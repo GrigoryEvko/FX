@@ -11024,6 +11024,155 @@ theorem isAggregatorTotal_optionSome {mode : Mode} {level : Nat}
   · next elementFails =>
       cases typeStrengthens
 
+/-- 1-IH non-binder totality: `Term.eitherInl`.  Source type is
+`Ty.eitherType leftType rightType`; child type is `leftType`.  Extract
+leftType's strengthening from typeStrengthens via `Option.mapTwo_eq_some`. -/
+theorem isAggregatorTotal_eitherInl {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {leftType rightType : Ty level sourceScope}
+    {valueRaw : RawTerm sourceScope}
+    {valueTerm : Term sourceCtx leftType valueRaw}
+    (valueTotal : IsAggregatorTotal valueTerm) :
+    IsAggregatorTotal
+      (Term.eitherInl (rightType := rightType) (valueTerm := valueTerm)) := by
+  intros _ _ strengthening _ _ typeStrengthens rawStrengthens
+  obtain ⟨targetLeftType, _, leftSuccess, _, _⟩ :=
+    Option.mapTwo_eq_some typeStrengthens
+  unfold partialStrengthenTyped?
+  unfold RawTerm.partialStrengthen? at rawStrengthens
+  unfold RawTerm.partialRename? at rawStrengthens
+  split at rawStrengthens
+  rotate_left
+  · cases rawStrengthens
+  next targetValueRaw valueRawSuccess =>
+    have valueTotalCall :=
+      valueTotal strengthening leftSuccess valueRawSuccess
+    split
+    · next rightFails =>
+        -- The dispatcher splits on rightType first; we know rightType
+        -- strengthens (by the second component of typeStrengthens).
+        obtain ⟨_, _, _, rightSuccess, _⟩ :=
+          Option.mapTwo_eq_some typeStrengthens
+        rw [rightSuccess] at rightFails
+        cases rightFails
+    · next _ _ =>
+        split
+        · next valueFails =>
+            rw [valueFails] at valueTotalCall
+            cases valueTotalCall
+        · rfl
+
+/-- 1-IH non-binder totality: `Term.eitherInr`.  Source type is
+`Ty.eitherType leftType rightType`; child type is `rightType`.  Mirror
+of `eitherInl` with `leftType` swapped. -/
+theorem isAggregatorTotal_eitherInr {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {leftType rightType : Ty level sourceScope}
+    {valueRaw : RawTerm sourceScope}
+    {valueTerm : Term sourceCtx rightType valueRaw}
+    (valueTotal : IsAggregatorTotal valueTerm) :
+    IsAggregatorTotal
+      (Term.eitherInr (leftType := leftType) (valueTerm := valueTerm)) := by
+  intros _ _ strengthening _ _ typeStrengthens rawStrengthens
+  obtain ⟨_, _, leftSuccess, rightSuccess, _⟩ :=
+    Option.mapTwo_eq_some typeStrengthens
+  unfold partialStrengthenTyped?
+  unfold RawTerm.partialStrengthen? at rawStrengthens
+  unfold RawTerm.partialRename? at rawStrengthens
+  split at rawStrengthens
+  rotate_left
+  · cases rawStrengthens
+  next targetValueRaw valueRawSuccess =>
+    have valueTotalCall :=
+      valueTotal strengthening rightSuccess valueRawSuccess
+    split
+    · next leftFails =>
+        rw [leftSuccess] at leftFails
+        cases leftFails
+    · next _ _ =>
+        split
+        · next valueFails =>
+            rw [valueFails] at valueTotalCall
+            cases valueTotalCall
+        · rfl
+
+/-- 1-IH non-binder totality: `Term.recordIntro`.  Source type is
+`Ty.record singleFieldType`; child type is `singleFieldType`.  The
+dispatcher does NOT split on the type payload — it recurses directly
+on `firstField`.  Extract singleFieldType's strengthening from
+typeStrengthens via the inner match arm. -/
+theorem isAggregatorTotal_recordIntro {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {singleFieldType : Ty level sourceScope}
+    {firstRaw : RawTerm sourceScope}
+    {firstField : Term sourceCtx singleFieldType firstRaw}
+    (firstTotal : IsAggregatorTotal firstField) :
+    IsAggregatorTotal (Term.recordIntro (firstField := firstField)) := by
+  intros _ _ strengthening _ _ typeStrengthens rawStrengthens
+  unfold Ty.partialStrengthen? at typeStrengthens
+  split at typeStrengthens
+  · next strengthenedField fieldSuccess =>
+      unfold partialStrengthenTyped?
+      unfold RawTerm.partialStrengthen? at rawStrengthens
+      unfold RawTerm.partialRename? at rawStrengthens
+      split at rawStrengthens
+      rotate_left
+      · cases rawStrengthens
+      next targetFirstRaw firstRawSuccess =>
+        have firstTotalCall :=
+          firstTotal strengthening fieldSuccess firstRawSuccess
+        split
+        · next fieldFails =>
+            rw [fieldFails] at firstTotalCall
+            cases firstTotalCall
+        · rfl
+  · next fieldFails =>
+      cases typeStrengthens
+
+/-- 1-IH non-binder totality: `Term.recordProj`.  Source type is
+`singleFieldType`; child carries `Ty.record singleFieldType`.  The
+dispatcher splits on `singleFieldType.partialStrengthen?` (which we
+get from `typeStrengthens` directly since source type IS the field
+type), then recurses. -/
+theorem isAggregatorTotal_recordProj {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {singleFieldType : Ty level sourceScope}
+    {recordRaw : RawTerm sourceScope}
+    {recordValue : Term sourceCtx (Ty.record singleFieldType) recordRaw}
+    (recordTotal : IsAggregatorTotal recordValue) :
+    IsAggregatorTotal (Term.recordProj (recordValue := recordValue)) := by
+  intros _ _ strengthening targetType _ typeStrengthens rawStrengthens
+  -- typeStrengthens : singleFieldType.partialStrengthen? back = some _
+  -- recordValue's type is Ty.record singleFieldType; reconstruct
+  -- its strengthening witness via the inner match.
+  have recordTypeStrengthens :
+      (Ty.record singleFieldType).partialStrengthen? strengthening.back =
+        some (Ty.record targetType) := by
+    show (match singleFieldType.partialStrengthen? strengthening.back with
+          | some strengthenedField => some (Ty.record strengthenedField)
+          | none => none) = some _
+    rw [typeStrengthens]
+  unfold partialStrengthenTyped?
+  unfold RawTerm.partialStrengthen? at rawStrengthens
+  unfold RawTerm.partialRename? at rawStrengthens
+  split at rawStrengthens
+  rotate_left
+  · cases rawStrengthens
+  next targetRecordRaw recordRawSuccess =>
+    have recordTotalCall :=
+      recordTotal strengthening recordTypeStrengthens recordRawSuccess
+    split
+    · next fieldFails =>
+        rw [typeStrengthens] at fieldFails
+        cases fieldFails
+    · next _ _ =>
+        split
+        · next recordFails =>
+            rw [recordFails] at recordTotalCall
+            cases recordTotalCall
+        · rfl
+
+
 /-! ## Image theorem trio — weaken / strengthen invertibility
 
 Three closure theorems on the image of `Term.weaken` under
