@@ -2215,6 +2215,101 @@ theorem aggregator_pair_listCons_listCons_closed {mode : Mode}
     (isAggregatorSound_listCons isAggregatorSound_boolTrue
       (isAggregatorSound_listNil (elementType := Ty.bool)))
 
+/-- Depth-18 nat chain: `succ^18 zero` at carrier `nat`.
+Extends the `natOne..natSeventeen` 1-IH chain progression by
+one more step. -/
+theorem aggregator_natEighteen_closed {mode : Mode} {level : Nat}
+    {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.natSucc (context := sourceCtx)
+        (Term.natSucc
+          (Term.natSucc
+            (Term.natSucc
+              (Term.natSucc
+                (Term.natSucc
+                  (Term.natSucc
+                    (Term.natSucc
+                      (Term.natSucc
+                        (Term.natSucc
+                          (Term.natSucc
+                            (Term.natSucc
+                              (Term.natSucc
+                                (Term.natSucc
+                                  (Term.natSucc
+                                    (Term.natSucc
+                                      (Term.natSucc
+                                        (Term.natSucc Term.natZero)))))))))))))))))) :=
+  isAggregatorSound_natSucc
+    (isAggregatorSound_natSucc
+      (isAggregatorSound_natSucc
+        (isAggregatorSound_natSucc
+          (isAggregatorSound_natSucc
+            (isAggregatorSound_natSucc
+              (isAggregatorSound_natSucc
+                (isAggregatorSound_natSucc
+                  (isAggregatorSound_natSucc
+                    (isAggregatorSound_natSucc
+                      (isAggregatorSound_natSucc
+                        (isAggregatorSound_natSucc
+                          (isAggregatorSound_natSucc
+                            (isAggregatorSound_natSucc
+                              (isAggregatorSound_natSucc
+                                (isAggregatorSound_natSucc
+                                  (isAggregatorSound_natSucc
+                                    (isAggregatorSound_natSucc
+                                      isAggregatorSound_natZero)))))))))))))))))
+
+/-- Depth-2 list of pair: `[[pair natZero natZero]]` at carrier
+`list (list (nat × nat))`.  New nesting pattern: outer listCons
+wraps an inner list-of-pair, demonstrating that parametric
+list-of-list-of-pair composes cleanly across two levels of
+parametric list wrapping. -/
+theorem aggregator_listCons_listCons_pair_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.listCons (context := sourceCtx)
+        (headTerm :=
+          Term.listCons
+            (headTerm :=
+              Term.pair (secondType := Ty.nat)
+                (firstValue := Term.natZero)
+                (secondValue := Term.natZero))
+            (tailTerm :=
+              Term.listNil (elementType := Ty.sigmaTy Ty.nat Ty.nat)))
+        (tailTerm :=
+          Term.listNil
+            (elementType := Ty.listType (Ty.sigmaTy Ty.nat Ty.nat)))) :=
+  isAggregatorSound_listCons
+    (isAggregatorSound_listCons
+      (isAggregatorSound_pair isAggregatorSound_natZero
+        isAggregatorSound_natZero)
+      (isAggregatorSound_listNil
+        (elementType := Ty.sigmaTy Ty.nat Ty.nat)))
+    (isAggregatorSound_listNil
+      (elementType := Ty.listType (Ty.sigmaTy Ty.nat Ty.nat)))
+
+/-- Heterogeneous pair combining 1-IH parametric optionSome on
+LEFT with 1-IH parametric listCons on RIGHT: `pair (Some natZero)
+[boolTrue]` at carrier `option nat × list bool`.  Both Sigma
+slots carry DIFFERENT 1-IH parametric wrappers at non-uniform
+element types — extends Phase 124's pair_listCons_optionNone
+(which paired listCons with optionNone) by using the non-empty
+optionSome on the left side. -/
+theorem aggregator_pair_optionSome_listCons_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.pair (context := sourceCtx)
+        (secondType := Ty.listType Ty.bool)
+        (firstValue := Term.optionSome (valueTerm := Term.natZero))
+        (secondValue :=
+          Term.listCons
+            (headTerm := Term.boolTrue)
+            (tailTerm := Term.listNil (elementType := Ty.bool)))) :=
+  isAggregatorSound_pair
+    (isAggregatorSound_optionSome isAggregatorSound_natZero)
+    (isAggregatorSound_listCons isAggregatorSound_boolTrue
+      (isAggregatorSound_listNil (elementType := Ty.bool)))
+
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_unit_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwo_closed
@@ -2325,5 +2420,8 @@ theorem aggregator_pair_listCons_listCons_closed {mode : Mode}
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natSeventeen_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_optionSome_quint_natZero_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_listCons_listCons_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natEighteen_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_listCons_pair_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_optionSome_listCons_closed
 
 end LeanFX2.SmokeAggregatorComposition
