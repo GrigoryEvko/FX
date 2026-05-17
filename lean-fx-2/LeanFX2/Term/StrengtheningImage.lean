@@ -8385,6 +8385,108 @@ theorem partialStrengthenTyped?_atEquivIntroHet_imp_sound {mode : Mode}
                 (leftInvIH leftInvResult leftInvRecurse)
                 (rightInvIH rightInvResult rightInvRecurse)
 
+/-- Dispatcher soundness at the `Term.uaIntroHet` arm.  Heterogeneous
+univalence introduction: positional `innerLevel`/`innerLevelLt`, two
+carrier-type witnesses, four raw witnesses (`carrierARaw`, `carrierBRaw`,
+`forwardRaw`, `backwardRaw`), and a single equivalence-witness value
+IH. -/
+theorem partialStrengthenTyped?_atUaIntroHet_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    {carrierA carrierB : Ty level sourceScope}
+    (carrierARaw carrierBRaw : RawTerm sourceScope)
+    {forwardRaw backwardRaw : RawTerm sourceScope}
+    {equivWitness :
+      Term sourceCtx (Ty.equiv carrierA carrierB)
+        (RawTerm.equivIntro forwardRaw backwardRaw)}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (equivIH : ∀ equivResult,
+        partialStrengthenTyped? equivWitness strengthening =
+            some equivResult →
+          StrengtheningSoundness equivResult)
+    (result : StrengtheningResult strengthening
+      (Term.uaIntroHet (context := sourceCtx) innerLevel innerLevelLt
+        carrierARaw carrierBRaw equivWitness))
+    (success : partialStrengthenTyped?
+        (Term.uaIntroHet (context := sourceCtx) innerLevel innerLevelLt
+          carrierARaw carrierBRaw equivWitness) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetCarrierA carrierAStrengthens
+    split at success
+    · cases success
+    · rename_i targetCarrierB carrierBStrengthens
+      split at success
+      · cases success
+      · rename_i targetCarrierARaw carrierARawStrengthens
+        split at success
+        · cases success
+        · rename_i targetCarrierBRaw carrierBRawStrengthens
+          split at success
+          · cases success
+          · rename_i targetForwardRaw forwardRawStrengthens
+            split at success
+            · cases success
+            · rename_i targetBackwardRaw backwardRawStrengthens
+              split at success
+              · cases success
+              · rename_i equivResult equivRecurse
+                cases success
+                exact partialStrengthenTypedUaIntroHet_sound innerLevel
+                  innerLevelLt targetCarrierA targetCarrierB
+                  carrierARaw carrierBRaw targetCarrierARaw targetCarrierBRaw
+                  targetForwardRaw targetBackwardRaw
+                  carrierAStrengthens carrierBStrengthens
+                  carrierARawStrengthens carrierBRawStrengthens
+                  forwardRawStrengthens backwardRawStrengthens
+                  (equivIH equivResult equivRecurse)
+
+/-- Dispatcher soundness at the `Term.funextIntroHet` arm.
+Heterogeneous-carrier funext introduction.  Closed leaf: two type
+witnesses (`domainType`/`codomainType`) and two lifted raw witnesses
+(`applyARaw`/`applyBRaw` under the binder via `strengthening.back.lift`).
+No value IH — the wrapper consumes the raw witnesses directly. -/
+theorem partialStrengthenTyped?_atFunextIntroHet_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (domainType codomainType : Ty level sourceScope)
+    (applyARaw applyBRaw : RawTerm (sourceScope + 1))
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (result : StrengtheningResult strengthening
+      (Term.funextIntroHet (context := sourceCtx) domainType codomainType
+        applyARaw applyBRaw))
+    (success : partialStrengthenTyped?
+        (Term.funextIntroHet (context := sourceCtx) domainType codomainType
+          applyARaw applyBRaw) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetDomainType domainStrengthens
+    split at success
+    · cases success
+    · rename_i targetCodomainType codomainStrengthens
+      split at success
+      · cases success
+      · rename_i targetApplyARaw applyAStrengthens
+        split at success
+        · cases success
+        · rename_i targetApplyBRaw applyBStrengthens
+          cases success
+          exact partialStrengthenTypedFunextIntroHet_sound domainType
+            codomainType targetDomainType targetCodomainType applyARaw
+            applyBRaw targetApplyARaw targetApplyBRaw
+            domainStrengthens codomainStrengthens
+            applyAStrengthens applyBStrengthens
+
 end Term
 
 end LeanFX2

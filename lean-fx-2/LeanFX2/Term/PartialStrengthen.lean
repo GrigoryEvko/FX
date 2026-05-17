@@ -7497,37 +7497,39 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                         (partialStrengthenTypedEquivApp carrierASuccess
                           carrierBSuccess equivResult argumentResult)
   | @Term.uaIntroHet _ _ _ _ innerLevel innerLevelLt carrierA carrierB
-      carrierARaw carrierBRaw forwardRaw backwardRaw equivWitness => by
-      cases carrierASuccess : carrierA.partialStrengthen? strengthening.back with
-      | none => exact none
+      carrierARaw carrierBRaw forwardRaw backwardRaw equivWitness =>
+      match carrierASuccess :
+          carrierA.partialStrengthen? strengthening.back with
+      | none => none
       | some targetCarrierA =>
-          cases carrierBSuccess :
+          match carrierBSuccess :
               carrierB.partialStrengthen? strengthening.back with
-          | none => exact none
+          | none => none
           | some targetCarrierB =>
-              cases carrierARawSuccess :
+              match carrierARawSuccess :
                   carrierARaw.partialStrengthen? strengthening.back with
-              | none => exact none
+              | none => none
               | some targetCarrierARaw =>
-                  cases carrierBRawSuccess :
+                  match carrierBRawSuccess :
                       carrierBRaw.partialStrengthen? strengthening.back with
-                  | none => exact none
+                  | none => none
                   | some targetCarrierBRaw =>
-                      cases forwardRawSuccess :
+                      match forwardRawSuccess :
                           forwardRaw.partialStrengthen?
                             strengthening.back with
-                      | none => exact none
+                      | none => none
                       | some targetForwardRaw =>
-                          cases backwardRawSuccess :
+                          match backwardRawSuccess :
                               backwardRaw.partialStrengthen?
                                 strengthening.back with
-                          | none => exact none
+                          | none => none
                           | some targetBackwardRaw =>
-                              cases partialStrengthenTyped? equivWitness
-                                  (strengthening := strengthening) with
-                              | none => exact none
+                              match equivRecurse :
+                                  partialStrengthenTyped? equivWitness
+                                    (strengthening := strengthening) with
+                              | none => none
                               | some equivResult =>
-                                  exact some
+                                  some
                                     (partialStrengthenTypedUaIntroHet
                                       innerLevel innerLevelLt targetCarrierA
                                       targetCarrierB carrierARaw carrierBRaw
@@ -7538,23 +7540,24 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                                       forwardRawSuccess backwardRawSuccess
                                       equivResult)
   | @Term.funextIntroHet _ _ _ _ domainType codomainType applyARaw
-      applyBRaw => by
-      cases domainSuccess : domainType.partialStrengthen? strengthening.back with
-      | none => exact none
+      applyBRaw =>
+      match domainSuccess :
+          domainType.partialStrengthen? strengthening.back with
+      | none => none
       | some targetDomainType =>
-          cases codomainSuccess :
+          match codomainSuccess :
               codomainType.partialStrengthen? strengthening.back with
-          | none => exact none
+          | none => none
           | some targetCodomainType =>
-              cases applyASuccess :
+              match applyASuccess :
                   applyARaw.partialStrengthen? strengthening.back.lift with
-              | none => exact none
+              | none => none
               | some targetApplyARaw =>
-                  cases applyBSuccess :
+                  match applyBSuccess :
                       applyBRaw.partialStrengthen? strengthening.back.lift with
-                  | none => exact none
+                  | none => none
                   | some targetApplyBRaw =>
-                      exact some
+                      some
                         (partialStrengthenTypedFunextIntroHet domainType
                           codomainType targetDomainType targetCodomainType
                           applyARaw applyBRaw targetApplyARaw
