@@ -750,4 +750,15 @@ existing computational dispatcher. -/
 -- and by the Phase B+ Step.eta SR cascade.
 #assert_no_axioms LeanFX2.Term.weaken_inv_of_strengthenTyped?_some
 
+-- Image Step 2: unweaken?-to-strengthenTyped? success direction.
+-- Tautological bijection — both witnesses succeed under identical
+-- conditions per unweaken?'s definitional pattern-match.
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_some_of_unweaken?_some
+
+-- Image Step 3: headline iff between unweaken? and strengthenTyped?
+-- success.  Tautological bijection (see Step 2).  Unconditional
+-- totality on the weakening image requires a separate 78-case
+-- structural induction.
+#assert_no_axioms LeanFX2.Term.weaken_image_iff_strengthenTyped?_some
+
 end LeanFX2.Tools

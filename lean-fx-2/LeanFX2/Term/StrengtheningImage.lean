@@ -10591,6 +10591,98 @@ theorem weaken_inv_of_strengthenTyped?_some {mode : Mode} {level : Nat}
     HEq sourceTerm result.renamedTarget :=
   (isAggregatorSound_universal sourceTerm strengthening result success).termRenames
 
+/-- Image Step 2 — `unweaken?` and `strengthenTyped?` agree on success.
+
+TAUTOLOGICAL BIJECTION: `Term.unweaken?` is defined to pattern-match on
+`strengthenTyped?` and return `none` in the `none` branch.  Both
+witnesses therefore succeed under identical conditions; this theorem
+packages the equivalence as a one-line corollary and reveals no new
+totality information.
+
+If `Term.unweaken? weakenedTerm` returned `some originalTerm`, the
+underlying `strengthenTyped?` dispatcher returned `some result`.  The
+proof is case analysis on `strengthenTyped? weakenedTerm`: the `none`
+branch makes `unweaken?` return `none`, contradicting the success
+hypothesis. -/
+theorem strengthenTyped?_some_of_unweaken?_some {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType sourceType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    {weakenedTerm :
+      Term (context.cons newType) sourceType.weaken sourceRaw.weaken}
+    {originalTerm : Term context sourceType sourceRaw}
+    (unweakSuccess : Term.unweaken? weakenedTerm = some originalTerm) :
+    ∃ result, strengthenTyped? weakenedTerm = some result := by
+  cases dispatchOutcome : strengthenTyped? weakenedTerm with
+  | none =>
+      exfalso
+      have noneEq : Term.unweaken? weakenedTerm = none := by
+        show (match strengthenTyped? weakenedTerm with
+              | none => none
+              | some result => _) = none
+        rw [dispatchOutcome]
+      rw [noneEq] at unweakSuccess
+      cases unweakSuccess
+  | some result =>
+      exact ⟨result, rfl⟩
+
+/-- Image Step 3 — headline iff between `unweaken?` success and
+`strengthenTyped?` success.
+
+TAUTOLOGICAL BIJECTION: both directions are structural corollaries of
+`Term.unweaken?`'s definition (it pattern-matches on `strengthenTyped?`
+and returns `none` exactly when `strengthenTyped?` does).  The iff
+therefore reveals no new totality content — both witnesses succeed
+under identical conditions, and the headline just packages that.
+
+For a typed term whose indices are syntactic weakenings (the canonical
+input shape consumed by the typed η-redesign + Phase B+ Step.eta SR
+cascade), `Term.unweaken?` recovers an original-context term IFF the
+underlying `strengthenTyped?` dispatcher produces a
+`StrengtheningResult`.
+
+NOTE: unconditional totality on the weakening image — i.e., `∀
+originalTerm, strengthenTyped? (Term.weaken nt originalTerm) = some _`
+— is a STRONGER theorem requiring a 78-case structural induction at the
+typed Term layer (parallel to `Ty.partialStrengthen?_rename_some` and
+`RawTerm.partialStrengthen?_rename_some`).  The structural induction
+unifies the dispatcher pattern matches with the index-level
+strengthen-of-weaken lemmas across every ctor with binder-lift
+threading; tracked as a follow-up after this iff packaging lands. -/
+theorem weaken_image_iff_strengthenTyped?_some {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType sourceType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    (weakenedTerm :
+      Term (context.cons newType) sourceType.weaken sourceRaw.weaken) :
+    (∃ originalTerm, Term.unweaken? weakenedTerm = some originalTerm) ↔
+      ∃ result, strengthenTyped? weakenedTerm = some result := by
+  refine ⟨fun forwardHypothesis => ?_, fun backwardHypothesis => ?_⟩
+  · obtain ⟨_, unweakSuccess⟩ := forwardHypothesis
+    exact strengthenTyped?_some_of_unweaken?_some unweakSuccess
+  · obtain ⟨result, dispatchSuccess⟩ := backwardHypothesis
+    cases result with
+    | mk targetType targetRaw targetTerm typeStrengthens rawStrengthens _ _ =>
+        have targetTypeEq : targetType = sourceType := by
+          have hh : sourceType.weaken.strengthen? = some targetType :=
+            typeStrengthens
+          rw [Ty.strengthen?_weaken] at hh
+          cases hh
+          rfl
+        have targetRawEq : targetRaw = sourceRaw := by
+          have hh : sourceRaw.weaken.strengthen? = some targetRaw :=
+            rawStrengthens
+          rw [RawTerm.strengthen?_weaken] at hh
+          cases hh
+          rfl
+        cases targetTypeEq
+        cases targetRawEq
+        refine ⟨targetTerm, ?_⟩
+        show (match strengthenTyped? weakenedTerm with
+              | none => none
+              | some result => _) = some targetTerm
+        rw [dispatchSuccess]
+
 end Term
 
 end LeanFX2
