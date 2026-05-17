@@ -1365,19 +1365,41 @@ def partialStrengthenTypedPathAppOfSuccess
     rfl
 
 /-- Cubical path application strengthens by strengthening the path and
-interval argument. -/
+interval argument.
+
+App-pattern: takes `carrierSuccess`, `leftSuccess`, `rightSuccess` as
+explicit parameters lifted from the dispatcher's three nested option-
+splits on the path carrier type, left endpoint, and right endpoint
+respectively.  Wrapper body destructures both `pathResult` and
+`intervalResult`, aligns the `Ty.path` shape of the path's
+`pathTypeStrengthens` via the standard `Option.mapThree` discharge
+recipe, then delegates to `partialStrengthenTypedPathAppOfSuccess`.
+Sister of `partialStrengthenTypedHcompPath` (Phase 42) — same
+3-option-split shape applied to the second cubical path-elimination
+producer. -/
 def partialStrengthenTypedPathApp {mode : Mode} {level : Nat}
     {sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
     {targetCtx : Ctx mode level targetScope}
     (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level sourceScope}
+    {targetCarrierType : Ty level targetScope}
     {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {targetLeftEndpoint targetRightEndpoint : RawTerm targetScope}
     {pathRaw intervalRaw : RawTerm sourceScope}
     {strengthening : ContextStrengthening sourceCtx targetCtx}
     {pathTerm : Term sourceCtx
       (Ty.path carrierType leftEndpoint rightEndpoint) pathRaw}
     {intervalTerm : Term sourceCtx Ty.interval intervalRaw}
+    (carrierSuccess :
+      carrierType.partialStrengthen? strengthening.back =
+        some targetCarrierType)
+    (leftSuccess :
+      leftEndpoint.partialStrengthen? strengthening.back =
+        some targetLeftEndpoint)
+    (rightSuccess :
+      rightEndpoint.partialStrengthen? strengthening.back =
+        some targetRightEndpoint)
     (pathResult : StrengtheningResult strengthening pathTerm)
     (intervalResult : StrengtheningResult strengthening intervalTerm) :
     StrengtheningResult strengthening
@@ -1385,66 +1407,34 @@ def partialStrengthenTypedPathApp {mode : Mode} {level : Nat}
   cases pathResult with
   | mk targetPathType targetPathRaw targetPathTerm pathTypeStrengthens
       pathRawStrengthens pathTypeRenames pathRawRenames =>
-      change
-        Option.mapThree
-          (carrierType.partialStrengthen? strengthening.back)
-          (leftEndpoint.partialStrengthen? strengthening.back)
-          (rightEndpoint.partialStrengthen? strengthening.back)
-          Ty.path = some targetPathType at pathTypeStrengthens
-      cases carrierSuccess : carrierType.partialStrengthen?
-          strengthening.back with
-      | none =>
-          rw [carrierSuccess] at pathTypeStrengthens
-          cases pathTypeStrengthens
-      | some targetCarrierType =>
-          cases leftSuccess : leftEndpoint.partialStrengthen?
-              strengthening.back with
-          | none =>
-              rw [carrierSuccess, leftSuccess] at pathTypeStrengthens
-              cases pathTypeStrengthens
-          | some targetLeftEndpoint =>
-              cases rightSuccess : rightEndpoint.partialStrengthen?
-                  strengthening.back with
-              | none =>
-                  rw [carrierSuccess, leftSuccess, rightSuccess] at pathTypeStrengthens
-                  cases pathTypeStrengthens
-              | some targetRightEndpoint =>
-                  rw [carrierSuccess, leftSuccess, rightSuccess] at pathTypeStrengthens
-                  cases pathTypeStrengthens
-                  cases intervalResult with
-                  | mk targetIntervalType targetIntervalRaw targetIntervalTerm
-                      intervalTypeStrengthens intervalRawStrengthens
-                      intervalTypeRenames intervalRawRenames =>
-                      cases intervalTypeStrengthens
-                      exact {
-                        targetType := targetCarrierType
-                        targetRaw :=
-                          RawTerm.pathApp targetPathRaw targetIntervalRaw
-                        targetTerm := Term.pathApp modeIsUnivalent
-                          targetPathTerm targetIntervalTerm
-                        typeStrengthens := carrierSuccess
-                        rawStrengthens := by
-                          change
-                            Option.mapTwo
-                              (pathRaw.partialStrengthen?
-                                strengthening.back)
-                              (intervalRaw.partialStrengthen?
-                                strengthening.back)
-                              RawTerm.pathApp =
-                              some (RawTerm.pathApp targetPathRaw
-                                targetIntervalRaw)
-                          rw [pathRawStrengthens, intervalRawStrengthens]
-                          rfl
-                        typeRenames :=
-                          Ty.partialStrengthen?_imp_rename carrierType
-                            strengthening.forward strengthening.back
-                            strengthening.injectsBack targetCarrierType
-                            carrierSuccess
-                        rawRenames := by
-                          cases pathRawRenames
-                          cases intervalRawRenames
-                          rfl
-                      }
+      have expectedPathTypeStrengthens :
+          (Ty.path carrierType leftEndpoint
+              rightEndpoint).partialStrengthen?
+              strengthening.back =
+            some (Ty.path targetCarrierType targetLeftEndpoint
+              targetRightEndpoint) := by
+        change
+          Option.mapThree
+            (carrierType.partialStrengthen? strengthening.back)
+            (leftEndpoint.partialStrengthen? strengthening.back)
+            (rightEndpoint.partialStrengthen? strengthening.back)
+            Ty.path =
+              some (Ty.path targetCarrierType targetLeftEndpoint
+                targetRightEndpoint)
+        rw [carrierSuccess, leftSuccess, rightSuccess]
+        rfl
+      rw [expectedPathTypeStrengthens] at pathTypeStrengthens
+      cases pathTypeStrengthens
+      cases intervalResult with
+      | mk targetIntervalType targetIntervalRaw targetIntervalTerm
+          intervalTypeStrengthens intervalRawStrengthens
+          intervalTypeRenames intervalRawRenames =>
+          cases intervalTypeStrengthens
+          exact partialStrengthenTypedPathAppOfSuccess
+            modeIsUnivalent targetPathTerm targetIntervalTerm
+            carrierSuccess leftSuccess rightSuccess
+            pathRawStrengthens intervalRawStrengthens
+            pathRawRenames intervalRawRenames
 
 /-- List cons strengthens by strengthening the head and tail, then
 aligning the shared element type through the tail's list type. -/
@@ -7016,18 +7006,32 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                       exact some
                         (partialStrengthenTypedPathLam modeIsUnivalent
                           carrierSuccess leftSuccess rightSuccess bodyResult)
-  | @Term.pathApp _ _ _ _ modeIsUnivalent _ _ _ _ _ pathTerm intervalTerm => by
-      cases partialStrengthenTyped? pathTerm
-          (strengthening := strengthening) with
+  | @Term.pathApp _ _ _ _ modeIsUnivalent carrierType leftEndpoint
+      rightEndpoint _ _ pathTerm intervalTerm => by
+      cases carrierSuccess :
+          carrierType.partialStrengthen? strengthening.back with
       | none => exact none
-      | some pathResult =>
-          cases partialStrengthenTyped? intervalTerm
-              (strengthening := strengthening) with
+      | some _ =>
+          cases leftSuccess :
+              leftEndpoint.partialStrengthen? strengthening.back with
           | none => exact none
-          | some intervalResult =>
-              exact some
-                (partialStrengthenTypedPathApp modeIsUnivalent
-                  pathResult intervalResult)
+          | some _ =>
+              cases rightSuccess :
+                  rightEndpoint.partialStrengthen? strengthening.back with
+              | none => exact none
+              | some _ =>
+                  cases partialStrengthenTyped? pathTerm
+                      (strengthening := strengthening) with
+                  | none => exact none
+                  | some pathResult =>
+                      cases partialStrengthenTyped? intervalTerm
+                          (strengthening := strengthening) with
+                      | none => exact none
+                      | some intervalResult =>
+                          exact some
+                            (partialStrengthenTypedPathApp modeIsUnivalent
+                              carrierSuccess leftSuccess rightSuccess
+                              pathResult intervalResult)
   | @Term.glueIntro _ _ _ _ modeIsUnivalent baseType boundaryWitness _ _
       baseValue partialValue => by
       cases baseTypeSuccess : baseType.partialStrengthen? strengthening.back with

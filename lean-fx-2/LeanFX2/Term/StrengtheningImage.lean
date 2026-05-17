@@ -4581,6 +4581,85 @@ theorem partialStrengthenTypedHcompPath_sound {mode : Mode}
             (capRawRenames := capRawRenames)
             sidesPathSound.termRenames capSound.termRenames
 
+/-- Soundness of the App-pattern `partialStrengthenTypedPathApp`
+wrapper.  Cubical path application: takes the three path-type pivots
+(`carrierSuccess`/`leftSuccess`/`rightSuccess`) as wrapper parameters
+lifted from the dispatcher.  Mirrors the wrapper's cascade — first
+`cases` the `pathResult`, align the `Ty.path` shape via
+`Option.mapThree` + `rw + rfl`, then `cases` the `intervalResult`
+(which always strengthens to `Ty.interval` trivially since the
+strengthening preserves `Ty.interval`), and delegate to
+`_OfSuccess_sound`.  Companion of Phase 42's HcompPath soundness:
+both ship 3-option-split soundness over the same `Ty.path` pivots,
+exercising the App-pattern's uniform scaling across cubical
+path-eliminators. -/
+theorem partialStrengthenTypedPathApp_sound {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    {targetCarrierType : Ty level targetScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {targetLeftEndpoint targetRightEndpoint : RawTerm targetScope}
+    {pathRaw intervalRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {pathTerm : Term sourceCtx
+      (Ty.path carrierType leftEndpoint rightEndpoint) pathRaw}
+    {intervalTerm : Term sourceCtx Ty.interval intervalRaw}
+    (carrierSuccess :
+      carrierType.partialStrengthen? strengthening.back =
+        some targetCarrierType)
+    (leftSuccess :
+      leftEndpoint.partialStrengthen? strengthening.back =
+        some targetLeftEndpoint)
+    (rightSuccess :
+      rightEndpoint.partialStrengthen? strengthening.back =
+        some targetRightEndpoint)
+    {pathResult : StrengtheningResult strengthening pathTerm}
+    {intervalResult : StrengtheningResult strengthening intervalTerm}
+    (pathSound : StrengtheningSoundness pathResult)
+    (intervalSound : StrengtheningSoundness intervalResult) :
+    StrengtheningSoundness
+      (partialStrengthenTypedPathApp modeIsUnivalent carrierSuccess
+        leftSuccess rightSuccess pathResult intervalResult) := by
+  cases pathResult with
+  | mk targetPathType targetPathRaw targetPathTerm pathTypeStrengthens
+      pathRawStrengthens pathTypeRenames pathRawRenames =>
+      have expectedPathTypeStrengthens :
+          (Ty.path carrierType leftEndpoint
+              rightEndpoint).partialStrengthen?
+              strengthening.back =
+            some (Ty.path targetCarrierType targetLeftEndpoint
+              targetRightEndpoint) := by
+        change
+          Option.mapThree
+            (carrierType.partialStrengthen? strengthening.back)
+            (leftEndpoint.partialStrengthen? strengthening.back)
+            (rightEndpoint.partialStrengthen? strengthening.back)
+            Ty.path =
+              some (Ty.path targetCarrierType targetLeftEndpoint
+                targetRightEndpoint)
+        rw [carrierSuccess, leftSuccess, rightSuccess]
+        rfl
+      rw [expectedPathTypeStrengthens] at pathTypeStrengthens
+      cases pathTypeStrengthens
+      cases intervalResult with
+      | mk targetIntervalType targetIntervalRaw targetIntervalTerm
+          intervalTypeStrengthens intervalRawStrengthens
+          intervalTypeRenames intervalRawRenames =>
+          cases intervalTypeStrengthens
+          exact partialStrengthenTypedPathAppOfSuccess_sound
+            modeIsUnivalent
+            (carrierSuccess := carrierSuccess)
+            (leftSuccess := leftSuccess)
+            (rightSuccess := rightSuccess)
+            (pathRawStrengthens := pathRawStrengthens)
+            (intervalRawStrengthens := intervalRawStrengthens)
+            (pathRawRenames := pathRawRenames)
+            (intervalRawRenames := intervalRawRenames)
+            pathSound.termRenames intervalSound.termRenames
+
 /-- Soundness of `partialStrengthenTypedEquivIntroHetOfSuccess`: the
 result's renamed target term is heterogeneously equal to the original
 typed heterogeneous-equivalence introduction.  Note: the leftInv and

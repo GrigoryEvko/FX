@@ -482,4 +482,19 @@ namespace LeanFX2.SmokeTypedInversion
 -- `pathApp`, `glueIntro`, and the cubical eliminators.
 #print axioms LeanFX2.Term.partialStrengthenTypedHcompPath_sound
 
+-- Phase 43 (sidequest): WRAPPER soundness for cubical path-application
+-- producer.  Sister of Phase 42 HcompPath — both ship 3-option-split
+-- App-pattern wrappers over the same `Ty.path` pivots
+-- (carrier/left/right).  Difference: `pathApp` returns a value at
+-- `carrierType` (the path's element type), so the second result
+-- (`intervalResult`) strengthens to `Ty.interval` — definitionally
+-- preserved by partial strengthening — and that arm is discharged by
+-- a trivial `cases intervalTypeStrengthens`.  Closes the second
+-- cubical 3-option-split wrapper; combined with Phase 42 this brings
+-- the path-elimination family to two zero-axiom shipped soundness
+-- theorems.  Remaining cubical 3-option candidate: `glueIntro` (when
+-- looked at carefully has Ty.glue's 2 pivots; ships via 2-option not
+-- 3-option, so PathLam family is the next 3-option target).
+#print axioms LeanFX2.Term.partialStrengthenTypedPathApp_sound
+
 end LeanFX2.SmokeTypedInversion
