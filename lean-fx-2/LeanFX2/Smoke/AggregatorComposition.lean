@@ -716,6 +716,57 @@ theorem aggregator_listCons_optionSome_two_closed {mode : Mode}
       (isAggregatorSound_listNil
         (elementType := Ty.optionType Ty.nat)))
 
+/-- eitherInl carrying a Sigma-pair (LEFT side): `eitherInl
+(natZero, natZero)` at carrier `Either (nat × nat) bool`.
+Counterpart to Phase 104's eitherInr_pair_closed which puts the
+Sigma on the right side; together they confirm both injection
+sides accept 2-IH Sigma children. -/
+theorem aggregator_eitherInl_pair_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.eitherInl (context := sourceCtx)
+        (rightType := Ty.bool)
+        (valueTerm :=
+          Term.pair (secondType := Ty.nat)
+            (firstValue := Term.natZero)
+            (secondValue := Term.natZero))) :=
+  isAggregatorSound_eitherInl (rightType := Ty.bool)
+    (isAggregatorSound_pair isAggregatorSound_natZero
+      isAggregatorSound_natZero)
+
+/-- List of right-injected either values: `[eitherInr boolTrue]`
+at carrier `list (Either nat bool)`.  Counterpart to Phase 104's
+listCons_eitherInl_closed; together they confirm both either
+injection sides serve as listCons heads. -/
+theorem aggregator_listCons_eitherInr_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.listCons (context := sourceCtx)
+        (headTerm :=
+          Term.eitherInr (leftType := Ty.nat)
+            (valueTerm := Term.boolTrue))
+        (tailTerm :=
+          Term.listNil
+            (elementType := Ty.eitherType Ty.nat Ty.bool))) :=
+  isAggregatorSound_listCons
+    (isAggregatorSound_eitherInr (leftType := Ty.nat)
+      isAggregatorSound_boolTrue)
+    (isAggregatorSound_listNil
+      (elementType := Ty.eitherType Ty.nat Ty.bool))
+
+/-- Option of an inner None: `Some None` at carrier
+`option (option nat)`.  Demonstrates that the 1-IH parametric
+optionSome wrapper composes with the 0-IH parametric optionNone
+wrapper at the inner valueTerm slot; mixing the two option-arm
+templates within a single composition. -/
+theorem aggregator_optionSome_optionNone_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.optionSome (context := sourceCtx)
+        (valueTerm := Term.optionNone (elementType := Ty.nat))) :=
+  isAggregatorSound_optionSome
+    (isAggregatorSound_optionNone (elementType := Ty.nat))
+
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_unit_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwo_closed
@@ -760,5 +811,8 @@ theorem aggregator_listCons_optionSome_two_closed {mode : Mode}
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_optionSome_eitherInl_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_eitherInl_natTwo_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_optionSome_two_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_eitherInl_pair_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_eitherInr_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_optionSome_optionNone_closed
 
 end LeanFX2.SmokeAggregatorComposition
