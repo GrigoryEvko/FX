@@ -1087,6 +1087,69 @@ theorem aggregator_eitherInl_listNil_closed {mode : Mode}
   isAggregatorSound_eitherInl (rightType := Ty.bool)
     (isAggregatorSound_listNil (elementType := Ty.nat))
 
+/-- 9-deep natSucc chain extending the natOne..natEight sequence.
+Continues the depth-uniformity demonstration for 1-IH wrappers
+past depth 8. -/
+theorem aggregator_natNine_closed {mode : Mode} {level : Nat}
+    {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.natSucc (context := sourceCtx)
+        (Term.natSucc
+          (Term.natSucc
+            (Term.natSucc
+              (Term.natSucc
+                (Term.natSucc
+                  (Term.natSucc
+                    (Term.natSucc
+                      (Term.natSucc Term.natZero))))))))) :=
+  isAggregatorSound_natSucc
+    (isAggregatorSound_natSucc
+      (isAggregatorSound_natSucc
+        (isAggregatorSound_natSucc
+          (isAggregatorSound_natSucc
+            (isAggregatorSound_natSucc
+              (isAggregatorSound_natSucc
+                (isAggregatorSound_natSucc
+                  (isAggregatorSound_natSucc
+                    isAggregatorSound_natZero))))))))
+
+/-- 1-element list of optionNone values: `[None]` at carrier
+`list (option nat)`.  Composes 2-IH parametric `listCons` with
+0-IH parametric `optionNone` as the head and a matching parametric
+`listNil` sentinel at the same option carrier — both parametric
+wrappers at the same elementType (option nat). -/
+theorem aggregator_listCons_optionNone_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.listCons (context := sourceCtx)
+        (headTerm := Term.optionNone (elementType := Ty.nat))
+        (tailTerm :=
+          Term.listNil
+            (elementType := Ty.optionType Ty.nat))) :=
+  isAggregatorSound_listCons
+    (isAggregatorSound_optionNone (elementType := Ty.nat))
+    (isAggregatorSound_listNil
+      (elementType := Ty.optionType Ty.nat))
+
+/-- Sigma-pair with TWO empty lists of DIFFERENT elementTypes:
+`pair (listNil := nat) (listNil := bool)` at carrier
+`list nat × list bool`.  Exercises the 2-IH non-parametric Σ
+wrapper with two 0-IH parametric `listNil` children whose
+elementTypes do NOT match — first list has element type `nat`,
+second list has element type `bool`.  Demonstrates that the
+heterogeneous-Σ shape composes parametric listNil wrappers at
+non-uniform elementTypes. -/
+theorem aggregator_pair_listNil_listNil_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.pair (context := sourceCtx)
+        (secondType := Ty.listType Ty.bool)
+        (firstValue := Term.listNil (elementType := Ty.nat))
+        (secondValue := Term.listNil (elementType := Ty.bool))) :=
+  isAggregatorSound_pair
+    (isAggregatorSound_listNil (elementType := Ty.nat))
+    (isAggregatorSound_listNil (elementType := Ty.bool))
+
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_unit_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwo_closed
@@ -1152,5 +1215,8 @@ theorem aggregator_eitherInl_listNil_closed {mode : Mode}
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_listCons_natZero_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_eitherInr_listCons_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_eitherInl_listNil_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natNine_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_optionNone_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_listNil_listNil_closed
 
 end LeanFX2.SmokeAggregatorComposition
