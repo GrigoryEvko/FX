@@ -455,4 +455,16 @@ namespace LeanFX2.SmokeTypedInversion
 -- `partialStrengthenTypedCodataDestOfSuccess`.
 #print axioms LeanFX2.Term.partialStrengthenTypedCodataDest_sound
 
+-- Phase 41 (sidequest): WRAPPER soundness for cubical glue-elimination
+-- producer.  Pattern: ListElim-shaped wrapper REFACTORED to App-style
+-- by lifting BOTH internal option-splits (`baseSuccess` on base type
+-- and `boundarySuccess` on boundary witness raw) into explicit
+-- parameters.  Same recipe as Phase 39 RefineElim / Phase 40
+-- CodataDest — confirms the App-pattern scales uniformly across the
+-- entire family of 2-option-split wrappers, including those that mix
+-- type-level (Ty) and raw-term-level (RawTerm) strengthening
+-- witnesses.  Threads `modeIsUnivalent` through unchanged since it is
+-- a mode-equality witness, not a strengthening pivot.
+#print axioms LeanFX2.Term.partialStrengthenTypedGlueElim_sound
+
 end LeanFX2.SmokeTypedInversion

@@ -568,5 +568,6 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedRecordProj_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedRefineElim_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedCodataDest_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedGlueElim_sound
 
 end LeanFX2.Tools

@@ -3969,6 +3969,63 @@ theorem partialStrengthenTypedGlueElimOfSuccess_sound {mode : Mode}
   exact Term.glueElim_HEq_congr modeIsUnivalent baseRenames boundaryRenames
     gluedRawRenames gluedSound
 
+/-- Soundness for the typed glue-elimination wrapper.
+
+Mirrors `partialStrengthenTypedGlueElim`'s App-pattern shape: the
+wrapper takes `baseSuccess` and `boundarySuccess` as explicit
+parameters (lifted from the dispatcher's two nested option-splits on
+base type and boundary witness respectively).  The proof destructures
+the glued value's `StrengtheningResult`, aligns the `Ty.glue` shape via
+`rw` + `cases` on the derived equation, then delegates to
+`partialStrengthenTypedGlueElimOfSuccess_sound`.  Same recipe as
+Phase 39 RefineElim / Phase 40 CodataDest. -/
+theorem partialStrengthenTypedGlueElim_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {baseType : Ty level sourceScope}
+    {targetBaseType : Ty level targetScope}
+    {boundaryWitness gluedRaw : RawTerm sourceScope}
+    {targetBoundaryWitness : RawTerm targetScope}
+    {gluedValue : Term sourceCtx (Ty.glue baseType boundaryWitness) gluedRaw}
+    (baseSuccess :
+      baseType.partialStrengthen? strengthening.back = some targetBaseType)
+    (boundarySuccess :
+      boundaryWitness.partialStrengthen? strengthening.back =
+        some targetBoundaryWitness)
+    {gluedResult : StrengtheningResult strengthening gluedValue}
+    (gluedSound : StrengtheningSoundness gluedResult) :
+    StrengtheningSoundness
+      (partialStrengthenTypedGlueElim modeIsUnivalent baseSuccess
+        boundarySuccess gluedResult) := by
+  cases gluedResult with
+  | mk targetGluedType targetGluedRaw targetGluedValue
+      gluedTypeStrengthens gluedRawStrengthens gluedTypeRenames
+      gluedRawRenames =>
+      have expectedGluedTypeStrengthens :
+          (Ty.glue baseType boundaryWitness).partialStrengthen?
+              strengthening.back =
+            some (Ty.glue targetBaseType targetBoundaryWitness) := by
+        change
+          Option.mapTwo
+            (baseType.partialStrengthen? strengthening.back)
+            (boundaryWitness.partialStrengthen? strengthening.back)
+            Ty.glue =
+              some (Ty.glue targetBaseType targetBoundaryWitness)
+        rw [baseSuccess, boundarySuccess]
+        rfl
+      rw [expectedGluedTypeStrengthens] at gluedTypeStrengthens
+      cases gluedTypeStrengthens
+      exact partialStrengthenTypedGlueElimOfSuccess_sound
+        modeIsUnivalent
+        (baseSuccess := baseSuccess)
+        (boundarySuccess := boundarySuccess)
+        (gluedRawStrengthens := gluedRawStrengthens)
+        (gluedRawRenames := gluedRawRenames)
+        gluedSound.termRenames
+
 /-- Soundness for cubical path-application strengthening (OfSuccess
 form).
 

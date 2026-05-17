@@ -5327,7 +5327,15 @@ def partialStrengthenTypedGlueElimOfSuccess {mode : Mode} {level : Nat}
     rfl
 
 /-- Glue elimination strengthens by decomposing the strengthened glue
-carrier of the eliminated value. -/
+carrier of the eliminated value.
+
+App-pattern: takes `baseSuccess` and `boundarySuccess` as explicit
+parameters (lifted from the dispatcher's two nested option-splits on
+base type and boundary witness respectively).  The body destructures
+the glued value's `StrengtheningResult`, aligns the `Ty.glue` shape
+via `rw` + `cases` on the derived equation, then delegates to
+`partialStrengthenTypedGlueElimOfSuccess`.  Identical 2-option-split
+recipe to Phase 39 RefineElim / Phase 40 CodataDest. -/
 def partialStrengthenTypedGlueElim {mode : Mode} {level : Nat}
     {sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
@@ -5335,8 +5343,15 @@ def partialStrengthenTypedGlueElim {mode : Mode} {level : Nat}
     {strengthening : ContextStrengthening sourceCtx targetCtx}
     (modeIsUnivalent : mode = Mode.univalent)
     {baseType : Ty level sourceScope}
+    {targetBaseType : Ty level targetScope}
     {boundaryWitness gluedRaw : RawTerm sourceScope}
+    {targetBoundaryWitness : RawTerm targetScope}
     {gluedValue : Term sourceCtx (Ty.glue baseType boundaryWitness) gluedRaw}
+    (baseSuccess :
+      baseType.partialStrengthen? strengthening.back = some targetBaseType)
+    (boundarySuccess :
+      boundaryWitness.partialStrengthen? strengthening.back =
+        some targetBoundaryWitness)
     (gluedResult : StrengtheningResult strengthening gluedValue) :
     StrengtheningResult strengthening
       (Term.glueElim (context := sourceCtx) modeIsUnivalent gluedValue) := by
@@ -5344,27 +5359,23 @@ def partialStrengthenTypedGlueElim {mode : Mode} {level : Nat}
   | mk targetGluedType targetGluedRaw targetGluedValue
       gluedTypeStrengthens gluedRawStrengthens gluedTypeRenames
       gluedRawRenames =>
-      change
-        Option.mapTwo
-          (baseType.partialStrengthen? strengthening.back)
-          (boundaryWitness.partialStrengthen? strengthening.back)
-          Ty.glue = some targetGluedType at gluedTypeStrengthens
-      cases baseSuccess : baseType.partialStrengthen? strengthening.back with
-      | none =>
-          rw [baseSuccess] at gluedTypeStrengthens
-          cases gluedTypeStrengthens
-      | some targetBaseType =>
-          cases boundarySuccess :
-              boundaryWitness.partialStrengthen? strengthening.back with
-          | none =>
-              rw [baseSuccess, boundarySuccess] at gluedTypeStrengthens
-              cases gluedTypeStrengthens
-          | some targetBoundaryWitness =>
-              rw [baseSuccess, boundarySuccess] at gluedTypeStrengthens
-              cases gluedTypeStrengthens
-              exact partialStrengthenTypedGlueElimOfSuccess
-                modeIsUnivalent targetGluedValue baseSuccess
-                boundarySuccess gluedRawStrengthens gluedRawRenames
+      have expectedGluedTypeStrengthens :
+          (Ty.glue baseType boundaryWitness).partialStrengthen?
+              strengthening.back =
+            some (Ty.glue targetBaseType targetBoundaryWitness) := by
+        change
+          Option.mapTwo
+            (baseType.partialStrengthen? strengthening.back)
+            (boundaryWitness.partialStrengthen? strengthening.back)
+            Ty.glue =
+              some (Ty.glue targetBaseType targetBoundaryWitness)
+        rw [baseSuccess, boundarySuccess]
+        rfl
+      rw [expectedGluedTypeStrengthens] at gluedTypeStrengthens
+      cases gluedTypeStrengthens
+      exact partialStrengthenTypedGlueElimOfSuccess
+        modeIsUnivalent targetGluedValue baseSuccess
+        boundarySuccess gluedRawStrengthens gluedRawRenames
 
 /-- OfSuccess variant of `partialStrengthenTypedTransp` that consumes
 pre-witnessed strengthening data for both the typed path and source
@@ -7052,13 +7063,23 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                           baseType targetBaseType boundaryWitness
                           targetBoundaryWitness baseTypeSuccess
                           boundarySuccess baseResult partialResult)
-  | @Term.glueElim _ _ _ _ modeIsUnivalent _ _ _ gluedValue => by
-      cases partialStrengthenTyped? gluedValue
-          (strengthening := strengthening) with
+  | @Term.glueElim _ _ _ _ modeIsUnivalent baseType boundaryWitness _
+      gluedValue => by
+      cases baseSuccess :
+          baseType.partialStrengthen? strengthening.back with
       | none => exact none
-      | some gluedResult =>
-          exact some
-            (partialStrengthenTypedGlueElim modeIsUnivalent gluedResult)
+      | some _ =>
+          cases boundarySuccess :
+              boundaryWitness.partialStrengthen? strengthening.back with
+          | none => exact none
+          | some _ =>
+              cases partialStrengthenTyped? gluedValue
+                  (strengthening := strengthening) with
+              | none => exact none
+              | some gluedResult =>
+                  exact some
+                    (partialStrengthenTypedGlueElim modeIsUnivalent
+                      baseSuccess boundarySuccess gluedResult)
   | @Term.transp _ _ _ _ modeIsUnivalent universeLevel universeLevelLt
       sourceType targetType sourceTypeRaw targetTypeRaw _ _ typePath
       sourceValue => by
