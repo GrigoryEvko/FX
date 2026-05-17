@@ -2041,6 +2041,89 @@ theorem aggregator_listCons_pair_eitherInl_closed {mode : Mode}
       (elementType :=
         Ty.sigmaTy (Ty.eitherType Ty.nat Ty.bool) Ty.nat))
 
+/-- Depth-16 nat chain: `succ^16 zero` at carrier `nat`.
+Extends the `natOne..natFifteen` 1-IH chain progression by one
+more step.  Confirms the natSucc wrapper composes at sixteen-fold
+depth without any structural change from shorter chains. -/
+theorem aggregator_natSixteen_closed {mode : Mode} {level : Nat}
+    {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.natSucc (context := sourceCtx)
+        (Term.natSucc
+          (Term.natSucc
+            (Term.natSucc
+              (Term.natSucc
+                (Term.natSucc
+                  (Term.natSucc
+                    (Term.natSucc
+                      (Term.natSucc
+                        (Term.natSucc
+                          (Term.natSucc
+                            (Term.natSucc
+                              (Term.natSucc
+                                (Term.natSucc
+                                  (Term.natSucc
+                                    (Term.natSucc Term.natZero)))))))))))))))) :=
+  isAggregatorSound_natSucc
+    (isAggregatorSound_natSucc
+      (isAggregatorSound_natSucc
+        (isAggregatorSound_natSucc
+          (isAggregatorSound_natSucc
+            (isAggregatorSound_natSucc
+              (isAggregatorSound_natSucc
+                (isAggregatorSound_natSucc
+                  (isAggregatorSound_natSucc
+                    (isAggregatorSound_natSucc
+                      (isAggregatorSound_natSucc
+                        (isAggregatorSound_natSucc
+                          (isAggregatorSound_natSucc
+                            (isAggregatorSound_natSucc
+                              (isAggregatorSound_natSucc
+                                (isAggregatorSound_natSucc
+                                  isAggregatorSound_natZero)))))))))))))))
+
+/-- Triple-nested LEFT injection: `eitherInl (eitherInl
+(eitherInl natZero))` at carrier
+`Either (Either (Either nat unit) bool) nat`.  Mirror of Phase
+125's `eitherInr_eitherInr_eitherInr_natZero` triple-right
+pattern, exercising the eitherInl wrapper at depth 3 with fresh
+rightType discharge at each layer. -/
+theorem aggregator_eitherInl_eitherInl_eitherInl_natZero_closed
+    {mode : Mode} {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.eitherInl (context := sourceCtx)
+        (rightType := Ty.nat)
+        (valueTerm :=
+          Term.eitherInl (rightType := Ty.bool)
+            (valueTerm :=
+              Term.eitherInl (rightType := Ty.unit)
+                (valueTerm := Term.natZero)))) :=
+  isAggregatorSound_eitherInl (rightType := Ty.nat)
+    (isAggregatorSound_eitherInl (rightType := Ty.bool)
+      (isAggregatorSound_eitherInl (rightType := Ty.unit)
+        isAggregatorSound_natZero))
+
+/-- Single-element list of doubly-wrapped option:
+`[Some (Some natZero)]` at carrier `list (option (option nat))`.
+New triple-stack ordering list-option-option, combining listCons
+outer with double optionSome at the leaf — distinguishes from
+already-shipped option-list and list-pair-option triples by
+nesting two parametric option wrappers inside the list. -/
+theorem aggregator_listCons_optionSome_optionSome_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.listCons (context := sourceCtx)
+        (headTerm :=
+          Term.optionSome
+            (valueTerm := Term.optionSome (valueTerm := Term.natZero)))
+        (tailTerm :=
+          Term.listNil (elementType := Ty.optionType (Ty.optionType Ty.nat)))) :=
+  isAggregatorSound_listCons
+    (isAggregatorSound_optionSome
+      (isAggregatorSound_optionSome isAggregatorSound_natZero))
+    (isAggregatorSound_listNil
+      (elementType := Ty.optionType (Ty.optionType Ty.nat)))
+
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_unit_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwo_closed
@@ -2145,5 +2228,8 @@ theorem aggregator_listCons_pair_eitherInl_closed {mode : Mode}
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natFifteen_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_eitherInr_eitherInr_eitherInr_natZero_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_pair_eitherInl_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natSixteen_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_eitherInl_eitherInl_eitherInl_natZero_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_optionSome_optionSome_closed
 
 end LeanFX2.SmokeAggregatorComposition
