@@ -7440,32 +7440,36 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                       applyRaw targetApplyRaw domainSuccess
                       codomainSuccess applySuccess)
   | @Term.equivIntroHet _ _ _ _ carrierA carrierB _ _ _ _ forward backward
-      leftInv rightInv => by
-      cases carrierASuccess :
+      leftInv rightInv =>
+      match carrierASuccess :
           carrierA.partialStrengthen? strengthening.back with
-      | none => exact none
+      | none => none
       | some _ =>
-          cases carrierBSuccess :
+          match carrierBSuccess :
               carrierB.partialStrengthen? strengthening.back with
-          | none => exact none
+          | none => none
           | some _ =>
-              cases partialStrengthenTyped? forward
-                  (strengthening := strengthening) with
-              | none => exact none
+              match forwardRecurse :
+                  partialStrengthenTyped? forward
+                    (strengthening := strengthening) with
+              | none => none
               | some forwardResult =>
-                  cases partialStrengthenTyped? backward
-                      (strengthening := strengthening) with
-                  | none => exact none
+                  match backwardRecurse :
+                      partialStrengthenTyped? backward
+                        (strengthening := strengthening) with
+                  | none => none
                   | some backwardResult =>
-                      cases partialStrengthenTyped? leftInv
-                          (strengthening := strengthening) with
-                      | none => exact none
+                      match leftInvRecurse :
+                          partialStrengthenTyped? leftInv
+                            (strengthening := strengthening) with
+                      | none => none
                       | some leftInvResult =>
-                          cases partialStrengthenTyped? rightInv
-                              (strengthening := strengthening) with
-                          | none => exact none
+                          match rightInvRecurse :
+                              partialStrengthenTyped? rightInv
+                                (strengthening := strengthening) with
+                          | none => none
                           | some rightInvResult =>
-                              exact some
+                              some
                                 (partialStrengthenTypedEquivIntroHet
                                   carrierASuccess carrierBSuccess
                                   forwardResult backwardResult leftInvResult

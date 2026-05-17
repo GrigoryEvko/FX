@@ -8311,6 +8311,80 @@ theorem partialStrengthenTyped?_atUaToEquiv_imp_sound {mode : Mode}
               leftTyStrengthens rightTyStrengthens leftRawStrengthens
               rightRawStrengthens (proofIH proofResult proofRecurse)
 
+/-- Dispatcher soundness at the `Term.equivIntroHet` arm.
+Heterogeneous-carrier equivalence introduction: two carrier types plus
+four function-shaped IHs (forward, backward, left-inverse, right-inverse).
+Six sequential splits feed the wrapper soundness with all four IH
+witnesses. -/
+theorem partialStrengthenTyped?_atEquivIntroHet_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {carrierA carrierB : Ty level sourceScope}
+    {forwardRaw backwardRaw leftInvRaw rightInvRaw : RawTerm sourceScope}
+    {forward :
+      Term sourceCtx (Ty.arrow carrierA carrierB) forwardRaw}
+    {backward :
+      Term sourceCtx (Ty.arrow carrierB carrierA) backwardRaw}
+    {leftInv :
+      Term sourceCtx
+        (equivIntroHetLeftInverseType carrierA forwardRaw backwardRaw)
+        leftInvRaw}
+    {rightInv :
+      Term sourceCtx
+        (equivIntroHetRightInverseType carrierB forwardRaw backwardRaw)
+        rightInvRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (forwardIH : ∀ forwardResult,
+        partialStrengthenTyped? forward strengthening =
+            some forwardResult →
+          StrengtheningSoundness forwardResult)
+    (backwardIH : ∀ backwardResult,
+        partialStrengthenTyped? backward strengthening =
+            some backwardResult →
+          StrengtheningSoundness backwardResult)
+    (leftInvIH : ∀ leftInvResult,
+        partialStrengthenTyped? leftInv strengthening =
+            some leftInvResult →
+          StrengtheningSoundness leftInvResult)
+    (rightInvIH : ∀ rightInvResult,
+        partialStrengthenTyped? rightInv strengthening =
+            some rightInvResult →
+          StrengtheningSoundness rightInvResult)
+    (result : StrengtheningResult strengthening
+      (Term.equivIntroHet forward backward leftInv rightInv))
+    (success : partialStrengthenTyped?
+        (Term.equivIntroHet forward backward leftInv rightInv)
+          strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetCarrierA carrierASuccess
+    split at success
+    · cases success
+    · rename_i targetCarrierB carrierBSuccess
+      split at success
+      · cases success
+      · rename_i forwardResult forwardRecurse
+        split at success
+        · cases success
+        · rename_i backwardResult backwardRecurse
+          split at success
+          · cases success
+          · rename_i leftInvResult leftInvRecurse
+            split at success
+            · cases success
+            · rename_i rightInvResult rightInvRecurse
+              cases success
+              exact partialStrengthenTypedEquivIntroHet_sound
+                carrierASuccess carrierBSuccess
+                (forwardIH forwardResult forwardRecurse)
+                (backwardIH backwardResult backwardRecurse)
+                (leftInvIH leftInvResult leftInvRecurse)
+                (rightInvIH rightInvResult rightInvRecurse)
+
 end Term
 
 end LeanFX2
