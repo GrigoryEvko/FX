@@ -11783,6 +11783,70 @@ theorem isAggregatorTotal_equivCode {mode : Mode} {level : Nat}
           cases rightFails
       · rfl
 
+/-! ## Wave T8: 2-IH pair totality (dependent Σ-intro).
+
+`Term.pair firstValue secondValue` has source type
+`Ty.sigmaTy firstType secondType`.  The first child's type is the
+encodable `firstType`; the second child's type is the substituted
+`secondType.subst0 firstType firstRaw` — reconstructed via
+`Ty.partialStrengthen?_subst0_of_success` using strengthening's
+forward/injectsBack/back_forward fields. -/
+
+/-- 2-IH non-binder totality: `Term.pair`.  Combines firstType +
+secondType.lift strengthens (from sigmaTy typeStrengthens) +
+firstRaw / secondRaw strengthens (from pair rawStrengthens), applying
+the subst0 reconstruction lemma to manufacture secondValue's IH input. -/
+theorem isAggregatorTotal_pair {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {firstType : Ty level sourceScope}
+    {secondType : Ty level (sourceScope + 1)}
+    {firstRaw secondRaw : RawTerm sourceScope}
+    {firstValue : Term sourceCtx firstType firstRaw}
+    {secondValue :
+      Term sourceCtx (secondType.subst0 firstType firstRaw) secondRaw}
+    (firstTotal : IsAggregatorTotal firstValue)
+    (secondTotal : IsAggregatorTotal secondValue) :
+    IsAggregatorTotal
+      (Term.pair (firstValue := firstValue) (secondValue := secondValue)) := by
+  intros _ _ strengthening _ _ typeStrengthens rawStrengthens
+  obtain ⟨targetFirstType, targetSecondType, firstSuccess, secondLiftSuccess, _⟩ :=
+    Option.mapTwo_eq_some typeStrengthens
+  change Option.mapTwo
+      (firstRaw.partialStrengthen? strengthening.back)
+      (secondRaw.partialStrengthen? strengthening.back)
+      RawTerm.pair = some _ at rawStrengthens
+  obtain ⟨targetFirstRaw, targetSecondRaw, firstRawSuccess, secondRawSuccess, _⟩ :=
+    Option.mapTwo_eq_some rawStrengthens
+  have firstTotalCall :=
+    firstTotal strengthening firstSuccess firstRawSuccess
+  -- Reconstruct secondType.subst0 strengthens via the subst0 lemma.
+  have substStrengthens :
+      (secondType.subst0 firstType firstRaw).partialStrengthen?
+          strengthening.back =
+        some (targetSecondType.subst0 targetFirstType targetFirstRaw) :=
+    Ty.partialStrengthen?_subst0_of_success secondType targetSecondType
+      firstType targetFirstType firstRaw targetFirstRaw
+      strengthening.forward strengthening.back strengthening.injectsBack
+      strengthening.back_forward secondLiftSuccess firstSuccess firstRawSuccess
+  have secondTotalCall :=
+    secondTotal strengthening substStrengthens secondRawSuccess
+  unfold partialStrengthenTyped?
+  split
+  · next secondTypeFails =>
+      rw [secondLiftSuccess] at secondTypeFails
+      cases secondTypeFails
+  · next _ _ =>
+      split
+      · next firstFails =>
+          rw [firstFails] at firstTotalCall
+          cases firstTotalCall
+      · next _ _ =>
+          split
+          · next secondFails =>
+              rw [secondFails] at secondTotalCall
+              cases secondTotalCall
+          · rfl
+
 
 /-! ## Image theorem trio — weaken / strengthen invertibility
 

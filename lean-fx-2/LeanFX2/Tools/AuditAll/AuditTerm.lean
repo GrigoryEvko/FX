@@ -960,5 +960,7 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_eitherCode
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_idCode
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_equivCode
+-- Phase 1.C Wave 6: 2-IH dependent pair (uses Ty.subst0 reconstruction)
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_pair
 
 end LeanFX2.Tools
