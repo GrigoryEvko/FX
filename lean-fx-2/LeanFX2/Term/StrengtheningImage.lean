@@ -8487,6 +8487,80 @@ theorem partialStrengthenTyped?_atFunextIntroHet_imp_sound {mode : Mode}
             domainStrengthens codomainStrengthens
             applyAStrengthens applyBStrengthens
 
+/-- Dispatcher soundness at the `Term.effectPerform` arm.  The arm
+threads three Ty witnesses (effect-tag raw, argument carrier, result
+carrier) plus two value-level recursive results (operation tag,
+arguments).  The `canPerformOperation` predicate is mode/effect-row
+metadata that passes through unstrengthened.  The leaf derives the
+`effectTagRenames` rename-direction fact from `effectTagSuccess` via
+`RawTerm.partialStrengthen?_imp_rename`, then delegates to
+`partialStrengthenTypedEffectPerform_sound`. -/
+theorem partialStrengthenTyped?_atEffectPerform_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {effectTag : RawTerm sourceScope}
+    {effectRow : Effects.EffectRow}
+    {operationSignature :
+      Effects.OperationSignature (Ty level sourceScope)}
+    (canPerformOperation :
+      Effects.CanPerform effectRow operationSignature)
+    {operationRaw argumentsRaw : RawTerm sourceScope}
+    {operationTag :
+      Term sourceCtx
+        (Ty.effect operationSignature.argumentCarrier effectTag)
+        operationRaw}
+    {arguments :
+      Term sourceCtx operationSignature.argumentCarrier argumentsRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (operationIH : ∀ operationResult,
+        partialStrengthenTyped? operationTag strengthening =
+            some operationResult →
+          StrengtheningSoundness operationResult)
+    (argumentsIH : ∀ argumentsResult,
+        partialStrengthenTyped? arguments strengthening =
+            some argumentsResult →
+          StrengtheningSoundness argumentsResult)
+    (result : StrengtheningResult strengthening
+      (Term.effectPerform (context := sourceCtx) effectTag effectRow
+        operationSignature canPerformOperation operationTag arguments))
+    (success : partialStrengthenTyped?
+        (Term.effectPerform (context := sourceCtx) effectTag effectRow
+          operationSignature canPerformOperation operationTag arguments)
+          strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetEffectTag effectTagSuccess
+    split at success
+    · cases success
+    · rename_i targetArgumentCarrier argumentCarrierSuccess
+      split at success
+      · cases success
+      · rename_i targetResultCarrier resultCarrierSuccess
+        split at success
+        · cases success
+        · rename_i operationResult operationRecurse
+          split at success
+          · cases success
+          · rename_i argumentsResult argumentsRecurse
+            cases success
+            have effectTagRenames :
+                effectTag = targetEffectTag.rename strengthening.forward :=
+              RawTerm.partialStrengthen?_imp_rename effectTag
+                strengthening.forward strengthening.back
+                strengthening.injectsBack targetEffectTag effectTagSuccess
+            exact partialStrengthenTypedEffectPerform_sound
+              effectTag targetEffectTag effectRow operationSignature
+              targetArgumentCarrier targetResultCarrier
+              canPerformOperation effectTagSuccess
+              argumentCarrierSuccess resultCarrierSuccess
+              (operationIH operationResult operationRecurse)
+              (argumentsIH argumentsResult argumentsRecurse)
+              effectTagRenames
+
 end Term
 
 end LeanFX2

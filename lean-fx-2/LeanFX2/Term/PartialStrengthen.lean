@@ -7337,30 +7337,30 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                 (partialStrengthenTypedSessionRecv protocolSuccess
                   channelResult)
   | @Term.effectPerform _ _ _ _ effectTag effectRow operationSignature
-      canPerformOperation _ _ operationTag arguments => by
-      cases effectTagSuccess :
+      canPerformOperation _ _ operationTag arguments =>
+      match effectTagSuccess :
           effectTag.partialStrengthen? strengthening.back with
-      | none => exact none
+      | none => none
       | some targetEffectTag =>
-          cases argumentCarrierSuccess :
+          match argumentCarrierSuccess :
               operationSignature.argumentCarrier.partialStrengthen?
                 strengthening.back with
-          | none => exact none
+          | none => none
           | some targetArgumentCarrier =>
-              cases resultCarrierSuccess :
+              match resultCarrierSuccess :
                   operationSignature.resultCarrier.partialStrengthen?
                     strengthening.back with
-              | none => exact none
+              | none => none
               | some targetResultCarrier =>
-                  cases partialStrengthenTyped? operationTag
+                  match partialStrengthenTyped? operationTag
                       (strengthening := strengthening) with
-                  | none => exact none
+                  | none => none
                   | some operationResult =>
-                      cases partialStrengthenTyped? arguments
+                      match partialStrengthenTyped? arguments
                           (strengthening := strengthening) with
-                      | none => exact none
+                      | none => none
                       | some argumentsResult =>
-                          exact some
+                          some
                             (partialStrengthenTypedEffectPerform effectTag
                               targetEffectTag effectRow operationSignature
                               targetArgumentCarrier targetResultCarrier

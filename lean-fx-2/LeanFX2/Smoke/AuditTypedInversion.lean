@@ -598,5 +598,6 @@ namespace LeanFX2.SmokeTypedInversion
 #print axioms LeanFX2.Term.partialStrengthenTyped?_atEquivIntroHet_imp_sound
 #print axioms LeanFX2.Term.partialStrengthenTyped?_atUaIntroHet_imp_sound
 #print axioms LeanFX2.Term.partialStrengthenTyped?_atFunextIntroHet_imp_sound
+#print axioms LeanFX2.Term.partialStrengthenTyped?_atEffectPerform_imp_sound
 
 end LeanFX2.SmokeTypedInversion
