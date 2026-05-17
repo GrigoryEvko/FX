@@ -207,6 +207,52 @@ theorem aggregator_listCons_natListChain_closed {mode : Mode}
       (isAggregatorSound_natSucc isAggregatorSound_natZero)
       (isAggregatorSound_listNil (elementType := Ty.nat)))
 
+/-- 2-IH Σ-pair smoke at non-dependent carrier `nat × nat`:
+`IsAggregatorSound (Term.pair Term.natZero Term.natZero)` with
+`secondType := Ty.nat` (closed, so the dependency vanishes after
+`subst0`).  Demonstrates the 2-IH non-parametric wrapper composes
+its two children at distinct (but here equal) carrier types. -/
+theorem aggregator_pair_natNat_closed {mode : Mode} {level : Nat}
+    {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.pair (context := sourceCtx)
+        (secondType := Ty.nat)
+        (firstValue := Term.natZero)
+        (secondValue := Term.natZero)) :=
+  isAggregatorSound_pair isAggregatorSound_natZero
+    isAggregatorSound_natZero
+
+/-- 4-deep nat chain extending the natOne/Two/Three sequence.
+Demonstrates that 1-IH chaining continues uniformly past depth 3
+with no per-step bookkeeping growth. -/
+theorem aggregator_natFour_closed {mode : Mode} {level : Nat}
+    {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.natSucc (context := sourceCtx)
+        (Term.natSucc
+          (Term.natSucc (Term.natSucc Term.natZero)))) :=
+  isAggregatorSound_natSucc
+    (isAggregatorSound_natSucc
+      (isAggregatorSound_natSucc
+        (isAggregatorSound_natSucc isAggregatorSound_natZero)))
+
+/-- Mixed Σ + nat-chain composition: a pair whose first component
+is a depth-2 nat chain and whose second component is the
+zero-depth natural.  Combines the natTwo chain pattern with the
+non-dependent Σ-pair pattern, demonstrating cross-category
+composition. -/
+theorem aggregator_pair_natTwo_natZero_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.pair (context := sourceCtx)
+        (secondType := Ty.nat)
+        (firstValue := Term.natSucc (Term.natSucc Term.natZero))
+        (secondValue := Term.natZero)) :=
+  isAggregatorSound_pair
+    (isAggregatorSound_natSucc
+      (isAggregatorSound_natSucc isAggregatorSound_natZero))
+    isAggregatorSound_natZero
+
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_unit_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwo_closed
@@ -221,5 +267,8 @@ theorem aggregator_listCons_natListChain_closed {mode : Mode}
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listNil_natList_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_optionNone_natOption_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_natListChain_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_natNat_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natFour_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_natTwo_natZero_closed
 
 end LeanFX2.SmokeAggregatorComposition
