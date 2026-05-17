@@ -1701,6 +1701,91 @@ theorem aggregator_eitherInl_pair_optionSome_closed {mode : Mode}
       (isAggregatorSound_optionSome isAggregatorSound_natZero)
       isAggregatorSound_natZero)
 
+/-- Mirror of Phase 121's `eitherInl_pair_optionSome_closed`
+using RIGHT injection: `eitherInr (pair (Some natZero) natZero)`
+at carrier `Either bool ((option nat) × nat)`.  Confirms both
+either injection sides accept the same Σ-of-option payload in
+either-Σ-option triple stacks. -/
+theorem aggregator_eitherInr_pair_optionSome_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.eitherInr (context := sourceCtx)
+        (leftType := Ty.bool)
+        (valueTerm :=
+          Term.pair (secondType := Ty.nat)
+            (firstValue :=
+              Term.optionSome (valueTerm := Term.natZero))
+            (secondValue := Term.natZero))) :=
+  isAggregatorSound_eitherInr (leftType := Ty.bool)
+    (isAggregatorSound_pair
+      (isAggregatorSound_optionSome isAggregatorSound_natZero)
+      isAggregatorSound_natZero)
+
+/-- Option wrapping balanced double-Σ tree: `Some (pair (pair
+natZero natZero) (pair natZero natZero))` at carrier
+`option ((nat × nat) × (nat × nat))`.  Combines Phase 116's
+balanced `pair_pair_pair` tree with the 1-IH parametric
+`optionSome` outer wrapper, demonstrating the depth-3 Σ tree
+composes inside an option container. -/
+theorem aggregator_optionSome_pair_pair_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.optionSome (context := sourceCtx)
+        (valueTerm :=
+          Term.pair (secondType := Ty.sigmaTy Ty.nat Ty.nat)
+            (firstValue :=
+              Term.pair (secondType := Ty.nat)
+                (firstValue := Term.natZero)
+                (secondValue := Term.natZero))
+            (secondValue :=
+              Term.pair (secondType := Ty.nat)
+                (firstValue := Term.natZero)
+                (secondValue := Term.natZero)))) :=
+  isAggregatorSound_optionSome
+    (isAggregatorSound_pair
+      (isAggregatorSound_pair isAggregatorSound_natZero
+        isAggregatorSound_natZero)
+      (isAggregatorSound_pair isAggregatorSound_natZero
+        isAggregatorSound_natZero))
+
+/-- Single-element list of balanced double-Σ tree:
+`[pair (pair natZero natZero) (pair natZero natZero)]` at carrier
+`list ((nat × nat) × (nat × nat))`.  Companion to
+`optionSome_pair_pair` above (option wrapping the same Σ tree);
+here the listCons wrapper takes the depth-3 Σ structure as its
+head with a matching listNil sentinel at the same carrier. -/
+theorem aggregator_listCons_pair_pair_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.listCons (context := sourceCtx)
+        (headTerm :=
+          Term.pair (secondType := Ty.sigmaTy Ty.nat Ty.nat)
+            (firstValue :=
+              Term.pair (secondType := Ty.nat)
+                (firstValue := Term.natZero)
+                (secondValue := Term.natZero))
+            (secondValue :=
+              Term.pair (secondType := Ty.nat)
+                (firstValue := Term.natZero)
+                (secondValue := Term.natZero)))
+        (tailTerm :=
+          Term.listNil
+            (elementType :=
+              Ty.sigmaTy
+                (Ty.sigmaTy Ty.nat Ty.nat)
+                (Ty.sigmaTy Ty.nat Ty.nat)))) :=
+  isAggregatorSound_listCons
+    (isAggregatorSound_pair
+      (isAggregatorSound_pair isAggregatorSound_natZero
+        isAggregatorSound_natZero)
+      (isAggregatorSound_pair isAggregatorSound_natZero
+        isAggregatorSound_natZero))
+    (isAggregatorSound_listNil
+      (elementType :=
+        Ty.sigmaTy
+          (Ty.sigmaTy Ty.nat Ty.nat)
+          (Ty.sigmaTy Ty.nat Ty.nat)))
+
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_unit_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwo_closed
@@ -1793,5 +1878,8 @@ theorem aggregator_eitherInl_pair_optionSome_closed {mode : Mode}
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_eitherInr_listCons_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_pair_optionSome_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_eitherInl_pair_optionSome_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_eitherInr_pair_optionSome_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_optionSome_pair_pair_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_pair_pair_closed
 
 end LeanFX2.SmokeAggregatorComposition
