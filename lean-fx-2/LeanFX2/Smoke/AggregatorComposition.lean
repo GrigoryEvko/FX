@@ -1414,6 +1414,78 @@ theorem aggregator_optionSome_listNil_closed {mode : Mode}
   isAggregatorSound_optionSome
     (isAggregatorSound_listNil (elementType := Ty.nat))
 
+/-- 11-deep natSucc chain extending the natOne..natTen sequence.
+Continues the depth-uniformity demonstration past depth 10. -/
+theorem aggregator_natEleven_closed {mode : Mode} {level : Nat}
+    {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.natSucc (context := sourceCtx)
+        (Term.natSucc
+          (Term.natSucc
+            (Term.natSucc
+              (Term.natSucc
+                (Term.natSucc
+                  (Term.natSucc
+                    (Term.natSucc
+                      (Term.natSucc
+                        (Term.natSucc
+                          (Term.natSucc Term.natZero))))))))))) :=
+  isAggregatorSound_natSucc
+    (isAggregatorSound_natSucc
+      (isAggregatorSound_natSucc
+        (isAggregatorSound_natSucc
+          (isAggregatorSound_natSucc
+            (isAggregatorSound_natSucc
+              (isAggregatorSound_natSucc
+                (isAggregatorSound_natSucc
+                  (isAggregatorSound_natSucc
+                    (isAggregatorSound_natSucc
+                      (isAggregatorSound_natSucc
+                        isAggregatorSound_natZero))))))))))
+
+/-- Two-element list of optionNone values: `[None, None]` at
+carrier `list (option nat)`.  Length-2 counterpart to Phase 113's
+`listCons_optionNone_closed` (length-1 list of optionNone);
+demonstrates listCons + optionNone composes at length > 1, just
+as Phase 105 demonstrated for optionSome and Phase 114 for
+eitherInr. -/
+theorem aggregator_listCons_optionNone_two_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.listCons (context := sourceCtx)
+        (headTerm := Term.optionNone (elementType := Ty.nat))
+        (tailTerm :=
+          Term.listCons
+            (headTerm := Term.optionNone (elementType := Ty.nat))
+            (tailTerm :=
+              Term.listNil
+                (elementType := Ty.optionType Ty.nat)))) :=
+  isAggregatorSound_listCons
+    (isAggregatorSound_optionNone (elementType := Ty.nat))
+    (isAggregatorSound_listCons
+      (isAggregatorSound_optionNone (elementType := Ty.nat))
+      (isAggregatorSound_listNil
+        (elementType := Ty.optionType Ty.nat)))
+
+/-- Sigma-pair with EITHERINR on LEFT slot: `pair (eitherInr
+boolTrue) natZero` at carrier `(Either nat bool) × nat`.
+Mirror of the existing `pair_eitherInl_natZero_closed` (which
+uses eitherInl on the left); confirms both either injection
+sides serve as Σ left-slot parametric children. -/
+theorem aggregator_pair_eitherInr_natZero_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.pair (context := sourceCtx)
+        (secondType := Ty.nat)
+        (firstValue :=
+          Term.eitherInr (leftType := Ty.nat)
+            (valueTerm := Term.boolTrue))
+        (secondValue := Term.natZero)) :=
+  isAggregatorSound_pair
+    (isAggregatorSound_eitherInr (leftType := Ty.nat)
+      isAggregatorSound_boolTrue)
+    isAggregatorSound_natZero
+
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_unit_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwo_closed
@@ -1494,5 +1566,8 @@ theorem aggregator_optionSome_listNil_closed {mode : Mode}
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_eitherInl_eitherInl_natZero_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_listNil_natZero_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_optionSome_listNil_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natEleven_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_optionNone_two_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_eitherInr_natZero_closed
 
 end LeanFX2.SmokeAggregatorComposition
