@@ -608,5 +608,6 @@ namespace LeanFX2.SmokeTypedInversion
 #print axioms LeanFX2.Term.partialStrengthenTyped?_atTransp_imp_sound
 
 #print axioms LeanFX2.Term.isAggregatorSound_var
+#print axioms LeanFX2.Term.isAggregatorSound_unit
 
 end LeanFX2.SmokeTypedInversion

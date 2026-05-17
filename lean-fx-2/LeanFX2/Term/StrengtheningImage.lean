@@ -9014,6 +9014,20 @@ theorem isAggregatorSound_var {mode : Mode} {level : Nat}
   exact partialStrengthenTyped?_atVar_imp_sound sourcePosition
     strengthening result success
 
+/-- Headline aggregator soundness at the `Term.unit` arm.
+
+Lifts `partialStrengthenTyped?_atUnit_imp_sound` into the uniform
+`IsAggregatorSound` predicate shape.  Second zero-IH closed-atomic
+ctor; confirms the template scales identically to `var` with no
+ctor-specific positional arguments — the leaf takes only
+strengthening / result / success. -/
+theorem isAggregatorSound_unit {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope} :
+    IsAggregatorSound (Term.unit (context := sourceCtx)) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atUnit_imp_sound strengthening result
+    success
+
 end Term
 
 end LeanFX2
