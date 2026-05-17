@@ -11263,6 +11263,200 @@ theorem isAggregatorTotal_optionNone {mode : Mode} {level : Nat}
   · next elementFails =>
       cases typeStrengthens
 
+/-! ## Wave T3: 2-IH listCons totality.
+
+Both head (elementType) and tail (Ty.listType elementType) have types
+encodable from source type's elementType.  The dispatcher recurses on
+each child without splitting on the type payload.  Reconstruct
+Ty.listType strengthening from typeStrengthens for the tail IH. -/
+
+/-- 2-IH non-binder totality: `Term.listCons`.  Source type is
+`Ty.listType elementType`; head type is `elementType`, tail type is
+`Ty.listType elementType` (same as source). -/
+theorem isAggregatorTotal_listCons {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {elementType : Ty level sourceScope}
+    {headRaw tailRaw : RawTerm sourceScope}
+    {headTerm : Term sourceCtx elementType headRaw}
+    {tailTerm : Term sourceCtx (Ty.listType elementType) tailRaw}
+    (headTotal : IsAggregatorTotal headTerm)
+    (tailTotal : IsAggregatorTotal tailTerm) :
+    IsAggregatorTotal
+      (Term.listCons (headTerm := headTerm) (tailTerm := tailTerm)) := by
+  intros _ _ strengthening _ _ typeStrengthens rawStrengthens
+  -- Extract elementType strengthening from typeStrengthens.
+  have elementSuccessExists : ∃ targetElement,
+      elementType.partialStrengthen? strengthening.back = some targetElement := by
+    rcases hElem : elementType.partialStrengthen? strengthening.back with _ | tgt
+    · simp only [Ty.partialStrengthen?, hElem] at typeStrengthens
+      cases typeStrengthens
+    · exact ⟨tgt, rfl⟩
+  obtain ⟨targetElement, elementSuccess⟩ := elementSuccessExists
+  unfold partialStrengthenTyped?
+  unfold RawTerm.partialStrengthen? at rawStrengthens
+  unfold RawTerm.partialRename? at rawStrengthens
+  -- rawStrengthens = Option.mapTwo head tail RawTerm.listCons = some _
+  obtain ⟨_, _, headRawSuccess, tailRawSuccess, _⟩ :=
+    Option.mapTwo_eq_some rawStrengthens
+  have headTotalCall :=
+    headTotal strengthening elementSuccess headRawSuccess
+  have tailTotalCall :=
+    tailTotal strengthening typeStrengthens tailRawSuccess
+  split
+  · next headFails =>
+      rw [headFails] at headTotalCall
+      cases headTotalCall
+  · next _ _ =>
+      split
+      · next tailFails =>
+          rw [tailFails] at tailTotalCall
+          cases tailTotalCall
+      · rfl
+
+/-! ## Wave T4: 2-IH non-binder totality (atomic Ty children) -/
+
+/-- 2-IH non-binder totality: `Term.intervalMeet`.  Children have type
+`Ty.interval` (atomic); both Ty strengthens are `rfl`. -/
+theorem isAggregatorTotal_intervalMeet {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {leftRaw rightRaw : RawTerm sourceScope}
+    {leftValue : Term sourceCtx Ty.interval leftRaw}
+    {rightValue : Term sourceCtx Ty.interval rightRaw}
+    (leftTotal : IsAggregatorTotal leftValue)
+    (rightTotal : IsAggregatorTotal rightValue) :
+    IsAggregatorTotal
+      (Term.intervalMeet (leftValue := leftValue) (rightValue := rightValue)) := by
+  intros _ _ strengthening _ _ _ rawStrengthens
+  unfold partialStrengthenTyped?
+  unfold RawTerm.partialStrengthen? at rawStrengthens
+  unfold RawTerm.partialRename? at rawStrengthens
+  obtain ⟨_, _, leftRawSuccess, rightRawSuccess, _⟩ :=
+    Option.mapTwo_eq_some rawStrengthens
+  have intervalStrengthens :
+      (Ty.interval : Ty level sourceScope).partialStrengthen?
+          strengthening.back =
+        some Ty.interval := rfl
+  have leftTotalCall :=
+    leftTotal strengthening intervalStrengthens leftRawSuccess
+  have rightTotalCall :=
+    rightTotal strengthening intervalStrengthens rightRawSuccess
+  split
+  · next leftFails =>
+      rw [leftFails] at leftTotalCall
+      cases leftTotalCall
+  · next _ _ =>
+      split
+      · next rightFails =>
+          rw [rightFails] at rightTotalCall
+          cases rightTotalCall
+      · rfl
+
+/-- 2-IH non-binder totality: `Term.intervalJoin`.  Mirror of
+`intervalMeet`. -/
+theorem isAggregatorTotal_intervalJoin {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {leftRaw rightRaw : RawTerm sourceScope}
+    {leftValue : Term sourceCtx Ty.interval leftRaw}
+    {rightValue : Term sourceCtx Ty.interval rightRaw}
+    (leftTotal : IsAggregatorTotal leftValue)
+    (rightTotal : IsAggregatorTotal rightValue) :
+    IsAggregatorTotal
+      (Term.intervalJoin (leftValue := leftValue) (rightValue := rightValue)) := by
+  intros _ _ strengthening _ _ _ rawStrengthens
+  unfold partialStrengthenTyped?
+  unfold RawTerm.partialStrengthen? at rawStrengthens
+  unfold RawTerm.partialRename? at rawStrengthens
+  obtain ⟨_, _, leftRawSuccess, rightRawSuccess, _⟩ :=
+    Option.mapTwo_eq_some rawStrengthens
+  have intervalStrengthens :
+      (Ty.interval : Ty level sourceScope).partialStrengthen?
+          strengthening.back =
+        some Ty.interval := rfl
+  have leftTotalCall :=
+    leftTotal strengthening intervalStrengthens leftRawSuccess
+  have rightTotalCall :=
+    rightTotal strengthening intervalStrengthens rightRawSuccess
+  split
+  · next leftFails =>
+      rw [leftFails] at leftTotalCall
+      cases leftTotalCall
+  · next _ _ =>
+      split
+      · next rightFails =>
+          rw [rightFails] at rightTotalCall
+          cases rightTotalCall
+      · rfl
+
+/-! ## Wave T5: 0-IH parametric atomic with Ty + Raw payloads (refl-family) -/
+
+/-- 0-IH parametric atomic totality: `Term.refl`.  Source type is
+`Ty.id carrier rawWitness rawWitness`; dispatcher inspects carrier
++ rawWitness strengthens.  Extract via Option.mapThree from
+typeStrengthens. -/
+theorem isAggregatorTotal_refl {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (carrier : Ty level sourceScope) (rawWitness : RawTerm sourceScope) :
+    IsAggregatorTotal (Term.refl (context := sourceCtx) carrier rawWitness) := by
+  intros _ _ strengthening _ _ typeStrengthens _
+  obtain ⟨_, _, _, carrierSuccess, witnessSuccess, _, _⟩ :=
+    Option.mapThree_eq_some typeStrengthens
+  unfold partialStrengthenTyped?
+  split
+  · next carrierFails =>
+      rw [carrierSuccess] at carrierFails
+      cases carrierFails
+  · next _ _ =>
+      split
+      · next witnessFails =>
+          rw [witnessSuccess] at witnessFails
+          cases witnessFails
+      · rfl
+
+/-- 0-IH parametric atomic totality: `Term.oeqRefl`.  Same shape as
+`refl` — source type `Ty.oeq carrier rawWitness rawWitness`. -/
+theorem isAggregatorTotal_oeqRefl {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (carrier : Ty level sourceScope) (rawWitness : RawTerm sourceScope) :
+    IsAggregatorTotal (Term.oeqRefl (context := sourceCtx) carrier rawWitness) := by
+  intros _ _ strengthening _ _ typeStrengthens _
+  obtain ⟨_, _, _, carrierSuccess, witnessSuccess, _, _⟩ :=
+    Option.mapThree_eq_some typeStrengthens
+  unfold partialStrengthenTyped?
+  split
+  · next carrierFails =>
+      rw [carrierSuccess] at carrierFails
+      cases carrierFails
+  · next _ _ =>
+      split
+      · next witnessFails =>
+          rw [witnessSuccess] at witnessFails
+          cases witnessFails
+      · rfl
+
+/-- 0-IH parametric atomic totality: `Term.idStrictRefl`.  Source type
+`Ty.idStrict carrier rawWitness rawWitness` plus a `modeIsStrict`
+value-level parameter. -/
+theorem isAggregatorTotal_idStrictRefl {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (modeIsStrict : mode = Mode.strict)
+    (carrier : Ty level sourceScope) (rawWitness : RawTerm sourceScope) :
+    IsAggregatorTotal
+      (Term.idStrictRefl (context := sourceCtx) modeIsStrict carrier rawWitness) := by
+  intros _ _ strengthening _ _ typeStrengthens _
+  obtain ⟨_, _, _, carrierSuccess, witnessSuccess, _, _⟩ :=
+    Option.mapThree_eq_some typeStrengthens
+  unfold partialStrengthenTyped?
+  split
+  · next carrierFails =>
+      rw [carrierSuccess] at carrierFails
+      cases carrierFails
+  · next _ _ =>
+      split
+      · next witnessFails =>
+          rw [witnessSuccess] at witnessFails
+          cases witnessFails
+      · rfl
+
 
 /-! ## Image theorem trio — weaken / strengthen invertibility
 
