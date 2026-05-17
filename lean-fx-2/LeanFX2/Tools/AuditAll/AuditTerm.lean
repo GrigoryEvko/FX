@@ -636,5 +636,10 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_atSigmaTyCode_imp_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_atProductCode_imp_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_atSumCode_imp_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_atListCode_imp_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_atOptionCode_imp_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_atEitherCode_imp_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_atIdCode_imp_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_atEquivCode_imp_sound
 
 end LeanFX2.Tools

@@ -7620,63 +7620,64 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                 (partialStrengthenTypedSumCode outerLevel levelLe
                   leftCodeRaw rightCodeRaw targetLeftCodeRaw
                   targetRightCodeRaw leftSuccess rightSuccess)
-  | @Term.listCode _ _ _ _ outerLevel levelLe elementCodeRaw => by
-      cases elementSuccess :
+  | @Term.listCode _ _ _ _ outerLevel levelLe elementCodeRaw =>
+      match elementSuccess :
           elementCodeRaw.partialStrengthen? strengthening.back with
-      | none => exact none
+      | none => none
       | some targetElementCodeRaw =>
-          exact some
+          some
             (partialStrengthenTypedListCode outerLevel levelLe
               elementCodeRaw targetElementCodeRaw elementSuccess)
-  | @Term.optionCode _ _ _ _ outerLevel levelLe elementCodeRaw => by
-      cases elementSuccess :
+  | @Term.optionCode _ _ _ _ outerLevel levelLe elementCodeRaw =>
+      match elementSuccess :
           elementCodeRaw.partialStrengthen? strengthening.back with
-      | none => exact none
+      | none => none
       | some targetElementCodeRaw =>
-          exact some
+          some
             (partialStrengthenTypedOptionCode outerLevel levelLe
               elementCodeRaw targetElementCodeRaw elementSuccess)
-  | @Term.eitherCode _ _ _ _ outerLevel levelLe leftCodeRaw rightCodeRaw => by
-      cases leftSuccess :
+  | @Term.eitherCode _ _ _ _ outerLevel levelLe leftCodeRaw rightCodeRaw =>
+      match leftSuccess :
           leftCodeRaw.partialStrengthen? strengthening.back with
-      | none => exact none
+      | none => none
       | some targetLeftCodeRaw =>
-          cases rightSuccess :
+          match rightSuccess :
               rightCodeRaw.partialStrengthen? strengthening.back with
-          | none => exact none
+          | none => none
           | some targetRightCodeRaw =>
-              exact some
+              some
                 (partialStrengthenTypedEitherCode outerLevel levelLe
                   leftCodeRaw rightCodeRaw targetLeftCodeRaw
                   targetRightCodeRaw leftSuccess rightSuccess)
-  | @Term.idCode _ _ _ _ outerLevel levelLe typeCodeRaw leftRaw rightRaw => by
-      cases typeSuccess :
+  | @Term.idCode _ _ _ _ outerLevel levelLe typeCodeRaw leftRaw rightRaw =>
+      match typeSuccess :
           typeCodeRaw.partialStrengthen? strengthening.back with
-      | none => exact none
+      | none => none
       | some targetTypeCodeRaw =>
-          cases leftSuccess : leftRaw.partialStrengthen? strengthening.back with
-          | none => exact none
+          match leftSuccess :
+              leftRaw.partialStrengthen? strengthening.back with
+          | none => none
           | some targetLeftRaw =>
-              cases rightSuccess :
+              match rightSuccess :
                   rightRaw.partialStrengthen? strengthening.back with
-              | none => exact none
+              | none => none
               | some targetRightRaw =>
-                  exact some
+                  some
                     (partialStrengthenTypedIdCode outerLevel levelLe
                       typeCodeRaw leftRaw rightRaw targetTypeCodeRaw
                       targetLeftRaw targetRightRaw typeSuccess leftSuccess
                       rightSuccess)
   | @Term.equivCode _ _ _ _ outerLevel levelLe leftTypeCodeRaw
-      rightTypeCodeRaw => by
-      cases leftSuccess :
+      rightTypeCodeRaw =>
+      match leftSuccess :
           leftTypeCodeRaw.partialStrengthen? strengthening.back with
-      | none => exact none
+      | none => none
       | some targetLeftTypeCodeRaw =>
-          cases rightSuccess :
+          match rightSuccess :
               rightTypeCodeRaw.partialStrengthen? strengthening.back with
-          | none => exact none
+          | none => none
           | some targetRightTypeCodeRaw =>
-              exact some
+              some
                 (partialStrengthenTypedEquivCode outerLevel levelLe
                   leftTypeCodeRaw rightTypeCodeRaw targetLeftTypeCodeRaw
                   targetRightTypeCodeRaw leftSuccess rightSuccess)

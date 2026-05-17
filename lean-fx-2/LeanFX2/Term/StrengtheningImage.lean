@@ -7882,6 +7882,161 @@ theorem partialStrengthenTyped?_atSumCode_imp_sound {mode : Mode}
         leftCodeRaw rightCodeRaw targetLeftCodeRaw
         targetRightCodeRaw leftSuccess rightSuccess
 
+/-- Dispatcher soundness at the `Term.listCode` arm.  List-type-code
+closed leaf with a single flat-scope raw witness (`elementCodeRaw`)
+plus the universe-level positional forwarding (`outerLevel`/
+`levelLe`).  No value IH; the wrapper consumes the raw witness
+directly. -/
+theorem partialStrengthenTyped?_atListCode_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (elementCodeRaw : RawTerm sourceScope)
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (result : StrengtheningResult strengthening
+      (Term.listCode (context := sourceCtx) outerLevel levelLe
+        elementCodeRaw))
+    (success : partialStrengthenTyped?
+        (Term.listCode (context := sourceCtx) outerLevel levelLe
+          elementCodeRaw) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetElementCodeRaw elementSuccess
+    cases success
+    exact partialStrengthenTypedListCode_sound outerLevel levelLe
+      elementCodeRaw targetElementCodeRaw elementSuccess
+
+/-- Dispatcher soundness at the `Term.optionCode` arm.  Option-type-code
+closed leaf with a single flat-scope raw witness (`elementCodeRaw`).
+Structurally identical to `listCode`. -/
+theorem partialStrengthenTyped?_atOptionCode_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (elementCodeRaw : RawTerm sourceScope)
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (result : StrengtheningResult strengthening
+      (Term.optionCode (context := sourceCtx) outerLevel levelLe
+        elementCodeRaw))
+    (success : partialStrengthenTyped?
+        (Term.optionCode (context := sourceCtx) outerLevel levelLe
+          elementCodeRaw) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetElementCodeRaw elementSuccess
+    cases success
+    exact partialStrengthenTypedOptionCode_sound outerLevel levelLe
+      elementCodeRaw targetElementCodeRaw elementSuccess
+
+/-- Dispatcher soundness at the `Term.eitherCode` arm.  Either-type-code
+closed leaf with two flat-scope raw witnesses (left + right summand
+codes).  Universe-level positional forwarding identical to arrow. -/
+theorem partialStrengthenTyped?_atEitherCode_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (leftCodeRaw rightCodeRaw : RawTerm sourceScope)
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (result : StrengtheningResult strengthening
+      (Term.eitherCode (context := sourceCtx) outerLevel levelLe
+        leftCodeRaw rightCodeRaw))
+    (success : partialStrengthenTyped?
+        (Term.eitherCode (context := sourceCtx) outerLevel levelLe
+          leftCodeRaw rightCodeRaw) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetLeftCodeRaw leftSuccess
+    split at success
+    · cases success
+    · rename_i targetRightCodeRaw rightSuccess
+      cases success
+      exact partialStrengthenTypedEitherCode_sound outerLevel levelLe
+        leftCodeRaw rightCodeRaw targetLeftCodeRaw
+        targetRightCodeRaw leftSuccess rightSuccess
+
+/-- Dispatcher soundness at the `Term.idCode` arm.  Identity-type-code
+closed leaf with THREE flat-scope raw witnesses (typeCode + left
+endpoint + right endpoint).  Three nested `split at success` calls
+plus three sequential `rename_i` to peel each Option layer. -/
+theorem partialStrengthenTyped?_atIdCode_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (typeCodeRaw leftRaw rightRaw : RawTerm sourceScope)
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (result : StrengtheningResult strengthening
+      (Term.idCode (context := sourceCtx) outerLevel levelLe
+        typeCodeRaw leftRaw rightRaw))
+    (success : partialStrengthenTyped?
+        (Term.idCode (context := sourceCtx) outerLevel levelLe
+          typeCodeRaw leftRaw rightRaw) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetTypeCodeRaw typeSuccess
+    split at success
+    · cases success
+    · rename_i targetLeftRaw leftSuccess
+      split at success
+      · cases success
+      · rename_i targetRightRaw rightSuccess
+        cases success
+        exact partialStrengthenTypedIdCode_sound outerLevel levelLe
+          typeCodeRaw leftRaw rightRaw targetTypeCodeRaw
+          targetLeftRaw targetRightRaw typeSuccess leftSuccess
+          rightSuccess
+
+/-- Dispatcher soundness at the `Term.equivCode` arm.  Equivalence-
+type-code closed leaf with two flat-scope raw witnesses
+(`leftTypeCodeRaw` + `rightTypeCodeRaw`).  Structurally identical to
+`eitherCode`. -/
+theorem partialStrengthenTyped?_atEquivCode_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (leftTypeCodeRaw rightTypeCodeRaw : RawTerm sourceScope)
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (result : StrengtheningResult strengthening
+      (Term.equivCode (context := sourceCtx) outerLevel levelLe
+        leftTypeCodeRaw rightTypeCodeRaw))
+    (success : partialStrengthenTyped?
+        (Term.equivCode (context := sourceCtx) outerLevel levelLe
+          leftTypeCodeRaw rightTypeCodeRaw) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetLeftTypeCodeRaw leftSuccess
+    split at success
+    · cases success
+    · rename_i targetRightTypeCodeRaw rightSuccess
+      cases success
+      exact partialStrengthenTypedEquivCode_sound outerLevel levelLe
+        leftTypeCodeRaw rightTypeCodeRaw targetLeftTypeCodeRaw
+        targetRightTypeCodeRaw leftSuccess rightSuccess
+
 end Term
 
 end LeanFX2
