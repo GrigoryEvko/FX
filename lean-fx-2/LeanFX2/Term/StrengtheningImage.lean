@@ -8878,6 +8878,78 @@ theorem partialStrengthenTyped?_atHcompPath_imp_sound {mode : Mode}
               (sidesIH sidesPathResult sidesRecurse)
               (capIH capResult capRecurse)
 
+/-- Dispatcher soundness at the `Term.transp` arm.  Heaviest leaf:
+cubical transport carries 2 Ty witnesses (sourceType, targetType) +
+2 raw witnesses (sourceTypeRaw, targetTypeRaw) + 2 child IHs
+(typePath, sourceValue) + metadata (universeLevel, universeLevelLt,
+modeIsUnivalent).  Term-level types `sourceType` and `targetType`
+are distinct — transp's role is to transport from source to target
+along `typePath` — but both still strengthen homogeneously (the
+strengthening is a context modification, not a type-shape change). -/
+theorem partialStrengthenTyped?_atTransp_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (universeLevel : UniverseLevel)
+    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+    (sourceType targetType : Ty level sourceScope)
+    (sourceTypeRaw targetTypeRaw : RawTerm sourceScope)
+    {pathRaw sourceRaw : RawTerm sourceScope}
+    {typePath :
+      Term sourceCtx
+        (Ty.path (Ty.universe universeLevel universeLevelLt)
+          sourceTypeRaw targetTypeRaw)
+        pathRaw}
+    {sourceValue : Term sourceCtx sourceType sourceRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (pathIH : ∀ pathResult,
+        partialStrengthenTyped? typePath strengthening =
+            some pathResult →
+          StrengtheningSoundness pathResult)
+    (sourceIH : ∀ sourceResult,
+        partialStrengthenTyped? sourceValue strengthening =
+            some sourceResult →
+          StrengtheningSoundness sourceResult)
+    (result : StrengtheningResult strengthening
+      (Term.transp (context := sourceCtx) modeIsUnivalent universeLevel
+        universeLevelLt sourceType targetType sourceTypeRaw
+        targetTypeRaw typePath sourceValue))
+    (success : partialStrengthenTyped?
+        (Term.transp (context := sourceCtx) modeIsUnivalent universeLevel
+          universeLevelLt sourceType targetType sourceTypeRaw
+          targetTypeRaw typePath sourceValue) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetSourceType sourceTypeSuccess
+    split at success
+    · cases success
+    · rename_i targetTargetType targetTypeSuccess
+      split at success
+      · cases success
+      · rename_i targetSourceTypeRaw sourceTypeRawSuccess
+        split at success
+        · cases success
+        · rename_i targetTargetTypeRaw targetTypeRawSuccess
+          split at success
+          · cases success
+          · rename_i pathResult pathRecurse
+            split at success
+            · cases success
+            · rename_i sourceResult sourceRecurse
+              cases success
+              exact partialStrengthenTypedTransp_sound modeIsUnivalent
+                universeLevel universeLevelLt sourceType targetType
+                targetSourceType targetTargetType sourceTypeRaw
+                targetTypeRaw targetSourceTypeRaw targetTargetTypeRaw
+                sourceTypeSuccess targetTypeSuccess
+                sourceTypeRawSuccess targetTypeRawSuccess
+                (pathIH pathResult pathRecurse)
+                (sourceIH sourceResult sourceRecurse)
+
 end Term
 
 end LeanFX2

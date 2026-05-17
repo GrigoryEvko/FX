@@ -7146,32 +7146,34 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                       baseSuccess boundarySuccess gluedResult)
   | @Term.transp _ _ _ _ modeIsUnivalent universeLevel universeLevelLt
       sourceType targetType sourceTypeRaw targetTypeRaw _ _ typePath
-      sourceValue => by
-      cases sourceTypeSuccess :
+      sourceValue =>
+      match sourceTypeSuccess :
           sourceType.partialStrengthen? strengthening.back with
-      | none => exact none
+      | none => none
       | some targetSourceType =>
-          cases targetTypeSuccess :
+          match targetTypeSuccess :
               targetType.partialStrengthen? strengthening.back with
-          | none => exact none
+          | none => none
           | some targetTargetType =>
-              cases sourceTypeRawSuccess :
+              match sourceTypeRawSuccess :
                   sourceTypeRaw.partialStrengthen? strengthening.back with
-              | none => exact none
+              | none => none
               | some targetSourceTypeRaw =>
-                  cases targetTypeRawSuccess :
+                  match targetTypeRawSuccess :
                       targetTypeRaw.partialStrengthen? strengthening.back with
-                  | none => exact none
+                  | none => none
                   | some targetTargetTypeRaw =>
-                      cases partialStrengthenTyped? typePath
-                          (strengthening := strengthening) with
-                      | none => exact none
+                      match pathRecurse :
+                          partialStrengthenTyped? typePath
+                            (strengthening := strengthening) with
+                      | none => none
                       | some pathResult =>
-                          cases partialStrengthenTyped? sourceValue
-                              (strengthening := strengthening) with
-                          | none => exact none
+                          match sourceRecurse :
+                              partialStrengthenTyped? sourceValue
+                                (strengthening := strengthening) with
+                          | none => none
                           | some sourceResult =>
-                              exact some
+                              some
                                 (partialStrengthenTypedTransp
                                   modeIsUnivalent universeLevel
                                   universeLevelLt sourceType targetType
