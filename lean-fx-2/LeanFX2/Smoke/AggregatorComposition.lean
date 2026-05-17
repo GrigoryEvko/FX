@@ -662,6 +662,60 @@ theorem aggregator_listCons_eitherInl_closed {mode : Mode}
     (isAggregatorSound_listNil
       (elementType := Ty.eitherType Ty.nat Ty.bool))
 
+/-- optionSome carrying an eitherInl: `Some (eitherInl natZero)`
+at carrier `option (Either nat bool)`.  Demonstrates the 1-IH
+parametric optionSome wrapper composes with a 1-IH heterogeneous
+injection at its valueTerm slot (parametric-over-heterogeneous
+direction). -/
+theorem aggregator_optionSome_eitherInl_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.optionSome (context := sourceCtx)
+        (valueTerm :=
+          Term.eitherInl (rightType := Ty.bool)
+            (valueTerm := Term.natZero))) :=
+  isAggregatorSound_optionSome
+    (isAggregatorSound_eitherInl (rightType := Ty.bool)
+      isAggregatorSound_natZero)
+
+/-- eitherInl carrying a depth-2 nat chain: `eitherInl
+(natSucc (natSucc natZero))` at carrier `Either nat bool`.
+Variant of the existing eitherInl_natOne example carrying a
+deeper nat chain; demonstrates 1-IH heterogeneous wrappers
+compose with non-trivial 1-IH chains past depth 1. -/
+theorem aggregator_eitherInl_natTwo_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.eitherInl (context := sourceCtx)
+        (rightType := Ty.bool)
+        (valueTerm :=
+          Term.natSucc (Term.natSucc Term.natZero))) :=
+  isAggregatorSound_eitherInl (rightType := Ty.bool)
+    (isAggregatorSound_natSucc
+      (isAggregatorSound_natSucc isAggregatorSound_natZero))
+
+/-- 2-element list of options: `[Some natZero, Some natZero]` at
+carrier `list (option nat)`.  Extends the 1-element
+`listCons_optionSome_closed` to length 2 with a recursive
+listCons tail; demonstrates that 2-IH parametric listCons +
+1-IH parametric optionSome compose at list length > 1. -/
+theorem aggregator_listCons_optionSome_two_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.listCons (context := sourceCtx)
+        (headTerm := Term.optionSome (valueTerm := Term.natZero))
+        (tailTerm :=
+          Term.listCons
+            (headTerm := Term.optionSome (valueTerm := Term.natZero))
+            (tailTerm :=
+              Term.listNil (elementType := Ty.optionType Ty.nat)))) :=
+  isAggregatorSound_listCons
+    (isAggregatorSound_optionSome isAggregatorSound_natZero)
+    (isAggregatorSound_listCons
+      (isAggregatorSound_optionSome isAggregatorSound_natZero)
+      (isAggregatorSound_listNil
+        (elementType := Ty.optionType Ty.nat)))
+
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_unit_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwo_closed
@@ -703,5 +757,8 @@ theorem aggregator_listCons_eitherInl_closed {mode : Mode}
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_optionSome_pair_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_eitherInr_pair_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_eitherInl_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_optionSome_eitherInl_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_eitherInl_natTwo_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_optionSome_two_closed
 
 end LeanFX2.SmokeAggregatorComposition
