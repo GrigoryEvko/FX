@@ -74,8 +74,65 @@ theorem aggregator_natTwo_closed {mode : Mode} {level : Nat}
   isAggregatorSound_natSucc
     (isAggregatorSound_natSucc isAggregatorSound_natZero)
 
+/-- 3-deep smoke: extends the nat chain by one more level
+(natSucc^3 natZero); demonstrates that arbitrary-depth chaining
+imposes no per-step coercion or unification overhead. -/
+theorem aggregator_natThree_closed {mode : Mode} {level : Nat}
+    {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.natSucc (context := sourceCtx)
+        (Term.natSucc (Term.natSucc Term.natZero))) :=
+  isAggregatorSound_natSucc
+    (isAggregatorSound_natSucc
+      (isAggregatorSound_natSucc isAggregatorSound_natZero))
+
+/-- Closed-atomic smoke (boolean): mirrors the `Term.unit` case
+but at `Ty.bool` via the `boolTrue` constructor.  Demonstrates
+that the closed-atomic wrapper template extends uniformly across
+the 0-IH zero-Ty-witness ctors. -/
+theorem aggregator_boolTrue_closed {mode : Mode} {level : Nat}
+    {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound (Term.boolTrue (context := sourceCtx)) :=
+  isAggregatorSound_boolTrue
+
+/-- Closed-atomic smoke (boolean false): boolFalse mirror. -/
+theorem aggregator_boolFalse_closed {mode : Mode} {level : Nat}
+    {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound (Term.boolFalse (context := sourceCtx)) :=
+  isAggregatorSound_boolFalse
+
+/-- 1-IH smoke at parametric type: `IsAggregatorSound
+(Term.optionSome Term.natZero)` builds an `option nat` from a
+0-IH `nat` child via the optionSome 1-IH wrapper.  Demonstrates
+the wrapper composes cleanly across an Ty.optionType
+parametric type boundary. -/
+theorem aggregator_optionSome_natZero_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.optionSome (context := sourceCtx)
+        (valueTerm := Term.natZero)) :=
+  isAggregatorSound_optionSome isAggregatorSound_natZero
+
+/-- 1-IH smoke at heterogeneous-Ty type: `IsAggregatorSound
+(Term.eitherInl Term.natZero)` at carrier `Either Ty.nat
+Ty.bool`.  Demonstrates that 1-IH wrappers carry through the
+two-type either-form with the unused carrier supplied via the
+named implicit. -/
+theorem aggregator_eitherInl_natZero_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.eitherInl (context := sourceCtx)
+        (rightType := Ty.bool) (valueTerm := Term.natZero)) :=
+  isAggregatorSound_eitherInl (rightType := Ty.bool)
+    isAggregatorSound_natZero
+
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_unit_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwo_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natThree_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_boolTrue_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_boolFalse_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_optionSome_natZero_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_eitherInl_natZero_closed
 
 end LeanFX2.SmokeAggregatorComposition
