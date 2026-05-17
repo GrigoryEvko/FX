@@ -1550,6 +1550,82 @@ theorem aggregator_eitherInr_listNil_closed {mode : Mode}
   isAggregatorSound_eitherInr (leftType := Ty.nat)
     (isAggregatorSound_listNil (elementType := Ty.bool))
 
+/-- Two-element list of left-injected either values:
+`[eitherInl natZero, eitherInl natZero]` at carrier
+`list (Either nat bool)`.  Counterpart to Phase 114's
+`listCons_eitherInr_two_closed` (which uses eitherInr); together
+they confirm both either injection sides serve as listCons heads
+at length > 1. -/
+theorem aggregator_listCons_eitherInl_two_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.listCons (context := sourceCtx)
+        (headTerm :=
+          Term.eitherInl (rightType := Ty.bool)
+            (valueTerm := Term.natZero))
+        (tailTerm :=
+          Term.listCons
+            (headTerm :=
+              Term.eitherInl (rightType := Ty.bool)
+                (valueTerm := Term.natZero))
+            (tailTerm :=
+              Term.listNil
+                (elementType := Ty.eitherType Ty.nat Ty.bool)))) :=
+  isAggregatorSound_listCons
+    (isAggregatorSound_eitherInl (rightType := Ty.bool)
+      isAggregatorSound_natZero)
+    (isAggregatorSound_listCons
+      (isAggregatorSound_eitherInl (rightType := Ty.bool)
+        isAggregatorSound_natZero)
+      (isAggregatorSound_listNil
+        (elementType := Ty.eitherType Ty.nat Ty.bool)))
+
+/-- Sigma-pair with EITHERINL on LEFT and LIST on RIGHT:
+`pair (eitherInl natZero) [boolTrue]` at carrier
+`(Either nat bool) × (list bool)`.  Combines Phase 112's
+`pair_listCons_natZero` (list on left + atomic right) with the
+either-on-left family, demonstrating that the 2-IH non-parametric
+Σ wrapper composes heterogeneous parametric children across two
+distinct type families (either and list). -/
+theorem aggregator_pair_eitherInl_listCons_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.pair (context := sourceCtx)
+        (secondType := Ty.listType Ty.bool)
+        (firstValue :=
+          Term.eitherInl (rightType := Ty.bool)
+            (valueTerm := Term.natZero))
+        (secondValue :=
+          Term.listCons
+            (headTerm := Term.boolTrue)
+            (tailTerm := Term.listNil (elementType := Ty.bool)))) :=
+  isAggregatorSound_pair
+    (isAggregatorSound_eitherInl (rightType := Ty.bool)
+      isAggregatorSound_natZero)
+    (isAggregatorSound_listCons isAggregatorSound_boolTrue
+      (isAggregatorSound_listNil (elementType := Ty.bool)))
+
+/-- Alternate triple-stack ordering option-either-Σ with LEFT
+injection: `Some (eitherInl (pair natZero boolTrue))` at carrier
+`option (Either (nat × bool) bool)`.  Companion to Phase 115's
+`optionSome_eitherInr_pair_closed` (which uses eitherInr); this
+version uses the eitherInl injection, demonstrating both either
+sides accept Σ-pair payloads inside option-either-Σ stacks. -/
+theorem aggregator_optionSome_eitherInl_pair_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.optionSome (context := sourceCtx)
+        (valueTerm :=
+          Term.eitherInl (rightType := Ty.bool)
+            (valueTerm :=
+              Term.pair (secondType := Ty.bool)
+                (firstValue := Term.natZero)
+                (secondValue := Term.boolTrue)))) :=
+  isAggregatorSound_optionSome
+    (isAggregatorSound_eitherInl (rightType := Ty.bool)
+      (isAggregatorSound_pair isAggregatorSound_natZero
+        isAggregatorSound_boolTrue))
+
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_unit_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwo_closed
@@ -1636,5 +1712,8 @@ theorem aggregator_eitherInr_listNil_closed {mode : Mode}
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwelve_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_optionNone_optionNone_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_eitherInr_listNil_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_eitherInl_two_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_eitherInl_listCons_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_optionSome_eitherInl_pair_closed
 
 end LeanFX2.SmokeAggregatorComposition
