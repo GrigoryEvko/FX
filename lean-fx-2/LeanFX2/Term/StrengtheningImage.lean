@@ -6202,6 +6202,118 @@ theorem partialStrengthenTyped?_atListCons_imp_sound {mode : Mode}
         (headSound := headIH headResult headRecurse)
         (tailSound := tailIH tailResult tailRecurse)
 
+/-- Dispatcher soundness at the `Term.listNil` arm.  Type-only
+strengthening (no value recurse): the dispatcher branches solely on
+`elementType.partialStrengthen?`, and the wrapper soundness consumes
+the witness directly. -/
+theorem partialStrengthenTyped?_atListNil_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (elementType : Ty level sourceScope)
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (result : StrengtheningResult strengthening
+      (Term.listNil (context := sourceCtx) (elementType := elementType)))
+    (success : partialStrengthenTyped?
+        (Term.listNil (context := sourceCtx) (elementType := elementType))
+          strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetElementType elementSuccess
+    cases success
+    exact partialStrengthenTypedListNilOfType_sound strengthening
+      elementType targetElementType elementSuccess
+
+/-- Dispatcher soundness at the `Term.optionNone` arm.  Mirrors
+`atListNil`: type-only strengthening, wrapper applied directly. -/
+theorem partialStrengthenTyped?_atOptionNone_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (elementType : Ty level sourceScope)
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (result : StrengtheningResult strengthening
+      (Term.optionNone (context := sourceCtx) (elementType := elementType)))
+    (success : partialStrengthenTyped?
+        (Term.optionNone (context := sourceCtx) (elementType := elementType))
+          strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetElementType elementSuccess
+    cases success
+    exact partialStrengthenTypedOptionNoneOfType_sound strengthening
+      elementType targetElementType elementSuccess
+
+/-- Dispatcher soundness at the `Term.eitherInl` arm.  Mixed shape:
+right-type strengthening witness + single value-subterm IH. -/
+theorem partialStrengthenTyped?_atEitherInl_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {leftType rightType : Ty level sourceScope}
+    {valueRaw : RawTerm sourceScope}
+    {valueTerm : Term sourceCtx leftType valueRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (valueIH : ∀ valueResult,
+        partialStrengthenTyped? valueTerm strengthening =
+            some valueResult →
+          StrengtheningSoundness valueResult)
+    (result : StrengtheningResult strengthening
+      (Term.eitherInl (rightType := rightType) (valueTerm := valueTerm)))
+    (success : partialStrengthenTyped?
+        (Term.eitherInl (rightType := rightType) (valueTerm := valueTerm))
+          strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetRightType rightSuccess
+    split at success
+    · cases success
+    · rename_i valueResult valueRecurse
+      cases success
+      exact partialStrengthenTypedEitherInlOfRightType_sound
+        rightSuccess (valueSound := valueIH valueResult valueRecurse)
+
+/-- Dispatcher soundness at the `Term.eitherInr` arm.  Mirrors
+`atEitherInl` with left-type strengthening on the unused side. -/
+theorem partialStrengthenTyped?_atEitherInr_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {leftType rightType : Ty level sourceScope}
+    {valueRaw : RawTerm sourceScope}
+    {valueTerm : Term sourceCtx rightType valueRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (valueIH : ∀ valueResult,
+        partialStrengthenTyped? valueTerm strengthening =
+            some valueResult →
+          StrengtheningSoundness valueResult)
+    (result : StrengtheningResult strengthening
+      (Term.eitherInr (leftType := leftType) (valueTerm := valueTerm)))
+    (success : partialStrengthenTyped?
+        (Term.eitherInr (leftType := leftType) (valueTerm := valueTerm))
+          strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetLeftType leftSuccess
+    split at success
+    · cases success
+    · rename_i valueResult valueRecurse
+      cases success
+      exact partialStrengthenTypedEitherInrOfLeftType_sound
+        leftSuccess (valueSound := valueIH valueResult valueRecurse)
+
 /-- Dispatcher soundness at the `Term.unit` arm.  Closed-leaf: the
 dispatcher returns `some (partialStrengthenTypedUnit strengthening)`
 unconditionally, so the soundness is the wrapper soundness applied

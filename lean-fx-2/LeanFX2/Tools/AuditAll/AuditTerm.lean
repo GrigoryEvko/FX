@@ -597,5 +597,9 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_atIntervalMeet_imp_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_atIntervalJoin_imp_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_atListCons_imp_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_atListNil_imp_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_atOptionNone_imp_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_atEitherInl_imp_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_atEitherInr_imp_sound
 
 end LeanFX2.Tools

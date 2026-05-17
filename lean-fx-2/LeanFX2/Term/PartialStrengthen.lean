@@ -6687,12 +6687,12 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                   exact some
                     (partialStrengthenTypedNatRec scrutineeResult
                       zeroResult succResult)
-  | @Term.listNil _ _ _ _ elementType => by
-      cases elementSuccess :
+  | @Term.listNil _ _ _ _ elementType =>
+      match elementSuccess :
           elementType.partialStrengthen? strengthening.back with
-      | none => exact none
+      | none => none
       | some targetElementType =>
-          exact some
+          some
             (partialStrengthenTypedListNilOfType strengthening
               elementType targetElementType elementSuccess)
   | @Term.listCons _ _ _ _ _ _ _ headTerm tailTerm =>
@@ -6728,12 +6728,12 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                       exact some
                         (partialStrengthenTypedListElim elementSuccess
                           scrutineeResult nilResult consResult)
-  | @Term.optionNone _ _ _ _ elementType => by
-      cases elementSuccess :
+  | @Term.optionNone _ _ _ _ elementType =>
+      match elementSuccess :
           elementType.partialStrengthen? strengthening.back with
-      | none => exact none
+      | none => none
       | some targetElementType =>
-          exact some
+          some
             (partialStrengthenTypedOptionNoneOfType strengthening
               elementType targetElementType elementSuccess)
   | @Term.optionSome _ _ _ _ _ _ valueTerm =>
@@ -6764,28 +6764,30 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                       exact some
                         (partialStrengthenTypedOptionMatch elementSuccess
                           scrutineeResult noneResult someResult)
-  | @Term.eitherInl _ _ _ _ _ rightType _ valueTerm => by
-      cases rightSuccess :
+  | @Term.eitherInl _ _ _ _ _ rightType _ valueTerm =>
+      match rightSuccess :
           rightType.partialStrengthen? strengthening.back with
-      | none => exact none
+      | none => none
       | some targetRightType =>
-          cases partialStrengthenTyped? valueTerm
-              (strengthening := strengthening) with
-          | none => exact none
+          match valueRecurse :
+              partialStrengthenTyped? valueTerm
+                (strengthening := strengthening) with
+          | none => none
           | some valueResult =>
-              exact some
+              some
                 (partialStrengthenTypedEitherInlOfRightType
                   rightSuccess valueResult)
-  | @Term.eitherInr _ _ _ _ leftType _ _ valueTerm => by
-      cases leftSuccess :
+  | @Term.eitherInr _ _ _ _ leftType _ _ valueTerm =>
+      match leftSuccess :
           leftType.partialStrengthen? strengthening.back with
-      | none => exact none
+      | none => none
       | some targetLeftType =>
-          cases partialStrengthenTyped? valueTerm
-              (strengthening := strengthening) with
-          | none => exact none
+          match valueRecurse :
+              partialStrengthenTyped? valueTerm
+                (strengthening := strengthening) with
+          | none => none
           | some valueResult =>
-              exact some
+              some
                 (partialStrengthenTypedEitherInrOfLeftType
                   leftSuccess valueResult)
   | @Term.eitherMatch _ _ _ _ leftType rightType motiveType _ _ _ scrutinee
