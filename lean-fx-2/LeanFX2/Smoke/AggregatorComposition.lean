@@ -2395,6 +2395,95 @@ theorem aggregator_optionSome_eitherInr_natZero_closed {mode : Mode}
     (isAggregatorSound_eitherInr (leftType := Ty.bool)
       isAggregatorSound_natZero)
 
+/-- Depth-20 nat chain at carrier `nat`: `natSucc^20 natZero`
+representing the natural number 20.  Continues the depth-N
+coverage from Phases 84 (depth-5) through 129 (depth-19),
+demonstrating that 1-IH nat-chain composition scales linearly
+without IH-shape degradation.  Direct successor to Phase 129's
+`aggregator_natNineteen_closed`. -/
+theorem aggregator_natTwenty_closed {mode : Mode} {level : Nat}
+    {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.natSucc (context := sourceCtx)
+        (Term.natSucc
+          (Term.natSucc
+            (Term.natSucc
+              (Term.natSucc
+                (Term.natSucc
+                  (Term.natSucc
+                    (Term.natSucc
+                      (Term.natSucc
+                        (Term.natSucc
+                          (Term.natSucc
+                            (Term.natSucc
+                              (Term.natSucc
+                                (Term.natSucc
+                                  (Term.natSucc
+                                    (Term.natSucc
+                                      (Term.natSucc
+                                        (Term.natSucc
+                                          (Term.natSucc
+                                            (Term.natSucc Term.natZero)))))))))))))))))))) :=
+  isAggregatorSound_natSucc
+    (isAggregatorSound_natSucc
+      (isAggregatorSound_natSucc
+        (isAggregatorSound_natSucc
+          (isAggregatorSound_natSucc
+            (isAggregatorSound_natSucc
+              (isAggregatorSound_natSucc
+                (isAggregatorSound_natSucc
+                  (isAggregatorSound_natSucc
+                    (isAggregatorSound_natSucc
+                      (isAggregatorSound_natSucc
+                        (isAggregatorSound_natSucc
+                          (isAggregatorSound_natSucc
+                            (isAggregatorSound_natSucc
+                              (isAggregatorSound_natSucc
+                                (isAggregatorSound_natSucc
+                                  (isAggregatorSound_natSucc
+                                    (isAggregatorSound_natSucc
+                                      (isAggregatorSound_natSucc
+                                        (isAggregatorSound_natSucc
+                                          isAggregatorSound_natZero)))))))))))))))))))
+
+/-- Option wrapping a single-element list with non-zero head:
+`Some [natOne]` at carrier `option (list nat)`.  Extends Phase 109's
+`aggregator_optionSome_listCons_natZero_closed` (zero head) with a
+depth-1 nat-chain head, demonstrating option / list / nat-chain
+composition at mixed IH depths in the head payload. -/
+theorem aggregator_optionSome_listCons_natOne_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.optionSome (context := sourceCtx)
+        (valueTerm :=
+          Term.listCons
+            (headTerm := Term.natSucc Term.natZero)
+            (tailTerm := Term.listNil (elementType := Ty.nat)))) :=
+  isAggregatorSound_optionSome
+    (isAggregatorSound_listCons
+      (isAggregatorSound_natSucc isAggregatorSound_natZero)
+      (isAggregatorSound_listNil (elementType := Ty.nat)))
+
+/-- Mixed left-then-right either nesting:
+`eitherInl (eitherInr natZero)` at carrier
+`Either (Either bool nat) bool`.  Companion to Phase 100's
+`aggregator_eitherInr_eitherInr_natZero_closed` (right-then-right)
+and the existing `aggregator_eitherInl_eitherInl_natZero_closed`
+(left-then-left); demonstrates that the mixed-injection ordering
+composes at depth two regardless of which side is the outer
+wrapper. -/
+theorem aggregator_eitherInl_eitherInr_natZero_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.eitherInl (context := sourceCtx)
+        (rightType := Ty.bool)
+        (valueTerm :=
+          Term.eitherInr (leftType := Ty.bool)
+            (valueTerm := Term.natZero))) :=
+  isAggregatorSound_eitherInl (rightType := Ty.bool)
+    (isAggregatorSound_eitherInr (leftType := Ty.bool)
+      isAggregatorSound_natZero)
+
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_unit_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwo_closed
@@ -2511,5 +2600,8 @@ theorem aggregator_optionSome_eitherInr_natZero_closed {mode : Mode}
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natNineteen_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_natTwo_natOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_optionSome_eitherInr_natZero_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwenty_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_optionSome_listCons_natOne_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_eitherInl_eitherInr_natZero_closed
 
 end LeanFX2.SmokeAggregatorComposition
