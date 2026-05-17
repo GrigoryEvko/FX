@@ -660,5 +660,13 @@ namespace LeanFX2.SmokeTypedInversion
 #print axioms LeanFX2.Term.isAggregatorSound_glueElim
 #print axioms LeanFX2.Term.isAggregatorSound_uaToEquiv
 #print axioms LeanFX2.Term.isAggregatorSound_transp
+#print axioms LeanFX2.Term.isAggregatorSound_app
+#print axioms LeanFX2.Term.isAggregatorSound_appPi
+#print axioms LeanFX2.Term.isAggregatorSound_sessionSend
+#print axioms LeanFX2.Term.isAggregatorSound_sessionRecv
+#print axioms LeanFX2.Term.isAggregatorSound_glueIntro
+#print axioms LeanFX2.Term.isAggregatorSound_lam
+#print axioms LeanFX2.Term.isAggregatorSound_lamPi
+#print axioms LeanFX2.Term.isAggregatorSound_pathLam
 
 end LeanFX2.SmokeTypedInversion

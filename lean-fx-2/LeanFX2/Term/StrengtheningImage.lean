@@ -9771,6 +9771,168 @@ theorem isAggregatorSound_transp {mode : Mode} {level : Nat}
     targetTypeRaw strengthening (pathAggregator strengthening)
     (sourceAggregator strengthening) result success
 
+/-- Headline aggregator soundness at the `Term.app` arm.  2-IH
+non-dependent application (function + argument). -/
+theorem isAggregatorSound_app {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {domainType codomainType : Ty level sourceScope}
+    {functionRaw argumentRaw : RawTerm sourceScope}
+    {functionTerm :
+      Term sourceCtx (Ty.arrow domainType codomainType) functionRaw}
+    {argumentTerm : Term sourceCtx domainType argumentRaw}
+    (functionAggregator : IsAggregatorSound functionTerm)
+    (argumentAggregator : IsAggregatorSound argumentTerm) :
+    IsAggregatorSound
+      (Term.app (codomainType := codomainType) functionTerm
+        argumentTerm) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atApp_imp_sound strengthening
+    (functionAggregator strengthening)
+    (argumentAggregator strengthening) result success
+
+/-- Headline aggregator soundness at the `Term.appPi` arm.  2-IH
+dependent application; codomain rides under the binder. -/
+theorem isAggregatorSound_appPi {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {domainType : Ty level sourceScope}
+    {codomainType : Ty level (sourceScope + 1)}
+    {functionRaw argumentRaw : RawTerm sourceScope}
+    {functionTerm :
+      Term sourceCtx (Ty.piTy domainType codomainType) functionRaw}
+    {argumentTerm : Term sourceCtx domainType argumentRaw}
+    (functionAggregator : IsAggregatorSound functionTerm)
+    (argumentAggregator : IsAggregatorSound argumentTerm) :
+    IsAggregatorSound
+      (Term.appPi (codomainType := codomainType) functionTerm
+        argumentTerm) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atAppPi_imp_sound strengthening
+    (functionAggregator strengthening)
+    (argumentAggregator strengthening) result success
+
+/-- Headline aggregator soundness at the `Term.sessionSend` arm.
+2-IH session send (`channel` + `payload`); `protocolStep` is a raw
+witness threading through the leaf. -/
+theorem isAggregatorSound_sessionSend {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (protocolStep : RawTerm sourceScope)
+    {payloadType : Ty level sourceScope}
+    {channelRaw payloadRaw : RawTerm sourceScope}
+    {channel : Term sourceCtx (Ty.session protocolStep) channelRaw}
+    {payload : Term sourceCtx payloadType payloadRaw}
+    (channelAggregator : IsAggregatorSound channel)
+    (payloadAggregator : IsAggregatorSound payload) :
+    IsAggregatorSound
+      (Term.sessionSend protocolStep channel payload) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atSessionSend_imp_sound strengthening
+    (channelAggregator strengthening)
+    (payloadAggregator strengthening) result success
+
+/-- Headline aggregator soundness at the `Term.sessionRecv` arm.
+1-IH session receive (`channel` only); `protocolStep` carries the
+raw witness through. -/
+theorem isAggregatorSound_sessionRecv {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {protocolStep : RawTerm sourceScope}
+    {channelRaw : RawTerm sourceScope}
+    {channel : Term sourceCtx (Ty.session protocolStep) channelRaw}
+    (channelAggregator : IsAggregatorSound channel) :
+    IsAggregatorSound (Term.sessionRecv channel) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atSessionRecv_imp_sound strengthening
+    (channelAggregator strengthening) result success
+
+/-- Headline aggregator soundness at the `Term.glueIntro` arm.  2-IH
+cubical glue introduction (`baseValue` + `partialValue`, both at
+`baseType`); `modeIsUnivalent` is positional, `baseType` and
+`boundaryWitness` are implicit (inferred from `baseValue`'s type). -/
+theorem isAggregatorSound_glueIntro {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {baseType : Ty level sourceScope}
+    {boundaryWitness : RawTerm sourceScope}
+    {baseRaw partialRaw : RawTerm sourceScope}
+    {baseValue : Term sourceCtx baseType baseRaw}
+    {partialValue : Term sourceCtx baseType partialRaw}
+    (baseAggregator : IsAggregatorSound baseValue)
+    (partialAggregator : IsAggregatorSound partialValue) :
+    IsAggregatorSound
+      (Term.glueIntro (context := sourceCtx) modeIsUnivalent baseType
+        boundaryWitness baseValue partialValue) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atGlueIntro_imp_sound modeIsUnivalent
+    strengthening (baseAggregator strengthening)
+    (partialAggregator strengthening) result success
+
+/-- Headline aggregator soundness at the `Term.lam` arm.  Lambda
+binder: body lives under `sourceCtx.cons domainType`.  The body
+aggregator must absorb the strengthening through the lift; the
+wrapper threads `bodyAggregator (strengthening.lift domainType ...)`. -/
+theorem isAggregatorSound_lam {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {domainType codomainType : Ty level sourceScope}
+    {bodyRaw : RawTerm (sourceScope + 1)}
+    {body :
+      Term (sourceCtx.cons domainType) codomainType.weaken bodyRaw}
+    (bodyAggregator : IsAggregatorSound body) :
+    IsAggregatorSound
+      (Term.lam (context := sourceCtx) (domainType := domainType)
+        (codomainType := codomainType) body) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atLam_imp_sound strengthening
+    (fun targetDomainType domainSuccess bodyResult bodyRecurse =>
+      bodyAggregator
+        (strengthening.lift domainType targetDomainType domainSuccess)
+        bodyResult bodyRecurse)
+    result success
+
+/-- Headline aggregator soundness at the `Term.lamPi` arm.
+Dependent-Π lambda: body lives at codomain inside the binder. -/
+theorem isAggregatorSound_lamPi {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {domainType : Ty level sourceScope}
+    {codomainType : Ty level (sourceScope + 1)}
+    {bodyRaw : RawTerm (sourceScope + 1)}
+    {body : Term (sourceCtx.cons domainType) codomainType bodyRaw}
+    (bodyAggregator : IsAggregatorSound body) :
+    IsAggregatorSound
+      (Term.lamPi (context := sourceCtx) (domainType := domainType)
+        (codomainType := codomainType) body) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atLamPi_imp_sound strengthening
+    (fun targetDomainType domainSuccess bodyResult bodyRecurse =>
+      bodyAggregator
+        (strengthening.lift domainType targetDomainType domainSuccess)
+        bodyResult bodyRecurse)
+    result success
+
+/-- Headline aggregator soundness at the `Term.pathLam` arm.  Cubical
+path-lambda binder: body lives under `sourceCtx.cons Ty.interval`.
+The interval slot is fixed (no domain strengthening), so the body
+aggregator threads against `strengthening.lift Ty.interval
+Ty.interval rfl`. -/
+theorem isAggregatorSound_pathLam {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {bodyRaw : RawTerm (sourceScope + 1)}
+    {body :
+      Term (sourceCtx.cons Ty.interval) carrierType.weaken bodyRaw}
+    (bodyAggregator : IsAggregatorSound body) :
+    IsAggregatorSound
+      (Term.pathLam (context := sourceCtx) modeIsUnivalent carrierType
+        leftEndpoint rightEndpoint body) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atPathLam_imp_sound modeIsUnivalent
+    strengthening
+    (fun bodyResult bodyRecurse =>
+      bodyAggregator
+        (strengthening.lift Ty.interval Ty.interval rfl)
+        bodyResult bodyRecurse)
+    result success
+
 end Term
 
 end LeanFX2
