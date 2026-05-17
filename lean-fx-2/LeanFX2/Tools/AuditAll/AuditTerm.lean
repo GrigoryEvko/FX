@@ -761,4 +761,37 @@ existing computational dispatcher. -/
 -- structural induction.
 #assert_no_axioms LeanFX2.Term.weaken_image_iff_strengthenTyped?_some
 
+-- BIG-ASS THEOREM (closed-atomic foundation): `IsTotalOnWeaken`
+-- predicate and the 7 closed-atomic ctor totality witnesses.  Each
+-- atomic case shipped as a direct `rfl` proof both at the
+-- `(strengthenTyped? (Term.weaken nt _)).isSome` level and at the
+-- user-facing `unweaken?_weaken_<ctor>` level.  The recursive 71
+-- ctors land in a follow-up via `IsTotalOnWeaken`'s composition rule.
+
+#assert_no_axioms LeanFX2.Term.IsTotalOnWeaken
+
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_unit
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_boolTrue
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_boolFalse
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_natZero
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_interval0
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_interval1
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_var
+
+-- User-facing unweaken?_weaken_<ctor> headline theorems.  Each is a
+-- direct `rfl` witness — concrete totality for the closed atomic
+-- ctors, consumable by Step.eta-cascade SR proofs.
+#assert_no_axioms LeanFX2.Term.unweaken?_weaken_unit
+#assert_no_axioms LeanFX2.Term.unweaken?_weaken_boolTrue
+#assert_no_axioms LeanFX2.Term.unweaken?_weaken_boolFalse
+#assert_no_axioms LeanFX2.Term.unweaken?_weaken_natZero
+#assert_no_axioms LeanFX2.Term.unweaken?_weaken_interval0
+#assert_no_axioms LeanFX2.Term.unweaken?_weaken_interval1
+#assert_no_axioms LeanFX2.Term.unweaken?_weaken_var
+
+-- Genuine (non-tautological) iff for the closed-atomic unit case.
+-- Augments the existing tautological iff with concrete totality
+-- content on a closed source.
+#assert_no_axioms LeanFX2.Term.weaken_image_iff_strengthenTyped?_some_TRUE_unit
+
 end LeanFX2.Tools

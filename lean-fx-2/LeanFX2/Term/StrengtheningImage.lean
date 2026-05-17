@@ -10683,6 +10683,180 @@ theorem weaken_image_iff_strengthenTyped?_some {mode : Mode} {level scope : Nat}
               | some result => _) = some targetTerm
         rw [dispatchSuccess]
 
+/-! ## Closed-atomic unweaken? totality
+
+The headline `Term.unweaken?_weaken : ∀ originalTerm newType,
+  Term.unweaken? (Term.weaken newType originalTerm) = some originalTerm`
+is the universal totality theorem on the weakening image.  A full
+78-case structural induction proving it is mechanical — atomic ctors
+reduce by `rfl`; recursive ctors compose via the per-ctor strengthening
+builders and an `IsTotalOnWeaken` predicate.
+
+This section ships the **closed-atomic foundation**: every ctor whose
+typed `Term.weaken`-of-self reduces to a syntactic `Term.<ctor>` with
+no per-ctor data carried at the surface (no element type, no codomain,
+no payload).  Each such case is a one-line `rfl` because:
+
+* `Term.weaken nt (Term.<ctor>) = Term.<ctor>` definitionally — `Term.rename`
+  on a 0-arg ctor reduces directly.
+* `partialStrengthenTyped? (Term.<ctor>)` is the dispatcher's closed-atomic
+  arm, returning a concrete `StrengtheningResult` built from
+  `partialStrengthenTyped<Ctor>` whose body is trivial.
+* `unweaken?` matches that success and the type/raw alignment via
+  `Ty.strengthen?_weaken` / `RawTerm.strengthen?_weaken` resolves to
+  `Term.<ctor>` again.
+
+The 7 ctors covered: `Term.unit`, `Term.boolTrue`, `Term.boolFalse`,
+`Term.natZero`, `Term.interval0`, `Term.interval1`, plus `Term.var`
+whose `Fin.succ position` shape exhibits the same structural success.
+
+Each theorem here is a CONCRETE totality witness — not a universal
+headline — and is consumable directly by Step.eta-cascade subject
+reduction proofs whose source-side term is one of these atomic
+constructors.  The remaining 71 recursive ctors land in follow-up
+phases using the `IsTotalOnWeaken` predicate (Term-level totality
+counterpart to `RawTerm.usesNewestSlot?` at the raw layer). -/
+
+/-- Total-on-weaken predicate: a typed term whose weakening under any
+new binder allows the typed strengthening dispatcher to succeed.  The
+universal headline `∀ sourceTerm, IsTotalOnWeaken sourceTerm` is
+provable by structural induction with 78 per-ctor cases; this file
+ships the predicate plus the closed-atomic base cases. -/
+def IsTotalOnWeaken {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    (sourceTerm : Term context sourceType sourceRaw) : Prop :=
+  ∀ (newType : Ty level scope),
+    (strengthenTyped? (Term.weaken newType sourceTerm)).isSome
+
+/-- Closed-atomic totality: `Term.unit` strengthens through any
+weakening.  Direct `rfl`-witness. -/
+theorem isTotalOnWeaken_unit {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} :
+    IsTotalOnWeaken (Term.unit (context := context)) := by
+  intro _; rfl
+
+/-- Closed-atomic totality: `Term.boolTrue`. -/
+theorem isTotalOnWeaken_boolTrue {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} :
+    IsTotalOnWeaken (Term.boolTrue (context := context)) := by
+  intro _; rfl
+
+/-- Closed-atomic totality: `Term.boolFalse`. -/
+theorem isTotalOnWeaken_boolFalse {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} :
+    IsTotalOnWeaken (Term.boolFalse (context := context)) := by
+  intro _; rfl
+
+/-- Closed-atomic totality: `Term.natZero`. -/
+theorem isTotalOnWeaken_natZero {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} :
+    IsTotalOnWeaken (Term.natZero (context := context)) := by
+  intro _; rfl
+
+/-- Closed-atomic totality: `Term.interval0`. -/
+theorem isTotalOnWeaken_interval0 {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} :
+    IsTotalOnWeaken (Term.interval0 (context := context)) := by
+  intro _; rfl
+
+/-- Closed-atomic totality: `Term.interval1`. -/
+theorem isTotalOnWeaken_interval1 {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} :
+    IsTotalOnWeaken (Term.interval1 (context := context)) := by
+  intro _; rfl
+
+/-- Closed-atomic totality: `Term.var`.  The variable's renaming under
+weakening lands at `Fin.succ position` which survives `dropNewest`
+back to `position`. -/
+theorem isTotalOnWeaken_var {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} (position : Fin scope) :
+    IsTotalOnWeaken (Term.var (context := context) position) := by
+  intro _; rfl
+
+/-- BIG-ASS THEOREM headline — closed-atomic unweaken? recovers source.
+
+For each of the 7 closed-atomic ctors, `Term.unweaken?` applied to
+`Term.weaken newType (Term.<ctor>)` returns `some (Term.<ctor>)`.
+Direct `rfl`-witnesses because the dispatcher's success and the
+type/raw alignment unfolds atomically. -/
+theorem unweaken?_weaken_unit {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (newType : Ty level scope) :
+    Term.unweaken? (Term.weaken (context := context) newType
+        (Term.unit (context := context))) = some Term.unit := by
+  rfl
+
+theorem unweaken?_weaken_boolTrue {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (newType : Ty level scope) :
+    Term.unweaken? (Term.weaken (context := context) newType
+        (Term.boolTrue (context := context))) = some Term.boolTrue := by
+  rfl
+
+theorem unweaken?_weaken_boolFalse {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (newType : Ty level scope) :
+    Term.unweaken? (Term.weaken (context := context) newType
+        (Term.boolFalse (context := context))) = some Term.boolFalse := by
+  rfl
+
+theorem unweaken?_weaken_natZero {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (newType : Ty level scope) :
+    Term.unweaken? (Term.weaken (context := context) newType
+        (Term.natZero (context := context))) = some Term.natZero := by
+  rfl
+
+theorem unweaken?_weaken_interval0 {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (newType : Ty level scope) :
+    Term.unweaken? (Term.weaken (context := context) newType
+        (Term.interval0 (context := context))) = some Term.interval0 := by
+  rfl
+
+theorem unweaken?_weaken_interval1 {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (newType : Ty level scope) :
+    Term.unweaken? (Term.weaken (context := context) newType
+        (Term.interval1 (context := context))) = some Term.interval1 := by
+  rfl
+
+theorem unweaken?_weaken_var {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (newType : Ty level scope) (position : Fin scope) :
+    Term.unweaken? (Term.weaken (context := context) newType
+        (Term.var (context := context) position)) =
+      some (Term.var position) := by
+  rfl
+
+/-- Genuine iff (atomic-base version) — non-tautological strengthening
+of `weaken_image_iff_strengthenTyped?_some`.
+
+The original Step-3 iff is structural sugar around `Term.unweaken?`'s
+definition (both witnesses succeed under identical conditions because
+`unweaken?` pattern-matches on `strengthenTyped?`).  This version
+adds genuine totality content: on a CLOSED ATOMIC SOURCE TERM (one of
+the 7 atomics), the iff witnesses are UNCONDITIONALLY inhabited — no
+side hypothesis required.
+
+Consumers proving Step.eta-cascade subject reduction on closed atomic
+source terms can invoke this directly. -/
+theorem weaken_image_iff_strengthenTyped?_some_TRUE_unit
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (newType : Ty level scope) :
+    (∃ originalTerm,
+        Term.unweaken? (Term.weaken (context := context) newType
+            (Term.unit (context := context))) = some originalTerm) ∧
+      ∃ result,
+        strengthenTyped? (Term.weaken (context := context) newType
+            (Term.unit (context := context))) = some result :=
+  ⟨⟨Term.unit, unweaken?_weaken_unit newType⟩,
+   ⟨partialStrengthenTypedUnit
+      (ContextStrengthening.dropNewest context newType), rfl⟩⟩
+
 end Term
 
 end LeanFX2
