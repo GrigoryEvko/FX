@@ -1486,6 +1486,70 @@ theorem aggregator_pair_eitherInr_natZero_closed {mode : Mode}
       isAggregatorSound_boolTrue)
     isAggregatorSound_natZero
 
+/-- 12-deep natSucc chain extending the natOne..natEleven
+sequence.  Continues the depth-uniformity demonstration past
+depth 11. -/
+theorem aggregator_natTwelve_closed {mode : Mode} {level : Nat}
+    {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.natSucc (context := sourceCtx)
+        (Term.natSucc
+          (Term.natSucc
+            (Term.natSucc
+              (Term.natSucc
+                (Term.natSucc
+                  (Term.natSucc
+                    (Term.natSucc
+                      (Term.natSucc
+                        (Term.natSucc
+                          (Term.natSucc
+                            (Term.natSucc Term.natZero)))))))))))) :=
+  isAggregatorSound_natSucc
+    (isAggregatorSound_natSucc
+      (isAggregatorSound_natSucc
+        (isAggregatorSound_natSucc
+          (isAggregatorSound_natSucc
+            (isAggregatorSound_natSucc
+              (isAggregatorSound_natSucc
+                (isAggregatorSound_natSucc
+                  (isAggregatorSound_natSucc
+                    (isAggregatorSound_natSucc
+                      (isAggregatorSound_natSucc
+                        (isAggregatorSound_natSucc
+                          isAggregatorSound_natZero)))))))))))
+
+/-- Sigma-pair with TWO optionNone values at DIFFERENT element
+types: `pair (None : option nat) (None : option bool)` at
+carrier `option(nat) × option(bool)`.  Mirror to the existing
+`pair_optionSome_optionSome_closed` (both slots non-empty);
+here both Σ slots carry the 0-IH parametric optionNone wrapper
+at non-uniform elementTypes (option nat vs option bool). -/
+theorem aggregator_pair_optionNone_optionNone_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.pair (context := sourceCtx)
+        (secondType := Ty.optionType Ty.bool)
+        (firstValue := Term.optionNone (elementType := Ty.nat))
+        (secondValue := Term.optionNone (elementType := Ty.bool))) :=
+  isAggregatorSound_pair
+    (isAggregatorSound_optionNone (elementType := Ty.nat))
+    (isAggregatorSound_optionNone (elementType := Ty.bool))
+
+/-- Heterogeneous either with EMPTY LIST on RIGHT slot:
+`eitherInr []` at carrier `Either nat (list bool)`.  Mirror to
+Phase 117's `eitherInl_listNil_closed` (empty list on LEFT side);
+here the parametric 0-IH `listNil` lands on the RIGHT side of a
+heterogeneous either, completing the empty-list-in-either matrix
+across both injection sides. -/
+theorem aggregator_eitherInr_listNil_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.eitherInr (context := sourceCtx)
+        (leftType := Ty.nat)
+        (valueTerm := Term.listNil (elementType := Ty.bool))) :=
+  isAggregatorSound_eitherInr (leftType := Ty.nat)
+    (isAggregatorSound_listNil (elementType := Ty.bool))
+
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_unit_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwo_closed
@@ -1569,5 +1633,8 @@ theorem aggregator_pair_eitherInr_natZero_closed {mode : Mode}
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natEleven_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_optionNone_two_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_eitherInr_natZero_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwelve_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_optionNone_optionNone_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_eitherInr_listNil_closed
 
 end LeanFX2.SmokeAggregatorComposition
