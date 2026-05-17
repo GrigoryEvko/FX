@@ -969,6 +969,66 @@ theorem aggregator_eitherInl_optionSome_closed {mode : Mode}
   isAggregatorSound_eitherInl (rightType := Ty.bool)
     (isAggregatorSound_optionSome isAggregatorSound_natZero)
 
+/-- Doubly-nested list: `[[natZero]]` at carrier
+`list (list nat)`.  Counterpart to the existing `listCons_natList`
+single-layer chain; here both the outer head and the tail's inner
+element type are themselves lists, exercising 2-IH parametric
+listCons wrappers stacked at depth two with matching listNil
+sentinels at both layers. -/
+theorem aggregator_listCons_listCons_natZero_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.listCons (context := sourceCtx)
+        (headTerm :=
+          Term.listCons
+            (headTerm := Term.natZero)
+            (tailTerm := Term.listNil (elementType := Ty.nat)))
+        (tailTerm :=
+          Term.listNil
+            (elementType := Ty.listType Ty.nat))) :=
+  isAggregatorSound_listCons
+    (isAggregatorSound_listCons isAggregatorSound_natZero
+      (isAggregatorSound_listNil (elementType := Ty.nat)))
+    (isAggregatorSound_listNil
+      (elementType := Ty.listType Ty.nat))
+
+/-- Heterogeneous Sigma-pair with EITHER ARMS in both slots:
+`pair (eitherInl natZero) (eitherInr boolTrue)` at carrier
+`(Either nat bool) × (Either nat bool)`.  Exercises the 2-IH
+non-parametric Sigma wrapper with two 0-IH heterogeneous-either
+children using OPPOSITE injection sides per slot. -/
+theorem aggregator_pair_eitherInl_eitherInr_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.pair (context := sourceCtx)
+        (secondType := Ty.eitherType Ty.nat Ty.bool)
+        (firstValue :=
+          Term.eitherInl (rightType := Ty.bool)
+            (valueTerm := Term.natZero))
+        (secondValue :=
+          Term.eitherInr (leftType := Ty.nat)
+            (valueTerm := Term.boolTrue))) :=
+  isAggregatorSound_pair
+    (isAggregatorSound_eitherInl (rightType := Ty.bool)
+      isAggregatorSound_natZero)
+    (isAggregatorSound_eitherInr (leftType := Ty.nat)
+      isAggregatorSound_boolTrue)
+
+/-- Heterogeneous either with parametric child on RIGHT side:
+`eitherInr (optionNone)` at carrier `Either nat (option bool)`.
+Counterpart to Phase 110's `eitherInl_optionSome_closed` which
+puts an `optionSome` on the LEFT side; here the parametric
+0-IH `optionNone` lands on the RIGHT, demonstrating both either
+injection sides accept the same parametric option child. -/
+theorem aggregator_eitherInr_optionNone_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.eitherInr (context := sourceCtx)
+        (leftType := Ty.nat)
+        (valueTerm := Term.optionNone (elementType := Ty.bool))) :=
+  isAggregatorSound_eitherInr (leftType := Ty.nat)
+    (isAggregatorSound_optionNone (elementType := Ty.bool))
+
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_unit_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwo_closed
@@ -1028,5 +1088,8 @@ theorem aggregator_eitherInl_optionSome_closed {mode : Mode}
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_optionSome_optionSome_eitherInl_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_optionNone_optionSome_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_eitherInl_optionSome_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_listCons_natZero_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_eitherInl_eitherInr_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_eitherInr_optionNone_closed
 
 end LeanFX2.SmokeAggregatorComposition
