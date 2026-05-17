@@ -800,6 +800,16 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.isTotalOnWeaken_oeqRefl
 #assert_no_axioms LeanFX2.Term.isTotalOnWeaken_idStrictRefl
 
+-- Wave A.2: universe-code 0-IH ctors (only outer-scope RawTerm payloads).
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_arrowCode
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_productCode
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_sumCode
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_listCode
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_optionCode
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_eitherCode
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_idCode
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_equivCode
+
 -- User-facing unweaken?_weaken_<ctor> headline theorems.  Each is a
 -- direct `rfl` witness — concrete totality for the closed atomic
 -- ctors, consumable by Step.eta-cascade SR proofs.

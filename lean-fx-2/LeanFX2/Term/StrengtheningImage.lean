@@ -11140,6 +11140,292 @@ theorem isTotalOnWeaken_idStrictRefl {mode : Mode} {level scope : Nat}
         cases witnessFails
     · rfl
 
+/-- 0-IH parametric atomic totality: `Term.arrowCode` (universe-code
+for `Ty.arrow`).  Two RawTerm sub-payloads at the outer scope. -/
+theorem isTotalOnWeaken_arrowCode {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (domainCodeRaw codomainCodeRaw : RawTerm scope) :
+    IsTotalOnWeaken (Term.arrowCode (context := context) outerLevel
+      levelLe domainCodeRaw codomainCodeRaw) := by
+  intro newType
+  show (strengthenTyped? (Term.arrowCode
+      (context := context.cons newType) outerLevel levelLe
+      domainCodeRaw.weaken codomainCodeRaw.weaken)).isSome
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next domainFails =>
+      exfalso
+      have domainSuccess :
+          domainCodeRaw.weaken.partialStrengthen?
+              (ContextStrengthening.dropNewest context newType).back =
+            some domainCodeRaw :=
+        RawTerm.strengthen?_weaken domainCodeRaw
+      rw [domainSuccess] at domainFails
+      cases domainFails
+  · split
+    · next codomainFails =>
+        exfalso
+        have codomainSuccess :
+            codomainCodeRaw.weaken.partialStrengthen?
+                (ContextStrengthening.dropNewest context newType).back =
+              some codomainCodeRaw :=
+          RawTerm.strengthen?_weaken codomainCodeRaw
+        rw [codomainSuccess] at codomainFails
+        cases codomainFails
+    · rfl
+
+/-- 0-IH parametric atomic totality: `Term.productCode` (universe-code
+for `Ty.product`).  Two RawTerm sub-payloads at the outer scope. -/
+theorem isTotalOnWeaken_productCode {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (firstCodeRaw secondCodeRaw : RawTerm scope) :
+    IsTotalOnWeaken (Term.productCode (context := context) outerLevel
+      levelLe firstCodeRaw secondCodeRaw) := by
+  intro newType
+  show (strengthenTyped? (Term.productCode
+      (context := context.cons newType) outerLevel levelLe
+      firstCodeRaw.weaken secondCodeRaw.weaken)).isSome
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next firstFails =>
+      exfalso
+      have firstSuccess :
+          firstCodeRaw.weaken.partialStrengthen?
+              (ContextStrengthening.dropNewest context newType).back =
+            some firstCodeRaw :=
+        RawTerm.strengthen?_weaken firstCodeRaw
+      rw [firstSuccess] at firstFails
+      cases firstFails
+  · split
+    · next secondFails =>
+        exfalso
+        have secondSuccess :
+            secondCodeRaw.weaken.partialStrengthen?
+                (ContextStrengthening.dropNewest context newType).back =
+              some secondCodeRaw :=
+          RawTerm.strengthen?_weaken secondCodeRaw
+        rw [secondSuccess] at secondFails
+        cases secondFails
+    · rfl
+
+/-- 0-IH parametric atomic totality: `Term.sumCode` (universe-code
+for `Ty.sum`). -/
+theorem isTotalOnWeaken_sumCode {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (leftCodeRaw rightCodeRaw : RawTerm scope) :
+    IsTotalOnWeaken (Term.sumCode (context := context) outerLevel
+      levelLe leftCodeRaw rightCodeRaw) := by
+  intro newType
+  show (strengthenTyped? (Term.sumCode
+      (context := context.cons newType) outerLevel levelLe
+      leftCodeRaw.weaken rightCodeRaw.weaken)).isSome
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next leftFails =>
+      exfalso
+      have leftSuccess :
+          leftCodeRaw.weaken.partialStrengthen?
+              (ContextStrengthening.dropNewest context newType).back =
+            some leftCodeRaw :=
+        RawTerm.strengthen?_weaken leftCodeRaw
+      rw [leftSuccess] at leftFails
+      cases leftFails
+  · split
+    · next rightFails =>
+        exfalso
+        have rightSuccess :
+            rightCodeRaw.weaken.partialStrengthen?
+                (ContextStrengthening.dropNewest context newType).back =
+              some rightCodeRaw :=
+          RawTerm.strengthen?_weaken rightCodeRaw
+        rw [rightSuccess] at rightFails
+        cases rightFails
+    · rfl
+
+/-- 0-IH parametric atomic totality: `Term.listCode` (universe-code
+for `Ty.listType`).  One RawTerm sub-payload. -/
+theorem isTotalOnWeaken_listCode {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (elementCodeRaw : RawTerm scope) :
+    IsTotalOnWeaken (Term.listCode (context := context) outerLevel
+      levelLe elementCodeRaw) := by
+  intro newType
+  show (strengthenTyped? (Term.listCode
+      (context := context.cons newType) outerLevel levelLe
+      elementCodeRaw.weaken)).isSome
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next elementFails =>
+      exfalso
+      have elementSuccess :
+          elementCodeRaw.weaken.partialStrengthen?
+              (ContextStrengthening.dropNewest context newType).back =
+            some elementCodeRaw :=
+        RawTerm.strengthen?_weaken elementCodeRaw
+      rw [elementSuccess] at elementFails
+      cases elementFails
+  · rfl
+
+/-- 0-IH parametric atomic totality: `Term.optionCode` (universe-code
+for `Ty.optionType`).  One RawTerm sub-payload. -/
+theorem isTotalOnWeaken_optionCode {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (elementCodeRaw : RawTerm scope) :
+    IsTotalOnWeaken (Term.optionCode (context := context) outerLevel
+      levelLe elementCodeRaw) := by
+  intro newType
+  show (strengthenTyped? (Term.optionCode
+      (context := context.cons newType) outerLevel levelLe
+      elementCodeRaw.weaken)).isSome
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next elementFails =>
+      exfalso
+      have elementSuccess :
+          elementCodeRaw.weaken.partialStrengthen?
+              (ContextStrengthening.dropNewest context newType).back =
+            some elementCodeRaw :=
+        RawTerm.strengthen?_weaken elementCodeRaw
+      rw [elementSuccess] at elementFails
+      cases elementFails
+  · rfl
+
+/-- 0-IH parametric atomic totality: `Term.eitherCode` (universe-code
+for `Ty.eitherType`).  Two RawTerm sub-payloads. -/
+theorem isTotalOnWeaken_eitherCode {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (leftCodeRaw rightCodeRaw : RawTerm scope) :
+    IsTotalOnWeaken (Term.eitherCode (context := context) outerLevel
+      levelLe leftCodeRaw rightCodeRaw) := by
+  intro newType
+  show (strengthenTyped? (Term.eitherCode
+      (context := context.cons newType) outerLevel levelLe
+      leftCodeRaw.weaken rightCodeRaw.weaken)).isSome
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next leftFails =>
+      exfalso
+      have leftSuccess :
+          leftCodeRaw.weaken.partialStrengthen?
+              (ContextStrengthening.dropNewest context newType).back =
+            some leftCodeRaw :=
+        RawTerm.strengthen?_weaken leftCodeRaw
+      rw [leftSuccess] at leftFails
+      cases leftFails
+  · split
+    · next rightFails =>
+        exfalso
+        have rightSuccess :
+            rightCodeRaw.weaken.partialStrengthen?
+                (ContextStrengthening.dropNewest context newType).back =
+              some rightCodeRaw :=
+          RawTerm.strengthen?_weaken rightCodeRaw
+        rw [rightSuccess] at rightFails
+        cases rightFails
+    · rfl
+
+/-- 0-IH parametric atomic totality: `Term.idCode` (universe-code
+for `Ty.id`).  Three RawTerm sub-payloads at the outer scope. -/
+theorem isTotalOnWeaken_idCode {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (typeCodeRaw leftRaw rightRaw : RawTerm scope) :
+    IsTotalOnWeaken (Term.idCode (context := context) outerLevel
+      levelLe typeCodeRaw leftRaw rightRaw) := by
+  intro newType
+  show (strengthenTyped? (Term.idCode
+      (context := context.cons newType) outerLevel levelLe
+      typeCodeRaw.weaken leftRaw.weaken rightRaw.weaken)).isSome
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next typeFails =>
+      exfalso
+      have typeSuccess :
+          typeCodeRaw.weaken.partialStrengthen?
+              (ContextStrengthening.dropNewest context newType).back =
+            some typeCodeRaw :=
+        RawTerm.strengthen?_weaken typeCodeRaw
+      rw [typeSuccess] at typeFails
+      cases typeFails
+  · split
+    · next leftFails =>
+        exfalso
+        have leftSuccess :
+            leftRaw.weaken.partialStrengthen?
+                (ContextStrengthening.dropNewest context newType).back =
+              some leftRaw :=
+          RawTerm.strengthen?_weaken leftRaw
+        rw [leftSuccess] at leftFails
+        cases leftFails
+    · split
+      · next rightFails =>
+          exfalso
+          have rightSuccess :
+              rightRaw.weaken.partialStrengthen?
+                  (ContextStrengthening.dropNewest context newType).back =
+                some rightRaw :=
+            RawTerm.strengthen?_weaken rightRaw
+          rw [rightSuccess] at rightFails
+          cases rightFails
+      · rfl
+
+/-- 0-IH parametric atomic totality: `Term.equivCode` (universe-code
+for `Ty.equiv`).  Two RawTerm sub-payloads. -/
+theorem isTotalOnWeaken_equivCode {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (leftTypeCodeRaw rightTypeCodeRaw : RawTerm scope) :
+    IsTotalOnWeaken (Term.equivCode (context := context) outerLevel
+      levelLe leftTypeCodeRaw rightTypeCodeRaw) := by
+  intro newType
+  show (strengthenTyped? (Term.equivCode
+      (context := context.cons newType) outerLevel levelLe
+      leftTypeCodeRaw.weaken rightTypeCodeRaw.weaken)).isSome
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next leftFails =>
+      exfalso
+      have leftSuccess :
+          leftTypeCodeRaw.weaken.partialStrengthen?
+              (ContextStrengthening.dropNewest context newType).back =
+            some leftTypeCodeRaw :=
+        RawTerm.strengthen?_weaken leftTypeCodeRaw
+      rw [leftSuccess] at leftFails
+      cases leftFails
+  · split
+    · next rightFails =>
+        exfalso
+        have rightSuccess :
+            rightTypeCodeRaw.weaken.partialStrengthen?
+                (ContextStrengthening.dropNewest context newType).back =
+              some rightTypeCodeRaw :=
+          RawTerm.strengthen?_weaken rightTypeCodeRaw
+        rw [rightSuccess] at rightFails
+        cases rightFails
+    · rfl
+
 /-- BIG-ASS THEOREM headline — closed-atomic unweaken? recovers source.
 
 For each of the 7 closed-atomic ctors, `Term.unweaken?` applied to
