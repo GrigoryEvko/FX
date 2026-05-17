@@ -1029,6 +1029,64 @@ theorem aggregator_eitherInr_optionNone_closed {mode : Mode}
   isAggregatorSound_eitherInr (leftType := Ty.nat)
     (isAggregatorSound_optionNone (elementType := Ty.bool))
 
+/-- Sigma-pair with LIST on the LEFT slot: `pair [natZero] natZero`
+at carrier `list(nat) × nat`.  Demonstrates that the 2-IH
+non-parametric Sigma wrapper accepts a 2-IH parametric listCons
+child paired with a 0-IH atomic natZero in the second slot —
+the previously-shipped pair-with-list combinations all placed
+the list inside an OPTION or EITHER, never directly as a Σ
+component. -/
+theorem aggregator_pair_listCons_natZero_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.pair (context := sourceCtx)
+        (secondType := Ty.nat)
+        (firstValue :=
+          Term.listCons
+            (headTerm := Term.natZero)
+            (tailTerm := Term.listNil (elementType := Ty.nat)))
+        (secondValue := Term.natZero)) :=
+  isAggregatorSound_pair
+    (isAggregatorSound_listCons isAggregatorSound_natZero
+      (isAggregatorSound_listNil (elementType := Ty.nat)))
+    isAggregatorSound_natZero
+
+/-- Heterogeneous either with LIST on the RIGHT slot:
+`eitherInr [boolTrue]` at carrier `Either nat (list bool)`.
+Counterpart to Phase 104's `listCons_eitherInl_closed` and
+Phase 111's `listCons_listCons_natZero_closed` — those put a
+list OUTSIDE the either, here the list lives INSIDE the either's
+right-injection payload, demonstrating composition orders are
+order-independent. -/
+theorem aggregator_eitherInr_listCons_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.eitherInr (context := sourceCtx)
+        (leftType := Ty.nat)
+        (valueTerm :=
+          Term.listCons
+            (headTerm := Term.boolTrue)
+            (tailTerm := Term.listNil (elementType := Ty.bool)))) :=
+  isAggregatorSound_eitherInr (leftType := Ty.nat)
+    (isAggregatorSound_listCons isAggregatorSound_boolTrue
+      (isAggregatorSound_listNil (elementType := Ty.bool)))
+
+/-- Heterogeneous either with EMPTY LIST on the LEFT slot:
+`eitherInl []` at carrier `Either (list nat) bool`.  Companion
+to `eitherInr_listCons_closed` above (which uses a non-empty
+list on the right); this version exercises the 0-IH parametric
+`listNil` wrapper as the LEFT-side payload of a heterogeneous
+0-IH either, the simplest possible parametric-child-of-either
+shape. -/
+theorem aggregator_eitherInl_listNil_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.eitherInl (context := sourceCtx)
+        (rightType := Ty.bool)
+        (valueTerm := Term.listNil (elementType := Ty.nat))) :=
+  isAggregatorSound_eitherInl (rightType := Ty.bool)
+    (isAggregatorSound_listNil (elementType := Ty.nat))
+
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_unit_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwo_closed
@@ -1091,5 +1149,8 @@ theorem aggregator_eitherInr_optionNone_closed {mode : Mode}
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_listCons_natZero_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_eitherInl_eitherInr_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_eitherInr_optionNone_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_listCons_natZero_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_eitherInr_listCons_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_eitherInl_listNil_closed
 
 end LeanFX2.SmokeAggregatorComposition
