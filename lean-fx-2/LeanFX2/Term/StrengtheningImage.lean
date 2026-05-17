@@ -12913,6 +12913,101 @@ theorem isTotalOnWeaken_eitherMatch {mode : Mode} {level scope : Nat}
                 cases this
             · rfl
 
+/-- 2-IH non-binder totality: `Term.effectPerform`.  One RawTerm
+(effectTag) + signature with two Ty carriers + two Term IH. -/
+theorem isTotalOnWeaken_effectPerform {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (effectTag : RawTerm scope)
+    (effectRow : Effects.EffectRow)
+    (operationSignature : Effects.OperationSignature (Ty level scope))
+    (canPerformOperation :
+      Effects.CanPerform effectRow operationSignature)
+    {operationRaw argumentsRaw : RawTerm scope}
+    {operationTag : Term context
+      (Ty.effect operationSignature.argumentCarrier effectTag)
+      operationRaw}
+    {arguments : Term context operationSignature.argumentCarrier
+      argumentsRaw}
+    (operationIH : IsTotalOnWeaken operationTag)
+    (argumentsIH : IsTotalOnWeaken arguments) :
+    IsTotalOnWeaken (Term.effectPerform effectTag effectRow
+      operationSignature canPerformOperation operationTag arguments) := by
+  intro newType
+  show (strengthenTyped? (Term.effectPerform effectTag.weaken
+      effectRow
+      (operationSignature.map
+        (fun carrierType : Ty level scope =>
+          (carrierType : Ty level scope).rename RawRenaming.weaken))
+      (Effects.CanPerform.map
+        (fun carrierType : Ty level scope =>
+          (carrierType : Ty level scope).rename RawRenaming.weaken)
+        canPerformOperation)
+      (Term.weaken newType operationTag)
+      (Term.weaken newType arguments))).isSome
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next effectTagFails =>
+      exfalso
+      have effectTagSuccess :
+          effectTag.weaken.partialStrengthen?
+              (ContextStrengthening.dropNewest context newType).back =
+            some effectTag :=
+        RawTerm.strengthen?_weaken effectTag
+      rw [effectTagSuccess] at effectTagFails
+      cases effectTagFails
+  · split
+    · next argumentCarrierFails =>
+        exfalso
+        have argumentCarrierSuccess :
+            (Effects.OperationSignature.map
+              (fun carrierType : Ty level scope =>
+                (carrierType : Ty level scope).rename RawRenaming.weaken)
+              operationSignature).argumentCarrier.partialStrengthen?
+                (ContextStrengthening.dropNewest context newType).back =
+              some operationSignature.argumentCarrier := by
+          change operationSignature.argumentCarrier.weaken.partialStrengthen?
+              _ = _
+          exact Ty.strengthen?_weaken operationSignature.argumentCarrier
+        rw [argumentCarrierSuccess] at argumentCarrierFails
+        cases argumentCarrierFails
+    · split
+      · next resultCarrierFails =>
+          exfalso
+          have resultCarrierSuccess :
+              (Effects.OperationSignature.map
+                (fun carrierType : Ty level scope =>
+                  (carrierType : Ty level scope).rename RawRenaming.weaken)
+                operationSignature).resultCarrier.partialStrengthen?
+                  (ContextStrengthening.dropNewest context newType).back =
+                some operationSignature.resultCarrier := by
+            change operationSignature.resultCarrier.weaken.partialStrengthen?
+                _ = _
+            exact Ty.strengthen?_weaken operationSignature.resultCarrier
+          rw [resultCarrierSuccess] at resultCarrierFails
+          cases resultCarrierFails
+      · split
+        · next operationRecurse =>
+            exfalso
+            have totHyp := operationIH newType
+            unfold strengthenTyped? at totHyp
+            have : Option.isSome (none (α := StrengtheningResult
+                (ContextStrengthening.dropNewest context newType)
+                (Term.weaken newType operationTag))) = true :=
+              operationRecurse ▸ totHyp
+            cases this
+        · split
+          · next argumentsRecurse =>
+              exfalso
+              have totHyp := argumentsIH newType
+              unfold strengthenTyped? at totHyp
+              have : Option.isSome (none (α := StrengtheningResult
+                  (ContextStrengthening.dropNewest context newType)
+                  (Term.weaken newType arguments))) = true :=
+                argumentsRecurse ▸ totHyp
+              cases this
+          · rfl
+
 /-- 0-IH parametric atomic totality: `Term.arrowCode` (universe-code
 for `Ty.arrow`).  Two RawTerm sub-payloads at the outer scope. -/
 theorem isTotalOnWeaken_arrowCode {mode : Mode} {level scope : Nat}

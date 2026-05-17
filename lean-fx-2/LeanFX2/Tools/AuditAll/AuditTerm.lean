@@ -855,6 +855,10 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.isTotalOnWeaken_optionMatch
 #assert_no_axioms LeanFX2.Term.isTotalOnWeaken_eitherMatch
 
+-- Wave F: effects ctor (operation signature carrier strengthening
+-- via OperationSignature.map definitional unfolding).
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_effectPerform
+
 -- User-facing unweaken?_weaken_<ctor> headline theorems.  Each is a
 -- direct `rfl` witness — concrete totality for the closed atomic
 -- ctors, consumable by Step.eta-cascade SR proofs.
