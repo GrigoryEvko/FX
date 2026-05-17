@@ -1298,6 +1298,71 @@ theorem aggregator_listCons_listCons_listCons_natZero_closed
     (isAggregatorSound_listNil
       (elementType := Ty.listType (Ty.listType Ty.nat)))
 
+/-- Doubly-right-injected either: `eitherInr (eitherInr natZero)`
+at carrier `Either nat (Either bool nat)`.  Mirror to the
+existing `eitherInr_eitherInl_closed` (which has the inner
+eitherInl); demonstrates both right-then-right and right-then-
+left compose at the same nesting depth across either-of-either
+shapes. -/
+theorem aggregator_eitherInr_eitherInr_natZero_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.eitherInr (context := sourceCtx)
+        (leftType := Ty.nat)
+        (valueTerm :=
+          Term.eitherInr (leftType := Ty.bool)
+            (valueTerm := Term.natZero))) :=
+  isAggregatorSound_eitherInr (leftType := Ty.nat)
+    (isAggregatorSound_eitherInr (leftType := Ty.bool)
+      isAggregatorSound_natZero)
+
+/-- Triple stack option-Σ-either: `Some (pair (eitherInl natZero)
+natZero)` at carrier `option ((Either nat bool) × nat)`.  Extends
+Phase 115's `optionSome_eitherInr_pair_closed` (option-either-Σ
+order) into the alternate option-Σ-either nesting, demonstrating
+the three wrapper categories compose at depth three regardless
+of inner ordering. -/
+theorem aggregator_optionSome_pair_eitherInl_natZero_closed
+    {mode : Mode} {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.optionSome (context := sourceCtx)
+        (valueTerm :=
+          Term.pair (secondType := Ty.nat)
+            (firstValue :=
+              Term.eitherInl (rightType := Ty.bool)
+                (valueTerm := Term.natZero))
+            (secondValue := Term.natZero))) :=
+  isAggregatorSound_optionSome
+    (isAggregatorSound_pair
+      (isAggregatorSound_eitherInl (rightType := Ty.bool)
+        isAggregatorSound_natZero)
+      isAggregatorSound_natZero)
+
+/-- Balanced double-Σ tree: `pair (pair natZero natZero) (pair
+natZero natZero)` at carrier `(nat × nat) × (nat × nat)`.
+Counterpart to the existing right-leaning `pair_pair_natNatNat`
+(which puts a pair on the second slot only) and Phase 107's
+`pair_natZero_pair_closed`; here BOTH Σ slots carry pair-of-nat
+children, forming a fully balanced binary tree at depth two. -/
+theorem aggregator_pair_pair_pair_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.pair (context := sourceCtx)
+        (secondType := Ty.sigmaTy Ty.nat Ty.nat)
+        (firstValue :=
+          Term.pair (secondType := Ty.nat)
+            (firstValue := Term.natZero)
+            (secondValue := Term.natZero))
+        (secondValue :=
+          Term.pair (secondType := Ty.nat)
+            (firstValue := Term.natZero)
+            (secondValue := Term.natZero))) :=
+  isAggregatorSound_pair
+    (isAggregatorSound_pair isAggregatorSound_natZero
+      isAggregatorSound_natZero)
+    (isAggregatorSound_pair isAggregatorSound_natZero
+      isAggregatorSound_natZero)
+
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_unit_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwo_closed
@@ -1372,5 +1437,8 @@ theorem aggregator_listCons_listCons_listCons_natZero_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_optionSome_eitherInr_pair_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_eitherInl_optionSome_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_listCons_listCons_natZero_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_eitherInr_eitherInr_natZero_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_optionSome_pair_eitherInl_natZero_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_pair_pair_closed
 
 end LeanFX2.SmokeAggregatorComposition
