@@ -13937,6 +13937,236 @@ theorem isTotalOnWeaken_funextRefl {mode : Mode} {level scope : Nat}
           cases applyFails
       · rfl
 
+/-- `Term.weaken` arm reshape for `Term.appPi`.
+
+The rename arm wraps in `(Ty.subst0_rename_commute ...).symm ▸ ...` to
+align the result Ty index.  Proved by `rfl`. -/
+theorem weaken_appPi_unfolds {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {domainType : Ty level scope}
+    {codomainType : Ty level (scope + 1)}
+    {functionRaw argumentRaw : RawTerm scope}
+    (newType : Ty level scope)
+    (functionTerm : Term context (Ty.piTy domainType codomainType) functionRaw)
+    (argumentTerm : Term context domainType argumentRaw) :
+    Term.weaken newType (Term.appPi functionTerm argumentTerm) =
+      ((Ty.subst0_rename_commute codomainType domainType argumentRaw
+          RawRenaming.weaken).symm ▸
+        (Term.appPi (Term.weaken newType functionTerm)
+          (Term.weaken newType argumentTerm) :
+          Term (context.cons newType)
+            ((codomainType.rename RawRenaming.weaken.lift).subst0
+              (domainType.rename RawRenaming.weaken)
+              (argumentRaw.rename RawRenaming.weaken))
+            (RawTerm.app (functionRaw.rename RawRenaming.weaken)
+              (argumentRaw.rename RawRenaming.weaken))) :
+       Term (context.cons newType)
+         ((codomainType.subst0 domainType argumentRaw).rename RawRenaming.weaken)
+         (RawTerm.app functionRaw argumentRaw).weaken) := by
+  rfl
+
+/-- 2-IH non-binder totality through Eq.mpr cast: `Term.appPi`.
+
+Dependent Π application — codomain at scope+1, two Term IH plus
+domain/codomain Ty payloads.  Cast on the outer result; discharge via
+weaken_appPi_unfolds + castInvariant. -/
+theorem isTotalOnWeaken_appPi {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {domainType : Ty level scope}
+    {codomainType : Ty level (scope + 1)}
+    {functionRaw argumentRaw : RawTerm scope}
+    {functionTerm : Term context (Ty.piTy domainType codomainType) functionRaw}
+    {argumentTerm : Term context domainType argumentRaw}
+    (functionIH : IsTotalOnWeaken functionTerm)
+    (argumentIH : IsTotalOnWeaken argumentTerm) :
+    IsTotalOnWeaken (Term.appPi functionTerm argumentTerm) := by
+  intro newType
+  suffices uncastTotality :
+      (strengthenTyped?
+        (Term.appPi (Term.weaken newType functionTerm)
+          (Term.weaken newType argumentTerm) :
+          Term (context.cons newType)
+            ((codomainType.rename RawRenaming.weaken.lift).subst0
+              (domainType.rename RawRenaming.weaken)
+              (argumentRaw.rename RawRenaming.weaken))
+            (RawTerm.app (functionRaw.rename RawRenaming.weaken)
+              (argumentRaw.rename RawRenaming.weaken)))).isSome by
+    rw [weaken_appPi_unfolds newType functionTerm argumentTerm]
+    show ((Ty.subst0_rename_commute codomainType domainType argumentRaw
+        RawRenaming.weaken).symm ▸
+        (Term.appPi (Term.weaken newType functionTerm)
+          (Term.weaken newType argumentTerm) :
+          Term (context.cons newType)
+            ((codomainType.rename RawRenaming.weaken.lift).subst0
+              (domainType.rename RawRenaming.weaken)
+              (argumentRaw.rename RawRenaming.weaken))
+            (RawTerm.app (functionRaw.rename RawRenaming.weaken)
+              (argumentRaw.rename RawRenaming.weaken)))).strengthenTyped?.isSome
+          = true
+    rw [strengthenTyped?_isSome_castInvariant]
+    exact uncastTotality
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next domainFails =>
+      exfalso
+      have domainSuccess :
+          (domainType.rename RawRenaming.weaken).partialStrengthen?
+              (ContextStrengthening.dropNewest context newType).back =
+            some domainType := by
+        have := Ty.partialStrengthen?_rename_some domainType
+          RawRenaming.weaken RawRenaming.identity
+          (ContextStrengthening.dropNewest context newType).back
+          (fun position => rfl)
+        rw [Ty.rename_identity] at this
+        exact this
+      rw [domainSuccess] at domainFails
+      cases domainFails
+  · split
+    · next codomainFails =>
+        exfalso
+        have codomainSuccess :
+            (codomainType.rename RawRenaming.weaken.lift).partialStrengthen?
+                (ContextStrengthening.dropNewest context newType).back.lift =
+              some codomainType := by
+          have := Ty.partialStrengthen?_rename_some codomainType
+            RawRenaming.weaken.lift RawRenaming.identity
+            (ContextStrengthening.dropNewest context newType).back.lift
+            (fun position =>
+              PartialRawRenaming.lift_dropNewest_weaken_lift position)
+          rw [Ty.rename_identity] at this
+          exact this
+        rw [codomainSuccess] at codomainFails
+        cases codomainFails
+    · split
+      · next functionRecurse =>
+          exfalso
+          have totHyp := functionIH newType
+          unfold strengthenTyped? at totHyp
+          have : Option.isSome (none (α := StrengtheningResult
+              (ContextStrengthening.dropNewest context newType)
+              (Term.weaken newType functionTerm))) = true :=
+            functionRecurse ▸ totHyp
+          cases this
+      · split
+        · next argumentRecurse =>
+            exfalso
+            have totHyp := argumentIH newType
+            unfold strengthenTyped? at totHyp
+            have : Option.isSome (none (α := StrengtheningResult
+                (ContextStrengthening.dropNewest context newType)
+                (Term.weaken newType argumentTerm))) = true :=
+              argumentRecurse ▸ totHyp
+            cases this
+        · rfl
+
+/-- `Term.weaken` arm reshape for `Term.pair`.
+
+The rename arm has INNER cast on `secondValue`: the head is `Term.pair`
+(no outer cast), but the secondValue argument is wrapped in
+`Ty.subst0_rename_commute ... ▸ ...`.  Proved by `rfl`.
+
+Note: `Ty.weaken` is defined as `Ty.rename RawRenaming.weaken`, but
+they may not be defeq in all positions; this lemma uses the
+`.rename RawRenaming.weaken` form explicitly. -/
+theorem weaken_pair_unfolds {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {firstRaw secondRaw : RawTerm scope}
+    (newType : Ty level scope)
+    (firstValue : Term context firstType firstRaw)
+    (secondValue : Term context (secondType.subst0 firstType firstRaw) secondRaw) :
+    Term.weaken newType (Term.pair firstValue secondValue) =
+      Term.pair (Term.weaken newType firstValue)
+        ((Ty.subst0_rename_commute secondType firstType firstRaw
+          RawRenaming.weaken) ▸
+          (Term.rename
+            (TermRenaming.weakenStep context newType) secondValue :
+            Term (context.cons newType)
+              ((secondType.subst0 firstType firstRaw).rename RawRenaming.weaken)
+              (secondRaw.rename RawRenaming.weaken))) := by
+  rfl
+
+/-- 2-IH non-binder totality through INNER Eq.mpr cast: `Term.pair`.
+
+The cast is on the `secondValue` subterm, so the dispatcher's match on
+`Term.pair` head succeeds, but the recursion on the cast term doesn't
+directly hit the secondIH.  Use cast invariance to bridge the inner
+cast back to the un-cast form. -/
+theorem isTotalOnWeaken_pair {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {firstRaw secondRaw : RawTerm scope}
+    {firstValue : Term context firstType firstRaw}
+    {secondValue : Term context (secondType.subst0 firstType firstRaw) secondRaw}
+    (firstIH : IsTotalOnWeaken firstValue)
+    (secondIH : IsTotalOnWeaken secondValue) :
+    IsTotalOnWeaken (Term.pair firstValue secondValue) := by
+  intro newType
+  -- Term.weaken nt (Term.pair fv sv) =
+  --   Term.pair (Term.weaken nt fv) (eq ▸ Term.weaken nt sv)
+  -- Rewrite via weaken_pair_unfolds to expose the inner cast explicitly,
+  -- then the dispatcher's match on Term.pair head fires.
+  rw [weaken_pair_unfolds newType firstValue secondValue]
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next secondTypeFails =>
+      exfalso
+      have secondTypeSuccess :
+          (secondType.rename RawRenaming.weaken.lift).partialStrengthen?
+              (ContextStrengthening.dropNewest context newType).back.lift =
+            some secondType := by
+        have := Ty.partialStrengthen?_rename_some secondType
+          RawRenaming.weaken.lift RawRenaming.identity
+          (ContextStrengthening.dropNewest context newType).back.lift
+          (fun position =>
+            PartialRawRenaming.lift_dropNewest_weaken_lift position)
+        rw [Ty.rename_identity] at this
+        exact this
+      rw [secondTypeSuccess] at secondTypeFails
+      cases secondTypeFails
+  · split
+    · next firstRecurse =>
+        exfalso
+        have totHyp := firstIH newType
+        unfold strengthenTyped? at totHyp
+        have : Option.isSome (none (α := StrengtheningResult
+            (ContextStrengthening.dropNewest context newType)
+            (Term.weaken newType firstValue))) = true :=
+          firstRecurse ▸ totHyp
+        cases this
+    · split
+      · next secondRecurse =>
+          exfalso
+          -- secondRecurse : (eq ▸ Term.rename _ secondValue).partialStrengthenTyped? = none
+          -- (Term.weaken newType secondValue = Term.rename (weakenStep) secondValue,
+          --  definitional equality through @[reducible] Term.weaken.)
+          --
+          -- secondIH gives (Term.weaken nt sv).strengthenTyped?.isSome = true,
+          -- castInvariant says (eq ▸ ...).strengthenTyped?.isSome = (...).strengthenTyped?.isSome,
+          -- so secondRecurse's none contradicts.
+          have totHyp := secondIH newType
+          unfold strengthenTyped? at totHyp
+          have invariance :=
+            strengthenTyped?_isSome_castInvariant
+              (Term.rename (TermRenaming.weakenStep context newType) secondValue)
+              (Ty.subst0_rename_commute secondType firstType firstRaw
+                RawRenaming.weaken)
+          unfold strengthenTyped? at invariance
+          -- invariance: (eq ▸ Term.rename ... sv).partialStrengthenTyped? _ .isSome
+          --           = (Term.rename ... sv).partialStrengthenTyped? _ .isSome
+          rw [secondRecurse] at invariance
+          -- invariance: false = (Term.rename ... sv).partialStrengthenTyped? _ .isSome
+          -- which is `Option.isSome none = ...`, i.e. `false = ...`
+          -- After rw, invariance becomes `none.isSome = ...isSome`
+          -- And totHyp says `... .isSome = true`
+          rw [totHyp] at invariance
+          cases invariance
+      · rfl
+
 /-- BIG-ASS THEOREM headline — closed-atomic unweaken? recovers source.
 
 For each of the 7 closed-atomic ctors, `Term.unweaken?` applied to

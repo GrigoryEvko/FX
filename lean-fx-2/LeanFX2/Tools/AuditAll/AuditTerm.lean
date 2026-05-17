@@ -881,6 +881,10 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.isTotalOnWeaken_snd
 #assert_no_axioms LeanFX2.Term.weaken_funextRefl_unfolds
 #assert_no_axioms LeanFX2.Term.isTotalOnWeaken_funextRefl
+#assert_no_axioms LeanFX2.Term.weaken_appPi_unfolds
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_appPi
+#assert_no_axioms LeanFX2.Term.weaken_pair_unfolds
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_pair
 
 -- User-facing unweaken?_weaken_<ctor> headline theorems.  Each is a
 -- direct `rfl` witness — concrete totality for the closed atomic

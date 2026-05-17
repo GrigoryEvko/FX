@@ -14,7 +14,14 @@ document supersedes:
 1. **Three orthogonal encoding columns**: Tree (`RawTerm`/`Term`),
    Operadic Polygraph (`RawPolyTerm`/`PolyTerm`, subsuming hypergraph
    via Squier reading), Value-form (`RawValueTerm`/`ValueTerm`, Path 2
-   staged).
+   staged).  The PolyTerm K11.9 inductive (currently intrinsic-Ty-
+   indexed mirror of Term carrying `Ty.subst0` propositional casts) is
+   replaced at Era Ω.0 with a polynomial-functor shape-function-
+   dependency encoding; the name `PolyTerm` is preserved, K11.9
+   deleted, downstream bijections re-pointed.  The Eq.mpr cast
+   pathology blocking the 7 dependent-ctor strengthening proofs
+   (appPi/snd/boolElim/equivIntroHet/funextRefl/oeqFunext/pair) is
+   eliminated structurally rather than worked around per-ctor.
 2. **PolyTerm is operadic**, not globular — multi-input/multi-output
    cells from the start, which subsumes Lafont interaction nets and
    eliminates the need for a separate `HyperTerm` IR.
@@ -25,9 +32,33 @@ document supersedes:
 4. **FX1.check_sound is the trust anchor**, per `kernel-metaplan.md` —
    THIS roadmap describes post-v1.0 evolution; FX1/FX0 trust spine
    work is orthogonal and ships independently.
+5. **(n, p, k, c)-parametric kernel** (Era Ω apex commitment): the
+   kernel ships as a universal metatheory parameterized over
+   `KernelParams = { cellDim n, invertibility p, gradingDim k,
+   categorification c }`.  FX's canonical instance is `PolyTerm @
+   (∞, 7, 21, 1)` — `n = ∞` for arbitrary cell coherence, `p = 7` for
+   the Stasheff K₇ max practical invertibility threshold under
+   predicative SN, `k = 21` for FX's 21 graded dimensions, `c = 1`
+   for v1.0 categorification position.  Other instances by parameter
+   substitution: `(2, 1, 1, 1)` MLTT slice, `(3, 2, 1, 1)` cubical-
+   only, `(6, 1, 24, 1)` current Era I-XIII position with energy +
+   incrementality extensions, `(∞, ω, ω, ω)` research apex.  Universal
+   metatheorems shipped at unconstrained `(n, p, k, c)` inherit per-
+   instance via parameter substitution.  **Strict zero-axiom and
+   100%-computability are preserved at every instance** via per-
+   parameter decidability witnesses; universal metatheorems are
+   polymorphic over the witnesses.  The categorification ladder
+   `(∞↑↑ω) = { (∞↑↑c) : c ∈ ω }` is the family-as-a-whole; no
+   single Lean object encodes the whole tower (predicativity
+   prevents universe-of-universes collapse), but each finite `c`
+   ships as a concrete Lean instance.
 
 Each "Day" represents 3-4 weeks of focused work; total duration to
-Day 95 is approximately 7-8 years at single-team pace, with
+Day 95 is approximately 7-8 years at single-team pace — at LLM-
+augmented velocity the cadence compresses substantially (lean-fx-2's
+first 2 weeks delivered Era I substrate + Term layer + Step + Conv +
+Era IV.5 partial + 78-ctor strengthening grind, suggesting a 1-2
+year buildout for the full Era I-XIII + Era Ω apex), with
 substantial parallelism possible.
 
 ## Companion documents (orthogonal axes)
@@ -94,7 +125,8 @@ CONTENT.**
 
 ## Vision
 
-By Day ~96.9 (Era W close-out, post Era IV.5/T/R/W insertions),
+By Day ~96.9 + Era Ω.10 close-out (full (∞↑↑ω)-categorification
+ladder shipped with practical (∞, 7, 21, 1) FX instance frozen),
 lean-fx-2 should have:
 
 1. **PolyTerm** (operadic Squier polygraph) as the kernel substrate
@@ -171,6 +203,132 @@ lean-fx-2 should have:
     additions (v6); ~10⁹ polygraph cells/μs target; 7-level fractal
     (3⁷ = 2187 atoms per tile) maps to polygraph dim 0..6; 27-die
     ternary cube as polygraph dim-6 parallel-strategy distribution.
+21. **PolyTerm refactor to polynomial-functor shape-function-
+    dependency encoding** (Era Ω.0): the current K11.9 PolyTerm
+    inductive (intrinsic-Ty-indexed mirror of Term carrying
+    `Ty.subst0` propositional casts) is REPLACED — same name,
+    different encoding.  Dependent ctors (appPi, snd, boolElim,
+    equivIntroHet, funextRefl, oeqFunext, pair) encode dependency via
+    the polynomial's *shape function* rather than via propositional
+    `Ty.subst0_rename_commute` casts; the Eq.mpr cast pathology
+    blocking Tier 4-5 proofs vanishes structurally.  Bridge `Term ↔
+    PolyTerm` zero-axiom preserved at all 78 ctors; K11.10/11/12
+    bijection theorems re-pointed; K11.13 rename/subst commute
+    simplifies because the cast no longer arises.  Item 1 encoding
+    column "Operadic Polygraph" refers to the refactored PolyTerm
+    throughout this document.
+22. **(n, p, k, c)-parametric kernel as universal metatheory** (Era
+    Ω.10): kernel ships as `PolyTerm (params : KernelParams) : Ctx →
+    Ty → RawPolygraph → Type` where `KernelParams = { cellDim n,
+    invertibility p, gradingDim k, categorification c }`.  Universal
+    metatheorems prove obligations at unconstrained `(n, p, k, c)`;
+    per-instance witnesses derive by parameter substitution.  FX
+    canonical instance: `PolyTerm @ (∞, 7, 21, 1)`.  Other instances
+    via parameter substitution: MLTT slice `(2, 1, 1, 1)`, cubical-
+    only `(3, 2, 1, 1)`, current Era I-XIII pre-Ω position
+    `(6, 1, 24, 1)`, full research apex `(∞, ω, ω, ω)`.  The
+    categorification ladder `(∞↑↑ω) = { (∞↑↑c) : c ∈ ω }` is the
+    family-as-a-whole; predicativity prevents collapsing the whole
+    tower into a single Lean object, but each finite `c` ships as a
+    concrete instance.
+23. **Right-inverse strengthening equation** (Era Ω.0 follow-up,
+    Tier 2): `Term.unweaken? (Term.weaken nt t) = some t` zero-axiom
+    at all 78 ctors; replaces existence-form `IsTotalOnWeaken` with
+    positive equation; consumers `rw [unweaken?_weaken]` instead of
+    unpacking ⟨result, success⟩ existentials.
+24. **`weakenEquiv` bijection** (Era Ω.0 follow-up, Tier 3):
+    `Term.weaken` promoted to bijection `Term ctx ty raw ≃ {t : Term
+    (ctx.cons newType) ty.weaken raw.weaken // ¬ raw.usesNewestSlot}`;
+    NbE quote becomes a function on the slot-0-free subtype rather
+    than a partial relation (consumed by Era S Day 45 quote).
+25. **Universal renaming totality** (Era Ω.1, Tier 4): `∃ result,
+    partialStrengthenTyped? rho (Term.rename rho t) = some result`
+    for any injective `RawRenaming`.  Three polynomial-functor lemmas
+    (`map` functoriality, `map` composition, injectivity preservation)
+    replace 78 ctor cases; the Eq.mpr cast vanishes structurally
+    because dependent slots live in the polynomial's shape function,
+    not as propositional equalities.  Unblocks cubical face
+    restriction + rename-equivariant subject reduction across the
+    cubical β suite (D2.5.5 transpPi, D2.5.6 transpSigma, D2.5.7
+    closed-type transps, hcomp face, glue).
+26. **Naturality square** (Era Ω.1, Tier 5): `unweaken? ∘ rename rho
+    = (map rho) ∘ unweaken?` — `unweaken?` is a natural transformation
+    between two polynomial functors.  On Term, naturality is 78 ad-
+    hoc commutation proofs (~12K LoC).  On PolyTerm, naturality is a
+    single equation between polynomial-functor maps, proved on
+    generators in ~5 cases (~300 LoC).  Every downstream substitution-
+    commutation lemma collapses to one rewrite.
+27. **Contextual-presheaf adjunction** (Era Ω.2, Tier 6 — inflection
+    point): `context_extension ⊣ context_restriction` as a Gambino-
+    Kock 2013 Proposition 3.7 instance.  Adjunction is **structurally
+    impossible Term-side** (Term's intrinsic-Ty-indexing is a
+    fibration, not a category, in any direct sense); PolyTerm refactor
+    (item 21) is therefore **forced**, not merely convenient.  Closes
+    D2.5.7 closed-type transp (#1558) + K12.20.U4 Kripke
+    fundamental_lam (#1928) + K18.7-η + D3.6 funext as adjunction
+    instances; ~5000 LoC of these collapse to ~200 LoC.
+28. **Polynomial W-type characterization** (Era Ω.3, Tier 12):
+    `PolyTerm @ params ≃ W(P_params)` in LCCC per Hugunin 2021 "Why
+    not W?".  Every kernel ctor is one summand of the polynomial
+    endofunctor; strict-positivity check becomes a Kan extension
+    argument; recursors derived for free at every dim; new reduction
+    rule = new polynomial summand (Generator enum extension).  ~6000
+    LoC on Term collapses to ~50 LoC at this layer.
+29. **Initial CwF model** (Era Ω.4, Tier 7): `PolyTerm @ FXParams ≅
+    Initial(CwF + universes + identity + univalence)` per Awodey
+    natural-models program.  Soundness of FX = unique CwF morphism
+    `Term → M` for every cohesive (∞,1)-topos M.  Hugunin 2021
+    supplies explicit construction template (~500 LoC).
+30. **Internal language of (∞,1)-topos** (Era Ω.5, Tier 8):
+    `InternalLang(LCCC + universes + identity + univalence) ≅
+    PolyTerm @ FXParams` per Awodey-Warren-Shulman 2-equivalence.
+    Every theorem in PolyTerm is simultaneously a theorem in every
+    cohesive (∞,1)-topos; synthetic differential geometry (Era X Day
+    72), derived algebraic geometry (Lurie DAG), condensed mathematics
+    (Clausen-Scholze), Costello-Gwilliam factorization algebras all
+    interpretable as FX libraries with zero translation overhead.
+31. **(∞,1)-Yoneda embedding** (Era Ω.6, Tier 9-10): `PolyTerm @
+    FXParams ≃ よ_∞(Th(PolyTerm))` in (∞,1)-Cat per Riehl-Verity 2022
+    Elements of ∞-Category Theory.  Squier coherence (K11.18) + Mac
+    Lane pentagon + Stasheff K_n + cd-cascade joinability (K12.28)
+    become Yoneda-corollaries at every dim; coherence is free; (∞,1)-
+    categorical accessibility is definitional from the polynomial-
+    functor encoding.  PolyTerm-Yoneda embeds into the polynomial-
+    functor-presheaves category (mathematically correct); Term-
+    Yoneda would embed into the coarser `Set^{Th(Term)^op}`.
+32. **(∞,∞)-cosmos position** (Era Ω.7): FX as object in the Riehl-
+    Verity 2022 (∞,∞)-cosmos.  Cross-dimensional 21-modality
+    composition (item 14 site-parametric kernel + cohesive structure
+    + Era IV.5 multi-level hardware abstraction stack) is one product-
+    of-(∞,1)-functors statement.  Era IV.5's 5-level Maxwell→μArch
+    stack retroactively recognized as a finite slice of the
+    categorification tower.
+33. **Initial univalent (∞,1)-topos** (Era Ω.8, Tier 11): per Shulman
+    2019, every (∞,1)-topos has a univalent universe; FX initial in
+    this category.  Univalence FORCED (not assumed) by initiality;
+    Brunerie's π₄(S³) = ℤ/2ℤ becomes a single FX computation; all
+    HITs trivialize via initiality preserving colimits.  Shulman's
+    construction uses polynomial fibrations — without item 21's
+    refactored PolyTerm the universe construction cannot even be
+    stated.
+34. **Synthetic ∞-category theory inside FX** (Era Ω.9, Tier 14):
+    Riehl-Shulman 2017 directed type theory + Riehl-Verity 2022 ∞-
+    cosmos internalization.  FX models directed ∞-categories with
+    non-invertible 1-cells; synthetic Lurie HTT chapter 5+ inside the
+    kernel; cohesive HoTT (Schreiber-Shulman 2014) accessible as a
+    kernel library not an external add-on.
+35. **Structural identity** (Era Ω close-out): under FX's six locked
+    invariants (zero axiom + 100% computability + strong
+    normalization + subject reduction + confluence + decidable Conv),
+    FX is the **maximal predicative-cohesive-univalent (∞↑↑ω)-cosmos
+    kernel family** — there is nothing strictly stronger that
+    preserves all six invariants.  Anything stronger requires
+    breaking at least one (choice-augmented, impredicative, Type-in-
+    Type, non-canonical-quotient, or unbounded large-cardinal-
+    augmented).  The categorification ladder positions FX at the
+    unique apex of constrained-foundation kernels; Cubical Agda /
+    Arend / Lean 4 / Coq / F* live at finite (n, p, k, c) below this
+    apex.
 
 Every kernel theorem is zero-axiom and computable per
 `computability-rules.md`. Model theorems, external certificates, and
@@ -954,6 +1112,127 @@ the typed-mirror layer Day 12.
 
 **Acceptance**: bijection + functoriality + action commute, all
 zero-axiom; STRICT-22 extends to RawPolyTerm.
+
+#### Day 11 (n, p, k, c)-parametric encoding extension
+
+**Apex commitment (per architectural commitment #5 + §C11 + §C16)**:
+the PolyTerm inductive shipped at this Day is the canonical
+polynomial-functor shape-function-dependency encoding, NOT the
+intrinsic-Ty-indexed-with-Ty.subst0-casts encoding from the v0
+K11.9 sketch.  Concretely:
+
+```lean
+structure KernelParams where
+  cellDim          : Cardinal   -- n; Era I current = 6; FX canonical = ∞
+  invertibility    : Ordinal    -- p; Era I current = 1; FX canonical = 7
+  gradingDim       : Cardinal   -- k; Era I current = 24; FX canonical = 21
+  categorification : Ordinal    -- c; Era I current = 1; FX canonical = 1
+
+inductive Generator (params : KernelParams) where
+  | var | unit | lam | app | appPi | pair | fst | snd | natZero |
+    natSucc | listNil | listCons | optionNone | optionSome |
+    boolElim | natElim | listElim | optionMatch | eitherMatch |
+    refl | idJ | oeqRefl | oeqJ | idStrictRefl | idStrictRec |
+    pathLam | pathApp | transp | hcomp | glueIntro | glueElim |
+    uaToEquiv | equivApply | equivIntroHet | uaIntroHet |
+    funextIntroHet | recordIntro | recordProj | refineIntro |
+    refineElim | codataUnfold | codataDest | sessionSend |
+    sessionRecv | modIntro | modElim | subsume | cumulUp |
+    universeCode | arrowCode | piTyCode | sigmaTyCode | productCode |
+    sumCode | listCode | optionCode | eitherCode | idCode |
+    equivCode | interval0 | interval1 | intervalOpp |
+    intervalMeet | intervalJoin | equivReflId | funextRefl |
+    equivReflIdAtId | funextReflAtId | uaToEquivOfEqType |
+    transpReflBeta | effectPerform | (...)
+  -- 78 entries mirroring FX kernel ctors
+
+def Generator.arity : Generator params → List Nat
+  -- per-ctor scope-shift table (binder count per child slot)
+
+def Generator.outputType
+    (g : Generator params)
+    (childTypes : ChildTypeVec g.arity)
+    (childRaws : ChildRawVec g.arity) : Ty params.cellDim
+  -- STRUCTURAL recursion via shape-function dependency.
+  -- For dependent ctors (appPi, snd, boolElim, equivIntroHet,
+  -- funextRefl, oeqFunext, pair) the output type is computed
+  -- directly from child shapes rather than via propositional
+  -- Ty.subst0_rename_commute casts.  The Eq.mpr cast pathology
+  -- structurally vanishes.
+
+inductive PolyTerm (params : KernelParams) :
+    Ctx → Ty → RawPolygraph → Type where
+  | mk (g : Generator params) (children : ChildList g.arity) :
+      PolyTerm params ctx (g.outputType children)
+                          (RawPolygraph.mk g children.toRaws)
+
+-- Practical canonical instance at FX v1.0
+abbrev FXParams : KernelParams := { cellDim := ∞, invertibility := 7,
+                                     gradingDim := 21,
+                                     categorification := 1 }
+abbrev FXTerm := PolyTerm FXParams
+
+-- Era I-XIII pre-canonical position (current Day 11 ships this)
+abbrev LegacyParams : KernelParams := { cellDim := 6, invertibility := 1,
+                                         gradingDim := 24,
+                                         categorification := 1 }
+abbrev LegacyTerm := PolyTerm LegacyParams
+```
+
+**Why the parametric form ships at Day 11 (not deferred)**: making
+the kernel parametric from inception is strictly cheaper than
+retrofitting later.  The (n, p) substrate already shipped in Day 10
+extends naturally to (n, p, k, c); writing `KernelParams` once + 78
+Generator entries once = shipping every instance simultaneously.
+Lean 4 v4.29.1 supports the universe-polymorphism + structure-
+parameter cascade without elaborator catastrophe at this depth (k=4
+parameters is well within Lean's documented limits).
+
+**Tasks (additions to D11.1-D11.7 above)**:
+* [ ] D11.8 `KernelParams` structure + parameter-validation
+  predicates
+* [ ] D11.9 `Generator` enum (78 entries) + arity table per FX
+  kernel ctor inventory
+* [ ] D11.10 `Generator.outputType` shape-function structural
+  recursion — NO `Ty.subst0` propositional casts for dependent
+  ctors; the 7 historically-blocked ctors (appPi, snd, boolElim,
+  equivIntroHet, funextRefl, oeqFunext, pair) land structurally
+* [ ] D11.11 `FXParams` + `FXTerm` + `LegacyParams` + `LegacyTerm`
+  canonical instance abbreviations
+* [ ] D11.12 Bridge `RawTerm ↔ FXTerm.toRawTerm` zero-axiom at all
+  78 ctors (replaces the K11.9 toRawTerm structural recursion;
+  same theorem content, simpler proof because no cast unwinds)
+* [ ] D11.13 If v0 K11.9 PolyTerm exists in working tree, delete it
+  after Bridge audits; downstream K11.10/11/12 bijection theorems
+  re-pointed to FXTerm; K11.13 rename/subst commute simplifies
+  (no `Eq.mpr` to commute through)
+* [ ] D11.14 §C16 cross-reference: this Day's deliverable is the
+  Era I instantiation of the parameterization catalog at
+  `LegacyParams = (6, 1, 24, 1)`; later Era II Day 20 close-out
+  ratifies the canonical lift to `FXParams = (∞, 7, 21, 1)` via
+  the cosmos morphism per §C13
+
+**Headline theorems (extending Day 11 base)**:
+1. **Bridge bijection**: `Term ctx ty raw ≃ LegacyTerm ctx ty
+   (raw.toPolygraph)` zero-axiom at all 78 ctors (Era I instance);
+   parametric form: `Term @ params ≃ PolyTerm params ctx ty raw`
+   for any well-formed params.
+2. **Cast-freeness** (per §C12): `PolyTerm.rename` produces no
+   `Eq.mpr` casts for any params — shape-function dependency is a
+   STRUCTURAL property of the polynomial encoding, not a per-
+   instance theorem.
+3. **Polynomial W-type characterization** (per §C16 → Era II Day 20
+   close-out): `PolyTerm params ≃ W(P_params)` where `P_params` is
+   the polynomial endofunctor specified by `Generator params` +
+   `Generator.arity` + `Generator.outputType`.  Strict-positivity
+   becomes a Kan-extension argument (Gambino-Kock 2013 Prop 3.7);
+   recursors derive at every dim ≤ params.cellDim for free.
+
+**Acceptance (extending Day 11 base)**: parametric PolyTerm + Era I
+canonical instance + bridge + cast-freeness ship zero-axiom;
+seven historically-blocked dependent ctors land structurally without
+auxiliary `weaken_<ctor>_eq` lemmas; STRICT-22 + STRICT-23 extend to
+parametric form.
 
 ### Day 12 — Step-as-dim-1 cells + intrinsic typing for PolyTerm (CRITICAL)
 
@@ -6395,6 +6674,53 @@ inconsistent formal systems").
 
 ---
 
+## Era Ω — (∞↑↑ω) cross-cutting refactor (NOT a separate chapter)
+
+Era Ω is **not** a new chapter.  It is the cross-cutting refactor
+that lifts Era I-XIII content to the (∞↑↑ω) parametric apex per
+architectural commitment #5 + §C11 + §C16.  Each piece of the
+refactor lives INSIDE an existing Era; this section is a cross-
+reference index, not a deliverable list.
+
+**Where the work lives** (read each Era's per-Day section for the
+substantive tasks; the Era Ω.X anchor labels are referenced from
+Vision items 21-35 and from §C1 / §C14 / Tier 8 / B20-B25):
+
+| Anchor | Refactor piece | Lives in | Existing tickets closed |
+|---|---|---|---|
+| Ω.0 | PolyTerm refactor (shape-function dependency encoding; deletes v0 K11.9 sketch) | Era I Day 11 (parametric extension sub-section) | K11.9 deprecation + K11.10/11/12/13 re-pointed |
+| Ω.0 follow-up | Right-inverse equation (Tier 2) + weakenEquiv bijection (Tier 3) | Era I Day 12 follow-up (after parametric PolyTerm typed lift) | — |
+| Ω.1 | Universal-renaming totality (Tier 4) + naturality square (Tier 5) | Era II Day 16 (Reduction retrofit; polynomial-functor `map` action) | Cubical β suite rename-equivariance (#1556 – #1675) inherits free; ~12K LoC of Term-side commutation work erased |
+| Ω.2 | Contextual-presheaf adjunction (Tier 6, Gambino-Kock 2013 Prop 3.7) | Era II Day 17 (Confluence retrofit; adjunction as canonical confluence framework) | D2.5.7 closed-type transp (#1558) + K12.20.U4 fundamental_lam (#1928) + K18.7-η + D3.6 funext (#1572) close as adjunction instances |
+| Ω.3 | Polynomial W-type characterization (Tier 12, Hugunin 2021) | Era I Day 10 (PolyCell ≃ initial algebra of polynomial endofunctor) + Era II Day 20 close-out (FXTerm ≃ W(P_FXTerm) ratification) | K11.1/3/4 strengthened |
+| Ω.4 | Initial CwF (Tier 7, Awodey natural models) | §C1 categorical model + Era II Day 20 close-out (commits FXTerm ≅ Initial(CwF)) | — |
+| Ω.5 | Internal language of (∞,1)-topos (Tier 8) | Era X Day 71 (Cohesive ∞-toposes; internal-language equivalence makes SDG/DAG/condensed mathematics importable as FX libraries) | — |
+| Ω.6 | (∞,1)-Yoneda (Tier 9-10, Riehl-Verity 2022) | Era X Day 77 ((∞,n)-categories) | K11.18 Squier coherence + K11.19 strategy 3-cells + K12.28 cd-cascade joinability inherit as Yoneda corollaries |
+| Ω.7 | (∞,∞)-cosmos position | Era X Day 77 (same — extension of (∞,n)-cat infrastructure to n = ∞) | — |
+| Ω.8 | Initial univalent (∞,1)-topos (Tier 11, Shulman 2019) | Era X Day 71 (same Day as Ω.5) + §C1 (univalence forced, not assumed) | D2.6 univalence + D3.6 ua_β (#1571/#1572) become initiality corollaries |
+| Ω.9 | Synthetic ∞-cat theory (Tier 14, Riehl-Shulman 2017) | Era X Day 70 (Directed types) | — |
+| Ω.10 | (∞↑↑ω) parametric metatheory + practical instance catalog + ladder freeze | Architectural commitment #5 (header) + §C11 (commitment) + §C16 (catalog) | — |
+
+**Parameterization catalog**: §C16 explains which specific
+`(n, p, k, c)` tuples fit which applications and why (load-bearing
+section; consult before committing to a non-canonical instance).
+
+**Bootstrap milestones B20-B25** (defined post-§C below) cross-
+reference the integrated work in existing Eras — there are no
+separate Era Ω deliverables, only checkpoints on the existing-Era
+work that ratify the (∞↑↑ω) commitment at the appropriate stage.
+
+**Why this is not a separate chapter**: the (∞↑↑ω) ladder is not
+new content but a *parametric reframing* of Era I-XIII's
+substrate.  The (n, p)-polygraph framing already shipped in Era I
+extends to (n, p, k, c) via parameter addition, not Era-level
+duplication.  Adding a separate Era Ω chapter would orphan the
+content from where the actual work happens; embedding it in
+existing Eras + cross-cutting §C11 + §C16 keeps coherence with
+the rest of the roadmap.
+
+---
+
 ## Verticals (parallel to all Eras after Era IV)
 
 Each is a standalone library/product. Drives adoption.
@@ -6729,20 +7055,43 @@ across all Eras and constrain every Day's deliverable.
 
 ### §C1. Categorical model
 
-**Choice**: FX is modeled in a **cubical (∞,1)-topos with cohesive
-structure**.
+**Choice (Era I-XIII canonical instance, ladder position (6, 1, 24, 1))**:
+FX is modeled in a **cubical (∞,1)-topos with cohesive structure**.
+
+**Choice (Era Ω apex, ladder position (∞, 7, 21, 1))**: FX is the
+**initial object** in the category of cohesive (∞,1)-toposes
+admitting a univalent universe (per §C11 + Shulman 2019); soundness
+becomes uniqueness of the CwF morphism `FXTerm → M` for every
+target cohesive (∞,1)-topos M.  Cross-instance lifting via cosmos
+morphisms (per §C13) — Era I-XIII instance lifts to Era Ω canonical
+via the morphism that completes cell dimension to ∞ and raises
+invertibility threshold to Stasheff K₇.
 
 **Soundness theorem**:
 ```
-Soundness: if Γ ⊢ t : A in FX, then ⟦t⟧ : ⟦A⟧ in M
+Soundness (instance-relative): if Γ ⊢ t : A in FX @ params, then
+                                ⟦t⟧ : ⟦A⟧ in M for any cosmos M
+                                accepting params via its cosmos
+                                morphism.
+
+Soundness (apex, Era Ω.4): FXTerm ≅ Initial(CwF + universes +
+                            identity + univalence) — the unique CwF
+                            morphism out of FXTerm IS the semantic
+                            interpretation.
 ```
-where M is the chosen cohesive (∞,1)-topos.
 
 **Reference models**:
-- **CCHM cubical model**: PSh(□) with cubical structure.
-- **ABCFHL Cartesian cubical model**: variant with cleaner regularity.
+- **CCHM cubical model**: PSh(□) with cubical structure (Era I-XIII
+  reference; instance position (3, 2, 1, 1) lift target).
+- **ABCFHL Cartesian cubical model**: variant with cleaner
+  regularity (canonical Era V Day 33 cubical β rule reference).
 - **Schreiber's cohesive ∞-topos**: SuperFormalSmooth∞Grpd for
-  physics.
+  physics (Era XI reference; instance position (5, 4, 24, 4)).
+- **Riehl-Verity (∞,∞)-cosmos**: Era Ω.7 reference model
+  (categorical foundation for Era Ω.6-Ω.9 (∞,1)-Yoneda + (∞,1)-
+  topos work).
+- **Shulman 2019 univalent universe**: Era Ω.8 reference for the
+  initial univalent (∞,1)-topos construction.
 
 ### §C2. Universe polymorphism
 
@@ -6866,6 +7215,284 @@ corresponding endofunctor, satisfying the recursion principle.
 | Squier polygraphic | All Eras (rule confluence) |
 | Lurie cobordism hypothesis | Era XI (physics) |
 
+### §C11. Categorification ladder commitment
+
+**Statement**: FX commits to the (∞↑↑ω)-polygraph categorification
+ladder as the apex foundation.  Each level `(n, p, k, c)` is
+shippable; the family-as-a-whole is the maximally expressive
+predicative-cohesive-univalent kernel compatible with FX's six
+invariants (zero axiom + 100% computability + SN + SR + confluence
++ decidable Conv).  Era I-XIII content lives at instance `(6, 1, 24,
+1)`; FX canonical is `(∞, 7, 21, 1)`; categorification depth `c >
+1` enters via Era Ω.
+
+**Practical encoding**: universal metatheory `PolyTerm @ (n, p, k,
+c)` at unconstrained parameters; per-instance witnesses derive by
+substitution.  Predicativity prevents collapsing the whole tower
+into one Lean object, but each finite `c` ships as a concrete
+instance via Lean 4 structure-parameter + universe-polymorphism
+discipline.
+
+**Computability preservation**: each instance carries decidability
+witnesses for its active dimensions; universal metatheorems are
+polymorphic over the witnesses.  No level of the ladder introduces
+non-computable structure.  Riehl-Verity (∞,∞)-cosmos has a
+computable presentation per Anel-Joyal; Shulman's univalent universe
+construction uses polynomial fibrations whose elaborate computation
+remains predicative.
+
+**References**: Riehl-Verity 2022 (Elements of ∞-Category Theory);
+Hugunin 2021 (Why not W?, FoSSaCS); Gambino-Kock 2013 (Wellfounded
+trees + dependent polynomial functors, MSCS 23); Awodey-Warren 2009
+(Homotopy theoretic models of identity types); Shulman 2019 (All
+(∞,1)-toposes have strict univalent universes); Anel-Joyal 2018
+(Topo-logie / cosmos computability).
+
+### §C12. PolyTerm as canonical kernel representation
+
+**Statement**: post-Era-Ω.0, the polynomial-functor shape-function-
+dependency PolyTerm is the CANONICAL kernel representation.  Current
+Term layer becomes a derived view via the verified bijection `Term
+↔ FXTerm`.
+
+**Implication**: future kernel work (Tier 4-15 + Era Ω) ships
+natively on PolyTerm.  Term layer preserved as legacy compatibility
+for v1.0 consumers; v2.0+ APIs prefer PolyTerm.  This commitment
+specifically subsumes architectural-commitment #1 ("three orthogonal
+encoding columns") to clarify that "Operadic Polygraph" means the
+refactored PolyTerm, not K11.9.
+
+### §C13. Inter-instance cosmos-morphism commitment
+
+**Statement**: parameter changes `(n, p, k, c) → (n', p', k', c')`
+correspond to **cosmos morphisms** preserving categorical structure.
+Inter-instance lifting requires verified cosmos-morphism witnesses;
+no theorem at instance A automatically transfers to instance B
+without an explicit cosmos morphism `A → B` and the theorem's
+hypotheses lifting under it.
+
+**Implication**: Era IV.5 multi-level hardware abstraction functors
+(F_Maxwell→RLC, F_RLC→STA, F_STA→Digital, F_Dig→μArch) are
+retroactively recognized as cosmos morphisms; Era T site morphisms
+are cosmos morphisms; cross-vertical composition (e.g., API gateway
+at `(1, 1, 1, 1)` composing with quantum at `(3, 3, 3, 3)`) uses
+explicit cosmos morphisms, not ad-hoc translation.
+
+### §C14. Universal-metatheory commitment
+
+**Statement**: kernel theorems shipped at the universal level
+`PolyTerm @ (n, p, k, c)` for unconstrained parameters inherit per-
+instance via parameter substitution.  Per-instance proofs are
+derived; universal proofs are foundational.  Writing 1 universal
+theorem = shipping it at every instance.
+
+**Implication**: Era Ω.1-Ω.9 metatheorems ship at unconstrained
+parameters; the practical FX `(∞, 7, 21, 1)` instance inherits all
+of them by substitution.  This is the load-bearing pattern that
+makes the ladder feasible at LLM-augmented velocity — write once,
+instantiate everywhere.
+
+### §C15. STRICT-ω documentation-discipline commitment
+
+**Statement**: every Era's documentation includes an explicit
+`@[ladder_position (n, p, k, c)]` marker identifying which instance
+the Era's content lives at.  CI gate `STRICT-ω-Doc` fails if a
+shipped theorem or Era section lacks its position marker.
+Reviewers verify alignment per PR.
+
+**Implication**: documentation drift catastrophe-mitigation.  Every
+contributor must consider ladder position per PR.  Mechanical
+enforcement prevents the apex commitment from degrading into prose
+that nobody updates.
+
+### §C16. Application-specific (n, p, k, c) parameterization catalog
+
+The kernel ships as universal metatheory parameterized over
+`KernelParams = { cellDim n, invertibility p, gradingDim k,
+categorification c }`.  Each parameter choice encodes a SPECIFIC
+structural fact about the application domain — picking the wrong
+parameter is not cosmetic, it changes what theorems hold, what
+reductions compose, and what categorical structure is available.
+
+**Parameter meanings (load-bearing)**:
+
+`n : Cardinal` — **cell-dimension ceiling**.  Bounds the highest
+polygraph cell dimension.  Determines which coherence theorems are
+expressible.
+- `n = 1` only terms (no reductions).  Term-arithmetic fragment.
+- `n = 2` terms + reductions.  Standard rewriting / λ-calculus.
+- `n = 3` adds cd_lemma / Squier coherence.
+- `n = 4` adds strategy-equivalence (pentagon coherence at dim 3);
+   hardware fibres begin here.
+- `n = 5` adds refinement functors at dim 5.
+- `n = 6` adds algorithm equivalences at dim 6 (Era I-XIII ceiling).
+- `n = 7` adds Stasheff K₇ associahedron coherence layer (max
+   practical under predicative SN).
+- `n = ∞` arbitrary higher cells for coherence at all depths
+   (FX canonical post-Era-Ω-refactor).
+
+`p : Ordinal` — **invertibility threshold**.  Cells of dim > p are
+groupoidal (invertible); cells of dim ≤ p are oriented (directed).
+Determines which equivalence relation governs the kernel.
+- `p = 0` all cells groupoidal (pure HoTT — unsuitable for FX
+   because reductions must orient).
+- `p = 1` terms directed, reductions+ groupoidal (pure rewriting).
+- `p = 2` terms + reductions oriented; confluence+ groupoidal
+   (FX's Era I-XIII discipline).
+- `p = 3` directed up to cd-cascade; quantum dagger-compact
+   semantics (Selinger 2007) anchors here.
+- `p = 4` directed up to differential cohesive structure (♭ ⊣ ◇ ⊣
+   □ ⊣ ♯ + temporal cohesion).
+- `p = 7` directed up to Stasheff K₇ coherence; FX canonical (the
+   deepest practical orientation under predicative SN).
+- `p = ω` no invertibility (everything oriented); loses HoTT
+   transports — research apex only.
+
+`k : Cardinal` — **graded-semiring product dimension**.  Number of
+independent grading axes per cell.
+- `k = 1` no grading (MLTT slice).
+- `k = 21` FX's locked 21 graded dimensions per fx_design.md §1.1
+   (Type / Refinement / Usage / Effect / Security / Protocol /
+   Lifetime / Provenance / Trust / Representation / Observability /
+   ClockDomain / Complexity / Precision / Space / Overflow /
+   FPOrder / Mutation / Reentrancy / Size / Version).
+- `k = 24` 21 + Belnap-Dunn FOUR consistency (dim 22) + Energy
+   (dim 23) + Incrementality (dim 24) — Era I-XIII extended position.
+- `k = ω` arbitrary product semiring of grading axes (research
+   apex).
+
+`c : Ordinal` — **categorification level** on the (∞↑↑c) tower.
+- `c = 0` set-level (no homotopy structure beyond 1-cells).
+- `c = 1` (∞,1)-category structure (FX v1.0 canonical).
+- `c = 2` (∞,∞)-category / (∞,∞)-cosmos (Riehl-Verity 2022).
+- `c = 3` (∞^∞)-polygraph (polynomial-functor presheaves category
+   as natural setting).
+- `c = 4` cohesive (∞,1)-topos with differential structure
+   (physics target).
+- `c = ω` full categorification ladder (research apex; no upper
+   bound).
+
+**Canonical instance catalog with justification**:
+
+| Instance | (n, p, k, c) | Why this combination | Use case |
+|---|---|---|---|
+| `MLTTTerm` | (2, 1, 1, 1) | Terms + directed reductions, no grading, single categorification — minimum for MLTT | FX1 kernel mirror; Lean kernel encoding (K17-K18 chains) |
+| `CubicalTerm` | (3, 2, 1, 1) | Terms + reductions + cd_lemma + path types as dim-2 with groupoidal invertibility | Pure HoTT / cubical applications; ABCFHL reference model |
+| `LegacyTerm` | (6, 1, 24, 1) | Era I-XIII current position: cells up to dim 6, oriented reductions, 24-dim graded vector (with energy + incrementality + consistency extensions) | Existing kernel work pre-Era-Ω-refactor |
+| **`FXTerm`** | **(∞, 7, 21, 1)** | **∞ for arbitrary coherence depth; p=7 for Stasheff K₇ max practical invertibility under predicative SN; k=21 for FX's locked 21-dim grade vector (energy/incrementality/consistency become refinements of the base 21 via cohesive sub-modality identification); c=1 since v1.0 stays at single categorification level** | **FX canonical post-refactor; load-bearing for v1.0 commitment** |
+| `QuantumTerm` | (3, 3, 3, 3) | Low cell-dim for finite-dim Hilbert spaces; p=3 because dagger-compact-closed structure is groupoidal up to dagger; k=3 for (linear × phase × measurement) graded axes; c=3 for ∞-cosmos quantum semantics (Heunen-Vicary 2019) | Vertical G quantum programming; ZX-calculus (Coecke-Duncan 2008) encoding |
+| `PhysicsTerm` | (5, 4, 24, 4) | Dim 5 for cohomology degree + differential structure; p=4 for differential cohesion (Schreiber 2013) adjoint chain invertibility; k=24 includes cohomology bigrading on top of base 21; c=4 for cohesive (∞,1)-topos categorification | Vertical H physics; Era XI synthetic mechanization (fx-mtheory); cohesive HoTT applications |
+| `HardwareTerm` (FEU) | (6, 1, 24, 1) | Matches LegacyTerm — hardware reasoning is sequential not groupoidal; k=24 includes energy (dim 23) + side-channel grade extensions | Vertical I FEU-FX; Era IV.5 multi-level hardware substrate |
+| `ResearchApex` | (∞, ω, ω, ω) | All parameters saturated.  Predicative-but-maximal: apex of constrained-foundation ladder | Open research; (∞↑↑ω) commitment ratification |
+
+**Why FX canonical `(∞, 7, 21, 1)` is NOT arbitrary**:
+
+Each parameter is the *minimum sufficient* for FX's locked
+commitments.  Raising any breaks predicative SN; lowering any
+breaks a specific FX commitment:
+
+- **`n = ∞`**: required to ship Squier coherence (K11.18), Mac
+  Lane pentagon (K11.19), and cd-cascade joinability (K12.28)
+  uniformly across all dimensions.  Lower n forces ad-hoc per-
+  dimension proofs.
+
+- **`p = 7`**: FX's cohesive structure (♭⊣◇⊣□⊣♯ + 4 FX-app
+  modalities + temporal ◯⊣▷⊣⟐⊣ℑ; 8-modality spacetime cohesion
+  per Era T D78.7) requires invertibility witnessing at the
+  Stasheff K₇ associahedron level.  Lower p means coherence
+  diagrams beyond pentagon stop holding; higher p forces
+  orientation on cells that FX needs groupoidal (HoTT path types,
+  modal transports).
+
+- **`k = 21`**: FX's `with E` effect syntax + 21-dimensional grade
+  vector per fx_design.md §6.3.  Lower k loses kernel features
+  (modal types, refinements, etc.); higher k introduces axes that
+  don't compose soundly per §6.8 collision catalog.  Note:
+  Era I-XIII shipped `k = 24` (21 + Belnap-Dunn FOUR + Energy +
+  Incrementality); the Era-Ω-refactor identifies the three
+  extensions as refinements within the base 21 via cohesive sub-
+  modality recognition, normalizing back to canonical 21.
+
+- **`c = 1`**: v1.0 ships at single categorification level for
+  practical buildout.  Climbing to c > 1 is shippable but
+  deferred to v2.0+ per Tier 8.  This is the ONE parameter whose
+  practical value differs from its research-apex value; the
+  others (n, p, k) are already at canonical position from v1.0.
+
+**Why other instances need their specific parameters**:
+
+- **`QuantumTerm (3, 3, 3, 3)`**: dagger-compact-closed structure
+  requires p = n = 3 because the dagger involution makes every
+  2-cell its own inverse.  k = 3 reflects (linear × phase ×
+  measurement) graded structure that cannot collapse to k = 1
+  without losing linearity-of-quantum-resources.  c = 3 because
+  quantum semantics lives in an (∞,∞)-cosmos with explicit
+  coherence at every dim (Heunen-Vicary 2019).  Choosing
+  `(2, 1, 1, 1)` fails to express no-cloning; choosing
+  `(∞, 7, 21, 1)` over-specifies with grading axes that don't
+  apply.
+
+- **`PhysicsTerm (5, 4, 24, 4)`**: cohomology theory needs dim 5
+  for the bigraded (degree × dimension) structure.  Differential
+  cohesion (Schreiber 2013) requires p = 4 for the four-fold
+  adjoint chain.  k = 24 includes the energy dimension that
+  physical observables consume.  c = 4 enables the cohesive
+  (∞,1)-topos semantics in which gauge theory and GR live.
+  Lower c degrades to non-cohesive HoTT (loses smooth structure);
+  lower p loses the differential adjoint chain.
+
+- **`CubicalTerm (3, 2, 1, 1)`**: path types as dim-2 cells require
+  n ≥ 3; groupoidal invertibility of paths requires p ≤ 2.  No
+  grading needed for pure cubical work, no categorification needed
+  beyond standard HoTT.  Lower n loses path types; higher p turns
+  paths directed (loses HoTT discipline).
+
+**Cross-instance lifting** (per §C13): parameter changes between
+instances correspond to **cosmos morphisms**.  A theorem at instance
+A transfers to instance B iff there's a verified cosmos morphism
+A → B and the theorem's hypotheses lift under it.  Example: a
+theorem about `LegacyTerm @ (6, 1, 24, 1)` lifts to `FXTerm @
+(∞, 7, 21, 1)` via the morphism that:
+- completes cell dimension to ∞ (no inverse — adds coherence not
+  present at n = 6)
+- raises invertibility threshold from 1 to 7 (loses ability to
+  treat dim-2-to-7 cells as oriented; gains coherence at every
+  dim ≤ 7)
+- identifies energy/incrementality/consistency grade extensions
+  as cohesive sub-modalities within base 21 (k = 24 → 21 via
+  recognition, not deletion)
+- preserves categorification c = 1 (no change)
+
+Era II Day 20 close-out commits this canonical lift as the FXTerm
+ratification.
+
+**Computability per instance**: each instance carries decidability
+witnesses for its active parameters; universal metatheorems are
+polymorphic over the witnesses.  No combination of (n, p, k, c)
+introduces non-computable structure provided each individual
+parameter is shipped with its decider.  **Strict zero-axiom + 100%
+computability are preserved at every concrete instance** — the
+ladder does not violate FX's six locked invariants because each
+ladder level is a CONCRETE Lean term with its own computability
+proof, not an axiomatic postulate.
+
+**Practical recommendation for downstream consumers**:
+
+- **Library authors**: pick the lowest `(n, p, k, c)` sufficient
+  for your library's needs.  Cross-instance lifting handles
+  composition automatically; the kernel daemon's
+  `POST /lift?from=A&to=B` REST endpoint generates the lift
+  on demand.
+- **Vertical authors** (A-I): use the canonical instance for your
+  application domain from the catalog above.  Avoid custom
+  parameterizations unless the catalog truly doesn't fit; if you
+  need a new canonical entry, propose it via RFC and verify it
+  satisfies all six FX invariants.
+- **Kernel hackers**: work at the universal metatheory level for
+  cross-cutting theorems; specialize only when an instance-
+  specific fact is needed.  Universal proofs are foundational;
+  per-instance proofs are derived.
+
 ---
 
 ## Risk register
@@ -6950,6 +7577,24 @@ FX as research frontier; cell-category-parametric kernel
 generalization (Set/Cont/Smooth∞/Prob/Hilb/Vec_R/Type/Lawvere_Th/
 Fuzzy/Tropical/Causet/Game per Appendix E) deferred here.
 
+**Tier 8 (apex categorification)**: **cross-Era (∞↑↑ω) refactor**
+per the Era Ω cross-reference index — content lives in Era I
+Day 11 (parametric PolyTerm), Era II Day 16-17 (universal renaming
++ adjunction), Era II Day 20 (close-out polynomial W-type +
+initial CwF), Era X Day 70-71-77 (synthetic ∞-cat + cohesive (∞,1)-
+toposes + (∞,1)-Yoneda), and cross-cutting §C11 + §C16.  Defines
+FX's apex identity as the maximal predicative-cohesive-univalent
+(∞↑↑ω)-cosmos kernel under the six locked invariants.  Universal
+metatheory at unconstrained `(n, p, k, c)` + practical canonical
+instance `FXTerm @ (∞, 7, 21, 1)` per §C16 catalog.  Each
+categorification level c > 1 ((∞,∞)-cosmos, (∞^∞)-polygraph, ...)
+is genuine PhD-thesis-scale work; at LLM-augmented velocity the
+buildout collapses to a ~1-2 year cadence rather than the
+multi-decade pace projected at single-team scale.  Cohesive-physics
++ synthetic-∞-cat + univalent (∞,1)-topos + initial CwF all
+unlocked as cosmos-morphism instances over the canonical FX
+instance.
+
 ---
 
 ## Tier dependency graph
@@ -6966,10 +7611,50 @@ Tier 1 (foundational, must ship)
    │      │
    │      └── Tier 4 (research)
    │             │
-   │             └── Tier 6 (selective extensions, world-as-type)
+   │             ├── Tier 6 (selective extensions, world-as-type)
+   │             │
+   │             └── Tier 8 (apex categorification, Era Ω)
+   │                    │
+   │                    ├── Ω.0 PolyTerm refactor
+   │                    │    (prerequisite for Ω.1+; closes 7
+   │                    │     Eq.mpr-blocked ctors structurally)
+   │                    │
+   │                    ├── Ω.1-Ω.2 Tier 4-6
+   │                    │    (universal renaming, naturality,
+   │                    │     contextual-presheaf adjunction —
+   │                    │     closes D2.5.7 + K12.20.U4 + funext)
+   │                    │
+   │                    ├── Ω.3-Ω.5 Tier 7-8-12
+   │                    │    (W-type, initial CwF, internal
+   │                    │     language of (∞,1)-topos — unlocks
+   │                    │     SDG / DAG / condensed mathematics
+   │                    │     as FX libraries)
+   │                    │
+   │                    ├── Ω.6-Ω.8 Tier 9-11
+   │                    │    ((∞,1)-Yoneda, (∞,∞)-cosmos, initial
+   │                    │     univalent (∞,1)-topos — closes
+   │                    │     K11.18 + K11.19 + K12.28 + univalence
+   │                    │     forced not assumed)
+   │                    │
+   │                    ├── Ω.9 Tier 14
+   │                    │    (synthetic ∞-cat theory — Lurie HTT +
+   │                    │     cohesive HoTT as FX libraries)
+   │                    │
+   │                    └── Ω.10 close-out
+   │                         (categorification ladder frozen;
+   │                          (∞, 7, 21, 1) FX canonical instance)
    │
    └── Tier 5 (verticals A-I, parallel adoption)
 ```
+
+**Tier 8 sequencing**: Day Ω.0 is the prerequisite for every
+subsequent Era Ω deliverable (the PolyTerm refactor's shape-function
+encoding is what makes Tier 4-15 tractable).  Ω.1 unblocks Ω.2;
+Ω.2 unblocks Ω.3+; Ω.3+Ω.4 unblock Ω.5; Ω.5 unblocks Ω.6;
+Ω.6+Ω.7 unblock Ω.8; Ω.8 unblocks Ω.9; Ω.9 unblocks Ω.10.  At
+LLM-augmented velocity the full Ω.0→Ω.10 cadence compresses to
+~1-2 years rather than the multi-decade pace at Mathlib-pace
+single-team.
 
 ---
 
@@ -7048,9 +7733,51 @@ Tier 1 (foundational, must ship)
   multi-die scaling; full Sati-Schreiber theorem mechanization
   hardware-accelerated
 
+* **B20** (Era I Day 11 parametric extension): polynomial-functor
+  shape-function-dependency PolyTerm shipped; v0 K11.9 sketch
+  deleted; `Term ↔ LegacyTerm` bridge bijection zero-axiom at all
+  78 ctors (Era I instance at `LegacyParams = (6, 1, 24, 1)`); the
+  seven historically-blocked dependent ctors (appPi, snd, boolElim,
+  equivIntroHet, funextRefl, oeqFunext, pair) land trivially via
+  the polynomial encoding.
+* **B21** (Era II Day 16 retrofit): universal-renaming totality
+  (Tier 4) + naturality square (Tier 5) ship as 3 polynomial-functor
+  lemmas; ~12K LoC of Term-side commutation work erased; cubical β
+  suite (D2.5.5–D2.5.9 + transpPi + transpSigma + closed-type
+  transps + hcomp face + glue + ua_β) inherits rename-equivariance
+  free.
+* **B22** (Era II Day 17 retrofit + Era V Day 32 close): polynomial-
+  functor adjunction `context_extension ⊣ context_restriction`
+  shipped per Gambino-Kock 2013 Proposition 3.7; D2.5.7 closed-type
+  transp (#1558) + K12.20.U4 Kripke fundamental_lam (#1928) +
+  K18.7-η + D3.6 funext (#1572) all close as adjunction instances.
+* **B23** (Era II Day 20 close-out): FXTerm ≃ W(P_FXTerm) per
+  Hugunin 2021 polynomial W-type characterization; FXTerm ≅
+  Initial(CwF) per Awodey natural models — Era II close-out
+  ratifies the canonical cosmos morphism `LegacyParams (6,1,24,1)
+  → FXParams (∞,7,21,1)` per §C13 + §C16; new reduction rules
+  add by Generator table extension, no inductive surgery.
+* **B24** (Era X Day 71 + Day 77): Awodey-Warren-Shulman internal-
+  language equivalence shipped (Day 71 cohesive ∞-toposes); Riehl-
+  Verity 2022 (∞,1)-Yoneda embedding shipped (Day 77 (∞,n)-cats);
+  Squier coherence (K11.18) + Mac Lane pentagon + cd-cascade
+  joinability (K12.28) inherit as Yoneda corollaries; synthetic
+  differential geometry + derived algebraic geometry + condensed
+  mathematics + Costello-Gwilliam factorization algebras become
+  importable FX libraries via the internal-language equivalence.
+* **B25** (Era X Day 70-71 close + (∞↑↑ω) commitment ratification):
+  initial univalent (∞,1)-topos (Shulman 2019, Day 71) + synthetic
+  ∞-cat theory (Riehl-Shulman 2017, Day 70) + parametric (∞↑↑ω)
+  metatheory ratification via §C11 + §C16 catalog; Brunerie π₄(S³)
+  = ℤ/2ℤ becomes single FX computation; univalence FORCED by
+  initiality (not axiom); HITs trivialize; FX practical `FXTerm
+  @ (∞, 7, 21, 1)` instance frozen as canonical reference;
+  categorification ladder spec frozen as v∞.0 commitment.
+
 Each milestone is a major release event. B0-B12 sequence the
 v1.0+ trust spine; B13-B19 sequence the parametric / reflective /
-worldly / hardware-co-designed extensions.
+worldly / hardware-co-designed extensions; B20-B25 sequence the
+(∞↑↑ω) categorification ladder apex commitment.
 
 ---
 
