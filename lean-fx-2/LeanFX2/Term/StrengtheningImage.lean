@@ -11847,6 +11847,73 @@ theorem isAggregatorTotal_pair {mode : Mode} {level : Nat}
               cases secondTotalCall
           · rfl
 
+/-- 0-IH totality: `Term.equivReflId`.  Source type
+`Ty.equiv carrier carrier` — single carrier component duplicated.
+Dispatcher splits on carrier.strengthens which decomposes from
+typeStrengthens mapTwo. -/
+theorem isAggregatorTotal_equivReflId {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (carrier : Ty level sourceScope) :
+    IsAggregatorTotal (Term.equivReflId (context := sourceCtx) carrier) := by
+  intros _ _ strengthening _ _ typeStrengthens _
+  obtain ⟨_, _, carrierSuccess, _, _⟩ :=
+    Option.mapTwo_eq_some typeStrengthens
+  unfold partialStrengthenTyped?
+  split
+  · next carrierFails =>
+      rw [carrierSuccess] at carrierFails
+      cases carrierFails
+  · rfl
+
+/-- 2-IH totality: `Term.refineIntro`.  Source type
+`Ty.refine baseType predicate` — typeStrengthens decomposes via
+mapTwo (baseType + predicate.lift).  predicateProof has type
+`Ty.unit` (trivially strengthens). -/
+theorem isAggregatorTotal_refineIntro {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {baseType : Ty level sourceScope}
+    (predicate : RawTerm (sourceScope + 1))
+    {valueRaw proofRaw : RawTerm sourceScope}
+    {baseValue : Term sourceCtx baseType valueRaw}
+    {predicateProof : Term sourceCtx Ty.unit proofRaw}
+    (baseTotal : IsAggregatorTotal baseValue)
+    (proofTotal : IsAggregatorTotal predicateProof) :
+    IsAggregatorTotal
+      (Term.refineIntro predicate baseValue predicateProof) := by
+  intros _ _ strengthening _ _ typeStrengthens rawStrengthens
+  obtain ⟨_, _, baseSuccess, predicateLiftSuccess, _⟩ :=
+    Option.mapTwo_eq_some typeStrengthens
+  change Option.mapTwo
+      (valueRaw.partialStrengthen? strengthening.back)
+      (proofRaw.partialStrengthen? strengthening.back)
+      RawTerm.refineIntro = some _ at rawStrengthens
+  obtain ⟨_, _, valueRawSuccess, proofRawSuccess, _⟩ :=
+    Option.mapTwo_eq_some rawStrengthens
+  have baseTotalCall :=
+    baseTotal strengthening baseSuccess valueRawSuccess
+  have unitStrengthens :
+      (Ty.unit : Ty level sourceScope).partialStrengthen?
+          strengthening.back =
+        some Ty.unit := rfl
+  have proofTotalCall :=
+    proofTotal strengthening unitStrengthens proofRawSuccess
+  unfold partialStrengthenTyped?
+  split
+  · next predicateFails =>
+      rw [predicateLiftSuccess] at predicateFails
+      cases predicateFails
+  · next _ _ =>
+      split
+      · next baseFails =>
+          rw [baseFails] at baseTotalCall
+          cases baseTotalCall
+      · next _ _ =>
+          split
+          · next proofFails =>
+              rw [proofFails] at proofTotalCall
+              cases proofTotalCall
+          · rfl
+
 
 /-! ## Image theorem trio — weaken / strengthen invertibility
 
