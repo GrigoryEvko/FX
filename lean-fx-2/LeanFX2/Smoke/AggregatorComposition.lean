@@ -2573,6 +2573,98 @@ theorem aggregator_pair_natOne_optionSome_closed {mode : Mode}
     (isAggregatorSound_natSucc isAggregatorSound_natZero)
     (isAggregatorSound_optionSome isAggregatorSound_natZero)
 
+/-- Depth-22 nat chain at carrier `nat`: `natSucc^22 natZero`
+representing the natural number 22.  Continues the depth-N
+coverage from Phase 131's `aggregator_natTwentyOne_closed`,
+demonstrating that 1-IH nat-chain composition continues to scale
+linearly past the 20 boundary with no IH-shape degradation. -/
+theorem aggregator_natTwentyTwo_closed {mode : Mode} {level : Nat}
+    {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.natSucc (context := sourceCtx)
+        (Term.natSucc
+          (Term.natSucc
+            (Term.natSucc
+              (Term.natSucc
+                (Term.natSucc
+                  (Term.natSucc
+                    (Term.natSucc
+                      (Term.natSucc
+                        (Term.natSucc
+                          (Term.natSucc
+                            (Term.natSucc
+                              (Term.natSucc
+                                (Term.natSucc
+                                  (Term.natSucc
+                                    (Term.natSucc
+                                      (Term.natSucc
+                                        (Term.natSucc
+                                          (Term.natSucc
+                                            (Term.natSucc
+                                              (Term.natSucc
+                                                (Term.natSucc Term.natZero)))))))))))))))))))))) :=
+  isAggregatorSound_natSucc
+    (isAggregatorSound_natSucc
+      (isAggregatorSound_natSucc
+        (isAggregatorSound_natSucc
+          (isAggregatorSound_natSucc
+            (isAggregatorSound_natSucc
+              (isAggregatorSound_natSucc
+                (isAggregatorSound_natSucc
+                  (isAggregatorSound_natSucc
+                    (isAggregatorSound_natSucc
+                      (isAggregatorSound_natSucc
+                        (isAggregatorSound_natSucc
+                          (isAggregatorSound_natSucc
+                            (isAggregatorSound_natSucc
+                              (isAggregatorSound_natSucc
+                                (isAggregatorSound_natSucc
+                                  (isAggregatorSound_natSucc
+                                    (isAggregatorSound_natSucc
+                                      (isAggregatorSound_natSucc
+                                        (isAggregatorSound_natSucc
+                                          (isAggregatorSound_natSucc
+                                            (isAggregatorSound_natSucc
+                                              isAggregatorSound_natZero)))))))))))))))))))))
+
+/-- Option wrapping a Sigma-pair with mixed-depth nat children:
+`Some (pair natOne natZero)` at carrier `option (nat × nat)`.
+Companion to Phase 131's `aggregator_pair_natOne_optionSome_closed`
+(option in the second slot of a pair); this swaps the nesting
+order — Σ now lives inside option — demonstrating that pair and
+optionSome wrappers compose at both orderings. -/
+theorem aggregator_optionSome_pair_natOne_natZero_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.optionSome (context := sourceCtx)
+        (valueTerm :=
+          Term.pair
+            (secondType := Ty.nat)
+            (firstValue := Term.natSucc Term.natZero)
+            (secondValue := Term.natZero))) :=
+  isAggregatorSound_optionSome
+    (isAggregatorSound_pair
+      (isAggregatorSound_natSucc isAggregatorSound_natZero)
+      isAggregatorSound_natZero)
+
+/-- Single-element list of empty lists: `[[]]` at carrier
+`list (list nat)`.  Distinct from Phase 119's
+`aggregator_pair_listNil_listNil_closed` (which puts two listNils
+in a Σ-pair) — here the two listNils are nested in a list-of-list
+structure, demonstrating that listCons composes with listNil at
+its head and a parametric listNil at its tail when the
+elementTypes are themselves list types. -/
+theorem aggregator_listCons_listNil_listNil_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.listCons (context := sourceCtx)
+        (headTerm := Term.listNil (elementType := Ty.nat))
+        (tailTerm :=
+          Term.listNil (elementType := Ty.listType Ty.nat))) :=
+  isAggregatorSound_listCons
+    (isAggregatorSound_listNil (elementType := Ty.nat))
+    (isAggregatorSound_listNil (elementType := Ty.listType Ty.nat))
+
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_unit_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwo_closed
@@ -2695,5 +2787,8 @@ theorem aggregator_pair_natOne_optionSome_closed {mode : Mode}
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwentyOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_optionSome_eitherInl_natOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_natOne_optionSome_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwentyTwo_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_optionSome_pair_natOne_natZero_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_listNil_listNil_closed
 
 end LeanFX2.SmokeAggregatorComposition
