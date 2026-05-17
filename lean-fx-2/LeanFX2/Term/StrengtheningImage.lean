@@ -10731,6 +10731,124 @@ theorem isAggregatorTotal_lam {mode : Mode} {level : Nat}
                 cases bodyTotalCall
             · rfl
 
+/-- 1-IH binder totality wrapper: `Term.lamPi`.  Dependent lambda;
+the codomain lives inside the binder, so the lifted strengthening
+already strengthens it (no double weakening). -/
+theorem isAggregatorTotal_lamPi {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {domainType : Ty level sourceScope}
+    {codomainType : Ty level (sourceScope + 1)}
+    {bodyRaw : RawTerm (sourceScope + 1)}
+    {body : Term (sourceCtx.cons domainType) codomainType bodyRaw}
+    (bodyTotal : IsAggregatorTotal body) :
+    IsAggregatorTotal
+      (Term.lamPi (context := sourceCtx) (domainType := domainType)
+        (codomainType := codomainType) body) := by
+  intros _ _ strengthening _ _ typeStrengthens rawStrengthens
+  unfold partialStrengthenTyped?
+  -- typeStrengthens: (Ty.piTy domain codomain).partialStrengthen? back = some _
+  -- piTy strengthens via Option.mapTwo (domain..back) (codomain..back.lift) Ty.piTy
+  obtain ⟨targetDomainType, targetCodomainType, domainSuccess,
+    codomainLiftSuccess, _piEq⟩ := Option.mapTwo_eq_some typeStrengthens
+  unfold RawTerm.partialStrengthen? at rawStrengthens
+  unfold RawTerm.partialRename? at rawStrengthens
+  split at rawStrengthens
+  rotate_left
+  · cases rawStrengthens
+  next targetBodyRaw bodyRawSuccess =>
+    -- codomainLiftSuccess already gives us what we need.
+    have codomainSuccessAtLift :
+        codomainType.partialStrengthen?
+            (strengthening.lift domainType targetDomainType
+              domainSuccess).back =
+          some targetCodomainType := codomainLiftSuccess
+    have bodyRawLiftSuccess :
+        bodyRaw.partialStrengthen?
+            (strengthening.lift domainType targetDomainType
+              domainSuccess).back =
+          some targetBodyRaw := bodyRawSuccess
+    have bodyTotalCall :=
+      bodyTotal
+        (strengthening.lift domainType targetDomainType domainSuccess)
+        codomainSuccessAtLift bodyRawLiftSuccess
+    split
+    · next domainFails =>
+        rw [domainSuccess] at domainFails; cases domainFails
+    · next targetDomainAgain domainSucceedsAgain =>
+        rw [domainSuccess] at domainSucceedsAgain
+        cases domainSucceedsAgain
+        split
+        · next bodyFails =>
+            rw [bodyFails] at bodyTotalCall
+            cases bodyTotalCall
+        · rfl
+
+/-- 1-IH binder totality wrapper: `Term.pathLam`.  Cubical path
+lambda; the body binds an interval slot, with carrier weakened. -/
+theorem isAggregatorTotal_pathLam {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {bodyRaw : RawTerm (sourceScope + 1)}
+    {body :
+      Term (sourceCtx.cons Ty.interval) carrierType.weaken bodyRaw}
+    (bodyTotal : IsAggregatorTotal body) :
+    IsAggregatorTotal
+      (Term.pathLam (context := sourceCtx) modeIsUnivalent carrierType
+        leftEndpoint rightEndpoint body) := by
+  intros _ _ strengthening _ _ typeStrengthens rawStrengthens
+  unfold partialStrengthenTyped?
+  -- typeStrengthens for Ty.path: Option.mapThree (carrier..) (left..) (right..) Ty.path
+  obtain ⟨targetCarrierType, targetLeftEndpoint, targetRightEndpoint,
+    carrierSuccess, leftSuccess, rightSuccess, _pathEq⟩ :=
+    Option.mapThree_eq_some typeStrengthens
+  unfold RawTerm.partialStrengthen? at rawStrengthens
+  unfold RawTerm.partialRename? at rawStrengthens
+  split at rawStrengthens
+  rotate_left
+  · cases rawStrengthens
+  next targetBodyRaw bodyRawSuccess =>
+    have carrierWeakenLift :
+        carrierType.weaken.partialStrengthen?
+            (strengthening.lift Ty.interval Ty.interval rfl).back =
+          some targetCarrierType.weaken := by
+      change carrierType.weaken.partialStrengthen? strengthening.back.lift =
+        some targetCarrierType.weaken
+      rw [Ty.partialStrengthen?_weaken_lift carrierType strengthening.back,
+        carrierSuccess]
+      rfl
+    have bodyRawLiftSuccess :
+        bodyRaw.partialStrengthen?
+            (strengthening.lift Ty.interval Ty.interval rfl).back =
+          some targetBodyRaw := bodyRawSuccess
+    have bodyTotalCall :=
+      bodyTotal (strengthening.lift Ty.interval Ty.interval rfl)
+        carrierWeakenLift bodyRawLiftSuccess
+    split
+    · next carrierFails =>
+        rw [carrierSuccess] at carrierFails; cases carrierFails
+    · next targetCarrierAgain carrierSucceedsAgain =>
+        rw [carrierSuccess] at carrierSucceedsAgain
+        cases carrierSucceedsAgain
+        split
+        · next leftFails =>
+            rw [leftSuccess] at leftFails; cases leftFails
+        · next targetLeftAgain leftSucceedsAgain =>
+            rw [leftSuccess] at leftSucceedsAgain
+            cases leftSucceedsAgain
+            split
+            · next rightFails =>
+                rw [rightSuccess] at rightFails; cases rightFails
+            · next targetRightAgain rightSucceedsAgain =>
+                rw [rightSuccess] at rightSucceedsAgain
+                cases rightSucceedsAgain
+                split
+                · next bodyFails =>
+                    rw [bodyFails] at bodyTotalCall
+                    cases bodyTotalCall
+                · rfl
+
 /-! ## Image theorem trio — weaken / strengthen invertibility
 
 Three closure theorems on the image of `Term.weaken` under
