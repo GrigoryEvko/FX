@@ -523,4 +523,16 @@ namespace LeanFX2.SmokeTypedInversion
 #print axioms LeanFX2.Term.partialStrengthenTypedEquivApply_sound
 #print axioms LeanFX2.Term.partialStrengthenTypedEquivIntroHet_sound
 
+-- Phase 53 — dispatcher-level soundness leaves.  Six closed-leaf
+-- arms of the `partialStrengthenTyped?` 78-arm dispatcher inverted
+-- and lifted to `StrengtheningSoundness` via their matching wrapper
+-- soundness.  These are the no-subterm-recursion arms; recursive
+-- and var (option-cased) arms ship in follow-up commits.
+#print axioms LeanFX2.Term.partialStrengthenTyped?_atUnit_imp_sound
+#print axioms LeanFX2.Term.partialStrengthenTyped?_atBoolTrue_imp_sound
+#print axioms LeanFX2.Term.partialStrengthenTyped?_atBoolFalse_imp_sound
+#print axioms LeanFX2.Term.partialStrengthenTyped?_atNatZero_imp_sound
+#print axioms LeanFX2.Term.partialStrengthenTyped?_atInterval0_imp_sound
+#print axioms LeanFX2.Term.partialStrengthenTyped?_atInterval1_imp_sound
+
 end LeanFX2.SmokeTypedInversion

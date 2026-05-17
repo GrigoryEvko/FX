@@ -5873,6 +5873,132 @@ theorem partialStrengthenTypedEquivIntroHet_sound {mode : Mode}
                     forwardSound.termRenames backwardSound.termRenames
                     leftInvSound.termRenames rightInvSound.termRenames
 
+/-! ## Dispatcher-level soundness — leaf prologue.
+
+The `partialStrengthenTyped?` top-level dispatcher (78 arms) takes any
+typed term to an optional `StrengtheningResult`.  Wrapper-level
+soundness already certifies each successful arm: every leaf and every
+recursive wrapper has a `_sound` theorem promoting its
+`StrengtheningResult` into a `StrengtheningSoundness` certificate.
+
+This prologue lifts the wrapper certificates to the dispatcher for the
+closed-leaf cases (var, unit, boolean/nat zero literals, interval
+endpoints).  Each such theorem inverts the dispatcher's arm by
+unfolding the auxiliary `match` plus, for `var`, the option-cases on
+`strengthening.back`, then immediately applies the matching wrapper
+soundness.
+
+Cumulatively, these lemmas plus the wrapper soundness theorems form
+the foundation for the headline image theorem trio (right-inverse,
+totality, iff): once every dispatcher arm is lifted, the trio becomes
+a uniform consequence of structural recursion on `Term`.  This commit
+ships the cheap, no-subterm-recursion fragment so the recursive arms
+can build on a known-good prologue. -/
+
+/-- Dispatcher soundness at the `Term.unit` arm.  Closed-leaf: the
+dispatcher returns `some (partialStrengthenTypedUnit strengthening)`
+unconditionally, so the soundness is the wrapper soundness applied
+directly. -/
+theorem partialStrengthenTyped?_atUnit_imp_sound {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (result :
+      StrengtheningResult strengthening (Term.unit (context := sourceCtx)))
+    (success :
+      partialStrengthenTyped? (Term.unit (context := sourceCtx))
+          strengthening = some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  cases success
+  exact partialStrengthenTypedUnit_sound strengthening
+
+/-- Dispatcher soundness at the `Term.boolTrue` arm. -/
+theorem partialStrengthenTyped?_atBoolTrue_imp_sound {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (result :
+      StrengtheningResult strengthening
+        (Term.boolTrue (context := sourceCtx)))
+    (success :
+      partialStrengthenTyped? (Term.boolTrue (context := sourceCtx))
+          strengthening = some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  cases success
+  exact partialStrengthenTypedBoolTrue_sound strengthening
+
+/-- Dispatcher soundness at the `Term.boolFalse` arm. -/
+theorem partialStrengthenTyped?_atBoolFalse_imp_sound {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (result :
+      StrengtheningResult strengthening
+        (Term.boolFalse (context := sourceCtx)))
+    (success :
+      partialStrengthenTyped? (Term.boolFalse (context := sourceCtx))
+          strengthening = some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  cases success
+  exact partialStrengthenTypedBoolFalse_sound strengthening
+
+/-- Dispatcher soundness at the `Term.natZero` arm. -/
+theorem partialStrengthenTyped?_atNatZero_imp_sound {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (result :
+      StrengtheningResult strengthening
+        (Term.natZero (context := sourceCtx)))
+    (success :
+      partialStrengthenTyped? (Term.natZero (context := sourceCtx))
+          strengthening = some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  cases success
+  exact partialStrengthenTypedNatZero_sound strengthening
+
+/-- Dispatcher soundness at the `Term.interval0` arm. -/
+theorem partialStrengthenTyped?_atInterval0_imp_sound {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (result :
+      StrengtheningResult strengthening
+        (Term.interval0 (context := sourceCtx)))
+    (success :
+      partialStrengthenTyped? (Term.interval0 (context := sourceCtx))
+          strengthening = some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  cases success
+  exact partialStrengthenTypedInterval0_sound strengthening
+
+/-- Dispatcher soundness at the `Term.interval1` arm. -/
+theorem partialStrengthenTyped?_atInterval1_imp_sound {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (result :
+      StrengtheningResult strengthening
+        (Term.interval1 (context := sourceCtx)))
+    (success :
+      partialStrengthenTyped? (Term.interval1 (context := sourceCtx))
+          strengthening = some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  cases success
+  exact partialStrengthenTypedInterval1_sound strengthening
+
 end Term
 
 end LeanFX2

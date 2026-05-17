@@ -581,4 +581,11 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedEquivApply_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedEquivIntroHet_sound
 
+#assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_atUnit_imp_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_atBoolTrue_imp_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_atBoolFalse_imp_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_atNatZero_imp_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_atInterval0_imp_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_atInterval1_imp_sound
+
 end LeanFX2.Tools
