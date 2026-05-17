@@ -902,6 +902,7 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.unweaken?_weaken_interval0
 #assert_no_axioms LeanFX2.Term.unweaken?_weaken_interval1
 #assert_no_axioms LeanFX2.Term.unweaken?_weaken_var
+#assert_no_axioms LeanFX2.Term.unweaken?_weaken_universeCode
 
 -- Genuine (non-tautological) iff for the closed-atomic unit case.
 -- Augments the existing tautological iff with concrete totality

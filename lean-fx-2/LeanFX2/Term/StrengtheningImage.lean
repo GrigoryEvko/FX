@@ -14654,6 +14654,20 @@ theorem unweaken?_weaken_var {mode : Mode} {level scope : Nat}
       some (Term.var position) := by
   rfl
 
+/-- Phase 2.A: 0-IH parametric atomic — `universeCode` equation form. -/
+theorem unweaken?_weaken_universeCode {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (newType : Ty level scope)
+    (innerLevel outerLevel : UniverseLevel)
+    (cumulOk : innerLevel.toNat ≤ outerLevel.toNat)
+    (levelLe : outerLevel.toNat + 1 ≤ level) :
+    Term.unweaken? (Term.weaken (context := context) newType
+        (Term.universeCode (context := context) innerLevel outerLevel
+          cumulOk levelLe)) =
+      some (Term.universeCode innerLevel outerLevel cumulOk levelLe) := by
+  rfl
+
+
 /-- Genuine iff (atomic-base version) — non-tautological strengthening
 of `weaken_image_iff_strengthenTyped?_some`.
 
