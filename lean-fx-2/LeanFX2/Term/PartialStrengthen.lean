@@ -7181,16 +7181,18 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                                   sourceTypeSuccess targetTypeSuccess
                                   sourceTypeRawSuccess targetTypeRawSuccess
                                   pathResult sourceResult)
-  | @Term.hcomp _ _ _ _ modeIsUnivalent _ _ _ sidesValue capValue => by
-      cases partialStrengthenTyped? sidesValue
-          (strengthening := strengthening) with
-      | none => exact none
+  | @Term.hcomp _ _ _ _ modeIsUnivalent _ _ _ sidesValue capValue =>
+      match sidesRecurse :
+          partialStrengthenTyped? sidesValue
+            (strengthening := strengthening) with
+      | none => none
       | some sidesResult =>
-          cases partialStrengthenTyped? capValue
-              (strengthening := strengthening) with
-          | none => exact none
+          match capRecurse :
+              partialStrengthenTyped? capValue
+                (strengthening := strengthening) with
+          | none => none
           | some capResult =>
-              exact some
+              some
                 (partialStrengthenTypedHcomp modeIsUnivalent sidesResult
                   capResult)
   | @Term.hcompPath _ _ _ _ modeIsUnivalent carrierType leftEndpoint

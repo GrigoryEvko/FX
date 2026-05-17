@@ -8767,6 +8767,54 @@ theorem partialStrengthenTyped?_atLamPi_imp_sound {mode : Mode}
         (bodyIH targetDomainType domainSuccess bodyResult
           bodyRecurse)
 
+/-- Dispatcher soundness at the `Term.hcomp` arm.  Cubical homogeneous
+composition over a closed-form carrier: both `sidesValue` and
+`capValue` live at the same `carrierType`, so the dispatcher carries
+no explicit Ty/raw witnesses — the wrapper aligns `capResult`'s
+carrier-type strengthening against `sidesResult`'s internally via
+`rw [carrierStrengthens] at capTypeStrengthens`.  Mirrors the
+two-child-IH shape of glueIntro but without the boundary/witness
+threading. -/
+theorem partialStrengthenTyped?_atHcomp_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    {sidesRaw capRaw : RawTerm sourceScope}
+    {sidesValue : Term sourceCtx carrierType sidesRaw}
+    {capValue : Term sourceCtx carrierType capRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (sidesIH : ∀ sidesResult,
+        partialStrengthenTyped? sidesValue strengthening =
+            some sidesResult →
+          StrengtheningSoundness sidesResult)
+    (capIH : ∀ capResult,
+        partialStrengthenTyped? capValue strengthening =
+            some capResult →
+          StrengtheningSoundness capResult)
+    (result : StrengtheningResult strengthening
+      (Term.hcomp (context := sourceCtx) (carrierType := carrierType)
+        (sidesRaw := sidesRaw) (capRaw := capRaw) modeIsUnivalent
+        sidesValue capValue))
+    (success : partialStrengthenTyped?
+        (Term.hcomp (context := sourceCtx) (carrierType := carrierType)
+          (sidesRaw := sidesRaw) (capRaw := capRaw) modeIsUnivalent
+          sidesValue capValue) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i sidesResult sidesRecurse
+    split at success
+    · cases success
+    · rename_i capResult capRecurse
+      cases success
+      exact partialStrengthenTypedHcomp_sound modeIsUnivalent
+        (sidesIH sidesResult sidesRecurse)
+        (capIH capResult capRecurse)
+
 end Term
 
 end LeanFX2
