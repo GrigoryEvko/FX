@@ -7687,27 +7687,29 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                   leftTypeCodeRaw rightTypeCodeRaw targetLeftTypeCodeRaw
                   targetRightTypeCodeRaw leftSuccess rightSuccess)
   | @Term.uaToEquiv _ _ _ _ innerLevel innerLevelLt leftTy rightTy
-      leftTyRaw rightTyRaw _ proof => by
-      cases leftTySuccess : leftTy.partialStrengthen? strengthening.back with
-      | none => exact none
+      leftTyRaw rightTyRaw _ proof =>
+      match leftTySuccess :
+          leftTy.partialStrengthen? strengthening.back with
+      | none => none
       | some targetLeftTy =>
-          cases rightTySuccess :
+          match rightTySuccess :
               rightTy.partialStrengthen? strengthening.back with
-          | none => exact none
+          | none => none
           | some targetRightTy =>
-              cases leftRawSuccess :
+              match leftRawSuccess :
                   leftTyRaw.partialStrengthen? strengthening.back with
-              | none => exact none
+              | none => none
               | some targetLeftTyRaw =>
-                  cases rightRawSuccess :
+                  match rightRawSuccess :
                       rightTyRaw.partialStrengthen? strengthening.back with
-                  | none => exact none
+                  | none => none
                   | some targetRightTyRaw =>
-                      cases partialStrengthenTyped? proof
-                          (strengthening := strengthening) with
-                      | none => exact none
+                      match proofRecurse :
+                          partialStrengthenTyped? proof
+                            (strengthening := strengthening) with
+                      | none => none
                       | some proofResult =>
-                          exact some
+                          some
                             (partialStrengthenTypedUaToEquiv innerLevel
                               innerLevelLt leftTy rightTy targetLeftTy
                               targetRightTy leftTyRaw rightTyRaw

@@ -647,5 +647,6 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_atFunextReflAtId_imp_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_atEquivApp_imp_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_atEquivApply_imp_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_atUaToEquiv_imp_sound
 
 end LeanFX2.Tools

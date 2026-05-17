@@ -8257,6 +8257,60 @@ theorem partialStrengthenTyped?_atEquivApply_imp_sound {mode : Mode}
             (equivIH equivResult equivRecurse)
             (argumentIH argumentResult argumentRecurse)
 
+/-- Dispatcher soundness at the `Term.uaToEquiv` arm.  Univalence-β extractor:
+two flat type witnesses (`leftTy`/`rightTy`), two flat raw witnesses
+(`leftTyRaw`/`rightTyRaw`), and one value IH on the universe-path proof.
+Universe-level positional forwarding (`innerLevel`/`innerLevelLt`) rides
+through the wrapper. -/
+theorem partialStrengthenTyped?_atUaToEquiv_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    (leftTy rightTy : Ty level sourceScope)
+    (leftTyRaw rightTyRaw : RawTerm sourceScope)
+    {proofRaw : RawTerm sourceScope}
+    {proof :
+      Term sourceCtx
+        (Ty.id (Ty.universe innerLevel innerLevelLt) leftTyRaw rightTyRaw)
+        proofRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (proofIH : ∀ proofResult,
+        partialStrengthenTyped? proof strengthening =
+            some proofResult →
+          StrengtheningSoundness proofResult)
+    (result : StrengtheningResult strengthening
+      (Term.uaToEquiv (context := sourceCtx) innerLevel innerLevelLt
+        leftTy rightTy leftTyRaw rightTyRaw proof))
+    (success : partialStrengthenTyped?
+        (Term.uaToEquiv (context := sourceCtx) innerLevel innerLevelLt
+          leftTy rightTy leftTyRaw rightTyRaw proof) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetLeftTy leftTyStrengthens
+    split at success
+    · cases success
+    · rename_i targetRightTy rightTyStrengthens
+      split at success
+      · cases success
+      · rename_i targetLeftTyRaw leftRawStrengthens
+        split at success
+        · cases success
+        · rename_i targetRightTyRaw rightRawStrengthens
+          split at success
+          · cases success
+          · rename_i proofResult proofRecurse
+            cases success
+            exact partialStrengthenTypedUaToEquiv_sound innerLevel
+              innerLevelLt leftTy rightTy targetLeftTy targetRightTy
+              leftTyRaw rightTyRaw targetLeftTyRaw targetRightTyRaw
+              leftTyStrengthens rightTyStrengthens leftRawStrengthens
+              rightRawStrengthens (proofIH proofResult proofRecurse)
+
 end Term
 
 end LeanFX2
