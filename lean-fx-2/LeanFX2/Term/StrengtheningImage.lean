@@ -10775,6 +10775,19 @@ theorem isTotalOnWeaken_var {mode : Mode} {level scope : Nat}
     IsTotalOnWeaken (Term.var (context := context) position) := by
   intro _; rfl
 
+/-- Closed-atomic totality: `Term.universeCode`.  The universe-code
+ctor carries pure value-level data (`innerLevel`, `outerLevel`,
+`cumulOk`, `levelLe`) — no scope-indexed payload to strengthen, so the
+dispatcher's arm succeeds unconditionally and totality is direct. -/
+theorem isTotalOnWeaken_universeCode {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (innerLevel outerLevel : UniverseLevel)
+    (cumulOk : innerLevel.toNat ≤ outerLevel.toNat)
+    (levelLe : outerLevel.toNat + 1 ≤ level) :
+    IsTotalOnWeaken (Term.universeCode (context := context) innerLevel
+      outerLevel cumulOk levelLe) := by
+  intro _; rfl
+
 /-- 1-IH non-binder totality: `Term.natSucc` is total on weaken if its
 predecessor is.  Composition pattern shipped here as the canonical
 template; the remaining 14 single-IH non-binder ctors (optionSome,
@@ -10824,6 +10837,110 @@ theorem isTotalOnWeaken_intervalOpp {mode : Mode} {level scope : Nat}
           (ContextStrengthening.dropNewest context newType)
           (Term.weaken newType point))) = true :=
         pointRecurse ▸ totHyp
+      cases this
+  · rfl
+
+/-- 1-IH non-binder totality: `Term.optionSome`.  Option-some carries
+exactly one typed payload (the wrapped value); no Ty payload to
+strengthen separately. -/
+theorem isTotalOnWeaken_optionSome {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {valueRaw : RawTerm scope}
+    {valueTerm : Term context elementType valueRaw}
+    (valueIH : IsTotalOnWeaken valueTerm) :
+    IsTotalOnWeaken (Term.optionSome valueTerm) := by
+  intro newType
+  show (strengthenTyped? (Term.optionSome (Term.weaken newType valueTerm))).isSome
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next valueRecurse =>
+      exfalso
+      have totHyp := valueIH newType
+      unfold strengthenTyped? at totHyp
+      have : Option.isSome (none (α := StrengtheningResult
+          (ContextStrengthening.dropNewest context newType)
+          (Term.weaken newType valueTerm))) = true :=
+        valueRecurse ▸ totHyp
+      cases this
+  · rfl
+
+/-- 1-IH non-binder totality: `Term.modIntro`.  Modal introduction;
+carries exactly one typed payload. -/
+theorem isTotalOnWeaken_modIntro {mode : Mode}
+    {level scope : Nat}
+    {context : Ctx mode level scope}
+    {innerType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term context innerType innerRaw}
+    (innerIH : IsTotalOnWeaken innerTerm) :
+    IsTotalOnWeaken (Term.modIntro innerTerm) := by
+  intro newType
+  show (strengthenTyped? (Term.modIntro (Term.weaken newType innerTerm))).isSome
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next innerRecurse =>
+      exfalso
+      have totHyp := innerIH newType
+      unfold strengthenTyped? at totHyp
+      have : Option.isSome (none (α := StrengtheningResult
+          (ContextStrengthening.dropNewest context newType)
+          (Term.weaken newType innerTerm))) = true :=
+        innerRecurse ▸ totHyp
+      cases this
+  · rfl
+
+/-- 1-IH non-binder totality: `Term.modElim`.  Modal elimination;
+carries exactly one typed payload. -/
+theorem isTotalOnWeaken_modElim {mode : Mode}
+    {level scope : Nat}
+    {context : Ctx mode level scope}
+    {innerType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term context innerType innerRaw}
+    (innerIH : IsTotalOnWeaken innerTerm) :
+    IsTotalOnWeaken (Term.modElim innerTerm) := by
+  intro newType
+  show (strengthenTyped? (Term.modElim (Term.weaken newType innerTerm))).isSome
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next innerRecurse =>
+      exfalso
+      have totHyp := innerIH newType
+      unfold strengthenTyped? at totHyp
+      have : Option.isSome (none (α := StrengtheningResult
+          (ContextStrengthening.dropNewest context newType)
+          (Term.weaken newType innerTerm))) = true :=
+        innerRecurse ▸ totHyp
+      cases this
+  · rfl
+
+/-- 1-IH non-binder totality: `Term.subsume`.  Mode subsumption;
+carries exactly one typed payload. -/
+theorem isTotalOnWeaken_subsume {mode : Mode}
+    {level scope : Nat}
+    {context : Ctx mode level scope}
+    {innerType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term context innerType innerRaw}
+    (innerIH : IsTotalOnWeaken innerTerm) :
+    IsTotalOnWeaken (Term.subsume innerTerm) := by
+  intro newType
+  show (strengthenTyped? (Term.subsume (Term.weaken newType innerTerm))).isSome
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next innerRecurse =>
+      exfalso
+      have totHyp := innerIH newType
+      unfold strengthenTyped? at totHyp
+      have : Option.isSome (none (α := StrengtheningResult
+          (ContextStrengthening.dropNewest context newType)
+          (Term.weaken newType innerTerm))) = true :=
+        innerRecurse ▸ totHyp
       cases this
   · rfl
 

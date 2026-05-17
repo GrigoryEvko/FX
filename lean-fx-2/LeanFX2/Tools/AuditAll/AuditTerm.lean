@@ -778,11 +778,18 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.isTotalOnWeaken_interval1
 #assert_no_axioms LeanFX2.Term.isTotalOnWeaken_var
 
+-- True 0-IH parametric atomic: universeCode (no scope-indexed payload).
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_universeCode
+
 -- 1-IH non-binder ctor totality (compositional rules — natSucc and
 -- intervalOpp as canonical templates; remaining 13 single-IH ctors
 -- follow the same unfold + split + ▸ pattern).
 #assert_no_axioms LeanFX2.Term.isTotalOnWeaken_natSucc
 #assert_no_axioms LeanFX2.Term.isTotalOnWeaken_intervalOpp
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_optionSome
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_modIntro
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_modElim
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_subsume
 
 -- User-facing unweaken?_weaken_<ctor> headline theorems.  Each is a
 -- direct `rfl` witness — concrete totality for the closed atomic
