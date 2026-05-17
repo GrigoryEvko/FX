@@ -7552,71 +7552,71 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                           targetApplyBRaw domainSuccess codomainSuccess
                           applyASuccess applyBSuccess)
   | @Term.arrowCode _ _ _ _ outerLevel levelLe domainCodeRaw
-      codomainCodeRaw => by
-      cases domainSuccess :
+      codomainCodeRaw =>
+      match domainSuccess :
           domainCodeRaw.partialStrengthen? strengthening.back with
-      | none => exact none
+      | none => none
       | some targetDomainCodeRaw =>
-          cases codomainSuccess :
+          match codomainSuccess :
               codomainCodeRaw.partialStrengthen? strengthening.back with
-          | none => exact none
+          | none => none
           | some targetCodomainCodeRaw =>
-              exact some
+              some
                 (partialStrengthenTypedArrowCode outerLevel levelLe
                   domainCodeRaw codomainCodeRaw targetDomainCodeRaw
                   targetCodomainCodeRaw domainSuccess codomainSuccess)
   | @Term.piTyCode _ _ _ _ outerLevel levelLe domainCodeRaw
-      codomainCodeRaw => by
-      cases domainSuccess :
+      codomainCodeRaw =>
+      match domainSuccess :
           domainCodeRaw.partialStrengthen? strengthening.back with
-      | none => exact none
+      | none => none
       | some targetDomainCodeRaw =>
-          cases codomainSuccess :
+          match codomainSuccess :
               codomainCodeRaw.partialStrengthen? strengthening.back.lift with
-          | none => exact none
+          | none => none
           | some targetCodomainCodeRaw =>
-              exact some
+              some
                 (partialStrengthenTypedPiTyCode outerLevel levelLe
                   domainCodeRaw codomainCodeRaw targetDomainCodeRaw
                   targetCodomainCodeRaw domainSuccess codomainSuccess)
   | @Term.sigmaTyCode _ _ _ _ outerLevel levelLe domainCodeRaw
-      codomainCodeRaw => by
-      cases domainSuccess :
+      codomainCodeRaw =>
+      match domainSuccess :
           domainCodeRaw.partialStrengthen? strengthening.back with
-      | none => exact none
+      | none => none
       | some targetDomainCodeRaw =>
-          cases codomainSuccess :
+          match codomainSuccess :
               codomainCodeRaw.partialStrengthen? strengthening.back.lift with
-          | none => exact none
+          | none => none
           | some targetCodomainCodeRaw =>
-              exact some
+              some
                 (partialStrengthenTypedSigmaTyCode outerLevel levelLe
                   domainCodeRaw codomainCodeRaw targetDomainCodeRaw
                   targetCodomainCodeRaw domainSuccess codomainSuccess)
   | @Term.productCode _ _ _ _ outerLevel levelLe firstCodeRaw
-      secondCodeRaw => by
-      cases firstSuccess :
+      secondCodeRaw =>
+      match firstSuccess :
           firstCodeRaw.partialStrengthen? strengthening.back with
-      | none => exact none
+      | none => none
       | some targetFirstCodeRaw =>
-          cases secondSuccess :
+          match secondSuccess :
               secondCodeRaw.partialStrengthen? strengthening.back with
-          | none => exact none
+          | none => none
           | some targetSecondCodeRaw =>
-              exact some
+              some
                 (partialStrengthenTypedProductCode outerLevel levelLe
                   firstCodeRaw secondCodeRaw targetFirstCodeRaw
                   targetSecondCodeRaw firstSuccess secondSuccess)
-  | @Term.sumCode _ _ _ _ outerLevel levelLe leftCodeRaw rightCodeRaw => by
-      cases leftSuccess :
+  | @Term.sumCode _ _ _ _ outerLevel levelLe leftCodeRaw rightCodeRaw =>
+      match leftSuccess :
           leftCodeRaw.partialStrengthen? strengthening.back with
-      | none => exact none
+      | none => none
       | some targetLeftCodeRaw =>
-          cases rightSuccess :
+          match rightSuccess :
               rightCodeRaw.partialStrengthen? strengthening.back with
-          | none => exact none
+          | none => none
           | some targetRightCodeRaw =>
-              exact some
+              some
                 (partialStrengthenTypedSumCode outerLevel levelLe
                   leftCodeRaw rightCodeRaw targetLeftCodeRaw
                   targetRightCodeRaw leftSuccess rightSuccess)

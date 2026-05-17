@@ -7720,6 +7720,168 @@ theorem partialStrengthenTyped?_atInterval1_imp_sound {mode : Mode} {level : Nat
   cases success
   exact partialStrengthenTypedInterval1_sound strengthening
 
+/-- Dispatcher soundness at the `Term.arrowCode` arm.  Type-code closed
+leaf with two flat-scope raw witnesses (domain + codomain) plus the
+universe-level positional forwarding (`outerLevel`/`levelLe`).  No
+value IH — the wrapper consumes the raw witnesses directly. -/
+theorem partialStrengthenTyped?_atArrowCode_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (domainCodeRaw codomainCodeRaw : RawTerm sourceScope)
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (result : StrengtheningResult strengthening
+      (Term.arrowCode (context := sourceCtx) outerLevel levelLe
+        domainCodeRaw codomainCodeRaw))
+    (success : partialStrengthenTyped?
+        (Term.arrowCode (context := sourceCtx) outerLevel levelLe
+          domainCodeRaw codomainCodeRaw) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetDomainCodeRaw domainSuccess
+    split at success
+    · cases success
+    · rename_i targetCodomainCodeRaw codomainSuccess
+      cases success
+      exact partialStrengthenTypedArrowCode_sound outerLevel levelLe
+        domainCodeRaw codomainCodeRaw targetDomainCodeRaw
+        targetCodomainCodeRaw domainSuccess codomainSuccess
+
+/-- Dispatcher soundness at the `Term.piTyCode` arm.  Π-type-code closed
+leaf with one flat-scope raw (`domainCodeRaw`) plus one lifted raw
+(`codomainCodeRaw` at `scope + 1`).  The codomain rides
+`strengthening.back.lift` to track the bound variable from the Π
+binder.  Universe-level positional forwarding identical to arrow. -/
+theorem partialStrengthenTyped?_atPiTyCode_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (domainCodeRaw : RawTerm sourceScope)
+    (codomainCodeRaw : RawTerm (sourceScope + 1))
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (result : StrengtheningResult strengthening
+      (Term.piTyCode (context := sourceCtx) outerLevel levelLe
+        domainCodeRaw codomainCodeRaw))
+    (success : partialStrengthenTyped?
+        (Term.piTyCode (context := sourceCtx) outerLevel levelLe
+          domainCodeRaw codomainCodeRaw) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetDomainCodeRaw domainSuccess
+    split at success
+    · cases success
+    · rename_i targetCodomainCodeRaw codomainSuccess
+      cases success
+      exact partialStrengthenTypedPiTyCode_sound outerLevel levelLe
+        domainCodeRaw codomainCodeRaw targetDomainCodeRaw
+        targetCodomainCodeRaw domainSuccess codomainSuccess
+
+/-- Dispatcher soundness at the `Term.sigmaTyCode` arm.  Σ-type-code
+closed leaf, structurally identical to piTyCode: one flat raw
+(`domainCodeRaw`) plus one lifted raw (`codomainCodeRaw` at
+`scope + 1`, dependent on the first component). -/
+theorem partialStrengthenTyped?_atSigmaTyCode_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (domainCodeRaw : RawTerm sourceScope)
+    (codomainCodeRaw : RawTerm (sourceScope + 1))
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (result : StrengtheningResult strengthening
+      (Term.sigmaTyCode (context := sourceCtx) outerLevel levelLe
+        domainCodeRaw codomainCodeRaw))
+    (success : partialStrengthenTyped?
+        (Term.sigmaTyCode (context := sourceCtx) outerLevel levelLe
+          domainCodeRaw codomainCodeRaw) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetDomainCodeRaw domainSuccess
+    split at success
+    · cases success
+    · rename_i targetCodomainCodeRaw codomainSuccess
+      cases success
+      exact partialStrengthenTypedSigmaTyCode_sound outerLevel levelLe
+        domainCodeRaw codomainCodeRaw targetDomainCodeRaw
+        targetCodomainCodeRaw domainSuccess codomainSuccess
+
+/-- Dispatcher soundness at the `Term.productCode` arm.  Non-dependent
+pair type-code closed leaf with two flat-scope raw witnesses (first +
+second components, both at `sourceScope`).  Universe-level positional
+forwarding identical to arrow. -/
+theorem partialStrengthenTyped?_atProductCode_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (firstCodeRaw secondCodeRaw : RawTerm sourceScope)
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (result : StrengtheningResult strengthening
+      (Term.productCode (context := sourceCtx) outerLevel levelLe
+        firstCodeRaw secondCodeRaw))
+    (success : partialStrengthenTyped?
+        (Term.productCode (context := sourceCtx) outerLevel levelLe
+          firstCodeRaw secondCodeRaw) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetFirstCodeRaw firstSuccess
+    split at success
+    · cases success
+    · rename_i targetSecondCodeRaw secondSuccess
+      cases success
+      exact partialStrengthenTypedProductCode_sound outerLevel levelLe
+        firstCodeRaw secondCodeRaw targetFirstCodeRaw
+        targetSecondCodeRaw firstSuccess secondSuccess
+
+/-- Dispatcher soundness at the `Term.sumCode` arm.  Binary sum
+type-code closed leaf with two flat-scope raw witnesses (left + right
+summands).  Structurally identical to productCode. -/
+theorem partialStrengthenTyped?_atSumCode_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (leftCodeRaw rightCodeRaw : RawTerm sourceScope)
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (result : StrengtheningResult strengthening
+      (Term.sumCode (context := sourceCtx) outerLevel levelLe
+        leftCodeRaw rightCodeRaw))
+    (success : partialStrengthenTyped?
+        (Term.sumCode (context := sourceCtx) outerLevel levelLe
+          leftCodeRaw rightCodeRaw) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetLeftCodeRaw leftSuccess
+    split at success
+    · cases success
+    · rename_i targetRightCodeRaw rightSuccess
+      cases success
+      exact partialStrengthenTypedSumCode_sound outerLevel levelLe
+        leftCodeRaw rightCodeRaw targetLeftCodeRaw
+        targetRightCodeRaw leftSuccess rightSuccess
+
 end Term
 
 end LeanFX2
