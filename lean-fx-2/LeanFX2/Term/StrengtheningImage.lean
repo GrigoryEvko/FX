@@ -6552,6 +6552,190 @@ theorem partialStrengthenTyped?_atGlueElim_imp_sound {mode : Mode}
         exact partialStrengthenTypedGlueElim_sound modeIsUnivalent
           baseSuccess boundarySuccess (gluedIH gluedResult gluedRecurse)
 
+/-- Dispatcher soundness at the `Term.recordIntro` arm.  Single-field
+record introduction: no raw or type witnesses (`Ty.record` is built
+from the strengthened field type via `congrArg`), one flat-context
+value IH (`firstField`). -/
+theorem partialStrengthenTyped?_atRecordIntro_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {singleFieldType : Ty level sourceScope}
+    {firstRaw : RawTerm sourceScope}
+    {firstField : Term sourceCtx singleFieldType firstRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (fieldIH : ∀ fieldResult,
+        partialStrengthenTyped? firstField strengthening =
+            some fieldResult →
+          StrengtheningSoundness fieldResult)
+    (result : StrengtheningResult strengthening
+      (Term.recordIntro (firstField := firstField)))
+    (success : partialStrengthenTyped?
+        (Term.recordIntro (firstField := firstField)) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i fieldResult fieldRecurse
+    cases success
+    exact partialStrengthenTypedRecordIntro_sound
+      (fieldSound := fieldIH fieldResult fieldRecurse)
+
+/-- Dispatcher soundness at the `Term.recordProj` arm.  Record
+projection: one type witness (`singleFieldType` at
+`strengthening.back`) + one flat-context value IH (`recordValue`). -/
+theorem partialStrengthenTyped?_atRecordProj_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {singleFieldType : Ty level sourceScope}
+    {recordRaw : RawTerm sourceScope}
+    {recordValue : Term sourceCtx (Ty.record singleFieldType) recordRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (recordIH : ∀ recordResult,
+        partialStrengthenTyped? recordValue strengthening =
+            some recordResult →
+          StrengtheningSoundness recordResult)
+    (result : StrengtheningResult strengthening
+      (Term.recordProj (recordValue := recordValue)))
+    (success : partialStrengthenTyped?
+        (Term.recordProj (recordValue := recordValue)) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetFieldType fieldSuccess
+    split at success
+    · cases success
+    · rename_i recordResult recordRecurse
+      cases success
+      exact partialStrengthenTypedRecordProj_sound fieldSuccess
+        (recordSound := recordIH recordResult recordRecurse)
+
+/-- Dispatcher soundness at the `Term.refineIntro` arm.  Refinement
+introduction: one raw witness on the predicate (lifted to
+`strengthening.back.lift` since the predicate binds the refined
+variable) + two flat-context value IHs (`baseValue` carrying the
+underlying datum + `predicateProof` discharging the refinement). -/
+theorem partialStrengthenTyped?_atRefineIntro_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {baseType : Ty level sourceScope}
+    {predicate : RawTerm (sourceScope + 1)}
+    {valueRaw proofRaw : RawTerm sourceScope}
+    {baseValue : Term sourceCtx baseType valueRaw}
+    {predicateProof : Term sourceCtx Ty.unit proofRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (baseIH : ∀ baseResult,
+        partialStrengthenTyped? baseValue strengthening =
+            some baseResult →
+          StrengtheningSoundness baseResult)
+    (proofIH : ∀ proofResult,
+        partialStrengthenTyped? predicateProof strengthening =
+            some proofResult →
+          StrengtheningSoundness proofResult)
+    (result : StrengtheningResult strengthening
+      (Term.refineIntro predicate baseValue predicateProof))
+    (success : partialStrengthenTyped?
+        (Term.refineIntro predicate baseValue predicateProof)
+          strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetPredicate predicateSuccess
+    split at success
+    · cases success
+    · rename_i baseResult baseRecurse
+      split at success
+      · cases success
+      · rename_i proofResult proofRecurse
+        cases success
+        exact partialStrengthenTypedRefineIntro_sound predicateSuccess
+          (baseSound := baseIH baseResult baseRecurse)
+          (proofSound := proofIH proofResult proofRecurse)
+
+/-- Dispatcher soundness at the `Term.refineElim` arm.  Refinement
+elimination: one type witness (`baseType` at `strengthening.back`) +
+one raw witness on the predicate (lifted) + one flat-context value
+IH (`refinedValue`). -/
+theorem partialStrengthenTyped?_atRefineElim_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {baseType : Ty level sourceScope}
+    {predicate : RawTerm (sourceScope + 1)}
+    {refinedRaw : RawTerm sourceScope}
+    {refinedValue :
+      Term sourceCtx (Ty.refine baseType predicate) refinedRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (refinedIH : ∀ refinedResult,
+        partialStrengthenTyped? refinedValue strengthening =
+            some refinedResult →
+          StrengtheningSoundness refinedResult)
+    (result : StrengtheningResult strengthening
+      (Term.refineElim refinedValue))
+    (success : partialStrengthenTyped?
+        (Term.refineElim refinedValue) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetBaseType baseSuccess
+    split at success
+    · cases success
+    · rename_i targetPredicate predicateSuccess
+      split at success
+      · cases success
+      · rename_i refinedResult refinedRecurse
+        cases success
+        exact partialStrengthenTypedRefineElim_sound baseSuccess
+          predicateSuccess
+          (refinedSound := refinedIH refinedResult refinedRecurse)
+
+/-- Dispatcher soundness at the `Term.cumulUp` arm.  Universe-level
+cumulation: no raw or type witnesses (all level data
+`lowerLevel`/`higherLevel`/`cumulMonotone`/`levelLeLow`/`levelLeHigh`
+forwards through as positional data into the wrapper), one
+flat-context value IH (`typeCode`). -/
+theorem partialStrengthenTyped?_atCumulUp_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (lowerLevel higherLevel : UniverseLevel)
+    (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
+    (levelLeLow : lowerLevel.toNat + 1 ≤ level)
+    (levelLeHigh : higherLevel.toNat + 1 ≤ level)
+    {codeRaw : RawTerm sourceScope}
+    {typeCode :
+      Term sourceCtx (Ty.universe lowerLevel levelLeLow) codeRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (codeIH : ∀ codeResult,
+        partialStrengthenTyped? typeCode strengthening =
+            some codeResult →
+          StrengtheningSoundness codeResult)
+    (result : StrengtheningResult strengthening
+      (Term.cumulUp lowerLevel higherLevel cumulMonotone levelLeLow
+        levelLeHigh typeCode))
+    (success : partialStrengthenTyped?
+        (Term.cumulUp lowerLevel higherLevel cumulMonotone levelLeLow
+          levelLeHigh typeCode) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i codeResult codeRecurse
+    cases success
+    exact partialStrengthenTypedCumulUp_sound lowerLevel higherLevel
+      cumulMonotone levelLeLow levelLeHigh
+      (codeSound := codeIH codeResult codeRecurse)
+
 /-- Dispatcher soundness at the `Term.eitherMatch` arm.  ι-eliminator
 with three type witnesses (leftType + rightType + motiveType, all at
 `strengthening.back`) plus three flat-context value IHs

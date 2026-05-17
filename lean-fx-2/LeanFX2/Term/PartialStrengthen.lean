@@ -7216,53 +7216,58 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                             (partialStrengthenTypedHcompPath modeIsUnivalent
                               leftEndpoint rightEndpoint carrierSuccess
                               leftSuccess rightSuccess sidesResult capResult)
-  | @Term.recordIntro _ _ _ _ _ _ firstField => by
-      cases partialStrengthenTyped? firstField
-          (strengthening := strengthening) with
-      | none => exact none
+  | @Term.recordIntro _ _ _ _ _ _ firstField =>
+      match fieldRecurse :
+          partialStrengthenTyped? firstField
+            (strengthening := strengthening) with
+      | none => none
       | some fieldResult =>
-          exact some (partialStrengthenTypedRecordIntro fieldResult)
-  | @Term.recordProj _ _ _ _ singleFieldType _ recordValue => by
-      cases fieldSuccess :
+          some (partialStrengthenTypedRecordIntro fieldResult)
+  | @Term.recordProj _ _ _ _ singleFieldType _ recordValue =>
+      match fieldSuccess :
           singleFieldType.partialStrengthen? strengthening.back with
-      | none => exact none
+      | none => none
       | some _ =>
-          cases partialStrengthenTyped? recordValue
-              (strengthening := strengthening) with
-          | none => exact none
+          match recordRecurse :
+              partialStrengthenTyped? recordValue
+                (strengthening := strengthening) with
+          | none => none
           | some recordResult =>
-              exact some
+              some
                 (partialStrengthenTypedRecordProj fieldSuccess recordResult)
-  | @Term.refineIntro _ _ _ _ _ predicate _ _ baseValue predicateProof => by
-      cases predicateSuccess :
+  | @Term.refineIntro _ _ _ _ _ predicate _ _ baseValue predicateProof =>
+      match predicateSuccess :
           predicate.partialStrengthen? strengthening.back.lift with
-      | none => exact none
-      | some targetPredicate =>
-          cases partialStrengthenTyped? baseValue
-              (strengthening := strengthening) with
-          | none => exact none
+      | none => none
+      | some _ =>
+          match baseRecurse :
+              partialStrengthenTyped? baseValue
+                (strengthening := strengthening) with
+          | none => none
           | some baseResult =>
-              cases partialStrengthenTyped? predicateProof
-                  (strengthening := strengthening) with
-              | none => exact none
+              match proofRecurse :
+                  partialStrengthenTyped? predicateProof
+                    (strengthening := strengthening) with
+              | none => none
               | some proofResult =>
-                  exact some
+                  some
                     (partialStrengthenTypedRefineIntro predicateSuccess
                       baseResult proofResult)
-  | @Term.refineElim _ _ _ _ baseType predicate _ refinedValue => by
-      cases baseSuccess :
+  | @Term.refineElim _ _ _ _ baseType predicate _ refinedValue =>
+      match baseSuccess :
           baseType.partialStrengthen? strengthening.back with
-      | none => exact none
+      | none => none
       | some _ =>
-          cases predicateSuccess :
+          match predicateSuccess :
               predicate.partialStrengthen? strengthening.back.lift with
-          | none => exact none
+          | none => none
           | some _ =>
-              cases partialStrengthenTyped? refinedValue
-                  (strengthening := strengthening) with
-              | none => exact none
+              match refinedRecurse :
+                  partialStrengthenTyped? refinedValue
+                    (strengthening := strengthening) with
+              | none => none
               | some refinedResult =>
-                  exact some
+                  some
                     (partialStrengthenTypedRefineElim baseSuccess
                       predicateSuccess refinedResult)
   | @Term.codataUnfold _ _ _ _ _ outputType _ _ initialState transition => by
@@ -7361,12 +7366,13 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
         (partialStrengthenTypedUniverseCode strengthening innerLevel
           outerLevel cumulOk levelLe)
   | @Term.cumulUp _ _ _ _ lowerLevel higherLevel cumulMonotone levelLeLow
-      levelLeHigh _ typeCode => by
-      cases partialStrengthenTyped? typeCode
-          (strengthening := strengthening) with
-      | none => exact none
+      levelLeHigh _ typeCode =>
+      match codeRecurse :
+          partialStrengthenTyped? typeCode
+            (strengthening := strengthening) with
+      | none => none
       | some codeResult =>
-          exact some
+          some
             (partialStrengthenTypedCumulUp lowerLevel higherLevel
               cumulMonotone levelLeLow levelLeHigh codeResult)
   | @Term.equivReflId _ _ _ _ carrier => by
