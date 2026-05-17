@@ -745,4 +745,9 @@ existing computational dispatcher. -/
 -- downstream Step.eta cascade per extended-roadmap.md Day 32.
 #assert_no_axioms LeanFX2.Term.isAggregatorSound_universal
 
+-- Image Step 1: right-inverse soundness — direct corollary of the
+-- universal aggregator headline.  Consumed by Step 3 iff headline
+-- and by the Phase B+ Step.eta SR cascade.
+#assert_no_axioms LeanFX2.Term.weaken_inv_of_strengthenTyped?_some
+
 end LeanFX2.Tools
