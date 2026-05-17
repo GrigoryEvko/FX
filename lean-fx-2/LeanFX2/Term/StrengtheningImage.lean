@@ -9068,6 +9068,80 @@ theorem isAggregatorSound_interval1 {mode : Mode} {level : Nat}
   exact partialStrengthenTyped?_atInterval1_imp_sound strengthening
     result success
 
+/-- Headline aggregator soundness at the `Term.listNil` arm.  Takes
+the element type explicitly (parametric closed value). -/
+theorem isAggregatorSound_listNil {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (elementType : Ty level sourceScope) :
+    IsAggregatorSound
+      (Term.listNil (context := sourceCtx)
+        (elementType := elementType)) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atListNil_imp_sound elementType
+    strengthening result success
+
+/-- Headline aggregator soundness at the `Term.optionNone` arm. -/
+theorem isAggregatorSound_optionNone {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (elementType : Ty level sourceScope) :
+    IsAggregatorSound
+      (Term.optionNone (context := sourceCtx)
+        (elementType := elementType)) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atOptionNone_imp_sound elementType
+    strengthening result success
+
+/-- Headline aggregator soundness at the `Term.refl` arm.  HoTT
+identity-refl: takes carrier type and raw witness as implicits
+matching the leaf's signature. -/
+theorem isAggregatorSound_refl {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {carrier : Ty level sourceScope} {rawWitness : RawTerm sourceScope} :
+    IsAggregatorSound
+      (Term.refl (context := sourceCtx) (carrier := carrier)
+        rawWitness) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atRefl_imp_sound strengthening result
+    success
+
+/-- Headline aggregator soundness at the `Term.oeqRefl` arm.
+Observational-equality refl mirrors `refl`. -/
+theorem isAggregatorSound_oeqRefl {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {carrier : Ty level sourceScope} {rawWitness : RawTerm sourceScope} :
+    IsAggregatorSound
+      (Term.oeqRefl (context := sourceCtx) (carrier := carrier)
+        rawWitness) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atOeqRefl_imp_sound strengthening
+    result success
+
+/-- Headline aggregator soundness at the `Term.idStrictRefl` arm.
+Strict-mode identity refl carries a mode-equality witness plus
+carrier and raw witness. -/
+theorem isAggregatorSound_idStrictRefl {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {modeIsStrict : mode = Mode.strict}
+    {carrier : Ty level sourceScope} {rawWitness : RawTerm sourceScope} :
+    IsAggregatorSound
+      (Term.idStrictRefl (context := sourceCtx) (carrier := carrier)
+        modeIsStrict rawWitness) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atIdStrictRefl_imp_sound strengthening
+    result success
+
+/-- Headline aggregator soundness at the `Term.equivReflId` arm.
+Identity-as-equivalence: carrier-only zero-IH closed-atomic. -/
+theorem isAggregatorSound_equivReflId {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {carrier : Ty level sourceScope} :
+    IsAggregatorSound
+      (Term.equivReflId (context := sourceCtx)
+        (carrier := carrier)) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atEquivReflId_imp_sound strengthening
+    result success
+
 end Term
 
 end LeanFX2
