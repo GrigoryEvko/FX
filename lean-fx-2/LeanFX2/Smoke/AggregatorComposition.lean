@@ -253,6 +253,43 @@ theorem aggregator_pair_natTwo_natZero_closed {mode : Mode}
       (isAggregatorSound_natSucc isAggregatorSound_natZero))
     isAggregatorSound_natZero
 
+/-- 0-IH HoTT-refl smoke: `IsAggregatorSound (Term.refl
+RawTerm.natZero)` at carrier `Ty.nat`.  Exercises the
+`isAggregatorSound_refl` wrapper in isolation, demonstrating that
+HoTT identity-refl wrappers (carrier + rawWitness as implicits)
+compose without IH children. -/
+theorem aggregator_refl_natZero_closed {mode : Mode} {level : Nat}
+    {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.refl (context := sourceCtx) (carrier := Ty.nat)
+        RawTerm.natZero) :=
+  isAggregatorSound_refl
+
+/-- 0-IH observational-equality refl mirror at carrier `Ty.nat`:
+`IsAggregatorSound (Term.oeqRefl RawTerm.natZero)`.  Mirror of the
+HoTT `refl` example via the parallel `oeqRefl` wrapper. -/
+theorem aggregator_oeqRefl_natZero_closed {mode : Mode} {level : Nat}
+    {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.oeqRefl (context := sourceCtx) (carrier := Ty.nat)
+        RawTerm.natZero) :=
+  isAggregatorSound_oeqRefl
+
+/-- 2-IH Σ-pair smoke at heterogeneous non-dependent carrier
+`nat × bool`: `IsAggregatorSound (Term.pair Term.natZero
+Term.boolTrue)` with `secondType := Ty.bool`.  Demonstrates that
+the 2-IH non-parametric Σ wrapper composes children of distinct
+type families (not just both nat). -/
+theorem aggregator_pair_natBool_closed {mode : Mode} {level : Nat}
+    {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.pair (context := sourceCtx)
+        (secondType := Ty.bool)
+        (firstValue := Term.natZero)
+        (secondValue := Term.boolTrue)) :=
+  isAggregatorSound_pair isAggregatorSound_natZero
+    isAggregatorSound_boolTrue
+
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_unit_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwo_closed
@@ -270,5 +307,8 @@ theorem aggregator_pair_natTwo_natZero_closed {mode : Mode}
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_natNat_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natFour_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_natTwo_natZero_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_refl_natZero_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_oeqRefl_natZero_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_natBool_closed
 
 end LeanFX2.SmokeAggregatorComposition
