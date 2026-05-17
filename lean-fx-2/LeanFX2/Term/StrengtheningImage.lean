@@ -9028,6 +9028,46 @@ theorem isAggregatorSound_unit {mode : Mode} {level : Nat}
   exact partialStrengthenTyped?_atUnit_imp_sound strengthening result
     success
 
+/-- Headline aggregator soundness at the `Term.boolTrue` arm. -/
+theorem isAggregatorSound_boolTrue {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope} :
+    IsAggregatorSound (Term.boolTrue (context := sourceCtx)) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atBoolTrue_imp_sound strengthening
+    result success
+
+/-- Headline aggregator soundness at the `Term.boolFalse` arm. -/
+theorem isAggregatorSound_boolFalse {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope} :
+    IsAggregatorSound (Term.boolFalse (context := sourceCtx)) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atBoolFalse_imp_sound strengthening
+    result success
+
+/-- Headline aggregator soundness at the `Term.natZero` arm. -/
+theorem isAggregatorSound_natZero {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope} :
+    IsAggregatorSound (Term.natZero (context := sourceCtx)) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atNatZero_imp_sound strengthening
+    result success
+
+/-- Headline aggregator soundness at the `Term.interval0` arm. -/
+theorem isAggregatorSound_interval0 {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope} :
+    IsAggregatorSound (Term.interval0 (context := sourceCtx)) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atInterval0_imp_sound strengthening
+    result success
+
+/-- Headline aggregator soundness at the `Term.interval1` arm. -/
+theorem isAggregatorSound_interval1 {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope} :
+    IsAggregatorSound (Term.interval1 (context := sourceCtx)) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atInterval1_imp_sound strengthening
+    result success
+
 end Term
 
 end LeanFX2

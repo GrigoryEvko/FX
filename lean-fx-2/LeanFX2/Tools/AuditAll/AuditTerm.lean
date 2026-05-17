@@ -662,5 +662,10 @@ existing computational dispatcher. -/
 
 #assert_no_axioms LeanFX2.Term.isAggregatorSound_var
 #assert_no_axioms LeanFX2.Term.isAggregatorSound_unit
+#assert_no_axioms LeanFX2.Term.isAggregatorSound_boolTrue
+#assert_no_axioms LeanFX2.Term.isAggregatorSound_boolFalse
+#assert_no_axioms LeanFX2.Term.isAggregatorSound_natZero
+#assert_no_axioms LeanFX2.Term.isAggregatorSound_interval0
+#assert_no_axioms LeanFX2.Term.isAggregatorSound_interval1
 
 end LeanFX2.Tools
