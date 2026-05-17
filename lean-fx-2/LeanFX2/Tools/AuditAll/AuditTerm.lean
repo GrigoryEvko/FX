@@ -924,5 +924,41 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_lam
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_lamPi
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_pathLam
+-- Phase 1.C Wave 1: 1-IH non-binder totality wrappers
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_natSucc
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_intervalOpp
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_modIntro
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_modElim
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_subsume
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_optionSome
+-- Phase 1.C Wave 2: more 1-IH wrappers
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_eitherInl
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_eitherInr
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_recordIntro
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_recordProj
+-- Phase 1.C Wave 3: sessionRecv + parametric atomics
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_sessionRecv
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_listNil
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_optionNone
+-- Phase 1.C Wave 4: interval pair + refl family
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_intervalMeet
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_intervalJoin
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_listCons
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_refl
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_oeqRefl
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_idStrictRefl
+-- Phase 1.C Wave 5: type codes + cumulUp + universeCode
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_universeCode
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_cumulUp
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_arrowCode
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_piTyCode
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_sigmaTyCode
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_productCode
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_sumCode
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_listCode
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_optionCode
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_eitherCode
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_idCode
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_equivCode
 
 end LeanFX2.Tools
