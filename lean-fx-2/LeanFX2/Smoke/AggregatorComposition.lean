@@ -919,6 +919,56 @@ theorem aggregator_pair_optionNone_natZero_closed {mode : Mode}
     (isAggregatorSound_optionNone (elementType := Ty.nat))
     isAggregatorSound_natZero
 
+/-- Triple nesting through two categories: `Some (Some (eitherInl
+natZero))` at carrier `option (option (Either nat bool))`.
+Demonstrates that two parametric optionSome wrappers compose
+recursively around a 1-IH heterogeneous injection at the base. -/
+theorem aggregator_optionSome_optionSome_eitherInl_closed
+    {mode : Mode} {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.optionSome (context := sourceCtx)
+        (valueTerm :=
+          Term.optionSome
+            (valueTerm :=
+              Term.eitherInl (rightType := Ty.bool)
+                (valueTerm := Term.natZero)))) :=
+  isAggregatorSound_optionSome
+    (isAggregatorSound_optionSome
+      (isAggregatorSound_eitherInl (rightType := Ty.bool)
+        isAggregatorSound_natZero))
+
+/-- Sigma-pair with both option arms in their respective slots:
+`pair optionNone (Some natZero)` at carrier
+`option nat × option nat`.  First example mixing the 0-IH
+parametric (optionNone) and 1-IH parametric (optionSome)
+wrappers across the two Sigma components. -/
+theorem aggregator_pair_optionNone_optionSome_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.pair (context := sourceCtx)
+        (secondType := Ty.optionType Ty.nat)
+        (firstValue := Term.optionNone (elementType := Ty.nat))
+        (secondValue :=
+          Term.optionSome (valueTerm := Term.natZero))) :=
+  isAggregatorSound_pair
+    (isAggregatorSound_optionNone (elementType := Ty.nat))
+    (isAggregatorSound_optionSome isAggregatorSound_natZero)
+
+/-- Heterogeneous either with parametric child on LEFT side:
+`eitherInl (Some natZero)` at carrier `Either (option nat) bool`.
+Counterpart to Phase 105's `optionSome_eitherInl_closed` which
+puts the either INSIDE the option; here the option is inside
+the either, demonstrating both nesting orders compose. -/
+theorem aggregator_eitherInl_optionSome_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.eitherInl (context := sourceCtx)
+        (rightType := Ty.bool)
+        (valueTerm :=
+          Term.optionSome (valueTerm := Term.natZero))) :=
+  isAggregatorSound_eitherInl (rightType := Ty.bool)
+    (isAggregatorSound_optionSome isAggregatorSound_natZero)
+
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_unit_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwo_closed
@@ -975,5 +1025,8 @@ theorem aggregator_pair_optionNone_natZero_closed {mode : Mode}
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_optionSome_eitherInr_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_optionSome_optionSome_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_optionNone_natZero_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_optionSome_optionSome_eitherInl_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_optionNone_optionSome_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_eitherInl_optionSome_closed
 
 end LeanFX2.SmokeAggregatorComposition
