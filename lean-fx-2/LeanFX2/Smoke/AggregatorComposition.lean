@@ -488,6 +488,68 @@ theorem aggregator_pair_pair_natNatNat_closed {mode : Mode}
       isAggregatorSound_natZero)
     isAggregatorSound_natZero
 
+/-- List of Σ-pairs: `[(natZero, natZero)]` at carrier
+`list (nat × nat)`.  Demonstrates that the 2-IH parametric
+listCons wrapper accepts a 2-IH non-parametric Sigma value as
+its head, with the listNil elementType bound to the matching
+Sigma carrier. -/
+theorem aggregator_listCons_pair_natZero_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.listCons (context := sourceCtx)
+        (headTerm :=
+          Term.pair (secondType := Ty.nat)
+            (firstValue := Term.natZero)
+            (secondValue := Term.natZero))
+        (tailTerm :=
+          Term.listNil (elementType := Ty.sigmaTy Ty.nat Ty.nat))) :=
+  isAggregatorSound_listCons
+    (isAggregatorSound_pair isAggregatorSound_natZero
+      isAggregatorSound_natZero)
+    (isAggregatorSound_listNil
+      (elementType := Ty.sigmaTy Ty.nat Ty.nat))
+
+/-- Sigma with Sigma in the SECOND component: `(natZero, (natZero,
+natZero))` at carrier `nat × (nat × nat)` (secondType :=
+Ty.sigmaTy Ty.nat Ty.nat closed).  Counterpart to
+`aggregator_pair_pair_natNatNat_closed` which nests the Sigma
+in the FIRST component; together they confirm Sigma-nesting
+composes symmetrically across both component positions. -/
+theorem aggregator_pair_natZero_pair_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.pair (context := sourceCtx)
+        (secondType := Ty.sigmaTy Ty.nat Ty.nat)
+        (firstValue := Term.natZero)
+        (secondValue :=
+          Term.pair (secondType := Ty.nat)
+            (firstValue := Term.natZero)
+            (secondValue := Term.natZero))) :=
+  isAggregatorSound_pair isAggregatorSound_natZero
+    (isAggregatorSound_pair isAggregatorSound_natZero
+      isAggregatorSound_natZero)
+
+/-- 7-deep natSucc chain extending the natOne..natSix sequence.
+Demonstrates that 1-IH chaining stays uniform past depth 6 as
+well. -/
+theorem aggregator_natSeven_closed {mode : Mode} {level : Nat}
+    {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.natSucc (context := sourceCtx)
+        (Term.natSucc
+          (Term.natSucc
+            (Term.natSucc
+              (Term.natSucc
+                (Term.natSucc
+                  (Term.natSucc Term.natZero))))))) :=
+  isAggregatorSound_natSucc
+    (isAggregatorSound_natSucc
+      (isAggregatorSound_natSucc
+        (isAggregatorSound_natSucc
+          (isAggregatorSound_natSucc
+            (isAggregatorSound_natSucc
+              (isAggregatorSound_natSucc isAggregatorSound_natZero))))))
+
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_unit_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwo_closed
@@ -520,5 +582,8 @@ theorem aggregator_pair_pair_natNatNat_closed {mode : Mode}
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natSix_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_optionSome_quad_natZero_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_pair_natNatNat_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_pair_natZero_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_natZero_pair_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natSeven_closed
 
 end LeanFX2.SmokeAggregatorComposition
