@@ -387,4 +387,27 @@ namespace LeanFX2.SmokeTypedInversion
 #print axioms LeanFX2.Term.partialStrengthenTypedEffectPerformOfSuccess
 #print axioms LeanFX2.Term.partialStrengthenTypedEffectPerformOfSuccess_sound
 
+-- Phase 36 (sidequest): WRAPPER soundness for codata-unfold producer.
+-- Pattern: App-style wrapper that takes `outputTypeStrengthens` as an
+-- explicit parameter (no internal `cases X : foo` option-split).  The
+-- proof destructures `stateResult` and `transitionResult`, aligns the
+-- transition's `Ty.arrow` shape via record-rewrite + `cases` on the
+-- equation, then delegates to
+-- `partialStrengthenTypedCodataUnfoldOfSuccess_sound` at the leaf.
+-- Mirrors the recipe established for `Transp_sound` / `Hcomp_sound`.
+#print axioms LeanFX2.Term.partialStrengthenTypedCodataUnfold_sound
+
+-- Phase 37 (sidequest): WRAPPER soundness for effect-performance
+-- producer.  Pattern: App-style wrapper that takes 3 strengtheners
+-- (effectTagStrengthens, argumentCarrierStrengthens,
+-- resultCarrierStrengthens) as explicit parameters; the proof
+-- destructures `operationTagResult` and `argumentsResult`, aligns the
+-- `Ty.effect`-shaped operation-tag type and the operation-signature
+-- argument-carrier for the arguments-term type, then delegates to
+-- `partialStrengthenTypedEffectPerformOfSuccess_sound`.  Threads the
+-- `canPerformOperation` and the row-membership witnesses through
+-- without case-splitting on them (OfSuccess_sound handles both
+-- direct + readViaWrite cases internally).
+#print axioms LeanFX2.Term.partialStrengthenTypedEffectPerform_sound
+
 end LeanFX2.SmokeTypedInversion

@@ -563,5 +563,7 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedEquivIntroHetOfSuccess_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedEffectPerformOfSuccess
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedEffectPerformOfSuccess_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedCodataUnfold_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedEffectPerform_sound
 
 end LeanFX2.Tools

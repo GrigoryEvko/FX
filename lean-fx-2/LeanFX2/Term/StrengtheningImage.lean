@@ -2391,6 +2391,68 @@ theorem partialStrengthenTypedCodataUnfoldOfSuccess_sound {mode : Mode}
   exact Term.codataUnfold_HEq_congr stateRenames outputRenames
     stateRawRenames transitionRawRenames stateSound transitionSound
 
+/-- Soundness for the typed codata-unfold wrapper.
+
+Mirrors `partialStrengthenTypedCodataUnfold`'s structure: destructures
+both child `StrengtheningResult` records, aligns the transition's
+`Ty.arrow` type via `rw` + `cases` on the transition-type
+strengthening, then invokes
+`partialStrengthenTypedCodataUnfoldOfSuccess_sound` at the leaf with
+the explicit `outputTypeStrengthens` witness threaded through.  Pure
+App-pattern: no internal `cases X : foo` option-split, only record
+field rewrites. -/
+theorem partialStrengthenTypedCodataUnfold_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {stateType outputType : Ty level sourceScope}
+    {targetOutputType : Ty level targetScope}
+    {stateRaw transitionRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {initialState : Term sourceCtx stateType stateRaw}
+    {transition :
+      Term sourceCtx (Ty.arrow stateType outputType) transitionRaw}
+    (outputTypeStrengthens :
+      outputType.partialStrengthen? strengthening.back =
+        some targetOutputType)
+    {stateResult : StrengtheningResult strengthening initialState}
+    {transitionResult : StrengtheningResult strengthening transition}
+    (stateSound : StrengtheningSoundness stateResult)
+    (transitionSound : StrengtheningSoundness transitionResult) :
+    StrengtheningSoundness
+      (partialStrengthenTypedCodataUnfold outputTypeStrengthens
+        stateResult transitionResult) := by
+  cases stateResult with
+  | mk targetStateType targetStateRaw targetStateTerm stateTypeStrengthens
+      stateRawStrengthens stateTypeRenames stateRawRenames =>
+      cases transitionResult with
+      | mk targetTransitionType targetTransitionRaw targetTransitionTerm
+          transitionTypeStrengthens transitionRawStrengthens
+          transitionTypeRenames transitionRawRenames =>
+          have expectedTransitionTypeStrengthens :
+              (Ty.arrow stateType outputType).partialStrengthen?
+                  strengthening.back =
+                some (Ty.arrow targetStateType targetOutputType) := by
+            change
+              Option.mapTwo
+                (stateType.partialStrengthen? strengthening.back)
+                (outputType.partialStrengthen? strengthening.back)
+                Ty.arrow =
+                  some (Ty.arrow targetStateType targetOutputType)
+            rw [stateTypeStrengthens, outputTypeStrengthens]
+            rfl
+          rw [expectedTransitionTypeStrengthens]
+            at transitionTypeStrengthens
+          cases transitionTypeStrengthens
+          exact partialStrengthenTypedCodataUnfoldOfSuccess_sound
+            (stateTypeStrengthens := stateTypeStrengthens)
+            (outputTypeStrengthens := outputTypeStrengthens)
+            (stateRawStrengthens := stateRawStrengthens)
+            (transitionRawStrengthens := transitionRawStrengthens)
+            (stateRawRenames := stateRawRenames)
+            (transitionRawRenames := transitionRawRenames)
+            stateSound.termRenames transitionSound.termRenames
+
 /-- Soundness for the success branch of codata-destruction strengthening.
 Mirrors `partialStrengthenTypedRefineElimOfSuccess_sound`: the OfSuccess
 body's record construction is what `dsimp` unfolds.  The state-type
@@ -4460,6 +4522,98 @@ theorem partialStrengthenTypedEffectPerformOfSuccess_sound
           rowMember)
         effectTagRenames operationRawRenames argumentsRawRenames
         operationTagSound argumentsSound
+
+/-- Soundness for the typed effect-performance wrapper.
+
+Mirrors `partialStrengthenTypedEffectPerform`'s structure:
+destructures both child `StrengtheningResult` records, aligns the
+`Ty.effect`-shaped operation-tag type and the operation-signature
+argument-carrier for the arguments-term type, then delegates the
+final `HEq` reconstruction to
+`partialStrengthenTypedEffectPerformOfSuccess_sound`.  The wrapper
+takes `effectTagStrengthens` + `argumentCarrierStrengthens` +
+`resultCarrierStrengthens` as explicit parameters; the soundness
+theorem threads them straight through. -/
+theorem partialStrengthenTypedEffectPerform_sound
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    (effectTag : RawTerm sourceScope)
+    (targetEffectTag : RawTerm targetScope)
+    (effectRow : Effects.EffectRow)
+    (operationSignature :
+      Effects.OperationSignature (Ty level sourceScope))
+    (targetArgumentCarrier targetResultCarrier :
+      Ty level targetScope)
+    (canPerformOperation :
+      Effects.CanPerform effectRow operationSignature)
+    {operationRaw argumentsRaw : RawTerm sourceScope}
+    {operationTag :
+      Term sourceCtx
+        (Ty.effect operationSignature.argumentCarrier effectTag)
+        operationRaw}
+    {arguments :
+      Term sourceCtx operationSignature.argumentCarrier argumentsRaw}
+    (effectTagStrengthens :
+      effectTag.partialStrengthen? strengthening.back =
+        some targetEffectTag)
+    (argumentCarrierStrengthens :
+      operationSignature.argumentCarrier.partialStrengthen?
+          strengthening.back =
+        some targetArgumentCarrier)
+    (resultCarrierStrengthens :
+      operationSignature.resultCarrier.partialStrengthen?
+          strengthening.back =
+        some targetResultCarrier)
+    {operationTagResult : StrengtheningResult strengthening operationTag}
+    {argumentsResult : StrengtheningResult strengthening arguments}
+    (operationTagSound : StrengtheningSoundness operationTagResult)
+    (argumentsSound : StrengtheningSoundness argumentsResult)
+    (effectTagRenames :
+      effectTag = targetEffectTag.rename strengthening.forward) :
+    StrengtheningSoundness
+      (partialStrengthenTypedEffectPerform effectTag targetEffectTag
+        effectRow operationSignature targetArgumentCarrier
+        targetResultCarrier canPerformOperation effectTagStrengthens
+        argumentCarrierStrengthens resultCarrierStrengthens
+        operationTagResult argumentsResult) := by
+  cases operationTagResult with
+  | mk targetOperationTagType targetOperationRaw targetOperationTag
+      operationTagTypeStrengthens operationRawStrengthens
+      operationTagTypeRenames operationRawRenames =>
+      have expectedOperationTagTypeStrengthens :
+          (Ty.effect operationSignature.argumentCarrier
+              effectTag).partialStrengthen? strengthening.back =
+            some (Ty.effect targetArgumentCarrier targetEffectTag) := by
+        change
+          Option.mapTwo
+            (operationSignature.argumentCarrier.partialStrengthen?
+              strengthening.back)
+            (effectTag.partialStrengthen? strengthening.back)
+            Ty.effect =
+              some (Ty.effect targetArgumentCarrier targetEffectTag)
+        rw [argumentCarrierStrengthens, effectTagStrengthens]
+        rfl
+      rw [expectedOperationTagTypeStrengthens]
+        at operationTagTypeStrengthens
+      cases operationTagTypeStrengthens
+      cases argumentsResult with
+      | mk targetArgumentsType targetArgumentsRaw targetArguments
+          argumentsTypeStrengthens argumentsRawStrengthens
+          argumentsTypeRenames argumentsRawRenames =>
+          rw [argumentCarrierStrengthens] at argumentsTypeStrengthens
+          cases argumentsTypeStrengthens
+          exact partialStrengthenTypedEffectPerformOfSuccess_sound
+            effectRow operationSignature canPerformOperation
+            (targetOperationTag := targetOperationTag)
+            (targetArguments := targetArguments)
+            effectTagStrengthens argumentCarrierStrengthens
+            resultCarrierStrengthens operationRawStrengthens
+            argumentsRawStrengthens effectTagRenames
+            operationRawRenames argumentsRawRenames
+            operationTagSound.termRenames
+            argumentsSound.termRenames
 
 end Term
 
