@@ -550,6 +550,63 @@ theorem aggregator_natSeven_closed {mode : Mode} {level : Nat}
             (isAggregatorSound_natSucc
               (isAggregatorSound_natSucc isAggregatorSound_natZero))))))
 
+/-- Sigma with option in the SECOND component: `(natZero, Some
+natZero)` at carrier `nat × option nat` (secondType :=
+Ty.optionType Ty.nat closed).  Counterpart to Phase 99's
+`pair_optionSome_natZero` which puts the parametric child in
+the first component; together they confirm parametric-in-Sigma
+nesting works at either component position. -/
+theorem aggregator_pair_natZero_optionSome_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.pair (context := sourceCtx)
+        (secondType := Ty.optionType Ty.nat)
+        (firstValue := Term.natZero)
+        (secondValue :=
+          Term.optionSome (valueTerm := Term.natZero))) :=
+  isAggregatorSound_pair isAggregatorSound_natZero
+    (isAggregatorSound_optionSome isAggregatorSound_natZero)
+
+/-- Sigma with either in the SECOND component: `(natZero,
+eitherInl natZero)` at carrier `nat × Either nat bool`.
+Counterpart to Phase 100's `pair_eitherInl_natZero` which puts
+the heterogeneous-injection child in the first component;
+together they confirm heterogeneous-in-Sigma nesting works at
+either component position. -/
+theorem aggregator_pair_natZero_eitherInl_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.pair (context := sourceCtx)
+        (secondType := Ty.eitherType Ty.nat Ty.bool)
+        (firstValue := Term.natZero)
+        (secondValue :=
+          Term.eitherInl (rightType := Ty.bool)
+            (valueTerm := Term.natZero))) :=
+  isAggregatorSound_pair isAggregatorSound_natZero
+    (isAggregatorSound_eitherInl (rightType := Ty.bool)
+      isAggregatorSound_natZero)
+
+/-- 3-element list `[0, 0, 0]` at carrier `list nat`.  Extends
+the existing 2-element `listCons_natListChain_closed` to depth 3,
+demonstrating that the 2-IH parametric listCons wrapper chains
+uniformly past length 2 with each tail-side recursive call
+binding `elementType := Ty.nat` only at the final listNil. -/
+theorem aggregator_listCons_natListChainThree_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.listCons (context := sourceCtx)
+        (headTerm := Term.natZero)
+        (tailTerm :=
+          Term.listCons (headTerm := Term.natZero)
+            (tailTerm :=
+              Term.listCons (headTerm := Term.natZero)
+                (tailTerm :=
+                  Term.listNil (elementType := Ty.nat))))) :=
+  isAggregatorSound_listCons isAggregatorSound_natZero
+    (isAggregatorSound_listCons isAggregatorSound_natZero
+      (isAggregatorSound_listCons isAggregatorSound_natZero
+        (isAggregatorSound_listNil (elementType := Ty.nat))))
+
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_unit_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwo_closed
@@ -585,5 +642,8 @@ theorem aggregator_natSeven_closed {mode : Mode} {level : Nat}
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_pair_natZero_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_natZero_pair_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natSeven_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_natZero_optionSome_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_natZero_eitherInl_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_natListChainThree_closed
 
 end LeanFX2.SmokeAggregatorComposition
