@@ -6634,24 +6634,27 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
   | @Term.boolFalse _ _ _ _ => by
       exact some (partialStrengthenTypedBoolFalse strengthening)
   | @Term.boolElim _ _ _ _ motiveType _ _ _ scrutinee thenBranch
-      elseBranch => by
-      cases motiveSuccess :
+      elseBranch =>
+      match motiveSuccess :
           motiveType.partialStrengthen? strengthening.back.lift with
-      | none => exact none
+      | none => none
       | some targetMotiveType =>
-          cases partialStrengthenTyped? scrutinee
-              (strengthening := strengthening) with
-          | none => exact none
+          match scrutineeRecurse :
+              partialStrengthenTyped? scrutinee
+                (strengthening := strengthening) with
+          | none => none
           | some scrutineeResult =>
-              cases partialStrengthenTyped? thenBranch
-                  (strengthening := strengthening) with
-              | none => exact none
+              match thenRecurse :
+                  partialStrengthenTyped? thenBranch
+                    (strengthening := strengthening) with
+              | none => none
               | some thenResult =>
-                  cases partialStrengthenTyped? elseBranch
-                      (strengthening := strengthening) with
-                  | none => exact none
+                  match elseRecurse :
+                      partialStrengthenTyped? elseBranch
+                        (strengthening := strengthening) with
+                  | none => none
                   | some elseResult =>
-                      exact some
+                      some
                         (partialStrengthenTypedBoolElim motiveSuccess
                           scrutineeResult thenResult elseResult)
   | @Term.natZero _ _ _ _ => by
@@ -6663,36 +6666,42 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
       | none => none
       | some predecessorResult =>
           some (partialStrengthenTypedNatSucc predecessorResult)
-  | @Term.natElim _ _ _ _ _ _ _ _ scrutinee zeroBranch succBranch => by
-      cases partialStrengthenTyped? scrutinee
-          (strengthening := strengthening) with
-      | none => exact none
+  | @Term.natElim _ _ _ _ _ _ _ _ scrutinee zeroBranch succBranch =>
+      match scrutineeRecurse :
+          partialStrengthenTyped? scrutinee
+            (strengthening := strengthening) with
+      | none => none
       | some scrutineeResult =>
-          cases partialStrengthenTyped? zeroBranch
-              (strengthening := strengthening) with
-          | none => exact none
+          match zeroRecurse :
+              partialStrengthenTyped? zeroBranch
+                (strengthening := strengthening) with
+          | none => none
           | some zeroResult =>
-              cases partialStrengthenTyped? succBranch
-                  (strengthening := strengthening) with
-              | none => exact none
+              match succRecurse :
+                  partialStrengthenTyped? succBranch
+                    (strengthening := strengthening) with
+              | none => none
               | some succResult =>
-                  exact some
+                  some
                     (partialStrengthenTypedNatElim scrutineeResult
                       zeroResult succResult)
-  | @Term.natRec _ _ _ _ _ _ _ _ scrutinee zeroBranch succBranch => by
-      cases partialStrengthenTyped? scrutinee
-          (strengthening := strengthening) with
-      | none => exact none
+  | @Term.natRec _ _ _ _ _ _ _ _ scrutinee zeroBranch succBranch =>
+      match scrutineeRecurse :
+          partialStrengthenTyped? scrutinee
+            (strengthening := strengthening) with
+      | none => none
       | some scrutineeResult =>
-          cases partialStrengthenTyped? zeroBranch
-              (strengthening := strengthening) with
-          | none => exact none
+          match zeroRecurse :
+              partialStrengthenTyped? zeroBranch
+                (strengthening := strengthening) with
+          | none => none
           | some zeroResult =>
-              cases partialStrengthenTyped? succBranch
-                  (strengthening := strengthening) with
-              | none => exact none
+              match succRecurse :
+                  partialStrengthenTyped? succBranch
+                    (strengthening := strengthening) with
+              | none => none
               | some succResult =>
-                  exact some
+                  some
                     (partialStrengthenTypedNatRec scrutineeResult
                       zeroResult succResult)
   | @Term.listNil _ _ _ _ elementType =>
@@ -6716,24 +6725,27 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
           | some tailResult =>
               some (partialStrengthenTypedListCons headResult tailResult)
   | @Term.listElim _ _ _ _ elementType _ _ _ _ scrutinee nilBranch
-      consBranch => by
-      cases elementSuccess :
+      consBranch =>
+      match elementSuccess :
           elementType.partialStrengthen? strengthening.back with
-      | none => exact none
-      | some _ =>
-          cases partialStrengthenTyped? scrutinee
-              (strengthening := strengthening) with
-          | none => exact none
+      | none => none
+      | some targetElementType =>
+          match scrutineeRecurse :
+              partialStrengthenTyped? scrutinee
+                (strengthening := strengthening) with
+          | none => none
           | some scrutineeResult =>
-              cases partialStrengthenTyped? nilBranch
-                  (strengthening := strengthening) with
-              | none => exact none
+              match nilRecurse :
+                  partialStrengthenTyped? nilBranch
+                    (strengthening := strengthening) with
+              | none => none
               | some nilResult =>
-                  cases partialStrengthenTyped? consBranch
-                      (strengthening := strengthening) with
-                  | none => exact none
+                  match consRecurse :
+                      partialStrengthenTyped? consBranch
+                        (strengthening := strengthening) with
+                  | none => none
                   | some consResult =>
-                      exact some
+                      some
                         (partialStrengthenTypedListElim elementSuccess
                           scrutineeResult nilResult consResult)
   | @Term.optionNone _ _ _ _ elementType =>
@@ -6752,24 +6764,27 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
       | some valueResult =>
           some (partialStrengthenTypedOptionSome valueResult)
   | @Term.optionMatch _ _ _ _ elementType _ _ _ _ scrutinee noneBranch
-      someBranch => by
-      cases elementSuccess :
+      someBranch =>
+      match elementSuccess :
           elementType.partialStrengthen? strengthening.back with
-      | none => exact none
-      | some _ =>
-          cases partialStrengthenTyped? scrutinee
-              (strengthening := strengthening) with
-          | none => exact none
+      | none => none
+      | some targetElementType =>
+          match scrutineeRecurse :
+              partialStrengthenTyped? scrutinee
+                (strengthening := strengthening) with
+          | none => none
           | some scrutineeResult =>
-              cases partialStrengthenTyped? noneBranch
-                  (strengthening := strengthening) with
-              | none => exact none
+              match noneRecurse :
+                  partialStrengthenTyped? noneBranch
+                    (strengthening := strengthening) with
+              | none => none
               | some noneResult =>
-                  cases partialStrengthenTyped? someBranch
-                      (strengthening := strengthening) with
-                  | none => exact none
+                  match someRecurse :
+                      partialStrengthenTyped? someBranch
+                        (strengthening := strengthening) with
+                  | none => none
                   | some someResult =>
-                      exact some
+                      some
                         (partialStrengthenTypedOptionMatch elementSuccess
                           scrutineeResult noneResult someResult)
   | @Term.eitherInl _ _ _ _ _ rightType _ valueTerm =>
