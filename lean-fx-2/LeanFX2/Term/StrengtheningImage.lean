@@ -8561,6 +8561,61 @@ theorem partialStrengthenTyped?_atEffectPerform_imp_sound {mode : Mode}
               (argumentsIH argumentsResult argumentsRecurse)
               effectTagRenames
 
+/-- Dispatcher soundness at the `Term.glueIntro` arm.  Carries one Ty
+witness (baseType), one raw witness (boundaryWitness) under the
+cubical mode-univalent flag, plus two value-level IHs (baseValue,
+partialValue).  Both value children share the same baseType — partial
+glue is the boundary half of the cubical glue type.  Delegates to
+`partialStrengthenTypedGlueIntro_sound` which derives both rename
+directions internally. -/
+theorem partialStrengthenTyped?_atGlueIntro_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {baseType : Ty level sourceScope}
+    {boundaryWitness : RawTerm sourceScope}
+    {baseRaw partialRaw : RawTerm sourceScope}
+    {baseValue : Term sourceCtx baseType baseRaw}
+    {partialValue : Term sourceCtx baseType partialRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (baseIH : ∀ baseResult,
+        partialStrengthenTyped? baseValue strengthening =
+            some baseResult →
+          StrengtheningSoundness baseResult)
+    (partialIH : ∀ partialResult,
+        partialStrengthenTyped? partialValue strengthening =
+            some partialResult →
+          StrengtheningSoundness partialResult)
+    (result : StrengtheningResult strengthening
+      (Term.glueIntro (context := sourceCtx) modeIsUnivalent baseType
+        boundaryWitness baseValue partialValue))
+    (success : partialStrengthenTyped?
+        (Term.glueIntro (context := sourceCtx) modeIsUnivalent baseType
+          boundaryWitness baseValue partialValue) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetBaseType baseTypeSuccess
+    split at success
+    · cases success
+    · rename_i targetBoundaryWitness boundarySuccess
+      split at success
+      · cases success
+      · rename_i baseResult baseRecurse
+        split at success
+        · cases success
+        · rename_i partialResult partialRecurse
+          cases success
+          exact partialStrengthenTypedGlueIntro_sound
+            modeIsUnivalent baseType targetBaseType
+            boundaryWitness targetBoundaryWitness
+            baseTypeSuccess boundarySuccess
+            (baseIH baseResult baseRecurse)
+            (partialIH partialResult partialRecurse)
+
 end Term
 
 end LeanFX2

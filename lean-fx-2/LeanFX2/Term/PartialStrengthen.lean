@@ -7102,23 +7102,24 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                               carrierSuccess leftSuccess rightSuccess
                               pathResult intervalResult)
   | @Term.glueIntro _ _ _ _ modeIsUnivalent baseType boundaryWitness _ _
-      baseValue partialValue => by
-      cases baseTypeSuccess : baseType.partialStrengthen? strengthening.back with
-      | none => exact none
+      baseValue partialValue =>
+      match baseTypeSuccess :
+          baseType.partialStrengthen? strengthening.back with
+      | none => none
       | some targetBaseType =>
-          cases boundarySuccess :
+          match boundarySuccess :
               boundaryWitness.partialStrengthen? strengthening.back with
-          | none => exact none
+          | none => none
           | some targetBoundaryWitness =>
-              cases partialStrengthenTyped? baseValue
+              match partialStrengthenTyped? baseValue
                   (strengthening := strengthening) with
-              | none => exact none
+              | none => none
               | some baseResult =>
-                  cases partialStrengthenTyped? partialValue
+                  match partialStrengthenTyped? partialValue
                       (strengthening := strengthening) with
-                  | none => exact none
+                  | none => none
                   | some partialResult =>
-                      exact some
+                      some
                         (partialStrengthenTypedGlueIntro modeIsUnivalent
                           baseType targetBaseType boundaryWitness
                           targetBoundaryWitness baseTypeSuccess
