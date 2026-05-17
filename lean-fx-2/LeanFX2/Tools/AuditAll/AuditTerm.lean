@@ -660,4 +660,6 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_atHcompPath_imp_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_atTransp_imp_sound
 
+#assert_no_axioms LeanFX2.Term.isAggregatorSound_var
+
 end LeanFX2.Tools

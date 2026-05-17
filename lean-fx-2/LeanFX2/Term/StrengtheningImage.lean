@@ -8950,6 +8950,70 @@ theorem partialStrengthenTyped?_atTransp_imp_sound {mode : Mode}
                 (pathIH pathResult pathRecurse)
                 (sourceIH sourceResult sourceRecurse)
 
+/-! ## Headline aggregator infrastructure
+
+The next layer above the 78 per-arm dispatcher leaves
+(`partialStrengthenTyped?_at<Ctor>_imp_sound`) is the full structural
+aggregator `partialStrengthenTyped?_imp_sound`: for ANY source typed
+term, if `partialStrengthenTyped?` succeeds, the result satisfies
+`StrengtheningSoundness`.  The aggregator is a 78-case structural
+induction on `Term`, with each case applying the corresponding leaf.
+
+Per-ctor IH plumbing varies (0–4 IHs depending on ctor arity and
+binder structure), so the full aggregator lands in multiple phases.
+
+This file ships the entry point: a single uniform soundness
+property `IsAggregatorSound`, plus a base-case dispatcher for the
+`var` arm.  Subsequent ctors land as further dispatchers extending
+the same predicate. -/
+
+/-- The aggregator-soundness property for a typed source term.
+
+`IsAggregatorSound sourceTerm` asserts that for ANY context
+strengthening from `sourceTerm`'s context, ANY successful dispatch
+of `partialStrengthenTyped?` produces a result whose recovery
+equations hold (via `StrengtheningSoundness`).
+
+The 78 per-arm dispatcher leaves
+`partialStrengthenTyped?_at<Ctor>_imp_sound` each prove this
+property for terms whose head constructor is the respective ctor,
+under inductive hypotheses for the recursive children.
+
+The full aggregator is the headline theorem
+`∀ sourceTerm, IsAggregatorSound sourceTerm`, proved by structural
+induction on `Term`; this file ships the predicate plus the `var`
+base case as scaffolding. -/
+def IsAggregatorSound {mode : Mode} {level : Nat} {sourceScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {ty : Ty level sourceScope} {rawTerm : RawTerm sourceScope}
+    (sourceTerm : Term sourceCtx ty rawTerm) : Prop :=
+  ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (result : StrengtheningResult strengthening sourceTerm),
+    partialStrengthenTyped? sourceTerm strengthening = some result →
+    StrengtheningSoundness result
+
+/-- Headline aggregator soundness at the `Term.var` arm.
+
+Lifts `partialStrengthenTyped?_atVar_imp_sound` into the uniform
+`IsAggregatorSound` predicate shape consumed by downstream image
+theorems (Steps 2–4 of `Term.weaken` strengthening invertibility).
+
+The proof is a single-line delegation: `intros _ _ str res suc`
+introduces the universally-quantified strengthening / result /
+success arguments, then `exact` calls the per-arm leaf.
+
+This is the FIRST shipped dispatcher arm of the headline
+aggregator; remaining 77 arms land in subsequent phases. -/
+theorem isAggregatorSound_var {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (sourcePosition : Fin sourceScope) :
+    IsAggregatorSound
+      (Term.var (context := sourceCtx) sourcePosition) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atVar_imp_sound sourcePosition
+    strengthening result success
+
 end Term
 
 end LeanFX2
