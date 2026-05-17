@@ -6552,6 +6552,187 @@ theorem partialStrengthenTyped?_atGlueElim_imp_sound {mode : Mode}
         exact partialStrengthenTypedGlueElim_sound modeIsUnivalent
           baseSuccess boundarySuccess (gluedIH gluedResult gluedRecurse)
 
+/-- Dispatcher soundness at the `Term.codataUnfold` arm.  Codata
+introduction: one raw witness on `outputType` (state type rides
+through the transition arrow's type strengthening) + two
+flat-context value IHs (`initialState` + `transition`). -/
+theorem partialStrengthenTyped?_atCodataUnfold_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {stateType outputType : Ty level sourceScope}
+    {stateRaw transitionRaw : RawTerm sourceScope}
+    {initialState : Term sourceCtx stateType stateRaw}
+    {transition :
+      Term sourceCtx (Ty.arrow stateType outputType) transitionRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (stateIH : ∀ stateResult,
+        partialStrengthenTyped? initialState strengthening =
+            some stateResult →
+          StrengtheningSoundness stateResult)
+    (transitionIH : ∀ transitionResult,
+        partialStrengthenTyped? transition strengthening =
+            some transitionResult →
+          StrengtheningSoundness transitionResult)
+    (result : StrengtheningResult strengthening
+      (Term.codataUnfold initialState transition))
+    (success : partialStrengthenTyped?
+        (Term.codataUnfold initialState transition) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetOutputType outputSuccess
+    split at success
+    · cases success
+    · rename_i stateResult stateRecurse
+      split at success
+      · cases success
+      · rename_i transitionResult transitionRecurse
+        cases success
+        exact partialStrengthenTypedCodataUnfold_sound outputSuccess
+          (stateSound := stateIH stateResult stateRecurse)
+          (transitionSound := transitionIH transitionResult transitionRecurse)
+
+/-- Dispatcher soundness at the `Term.codataDest` arm.  Codata
+destruction: two type witnesses (`stateType` + `outputType`, both at
+`strengthening.back`) + one flat-context value IH on `codataValue`. -/
+theorem partialStrengthenTyped?_atCodataDest_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {stateType outputType : Ty level sourceScope}
+    {codataRaw : RawTerm sourceScope}
+    {codataValue :
+      Term sourceCtx (Ty.codata stateType outputType) codataRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (codataIH : ∀ codataResult,
+        partialStrengthenTyped? codataValue strengthening =
+            some codataResult →
+          StrengtheningSoundness codataResult)
+    (result : StrengtheningResult strengthening
+      (Term.codataDest codataValue))
+    (success : partialStrengthenTyped?
+        (Term.codataDest codataValue) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetStateType stateSuccess
+    split at success
+    · cases success
+    · rename_i targetOutputType outputSuccess
+      split at success
+      · cases success
+      · rename_i codataResult codataRecurse
+        cases success
+        exact partialStrengthenTypedCodataDest_sound stateSuccess
+          outputSuccess
+          (codataSound := codataIH codataResult codataRecurse)
+
+/-- Dispatcher soundness at the `Term.sessionSend` arm.  Session-send:
+one raw witness on the protocol step (lifted to
+`strengthening.back` since the protocol step lives at flat scope) +
+two flat-context value IHs (`channel` + `payload`). -/
+theorem partialStrengthenTyped?_atSessionSend_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {protocolStep : RawTerm sourceScope}
+    {payloadType : Ty level sourceScope}
+    {channelRaw payloadRaw : RawTerm sourceScope}
+    {channel : Term sourceCtx (Ty.session protocolStep) channelRaw}
+    {payload : Term sourceCtx payloadType payloadRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (channelIH : ∀ channelResult,
+        partialStrengthenTyped? channel strengthening =
+            some channelResult →
+          StrengtheningSoundness channelResult)
+    (payloadIH : ∀ payloadResult,
+        partialStrengthenTyped? payload strengthening =
+            some payloadResult →
+          StrengtheningSoundness payloadResult)
+    (result : StrengtheningResult strengthening
+      (Term.sessionSend protocolStep channel payload))
+    (success : partialStrengthenTyped?
+        (Term.sessionSend protocolStep channel payload) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetProtocolStep protocolSuccess
+    split at success
+    · cases success
+    · rename_i channelResult channelRecurse
+      split at success
+      · cases success
+      · rename_i payloadResult payloadRecurse
+        cases success
+        exact partialStrengthenTypedSessionSend_sound protocolSuccess
+          (channelSound := channelIH channelResult channelRecurse)
+          (payloadSound := payloadIH payloadResult payloadRecurse)
+
+/-- Dispatcher soundness at the `Term.sessionRecv` arm.  Session-recv:
+one raw witness on the protocol step + one flat-context value IH on
+`channel`. -/
+theorem partialStrengthenTyped?_atSessionRecv_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {protocolStep : RawTerm sourceScope}
+    {channelRaw : RawTerm sourceScope}
+    {channel : Term sourceCtx (Ty.session protocolStep) channelRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (channelIH : ∀ channelResult,
+        partialStrengthenTyped? channel strengthening =
+            some channelResult →
+          StrengtheningSoundness channelResult)
+    (result : StrengtheningResult strengthening
+      (Term.sessionRecv channel))
+    (success : partialStrengthenTyped?
+        (Term.sessionRecv channel) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetProtocolStep protocolSuccess
+    split at success
+    · cases success
+    · rename_i channelResult channelRecurse
+      cases success
+      exact partialStrengthenTypedSessionRecv_sound protocolSuccess
+        (channelSound := channelIH channelResult channelRecurse)
+
+/-- Dispatcher soundness at the `Term.equivReflId` arm.  Closed-leaf
+equivalence-reflexivity-at-id: one type witness on `carrier`, NO
+value IH.  The wrapper takes `carrier` and `targetCarrier` as
+positional explicit arguments; the dispatcher leaf grabs the latter
+from `split`'s rename. -/
+theorem partialStrengthenTyped?_atEquivReflId_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {carrier : Ty level sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (result : StrengtheningResult strengthening
+      (Term.equivReflId (context := sourceCtx) (carrier := carrier)))
+    (success : partialStrengthenTyped?
+        (Term.equivReflId (context := sourceCtx) (carrier := carrier))
+          strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetCarrier carrierSuccess
+    cases success
+    exact partialStrengthenTypedEquivReflId_sound carrier targetCarrier
+      carrierSuccess
+
 /-- Dispatcher soundness at the `Term.recordIntro` arm.  Single-field
 record introduction: no raw or type witnesses (`Ty.record` is built
 from the strengthened field type via `congrArg`), one flat-context

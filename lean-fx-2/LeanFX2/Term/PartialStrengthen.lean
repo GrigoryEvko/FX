@@ -7270,64 +7270,70 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                   some
                     (partialStrengthenTypedRefineElim baseSuccess
                       predicateSuccess refinedResult)
-  | @Term.codataUnfold _ _ _ _ _ outputType _ _ initialState transition => by
-      cases outputSuccess :
+  | @Term.codataUnfold _ _ _ _ _ outputType _ _ initialState transition =>
+      match outputSuccess :
           outputType.partialStrengthen? strengthening.back with
-      | none => exact none
-      | some targetOutputType =>
-          cases partialStrengthenTyped? initialState
-              (strengthening := strengthening) with
-          | none => exact none
+      | none => none
+      | some _ =>
+          match stateRecurse :
+              partialStrengthenTyped? initialState
+                (strengthening := strengthening) with
+          | none => none
           | some stateResult =>
-              cases partialStrengthenTyped? transition
-                  (strengthening := strengthening) with
-              | none => exact none
+              match transitionRecurse :
+                  partialStrengthenTyped? transition
+                    (strengthening := strengthening) with
+              | none => none
               | some transitionResult =>
-                  exact some
+                  some
                     (partialStrengthenTypedCodataUnfold outputSuccess
                       stateResult transitionResult)
-  | @Term.codataDest _ _ _ _ stateType outputType _ codataValue => by
-      cases stateSuccess :
+  | @Term.codataDest _ _ _ _ stateType outputType _ codataValue =>
+      match stateSuccess :
           stateType.partialStrengthen? strengthening.back with
-      | none => exact none
+      | none => none
       | some _ =>
-          cases outputSuccess :
+          match outputSuccess :
               outputType.partialStrengthen? strengthening.back with
-          | none => exact none
+          | none => none
           | some _ =>
-              cases partialStrengthenTyped? codataValue
-                  (strengthening := strengthening) with
-              | none => exact none
+              match codataRecurse :
+                  partialStrengthenTyped? codataValue
+                    (strengthening := strengthening) with
+              | none => none
               | some codataResult =>
-                  exact some
+                  some
                     (partialStrengthenTypedCodataDest stateSuccess
                       outputSuccess codataResult)
-  | @Term.sessionSend _ _ _ _ protocolStep _ _ _ channel payload => by
-      cases protocolSuccess :
+  | @Term.sessionSend _ _ _ _ protocolStep _ _ _ channel payload =>
+      match protocolSuccess :
           protocolStep.partialStrengthen? strengthening.back with
-      | none => exact none
-      | some targetProtocolStep =>
-          cases partialStrengthenTyped? channel
-              (strengthening := strengthening) with
-          | none => exact none
+      | none => none
+      | some _ =>
+          match channelRecurse :
+              partialStrengthenTyped? channel
+                (strengthening := strengthening) with
+          | none => none
           | some channelResult =>
-              cases partialStrengthenTyped? payload
-                  (strengthening := strengthening) with
-              | none => exact none
+              match payloadRecurse :
+                  partialStrengthenTyped? payload
+                    (strengthening := strengthening) with
+              | none => none
               | some payloadResult =>
-                  exact some
+                  some
                     (partialStrengthenTypedSessionSend protocolSuccess
                       channelResult payloadResult)
-  | @Term.sessionRecv _ _ _ _ protocolStep _ channel => by
-      cases protocolSuccess :
+  | @Term.sessionRecv _ _ _ _ protocolStep _ channel =>
+      match protocolSuccess :
           protocolStep.partialStrengthen? strengthening.back with
-      | none => exact none
-      | some targetProtocolStep =>
-          cases partialStrengthenTyped? channel
-              (strengthening := strengthening) with
-          | none => exact none
+      | none => none
+      | some _ =>
+          match channelRecurse :
+              partialStrengthenTyped? channel
+                (strengthening := strengthening) with
+          | none => none
           | some channelResult =>
-              exact some
+              some
                 (partialStrengthenTypedSessionRecv protocolSuccess
                   channelResult)
   | @Term.effectPerform _ _ _ _ effectTag effectRow operationSignature
@@ -7375,11 +7381,12 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
           some
             (partialStrengthenTypedCumulUp lowerLevel higherLevel
               cumulMonotone levelLeLow levelLeHigh codeResult)
-  | @Term.equivReflId _ _ _ _ carrier => by
-      cases carrierSuccess : carrier.partialStrengthen? strengthening.back with
-      | none => exact none
+  | @Term.equivReflId _ _ _ _ carrier =>
+      match carrierSuccess :
+          carrier.partialStrengthen? strengthening.back with
+      | none => none
       | some targetCarrier =>
-          exact some
+          some
             (partialStrengthenTypedEquivReflId carrier targetCarrier
               carrierSuccess)
   | @Term.funextRefl _ _ _ _ domainType codomainType applyRaw => by
