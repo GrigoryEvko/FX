@@ -13264,6 +13264,130 @@ theorem isTotalOnWeaken_refineElim {mode : Mode} {level scope : Nat}
           cases this
       · rfl
 
+/-- 0-IH parametric atomic totality: `Term.funextReflAtId`.  Two Ty
+(domainType, codomainType) at outer scope + one RawTerm (applyRaw)
+at scope+1.  No Term IH. -/
+theorem isTotalOnWeaken_funextReflAtId {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    (applyRaw : RawTerm (scope + 1)) :
+    IsTotalOnWeaken (Term.funextReflAtId (context := context)
+      domainType codomainType applyRaw) := by
+  intro newType
+  show (strengthenTyped? (Term.funextReflAtId
+      (context := context.cons newType)
+      domainType.weaken codomainType.weaken
+      (applyRaw.rename RawRenaming.weaken.lift))).isSome
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next domainFails =>
+      exfalso
+      have domainSuccess :
+          domainType.weaken.partialStrengthen?
+              (ContextStrengthening.dropNewest context newType).back =
+            some domainType :=
+        Ty.strengthen?_weaken domainType
+      rw [domainSuccess] at domainFails
+      cases domainFails
+  · split
+    · next codomainFails =>
+        exfalso
+        have codomainSuccess :
+            codomainType.weaken.partialStrengthen?
+                (ContextStrengthening.dropNewest context newType).back =
+              some codomainType :=
+          Ty.strengthen?_weaken codomainType
+        rw [codomainSuccess] at codomainFails
+        cases codomainFails
+    · split
+      · next applyFails =>
+          exfalso
+          have applySuccess :
+              (applyRaw.rename RawRenaming.weaken.lift).partialStrengthen?
+                  (ContextStrengthening.dropNewest context newType).back.lift =
+                some applyRaw := by
+            have := RawTerm.partialStrengthen?_rename_some applyRaw
+              RawRenaming.weaken.lift RawRenaming.identity
+              (ContextStrengthening.dropNewest context newType).back.lift
+              (fun position =>
+                PartialRawRenaming.lift_dropNewest_weaken_lift position)
+            rw [RawTerm.rename_identity] at this
+            exact this
+          rw [applySuccess] at applyFails
+          cases applyFails
+      · rfl
+
+/-- 0-IH parametric atomic totality: `Term.funextIntroHet`.  Two Ty +
+two RawTerm at scope+1.  No Term IH. -/
+theorem isTotalOnWeaken_funextIntroHet {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    (applyARaw applyBRaw : RawTerm (scope + 1)) :
+    IsTotalOnWeaken (Term.funextIntroHet (context := context)
+      domainType codomainType applyARaw applyBRaw) := by
+  intro newType
+  show (strengthenTyped? (Term.funextIntroHet
+      (context := context.cons newType)
+      domainType.weaken codomainType.weaken
+      (applyARaw.rename RawRenaming.weaken.lift)
+      (applyBRaw.rename RawRenaming.weaken.lift))).isSome
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next domainFails =>
+      exfalso
+      have domainSuccess :
+          domainType.weaken.partialStrengthen?
+              (ContextStrengthening.dropNewest context newType).back =
+            some domainType :=
+        Ty.strengthen?_weaken domainType
+      rw [domainSuccess] at domainFails
+      cases domainFails
+  · split
+    · next codomainFails =>
+        exfalso
+        have codomainSuccess :
+            codomainType.weaken.partialStrengthen?
+                (ContextStrengthening.dropNewest context newType).back =
+              some codomainType :=
+          Ty.strengthen?_weaken codomainType
+        rw [codomainSuccess] at codomainFails
+        cases codomainFails
+    · split
+      · next applyAFails =>
+          exfalso
+          have applyASuccess :
+              (applyARaw.rename RawRenaming.weaken.lift).partialStrengthen?
+                  (ContextStrengthening.dropNewest context newType).back.lift =
+                some applyARaw := by
+            have := RawTerm.partialStrengthen?_rename_some applyARaw
+              RawRenaming.weaken.lift RawRenaming.identity
+              (ContextStrengthening.dropNewest context newType).back.lift
+              (fun position =>
+                PartialRawRenaming.lift_dropNewest_weaken_lift position)
+            rw [RawTerm.rename_identity] at this
+            exact this
+          rw [applyASuccess] at applyAFails
+          cases applyAFails
+      · split
+        · next applyBFails =>
+            exfalso
+            have applyBSuccess :
+                (applyBRaw.rename RawRenaming.weaken.lift).partialStrengthen?
+                    (ContextStrengthening.dropNewest context newType).back.lift =
+                  some applyBRaw := by
+              have := RawTerm.partialStrengthen?_rename_some applyBRaw
+                RawRenaming.weaken.lift RawRenaming.identity
+                (ContextStrengthening.dropNewest context newType).back.lift
+                (fun position =>
+                  PartialRawRenaming.lift_dropNewest_weaken_lift position)
+              rw [RawTerm.rename_identity] at this
+              exact this
+            rw [applyBSuccess] at applyBFails
+            cases applyBFails
+        · rfl
+
 /-- 0-IH parametric atomic totality: `Term.arrowCode` (universe-code
 for `Ty.arrow`).  Two RawTerm sub-payloads at the outer scope. -/
 theorem isTotalOnWeaken_arrowCode {mode : Mode} {level scope : Nat}

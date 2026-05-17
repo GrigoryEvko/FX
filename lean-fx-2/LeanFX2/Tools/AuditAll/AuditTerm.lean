@@ -868,6 +868,10 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.isTotalOnWeaken_refineIntro
 #assert_no_axioms LeanFX2.Term.isTotalOnWeaken_refineElim
 
+-- Wave H: HoTT canonical-witness ctors with scope+1 applyRaw payloads.
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_funextReflAtId
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_funextIntroHet
+
 -- User-facing unweaken?_weaken_<ctor> headline theorems.  Each is a
 -- direct `rfl` witness — concrete totality for the closed atomic
 -- ctors, consumable by Step.eta-cascade SR proofs.
