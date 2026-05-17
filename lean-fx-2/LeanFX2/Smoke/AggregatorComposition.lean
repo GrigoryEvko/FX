@@ -1950,6 +1950,97 @@ theorem aggregator_pair_listCons_optionNone_closed {mode : Mode}
       (isAggregatorSound_listNil (elementType := Ty.nat)))
     (isAggregatorSound_optionNone (elementType := Ty.bool))
 
+/-- Depth-15 nat chain: `succ^15 zero` at carrier `nat`.
+Extends the `natOne..natFourteen` 1-IH chain progression by one
+more step, demonstrating that the natSucc wrapper composes at
+fifteen-fold depth.  Confirms the linear-in-depth proof structure
+remains tractable. -/
+theorem aggregator_natFifteen_closed {mode : Mode} {level : Nat}
+    {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.natSucc (context := sourceCtx)
+        (Term.natSucc
+          (Term.natSucc
+            (Term.natSucc
+              (Term.natSucc
+                (Term.natSucc
+                  (Term.natSucc
+                    (Term.natSucc
+                      (Term.natSucc
+                        (Term.natSucc
+                          (Term.natSucc
+                            (Term.natSucc
+                              (Term.natSucc
+                                (Term.natSucc
+                                  (Term.natSucc Term.natZero))))))))))))))) :=
+  isAggregatorSound_natSucc
+    (isAggregatorSound_natSucc
+      (isAggregatorSound_natSucc
+        (isAggregatorSound_natSucc
+          (isAggregatorSound_natSucc
+            (isAggregatorSound_natSucc
+              (isAggregatorSound_natSucc
+                (isAggregatorSound_natSucc
+                  (isAggregatorSound_natSucc
+                    (isAggregatorSound_natSucc
+                      (isAggregatorSound_natSucc
+                        (isAggregatorSound_natSucc
+                          (isAggregatorSound_natSucc
+                            (isAggregatorSound_natSucc
+                              (isAggregatorSound_natSucc
+                                isAggregatorSound_natZero))))))))))))))
+
+/-- Triple-nested right injection: `eitherInr (eitherInr
+(eitherInr natZero))` at carrier
+`Either nat (Either bool (Either unit nat))`.  Extends the
+existing depth-2 `eitherInr_eitherInr_natZero_closed` by one
+more right-injection layer with a fresh `unit` leftType at the
+innermost level.  Exercises the eitherInr wrapper at depth 3. -/
+theorem aggregator_eitherInr_eitherInr_eitherInr_natZero_closed
+    {mode : Mode} {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.eitherInr (context := sourceCtx)
+        (leftType := Ty.nat)
+        (valueTerm :=
+          Term.eitherInr (leftType := Ty.bool)
+            (valueTerm :=
+              Term.eitherInr (leftType := Ty.unit)
+                (valueTerm := Term.natZero)))) :=
+  isAggregatorSound_eitherInr (leftType := Ty.nat)
+    (isAggregatorSound_eitherInr (leftType := Ty.bool)
+      (isAggregatorSound_eitherInr (leftType := Ty.unit)
+        isAggregatorSound_natZero))
+
+/-- New triple-stack ordering list-Sigma-either:
+`[pair (eitherInl natZero) natZero]` at carrier
+`list ((Either nat bool) × nat)`.  Combines listCons (outer 1-IH
+parametric) wrapping pair (middle 2-IH) wrapping eitherInl
+(inner 1-IH heterogeneous) at the LEFT slot, with natZero filling
+the RIGHT slot.  Tests list-as-outer-wrapper with Sigma-pair as
+middle and either at the leaf. -/
+theorem aggregator_listCons_pair_eitherInl_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.listCons (context := sourceCtx)
+        (headTerm :=
+          Term.pair (secondType := Ty.nat)
+            (firstValue :=
+              Term.eitherInl (rightType := Ty.bool)
+                (valueTerm := Term.natZero))
+            (secondValue := Term.natZero))
+        (tailTerm :=
+          Term.listNil
+            (elementType :=
+              Ty.sigmaTy (Ty.eitherType Ty.nat Ty.bool) Ty.nat))) :=
+  isAggregatorSound_listCons
+    (isAggregatorSound_pair
+      (isAggregatorSound_eitherInl (rightType := Ty.bool)
+        isAggregatorSound_natZero)
+      isAggregatorSound_natZero)
+    (isAggregatorSound_listNil
+      (elementType :=
+        Ty.sigmaTy (Ty.eitherType Ty.nat Ty.bool) Ty.nat))
+
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_unit_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwo_closed
@@ -2051,5 +2142,8 @@ theorem aggregator_pair_listCons_optionNone_closed {mode : Mode}
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natFourteen_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_eitherInl_optionNone_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_listCons_optionNone_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natFifteen_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_eitherInr_eitherInr_eitherInr_natZero_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_pair_eitherInl_closed
 
 end LeanFX2.SmokeAggregatorComposition
