@@ -3086,34 +3086,46 @@ def partialStrengthenTypedRecordProjOfSuccess {mode : Mode} {level : Nat}
     rfl
 }
 
-/-- Record projection strengthens by strengthening its record payload. -/
+/-- Record projection strengthens by strengthening its record payload.
+
+App-pattern: takes the field-type strengthening witness `fieldSuccess`
+as an explicit parameter, lifted from the dispatcher's option-split.
+The body destructures the record's `StrengtheningResult`, aligns the
+`Ty.record` shape via `rw` + `cases` on the derived equation, then
+delegates to `partialStrengthenTypedRecordProjOfSuccess`.  This shape
+admits a clean App-pattern soundness proof
+(`partialStrengthenTypedRecordProj_sound`) by mirror-destructuring +
+final-arm `OfSuccess_sound` delegation. -/
 def partialStrengthenTypedRecordProj {mode : Mode} {level : Nat}
     {sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
     {targetCtx : Ctx mode level targetScope}
     {singleFieldType : Ty level sourceScope}
+    {targetFieldType : Ty level targetScope}
     {recordRaw : RawTerm sourceScope}
     {strengthening : ContextStrengthening sourceCtx targetCtx}
     {recordValue : Term sourceCtx (Ty.record singleFieldType) recordRaw}
+    (fieldSuccess :
+      singleFieldType.partialStrengthen? strengthening.back =
+        some targetFieldType)
     (recordResult : StrengtheningResult strengthening recordValue) :
     StrengtheningResult strengthening (Term.recordProj recordValue) := by
   cases recordResult with
   | mk targetType targetRaw targetTerm typeStrengthens rawStrengthens
       typeRenames rawRenames =>
-      change
-        (match singleFieldType.partialStrengthen? strengthening.back with
-        | some strengthenedField => some (Ty.record strengthenedField)
-        | none => none) = some targetType at typeStrengthens
-      cases fieldSuccess : singleFieldType.partialStrengthen?
-          strengthening.back with
-      | none =>
-          rw [fieldSuccess] at typeStrengthens
-          cases typeStrengthens
-      | some targetFieldType =>
-          rw [fieldSuccess] at typeStrengthens
-          cases typeStrengthens
-          exact partialStrengthenTypedRecordProjOfSuccess
-            targetTerm fieldSuccess rawStrengthens rawRenames
+      have expectedRecordTypeStrengthens :
+          (Ty.record singleFieldType).partialStrengthen? strengthening.back =
+            some (Ty.record targetFieldType) := by
+        change
+          (match singleFieldType.partialStrengthen? strengthening.back with
+          | some strengthenedField => some (Ty.record strengthenedField)
+          | none => none) =
+            some (Ty.record targetFieldType)
+        rw [fieldSuccess]
+      rw [expectedRecordTypeStrengthens] at typeStrengthens
+      cases typeStrengthens
+      exact partialStrengthenTypedRecordProjOfSuccess
+        targetTerm fieldSuccess rawStrengthens rawRenames
 
 /-- Success branch for codata-unfold strengthening.
 
@@ -7095,12 +7107,17 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
       | none => exact none
       | some fieldResult =>
           exact some (partialStrengthenTypedRecordIntro fieldResult)
-  | @Term.recordProj _ _ _ _ _ _ recordValue => by
-      cases partialStrengthenTyped? recordValue
-          (strengthening := strengthening) with
+  | @Term.recordProj _ _ _ _ singleFieldType _ recordValue => by
+      cases fieldSuccess :
+          singleFieldType.partialStrengthen? strengthening.back with
       | none => exact none
-      | some recordResult =>
-          exact some (partialStrengthenTypedRecordProj recordResult)
+      | some _ =>
+          cases partialStrengthenTyped? recordValue
+              (strengthening := strengthening) with
+          | none => exact none
+          | some recordResult =>
+              exact some
+                (partialStrengthenTypedRecordProj fieldSuccess recordResult)
   | @Term.refineIntro _ _ _ _ _ predicate _ _ baseValue predicateProof => by
       cases predicateSuccess :
           predicate.partialStrengthen? strengthening.back.lift with

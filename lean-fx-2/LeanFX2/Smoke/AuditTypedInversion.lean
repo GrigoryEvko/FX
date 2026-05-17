@@ -410,4 +410,19 @@ namespace LeanFX2.SmokeTypedInversion
 -- direct + readViaWrite cases internally).
 #print axioms LeanFX2.Term.partialStrengthenTypedEffectPerform_sound
 
+-- Phase 38 (sidequest): WRAPPER soundness for record-projection
+-- producer.  Pattern: ListElim-shaped wrapper REFACTORED to App-style by
+-- lifting its internal `cases fieldSuccess : singleFieldType.partialStrengthen?`
+-- option-split into an explicit `fieldSuccess` parameter at the wrapper
+-- signature.  The dispatcher arm at `PartialStrengthen.lean` does the
+-- option-split before invoking the wrapper; the wrapper now just
+-- destructures the record's `StrengtheningResult`, aligns the `Ty.record`
+-- shape via record-rewrite + `cases`, and delegates to
+-- `partialStrengthenTypedRecordProjOfSuccess`.  Soundness mirrors the
+-- same case cascade and invokes `_OfSuccess_sound` at the leaf.
+-- Confirms the empirically-validated workaround for the Lean 4.29.1
+-- tactic-mode opacity that defeats internal `cases X : foo with` patterns
+-- in wrapper-soundness proofs of the original ListElim-pattern shape.
+#print axioms LeanFX2.Term.partialStrengthenTypedRecordProj_sound
+
 end LeanFX2.SmokeTypedInversion

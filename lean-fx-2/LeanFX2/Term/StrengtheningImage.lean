@@ -2327,6 +2327,53 @@ theorem partialStrengthenTypedRecordProjOfSuccess_sound {mode : Mode}
       targetFieldType fieldSuccess
   exact Term.recordProj_HEq_congr fieldRenames recordRawRenames recordSound
 
+/-- Soundness for the typed record-projection wrapper.
+
+Mirrors `partialStrengthenTypedRecordProj`'s structure after the
+App-pattern refactor: the wrapper takes the field-type strengthening
+witness `fieldSuccess` as an explicit parameter (lifted from the
+dispatcher's option-split), destructures the record's
+`StrengtheningResult`, aligns the `Ty.record` shape via `rw` + `cases`
+on the derived equation, and delegates to
+`partialStrengthenTypedRecordProjOfSuccess`.  Soundness threads
+`recordSound.termRenames` through the same case cascade and invokes
+the leaf `_OfSuccess_sound`. -/
+theorem partialStrengthenTypedRecordProj_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {singleFieldType : Ty level sourceScope}
+    {targetFieldType : Ty level targetScope}
+    {recordRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {recordValue : Term sourceCtx (Ty.record singleFieldType) recordRaw}
+    (fieldSuccess :
+      singleFieldType.partialStrengthen? strengthening.back =
+        some targetFieldType)
+    {recordResult : StrengtheningResult strengthening recordValue}
+    (recordSound : StrengtheningSoundness recordResult) :
+    StrengtheningSoundness
+      (partialStrengthenTypedRecordProj fieldSuccess recordResult) := by
+  cases recordResult with
+  | mk targetType targetRaw targetTerm typeStrengthens rawStrengthens
+      typeRenames rawRenames =>
+      have expectedRecordTypeStrengthens :
+          (Ty.record singleFieldType).partialStrengthen? strengthening.back =
+            some (Ty.record targetFieldType) := by
+        change
+          (match singleFieldType.partialStrengthen? strengthening.back with
+          | some strengthenedField => some (Ty.record strengthenedField)
+          | none => none) =
+            some (Ty.record targetFieldType)
+        rw [fieldSuccess]
+      rw [expectedRecordTypeStrengthens] at typeStrengthens
+      cases typeStrengthens
+      exact partialStrengthenTypedRecordProjOfSuccess_sound
+        (fieldSuccess := fieldSuccess)
+        (recordRawStrengthens := rawStrengthens)
+        (recordRawRenames := rawRenames)
+        recordSound.termRenames
+
 /-- Soundness for the success branch of codata-unfold strengthening.
 Mirrors `partialStrengthenTypedAppOfSuccess_sound`: takes pre-decomposed
 state/output strengthenings and rename equations, applies the codata-
