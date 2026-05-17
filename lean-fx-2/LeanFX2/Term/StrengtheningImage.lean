@@ -10086,6 +10086,231 @@ theorem isAggregatorSound_eitherMatch {mode : Mode} {level : Nat}
     (rightAggregator strengthening)
     result success
 
+/-- Aggregator wrapper at the `Term.idJ` arm.  HoTT J-eliminator: two
+flat-context value IHs (baseCase + witness); type witnesses (carrier +
+both endpoints) are handled internally by the leaf via the
+`strengthening`-driven splits, so no companion aggregators. -/
+theorem isAggregatorSound_idJ {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {carrier : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {motiveType : Ty level sourceScope}
+    {baseRaw witnessRaw : RawTerm sourceScope}
+    {baseCase : Term sourceCtx motiveType baseRaw}
+    {witness :
+      Term sourceCtx (Ty.id carrier leftEndpoint rightEndpoint) witnessRaw}
+    (baseAggregator : IsAggregatorSound baseCase)
+    (witnessAggregator : IsAggregatorSound witness) :
+    IsAggregatorSound
+      (Term.idJ (motiveType := motiveType) baseCase witness) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atIdJ_imp_sound strengthening
+    (baseAggregator strengthening)
+    (witnessAggregator strengthening)
+    result success
+
+/-- Aggregator wrapper at the `Term.oeqJ` arm.  Mirrors `atIdJ` for
+observational equality: two flat-context value IHs (baseCase +
+witness). -/
+theorem isAggregatorSound_oeqJ {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {carrier : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {motiveType : Ty level sourceScope}
+    {baseRaw witnessRaw : RawTerm sourceScope}
+    {baseCase : Term sourceCtx motiveType baseRaw}
+    {witness :
+      Term sourceCtx (Ty.oeq carrier leftEndpoint rightEndpoint) witnessRaw}
+    (baseAggregator : IsAggregatorSound baseCase)
+    (witnessAggregator : IsAggregatorSound witness) :
+    IsAggregatorSound
+      (Term.oeqJ (motiveType := motiveType) baseCase witness) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atOeqJ_imp_sound strengthening
+    (baseAggregator strengthening)
+    (witnessAggregator strengthening)
+    result success
+
+/-- Aggregator wrapper at the `Term.idStrictRec` arm.  Strict-mode
+J-eliminator: two flat-context value IHs plus the `modeIsStrict`
+discipline witness threaded through. -/
+theorem isAggregatorSound_idStrictRec {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {modeIsStrict : mode = Mode.strict}
+    {carrier : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {motiveType : Ty level sourceScope}
+    {baseRaw witnessRaw : RawTerm sourceScope}
+    {baseCase : Term sourceCtx motiveType baseRaw}
+    {witness :
+      Term sourceCtx (Ty.idStrict carrier leftEndpoint rightEndpoint)
+        witnessRaw}
+    (baseAggregator : IsAggregatorSound baseCase)
+    (witnessAggregator : IsAggregatorSound witness) :
+    IsAggregatorSound
+      (Term.idStrictRec (motiveType := motiveType) modeIsStrict
+        baseCase witness) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atIdStrictRec_imp_sound strengthening
+    (baseAggregator strengthening)
+    (witnessAggregator strengthening)
+    result success
+
+/-- Aggregator wrapper at the `Term.equivApp` arm.  Heterogeneous
+equivalence application: two flat-context value IHs (equiv + argument);
+both carrier-type witnesses (`carrierA`/`carrierB`) handled inside the
+leaf. -/
+theorem isAggregatorSound_equivApp {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {carrierA carrierB : Ty level sourceScope}
+    {equivRaw argumentRaw : RawTerm sourceScope}
+    {equivTerm :
+      Term sourceCtx (Ty.equiv carrierA carrierB) equivRaw}
+    {argumentTerm : Term sourceCtx carrierA argumentRaw}
+    (equivAggregator : IsAggregatorSound equivTerm)
+    (argumentAggregator : IsAggregatorSound argumentTerm) :
+    IsAggregatorSound (Term.equivApp equivTerm argumentTerm) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atEquivApp_imp_sound strengthening
+    (equivAggregator strengthening)
+    (argumentAggregator strengthening)
+    result success
+
+/-- Aggregator wrapper at the `Term.equivApply` arm.  Univalence-
+flavoured equivalence application: same shape as `equivApp` — two
+flat-context value IHs.  Differs from `equivApp` only in the raw
+constructor used by the dispatcher. -/
+theorem isAggregatorSound_equivApply {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {carrierA carrierB : Ty level sourceScope}
+    {equivRaw argumentRaw : RawTerm sourceScope}
+    {equivTerm :
+      Term sourceCtx (Ty.equiv carrierA carrierB) equivRaw}
+    {argumentTerm : Term sourceCtx carrierA argumentRaw}
+    (equivAggregator : IsAggregatorSound equivTerm)
+    (argumentAggregator : IsAggregatorSound argumentTerm) :
+    IsAggregatorSound (Term.equivApply equivTerm argumentTerm) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atEquivApply_imp_sound strengthening
+    (equivAggregator strengthening)
+    (argumentAggregator strengthening)
+    result success
+
+/-- Aggregator wrapper at the `Term.equivIntroHet` arm.  Heterogeneous
+equivalence introduction: four function-shaped value IHs (forward +
+backward + leftInverse + rightInverse).  Both carrier types handled
+internally. -/
+theorem isAggregatorSound_equivIntroHet {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {carrierA carrierB : Ty level sourceScope}
+    {forwardRaw backwardRaw leftInvRaw rightInvRaw : RawTerm sourceScope}
+    {forward :
+      Term sourceCtx (Ty.arrow carrierA carrierB) forwardRaw}
+    {backward :
+      Term sourceCtx (Ty.arrow carrierB carrierA) backwardRaw}
+    {leftInv :
+      Term sourceCtx
+        (equivIntroHetLeftInverseType carrierA forwardRaw backwardRaw)
+        leftInvRaw}
+    {rightInv :
+      Term sourceCtx
+        (equivIntroHetRightInverseType carrierB forwardRaw backwardRaw)
+        rightInvRaw}
+    (forwardAggregator : IsAggregatorSound forward)
+    (backwardAggregator : IsAggregatorSound backward)
+    (leftInvAggregator : IsAggregatorSound leftInv)
+    (rightInvAggregator : IsAggregatorSound rightInv) :
+    IsAggregatorSound
+      (Term.equivIntroHet forward backward leftInv rightInv) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atEquivIntroHet_imp_sound strengthening
+    (forwardAggregator strengthening)
+    (backwardAggregator strengthening)
+    (leftInvAggregator strengthening)
+    (rightInvAggregator strengthening)
+    result success
+
+/-- Aggregator wrapper at the `Term.oeqFunext` arm.  Observational-
+equality funext: one value IH on the pointwise-equality proof.  All
+type and raw witnesses handled internally by the leaf's sequential
+splits. -/
+theorem isAggregatorSound_oeqFunext {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {domainType codomainType : Ty level sourceScope}
+    {leftFunctionRaw rightFunctionRaw : RawTerm sourceScope}
+    {pointwiseRaw : RawTerm sourceScope}
+    {pointwiseProof :
+      Term sourceCtx
+        (oeqFunextPointwiseType domainType codomainType
+          leftFunctionRaw rightFunctionRaw)
+        pointwiseRaw}
+    (pointwiseAggregator : IsAggregatorSound pointwiseProof) :
+    IsAggregatorSound
+      (Term.oeqFunext (domainType := domainType)
+        (codomainType := codomainType)
+        (leftFunctionRaw := leftFunctionRaw)
+        (rightFunctionRaw := rightFunctionRaw)
+        pointwiseProof) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atOeqFunext_imp_sound strengthening
+    (pointwiseAggregator strengthening)
+    result success
+
+/-- Aggregator wrapper at the `Term.uaIntroHet` arm.  Heterogeneous
+univalence introduction: one value IH on the equivalence-witness term;
+positional `innerLevel`/`innerLevelLt` (universe level + bound) and
+the two raw carrier witnesses thread through directly. -/
+theorem isAggregatorSound_uaIntroHet {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    {carrierA carrierB : Ty level sourceScope}
+    (carrierARaw carrierBRaw : RawTerm sourceScope)
+    {forwardRaw backwardRaw : RawTerm sourceScope}
+    {equivWitness :
+      Term sourceCtx (Ty.equiv carrierA carrierB)
+        (RawTerm.equivIntro forwardRaw backwardRaw)}
+    (equivAggregator : IsAggregatorSound equivWitness) :
+    IsAggregatorSound
+      (Term.uaIntroHet (context := sourceCtx) innerLevel innerLevelLt
+        carrierARaw carrierBRaw equivWitness) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atUaIntroHet_imp_sound innerLevel
+    innerLevelLt carrierARaw carrierBRaw strengthening
+    (equivAggregator strengthening)
+    result success
+
+/-- Aggregator wrapper at the `Term.effectPerform` arm.  Effect
+operation invocation: two flat-context value IHs (operation tag +
+arguments); positional `canPerformOperation` predicate threads through
+unstrengthened (mode/effect-row metadata). -/
+theorem isAggregatorSound_effectPerform {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {effectTag : RawTerm sourceScope}
+    {effectRow : Effects.EffectRow}
+    {operationSignature :
+      Effects.OperationSignature (Ty level sourceScope)}
+    (canPerformOperation :
+      Effects.CanPerform effectRow operationSignature)
+    {operationRaw argumentsRaw : RawTerm sourceScope}
+    {operationTag :
+      Term sourceCtx
+        (Ty.effect operationSignature.argumentCarrier effectTag)
+        operationRaw}
+    {arguments :
+      Term sourceCtx operationSignature.argumentCarrier argumentsRaw}
+    (operationAggregator : IsAggregatorSound operationTag)
+    (argumentsAggregator : IsAggregatorSound arguments) :
+    IsAggregatorSound
+      (Term.effectPerform (context := sourceCtx) effectTag effectRow
+        operationSignature canPerformOperation operationTag arguments) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atEffectPerform_imp_sound
+    canPerformOperation strengthening
+    (operationAggregator strengthening)
+    (argumentsAggregator strengthening)
+    result success
+
 end Term
 
 end LeanFX2
