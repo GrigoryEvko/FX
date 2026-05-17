@@ -2179,44 +2179,54 @@ def partialStrengthenTypedRefineElimOfSuccess {mode : Mode} {level : Nat}
 
 /-- Refinement elimination strengthens by strengthening its refined
 payload and projecting the strengthened base type out of the refined
-type index. -/
+type index.
+
+App-pattern: takes the base-type and predicate strengthening witnesses
+`baseSuccess` / `predicateSuccess` as explicit parameters, lifted from
+the dispatcher's nested option-splits.  The body destructures the
+refined value's `StrengtheningResult`, aligns the `Ty.refine` shape via
+`rw` + `cases` on the derived equation, then delegates to
+`partialStrengthenTypedRefineElimOfSuccess`.  This shape admits a
+clean App-pattern soundness proof
+(`partialStrengthenTypedRefineElim_sound`) by mirror-destructure +
+final-arm `OfSuccess_sound` delegation. -/
 def partialStrengthenTypedRefineElim {mode : Mode} {level : Nat}
     {sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
     {targetCtx : Ctx mode level targetScope}
     {baseType : Ty level sourceScope}
     {predicate : RawTerm (sourceScope + 1)}
+    {targetBaseType : Ty level targetScope}
+    {targetPredicate : RawTerm (targetScope + 1)}
     {refinedRaw : RawTerm sourceScope}
     {strengthening : ContextStrengthening sourceCtx targetCtx}
     {refinedValue :
       Term sourceCtx (Ty.refine baseType predicate) refinedRaw}
+    (baseSuccess :
+      baseType.partialStrengthen? strengthening.back = some targetBaseType)
+    (predicateSuccess :
+      predicate.partialStrengthen? strengthening.back.lift =
+        some targetPredicate)
     (refinedResult : StrengtheningResult strengthening refinedValue) :
     StrengtheningResult strengthening (Term.refineElim refinedValue) := by
   cases refinedResult with
   | mk targetType targetRaw targetTerm typeStrengthens rawStrengthens
       typeRenames rawRenames =>
-      change
-        Option.mapTwo
-          (baseType.partialStrengthen? strengthening.back)
-          (predicate.partialStrengthen? strengthening.back.lift)
-          Ty.refine = some targetType at typeStrengthens
-      cases baseSuccess : baseType.partialStrengthen?
-          strengthening.back with
-      | none =>
-          rw [baseSuccess] at typeStrengthens
-          cases typeStrengthens
-      | some targetBaseType =>
-          cases predicateSuccess : predicate.partialStrengthen?
-              strengthening.back.lift with
-          | none =>
-              rw [baseSuccess, predicateSuccess] at typeStrengthens
-              cases typeStrengthens
-          | some targetPredicate =>
-              rw [baseSuccess, predicateSuccess] at typeStrengthens
-              cases typeStrengthens
-              exact partialStrengthenTypedRefineElimOfSuccess
-                targetTerm baseSuccess predicateSuccess rawStrengthens
-                rawRenames
+      have expectedRefineTypeStrengthens :
+          (Ty.refine baseType predicate).partialStrengthen? strengthening.back =
+            some (Ty.refine targetBaseType targetPredicate) := by
+        change
+          Option.mapTwo
+            (baseType.partialStrengthen? strengthening.back)
+            (predicate.partialStrengthen? strengthening.back.lift)
+            Ty.refine =
+              some (Ty.refine targetBaseType targetPredicate)
+        rw [baseSuccess, predicateSuccess]
+        rfl
+      rw [expectedRefineTypeStrengthens] at typeStrengthens
+      cases typeStrengthens
+      exact partialStrengthenTypedRefineElimOfSuccess
+        targetTerm baseSuccess predicateSuccess rawStrengthens rawRenames
 
 /-- HoTT reflexivity strengthens by strengthening the carrier type and
 the raw witness endpoint. -/
@@ -7134,13 +7144,22 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                   exact some
                     (partialStrengthenTypedRefineIntro predicateSuccess
                       baseResult proofResult)
-  | @Term.refineElim _ _ _ _ _ _ _ refinedValue => by
-      cases partialStrengthenTyped? refinedValue
-          (strengthening := strengthening) with
+  | @Term.refineElim _ _ _ _ baseType predicate _ refinedValue => by
+      cases baseSuccess :
+          baseType.partialStrengthen? strengthening.back with
       | none => exact none
-      | some refinedResult =>
-          exact some
-            (partialStrengthenTypedRefineElim refinedResult)
+      | some _ =>
+          cases predicateSuccess :
+              predicate.partialStrengthen? strengthening.back.lift with
+          | none => exact none
+          | some _ =>
+              cases partialStrengthenTyped? refinedValue
+                  (strengthening := strengthening) with
+              | none => exact none
+              | some refinedResult =>
+                  exact some
+                    (partialStrengthenTypedRefineElim baseSuccess
+                      predicateSuccess refinedResult)
   | @Term.codataUnfold _ _ _ _ _ outputType _ _ initialState transition => by
       cases outputSuccess :
           outputType.partialStrengthen? strengthening.back with

@@ -425,4 +425,20 @@ namespace LeanFX2.SmokeTypedInversion
 -- in wrapper-soundness proofs of the original ListElim-pattern shape.
 #print axioms LeanFX2.Term.partialStrengthenTypedRecordProj_sound
 
+-- Phase 39 (sidequest): WRAPPER soundness for refine-elimination
+-- producer.  Pattern: ListElim-shaped wrapper REFACTORED to App-style
+-- by lifting BOTH internal option-splits (`baseSuccess` on base type
+-- and `predicateSuccess` on predicate under lift) into explicit
+-- parameters at the wrapper signature.  The dispatcher arm at
+-- `PartialStrengthen.lean` does the two option-splits before invoking
+-- the wrapper.  The wrapper destructures the refined value's
+-- `StrengtheningResult`, aligns the `Ty.refine` shape via record-
+-- rewrite + `cases`, and delegates to
+-- `partialStrengthenTypedRefineElimOfSuccess`.  Soundness mirrors the
+-- same case cascade and invokes `_OfSuccess_sound` at the leaf.
+-- Extends Phase 38's recipe to wrappers with 2-option-splits — the
+-- App-pattern refactor scales uniformly to nested option-splits as
+-- long as the OfSuccess leaf accepts all witnesses as parameters.
+#print axioms LeanFX2.Term.partialStrengthenTypedRefineElim_sound
+
 end LeanFX2.SmokeTypedInversion

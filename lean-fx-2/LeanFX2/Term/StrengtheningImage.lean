@@ -2262,6 +2262,63 @@ theorem partialStrengthenTypedRefineElimOfSuccess_sound {mode : Mode}
   exact Term.refineElim_HEq_congr baseRenames predicateRenames
     refinedRawRenames refinedSound
 
+/-- Soundness for the typed refinement-elimination wrapper.
+
+Mirrors `partialStrengthenTypedRefineElim`'s App-pattern shape: the
+wrapper takes `baseSuccess` and `predicateSuccess` as explicit
+parameters (lifted from the dispatcher's two nested option-splits on
+base type and predicate respectively).  The proof destructures the
+refined value's `StrengtheningResult`, aligns the `Ty.refine` shape via
+`rw` + `cases` on the derived equation, then delegates to
+`partialStrengthenTypedRefineElimOfSuccess_sound`.  Bypasses Lean
+4.29.1 tactic-mode opacity on the original ListElim-pattern wrapper
+with two internal option-splits. -/
+theorem partialStrengthenTypedRefineElim_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {baseType : Ty level sourceScope}
+    {predicate : RawTerm (sourceScope + 1)}
+    {targetBaseType : Ty level targetScope}
+    {targetPredicate : RawTerm (targetScope + 1)}
+    {refinedRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {refinedValue :
+      Term sourceCtx (Ty.refine baseType predicate) refinedRaw}
+    (baseSuccess :
+      baseType.partialStrengthen? strengthening.back = some targetBaseType)
+    (predicateSuccess :
+      predicate.partialStrengthen? strengthening.back.lift =
+        some targetPredicate)
+    {refinedResult : StrengtheningResult strengthening refinedValue}
+    (refinedSound : StrengtheningSoundness refinedResult) :
+    StrengtheningSoundness
+      (partialStrengthenTypedRefineElim baseSuccess predicateSuccess
+        refinedResult) := by
+  cases refinedResult with
+  | mk targetType targetRaw targetTerm typeStrengthens rawStrengthens
+      typeRenames rawRenames =>
+      have expectedRefineTypeStrengthens :
+          (Ty.refine baseType predicate).partialStrengthen?
+              strengthening.back =
+            some (Ty.refine targetBaseType targetPredicate) := by
+        change
+          Option.mapTwo
+            (baseType.partialStrengthen? strengthening.back)
+            (predicate.partialStrengthen? strengthening.back.lift)
+            Ty.refine =
+              some (Ty.refine targetBaseType targetPredicate)
+        rw [baseSuccess, predicateSuccess]
+        rfl
+      rw [expectedRefineTypeStrengthens] at typeStrengthens
+      cases typeStrengthens
+      exact partialStrengthenTypedRefineElimOfSuccess_sound
+        (baseSuccess := baseSuccess)
+        (predicateSuccess := predicateSuccess)
+        (refinedRawStrengthens := rawStrengthens)
+        (refinedRawRenames := rawRenames)
+        refinedSound.termRenames
+
 /-- Soundness for record-introduction strengthening.  The producer
 threads `fieldResult`'s field projections through without destructuring,
 so the soundness proof can apply the HEq congruence lemma directly using
