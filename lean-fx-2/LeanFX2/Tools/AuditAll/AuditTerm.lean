@@ -844,6 +844,16 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.isTotalOnWeaken_glueIntro
 #assert_no_axioms LeanFX2.Term.isTotalOnWeaken_transp
 #assert_no_axioms LeanFX2.Term.isTotalOnWeaken_uaToEquiv
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_pathApp
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_hcompPath
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_uaIntroHet
+
+-- Wave E: eliminator ctors (3-IH non-binder pattern).
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_natElim
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_natRec
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_listElim
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_optionMatch
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_eitherMatch
 
 -- User-facing unweaken?_weaken_<ctor> headline theorems.  Each is a
 -- direct `rfl` witness — concrete totality for the closed atomic
