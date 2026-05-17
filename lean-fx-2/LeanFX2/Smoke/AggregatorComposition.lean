@@ -767,6 +767,62 @@ theorem aggregator_optionSome_optionNone_closed {mode : Mode}
   isAggregatorSound_optionSome
     (isAggregatorSound_optionNone (elementType := Ty.nat))
 
+/-- Mixed-depth Sigma-pair: `pair (natSucc natZero) (natSucc
+(natSucc natZero))` at carrier `nat × nat`.  Variant of the
+existing `pair_natNat_closed` whose components are both
+natZero; this version exercises non-trivial 1-IH children at
+both positions with different chain depths (1 and 2). -/
+theorem aggregator_pair_natOne_natTwo_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.pair (context := sourceCtx)
+        (secondType := Ty.nat)
+        (firstValue := Term.natSucc Term.natZero)
+        (secondValue :=
+          Term.natSucc (Term.natSucc Term.natZero))) :=
+  isAggregatorSound_pair
+    (isAggregatorSound_natSucc isAggregatorSound_natZero)
+    (isAggregatorSound_natSucc
+      (isAggregatorSound_natSucc isAggregatorSound_natZero))
+
+/-- 1-element list of booleans: `[boolTrue]` at carrier
+`list bool`.  Demonstrates that the 2-IH parametric listCons
+wrapper composes with a 0-IH atomic boolean head and a 0-IH
+parametric listNil tail at the bool carrier (counterpart to
+the existing listCons_natList example at the nat carrier). -/
+theorem aggregator_listCons_boolList_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.listCons (context := sourceCtx)
+        (headTerm := Term.boolTrue)
+        (tailTerm := Term.listNil (elementType := Ty.bool))) :=
+  isAggregatorSound_listCons isAggregatorSound_boolTrue
+    (isAggregatorSound_listNil (elementType := Ty.bool))
+
+/-- 8-deep natSucc chain extending the natOne..natSeven sequence.
+Continues the depth-uniformity demonstration for 1-IH wrappers
+past depth 7. -/
+theorem aggregator_natEight_closed {mode : Mode} {level : Nat}
+    {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.natSucc (context := sourceCtx)
+        (Term.natSucc
+          (Term.natSucc
+            (Term.natSucc
+              (Term.natSucc
+                (Term.natSucc
+                  (Term.natSucc
+                    (Term.natSucc Term.natZero)))))))) :=
+  isAggregatorSound_natSucc
+    (isAggregatorSound_natSucc
+      (isAggregatorSound_natSucc
+        (isAggregatorSound_natSucc
+          (isAggregatorSound_natSucc
+            (isAggregatorSound_natSucc
+              (isAggregatorSound_natSucc
+                (isAggregatorSound_natSucc
+                  isAggregatorSound_natZero)))))))
+
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_unit_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwo_closed
@@ -814,5 +870,8 @@ theorem aggregator_optionSome_optionNone_closed {mode : Mode}
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_eitherInl_pair_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_eitherInr_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_optionSome_optionNone_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_natOne_natTwo_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_boolList_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natEight_closed
 
 end LeanFX2.SmokeAggregatorComposition
