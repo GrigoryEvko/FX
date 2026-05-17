@@ -11172,6 +11172,97 @@ theorem isAggregatorTotal_recordProj {mode : Mode} {level : Nat}
             cases recordTotalCall
         · rfl
 
+/-- 1-IH non-binder totality: `Term.sessionRecv`.  Source type is
+`Ty.session protocolStep`, child type identical; raw form
+`RawTerm.sessionRecv channelRaw`.  The dispatcher splits on
+`protocolStep.partialStrengthen?` (extractable from typeStrengthens'
+Ty.session match), then recurses on channel. -/
+theorem isAggregatorTotal_sessionRecv {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {protocolStep : RawTerm sourceScope}
+    {channelRaw : RawTerm sourceScope}
+    {channel : Term sourceCtx (Ty.session protocolStep) channelRaw}
+    (channelTotal : IsAggregatorTotal channel) :
+    IsAggregatorTotal (Term.sessionRecv (channel := channel)) := by
+  intros _ _ strengthening _ _ typeStrengthens rawStrengthens
+  -- Extract protocolStep raw strengthens from typeStrengthens via case analysis.
+  have protocolSuccessExists : ∃ targetProtocol,
+      protocolStep.partialStrengthen? strengthening.back = some targetProtocol := by
+    rcases hStep : protocolStep.partialStrengthen? strengthening.back with _ | tgt
+    · simp only [Ty.partialStrengthen?, hStep] at typeStrengthens
+      cases typeStrengthens
+    · exact ⟨tgt, rfl⟩
+  obtain ⟨targetProtocol, protocolSuccess⟩ := protocolSuccessExists
+  unfold partialStrengthenTyped?
+  unfold RawTerm.partialStrengthen? at rawStrengthens
+  unfold RawTerm.partialRename? at rawStrengthens
+  split at rawStrengthens
+  rotate_left
+  · cases rawStrengthens
+  next targetChannelRaw channelRawSuccess =>
+    have channelTotalCall :=
+      channelTotal strengthening typeStrengthens channelRawSuccess
+    split
+    · next protocolFails =>
+        rw [protocolSuccess] at protocolFails
+        cases protocolFails
+    · next _ _ =>
+        split
+        · next channelFails =>
+            rw [channelFails] at channelTotalCall
+            cases channelTotalCall
+        · rfl
+
+/-! ## Wave T2: 0-IH parametric atomic totality wrappers.
+
+These ctors have no Term recursive children but carry one or more
+`Ty`/`RawTerm` payloads at the source scope.  The dispatcher inspects
+each payload's `partialStrengthen?`; success comes either from
+extracting the strengthening witness out of `typeStrengthens`
+(when the payload appears in the source type) or from
+`rawStrengthens` (when the payload appears in the source raw form). -/
+
+/-- 0-IH parametric atomic totality: `Term.listNil`.  Source type is
+`Ty.listType elementType`; the dispatcher inspects
+`elementType.partialStrengthen?`.  Extract via the inner match. -/
+theorem isAggregatorTotal_listNil {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {elementType : Ty level sourceScope} :
+    IsAggregatorTotal
+      (Term.listNil (context := sourceCtx) (elementType := elementType)) := by
+  intros _ _ strengthening _ _ typeStrengthens _
+  unfold Ty.partialStrengthen? at typeStrengthens
+  split at typeStrengthens
+  · next strengthenedElement elementSuccess =>
+      unfold partialStrengthenTyped?
+      split
+      · next elementFails =>
+          rw [elementSuccess] at elementFails
+          cases elementFails
+      · rfl
+  · next elementFails =>
+      cases typeStrengthens
+
+/-- 0-IH parametric atomic totality: `Term.optionNone`.  Same pattern
+as `listNil` — Ty.optionType payload. -/
+theorem isAggregatorTotal_optionNone {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {elementType : Ty level sourceScope} :
+    IsAggregatorTotal
+      (Term.optionNone (context := sourceCtx) (elementType := elementType)) := by
+  intros _ _ strengthening _ _ typeStrengthens _
+  unfold Ty.partialStrengthen? at typeStrengthens
+  split at typeStrengthens
+  · next strengthenedElement elementSuccess =>
+      unfold partialStrengthenTyped?
+      split
+      · next elementFails =>
+          rw [elementSuccess] at elementFails
+          cases elementFails
+      · rfl
+  · next elementFails =>
+      cases typeStrengthens
+
 
 /-! ## Image theorem trio — weaken / strengthen invertibility
 
