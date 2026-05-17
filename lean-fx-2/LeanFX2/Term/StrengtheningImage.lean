@@ -10849,6 +10849,181 @@ theorem isAggregatorTotal_pathLam {mode : Mode} {level : Nat}
                     cases bodyTotalCall
                 · rfl
 
+/-! ## Wave T1: 1-IH non-binder totality wrappers (Term-only payload).
+
+Each ctor below has a single typed recursive child and no dependent
+`Ty` payload separately consulted by the dispatcher (the child's type
+is either trivial — `Ty.nat` / `Ty.interval` — or only consulted via
+the source term's typeStrengthens).  The proof unfolds the raw
+dispatcher to extract the child's `RawTerm` strengthening witness,
+synthesizes the child's `Ty` strengthening witness from the source
+type's hypothesis, applies the child's `IsAggregatorTotal` IH, then
+discharges the dispatcher's `none` branches as impossible. -/
+
+/-- 1-IH non-binder totality: `Term.natSucc`.  Predecessor has type
+`Ty.nat`; child type strengthening is trivially `rfl`. -/
+theorem isAggregatorTotal_natSucc {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {predecessorRaw : RawTerm sourceScope}
+    {predecessor : Term sourceCtx Ty.nat predecessorRaw}
+    (predecessorTotal : IsAggregatorTotal predecessor) :
+    IsAggregatorTotal (Term.natSucc (predecessor := predecessor)) := by
+  intros _ _ strengthening _ _ _ rawStrengthens
+  unfold partialStrengthenTyped?
+  unfold RawTerm.partialStrengthen? at rawStrengthens
+  unfold RawTerm.partialRename? at rawStrengthens
+  split at rawStrengthens
+  rotate_left
+  · cases rawStrengthens
+  next targetPredRaw predRawSuccess =>
+    have predTypeStrengthens :
+        (Ty.nat : Ty level sourceScope).partialStrengthen?
+            strengthening.back =
+          some Ty.nat := rfl
+    have predTotalCall :=
+      predecessorTotal strengthening predTypeStrengthens predRawSuccess
+    split
+    · next predFails =>
+        rw [predFails] at predTotalCall
+        cases predTotalCall
+    · rfl
+
+/-- 1-IH non-binder totality: `Term.intervalOpp`.  Child has type
+`Ty.interval`; child type strengthening is trivially `rfl`. -/
+theorem isAggregatorTotal_intervalOpp {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {innerRaw : RawTerm sourceScope}
+    {innerValue : Term sourceCtx Ty.interval innerRaw}
+    (innerTotal : IsAggregatorTotal innerValue) :
+    IsAggregatorTotal (Term.intervalOpp (innerValue := innerValue)) := by
+  intros _ _ strengthening _ _ _ rawStrengthens
+  unfold partialStrengthenTyped?
+  unfold RawTerm.partialStrengthen? at rawStrengthens
+  unfold RawTerm.partialRename? at rawStrengthens
+  split at rawStrengthens
+  rotate_left
+  · cases rawStrengthens
+  next targetInnerRaw innerRawSuccess =>
+    have innerTypeStrengthens :
+        (Ty.interval : Ty level sourceScope).partialStrengthen?
+            strengthening.back =
+          some Ty.interval := rfl
+    have innerTotalCall :=
+      innerTotal strengthening innerTypeStrengthens innerRawSuccess
+    split
+    · next innerFails =>
+        rw [innerFails] at innerTotalCall
+        cases innerTotalCall
+    · rfl
+
+/-- 1-IH non-binder totality: `Term.modIntro`.  Child type equals the
+source type — the dispatcher recurses directly without splitting on
+any type payload. -/
+theorem isAggregatorTotal_modIntro {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {innerType : Ty level sourceScope}
+    {innerRaw : RawTerm sourceScope}
+    {innerTerm : Term sourceCtx innerType innerRaw}
+    (innerTotal : IsAggregatorTotal innerTerm) :
+    IsAggregatorTotal (Term.modIntro (innerTerm := innerTerm)) := by
+  intros _ _ strengthening _ _ typeStrengthens rawStrengthens
+  unfold partialStrengthenTyped?
+  unfold RawTerm.partialStrengthen? at rawStrengthens
+  unfold RawTerm.partialRename? at rawStrengthens
+  split at rawStrengthens
+  rotate_left
+  · cases rawStrengthens
+  next targetInnerRaw innerRawSuccess =>
+    have innerTotalCall :=
+      innerTotal strengthening typeStrengthens innerRawSuccess
+    split
+    · next innerFails =>
+        rw [innerFails] at innerTotalCall
+        cases innerTotalCall
+    · rfl
+
+/-- 1-IH non-binder totality: `Term.modElim`.  Same shape as
+`modIntro` — child type equals source type. -/
+theorem isAggregatorTotal_modElim {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {innerType : Ty level sourceScope}
+    {innerRaw : RawTerm sourceScope}
+    {innerTerm : Term sourceCtx innerType innerRaw}
+    (innerTotal : IsAggregatorTotal innerTerm) :
+    IsAggregatorTotal (Term.modElim (innerTerm := innerTerm)) := by
+  intros _ _ strengthening _ _ typeStrengthens rawStrengthens
+  unfold partialStrengthenTyped?
+  unfold RawTerm.partialStrengthen? at rawStrengthens
+  unfold RawTerm.partialRename? at rawStrengthens
+  split at rawStrengthens
+  rotate_left
+  · cases rawStrengthens
+  next targetInnerRaw innerRawSuccess =>
+    have innerTotalCall :=
+      innerTotal strengthening typeStrengthens innerRawSuccess
+    split
+    · next innerFails =>
+        rw [innerFails] at innerTotalCall
+        cases innerTotalCall
+    · rfl
+
+/-- 1-IH non-binder totality: `Term.subsume`.  Same shape as
+`modIntro` / `modElim` — child type equals source type. -/
+theorem isAggregatorTotal_subsume {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {innerType : Ty level sourceScope}
+    {innerRaw : RawTerm sourceScope}
+    {innerTerm : Term sourceCtx innerType innerRaw}
+    (innerTotal : IsAggregatorTotal innerTerm) :
+    IsAggregatorTotal (Term.subsume (innerTerm := innerTerm)) := by
+  intros _ _ strengthening _ _ typeStrengthens rawStrengthens
+  unfold partialStrengthenTyped?
+  unfold RawTerm.partialStrengthen? at rawStrengthens
+  unfold RawTerm.partialRename? at rawStrengthens
+  split at rawStrengthens
+  rotate_left
+  · cases rawStrengthens
+  next targetInnerRaw innerRawSuccess =>
+    have innerTotalCall :=
+      innerTotal strengthening typeStrengthens innerRawSuccess
+    split
+    · next innerFails =>
+        rw [innerFails] at innerTotalCall
+        cases innerTotalCall
+    · rfl
+
+/-- 1-IH non-binder totality: `Term.optionSome`.  Source type is
+`Ty.optionType elementType`; child type is `elementType`.  Extract
+elementType's strengthening witness from the source's `typeStrengthens`. -/
+theorem isAggregatorTotal_optionSome {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {elementType : Ty level sourceScope}
+    {valueRaw : RawTerm sourceScope}
+    {valueTerm : Term sourceCtx elementType valueRaw}
+    (valueTotal : IsAggregatorTotal valueTerm) :
+    IsAggregatorTotal (Term.optionSome (valueTerm := valueTerm)) := by
+  intros _ _ strengthening _ _ typeStrengthens rawStrengthens
+  -- Extract elementType's strengthening from typeStrengthens.
+  unfold Ty.partialStrengthen? at typeStrengthens
+  split at typeStrengthens
+  · next strengthenedElement elementSuccess =>
+      unfold partialStrengthenTyped?
+      unfold RawTerm.partialStrengthen? at rawStrengthens
+      unfold RawTerm.partialRename? at rawStrengthens
+      split at rawStrengthens
+      rotate_left
+      · cases rawStrengthens
+      next targetValueRaw valueRawSuccess =>
+        have valueTotalCall :=
+          valueTotal strengthening elementSuccess valueRawSuccess
+        split
+        · next valueFails =>
+            rw [valueFails] at valueTotalCall
+            cases valueTotalCall
+        · rfl
+  · next elementFails =>
+      cases typeStrengthens
+
 /-! ## Image theorem trio — weaken / strengthen invertibility
 
 Three closure theorems on the image of `Term.weaken` under
