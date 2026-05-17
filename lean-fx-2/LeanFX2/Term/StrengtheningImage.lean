@@ -6314,6 +6314,228 @@ theorem partialStrengthenTyped?_atEitherInr_imp_sound {mode : Mode}
       exact partialStrengthenTypedEitherInrOfLeftType_sound
         leftSuccess (valueSound := valueIH valueResult valueRecurse)
 
+/-- Dispatcher soundness at the `Term.eitherMatch` arm.  ι-eliminator
+with three type witnesses (leftType + rightType + motiveType, all at
+`strengthening.back`) plus three flat-context value IHs
+(scrutinee + leftBranch + rightBranch). -/
+theorem partialStrengthenTyped?_atEitherMatch_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {leftType rightType motiveType : Ty level sourceScope}
+    {scrutineeRaw leftRaw rightRaw : RawTerm sourceScope}
+    {scrutinee :
+      Term sourceCtx (Ty.eitherType leftType rightType) scrutineeRaw}
+    {leftBranch : Term sourceCtx (Ty.arrow leftType motiveType) leftRaw}
+    {rightBranch :
+      Term sourceCtx (Ty.arrow rightType motiveType) rightRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (scrutineeIH : ∀ scrutineeResult,
+        partialStrengthenTyped? scrutinee strengthening =
+            some scrutineeResult →
+          StrengtheningSoundness scrutineeResult)
+    (leftIH : ∀ leftResult,
+        partialStrengthenTyped? leftBranch strengthening =
+            some leftResult →
+          StrengtheningSoundness leftResult)
+    (rightIH : ∀ rightResult,
+        partialStrengthenTyped? rightBranch strengthening =
+            some rightResult →
+          StrengtheningSoundness rightResult)
+    (result : StrengtheningResult strengthening
+      (Term.eitherMatch (motiveType := motiveType) scrutinee leftBranch
+        rightBranch))
+    (success : partialStrengthenTyped?
+        (Term.eitherMatch (motiveType := motiveType) scrutinee leftBranch
+          rightBranch) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetLeftType leftSuccess
+    split at success
+    · cases success
+    · rename_i targetRightType rightSuccess
+      split at success
+      · cases success
+      · rename_i targetMotiveType motiveSuccess
+        split at success
+        · cases success
+        · rename_i scrutineeResult scrutineeRecurse
+          split at success
+          · cases success
+          · rename_i leftResult leftRecurse
+            split at success
+            · cases success
+            · rename_i rightResult rightRecurse
+              cases success
+              exact partialStrengthenTypedEitherMatch_sound
+                leftSuccess rightSuccess motiveSuccess
+                (scrutineeIH scrutineeResult scrutineeRecurse)
+                (leftIH leftResult leftRecurse)
+                (rightIH rightResult rightRecurse)
+
+/-- Dispatcher soundness at the `Term.refl` arm.  HoTT identity
+introduction: one type witness (carrier) plus one raw witness
+(rawWitness) — no value IH at all. -/
+theorem partialStrengthenTyped?_atRefl_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {carrier : Ty level sourceScope}
+    {rawWitness : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (result : StrengtheningResult strengthening
+      (Term.refl (context := sourceCtx) (carrier := carrier) rawWitness))
+    (success : partialStrengthenTyped?
+        (Term.refl (context := sourceCtx) (carrier := carrier) rawWitness)
+          strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetCarrier carrierSuccess
+    split at success
+    · cases success
+    · rename_i targetWitness witnessSuccess
+      cases success
+      exact partialStrengthenTypedRefl_sound carrierSuccess witnessSuccess
+
+/-- Dispatcher soundness at the `Term.oeqRefl` arm.  Mirrors `atRefl`
+for observational equality: one type witness + one raw witness, no
+value IH. -/
+theorem partialStrengthenTyped?_atOeqRefl_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {carrier : Ty level sourceScope}
+    {rawWitness : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (result : StrengtheningResult strengthening
+      (Term.oeqRefl (context := sourceCtx) (carrier := carrier)
+        rawWitness))
+    (success : partialStrengthenTyped?
+        (Term.oeqRefl (context := sourceCtx) (carrier := carrier)
+          rawWitness) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetCarrier carrierSuccess
+    split at success
+    · cases success
+    · rename_i targetWitness witnessSuccess
+      cases success
+      exact partialStrengthenTypedOeqRefl_sound carrierSuccess
+        witnessSuccess
+
+/-- Dispatcher soundness at the `Term.idJ` arm.  HoTT J-eliminator:
+one type witness (carrier) + two raw witnesses (leftEndpoint +
+rightEndpoint) + two flat-context value IHs (baseCase + witness). -/
+theorem partialStrengthenTyped?_atIdJ_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {carrier : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {motiveType : Ty level sourceScope}
+    {baseRaw witnessRaw : RawTerm sourceScope}
+    {baseCase : Term sourceCtx motiveType baseRaw}
+    {witness :
+      Term sourceCtx (Ty.id carrier leftEndpoint rightEndpoint) witnessRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (baseIH : ∀ baseResult,
+        partialStrengthenTyped? baseCase strengthening =
+            some baseResult →
+          StrengtheningSoundness baseResult)
+    (witnessIH : ∀ witnessResult,
+        partialStrengthenTyped? witness strengthening =
+            some witnessResult →
+          StrengtheningSoundness witnessResult)
+    (result : StrengtheningResult strengthening
+      (Term.idJ (motiveType := motiveType) baseCase witness))
+    (success : partialStrengthenTyped?
+        (Term.idJ (motiveType := motiveType) baseCase witness)
+          strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetCarrier carrierSuccess
+    split at success
+    · cases success
+    · rename_i targetLeftEndpoint leftSuccess
+      split at success
+      · cases success
+      · rename_i targetRightEndpoint rightSuccess
+        split at success
+        · cases success
+        · rename_i baseResult baseRecurse
+          split at success
+          · cases success
+          · rename_i witnessResult witnessRecurse
+            cases success
+            exact partialStrengthenTypedIdJ_sound
+              carrierSuccess leftSuccess rightSuccess
+              (baseIH baseResult baseRecurse)
+              (witnessIH witnessResult witnessRecurse)
+
+/-- Dispatcher soundness at the `Term.oeqJ` arm.  Mirrors `atIdJ` for
+observational equality: one type witness + two raw witnesses + two
+flat-context value IHs. -/
+theorem partialStrengthenTyped?_atOeqJ_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {carrier : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {motiveType : Ty level sourceScope}
+    {baseRaw witnessRaw : RawTerm sourceScope}
+    {baseCase : Term sourceCtx motiveType baseRaw}
+    {witness :
+      Term sourceCtx (Ty.oeq carrier leftEndpoint rightEndpoint) witnessRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (baseIH : ∀ baseResult,
+        partialStrengthenTyped? baseCase strengthening =
+            some baseResult →
+          StrengtheningSoundness baseResult)
+    (witnessIH : ∀ witnessResult,
+        partialStrengthenTyped? witness strengthening =
+            some witnessResult →
+          StrengtheningSoundness witnessResult)
+    (result : StrengtheningResult strengthening
+      (Term.oeqJ (motiveType := motiveType) baseCase witness))
+    (success : partialStrengthenTyped?
+        (Term.oeqJ (motiveType := motiveType) baseCase witness)
+          strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetCarrier carrierSuccess
+    split at success
+    · cases success
+    · rename_i targetLeftEndpoint leftSuccess
+      split at success
+      · cases success
+      · rename_i targetRightEndpoint rightSuccess
+        split at success
+        · cases success
+        · rename_i baseResult baseRecurse
+          split at success
+          · cases success
+          · rename_i witnessResult witnessRecurse
+            cases success
+            exact partialStrengthenTypedOeqJ_sound
+              carrierSuccess leftSuccess rightSuccess
+              (baseIH baseResult baseRecurse)
+              (witnessIH witnessResult witnessRecurse)
+
 /-- Dispatcher soundness at the `Term.boolElim` arm.  ι-eliminator
 shape: one binder-type strengthening witness on the motive slot
 (`strengthening.back.lift`) plus three flat-context value IHs

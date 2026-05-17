@@ -6814,104 +6814,112 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                 (partialStrengthenTypedEitherInrOfLeftType
                   leftSuccess valueResult)
   | @Term.eitherMatch _ _ _ _ leftType rightType motiveType _ _ _ scrutinee
-      leftBranch rightBranch => by
-      cases leftSuccess :
+      leftBranch rightBranch =>
+      match leftSuccess :
           leftType.partialStrengthen? strengthening.back with
-      | none => exact none
-      | some _ =>
-          cases rightSuccess :
+      | none => none
+      | some targetLeftType =>
+          match rightSuccess :
               rightType.partialStrengthen? strengthening.back with
-          | none => exact none
-          | some _ =>
-              cases motiveSuccess :
+          | none => none
+          | some targetRightType =>
+              match motiveSuccess :
                   motiveType.partialStrengthen? strengthening.back with
-              | none => exact none
-              | some _ =>
-                  cases partialStrengthenTyped? scrutinee
-                      (strengthening := strengthening) with
-                  | none => exact none
+              | none => none
+              | some targetMotiveType =>
+                  match scrutineeRecurse :
+                      partialStrengthenTyped? scrutinee
+                        (strengthening := strengthening) with
+                  | none => none
                   | some scrutineeResult =>
-                      cases partialStrengthenTyped? leftBranch
-                          (strengthening := strengthening) with
-                      | none => exact none
+                      match leftRecurse :
+                          partialStrengthenTyped? leftBranch
+                            (strengthening := strengthening) with
+                      | none => none
                       | some leftResult =>
-                          cases partialStrengthenTyped? rightBranch
-                              (strengthening := strengthening) with
-                          | none => exact none
+                          match rightRecurse :
+                              partialStrengthenTyped? rightBranch
+                                (strengthening := strengthening) with
+                          | none => none
                           | some rightResult =>
-                              exact some
+                              some
                                 (partialStrengthenTypedEitherMatch leftSuccess
                                   rightSuccess motiveSuccess scrutineeResult
                                   leftResult rightResult)
-  | @Term.refl _ _ _ _ carrier rawWitness => by
-      cases carrierSuccess : carrier.partialStrengthen? strengthening.back with
-      | none => exact none
-      | some targetCarrier =>
-          cases witnessSuccess :
-              rawWitness.partialStrengthen? strengthening.back with
-          | none => exact none
-          | some targetWitness =>
-              exact some
-                (partialStrengthenTypedRefl carrierSuccess witnessSuccess)
-  | @Term.idJ _ _ _ _ carrier leftEndpoint rightEndpoint _ _ _ baseCase
-      witness => by
-      cases carrierSuccess :
+  | @Term.refl _ _ _ _ carrier rawWitness =>
+      match carrierSuccess :
           carrier.partialStrengthen? strengthening.back with
-      | none => exact none
-      | some _ =>
-          cases leftSuccess :
+      | none => none
+      | some targetCarrier =>
+          match witnessSuccess :
+              rawWitness.partialStrengthen? strengthening.back with
+          | none => none
+          | some targetWitness =>
+              some (partialStrengthenTypedRefl carrierSuccess witnessSuccess)
+  | @Term.idJ _ _ _ _ carrier leftEndpoint rightEndpoint _ _ _ baseCase
+      witness =>
+      match carrierSuccess :
+          carrier.partialStrengthen? strengthening.back with
+      | none => none
+      | some targetCarrier =>
+          match leftSuccess :
               leftEndpoint.partialStrengthen? strengthening.back with
-          | none => exact none
-          | some _ =>
-              cases rightSuccess :
+          | none => none
+          | some targetLeftEndpoint =>
+              match rightSuccess :
                   rightEndpoint.partialStrengthen? strengthening.back with
-              | none => exact none
-              | some _ =>
-                  cases partialStrengthenTyped? baseCase
-                      (strengthening := strengthening) with
-                  | none => exact none
+              | none => none
+              | some targetRightEndpoint =>
+                  match baseRecurse :
+                      partialStrengthenTyped? baseCase
+                        (strengthening := strengthening) with
+                  | none => none
                   | some baseResult =>
-                      cases partialStrengthenTyped? witness
-                          (strengthening := strengthening) with
-                      | none => exact none
+                      match witnessRecurse :
+                          partialStrengthenTyped? witness
+                            (strengthening := strengthening) with
+                      | none => none
                       | some witnessResult =>
-                          exact some
+                          some
                             (partialStrengthenTypedIdJ carrierSuccess
                               leftSuccess rightSuccess baseResult
                               witnessResult)
-  | @Term.oeqRefl _ _ _ _ carrier rawWitness => by
-      cases carrierSuccess : carrier.partialStrengthen? strengthening.back with
-      | none => exact none
+  | @Term.oeqRefl _ _ _ _ carrier rawWitness =>
+      match carrierSuccess :
+          carrier.partialStrengthen? strengthening.back with
+      | none => none
       | some targetCarrier =>
-          cases witnessSuccess :
+          match witnessSuccess :
               rawWitness.partialStrengthen? strengthening.back with
-          | none => exact none
+          | none => none
           | some targetWitness =>
-              exact some
+              some
                 (partialStrengthenTypedOeqRefl carrierSuccess witnessSuccess)
   | @Term.oeqJ _ _ _ _ carrier leftEndpoint rightEndpoint _ _ _ baseCase
-      witness => by
-      cases carrierSuccess :
+      witness =>
+      match carrierSuccess :
           carrier.partialStrengthen? strengthening.back with
-      | none => exact none
-      | some _ =>
-          cases leftSuccess :
+      | none => none
+      | some targetCarrier =>
+          match leftSuccess :
               leftEndpoint.partialStrengthen? strengthening.back with
-          | none => exact none
-          | some _ =>
-              cases rightSuccess :
+          | none => none
+          | some targetLeftEndpoint =>
+              match rightSuccess :
                   rightEndpoint.partialStrengthen? strengthening.back with
-              | none => exact none
-              | some _ =>
-                  cases partialStrengthenTyped? baseCase
-                      (strengthening := strengthening) with
-                  | none => exact none
+              | none => none
+              | some targetRightEndpoint =>
+                  match baseRecurse :
+                      partialStrengthenTyped? baseCase
+                        (strengthening := strengthening) with
+                  | none => none
                   | some baseResult =>
-                      cases partialStrengthenTyped? witness
-                          (strengthening := strengthening) with
-                      | none => exact none
+                      match witnessRecurse :
+                          partialStrengthenTyped? witness
+                            (strengthening := strengthening) with
+                      | none => none
                       | some witnessResult =>
-                          exact some
+                          some
                             (partialStrengthenTypedOeqJ carrierSuccess
                               leftSuccess rightSuccess baseResult
                               witnessResult)
