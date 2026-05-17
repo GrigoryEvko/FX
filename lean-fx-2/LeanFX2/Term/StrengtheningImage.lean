@@ -9933,6 +9933,159 @@ theorem isAggregatorSound_pathLam {mode : Mode} {level : Nat}
         bodyResult bodyRecurse)
     result success
 
+/-- Aggregator wrapper at the `Term.boolElim` arm.  Three flat-context
+value IHs (scrutinee + then + else); motive is a `Ty (sourceScope + 1)`
+handled by the dispatcher leaf's internal type-witness split, so no
+motive aggregator. -/
+theorem isAggregatorSound_boolElim {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {motiveType : Ty level (sourceScope + 1)}
+    {scrutineeRaw thenRaw elseRaw : RawTerm sourceScope}
+    {scrutinee : Term sourceCtx Ty.bool scrutineeRaw}
+    {thenBranch :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw}
+    {elseBranch :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw}
+    (scrutineeAggregator : IsAggregatorSound scrutinee)
+    (thenAggregator : IsAggregatorSound thenBranch)
+    (elseAggregator : IsAggregatorSound elseBranch) :
+    IsAggregatorSound
+      (Term.boolElim (motiveType := motiveType) scrutinee thenBranch
+        elseBranch) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atBoolElim_imp_sound strengthening
+    (scrutineeAggregator strengthening)
+    (thenAggregator strengthening)
+    (elseAggregator strengthening)
+    result success
+
+/-- Aggregator wrapper at the `Term.natElim` arm.  Three flat-context
+value IHs (scrutinee + zero + succ); succ branch has the eliminator's
+arrow `Ty.nat → motiveType`. -/
+theorem isAggregatorSound_natElim {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {motiveType : Ty level sourceScope}
+    {scrutineeRaw zeroRaw succRaw : RawTerm sourceScope}
+    {scrutinee : Term sourceCtx Ty.nat scrutineeRaw}
+    {zeroBranch : Term sourceCtx motiveType zeroRaw}
+    {succBranch : Term sourceCtx (Ty.arrow Ty.nat motiveType) succRaw}
+    (scrutineeAggregator : IsAggregatorSound scrutinee)
+    (zeroAggregator : IsAggregatorSound zeroBranch)
+    (succAggregator : IsAggregatorSound succBranch) :
+    IsAggregatorSound
+      (Term.natElim (motiveType := motiveType) scrutinee zeroBranch
+        succBranch) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atNatElim_imp_sound strengthening
+    (scrutineeAggregator strengthening)
+    (zeroAggregator strengthening)
+    (succAggregator strengthening)
+    result success
+
+/-- Aggregator wrapper at the `Term.natRec` arm.  Mirrors `atNatElim`
+shape with the recursor's higher-kinded succ branch
+`Ty.nat → motiveType → motiveType`. -/
+theorem isAggregatorSound_natRec {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {motiveType : Ty level sourceScope}
+    {scrutineeRaw zeroRaw succRaw : RawTerm sourceScope}
+    {scrutinee : Term sourceCtx Ty.nat scrutineeRaw}
+    {zeroBranch : Term sourceCtx motiveType zeroRaw}
+    {succBranch :
+      Term sourceCtx (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType))
+        succRaw}
+    (scrutineeAggregator : IsAggregatorSound scrutinee)
+    (zeroAggregator : IsAggregatorSound zeroBranch)
+    (succAggregator : IsAggregatorSound succBranch) :
+    IsAggregatorSound
+      (Term.natRec (motiveType := motiveType) scrutinee zeroBranch
+        succBranch) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atNatRec_imp_sound strengthening
+    (scrutineeAggregator strengthening)
+    (zeroAggregator strengthening)
+    (succAggregator strengthening)
+    result success
+
+/-- Aggregator wrapper at the `Term.listElim` arm.  Parametric ι-
+eliminator: one element-type witness handled internally by the leaf
+plus three flat-context value IHs (scrutinee + nil + cons). -/
+theorem isAggregatorSound_listElim {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {elementType motiveType : Ty level sourceScope}
+    {scrutineeRaw nilRaw consRaw : RawTerm sourceScope}
+    {scrutinee : Term sourceCtx (Ty.listType elementType) scrutineeRaw}
+    {nilBranch : Term sourceCtx motiveType nilRaw}
+    {consBranch :
+      Term sourceCtx
+        (Ty.arrow elementType
+          (Ty.arrow (Ty.listType elementType) motiveType))
+        consRaw}
+    (scrutineeAggregator : IsAggregatorSound scrutinee)
+    (nilAggregator : IsAggregatorSound nilBranch)
+    (consAggregator : IsAggregatorSound consBranch) :
+    IsAggregatorSound
+      (Term.listElim (motiveType := motiveType) scrutinee nilBranch
+        consBranch) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atListElim_imp_sound strengthening
+    (scrutineeAggregator strengthening)
+    (nilAggregator strengthening)
+    (consAggregator strengthening)
+    result success
+
+/-- Aggregator wrapper at the `Term.optionMatch` arm.  Mirrors
+`atListElim` shape: one element-type witness internal + three flat-
+context value IHs (scrutinee + none + some). -/
+theorem isAggregatorSound_optionMatch {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {elementType motiveType : Ty level sourceScope}
+    {scrutineeRaw noneRaw someRaw : RawTerm sourceScope}
+    {scrutinee :
+      Term sourceCtx (Ty.optionType elementType) scrutineeRaw}
+    {noneBranch : Term sourceCtx motiveType noneRaw}
+    {someBranch :
+      Term sourceCtx (Ty.arrow elementType motiveType) someRaw}
+    (scrutineeAggregator : IsAggregatorSound scrutinee)
+    (noneAggregator : IsAggregatorSound noneBranch)
+    (someAggregator : IsAggregatorSound someBranch) :
+    IsAggregatorSound
+      (Term.optionMatch (motiveType := motiveType) scrutinee noneBranch
+        someBranch) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atOptionMatch_imp_sound strengthening
+    (scrutineeAggregator strengthening)
+    (noneAggregator strengthening)
+    (someAggregator strengthening)
+    result success
+
+/-- Aggregator wrapper at the `Term.eitherMatch` arm.  Two-source
+parametric ι-eliminator: two type witnesses (leftType + rightType)
+handled internally plus three flat-context value IHs (scrutinee +
+left + right). -/
+theorem isAggregatorSound_eitherMatch {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {leftType rightType motiveType : Ty level sourceScope}
+    {scrutineeRaw leftRaw rightRaw : RawTerm sourceScope}
+    {scrutinee :
+      Term sourceCtx (Ty.eitherType leftType rightType) scrutineeRaw}
+    {leftBranch :
+      Term sourceCtx (Ty.arrow leftType motiveType) leftRaw}
+    {rightBranch :
+      Term sourceCtx (Ty.arrow rightType motiveType) rightRaw}
+    (scrutineeAggregator : IsAggregatorSound scrutinee)
+    (leftAggregator : IsAggregatorSound leftBranch)
+    (rightAggregator : IsAggregatorSound rightBranch) :
+    IsAggregatorSound
+      (Term.eitherMatch (motiveType := motiveType) scrutinee leftBranch
+        rightBranch) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atEitherMatch_imp_sound strengthening
+    (scrutineeAggregator strengthening)
+    (leftAggregator strengthening)
+    (rightAggregator strengthening)
+    result success
+
 end Term
 
 end LeanFX2
