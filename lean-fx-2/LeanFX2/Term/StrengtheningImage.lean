@@ -13008,6 +13008,98 @@ theorem isTotalOnWeaken_effectPerform {mode : Mode} {level scope : Nat}
               cases this
           · rfl
 
+/-- 0-IH parametric atomic totality: `Term.piTyCode` (universe-code
+for `Ty.piTy`).  Domain at outer scope; codomain at scope+1 (under
+binder).  Codomain strengthen uses `back.lift` and the lift-after-
+lift composition lemma. -/
+theorem isTotalOnWeaken_piTyCode {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (domainCodeRaw : RawTerm scope)
+    (codomainCodeRaw : RawTerm (scope + 1)) :
+    IsTotalOnWeaken (Term.piTyCode (context := context) outerLevel
+      levelLe domainCodeRaw codomainCodeRaw) := by
+  intro newType
+  show (strengthenTyped? (Term.piTyCode
+      (context := context.cons newType) outerLevel levelLe
+      domainCodeRaw.weaken
+      (codomainCodeRaw.rename RawRenaming.weaken.lift))).isSome
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next domainFails =>
+      exfalso
+      have domainSuccess :
+          domainCodeRaw.weaken.partialStrengthen?
+              (ContextStrengthening.dropNewest context newType).back =
+            some domainCodeRaw :=
+        RawTerm.strengthen?_weaken domainCodeRaw
+      rw [domainSuccess] at domainFails
+      cases domainFails
+  · split
+    · next codomainFails =>
+        exfalso
+        have codomainSuccess :
+            (codomainCodeRaw.rename RawRenaming.weaken.lift).partialStrengthen?
+                (ContextStrengthening.dropNewest context newType).back.lift =
+              some codomainCodeRaw := by
+          have := RawTerm.partialStrengthen?_rename_some codomainCodeRaw
+            RawRenaming.weaken.lift RawRenaming.identity
+            (ContextStrengthening.dropNewest context newType).back.lift
+            (fun position =>
+              PartialRawRenaming.lift_dropNewest_weaken_lift position)
+          rw [RawTerm.rename_identity] at this
+          exact this
+        rw [codomainSuccess] at codomainFails
+        cases codomainFails
+    · rfl
+
+/-- 0-IH parametric atomic totality: `Term.sigmaTyCode` (universe-code
+for `Ty.sigmaTy`).  Same shape as `piTyCode`. -/
+theorem isTotalOnWeaken_sigmaTyCode {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (domainCodeRaw : RawTerm scope)
+    (codomainCodeRaw : RawTerm (scope + 1)) :
+    IsTotalOnWeaken (Term.sigmaTyCode (context := context) outerLevel
+      levelLe domainCodeRaw codomainCodeRaw) := by
+  intro newType
+  show (strengthenTyped? (Term.sigmaTyCode
+      (context := context.cons newType) outerLevel levelLe
+      domainCodeRaw.weaken
+      (codomainCodeRaw.rename RawRenaming.weaken.lift))).isSome
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next domainFails =>
+      exfalso
+      have domainSuccess :
+          domainCodeRaw.weaken.partialStrengthen?
+              (ContextStrengthening.dropNewest context newType).back =
+            some domainCodeRaw :=
+        RawTerm.strengthen?_weaken domainCodeRaw
+      rw [domainSuccess] at domainFails
+      cases domainFails
+  · split
+    · next codomainFails =>
+        exfalso
+        have codomainSuccess :
+            (codomainCodeRaw.rename RawRenaming.weaken.lift).partialStrengthen?
+                (ContextStrengthening.dropNewest context newType).back.lift =
+              some codomainCodeRaw := by
+          have := RawTerm.partialStrengthen?_rename_some codomainCodeRaw
+            RawRenaming.weaken.lift RawRenaming.identity
+            (ContextStrengthening.dropNewest context newType).back.lift
+            (fun position =>
+              PartialRawRenaming.lift_dropNewest_weaken_lift position)
+          rw [RawTerm.rename_identity] at this
+          exact this
+        rw [codomainSuccess] at codomainFails
+        cases codomainFails
+    · rfl
+
 /-- 0-IH parametric atomic totality: `Term.arrowCode` (universe-code
 for `Ty.arrow`).  Two RawTerm sub-payloads at the outer scope. -/
 theorem isTotalOnWeaken_arrowCode {mode : Mode} {level scope : Nat}

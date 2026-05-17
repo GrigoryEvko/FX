@@ -859,6 +859,12 @@ existing computational dispatcher. -/
 -- via OperationSignature.map definitional unfolding).
 #assert_no_axioms LeanFX2.Term.isTotalOnWeaken_effectPerform
 
+-- Wave G: lift-based universe-code ctors (codomain at scope+1).
+-- Use the lift-after-lift composition (lift_dropNewest_weaken_lift)
+-- + RawTerm.partialStrengthen?_rename_some + rename_identity.
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_piTyCode
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_sigmaTyCode
+
 -- User-facing unweaken?_weaken_<ctor> headline theorems.  Each is a
 -- direct `rfl` witness — concrete totality for the closed atomic
 -- ctors, consumable by Step.eta-cascade SR proofs.
