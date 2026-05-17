@@ -290,6 +290,50 @@ theorem aggregator_pair_natBool_closed {mode : Mode} {level : Nat}
   isAggregatorSound_pair isAggregatorSound_natZero
     isAggregatorSound_boolTrue
 
+/-- 5-deep nat chain extending the nat sequence to confirm 1-IH
+chaining stays uniform past depth 4 as well. -/
+theorem aggregator_natFive_closed {mode : Mode} {level : Nat}
+    {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.natSucc (context := sourceCtx)
+        (Term.natSucc
+          (Term.natSucc
+            (Term.natSucc (Term.natSucc Term.natZero))))) :=
+  isAggregatorSound_natSucc
+    (isAggregatorSound_natSucc
+      (isAggregatorSound_natSucc
+        (isAggregatorSound_natSucc
+          (isAggregatorSound_natSucc isAggregatorSound_natZero))))
+
+/-- Nested parametric: `Some (Some natZero)` at carrier
+`option (option nat)`.  Demonstrates that the 1-IH parametric
+`optionSome` wrapper composes recursively as the inner child of
+another `optionSome`, with the outer `valueType` implicit
+threading through the inner construction. -/
+theorem aggregator_optionSome_optionSome_natZero_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.optionSome (context := sourceCtx)
+        (valueTerm :=
+          Term.optionSome (valueTerm := Term.natZero))) :=
+  isAggregatorSound_optionSome
+    (isAggregatorSound_optionSome isAggregatorSound_natZero)
+
+/-- 1-IH heterogeneous with non-trivial child: `eitherInl
+(natSucc natZero)` at carrier `Either nat bool`.  Variant of
+the existing `eitherInl_natZero` example carrying a depth-1
+nat chain rather than the bare zero.  Demonstrates that
+heterogeneous 1-IH wrappers compose with non-trivial 1-IH
+children of the matching side. -/
+theorem aggregator_eitherInl_natOne_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.eitherInl (context := sourceCtx)
+        (rightType := Ty.bool)
+        (valueTerm := Term.natSucc Term.natZero)) :=
+  isAggregatorSound_eitherInl (rightType := Ty.bool)
+    (isAggregatorSound_natSucc isAggregatorSound_natZero)
+
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_unit_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwo_closed
@@ -310,5 +354,8 @@ theorem aggregator_pair_natBool_closed {mode : Mode} {level : Nat}
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_refl_natZero_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_oeqRefl_natZero_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_natBool_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natFive_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_optionSome_optionSome_natZero_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_eitherInl_natOne_closed
 
 end LeanFX2.SmokeAggregatorComposition
