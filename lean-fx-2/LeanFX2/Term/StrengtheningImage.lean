@@ -5895,6 +5895,31 @@ a uniform consequence of structural recursion on `Term`.  This commit
 ships the cheap, no-subterm-recursion fragment so the recursive arms
 can build on a known-good prologue. -/
 
+/-- Dispatcher soundness at the `Term.var` arm.  After refactoring the
+dispatcher's var body to term-mode `match h :`, the standard `split`
+machinery penetrates the resulting `Option` match and exposes a clean
+witness `survives : strengthening.back sourcePosition = some targetPosition`
+that feeds the wrapper soundness directly. -/
+theorem partialStrengthenTyped?_atVar_imp_sound {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (sourcePosition : Fin sourceScope)
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (result : StrengtheningResult strengthening
+      (Term.var (context := sourceCtx) sourcePosition))
+    (success : partialStrengthenTyped?
+        (Term.var (context := sourceCtx) sourcePosition) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetPosition survives
+    cases success
+    exact partialStrengthenTypedVarOfSurvives_sound strengthening sourcePosition
+      targetPosition survives
+
 /-- Dispatcher soundness at the `Term.unit` arm.  Closed-leaf: the
 dispatcher returns `some (partialStrengthenTypedUnit strengthening)`
 unconditionally, so the soundness is the wrapper soundness applied

@@ -6491,11 +6491,11 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
     (strengthening : ContextStrengthening sourceCtx targetCtx) :
     Option (StrengtheningResult strengthening sourceTerm) :=
   match sourceTerm with
-  | @Term.var _ _ _ _ position => by
-      cases survives : strengthening.back position with
-      | none => exact none
+  | @Term.var _ _ _ _ position =>
+      match survives : strengthening.back position with
+      | none => none
       | some targetPosition =>
-          exact some
+          some
             (partialStrengthenTypedVarOfSurvives strengthening position
               targetPosition survives)
   | @Term.unit _ _ _ _ => by
