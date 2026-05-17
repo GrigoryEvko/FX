@@ -6648,13 +6648,13 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                           scrutineeResult thenResult elseResult)
   | @Term.natZero _ _ _ _ => by
       exact some (partialStrengthenTypedNatZero strengthening)
-  | @Term.natSucc _ _ _ _ _ predecessor => by
-      cases partialStrengthenTyped? predecessor
-          (strengthening := strengthening) with
-      | none => exact none
+  | @Term.natSucc _ _ _ _ _ predecessor =>
+      match predecessorRecurse :
+          partialStrengthenTyped? predecessor
+            (strengthening := strengthening) with
+      | none => none
       | some predecessorResult =>
-          exact some
-            (partialStrengthenTypedNatSucc predecessorResult)
+          some (partialStrengthenTypedNatSucc predecessorResult)
   | @Term.natElim _ _ _ _ _ _ _ _ scrutinee zeroBranch succBranch => by
       cases partialStrengthenTyped? scrutinee
           (strengthening := strengthening) with
@@ -6735,12 +6735,13 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
           exact some
             (partialStrengthenTypedOptionNoneOfType strengthening
               elementType targetElementType elementSuccess)
-  | @Term.optionSome _ _ _ _ _ _ valueTerm => by
-      cases partialStrengthenTyped? valueTerm
-          (strengthening := strengthening) with
-      | none => exact none
+  | @Term.optionSome _ _ _ _ _ _ valueTerm =>
+      match valueRecurse :
+          partialStrengthenTyped? valueTerm
+            (strengthening := strengthening) with
+      | none => none
       | some valueResult =>
-          exact some (partialStrengthenTypedOptionSome valueResult)
+          some (partialStrengthenTypedOptionSome valueResult)
   | @Term.optionMatch _ _ _ _ elementType _ _ _ _ scrutinee noneBranch
       someBranch => by
       cases elementSuccess :
@@ -6954,34 +6955,38 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                             (partialStrengthenTypedIdStrictRec modeIsStrict
                               carrierSuccess leftSuccess rightSuccess
                               baseResult witnessResult)
-  | @Term.modIntro _ _ _ _ _ _ innerTerm => by
-      cases partialStrengthenTyped? innerTerm
-          (strengthening := strengthening) with
-      | none => exact none
+  | @Term.modIntro _ _ _ _ _ _ innerTerm =>
+      match innerRecurse :
+          partialStrengthenTyped? innerTerm
+            (strengthening := strengthening) with
+      | none => none
       | some innerResult =>
-          exact some (partialStrengthenTypedModIntro innerResult)
-  | @Term.modElim _ _ _ _ _ _ innerTerm => by
-      cases partialStrengthenTyped? innerTerm
-          (strengthening := strengthening) with
-      | none => exact none
+          some (partialStrengthenTypedModIntro innerResult)
+  | @Term.modElim _ _ _ _ _ _ innerTerm =>
+      match innerRecurse :
+          partialStrengthenTyped? innerTerm
+            (strengthening := strengthening) with
+      | none => none
       | some innerResult =>
-          exact some (partialStrengthenTypedModElim innerResult)
-  | @Term.subsume _ _ _ _ _ _ innerTerm => by
-      cases partialStrengthenTyped? innerTerm
-          (strengthening := strengthening) with
-      | none => exact none
+          some (partialStrengthenTypedModElim innerResult)
+  | @Term.subsume _ _ _ _ _ _ innerTerm =>
+      match innerRecurse :
+          partialStrengthenTyped? innerTerm
+            (strengthening := strengthening) with
+      | none => none
       | some innerResult =>
-          exact some (partialStrengthenTypedSubsume innerResult)
+          some (partialStrengthenTypedSubsume innerResult)
   | @Term.interval0 _ _ _ _ => by
       exact some (partialStrengthenTypedInterval0 strengthening)
   | @Term.interval1 _ _ _ _ => by
       exact some (partialStrengthenTypedInterval1 strengthening)
-  | @Term.intervalOpp _ _ _ _ _ innerValue => by
-      cases partialStrengthenTyped? innerValue
-          (strengthening := strengthening) with
-      | none => exact none
+  | @Term.intervalOpp _ _ _ _ _ innerValue =>
+      match innerRecurse :
+          partialStrengthenTyped? innerValue
+            (strengthening := strengthening) with
+      | none => none
       | some innerResult =>
-          exact some (partialStrengthenTypedIntervalOpp innerResult)
+          some (partialStrengthenTypedIntervalOpp innerResult)
   | @Term.intervalMeet _ _ _ _ _ _ leftValue rightValue => by
       cases partialStrengthenTyped? leftValue
           (strengthening := strengthening) with

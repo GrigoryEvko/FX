@@ -5920,6 +5920,174 @@ theorem partialStrengthenTyped?_atVar_imp_sound {mode : Mode} {level : Nat}
     exact partialStrengthenTypedVarOfSurvives_sound strengthening sourcePosition
       targetPosition survives
 
+/-- Dispatcher soundness at the `Term.natSucc` arm.  First arm with a
+recursive `partialStrengthenTyped?` sub-call: the inductive hypothesis
+on the predecessor flows through as an explicit `predecessorIH`
+parameter, which `split at success` plus `cases success` reduces to
+exactly the wrapper soundness premise.  Same term-mode `match h :`
+refactor as `atVar`: standard equation lemmas, no Option.casesOn
+motive trap. -/
+theorem partialStrengthenTyped?_atNatSucc_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {predecessorRaw : RawTerm sourceScope}
+    {predecessor : Term sourceCtx Ty.nat predecessorRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (predecessorIH : ∀ predecessorResult,
+        partialStrengthenTyped? predecessor strengthening =
+            some predecessorResult →
+          StrengtheningSoundness predecessorResult)
+    (result : StrengtheningResult strengthening
+      (Term.natSucc (predecessor := predecessor)))
+    (success : partialStrengthenTyped?
+        (Term.natSucc (predecessor := predecessor)) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i predecessorResult predecessorRecurse
+    cases success
+    exact partialStrengthenTypedNatSucc_sound
+      (predecessorSound := predecessorIH predecessorResult predecessorRecurse)
+
+/-- Dispatcher soundness at the `Term.optionSome` arm.  Single-recurse
+arm with no type-shape strengthening: identical proof shape to
+`atNatSucc`. -/
+theorem partialStrengthenTyped?_atOptionSome_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {elementType : Ty level sourceScope}
+    {valueRaw : RawTerm sourceScope}
+    {valueTerm : Term sourceCtx elementType valueRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (valueIH : ∀ valueResult,
+        partialStrengthenTyped? valueTerm strengthening =
+            some valueResult →
+          StrengtheningSoundness valueResult)
+    (result : StrengtheningResult strengthening
+      (Term.optionSome (valueTerm := valueTerm)))
+    (success : partialStrengthenTyped?
+        (Term.optionSome (valueTerm := valueTerm)) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i valueResult valueRecurse
+    cases success
+    exact partialStrengthenTypedOptionSome_sound
+      (valueSound := valueIH valueResult valueRecurse)
+
+/-- Dispatcher soundness at the `Term.modIntro` arm. -/
+theorem partialStrengthenTyped?_atModIntro_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {innerType : Ty level sourceScope}
+    {innerRaw : RawTerm sourceScope}
+    {innerTerm : Term sourceCtx innerType innerRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (innerIH : ∀ innerResult,
+        partialStrengthenTyped? innerTerm strengthening =
+            some innerResult →
+          StrengtheningSoundness innerResult)
+    (result : StrengtheningResult strengthening
+      (Term.modIntro (innerTerm := innerTerm)))
+    (success : partialStrengthenTyped?
+        (Term.modIntro (innerTerm := innerTerm)) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i innerResult innerRecurse
+    cases success
+    exact partialStrengthenTypedModIntro_sound
+      (innerSound := innerIH innerResult innerRecurse)
+
+/-- Dispatcher soundness at the `Term.modElim` arm. -/
+theorem partialStrengthenTyped?_atModElim_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {innerType : Ty level sourceScope}
+    {innerRaw : RawTerm sourceScope}
+    {innerTerm : Term sourceCtx innerType innerRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (innerIH : ∀ innerResult,
+        partialStrengthenTyped? innerTerm strengthening =
+            some innerResult →
+          StrengtheningSoundness innerResult)
+    (result : StrengtheningResult strengthening
+      (Term.modElim (innerTerm := innerTerm)))
+    (success : partialStrengthenTyped?
+        (Term.modElim (innerTerm := innerTerm)) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i innerResult innerRecurse
+    cases success
+    exact partialStrengthenTypedModElim_sound
+      (innerSound := innerIH innerResult innerRecurse)
+
+/-- Dispatcher soundness at the `Term.subsume` arm. -/
+theorem partialStrengthenTyped?_atSubsume_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {innerType : Ty level sourceScope}
+    {innerRaw : RawTerm sourceScope}
+    {innerTerm : Term sourceCtx innerType innerRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (innerIH : ∀ innerResult,
+        partialStrengthenTyped? innerTerm strengthening =
+            some innerResult →
+          StrengtheningSoundness innerResult)
+    (result : StrengtheningResult strengthening
+      (Term.subsume (innerTerm := innerTerm)))
+    (success : partialStrengthenTyped?
+        (Term.subsume (innerTerm := innerTerm)) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i innerResult innerRecurse
+    cases success
+    exact partialStrengthenTypedSubsume_sound
+      (innerSound := innerIH innerResult innerRecurse)
+
+/-- Dispatcher soundness at the `Term.intervalOpp` arm. -/
+theorem partialStrengthenTyped?_atIntervalOpp_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {innerRaw : RawTerm sourceScope}
+    {innerValue : Term sourceCtx Ty.interval innerRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (innerIH : ∀ innerResult,
+        partialStrengthenTyped? innerValue strengthening =
+            some innerResult →
+          StrengtheningSoundness innerResult)
+    (result : StrengtheningResult strengthening
+      (Term.intervalOpp (innerValue := innerValue)))
+    (success : partialStrengthenTyped?
+        (Term.intervalOpp (innerValue := innerValue)) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i innerResult innerRecurse
+    cases success
+    exact partialStrengthenTypedIntervalOpp_sound
+      (innerSound := innerIH innerResult innerRecurse)
+
 /-- Dispatcher soundness at the `Term.unit` arm.  Closed-leaf: the
 dispatcher returns `some (partialStrengthenTypedUnit strengthening)`
 unconditionally, so the soundness is the wrapper soundness applied
