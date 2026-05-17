@@ -1579,6 +1579,7 @@ def partialStrengthenTypedListElim {mode : Mode} {level : Nat}
     {sourceCtx : Ctx mode level sourceScope}
     {targetCtx : Ctx mode level targetScope}
     {elementType motiveType : Ty level sourceScope}
+    {targetElementType : Ty level targetScope}
     {scrutineeRaw nilRaw consRaw : RawTerm sourceScope}
     {strengthening : ContextStrengthening sourceCtx targetCtx}
     {scrutinee :
@@ -1589,6 +1590,9 @@ def partialStrengthenTypedListElim {mode : Mode} {level : Nat}
         (Ty.arrow elementType
           (Ty.arrow (Ty.listType elementType) motiveType))
         consRaw}
+    (elementSuccess :
+      elementType.partialStrengthen? strengthening.back =
+        some targetElementType)
     (scrutineeResult : StrengtheningResult strengthening scrutinee)
     (nilResult : StrengtheningResult strengthening nilBranch)
     (consResult : StrengtheningResult strengthening consBranch) :
@@ -1598,46 +1602,46 @@ def partialStrengthenTypedListElim {mode : Mode} {level : Nat}
   | mk targetScrutineeType targetScrutineeRaw targetScrutineeTerm
       scrutineeTypeStrengthens scrutineeRawStrengthens
       scrutineeTypeRenames scrutineeRawRenames =>
-      change
-        (match elementType.partialStrengthen? strengthening.back with
-        | some strengthenedElement => some (Ty.listType strengthenedElement)
-        | none => none) = some targetScrutineeType at scrutineeTypeStrengthens
-      cases elementSuccess : elementType.partialStrengthen?
-          strengthening.back with
-      | none =>
-          rw [elementSuccess] at scrutineeTypeStrengthens
-          cases scrutineeTypeStrengthens
-      | some targetElementType =>
-          rw [elementSuccess] at scrutineeTypeStrengthens
-          cases scrutineeTypeStrengthens
-          cases nilResult with
-          | mk targetMotiveType targetNilRaw targetNilTerm
-              nilTypeStrengthens nilRawStrengthens nilTypeRenames
-              nilRawRenames =>
-              cases consResult with
-              | mk targetConsType targetConsRaw targetConsTerm
-                  consTypeStrengthens consRawStrengthens consTypeRenames
-                  consRawRenames =>
-                  change
-                    Option.mapTwo
-                      (elementType.partialStrengthen? strengthening.back)
-                      (Option.mapTwo
-                        (match elementType.partialStrengthen?
-                            strengthening.back with
-                        | some strengthenedElement =>
-                            some (Ty.listType strengthenedElement)
-                        | none => none)
-                        (motiveType.partialStrengthen? strengthening.back)
-                        Ty.arrow)
-                      Ty.arrow = some targetConsType at consTypeStrengthens
-                  rw [elementSuccess, nilTypeStrengthens] at consTypeStrengthens
-                  cases consTypeStrengthens
-                  exact partialStrengthenTypedListElimOfSuccess
-                    targetScrutineeTerm targetNilTerm targetConsTerm
-                    elementSuccess nilTypeStrengthens
-                    scrutineeRawStrengthens nilRawStrengthens
-                    consRawStrengthens scrutineeRawRenames nilRawRenames
-                    consRawRenames
+      have expectedScrutineeTypeStrengthens :
+          (Ty.listType elementType).partialStrengthen?
+              strengthening.back =
+            some (Ty.listType targetElementType) := by
+        change
+          (match elementType.partialStrengthen? strengthening.back with
+          | some strengthenedElement =>
+              some (Ty.listType strengthenedElement)
+          | none => none) = some (Ty.listType targetElementType)
+        rw [elementSuccess]
+      rw [expectedScrutineeTypeStrengthens] at scrutineeTypeStrengthens
+      cases scrutineeTypeStrengthens
+      cases nilResult with
+      | mk targetMotiveType targetNilRaw targetNilTerm
+          nilTypeStrengthens nilRawStrengthens nilTypeRenames
+          nilRawRenames =>
+          cases consResult with
+          | mk targetConsType targetConsRaw targetConsTerm
+              consTypeStrengthens consRawStrengthens consTypeRenames
+              consRawRenames =>
+              change
+                Option.mapTwo
+                  (elementType.partialStrengthen? strengthening.back)
+                  (Option.mapTwo
+                    (match elementType.partialStrengthen?
+                        strengthening.back with
+                    | some strengthenedElement =>
+                        some (Ty.listType strengthenedElement)
+                    | none => none)
+                    (motiveType.partialStrengthen? strengthening.back)
+                    Ty.arrow)
+                  Ty.arrow = some targetConsType at consTypeStrengthens
+              rw [elementSuccess, nilTypeStrengthens] at consTypeStrengthens
+              cases consTypeStrengthens
+              exact partialStrengthenTypedListElimOfSuccess
+                targetScrutineeTerm targetNilTerm targetConsTerm
+                elementSuccess nilTypeStrengthens
+                scrutineeRawStrengthens nilRawStrengthens
+                consRawStrengthens scrutineeRawRenames nilRawRenames
+                consRawRenames
 
 /-- Either-left injection strengthens by strengthening the payload and
 the unused right type index. -/
@@ -1825,12 +1829,16 @@ def partialStrengthenTypedOptionMatch {mode : Mode} {level : Nat}
     {sourceCtx : Ctx mode level sourceScope}
     {targetCtx : Ctx mode level targetScope}
     {elementType motiveType : Ty level sourceScope}
+    {targetElementType : Ty level targetScope}
     {scrutineeRaw noneRaw someRaw : RawTerm sourceScope}
     {strengthening : ContextStrengthening sourceCtx targetCtx}
     {scrutinee :
       Term sourceCtx (Ty.optionType elementType) scrutineeRaw}
     {noneBranch : Term sourceCtx motiveType noneRaw}
     {someBranch : Term sourceCtx (Ty.arrow elementType motiveType) someRaw}
+    (elementSuccess :
+      elementType.partialStrengthen? strengthening.back =
+        some targetElementType)
     (scrutineeResult : StrengtheningResult strengthening scrutinee)
     (noneResult : StrengtheningResult strengthening noneBranch)
     (someResult : StrengtheningResult strengthening someBranch) :
@@ -1840,40 +1848,39 @@ def partialStrengthenTypedOptionMatch {mode : Mode} {level : Nat}
   | mk targetScrutineeType targetScrutineeRaw targetScrutineeTerm
       scrutineeTypeStrengthens scrutineeRawStrengthens
       scrutineeTypeRenames scrutineeRawRenames =>
-      change
-        (match elementType.partialStrengthen? strengthening.back with
-        | some strengthenedElement =>
-            some (Ty.optionType strengthenedElement)
-        | none => none) = some targetScrutineeType at scrutineeTypeStrengthens
-      cases elementSuccess : elementType.partialStrengthen?
-          strengthening.back with
-      | none =>
-          rw [elementSuccess] at scrutineeTypeStrengthens
-          cases scrutineeTypeStrengthens
-      | some targetElementType =>
-          rw [elementSuccess] at scrutineeTypeStrengthens
-          cases scrutineeTypeStrengthens
-          cases noneResult with
-          | mk targetMotiveType targetNoneRaw targetNoneTerm
-              noneTypeStrengthens noneRawStrengthens noneTypeRenames
-              noneRawRenames =>
-              cases someResult with
-              | mk targetSomeType targetSomeRaw targetSomeTerm
-                  someTypeStrengthens someRawStrengthens someTypeRenames
-                  someRawRenames =>
-                  change
-                    Option.mapTwo
-                      (elementType.partialStrengthen? strengthening.back)
-                      (motiveType.partialStrengthen? strengthening.back)
-                      Ty.arrow = some targetSomeType at someTypeStrengthens
-                  rw [elementSuccess, noneTypeStrengthens] at someTypeStrengthens
-                  cases someTypeStrengthens
-                  exact partialStrengthenTypedOptionMatchOfSuccess
-                    targetScrutineeTerm targetNoneTerm targetSomeTerm
-                    elementSuccess noneTypeStrengthens
-                    scrutineeRawStrengthens noneRawStrengthens
-                    someRawStrengthens scrutineeRawRenames noneRawRenames
-                    someRawRenames
+      have expectedScrutineeTypeStrengthens :
+          (Ty.optionType elementType).partialStrengthen?
+              strengthening.back =
+            some (Ty.optionType targetElementType) := by
+        change
+          (match elementType.partialStrengthen? strengthening.back with
+          | some strengthenedElement =>
+              some (Ty.optionType strengthenedElement)
+          | none => none) = some (Ty.optionType targetElementType)
+        rw [elementSuccess]
+      rw [expectedScrutineeTypeStrengthens] at scrutineeTypeStrengthens
+      cases scrutineeTypeStrengthens
+      cases noneResult with
+      | mk targetMotiveType targetNoneRaw targetNoneTerm
+          noneTypeStrengthens noneRawStrengthens noneTypeRenames
+          noneRawRenames =>
+          cases someResult with
+          | mk targetSomeType targetSomeRaw targetSomeTerm
+              someTypeStrengthens someRawStrengthens someTypeRenames
+              someRawRenames =>
+              change
+                Option.mapTwo
+                  (elementType.partialStrengthen? strengthening.back)
+                  (motiveType.partialStrengthen? strengthening.back)
+                  Ty.arrow = some targetSomeType at someTypeStrengthens
+              rw [elementSuccess, noneTypeStrengthens] at someTypeStrengthens
+              cases someTypeStrengthens
+              exact partialStrengthenTypedOptionMatchOfSuccess
+                targetScrutineeTerm targetNoneTerm targetSomeTerm
+                elementSuccess noneTypeStrengthens
+                scrutineeRawStrengthens noneRawStrengthens
+                someRawStrengthens scrutineeRawRenames noneRawRenames
+                someRawRenames
 
 /-- Success branch for either-match strengthening.  Pure term-mode
 construction; see `partialStrengthenTypedListElimOfSuccess` rationale. -/
@@ -1961,12 +1968,20 @@ def partialStrengthenTypedEitherMatch {mode : Mode} {level : Nat}
     {sourceCtx : Ctx mode level sourceScope}
     {targetCtx : Ctx mode level targetScope}
     {leftType rightType motiveType : Ty level sourceScope}
+    {targetLeftType targetRightType targetMotiveType : Ty level targetScope}
     {scrutineeRaw leftRaw rightRaw : RawTerm sourceScope}
     {strengthening : ContextStrengthening sourceCtx targetCtx}
     {scrutinee :
       Term sourceCtx (Ty.eitherType leftType rightType) scrutineeRaw}
     {leftBranch : Term sourceCtx (Ty.arrow leftType motiveType) leftRaw}
     {rightBranch : Term sourceCtx (Ty.arrow rightType motiveType) rightRaw}
+    (leftSuccess :
+      leftType.partialStrengthen? strengthening.back = some targetLeftType)
+    (rightSuccess :
+      rightType.partialStrengthen? strengthening.back = some targetRightType)
+    (motiveSuccess :
+      motiveType.partialStrengthen? strengthening.back =
+        some targetMotiveType)
     (scrutineeResult : StrengtheningResult strengthening scrutinee)
     (leftResult : StrengtheningResult strengthening leftBranch)
     (rightResult : StrengtheningResult strengthening rightBranch) :
@@ -1976,63 +1991,52 @@ def partialStrengthenTypedEitherMatch {mode : Mode} {level : Nat}
   | mk targetScrutineeType targetScrutineeRaw targetScrutineeTerm
       scrutineeTypeStrengthens scrutineeRawStrengthens
       scrutineeTypeRenames scrutineeRawRenames =>
-      change
-        Option.mapTwo
-          (leftType.partialStrengthen? strengthening.back)
-          (rightType.partialStrengthen? strengthening.back)
-          Ty.eitherType = some targetScrutineeType at scrutineeTypeStrengthens
-      cases leftSuccess : leftType.partialStrengthen? strengthening.back with
-      | none =>
-          rw [leftSuccess] at scrutineeTypeStrengthens
-          cases scrutineeTypeStrengthens
-      | some targetLeftType =>
-          cases rightSuccess : rightType.partialStrengthen?
-              strengthening.back with
-          | none =>
-              rw [leftSuccess, rightSuccess] at scrutineeTypeStrengthens
-              cases scrutineeTypeStrengthens
-          | some targetRightType =>
-              rw [leftSuccess, rightSuccess] at scrutineeTypeStrengthens
-              cases scrutineeTypeStrengthens
-              cases leftResult with
-              | mk targetLeftBranchType targetLeftRaw targetLeftTerm
-                  leftTypeStrengthens leftRawStrengthens leftTypeRenames
-                  leftRawRenames =>
-                  change
-                    Option.mapTwo
-                      (leftType.partialStrengthen? strengthening.back)
-                      (motiveType.partialStrengthen? strengthening.back)
-                      Ty.arrow = some targetLeftBranchType at leftTypeStrengthens
-                  rw [leftSuccess] at leftTypeStrengthens
-                  cases motiveSuccess : motiveType.partialStrengthen?
-                      strengthening.back with
-                  | none =>
-                      rw [motiveSuccess] at leftTypeStrengthens
-                      cases leftTypeStrengthens
-                  | some targetMotiveType =>
-                      rw [motiveSuccess] at leftTypeStrengthens
-                      cases leftTypeStrengthens
-                      cases rightResult with
-                      | mk targetRightBranchType targetRightRaw
-                          targetRightTerm rightTypeStrengthens
-                          rightRawStrengthens rightTypeRenames
-                          rightRawRenames =>
-                          change
-                            Option.mapTwo
-                              (rightType.partialStrengthen?
-                                strengthening.back)
-                              (motiveType.partialStrengthen?
-                                strengthening.back)
-                              Ty.arrow = some targetRightBranchType at rightTypeStrengthens
-                          rw [rightSuccess, motiveSuccess] at rightTypeStrengthens
-                          cases rightTypeStrengthens
-                          exact partialStrengthenTypedEitherMatchOfSuccess
-                            targetScrutineeTerm targetLeftTerm
-                            targetRightTerm leftSuccess rightSuccess
-                            motiveSuccess scrutineeRawStrengthens
-                            leftRawStrengthens rightRawStrengthens
-                            scrutineeRawRenames leftRawRenames
-                            rightRawRenames
+      have expectedScrutineeTypeStrengthens :
+          (Ty.eitherType leftType rightType).partialStrengthen?
+              strengthening.back =
+            some (Ty.eitherType targetLeftType targetRightType) := by
+        change
+          Option.mapTwo
+            (leftType.partialStrengthen? strengthening.back)
+            (rightType.partialStrengthen? strengthening.back)
+            Ty.eitherType =
+              some (Ty.eitherType targetLeftType targetRightType)
+        rw [leftSuccess, rightSuccess]
+        rfl
+      rw [expectedScrutineeTypeStrengthens] at scrutineeTypeStrengthens
+      cases scrutineeTypeStrengthens
+      cases leftResult with
+      | mk targetLeftBranchType targetLeftRaw targetLeftTerm
+          leftTypeStrengthens leftRawStrengthens leftTypeRenames
+          leftRawRenames =>
+          change
+            Option.mapTwo
+              (leftType.partialStrengthen? strengthening.back)
+              (motiveType.partialStrengthen? strengthening.back)
+              Ty.arrow = some targetLeftBranchType at leftTypeStrengthens
+          rw [leftSuccess, motiveSuccess] at leftTypeStrengthens
+          cases leftTypeStrengthens
+          cases rightResult with
+          | mk targetRightBranchType targetRightRaw
+              targetRightTerm rightTypeStrengthens
+              rightRawStrengthens rightTypeRenames
+              rightRawRenames =>
+              change
+                Option.mapTwo
+                  (rightType.partialStrengthen?
+                    strengthening.back)
+                  (motiveType.partialStrengthen?
+                    strengthening.back)
+                  Ty.arrow = some targetRightBranchType at rightTypeStrengthens
+              rw [rightSuccess, motiveSuccess] at rightTypeStrengthens
+              cases rightTypeStrengthens
+              exact partialStrengthenTypedEitherMatchOfSuccess
+                targetScrutineeTerm targetLeftTerm
+                targetRightTerm leftSuccess rightSuccess
+                motiveSuccess scrutineeRawStrengthens
+                leftRawStrengthens rightRawStrengthens
+                scrutineeRawRenames leftRawRenames
+                rightRawRenames
 
 /-- Refinement introduction strengthens by strengthening its base value,
 unit proof, and binder-indexed predicate raw. -/
@@ -2499,13 +2503,23 @@ def partialStrengthenTypedIdJ {mode : Mode} {level : Nat}
     {sourceCtx : Ctx mode level sourceScope}
     {targetCtx : Ctx mode level targetScope}
     {carrier : Ty level sourceScope}
+    {targetCarrier : Ty level targetScope}
     {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {targetLeftEndpoint targetRightEndpoint : RawTerm targetScope}
     {motiveType : Ty level sourceScope}
     {baseRaw witnessRaw : RawTerm sourceScope}
     {strengthening : ContextStrengthening sourceCtx targetCtx}
     {baseCase : Term sourceCtx motiveType baseRaw}
     {witness :
       Term sourceCtx (Ty.id carrier leftEndpoint rightEndpoint) witnessRaw}
+    (carrierSuccess :
+      carrier.partialStrengthen? strengthening.back = some targetCarrier)
+    (leftSuccess :
+      leftEndpoint.partialStrengthen? strengthening.back =
+        some targetLeftEndpoint)
+    (rightSuccess :
+      rightEndpoint.partialStrengthen? strengthening.back =
+        some targetRightEndpoint)
     (baseResult : StrengtheningResult strengthening baseCase)
     (witnessResult : StrengtheningResult strengthening witness) :
     StrengtheningResult strengthening (Term.idJ baseCase witness) := by
@@ -2516,37 +2530,28 @@ def partialStrengthenTypedIdJ {mode : Mode} {level : Nat}
       | mk targetWitnessType targetWitnessRaw targetWitnessTerm
           witnessTypeStrengthens witnessRawStrengthens witnessTypeRenames
           witnessRawRenames =>
-          change
-            Option.mapThree
-              (carrier.partialStrengthen? strengthening.back)
-              (leftEndpoint.partialStrengthen? strengthening.back)
-              (rightEndpoint.partialStrengthen? strengthening.back)
-              Ty.id = some targetWitnessType at witnessTypeStrengthens
-          cases carrierSuccess : carrier.partialStrengthen?
-              strengthening.back with
-          | none =>
-              rw [carrierSuccess] at witnessTypeStrengthens
-              cases witnessTypeStrengthens
-          | some targetCarrier =>
-              cases leftSuccess : leftEndpoint.partialStrengthen?
-                  strengthening.back with
-              | none =>
-                  rw [carrierSuccess, leftSuccess] at witnessTypeStrengthens
-                  cases witnessTypeStrengthens
-              | some targetLeftEndpoint =>
-                  cases rightSuccess : rightEndpoint.partialStrengthen?
-                      strengthening.back with
-                  | none =>
-                      rw [carrierSuccess, leftSuccess, rightSuccess] at witnessTypeStrengthens
-                      cases witnessTypeStrengthens
-                  | some targetRightEndpoint =>
-                      rw [carrierSuccess, leftSuccess, rightSuccess] at witnessTypeStrengthens
-                      cases witnessTypeStrengthens
-                      exact partialStrengthenTypedIdJOfSuccess
-                        targetBaseTerm targetWitnessTerm baseTypeStrengthens
-                        carrierSuccess leftSuccess rightSuccess
-                        baseRawStrengthens witnessRawStrengthens
-                        baseTypeRenames baseRawRenames witnessRawRenames
+          have expectedWitnessTypeStrengthens :
+              (Ty.id carrier leftEndpoint rightEndpoint).partialStrengthen?
+                  strengthening.back =
+                some (Ty.id targetCarrier targetLeftEndpoint
+                  targetRightEndpoint) := by
+            change
+              Option.mapThree
+                (carrier.partialStrengthen? strengthening.back)
+                (leftEndpoint.partialStrengthen? strengthening.back)
+                (rightEndpoint.partialStrengthen? strengthening.back)
+                Ty.id =
+                  some (Ty.id targetCarrier targetLeftEndpoint
+                    targetRightEndpoint)
+            rw [carrierSuccess, leftSuccess, rightSuccess]
+            rfl
+          rw [expectedWitnessTypeStrengthens] at witnessTypeStrengthens
+          cases witnessTypeStrengthens
+          exact partialStrengthenTypedIdJOfSuccess
+            targetBaseTerm targetWitnessTerm baseTypeStrengthens
+            carrierSuccess leftSuccess rightSuccess
+            baseRawStrengthens witnessRawStrengthens
+            baseTypeRenames baseRawRenames witnessRawRenames
 
 /-- Success branch for observational-equality elimination strengthening.
 Mirrors `partialStrengthenTypedIdJOfSuccess`: pre-decomposed witnesses
@@ -2624,13 +2629,23 @@ def partialStrengthenTypedOeqJ {mode : Mode} {level : Nat}
     {sourceCtx : Ctx mode level sourceScope}
     {targetCtx : Ctx mode level targetScope}
     {carrier : Ty level sourceScope}
+    {targetCarrier : Ty level targetScope}
     {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {targetLeftEndpoint targetRightEndpoint : RawTerm targetScope}
     {motiveType : Ty level sourceScope}
     {baseRaw witnessRaw : RawTerm sourceScope}
     {strengthening : ContextStrengthening sourceCtx targetCtx}
     {baseCase : Term sourceCtx motiveType baseRaw}
     {witness :
       Term sourceCtx (Ty.oeq carrier leftEndpoint rightEndpoint) witnessRaw}
+    (carrierSuccess :
+      carrier.partialStrengthen? strengthening.back = some targetCarrier)
+    (leftSuccess :
+      leftEndpoint.partialStrengthen? strengthening.back =
+        some targetLeftEndpoint)
+    (rightSuccess :
+      rightEndpoint.partialStrengthen? strengthening.back =
+        some targetRightEndpoint)
     (baseResult : StrengtheningResult strengthening baseCase)
     (witnessResult : StrengtheningResult strengthening witness) :
     StrengtheningResult strengthening (Term.oeqJ baseCase witness) := by
@@ -2641,37 +2656,28 @@ def partialStrengthenTypedOeqJ {mode : Mode} {level : Nat}
       | mk targetWitnessType targetWitnessRaw targetWitnessTerm
           witnessTypeStrengthens witnessRawStrengthens witnessTypeRenames
           witnessRawRenames =>
-          change
-            Option.mapThree
-              (carrier.partialStrengthen? strengthening.back)
-              (leftEndpoint.partialStrengthen? strengthening.back)
-              (rightEndpoint.partialStrengthen? strengthening.back)
-              Ty.oeq = some targetWitnessType at witnessTypeStrengthens
-          cases carrierSuccess : carrier.partialStrengthen?
-              strengthening.back with
-          | none =>
-              rw [carrierSuccess] at witnessTypeStrengthens
-              cases witnessTypeStrengthens
-          | some targetCarrier =>
-              cases leftSuccess : leftEndpoint.partialStrengthen?
-                  strengthening.back with
-              | none =>
-                  rw [carrierSuccess, leftSuccess] at witnessTypeStrengthens
-                  cases witnessTypeStrengthens
-              | some targetLeftEndpoint =>
-                  cases rightSuccess : rightEndpoint.partialStrengthen?
-                      strengthening.back with
-                  | none =>
-                      rw [carrierSuccess, leftSuccess, rightSuccess] at witnessTypeStrengthens
-                      cases witnessTypeStrengthens
-                  | some targetRightEndpoint =>
-                      rw [carrierSuccess, leftSuccess, rightSuccess] at witnessTypeStrengthens
-                      cases witnessTypeStrengthens
-                      exact partialStrengthenTypedOeqJOfSuccess
-                        targetBaseTerm targetWitnessTerm baseTypeStrengthens
-                        carrierSuccess leftSuccess rightSuccess
-                        baseRawStrengthens witnessRawStrengthens
-                        baseTypeRenames baseRawRenames witnessRawRenames
+          have expectedWitnessTypeStrengthens :
+              (Ty.oeq carrier leftEndpoint rightEndpoint).partialStrengthen?
+                  strengthening.back =
+                some (Ty.oeq targetCarrier targetLeftEndpoint
+                  targetRightEndpoint) := by
+            change
+              Option.mapThree
+                (carrier.partialStrengthen? strengthening.back)
+                (leftEndpoint.partialStrengthen? strengthening.back)
+                (rightEndpoint.partialStrengthen? strengthening.back)
+                Ty.oeq =
+                  some (Ty.oeq targetCarrier targetLeftEndpoint
+                    targetRightEndpoint)
+            rw [carrierSuccess, leftSuccess, rightSuccess]
+            rfl
+          rw [expectedWitnessTypeStrengthens] at witnessTypeStrengthens
+          cases witnessTypeStrengthens
+          exact partialStrengthenTypedOeqJOfSuccess
+            targetBaseTerm targetWitnessTerm baseTypeStrengthens
+            carrierSuccess leftSuccess rightSuccess
+            baseRawStrengthens witnessRawStrengthens
+            baseTypeRenames baseRawRenames witnessRawRenames
 
 /-- Success branch for strict-identity recursor strengthening.  Mirrors
 `partialStrengthenTypedIdJOfSuccess` with the strict-identity carrier
@@ -2751,7 +2757,9 @@ def partialStrengthenTypedIdStrictRec {mode : Mode} {level : Nat}
     {targetCtx : Ctx mode level targetScope}
     (modeIsStrict : mode = Mode.strict)
     {carrier : Ty level sourceScope}
+    {targetCarrier : Ty level targetScope}
     {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {targetLeftEndpoint targetRightEndpoint : RawTerm targetScope}
     {motiveType : Ty level sourceScope}
     {baseRaw witnessRaw : RawTerm sourceScope}
     {strengthening : ContextStrengthening sourceCtx targetCtx}
@@ -2759,6 +2767,14 @@ def partialStrengthenTypedIdStrictRec {mode : Mode} {level : Nat}
     {witness :
       Term sourceCtx
         (Ty.idStrict carrier leftEndpoint rightEndpoint) witnessRaw}
+    (carrierSuccess :
+      carrier.partialStrengthen? strengthening.back = some targetCarrier)
+    (leftSuccess :
+      leftEndpoint.partialStrengthen? strengthening.back =
+        some targetLeftEndpoint)
+    (rightSuccess :
+      rightEndpoint.partialStrengthen? strengthening.back =
+        some targetRightEndpoint)
     (baseResult : StrengtheningResult strengthening baseCase)
     (witnessResult : StrengtheningResult strengthening witness) :
     StrengtheningResult strengthening
@@ -2770,37 +2786,29 @@ def partialStrengthenTypedIdStrictRec {mode : Mode} {level : Nat}
       | mk targetWitnessType targetWitnessRaw targetWitnessTerm
           witnessTypeStrengthens witnessRawStrengthens witnessTypeRenames
           witnessRawRenames =>
-          change
-            Option.mapThree
-              (carrier.partialStrengthen? strengthening.back)
-              (leftEndpoint.partialStrengthen? strengthening.back)
-              (rightEndpoint.partialStrengthen? strengthening.back)
-              Ty.idStrict = some targetWitnessType at witnessTypeStrengthens
-          cases carrierSuccess : carrier.partialStrengthen?
-              strengthening.back with
-          | none =>
-              rw [carrierSuccess] at witnessTypeStrengthens
-              cases witnessTypeStrengthens
-          | some targetCarrier =>
-              cases leftSuccess : leftEndpoint.partialStrengthen?
-                  strengthening.back with
-              | none =>
-                  rw [carrierSuccess, leftSuccess] at witnessTypeStrengthens
-                  cases witnessTypeStrengthens
-              | some targetLeftEndpoint =>
-                  cases rightSuccess : rightEndpoint.partialStrengthen?
-                      strengthening.back with
-                  | none =>
-                      rw [carrierSuccess, leftSuccess, rightSuccess] at witnessTypeStrengthens
-                      cases witnessTypeStrengthens
-                  | some targetRightEndpoint =>
-                      rw [carrierSuccess, leftSuccess, rightSuccess] at witnessTypeStrengthens
-                      cases witnessTypeStrengthens
-                      exact partialStrengthenTypedIdStrictRecOfSuccess
-                        modeIsStrict targetBaseTerm targetWitnessTerm
-                        baseTypeStrengthens carrierSuccess leftSuccess
-                        rightSuccess baseRawStrengthens witnessRawStrengthens
-                        baseTypeRenames baseRawRenames witnessRawRenames
+          have expectedWitnessTypeStrengthens :
+              (Ty.idStrict carrier leftEndpoint
+                  rightEndpoint).partialStrengthen?
+                  strengthening.back =
+                some (Ty.idStrict targetCarrier targetLeftEndpoint
+                  targetRightEndpoint) := by
+            change
+              Option.mapThree
+                (carrier.partialStrengthen? strengthening.back)
+                (leftEndpoint.partialStrengthen? strengthening.back)
+                (rightEndpoint.partialStrengthen? strengthening.back)
+                Ty.idStrict =
+                  some (Ty.idStrict targetCarrier targetLeftEndpoint
+                    targetRightEndpoint)
+            rw [carrierSuccess, leftSuccess, rightSuccess]
+            rfl
+          rw [expectedWitnessTypeStrengthens] at witnessTypeStrengthens
+          cases witnessTypeStrengthens
+          exact partialStrengthenTypedIdStrictRecOfSuccess
+            modeIsStrict targetBaseTerm targetWitnessTerm
+            baseTypeStrengthens carrierSuccess leftSuccess
+            rightSuccess baseRawStrengthens witnessRawStrengthens
+            baseTypeRenames baseRawRenames witnessRawRenames
 
 /-- Sigma pair strengthens by strengthening both components and the
 binder-indexed second component type. -/
@@ -4461,10 +4469,15 @@ def partialStrengthenTypedEquivApp {mode : Mode} {level : Nat}
     {sourceCtx : Ctx mode level sourceScope}
     {targetCtx : Ctx mode level targetScope}
     {carrierA carrierB : Ty level sourceScope}
+    {targetCarrierA targetCarrierB : Ty level targetScope}
     {equivRaw argumentRaw : RawTerm sourceScope}
     {strengthening : ContextStrengthening sourceCtx targetCtx}
     {equivTerm : Term sourceCtx (Ty.equiv carrierA carrierB) equivRaw}
     {argumentTerm : Term sourceCtx carrierA argumentRaw}
+    (carrierASuccess :
+      carrierA.partialStrengthen? strengthening.back = some targetCarrierA)
+    (carrierBSuccess :
+      carrierB.partialStrengthen? strengthening.back = some targetCarrierB)
     (equivResult : StrengtheningResult strengthening equivTerm)
     (argumentResult : StrengtheningResult strengthening argumentTerm) :
     StrengtheningResult strengthening
@@ -4473,35 +4486,29 @@ def partialStrengthenTypedEquivApp {mode : Mode} {level : Nat}
   | mk targetEquivType targetEquivRaw targetEquivTerm
       equivTypeStrengthens equivRawStrengthens equivTypeRenames
       equivRawRenames =>
-      change
-        Option.mapTwo
-          (carrierA.partialStrengthen? strengthening.back)
-          (carrierB.partialStrengthen? strengthening.back)
-          Ty.equiv = some targetEquivType at equivTypeStrengthens
-      cases carrierASuccess : carrierA.partialStrengthen?
-          strengthening.back with
-      | none =>
-          rw [carrierASuccess] at equivTypeStrengthens
-          cases equivTypeStrengthens
-      | some targetCarrierA =>
-          cases carrierBSuccess : carrierB.partialStrengthen?
-              strengthening.back with
-          | none =>
-              rw [carrierASuccess, carrierBSuccess] at equivTypeStrengthens
-              cases equivTypeStrengthens
-          | some targetCarrierB =>
-              rw [carrierASuccess, carrierBSuccess] at equivTypeStrengthens
-              cases equivTypeStrengthens
-              cases argumentResult with
-              | mk targetArgumentType targetArgumentRaw targetArgumentTerm
-                  argumentTypeStrengthens argumentRawStrengthens
-                  argumentTypeRenames argumentRawRenames =>
-                  rw [carrierASuccess] at argumentTypeStrengthens
-                  cases argumentTypeStrengthens
-                  exact partialStrengthenTypedEquivAppOfSuccess
-                    targetEquivTerm targetArgumentTerm carrierASuccess
-                    carrierBSuccess equivRawStrengthens argumentRawStrengthens
-                    equivRawRenames argumentRawRenames
+      have expectedEquivTypeStrengthens :
+          (Ty.equiv carrierA carrierB).partialStrengthen?
+              strengthening.back =
+            some (Ty.equiv targetCarrierA targetCarrierB) := by
+        change
+          Option.mapTwo
+            (carrierA.partialStrengthen? strengthening.back)
+            (carrierB.partialStrengthen? strengthening.back)
+            Ty.equiv = some (Ty.equiv targetCarrierA targetCarrierB)
+        rw [carrierASuccess, carrierBSuccess]
+        rfl
+      rw [expectedEquivTypeStrengthens] at equivTypeStrengthens
+      cases equivTypeStrengthens
+      cases argumentResult with
+      | mk targetArgumentType targetArgumentRaw targetArgumentTerm
+          argumentTypeStrengthens argumentRawStrengthens
+          argumentTypeRenames argumentRawRenames =>
+          rw [carrierASuccess] at argumentTypeStrengthens
+          cases argumentTypeStrengthens
+          exact partialStrengthenTypedEquivAppOfSuccess
+            targetEquivTerm targetArgumentTerm carrierASuccess
+            carrierBSuccess equivRawStrengthens argumentRawStrengthens
+            equivRawRenames argumentRawRenames
 
 /-- Success branch for equiv-application strengthening.  Takes
 pre-decomposed witnesses for the equiv carrier-pair pivots plus the
@@ -4573,10 +4580,15 @@ def partialStrengthenTypedEquivApply {mode : Mode} {level : Nat}
     {sourceCtx : Ctx mode level sourceScope}
     {targetCtx : Ctx mode level targetScope}
     {carrierA carrierB : Ty level sourceScope}
+    {targetCarrierA targetCarrierB : Ty level targetScope}
     {equivRaw argumentRaw : RawTerm sourceScope}
     {strengthening : ContextStrengthening sourceCtx targetCtx}
     {equivTerm : Term sourceCtx (Ty.equiv carrierA carrierB) equivRaw}
     {argumentTerm : Term sourceCtx carrierA argumentRaw}
+    (carrierASuccess :
+      carrierA.partialStrengthen? strengthening.back = some targetCarrierA)
+    (carrierBSuccess :
+      carrierB.partialStrengthen? strengthening.back = some targetCarrierB)
     (equivResult : StrengtheningResult strengthening equivTerm)
     (argumentResult : StrengtheningResult strengthening argumentTerm) :
     StrengtheningResult strengthening
@@ -4585,35 +4597,29 @@ def partialStrengthenTypedEquivApply {mode : Mode} {level : Nat}
   | mk targetEquivType targetEquivRaw targetEquivTerm
       equivTypeStrengthens equivRawStrengthens equivTypeRenames
       equivRawRenames =>
-      change
-        Option.mapTwo
-          (carrierA.partialStrengthen? strengthening.back)
-          (carrierB.partialStrengthen? strengthening.back)
-          Ty.equiv = some targetEquivType at equivTypeStrengthens
-      cases carrierASuccess : carrierA.partialStrengthen?
-          strengthening.back with
-      | none =>
-          rw [carrierASuccess] at equivTypeStrengthens
-          cases equivTypeStrengthens
-      | some targetCarrierA =>
-          cases carrierBSuccess : carrierB.partialStrengthen?
-              strengthening.back with
-          | none =>
-              rw [carrierASuccess, carrierBSuccess] at equivTypeStrengthens
-              cases equivTypeStrengthens
-          | some targetCarrierB =>
-              rw [carrierASuccess, carrierBSuccess] at equivTypeStrengthens
-              cases equivTypeStrengthens
-              cases argumentResult with
-              | mk targetArgumentType targetArgumentRaw targetArgumentTerm
-                  argumentTypeStrengthens argumentRawStrengthens
-                  argumentTypeRenames argumentRawRenames =>
-                  rw [carrierASuccess] at argumentTypeStrengthens
-                  cases argumentTypeStrengthens
-                  exact partialStrengthenTypedEquivApplyOfSuccess
-                    targetEquivTerm targetArgumentTerm carrierASuccess
-                    carrierBSuccess equivRawStrengthens argumentRawStrengthens
-                    equivRawRenames argumentRawRenames
+      have expectedEquivTypeStrengthens :
+          (Ty.equiv carrierA carrierB).partialStrengthen?
+              strengthening.back =
+            some (Ty.equiv targetCarrierA targetCarrierB) := by
+        change
+          Option.mapTwo
+            (carrierA.partialStrengthen? strengthening.back)
+            (carrierB.partialStrengthen? strengthening.back)
+            Ty.equiv = some (Ty.equiv targetCarrierA targetCarrierB)
+        rw [carrierASuccess, carrierBSuccess]
+        rfl
+      rw [expectedEquivTypeStrengthens] at equivTypeStrengthens
+      cases equivTypeStrengthens
+      cases argumentResult with
+      | mk targetArgumentType targetArgumentRaw targetArgumentTerm
+          argumentTypeStrengthens argumentRawStrengthens
+          argumentTypeRenames argumentRawRenames =>
+          rw [carrierASuccess] at argumentTypeStrengthens
+          cases argumentTypeStrengthens
+          exact partialStrengthenTypedEquivApplyOfSuccess
+            targetEquivTerm targetArgumentTerm carrierASuccess
+            carrierBSuccess equivRawStrengthens argumentRawStrengthens
+            equivRawRenames argumentRawRenames
 
 /-- `uaToEquiv` strengthens by strengthening its universe-path proof and
 the schematic left/right carrier types and raw endpoints. -/
@@ -6187,6 +6193,7 @@ def partialStrengthenTypedEquivIntroHet {mode : Mode} {level : Nat}
     {targetCtx : Ctx mode level targetScope}
     {strengthening : ContextStrengthening sourceCtx targetCtx}
     {carrierA carrierB : Ty level sourceScope}
+    {targetCarrierA targetCarrierB : Ty level targetScope}
     {forwardRaw backwardRaw leftInvRaw rightInvRaw : RawTerm sourceScope}
     {forward :
       Term sourceCtx (Ty.arrow carrierA carrierB) forwardRaw}
@@ -6200,6 +6207,10 @@ def partialStrengthenTypedEquivIntroHet {mode : Mode} {level : Nat}
       Term sourceCtx
         (equivIntroHetRightInverseType carrierB forwardRaw backwardRaw)
         rightInvRaw}
+    (carrierASuccess :
+      carrierA.partialStrengthen? strengthening.back = some targetCarrierA)
+    (carrierBSuccess :
+      carrierB.partialStrengthen? strengthening.back = some targetCarrierB)
     (forwardResult : StrengtheningResult strengthening forward)
     (backwardResult : StrengtheningResult strengthening backward)
     (leftInvResult : StrengtheningResult strengthening leftInv)
@@ -6210,26 +6221,20 @@ def partialStrengthenTypedEquivIntroHet {mode : Mode} {level : Nat}
   | mk targetForwardType targetForwardRaw targetForward
       forwardTypeStrengthens forwardRawStrengthens forwardTypeRenames
       forwardRawRenames =>
-      change
-        Option.mapTwo
-          (carrierA.partialStrengthen? strengthening.back)
-          (carrierB.partialStrengthen? strengthening.back)
-          Ty.arrow = some targetForwardType at forwardTypeStrengthens
-      cases carrierASuccess : carrierA.partialStrengthen?
-          strengthening.back with
-      | none =>
-          rw [carrierASuccess] at forwardTypeStrengthens
-          cases forwardTypeStrengthens
-      | some targetCarrierA =>
-          cases carrierBSuccess : carrierB.partialStrengthen?
-              strengthening.back with
-          | none =>
-              rw [carrierASuccess, carrierBSuccess] at forwardTypeStrengthens
-              cases forwardTypeStrengthens
-          | some targetCarrierB =>
-              rw [carrierASuccess, carrierBSuccess] at forwardTypeStrengthens
-              cases forwardTypeStrengthens
-              cases backwardResult with
+      have expectedForwardTypeStrengthens :
+          (Ty.arrow carrierA carrierB).partialStrengthen?
+              strengthening.back =
+            some (Ty.arrow targetCarrierA targetCarrierB) := by
+        change
+          Option.mapTwo
+            (carrierA.partialStrengthen? strengthening.back)
+            (carrierB.partialStrengthen? strengthening.back)
+            Ty.arrow = some (Ty.arrow targetCarrierA targetCarrierB)
+        rw [carrierASuccess, carrierBSuccess]
+        rfl
+      rw [expectedForwardTypeStrengthens] at forwardTypeStrengthens
+      cases forwardTypeStrengthens
+      cases backwardResult with
               | mk targetBackwardType targetBackwardRaw targetBackward
                   backwardTypeStrengthens backwardRawStrengthens
                   backwardTypeRenames backwardRawRenames =>
@@ -6462,64 +6467,11 @@ def partialStrengthenTypedEquivIntroHet {mode : Mode} {level : Nat}
                           rightInvRawRenames =>
                           rw [rightInverseTypeStrengthens] at rightInvTypeStrengthens
                           cases rightInvTypeStrengthens
-                          exact {
-                            targetType :=
-                              Ty.equiv targetCarrierA targetCarrierB
-                            targetRaw :=
-                              RawTerm.equivIntro targetForwardRaw
-                                targetBackwardRaw
-                            targetTerm :=
-                              Term.equivIntroHet targetForward targetBackward
-                                targetLeftInv targetRightInv
-                            typeStrengthens := by
-                              change
-                                Option.mapTwo
-                                  (carrierA.partialStrengthen?
-                                    strengthening.back)
-                                  (carrierB.partialStrengthen?
-                                    strengthening.back)
-                                  Ty.equiv =
-                                    some (Ty.equiv targetCarrierA
-                                      targetCarrierB)
-                              rw [carrierASuccess, carrierBSuccess]
-                              rfl
-                            rawStrengthens := by
-                              change
-                                Option.mapTwo
-                                  (forwardRaw.partialStrengthen?
-                                    strengthening.back)
-                                  (backwardRaw.partialStrengthen?
-                                    strengthening.back)
-                                  RawTerm.equivIntro =
-                                    some (RawTerm.equivIntro
-                                      targetForwardRaw targetBackwardRaw)
-                              rw [forwardRawStrengthens,
-                                backwardRawStrengthens]
-                              rfl
-                            typeRenames := by
-                              exact
-                                Ty.partialStrengthen?_imp_rename
-                                  (Ty.equiv carrierA carrierB)
-                                  strengthening.forward strengthening.back
-                                  strengthening.injectsBack
-                                  (Ty.equiv targetCarrierA targetCarrierB)
-                                  (by
-                                    change
-                                      Option.mapTwo
-                                        (carrierA.partialStrengthen?
-                                          strengthening.back)
-                                        (carrierB.partialStrengthen?
-                                          strengthening.back)
-                                        Ty.equiv =
-                                          some (Ty.equiv targetCarrierA
-                                            targetCarrierB)
-                                    rw [carrierASuccess, carrierBSuccess]
-                                    rfl)
-                            rawRenames := by
-                              cases forwardRawRenames
-                              cases backwardRawRenames
-                              rfl
-                          }
+                          exact partialStrengthenTypedEquivIntroHetOfSuccess
+                            targetForward targetBackward targetLeftInv
+                            targetRightInv carrierASuccess carrierBSuccess
+                            forwardRawStrengthens backwardRawStrengthens
+                            forwardRawRenames backwardRawRenames
 
 /-- Universal typed partial strengthening dispatcher.
 
@@ -6754,22 +6706,27 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
           | some tailResult =>
               exact some
                 (partialStrengthenTypedListCons headResult tailResult)
-  | @Term.listElim _ _ _ _ _ _ _ _ _ scrutinee nilBranch consBranch => by
-      cases partialStrengthenTyped? scrutinee
-          (strengthening := strengthening) with
+  | @Term.listElim _ _ _ _ elementType _ _ _ _ scrutinee nilBranch
+      consBranch => by
+      cases elementSuccess :
+          elementType.partialStrengthen? strengthening.back with
       | none => exact none
-      | some scrutineeResult =>
-          cases partialStrengthenTyped? nilBranch
+      | some _ =>
+          cases partialStrengthenTyped? scrutinee
               (strengthening := strengthening) with
           | none => exact none
-          | some nilResult =>
-              cases partialStrengthenTyped? consBranch
+          | some scrutineeResult =>
+              cases partialStrengthenTyped? nilBranch
                   (strengthening := strengthening) with
               | none => exact none
-              | some consResult =>
-                  exact some
-                    (partialStrengthenTypedListElim scrutineeResult
-                      nilResult consResult)
+              | some nilResult =>
+                  cases partialStrengthenTyped? consBranch
+                      (strengthening := strengthening) with
+                  | none => exact none
+                  | some consResult =>
+                      exact some
+                        (partialStrengthenTypedListElim elementSuccess
+                          scrutineeResult nilResult consResult)
   | @Term.optionNone _ _ _ _ elementType => by
       cases elementSuccess :
           elementType.partialStrengthen? strengthening.back with
@@ -6784,22 +6741,27 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
       | none => exact none
       | some valueResult =>
           exact some (partialStrengthenTypedOptionSome valueResult)
-  | @Term.optionMatch _ _ _ _ _ _ _ _ _ scrutinee noneBranch someBranch => by
-      cases partialStrengthenTyped? scrutinee
-          (strengthening := strengthening) with
+  | @Term.optionMatch _ _ _ _ elementType _ _ _ _ scrutinee noneBranch
+      someBranch => by
+      cases elementSuccess :
+          elementType.partialStrengthen? strengthening.back with
       | none => exact none
-      | some scrutineeResult =>
-          cases partialStrengthenTyped? noneBranch
+      | some _ =>
+          cases partialStrengthenTyped? scrutinee
               (strengthening := strengthening) with
           | none => exact none
-          | some noneResult =>
-              cases partialStrengthenTyped? someBranch
+          | some scrutineeResult =>
+              cases partialStrengthenTyped? noneBranch
                   (strengthening := strengthening) with
               | none => exact none
-              | some someResult =>
-                  exact some
-                    (partialStrengthenTypedOptionMatch scrutineeResult
-                      noneResult someResult)
+              | some noneResult =>
+                  cases partialStrengthenTyped? someBranch
+                      (strengthening := strengthening) with
+                  | none => exact none
+                  | some someResult =>
+                      exact some
+                        (partialStrengthenTypedOptionMatch elementSuccess
+                          scrutineeResult noneResult someResult)
   | @Term.eitherInl _ _ _ _ _ rightType _ valueTerm => by
       cases rightSuccess :
           rightType.partialStrengthen? strengthening.back with
@@ -6824,22 +6786,36 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
               exact some
                 (partialStrengthenTypedEitherInrOfLeftType
                   leftSuccess valueResult)
-  | @Term.eitherMatch _ _ _ _ _ _ _ _ _ _ scrutinee leftBranch rightBranch => by
-      cases partialStrengthenTyped? scrutinee
-          (strengthening := strengthening) with
+  | @Term.eitherMatch _ _ _ _ leftType rightType motiveType _ _ _ scrutinee
+      leftBranch rightBranch => by
+      cases leftSuccess :
+          leftType.partialStrengthen? strengthening.back with
       | none => exact none
-      | some scrutineeResult =>
-          cases partialStrengthenTyped? leftBranch
-              (strengthening := strengthening) with
+      | some _ =>
+          cases rightSuccess :
+              rightType.partialStrengthen? strengthening.back with
           | none => exact none
-          | some leftResult =>
-              cases partialStrengthenTyped? rightBranch
-                  (strengthening := strengthening) with
+          | some _ =>
+              cases motiveSuccess :
+                  motiveType.partialStrengthen? strengthening.back with
               | none => exact none
-              | some rightResult =>
-                  exact some
-                    (partialStrengthenTypedEitherMatch scrutineeResult
-                      leftResult rightResult)
+              | some _ =>
+                  cases partialStrengthenTyped? scrutinee
+                      (strengthening := strengthening) with
+                  | none => exact none
+                  | some scrutineeResult =>
+                      cases partialStrengthenTyped? leftBranch
+                          (strengthening := strengthening) with
+                      | none => exact none
+                      | some leftResult =>
+                          cases partialStrengthenTyped? rightBranch
+                              (strengthening := strengthening) with
+                          | none => exact none
+                          | some rightResult =>
+                              exact some
+                                (partialStrengthenTypedEitherMatch leftSuccess
+                                  rightSuccess motiveSuccess scrutineeResult
+                                  leftResult rightResult)
   | @Term.refl _ _ _ _ carrier rawWitness => by
       cases carrierSuccess : carrier.partialStrengthen? strengthening.back with
       | none => exact none
@@ -6850,17 +6826,32 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
           | some targetWitness =>
               exact some
                 (partialStrengthenTypedRefl carrierSuccess witnessSuccess)
-  | @Term.idJ _ _ _ _ _ _ _ _ _ _ baseCase witness => by
-      cases partialStrengthenTyped? baseCase
-          (strengthening := strengthening) with
+  | @Term.idJ _ _ _ _ carrier leftEndpoint rightEndpoint _ _ _ baseCase
+      witness => by
+      cases carrierSuccess :
+          carrier.partialStrengthen? strengthening.back with
       | none => exact none
-      | some baseResult =>
-          cases partialStrengthenTyped? witness
-              (strengthening := strengthening) with
+      | some _ =>
+          cases leftSuccess :
+              leftEndpoint.partialStrengthen? strengthening.back with
           | none => exact none
-          | some witnessResult =>
-              exact some
-                (partialStrengthenTypedIdJ baseResult witnessResult)
+          | some _ =>
+              cases rightSuccess :
+                  rightEndpoint.partialStrengthen? strengthening.back with
+              | none => exact none
+              | some _ =>
+                  cases partialStrengthenTyped? baseCase
+                      (strengthening := strengthening) with
+                  | none => exact none
+                  | some baseResult =>
+                      cases partialStrengthenTyped? witness
+                          (strengthening := strengthening) with
+                      | none => exact none
+                      | some witnessResult =>
+                          exact some
+                            (partialStrengthenTypedIdJ carrierSuccess
+                              leftSuccess rightSuccess baseResult
+                              witnessResult)
   | @Term.oeqRefl _ _ _ _ carrier rawWitness => by
       cases carrierSuccess : carrier.partialStrengthen? strengthening.back with
       | none => exact none
@@ -6871,17 +6862,32 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
           | some targetWitness =>
               exact some
                 (partialStrengthenTypedOeqRefl carrierSuccess witnessSuccess)
-  | @Term.oeqJ _ _ _ _ _ _ _ _ _ _ baseCase witness => by
-      cases partialStrengthenTyped? baseCase
-          (strengthening := strengthening) with
+  | @Term.oeqJ _ _ _ _ carrier leftEndpoint rightEndpoint _ _ _ baseCase
+      witness => by
+      cases carrierSuccess :
+          carrier.partialStrengthen? strengthening.back with
       | none => exact none
-      | some baseResult =>
-          cases partialStrengthenTyped? witness
-              (strengthening := strengthening) with
+      | some _ =>
+          cases leftSuccess :
+              leftEndpoint.partialStrengthen? strengthening.back with
           | none => exact none
-          | some witnessResult =>
-              exact some
-                (partialStrengthenTypedOeqJ baseResult witnessResult)
+          | some _ =>
+              cases rightSuccess :
+                  rightEndpoint.partialStrengthen? strengthening.back with
+              | none => exact none
+              | some _ =>
+                  cases partialStrengthenTyped? baseCase
+                      (strengthening := strengthening) with
+                  | none => exact none
+                  | some baseResult =>
+                      cases partialStrengthenTyped? witness
+                          (strengthening := strengthening) with
+                      | none => exact none
+                      | some witnessResult =>
+                          exact some
+                            (partialStrengthenTypedOeqJ carrierSuccess
+                              leftSuccess rightSuccess baseResult
+                              witnessResult)
   | @Term.oeqFunext _ _ _ _ domainType codomainType leftFunctionRaw
       rightFunctionRaw _ pointwiseProof => by
       cases domainSuccess : domainType.partialStrengthen? strengthening.back with
@@ -6922,18 +6928,32 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
               exact some
                 (partialStrengthenTypedIdStrictRefl modeIsStrict
                   carrierSuccess witnessSuccess)
-  | @Term.idStrictRec _ _ _ _ modeIsStrict _ _ _ _ _ _ baseCase witness => by
-      cases partialStrengthenTyped? baseCase
-          (strengthening := strengthening) with
+  | @Term.idStrictRec _ _ _ _ modeIsStrict carrier leftEndpoint
+      rightEndpoint _ _ _ baseCase witness => by
+      cases carrierSuccess :
+          carrier.partialStrengthen? strengthening.back with
       | none => exact none
-      | some baseResult =>
-          cases partialStrengthenTyped? witness
-              (strengthening := strengthening) with
+      | some _ =>
+          cases leftSuccess :
+              leftEndpoint.partialStrengthen? strengthening.back with
           | none => exact none
-          | some witnessResult =>
-              exact some
-                (partialStrengthenTypedIdStrictRec modeIsStrict
-                  baseResult witnessResult)
+          | some _ =>
+              cases rightSuccess :
+                  rightEndpoint.partialStrengthen? strengthening.back with
+              | none => exact none
+              | some _ =>
+                  cases partialStrengthenTyped? baseCase
+                      (strengthening := strengthening) with
+                  | none => exact none
+                  | some baseResult =>
+                      cases partialStrengthenTyped? witness
+                          (strengthening := strengthening) with
+                      | none => exact none
+                      | some witnessResult =>
+                          exact some
+                            (partialStrengthenTypedIdStrictRec modeIsStrict
+                              carrierSuccess leftSuccess rightSuccess
+                              baseResult witnessResult)
   | @Term.modIntro _ _ _ _ _ _ innerTerm => by
       cases partialStrengthenTyped? innerTerm
           (strengthening := strengthening) with
@@ -7353,38 +7373,57 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                       codomainType targetDomainType targetCodomainType
                       applyRaw targetApplyRaw domainSuccess
                       codomainSuccess applySuccess)
-  | @Term.equivIntroHet _ _ _ _ _ _ _ _ _ _ forward backward leftInv
-      rightInv => by
-      cases partialStrengthenTyped? forward
-          (strengthening := strengthening) with
+  | @Term.equivIntroHet _ _ _ _ carrierA carrierB _ _ _ _ forward backward
+      leftInv rightInv => by
+      cases carrierASuccess :
+          carrierA.partialStrengthen? strengthening.back with
       | none => exact none
-      | some forwardResult =>
-          cases partialStrengthenTyped? backward
-              (strengthening := strengthening) with
+      | some _ =>
+          cases carrierBSuccess :
+              carrierB.partialStrengthen? strengthening.back with
           | none => exact none
-          | some backwardResult =>
-              cases partialStrengthenTyped? leftInv
+          | some _ =>
+              cases partialStrengthenTyped? forward
                   (strengthening := strengthening) with
               | none => exact none
-              | some leftInvResult =>
-                  cases partialStrengthenTyped? rightInv
+              | some forwardResult =>
+                  cases partialStrengthenTyped? backward
                       (strengthening := strengthening) with
                   | none => exact none
-                  | some rightInvResult =>
-                      exact some
-                        (partialStrengthenTypedEquivIntroHet forwardResult
-                          backwardResult leftInvResult rightInvResult)
-  | @Term.equivApp _ _ _ _ _ _ _ _ equivTerm argumentTerm => by
-      cases partialStrengthenTyped? equivTerm
-          (strengthening := strengthening) with
+                  | some backwardResult =>
+                      cases partialStrengthenTyped? leftInv
+                          (strengthening := strengthening) with
+                      | none => exact none
+                      | some leftInvResult =>
+                          cases partialStrengthenTyped? rightInv
+                              (strengthening := strengthening) with
+                          | none => exact none
+                          | some rightInvResult =>
+                              exact some
+                                (partialStrengthenTypedEquivIntroHet
+                                  carrierASuccess carrierBSuccess
+                                  forwardResult backwardResult leftInvResult
+                                  rightInvResult)
+  | @Term.equivApp _ _ _ _ carrierA carrierB _ _ equivTerm argumentTerm => by
+      cases carrierASuccess :
+          carrierA.partialStrengthen? strengthening.back with
       | none => exact none
-      | some equivResult =>
-          cases partialStrengthenTyped? argumentTerm
-              (strengthening := strengthening) with
+      | some _ =>
+          cases carrierBSuccess :
+              carrierB.partialStrengthen? strengthening.back with
           | none => exact none
-          | some argumentResult =>
-              exact some
-                (partialStrengthenTypedEquivApp equivResult argumentResult)
+          | some _ =>
+              cases partialStrengthenTyped? equivTerm
+                  (strengthening := strengthening) with
+              | none => exact none
+              | some equivResult =>
+                  cases partialStrengthenTyped? argumentTerm
+                      (strengthening := strengthening) with
+                  | none => exact none
+                  | some argumentResult =>
+                      exact some
+                        (partialStrengthenTypedEquivApp carrierASuccess
+                          carrierBSuccess equivResult argumentResult)
   | @Term.uaIntroHet _ _ _ _ innerLevel innerLevelLt carrierA carrierB
       carrierARaw carrierBRaw forwardRaw backwardRaw equivWitness => by
       cases carrierASuccess : carrierA.partialStrengthen? strengthening.back with
@@ -7606,17 +7645,26 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                               targetLeftTyRaw targetRightTyRaw
                               leftTySuccess rightTySuccess leftRawSuccess
                               rightRawSuccess proofResult)
-  | @Term.equivApply _ _ _ _ _ _ _ _ equivTerm argumentTerm => by
-      cases partialStrengthenTyped? equivTerm
-          (strengthening := strengthening) with
+  | @Term.equivApply _ _ _ _ carrierA carrierB _ _ equivTerm argumentTerm => by
+      cases carrierASuccess :
+          carrierA.partialStrengthen? strengthening.back with
       | none => exact none
-      | some equivResult =>
-          cases partialStrengthenTyped? argumentTerm
-              (strengthening := strengthening) with
+      | some _ =>
+          cases carrierBSuccess :
+              carrierB.partialStrengthen? strengthening.back with
           | none => exact none
-          | some argumentResult =>
-              exact some
-                (partialStrengthenTypedEquivApply equivResult argumentResult)
+          | some _ =>
+              cases partialStrengthenTyped? equivTerm
+                  (strengthening := strengthening) with
+              | none => exact none
+              | some equivResult =>
+                  cases partialStrengthenTyped? argumentTerm
+                      (strengthening := strengthening) with
+                  | none => exact none
+                  | some argumentResult =>
+                      exact some
+                        (partialStrengthenTypedEquivApply carrierASuccess
+                          carrierBSuccess equivResult argumentResult)
 
 /-- Single-newest-slot typed strengthening.
 

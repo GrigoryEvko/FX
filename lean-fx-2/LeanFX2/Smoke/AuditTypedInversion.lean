@@ -497,4 +497,30 @@ namespace LeanFX2.SmokeTypedInversion
 -- 3-option, so PathLam family is the next 3-option target).
 #print axioms LeanFX2.Term.partialStrengthenTypedPathApp_sound
 
+-- Phases 44-52 (sidequest mega-batch): WRAPPER soundness for the
+-- nine remaining ListElim-pattern producers refactored to App-pattern.
+-- Closes the producer coverage gap.  Each wrapper now takes its
+-- type-pivot successes as explicit parameters (lifted from the
+-- dispatcher's `cases X : foo` arms), and the soundness theorem
+-- mirrors the wrapper's case-cascade and delegates to
+-- `_OfSuccess_sound` with `.termRenames` HEq witnesses.  Coverage by
+-- pivot count: 1-option (listElim/optionMatch element pivot),
+-- 2-option (equivApp/equivApply/equivIntroHet carrier-pair),
+-- 3-option (eitherMatch left/right/motive; idJ/oeqJ/idStrictRec
+-- carrier/left/right).  All nine ship zero-axiom.  EquivIntroHet
+-- inlines the 200-line cascade reconstructing the heterogeneous
+-- inverse-law type-strengthens lemmas (via `RawTerm.partialStrengthen?_weaken_lift`
+-- and `Ty.partialStrengthen?_weaken_lift` primitives), since its
+-- proof children's types depend computationally on the previous
+-- children's strengthened raw forms.
+#print axioms LeanFX2.Term.partialStrengthenTypedListElim_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedOptionMatch_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedEitherMatch_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedIdJ_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedOeqJ_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedIdStrictRec_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedEquivApp_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedEquivApply_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedEquivIntroHet_sound
+
 end LeanFX2.SmokeTypedInversion

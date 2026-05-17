@@ -571,5 +571,14 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedGlueElim_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedHcompPath_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedPathApp_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedListElim_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedOptionMatch_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedEitherMatch_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedIdJ_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedOeqJ_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedIdStrictRec_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedEquivApp_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedEquivApply_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedEquivIntroHet_sound
 
 end LeanFX2.Tools
