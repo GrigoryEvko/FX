@@ -778,6 +778,12 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.isTotalOnWeaken_interval1
 #assert_no_axioms LeanFX2.Term.isTotalOnWeaken_var
 
+-- 1-IH non-binder ctor totality (compositional rules — natSucc and
+-- intervalOpp as canonical templates; remaining 13 single-IH ctors
+-- follow the same unfold + split + ▸ pattern).
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_natSucc
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_intervalOpp
+
 -- User-facing unweaken?_weaken_<ctor> headline theorems.  Each is a
 -- direct `rfl` witness — concrete totality for the closed atomic
 -- ctors, consumable by Step.eta-cascade SR proofs.

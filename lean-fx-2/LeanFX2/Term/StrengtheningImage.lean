@@ -10775,6 +10775,58 @@ theorem isTotalOnWeaken_var {mode : Mode} {level scope : Nat}
     IsTotalOnWeaken (Term.var (context := context) position) := by
   intro _; rfl
 
+/-- 1-IH non-binder totality: `Term.natSucc` is total on weaken if its
+predecessor is.  Composition pattern shipped here as the canonical
+template; the remaining 14 single-IH non-binder ctors (optionSome,
+modIntro/Elim, subsume, eitherInl/Inr, recordIntro/Proj, refineElim,
+fst, snd, intervalOpp, codataDest, sessionRecv) follow the same
+unfold + split + ▸ pattern, landing per follow-up. -/
+theorem isTotalOnWeaken_natSucc {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {predecessorRaw : RawTerm scope}
+    {predecessor : Term context Ty.nat predecessorRaw}
+    (predecessorIH : IsTotalOnWeaken predecessor) :
+    IsTotalOnWeaken (Term.natSucc predecessor) := by
+  intro newType
+  show (strengthenTyped? (Term.natSucc (Term.weaken newType predecessor))).isSome
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next predRecurse =>
+      exfalso
+      have totHyp := predecessorIH newType
+      unfold strengthenTyped? at totHyp
+      have : Option.isSome (none (α := StrengtheningResult
+          (ContextStrengthening.dropNewest context newType)
+          (Term.weaken newType predecessor))) = true :=
+        predRecurse ▸ totHyp
+      cases this
+  · rfl
+
+/-- 1-IH non-binder totality: `Term.intervalOpp`.  Cubical interval
+negation; sibling of `natSucc` at a different carrier type. -/
+theorem isTotalOnWeaken_intervalOpp {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {pointRaw : RawTerm scope}
+    {point : Term context Ty.interval pointRaw}
+    (pointIH : IsTotalOnWeaken point) :
+    IsTotalOnWeaken (Term.intervalOpp point) := by
+  intro newType
+  show (strengthenTyped? (Term.intervalOpp (Term.weaken newType point))).isSome
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next pointRecurse =>
+      exfalso
+      have totHyp := pointIH newType
+      unfold strengthenTyped? at totHyp
+      have : Option.isSome (none (α := StrengtheningResult
+          (ContextStrengthening.dropNewest context newType)
+          (Term.weaken newType point))) = true :=
+        pointRecurse ▸ totHyp
+      cases this
+  · rfl
+
 /-- BIG-ASS THEOREM headline — closed-atomic unweaken? recovers source.
 
 For each of the 7 closed-atomic ctors, `Term.unweaken?` applied to
