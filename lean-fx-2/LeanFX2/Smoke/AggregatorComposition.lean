@@ -823,6 +823,53 @@ theorem aggregator_natEight_closed {mode : Mode} {level : Nat}
                 (isAggregatorSound_natSucc
                   isAggregatorSound_natZero)))))))
 
+/-- Nested either at carrier `Either nat (Either nat bool)`:
+`eitherInr (eitherInl natZero)`.  Demonstrates that the 1-IH
+heterogeneous-injection wrapper composes with another 1-IH
+heterogeneous-injection wrapper at its valueTerm slot, with the
+outer's leftType and inner's rightType independently bound. -/
+theorem aggregator_eitherInr_eitherInl_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.eitherInr (context := sourceCtx)
+        (leftType := Ty.nat)
+        (valueTerm :=
+          Term.eitherInl (rightType := Ty.bool)
+            (valueTerm := Term.natZero))) :=
+  isAggregatorSound_eitherInr (leftType := Ty.nat)
+    (isAggregatorSound_eitherInl (rightType := Ty.bool)
+      isAggregatorSound_natZero)
+
+/-- Mixed-type Sigma-pair with non-trivial first child: `pair
+(natSucc natZero) boolTrue` at carrier `nat × bool`.  Variant of
+the existing `pair_natBool_closed` whose first component is the
+atomic natZero; this version exercises a 1-IH chain at the first
+position with an atomic boolean at the second. -/
+theorem aggregator_pair_natOne_boolTrue_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.pair (context := sourceCtx)
+        (secondType := Ty.bool)
+        (firstValue := Term.natSucc Term.natZero)
+        (secondValue := Term.boolTrue)) :=
+  isAggregatorSound_pair
+    (isAggregatorSound_natSucc isAggregatorSound_natZero)
+    isAggregatorSound_boolTrue
+
+/-- 1-element list of booleans (false variant): `[boolFalse]` at
+carrier `list bool`.  Counterpart to the Phase 107
+listCons_boolList_closed (which uses boolTrue); confirms both
+boolean atomic values serve as listCons heads at the bool
+carrier. -/
+theorem aggregator_listCons_boolFalse_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.listCons (context := sourceCtx)
+        (headTerm := Term.boolFalse)
+        (tailTerm := Term.listNil (elementType := Ty.bool))) :=
+  isAggregatorSound_listCons isAggregatorSound_boolFalse
+    (isAggregatorSound_listNil (elementType := Ty.bool))
+
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_unit_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwo_closed
@@ -873,5 +920,8 @@ theorem aggregator_natEight_closed {mode : Mode} {level : Nat}
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_natOne_natTwo_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_boolList_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natEight_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_eitherInr_eitherInl_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_natOne_boolTrue_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_boolFalse_closed
 
 end LeanFX2.SmokeAggregatorComposition
