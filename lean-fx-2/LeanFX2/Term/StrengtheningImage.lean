@@ -9584,6 +9584,193 @@ theorem isAggregatorSound_refineIntro {mode : Mode} {level : Nat}
     (baseAggregator strengthening) (proofAggregator strengthening)
     result success
 
+/-- Headline aggregator soundness at the `Term.intervalOpp` arm.
+1-IH interval negation. -/
+theorem isAggregatorSound_intervalOpp {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {innerRaw : RawTerm sourceScope}
+    {innerValue : Term sourceCtx Ty.interval innerRaw}
+    (innerAggregator : IsAggregatorSound innerValue) :
+    IsAggregatorSound
+      (Term.intervalOpp (innerValue := innerValue)) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atIntervalOpp_imp_sound strengthening
+    (innerAggregator strengthening) result success
+
+/-- Headline aggregator soundness at the `Term.intervalMeet` arm.
+2-IH interval meet (min). -/
+theorem isAggregatorSound_intervalMeet {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {leftRaw rightRaw : RawTerm sourceScope}
+    {leftValue : Term sourceCtx Ty.interval leftRaw}
+    {rightValue : Term sourceCtx Ty.interval rightRaw}
+    (leftAggregator : IsAggregatorSound leftValue)
+    (rightAggregator : IsAggregatorSound rightValue) :
+    IsAggregatorSound
+      (Term.intervalMeet (leftValue := leftValue)
+        (rightValue := rightValue)) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atIntervalMeet_imp_sound strengthening
+    (leftAggregator strengthening) (rightAggregator strengthening)
+    result success
+
+/-- Headline aggregator soundness at the `Term.intervalJoin` arm.
+2-IH interval join (max). -/
+theorem isAggregatorSound_intervalJoin {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {leftRaw rightRaw : RawTerm sourceScope}
+    {leftValue : Term sourceCtx Ty.interval leftRaw}
+    {rightValue : Term sourceCtx Ty.interval rightRaw}
+    (leftAggregator : IsAggregatorSound leftValue)
+    (rightAggregator : IsAggregatorSound rightValue) :
+    IsAggregatorSound
+      (Term.intervalJoin (leftValue := leftValue)
+        (rightValue := rightValue)) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atIntervalJoin_imp_sound strengthening
+    (leftAggregator strengthening) (rightAggregator strengthening)
+    result success
+
+/-- Headline aggregator soundness at the `Term.listCons` arm.
+2-IH list cons (head + tail). -/
+theorem isAggregatorSound_listCons {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {elementType : Ty level sourceScope}
+    {headRaw tailRaw : RawTerm sourceScope}
+    {headTerm : Term sourceCtx elementType headRaw}
+    {tailTerm : Term sourceCtx (Ty.listType elementType) tailRaw}
+    (headAggregator : IsAggregatorSound headTerm)
+    (tailAggregator : IsAggregatorSound tailTerm) :
+    IsAggregatorSound
+      (Term.listCons (headTerm := headTerm) (tailTerm := tailTerm)) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atListCons_imp_sound strengthening
+    (headAggregator strengthening) (tailAggregator strengthening)
+    result success
+
+/-- Headline aggregator soundness at the `Term.codataDest` arm.
+1-IH codata destruction. -/
+theorem isAggregatorSound_codataDest {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {stateType outputType : Ty level sourceScope}
+    {codataRaw : RawTerm sourceScope}
+    {codataValue :
+      Term sourceCtx (Ty.codata stateType outputType) codataRaw}
+    (codataAggregator : IsAggregatorSound codataValue) :
+    IsAggregatorSound (Term.codataDest codataValue) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atCodataDest_imp_sound strengthening
+    (codataAggregator strengthening) result success
+
+/-- Headline aggregator soundness at the `Term.codataUnfold` arm.
+2-IH codata introduction (`initialState` + `transition`). -/
+theorem isAggregatorSound_codataUnfold {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {stateType outputType : Ty level sourceScope}
+    {stateRaw transitionRaw : RawTerm sourceScope}
+    {initialState : Term sourceCtx stateType stateRaw}
+    {transition :
+      Term sourceCtx (Ty.arrow stateType outputType) transitionRaw}
+    (stateAggregator : IsAggregatorSound initialState)
+    (transitionAggregator : IsAggregatorSound transition) :
+    IsAggregatorSound
+      (Term.codataUnfold initialState transition) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atCodataUnfold_imp_sound strengthening
+    (stateAggregator strengthening) (transitionAggregator strengthening)
+    result success
+
+/-- Headline aggregator soundness at the `Term.pathApp` arm.  2-IH
+cubical path application (`pathTerm` + `intervalTerm`); also threads
+the `modeIsUnivalent` mode-eq witness. -/
+theorem isAggregatorSound_pathApp {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {modeIsUnivalent : mode = Mode.univalent}
+    {carrierType : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {pathRaw intervalRaw : RawTerm sourceScope}
+    {pathTerm :
+      Term sourceCtx (Ty.path carrierType leftEndpoint rightEndpoint)
+        pathRaw}
+    {intervalTerm : Term sourceCtx Ty.interval intervalRaw}
+    (pathAggregator : IsAggregatorSound pathTerm)
+    (intervalAggregator : IsAggregatorSound intervalTerm) :
+    IsAggregatorSound
+      (Term.pathApp modeIsUnivalent pathTerm intervalTerm) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atPathApp_imp_sound strengthening
+    (pathAggregator strengthening) (intervalAggregator strengthening)
+    result success
+
+/-- Headline aggregator soundness at the `Term.glueElim` arm.
+1-IH cubical glue elimination, threading `modeIsUnivalent`. -/
+theorem isAggregatorSound_glueElim {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {modeIsUnivalent : mode = Mode.univalent}
+    {baseType : Ty level sourceScope}
+    {boundaryWitness gluedRaw : RawTerm sourceScope}
+    {gluedValue :
+      Term sourceCtx (Ty.glue baseType boundaryWitness) gluedRaw}
+    (gluedAggregator : IsAggregatorSound gluedValue) :
+    IsAggregatorSound (Term.glueElim modeIsUnivalent gluedValue) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atGlueElim_imp_sound strengthening
+    (gluedAggregator strengthening) result success
+
+/-- Headline aggregator soundness at the `Term.uaToEquiv` arm.
+1-IH (proof of type identity) with positional universe-level data
+(`innerLevel`/`innerLevelLt`), two carrier types, two raw type
+witnesses. -/
+theorem isAggregatorSound_uaToEquiv {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    (leftTy rightTy : Ty level sourceScope)
+    (leftTyRaw rightTyRaw : RawTerm sourceScope)
+    {proofRaw : RawTerm sourceScope}
+    {proof :
+      Term sourceCtx
+        (Ty.id (Ty.universe innerLevel innerLevelLt) leftTyRaw
+          rightTyRaw) proofRaw}
+    (proofAggregator : IsAggregatorSound proof) :
+    IsAggregatorSound
+      (Term.uaToEquiv (context := sourceCtx) innerLevel innerLevelLt
+        leftTy rightTy leftTyRaw rightTyRaw proof) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atUaToEquiv_imp_sound innerLevel
+    innerLevelLt leftTy rightTy leftTyRaw rightTyRaw strengthening
+    (proofAggregator strengthening) result success
+
+/-- Headline aggregator soundness at the `Term.transp` arm.  2-IH
+cubical transport: `typePath` (universe-valued path) + `sourceValue`
+(input at sourceType); positional `modeIsUnivalent` /
+`universeLevel` / `universeLevelLt` / `sourceType` / `targetType` /
+`sourceTypeRaw` / `targetTypeRaw`. -/
+theorem isAggregatorSound_transp {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (universeLevel : UniverseLevel)
+    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+    (sourceType targetType : Ty level sourceScope)
+    (sourceTypeRaw targetTypeRaw : RawTerm sourceScope)
+    {pathRaw sourceRaw : RawTerm sourceScope}
+    {typePath :
+      Term sourceCtx
+        (Ty.path (Ty.universe universeLevel universeLevelLt)
+          sourceTypeRaw targetTypeRaw) pathRaw}
+    {sourceValue : Term sourceCtx sourceType sourceRaw}
+    (pathAggregator : IsAggregatorSound typePath)
+    (sourceAggregator : IsAggregatorSound sourceValue) :
+    IsAggregatorSound
+      (Term.transp (context := sourceCtx) modeIsUnivalent universeLevel
+        universeLevelLt sourceType targetType sourceTypeRaw
+        targetTypeRaw typePath sourceValue) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atTransp_imp_sound modeIsUnivalent
+    universeLevel universeLevelLt sourceType targetType sourceTypeRaw
+    targetTypeRaw strengthening (pathAggregator strengthening)
+    (sourceAggregator strengthening) result success
+
 end Term
 
 end LeanFX2

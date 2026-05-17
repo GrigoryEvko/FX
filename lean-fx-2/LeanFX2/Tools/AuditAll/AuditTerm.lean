@@ -703,5 +703,15 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.isAggregatorSound_snd
 #assert_no_axioms LeanFX2.Term.isAggregatorSound_pair
 #assert_no_axioms LeanFX2.Term.isAggregatorSound_refineIntro
+#assert_no_axioms LeanFX2.Term.isAggregatorSound_intervalOpp
+#assert_no_axioms LeanFX2.Term.isAggregatorSound_intervalMeet
+#assert_no_axioms LeanFX2.Term.isAggregatorSound_intervalJoin
+#assert_no_axioms LeanFX2.Term.isAggregatorSound_listCons
+#assert_no_axioms LeanFX2.Term.isAggregatorSound_codataDest
+#assert_no_axioms LeanFX2.Term.isAggregatorSound_codataUnfold
+#assert_no_axioms LeanFX2.Term.isAggregatorSound_pathApp
+#assert_no_axioms LeanFX2.Term.isAggregatorSound_glueElim
+#assert_no_axioms LeanFX2.Term.isAggregatorSound_uaToEquiv
+#assert_no_axioms LeanFX2.Term.isAggregatorSound_transp
 
 end LeanFX2.Tools
