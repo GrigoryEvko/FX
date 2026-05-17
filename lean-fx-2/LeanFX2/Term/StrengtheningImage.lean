@@ -8616,6 +8616,55 @@ theorem partialStrengthenTyped?_atGlueIntro_imp_sound {mode : Mode}
             (baseIH baseResult baseRecurse)
             (partialIH partialResult partialRecurse)
 
+/-- Dispatcher soundness at the `Term.pathLam` arm.  Path-lambda is the
+first under-binder cubical leaf: the body lives in a context extended
+by `Ty.interval`, so the body IH ranges over
+`strengthening.lift Ty.interval Ty.interval rfl` strengthening (the
+binder shift preserves the interval-typed slot).  Carries 1 Ty
+witness (carrier) + 2 raw witnesses (left/right endpoints) +
+1 body IH; the wrapper derives all rename directions internally. -/
+theorem partialStrengthenTyped?_atPathLam_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {bodyRaw : RawTerm (sourceScope + 1)}
+    {body :
+      Term (sourceCtx.cons Ty.interval) carrierType.weaken bodyRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (bodyIH : ∀ bodyResult,
+        partialStrengthenTyped? body
+            (strengthening.lift Ty.interval Ty.interval rfl) =
+            some bodyResult →
+          StrengtheningSoundness bodyResult)
+    (result : StrengtheningResult strengthening
+      (Term.pathLam (context := sourceCtx) modeIsUnivalent carrierType
+        leftEndpoint rightEndpoint body))
+    (success : partialStrengthenTyped?
+        (Term.pathLam (context := sourceCtx) modeIsUnivalent carrierType
+          leftEndpoint rightEndpoint body) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetCarrierType carrierSuccess
+    split at success
+    · cases success
+    · rename_i targetLeftEndpoint leftSuccess
+      split at success
+      · cases success
+      · rename_i targetRightEndpoint rightSuccess
+        split at success
+        · cases success
+        · rename_i bodyResult bodyRecurse
+          cases success
+          exact partialStrengthenTypedPathLam_sound
+            modeIsUnivalent carrierSuccess leftSuccess rightSuccess
+            (bodyIH bodyResult bodyRecurse)
+
 end Term
 
 end LeanFX2

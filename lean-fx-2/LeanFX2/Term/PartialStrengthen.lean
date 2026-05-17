@@ -7052,25 +7052,25 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
           | some rightResult =>
               some (partialStrengthenTypedIntervalJoin leftResult rightResult)
   | @Term.pathLam _ _ _ _ modeIsUnivalent carrierType leftEndpoint
-      rightEndpoint _ body => by
-      cases carrierSuccess :
+      rightEndpoint _ body =>
+      match carrierSuccess :
           carrierType.partialStrengthen? strengthening.back with
-      | none => exact none
+      | none => none
       | some targetCarrierType =>
-          cases leftSuccess :
+          match leftSuccess :
               leftEndpoint.partialStrengthen? strengthening.back with
-          | none => exact none
+          | none => none
           | some targetLeftEndpoint =>
-              cases rightSuccess :
+              match rightSuccess :
                   rightEndpoint.partialStrengthen? strengthening.back with
-              | none => exact none
+              | none => none
               | some targetRightEndpoint =>
-                  cases partialStrengthenTyped? body
+                  match partialStrengthenTyped? body
                       (strengthening :=
                         strengthening.lift Ty.interval Ty.interval rfl) with
-                  | none => exact none
+                  | none => none
                   | some bodyResult =>
-                      exact some
+                      some
                         (partialStrengthenTypedPathLam modeIsUnivalent
                           carrierSuccess leftSuccess rightSuccess bodyResult)
   | @Term.pathApp _ _ _ _ modeIsUnivalent carrierType leftEndpoint
