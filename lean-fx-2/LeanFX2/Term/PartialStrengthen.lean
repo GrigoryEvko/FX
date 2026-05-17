@@ -7367,8 +7367,8 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                               canPerformOperation effectTagSuccess
                               argumentCarrierSuccess resultCarrierSuccess
                               operationResult argumentsResult)
-  | @Term.universeCode _ _ _ _ innerLevel outerLevel cumulOk levelLe => by
-      exact some
+  | @Term.universeCode _ _ _ _ innerLevel outerLevel cumulOk levelLe =>
+      some
         (partialStrengthenTypedUniverseCode strengthening innerLevel
           outerLevel cumulOk levelLe)
   | @Term.cumulUp _ _ _ _ lowerLevel higherLevel cumulMonotone levelLeLow
@@ -7389,49 +7389,52 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
           some
             (partialStrengthenTypedEquivReflId carrier targetCarrier
               carrierSuccess)
-  | @Term.funextRefl _ _ _ _ domainType codomainType applyRaw => by
-      cases domainSuccess : domainType.partialStrengthen? strengthening.back with
-      | none => exact none
+  | @Term.funextRefl _ _ _ _ domainType codomainType applyRaw =>
+      match domainSuccess :
+          domainType.partialStrengthen? strengthening.back with
+      | none => none
       | some targetDomainType =>
-          cases codomainSuccess :
+          match codomainSuccess :
               codomainType.partialStrengthen? strengthening.back with
-          | none => exact none
+          | none => none
           | some targetCodomainType =>
-              cases applySuccess :
+              match applySuccess :
                   applyRaw.partialStrengthen? strengthening.back.lift with
-              | none => exact none
+              | none => none
               | some targetApplyRaw =>
-                  exact some
+                  some
                     (partialStrengthenTypedFunextRefl domainType
                       codomainType targetDomainType targetCodomainType
                       applyRaw targetApplyRaw domainSuccess
                       codomainSuccess applySuccess)
   | @Term.equivReflIdAtId _ _ _ _ innerLevel innerLevelLt carrier
-      carrierRaw => by
-      cases carrierSuccess : carrier.partialStrengthen? strengthening.back with
-      | none => exact none
+      carrierRaw =>
+      match carrierSuccess :
+          carrier.partialStrengthen? strengthening.back with
+      | none => none
       | some targetCarrier =>
-          cases carrierRawSuccess :
+          match carrierRawSuccess :
               carrierRaw.partialStrengthen? strengthening.back with
-          | none => exact none
+          | none => none
           | some targetCarrierRaw =>
-              exact some
+              some
                 (partialStrengthenTypedEquivReflIdAtId innerLevel
                   innerLevelLt carrier targetCarrier carrierRaw
                   targetCarrierRaw carrierSuccess carrierRawSuccess)
-  | @Term.funextReflAtId _ _ _ _ domainType codomainType applyRaw => by
-      cases domainSuccess : domainType.partialStrengthen? strengthening.back with
-      | none => exact none
+  | @Term.funextReflAtId _ _ _ _ domainType codomainType applyRaw =>
+      match domainSuccess :
+          domainType.partialStrengthen? strengthening.back with
+      | none => none
       | some targetDomainType =>
-          cases codomainSuccess :
+          match codomainSuccess :
               codomainType.partialStrengthen? strengthening.back with
-          | none => exact none
+          | none => none
           | some targetCodomainType =>
-              cases applySuccess :
+              match applySuccess :
                   applyRaw.partialStrengthen? strengthening.back.lift with
-              | none => exact none
+              | none => none
               | some targetApplyRaw =>
-                  exact some
+                  some
                     (partialStrengthenTypedFunextReflAtId domainType
                       codomainType targetDomainType targetCodomainType
                       applyRaw targetApplyRaw domainSuccess

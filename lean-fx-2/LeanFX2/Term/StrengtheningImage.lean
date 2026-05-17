@@ -8037,6 +8037,133 @@ theorem partialStrengthenTyped?_atEquivCode_imp_sound {mode : Mode}
         leftTypeCodeRaw rightTypeCodeRaw targetLeftTypeCodeRaw
         targetRightTypeCodeRaw leftSuccess rightSuccess
 
+/-- Dispatcher soundness at the `Term.universeCode` arm.  The bare-
+universe-of-codes producer carries no scope-dependent payload; the
+dispatcher returns the wrapper unconditionally and the leaf simply
+`cases success` and applies the wrapper's `_sound` companion. -/
+theorem partialStrengthenTyped?_atUniverseCode_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (innerLevel outerLevel : UniverseLevel)
+    (cumulOk : innerLevel.toNat ≤ outerLevel.toNat)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (result : StrengtheningResult strengthening
+      (Term.universeCode (context := sourceCtx) innerLevel outerLevel
+        cumulOk levelLe))
+    (success : partialStrengthenTyped?
+        (Term.universeCode (context := sourceCtx) innerLevel outerLevel
+          cumulOk levelLe) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  cases success
+  exact partialStrengthenTypedUniverseCode_sound strengthening
+    innerLevel outerLevel cumulOk levelLe
+
+/-- Dispatcher soundness at the `Term.funextRefl` arm.  Closed-leaf
+canonical funext reflexivity: two flat type witnesses (`domainType`
+and `codomainType`) plus one lifted raw witness (`applyRaw` at
+`scope + 1`).  No value IH. -/
+theorem partialStrengthenTyped?_atFunextRefl_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (domainType codomainType : Ty level sourceScope)
+    (applyRaw : RawTerm (sourceScope + 1))
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (result : StrengtheningResult strengthening
+      (Term.funextRefl (context := sourceCtx) domainType codomainType
+        applyRaw))
+    (success : partialStrengthenTyped?
+        (Term.funextRefl (context := sourceCtx) domainType codomainType
+          applyRaw) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetDomainType domainSuccess
+    split at success
+    · cases success
+    · rename_i targetCodomainType codomainSuccess
+      split at success
+      · cases success
+      · rename_i targetApplyRaw applySuccess
+        cases success
+        exact partialStrengthenTypedFunextRefl_sound domainType
+          codomainType targetDomainType targetCodomainType applyRaw
+          targetApplyRaw domainSuccess codomainSuccess applySuccess
+
+/-- Dispatcher soundness at the `Term.equivReflIdAtId` arm.  Closed-
+leaf equivalence-reflexivity at the identity type: one positional
+universe-level pair (`innerLevel`/`innerLevelLt`) + one type witness
+(`carrier`) + one flat-scope raw witness (`carrierRaw`).  No value
+IH. -/
+theorem partialStrengthenTyped?_atEquivReflIdAtId_imp_sound
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    (carrier : Ty level sourceScope)
+    (carrierRaw : RawTerm sourceScope)
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (result : StrengtheningResult strengthening
+      (Term.equivReflIdAtId (context := sourceCtx) innerLevel
+        innerLevelLt carrier carrierRaw))
+    (success : partialStrengthenTyped?
+        (Term.equivReflIdAtId (context := sourceCtx) innerLevel
+          innerLevelLt carrier carrierRaw) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetCarrier carrierSuccess
+    split at success
+    · cases success
+    · rename_i targetCarrierRaw carrierRawSuccess
+      cases success
+      exact partialStrengthenTypedEquivReflIdAtId_sound innerLevel
+        innerLevelLt carrier targetCarrier carrierRaw targetCarrierRaw
+        carrierSuccess carrierRawSuccess
+
+/-- Dispatcher soundness at the `Term.funextReflAtId` arm.
+Structurally identical to `funextRefl` — two flat type witnesses plus
+one lifted raw witness; only the wrapper's resulting type differs
+(Id-typed instead of canonical funext form). -/
+theorem partialStrengthenTyped?_atFunextReflAtId_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (domainType codomainType : Ty level sourceScope)
+    (applyRaw : RawTerm (sourceScope + 1))
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (result : StrengtheningResult strengthening
+      (Term.funextReflAtId (context := sourceCtx) domainType
+        codomainType applyRaw))
+    (success : partialStrengthenTyped?
+        (Term.funextReflAtId (context := sourceCtx) domainType
+          codomainType applyRaw) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetDomainType domainSuccess
+    split at success
+    · cases success
+    · rename_i targetCodomainType codomainSuccess
+      split at success
+      · cases success
+      · rename_i targetApplyRaw applySuccess
+        cases success
+        exact partialStrengthenTypedFunextReflAtId_sound domainType
+          codomainType targetDomainType targetCodomainType applyRaw
+          targetApplyRaw domainSuccess codomainSuccess applySuccess
+
 end Term
 
 end LeanFX2
