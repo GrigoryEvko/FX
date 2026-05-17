@@ -736,5 +736,7 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.isAggregatorSound_oeqFunext
 #assert_no_axioms LeanFX2.Term.isAggregatorSound_uaIntroHet
 #assert_no_axioms LeanFX2.Term.isAggregatorSound_effectPerform
+#assert_no_axioms LeanFX2.Term.isAggregatorSound_hcomp
+#assert_no_axioms LeanFX2.Term.isAggregatorSound_hcompPath
 
 end LeanFX2.Tools
