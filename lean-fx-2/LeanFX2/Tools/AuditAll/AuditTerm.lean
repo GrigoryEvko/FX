@@ -872,6 +872,16 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.isTotalOnWeaken_funextReflAtId
 #assert_no_axioms LeanFX2.Term.isTotalOnWeaken_funextIntroHet
 
+-- Wave I: Eq.mpr-blocked ctor totality via weaken_<ctor>_eq + cast invariance.
+-- These ctors' Term.rename arms wrap the constructed value in (eq).symm ▸ ...
+-- which blocks the standard unfold+split template; resolved via per-ctor
+-- rewrite lemmas + strengthenTyped?_isSome_castInvariant.
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_isSome_castInvariant
+#assert_no_axioms LeanFX2.Term.weaken_snd_unfolds
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_snd
+#assert_no_axioms LeanFX2.Term.weaken_funextRefl_unfolds
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_funextRefl
+
 -- User-facing unweaken?_weaken_<ctor> headline theorems.  Each is a
 -- direct `rfl` witness — concrete totality for the closed atomic
 -- ctors, consumable by Step.eta-cascade SR proofs.
