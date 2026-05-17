@@ -6314,6 +6314,120 @@ theorem partialStrengthenTyped?_atEitherInr_imp_sound {mode : Mode}
       exact partialStrengthenTypedEitherInrOfLeftType_sound
         leftSuccess (valueSound := valueIH valueResult valueRecurse)
 
+/-- Dispatcher soundness at the `Term.pair` arm.  Sigma-pair shape:
+one binder-type strengthening witness on the second-type slot, plus
+two value-subterm IHs (first value at `firstType`, second value at
+the substituted type). -/
+theorem partialStrengthenTyped?_atPair_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {firstType : Ty level sourceScope}
+    {secondType : Ty level (sourceScope + 1)}
+    {firstRaw secondRaw : RawTerm sourceScope}
+    {firstValue : Term sourceCtx firstType firstRaw}
+    {secondValue :
+      Term sourceCtx (secondType.subst0 firstType firstRaw) secondRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (firstIH : ∀ firstResult,
+        partialStrengthenTyped? firstValue strengthening =
+            some firstResult →
+          StrengtheningSoundness firstResult)
+    (secondIH : ∀ secondResult,
+        partialStrengthenTyped? secondValue strengthening =
+            some secondResult →
+          StrengtheningSoundness secondResult)
+    (result : StrengtheningResult strengthening
+      (Term.pair (secondType := secondType) firstValue secondValue))
+    (success : partialStrengthenTyped?
+        (Term.pair (secondType := secondType) firstValue secondValue)
+          strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetSecondType secondTypeSuccess
+    split at success
+    · cases success
+    · rename_i firstResult firstRecurse
+      split at success
+      · cases success
+      · rename_i secondResult secondRecurse
+        cases success
+        exact partialStrengthenTypedPair_sound secondTypeSuccess
+          (firstIH firstResult firstRecurse)
+          (secondIH secondResult secondRecurse)
+
+/-- Dispatcher soundness at the `Term.fst` arm.  Sigma first-projection:
+two type strengthening witnesses (firstType + secondType) plus a
+single sigma-value IH. -/
+theorem partialStrengthenTyped?_atFst_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {firstType : Ty level sourceScope}
+    {secondType : Ty level (sourceScope + 1)}
+    {pairRaw : RawTerm sourceScope}
+    {pairTerm : Term sourceCtx (Ty.sigmaTy firstType secondType) pairRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (pairIH : ∀ pairResult,
+        partialStrengthenTyped? pairTerm strengthening =
+            some pairResult →
+          StrengtheningSoundness pairResult)
+    (result : StrengtheningResult strengthening (Term.fst pairTerm))
+    (success :
+      partialStrengthenTyped? (Term.fst pairTerm) strengthening =
+        some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetFirstType firstSuccess
+    split at success
+    · cases success
+    · rename_i targetSecondType secondSuccess
+      split at success
+      · cases success
+      · rename_i pairResult pairRecurse
+        cases success
+        exact partialStrengthenTypedFst_sound firstSuccess secondSuccess
+          (pairIH pairResult pairRecurse)
+
+/-- Dispatcher soundness at the `Term.snd` arm.  Mirrors `atFst` —
+two type strengthening witnesses plus a single sigma-value IH. -/
+theorem partialStrengthenTyped?_atSnd_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {firstType : Ty level sourceScope}
+    {secondType : Ty level (sourceScope + 1)}
+    {pairRaw : RawTerm sourceScope}
+    {pairTerm : Term sourceCtx (Ty.sigmaTy firstType secondType) pairRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (pairIH : ∀ pairResult,
+        partialStrengthenTyped? pairTerm strengthening =
+            some pairResult →
+          StrengtheningSoundness pairResult)
+    (result : StrengtheningResult strengthening (Term.snd pairTerm))
+    (success :
+      partialStrengthenTyped? (Term.snd pairTerm) strengthening =
+        some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetFirstType firstSuccess
+    split at success
+    · cases success
+    · rename_i targetSecondType secondSuccess
+      split at success
+      · cases success
+      · rename_i pairResult pairRecurse
+        cases success
+        exact partialStrengthenTypedSnd_sound firstSuccess secondSuccess
+          (pairIH pairResult pairRecurse)
+
 /-- Dispatcher soundness at the `Term.unit` arm.  Closed-leaf: the
 dispatcher returns `some (partialStrengthenTypedUnit strengthening)`
 unconditionally, so the soundness is the wrapper soundness applied

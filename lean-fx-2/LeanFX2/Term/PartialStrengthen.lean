@@ -6573,52 +6573,56 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                       exact some
                         (partialStrengthenTypedAppPi domainSuccess
                           codomainSuccess functionResult argumentResult)
-  | @Term.pair _ _ _ _ _ secondType _ _ firstValue secondValue => by
-      cases secondTypeSuccess :
+  | @Term.pair _ _ _ _ _ secondType _ _ firstValue secondValue =>
+      match secondTypeSuccess :
           secondType.partialStrengthen? strengthening.back.lift with
-      | none => exact none
+      | none => none
       | some targetSecondType =>
-          cases partialStrengthenTyped? firstValue
-              (strengthening := strengthening) with
-          | none => exact none
+          match firstRecurse :
+              partialStrengthenTyped? firstValue
+                (strengthening := strengthening) with
+          | none => none
           | some firstResult =>
-              cases partialStrengthenTyped? secondValue
-                  (strengthening := strengthening) with
-              | none => exact none
+              match secondRecurse :
+                  partialStrengthenTyped? secondValue
+                    (strengthening := strengthening) with
+              | none => none
               | some secondResult =>
-                  exact some
+                  some
                     (partialStrengthenTypedPair secondTypeSuccess
                       firstResult secondResult)
-  | @Term.fst _ _ _ _ firstType secondType _ pairTerm => by
-      cases firstSuccess :
+  | @Term.fst _ _ _ _ firstType secondType _ pairTerm =>
+      match firstSuccess :
           firstType.partialStrengthen? strengthening.back with
-      | none => exact none
+      | none => none
       | some targetFirstType =>
-          cases secondSuccess :
+          match secondSuccess :
               secondType.partialStrengthen? strengthening.back.lift with
-          | none => exact none
+          | none => none
           | some targetSecondType =>
-              cases partialStrengthenTyped? pairTerm
-                  (strengthening := strengthening) with
-              | none => exact none
+              match pairRecurse :
+                  partialStrengthenTyped? pairTerm
+                    (strengthening := strengthening) with
+              | none => none
               | some pairResult =>
-                  exact some
+                  some
                     (partialStrengthenTypedFst firstSuccess secondSuccess
                       pairResult)
-  | @Term.snd _ _ _ _ firstType secondType _ pairTerm => by
-      cases firstSuccess :
+  | @Term.snd _ _ _ _ firstType secondType _ pairTerm =>
+      match firstSuccess :
           firstType.partialStrengthen? strengthening.back with
-      | none => exact none
+      | none => none
       | some targetFirstType =>
-          cases secondSuccess :
+          match secondSuccess :
               secondType.partialStrengthen? strengthening.back.lift with
-          | none => exact none
+          | none => none
           | some targetSecondType =>
-              cases partialStrengthenTyped? pairTerm
-                  (strengthening := strengthening) with
-              | none => exact none
+              match pairRecurse :
+                  partialStrengthenTyped? pairTerm
+                    (strengthening := strengthening) with
+              | none => none
               | some pairResult =>
-                  exact some
+                  some
                     (partialStrengthenTypedSnd firstSuccess secondSuccess
                       pairResult)
   | @Term.boolTrue _ _ _ _ => by
