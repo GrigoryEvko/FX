@@ -312,6 +312,18 @@ namespace LeanFX2.SmokeTypedInversion
 #print axioms LeanFX2.Term.partialStrengthenTypedTranspOfSuccess
 #print axioms LeanFX2.Term.partialStrengthenTypedTranspOfSuccess_sound
 
+-- Phase 34: typed-transport WRAPPER soundness — first wrapper
+-- _sound shipped via the App-pattern (inline-construct wrapper +
+-- parallel cases + Term.transp_HEq_congr).  Unlocks ~10 sibling
+-- wrappers that share the App-pattern: Hcomp, HcompPath, IdJ, OeqJ,
+-- IdStrictRec, EquivApp, EquivApply, EquivIntroHet, GlueElim,
+-- RefineElim.  Wrappers blocked by `cases X : foo` internal option-
+-- splits (ListElim, OptionMatch, EitherMatch, CodataDest,
+-- CodataUnfold, EffectPerform, RecordProj, PathApp) require a
+-- separate refactor — wrappers must take type-strengtheners as
+-- parameters, not derive them from result.targetType.
+#print axioms LeanFX2.Term.partialStrengthenTypedTransp_sound
+
 -- Phase 30: homogeneous composition via OfSuccess pattern.
 -- Hcomp's wrapper is the simplest non-binder OfSuccess target: single
 -- carrierType pivot shared by both child terms.  The OfSuccess form
@@ -320,6 +332,13 @@ namespace LeanFX2.SmokeTypedInversion
 -- `partialStrengthen?_imp_rename`.
 #print axioms LeanFX2.Term.partialStrengthenTypedHcompOfSuccess
 #print axioms LeanFX2.Term.partialStrengthenTypedHcompOfSuccess_sound
+
+-- Phase 35: Hcomp WRAPPER soundness — second App-pattern wrapper
+-- _sound after Phase 34's Transp_sound.  The pattern: cases on two
+-- StrengtheningResults, align cap type via carrier-strengthening,
+-- discharge via `Term.hcomp_HEq_congr` with carrierRenames +
+-- sidesSound.termRenames + capSound.termRenames.
+#print axioms LeanFX2.Term.partialStrengthenTypedHcomp_sound
 
 -- Phase 31: path-shaped homogeneous composition via OfSuccess pattern.
 -- HcompPath's wrapper combines Hcomp's two-child structure with

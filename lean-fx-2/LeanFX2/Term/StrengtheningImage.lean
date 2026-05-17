@@ -3933,6 +3933,119 @@ theorem partialStrengthenTypedTranspOfSuccess_sound {mode : Mode}
     sourceTypeRawRenames targetTypeRawRenames pathRawRenames
     sourceRawRenames pathSound sourceSound
 
+/-- Soundness for the typed-transport strengthening wrapper.
+
+The wrapper inline-constructs a `StrengtheningResult` after splitting the
+path and source-value results.  This soundness mirror parallels those
+splits, aligns the path type via the expected path-strengthening
+equation, and discharges via `Term.transp_HEq_congr`. -/
+theorem partialStrengthenTypedTransp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (universeLevel : UniverseLevel)
+    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+    (sourceType targetType : Ty level sourceScope)
+    (targetSourceType targetTargetType : Ty level targetScope)
+    (sourceTypeRaw targetTypeRaw : RawTerm sourceScope)
+    (targetSourceTypeRaw targetTargetTypeRaw : RawTerm targetScope)
+    {pathRaw sourceRaw : RawTerm sourceScope}
+    {typePath :
+      Term sourceCtx
+        (Ty.path (Ty.universe universeLevel universeLevelLt)
+          sourceTypeRaw targetTypeRaw)
+        pathRaw}
+    {sourceValue : Term sourceCtx sourceType sourceRaw}
+    (sourceTypeStrengthens :
+      sourceType.partialStrengthen? strengthening.back =
+        some targetSourceType)
+    (targetTypeStrengthens :
+      targetType.partialStrengthen? strengthening.back =
+        some targetTargetType)
+    (sourceTypeRawStrengthens :
+      sourceTypeRaw.partialStrengthen? strengthening.back =
+        some targetSourceTypeRaw)
+    (targetTypeRawStrengthens :
+      targetTypeRaw.partialStrengthen? strengthening.back =
+        some targetTargetTypeRaw)
+    {pathResult : StrengtheningResult strengthening typePath}
+    {sourceResult : StrengtheningResult strengthening sourceValue}
+    (pathSound : StrengtheningSoundness pathResult)
+    (sourceSound : StrengtheningSoundness sourceResult) :
+    StrengtheningSoundness
+      (partialStrengthenTypedTransp modeIsUnivalent universeLevel
+        universeLevelLt sourceType targetType targetSourceType
+        targetTargetType sourceTypeRaw targetTypeRaw
+        targetSourceTypeRaw targetTargetTypeRaw
+        sourceTypeStrengthens targetTypeStrengthens
+        sourceTypeRawStrengthens targetTypeRawStrengthens
+        pathResult sourceResult) := by
+  cases pathResult with
+  | mk targetPathType targetPathRaw targetPath pathTypeStrengthens
+      pathRawStrengthens pathTypeRenames pathRawRenames =>
+      have expectedPathTypeStrengthens :
+          (Ty.path (Ty.universe universeLevel universeLevelLt)
+              sourceTypeRaw targetTypeRaw).partialStrengthen?
+              strengthening.back =
+            some (Ty.path (Ty.universe universeLevel universeLevelLt)
+              targetSourceTypeRaw targetTargetTypeRaw) := by
+        change
+          Option.mapThree
+            ((Ty.universe universeLevel universeLevelLt).partialStrengthen?
+              strengthening.back)
+            (sourceTypeRaw.partialStrengthen? strengthening.back)
+            (targetTypeRaw.partialStrengthen? strengthening.back)
+            Ty.path =
+              some (Ty.path (Ty.universe universeLevel universeLevelLt)
+                targetSourceTypeRaw targetTargetTypeRaw)
+        rw [sourceTypeRawStrengthens, targetTypeRawStrengthens]
+        rfl
+      rw [expectedPathTypeStrengthens] at pathTypeStrengthens
+      cases pathTypeStrengthens
+      cases sourceResult with
+      | mk targetSourceValueType targetSourceRaw targetSourceValue
+          sourceValueTypeStrengthens sourceRawStrengthens
+          sourceValueTypeRenames sourceRawRenames =>
+          rw [sourceTypeStrengthens] at sourceValueTypeStrengthens
+          cases sourceValueTypeStrengthens
+          refine ⟨?_⟩
+          dsimp [partialStrengthenTypedTransp,
+              StrengtheningResult.renamedTarget]
+            at pathSound sourceSound ⊢
+          have sourceTypeRenames :
+              sourceType = targetSourceType.rename strengthening.forward :=
+            Ty.partialStrengthen?_imp_rename sourceType
+              strengthening.forward strengthening.back
+              strengthening.injectsBack targetSourceType
+              sourceTypeStrengthens
+          have targetTypeRenames :
+              targetType = targetTargetType.rename strengthening.forward :=
+            Ty.partialStrengthen?_imp_rename targetType
+              strengthening.forward strengthening.back
+              strengthening.injectsBack targetTargetType
+              targetTypeStrengthens
+          have sourceTypeRawRenames :
+              sourceTypeRaw =
+                targetSourceTypeRaw.rename strengthening.forward :=
+            RawTerm.partialStrengthen?_imp_rename sourceTypeRaw
+              strengthening.forward strengthening.back
+              strengthening.injectsBack targetSourceTypeRaw
+              sourceTypeRawStrengthens
+          have targetTypeRawRenames :
+              targetTypeRaw =
+                targetTargetTypeRaw.rename strengthening.forward :=
+            RawTerm.partialStrengthen?_imp_rename targetTypeRaw
+              strengthening.forward strengthening.back
+              strengthening.injectsBack targetTargetTypeRaw
+              targetTypeRawStrengthens
+          exact Term.transp_HEq_congr modeIsUnivalent universeLevel
+            universeLevelLt sourceTypeRenames targetTypeRenames
+            sourceTypeRawRenames targetTypeRawRenames pathRawRenames
+            sourceRawRenames pathSound.termRenames
+            sourceSound.termRenames
+
 /-- Soundness of `partialStrengthenTypedHcompOfSuccess`: the result's
 renamed target term is heterogeneously equal to the original typed
 homogeneous composition. -/
@@ -3987,6 +4100,45 @@ theorem partialStrengthenTypedHcompOfSuccess_sound {mode : Mode}
       targetCarrierType carrierStrengthens
   exact Term.hcomp_HEq_congr modeIsUnivalent carrierRenames
     sidesRawRenames capRawRenames sidesSound capSound
+
+/-- Soundness for the typed homogeneous-composition wrapper.
+
+Mirrors `partialStrengthenTypedHcomp`'s inline-construct pattern:
+splits both child results, aligns the cap type via the sides'
+carrier-type strengthening, and discharges via `Term.hcomp_HEq_congr`. -/
+theorem partialStrengthenTypedHcomp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    {sidesRaw capRaw : RawTerm sourceScope}
+    {sidesValue : Term sourceCtx carrierType sidesRaw}
+    {capValue : Term sourceCtx carrierType capRaw}
+    {sidesResult : StrengtheningResult strengthening sidesValue}
+    {capResult : StrengtheningResult strengthening capValue}
+    (sidesSound : StrengtheningSoundness sidesResult)
+    (capSound : StrengtheningSoundness capResult) :
+    StrengtheningSoundness
+      (partialStrengthenTypedHcomp modeIsUnivalent sidesResult
+        capResult) := by
+  cases sidesResult with
+  | mk targetCarrierType targetSidesRaw targetSidesValue
+      carrierStrengthens sidesRawStrengthens carrierRenames
+      sidesRawRenames =>
+      cases capResult with
+      | mk targetCapType targetCapRaw targetCapValue capTypeStrengthens
+          capRawStrengthens capTypeRenames capRawRenames =>
+          rw [carrierStrengthens] at capTypeStrengthens
+          cases capTypeStrengthens
+          refine ⟨?_⟩
+          dsimp [partialStrengthenTypedHcomp,
+              StrengtheningResult.renamedTarget]
+            at sidesSound capSound ⊢
+          exact Term.hcomp_HEq_congr modeIsUnivalent carrierRenames
+            sidesRawRenames capRawRenames sidesSound.termRenames
+            capSound.termRenames
 
 /-- Soundness of `partialStrengthenTypedHcompPathOfSuccess`: the
 result's renamed target term is heterogeneously equal to the original
