@@ -6542,18 +6542,19 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                       some
                         (partialStrengthenTypedApp domainSuccess
                           codomainSuccess functionResult argumentResult)
-  | @Term.lamPi _ _ _ _ domainType _ _ body => by
-      cases domainSuccess :
+  | @Term.lamPi _ _ _ _ domainType _ _ body =>
+      match domainSuccess :
           domainType.partialStrengthen? strengthening.back with
-      | none => exact none
+      | none => none
       | some targetDomainType =>
-          cases partialStrengthenTyped? body
-              (strengthening :=
-                strengthening.lift domainType targetDomainType
-                  domainSuccess) with
-          | none => exact none
+          match
+              partialStrengthenTyped? body
+                (strengthening :=
+                  strengthening.lift domainType targetDomainType
+                    domainSuccess) with
+          | none => none
           | some bodyResult =>
-              exact some
+              some
                 (partialStrengthenTypedLamPi domainSuccess bodyResult)
   | @Term.appPi _ _ _ _ domainType codomainType _ _ functionTerm
       argumentTerm =>

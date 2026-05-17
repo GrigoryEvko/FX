@@ -8718,6 +8718,55 @@ theorem partialStrengthenTyped?_atLam_imp_sound {mode : Mode}
           (bodyIH targetDomainType domainSuccess bodyResult
             bodyRecurse)
 
+/-- Dispatcher soundness at the `Term.lamPi` arm.  Dependent-Π lambda
+mirrors `lam`'s dependent-lift body-IH shape, but the codomain lives
+in `Ty level (sourceScope + 1)` (inside the binder), so no codomain
+witness threads through the dispatcher — `partialStrengthenTypedLamPi`
+takes only `domainSuccess` and the body result carries the codomain
+strengthen-evidence in its `StrengtheningResult`.  Body IH is
+quantified over `(targetDomainType, domainSuccess)` because the body
+recursion's strengthening (`strengthening.lift domainType
+targetDomainType domainSuccess`) depends on the witness. -/
+theorem partialStrengthenTyped?_atLamPi_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {domainType : Ty level sourceScope}
+    {codomainType : Ty level (sourceScope + 1)}
+    {bodyRaw : RawTerm (sourceScope + 1)}
+    {body : Term (sourceCtx.cons domainType) codomainType bodyRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (bodyIH : ∀ targetDomainType
+        (domainSuccess :
+          domainType.partialStrengthen? strengthening.back =
+            some targetDomainType)
+        bodyResult,
+        partialStrengthenTyped? body
+            (strengthening.lift domainType targetDomainType
+              domainSuccess) =
+            some bodyResult →
+          StrengtheningSoundness bodyResult)
+    (result : StrengtheningResult strengthening
+      (Term.lamPi (context := sourceCtx) (domainType := domainType)
+        (codomainType := codomainType) body))
+    (success : partialStrengthenTyped?
+        (Term.lamPi (context := sourceCtx) (domainType := domainType)
+          (codomainType := codomainType) body) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetDomainType domainSuccess
+    split at success
+    · cases success
+    · rename_i bodyResult bodyRecurse
+      cases success
+      exact partialStrengthenTypedLamPi_sound
+        domainSuccess
+        (bodyIH targetDomainType domainSuccess bodyResult
+          bodyRecurse)
+
 end Term
 
 end LeanFX2
