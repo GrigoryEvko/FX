@@ -441,4 +441,18 @@ namespace LeanFX2.SmokeTypedInversion
 -- long as the OfSuccess leaf accepts all witnesses as parameters.
 #print axioms LeanFX2.Term.partialStrengthenTypedRefineElim_sound
 
+-- Phase 40 (sidequest): WRAPPER soundness for codata-destruction
+-- producer.  Pattern: ListElim-shaped wrapper REFACTORED to App-style
+-- by lifting BOTH internal option-splits (`stateSuccess` on state
+-- carrier and `outputSuccess` on output type) into explicit parameters
+-- at the wrapper signature.  Same recipe as Phase 39 RefineElim — the
+-- App-pattern refactor for 2-option wrappers scales uniformly to any
+-- pair of independent option-splits on type-level witnesses.  Dispatch
+-- arm at `PartialStrengthen.lean` does both option-splits before
+-- invoking the wrapper; the wrapper destructures the codata value's
+-- `StrengtheningResult`, aligns the `Ty.codata` shape via record-
+-- rewrite + `cases`, and delegates to
+-- `partialStrengthenTypedCodataDestOfSuccess`.
+#print axioms LeanFX2.Term.partialStrengthenTypedCodataDest_sound
+
 end LeanFX2.SmokeTypedInversion

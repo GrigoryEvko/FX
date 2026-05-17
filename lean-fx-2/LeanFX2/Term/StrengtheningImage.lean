@@ -2610,6 +2610,60 @@ theorem partialStrengthenTypedCodataDestOfSuccess_sound {mode : Mode}
   exact Term.codataDest_HEq_congr stateRenames outputRenames
     codataRawRenames codataSound
 
+/-- Soundness for the typed codata-destruction wrapper.
+
+Mirrors `partialStrengthenTypedCodataDest`'s App-pattern shape: the
+wrapper takes `stateSuccess` and `outputSuccess` as explicit
+parameters (lifted from the dispatcher's two nested option-splits on
+state and output type respectively).  The proof destructures the
+codata value's `StrengtheningResult`, aligns the `Ty.codata` shape via
+`rw` + `cases` on the derived equation, then delegates to
+`partialStrengthenTypedCodataDestOfSuccess_sound`.  Same recipe as
+Phase 39 RefineElim. -/
+theorem partialStrengthenTypedCodataDest_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {stateType outputType : Ty level sourceScope}
+    {targetStateType targetOutputType : Ty level targetScope}
+    {codataRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {codataValue : Term sourceCtx (Ty.codata stateType outputType) codataRaw}
+    (stateSuccess :
+      stateType.partialStrengthen? strengthening.back = some targetStateType)
+    (outputSuccess :
+      outputType.partialStrengthen? strengthening.back =
+        some targetOutputType)
+    {codataResult : StrengtheningResult strengthening codataValue}
+    (codataSound : StrengtheningSoundness codataResult) :
+    StrengtheningSoundness
+      (partialStrengthenTypedCodataDest stateSuccess outputSuccess
+        codataResult) := by
+  cases codataResult with
+  | mk targetCodataType targetCodataRaw targetCodataTerm
+      codataTypeStrengthens codataRawStrengthens codataTypeRenames
+      codataRawRenames =>
+      have expectedCodataTypeStrengthens :
+          (Ty.codata stateType outputType).partialStrengthen?
+              strengthening.back =
+            some (Ty.codata targetStateType targetOutputType) := by
+        change
+          Option.mapTwo
+            (stateType.partialStrengthen? strengthening.back)
+            (outputType.partialStrengthen? strengthening.back)
+            Ty.codata =
+              some (Ty.codata targetStateType targetOutputType)
+        rw [stateSuccess, outputSuccess]
+        rfl
+      rw [expectedCodataTypeStrengthens] at codataTypeStrengthens
+      cases codataTypeStrengthens
+      exact partialStrengthenTypedCodataDestOfSuccess_sound
+        (stateSuccess := stateSuccess)
+        (outputSuccess := outputSuccess)
+        (codataRawStrengthens := codataRawStrengthens)
+        (codataRawRenames := codataRawRenames)
+        codataSound.termRenames
+
 /-- Soundness for session-send strengthening.  The producer is direct
 (no Option.casesOn discriminator wall — protocol pivot is pre-witnessed
 by the `protocolStrengthens` hypothesis), so soundness mirrors the

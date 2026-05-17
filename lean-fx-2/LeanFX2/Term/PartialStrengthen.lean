@@ -3309,42 +3309,52 @@ def partialStrengthenTypedCodataDestOfSuccess {mode : Mode} {level : Nat}
 }
 
 /-- Codata destruction strengthens by strengthening the codata payload
-and projecting the strengthened output type from the codata carrier. -/
+and projecting both the state and output strengthenings out of the
+codata type index.
+
+App-pattern: takes `stateSuccess` / `outputSuccess` as explicit
+parameters lifted from the dispatcher's two option-splits.  The body
+destructures the codata value's `StrengtheningResult`, aligns the
+`Ty.codata` shape via `rw` + `cases` on the derived equation, then
+delegates to `partialStrengthenTypedCodataDestOfSuccess`.  Mirrors the
+2-option-split recipe established for RefineElim (Phase 39). -/
 def partialStrengthenTypedCodataDest {mode : Mode} {level : Nat}
     {sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
     {targetCtx : Ctx mode level targetScope}
     {stateType outputType : Ty level sourceScope}
+    {targetStateType targetOutputType : Ty level targetScope}
     {codataRaw : RawTerm sourceScope}
     {strengthening : ContextStrengthening sourceCtx targetCtx}
     {codataValue : Term sourceCtx (Ty.codata stateType outputType) codataRaw}
+    (stateSuccess :
+      stateType.partialStrengthen? strengthening.back = some targetStateType)
+    (outputSuccess :
+      outputType.partialStrengthen? strengthening.back =
+        some targetOutputType)
     (codataResult : StrengtheningResult strengthening codataValue) :
     StrengtheningResult strengthening (Term.codataDest codataValue) := by
   cases codataResult with
   | mk targetCodataType targetCodataRaw targetCodataTerm
       codataTypeStrengthens codataRawStrengthens codataTypeRenames
       codataRawRenames =>
-      change
-        Option.mapTwo
-          (stateType.partialStrengthen? strengthening.back)
-          (outputType.partialStrengthen? strengthening.back)
-          Ty.codata = some targetCodataType at codataTypeStrengthens
-      cases stateSuccess : stateType.partialStrengthen? strengthening.back with
-      | none =>
-          rw [stateSuccess] at codataTypeStrengthens
-          cases codataTypeStrengthens
-      | some targetStateType =>
-          cases outputSuccess : outputType.partialStrengthen?
-              strengthening.back with
-          | none =>
-              rw [stateSuccess, outputSuccess] at codataTypeStrengthens
-              cases codataTypeStrengthens
-          | some targetOutputType =>
-              rw [stateSuccess, outputSuccess] at codataTypeStrengthens
-              cases codataTypeStrengthens
-              exact partialStrengthenTypedCodataDestOfSuccess
-                targetCodataTerm stateSuccess outputSuccess
-                codataRawStrengthens codataRawRenames
+      have expectedCodataTypeStrengthens :
+          (Ty.codata stateType outputType).partialStrengthen?
+              strengthening.back =
+            some (Ty.codata targetStateType targetOutputType) := by
+        change
+          Option.mapTwo
+            (stateType.partialStrengthen? strengthening.back)
+            (outputType.partialStrengthen? strengthening.back)
+            Ty.codata =
+              some (Ty.codata targetStateType targetOutputType)
+        rw [stateSuccess, outputSuccess]
+        rfl
+      rw [expectedCodataTypeStrengthens] at codataTypeStrengthens
+      cases codataTypeStrengthens
+      exact partialStrengthenTypedCodataDestOfSuccess
+        targetCodataTerm stateSuccess outputSuccess
+        codataRawStrengthens codataRawRenames
 
 /-- Session send strengthens by strengthening the protocol raw, channel,
 and payload while preserving the session carrier shape. -/
@@ -7176,12 +7186,22 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                   exact some
                     (partialStrengthenTypedCodataUnfold outputSuccess
                       stateResult transitionResult)
-  | @Term.codataDest _ _ _ _ _ _ _ codataValue => by
-      cases partialStrengthenTyped? codataValue
-          (strengthening := strengthening) with
+  | @Term.codataDest _ _ _ _ stateType outputType _ codataValue => by
+      cases stateSuccess :
+          stateType.partialStrengthen? strengthening.back with
       | none => exact none
-      | some codataResult =>
-          exact some (partialStrengthenTypedCodataDest codataResult)
+      | some _ =>
+          cases outputSuccess :
+              outputType.partialStrengthen? strengthening.back with
+          | none => exact none
+          | some _ =>
+              cases partialStrengthenTyped? codataValue
+                  (strengthening := strengthening) with
+              | none => exact none
+              | some codataResult =>
+                  exact some
+                    (partialStrengthenTypedCodataDest stateSuccess
+                      outputSuccess codataResult)
   | @Term.sessionSend _ _ _ _ protocolStep _ _ _ channel payload => by
       cases protocolSuccess :
           protocolStep.partialStrengthen? strengthening.back with
