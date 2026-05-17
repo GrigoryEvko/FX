@@ -739,4 +739,10 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.isAggregatorSound_hcomp
 #assert_no_axioms LeanFX2.Term.isAggregatorSound_hcompPath
 
+-- HEADLINE: universal aggregator soundness over all 78 Term ctors.
+-- Composes every isAggregatorSound_<ctor> wrapper via structural
+-- induction; unblocks the Phase A image theorem trio and the
+-- downstream Step.eta cascade per extended-roadmap.md Day 32.
+#assert_no_axioms LeanFX2.Term.isAggregatorSound_universal
+
 end LeanFX2.Tools
