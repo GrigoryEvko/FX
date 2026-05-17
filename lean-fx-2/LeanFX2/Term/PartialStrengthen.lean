@@ -6695,17 +6695,18 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
           exact some
             (partialStrengthenTypedListNilOfType strengthening
               elementType targetElementType elementSuccess)
-  | @Term.listCons _ _ _ _ _ _ _ headTerm tailTerm => by
-      cases partialStrengthenTyped? headTerm
-          (strengthening := strengthening) with
-      | none => exact none
+  | @Term.listCons _ _ _ _ _ _ _ headTerm tailTerm =>
+      match headRecurse :
+          partialStrengthenTyped? headTerm
+            (strengthening := strengthening) with
+      | none => none
       | some headResult =>
-          cases partialStrengthenTyped? tailTerm
-              (strengthening := strengthening) with
-          | none => exact none
+          match tailRecurse :
+              partialStrengthenTyped? tailTerm
+                (strengthening := strengthening) with
+          | none => none
           | some tailResult =>
-              exact some
-                (partialStrengthenTypedListCons headResult tailResult)
+              some (partialStrengthenTypedListCons headResult tailResult)
   | @Term.listElim _ _ _ _ elementType _ _ _ _ scrutinee nilBranch
       consBranch => by
       cases elementSuccess :
@@ -6987,28 +6988,30 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
       | none => none
       | some innerResult =>
           some (partialStrengthenTypedIntervalOpp innerResult)
-  | @Term.intervalMeet _ _ _ _ _ _ leftValue rightValue => by
-      cases partialStrengthenTyped? leftValue
-          (strengthening := strengthening) with
-      | none => exact none
+  | @Term.intervalMeet _ _ _ _ _ _ leftValue rightValue =>
+      match leftRecurse :
+          partialStrengthenTyped? leftValue
+            (strengthening := strengthening) with
+      | none => none
       | some leftResult =>
-          cases partialStrengthenTyped? rightValue
-              (strengthening := strengthening) with
-          | none => exact none
+          match rightRecurse :
+              partialStrengthenTyped? rightValue
+                (strengthening := strengthening) with
+          | none => none
           | some rightResult =>
-              exact some
-                (partialStrengthenTypedIntervalMeet leftResult rightResult)
-  | @Term.intervalJoin _ _ _ _ _ _ leftValue rightValue => by
-      cases partialStrengthenTyped? leftValue
-          (strengthening := strengthening) with
-      | none => exact none
+              some (partialStrengthenTypedIntervalMeet leftResult rightResult)
+  | @Term.intervalJoin _ _ _ _ _ _ leftValue rightValue =>
+      match leftRecurse :
+          partialStrengthenTyped? leftValue
+            (strengthening := strengthening) with
+      | none => none
       | some leftResult =>
-          cases partialStrengthenTyped? rightValue
-              (strengthening := strengthening) with
-          | none => exact none
+          match rightRecurse :
+              partialStrengthenTyped? rightValue
+                (strengthening := strengthening) with
+          | none => none
           | some rightResult =>
-              exact some
-                (partialStrengthenTypedIntervalJoin leftResult rightResult)
+              some (partialStrengthenTypedIntervalJoin leftResult rightResult)
   | @Term.pathLam _ _ _ _ modeIsUnivalent carrierType leftEndpoint
       rightEndpoint _ body => by
       cases carrierSuccess :

@@ -6088,6 +6088,120 @@ theorem partialStrengthenTyped?_atIntervalOpp_imp_sound {mode : Mode}
     exact partialStrengthenTypedIntervalOpp_sound
       (innerSound := innerIH innerResult innerRecurse)
 
+/-- Dispatcher soundness at the `Term.intervalMeet` arm.  Binary
+recurse on two interval subterms, no type-shape strengthening: two
+inductive hypotheses (one per subterm) thread to the wrapper. -/
+theorem partialStrengthenTyped?_atIntervalMeet_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {leftRaw rightRaw : RawTerm sourceScope}
+    {leftValue : Term sourceCtx Ty.interval leftRaw}
+    {rightValue : Term sourceCtx Ty.interval rightRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (leftIH : ∀ leftResult,
+        partialStrengthenTyped? leftValue strengthening =
+            some leftResult →
+          StrengtheningSoundness leftResult)
+    (rightIH : ∀ rightResult,
+        partialStrengthenTyped? rightValue strengthening =
+            some rightResult →
+          StrengtheningSoundness rightResult)
+    (result : StrengtheningResult strengthening
+      (Term.intervalMeet (leftValue := leftValue) (rightValue := rightValue)))
+    (success : partialStrengthenTyped?
+        (Term.intervalMeet (leftValue := leftValue) (rightValue := rightValue))
+          strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i leftResult leftRecurse
+    split at success
+    · cases success
+    · rename_i rightResult rightRecurse
+      cases success
+      exact partialStrengthenTypedIntervalMeet_sound
+        (leftSound := leftIH leftResult leftRecurse)
+        (rightSound := rightIH rightResult rightRecurse)
+
+/-- Dispatcher soundness at the `Term.intervalJoin` arm.  Mirrors
+`atIntervalMeet`. -/
+theorem partialStrengthenTyped?_atIntervalJoin_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {leftRaw rightRaw : RawTerm sourceScope}
+    {leftValue : Term sourceCtx Ty.interval leftRaw}
+    {rightValue : Term sourceCtx Ty.interval rightRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (leftIH : ∀ leftResult,
+        partialStrengthenTyped? leftValue strengthening =
+            some leftResult →
+          StrengtheningSoundness leftResult)
+    (rightIH : ∀ rightResult,
+        partialStrengthenTyped? rightValue strengthening =
+            some rightResult →
+          StrengtheningSoundness rightResult)
+    (result : StrengtheningResult strengthening
+      (Term.intervalJoin (leftValue := leftValue) (rightValue := rightValue)))
+    (success : partialStrengthenTyped?
+        (Term.intervalJoin (leftValue := leftValue) (rightValue := rightValue))
+          strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i leftResult leftRecurse
+    split at success
+    · cases success
+    · rename_i rightResult rightRecurse
+      cases success
+      exact partialStrengthenTypedIntervalJoin_sound
+        (leftSound := leftIH leftResult leftRecurse)
+        (rightSound := rightIH rightResult rightRecurse)
+
+/-- Dispatcher soundness at the `Term.listCons` arm.  Binary recurse
+on head and tail subterms; the elementType strengthening is implicit
+in the wrapper's type-equality discharge. -/
+theorem partialStrengthenTyped?_atListCons_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {elementType : Ty level sourceScope}
+    {headRaw tailRaw : RawTerm sourceScope}
+    {headTerm : Term sourceCtx elementType headRaw}
+    {tailTerm : Term sourceCtx (Ty.listType elementType) tailRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (headIH : ∀ headResult,
+        partialStrengthenTyped? headTerm strengthening =
+            some headResult →
+          StrengtheningSoundness headResult)
+    (tailIH : ∀ tailResult,
+        partialStrengthenTyped? tailTerm strengthening =
+            some tailResult →
+          StrengtheningSoundness tailResult)
+    (result : StrengtheningResult strengthening
+      (Term.listCons (headTerm := headTerm) (tailTerm := tailTerm)))
+    (success : partialStrengthenTyped?
+        (Term.listCons (headTerm := headTerm) (tailTerm := tailTerm))
+          strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i headResult headRecurse
+    split at success
+    · cases success
+    · rename_i tailResult tailRecurse
+      cases success
+      exact partialStrengthenTypedListCons_sound
+        (headSound := headIH headResult headRecurse)
+        (tailSound := tailIH tailResult tailRecurse)
+
 /-- Dispatcher soundness at the `Term.unit` arm.  Closed-leaf: the
 dispatcher returns `some (partialStrengthenTypedUnit strengthening)`
 unconditionally, so the soundness is the wrapper soundness applied
