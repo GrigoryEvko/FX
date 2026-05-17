@@ -909,4 +909,20 @@ existing computational dispatcher. -/
 -- content on a closed source.
 #assert_no_axioms LeanFX2.Term.weaken_image_iff_strengthenTyped?_some_TRUE_unit
 
+-- Universal-strengthening totality predicate `IsAggregatorTotal` and
+-- its per-ctor wrappers.  The 3 binder wrappers close the
+-- architectural gap that the narrow `IsTotalOnWeaken` predicate
+-- could not bridge.
+#assert_no_axioms LeanFX2.Term.IsAggregatorTotal
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_unit
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_boolTrue
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_boolFalse
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_natZero
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_interval0
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_interval1
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_var
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_lam
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_lamPi
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_pathLam
+
 end LeanFX2.Tools
