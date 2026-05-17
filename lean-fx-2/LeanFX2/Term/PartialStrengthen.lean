@@ -7196,28 +7196,30 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                 (partialStrengthenTypedHcomp modeIsUnivalent sidesResult
                   capResult)
   | @Term.hcompPath _ _ _ _ modeIsUnivalent carrierType leftEndpoint
-      rightEndpoint _ _ sidesPath capValue => by
-      cases carrierSuccess :
+      rightEndpoint _ _ sidesPath capValue =>
+      match carrierSuccess :
           carrierType.partialStrengthen? strengthening.back with
-      | none => exact none
+      | none => none
       | some _ =>
-          cases leftSuccess :
+          match leftSuccess :
               leftEndpoint.partialStrengthen? strengthening.back with
-          | none => exact none
+          | none => none
           | some _ =>
-              cases rightSuccess :
+              match rightSuccess :
                   rightEndpoint.partialStrengthen? strengthening.back with
-              | none => exact none
+              | none => none
               | some _ =>
-                  cases partialStrengthenTyped? sidesPath
-                      (strengthening := strengthening) with
-                  | none => exact none
+                  match sidesRecurse :
+                      partialStrengthenTyped? sidesPath
+                        (strengthening := strengthening) with
+                  | none => none
                   | some sidesResult =>
-                      cases partialStrengthenTyped? capValue
-                          (strengthening := strengthening) with
-                      | none => exact none
+                      match capRecurse :
+                          partialStrengthenTyped? capValue
+                            (strengthening := strengthening) with
+                      | none => none
                       | some capResult =>
-                          exact some
+                          some
                             (partialStrengthenTypedHcompPath modeIsUnivalent
                               leftEndpoint rightEndpoint carrierSuccess
                               leftSuccess rightSuccess sidesResult capResult)

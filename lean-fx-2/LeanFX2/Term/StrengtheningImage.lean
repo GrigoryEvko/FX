@@ -8815,6 +8815,69 @@ theorem partialStrengthenTyped?_atHcomp_imp_sound {mode : Mode}
         (sidesIH sidesResult sidesRecurse)
         (capIH capResult capRecurse)
 
+/-- Dispatcher soundness at the `Term.hcompPath` arm.  Path-shaped
+cubical composition: `sidesPath` lives at `Ty.path carrierType
+leftEndpoint rightEndpoint`, so three raw/Ty witnesses thread through
+(carrier, left, right), plus two child IHs (sidesPath + capValue).
+Mirrors pathLam's 3-witness pattern but at term-level rather than
+under a binder.  Wrapper takes both `leftEndpoint`/`rightEndpoint`
+explicitly because they are explicit fields of `Term.hcompPath`. -/
+theorem partialStrengthenTyped?_atHcompPath_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    (leftEndpoint rightEndpoint : RawTerm sourceScope)
+    {sidesPathRaw capRaw : RawTerm sourceScope}
+    {sidesPath :
+      Term sourceCtx (Ty.path carrierType leftEndpoint rightEndpoint)
+        sidesPathRaw}
+    {capValue : Term sourceCtx carrierType capRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (sidesIH : ∀ sidesPathResult,
+        partialStrengthenTyped? sidesPath strengthening =
+            some sidesPathResult →
+          StrengtheningSoundness sidesPathResult)
+    (capIH : ∀ capResult,
+        partialStrengthenTyped? capValue strengthening =
+            some capResult →
+          StrengtheningSoundness capResult)
+    (result : StrengtheningResult strengthening
+      (Term.hcompPath (context := sourceCtx) (carrierType := carrierType)
+        (sidesPathRaw := sidesPathRaw) (capRaw := capRaw)
+        modeIsUnivalent leftEndpoint rightEndpoint sidesPath capValue))
+    (success : partialStrengthenTyped?
+        (Term.hcompPath (context := sourceCtx)
+          (carrierType := carrierType)
+          (sidesPathRaw := sidesPathRaw) (capRaw := capRaw)
+          modeIsUnivalent leftEndpoint rightEndpoint sidesPath capValue)
+          strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetCarrierType carrierSuccess
+    split at success
+    · cases success
+    · rename_i targetLeftEndpoint leftSuccess
+      split at success
+      · cases success
+      · rename_i targetRightEndpoint rightSuccess
+        split at success
+        · cases success
+        · rename_i sidesPathResult sidesRecurse
+          split at success
+          · cases success
+          · rename_i capResult capRecurse
+            cases success
+            exact partialStrengthenTypedHcompPath_sound
+              modeIsUnivalent leftEndpoint rightEndpoint
+              carrierSuccess leftSuccess rightSuccess
+              (sidesIH sidesPathResult sidesRecurse)
+              (capIH capResult capRecurse)
+
 end Term
 
 end LeanFX2
