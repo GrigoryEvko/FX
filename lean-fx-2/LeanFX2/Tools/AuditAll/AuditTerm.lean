@@ -688,5 +688,20 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.isAggregatorSound_equivReflIdAtId
 #assert_no_axioms LeanFX2.Term.isAggregatorSound_funextReflAtId
 #assert_no_axioms LeanFX2.Term.isAggregatorSound_funextIntroHet
+#assert_no_axioms LeanFX2.Term.isAggregatorSound_natSucc
+#assert_no_axioms LeanFX2.Term.isAggregatorSound_optionSome
+#assert_no_axioms LeanFX2.Term.isAggregatorSound_modIntro
+#assert_no_axioms LeanFX2.Term.isAggregatorSound_modElim
+#assert_no_axioms LeanFX2.Term.isAggregatorSound_subsume
+#assert_no_axioms LeanFX2.Term.isAggregatorSound_eitherInl
+#assert_no_axioms LeanFX2.Term.isAggregatorSound_eitherInr
+#assert_no_axioms LeanFX2.Term.isAggregatorSound_recordIntro
+#assert_no_axioms LeanFX2.Term.isAggregatorSound_recordProj
+#assert_no_axioms LeanFX2.Term.isAggregatorSound_refineElim
+#assert_no_axioms LeanFX2.Term.isAggregatorSound_cumulUp
+#assert_no_axioms LeanFX2.Term.isAggregatorSound_fst
+#assert_no_axioms LeanFX2.Term.isAggregatorSound_snd
+#assert_no_axioms LeanFX2.Term.isAggregatorSound_pair
+#assert_no_axioms LeanFX2.Term.isAggregatorSound_refineIntro
 
 end LeanFX2.Tools
