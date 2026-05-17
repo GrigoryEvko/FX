@@ -126,6 +126,47 @@ theorem aggregator_eitherInl_natZero_closed {mode : Mode}
   isAggregatorSound_eitherInl (rightType := Ty.bool)
     isAggregatorSound_natZero
 
+/-- 1-IH smoke (eitherInr mirror): `IsAggregatorSound
+(Term.eitherInr Term.boolTrue)` at carrier `Either Ty.nat
+Ty.bool` with leftType named via implicit.  Mirror of the
+eitherInl example demonstrating both side-injections of the
+either form. -/
+theorem aggregator_eitherInr_boolTrue_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.eitherInr (context := sourceCtx)
+        (leftType := Ty.nat) (valueTerm := Term.boolTrue)) :=
+  isAggregatorSound_eitherInr (leftType := Ty.nat)
+    isAggregatorSound_boolTrue
+
+/-- 1-IH-over-1-IH smoke at parametric type: `IsAggregatorSound
+(Term.optionSome (Term.natSucc Term.natZero))` builds `Some 1`,
+demonstrating that 1-IH parametric wrappers compose through a
+nested 1-IH child (parametric Ty.optionType wrapping a
+non-trivial nat term). -/
+theorem aggregator_optionSome_natOne_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.optionSome (context := sourceCtx)
+        (valueTerm := Term.natSucc Term.natZero)) :=
+  isAggregatorSound_optionSome
+    (isAggregatorSound_natSucc isAggregatorSound_natZero)
+
+/-- 2-IH smoke at parametric type with explicit elementType:
+`IsAggregatorSound (Term.listCons Term.natZero Term.listNil)`.
+Originally dropped in Phase 93 — Lean's elaborator couldn't
+propagate elementType from headTerm to tailTerm := Term.listNil
+and silently inserted a sorry.  Fixed here by binding listNil's
+elementType explicitly via named implicit. -/
+theorem aggregator_listCons_natList_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.listCons (context := sourceCtx)
+        (headTerm := Term.natZero)
+        (tailTerm := Term.listNil (elementType := Ty.nat))) :=
+  isAggregatorSound_listCons isAggregatorSound_natZero
+    (isAggregatorSound_listNil (elementType := Ty.nat))
+
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_unit_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwo_closed
@@ -134,5 +175,8 @@ theorem aggregator_eitherInl_natZero_closed {mode : Mode}
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_boolFalse_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_optionSome_natZero_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_eitherInl_natZero_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_eitherInr_boolTrue_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_optionSome_natOne_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_natList_closed
 
 end LeanFX2.SmokeAggregatorComposition
