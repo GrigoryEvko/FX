@@ -334,6 +334,55 @@ theorem aggregator_eitherInl_natOne_closed {mode : Mode}
   isAggregatorSound_eitherInl (rightType := Ty.bool)
     (isAggregatorSound_natSucc isAggregatorSound_natZero)
 
+/-- Triple-nested parametric: `Some (Some (Some natZero))` at
+carrier `option (option (option nat))`.  Demonstrates that the
+optionSome 1-IH parametric wrapper composes recursively past
+depth 2 with no per-step bookkeeping growth. -/
+theorem aggregator_optionSome_triple_natZero_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.optionSome (context := sourceCtx)
+        (valueTerm :=
+          Term.optionSome
+            (valueTerm := Term.optionSome
+              (valueTerm := Term.natZero)))) :=
+  isAggregatorSound_optionSome
+    (isAggregatorSound_optionSome
+      (isAggregatorSound_optionSome isAggregatorSound_natZero))
+
+/-- Mixed-content listCons: `[1, 0]` = `listCons (natSucc natZero)
+(listCons natZero listNil)`.  Variant of the existing
+`listCons_natListChain_closed` showing that the head positions
+of a chained listCons may carry different nat values; first
+example with non-uniform list element values. -/
+theorem aggregator_listCons_natOne_natZero_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.listCons (context := sourceCtx)
+        (headTerm := Term.natSucc Term.natZero)
+        (tailTerm :=
+          Term.listCons (headTerm := Term.natZero)
+            (tailTerm := Term.listNil (elementType := Ty.nat)))) :=
+  isAggregatorSound_listCons
+    (isAggregatorSound_natSucc isAggregatorSound_natZero)
+    (isAggregatorSound_listCons isAggregatorSound_natZero
+      (isAggregatorSound_listNil (elementType := Ty.nat)))
+
+/-- Cross-category Σ + option: `pair (optionSome natZero) natZero`
+at carrier `option nat × nat` (secondType := Ty.nat closed).
+Demonstrates that the 2-IH non-parametric Σ wrapper accepts a
+1-IH parametric child as its first component. -/
+theorem aggregator_pair_optionSome_natZero_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.pair (context := sourceCtx)
+        (secondType := Ty.nat)
+        (firstValue := Term.optionSome (valueTerm := Term.natZero))
+        (secondValue := Term.natZero)) :=
+  isAggregatorSound_pair
+    (isAggregatorSound_optionSome isAggregatorSound_natZero)
+    isAggregatorSound_natZero
+
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_unit_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwo_closed
@@ -357,5 +406,8 @@ theorem aggregator_eitherInl_natOne_closed {mode : Mode}
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natFive_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_optionSome_optionSome_natZero_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_eitherInl_natOne_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_optionSome_triple_natZero_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_natOne_natZero_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_optionSome_natZero_closed
 
 end LeanFX2.SmokeAggregatorComposition
