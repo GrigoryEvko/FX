@@ -604,5 +604,7 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_atPair_imp_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_atFst_imp_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_atSnd_imp_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_atApp_imp_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_atAppPi_imp_sound
 
 end LeanFX2.Tools

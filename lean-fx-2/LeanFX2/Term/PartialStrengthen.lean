@@ -6519,24 +6519,26 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                     (partialStrengthenTypedLam domainSuccess
                       codomainSuccess bodyResult)
   | @Term.app _ _ _ _ domainType codomainType _ _ functionTerm
-      argumentTerm => by
-      cases domainSuccess :
+      argumentTerm =>
+      match domainSuccess :
           domainType.partialStrengthen? strengthening.back with
-      | none => exact none
+      | none => none
       | some targetDomainType =>
-          cases codomainSuccess :
+          match codomainSuccess :
               codomainType.partialStrengthen? strengthening.back with
-          | none => exact none
+          | none => none
           | some targetCodomainType =>
-              cases partialStrengthenTyped? functionTerm
-                  (strengthening := strengthening) with
-              | none => exact none
+              match functionRecurse :
+                  partialStrengthenTyped? functionTerm
+                    (strengthening := strengthening) with
+              | none => none
               | some functionResult =>
-                  cases partialStrengthenTyped? argumentTerm
-                      (strengthening := strengthening) with
-                  | none => exact none
+                  match argumentRecurse :
+                      partialStrengthenTyped? argumentTerm
+                        (strengthening := strengthening) with
+                  | none => none
                   | some argumentResult =>
-                      exact some
+                      some
                         (partialStrengthenTypedApp domainSuccess
                           codomainSuccess functionResult argumentResult)
   | @Term.lamPi _ _ _ _ domainType _ _ body => by
@@ -6553,24 +6555,26 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
               exact some
                 (partialStrengthenTypedLamPi domainSuccess bodyResult)
   | @Term.appPi _ _ _ _ domainType codomainType _ _ functionTerm
-      argumentTerm => by
-      cases domainSuccess :
+      argumentTerm =>
+      match domainSuccess :
           domainType.partialStrengthen? strengthening.back with
-      | none => exact none
+      | none => none
       | some targetDomainType =>
-          cases codomainSuccess :
+          match codomainSuccess :
               codomainType.partialStrengthen? strengthening.back.lift with
-          | none => exact none
+          | none => none
           | some targetCodomainType =>
-              cases partialStrengthenTyped? functionTerm
-                  (strengthening := strengthening) with
-              | none => exact none
+              match functionRecurse :
+                  partialStrengthenTyped? functionTerm
+                    (strengthening := strengthening) with
+              | none => none
               | some functionResult =>
-                  cases partialStrengthenTyped? argumentTerm
-                      (strengthening := strengthening) with
-                  | none => exact none
+                  match argumentRecurse :
+                      partialStrengthenTyped? argumentTerm
+                        (strengthening := strengthening) with
+                  | none => none
                   | some argumentResult =>
-                      exact some
+                      some
                         (partialStrengthenTypedAppPi domainSuccess
                           codomainSuccess functionResult argumentResult)
   | @Term.pair _ _ _ _ _ secondType _ _ firstValue secondValue =>

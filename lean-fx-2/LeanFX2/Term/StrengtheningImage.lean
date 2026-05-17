@@ -6314,6 +6314,104 @@ theorem partialStrengthenTyped?_atEitherInr_imp_sound {mode : Mode}
       exact partialStrengthenTypedEitherInrOfLeftType_sound
         leftSuccess (valueSound := valueIH valueResult valueRecurse)
 
+/-- Dispatcher soundness at the `Term.app` arm.  Non-dependent
+application: two type strengthening witnesses (domain + codomain,
+both at `strengthening.back` since the codomain in `Ty.arrow` does
+not see the bound variable) plus two value IHs (function + argument). -/
+theorem partialStrengthenTyped?_atApp_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {domainType codomainType : Ty level sourceScope}
+    {functionRaw argumentRaw : RawTerm sourceScope}
+    {functionTerm :
+      Term sourceCtx (Ty.arrow domainType codomainType) functionRaw}
+    {argumentTerm : Term sourceCtx domainType argumentRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (functionIH : ∀ functionResult,
+        partialStrengthenTyped? functionTerm strengthening =
+            some functionResult →
+          StrengtheningSoundness functionResult)
+    (argumentIH : ∀ argumentResult,
+        partialStrengthenTyped? argumentTerm strengthening =
+            some argumentResult →
+          StrengtheningSoundness argumentResult)
+    (result : StrengtheningResult strengthening
+      (Term.app (codomainType := codomainType)
+        functionTerm argumentTerm))
+    (success : partialStrengthenTyped?
+        (Term.app (codomainType := codomainType)
+          functionTerm argumentTerm) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetDomainType domainSuccess
+    split at success
+    · cases success
+    · rename_i targetCodomainType codomainSuccess
+      split at success
+      · cases success
+      · rename_i functionResult functionRecurse
+        split at success
+        · cases success
+        · rename_i argumentResult argumentRecurse
+          cases success
+          exact partialStrengthenTypedApp_sound
+            domainSuccess codomainSuccess
+            (functionIH functionResult functionRecurse)
+            (argumentIH argumentResult argumentRecurse)
+
+/-- Dispatcher soundness at the `Term.appPi` arm.  Dependent application:
+domain strengthens at `strengthening.back`, codomain strengthens under
+the binder via `strengthening.back.lift`; two value IHs. -/
+theorem partialStrengthenTyped?_atAppPi_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {domainType : Ty level sourceScope}
+    {codomainType : Ty level (sourceScope + 1)}
+    {functionRaw argumentRaw : RawTerm sourceScope}
+    {functionTerm :
+      Term sourceCtx (Ty.piTy domainType codomainType) functionRaw}
+    {argumentTerm : Term sourceCtx domainType argumentRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (functionIH : ∀ functionResult,
+        partialStrengthenTyped? functionTerm strengthening =
+            some functionResult →
+          StrengtheningSoundness functionResult)
+    (argumentIH : ∀ argumentResult,
+        partialStrengthenTyped? argumentTerm strengthening =
+            some argumentResult →
+          StrengtheningSoundness argumentResult)
+    (result : StrengtheningResult strengthening
+      (Term.appPi (codomainType := codomainType)
+        functionTerm argumentTerm))
+    (success : partialStrengthenTyped?
+        (Term.appPi (codomainType := codomainType)
+          functionTerm argumentTerm) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetDomainType domainSuccess
+    split at success
+    · cases success
+    · rename_i targetCodomainType codomainSuccess
+      split at success
+      · cases success
+      · rename_i functionResult functionRecurse
+        split at success
+        · cases success
+        · rename_i argumentResult argumentRecurse
+          cases success
+          exact partialStrengthenTypedAppPi_sound
+            domainSuccess codomainSuccess
+            (functionIH functionResult functionRecurse)
+            (argumentIH argumentResult argumentRecurse)
+
 /-- Dispatcher soundness at the `Term.pair` arm.  Sigma-pair shape:
 one binder-type strengthening witness on the second-type slot, plus
 two value-subterm IHs (first value at `firstType`, second value at
