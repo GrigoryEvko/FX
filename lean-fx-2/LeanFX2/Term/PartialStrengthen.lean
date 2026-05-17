@@ -7470,24 +7470,26 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                                   carrierASuccess carrierBSuccess
                                   forwardResult backwardResult leftInvResult
                                   rightInvResult)
-  | @Term.equivApp _ _ _ _ carrierA carrierB _ _ equivTerm argumentTerm => by
-      cases carrierASuccess :
+  | @Term.equivApp _ _ _ _ carrierA carrierB _ _ equivTerm argumentTerm =>
+      match carrierASuccess :
           carrierA.partialStrengthen? strengthening.back with
-      | none => exact none
+      | none => none
       | some _ =>
-          cases carrierBSuccess :
+          match carrierBSuccess :
               carrierB.partialStrengthen? strengthening.back with
-          | none => exact none
+          | none => none
           | some _ =>
-              cases partialStrengthenTyped? equivTerm
-                  (strengthening := strengthening) with
-              | none => exact none
+              match equivRecurse :
+                  partialStrengthenTyped? equivTerm
+                    (strengthening := strengthening) with
+              | none => none
               | some equivResult =>
-                  cases partialStrengthenTyped? argumentTerm
-                      (strengthening := strengthening) with
-                  | none => exact none
+                  match argumentRecurse :
+                      partialStrengthenTyped? argumentTerm
+                        (strengthening := strengthening) with
+                  | none => none
                   | some argumentResult =>
-                      exact some
+                      some
                         (partialStrengthenTypedEquivApp carrierASuccess
                           carrierBSuccess equivResult argumentResult)
   | @Term.uaIntroHet _ _ _ _ innerLevel innerLevelLt carrierA carrierB
@@ -7712,24 +7714,26 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                               targetLeftTyRaw targetRightTyRaw
                               leftTySuccess rightTySuccess leftRawSuccess
                               rightRawSuccess proofResult)
-  | @Term.equivApply _ _ _ _ carrierA carrierB _ _ equivTerm argumentTerm => by
-      cases carrierASuccess :
+  | @Term.equivApply _ _ _ _ carrierA carrierB _ _ equivTerm argumentTerm =>
+      match carrierASuccess :
           carrierA.partialStrengthen? strengthening.back with
-      | none => exact none
+      | none => none
       | some _ =>
-          cases carrierBSuccess :
+          match carrierBSuccess :
               carrierB.partialStrengthen? strengthening.back with
-          | none => exact none
+          | none => none
           | some _ =>
-              cases partialStrengthenTyped? equivTerm
-                  (strengthening := strengthening) with
-              | none => exact none
+              match equivRecurse :
+                  partialStrengthenTyped? equivTerm
+                    (strengthening := strengthening) with
+              | none => none
               | some equivResult =>
-                  cases partialStrengthenTyped? argumentTerm
-                      (strengthening := strengthening) with
-                  | none => exact none
+                  match argumentRecurse :
+                      partialStrengthenTyped? argumentTerm
+                        (strengthening := strengthening) with
+                  | none => none
                   | some argumentResult =>
-                      exact some
+                      some
                         (partialStrengthenTypedEquivApply carrierASuccess
                           carrierBSuccess equivResult argumentResult)
 

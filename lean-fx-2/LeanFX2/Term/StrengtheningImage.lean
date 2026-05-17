@@ -8164,6 +8164,99 @@ theorem partialStrengthenTyped?_atFunextReflAtId_imp_sound {mode : Mode}
           codomainType targetDomainType targetCodomainType applyRaw
           targetApplyRaw domainSuccess codomainSuccess applySuccess
 
+/-- Dispatcher soundness at the `Term.equivApp` arm.  Heterogeneous-carrier
+equivalence application: both carrier types strengthen flat (no binder
+shift) and the two value children supply IHs via the standard pattern. -/
+theorem partialStrengthenTyped?_atEquivApp_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {carrierA carrierB : Ty level sourceScope}
+    {equivRaw argumentRaw : RawTerm sourceScope}
+    {equivTerm :
+      Term sourceCtx (Ty.equiv carrierA carrierB) equivRaw}
+    {argumentTerm : Term sourceCtx carrierA argumentRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (equivIH : ∀ equivResult,
+        partialStrengthenTyped? equivTerm strengthening =
+            some equivResult →
+          StrengtheningSoundness equivResult)
+    (argumentIH : ∀ argumentResult,
+        partialStrengthenTyped? argumentTerm strengthening =
+            some argumentResult →
+          StrengtheningSoundness argumentResult)
+    (result : StrengtheningResult strengthening
+      (Term.equivApp equivTerm argumentTerm))
+    (success : partialStrengthenTyped?
+        (Term.equivApp equivTerm argumentTerm) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetCarrierA carrierASuccess
+    split at success
+    · cases success
+    · rename_i targetCarrierB carrierBSuccess
+      split at success
+      · cases success
+      · rename_i equivResult equivRecurse
+        split at success
+        · cases success
+        · rename_i argumentResult argumentRecurse
+          cases success
+          exact partialStrengthenTypedEquivApp_sound
+            carrierASuccess carrierBSuccess
+            (equivIH equivResult equivRecurse)
+            (argumentIH argumentResult argumentRecurse)
+
+/-- Dispatcher soundness at the `Term.equivApply` arm.  Univalence-flavoured
+equivalence application: same shape as the `equivApp` arm — both carrier
+types strengthen flat, two value children supply IHs.  Only the raw
+constructor differs (`RawTerm.equivApply` vs `RawTerm.equivApp`). -/
+theorem partialStrengthenTyped?_atEquivApply_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {carrierA carrierB : Ty level sourceScope}
+    {equivRaw argumentRaw : RawTerm sourceScope}
+    {equivTerm :
+      Term sourceCtx (Ty.equiv carrierA carrierB) equivRaw}
+    {argumentTerm : Term sourceCtx carrierA argumentRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (equivIH : ∀ equivResult,
+        partialStrengthenTyped? equivTerm strengthening =
+            some equivResult →
+          StrengtheningSoundness equivResult)
+    (argumentIH : ∀ argumentResult,
+        partialStrengthenTyped? argumentTerm strengthening =
+            some argumentResult →
+          StrengtheningSoundness argumentResult)
+    (result : StrengtheningResult strengthening
+      (Term.equivApply equivTerm argumentTerm))
+    (success : partialStrengthenTyped?
+        (Term.equivApply equivTerm argumentTerm) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetCarrierA carrierASuccess
+    split at success
+    · cases success
+    · rename_i targetCarrierB carrierBSuccess
+      split at success
+      · cases success
+      · rename_i equivResult equivRecurse
+        split at success
+        · cases success
+        · rename_i argumentResult argumentRecurse
+          cases success
+          exact partialStrengthenTypedEquivApply_sound
+            carrierASuccess carrierBSuccess
+            (equivIH equivResult equivRecurse)
+            (argumentIH argumentResult argumentRecurse)
+
 end Term
 
 end LeanFX2
