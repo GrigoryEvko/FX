@@ -6314,6 +6314,244 @@ theorem partialStrengthenTyped?_atEitherInr_imp_sound {mode : Mode}
       exact partialStrengthenTypedEitherInrOfLeftType_sound
         leftSuccess (valueSound := valueIH valueResult valueRecurse)
 
+/-- Dispatcher soundness at the `Term.oeqFunext` arm.  Function-
+extensionality intro: two type witnesses (domain + codomain) plus
+two raw witnesses (leftFunctionRaw + rightFunctionRaw) plus one
+flat-context value IH (pointwiseProof). -/
+theorem partialStrengthenTyped?_atOeqFunext_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {domainType codomainType : Ty level sourceScope}
+    {leftFunctionRaw rightFunctionRaw : RawTerm sourceScope}
+    {pointwiseRaw : RawTerm sourceScope}
+    {pointwiseProof :
+      Term sourceCtx
+        (oeqFunextPointwiseType domainType codomainType
+          leftFunctionRaw rightFunctionRaw)
+        pointwiseRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (pointwiseIH : ∀ pointwiseResult,
+        partialStrengthenTyped? pointwiseProof strengthening =
+            some pointwiseResult →
+          StrengtheningSoundness pointwiseResult)
+    (result : StrengtheningResult strengthening
+      (Term.oeqFunext (domainType := domainType)
+        (codomainType := codomainType)
+        (leftFunctionRaw := leftFunctionRaw)
+        (rightFunctionRaw := rightFunctionRaw)
+        pointwiseProof))
+    (success : partialStrengthenTyped?
+        (Term.oeqFunext (domainType := domainType)
+          (codomainType := codomainType)
+          (leftFunctionRaw := leftFunctionRaw)
+          (rightFunctionRaw := rightFunctionRaw)
+          pointwiseProof) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetDomainType domainSuccess
+    split at success
+    · cases success
+    · rename_i targetCodomainType codomainSuccess
+      split at success
+      · cases success
+      · rename_i targetLeftFunctionRaw leftSuccess
+        split at success
+        · cases success
+        · rename_i targetRightFunctionRaw rightSuccess
+          split at success
+          · cases success
+          · rename_i pointwiseResult pointwiseRecurse
+            cases success
+            exact partialStrengthenTypedOeqFunext_sound
+              domainType codomainType targetDomainType targetCodomainType
+              leftFunctionRaw rightFunctionRaw targetLeftFunctionRaw
+              targetRightFunctionRaw domainSuccess codomainSuccess
+              leftSuccess rightSuccess
+              (pointwiseIH pointwiseResult pointwiseRecurse)
+
+/-- Dispatcher soundness at the `Term.idStrictRefl` arm.  Strict-mode
+identity reflexivity: one type witness (carrier) + one raw witness,
+no value IH, plus the `modeIsStrict` discipline witness. -/
+theorem partialStrengthenTyped?_atIdStrictRefl_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {modeIsStrict : mode = Mode.strict}
+    {carrier : Ty level sourceScope}
+    {rawWitness : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (result : StrengtheningResult strengthening
+      (Term.idStrictRefl (context := sourceCtx)
+        (carrier := carrier) modeIsStrict rawWitness))
+    (success : partialStrengthenTyped?
+        (Term.idStrictRefl (context := sourceCtx)
+          (carrier := carrier) modeIsStrict rawWitness)
+          strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetCarrier carrierSuccess
+    split at success
+    · cases success
+    · rename_i targetWitness witnessSuccess
+      cases success
+      exact partialStrengthenTypedIdStrictRefl_sound modeIsStrict
+        carrierSuccess witnessSuccess
+
+/-- Dispatcher soundness at the `Term.idStrictRec` arm.  Strict-mode
+J-eliminator: one type witness (carrier) + two raw witnesses
+(leftEndpoint + rightEndpoint) + two flat-context value IHs
+(baseCase + witness), plus `modeIsStrict`. -/
+theorem partialStrengthenTyped?_atIdStrictRec_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {modeIsStrict : mode = Mode.strict}
+    {carrier : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {motiveType : Ty level sourceScope}
+    {baseRaw witnessRaw : RawTerm sourceScope}
+    {baseCase : Term sourceCtx motiveType baseRaw}
+    {witness :
+      Term sourceCtx (Ty.idStrict carrier leftEndpoint rightEndpoint)
+        witnessRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (baseIH : ∀ baseResult,
+        partialStrengthenTyped? baseCase strengthening =
+            some baseResult →
+          StrengtheningSoundness baseResult)
+    (witnessIH : ∀ witnessResult,
+        partialStrengthenTyped? witness strengthening =
+            some witnessResult →
+          StrengtheningSoundness witnessResult)
+    (result : StrengtheningResult strengthening
+      (Term.idStrictRec (motiveType := motiveType) modeIsStrict
+        baseCase witness))
+    (success : partialStrengthenTyped?
+        (Term.idStrictRec (motiveType := motiveType) modeIsStrict
+          baseCase witness) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetCarrier carrierSuccess
+    split at success
+    · cases success
+    · rename_i targetLeftEndpoint leftSuccess
+      split at success
+      · cases success
+      · rename_i targetRightEndpoint rightSuccess
+        split at success
+        · cases success
+        · rename_i baseResult baseRecurse
+          split at success
+          · cases success
+          · rename_i witnessResult witnessRecurse
+            cases success
+            exact partialStrengthenTypedIdStrictRec_sound modeIsStrict
+              carrierSuccess leftSuccess rightSuccess
+              (baseIH baseResult baseRecurse)
+              (witnessIH witnessResult witnessRecurse)
+
+/-- Dispatcher soundness at the `Term.pathApp` arm.  Cubical path
+application: three type witnesses (carrierType + leftEndpoint +
+rightEndpoint as Ty.path components) + two flat-context value IHs
+(pathTerm + intervalTerm), plus `modeIsUnivalent`. -/
+theorem partialStrengthenTyped?_atPathApp_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {modeIsUnivalent : mode = Mode.univalent}
+    {carrierType : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {pathRaw intervalRaw : RawTerm sourceScope}
+    {pathTerm :
+      Term sourceCtx (Ty.path carrierType leftEndpoint rightEndpoint)
+        pathRaw}
+    {intervalTerm : Term sourceCtx Ty.interval intervalRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (pathIH : ∀ pathResult,
+        partialStrengthenTyped? pathTerm strengthening =
+            some pathResult →
+          StrengtheningSoundness pathResult)
+    (intervalIH : ∀ intervalResult,
+        partialStrengthenTyped? intervalTerm strengthening =
+            some intervalResult →
+          StrengtheningSoundness intervalResult)
+    (result : StrengtheningResult strengthening
+      (Term.pathApp modeIsUnivalent pathTerm intervalTerm))
+    (success : partialStrengthenTyped?
+        (Term.pathApp modeIsUnivalent pathTerm intervalTerm)
+          strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetCarrierType carrierSuccess
+    split at success
+    · cases success
+    · rename_i targetLeftEndpoint leftSuccess
+      split at success
+      · cases success
+      · rename_i targetRightEndpoint rightSuccess
+        split at success
+        · cases success
+        · rename_i pathResult pathRecurse
+          split at success
+          · cases success
+          · rename_i intervalResult intervalRecurse
+            cases success
+            exact partialStrengthenTypedPathApp_sound modeIsUnivalent
+              carrierSuccess leftSuccess rightSuccess
+              (pathIH pathResult pathRecurse)
+              (intervalIH intervalResult intervalRecurse)
+
+/-- Dispatcher soundness at the `Term.glueElim` arm.  Cubical glue
+elimination: one type witness (baseType) + one raw witness
+(boundaryWitness) + one flat-context value IH (gluedValue), plus
+`modeIsUnivalent`. -/
+theorem partialStrengthenTyped?_atGlueElim_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {modeIsUnivalent : mode = Mode.univalent}
+    {baseType : Ty level sourceScope}
+    {boundaryWitness gluedRaw : RawTerm sourceScope}
+    {gluedValue :
+      Term sourceCtx (Ty.glue baseType boundaryWitness) gluedRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (gluedIH : ∀ gluedResult,
+        partialStrengthenTyped? gluedValue strengthening =
+            some gluedResult →
+          StrengtheningSoundness gluedResult)
+    (result : StrengtheningResult strengthening
+      (Term.glueElim modeIsUnivalent gluedValue))
+    (success : partialStrengthenTyped?
+        (Term.glueElim modeIsUnivalent gluedValue) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetBaseType baseSuccess
+    split at success
+    · cases success
+    · rename_i targetBoundaryWitness boundarySuccess
+      split at success
+      · cases success
+      · rename_i gluedResult gluedRecurse
+        cases success
+        exact partialStrengthenTypedGlueElim_sound modeIsUnivalent
+          baseSuccess boundarySuccess (gluedIH gluedResult gluedRecurse)
+
 /-- Dispatcher soundness at the `Term.eitherMatch` arm.  ι-eliminator
 with three type witnesses (leftType + rightType + motiveType, all at
 `strengthening.back`) plus three flat-context value IHs

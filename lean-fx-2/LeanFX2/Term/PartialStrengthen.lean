@@ -6924,27 +6924,30 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                               leftSuccess rightSuccess baseResult
                               witnessResult)
   | @Term.oeqFunext _ _ _ _ domainType codomainType leftFunctionRaw
-      rightFunctionRaw _ pointwiseProof => by
-      cases domainSuccess : domainType.partialStrengthen? strengthening.back with
-      | none => exact none
+      rightFunctionRaw _ pointwiseProof =>
+      match domainSuccess :
+          domainType.partialStrengthen? strengthening.back with
+      | none => none
       | some targetDomainType =>
-          cases codomainSuccess :
+          match codomainSuccess :
               codomainType.partialStrengthen? strengthening.back with
-          | none => exact none
+          | none => none
           | some targetCodomainType =>
-              cases leftSuccess :
+              match leftSuccess :
                   leftFunctionRaw.partialStrengthen? strengthening.back with
-              | none => exact none
+              | none => none
               | some targetLeftFunctionRaw =>
-                  cases rightSuccess :
-                      rightFunctionRaw.partialStrengthen? strengthening.back with
-                  | none => exact none
+                  match rightSuccess :
+                      rightFunctionRaw.partialStrengthen?
+                        strengthening.back with
+                  | none => none
                   | some targetRightFunctionRaw =>
-                      cases partialStrengthenTyped? pointwiseProof
-                          (strengthening := strengthening) with
-                      | none => exact none
+                      match pointwiseRecurse :
+                          partialStrengthenTyped? pointwiseProof
+                            (strengthening := strengthening) with
+                      | none => none
                       | some pointwiseResult =>
-                          exact some
+                          some
                             (partialStrengthenTypedOeqFunext domainType
                               codomainType targetDomainType
                               targetCodomainType leftFunctionRaw
@@ -6952,40 +6955,43 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                               targetRightFunctionRaw domainSuccess
                               codomainSuccess leftSuccess rightSuccess
                               pointwiseResult)
-  | @Term.idStrictRefl _ _ _ _ modeIsStrict carrier rawWitness => by
-      cases carrierSuccess : carrier.partialStrengthen? strengthening.back with
-      | none => exact none
+  | @Term.idStrictRefl _ _ _ _ modeIsStrict carrier rawWitness =>
+      match carrierSuccess :
+          carrier.partialStrengthen? strengthening.back with
+      | none => none
       | some targetCarrier =>
-          cases witnessSuccess :
+          match witnessSuccess :
               rawWitness.partialStrengthen? strengthening.back with
-          | none => exact none
+          | none => none
           | some targetWitness =>
-              exact some
+              some
                 (partialStrengthenTypedIdStrictRefl modeIsStrict
                   carrierSuccess witnessSuccess)
   | @Term.idStrictRec _ _ _ _ modeIsStrict carrier leftEndpoint
-      rightEndpoint _ _ _ baseCase witness => by
-      cases carrierSuccess :
+      rightEndpoint _ _ _ baseCase witness =>
+      match carrierSuccess :
           carrier.partialStrengthen? strengthening.back with
-      | none => exact none
-      | some _ =>
-          cases leftSuccess :
+      | none => none
+      | some targetCarrier =>
+          match leftSuccess :
               leftEndpoint.partialStrengthen? strengthening.back with
-          | none => exact none
-          | some _ =>
-              cases rightSuccess :
+          | none => none
+          | some targetLeftEndpoint =>
+              match rightSuccess :
                   rightEndpoint.partialStrengthen? strengthening.back with
-              | none => exact none
-              | some _ =>
-                  cases partialStrengthenTyped? baseCase
-                      (strengthening := strengthening) with
-                  | none => exact none
+              | none => none
+              | some targetRightEndpoint =>
+                  match baseRecurse :
+                      partialStrengthenTyped? baseCase
+                        (strengthening := strengthening) with
+                  | none => none
                   | some baseResult =>
-                      cases partialStrengthenTyped? witness
-                          (strengthening := strengthening) with
-                      | none => exact none
+                      match witnessRecurse :
+                          partialStrengthenTyped? witness
+                            (strengthening := strengthening) with
+                      | none => none
                       | some witnessResult =>
-                          exact some
+                          some
                             (partialStrengthenTypedIdStrictRec modeIsStrict
                               carrierSuccess leftSuccess rightSuccess
                               baseResult witnessResult)
@@ -7068,28 +7074,30 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                         (partialStrengthenTypedPathLam modeIsUnivalent
                           carrierSuccess leftSuccess rightSuccess bodyResult)
   | @Term.pathApp _ _ _ _ modeIsUnivalent carrierType leftEndpoint
-      rightEndpoint _ _ pathTerm intervalTerm => by
-      cases carrierSuccess :
+      rightEndpoint _ _ pathTerm intervalTerm =>
+      match carrierSuccess :
           carrierType.partialStrengthen? strengthening.back with
-      | none => exact none
-      | some _ =>
-          cases leftSuccess :
+      | none => none
+      | some targetCarrierType =>
+          match leftSuccess :
               leftEndpoint.partialStrengthen? strengthening.back with
-          | none => exact none
-          | some _ =>
-              cases rightSuccess :
+          | none => none
+          | some targetLeftEndpoint =>
+              match rightSuccess :
                   rightEndpoint.partialStrengthen? strengthening.back with
-              | none => exact none
-              | some _ =>
-                  cases partialStrengthenTyped? pathTerm
-                      (strengthening := strengthening) with
-                  | none => exact none
+              | none => none
+              | some targetRightEndpoint =>
+                  match pathRecurse :
+                      partialStrengthenTyped? pathTerm
+                        (strengthening := strengthening) with
+                  | none => none
                   | some pathResult =>
-                      cases partialStrengthenTyped? intervalTerm
-                          (strengthening := strengthening) with
-                      | none => exact none
+                      match intervalRecurse :
+                          partialStrengthenTyped? intervalTerm
+                            (strengthening := strengthening) with
+                      | none => none
                       | some intervalResult =>
-                          exact some
+                          some
                             (partialStrengthenTypedPathApp modeIsUnivalent
                               carrierSuccess leftSuccess rightSuccess
                               pathResult intervalResult)
@@ -7116,20 +7124,21 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                           targetBoundaryWitness baseTypeSuccess
                           boundarySuccess baseResult partialResult)
   | @Term.glueElim _ _ _ _ modeIsUnivalent baseType boundaryWitness _
-      gluedValue => by
-      cases baseSuccess :
+      gluedValue =>
+      match baseSuccess :
           baseType.partialStrengthen? strengthening.back with
-      | none => exact none
-      | some _ =>
-          cases boundarySuccess :
+      | none => none
+      | some targetBaseType =>
+          match boundarySuccess :
               boundaryWitness.partialStrengthen? strengthening.back with
-          | none => exact none
-          | some _ =>
-              cases partialStrengthenTyped? gluedValue
-                  (strengthening := strengthening) with
-              | none => exact none
+          | none => none
+          | some targetBoundaryWitness =>
+              match gluedRecurse :
+                  partialStrengthenTyped? gluedValue
+                    (strengthening := strengthening) with
+              | none => none
               | some gluedResult =>
-                  exact some
+                  some
                     (partialStrengthenTypedGlueElim modeIsUnivalent
                       baseSuccess boundarySuccess gluedResult)
   | @Term.transp _ _ _ _ modeIsUnivalent universeLevel universeLevelLt
