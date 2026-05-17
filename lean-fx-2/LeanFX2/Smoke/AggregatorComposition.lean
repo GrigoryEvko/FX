@@ -433,6 +433,61 @@ theorem aggregator_listCons_optionSome_closed {mode : Mode}
     (isAggregatorSound_listNil
       (elementType := Ty.optionType Ty.nat))
 
+/-- 6-deep natSucc chain extending the natOne..natFive sequence.
+Continues the depth-uniformity demonstration for 1-IH wrappers
+past depth 5. -/
+theorem aggregator_natSix_closed {mode : Mode} {level : Nat}
+    {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.natSucc (context := sourceCtx)
+        (Term.natSucc
+          (Term.natSucc
+            (Term.natSucc
+              (Term.natSucc (Term.natSucc Term.natZero)))))) :=
+  isAggregatorSound_natSucc
+    (isAggregatorSound_natSucc
+      (isAggregatorSound_natSucc
+        (isAggregatorSound_natSucc
+          (isAggregatorSound_natSucc
+            (isAggregatorSound_natSucc isAggregatorSound_natZero)))))
+
+/-- 4-deep optionSome chain: `Some (Some (Some (Some natZero)))`
+at carrier `option (option (option (option nat)))`.  Extends
+the optionSome triple-nesting from Phase 99 to depth 4. -/
+theorem aggregator_optionSome_quad_natZero_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.optionSome (context := sourceCtx)
+        (valueTerm :=
+          Term.optionSome
+            (valueTerm :=
+              Term.optionSome
+                (valueTerm :=
+                  Term.optionSome (valueTerm := Term.natZero))))) :=
+  isAggregatorSound_optionSome
+    (isAggregatorSound_optionSome
+      (isAggregatorSound_optionSome
+        (isAggregatorSound_optionSome isAggregatorSound_natZero)))
+
+/-- Pair-of-pair at carrier `(nat × nat) × nat`: `pair (pair
+natZero natZero) natZero`.  Demonstrates the 2-IH non-parametric
+Sigma wrapper accepts a 2-IH non-parametric Sigma child as its
+first component (Sigma-nested-in-Sigma). -/
+theorem aggregator_pair_pair_natNatNat_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.pair (context := sourceCtx)
+        (secondType := Ty.nat)
+        (firstValue :=
+          Term.pair (secondType := Ty.nat)
+            (firstValue := Term.natZero)
+            (secondValue := Term.natZero))
+        (secondValue := Term.natZero)) :=
+  isAggregatorSound_pair
+    (isAggregatorSound_pair isAggregatorSound_natZero
+      isAggregatorSound_natZero)
+    isAggregatorSound_natZero
+
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_unit_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwo_closed
@@ -462,5 +517,8 @@ theorem aggregator_listCons_optionSome_closed {mode : Mode}
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_eitherInr_optionSome_natZero_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_eitherInl_natZero_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_optionSome_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natSix_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_optionSome_quad_natZero_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_pair_natNatNat_closed
 
 end LeanFX2.SmokeAggregatorComposition
