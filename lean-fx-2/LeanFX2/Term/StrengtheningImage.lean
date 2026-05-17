@@ -8665,6 +8665,59 @@ theorem partialStrengthenTyped?_atPathLam_imp_sound {mode : Mode}
             modeIsUnivalent carrierSuccess leftSuccess rightSuccess
             (bodyIH bodyResult bodyRecurse)
 
+/-- Dispatcher soundness at the `Term.lam` arm.  Lam is the first
+under-binder leaf whose binder type is itself strengthening-mediated:
+the body lives in `sourceCtx.cons domainType`, the strengthened body
+must live in `targetCtx.cons targetDomainType`, and the lift uses the
+witness `domainSuccess` as a typeclass-style cargo.  The body IH is
+therefore quantified over the pair `(targetDomainType, domainSuccess)`
+rather than a fixed target — first dispatcher leaf with this shape;
+applies again to `lamPi` and any future binder whose argument type is
+not closed.  Two Ty witnesses (domain, codomain) thread through; the
+wrapper derives both rename directions internally. -/
+theorem partialStrengthenTyped?_atLam_imp_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {domainType codomainType : Ty level sourceScope}
+    {bodyRaw : RawTerm (sourceScope + 1)}
+    {body :
+      Term (sourceCtx.cons domainType) codomainType.weaken bodyRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (bodyIH : ∀ targetDomainType
+        (domainSuccess :
+          domainType.partialStrengthen? strengthening.back =
+            some targetDomainType)
+        bodyResult,
+        partialStrengthenTyped? body
+            (strengthening.lift domainType targetDomainType
+              domainSuccess) =
+            some bodyResult →
+          StrengtheningSoundness bodyResult)
+    (result : StrengtheningResult strengthening
+      (Term.lam (context := sourceCtx) (domainType := domainType)
+        (codomainType := codomainType) body))
+    (success : partialStrengthenTyped?
+        (Term.lam (context := sourceCtx) (domainType := domainType)
+          (codomainType := codomainType) body) strengthening =
+          some result) :
+    StrengtheningSoundness result := by
+  unfold partialStrengthenTyped? at success
+  split at success
+  · cases success
+  · rename_i targetDomainType domainSuccess
+    split at success
+    · cases success
+    · rename_i _ codomainSuccess
+      split at success
+      · cases success
+      · rename_i bodyResult bodyRecurse
+        cases success
+        exact partialStrengthenTypedLam_sound
+          domainSuccess codomainSuccess
+          (bodyIH targetDomainType domainSuccess bodyResult
+            bodyRecurse)
+
 end Term
 
 end LeanFX2

@@ -6500,22 +6500,23 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
               targetPosition survives)
   | @Term.unit _ _ _ _ => by
       exact some (partialStrengthenTypedUnit strengthening)
-  | @Term.lam _ _ _ _ domainType codomainType _ body => by
-      cases domainSuccess :
+  | @Term.lam _ _ _ _ domainType codomainType _ body =>
+      match domainSuccess :
           domainType.partialStrengthen? strengthening.back with
-      | none => exact none
+      | none => none
       | some targetDomainType =>
-          cases codomainSuccess :
+          match codomainSuccess :
               codomainType.partialStrengthen? strengthening.back with
-          | none => exact none
-          | some targetCodomainType =>
-              cases partialStrengthenTyped? body
-                  (strengthening :=
-                    strengthening.lift domainType targetDomainType
-                      domainSuccess) with
-              | none => exact none
+          | none => none
+          | some _ =>
+              match
+                  partialStrengthenTyped? body
+                    (strengthening :=
+                      strengthening.lift domainType targetDomainType
+                        domainSuccess) with
+              | none => none
               | some bodyResult =>
-                  exact some
+                  some
                     (partialStrengthenTypedLam domainSuccess
                       codomainSuccess bodyResult)
   | @Term.app _ _ _ _ domainType codomainType _ _ functionTerm
