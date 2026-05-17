@@ -1150,6 +1150,81 @@ theorem aggregator_pair_listNil_listNil_closed {mode : Mode}
     (isAggregatorSound_listNil (elementType := Ty.nat))
     (isAggregatorSound_listNil (elementType := Ty.bool))
 
+/-- 10-deep natSucc chain extending the natOne..natNine sequence.
+Continues the depth-uniformity demonstration for 1-IH wrappers
+past depth 9 into double-digit territory. -/
+theorem aggregator_natTen_closed {mode : Mode} {level : Nat}
+    {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.natSucc (context := sourceCtx)
+        (Term.natSucc
+          (Term.natSucc
+            (Term.natSucc
+              (Term.natSucc
+                (Term.natSucc
+                  (Term.natSucc
+                    (Term.natSucc
+                      (Term.natSucc
+                        (Term.natSucc Term.natZero)))))))))) :=
+  isAggregatorSound_natSucc
+    (isAggregatorSound_natSucc
+      (isAggregatorSound_natSucc
+        (isAggregatorSound_natSucc
+          (isAggregatorSound_natSucc
+            (isAggregatorSound_natSucc
+              (isAggregatorSound_natSucc
+                (isAggregatorSound_natSucc
+                  (isAggregatorSound_natSucc
+                    (isAggregatorSound_natSucc
+                      isAggregatorSound_natZero)))))))))
+
+/-- Option wrapping a single-element list: `Some [natZero]` at
+carrier `option (list nat)`.  Counterpart to Phase 111's
+`listCons_optionNone_closed` (which puts an option INSIDE a
+list); here the list lives INSIDE the option, demonstrating
+both nesting orders compose for the optionSome/listCons pair. -/
+theorem aggregator_optionSome_listCons_natZero_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.optionSome (context := sourceCtx)
+        (valueTerm :=
+          Term.listCons
+            (headTerm := Term.natZero)
+            (tailTerm := Term.listNil (elementType := Ty.nat)))) :=
+  isAggregatorSound_optionSome
+    (isAggregatorSound_listCons isAggregatorSound_natZero
+      (isAggregatorSound_listNil (elementType := Ty.nat)))
+
+/-- Two-element list of right-injected either values:
+`[eitherInr boolTrue, eitherInr boolTrue]` at carrier
+`list (Either nat bool)`.  Counterpart to Phase 105's
+`listCons_optionSome_two_closed` (which uses optionSome) and to
+the existing `listCons_eitherInr_closed` (length-1 either-list);
+demonstrates listCons + eitherInr composes at length > 1. -/
+theorem aggregator_listCons_eitherInr_two_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.listCons (context := sourceCtx)
+        (headTerm :=
+          Term.eitherInr (leftType := Ty.nat)
+            (valueTerm := Term.boolTrue))
+        (tailTerm :=
+          Term.listCons
+            (headTerm :=
+              Term.eitherInr (leftType := Ty.nat)
+                (valueTerm := Term.boolTrue))
+            (tailTerm :=
+              Term.listNil
+                (elementType := Ty.eitherType Ty.nat Ty.bool)))) :=
+  isAggregatorSound_listCons
+    (isAggregatorSound_eitherInr (leftType := Ty.nat)
+      isAggregatorSound_boolTrue)
+    (isAggregatorSound_listCons
+      (isAggregatorSound_eitherInr (leftType := Ty.nat)
+        isAggregatorSound_boolTrue)
+      (isAggregatorSound_listNil
+        (elementType := Ty.eitherType Ty.nat Ty.bool)))
+
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_unit_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwo_closed
@@ -1218,5 +1293,8 @@ theorem aggregator_pair_listNil_listNil_closed {mode : Mode}
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natNine_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_optionNone_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_listNil_listNil_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTen_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_optionSome_listCons_natZero_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_eitherInr_two_closed
 
 end LeanFX2.SmokeAggregatorComposition
