@@ -1363,6 +1363,57 @@ theorem aggregator_pair_pair_pair_closed {mode : Mode}
     (isAggregatorSound_pair isAggregatorSound_natZero
       isAggregatorSound_natZero)
 
+/-- Doubly-left-injected either: `eitherInl (eitherInl natZero)`
+at carrier `Either (Either nat bool) bool`.  Companion to Phase
+116's `eitherInr_eitherInr_natZero_closed`; together they cover
+the four either-of-either combinations (LL/LR/RL/RR) on closed
+ground values.  LR is the existing `eitherInr_eitherInl`; RL is
+the existing `eitherInl_*` patterns wrapped through eitherInr;
+RR is Phase 116; here LL completes the matrix. -/
+theorem aggregator_eitherInl_eitherInl_natZero_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.eitherInl (context := sourceCtx)
+        (rightType := Ty.bool)
+        (valueTerm :=
+          Term.eitherInl (rightType := Ty.bool)
+            (valueTerm := Term.natZero))) :=
+  isAggregatorSound_eitherInl (rightType := Ty.bool)
+    (isAggregatorSound_eitherInl (rightType := Ty.bool)
+      isAggregatorSound_natZero)
+
+/-- Sigma-pair with empty list on LEFT and atomic nat on RIGHT:
+`pair listNil natZero` at carrier `list(nat) × nat`.  Companion
+to Phase 112's `pair_listCons_natZero_closed` (which uses a
+NON-EMPTY list on the left); here the LEFT slot carries the
+0-IH `listNil` sentinel, demonstrating that the 2-IH Sigma
+wrapper composes parametric `listNil` on left + atomic natZero
+on right. -/
+theorem aggregator_pair_listNil_natZero_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.pair (context := sourceCtx)
+        (secondType := Ty.nat)
+        (firstValue := Term.listNil (elementType := Ty.nat))
+        (secondValue := Term.natZero)) :=
+  isAggregatorSound_pair
+    (isAggregatorSound_listNil (elementType := Ty.nat))
+    isAggregatorSound_natZero
+
+/-- Option wrapping empty list: `Some []` at carrier
+`option (list nat)`.  Counterpart to Phase 114's
+`optionSome_listCons_natZero_closed` (option wrapping NON-EMPTY
+list) and Phase 113's `listCons_optionNone_closed` (list of
+optionNone); here the option contains the 0-IH parametric
+`listNil` sentinel, the simplest option-of-empty-list shape. -/
+theorem aggregator_optionSome_listNil_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.optionSome (context := sourceCtx)
+        (valueTerm := Term.listNil (elementType := Ty.nat))) :=
+  isAggregatorSound_optionSome
+    (isAggregatorSound_listNil (elementType := Ty.nat))
+
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_unit_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwo_closed
@@ -1440,5 +1491,8 @@ theorem aggregator_pair_pair_pair_closed {mode : Mode}
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_eitherInr_eitherInr_natZero_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_optionSome_pair_eitherInl_natZero_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_pair_pair_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_eitherInl_eitherInl_natZero_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_listNil_natZero_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_optionSome_listNil_closed
 
 end LeanFX2.SmokeAggregatorComposition
