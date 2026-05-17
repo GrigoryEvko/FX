@@ -10944,6 +10944,202 @@ theorem isTotalOnWeaken_subsume {mode : Mode}
       cases this
   · rfl
 
+/-- 1-IH non-binder totality: `Term.cumulUp`.  Cross-level cumulativity;
+carries exactly one typed payload (the source type code).  No Ty payload
+to strengthen separately — the universe levels are pure Nat data. -/
+theorem isTotalOnWeaken_cumulUp {mode : Mode}
+    {level scope : Nat}
+    {context : Ctx mode level scope}
+    (lowerLevel higherLevel : UniverseLevel)
+    (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
+    (levelLeLow : lowerLevel.toNat + 1 ≤ level)
+    (levelLeHigh : higherLevel.toNat + 1 ≤ level)
+    {codeRaw : RawTerm scope}
+    {typeCode : Term context (Ty.universe lowerLevel levelLeLow) codeRaw}
+    (codeIH : IsTotalOnWeaken typeCode) :
+    IsTotalOnWeaken (Term.cumulUp lowerLevel higherLevel cumulMonotone
+      levelLeLow levelLeHigh typeCode) := by
+  intro newType
+  show (strengthenTyped? (Term.cumulUp lowerLevel higherLevel cumulMonotone
+      levelLeLow levelLeHigh (Term.weaken newType typeCode))).isSome
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next codeRecurse =>
+      exfalso
+      have totHyp := codeIH newType
+      unfold strengthenTyped? at totHyp
+      have : Option.isSome (none (α := StrengtheningResult
+          (ContextStrengthening.dropNewest context newType)
+          (Term.weaken newType typeCode))) = true :=
+        codeRecurse ▸ totHyp
+      cases this
+  · rfl
+
+/-! ## Wave A: parametric atomic 0-IH totality
+
+These ctors have no Term IH but carry one or more `Ty`/`RawTerm`
+sub-payloads whose strengthening succeeds via `Ty.strengthen?_weaken`
+or `RawTerm.strengthen?_weaken`.  The dispatcher's arm tests
+`payload.partialStrengthen? strengthening.back`; under
+`ContextStrengthening.dropNewest`, that is exactly `payload.weaken.strengthen?`
+which always returns `some payload`.
+
+Each proof follows the same shape: unfold the dispatcher, split on
+the payload-strengthen success (the only `none` branch is impossible
+because the payload here is `payload.weaken`), and discharge with
+`rfl` after the success branch reduces. -/
+
+/-- 0-IH parametric atomic totality: `Term.listNil`.  Element type
+strengthens via `Ty.strengthen?_weaken`. -/
+theorem isTotalOnWeaken_listNil {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType : Ty level scope} :
+    IsTotalOnWeaken (Term.listNil (context := context)
+      (elementType := elementType)) := by
+  intro newType
+  show (strengthenTyped? (Term.listNil (context := context.cons newType)
+      (elementType := elementType.weaken))).isSome
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next elementFails =>
+      exfalso
+      have elementSuccess :
+          elementType.weaken.partialStrengthen?
+              (ContextStrengthening.dropNewest context newType).back =
+            some elementType :=
+        Ty.strengthen?_weaken elementType
+      rw [elementSuccess] at elementFails
+      cases elementFails
+  · rfl
+
+/-- 0-IH parametric atomic totality: `Term.optionNone`. -/
+theorem isTotalOnWeaken_optionNone {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType : Ty level scope} :
+    IsTotalOnWeaken (Term.optionNone (context := context)
+      (elementType := elementType)) := by
+  intro newType
+  show (strengthenTyped? (Term.optionNone (context := context.cons newType)
+      (elementType := elementType.weaken))).isSome
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next elementFails =>
+      exfalso
+      have elementSuccess :
+          elementType.weaken.partialStrengthen?
+              (ContextStrengthening.dropNewest context newType).back =
+            some elementType :=
+        Ty.strengthen?_weaken elementType
+      rw [elementSuccess] at elementFails
+      cases elementFails
+  · rfl
+
+/-- 0-IH parametric atomic totality: `Term.refl`.  Carries an explicit
+Ty carrier + a raw witness, both at the outer scope.  Both strengthen
+via `Ty.strengthen?_weaken` / `RawTerm.strengthen?_weaken`. -/
+theorem isTotalOnWeaken_refl {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (carrier : Ty level scope) (rawWitness : RawTerm scope) :
+    IsTotalOnWeaken (Term.refl (context := context) carrier rawWitness) := by
+  intro newType
+  show (strengthenTyped? (Term.refl (context := context.cons newType)
+      (carrier.weaken) (rawWitness.weaken))).isSome
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next carrierFails =>
+      exfalso
+      have carrierSuccess :
+          carrier.weaken.partialStrengthen?
+              (ContextStrengthening.dropNewest context newType).back =
+            some carrier :=
+        Ty.strengthen?_weaken carrier
+      rw [carrierSuccess] at carrierFails
+      cases carrierFails
+  · split
+    · next witnessFails =>
+        exfalso
+        have witnessSuccess :
+            rawWitness.weaken.partialStrengthen?
+                (ContextStrengthening.dropNewest context newType).back =
+              some rawWitness :=
+          RawTerm.strengthen?_weaken rawWitness
+        rw [witnessSuccess] at witnessFails
+        cases witnessFails
+    · rfl
+
+/-- 0-IH parametric atomic totality: `Term.oeqRefl`.  Same shape as
+`refl` — carrier (Ty) + rawWitness (RawTerm). -/
+theorem isTotalOnWeaken_oeqRefl {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (carrier : Ty level scope) (rawWitness : RawTerm scope) :
+    IsTotalOnWeaken (Term.oeqRefl (context := context) carrier rawWitness) := by
+  intro newType
+  show (strengthenTyped? (Term.oeqRefl (context := context.cons newType)
+      (carrier.weaken) (rawWitness.weaken))).isSome
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next carrierFails =>
+      exfalso
+      have carrierSuccess :
+          carrier.weaken.partialStrengthen?
+              (ContextStrengthening.dropNewest context newType).back =
+            some carrier :=
+        Ty.strengthen?_weaken carrier
+      rw [carrierSuccess] at carrierFails
+      cases carrierFails
+  · split
+    · next witnessFails =>
+        exfalso
+        have witnessSuccess :
+            rawWitness.weaken.partialStrengthen?
+                (ContextStrengthening.dropNewest context newType).back =
+              some rawWitness :=
+          RawTerm.strengthen?_weaken rawWitness
+        rw [witnessSuccess] at witnessFails
+        cases witnessFails
+    · rfl
+
+/-- 0-IH parametric atomic totality: `Term.idStrictRefl`.  Same shape
+as `refl` plus a `modeIsStrict` value-level parameter. -/
+theorem isTotalOnWeaken_idStrictRefl {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsStrict : mode = Mode.strict)
+    (carrier : Ty level scope) (rawWitness : RawTerm scope) :
+    IsTotalOnWeaken (Term.idStrictRefl (context := context)
+      modeIsStrict carrier rawWitness) := by
+  intro newType
+  show (strengthenTyped? (Term.idStrictRefl
+      (context := context.cons newType) modeIsStrict
+      (carrier.weaken) (rawWitness.weaken))).isSome
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next carrierFails =>
+      exfalso
+      have carrierSuccess :
+          carrier.weaken.partialStrengthen?
+              (ContextStrengthening.dropNewest context newType).back =
+            some carrier :=
+        Ty.strengthen?_weaken carrier
+      rw [carrierSuccess] at carrierFails
+      cases carrierFails
+  · split
+    · next witnessFails =>
+        exfalso
+        have witnessSuccess :
+            rawWitness.weaken.partialStrengthen?
+                (ContextStrengthening.dropNewest context newType).back =
+              some rawWitness :=
+          RawTerm.strengthen?_weaken rawWitness
+        rw [witnessSuccess] at witnessFails
+        cases witnessFails
+    · rfl
+
 /-- BIG-ASS THEOREM headline — closed-atomic unweaken? recovers source.
 
 For each of the 7 closed-atomic ctors, `Term.unweaken?` applied to

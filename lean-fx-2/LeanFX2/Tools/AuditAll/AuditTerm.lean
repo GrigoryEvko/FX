@@ -790,6 +790,15 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.isTotalOnWeaken_modIntro
 #assert_no_axioms LeanFX2.Term.isTotalOnWeaken_modElim
 #assert_no_axioms LeanFX2.Term.isTotalOnWeaken_subsume
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_cumulUp
+
+-- Wave A: parametric atomic 0-IH ctors (no Term IH; sub-payloads
+-- strengthen via Ty.strengthen?_weaken / RawTerm.strengthen?_weaken).
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_listNil
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_optionNone
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_refl
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_oeqRefl
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_idStrictRefl
 
 -- User-facing unweaken?_weaken_<ctor> headline theorems.  Each is a
 -- direct `rfl` witness — concrete totality for the closed atomic
