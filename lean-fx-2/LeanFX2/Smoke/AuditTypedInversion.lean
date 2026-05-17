@@ -467,4 +467,19 @@ namespace LeanFX2.SmokeTypedInversion
 -- a mode-equality witness, not a strengthening pivot.
 #print axioms LeanFX2.Term.partialStrengthenTypedGlueElim_sound
 
+-- Phase 42 (sidequest): WRAPPER soundness for cubical path-shaped
+-- homogeneous composition producer.  First 3-option-split wrapper in
+-- the cascade: `partialStrengthenTypedHcompPath` takes the carrier
+-- type, left endpoint, and right endpoint as three independent
+-- strengthening witnesses (`carrierSuccess` is a Ty witness,
+-- `leftSuccess` and `rightSuccess` are RawTerm witnesses on the path
+-- endpoints).  Demonstrates the App-pattern scales beyond 2-option
+-- wrappers — the `Option.mapThree` shape of `Ty.path`'s
+-- `partialStrengthen?` arm is discharged by `change`+`rw [carrier,
+-- left, right]; rfl`, identical structure to Phase 41's `Option.mapTwo`
+-- discharge but with one extra option pivot.  Closes the path-related
+-- producer coverage gap; remaining 3-option-split candidates include
+-- `pathApp`, `glueIntro`, and the cubical eliminators.
+#print axioms LeanFX2.Term.partialStrengthenTypedHcompPath_sound
+
 end LeanFX2.SmokeTypedInversion

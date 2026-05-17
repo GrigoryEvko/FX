@@ -5750,7 +5750,18 @@ def partialStrengthenTypedHcompPathOfSuccess
     rfl
 
 /-- Path-shaped homogeneous composition strengthens by decomposing the
-strengthened path carrier for the sides and aligning the cap carrier. -/
+strengthened path carrier for the sides and aligning the cap carrier.
+
+App-pattern: takes `carrierSuccess`, `leftSuccess`, `rightSuccess` as
+explicit parameters lifted from the dispatcher's three nested option-
+splits on the path carrier type, left endpoint, and right endpoint
+respectively.  The body destructures both `sidesPathResult` and
+`capResult`, aligns the `Ty.path` shape of `sidesPathType` and the
+`carrierType` of the cap, then delegates to
+`partialStrengthenTypedHcompPathOfSuccess`.  Extends the recipe from
+Phase 39/40/41 (2-option) to 3-option wrappers — the App-pattern
+remains uniform: every option-split lifts to a wrapper parameter, the
+leaf consumes all witnesses, and soundness mirrors the case cascade. -/
 def partialStrengthenTypedHcompPath {mode : Mode} {level : Nat}
     {sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
@@ -5758,12 +5769,23 @@ def partialStrengthenTypedHcompPath {mode : Mode} {level : Nat}
     {strengthening : ContextStrengthening sourceCtx targetCtx}
     (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level sourceScope}
+    {targetCarrierType : Ty level targetScope}
     (leftEndpoint rightEndpoint : RawTerm sourceScope)
+    {targetLeftEndpoint targetRightEndpoint : RawTerm targetScope}
     {sidesPathRaw capRaw : RawTerm sourceScope}
     {sidesPath :
       Term sourceCtx (Ty.path carrierType leftEndpoint rightEndpoint)
         sidesPathRaw}
     {capValue : Term sourceCtx carrierType capRaw}
+    (carrierSuccess :
+      carrierType.partialStrengthen? strengthening.back =
+        some targetCarrierType)
+    (leftSuccess :
+      leftEndpoint.partialStrengthen? strengthening.back =
+        some targetLeftEndpoint)
+    (rightSuccess :
+      rightEndpoint.partialStrengthen? strengthening.back =
+        some targetRightEndpoint)
     (sidesPathResult : StrengtheningResult strengthening sidesPath)
     (capResult : StrengtheningResult strengthening capValue) :
     StrengtheningResult strengthening
@@ -5773,69 +5795,34 @@ def partialStrengthenTypedHcompPath {mode : Mode} {level : Nat}
   | mk targetSidesPathType targetSidesPathRaw targetSidesPath
       sidesPathTypeStrengthens sidesPathRawStrengthens
       sidesPathTypeRenames sidesPathRawRenames =>
-      change
-        Option.mapThree
-          (carrierType.partialStrengthen? strengthening.back)
-          (leftEndpoint.partialStrengthen? strengthening.back)
-          (rightEndpoint.partialStrengthen? strengthening.back)
-          Ty.path = some targetSidesPathType at sidesPathTypeStrengthens
-      cases carrierSuccess : carrierType.partialStrengthen?
-          strengthening.back with
-      | none =>
-          rw [carrierSuccess] at sidesPathTypeStrengthens
-          cases sidesPathTypeStrengthens
-      | some targetCarrierType =>
-          cases leftSuccess :
-              leftEndpoint.partialStrengthen? strengthening.back with
-          | none =>
-              rw [carrierSuccess, leftSuccess] at sidesPathTypeStrengthens
-              cases sidesPathTypeStrengthens
-          | some targetLeftEndpoint =>
-              cases rightSuccess :
-                  rightEndpoint.partialStrengthen? strengthening.back with
-              | none =>
-                  rw [carrierSuccess, leftSuccess, rightSuccess] at sidesPathTypeStrengthens
-                  cases sidesPathTypeStrengthens
-              | some targetRightEndpoint =>
-                  rw [carrierSuccess, leftSuccess, rightSuccess] at sidesPathTypeStrengthens
-                  cases sidesPathTypeStrengthens
-                  cases capResult with
-                  | mk targetCapType targetCapRaw targetCapValue
-                      capTypeStrengthens capRawStrengthens capTypeRenames
-                      capRawRenames =>
-                      rw [carrierSuccess] at capTypeStrengthens
-                      cases capTypeStrengthens
-                      exact {
-                        targetType := targetCarrierType
-                        targetRaw :=
-                          RawTerm.hcomp targetSidesPathRaw targetCapRaw
-                        targetTerm :=
-                          Term.hcompPath (context := targetCtx)
-                            modeIsUnivalent targetLeftEndpoint
-                            targetRightEndpoint targetSidesPath
-                            targetCapValue
-                        typeStrengthens := carrierSuccess
-                        rawStrengthens := by
-                          change
-                            Option.mapTwo
-                              (sidesPathRaw.partialStrengthen?
-                                strengthening.back)
-                              (capRaw.partialStrengthen? strengthening.back)
-                              RawTerm.hcomp =
-                                some (RawTerm.hcomp targetSidesPathRaw
-                                  targetCapRaw)
-                          rw [sidesPathRawStrengthens, capRawStrengthens]
-                          rfl
-                        typeRenames :=
-                          Ty.partialStrengthen?_imp_rename carrierType
-                            strengthening.forward strengthening.back
-                            strengthening.injectsBack targetCarrierType
-                            carrierSuccess
-                        rawRenames := by
-                          cases sidesPathRawRenames
-                          cases capRawRenames
-                          rfl
-                      }
+      have expectedSidesPathTypeStrengthens :
+          (Ty.path carrierType leftEndpoint rightEndpoint).partialStrengthen?
+              strengthening.back =
+            some (Ty.path targetCarrierType targetLeftEndpoint
+              targetRightEndpoint) := by
+        change
+          Option.mapThree
+            (carrierType.partialStrengthen? strengthening.back)
+            (leftEndpoint.partialStrengthen? strengthening.back)
+            (rightEndpoint.partialStrengthen? strengthening.back)
+            Ty.path =
+              some (Ty.path targetCarrierType targetLeftEndpoint
+                targetRightEndpoint)
+        rw [carrierSuccess, leftSuccess, rightSuccess]
+        rfl
+      rw [expectedSidesPathTypeStrengthens] at sidesPathTypeStrengthens
+      cases sidesPathTypeStrengthens
+      cases capResult with
+      | mk targetCapType targetCapRaw targetCapValue
+          capTypeStrengthens capRawStrengthens capTypeRenames
+          capRawRenames =>
+          rw [carrierSuccess] at capTypeStrengthens
+          cases capTypeStrengthens
+          exact partialStrengthenTypedHcompPathOfSuccess
+            modeIsUnivalent leftEndpoint rightEndpoint
+            targetSidesPath targetCapValue carrierSuccess leftSuccess
+            rightSuccess sidesPathRawStrengthens capRawStrengthens
+            sidesPathRawRenames capRawRenames
 
 /-- Pre-witnessed effect-performance strengthening.
 
@@ -7129,19 +7116,32 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
               exact some
                 (partialStrengthenTypedHcomp modeIsUnivalent sidesResult
                   capResult)
-  | @Term.hcompPath _ _ _ _ modeIsUnivalent _ leftEndpoint rightEndpoint
-      _ _ sidesPath capValue => by
-      cases partialStrengthenTyped? sidesPath
-          (strengthening := strengthening) with
+  | @Term.hcompPath _ _ _ _ modeIsUnivalent carrierType leftEndpoint
+      rightEndpoint _ _ sidesPath capValue => by
+      cases carrierSuccess :
+          carrierType.partialStrengthen? strengthening.back with
       | none => exact none
-      | some sidesResult =>
-          cases partialStrengthenTyped? capValue
-              (strengthening := strengthening) with
+      | some _ =>
+          cases leftSuccess :
+              leftEndpoint.partialStrengthen? strengthening.back with
           | none => exact none
-          | some capResult =>
-              exact some
-                (partialStrengthenTypedHcompPath modeIsUnivalent
-                  leftEndpoint rightEndpoint sidesResult capResult)
+          | some _ =>
+              cases rightSuccess :
+                  rightEndpoint.partialStrengthen? strengthening.back with
+              | none => exact none
+              | some _ =>
+                  cases partialStrengthenTyped? sidesPath
+                      (strengthening := strengthening) with
+                  | none => exact none
+                  | some sidesResult =>
+                      cases partialStrengthenTyped? capValue
+                          (strengthening := strengthening) with
+                      | none => exact none
+                      | some capResult =>
+                          exact some
+                            (partialStrengthenTypedHcompPath modeIsUnivalent
+                              leftEndpoint rightEndpoint carrierSuccess
+                              leftSuccess rightSuccess sidesResult capResult)
   | @Term.recordIntro _ _ _ _ _ _ firstField => by
       cases partialStrengthenTyped? firstField
           (strengthening := strengthening) with

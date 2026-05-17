@@ -4497,6 +4497,90 @@ theorem partialStrengthenTypedHcompPathOfSuccess_sound {mode : Mode}
     leftEndpointRenames rightEndpointRenames sidesPathRawRenames
     capRawRenames sidesPathSound capSound
 
+/-- Soundness of the App-pattern `partialStrengthenTypedHcompPath`
+wrapper: destructures both child `StrengtheningResult`s, aligns the
+`Ty.path` shape of the sides path's type and the `carrierType` of the
+cap, then delegates to `_OfSuccess_sound`.
+
+Mirrors the wrapper's cascade exactly: 3 type/raw witnesses
+(`carrierSuccess`/`leftSuccess`/`rightSuccess`) lifted from the
+dispatcher to the wrapper become explicit parameters here.  The
+`Option.mapThree` shape of the sides path type discharge uses the
+same `change`+`rw [carrierSuccess, leftSuccess, rightSuccess]; rfl`
+recipe as the wrapper.  Extends the Phase 39/40/41 (2-option) pattern
+to 3-option wrappers; child soundness HEqs extracted via
+`.termRenames` projection. -/
+theorem partialStrengthenTypedHcompPath_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    {targetCarrierType : Ty level targetScope}
+    (leftEndpoint rightEndpoint : RawTerm sourceScope)
+    {targetLeftEndpoint targetRightEndpoint : RawTerm targetScope}
+    {sidesPathRaw capRaw : RawTerm sourceScope}
+    {sidesPath :
+      Term sourceCtx (Ty.path carrierType leftEndpoint rightEndpoint)
+        sidesPathRaw}
+    {capValue : Term sourceCtx carrierType capRaw}
+    (carrierSuccess :
+      carrierType.partialStrengthen? strengthening.back =
+        some targetCarrierType)
+    (leftSuccess :
+      leftEndpoint.partialStrengthen? strengthening.back =
+        some targetLeftEndpoint)
+    (rightSuccess :
+      rightEndpoint.partialStrengthen? strengthening.back =
+        some targetRightEndpoint)
+    {sidesPathResult : StrengtheningResult strengthening sidesPath}
+    {capResult : StrengtheningResult strengthening capValue}
+    (sidesPathSound : StrengtheningSoundness sidesPathResult)
+    (capSound : StrengtheningSoundness capResult) :
+    StrengtheningSoundness
+      (partialStrengthenTypedHcompPath modeIsUnivalent leftEndpoint
+        rightEndpoint carrierSuccess leftSuccess rightSuccess
+        sidesPathResult capResult) := by
+  cases sidesPathResult with
+  | mk targetSidesPathType targetSidesPathRaw targetSidesPath
+      sidesPathTypeStrengthens sidesPathRawStrengthens
+      sidesPathTypeRenames sidesPathRawRenames =>
+      have expectedSidesPathTypeStrengthens :
+          (Ty.path carrierType leftEndpoint
+              rightEndpoint).partialStrengthen?
+              strengthening.back =
+            some (Ty.path targetCarrierType targetLeftEndpoint
+              targetRightEndpoint) := by
+        change
+          Option.mapThree
+            (carrierType.partialStrengthen? strengthening.back)
+            (leftEndpoint.partialStrengthen? strengthening.back)
+            (rightEndpoint.partialStrengthen? strengthening.back)
+            Ty.path =
+              some (Ty.path targetCarrierType targetLeftEndpoint
+                targetRightEndpoint)
+        rw [carrierSuccess, leftSuccess, rightSuccess]
+        rfl
+      rw [expectedSidesPathTypeStrengthens] at sidesPathTypeStrengthens
+      cases sidesPathTypeStrengthens
+      cases capResult with
+      | mk targetCapType targetCapRaw targetCapValue
+          capTypeStrengthens capRawStrengthens capTypeRenames
+          capRawRenames =>
+          rw [carrierSuccess] at capTypeStrengthens
+          cases capTypeStrengthens
+          exact partialStrengthenTypedHcompPathOfSuccess_sound
+            modeIsUnivalent leftEndpoint rightEndpoint
+            (carrierSuccess := carrierSuccess)
+            (leftSuccess := leftSuccess)
+            (rightSuccess := rightSuccess)
+            (sidesPathRawStrengthens := sidesPathRawStrengthens)
+            (capRawStrengthens := capRawStrengthens)
+            (sidesPathRawRenames := sidesPathRawRenames)
+            (capRawRenames := capRawRenames)
+            sidesPathSound.termRenames capSound.termRenames
+
 /-- Soundness of `partialStrengthenTypedEquivIntroHetOfSuccess`: the
 result's renamed target term is heterogeneously equal to the original
 typed heterogeneous-equivalence introduction.  Note: the leftInv and
