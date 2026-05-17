@@ -1225,6 +1225,79 @@ theorem aggregator_listCons_eitherInr_two_closed {mode : Mode}
       (isAggregatorSound_listNil
         (elementType := Ty.eitherType Ty.nat Ty.bool)))
 
+/-- Triple-nested option through either with Σ at the inner core:
+`Some (eitherInr (pair natZero boolTrue))` at carrier
+`option (Either nat (nat × bool))`.  Extends the depth-three
+composition patterns from Phase 110's `optionSome_optionSome_
+eitherInl` (which is option-option-either) into the option-either-
+Σ family, exercising three distinct wrapper categories stacked. -/
+theorem aggregator_optionSome_eitherInr_pair_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.optionSome (context := sourceCtx)
+        (valueTerm :=
+          Term.eitherInr (leftType := Ty.nat)
+            (valueTerm :=
+              Term.pair (secondType := Ty.bool)
+                (firstValue := Term.natZero)
+                (secondValue := Term.boolTrue)))) :=
+  isAggregatorSound_optionSome
+    (isAggregatorSound_eitherInr (leftType := Ty.nat)
+      (isAggregatorSound_pair isAggregatorSound_natZero
+        isAggregatorSound_boolTrue))
+
+/-- Heterogeneous-children Sigma: `pair (eitherInl natZero) (Some
+natZero)` at carrier `(Either nat bool) × (option nat)`.  Both
+slots carry parametric 0-IH containers of DIFFERENT type families
+(either vs option), exercising the 2-IH non-parametric Σ wrapper
+with maximally heterogeneous parametric children. -/
+theorem aggregator_pair_eitherInl_optionSome_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.pair (context := sourceCtx)
+        (secondType := Ty.optionType Ty.nat)
+        (firstValue :=
+          Term.eitherInl (rightType := Ty.bool)
+            (valueTerm := Term.natZero))
+        (secondValue :=
+          Term.optionSome (valueTerm := Term.natZero))) :=
+  isAggregatorSound_pair
+    (isAggregatorSound_eitherInl (rightType := Ty.bool)
+      isAggregatorSound_natZero)
+    (isAggregatorSound_optionSome isAggregatorSound_natZero)
+
+/-- Triple-nested list: `[[[natZero]]]` at carrier
+`list (list (list nat))`.  Extends Phase 111's
+`listCons_listCons_natZero` (depth-2 list-of-list) to depth 3,
+demonstrating the 2-IH parametric listCons + 0-IH listNil
+wrappers stack uniformly at any depth with matching elementType
+sentinels at every layer. -/
+theorem aggregator_listCons_listCons_listCons_natZero_closed
+    {mode : Mode} {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.listCons (context := sourceCtx)
+        (headTerm :=
+          Term.listCons
+            (headTerm :=
+              Term.listCons
+                (headTerm := Term.natZero)
+                (tailTerm := Term.listNil (elementType := Ty.nat)))
+            (tailTerm :=
+              Term.listNil
+                (elementType := Ty.listType Ty.nat)))
+        (tailTerm :=
+          Term.listNil
+            (elementType :=
+              Ty.listType (Ty.listType Ty.nat)))) :=
+  isAggregatorSound_listCons
+    (isAggregatorSound_listCons
+      (isAggregatorSound_listCons isAggregatorSound_natZero
+        (isAggregatorSound_listNil (elementType := Ty.nat)))
+      (isAggregatorSound_listNil
+        (elementType := Ty.listType Ty.nat)))
+    (isAggregatorSound_listNil
+      (elementType := Ty.listType (Ty.listType Ty.nat)))
+
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_unit_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwo_closed
@@ -1296,5 +1369,8 @@ theorem aggregator_listCons_eitherInr_two_closed {mode : Mode}
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTen_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_optionSome_listCons_natZero_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_eitherInr_two_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_optionSome_eitherInr_pair_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_eitherInl_optionSome_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_listCons_listCons_natZero_closed
 
 end LeanFX2.SmokeAggregatorComposition
