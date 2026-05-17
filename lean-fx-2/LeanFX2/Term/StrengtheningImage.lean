@@ -13100,6 +13100,170 @@ theorem isTotalOnWeaken_sigmaTyCode {mode : Mode} {level scope : Nat}
         cases codomainFails
     · rfl
 
+/-- 1-IH non-binder totality: `Term.fst`.  One Ty (firstType) at outer
+scope + one Ty (secondType) at scope+1 (lift) + one Term IH.  The
+secondType strengthen uses `back.lift`. -/
+theorem isTotalOnWeaken_fst {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
+    {pairRaw : RawTerm scope}
+    {pairTerm : Term context (Ty.sigmaTy firstType secondType) pairRaw}
+    (pairIH : IsTotalOnWeaken pairTerm) :
+    IsTotalOnWeaken (Term.fst pairTerm) := by
+  intro newType
+  show (strengthenTyped? (Term.fst (Term.weaken newType pairTerm))).isSome
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next firstFails =>
+      exfalso
+      have firstSuccess :
+          firstType.weaken.partialStrengthen?
+              (ContextStrengthening.dropNewest context newType).back =
+            some firstType :=
+        Ty.strengthen?_weaken firstType
+      rw [firstSuccess] at firstFails
+      cases firstFails
+  · split
+    · next secondFails =>
+        exfalso
+        have secondSuccess :
+            (secondType.rename RawRenaming.weaken.lift).partialStrengthen?
+                (ContextStrengthening.dropNewest context newType).back.lift =
+              some secondType := by
+          have := Ty.partialStrengthen?_rename_some secondType
+            RawRenaming.weaken.lift RawRenaming.identity
+            (ContextStrengthening.dropNewest context newType).back.lift
+            (fun position =>
+              PartialRawRenaming.lift_dropNewest_weaken_lift position)
+          rw [Ty.rename_identity] at this
+          exact this
+        rw [secondSuccess] at secondFails
+        cases secondFails
+    · split
+      · next pairRecurse =>
+          exfalso
+          have totHyp := pairIH newType
+          unfold strengthenTyped? at totHyp
+          have : Option.isSome (none (α := StrengtheningResult
+              (ContextStrengthening.dropNewest context newType)
+              (Term.weaken newType pairTerm))) = true :=
+            pairRecurse ▸ totHyp
+          cases this
+      · rfl
+
+/-- 2-IH non-binder totality: `Term.refineIntro`.  Predicate (RawTerm)
+at scope+1 uses `back.lift`; baseValue and predicateProof are Term
+IHs at outer scope. -/
+theorem isTotalOnWeaken_refineIntro {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {baseType : Ty level scope}
+    (predicate : RawTerm (scope + 1))
+    {valueRaw proofRaw : RawTerm scope}
+    {baseValue : Term context baseType valueRaw}
+    {predicateProof : Term context Ty.unit proofRaw}
+    (baseIH : IsTotalOnWeaken baseValue)
+    (proofIH : IsTotalOnWeaken predicateProof) :
+    IsTotalOnWeaken (Term.refineIntro predicate baseValue
+      predicateProof) := by
+  intro newType
+  show (strengthenTyped? (Term.refineIntro
+      (predicate.rename RawRenaming.weaken.lift)
+      (Term.weaken newType baseValue)
+      (Term.weaken newType predicateProof))).isSome
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next predicateFails =>
+      exfalso
+      have predicateSuccess :
+          (predicate.rename RawRenaming.weaken.lift).partialStrengthen?
+              (ContextStrengthening.dropNewest context newType).back.lift =
+            some predicate := by
+        have := RawTerm.partialStrengthen?_rename_some predicate
+          RawRenaming.weaken.lift RawRenaming.identity
+          (ContextStrengthening.dropNewest context newType).back.lift
+          (fun position =>
+            PartialRawRenaming.lift_dropNewest_weaken_lift position)
+        rw [RawTerm.rename_identity] at this
+        exact this
+      rw [predicateSuccess] at predicateFails
+      cases predicateFails
+  · split
+    · next baseRecurse =>
+        exfalso
+        have totHyp := baseIH newType
+        unfold strengthenTyped? at totHyp
+        have : Option.isSome (none (α := StrengtheningResult
+            (ContextStrengthening.dropNewest context newType)
+            (Term.weaken newType baseValue))) = true :=
+          baseRecurse ▸ totHyp
+        cases this
+    · split
+      · next proofRecurse =>
+          exfalso
+          have totHyp := proofIH newType
+          unfold strengthenTyped? at totHyp
+          have : Option.isSome (none (α := StrengtheningResult
+              (ContextStrengthening.dropNewest context newType)
+              (Term.weaken newType predicateProof))) = true :=
+            proofRecurse ▸ totHyp
+          cases this
+      · rfl
+
+/-- 1-IH non-binder totality: `Term.refineElim`.  One Ty (baseType) at
+outer scope + one RawTerm (predicate) at scope+1 + one Term IH. -/
+theorem isTotalOnWeaken_refineElim {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {baseType : Ty level scope}
+    {predicate : RawTerm (scope + 1)}
+    {refinedRaw : RawTerm scope}
+    {refinedValue : Term context (Ty.refine baseType predicate) refinedRaw}
+    (refinedIH : IsTotalOnWeaken refinedValue) :
+    IsTotalOnWeaken (Term.refineElim refinedValue) := by
+  intro newType
+  show (strengthenTyped? (Term.refineElim (Term.weaken newType
+      refinedValue))).isSome
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next baseFails =>
+      exfalso
+      have baseSuccess :
+          baseType.weaken.partialStrengthen?
+              (ContextStrengthening.dropNewest context newType).back =
+            some baseType :=
+        Ty.strengthen?_weaken baseType
+      rw [baseSuccess] at baseFails
+      cases baseFails
+  · split
+    · next predicateFails =>
+        exfalso
+        have predicateSuccess :
+            (predicate.rename RawRenaming.weaken.lift).partialStrengthen?
+                (ContextStrengthening.dropNewest context newType).back.lift =
+              some predicate := by
+          have := RawTerm.partialStrengthen?_rename_some predicate
+            RawRenaming.weaken.lift RawRenaming.identity
+            (ContextStrengthening.dropNewest context newType).back.lift
+            (fun position =>
+              PartialRawRenaming.lift_dropNewest_weaken_lift position)
+          rw [RawTerm.rename_identity] at this
+          exact this
+        rw [predicateSuccess] at predicateFails
+        cases predicateFails
+    · split
+      · next refinedRecurse =>
+          exfalso
+          have totHyp := refinedIH newType
+          unfold strengthenTyped? at totHyp
+          have : Option.isSome (none (α := StrengtheningResult
+              (ContextStrengthening.dropNewest context newType)
+              (Term.weaken newType refinedValue))) = true :=
+            refinedRecurse ▸ totHyp
+          cases this
+      · rfl
+
 /-- 0-IH parametric atomic totality: `Term.arrowCode` (universe-code
 for `Ty.arrow`).  Two RawTerm sub-payloads at the outer scope. -/
 theorem isTotalOnWeaken_arrowCode {mode : Mode} {level scope : Nat}
