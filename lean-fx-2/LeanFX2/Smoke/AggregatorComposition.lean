@@ -167,6 +167,46 @@ theorem aggregator_listCons_natList_closed {mode : Mode}
   isAggregatorSound_listCons isAggregatorSound_natZero
     (isAggregatorSound_listNil (elementType := Ty.nat))
 
+/-- 0-IH parametric smoke (listNil): exercises the
+`isAggregatorSound_listNil` wrapper in isolation at carrier
+`list nat`.  Demonstrates that 0-IH wrappers for parametric
+constructors take their carrier type as a positional argument
+without IH children, and compose cleanly into IsAggregatorSound. -/
+theorem aggregator_listNil_natList_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.listNil (context := sourceCtx) (elementType := Ty.nat)) :=
+  isAggregatorSound_listNil (elementType := Ty.nat)
+
+/-- 0-IH parametric smoke (optionNone): mirror of the listNil
+example at the option carrier.  Demonstrates the parametric 0-IH
+wrapper template extends uniformly across both list and option
+zero-Ty-witness constructors. -/
+theorem aggregator_optionNone_natOption_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.optionNone (context := sourceCtx)
+        (elementType := Ty.nat)) :=
+  isAggregatorSound_optionNone (elementType := Ty.nat)
+
+/-- 2-deep listCons chain: `[0, 1] = listCons 0 (listCons 1 nil)`.
+Exercises the 2-IH listCons wrapper recursively as the tail child
+of another listCons, with all element-type indices bound
+explicitly to sidestep the elaborator gap documented in
+`aggregator_listCons_natList_closed`. -/
+theorem aggregator_listCons_natListChain_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.listCons (context := sourceCtx)
+        (headTerm := Term.natZero)
+        (tailTerm :=
+          Term.listCons (headTerm := Term.natSucc Term.natZero)
+            (tailTerm := Term.listNil (elementType := Ty.nat)))) :=
+  isAggregatorSound_listCons isAggregatorSound_natZero
+    (isAggregatorSound_listCons
+      (isAggregatorSound_natSucc isAggregatorSound_natZero)
+      (isAggregatorSound_listNil (elementType := Ty.nat)))
+
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_unit_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwo_closed
@@ -178,5 +218,8 @@ theorem aggregator_listCons_natList_closed {mode : Mode}
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_eitherInr_boolTrue_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_optionSome_natOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_natList_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listNil_natList_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_optionNone_natOption_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_natListChain_closed
 
 end LeanFX2.SmokeAggregatorComposition
