@@ -1094,5 +1094,13 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_intervalMeet
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_intervalJoin
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_hcomp
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_listCode
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_optionCode
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_arrowCode
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_sumCode
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_productCode
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_eitherCode
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_idCode
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_equivCode
 
 end LeanFX2.Tools
