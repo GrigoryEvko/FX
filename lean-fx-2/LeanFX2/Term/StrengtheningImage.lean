@@ -11969,6 +11969,136 @@ theorem isAggregatorTotal_codataUnfold {mode : Mode} {level : Nat}
               cases transitionTotalCall
           · rfl
 
+/-! ## Wave Y1: wrap-able 0-IH/2-IH totality wrappers for ctors whose
+    source type fully encodes the dispatcher's index witnesses.
+
+    Each wrapper below decomposes `typeStrengthens` / `rawStrengthens`
+    via Option.mapTwo / mapThree inversion plus `Ty.partialStrengthen?_weaken_lift`
+    where the source type uses a lifted (binder) sub-Ty.  No additional
+    auxiliary witnesses required — the predicate IsAggregatorTotal already
+    encodes everything the dispatcher arm reads. -/
+
+/-- 0-IH totality: `Term.funextRefl`.  Source type
+`funextReflType domainType codomainType applyRaw = Ty.piTy domainType
+(Ty.id codomainType.weaken applyRaw applyRaw)`.  Decompose typeStrengthens
+via Ty.piTy mapTwo → domainStrengthens + (Ty.id ...).back.lift = some _.
+The latter via Ty.id mapThree → codomainType.weaken.back.lift = some _ +
+applyRaw.back.lift = some _ (twice).  Recover codomainStrengthens via
+`Ty.partialStrengthen?_weaken_lift` (codomainType.weaken.back.lift =
+codomainType.back |>.map weaken; map = some ⟹ inner = some).  Recover
+applyRaw.back.lift from rawStrengthens (`RawTerm.lam (RawTerm.refl _)`)
+or directly from typeStrengthens. -/
+theorem isAggregatorTotal_funextRefl {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (domainType codomainType : Ty level sourceScope)
+    (applyRaw : RawTerm (sourceScope + 1)) :
+    IsAggregatorTotal (Term.funextRefl (context := sourceCtx)
+      domainType codomainType applyRaw) := by
+  intros _ _ strengthening _ _ typeStrengthens _
+  -- typeStrengthens : (Ty.piTy domainType (Ty.id codomainType.weaken applyRaw applyRaw)).back = some _
+  -- Decompose via Ty.piTy mapTwo
+  change Option.mapTwo
+      (domainType.partialStrengthen? strengthening.back)
+      ((Ty.id codomainType.weaken applyRaw applyRaw).partialStrengthen?
+        strengthening.back.lift)
+      Ty.piTy = some _ at typeStrengthens
+  obtain ⟨targetDomainType, targetIdBody, domainSuccess, idSuccess, _⟩ :=
+    Option.mapTwo_eq_some typeStrengthens
+  -- Decompose idSuccess via Ty.id mapThree
+  change Option.mapThree
+      (codomainType.weaken.partialStrengthen? strengthening.back.lift)
+      (applyRaw.partialStrengthen? strengthening.back.lift)
+      (applyRaw.partialStrengthen? strengthening.back.lift)
+      Ty.id = some _ at idSuccess
+  obtain ⟨targetCodomainWeaken, targetApplyRaw, _, codomainWeakenSuccess,
+    applyRawSuccess, _, _⟩ :=
+    Option.mapThree_eq_some idSuccess
+  -- Recover codomainType.partialStrengthen? back = some _ via weaken_lift
+  rw [Ty.partialStrengthen?_weaken_lift codomainType strengthening.back]
+    at codomainWeakenSuccess
+  obtain ⟨targetCodomainType, codomainSuccess, _⟩ :=
+    Option.map_eq_some_inversion codomainWeakenSuccess
+  -- Now discharge the dispatcher
+  unfold partialStrengthenTyped?
+  split
+  · next domainFails =>
+      rw [domainSuccess] at domainFails
+      cases domainFails
+  · next _ _ =>
+      split
+      · next codomainFails =>
+          rw [codomainSuccess] at codomainFails
+          cases codomainFails
+      · next _ _ =>
+          split
+          · next applyFails =>
+              rw [applyRawSuccess] at applyFails
+              cases applyFails
+          · rfl
+
+/-- 0-IH totality: `Term.funextReflAtId`.  Source type
+`Ty.id (Ty.arrow domainType codomainType) (RawTerm.lam (RawTerm.refl applyRaw))
+(RawTerm.lam (RawTerm.refl applyRaw))`.  Decompose typeStrengthens via
+Ty.id mapThree → arrow.back + two lam-refl raw witnesses.  Ty.arrow.mapTwo
+gives dom.back + codom.back.  Either lam-refl raw witness decomposes
+to applyRaw.back.lift. -/
+theorem isAggregatorTotal_funextReflAtId {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (domainType codomainType : Ty level sourceScope)
+    (applyRaw : RawTerm (sourceScope + 1)) :
+    IsAggregatorTotal (Term.funextReflAtId (context := sourceCtx)
+      domainType codomainType applyRaw) := by
+  intros _ _ strengthening _ _ typeStrengthens _
+  -- Decompose typeStrengthens via Ty.id mapThree
+  change Option.mapThree
+      ((Ty.arrow domainType codomainType).partialStrengthen?
+        strengthening.back)
+      ((RawTerm.lam (RawTerm.refl applyRaw)).partialStrengthen?
+        strengthening.back)
+      ((RawTerm.lam (RawTerm.refl applyRaw)).partialStrengthen?
+        strengthening.back)
+      Ty.id = some _ at typeStrengthens
+  obtain ⟨_, lamWitness, _, arrowSuccess, lamSuccess, _, _⟩ :=
+    Option.mapThree_eq_some typeStrengthens
+  -- Decompose arrowSuccess via Ty.arrow mapTwo
+  change Option.mapTwo
+      (domainType.partialStrengthen? strengthening.back)
+      (codomainType.partialStrengthen? strengthening.back)
+      Ty.arrow = some _ at arrowSuccess
+  obtain ⟨_, _, domainSuccess, codomainSuccess, _⟩ :=
+    Option.mapTwo_eq_some arrowSuccess
+  -- Decompose lamSuccess (RawTerm.lam → RawTerm.refl → applyRaw at lift)
+  unfold RawTerm.partialStrengthen? at lamSuccess
+  unfold RawTerm.partialRename? at lamSuccess
+  split at lamSuccess
+  rotate_left
+  · cases lamSuccess
+  next reflWitness reflSuccess =>
+    unfold RawTerm.partialRename? at reflSuccess
+    split at reflSuccess
+    rotate_left
+    · cases reflSuccess
+    next targetApplyRaw applyRawSuccess =>
+      have applyStrengthenSuccess :
+          applyRaw.partialStrengthen? strengthening.back.lift =
+            some targetApplyRaw := applyRawSuccess
+      -- Now discharge the dispatcher
+      unfold partialStrengthenTyped?
+      split
+      · next domainFails =>
+          rw [domainSuccess] at domainFails
+          cases domainFails
+      · next _ _ =>
+          split
+          · next codomainFails =>
+              rw [codomainSuccess] at codomainFails
+              cases codomainFails
+          · next _ _ =>
+              split
+              · next applyFails =>
+                  rw [applyStrengthenSuccess] at applyFails
+                  cases applyFails
+              · rfl
 
 /-! ## Image theorem trio — weaken / strengthen invertibility
 
