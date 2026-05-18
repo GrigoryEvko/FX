@@ -7939,6 +7939,171 @@ def StrengtheningResult.fromRename
   typeRenames := rfl
   rawRenames := rfl
 
+/-! ## strength-T1: per-ctor renaming-image dispatcher equations.
+
+For each Term constructor, the dispatcher `partialStrengthenTyped?`
+applied to the renamed term through the `ContextStrengthening.ofRenaming`-
+induced strengthening produces exactly the canonical `StrengtheningResult`
+recovering the original.
+
+These per-ctor lemmas compose into the full strength-T1 universal
+headline `Term.strengthenTyped?_rename_eq` (78-case structural
+induction).  This block starts the closed-atomic family (unit /
+boolTrue / boolFalse / natZero / interval0 / interval1 /
+universeCode) and the var case; recursive ctors land in follow-up
+ticks. -/
+
+/-- Closed-atomic strength-T1 case: `Term.unit`.
+
+The dispatcher's unit arm returns `partialStrengthenTypedUnit`
+which produces a `StrengtheningResult` with `targetTerm := Term.unit`
+in the strengthening's target context.  The `fromRename` constructor
+for the unit original also produces a `StrengtheningResult` whose
+fields match.  Both StrengtheningResults are definitionally equal by
+field eta. -/
+theorem strengthenTyped?_rename_eq_unit
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition) :
+    partialStrengthenTyped?
+        (Term.rename typedRenaming (Term.unit (context := sourceCtx)))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)
+      = some (StrengtheningResult.fromRename forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects
+          (Term.unit (context := sourceCtx))) := rfl
+
+/-- Closed-atomic strength-T1 case: `Term.boolTrue`. -/
+theorem strengthenTyped?_rename_eq_boolTrue
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition) :
+    partialStrengthenTyped?
+        (Term.rename typedRenaming (Term.boolTrue (context := sourceCtx)))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)
+      = some (StrengtheningResult.fromRename forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects
+          (Term.boolTrue (context := sourceCtx))) := rfl
+
+/-- Closed-atomic strength-T1 case: `Term.boolFalse`. -/
+theorem strengthenTyped?_rename_eq_boolFalse
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition) :
+    partialStrengthenTyped?
+        (Term.rename typedRenaming (Term.boolFalse (context := sourceCtx)))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)
+      = some (StrengtheningResult.fromRename forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects
+          (Term.boolFalse (context := sourceCtx))) := rfl
+
+/-- Closed-atomic strength-T1 case: `Term.natZero`. -/
+theorem strengthenTyped?_rename_eq_natZero
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition) :
+    partialStrengthenTyped?
+        (Term.rename typedRenaming (Term.natZero (context := sourceCtx)))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)
+      = some (StrengtheningResult.fromRename forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects
+          (Term.natZero (context := sourceCtx))) := rfl
+
+/-- Closed-atomic strength-T1 case: `Term.interval0`. -/
+theorem strengthenTyped?_rename_eq_interval0
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition) :
+    partialStrengthenTyped?
+        (Term.rename typedRenaming (Term.interval0 (context := sourceCtx)))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)
+      = some (StrengtheningResult.fromRename forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects
+          (Term.interval0 (context := sourceCtx))) := rfl
+
+/-- Closed-atomic strength-T1 case: `Term.interval1`. -/
+theorem strengthenTyped?_rename_eq_interval1
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition) :
+    partialStrengthenTyped?
+        (Term.rename typedRenaming (Term.interval1 (context := sourceCtx)))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)
+      = some (StrengtheningResult.fromRename forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects
+          (Term.interval1 (context := sourceCtx))) := rfl
+
 end Term
 
 end LeanFX2
