@@ -14049,6 +14049,143 @@ theorem isAggregatorTotal_boolElim_with_motive {mode : Mode} {level : Nat}
                   cases elseTotalCall
               · rfl
 
+/-- 3-IH totality: `Term.natElim`.  Source type is `motiveType`
+directly (✓).  Dispatcher takes only 3 IH recurses (no type witness
+checks).  scrutinee : Ty.nat (closed-atomic), zeroBranch : motiveType,
+succBranch : Ty.arrow Ty.nat motiveType.  Construct succ's arrow type
+strengthens from typeStrengthens + Ty.nat trivial. -/
+theorem isAggregatorTotal_natElim {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {motiveType : Ty level sourceScope}
+    {scrutineeRaw zeroRaw succRaw : RawTerm sourceScope}
+    {scrutinee : Term sourceCtx Ty.nat scrutineeRaw}
+    {zeroBranch : Term sourceCtx motiveType zeroRaw}
+    {succBranch :
+      Term sourceCtx (Ty.arrow Ty.nat motiveType) succRaw}
+    (scrutineeTotal : IsAggregatorTotal scrutinee)
+    (zeroTotal : IsAggregatorTotal zeroBranch)
+    (succTotal : IsAggregatorTotal succBranch) :
+    IsAggregatorTotal (Term.natElim scrutinee zeroBranch succBranch) := by
+  intros _ _ strengthening targetMotiveType _ typeStrengthens rawStrengthens
+  change Option.mapThree
+      (scrutineeRaw.partialStrengthen? strengthening.back)
+      (zeroRaw.partialStrengthen? strengthening.back)
+      (succRaw.partialStrengthen? strengthening.back)
+      RawTerm.natElim = some _ at rawStrengthens
+  obtain ⟨_, _, _, scrutineeRawSuccess, zeroRawSuccess, succRawSuccess, _⟩ :=
+    Option.mapThree_eq_some rawStrengthens
+  have natStrengthens :
+      (Ty.nat : Ty level sourceScope).partialStrengthen?
+          strengthening.back =
+        some Ty.nat := rfl
+  have arrowStrengthens :
+      (Ty.arrow Ty.nat motiveType).partialStrengthen?
+          strengthening.back =
+        some (Ty.arrow Ty.nat targetMotiveType) := by
+    show Option.mapTwo
+        ((Ty.nat : Ty level sourceScope).partialStrengthen?
+          strengthening.back)
+        (motiveType.partialStrengthen? strengthening.back)
+        Ty.arrow = _
+    rw [natStrengthens, typeStrengthens]
+    rfl
+  have scrutineeTotalCall :=
+    scrutineeTotal strengthening natStrengthens scrutineeRawSuccess
+  have zeroTotalCall :=
+    zeroTotal strengthening typeStrengthens zeroRawSuccess
+  have succTotalCall :=
+    succTotal strengthening arrowStrengthens succRawSuccess
+  unfold partialStrengthenTyped?
+  split
+  · next scrutineeFails =>
+      rw [scrutineeFails] at scrutineeTotalCall
+      cases scrutineeTotalCall
+  · next _ _ =>
+      split
+      · next zeroFails =>
+          rw [zeroFails] at zeroTotalCall
+          cases zeroTotalCall
+      · next _ _ =>
+          split
+          · next succFails =>
+              rw [succFails] at succTotalCall
+              cases succTotalCall
+          · rfl
+
+/-- 3-IH totality: `Term.natRec`.  Source type motiveType (✓).
+Like natElim but succBranch's type is
+`Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)`. -/
+theorem isAggregatorTotal_natRec {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {motiveType : Ty level sourceScope}
+    {scrutineeRaw zeroRaw succRaw : RawTerm sourceScope}
+    {scrutinee : Term sourceCtx Ty.nat scrutineeRaw}
+    {zeroBranch : Term sourceCtx motiveType zeroRaw}
+    {succBranch :
+      Term sourceCtx
+        (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)) succRaw}
+    (scrutineeTotal : IsAggregatorTotal scrutinee)
+    (zeroTotal : IsAggregatorTotal zeroBranch)
+    (succTotal : IsAggregatorTotal succBranch) :
+    IsAggregatorTotal (Term.natRec scrutinee zeroBranch succBranch) := by
+  intros _ _ strengthening targetMotiveType _ typeStrengthens rawStrengthens
+  change Option.mapThree
+      (scrutineeRaw.partialStrengthen? strengthening.back)
+      (zeroRaw.partialStrengthen? strengthening.back)
+      (succRaw.partialStrengthen? strengthening.back)
+      RawTerm.natRec = some _ at rawStrengthens
+  obtain ⟨_, _, _, scrutineeRawSuccess, zeroRawSuccess, succRawSuccess, _⟩ :=
+    Option.mapThree_eq_some rawStrengthens
+  have natStrengthens :
+      (Ty.nat : Ty level sourceScope).partialStrengthen?
+          strengthening.back =
+        some Ty.nat := rfl
+  have innerArrowStrengthens :
+      (Ty.arrow motiveType motiveType).partialStrengthen?
+          strengthening.back =
+        some (Ty.arrow targetMotiveType targetMotiveType) := by
+    show Option.mapTwo
+        (motiveType.partialStrengthen? strengthening.back)
+        (motiveType.partialStrengthen? strengthening.back)
+        Ty.arrow = _
+    rw [typeStrengthens]
+    rfl
+  have outerArrowStrengthens :
+      (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)).partialStrengthen?
+          strengthening.back =
+        some (Ty.arrow Ty.nat (Ty.arrow targetMotiveType
+          targetMotiveType)) := by
+    show Option.mapTwo
+        ((Ty.nat : Ty level sourceScope).partialStrengthen?
+          strengthening.back)
+        ((Ty.arrow motiveType motiveType).partialStrengthen?
+          strengthening.back)
+        Ty.arrow = _
+    rw [natStrengthens, innerArrowStrengthens]
+    rfl
+  have scrutineeTotalCall :=
+    scrutineeTotal strengthening natStrengthens scrutineeRawSuccess
+  have zeroTotalCall :=
+    zeroTotal strengthening typeStrengthens zeroRawSuccess
+  have succTotalCall :=
+    succTotal strengthening outerArrowStrengthens succRawSuccess
+  unfold partialStrengthenTyped?
+  split
+  · next scrutineeFails =>
+      rw [scrutineeFails] at scrutineeTotalCall
+      cases scrutineeTotalCall
+  · next _ _ =>
+      split
+      · next zeroFails =>
+          rw [zeroFails] at zeroTotalCall
+          cases zeroTotalCall
+      · next _ _ =>
+          split
+          · next succFails =>
+              rw [succFails] at succTotalCall
+              cases succTotalCall
+          · rfl
+
 /-! ## Image theorem trio — weaken / strengthen invertibility
 
 Three closure theorems on the image of `Term.weaken` under

@@ -1005,6 +1005,9 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_sessionSend_with_payload
 -- Phase Y.2 Wave 10: boolElim (motive bridge with subst0 reconstruction)
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_boolElim_with_motive
+-- Phase Y.1 Wave 5: natElim + natRec (no aux witnesses, universal)
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_natElim
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_natRec
 
 -- Phase X: bridge from `IsAggregatorTotal (Term.weaken ...)` to
 -- `IsTotalOnWeaken` and the three binder wrappers that close the
