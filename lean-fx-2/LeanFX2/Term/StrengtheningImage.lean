@@ -14473,6 +14473,73 @@ theorem isAggregatorTotal_eitherMatch_with_lr_types {mode : Mode}
                           cases rightTotalCall
                       · rfl
 
+/-- Bridge totality wrapper for `Term.snd`.  Source type is
+`secondType.subst0 firstType (RawTerm.fst pairRaw)`; dispatcher needs
+firstType.back + secondType.back.lift + pairTerm IH (Ty.sigmaTy).
+Take firstType.back + secondType.back.lift as extra hypotheses. -/
+theorem isAggregatorTotal_snd_with_sigma_witnesses {mode : Mode}
+    {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {firstType : Ty level sourceScope}
+    {secondType : Ty level (sourceScope + 1)}
+    {pairRaw : RawTerm sourceScope}
+    {pairTerm : Term sourceCtx (Ty.sigmaTy firstType secondType) pairRaw}
+    (pairTotal : IsAggregatorTotal pairTerm)
+    (sigmaTotal :
+      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
+        (strengthening : ContextStrengthening sourceCtx targetCtx)
+        {targetSourceType : Ty level targetScope},
+        (secondType.subst0 firstType
+          (RawTerm.fst pairRaw)).partialStrengthen? strengthening.back =
+            some targetSourceType →
+        ∃ targetFirstType targetSecondType,
+          firstType.partialStrengthen? strengthening.back =
+              some targetFirstType ∧
+          secondType.partialStrengthen? strengthening.back.lift =
+              some targetSecondType) :
+    IsAggregatorTotal (Term.snd pairTerm) := by
+  intros _ _ strengthening _ _ typeStrengthens rawStrengthens
+  unfold RawTerm.partialStrengthen? at rawStrengthens
+  unfold RawTerm.partialRename? at rawStrengthens
+  split at rawStrengthens
+  rotate_left
+  · cases rawStrengthens
+  next targetPairRaw pairRawRenSuccess =>
+    have pairRawSuccess :
+        pairRaw.partialStrengthen? strengthening.back =
+          some targetPairRaw := pairRawRenSuccess
+    obtain ⟨targetFirstType, targetSecondType, firstSuccess,
+      secondSuccess⟩ :=
+      sigmaTotal strengthening typeStrengthens
+    have sigmaTypeStrengthens :
+        (Ty.sigmaTy firstType secondType).partialStrengthen?
+            strengthening.back =
+          some (Ty.sigmaTy targetFirstType targetSecondType) := by
+      show Option.mapTwo
+          (firstType.partialStrengthen? strengthening.back)
+          (secondType.partialStrengthen? strengthening.back.lift)
+          Ty.sigmaTy = _
+      rw [firstSuccess, secondSuccess]
+      rfl
+    have pairTotalCall :=
+      pairTotal strengthening sigmaTypeStrengthens pairRawSuccess
+    unfold partialStrengthenTyped?
+    split
+    · next firstFails =>
+        rw [firstSuccess] at firstFails
+        cases firstFails
+    · next _ _ =>
+        split
+        · next secondFails =>
+            rw [secondSuccess] at secondFails
+            cases secondFails
+        · next _ _ =>
+            split
+            · next pairFails =>
+                rw [pairFails] at pairTotalCall
+                cases pairTotalCall
+            · rfl
+
 /-! ## Image theorem trio — weaken / strengthen invertibility
 
 Three closure theorems on the image of `Term.weaken` under
