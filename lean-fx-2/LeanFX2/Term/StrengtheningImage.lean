@@ -12444,6 +12444,125 @@ theorem isAggregatorTotal_glueIntro {mode : Mode} {level : Nat}
                   cases partialTotalCall
               · rfl
 
+/-! ## Phase Y.2: Bridge wrappers for ctors whose source type lacks
+    sub-Ty / sub-raw witnesses the dispatcher reads.
+
+    These wrappers take per-ctor auxiliary witnesses as additional
+    hypotheses (modeled on Agent C's Phase X bridge for
+    `isTotalOnWeaken_of_weaken_isAggregatorTotal`).  The wrapper still
+    discharges `IsAggregatorTotal` at the source ctor application;
+    downstream consumers supply the auxiliary witnesses case-by-case.
+
+    The universal-over-all-source-terms headline
+    `∀ t, IsAggregatorTotal t` is NOT shippable for these ctors at the
+    current predicate, but per-ctor wrappers with case-specific witness
+    construction are.  Consumers route through these wrappers when
+    the source-level witnesses are constructible in their context. -/
+
+/-- Bridge totality wrapper for `Term.pathApp`.  The dispatcher arm
+needs leftEndpoint.back + rightEndpoint.back + carrierType.back, but
+the source type encodes only carrierType.  We take the missing
+endpoint strengthenings as additional hypotheses parameterized over
+strengthening (universally, matching IsAggregatorTotal's shape).
+
+Consumers satisfy these hypotheses when leftEndpoint and rightEndpoint
+have known strengthening behaviour (e.g. when they're proved totally
+strengthenable independently). -/
+theorem isAggregatorTotal_pathApp_with_endpoints {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {pathRaw intervalRaw : RawTerm sourceScope}
+    {pathTerm :
+      Term sourceCtx (Ty.path carrierType leftEndpoint rightEndpoint)
+        pathRaw}
+    {intervalTerm : Term sourceCtx Ty.interval intervalRaw}
+    (pathTotal : IsAggregatorTotal pathTerm)
+    (intervalTotal : IsAggregatorTotal intervalTerm)
+    (leftEndpointTotal :
+      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
+        (strengthening : ContextStrengthening sourceCtx targetCtx)
+        {targetCarrierType : Ty level targetScope},
+        carrierType.partialStrengthen? strengthening.back =
+            some targetCarrierType →
+        ∃ targetLeftEndpoint,
+          leftEndpoint.partialStrengthen? strengthening.back =
+            some targetLeftEndpoint)
+    (rightEndpointTotal :
+      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
+        (strengthening : ContextStrengthening sourceCtx targetCtx)
+        {targetCarrierType : Ty level targetScope},
+        carrierType.partialStrengthen? strengthening.back =
+            some targetCarrierType →
+        ∃ targetRightEndpoint,
+          rightEndpoint.partialStrengthen? strengthening.back =
+            some targetRightEndpoint) :
+    IsAggregatorTotal
+      (Term.pathApp modeIsUnivalent pathTerm intervalTerm) := by
+  intros _ _ strengthening targetCarrierType _ typeStrengthens rawStrengthens
+  -- typeStrengthens : carrierType.back = some targetCarrierType
+  -- rawStrengthens : (RawTerm.pathApp pathRaw intervalRaw).back = some _
+  change Option.mapTwo
+      (pathRaw.partialStrengthen? strengthening.back)
+      (intervalRaw.partialStrengthen? strengthening.back)
+      RawTerm.pathApp = some _ at rawStrengthens
+  obtain ⟨_, _, pathRawSuccess, intervalRawSuccess, _⟩ :=
+    Option.mapTwo_eq_some rawStrengthens
+  -- Get the endpoint strengthenings from the auxiliary hypotheses
+  obtain ⟨targetLeftEndpoint, leftEndpointSuccess⟩ :=
+    leftEndpointTotal strengthening typeStrengthens
+  obtain ⟨targetRightEndpoint, rightEndpointSuccess⟩ :=
+    rightEndpointTotal strengthening typeStrengthens
+  -- Construct pathTerm's type strengthening: Ty.path.mapThree
+  have pathTypeStrengthens :
+      (Ty.path carrierType leftEndpoint rightEndpoint).partialStrengthen?
+          strengthening.back =
+        some (Ty.path targetCarrierType targetLeftEndpoint
+          targetRightEndpoint) := by
+    show Option.mapThree
+        (carrierType.partialStrengthen? strengthening.back)
+        (leftEndpoint.partialStrengthen? strengthening.back)
+        (rightEndpoint.partialStrengthen? strengthening.back)
+        Ty.path = _
+    rw [typeStrengthens, leftEndpointSuccess, rightEndpointSuccess]
+    rfl
+  -- Construct intervalTerm's type strengthening: Ty.interval is closed-atomic
+  have intervalTypeStrengthens :
+      (Ty.interval : Ty level sourceScope).partialStrengthen?
+          strengthening.back =
+        some Ty.interval := rfl
+  have pathTotalCall :=
+    pathTotal strengthening pathTypeStrengthens pathRawSuccess
+  have intervalTotalCall :=
+    intervalTotal strengthening intervalTypeStrengthens intervalRawSuccess
+  unfold partialStrengthenTyped?
+  split
+  · next carrierFails =>
+      rw [typeStrengthens] at carrierFails
+      cases carrierFails
+  · next _ _ =>
+      split
+      · next leftFails =>
+          rw [leftEndpointSuccess] at leftFails
+          cases leftFails
+      · next _ _ =>
+          split
+          · next rightFails =>
+              rw [rightEndpointSuccess] at rightFails
+              cases rightFails
+          · next _ _ =>
+              split
+              · next pathFails =>
+                  rw [pathFails] at pathTotalCall
+                  cases pathTotalCall
+              · next _ _ =>
+                  split
+                  · next intervalFails =>
+                      rw [intervalFails] at intervalTotalCall
+                      cases intervalTotalCall
+                  · rfl
+
 /-! ## Image theorem trio — weaken / strengthen invertibility
 
 Three closure theorems on the image of `Term.weaken` under
