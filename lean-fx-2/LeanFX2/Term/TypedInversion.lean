@@ -344,4 +344,12 @@ def Term.weakenInverse_atVarZero
   cases genericTerm
   exact ⟨rfl, HEq.rfl⟩
 
+/-! ## `Term.weaken_inv_arrow` — conditional existence form
+
+The Phase A close-out of the Step.eta integration plan lives in
+`LeanFX2/Term/StrengtheningImage.lean` because it consumes
+`weaken_inv_of_strengthenTyped?_some`.  The theorem is named
+`LeanFX2.Term.weaken_inv_arrow` and ships at the end of that
+file's "Image theorem trio" block. -/
+
 end LeanFX2

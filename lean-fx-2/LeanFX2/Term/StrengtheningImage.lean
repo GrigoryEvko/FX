@@ -14963,6 +14963,161 @@ theorem weaken_image_iff_strengthenTyped?_some {mode : Mode} {level scope : Nat}
               | some result => _) = some targetTerm
         rw [dispatchSuccess]
 
+/-! ## `Term.weaken_inv_arrow` — conditional existence form (Phase A close-out)
+
+The full existence-form companion to
+`Term.weaken_inv_arrow_option` (Term/TypedInversion.lean).  Packages
+the soundness component of `Term.unweaken?` as an existence-form
+theorem: given a weakened arrow-typed term `weakenedFn` together with
+an `unweaken?`-success witness producing the original `originalFn`,
+the weakened term IS heterogeneously equal to `Term.weaken newType
+originalFn`.
+
+### Architecture rationale
+
+The Step.eta plan's spec sketches an unconditional existence form `∀
+arrowTerm, ∃ origArrowTerm, arrowTerm = origArrowTerm.weaken newType`,
+but that is architecturally unshippable under the current
+strengthening predicate (per Phase Y close-out commit `bdd613ec`): 25
+of 78 Term constructors carry sub-types whose strengthening witness
+is not recoverable from the source type's structure, so a universal
+`IsAggregatorTotal` headline is impossible.
+
+The conditional existence form below threads soundness through the
+already-shipped image theorem
+`weaken_inv_of_strengthenTyped?_some`, extracting the canonical
+`HEq weakenedFn (Term.weaken newType originalFn)` from a
+`Term.unweaken?` success.  Consumers (Phase B `lift_lam`
+eta-disjunct) supply the `unweaken?` success themselves from their
+own structural information about the typed app shape's function
+side.
+
+### Mechanical content
+
+1. From `Term.unweaken? weakenedFn = some originalFn` infer
+   `strengthenTyped? weakenedFn = some result` for some result
+   with `result.targetTerm = originalFn` (after the indices are
+   cast through `Ty.strengthen?_weaken` / `RawTerm.strengthen?_weaken`).
+2. Apply `weaken_inv_of_strengthenTyped?_some` to get
+   `HEq weakenedFn result.renamedTarget`.
+3. Observe that `renamedTarget` is `Term.rename
+   strengthening.toTermRenaming result.targetTerm`, and for
+   `strengthening = dropNewest`, `toTermRenaming =
+   TermRenaming.weakenStep` by `rfl`
+   (`ContextStrengthening.dropNewest_toTermRenaming`).
+4. Conclude `HEq weakenedFn (Term.weaken newType originalFn)` via
+   the `@[reducible]` definition of `Term.weaken`.
+
+### Phase B usage
+
+The `lift_lam` η-disjunct receives an eta-shaped raw step `RawStep.
+par (RawTerm.lam (RawTerm.app fnRaw.weaken (RawTerm.var 0)))
+targetRaw`.  The typed body decomposes via `app_inv` into a function
+term `fnTerm` at type `(Ty.arrow domainType codomainType).weaken`
+over raw `fnRaw.weaken`.  Phase B will call `Term.unweaken?` on
+`fnTerm`, refuting the `none` case via the structural reasoning that
+the η raw shape forces, then invoke this theorem to obtain the typed
+`origFn` plus the soundness HEq. -/
+
+/-- **Conditional existence-form weaken inversion at arrow type.**
+
+Given an arrow-typed weakened function term plus an `unweaken?`
+success witness producing the original function term, conclude that
+the weakened term is heterogeneously equal to the canonical
+`Term.weaken newType originalFn`.
+
+The `HEq` rather than `Eq` is necessary because the two sides have
+indices
+
+* `weakenedFn` : `Term (context.cons newType) (Ty.arrow domainType
+  codomainType).weaken fnRaw.weaken`
+* `Term.weaken newType originalFn` : same indices definitionally
+
+but the indices are computed through different paths (the
+`@[reducible]` `Term.weaken` wrapper vs the raw renaming path
+inside `renamedTarget`).  `HEq` accepts the propositional-equal
+indices uniformly. -/
+theorem weaken_inv_arrow {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType : Ty level scope}
+    {domainType codomainType : Ty level scope}
+    {fnRaw : RawTerm scope}
+    (weakenedFn :
+      Term (context.cons newType)
+           (Ty.arrow domainType codomainType).weaken
+           fnRaw.weaken)
+    {originalFn : Term context (Ty.arrow domainType codomainType) fnRaw}
+    (unweakenSuccess :
+      Term.unweaken? weakenedFn = some originalFn) :
+    HEq weakenedFn (Term.weaken newType originalFn) := by
+  -- Step 1: unpack the `unweaken?` success into a `strengthenTyped?`
+  -- success.  `Term.unweaken?` is defined by pattern-matching on
+  -- `strengthenTyped?`; in the `some result` arm it casts the result
+  -- target indices through `Ty.strengthen?_weaken` /
+  -- `RawTerm.strengthen?_weaken` and produces `some result.targetTerm`.
+  cases dispatchOutcome : strengthenTyped? weakenedFn with
+  | none =>
+      -- `unweaken?`'s `none` arm makes `unweakenSuccess` impossible.
+      exfalso
+      have noneEq : Term.unweaken? weakenedFn = none := by
+        unfold Term.unweaken?
+        rw [dispatchOutcome]
+      rw [noneEq] at unweakenSuccess
+      cases unweakenSuccess
+  | some dispatchResult =>
+      -- Apply the soundness headline FIRST (before destructuring) to
+      -- extract the canonical `HEq weakenedFn
+      -- dispatchResult.renamedTarget`.
+      have soundness :
+          HEq weakenedFn dispatchResult.renamedTarget :=
+        weaken_inv_of_strengthenTyped?_some
+          (ContextStrengthening.dropNewest context newType)
+          dispatchResult dispatchOutcome
+      -- Bridge `dispatchResult.renamedTarget` to `Term.weaken newType
+      -- originalFn` by destructuring the result and identifying the
+      -- canonical indices via `Ty.strengthen?_weaken` /
+      -- `RawTerm.strengthen?_weaken`, then identifying `targetTerm`
+      -- with `originalFn` from the `unweaken?` success.
+      cases dispatchResult with
+      | mk targetType targetRaw targetTerm typeStrengthens rawStrengthens
+            typeRenames rawRenames =>
+          -- Recover `targetType = Ty.arrow domainType codomainType`.
+          have targetTypeEq :
+              targetType = Ty.arrow domainType codomainType := by
+            have rewritten :
+                (Ty.arrow domainType codomainType).weaken.strengthen?
+                  = some targetType := typeStrengthens
+            rw [Ty.strengthen?_weaken (Ty.arrow domainType codomainType)]
+              at rewritten
+            injection rewritten with strengthenSomeEq
+            exact strengthenSomeEq.symm
+          -- Recover `targetRaw = fnRaw`.
+          have targetRawEq : targetRaw = fnRaw := by
+            have rewritten :
+                fnRaw.weaken.strengthen? = some targetRaw :=
+              rawStrengthens
+            rw [RawTerm.strengthen?_weaken fnRaw] at rewritten
+            injection rewritten with strengthenSomeEq
+            exact strengthenSomeEq.symm
+          subst targetTypeEq
+          subst targetRawEq
+          -- After the substitutions, `unweaken?` unfolds to
+          -- `some targetTerm`, so `targetTerm = originalFn`.
+          have unfoldEq :
+              Term.unweaken? weakenedFn = some targetTerm := by
+            unfold Term.unweaken?
+            rw [dispatchOutcome]
+          rw [unfoldEq] at unweakenSuccess
+          injection unweakenSuccess with targetTermInj
+          subst targetTermInj
+          -- `soundness` is now `HEq weakenedFn renamedTarget` with
+          -- `renamedTarget = Term.rename (dropNewest ...).toTermRenaming
+          -- originalFn`.  By `dropNewest_toTermRenaming` (rfl) this is
+          -- `Term.rename (TermRenaming.weakenStep ...) originalFn`,
+          -- which is `Term.weaken newType originalFn` by the
+          -- `@[reducible]` wrapper definition.
+          exact soundness
+
 /-! ## Closed-atomic unweaken? totality
 
 The headline `Term.unweaken?_weaken : ∀ originalTerm newType,

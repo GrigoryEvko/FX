@@ -761,6 +761,13 @@ existing computational dispatcher. -/
 -- structural induction.
 #assert_no_axioms LeanFX2.Term.weaken_image_iff_strengthenTyped?_some
 
+-- Phase A close-out (Step.eta integration plan): conditional
+-- existence-form companion to `Term.weaken_inv_arrow_option`.
+-- Packages soundness via `weaken_inv_of_strengthenTyped?_some`
+-- and reduces `Term.unweaken?` success to `HEq weakenedFn (Term.weaken
+-- newType originalFn)`.  Consumed by Phase B `lift_lam` η-disjunct.
+#assert_no_axioms LeanFX2.Term.weaken_inv_arrow
+
 -- BIG-ASS THEOREM (closed-atomic foundation): `IsTotalOnWeaken`
 -- predicate and the 7 closed-atomic ctor totality witnesses.  Each
 -- atomic case shipped as a direct `rfl` proof both at the
