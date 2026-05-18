@@ -1081,5 +1081,18 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_codataDest
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_recordIntro
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_glueElim
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_listCons
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_natElim
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_natRec
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_app
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_listElim
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_optionMatch
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_eitherMatch
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_idJ
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_oeqJ
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_idStrictRec
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_intervalMeet
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_intervalJoin
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_hcomp
 
 end LeanFX2.Tools
