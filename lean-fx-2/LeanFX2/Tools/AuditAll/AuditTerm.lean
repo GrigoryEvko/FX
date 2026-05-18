@@ -1114,5 +1114,10 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_glueIntro
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_pathApp
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_codataUnfold
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_fst
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_equivApply
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_uaToEquiv
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_uaIntroHet
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_funextIntroHet
 
 end LeanFX2.Tools
