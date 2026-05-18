@@ -1121,4 +1121,11 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_funextIntroHet
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_effectPerform
 
+-- strength-T1 cast-invariance helper lemmas used to peel Eq.mpr casts in
+-- the 11 cast-wrapped ctors (lam, lamPi, appPi, snd, pair, boolElim,
+-- pathLam, oeqFunext, funextRefl, equivIntroHet, var).
+#assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_isSome_castInvariant
+#assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_castInvariantHEq
+#assert_no_axioms LeanFX2.Term.rename_oeqFunext_unfolds
+
 end LeanFX2.Tools

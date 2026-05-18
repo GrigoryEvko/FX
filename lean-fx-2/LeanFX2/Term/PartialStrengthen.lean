@@ -7953,6 +7953,96 @@ boolTrue / boolFalse / natZero / interval0 / interval1 /
 universeCode) and the var case; recursive ctors land in follow-up
 ticks. -/
 
+/-- Cast-invariance for `partialStrengthenTyped?` `.isSome` at the
+Ty index.
+
+When the source Term is wrapped in a type-equality cast `typeEq ▸
+sourceTerm`, the dispatcher's `.isSome` result is the same as the
+un-cast form.  The transport is structural on Eq: `cases typeEq`
+peels the cast cleanly.  This is the `partialStrengthen?` analog of
+`strengthenTyped?_isSome_castInvariant` in StrengtheningImage. -/
+theorem partialStrengthenTyped?_isSome_castInvariant
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {someTypeA someTypeB : Ty level sourceScope}
+    {someRaw : RawTerm sourceScope}
+    (sourceTerm : Term sourceCtx someTypeA someRaw)
+    (typeEq : someTypeA = someTypeB)
+    (strengthening : ContextStrengthening sourceCtx targetCtx) :
+    (partialStrengthenTyped? (typeEq ▸ sourceTerm) strengthening).isSome
+      = (partialStrengthenTyped? sourceTerm strengthening).isSome := by
+  cases typeEq
+  rfl
+
+/-- Cast-invariance of `partialStrengthenTyped?` via `HEq`.
+
+When the source Term is wrapped in a type-equality cast `typeEq ▸
+sourceTerm`, the dispatcher's result is HEq-related to the un-cast
+form.  HEq abstracts over the differing result types
+(`Option (StrengtheningResult σ (typeEq ▸ sourceTerm))` vs
+`Option (StrengtheningResult σ sourceTerm)`).  Used to bridge the
+cast-wrapped dispatcher invocation back to the un-cast IH. -/
+theorem partialStrengthenTyped?_castInvariantHEq
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {someTypeA someTypeB : Ty level sourceScope}
+    {someRaw : RawTerm sourceScope}
+    (sourceTerm : Term sourceCtx someTypeA someRaw)
+    (typeEq : someTypeA = someTypeB)
+    (strengthening : ContextStrengthening sourceCtx targetCtx) :
+    HEq
+      (partialStrengthenTyped? (typeEq ▸ sourceTerm) strengthening)
+      (partialStrengthenTyped? sourceTerm strengthening) := by
+  cases typeEq
+  rfl
+
+/-- `Term.rename` arm reshape for `Term.oeqFunext`.
+
+The rename arm wraps the `pointwiseProof` argument in
+`oeqFunextPointwiseType_rename rho domainType codomainType
+leftFunctionRaw rightFunctionRaw ▸ Term.rename termRenaming
+pointwiseProof` to align the result type with the renamed
+`oeqFunextPointwiseType`.  This lemma exposes the cast equation as
+an explicit (non-internal) proof so downstream rewriting can
+manipulate the cast structurally.
+
+Proved by `rfl` because `Term.rename`'s `oeqFunext` arm normalises
+to the cast-wrapped form. -/
+theorem rename_oeqFunext_unfolds {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (typedRenaming : TermRenaming sourceCtx targetCtx rho)
+    (domainType codomainType : Ty level sourceScope)
+    (leftFunctionRaw rightFunctionRaw : RawTerm sourceScope)
+    {pointwiseRaw : RawTerm sourceScope}
+    (pointwiseProof :
+      Term sourceCtx
+        (oeqFunextPointwiseType domainType codomainType
+          leftFunctionRaw rightFunctionRaw)
+        pointwiseRaw) :
+    Term.rename typedRenaming
+        (Term.oeqFunext (context := sourceCtx) domainType codomainType
+          leftFunctionRaw rightFunctionRaw pointwiseProof) =
+      Term.oeqFunext (context := targetCtx)
+        (domainType.rename rho)
+        (codomainType.rename rho)
+        (leftFunctionRaw.rename rho)
+        (rightFunctionRaw.rename rho)
+        ((oeqFunextPointwiseType_rename rho
+          domainType codomainType leftFunctionRaw rightFunctionRaw) ▸
+          (Term.rename typedRenaming pointwiseProof :
+            Term targetCtx
+              ((oeqFunextPointwiseType domainType codomainType
+                leftFunctionRaw rightFunctionRaw).rename rho)
+              (pointwiseRaw.rename rho))) := by
+  rfl
+
 /-- Closed-atomic strength-T1 case: `Term.unit`.
 
 The dispatcher's unit arm returns `partialStrengthenTypedUnit`
