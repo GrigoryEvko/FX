@@ -12312,6 +12312,79 @@ theorem isAggregatorTotal_oeqFunext {mode : Mode} {level : Nat}
                         cases pointwiseTotalCall
                     · rfl
 
+/-- 0-IH totality: `Term.funextIntroHet`.  Source type
+`Ty.id (Ty.arrow domainType codomainType) (RawTerm.lam applyARaw)
+(RawTerm.lam applyBRaw)`.  Decompose typeStrengthens via Ty.id mapThree
+→ arrow.back + two lam raw witnesses.  Ty.arrow.mapTwo gives dom + codom.
+Each lam-raw decomposes (via RawTerm.lam) to applyXRaw at .back.lift. -/
+theorem isAggregatorTotal_funextIntroHet {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (domainType codomainType : Ty level sourceScope)
+    (applyARaw applyBRaw : RawTerm (sourceScope + 1)) :
+    IsAggregatorTotal (Term.funextIntroHet (context := sourceCtx)
+      domainType codomainType applyARaw applyBRaw) := by
+  intros _ _ strengthening _ _ typeStrengthens _
+  -- Decompose typeStrengthens via Ty.id mapThree
+  change Option.mapThree
+      ((Ty.arrow domainType codomainType).partialStrengthen?
+        strengthening.back)
+      ((RawTerm.lam applyARaw).partialStrengthen?
+        strengthening.back)
+      ((RawTerm.lam applyBRaw).partialStrengthen?
+        strengthening.back)
+      Ty.id = some _ at typeStrengthens
+  obtain ⟨_, _, _, arrowSuccess, lamAOk, lamBOk, _⟩ :=
+    Option.mapThree_eq_some typeStrengthens
+  -- Decompose arrowSuccess via Ty.arrow mapTwo
+  change Option.mapTwo
+      (domainType.partialStrengthen? strengthening.back)
+      (codomainType.partialStrengthen? strengthening.back)
+      Ty.arrow = some _ at arrowSuccess
+  obtain ⟨_, _, domainSuccess, codomainSuccess, _⟩ :=
+    Option.mapTwo_eq_some arrowSuccess
+  -- Decompose lamAOk (RawTerm.lam → applyARaw at lift)
+  unfold RawTerm.partialStrengthen? at lamAOk
+  unfold RawTerm.partialRename? at lamAOk
+  split at lamAOk
+  rotate_left
+  · cases lamAOk
+  next targetApplyARaw applyARawRenSuccess =>
+    have applyAStrengthenSuccess :
+        applyARaw.partialStrengthen? strengthening.back.lift =
+          some targetApplyARaw := applyARawRenSuccess
+    -- Decompose lamBOk (RawTerm.lam → applyBRaw at lift)
+    unfold RawTerm.partialStrengthen? at lamBOk
+    unfold RawTerm.partialRename? at lamBOk
+    split at lamBOk
+    rotate_left
+    · cases lamBOk
+    next targetApplyBRaw applyBRawRenSuccess =>
+      have applyBStrengthenSuccess :
+          applyBRaw.partialStrengthen? strengthening.back.lift =
+            some targetApplyBRaw := applyBRawRenSuccess
+      -- Discharge the dispatcher
+      unfold partialStrengthenTyped?
+      split
+      · next domainFails =>
+          rw [domainSuccess] at domainFails
+          cases domainFails
+      · next _ _ =>
+          split
+          · next codomainFails =>
+              rw [codomainSuccess] at codomainFails
+              cases codomainFails
+          · next _ _ =>
+              split
+              · next applyAFails =>
+                  rw [applyAStrengthenSuccess] at applyAFails
+                  cases applyAFails
+              · next _ _ =>
+                  split
+                  · next applyBFails =>
+                      rw [applyBStrengthenSuccess] at applyBFails
+                      cases applyBFails
+                  · rfl
+
 /-- 2-IH totality: `Term.glueIntro`.  Source type
 `Ty.glue baseType boundaryWitness`; dispatcher needs baseType.back +
 boundaryWitness.back + 2 IH children (baseValue, partialValue), both

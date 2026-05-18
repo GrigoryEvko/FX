@@ -975,6 +975,8 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_glueIntro
 -- Phase Y.1 Wave 3: oeqFunext (oeq+arrow+lift-app construction)
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_oeqFunext
+-- Phase Y.1 Wave 4: funextIntroHet (0-IH, id+arrow+lam decomposition)
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_funextIntroHet
 
 -- Phase X: bridge from `IsAggregatorTotal (Term.weaken ...)` to
 -- `IsTotalOnWeaken` and the three binder wrappers that close the
