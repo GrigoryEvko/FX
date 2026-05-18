@@ -968,4 +968,16 @@ existing computational dispatcher. -/
 -- Phase 1.C Wave 8: codataUnfold (mapTwo of stateType + outputType)
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_codataUnfold
 
+-- Phase X: bridge from `IsAggregatorTotal (Term.weaken ...)` to
+-- `IsTotalOnWeaken` and the three binder wrappers that close the
+-- IsTotalOnWeaken cascade from 75/78 to 78/78.  Each wrapper applies
+-- the bridge to a per-newType `IsAggregatorTotal` hypothesis on the
+-- weakened binder term; downstream constructions of that hypothesis
+-- combine body's `IsAggregatorTotal` IH with the typed rename-
+-- compatibility transport and `isAggregatorTotal_<binder>`.
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_of_weaken_isAggregatorTotal
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_lam
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_lamPi
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_pathLam
+
 end LeanFX2.Tools
