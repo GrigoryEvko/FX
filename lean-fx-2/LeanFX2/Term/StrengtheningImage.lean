@@ -11914,6 +11914,61 @@ theorem isAggregatorTotal_refineIntro {mode : Mode} {level : Nat}
               cases proofTotalCall
           · rfl
 
+/-- 2-IH totality: `Term.codataUnfold`.  Source type
+`Ty.codata stateType outputType` — typeStrengthens decomposes via
+mapTwo (stateType + outputType).  initialState's type is stateType;
+transition's type is `Ty.arrow stateType outputType` (built via
+mapTwo). -/
+theorem isAggregatorTotal_codataUnfold {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {stateType outputType : Ty level sourceScope}
+    {stateRaw transitionRaw : RawTerm sourceScope}
+    {initialState : Term sourceCtx stateType stateRaw}
+    {transition : Term sourceCtx (Ty.arrow stateType outputType) transitionRaw}
+    (stateTotal : IsAggregatorTotal initialState)
+    (transitionTotal : IsAggregatorTotal transition) :
+    IsAggregatorTotal
+      (Term.codataUnfold (initialState := initialState) (transition := transition)) := by
+  intros _ _ strengthening _ _ typeStrengthens rawStrengthens
+  obtain ⟨targetStateType, targetOutputType, stateSuccess, outputSuccess, _⟩ :=
+    Option.mapTwo_eq_some typeStrengthens
+  change Option.mapTwo
+      (stateRaw.partialStrengthen? strengthening.back)
+      (transitionRaw.partialStrengthen? strengthening.back)
+      RawTerm.codataUnfold = some _ at rawStrengthens
+  obtain ⟨_, _, stateRawSuccess, transitionRawSuccess, _⟩ :=
+    Option.mapTwo_eq_some rawStrengthens
+  have stateTotalCall :=
+    stateTotal strengthening stateSuccess stateRawSuccess
+  have arrowStrengthens :
+      (Ty.arrow stateType outputType).partialStrengthen?
+          strengthening.back =
+        some (Ty.arrow targetStateType targetOutputType) := by
+    show Option.mapTwo
+        (stateType.partialStrengthen? strengthening.back)
+        (outputType.partialStrengthen? strengthening.back)
+        Ty.arrow = _
+    rw [stateSuccess, outputSuccess]
+    rfl
+  have transitionTotalCall :=
+    transitionTotal strengthening arrowStrengthens transitionRawSuccess
+  unfold partialStrengthenTyped?
+  split
+  · next outputFails =>
+      rw [outputSuccess] at outputFails
+      cases outputFails
+  · next _ _ =>
+      split
+      · next stateFails =>
+          rw [stateFails] at stateTotalCall
+          cases stateTotalCall
+      · next _ _ =>
+          split
+          · next transitionFails =>
+              rw [transitionFails] at transitionTotalCall
+              cases transitionTotalCall
+          · rfl
+
 
 /-! ## Image theorem trio — weaken / strengthen invertibility
 

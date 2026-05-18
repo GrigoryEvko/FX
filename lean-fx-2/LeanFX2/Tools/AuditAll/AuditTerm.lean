@@ -965,5 +965,7 @@ existing computational dispatcher. -/
 -- Phase 1.C Wave 7: equivReflId + refineIntro
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_equivReflId
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_refineIntro
+-- Phase 1.C Wave 8: codataUnfold (mapTwo of stateType + outputType)
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_codataUnfold
 
 end LeanFX2.Tools
