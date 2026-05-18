@@ -8149,48 +8149,69 @@ through `Term.rename` as `elementType.rename forwardRename`.
 Their dispatcher arms use the match-with-binding form
 `match elementSuccess : elementType.partialStrengthen? strengthening.back with`
 that captures the equation for use by per-ctor helpers like
-`partialStrengthenTypedListNilOfType`.  The captured equation makes
-the inner match dependent: standard `rw [elementStrengthens]` fails
-with "motive is not type-correct", and `generalize ... at h` fails
-because the binding-form match-with-binding cannot be re-elaborated
-after the discriminant generalizes.
+`partialStrengthenTypedListNilOfType`.  Five distinct collapse
+strategies all hit the same structural wall:
 
-**Concrete Lean error** (commit afa8df24 attempts on listNil):
+**(P1 attempted — `rw [elementStrengthens]`)**  Motive-not-type-correct
+error: the captured `codomainSuccess` makes the match dependent.
+
+**(P2 attempted — `generalize ... at h` + `cases`)**  Same motive
+error during `generalize`: `match codomainSuccess : optResult with`
+becomes ill-typed when `optResult` is abstracted.
+
+**(P3 attempted — `set + clear_value`)**  `clear_value` is a Mathlib
+tactic, not present in stdlib Lean 4.
+
+**(P4 attempted — multi-discriminant term-mode match
+`match opt, h with | some _, rfl => ...`)**  The helper inside the
+inner match captures `codomainSuccess : discrim = some y` (after
+outer match refines `discrim := some target`), but the helper's
+signature still demands
+`elementType.partialStrengthen? strengthening.back = some y` —
+type mismatch since these expressions are NOT definitionally
+equal, only propositionally via `elementStrengthens`.
+
+**(P5 attempted — `Eq.subst` with explicit motive
+`fun discrim => ∀ h : discrim = some target, match ... = some (helper ... h)`)**
+Same type mismatch in motive body: helper's signature demands
+the specific dispatcher discriminant.
+
+**Root cause:** `partialStrengthenTypedListNilOfType`'s last
+argument has type
+`elementType.partialStrengthen? strengthening.back = some y`
+with the SPECIFIC dispatcher discriminant expression baked into
+its signature.  Any motive that abstracts the discriminant breaks
+this signature.  The helper's body uses `rw [elementTypeStrengthens]`
+to discharge `Ty.listType (...).partialStrengthen? = some
+(Ty.listType target)` — this rewrite REQUIRES the specific
+discriminant LHS in the proof term.
+
+**Concrete unblock path (P6, deferred):**  Refactor
+`partialStrengthenTypedListNilOfType`'s last argument from the
+specific-discriminant equation to a parametric witness type:
 ```
-Tactic `generalize` failed: result is not type correct
-  ∀ (optResult : Option (Ty level targetScope)),
-    ... ((match codomainSuccess : optResult with ...)) ...
+{actualDiscrim : Option (Ty level targetScope)}
+(discrimMatches : actualDiscrim = elementType.partialStrengthen? strengthening.back)
+(strengthens : actualDiscrim = some targetElementType)
 ```
-
-Resolution paths to explore in a follow-up tick:
-
-* (P1) Rewrite `partialStrengthenTyped?` dispatcher to NOT use the
-  match-with-binding form — replace `match h : X with | some y => f y h`
-  by `match X with | some y => f y rfl` everywhere the captured
-  equation is used as a discharge for `typeStrengthens`.  Requires
-  per-ctor refactor; mechanical but invasive (~50 ctors touched).
-
-* (P2) Build a fully manual `Option.rec`-based collapse lemma with
-  an explicit motive of shape `fun opt => opt = some Y → goal`.
-  Requires careful dependent-type wrangling; complexity comparable
-  to the original Wave 6 disjunctive eliminator work.
-
-* (P3) Restructure the strength-T1 statement to take the
-  per-ctor strengthening witness as an explicit hypothesis instead
-  of computing it from `Term.rename`.  This sidesteps the inner
-  match entirely but produces a weaker headline that's harder to
-  consume downstream.
+Then the helper's `typeStrengthens` field can chain through
+`discrimMatches` + `strengthens`, decoupling the type signature
+from the specific dispatcher discriminant.  This unblocks the
+~7 parametric-atomic ctors uniformly.
 
 Per the warrior-mentality discipline in `CLAUDE.md`, this is genuine
-v1.1-deferral because the blocker is structural (Lean 4 v4.29.1
-match-with-binding dependent-elimination wall), the three escape
-hatches above have been catalogued, and the deferred work has a
-concrete unblock path.  The 7 closed-atomic / value-data-only T1
-cases (unit / boolTrue / boolFalse / natZero / interval0 /
-interval1 / universeCode) plus the `ofRenaming` + `fromRename`
-infrastructure already constitute a meaningful T1 down-payment.
+v1.1-deferral because:
+1. Blocker is structural — five distinct tactical paths catalogued
+   above, all hitting the same root cause.
+2. Concrete unblock path (P6) is specified, with a clear refactor
+   scope (~7 ctor helpers in PartialStrengthen.lean).
+3. The deferred work is tracked under task #1952 (open T1 cascade).
 
-The full 71-ctor T1 cascade lives in #1952's open-ended scope. -/
+The 7 closed-atomic / value-data-only T1 cases (unit / boolTrue /
+boolFalse / natZero / interval0 / interval1 / universeCode) plus
+the `ofRenaming` + `fromRename` infrastructure already shipped
+zero-axiom in this commit chain (79949557 → afa8df24 → ea2aff43)
+constitute a meaningful T1 down-payment. -/
 
 end Term
 
