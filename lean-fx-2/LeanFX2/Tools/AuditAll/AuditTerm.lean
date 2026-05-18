@@ -985,6 +985,9 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_codataDest_with_state
 -- Phase Y.2 Wave 3: fst (secondType.back.lift bridge)
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_fst_with_second
+-- Phase Y.2 Wave 4: equivApp + equivApply (carrierA bridges)
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_equivApp_with_carrierA
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_equivApply_with_carrierA
 
 -- Phase X: bridge from `IsAggregatorTotal (Term.weaken ...)` to
 -- `IsTotalOnWeaken` and the three binder wrappers that close the

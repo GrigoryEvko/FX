@@ -12841,6 +12841,138 @@ theorem isAggregatorTotal_fst_with_second {mode : Mode} {level : Nat}
                 cases pairTotalCall
             · rfl
 
+/-- Bridge totality wrapper for `Term.equivApp`.  Source type is
+`carrierB`; dispatcher needs carrierA.back + carrierB.back +
+equivTerm IH (Ty.equiv) + argumentTerm IH (carrierA).  Take
+carrierA.back strengthening as extra hypothesis. -/
+theorem isAggregatorTotal_equivApp_with_carrierA {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {carrierA carrierB : Ty level sourceScope}
+    {equivRaw argumentRaw : RawTerm sourceScope}
+    {equivTerm : Term sourceCtx (Ty.equiv carrierA carrierB) equivRaw}
+    {argumentTerm : Term sourceCtx carrierA argumentRaw}
+    (equivTotal : IsAggregatorTotal equivTerm)
+    (argumentTotal : IsAggregatorTotal argumentTerm)
+    (carrierATotal :
+      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
+        (strengthening : ContextStrengthening sourceCtx targetCtx)
+        {targetCarrierB : Ty level targetScope},
+        carrierB.partialStrengthen? strengthening.back =
+            some targetCarrierB →
+        ∃ targetCarrierA,
+          carrierA.partialStrengthen? strengthening.back =
+            some targetCarrierA) :
+    IsAggregatorTotal (Term.equivApp equivTerm argumentTerm) := by
+  intros _ _ strengthening targetCarrierB _ typeStrengthens rawStrengthens
+  change Option.mapTwo
+      (equivRaw.partialStrengthen? strengthening.back)
+      (argumentRaw.partialStrengthen? strengthening.back)
+      RawTerm.equivApp = some _ at rawStrengthens
+  obtain ⟨_, _, equivRawSuccess, argumentRawSuccess, _⟩ :=
+    Option.mapTwo_eq_some rawStrengthens
+  obtain ⟨targetCarrierA, carrierASuccess⟩ :=
+    carrierATotal strengthening typeStrengthens
+  have equivTypeStrengthens :
+      (Ty.equiv carrierA carrierB).partialStrengthen?
+          strengthening.back =
+        some (Ty.equiv targetCarrierA targetCarrierB) := by
+    show Option.mapTwo
+        (carrierA.partialStrengthen? strengthening.back)
+        (carrierB.partialStrengthen? strengthening.back)
+        Ty.equiv = _
+    rw [carrierASuccess, typeStrengthens]
+    rfl
+  have equivTotalCall :=
+    equivTotal strengthening equivTypeStrengthens equivRawSuccess
+  have argumentTotalCall :=
+    argumentTotal strengthening carrierASuccess argumentRawSuccess
+  unfold partialStrengthenTyped?
+  split
+  · next carrierAFails =>
+      rw [carrierASuccess] at carrierAFails
+      cases carrierAFails
+  · next _ _ =>
+      split
+      · next carrierBFails =>
+          rw [typeStrengthens] at carrierBFails
+          cases carrierBFails
+      · next _ _ =>
+          split
+          · next equivFails =>
+              rw [equivFails] at equivTotalCall
+              cases equivTotalCall
+          · next _ _ =>
+              split
+              · next argumentFails =>
+                  rw [argumentFails] at argumentTotalCall
+                  cases argumentTotalCall
+              · rfl
+
+/-- Bridge totality wrapper for `Term.equivApply`.  Like equivApp but
+the raw uses RawTerm.equivApply.  Same auxiliary witness pattern. -/
+theorem isAggregatorTotal_equivApply_with_carrierA {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {carrierA carrierB : Ty level sourceScope}
+    {equivRaw argumentRaw : RawTerm sourceScope}
+    {equivTerm : Term sourceCtx (Ty.equiv carrierA carrierB) equivRaw}
+    {argumentTerm : Term sourceCtx carrierA argumentRaw}
+    (equivTotal : IsAggregatorTotal equivTerm)
+    (argumentTotal : IsAggregatorTotal argumentTerm)
+    (carrierATotal :
+      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
+        (strengthening : ContextStrengthening sourceCtx targetCtx)
+        {targetCarrierB : Ty level targetScope},
+        carrierB.partialStrengthen? strengthening.back =
+            some targetCarrierB →
+        ∃ targetCarrierA,
+          carrierA.partialStrengthen? strengthening.back =
+            some targetCarrierA) :
+    IsAggregatorTotal (Term.equivApply equivTerm argumentTerm) := by
+  intros _ _ strengthening targetCarrierB _ typeStrengthens rawStrengthens
+  change Option.mapTwo
+      (equivRaw.partialStrengthen? strengthening.back)
+      (argumentRaw.partialStrengthen? strengthening.back)
+      RawTerm.equivApply = some _ at rawStrengthens
+  obtain ⟨_, _, equivRawSuccess, argumentRawSuccess, _⟩ :=
+    Option.mapTwo_eq_some rawStrengthens
+  obtain ⟨targetCarrierA, carrierASuccess⟩ :=
+    carrierATotal strengthening typeStrengthens
+  have equivTypeStrengthens :
+      (Ty.equiv carrierA carrierB).partialStrengthen?
+          strengthening.back =
+        some (Ty.equiv targetCarrierA targetCarrierB) := by
+    show Option.mapTwo
+        (carrierA.partialStrengthen? strengthening.back)
+        (carrierB.partialStrengthen? strengthening.back)
+        Ty.equiv = _
+    rw [carrierASuccess, typeStrengthens]
+    rfl
+  have equivTotalCall :=
+    equivTotal strengthening equivTypeStrengthens equivRawSuccess
+  have argumentTotalCall :=
+    argumentTotal strengthening carrierASuccess argumentRawSuccess
+  unfold partialStrengthenTyped?
+  split
+  · next carrierAFails =>
+      rw [carrierASuccess] at carrierAFails
+      cases carrierAFails
+  · next _ _ =>
+      split
+      · next carrierBFails =>
+          rw [typeStrengthens] at carrierBFails
+          cases carrierBFails
+      · next _ _ =>
+          split
+          · next equivFails =>
+              rw [equivFails] at equivTotalCall
+              cases equivTotalCall
+          · next _ _ =>
+              split
+              · next argumentFails =>
+                  rw [argumentFails] at argumentTotalCall
+                  cases argumentTotalCall
+              · rfl
+
 /-! ## Image theorem trio — weaken / strengthen invertibility
 
 Three closure theorems on the image of `Term.weaken` under
