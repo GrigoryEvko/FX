@@ -1,5 +1,6 @@
 import LeanFX2.Term.Rename
 import LeanFX2.Foundation.TyStrengthen
+import LeanFX2.Foundation.RenameIdentity
 
 /-! # Context strengthening morphisms.
 
@@ -212,6 +213,64 @@ def lift {mode : Mode} {level : Nat}
                           Nat.lt_of_succ_lt_succ targetIsLt⟩
                         innerSurvives]
                     rfl
+
+/-- Strengthening obtained from an injective typed renaming.
+
+Given a total source-to-target `renaming` whose typed companion
+`typedRenaming` preserves variable types, plus a partial left-inverse
+`renameInverse : PartialRawRenaming targetScope sourceScope` witnessing
+injectivity of `renaming`, build a `ContextStrengthening targetCtx
+sourceCtx`.
+
+The contract laws follow:
+* `back := renameInverse`, `forward := renaming` — supplied as inputs.
+* `back_forward` — exactly `renameInverseLeft` (the left-inverse law).
+* `injectsBack` — exactly `renameInverseInjects` (the partial-inverse
+  pointwise identification law).
+* `varTypeStrengthens` — follows from
+  `Ty.partialStrengthen?_rename_some` applied at `sourceRenaming :=
+  renaming` and `targetRenaming := RawRenaming.identity`, then closed
+  via `Ty.rename_identity`.
+
+This is the keystone constructor for strength-T1
+(`Term.strengthenTyped?_rename_eq`): the per-ctor structural induction
+operates against the strengthening induced by an arbitrary injective
+renaming, not just `dropNewest`. -/
+def ofRenaming
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition) :
+    ContextStrengthening targetCtx sourceCtx where
+  back := renameInverse
+  forward := forwardRename
+  back_forward := renameInverseLeft
+  injectsBack := renameInverseInjects
+  varTypeStrengthens := by
+    intro targetPosition sourcePosition survives
+    have positionIsImage :=
+      renameInverseInjects targetPosition sourcePosition survives
+    have typedEvidence := typedRenaming sourcePosition
+    rw [positionIsImage, typedEvidence]
+    have inverseAtIdentity :
+        ∀ probe,
+          renameInverse (forwardRename probe) =
+            some (@RawRenaming.identity sourceScope probe) :=
+      renameInverseLeft
+    rw [Ty.partialStrengthen?_rename_some
+      (varType sourceCtx sourcePosition) forwardRename
+      (@RawRenaming.identity sourceScope) renameInverse inverseAtIdentity,
+      Ty.rename_identity (varType sourceCtx sourcePosition)]
 
 end ContextStrengthening
 
