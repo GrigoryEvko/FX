@@ -14540,6 +14540,81 @@ theorem isAggregatorTotal_snd_with_sigma_witnesses {mode : Mode}
                 cases pairTotalCall
             · rfl
 
+/-- Bridge totality wrapper for `Term.appPi`.  Source type is
+`codomainType.subst0 domainType argumentRaw`; dispatcher needs
+domainType.back + codomainType.back.lift + function IH (Ty.piTy) +
+argument IH (domainType).  Take domain + codomain witnesses as
+extra hypotheses. -/
+theorem isAggregatorTotal_appPi_with_pi_witnesses {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {domainType : Ty level sourceScope}
+    {codomainType : Ty level (sourceScope + 1)}
+    {functionRaw argumentRaw : RawTerm sourceScope}
+    {functionTerm :
+      Term sourceCtx (Ty.piTy domainType codomainType) functionRaw}
+    {argumentTerm : Term sourceCtx domainType argumentRaw}
+    (functionTotal : IsAggregatorTotal functionTerm)
+    (argumentTotal : IsAggregatorTotal argumentTerm)
+    (piTotal :
+      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
+        (strengthening : ContextStrengthening sourceCtx targetCtx)
+        {targetSourceType : Ty level targetScope},
+        (codomainType.subst0 domainType argumentRaw).partialStrengthen?
+            strengthening.back =
+            some targetSourceType →
+        ∃ targetDomainType targetCodomainType,
+          domainType.partialStrengthen? strengthening.back =
+              some targetDomainType ∧
+          codomainType.partialStrengthen? strengthening.back.lift =
+              some targetCodomainType) :
+    IsAggregatorTotal (Term.appPi functionTerm argumentTerm) := by
+  intros _ _ strengthening _ _ typeStrengthens rawStrengthens
+  change Option.mapTwo
+      (functionRaw.partialStrengthen? strengthening.back)
+      (argumentRaw.partialStrengthen? strengthening.back)
+      RawTerm.app = some _ at rawStrengthens
+  obtain ⟨_, _, functionRawSuccess, argumentRawSuccess, _⟩ :=
+    Option.mapTwo_eq_some rawStrengthens
+  obtain ⟨targetDomainType, targetCodomainType, domainSuccess,
+    codomainSuccess⟩ :=
+    piTotal strengthening typeStrengthens
+  -- functionTerm type: Ty.piTy domainType codomainType
+  have piTypeStrengthens :
+      (Ty.piTy domainType codomainType).partialStrengthen?
+          strengthening.back =
+        some (Ty.piTy targetDomainType targetCodomainType) := by
+    show Option.mapTwo
+        (domainType.partialStrengthen? strengthening.back)
+        (codomainType.partialStrengthen? strengthening.back.lift)
+        Ty.piTy = _
+    rw [domainSuccess, codomainSuccess]
+    rfl
+  have functionTotalCall :=
+    functionTotal strengthening piTypeStrengthens functionRawSuccess
+  have argumentTotalCall :=
+    argumentTotal strengthening domainSuccess argumentRawSuccess
+  unfold partialStrengthenTyped?
+  split
+  · next domainFails =>
+      rw [domainSuccess] at domainFails
+      cases domainFails
+  · next _ _ =>
+      split
+      · next codomainFails =>
+          rw [codomainSuccess] at codomainFails
+          cases codomainFails
+      · next _ _ =>
+          split
+          · next functionFails =>
+              rw [functionFails] at functionTotalCall
+              cases functionTotalCall
+          · next _ _ =>
+              split
+              · next argumentFails =>
+                  rw [argumentFails] at argumentTotalCall
+                  cases argumentTotalCall
+              · rfl
+
 /-! ## Image theorem trio — weaken / strengthen invertibility
 
 Three closure theorems on the image of `Term.weaken` under
