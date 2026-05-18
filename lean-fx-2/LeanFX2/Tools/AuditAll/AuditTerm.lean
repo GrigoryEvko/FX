@@ -967,9 +967,12 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_refineIntro
 -- Phase 1.C Wave 8: codataUnfold (mapTwo of stateType + outputType)
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_codataUnfold
--- Phase Y.1 Wave 1: funextRefl (piTy/id/weaken_lift inversion)
+-- Phase Y.1 Wave 1: funextRefl + funextReflAtId (piTy/id/weaken_lift)
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_funextRefl
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_funextReflAtId
+-- Phase Y.1 Wave 2: hcomp + glueIntro (carrier-direct / glue.mapTwo)
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_hcomp
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_glueIntro
 
 -- Phase X: bridge from `IsAggregatorTotal (Term.weaken ...)` to
 -- `IsTotalOnWeaken` and the three binder wrappers that close the

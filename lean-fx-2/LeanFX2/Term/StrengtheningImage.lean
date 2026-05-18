@@ -12100,6 +12100,103 @@ theorem isAggregatorTotal_funextReflAtId {mode : Mode} {level : Nat}
                   cases applyFails
               · rfl
 
+/-- 2-IH totality: `Term.hcomp`.  Source type is the carrier `carrierType`
+directly, and the dispatcher arm reads NO sub-Ty witnesses (only its
+two IH children).  Both children share the carrier as their type, so
+both IHs invoke with typeStrengthens directly.  Raw form
+`RawTerm.hcomp sidesRaw capRaw` decomposes mapTwo. -/
+theorem isAggregatorTotal_hcomp {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    {sidesRaw capRaw : RawTerm sourceScope}
+    {sidesValue : Term sourceCtx carrierType sidesRaw}
+    {capValue : Term sourceCtx carrierType capRaw}
+    (sidesTotal : IsAggregatorTotal sidesValue)
+    (capTotal : IsAggregatorTotal capValue) :
+    IsAggregatorTotal (Term.hcomp modeIsUnivalent sidesValue capValue) := by
+  intros _ _ strengthening _ _ typeStrengthens rawStrengthens
+  change Option.mapTwo
+      (sidesRaw.partialStrengthen? strengthening.back)
+      (capRaw.partialStrengthen? strengthening.back)
+      RawTerm.hcomp = some _ at rawStrengthens
+  obtain ⟨_, _, sidesRawSuccess, capRawSuccess, _⟩ :=
+    Option.mapTwo_eq_some rawStrengthens
+  have sidesTotalCall :=
+    sidesTotal strengthening typeStrengthens sidesRawSuccess
+  have capTotalCall :=
+    capTotal strengthening typeStrengthens capRawSuccess
+  unfold partialStrengthenTyped?
+  split
+  · next sidesFails =>
+      rw [sidesFails] at sidesTotalCall
+      cases sidesTotalCall
+  · next _ _ =>
+      split
+      · next capFails =>
+          rw [capFails] at capTotalCall
+          cases capTotalCall
+      · rfl
+
+/-- 2-IH totality: `Term.glueIntro`.  Source type
+`Ty.glue baseType boundaryWitness`; dispatcher needs baseType.back +
+boundaryWitness.back + 2 IH children (baseValue, partialValue), both
+typed at baseType.  typeStrengthens decomposes via Ty.glue mapTwo. -/
+theorem isAggregatorTotal_glueIntro {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (baseType : Ty level sourceScope)
+    (boundaryWitness : RawTerm sourceScope)
+    {baseRaw partialRaw : RawTerm sourceScope}
+    {baseValue : Term sourceCtx baseType baseRaw}
+    {partialValue : Term sourceCtx baseType partialRaw}
+    (baseTotal : IsAggregatorTotal baseValue)
+    (partialTotal : IsAggregatorTotal partialValue) :
+    IsAggregatorTotal
+      (Term.glueIntro modeIsUnivalent baseType boundaryWitness
+        baseValue partialValue) := by
+  intros _ _ strengthening _ _ typeStrengthens rawStrengthens
+  -- typeStrengthens : (Ty.glue baseType boundaryWitness).back = some _
+  change Option.mapTwo
+      (baseType.partialStrengthen? strengthening.back)
+      (boundaryWitness.partialStrengthen? strengthening.back)
+      Ty.glue = some _ at typeStrengthens
+  obtain ⟨targetBaseType, _, baseTypeSuccess, boundarySuccess, _⟩ :=
+    Option.mapTwo_eq_some typeStrengthens
+  -- rawStrengthens : (RawTerm.glueIntro baseRaw partialRaw).back = some _
+  change Option.mapTwo
+      (baseRaw.partialStrengthen? strengthening.back)
+      (partialRaw.partialStrengthen? strengthening.back)
+      RawTerm.glueIntro = some _ at rawStrengthens
+  obtain ⟨_, _, baseRawSuccess, partialRawSuccess, _⟩ :=
+    Option.mapTwo_eq_some rawStrengthens
+  -- Both children's type IS baseType
+  have baseTotalCall :=
+    baseTotal strengthening baseTypeSuccess baseRawSuccess
+  have partialTotalCall :=
+    partialTotal strengthening baseTypeSuccess partialRawSuccess
+  unfold partialStrengthenTyped?
+  split
+  · next baseTypeFails =>
+      rw [baseTypeSuccess] at baseTypeFails
+      cases baseTypeFails
+  · next _ _ =>
+      split
+      · next boundaryFails =>
+          rw [boundarySuccess] at boundaryFails
+          cases boundaryFails
+      · next _ _ =>
+          split
+          · next baseFails =>
+              rw [baseFails] at baseTotalCall
+              cases baseTotalCall
+          · next _ _ =>
+              split
+              · next partialFails =>
+                  rw [partialFails] at partialTotalCall
+                  cases partialTotalCall
+              · rfl
+
 /-! ## Image theorem trio — weaken / strengthen invertibility
 
 Three closure theorems on the image of `Term.weaken` under
