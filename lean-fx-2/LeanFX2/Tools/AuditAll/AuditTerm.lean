@@ -1104,5 +1104,10 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_equivCode
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_piTyCode
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_sigmaTyCode
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_funextReflAtId
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_refineIntro
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_refineElim
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_sessionSend
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_equivApp
 
 end LeanFX2.Tools

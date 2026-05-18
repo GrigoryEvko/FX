@@ -11284,6 +11284,469 @@ theorem strengthenTyped?_rename_eq_sigmaTyCode
       subst codomainEq
       rfl
 
+/-- HoTT-special strength-T1 case: `Term.funextReflAtId`.
+
+Carries 2 Ty payloads at the outer scope (domainType, codomainType)
+plus 1 RawTerm payload under one binder (applyRaw via `back.lift`).
+The codomain RawTerm `applyRaw` uses the same `rho.lift` survival
+recipe as `piTyCode`. -/
+theorem strengthenTyped?_rename_eq_funextReflAtId
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    {domainType codomainType : Ty level sourceScope}
+    (applyRaw : RawTerm (sourceScope + 1)) :
+    partialStrengthenTyped?
+        (Term.rename typedRenaming
+          (Term.funextReflAtId (context := sourceCtx) domainType codomainType
+            applyRaw))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)
+      = some (StrengtheningResult.fromRename forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects
+          (Term.funextReflAtId (context := sourceCtx) domainType codomainType
+            applyRaw)) := by
+  dsimp only [Term.rename]
+  unfold partialStrengthenTyped?
+  have domainStrengthens :
+      (domainType.rename forwardRename).partialStrengthen? renameInverse
+        = some domainType := by
+    rw [Ty.partialStrengthen?_rename_some domainType forwardRename
+      (@RawRenaming.identity sourceScope) renameInverse renameInverseLeft,
+      Ty.rename_identity domainType]
+  have codomainStrengthens :
+      (codomainType.rename forwardRename).partialStrengthen? renameInverse
+        = some codomainType := by
+    rw [Ty.partialStrengthen?_rename_some codomainType forwardRename
+      (@RawRenaming.identity sourceScope) renameInverse renameInverseLeft,
+      Ty.rename_identity codomainType]
+  have applyStrengthens :
+      (applyRaw.rename forwardRename.lift).partialStrengthen?
+          renameInverse.lift
+        = some applyRaw := by
+    rw [RawTerm.partialStrengthen?_rename_some applyRaw
+      forwardRename.lift (@RawRenaming.identity sourceScope).lift
+      renameInverse.lift
+      (PartialRawRenaming.lift_rename_some renameInverseLeft),
+      RawTerm.rename_pointwise
+        (@RawRenaming.identity_lift_pointwise sourceScope) applyRaw,
+      RawTerm.rename_identity applyRaw]
+  split
+  next noDomainSuccess =>
+    exact absurd (domainStrengthens.symm.trans noDomainSuccess)
+      (by intro contra; cases contra)
+  next targetDomainType domainSuccess =>
+    have domainEq : targetDomainType = domainType :=
+      Option.some.inj (domainSuccess.symm.trans domainStrengthens)
+    subst domainEq
+    split
+    next noCodomainSuccess =>
+      exact absurd (codomainStrengthens.symm.trans noCodomainSuccess)
+        (by intro contra; cases contra)
+    next targetCodomainType codomainSuccess =>
+      have codomainEq : targetCodomainType = codomainType :=
+        Option.some.inj (codomainSuccess.symm.trans codomainStrengthens)
+      subst codomainEq
+      split
+      next noApplySuccess =>
+        exact absurd (applyStrengthens.symm.trans noApplySuccess)
+          (by intro contra; cases contra)
+      next targetApplyRaw applySuccess =>
+        have applyEq : targetApplyRaw = applyRaw :=
+          Option.some.inj (applySuccess.symm.trans applyStrengthens)
+        subst applyEq
+        rfl
+
+/-- HoTT-special strength-T1 case: `Term.refineIntro`.
+
+Carries 1 binder-shape RawTerm payload (`predicate` at `scope+1` via
+`back.lift`) plus 2 Term IHs (`baseValue` at `baseType` + `predicateProof`
+at `Ty.unit`). -/
+theorem strengthenTyped?_rename_eq_refineIntro
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    {baseType : Ty level sourceScope}
+    (predicate : RawTerm (sourceScope + 1))
+    {valueRaw proofRaw : RawTerm sourceScope}
+    (baseValue : Term sourceCtx baseType valueRaw)
+    (predicateProof : Term sourceCtx Ty.unit proofRaw)
+    (baseIH :
+      partialStrengthenTyped?
+          (Term.rename typedRenaming baseValue)
+          (ContextStrengthening.ofRenaming forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects)
+        = some (StrengtheningResult.fromRename forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects
+            baseValue))
+    (proofIH :
+      partialStrengthenTyped?
+          (Term.rename typedRenaming predicateProof)
+          (ContextStrengthening.ofRenaming forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects)
+        = some (StrengtheningResult.fromRename forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects
+            predicateProof)) :
+    partialStrengthenTyped?
+        (Term.rename typedRenaming
+          (Term.refineIntro (context := sourceCtx) predicate baseValue
+            predicateProof))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)
+      = some (StrengtheningResult.fromRename forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects
+          (Term.refineIntro (context := sourceCtx) predicate baseValue
+            predicateProof)) := by
+  dsimp only [Term.rename]
+  unfold partialStrengthenTyped?
+  have predicateStrengthens :
+      (predicate.rename forwardRename.lift).partialStrengthen?
+          renameInverse.lift
+        = some predicate := by
+    rw [RawTerm.partialStrengthen?_rename_some predicate
+      forwardRename.lift (@RawRenaming.identity sourceScope).lift
+      renameInverse.lift
+      (PartialRawRenaming.lift_rename_some renameInverseLeft),
+      RawTerm.rename_pointwise
+        (@RawRenaming.identity_lift_pointwise sourceScope) predicate,
+      RawTerm.rename_identity predicate]
+  split
+  next noPredicateSuccess =>
+    exact absurd (predicateStrengthens.symm.trans noPredicateSuccess)
+      (by intro contra; cases contra)
+  next targetPredicate predicateSuccess =>
+    have predicateEq : targetPredicate = predicate :=
+      Option.some.inj (predicateSuccess.symm.trans predicateStrengthens)
+    subst predicateEq
+    split
+    next noBaseSuccess =>
+      exact absurd (baseIH.symm.trans noBaseSuccess)
+        (by intro contra; cases contra)
+    next baseResult baseSuccess =>
+      have baseEq : baseResult =
+          StrengtheningResult.fromRename forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects baseValue :=
+        Option.some.inj (baseSuccess.symm.trans baseIH)
+      subst baseEq
+      split
+      next noProofSuccess =>
+        exact absurd (proofIH.symm.trans noProofSuccess)
+          (by intro contra; cases contra)
+      next proofResult proofSuccess =>
+        have proofEq : proofResult =
+            StrengtheningResult.fromRename forwardRename typedRenaming
+              renameInverse renameInverseLeft renameInverseInjects
+              predicateProof :=
+          Option.some.inj (proofSuccess.symm.trans proofIH)
+        subst proofEq
+        rfl
+
+/-- HoTT-special strength-T1 case: `Term.refineElim`.
+
+Carries 1 Ty payload (`baseType` at outer `back`) + 1 binder-shape
+RawTerm payload (`predicate` at `back.lift`) + 1 Term IH
+(`refinedValue` at `Ty.refine baseType predicate`).  Both `baseType`
+and `predicate` are implicit on the ctor — they reconstruct from the
+refinedValue's type. -/
+theorem strengthenTyped?_rename_eq_refineElim
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    {baseType : Ty level sourceScope}
+    {predicate : RawTerm (sourceScope + 1)}
+    {refinedRaw : RawTerm sourceScope}
+    (refinedValue : Term sourceCtx (Ty.refine baseType predicate) refinedRaw)
+    (refinedIH :
+      partialStrengthenTyped?
+          (Term.rename typedRenaming refinedValue)
+          (ContextStrengthening.ofRenaming forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects)
+        = some (StrengtheningResult.fromRename forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects
+            refinedValue)) :
+    partialStrengthenTyped?
+        (Term.rename typedRenaming
+          (Term.refineElim (context := sourceCtx) (baseType := baseType)
+            (predicate := predicate) refinedValue))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)
+      = some (StrengtheningResult.fromRename forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects
+          (Term.refineElim (context := sourceCtx) (baseType := baseType)
+            (predicate := predicate) refinedValue)) := by
+  dsimp only [Term.rename]
+  unfold partialStrengthenTyped?
+  have baseStrengthens :
+      (baseType.rename forwardRename).partialStrengthen? renameInverse
+        = some baseType := by
+    rw [Ty.partialStrengthen?_rename_some baseType forwardRename
+      (@RawRenaming.identity sourceScope) renameInverse renameInverseLeft,
+      Ty.rename_identity baseType]
+  have predicateStrengthens :
+      (predicate.rename forwardRename.lift).partialStrengthen?
+          renameInverse.lift
+        = some predicate := by
+    rw [RawTerm.partialStrengthen?_rename_some predicate
+      forwardRename.lift (@RawRenaming.identity sourceScope).lift
+      renameInverse.lift
+      (PartialRawRenaming.lift_rename_some renameInverseLeft),
+      RawTerm.rename_pointwise
+        (@RawRenaming.identity_lift_pointwise sourceScope) predicate,
+      RawTerm.rename_identity predicate]
+  split
+  next noBaseSuccess =>
+    exact absurd (baseStrengthens.symm.trans noBaseSuccess)
+      (by intro contra; cases contra)
+  next targetBaseType baseSuccess =>
+    have baseEq : targetBaseType = baseType :=
+      Option.some.inj (baseSuccess.symm.trans baseStrengthens)
+    subst baseEq
+    split
+    next noPredicateSuccess =>
+      exact absurd (predicateStrengthens.symm.trans noPredicateSuccess)
+        (by intro contra; cases contra)
+    next targetPredicate predicateSuccess =>
+      have predicateEq : targetPredicate = predicate :=
+        Option.some.inj (predicateSuccess.symm.trans predicateStrengthens)
+      subst predicateEq
+      split
+      next noRefinedSuccess =>
+        exact absurd (refinedIH.symm.trans noRefinedSuccess)
+          (by intro contra; cases contra)
+      next refinedResult refinedSuccess =>
+        have refinedEq : refinedResult =
+            StrengtheningResult.fromRename forwardRename typedRenaming
+              renameInverse renameInverseLeft renameInverseInjects
+              refinedValue :=
+          Option.some.inj (refinedSuccess.symm.trans refinedIH)
+        subst refinedEq
+        rfl
+
+/-- HoTT-special strength-T1 case: `Term.sessionSend`.
+
+Carries 1 outer-scope RawTerm payload (`protocolStep` at `back`) + 2
+Term IHs (`channel` at `Ty.session protocolStep` + `payload` at
+`payloadType`).  The `payloadType` itself is implicit — reconstructed
+from the payload's type. -/
+theorem strengthenTyped?_rename_eq_sessionSend
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    (protocolStep : RawTerm sourceScope)
+    {payloadType : Ty level sourceScope}
+    {channelRaw payloadRaw : RawTerm sourceScope}
+    (channel : Term sourceCtx (Ty.session protocolStep) channelRaw)
+    (payload : Term sourceCtx payloadType payloadRaw)
+    (channelIH :
+      partialStrengthenTyped?
+          (Term.rename typedRenaming channel)
+          (ContextStrengthening.ofRenaming forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects)
+        = some (StrengtheningResult.fromRename forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects
+            channel))
+    (payloadIH :
+      partialStrengthenTyped?
+          (Term.rename typedRenaming payload)
+          (ContextStrengthening.ofRenaming forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects)
+        = some (StrengtheningResult.fromRename forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects
+            payload)) :
+    partialStrengthenTyped?
+        (Term.rename typedRenaming
+          (Term.sessionSend (context := sourceCtx) protocolStep channel
+            payload))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)
+      = some (StrengtheningResult.fromRename forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects
+          (Term.sessionSend (context := sourceCtx) protocolStep channel
+            payload)) := by
+  dsimp only [Term.rename]
+  unfold partialStrengthenTyped?
+  have protocolStrengthens :
+      (protocolStep.rename forwardRename).partialStrengthen? renameInverse
+        = some protocolStep := by
+    rw [RawTerm.partialStrengthen?_rename_some protocolStep forwardRename
+      (@RawRenaming.identity sourceScope) renameInverse renameInverseLeft,
+      RawTerm.rename_identity protocolStep]
+  split
+  next noProtocolSuccess =>
+    exact absurd (protocolStrengthens.symm.trans noProtocolSuccess)
+      (by intro contra; cases contra)
+  next targetProtocolStep protocolSuccess =>
+    have protocolEq : targetProtocolStep = protocolStep :=
+      Option.some.inj (protocolSuccess.symm.trans protocolStrengthens)
+    subst protocolEq
+    split
+    next noChannelSuccess =>
+      exact absurd (channelIH.symm.trans noChannelSuccess)
+        (by intro contra; cases contra)
+    next channelResult channelSuccess =>
+      have channelEq : channelResult =
+          StrengtheningResult.fromRename forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects channel :=
+        Option.some.inj (channelSuccess.symm.trans channelIH)
+      subst channelEq
+      split
+      next noPayloadSuccess =>
+        exact absurd (payloadIH.symm.trans noPayloadSuccess)
+          (by intro contra; cases contra)
+      next payloadResult payloadSuccess =>
+        have payloadEq : payloadResult =
+            StrengtheningResult.fromRename forwardRename typedRenaming
+              renameInverse renameInverseLeft renameInverseInjects payload :=
+          Option.some.inj (payloadSuccess.symm.trans payloadIH)
+        subst payloadEq
+        rfl
+
+/-- HoTT-special strength-T1 case: `Term.equivApp`.
+
+Carries 2 Ty payloads (`carrierA + carrierB` at outer `back`) + 2 Term
+IHs (`equivTerm` at `Ty.equiv carrierA carrierB` + `argumentTerm` at
+`carrierA`).  Both Ty payloads are implicit on the ctor. -/
+theorem strengthenTyped?_rename_eq_equivApp
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    {carrierA carrierB : Ty level sourceScope}
+    {equivRaw argumentRaw : RawTerm sourceScope}
+    (equivTerm : Term sourceCtx (Ty.equiv carrierA carrierB) equivRaw)
+    (argumentTerm : Term sourceCtx carrierA argumentRaw)
+    (equivIH :
+      partialStrengthenTyped?
+          (Term.rename typedRenaming equivTerm)
+          (ContextStrengthening.ofRenaming forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects)
+        = some (StrengtheningResult.fromRename forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects
+            equivTerm))
+    (argumentIH :
+      partialStrengthenTyped?
+          (Term.rename typedRenaming argumentTerm)
+          (ContextStrengthening.ofRenaming forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects)
+        = some (StrengtheningResult.fromRename forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects
+            argumentTerm)) :
+    partialStrengthenTyped?
+        (Term.rename typedRenaming
+          (Term.equivApp (context := sourceCtx) equivTerm argumentTerm))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)
+      = some (StrengtheningResult.fromRename forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects
+          (Term.equivApp (context := sourceCtx) equivTerm argumentTerm)) := by
+  dsimp only [Term.rename]
+  unfold partialStrengthenTyped?
+  have carrierAStrengthens :
+      (carrierA.rename forwardRename).partialStrengthen? renameInverse
+        = some carrierA := by
+    rw [Ty.partialStrengthen?_rename_some carrierA forwardRename
+      (@RawRenaming.identity sourceScope) renameInverse renameInverseLeft,
+      Ty.rename_identity carrierA]
+  have carrierBStrengthens :
+      (carrierB.rename forwardRename).partialStrengthen? renameInverse
+        = some carrierB := by
+    rw [Ty.partialStrengthen?_rename_some carrierB forwardRename
+      (@RawRenaming.identity sourceScope) renameInverse renameInverseLeft,
+      Ty.rename_identity carrierB]
+  split
+  next noCarrierASuccess =>
+    exact absurd (carrierAStrengthens.symm.trans noCarrierASuccess)
+      (by intro contra; cases contra)
+  next targetCarrierA carrierASuccess =>
+    have carrierAEq : targetCarrierA = carrierA :=
+      Option.some.inj (carrierASuccess.symm.trans carrierAStrengthens)
+    subst carrierAEq
+    split
+    next noCarrierBSuccess =>
+      exact absurd (carrierBStrengthens.symm.trans noCarrierBSuccess)
+        (by intro contra; cases contra)
+    next targetCarrierB carrierBSuccess =>
+      have carrierBEq : targetCarrierB = carrierB :=
+        Option.some.inj (carrierBSuccess.symm.trans carrierBStrengthens)
+      subst carrierBEq
+      split
+      next noEquivSuccess =>
+        exact absurd (equivIH.symm.trans noEquivSuccess)
+          (by intro contra; cases contra)
+      next equivResult equivSuccess =>
+        have equivEq : equivResult =
+            StrengtheningResult.fromRename forwardRename typedRenaming
+              renameInverse renameInverseLeft renameInverseInjects
+              equivTerm :=
+          Option.some.inj (equivSuccess.symm.trans equivIH)
+        subst equivEq
+        split
+        next noArgumentSuccess =>
+          exact absurd (argumentIH.symm.trans noArgumentSuccess)
+            (by intro contra; cases contra)
+        next argumentResult argumentSuccess =>
+          have argumentEq : argumentResult =
+              StrengtheningResult.fromRename forwardRename typedRenaming
+                renameInverse renameInverseLeft renameInverseInjects
+                argumentTerm :=
+            Option.some.inj (argumentSuccess.symm.trans argumentIH)
+          subst argumentEq
+          rfl
+
 end Term
 
 end LeanFX2
