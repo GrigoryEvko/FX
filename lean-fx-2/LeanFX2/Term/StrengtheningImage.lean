@@ -13874,6 +13874,81 @@ theorem isAggregatorTotal_equivIntroHet_with_inv_raws {mode : Mode}
                           cases rightInvTotalCall
                       · rfl
 
+/-- Bridge totality wrapper for `Term.sessionSend`.  Source type is
+`Ty.session protocolStep`; dispatcher needs protocolStep.back + channel
+IH (Ty.session protocolStep) + payload IH (payloadType).  Take
+payloadType.back as extra hypothesis (payloadType is NOT in source). -/
+theorem isAggregatorTotal_sessionSend_with_payload {mode : Mode}
+    {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (protocolStep : RawTerm sourceScope)
+    {payloadType : Ty level sourceScope}
+    {channelRaw payloadRaw : RawTerm sourceScope}
+    {channel : Term sourceCtx (Ty.session protocolStep) channelRaw}
+    {payload : Term sourceCtx payloadType payloadRaw}
+    (channelTotal : IsAggregatorTotal channel)
+    (payloadTotal : IsAggregatorTotal payload)
+    (payloadTypeTotal :
+      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
+        (strengthening : ContextStrengthening sourceCtx targetCtx)
+        {targetProtocolStep : RawTerm targetScope},
+        protocolStep.partialStrengthen? strengthening.back =
+            some targetProtocolStep →
+        ∃ targetPayloadType,
+          payloadType.partialStrengthen? strengthening.back =
+            some targetPayloadType) :
+    IsAggregatorTotal
+      (Term.sessionSend protocolStep channel payload) := by
+  intros _ _ strengthening _ _ typeStrengthens rawStrengthens
+  -- typeStrengthens : (Ty.session protocolStep).back = some _
+  -- Decompose by changing to the match form
+  change (match protocolStep.partialStrengthen? strengthening.back with
+          | some strengthenedProtocol => some (Ty.session strengthenedProtocol)
+          | none => none) = some _ at typeStrengthens
+  split at typeStrengthens
+  rotate_left
+  · cases typeStrengthens
+  next targetProtocolStep protocolSuccess =>
+    -- rawStrengthens : (RawTerm.sessionSend channelRaw payloadRaw).back
+    change Option.mapTwo
+        (channelRaw.partialStrengthen? strengthening.back)
+        (payloadRaw.partialStrengthen? strengthening.back)
+        RawTerm.sessionSend = some _ at rawStrengthens
+    obtain ⟨_, _, channelRawSuccess, payloadRawSuccess, _⟩ :=
+      Option.mapTwo_eq_some rawStrengthens
+    obtain ⟨targetPayloadType, payloadTypeSuccess⟩ :=
+      payloadTypeTotal strengthening protocolSuccess
+    -- channel's type strengthens
+    have sessionTypeStrengthens :
+        (Ty.session (level := level) protocolStep).partialStrengthen?
+            strengthening.back =
+          some (Ty.session (level := level) targetProtocolStep) := by
+      show (match protocolStep.partialStrengthen? strengthening.back with
+          | some strengthenedProtocol =>
+              some (Ty.session (level := level) strengthenedProtocol)
+          | none => none) = _
+      rw [protocolSuccess]
+    have channelTotalCall :=
+      channelTotal strengthening sessionTypeStrengthens channelRawSuccess
+    have payloadTotalCall :=
+      payloadTotal strengthening payloadTypeSuccess payloadRawSuccess
+    unfold partialStrengthenTyped?
+    split
+    · next protocolFails =>
+        rw [protocolSuccess] at protocolFails
+        cases protocolFails
+    · next _ _ =>
+        split
+        · next channelFails =>
+            rw [channelFails] at channelTotalCall
+            cases channelTotalCall
+        · next _ _ =>
+            split
+            · next payloadFails =>
+                rw [payloadFails] at payloadTotalCall
+                cases payloadTotalCall
+            · rfl
+
 /-! ## Image theorem trio — weaken / strengthen invertibility
 
 Three closure theorems on the image of `Term.weaken` under
