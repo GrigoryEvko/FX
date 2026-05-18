@@ -14615,6 +14615,112 @@ theorem isAggregatorTotal_appPi_with_pi_witnesses {mode : Mode} {level : Nat}
                   cases argumentTotalCall
               · rfl
 
+/-- Bridge totality wrapper for `Term.transp`.  Source type is
+`targetType`; dispatcher needs sourceType.back + targetType.back +
+sourceTypeRaw.back + targetTypeRaw.back + 2 IH children.  Take the
+3 missing witnesses (sourceType, sourceTypeRaw, targetTypeRaw) as
+extra hypotheses. -/
+theorem isAggregatorTotal_transp_with_path_witnesses {mode : Mode}
+    {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (universeLevel : UniverseLevel)
+    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+    (sourceType targetType : Ty level sourceScope)
+    (sourceTypeRaw targetTypeRaw : RawTerm sourceScope)
+    {pathRaw sourceRaw : RawTerm sourceScope}
+    {typePath :
+      Term sourceCtx
+        (Ty.path (Ty.universe universeLevel universeLevelLt)
+          sourceTypeRaw targetTypeRaw)
+        pathRaw}
+    {sourceValue : Term sourceCtx sourceType sourceRaw}
+    (pathTotal : IsAggregatorTotal typePath)
+    (sourceTotal : IsAggregatorTotal sourceValue)
+    (transpWitnessesTotal :
+      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
+        (strengthening : ContextStrengthening sourceCtx targetCtx)
+        {targetTargetType : Ty level targetScope},
+        targetType.partialStrengthen? strengthening.back =
+            some targetTargetType →
+        ∃ targetSourceType targetSourceTypeRaw targetTargetTypeRaw,
+          sourceType.partialStrengthen? strengthening.back =
+              some targetSourceType ∧
+          sourceTypeRaw.partialStrengthen? strengthening.back =
+              some targetSourceTypeRaw ∧
+          targetTypeRaw.partialStrengthen? strengthening.back =
+              some targetTargetTypeRaw) :
+    IsAggregatorTotal
+      (Term.transp modeIsUnivalent universeLevel universeLevelLt
+        sourceType targetType sourceTypeRaw targetTypeRaw
+        typePath sourceValue) := by
+  intros _ _ strengthening targetTargetType _ typeStrengthens rawStrengthens
+  change Option.mapTwo
+      (pathRaw.partialStrengthen? strengthening.back)
+      (sourceRaw.partialStrengthen? strengthening.back)
+      RawTerm.transp = some _ at rawStrengthens
+  obtain ⟨_, _, pathRawSuccess, sourceRawSuccess, _⟩ :=
+    Option.mapTwo_eq_some rawStrengthens
+  obtain ⟨targetSourceType, targetSourceTypeRaw, targetTargetTypeRaw,
+    sourceTypeSuccess, sourceTypeRawSuccess, targetTypeRawSuccess⟩ :=
+    transpWitnessesTotal strengthening typeStrengthens
+  -- typePath's type: Ty.path (Ty.universe ...) sourceTypeRaw targetTypeRaw
+  have universeStrengthens :
+      (Ty.universe universeLevel universeLevelLt :
+          Ty level sourceScope).partialStrengthen?
+          strengthening.back =
+        some (Ty.universe universeLevel universeLevelLt) := rfl
+  have pathTypeStrengthens :
+      (Ty.path (Ty.universe universeLevel universeLevelLt)
+        sourceTypeRaw targetTypeRaw).partialStrengthen?
+          strengthening.back =
+        some (Ty.path (Ty.universe universeLevel universeLevelLt)
+          targetSourceTypeRaw targetTargetTypeRaw) := by
+    show Option.mapThree
+        ((Ty.universe universeLevel universeLevelLt :
+            Ty level sourceScope).partialStrengthen?
+          strengthening.back)
+        (sourceTypeRaw.partialStrengthen? strengthening.back)
+        (targetTypeRaw.partialStrengthen? strengthening.back)
+        Ty.path = _
+    rw [universeStrengthens, sourceTypeRawSuccess, targetTypeRawSuccess]
+    rfl
+  have pathTotalCall :=
+    pathTotal strengthening pathTypeStrengthens pathRawSuccess
+  have sourceTotalCall :=
+    sourceTotal strengthening sourceTypeSuccess sourceRawSuccess
+  unfold partialStrengthenTyped?
+  split
+  · next sourceTypeFails =>
+      rw [sourceTypeSuccess] at sourceTypeFails
+      cases sourceTypeFails
+  · next _ _ =>
+      split
+      · next targetTypeFails =>
+          rw [typeStrengthens] at targetTypeFails
+          cases targetTypeFails
+      · next _ _ =>
+          split
+          · next sourceTypeRawFails =>
+              rw [sourceTypeRawSuccess] at sourceTypeRawFails
+              cases sourceTypeRawFails
+          · next _ _ =>
+              split
+              · next targetTypeRawFails =>
+                  rw [targetTypeRawSuccess] at targetTypeRawFails
+                  cases targetTypeRawFails
+              · next _ _ =>
+                  split
+                  · next pathFails =>
+                      rw [pathFails] at pathTotalCall
+                      cases pathTotalCall
+                  · next _ _ =>
+                      split
+                      · next sourceFails =>
+                          rw [sourceFails] at sourceTotalCall
+                          cases sourceTotalCall
+                      · rfl
+
 /-! ## Image theorem trio — weaken / strengthen invertibility
 
 Three closure theorems on the image of `Term.weaken` under
