@@ -13349,6 +13349,154 @@ theorem isAggregatorTotal_idStrictRec_with_idStrict_components
                       cases witnessTotalCall
                   · rfl
 
+/-- Bridge totality wrapper for `Term.equivReflIdAtId`.  Source type
+`Ty.id (Ty.universe innerLevel innerLevelLt) carrierRaw carrierRaw`
+encodes carrierRaw but NOT carrier (Ty).  Take carrier.back as extra
+hypothesis. -/
+theorem isAggregatorTotal_equivReflIdAtId_with_carrier {mode : Mode}
+    {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    (carrier : Ty level sourceScope)
+    (carrierRaw : RawTerm sourceScope)
+    (carrierTotal :
+      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
+        (strengthening : ContextStrengthening sourceCtx targetCtx)
+        {targetCarrierRaw : RawTerm targetScope},
+        carrierRaw.partialStrengthen? strengthening.back =
+            some targetCarrierRaw →
+        ∃ targetCarrier,
+          carrier.partialStrengthen? strengthening.back =
+            some targetCarrier) :
+    IsAggregatorTotal
+      (Term.equivReflIdAtId (context := sourceCtx) innerLevel innerLevelLt
+        carrier carrierRaw) := by
+  intros _ _ strengthening _ _ typeStrengthens _
+  change Option.mapThree
+      ((Ty.universe innerLevel innerLevelLt :
+          Ty level sourceScope).partialStrengthen?
+        strengthening.back)
+      (carrierRaw.partialStrengthen? strengthening.back)
+      (carrierRaw.partialStrengthen? strengthening.back)
+      Ty.id = some _ at typeStrengthens
+  obtain ⟨_, _, _, _, carrierRawSuccess, _, _⟩ :=
+    Option.mapThree_eq_some typeStrengthens
+  obtain ⟨_, carrierSuccess⟩ :=
+    carrierTotal strengthening carrierRawSuccess
+  unfold partialStrengthenTyped?
+  split
+  · next carrierFails =>
+      rw [carrierSuccess] at carrierFails
+      cases carrierFails
+  · next _ _ =>
+      split
+      · next carrierRawFails =>
+          rw [carrierRawSuccess] at carrierRawFails
+          cases carrierRawFails
+      · rfl
+
+/-- Bridge totality wrapper for `Term.uaToEquiv`.  Source type
+`Ty.equiv leftTy rightTy` encodes the carrier Ty's but the dispatcher
+also reads leftTyRaw / rightTyRaw (positional schematic raw fields).
+Take them as extra hypotheses. -/
+theorem isAggregatorTotal_uaToEquiv_with_carrier_raws {mode : Mode}
+    {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    (leftTy rightTy : Ty level sourceScope)
+    (leftTyRaw rightTyRaw : RawTerm sourceScope)
+    {proofRaw : RawTerm sourceScope}
+    {proof : Term sourceCtx
+              (Ty.id (Ty.universe innerLevel innerLevelLt)
+                     leftTyRaw rightTyRaw)
+              proofRaw}
+    (proofTotal : IsAggregatorTotal proof)
+    (carrierRawsTotal :
+      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
+        (strengthening : ContextStrengthening sourceCtx targetCtx)
+        {targetLeftTy targetRightTy : Ty level targetScope},
+        leftTy.partialStrengthen? strengthening.back =
+            some targetLeftTy →
+        rightTy.partialStrengthen? strengthening.back =
+            some targetRightTy →
+        ∃ targetLeftTyRaw targetRightTyRaw,
+          leftTyRaw.partialStrengthen? strengthening.back =
+              some targetLeftTyRaw ∧
+          rightTyRaw.partialStrengthen? strengthening.back =
+              some targetRightTyRaw) :
+    IsAggregatorTotal
+      (Term.uaToEquiv (context := sourceCtx) innerLevel innerLevelLt
+        leftTy rightTy leftTyRaw rightTyRaw proof) := by
+  intros _ _ strengthening _ _ typeStrengthens rawStrengthens
+  change Option.mapTwo
+      (leftTy.partialStrengthen? strengthening.back)
+      (rightTy.partialStrengthen? strengthening.back)
+      Ty.equiv = some _ at typeStrengthens
+  obtain ⟨targetLeftTy, targetRightTy, leftTySuccess, rightTySuccess, _⟩ :=
+    Option.mapTwo_eq_some typeStrengthens
+  -- rawStrengthens: (RawTerm.uaToEquiv proofRaw).back
+  unfold RawTerm.partialStrengthen? at rawStrengthens
+  unfold RawTerm.partialRename? at rawStrengthens
+  split at rawStrengthens
+  rotate_left
+  · cases rawStrengthens
+  next targetProofRaw proofRawRenSuccess =>
+    have proofRawSuccess :
+        proofRaw.partialStrengthen? strengthening.back =
+          some targetProofRaw := proofRawRenSuccess
+    obtain ⟨targetLeftTyRaw, targetRightTyRaw, leftRawSuccess,
+      rightRawSuccess⟩ :=
+      carrierRawsTotal strengthening leftTySuccess rightTySuccess
+    -- proof's type: Ty.id (Ty.universe ...) leftTyRaw rightTyRaw
+    have universeStrengthens :
+        (Ty.universe innerLevel innerLevelLt :
+            Ty level sourceScope).partialStrengthen? strengthening.back =
+          some (Ty.universe innerLevel innerLevelLt) := rfl
+    have idTypeStrengthens :
+        (Ty.id (Ty.universe innerLevel innerLevelLt) leftTyRaw rightTyRaw
+          ).partialStrengthen? strengthening.back =
+          some (Ty.id (Ty.universe innerLevel innerLevelLt) targetLeftTyRaw
+            targetRightTyRaw) := by
+      show Option.mapThree
+          ((Ty.universe innerLevel innerLevelLt :
+              Ty level sourceScope).partialStrengthen?
+            strengthening.back)
+          (leftTyRaw.partialStrengthen? strengthening.back)
+          (rightTyRaw.partialStrengthen? strengthening.back)
+          Ty.id = _
+      rw [universeStrengthens, leftRawSuccess, rightRawSuccess]
+      rfl
+    have proofTotalCall :=
+      proofTotal strengthening idTypeStrengthens proofRawSuccess
+    unfold partialStrengthenTyped?
+    split
+    · next leftTyFails =>
+        rw [leftTySuccess] at leftTyFails
+        cases leftTyFails
+    · next _ _ =>
+        split
+        · next rightTyFails =>
+            rw [rightTySuccess] at rightTyFails
+            cases rightTyFails
+        · next _ _ =>
+            split
+            · next leftRawFails =>
+                rw [leftRawSuccess] at leftRawFails
+                cases leftRawFails
+            · next _ _ =>
+                split
+                · next rightRawFails =>
+                    rw [rightRawSuccess] at rightRawFails
+                    cases rightRawFails
+                · next _ _ =>
+                    split
+                    · next proofFails =>
+                        rw [proofFails] at proofTotalCall
+                        cases proofTotalCall
+                    · rfl
+
 /-! ## Image theorem trio — weaken / strengthen invertibility
 
 Three closure theorems on the image of `Term.weaken` under

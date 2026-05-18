@@ -995,6 +995,9 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_idJ_with_id_components
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_oeqJ_with_oeq_components
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_idStrictRec_with_idStrict_components
+-- Phase Y.2 Wave 7: equivReflIdAtId + uaToEquiv (HoTT family bridges)
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_equivReflIdAtId_with_carrier
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_uaToEquiv_with_carrier_raws
 
 -- Phase X: bridge from `IsAggregatorTotal (Term.weaken ...)` to
 -- `IsTotalOnWeaken` and the three binder wrappers that close the
