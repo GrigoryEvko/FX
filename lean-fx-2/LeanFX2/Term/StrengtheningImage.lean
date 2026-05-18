@@ -16158,6 +16158,105 @@ theorem isTotalOnWeaken_of_weaken_isAggregatorTotal
     (Ty.strengthen?_weaken sourceType)
     (RawTerm.strengthen?_weaken sourceRaw)
 
+/-! ## Phase X: the three binder wrappers.
+
+The non-binder ctors (the 75 already-shipped `isTotalOnWeaken_<ctor>`
+theorems) all take `IsTotalOnWeaken child` IHs on their recursive
+children — the narrow predicate suffices because the dispatcher's
+recursion on a non-binder child uses `dropNewest`, matching the
+predicate's `Term.weaken newType` shape directly.
+
+The three binder ctors (`lam`, `lamPi`, `pathLam`) break this
+pattern: their body's strengthening goes through `strengthening.lift`,
+not `dropNewest`.  The narrow `IsTotalOnWeaken body` predicate cannot
+transport through the lift; the strictly stronger
+`IsAggregatorTotal body` (universal over all strengthenings of body)
+must take its place as the binder IH.
+
+Each wrapper's hypothesis is `weakenedBinderTotal`:
+`∀ newType, IsAggregatorTotal (Term.weaken newType (Term.<binder> ...))`.
+Downstream, this is constructed by:
+1. taking `bodyTotal : IsAggregatorTotal body`,
+2. transporting it under the binder's required renaming
+   (`(weakenStep _).lift _` for the body of a weakened binder) — the
+   typed rename-compatibility transport, ~78-case structural
+   recursion, lives in the `Term.rename` cascade,
+3. lifting through `isAggregatorTotal_<binder>`,
+4. and arriving at the wrapper's `weakenedBinderTotal` hypothesis.
+
+The bridge `isTotalOnWeaken_of_weaken_isAggregatorTotal` then
+specializes the universal statement to `dropNewest` at each
+`newType`, recovering `IsTotalOnWeaken (Term.<binder> ...)`. -/
+
+/-- Binder totality wrapper: `Term.lam`.
+
+Takes the per-`newType` `IsAggregatorTotal` on the weakened lam term,
+which encapsulates the rename-transport of body's
+`IsAggregatorTotal` through the dispatcher's lifted strengthening.
+Converts to the consumer-facing `IsTotalOnWeaken` via the canonical
+`dropNewest` specialization (the Phase X bridge above). -/
+theorem isTotalOnWeaken_lam {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {body : Term (context.cons domainType) codomainType.weaken bodyRaw}
+    (weakenedLamTotal :
+      ∀ (newType : Ty level scope),
+        IsAggregatorTotal
+          (Term.weaken newType
+            (Term.lam (context := context) (domainType := domainType)
+              (codomainType := codomainType) body))) :
+    IsTotalOnWeaken
+      (Term.lam (context := context) (domainType := domainType)
+        (codomainType := codomainType) body) :=
+  isTotalOnWeaken_of_weaken_isAggregatorTotal weakenedLamTotal
+
+/-- Binder totality wrapper: `Term.lamPi`.
+
+Dependent-Pi lambda; body lives at the lifted codomain inside the
+binder.  Same structural shape as `isTotalOnWeaken_lam` modulo the
+codomain's scope — proof is one application of the Phase X bridge. -/
+theorem isTotalOnWeaken_lamPi {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {domainType : Ty level scope}
+    {codomainType : Ty level (scope + 1)}
+    {bodyRaw : RawTerm (scope + 1)}
+    {body : Term (context.cons domainType) codomainType bodyRaw}
+    (weakenedLamPiTotal :
+      ∀ (newType : Ty level scope),
+        IsAggregatorTotal
+          (Term.weaken newType
+            (Term.lamPi (context := context) (domainType := domainType)
+              (codomainType := codomainType) body))) :
+    IsTotalOnWeaken
+      (Term.lamPi (context := context) (domainType := domainType)
+        (codomainType := codomainType) body) :=
+  isTotalOnWeaken_of_weaken_isAggregatorTotal weakenedLamPiTotal
+
+/-- Binder totality wrapper: `Term.pathLam`.
+
+Cubical path lambda; body binds an interval slot with carrier
+weakened.  Same Phase X bridge specialization as the other two
+binders. -/
+theorem isTotalOnWeaken_pathLam {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {body :
+      Term (context.cons Ty.interval) carrierType.weaken bodyRaw}
+    (weakenedPathLamTotal :
+      ∀ (newType : Ty level scope),
+        IsAggregatorTotal
+          (Term.weaken newType
+            (Term.pathLam (context := context) modeIsUnivalent carrierType
+              leftEndpoint rightEndpoint body))) :
+    IsTotalOnWeaken
+      (Term.pathLam (context := context) modeIsUnivalent carrierType
+        leftEndpoint rightEndpoint body) :=
+  isTotalOnWeaken_of_weaken_isAggregatorTotal weakenedPathLamTotal
+
 end Term
 
 end LeanFX2
