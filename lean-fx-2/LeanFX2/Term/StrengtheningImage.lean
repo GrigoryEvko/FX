@@ -13949,6 +13949,106 @@ theorem isAggregatorTotal_sessionSend_with_payload {mode : Mode}
                 cases payloadTotalCall
             · rfl
 
+/-- Bridge totality wrapper for `Term.boolElim`.  Source type is
+`motiveType.subst0 Ty.bool scrutineeRaw`; dispatcher needs
+motiveType.back.lift + scrutinee IH (Ty.bool) + thenBranch IH +
+elseBranch IH.  Take motiveType.back.lift as extra hypothesis.
+thenBranch / elseBranch type strengthenings constructed via
+`Ty.partialStrengthen?_subst0_of_success`. -/
+theorem isAggregatorTotal_boolElim_with_motive {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {motiveType : Ty level (sourceScope + 1)}
+    {scrutineeRaw thenRaw elseRaw : RawTerm sourceScope}
+    {scrutinee : Term sourceCtx Ty.bool scrutineeRaw}
+    {thenBranch :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw}
+    {elseBranch :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw}
+    (scrutineeTotal : IsAggregatorTotal scrutinee)
+    (thenTotal : IsAggregatorTotal thenBranch)
+    (elseTotal : IsAggregatorTotal elseBranch)
+    (motiveTotal :
+      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
+        (strengthening : ContextStrengthening sourceCtx targetCtx)
+        {targetSourceType : Ty level targetScope},
+        (motiveType.subst0 Ty.bool scrutineeRaw).partialStrengthen?
+            strengthening.back =
+            some targetSourceType →
+        ∃ targetMotiveType,
+          motiveType.partialStrengthen? strengthening.back.lift =
+            some targetMotiveType) :
+    IsAggregatorTotal
+      (Term.boolElim scrutinee thenBranch elseBranch) := by
+  intros _ _ strengthening _ _ typeStrengthens rawStrengthens
+  change Option.mapThree
+      (scrutineeRaw.partialStrengthen? strengthening.back)
+      (thenRaw.partialStrengthen? strengthening.back)
+      (elseRaw.partialStrengthen? strengthening.back)
+      RawTerm.boolElim = some _ at rawStrengthens
+  obtain ⟨_, _, _, scrutineeRawSuccess, thenRawSuccess, elseRawSuccess, _⟩ :=
+    Option.mapThree_eq_some rawStrengthens
+  obtain ⟨targetMotiveType, motiveSuccess⟩ :=
+    motiveTotal strengthening typeStrengthens
+  -- scrutinee's type Ty.bool is closed-atomic
+  have boolStrengthens :
+      (Ty.bool : Ty level sourceScope).partialStrengthen?
+          strengthening.back =
+        some Ty.bool := rfl
+  have scrutineeTotalCall :=
+    scrutineeTotal strengthening boolStrengthens scrutineeRawSuccess
+  -- thenBranch's type: motiveType.subst0 Ty.bool RawTerm.boolTrue
+  have boolTrueStrengthens :
+      (RawTerm.boolTrue : RawTerm sourceScope).partialStrengthen?
+          strengthening.back =
+        some RawTerm.boolTrue := rfl
+  have boolFalseStrengthens :
+      (RawTerm.boolFalse : RawTerm sourceScope).partialStrengthen?
+          strengthening.back =
+        some RawTerm.boolFalse := rfl
+  have thenTypeStrengthens :
+      (motiveType.subst0 Ty.bool RawTerm.boolTrue).partialStrengthen?
+          strengthening.back =
+        some (targetMotiveType.subst0 Ty.bool RawTerm.boolTrue) :=
+    Ty.partialStrengthen?_subst0_of_success motiveType targetMotiveType
+      Ty.bool Ty.bool RawTerm.boolTrue RawTerm.boolTrue
+      strengthening.forward strengthening.back strengthening.injectsBack
+      strengthening.back_forward motiveSuccess boolStrengthens
+      boolTrueStrengthens
+  have elseTypeStrengthens :
+      (motiveType.subst0 Ty.bool RawTerm.boolFalse).partialStrengthen?
+          strengthening.back =
+        some (targetMotiveType.subst0 Ty.bool RawTerm.boolFalse) :=
+    Ty.partialStrengthen?_subst0_of_success motiveType targetMotiveType
+      Ty.bool Ty.bool RawTerm.boolFalse RawTerm.boolFalse
+      strengthening.forward strengthening.back strengthening.injectsBack
+      strengthening.back_forward motiveSuccess boolStrengthens
+      boolFalseStrengthens
+  have thenTotalCall :=
+    thenTotal strengthening thenTypeStrengthens thenRawSuccess
+  have elseTotalCall :=
+    elseTotal strengthening elseTypeStrengthens elseRawSuccess
+  unfold partialStrengthenTyped?
+  split
+  · next motiveFails =>
+      rw [motiveSuccess] at motiveFails
+      cases motiveFails
+  · next _ _ =>
+      split
+      · next scrutineeFails =>
+          rw [scrutineeFails] at scrutineeTotalCall
+          cases scrutineeTotalCall
+      · next _ _ =>
+          split
+          · next thenFails =>
+              rw [thenFails] at thenTotalCall
+              cases thenTotalCall
+          · next _ _ =>
+              split
+              · next elseFails =>
+                  rw [elseFails] at elseTotalCall
+                  cases elseTotalCall
+              · rfl
+
 /-! ## Image theorem trio — weaken / strengthen invertibility
 
 Three closure theorems on the image of `Term.weaken` under

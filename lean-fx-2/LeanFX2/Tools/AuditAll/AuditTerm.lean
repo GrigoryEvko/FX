@@ -1003,6 +1003,8 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_equivIntroHet_with_inv_raws
 -- Phase Y.2 Wave 9: sessionSend (payload type bridge)
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_sessionSend_with_payload
+-- Phase Y.2 Wave 10: boolElim (motive bridge with subst0 reconstruction)
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_boolElim_with_motive
 
 -- Phase X: bridge from `IsAggregatorTotal (Term.weaken ...)` to
 -- `IsTotalOnWeaken` and the three binder wrappers that close the
