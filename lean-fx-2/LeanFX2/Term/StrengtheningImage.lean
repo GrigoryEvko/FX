@@ -12563,6 +12563,222 @@ theorem isAggregatorTotal_pathApp_with_endpoints {mode : Mode} {level : Nat}
                       cases intervalTotalCall
                   · rfl
 
+/-- Bridge totality wrapper for `Term.hcompPath`.  Like `pathApp`, the
+endpoints are dispatcher-needed but not in source.  Take endpoint
+strengthening witnesses as extra hypotheses. -/
+theorem isAggregatorTotal_hcompPath_with_endpoints {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    (leftEndpoint rightEndpoint : RawTerm sourceScope)
+    {sidesPathRaw capRaw : RawTerm sourceScope}
+    {sidesPath :
+      Term sourceCtx (Ty.path carrierType leftEndpoint rightEndpoint)
+        sidesPathRaw}
+    {capValue : Term sourceCtx carrierType capRaw}
+    (sidesPathTotal : IsAggregatorTotal sidesPath)
+    (capTotal : IsAggregatorTotal capValue)
+    (leftEndpointTotal :
+      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
+        (strengthening : ContextStrengthening sourceCtx targetCtx)
+        {targetCarrierType : Ty level targetScope},
+        carrierType.partialStrengthen? strengthening.back =
+            some targetCarrierType →
+        ∃ targetLeftEndpoint,
+          leftEndpoint.partialStrengthen? strengthening.back =
+            some targetLeftEndpoint)
+    (rightEndpointTotal :
+      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
+        (strengthening : ContextStrengthening sourceCtx targetCtx)
+        {targetCarrierType : Ty level targetScope},
+        carrierType.partialStrengthen? strengthening.back =
+            some targetCarrierType →
+        ∃ targetRightEndpoint,
+          rightEndpoint.partialStrengthen? strengthening.back =
+            some targetRightEndpoint) :
+    IsAggregatorTotal
+      (Term.hcompPath modeIsUnivalent leftEndpoint rightEndpoint
+        sidesPath capValue) := by
+  intros _ _ strengthening targetCarrierType _ typeStrengthens rawStrengthens
+  change Option.mapTwo
+      (sidesPathRaw.partialStrengthen? strengthening.back)
+      (capRaw.partialStrengthen? strengthening.back)
+      RawTerm.hcomp = some _ at rawStrengthens
+  obtain ⟨_, _, sidesPathRawSuccess, capRawSuccess, _⟩ :=
+    Option.mapTwo_eq_some rawStrengthens
+  obtain ⟨targetLeftEndpoint, leftEndpointSuccess⟩ :=
+    leftEndpointTotal strengthening typeStrengthens
+  obtain ⟨targetRightEndpoint, rightEndpointSuccess⟩ :=
+    rightEndpointTotal strengthening typeStrengthens
+  have pathTypeStrengthens :
+      (Ty.path carrierType leftEndpoint rightEndpoint).partialStrengthen?
+          strengthening.back =
+        some (Ty.path targetCarrierType targetLeftEndpoint
+          targetRightEndpoint) := by
+    show Option.mapThree
+        (carrierType.partialStrengthen? strengthening.back)
+        (leftEndpoint.partialStrengthen? strengthening.back)
+        (rightEndpoint.partialStrengthen? strengthening.back)
+        Ty.path = _
+    rw [typeStrengthens, leftEndpointSuccess, rightEndpointSuccess]
+    rfl
+  have sidesPathTotalCall :=
+    sidesPathTotal strengthening pathTypeStrengthens sidesPathRawSuccess
+  have capTotalCall :=
+    capTotal strengthening typeStrengthens capRawSuccess
+  unfold partialStrengthenTyped?
+  split
+  · next carrierFails =>
+      rw [typeStrengthens] at carrierFails
+      cases carrierFails
+  · next _ _ =>
+      split
+      · next leftFails =>
+          rw [leftEndpointSuccess] at leftFails
+          cases leftFails
+      · next _ _ =>
+          split
+          · next rightFails =>
+              rw [rightEndpointSuccess] at rightFails
+              cases rightFails
+          · next _ _ =>
+              split
+              · next sidesPathFails =>
+                  rw [sidesPathFails] at sidesPathTotalCall
+                  cases sidesPathTotalCall
+              · next _ _ =>
+                  split
+                  · next capFails =>
+                      rw [capFails] at capTotalCall
+                      cases capTotalCall
+                  · rfl
+
+/-- Bridge totality wrapper for `Term.glueElim`.  Source type is
+`baseType`; dispatcher needs baseType.back + boundaryWitness.back +
+gluedValue IH (type `Ty.glue baseType boundaryWitness`).  Take
+boundaryWitness strengthening as extra hypothesis. -/
+theorem isAggregatorTotal_glueElim_with_boundary {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {baseType : Ty level sourceScope}
+    {boundaryWitness gluedRaw : RawTerm sourceScope}
+    {gluedValue :
+      Term sourceCtx (Ty.glue baseType boundaryWitness) gluedRaw}
+    (gluedTotal : IsAggregatorTotal gluedValue)
+    (boundaryTotal :
+      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
+        (strengthening : ContextStrengthening sourceCtx targetCtx)
+        {targetBaseType : Ty level targetScope},
+        baseType.partialStrengthen? strengthening.back =
+            some targetBaseType →
+        ∃ targetBoundaryWitness,
+          boundaryWitness.partialStrengthen? strengthening.back =
+            some targetBoundaryWitness) :
+    IsAggregatorTotal
+      (Term.glueElim modeIsUnivalent gluedValue) := by
+  intros _ _ strengthening targetBaseType _ typeStrengthens rawStrengthens
+  unfold RawTerm.partialStrengthen? at rawStrengthens
+  unfold RawTerm.partialRename? at rawStrengthens
+  split at rawStrengthens
+  rotate_left
+  · cases rawStrengthens
+  next targetGluedRaw gluedRawRenameSuccess =>
+    have gluedRawSuccess :
+        gluedRaw.partialStrengthen? strengthening.back =
+          some targetGluedRaw := gluedRawRenameSuccess
+    obtain ⟨targetBoundaryWitness, boundarySuccess⟩ :=
+      boundaryTotal strengthening typeStrengthens
+    have glueTypeStrengthens :
+        (Ty.glue baseType boundaryWitness).partialStrengthen?
+            strengthening.back =
+          some (Ty.glue targetBaseType targetBoundaryWitness) := by
+      show Option.mapTwo
+          (baseType.partialStrengthen? strengthening.back)
+          (boundaryWitness.partialStrengthen? strengthening.back)
+          Ty.glue = _
+      rw [typeStrengthens, boundarySuccess]
+      rfl
+    have gluedTotalCall :=
+      gluedTotal strengthening glueTypeStrengthens gluedRawSuccess
+    unfold partialStrengthenTyped?
+    split
+    · next baseFails =>
+        rw [typeStrengthens] at baseFails
+        cases baseFails
+    · next _ _ =>
+        split
+        · next boundaryFails =>
+            rw [boundarySuccess] at boundaryFails
+            cases boundaryFails
+        · next _ _ =>
+            split
+            · next gluedFails =>
+                rw [gluedFails] at gluedTotalCall
+                cases gluedTotalCall
+            · rfl
+
+/-- Bridge totality wrapper for `Term.codataDest`.  Source type is
+`outputType`; dispatcher needs stateType.back + outputType.back +
+codataValue IH (type `Ty.codata stateType outputType`).  Take
+stateType strengthening as extra hypothesis. -/
+theorem isAggregatorTotal_codataDest_with_state {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {stateType outputType : Ty level sourceScope}
+    {codataRaw : RawTerm sourceScope}
+    {codataValue :
+      Term sourceCtx (Ty.codata stateType outputType) codataRaw}
+    (codataTotal : IsAggregatorTotal codataValue)
+    (stateTypeTotal :
+      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
+        (strengthening : ContextStrengthening sourceCtx targetCtx)
+        {targetOutputType : Ty level targetScope},
+        outputType.partialStrengthen? strengthening.back =
+            some targetOutputType →
+        ∃ targetStateType,
+          stateType.partialStrengthen? strengthening.back =
+            some targetStateType) :
+    IsAggregatorTotal (Term.codataDest codataValue) := by
+  intros _ _ strengthening targetOutputType _ typeStrengthens rawStrengthens
+  unfold RawTerm.partialStrengthen? at rawStrengthens
+  unfold RawTerm.partialRename? at rawStrengthens
+  split at rawStrengthens
+  rotate_left
+  · cases rawStrengthens
+  next targetCodataRaw codataRawRenameSuccess =>
+    have codataRawSuccess :
+        codataRaw.partialStrengthen? strengthening.back =
+          some targetCodataRaw := codataRawRenameSuccess
+    obtain ⟨targetStateType, stateTypeSuccess⟩ :=
+      stateTypeTotal strengthening typeStrengthens
+    have codataTypeStrengthens :
+        (Ty.codata stateType outputType).partialStrengthen?
+            strengthening.back =
+          some (Ty.codata targetStateType targetOutputType) := by
+      show Option.mapTwo
+          (stateType.partialStrengthen? strengthening.back)
+          (outputType.partialStrengthen? strengthening.back)
+          Ty.codata = _
+      rw [stateTypeSuccess, typeStrengthens]
+      rfl
+    have codataTotalCall :=
+      codataTotal strengthening codataTypeStrengthens codataRawSuccess
+    unfold partialStrengthenTyped?
+    split
+    · next stateFails =>
+        rw [stateTypeSuccess] at stateFails
+        cases stateFails
+    · next _ _ =>
+        split
+        · next outputFails =>
+            rw [typeStrengthens] at outputFails
+            cases outputFails
+        · next _ _ =>
+            split
+            · next codataFails =>
+                rw [codataFails] at codataTotalCall
+                cases codataTotalCall
+            · rfl
+
 /-! ## Image theorem trio — weaken / strengthen invertibility
 
 Three closure theorems on the image of `Term.weaken` under

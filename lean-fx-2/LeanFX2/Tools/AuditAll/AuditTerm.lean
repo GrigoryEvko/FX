@@ -979,6 +979,10 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_funextIntroHet
 -- Phase Y.2 Wave 1: pathApp bridge (endpoint witnesses as hypotheses)
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_pathApp_with_endpoints
+-- Phase Y.2 Wave 2: hcompPath + glueElim + codataDest bridges
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_hcompPath_with_endpoints
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_glueElim_with_boundary
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_codataDest_with_state
 
 -- Phase X: bridge from `IsAggregatorTotal (Term.weaken ...)` to
 -- `IsTotalOnWeaken` and the three binder wrappers that close the
