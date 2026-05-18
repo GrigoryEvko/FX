@@ -973,6 +973,8 @@ existing computational dispatcher. -/
 -- Phase Y.1 Wave 2: hcomp + glueIntro (carrier-direct / glue.mapTwo)
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_hcomp
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_glueIntro
+-- Phase Y.1 Wave 3: oeqFunext (oeq+arrow+lift-app construction)
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_oeqFunext
 
 -- Phase X: bridge from `IsAggregatorTotal (Term.weaken ...)` to
 -- `IsTotalOnWeaken` and the three binder wrappers that close the

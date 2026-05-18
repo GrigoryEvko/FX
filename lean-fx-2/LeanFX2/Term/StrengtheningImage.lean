@@ -12138,6 +12138,180 @@ theorem isAggregatorTotal_hcomp {mode : Mode} {level : Nat}
           cases capTotalCall
       · rfl
 
+/-- 1-IH totality: `Term.oeqFunext`.  Source type
+`Ty.oeq (Ty.arrow domainType codomainType) leftFunctionRaw rightFunctionRaw`.
+Dispatcher needs dom/codom/left/right.back + pointwiseProof IH.
+pointwiseProof's type is `oeqFunextPointwiseType` (a piTy of dom with
+oeq codom.weaken (app leftRaw.weaken (var 0)) (app rightRaw.weaken (var 0))
+in body).  We synthesize the type strengthening via Ty.partialStrengthen?
+unfolding + Ty.partialStrengthen?_weaken_lift +
+RawTerm.partialStrengthen?_weaken_lift. -/
+theorem isAggregatorTotal_oeqFunext {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (domainType codomainType : Ty level sourceScope)
+    (leftFunctionRaw rightFunctionRaw : RawTerm sourceScope)
+    {pointwiseRaw : RawTerm sourceScope}
+    {pointwiseProof :
+      Term sourceCtx
+        (oeqFunextPointwiseType domainType codomainType
+          leftFunctionRaw rightFunctionRaw)
+        pointwiseRaw}
+    (pointwiseTotal : IsAggregatorTotal pointwiseProof) :
+    IsAggregatorTotal
+      (Term.oeqFunext (context := sourceCtx) domainType codomainType
+        leftFunctionRaw rightFunctionRaw pointwiseProof) := by
+  intros _ _ strengthening _ _ typeStrengthens rawStrengthens
+  -- typeStrengthens via Ty.oeq mapThree
+  change Option.mapThree
+      ((Ty.arrow domainType codomainType).partialStrengthen?
+        strengthening.back)
+      (leftFunctionRaw.partialStrengthen? strengthening.back)
+      (rightFunctionRaw.partialStrengthen? strengthening.back)
+      Ty.oeq = some _ at typeStrengthens
+  obtain ⟨_, targetLeftFunctionRaw, targetRightFunctionRaw, arrowSuccess,
+    leftSuccess', rightSuccess', _⟩ :=
+    Option.mapThree_eq_some typeStrengthens
+  -- arrowSuccess via Ty.arrow mapTwo
+  change Option.mapTwo
+      (domainType.partialStrengthen? strengthening.back)
+      (codomainType.partialStrengthen? strengthening.back)
+      Ty.arrow = some _ at arrowSuccess
+  obtain ⟨targetDomainType, targetCodomainType, domainSuccess,
+    codomainSuccess, _⟩ :=
+    Option.mapTwo_eq_some arrowSuccess
+  -- rawStrengthens : (RawTerm.oeqFunext pointwiseRaw).back = some _
+  unfold RawTerm.partialStrengthen? at rawStrengthens
+  unfold RawTerm.partialRename? at rawStrengthens
+  split at rawStrengthens
+  rotate_left
+  · cases rawStrengthens
+  next targetPointwiseRaw pointwiseRawSuccess =>
+    have pointwiseStrengthenSuccess :
+        pointwiseRaw.partialStrengthen? strengthening.back =
+          some targetPointwiseRaw := pointwiseRawSuccess
+    -- Construct pointwiseProof's type strengthening:
+    -- oeqFunextPointwiseType.back = piTy of dom + oeq codom.weaken etc.
+    have codomainWeakenStrengthens :
+        codomainType.weaken.partialStrengthen? strengthening.back.lift =
+          some targetCodomainType.weaken := by
+      rw [Ty.partialStrengthen?_weaken_lift codomainType strengthening.back,
+        codomainSuccess]
+      rfl
+    have leftWeakenStrengthens :
+        leftFunctionRaw.weaken.partialStrengthen? strengthening.back.lift =
+          some targetLeftFunctionRaw.weaken := by
+      rw [RawTerm.partialStrengthen?_weaken_lift leftFunctionRaw
+        strengthening.back, leftSuccess']
+      rfl
+    have rightWeakenStrengthens :
+        rightFunctionRaw.weaken.partialStrengthen?
+            strengthening.back.lift =
+          some targetRightFunctionRaw.weaken := by
+      rw [RawTerm.partialStrengthen?_weaken_lift rightFunctionRaw
+        strengthening.back, rightSuccess']
+      rfl
+    have leftAppStrengthens :
+        (RawTerm.app leftFunctionRaw.weaken
+          (RawTerm.var ⟨0, Nat.zero_lt_succ sourceScope⟩)
+          ).partialStrengthen? strengthening.back.lift =
+          some (RawTerm.app targetLeftFunctionRaw.weaken
+            (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩)) := by
+      change
+        Option.mapTwo
+          (leftFunctionRaw.weaken.partialStrengthen?
+            strengthening.back.lift)
+          (some (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩))
+          RawTerm.app =
+            some (RawTerm.app targetLeftFunctionRaw.weaken
+              (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩))
+      rw [leftWeakenStrengthens]
+      rfl
+    have rightAppStrengthens :
+        (RawTerm.app rightFunctionRaw.weaken
+          (RawTerm.var ⟨0, Nat.zero_lt_succ sourceScope⟩)
+          ).partialStrengthen? strengthening.back.lift =
+          some (RawTerm.app targetRightFunctionRaw.weaken
+            (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩)) := by
+      change
+        Option.mapTwo
+          (rightFunctionRaw.weaken.partialStrengthen?
+            strengthening.back.lift)
+          (some (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩))
+          RawTerm.app =
+            some (RawTerm.app targetRightFunctionRaw.weaken
+              (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩))
+      rw [rightWeakenStrengthens]
+      rfl
+    have codomainBodyStrengthens :
+        (oeqFunextPointwiseCodomain codomainType
+            leftFunctionRaw rightFunctionRaw).partialStrengthen?
+            strengthening.back.lift =
+          some (oeqFunextPointwiseCodomain targetCodomainType
+            targetLeftFunctionRaw targetRightFunctionRaw) := by
+      change
+        Option.mapThree
+          (codomainType.weaken.partialStrengthen?
+            strengthening.back.lift)
+          ((RawTerm.app leftFunctionRaw.weaken
+            (RawTerm.var ⟨0, Nat.zero_lt_succ sourceScope⟩)
+            ).partialStrengthen? strengthening.back.lift)
+          ((RawTerm.app rightFunctionRaw.weaken
+            (RawTerm.var ⟨0, Nat.zero_lt_succ sourceScope⟩)
+            ).partialStrengthen? strengthening.back.lift)
+          Ty.oeq =
+            some (oeqFunextPointwiseCodomain targetCodomainType
+              targetLeftFunctionRaw targetRightFunctionRaw)
+      rw [codomainWeakenStrengthens, leftAppStrengthens,
+        rightAppStrengthens]
+      rfl
+    have pointwiseTypeStrengthens :
+        (oeqFunextPointwiseType domainType codomainType
+            leftFunctionRaw rightFunctionRaw).partialStrengthen?
+            strengthening.back =
+          some (oeqFunextPointwiseType targetDomainType targetCodomainType
+            targetLeftFunctionRaw targetRightFunctionRaw) := by
+      change
+        Option.mapTwo
+          (domainType.partialStrengthen? strengthening.back)
+          ((oeqFunextPointwiseCodomain codomainType
+              leftFunctionRaw rightFunctionRaw).partialStrengthen?
+              strengthening.back.lift)
+          Ty.piTy =
+            some (oeqFunextPointwiseType targetDomainType
+              targetCodomainType targetLeftFunctionRaw
+              targetRightFunctionRaw)
+      rw [domainSuccess, codomainBodyStrengthens]
+      rfl
+    have pointwiseTotalCall :=
+      pointwiseTotal strengthening pointwiseTypeStrengthens
+        pointwiseStrengthenSuccess
+    unfold partialStrengthenTyped?
+    split
+    · next domainFails =>
+        rw [domainSuccess] at domainFails
+        cases domainFails
+    · next _ _ =>
+        split
+        · next codomainFails =>
+            rw [codomainSuccess] at codomainFails
+            cases codomainFails
+        · next _ _ =>
+            split
+            · next leftFails =>
+                rw [leftSuccess'] at leftFails
+                cases leftFails
+            · next _ _ =>
+                split
+                · next rightFails =>
+                    rw [rightSuccess'] at rightFails
+                    cases rightFails
+                · next _ _ =>
+                    split
+                    · next pointwiseFails =>
+                        rw [pointwiseFails] at pointwiseTotalCall
+                        cases pointwiseTotalCall
+                    · rfl
+
 /-- 2-IH totality: `Term.glueIntro`.  Source type
 `Ty.glue baseType boundaryWitness`; dispatcher needs baseType.back +
 boundaryWitness.back + 2 IH children (baseValue, partialValue), both
