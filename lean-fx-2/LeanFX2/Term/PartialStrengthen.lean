@@ -8104,6 +8104,41 @@ theorem strengthenTyped?_rename_eq_interval1
           renameInverse renameInverseLeft renameInverseInjects
           (Term.interval1 (context := sourceCtx))) := rfl
 
+/-- Parametric-atomic strength-T1 case: `Term.universeCode`.
+
+Carries value-level data (innerLevel, outerLevel, cumulOk, levelLe)
+but no Term children.  The Term.rename arm produces another
+universeCode with the same value-level fields, and the dispatcher
+matches the universeCode arm directly. -/
+theorem strengthenTyped?_rename_eq_universeCode
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    (innerLevel outerLevel : UniverseLevel)
+    (cumulOk : innerLevel.toNat ≤ outerLevel.toNat)
+    (levelLe : outerLevel.toNat + 1 ≤ level) :
+    partialStrengthenTyped?
+        (Term.rename typedRenaming
+          (Term.universeCode (context := sourceCtx) innerLevel outerLevel
+            cumulOk levelLe))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)
+      = some (StrengtheningResult.fromRename forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects
+          (Term.universeCode (context := sourceCtx) innerLevel outerLevel
+            cumulOk levelLe)) := rfl
+
 end Term
 
 end LeanFX2
