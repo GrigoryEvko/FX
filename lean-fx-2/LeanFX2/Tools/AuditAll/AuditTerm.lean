@@ -1016,6 +1016,10 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_snd_with_sigma_witnesses
 -- Phase Y.2 Wave 13: appPi (Pi witnesses bridge)
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_appPi_with_pi_witnesses
+-- Phase Y.2 Wave 14: transp (path witnesses bridge)
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_transp_with_path_witnesses
+-- Phase Y.2 Wave 15: effectPerform (op-sig witness bridge)
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_effectPerform_with_opsig_witness
 
 -- Phase X: bridge from `IsAggregatorTotal (Term.weaken ...)` to
 -- `IsTotalOnWeaken` and the three binder wrappers that close the
