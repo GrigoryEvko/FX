@@ -16117,6 +16117,47 @@ theorem weaken_image_iff_strengthenTyped?_some_TRUE_unit
    ⟨partialStrengthenTypedUnit
       (ContextStrengthening.dropNewest context newType), rfl⟩⟩
 
+/-! ## Phase X bridge: IsAggregatorTotal (weakened term) → IsTotalOnWeaken.
+
+`IsTotalOnWeaken sourceTerm` asserts that the dispatcher succeeds on
+the WEAKENED form `Term.weaken newType sourceTerm` for any
+`newType : Ty level scope`.  `IsAggregatorTotal weakenedTerm` is the
+strictly stronger universal-strengthening statement on a
+sourceTerm-bearing weakenedTerm.
+
+This bridge specializes the universal statement to the canonical
+`dropNewest` strengthening: when `IsAggregatorTotal (Term.weaken
+newType sourceTerm)` holds for every choice of `newType`, the
+`dropNewest context newType` strengthening witnesses
+`IsTotalOnWeaken sourceTerm` because the source/raw indices of
+`Term.weaken newType sourceTerm` are already weakened forms of
+`sourceTerm`'s indices, and `Ty.strengthen?_weaken` /
+`RawTerm.strengthen?_weaken` discharge the index witnesses.
+
+This is the load-bearing path for the three binder wrappers
+(`lam`, `lamPi`, `pathLam`) whose body strengthens through the
+LIFTED `dropNewest`: the body's `IsAggregatorTotal` IH supplies the
+universal-strengthening parameter, the binder's
+`isAggregatorTotal_<binder>` derivation lifts that into
+`IsAggregatorTotal (Term.<binder> ...)`, and this bridge converts
+the conclusion into the consumer-facing `IsTotalOnWeaken`
+predicate. -/
+theorem isTotalOnWeaken_of_weaken_isAggregatorTotal
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    (weakenTotal :
+      ∀ (newType : Ty level scope),
+        IsAggregatorTotal (Term.weaken newType sourceTerm)) :
+    IsTotalOnWeaken sourceTerm := by
+  intro newType
+  exact weakenTotal newType
+    (ContextStrengthening.dropNewest context newType)
+    (Ty.strengthen?_weaken sourceType)
+    (RawTerm.strengthen?_weaken sourceRaw)
+
 end Term
 
 end LeanFX2
