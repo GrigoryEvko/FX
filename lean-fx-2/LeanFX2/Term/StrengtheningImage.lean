@@ -13036,6 +13036,319 @@ theorem isAggregatorTotal_refineElim_with_predicate {mode : Mode} {level : Nat}
                 cases refinedTotalCall
             · rfl
 
+/-- Bridge totality wrapper for `Term.app`.  Source type is
+`codomainType`; dispatcher needs domainType.back + codomainType.back +
+functionTerm IH (Ty.arrow) + argumentTerm IH (domainType).  Take
+domainType.back strengthening as extra hypothesis. -/
+theorem isAggregatorTotal_app_with_domain {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {domainType codomainType : Ty level sourceScope}
+    {functionRaw argumentRaw : RawTerm sourceScope}
+    {functionTerm :
+      Term sourceCtx (Ty.arrow domainType codomainType) functionRaw}
+    {argumentTerm : Term sourceCtx domainType argumentRaw}
+    (functionTotal : IsAggregatorTotal functionTerm)
+    (argumentTotal : IsAggregatorTotal argumentTerm)
+    (domainTotal :
+      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
+        (strengthening : ContextStrengthening sourceCtx targetCtx)
+        {targetCodomainType : Ty level targetScope},
+        codomainType.partialStrengthen? strengthening.back =
+            some targetCodomainType →
+        ∃ targetDomainType,
+          domainType.partialStrengthen? strengthening.back =
+            some targetDomainType) :
+    IsAggregatorTotal (Term.app functionTerm argumentTerm) := by
+  intros _ _ strengthening targetCodomainType _ typeStrengthens rawStrengthens
+  change Option.mapTwo
+      (functionRaw.partialStrengthen? strengthening.back)
+      (argumentRaw.partialStrengthen? strengthening.back)
+      RawTerm.app = some _ at rawStrengthens
+  obtain ⟨_, _, functionRawSuccess, argumentRawSuccess, _⟩ :=
+    Option.mapTwo_eq_some rawStrengthens
+  obtain ⟨targetDomainType, domainSuccess⟩ :=
+    domainTotal strengthening typeStrengthens
+  have arrowTypeStrengthens :
+      (Ty.arrow domainType codomainType).partialStrengthen?
+          strengthening.back =
+        some (Ty.arrow targetDomainType targetCodomainType) := by
+    show Option.mapTwo
+        (domainType.partialStrengthen? strengthening.back)
+        (codomainType.partialStrengthen? strengthening.back)
+        Ty.arrow = _
+    rw [domainSuccess, typeStrengthens]
+    rfl
+  have functionTotalCall :=
+    functionTotal strengthening arrowTypeStrengthens functionRawSuccess
+  have argumentTotalCall :=
+    argumentTotal strengthening domainSuccess argumentRawSuccess
+  unfold partialStrengthenTyped?
+  split
+  · next domainFails =>
+      rw [domainSuccess] at domainFails
+      cases domainFails
+  · next _ _ =>
+      split
+      · next codomainFails =>
+          rw [typeStrengthens] at codomainFails
+          cases codomainFails
+      · next _ _ =>
+          split
+          · next functionFails =>
+              rw [functionFails] at functionTotalCall
+              cases functionTotalCall
+          · next _ _ =>
+              split
+              · next argumentFails =>
+                  rw [argumentFails] at argumentTotalCall
+                  cases argumentTotalCall
+              · rfl
+
+/-- Bridge totality wrapper for `Term.idJ`.  Source type is `motiveType`;
+dispatcher needs carrier.back + leftEndpoint.back + rightEndpoint.back +
+baseCase IH (motiveType) + witness IH (Ty.id carrier leftEndpoint
+rightEndpoint).  Take the three Ty.id-component witnesses as extra
+hypotheses. -/
+theorem isAggregatorTotal_idJ_with_id_components {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {carrier : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {motiveType : Ty level sourceScope}
+    {baseRaw witnessRaw : RawTerm sourceScope}
+    {baseCase : Term sourceCtx motiveType baseRaw}
+    {witness :
+      Term sourceCtx (Ty.id carrier leftEndpoint rightEndpoint) witnessRaw}
+    (baseTotal : IsAggregatorTotal baseCase)
+    (witnessTotal : IsAggregatorTotal witness)
+    (idComponentsTotal :
+      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
+        (strengthening : ContextStrengthening sourceCtx targetCtx)
+        {targetMotiveType : Ty level targetScope},
+        motiveType.partialStrengthen? strengthening.back =
+            some targetMotiveType →
+        ∃ targetCarrier targetLeftEndpoint targetRightEndpoint,
+          carrier.partialStrengthen? strengthening.back =
+              some targetCarrier ∧
+          leftEndpoint.partialStrengthen? strengthening.back =
+              some targetLeftEndpoint ∧
+          rightEndpoint.partialStrengthen? strengthening.back =
+              some targetRightEndpoint) :
+    IsAggregatorTotal (Term.idJ baseCase witness) := by
+  intros _ _ strengthening targetMotiveType _ typeStrengthens rawStrengthens
+  change Option.mapTwo
+      (baseRaw.partialStrengthen? strengthening.back)
+      (witnessRaw.partialStrengthen? strengthening.back)
+      RawTerm.idJ = some _ at rawStrengthens
+  obtain ⟨_, _, baseRawSuccess, witnessRawSuccess, _⟩ :=
+    Option.mapTwo_eq_some rawStrengthens
+  obtain ⟨targetCarrier, targetLeftEndpoint, targetRightEndpoint,
+    carrierSuccess, leftSuccess, rightSuccess⟩ :=
+    idComponentsTotal strengthening typeStrengthens
+  have idTypeStrengthens :
+      (Ty.id carrier leftEndpoint rightEndpoint).partialStrengthen?
+          strengthening.back =
+        some (Ty.id targetCarrier targetLeftEndpoint targetRightEndpoint) := by
+    show Option.mapThree
+        (carrier.partialStrengthen? strengthening.back)
+        (leftEndpoint.partialStrengthen? strengthening.back)
+        (rightEndpoint.partialStrengthen? strengthening.back)
+        Ty.id = _
+    rw [carrierSuccess, leftSuccess, rightSuccess]
+    rfl
+  have baseTotalCall :=
+    baseTotal strengthening typeStrengthens baseRawSuccess
+  have witnessTotalCall :=
+    witnessTotal strengthening idTypeStrengthens witnessRawSuccess
+  unfold partialStrengthenTyped?
+  split
+  · next carrierFails =>
+      rw [carrierSuccess] at carrierFails
+      cases carrierFails
+  · next _ _ =>
+      split
+      · next leftFails =>
+          rw [leftSuccess] at leftFails
+          cases leftFails
+      · next _ _ =>
+          split
+          · next rightFails =>
+              rw [rightSuccess] at rightFails
+              cases rightFails
+          · next _ _ =>
+              split
+              · next baseFails =>
+                  rw [baseFails] at baseTotalCall
+                  cases baseTotalCall
+              · next _ _ =>
+                  split
+                  · next witnessFails =>
+                      rw [witnessFails] at witnessTotalCall
+                      cases witnessTotalCall
+                  · rfl
+
+/-- Bridge totality wrapper for `Term.oeqJ`.  Same structure as idJ
+but with Ty.oeq instead of Ty.id. -/
+theorem isAggregatorTotal_oeqJ_with_oeq_components {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {carrier : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {motiveType : Ty level sourceScope}
+    {baseRaw witnessRaw : RawTerm sourceScope}
+    {baseCase : Term sourceCtx motiveType baseRaw}
+    {witness :
+      Term sourceCtx (Ty.oeq carrier leftEndpoint rightEndpoint) witnessRaw}
+    (baseTotal : IsAggregatorTotal baseCase)
+    (witnessTotal : IsAggregatorTotal witness)
+    (oeqComponentsTotal :
+      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
+        (strengthening : ContextStrengthening sourceCtx targetCtx)
+        {targetMotiveType : Ty level targetScope},
+        motiveType.partialStrengthen? strengthening.back =
+            some targetMotiveType →
+        ∃ targetCarrier targetLeftEndpoint targetRightEndpoint,
+          carrier.partialStrengthen? strengthening.back =
+              some targetCarrier ∧
+          leftEndpoint.partialStrengthen? strengthening.back =
+              some targetLeftEndpoint ∧
+          rightEndpoint.partialStrengthen? strengthening.back =
+              some targetRightEndpoint) :
+    IsAggregatorTotal (Term.oeqJ baseCase witness) := by
+  intros _ _ strengthening targetMotiveType _ typeStrengthens rawStrengthens
+  change Option.mapTwo
+      (baseRaw.partialStrengthen? strengthening.back)
+      (witnessRaw.partialStrengthen? strengthening.back)
+      RawTerm.oeqJ = some _ at rawStrengthens
+  obtain ⟨_, _, baseRawSuccess, witnessRawSuccess, _⟩ :=
+    Option.mapTwo_eq_some rawStrengthens
+  obtain ⟨targetCarrier, targetLeftEndpoint, targetRightEndpoint,
+    carrierSuccess, leftSuccess, rightSuccess⟩ :=
+    oeqComponentsTotal strengthening typeStrengthens
+  have oeqTypeStrengthens :
+      (Ty.oeq carrier leftEndpoint rightEndpoint).partialStrengthen?
+          strengthening.back =
+        some (Ty.oeq targetCarrier targetLeftEndpoint targetRightEndpoint) := by
+    show Option.mapThree
+        (carrier.partialStrengthen? strengthening.back)
+        (leftEndpoint.partialStrengthen? strengthening.back)
+        (rightEndpoint.partialStrengthen? strengthening.back)
+        Ty.oeq = _
+    rw [carrierSuccess, leftSuccess, rightSuccess]
+    rfl
+  have baseTotalCall :=
+    baseTotal strengthening typeStrengthens baseRawSuccess
+  have witnessTotalCall :=
+    witnessTotal strengthening oeqTypeStrengthens witnessRawSuccess
+  unfold partialStrengthenTyped?
+  split
+  · next carrierFails =>
+      rw [carrierSuccess] at carrierFails
+      cases carrierFails
+  · next _ _ =>
+      split
+      · next leftFails =>
+          rw [leftSuccess] at leftFails
+          cases leftFails
+      · next _ _ =>
+          split
+          · next rightFails =>
+              rw [rightSuccess] at rightFails
+              cases rightFails
+          · next _ _ =>
+              split
+              · next baseFails =>
+                  rw [baseFails] at baseTotalCall
+                  cases baseTotalCall
+              · next _ _ =>
+                  split
+                  · next witnessFails =>
+                      rw [witnessFails] at witnessTotalCall
+                      cases witnessTotalCall
+                  · rfl
+
+/-- Bridge totality wrapper for `Term.idStrictRec`.  Source type is
+`motiveType`; same structure as idJ/oeqJ with Ty.idStrict. -/
+theorem isAggregatorTotal_idStrictRec_with_idStrict_components
+    {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (modeIsStrict : mode = Mode.strict)
+    {carrier : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {motiveType : Ty level sourceScope}
+    {baseRaw witnessRaw : RawTerm sourceScope}
+    {baseCase : Term sourceCtx motiveType baseRaw}
+    {witness :
+      Term sourceCtx (Ty.idStrict carrier leftEndpoint rightEndpoint)
+        witnessRaw}
+    (baseTotal : IsAggregatorTotal baseCase)
+    (witnessTotal : IsAggregatorTotal witness)
+    (idStrictComponentsTotal :
+      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
+        (strengthening : ContextStrengthening sourceCtx targetCtx)
+        {targetMotiveType : Ty level targetScope},
+        motiveType.partialStrengthen? strengthening.back =
+            some targetMotiveType →
+        ∃ targetCarrier targetLeftEndpoint targetRightEndpoint,
+          carrier.partialStrengthen? strengthening.back =
+              some targetCarrier ∧
+          leftEndpoint.partialStrengthen? strengthening.back =
+              some targetLeftEndpoint ∧
+          rightEndpoint.partialStrengthen? strengthening.back =
+              some targetRightEndpoint) :
+    IsAggregatorTotal
+      (Term.idStrictRec modeIsStrict baseCase witness) := by
+  intros _ _ strengthening targetMotiveType _ typeStrengthens rawStrengthens
+  change Option.mapTwo
+      (baseRaw.partialStrengthen? strengthening.back)
+      (witnessRaw.partialStrengthen? strengthening.back)
+      RawTerm.idStrictRec = some _ at rawStrengthens
+  obtain ⟨_, _, baseRawSuccess, witnessRawSuccess, _⟩ :=
+    Option.mapTwo_eq_some rawStrengthens
+  obtain ⟨targetCarrier, targetLeftEndpoint, targetRightEndpoint,
+    carrierSuccess, leftSuccess, rightSuccess⟩ :=
+    idStrictComponentsTotal strengthening typeStrengthens
+  have idStrictTypeStrengthens :
+      (Ty.idStrict carrier leftEndpoint rightEndpoint).partialStrengthen?
+          strengthening.back =
+        some (Ty.idStrict targetCarrier targetLeftEndpoint
+          targetRightEndpoint) := by
+    show Option.mapThree
+        (carrier.partialStrengthen? strengthening.back)
+        (leftEndpoint.partialStrengthen? strengthening.back)
+        (rightEndpoint.partialStrengthen? strengthening.back)
+        Ty.idStrict = _
+    rw [carrierSuccess, leftSuccess, rightSuccess]
+    rfl
+  have baseTotalCall :=
+    baseTotal strengthening typeStrengthens baseRawSuccess
+  have witnessTotalCall :=
+    witnessTotal strengthening idStrictTypeStrengthens witnessRawSuccess
+  unfold partialStrengthenTyped?
+  split
+  · next carrierFails =>
+      rw [carrierSuccess] at carrierFails
+      cases carrierFails
+  · next _ _ =>
+      split
+      · next leftFails =>
+          rw [leftSuccess] at leftFails
+          cases leftFails
+      · next _ _ =>
+          split
+          · next rightFails =>
+              rw [rightSuccess] at rightFails
+              cases rightFails
+          · next _ _ =>
+              split
+              · next baseFails =>
+                  rw [baseFails] at baseTotalCall
+                  cases baseTotalCall
+              · next _ _ =>
+                  split
+                  · next witnessFails =>
+                      rw [witnessFails] at witnessTotalCall
+                      cases witnessTotalCall
+                  · rfl
+
 /-! ## Image theorem trio — weaken / strengthen invertibility
 
 Three closure theorems on the image of `Term.weaken` under

@@ -990,6 +990,11 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_equivApply_with_carrierA
 -- Phase Y.2 Wave 5: refineElim (predicate.back.lift bridge)
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_refineElim_with_predicate
+-- Phase Y.2 Wave 6: app + idJ + oeqJ + idStrictRec bridges
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_app_with_domain
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_idJ_with_id_components
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_oeqJ_with_oeq_components
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_idStrictRec_with_idStrict_components
 
 -- Phase X: bridge from `IsAggregatorTotal (Term.weaken ...)` to
 -- `IsTotalOnWeaken` and the three binder wrappers that close the
