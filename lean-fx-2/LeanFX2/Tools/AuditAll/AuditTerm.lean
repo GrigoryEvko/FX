@@ -1102,5 +1102,7 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_eitherCode
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_idCode
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_equivCode
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_piTyCode
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_sigmaTyCode
 
 end LeanFX2.Tools

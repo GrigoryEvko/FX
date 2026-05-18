@@ -11140,6 +11140,150 @@ theorem strengthenTyped?_rename_eq_equivCode
       subst rightEq
       rfl
 
+/-- Type-code strength-T1 case: `Term.piTyCode`.
+
+Binder-shape: `domainCodeRaw` renames via `rho` at the outer scope,
+`codomainCodeRaw` renames via `rho.lift` under one binder.  The
+codomain witness uses
+`PartialRawRenaming.lift_rename_some` for survival under the lift,
+combined with `RawRenaming.identity_lift_pointwise` + rename_identity
+to collapse `codomainCodeRaw.rename id.lift` back to `codomainCodeRaw`. -/
+theorem strengthenTyped?_rename_eq_piTyCode
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (domainCodeRaw : RawTerm sourceScope)
+    (codomainCodeRaw : RawTerm (sourceScope + 1)) :
+    partialStrengthenTyped?
+        (Term.rename typedRenaming
+          (Term.piTyCode (context := sourceCtx) outerLevel levelLe
+            domainCodeRaw codomainCodeRaw))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)
+      = some (StrengtheningResult.fromRename forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects
+          (Term.piTyCode (context := sourceCtx) outerLevel levelLe
+            domainCodeRaw codomainCodeRaw)) := by
+  dsimp only [Term.rename]
+  unfold partialStrengthenTyped?
+  have domainStrengthens :
+      (domainCodeRaw.rename forwardRename).partialStrengthen? renameInverse
+        = some domainCodeRaw := by
+    rw [RawTerm.partialStrengthen?_rename_some domainCodeRaw forwardRename
+      (@RawRenaming.identity sourceScope) renameInverse renameInverseLeft,
+      RawTerm.rename_identity domainCodeRaw]
+  have codomainStrengthens :
+      (codomainCodeRaw.rename forwardRename.lift).partialStrengthen?
+          renameInverse.lift
+        = some codomainCodeRaw := by
+    rw [RawTerm.partialStrengthen?_rename_some codomainCodeRaw
+      forwardRename.lift (@RawRenaming.identity sourceScope).lift
+      renameInverse.lift
+      (PartialRawRenaming.lift_rename_some renameInverseLeft),
+      RawTerm.rename_pointwise
+        (@RawRenaming.identity_lift_pointwise sourceScope) codomainCodeRaw,
+      RawTerm.rename_identity codomainCodeRaw]
+  split
+  next noDomainSuccess =>
+    exact absurd (domainStrengthens.symm.trans noDomainSuccess)
+      (by intro contra; cases contra)
+  next targetDomainCodeRaw domainSuccess =>
+    have domainEq : targetDomainCodeRaw = domainCodeRaw :=
+      Option.some.inj (domainSuccess.symm.trans domainStrengthens)
+    subst domainEq
+    split
+    next noCodomainSuccess =>
+      exact absurd (codomainStrengthens.symm.trans noCodomainSuccess)
+        (by intro contra; cases contra)
+    next targetCodomainCodeRaw codomainSuccess =>
+      have codomainEq : targetCodomainCodeRaw = codomainCodeRaw :=
+        Option.some.inj (codomainSuccess.symm.trans codomainStrengthens)
+      subst codomainEq
+      rfl
+
+/-- Type-code strength-T1 case: `Term.sigmaTyCode`.
+
+Binder-shape mirror of `piTyCode`: same survival pattern under the
+codomain binder. -/
+theorem strengthenTyped?_rename_eq_sigmaTyCode
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (domainCodeRaw : RawTerm sourceScope)
+    (codomainCodeRaw : RawTerm (sourceScope + 1)) :
+    partialStrengthenTyped?
+        (Term.rename typedRenaming
+          (Term.sigmaTyCode (context := sourceCtx) outerLevel levelLe
+            domainCodeRaw codomainCodeRaw))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)
+      = some (StrengtheningResult.fromRename forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects
+          (Term.sigmaTyCode (context := sourceCtx) outerLevel levelLe
+            domainCodeRaw codomainCodeRaw)) := by
+  dsimp only [Term.rename]
+  unfold partialStrengthenTyped?
+  have domainStrengthens :
+      (domainCodeRaw.rename forwardRename).partialStrengthen? renameInverse
+        = some domainCodeRaw := by
+    rw [RawTerm.partialStrengthen?_rename_some domainCodeRaw forwardRename
+      (@RawRenaming.identity sourceScope) renameInverse renameInverseLeft,
+      RawTerm.rename_identity domainCodeRaw]
+  have codomainStrengthens :
+      (codomainCodeRaw.rename forwardRename.lift).partialStrengthen?
+          renameInverse.lift
+        = some codomainCodeRaw := by
+    rw [RawTerm.partialStrengthen?_rename_some codomainCodeRaw
+      forwardRename.lift (@RawRenaming.identity sourceScope).lift
+      renameInverse.lift
+      (PartialRawRenaming.lift_rename_some renameInverseLeft),
+      RawTerm.rename_pointwise
+        (@RawRenaming.identity_lift_pointwise sourceScope) codomainCodeRaw,
+      RawTerm.rename_identity codomainCodeRaw]
+  split
+  next noDomainSuccess =>
+    exact absurd (domainStrengthens.symm.trans noDomainSuccess)
+      (by intro contra; cases contra)
+  next targetDomainCodeRaw domainSuccess =>
+    have domainEq : targetDomainCodeRaw = domainCodeRaw :=
+      Option.some.inj (domainSuccess.symm.trans domainStrengthens)
+    subst domainEq
+    split
+    next noCodomainSuccess =>
+      exact absurd (codomainStrengthens.symm.trans noCodomainSuccess)
+        (by intro contra; cases contra)
+    next targetCodomainCodeRaw codomainSuccess =>
+      have codomainEq : targetCodomainCodeRaw = codomainCodeRaw :=
+        Option.some.inj (codomainSuccess.symm.trans codomainStrengthens)
+      subst codomainEq
+      rfl
+
 end Term
 
 end LeanFX2
