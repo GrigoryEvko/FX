@@ -7871,6 +7871,74 @@ theorem not_usesNewestSlotTyped?_imp_strengthenTyped?_some
   | some result =>
       exact ⟨result, rfl⟩
 
+/-- Canonical `StrengtheningResult` for the rename-image case.
+
+Given an injective renaming `forwardRename : RawRenaming sourceScope
+targetScope` with typed companion `typedRenaming`, a partial inverse
+`renameInverse`, and an original typed term `original` living in the
+source context, build the canonical `StrengtheningResult` for
+`Term.rename typedRenaming original` (which lives in the target
+context) through the `ContextStrengthening.ofRenaming`-induced
+strengthening (which goes back from target to source).
+
+Mechanical content:
+* `targetType := originalTy` — the strengthening recovers the original
+  type.
+* `targetRaw := originalRaw` — analogous at the raw layer.
+* `targetTerm := original` — the original typed term itself.
+* `typeStrengthens` — discharges via `Ty.partialStrengthen?_rename_some`
+  applied at `targetRenaming := RawRenaming.identity`, then closed via
+  `Ty.rename_identity`.
+* `rawStrengthens` — analogous at raw, via
+  `RawTerm.partialStrengthen?_rename_some` + `RawTerm.rename_identity`.
+* `typeRenames` / `rawRenames` — both `rfl` because the
+  `ContextStrengthening.ofRenaming`'s `forward` field IS `forwardRename`
+  by definition.
+
+This is the canonical witness consumed by strength-T1
+(`Term.strengthenTyped?_rename_eq`): the headline asserts that the
+dispatcher produces exactly this StrengtheningResult on a renamed
+input. -/
+def StrengtheningResult.fromRename
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    {originalTy : Ty level sourceScope}
+    {originalRaw : RawTerm sourceScope}
+    (original : Term sourceCtx originalTy originalRaw) :
+    StrengtheningResult
+      (ContextStrengthening.ofRenaming forwardRename typedRenaming
+        renameInverse renameInverseLeft renameInverseInjects)
+      (Term.rename typedRenaming original) where
+  targetType := originalTy
+  targetRaw := originalRaw
+  targetTerm := original
+  typeStrengthens := by
+    show (originalTy.rename forwardRename).partialStrengthen? renameInverse =
+      some originalTy
+    rw [Ty.partialStrengthen?_rename_some originalTy forwardRename
+      (@RawRenaming.identity sourceScope) renameInverse renameInverseLeft,
+      Ty.rename_identity originalTy]
+  rawStrengthens := by
+    show (originalRaw.rename forwardRename).partialStrengthen? renameInverse =
+      some originalRaw
+    rw [RawTerm.partialStrengthen?_rename_some originalRaw forwardRename
+      (@RawRenaming.identity sourceScope) renameInverse renameInverseLeft,
+      RawTerm.rename_identity originalRaw]
+  typeRenames := rfl
+  rawRenames := rfl
+
 end Term
 
 end LeanFX2
