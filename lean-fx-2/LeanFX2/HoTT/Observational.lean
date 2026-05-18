@@ -259,7 +259,7 @@ theorem to_pointwise
     {firstFn secondFn : ∀ (someValue : alpha), beta someValue}
     (functionEquality : OEq firstFn secondFn) :
     ∀ (someValue : alpha), OEq (firstFn someValue) (secondFn someValue) :=
-  fun someValue => functionEquality ▸ rfl
+  fun _someValue => functionEquality ▸ rfl
 
 /-! The reverse direction (`(∀ x, f x = g x) → f = g`) is
 **funext**, which is a propext-class axiom in MLTT.  Under

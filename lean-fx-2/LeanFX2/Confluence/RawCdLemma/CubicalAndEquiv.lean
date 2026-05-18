@@ -80,7 +80,7 @@ theorem RawStep.par.cd_lemma_betaGlueElimIntro {scope : Nat}
     {baseRawSource baseRawTarget
      partialRawSource partialRawTarget : RawTerm scope}
     (baseIH : RawStep.par baseRawTarget (RawTerm.cd baseRawSource))
-    (partialIH :
+    (_partialIH :
       RawStep.par partialRawTarget (RawTerm.cd partialRawSource)) :
     RawStep.par baseRawTarget
       (RawTerm.cd (RawTerm.glueElim

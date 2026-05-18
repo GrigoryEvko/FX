@@ -220,7 +220,7 @@ def GradedCtx.lookup :
       GradedCtx mode level dimensions scope →
       Fin scope →
       Σ' (lookupScope : Nat), GradedBinding level lookupScope dimensions
-  | _, _, _, _, .cons rest binding, ⟨0, _⟩ => ⟨_, binding⟩
+  | _, _, _, _, .cons _rest binding, ⟨0, _⟩ => ⟨_, binding⟩
   | _, _, _, _, .cons rest _, ⟨innerIdx + 1, lookupBound⟩ =>
       GradedCtx.lookup rest ⟨innerIdx, Nat.lt_of_succ_lt_succ lookupBound⟩
 

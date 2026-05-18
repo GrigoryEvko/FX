@@ -2457,12 +2457,12 @@ def partialStrengthenTypedIdJOfSuccess {mode : Mode} {level : Nat}
     (baseTypeStrengthens :
       motiveType.partialStrengthen? strengthening.back =
         some targetMotiveType)
-    (carrierSuccess :
+    (_carrierSuccess :
       carrier.partialStrengthen? strengthening.back = some targetCarrier)
-    (leftSuccess :
+    (_leftSuccess :
       leftEndpoint.partialStrengthen? strengthening.back =
         some targetLeftEndpoint)
-    (rightSuccess :
+    (_rightSuccess :
       rightEndpoint.partialStrengthen? strengthening.back =
         some targetRightEndpoint)
     (baseRawStrengthens :
@@ -4532,7 +4532,7 @@ def partialStrengthenTypedEquivApplyOfSuccess {mode : Mode} {level : Nat}
       Term targetCtx (Ty.equiv targetCarrierA targetCarrierB) targetEquivRaw)
     (targetArgumentTerm :
       Term targetCtx targetCarrierA targetArgumentRaw)
-    (carrierASuccess :
+    (_carrierASuccess :
       carrierA.partialStrengthen? strengthening.back = some targetCarrierA)
     (carrierBSuccess :
       carrierB.partialStrengthen? strengthening.back = some targetCarrierB)
@@ -5407,16 +5407,16 @@ def partialStrengthenTypedTranspOfSuccess
         targetPathRaw)
     (targetSourceValue :
       Term targetCtx targetSourceType targetSourceRaw)
-    (sourceTypeStrengthens :
+    (_sourceTypeStrengthens :
       sourceType.partialStrengthen? strengthening.back =
         some targetSourceType)
     (targetTypeStrengthens :
       targetType.partialStrengthen? strengthening.back =
         some targetTargetType)
-    (sourceTypeRawStrengthens :
+    (_sourceTypeRawStrengthens :
       sourceTypeRaw.partialStrengthen? strengthening.back =
         some targetSourceTypeRaw)
-    (targetTypeRawStrengthens :
+    (_targetTypeRawStrengthens :
       targetTypeRaw.partialStrengthen? strengthening.back =
         some targetTargetTypeRaw)
     (pathRawStrengthens :
@@ -5874,7 +5874,7 @@ def partialStrengthenTypedEffectPerformOfSuccess
     (argumentsRawStrengthens :
       argumentsRaw.partialStrengthen? strengthening.back =
         some targetArgumentsRaw)
-    (effectTagRenames :
+    (_effectTagRenames :
       effectTag = targetEffectTag.rename strengthening.forward)
     (operationRawRenames :
       operationRaw = targetOperationRaw.rename strengthening.forward)

@@ -222,8 +222,8 @@ def Term.idReflDestruct
     (someTerm :
       Term context (Ty.id carrier leftEndpoint rightEndpoint)
                    (RawTerm.refl witnessRaw)) :
-    Σ' (witnessEqLeft : witnessRaw = leftEndpoint)
-       (witnessEqRight : witnessRaw = rightEndpoint),
+    Σ' (_witnessEqLeft : witnessRaw = leftEndpoint)
+       (_witnessEqRight : witnessRaw = rightEndpoint),
        HEq someTerm
             (Term.refl (context := context) carrier witnessRaw) := by
   suffices key :

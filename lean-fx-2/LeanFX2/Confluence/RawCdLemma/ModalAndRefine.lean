@@ -89,7 +89,7 @@ theorem RawStep.par.cd_lemma_betaRefineElimIntro {scope : Nat}
     {valueRawSource valueRawTarget : RawTerm scope}
     {proofRawSource proofRawTarget : RawTerm scope}
     (valueIH : RawStep.par valueRawTarget (RawTerm.cd valueRawSource))
-    (proofIH : RawStep.par proofRawTarget (RawTerm.cd proofRawSource)) :
+    (_proofIH : RawStep.par proofRawTarget (RawTerm.cd proofRawSource)) :
     RawStep.par valueRawTarget
       (RawTerm.cd (RawTerm.refineElim
         (RawTerm.refineIntro valueRawSource proofRawSource))) := by

@@ -205,8 +205,8 @@ def Term.idStrictReflDestruct
     (someTerm :
       Term context (Ty.idStrict carrier leftEndpoint rightEndpoint)
                    (RawTerm.idStrictRefl witnessRaw)) :
-    Σ' (witnessEqLeft : witnessRaw = leftEndpoint)
-       (witnessEqRight : witnessRaw = rightEndpoint),
+    Σ' (_witnessEqLeft : witnessRaw = leftEndpoint)
+       (_witnessEqRight : witnessRaw = rightEndpoint),
        HEq someTerm
             (Term.idStrictRefl (context := context) modeIsStrict carrier
                                witnessRaw) := by

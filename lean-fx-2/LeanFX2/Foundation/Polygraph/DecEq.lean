@@ -44,7 +44,7 @@ theorem PolyCell.atom_unique_at_dim0 {sv : Nat}
     (motive := fun (someDim someSource someTarget : Nat)
                    (theCell : PolyCell someDim someSource someTarget) =>
                 ∀ (_dimEq : someDim = 0)
-                  (sourceEq : someSource = sv)
+                  (_sourceEq : someSource = sv)
                   (_targetEq : someTarget = sv),
                   HEq theCell (PolyCell.atom sv))
     someCell

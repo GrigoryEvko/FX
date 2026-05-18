@@ -141,7 +141,7 @@ theorem Ty.act_pointwise
       (someTy : Ty level sourceScope)
       {actA : ContainerA sourceScope targetScope}
       {actB : ContainerB sourceScope targetScope}
-      (agreeWitness : ActPointwiseAgree ContainerA ContainerB level
+      (_agreeWitness : ActPointwiseAgree ContainerA ContainerB level
           sourceScope targetScope actA actB),
       Ty.act someTy actA = Ty.act someTy actB := by
   intro sourceScope targetScope someTy
@@ -343,7 +343,7 @@ theorem Ty.act_compose
       {firstAction : ContainerFirst sourceScope middleScope}
       {secondAction : ContainerSecond middleScope targetScope}
       {composedAction : ContainerComposed sourceScope targetScope}
-      (compatWitness : ActComposeCompat ContainerFirst ContainerSecond
+      (_compatWitness : ActComposeCompat ContainerFirst ContainerSecond
           ContainerComposed level sourceScope middleScope targetScope
           firstAction secondAction composedAction),
       Ty.act (Ty.act someTy firstAction) secondAction =
@@ -493,7 +493,7 @@ theorem Ty.act_identity
             (Action.liftForRaw someAction)) :
     ∀ {scope : Nat} (someTy : Ty level scope)
       {someAction : Container scope scope}
-      (identityWitness : ActsAsIdentity Container level scope someAction),
+      (_identityWitness : ActsAsIdentity Container level scope someAction),
       Ty.act someTy someAction = someTy := by
   intro scope someTy
   induction someTy with

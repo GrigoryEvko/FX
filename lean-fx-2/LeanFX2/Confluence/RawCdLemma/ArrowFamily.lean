@@ -142,7 +142,7 @@ theorem RawStep.par.cd_lemma_betaPathReflApp {scope : Nat}
     {valueRawSource valueRawTarget
      intervalRawSource intervalRawTarget : RawTerm scope}
     (valueIH : RawStep.par valueRawTarget (RawTerm.cd valueRawSource))
-    (intervalIH :
+    (_intervalIH :
       RawStep.par intervalRawTarget (RawTerm.cd intervalRawSource)) :
     RawStep.par valueRawTarget
       (RawTerm.cd (RawTerm.pathApp

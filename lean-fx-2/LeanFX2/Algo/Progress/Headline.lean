@@ -2054,8 +2054,8 @@ def Term.idReflDestructAlgo {context : Ctx mode level scope}
     (someTerm :
       Term context (Ty.id carrier leftEndpoint rightEndpoint)
                    (RawTerm.refl witnessRaw)) :
-    Σ' (leftEqWitness : leftEndpoint = witnessRaw)
-       (rightEqWitness : rightEndpoint = witnessRaw),
+    Σ' (_leftEqWitness : leftEndpoint = witnessRaw)
+       (_rightEqWitness : rightEndpoint = witnessRaw),
        HEq someTerm (Term.refl (context := context) carrier witnessRaw) := by
   suffices key :
       ∀ {someType : Ty level scope}

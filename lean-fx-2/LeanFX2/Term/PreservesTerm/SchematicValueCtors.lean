@@ -246,7 +246,7 @@ theorem RawStep.par.lift_full_equivReflId
 /-- **Term.equivReflIdAtId full lift.**  Atom-shaped — only refl applies. -/
 theorem RawStep.par.lift_full_equivReflIdAtId
     (innerLevel : UniverseLevel) (innerLevelLt : innerLevel.toNat + 1 ≤ level)
-    (carrier : Ty level scope) (carrierRaw : RawTerm scope)
+    (_carrier : Ty level scope) (carrierRaw : RawTerm scope)
     (sourceTerm :
       Term context
         (Ty.id (Ty.universe innerLevel innerLevelLt) carrierRaw carrierRaw)
