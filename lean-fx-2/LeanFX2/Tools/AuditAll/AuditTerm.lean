@@ -1008,6 +1008,10 @@ existing computational dispatcher. -/
 -- Phase Y.1 Wave 5: natElim + natRec (no aux witnesses, universal)
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_natElim
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_natRec
+-- Phase Y.2 Wave 11: listElim + optionMatch + eitherMatch (element/lr bridges)
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_listElim_with_element
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_optionMatch_with_element
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_eitherMatch_with_lr_types
 
 -- Phase X: bridge from `IsAggregatorTotal (Term.weaken ...)` to
 -- `IsTotalOnWeaken` and the three binder wrappers that close the
