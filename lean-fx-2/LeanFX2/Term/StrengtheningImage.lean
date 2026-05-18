@@ -13497,6 +13497,383 @@ theorem isAggregatorTotal_uaToEquiv_with_carrier_raws {mode : Mode}
                         cases proofTotalCall
                     · rfl
 
+/-- Bridge totality wrapper for `Term.uaIntroHet`.  Source type
+`Ty.id (Ty.universe...) carrierARaw carrierBRaw` encodes carrierARaw/
+carrierBRaw via Ty.id mapThree but NOT carrierA/carrierB (Ty's).
+Source raw `RawTerm.equivIntro forwardRaw backwardRaw` gives forwardRaw,
+backwardRaw via mapTwo.  Take carrierA.back + carrierB.back as
+extra hypotheses. -/
+theorem isAggregatorTotal_uaIntroHet_with_carriers {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    {carrierA carrierB : Ty level sourceScope}
+    (carrierARaw carrierBRaw : RawTerm sourceScope)
+    {forwardRaw backwardRaw : RawTerm sourceScope}
+    {equivWitness :
+      Term sourceCtx (Ty.equiv carrierA carrierB)
+        (RawTerm.equivIntro forwardRaw backwardRaw)}
+    (equivTotal : IsAggregatorTotal equivWitness)
+    (carrierTotal :
+      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
+        (strengthening : ContextStrengthening sourceCtx targetCtx)
+        {targetCarrierARaw targetCarrierBRaw : RawTerm targetScope},
+        carrierARaw.partialStrengthen? strengthening.back =
+            some targetCarrierARaw →
+        carrierBRaw.partialStrengthen? strengthening.back =
+            some targetCarrierBRaw →
+        ∃ targetCarrierA targetCarrierB,
+          carrierA.partialStrengthen? strengthening.back =
+              some targetCarrierA ∧
+          carrierB.partialStrengthen? strengthening.back =
+              some targetCarrierB) :
+    IsAggregatorTotal
+      (Term.uaIntroHet (context := sourceCtx) innerLevel innerLevelLt
+        carrierARaw carrierBRaw equivWitness) := by
+  intros _ _ strengthening _ _ typeStrengthens rawStrengthens
+  -- typeStrengthens: Ty.id (Ty.universe ...) carrierARaw carrierBRaw
+  change Option.mapThree
+      ((Ty.universe innerLevel innerLevelLt :
+          Ty level sourceScope).partialStrengthen?
+        strengthening.back)
+      (carrierARaw.partialStrengthen? strengthening.back)
+      (carrierBRaw.partialStrengthen? strengthening.back)
+      Ty.id = some _ at typeStrengthens
+  obtain ⟨_, _, _, _, carrierARawSuccess, carrierBRawSuccess, _⟩ :=
+    Option.mapThree_eq_some typeStrengthens
+  -- rawStrengthens: RawTerm.equivIntro forwardRaw backwardRaw
+  change Option.mapTwo
+      (forwardRaw.partialStrengthen? strengthening.back)
+      (backwardRaw.partialStrengthen? strengthening.back)
+      RawTerm.equivIntro = some _ at rawStrengthens
+  obtain ⟨targetForwardRaw, targetBackwardRaw, forwardRawSuccess,
+    backwardRawSuccess, _⟩ :=
+    Option.mapTwo_eq_some rawStrengthens
+  obtain ⟨targetCarrierA, targetCarrierB, carrierASuccess,
+    carrierBSuccess⟩ :=
+    carrierTotal strengthening carrierARawSuccess carrierBRawSuccess
+  -- equivWitness's type: Ty.equiv carrierA carrierB
+  have equivTypeStrengthens :
+      (Ty.equiv carrierA carrierB).partialStrengthen?
+          strengthening.back =
+        some (Ty.equiv targetCarrierA targetCarrierB) := by
+    show Option.mapTwo
+        (carrierA.partialStrengthen? strengthening.back)
+        (carrierB.partialStrengthen? strengthening.back)
+        Ty.equiv = _
+    rw [carrierASuccess, carrierBSuccess]
+    rfl
+  -- equivWitness's raw: RawTerm.equivIntro forwardRaw backwardRaw
+  have equivRawStrengthens :
+      (RawTerm.equivIntro forwardRaw backwardRaw).partialStrengthen?
+          strengthening.back =
+        some (RawTerm.equivIntro targetForwardRaw targetBackwardRaw) := by
+    change Option.mapTwo
+        (forwardRaw.partialStrengthen? strengthening.back)
+        (backwardRaw.partialStrengthen? strengthening.back)
+        RawTerm.equivIntro = _
+    rw [forwardRawSuccess, backwardRawSuccess]
+    rfl
+  have equivTotalCall :=
+    equivTotal strengthening equivTypeStrengthens equivRawStrengthens
+  unfold partialStrengthenTyped?
+  split
+  · next carrierAFails =>
+      rw [carrierASuccess] at carrierAFails
+      cases carrierAFails
+  · next _ _ =>
+      split
+      · next carrierBFails =>
+          rw [carrierBSuccess] at carrierBFails
+          cases carrierBFails
+      · next _ _ =>
+          split
+          · next carrierARawFails =>
+              rw [carrierARawSuccess] at carrierARawFails
+              cases carrierARawFails
+          · next _ _ =>
+              split
+              · next carrierBRawFails =>
+                  rw [carrierBRawSuccess] at carrierBRawFails
+                  cases carrierBRawFails
+              · next _ _ =>
+                  split
+                  · next forwardRawFails =>
+                      rw [forwardRawSuccess] at forwardRawFails
+                      cases forwardRawFails
+                  · next _ _ =>
+                      split
+                      · next backwardRawFails =>
+                          rw [backwardRawSuccess] at backwardRawFails
+                          cases backwardRawFails
+                      · next _ _ =>
+                          split
+                          · next equivFails =>
+                              rw [equivFails] at equivTotalCall
+                              cases equivTotalCall
+                          · rfl
+
+/-- Bridge totality wrapper for `Term.equivIntroHet`.  Source type
+`Ty.equiv carrierA carrierB` encodes the carriers via mapTwo.  Source
+raw `RawTerm.equivIntro forwardRaw backwardRaw` encodes those raws
+but NOT leftInvRaw / rightInvRaw.  Take the missing raws as extra
+hypotheses. -/
+theorem isAggregatorTotal_equivIntroHet_with_inv_raws {mode : Mode}
+    {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {carrierA carrierB : Ty level sourceScope}
+    {forwardRaw backwardRaw leftInvRaw rightInvRaw : RawTerm sourceScope}
+    {forward : Term sourceCtx (Ty.arrow carrierA carrierB) forwardRaw}
+    {backward : Term sourceCtx (Ty.arrow carrierB carrierA) backwardRaw}
+    {leftInv :
+      Term sourceCtx
+        (equivIntroHetLeftInverseType carrierA forwardRaw backwardRaw)
+        leftInvRaw}
+    {rightInv :
+      Term sourceCtx
+        (equivIntroHetRightInverseType carrierB forwardRaw backwardRaw)
+        rightInvRaw}
+    (forwardTotal : IsAggregatorTotal forward)
+    (backwardTotal : IsAggregatorTotal backward)
+    (leftInvTotal : IsAggregatorTotal leftInv)
+    (rightInvTotal : IsAggregatorTotal rightInv)
+    (invRawsTotal :
+      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
+        (strengthening : ContextStrengthening sourceCtx targetCtx)
+        {targetCarrierA targetCarrierB : Ty level targetScope}
+        {targetForwardRaw targetBackwardRaw : RawTerm targetScope},
+        carrierA.partialStrengthen? strengthening.back =
+            some targetCarrierA →
+        carrierB.partialStrengthen? strengthening.back =
+            some targetCarrierB →
+        forwardRaw.partialStrengthen? strengthening.back =
+            some targetForwardRaw →
+        backwardRaw.partialStrengthen? strengthening.back =
+            some targetBackwardRaw →
+        ∃ targetLeftInvRaw targetRightInvRaw,
+          leftInvRaw.partialStrengthen? strengthening.back =
+              some targetLeftInvRaw ∧
+          rightInvRaw.partialStrengthen? strengthening.back =
+              some targetRightInvRaw) :
+    IsAggregatorTotal
+      (Term.equivIntroHet forward backward leftInv rightInv) := by
+  intros _ _ strengthening _ _ typeStrengthens rawStrengthens
+  change Option.mapTwo
+      (carrierA.partialStrengthen? strengthening.back)
+      (carrierB.partialStrengthen? strengthening.back)
+      Ty.equiv = some _ at typeStrengthens
+  obtain ⟨targetCarrierA, targetCarrierB, carrierASuccess, carrierBSuccess,
+    _⟩ :=
+    Option.mapTwo_eq_some typeStrengthens
+  change Option.mapTwo
+      (forwardRaw.partialStrengthen? strengthening.back)
+      (backwardRaw.partialStrengthen? strengthening.back)
+      RawTerm.equivIntro = some _ at rawStrengthens
+  obtain ⟨targetForwardRaw, targetBackwardRaw, forwardRawSuccess,
+    backwardRawSuccess, _⟩ :=
+    Option.mapTwo_eq_some rawStrengthens
+  obtain ⟨targetLeftInvRaw, targetRightInvRaw, leftInvRawSuccess,
+    rightInvRawSuccess⟩ :=
+    invRawsTotal strengthening carrierASuccess carrierBSuccess
+      forwardRawSuccess backwardRawSuccess
+  -- Forward IH: type Ty.arrow carrierA carrierB
+  have forwardArrowStrengthens :
+      (Ty.arrow carrierA carrierB).partialStrengthen? strengthening.back =
+        some (Ty.arrow targetCarrierA targetCarrierB) := by
+    show Option.mapTwo
+        (carrierA.partialStrengthen? strengthening.back)
+        (carrierB.partialStrengthen? strengthening.back)
+        Ty.arrow = _
+    rw [carrierASuccess, carrierBSuccess]
+    rfl
+  have backwardArrowStrengthens :
+      (Ty.arrow carrierB carrierA).partialStrengthen? strengthening.back =
+        some (Ty.arrow targetCarrierB targetCarrierA) := by
+    show Option.mapTwo
+        (carrierB.partialStrengthen? strengthening.back)
+        (carrierA.partialStrengthen? strengthening.back)
+        Ty.arrow = _
+    rw [carrierASuccess, carrierBSuccess]
+    rfl
+  have forwardTotalCall :=
+    forwardTotal strengthening forwardArrowStrengthens forwardRawSuccess
+  have backwardTotalCall :=
+    backwardTotal strengthening backwardArrowStrengthens backwardRawSuccess
+  -- Aux weakens for inverse-law type strengthening
+  have carrierAWeakenStrengthens :
+      carrierA.weaken.partialStrengthen? strengthening.back.lift =
+        some targetCarrierA.weaken := by
+    rw [Ty.partialStrengthen?_weaken_lift carrierA strengthening.back,
+      carrierASuccess]
+    rfl
+  have carrierBWeakenStrengthens :
+      carrierB.weaken.partialStrengthen? strengthening.back.lift =
+        some targetCarrierB.weaken := by
+    rw [Ty.partialStrengthen?_weaken_lift carrierB strengthening.back,
+      carrierBSuccess]
+    rfl
+  have forwardRawWeakenStrengthens :
+      forwardRaw.weaken.partialStrengthen? strengthening.back.lift =
+        some targetForwardRaw.weaken := by
+    rw [RawTerm.partialStrengthen?_weaken_lift forwardRaw
+      strengthening.back, forwardRawSuccess]
+    rfl
+  have backwardRawWeakenStrengthens :
+      backwardRaw.weaken.partialStrengthen? strengthening.back.lift =
+        some targetBackwardRaw.weaken := by
+    rw [RawTerm.partialStrengthen?_weaken_lift backwardRaw
+      strengthening.back, backwardRawSuccess]
+    rfl
+  -- LeftInv codomain reconstruction
+  have leftAppForwardStrengthens :
+      (RawTerm.app forwardRaw.weaken
+          (RawTerm.var ⟨0, Nat.zero_lt_succ sourceScope⟩)
+          ).partialStrengthen? strengthening.back.lift =
+        some (RawTerm.app targetForwardRaw.weaken
+          (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩)) := by
+    change Option.mapTwo
+        (forwardRaw.weaken.partialStrengthen? strengthening.back.lift)
+        (some (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩))
+        RawTerm.app = _
+    rw [forwardRawWeakenStrengthens]
+    rfl
+  have leftAppBackForwardStrengthens :
+      (RawTerm.app backwardRaw.weaken
+          (RawTerm.app forwardRaw.weaken
+            (RawTerm.var ⟨0, Nat.zero_lt_succ sourceScope⟩))
+          ).partialStrengthen? strengthening.back.lift =
+        some (RawTerm.app targetBackwardRaw.weaken
+          (RawTerm.app targetForwardRaw.weaken
+            (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩))) := by
+    change Option.mapTwo
+        (backwardRaw.weaken.partialStrengthen? strengthening.back.lift)
+        ((RawTerm.app forwardRaw.weaken
+          (RawTerm.var ⟨0, Nat.zero_lt_succ sourceScope⟩)
+          ).partialStrengthen? strengthening.back.lift)
+        RawTerm.app = _
+    rw [backwardRawWeakenStrengthens, leftAppForwardStrengthens]
+    rfl
+  have leftInvCodomainStrengthens :
+      (equivIntroHetLeftInverseCodomain carrierA forwardRaw
+        backwardRaw).partialStrengthen? strengthening.back.lift =
+        some (equivIntroHetLeftInverseCodomain targetCarrierA
+          targetForwardRaw targetBackwardRaw) := by
+    change Option.mapThree
+        (carrierA.weaken.partialStrengthen? strengthening.back.lift)
+        ((RawTerm.app backwardRaw.weaken
+          (RawTerm.app forwardRaw.weaken
+            (RawTerm.var ⟨0, Nat.zero_lt_succ sourceScope⟩))
+          ).partialStrengthen? strengthening.back.lift)
+        ((RawTerm.var ⟨0, Nat.zero_lt_succ sourceScope⟩
+          ).partialStrengthen? strengthening.back.lift)
+        Ty.id = _
+    rw [carrierAWeakenStrengthens, leftAppBackForwardStrengthens]
+    rfl
+  have leftInvTypeStrengthens :
+      (equivIntroHetLeftInverseType carrierA forwardRaw
+        backwardRaw).partialStrengthen? strengthening.back =
+        some (equivIntroHetLeftInverseType targetCarrierA targetForwardRaw
+          targetBackwardRaw) := by
+    change Option.mapTwo
+        (carrierA.partialStrengthen? strengthening.back)
+        ((equivIntroHetLeftInverseCodomain carrierA forwardRaw
+          backwardRaw).partialStrengthen? strengthening.back.lift)
+        Ty.piTy = _
+    rw [carrierASuccess, leftInvCodomainStrengthens]
+    rfl
+  -- RightInv similarly
+  have rightAppBackwardStrengthens :
+      (RawTerm.app backwardRaw.weaken
+          (RawTerm.var ⟨0, Nat.zero_lt_succ sourceScope⟩)
+          ).partialStrengthen? strengthening.back.lift =
+        some (RawTerm.app targetBackwardRaw.weaken
+          (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩)) := by
+    change Option.mapTwo
+        (backwardRaw.weaken.partialStrengthen? strengthening.back.lift)
+        (some (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩))
+        RawTerm.app = _
+    rw [backwardRawWeakenStrengthens]
+    rfl
+  have rightAppForwardBackwardStrengthens :
+      (RawTerm.app forwardRaw.weaken
+          (RawTerm.app backwardRaw.weaken
+            (RawTerm.var ⟨0, Nat.zero_lt_succ sourceScope⟩))
+          ).partialStrengthen? strengthening.back.lift =
+        some (RawTerm.app targetForwardRaw.weaken
+          (RawTerm.app targetBackwardRaw.weaken
+            (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩))) := by
+    change Option.mapTwo
+        (forwardRaw.weaken.partialStrengthen? strengthening.back.lift)
+        ((RawTerm.app backwardRaw.weaken
+          (RawTerm.var ⟨0, Nat.zero_lt_succ sourceScope⟩)
+          ).partialStrengthen? strengthening.back.lift)
+        RawTerm.app = _
+    rw [forwardRawWeakenStrengthens, rightAppBackwardStrengthens]
+    rfl
+  have rightInvCodomainStrengthens :
+      (equivIntroHetRightInverseCodomain carrierB forwardRaw
+        backwardRaw).partialStrengthen? strengthening.back.lift =
+        some (equivIntroHetRightInverseCodomain targetCarrierB
+          targetForwardRaw targetBackwardRaw) := by
+    change Option.mapThree
+        (carrierB.weaken.partialStrengthen? strengthening.back.lift)
+        ((RawTerm.app forwardRaw.weaken
+          (RawTerm.app backwardRaw.weaken
+            (RawTerm.var ⟨0, Nat.zero_lt_succ sourceScope⟩))
+          ).partialStrengthen? strengthening.back.lift)
+        ((RawTerm.var ⟨0, Nat.zero_lt_succ sourceScope⟩
+          ).partialStrengthen? strengthening.back.lift)
+        Ty.id = _
+    rw [carrierBWeakenStrengthens, rightAppForwardBackwardStrengthens]
+    rfl
+  have rightInvTypeStrengthens :
+      (equivIntroHetRightInverseType carrierB forwardRaw
+        backwardRaw).partialStrengthen? strengthening.back =
+        some (equivIntroHetRightInverseType targetCarrierB
+          targetForwardRaw targetBackwardRaw) := by
+    change Option.mapTwo
+        (carrierB.partialStrengthen? strengthening.back)
+        ((equivIntroHetRightInverseCodomain carrierB forwardRaw
+          backwardRaw).partialStrengthen? strengthening.back.lift)
+        Ty.piTy = _
+    rw [carrierBSuccess, rightInvCodomainStrengthens]
+    rfl
+  have leftInvTotalCall :=
+    leftInvTotal strengthening leftInvTypeStrengthens leftInvRawSuccess
+  have rightInvTotalCall :=
+    rightInvTotal strengthening rightInvTypeStrengthens rightInvRawSuccess
+  unfold partialStrengthenTyped?
+  split
+  · next carrierAFails =>
+      rw [carrierASuccess] at carrierAFails
+      cases carrierAFails
+  · next _ _ =>
+      split
+      · next carrierBFails =>
+          rw [carrierBSuccess] at carrierBFails
+          cases carrierBFails
+      · next _ _ =>
+          split
+          · next forwardFails =>
+              rw [forwardFails] at forwardTotalCall
+              cases forwardTotalCall
+          · next _ _ =>
+              split
+              · next backwardFails =>
+                  rw [backwardFails] at backwardTotalCall
+                  cases backwardTotalCall
+              · next _ _ =>
+                  split
+                  · next leftInvFails =>
+                      rw [leftInvFails] at leftInvTotalCall
+                      cases leftInvTotalCall
+                  · next _ _ =>
+                      split
+                      · next rightInvFails =>
+                          rw [rightInvFails] at rightInvTotalCall
+                          cases rightInvTotalCall
+                      · rfl
+
 /-! ## Image theorem trio — weaken / strengthen invertibility
 
 Three closure theorems on the image of `Term.weaken` under
