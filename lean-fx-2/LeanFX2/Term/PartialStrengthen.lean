@@ -8139,6 +8139,59 @@ theorem strengthenTyped?_rename_eq_universeCode
           (Term.universeCode (context := sourceCtx) innerLevel outerLevel
             cumulOk levelLe)) := rfl
 
+/-! ### strength-T1: parametric-atomic Ty-payload cases (deferred)
+
+Constructors like `Term.listNil`, `Term.optionNone`, `Term.refl`,
+`Term.oeqRefl`, `Term.idStrictRefl`, `Term.equivReflId`,
+`Term.equivReflIdAtId` carry a single `Ty` payload that survives
+through `Term.rename` as `elementType.rename forwardRename`.
+
+Their dispatcher arms use the match-with-binding form
+`match elementSuccess : elementType.partialStrengthen? strengthening.back with`
+that captures the equation for use by per-ctor helpers like
+`partialStrengthenTypedListNilOfType`.  The captured equation makes
+the inner match dependent: standard `rw [elementStrengthens]` fails
+with "motive is not type-correct", and `generalize ... at h` fails
+because the binding-form match-with-binding cannot be re-elaborated
+after the discriminant generalizes.
+
+**Concrete Lean error** (commit afa8df24 attempts on listNil):
+```
+Tactic `generalize` failed: result is not type correct
+  ∀ (optResult : Option (Ty level targetScope)),
+    ... ((match codomainSuccess : optResult with ...)) ...
+```
+
+Resolution paths to explore in a follow-up tick:
+
+* (P1) Rewrite `partialStrengthenTyped?` dispatcher to NOT use the
+  match-with-binding form — replace `match h : X with | some y => f y h`
+  by `match X with | some y => f y rfl` everywhere the captured
+  equation is used as a discharge for `typeStrengthens`.  Requires
+  per-ctor refactor; mechanical but invasive (~50 ctors touched).
+
+* (P2) Build a fully manual `Option.rec`-based collapse lemma with
+  an explicit motive of shape `fun opt => opt = some Y → goal`.
+  Requires careful dependent-type wrangling; complexity comparable
+  to the original Wave 6 disjunctive eliminator work.
+
+* (P3) Restructure the strength-T1 statement to take the
+  per-ctor strengthening witness as an explicit hypothesis instead
+  of computing it from `Term.rename`.  This sidesteps the inner
+  match entirely but produces a weaker headline that's harder to
+  consume downstream.
+
+Per the warrior-mentality discipline in `CLAUDE.md`, this is genuine
+v1.1-deferral because the blocker is structural (Lean 4 v4.29.1
+match-with-binding dependent-elimination wall), the three escape
+hatches above have been catalogued, and the deferred work has a
+concrete unblock path.  The 7 closed-atomic / value-data-only T1
+cases (unit / boolTrue / boolFalse / natZero / interval0 /
+interval1 / universeCode) plus the `ofRenaming` + `fromRename`
+infrastructure already constitute a meaningful T1 down-payment.
+
+The full 71-ctor T1 cascade lives in #1952's open-ended scope. -/
+
 end Term
 
 end LeanFX2
