@@ -988,6 +988,8 @@ existing computational dispatcher. -/
 -- Phase Y.2 Wave 4: equivApp + equivApply (carrierA bridges)
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_equivApp_with_carrierA
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_equivApply_with_carrierA
+-- Phase Y.2 Wave 5: refineElim (predicate.back.lift bridge)
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_refineElim_with_predicate
 
 -- Phase X: bridge from `IsAggregatorTotal (Term.weaken ...)` to
 -- `IsTotalOnWeaken` and the three binder wrappers that close the

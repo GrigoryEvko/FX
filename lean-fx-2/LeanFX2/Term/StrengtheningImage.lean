@@ -12973,6 +12973,69 @@ theorem isAggregatorTotal_equivApply_with_carrierA {mode : Mode} {level : Nat}
                   cases argumentTotalCall
               · rfl
 
+/-- Bridge totality wrapper for `Term.refineElim`.  Source type is
+`baseType`; dispatcher needs baseType.back + predicate.back.lift +
+refinedValue IH (type `Ty.refine baseType predicate`).  Take
+predicate.back.lift strengthening as extra hypothesis. -/
+theorem isAggregatorTotal_refineElim_with_predicate {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    {baseType : Ty level sourceScope}
+    {predicate : RawTerm (sourceScope + 1)}
+    {refinedRaw : RawTerm sourceScope}
+    {refinedValue :
+      Term sourceCtx (Ty.refine baseType predicate) refinedRaw}
+    (refinedTotal : IsAggregatorTotal refinedValue)
+    (predicateTotal :
+      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
+        (strengthening : ContextStrengthening sourceCtx targetCtx)
+        {targetBaseType : Ty level targetScope},
+        baseType.partialStrengthen? strengthening.back =
+            some targetBaseType →
+        ∃ targetPredicate,
+          predicate.partialStrengthen? strengthening.back.lift =
+            some targetPredicate) :
+    IsAggregatorTotal (Term.refineElim refinedValue) := by
+  intros _ _ strengthening targetBaseType _ typeStrengthens rawStrengthens
+  unfold RawTerm.partialStrengthen? at rawStrengthens
+  unfold RawTerm.partialRename? at rawStrengthens
+  split at rawStrengthens
+  rotate_left
+  · cases rawStrengthens
+  next targetRefinedRaw refinedRawRenSuccess =>
+    have refinedRawSuccess :
+        refinedRaw.partialStrengthen? strengthening.back =
+          some targetRefinedRaw := refinedRawRenSuccess
+    obtain ⟨targetPredicate, predicateSuccess⟩ :=
+      predicateTotal strengthening typeStrengthens
+    have refineTypeStrengthens :
+        (Ty.refine baseType predicate).partialStrengthen?
+            strengthening.back =
+          some (Ty.refine targetBaseType targetPredicate) := by
+      show Option.mapTwo
+          (baseType.partialStrengthen? strengthening.back)
+          (predicate.partialStrengthen? strengthening.back.lift)
+          Ty.refine = _
+      rw [typeStrengthens, predicateSuccess]
+      rfl
+    have refinedTotalCall :=
+      refinedTotal strengthening refineTypeStrengthens refinedRawSuccess
+    unfold partialStrengthenTyped?
+    split
+    · next baseFails =>
+        rw [typeStrengthens] at baseFails
+        cases baseFails
+    · next _ _ =>
+        split
+        · next predicateFails =>
+            rw [predicateSuccess] at predicateFails
+            cases predicateFails
+        · next _ _ =>
+            split
+            · next refinedFails =>
+                rw [refinedFails] at refinedTotalCall
+                cases refinedTotalCall
+            · rfl
+
 /-! ## Image theorem trio — weaken / strengthen invertibility
 
 Three closure theorems on the image of `Term.weaken` under
