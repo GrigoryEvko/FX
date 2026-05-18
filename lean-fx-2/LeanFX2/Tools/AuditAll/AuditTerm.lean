@@ -1063,5 +1063,23 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_oeqRefl
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_idStrictRefl
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_equivReflIdAtId
+-- strength-T1 1-IH non-binder atomic: subst-via-witness on inner Term IH.
+-- Each ctor wraps a single Term sub-result (optionally with Ty / RawTerm
+-- payloads, or value-level data) via the partialStrengthenTyped helpers'
+-- match-then-construct shape.
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_natSucc
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_intervalOpp
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_modIntro
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_modElim
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_subsume
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_optionSome
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_eitherInl
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_eitherInr
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_sessionRecv
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_cumulUp
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_recordProj
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_codataDest
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_recordIntro
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_glueElim
 
 end LeanFX2.Tools
