@@ -14721,6 +14721,112 @@ theorem isAggregatorTotal_transp_with_path_witnesses {mode : Mode}
                           cases sourceTotalCall
                       · rfl
 
+/-- Bridge totality wrapper for `Term.effectPerform`.  Source type is
+`Ty.effect resultCarrier effectTag`; the dispatcher needs
+`effectTag.back` + `argumentCarrier.back` + `resultCarrier.back` +
+operationTag IH + arguments IH.  Decomposing the source-type
+strengthening yields `effectTag.back` and `resultCarrier.back`
+through `Option.mapTwo_eq_some`, but `argumentCarrier.back` is NOT
+recoverable from `Ty.effect resultCarrier effectTag` alone — take
+it as an explicit aux witness (parametric on strengthening). -/
+theorem isAggregatorTotal_effectPerform_with_opsig_witness {mode : Mode}
+    {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (effectTag : RawTerm sourceScope)
+    (effectRow : Effects.EffectRow)
+    (operationSignature : Effects.OperationSignature (Ty level sourceScope))
+    (canPerformOperation :
+      Effects.CanPerform effectRow operationSignature)
+    {operationRaw argumentsRaw : RawTerm sourceScope}
+    {operationTag :
+      Term sourceCtx
+        (Ty.effect operationSignature.argumentCarrier effectTag)
+        operationRaw}
+    {arguments :
+      Term sourceCtx operationSignature.argumentCarrier argumentsRaw}
+    (operationTotal : IsAggregatorTotal operationTag)
+    (argumentsTotal : IsAggregatorTotal arguments)
+    (argumentCarrierTotal :
+      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
+        (strengthening : ContextStrengthening sourceCtx targetCtx)
+        {targetEffectTag : RawTerm targetScope}
+        {targetResultCarrier : Ty level targetScope},
+        effectTag.partialStrengthen? strengthening.back =
+            some targetEffectTag →
+        operationSignature.resultCarrier.partialStrengthen?
+            strengthening.back =
+            some targetResultCarrier →
+        ∃ targetArgumentCarrier,
+          operationSignature.argumentCarrier.partialStrengthen?
+              strengthening.back =
+            some targetArgumentCarrier) :
+    IsAggregatorTotal
+      (Term.effectPerform (context := sourceCtx) effectTag effectRow
+        operationSignature canPerformOperation operationTag arguments) := by
+  intros _ _ strengthening _ _ typeStrengthens rawStrengthens
+  -- typeStrengthens decomposes Ty.effect resultCarrier effectTag
+  change Option.mapTwo
+      (operationSignature.resultCarrier.partialStrengthen?
+        strengthening.back)
+      (effectTag.partialStrengthen? strengthening.back)
+      Ty.effect = some _ at typeStrengthens
+  obtain ⟨targetResultCarrier, targetEffectTag, resultCarrierSuccess,
+    effectTagSuccess, _⟩ := Option.mapTwo_eq_some typeStrengthens
+  -- rawStrengthens decomposes RawTerm.effectPerform operationRaw argumentsRaw
+  change Option.mapTwo
+      (operationRaw.partialStrengthen? strengthening.back)
+      (argumentsRaw.partialStrengthen? strengthening.back)
+      RawTerm.effectPerform = some _ at rawStrengthens
+  obtain ⟨_, _, operationRawSuccess, argumentsRawSuccess, _⟩ :=
+    Option.mapTwo_eq_some rawStrengthens
+  obtain ⟨targetArgumentCarrier, argumentCarrierSuccess⟩ :=
+    argumentCarrierTotal strengthening effectTagSuccess
+      resultCarrierSuccess
+  -- operationTag's type: Ty.effect argumentCarrier effectTag
+  have operationTagTypeStrengthens :
+      (Ty.effect operationSignature.argumentCarrier effectTag).partialStrengthen?
+          strengthening.back =
+        some (Ty.effect targetArgumentCarrier targetEffectTag) := by
+    show Option.mapTwo
+        (operationSignature.argumentCarrier.partialStrengthen?
+          strengthening.back)
+        (effectTag.partialStrengthen? strengthening.back)
+        Ty.effect = _
+    rw [argumentCarrierSuccess, effectTagSuccess]
+    rfl
+  have operationTotalCall :=
+    operationTotal strengthening operationTagTypeStrengthens
+      operationRawSuccess
+  have argumentsTotalCall :=
+    argumentsTotal strengthening argumentCarrierSuccess
+      argumentsRawSuccess
+  unfold partialStrengthenTyped?
+  split
+  · next effectTagFails =>
+      rw [effectTagSuccess] at effectTagFails
+      cases effectTagFails
+  · next _ _ =>
+      split
+      · next argumentCarrierFails =>
+          rw [argumentCarrierSuccess] at argumentCarrierFails
+          cases argumentCarrierFails
+      · next _ _ =>
+          split
+          · next resultCarrierFails =>
+              rw [resultCarrierSuccess] at resultCarrierFails
+              cases resultCarrierFails
+          · next _ _ =>
+              split
+              · next operationFails =>
+                  rw [operationFails] at operationTotalCall
+                  cases operationTotalCall
+              · next _ _ =>
+                  split
+                  · next argumentsFails =>
+                      rw [argumentsFails] at argumentsTotalCall
+                      cases argumentsTotalCall
+                  · rfl
+
 /-! ## Image theorem trio — weaken / strengthen invertibility
 
 Three closure theorems on the image of `Term.weaken` under
