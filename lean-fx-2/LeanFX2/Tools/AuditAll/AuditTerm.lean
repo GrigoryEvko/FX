@@ -1119,5 +1119,6 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_uaToEquiv
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_uaIntroHet
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_funextIntroHet
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_effectPerform
 
 end LeanFX2.Tools
