@@ -1040,4 +1040,28 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.isTotalOnWeaken_lamPi
 #assert_no_axioms LeanFX2.Term.isTotalOnWeaken_pathLam
 
+-- strength-T1: per-ctor renaming-image dispatcher equations.
+-- Closed-atomic (7): unit / boolTrue / boolFalse / natZero / interval0 /
+-- interval1 / universeCode.  Each closes by `rfl`.
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_unit
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_boolTrue
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_boolFalse
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_natZero
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_interval0
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_interval1
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_universeCode
+-- strength-T1 parametric-atomic (7): subst-via-witness pattern.  Each
+-- ctor with Ty (or Ty + RawTerm) payload but no Term children — the
+-- dispatcher's match-with-binding is unblocked by `subst`-ing the
+-- propositional equality between the bound witness and the original
+-- (derived from `Ty.partialStrengthen?_rename_some` / `Ty.rename_identity`
+-- and their raw companions).
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_listNil
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_optionNone
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_equivReflId
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_refl
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_oeqRefl
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_idStrictRefl
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq_equivReflIdAtId
+
 end LeanFX2.Tools
