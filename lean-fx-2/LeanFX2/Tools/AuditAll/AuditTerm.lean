@@ -983,6 +983,8 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_hcompPath_with_endpoints
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_glueElim_with_boundary
 #assert_no_axioms LeanFX2.Term.isAggregatorTotal_codataDest_with_state
+-- Phase Y.2 Wave 3: fst (secondType.back.lift bridge)
+#assert_no_axioms LeanFX2.Term.isAggregatorTotal_fst_with_second
 
 -- Phase X: bridge from `IsAggregatorTotal (Term.weaken ...)` to
 -- `IsTotalOnWeaken` and the three binder wrappers that close the
