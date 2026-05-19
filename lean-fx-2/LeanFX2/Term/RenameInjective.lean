@@ -506,6 +506,50 @@ theorem Term.rename_injective_atFst_of_inner
   rename_i inferredSecondType pairTerm
   exact ⟨inferredSecondType, pairTerm, HEq.rfl⟩
 
+theorem Term.rename_injective_snd_ctor
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {firstType : Ty level sourceScope}
+    {secondType : Ty level (sourceScope + 1)}
+    {pairRaw : RawTerm sourceScope}
+    (pairInjective :
+      ∀ (pairA pairB :
+          Term sourceCtx (Ty.sigmaTy firstType secondType) pairRaw),
+        HEq (Term.rename termRenaming pairA)
+          (Term.rename termRenaming pairB) →
+        HEq pairA pairB)
+    (pairA pairB :
+      Term sourceCtx (Ty.sigmaTy firstType secondType) pairRaw) :
+    Term.rename termRenaming (Term.snd pairA) =
+      Term.rename termRenaming (Term.snd pairB) →
+      Term.snd pairA = Term.snd pairB := by
+  intro renameEq
+  simp only [Term.rename] at renameEq
+  have sndRenameHEq :
+      HEq
+        (Term.snd (Term.rename termRenaming pairA))
+        (Term.snd (Term.rename termRenaming pairB)) :=
+    HEq.trans
+      (HEq.symm
+        (termRenameInjectiveCastHEq
+          (Ty.subst0_rename_commute secondType firstType
+            (RawTerm.fst pairRaw) rho).symm
+          (Term.snd (Term.rename termRenaming pairA))))
+      (HEq.trans (heq_of_eq renameEq)
+        (termRenameInjectiveCastHEq
+          (Ty.subst0_rename_commute secondType firstType
+            (RawTerm.fst pairRaw) rho).symm
+          (Term.snd (Term.rename termRenaming pairB))))
+  injection sndRenameHEq with scopeEq contextEq firstTypeRenameEq
+    secondTypeRenameEq pairRawRenameEq pairRenameHEq
+  have pairHEq : HEq pairA pairB :=
+    pairInjective pairA pairB (heq_of_eq pairRenameHEq)
+  cases pairHEq
+  rfl
+
 theorem Term.rename_injective_atGlueIntro_of_inner
     {mode : Mode} {level sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
