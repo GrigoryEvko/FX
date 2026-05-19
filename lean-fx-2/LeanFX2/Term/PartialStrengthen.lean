@@ -13135,6 +13135,88 @@ theorem strengthenTyped?_rename_eq_effectPerform
             subst argumentsEq
             rfl
 
+/-! ## Cast-wrapped strength-T1 cases (HEq-form)
+
+The `Term.rename` arm for `Term.funextRefl` (and 10 other cast-wrapped
+ctors) wraps the result in
+`(funextReflType_rename ...).symm ▸ Term.funextRefl (renamed args)`.
+The Eq-form headline of strength-T1 cannot be proved at the typed-level:
+after `dsimp only [Term.rename]`, the dispatcher's pattern-match cannot
+peel the cast (Lean refuses `cases castEq` because the underlying
+definitional equation `codomainType.weaken.rename forwardRename.lift =
+(codomainType.rename forwardRename).rename RawRenaming.weaken` is not
+syntactic).
+
+We therefore ship the HEq form for the cast-wrapped ctors: the LHS
+dispatcher (on the cast-wrapped input) is HEq to the RHS dispatcher
+(on the un-cast `Term.funextRefl` at the target context).  This is
+the natural statement that survives the cast wrapper because HEq is
+agnostic to the type-level cast.
+
+The Eq-form headline for these 11 ctors is structurally blocked at
+the kernel level; downstream consumers should bridge via
+`HEq.cast` + the cast equation's known direction. -/
+
+/-- Cast-wrapped strength-T1 case (HEq form): `Term.funextRefl`.
+
+Closed value-shape ctor (no Term subterms).  Three Ty/raw payloads:
+`domainType`, `codomainType`, `applyRaw` at `scope+1`.  Rename arm
+wraps the result in `(funextReflType_rename rho ...).symm ▸ Term.funextRefl
+(renamed args)`.
+
+The HEq form abstracts over the cast: the dispatcher on the cast-
+wrapped input is HEq to the dispatcher on the un-cast `Term.funextRefl`
+applied to the renamed payloads.  Proof: cast-invariance of the
+dispatcher (`partialStrengthenTyped?_castInvariantHEq`) gives the HEq;
+the un-cast dispatcher equation closes via the standard `split` chain.
+-/
+theorem strengthenTyped?_rename_heq_funextRefl
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    {domainType codomainType : Ty level sourceScope}
+    (applyRaw : RawTerm (sourceScope + 1)) :
+    HEq
+      (partialStrengthenTyped?
+        (Term.rename typedRenaming
+          (Term.funextRefl (context := sourceCtx) domainType codomainType
+            applyRaw))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects))
+      (partialStrengthenTyped?
+        (Term.funextRefl (context := targetCtx)
+          (domainType.rename forwardRename)
+          (codomainType.rename forwardRename)
+          (applyRaw.rename forwardRename.lift))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)) := by
+  dsimp only [Term.rename]
+  -- After dsimp, LHS becomes:
+  --   partialStrengthenTyped?
+  --     ((funextReflType_rename ...).symm ▸ Term.funextRefl (renamed args))
+  --     σ
+  -- Apply cast-invariance HEq to peel the cast wrapper.
+  exact
+    partialStrengthenTyped?_castInvariantHEq
+      (Term.funextRefl (context := targetCtx)
+        (domainType.rename forwardRename)
+        (codomainType.rename forwardRename)
+        (applyRaw.rename forwardRename.lift))
+      (funextReflType_rename forwardRename domainType codomainType applyRaw).symm
+      (ContextStrengthening.ofRenaming forwardRename typedRenaming
+        renameInverse renameInverseLeft renameInverseInjects)
+
 end Term
 
 end LeanFX2

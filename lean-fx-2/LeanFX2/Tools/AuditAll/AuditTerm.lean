@@ -1128,4 +1128,11 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_castInvariantHEq
 #assert_no_axioms LeanFX2.Term.rename_oeqFunext_unfolds
 
+-- strength-T1 cast-wrapped ctors (HEq-form pivot — Eq-form structurally
+-- blocked because the named cast equations like funextReflType_rename are
+-- non-rfl, so `cases castProof` fails past Eq.mpr ▸).  Pivot ships as HEq
+-- via partialStrengthenTyped?_castInvariantHEq; downstream consumers bridge
+-- HEq → Eq via the named cast equation when needed.
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_heq_funextRefl
+
 end LeanFX2.Tools
