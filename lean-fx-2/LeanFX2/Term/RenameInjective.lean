@@ -724,6 +724,88 @@ theorem Term.rename_injective_atTransp_of_inner
     inferredSourceTypeRaw, inferredTargetTypeRaw, typePath, sourceValue, rfl,
     HEq.rfl⟩
 
+theorem Term.rename_injective_atHcompFamily_of_inner
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (rhoInjective : RawRenamingInjective rho)
+    {carrierType : Ty level sourceScope}
+    {sidesRaw capRaw : RawTerm sourceScope}
+    (sidesInjective :
+      ∀ {sidesTypeA sidesTypeB : Ty level sourceScope}
+        (sidesA : Term sourceCtx sidesTypeA sidesRaw)
+        (sidesB : Term sourceCtx sidesTypeB sidesRaw),
+        HEq (Term.rename termRenaming sidesA)
+          (Term.rename termRenaming sidesB) →
+        HEq sidesA sidesB)
+    (capInjective :
+      ∀ {capTypeA capTypeB : Ty level sourceScope}
+        (capA : Term sourceCtx capTypeA capRaw)
+        (capB : Term sourceCtx capTypeB capRaw),
+        HEq (Term.rename termRenaming capA)
+          (Term.rename termRenaming capB) →
+        HEq capA capB)
+    (termA termB :
+      Term sourceCtx carrierType (RawTerm.hcomp sidesRaw capRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro renameEq
+  cases termA <;> cases termB
+  · rename_i modeIsUnivalentA sidesA capA modeIsUnivalentB sidesB capB
+    simp only [Term.rename] at renameEq
+    injection renameEq with contextEq carrierTypeRenameEq
+      sidesRawRenameEq capRawRenameEq modeEq sidesRenameHEq capRenameHEq
+    cases modeEq
+    have sidesRenameHEq' :
+        HEq (Term.rename termRenaming sidesA)
+          (Term.rename termRenaming sidesB) :=
+      heq_of_eq sidesRenameHEq
+    have capRenameHEq' :
+        HEq (Term.rename termRenaming capA)
+          (Term.rename termRenaming capB) :=
+      heq_of_eq capRenameHEq
+    have sidesHEq : HEq sidesA sidesB :=
+      sidesInjective sidesA sidesB sidesRenameHEq'
+    have capHEq : HEq capA capB :=
+      capInjective capA capB capRenameHEq'
+    exact eq_of_heq
+      (Term.hcomp_HEq_congr modeIsUnivalentB rfl rfl rfl
+        sidesHEq capHEq)
+  · rename_i modeIsUnivalentA sidesA capA modeIsUnivalentB
+      leftEndpointB rightEndpointB sidesPathB capB
+    simp only [Term.rename] at renameEq
+    cases renameEq
+  · rename_i modeIsUnivalentA leftEndpointA rightEndpointA sidesPathA capA
+      modeIsUnivalentB sidesB capB
+    simp only [Term.rename] at renameEq
+    cases renameEq
+  · rename_i modeIsUnivalentA leftEndpointA rightEndpointA sidesPathA capA
+      modeIsUnivalentB leftEndpointB rightEndpointB sidesPathB capB
+    simp only [Term.rename] at renameEq
+    injection renameEq with contextEq carrierTypeRenameEq modeEq
+      leftEndpointRenameEq rightEndpointRenameEq sidesPathRawRenameEq
+      capRawRenameEq sidesPathRenameHEq capRenameHEq
+    cases modeEq
+    have leftEndpointEq : leftEndpointA = leftEndpointB :=
+      RawTerm.rename_injective_under_injective_renaming leftEndpointA
+        rhoInjective leftEndpointB leftEndpointRenameEq
+    have rightEndpointEq : rightEndpointA = rightEndpointB :=
+      RawTerm.rename_injective_under_injective_renaming rightEndpointA
+        rhoInjective rightEndpointB rightEndpointRenameEq
+    have sidesPathHEq : HEq sidesPathA sidesPathB :=
+      sidesInjective sidesPathA sidesPathB sidesPathRenameHEq
+    have capRenameHEq' :
+        HEq (Term.rename termRenaming capA)
+          (Term.rename termRenaming capB) :=
+      heq_of_eq capRenameHEq
+    have capHEq : HEq capA capB :=
+      capInjective capA capB capRenameHEq'
+    exact eq_of_heq
+      (Term.hcompPath_HEq_congr modeIsUnivalentB rfl leftEndpointEq
+        rightEndpointEq rfl rfl sidesPathHEq capHEq)
+
 theorem Term.rename_injective_atListElim_of_inner
     {mode : Mode} {level sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
