@@ -3,6 +3,9 @@ import LeanFX2.Term.RenameInjective
 /-! # Smoke: Term/RenameInjective zero-axiom audit -/
 
 #print axioms LeanFX2.Term.rename_injective_atVar
+#print axioms LeanFX2.Term.rename_injective_lam_ctor
+#print axioms LeanFX2.Term.rename_injective_lamPi_ctor
+#print axioms LeanFX2.Term.rename_injective_pathLam_ctor
 #print axioms LeanFX2.Term.rename_injective_atUnit
 #print axioms LeanFX2.Term.rename_injective_atBoolTrue
 #print axioms LeanFX2.Term.rename_injective_atBoolFalse

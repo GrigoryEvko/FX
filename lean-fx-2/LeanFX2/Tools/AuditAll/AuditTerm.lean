@@ -18,11 +18,14 @@ import LeanFX2.FX1Bridge
 
 namespace LeanFX2.Tools
 
-/-! ## AuditTerm — 388 `#assert_no_axioms` checks. -/
+/-! ## AuditTerm — 391 `#assert_no_axioms` checks. -/
 
 #assert_no_axioms LeanFX2.Term.subst
 #assert_no_axioms LeanFX2.Term.rename
 #assert_no_axioms LeanFX2.Term.rename_injective_atVar
+#assert_no_axioms LeanFX2.Term.rename_injective_lam_ctor
+#assert_no_axioms LeanFX2.Term.rename_injective_lamPi_ctor
+#assert_no_axioms LeanFX2.Term.rename_injective_pathLam_ctor
 #assert_no_axioms LeanFX2.Term.rename_injective_atUnit
 #assert_no_axioms LeanFX2.Term.rename_injective_atBoolTrue
 #assert_no_axioms LeanFX2.Term.rename_injective_atBoolFalse

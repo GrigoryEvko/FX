@@ -27,6 +27,124 @@ private theorem termRenameInjectiveCastHEq
   cases typeEq
   rfl
 
+theorem Term.rename_injective_lam_ctor
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {domainType codomainType : Ty level sourceScope}
+    {bodyRaw : RawTerm (sourceScope + 1)}
+    (bodyInjective :
+      ∀ (bodyA bodyB :
+          Term (sourceCtx.cons domainType) codomainType.weaken bodyRaw),
+        HEq (Term.rename (termRenaming.lift domainType) bodyA)
+          (Term.rename (termRenaming.lift domainType) bodyB) →
+        HEq bodyA bodyB)
+    (bodyA bodyB :
+      Term (sourceCtx.cons domainType) codomainType.weaken bodyRaw) :
+    Term.rename termRenaming (Term.lam bodyA) =
+      Term.rename termRenaming (Term.lam bodyB) →
+      Term.lam bodyA = Term.lam bodyB := by
+  intro renameEq
+  simp only [Term.rename] at renameEq
+  injection renameEq with contextEq domainRenameEq codomainRenameEq
+    bodyRawRenameEq bodyRawRenameEqAgain bodyRenameEq
+  have bodyRenameUncastHEq :
+      HEq (Term.rename (termRenaming.lift domainType) bodyA)
+        (Term.rename (termRenaming.lift domainType) bodyB) :=
+    HEq.trans
+      (HEq.symm
+        (termRenameInjectiveCastHEq
+          (Ty.weaken_rename_commute rho codomainType)
+          (Term.rename (termRenaming.lift domainType) bodyA)))
+      (HEq.trans (heq_of_eq bodyRenameEq)
+        (termRenameInjectiveCastHEq
+          (Ty.weaken_rename_commute rho codomainType)
+          (Term.rename (termRenaming.lift domainType) bodyB)))
+  have bodyHEq : HEq bodyA bodyB :=
+    bodyInjective bodyA bodyB bodyRenameUncastHEq
+  cases bodyHEq
+  rfl
+
+theorem Term.rename_injective_lamPi_ctor
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {domainType : Ty level sourceScope}
+    {codomainType : Ty level (sourceScope + 1)}
+    {bodyRaw : RawTerm (sourceScope + 1)}
+    (bodyInjective :
+      ∀ (bodyA bodyB :
+          Term (sourceCtx.cons domainType) codomainType bodyRaw),
+        HEq (Term.rename (termRenaming.lift domainType) bodyA)
+          (Term.rename (termRenaming.lift domainType) bodyB) →
+        HEq bodyA bodyB)
+    (bodyA bodyB : Term (sourceCtx.cons domainType) codomainType bodyRaw) :
+    Term.rename termRenaming (Term.lamPi bodyA) =
+      Term.rename termRenaming (Term.lamPi bodyB) →
+      Term.lamPi bodyA = Term.lamPi bodyB := by
+  intro renameEq
+  simp only [Term.rename] at renameEq
+  injection renameEq with contextEq domainRenameEq codomainRenameEq
+    bodyRawRenameEq bodyRawRenameEqAgain bodyRenameEq
+  have bodyHEq : HEq bodyA bodyB :=
+    bodyInjective bodyA bodyB (heq_of_eq bodyRenameEq)
+  cases bodyHEq
+  rfl
+
+theorem Term.rename_injective_pathLam_ctor
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {bodyRaw : RawTerm (sourceScope + 1)}
+    (bodyInjective :
+      ∀ (bodyA bodyB :
+          Term (sourceCtx.cons Ty.interval) carrierType.weaken bodyRaw),
+        HEq (Term.rename (termRenaming.lift Ty.interval) bodyA)
+          (Term.rename (termRenaming.lift Ty.interval) bodyB) →
+        HEq bodyA bodyB)
+    (bodyA bodyB :
+      Term (sourceCtx.cons Ty.interval) carrierType.weaken bodyRaw) :
+    Term.rename termRenaming
+        (Term.pathLam modeIsUnivalent carrierType leftEndpoint
+          rightEndpoint bodyA) =
+      Term.rename termRenaming
+        (Term.pathLam modeIsUnivalent carrierType leftEndpoint
+          rightEndpoint bodyB) →
+      Term.pathLam modeIsUnivalent carrierType leftEndpoint
+          rightEndpoint bodyA =
+        Term.pathLam modeIsUnivalent carrierType leftEndpoint
+          rightEndpoint bodyB := by
+  intro renameEq
+  simp only [Term.rename] at renameEq
+  injection renameEq with contextEq carrierRenameEq modeEq
+    leftEndpointRenameEq rightEndpointRenameEq bodyRawRenameEq
+    bodyRenameEq
+  have bodyRenameUncastHEq :
+      HEq (Term.rename (termRenaming.lift Ty.interval) bodyA)
+        (Term.rename (termRenaming.lift Ty.interval) bodyB) :=
+    HEq.trans
+      (HEq.symm
+        (termRenameInjectiveCastHEq
+          (Ty.weaken_rename_commute rho carrierType)
+          (Term.rename (termRenaming.lift Ty.interval) bodyA)))
+      (HEq.trans (heq_of_eq bodyRenameEq)
+        (termRenameInjectiveCastHEq
+          (Ty.weaken_rename_commute rho carrierType)
+          (Term.rename (termRenaming.lift Ty.interval) bodyB)))
+  have bodyHEq : HEq bodyA bodyB :=
+    bodyInjective bodyA bodyB bodyRenameUncastHEq
+  cases bodyHEq
+  rfl
+
 theorem Term.rename_injective_atVar
     {mode : Mode} {level sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
