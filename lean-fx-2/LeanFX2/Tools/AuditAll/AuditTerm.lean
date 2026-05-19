@@ -839,6 +839,7 @@ existing computational dispatcher. -/
 -- and by the Phase B+ Step.eta SR cascade.
 #assert_no_axioms LeanFX2.Term.weaken_inv_of_strengthenTyped?_some
 #assert_no_axioms LeanFX2.Term.rename_image_of_strengthenTyped?_some
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_isSome_unit
 
 -- Image Step 2: unweaken?-to-strengthenTyped? success direction.
 -- Tautological bijection — both witnesses succeed under identical

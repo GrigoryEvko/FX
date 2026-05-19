@@ -14896,6 +14896,48 @@ theorem rename_image_of_strengthenTyped?_some {mode : Mode} {level : Nat}
   exact ⟨result.targetType, result.targetRaw, result.targetTerm,
     weaken_inv_of_strengthenTyped?_some strengthening result success⟩
 
+/-! ## Rename-image success packaging
+
+These lemmas package the strength-T1 exact dispatcher equations into
+the `.isSome` shape needed by the T3 rename-image iff.  Eq-form T1
+cases reduce directly; cast-wrapped HEq-form cases need a separate
+bridge because the proof-bearing survival/cast matches are not
+definitionally transparent to ordinary rewriting.
+-/
+
+private theorem option_isSome_of_eq_some
+    {ResultType : Type} {resultOption : Option ResultType}
+    {resultValue : ResultType}
+    (resultEq : resultOption = some resultValue) :
+    resultOption.isSome = true := by
+  rw [resultEq]
+  rfl
+
+/-- T3 reverse-image bridge for the closed `Term.unit` case. -/
+theorem strengthenTyped?_rename_isSome_unit
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition) :
+    (partialStrengthenTyped?
+        (Term.rename typedRenaming (Term.unit (context := sourceCtx)))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)).isSome =
+      true :=
+  option_isSome_of_eq_some
+    (strengthenTyped?_rename_eq_unit forwardRename typedRenaming
+      renameInverse renameInverseLeft renameInverseInjects)
+
 /-- Image Step 2 — `unweaken?` and `strengthenTyped?` agree on success.
 
 TAUTOLOGICAL BIJECTION: `Term.unweaken?` is defined to pattern-match on
