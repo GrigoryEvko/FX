@@ -27,6 +27,94 @@ private theorem termRenameInjectiveCastHEq
   cases typeEq
   rfl
 
+private theorem rawTerm_ne_refl_self
+    {scope : Nat} (sourceRaw : RawTerm scope) :
+    sourceRaw ≠ RawTerm.refl sourceRaw := by
+  intro rawEq
+  induction sourceRaw with
+  | var position => cases rawEq
+  | unit => cases rawEq
+  | lam body bodyIH => cases rawEq
+  | app functionTerm argumentTerm functionIH argumentIH => cases rawEq
+  | pair firstValue secondValue firstIH secondIH => cases rawEq
+  | fst pairTerm pairIH => cases rawEq
+  | snd pairTerm pairIH => cases rawEq
+  | boolTrue => cases rawEq
+  | boolFalse => cases rawEq
+  | boolElim scrutinee thenBranch elseBranch scrutineeIH thenIH elseIH =>
+      cases rawEq
+  | natZero => cases rawEq
+  | natSucc predecessor predecessorIH => cases rawEq
+  | natElim scrutinee zeroBranch succBranch scrutineeIH zeroIH succIH =>
+      cases rawEq
+  | natRec scrutinee zeroBranch succBranch scrutineeIH zeroIH succIH =>
+      cases rawEq
+  | listNil => cases rawEq
+  | listCons headTerm tailTerm headIH tailIH => cases rawEq
+  | listElim scrutinee nilBranch consBranch scrutineeIH nilIH consIH =>
+      cases rawEq
+  | optionNone => cases rawEq
+  | optionSome valueTerm valueIH => cases rawEq
+  | optionMatch scrutinee noneBranch someBranch scrutineeIH noneIH someIH =>
+      cases rawEq
+  | eitherInl valueTerm valueIH => cases rawEq
+  | eitherInr valueTerm valueIH => cases rawEq
+  | eitherMatch scrutinee leftBranch rightBranch scrutineeIH leftIH rightIH =>
+      cases rawEq
+  | refl rawWitness witnessIH =>
+      exact witnessIH (by injection rawEq)
+  | idJ baseCase witness baseIH witnessIH => cases rawEq
+  | modIntro raw rawIH => cases rawEq
+  | modElim raw rawIH => cases rawEq
+  | subsume raw rawIH => cases rawEq
+  | interval0 => cases rawEq
+  | interval1 => cases rawEq
+  | intervalOpp intervalTerm intervalIH => cases rawEq
+  | intervalMeet leftInterval rightInterval leftIH rightIH => cases rawEq
+  | intervalJoin leftInterval rightInterval leftIH rightIH => cases rawEq
+  | pathLam body bodyIH => cases rawEq
+  | pathApp pathTerm intervalArg pathIH intervalIH => cases rawEq
+  | glueIntro baseValue partialValue baseIH partialIH => cases rawEq
+  | glueElim gluedValue gluedIH => cases rawEq
+  | transp path source pathIH sourceIH => cases rawEq
+  | hcomp sides cap sidesIH capIH => cases rawEq
+  | oeqRefl witness witnessIH => cases rawEq
+  | oeqJ baseCase witness baseIH witnessIH => cases rawEq
+  | oeqFunext pointwiseEquality pointwiseIH => cases rawEq
+  | idStrictRefl witness witnessIH => cases rawEq
+  | idStrictRec baseCase witness baseIH witnessIH => cases rawEq
+  | equivIntro forwardFn backwardFn forwardIH backwardIH => cases rawEq
+  | equivApp equivTerm argument equivIH argumentIH => cases rawEq
+  | refineIntro rawValue predicateProof valueIH proofIH => cases rawEq
+  | refineElim refinedValue refinedIH => cases rawEq
+  | recordIntro firstField fieldIH => cases rawEq
+  | recordProj recordValue recordIH => cases rawEq
+  | codataUnfold initialState transition initialIH transitionIH => cases rawEq
+  | codataDest codataValue codataIH => cases rawEq
+  | sessionSend channel payload channelIH payloadIH => cases rawEq
+  | sessionRecv channel channelIH => cases rawEq
+  | effectPerform operationTag arguments tagIH argumentsIH => cases rawEq
+  | universeCode innerLevel => cases rawEq
+  | arrowCode domainCode codomainCode domainIH codomainIH => cases rawEq
+  | piTyCode domainCode codomainCode domainIH codomainIH => cases rawEq
+  | sigmaTyCode domainCode codomainCode domainIH codomainIH => cases rawEq
+  | productCode firstCode secondCode firstIH secondIH => cases rawEq
+  | sumCode leftCode rightCode leftIH rightIH => cases rawEq
+  | listCode elementCode elementIH => cases rawEq
+  | optionCode elementCode elementIH => cases rawEq
+  | eitherCode leftCode rightCode leftIH rightIH => cases rawEq
+  | idCode typeCode leftRaw rightRaw typeIH leftIH rightIH => cases rawEq
+  | equivCode leftTypeCode rightTypeCode leftIH rightIH => cases rawEq
+  | cumulUpMarker innerCodeRaw innerIH => cases rawEq
+  | uaToEquiv proofRaw proofIH => cases rawEq
+  | equivApply equivRaw argRaw equivIH argIH => cases rawEq
+  | pathCompose leftPathRaw rightPathRaw leftIH rightIH => cases rawEq
+  | idToEquiv proofRaw proofIH => cases rawEq
+  | oeqTrans firstProof secondProof firstIH secondIH => cases rawEq
+  | equivCompose firstEquiv secondEquiv firstIH secondIH => cases rawEq
+  | transpFill pathTy currentInterval source pathIH intervalIH sourceIH =>
+      cases rawEq
+
 private theorem renamedLamPi_ne_renamedFunextReflCast
     {mode : Mode} {level sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
@@ -851,6 +939,75 @@ def Term.lam_pi_inv
             typeEq, termHEq⟩ := introView
           cases typeEq
 
+def Term.lam_arrow_id_inv
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {leftRaw rightRaw : RawTerm (scope + 1)}
+    {bodyRaw : RawTerm (scope + 1)}
+    (genericTerm :
+      Term sourceCtx
+        (Ty.id (Ty.arrow domainType codomainType)
+          (RawTerm.lam leftRaw) (RawTerm.lam rightRaw))
+        (RawTerm.lam bodyRaw)) :
+    (Σ' (applyRaw : RawTerm (scope + 1)),
+      Σ' (_ : bodyRaw = RawTerm.refl applyRaw),
+        Σ' (_ : leftRaw = RawTerm.refl applyRaw),
+          Σ' (_ : rightRaw = RawTerm.refl applyRaw),
+            HEq genericTerm
+              (Term.funextReflAtId (context := sourceCtx)
+                domainType codomainType applyRaw)) ⊕'
+    (Σ' (applyARaw applyBRaw : RawTerm (scope + 1)),
+      Σ' (_ : bodyRaw = RawTerm.refl applyARaw),
+        Σ' (_ : leftRaw = applyARaw),
+          Σ' (_ : rightRaw = applyBRaw),
+            HEq genericTerm
+              (Term.funextIntroHet (context := sourceCtx)
+                domainType codomainType applyARaw applyBRaw)) := by
+  cases Term.lam_raw_inv genericTerm with
+  | inl lamView =>
+    obtain ⟨domainA, codomainA, bodyTerm, typeEq, termHEq⟩ := lamView
+    cases typeEq
+  | inr restView =>
+    cases restView with
+    | inl piView =>
+      obtain ⟨domainA, codomainA, bodyTerm, typeEq, termHEq⟩ := piView
+      cases typeEq
+    | inr restView =>
+      cases restView with
+      | inl reflView =>
+        obtain ⟨domainA, codomainA, applyRaw, rawEq, typeEq,
+          termHEq⟩ := reflView
+        unfold funextReflType at typeEq
+        cases typeEq
+      | inr restView =>
+        cases restView with
+        | inl reflAtIdView =>
+          obtain ⟨domainA, codomainA, applyRaw, rawEq, typeEq,
+            termHEq⟩ := reflAtIdView
+          injection typeEq with _ carrierEq leftEq rightEq
+          injection carrierEq with domainEq codomainEq
+          injection leftEq with leftRawEq
+          injection rightEq with rightRawEq
+          subst domainA
+          subst codomainA
+          subst leftRaw
+          subst rightRaw
+          exact PSum.inl ⟨applyRaw, rawEq, rfl, rfl, termHEq⟩
+        | inr introView =>
+          obtain ⟨domainA, codomainA, applyARaw, applyBRaw, rawEq,
+            typeEq, termHEq⟩ := introView
+          injection typeEq with _ carrierEq leftEq rightEq
+          injection carrierEq with domainEq codomainEq
+          injection leftEq with leftRawEq
+          injection rightEq with rightRawEq
+          subst domainA
+          subst codomainA
+          subst leftRaw
+          subst rightRaw
+          exact PSum.inr
+            ⟨applyARaw, applyBRaw, rawEq, rfl, rfl, termHEq⟩
+
 theorem Term.rename_injective_atLamArrow_of_inner
     {mode : Mode} {level sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
@@ -952,6 +1109,82 @@ theorem Term.rename_injective_atLamPi_of_inner
           RawRenamingInjective.weaken baseCodomainB baseWeakenEq
       cases baseCodomainEq
       cases codomainEqB
+      cases termHEqA
+      cases termHEqB
+      rfl
+
+theorem Term.rename_injective_atLamArrowId
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {domainType codomainType : Ty level sourceScope}
+    {leftRaw rightRaw bodyRaw : RawTerm (sourceScope + 1)}
+    (termA termB :
+      Term sourceCtx
+        (Ty.id (Ty.arrow domainType codomainType)
+          (RawTerm.lam leftRaw) (RawTerm.lam rightRaw))
+        (RawTerm.lam bodyRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro renameEq
+  cases Term.lam_arrow_id_inv termA with
+  | inl reflViewA =>
+    obtain ⟨applyRawA, bodyRawEqA, leftRawEqA, rightRawEqA,
+      termHEqA⟩ := reflViewA
+    cases Term.lam_arrow_id_inv termB with
+    | inl reflViewB =>
+      obtain ⟨applyRawB, bodyRawEqB, leftRawEqB, rightRawEqB,
+        termHEqB⟩ := reflViewB
+      cases bodyRawEqA
+      have applyRawEq : applyRawA = applyRawB := by
+        injection bodyRawEqB
+      cases applyRawEq
+      cases leftRawEqA
+      cases leftRawEqB
+      cases rightRawEqA
+      cases rightRawEqB
+      cases termHEqA
+      cases termHEqB
+      exact
+        Term.rename_injective_funextReflAtId_ctor termRenaming
+          domainType codomainType applyRawA renameEq
+    | inr introViewB =>
+      obtain ⟨applyARawB, applyBRawB, bodyRawEqB, leftRawEqB,
+        rightRawEqB, termHEqB⟩ := introViewB
+      cases bodyRawEqA
+      have applyARawEq : applyRawA = applyARawB := by
+        injection bodyRawEqB
+      cases applyARawEq
+      cases leftRawEqA
+      exact False.elim
+        (rawTerm_ne_refl_self _ leftRawEqB.symm)
+  | inr introViewA =>
+    obtain ⟨applyARawA, applyBRawA, bodyRawEqA, leftRawEqA,
+      rightRawEqA, termHEqA⟩ := introViewA
+    cases Term.lam_arrow_id_inv termB with
+    | inl reflViewB =>
+      obtain ⟨applyRawB, bodyRawEqB, leftRawEqB, rightRawEqB,
+        termHEqB⟩ := reflViewB
+      cases bodyRawEqA
+      have applyRawEq : applyARawA = applyRawB := by
+        injection bodyRawEqB
+      cases applyRawEq
+      cases leftRawEqA
+      exact False.elim
+        (rawTerm_ne_refl_self _ leftRawEqB)
+    | inr introViewB =>
+      obtain ⟨applyARawB, applyBRawB, bodyRawEqB, leftRawEqB,
+        rightRawEqB, termHEqB⟩ := introViewB
+      cases bodyRawEqA
+      have applyARawEq : applyARawA = applyARawB := by
+        injection bodyRawEqB
+      cases applyARawEq
+      cases leftRawEqA
+      cases leftRawEqB
+      cases rightRawEqA
+      cases rightRawEqB
       cases termHEqA
       cases termHEqB
       rfl

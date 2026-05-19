@@ -41,8 +41,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Term.lam_raw_inv
 #assert_no_axioms LeanFX2.Term.lam_arrow_inv
 #assert_no_axioms LeanFX2.Term.lam_pi_inv
+#assert_no_axioms LeanFX2.Term.lam_arrow_id_inv
 #assert_no_axioms LeanFX2.Term.rename_injective_atLamArrow_of_inner
 #assert_no_axioms LeanFX2.Term.rename_injective_atLamPi_of_inner
+#assert_no_axioms LeanFX2.Term.rename_injective_atLamArrowId
 #assert_no_axioms LeanFX2.Term.rename_injective_atUnit
 #assert_no_axioms LeanFX2.Term.rename_injective_atBoolTrue
 #assert_no_axioms LeanFX2.Term.rename_injective_atBoolFalse
