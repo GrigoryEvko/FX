@@ -17795,6 +17795,89 @@ theorem strengthenTyped?_rename_isSome_lamPi
     next bodyResult bodySuccess =>
       rfl
 
+/-- T3 reverse-image bridge for the cast-wrapped `Term.pathLam` rename arm. -/
+theorem strengthenTyped?_rename_isSome_pathLam
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    (modeIsUnivalent : mode = Mode.univalent)
+    (carrierType : Ty level sourceScope)
+    (leftEndpoint rightEndpoint : RawTerm sourceScope)
+    {bodyRaw : RawTerm (sourceScope + 1)}
+    (body :
+      Term (sourceCtx.cons Ty.interval) carrierType.weaken bodyRaw)
+    (bodyIH :
+      ∀ (intervalSuccess :
+          Ty.interval.partialStrengthen? renameInverse =
+            some Ty.interval),
+        (partialStrengthenTyped?
+            (Ty.weaken_rename_commute forwardRename carrierType ▸
+              Term.rename (typedRenaming.lift Ty.interval) body)
+            ((ContextStrengthening.ofRenaming forwardRename typedRenaming
+                renameInverse renameInverseLeft renameInverseInjects).lift
+              Ty.interval Ty.interval intervalSuccess)).isSome =
+          true) :
+    (partialStrengthenTyped?
+        (Term.rename typedRenaming
+          (Term.pathLam modeIsUnivalent carrierType leftEndpoint
+            rightEndpoint body))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)).isSome =
+      true := by
+  dsimp only [Term.rename]
+  unfold partialStrengthenTyped?
+  have carrierStrengthens :
+      (carrierType.rename forwardRename).partialStrengthen? renameInverse
+        = some carrierType := by
+    rw [Ty.partialStrengthen?_rename_some carrierType forwardRename
+      (@RawRenaming.identity sourceScope) renameInverse renameInverseLeft,
+      Ty.rename_identity carrierType]
+  have leftStrengthens :
+      (leftEndpoint.rename forwardRename).partialStrengthen? renameInverse
+        = some leftEndpoint := by
+    rw [RawTerm.partialStrengthen?_rename_some leftEndpoint forwardRename
+      (@RawRenaming.identity sourceScope) renameInverse renameInverseLeft,
+      RawTerm.rename_identity leftEndpoint]
+  have rightStrengthens :
+      (rightEndpoint.rename forwardRename).partialStrengthen? renameInverse
+        = some rightEndpoint := by
+    rw [RawTerm.partialStrengthen?_rename_some rightEndpoint forwardRename
+      (@RawRenaming.identity sourceScope) renameInverse renameInverseLeft,
+      RawTerm.rename_identity rightEndpoint]
+  split
+  next noCarrierSuccess =>
+    exact absurd (carrierStrengthens.symm.trans noCarrierSuccess)
+      (by intro contra; cases contra)
+  next targetCarrierType carrierSuccess =>
+    split
+    next noLeftSuccess =>
+      exact absurd (leftStrengthens.symm.trans noLeftSuccess)
+        (by intro contra; cases contra)
+    next targetLeftEndpoint leftSuccess =>
+      split
+      next noRightSuccess =>
+        exact absurd (rightStrengthens.symm.trans noRightSuccess)
+          (by intro contra; cases contra)
+      next targetRightEndpoint rightSuccess =>
+        split
+        next noBodySuccess =>
+          have impossible : Option.isSome (none (α := _)) = true :=
+            noBodySuccess ▸ bodyIH rfl
+          cases impossible
+        next bodyResult bodySuccess =>
+          rfl
+
 /-- T3 reverse-image bridge for `Term.transp`. -/
 theorem strengthenTyped?_rename_isSome_transp
     {mode : Mode} {level : Nat}
