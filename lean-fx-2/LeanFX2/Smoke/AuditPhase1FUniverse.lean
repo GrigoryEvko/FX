@@ -12,6 +12,7 @@ These declarations form the structural foundation for `Ty.universe` /
 #print axioms LeanFX2.UniverseLevel.le_refl
 #print axioms LeanFX2.UniverseLevel.le_trans
 #print axioms LeanFX2.UniverseLevel.le_succ
+#print axioms LeanFX2.UniverseLevel.toNat_not_injective
 
 #print axioms LeanFX2.Ty.universeLe
 #print axioms LeanFX2.Ty.universeLe_refl

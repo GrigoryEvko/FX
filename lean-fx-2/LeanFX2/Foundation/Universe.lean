@@ -127,6 +127,27 @@ theorem le_trans {lowLevel midLevel highLevel : UniverseLevel}
 theorem le_succ (level : UniverseLevel) : le level (UniverseLevel.succ level) :=
   Nat.le_succ level.toNat
 
+/-- `UniverseLevel.toNat` intentionally forgets expression structure.
+
+This pins the reason raw-only universe-code inversion cannot recover
+structured universe expressions: `max 0 0` and `imax 0 0` both map to
+the same numeric height but are distinct constructors. -/
+theorem toNat_not_injective :
+    ¬ (∀ levelA levelB : UniverseLevel,
+      levelA.toNat = levelB.toNat → levelA = levelB) := by
+  intro toNatInjective
+  have sameHeight :
+      (UniverseLevel.max UniverseLevel.zero UniverseLevel.zero).toNat =
+        (UniverseLevel.imax UniverseLevel.zero UniverseLevel.zero).toNat := rfl
+  have impossibleEq :
+      UniverseLevel.max UniverseLevel.zero UniverseLevel.zero =
+        UniverseLevel.imax UniverseLevel.zero UniverseLevel.zero :=
+    toNatInjective
+      (UniverseLevel.max UniverseLevel.zero UniverseLevel.zero)
+      (UniverseLevel.imax UniverseLevel.zero UniverseLevel.zero)
+      sameHeight
+  cases impossibleEq
+
 end UniverseLevel
 
 /-- Nat-level preorder retained for older code paths that have not yet moved
