@@ -18577,6 +18577,81 @@ theorem weaken_inv_of_unweaken?_some {mode : Mode} {level scope : Nat}
           subst targetTermInj
           exact soundness
 
+/-- Closed-type specialization of `weaken_inv_of_unweaken?_some` for unit. -/
+theorem weaken_inv_unit {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    (weakenedTerm :
+      Term (context.cons newType) Ty.unit.weaken sourceRaw.weaken)
+    {originalTerm : Term context Ty.unit sourceRaw}
+    (unweakenSuccess : Term.unweaken? weakenedTerm = some originalTerm) :
+    HEq weakenedTerm (Term.weaken newType originalTerm) :=
+  weaken_inv_of_unweaken?_some weakenedTerm unweakenSuccess
+
+/-- Closed-type specialization of `weaken_inv_of_unweaken?_some` for bool. -/
+theorem weaken_inv_bool {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    (weakenedTerm :
+      Term (context.cons newType) Ty.bool.weaken sourceRaw.weaken)
+    {originalTerm : Term context Ty.bool sourceRaw}
+    (unweakenSuccess : Term.unweaken? weakenedTerm = some originalTerm) :
+    HEq weakenedTerm (Term.weaken newType originalTerm) :=
+  weaken_inv_of_unweaken?_some weakenedTerm unweakenSuccess
+
+/-- Closed-type specialization of `weaken_inv_of_unweaken?_some` for nat. -/
+theorem weaken_inv_nat {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    (weakenedTerm :
+      Term (context.cons newType) Ty.nat.weaken sourceRaw.weaken)
+    {originalTerm : Term context Ty.nat sourceRaw}
+    (unweakenSuccess : Term.unweaken? weakenedTerm = some originalTerm) :
+    HEq weakenedTerm (Term.weaken newType originalTerm) :=
+  weaken_inv_of_unweaken?_some weakenedTerm unweakenSuccess
+
+/-- Closed-type specialization of `weaken_inv_of_unweaken?_some` for empty. -/
+theorem weaken_inv_empty {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    (weakenedTerm :
+      Term (context.cons newType) Ty.empty.weaken sourceRaw.weaken)
+    {originalTerm : Term context Ty.empty sourceRaw}
+    (unweakenSuccess : Term.unweaken? weakenedTerm = some originalTerm) :
+    HEq weakenedTerm (Term.weaken newType originalTerm) :=
+  weaken_inv_of_unweaken?_some weakenedTerm unweakenSuccess
+
+/-- Closed-type specialization of `weaken_inv_of_unweaken?_some` for interval. -/
+theorem weaken_inv_interval {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    (weakenedTerm :
+      Term (context.cons newType) Ty.interval.weaken sourceRaw.weaken)
+    {originalTerm : Term context Ty.interval sourceRaw}
+    (unweakenSuccess : Term.unweaken? weakenedTerm = some originalTerm) :
+    HEq weakenedTerm (Term.weaken newType originalTerm) :=
+  weaken_inv_of_unweaken?_some weakenedTerm unweakenSuccess
+
+/-- Closed-type specialization of `weaken_inv_of_unweaken?_some` for universes. -/
+theorem weaken_inv_universe {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType : Ty level scope}
+    (universeLevel : UniverseLevel)
+    (levelLe : universeLevel.toNat + 1 ≤ level)
+    {sourceRaw : RawTerm scope}
+    (weakenedTerm :
+      Term (context.cons newType)
+        (Ty.universe universeLevel levelLe).weaken sourceRaw.weaken)
+    {originalTerm : Term context (Ty.universe universeLevel levelLe) sourceRaw}
+    (unweakenSuccess : Term.unweaken? weakenedTerm = some originalTerm) :
+    HEq weakenedTerm (Term.weaken newType originalTerm) :=
+  weaken_inv_of_unweaken?_some weakenedTerm unweakenSuccess
+
 /-- Image Step 3 — headline iff between `unweaken?` success and
 `strengthenTyped?` success.
 

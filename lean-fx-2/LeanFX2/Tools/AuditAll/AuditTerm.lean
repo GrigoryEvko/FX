@@ -839,6 +839,12 @@ existing computational dispatcher. -/
 -- and by the Phase B+ Step.eta SR cascade.
 #assert_no_axioms LeanFX2.Term.weaken_inv_of_strengthenTyped?_some
 #assert_no_axioms LeanFX2.Term.weaken_inv_of_unweaken?_some
+#assert_no_axioms LeanFX2.Term.weaken_inv_unit
+#assert_no_axioms LeanFX2.Term.weaken_inv_bool
+#assert_no_axioms LeanFX2.Term.weaken_inv_nat
+#assert_no_axioms LeanFX2.Term.weaken_inv_empty
+#assert_no_axioms LeanFX2.Term.weaken_inv_interval
+#assert_no_axioms LeanFX2.Term.weaken_inv_universe
 #assert_no_axioms LeanFX2.Term.rename_image_of_strengthenTyped?_some
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_isSome_var
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_isSome_unit
