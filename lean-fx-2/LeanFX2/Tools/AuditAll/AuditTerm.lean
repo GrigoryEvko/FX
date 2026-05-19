@@ -99,6 +99,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Term.rename_injective_atUaToEquiv_of_inner
 #assert_no_axioms LeanFX2.Term.rename_injective_atEquivApply_of_inner
 #assert_no_axioms LeanFX2.Term.rename_injective_atEquivApp_of_inner
+#assert_no_axioms LeanFX2.Term.equivIntro_inv
+#assert_no_axioms LeanFX2.Term.rename_injective_atEquivIntroEquiv_of_inner
 #assert_no_axioms LeanFX2.Term.toRaw_rename
 #assert_no_axioms LeanFX2.Term.toRaw_subst
 #assert_no_axioms LeanFX2.Term.toRaw_weaken
