@@ -37,6 +37,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Term.rename_injective_equivIntroHet_ctor
 #assert_no_axioms LeanFX2.Term.rename_injective_uaIntroHet_ctor
 #assert_no_axioms LeanFX2.Term.rename_injective_pathLam_ctor
+#assert_no_axioms LeanFX2.Term.rename_injective_atPathLam_of_inner
 #assert_no_axioms LeanFX2.Term.rename_injective_atUnit
 #assert_no_axioms LeanFX2.Term.rename_injective_atBoolTrue
 #assert_no_axioms LeanFX2.Term.rename_injective_atBoolFalse

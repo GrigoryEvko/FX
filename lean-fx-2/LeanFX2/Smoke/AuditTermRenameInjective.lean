@@ -17,6 +17,7 @@ import LeanFX2.Term.RenameInjective
 #print axioms LeanFX2.Term.rename_injective_equivIntroHet_ctor
 #print axioms LeanFX2.Term.rename_injective_uaIntroHet_ctor
 #print axioms LeanFX2.Term.rename_injective_pathLam_ctor
+#print axioms LeanFX2.Term.rename_injective_atPathLam_of_inner
 #print axioms LeanFX2.Term.rename_injective_atUnit
 #print axioms LeanFX2.Term.rename_injective_atBoolTrue
 #print axioms LeanFX2.Term.rename_injective_atBoolFalse

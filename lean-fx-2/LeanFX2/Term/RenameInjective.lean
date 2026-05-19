@@ -565,6 +565,83 @@ theorem Term.rename_injective_pathLam_ctor
   cases bodyHEq
   rfl
 
+theorem Term.rename_injective_atPathLam_of_inner
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {carrierType : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {bodyRaw : RawTerm (sourceScope + 1)}
+    (bodyInjective :
+      ∀ {carrierA carrierB : Ty level sourceScope}
+        (bodyA : Term (sourceCtx.cons Ty.interval) carrierA.weaken bodyRaw)
+        (bodyB : Term (sourceCtx.cons Ty.interval) carrierB.weaken bodyRaw),
+        HEq (Term.rename (termRenaming.lift Ty.interval) bodyA)
+          (Term.rename (termRenaming.lift Ty.interval) bodyB) →
+        HEq bodyA bodyB)
+    (termA termB :
+      Term sourceCtx (Ty.path carrierType leftEndpoint rightEndpoint)
+        (RawTerm.pathLam bodyRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.pathLam bodyRaw)),
+        Σ' (modeIsUnivalent : mode = Mode.univalent),
+          Σ' (genericCarrier : Ty level sourceScope),
+            Σ' (genericLeft : RawTerm sourceScope),
+              Σ' (genericRight : RawTerm sourceScope),
+                Σ' (bodyTerm :
+                    Term (sourceCtx.cons Ty.interval)
+                      genericCarrier.weaken bodyRaw),
+                  Σ' (_ :
+                      genericType =
+                        Ty.path genericCarrier genericLeft genericRight),
+                    HEq genericTerm
+                      (Term.pathLam modeIsUnivalent genericCarrier
+                        genericLeft genericRight bodyTerm) by
+    obtain ⟨modeIsUnivalentA, carrierA, leftA, rightA, bodyA, typeEqA,
+      termHEqA⟩ := key termA
+    obtain ⟨modeIsUnivalentB, carrierB, leftB, rightB, bodyB, typeEqB,
+      termHEqB⟩ := key termB
+    cases typeEqA
+    cases typeEqB
+    cases termHEqA
+    cases termHEqB
+    simp only [Term.rename] at renameEq
+    injection renameEq with contextEq carrierRenameEq modeEq
+      leftEndpointRenameEq rightEndpointRenameEq bodyRawRenameEq
+      bodyRenameEq
+    cases modeEq
+    have bodyRenameUncastHEq :
+        HEq (Term.rename (termRenaming.lift Ty.interval) bodyA)
+          (Term.rename (termRenaming.lift Ty.interval) bodyB) :=
+      HEq.trans
+        (HEq.symm
+          (termRenameInjectiveCastHEq
+            (Ty.weaken_rename_commute rho carrierType)
+            (Term.rename (termRenaming.lift Ty.interval) bodyA)))
+        (HEq.trans (heq_of_eq bodyRenameEq)
+          (termRenameInjectiveCastHEq
+            (Ty.weaken_rename_commute rho carrierType)
+            (Term.rename (termRenaming.lift Ty.interval) bodyB)))
+    have bodyHEq : HEq bodyA bodyB :=
+      bodyInjective bodyA bodyB bodyRenameUncastHEq
+    cases bodyHEq
+    cases modeIsUnivalentA
+    cases modeIsUnivalentB
+    rfl
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredModeIsUnivalent inferredCarrier inferredLeftEndpoint
+    inferredRightEndpoint bodyTerm
+  exact ⟨inferredModeIsUnivalent, inferredCarrier, inferredLeftEndpoint,
+    inferredRightEndpoint, bodyTerm, rfl, HEq.rfl⟩
+
 theorem Term.rename_injective_atVar
     {mode : Mode} {level sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
