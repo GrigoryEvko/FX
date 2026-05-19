@@ -745,6 +745,81 @@ theorem Term.rename_injective_atEitherMatch_of_inner
   exact ⟨inferredLeftType, inferredRightType, scrutineeTerm, leftTerm,
     rightTerm, HEq.rfl⟩
 
+theorem Term.rename_injective_atIdJ_of_inner
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (rhoInjective : RawRenamingInjective rho)
+    {motiveType : Ty level sourceScope}
+    {baseRaw witnessRaw : RawTerm sourceScope}
+    (baseInjective :
+      ∀ (baseA baseB : Term sourceCtx motiveType baseRaw),
+        Term.rename termRenaming baseA = Term.rename termRenaming baseB →
+        baseA = baseB)
+    (witnessInjective :
+      ∀ {carrierA carrierB : Ty level sourceScope}
+        {leftEndpointA rightEndpointA leftEndpointB rightEndpointB :
+          RawTerm sourceScope}
+        (witnessA :
+          Term sourceCtx (Ty.id carrierA leftEndpointA rightEndpointA)
+            witnessRaw)
+        (witnessB :
+          Term sourceCtx (Ty.id carrierB leftEndpointB rightEndpointB)
+            witnessRaw),
+        HEq (Term.rename termRenaming witnessA)
+          (Term.rename termRenaming witnessB) →
+        HEq witnessA witnessB)
+    (termA termB : Term sourceCtx motiveType (RawTerm.idJ baseRaw witnessRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.idJ baseRaw witnessRaw)),
+        Σ' (carrier : Ty level sourceScope),
+          Σ' (leftEndpoint : RawTerm sourceScope),
+            Σ' (rightEndpoint : RawTerm sourceScope),
+              Σ' (baseTerm : Term sourceCtx genericType baseRaw),
+                Σ' (witness :
+                    Term sourceCtx (Ty.id carrier leftEndpoint rightEndpoint)
+                      witnessRaw),
+                  HEq genericTerm (Term.idJ baseTerm witness) by
+    obtain ⟨carrierA, leftEndpointA, rightEndpointA, baseA, witnessA,
+      termHEqA⟩ := key termA
+    obtain ⟨carrierB, leftEndpointB, rightEndpointB, baseB, witnessB,
+      termHEqB⟩ := key termB
+    cases termHEqA
+    cases termHEqB
+    simp only [Term.rename] at renameEq
+    injection renameEq with scopeEq contextEq carrierRenameEq
+      leftEndpointRenameEq rightEndpointRenameEq motiveRenameEq
+      baseRawRenameEq witnessRawRenameEq baseRenameEq witnessRenameHEq
+    have witnessHEq : HEq witnessA witnessB :=
+      witnessInjective witnessA witnessB witnessRenameHEq
+    have carrierEq : carrierA = carrierB :=
+      Ty.rename_injective_under_injective_renaming carrierA rhoInjective
+        carrierB carrierRenameEq
+    have leftEndpointEq : leftEndpointA = leftEndpointB :=
+      RawTerm.rename_injective_under_injective_renaming leftEndpointA
+        rhoInjective leftEndpointB leftEndpointRenameEq
+    have rightEndpointEq : rightEndpointA = rightEndpointB :=
+      RawTerm.rename_injective_under_injective_renaming rightEndpointA
+        rhoInjective rightEndpointB rightEndpointRenameEq
+    cases carrierEq
+    cases leftEndpointEq
+    cases rightEndpointEq
+    cases witnessHEq
+    rw [baseInjective baseA baseB baseRenameEq]
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredCarrier inferredLeftEndpoint inferredRightEndpoint
+    baseTerm witnessTerm
+  exact ⟨inferredCarrier, inferredLeftEndpoint, inferredRightEndpoint,
+    baseTerm, witnessTerm, HEq.rfl⟩
+
 theorem Term.rename_injective_atRefl
     {mode : Mode} {level sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
