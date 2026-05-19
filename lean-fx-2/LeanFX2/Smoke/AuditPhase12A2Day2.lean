@@ -1,6 +1,14 @@
 import LeanFX2.Reduction.RawParInversion
 import LeanFX2.Reduction.ParRed
-import LeanFX2.Reduction.Compat
+import LeanFX2.Reduction.RawParCompatible.NamedCompatibility
+import LeanFX2.Reduction.Compat.Cubical
+import LeanFX2.Reduction.Compat.HoTT.IdentityFamily
+import LeanFX2.Reduction.Compat.HoTT.EquivalenceFamily
+import LeanFX2.Reduction.Compat.HoTT.FunextFamily
+import LeanFX2.Reduction.Compat.HoTT.UnivalenceFamily
+import LeanFX2.Reduction.Compat.Effects
+import LeanFX2.Reduction.Compat.Misc
+import LeanFX2.Reduction.Compat.TypeCodes
 import LeanFX2.Confluence.RawCd
 import LeanFX2.Term.ToRaw
 import LeanFX2.Term.Pointwise
