@@ -12,11 +12,13 @@ import LeanFX2.Term.RenameInjective
 #print axioms LeanFX2.Term.rename_injective_atNatRec_of_inner
 #print axioms LeanFX2.Term.rename_injective_atListNil
 #print axioms LeanFX2.Term.rename_injective_atListCons_of_inner
+#print axioms LeanFX2.Term.rename_injective_atListElim_of_inner
 #print axioms LeanFX2.Term.rename_injective_atOptionNone
 #print axioms LeanFX2.Term.rename_injective_atOptionSome_of_inner
 #print axioms LeanFX2.Term.rename_injective_atOptionMatch_of_inner
 #print axioms LeanFX2.Term.rename_injective_atEitherInl_of_inner
 #print axioms LeanFX2.Term.rename_injective_atEitherInr_of_inner
+#print axioms LeanFX2.Term.rename_injective_atEitherMatch_of_inner
 #print axioms LeanFX2.Term.rename_injective_atRefl
 #print axioms LeanFX2.Term.rename_injective_atOEqRefl
 #print axioms LeanFX2.Term.rename_injective_atIdStrictRefl
