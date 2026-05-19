@@ -435,6 +435,49 @@ theorem Term.rename_injective_equivIntroHet_ctor
   cases rightInvHEq
   rfl
 
+theorem Term.rename_injective_uaIntroHet_ctor
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    {carrierA carrierB : Ty level sourceScope}
+    (carrierARaw carrierBRaw : RawTerm sourceScope)
+    {forwardRaw backwardRaw : RawTerm sourceScope}
+    (equivWitnessInjective :
+      ∀ (equivWitnessA equivWitnessB :
+          Term sourceCtx (Ty.equiv carrierA carrierB)
+            (RawTerm.equivIntro forwardRaw backwardRaw)),
+        HEq (Term.rename termRenaming equivWitnessA)
+          (Term.rename termRenaming equivWitnessB) →
+        HEq equivWitnessA equivWitnessB)
+    (equivWitnessA equivWitnessB :
+      Term sourceCtx (Ty.equiv carrierA carrierB)
+        (RawTerm.equivIntro forwardRaw backwardRaw)) :
+    Term.rename termRenaming
+        (Term.uaIntroHet innerLevel innerLevelLt carrierARaw carrierBRaw
+          equivWitnessA) =
+      Term.rename termRenaming
+        (Term.uaIntroHet innerLevel innerLevelLt carrierARaw carrierBRaw
+          equivWitnessB) →
+      Term.uaIntroHet innerLevel innerLevelLt carrierARaw carrierBRaw
+          equivWitnessA =
+        Term.uaIntroHet innerLevel innerLevelLt carrierARaw carrierBRaw
+          equivWitnessB := by
+  intro renameEq
+  simp only [Term.rename] at renameEq
+  injection renameEq with contextEq innerLevelEq carrierARenameEq
+    carrierBRenameEq carrierARawRenameEq carrierBRawRenameEq
+    forwardRawRenameEq backwardRawRenameEq backwardRawRenameEqAgain
+    equivWitnessRenameEq
+  have equivWitnessHEq : HEq equivWitnessA equivWitnessB :=
+    equivWitnessInjective equivWitnessA equivWitnessB
+      (heq_of_eq equivWitnessRenameEq)
+  cases equivWitnessHEq
+  rfl
+
 theorem Term.rename_injective_pathLam_ctor
     {mode : Mode} {level sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
