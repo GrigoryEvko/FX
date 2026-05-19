@@ -1442,6 +1442,66 @@ theorem Term.rename_injective_atSessionRecv_of_inner
   rename_i inferredProtocolStep channelTerm
   exact ⟨inferredProtocolStep, channelTerm, rfl, HEq.rfl⟩
 
+theorem Term.rename_injective_atSessionSend_of_inner
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (rhoInjective : RawRenamingInjective rho)
+    {protocolStep channelRaw payloadRaw : RawTerm sourceScope}
+    (channelInjective :
+      ∀ (channelA channelB :
+          Term sourceCtx (Ty.session protocolStep) channelRaw),
+        Term.rename termRenaming channelA = Term.rename termRenaming channelB →
+        channelA = channelB)
+    (payloadInjective :
+      ∀ {matchedPayloadType : Ty level sourceScope}
+        (payloadA payloadB : Term sourceCtx matchedPayloadType payloadRaw),
+        Term.rename termRenaming payloadA = Term.rename termRenaming payloadB →
+        payloadA = payloadB)
+    (termA termB :
+      Term sourceCtx (Ty.session protocolStep)
+        (RawTerm.sessionSend channelRaw payloadRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.sessionSend channelRaw payloadRaw)),
+        Σ' (matchedProtocolStep : RawTerm sourceScope),
+          Σ' (payloadType : Ty level sourceScope),
+            Σ' (channelTerm :
+                Term sourceCtx (Ty.session matchedProtocolStep) channelRaw),
+              Σ' (payloadTerm : Term sourceCtx payloadType payloadRaw),
+                Σ' (_ : genericType = Ty.session matchedProtocolStep),
+                  HEq genericTerm
+                    (Term.sessionSend matchedProtocolStep channelTerm
+                      payloadTerm) by
+    obtain ⟨protocolStepA, payloadTypeA, channelA, payloadA, typeEqA,
+      termHEqA⟩ := key termA
+    obtain ⟨protocolStepB, payloadTypeB, channelB, payloadB, typeEqB,
+      termHEqB⟩ := key termB
+    cases typeEqA
+    cases typeEqB
+    cases termHEqA
+    cases termHEqB
+    simp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ payloadTypeRenameEq _ _
+      channelRenameEq payloadRenameHEq
+    have payloadTypeEq : payloadTypeA = payloadTypeB :=
+      Ty.rename_injective_under_injective_renaming payloadTypeA
+        rhoInjective payloadTypeB payloadTypeRenameEq
+    cases payloadTypeEq
+    rw [channelInjective channelA channelB channelRenameEq,
+      payloadInjective payloadA payloadB (eq_of_heq payloadRenameHEq)]
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredProtocolStep inferredPayloadType channelTerm payloadTerm
+  exact ⟨inferredProtocolStep, inferredPayloadType, channelTerm, payloadTerm,
+    rfl, HEq.rfl⟩
+
 theorem Term.rename_injective_atArrowCode
     {mode : Mode} {level sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
