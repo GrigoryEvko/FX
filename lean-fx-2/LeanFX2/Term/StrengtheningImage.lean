@@ -17573,6 +17573,96 @@ theorem strengthenTyped?_rename_isSome_snd
       next pairResult pairSuccess =>
         rfl
 
+/-- T3 reverse-image bridge for the cast-wrapped `Term.pair` rename arm. -/
+theorem strengthenTyped?_rename_isSome_pair
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    {firstType : Ty level sourceScope}
+    {secondType : Ty level (sourceScope + 1)}
+    {firstRaw secondRaw : RawTerm sourceScope}
+    (firstValue : Term sourceCtx firstType firstRaw)
+    (secondValue :
+      Term sourceCtx (secondType.subst0 firstType firstRaw) secondRaw)
+    (firstIH :
+      (partialStrengthenTyped?
+          (Term.rename typedRenaming firstValue)
+          (ContextStrengthening.ofRenaming forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects)).isSome =
+        true)
+    (secondIH :
+      (partialStrengthenTyped?
+          (Term.rename typedRenaming secondValue)
+          (ContextStrengthening.ofRenaming forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects)).isSome =
+        true) :
+    (partialStrengthenTyped?
+        (Term.rename typedRenaming (Term.pair firstValue secondValue))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)).isSome =
+      true := by
+  dsimp only [Term.rename]
+  unfold partialStrengthenTyped?
+  have secondTypeStrengthens :
+      (secondType.rename forwardRename.lift).partialStrengthen?
+          renameInverse.lift
+        = some secondType := by
+    rw [Ty.partialStrengthen?_rename_some secondType
+      forwardRename.lift (@RawRenaming.identity sourceScope).lift
+      renameInverse.lift
+      (PartialRawRenaming.lift_rename_some renameInverseLeft),
+      Ty.rename_pointwise
+        (@RawRenaming.identity_lift_pointwise sourceScope) secondType,
+      Ty.rename_identity secondType]
+  have castedSecondIH :
+      (partialStrengthenTyped?
+          (Ty.subst0_rename_commute secondType firstType firstRaw
+              forwardRename ▸
+            Term.rename typedRenaming secondValue)
+          (ContextStrengthening.ofRenaming forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects)).isSome =
+        true := by
+    rw [partialStrengthenTyped?_isSome_castInvariant]
+    exact secondIH
+  split
+  next noSecondTypeSuccess =>
+    exact absurd (secondTypeStrengthens.symm.trans noSecondTypeSuccess)
+      (by intro contra; cases contra)
+  next targetSecondType secondTypeSuccess =>
+    have secondTypeEq : targetSecondType = secondType :=
+      Option.some.inj (secondTypeSuccess.symm.trans secondTypeStrengthens)
+    subst secondTypeEq
+    split
+    next noFirstSuccess =>
+      have noFirstIsSome :
+          (partialStrengthenTyped?
+              (Term.rename typedRenaming firstValue)
+              (ContextStrengthening.ofRenaming forwardRename typedRenaming
+                renameInverse renameInverseLeft renameInverseInjects)).isSome =
+            false := by
+        exact congrArg Option.isSome noFirstSuccess
+      rw [noFirstIsSome] at firstIH
+      cases firstIH
+    next firstResult firstSuccess =>
+      split
+      next noSecondSuccess =>
+        have noSecondIsSome := congrArg Option.isSome noSecondSuccess
+        rw [noSecondIsSome] at castedSecondIH
+        cases castedSecondIH
+      next secondResult secondSuccess =>
+        rfl
+
 /-- T3 reverse-image bridge for `Term.transp`. -/
 theorem strengthenTyped?_rename_isSome_transp
     {mode : Mode} {level : Nat}
