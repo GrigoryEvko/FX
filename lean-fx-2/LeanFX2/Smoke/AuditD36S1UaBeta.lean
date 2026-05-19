@@ -1,4 +1,4 @@
-import LeanFX2.Reduction.RawParCompatible
+import LeanFX2.Reduction.RawParCompatible.NamedCompatibility
 import LeanFX2.Reduction.RawParWeakenInv
 import LeanFX2.Confluence.RawCd
 import LeanFX2.Confluence.RawCdRename

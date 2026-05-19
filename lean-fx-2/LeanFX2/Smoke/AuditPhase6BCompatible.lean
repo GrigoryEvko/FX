@@ -1,4 +1,4 @@
-import LeanFX2.Reduction.RawParCompatible
+import LeanFX2.Reduction.RawParCompatible.Substitution
 
 /-! Phase 6.B substitution-compatibility chain zero-axiom audit.
 

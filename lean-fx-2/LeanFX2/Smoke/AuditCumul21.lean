@@ -2,7 +2,7 @@ import LeanFX2.Foundation.RawTerm
 import LeanFX2.Foundation.RawSubst
 import LeanFX2.Foundation.RenameIdentity
 import LeanFX2.Foundation.SubstActsOnTy
-import LeanFX2.Reduction.RawParCompatible
+import LeanFX2.Reduction.RawParCompatible.Substitution
 import LeanFX2.Confluence.RawCd
 import LeanFX2.Confluence.RawCdLemma
 import LeanFX2.Confluence.RawCdDominates
