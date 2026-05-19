@@ -642,6 +642,69 @@ theorem Term.rename_injective_atPathLam_of_inner
   exact ⟨inferredModeIsUnivalent, inferredCarrier, inferredLeftEndpoint,
     inferredRightEndpoint, bodyTerm, rfl, HEq.rfl⟩
 
+def Term.lam_raw_inv
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {genericType : Ty level scope}
+    (someTerm : Term sourceCtx genericType (RawTerm.lam bodyRaw)) :
+    (Σ' (domainA codomainA : Ty level scope),
+      Σ' (bodyTerm :
+          Term (sourceCtx.cons domainA) codomainA.weaken bodyRaw),
+        Σ' (_ : genericType = Ty.arrow domainA codomainA),
+          HEq someTerm (Term.lam bodyTerm)) ⊕'
+    (Σ' (domainA : Ty level scope),
+      Σ' (codomainA : Ty level (scope + 1)),
+        Σ' (bodyTerm : Term (sourceCtx.cons domainA) codomainA bodyRaw),
+          Σ' (_ : genericType = Ty.piTy domainA codomainA),
+            HEq someTerm (Term.lamPi bodyTerm)) ⊕'
+    (Σ' (domainA codomainA : Ty level scope),
+      Σ' (applyRaw : RawTerm (scope + 1)),
+        Σ' (_ : bodyRaw = RawTerm.refl applyRaw),
+          Σ' (_ :
+              genericType =
+                funextReflType domainA codomainA applyRaw),
+            HEq someTerm
+              (Term.funextRefl (context := sourceCtx) domainA
+                codomainA applyRaw)) ⊕'
+    (Σ' (domainA codomainA : Ty level scope),
+      Σ' (applyRaw : RawTerm (scope + 1)),
+        Σ' (_ : bodyRaw = RawTerm.refl applyRaw),
+          Σ' (_ :
+              genericType =
+                Ty.id (Ty.arrow domainA codomainA)
+                  (RawTerm.lam (RawTerm.refl applyRaw))
+                  (RawTerm.lam (RawTerm.refl applyRaw))),
+            HEq someTerm
+              (Term.funextReflAtId (context := sourceCtx) domainA
+                codomainA applyRaw)) ⊕'
+    (Σ' (domainA codomainA : Ty level scope),
+      Σ' (applyARaw applyBRaw : RawTerm (scope + 1)),
+        Σ' (_ : bodyRaw = RawTerm.refl applyARaw),
+          Σ' (_ :
+              genericType =
+                Ty.id (Ty.arrow domainA codomainA)
+                  (RawTerm.lam applyARaw) (RawTerm.lam applyBRaw)),
+            HEq someTerm
+              (Term.funextIntroHet (context := sourceCtx) domainA
+                codomainA applyARaw applyBRaw)) := by
+  cases someTerm
+  case lam domainType codomainType body =>
+    exact PSum.inl ⟨domainType, codomainType, body, rfl, HEq.rfl⟩
+  case lamPi domainType codomainType body =>
+    exact PSum.inr (PSum.inl
+      ⟨domainType, codomainType, body, rfl, HEq.rfl⟩)
+  case funextRefl domainType codomainType applyRaw =>
+    exact PSum.inr (PSum.inr (PSum.inl
+      ⟨domainType, codomainType, applyRaw, rfl, rfl, HEq.rfl⟩))
+  case funextReflAtId domainType codomainType applyRaw =>
+    exact PSum.inr (PSum.inr (PSum.inr (PSum.inl
+      ⟨domainType, codomainType, applyRaw, rfl, rfl, HEq.rfl⟩)))
+  case funextIntroHet domainType codomainType applyARaw applyBRaw =>
+    exact PSum.inr (PSum.inr (PSum.inr (PSum.inr
+      ⟨domainType, codomainType, applyARaw, applyBRaw, rfl, rfl,
+        HEq.rfl⟩)))
+
 def Term.lam_arrow_inv
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope}
@@ -653,50 +716,7 @@ def Term.lam_arrow_inv
     Σ' (bodyTerm :
         Term (sourceCtx.cons domainType) codomainType.weaken bodyRaw),
       HEq genericTerm (Term.lam bodyTerm) := by
-  suffices key :
-      ∀ {genericType : Ty level scope}
-        (someTerm : Term sourceCtx genericType (RawTerm.lam bodyRaw)),
-        (Σ' (domainA codomainA : Ty level scope),
-          Σ' (bodyTerm :
-              Term (sourceCtx.cons domainA) codomainA.weaken bodyRaw),
-            Σ' (_ : genericType = Ty.arrow domainA codomainA),
-              HEq someTerm (Term.lam bodyTerm)) ⊕'
-        (Σ' (domainA : Ty level scope),
-          Σ' (codomainA : Ty level (scope + 1)),
-            Σ' (bodyTerm : Term (sourceCtx.cons domainA) codomainA bodyRaw),
-              Σ' (_ : genericType = Ty.piTy domainA codomainA),
-                HEq someTerm (Term.lamPi bodyTerm)) ⊕'
-        (Σ' (domainA codomainA : Ty level scope),
-          Σ' (applyRaw : RawTerm (scope + 1)),
-            Σ' (_ : bodyRaw = RawTerm.refl applyRaw),
-              Σ' (_ :
-                  genericType =
-                    funextReflType domainA codomainA applyRaw),
-                HEq someTerm
-                  (Term.funextRefl (context := sourceCtx) domainA
-                    codomainA applyRaw)) ⊕'
-        (Σ' (domainA codomainA : Ty level scope),
-          Σ' (applyRaw : RawTerm (scope + 1)),
-            Σ' (_ : bodyRaw = RawTerm.refl applyRaw),
-              Σ' (_ :
-                  genericType =
-                    Ty.id (Ty.arrow domainA codomainA)
-                      (RawTerm.lam (RawTerm.refl applyRaw))
-                      (RawTerm.lam (RawTerm.refl applyRaw))),
-                HEq someTerm
-                  (Term.funextReflAtId (context := sourceCtx) domainA
-                    codomainA applyRaw)) ⊕'
-        (Σ' (domainA codomainA : Ty level scope),
-          Σ' (applyARaw applyBRaw : RawTerm (scope + 1)),
-            Σ' (_ : bodyRaw = RawTerm.refl applyARaw),
-              Σ' (_ :
-                  genericType =
-                    Ty.id (Ty.arrow domainA codomainA)
-                      (RawTerm.lam applyARaw) (RawTerm.lam applyBRaw)),
-                HEq someTerm
-                  (Term.funextIntroHet (context := sourceCtx) domainA
-                    codomainA applyARaw applyBRaw)) by
-    cases key genericTerm with
+  cases Term.lam_raw_inv genericTerm with
     | inl lamView =>
       obtain ⟨domainA, codomainA, bodyTerm, typeEq, termHEq⟩ := lamView
       injection typeEq
@@ -725,23 +745,57 @@ def Term.lam_arrow_inv
             obtain ⟨domainA, codomainA, applyARaw, applyBRaw, rawEq,
               typeEq, termHEq⟩ := introView
             cases typeEq
-  intro genericType someTerm
-  cases someTerm
-  case lam domainType codomainType body =>
-    exact PSum.inl ⟨domainType, codomainType, body, rfl, HEq.rfl⟩
-  case lamPi domainType codomainType body =>
-    exact PSum.inr (PSum.inl
-      ⟨domainType, codomainType, body, rfl, HEq.rfl⟩)
-  case funextRefl domainType codomainType applyRaw =>
-    exact PSum.inr (PSum.inr (PSum.inl
-      ⟨domainType, codomainType, applyRaw, rfl, rfl, HEq.rfl⟩))
-  case funextReflAtId domainType codomainType applyRaw =>
-    exact PSum.inr (PSum.inr (PSum.inr (PSum.inl
-      ⟨domainType, codomainType, applyRaw, rfl, rfl, HEq.rfl⟩)))
-  case funextIntroHet domainType codomainType applyARaw applyBRaw =>
-    exact PSum.inr (PSum.inr (PSum.inr (PSum.inr
-      ⟨domainType, codomainType, applyARaw, applyBRaw, rfl, rfl,
-        HEq.rfl⟩)))
+
+def Term.lam_pi_inv
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {domainType : Ty level scope}
+    {codomainType : Ty level (scope + 1)}
+    {bodyRaw : RawTerm (scope + 1)}
+    (genericTerm :
+      Term sourceCtx (Ty.piTy domainType codomainType)
+        (RawTerm.lam bodyRaw)) :
+    (Σ' (bodyTerm : Term (sourceCtx.cons domainType) codomainType bodyRaw),
+      HEq genericTerm (Term.lamPi bodyTerm)) ⊕'
+    (Σ' (baseCodomain : Ty level scope)
+      (applyRaw : RawTerm (scope + 1))
+      (_ : bodyRaw = RawTerm.refl applyRaw)
+      (_ : codomainType = Ty.id baseCodomain.weaken applyRaw applyRaw),
+      HEq genericTerm
+        (Term.funextRefl (context := sourceCtx) domainType baseCodomain
+          applyRaw)) := by
+  cases Term.lam_raw_inv genericTerm with
+  | inl lamView =>
+    obtain ⟨domainA, codomainA, bodyTerm, typeEq, termHEq⟩ := lamView
+    cases typeEq
+  | inr restView =>
+    cases restView with
+    | inl piView =>
+      obtain ⟨domainA, codomainA, bodyTerm, typeEq, termHEq⟩ := piView
+      injection typeEq
+      subst domainA
+      subst codomainA
+      exact PSum.inl ⟨bodyTerm, termHEq⟩
+    | inr restView =>
+      cases restView with
+      | inl reflView =>
+        obtain ⟨domainA, codomainA, applyRaw, rawEq, typeEq,
+          termHEq⟩ := reflView
+        unfold funextReflType at typeEq
+        injection typeEq
+        subst domainA
+        exact PSum.inr
+          ⟨codomainA, applyRaw, rawEq, by assumption, termHEq⟩
+      | inr restView =>
+        cases restView with
+        | inl reflAtIdView =>
+          obtain ⟨domainA, codomainA, applyRaw, rawEq, typeEq,
+            termHEq⟩ := reflAtIdView
+          cases typeEq
+        | inr introView =>
+          obtain ⟨domainA, codomainA, applyARaw, applyBRaw, rawEq,
+            typeEq, termHEq⟩ := introView
+          cases typeEq
 
 theorem Term.rename_injective_atLamArrow_of_inner
     {mode : Mode} {level sourceScope targetScope : Nat}
