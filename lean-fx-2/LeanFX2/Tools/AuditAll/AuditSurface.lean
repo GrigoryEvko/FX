@@ -1,7 +1,12 @@
 import LeanFX2.Tools.DependencyAudit
 import LeanFX2.Tools.AuditGen
 import LeanFX2.Tools.StrictHarness
-import LeanFX2
+import LeanFX2.Surface.GrammarToken
+import LeanFX2.Surface.KernelEnvCorrespondence
+import LeanFX2.Surface.Lex.EofTermination
+import LeanFX2.Surface.Lex.MonotonicOffset
+import LeanFX2.Surface.Semantics
+import LeanFX2.Surface.StdNames
 
 namespace LeanFX2.Tools
 

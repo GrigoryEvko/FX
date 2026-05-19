@@ -1,19 +1,20 @@
 import LeanFX2.Tools.DependencyAudit
 import LeanFX2.Tools.AuditGen
 import LeanFX2.Tools.StrictHarness
-import LeanFX2
-import LeanFX2.FX1.LeanKernel.Name
-import LeanFX2.FX1.LeanKernel.Level
-import LeanFX2.FX1.LeanKernel.Expr
-import LeanFX2.FX1.LeanKernel.Substitution
-import LeanFX2.FX1.LeanKernel.Reduction
-import LeanFX2.FX1.LeanKernel.Inductive
-import LeanFX2.FX1.LeanKernel.HasType
-import LeanFX2.FX1.LeanKernel.Check
-import LeanFX2.FX1.LeanKernel.Soundness
-import LeanFX2.FX1.LeanKernel.Audit
-import LeanFX2.FX1
-import LeanFX2.FX1Bridge
+import LeanFX2.Bridge
+import LeanFX2.Confluence.RawCd
+import LeanFX2.Confluence.RawCdLemma
+import LeanFX2.Confluence.RawCdRename
+import LeanFX2.Confluence.RawDiamond
+import LeanFX2.Confluence.RawParStarCong
+import LeanFX2.Reduction.Compat
+import LeanFX2.Reduction.ConvBridge
+import LeanFX2.Reduction.ParRed
+import LeanFX2.Reduction.RawParCompatible
+import LeanFX2.Reduction.RawParInversion
+import LeanFX2.Reduction.RawParRename
+import LeanFX2.Reduction.RawParWeakenInv
+import LeanFX2.Reduction.TranspPiContractumPar
 
 namespace LeanFX2.Tools
 
