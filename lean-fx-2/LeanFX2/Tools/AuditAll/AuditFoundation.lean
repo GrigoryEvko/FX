@@ -1,21 +1,19 @@
 import LeanFX2.Tools.DependencyAudit
-import LeanFX2.Tools.AuditGen
-import LeanFX2.Tools.StrictHarness
+import LeanFX2.Foundation.Universe
+import LeanFX2.Foundation.RawPartialRename
+import LeanFX2.Foundation.RawPartialRename.UnweakenSubstCommute
+import LeanFX2.Foundation.RawPartialRename.UnweakenSubstDispatch
+import LeanFX2.Foundation.RawPartialRename.Swap01
+import LeanFX2.Foundation.RawPartialRename.TranspPiContractum
+import LeanFX2.Foundation.RawPartialRename.TranspPiPathRecognizer
+import LeanFX2.Foundation.TyStrengthen
 import LeanFX2.Foundation.TyRenameInjective
-import LeanFX2
+import LeanFX2.Foundation.Polygraph.Wellfounded
+import LeanFX2.Foundation.Polygraph.DecEq
+import LeanFX2.Foundation.Polygraph.FreeCategory
 import LeanFX2.Foundation.Polygraph.PolyTermRoundtrip
-import LeanFX2.FX1.LeanKernel.Name
-import LeanFX2.FX1.LeanKernel.Level
-import LeanFX2.FX1.LeanKernel.Expr
-import LeanFX2.FX1.LeanKernel.Substitution
-import LeanFX2.FX1.LeanKernel.Reduction
-import LeanFX2.FX1.LeanKernel.Inductive
-import LeanFX2.FX1.LeanKernel.HasType
-import LeanFX2.FX1.LeanKernel.Check
-import LeanFX2.FX1.LeanKernel.Soundness
-import LeanFX2.FX1.LeanKernel.Audit
-import LeanFX2.FX1
-import LeanFX2.FX1Bridge
+import LeanFX2.Confluence.RawCd
+import LeanFX2.Reduction.RawParWeakenInv.Foundation
 
 namespace LeanFX2.Tools
 
