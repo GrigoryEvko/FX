@@ -50,4 +50,44 @@ example {someValue : Nat} (valueEq : someValue = someValue) :
     someValue = someValue := by
   fx_cases_rfl valueEq
 
+example {firstValue secondValue : Nat}
+    (valueHEq : HEq firstValue secondValue) :
+    HEq secondValue firstValue := by
+  fx_heq_symm valueHEq
+
+example {firstValue secondValue thirdValue : Nat}
+    (firstHEq : HEq firstValue secondValue)
+    (secondHEq : HEq secondValue thirdValue) :
+    HEq firstValue thirdValue := by
+  fx_heq_trans firstHEq then secondHEq
+
+example {firstValue secondValue thirdValue fourthValue : Nat}
+    (firstHEq : HEq firstValue secondValue)
+    (secondHEq : HEq secondValue thirdValue)
+    (thirdHEq : HEq thirdValue fourthValue) :
+    HEq firstValue fourthValue := by
+  fx_heq_trans3 firstHEq then secondHEq then thirdHEq
+
+example
+    {firstValue secondValue thirdValue fourthValue fifthValue : Nat}
+    (firstHEq : HEq firstValue secondValue)
+    (secondHEq : HEq secondValue thirdValue)
+    (thirdHEq : HEq thirdValue fourthValue)
+    (fourthHEq : HEq fourthValue fifthValue) :
+    HEq firstValue fifthValue := by
+  fx_heq_trans4 firstHEq then secondHEq then thirdHEq then fourthHEq
+
+example {firstValue secondValue thirdValue : Nat}
+    (firstHEq : HEq firstValue secondValue)
+    (secondHEq : HEq secondValue thirdValue) :
+    HEq firstValue thirdValue := by
+  fx_have_heq_trans resultHEq from firstHEq then secondHEq
+  exact resultHEq
+
+example {firstValue secondValue : Nat}
+    (valueHEq : HEq firstValue secondValue) :
+    HEq secondValue firstValue := by
+  fx_have_heq_symm resultHEq from valueHEq
+  exact resultHEq
+
 end LeanFX2.Smoke.AuditTacticsChoreography

@@ -102,11 +102,11 @@ macro "fx_split_strength_dispatcher" : tactic =>
     unfold partialStrengthenTyped?
     split)
 
-/-- Close one-step Term cast HEq goals using the audited cast lemmas already
-present in the Term pointwise infrastructure.  This tactic performs no broad
-search; it tries only the known cast-erasure helper family. -/
-macro "fx_heq_cast" : tactic =>
-  `(tactic|
+  /-- Close one-step Term cast HEq goals using the audited cast lemmas already
+  present in the Term pointwise infrastructure.  This tactic performs no broad
+  search; it tries only the known cast-erasure helper family. -/
+  macro "fx_heq_cast" : tactic =>
+    `(tactic|
     first
       | exact Term.type_eq_cast_heq _ _
       | exact Term.type_eq_symm_cast_heq _
@@ -116,6 +116,51 @@ macro "fx_heq_cast" : tactic =>
       | exact Term.rename_type_eq_cast_heq _ _ _
       | exact Term.rename_type_eq_symm_cast_heq _ _
       | exact cast_heq _ _)
+
+  /-- Close a heterogeneous equality goal by applying `HEq.symm` to an
+  explicit witness. -/
+  syntax "fx_heq_symm " term : tactic
+  macro_rules
+    | `(tactic| fx_heq_symm $witnessHEq) =>
+        `(tactic| exact HEq.symm $witnessHEq)
+
+  /-- Close a heterogeneous equality goal by composing two explicit HEq
+  witnesses. -/
+  syntax "fx_heq_trans " term " then " term : tactic
+  macro_rules
+    | `(tactic| fx_heq_trans $firstHEq then $secondHEq) =>
+        `(tactic| exact HEq.trans $firstHEq $secondHEq)
+
+  /-- Close a heterogeneous equality goal by composing three explicit HEq
+  witnesses left-to-right. -/
+  syntax "fx_heq_trans3 " term " then " term " then " term : tactic
+  macro_rules
+    | `(tactic|
+        fx_heq_trans3 $firstHEq then $secondHEq then $thirdHEq) =>
+        `(tactic|
+          exact HEq.trans $firstHEq (HEq.trans $secondHEq $thirdHEq))
+
+  /-- Close a heterogeneous equality goal by composing four explicit HEq
+  witnesses left-to-right. -/
+  syntax "fx_heq_trans4 " term " then " term " then " term " then " term : tactic
+  macro_rules
+    | `(tactic|
+        fx_heq_trans4 $firstHEq then $secondHEq then $thirdHEq then $fourthHEq) =>
+        `(tactic|
+          exact HEq.trans $firstHEq
+            (HEq.trans $secondHEq (HEq.trans $thirdHEq $fourthHEq)))
+
+  /-- Bind the composition of two explicit HEq witnesses under a local name. -/
+  syntax "fx_have_heq_trans " ident " from " term " then " term : tactic
+  macro_rules
+    | `(tactic| fx_have_heq_trans $resultName from $firstHEq then $secondHEq) =>
+        `(tactic| have $resultName := HEq.trans $firstHEq $secondHEq)
+
+  /-- Bind the symmetric form of an explicit HEq witness under a local name. -/
+  syntax "fx_have_heq_symm " ident " from " term : tactic
+  macro_rules
+    | `(tactic| fx_have_heq_symm $resultName from $witnessHEq) =>
+        `(tactic| have $resultName := HEq.symm $witnessHEq)
 
 end Tools.Tactics
 
