@@ -504,6 +504,65 @@ theorem Term.rename_injective_atFst_of_inner
   rename_i inferredSecondType pairTerm
   exact ⟨inferredSecondType, pairTerm, HEq.rfl⟩
 
+theorem Term.rename_injective_atGlueIntro_of_inner
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {baseType : Ty level sourceScope}
+    {boundaryWitness : RawTerm sourceScope}
+    {baseRaw partialRaw : RawTerm sourceScope}
+    (baseInjective :
+      ∀ (baseA baseB : Term sourceCtx baseType baseRaw),
+        Term.rename termRenaming baseA = Term.rename termRenaming baseB →
+        baseA = baseB)
+    (partialInjective :
+      ∀ (partialA partialB : Term sourceCtx baseType partialRaw),
+        Term.rename termRenaming partialA = Term.rename termRenaming partialB →
+        partialA = partialB)
+    (termA termB :
+      Term sourceCtx (Ty.glue baseType boundaryWitness)
+        (RawTerm.glueIntro baseRaw partialRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.glueIntro baseRaw partialRaw)),
+        Σ' (modeIsUnivalent : mode = Mode.univalent),
+          Σ' (inferredBaseType : Ty level sourceScope),
+            Σ' (inferredBoundary : RawTerm sourceScope),
+              Σ' (baseValue :
+                  Term sourceCtx inferredBaseType baseRaw),
+                Σ' (partialValue :
+                    Term sourceCtx inferredBaseType partialRaw),
+                  Σ' (_ :
+                      genericType =
+                        Ty.glue inferredBaseType inferredBoundary),
+                    HEq genericTerm
+                      (Term.glueIntro modeIsUnivalent inferredBaseType
+                        inferredBoundary baseValue partialValue) by
+    obtain ⟨modeIsUnivalentA, inferredBaseA, inferredBoundaryA, baseA,
+      partialA, typeEqA, termHEqA⟩ := key termA
+    obtain ⟨modeIsUnivalentB, inferredBaseB, inferredBoundaryB, baseB,
+      partialB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqA
+    cases typeEqB
+    cases termHEqA
+    cases termHEqB
+    simp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ _ _ baseRenameEq partialRenameEq
+    rw [baseInjective baseA baseB baseRenameEq,
+      partialInjective partialA partialB partialRenameEq]
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredModeIsUnivalent inferredBaseType inferredBoundary
+    baseValue partialValue
+  exact ⟨inferredModeIsUnivalent, inferredBaseType, inferredBoundary,
+    baseValue, partialValue, rfl, HEq.rfl⟩
+
 theorem Term.rename_injective_atGlueElim_of_inner
     {mode : Mode} {level sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
