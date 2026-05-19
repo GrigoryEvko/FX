@@ -17390,6 +17390,108 @@ theorem strengthenTyped?_rename_isSome_funextRefl
         subst applyEq
         rfl
 
+/-- T3 reverse-image bridge for the cast-wrapped `Term.appPi` rename arm. -/
+theorem strengthenTyped?_rename_isSome_appPi
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    {domainType : Ty level sourceScope}
+    {codomainType : Ty level (sourceScope + 1)}
+    {functionRaw argumentRaw : RawTerm sourceScope}
+    (functionTerm : Term sourceCtx (Ty.piTy domainType codomainType)
+      functionRaw)
+    (argumentTerm : Term sourceCtx domainType argumentRaw)
+    (functionIH :
+      (partialStrengthenTyped?
+          (Term.rename typedRenaming functionTerm)
+          (ContextStrengthening.ofRenaming forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects)).isSome =
+        true)
+    (argumentIH :
+      (partialStrengthenTyped?
+          (Term.rename typedRenaming argumentTerm)
+          (ContextStrengthening.ofRenaming forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects)).isSome =
+        true) :
+    (partialStrengthenTyped?
+        (Term.rename typedRenaming
+          (Term.appPi functionTerm argumentTerm))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)).isSome =
+      true := by
+  dsimp only [Term.rename]
+  rw [partialStrengthenTyped?_isSome_castInvariant]
+  unfold partialStrengthenTyped?
+  have domainStrengthens :
+      (domainType.rename forwardRename).partialStrengthen? renameInverse
+        = some domainType := by
+    rw [Ty.partialStrengthen?_rename_some domainType forwardRename
+      (@RawRenaming.identity sourceScope) renameInverse renameInverseLeft,
+      Ty.rename_identity domainType]
+  have codomainStrengthens :
+      (codomainType.rename forwardRename.lift).partialStrengthen?
+          renameInverse.lift
+        = some codomainType := by
+    rw [Ty.partialStrengthen?_rename_some codomainType
+      forwardRename.lift (@RawRenaming.identity sourceScope).lift
+      renameInverse.lift
+      (PartialRawRenaming.lift_rename_some renameInverseLeft),
+      Ty.rename_pointwise
+        (@RawRenaming.identity_lift_pointwise sourceScope) codomainType,
+      Ty.rename_identity codomainType]
+  split
+  next noDomainSuccess =>
+    exact absurd (domainStrengthens.symm.trans noDomainSuccess)
+      (by intro contra; cases contra)
+  next targetDomainType domainSuccess =>
+    have domainEq : targetDomainType = domainType :=
+      Option.some.inj (domainSuccess.symm.trans domainStrengthens)
+    subst domainEq
+    split
+    next noCodomainSuccess =>
+      exact absurd (codomainStrengthens.symm.trans noCodomainSuccess)
+        (by intro contra; cases contra)
+    next targetCodomainType codomainSuccess =>
+      have codomainEq : targetCodomainType = codomainType :=
+        Option.some.inj (codomainSuccess.symm.trans codomainStrengthens)
+      subst codomainEq
+      split
+      next noFunctionSuccess =>
+        have noFunctionIsSome :
+            (partialStrengthenTyped?
+                (Term.rename typedRenaming functionTerm)
+                (ContextStrengthening.ofRenaming forwardRename typedRenaming
+                  renameInverse renameInverseLeft renameInverseInjects)).isSome =
+              false := by
+          exact congrArg Option.isSome noFunctionSuccess
+        rw [noFunctionIsSome] at functionIH
+        cases functionIH
+      next functionResult functionSuccess =>
+        split
+        next noArgumentSuccess =>
+          have noArgumentIsSome :
+              (partialStrengthenTyped?
+                  (Term.rename typedRenaming argumentTerm)
+                  (ContextStrengthening.ofRenaming forwardRename typedRenaming
+                    renameInverse renameInverseLeft renameInverseInjects)).isSome =
+                false := by
+            exact congrArg Option.isSome noArgumentSuccess
+          rw [noArgumentIsSome] at argumentIH
+          cases argumentIH
+        next argumentResult argumentSuccess =>
+          rfl
+
 /-- T3 reverse-image bridge for `Term.transp`. -/
 theorem strengthenTyped?_rename_isSome_transp
     {mode : Mode} {level : Nat}
