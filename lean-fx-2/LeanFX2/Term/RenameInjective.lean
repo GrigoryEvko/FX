@@ -504,6 +504,55 @@ theorem Term.rename_injective_atFst_of_inner
   rename_i inferredSecondType pairTerm
   exact ⟨inferredSecondType, pairTerm, HEq.rfl⟩
 
+theorem Term.rename_injective_atGlueElim_of_inner
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (rhoInjective : RawRenamingInjective rho)
+    {baseType : Ty level sourceScope}
+    {gluedRaw : RawTerm sourceScope}
+    (gluedInjective :
+      ∀ {boundaryA boundaryB : RawTerm sourceScope}
+        (gluedA : Term sourceCtx (Ty.glue baseType boundaryA) gluedRaw)
+        (gluedB : Term sourceCtx (Ty.glue baseType boundaryB) gluedRaw),
+        HEq (Term.rename termRenaming gluedA)
+          (Term.rename termRenaming gluedB) →
+        HEq gluedA gluedB)
+    (termA termB : Term sourceCtx baseType (RawTerm.glueElim gluedRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType (RawTerm.glueElim gluedRaw)),
+        Σ' (modeIsUnivalent : mode = Mode.univalent),
+          Σ' (boundaryWitness : RawTerm sourceScope),
+            Σ' (gluedValue :
+                Term sourceCtx (Ty.glue genericType boundaryWitness) gluedRaw),
+              HEq genericTerm
+                (Term.glueElim modeIsUnivalent gluedValue) by
+    obtain ⟨modeIsUnivalentA, boundaryA, gluedA, termHEqA⟩ := key termA
+    obtain ⟨modeIsUnivalentB, boundaryB, gluedB, termHEqB⟩ := key termB
+    cases termHEqA
+    cases termHEqB
+    simp only [Term.rename] at renameEq
+    injection renameEq with scopeEq contextEq baseTypeRenameEq
+      boundaryRenameEq gluedRawRenameEq gluedRenameHEq
+    have gluedHEq : HEq gluedA gluedB :=
+      gluedInjective gluedA gluedB gluedRenameHEq
+    have boundaryEq : boundaryA = boundaryB :=
+      RawTerm.rename_injective_under_injective_renaming boundaryA
+        rhoInjective boundaryB boundaryRenameEq
+    cases boundaryEq
+    cases gluedHEq
+    rfl
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredModeIsUnivalent inferredBoundary gluedValue
+  exact ⟨inferredModeIsUnivalent, inferredBoundary, gluedValue, HEq.rfl⟩
+
 theorem Term.rename_injective_atListElim_of_inner
     {mode : Mode} {level sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
