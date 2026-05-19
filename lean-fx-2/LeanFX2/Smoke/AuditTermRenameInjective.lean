@@ -13,6 +13,7 @@ import LeanFX2.Term.RenameInjective
 #print axioms LeanFX2.Term.rename_injective_atListNil
 #print axioms LeanFX2.Term.rename_injective_atListCons_of_inner
 #print axioms LeanFX2.Term.rename_injective_atPair_of_inner
+#print axioms LeanFX2.Term.rename_injective_atFst_of_inner
 #print axioms LeanFX2.Term.rename_injective_atListElim_of_inner
 #print axioms LeanFX2.Term.rename_injective_atOptionNone
 #print axioms LeanFX2.Term.rename_injective_atOptionSome_of_inner
