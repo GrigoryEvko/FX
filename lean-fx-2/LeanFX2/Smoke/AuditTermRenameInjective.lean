@@ -25,6 +25,7 @@ import LeanFX2.Term.RenameInjective
 #print axioms LeanFX2.Term.rename_injective_atEitherInl_of_inner
 #print axioms LeanFX2.Term.rename_injective_atEitherInr_of_inner
 #print axioms LeanFX2.Term.rename_injective_atEitherMatch_of_inner
+#print axioms LeanFX2.Term.rename_injective_boolElim_ctor
 #print axioms LeanFX2.Term.rename_injective_atIdJ_of_inner
 #print axioms LeanFX2.Term.rename_injective_atOEqJ_of_inner
 #print axioms LeanFX2.Term.rename_injective_atOEqFunext_of_inner

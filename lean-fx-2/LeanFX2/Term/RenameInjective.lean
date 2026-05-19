@@ -1180,6 +1180,117 @@ theorem Term.rename_injective_atEitherMatch_of_inner
   exact ⟨inferredLeftType, inferredRightType, scrutineeTerm, leftTerm,
     rightTerm, HEq.rfl⟩
 
+theorem Term.rename_injective_boolElim_ctor
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {motiveType : Ty level (sourceScope + 1)}
+    {scrutineeRaw thenRaw elseRaw : RawTerm sourceScope}
+    (scrutineeInjective :
+      ∀ (scrutineeA scrutineeB : Term sourceCtx Ty.bool scrutineeRaw),
+        Term.rename termRenaming scrutineeA =
+          Term.rename termRenaming scrutineeB →
+        scrutineeA = scrutineeB)
+    (thenInjective :
+      ∀ (thenA thenB :
+          Term sourceCtx
+            (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw),
+        HEq (Term.rename termRenaming thenA)
+          (Term.rename termRenaming thenB) →
+        HEq thenA thenB)
+    (elseInjective :
+      ∀ (elseA elseB :
+          Term sourceCtx
+            (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw),
+        HEq (Term.rename termRenaming elseA)
+          (Term.rename termRenaming elseB) →
+        HEq elseA elseB)
+    (scrutineeA scrutineeB : Term sourceCtx Ty.bool scrutineeRaw)
+    (thenA thenB :
+      Term sourceCtx
+        (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw)
+    (elseA elseB :
+      Term sourceCtx
+        (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw) :
+    Term.rename termRenaming
+        (Term.boolElim scrutineeA thenA elseA) =
+      Term.rename termRenaming
+        (Term.boolElim scrutineeB thenB elseB) →
+      Term.boolElim scrutineeA thenA elseA =
+        Term.boolElim scrutineeB thenB elseB := by
+  intro renameEq
+  simp only [Term.rename] at renameEq
+  have boolElimRenameHEq :
+      HEq
+        (Term.boolElim
+          (Term.rename termRenaming scrutineeA)
+          (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolTrue rho ▸
+            Term.rename termRenaming thenA)
+          (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolFalse rho ▸
+            Term.rename termRenaming elseA))
+        (Term.boolElim
+          (Term.rename termRenaming scrutineeB)
+          (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolTrue rho ▸
+            Term.rename termRenaming thenB)
+          (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolFalse rho ▸
+            Term.rename termRenaming elseB)) :=
+    HEq.trans
+      (HEq.symm
+        (termRenameInjectiveCastHEq
+          (Ty.subst0_rename_commute motiveType Ty.bool scrutineeRaw rho).symm
+          (Term.boolElim
+            (Term.rename termRenaming scrutineeA)
+            (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolTrue rho ▸
+              Term.rename termRenaming thenA)
+            (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolFalse rho ▸
+              Term.rename termRenaming elseA))))
+      (HEq.trans (heq_of_eq renameEq)
+        (termRenameInjectiveCastHEq
+          (Ty.subst0_rename_commute motiveType Ty.bool scrutineeRaw rho).symm
+          (Term.boolElim
+            (Term.rename termRenaming scrutineeB)
+            (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolTrue rho ▸
+              Term.rename termRenaming thenB)
+            (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolFalse rho ▸
+              Term.rename termRenaming elseB))))
+  injection boolElimRenameHEq with scopeEq contextEq motiveRenameEq
+    scrutineeRawRenameEq thenRawRenameEq elseRawRenameEq
+    scrutineeRenameEq thenRenameHEq elseRenameHEq
+  have thenRenameUncastHEq :
+      HEq (Term.rename termRenaming thenA)
+        (Term.rename termRenaming thenB) :=
+    HEq.trans
+      (HEq.symm
+        (termRenameInjectiveCastHEq
+          (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolTrue rho)
+          (Term.rename termRenaming thenA)))
+      (HEq.trans (heq_of_eq thenRenameHEq)
+        (termRenameInjectiveCastHEq
+          (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolTrue rho)
+          (Term.rename termRenaming thenB)))
+  have elseRenameUncastHEq :
+      HEq (Term.rename termRenaming elseA)
+        (Term.rename termRenaming elseB) :=
+    HEq.trans
+      (HEq.symm
+        (termRenameInjectiveCastHEq
+          (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolFalse rho)
+          (Term.rename termRenaming elseA)))
+      (HEq.trans (heq_of_eq elseRenameHEq)
+        (termRenameInjectiveCastHEq
+          (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolFalse rho)
+          (Term.rename termRenaming elseB)))
+  have thenHEq : HEq thenA thenB :=
+    thenInjective thenA thenB thenRenameUncastHEq
+  have elseHEq : HEq elseA elseB :=
+    elseInjective elseA elseB elseRenameUncastHEq
+  rw [scrutineeInjective scrutineeA scrutineeB scrutineeRenameEq]
+  cases thenHEq
+  cases elseHEq
+  rfl
+
 theorem Term.rename_injective_atIdJ_of_inner
     {mode : Mode} {level sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
