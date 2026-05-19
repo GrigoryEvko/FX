@@ -14913,6 +14913,74 @@ private theorem option_isSome_of_eq_some
   rw [resultEq]
   rfl
 
+private theorem option_dependent_match_isSome_of_some
+    {SomeType ResultType : Type}
+    {optionValue : Option SomeType}
+    {targetValue : SomeType}
+    (payload : ∀ candidateValue,
+      optionValue = some candidateValue → ResultType)
+    (optionSuccess : optionValue = some targetValue) :
+    (match survives : optionValue with
+    | none => none
+    | some candidateValue => some (payload candidateValue survives)).isSome =
+      true := by
+  cases optionValue with
+  | none =>
+      cases optionSuccess
+  | some candidateValue =>
+      rfl
+
+private theorem partialStrengthenTyped_var_isSome_of_survives
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (sourcePosition : Fin sourceScope)
+    (targetPosition : Fin targetScope)
+    (survives : strengthening.back sourcePosition = some targetPosition) :
+    (partialStrengthenTyped?
+        (Term.var (context := sourceCtx) sourcePosition)
+        strengthening).isSome = true := by
+  unfold partialStrengthenTyped?
+  split
+  · next noSurvival =>
+      rw [noSurvival] at survives
+      cases survives
+  · rfl
+
+/-- T3 reverse-image bridge for the cast-wrapped `Term.var` rename arm. -/
+theorem strengthenTyped?_rename_isSome_var
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    (sourcePosition : Fin sourceScope) :
+    (partialStrengthenTyped?
+        (Term.rename typedRenaming
+          (Term.var (context := sourceCtx) sourcePosition))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)).isSome =
+      true := by
+  dsimp only [Term.rename]
+  rw [partialStrengthenTyped?_isSome_castInvariant]
+  exact
+    partialStrengthenTyped_var_isSome_of_survives
+      (ContextStrengthening.ofRenaming forwardRename typedRenaming
+        renameInverse renameInverseLeft renameInverseInjects)
+      (forwardRename sourcePosition) sourcePosition
+      (renameInverseLeft sourcePosition)
+
 /-- T3 reverse-image bridge for the closed `Term.unit` case. -/
 theorem strengthenTyped?_rename_isSome_unit
     {mode : Mode} {level : Nat}
