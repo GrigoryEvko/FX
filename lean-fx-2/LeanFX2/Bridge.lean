@@ -1,4 +1,5 @@
-import LeanFX2.Reduction.Compat
+import LeanFX2.Reduction.RawParCompatible.Substitution
+import LeanFX2.Reduction.RawParRename
 import LeanFX2.Reduction.ParRed
 import LeanFX2.Term.Bridge
 
@@ -415,7 +416,7 @@ theorem Step.par.rename_toRawBridge
                 (Term.toRaw (Term.rename termRenaming targetTerm)) := by
   rw [Term.toRaw_rename termRenaming sourceTerm,
       Term.toRaw_rename termRenaming targetTerm]
-  exact RawStep.par.rename_compatible rawRenaming
+  exact RawStep.par.rename rawRenaming
     (Step.par.toRawBridge parallelStep)
 
 /-- Raw-image compatibility for typed parallel reduction after a typed
@@ -438,7 +439,8 @@ theorem Step.par.subst_toRawBridge
                 (Term.toRaw (Term.subst termSubst targetTerm)) := by
   rw [Term.toRaw_subst termSubst sourceTerm,
       Term.toRaw_subst termSubst targetTerm]
-  exact RawStep.par.subst_compatible_same sigma.forRaw
+  exact RawStep.par.subst_par
+    (fun position => RawStep.par.refl (sigma.forRaw position))
     (Step.par.toRawBridge parallelStep)
 
 end LeanFX2
