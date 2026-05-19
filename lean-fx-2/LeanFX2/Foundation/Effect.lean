@@ -229,6 +229,29 @@ def map {SourcePayload : Type sourcePayloadLevel}
   argumentCarrier := payloadMap operation.argumentCarrier
   resultCarrier := payloadMap operation.resultCarrier
 
+/-- `OperationSignature.map` is injective when its payload map is injective. -/
+theorem map_injective
+    {SourcePayload : Type sourcePayloadLevel}
+    {TargetPayload : Type targetPayloadLevel}
+    (payloadMap : SourcePayload → TargetPayload)
+    (payloadMapInjective :
+      ∀ sourcePayloadA sourcePayloadB,
+        payloadMap sourcePayloadA = payloadMap sourcePayloadB →
+          sourcePayloadA = sourcePayloadB)
+    (operationA operationB : OperationSignature SourcePayload) :
+    map payloadMap operationA = map payloadMap operationB →
+      operationA = operationB := by
+  intro mappedOperationEq
+  cases operationA with
+  | mk labelA argumentA resultA =>
+    cases operationB with
+    | mk labelB argumentB resultB =>
+      simp only [map] at mappedOperationEq
+      injection mappedOperationEq with labelEq argumentEq resultEq
+      cases labelEq
+      rw [payloadMapInjective argumentA argumentB argumentEq,
+        payloadMapInjective resultA resultB resultEq]
+
 end OperationSignature
 
 /-- Evidence that an effect row permits an operation. -/

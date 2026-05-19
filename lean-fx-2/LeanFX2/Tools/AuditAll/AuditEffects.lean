@@ -39,6 +39,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Effects.EffectRow.join_associates_subset
 #assert_no_axioms LeanFX2.Effects.read_subset_writeRead
 #assert_no_axioms LeanFX2.Effects.OperationSignature
+#assert_no_axioms LeanFX2.Effects.OperationSignature.map_injective
 #assert_no_axioms LeanFX2.Effects.CanPerform
 #assert_no_axioms LeanFX2.Effects.CanPerform.mono
 #assert_no_axioms LeanFX2.Effects.CanPerform.join_left
