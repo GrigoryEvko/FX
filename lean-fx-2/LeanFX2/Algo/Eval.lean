@@ -1,5 +1,5 @@
 import LeanFX2.Algo.WHNF
-import LeanFX2.Algo.RawWHNF
+import LeanFX2.Algo.RawWHNF.ProjectionInversions
 import LeanFX2.Term.Inversion
 
 /-! # Algo/Eval — fuel-bounded typed evaluator

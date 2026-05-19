@@ -1,4 +1,4 @@
-import LeanFX2.Reduction.RawParCompatible
+import LeanFX2.Reduction.RawParCompatible.Substitution
 import LeanFX2.Reduction.ParRed
 import LeanFX2.Term.Subst
 import LeanFX2.Reduction.Compat.Cubical

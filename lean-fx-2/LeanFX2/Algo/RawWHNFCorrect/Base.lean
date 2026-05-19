@@ -1,4 +1,4 @@
-import LeanFX2.Algo.RawWHNF
+import LeanFX2.Algo.RawWHNF.Projections
 import LeanFX2.Confluence.RawParStarCong
 
 /-! # LeanFX2.Algo.RawWHNFCorrect.Base — small-head inversions

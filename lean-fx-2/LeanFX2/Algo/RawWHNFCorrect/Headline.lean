@@ -1,3 +1,4 @@
+import LeanFX2.Algo.RawWHNF.Evaluator
 import LeanFX2.Algo.RawWHNFCorrect.Base
 import LeanFX2.Algo.RawWHNFCorrect.ElimInversions
 

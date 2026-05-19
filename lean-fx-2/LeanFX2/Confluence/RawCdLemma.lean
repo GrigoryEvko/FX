@@ -1,7 +1,7 @@
 import LeanFX2.Confluence.RawCdDominates
 import LeanFX2.Confluence.RawCdRename
 import LeanFX2.Reduction.RawParInversion
-import LeanFX2.Reduction.RawParCompatible
+import LeanFX2.Reduction.RawParCompatible.Substitution
 import LeanFX2.Reduction.RawParWeakenInv
 
 /-! # Confluence/RawCdLemma — every parallel reduct lands in `RawTerm.cd`
