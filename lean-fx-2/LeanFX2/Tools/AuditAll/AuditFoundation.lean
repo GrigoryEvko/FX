@@ -1,6 +1,7 @@
 import LeanFX2.Tools.DependencyAudit
 import LeanFX2.Tools.AuditGen
 import LeanFX2.Tools.StrictHarness
+import LeanFX2.Foundation.TyRenameInjective
 import LeanFX2
 import LeanFX2.Foundation.Polygraph.PolyTermRoundtrip
 import LeanFX2.FX1.LeanKernel.Name
@@ -18,7 +19,7 @@ import LeanFX2.FX1Bridge
 
 namespace LeanFX2.Tools
 
-/-! ## AuditFoundation — 24 `#assert_no_axioms` checks. -/
+/-! ## AuditFoundation — foundation `#assert_no_axioms` checks. -/
 
 #assert_no_axioms LeanFX2.PartialRawRenaming
 #assert_no_axioms LeanFX2.PartialRawRenaming.lift
@@ -70,6 +71,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Ty.strengthen?_weaken
 #assert_no_axioms LeanFX2.Ty.strengthen?_imp_weaken
 #assert_no_axioms LeanFX2.Ty.not_usesNewestSlot?_imp_weaken
+#assert_no_axioms LeanFX2.Ty.rename_injective_under_injective_renaming
 #assert_no_axioms LeanFX2.RawTerm.unweaken?_newest_var_none
 #assert_no_axioms LeanFX2.RawTerm.unweaken?_weaken_var
 #assert_no_axioms LeanFX2.RawTerm.partialRename?_lift_preserves_binder_var

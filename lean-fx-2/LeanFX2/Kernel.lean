@@ -10,8 +10,10 @@ import LeanFX2.Foundation.RawPartialRename.UnweakenSubstDispatch
 import LeanFX2.Foundation.RawPartialRename.Swap01
 import LeanFX2.Foundation.RawPartialRename.TranspPiContractum
 import LeanFX2.Foundation.RawPartialRename.TranspPiPathRecognizer
+import LeanFX2.Foundation.RawTermInjective
 import LeanFX2.Foundation.Ty
 import LeanFX2.Foundation.TyStrengthen
+import LeanFX2.Foundation.TyRenameInjective
 import LeanFX2.Foundation.Subst
 import LeanFX2.Foundation.SubstActsOnTy
 import LeanFX2.Foundation.TyAct
