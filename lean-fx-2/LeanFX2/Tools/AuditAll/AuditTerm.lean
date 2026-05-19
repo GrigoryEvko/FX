@@ -845,6 +845,10 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.weaken_inv_empty
 #assert_no_axioms LeanFX2.Term.weaken_inv_interval
 #assert_no_axioms LeanFX2.Term.weaken_inv_universe
+#assert_no_axioms LeanFX2.Term.weaken_inv_pi
+#assert_no_axioms LeanFX2.Term.weaken_inv_sigma
+#assert_no_axioms LeanFX2.Term.weaken_inv_path
+#assert_no_axioms LeanFX2.Term.weaken_inv_refine
 #assert_no_axioms LeanFX2.Term.rename_image_of_strengthenTyped?_some
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_isSome_var
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_isSome_unit

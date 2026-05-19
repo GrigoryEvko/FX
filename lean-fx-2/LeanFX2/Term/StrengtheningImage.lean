@@ -18652,6 +18652,63 @@ theorem weaken_inv_universe {mode : Mode} {level scope : Nat}
     HEq weakenedTerm (Term.weaken newType originalTerm) :=
   weaken_inv_of_unweaken?_some weakenedTerm unweakenSuccess
 
+/-- Binder-type specialization of `weaken_inv_of_unweaken?_some` for Pi. -/
+theorem weaken_inv_pi {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType domainType : Ty level scope}
+    {codomainType : Ty level (scope + 1)}
+    {sourceRaw : RawTerm scope}
+    (weakenedTerm :
+      Term (context.cons newType)
+        (Ty.piTy domainType codomainType).weaken sourceRaw.weaken)
+    {originalTerm : Term context (Ty.piTy domainType codomainType) sourceRaw}
+    (unweakenSuccess : Term.unweaken? weakenedTerm = some originalTerm) :
+    HEq weakenedTerm (Term.weaken newType originalTerm) :=
+  weaken_inv_of_unweaken?_some weakenedTerm unweakenSuccess
+
+/-- Binder-type specialization of `weaken_inv_of_unweaken?_some` for Sigma. -/
+theorem weaken_inv_sigma {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {sourceRaw : RawTerm scope}
+    (weakenedTerm :
+      Term (context.cons newType)
+        (Ty.sigmaTy firstType secondType).weaken sourceRaw.weaken)
+    {originalTerm : Term context (Ty.sigmaTy firstType secondType) sourceRaw}
+    (unweakenSuccess : Term.unweaken? weakenedTerm = some originalTerm) :
+    HEq weakenedTerm (Term.weaken newType originalTerm) :=
+  weaken_inv_of_unweaken?_some weakenedTerm unweakenSuccess
+
+/-- Binder-family specialization of `weaken_inv_of_unweaken?_some` for Path. -/
+theorem weaken_inv_path {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint sourceRaw : RawTerm scope}
+    (weakenedTerm :
+      Term (context.cons newType)
+        (Ty.path carrierType leftEndpoint rightEndpoint).weaken
+        sourceRaw.weaken)
+    {originalTerm :
+      Term context (Ty.path carrierType leftEndpoint rightEndpoint) sourceRaw}
+    (unweakenSuccess : Term.unweaken? weakenedTerm = some originalTerm) :
+    HEq weakenedTerm (Term.weaken newType originalTerm) :=
+  weaken_inv_of_unweaken?_some weakenedTerm unweakenSuccess
+
+/-- Binder-family specialization of `weaken_inv_of_unweaken?_some` for refine. -/
+theorem weaken_inv_refine {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType baseType : Ty level scope}
+    {predicate : RawTerm (scope + 1)}
+    {sourceRaw : RawTerm scope}
+    (weakenedTerm :
+      Term (context.cons newType)
+        (Ty.refine baseType predicate).weaken sourceRaw.weaken)
+    {originalTerm : Term context (Ty.refine baseType predicate) sourceRaw}
+    (unweakenSuccess : Term.unweaken? weakenedTerm = some originalTerm) :
+    HEq weakenedTerm (Term.weaken newType originalTerm) :=
+  weaken_inv_of_unweaken?_some weakenedTerm unweakenSuccess
+
 /-- Image Step 3 — headline iff between `unweaken?` success and
 `strengthenTyped?` success.
 
