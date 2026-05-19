@@ -1256,6 +1256,51 @@ theorem Term.rename_injective_atRefineIntro_of_inner
   exact ⟨inferredBaseType, inferredPredicate, baseValue, predicateProof,
     rfl, HEq.rfl⟩
 
+theorem Term.rename_injective_atRefineElim_of_inner
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (rhoInjective : RawRenamingInjective rho)
+    {baseType : Ty level sourceScope}
+    {refinedRaw : RawTerm sourceScope}
+    (refinedInjective :
+      ∀ {matchedPredicate : RawTerm (sourceScope + 1)}
+        (refinedA refinedB :
+          Term sourceCtx (Ty.refine baseType matchedPredicate) refinedRaw),
+        Term.rename termRenaming refinedA = Term.rename termRenaming refinedB →
+        refinedA = refinedB)
+    (termA termB :
+      Term sourceCtx baseType (RawTerm.refineElim refinedRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.refineElim refinedRaw)),
+        Σ' (predicate : RawTerm (sourceScope + 1)),
+          Σ' (refinedTerm :
+              Term sourceCtx (Ty.refine genericType predicate) refinedRaw),
+            HEq genericTerm (Term.refineElim refinedTerm) by
+    obtain ⟨predicateA, refinedA, termHEqA⟩ := key termA
+    obtain ⟨predicateB, refinedB, termHEqB⟩ := key termB
+    cases termHEqA
+    cases termHEqB
+    simp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ predicateRenameEq _ refinedRenameHEq
+    have predicateEq : predicateA = predicateB :=
+      RawTerm.rename_injective_under_injective_renaming predicateA
+        (RawRenamingInjective.lift rhoInjective) predicateB predicateRenameEq
+    cases predicateEq
+    exact congrArg Term.refineElim
+      (refinedInjective refinedA refinedB (eq_of_heq refinedRenameHEq))
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredPredicate refinedTerm
+  exact ⟨inferredPredicate, refinedTerm, HEq.rfl⟩
+
 theorem Term.rename_injective_atCodataUnfold_of_inner
     {mode : Mode} {level sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}

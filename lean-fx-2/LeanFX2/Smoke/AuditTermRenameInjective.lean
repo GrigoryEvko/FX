@@ -33,6 +33,7 @@ import LeanFX2.Term.RenameInjective
 #print axioms LeanFX2.Term.rename_injective_atRecordIntro_of_inner
 #print axioms LeanFX2.Term.rename_injective_atRecordProj_of_inner
 #print axioms LeanFX2.Term.rename_injective_atRefineIntro_of_inner
+#print axioms LeanFX2.Term.rename_injective_atRefineElim_of_inner
 #print axioms LeanFX2.Term.rename_injective_atCodataUnfold_of_inner
 #print axioms LeanFX2.Term.rename_injective_atCodataDest_of_inner
 #print axioms LeanFX2.Term.rename_injective_atSessionRecv_of_inner
