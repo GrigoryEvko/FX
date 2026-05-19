@@ -18709,6 +18709,194 @@ theorem weaken_inv_refine {mode : Mode} {level scope : Nat}
     HEq weakenedTerm (Term.weaken newType originalTerm) :=
   weaken_inv_of_unweaken?_some weakenedTerm unweakenSuccess
 
+/-- Type-variable specialization of `weaken_inv_of_unweaken?_some`. -/
+theorem weaken_inv_tyVar {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType : Ty level scope}
+    {position : Fin scope}
+    {sourceRaw : RawTerm scope}
+    (weakenedTerm :
+      Term (context.cons newType) (Ty.tyVar position).weaken sourceRaw.weaken)
+    {originalTerm : Term context (Ty.tyVar position) sourceRaw}
+    (unweakenSuccess : Term.unweaken? weakenedTerm = some originalTerm) :
+    HEq weakenedTerm (Term.weaken newType originalTerm) :=
+  weaken_inv_of_unweaken?_some weakenedTerm unweakenSuccess
+
+/-- Parametric-type specialization of `weaken_inv_of_unweaken?_some` for lists. -/
+theorem weaken_inv_listType {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType elementType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    (weakenedTerm :
+      Term (context.cons newType) (Ty.listType elementType).weaken sourceRaw.weaken)
+    {originalTerm : Term context (Ty.listType elementType) sourceRaw}
+    (unweakenSuccess : Term.unweaken? weakenedTerm = some originalTerm) :
+    HEq weakenedTerm (Term.weaken newType originalTerm) :=
+  weaken_inv_of_unweaken?_some weakenedTerm unweakenSuccess
+
+/-- Parametric-type specialization of `weaken_inv_of_unweaken?_some` for options. -/
+theorem weaken_inv_optionType {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType elementType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    (weakenedTerm :
+      Term (context.cons newType)
+        (Ty.optionType elementType).weaken sourceRaw.weaken)
+    {originalTerm : Term context (Ty.optionType elementType) sourceRaw}
+    (unweakenSuccess : Term.unweaken? weakenedTerm = some originalTerm) :
+    HEq weakenedTerm (Term.weaken newType originalTerm) :=
+  weaken_inv_of_unweaken?_some weakenedTerm unweakenSuccess
+
+/-- Parametric-type specialization of `weaken_inv_of_unweaken?_some` for either. -/
+theorem weaken_inv_eitherType {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType leftType rightType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    (weakenedTerm :
+      Term (context.cons newType)
+        (Ty.eitherType leftType rightType).weaken sourceRaw.weaken)
+    {originalTerm : Term context (Ty.eitherType leftType rightType) sourceRaw}
+    (unweakenSuccess : Term.unweaken? weakenedTerm = some originalTerm) :
+    HEq weakenedTerm (Term.weaken newType originalTerm) :=
+  weaken_inv_of_unweaken?_some weakenedTerm unweakenSuccess
+
+/-- Identity-type specialization of `weaken_inv_of_unweaken?_some`. -/
+theorem weaken_inv_id {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint sourceRaw : RawTerm scope}
+    (weakenedTerm :
+      Term (context.cons newType)
+        (Ty.id carrierType leftEndpoint rightEndpoint).weaken
+        sourceRaw.weaken)
+    {originalTerm :
+      Term context (Ty.id carrierType leftEndpoint rightEndpoint) sourceRaw}
+    (unweakenSuccess : Term.unweaken? weakenedTerm = some originalTerm) :
+    HEq weakenedTerm (Term.weaken newType originalTerm) :=
+  weaken_inv_of_unweaken?_some weakenedTerm unweakenSuccess
+
+/-- Observational-equality specialization of `weaken_inv_of_unweaken?_some`. -/
+theorem weaken_inv_oeq {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint sourceRaw : RawTerm scope}
+    (weakenedTerm :
+      Term (context.cons newType)
+        (Ty.oeq carrierType leftEndpoint rightEndpoint).weaken
+        sourceRaw.weaken)
+    {originalTerm :
+      Term context (Ty.oeq carrierType leftEndpoint rightEndpoint) sourceRaw}
+    (unweakenSuccess : Term.unweaken? weakenedTerm = some originalTerm) :
+    HEq weakenedTerm (Term.weaken newType originalTerm) :=
+  weaken_inv_of_unweaken?_some weakenedTerm unweakenSuccess
+
+/-- Strict-identity specialization of `weaken_inv_of_unweaken?_some`. -/
+theorem weaken_inv_idStrict {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint sourceRaw : RawTerm scope}
+    (weakenedTerm :
+      Term (context.cons newType)
+        (Ty.idStrict carrierType leftEndpoint rightEndpoint).weaken
+        sourceRaw.weaken)
+    {originalTerm :
+      Term context (Ty.idStrict carrierType leftEndpoint rightEndpoint) sourceRaw}
+    (unweakenSuccess : Term.unweaken? weakenedTerm = some originalTerm) :
+    HEq weakenedTerm (Term.weaken newType originalTerm) :=
+  weaken_inv_of_unweaken?_some weakenedTerm unweakenSuccess
+
+/-- Equivalence-type specialization of `weaken_inv_of_unweaken?_some`. -/
+theorem weaken_inv_equiv {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType domainType codomainType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    (weakenedTerm :
+      Term (context.cons newType)
+        (Ty.equiv domainType codomainType).weaken sourceRaw.weaken)
+    {originalTerm : Term context (Ty.equiv domainType codomainType) sourceRaw}
+    (unweakenSuccess : Term.unweaken? weakenedTerm = some originalTerm) :
+    HEq weakenedTerm (Term.weaken newType originalTerm) :=
+  weaken_inv_of_unweaken?_some weakenedTerm unweakenSuccess
+
+/-- Cubical glue specialization of `weaken_inv_of_unweaken?_some`. -/
+theorem weaken_inv_glue {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType baseType : Ty level scope}
+    {boundaryWitness sourceRaw : RawTerm scope}
+    (weakenedTerm :
+      Term (context.cons newType)
+        (Ty.glue baseType boundaryWitness).weaken sourceRaw.weaken)
+    {originalTerm : Term context (Ty.glue baseType boundaryWitness) sourceRaw}
+    (unweakenSuccess : Term.unweaken? weakenedTerm = some originalTerm) :
+    HEq weakenedTerm (Term.weaken newType originalTerm) :=
+  weaken_inv_of_unweaken?_some weakenedTerm unweakenSuccess
+
+/-- Record-type specialization of `weaken_inv_of_unweaken?_some`. -/
+theorem weaken_inv_record {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType singleFieldType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    (weakenedTerm :
+      Term (context.cons newType)
+        (Ty.record singleFieldType).weaken sourceRaw.weaken)
+    {originalTerm : Term context (Ty.record singleFieldType) sourceRaw}
+    (unweakenSuccess : Term.unweaken? weakenedTerm = some originalTerm) :
+    HEq weakenedTerm (Term.weaken newType originalTerm) :=
+  weaken_inv_of_unweaken?_some weakenedTerm unweakenSuccess
+
+/-- Codata-type specialization of `weaken_inv_of_unweaken?_some`. -/
+theorem weaken_inv_codata {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType stateType outputType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    (weakenedTerm :
+      Term (context.cons newType)
+        (Ty.codata stateType outputType).weaken sourceRaw.weaken)
+    {originalTerm : Term context (Ty.codata stateType outputType) sourceRaw}
+    (unweakenSuccess : Term.unweaken? weakenedTerm = some originalTerm) :
+    HEq weakenedTerm (Term.weaken newType originalTerm) :=
+  weaken_inv_of_unweaken?_some weakenedTerm unweakenSuccess
+
+/-- Session-type specialization of `weaken_inv_of_unweaken?_some`. -/
+theorem weaken_inv_session {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType : Ty level scope}
+    {protocolStep sourceRaw : RawTerm scope}
+    (weakenedTerm :
+      Term (context.cons newType)
+        (Ty.session protocolStep).weaken sourceRaw.weaken)
+    {originalTerm : Term context (Ty.session protocolStep) sourceRaw}
+    (unweakenSuccess : Term.unweaken? weakenedTerm = some originalTerm) :
+    HEq weakenedTerm (Term.weaken newType originalTerm) :=
+  weaken_inv_of_unweaken?_some weakenedTerm unweakenSuccess
+
+/-- Effect-type specialization of `weaken_inv_of_unweaken?_some`. -/
+theorem weaken_inv_effect {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType carrierType : Ty level scope}
+    {effectTag sourceRaw : RawTerm scope}
+    (weakenedTerm :
+      Term (context.cons newType)
+        (Ty.effect carrierType effectTag).weaken sourceRaw.weaken)
+    {originalTerm : Term context (Ty.effect carrierType effectTag) sourceRaw}
+    (unweakenSuccess : Term.unweaken? weakenedTerm = some originalTerm) :
+    HEq weakenedTerm (Term.weaken newType originalTerm) :=
+  weaken_inv_of_unweaken?_some weakenedTerm unweakenSuccess
+
+/-- Modal-type specialization of `weaken_inv_of_unweaken?_some`. -/
+theorem weaken_inv_modal {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType carrierType : Ty level scope}
+    {modalityTag : Nat}
+    {sourceRaw : RawTerm scope}
+    (weakenedTerm :
+      Term (context.cons newType)
+        (Ty.modal modalityTag carrierType).weaken sourceRaw.weaken)
+    {originalTerm : Term context (Ty.modal modalityTag carrierType) sourceRaw}
+    (unweakenSuccess : Term.unweaken? weakenedTerm = some originalTerm) :
+    HEq weakenedTerm (Term.weaken newType originalTerm) :=
+  weaken_inv_of_unweaken?_some weakenedTerm unweakenSuccess
+
 /-- Image Step 3 — headline iff between `unweaken?` success and
 `strengthenTyped?` success.
 
