@@ -1,6 +1,4 @@
 import LeanFX2.Term
-import LeanFX2.Term.Subst
-import LeanFX2.Term.Pointwise
 import LeanFX2.Reduction.RawPar
 import LeanFX2.Reduction.RawParInversion
 import LeanFX2.Reduction.RawParCompatible

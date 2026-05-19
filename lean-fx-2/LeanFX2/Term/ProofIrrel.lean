@@ -1,4 +1,4 @@
-import LeanFX2.Term.Pointwise
+import LeanFX2.Term.Pointwise.PointwiseAndCompositionInfrastructure.SubstPointwise
 
 /-! # Term/ProofIrrel — TermRenaming / TermSubst proof irrelevance
 

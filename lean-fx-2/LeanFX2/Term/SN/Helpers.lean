@@ -1,11 +1,12 @@
 import LeanFX2.Reducibility.Basic
+import LeanFX2.Term.Rename
 
 /-! # LeanFX2.Term.SN.Helpers — pure SN preservation lemmas
 
 Pure strong-normalization preservation theorems shared by the Kripke
 step-indexed candidate and Term-level SN endpoints.  Imports only the
-bare SN foundation (`Reducibility.Basic`), so it stays disjoint from any
-logical-relation predicate machinery.
+bare SN foundation (`Reducibility.Basic`) plus typed weakening syntax, so
+it stays disjoint from any logical-relation predicate machinery.
 
 ## Contents
 
