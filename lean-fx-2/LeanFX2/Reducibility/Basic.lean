@@ -1,8 +1,5 @@
 import LeanFX2.Term
 import LeanFX2.Reduction.RawPar
-import LeanFX2.Reduction.RawParInversion
-import LeanFX2.Reduction.RawParCompatible
-import LeanFX2.Reduction.RawParWeakenInv
 
 /-! # LeanFX2.Reducibility.Basic — strong-normalization foundation
 

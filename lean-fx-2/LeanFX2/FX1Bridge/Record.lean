@@ -1,5 +1,6 @@
 import LeanFX2.FX1Bridge.RoundTrip
 import LeanFX2.FX1.Core.HasType
+import LeanFX2.Term
 
 /-! # FX1Bridge/Record
 

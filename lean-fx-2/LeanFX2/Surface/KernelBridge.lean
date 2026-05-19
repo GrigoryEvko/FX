@@ -1,5 +1,5 @@
 import LeanFX2.Surface.AST
-import LeanFX2.Term
+import LeanFX2.Foundation.RawSubst.RenameDefs
 
 /-! # Surface/KernelBridge — wire Surface AST into the kernel
 
