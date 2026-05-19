@@ -1,4 +1,3 @@
-import Lean
 import LeanFX2.Foundation.RawPartialRename.Function
 import LeanFX2.Foundation.RawPartialRename.Strengthen
 import LeanFX2.Foundation.RawSubst.SubstDefs
@@ -164,5 +163,56 @@ syntax "fx_rw_ty_rename_identity" Lean.Parser.Tactic.location : tactic
 macro_rules
   | `(tactic| fx_rw_ty_rename_identity $location) =>
       `(tactic| rw [LeanFX2.Ty.rename_identity] $location)
+
+macro "fx_rw_raw_weaken_rename_commute" : tactic =>
+  `(tactic| rw [LeanFX2.RawTerm.weaken_rename_commute])
+
+syntax "fx_rw_raw_weaken_rename_commute" Lean.Parser.Tactic.location : tactic
+macro_rules
+  | `(tactic| fx_rw_raw_weaken_rename_commute $location) =>
+      `(tactic| rw [LeanFX2.RawTerm.weaken_rename_commute] $location)
+
+macro "fx_rw_raw_weaken_rename_commute_symm" : tactic =>
+  `(tactic| rw [← LeanFX2.RawTerm.weaken_rename_commute])
+
+syntax "fx_rw_raw_weaken_rename_commute_symm"
+    Lean.Parser.Tactic.location : tactic
+macro_rules
+  | `(tactic| fx_rw_raw_weaken_rename_commute_symm $location) =>
+      `(tactic| rw [← LeanFX2.RawTerm.weaken_rename_commute] $location)
+
+macro "fx_rw_ty_weaken_rename_commute" : tactic =>
+  `(tactic| rw [LeanFX2.Ty.weaken_rename_commute])
+
+syntax "fx_rw_ty_weaken_rename_commute" Lean.Parser.Tactic.location : tactic
+macro_rules
+  | `(tactic| fx_rw_ty_weaken_rename_commute $location) =>
+      `(tactic| rw [LeanFX2.Ty.weaken_rename_commute] $location)
+
+macro "fx_rw_ty_weaken_rename_commute_symm" : tactic =>
+  `(tactic| rw [← LeanFX2.Ty.weaken_rename_commute])
+
+syntax "fx_rw_ty_weaken_rename_commute_symm"
+    Lean.Parser.Tactic.location : tactic
+macro_rules
+  | `(tactic| fx_rw_ty_weaken_rename_commute_symm $location) =>
+      `(tactic| rw [← LeanFX2.Ty.weaken_rename_commute] $location)
+
+macro "fx_rw_ty_subst0_rename_commute" : tactic =>
+  `(tactic| rw [LeanFX2.Ty.subst0_rename_commute])
+
+syntax "fx_rw_ty_subst0_rename_commute" Lean.Parser.Tactic.location : tactic
+macro_rules
+  | `(tactic| fx_rw_ty_subst0_rename_commute $location) =>
+      `(tactic| rw [LeanFX2.Ty.subst0_rename_commute] $location)
+
+macro "fx_rw_ty_subst0_rename_commute_symm" : tactic =>
+  `(tactic| rw [← LeanFX2.Ty.subst0_rename_commute])
+
+syntax "fx_rw_ty_subst0_rename_commute_symm"
+    Lean.Parser.Tactic.location : tactic
+macro_rules
+  | `(tactic| fx_rw_ty_subst0_rename_commute_symm $location) =>
+      `(tactic| rw [← LeanFX2.Ty.subst0_rename_commute] $location)
 
 end LeanFX2.Tools.Tactics

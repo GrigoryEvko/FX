@@ -1,4 +1,3 @@
-import Lean
 import LeanFX2.Term.Pointwise.PointwiseAndCompositionInfrastructure
 
 /-! # Tools/Tactics/Choreography

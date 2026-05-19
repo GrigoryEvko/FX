@@ -1,4 +1,3 @@
-import Lean
 import LeanFX2.Foundation.RawPartialRename.Strengthen
 import LeanFX2.Foundation.RawPartialRename.UnweakenInversion
 import LeanFX2.Foundation.RenameIdentity

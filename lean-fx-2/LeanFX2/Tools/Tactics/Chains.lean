@@ -1,4 +1,3 @@
-import Lean
 import LeanFX2.Confluence.RawDiamond
 import LeanFX2.Reduction.ParStar
 import LeanFX2.Reduction.StepStar

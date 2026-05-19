@@ -1,4 +1,3 @@
-import Lean
 import LeanFX2.Reducibility.Basic
 
 /-! # Tools/Tactics/SN
