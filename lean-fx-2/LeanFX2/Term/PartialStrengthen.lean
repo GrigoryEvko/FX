@@ -8000,6 +8000,21 @@ theorem partialStrengthenTyped?_castInvariantHEq
   cases typeEq
   rfl
 
+/-- A type-index cast on a typed term is heterogeneously equal to the
+uncast term.  Kept local to typed strengthening so this file can reason
+about `Term.rename` arms with inner casts without importing the heavier
+pointwise substitution layer. -/
+theorem termTypeCastHEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    (typeEq : sourceType = targetType)
+    (sourceTerm : Term context sourceType sourceRaw) :
+    HEq (typeEq ▸ sourceTerm) sourceTerm := by
+  cases typeEq
+  rfl
+
 /-- `Term.rename` arm reshape for `Term.oeqFunext`.
 
 The rename arm wraps the `pointwiseProof` argument in

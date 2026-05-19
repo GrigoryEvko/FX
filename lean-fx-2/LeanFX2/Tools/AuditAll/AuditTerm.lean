@@ -1126,6 +1126,7 @@ existing computational dispatcher. -/
 -- pathLam, oeqFunext, funextRefl, equivIntroHet, var).
 #assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_isSome_castInvariant
 #assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_castInvariantHEq
+#assert_no_axioms LeanFX2.Term.termTypeCastHEq
 #assert_no_axioms LeanFX2.Term.rename_oeqFunext_unfolds
 
 -- strength-T1 cast-wrapped ctors (HEq-form pivot — Eq-form structurally

@@ -1,9 +1,13 @@
 import LeanFX2.Smoke.AuditAll
 import LeanFX2.Smoke.AuditNamespace
+import LeanFX2.Smoke.AuditTacticsCast
+import LeanFX2.Smoke.AuditTacticsChoreography
+import LeanFX2.Smoke.AuditTacticsSimpStrip
 import LeanFX2.Smoke.ImportSurface
 import LeanFX2.Smoke.StrictComposition
 import LeanFX2.Tools.StrictHarness
 import LeanFX2.Tools.Tactics.Cast
+import LeanFX2.Tools.Tactics.Choreography
 import LeanFX2.Tools.Tactics.HEq
 import LeanFX2.Tools.Tactics.SimpStrip
 import LeanFX2.Surface.HostLex
