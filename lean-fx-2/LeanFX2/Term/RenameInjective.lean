@@ -1491,6 +1491,80 @@ theorem Term.rename_injective_atIntervalJoin_of_inner
   rename_i leftTerm rightTerm
   exact ⟨leftTerm, rightTerm, rfl, HEq.rfl⟩
 
+theorem Term.rename_injective_atPathApp_of_inner
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (rhoInjective : RawRenamingInjective rho)
+    {carrierType : Ty level sourceScope}
+    {pathRaw intervalRaw : RawTerm sourceScope}
+    (pathInjective :
+      ∀ {leftA leftB rightA rightB : RawTerm sourceScope}
+        (pathA :
+          Term sourceCtx (Ty.path carrierType leftA rightA) pathRaw)
+        (pathB :
+          Term sourceCtx (Ty.path carrierType leftB rightB) pathRaw),
+        HEq (Term.rename termRenaming pathA)
+          (Term.rename termRenaming pathB) →
+        HEq pathA pathB)
+    (intervalInjective :
+      ∀ (intervalA intervalB : Term sourceCtx Ty.interval intervalRaw),
+        Term.rename termRenaming intervalA =
+          Term.rename termRenaming intervalB →
+        intervalA = intervalB)
+    (termA termB :
+      Term sourceCtx carrierType (RawTerm.pathApp pathRaw intervalRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.pathApp pathRaw intervalRaw)),
+        Σ' (modeIsUnivalent : mode = Mode.univalent),
+          Σ' (leftEndpoint : RawTerm sourceScope),
+            Σ' (rightEndpoint : RawTerm sourceScope),
+              Σ' (pathTerm :
+                  Term sourceCtx
+                    (Ty.path genericType leftEndpoint rightEndpoint)
+                    pathRaw),
+                Σ' (intervalTerm : Term sourceCtx Ty.interval intervalRaw),
+                  HEq genericTerm
+                    (Term.pathApp modeIsUnivalent pathTerm intervalTerm) by
+    obtain ⟨modeIsUnivalentA, leftA, rightA, pathA, intervalA,
+      termHEqA⟩ := key termA
+    obtain ⟨modeIsUnivalentB, leftB, rightB, pathB, intervalB,
+      termHEqB⟩ := key termB
+    cases termHEqA
+    cases termHEqB
+    simp only [Term.rename] at renameEq
+    injection renameEq with scopeEq contextEq carrierTypeRenameEq
+      leftRenameEq rightRenameEq pathRawRenameEq intervalRawRenameEq
+      pathRenameHEq intervalRenameEq
+    have leftEq : leftA = leftB :=
+      RawTerm.rename_injective_under_injective_renaming leftA
+        rhoInjective leftB leftRenameEq
+    have rightEq : rightA = rightB :=
+      RawTerm.rename_injective_under_injective_renaming rightA
+        rhoInjective rightB rightRenameEq
+    have pathHEq : HEq pathA pathB :=
+      pathInjective pathA pathB pathRenameHEq
+    have intervalEq : intervalA = intervalB :=
+      intervalInjective intervalA intervalB intervalRenameEq
+    cases leftEq
+    cases rightEq
+    cases pathHEq
+    cases intervalEq
+    rfl
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredModeIsUnivalent inferredLeftEndpoint
+    inferredRightEndpoint pathTerm intervalTerm
+  exact ⟨inferredModeIsUnivalent, inferredLeftEndpoint,
+    inferredRightEndpoint, pathTerm, intervalTerm, HEq.rfl⟩
+
 theorem Term.rename_injective_atModIntro_of_inner
     {mode : Mode} {level sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}

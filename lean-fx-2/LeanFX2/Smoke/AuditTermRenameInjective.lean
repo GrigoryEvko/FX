@@ -34,6 +34,7 @@ import LeanFX2.Term.RenameInjective
 #print axioms LeanFX2.Term.rename_injective_atIntervalOpp_of_inner
 #print axioms LeanFX2.Term.rename_injective_atIntervalMeet_of_inner
 #print axioms LeanFX2.Term.rename_injective_atIntervalJoin_of_inner
+#print axioms LeanFX2.Term.rename_injective_atPathApp_of_inner
 #print axioms LeanFX2.Term.rename_injective_atModIntro_of_inner
 #print axioms LeanFX2.Term.rename_injective_atModElim_of_inner
 #print axioms LeanFX2.Term.rename_injective_atSubsume_of_inner
