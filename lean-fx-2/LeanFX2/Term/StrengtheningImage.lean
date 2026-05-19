@@ -15468,6 +15468,116 @@ theorem strengthenTyped?_rename_isSome_subsume
     (strengthenTyped?_rename_eq_subsume forwardRename typedRenaming
       renameInverse renameInverseLeft renameInverseInjects innerTerm innerIH)
 
+/-- T3 reverse-image induction step for `Term.optionSome`. -/
+theorem strengthenTyped?_rename_isSome_optionSome
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    {elementType : Ty level sourceScope}
+    {valueRaw : RawTerm sourceScope}
+    (valueTerm : Term sourceCtx elementType valueRaw)
+    (valueIH :
+      partialStrengthenTyped?
+          (Term.rename typedRenaming valueTerm)
+          (ContextStrengthening.ofRenaming forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects)
+        = some (StrengtheningResult.fromRename forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects
+            valueTerm)) :
+    (partialStrengthenTyped?
+        (Term.rename typedRenaming (Term.optionSome valueTerm))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)).isSome =
+      true :=
+  option_isSome_of_eq_some
+    (strengthenTyped?_rename_eq_optionSome forwardRename typedRenaming
+      renameInverse renameInverseLeft renameInverseInjects valueTerm valueIH)
+
+/-- T3 reverse-image induction step for `Term.eitherInl`. -/
+theorem strengthenTyped?_rename_isSome_eitherInl
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    {leftType rightType : Ty level sourceScope}
+    {valueRaw : RawTerm sourceScope}
+    (valueTerm : Term sourceCtx leftType valueRaw)
+    (valueIH :
+      partialStrengthenTyped?
+          (Term.rename typedRenaming valueTerm)
+          (ContextStrengthening.ofRenaming forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects)
+        = some (StrengtheningResult.fromRename forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects
+            valueTerm)) :
+    (partialStrengthenTyped?
+        (Term.rename typedRenaming
+          (Term.eitherInl (rightType := rightType) valueTerm))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)).isSome =
+      true :=
+  option_isSome_of_eq_some
+    (strengthenTyped?_rename_eq_eitherInl forwardRename typedRenaming
+      renameInverse renameInverseLeft renameInverseInjects valueTerm valueIH)
+
+/-- T3 reverse-image induction step for `Term.eitherInr`. -/
+theorem strengthenTyped?_rename_isSome_eitherInr
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    {leftType rightType : Ty level sourceScope}
+    {valueRaw : RawTerm sourceScope}
+    (valueTerm : Term sourceCtx rightType valueRaw)
+    (valueIH :
+      partialStrengthenTyped?
+          (Term.rename typedRenaming valueTerm)
+          (ContextStrengthening.ofRenaming forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects)
+        = some (StrengtheningResult.fromRename forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects
+            valueTerm)) :
+    (partialStrengthenTyped?
+        (Term.rename typedRenaming
+          (Term.eitherInr (leftType := leftType) valueTerm))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)).isSome =
+      true :=
+  option_isSome_of_eq_some
+    (strengthenTyped?_rename_eq_eitherInr forwardRename typedRenaming
+      renameInverse renameInverseLeft renameInverseInjects valueTerm valueIH)
+
 /-- Image Step 2 — `unweaken?` and `strengthenTyped?` agree on success.
 
 TAUTOLOGICAL BIJECTION: `Term.unweaken?` is defined to pattern-match on
