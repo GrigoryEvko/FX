@@ -289,6 +289,92 @@ theorem Term.rename_injective_atOptionSome_of_inner
   rename_i inferredElementType valueTerm
   exact ⟨inferredElementType, valueTerm, rfl, HEq.rfl⟩
 
+theorem Term.rename_injective_atEitherInl_of_inner
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {leftType rightType : Ty level sourceScope}
+    {valueRaw : RawTerm sourceScope}
+    (valueInjective :
+      ∀ (valueA valueB : Term sourceCtx leftType valueRaw),
+        Term.rename termRenaming valueA = Term.rename termRenaming valueB →
+        valueA = valueB)
+    (termA termB :
+      Term sourceCtx (Ty.eitherType leftType rightType)
+        (RawTerm.eitherInl valueRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.eitherInl valueRaw)),
+        Σ' (leftType : Ty level sourceScope),
+          Σ' (rightType : Ty level sourceScope),
+            Σ' (valueTerm : Term sourceCtx leftType valueRaw),
+              Σ' (_ : genericType = Ty.eitherType leftType rightType),
+                HEq genericTerm
+                  (Term.eitherInl (rightType := rightType) valueTerm) by
+    obtain ⟨leftTypeA, rightTypeA, valueA, typeEqA, termHEqA⟩ := key termA
+    obtain ⟨leftTypeB, rightTypeB, valueB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqA
+    cases typeEqB
+    cases termHEqA
+    cases termHEqB
+    simp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ _ valueRenameEq
+    exact congrArg (Term.eitherInl (rightType := rightType))
+      (valueInjective valueA valueB valueRenameEq)
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredLeftType inferredRightType valueTerm
+  exact ⟨inferredLeftType, inferredRightType, valueTerm, rfl, HEq.rfl⟩
+
+theorem Term.rename_injective_atEitherInr_of_inner
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {leftType rightType : Ty level sourceScope}
+    {valueRaw : RawTerm sourceScope}
+    (valueInjective :
+      ∀ (valueA valueB : Term sourceCtx rightType valueRaw),
+        Term.rename termRenaming valueA = Term.rename termRenaming valueB →
+        valueA = valueB)
+    (termA termB :
+      Term sourceCtx (Ty.eitherType leftType rightType)
+        (RawTerm.eitherInr valueRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.eitherInr valueRaw)),
+        Σ' (leftType : Ty level sourceScope),
+          Σ' (rightType : Ty level sourceScope),
+            Σ' (valueTerm : Term sourceCtx rightType valueRaw),
+              Σ' (_ : genericType = Ty.eitherType leftType rightType),
+                HEq genericTerm
+                  (Term.eitherInr (leftType := leftType) valueTerm) by
+    obtain ⟨leftTypeA, rightTypeA, valueA, typeEqA, termHEqA⟩ := key termA
+    obtain ⟨leftTypeB, rightTypeB, valueB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqA
+    cases typeEqB
+    cases termHEqA
+    cases termHEqB
+    simp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ _ valueRenameEq
+    exact congrArg (Term.eitherInr (leftType := leftType))
+      (valueInjective valueA valueB valueRenameEq)
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredLeftType inferredRightType valueTerm
+  exact ⟨inferredLeftType, inferredRightType, valueTerm, rfl, HEq.rfl⟩
+
 theorem Term.rename_injective_atInterval0
     {mode : Mode} {level sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
@@ -378,5 +464,91 @@ theorem Term.rename_injective_atIntervalOpp_of_inner
   cases genericTerm
   rename_i innerTerm
   exact ⟨innerTerm, rfl, HEq.rfl⟩
+
+theorem Term.rename_injective_atIntervalMeet_of_inner
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {leftRaw rightRaw : RawTerm sourceScope}
+    (leftInjective :
+      ∀ (leftA leftB : Term sourceCtx Ty.interval leftRaw),
+        Term.rename termRenaming leftA = Term.rename termRenaming leftB →
+        leftA = leftB)
+    (rightInjective :
+      ∀ (rightA rightB : Term sourceCtx Ty.interval rightRaw),
+        Term.rename termRenaming rightA = Term.rename termRenaming rightB →
+        rightA = rightB)
+    (termA termB :
+      Term sourceCtx Ty.interval (RawTerm.intervalMeet leftRaw rightRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.intervalMeet leftRaw rightRaw)),
+        Σ' (leftTerm : Term sourceCtx Ty.interval leftRaw),
+          Σ' (rightTerm : Term sourceCtx Ty.interval rightRaw),
+            Σ' (_ : genericType = Ty.interval),
+              HEq genericTerm (Term.intervalMeet leftTerm rightTerm) by
+    obtain ⟨leftA, rightA, typeEqA, termHEqA⟩ := key termA
+    obtain ⟨leftB, rightB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqA
+    cases typeEqB
+    cases termHEqA
+    cases termHEqB
+    simp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ leftRenameEq rightRenameEq
+    rw [leftInjective leftA leftB leftRenameEq,
+      rightInjective rightA rightB rightRenameEq]
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i leftTerm rightTerm
+  exact ⟨leftTerm, rightTerm, rfl, HEq.rfl⟩
+
+theorem Term.rename_injective_atIntervalJoin_of_inner
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {leftRaw rightRaw : RawTerm sourceScope}
+    (leftInjective :
+      ∀ (leftA leftB : Term sourceCtx Ty.interval leftRaw),
+        Term.rename termRenaming leftA = Term.rename termRenaming leftB →
+        leftA = leftB)
+    (rightInjective :
+      ∀ (rightA rightB : Term sourceCtx Ty.interval rightRaw),
+        Term.rename termRenaming rightA = Term.rename termRenaming rightB →
+        rightA = rightB)
+    (termA termB :
+      Term sourceCtx Ty.interval (RawTerm.intervalJoin leftRaw rightRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.intervalJoin leftRaw rightRaw)),
+        Σ' (leftTerm : Term sourceCtx Ty.interval leftRaw),
+          Σ' (rightTerm : Term sourceCtx Ty.interval rightRaw),
+            Σ' (_ : genericType = Ty.interval),
+              HEq genericTerm (Term.intervalJoin leftTerm rightTerm) by
+    obtain ⟨leftA, rightA, typeEqA, termHEqA⟩ := key termA
+    obtain ⟨leftB, rightB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqA
+    cases typeEqB
+    cases termHEqA
+    cases termHEqB
+    simp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ leftRenameEq rightRenameEq
+    rw [leftInjective leftA leftB leftRenameEq,
+      rightInjective rightA rightB rightRenameEq]
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i leftTerm rightTerm
+  exact ⟨leftTerm, rightTerm, rfl, HEq.rfl⟩
 
 end LeanFX2

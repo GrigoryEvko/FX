@@ -31,9 +31,13 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Term.rename_injective_atListNil
 #assert_no_axioms LeanFX2.Term.rename_injective_atOptionNone
 #assert_no_axioms LeanFX2.Term.rename_injective_atOptionSome_of_inner
+#assert_no_axioms LeanFX2.Term.rename_injective_atEitherInl_of_inner
+#assert_no_axioms LeanFX2.Term.rename_injective_atEitherInr_of_inner
 #assert_no_axioms LeanFX2.Term.rename_injective_atInterval0
 #assert_no_axioms LeanFX2.Term.rename_injective_atInterval1
 #assert_no_axioms LeanFX2.Term.rename_injective_atIntervalOpp_of_inner
+#assert_no_axioms LeanFX2.Term.rename_injective_atIntervalMeet_of_inner
+#assert_no_axioms LeanFX2.Term.rename_injective_atIntervalJoin_of_inner
 #assert_no_axioms LeanFX2.Term.toRaw_rename
 #assert_no_axioms LeanFX2.Term.toRaw_subst
 #assert_no_axioms LeanFX2.Term.toRaw_weaken
