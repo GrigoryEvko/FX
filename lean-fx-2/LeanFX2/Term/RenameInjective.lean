@@ -216,6 +216,52 @@ theorem Term.rename_injective_atListNil
   rename_i inferredElementType
   exact ⟨inferredElementType, rfl, HEq.rfl⟩
 
+theorem Term.rename_injective_atListCons_of_inner
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {elementType : Ty level sourceScope}
+    {headRaw tailRaw : RawTerm sourceScope}
+    (headInjective :
+      ∀ (headA headB : Term sourceCtx elementType headRaw),
+        Term.rename termRenaming headA = Term.rename termRenaming headB →
+        headA = headB)
+    (tailInjective :
+      ∀ (tailA tailB : Term sourceCtx (Ty.listType elementType) tailRaw),
+        Term.rename termRenaming tailA = Term.rename termRenaming tailB →
+        tailA = tailB)
+    (termA termB :
+      Term sourceCtx (Ty.listType elementType)
+        (RawTerm.listCons headRaw tailRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.listCons headRaw tailRaw)),
+        Σ' (elementType : Ty level sourceScope),
+          Σ' (headTerm : Term sourceCtx elementType headRaw),
+            Σ' (tailTerm : Term sourceCtx (Ty.listType elementType) tailRaw),
+              Σ' (_ : genericType = Ty.listType elementType),
+                HEq genericTerm (Term.listCons headTerm tailTerm) by
+    obtain ⟨elementTypeA, headA, tailA, typeEqA, termHEqA⟩ := key termA
+    obtain ⟨elementTypeB, headB, tailB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqA
+    cases typeEqB
+    cases termHEqA
+    cases termHEqB
+    simp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ _ headRenameEq tailRenameEq
+    rw [headInjective headA headB headRenameEq,
+      tailInjective tailA tailB tailRenameEq]
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredElementType headTerm tailTerm
+  exact ⟨inferredElementType, headTerm, tailTerm, rfl, HEq.rfl⟩
+
 theorem Term.rename_injective_atOptionNone
     {mode : Mode} {level sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
@@ -550,5 +596,46 @@ theorem Term.rename_injective_atIntervalJoin_of_inner
   cases genericTerm
   rename_i leftTerm rightTerm
   exact ⟨leftTerm, rightTerm, rfl, HEq.rfl⟩
+
+theorem Term.rename_injective_atRecordIntro_of_inner
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {singleFieldType : Ty level sourceScope}
+    {firstRaw : RawTerm sourceScope}
+    (fieldInjective :
+      ∀ (fieldA fieldB : Term sourceCtx singleFieldType firstRaw),
+        Term.rename termRenaming fieldA = Term.rename termRenaming fieldB →
+        fieldA = fieldB)
+    (termA termB :
+      Term sourceCtx (Ty.record singleFieldType)
+        (RawTerm.recordIntro firstRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.recordIntro firstRaw)),
+        Σ' (singleFieldType : Ty level sourceScope),
+          Σ' (fieldTerm : Term sourceCtx singleFieldType firstRaw),
+            Σ' (_ : genericType = Ty.record singleFieldType),
+              HEq genericTerm (Term.recordIntro fieldTerm) by
+    obtain ⟨singleFieldTypeA, fieldA, typeEqA, termHEqA⟩ := key termA
+    obtain ⟨singleFieldTypeB, fieldB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqA
+    cases typeEqB
+    cases termHEqA
+    cases termHEqB
+    simp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ fieldRenameEq
+    exact congrArg Term.recordIntro
+      (fieldInjective fieldA fieldB fieldRenameEq)
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredFieldType fieldTerm
+  exact ⟨inferredFieldType, fieldTerm, rfl, HEq.rfl⟩
 
 end LeanFX2

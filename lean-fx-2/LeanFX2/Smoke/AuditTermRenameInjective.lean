@@ -9,6 +9,7 @@ import LeanFX2.Term.RenameInjective
 #print axioms LeanFX2.Term.rename_injective_atNatZero
 #print axioms LeanFX2.Term.rename_injective_atNatSucc_of_inner
 #print axioms LeanFX2.Term.rename_injective_atListNil
+#print axioms LeanFX2.Term.rename_injective_atListCons_of_inner
 #print axioms LeanFX2.Term.rename_injective_atOptionNone
 #print axioms LeanFX2.Term.rename_injective_atOptionSome_of_inner
 #print axioms LeanFX2.Term.rename_injective_atEitherInl_of_inner
@@ -18,3 +19,4 @@ import LeanFX2.Term.RenameInjective
 #print axioms LeanFX2.Term.rename_injective_atIntervalOpp_of_inner
 #print axioms LeanFX2.Term.rename_injective_atIntervalMeet_of_inner
 #print axioms LeanFX2.Term.rename_injective_atIntervalJoin_of_inner
+#print axioms LeanFX2.Term.rename_injective_atRecordIntro_of_inner
