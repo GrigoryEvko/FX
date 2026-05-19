@@ -594,6 +594,42 @@ theorem Term.rename_injective_atOEqRefl
   rename_i inferredCarrier
   exact ⟨inferredCarrier, rfl, HEq.rfl⟩
 
+theorem Term.rename_injective_atIdStrictRefl
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {carrier : Ty level sourceScope}
+    {rawWitness : RawTerm sourceScope}
+    (termA termB :
+      Term sourceCtx (Ty.idStrict carrier rawWitness rawWitness)
+        (RawTerm.idStrictRefl rawWitness)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro _renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.idStrictRefl rawWitness)),
+        Σ' (modeIsStrict : mode = Mode.strict),
+          Σ' (carrier : Ty level sourceScope),
+            Σ' (_ : genericType = Ty.idStrict carrier rawWitness rawWitness),
+              HEq genericTerm
+                (Term.idStrictRefl (context := sourceCtx) modeIsStrict
+                  carrier rawWitness) by
+    obtain ⟨modeIsStrictA, carrierA, typeEqA, termHEqA⟩ := key termA
+    obtain ⟨modeIsStrictB, carrierB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqA
+    cases typeEqB
+    cases termHEqA
+    cases termHEqB
+    rfl
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredModeIsStrict inferredCarrier
+  exact ⟨inferredModeIsStrict, inferredCarrier, rfl, HEq.rfl⟩
+
 theorem Term.rename_injective_atInterval0
     {mode : Mode} {level sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
