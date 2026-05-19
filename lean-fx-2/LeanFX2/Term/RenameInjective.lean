@@ -268,6 +268,43 @@ theorem Term.rename_injective_universeCode_ctor
   intro _renameEq
   rfl
 
+theorem Term.rename_injective_equivReflId_ctor
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (carrier : Ty level sourceScope) :
+    Term.rename termRenaming
+        (Term.equivReflId (context := sourceCtx) carrier) =
+      Term.rename termRenaming
+        (Term.equivReflId (context := sourceCtx) carrier) →
+      Term.equivReflId (context := sourceCtx) carrier =
+        Term.equivReflId (context := sourceCtx) carrier := by
+  intro _renameEq
+  rfl
+
+theorem Term.rename_injective_funextRefl_ctor
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (domainType codomainType : Ty level sourceScope)
+    (applyRaw : RawTerm (sourceScope + 1)) :
+    Term.rename termRenaming
+        (Term.funextRefl (context := sourceCtx)
+          domainType codomainType applyRaw) =
+      Term.rename termRenaming
+        (Term.funextRefl (context := sourceCtx)
+          domainType codomainType applyRaw) →
+      Term.funextRefl (context := sourceCtx)
+          domainType codomainType applyRaw =
+        Term.funextRefl (context := sourceCtx)
+          domainType codomainType applyRaw := by
+  intro _renameEq
+  rfl
+
 theorem Term.rename_injective_equivReflIdAtId_ctor
     {mode : Mode} {level sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}

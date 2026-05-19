@@ -18,7 +18,7 @@ import LeanFX2.FX1Bridge
 
 namespace LeanFX2.Tools
 
-/-! ## AuditTerm — 400 `#assert_no_axioms` checks. -/
+/-! ## AuditTerm — 402 `#assert_no_axioms` checks. -/
 
 #assert_no_axioms LeanFX2.Term.subst
 #assert_no_axioms LeanFX2.Term.rename
@@ -29,6 +29,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Term.rename_injective_appPi_ctor
 #assert_no_axioms LeanFX2.Term.rename_injective_effectPerform_ctor
 #assert_no_axioms LeanFX2.Term.rename_injective_universeCode_ctor
+#assert_no_axioms LeanFX2.Term.rename_injective_equivReflId_ctor
+#assert_no_axioms LeanFX2.Term.rename_injective_funextRefl_ctor
 #assert_no_axioms LeanFX2.Term.rename_injective_equivReflIdAtId_ctor
 #assert_no_axioms LeanFX2.Term.rename_injective_funextReflAtId_ctor
 #assert_no_axioms LeanFX2.Term.rename_injective_funextIntroHet_ctor
