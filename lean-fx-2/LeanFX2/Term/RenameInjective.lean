@@ -2497,4 +2497,67 @@ theorem Term.rename_injective_atUaToEquiv_of_inner
     inferredRightTy, inferredLeftRaw, inferredRightRaw, proofTerm, rfl,
     HEq.rfl⟩
 
+theorem Term.rename_injective_atEquivApply_of_inner
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (rhoInjective : RawRenamingInjective rho)
+    {carrierB : Ty level sourceScope}
+    {equivRaw argumentRaw : RawTerm sourceScope}
+    (equivInjective :
+      ∀ {carrierA1 carrierA2 : Ty level sourceScope}
+        (equivA : Term sourceCtx (Ty.equiv carrierA1 carrierB) equivRaw)
+        (equivB : Term sourceCtx (Ty.equiv carrierA2 carrierB) equivRaw),
+        HEq (Term.rename termRenaming equivA)
+          (Term.rename termRenaming equivB) →
+        HEq equivA equivB)
+    (argumentInjective :
+      ∀ {carrierA1 carrierA2 : Ty level sourceScope}
+        (argumentA : Term sourceCtx carrierA1 argumentRaw)
+        (argumentB : Term sourceCtx carrierA2 argumentRaw),
+        HEq (Term.rename termRenaming argumentA)
+          (Term.rename termRenaming argumentB) →
+        HEq argumentA argumentB)
+    (termA termB :
+      Term sourceCtx carrierB
+        (RawTerm.equivApply equivRaw argumentRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.equivApply equivRaw argumentRaw)),
+        Σ' (carrierA : Ty level sourceScope),
+          Σ' (equivTerm :
+              Term sourceCtx (Ty.equiv carrierA genericType) equivRaw),
+            Σ' (argumentTerm : Term sourceCtx carrierA argumentRaw),
+              HEq genericTerm
+                (Term.equivApply equivTerm argumentTerm) by
+    obtain ⟨carrierA1, equivA, argumentA, termHEqA⟩ := key termA
+    obtain ⟨carrierA2, equivB, argumentB, termHEqB⟩ := key termB
+    cases termHEqA
+    cases termHEqB
+    simp only [Term.rename] at renameEq
+    injection renameEq with scopeEq contextEq carrierARenameEq
+      carrierBRenameEq equivRawRenameEq argumentRawRenameEq equivRenameHEq
+      argumentRenameHEq
+    have equivHEq : HEq equivA equivB :=
+      equivInjective equivA equivB equivRenameHEq
+    have argumentHEq : HEq argumentA argumentB :=
+      argumentInjective argumentA argumentB argumentRenameHEq
+    have carrierAEq : carrierA1 = carrierA2 :=
+      Ty.rename_injective_under_injective_renaming carrierA1
+        rhoInjective carrierA2 carrierARenameEq
+    cases carrierAEq
+    cases equivHEq
+    cases argumentHEq
+    rfl
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredCarrierA equivTerm argumentTerm
+  exact ⟨inferredCarrierA, equivTerm, argumentTerm, HEq.rfl⟩
+
 end LeanFX2
