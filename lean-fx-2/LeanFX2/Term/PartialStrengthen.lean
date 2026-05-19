@@ -13157,6 +13157,141 @@ The Eq-form headline for these 11 ctors is structurally blocked at
 the kernel level; downstream consumers should bridge via
 `HEq.cast` + the cast equation's known direction. -/
 
+/-- Cast-wrapped strength-T1 case (HEq form): `Term.var`.
+
+The variable rename arm casts the target variable across the
+`TermRenaming` evidence for this position.  The dispatcher itself is
+cast-invariant at HEq, so the cast-wrapped renamed variable and the
+uncast target variable have HEq-related strengthening results.
+-/
+theorem strengthenTyped?_rename_heq_var
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    (sourcePosition : Fin sourceScope) :
+    HEq
+      (partialStrengthenTyped?
+        (Term.rename typedRenaming
+          (Term.var (context := sourceCtx) sourcePosition))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects))
+      (partialStrengthenTyped?
+        (Term.var (context := targetCtx) (forwardRename sourcePosition))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)) := by
+  dsimp only [Term.rename]
+  exact
+    partialStrengthenTyped?_castInvariantHEq
+      (Term.var (context := targetCtx) (forwardRename sourcePosition))
+      (typedRenaming sourcePosition)
+      (ContextStrengthening.ofRenaming forwardRename typedRenaming
+        renameInverse renameInverseLeft renameInverseInjects)
+
+/-- Cast-wrapped strength-T1 case (HEq form): `Term.appPi`.
+
+The dependent application rename arm wraps the whole result in the
+non-rfl `Ty.subst0_rename_commute ...` cast.  The HEq statement peels
+that top-level cast and compares against the uncast renamed
+application. -/
+theorem strengthenTyped?_rename_heq_appPi
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    {domainType : Ty level sourceScope}
+    {codomainType : Ty level (sourceScope + 1)}
+    {functionRaw argumentRaw : RawTerm sourceScope}
+    (functionTerm : Term sourceCtx (Ty.piTy domainType codomainType)
+      functionRaw)
+    (argumentTerm : Term sourceCtx domainType argumentRaw) :
+    HEq
+      (partialStrengthenTyped?
+        (Term.rename typedRenaming
+          (Term.appPi functionTerm argumentTerm))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects))
+      (partialStrengthenTyped?
+        (Term.appPi
+          (Term.rename typedRenaming functionTerm)
+          (Term.rename typedRenaming argumentTerm))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)) := by
+  dsimp only [Term.rename]
+  exact
+    partialStrengthenTyped?_castInvariantHEq
+      (Term.appPi
+        (Term.rename typedRenaming functionTerm)
+        (Term.rename typedRenaming argumentTerm))
+      (Ty.subst0_rename_commute codomainType domainType argumentRaw
+        forwardRename).symm
+      (ContextStrengthening.ofRenaming forwardRename typedRenaming
+        renameInverse renameInverseLeft renameInverseInjects)
+
+/-- Cast-wrapped strength-T1 case (HEq form): `Term.snd`.
+
+The second projection rename arm wraps the whole result in the non-rfl
+`Ty.subst0_rename_commute` cast for the projected second component
+type.  The HEq form exposes that the cast-wrapped dispatcher result is
+the same computation as the uncast renamed `snd`.
+-/
+theorem strengthenTyped?_rename_heq_snd
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    {firstType : Ty level sourceScope}
+    {secondType : Ty level (sourceScope + 1)}
+    {pairRaw : RawTerm sourceScope}
+    (pairTerm : Term sourceCtx (Ty.sigmaTy firstType secondType) pairRaw) :
+    HEq
+      (partialStrengthenTyped?
+        (Term.rename typedRenaming (Term.snd pairTerm))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects))
+      (partialStrengthenTyped?
+        (Term.snd (Term.rename typedRenaming pairTerm))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)) := by
+  dsimp only [Term.rename]
+  exact
+    partialStrengthenTyped?_castInvariantHEq
+      (Term.snd (Term.rename typedRenaming pairTerm))
+      (Ty.subst0_rename_commute secondType firstType
+        (RawTerm.fst pairRaw) forwardRename).symm
+      (ContextStrengthening.ofRenaming forwardRename typedRenaming
+        renameInverse renameInverseLeft renameInverseInjects)
+
 /-- Cast-wrapped strength-T1 case (HEq form): `Term.funextRefl`.
 
 Closed value-shape ctor (no Term subterms).  Three Ty/raw payloads:
