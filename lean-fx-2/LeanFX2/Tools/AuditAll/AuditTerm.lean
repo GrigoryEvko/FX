@@ -28,6 +28,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Term.rename_injective_lamPi_ctor
 #assert_no_axioms LeanFX2.Term.rename_injective_appPi_ctor
 #assert_no_axioms LeanFX2.Term.rename_injective_effectPerform_ctor
+#assert_no_axioms LeanFX2.Term.rename_injective_effectPerform_ctor_proofIrrel
 #assert_no_axioms LeanFX2.Term.rename_injective_universeCode_ctor
 #assert_no_axioms LeanFX2.Term.rename_injective_equivReflId_ctor
 #assert_no_axioms LeanFX2.Term.rename_injective_funextRefl_ctor

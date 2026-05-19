@@ -388,6 +388,64 @@ theorem Term.rename_injective_effectPerform_ctor
   cases argumentsHEq
   rfl
 
+theorem Term.rename_injective_effectPerform_ctor_proofIrrel
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {effectTag : RawTerm sourceScope}
+    (effectRow : Effects.EffectRow)
+    (operationSignature : Effects.OperationSignature (Ty level sourceScope))
+    (canPerformA canPerformB :
+      Effects.CanPerform effectRow operationSignature)
+    {operationRaw argumentsRaw : RawTerm sourceScope}
+    (operationInjective :
+      ∀ (operationA operationB :
+          Term sourceCtx
+            (Ty.effect operationSignature.argumentCarrier effectTag)
+            operationRaw),
+        HEq (Term.rename termRenaming operationA)
+          (Term.rename termRenaming operationB) →
+        HEq operationA operationB)
+    (argumentsInjective :
+      ∀ (argumentsA argumentsB :
+          Term sourceCtx operationSignature.argumentCarrier argumentsRaw),
+        HEq (Term.rename termRenaming argumentsA)
+          (Term.rename termRenaming argumentsB) →
+        HEq argumentsA argumentsB)
+    (operationA operationB :
+      Term sourceCtx
+        (Ty.effect operationSignature.argumentCarrier effectTag)
+        operationRaw)
+    (argumentsA argumentsB :
+      Term sourceCtx operationSignature.argumentCarrier argumentsRaw) :
+    Term.rename termRenaming
+        (Term.effectPerform effectTag effectRow operationSignature
+          canPerformA operationA argumentsA) =
+      Term.rename termRenaming
+        (Term.effectPerform effectTag effectRow operationSignature
+          canPerformB operationB argumentsB) →
+      Term.effectPerform effectTag effectRow operationSignature
+          canPerformA operationA argumentsA =
+        Term.effectPerform effectTag effectRow operationSignature
+          canPerformB operationB argumentsB := by
+  intro renameEq
+  simp only [Term.rename] at renameEq
+  injection renameEq with contextEq effectTagRenameEq effectRowEq
+    operationSignatureRenameEq canPerformRenameHEq operationRawRenameEq
+    argumentsRawRenameEq operationRenameHEq argumentsRenameHEq
+  have operationHEq : HEq operationA operationB :=
+    operationInjective operationA operationB (heq_of_eq operationRenameHEq)
+  have argumentsHEq : HEq argumentsA argumentsB :=
+    argumentsInjective argumentsA argumentsB (heq_of_eq argumentsRenameHEq)
+  cases operationHEq
+  cases argumentsHEq
+  have canPerformEq : canPerformA = canPerformB :=
+    proof_irrel canPerformA canPerformB
+  cases canPerformEq
+  rfl
+
 theorem Term.rename_injective_universeCode_ctor
     {mode : Mode} {level sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
