@@ -891,6 +891,11 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_isSome_idStrictRec
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_isSome_hcomp
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_isSome_funextReflAtId
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_isSome_refineIntro
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_isSome_refineElim
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_isSome_sessionSend
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_isSome_equivApp
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_isSome_fst
 
 -- Image Step 2: unweaken?-to-strengthenTyped? success direction.
 -- Tautological bijection — both witnesses succeed under identical
