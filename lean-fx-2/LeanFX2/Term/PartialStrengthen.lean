@@ -13307,6 +13307,50 @@ theorem strengthenTyped?_rename_heq_snd
       (ContextStrengthening.ofRenaming forwardRename typedRenaming
         renameInverse renameInverseLeft renameInverseInjects)
 
+/-- Cast-wrapped strength-T1 case (HEq form): `Term.pair`.
+
+The pair rename arm does not wrap the outer pair in a cast; instead the
+second component is cast across `Ty.subst0_rename_commute` so its
+dependent Σ component type matches the first component's renamed raw.
+The HEq form records the dispatcher computation on that exact renamed
+pair shape. -/
+theorem strengthenTyped?_rename_heq_pair
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    {firstType : Ty level sourceScope}
+    {secondType : Ty level (sourceScope + 1)}
+    {firstRaw secondRaw : RawTerm sourceScope}
+    (firstValue : Term sourceCtx firstType firstRaw)
+    (secondValue :
+      Term sourceCtx (secondType.subst0 firstType firstRaw) secondRaw) :
+    HEq
+      (partialStrengthenTyped?
+        (Term.rename typedRenaming (Term.pair firstValue secondValue))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects))
+      (partialStrengthenTyped?
+        (Term.pair
+          (Term.rename typedRenaming firstValue)
+          (Ty.subst0_rename_commute secondType firstType firstRaw
+            forwardRename ▸
+            Term.rename typedRenaming secondValue))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)) := by
+  dsimp only [Term.rename]
+  exact HEq.rfl
+
 /-- Cast-wrapped strength-T1 case (HEq form): `Term.boolElim`.
 
 The Boolean eliminator rename arm has a top-level non-rfl
