@@ -18112,6 +18112,112 @@ theorem strengthenTyped?_rename_isSome_equivIntroHet
             next rightInvResult rightInvSuccess =>
               rfl
 
+/-- T3 reverse-image bridge for the cast-wrapped `Term.boolElim` rename arm. -/
+theorem strengthenTyped?_rename_isSome_boolElim
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    {motiveType : Ty level (sourceScope + 1)}
+    {scrutineeRaw thenRaw elseRaw : RawTerm sourceScope}
+    (scrutinee : Term sourceCtx Ty.bool scrutineeRaw)
+    (thenBranch :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw)
+    (elseBranch :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw)
+    (scrutineeIH :
+      (partialStrengthenTyped?
+          (Term.rename typedRenaming scrutinee)
+          (ContextStrengthening.ofRenaming forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects)).isSome =
+        true)
+    (thenIH :
+      (partialStrengthenTyped?
+          (Term.rename typedRenaming thenBranch)
+          (ContextStrengthening.ofRenaming forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects)).isSome =
+        true)
+    (elseIH :
+      (partialStrengthenTyped?
+          (Term.rename typedRenaming elseBranch)
+          (ContextStrengthening.ofRenaming forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects)).isSome =
+        true) :
+    (partialStrengthenTyped?
+        (Term.rename typedRenaming
+          (Term.boolElim scrutinee thenBranch elseBranch))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)).isSome =
+      true := by
+  dsimp only [Term.rename]
+  rw [partialStrengthenTyped?_isSome_castInvariant]
+  unfold partialStrengthenTyped?
+  have motiveStrengthens :
+      (motiveType.rename forwardRename.lift).partialStrengthen?
+          renameInverse.lift =
+        some motiveType := by
+    rw [Ty.partialStrengthen?_rename_some motiveType
+      forwardRename.lift (@RawRenaming.identity sourceScope).lift
+      renameInverse.lift
+      (PartialRawRenaming.lift_rename_some renameInverseLeft),
+      Ty.rename_pointwise
+        (@RawRenaming.identity_lift_pointwise sourceScope) motiveType,
+      Ty.rename_identity motiveType]
+  have castedThenIH :
+      (partialStrengthenTyped?
+          (Ty.subst0_rename_commute motiveType Ty.bool
+              RawTerm.boolTrue forwardRename ▸
+            Term.rename typedRenaming thenBranch)
+          (ContextStrengthening.ofRenaming forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects)).isSome =
+        true := by
+    rw [partialStrengthenTyped?_isSome_castInvariant]
+    exact thenIH
+  have castedElseIH :
+      (partialStrengthenTyped?
+          (Ty.subst0_rename_commute motiveType Ty.bool
+              RawTerm.boolFalse forwardRename ▸
+            Term.rename typedRenaming elseBranch)
+          (ContextStrengthening.ofRenaming forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects)).isSome =
+        true := by
+    rw [partialStrengthenTyped?_isSome_castInvariant]
+    exact elseIH
+  split
+  next noMotiveSuccess =>
+    exact absurd (motiveStrengthens.symm.trans noMotiveSuccess)
+      (by intro contra; cases contra)
+  next targetMotiveType motiveSuccess =>
+    split
+    next noScrutineeSuccess =>
+      have impossible : Option.isSome (none (α := _)) = true :=
+        noScrutineeSuccess ▸ scrutineeIH
+      cases impossible
+    next scrutineeResult scrutineeSuccess =>
+      split
+      next noThenSuccess =>
+        have impossible : Option.isSome (none (α := _)) = true :=
+          noThenSuccess ▸ castedThenIH
+        cases impossible
+      next thenResult thenSuccess =>
+        split
+        next noElseSuccess =>
+          have impossible : Option.isSome (none (α := _)) = true :=
+            noElseSuccess ▸ castedElseIH
+          cases impossible
+        next elseResult elseSuccess =>
+          rfl
+
 /-- T3 reverse-image bridge for `Term.transp`. -/
 theorem strengthenTyped?_rename_isSome_transp
     {mode : Mode} {level : Nat}
