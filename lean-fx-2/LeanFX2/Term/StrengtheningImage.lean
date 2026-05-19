@@ -17035,6 +17035,216 @@ theorem strengthenTyped?_rename_isSome_fst
     (strengthenTyped?_rename_eq_fst forwardRename typedRenaming
       renameInverse renameInverseLeft renameInverseInjects pairTerm pairIH)
 
+/-- T3 reverse-image bridge for `Term.codataUnfold`. -/
+theorem strengthenTyped?_rename_isSome_codataUnfold
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    {stateType outputType : Ty level sourceScope}
+    {stateRaw transitionRaw : RawTerm sourceScope}
+    (initialState : Term sourceCtx stateType stateRaw)
+    (transition : Term sourceCtx (Ty.arrow stateType outputType) transitionRaw)
+    (stateIH :
+      partialStrengthenTyped?
+          (Term.rename typedRenaming initialState)
+          (ContextStrengthening.ofRenaming forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects)
+        = some (StrengtheningResult.fromRename forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects
+            initialState))
+    (transitionIH :
+      partialStrengthenTyped?
+          (Term.rename typedRenaming transition)
+          (ContextStrengthening.ofRenaming forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects)
+        = some (StrengtheningResult.fromRename forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects
+            transition)) :
+    (partialStrengthenTyped?
+        (Term.rename typedRenaming
+          (Term.codataUnfold (context := sourceCtx) initialState transition))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)).isSome =
+      true :=
+  option_isSome_of_eq_some
+    (strengthenTyped?_rename_eq_codataUnfold forwardRename typedRenaming
+      renameInverse renameInverseLeft renameInverseInjects initialState
+      transition stateIH transitionIH)
+
+/-- T3 reverse-image bridge for `Term.equivApply`. -/
+theorem strengthenTyped?_rename_isSome_equivApply
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    {carrierA carrierB : Ty level sourceScope}
+    {equivRaw argumentRaw : RawTerm sourceScope}
+    (equivTerm : Term sourceCtx (Ty.equiv carrierA carrierB) equivRaw)
+    (argumentTerm : Term sourceCtx carrierA argumentRaw)
+    (equivIH :
+      partialStrengthenTyped?
+          (Term.rename typedRenaming equivTerm)
+          (ContextStrengthening.ofRenaming forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects)
+        = some (StrengtheningResult.fromRename forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects
+            equivTerm))
+    (argumentIH :
+      partialStrengthenTyped?
+          (Term.rename typedRenaming argumentTerm)
+          (ContextStrengthening.ofRenaming forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects)
+        = some (StrengtheningResult.fromRename forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects
+            argumentTerm)) :
+    (partialStrengthenTyped?
+        (Term.rename typedRenaming (Term.equivApply equivTerm argumentTerm))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)).isSome =
+      true :=
+  option_isSome_of_eq_some
+    (strengthenTyped?_rename_eq_equivApply forwardRename typedRenaming
+      renameInverse renameInverseLeft renameInverseInjects equivTerm
+      argumentTerm equivIH argumentIH)
+
+/-- T3 reverse-image bridge for `Term.uaToEquiv`. -/
+theorem strengthenTyped?_rename_isSome_uaToEquiv
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    (leftTy rightTy : Ty level sourceScope)
+    (leftTyRaw rightTyRaw : RawTerm sourceScope)
+    {proofRaw : RawTerm sourceScope}
+    (proof : Term sourceCtx
+      (Ty.id (Ty.universe innerLevel innerLevelLt) leftTyRaw rightTyRaw)
+      proofRaw)
+    (proofIH :
+      partialStrengthenTyped?
+          (Term.rename typedRenaming proof)
+          (ContextStrengthening.ofRenaming forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects)
+        = some (StrengtheningResult.fromRename forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects
+            proof)) :
+    (partialStrengthenTyped?
+        (Term.rename typedRenaming
+          (Term.uaToEquiv (context := sourceCtx) innerLevel innerLevelLt
+            leftTy rightTy leftTyRaw rightTyRaw proof))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)).isSome =
+      true :=
+  option_isSome_of_eq_some
+    (strengthenTyped?_rename_eq_uaToEquiv forwardRename typedRenaming
+      renameInverse renameInverseLeft renameInverseInjects innerLevel
+      innerLevelLt leftTy rightTy leftTyRaw rightTyRaw proof proofIH)
+
+/-- T3 reverse-image bridge for `Term.uaIntroHet`. -/
+theorem strengthenTyped?_rename_isSome_uaIntroHet
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    {carrierA carrierB : Ty level sourceScope}
+    (carrierARaw carrierBRaw : RawTerm sourceScope)
+    {forwardRaw backwardRaw : RawTerm sourceScope}
+    (equivWitness : Term sourceCtx (Ty.equiv carrierA carrierB)
+                       (RawTerm.equivIntro forwardRaw backwardRaw))
+    (equivIH :
+      partialStrengthenTyped?
+          (Term.rename typedRenaming equivWitness)
+          (ContextStrengthening.ofRenaming forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects)
+        = some (StrengtheningResult.fromRename forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects
+            equivWitness)) :
+    (partialStrengthenTyped?
+        (Term.rename typedRenaming
+          (Term.uaIntroHet (context := sourceCtx) innerLevel innerLevelLt
+            carrierARaw carrierBRaw equivWitness))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)).isSome =
+      true :=
+  option_isSome_of_eq_some
+    (strengthenTyped?_rename_eq_uaIntroHet forwardRename typedRenaming
+      renameInverse renameInverseLeft renameInverseInjects innerLevel
+      innerLevelLt carrierARaw carrierBRaw equivWitness equivIH)
+
+/-- T3 reverse-image bridge for `Term.funextIntroHet`. -/
+theorem strengthenTyped?_rename_isSome_funextIntroHet
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    (domainType codomainType : Ty level sourceScope)
+    (applyARaw applyBRaw : RawTerm (sourceScope + 1)) :
+    (partialStrengthenTyped?
+        (Term.rename typedRenaming
+          (Term.funextIntroHet (context := sourceCtx) domainType codomainType
+            applyARaw applyBRaw))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)).isSome =
+      true :=
+  option_isSome_of_eq_some
+    (strengthenTyped?_rename_eq_funextIntroHet forwardRename typedRenaming
+      renameInverse renameInverseLeft renameInverseInjects domainType
+      codomainType applyARaw applyBRaw)
+
 /-- Image Step 2 — `unweaken?` and `strengthenTyped?` agree on success.
 
 TAUTOLOGICAL BIJECTION: `Term.unweaken?` is defined to pattern-match on
