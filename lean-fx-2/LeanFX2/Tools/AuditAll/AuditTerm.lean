@@ -838,6 +838,7 @@ existing computational dispatcher. -/
 -- universal aggregator headline.  Consumed by Step 3 iff headline
 -- and by the Phase B+ Step.eta SR cascade.
 #assert_no_axioms LeanFX2.Term.weaken_inv_of_strengthenTyped?_some
+#assert_no_axioms LeanFX2.Term.weaken_inv_of_unweaken?_some
 #assert_no_axioms LeanFX2.Term.rename_image_of_strengthenTyped?_some
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_isSome_var
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_isSome_unit

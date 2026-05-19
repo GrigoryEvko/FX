@@ -18521,6 +18521,62 @@ theorem strengthenTyped?_some_of_unweaken?_some {mode : Mode} {level scope : Nat
   | some result =>
       exact ⟨result, rfl⟩
 
+/-- Generic conditional weakening inversion from an `unweaken?` success.
+
+This is the type-generic core behind the per-type `weaken_inv_*`
+specializations: it does not claim unconditional totality of
+strengthening, but once `Term.unweaken?` has recovered an original term,
+the weakened term is heterogeneously equal to weakening that original
+term back into the extended context. -/
+theorem weaken_inv_of_unweaken?_some {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType sourceType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    (weakenedTerm :
+      Term (context.cons newType) sourceType.weaken sourceRaw.weaken)
+    {originalTerm : Term context sourceType sourceRaw}
+    (unweakenSuccess :
+      Term.unweaken? weakenedTerm = some originalTerm) :
+    HEq weakenedTerm (Term.weaken newType originalTerm) := by
+  cases dispatchOutcome : strengthenTyped? weakenedTerm with
+  | none =>
+      exfalso
+      have noneEq : Term.unweaken? weakenedTerm = none := by
+        unfold Term.unweaken?
+        rw [dispatchOutcome]
+      rw [noneEq] at unweakenSuccess
+      cases unweakenSuccess
+  | some dispatchResult =>
+      have soundness :
+          HEq weakenedTerm dispatchResult.renamedTarget :=
+        weaken_inv_of_strengthenTyped?_some
+          (ContextStrengthening.dropNewest context newType)
+          dispatchResult dispatchOutcome
+      cases dispatchResult with
+      | mk targetType targetRaw targetTerm typeStrengthens rawStrengthens
+            typeRenames rawRenames =>
+          have targetTypeEq : targetType = sourceType := by
+            have rewritten : sourceType.weaken.strengthen? = some targetType :=
+              typeStrengthens
+            rw [Ty.strengthen?_weaken sourceType] at rewritten
+            injection rewritten with strengthenSomeEq
+            exact strengthenSomeEq.symm
+          have targetRawEq : targetRaw = sourceRaw := by
+            have rewritten : sourceRaw.weaken.strengthen? = some targetRaw :=
+              rawStrengthens
+            rw [RawTerm.strengthen?_weaken sourceRaw] at rewritten
+            injection rewritten with strengthenSomeEq
+            exact strengthenSomeEq.symm
+          subst targetTypeEq
+          subst targetRawEq
+          have unfoldEq : Term.unweaken? weakenedTerm = some targetTerm := by
+            unfold Term.unweaken?
+            rw [dispatchOutcome]
+          rw [unfoldEq] at unweakenSuccess
+          injection unweakenSuccess with targetTermInj
+          subst targetTermInj
+          exact soundness
+
 /-- Image Step 3 — headline iff between `unweaken?` success and
 `strengthenTyped?` success.
 
