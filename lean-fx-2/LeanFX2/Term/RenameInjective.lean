@@ -2408,4 +2408,93 @@ theorem Term.rename_injective_atEquivCode
   rename_i inferredOuterLevel inferredLevelLe
   exact ⟨inferredOuterLevel, inferredLevelLe, rfl, HEq.rfl⟩
 
+theorem Term.rename_injective_atUaToEquiv_of_inner
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (rhoInjective : RawRenamingInjective rho)
+    {leftTy rightTy : Ty level sourceScope}
+    {proofRaw : RawTerm sourceScope}
+    (proofInjective :
+      ∀ {innerLevelA innerLevelB : UniverseLevel}
+        {innerLevelLtA : innerLevelA.toNat + 1 ≤ level}
+        {innerLevelLtB : innerLevelB.toNat + 1 ≤ level}
+        {leftRawA leftRawB rightRawA rightRawB : RawTerm sourceScope}
+        (proofA :
+          Term sourceCtx
+            (Ty.id (Ty.universe innerLevelA innerLevelLtA)
+              leftRawA rightRawA)
+            proofRaw)
+        (proofB :
+          Term sourceCtx
+            (Ty.id (Ty.universe innerLevelB innerLevelLtB)
+              leftRawB rightRawB)
+            proofRaw),
+        HEq (Term.rename termRenaming proofA)
+          (Term.rename termRenaming proofB) →
+        HEq proofA proofB)
+    (termA termB :
+      Term sourceCtx (Ty.equiv leftTy rightTy)
+        (RawTerm.uaToEquiv proofRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.uaToEquiv proofRaw)),
+        Σ' (innerLevel : UniverseLevel),
+          Σ' (innerLevelLt : innerLevel.toNat + 1 ≤ level),
+            Σ' (inferredLeftTy : Ty level sourceScope),
+              Σ' (inferredRightTy : Ty level sourceScope),
+                Σ' (leftTyRaw : RawTerm sourceScope),
+                  Σ' (rightTyRaw : RawTerm sourceScope),
+                    Σ' (proof :
+                        Term sourceCtx
+                          (Ty.id (Ty.universe innerLevel innerLevelLt)
+                            leftTyRaw rightTyRaw)
+                          proofRaw),
+                      Σ' (_ :
+                          genericType =
+                            Ty.equiv inferredLeftTy inferredRightTy),
+                        HEq genericTerm
+                          (Term.uaToEquiv innerLevel innerLevelLt
+                            inferredLeftTy inferredRightTy
+                            leftTyRaw rightTyRaw proof) by
+    obtain ⟨innerLevelA, innerLevelLtA, inferredLeftA, inferredRightA,
+      leftRawA, rightRawA, proofA, typeEqA, termHEqA⟩ := key termA
+    obtain ⟨innerLevelB, innerLevelLtB, inferredLeftB, inferredRightB,
+      leftRawB, rightRawB, proofB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqA
+    cases typeEqB
+    cases termHEqA
+    cases termHEqB
+    simp only [Term.rename] at renameEq
+    injection renameEq with scopeEq contextEq innerLevelEq innerLevelLtEq
+      leftTyRenameEq rightTyRenameEq leftRawRenameEq rightRawRenameEq
+      proofRenameHEq
+    have proofHEq : HEq proofA proofB :=
+      proofInjective proofA proofB proofRenameHEq
+    have leftRawEq : leftRawA = leftRawB :=
+      RawTerm.rename_injective_under_injective_renaming leftRawA
+        rhoInjective leftRawB rightTyRenameEq
+    have rightRawEq : rightRawA = rightRawB :=
+      RawTerm.rename_injective_under_injective_renaming rightRawA
+        rhoInjective rightRawB leftRawRenameEq
+    cases innerLevelEq
+    cases innerLevelLtEq
+    cases leftRawEq
+    cases rightRawEq
+    cases proofHEq
+    rfl
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredInnerLevel inferredInnerLevelLt inferredLeftTy
+    inferredRightTy inferredLeftRaw inferredRightRaw proofTerm
+  exact ⟨inferredInnerLevel, inferredInnerLevelLt, inferredLeftTy,
+    inferredRightTy, inferredLeftRaw, inferredRightRaw, proofTerm, rfl,
+    HEq.rfl⟩
+
 end LeanFX2
