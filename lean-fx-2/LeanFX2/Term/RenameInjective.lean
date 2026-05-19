@@ -186,6 +186,115 @@ theorem Term.rename_injective_atNatSucc_of_inner
   rename_i predecessorTerm
   exact ⟨predecessorTerm, rfl, HEq.rfl⟩
 
+theorem Term.rename_injective_atNatElim_of_inner
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {motiveType : Ty level sourceScope}
+    {scrutineeRaw zeroRaw succRaw : RawTerm sourceScope}
+    (scrutineeInjective :
+      ∀ (scrutineeA scrutineeB : Term sourceCtx Ty.nat scrutineeRaw),
+        Term.rename termRenaming scrutineeA =
+          Term.rename termRenaming scrutineeB →
+        scrutineeA = scrutineeB)
+    (zeroInjective :
+      ∀ (zeroA zeroB : Term sourceCtx motiveType zeroRaw),
+        Term.rename termRenaming zeroA = Term.rename termRenaming zeroB →
+        zeroA = zeroB)
+    (succInjective :
+      ∀ (succA succB :
+          Term sourceCtx (Ty.arrow Ty.nat motiveType) succRaw),
+        Term.rename termRenaming succA = Term.rename termRenaming succB →
+        succA = succB)
+    (termA termB :
+      Term sourceCtx motiveType
+        (RawTerm.natElim scrutineeRaw zeroRaw succRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.natElim scrutineeRaw zeroRaw succRaw)),
+        Σ' (scrutineeTerm : Term sourceCtx Ty.nat scrutineeRaw),
+          Σ' (zeroTerm : Term sourceCtx genericType zeroRaw),
+            Σ' (succTerm :
+                Term sourceCtx (Ty.arrow Ty.nat genericType) succRaw),
+              HEq genericTerm
+                (Term.natElim scrutineeTerm zeroTerm succTerm) by
+    obtain ⟨scrutineeA, zeroA, succA, termHEqA⟩ := key termA
+    obtain ⟨scrutineeB, zeroB, succB, termHEqB⟩ := key termB
+    cases termHEqA
+    cases termHEqB
+    simp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ _ _ scrutineeRenameEq zeroRenameEq
+      succRenameEq
+    rw [scrutineeInjective scrutineeA scrutineeB scrutineeRenameEq,
+      zeroInjective zeroA zeroB zeroRenameEq,
+      succInjective succA succB succRenameEq]
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i scrutineeTerm zeroTerm succTerm
+  exact ⟨scrutineeTerm, zeroTerm, succTerm, HEq.rfl⟩
+
+theorem Term.rename_injective_atNatRec_of_inner
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {motiveType : Ty level sourceScope}
+    {scrutineeRaw zeroRaw succRaw : RawTerm sourceScope}
+    (scrutineeInjective :
+      ∀ (scrutineeA scrutineeB : Term sourceCtx Ty.nat scrutineeRaw),
+        Term.rename termRenaming scrutineeA =
+          Term.rename termRenaming scrutineeB →
+        scrutineeA = scrutineeB)
+    (zeroInjective :
+      ∀ (zeroA zeroB : Term sourceCtx motiveType zeroRaw),
+        Term.rename termRenaming zeroA = Term.rename termRenaming zeroB →
+        zeroA = zeroB)
+    (succInjective :
+      ∀ (succA succB :
+          Term sourceCtx
+            (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)) succRaw),
+        Term.rename termRenaming succA = Term.rename termRenaming succB →
+        succA = succB)
+    (termA termB :
+      Term sourceCtx motiveType
+        (RawTerm.natRec scrutineeRaw zeroRaw succRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.natRec scrutineeRaw zeroRaw succRaw)),
+        Σ' (scrutineeTerm : Term sourceCtx Ty.nat scrutineeRaw),
+          Σ' (zeroTerm : Term sourceCtx genericType zeroRaw),
+            Σ' (succTerm :
+                Term sourceCtx
+                  (Ty.arrow Ty.nat (Ty.arrow genericType genericType))
+                  succRaw),
+              HEq genericTerm
+                (Term.natRec scrutineeTerm zeroTerm succTerm) by
+    obtain ⟨scrutineeA, zeroA, succA, termHEqA⟩ := key termA
+    obtain ⟨scrutineeB, zeroB, succB, termHEqB⟩ := key termB
+    cases termHEqA
+    cases termHEqB
+    simp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ _ _ scrutineeRenameEq zeroRenameEq
+      succRenameEq
+    rw [scrutineeInjective scrutineeA scrutineeB scrutineeRenameEq,
+      zeroInjective zeroA zeroB zeroRenameEq,
+      succInjective succA succB succRenameEq]
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i scrutineeTerm zeroTerm succTerm
+  exact ⟨scrutineeTerm, zeroTerm, succTerm, HEq.rfl⟩
+
 theorem Term.rename_injective_atListNil
     {mode : Mode} {level sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
@@ -420,6 +529,70 @@ theorem Term.rename_injective_atEitherInr_of_inner
   cases genericTerm
   rename_i inferredLeftType inferredRightType valueTerm
   exact ⟨inferredLeftType, inferredRightType, valueTerm, rfl, HEq.rfl⟩
+
+theorem Term.rename_injective_atRefl
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {carrier : Ty level sourceScope}
+    {rawWitness : RawTerm sourceScope}
+    (termA termB :
+      Term sourceCtx (Ty.id carrier rawWitness rawWitness)
+        (RawTerm.refl rawWitness)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro _renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType (RawTerm.refl rawWitness)),
+        Σ' (carrier : Ty level sourceScope),
+          Σ' (_ : genericType = Ty.id carrier rawWitness rawWitness),
+            HEq genericTerm (Term.refl carrier rawWitness) by
+    obtain ⟨carrierA, typeEqA, termHEqA⟩ := key termA
+    obtain ⟨carrierB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqA
+    cases typeEqB
+    cases termHEqA
+    cases termHEqB
+    rfl
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredCarrier
+  exact ⟨inferredCarrier, rfl, HEq.rfl⟩
+
+theorem Term.rename_injective_atOEqRefl
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {carrier : Ty level sourceScope}
+    {rawWitness : RawTerm sourceScope}
+    (termA termB :
+      Term sourceCtx (Ty.oeq carrier rawWitness rawWitness)
+        (RawTerm.oeqRefl rawWitness)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro _renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType (RawTerm.oeqRefl rawWitness)),
+        Σ' (carrier : Ty level sourceScope),
+          Σ' (_ : genericType = Ty.oeq carrier rawWitness rawWitness),
+            HEq genericTerm (Term.oeqRefl carrier rawWitness) by
+    obtain ⟨carrierA, typeEqA, termHEqA⟩ := key termA
+    obtain ⟨carrierB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqA
+    cases typeEqB
+    cases termHEqA
+    cases termHEqB
+    rfl
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredCarrier
+  exact ⟨inferredCarrier, rfl, HEq.rfl⟩
 
 theorem Term.rename_injective_atInterval0
     {mode : Mode} {level sourceScope targetScope : Nat}
@@ -779,6 +952,112 @@ theorem Term.rename_injective_atRecordProj_of_inner
   cases genericTerm
   rename_i recordTerm
   exact ⟨recordTerm, HEq.rfl⟩
+
+theorem Term.rename_injective_atRefineIntro_of_inner
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {baseType : Ty level sourceScope}
+    {predicate : RawTerm (sourceScope + 1)}
+    {valueRaw proofRaw : RawTerm sourceScope}
+    (valueInjective :
+      ∀ (valueA valueB : Term sourceCtx baseType valueRaw),
+        Term.rename termRenaming valueA = Term.rename termRenaming valueB →
+        valueA = valueB)
+    (proofInjective :
+      ∀ (proofA proofB : Term sourceCtx Ty.unit proofRaw),
+        Term.rename termRenaming proofA = Term.rename termRenaming proofB →
+        proofA = proofB)
+    (termA termB :
+      Term sourceCtx (Ty.refine baseType predicate)
+        (RawTerm.refineIntro valueRaw proofRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.refineIntro valueRaw proofRaw)),
+        Σ' (baseType : Ty level sourceScope),
+          Σ' (predicate : RawTerm (sourceScope + 1)),
+            Σ' (baseValue : Term sourceCtx baseType valueRaw),
+              Σ' (predicateProof : Term sourceCtx Ty.unit proofRaw),
+                Σ' (_ : genericType = Ty.refine baseType predicate),
+                  HEq genericTerm
+                    (Term.refineIntro predicate baseValue predicateProof) by
+    obtain ⟨baseTypeA, predicateA, valueA, proofA, typeEqA,
+      termHEqA⟩ := key termA
+    obtain ⟨baseTypeB, predicateB, valueB, proofB, typeEqB,
+      termHEqB⟩ := key termB
+    cases typeEqA
+    cases typeEqB
+    cases termHEqA
+    cases termHEqB
+    simp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ _ _ valueRenameEq proofRenameEq
+    rw [valueInjective valueA valueB valueRenameEq,
+      proofInjective proofA proofB proofRenameEq]
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredBaseType inferredPredicate baseValue predicateProof
+  exact ⟨inferredBaseType, inferredPredicate, baseValue, predicateProof,
+    rfl, HEq.rfl⟩
+
+theorem Term.rename_injective_atCodataUnfold_of_inner
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {stateType outputType : Ty level sourceScope}
+    {stateRaw transitionRaw : RawTerm sourceScope}
+    (stateInjective :
+      ∀ (stateA stateB : Term sourceCtx stateType stateRaw),
+        Term.rename termRenaming stateA = Term.rename termRenaming stateB →
+        stateA = stateB)
+    (transitionInjective :
+      ∀ (transitionA transitionB :
+          Term sourceCtx (Ty.arrow stateType outputType) transitionRaw),
+        Term.rename termRenaming transitionA =
+          Term.rename termRenaming transitionB →
+        transitionA = transitionB)
+    (termA termB :
+      Term sourceCtx (Ty.codata stateType outputType)
+        (RawTerm.codataUnfold stateRaw transitionRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.codataUnfold stateRaw transitionRaw)),
+        Σ' (stateType : Ty level sourceScope),
+          Σ' (outputType : Ty level sourceScope),
+            Σ' (stateTerm : Term sourceCtx stateType stateRaw),
+              Σ' (transitionTerm :
+                  Term sourceCtx (Ty.arrow stateType outputType) transitionRaw),
+                Σ' (_ : genericType = Ty.codata stateType outputType),
+                  HEq genericTerm
+                    (Term.codataUnfold stateTerm transitionTerm) by
+    obtain ⟨stateTypeA, outputTypeA, stateA, transitionA, typeEqA,
+      termHEqA⟩ := key termA
+    obtain ⟨stateTypeB, outputTypeB, stateB, transitionB, typeEqB,
+      termHEqB⟩ := key termB
+    cases typeEqA
+    cases typeEqB
+    cases termHEqA
+    cases termHEqB
+    simp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ _ _ stateRenameEq transitionRenameEq
+    rw [stateInjective stateA stateB stateRenameEq,
+      transitionInjective transitionA transitionB transitionRenameEq]
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredStateType inferredOutputType stateTerm transitionTerm
+  exact ⟨inferredStateType, inferredOutputType, stateTerm, transitionTerm,
+    rfl, HEq.rfl⟩
 
 theorem Term.rename_injective_atSessionRecv_of_inner
     {mode : Mode} {level sourceScope targetScope : Nat}

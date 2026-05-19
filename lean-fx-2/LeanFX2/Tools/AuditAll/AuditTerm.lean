@@ -18,7 +18,7 @@ import LeanFX2.FX1Bridge
 
 namespace LeanFX2.Tools
 
-/-! ## AuditTerm — 348 `#assert_no_axioms` checks. -/
+/-! ## AuditTerm — 354 `#assert_no_axioms` checks. -/
 
 #assert_no_axioms LeanFX2.Term.subst
 #assert_no_axioms LeanFX2.Term.rename
@@ -28,12 +28,16 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Term.rename_injective_atBoolFalse
 #assert_no_axioms LeanFX2.Term.rename_injective_atNatZero
 #assert_no_axioms LeanFX2.Term.rename_injective_atNatSucc_of_inner
+#assert_no_axioms LeanFX2.Term.rename_injective_atNatElim_of_inner
+#assert_no_axioms LeanFX2.Term.rename_injective_atNatRec_of_inner
 #assert_no_axioms LeanFX2.Term.rename_injective_atListNil
 #assert_no_axioms LeanFX2.Term.rename_injective_atListCons_of_inner
 #assert_no_axioms LeanFX2.Term.rename_injective_atOptionNone
 #assert_no_axioms LeanFX2.Term.rename_injective_atOptionSome_of_inner
 #assert_no_axioms LeanFX2.Term.rename_injective_atEitherInl_of_inner
 #assert_no_axioms LeanFX2.Term.rename_injective_atEitherInr_of_inner
+#assert_no_axioms LeanFX2.Term.rename_injective_atRefl
+#assert_no_axioms LeanFX2.Term.rename_injective_atOEqRefl
 #assert_no_axioms LeanFX2.Term.rename_injective_atInterval0
 #assert_no_axioms LeanFX2.Term.rename_injective_atInterval1
 #assert_no_axioms LeanFX2.Term.rename_injective_atIntervalOpp_of_inner
@@ -44,6 +48,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Term.rename_injective_atSubsume_of_inner
 #assert_no_axioms LeanFX2.Term.rename_injective_atRecordIntro_of_inner
 #assert_no_axioms LeanFX2.Term.rename_injective_atRecordProj_of_inner
+#assert_no_axioms LeanFX2.Term.rename_injective_atRefineIntro_of_inner
+#assert_no_axioms LeanFX2.Term.rename_injective_atCodataUnfold_of_inner
 #assert_no_axioms LeanFX2.Term.rename_injective_atSessionRecv_of_inner
 #assert_no_axioms LeanFX2.Term.toRaw_rename
 #assert_no_axioms LeanFX2.Term.toRaw_subst
