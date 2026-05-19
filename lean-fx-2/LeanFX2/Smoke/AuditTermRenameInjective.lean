@@ -22,6 +22,7 @@ import LeanFX2.Term.RenameInjective
 #print axioms LeanFX2.Term.lam_arrow_inv
 #print axioms LeanFX2.Term.lam_pi_inv
 #print axioms LeanFX2.Term.rename_injective_atLamArrow_of_inner
+#print axioms LeanFX2.Term.rename_injective_atLamPi_of_inner
 #print axioms LeanFX2.Term.rename_injective_atUnit
 #print axioms LeanFX2.Term.rename_injective_atBoolTrue
 #print axioms LeanFX2.Term.rename_injective_atBoolFalse

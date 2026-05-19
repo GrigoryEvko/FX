@@ -27,6 +27,60 @@ private theorem termRenameInjectiveCastHEq
   cases typeEq
   rfl
 
+private theorem renamedLamPi_ne_renamedFunextReflCast
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {domainType : Ty level sourceScope}
+    {codomainType : Ty level (sourceScope + 1)}
+    {bodyRaw : RawTerm (sourceScope + 1)}
+    (bodyTerm :
+      Term (sourceCtx.cons domainType) codomainType bodyRaw)
+    (baseCodomain : Ty level sourceScope)
+    (applyRaw : RawTerm (sourceScope + 1))
+    (bodyRawEq : bodyRaw = RawTerm.refl applyRaw)
+    (codomainEq :
+      codomainType = Ty.id baseCodomain.weaken applyRaw applyRaw) :
+    HEq
+      (Term.rename termRenaming (Term.lamPi bodyTerm))
+      (Term.rename termRenaming
+        (Term.funextRefl (context := sourceCtx) domainType baseCodomain
+          applyRaw)) →
+      False := by
+  intro renameHEq
+  cases bodyRawEq
+  cases codomainEq
+  simp only [Term.rename] at renameHEq
+  have uncastHEq :
+      HEq
+        (Term.lamPi (Term.rename (termRenaming.lift domainType) bodyTerm))
+        (Term.funextRefl (context := targetCtx)
+          (domainType.rename rho) (baseCodomain.rename rho)
+          (applyRaw.rename rho.lift)) :=
+    HEq.trans renameHEq
+      (termRenameInjectiveCastHEq
+        (funextReflType_rename rho domainType baseCodomain applyRaw).symm
+        (Term.funextRefl (context := targetCtx)
+          (domainType.rename rho) (baseCodomain.rename rho)
+          (applyRaw.rename rho.lift)))
+  exact
+    Term.noConfusion (P := False) rfl rfl rfl HEq.rfl
+      (by
+        unfold funextReflType
+        simp only [Ty.rename]
+        exact
+          heq_of_eq
+            (congrArg
+              (fun renamedCodomain =>
+                Ty.piTy (domainType.rename rho)
+                  (Ty.id renamedCodomain
+                    (applyRaw.rename rho.lift)
+                    (applyRaw.rename rho.lift)))
+              (Ty.weaken_rename_commute rho baseCodomain)))
+      HEq.rfl uncastHEq
+
 theorem Term.rename_injective_lam_ctor
     {mode : Mode} {level sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
@@ -824,6 +878,83 @@ theorem Term.rename_injective_atLamArrow_of_inner
   exact
     Term.rename_injective_lam_ctor termRenaming bodyInjective bodyA bodyB
       renameEq
+
+theorem Term.rename_injective_atLamPi_of_inner
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {domainType : Ty level sourceScope}
+    {codomainType : Ty level (sourceScope + 1)}
+    {bodyRaw : RawTerm (sourceScope + 1)}
+    (bodyInjective :
+      ∀ (bodyA bodyB :
+          Term (sourceCtx.cons domainType) codomainType bodyRaw),
+        HEq (Term.rename (termRenaming.lift domainType) bodyA)
+          (Term.rename (termRenaming.lift domainType) bodyB) →
+        HEq bodyA bodyB)
+    (termA termB :
+      Term sourceCtx (Ty.piTy domainType codomainType)
+        (RawTerm.lam bodyRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro renameEq
+  cases Term.lam_pi_inv termA with
+  | inl lamViewA =>
+    obtain ⟨bodyA, termHEqA⟩ := lamViewA
+    cases Term.lam_pi_inv termB with
+    | inl lamViewB =>
+      obtain ⟨bodyB, termHEqB⟩ := lamViewB
+      cases termHEqA
+      cases termHEqB
+      exact
+        Term.rename_injective_lamPi_ctor termRenaming bodyInjective bodyA
+          bodyB renameEq
+    | inr reflViewB =>
+      obtain ⟨baseCodomainB, applyRawB, bodyRawEqB, codomainEqB,
+        termHEqB⟩ := reflViewB
+      cases termHEqA
+      cases bodyRawEqB
+      cases codomainEqB
+      cases termHEqB
+      exact False.elim
+        (renamedLamPi_ne_renamedFunextReflCast termRenaming bodyA
+          baseCodomainB applyRawB rfl rfl
+          (heq_of_eq renameEq))
+  | inr reflViewA =>
+    obtain ⟨baseCodomainA, applyRawA, bodyRawEqA, codomainEqA,
+      termHEqA⟩ := reflViewA
+    cases Term.lam_pi_inv termB with
+    | inl lamViewB =>
+      obtain ⟨bodyB, termHEqB⟩ := lamViewB
+      cases bodyRawEqA
+      cases codomainEqA
+      cases termHEqA
+      cases termHEqB
+      exact False.elim
+        (renamedLamPi_ne_renamedFunextReflCast termRenaming bodyB
+          baseCodomainA applyRawA rfl rfl
+          (HEq.symm (heq_of_eq renameEq)))
+    | inr reflViewB =>
+      obtain ⟨baseCodomainB, applyRawB, bodyRawEqB, codomainEqB,
+        termHEqB⟩ := reflViewB
+      cases bodyRawEqA
+      cases codomainEqA
+      have applyRawEq : applyRawA = applyRawB := by
+        injection bodyRawEqB
+      cases applyRawEq
+      have baseWeakenEq :
+          baseCodomainA.weaken = baseCodomainB.weaken := by
+        injection codomainEqB
+      have baseCodomainEq : baseCodomainA = baseCodomainB :=
+        Ty.rename_injective_under_injective_renaming baseCodomainA
+          RawRenamingInjective.weaken baseCodomainB baseWeakenEq
+      cases baseCodomainEq
+      cases codomainEqB
+      cases termHEqA
+      cases termHEqB
+      rfl
 
 theorem Term.rename_injective_atVar
     {mode : Mode} {level sourceScope targetScope : Nat}
