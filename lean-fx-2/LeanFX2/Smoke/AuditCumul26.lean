@@ -1,4 +1,3 @@
-import LeanFX2.Term
 import LeanFX2.Term.Subst
 
 /-! # Smoke/AuditCumul26 — CUMUL-2.6 Design D + cumulUpMarker audit.

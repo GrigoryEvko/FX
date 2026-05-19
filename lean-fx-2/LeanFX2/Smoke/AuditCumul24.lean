@@ -1,4 +1,3 @@
-import LeanFX2.Term
 import LeanFX2.Term.Rename
 import LeanFX2.Term.Subst
 import LeanFX2.Term.SubstHet

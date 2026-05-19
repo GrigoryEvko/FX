@@ -1,4 +1,3 @@
-import LeanFX2.Term
 import LeanFX2.Term.ToRaw
 
 /-! # Smoke/Term — concrete typed Term examples.

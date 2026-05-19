@@ -1,4 +1,3 @@
-import LeanFX2.Term
 import LeanFX2.Term.Subst
 import LeanFX2.Term.ToPoly
 import LeanFX2.Term.PolyToTerm

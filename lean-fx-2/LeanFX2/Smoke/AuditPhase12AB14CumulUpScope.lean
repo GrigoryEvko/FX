@@ -1,4 +1,3 @@
-import LeanFX2.Term
 import LeanFX2.Term.Subst
 
 /-! # AuditPhase12AB14CumulUpScope — verify Term.cumulUp at scope > 0
