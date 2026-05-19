@@ -1,5 +1,4 @@
 import LeanFX2.Reduction.RawParWeakenInv
-import LeanFX2.Reduction.RawParCompatible
 import LeanFX2.Reduction.Step
 import LeanFX2.Reduction.ParRed
 import LeanFX2.Reduction.ConvBridge
