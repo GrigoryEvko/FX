@@ -1136,6 +1136,93 @@ theorem Term.rename_injective_atOEqJ_of_inner
   exact ⟨inferredCarrier, inferredLeftEndpoint, inferredRightEndpoint,
     baseTerm, witnessTerm, HEq.rfl⟩
 
+theorem Term.rename_injective_atOEqFunext_of_inner
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {domainType codomainType : Ty level sourceScope}
+    {leftFunctionRaw rightFunctionRaw pointwiseRaw : RawTerm sourceScope}
+    (pointwiseInjective :
+      ∀ {domainA domainB codomainA codomainB : Ty level sourceScope}
+        {leftRawA rightRawA leftRawB rightRawB : RawTerm sourceScope}
+        (pointwiseA :
+          Term sourceCtx
+            (oeqFunextPointwiseType domainA codomainA leftRawA rightRawA)
+            pointwiseRaw)
+        (pointwiseB :
+          Term sourceCtx
+            (oeqFunextPointwiseType domainB codomainB leftRawB rightRawB)
+            pointwiseRaw),
+        HEq (Term.rename termRenaming pointwiseA)
+          (Term.rename termRenaming pointwiseB) →
+        HEq pointwiseA pointwiseB)
+    (termA termB :
+      Term sourceCtx
+        (Ty.oeq (Ty.arrow domainType codomainType)
+          leftFunctionRaw rightFunctionRaw)
+        (RawTerm.oeqFunext pointwiseRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.oeqFunext pointwiseRaw)),
+        Σ' (matchedDomain : Ty level sourceScope),
+          Σ' (matchedCodomain : Ty level sourceScope),
+            Σ' (matchedLeftRaw : RawTerm sourceScope),
+              Σ' (matchedRightRaw : RawTerm sourceScope),
+                Σ' (pointwiseProof :
+                    Term sourceCtx
+                      (oeqFunextPointwiseType matchedDomain
+                        matchedCodomain matchedLeftRaw matchedRightRaw)
+                      pointwiseRaw),
+                  Σ' (_ :
+                      genericType =
+                        Ty.oeq (Ty.arrow matchedDomain matchedCodomain)
+                          matchedLeftRaw matchedRightRaw),
+                    HEq genericTerm
+                      (Term.oeqFunext matchedDomain matchedCodomain
+                        matchedLeftRaw matchedRightRaw pointwiseProof) by
+    obtain ⟨domainA, codomainA, leftRawA, rightRawA, pointwiseA,
+      typeEqA, termHEqA⟩ := key termA
+    obtain ⟨domainB, codomainB, leftRawB, rightRawB, pointwiseB,
+      typeEqB, termHEqB⟩ := key termB
+    cases typeEqA
+    cases typeEqB
+    cases termHEqA
+    cases termHEqB
+    simp only [Term.rename] at renameEq
+    injection renameEq with scopeEq contextEq domainRenameEq codomainRenameEq
+      leftRawRenameEq rightRawRenameEq pointwiseRawRenameEq
+      pointwiseRenameCastEq
+    have pointwiseRenameUncastHEq :
+        HEq (Term.rename termRenaming pointwiseA)
+          (Term.rename termRenaming pointwiseB) :=
+      HEq.trans
+        (HEq.symm
+          (termRenameInjectiveCastHEq
+            (oeqFunextPointwiseType_rename rho domainType codomainType
+              leftFunctionRaw rightFunctionRaw)
+            (Term.rename termRenaming pointwiseA)))
+        (HEq.trans (heq_of_eq pointwiseRenameCastEq)
+          (termRenameInjectiveCastHEq
+            (oeqFunextPointwiseType_rename rho domainType codomainType
+              leftFunctionRaw rightFunctionRaw)
+            (Term.rename termRenaming pointwiseB)))
+    have pointwiseHEq : HEq pointwiseA pointwiseB :=
+      pointwiseInjective pointwiseA pointwiseB pointwiseRenameUncastHEq
+    cases pointwiseHEq
+    rfl
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i matchedDomain matchedCodomain matchedLeftRaw matchedRightRaw
+    pointwiseProof
+  exact ⟨matchedDomain, matchedCodomain, matchedLeftRaw, matchedRightRaw,
+    pointwiseProof, rfl, HEq.rfl⟩
+
 theorem Term.rename_injective_atIdStrictRec_of_inner
     {mode : Mode} {level sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
