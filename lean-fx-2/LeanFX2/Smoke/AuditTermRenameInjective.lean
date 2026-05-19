@@ -7,6 +7,7 @@ import LeanFX2.Term.RenameInjective
 #print axioms LeanFX2.Term.rename_injective_app_ctor
 #print axioms LeanFX2.Term.rename_injective_lamPi_ctor
 #print axioms LeanFX2.Term.rename_injective_appPi_ctor
+#print axioms LeanFX2.Term.rename_injective_effectPerform_ctor
 #print axioms LeanFX2.Term.rename_injective_pathLam_ctor
 #print axioms LeanFX2.Term.rename_injective_atUnit
 #print axioms LeanFX2.Term.rename_injective_atBoolTrue
