@@ -57,6 +57,7 @@ import LeanFX2.Term.RenameInjective
 #print axioms LeanFX2.Term.rename_injective_atEitherCode
 #print axioms LeanFX2.Term.rename_injective_atIdCode
 #print axioms LeanFX2.Term.rename_injective_atEquivCode
+#print axioms LeanFX2.Term.rename_injective_atCumulUp_of_inner
 #print axioms LeanFX2.Term.rename_injective_atUaToEquiv_of_inner
 #print axioms LeanFX2.Term.rename_injective_atEquivApply_of_inner
 #print axioms LeanFX2.Term.rename_injective_atEquivApp_of_inner

@@ -1,4 +1,5 @@
 import LeanFX2.Term.Rename
+import LeanFX2.Term.HEqCongr.Compound
 import LeanFX2.Foundation.RawTermInjective
 import LeanFX2.Foundation.TyRenameInjective
 
@@ -2494,6 +2495,77 @@ theorem Term.rename_injective_atEquivCode
   cases genericTerm
   rename_i inferredOuterLevel inferredLevelLe
   exact ⟨inferredOuterLevel, inferredLevelLe, rfl, HEq.rfl⟩
+
+theorem Term.rename_injective_atCumulUp_of_inner
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {higherLevel : UniverseLevel}
+    {levelLeHigh : higherLevel.toNat + 1 ≤ level}
+    {codeRaw : RawTerm sourceScope}
+    (codeInjective :
+      ∀ {lowerLevelA lowerLevelB : UniverseLevel}
+        {levelLeLowA : lowerLevelA.toNat + 1 ≤ level}
+        {levelLeLowB : lowerLevelB.toNat + 1 ≤ level}
+        (codeA :
+          Term sourceCtx (Ty.universe lowerLevelA levelLeLowA) codeRaw)
+        (codeB :
+          Term sourceCtx (Ty.universe lowerLevelB levelLeLowB) codeRaw),
+        HEq (Term.rename termRenaming codeA)
+          (Term.rename termRenaming codeB) →
+        HEq codeA codeB)
+    (termA termB :
+      Term sourceCtx (Ty.universe higherLevel levelLeHigh)
+        (RawTerm.cumulUpMarker codeRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.cumulUpMarker codeRaw)),
+        Σ' (lowerLevel : UniverseLevel),
+          Σ' (higherLevel : UniverseLevel),
+            Σ' (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat),
+              Σ' (levelLeLow : lowerLevel.toNat + 1 ≤ level),
+                Σ' (levelLeHigh : higherLevel.toNat + 1 ≤ level),
+                  Σ' (typeCode :
+                      Term sourceCtx
+                        (Ty.universe lowerLevel levelLeLow)
+                        codeRaw),
+                    Σ' (_ :
+                        genericType = Ty.universe higherLevel levelLeHigh),
+                      HEq genericTerm
+                        (Term.cumulUp (context := sourceCtx)
+                          lowerLevel higherLevel cumulMonotone levelLeLow
+                          levelLeHigh typeCode) by
+    obtain ⟨lowerLevelA, higherLevelA, cumulMonotoneA, levelLeLowA,
+      levelLeHighA, codeA, typeEqA, termHEqA⟩ := key termA
+    obtain ⟨lowerLevelB, higherLevelB, cumulMonotoneB, levelLeLowB,
+      levelLeHighB, codeB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqA
+    cases typeEqB
+    cases termHEqA
+    cases termHEqB
+    simp only [Term.rename] at renameEq
+    injection renameEq with lowerLevelEq higherLevelEq cumulMonotoneEq
+      levelLeLowEq levelLeHighEq codeRenameHEq
+    cases lowerLevelEq
+    cases higherLevelEq
+    cases cumulMonotoneEq
+    cases levelLeLowEq
+    cases levelLeHighEq
+    have codeHEq : HEq codeA codeB :=
+      codeInjective codeA codeB codeRenameHEq
+    exact eq_of_heq (Term.cumulUp_HEq_congr rfl codeHEq)
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredLowerLevel inferredHigherLevel inferredCumulMonotone
+    inferredLevelLeLow inferredLevelLeHigh typeCode
+  exact ⟨inferredLowerLevel, inferredHigherLevel, inferredCumulMonotone,
+    inferredLevelLeLow, inferredLevelLeHigh, typeCode, rfl, HEq.rfl⟩
 
 theorem Term.rename_injective_atUaToEquiv_of_inner
     {mode : Mode} {level sourceScope targetScope : Nat}
