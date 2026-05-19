@@ -10,7 +10,6 @@ import LeanFX2.Confluence.RawParStarCong
 import LeanFX2.Reduction.Compat
 import LeanFX2.Reduction.ConvBridge
 import LeanFX2.Reduction.ParRed
-import LeanFX2.Reduction.RawParCompatible
 import LeanFX2.Reduction.RawParWeakenInv
 import LeanFX2.Reduction.TranspPiContractumPar
 
