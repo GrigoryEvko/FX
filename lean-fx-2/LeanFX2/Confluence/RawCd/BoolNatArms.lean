@@ -1,5 +1,4 @@
 import LeanFX2.Foundation.RawSubst
-import LeanFX2.Foundation.RawPartialRename
 
 /-! # LeanFX2.Confluence.RawCd.BoolNatArms
 
