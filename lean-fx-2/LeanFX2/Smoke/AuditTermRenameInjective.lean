@@ -16,6 +16,7 @@ import LeanFX2.Term.RenameInjective
 #print axioms LeanFX2.Term.rename_injective_atFst_of_inner
 #print axioms LeanFX2.Term.rename_injective_atGlueIntro_of_inner
 #print axioms LeanFX2.Term.rename_injective_atGlueElim_of_inner
+#print axioms LeanFX2.Term.rename_injective_atTransp_of_inner
 #print axioms LeanFX2.Term.rename_injective_atListElim_of_inner
 #print axioms LeanFX2.Term.rename_injective_atOptionNone
 #print axioms LeanFX2.Term.rename_injective_atOptionSome_of_inner

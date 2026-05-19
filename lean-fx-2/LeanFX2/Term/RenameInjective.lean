@@ -1,4 +1,5 @@
 import LeanFX2.Term.Rename
+import LeanFX2.Term.HEqCongr.Atomic
 import LeanFX2.Term.HEqCongr.Compound
 import LeanFX2.Foundation.RawTermInjective
 import LeanFX2.Foundation.TyRenameInjective
@@ -612,6 +613,116 @@ theorem Term.rename_injective_atGlueElim_of_inner
   cases genericTerm
   rename_i inferredModeIsUnivalent inferredBoundary gluedValue
   exact ⟨inferredModeIsUnivalent, inferredBoundary, gluedValue, HEq.rfl⟩
+
+theorem Term.rename_injective_atTransp_of_inner
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (rhoInjective : RawRenamingInjective rho)
+    {targetType : Ty level sourceScope}
+    {pathRaw sourceRaw : RawTerm sourceScope}
+    (typePathInjective :
+      ∀ {universeLevelA universeLevelB : UniverseLevel}
+        {universeLevelLtA : universeLevelA.toNat + 1 ≤ level}
+        {universeLevelLtB : universeLevelB.toNat + 1 ≤ level}
+        {sourceTypeRawA sourceTypeRawB targetTypeRawA targetTypeRawB :
+          RawTerm sourceScope}
+        (typePathA :
+          Term sourceCtx
+            (Ty.path (Ty.universe universeLevelA universeLevelLtA)
+              sourceTypeRawA targetTypeRawA)
+            pathRaw)
+        (typePathB :
+          Term sourceCtx
+            (Ty.path (Ty.universe universeLevelB universeLevelLtB)
+              sourceTypeRawB targetTypeRawB)
+            pathRaw),
+        HEq (Term.rename termRenaming typePathA)
+          (Term.rename termRenaming typePathB) →
+        HEq typePathA typePathB)
+    (sourceValueInjective :
+      ∀ {sourceTypeA sourceTypeB : Ty level sourceScope}
+        (sourceValueA : Term sourceCtx sourceTypeA sourceRaw)
+        (sourceValueB : Term sourceCtx sourceTypeB sourceRaw),
+        HEq (Term.rename termRenaming sourceValueA)
+          (Term.rename termRenaming sourceValueB) →
+        HEq sourceValueA sourceValueB)
+    (termA termB :
+      Term sourceCtx targetType (RawTerm.transp pathRaw sourceRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.transp pathRaw sourceRaw)),
+        Σ' (modeIsUnivalent : mode = Mode.univalent),
+          Σ' (universeLevel : UniverseLevel),
+            Σ' (universeLevelLt : universeLevel.toNat + 1 ≤ level),
+              Σ' (sourceType : Ty level sourceScope),
+                Σ' (targetType : Ty level sourceScope),
+                  Σ' (sourceTypeRaw : RawTerm sourceScope),
+                    Σ' (targetTypeRaw : RawTerm sourceScope),
+                      Σ' (typePath :
+                          Term sourceCtx
+                            (Ty.path
+                              (Ty.universe universeLevel universeLevelLt)
+                              sourceTypeRaw targetTypeRaw)
+                            pathRaw),
+                        Σ' (sourceValue :
+                            Term sourceCtx sourceType sourceRaw),
+                          Σ' (_ : genericType = targetType),
+                            HEq genericTerm
+                              (Term.transp modeIsUnivalent universeLevel
+                                universeLevelLt sourceType targetType
+                                sourceTypeRaw targetTypeRaw typePath
+                                sourceValue) by
+    obtain ⟨modeIsUnivalentA, universeLevelA, universeLevelLtA, sourceTypeA,
+      targetTypeA, sourceTypeRawA, targetTypeRawA, typePathA,
+      sourceValueA, typeEqA, termHEqA⟩ := key termA
+    obtain ⟨modeIsUnivalentB, universeLevelB, universeLevelLtB, sourceTypeB,
+      targetTypeB, sourceTypeRawB, targetTypeRawB, typePathB,
+      sourceValueB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqA
+    cases typeEqB
+    cases termHEqA
+    cases termHEqB
+    simp only [Term.rename] at renameEq
+    injection renameEq with modeEq universeLevelEq universeLevelLtEq
+      sourceTypeRenameEq targetTypeRenameEq sourceTypeRawRenameEq
+      targetTypeRawRenameEq pathRawRenameEq sourceRawRenameEq
+      typePathRenameHEq sourceValueRenameHEq
+    cases modeEq
+    cases universeLevelEq
+    cases universeLevelLtEq
+    have sourceTypeEq : sourceTypeA = sourceTypeB :=
+      Ty.rename_injective_under_injective_renaming sourceTypeA
+        rhoInjective sourceTypeB sourceTypeRenameEq
+    have sourceTypeRawEq : sourceTypeRawA = sourceTypeRawB :=
+      RawTerm.rename_injective_under_injective_renaming sourceTypeRawA
+        rhoInjective sourceTypeRawB sourceTypeRawRenameEq
+    have targetTypeRawEq : targetTypeRawA = targetTypeRawB :=
+      RawTerm.rename_injective_under_injective_renaming targetTypeRawA
+        rhoInjective targetTypeRawB targetTypeRawRenameEq
+    have typePathHEq : HEq typePathA typePathB :=
+      typePathInjective typePathA typePathB typePathRenameHEq
+    have sourceValueHEq : HEq sourceValueA sourceValueB :=
+      sourceValueInjective sourceValueA sourceValueB sourceValueRenameHEq
+    exact eq_of_heq
+      (Term.transp_HEq_congr modeIsUnivalentB universeLevelA
+        universeLevelLtB sourceTypeEq rfl sourceTypeRawEq
+        targetTypeRawEq rfl rfl typePathHEq sourceValueHEq)
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredModeIsUnivalent inferredUniverseLevel
+    inferredUniverseLevelLt inferredSourceType inferredSourceTypeRaw
+    inferredTargetTypeRaw typePath sourceValue
+  exact ⟨inferredModeIsUnivalent, inferredUniverseLevel,
+    inferredUniverseLevelLt, inferredSourceType, genericType,
+    inferredSourceTypeRaw, inferredTargetTypeRaw, typePath, sourceValue, rfl,
+    HEq.rfl⟩
 
 theorem Term.rename_injective_atListElim_of_inner
     {mode : Mode} {level sourceScope targetScope : Nat}
