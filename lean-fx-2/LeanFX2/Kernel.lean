@@ -67,8 +67,6 @@ import LeanFX2.Reduction.ConvBridge
 import LeanFX2.Reduction.ConvCanonical
 import LeanFX2.Reduction.ParRed
 import LeanFX2.Reduction.RawPar
-import LeanFX2.Reduction.RawParInversion
-import LeanFX2.Reduction.RawParRename
 import LeanFX2.Reduction.RawParCompatible
 import LeanFX2.Reduction.RawParWeakenInv
 import LeanFX2.Reduction.TranspPiContractumPar
