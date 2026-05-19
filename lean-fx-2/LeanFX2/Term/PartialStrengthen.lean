@@ -13351,6 +13351,125 @@ theorem strengthenTyped?_rename_heq_pair
   dsimp only [Term.rename]
   exact HEq.rfl
 
+/-- Cast-wrapped strength-T1 case (HEq form): `Term.lam`.
+
+The lambda rename arm casts the renamed body across
+`Ty.weaken_rename_commute` before rebuilding the lambda.  The HEq form
+records the dispatcher result for that exact renamed lambda shape. -/
+theorem strengthenTyped?_rename_heq_lam
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    {domainType codomainType : Ty level sourceScope}
+    {bodyRaw : RawTerm (sourceScope + 1)}
+    (body :
+      Term (sourceCtx.cons domainType) codomainType.weaken bodyRaw) :
+    HEq
+      (partialStrengthenTyped?
+        (Term.rename typedRenaming (Term.lam body))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects))
+      (partialStrengthenTyped?
+        (Term.lam
+          (Ty.weaken_rename_commute forwardRename codomainType ▸
+            Term.rename (typedRenaming.lift domainType) body))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)) := by
+  dsimp only [Term.rename]
+  exact HEq.rfl
+
+/-- Cast-wrapped strength-T1 case (HEq form): `Term.lamPi`.
+
+Dependent lambda rename is structurally direct once the renaming is lifted
+under the domain binder.  The HEq form keeps it in the same cast-wall
+family as the other binder constructors so T1 can account for every
+renamed binder uniformly. -/
+theorem strengthenTyped?_rename_heq_lamPi
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    {domainType : Ty level sourceScope}
+    {codomainType : Ty level (sourceScope + 1)}
+    {bodyRaw : RawTerm (sourceScope + 1)}
+    (body : Term (sourceCtx.cons domainType) codomainType bodyRaw) :
+    HEq
+      (partialStrengthenTyped?
+        (Term.rename typedRenaming (Term.lamPi body))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects))
+      (partialStrengthenTyped?
+        (Term.lamPi
+          (Term.rename (typedRenaming.lift domainType) body))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)) := by
+  dsimp only [Term.rename]
+  exact HEq.rfl
+
+/-- Cast-wrapped strength-T1 case (HEq form): `Term.pathLam`.
+
+Path lambda rename mirrors ordinary lambda rename: the lifted body is
+transported across `Ty.weaken_rename_commute` for the path carrier. -/
+theorem strengthenTyped?_rename_heq_pathLam
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    (leftEndpoint rightEndpoint : RawTerm sourceScope)
+    {bodyRaw : RawTerm (sourceScope + 1)}
+    (body :
+      Term (sourceCtx.cons Ty.interval) carrierType.weaken bodyRaw) :
+    HEq
+      (partialStrengthenTyped?
+        (Term.rename typedRenaming
+          (Term.pathLam modeIsUnivalent carrierType leftEndpoint
+            rightEndpoint body))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects))
+      (partialStrengthenTyped?
+        (Term.pathLam modeIsUnivalent (carrierType.rename forwardRename)
+          (leftEndpoint.rename forwardRename)
+          (rightEndpoint.rename forwardRename)
+          (Ty.weaken_rename_commute forwardRename carrierType ▸
+            Term.rename (typedRenaming.lift Ty.interval) body))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)) := by
+  dsimp only [Term.rename]
+  exact HEq.rfl
+
 /-- Cast-wrapped strength-T1 case (HEq form): `Term.boolElim`.
 
 The Boolean eliminator rename arm has a top-level non-rfl

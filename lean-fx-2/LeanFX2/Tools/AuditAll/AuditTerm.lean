@@ -1138,6 +1138,9 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_heq_appPi
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_heq_snd
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_heq_pair
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_heq_lam
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_heq_lamPi
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_heq_pathLam
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_heq_boolElim
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_heq_funextRefl
 
