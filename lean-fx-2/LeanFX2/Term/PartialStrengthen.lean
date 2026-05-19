@@ -13292,6 +13292,71 @@ theorem strengthenTyped?_rename_heq_snd
       (ContextStrengthening.ofRenaming forwardRename typedRenaming
         renameInverse renameInverseLeft renameInverseInjects)
 
+/-- Cast-wrapped strength-T1 case (HEq form): `Term.boolElim`.
+
+The Boolean eliminator rename arm has a top-level non-rfl
+`Ty.subst0_rename_commute` cast for the motive instantiated at the
+scrutinee.  The branch casts remain inside the uncast eliminator; this
+lemma only removes the outer cast wrapper so later per-branch soundness
+can be handled at the subterm level.
+-/
+theorem strengthenTyped?_rename_heq_boolElim
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    {motiveType : Ty level (sourceScope + 1)}
+    {scrutineeRaw thenRaw elseRaw : RawTerm sourceScope}
+    (scrutinee : Term sourceCtx Ty.bool scrutineeRaw)
+    (thenBranch :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw)
+    (elseBranch :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw) :
+    HEq
+      (partialStrengthenTyped?
+        (Term.rename typedRenaming
+          (Term.boolElim scrutinee thenBranch elseBranch))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects))
+      (partialStrengthenTyped?
+        (Term.boolElim
+          (motiveType := motiveType.rename forwardRename.lift)
+          (Term.rename typedRenaming scrutinee)
+          (Ty.subst0_rename_commute motiveType Ty.bool
+            RawTerm.boolTrue forwardRename ▸
+            Term.rename typedRenaming thenBranch)
+          (Ty.subst0_rename_commute motiveType Ty.bool
+            RawTerm.boolFalse forwardRename ▸
+            Term.rename typedRenaming elseBranch))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)) := by
+  dsimp only [Term.rename]
+  exact
+    partialStrengthenTyped?_castInvariantHEq
+      (Term.boolElim
+        (motiveType := motiveType.rename forwardRename.lift)
+        (Term.rename typedRenaming scrutinee)
+        (Ty.subst0_rename_commute motiveType Ty.bool
+          RawTerm.boolTrue forwardRename ▸
+          Term.rename typedRenaming thenBranch)
+        (Ty.subst0_rename_commute motiveType Ty.bool
+          RawTerm.boolFalse forwardRename ▸
+          Term.rename typedRenaming elseBranch))
+      (Ty.subst0_rename_commute motiveType Ty.bool scrutineeRaw
+        forwardRename).symm
+      (ContextStrengthening.ofRenaming forwardRename typedRenaming
+        renameInverse renameInverseLeft renameInverseInjects)
+
 /-- Cast-wrapped strength-T1 case (HEq form): `Term.funextRefl`.
 
 Closed value-shape ctor (no Term subterms).  Three Ty/raw payloads:
