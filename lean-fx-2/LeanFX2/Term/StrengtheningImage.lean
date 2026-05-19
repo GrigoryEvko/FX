@@ -14871,6 +14871,31 @@ theorem weaken_inv_of_strengthenTyped?_some {mode : Mode} {level : Nat}
     HEq sourceTerm result.renamedTarget :=
   (isAggregatorSound_universal sourceTerm strengthening result success).termRenames
 
+/-- Rename-image soundness for successful typed strengthening.
+
+Any successful `partialStrengthenTyped?` result exposes a target-context
+term whose forward rename is heterogeneously equal to the original
+source-context term.  This is the forward, already-available half of the
+planned T3 rename-image iff; the reverse direction still needs a
+universal T1 dispatcher packaging over the 67 Eq-form and 11 HEq-form
+rename-totality cases. -/
+theorem rename_image_of_strengthenTyped?_some {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sourceType : Ty level sourceScope}
+    {sourceRaw : RawTerm sourceScope}
+    {sourceTerm : Term sourceCtx sourceType sourceRaw}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (result : StrengtheningResult strengthening sourceTerm)
+    (success : partialStrengthenTyped? sourceTerm strengthening = some result) :
+    ∃ (targetType : Ty level targetScope)
+      (targetRaw : RawTerm targetScope)
+      (targetTerm : Term targetCtx targetType targetRaw),
+      HEq sourceTerm (Term.rename strengthening.toTermRenaming targetTerm) := by
+  exact ⟨result.targetType, result.targetRaw, result.targetTerm,
+    weaken_inv_of_strengthenTyped?_some strengthening result success⟩
+
 /-- Image Step 2 — `unweaken?` and `strengthenTyped?` agree on success.
 
 TAUTOLOGICAL BIJECTION: `Term.unweaken?` is defined to pattern-match on
