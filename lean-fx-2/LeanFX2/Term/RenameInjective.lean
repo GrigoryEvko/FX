@@ -246,6 +246,28 @@ theorem Term.rename_injective_effectPerform_ctor
   cases argumentsHEq
   rfl
 
+theorem Term.rename_injective_universeCode_ctor
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (innerLevel outerLevel : UniverseLevel)
+    (cumulOk : innerLevel.toNat ≤ outerLevel.toNat)
+    (levelLe : outerLevel.toNat + 1 ≤ level) :
+    Term.rename termRenaming
+        (Term.universeCode (context := sourceCtx)
+          innerLevel outerLevel cumulOk levelLe) =
+      Term.rename termRenaming
+        (Term.universeCode (context := sourceCtx)
+          innerLevel outerLevel cumulOk levelLe) →
+      Term.universeCode (context := sourceCtx)
+          innerLevel outerLevel cumulOk levelLe =
+        Term.universeCode (context := sourceCtx)
+          innerLevel outerLevel cumulOk levelLe := by
+  intro _renameEq
+  rfl
+
 theorem Term.rename_injective_pathLam_ctor
     {mode : Mode} {level sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
