@@ -67,6 +67,44 @@ theorem Term.rename_injective_lam_ctor
   cases bodyHEq
   rfl
 
+theorem Term.rename_injective_app_ctor
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {domainType codomainType : Ty level sourceScope}
+    {functionRaw argumentRaw : RawTerm sourceScope}
+    (functionInjective :
+      ∀ (functionA functionB :
+          Term sourceCtx (Ty.arrow domainType codomainType) functionRaw),
+        HEq (Term.rename termRenaming functionA)
+          (Term.rename termRenaming functionB) →
+        HEq functionA functionB)
+    (argumentInjective :
+      ∀ (argumentA argumentB : Term sourceCtx domainType argumentRaw),
+        HEq (Term.rename termRenaming argumentA)
+          (Term.rename termRenaming argumentB) →
+        HEq argumentA argumentB)
+    (functionA functionB :
+      Term sourceCtx (Ty.arrow domainType codomainType) functionRaw)
+    (argumentA argumentB : Term sourceCtx domainType argumentRaw) :
+    Term.rename termRenaming (Term.app functionA argumentA) =
+      Term.rename termRenaming (Term.app functionB argumentB) →
+      Term.app functionA argumentA = Term.app functionB argumentB := by
+  intro renameEq
+  simp only [Term.rename] at renameEq
+  injection renameEq with contextEq codomainRenameEq domainRenameEq
+    functionRawRenameEq argumentRawRenameEq argumentRawRenameEqAgain
+    functionRenameEq argumentRenameEq
+  have functionHEq : HEq functionA functionB :=
+    functionInjective functionA functionB (heq_of_eq functionRenameEq)
+  have argumentHEq : HEq argumentA argumentB :=
+    argumentInjective argumentA argumentB (heq_of_eq argumentRenameEq)
+  cases functionHEq
+  cases argumentHEq
+  rfl
+
 theorem Term.rename_injective_lamPi_ctor
     {mode : Mode} {level sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
@@ -93,6 +131,64 @@ theorem Term.rename_injective_lamPi_ctor
   have bodyHEq : HEq bodyA bodyB :=
     bodyInjective bodyA bodyB (heq_of_eq bodyRenameEq)
   cases bodyHEq
+  rfl
+
+theorem Term.rename_injective_appPi_ctor
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {domainType : Ty level sourceScope}
+    {codomainType : Ty level (sourceScope + 1)}
+    {functionRaw argumentRaw : RawTerm sourceScope}
+    (functionInjective :
+      ∀ (functionA functionB :
+          Term sourceCtx (Ty.piTy domainType codomainType) functionRaw),
+        HEq (Term.rename termRenaming functionA)
+          (Term.rename termRenaming functionB) →
+        HEq functionA functionB)
+    (argumentInjective :
+      ∀ (argumentA argumentB : Term sourceCtx domainType argumentRaw),
+        HEq (Term.rename termRenaming argumentA)
+          (Term.rename termRenaming argumentB) →
+        HEq argumentA argumentB)
+    (functionA functionB :
+      Term sourceCtx (Ty.piTy domainType codomainType) functionRaw)
+    (argumentA argumentB : Term sourceCtx domainType argumentRaw) :
+    Term.rename termRenaming (Term.appPi functionA argumentA) =
+      Term.rename termRenaming (Term.appPi functionB argumentB) →
+      Term.appPi functionA argumentA = Term.appPi functionB argumentB := by
+  intro renameEq
+  simp only [Term.rename] at renameEq
+  have appPiRenameHEq :
+      HEq
+        (Term.appPi (Term.rename termRenaming functionA)
+          (Term.rename termRenaming argumentA))
+        (Term.appPi (Term.rename termRenaming functionB)
+          (Term.rename termRenaming argumentB)) :=
+    HEq.trans
+      (HEq.symm
+        (termRenameInjectiveCastHEq
+          (Ty.subst0_rename_commute codomainType domainType
+            argumentRaw rho).symm
+          (Term.appPi (Term.rename termRenaming functionA)
+            (Term.rename termRenaming argumentA))))
+      (HEq.trans (heq_of_eq renameEq)
+        (termRenameInjectiveCastHEq
+          (Ty.subst0_rename_commute codomainType domainType
+            argumentRaw rho).symm
+          (Term.appPi (Term.rename termRenaming functionB)
+            (Term.rename termRenaming argumentB))))
+  injection appPiRenameHEq with contextEq domainRenameEq
+    codomainRenameEq functionRawRenameEq argumentRawRenameEq
+    argumentRawRenameEqAgain functionRenameEq argumentRenameEq
+  have functionHEq : HEq functionA functionB :=
+    functionInjective functionA functionB (heq_of_eq functionRenameEq)
+  have argumentHEq : HEq argumentA argumentB :=
+    argumentInjective argumentA argumentB (heq_of_eq argumentRenameEq)
+  cases functionHEq
+  cases argumentHEq
   rfl
 
 theorem Term.rename_injective_pathLam_ctor
