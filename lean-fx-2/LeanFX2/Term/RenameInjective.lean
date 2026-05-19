@@ -597,6 +597,111 @@ theorem Term.rename_injective_atIntervalJoin_of_inner
   rename_i leftTerm rightTerm
   exact ⟨leftTerm, rightTerm, rfl, HEq.rfl⟩
 
+theorem Term.rename_injective_atModIntro_of_inner
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {innerType : Ty level sourceScope}
+    {innerRaw : RawTerm sourceScope}
+    (innerInjective :
+      ∀ (innerA innerB : Term sourceCtx innerType innerRaw),
+        Term.rename termRenaming innerA = Term.rename termRenaming innerB →
+        innerA = innerB)
+    (termA termB :
+      Term sourceCtx innerType (RawTerm.modIntro innerRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType (RawTerm.modIntro innerRaw)),
+        Σ' (innerTerm : Term sourceCtx genericType innerRaw),
+          HEq genericTerm (Term.modIntro innerTerm) by
+    obtain ⟨innerA, termHEqA⟩ := key termA
+    obtain ⟨innerB, termHEqB⟩ := key termB
+    cases termHEqA
+    cases termHEqB
+    simp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ innerRenameEq
+    exact congrArg Term.modIntro
+      (innerInjective innerA innerB innerRenameEq)
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i innerTerm
+  exact ⟨innerTerm, HEq.rfl⟩
+
+theorem Term.rename_injective_atModElim_of_inner
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {innerType : Ty level sourceScope}
+    {innerRaw : RawTerm sourceScope}
+    (innerInjective :
+      ∀ (innerA innerB : Term sourceCtx innerType innerRaw),
+        Term.rename termRenaming innerA = Term.rename termRenaming innerB →
+        innerA = innerB)
+    (termA termB :
+      Term sourceCtx innerType (RawTerm.modElim innerRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType (RawTerm.modElim innerRaw)),
+        Σ' (innerTerm : Term sourceCtx genericType innerRaw),
+          HEq genericTerm (Term.modElim innerTerm) by
+    obtain ⟨innerA, termHEqA⟩ := key termA
+    obtain ⟨innerB, termHEqB⟩ := key termB
+    cases termHEqA
+    cases termHEqB
+    simp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ innerRenameEq
+    exact congrArg Term.modElim
+      (innerInjective innerA innerB innerRenameEq)
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i innerTerm
+  exact ⟨innerTerm, HEq.rfl⟩
+
+theorem Term.rename_injective_atSubsume_of_inner
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {innerType : Ty level sourceScope}
+    {innerRaw : RawTerm sourceScope}
+    (innerInjective :
+      ∀ (innerA innerB : Term sourceCtx innerType innerRaw),
+        Term.rename termRenaming innerA = Term.rename termRenaming innerB →
+        innerA = innerB)
+    (termA termB :
+      Term sourceCtx innerType (RawTerm.subsume innerRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType (RawTerm.subsume innerRaw)),
+        Σ' (innerTerm : Term sourceCtx genericType innerRaw),
+          HEq genericTerm (Term.subsume innerTerm) by
+    obtain ⟨innerA, termHEqA⟩ := key termA
+    obtain ⟨innerB, termHEqB⟩ := key termB
+    cases termHEqA
+    cases termHEqB
+    simp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ innerRenameEq
+    exact congrArg Term.subsume
+      (innerInjective innerA innerB innerRenameEq)
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i innerTerm
+  exact ⟨innerTerm, HEq.rfl⟩
+
 theorem Term.rename_injective_atRecordIntro_of_inner
     {mode : Mode} {level sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
@@ -637,5 +742,84 @@ theorem Term.rename_injective_atRecordIntro_of_inner
   cases genericTerm
   rename_i inferredFieldType fieldTerm
   exact ⟨inferredFieldType, fieldTerm, rfl, HEq.rfl⟩
+
+theorem Term.rename_injective_atRecordProj_of_inner
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {singleFieldType : Ty level sourceScope}
+    {recordRaw : RawTerm sourceScope}
+    (recordInjective :
+      ∀ (recordA recordB :
+          Term sourceCtx (Ty.record singleFieldType) recordRaw),
+        Term.rename termRenaming recordA = Term.rename termRenaming recordB →
+        recordA = recordB)
+    (termA termB :
+      Term sourceCtx singleFieldType (RawTerm.recordProj recordRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.recordProj recordRaw)),
+        Σ' (recordTerm : Term sourceCtx (Ty.record genericType) recordRaw),
+          HEq genericTerm (Term.recordProj recordTerm) by
+    obtain ⟨recordA, termHEqA⟩ := key termA
+    obtain ⟨recordB, termHEqB⟩ := key termB
+    cases termHEqA
+    cases termHEqB
+    simp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ recordRenameEq
+    exact congrArg Term.recordProj
+      (recordInjective recordA recordB recordRenameEq)
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i recordTerm
+  exact ⟨recordTerm, HEq.rfl⟩
+
+theorem Term.rename_injective_atSessionRecv_of_inner
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {protocolStep channelRaw : RawTerm sourceScope}
+    (channelInjective :
+      ∀ (channelA channelB :
+          Term sourceCtx (Ty.session protocolStep) channelRaw),
+        Term.rename termRenaming channelA = Term.rename termRenaming channelB →
+        channelA = channelB)
+    (termA termB :
+      Term sourceCtx (Ty.session protocolStep)
+        (RawTerm.sessionRecv channelRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.sessionRecv channelRaw)),
+        Σ' (protocolStep : RawTerm sourceScope),
+          Σ' (channelTerm :
+              Term sourceCtx (Ty.session protocolStep) channelRaw),
+            Σ' (_ : genericType = Ty.session protocolStep),
+              HEq genericTerm (Term.sessionRecv channelTerm) by
+    obtain ⟨protocolStepA, channelA, typeEqA, termHEqA⟩ := key termA
+    obtain ⟨protocolStepB, channelB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqA
+    cases typeEqB
+    cases termHEqA
+    cases termHEqB
+    simp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ channelRenameEq
+    exact congrArg Term.sessionRecv
+      (channelInjective channelA channelB channelRenameEq)
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredProtocolStep channelTerm
+  exact ⟨inferredProtocolStep, channelTerm, rfl, HEq.rfl⟩
 
 end LeanFX2
