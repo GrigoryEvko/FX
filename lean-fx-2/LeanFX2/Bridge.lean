@@ -1,5 +1,4 @@
 import LeanFX2.Reduction.RawParCompatible.Substitution
-import LeanFX2.Reduction.RawParRename
 import LeanFX2.Reduction.ParRed
 import LeanFX2.Term.Bridge
 

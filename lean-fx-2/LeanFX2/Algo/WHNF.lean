@@ -1,5 +1,3 @@
-import LeanFX2.Algo.WHNF.Evaluator
-import LeanFX2.Algo.WHNF.NullaryInversions
 import LeanFX2.Algo.WHNF.PayloadInversions
 
 /-! # LeanFX2.Algo.WHNF — weak head normal form classifier (shim)

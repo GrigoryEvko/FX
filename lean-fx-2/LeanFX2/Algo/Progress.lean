@@ -1,9 +1,3 @@
-import LeanFX2.Algo.Progress.CanonicalIntroductions
-import LeanFX2.Algo.Progress.CanonicalTypeCodes
-import LeanFX2.Algo.Progress.CanonicalInterval
-import LeanFX2.Algo.Progress.CanonicalHoTTRefl
-import LeanFX2.Algo.Progress.BetaIotaStepProvability
-import LeanFX2.Algo.Progress.CongRuleLifters
 import LeanFX2.Algo.Progress.Headline
 
 /-! # LeanFX2.Algo.Progress — Wright-Felleisen Progress (M05) (shim)

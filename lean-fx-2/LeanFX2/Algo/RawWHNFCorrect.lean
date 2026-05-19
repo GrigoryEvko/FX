@@ -1,6 +1,3 @@
-import LeanFX2.Algo.RawWHNFCorrect.Base
-import LeanFX2.Algo.RawWHNFCorrect.ElimInversions
-import LeanFX2.Algo.RawWHNFCorrect.Headline
 import LeanFX2.Algo.RawWHNFCorrect.Corollary
 
 /-! # LeanFX2.Algo.RawWHNFCorrect — raw WHNF correctness (shim)
