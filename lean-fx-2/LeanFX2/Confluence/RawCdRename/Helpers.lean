@@ -1,4 +1,4 @@
-import LeanFX2.Confluence.RawCd
+import LeanFX2.Confluence.RawCd.Core
 import LeanFX2.Foundation.RawSubst
 import LeanFX2.Foundation.RawPartialRename
 import LeanFX2.Foundation.RawPartialRenameCommute

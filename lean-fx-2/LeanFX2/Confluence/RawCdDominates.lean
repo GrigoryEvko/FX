@@ -1,4 +1,4 @@
-import LeanFX2.Confluence.RawCd
+import LeanFX2.Confluence.RawCd.Core
 import LeanFX2.Reduction.RawPar
 
 /-! # Confluence/RawCdDominates — every raw term parallel-reduces to its cd

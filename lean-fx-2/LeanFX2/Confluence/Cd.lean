@@ -1,4 +1,4 @@
-import LeanFX2.Confluence.RawCd
+import LeanFX2.Confluence.RawCd.Core
 import LeanFX2.Bridge
 
 /-! # Confluence/Cd — complete-development at the raw projection of typed Terms
