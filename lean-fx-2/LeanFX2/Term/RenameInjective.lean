@@ -333,6 +333,108 @@ theorem Term.rename_injective_funextIntroHet_ctor
   intro _renameEq
   rfl
 
+theorem Term.rename_injective_equivIntroHet_ctor
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {carrierA carrierB : Ty level sourceScope}
+    {forwardRaw backwardRaw leftInvRaw rightInvRaw : RawTerm sourceScope}
+    (forwardInjective :
+      ∀ (forwardA forwardB :
+          Term sourceCtx (Ty.arrow carrierA carrierB) forwardRaw),
+        HEq (Term.rename termRenaming forwardA)
+          (Term.rename termRenaming forwardB) →
+        HEq forwardA forwardB)
+    (backwardInjective :
+      ∀ (backwardA backwardB :
+          Term sourceCtx (Ty.arrow carrierB carrierA) backwardRaw),
+        HEq (Term.rename termRenaming backwardA)
+          (Term.rename termRenaming backwardB) →
+        HEq backwardA backwardB)
+    (leftInvInjective :
+      ∀ (leftInvA leftInvB :
+          Term sourceCtx
+            (equivIntroHetLeftInverseType carrierA forwardRaw backwardRaw)
+            leftInvRaw),
+        HEq (Term.rename termRenaming leftInvA)
+          (Term.rename termRenaming leftInvB) →
+        HEq leftInvA leftInvB)
+    (rightInvInjective :
+      ∀ (rightInvA rightInvB :
+          Term sourceCtx
+            (equivIntroHetRightInverseType carrierB forwardRaw backwardRaw)
+            rightInvRaw),
+        HEq (Term.rename termRenaming rightInvA)
+          (Term.rename termRenaming rightInvB) →
+        HEq rightInvA rightInvB)
+    (forwardA forwardB :
+      Term sourceCtx (Ty.arrow carrierA carrierB) forwardRaw)
+    (backwardA backwardB :
+      Term sourceCtx (Ty.arrow carrierB carrierA) backwardRaw)
+    (leftInvA leftInvB :
+      Term sourceCtx
+        (equivIntroHetLeftInverseType carrierA forwardRaw backwardRaw)
+        leftInvRaw)
+    (rightInvA rightInvB :
+      Term sourceCtx
+        (equivIntroHetRightInverseType carrierB forwardRaw backwardRaw)
+        rightInvRaw) :
+    Term.rename termRenaming
+        (Term.equivIntroHet forwardA backwardA leftInvA rightInvA) =
+      Term.rename termRenaming
+        (Term.equivIntroHet forwardB backwardB leftInvB rightInvB) →
+      Term.equivIntroHet forwardA backwardA leftInvA rightInvA =
+        Term.equivIntroHet forwardB backwardB leftInvB rightInvB := by
+  intro renameEq
+  simp only [Term.rename] at renameEq
+  injection renameEq with contextEq carrierARenameEq carrierBRenameEq
+    forwardRawRenameEq backwardRawRenameEq leftInvRawRenameEq
+    rightInvRawRenameEq rightInvRawRenameEqAgain forwardRenameEq
+    backwardRenameEq leftInvRenameEq rightInvRenameEq
+  have forwardHEq : HEq forwardA forwardB :=
+    forwardInjective forwardA forwardB (heq_of_eq forwardRenameEq)
+  have backwardHEq : HEq backwardA backwardB :=
+    backwardInjective backwardA backwardB (heq_of_eq backwardRenameEq)
+  have leftInvRenameUncastHEq :
+      HEq (Term.rename termRenaming leftInvA)
+        (Term.rename termRenaming leftInvB) :=
+    HEq.trans
+      (HEq.symm
+        (termRenameInjectiveCastHEq
+          (equivIntroHetLeftInverseType_rename rho carrierA forwardRaw
+            backwardRaw)
+          (Term.rename termRenaming leftInvA)))
+      (HEq.trans (heq_of_eq leftInvRenameEq)
+        (termRenameInjectiveCastHEq
+          (equivIntroHetLeftInverseType_rename rho carrierA forwardRaw
+            backwardRaw)
+          (Term.rename termRenaming leftInvB)))
+  have rightInvRenameUncastHEq :
+      HEq (Term.rename termRenaming rightInvA)
+        (Term.rename termRenaming rightInvB) :=
+    HEq.trans
+      (HEq.symm
+        (termRenameInjectiveCastHEq
+          (equivIntroHetRightInverseType_rename rho carrierB forwardRaw
+            backwardRaw)
+          (Term.rename termRenaming rightInvA)))
+      (HEq.trans (heq_of_eq rightInvRenameEq)
+        (termRenameInjectiveCastHEq
+          (equivIntroHetRightInverseType_rename rho carrierB forwardRaw
+            backwardRaw)
+          (Term.rename termRenaming rightInvB)))
+  have leftInvHEq : HEq leftInvA leftInvB :=
+    leftInvInjective leftInvA leftInvB leftInvRenameUncastHEq
+  have rightInvHEq : HEq rightInvA rightInvB :=
+    rightInvInjective rightInvA rightInvB rightInvRenameUncastHEq
+  cases forwardHEq
+  cases backwardHEq
+  cases leftInvHEq
+  cases rightInvHEq
+  rfl
+
 theorem Term.rename_injective_pathLam_ctor
     {mode : Mode} {level sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
