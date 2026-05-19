@@ -1,6 +1,6 @@
 import LeanFX2.Term.TypedInversion
 import LeanFX2.Term.HEqCongr
-import LeanFX2.Term.Pointwise.PointwiseAndCompositionInfrastructure
+import LeanFX2.Term.Pointwise.PointwiseAndCompositionInfrastructure.CastHEq
 
 /-! # Term/StrengtheningImage — soundness of typed strengthening.
 

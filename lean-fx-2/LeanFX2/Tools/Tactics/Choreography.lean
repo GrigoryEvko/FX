@@ -1,4 +1,4 @@
-import LeanFX2.Term.Pointwise.PointwiseAndCompositionInfrastructure
+import LeanFX2.Term.Pointwise.PointwiseAndCompositionInfrastructure.CastHEq
 
 /-! # Tools/Tactics/Choreography
 

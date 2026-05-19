@@ -1,6 +1,6 @@
 import LeanFX2.Term.HEqCongr
 import LeanFX2.Term.Subst
-import LeanFX2.Term.Pointwise.PointwiseAndCompositionInfrastructure
+import LeanFX2.Term.Pointwise.PointwiseAndCompositionInfrastructure.LiftCompose
 
 /-! # LeanFX2.Term.Pointwise.EffectAndHoTTHetArms
 

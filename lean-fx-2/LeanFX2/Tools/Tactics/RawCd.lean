@@ -1,4 +1,4 @@
-import LeanFX2.Confluence.RawCdRename
+import LeanFX2.Confluence.RawCdRename.Main
 
 /-! # Tools/Tactics/RawCd
 

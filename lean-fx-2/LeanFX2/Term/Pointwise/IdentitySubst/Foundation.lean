@@ -1,4 +1,4 @@
-import LeanFX2.Term.Pointwise.PointwiseAndCompositionInfrastructure
+import LeanFX2.Term.Pointwise.PointwiseAndCompositionInfrastructure.SingletonPrecompose
 
 /-! # LeanFX2.Term.Pointwise.IdentitySubst
 
