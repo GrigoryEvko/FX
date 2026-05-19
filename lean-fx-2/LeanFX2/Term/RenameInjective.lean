@@ -1310,6 +1310,51 @@ theorem Term.rename_injective_atCodataUnfold_of_inner
   exact ⟨inferredStateType, inferredOutputType, stateTerm, transitionTerm,
     rfl, HEq.rfl⟩
 
+theorem Term.rename_injective_atCodataDest_of_inner
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (rhoInjective : RawRenamingInjective rho)
+    {outputType : Ty level sourceScope}
+    {codataRaw : RawTerm sourceScope}
+    (codataInjective :
+      ∀ {matchedStateType : Ty level sourceScope}
+        (codataA codataB :
+          Term sourceCtx (Ty.codata matchedStateType outputType) codataRaw),
+        Term.rename termRenaming codataA = Term.rename termRenaming codataB →
+        codataA = codataB)
+    (termA termB :
+      Term sourceCtx outputType (RawTerm.codataDest codataRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.codataDest codataRaw)),
+        Σ' (stateType : Ty level sourceScope),
+          Σ' (codataTerm :
+              Term sourceCtx (Ty.codata stateType genericType) codataRaw),
+            HEq genericTerm (Term.codataDest codataTerm) by
+    obtain ⟨stateTypeA, codataA, termHEqA⟩ := key termA
+    obtain ⟨stateTypeB, codataB, termHEqB⟩ := key termB
+    cases termHEqA
+    cases termHEqB
+    simp only [Term.rename] at renameEq
+    injection renameEq with _ _ stateTypeRenameEq _ _ codataRenameHEq
+    have stateTypeEq : stateTypeA = stateTypeB :=
+      Ty.rename_injective_under_injective_renaming stateTypeA
+        rhoInjective stateTypeB stateTypeRenameEq
+    cases stateTypeEq
+    exact congrArg Term.codataDest
+      (codataInjective codataA codataB (eq_of_heq codataRenameHEq))
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredStateType codataTerm
+  exact ⟨inferredStateType, codataTerm, HEq.rfl⟩
+
 theorem Term.rename_injective_atSessionRecv_of_inner
     {mode : Mode} {level sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
