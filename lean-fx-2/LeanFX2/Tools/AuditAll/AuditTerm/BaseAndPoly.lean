@@ -1,9 +1,7 @@
 import LeanFX2.Tools.DependencyAudit
 import LeanFX2.Term.Subst
-import LeanFX2.Term.Rename
 import LeanFX2.Term.RenameInjective
 import LeanFX2.Term.Inversion
-import LeanFX2.Term.ToRaw
 import LeanFX2.Term.Bridge
 import LeanFX2.Algo.Progress
 import LeanFX2.Term.PolyToTerm

@@ -1,5 +1,3 @@
-import LeanFX2.Term.Rename
-import LeanFX2.Term.Subst
 import LeanFX2.Term.SubstHet
 import LeanFX2.Term.Pointwise
 import LeanFX2.Algo.Eval

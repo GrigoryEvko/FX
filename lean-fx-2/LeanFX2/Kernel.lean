@@ -41,11 +41,9 @@ import LeanFX2.Foundation.Polygraph.Dim2Diamond
 
 -- Layer 1 - Term
 import LeanFX2.Term
-import LeanFX2.Term.Rename
 import LeanFX2.Term.RenameInjective
 import LeanFX2.Term.Subst
 import LeanFX2.Term.Act
-import LeanFX2.Term.ToRaw
 import LeanFX2.Term.Pointwise
 import LeanFX2.Term.HEqCongr
 import LeanFX2.Term.Bridge

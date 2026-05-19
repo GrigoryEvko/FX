@@ -1,4 +1,3 @@
-import LeanFX2.Term.Rename
 import LeanFX2.Term.Subst
 import LeanFX2.Term.Bridge
 import LeanFX2.Reduction.RawParInversion
