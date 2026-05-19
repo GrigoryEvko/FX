@@ -15148,6 +15148,147 @@ theorem strengthenTyped?_rename_isSome_optionNone
     (strengthenTyped?_rename_eq_optionNone forwardRename typedRenaming
       renameInverse renameInverseLeft renameInverseInjects)
 
+/-- T3 reverse-image bridge for the parametric `Term.equivReflId` case. -/
+theorem strengthenTyped?_rename_isSome_equivReflId
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    {carrier : Ty level sourceScope} :
+    (partialStrengthenTyped?
+        (Term.rename typedRenaming
+          (Term.equivReflId (context := sourceCtx) carrier))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)).isSome =
+      true :=
+  option_isSome_of_eq_some
+    (strengthenTyped?_rename_eq_equivReflId forwardRename typedRenaming
+      renameInverse renameInverseLeft renameInverseInjects)
+
+/-- T3 reverse-image bridge for the parametric `Term.refl` case. -/
+theorem strengthenTyped?_rename_isSome_refl
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    {carrier : Ty level sourceScope} {rawWitness : RawTerm sourceScope} :
+    (partialStrengthenTyped?
+        (Term.rename typedRenaming
+          (Term.refl (context := sourceCtx) carrier rawWitness))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)).isSome =
+      true :=
+  option_isSome_of_eq_some
+    (strengthenTyped?_rename_eq_refl forwardRename typedRenaming
+      renameInverse renameInverseLeft renameInverseInjects)
+
+/-- T3 reverse-image bridge for the parametric `Term.oeqRefl` case. -/
+theorem strengthenTyped?_rename_isSome_oeqRefl
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    {carrier : Ty level sourceScope} {rawWitness : RawTerm sourceScope} :
+    (partialStrengthenTyped?
+        (Term.rename typedRenaming
+          (Term.oeqRefl (context := sourceCtx) carrier rawWitness))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)).isSome =
+      true :=
+  option_isSome_of_eq_some
+    (strengthenTyped?_rename_eq_oeqRefl forwardRename typedRenaming
+      renameInverse renameInverseLeft renameInverseInjects)
+
+/-- T3 reverse-image bridge for the parametric `Term.idStrictRefl` case. -/
+theorem strengthenTyped?_rename_isSome_idStrictRefl
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    {modeIsStrict : mode = Mode.strict}
+    {carrier : Ty level sourceScope} {rawWitness : RawTerm sourceScope} :
+    (partialStrengthenTyped?
+        (Term.rename typedRenaming
+          (Term.idStrictRefl (context := sourceCtx) modeIsStrict carrier
+            rawWitness))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)).isSome =
+      true :=
+  option_isSome_of_eq_some
+    (strengthenTyped?_rename_eq_idStrictRefl forwardRename typedRenaming
+      renameInverse renameInverseLeft renameInverseInjects)
+
+/-- T3 reverse-image bridge for the `Term.equivReflIdAtId` case. -/
+theorem strengthenTyped?_rename_isSome_equivReflIdAtId
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    {carrier : Ty level sourceScope} {carrierRaw : RawTerm sourceScope} :
+    (partialStrengthenTyped?
+        (Term.rename typedRenaming
+          (Term.equivReflIdAtId (context := sourceCtx) innerLevel innerLevelLt
+            carrier carrierRaw))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)).isSome =
+      true :=
+  option_isSome_of_eq_some
+    (strengthenTyped?_rename_eq_equivReflIdAtId forwardRename typedRenaming
+      renameInverse renameInverseLeft renameInverseInjects innerLevel
+      innerLevelLt)
+
 /-- Image Step 2 — `unweaken?` and `strengthenTyped?` agree on success.
 
 TAUTOLOGICAL BIJECTION: `Term.unweaken?` is defined to pattern-match on
