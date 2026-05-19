@@ -13470,6 +13470,109 @@ theorem strengthenTyped?_rename_heq_pathLam
   dsimp only [Term.rename]
   exact HEq.rfl
 
+/-- Cast-wrapped strength-T1 case (HEq form): `Term.oeqFunext`.
+
+The observational funext rename arm casts the pointwise proof through
+`oeqFunextPointwiseType_rename` before rebuilding the constructor. -/
+theorem strengthenTyped?_rename_heq_oeqFunext
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    (domainType codomainType : Ty level sourceScope)
+    (leftFunctionRaw rightFunctionRaw : RawTerm sourceScope)
+    {pointwiseRaw : RawTerm sourceScope}
+    (pointwiseProof :
+      Term sourceCtx
+        (oeqFunextPointwiseType domainType codomainType
+          leftFunctionRaw rightFunctionRaw)
+        pointwiseRaw) :
+    HEq
+      (partialStrengthenTyped?
+        (Term.rename typedRenaming
+          (Term.oeqFunext domainType codomainType
+            leftFunctionRaw rightFunctionRaw pointwiseProof))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects))
+      (partialStrengthenTyped?
+        (Term.oeqFunext
+          (domainType.rename forwardRename)
+          (codomainType.rename forwardRename)
+          (leftFunctionRaw.rename forwardRename)
+          (rightFunctionRaw.rename forwardRename)
+          (oeqFunextPointwiseType_rename forwardRename domainType
+            codomainType leftFunctionRaw rightFunctionRaw ▸
+            Term.rename typedRenaming pointwiseProof))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)) := by
+  dsimp only [Term.rename]
+  exact HEq.rfl
+
+/-- Cast-wrapped strength-T1 case (HEq form): `Term.equivIntroHet`.
+
+The heterogeneous equivalence introduction rename arm structurally
+renames the forward and backward maps, and casts both inverse proofs
+through their dedicated inverse-type rename lemmas. -/
+theorem strengthenTyped?_rename_heq_equivIntroHet
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    {carrierA carrierB : Ty level sourceScope}
+    {forwardRaw backwardRaw leftInvRaw rightInvRaw : RawTerm sourceScope}
+    (forward :
+      Term sourceCtx (Ty.arrow carrierA carrierB) forwardRaw)
+    (backward :
+      Term sourceCtx (Ty.arrow carrierB carrierA) backwardRaw)
+    (leftInv :
+      Term sourceCtx
+        (equivIntroHetLeftInverseType carrierA forwardRaw backwardRaw)
+        leftInvRaw)
+    (rightInv :
+      Term sourceCtx
+        (equivIntroHetRightInverseType carrierB forwardRaw backwardRaw)
+        rightInvRaw) :
+    HEq
+      (partialStrengthenTyped?
+        (Term.rename typedRenaming
+          (Term.equivIntroHet forward backward leftInv rightInv))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects))
+      (partialStrengthenTyped?
+        (Term.equivIntroHet
+          (Term.rename typedRenaming forward)
+          (Term.rename typedRenaming backward)
+          (equivIntroHetLeftInverseType_rename forwardRename carrierA
+            forwardRaw backwardRaw ▸
+            Term.rename typedRenaming leftInv)
+          (equivIntroHetRightInverseType_rename forwardRename carrierB
+            forwardRaw backwardRaw ▸
+            Term.rename typedRenaming rightInv))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)) := by
+  dsimp only [Term.rename]
+  exact HEq.rfl
+
 /-- Cast-wrapped strength-T1 case (HEq form): `Term.boolElim`.
 
 The Boolean eliminator rename arm has a top-level non-rfl
