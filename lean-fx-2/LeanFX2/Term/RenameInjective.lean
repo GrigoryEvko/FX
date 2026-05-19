@@ -4064,4 +4064,63 @@ theorem Term.rename_injective_atEquivIntroUniverseId_of_inner
                   carrierLeftEq carrierRightEq carrierLeftRawEq
                   carrierRightRawEq rfl rfl equivWitnessHEq)
 
+theorem Term.rename_injective_atEquivIntro_of_inner
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (rhoInjective : RawRenamingInjective rho)
+    {targetType : Ty level sourceScope}
+    {forwardRaw backwardRaw : RawTerm sourceScope}
+    (childInjective :
+      ∀ {childTypeA childTypeB : Ty level sourceScope}
+        {childRawA childRawB : RawTerm sourceScope}
+        (childA : Term sourceCtx childTypeA childRawA)
+        (childB : Term sourceCtx childTypeB childRawB),
+        HEq (Term.rename termRenaming childA)
+          (Term.rename termRenaming childB) →
+        HEq childA childB)
+    (termA termB :
+      Term sourceCtx targetType
+        (RawTerm.equivIntro forwardRaw backwardRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro renameEq
+  have viewA := Term.equivIntro_inv termA
+  cases viewA with
+  | inl reflViewA =>
+    obtain ⟨carrier, forwardEq, backwardEq, typeEq, termHEq⟩ := reflViewA
+    cases typeEq
+    exact
+      Term.rename_injective_atEquivIntroEquiv_of_inner termRenaming
+        rhoInjective childInjective termA termB renameEq
+  | inr restViewA =>
+    cases restViewA with
+    | inl idViewA =>
+      obtain ⟨innerLevel, innerLevelLt, carrier, carrierRaw, forwardEq,
+        backwardEq, typeEq, termHEq⟩ := idViewA
+      cases typeEq
+      exact
+        Term.rename_injective_atEquivIntroUniverseId_of_inner termRenaming
+          rhoInjective childInjective termA termB renameEq
+    | inr restViewA =>
+      cases restViewA with
+      | inl introViewA =>
+        obtain ⟨carrierLeft, carrierRight, leftInvRaw, rightInvRaw,
+          forwardTerm, backwardTerm, leftInv, rightInv, typeEq, termHEq⟩ :=
+          introViewA
+        cases typeEq
+        exact
+          Term.rename_injective_atEquivIntroEquiv_of_inner termRenaming
+            rhoInjective childInjective termA termB renameEq
+      | inr uaViewA =>
+        obtain ⟨innerLevel, innerLevelLt, carrierLeft, carrierRight,
+          carrierLeftRaw, carrierRightRaw, equivWitness, typeEq,
+          termHEq⟩ := uaViewA
+        cases typeEq
+        exact
+          Term.rename_injective_atEquivIntroUniverseId_of_inner termRenaming
+            rhoInjective childInjective termA termB renameEq
+
 end LeanFX2

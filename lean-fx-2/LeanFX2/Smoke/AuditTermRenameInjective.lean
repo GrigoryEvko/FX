@@ -82,3 +82,4 @@ import LeanFX2.Term.RenameInjective
 #print axioms LeanFX2.Term.equivIntro_inv
 #print axioms LeanFX2.Term.rename_injective_atEquivIntroEquiv_of_inner
 #print axioms LeanFX2.Term.rename_injective_atEquivIntroUniverseId_of_inner
+#print axioms LeanFX2.Term.rename_injective_atEquivIntro_of_inner
