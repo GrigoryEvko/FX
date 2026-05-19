@@ -18,7 +18,7 @@ import LeanFX2.FX1Bridge
 
 namespace LeanFX2.Tools
 
-/-! ## AuditTerm — 354 `#assert_no_axioms` checks. -/
+/-! ## AuditTerm — 364 `#assert_no_axioms` checks. -/
 
 #assert_no_axioms LeanFX2.Term.subst
 #assert_no_axioms LeanFX2.Term.rename
@@ -51,6 +51,16 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Term.rename_injective_atRefineIntro_of_inner
 #assert_no_axioms LeanFX2.Term.rename_injective_atCodataUnfold_of_inner
 #assert_no_axioms LeanFX2.Term.rename_injective_atSessionRecv_of_inner
+#assert_no_axioms LeanFX2.Term.rename_injective_atArrowCode
+#assert_no_axioms LeanFX2.Term.rename_injective_atPiTyCode
+#assert_no_axioms LeanFX2.Term.rename_injective_atSigmaTyCode
+#assert_no_axioms LeanFX2.Term.rename_injective_atProductCode
+#assert_no_axioms LeanFX2.Term.rename_injective_atSumCode
+#assert_no_axioms LeanFX2.Term.rename_injective_atListCode
+#assert_no_axioms LeanFX2.Term.rename_injective_atOptionCode
+#assert_no_axioms LeanFX2.Term.rename_injective_atEitherCode
+#assert_no_axioms LeanFX2.Term.rename_injective_atIdCode
+#assert_no_axioms LeanFX2.Term.rename_injective_atEquivCode
 #assert_no_axioms LeanFX2.Term.toRaw_rename
 #assert_no_axioms LeanFX2.Term.toRaw_subst
 #assert_no_axioms LeanFX2.Term.toRaw_weaken

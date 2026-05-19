@@ -1101,4 +1101,366 @@ theorem Term.rename_injective_atSessionRecv_of_inner
   rename_i inferredProtocolStep channelTerm
   exact ⟨inferredProtocolStep, channelTerm, rfl, HEq.rfl⟩
 
+theorem Term.rename_injective_atArrowCode
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {outerLevel : UniverseLevel}
+    {levelLe : outerLevel.toNat + 1 ≤ level}
+    {domainCodeRaw codomainCodeRaw : RawTerm sourceScope}
+    (termA termB : Term sourceCtx (Ty.universe outerLevel levelLe)
+      (RawTerm.arrowCode domainCodeRaw codomainCodeRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro _renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.arrowCode domainCodeRaw codomainCodeRaw)),
+        Σ' (outerLevel : UniverseLevel),
+          Σ' (levelLe : outerLevel.toNat + 1 ≤ level),
+            Σ' (_ : genericType = Ty.universe outerLevel levelLe),
+              HEq genericTerm
+                (Term.arrowCode (context := sourceCtx) outerLevel levelLe
+                  domainCodeRaw codomainCodeRaw) by
+    obtain ⟨outerLevelA, levelLeA, typeEqA, termHEqA⟩ := key termA
+    obtain ⟨outerLevelB, levelLeB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqA
+    cases typeEqB
+    cases termHEqA
+    cases termHEqB
+    rfl
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredOuterLevel inferredLevelLe
+  exact ⟨inferredOuterLevel, inferredLevelLe, rfl, HEq.rfl⟩
+
+theorem Term.rename_injective_atPiTyCode
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {outerLevel : UniverseLevel}
+    {levelLe : outerLevel.toNat + 1 ≤ level}
+    {domainCodeRaw : RawTerm sourceScope}
+    {codomainCodeRaw : RawTerm (sourceScope + 1)}
+    (termA termB : Term sourceCtx (Ty.universe outerLevel levelLe)
+      (RawTerm.piTyCode domainCodeRaw codomainCodeRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro _renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.piTyCode domainCodeRaw codomainCodeRaw)),
+        Σ' (outerLevel : UniverseLevel),
+          Σ' (levelLe : outerLevel.toNat + 1 ≤ level),
+            Σ' (_ : genericType = Ty.universe outerLevel levelLe),
+              HEq genericTerm
+                (Term.piTyCode (context := sourceCtx) outerLevel levelLe
+                  domainCodeRaw codomainCodeRaw) by
+    obtain ⟨outerLevelA, levelLeA, typeEqA, termHEqA⟩ := key termA
+    obtain ⟨outerLevelB, levelLeB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqA
+    cases typeEqB
+    cases termHEqA
+    cases termHEqB
+    rfl
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredOuterLevel inferredLevelLe
+  exact ⟨inferredOuterLevel, inferredLevelLe, rfl, HEq.rfl⟩
+
+theorem Term.rename_injective_atSigmaTyCode
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {outerLevel : UniverseLevel}
+    {levelLe : outerLevel.toNat + 1 ≤ level}
+    {domainCodeRaw : RawTerm sourceScope}
+    {codomainCodeRaw : RawTerm (sourceScope + 1)}
+    (termA termB : Term sourceCtx (Ty.universe outerLevel levelLe)
+      (RawTerm.sigmaTyCode domainCodeRaw codomainCodeRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro _renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.sigmaTyCode domainCodeRaw codomainCodeRaw)),
+        Σ' (outerLevel : UniverseLevel),
+          Σ' (levelLe : outerLevel.toNat + 1 ≤ level),
+            Σ' (_ : genericType = Ty.universe outerLevel levelLe),
+              HEq genericTerm
+                (Term.sigmaTyCode (context := sourceCtx) outerLevel levelLe
+                  domainCodeRaw codomainCodeRaw) by
+    obtain ⟨outerLevelA, levelLeA, typeEqA, termHEqA⟩ := key termA
+    obtain ⟨outerLevelB, levelLeB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqA
+    cases typeEqB
+    cases termHEqA
+    cases termHEqB
+    rfl
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredOuterLevel inferredLevelLe
+  exact ⟨inferredOuterLevel, inferredLevelLe, rfl, HEq.rfl⟩
+
+theorem Term.rename_injective_atProductCode
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {outerLevel : UniverseLevel}
+    {levelLe : outerLevel.toNat + 1 ≤ level}
+    {firstCodeRaw secondCodeRaw : RawTerm sourceScope}
+    (termA termB : Term sourceCtx (Ty.universe outerLevel levelLe)
+      (RawTerm.productCode firstCodeRaw secondCodeRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro _renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.productCode firstCodeRaw secondCodeRaw)),
+        Σ' (outerLevel : UniverseLevel),
+          Σ' (levelLe : outerLevel.toNat + 1 ≤ level),
+            Σ' (_ : genericType = Ty.universe outerLevel levelLe),
+              HEq genericTerm
+                (Term.productCode (context := sourceCtx) outerLevel levelLe
+                  firstCodeRaw secondCodeRaw) by
+    obtain ⟨outerLevelA, levelLeA, typeEqA, termHEqA⟩ := key termA
+    obtain ⟨outerLevelB, levelLeB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqA
+    cases typeEqB
+    cases termHEqA
+    cases termHEqB
+    rfl
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredOuterLevel inferredLevelLe
+  exact ⟨inferredOuterLevel, inferredLevelLe, rfl, HEq.rfl⟩
+
+theorem Term.rename_injective_atSumCode
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {outerLevel : UniverseLevel}
+    {levelLe : outerLevel.toNat + 1 ≤ level}
+    {leftCodeRaw rightCodeRaw : RawTerm sourceScope}
+    (termA termB : Term sourceCtx (Ty.universe outerLevel levelLe)
+      (RawTerm.sumCode leftCodeRaw rightCodeRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro _renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.sumCode leftCodeRaw rightCodeRaw)),
+        Σ' (outerLevel : UniverseLevel),
+          Σ' (levelLe : outerLevel.toNat + 1 ≤ level),
+            Σ' (_ : genericType = Ty.universe outerLevel levelLe),
+              HEq genericTerm
+                (Term.sumCode (context := sourceCtx) outerLevel levelLe
+                  leftCodeRaw rightCodeRaw) by
+    obtain ⟨outerLevelA, levelLeA, typeEqA, termHEqA⟩ := key termA
+    obtain ⟨outerLevelB, levelLeB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqA
+    cases typeEqB
+    cases termHEqA
+    cases termHEqB
+    rfl
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredOuterLevel inferredLevelLe
+  exact ⟨inferredOuterLevel, inferredLevelLe, rfl, HEq.rfl⟩
+
+theorem Term.rename_injective_atListCode
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {outerLevel : UniverseLevel}
+    {levelLe : outerLevel.toNat + 1 ≤ level}
+    {elementCodeRaw : RawTerm sourceScope}
+    (termA termB : Term sourceCtx (Ty.universe outerLevel levelLe)
+      (RawTerm.listCode elementCodeRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro _renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.listCode elementCodeRaw)),
+        Σ' (outerLevel : UniverseLevel),
+          Σ' (levelLe : outerLevel.toNat + 1 ≤ level),
+            Σ' (_ : genericType = Ty.universe outerLevel levelLe),
+              HEq genericTerm
+                (Term.listCode (context := sourceCtx) outerLevel levelLe
+                  elementCodeRaw) by
+    obtain ⟨outerLevelA, levelLeA, typeEqA, termHEqA⟩ := key termA
+    obtain ⟨outerLevelB, levelLeB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqA
+    cases typeEqB
+    cases termHEqA
+    cases termHEqB
+    rfl
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredOuterLevel inferredLevelLe
+  exact ⟨inferredOuterLevel, inferredLevelLe, rfl, HEq.rfl⟩
+
+theorem Term.rename_injective_atOptionCode
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {outerLevel : UniverseLevel}
+    {levelLe : outerLevel.toNat + 1 ≤ level}
+    {elementCodeRaw : RawTerm sourceScope}
+    (termA termB : Term sourceCtx (Ty.universe outerLevel levelLe)
+      (RawTerm.optionCode elementCodeRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro _renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.optionCode elementCodeRaw)),
+        Σ' (outerLevel : UniverseLevel),
+          Σ' (levelLe : outerLevel.toNat + 1 ≤ level),
+            Σ' (_ : genericType = Ty.universe outerLevel levelLe),
+              HEq genericTerm
+                (Term.optionCode (context := sourceCtx) outerLevel levelLe
+                  elementCodeRaw) by
+    obtain ⟨outerLevelA, levelLeA, typeEqA, termHEqA⟩ := key termA
+    obtain ⟨outerLevelB, levelLeB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqA
+    cases typeEqB
+    cases termHEqA
+    cases termHEqB
+    rfl
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredOuterLevel inferredLevelLe
+  exact ⟨inferredOuterLevel, inferredLevelLe, rfl, HEq.rfl⟩
+
+theorem Term.rename_injective_atEitherCode
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {outerLevel : UniverseLevel}
+    {levelLe : outerLevel.toNat + 1 ≤ level}
+    {leftCodeRaw rightCodeRaw : RawTerm sourceScope}
+    (termA termB : Term sourceCtx (Ty.universe outerLevel levelLe)
+      (RawTerm.eitherCode leftCodeRaw rightCodeRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro _renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.eitherCode leftCodeRaw rightCodeRaw)),
+        Σ' (outerLevel : UniverseLevel),
+          Σ' (levelLe : outerLevel.toNat + 1 ≤ level),
+            Σ' (_ : genericType = Ty.universe outerLevel levelLe),
+              HEq genericTerm
+                (Term.eitherCode (context := sourceCtx) outerLevel levelLe
+                  leftCodeRaw rightCodeRaw) by
+    obtain ⟨outerLevelA, levelLeA, typeEqA, termHEqA⟩ := key termA
+    obtain ⟨outerLevelB, levelLeB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqA
+    cases typeEqB
+    cases termHEqA
+    cases termHEqB
+    rfl
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredOuterLevel inferredLevelLe
+  exact ⟨inferredOuterLevel, inferredLevelLe, rfl, HEq.rfl⟩
+
+theorem Term.rename_injective_atIdCode
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {outerLevel : UniverseLevel}
+    {levelLe : outerLevel.toNat + 1 ≤ level}
+    {typeCodeRaw leftRaw rightRaw : RawTerm sourceScope}
+    (termA termB : Term sourceCtx (Ty.universe outerLevel levelLe)
+      (RawTerm.idCode typeCodeRaw leftRaw rightRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro _renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.idCode typeCodeRaw leftRaw rightRaw)),
+        Σ' (outerLevel : UniverseLevel),
+          Σ' (levelLe : outerLevel.toNat + 1 ≤ level),
+            Σ' (_ : genericType = Ty.universe outerLevel levelLe),
+              HEq genericTerm
+                (Term.idCode (context := sourceCtx) outerLevel levelLe
+                  typeCodeRaw leftRaw rightRaw) by
+    obtain ⟨outerLevelA, levelLeA, typeEqA, termHEqA⟩ := key termA
+    obtain ⟨outerLevelB, levelLeB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqA
+    cases typeEqB
+    cases termHEqA
+    cases termHEqB
+    rfl
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredOuterLevel inferredLevelLe
+  exact ⟨inferredOuterLevel, inferredLevelLe, rfl, HEq.rfl⟩
+
+theorem Term.rename_injective_atEquivCode
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {outerLevel : UniverseLevel}
+    {levelLe : outerLevel.toNat + 1 ≤ level}
+    {leftTypeCodeRaw rightTypeCodeRaw : RawTerm sourceScope}
+    (termA termB : Term sourceCtx (Ty.universe outerLevel levelLe)
+      (RawTerm.equivCode leftTypeCodeRaw rightTypeCodeRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro _renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.equivCode leftTypeCodeRaw rightTypeCodeRaw)),
+        Σ' (outerLevel : UniverseLevel),
+          Σ' (levelLe : outerLevel.toNat + 1 ≤ level),
+            Σ' (_ : genericType = Ty.universe outerLevel levelLe),
+              HEq genericTerm
+                (Term.equivCode (context := sourceCtx) outerLevel levelLe
+                  leftTypeCodeRaw rightTypeCodeRaw) by
+    obtain ⟨outerLevelA, levelLeA, typeEqA, termHEqA⟩ := key termA
+    obtain ⟨outerLevelB, levelLeB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqA
+    cases typeEqB
+    cases termHEqA
+    cases termHEqB
+    rfl
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredOuterLevel inferredLevelLe
+  exact ⟨inferredOuterLevel, inferredLevelLe, rfl, HEq.rfl⟩
+
 end LeanFX2

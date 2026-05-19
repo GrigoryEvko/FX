@@ -31,3 +31,13 @@ import LeanFX2.Term.RenameInjective
 #print axioms LeanFX2.Term.rename_injective_atRefineIntro_of_inner
 #print axioms LeanFX2.Term.rename_injective_atCodataUnfold_of_inner
 #print axioms LeanFX2.Term.rename_injective_atSessionRecv_of_inner
+#print axioms LeanFX2.Term.rename_injective_atArrowCode
+#print axioms LeanFX2.Term.rename_injective_atPiTyCode
+#print axioms LeanFX2.Term.rename_injective_atSigmaTyCode
+#print axioms LeanFX2.Term.rename_injective_atProductCode
+#print axioms LeanFX2.Term.rename_injective_atSumCode
+#print axioms LeanFX2.Term.rename_injective_atListCode
+#print axioms LeanFX2.Term.rename_injective_atOptionCode
+#print axioms LeanFX2.Term.rename_injective_atEitherCode
+#print axioms LeanFX2.Term.rename_injective_atIdCode
+#print axioms LeanFX2.Term.rename_injective_atEquivCode
