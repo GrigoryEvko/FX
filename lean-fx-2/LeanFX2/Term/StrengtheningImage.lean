@@ -17982,6 +17982,136 @@ theorem strengthenTyped?_rename_isSome_oeqFunext
           next pointwiseResult pointwiseSuccess =>
             rfl
 
+/-- T3 reverse-image bridge for the cast-wrapped `Term.equivIntroHet` rename arm. -/
+theorem strengthenTyped?_rename_isSome_equivIntroHet
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    {carrierA carrierB : Ty level sourceScope}
+    {forwardRaw backwardRaw leftInvRaw rightInvRaw : RawTerm sourceScope}
+    (forward :
+      Term sourceCtx (Ty.arrow carrierA carrierB) forwardRaw)
+    (backward :
+      Term sourceCtx (Ty.arrow carrierB carrierA) backwardRaw)
+    (leftInv :
+      Term sourceCtx
+        (equivIntroHetLeftInverseType carrierA forwardRaw backwardRaw)
+        leftInvRaw)
+    (rightInv :
+      Term sourceCtx
+        (equivIntroHetRightInverseType carrierB forwardRaw backwardRaw)
+        rightInvRaw)
+    (forwardIH :
+      (partialStrengthenTyped?
+          (Term.rename typedRenaming forward)
+          (ContextStrengthening.ofRenaming forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects)).isSome =
+        true)
+    (backwardIH :
+      (partialStrengthenTyped?
+          (Term.rename typedRenaming backward)
+          (ContextStrengthening.ofRenaming forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects)).isSome =
+        true)
+    (leftInvIH :
+      (partialStrengthenTyped?
+          (Term.rename typedRenaming leftInv)
+          (ContextStrengthening.ofRenaming forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects)).isSome =
+        true)
+    (rightInvIH :
+      (partialStrengthenTyped?
+          (Term.rename typedRenaming rightInv)
+          (ContextStrengthening.ofRenaming forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects)).isSome =
+        true) :
+    (partialStrengthenTyped?
+        (Term.rename typedRenaming
+          (Term.equivIntroHet forward backward leftInv rightInv))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)).isSome =
+      true := by
+  dsimp only [Term.rename]
+  unfold partialStrengthenTyped?
+  have carrierAStrengthens :
+      (carrierA.rename forwardRename).partialStrengthen? renameInverse =
+        some carrierA := by
+    rw [Ty.partialStrengthen?_rename_some carrierA forwardRename
+      (@RawRenaming.identity sourceScope) renameInverse renameInverseLeft,
+      Ty.rename_identity carrierA]
+  have carrierBStrengthens :
+      (carrierB.rename forwardRename).partialStrengthen? renameInverse =
+        some carrierB := by
+    rw [Ty.partialStrengthen?_rename_some carrierB forwardRename
+      (@RawRenaming.identity sourceScope) renameInverse renameInverseLeft,
+      Ty.rename_identity carrierB]
+  have castedLeftInvIH :
+      (partialStrengthenTyped?
+          (equivIntroHetLeftInverseType_rename forwardRename carrierA
+              forwardRaw backwardRaw ▸
+            Term.rename typedRenaming leftInv)
+          (ContextStrengthening.ofRenaming forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects)).isSome =
+        true := by
+    rw [partialStrengthenTyped?_isSome_castInvariant]
+    exact leftInvIH
+  have castedRightInvIH :
+      (partialStrengthenTyped?
+          (equivIntroHetRightInverseType_rename forwardRename carrierB
+              forwardRaw backwardRaw ▸
+            Term.rename typedRenaming rightInv)
+          (ContextStrengthening.ofRenaming forwardRename typedRenaming
+            renameInverse renameInverseLeft renameInverseInjects)).isSome =
+        true := by
+    rw [partialStrengthenTyped?_isSome_castInvariant]
+    exact rightInvIH
+  split
+  next noCarrierASuccess =>
+    exact absurd (carrierAStrengthens.symm.trans noCarrierASuccess)
+      (by intro contra; cases contra)
+  next targetCarrierA carrierASuccess =>
+    split
+    next noCarrierBSuccess =>
+      exact absurd (carrierBStrengthens.symm.trans noCarrierBSuccess)
+        (by intro contra; cases contra)
+    next targetCarrierB carrierBSuccess =>
+      split
+      next noForwardSuccess =>
+        have impossible : Option.isSome (none (α := _)) = true :=
+          noForwardSuccess ▸ forwardIH
+        cases impossible
+      next forwardResult forwardSuccess =>
+        split
+        next noBackwardSuccess =>
+          have impossible : Option.isSome (none (α := _)) = true :=
+            noBackwardSuccess ▸ backwardIH
+          cases impossible
+        next backwardResult backwardSuccess =>
+          split
+          next noLeftInvSuccess =>
+            have impossible : Option.isSome (none (α := _)) = true :=
+              noLeftInvSuccess ▸ castedLeftInvIH
+            cases impossible
+          next leftInvResult leftInvSuccess =>
+            split
+            next noRightInvSuccess =>
+              have impossible : Option.isSome (none (α := _)) = true :=
+                noRightInvSuccess ▸ castedRightInvIH
+              cases impossible
+            next rightInvResult rightInvSuccess =>
+              rfl
+
 /-- T3 reverse-image bridge for `Term.transp`. -/
 theorem strengthenTyped?_rename_isSome_transp
     {mode : Mode} {level : Nat}
