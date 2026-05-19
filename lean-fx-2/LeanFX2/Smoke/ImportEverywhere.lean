@@ -7,6 +7,7 @@ import LeanFX2.Smoke.AuditTacticsRawCd
 import LeanFX2.Smoke.AuditTacticsRawInversion
 import LeanFX2.Smoke.AuditTacticsSN
 import LeanFX2.Smoke.AuditTacticsSimpStrip
+import LeanFX2.Smoke.AuditTacticsStrengthen
 import LeanFX2.Smoke.ImportSurface
 import LeanFX2.Smoke.StrictComposition
 import LeanFX2.Tools.StrictHarness
@@ -18,6 +19,7 @@ import LeanFX2.Tools.Tactics.RawCd
 import LeanFX2.Tools.Tactics.RawInversion
 import LeanFX2.Tools.Tactics.SN
 import LeanFX2.Tools.Tactics.SimpStrip
+import LeanFX2.Tools.Tactics.Strengthen
 import LeanFX2.Surface.HostLex
 import LeanFX2.FX1.LeanKernel.Audit
 import LeanFX2.FX1.LeanKernel.Check
