@@ -17313,6 +17313,83 @@ theorem strengthenTyped?_rename_isSome_funextIntroHet
       renameInverse renameInverseLeft renameInverseInjects domainType
       codomainType applyARaw applyBRaw)
 
+/-- T3 reverse-image bridge for the cast-wrapped `Term.funextRefl` rename arm. -/
+theorem strengthenTyped?_rename_isSome_funextRefl
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (forwardRename : RawRenaming sourceScope targetScope)
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft :
+      ∀ sourcePosition,
+        renameInverse (forwardRename sourcePosition) = some sourcePosition)
+    (renameInverseInjects :
+      ∀ targetPosition sourcePosition,
+        renameInverse targetPosition = some sourcePosition →
+        targetPosition = forwardRename sourcePosition)
+    {domainType codomainType : Ty level sourceScope}
+    (applyRaw : RawTerm (sourceScope + 1)) :
+    (partialStrengthenTyped?
+        (Term.rename typedRenaming
+          (Term.funextRefl (context := sourceCtx) domainType codomainType
+            applyRaw))
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)).isSome =
+      true := by
+  dsimp only [Term.rename]
+  rw [partialStrengthenTyped?_isSome_castInvariant]
+  unfold partialStrengthenTyped?
+  have domainStrengthens :
+      (domainType.rename forwardRename).partialStrengthen? renameInverse
+        = some domainType := by
+    rw [Ty.partialStrengthen?_rename_some domainType forwardRename
+      (@RawRenaming.identity sourceScope) renameInverse renameInverseLeft,
+      Ty.rename_identity domainType]
+  have codomainStrengthens :
+      (codomainType.rename forwardRename).partialStrengthen? renameInverse
+        = some codomainType := by
+    rw [Ty.partialStrengthen?_rename_some codomainType forwardRename
+      (@RawRenaming.identity sourceScope) renameInverse renameInverseLeft,
+      Ty.rename_identity codomainType]
+  have applyStrengthens :
+      (applyRaw.rename forwardRename.lift).partialStrengthen?
+          renameInverse.lift
+        = some applyRaw := by
+    rw [RawTerm.partialStrengthen?_rename_some applyRaw
+      forwardRename.lift (@RawRenaming.identity sourceScope).lift
+      renameInverse.lift
+      (PartialRawRenaming.lift_rename_some renameInverseLeft),
+      RawTerm.rename_pointwise
+        (@RawRenaming.identity_lift_pointwise sourceScope) applyRaw,
+      RawTerm.rename_identity applyRaw]
+  split
+  next noDomainSuccess =>
+    exact absurd (domainStrengthens.symm.trans noDomainSuccess)
+      (by intro contra; cases contra)
+  next targetDomainType domainSuccess =>
+    have domainEq : targetDomainType = domainType :=
+      Option.some.inj (domainSuccess.symm.trans domainStrengthens)
+    subst domainEq
+    split
+    next noCodomainSuccess =>
+      exact absurd (codomainStrengthens.symm.trans noCodomainSuccess)
+        (by intro contra; cases contra)
+    next targetCodomainType codomainSuccess =>
+      have codomainEq : targetCodomainType = codomainType :=
+        Option.some.inj (codomainSuccess.symm.trans codomainStrengthens)
+      subst codomainEq
+      split
+      next noApplySuccess =>
+        exact absurd (applyStrengthens.symm.trans noApplySuccess)
+          (by intro contra; cases contra)
+      next targetApplyRaw applySuccess =>
+        have applyEq : targetApplyRaw = applyRaw :=
+          Option.some.inj (applySuccess.symm.trans applyStrengthens)
+        subst applyEq
+        rfl
+
 /-- T3 reverse-image bridge for `Term.transp`. -/
 theorem strengthenTyped?_rename_isSome_transp
     {mode : Mode} {level : Nat}
