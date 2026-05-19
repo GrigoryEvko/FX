@@ -14,6 +14,17 @@ constructor, so the rename equality is irrelevant.
 
 namespace LeanFX2
 
+private theorem termRenameInjectiveCastHEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    (typeEq : sourceType = targetType)
+    (sourceTerm : Term context sourceType sourceRaw) :
+    HEq (typeEq ▸ sourceTerm) sourceTerm := by
+  cases typeEq
+  rfl
+
 theorem Term.rename_injective_atVar
     {mode : Mode} {level sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
@@ -370,6 +381,81 @@ theorem Term.rename_injective_atListCons_of_inner
   cases genericTerm
   rename_i inferredElementType headTerm tailTerm
   exact ⟨inferredElementType, headTerm, tailTerm, rfl, HEq.rfl⟩
+
+theorem Term.rename_injective_atPair_of_inner
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {firstType : Ty level sourceScope}
+    {secondType : Ty level (sourceScope + 1)}
+    {firstRaw secondRaw : RawTerm sourceScope}
+    (firstInjective :
+      ∀ (firstA firstB : Term sourceCtx firstType firstRaw),
+        Term.rename termRenaming firstA = Term.rename termRenaming firstB →
+        firstA = firstB)
+    (secondInjective :
+      ∀ (secondA secondB :
+          Term sourceCtx (secondType.subst0 firstType firstRaw) secondRaw),
+        HEq (Term.rename termRenaming secondA)
+          (Term.rename termRenaming secondB) →
+        HEq secondA secondB)
+    (termA termB :
+      Term sourceCtx (Ty.sigmaTy firstType secondType)
+        (RawTerm.pair firstRaw secondRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.pair firstRaw secondRaw)),
+        Σ' (inferredFirstType : Ty level sourceScope),
+          Σ' (inferredSecondType : Ty level (sourceScope + 1)),
+            Σ' (firstValue :
+                Term sourceCtx inferredFirstType firstRaw),
+              Σ' (secondValue :
+                  Term sourceCtx
+                    (inferredSecondType.subst0 inferredFirstType firstRaw)
+                    secondRaw),
+                Σ' (_ :
+                    genericType =
+                      Ty.sigmaTy inferredFirstType inferredSecondType),
+                  HEq genericTerm (Term.pair firstValue secondValue) by
+    obtain ⟨inferredFirstA, inferredSecondA, firstA, secondA, typeEqA,
+      termHEqA⟩ := key termA
+    obtain ⟨inferredFirstB, inferredSecondB, firstB, secondB, typeEqB,
+      termHEqB⟩ := key termB
+    cases typeEqA
+    cases typeEqB
+    cases termHEqA
+    cases termHEqB
+    simp only [Term.rename] at renameEq
+    injection renameEq with scopeEq contextEq firstTypeEq secondTypeEq
+      firstRawEq secondRawEq firstRenameEq secondRenameHEq
+    have secondRenameUncastHEq :
+        HEq (Term.rename termRenaming secondA)
+          (Term.rename termRenaming secondB) :=
+      HEq.trans
+        (HEq.symm
+          (termRenameInjectiveCastHEq
+            (Ty.subst0_rename_commute secondType firstType firstRaw rho)
+            (Term.rename termRenaming secondA)))
+        (HEq.trans (heq_of_eq secondRenameHEq)
+          (termRenameInjectiveCastHEq
+            (Ty.subst0_rename_commute secondType firstType firstRaw rho)
+            (Term.rename termRenaming secondB)))
+    have secondHEq : HEq secondA secondB :=
+      secondInjective secondA secondB secondRenameUncastHEq
+    rw [firstInjective firstA firstB firstRenameEq]
+    cases secondHEq
+    rfl
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredFirstType inferredSecondType firstValue secondValue
+  exact ⟨inferredFirstType, inferredSecondType, firstValue, secondValue, rfl,
+    HEq.rfl⟩
 
 theorem Term.rename_injective_atListElim_of_inner
     {mode : Mode} {level sourceScope targetScope : Nat}
