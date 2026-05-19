@@ -268,6 +268,71 @@ theorem Term.rename_injective_universeCode_ctor
   intro _renameEq
   rfl
 
+theorem Term.rename_injective_equivReflIdAtId_ctor
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    (carrier : Ty level sourceScope)
+    (carrierRaw : RawTerm sourceScope) :
+    Term.rename termRenaming
+        (Term.equivReflIdAtId (context := sourceCtx)
+          innerLevel innerLevelLt carrier carrierRaw) =
+      Term.rename termRenaming
+        (Term.equivReflIdAtId (context := sourceCtx)
+          innerLevel innerLevelLt carrier carrierRaw) →
+      Term.equivReflIdAtId (context := sourceCtx)
+          innerLevel innerLevelLt carrier carrierRaw =
+        Term.equivReflIdAtId (context := sourceCtx)
+          innerLevel innerLevelLt carrier carrierRaw := by
+  intro _renameEq
+  rfl
+
+theorem Term.rename_injective_funextReflAtId_ctor
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (domainType codomainType : Ty level sourceScope)
+    (applyRaw : RawTerm (sourceScope + 1)) :
+    Term.rename termRenaming
+        (Term.funextReflAtId (context := sourceCtx)
+          domainType codomainType applyRaw) =
+      Term.rename termRenaming
+        (Term.funextReflAtId (context := sourceCtx)
+          domainType codomainType applyRaw) →
+      Term.funextReflAtId (context := sourceCtx)
+          domainType codomainType applyRaw =
+        Term.funextReflAtId (context := sourceCtx)
+          domainType codomainType applyRaw := by
+  intro _renameEq
+  rfl
+
+theorem Term.rename_injective_funextIntroHet_ctor
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (domainType codomainType : Ty level sourceScope)
+    (applyARaw applyBRaw : RawTerm (sourceScope + 1)) :
+    Term.rename termRenaming
+        (Term.funextIntroHet (context := sourceCtx)
+          domainType codomainType applyARaw applyBRaw) =
+      Term.rename termRenaming
+        (Term.funextIntroHet (context := sourceCtx)
+          domainType codomainType applyARaw applyBRaw) →
+      Term.funextIntroHet (context := sourceCtx)
+          domainType codomainType applyARaw applyBRaw =
+        Term.funextIntroHet (context := sourceCtx)
+          domainType codomainType applyARaw applyBRaw := by
+  intro _renameEq
+  rfl
+
 theorem Term.rename_injective_pathLam_ctor
     {mode : Mode} {level sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
