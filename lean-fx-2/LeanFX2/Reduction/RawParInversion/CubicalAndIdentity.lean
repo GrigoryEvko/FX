@@ -1,4 +1,3 @@
-import LeanFX2.Reduction.RawPar
 import LeanFX2.Reduction.RawParRename
 
 /-! # LeanFX2.Reduction.RawParInversion.CubicalAndIdentity

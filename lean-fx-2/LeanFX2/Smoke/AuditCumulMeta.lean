@@ -17,7 +17,6 @@ import LeanFX2.Reduction.CumulPairedEnv
 import LeanFX2.Reduction.CumulAllais
 import LeanFX2.Reduction.ConvCumulHomo
 import LeanFX2.Reduction.ConvBridge
-import LeanFX2.Reduction.RawPar
 import LeanFX2.Reduction.RawParCompatible
 import LeanFX2.Confluence.RawCdLemma
 import LeanFX2.Confluence.RawDiamond

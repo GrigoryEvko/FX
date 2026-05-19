@@ -1,6 +1,5 @@
 import LeanFX2.Foundation.RawPartialRename.TranspPiContractum
 import LeanFX2.Foundation.RawPartialRename.TranspPiPathRecognizer
-import LeanFX2.Reduction.RawPar
 import LeanFX2.Reduction.RawParRename
 import LeanFX2.Reduction.RawParInversion.TypeCodes
 import LeanFX2.Reduction.RawParWeakenInv.Weaken

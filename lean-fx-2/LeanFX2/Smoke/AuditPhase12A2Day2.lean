@@ -1,4 +1,3 @@
-import LeanFX2.Reduction.RawPar
 import LeanFX2.Reduction.RawParRename
 import LeanFX2.Reduction.RawParCompatible
 import LeanFX2.Reduction.RawParInversion
