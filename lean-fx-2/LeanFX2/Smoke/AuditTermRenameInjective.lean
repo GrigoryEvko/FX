@@ -20,6 +20,7 @@ import LeanFX2.Term.RenameInjective
 #print axioms LeanFX2.Term.rename_injective_atEitherInr_of_inner
 #print axioms LeanFX2.Term.rename_injective_atEitherMatch_of_inner
 #print axioms LeanFX2.Term.rename_injective_atIdJ_of_inner
+#print axioms LeanFX2.Term.rename_injective_atOEqJ_of_inner
 #print axioms LeanFX2.Term.rename_injective_atRefl
 #print axioms LeanFX2.Term.rename_injective_atOEqRefl
 #print axioms LeanFX2.Term.rename_injective_atIdStrictRefl
