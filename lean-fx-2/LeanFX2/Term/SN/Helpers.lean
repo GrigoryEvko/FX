@@ -1,6 +1,5 @@
 import LeanFX2.Reducibility.Basic
 import LeanFX2.Reduction.RawParCompatible
-import LeanFX2.Reduction.RawParInversion
 import LeanFX2.Reduction.RawParWeakenInv
 import LeanFX2.Term.Rename
 
