@@ -3918,4 +3918,150 @@ theorem Term.rename_injective_atEquivIntroEquiv_of_inner
           termHEqA⟩ := uaViewA
         cases typeEqA
 
+theorem Term.rename_injective_atEquivIntroUniverseId_of_inner
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (rhoInjective : RawRenamingInjective rho)
+    {innerLevel : UniverseLevel}
+    {innerLevelLt : innerLevel.toNat + 1 ≤ level}
+    {leftRaw rightRaw : RawTerm sourceScope}
+    {forwardRaw backwardRaw : RawTerm sourceScope}
+    (childInjective :
+      ∀ {childTypeA childTypeB : Ty level sourceScope}
+        {childRawA childRawB : RawTerm sourceScope}
+        (childA : Term sourceCtx childTypeA childRawA)
+        (childB : Term sourceCtx childTypeB childRawB),
+        HEq (Term.rename termRenaming childA)
+          (Term.rename termRenaming childB) →
+        HEq childA childB)
+    (termA termB :
+      Term sourceCtx (Ty.id (Ty.universe innerLevel innerLevelLt)
+        leftRaw rightRaw)
+        (RawTerm.equivIntro forwardRaw backwardRaw)) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB := by
+  intro renameEq
+  have viewA := Term.equivIntro_inv termA
+  have viewB := Term.equivIntro_inv termB
+  cases viewA with
+  | inl reflViewA =>
+    obtain ⟨carrierA, forwardEqA, backwardEqA, typeEqA, termHEqA⟩ :=
+      reflViewA
+    cases typeEqA
+  | inr restViewA =>
+    cases restViewA with
+    | inl idViewA =>
+      obtain ⟨innerLevelA, innerLevelLtA, carrierA, carrierRawA,
+        forwardEqA, backwardEqA, typeEqA, termHEqA⟩ := idViewA
+      cases typeEqA
+      cases forwardEqA
+      cases backwardEqA
+      cases termHEqA
+      cases viewB with
+      | inl reflViewB =>
+        obtain ⟨carrierB, forwardEqB, backwardEqB, typeEqB, termHEqB⟩ :=
+          reflViewB
+        cases typeEqB
+      | inr restViewB =>
+        cases restViewB with
+        | inl idViewB =>
+          obtain ⟨innerLevelB, innerLevelLtB, carrierB, carrierRawB,
+            forwardEqB, backwardEqB, typeEqB, termHEqB⟩ := idViewB
+          cases typeEqB
+          cases forwardEqB
+          cases backwardEqB
+          cases termHEqB
+          simp only [Term.rename] at renameEq
+          injection renameEq with contextEq innerLevelEq innerLevelLtEq
+            carrierRenameEq carrierRawRenameEq
+          cases innerLevelEq
+          cases innerLevelLtEq
+          have carrierEq : carrierA = carrierB :=
+            Ty.rename_injective_under_injective_renaming carrierA rhoInjective
+              carrierB carrierRenameEq
+          exact eq_of_heq
+            (Term.equivReflIdAtId_HEq_congr carrierEq rfl)
+        | inr restViewB =>
+          cases restViewB with
+          | inl introViewB =>
+            obtain ⟨carrierLeftB, carrierRightB, leftInvRawB, rightInvRawB,
+              forwardB, backwardB, leftInvB, rightInvB, typeEqB,
+              termHEqB⟩ := introViewB
+            cases typeEqB
+          | inr uaViewB =>
+            obtain ⟨innerLevelB, innerLevelLtB, carrierLeftB, carrierRightB,
+              carrierLeftRawB, carrierRightRawB, equivWitnessB, typeEqB,
+              termHEqB⟩ := uaViewB
+            cases typeEqB
+            cases termHEqB
+            simp only [Term.rename] at renameEq
+            cases renameEq
+    | inr restViewA =>
+      cases restViewA with
+      | inl introViewA =>
+        obtain ⟨carrierLeftA, carrierRightA, leftInvRawA, rightInvRawA,
+          forwardA, backwardA, leftInvA, rightInvA, typeEqA,
+          termHEqA⟩ := introViewA
+        cases typeEqA
+      | inr uaViewA =>
+        obtain ⟨innerLevelA, innerLevelLtA, carrierLeftA, carrierRightA,
+          carrierLeftRawA, carrierRightRawA, equivWitnessA, typeEqA,
+          termHEqA⟩ := uaViewA
+        cases typeEqA
+        cases termHEqA
+        cases viewB with
+        | inl reflViewB =>
+          obtain ⟨carrierB, forwardEqB, backwardEqB, typeEqB, termHEqB⟩ :=
+            reflViewB
+          cases typeEqB
+        | inr restViewB =>
+          cases restViewB with
+          | inl idViewB =>
+            obtain ⟨innerLevelB, innerLevelLtB, carrierB, carrierRawB,
+              forwardEqB, backwardEqB, typeEqB, termHEqB⟩ := idViewB
+            cases typeEqB
+            cases forwardEqB
+            cases backwardEqB
+            cases termHEqB
+            simp only [Term.rename] at renameEq
+            cases renameEq
+          | inr restViewB =>
+            cases restViewB with
+            | inl introViewB =>
+              obtain ⟨carrierLeftB, carrierRightB, leftInvRawB,
+                rightInvRawB, forwardB, backwardB, leftInvB, rightInvB,
+                typeEqB, termHEqB⟩ := introViewB
+              cases typeEqB
+            | inr uaViewB =>
+              obtain ⟨innerLevelB, innerLevelLtB, carrierLeftB,
+                carrierRightB, carrierLeftRawB, carrierRightRawB,
+                equivWitnessB, typeEqB, termHEqB⟩ := uaViewB
+              cases typeEqB
+              cases termHEqB
+              simp only [Term.rename] at renameEq
+              injection renameEq with contextEq innerLevelEq innerLevelLtEq
+                carrierLeftRenameEq carrierRightRenameEq carrierLeftRawRenameEq
+                carrierRightRawRenameEq forwardRawRenameEq backwardRawRenameEq
+                equivWitnessRenameEq
+              cases innerLevelEq
+              cases innerLevelLtEq
+              have carrierLeftEq : carrierLeftA = carrierLeftB :=
+                Ty.rename_injective_under_injective_renaming carrierLeftA
+                  rhoInjective carrierLeftB carrierLeftRenameEq
+              have carrierRightEq : carrierRightA = carrierRightB :=
+                Ty.rename_injective_under_injective_renaming carrierRightA
+                  rhoInjective carrierRightB carrierRightRenameEq
+              have carrierLeftRawEq : leftRaw = leftRaw := rfl
+              have carrierRightRawEq : rightRaw = rightRaw := rfl
+              have equivWitnessHEq : HEq equivWitnessA equivWitnessB :=
+                childInjective equivWitnessA equivWitnessB
+                  equivWitnessRenameEq
+              exact eq_of_heq
+                (Term.uaIntroHet_HEq_congr innerLevel innerLevelLt
+                  carrierLeftEq carrierRightEq carrierLeftRawEq
+                  carrierRightRawEq rfl rfl equivWitnessHEq)
+
 end LeanFX2
