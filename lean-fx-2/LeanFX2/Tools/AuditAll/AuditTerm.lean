@@ -909,6 +909,7 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_isSome_lam
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_isSome_lamPi
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_isSome_pathLam
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_isSome_oeqFunext
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_isSome_transp
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_isSome_hcompPath
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_isSome_glueIntro
