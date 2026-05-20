@@ -293,6 +293,62 @@ are already ~2s rebuilds.
 * GitHub release artifact caching (`preferReleaseBuild`) — would help
   downstream consumers but not local iteration.
 
+## Performance anti-patterns — tactics that wreck elaboration
+
+Measured from the full 628-file elaboration profile (2026-05-20,
+`scripts/profile_lean_elab.py`).  Project-wide elaboration is dominated
+by `simp` (~1474 s) and `unfold` (~357 s), almost all of it inside ~20
+single 78-case structural inductions over `Term` / `RawTerm`.  These
+patterns ARE the reason "typechecking is slow" — avoid them, and prefer
+`simp only` / `dsimp only` by default in any case split over the kernel
+inductives:
+
+1. **Bare `simp` per arm of a big case split.**  Closing every arm of an
+   `induction`/`cases` over 78-ctor `Term`/`RawTerm` with bare `simp`
+   re-runs the full default simp set per arm (cost ~ #arms × set-size ×
+   goal-size) and builds huge proof terms.  Seen in
+   `Term/RenameInjective/*` (`rename_injective_*`, ~52 % of ~86 s each).
+   FIX: `simp only [<minimal explicit lemmas>]`; hoist the shared rewrite
+   group into one local set or a `private` lemma the arms cite.
+
+2. **`unfold f` per arm.**  `unfold` runs the full unfolding elaborator
+   and re-derives equation lemmas every call; 78× on a giant goal is
+   pathological.  Seen in `Term/PartialStrengthen/RenameImage/*`
+   (`strengthenTyped?_rename_eq_*`, `unfold` 65–68 % of ~88 s each).
+   FIX: `dsimp only [f]`, or unfold ONCE before the split, or cite
+   `f.eq_def`.
+
+3. **One monster induction = one file = one core.**  Lean elaborates a
+   single `induction` sequentially (~2 cores max), so `lake -j` cannot
+   speed it.  `Foundation/RawTermInjective.lean`
+   (`rename_injective_under_injective_renaming`) is 124 s solo.  FIX:
+   factor the induction into per-constructor-family lemmas that compose,
+   or a reusable action/congruence lemma, so each piece is small AND
+   parallelizable across files (same lever as the `PolyTermAction` split
+   note above).
+
+4. **Giant proof terms → kernel re-check is the hidden cost.**  The
+   elaborator's reported self-time is often a fraction of wall time; the
+   gap is the kernel re-typechecking the produced term.  `decide` /
+   `omega` / `norm_num` / full `simp` on large goals, `cases` blowups,
+   and `<;> <heavy>` over a 78-case enum all inflate term size (the
+   `<;> rfl/decide` 92-case kernel-budget blowup is already catalogued in
+   the match-propext memory).  FIX: keep terms small — `simp only`,
+   targeted structural lemmas, no `decide` on non-trivial Decidable goals.
+
+5. **Re-deriving rename/subst/HEq facts per arm.**  rename/subst commute
+   and HEq/cast collapses re-proven in every case.  Seen in
+   `Term/Pointwise/*` (`rename_var_HEq`, `subst_pointwise`) and
+   `Reduction/Compat/HoTT/FunextFamily.lean`.  FIX: hoist into one `have`
+   before the split or a shared `private` lemma; use the `fx_simp_*` /
+   `simp_strip` bridge-rfl macros in `Tools/Tactics/SimpStrip.lean` for
+   `toRaw` cast collapsing.
+
+Before shipping a proof over `Term`/`RawTerm`/`Ty`: default to
+`simp only`/`dsimp only`, never bare `simp`/`unfold` in a case split.
+If a single declaration exceeds ~10 s, re-measure with
+`python3 scripts/profile_lean_elab.py --workers 1 --timeout-seconds 0 <file>`.
+
 ## Naming + style discipline
 
 Per `WORKING_RULES.md`:
