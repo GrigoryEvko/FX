@@ -1,4 +1,4 @@
-import LeanFX2.Reduction.ParRed.ParInductive
+import LeanFX2.Reduction.ParRed.ParInductive.Inductive
 import LeanFX2.Reduction.ParRed.CongAliases
 import LeanFX2.Reduction.ParRed.ParStepLift
 import LeanFX2.Reduction.ParRed.ParCasts

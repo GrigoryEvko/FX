@@ -1,6 +1,6 @@
 import LeanFX2.Algo.WHNF
 import LeanFX2.Term.Inversion
-import LeanFX2.Reduction.Step
+import LeanFX2.Reduction.Step.Inductive
 import LeanFX2.Algo.Progress.CanonicalIntroductions
 import LeanFX2.Algo.Progress.CanonicalTypeCodes
 import LeanFX2.Algo.Progress.CanonicalInterval

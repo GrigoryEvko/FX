@@ -1,4 +1,4 @@
-import LeanFX2.Reduction.Step
+import LeanFX2.Reduction.Step.Inductive
 
 /-! # LeanFX2.Algo.WHNF.Evaluator — head classifier, head-ctor enum, isWHNF
 

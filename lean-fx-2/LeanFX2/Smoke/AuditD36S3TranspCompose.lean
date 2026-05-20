@@ -1,7 +1,7 @@
 import LeanFX2.HoTT.TranspCompose
 import LeanFX2.HoTT.Path.Composition
 import LeanFX2.HoTT.Transport
-import LeanFX2.Reduction.Step
+import LeanFX2.Reduction.Step.Inductive
 import LeanFX2.Reduction.RawParInversion
 import LeanFX2.Confluence.RawCd
 import LeanFX2.Confluence.RawCdLemma

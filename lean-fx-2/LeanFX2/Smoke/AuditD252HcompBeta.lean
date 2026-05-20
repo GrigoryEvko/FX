@@ -1,8 +1,8 @@
 import LeanFX2.Reduction.RawParWeakenInv
-import LeanFX2.Reduction.Step
+import LeanFX2.Reduction.Step.Inductive
 import LeanFX2.Reduction.ParRed
 import LeanFX2.Reduction.ConvBridge
-import LeanFX2.Reduction.Cumul.Relation
+import LeanFX2.Reduction.Cumul.Relation.Inductive
 import LeanFX2.Bridge
 import LeanFX2.Confluence.RawCd
 import LeanFX2.Confluence.RawCdRename

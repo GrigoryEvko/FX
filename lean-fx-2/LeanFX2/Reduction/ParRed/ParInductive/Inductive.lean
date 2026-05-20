@@ -1,5 +1,5 @@
 import LeanFX2.Reduction.StepStar
-import LeanFX2.Reduction.RawPar
+import LeanFX2.Reduction.RawPar.Inductive
 
 /-! # LeanFX2.Reduction.ParRed.ParInductive
 

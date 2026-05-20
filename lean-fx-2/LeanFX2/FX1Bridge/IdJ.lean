@@ -1,5 +1,5 @@
 import LeanFX2.FX1Bridge.Id
-import LeanFX2.Reduction.Step
+import LeanFX2.Reduction.Step.Inductive
 
 /-! # FX1Bridge/IdJ
 

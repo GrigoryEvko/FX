@@ -1,4 +1,4 @@
-import LeanFX2.Reduction.RawPar
+import LeanFX2.Reduction.RawPar.Inductive
 
 /-! Phase 3.E zero-axiom audit — RawStep.par. -/
 

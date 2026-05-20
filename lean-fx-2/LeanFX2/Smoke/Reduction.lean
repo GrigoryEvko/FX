@@ -1,4 +1,4 @@
-import LeanFX2.Reduction.Step
+import LeanFX2.Reduction.Step.Inductive
 import LeanFX2.Reduction.StepStar
 
 /-! # Smoke/Reduction — β/ι reduction examples.

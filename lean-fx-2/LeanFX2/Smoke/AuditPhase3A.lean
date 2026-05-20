@@ -1,4 +1,4 @@
-import LeanFX2.Reduction.Step
+import LeanFX2.Reduction.Step.Casts
 
 /-! Phase 3.A zero-axiom audit — Step inductive + cast helpers. -/
 

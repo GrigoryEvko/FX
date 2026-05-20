@@ -1,4 +1,4 @@
-import LeanFX2.Reduction.Step
+import LeanFX2.Reduction.Step.Inductive
 import LeanFX2.Reduction.RawParInversion
 import LeanFX2.Confluence.RawCd
 import LeanFX2.Confluence.RawCdLemma

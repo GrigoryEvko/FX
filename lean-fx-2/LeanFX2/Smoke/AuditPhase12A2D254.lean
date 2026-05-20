@@ -1,6 +1,6 @@
 import LeanFX2.Reduction.RawParWeakenInv
 import LeanFX2.Reduction.ParRed
-import LeanFX2.Reduction.Step
+import LeanFX2.Reduction.Step.Inductive
 import LeanFX2.Reduction.ConvBridge
 import LeanFX2.Confluence.RawCd
 import LeanFX2.Confluence.RawCdRename

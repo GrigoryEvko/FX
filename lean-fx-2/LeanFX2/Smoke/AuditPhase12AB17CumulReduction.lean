@@ -1,4 +1,4 @@
-import LeanFX2.Reduction.Step
+import LeanFX2.Reduction.Step.Inductive
 import LeanFX2.Reduction.ParRed
 import LeanFX2.Reduction.Cumul
 

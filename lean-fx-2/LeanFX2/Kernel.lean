@@ -60,13 +60,13 @@ import LeanFX2.Term.PolyRename
 import LeanFX2.Term.PolySubst
 
 -- Layer 2 - Reduction
-import LeanFX2.Reduction.Step
+import LeanFX2.Reduction.Step.Casts
 import LeanFX2.Reduction.StepStar
 import LeanFX2.Reduction.Conv
 import LeanFX2.Reduction.ConvBridge
 import LeanFX2.Reduction.ConvCanonical
 import LeanFX2.Reduction.ParRed
-import LeanFX2.Reduction.RawPar
+import LeanFX2.Reduction.RawPar.Inductive
 import LeanFX2.Reduction.RawParCompatible
 import LeanFX2.Reduction.RawParWeakenInv
 import LeanFX2.Reduction.TranspPiContractumPar

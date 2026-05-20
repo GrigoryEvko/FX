@@ -1,6 +1,6 @@
 import LeanFX2.Algo.WHNF
 import LeanFX2.Term.Inversion
-import LeanFX2.Reduction.Step
+import LeanFX2.Reduction.Step.Inductive
 
 /-! # LeanFX2.Algo.Progress.CanonicalHoTTRefl
 

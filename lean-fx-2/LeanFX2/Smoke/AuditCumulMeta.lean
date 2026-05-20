@@ -7,7 +7,7 @@ import LeanFX2.Foundation.RawTerm
 import LeanFX2.Foundation.Ty
 import LeanFX2.Foundation.TyAct
 import LeanFX2.Foundation.SubstActsOnTy
-import LeanFX2.Reduction.Step
+import LeanFX2.Reduction.Step.Inductive
 import LeanFX2.Reduction.ParRed
 import LeanFX2.Reduction.Cumul
 import LeanFX2.Reduction.CumulSubstCompat

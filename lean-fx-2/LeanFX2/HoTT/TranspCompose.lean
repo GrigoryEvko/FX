@@ -1,6 +1,6 @@
 import LeanFX2.HoTT.Transport
 import LeanFX2.HoTT.Path.Composition
-import LeanFX2.Reduction.Step
+import LeanFX2.Reduction.Step.Inductive
 import LeanFX2.Reduction.Conv
 
 /-! # HoTT/TranspCompose — D3.6-S3 transp distributes over path composition.

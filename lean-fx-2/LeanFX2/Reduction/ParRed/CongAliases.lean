@@ -1,4 +1,4 @@
-import LeanFX2.Reduction.ParRed.ParInductive
+import LeanFX2.Reduction.ParRed.ParInductive.Inductive
 
 /-! # LeanFX2.Reduction.ParRed.CongAliases
 

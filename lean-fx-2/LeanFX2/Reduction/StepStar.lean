@@ -1,4 +1,4 @@
-import LeanFX2.Reduction.Step
+import LeanFX2.Reduction.Step.Inductive
 
 /-! # Reduction/StepStar — reflexive-transitive closure of Step.
 

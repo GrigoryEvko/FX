@@ -1,5 +1,5 @@
 import LeanFX2.Term
-import LeanFX2.Reduction.Step
+import LeanFX2.Reduction.Step.Inductive
 import LeanFX2.Graded.Rules
 import LeanFX2.Graded.Dimensions21
 import LeanFX2.Graded.Instances.Usage

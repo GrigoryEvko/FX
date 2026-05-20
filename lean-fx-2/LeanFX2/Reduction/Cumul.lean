@@ -1,4 +1,4 @@
-import LeanFX2.Reduction.Cumul.Relation
+import LeanFX2.Reduction.Cumul.Relation.Inductive
 import LeanFX2.Reduction.Cumul.Promotion
 import LeanFX2.Reduction.Cumul.BackwardCompat
 import LeanFX2.Reduction.Cumul.SubstOuter

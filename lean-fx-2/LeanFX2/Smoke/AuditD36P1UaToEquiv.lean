@@ -1,5 +1,5 @@
 import LeanFX2.Foundation.RawTerm
-import LeanFX2.Reduction.RawPar
+import LeanFX2.Reduction.RawPar.Inductive
 
 /-! # Smoke/AuditD36P1UaToEquiv — D3.6-P1 univalence-β raw vocabulary audit.
 
