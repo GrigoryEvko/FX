@@ -1,5 +1,10 @@
 import LeanFX2.Term.TypedInversion
-import LeanFX2.Term.HEqCongr
+import LeanFX2.Term.HEqCongr.Compound
+import LeanFX2.Term.HEqCongr.Atomic.Base
+import LeanFX2.Term.HEqCongr.Atomic.Cubical
+import LeanFX2.Term.HEqCongr.Atomic.Structural
+import LeanFX2.Term.HEqCongr.Atomic.TypeCodes
+import LeanFX2.Term.HEqCongr.Atomic.HeterogeneousIntro
 import LeanFX2.Term.Pointwise.PointwiseAndCompositionInfrastructure.CastHEq
 
 /-! # Term/StrengtheningImage — soundness of typed strengthening.
