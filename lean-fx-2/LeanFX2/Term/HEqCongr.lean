@@ -33,9 +33,13 @@ note in `CLAUDE.md`), the 77 congruences live in two sub-modules:
   J, observational and strict identity, modal wrappers
   (modIntro/modElim/subsume/cumulUp), and HoTT-special reflexivity
   witnesses (35 theorems)
-* `Term/HEqCongr/Atomic.lean` — atomic nullary ctors, interval
-  primitives, cubical operators, structural intros/elims, type-code
-  values, and heterogeneous intros (42 theorems)
+* `Term/HEqCongr/Atomic.lean` — public shim for atomic congruence
+  leaves:
+  * `Atomic/Base.lean` — variables, closed atomics, interval primitives
+  * `Atomic/Cubical.lean` — path, glue, transport, hcomp
+  * `Atomic/Structural.lean` — record/refine/codata/session/effect
+  * `Atomic/TypeCodes.lean` — universe and type-code values
+  * `Atomic/HeterogeneousIntro.lean` — HoTT heterogeneous intros
 
 This shim re-exports both so existing consumers keep their
 `import LeanFX2.Term.HEqCongr` statement unchanged.

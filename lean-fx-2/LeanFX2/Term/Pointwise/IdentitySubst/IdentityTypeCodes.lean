@@ -1,4 +1,5 @@
 import LeanFX2.Term.Pointwise.IdentitySubst.IdentityStructural
+import LeanFX2.Term.HEqCongr.Atomic.TypeCodes
 
 /-! # LeanFX2.Term.Pointwise.IdentitySubst.IdentityTypeCodes
 

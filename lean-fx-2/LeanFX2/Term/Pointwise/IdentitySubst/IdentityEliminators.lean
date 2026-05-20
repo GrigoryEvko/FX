@@ -1,4 +1,5 @@
 import LeanFX2.Term.Pointwise.IdentitySubst.IdentityRecursive
+import LeanFX2.Term.HEqCongr.Compound
 
 /-! # LeanFX2.Term.Pointwise.IdentitySubst.IdentityEliminators
 

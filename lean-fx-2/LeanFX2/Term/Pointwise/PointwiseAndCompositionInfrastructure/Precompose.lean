@@ -1,4 +1,3 @@
-import LeanFX2.Term.HEqCongr
 import LeanFX2.Term.Subst
 
 /-! # LeanFX2.Term.Pointwise.PointwiseAndCompositionInfrastructure

@@ -1,6 +1,4 @@
 import LeanFX2.Term.Rename
-import LeanFX2.Term.HEqCongr.Atomic
-import LeanFX2.Term.HEqCongr.Compound
 import LeanFX2.Foundation.RawTermInjective
 import LeanFX2.Foundation.TyRenameInjective
 

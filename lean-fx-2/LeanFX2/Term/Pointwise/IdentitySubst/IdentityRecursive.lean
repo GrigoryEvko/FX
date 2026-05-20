@@ -1,4 +1,6 @@
 import LeanFX2.Term.Pointwise.IdentitySubst.IdentityVariableAndBinders
+import LeanFX2.Term.HEqCongr.Compound
+import LeanFX2.Term.HEqCongr.Atomic.Base
 
 /-! # LeanFX2.Term.Pointwise.IdentitySubst.IdentityRecursive
 

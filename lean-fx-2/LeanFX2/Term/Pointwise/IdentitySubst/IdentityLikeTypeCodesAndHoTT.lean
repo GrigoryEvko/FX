@@ -1,4 +1,9 @@
 import LeanFX2.Term.Pointwise.IdentitySubst.IdentityLikeStructural
+import LeanFX2.Term.HEqCongr.Compound
+import LeanFX2.Term.HEqCongr.Atomic.Cubical
+import LeanFX2.Term.HEqCongr.Atomic.Structural
+import LeanFX2.Term.HEqCongr.Atomic.TypeCodes
+import LeanFX2.Term.HEqCongr.Atomic.HeterogeneousIntro
 
 /-! # LeanFX2.Term.Pointwise.IdentitySubst.IdentityLikeTypeCodesAndHoTT
 

@@ -1,4 +1,5 @@
 import LeanFX2.Term.RenameInjective.Core
+import LeanFX2.Term.HEqCongr.Compound
 
 /-! # Term/RenameInjective/TypeCodes
 

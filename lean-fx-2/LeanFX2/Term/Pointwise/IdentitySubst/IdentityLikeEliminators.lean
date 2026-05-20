@@ -1,4 +1,5 @@
 import LeanFX2.Term.Pointwise.IdentitySubst.IdentityLikeIntro
+import LeanFX2.Term.HEqCongr.Compound
 
 /-! # LeanFX2.Term.Pointwise.IdentitySubst.IdentityLikeEliminators
 

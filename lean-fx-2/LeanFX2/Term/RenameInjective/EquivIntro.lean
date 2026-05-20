@@ -1,4 +1,6 @@
 import LeanFX2.Term.RenameInjective.Core
+import LeanFX2.Term.HEqCongr.Compound
+import LeanFX2.Term.HEqCongr.Atomic.HeterogeneousIntro
 
 /-! # Term/RenameInjective/EquivIntro
 

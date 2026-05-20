@@ -1,4 +1,6 @@
 import LeanFX2.Term.Pointwise.IdentitySubst.Foundation
+import LeanFX2.Term.HEqCongr.Compound
+import LeanFX2.Term.HEqCongr.Atomic.Cubical
 
 /-! # LeanFX2.Term.Pointwise.IdentitySubst.IdentityLikeBinders
 

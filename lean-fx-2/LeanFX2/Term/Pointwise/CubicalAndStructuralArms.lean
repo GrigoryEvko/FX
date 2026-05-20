@@ -1,4 +1,6 @@
-import LeanFX2.Term.HEqCongr
+import LeanFX2.Term.HEqCongr.Compound
+import LeanFX2.Term.HEqCongr.Atomic.Cubical
+import LeanFX2.Term.HEqCongr.Atomic.Structural
 import LeanFX2.Term.Subst
 import LeanFX2.Term.Pointwise.PointwiseAndCompositionInfrastructure.LiftCompose
 
