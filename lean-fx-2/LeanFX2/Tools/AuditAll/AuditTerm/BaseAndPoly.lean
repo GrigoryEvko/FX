@@ -8,6 +8,8 @@ import LeanFX2.Term.PolyToTerm
 import LeanFX2.Term.ToPoly
 import LeanFX2.Term.PolyRename
 import LeanFX2.Term.PolySubst
+import LeanFX2.Foundation.Polygraph.PolyTermAction.ToRawTermRename
+import LeanFX2.Foundation.Polygraph.PolyTermAction.ToRawTermSubst
 
 /-! # AuditTerm.BaseAndPoly — core Term, progress, and polygraph bridge gates. -/
 

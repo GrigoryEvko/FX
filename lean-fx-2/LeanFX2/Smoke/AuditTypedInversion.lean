@@ -1,4 +1,5 @@
 import LeanFX2.Term.StrengtheningImage
+import LeanFX2.Term.TypedInversion
 
 /-! # AuditTypedInversion — typed `Term.app_inv` family axiom audit.
 

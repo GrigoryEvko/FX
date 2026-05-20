@@ -154,6 +154,20 @@ import LeanFX2.Translation.CubicalToObservational
 import LeanFX2.Translation.ObservationalToCubical
 import LeanFX2.Translation.Inverse
 import LeanFX2.InternalLanguage.Coherence
+import LeanFX2.Foundation.RawSubst
+import LeanFX2.Foundation.RawPartialRename
+import LeanFX2.Term.Pointwise
+import LeanFX2.Term.RenameInjective
+import LeanFX2.Term.HEqCongr
+import LeanFX2.Term.StrengtheningImage
+import LeanFX2.Reduction.RawParInversion
+import LeanFX2.Reduction.ParRed
+import LeanFX2.Reduction.ConvCumulHomo
+import LeanFX2.Reduction.Cumul
+import LeanFX2.Reduction.CumulAllais
+import LeanFX2.Confluence.RawCd
+import LeanFX2.Confluence.RawCdRename
+import LeanFX2.Reducibility
 
 /-! # LeanFX2.Rich
 
