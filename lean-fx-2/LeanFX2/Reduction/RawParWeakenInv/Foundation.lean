@@ -1,4 +1,3 @@
-import LeanFX2.Reduction.RawParInversion
 import LeanFX2.Foundation.RawPartialRename
 
 /-! # Reduction/RawParWeakenInv/Foundation — injectivity of weaken and lift

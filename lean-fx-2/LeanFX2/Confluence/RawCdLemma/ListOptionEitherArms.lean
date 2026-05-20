@@ -1,7 +1,7 @@
 import LeanFX2.Confluence.RawCdDominates
 import LeanFX2.Confluence.RawCdRename.Main
 import LeanFX2.Reduction.RawPar.Inductive
-import LeanFX2.Reduction.RawParWeakenInv
+import LeanFX2.Reduction.RawParInversion.AtomicCtors
 
 /-! # LeanFX2.Confluence.RawCdLemma.ListOptionEitherArms
 

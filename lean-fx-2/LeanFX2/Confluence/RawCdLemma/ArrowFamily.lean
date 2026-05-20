@@ -1,7 +1,8 @@
 import LeanFX2.Confluence.RawCdDominates
 import LeanFX2.Confluence.RawCdRename.Main
 import LeanFX2.Reduction.RawParCompatible.Substitution
-import LeanFX2.Reduction.RawParWeakenInv
+import LeanFX2.Reduction.RawParInversion.AtomicCtors
+import LeanFX2.Reduction.RawParInversion.CubicalAndIdentity
 
 /-! # LeanFX2.Confluence.RawCdLemma.ArrowFamily
 

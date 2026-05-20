@@ -1,5 +1,6 @@
 import LeanFX2.Confluence.RawDiamond
-import LeanFX2.Reduction.RawParInversion
+import LeanFX2.Reduction.RawParInversion.AtomicCtors
+import LeanFX2.Reduction.RawParInversion.TypeCodes
 
 /-! # Confluence/RawParStarCong — parStar congruence rules
 

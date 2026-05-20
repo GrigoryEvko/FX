@@ -1,4 +1,4 @@
-import LeanFX2.Reduction.CumulAllais
+import LeanFX2.Reduction.CumulAllais.EliminatorArms
 import LeanFX2.Reduction.ConvCumulHomo
 
 /-! # Reduction/CumulPairedEnv — Pattern 3 paired-env infrastructure (Allais)

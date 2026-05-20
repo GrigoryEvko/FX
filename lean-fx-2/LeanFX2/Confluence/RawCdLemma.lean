@@ -7,6 +7,7 @@ import LeanFX2.Confluence.RawCdLemma.ModalAndRefine
 import LeanFX2.Confluence.RawCdLemma.RecordAndCodata
 import LeanFX2.Confluence.RawCdLemma.SigmaArms
 import LeanFX2.Confluence.RawCdLemma.TypeCodes
+import LeanFX2.Reduction.RawParWeakenInv.Weaken
 
 /-! # Confluence/RawCdLemma — every parallel reduct lands in `RawTerm.cd`
 
