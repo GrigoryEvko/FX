@@ -33,7 +33,7 @@ theorem partialStrengthenTyped?_atRefl_imp_sound {mode : Mode}
           strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetCarrier carrierSuccess
@@ -61,7 +61,7 @@ theorem partialStrengthenTyped?_atOeqRefl_imp_sound {mode : Mode}
           rawWitness) strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetCarrier carrierSuccess
@@ -102,7 +102,7 @@ theorem partialStrengthenTyped?_atIdJ_imp_sound {mode : Mode}
           strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetCarrier carrierSuccess
@@ -154,7 +154,7 @@ theorem partialStrengthenTyped?_atOeqJ_imp_sound {mode : Mode}
           strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetCarrier carrierSuccess
@@ -212,7 +212,7 @@ theorem partialStrengthenTyped?_atBoolElim_imp_sound {mode : Mode}
           elseBranch) strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetMotiveType motiveSuccess
@@ -264,7 +264,7 @@ theorem partialStrengthenTyped?_atNatElim_imp_sound {mode : Mode}
           succBranch) strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i scrutineeResult scrutineeRecurse
@@ -315,7 +315,7 @@ theorem partialStrengthenTyped?_atNatRec_imp_sound {mode : Mode}
           succBranch) strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i scrutineeResult scrutineeRecurse
@@ -368,7 +368,7 @@ theorem partialStrengthenTyped?_atListElim_imp_sound {mode : Mode}
           consBranch) strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetElementType elementSuccess
@@ -422,7 +422,7 @@ theorem partialStrengthenTyped?_atOptionMatch_imp_sound {mode : Mode}
           someBranch) strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetElementType elementSuccess
@@ -471,7 +471,7 @@ theorem partialStrengthenTyped?_atApp_imp_sound {mode : Mode}
           functionTerm argumentTerm) strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetDomainType domainSuccess
@@ -520,7 +520,7 @@ theorem partialStrengthenTyped?_atAppPi_imp_sound {mode : Mode}
           functionTerm argumentTerm) strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetDomainType domainSuccess
@@ -569,7 +569,7 @@ theorem partialStrengthenTyped?_atPair_imp_sound {mode : Mode}
           strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetSecondType secondTypeSuccess
@@ -605,7 +605,7 @@ theorem partialStrengthenTyped?_atFst_imp_sound {mode : Mode}
       partialStrengthenTyped? (Term.fst pairTerm) strengthening =
         some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetFirstType firstSuccess
@@ -639,7 +639,7 @@ theorem partialStrengthenTyped?_atSnd_imp_sound {mode : Mode}
       partialStrengthenTyped? (Term.snd pairTerm) strengthening =
         some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetFirstType firstSuccess

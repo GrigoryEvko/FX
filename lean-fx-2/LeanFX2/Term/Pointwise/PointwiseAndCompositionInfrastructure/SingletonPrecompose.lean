@@ -404,20 +404,21 @@ theorem Term.subst_precompose_lift_weaken_singleton_lift_var_HEq
           ((TermSubst.singleton singletonTerm).lift
             (domainType.rename RawRenaming.weaken)))
         (Term.var (context := context.cons domainType) position))
-      (Term.var (context := context.cons domainType) position) := by
-  exact HEq.trans
-    (by
-      simpa only [Term.subst] using
-        TermSubst.precompose_lift_weaken_singleton_lift_position_HEq
-          (domainType := domainType) singletonTerm position)
-    (by
-      simp only [TermSubst.identity]
-      exact Term.type_eq_symm_cast_heq
-        (context := context.cons domainType)
-        (typeEq := Ty.subst_identity
-          (varType (context.cons domainType) position))
-        (targetTerm := Term.var
-          (context := context.cons domainType) position))
+      (Term.var (context := context.cons domainType) position) :=
+  -- `Term.subst (precompose...) (Term.var position)` reduces to the
+  -- substitution-entry lookup, and `TermSubst.identity ... position`
+  -- reduces to the identity cast, so the chain closes definitionally via
+  -- the position alignment and the cast-collapse lemma without unfolding
+  -- the 78-arm `Term.subst` match or the `TermSubst.identity` equation.
+  HEq.trans
+    (TermSubst.precompose_lift_weaken_singleton_lift_position_HEq
+      (domainType := domainType) singletonTerm position)
+    (Term.type_eq_symm_cast_heq
+      (context := context.cons domainType)
+      (typeEq := Ty.subst_identity
+        (varType (context.cons domainType) position))
+      (targetTerm := Term.var
+        (context := context.cons domainType) position))
 
 /-- A raw-index cast on a typed term is heterogeneously equal to the
 original term. -/
@@ -536,13 +537,16 @@ theorem Term.subst_rename_cancel_var_HEq
       (Term.subst termSubst
         (Term.rename termRenaming
           (Term.var (context := sourceCtx) position)))
-      (Term.var (context := sourceCtx) position) := by
-  simp only [Term.rename]
-  exact HEq.trans
+      (Term.var (context := sourceCtx) position) :=
+  -- `Term.rename termRenaming (Term.var position)` reduces by iota to the
+  -- cast form, and `Term.subst termSubst (Term.var ...)` reduces to the
+  -- substitution-entry lookup, so the whole chain closes definitionally
+  -- via the cast-collapse lemmas without unfolding the 78-arm match defs.
+  HEq.trans
     (Term.subst_type_eq_cast_heq termSubst (termRenaming position)
       (Term.var (context := middleCtx) (rho position)))
     (HEq.trans
-      (by simpa only [Term.subst] using entryHEq position)
+      (entryHEq position)
       (Term.type_eq_symm_cast_heq
         (context := sourceCtx)
         (typeEq := Ty.subst_identity (varType sourceCtx position))

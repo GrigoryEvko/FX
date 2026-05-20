@@ -56,7 +56,7 @@ theorem partialStrengthenTyped?_atEffectPerform_imp_sound {mode : Mode}
           strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetEffectTag effectTagSuccess
@@ -121,7 +121,7 @@ theorem partialStrengthenTyped?_atGlueIntro_imp_sound {mode : Mode}
           boundaryWitness baseValue partialValue) strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetBaseType baseTypeSuccess
@@ -173,7 +173,7 @@ theorem partialStrengthenTyped?_atPathLam_imp_sound {mode : Mode}
           leftEndpoint rightEndpoint body) strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetCarrierType carrierSuccess
@@ -228,7 +228,7 @@ theorem partialStrengthenTyped?_atLam_imp_sound {mode : Mode}
           (codomainType := codomainType) body) strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetDomainType domainSuccess
@@ -280,7 +280,7 @@ theorem partialStrengthenTyped?_atLamPi_imp_sound {mode : Mode}
           (codomainType := codomainType) body) strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetDomainType domainSuccess
@@ -329,7 +329,7 @@ theorem partialStrengthenTyped?_atHcomp_imp_sound {mode : Mode}
           sidesValue capValue) strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i sidesResult sidesRecurse
@@ -381,7 +381,7 @@ theorem partialStrengthenTyped?_atHcompPath_imp_sound {mode : Mode}
           strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetCarrierType carrierSuccess
@@ -447,7 +447,7 @@ theorem partialStrengthenTyped?_atTransp_imp_sound {mode : Mode}
           targetTypeRaw typePath sourceValue) strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetSourceType sourceTypeSuccess

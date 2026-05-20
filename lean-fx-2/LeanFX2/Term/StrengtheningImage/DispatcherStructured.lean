@@ -52,7 +52,7 @@ theorem partialStrengthenTyped?_atOeqFunext_imp_sound {mode : Mode}
           pointwiseProof) strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetDomainType domainSuccess
@@ -96,7 +96,7 @@ theorem partialStrengthenTyped?_atIdStrictRefl_imp_sound {mode : Mode}
           strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetCarrier carrierSuccess
@@ -141,7 +141,7 @@ theorem partialStrengthenTyped?_atIdStrictRec_imp_sound {mode : Mode}
           baseCase witness) strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetCarrier carrierSuccess
@@ -195,7 +195,7 @@ theorem partialStrengthenTyped?_atPathApp_imp_sound {mode : Mode}
           strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetCarrierType carrierSuccess
@@ -241,7 +241,7 @@ theorem partialStrengthenTyped?_atGlueElim_imp_sound {mode : Mode}
         (Term.glueElim modeIsUnivalent gluedValue) strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetBaseType baseSuccess
@@ -283,7 +283,7 @@ theorem partialStrengthenTyped?_atCodataUnfold_imp_sound {mode : Mode}
         (Term.codataUnfold initialState transition) strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetOutputType outputSuccess
@@ -320,7 +320,7 @@ theorem partialStrengthenTyped?_atCodataDest_imp_sound {mode : Mode}
         (Term.codataDest codataValue) strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetStateType stateSuccess
@@ -363,7 +363,7 @@ theorem partialStrengthenTyped?_atSessionSend_imp_sound {mode : Mode}
         (Term.sessionSend protocolStep channel payload) strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetProtocolStep protocolSuccess
@@ -399,7 +399,7 @@ theorem partialStrengthenTyped?_atSessionRecv_imp_sound {mode : Mode}
         (Term.sessionRecv channel) strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetProtocolStep protocolSuccess
@@ -428,7 +428,7 @@ theorem partialStrengthenTyped?_atEquivReflId_imp_sound {mode : Mode}
           strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetCarrier carrierSuccess
@@ -458,7 +458,7 @@ theorem partialStrengthenTyped?_atRecordIntro_imp_sound {mode : Mode}
         (Term.recordIntro (firstField := firstField)) strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i fieldResult fieldRecurse
@@ -487,7 +487,7 @@ theorem partialStrengthenTyped?_atRecordProj_imp_sound {mode : Mode}
         (Term.recordProj (recordValue := recordValue)) strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetFieldType fieldSuccess
@@ -528,7 +528,7 @@ theorem partialStrengthenTyped?_atRefineIntro_imp_sound {mode : Mode}
           strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetPredicate predicateSuccess
@@ -567,7 +567,7 @@ theorem partialStrengthenTyped?_atRefineElim_imp_sound {mode : Mode}
         (Term.refineElim refinedValue) strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetBaseType baseSuccess
@@ -611,7 +611,7 @@ theorem partialStrengthenTyped?_atCumulUp_imp_sound {mode : Mode}
           levelLeHigh typeCode) strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i codeResult codeRecurse
@@ -656,7 +656,7 @@ theorem partialStrengthenTyped?_atEitherMatch_imp_sound {mode : Mode}
           rightBranch) strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetLeftType leftSuccess

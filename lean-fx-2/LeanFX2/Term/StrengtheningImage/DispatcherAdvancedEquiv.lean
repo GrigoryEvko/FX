@@ -40,7 +40,7 @@ theorem partialStrengthenTyped?_atEquivApp_imp_sound {mode : Mode}
         (Term.equivApp equivTerm argumentTerm) strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetCarrierA carrierASuccess
@@ -87,7 +87,7 @@ theorem partialStrengthenTyped?_atEquivApply_imp_sound {mode : Mode}
         (Term.equivApply equivTerm argumentTerm) strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetCarrierA carrierASuccess
@@ -137,7 +137,7 @@ theorem partialStrengthenTyped?_atUaToEquiv_imp_sound {mode : Mode}
           leftTy rightTy leftTyRaw rightTyRaw proof) strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetLeftTy leftTyStrengthens
@@ -207,7 +207,7 @@ theorem partialStrengthenTyped?_atEquivIntroHet_imp_sound {mode : Mode}
           strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetCarrierA carrierASuccess
@@ -264,7 +264,7 @@ theorem partialStrengthenTyped?_atUaIntroHet_imp_sound {mode : Mode}
           carrierARaw carrierBRaw equivWitness) strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetCarrierA carrierAStrengthens
@@ -316,7 +316,7 @@ theorem partialStrengthenTyped?_atFunextIntroHet_imp_sound {mode : Mode}
           applyARaw applyBRaw) strengthening =
           some result) :
     StrengtheningSoundness result := by
-  unfold partialStrengthenTyped? at success
+  dsimp only [partialStrengthenTyped?] at success
   split at success
   · cases success
   · rename_i targetDomainType domainStrengthens

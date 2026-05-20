@@ -21,6 +21,111 @@ namespace LeanFX2
 
 variable {mode : Mode} {level scope : Nat}
 
+/-- Per-head-ctor target proposition collecting all eleven type-code
+raw inversions into one shared shape.  For each type-code head, this
+gives the existential raw shape that the public inversion theorem
+below extracts; every non-type-code head maps to `True`.  Full
+enumeration (no wildcard) keeps the definition propext-free under the
+strict zero-axiom policy.  This is the single carrier that lets all
+eleven public theorems share ONE structural `cases someTerm` (in
+`Term.typeCodeRawShape_self`) rather than each performing its own
+seventy-seven-arm split. -/
+private def Term.typeCodeRawShape {scope : Nat} (raw : RawTerm scope) :
+    Term.HeadCtor → Prop
+  | .var => True
+  | .unit => True
+  | .lam => True
+  | .app => True
+  | .lamPi => True
+  | .appPi => True
+  | .pair => True
+  | .fst => True
+  | .snd => True
+  | .boolTrue => True
+  | .boolFalse => True
+  | .boolElim => True
+  | .natZero => True
+  | .natSucc => True
+  | .natElim => True
+  | .natRec => True
+  | .listNil => True
+  | .listCons => True
+  | .listElim => True
+  | .optionNone => True
+  | .optionSome => True
+  | .optionMatch => True
+  | .eitherInl => True
+  | .eitherInr => True
+  | .eitherMatch => True
+  | .refl => True
+  | .idJ => True
+  | .oeqRefl => True
+  | .oeqJ => True
+  | .oeqFunext => True
+  | .idStrictRefl => True
+  | .idStrictRec => True
+  | .modIntro => True
+  | .modElim => True
+  | .subsume => True
+  | .interval0 => True
+  | .interval1 => True
+  | .intervalOpp => True
+  | .intervalMeet => True
+  | .intervalJoin => True
+  | .pathLam => True
+  | .pathApp => True
+  | .glueIntro => True
+  | .glueElim => True
+  | .transp => True
+  | .hcomp => True
+  | .recordIntro => True
+  | .recordProj => True
+  | .refineIntro => True
+  | .refineElim => True
+  | .codataUnfold => True
+  | .codataDest => True
+  | .sessionSend => True
+  | .sessionRecv => True
+  | .effectPerform => True
+  | .universeCode => ∃ universeLevelRaw : Nat, raw = RawTerm.universeCode universeLevelRaw
+  | .cumulUp => True
+  | .equivReflId => True
+  | .funextRefl => True
+  | .equivReflIdAtId => True
+  | .funextReflAtId => True
+  | .equivIntroHet => True
+  | .equivApp => True
+  | .uaIntroHet => True
+  | .funextIntroHet => True
+  | .uaToEquiv => True
+  | .equivApply => True
+  | .arrowCode => ∃ domainCodeRaw codomainCodeRaw : RawTerm scope, raw = RawTerm.arrowCode domainCodeRaw codomainCodeRaw
+  | .piTyCode => ∃ (domainCodeRaw : RawTerm scope) (codomainCodeRaw : RawTerm (scope + 1)), raw = RawTerm.piTyCode domainCodeRaw codomainCodeRaw
+  | .sigmaTyCode => ∃ (domainCodeRaw : RawTerm scope) (codomainCodeRaw : RawTerm (scope + 1)), raw = RawTerm.sigmaTyCode domainCodeRaw codomainCodeRaw
+  | .productCode => ∃ firstCodeRaw secondCodeRaw : RawTerm scope, raw = RawTerm.productCode firstCodeRaw secondCodeRaw
+  | .sumCode => ∃ leftCodeRaw rightCodeRaw : RawTerm scope, raw = RawTerm.sumCode leftCodeRaw rightCodeRaw
+  | .listCode => ∃ elementCodeRaw : RawTerm scope, raw = RawTerm.listCode elementCodeRaw
+  | .optionCode => ∃ elementCodeRaw : RawTerm scope, raw = RawTerm.optionCode elementCodeRaw
+  | .eitherCode => ∃ leftCodeRaw rightCodeRaw : RawTerm scope, raw = RawTerm.eitherCode leftCodeRaw rightCodeRaw
+  | .idCode => ∃ typeCodeRaw leftRaw rightRaw : RawTerm scope, raw = RawTerm.idCode typeCodeRaw leftRaw rightRaw
+  | .equivCode => ∃ leftTypeCodeRaw rightTypeCodeRaw : RawTerm scope, raw = RawTerm.equivCode leftTypeCodeRaw rightTypeCodeRaw
+
+/-- The single shared seventy-seven-arm `cases someTerm`: every typed
+term satisfies `typeCodeRawShape` at its own head ctor.  Type-code
+heads land in their existential arm (witnesses read off the matched
+constructor's raw fields); all other heads land in the trivial `True`
+arm.  The eleven public theorems below specialise this with their
+`headEq` hypothesis, paying ZERO additional case-split cost. -/
+private theorem Term.typeCodeRawShape_self {context : Ctx mode level scope}
+    {ty : Ty level scope} {raw : RawTerm scope}
+    (someTerm : Term context ty raw) :
+    Term.typeCodeRawShape raw someTerm.headCtor := by
+  cases someTerm <;> first
+    | exact ⟨_, _, _, rfl⟩
+    | exact ⟨_, _, rfl⟩
+    | exact ⟨_, rfl⟩
+    | exact True.intro
+
 /-- If a term's `headCtor` is `universeCode`, its raw is
 `RawTerm.universeCode` of a single inner-universe level (a `Nat`).
 Universe-code canonical form needed by the Progress proof for the
@@ -35,85 +140,9 @@ theorem Term.headCtor_universeCode_raw {context : Ctx mode level scope}
     (headEq : someTerm.headCtor = Term.HeadCtor.universeCode) :
     ∃ universeLevelRaw : Nat,
       raw = RawTerm.universeCode universeLevelRaw := by
-  cases someTerm with
-  | var _ => nomatch headEq
-  | unit => nomatch headEq
-  | lam _ => nomatch headEq
-  | app _ _ => nomatch headEq
-  | lamPi _ => nomatch headEq
-  | appPi _ _ => nomatch headEq
-  | pair _ _ => nomatch headEq
-  | fst _ => nomatch headEq
-  | snd _ => nomatch headEq
-  | boolTrue => nomatch headEq
-  | boolFalse => nomatch headEq
-  | boolElim _ _ _ => nomatch headEq
-  | natZero => nomatch headEq
-  | natSucc _ => nomatch headEq
-  | natElim _ _ _ => nomatch headEq
-  | natRec _ _ _ => nomatch headEq
-  | listNil => nomatch headEq
-  | listCons _ _ => nomatch headEq
-  | listElim _ _ _ => nomatch headEq
-  | optionNone => nomatch headEq
-  | optionSome _ => nomatch headEq
-  | optionMatch _ _ _ => nomatch headEq
-  | eitherInl _ => nomatch headEq
-  | eitherInr _ => nomatch headEq
-  | eitherMatch _ _ _ => nomatch headEq
-  | refl _ _ => nomatch headEq
-  | idJ _ _ => nomatch headEq
-  | oeqRefl _ _ => nomatch headEq
-  | oeqJ _ _ => nomatch headEq
-  | oeqFunext _ _ _ _ _ => nomatch headEq
-  | idStrictRefl _ _ _ => nomatch headEq
-  | idStrictRec _ _ _ => nomatch headEq
-  | modIntro _ => nomatch headEq
-  | modElim _ => nomatch headEq
-  | subsume _ => nomatch headEq
-  | interval0 => nomatch headEq
-  | interval1 => nomatch headEq
-  | intervalOpp _ => nomatch headEq
-  | intervalMeet _ _ => nomatch headEq
-  | intervalJoin _ _ => nomatch headEq
-  | pathLam _ _ _ _ _ => nomatch headEq
-  | pathApp _ _ _ => nomatch headEq
-  | glueIntro _ _ _ _ _ => nomatch headEq
-  | glueElim _ _ => nomatch headEq
-  | transp _ _ _ _ _ _ _ _ _ => nomatch headEq
-  | hcomp _ _ _ => nomatch headEq
-  | hcompPath _ _ _ _ _ => nomatch headEq
-  | recordIntro _ => nomatch headEq
-  | recordProj _ => nomatch headEq
-  | refineIntro _ _ _ => nomatch headEq
-  | refineElim _ => nomatch headEq
-  | codataUnfold _ _ => nomatch headEq
-  | codataDest _ => nomatch headEq
-  | sessionSend _ _ _ => nomatch headEq
-  | sessionRecv _ => nomatch headEq
-  | effectPerform _ _ _ _ _ _ => nomatch headEq
-  | universeCode _ _ _ _ => exact ⟨_, rfl⟩
-  | cumulUp _ _ _ _ _ _ => nomatch headEq
-  | equivReflId _ => nomatch headEq
-  | funextRefl _ _ _ => nomatch headEq
-  | equivReflIdAtId _ _ _ _ => nomatch headEq
-  | funextReflAtId _ _ _ => nomatch headEq
-  | equivIntroHet _ _ _ _ => nomatch headEq
-  | equivApp _ _ => nomatch headEq
-  | uaIntroHet _ _ _ _ _ => nomatch headEq
-  | funextIntroHet _ _ _ _ => nomatch headEq
-  | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
-  | equivApply _ _ => nomatch headEq
-  | arrowCode _ _ _ _ => nomatch headEq
-  | piTyCode _ _ _ _ => nomatch headEq
-  | sigmaTyCode _ _ _ _ => nomatch headEq
-  | productCode _ _ _ _ => nomatch headEq
-  | sumCode _ _ _ _ => nomatch headEq
-  | listCode _ _ _ => nomatch headEq
-  | optionCode _ _ _ => nomatch headEq
-  | eitherCode _ _ _ _ => nomatch headEq
-  | idCode _ _ _ _ _ => nomatch headEq
-  | equivCode _ _ _ _ => nomatch headEq
+  have shape := someTerm.typeCodeRawShape_self
+  rw [headEq] at shape
+  exact shape
 
 /-- If a term's `headCtor` is `arrowCode`, its raw is
 `RawTerm.arrowCode` of a domain code raw form and a codomain code raw
@@ -129,85 +158,9 @@ theorem Term.headCtor_arrowCode_raw {context : Ctx mode level scope}
     (headEq : someTerm.headCtor = Term.HeadCtor.arrowCode) :
     ∃ domainCodeRaw codomainCodeRaw : RawTerm scope,
       raw = RawTerm.arrowCode domainCodeRaw codomainCodeRaw := by
-  cases someTerm with
-  | var _ => nomatch headEq
-  | unit => nomatch headEq
-  | lam _ => nomatch headEq
-  | app _ _ => nomatch headEq
-  | lamPi _ => nomatch headEq
-  | appPi _ _ => nomatch headEq
-  | pair _ _ => nomatch headEq
-  | fst _ => nomatch headEq
-  | snd _ => nomatch headEq
-  | boolTrue => nomatch headEq
-  | boolFalse => nomatch headEq
-  | boolElim _ _ _ => nomatch headEq
-  | natZero => nomatch headEq
-  | natSucc _ => nomatch headEq
-  | natElim _ _ _ => nomatch headEq
-  | natRec _ _ _ => nomatch headEq
-  | listNil => nomatch headEq
-  | listCons _ _ => nomatch headEq
-  | listElim _ _ _ => nomatch headEq
-  | optionNone => nomatch headEq
-  | optionSome _ => nomatch headEq
-  | optionMatch _ _ _ => nomatch headEq
-  | eitherInl _ => nomatch headEq
-  | eitherInr _ => nomatch headEq
-  | eitherMatch _ _ _ => nomatch headEq
-  | refl _ _ => nomatch headEq
-  | idJ _ _ => nomatch headEq
-  | oeqRefl _ _ => nomatch headEq
-  | oeqJ _ _ => nomatch headEq
-  | oeqFunext _ _ _ _ _ => nomatch headEq
-  | idStrictRefl _ _ _ => nomatch headEq
-  | idStrictRec _ _ _ => nomatch headEq
-  | modIntro _ => nomatch headEq
-  | modElim _ => nomatch headEq
-  | subsume _ => nomatch headEq
-  | interval0 => nomatch headEq
-  | interval1 => nomatch headEq
-  | intervalOpp _ => nomatch headEq
-  | intervalMeet _ _ => nomatch headEq
-  | intervalJoin _ _ => nomatch headEq
-  | pathLam _ _ _ _ _ => nomatch headEq
-  | pathApp _ _ _ => nomatch headEq
-  | glueIntro _ _ _ _ _ => nomatch headEq
-  | glueElim _ _ => nomatch headEq
-  | transp _ _ _ _ _ _ _ _ _ => nomatch headEq
-  | hcomp _ _ _ => nomatch headEq
-  | hcompPath _ _ _ _ _ => nomatch headEq
-  | recordIntro _ => nomatch headEq
-  | recordProj _ => nomatch headEq
-  | refineIntro _ _ _ => nomatch headEq
-  | refineElim _ => nomatch headEq
-  | codataUnfold _ _ => nomatch headEq
-  | codataDest _ => nomatch headEq
-  | sessionSend _ _ _ => nomatch headEq
-  | sessionRecv _ => nomatch headEq
-  | effectPerform _ _ _ _ _ _ => nomatch headEq
-  | universeCode _ _ _ _ => nomatch headEq
-  | cumulUp _ _ _ _ _ _ => nomatch headEq
-  | equivReflId _ => nomatch headEq
-  | funextRefl _ _ _ => nomatch headEq
-  | equivReflIdAtId _ _ _ _ => nomatch headEq
-  | funextReflAtId _ _ _ => nomatch headEq
-  | equivIntroHet _ _ _ _ => nomatch headEq
-  | equivApp _ _ => nomatch headEq
-  | uaIntroHet _ _ _ _ _ => nomatch headEq
-  | funextIntroHet _ _ _ _ => nomatch headEq
-  | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
-  | equivApply _ _ => nomatch headEq
-  | arrowCode _ _ _ _ => exact ⟨_, _, rfl⟩
-  | piTyCode _ _ _ _ => nomatch headEq
-  | sigmaTyCode _ _ _ _ => nomatch headEq
-  | productCode _ _ _ _ => nomatch headEq
-  | sumCode _ _ _ _ => nomatch headEq
-  | listCode _ _ _ => nomatch headEq
-  | optionCode _ _ _ => nomatch headEq
-  | eitherCode _ _ _ _ => nomatch headEq
-  | idCode _ _ _ _ _ => nomatch headEq
-  | equivCode _ _ _ _ => nomatch headEq
+  have shape := someTerm.typeCodeRawShape_self
+  rw [headEq] at shape
+  exact shape
 
 /-- If a term's `headCtor` is `piTyCode`, its raw is `RawTerm.piTyCode`
 of a domain code raw form (at scope) and a codomain code raw form (at
@@ -221,85 +174,9 @@ theorem Term.headCtor_piTyCode_raw {context : Ctx mode level scope}
     (headEq : someTerm.headCtor = Term.HeadCtor.piTyCode) :
     ∃ (domainCodeRaw : RawTerm scope) (codomainCodeRaw : RawTerm (scope + 1)),
       raw = RawTerm.piTyCode domainCodeRaw codomainCodeRaw := by
-  cases someTerm with
-  | var _ => nomatch headEq
-  | unit => nomatch headEq
-  | lam _ => nomatch headEq
-  | app _ _ => nomatch headEq
-  | lamPi _ => nomatch headEq
-  | appPi _ _ => nomatch headEq
-  | pair _ _ => nomatch headEq
-  | fst _ => nomatch headEq
-  | snd _ => nomatch headEq
-  | boolTrue => nomatch headEq
-  | boolFalse => nomatch headEq
-  | boolElim _ _ _ => nomatch headEq
-  | natZero => nomatch headEq
-  | natSucc _ => nomatch headEq
-  | natElim _ _ _ => nomatch headEq
-  | natRec _ _ _ => nomatch headEq
-  | listNil => nomatch headEq
-  | listCons _ _ => nomatch headEq
-  | listElim _ _ _ => nomatch headEq
-  | optionNone => nomatch headEq
-  | optionSome _ => nomatch headEq
-  | optionMatch _ _ _ => nomatch headEq
-  | eitherInl _ => nomatch headEq
-  | eitherInr _ => nomatch headEq
-  | eitherMatch _ _ _ => nomatch headEq
-  | refl _ _ => nomatch headEq
-  | idJ _ _ => nomatch headEq
-  | oeqRefl _ _ => nomatch headEq
-  | oeqJ _ _ => nomatch headEq
-  | oeqFunext _ _ _ _ _ => nomatch headEq
-  | idStrictRefl _ _ _ => nomatch headEq
-  | idStrictRec _ _ _ => nomatch headEq
-  | modIntro _ => nomatch headEq
-  | modElim _ => nomatch headEq
-  | subsume _ => nomatch headEq
-  | interval0 => nomatch headEq
-  | interval1 => nomatch headEq
-  | intervalOpp _ => nomatch headEq
-  | intervalMeet _ _ => nomatch headEq
-  | intervalJoin _ _ => nomatch headEq
-  | pathLam _ _ _ _ _ => nomatch headEq
-  | pathApp _ _ _ => nomatch headEq
-  | glueIntro _ _ _ _ _ => nomatch headEq
-  | glueElim _ _ => nomatch headEq
-  | transp _ _ _ _ _ _ _ _ _ => nomatch headEq
-  | hcomp _ _ _ => nomatch headEq
-  | hcompPath _ _ _ _ _ => nomatch headEq
-  | recordIntro _ => nomatch headEq
-  | recordProj _ => nomatch headEq
-  | refineIntro _ _ _ => nomatch headEq
-  | refineElim _ => nomatch headEq
-  | codataUnfold _ _ => nomatch headEq
-  | codataDest _ => nomatch headEq
-  | sessionSend _ _ _ => nomatch headEq
-  | sessionRecv _ => nomatch headEq
-  | effectPerform _ _ _ _ _ _ => nomatch headEq
-  | universeCode _ _ _ _ => nomatch headEq
-  | cumulUp _ _ _ _ _ _ => nomatch headEq
-  | equivReflId _ => nomatch headEq
-  | funextRefl _ _ _ => nomatch headEq
-  | equivReflIdAtId _ _ _ _ => nomatch headEq
-  | funextReflAtId _ _ _ => nomatch headEq
-  | equivIntroHet _ _ _ _ => nomatch headEq
-  | equivApp _ _ => nomatch headEq
-  | uaIntroHet _ _ _ _ _ => nomatch headEq
-  | funextIntroHet _ _ _ _ => nomatch headEq
-  | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
-  | equivApply _ _ => nomatch headEq
-  | arrowCode _ _ _ _ => nomatch headEq
-  | piTyCode _ _ _ _ => exact ⟨_, _, rfl⟩
-  | sigmaTyCode _ _ _ _ => nomatch headEq
-  | productCode _ _ _ _ => nomatch headEq
-  | sumCode _ _ _ _ => nomatch headEq
-  | listCode _ _ _ => nomatch headEq
-  | optionCode _ _ _ => nomatch headEq
-  | eitherCode _ _ _ _ => nomatch headEq
-  | idCode _ _ _ _ _ => nomatch headEq
-  | equivCode _ _ _ _ => nomatch headEq
+  have shape := someTerm.typeCodeRawShape_self
+  rw [headEq] at shape
+  exact shape
 
 /-- If a term's `headCtor` is `sigmaTyCode`, its raw is
 `RawTerm.sigmaTyCode` of a domain code raw form (at scope) and a
@@ -314,85 +191,9 @@ theorem Term.headCtor_sigmaTyCode_raw {context : Ctx mode level scope}
     (headEq : someTerm.headCtor = Term.HeadCtor.sigmaTyCode) :
     ∃ (domainCodeRaw : RawTerm scope) (codomainCodeRaw : RawTerm (scope + 1)),
       raw = RawTerm.sigmaTyCode domainCodeRaw codomainCodeRaw := by
-  cases someTerm with
-  | var _ => nomatch headEq
-  | unit => nomatch headEq
-  | lam _ => nomatch headEq
-  | app _ _ => nomatch headEq
-  | lamPi _ => nomatch headEq
-  | appPi _ _ => nomatch headEq
-  | pair _ _ => nomatch headEq
-  | fst _ => nomatch headEq
-  | snd _ => nomatch headEq
-  | boolTrue => nomatch headEq
-  | boolFalse => nomatch headEq
-  | boolElim _ _ _ => nomatch headEq
-  | natZero => nomatch headEq
-  | natSucc _ => nomatch headEq
-  | natElim _ _ _ => nomatch headEq
-  | natRec _ _ _ => nomatch headEq
-  | listNil => nomatch headEq
-  | listCons _ _ => nomatch headEq
-  | listElim _ _ _ => nomatch headEq
-  | optionNone => nomatch headEq
-  | optionSome _ => nomatch headEq
-  | optionMatch _ _ _ => nomatch headEq
-  | eitherInl _ => nomatch headEq
-  | eitherInr _ => nomatch headEq
-  | eitherMatch _ _ _ => nomatch headEq
-  | refl _ _ => nomatch headEq
-  | idJ _ _ => nomatch headEq
-  | oeqRefl _ _ => nomatch headEq
-  | oeqJ _ _ => nomatch headEq
-  | oeqFunext _ _ _ _ _ => nomatch headEq
-  | idStrictRefl _ _ _ => nomatch headEq
-  | idStrictRec _ _ _ => nomatch headEq
-  | modIntro _ => nomatch headEq
-  | modElim _ => nomatch headEq
-  | subsume _ => nomatch headEq
-  | interval0 => nomatch headEq
-  | interval1 => nomatch headEq
-  | intervalOpp _ => nomatch headEq
-  | intervalMeet _ _ => nomatch headEq
-  | intervalJoin _ _ => nomatch headEq
-  | pathLam _ _ _ _ _ => nomatch headEq
-  | pathApp _ _ _ => nomatch headEq
-  | glueIntro _ _ _ _ _ => nomatch headEq
-  | glueElim _ _ => nomatch headEq
-  | transp _ _ _ _ _ _ _ _ _ => nomatch headEq
-  | hcomp _ _ _ => nomatch headEq
-  | hcompPath _ _ _ _ _ => nomatch headEq
-  | recordIntro _ => nomatch headEq
-  | recordProj _ => nomatch headEq
-  | refineIntro _ _ _ => nomatch headEq
-  | refineElim _ => nomatch headEq
-  | codataUnfold _ _ => nomatch headEq
-  | codataDest _ => nomatch headEq
-  | sessionSend _ _ _ => nomatch headEq
-  | sessionRecv _ => nomatch headEq
-  | effectPerform _ _ _ _ _ _ => nomatch headEq
-  | universeCode _ _ _ _ => nomatch headEq
-  | cumulUp _ _ _ _ _ _ => nomatch headEq
-  | equivReflId _ => nomatch headEq
-  | funextRefl _ _ _ => nomatch headEq
-  | equivReflIdAtId _ _ _ _ => nomatch headEq
-  | funextReflAtId _ _ _ => nomatch headEq
-  | equivIntroHet _ _ _ _ => nomatch headEq
-  | equivApp _ _ => nomatch headEq
-  | uaIntroHet _ _ _ _ _ => nomatch headEq
-  | funextIntroHet _ _ _ _ => nomatch headEq
-  | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
-  | equivApply _ _ => nomatch headEq
-  | arrowCode _ _ _ _ => nomatch headEq
-  | piTyCode _ _ _ _ => nomatch headEq
-  | sigmaTyCode _ _ _ _ => exact ⟨_, _, rfl⟩
-  | productCode _ _ _ _ => nomatch headEq
-  | sumCode _ _ _ _ => nomatch headEq
-  | listCode _ _ _ => nomatch headEq
-  | optionCode _ _ _ => nomatch headEq
-  | eitherCode _ _ _ _ => nomatch headEq
-  | idCode _ _ _ _ _ => nomatch headEq
-  | equivCode _ _ _ _ => nomatch headEq
+  have shape := someTerm.typeCodeRawShape_self
+  rw [headEq] at shape
+  exact shape
 
 /-- If a term's `headCtor` is `productCode`, its raw is
 `RawTerm.productCode` of a first-component code raw form and a
@@ -408,85 +209,9 @@ theorem Term.headCtor_productCode_raw {context : Ctx mode level scope}
     (headEq : someTerm.headCtor = Term.HeadCtor.productCode) :
     ∃ firstCodeRaw secondCodeRaw : RawTerm scope,
       raw = RawTerm.productCode firstCodeRaw secondCodeRaw := by
-  cases someTerm with
-  | var _ => nomatch headEq
-  | unit => nomatch headEq
-  | lam _ => nomatch headEq
-  | app _ _ => nomatch headEq
-  | lamPi _ => nomatch headEq
-  | appPi _ _ => nomatch headEq
-  | pair _ _ => nomatch headEq
-  | fst _ => nomatch headEq
-  | snd _ => nomatch headEq
-  | boolTrue => nomatch headEq
-  | boolFalse => nomatch headEq
-  | boolElim _ _ _ => nomatch headEq
-  | natZero => nomatch headEq
-  | natSucc _ => nomatch headEq
-  | natElim _ _ _ => nomatch headEq
-  | natRec _ _ _ => nomatch headEq
-  | listNil => nomatch headEq
-  | listCons _ _ => nomatch headEq
-  | listElim _ _ _ => nomatch headEq
-  | optionNone => nomatch headEq
-  | optionSome _ => nomatch headEq
-  | optionMatch _ _ _ => nomatch headEq
-  | eitherInl _ => nomatch headEq
-  | eitherInr _ => nomatch headEq
-  | eitherMatch _ _ _ => nomatch headEq
-  | refl _ _ => nomatch headEq
-  | idJ _ _ => nomatch headEq
-  | oeqRefl _ _ => nomatch headEq
-  | oeqJ _ _ => nomatch headEq
-  | oeqFunext _ _ _ _ _ => nomatch headEq
-  | idStrictRefl _ _ _ => nomatch headEq
-  | idStrictRec _ _ _ => nomatch headEq
-  | modIntro _ => nomatch headEq
-  | modElim _ => nomatch headEq
-  | subsume _ => nomatch headEq
-  | interval0 => nomatch headEq
-  | interval1 => nomatch headEq
-  | intervalOpp _ => nomatch headEq
-  | intervalMeet _ _ => nomatch headEq
-  | intervalJoin _ _ => nomatch headEq
-  | pathLam _ _ _ _ _ => nomatch headEq
-  | pathApp _ _ _ => nomatch headEq
-  | glueIntro _ _ _ _ _ => nomatch headEq
-  | glueElim _ _ => nomatch headEq
-  | transp _ _ _ _ _ _ _ _ _ => nomatch headEq
-  | hcomp _ _ _ => nomatch headEq
-  | hcompPath _ _ _ _ _ => nomatch headEq
-  | recordIntro _ => nomatch headEq
-  | recordProj _ => nomatch headEq
-  | refineIntro _ _ _ => nomatch headEq
-  | refineElim _ => nomatch headEq
-  | codataUnfold _ _ => nomatch headEq
-  | codataDest _ => nomatch headEq
-  | sessionSend _ _ _ => nomatch headEq
-  | sessionRecv _ => nomatch headEq
-  | effectPerform _ _ _ _ _ _ => nomatch headEq
-  | universeCode _ _ _ _ => nomatch headEq
-  | cumulUp _ _ _ _ _ _ => nomatch headEq
-  | equivReflId _ => nomatch headEq
-  | funextRefl _ _ _ => nomatch headEq
-  | equivReflIdAtId _ _ _ _ => nomatch headEq
-  | funextReflAtId _ _ _ => nomatch headEq
-  | equivIntroHet _ _ _ _ => nomatch headEq
-  | equivApp _ _ => nomatch headEq
-  | uaIntroHet _ _ _ _ _ => nomatch headEq
-  | funextIntroHet _ _ _ _ => nomatch headEq
-  | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
-  | equivApply _ _ => nomatch headEq
-  | arrowCode _ _ _ _ => nomatch headEq
-  | piTyCode _ _ _ _ => nomatch headEq
-  | sigmaTyCode _ _ _ _ => nomatch headEq
-  | productCode _ _ _ _ => exact ⟨_, _, rfl⟩
-  | sumCode _ _ _ _ => nomatch headEq
-  | listCode _ _ _ => nomatch headEq
-  | optionCode _ _ _ => nomatch headEq
-  | eitherCode _ _ _ _ => nomatch headEq
-  | idCode _ _ _ _ _ => nomatch headEq
-  | equivCode _ _ _ _ => nomatch headEq
+  have shape := someTerm.typeCodeRawShape_self
+  rw [headEq] at shape
+  exact shape
 
 /-- If a term's `headCtor` is `sumCode`, its raw is `RawTerm.sumCode`
 of a left-component code raw form and a right-component code raw form
@@ -501,85 +226,9 @@ theorem Term.headCtor_sumCode_raw {context : Ctx mode level scope}
     (headEq : someTerm.headCtor = Term.HeadCtor.sumCode) :
     ∃ leftCodeRaw rightCodeRaw : RawTerm scope,
       raw = RawTerm.sumCode leftCodeRaw rightCodeRaw := by
-  cases someTerm with
-  | var _ => nomatch headEq
-  | unit => nomatch headEq
-  | lam _ => nomatch headEq
-  | app _ _ => nomatch headEq
-  | lamPi _ => nomatch headEq
-  | appPi _ _ => nomatch headEq
-  | pair _ _ => nomatch headEq
-  | fst _ => nomatch headEq
-  | snd _ => nomatch headEq
-  | boolTrue => nomatch headEq
-  | boolFalse => nomatch headEq
-  | boolElim _ _ _ => nomatch headEq
-  | natZero => nomatch headEq
-  | natSucc _ => nomatch headEq
-  | natElim _ _ _ => nomatch headEq
-  | natRec _ _ _ => nomatch headEq
-  | listNil => nomatch headEq
-  | listCons _ _ => nomatch headEq
-  | listElim _ _ _ => nomatch headEq
-  | optionNone => nomatch headEq
-  | optionSome _ => nomatch headEq
-  | optionMatch _ _ _ => nomatch headEq
-  | eitherInl _ => nomatch headEq
-  | eitherInr _ => nomatch headEq
-  | eitherMatch _ _ _ => nomatch headEq
-  | refl _ _ => nomatch headEq
-  | idJ _ _ => nomatch headEq
-  | oeqRefl _ _ => nomatch headEq
-  | oeqJ _ _ => nomatch headEq
-  | oeqFunext _ _ _ _ _ => nomatch headEq
-  | idStrictRefl _ _ _ => nomatch headEq
-  | idStrictRec _ _ _ => nomatch headEq
-  | modIntro _ => nomatch headEq
-  | modElim _ => nomatch headEq
-  | subsume _ => nomatch headEq
-  | interval0 => nomatch headEq
-  | interval1 => nomatch headEq
-  | intervalOpp _ => nomatch headEq
-  | intervalMeet _ _ => nomatch headEq
-  | intervalJoin _ _ => nomatch headEq
-  | pathLam _ _ _ _ _ => nomatch headEq
-  | pathApp _ _ _ => nomatch headEq
-  | glueIntro _ _ _ _ _ => nomatch headEq
-  | glueElim _ _ => nomatch headEq
-  | transp _ _ _ _ _ _ _ _ _ => nomatch headEq
-  | hcomp _ _ _ => nomatch headEq
-  | hcompPath _ _ _ _ _ => nomatch headEq
-  | recordIntro _ => nomatch headEq
-  | recordProj _ => nomatch headEq
-  | refineIntro _ _ _ => nomatch headEq
-  | refineElim _ => nomatch headEq
-  | codataUnfold _ _ => nomatch headEq
-  | codataDest _ => nomatch headEq
-  | sessionSend _ _ _ => nomatch headEq
-  | sessionRecv _ => nomatch headEq
-  | effectPerform _ _ _ _ _ _ => nomatch headEq
-  | universeCode _ _ _ _ => nomatch headEq
-  | cumulUp _ _ _ _ _ _ => nomatch headEq
-  | equivReflId _ => nomatch headEq
-  | funextRefl _ _ _ => nomatch headEq
-  | equivReflIdAtId _ _ _ _ => nomatch headEq
-  | funextReflAtId _ _ _ => nomatch headEq
-  | equivIntroHet _ _ _ _ => nomatch headEq
-  | equivApp _ _ => nomatch headEq
-  | uaIntroHet _ _ _ _ _ => nomatch headEq
-  | funextIntroHet _ _ _ _ => nomatch headEq
-  | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
-  | equivApply _ _ => nomatch headEq
-  | arrowCode _ _ _ _ => nomatch headEq
-  | piTyCode _ _ _ _ => nomatch headEq
-  | sigmaTyCode _ _ _ _ => nomatch headEq
-  | productCode _ _ _ _ => nomatch headEq
-  | sumCode _ _ _ _ => exact ⟨_, _, rfl⟩
-  | listCode _ _ _ => nomatch headEq
-  | optionCode _ _ _ => nomatch headEq
-  | eitherCode _ _ _ _ => nomatch headEq
-  | idCode _ _ _ _ _ => nomatch headEq
-  | equivCode _ _ _ _ => nomatch headEq
+  have shape := someTerm.typeCodeRawShape_self
+  rw [headEq] at shape
+  exact shape
 
 /-- If a term's `headCtor` is `listCode`, its raw is `RawTerm.listCode`
 of a single element-type code raw form (at outer scope).  List-type-
@@ -595,85 +244,9 @@ theorem Term.headCtor_listCode_raw {context : Ctx mode level scope}
     (headEq : someTerm.headCtor = Term.HeadCtor.listCode) :
     ∃ elementCodeRaw : RawTerm scope,
       raw = RawTerm.listCode elementCodeRaw := by
-  cases someTerm with
-  | var _ => nomatch headEq
-  | unit => nomatch headEq
-  | lam _ => nomatch headEq
-  | app _ _ => nomatch headEq
-  | lamPi _ => nomatch headEq
-  | appPi _ _ => nomatch headEq
-  | pair _ _ => nomatch headEq
-  | fst _ => nomatch headEq
-  | snd _ => nomatch headEq
-  | boolTrue => nomatch headEq
-  | boolFalse => nomatch headEq
-  | boolElim _ _ _ => nomatch headEq
-  | natZero => nomatch headEq
-  | natSucc _ => nomatch headEq
-  | natElim _ _ _ => nomatch headEq
-  | natRec _ _ _ => nomatch headEq
-  | listNil => nomatch headEq
-  | listCons _ _ => nomatch headEq
-  | listElim _ _ _ => nomatch headEq
-  | optionNone => nomatch headEq
-  | optionSome _ => nomatch headEq
-  | optionMatch _ _ _ => nomatch headEq
-  | eitherInl _ => nomatch headEq
-  | eitherInr _ => nomatch headEq
-  | eitherMatch _ _ _ => nomatch headEq
-  | refl _ _ => nomatch headEq
-  | idJ _ _ => nomatch headEq
-  | oeqRefl _ _ => nomatch headEq
-  | oeqJ _ _ => nomatch headEq
-  | oeqFunext _ _ _ _ _ => nomatch headEq
-  | idStrictRefl _ _ _ => nomatch headEq
-  | idStrictRec _ _ _ => nomatch headEq
-  | modIntro _ => nomatch headEq
-  | modElim _ => nomatch headEq
-  | subsume _ => nomatch headEq
-  | interval0 => nomatch headEq
-  | interval1 => nomatch headEq
-  | intervalOpp _ => nomatch headEq
-  | intervalMeet _ _ => nomatch headEq
-  | intervalJoin _ _ => nomatch headEq
-  | pathLam _ _ _ _ _ => nomatch headEq
-  | pathApp _ _ _ => nomatch headEq
-  | glueIntro _ _ _ _ _ => nomatch headEq
-  | glueElim _ _ => nomatch headEq
-  | transp _ _ _ _ _ _ _ _ _ => nomatch headEq
-  | hcomp _ _ _ => nomatch headEq
-  | hcompPath _ _ _ _ _ => nomatch headEq
-  | recordIntro _ => nomatch headEq
-  | recordProj _ => nomatch headEq
-  | refineIntro _ _ _ => nomatch headEq
-  | refineElim _ => nomatch headEq
-  | codataUnfold _ _ => nomatch headEq
-  | codataDest _ => nomatch headEq
-  | sessionSend _ _ _ => nomatch headEq
-  | sessionRecv _ => nomatch headEq
-  | effectPerform _ _ _ _ _ _ => nomatch headEq
-  | universeCode _ _ _ _ => nomatch headEq
-  | cumulUp _ _ _ _ _ _ => nomatch headEq
-  | equivReflId _ => nomatch headEq
-  | funextRefl _ _ _ => nomatch headEq
-  | equivReflIdAtId _ _ _ _ => nomatch headEq
-  | funextReflAtId _ _ _ => nomatch headEq
-  | equivIntroHet _ _ _ _ => nomatch headEq
-  | equivApp _ _ => nomatch headEq
-  | uaIntroHet _ _ _ _ _ => nomatch headEq
-  | funextIntroHet _ _ _ _ => nomatch headEq
-  | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
-  | equivApply _ _ => nomatch headEq
-  | arrowCode _ _ _ _ => nomatch headEq
-  | piTyCode _ _ _ _ => nomatch headEq
-  | sigmaTyCode _ _ _ _ => nomatch headEq
-  | productCode _ _ _ _ => nomatch headEq
-  | sumCode _ _ _ _ => nomatch headEq
-  | listCode _ _ _ => exact ⟨_, rfl⟩
-  | optionCode _ _ _ => nomatch headEq
-  | eitherCode _ _ _ _ => nomatch headEq
-  | idCode _ _ _ _ _ => nomatch headEq
-  | equivCode _ _ _ _ => nomatch headEq
+  have shape := someTerm.typeCodeRawShape_self
+  rw [headEq] at shape
+  exact shape
 
 /-- If a term's `headCtor` is `optionCode`, its raw is
 `RawTerm.optionCode` of a single element-type code raw form (at outer
@@ -687,85 +260,9 @@ theorem Term.headCtor_optionCode_raw {context : Ctx mode level scope}
     (headEq : someTerm.headCtor = Term.HeadCtor.optionCode) :
     ∃ elementCodeRaw : RawTerm scope,
       raw = RawTerm.optionCode elementCodeRaw := by
-  cases someTerm with
-  | var _ => nomatch headEq
-  | unit => nomatch headEq
-  | lam _ => nomatch headEq
-  | app _ _ => nomatch headEq
-  | lamPi _ => nomatch headEq
-  | appPi _ _ => nomatch headEq
-  | pair _ _ => nomatch headEq
-  | fst _ => nomatch headEq
-  | snd _ => nomatch headEq
-  | boolTrue => nomatch headEq
-  | boolFalse => nomatch headEq
-  | boolElim _ _ _ => nomatch headEq
-  | natZero => nomatch headEq
-  | natSucc _ => nomatch headEq
-  | natElim _ _ _ => nomatch headEq
-  | natRec _ _ _ => nomatch headEq
-  | listNil => nomatch headEq
-  | listCons _ _ => nomatch headEq
-  | listElim _ _ _ => nomatch headEq
-  | optionNone => nomatch headEq
-  | optionSome _ => nomatch headEq
-  | optionMatch _ _ _ => nomatch headEq
-  | eitherInl _ => nomatch headEq
-  | eitherInr _ => nomatch headEq
-  | eitherMatch _ _ _ => nomatch headEq
-  | refl _ _ => nomatch headEq
-  | idJ _ _ => nomatch headEq
-  | oeqRefl _ _ => nomatch headEq
-  | oeqJ _ _ => nomatch headEq
-  | oeqFunext _ _ _ _ _ => nomatch headEq
-  | idStrictRefl _ _ _ => nomatch headEq
-  | idStrictRec _ _ _ => nomatch headEq
-  | modIntro _ => nomatch headEq
-  | modElim _ => nomatch headEq
-  | subsume _ => nomatch headEq
-  | interval0 => nomatch headEq
-  | interval1 => nomatch headEq
-  | intervalOpp _ => nomatch headEq
-  | intervalMeet _ _ => nomatch headEq
-  | intervalJoin _ _ => nomatch headEq
-  | pathLam _ _ _ _ _ => nomatch headEq
-  | pathApp _ _ _ => nomatch headEq
-  | glueIntro _ _ _ _ _ => nomatch headEq
-  | glueElim _ _ => nomatch headEq
-  | transp _ _ _ _ _ _ _ _ _ => nomatch headEq
-  | hcomp _ _ _ => nomatch headEq
-  | hcompPath _ _ _ _ _ => nomatch headEq
-  | recordIntro _ => nomatch headEq
-  | recordProj _ => nomatch headEq
-  | refineIntro _ _ _ => nomatch headEq
-  | refineElim _ => nomatch headEq
-  | codataUnfold _ _ => nomatch headEq
-  | codataDest _ => nomatch headEq
-  | sessionSend _ _ _ => nomatch headEq
-  | sessionRecv _ => nomatch headEq
-  | effectPerform _ _ _ _ _ _ => nomatch headEq
-  | universeCode _ _ _ _ => nomatch headEq
-  | cumulUp _ _ _ _ _ _ => nomatch headEq
-  | equivReflId _ => nomatch headEq
-  | funextRefl _ _ _ => nomatch headEq
-  | equivReflIdAtId _ _ _ _ => nomatch headEq
-  | funextReflAtId _ _ _ => nomatch headEq
-  | equivIntroHet _ _ _ _ => nomatch headEq
-  | equivApp _ _ => nomatch headEq
-  | uaIntroHet _ _ _ _ _ => nomatch headEq
-  | funextIntroHet _ _ _ _ => nomatch headEq
-  | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
-  | equivApply _ _ => nomatch headEq
-  | arrowCode _ _ _ _ => nomatch headEq
-  | piTyCode _ _ _ _ => nomatch headEq
-  | sigmaTyCode _ _ _ _ => nomatch headEq
-  | productCode _ _ _ _ => nomatch headEq
-  | sumCode _ _ _ _ => nomatch headEq
-  | listCode _ _ _ => nomatch headEq
-  | optionCode _ _ _ => exact ⟨_, rfl⟩
-  | eitherCode _ _ _ _ => nomatch headEq
-  | idCode _ _ _ _ _ => nomatch headEq
-  | equivCode _ _ _ _ => nomatch headEq
+  have shape := someTerm.typeCodeRawShape_self
+  rw [headEq] at shape
+  exact shape
 
 /-- If a term's `headCtor` is `eitherCode`, its raw is
 `RawTerm.eitherCode` of a left-component code raw and a
@@ -781,85 +278,9 @@ theorem Term.headCtor_eitherCode_raw {context : Ctx mode level scope}
     (headEq : someTerm.headCtor = Term.HeadCtor.eitherCode) :
     ∃ leftCodeRaw rightCodeRaw : RawTerm scope,
       raw = RawTerm.eitherCode leftCodeRaw rightCodeRaw := by
-  cases someTerm with
-  | var _ => nomatch headEq
-  | unit => nomatch headEq
-  | lam _ => nomatch headEq
-  | app _ _ => nomatch headEq
-  | lamPi _ => nomatch headEq
-  | appPi _ _ => nomatch headEq
-  | pair _ _ => nomatch headEq
-  | fst _ => nomatch headEq
-  | snd _ => nomatch headEq
-  | boolTrue => nomatch headEq
-  | boolFalse => nomatch headEq
-  | boolElim _ _ _ => nomatch headEq
-  | natZero => nomatch headEq
-  | natSucc _ => nomatch headEq
-  | natElim _ _ _ => nomatch headEq
-  | natRec _ _ _ => nomatch headEq
-  | listNil => nomatch headEq
-  | listCons _ _ => nomatch headEq
-  | listElim _ _ _ => nomatch headEq
-  | optionNone => nomatch headEq
-  | optionSome _ => nomatch headEq
-  | optionMatch _ _ _ => nomatch headEq
-  | eitherInl _ => nomatch headEq
-  | eitherInr _ => nomatch headEq
-  | eitherMatch _ _ _ => nomatch headEq
-  | refl _ _ => nomatch headEq
-  | idJ _ _ => nomatch headEq
-  | oeqRefl _ _ => nomatch headEq
-  | oeqJ _ _ => nomatch headEq
-  | oeqFunext _ _ _ _ _ => nomatch headEq
-  | idStrictRefl _ _ _ => nomatch headEq
-  | idStrictRec _ _ _ => nomatch headEq
-  | modIntro _ => nomatch headEq
-  | modElim _ => nomatch headEq
-  | subsume _ => nomatch headEq
-  | interval0 => nomatch headEq
-  | interval1 => nomatch headEq
-  | intervalOpp _ => nomatch headEq
-  | intervalMeet _ _ => nomatch headEq
-  | intervalJoin _ _ => nomatch headEq
-  | pathLam _ _ _ _ _ => nomatch headEq
-  | pathApp _ _ _ => nomatch headEq
-  | glueIntro _ _ _ _ _ => nomatch headEq
-  | glueElim _ _ => nomatch headEq
-  | transp _ _ _ _ _ _ _ _ _ => nomatch headEq
-  | hcomp _ _ _ => nomatch headEq
-  | hcompPath _ _ _ _ _ => nomatch headEq
-  | recordIntro _ => nomatch headEq
-  | recordProj _ => nomatch headEq
-  | refineIntro _ _ _ => nomatch headEq
-  | refineElim _ => nomatch headEq
-  | codataUnfold _ _ => nomatch headEq
-  | codataDest _ => nomatch headEq
-  | sessionSend _ _ _ => nomatch headEq
-  | sessionRecv _ => nomatch headEq
-  | effectPerform _ _ _ _ _ _ => nomatch headEq
-  | universeCode _ _ _ _ => nomatch headEq
-  | cumulUp _ _ _ _ _ _ => nomatch headEq
-  | equivReflId _ => nomatch headEq
-  | funextRefl _ _ _ => nomatch headEq
-  | equivReflIdAtId _ _ _ _ => nomatch headEq
-  | funextReflAtId _ _ _ => nomatch headEq
-  | equivIntroHet _ _ _ _ => nomatch headEq
-  | equivApp _ _ => nomatch headEq
-  | uaIntroHet _ _ _ _ _ => nomatch headEq
-  | funextIntroHet _ _ _ _ => nomatch headEq
-  | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
-  | equivApply _ _ => nomatch headEq
-  | arrowCode _ _ _ _ => nomatch headEq
-  | piTyCode _ _ _ _ => nomatch headEq
-  | sigmaTyCode _ _ _ _ => nomatch headEq
-  | productCode _ _ _ _ => nomatch headEq
-  | sumCode _ _ _ _ => nomatch headEq
-  | listCode _ _ _ => nomatch headEq
-  | optionCode _ _ _ => nomatch headEq
-  | eitherCode _ _ _ _ => exact ⟨_, _, rfl⟩
-  | idCode _ _ _ _ _ => nomatch headEq
-  | equivCode _ _ _ _ => nomatch headEq
+  have shape := someTerm.typeCodeRawShape_self
+  rw [headEq] at shape
+  exact shape
 
 /-- If a term's `headCtor` is `idCode`, its raw is `RawTerm.idCode` of
 a type code raw and two endpoint raws (left and right) at outer scope
@@ -875,85 +296,9 @@ theorem Term.headCtor_idCode_raw {context : Ctx mode level scope}
     (headEq : someTerm.headCtor = Term.HeadCtor.idCode) :
     ∃ typeCodeRaw leftRaw rightRaw : RawTerm scope,
       raw = RawTerm.idCode typeCodeRaw leftRaw rightRaw := by
-  cases someTerm with
-  | var _ => nomatch headEq
-  | unit => nomatch headEq
-  | lam _ => nomatch headEq
-  | app _ _ => nomatch headEq
-  | lamPi _ => nomatch headEq
-  | appPi _ _ => nomatch headEq
-  | pair _ _ => nomatch headEq
-  | fst _ => nomatch headEq
-  | snd _ => nomatch headEq
-  | boolTrue => nomatch headEq
-  | boolFalse => nomatch headEq
-  | boolElim _ _ _ => nomatch headEq
-  | natZero => nomatch headEq
-  | natSucc _ => nomatch headEq
-  | natElim _ _ _ => nomatch headEq
-  | natRec _ _ _ => nomatch headEq
-  | listNil => nomatch headEq
-  | listCons _ _ => nomatch headEq
-  | listElim _ _ _ => nomatch headEq
-  | optionNone => nomatch headEq
-  | optionSome _ => nomatch headEq
-  | optionMatch _ _ _ => nomatch headEq
-  | eitherInl _ => nomatch headEq
-  | eitherInr _ => nomatch headEq
-  | eitherMatch _ _ _ => nomatch headEq
-  | refl _ _ => nomatch headEq
-  | idJ _ _ => nomatch headEq
-  | oeqRefl _ _ => nomatch headEq
-  | oeqJ _ _ => nomatch headEq
-  | oeqFunext _ _ _ _ _ => nomatch headEq
-  | idStrictRefl _ _ _ => nomatch headEq
-  | idStrictRec _ _ _ => nomatch headEq
-  | modIntro _ => nomatch headEq
-  | modElim _ => nomatch headEq
-  | subsume _ => nomatch headEq
-  | interval0 => nomatch headEq
-  | interval1 => nomatch headEq
-  | intervalOpp _ => nomatch headEq
-  | intervalMeet _ _ => nomatch headEq
-  | intervalJoin _ _ => nomatch headEq
-  | pathLam _ _ _ _ _ => nomatch headEq
-  | pathApp _ _ _ => nomatch headEq
-  | glueIntro _ _ _ _ _ => nomatch headEq
-  | glueElim _ _ => nomatch headEq
-  | transp _ _ _ _ _ _ _ _ _ => nomatch headEq
-  | hcomp _ _ _ => nomatch headEq
-  | hcompPath _ _ _ _ _ => nomatch headEq
-  | recordIntro _ => nomatch headEq
-  | recordProj _ => nomatch headEq
-  | refineIntro _ _ _ => nomatch headEq
-  | refineElim _ => nomatch headEq
-  | codataUnfold _ _ => nomatch headEq
-  | codataDest _ => nomatch headEq
-  | sessionSend _ _ _ => nomatch headEq
-  | sessionRecv _ => nomatch headEq
-  | effectPerform _ _ _ _ _ _ => nomatch headEq
-  | universeCode _ _ _ _ => nomatch headEq
-  | cumulUp _ _ _ _ _ _ => nomatch headEq
-  | equivReflId _ => nomatch headEq
-  | funextRefl _ _ _ => nomatch headEq
-  | equivReflIdAtId _ _ _ _ => nomatch headEq
-  | funextReflAtId _ _ _ => nomatch headEq
-  | equivIntroHet _ _ _ _ => nomatch headEq
-  | equivApp _ _ => nomatch headEq
-  | uaIntroHet _ _ _ _ _ => nomatch headEq
-  | funextIntroHet _ _ _ _ => nomatch headEq
-  | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
-  | equivApply _ _ => nomatch headEq
-  | arrowCode _ _ _ _ => nomatch headEq
-  | piTyCode _ _ _ _ => nomatch headEq
-  | sigmaTyCode _ _ _ _ => nomatch headEq
-  | productCode _ _ _ _ => nomatch headEq
-  | sumCode _ _ _ _ => nomatch headEq
-  | listCode _ _ _ => nomatch headEq
-  | optionCode _ _ _ => nomatch headEq
-  | eitherCode _ _ _ _ => nomatch headEq
-  | idCode _ _ _ _ _ => exact ⟨_, _, _, rfl⟩
-  | equivCode _ _ _ _ => nomatch headEq
+  have shape := someTerm.typeCodeRawShape_self
+  rw [headEq] at shape
+  exact shape
 
 /-- If a term's `headCtor` is `equivCode`, its raw is
 `RawTerm.equivCode` of a left-type code raw and a right-type code raw
@@ -970,85 +315,9 @@ theorem Term.headCtor_equivCode_raw {context : Ctx mode level scope}
     (headEq : someTerm.headCtor = Term.HeadCtor.equivCode) :
     ∃ leftTypeCodeRaw rightTypeCodeRaw : RawTerm scope,
       raw = RawTerm.equivCode leftTypeCodeRaw rightTypeCodeRaw := by
-  cases someTerm with
-  | var _ => nomatch headEq
-  | unit => nomatch headEq
-  | lam _ => nomatch headEq
-  | app _ _ => nomatch headEq
-  | lamPi _ => nomatch headEq
-  | appPi _ _ => nomatch headEq
-  | pair _ _ => nomatch headEq
-  | fst _ => nomatch headEq
-  | snd _ => nomatch headEq
-  | boolTrue => nomatch headEq
-  | boolFalse => nomatch headEq
-  | boolElim _ _ _ => nomatch headEq
-  | natZero => nomatch headEq
-  | natSucc _ => nomatch headEq
-  | natElim _ _ _ => nomatch headEq
-  | natRec _ _ _ => nomatch headEq
-  | listNil => nomatch headEq
-  | listCons _ _ => nomatch headEq
-  | listElim _ _ _ => nomatch headEq
-  | optionNone => nomatch headEq
-  | optionSome _ => nomatch headEq
-  | optionMatch _ _ _ => nomatch headEq
-  | eitherInl _ => nomatch headEq
-  | eitherInr _ => nomatch headEq
-  | eitherMatch _ _ _ => nomatch headEq
-  | refl _ _ => nomatch headEq
-  | idJ _ _ => nomatch headEq
-  | oeqRefl _ _ => nomatch headEq
-  | oeqJ _ _ => nomatch headEq
-  | oeqFunext _ _ _ _ _ => nomatch headEq
-  | idStrictRefl _ _ _ => nomatch headEq
-  | idStrictRec _ _ _ => nomatch headEq
-  | modIntro _ => nomatch headEq
-  | modElim _ => nomatch headEq
-  | subsume _ => nomatch headEq
-  | interval0 => nomatch headEq
-  | interval1 => nomatch headEq
-  | intervalOpp _ => nomatch headEq
-  | intervalMeet _ _ => nomatch headEq
-  | intervalJoin _ _ => nomatch headEq
-  | pathLam _ _ _ _ _ => nomatch headEq
-  | pathApp _ _ _ => nomatch headEq
-  | glueIntro _ _ _ _ _ => nomatch headEq
-  | glueElim _ _ => nomatch headEq
-  | transp _ _ _ _ _ _ _ _ _ => nomatch headEq
-  | hcomp _ _ _ => nomatch headEq
-  | hcompPath _ _ _ _ _ => nomatch headEq
-  | recordIntro _ => nomatch headEq
-  | recordProj _ => nomatch headEq
-  | refineIntro _ _ _ => nomatch headEq
-  | refineElim _ => nomatch headEq
-  | codataUnfold _ _ => nomatch headEq
-  | codataDest _ => nomatch headEq
-  | sessionSend _ _ _ => nomatch headEq
-  | sessionRecv _ => nomatch headEq
-  | effectPerform _ _ _ _ _ _ => nomatch headEq
-  | universeCode _ _ _ _ => nomatch headEq
-  | cumulUp _ _ _ _ _ _ => nomatch headEq
-  | equivReflId _ => nomatch headEq
-  | funextRefl _ _ _ => nomatch headEq
-  | equivReflIdAtId _ _ _ _ => nomatch headEq
-  | funextReflAtId _ _ _ => nomatch headEq
-  | equivIntroHet _ _ _ _ => nomatch headEq
-  | equivApp _ _ => nomatch headEq
-  | uaIntroHet _ _ _ _ _ => nomatch headEq
-  | funextIntroHet _ _ _ _ => nomatch headEq
-  | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
-  | equivApply _ _ => nomatch headEq
-  | arrowCode _ _ _ _ => nomatch headEq
-  | piTyCode _ _ _ _ => nomatch headEq
-  | sigmaTyCode _ _ _ _ => nomatch headEq
-  | productCode _ _ _ _ => nomatch headEq
-  | sumCode _ _ _ _ => nomatch headEq
-  | listCode _ _ _ => nomatch headEq
-  | optionCode _ _ _ => nomatch headEq
-  | eitherCode _ _ _ _ => nomatch headEq
-  | idCode _ _ _ _ _ => nomatch headEq
-  | equivCode _ _ _ _ => exact ⟨_, _, rfl⟩
+  have shape := someTerm.typeCodeRawShape_self
+  rw [headEq] at shape
+  exact shape
 
 
 end LeanFX2

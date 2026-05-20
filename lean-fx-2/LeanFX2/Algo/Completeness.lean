@@ -104,7 +104,7 @@ theorem Term.infer_complete_natSucc
     (innerIH : Term.infer context innerRaw = some ⟨Ty.nat, innerTerm⟩) :
     Term.infer context (RawTerm.natSucc innerRaw)
       = some ⟨Ty.nat, Term.natSucc innerTerm⟩ := by
-  unfold Term.infer
+  dsimp only [Term.infer]
   rw [innerIH]
   rfl
 
@@ -119,7 +119,7 @@ theorem Term.infer_complete_optionSome
     (innerIH : Term.infer context innerRaw = some ⟨elementType, innerTerm⟩) :
     Term.infer context (RawTerm.optionSome innerRaw)
       = some ⟨Ty.optionType elementType, Term.optionSome innerTerm⟩ := by
-  unfold Term.infer
+  dsimp only [Term.infer]
   rw [innerIH]
 
 /-- Completeness of `Term.infer` at `modIntro`.  Modal markers
@@ -133,7 +133,7 @@ theorem Term.infer_complete_modIntro
     (innerIH : Term.infer context innerRaw = some ⟨innerType, innerTerm⟩) :
     Term.infer context (RawTerm.modIntro innerRaw)
       = some ⟨innerType, Term.modIntro innerTerm⟩ := by
-  unfold Term.infer
+  dsimp only [Term.infer]
   rw [innerIH]
 
 /-- Completeness of `Term.infer` at `modElim`.  Mirror of
@@ -146,7 +146,7 @@ theorem Term.infer_complete_modElim
     (innerIH : Term.infer context innerRaw = some ⟨innerType, innerTerm⟩) :
     Term.infer context (RawTerm.modElim innerRaw)
       = some ⟨innerType, Term.modElim innerTerm⟩ := by
-  unfold Term.infer
+  dsimp only [Term.infer]
   rw [innerIH]
 
 /-- Completeness of `Term.infer` at `subsume`.  Cumulativity-marker
@@ -159,7 +159,7 @@ theorem Term.infer_complete_subsume
     (innerIH : Term.infer context innerRaw = some ⟨innerType, innerTerm⟩) :
     Term.infer context (RawTerm.subsume innerRaw)
       = some ⟨innerType, Term.subsume innerTerm⟩ := by
-  unfold Term.infer
+  dsimp only [Term.infer]
   rw [innerIH]
 
 /-- Completeness of `Term.infer` at `app`.  Multi-recurse: the
@@ -180,7 +180,7 @@ theorem Term.infer_complete_app
     (argIH : Term.infer context argRaw = some ⟨domainType, argTerm⟩) :
     Term.infer context (RawTerm.app fnRaw argRaw)
       = some ⟨codomainType, Term.app fnTerm argTerm⟩ := by
-  unfold Term.infer
+  dsimp only [Term.infer]
   rw [fnIH, argIH]
   dsimp only
   exact dif_pos rfl
@@ -198,7 +198,7 @@ theorem Term.infer_complete_fst
                 = some ⟨Ty.sigmaTy firstType secondType, pairTerm⟩) :
     Term.infer context (RawTerm.fst pairRaw)
       = some ⟨firstType, Term.fst pairTerm⟩ := by
-  unfold Term.infer
+  dsimp only [Term.infer]
   rw [pairIH]
 
 /-- Completeness of `Term.infer` at `snd`.  Returns the second
@@ -217,7 +217,7 @@ theorem Term.infer_complete_snd
     Term.infer context (RawTerm.snd pairRaw)
       = some ⟨secondType.subst0 firstType (RawTerm.fst pairRaw),
               Term.snd pairTerm⟩ := by
-  unfold Term.infer
+  dsimp only [Term.infer]
   rw [pairIH]
 
 /-- Completeness of `Term.infer` at `listCons`.  Multi-recurse with
@@ -235,7 +235,7 @@ theorem Term.infer_complete_listCons
     Term.infer context (RawTerm.listCons headRaw tailRaw)
       = some ⟨Ty.listType elementType,
               Term.listCons headTerm tailTerm⟩ := by
-  unfold Term.infer
+  dsimp only [Term.infer]
   rw [headIH, tailIH]
   dsimp only
   exact dif_pos rfl
@@ -257,7 +257,7 @@ theorem Term.infer_complete_idJ
     (baseIH : Term.infer context baseRaw = some ⟨motiveType, baseTerm⟩) :
     Term.infer context (RawTerm.idJ baseRaw witnessRaw)
       = some ⟨motiveType, Term.idJ baseTerm witnessTerm⟩ := by
-  unfold Term.infer
+  dsimp only [Term.infer]
   rw [witnessIH, baseIH]
 
 /-! ## Check-mode counterparts (atomic leaves)
@@ -365,7 +365,7 @@ theorem Term.check_complete_optionSome
     Term.check context (Ty.optionType elementType)
         (RawTerm.optionSome valueRaw)
       = some (Term.optionSome valueTerm) := by
-  simp only [Term.check]
+  dsimp only [Term.check]
   rw [valueIH]
 
 /-- Completeness of `Term.check` at `eitherInl`.  Expected type
@@ -381,7 +381,7 @@ theorem Term.check_complete_eitherInl
     Term.check context (Ty.eitherType leftType rightType)
         (RawTerm.eitherInl valueRaw)
       = some (Term.eitherInl valueTerm) := by
-  simp only [Term.check]
+  dsimp only [Term.check]
   rw [valueIH]
 
 /-- Completeness of `Term.check` at `eitherInr`.  Mirror of
@@ -396,7 +396,7 @@ theorem Term.check_complete_eitherInr
     Term.check context (Ty.eitherType leftType rightType)
         (RawTerm.eitherInr valueRaw)
       = some (Term.eitherInr valueTerm) := by
-  simp only [Term.check]
+  dsimp only [Term.check]
   rw [valueIH]
 
 /-- Completeness of `Term.check` at `listCons`.  Multi-recurse with
@@ -415,7 +415,7 @@ theorem Term.check_complete_listCons
     Term.check context (Ty.listType elementType)
         (RawTerm.listCons headRaw tailRaw)
       = some (Term.listCons headTerm tailTerm) := by
-  simp only [Term.check]
+  dsimp only [Term.check]
   rw [headIH, tailIH]
 
 /-- Completeness of `Term.check` at `lam` (non-dependent arrow).
@@ -433,7 +433,7 @@ theorem Term.check_complete_lam
     Term.check context (Ty.arrow domainType codomainType)
         (RawTerm.lam bodyRaw)
       = some (Term.lam bodyTerm) := by
-  simp only [Term.check]
+  dsimp only [Term.check]
   rw [bodyIH]
 
 /-- Completeness of `Term.check` at `lam` (dependent Π).  Expected
@@ -452,7 +452,7 @@ theorem Term.check_complete_lamPi
     Term.check context (Ty.piTy domainType codomainType)
         (RawTerm.lam bodyRaw)
       = some (Term.lamPi bodyTerm) := by
-  simp only [Term.check]
+  dsimp only [Term.check]
   rw [bodyIH]
 
 /-- Completeness of `Term.check` at `pair`.  Expected type
@@ -473,7 +473,7 @@ theorem Term.check_complete_pair
     Term.check context (Ty.sigmaTy firstType secondType)
         (RawTerm.pair firstRaw secondRaw)
       = some (Term.pair firstTerm secondTerm) := by
-  simp only [Term.check]
+  dsimp only [Term.check]
   rw [firstIH, secondIH]
 
 end LeanFX2
