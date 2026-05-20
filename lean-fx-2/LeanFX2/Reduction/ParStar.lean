@@ -1,4 +1,4 @@
-import LeanFX2.Reduction.ParRed
+import LeanFX2.Reduction.ParRed.ParInductive.Inductive
 
 /-! # Reduction/ParStar — reflexive-transitive closure of Step.par
 

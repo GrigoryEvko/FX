@@ -1,4 +1,4 @@
-import LeanFX2.Reduction.ParRed
+import LeanFX2.Reduction.ParRed.ParInductive.Inductive
 import LeanFX2.Reduction.Cumul
 
 /-! # Cubical/Composition

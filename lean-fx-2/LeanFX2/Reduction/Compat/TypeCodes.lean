@@ -1,4 +1,4 @@
-import LeanFX2.Reduction.ParRed
+import LeanFX2.Reduction.ParRed.ParInductive.Inductive
 import LeanFX2.Term.Subst
 
 /-! # Reduction/Compat/TypeCodes — typed compositional compat for CUMUL-2.4 type codes

@@ -1,4 +1,4 @@
-import LeanFX2.Reduction.ParRed
+import LeanFX2.Reduction.ParRed.ParInductive.Inductive
 import LeanFX2.Term.Subst
 
 /-! # Reduction/Compat/Misc — typed compositional compat for misc ctors

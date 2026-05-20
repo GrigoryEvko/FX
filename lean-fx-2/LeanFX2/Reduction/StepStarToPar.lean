@@ -1,4 +1,5 @@
 import LeanFX2.Reduction.ParStar
+import LeanFX2.Reduction.ParRed.ParStepLift
 
 /-! # Reduction/StepStarToPar — lift StepStar to Step.parStar
 

@@ -1,4 +1,4 @@
-import LeanFX2.Reduction.ParRed
+import LeanFX2.Reduction.ParRed.ParCasts
 import LeanFX2.Term.Subst
 
 /-! # LeanFX2.Reduction.Compat.HoTT.FunextFamily

@@ -1,5 +1,5 @@
 import LeanFX2.Reduction.RawParCompatible.Substitution
-import LeanFX2.Reduction.ParRed
+import LeanFX2.Reduction.ParRed.ParInductive.Inductive
 import LeanFX2.Term.Bridge
 
 /-! # Bridge — typed↔raw correspondence (Phase 5).
