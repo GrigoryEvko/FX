@@ -48,7 +48,7 @@ theorem Term.rename_injective_boolElim_ctor
       Term.boolElim scrutineeA thenA elseA =
         Term.boolElim scrutineeB thenB elseB := by
   intro renameEq
-  simp only [Term.rename] at renameEq
+  dsimp only [Term.rename] at renameEq
   have boolElimRenameHEq :
       HEq
         (Term.boolElim
@@ -166,7 +166,7 @@ theorem Term.rename_injective_atIdJ_of_inner
       termHEqB⟩ := key termB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with scopeEq contextEq carrierRenameEq
       leftEndpointRenameEq rightEndpointRenameEq motiveRenameEq
       baseRawRenameEq witnessRawRenameEq baseRenameEq witnessRenameHEq
@@ -241,7 +241,7 @@ theorem Term.rename_injective_atOEqJ_of_inner
       termHEqB⟩ := key termB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with scopeEq contextEq carrierRenameEq
       leftEndpointRenameEq rightEndpointRenameEq motiveRenameEq
       baseRawRenameEq witnessRawRenameEq baseRenameEq witnessRenameHEq
@@ -326,7 +326,7 @@ theorem Term.rename_injective_atOEqFunext_of_inner
     cases typeEqB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with scopeEq contextEq domainRenameEq codomainRenameEq
       leftRawRenameEq rightRawRenameEq pointwiseRawRenameEq
       pointwiseRenameCastEq
@@ -407,7 +407,7 @@ theorem Term.rename_injective_atIdStrictRec_of_inner
       witnessB, termHEqB⟩ := key termB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with scopeEq contextEq carrierRenameEq
       leftEndpointRenameEq rightEndpointRenameEq motiveRenameEq
       baseRawRenameEq witnessRawRenameEq baseRenameEq witnessRenameHEq

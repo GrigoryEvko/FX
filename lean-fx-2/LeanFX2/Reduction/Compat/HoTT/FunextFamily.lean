@@ -65,16 +65,23 @@ theorem rename_compatible
       (Term.rename termRenaming
         (Term.funextRefl (context := sourceCtx)
                          domainType codomainType applyRawTarget)) :=
-  by
-    simp only [Term.rename]
-    exact Step.par.castTargetType
+  -- `Term.rename termRenaming (Term.funextRefl ...)` reduces
+  -- definitionally (iota on the `.funextRefl` match arm) to
+  -- `(funextReflType_rename rho ...).symm ▸ Term.funextRefl
+  -- (domainType.rename rho) (codomainType.rename rho)
+  -- (applyRaw.rename rho.lift)`.  The `castTargetType`/`castSourceType`
+  -- wrappers reproduce exactly those casts, so the term checks
+  -- directly.  Dropping `simp only [Term.rename]` skips generating the
+  -- 78-arm equational unfolder for a single-constructor goal
+  -- (86.8s -> ~0.3s).
+  Step.par.castTargetType
+    (funextReflType_rename rho domainType codomainType
+      applyRawTarget).symm
+    (Step.par.castSourceType
       (funextReflType_rename rho domainType codomainType
-        applyRawTarget).symm
-      (Step.par.castSourceType
-        (funextReflType_rename rho domainType codomainType
-          applyRawSource).symm
-        (Step.par.funextReflCong (domainType.rename rho)
-          (codomainType.rename rho) renamedApplyRawStep))
+        applyRawSource).symm
+      (Step.par.funextReflCong (domainType.rename rho)
+        (codomainType.rename rho) renamedApplyRawStep))
 
 theorem subst_compatible
     {mode : Mode} {level : Nat}
@@ -95,16 +102,23 @@ theorem subst_compatible
       (Term.subst termSubst
         (Term.funextRefl (context := sourceCtx)
                          domainType codomainType applyRawTarget)) :=
-  by
-    simp only [Term.subst]
-    exact Step.par.castTargetType
+  -- `Term.subst termSubst (Term.funextRefl ...)` reduces definitionally
+  -- (iota on the `.funextRefl` match arm) to
+  -- `(funextReflType_subst sigma ...).symm ▸ Term.funextRefl
+  -- (domainType.subst sigma) (codomainType.subst sigma)
+  -- (applyRaw.subst sigma.forRaw.lift)`.  The
+  -- `castTargetType`/`castSourceType` wrappers reproduce exactly those
+  -- casts, so the term checks directly.  Dropping `simp only
+  -- [Term.subst]` skips generating the equational unfolder for a
+  -- single-constructor goal (80.8s -> ~0.3s).
+  Step.par.castTargetType
+    (funextReflType_subst sigma domainType codomainType
+      applyRawTarget).symm
+    (Step.par.castSourceType
       (funextReflType_subst sigma domainType codomainType
-        applyRawTarget).symm
-      (Step.par.castSourceType
-        (funextReflType_subst sigma domainType codomainType
-          applyRawSource).symm
-        (Step.par.funextReflCong (domainType.subst sigma)
-          (codomainType.subst sigma) substitutedApplyRawStep))
+        applyRawSource).symm
+      (Step.par.funextReflCong (domainType.subst sigma)
+        (codomainType.subst sigma) substitutedApplyRawStep))
 
 end funextReflCong
 

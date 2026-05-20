@@ -71,8 +71,7 @@ theorem strengthenTyped?_rename_eq_listElim
       = some (StrengtheningResult.fromRename forwardRename typedRenaming
           renameInverse renameInverseLeft renameInverseInjects
           (Term.listElim scrutinee nilBranch consBranch)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have elementStrengthens :
       (elementType.rename forwardRename).partialStrengthen? renameInverse
         = some elementType := by
@@ -178,8 +177,7 @@ theorem strengthenTyped?_rename_eq_optionMatch
       = some (StrengtheningResult.fromRename forwardRename typedRenaming
           renameInverse renameInverseLeft renameInverseInjects
           (Term.optionMatch scrutinee noneBranch someBranch)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have elementStrengthens :
       (elementType.rename forwardRename).partialStrengthen? renameInverse
         = some elementType := by
@@ -287,8 +285,7 @@ theorem strengthenTyped?_rename_eq_eitherMatch
       = some (StrengtheningResult.fromRename forwardRename typedRenaming
           renameInverse renameInverseLeft renameInverseInjects
           (Term.eitherMatch scrutinee leftBranch rightBranch)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have leftTypeStrengthens :
       (leftType.rename forwardRename).partialStrengthen? renameInverse
         = some leftType := by

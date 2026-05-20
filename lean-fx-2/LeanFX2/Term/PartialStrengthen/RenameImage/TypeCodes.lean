@@ -42,8 +42,7 @@ theorem strengthenTyped?_rename_eq_listCode
           renameInverse renameInverseLeft renameInverseInjects
           (Term.listCode (context := sourceCtx) outerLevel levelLe
             elementCodeRaw)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have elementStrengthens :
       (elementCodeRaw.rename forwardRename).partialStrengthen? renameInverse
         = some elementCodeRaw := by
@@ -89,8 +88,7 @@ theorem strengthenTyped?_rename_eq_optionCode
           renameInverse renameInverseLeft renameInverseInjects
           (Term.optionCode (context := sourceCtx) outerLevel levelLe
             elementCodeRaw)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have elementStrengthens :
       (elementCodeRaw.rename forwardRename).partialStrengthen? renameInverse
         = some elementCodeRaw := by
@@ -139,8 +137,7 @@ theorem strengthenTyped?_rename_eq_arrowCode
           renameInverse renameInverseLeft renameInverseInjects
           (Term.arrowCode (context := sourceCtx) outerLevel levelLe
             domainCodeRaw codomainCodeRaw)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have domainStrengthens :
       (domainCodeRaw.rename forwardRename).partialStrengthen? renameInverse
         = some domainCodeRaw := by
@@ -200,8 +197,7 @@ theorem strengthenTyped?_rename_eq_sumCode
           renameInverse renameInverseLeft renameInverseInjects
           (Term.sumCode (context := sourceCtx) outerLevel levelLe
             leftCodeRaw rightCodeRaw)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have leftStrengthens :
       (leftCodeRaw.rename forwardRename).partialStrengthen? renameInverse
         = some leftCodeRaw := by
@@ -261,8 +257,7 @@ theorem strengthenTyped?_rename_eq_productCode
           renameInverse renameInverseLeft renameInverseInjects
           (Term.productCode (context := sourceCtx) outerLevel levelLe
             firstCodeRaw secondCodeRaw)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have firstStrengthens :
       (firstCodeRaw.rename forwardRename).partialStrengthen? renameInverse
         = some firstCodeRaw := by
@@ -322,8 +317,7 @@ theorem strengthenTyped?_rename_eq_eitherCode
           renameInverse renameInverseLeft renameInverseInjects
           (Term.eitherCode (context := sourceCtx) outerLevel levelLe
             leftCodeRaw rightCodeRaw)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have leftStrengthens :
       (leftCodeRaw.rename forwardRename).partialStrengthen? renameInverse
         = some leftCodeRaw := by
@@ -385,8 +379,7 @@ theorem strengthenTyped?_rename_eq_idCode
           renameInverse renameInverseLeft renameInverseInjects
           (Term.idCode (context := sourceCtx) outerLevel levelLe
             typeCodeRaw leftRaw rightRaw)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have typeStrengthens :
       (typeCodeRaw.rename forwardRename).partialStrengthen? renameInverse
         = some typeCodeRaw := by
@@ -460,8 +453,7 @@ theorem strengthenTyped?_rename_eq_equivCode
           renameInverse renameInverseLeft renameInverseInjects
           (Term.equivCode (context := sourceCtx) outerLevel levelLe
             leftTypeCodeRaw rightTypeCodeRaw)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have leftStrengthens :
       (leftTypeCodeRaw.rename forwardRename).partialStrengthen? renameInverse
         = some leftTypeCodeRaw := by
@@ -529,8 +521,7 @@ theorem strengthenTyped?_rename_eq_piTyCode
           renameInverse renameInverseLeft renameInverseInjects
           (Term.piTyCode (context := sourceCtx) outerLevel levelLe
             domainCodeRaw codomainCodeRaw)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have domainStrengthens :
       (domainCodeRaw.rename forwardRename).partialStrengthen? renameInverse
         = some domainCodeRaw := by
@@ -599,8 +590,7 @@ theorem strengthenTyped?_rename_eq_sigmaTyCode
           renameInverse renameInverseLeft renameInverseInjects
           (Term.sigmaTyCode (context := sourceCtx) outerLevel levelLe
             domainCodeRaw codomainCodeRaw)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have domainStrengthens :
       (domainCodeRaw.rename forwardRename).partialStrengthen? renameInverse
         = some domainCodeRaw := by

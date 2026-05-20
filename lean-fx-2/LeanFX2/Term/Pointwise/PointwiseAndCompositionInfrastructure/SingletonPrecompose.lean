@@ -14,9 +14,14 @@ theorem Term.rename_var_HEq
     (termRenaming : TermRenaming sourceCtx targetCtx rho)
     (position : Fin sourceScope) :
     HEq (Term.rename termRenaming (Term.var position))
-      (Term.var (context := targetCtx) (rho position)) := by
-  simp only [Term.rename]
-  exact Term.type_eq_cast_heq
+      (Term.var (context := targetCtx) (rho position)) :=
+  -- `Term.rename termRenaming (Term.var position)` reduces
+  -- definitionally (iota on the `.var` match arm) to
+  -- `(termRenaming position).symm ▸ Term.var (rho position)`, so the
+  -- cast-erasure lemma applies directly.  Avoiding `simp only
+  -- [Term.rename]` here skips generating the full 78-arm equational
+  -- unfolder for a single-constructor goal (87.5s -> ~0.03s).
+  Term.type_eq_cast_heq
     (typeEq := termRenaming position)
     (sourceTerm := Term.var (context := targetCtx) (rho position))
 

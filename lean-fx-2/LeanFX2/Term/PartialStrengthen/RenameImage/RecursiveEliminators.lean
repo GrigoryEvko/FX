@@ -59,8 +59,7 @@ theorem strengthenTyped?_rename_eq_idJ
       = some (StrengtheningResult.fromRename forwardRename typedRenaming
           renameInverse renameInverseLeft renameInverseInjects
           (Term.idJ baseCase witness)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have carrierStrengthens :
       (carrier.rename forwardRename).partialStrengthen? renameInverse
         = some carrier := by
@@ -177,8 +176,7 @@ theorem strengthenTyped?_rename_eq_oeqJ
       = some (StrengtheningResult.fromRename forwardRename typedRenaming
           renameInverse renameInverseLeft renameInverseInjects
           (Term.oeqJ baseCase witness)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have carrierStrengthens :
       (carrier.rename forwardRename).partialStrengthen? renameInverse
         = some carrier := by
@@ -298,8 +296,7 @@ theorem strengthenTyped?_rename_eq_idStrictRec
       = some (StrengtheningResult.fromRename forwardRename typedRenaming
           renameInverse renameInverseLeft renameInverseInjects
           (Term.idStrictRec modeIsStrict baseCase witness)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have carrierStrengthens :
       (carrier.rename forwardRename).partialStrengthen? renameInverse
         = some carrier := by
@@ -413,8 +410,7 @@ theorem strengthenTyped?_rename_eq_intervalMeet
       = some (StrengtheningResult.fromRename forwardRename typedRenaming
           renameInverse renameInverseLeft renameInverseInjects
           (Term.intervalMeet leftValue rightValue)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   split
   next noLeftSuccess =>
     exact absurd (leftIH.symm.trans noLeftSuccess)
@@ -482,8 +478,7 @@ theorem strengthenTyped?_rename_eq_intervalJoin
       = some (StrengtheningResult.fromRename forwardRename typedRenaming
           renameInverse renameInverseLeft renameInverseInjects
           (Term.intervalJoin leftValue rightValue)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   split
   next noLeftSuccess =>
     exact absurd (leftIH.symm.trans noLeftSuccess)
@@ -556,8 +551,7 @@ theorem strengthenTyped?_rename_eq_hcomp
       = some (StrengtheningResult.fromRename forwardRename typedRenaming
           renameInverse renameInverseLeft renameInverseInjects
           (Term.hcomp modeIsUnivalent sidesValue capValue)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   split
   next noSidesSuccess =>
     exact absurd (sidesIH.symm.trans noSidesSuccess)

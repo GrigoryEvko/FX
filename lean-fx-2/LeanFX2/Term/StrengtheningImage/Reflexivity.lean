@@ -1,4 +1,7 @@
-import LeanFX2.Term.StrengtheningImage.Core
+import LeanFX2.Term.StrengtheningImage.Core.Base
+import LeanFX2.Term.PartialStrengthen.Constructors.EquivalenceCanonical
+import LeanFX2.Term.PartialStrengthen.Constructors.Identity
+import LeanFX2.Term.PartialStrengthen.Constructors.Reflexivity
 import LeanFX2.Term.HEqCongr.Compound.IdentityModalHoTT
 
 /-! # Term/StrengtheningImage/Reflexivity

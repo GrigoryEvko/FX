@@ -1,4 +1,5 @@
-import LeanFX2.Term.StrengtheningImage.Core
+import LeanFX2.Term.StrengtheningImage.Core.Base
+import LeanFX2.Term.PartialStrengthen.Constructors.CollectionsAndSums
 import LeanFX2.Term.HEqCongr.Compound.EliminatorsAndRecursive
 
 /-! # Term/StrengtheningImage/MatcherSuccess

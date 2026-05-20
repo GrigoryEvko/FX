@@ -70,8 +70,7 @@ theorem strengthenTyped?_rename_eq_transp
           (Term.transp (context := sourceCtx) modeIsUnivalent universeLevel
             universeLevelLt sourceType targetType sourceTypeRaw targetTypeRaw
             typePath sourceValue)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have sourceTypeStrengthens :
       (sourceType.rename forwardRename).partialStrengthen? renameInverse
         = some sourceType := by
@@ -212,8 +211,7 @@ theorem strengthenTyped?_rename_eq_hcompPath
           renameInverse renameInverseLeft renameInverseInjects
           (Term.hcompPath (context := sourceCtx) modeIsUnivalent
             leftEndpoint rightEndpoint sidesPath capValue)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have carrierStrengthens :
       (carrierType.rename forwardRename).partialStrengthen? renameInverse
         = some carrierType := by
@@ -332,8 +330,7 @@ theorem strengthenTyped?_rename_eq_glueIntro
           renameInverse renameInverseLeft renameInverseInjects
           (Term.glueIntro (context := sourceCtx) modeIsUnivalent baseType
             boundaryWitness baseValue partialValue)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have baseTypeStrengthens :
       (baseType.rename forwardRename).partialStrengthen? renameInverse
         = some baseType := by
@@ -440,8 +437,7 @@ theorem strengthenTyped?_rename_eq_pathApp
           renameInverse renameInverseLeft renameInverseInjects
           (Term.pathApp (context := sourceCtx) modeIsUnivalent pathTerm
             intervalTerm)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have carrierStrengthens :
       (carrierType.rename forwardRename).partialStrengthen? renameInverse
         = some carrierType := by

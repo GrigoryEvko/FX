@@ -1,6 +1,10 @@
-import LeanFX2.Term.StrengtheningImage.Core
+import LeanFX2.Term.StrengtheningImage.Core.Base
+import LeanFX2.Term.PartialStrengthen.Constructors.CollectionsAndSums
+import LeanFX2.Term.PartialStrengthen.Constructors.ModalInterval
+import LeanFX2.Term.PartialStrengthen.Constructors.SigmaRecordCodataSession
 import LeanFX2.Term.HEqCongr.Compound.ApplicationsAndBinders
 import LeanFX2.Term.HEqCongr.Compound.EliminatorsAndRecursive
+import LeanFX2.Term.HEqCongr.Atomic.Base
 
 /-! # Term/StrengtheningImage/CollectionsSigmaInterval
 

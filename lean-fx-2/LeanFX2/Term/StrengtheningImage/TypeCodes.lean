@@ -1,4 +1,6 @@
-import LeanFX2.Term.StrengtheningImage.Core
+import LeanFX2.Term.StrengtheningImage.Core.Base
+import LeanFX2.Term.PartialStrengthen.Constructors.CumulAndTypeCodes
+import LeanFX2.Term.HEqCongr.Atomic.TypeCodes
 
 /-! # Term/StrengtheningImage/TypeCodes
 

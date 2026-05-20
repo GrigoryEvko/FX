@@ -42,8 +42,7 @@ theorem strengthenTyped?_rename_eq_funextReflAtId
           renameInverse renameInverseLeft renameInverseInjects
           (Term.funextReflAtId (context := sourceCtx) domainType codomainType
             applyRaw)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have domainStrengthens :
       (domainType.rename forwardRename).partialStrengthen? renameInverse
         = some domainType := by
@@ -141,8 +140,7 @@ theorem strengthenTyped?_rename_eq_equivApp
       = some (StrengtheningResult.fromRename forwardRename typedRenaming
           renameInverse renameInverseLeft renameInverseInjects
           (Term.equivApp (context := sourceCtx) equivTerm argumentTerm)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have carrierAStrengthens :
       (carrierA.rename forwardRename).partialStrengthen? renameInverse
         = some carrierA := by
@@ -243,8 +241,7 @@ theorem strengthenTyped?_rename_eq_equivApply
       = some (StrengtheningResult.fromRename forwardRename typedRenaming
           renameInverse renameInverseLeft renameInverseInjects
           (Term.equivApply equivTerm argumentTerm)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have carrierAStrengthens :
       (carrierA.rename forwardRename).partialStrengthen? renameInverse
         = some carrierA := by
@@ -346,8 +343,7 @@ theorem strengthenTyped?_rename_eq_uaToEquiv
           renameInverse renameInverseLeft renameInverseInjects
           (Term.uaToEquiv (context := sourceCtx) innerLevel innerLevelLt
             leftTy rightTy leftTyRaw rightTyRaw proof)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have leftTyStrengthens :
       (leftTy.rename forwardRename).partialStrengthen? renameInverse
         = some leftTy := by
@@ -465,8 +461,7 @@ theorem strengthenTyped?_rename_eq_uaIntroHet
           renameInverse renameInverseLeft renameInverseInjects
           (Term.uaIntroHet (context := sourceCtx) innerLevel innerLevelLt
             carrierARaw carrierBRaw equivWitness)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have carrierAStrengthens :
       (carrierA.rename forwardRename).partialStrengthen? renameInverse
         = some carrierA := by
@@ -603,8 +598,7 @@ theorem strengthenTyped?_rename_eq_funextIntroHet
           renameInverse renameInverseLeft renameInverseInjects
           (Term.funextIntroHet (context := sourceCtx) domainType codomainType
             applyARaw applyBRaw)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have domainStrengthens :
       (domainType.rename forwardRename).partialStrengthen? renameInverse
         = some domainType := by

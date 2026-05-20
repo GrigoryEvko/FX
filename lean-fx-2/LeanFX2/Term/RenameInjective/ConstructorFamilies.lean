@@ -27,7 +27,7 @@ theorem Term.rename_injective_lam_ctor
       Term.rename termRenaming (Term.lam bodyB) →
       Term.lam bodyA = Term.lam bodyB := by
   intro renameEq
-  simp only [Term.rename] at renameEq
+  dsimp only [Term.rename] at renameEq
   injection renameEq with contextEq domainRenameEq codomainRenameEq
     bodyRawRenameEq bodyRawRenameEqAgain bodyRenameEq
   have bodyRenameUncastHEq :
@@ -73,7 +73,7 @@ theorem Term.rename_injective_app_ctor
       Term.rename termRenaming (Term.app functionB argumentB) →
       Term.app functionA argumentA = Term.app functionB argumentB := by
   intro renameEq
-  simp only [Term.rename] at renameEq
+  dsimp only [Term.rename] at renameEq
   injection renameEq with contextEq codomainRenameEq domainRenameEq
     functionRawRenameEq argumentRawRenameEq argumentRawRenameEqAgain
     functionRenameEq argumentRenameEq
@@ -105,7 +105,7 @@ theorem Term.rename_injective_lamPi_ctor
       Term.rename termRenaming (Term.lamPi bodyB) →
       Term.lamPi bodyA = Term.lamPi bodyB := by
   intro renameEq
-  simp only [Term.rename] at renameEq
+  dsimp only [Term.rename] at renameEq
   injection renameEq with contextEq domainRenameEq codomainRenameEq
     bodyRawRenameEq bodyRawRenameEqAgain bodyRenameEq
   have bodyHEq : HEq bodyA bodyB :=
@@ -140,7 +140,7 @@ theorem Term.rename_injective_appPi_ctor
       Term.rename termRenaming (Term.appPi functionB argumentB) →
       Term.appPi functionA argumentA = Term.appPi functionB argumentB := by
   intro renameEq
-  simp only [Term.rename] at renameEq
+  dsimp only [Term.rename] at renameEq
   have appPiRenameHEq :
       HEq
         (Term.appPi (Term.rename termRenaming functionA)
@@ -214,7 +214,7 @@ theorem Term.rename_injective_effectPerform_ctor
         Term.effectPerform effectTag effectRow operationSignature
           canPerformOperation operationB argumentsB := by
   intro renameEq
-  simp only [Term.rename] at renameEq
+  dsimp only [Term.rename] at renameEq
   injection renameEq with contextEq effectTagRenameEq effectRowEq
     operationSignatureRenameEq canPerformRenameHEq operationRawRenameEq
     argumentsRawRenameEq operationRenameHEq argumentsRenameHEq
@@ -269,7 +269,7 @@ theorem Term.rename_injective_effectPerform_ctor_proofIrrel
         Term.effectPerform effectTag effectRow operationSignature
           canPerformB operationB argumentsB := by
   intro renameEq
-  simp only [Term.rename] at renameEq
+  dsimp only [Term.rename] at renameEq
   injection renameEq with contextEq effectTagRenameEq effectRowEq
     operationSignatureRenameEq canPerformRenameHEq operationRawRenameEq
     argumentsRawRenameEq operationRenameHEq argumentsRenameHEq
@@ -463,7 +463,7 @@ theorem Term.rename_injective_equivIntroHet_ctor
       Term.equivIntroHet forwardA backwardA leftInvA rightInvA =
         Term.equivIntroHet forwardB backwardB leftInvB rightInvB := by
   intro renameEq
-  simp only [Term.rename] at renameEq
+  dsimp only [Term.rename] at renameEq
   injection renameEq with contextEq carrierARenameEq carrierBRenameEq
     forwardRawRenameEq backwardRawRenameEq leftInvRawRenameEq
     rightInvRawRenameEq rightInvRawRenameEqAgain forwardRenameEq
@@ -542,7 +542,7 @@ theorem Term.rename_injective_uaIntroHet_ctor
         Term.uaIntroHet innerLevel innerLevelLt carrierARaw carrierBRaw
           equivWitnessB := by
   intro renameEq
-  simp only [Term.rename] at renameEq
+  dsimp only [Term.rename] at renameEq
   injection renameEq with contextEq innerLevelEq carrierARenameEq
     carrierBRenameEq carrierARawRenameEq carrierBRawRenameEq
     forwardRawRenameEq backwardRawRenameEq backwardRawRenameEqAgain
@@ -582,7 +582,7 @@ theorem Term.rename_injective_pathLam_ctor
         Term.pathLam modeIsUnivalent carrierType leftEndpoint
           rightEndpoint bodyB := by
   intro renameEq
-  simp only [Term.rename] at renameEq
+  dsimp only [Term.rename] at renameEq
   injection renameEq with contextEq carrierRenameEq modeEq
     leftEndpointRenameEq rightEndpointRenameEq bodyRawRenameEq
     bodyRenameEq
@@ -650,7 +650,7 @@ theorem Term.rename_injective_atPathLam_of_inner
     cases typeEqB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with contextEq carrierRenameEq modeEq
       leftEndpointRenameEq rightEndpointRenameEq bodyRawRenameEq
       bodyRenameEq

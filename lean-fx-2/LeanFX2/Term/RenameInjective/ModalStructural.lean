@@ -55,7 +55,7 @@ theorem Term.rename_injective_atPathApp_of_inner
       termHEqB⟩ := key termB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with scopeEq contextEq carrierTypeRenameEq
       leftRenameEq rightRenameEq pathRawRenameEq intervalRawRenameEq
       pathRenameHEq intervalRenameEq
@@ -107,7 +107,7 @@ theorem Term.rename_injective_atModIntro_of_inner
     obtain ⟨innerB, termHEqB⟩ := key termB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with _ _ _ _ innerRenameEq
     exact congrArg Term.modIntro
       (innerInjective innerA innerB innerRenameEq)
@@ -142,7 +142,7 @@ theorem Term.rename_injective_atModElim_of_inner
     obtain ⟨innerB, termHEqB⟩ := key termB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with _ _ _ _ innerRenameEq
     exact congrArg Term.modElim
       (innerInjective innerA innerB innerRenameEq)
@@ -177,7 +177,7 @@ theorem Term.rename_injective_atSubsume_of_inner
     obtain ⟨innerB, termHEqB⟩ := key termB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with _ _ _ _ innerRenameEq
     exact congrArg Term.subsume
       (innerInjective innerA innerB innerRenameEq)
@@ -218,7 +218,7 @@ theorem Term.rename_injective_atRecordIntro_of_inner
     cases typeEqB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with _ _ _ _ fieldRenameEq
     exact congrArg Term.recordIntro
       (fieldInjective fieldA fieldB fieldRenameEq)
@@ -255,7 +255,7 @@ theorem Term.rename_injective_atRecordProj_of_inner
     obtain ⟨recordB, termHEqB⟩ := key termB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with _ _ _ _ recordRenameEq
     exact congrArg Term.recordProj
       (recordInjective recordA recordB recordRenameEq)
@@ -306,7 +306,7 @@ theorem Term.rename_injective_atRefineIntro_of_inner
     cases typeEqB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with _ _ _ _ _ _ valueRenameEq proofRenameEq
     rw [valueInjective valueA valueB valueRenameEq,
       proofInjective proofA proofB proofRenameEq]
@@ -348,7 +348,7 @@ theorem Term.rename_injective_atRefineElim_of_inner
     obtain ⟨predicateB, refinedB, termHEqB⟩ := key termB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with _ _ _ predicateRenameEq _ refinedRenameHEq
     have predicateEq : predicateA = predicateB :=
       RawTerm.rename_injective_under_injective_renaming predicateA
@@ -405,7 +405,7 @@ theorem Term.rename_injective_atCodataUnfold_of_inner
     cases typeEqB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with _ _ _ _ _ _ stateRenameEq transitionRenameEq
     rw [stateInjective stateA stateB stateRenameEq,
       transitionInjective transitionA transitionB transitionRenameEq]
@@ -447,7 +447,7 @@ theorem Term.rename_injective_atCodataDest_of_inner
     obtain ⟨stateTypeB, codataB, termHEqB⟩ := key termB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with _ _ stateTypeRenameEq _ _ codataRenameHEq
     have stateTypeEq : stateTypeA = stateTypeB :=
       Ty.rename_injective_under_injective_renaming stateTypeA
@@ -493,7 +493,7 @@ theorem Term.rename_injective_atSessionRecv_of_inner
     cases typeEqB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with _ _ _ _ channelRenameEq
     exact congrArg Term.sessionRecv
       (channelInjective channelA channelB channelRenameEq)
@@ -547,7 +547,7 @@ theorem Term.rename_injective_atSessionSend_of_inner
     cases typeEqB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with _ _ _ payloadTypeRenameEq _ _
       channelRenameEq payloadRenameHEq
     have payloadTypeEq : payloadTypeA = payloadTypeB :=

@@ -59,8 +59,7 @@ theorem strengthenTyped?_rename_eq_codataUnfold
           renameInverse renameInverseLeft renameInverseInjects
           (Term.codataUnfold (context := sourceCtx) initialState
             transition)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have outputStrengthens :
       (outputType.rename forwardRename).partialStrengthen? renameInverse
         = some outputType := by
@@ -140,8 +139,7 @@ theorem strengthenTyped?_rename_eq_fst
       = some (StrengtheningResult.fromRename forwardRename typedRenaming
           renameInverse renameInverseLeft renameInverseInjects
           (Term.fst pairTerm)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have firstStrengthens :
       (firstType.rename forwardRename).partialStrengthen? renameInverse
         = some firstType := by

@@ -170,7 +170,7 @@ theorem Term.rename_injective_atNatSucc_of_inner
     cases typeEqB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with _ _ _ predecessorRenameEq
     exact congrArg Term.natSucc
       (predecessorInjective predecessorA predecessorB predecessorRenameEq)
@@ -221,7 +221,7 @@ theorem Term.rename_injective_atNatElim_of_inner
     obtain ⟨scrutineeB, zeroB, succB, termHEqB⟩ := key termB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with _ _ _ _ _ _ scrutineeRenameEq zeroRenameEq
       succRenameEq
     rw [scrutineeInjective scrutineeA scrutineeB scrutineeRenameEq,
@@ -277,7 +277,7 @@ theorem Term.rename_injective_atNatRec_of_inner
     obtain ⟨scrutineeB, zeroB, succB, termHEqB⟩ := key termB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with _ _ _ _ _ _ scrutineeRenameEq zeroRenameEq
       succRenameEq
     rw [scrutineeInjective scrutineeA scrutineeB scrutineeRenameEq,
@@ -355,7 +355,7 @@ theorem Term.rename_injective_atListCons_of_inner
     cases typeEqB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with _ _ _ _ _ headRenameEq tailRenameEq
     rw [headInjective headA headB headRenameEq,
       tailInjective tailA tailB tailRenameEq]
@@ -413,7 +413,7 @@ theorem Term.rename_injective_atPair_of_inner
     cases typeEqB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with scopeEq contextEq firstTypeEq secondTypeEq
       firstRawEq secondRawEq firstRenameEq secondRenameHEq
     have secondRenameUncastHEq :
@@ -470,7 +470,7 @@ theorem Term.rename_injective_atFst_of_inner
     obtain ⟨secondTypeB, pairB, termHEqB⟩ := key termB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with scopeEq contextEq firstTypeRenameEq
       secondTypeRenameEq pairRawRenameEq pairRenameHEq
     have secondTypeEq : secondTypeA = secondTypeB :=
@@ -507,7 +507,7 @@ theorem Term.rename_injective_snd_ctor
       Term.rename termRenaming (Term.snd pairB) →
       Term.snd pairA = Term.snd pairB := by
   intro renameEq
-  simp only [Term.rename] at renameEq
+  dsimp only [Term.rename] at renameEq
   have sndRenameHEq :
       HEq
         (Term.snd (Term.rename termRenaming pairA))

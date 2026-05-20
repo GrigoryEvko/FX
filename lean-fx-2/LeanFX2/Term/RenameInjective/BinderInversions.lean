@@ -120,7 +120,7 @@ private theorem renamedLamPi_ne_renamedFunextReflCast
   intro renameHEq
   cases bodyRawEq
   cases codomainEq
-  simp only [Term.rename] at renameHEq
+  dsimp only [Term.rename] at renameHEq
   have uncastHEq :
       HEq
         (Term.lamPi (Term.rename (termRenaming.lift domainType) bodyTerm))

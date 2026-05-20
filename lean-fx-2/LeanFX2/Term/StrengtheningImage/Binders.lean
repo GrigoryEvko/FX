@@ -1,5 +1,7 @@
-import LeanFX2.Term.StrengtheningImage.Core
+import LeanFX2.Term.StrengtheningImage.Core.Base
+import LeanFX2.Term.PartialStrengthen.Constructors.ApplicationAndBinders
 import LeanFX2.Term.HEqCongr.Compound.ApplicationsAndBinders
+import LeanFX2.Term.HEqCongr.Atomic.Cubical
 
 /-! # Term/StrengtheningImage/Binders
 
@@ -56,8 +58,8 @@ theorem partialStrengthenTypedLamPi_sound {mode : Mode} {level : Nat}
       bodyRawRenames =>
       refine ⟨?_⟩
       have bodyHEq := bodySound.termRenames
-      simp only [StrengtheningResult.renamedTarget] at bodyHEq
-      simp only [partialStrengthenTypedLamPi, StrengtheningResult.renamedTarget,
+      dsimp [StrengtheningResult.renamedTarget] at bodyHEq
+      dsimp [partialStrengthenTypedLamPi, StrengtheningResult.renamedTarget,
         Term.rename]
       exact Term.lamPi_HEq_congr rfl codomainTypeRenames
         bodyRawRenames bodyHEq
@@ -129,8 +131,8 @@ theorem partialStrengthenTypedLam_sound {mode : Mode} {level : Nat}
       cases bodyTypeStrengthensAtLift
       refine ⟨?_⟩
       have bodyHEq := bodySound.termRenames
-      simp only [StrengtheningResult.renamedTarget] at bodyHEq
-      simp only [partialStrengthenTypedLam, StrengtheningResult.renamedTarget]
+      dsimp [StrengtheningResult.renamedTarget] at bodyHEq
+      dsimp [partialStrengthenTypedLam, StrengtheningResult.renamedTarget]
       have castedHEq : HEq body
           (Ty.weaken_rename_commute strengthening.forward
               targetCodomainType ▸
@@ -235,8 +237,8 @@ theorem partialStrengthenTypedPathLam_sound {mode : Mode} {level : Nat}
       cases bodyTypeStrengthensAtLift
       refine ⟨?_⟩
       have bodyHEq := bodySound.termRenames
-      simp only [StrengtheningResult.renamedTarget] at bodyHEq
-      simp only [partialStrengthenTypedPathLam,
+      dsimp [StrengtheningResult.renamedTarget] at bodyHEq
+      dsimp [partialStrengthenTypedPathLam,
         StrengtheningResult.renamedTarget]
       have castedHEq : HEq body
           (Ty.weaken_rename_commute strengthening.forward

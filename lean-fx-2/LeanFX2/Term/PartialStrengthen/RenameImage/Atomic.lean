@@ -225,8 +225,7 @@ theorem strengthenTyped?_rename_eq_listNil
           renameInverse renameInverseLeft renameInverseInjects
           (Term.listNil (context := sourceCtx)
             (elementType := elementType))) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have elementStrengthens :
       (elementType.rename forwardRename).partialStrengthen? renameInverse
         = some elementType := by
@@ -271,8 +270,7 @@ theorem strengthenTyped?_rename_eq_optionNone
           renameInverse renameInverseLeft renameInverseInjects
           (Term.optionNone (context := sourceCtx)
             (elementType := elementType))) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have elementStrengthens :
       (elementType.rename forwardRename).partialStrengthen? renameInverse
         = some elementType := by
@@ -316,8 +314,7 @@ theorem strengthenTyped?_rename_eq_equivReflId
       = some (StrengtheningResult.fromRename forwardRename typedRenaming
           renameInverse renameInverseLeft renameInverseInjects
           (Term.equivReflId (context := sourceCtx) carrier)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have carrierStrengthens :
       (carrier.rename forwardRename).partialStrengthen? renameInverse
         = some carrier := by
@@ -363,8 +360,7 @@ theorem strengthenTyped?_rename_eq_refl
       = some (StrengtheningResult.fromRename forwardRename typedRenaming
           renameInverse renameInverseLeft renameInverseInjects
           (Term.refl (context := sourceCtx) carrier rawWitness)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have carrierStrengthens :
       (carrier.rename forwardRename).partialStrengthen? renameInverse
         = some carrier := by
@@ -422,8 +418,7 @@ theorem strengthenTyped?_rename_eq_oeqRefl
       = some (StrengtheningResult.fromRename forwardRename typedRenaming
           renameInverse renameInverseLeft renameInverseInjects
           (Term.oeqRefl (context := sourceCtx) carrier rawWitness)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have carrierStrengthens :
       (carrier.rename forwardRename).partialStrengthen? renameInverse
         = some carrier := by
@@ -485,8 +480,7 @@ theorem strengthenTyped?_rename_eq_idStrictRefl
           renameInverse renameInverseLeft renameInverseInjects
           (Term.idStrictRefl (context := sourceCtx) modeIsStrict carrier
             rawWitness)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have carrierStrengthens :
       (carrier.rename forwardRename).partialStrengthen? renameInverse
         = some carrier := by
@@ -549,8 +543,7 @@ theorem strengthenTyped?_rename_eq_equivReflIdAtId
           renameInverse renameInverseLeft renameInverseInjects
           (Term.equivReflIdAtId (context := sourceCtx) innerLevel innerLevelLt
             carrier carrierRaw)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have carrierStrengthens :
       (carrier.rename forwardRename).partialStrengthen? renameInverse
         = some carrier := by

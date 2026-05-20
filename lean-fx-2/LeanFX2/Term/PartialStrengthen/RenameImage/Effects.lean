@@ -73,8 +73,7 @@ theorem strengthenTyped?_rename_eq_effectPerform
           (Term.effectPerform (context := sourceCtx) effectTag effectRow
             operationSignature canPerformOperation operationTag
             arguments)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have effectTagStrengthens :
       (effectTag.rename forwardRename).partialStrengthen? renameInverse
         = some effectTag := by

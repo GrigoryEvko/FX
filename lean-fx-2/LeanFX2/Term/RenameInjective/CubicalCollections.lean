@@ -56,7 +56,7 @@ theorem Term.rename_injective_atGlueIntro_of_inner
     cases typeEqB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with _ _ _ _ _ _ baseRenameEq partialRenameEq
     rw [baseInjective baseA baseB baseRenameEq,
       partialInjective partialA partialB partialRenameEq]
@@ -100,7 +100,7 @@ theorem Term.rename_injective_atGlueElim_of_inner
     obtain ⟨modeIsUnivalentB, boundaryB, gluedB, termHEqB⟩ := key termB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with scopeEq contextEq baseTypeRenameEq
       boundaryRenameEq gluedRawRenameEq gluedRenameHEq
     have gluedHEq : HEq gluedA gluedB :=
@@ -191,7 +191,7 @@ theorem Term.rename_injective_atTransp_of_inner
     cases typeEqB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with modeEq universeLevelEq universeLevelLtEq
       sourceTypeRenameEq targetTypeRenameEq sourceTypeRawRenameEq
       targetTypeRawRenameEq pathRawRenameEq sourceRawRenameEq
@@ -256,7 +256,7 @@ theorem Term.rename_injective_atHcompFamily_of_inner
   intro renameEq
   cases termA <;> cases termB
   · rename_i modeIsUnivalentA sidesA capA modeIsUnivalentB sidesB capB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with contextEq carrierTypeRenameEq
       sidesRawRenameEq capRawRenameEq modeEq sidesRenameHEq capRenameHEq
     cases modeEq
@@ -277,15 +277,15 @@ theorem Term.rename_injective_atHcompFamily_of_inner
         sidesHEq capHEq)
   · rename_i modeIsUnivalentA sidesA capA modeIsUnivalentB
       leftEndpointB rightEndpointB sidesPathB capB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     cases renameEq
   · rename_i modeIsUnivalentA leftEndpointA rightEndpointA sidesPathA capA
       modeIsUnivalentB sidesB capB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     cases renameEq
   · rename_i modeIsUnivalentA leftEndpointA rightEndpointA sidesPathA capA
       modeIsUnivalentB leftEndpointB rightEndpointB sidesPathB capB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with contextEq carrierTypeRenameEq modeEq
       leftEndpointRenameEq rightEndpointRenameEq sidesPathRawRenameEq
       capRawRenameEq sidesPathRenameHEq capRenameHEq
@@ -362,7 +362,7 @@ theorem Term.rename_injective_atListElim_of_inner
     obtain ⟨elementTypeB, scrutineeB, nilB, consB, termHEqB⟩ := key termB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with _ _ elementTypeRenameEq _ _ _ _
       scrutineeRenameHEq nilRenameEq consRenameHEq
     have elementTypeEq : elementTypeA = elementTypeB :=
@@ -442,7 +442,7 @@ theorem Term.rename_injective_atOptionSome_of_inner
     cases typeEqB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with _ _ _ _ valueRenameEq
     exact congrArg Term.optionSome
       (valueInjective valueA valueB valueRenameEq)
@@ -499,7 +499,7 @@ theorem Term.rename_injective_atOptionMatch_of_inner
     obtain ⟨elementTypeB, scrutineeB, noneB, someB, termHEqB⟩ := key termB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with _ _ elementTypeRenameEq _ _ _ _
       scrutineeRenameHEq noneRenameEq someRenameHEq
     have elementTypeEq : elementTypeA = elementTypeB :=
@@ -549,7 +549,7 @@ theorem Term.rename_injective_atEitherInl_of_inner
     cases typeEqB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with _ _ _ _ _ valueRenameEq
     exact congrArg (Term.eitherInl (rightType := rightType))
       (valueInjective valueA valueB valueRenameEq)
@@ -592,7 +592,7 @@ theorem Term.rename_injective_atEitherInr_of_inner
     cases typeEqB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with _ _ _ _ _ valueRenameEq
     exact congrArg (Term.eitherInr (leftType := leftType))
       (valueInjective valueA valueB valueRenameEq)
@@ -658,7 +658,7 @@ theorem Term.rename_injective_atEitherMatch_of_inner
       key termB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with _ _ leftTypeRenameEq rightTypeRenameEq _ _ _ _
       scrutineeRenameHEq leftRenameHEq rightRenameHEq
     have leftTypeEq : leftTypeA = leftTypeB :=

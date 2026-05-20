@@ -423,7 +423,7 @@ theorem Term.rename_injective_atCumulUp_of_inner
     cases typeEqB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with lowerLevelEq higherLevelEq cumulMonotoneEq
       levelLeLowEq levelLeHighEq codeRenameHEq
     cases lowerLevelEq
@@ -504,7 +504,7 @@ theorem Term.rename_injective_atUaToEquiv_of_inner
     cases typeEqB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with scopeEq contextEq innerLevelEq innerLevelLtEq
       leftTyRenameEq rightTyRenameEq leftRawRenameEq rightRawRenameEq
       proofRenameHEq
@@ -573,7 +573,7 @@ theorem Term.rename_injective_atEquivApply_of_inner
     obtain ⟨carrierA2, equivB, argumentB, termHEqB⟩ := key termB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with scopeEq contextEq carrierARenameEq
       carrierBRenameEq equivRawRenameEq argumentRawRenameEq equivRenameHEq
       argumentRenameHEq
@@ -636,7 +636,7 @@ theorem Term.rename_injective_atEquivApp_of_inner
     obtain ⟨carrierA2, equivB, argumentB, termHEqB⟩ := key termB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with scopeEq contextEq carrierARenameEq
       carrierBRenameEq equivRawRenameEq argumentRawRenameEq equivRenameHEq
       argumentRenameHEq

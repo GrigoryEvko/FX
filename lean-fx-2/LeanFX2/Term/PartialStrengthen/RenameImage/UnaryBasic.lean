@@ -47,8 +47,7 @@ theorem strengthenTyped?_rename_eq_natSucc
       = some (StrengtheningResult.fromRename forwardRename typedRenaming
           renameInverse renameInverseLeft renameInverseInjects
           (Term.natSucc predecessor)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   split
   next noPredecessorSuccess =>
     exact absurd (predecessorIH.symm.trans noPredecessorSuccess)
@@ -98,8 +97,7 @@ theorem strengthenTyped?_rename_eq_intervalOpp
       = some (StrengtheningResult.fromRename forwardRename typedRenaming
           renameInverse renameInverseLeft renameInverseInjects
           (Term.intervalOpp innerValue)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   split
   next noInnerSuccess =>
     exact absurd (innerIH.symm.trans noInnerSuccess)
@@ -150,8 +148,7 @@ theorem strengthenTyped?_rename_eq_modIntro
       = some (StrengtheningResult.fromRename forwardRename typedRenaming
           renameInverse renameInverseLeft renameInverseInjects
           (Term.modIntro innerTerm)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   split
   next noInnerSuccess =>
     exact absurd (innerIH.symm.trans noInnerSuccess)
@@ -198,8 +195,7 @@ theorem strengthenTyped?_rename_eq_modElim
       = some (StrengtheningResult.fromRename forwardRename typedRenaming
           renameInverse renameInverseLeft renameInverseInjects
           (Term.modElim innerTerm)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   split
   next noInnerSuccess =>
     exact absurd (innerIH.symm.trans noInnerSuccess)
@@ -246,8 +242,7 @@ theorem strengthenTyped?_rename_eq_subsume
       = some (StrengtheningResult.fromRename forwardRename typedRenaming
           renameInverse renameInverseLeft renameInverseInjects
           (Term.subsume innerTerm)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   split
   next noInnerSuccess =>
     exact absurd (innerIH.symm.trans noInnerSuccess)
@@ -298,8 +293,7 @@ theorem strengthenTyped?_rename_eq_optionSome
       = some (StrengtheningResult.fromRename forwardRename typedRenaming
           renameInverse renameInverseLeft renameInverseInjects
           (Term.optionSome valueTerm)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   split
   next noValueSuccess =>
     exact absurd (valueIH.symm.trans noValueSuccess)
@@ -351,8 +345,7 @@ theorem strengthenTyped?_rename_eq_eitherInl
       = some (StrengtheningResult.fromRename forwardRename typedRenaming
           renameInverse renameInverseLeft renameInverseInjects
           (Term.eitherInl (rightType := rightType) valueTerm)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have rightTypeStrengthens :
       (rightType.rename forwardRename).partialStrengthen? renameInverse
         = some rightType := by
@@ -416,8 +409,7 @@ theorem strengthenTyped?_rename_eq_eitherInr
       = some (StrengtheningResult.fromRename forwardRename typedRenaming
           renameInverse renameInverseLeft renameInverseInjects
           (Term.eitherInr (leftType := leftType) valueTerm)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have leftTypeStrengthens :
       (leftType.rename forwardRename).partialStrengthen? renameInverse
         = some leftType := by
@@ -482,8 +474,7 @@ theorem strengthenTyped?_rename_eq_sessionRecv
       = some (StrengtheningResult.fromRename forwardRename typedRenaming
           renameInverse renameInverseLeft renameInverseInjects
           (Term.sessionRecv channel)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have protocolStrengthens :
       (protocolStep.rename forwardRename).partialStrengthen? renameInverse
         = some protocolStep := by
@@ -556,8 +547,7 @@ theorem strengthenTyped?_rename_eq_cumulUp
           renameInverse renameInverseLeft renameInverseInjects
           (Term.cumulUp lowerLevel higherLevel cumulMonotone levelLeLow
             levelLeHigh typeCode)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   split
   next noCodeSuccess =>
     exact absurd (codeIH.symm.trans noCodeSuccess)

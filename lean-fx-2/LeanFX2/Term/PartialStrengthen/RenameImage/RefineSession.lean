@@ -60,8 +60,7 @@ theorem strengthenTyped?_rename_eq_refineIntro
           renameInverse renameInverseLeft renameInverseInjects
           (Term.refineIntro (context := sourceCtx) predicate baseValue
             predicateProof)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have predicateStrengthens :
       (predicate.rename forwardRename.lift).partialStrengthen?
           renameInverse.lift
@@ -148,8 +147,7 @@ theorem strengthenTyped?_rename_eq_refineElim
           renameInverse renameInverseLeft renameInverseInjects
           (Term.refineElim (context := sourceCtx) (baseType := baseType)
             (predicate := predicate) refinedValue)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have baseStrengthens :
       (baseType.rename forwardRename).partialStrengthen? renameInverse
         = some baseType := by
@@ -248,8 +246,7 @@ theorem strengthenTyped?_rename_eq_sessionSend
           renameInverse renameInverseLeft renameInverseInjects
           (Term.sessionSend (context := sourceCtx) protocolStep channel
             payload)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have protocolStrengthens :
       (protocolStep.rename forwardRename).partialStrengthen? renameInverse
         = some protocolStep := by

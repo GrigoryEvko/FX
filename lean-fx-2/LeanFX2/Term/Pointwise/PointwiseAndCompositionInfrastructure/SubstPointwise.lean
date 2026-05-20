@@ -57,176 +57,176 @@ theorem Term.subst_pointwise
   | _, _, .var position => pointwiseEq position
   | _, _, .unit => rfl
   | _, _, .lam body => by
-      simp only [Term.subst]
+      dsimp only [Term.subst]
       rw [Term.subst_pointwise (TermSubst.lift_pointwise pointwiseEq _) body]
   | _, _, .app fnTerm argTerm => by
-      simp only [Term.subst]
+      show Term.app _ _ = Term.app _ _
       rw [Term.subst_pointwise pointwiseEq fnTerm,
           Term.subst_pointwise pointwiseEq argTerm]
   | _, _, .lamPi body => by
-      simp only [Term.subst]
+      show Term.lamPi _ = Term.lamPi _
       rw [Term.subst_pointwise (TermSubst.lift_pointwise pointwiseEq _) body]
   | _, _, .appPi fnTerm argTerm => by
-      simp only [Term.subst]
+      dsimp only [Term.subst]
       rw [Term.subst_pointwise pointwiseEq fnTerm,
           Term.subst_pointwise pointwiseEq argTerm]
   | _, _, .pair firstValue secondValue => by
-      simp only [Term.subst]
+      dsimp only [Term.subst]
       rw [Term.subst_pointwise pointwiseEq firstValue,
           Term.subst_pointwise pointwiseEq secondValue]
   | _, _, .fst pairTerm => by
-      simp only [Term.subst]
+      show Term.fst _ = Term.fst _
       rw [Term.subst_pointwise pointwiseEq pairTerm]
   | _, _, .snd pairTerm => by
-      simp only [Term.subst]
+      dsimp only [Term.subst]
       rw [Term.subst_pointwise pointwiseEq pairTerm]
   | _, _, .boolTrue => rfl
   | _, _, .boolFalse => rfl
   | _, _, .boolElim scrutinee thenBranch elseBranch => by
-      simp only [Term.subst]
+      dsimp only [Term.subst]
       rw [Term.subst_pointwise pointwiseEq scrutinee,
           Term.subst_pointwise pointwiseEq thenBranch,
           Term.subst_pointwise pointwiseEq elseBranch]
   | _, _, .natZero => rfl
   | _, _, .natSucc predecessor => by
-      simp only [Term.subst]
+      show Term.natSucc _ = Term.natSucc _
       rw [Term.subst_pointwise pointwiseEq predecessor]
   | _, _, .natElim scrutinee zeroBranch succBranch => by
-      simp only [Term.subst]
+      show Term.natElim _ _ _ = Term.natElim _ _ _
       rw [Term.subst_pointwise pointwiseEq scrutinee,
           Term.subst_pointwise pointwiseEq zeroBranch,
           Term.subst_pointwise pointwiseEq succBranch]
   | _, _, .natRec scrutinee zeroBranch succBranch => by
-      simp only [Term.subst]
+      show Term.natRec _ _ _ = Term.natRec _ _ _
       rw [Term.subst_pointwise pointwiseEq scrutinee,
           Term.subst_pointwise pointwiseEq zeroBranch,
           Term.subst_pointwise pointwiseEq succBranch]
   | _, _, .listNil => rfl
   | _, _, .listCons headTerm tailTerm => by
-      simp only [Term.subst]
+      show Term.listCons _ _ = Term.listCons _ _
       rw [Term.subst_pointwise pointwiseEq headTerm,
           Term.subst_pointwise pointwiseEq tailTerm]
   | _, _, .listElim scrutinee nilBranch consBranch => by
-      simp only [Term.subst]
+      show Term.listElim _ _ _ = Term.listElim _ _ _
       rw [Term.subst_pointwise pointwiseEq scrutinee,
           Term.subst_pointwise pointwiseEq nilBranch,
           Term.subst_pointwise pointwiseEq consBranch]
   | _, _, .optionNone => rfl
   | _, _, .optionSome valueTerm => by
-      simp only [Term.subst]
+      show Term.optionSome _ = Term.optionSome _
       rw [Term.subst_pointwise pointwiseEq valueTerm]
   | _, _, .optionMatch scrutinee noneBranch someBranch => by
-      simp only [Term.subst]
+      show Term.optionMatch _ _ _ = Term.optionMatch _ _ _
       rw [Term.subst_pointwise pointwiseEq scrutinee,
           Term.subst_pointwise pointwiseEq noneBranch,
           Term.subst_pointwise pointwiseEq someBranch]
   | _, _, .eitherInl valueTerm => by
-      simp only [Term.subst]
+      show Term.eitherInl _ = Term.eitherInl _
       rw [Term.subst_pointwise pointwiseEq valueTerm]
   | _, _, .eitherInr valueTerm => by
-      simp only [Term.subst]
+      show Term.eitherInr _ = Term.eitherInr _
       rw [Term.subst_pointwise pointwiseEq valueTerm]
   | _, _, .eitherMatch scrutinee leftBranch rightBranch => by
-      simp only [Term.subst]
+      show Term.eitherMatch _ _ _ = Term.eitherMatch _ _ _
       rw [Term.subst_pointwise pointwiseEq scrutinee,
           Term.subst_pointwise pointwiseEq leftBranch,
           Term.subst_pointwise pointwiseEq rightBranch]
   | _, _, .refl _ _ => rfl
   | _, _, .idJ baseCase witness => by
-      simp only [Term.subst]
+      show Term.idJ _ _ = Term.idJ _ _
       rw [Term.subst_pointwise pointwiseEq baseCase,
           Term.subst_pointwise pointwiseEq witness]
   | _, _, .oeqRefl _ _ => rfl
   | _, _, .oeqJ baseCase witness => by
-      simp only [Term.subst]
+      show Term.oeqJ _ _ = Term.oeqJ _ _
       rw [Term.subst_pointwise pointwiseEq baseCase,
           Term.subst_pointwise pointwiseEq witness]
   | _, _, .oeqFunext _ _ _ _ pointwiseProof => by
-      simp only [Term.subst]
+      dsimp only [Term.subst]
       rw [Term.subst_pointwise pointwiseEq pointwiseProof]
   | _, _, .idStrictRefl _ _ _ => rfl
   | _, _, .idStrictRec _ baseCase witness => by
-      simp only [Term.subst]
+      show Term.idStrictRec _ _ _ = Term.idStrictRec _ _ _
       rw [Term.subst_pointwise pointwiseEq baseCase,
           Term.subst_pointwise pointwiseEq witness]
   | _, _, .modIntro innerTerm => by
-      simp only [Term.subst]
+      show Term.modIntro _ = Term.modIntro _
       rw [Term.subst_pointwise pointwiseEq innerTerm]
   | _, _, .modElim innerTerm => by
-      simp only [Term.subst]
+      show Term.modElim _ = Term.modElim _
       rw [Term.subst_pointwise pointwiseEq innerTerm]
   | _, _, .subsume innerTerm => by
-      simp only [Term.subst]
+      show Term.subsume _ = Term.subsume _
       rw [Term.subst_pointwise pointwiseEq innerTerm]
   | _, _, .interval0 => rfl
   | _, _, .interval1 => rfl
   | _, _, .intervalOpp innerValue => by
-      simp only [Term.subst]
+      show Term.intervalOpp _ = Term.intervalOpp _
       rw [Term.subst_pointwise pointwiseEq innerValue]
   | _, _, .intervalMeet leftValue rightValue => by
-      simp only [Term.subst]
+      show Term.intervalMeet _ _ = Term.intervalMeet _ _
       rw [Term.subst_pointwise pointwiseEq leftValue,
           Term.subst_pointwise pointwiseEq rightValue]
   | _, _, .intervalJoin leftValue rightValue => by
-      simp only [Term.subst]
+      show Term.intervalJoin _ _ = Term.intervalJoin _ _
       rw [Term.subst_pointwise pointwiseEq leftValue,
           Term.subst_pointwise pointwiseEq rightValue]
   | _, _, .pathLam _ _ _ _ body => by
-      simp only [Term.subst]
+      dsimp only [Term.subst]
       rw [Term.subst_pointwise
             (TermSubst.lift_pointwise pointwiseEq Ty.interval) body]
   | _, _, .pathApp _ pathTerm intervalTerm => by
-      simp only [Term.subst]
+      show Term.pathApp _ _ _ = Term.pathApp _ _ _
       rw [Term.subst_pointwise pointwiseEq pathTerm,
           Term.subst_pointwise pointwiseEq intervalTerm]
   | _, _, .glueIntro _ _ _ baseValue partialValue => by
-      simp only [Term.subst]
+      show Term.glueIntro _ _ _ _ _ = Term.glueIntro _ _ _ _ _
       rw [Term.subst_pointwise pointwiseEq baseValue,
           Term.subst_pointwise pointwiseEq partialValue]
   | _, _, .glueElim _ gluedValue => by
-      simp only [Term.subst]
+      show Term.glueElim _ _ = Term.glueElim _ _
       rw [Term.subst_pointwise pointwiseEq gluedValue]
   | _, _, .transp _ _ _ _ _ _ _ typePath sourceValue => by
-      simp only [Term.subst]
+      show Term.transp _ _ _ _ _ _ _ _ _ = Term.transp _ _ _ _ _ _ _ _ _
       rw [Term.subst_pointwise pointwiseEq typePath,
           Term.subst_pointwise pointwiseEq sourceValue]
   | _, _, .hcomp _ sidesValue capValue => by
-      simp only [Term.subst]
+      show Term.hcomp _ _ _ = Term.hcomp _ _ _
       rw [Term.subst_pointwise pointwiseEq sidesValue,
           Term.subst_pointwise pointwiseEq capValue]
   | _, _, .hcompPath _ _ _ sidesPath capValue => by
-      simp only [Term.subst]
+      show Term.hcompPath _ _ _ _ _ = Term.hcompPath _ _ _ _ _
       rw [Term.subst_pointwise pointwiseEq sidesPath,
           Term.subst_pointwise pointwiseEq capValue]
   | _, _, .recordIntro firstField => by
-      simp only [Term.subst]
+      show Term.recordIntro _ = Term.recordIntro _
       rw [Term.subst_pointwise pointwiseEq firstField]
   | _, _, .recordProj recordValue => by
-      simp only [Term.subst]
+      show Term.recordProj _ = Term.recordProj _
       rw [Term.subst_pointwise pointwiseEq recordValue]
   | _, _, .refineIntro _ baseValue predicateProof => by
-      simp only [Term.subst]
+      show Term.refineIntro _ _ _ = Term.refineIntro _ _ _
       rw [Term.subst_pointwise pointwiseEq baseValue,
           Term.subst_pointwise pointwiseEq predicateProof]
   | _, _, .refineElim refinedValue => by
-      simp only [Term.subst]
+      show Term.refineElim _ = Term.refineElim _
       rw [Term.subst_pointwise pointwiseEq refinedValue]
   | _, _, .codataUnfold initialState transition => by
-      simp only [Term.subst]
+      show Term.codataUnfold _ _ = Term.codataUnfold _ _
       rw [Term.subst_pointwise pointwiseEq initialState,
           Term.subst_pointwise pointwiseEq transition]
   | _, _, .codataDest codataValue => by
-      simp only [Term.subst]
+      show Term.codataDest _ = Term.codataDest _
       rw [Term.subst_pointwise pointwiseEq codataValue]
   | _, _, .sessionSend _ channel payload => by
-      simp only [Term.subst]
+      show Term.sessionSend _ _ _ = Term.sessionSend _ _ _
       rw [Term.subst_pointwise pointwiseEq channel,
           Term.subst_pointwise pointwiseEq payload]
   | _, _, .sessionRecv channel => by
-      simp only [Term.subst]
+      show Term.sessionRecv _ = Term.sessionRecv _
       rw [Term.subst_pointwise pointwiseEq channel]
   | _, _, .effectPerform _ _ _ _ operationTag arguments => by
-      simp only [Term.subst]
+      show Term.effectPerform _ _ _ _ _ _ = Term.effectPerform _ _ _ _ _ _
       rw [Term.subst_pointwise pointwiseEq operationTag,
           Term.subst_pointwise pointwiseEq arguments]
   -- Universe-code: scope-polymorphic; both sides definitionally
@@ -236,7 +236,7 @@ theorem Term.subst_pointwise
   -- inner typeCode, so pointwise propagates via Term.subst_pointwise
   -- on the typeCode.
   | _, _, .cumulUp _ _ _ _ _ typeCode => by
-      simp only [Term.subst]
+      show Term.cumulUp _ _ _ _ _ _ = Term.cumulUp _ _ _ _ _ _
       rw [Term.subst_pointwise pointwiseEq typeCode]
   -- HoTT canonical equivalence/funext refl-fragment witnesses: their
   -- subst arms in Term/Subst.lean depend ONLY on the underlying
@@ -252,13 +252,13 @@ theorem Term.subst_pointwise
   -- IH).  Pointwise equality propagates through forward/backward plus
   -- the proof-function obligations, then the ctor reassembles identically.
   | _, _, .equivIntroHet forward backward leftInv rightInv => by
-      simp only [Term.subst]
+      dsimp only [Term.subst]
       rw [Term.subst_pointwise pointwiseEq forward,
           Term.subst_pointwise pointwiseEq backward,
           Term.subst_pointwise pointwiseEq leftInv,
           Term.subst_pointwise pointwiseEq rightInv]
   | _, _, .equivApp equivTerm argumentTerm => by
-      simp only [Term.subst]
+      show Term.equivApp _ _ = Term.equivApp _ _
       rw [Term.subst_pointwise pointwiseEq equivTerm,
           Term.subst_pointwise pointwiseEq argumentTerm]
   -- HoTT heterogeneous-carrier path-from-equivalence (Phase 12.A.B8.5b):
@@ -270,7 +270,7 @@ theorem Term.subst_pointwise
   -- equality propagates through the equivWitness subterm via the
   -- structural IH and the ctor reassembles identically.
   | _, _, .uaIntroHet _ _ _ _ equivWitness => by
-      simp only [Term.subst]
+      show Term.uaIntroHet _ _ _ _ _ = Term.uaIntroHet _ _ _ _ _
       rw [Term.subst_pointwise pointwiseEq equivWitness]
   -- Phase D3.6-P3: univalence-β extractor.  Same single-subterm
   -- pattern as `uaIntroHet`: the subst arm in Term/Subst.lean
@@ -281,14 +281,14 @@ theorem Term.subst_pointwise
   -- through the `proof` subterm via the structural IH and the ctor
   -- reassembles identically.
   | _, _, .uaToEquiv _ _ _ _ _ _ proof => by
-      simp only [Term.subst]
+      show Term.uaToEquiv _ _ _ _ _ _ _ = Term.uaToEquiv _ _ _ _ _ _ _
       rw [Term.subst_pointwise pointwiseEq proof]
   -- Phase D3.6-P4: univalence-β application.  Binary-subterm pattern
   -- mirroring `equivApp`: the subst arm in Term/Subst.lean recurses
   -- on both `equivTerm` and `argumentTerm` via Term.subst; pointwise
   -- equality propagates through both subterms via the structural IH.
   | _, _, .equivApply equivTerm argumentTerm => by
-      simp only [Term.subst]
+      show Term.equivApply _ _ = Term.equivApply _ _
       rw [Term.subst_pointwise pointwiseEq equivTerm,
           Term.subst_pointwise pointwiseEq argumentTerm]
   -- HoTT heterogeneous-carrier funext-introduction at Id-of-arrow

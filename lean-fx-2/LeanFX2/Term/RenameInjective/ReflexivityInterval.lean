@@ -188,7 +188,7 @@ theorem Term.rename_injective_atIntervalOpp_of_inner
     cases typeEqB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with _ _ _ innerRenameEq
     exact congrArg Term.intervalOpp
       (innerInjective innerA innerB innerRenameEq)
@@ -231,7 +231,7 @@ theorem Term.rename_injective_atIntervalMeet_of_inner
     cases typeEqB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with _ _ _ _ leftRenameEq rightRenameEq
     rw [leftInjective leftA leftB leftRenameEq,
       rightInjective rightA rightB rightRenameEq]
@@ -274,7 +274,7 @@ theorem Term.rename_injective_atIntervalJoin_of_inner
     cases typeEqB
     cases termHEqA
     cases termHEqB
-    simp only [Term.rename] at renameEq
+    dsimp only [Term.rename] at renameEq
     injection renameEq with _ _ _ _ leftRenameEq rightRenameEq
     rw [leftInjective leftA leftB leftRenameEq,
       rightInjective rightA rightB rightRenameEq]

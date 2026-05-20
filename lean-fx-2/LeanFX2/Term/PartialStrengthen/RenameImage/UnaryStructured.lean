@@ -47,8 +47,7 @@ theorem strengthenTyped?_rename_eq_recordProj
       = some (StrengtheningResult.fromRename forwardRename typedRenaming
           renameInverse renameInverseLeft renameInverseInjects
           (Term.recordProj recordValue)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have fieldStrengthens :
       (singleFieldType.rename forwardRename).partialStrengthen? renameInverse
         = some singleFieldType := by
@@ -114,8 +113,7 @@ theorem strengthenTyped?_rename_eq_codataDest
       = some (StrengtheningResult.fromRename forwardRename typedRenaming
           renameInverse renameInverseLeft renameInverseInjects
           (Term.codataDest codataValue)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have stateStrengthens :
       (stateType.rename forwardRename).partialStrengthen? renameInverse
         = some stateType := by
@@ -196,8 +194,7 @@ theorem strengthenTyped?_rename_eq_recordIntro
       = some (StrengtheningResult.fromRename forwardRename typedRenaming
           renameInverse renameInverseLeft renameInverseInjects
           (Term.recordIntro firstField)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   split
   next noFieldSuccess =>
     exact absurd (fieldIH.symm.trans noFieldSuccess)
@@ -250,8 +247,7 @@ theorem strengthenTyped?_rename_eq_glueElim
       = some (StrengtheningResult.fromRename forwardRename typedRenaming
           renameInverse renameInverseLeft renameInverseInjects
           (Term.glueElim modeIsUnivalent gluedValue)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have baseStrengthens :
       (baseType.rename forwardRename).partialStrengthen? renameInverse
         = some baseType := by

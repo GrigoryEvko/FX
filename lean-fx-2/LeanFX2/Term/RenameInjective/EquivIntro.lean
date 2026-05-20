@@ -151,7 +151,7 @@ theorem Term.rename_injective_atEquivIntroEquiv_of_inner
             termHEqB⟩ := introViewB
           cases typeEqB
           cases termHEqB
-          simp only [Term.rename] at renameEq
+          dsimp only [Term.rename] at renameEq
           cases renameEq
         | inr uaViewB =>
           obtain ⟨innerLevelB, innerLevelLtB, carrierLeftB, carrierRightB,
@@ -180,7 +180,7 @@ theorem Term.rename_injective_atEquivIntroEquiv_of_inner
           cases forwardEqB
           cases backwardEqB
           cases termHEqB
-          simp only [Term.rename] at renameEq
+          dsimp only [Term.rename] at renameEq
           cases renameEq
         | inr restViewB =>
           cases restViewB with
@@ -196,7 +196,7 @@ theorem Term.rename_injective_atEquivIntroEquiv_of_inner
                 typeEqB, termHEqB⟩ := introViewB
               cases typeEqB
               cases termHEqB
-              simp only [Term.rename] at renameEq
+              dsimp only [Term.rename] at renameEq
               injection renameEq with contextEq carrierLeftRenameEq
                 carrierRightRenameEq forwardRawRenameEq backwardRawRenameEq
                 backwardRawRenameEqAgain leftInvRawRenameEq rightInvRawRenameEq
@@ -315,7 +315,7 @@ theorem Term.rename_injective_atEquivIntroUniverseId_of_inner
           cases forwardEqB
           cases backwardEqB
           cases termHEqB
-          simp only [Term.rename] at renameEq
+          dsimp only [Term.rename] at renameEq
           injection renameEq with contextEq innerLevelEq innerLevelLtEq
             carrierRenameEq carrierRawRenameEq
           cases innerLevelEq
@@ -338,7 +338,7 @@ theorem Term.rename_injective_atEquivIntroUniverseId_of_inner
               termHEqB⟩ := uaViewB
             cases typeEqB
             cases termHEqB
-            simp only [Term.rename] at renameEq
+            dsimp only [Term.rename] at renameEq
             cases renameEq
     | inr restViewA =>
       cases restViewA with
@@ -367,7 +367,7 @@ theorem Term.rename_injective_atEquivIntroUniverseId_of_inner
             cases forwardEqB
             cases backwardEqB
             cases termHEqB
-            simp only [Term.rename] at renameEq
+            dsimp only [Term.rename] at renameEq
             cases renameEq
           | inr restViewB =>
             cases restViewB with
@@ -382,7 +382,7 @@ theorem Term.rename_injective_atEquivIntroUniverseId_of_inner
                 equivWitnessB, typeEqB, termHEqB⟩ := uaViewB
               cases typeEqB
               cases termHEqB
-              simp only [Term.rename] at renameEq
+              dsimp only [Term.rename] at renameEq
               injection renameEq with contextEq innerLevelEq innerLevelLtEq
                 carrierLeftRenameEq carrierRightRenameEq carrierLeftRawRenameEq
                 carrierRightRawRenameEq forwardRawRenameEq backwardRawRenameEq

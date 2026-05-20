@@ -57,8 +57,7 @@ theorem strengthenTyped?_rename_eq_listCons
       = some (StrengtheningResult.fromRename forwardRename typedRenaming
           renameInverse renameInverseLeft renameInverseInjects
           (Term.listCons headTerm tailTerm)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   split
   next noHeadSuccess =>
     exact absurd (headIH.symm.trans noHeadSuccess)
@@ -139,8 +138,7 @@ theorem strengthenTyped?_rename_eq_natElim
       = some (StrengtheningResult.fromRename forwardRename typedRenaming
           renameInverse renameInverseLeft renameInverseInjects
           (Term.natElim scrutinee zeroBranch succBranch)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   split
   next noScrutSuccess =>
     exact absurd (scrutineeIH.symm.trans noScrutSuccess)
@@ -231,8 +229,7 @@ theorem strengthenTyped?_rename_eq_natRec
       = some (StrengtheningResult.fromRename forwardRename typedRenaming
           renameInverse renameInverseLeft renameInverseInjects
           (Term.natRec scrutinee zeroBranch succBranch)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   split
   next noScrutSuccess =>
     exact absurd (scrutineeIH.symm.trans noScrutSuccess)
@@ -315,8 +312,7 @@ theorem strengthenTyped?_rename_eq_app
       = some (StrengtheningResult.fromRename forwardRename typedRenaming
           renameInverse renameInverseLeft renameInverseInjects
           (Term.app functionTerm argumentTerm)) := by
-  dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [Term.rename, partialStrengthenTyped?]
   have domainStrengthens :
       (domainType.rename forwardRename).partialStrengthen? renameInverse
         = some domainType := by
