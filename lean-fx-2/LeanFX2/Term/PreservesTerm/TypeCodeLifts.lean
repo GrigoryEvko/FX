@@ -1,5 +1,5 @@
-import LeanFX2.Reduction.ParRed
-import LeanFX2.Reduction.RawParInversion
+import LeanFX2.Reduction.ParRed.ParInductive.Inductive
+import LeanFX2.Reduction.RawParInversion.TypeCodes
 import LeanFX2.Term.Inversion
 
 /-! # LeanFX2.Term.PreservesTerm.TypeCodeLifts

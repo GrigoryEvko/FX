@@ -1,4 +1,9 @@
 import LeanFX2.Term.PreservesTerm.UniversalChain.Core
+import LeanFX2.Term.PreservesTerm.BetaCastWallDemolition
+import LeanFX2.Term.PreservesTerm.SchematicValueCtors
+import LeanFX2.Term.PreservesTerm.TypeCodeLifts
+import LeanFX2.Term.PreservesTerm.TwoTyAtomsAndCong
+import LeanFX2.Term.PreservesTerm.TwoTyEliminators
 import LeanFX2.Term.SubjectReductionPar
 
 /-! # LeanFX2.Term.PreservesTerm.UniversalChain.LiftFullTerm

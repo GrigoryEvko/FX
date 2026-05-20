@@ -1,5 +1,6 @@
-import LeanFX2.Reduction.ParRed
-import LeanFX2.Reduction.RawParInversion
+import LeanFX2.Reduction.ParRed.ParInductive.Inductive
+import LeanFX2.Reduction.RawParInversion.AtomicCtors
+import LeanFX2.Reduction.RawParInversion.CubicalAndIdentity
 import LeanFX2.Term.Inversion
 
 /-! # LeanFX2.Term.PreservesTerm.SchematicValueCtors

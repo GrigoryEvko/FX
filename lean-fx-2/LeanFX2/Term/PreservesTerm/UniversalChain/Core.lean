@@ -1,4 +1,5 @@
-import LeanFX2.Term.PreservesTerm
+import LeanFX2.Reduction.ParRed.ParInductive.Inductive
+import LeanFX2.Term
 import LeanFX2.Foundation.IsClosedTy
 
 /-! # LeanFX2.Term.PreservesTerm.UniversalChain.Core

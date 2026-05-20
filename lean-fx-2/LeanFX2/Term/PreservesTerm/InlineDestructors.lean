@@ -1,5 +1,3 @@
-import LeanFX2.Reduction.ParRed
-import LeanFX2.Reduction.RawParInversion
 import LeanFX2.Term.Inversion
 
 /-! # LeanFX2.Term.PreservesTerm.InlineDestructors

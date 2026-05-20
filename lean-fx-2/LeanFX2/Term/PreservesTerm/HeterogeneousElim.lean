@@ -1,5 +1,7 @@
 import LeanFX2.Term.PreservesTerm.BetaCastWallDemolition
 import LeanFX2.Term.PreservesTerm.InlineDestructors
+import LeanFX2.Reduction.RawParInversion.CubicalAndIdentity
+import LeanFX2.Reduction.RawParInversion.RedexParents
 
 /-! # LeanFX2.Term.PreservesTerm.HeterogeneousElim
 
