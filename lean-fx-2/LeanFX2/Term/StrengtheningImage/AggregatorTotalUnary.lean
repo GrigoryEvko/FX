@@ -29,9 +29,8 @@ theorem isAggregatorTotal_natSucc {mode : Mode} {level : Nat}
     (predecessorTotal : IsAggregatorTotal predecessor) :
     IsAggregatorTotal (Term.natSucc (predecessor := predecessor)) := by
   intros _ _ strengthening _ _ _ rawStrengthens
-  unfold partialStrengthenTyped?
-  unfold RawTerm.partialStrengthen? at rawStrengthens
-  unfold RawTerm.partialRename? at rawStrengthens
+  dsimp only [partialStrengthenTyped?]
+  dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?] at rawStrengthens
   split at rawStrengthens
   rotate_left
   · cases rawStrengthens
@@ -57,9 +56,8 @@ theorem isAggregatorTotal_intervalOpp {mode : Mode} {level : Nat}
     (innerTotal : IsAggregatorTotal innerValue) :
     IsAggregatorTotal (Term.intervalOpp (innerValue := innerValue)) := by
   intros _ _ strengthening _ _ _ rawStrengthens
-  unfold partialStrengthenTyped?
-  unfold RawTerm.partialStrengthen? at rawStrengthens
-  unfold RawTerm.partialRename? at rawStrengthens
+  dsimp only [partialStrengthenTyped?]
+  dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?] at rawStrengthens
   split at rawStrengthens
   rotate_left
   · cases rawStrengthens
@@ -87,9 +85,8 @@ theorem isAggregatorTotal_modIntro {mode : Mode} {level : Nat}
     (innerTotal : IsAggregatorTotal innerTerm) :
     IsAggregatorTotal (Term.modIntro (innerTerm := innerTerm)) := by
   intros _ _ strengthening _ _ typeStrengthens rawStrengthens
-  unfold partialStrengthenTyped?
-  unfold RawTerm.partialStrengthen? at rawStrengthens
-  unfold RawTerm.partialRename? at rawStrengthens
+  dsimp only [partialStrengthenTyped?]
+  dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?] at rawStrengthens
   split at rawStrengthens
   rotate_left
   · cases rawStrengthens
@@ -112,9 +109,8 @@ theorem isAggregatorTotal_modElim {mode : Mode} {level : Nat}
     (innerTotal : IsAggregatorTotal innerTerm) :
     IsAggregatorTotal (Term.modElim (innerTerm := innerTerm)) := by
   intros _ _ strengthening _ _ typeStrengthens rawStrengthens
-  unfold partialStrengthenTyped?
-  unfold RawTerm.partialStrengthen? at rawStrengthens
-  unfold RawTerm.partialRename? at rawStrengthens
+  dsimp only [partialStrengthenTyped?]
+  dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?] at rawStrengthens
   split at rawStrengthens
   rotate_left
   · cases rawStrengthens
@@ -137,9 +133,8 @@ theorem isAggregatorTotal_subsume {mode : Mode} {level : Nat}
     (innerTotal : IsAggregatorTotal innerTerm) :
     IsAggregatorTotal (Term.subsume (innerTerm := innerTerm)) := by
   intros _ _ strengthening _ _ typeStrengthens rawStrengthens
-  unfold partialStrengthenTyped?
-  unfold RawTerm.partialStrengthen? at rawStrengthens
-  unfold RawTerm.partialRename? at rawStrengthens
+  dsimp only [partialStrengthenTyped?]
+  dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?] at rawStrengthens
   split at rawStrengthens
   rotate_left
   · cases rawStrengthens
@@ -164,12 +159,11 @@ theorem isAggregatorTotal_optionSome {mode : Mode} {level : Nat}
     IsAggregatorTotal (Term.optionSome (valueTerm := valueTerm)) := by
   intros _ _ strengthening _ _ typeStrengthens rawStrengthens
   -- Extract elementType's strengthening from typeStrengthens.
-  unfold Ty.partialStrengthen? at typeStrengthens
+  dsimp only [Ty.partialStrengthen?] at typeStrengthens
   split at typeStrengthens
   · next strengthenedElement elementSuccess =>
-      unfold partialStrengthenTyped?
-      unfold RawTerm.partialStrengthen? at rawStrengthens
-      unfold RawTerm.partialRename? at rawStrengthens
+      dsimp only [partialStrengthenTyped?]
+      dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?] at rawStrengthens
       split at rawStrengthens
       rotate_left
       · cases rawStrengthens
@@ -198,9 +192,8 @@ theorem isAggregatorTotal_eitherInl {mode : Mode} {level : Nat}
   intros _ _ strengthening _ _ typeStrengthens rawStrengthens
   obtain ⟨targetLeftType, _, leftSuccess, _, _⟩ :=
     Option.mapTwo_eq_some typeStrengthens
-  unfold partialStrengthenTyped?
-  unfold RawTerm.partialStrengthen? at rawStrengthens
-  unfold RawTerm.partialRename? at rawStrengthens
+  dsimp only [partialStrengthenTyped?]
+  dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?] at rawStrengthens
   split at rawStrengthens
   rotate_left
   · cases rawStrengthens
@@ -236,9 +229,8 @@ theorem isAggregatorTotal_eitherInr {mode : Mode} {level : Nat}
   intros _ _ strengthening _ _ typeStrengthens rawStrengthens
   obtain ⟨_, _, leftSuccess, rightSuccess, _⟩ :=
     Option.mapTwo_eq_some typeStrengthens
-  unfold partialStrengthenTyped?
-  unfold RawTerm.partialStrengthen? at rawStrengthens
-  unfold RawTerm.partialRename? at rawStrengthens
+  dsimp only [partialStrengthenTyped?]
+  dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?] at rawStrengthens
   split at rawStrengthens
   rotate_left
   · cases rawStrengthens
@@ -269,12 +261,11 @@ theorem isAggregatorTotal_recordIntro {mode : Mode} {level : Nat}
     (firstTotal : IsAggregatorTotal firstField) :
     IsAggregatorTotal (Term.recordIntro (firstField := firstField)) := by
   intros _ _ strengthening _ _ typeStrengthens rawStrengthens
-  unfold Ty.partialStrengthen? at typeStrengthens
+  dsimp only [Ty.partialStrengthen?] at typeStrengthens
   split at typeStrengthens
   · next strengthenedField fieldSuccess =>
-      unfold partialStrengthenTyped?
-      unfold RawTerm.partialStrengthen? at rawStrengthens
-      unfold RawTerm.partialRename? at rawStrengthens
+      dsimp only [partialStrengthenTyped?]
+      dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?] at rawStrengthens
       split at rawStrengthens
       rotate_left
       · cases rawStrengthens
@@ -312,9 +303,8 @@ theorem isAggregatorTotal_recordProj {mode : Mode} {level : Nat}
           | some strengthenedField => some (Ty.record strengthenedField)
           | none => none) = some _
     rw [typeStrengthens]
-  unfold partialStrengthenTyped?
-  unfold RawTerm.partialStrengthen? at rawStrengthens
-  unfold RawTerm.partialRename? at rawStrengthens
+  dsimp only [partialStrengthenTyped?]
+  dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?] at rawStrengthens
   split at rawStrengthens
   rotate_left
   · cases rawStrengthens
@@ -353,9 +343,8 @@ theorem isAggregatorTotal_sessionRecv {mode : Mode} {level : Nat}
       cases typeStrengthens
     · exact ⟨tgt, rfl⟩
   obtain ⟨targetProtocol, protocolSuccess⟩ := protocolSuccessExists
-  unfold partialStrengthenTyped?
-  unfold RawTerm.partialStrengthen? at rawStrengthens
-  unfold RawTerm.partialRename? at rawStrengthens
+  dsimp only [partialStrengthenTyped?]
+  dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?] at rawStrengthens
   split at rawStrengthens
   rotate_left
   · cases rawStrengthens

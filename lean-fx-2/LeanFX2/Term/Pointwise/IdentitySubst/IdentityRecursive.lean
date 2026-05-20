@@ -24,7 +24,7 @@ theorem Term.subst_identity_natSucc_HEq
       (Term.subst (TermSubst.identity context)
         (Term.natSucc predecessor))
       (Term.natSucc predecessor) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.natSucc_HEq_congr
     (RawTerm.subst_identity predecessorRaw) predecessorHEq
 
@@ -46,7 +46,7 @@ theorem Term.subst_identity_listCons_HEq
       (Term.subst (TermSubst.identity context)
         (Term.listCons headTerm tailTerm))
       (Term.listCons headTerm tailTerm) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.listCons_HEq_congr
     (Ty.subst_identity elementType)
     (RawTerm.subst_identity headRaw)
@@ -67,7 +67,7 @@ theorem Term.subst_identity_optionSome_HEq
       (Term.subst (TermSubst.identity context)
         (Term.optionSome valueTerm))
       (Term.optionSome valueTerm) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.optionSome_HEq_congr
     (Ty.subst_identity elementType)
     (RawTerm.subst_identity valueRaw)
@@ -87,7 +87,7 @@ theorem Term.subst_identity_eitherInl_HEq
       (Term.subst (TermSubst.identity context)
         (Term.eitherInl (rightType := rightType) valueTerm))
       (Term.eitherInl (rightType := rightType) valueTerm) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.eitherInl_HEq_congr
     (Ty.subst_identity leftType)
     (Ty.subst_identity rightType)
@@ -108,7 +108,7 @@ theorem Term.subst_identity_eitherInr_HEq
       (Term.subst (TermSubst.identity context)
         (Term.eitherInr (leftType := leftType) valueTerm))
       (Term.eitherInr (leftType := leftType) valueTerm) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.eitherInr_HEq_congr
     (Ty.subst_identity leftType)
     (Ty.subst_identity rightType)
@@ -128,7 +128,7 @@ theorem Term.subst_identity_intervalOpp_HEq
       (Term.subst (TermSubst.identity context)
         (Term.intervalOpp innerValue))
       (Term.intervalOpp innerValue) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.intervalOpp_HEq_congr
     (RawTerm.subst_identity innerRaw) innerHEq
 
@@ -149,7 +149,7 @@ theorem Term.subst_identity_intervalMeet_HEq
       (Term.subst (TermSubst.identity context)
         (Term.intervalMeet leftValue rightValue))
       (Term.intervalMeet leftValue rightValue) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.intervalMeet_HEq_congr
     (RawTerm.subst_identity leftRaw)
     (RawTerm.subst_identity rightRaw)
@@ -172,7 +172,7 @@ theorem Term.subst_identity_intervalJoin_HEq
       (Term.subst (TermSubst.identity context)
         (Term.intervalJoin leftValue rightValue))
       (Term.intervalJoin leftValue rightValue) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.intervalJoin_HEq_congr
     (RawTerm.subst_identity leftRaw)
     (RawTerm.subst_identity rightRaw)
@@ -192,7 +192,7 @@ theorem Term.subst_identity_modIntro_HEq
       (Term.subst (TermSubst.identity context)
         (Term.modIntro innerTerm))
       (Term.modIntro innerTerm) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.modIntro_HEq_congr
     (Ty.subst_identity innerType)
     (RawTerm.subst_identity innerRaw)
@@ -212,7 +212,7 @@ theorem Term.subst_identity_modElim_HEq
       (Term.subst (TermSubst.identity context)
         (Term.modElim innerTerm))
       (Term.modElim innerTerm) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.modElim_HEq_congr
     (Ty.subst_identity innerType)
     (RawTerm.subst_identity innerRaw)
@@ -232,7 +232,7 @@ theorem Term.subst_identity_subsume_HEq
       (Term.subst (TermSubst.identity context)
         (Term.subsume innerTerm))
       (Term.subsume innerTerm) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.subsume_HEq_congr
     (Ty.subst_identity innerType)
     (RawTerm.subst_identity innerRaw)
