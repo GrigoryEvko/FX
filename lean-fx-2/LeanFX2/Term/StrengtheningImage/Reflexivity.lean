@@ -1,4 +1,5 @@
 import LeanFX2.Term.StrengtheningImage.Core
+import LeanFX2.Term.HEqCongr.Compound.IdentityModalHoTT
 
 /-! # Term/StrengtheningImage/Reflexivity
 

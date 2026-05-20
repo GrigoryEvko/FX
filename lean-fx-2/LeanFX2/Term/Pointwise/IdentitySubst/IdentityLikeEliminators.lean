@@ -1,5 +1,7 @@
 import LeanFX2.Term.Pointwise.IdentitySubst.IdentityLikeIntro
-import LeanFX2.Term.HEqCongr.Compound
+import LeanFX2.Term.HEqCongr.Compound.ApplicationsAndBinders
+import LeanFX2.Term.HEqCongr.Compound.EliminatorsAndRecursive
+import LeanFX2.Term.HEqCongr.Compound.IdentityModalHoTT
 
 /-! # LeanFX2.Term.Pointwise.IdentitySubst.IdentityLikeEliminators
 

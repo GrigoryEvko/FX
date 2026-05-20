@@ -6,7 +6,7 @@ import LeanFX2.Term.PartialStrengthen.RenameImage.Cubical
 import LeanFX2.Term.PartialStrengthen.RenameImage.CodataProjection
 import LeanFX2.Term.PartialStrengthen.RenameImage.Effects
 import LeanFX2.Term.PartialStrengthen.RenameImage.CastWrapped
-import LeanFX2.Term.HEqCongr.Compound
+import LeanFX2.Term.HEqCongr.Compound.EliminatorsAndRecursive
 import LeanFX2.Term.HEqCongr.Atomic.Base
 import LeanFX2.Term.HEqCongr.Atomic.Cubical
 import LeanFX2.Term.HEqCongr.Atomic.Structural

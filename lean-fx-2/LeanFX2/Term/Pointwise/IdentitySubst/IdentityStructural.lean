@@ -1,5 +1,5 @@
 import LeanFX2.Term.Pointwise.IdentitySubst.IdentityEquality
-import LeanFX2.Term.HEqCongr.Compound
+import LeanFX2.Term.HEqCongr.Compound.IdentityModalHoTT
 import LeanFX2.Term.HEqCongr.Atomic.Cubical
 import LeanFX2.Term.HEqCongr.Atomic.Structural
 

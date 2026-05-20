@@ -1,4 +1,6 @@
 import LeanFX2.Term.StrengtheningImage.Core
+import LeanFX2.Term.HEqCongr.Compound.ApplicationsAndBinders
+import LeanFX2.Term.HEqCongr.Compound.EliminatorsAndRecursive
 
 /-! # Term/StrengtheningImage/Applications
 

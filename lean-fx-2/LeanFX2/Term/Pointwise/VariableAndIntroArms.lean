@@ -1,4 +1,6 @@
-import LeanFX2.Term.HEqCongr.Compound
+import LeanFX2.Term.HEqCongr.Compound.ApplicationsAndBinders
+import LeanFX2.Term.HEqCongr.Compound.EliminatorsAndRecursive
+import LeanFX2.Term.HEqCongr.Compound.IdentityModalHoTT
 import LeanFX2.Term.HEqCongr.Atomic.Base
 import LeanFX2.Term.HEqCongr.Atomic.Cubical
 import LeanFX2.Term.Subst

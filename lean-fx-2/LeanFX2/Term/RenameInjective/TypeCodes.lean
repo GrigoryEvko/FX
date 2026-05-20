@@ -1,5 +1,5 @@
 import LeanFX2.Term.RenameInjective.Core
-import LeanFX2.Term.HEqCongr.Compound
+import LeanFX2.Term.HEqCongr.Compound.IdentityModalHoTT
 
 /-! # Term/RenameInjective/TypeCodes
 

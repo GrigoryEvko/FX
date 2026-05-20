@@ -1,4 +1,4 @@
-import LeanFX2.Term.HEqCongr.Compound
+import LeanFX2.Term.HEqCongr.Compound.IdentityModalHoTT
 import LeanFX2.Term.HEqCongr.Atomic.TypeCodes
 import LeanFX2.Term.Subst
 import LeanFX2.Term.Pointwise.PointwiseAndCompositionInfrastructure.LiftCompose
