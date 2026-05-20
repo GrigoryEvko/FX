@@ -1,5 +1,5 @@
 import LeanFX2.Term.WeakenInverse
-import LeanFX2.Term.PartialStrengthen
+import LeanFX2.Term.PartialStrengthen.Weaken
 
 /-! # Term/TypedInversion — typed structural inversion for `Term.app`
 shape.

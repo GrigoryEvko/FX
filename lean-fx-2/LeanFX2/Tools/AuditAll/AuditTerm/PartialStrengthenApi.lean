@@ -1,5 +1,5 @@
 import LeanFX2.Tools.DependencyAudit
-import LeanFX2.Term.PartialStrengthen
+import LeanFX2.Term.PartialStrengthen.Weaken
 
 /-! # AuditTerm.PartialStrengthenApi — typed strengthening dispatcher API gates. -/
 

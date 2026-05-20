@@ -1,4 +1,11 @@
 import LeanFX2.Term.TypedInversion
+import LeanFX2.Term.PartialStrengthen.RenameImage.TypeCodes
+import LeanFX2.Term.PartialStrengthen.RenameImage.RefineSession
+import LeanFX2.Term.PartialStrengthen.RenameImage.Equivalence
+import LeanFX2.Term.PartialStrengthen.RenameImage.Cubical
+import LeanFX2.Term.PartialStrengthen.RenameImage.CodataProjection
+import LeanFX2.Term.PartialStrengthen.RenameImage.Effects
+import LeanFX2.Term.PartialStrengthen.RenameImage.CastWrapped
 import LeanFX2.Term.HEqCongr.Compound
 import LeanFX2.Term.HEqCongr.Atomic.Base
 import LeanFX2.Term.HEqCongr.Atomic.Cubical

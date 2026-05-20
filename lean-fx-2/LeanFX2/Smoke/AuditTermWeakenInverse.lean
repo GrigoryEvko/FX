@@ -1,6 +1,6 @@
 import LeanFX2.Term.WeakenInverse
 import LeanFX2.Term.ContextStrengthening
-import LeanFX2.Term.PartialStrengthen
+import LeanFX2.Term.PartialStrengthen.Weaken
 
 /-! # AuditTermWeakenInverse — typed strengthening foundation primitives.
 

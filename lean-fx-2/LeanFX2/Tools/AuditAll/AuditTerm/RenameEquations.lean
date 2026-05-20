@@ -1,5 +1,11 @@
 import LeanFX2.Tools.DependencyAudit
-import LeanFX2.Term.PartialStrengthen
+import LeanFX2.Term.PartialStrengthen.RenameImage.TypeCodes
+import LeanFX2.Term.PartialStrengthen.RenameImage.RefineSession
+import LeanFX2.Term.PartialStrengthen.RenameImage.Equivalence
+import LeanFX2.Term.PartialStrengthen.RenameImage.Cubical
+import LeanFX2.Term.PartialStrengthen.RenameImage.CodataProjection
+import LeanFX2.Term.PartialStrengthen.RenameImage.Effects
+import LeanFX2.Term.PartialStrengthen.RenameImage.CastWrapped
 
 /-! # AuditTerm.RenameEquations — strength-T1 rename equation gates. -/
 
