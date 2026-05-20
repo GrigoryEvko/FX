@@ -1,4 +1,4 @@
-import LeanFX2.Term.TypedInversion
+import LeanFX2.Term.PartialStrengthen.Weaken
 import LeanFX2.Term.PartialStrengthen.RenameImage.TypeCodes
 import LeanFX2.Term.PartialStrengthen.RenameImage.RefineSession
 import LeanFX2.Term.PartialStrengthen.RenameImage.Equivalence
