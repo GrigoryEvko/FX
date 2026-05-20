@@ -82,8 +82,14 @@ theorem strengthenTyped?_rename_isSome_oeqFunext
           (ContextStrengthening.ofRenaming forwardRename typedRenaming
             renameInverse renameInverseLeft renameInverseInjects)).isSome =
         true := by
-    rw [partialStrengthenTyped?_isSome_castInvariant]
-    exact pointwiseIH
+    exact
+      partialStrengthenTyped?_isSome_of_typeCast
+        (Term.rename typedRenaming pointwiseProof)
+        (oeqFunextPointwiseType_rename forwardRename domainType
+          codomainType leftFunctionRaw rightFunctionRaw)
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)
+        pointwiseIH
   split
   next noDomainSuccess =>
     exact absurd (domainStrengthens.symm.trans noDomainSuccess)
@@ -195,8 +201,14 @@ theorem strengthenTyped?_rename_isSome_equivIntroHet
           (ContextStrengthening.ofRenaming forwardRename typedRenaming
             renameInverse renameInverseLeft renameInverseInjects)).isSome =
         true := by
-    rw [partialStrengthenTyped?_isSome_castInvariant]
-    exact leftInvIH
+    exact
+      partialStrengthenTyped?_isSome_of_typeCast
+        (Term.rename typedRenaming leftInv)
+        (equivIntroHetLeftInverseType_rename forwardRename carrierA
+          forwardRaw backwardRaw)
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)
+        leftInvIH
   have castedRightInvIH :
       (partialStrengthenTyped?
           (equivIntroHetRightInverseType_rename forwardRename carrierB
@@ -205,8 +217,14 @@ theorem strengthenTyped?_rename_isSome_equivIntroHet
           (ContextStrengthening.ofRenaming forwardRename typedRenaming
             renameInverse renameInverseLeft renameInverseInjects)).isSome =
         true := by
-    rw [partialStrengthenTyped?_isSome_castInvariant]
-    exact rightInvIH
+    exact
+      partialStrengthenTyped?_isSome_of_typeCast
+        (Term.rename typedRenaming rightInv)
+        (equivIntroHetRightInverseType_rename forwardRename carrierB
+          forwardRaw backwardRaw)
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)
+        rightInvIH
   split
   next noCarrierASuccess =>
     exact absurd (carrierAStrengthens.symm.trans noCarrierASuccess)
@@ -291,7 +309,22 @@ theorem strengthenTyped?_rename_isSome_boolElim
           renameInverse renameInverseLeft renameInverseInjects)).isSome =
       true := by
   dsimp only [Term.rename]
-  rw [partialStrengthenTyped?_isSome_castInvariant]
+  refine
+    partialStrengthenTyped?_isSome_of_typeCast
+      (Term.boolElim
+        (motiveType := motiveType.rename forwardRename.lift)
+        (Term.rename typedRenaming scrutinee)
+        (Ty.subst0_rename_commute motiveType Ty.bool
+          RawTerm.boolTrue forwardRename ▸
+          Term.rename typedRenaming thenBranch)
+        (Ty.subst0_rename_commute motiveType Ty.bool
+          RawTerm.boolFalse forwardRename ▸
+          Term.rename typedRenaming elseBranch))
+      (Ty.subst0_rename_commute motiveType Ty.bool scrutineeRaw
+        forwardRename).symm
+      (ContextStrengthening.ofRenaming forwardRename typedRenaming
+        renameInverse renameInverseLeft renameInverseInjects)
+      ?_
   dsimp only [partialStrengthenTyped?]
   have motiveStrengthens :
       (motiveType.rename forwardRename.lift).partialStrengthen?
@@ -312,8 +345,14 @@ theorem strengthenTyped?_rename_isSome_boolElim
           (ContextStrengthening.ofRenaming forwardRename typedRenaming
             renameInverse renameInverseLeft renameInverseInjects)).isSome =
         true := by
-    rw [partialStrengthenTyped?_isSome_castInvariant]
-    exact thenIH
+    exact
+      partialStrengthenTyped?_isSome_of_typeCast
+        (Term.rename typedRenaming thenBranch)
+        (Ty.subst0_rename_commute motiveType Ty.bool
+          RawTerm.boolTrue forwardRename)
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)
+        thenIH
   have castedElseIH :
       (partialStrengthenTyped?
           (Ty.subst0_rename_commute motiveType Ty.bool
@@ -322,8 +361,14 @@ theorem strengthenTyped?_rename_isSome_boolElim
           (ContextStrengthening.ofRenaming forwardRename typedRenaming
             renameInverse renameInverseLeft renameInverseInjects)).isSome =
         true := by
-    rw [partialStrengthenTyped?_isSome_castInvariant]
-    exact elseIH
+    exact
+      partialStrengthenTyped?_isSome_of_typeCast
+        (Term.rename typedRenaming elseBranch)
+        (Ty.subst0_rename_commute motiveType Ty.bool
+          RawTerm.boolFalse forwardRename)
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)
+        elseIH
   split
   next noMotiveSuccess =>
     exact absurd (motiveStrengthens.symm.trans noMotiveSuccess)

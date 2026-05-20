@@ -97,6 +97,7 @@ namespace LeanFX2.Tools
 -- pathLam, oeqFunext, funextRefl, equivIntroHet, var).
 #assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_isSome_castInvariant
 #assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_castInvariantHEq
+#assert_no_axioms LeanFX2.Term.partialStrengthenTyped?_isSome_of_typeCast
 #assert_no_axioms LeanFX2.Term.termTypeCastHEq
 #assert_no_axioms LeanFX2.Term.rename_oeqFunext_unfolds
 

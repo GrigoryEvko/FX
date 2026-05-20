@@ -9,6 +9,31 @@ namespace LeanFX2
 
 namespace Term
 
+/-- Common `.isSome` interface for type-index cast wrappers.
+
+The 11 cast-wrapped rename-image constructors have two proof surfaces:
+an HEq bridge for the full dispatcher result, and an `.isSome` bridge
+for recursive totality.  The `.isSome` side should not repeat the
+cast-peeling idiom by hand.  This lemma says that if the uncast
+dispatcher succeeds, then the same dispatcher succeeds after an
+Eq-recursive type-index cast. -/
+theorem partialStrengthenTyped?_isSome_of_typeCast
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {someTypeA someTypeB : Ty level sourceScope}
+    {someRaw : RawTerm sourceScope}
+    (sourceTerm : Term sourceCtx someTypeA someRaw)
+    (typeEq : someTypeA = someTypeB)
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (sourceIsSome :
+      (partialStrengthenTyped? sourceTerm strengthening).isSome = true) :
+    (partialStrengthenTyped? (typeEq ▸ sourceTerm) strengthening).isSome =
+      true := by
+  rw [partialStrengthenTyped?_isSome_castInvariant]
+  exact sourceIsSome
+
 /-- Cast-wrapped strength-T1 case (HEq form): `Term.var`.
 
 The variable rename arm casts the target variable across the

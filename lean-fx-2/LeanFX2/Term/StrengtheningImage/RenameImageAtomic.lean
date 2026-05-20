@@ -1,4 +1,5 @@
 import LeanFX2.Term.StrengtheningImage.AggregatorTotalBridgeCasts
+import LeanFX2.Term.PartialStrengthen.RenameImage.CastWrapped
 
 /-! # Term/StrengtheningImage/RenameImageAtomic
 
@@ -86,13 +87,17 @@ theorem strengthenTyped?_rename_isSome_var
           renameInverse renameInverseLeft renameInverseInjects)).isSome =
       true := by
   dsimp only [Term.rename]
-  rw [partialStrengthenTyped?_isSome_castInvariant]
   exact
-    partialStrengthenTyped_var_isSome_of_survives
+    partialStrengthenTyped?_isSome_of_typeCast
+      (Term.var (context := targetCtx) (forwardRename sourcePosition))
+      (typedRenaming sourcePosition)
       (ContextStrengthening.ofRenaming forwardRename typedRenaming
         renameInverse renameInverseLeft renameInverseInjects)
-      (forwardRename sourcePosition) sourcePosition
-      (renameInverseLeft sourcePosition)
+      (partialStrengthenTyped_var_isSome_of_survives
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)
+        (forwardRename sourcePosition) sourcePosition
+        (renameInverseLeft sourcePosition))
 
 /-- T3 reverse-image bridge for the closed `Term.unit` case. -/
 theorem strengthenTyped?_rename_isSome_unit

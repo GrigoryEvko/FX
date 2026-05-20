@@ -1,4 +1,5 @@
 import LeanFX2.Term.StrengtheningImage.RenameImageHoTTStructured
+import LeanFX2.Term.PartialStrengthen.RenameImage.CastWrapped
 
 /-! # Term/StrengtheningImage/RenameImageCastCore
 
@@ -35,7 +36,17 @@ theorem strengthenTyped?_rename_isSome_funextRefl
           renameInverse renameInverseLeft renameInverseInjects)).isSome =
       true := by
   dsimp only [Term.rename]
-  rw [partialStrengthenTyped?_isSome_castInvariant]
+  refine
+    partialStrengthenTyped?_isSome_of_typeCast
+      (Term.funextRefl (context := targetCtx)
+        (domainType.rename forwardRename)
+        (codomainType.rename forwardRename)
+        (applyRaw.rename forwardRename.lift))
+      (funextReflType_rename forwardRename domainType codomainType
+        applyRaw).symm
+      (ContextStrengthening.ofRenaming forwardRename typedRenaming
+        renameInverse renameInverseLeft renameInverseInjects)
+      ?_
   dsimp only [partialStrengthenTyped?]
   have domainStrengthens :
       (domainType.rename forwardRename).partialStrengthen? renameInverse
@@ -127,7 +138,16 @@ theorem strengthenTyped?_rename_isSome_appPi
           renameInverse renameInverseLeft renameInverseInjects)).isSome =
       true := by
   dsimp only [Term.rename]
-  rw [partialStrengthenTyped?_isSome_castInvariant]
+  refine
+    partialStrengthenTyped?_isSome_of_typeCast
+      (Term.appPi
+        (Term.rename typedRenaming functionTerm)
+        (Term.rename typedRenaming argumentTerm))
+      (Ty.subst0_rename_commute codomainType domainType
+        argumentRaw forwardRename).symm
+      (ContextStrengthening.ofRenaming forwardRename typedRenaming
+        renameInverse renameInverseLeft renameInverseInjects)
+      ?_
   dsimp only [partialStrengthenTyped?]
   have domainStrengthens :
       (domainType.rename forwardRename).partialStrengthen? renameInverse
@@ -220,7 +240,14 @@ theorem strengthenTyped?_rename_isSome_snd
           renameInverse renameInverseLeft renameInverseInjects)).isSome =
       true := by
   dsimp only [Term.rename]
-  rw [partialStrengthenTyped?_isSome_castInvariant]
+  refine
+    partialStrengthenTyped?_isSome_of_typeCast
+      (Term.snd (Term.rename typedRenaming pairTerm))
+      (Ty.subst0_rename_commute secondType firstType
+        (RawTerm.fst pairRaw) forwardRename).symm
+      (ContextStrengthening.ofRenaming forwardRename typedRenaming
+        renameInverse renameInverseLeft renameInverseInjects)
+      ?_
   dsimp only [partialStrengthenTyped?]
   have firstStrengthens :
       (firstType.rename forwardRename).partialStrengthen? renameInverse
@@ -329,8 +356,14 @@ theorem strengthenTyped?_rename_isSome_pair
           (ContextStrengthening.ofRenaming forwardRename typedRenaming
             renameInverse renameInverseLeft renameInverseInjects)).isSome =
         true := by
-    rw [partialStrengthenTyped?_isSome_castInvariant]
-    exact secondIH
+    exact
+      partialStrengthenTyped?_isSome_of_typeCast
+        (Term.rename typedRenaming secondValue)
+        (Ty.subst0_rename_commute secondType firstType firstRaw
+          forwardRename)
+        (ContextStrengthening.ofRenaming forwardRename typedRenaming
+          renameInverse renameInverseLeft renameInverseInjects)
+        secondIH
   split
   next noSecondTypeSuccess =>
     exact absurd (secondTypeStrengthens.symm.trans noSecondTypeSuccess)
