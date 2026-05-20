@@ -41,7 +41,21 @@ theorem Term.weaken_subst_singleton_app_heq
       (Term.subst (TermSubst.singleton singletonTerm)
         (Term.weaken newType (Term.app functionTerm argumentValue)))
       (Term.app functionTerm argumentValue) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
+  -- `Term.weaken` is `@[reducible]`, so the weaken-then-subst chain over
+  -- `Term.app` reduces by iota (the `.app` arms of `Term.rename` and
+  -- `Term.subst`) to a `Term.app` of the renamed/substituted subterms.
+  -- Presenting that reduct via `show` avoids generating the full 78-arm
+  -- equational unfolders that `simp only [Term.rename, Term.subst]` builds.
+  show
+    HEq
+      (Term.app
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.rename (TermRenaming.weakenStep context newType)
+            functionTerm))
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.rename (TermRenaming.weakenStep context newType)
+            argumentValue)))
+      (Term.app functionTerm argumentValue)
   exact Term.app_HEq_congr
     (Ty.weaken_subst_singleton domainType newType singletonRaw)
     (Ty.weaken_subst_singleton codomainType newType singletonRaw)
@@ -78,21 +92,36 @@ theorem Term.weaken_subst_singleton_appPi_heq
         (Term.weaken newType
           (Term.appPi functionTerm argumentTerm)))
       (Term.appPi functionTerm argumentTerm) := by
-  simp only [Term.weaken, Term.rename]
+  -- `Term.weaken` is `@[reducible]`; the `.appPi` arm of `Term.rename`
+  -- carries a `subst0_rename_commute` cast.  Iota reduces the
+  -- weaken-then-rename chain to that cast over a `Term.appPi` of renamed
+  -- subterms.  `show` presents the reduct so we avoid the 78-arm
+  -- equational unfolder that `simp only [Term.rename]` would build.
+  show
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        ((Ty.subst0_rename_commute codomainType domainType
+          argumentRaw RawRenaming.weaken).symm ▸
+          Term.appPi
+            (Term.rename (TermRenaming.weakenStep context newType)
+              functionTerm)
+            (Term.rename (TermRenaming.weakenStep context newType)
+              argumentTerm)))
+      (Term.appPi functionTerm argumentTerm)
+  -- `Term.weaken` is `@[reducible]`, so the hypotheses already have the
+  -- renamed shape definitionally; no `simpa` rewrite is required.
   have functionWithoutCastsHEq :
       HEq
         (Term.subst (TermSubst.singleton singletonTerm)
           (Term.rename (TermRenaming.weakenStep context newType)
             functionTerm))
-        functionTerm := by
-    simpa only [Term.weaken] using functionHEq
+        functionTerm := functionHEq
   have argumentWithoutCastsHEq :
       HEq
         (Term.subst (TermSubst.singleton singletonTerm)
           (Term.rename (TermRenaming.weakenStep context newType)
             argumentTerm))
-        argumentTerm := by
-    simpa only [Term.weaken] using argumentHEq
+        argumentTerm := argumentHEq
   have innerCastHEq :
       HEq
         (Term.subst (TermSubst.singleton singletonTerm)
@@ -199,14 +228,38 @@ theorem Term.weaken_subst_singleton_pair_heq
         (Term.weaken newType
           (Term.pair (secondType := secondType) firstValue secondValue)))
       (Term.pair (secondType := secondType) firstValue secondValue) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
+  -- `Term.weaken` is `@[reducible]`; the `.pair` arms of `Term.rename`
+  -- and `Term.subst` each cast the second component (via
+  -- `subst0_rename_commute` then `subst0_subst_commute`).  Iota reduces
+  -- the weaken-then-subst chain to a `Term.pair` of the substituted
+  -- first component and the doubly-cast substituted second component.
+  -- `show` presents that reduct so we avoid the 78-arm equational
+  -- unfolders for `Term.rename` / `Term.subst`.
+  show
+    HEq
+      (Term.pair
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.rename (TermRenaming.weakenStep context newType)
+            firstValue))
+        ((Ty.subst0_subst_commute
+            (secondType.rename RawRenaming.weaken.lift)
+            (firstType.rename RawRenaming.weaken)
+            (firstRaw.rename RawRenaming.weaken)
+            (Subst.singleton newType singletonRaw)) ▸
+          Term.subst (TermSubst.singleton singletonTerm)
+            ((Ty.subst0_rename_commute secondType firstType firstRaw
+              RawRenaming.weaken) ▸
+              Term.rename (TermRenaming.weakenStep context newType)
+                secondValue)))
+      (Term.pair (secondType := secondType) firstValue secondValue)
+  -- `Term.weaken` is `@[reducible]`, so this hypothesis already has the
+  -- renamed shape definitionally; no `simpa` rewrite is required.
   have secondWithoutCastsHEq :
       HEq
         (Term.subst (TermSubst.singleton singletonTerm)
           (Term.rename (TermRenaming.weakenStep context newType)
             secondValue))
-        secondValue := by
-    simpa only [Term.weaken] using secondHEq
+        secondValue := secondHEq
   have secondInnerCastHEq :
       HEq
         (Term.subst (TermSubst.singleton singletonTerm)
@@ -292,7 +345,17 @@ theorem Term.weaken_subst_singleton_fst_heq
       (Term.subst (TermSubst.singleton singletonTerm)
         (Term.weaken newType (Term.fst pairTerm)))
       (Term.fst pairTerm) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
+  -- `Term.fst` carries no type cast in either `Term.rename` or
+  -- `Term.subst`, so the weaken-then-subst chain reduces by iota to a
+  -- bare `Term.fst` of the renamed/substituted pair.  `show` presents
+  -- that reduct without building the 78-arm equational unfolders.
+  show
+    HEq
+      (Term.fst
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.rename (TermRenaming.weakenStep context newType)
+            pairTerm)))
+      (Term.fst pairTerm)
   exact Term.fst_HEq_congr
     (Ty.weaken_subst_singleton firstType newType singletonRaw)
     (Ty.weaken_lift_subst_singleton_lift secondType newType singletonRaw)
@@ -320,14 +383,29 @@ theorem Term.weaken_subst_singleton_snd_heq
         (Term.weaken newType
           (Term.snd (secondType := secondType) pairTerm)))
       (Term.snd (secondType := secondType) pairTerm) := by
-  simp only [Term.weaken, Term.rename]
+  -- `Term.weaken` is `@[reducible]`; the `.snd` arm of `Term.rename`
+  -- casts the result via `subst0_rename_commute (RawTerm.fst pairRaw)`.
+  -- Iota reduces the weaken-then-rename chain to that cast over a
+  -- `Term.snd` of the renamed pair.  `show` presents the reduct so we
+  -- avoid the 78-arm equational unfolder that `simp only [Term.rename]`
+  -- would build.
+  show
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        ((Ty.subst0_rename_commute secondType firstType
+          (RawTerm.fst pairRaw) RawRenaming.weaken).symm ▸
+          Term.snd
+            (Term.rename (TermRenaming.weakenStep context newType)
+              pairTerm)))
+      (Term.snd (secondType := secondType) pairTerm)
+  -- `Term.weaken` is `@[reducible]`, so this hypothesis already has the
+  -- renamed shape definitionally; no `simpa` rewrite is required.
   have pairWithoutCastsHEq :
       HEq
         (Term.subst (TermSubst.singleton singletonTerm)
           (Term.rename (TermRenaming.weakenStep context newType)
             pairTerm))
-        pairTerm := by
-    simpa only [Term.weaken] using pairHEq
+        pairTerm := pairHEq
   have innerCastHEq :
       HEq
         (Term.subst (TermSubst.singleton singletonTerm)

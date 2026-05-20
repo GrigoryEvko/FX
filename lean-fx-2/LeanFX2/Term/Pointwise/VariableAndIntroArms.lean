@@ -40,7 +40,7 @@ theorem Term.weaken_subst_singleton_var_heq
       (Term.subst (TermSubst.singleton argumentTerm)
         (Term.weaken newType (Term.var (context := context) position)))
       (Term.var (context := context) position) := by
-  simp only [Term.weaken, Term.rename, Term.subst, TermSubst.singleton]
+  dsimp only [Term.weaken, Term.rename, Term.subst, TermSubst.singleton]
   exact Term.type_raw_eq_cast_heq
     (Ty.weaken_subst_singleton (varType context position) newType
       argumentRaw).symm
@@ -92,7 +92,7 @@ theorem Term.weaken_subst_singleton_lam_heq
       (Term.subst (TermSubst.singleton singletonTerm)
         (Term.weaken newType (Term.lam body)))
       (Term.lam body) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
+  dsimp only [Term.weaken, Term.rename, Term.subst]
   exact Term.lam_HEq_congr
     (Ty.weaken_subst_singleton domainType newType singletonRaw)
     (Ty.weaken_subst_singleton codomainType newType singletonRaw)
@@ -124,7 +124,7 @@ theorem Term.weaken_subst_singleton_lamPi_heq
       (Term.subst (TermSubst.singleton singletonTerm)
         (Term.weaken newType (Term.lamPi body)))
       (Term.lamPi body) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
+  dsimp only [Term.weaken, Term.rename, Term.subst]
   exact Term.lamPi_HEq_congr
     (Ty.weaken_subst_singleton domainType newType singletonRaw)
     (Ty.weaken_lift_subst_singleton_lift codomainType newType singletonRaw)
@@ -183,7 +183,7 @@ theorem Term.weaken_subst_singleton_listNil_heq
         (Term.weaken newType
           (Term.listNil (context := context) (elementType := elementType))))
       (Term.listNil (context := context) (elementType := elementType)) := by
-  simp only [Term.weaken, Term.rename]
+  dsimp only [Term.weaken, Term.rename]
   exact Term.listNil_HEq_congr
     (Ty.weaken_subst_singleton elementType newType argumentRaw)
 
@@ -200,7 +200,7 @@ theorem Term.weaken_subst_singleton_optionNone_heq
         (Term.weaken newType
           (Term.optionNone (context := context) (elementType := elementType))))
       (Term.optionNone (context := context) (elementType := elementType)) := by
-  simp only [Term.weaken, Term.rename]
+  dsimp only [Term.weaken, Term.rename]
   exact Term.optionNone_HEq_congr
     (Ty.weaken_subst_singleton elementType newType argumentRaw)
 
@@ -248,7 +248,7 @@ theorem Term.weaken_subst_singleton_natSucc_heq
       (Term.subst (TermSubst.singleton argumentTerm)
         (Term.weaken newType (Term.natSucc predecessorTerm)))
       (Term.natSucc predecessorTerm) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
+  dsimp only [Term.weaken, Term.rename, Term.subst]
   exact Term.natSucc_HEq_congr
     (RawTerm.weaken_subst_singleton predecessorRaw argumentRaw)
     predecessorHEq
@@ -278,7 +278,7 @@ theorem Term.weaken_subst_singleton_listCons_heq
       (Term.subst (TermSubst.singleton argumentTerm)
         (Term.weaken newType (Term.listCons headTerm tailTerm)))
       (Term.listCons headTerm tailTerm) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
+  dsimp only [Term.weaken, Term.rename, Term.subst]
   exact Term.listCons_HEq_congr
     (Ty.weaken_subst_singleton elementType newType argumentRaw)
     (RawTerm.weaken_subst_singleton headRaw argumentRaw)
@@ -304,7 +304,7 @@ theorem Term.weaken_subst_singleton_optionSome_heq
       (Term.subst (TermSubst.singleton argumentTerm)
         (Term.weaken newType (Term.optionSome valueTerm)))
       (Term.optionSome valueTerm) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
+  dsimp only [Term.weaken, Term.rename, Term.subst]
   exact Term.optionSome_HEq_congr
     (Ty.weaken_subst_singleton elementType newType argumentRaw)
     (RawTerm.weaken_subst_singleton valueRaw argumentRaw)
@@ -330,7 +330,7 @@ theorem Term.weaken_subst_singleton_eitherInl_heq
         (Term.weaken newType
           (Term.eitherInl (rightType := rightType) valueTerm)))
       (Term.eitherInl (rightType := rightType) valueTerm) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
+  dsimp only [Term.weaken, Term.rename, Term.subst]
   exact Term.eitherInl_HEq_congr
     (Ty.weaken_subst_singleton leftType newType argumentRaw)
     (Ty.weaken_subst_singleton rightType newType argumentRaw)
@@ -357,7 +357,7 @@ theorem Term.weaken_subst_singleton_eitherInr_heq
         (Term.weaken newType
           (Term.eitherInr (leftType := leftType) valueTerm)))
       (Term.eitherInr (leftType := leftType) valueTerm) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
+  dsimp only [Term.weaken, Term.rename, Term.subst]
   exact Term.eitherInr_HEq_congr
     (Ty.weaken_subst_singleton leftType newType argumentRaw)
     (Ty.weaken_subst_singleton rightType newType argumentRaw)
@@ -382,7 +382,7 @@ theorem Term.weaken_subst_singleton_intervalOpp_heq
       (Term.subst (TermSubst.singleton argumentTerm)
         (Term.weaken newType (Term.intervalOpp innerTerm)))
       (Term.intervalOpp innerTerm) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
+  dsimp only [Term.weaken, Term.rename, Term.subst]
   exact Term.intervalOpp_HEq_congr
     (RawTerm.weaken_subst_singleton innerRaw argumentRaw)
     innerHEq
@@ -411,7 +411,7 @@ theorem Term.weaken_subst_singleton_intervalMeet_heq
       (Term.subst (TermSubst.singleton argumentTerm)
         (Term.weaken newType (Term.intervalMeet leftTerm rightTerm)))
       (Term.intervalMeet leftTerm rightTerm) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
+  dsimp only [Term.weaken, Term.rename, Term.subst]
   exact Term.intervalMeet_HEq_congr
     (RawTerm.weaken_subst_singleton leftRaw argumentRaw)
     (RawTerm.weaken_subst_singleton rightRaw argumentRaw)
@@ -441,7 +441,7 @@ theorem Term.weaken_subst_singleton_intervalJoin_heq
       (Term.subst (TermSubst.singleton argumentTerm)
         (Term.weaken newType (Term.intervalJoin leftTerm rightTerm)))
       (Term.intervalJoin leftTerm rightTerm) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
+  dsimp only [Term.weaken, Term.rename, Term.subst]
   exact Term.intervalJoin_HEq_congr
     (RawTerm.weaken_subst_singleton leftRaw argumentRaw)
     (RawTerm.weaken_subst_singleton rightRaw argumentRaw)
@@ -479,7 +479,7 @@ theorem Term.weaken_subst_singleton_pathLam_heq
             rightEndpoint body)))
       (Term.pathLam modeIsUnivalent carrierType leftEndpoint
         rightEndpoint body) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
+  dsimp only [Term.weaken, Term.rename, Term.subst]
   exact Term.pathLam_HEq_congr modeIsUnivalent
     (Ty.weaken_subst_singleton carrierType newType singletonRaw)
     (RawTerm.weaken_subst_singleton leftEndpoint singletonRaw)
@@ -506,7 +506,7 @@ theorem Term.weaken_subst_singleton_modIntro_heq
       (Term.subst (TermSubst.singleton argumentTerm)
         (Term.weaken newType (Term.modIntro innerTerm)))
       (Term.modIntro innerTerm) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
+  dsimp only [Term.weaken, Term.rename, Term.subst]
   exact Term.modIntro_HEq_congr
     (Ty.weaken_subst_singleton innerType newType argumentRaw)
     (RawTerm.weaken_subst_singleton innerRaw argumentRaw)
@@ -531,7 +531,7 @@ theorem Term.weaken_subst_singleton_modElim_heq
       (Term.subst (TermSubst.singleton argumentTerm)
         (Term.weaken newType (Term.modElim innerTerm)))
       (Term.modElim innerTerm) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
+  dsimp only [Term.weaken, Term.rename, Term.subst]
   exact Term.modElim_HEq_congr
     (Ty.weaken_subst_singleton innerType newType argumentRaw)
     (RawTerm.weaken_subst_singleton innerRaw argumentRaw)
@@ -556,7 +556,7 @@ theorem Term.weaken_subst_singleton_subsume_heq
       (Term.subst (TermSubst.singleton argumentTerm)
         (Term.weaken newType (Term.subsume innerTerm)))
       (Term.subsume innerTerm) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
+  dsimp only [Term.weaken, Term.rename, Term.subst]
   exact Term.subsume_HEq_congr
     (Ty.weaken_subst_singleton innerType newType argumentRaw)
     (RawTerm.weaken_subst_singleton innerRaw argumentRaw)

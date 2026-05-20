@@ -453,104 +453,131 @@ theorem Keyword.toToken_asKeyword (kind : KeywordKind) :
 /-- Recognize a keyword from raw lexeme chars.  Used by
 `classifyIdent` in `Lex.lean`.
 
-Implementation: route through `String.ofList` (zero-axiom) and
-match on string literals.  Lean's match compiler handles String
-literal patterns cleanly (no propext leak). -/
+Implementation: dispatch on the FIRST character of the lexeme,
+then route the (small) per-letter group through `String.ofList`
+and a string-literal match.  Lean's match compiler handles both
+the `Char` dispatch and the String-literal patterns cleanly (no
+propext leak).
+
+Behaviour is identical to a flat 92-arm `String.ofList` match:
+a char list spelling exactly one keyword returns that keyword,
+everything else returns `none`.  The first-char dispatch is a
+performance refactor — it bounds each lookup to its letter group
+(at most 9 string comparisons for the `c` group) instead of up
+to 92 sequential comparisons.  This keeps both the recognizer
+itself and the round-trip proof `fromCharsExact_toLexemeChars`
+linear-in-group-size rather than quadratic in the 92-keyword
+table, so the kernel re-check of the round-trip stays cheap. -/
 def KeywordKind.fromCharsExact (chars : List Char) : Option KeywordKind :=
-  match String.ofList chars with
-  | "affine" => some .affine
-  | "and" => some .andK
-  | "as" => some .as
-  | "assert" => some .assertK
-  | "await" => some .await
-  | "axiom" => some .axiomK
-  | "begin" => some .begin
-  | "bench" => some .bench
-  | "bisimulation" => some .bisimulation
-  | "break" => some .breakK
-  | "by" => some .byK
-  | "calc" => some .calc
-  | "catch" => some .catchK
-  | "class" => some .classK
-  | "code" => some .code
-  | "codata" => some .codata
-  | "comptime" => some .comptime
-  | "const" => some .constK
-  | "continue" => some .continueK
-  | "contract" => some .contract
-  | "decreases" => some .decreases
-  | "decorator" => some .decorator
-  | "declassify" => some .declassify
-  | "defer" => some .defer
-  | "dimension" => some .dimension
-  | "drop" => some .drop
-  | "dual" => some .dual
-  | "effect" => some .effectK
-  | "else" => some .elseK
-  | "end" => some .endK
-  | "errdefer" => some .errdefer
-  | "exception" => some .exception
-  | "exists" => some .existsK
-  | "exports" => some .exports
-  | "extern" => some .extern
-  | "false" => some .falseK
-  | "fn" => some .fnK
-  | "for" => some .forK
-  | "forall" => some .forallK
-  | "ghost" => some .ghost
-  | "handle" => some .handle
-  | "hint" => some .hint
-  | "if" => some .ifK
-  | "impl" => some .impl
-  | "in" => some .inK
-  | "include" => some .include
-  | "instance" => some .instance
-  | "is" => some .isK
-  | "label" => some .label
-  | "layout" => some .layout
-  | "lemma" => some .lemma
-  | "let" => some .letK
-  | "linear" => some .linear
-  | "machine" => some .machine
-  | "match" => some .matchK
-  | "module" => some .moduleK
-  | "mut" => some .mutK
-  | "not" => some .notK
-  | "open" => some .open
-  | "or" => some .orK
-  | "own" => some .own
-  | "post" => some .post
-  | "pre" => some .pre
-  | "proof" => some .proof
-  | "pub" => some .pub
-  | "quotient" => some .quotient
-  | "receive" => some .receive
-  | "rec" => some .recK
-  | "ref" => some .ref
-  | "refinement" => some .refinement
-  | "return" => some .returnK
-  | "sanitize" => some .sanitize
-  | "secret" => some .secret
-  | "select" => some .select
-  | "self" => some .selfK
-  | "send" => some .send
-  | "session" => some .session
-  | "sorry" => some .sorry
-  | "spawn" => some .spawn
-  | "taint_class" => some .taintClass
-  | "tainted" => some .tainted
-  | "test" => some .test
-  | "true" => some .trueK
-  | "try" => some .tryK
-  | "type" => some .typeK
-  | "unfold" => some .unfold
-  | "val" => some .val
-  | "verify" => some .verify
-  | "while" => some .whileK
-  | "with" => some .withK
-  | "where" => some .whereK
-  | "yield" => some .yield
-  | _ => none
+  match chars with
+  | [] => none
+  | firstChar :: _ =>
+    match firstChar with
+    | 'a' =>
+      match String.ofList chars with
+      | "affine" => some .affine | "and" => some .andK | "as" => some .as
+      | "assert" => some .assertK | "await" => some .await | "axiom" => some .axiomK
+      | _ => none
+    | 'b' =>
+      match String.ofList chars with
+      | "begin" => some .begin | "bench" => some .bench
+      | "bisimulation" => some .bisimulation | "break" => some .breakK | "by" => some .byK
+      | _ => none
+    | 'c' =>
+      match String.ofList chars with
+      | "calc" => some .calc | "catch" => some .catchK | "class" => some .classK
+      | "code" => some .code | "codata" => some .codata | "comptime" => some .comptime
+      | "const" => some .constK | "continue" => some .continueK | "contract" => some .contract
+      | _ => none
+    | 'd' =>
+      match String.ofList chars with
+      | "decreases" => some .decreases | "decorator" => some .decorator
+      | "declassify" => some .declassify | "defer" => some .defer
+      | "dimension" => some .dimension | "drop" => some .drop | "dual" => some .dual
+      | _ => none
+    | 'e' =>
+      match String.ofList chars with
+      | "effect" => some .effectK | "else" => some .elseK | "end" => some .endK
+      | "errdefer" => some .errdefer | "exception" => some .exception
+      | "exists" => some .existsK | "exports" => some .exports | "extern" => some .extern
+      | _ => none
+    | 'f' =>
+      match String.ofList chars with
+      | "false" => some .falseK | "fn" => some .fnK | "for" => some .forK
+      | "forall" => some .forallK
+      | _ => none
+    | 'g' =>
+      match String.ofList chars with
+      | "ghost" => some .ghost
+      | _ => none
+    | 'h' =>
+      match String.ofList chars with
+      | "handle" => some .handle | "hint" => some .hint
+      | _ => none
+    | 'i' =>
+      match String.ofList chars with
+      | "if" => some .ifK | "impl" => some .impl | "in" => some .inK
+      | "include" => some .include | "instance" => some .instance | "is" => some .isK
+      | _ => none
+    | 'l' =>
+      match String.ofList chars with
+      | "label" => some .label | "layout" => some .layout | "lemma" => some .lemma
+      | "let" => some .letK | "linear" => some .linear
+      | _ => none
+    | 'm' =>
+      match String.ofList chars with
+      | "machine" => some .machine | "match" => some .matchK | "module" => some .moduleK
+      | "mut" => some .mutK
+      | _ => none
+    | 'n' =>
+      match String.ofList chars with
+      | "not" => some .notK
+      | _ => none
+    | 'o' =>
+      match String.ofList chars with
+      | "open" => some .open | "or" => some .orK | "own" => some .own
+      | _ => none
+    | 'p' =>
+      match String.ofList chars with
+      | "post" => some .post | "pre" => some .pre | "proof" => some .proof | "pub" => some .pub
+      | _ => none
+    | 'q' =>
+      match String.ofList chars with
+      | "quotient" => some .quotient
+      | _ => none
+    | 'r' =>
+      match String.ofList chars with
+      | "receive" => some .receive | "rec" => some .recK | "ref" => some .ref
+      | "refinement" => some .refinement | "return" => some .returnK
+      | _ => none
+    | 's' =>
+      match String.ofList chars with
+      | "sanitize" => some .sanitize | "secret" => some .secret | "select" => some .select
+      | "self" => some .selfK | "send" => some .send | "session" => some .session
+      | "sorry" => some .sorry | "spawn" => some .spawn
+      | _ => none
+    | 't' =>
+      match String.ofList chars with
+      | "taint_class" => some .taintClass | "tainted" => some .tainted | "test" => some .test
+      | "true" => some .trueK | "try" => some .tryK | "type" => some .typeK
+      | _ => none
+    | 'u' =>
+      match String.ofList chars with
+      | "unfold" => some .unfold
+      | _ => none
+    | 'v' =>
+      match String.ofList chars with
+      | "val" => some .val | "verify" => some .verify
+      | _ => none
+    | 'w' =>
+      match String.ofList chars with
+      | "while" => some .whileK | "with" => some .withK | "where" => some .whereK
+      | _ => none
+    | 'y' =>
+      match String.ofList chars with
+      | "yield" => some .yield
+      | _ => none
+    | _ => none
 
 /-- **Recognition round-trip** — feeding a keyword's canonical
 lexeme chars back through `fromCharsExact` recovers the keyword.
@@ -561,7 +588,7 @@ spelling doesn't match `fromCharsExact`'s recognition, this
 time.  -/
 theorem Keyword.fromCharsExact_toLexemeChars (kind : KeywordKind) :
     KeywordKind.fromCharsExact kind.toLexemeChars = some kind := by
-  cases kind <;> rfl
+  cases kind <;> decide
 
 /-- **Injectivity of `toLexemeChars`** — distinct keyword kinds
 have distinct canonical char-list spellings.  Combined with

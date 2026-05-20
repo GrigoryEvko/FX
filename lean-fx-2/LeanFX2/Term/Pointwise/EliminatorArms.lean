@@ -49,28 +49,28 @@ theorem Term.weaken_subst_singleton_boolElim_heq
         (Term.weaken newType
           (Term.boolElim scrutinee thenBranch elseBranch)))
       (Term.boolElim scrutinee thenBranch elseBranch) := by
-  simp only [Term.weaken, Term.rename]
+  dsimp only [Term.weaken, Term.rename]
   have scrutineeWithoutCastsHEq :
       HEq
         (Term.subst (TermSubst.singleton singletonTerm)
           (Term.rename (TermRenaming.weakenStep context newType)
             scrutinee))
-        scrutinee := by
-    simpa only [Term.weaken] using scrutineeHEq
+        scrutinee :=
+    scrutineeHEq
   have thenWithoutCastsHEq :
       HEq
         (Term.subst (TermSubst.singleton singletonTerm)
           (Term.rename (TermRenaming.weakenStep context newType)
             thenBranch))
-        thenBranch := by
-    simpa only [Term.weaken] using thenHEq
+        thenBranch :=
+    thenHEq
   have elseWithoutCastsHEq :
       HEq
         (Term.subst (TermSubst.singleton singletonTerm)
           (Term.rename (TermRenaming.weakenStep context newType)
             elseBranch))
-        elseBranch := by
-    simpa only [Term.weaken] using elseHEq
+        elseBranch :=
+    elseHEq
   have innerCastHEq :
       HEq
         (Term.subst (TermSubst.singleton singletonTerm)
@@ -276,7 +276,7 @@ theorem Term.weaken_subst_singleton_natElim_heq
       (Term.subst (TermSubst.singleton singletonTerm)
         (Term.weaken newType (Term.natElim scrutinee zeroBranch succBranch)))
       (Term.natElim scrutinee zeroBranch succBranch) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
+  dsimp only [Term.weaken, Term.rename, Term.subst]
   exact Term.natElim_HEq_congr
     (Ty.weaken_subst_singleton motiveType newType singletonRaw)
     (RawTerm.weaken_subst_singleton scrutineeRaw singletonRaw)
@@ -317,7 +317,7 @@ theorem Term.weaken_subst_singleton_natRec_heq
       (Term.subst (TermSubst.singleton singletonTerm)
         (Term.weaken newType (Term.natRec scrutinee zeroBranch succBranch)))
       (Term.natRec scrutinee zeroBranch succBranch) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
+  dsimp only [Term.weaken, Term.rename, Term.subst]
   exact Term.natRec_HEq_congr
     (Ty.weaken_subst_singleton motiveType newType singletonRaw)
     (RawTerm.weaken_subst_singleton scrutineeRaw singletonRaw)
@@ -359,7 +359,7 @@ theorem Term.weaken_subst_singleton_listElim_heq
       (Term.subst (TermSubst.singleton singletonTerm)
         (Term.weaken newType (Term.listElim scrutinee nilBranch consBranch)))
       (Term.listElim scrutinee nilBranch consBranch) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
+  dsimp only [Term.weaken, Term.rename, Term.subst]
   exact Term.listElim_HEq_congr
     (Ty.weaken_subst_singleton elementType newType singletonRaw)
     (Ty.weaken_subst_singleton motiveType newType singletonRaw)
@@ -400,7 +400,7 @@ theorem Term.weaken_subst_singleton_optionMatch_heq
         (Term.weaken newType
           (Term.optionMatch scrutinee noneBranch someBranch)))
       (Term.optionMatch scrutinee noneBranch someBranch) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
+  dsimp only [Term.weaken, Term.rename, Term.subst]
   exact Term.optionMatch_HEq_congr
     (Ty.weaken_subst_singleton elementType newType singletonRaw)
     (Ty.weaken_subst_singleton motiveType newType singletonRaw)
@@ -442,7 +442,7 @@ theorem Term.weaken_subst_singleton_eitherMatch_heq
         (Term.weaken newType
           (Term.eitherMatch scrutinee leftBranch rightBranch)))
       (Term.eitherMatch scrutinee leftBranch rightBranch) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
+  dsimp only [Term.weaken, Term.rename, Term.subst]
   exact Term.eitherMatch_HEq_congr
     (Ty.weaken_subst_singleton leftType newType singletonRaw)
     (Ty.weaken_subst_singleton rightType newType singletonRaw)

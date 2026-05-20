@@ -111,9 +111,8 @@ theorem isAggregatorTotal_var {mode : Mode} {level : Nat}
   intros _ _ strengthening _ _ _ rawStrengthens
   -- rawStrengthens carries `strengthening.back position = some _`,
   -- which is exactly the dispatcher's surviving arm.
-  unfold partialStrengthenTyped?
-  unfold RawTerm.partialStrengthen? at rawStrengthens
-  unfold RawTerm.partialRename? at rawStrengthens
+  dsimp only [partialStrengthenTyped?]
+  dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?] at rawStrengthens
   split at rawStrengthens
   · next survives =>
       split
@@ -138,15 +137,14 @@ theorem isAggregatorTotal_lam {mode : Mode} {level : Nat}
         (codomainType := codomainType) body) := by
   intros _ _ strengthening _ _ typeStrengthens rawStrengthens
   -- Extract domainSuccess + codomainSuccess from typeStrengthens.
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   -- typeStrengthens: (Ty.arrow domain codomain).partialStrengthen? back = some _
   -- which unfolds to Option.mapTwo of the children.
   obtain ⟨targetDomainType, targetCodomainType, domainSuccess,
     codomainSuccess, _arrowEq⟩ := Option.mapTwo_eq_some typeStrengthens
   -- rawStrengthens: (RawTerm.lam bodyRaw).partialStrengthen? back = some _
   -- which unfolds to a match on body's raw strengthening through .lift.
-  unfold RawTerm.partialStrengthen? at rawStrengthens
-  unfold RawTerm.partialRename? at rawStrengthens
+  dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?] at rawStrengthens
   split at rawStrengthens
   rotate_left
   · cases rawStrengthens
@@ -207,13 +205,12 @@ theorem isAggregatorTotal_lamPi {mode : Mode} {level : Nat}
       (Term.lamPi (context := sourceCtx) (domainType := domainType)
         (codomainType := codomainType) body) := by
   intros _ _ strengthening _ _ typeStrengthens rawStrengthens
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   -- typeStrengthens: (Ty.piTy domain codomain).partialStrengthen? back = some _
   -- piTy strengthens via Option.mapTwo (domain..back) (codomain..back.lift) Ty.piTy
   obtain ⟨targetDomainType, targetCodomainType, domainSuccess,
     codomainLiftSuccess, _piEq⟩ := Option.mapTwo_eq_some typeStrengthens
-  unfold RawTerm.partialStrengthen? at rawStrengthens
-  unfold RawTerm.partialRename? at rawStrengthens
+  dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?] at rawStrengthens
   split at rawStrengthens
   rotate_left
   · cases rawStrengthens
@@ -260,13 +257,12 @@ theorem isAggregatorTotal_pathLam {mode : Mode} {level : Nat}
       (Term.pathLam (context := sourceCtx) modeIsUnivalent carrierType
         leftEndpoint rightEndpoint body) := by
   intros _ _ strengthening _ _ typeStrengthens rawStrengthens
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   -- typeStrengthens for Ty.path: Option.mapThree (carrier..) (left..) (right..) Ty.path
   obtain ⟨targetCarrierType, targetLeftEndpoint, targetRightEndpoint,
     carrierSuccess, leftSuccess, rightSuccess, _pathEq⟩ :=
     Option.mapThree_eq_some typeStrengthens
-  unfold RawTerm.partialStrengthen? at rawStrengthens
-  unfold RawTerm.partialRename? at rawStrengthens
+  dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?] at rawStrengthens
   split at rawStrengthens
   rotate_left
   · cases rawStrengthens

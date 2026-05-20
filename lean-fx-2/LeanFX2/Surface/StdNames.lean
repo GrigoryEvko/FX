@@ -73,96 +73,187 @@ def UpperIdent.propMod : UpperIdent :=
 def UpperIdent.patMod : UpperIdent :=
   { chars := ['P', 'a', 't'], isShape := by decide }
 
+/-! ## Keyword-clean batch witness (kernel-recheck optimization)
+
+`KeywordKind.fromCharsExact` recognizes keywords by routing the
+char list through `String.ofList` and matching String literals.
+Each such match reduces, in the kernel, to a `Decidable.casesOn`
+chain of `String.decEq` (ByteArray) comparisons over the whole
+~92-keyword table.  Proving each `notKeyword` obligation with a
+separate `by decide` forces that full reduction once PER name, so
+the per-declaration kernel re-check (and the elaborator `whnf`
+trace) scales as names times table-size.
+
+Instead we run the recognizer over EVERY operation name in one
+`List.all` and discharge it with a single `decide`; each individual
+`notKeyword` field then follows by a structural list-membership
+lookup that NEVER re-reduces `fromCharsExact`.  Zero axioms: the
+extraction is structural induction on `List.Mem` plus
+`Bool.noConfusion`; the conversion is `Option.isNone_iff_eq_none`. -/
+
+/-- Every operation-name char list, in declaration order. -/
+private def operationNameChars : List (List Char) :=
+  [ ['a', 'd', 'd']
+  , ['s', 'u', 'b']
+  , ['m', 'u', 'l']
+  , ['d', 'i', 'v']
+  , ['m', 'o', 'd']
+  , ['e', 'q']
+  , ['n', 'e']
+  , ['l', 't']
+  , ['g', 't']
+  , ['l', 'e']
+  , ['g', 'e']
+  , ['l', 'a', 'n', 'd']
+  , ['l', 'o', 'r']
+  , ['l', 'n', 'o', 't']
+  , ['b', 'a', 'n', 'd']
+  , ['b', 'o', 'r']
+  , ['x', 'o', 'r']
+  , ['b', 'n', 'o', 't']
+  , ['s', 'h', 'l']
+  , ['s', 'h', 'r']
+  , ['e', 'x', 'c', 'l', 'u', 's', 'i', 'v', 'e']
+  , ['i', 'n', 'c', 'l', 'u', 's', 'i', 'v', 'e']
+  , ['a', 'p', 'p', 'l', 'y']
+  , ['i', 'f', 'f']
+  , ['i', 'm', 'p', 'l', 'i', 'e', 's']
+  , ['i', 's', 'C', 't', 'o', 'r']
+  , ['n', 'e', 'g']
+  , ['a', 'r', 'r', 'o', 'w'] ]
+
+/-- Single batched recognizer pass: NONE of the operation names is a
+reserved keyword.  One `decide` reduces the whole table once. -/
+private theorem operationNamesKeywordClean :
+    operationNameChars.all
+      (fun chars => (KeywordKind.fromCharsExact chars).isNone) = true := by
+  decide
+
+/-- Structural extraction: an element of a list whose `List.all` of a
+`Bool` predicate holds itself satisfies the predicate.  Induction on
+the membership witness; the impossible `false` arms close by
+`Bool.noConfusion`.  No `propext`/`Quot.sound`. -/
+private theorem predTrueOfMemAll
+    {items : List (List Char)} {pred : List Char → Bool}
+    (allTrue : items.all pred = true) :
+    ∀ {entry : List Char}, entry ∈ items → pred entry = true := by
+  intro entry isMember
+  induction isMember with
+  | head remaining =>
+      rw [List.all_cons] at allTrue
+      cases predValue : pred entry with
+      | true => rfl
+      | false =>
+          rw [predValue, Bool.false_and] at allTrue
+          exact Bool.noConfusion allTrue
+  | tail headEntry isMemberTail extractTail =>
+      rw [List.all_cons] at allTrue
+      cases headValue : pred headEntry with
+      | true =>
+          rw [headValue, Bool.true_and] at allTrue
+          exact extractTail allTrue
+      | false =>
+          rw [headValue, Bool.false_and] at allTrue
+          exact Bool.noConfusion allTrue
+
+/-- Per-name `notKeyword` proof from the batch witness + a membership
+witness, with no re-reduction of `KeywordKind.fromCharsExact`. -/
+private theorem notKeywordOfMember {chars : List Char}
+    (isMember : chars ∈ operationNameChars) :
+    KeywordKind.fromCharsExact chars = none :=
+  Option.isNone_iff_eq_none.mp
+    (predTrueOfMemAll operationNamesKeywordClean isMember)
+
 /-! ## Operation LowerIdent literals -/
 
 def LowerIdent.add : LowerIdent :=
-  { chars := ['a', 'd', 'd'], isShape := by decide, notKeyword := by decide }
+  { chars := ['a', 'd', 'd'], isShape := by decide, notKeyword := notKeywordOfMember (List.Mem.head _) }
 
 def LowerIdent.sub : LowerIdent :=
-  { chars := ['s', 'u', 'b'], isShape := by decide, notKeyword := by decide }
+  { chars := ['s', 'u', 'b'], isShape := by decide, notKeyword := notKeywordOfMember (List.Mem.tail _ (List.Mem.head _)) }
 
 def LowerIdent.mul : LowerIdent :=
-  { chars := ['m', 'u', 'l'], isShape := by decide, notKeyword := by decide }
+  { chars := ['m', 'u', 'l'], isShape := by decide, notKeyword := notKeywordOfMember (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))) }
 
 def LowerIdent.divName : LowerIdent :=
-  { chars := ['d', 'i', 'v'], isShape := by decide, notKeyword := by decide }
+  { chars := ['d', 'i', 'v'], isShape := by decide, notKeyword := notKeywordOfMember (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))) }
 
 def LowerIdent.modName : LowerIdent :=
-  { chars := ['m', 'o', 'd'], isShape := by decide, notKeyword := by decide }
+  { chars := ['m', 'o', 'd'], isShape := by decide, notKeyword := notKeywordOfMember (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))) }
 
 def LowerIdent.eq : LowerIdent :=
-  { chars := ['e', 'q'], isShape := by decide, notKeyword := by decide }
+  { chars := ['e', 'q'], isShape := by decide, notKeyword := notKeywordOfMember (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))) }
 
 def LowerIdent.ne : LowerIdent :=
-  { chars := ['n', 'e'], isShape := by decide, notKeyword := by decide }
+  { chars := ['n', 'e'], isShape := by decide, notKeyword := notKeywordOfMember (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))) }
 
 def LowerIdent.lt : LowerIdent :=
-  { chars := ['l', 't'], isShape := by decide, notKeyword := by decide }
+  { chars := ['l', 't'], isShape := by decide, notKeyword := notKeywordOfMember (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))) }
 
 def LowerIdent.gt : LowerIdent :=
-  { chars := ['g', 't'], isShape := by decide, notKeyword := by decide }
+  { chars := ['g', 't'], isShape := by decide, notKeyword := notKeywordOfMember (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))) }
 
 def LowerIdent.le : LowerIdent :=
-  { chars := ['l', 'e'], isShape := by decide, notKeyword := by decide }
+  { chars := ['l', 'e'], isShape := by decide, notKeyword := notKeywordOfMember (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))) }
 
 def LowerIdent.ge : LowerIdent :=
-  { chars := ['g', 'e'], isShape := by decide, notKeyword := by decide }
+  { chars := ['g', 'e'], isShape := by decide, notKeyword := notKeywordOfMember (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))) }
 
 def LowerIdent.andOp : LowerIdent :=
-  { chars := ['l', 'a', 'n', 'd'], isShape := by decide, notKeyword := by decide }
+  { chars := ['l', 'a', 'n', 'd'], isShape := by decide, notKeyword := notKeywordOfMember (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))) }
 
 def LowerIdent.orOp : LowerIdent :=
-  { chars := ['l', 'o', 'r'], isShape := by decide, notKeyword := by decide }
+  { chars := ['l', 'o', 'r'], isShape := by decide, notKeyword := notKeywordOfMember (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))) }
 
 def LowerIdent.notOp : LowerIdent :=
-  { chars := ['l', 'n', 'o', 't'], isShape := by decide, notKeyword := by decide }
+  { chars := ['l', 'n', 'o', 't'], isShape := by decide, notKeyword := notKeywordOfMember (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))) }
 
 def LowerIdent.bitAndOp : LowerIdent :=
-  { chars := ['b', 'a', 'n', 'd'], isShape := by decide, notKeyword := by decide }
+  { chars := ['b', 'a', 'n', 'd'], isShape := by decide, notKeyword := notKeywordOfMember (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))) }
 
 def LowerIdent.bitOrOp : LowerIdent :=
-  { chars := ['b', 'o', 'r'], isShape := by decide, notKeyword := by decide }
+  { chars := ['b', 'o', 'r'], isShape := by decide, notKeyword := notKeywordOfMember (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))) }
 
 def LowerIdent.bitXorOp : LowerIdent :=
-  { chars := ['x', 'o', 'r'], isShape := by decide, notKeyword := by decide }
+  { chars := ['x', 'o', 'r'], isShape := by decide, notKeyword := notKeywordOfMember (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))) }
 
 def LowerIdent.bitNotOp : LowerIdent :=
-  { chars := ['b', 'n', 'o', 't'], isShape := by decide, notKeyword := by decide }
+  { chars := ['b', 'n', 'o', 't'], isShape := by decide, notKeyword := notKeywordOfMember (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))) }
 
 def LowerIdent.shl : LowerIdent :=
-  { chars := ['s', 'h', 'l'], isShape := by decide, notKeyword := by decide }
+  { chars := ['s', 'h', 'l'], isShape := by decide, notKeyword := notKeywordOfMember (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))) }
 
 def LowerIdent.shr : LowerIdent :=
-  { chars := ['s', 'h', 'r'], isShape := by decide, notKeyword := by decide }
+  { chars := ['s', 'h', 'r'], isShape := by decide, notKeyword := notKeywordOfMember (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))) }
 
 def LowerIdent.exclusive : LowerIdent :=
   { chars := ['e', 'x', 'c', 'l', 'u', 's', 'i', 'v', 'e'],
-    isShape := by decide, notKeyword := by decide }
+    isShape := by decide, notKeyword := notKeywordOfMember (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))) }
 
 def LowerIdent.inclusive : LowerIdent :=
   { chars := ['i', 'n', 'c', 'l', 'u', 's', 'i', 'v', 'e'],
-    isShape := by decide, notKeyword := by decide }
+    isShape := by decide, notKeyword := notKeywordOfMember (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))) }
 
 def LowerIdent.apply : LowerIdent :=
-  { chars := ['a', 'p', 'p', 'l', 'y'], isShape := by decide, notKeyword := by decide }
+  { chars := ['a', 'p', 'p', 'l', 'y'], isShape := by decide, notKeyword := notKeywordOfMember (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))) }
 
 def LowerIdent.iffName : LowerIdent :=
-  { chars := ['i', 'f', 'f'], isShape := by decide, notKeyword := by decide }
+  { chars := ['i', 'f', 'f'], isShape := by decide, notKeyword := notKeywordOfMember (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))) }
 
 def LowerIdent.impliesName : LowerIdent :=
   { chars := ['i', 'm', 'p', 'l', 'i', 'e', 's'],
-    isShape := by decide, notKeyword := by decide }
+    isShape := by decide, notKeyword := notKeywordOfMember (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))) }
 
 def LowerIdent.isCtor : LowerIdent :=
   { chars := ['i', 's', 'C', 't', 'o', 'r'],
-    isShape := by decide, notKeyword := by decide }
+    isShape := by decide, notKeyword := notKeywordOfMember (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))) }
 
 def LowerIdent.neg : LowerIdent :=
-  { chars := ['n', 'e', 'g'], isShape := by decide, notKeyword := by decide }
+  { chars := ['n', 'e', 'g'], isShape := by decide, notKeyword := notKeywordOfMember (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))) }
 
 def LowerIdent.arrowName : LowerIdent :=
   { chars := ['a', 'r', 'r', 'o', 'w'],
-    isShape := by decide, notKeyword := by decide }
+    isShape := by decide, notKeyword := notKeywordOfMember (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))) }
 
 /-! ## Path-builder utilities -/
 

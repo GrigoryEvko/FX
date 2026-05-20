@@ -20,7 +20,12 @@ theorem Term.subst_identity_var_HEq
       (Term.subst (TermSubst.identity context)
         (Term.var (context := context) position))
       (Term.var (context := context) position) := by
-  simp only [Term.subst, TermSubst.identity]
+  -- `Term.subst (TermSubst.identity context) (Term.var position)` reduces by
+  -- iota (single `.var` arm) to `(Ty.subst_identity ...).symm ▸ Term.var
+  -- position`, so the cast-erasure lemma applies after a `dsimp only`
+  -- definitional unfold.  Avoiding the equational `simp only [Term.subst]`
+  -- skips generating the 78-arm unfolder + giant `Eq.mpr` kernel re-check.
+  dsimp only [Term.subst, TermSubst.identity]
   exact Term.type_eq_symm_cast_heq
     (context := context)
     (typeEq := Ty.subst_identity (varType context position))
@@ -36,7 +41,9 @@ theorem Term.subst_identity_lift_var_HEq
       (Term.subst ((TermSubst.identity context).lift newType)
         (Term.var (context := context.cons newType) position))
       (Term.var (context := context.cons newType) position) := by
-  simp only [Term.subst]
+  -- The `.var` arm reduces by iota to the lifted substitution-entry lookup;
+  -- a definitional `dsimp only` exposes it without the equational unfolder.
+  dsimp only [Term.subst]
   exact HEq.trans
     (TermSubst.identity_lift_position_HEq
       (context := context) newType position)
@@ -78,7 +85,11 @@ theorem Term.subst_identity_lam_HEq
       (Term.subst (TermSubst.identity context)
         (Term.lam (codomainType := codomainType) body))
       (Term.lam (codomainType := codomainType) body) := by
-  simp only [Term.subst]
+  -- The `.lam` arm reduces by iota to `Term.lam (Ty.weaken_subst_commute ...
+  -- ▸ Term.subst (termSubst.lift _) body)`; `dsimp only` exposes it
+  -- definitionally so the binder congruence lemma applies, skipping the
+  -- equational 78-arm unfolder and its heavy kernel re-check.
+  dsimp only [Term.subst]
   have bodyRawIdentity :
       bodyRaw.subst (@Subst.identity level scope).forRaw.lift = bodyRaw := by
     rw [RawTerm.subst_pointwise
@@ -118,7 +129,10 @@ theorem Term.subst_identity_lamPi_HEq
       (Term.subst (TermSubst.identity context)
         (Term.lamPi (domainType := domainType) body))
       (Term.lamPi (domainType := domainType) body) := by
-  simp only [Term.subst]
+  -- The `.lamPi` arm reduces by iota to `Term.lamPi (Term.subst
+  -- (termSubst.lift _) body)`; `dsimp only` exposes it definitionally for
+  -- the dependent binder congruence lemma without the equational unfolder.
+  dsimp only [Term.subst]
   have codomainIdentity :
       codomainType.subst (@Subst.identity level scope).lift = codomainType := by
     rw [Ty.subst_pointwise
@@ -158,7 +172,11 @@ theorem Term.subst_identity_pathLam_HEq
           body))
       (Term.pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint
         body) := by
-  simp only [Term.subst]
+  -- The `.pathLam` arm reduces by iota to `Term.pathLam ... (Ty.weaken_subst_
+  -- commute ... ▸ Term.subst (termSubst.lift Ty.interval) body)`; `dsimp only`
+  -- exposes it definitionally for the path-binder congruence lemma without
+  -- the equational 78-arm unfolder and its kernel re-check.
+  dsimp only [Term.subst]
   have bodyRawIdentity :
       bodyRaw.subst (@Subst.identity level scope).forRaw.lift = bodyRaw := by
     rw [RawTerm.subst_pointwise
@@ -241,7 +259,9 @@ theorem Term.subst_identity_listNil_HEq
       (Term.subst (TermSubst.identity context)
         (Term.listNil (context := context) (elementType := elementType)))
       (Term.listNil (context := context) (elementType := elementType)) := by
-  simp only [Term.subst]
+  -- The `.listNil` arm reduces by iota to `Term.listNil`; `dsimp only`
+  -- exposes the index shift definitionally for the congruence lemma.
+  dsimp only [Term.subst]
   exact Term.listNil_HEq_congr (Ty.subst_identity elementType)
 
 /-- Empty option case for ordinary identity substitution. -/
@@ -253,7 +273,9 @@ theorem Term.subst_identity_optionNone_HEq
       (Term.subst (TermSubst.identity context)
         (Term.optionNone (context := context) (elementType := elementType)))
       (Term.optionNone (context := context) (elementType := elementType)) := by
-  simp only [Term.subst]
+  -- The `.optionNone` arm reduces by iota to `Term.optionNone`; `dsimp only`
+  -- exposes the index shift definitionally for the congruence lemma.
+  dsimp only [Term.subst]
   exact Term.optionNone_HEq_congr (Ty.subst_identity elementType)
 
 end LeanFX2

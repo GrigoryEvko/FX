@@ -31,9 +31,13 @@ theorem Term.weaken_subst_singleton_refl_heq
       (Term.subst (TermSubst.singleton singletonTerm)
         (Term.weaken newType
           (Term.refl (context := context) carrier rawWitness)))
-      (Term.refl (context := context) carrier rawWitness) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
-  exact Term.refl_HEq_congr
+      (Term.refl (context := context) carrier rawWitness) :=
+  -- `Term.subst _ (Term.weaken _ (Term.refl ..))` reduces by iota (the
+  -- clean `.refl` rename/subst arms push the operations onto the carrier
+  -- and witness with no cast), so the congruence closes through
+  -- definitional equality without generating the 78-arm `Term.subst` /
+  -- `Term.rename` equational unfolder that the kernel must re-check.
+  Term.refl_HEq_congr
     (Ty.weaken_subst_singleton carrier newType singletonRaw)
     (RawTerm.weaken_subst_singleton rawWitness singletonRaw)
 
@@ -64,9 +68,12 @@ theorem Term.weaken_subst_singleton_idJ_heq
     HEq
       (Term.subst (TermSubst.singleton singletonTerm)
         (Term.weaken newType (Term.idJ baseCase witness)))
-      (Term.idJ baseCase witness) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
-  exact Term.idJ_HEq_congr
+      (Term.idJ baseCase witness) :=
+  -- The `.idJ` rename/subst arms recurse structurally with no cast, so
+  -- the congruence closes through iota reduction; dropping `simp only`
+  -- avoids materializing the 78-arm equational unfolder for the kernel
+  -- to re-check.
+  Term.idJ_HEq_congr
     (Ty.weaken_subst_singleton carrier newType singletonRaw)
     (RawTerm.weaken_subst_singleton leftEndpoint singletonRaw)
     (RawTerm.weaken_subst_singleton rightEndpoint singletonRaw)
@@ -88,9 +95,11 @@ theorem Term.weaken_subst_singleton_oeqRefl_heq
       (Term.subst (TermSubst.singleton singletonTerm)
         (Term.weaken newType
           (Term.oeqRefl (context := context) carrier rawWitness)))
-      (Term.oeqRefl (context := context) carrier rawWitness) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
-  exact Term.oeqRefl_HEq_congr
+      (Term.oeqRefl (context := context) carrier rawWitness) :=
+  -- The clean `.oeqRefl` rename/subst arms push the operations onto the
+  -- carrier and witness with no cast, so the congruence closes through
+  -- iota reduction without the 78-arm equational unfolder.
+  Term.oeqRefl_HEq_congr
     (Ty.weaken_subst_singleton carrier newType singletonRaw)
     (RawTerm.weaken_subst_singleton rawWitness singletonRaw)
 
@@ -121,9 +130,11 @@ theorem Term.weaken_subst_singleton_oeqJ_heq
     HEq
       (Term.subst (TermSubst.singleton singletonTerm)
         (Term.weaken newType (Term.oeqJ baseCase witness)))
-      (Term.oeqJ baseCase witness) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
-  exact Term.oeqJ_HEq_congr
+      (Term.oeqJ baseCase witness) :=
+  -- The `.oeqJ` rename/subst arms recurse structurally with no cast, so
+  -- the congruence closes through iota reduction; dropping `simp only`
+  -- avoids materializing the 78-arm equational unfolder.
+  Term.oeqJ_HEq_congr
     (Ty.weaken_subst_singleton carrier newType singletonRaw)
     (RawTerm.weaken_subst_singleton leftEndpoint singletonRaw)
     (RawTerm.weaken_subst_singleton rightEndpoint singletonRaw)
@@ -158,7 +169,11 @@ theorem Term.weaken_subst_singleton_oeqFunext_heq
             rightFunctionRaw pointwiseProof)))
       (Term.oeqFunext domainType codomainType leftFunctionRaw
         rightFunctionRaw pointwiseProof) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
+  -- The `.oeqFunext` rename/subst arms carry a `▸` transport on the
+  -- pointwise proof (`oeqFunextPointwiseType_{rename,subst}`); the cast
+  -- chain below reconstructs exactly that transported shape, so the
+  -- final congruence closes through iota reduction without the slow
+  -- `simp only [Term.weaken, Term.rename, Term.subst]` 78-arm unfolder.
   let renamedPointwiseProof :=
     Term.rename (TermRenaming.weakenStep context newType) pointwiseProof
   let renamedPointwiseTypeEq :=
@@ -221,9 +236,11 @@ theorem Term.weaken_subst_singleton_idStrictRefl_heq
           (Term.idStrictRefl (context := context) modeIsStrict carrier
             rawWitness)))
       (Term.idStrictRefl (context := context) modeIsStrict carrier
-        rawWitness) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
-  exact Term.idStrictRefl_HEq_congr modeIsStrict
+        rawWitness) :=
+  -- The clean `.idStrictRefl` rename/subst arms push the operations onto
+  -- the carrier and witness with no cast, so the congruence closes
+  -- through iota reduction without the 78-arm equational unfolder.
+  Term.idStrictRefl_HEq_congr modeIsStrict
     (Ty.weaken_subst_singleton carrier newType singletonRaw)
     (RawTerm.weaken_subst_singleton rawWitness singletonRaw)
 
@@ -257,9 +274,11 @@ theorem Term.weaken_subst_singleton_idStrictRec_heq
       (Term.subst (TermSubst.singleton singletonTerm)
         (Term.weaken newType
           (Term.idStrictRec modeIsStrict baseCase witness)))
-      (Term.idStrictRec modeIsStrict baseCase witness) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
-  exact Term.idStrictRec_HEq_congr modeIsStrict
+      (Term.idStrictRec modeIsStrict baseCase witness) :=
+  -- The `.idStrictRec` rename/subst arms recurse structurally with no
+  -- cast, so the congruence closes through iota reduction; dropping
+  -- `simp only` avoids materializing the 78-arm equational unfolder.
+  Term.idStrictRec_HEq_congr modeIsStrict
     (Ty.weaken_subst_singleton carrier newType singletonRaw)
     (RawTerm.weaken_subst_singleton leftEndpoint singletonRaw)
     (RawTerm.weaken_subst_singleton rightEndpoint singletonRaw)
@@ -284,9 +303,11 @@ theorem Term.weaken_subst_singleton_universeCode_heq
           (Term.universeCode (context := context) innerLevel outerLevel
             cumulOk levelLe)))
       (Term.universeCode (context := context) innerLevel outerLevel
-        cumulOk levelLe) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
-  exact Term.universeCode_HEq_congr innerLevel outerLevel cumulOk levelLe
+        cumulOk levelLe) :=
+  -- The `.universeCode` rename/subst arms return the constructor
+  -- unchanged, so the congruence closes through iota reduction without
+  -- the 78-arm equational unfolder.
+  Term.universeCode_HEq_congr innerLevel outerLevel cumulOk levelLe
 
 /-- Arrow type-code values preserve weaken-then-singleton collapse. -/
 theorem Term.weaken_subst_singleton_arrowCode_heq
@@ -304,9 +325,11 @@ theorem Term.weaken_subst_singleton_arrowCode_heq
           (Term.arrowCode (context := context) outerLevel levelLe
             domainCodeRaw codomainCodeRaw)))
       (Term.arrowCode (context := context) outerLevel levelLe
-        domainCodeRaw codomainCodeRaw) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
-  exact Term.arrowCode_HEq_congr outerLevel levelLe
+        domainCodeRaw codomainCodeRaw) :=
+  -- The `.arrowCode` rename/subst arms push the operations onto the
+  -- domain and codomain codes with no cast, so the congruence closes
+  -- through iota reduction without the 78-arm equational unfolder.
+  Term.arrowCode_HEq_congr outerLevel levelLe
     (RawTerm.weaken_subst_singleton domainCodeRaw singletonRaw)
     (RawTerm.weaken_subst_singleton codomainCodeRaw singletonRaw)
 
@@ -327,9 +350,12 @@ theorem Term.weaken_subst_singleton_piTyCode_heq
           (Term.piTyCode (context := context) outerLevel levelLe
             domainCodeRaw codomainCodeRaw)))
       (Term.piTyCode (context := context) outerLevel levelLe
-        domainCodeRaw codomainCodeRaw) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
-  exact Term.piTyCode_HEq_congr outerLevel levelLe
+        domainCodeRaw codomainCodeRaw) :=
+  -- The `.piTyCode` rename/subst arms push the operations onto the
+  -- domain code and (lifted) codomain code with no cast, so the
+  -- congruence closes through iota reduction without the 78-arm
+  -- equational unfolder.
+  Term.piTyCode_HEq_congr outerLevel levelLe
     (RawTerm.weaken_subst_singleton domainCodeRaw singletonRaw)
     (RawTerm.weaken_lift_subst_singleton_lift codomainCodeRaw singletonRaw)
 
@@ -350,9 +376,12 @@ theorem Term.weaken_subst_singleton_sigmaTyCode_heq
           (Term.sigmaTyCode (context := context) outerLevel levelLe
             domainCodeRaw codomainCodeRaw)))
       (Term.sigmaTyCode (context := context) outerLevel levelLe
-        domainCodeRaw codomainCodeRaw) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
-  exact Term.sigmaTyCode_HEq_congr outerLevel levelLe
+        domainCodeRaw codomainCodeRaw) :=
+  -- The `.sigmaTyCode` rename/subst arms push the operations onto the
+  -- domain code and (lifted) codomain code with no cast, so the
+  -- congruence closes through iota reduction without the 78-arm
+  -- equational unfolder.
+  Term.sigmaTyCode_HEq_congr outerLevel levelLe
     (RawTerm.weaken_subst_singleton domainCodeRaw singletonRaw)
     (RawTerm.weaken_lift_subst_singleton_lift codomainCodeRaw singletonRaw)
 
@@ -372,9 +401,11 @@ theorem Term.weaken_subst_singleton_productCode_heq
           (Term.productCode (context := context) outerLevel levelLe
             firstCodeRaw secondCodeRaw)))
       (Term.productCode (context := context) outerLevel levelLe
-        firstCodeRaw secondCodeRaw) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
-  exact Term.productCode_HEq_congr outerLevel levelLe
+        firstCodeRaw secondCodeRaw) :=
+  -- The `.productCode` rename/subst arms push the operations onto the
+  -- first and second codes with no cast, so the congruence closes
+  -- through iota reduction without the 78-arm equational unfolder.
+  Term.productCode_HEq_congr outerLevel levelLe
     (RawTerm.weaken_subst_singleton firstCodeRaw singletonRaw)
     (RawTerm.weaken_subst_singleton secondCodeRaw singletonRaw)
 
@@ -394,9 +425,11 @@ theorem Term.weaken_subst_singleton_sumCode_heq
           (Term.sumCode (context := context) outerLevel levelLe
             leftCodeRaw rightCodeRaw)))
       (Term.sumCode (context := context) outerLevel levelLe
-        leftCodeRaw rightCodeRaw) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
-  exact Term.sumCode_HEq_congr outerLevel levelLe
+        leftCodeRaw rightCodeRaw) :=
+  -- The `.sumCode` rename/subst arms push the operations onto the left
+  -- and right codes with no cast, so the congruence closes through iota
+  -- reduction without the 78-arm equational unfolder.
+  Term.sumCode_HEq_congr outerLevel levelLe
     (RawTerm.weaken_subst_singleton leftCodeRaw singletonRaw)
     (RawTerm.weaken_subst_singleton rightCodeRaw singletonRaw)
 
@@ -416,9 +449,11 @@ theorem Term.weaken_subst_singleton_listCode_heq
           (Term.listCode (context := context) outerLevel levelLe
             elementCodeRaw)))
       (Term.listCode (context := context) outerLevel levelLe
-        elementCodeRaw) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
-  exact Term.listCode_HEq_congr outerLevel levelLe
+        elementCodeRaw) :=
+  -- The `.listCode` rename/subst arms push the operation onto the
+  -- element code with no cast, so the congruence closes through iota
+  -- reduction without the 78-arm equational unfolder.
+  Term.listCode_HEq_congr outerLevel levelLe
     (RawTerm.weaken_subst_singleton elementCodeRaw singletonRaw)
 
 /-- Option type-code values preserve weaken-then-singleton collapse. -/
@@ -437,9 +472,11 @@ theorem Term.weaken_subst_singleton_optionCode_heq
           (Term.optionCode (context := context) outerLevel levelLe
             elementCodeRaw)))
       (Term.optionCode (context := context) outerLevel levelLe
-        elementCodeRaw) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
-  exact Term.optionCode_HEq_congr outerLevel levelLe
+        elementCodeRaw) :=
+  -- The `.optionCode` rename/subst arms push the operation onto the
+  -- element code with no cast, so the congruence closes through iota
+  -- reduction without the 78-arm equational unfolder.
+  Term.optionCode_HEq_congr outerLevel levelLe
     (RawTerm.weaken_subst_singleton elementCodeRaw singletonRaw)
 
 /-- Either type-code values preserve weaken-then-singleton collapse. -/
@@ -458,9 +495,11 @@ theorem Term.weaken_subst_singleton_eitherCode_heq
           (Term.eitherCode (context := context) outerLevel levelLe
             leftCodeRaw rightCodeRaw)))
       (Term.eitherCode (context := context) outerLevel levelLe
-        leftCodeRaw rightCodeRaw) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
-  exact Term.eitherCode_HEq_congr outerLevel levelLe
+        leftCodeRaw rightCodeRaw) :=
+  -- The `.eitherCode` rename/subst arms push the operations onto the
+  -- left and right codes with no cast, so the congruence closes through
+  -- iota reduction without the 78-arm equational unfolder.
+  Term.eitherCode_HEq_congr outerLevel levelLe
     (RawTerm.weaken_subst_singleton leftCodeRaw singletonRaw)
     (RawTerm.weaken_subst_singleton rightCodeRaw singletonRaw)
 
@@ -480,9 +519,12 @@ theorem Term.weaken_subst_singleton_idCode_heq
           (Term.idCode (context := context) outerLevel levelLe typeCodeRaw
             leftRaw rightRaw)))
       (Term.idCode (context := context) outerLevel levelLe typeCodeRaw
-        leftRaw rightRaw) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
-  exact Term.idCode_HEq_congr outerLevel levelLe
+        leftRaw rightRaw) :=
+  -- The `.idCode` rename/subst arms push the operations onto the type
+  -- code and the two endpoint codes with no cast, so the congruence
+  -- closes through iota reduction without the 78-arm equational
+  -- unfolder.
+  Term.idCode_HEq_congr outerLevel levelLe
     (RawTerm.weaken_subst_singleton typeCodeRaw singletonRaw)
     (RawTerm.weaken_subst_singleton leftRaw singletonRaw)
     (RawTerm.weaken_subst_singleton rightRaw singletonRaw)
@@ -503,9 +545,11 @@ theorem Term.weaken_subst_singleton_equivCode_heq
           (Term.equivCode (context := context) outerLevel levelLe
             leftTypeCodeRaw rightTypeCodeRaw)))
       (Term.equivCode (context := context) outerLevel levelLe
-        leftTypeCodeRaw rightTypeCodeRaw) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
-  exact Term.equivCode_HEq_congr outerLevel levelLe
+        leftTypeCodeRaw rightTypeCodeRaw) :=
+  -- The `.equivCode` rename/subst arms push the operations onto the two
+  -- type codes with no cast, so the congruence closes through iota
+  -- reduction without the 78-arm equational unfolder.
+  Term.equivCode_HEq_congr outerLevel levelLe
     (RawTerm.weaken_subst_singleton leftTypeCodeRaw singletonRaw)
     (RawTerm.weaken_subst_singleton rightTypeCodeRaw singletonRaw)
 
@@ -521,9 +565,11 @@ theorem Term.weaken_subst_singleton_equivReflId_heq
       (Term.subst (TermSubst.singleton singletonTerm)
         (Term.weaken newType
           (Term.equivReflId (context := context) carrier)))
-      (Term.equivReflId (context := context) carrier) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
-  exact Term.equivReflId_HEq_congr
+      (Term.equivReflId (context := context) carrier) :=
+  -- The `.equivReflId` rename/subst arms push the operation onto the
+  -- carrier with no cast, so the congruence closes through iota
+  -- reduction without the 78-arm equational unfolder.
+  Term.equivReflId_HEq_congr
     (Ty.weaken_subst_singleton carrier newType singletonRaw)
 
 /-- Id-typed identity equivalence witnesses preserve weaken-then-singleton
@@ -544,9 +590,11 @@ theorem Term.weaken_subst_singleton_equivReflIdAtId_heq
           (Term.equivReflIdAtId (context := context) innerLevel innerLevelLt
             carrier carrierRaw)))
       (Term.equivReflIdAtId (context := context) innerLevel innerLevelLt
-        carrier carrierRaw) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
-  exact Term.equivReflIdAtId_HEq_congr
+        carrier carrierRaw) :=
+  -- The `.equivReflIdAtId` rename/subst arms push the operations onto
+  -- the carrier and witness with no cast, so the congruence closes
+  -- through iota reduction without the 78-arm equational unfolder.
+  Term.equivReflIdAtId_HEq_congr
     (Ty.weaken_subst_singleton carrier newType singletonRaw)
     (RawTerm.weaken_subst_singleton carrierRaw singletonRaw)
 

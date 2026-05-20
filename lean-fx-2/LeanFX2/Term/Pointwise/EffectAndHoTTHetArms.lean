@@ -173,8 +173,6 @@ theorem Term.weaken_subst_singleton_effectPerform_heq
   | mk effectLabel argumentCarrier resultCarrier =>
     cases canPerformOperation with
     | direct rowMember =>
-      simp only [Term.weaken, Term.rename, Term.subst,
-        Effects.OperationSignature.map]
       exact Term.effectPerform_direct_carrier_HEq_congr
         effectRow effectLabel rowMember
         (RawTerm.weaken_subst_singleton effectTag singletonRaw)
@@ -185,8 +183,6 @@ theorem Term.weaken_subst_singleton_effectPerform_heq
         operationTagWithoutCastsHEq
         argumentsWithoutCastsHEq
     | readViaWrite argumentCarrier resultCarrier rowMember =>
-      simp only [Term.weaken, Term.rename, Term.subst,
-        Effects.OperationSignature.map]
       exact Term.effectPerform_readViaWrite_carrier_HEq_congr
         effectRow rowMember
         (RawTerm.weaken_subst_singleton effectTag singletonRaw)
@@ -226,7 +222,6 @@ theorem Term.weaken_subst_singleton_uaToEquiv_heq
             rightTyRaw proof)))
       (Term.uaToEquiv innerLevel innerLevelLt leftTy rightTy leftTyRaw
         rightTyRaw proof) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
   exact Term.uaToEquiv_HEq_congr
     (Ty.weaken_subst_singleton leftTy newType singletonRaw)
     (Ty.weaken_subst_singleton rightTy newType singletonRaw)
@@ -264,7 +259,6 @@ theorem Term.weaken_subst_singleton_pathApp_heq
         (Term.weaken newType
           (Term.pathApp modeIsUnivalent pathTerm intervalTerm)))
       (Term.pathApp modeIsUnivalent pathTerm intervalTerm) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
   exact Term.pathApp_HEq_congr modeIsUnivalent
     (Ty.weaken_subst_singleton carrierType newType singletonRaw)
     (RawTerm.weaken_subst_singleton leftEndpoint singletonRaw)
@@ -293,7 +287,6 @@ theorem Term.weaken_subst_singleton_glueElim_heq
       (Term.subst (TermSubst.singleton singletonTerm)
         (Term.weaken newType (Term.glueElim modeIsUnivalent gluedValue)))
       (Term.glueElim modeIsUnivalent gluedValue) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
   exact Term.glueElim_HEq_congr modeIsUnivalent
     (Ty.weaken_subst_singleton baseType newType singletonRaw)
     (RawTerm.weaken_subst_singleton boundaryWitness singletonRaw)
@@ -319,7 +312,6 @@ theorem Term.weaken_subst_singleton_recordProj_heq
       (Term.subst (TermSubst.singleton singletonTerm)
         (Term.weaken newType (Term.recordProj recordValue)))
       (Term.recordProj recordValue) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
   exact Term.recordProj_HEq_congr
     (Ty.weaken_subst_singleton singleFieldType newType singletonRaw)
     (RawTerm.weaken_subst_singleton recordRaw singletonRaw)
@@ -344,7 +336,6 @@ theorem Term.weaken_subst_singleton_codataDest_heq
       (Term.subst (TermSubst.singleton singletonTerm)
         (Term.weaken newType (Term.codataDest codataValue)))
       (Term.codataDest codataValue) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
   exact Term.codataDest_HEq_congr
     (Ty.weaken_subst_singleton stateType newType singletonRaw)
     (Ty.weaken_subst_singleton outputType newType singletonRaw)
@@ -398,7 +389,7 @@ theorem Term.weaken_subst_singleton_equivIntroHet_heq
         (Term.weaken newType
           (Term.equivIntroHet forward backward leftInv rightInv)))
       (Term.equivIntroHet forward backward leftInv rightInv) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
+  dsimp only [Term.weaken, Term.rename, Term.subst]
   let renamedLeftInv :=
     Term.rename (TermRenaming.weakenStep context newType) leftInv
   let renamedRightInv :=
@@ -509,7 +500,6 @@ theorem Term.weaken_subst_singleton_equivApp_heq
       (Term.subst (TermSubst.singleton singletonTerm)
         (Term.weaken newType (Term.equivApp equivTerm argumentValue)))
       (Term.equivApp equivTerm argumentValue) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
   exact Term.equivApp_HEq_congr
     (Ty.weaken_subst_singleton carrierA newType singletonRaw)
     (Ty.weaken_subst_singleton carrierB newType singletonRaw)
@@ -542,7 +532,6 @@ theorem Term.weaken_subst_singleton_equivApply_heq
       (Term.subst (TermSubst.singleton singletonTerm)
         (Term.weaken newType (Term.equivApply equivTerm argumentValue)))
       (Term.equivApply equivTerm argumentValue) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
   exact Term.equivApply_HEq_congr
     (Ty.weaken_subst_singleton carrierA newType singletonRaw)
     (Ty.weaken_subst_singleton carrierB newType singletonRaw)
@@ -578,7 +567,6 @@ theorem Term.weaken_subst_singleton_uaIntroHet_heq
             equivWitness)))
       (Term.uaIntroHet innerLevel innerLevelLt carrierARaw carrierBRaw
         equivWitness) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
   exact Term.uaIntroHet_HEq_congr innerLevel innerLevelLt
     (Ty.weaken_subst_singleton carrierA newType singletonRaw)
     (Ty.weaken_subst_singleton carrierB newType singletonRaw)
@@ -605,7 +593,6 @@ theorem Term.weaken_subst_singleton_funextIntroHet_heq
             applyARaw applyBRaw)))
       (Term.funextIntroHet (context := context) domainType codomainType
         applyARaw applyBRaw) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
   exact Term.funextIntroHet_HEq_congr
     (Ty.weaken_subst_singleton domainType newType singletonRaw)
     (Ty.weaken_subst_singleton codomainType newType singletonRaw)
@@ -638,7 +625,6 @@ theorem Term.weaken_subst_singleton_cumulUp_heq
             levelLeLow levelLeHigh typeCode)))
       (Term.cumulUp lowerLevel higherLevel cumulMonotone
         levelLeLow levelLeHigh typeCode) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
   exact Term.cumulUp_HEq_congr
     (RawTerm.weaken_subst_singleton codeRaw singletonRaw)
     typeCodeHEq

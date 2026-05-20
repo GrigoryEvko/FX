@@ -148,7 +148,82 @@ spelling), feeding `kind.toLexemeChars.reverse` into
 
 Three cases: `trueK` and `falseK` decode to `Token.boolLit`
 (per `classifyIdent`'s special-case for boolean literals);
-every other keyword decodes to `kind.toToken`. -/
+every other keyword decodes to `kind.toToken`.
+
+### Why these proofs avoid `decide` / `cases kind <;> rfl`
+
+The naive proofs (`decide` for the bool cases, `cases kind <;>
+rfl` for the general case) force the KERNEL to reduce
+`classifyIdent kind.toLexemeChars.reverse` per keyword.  That
+pipeline calls `KeywordKind.fromCharsExact`, whose body is a
+match over 92 `String` literals — each arm a `String.ofList` +
+sequential `List Char` decidable-equality comparison.  Reducing
+that whole classifier 90 times (once per non-bool ctor) is the
+hidden ~48 s kernel re-check cost of this file.
+
+Instead we route every case through `classifyIdentRoundtrip`
+below, which collapses the classifier ONCE — via the already-
+proven `Keyword.fromCharsExact_toLexemeChars` round-trip — into a
+plain two-`if` term over `decide (kind = trueK)` /
+`decide (kind = falseK)`.  Each downstream lemma then discharges
+those tiny decidable guards instead of re-reducing the keyword
+table.  No statement changes; all three stay zero-axiom. -/
+
+/-- Reverse-of-reverse invariant on the accumulator-based
+`List.reverseAux`: reversing `source` onto `acc` and then
+reversing the whole thing equals reversing `acc` onto `source`.
+Proved by direct structural recursion on `source` so it stays
+clean — the stdlib `List.reverse_reverse` and `List.reverse_cons`
+lemmas both leak `propext` in Lean 4 v4.29.1. -/
+private theorem reverseAuxRoundtrip {alpha : Type} :
+    ∀ (source acc : List alpha),
+      (source.reverseAux acc).reverseAux [] = acc.reverseAux source
+  | [], _ => rfl
+  | head :: rest, acc => by
+      show (rest.reverseAux (head :: acc)).reverseAux [] = acc.reverseAux (head :: rest)
+      rw [reverseAuxRoundtrip rest (head :: acc)]
+      rfl
+
+/-- `propext`-free `List.reverse.reverse = id`, specialised from
+`reverseAuxRoundtrip` with an empty accumulator. -/
+private theorem reverseReverseClean {alpha : Type} (listInput : List alpha) :
+    listInput.reverse.reverse = listInput := by
+  show (listInput.reverseAux []).reverseAux [] = listInput
+  rw [reverseAuxRoundtrip listInput []]
+  rfl
+
+/-- Collapse `classifyIdent kind.toLexemeChars.reverse` to the
+`some`-branch of `classifyIdent` WITHOUT reducing the 92-entry
+keyword classifier in the kernel.  The double `reverse` cancels
+via `reverseReverseClean`, then a single rewrite with the
+upstream round-trip `Keyword.fromCharsExact_toLexemeChars`
+replaces `fromCharsExact kind.toLexemeChars` by `some kind` —
+turning the goal into a plain two-`if` over the boolean-literal
+guards.  The `show` ascribes the post-zeta-reduction form of
+`classifyIdent`'s body so both rewrites have a syntactic
+target. -/
+private theorem classifyIdentRoundtrip (kind : KeywordKind) :
+    classifyIdent kind.toLexemeChars.reverse =
+      (if decide (kind = KeywordKind.trueK) then Token.boolLit true
+       else if decide (kind = KeywordKind.falseK) then Token.boolLit false
+       else kind.toToken) := by
+  show (match KeywordKind.fromCharsExact kind.toLexemeChars.reverse.reverse with
+        | some recognized =>
+          if decide (recognized = KeywordKind.trueK) = true then Token.boolLit true
+          else if decide (recognized = KeywordKind.falseK) = true then Token.boolLit false
+          else recognized.toToken
+        | none =>
+          match kind.toLexemeChars.reverse.reverse with
+          | leadChar :: _ =>
+            if isAsciiUpper leadChar = true then
+              Token.uident (String.ofList kind.toLexemeChars.reverse.reverse)
+            else Token.ident (String.ofList kind.toLexemeChars.reverse.reverse)
+          | [] => Token.ident (String.ofList kind.toLexemeChars.reverse.reverse))
+        = (if decide (kind = KeywordKind.trueK) = true then Token.boolLit true
+           else if decide (kind = KeywordKind.falseK) = true then Token.boolLit false
+           else kind.toToken)
+  rw [reverseReverseClean kind.toLexemeChars]
+  rw [Keyword.fromCharsExact_toLexemeChars kind]
 
 /-- L02 case A: `trueK`'s lexeme `['t','r','u','e']` reversed
 through `classifyIdent` recovers the `boolLit true` token
@@ -156,29 +231,29 @@ through `classifyIdent` recovers the `boolLit true` token
 literal form for downstream parser convenience). -/
 theorem Lex.classifyIdent_kwTrue :
     classifyIdent KeywordKind.trueK.toLexemeChars.reverse
-      = Token.boolLit true := by
-  decide
+      = Token.boolLit true :=
+  (classifyIdentRoundtrip KeywordKind.trueK).trans rfl
 
 /-- L02 case B: `falseK`'s lexeme `['f','a','l','s','e']` reversed
 through `classifyIdent` recovers the `boolLit false` token. -/
 theorem Lex.classifyIdent_kwFalse :
     classifyIdent KeywordKind.falseK.toLexemeChars.reverse
-      = Token.boolLit false := by
-  decide
+      = Token.boolLit false :=
+  (classifyIdentRoundtrip KeywordKind.falseK).trans rfl
 
 /-- L02 case C: every keyword OTHER than `trueK`/`falseK`
 decodes through `classifyIdent` back to its canonical
 `Token.toToken` form.  The reversal cancels and the
 `fromCharsExact_toLexemeChars` round-trip recovers the
-original `KeywordKind`; the two `decide` guards both
-evaluate to `false` per the hypotheses. -/
+original `KeywordKind` (both performed once inside
+`classifyIdentRoundtrip`); the two `if` guards both fail by the
+hypotheses via `of_decide_eq_true`. -/
 theorem Lex.classifyIdent_keyword_toToken (kind : KeywordKind)
     (notTrue : kind ≠ KeywordKind.trueK)
     (notFalse : kind ≠ KeywordKind.falseK) :
     classifyIdent kind.toLexemeChars.reverse = kind.toToken := by
-  cases kind <;> first
-    | (exact absurd rfl notTrue)
-    | (exact absurd rfl notFalse)
-    | rfl
+  rw [classifyIdentRoundtrip kind,
+      if_neg (fun hTrue => notTrue (of_decide_eq_true hTrue)),
+      if_neg (fun hFalse => notFalse (of_decide_eq_true hFalse))]
 
 end LeanFX2.Surface

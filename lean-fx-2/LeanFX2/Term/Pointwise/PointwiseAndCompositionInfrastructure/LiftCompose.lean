@@ -40,7 +40,7 @@ theorem TermSubst.lift_compose_zero_HEq
       (TermSubst.compose (firstTermSubst.lift newSourceType)
         (secondTermSubst.lift (newSourceType.subst firstSubst))
         ⟨0, Nat.zero_lt_succ sourceScope⟩) := by
-  simp only [TermSubst.lift, TermSubst.compose]
+  dsimp only [TermSubst.lift, TermSubst.compose]
   apply HEq.trans
   · exact Term.type_eq_symm_cast_heq
       (Ty.weaken_subst_commute (Subst.compose firstSubst secondSubst)
@@ -50,7 +50,7 @@ theorem TermSubst.lift_compose_zero_HEq
     · exact cast_heq _ _
     · apply HEq.trans
       · exact Term.subst_type_eq_cast_heq _ _ _
-      · simp only [Term.subst, TermSubst.lift]
+      · dsimp only [Term.subst, TermSubst.lift]
         apply HEq.trans
         · exact Term.type_eq_symm_cast_heq
             (Ty.weaken_subst_commute secondSubst
@@ -215,7 +215,7 @@ theorem TermSubst.consSingleton_succ_HEq
         ⟨previousIndex + 1, positionIsWithinScope⟩)
       (termSubst
         ⟨previousIndex, Nat.lt_of_succ_lt_succ positionIsWithinScope⟩) := by
-  simp only [TermSubst.consSingleton]
+  dsimp only [TermSubst.consSingleton]
   exact Term.type_raw_eq_cast_heq
     (Ty.weaken_subst_lift_singleton
       (varType sourceCtx
@@ -243,7 +243,7 @@ theorem TermSubst.lift_zero_subst_singleton_heq
       (Term.subst (TermSubst.singleton argumentTerm)
         (termSubst.lift domainType ⟨0, Nat.zero_lt_succ scope⟩))
       argumentTerm := by
-  simp only [TermSubst.lift, varType]
+  dsimp only [TermSubst.lift, varType]
   apply HEq.trans
     (Term.subst_type_eq_cast_heq (TermSubst.singleton argumentTerm)
       (Ty.weaken_subst_commute sigma domainType).symm
@@ -252,7 +252,7 @@ theorem TermSubst.lift_zero_subst_singleton_heq
   change HEq
     (TermSubst.singleton argumentTerm ⟨0, Nat.zero_lt_succ targetScope⟩)
     argumentTerm
-  simp only [TermSubst.singleton, varType]
+  dsimp only [TermSubst.singleton, varType]
   exact Term.type_eq_cast_heq
     (Ty.weaken_subst_singleton (domainType.subst sigma)
       (domainType.subst sigma) argumentRaw).symm

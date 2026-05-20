@@ -33,7 +33,17 @@ theorem Term.subst_identityLike_lam_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  -- `Term.subst termSubst (Term.lam body)` reduces by iota on the `.lam`
+  -- match arm to the cast-wrapped `Term.lam` below.  Using `show` exposes
+  -- the contractum through the kernel's definitional reduction, skipping
+  -- the full 78-arm `Term.subst` equational unfolder that `simp only
+  -- [Term.subst]` would force the kernel to re-check.
+  show
+    HEq
+      (Term.lam (codomainType := codomainType.subst sigma)
+        (Ty.weaken_subst_commute sigma codomainType ▸
+          Term.subst (termSubst.lift domainType) body))
+      (Term.lam body)
   have liftedSubstitutionIsIdentityLike :=
     substitutionIsIdentityLike.lift domainType
   have bodyRawEq :
@@ -75,7 +85,15 @@ theorem Term.subst_identityLike_lamPi_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  -- `Term.subst termSubst (Term.lamPi body)` reduces by iota on the
+  -- `.lamPi` match arm directly to `Term.lamPi (Term.subst (termSubst.lift
+  -- domainType) body)`.  `show` exposes that contractum definitionally,
+  -- avoiding the 78-arm `Term.subst` equational unfolder.
+  show
+    HEq
+      (Term.lamPi (domainType := domainType.subst sigma)
+        (Term.subst (termSubst.lift domainType) body))
+      (Term.lamPi body)
   have liftedSubstitutionIsIdentityLike :=
     substitutionIsIdentityLike.lift domainType
   exact Term.lamPi_HEq_congr
@@ -109,7 +127,19 @@ theorem Term.subst_identityLike_pathLam_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  -- `Term.subst termSubst (Term.pathLam ...)` reduces by iota on the
+  -- `.pathLam` match arm to the cast-wrapped `Term.pathLam` below.  `show`
+  -- exposes that contractum definitionally, avoiding the 78-arm
+  -- `Term.subst` equational unfolder.
+  show
+    HEq
+      (Term.pathLam modeIsUnivalent (carrierType.subst sigma)
+        (leftEndpoint.subst sigma.forRaw)
+        (rightEndpoint.subst sigma.forRaw)
+        (Ty.weaken_subst_commute sigma carrierType ▸
+          Term.subst (termSubst.lift Ty.interval) body))
+      (Term.pathLam modeIsUnivalent carrierType leftEndpoint
+        rightEndpoint body)
   have liftedSubstitutionIsIdentityLike :=
     substitutionIsIdentityLike.lift Ty.interval
   have bodyCastHEq :
