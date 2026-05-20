@@ -1,6 +1,6 @@
 import LeanFX2.Reduction.Conv
 import LeanFX2.Reduction.Step.Casts
-import LeanFX2.Reduction.ParRed
+import LeanFX2.Reduction.ParRed.ParCasts
 import LeanFX2.Reduction.StepStar
 
 /-! # Tools/Tactics/Cast — cast helpers for Step / Step.par
@@ -45,7 +45,7 @@ Casts are needed less than in lean-fx because:
 
 ## Dependencies
 
-* `Reduction/Step.lean`, `Reduction/ParRed.lean`
+* `Reduction/Step.Casts.lean`, `Reduction/ParRed/ParCasts.lean`
 
 ## Downstream
 

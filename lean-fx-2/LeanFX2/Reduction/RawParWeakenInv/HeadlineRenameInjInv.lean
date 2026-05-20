@@ -1,4 +1,8 @@
-import LeanFX2.Reduction.RawParInversion
+import LeanFX2.Reduction.RawParInversion.AtomicCtors
+import LeanFX2.Reduction.RawParInversion.CubicalAndIdentity
+import LeanFX2.Reduction.RawParInversion.ModalAndAdvanced
+import LeanFX2.Reduction.RawParInversion.RedexParents
+import LeanFX2.Reduction.RawParInversion.TypeCodes
 import LeanFX2.Reduction.RawParWeakenInv.Foundation
 import LeanFX2.Reduction.RawParWeakenInv.AtomShape1
 import LeanFX2.Reduction.RawParWeakenInv.AtomShape2

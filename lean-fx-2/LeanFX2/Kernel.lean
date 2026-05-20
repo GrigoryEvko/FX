@@ -65,10 +65,12 @@ import LeanFX2.Reduction.StepStar
 import LeanFX2.Reduction.Conv
 import LeanFX2.Reduction.ConvBridge
 import LeanFX2.Reduction.ConvCanonical
-import LeanFX2.Reduction.ParRed
+import LeanFX2.Reduction.ParRed.CongAliases
+import LeanFX2.Reduction.ParRed.ParCasts
+import LeanFX2.Reduction.ParRed.ParStepLift
 import LeanFX2.Reduction.RawPar.Inductive
 import LeanFX2.Reduction.RawParCompatible
-import LeanFX2.Reduction.RawParWeakenInv
+import LeanFX2.Reduction.RawParWeakenInv.Weaken
 import LeanFX2.Reduction.TranspPiContractumPar
 import LeanFX2.Reduction.ParStar
 import LeanFX2.Reduction.StepStarToPar
@@ -77,7 +79,7 @@ import LeanFX2.Reduction.Cumul
 import LeanFX2.Reduction.ConvCumulHomo
 import LeanFX2.Reduction.CumulCastElim
 import LeanFX2.Reduction.CumulBenton
-import LeanFX2.Reduction.CumulAllais
+import LeanFX2.Reduction.CumulAllais.EliminatorArms
 import LeanFX2.Reduction.CumulPairedEnv
 import LeanFX2.Reduction.CumulSubstCompat
 import LeanFX2.Reduction.CumulPattern23Bridge

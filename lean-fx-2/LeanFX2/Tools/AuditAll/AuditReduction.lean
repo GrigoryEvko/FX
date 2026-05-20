@@ -17,8 +17,9 @@ import LeanFX2.Reduction.Compat.Effects
 import LeanFX2.Reduction.Compat.Misc
 import LeanFX2.Reduction.Compat.TypeCodes
 import LeanFX2.Reduction.ConvBridge
-import LeanFX2.Reduction.ParRed
-import LeanFX2.Reduction.RawParWeakenInv
+import LeanFX2.Reduction.ParRed.CongAliases
+import LeanFX2.Reduction.ParRed.ParCasts
+import LeanFX2.Reduction.RawParWeakenInv.Weaken
 import LeanFX2.Reduction.TranspPiContractumPar
 
 namespace LeanFX2.Tools
