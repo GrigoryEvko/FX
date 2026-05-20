@@ -342,8 +342,7 @@ ad hoc reductions. -/
 theorem RawTerm.unweaken?_weaken {scope : Nat}
     (term : RawTerm scope) :
     RawTerm.unweaken? term.weaken = some term := by
-  unfold RawTerm.unweaken?
-  unfold RawTerm.weaken
+  dsimp only [RawTerm.unweaken?, RawTerm.weaken]
   rw [RawTerm.partialRename?_rename_some term RawRenaming.weaken
     RawRenaming.identity PartialRawRenaming.dropNewest
     PartialRawRenaming.dropNewest_weaken]

@@ -93,13 +93,11 @@ macro_rules
           (LeanFX2.optionNoneIsSomeContradictsTrue $isSomeNone))
 
 /-- Expose the common strengthening dispatcher head.  This is intentionally
-only an unfold step plus `split`; it does not try to solve the generated
-branches. -/
+only a definitional-reduction step plus `split`; it does not try to solve the
+generated branches. -/
 macro "fx_split_strength_dispatcher" : tactic =>
   `(tactic|
-    unfold strengthenTyped?
-    unfold partialStrengthenTyped?
-    split)
+    (dsimp only [strengthenTyped?, partialStrengthenTyped?]; split))
 
   /-- Close one-step Term cast HEq goals using the audited cast lemmas already
   present in the Term pointwise infrastructure.  This tactic performs no broad
