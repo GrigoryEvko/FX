@@ -23,7 +23,7 @@ theorem RawTerm.rename_eq_natSucc_imp {sourceScope targetScope : Nat}
   cases term with
   | natSucc inner =>
     refine ⟨inner, rfl, ?_⟩
-    simp only [RawTerm.rename] at h
+    dsimp only [RawTerm.rename] at h
     have : inner.rename rho = target := by injection h
     exact this.symm
   | var _ => simp only [RawTerm.rename] at h; nomatch h
@@ -110,7 +110,7 @@ theorem RawTerm.rename_eq_optionSome_imp {sourceScope targetScope : Nat}
   cases term with
   | optionSome inner =>
     refine ⟨inner, rfl, ?_⟩
-    simp only [RawTerm.rename] at h
+    dsimp only [RawTerm.rename] at h
     have : inner.rename rho = target := by injection h
     exact this.symm
   | var _ => simp only [RawTerm.rename] at h; nomatch h
@@ -197,7 +197,7 @@ theorem RawTerm.rename_eq_eitherInl_imp {sourceScope targetScope : Nat}
   cases term with
   | eitherInl inner =>
     refine ⟨inner, rfl, ?_⟩
-    simp only [RawTerm.rename] at h
+    dsimp only [RawTerm.rename] at h
     have : inner.rename rho = target := by injection h
     exact this.symm
   | var _ => simp only [RawTerm.rename] at h; nomatch h
@@ -284,7 +284,7 @@ theorem RawTerm.rename_eq_eitherInr_imp {sourceScope targetScope : Nat}
   cases term with
   | eitherInr inner =>
     refine ⟨inner, rfl, ?_⟩
-    simp only [RawTerm.rename] at h
+    dsimp only [RawTerm.rename] at h
     have : inner.rename rho = target := by injection h
     exact this.symm
   | var _ => simp only [RawTerm.rename] at h; nomatch h
@@ -371,7 +371,7 @@ theorem RawTerm.rename_eq_refl_imp {sourceScope targetScope : Nat}
   cases term with
   | refl inner =>
     refine ⟨inner, rfl, ?_⟩
-    simp only [RawTerm.rename] at h
+    dsimp only [RawTerm.rename] at h
     have : inner.rename rho = target := by injection h
     exact this.symm
   | var _ => simp only [RawTerm.rename] at h; nomatch h

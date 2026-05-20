@@ -73,144 +73,144 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
       exact RawStep.par.subsume (innerIH substsRelated)
   -- Shallow β rules: reshape via subst0_subst_commute.
   | betaApp _ _ bodyIH argumentIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       rw [RawTerm.subst0_subst_commute _ _ secondSubst]
       exact RawStep.par.betaApp
         (bodyIH (RawTermSubst.par_lift substsRelated))
         (argumentIH substsRelated)
   | betaFstPair secondValue _ firstIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.betaFstPair (secondValue.subst firstSubst)
         (firstIH substsRelated)
   | betaSndPair firstValue _ secondIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.betaSndPair (firstValue.subst firstSubst)
         (secondIH substsRelated)
   -- Shallow ι rules.
   | iotaBoolElimTrue elseBranch _ thenIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.iotaBoolElimTrue (elseBranch.subst firstSubst)
         (thenIH substsRelated)
   | iotaBoolElimFalse thenBranch _ elseIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.iotaBoolElimFalse (thenBranch.subst firstSubst)
         (elseIH substsRelated)
   | iotaNatElimZero succBranch _ zeroIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.iotaNatElimZero (succBranch.subst firstSubst)
         (zeroIH substsRelated)
   | iotaNatElimSucc zeroBranch _ _ predecessorIH succIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.iotaNatElimSucc (zeroBranch.subst firstSubst)
         (predecessorIH substsRelated) (succIH substsRelated)
   | iotaNatRecZero succBranch _ zeroIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.iotaNatRecZero (succBranch.subst firstSubst)
         (zeroIH substsRelated)
   | iotaNatRecSucc _ _ _ predecessorIH zeroIH succIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.iotaNatRecSucc (predecessorIH substsRelated)
         (zeroIH substsRelated) (succIH substsRelated)
   | iotaListElimNil consBranch _ nilIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.iotaListElimNil (consBranch.subst firstSubst)
         (nilIH substsRelated)
   | iotaListElimCons nilBranch _ _ _ headIH tailIH consIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.iotaListElimCons (nilBranch.subst firstSubst)
         (headIH substsRelated) (tailIH substsRelated) (consIH substsRelated)
   | iotaOptionMatchNone someBranch _ noneIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.iotaOptionMatchNone (someBranch.subst firstSubst)
         (noneIH substsRelated)
   | iotaOptionMatchSome noneBranch _ _ valueIH someIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.iotaOptionMatchSome (noneBranch.subst firstSubst)
         (valueIH substsRelated) (someIH substsRelated)
   | iotaEitherMatchInl rightBranch _ _ valueIH leftIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.iotaEitherMatchInl (rightBranch.subst firstSubst)
         (valueIH substsRelated) (leftIH substsRelated)
   | iotaEitherMatchInr leftBranch _ _ valueIH rightIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.iotaEitherMatchInr (leftBranch.subst firstSubst)
         (valueIH substsRelated) (rightIH substsRelated)
   | iotaIdJRefl witnessRaw _ baseIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.iotaIdJRefl (witnessRaw.subst firstSubst)
         (baseIH substsRelated)
   | iotaIdStrictRecRefl witnessRaw _ baseIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.iotaIdStrictRecRefl (witnessRaw.subst firstSubst)
         (baseIH substsRelated)
   -- Deep β rules.
   | betaAppDeep _ _ functionIH argumentIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       rw [RawTerm.subst0_subst_commute _ _ secondSubst]
       exact RawStep.par.betaAppDeep
         (functionIH substsRelated)
         (argumentIH substsRelated)
   | betaFstPairDeep _ pairIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.betaFstPairDeep (pairIH substsRelated)
   | betaSndPairDeep _ pairIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.betaSndPairDeep (pairIH substsRelated)
   -- Deep ι rules.
   | iotaBoolElimTrueDeep elseBranch _ _ scrutineeIH thenIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.iotaBoolElimTrueDeep (elseBranch.subst firstSubst)
         (scrutineeIH substsRelated) (thenIH substsRelated)
   | iotaBoolElimFalseDeep thenBranch _ _ scrutineeIH elseIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.iotaBoolElimFalseDeep (thenBranch.subst firstSubst)
         (scrutineeIH substsRelated) (elseIH substsRelated)
   | iotaNatElimZeroDeep succBranch _ _ scrutineeIH zeroIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.iotaNatElimZeroDeep (succBranch.subst firstSubst)
         (scrutineeIH substsRelated) (zeroIH substsRelated)
   | iotaNatElimSuccDeep zeroBranch _ _ scrutineeIH succIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.iotaNatElimSuccDeep (zeroBranch.subst firstSubst)
         (scrutineeIH substsRelated) (succIH substsRelated)
   | iotaNatRecZeroDeep succBranch _ _ scrutineeIH zeroIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.iotaNatRecZeroDeep (succBranch.subst firstSubst)
         (scrutineeIH substsRelated) (zeroIH substsRelated)
   | iotaNatRecSuccDeep _ _ _ scrutineeIH zeroIH succIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.iotaNatRecSuccDeep
         (scrutineeIH substsRelated) (zeroIH substsRelated) (succIH substsRelated)
   | iotaListElimNilDeep consBranch _ _ scrutineeIH nilIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.iotaListElimNilDeep (consBranch.subst firstSubst)
         (scrutineeIH substsRelated) (nilIH substsRelated)
   | iotaListElimConsDeep nilBranch _ _ scrutineeIH consIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.iotaListElimConsDeep (nilBranch.subst firstSubst)
         (scrutineeIH substsRelated) (consIH substsRelated)
   | iotaOptionMatchNoneDeep someBranch _ _ scrutineeIH noneIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.iotaOptionMatchNoneDeep (someBranch.subst firstSubst)
         (scrutineeIH substsRelated) (noneIH substsRelated)
   | iotaOptionMatchSomeDeep noneBranch _ _ scrutineeIH someIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.iotaOptionMatchSomeDeep (noneBranch.subst firstSubst)
         (scrutineeIH substsRelated) (someIH substsRelated)
   | iotaEitherMatchInlDeep rightBranch _ _ scrutineeIH leftIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.iotaEitherMatchInlDeep (rightBranch.subst firstSubst)
         (scrutineeIH substsRelated) (leftIH substsRelated)
   | iotaEitherMatchInrDeep leftBranch _ _ scrutineeIH rightIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.iotaEitherMatchInrDeep (leftBranch.subst firstSubst)
         (scrutineeIH substsRelated) (rightIH substsRelated)
   | iotaIdJReflDeep _ _ witnessIH baseIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.iotaIdJReflDeep
         (witnessIH substsRelated) (baseIH substsRelated)
   | iotaIdStrictRecReflDeep _ _ witnessIH baseIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.iotaIdStrictRecReflDeep
         (witnessIH substsRelated) (baseIH substsRelated)
   -- D1.6: cong cases for the 27 new RawTerm ctors.
@@ -225,13 +225,13 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
   | pathAppCong _ _ pathIH intervalIH =>
       exact RawStep.par.pathAppCong (pathIH substsRelated) (intervalIH substsRelated)
   | betaPathApp _ _ bodyIH intervalIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       rw [RawTerm.subst0_subst_commute _ _ secondSubst]
       exact RawStep.par.betaPathApp
         (bodyIH (RawTermSubst.par_lift substsRelated))
         (intervalIH substsRelated)
   | betaPathAppDeep _ _ pathIH intervalIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       rw [RawTerm.subst0_subst_commute _ _ secondSubst]
       exact RawStep.par.betaPathAppDeep
         (pathIH substsRelated)
@@ -243,19 +243,19 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
       -- We need: valueRawSource.weaken.subst rho.lift =
       --            (valueRawSource.subst rho).weaken.
       -- That is `weaken_subst_commute`, mirroring the transpReflBeta arm.
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       rw [RawTerm.weaken_subst_commute firstSubst valueRawSource]
       exact RawStep.par.betaPathReflApp
         (valueIH substsRelated) (intervalIH substsRelated)
   | glueIntroCong _ _ baseIH partialIH =>
       exact RawStep.par.glueIntroCong (baseIH substsRelated) (partialIH substsRelated)
   | betaGlueElimIntro _ _ baseIH partialIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.betaGlueElimIntro
         (baseIH substsRelated)
         (partialIH substsRelated)
   | betaGlueElimIntroDeep _ gluedIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.betaGlueElimIntroDeep (gluedIH substsRelated)
   | glueElimCong _ gluedIH =>
       exact RawStep.par.glueElimCong (gluedIH substsRelated)
@@ -265,12 +265,12 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
       exact RawStep.par.transpFillCong
         (pathIH substsRelated) (intervalIH substsRelated) (sourceIH substsRelated)
   | @transpReflBeta _ typeRawSource _ _ _ _ _ typeIH sourceIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       rw [RawTerm.weaken_subst_commute firstSubst typeRawSource]
       exact RawStep.par.transpReflBeta
         (typeIH substsRelated) (sourceIH substsRelated)
   | @transpReflBetaDeep _ _ typeRawTarget _ _ _ _ pathIH sourceIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       have pathSubstStep := pathIH substsRelated
       simp only [RawTerm.subst, RawTerm.weaken_subst_commute] at pathSubstStep
       exact RawStep.par.transpReflBetaDeep pathSubstStep
@@ -282,7 +282,7 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
       -- Need: pathBodyRawSource.weaken.subst rho.lift =
       --         (pathBodyRawSource.subst rho).weaken
       -- via `weaken_subst_commute`, mirroring the transpReflBeta arm.
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       rw [RawTerm.weaken_subst_commute firstSubst pathBodyRawSource]
       exact RawStep.par.hcompBeta
         (pathBodyIH substsRelated) (capIH substsRelated)
@@ -291,7 +291,7 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
       -- After subst rho, the IH gives par on substituted sides; the target
       -- becomes pathLam ((pathBodyRawTarget.weaken).subst rho.lift), rewritten via
       -- weaken_subst_commute to pathLam (pathBodyRawTarget.subst rho).weaken.
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       have sidesSubstStep := sidesIH substsRelated
       simp only [RawTerm.subst, RawTerm.weaken_subst_commute] at sidesSubstStep
       exact RawStep.par.hcompBetaDeep sidesSubstStep
@@ -315,34 +315,34 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
   | refineIntroCong _ _ valueIH proofIH =>
       exact RawStep.par.refineIntroCong (valueIH substsRelated) (proofIH substsRelated)
   | betaRefineElimIntro _ _ valueIH proofIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.betaRefineElimIntro
         (valueIH substsRelated)
         (proofIH substsRelated)
   | betaRefineElimIntroDeep _ refinedIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.betaRefineElimIntroDeep (refinedIH substsRelated)
   | refineElimCong _ refinedIH =>
       exact RawStep.par.refineElimCong (refinedIH substsRelated)
   | recordIntroCong _ firstIH =>
       exact RawStep.par.recordIntroCong (firstIH substsRelated)
   | betaRecordProjIntro _ firstIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.betaRecordProjIntro (firstIH substsRelated)
   | betaRecordProjIntroDeep _ recordIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.betaRecordProjIntroDeep (recordIH substsRelated)
   | recordProjCong _ recordIH =>
       exact RawStep.par.recordProjCong (recordIH substsRelated)
   | codataUnfoldCong _ _ stateIH transitionIH =>
       exact RawStep.par.codataUnfoldCong (stateIH substsRelated) (transitionIH substsRelated)
   | betaCodataDestUnfold _ _ stateIH transitionIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.betaCodataDestUnfold
         (stateIH substsRelated)
         (transitionIH substsRelated)
   | betaCodataDestUnfoldDeep _ codataIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.betaCodataDestUnfoldDeep
         (codataIH substsRelated)
   | codataDestCong _ codataIH =>
@@ -395,15 +395,15 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
       -- sides are mechanical via the definition of `RawTerm.subst`
       -- on the involved ctors (no binder shift since none of the
       -- involved ctors carry binders at this level).
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.uaBeta (proofIH substsRelated) (sourceIH substsRelated)
   | uaBetaDeep _ _ pathIH sourceIH =>
       -- D3.6-S1 deep variant: parallel substitution pushes through
       -- transp/equivApply/uaToEquiv heads.  Lift pathIH via subst on
       -- its uaToEquiv-headed target, then assemble.
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       have pathSubstStep := pathIH substsRelated
-      simp only [RawTerm.subst] at pathSubstStep
+      dsimp only [RawTerm.subst] at pathSubstStep
       exact RawStep.par.uaBetaDeep pathSubstStep (sourceIH substsRelated)
   | pathComposeCong _ _ leftIH rightIH =>
       -- D3.6-S3: parallel substitution distributes over the binary
@@ -417,16 +417,16 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
       -- definition of `RawTerm.subst` on the involved ctors (no binder
       -- shift since none of the involved ctors carry binders at this
       -- level).
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.transpCompose
         (leftIH substsRelated) (rightIH substsRelated) (sourceIH substsRelated)
   | transpComposeDeep _ _ pathIH sourceIH =>
       -- D3.6-S3 deep variant: parallel substitution pushes through
       -- transp/pathCompose heads.  Lift pathIH via subst on its
       -- pathCompose-headed target, then assemble the nested-transp RHS.
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       have pathSubstStep := pathIH substsRelated
-      simp only [RawTerm.subst] at pathSubstStep
+      dsimp only [RawTerm.subst] at pathSubstStep
       exact RawStep.par.transpComposeDeep pathSubstStep (sourceIH substsRelated)
   | idToEquivCong _ proofIH =>
       -- D3.6-S4: parallel substitution distributes over the unary
@@ -438,15 +438,15 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
       -- RHS subst over equivIntro/lam/var (var 0 is the bound binder
       -- variable, so it's unchanged by the outer subst).  Mechanical
       -- via the definition of `RawTerm.subst` on the involved ctors.
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.idToEquivRefl (witnessIH substsRelated)
   | idToEquivReflDeep _ proofIH =>
       -- D3.6-S4 deep variant: parallel substitution pushes through
       -- idToEquiv heads.  proofIH substituted gives a par step on the
       -- substituted proof landing at refl of the substituted witness.
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       have proofSubstStep := proofIH substsRelated
-      simp only [RawTerm.subst] at proofSubstStep
+      dsimp only [RawTerm.subst] at proofSubstStep
       exact RawStep.par.idToEquivReflDeep proofSubstStep
   | oeqTransCong _ _ firstIH secondIH =>
       -- D3.6-S5: parallel substitution distributes over the binary
@@ -461,16 +461,16 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
       -- equivCompose contractum.  LHS subst pushes through
       -- idToEquiv/oeqTrans heads; RHS subst over equivCompose/idToEquiv
       -- pushes through both arms.
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.idToEquivCompose (firstIH substsRelated) (secondIH substsRelated)
   | idToEquivComposeDeep _ proofIH =>
       -- D3.6-S5 deep compose-β: parallel substitution pushes through
       -- idToEquiv heads.  proofIH substituted gives a par step on the
       -- substituted proof landing at oeqTrans of the substituted
       -- targets.
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       have proofSubstStep := proofIH substsRelated
-      simp only [RawTerm.subst] at proofSubstStep
+      dsimp only [RawTerm.subst] at proofSubstStep
       exact RawStep.par.idToEquivComposeDeep proofSubstStep
   | uaReflEquivApply _ _ witnessIH sourceIH =>
       -- D3.6-S6 shallow round-trip-β: parallel substitution preserves
@@ -478,7 +478,7 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
       -- equivApply/uaToEquiv/oeqRefl heads; RHS subst pushes through
       -- bare source raw.  Both mechanical via `RawTerm.subst` on the
       -- involved ctors (no binder shift since none carry binders here).
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       exact RawStep.par.uaReflEquivApply
         (witnessIH substsRelated) (sourceIH substsRelated)
   | uaReflEquivApplyDeep _ _ equivIH sourceIH =>
@@ -486,9 +486,9 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
       -- equivApply heads.  equivIH substituted gives a par step on the
       -- substituted equiv landing at uaToEquiv (oeqRefl _) of the
       -- substituted witness, then assemble.
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       have equivSubstStep := equivIH substsRelated
-      simp only [RawTerm.subst] at equivSubstStep
+      dsimp only [RawTerm.subst] at equivSubstStep
       exact RawStep.par.uaReflEquivApplyDeep
         equivSubstStep (sourceIH substsRelated)
   | funextReflCong _ applyIH =>

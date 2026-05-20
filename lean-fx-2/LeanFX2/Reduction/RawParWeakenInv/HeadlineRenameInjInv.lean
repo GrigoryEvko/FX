@@ -318,7 +318,7 @@ theorem RawStep.par.rename_inj_inv :
         (RawTerm.idToEquiv firstInner)
         (RawTerm.idToEquiv secondInner), ?_⟩
       rw [hTarget]
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       rw [← hFirst, ← hSecond]
     · -- idToEquivComposeDeep arm: proofRaw.rename rho develops via parStep
       -- to oeqTrans firstTarget secondTarget; the target is
@@ -332,7 +332,7 @@ theorem RawStep.par.rename_inj_inv :
         (RawTerm.idToEquiv firstInner)
         (RawTerm.idToEquiv secondInner), ?_⟩
       rw [hTarget]
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       rw [← hFirst, ← hSecond]
   | oeqTrans firstProof secondProof firstIH secondIH =>
     intro _ rho rhoInj _ parStep
@@ -558,7 +558,7 @@ theorem RawStep.par.rename_inj_inv :
       have parPath : RawStep.par (path.rename rho)
                        (RawTerm.uaToEquiv _proofRawTarget) := by
         rw [hPathInner]
-        simp only [RawTerm.rename]
+        dsimp only [RawTerm.rename]
         rw [← hProofRename]
         exact RawStep.par.uaToEquivCong _proofStep
       obtain ⟨pathInner, hPathReindex⟩ := pathIH rho rhoInj parPath
@@ -584,7 +584,7 @@ theorem RawStep.par.rename_inj_inv :
       have parPath : RawStep.par (path.rename rho)
           (RawTerm.pathCompose _leftRawTarget _rightRawTarget) := by
         rw [hPathInner]
-        simp only [RawTerm.rename]
+        dsimp only [RawTerm.rename]
         rw [← hLeftRename, ← hRightRename]
         exact RawStep.par.pathComposeCong _leftStep _rightStep
       obtain ⟨pathInner, hPathReindex⟩ := pathIH rho rhoInj parPath
@@ -600,7 +600,7 @@ theorem RawStep.par.rename_inj_inv :
       obtain ⟨sourceInner, hSourceInner⟩ := sourceIH rho rhoInj sourceStep
       refine ⟨RawTerm.transp rightFinal (RawTerm.transp leftFinal sourceInner), ?_⟩
       rw [hTarget]
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       rw [← hLeftFinalRename, ← hRightFinalRename, hSourceInner]
     · -- D3.6-S3 transpComposeDeep arm: target = transp right (transp left sourceTarget).
       -- pathIH consumes pathStep on path.rename rho landing at
@@ -613,7 +613,7 @@ theorem RawStep.par.rename_inj_inv :
       obtain ⟨sourceInner, hSourceInner⟩ := sourceIH rho rhoInj sourceStep
       refine ⟨RawTerm.transp rightFinal (RawTerm.transp leftFinal sourceInner), ?_⟩
       rw [hTarget]
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       rw [← hLeftFinalRename, ← hRightFinalRename, hSourceInner]
   | transpFill path interval source pathIH intervalIH sourceIH =>
     intro _ rho rhoInj _ parStep

@@ -304,7 +304,7 @@ def partialStrengthenTypedUaToEquiv {mode : Mode} {level : Nat}
                 some (RawTerm.uaToEquiv targetProofRaw)
           rw [proofRawStrengthens]
         typeRenames := by
-          simp only [Ty.rename]
+          dsimp only [Ty.rename]
           rw [Ty.partialStrengthen?_imp_rename leftTy
               strengthening.forward strengthening.back
               strengthening.injectsBack targetLeftTy leftTyStrengthens,

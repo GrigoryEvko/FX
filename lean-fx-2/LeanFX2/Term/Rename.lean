@@ -159,7 +159,7 @@ theorem equivIntroHetLeftInverseType_rename {level : Nat}
       equivIntroHetLeftInverseType (carrierA.rename rho)
         (forwardRaw.rename rho) (backwardRaw.rename rho) := by
   unfold equivIntroHetLeftInverseType
-  simp only [Ty.rename]
+  dsimp only [Ty.rename]
   congr 1
   exact equivIntroHetLeftInverseCodomain_rename rho carrierA forwardRaw backwardRaw
 
@@ -186,7 +186,7 @@ theorem equivIntroHetRightInverseType_rename {level : Nat}
       equivIntroHetRightInverseType (carrierB.rename rho)
         (forwardRaw.rename rho) (backwardRaw.rename rho) := by
   unfold equivIntroHetRightInverseType
-  simp only [Ty.rename]
+  dsimp only [Ty.rename]
   congr 1
   exact equivIntroHetRightInverseCodomain_rename rho carrierB forwardRaw backwardRaw
 
@@ -215,7 +215,7 @@ theorem oeqFunextPointwiseType_rename {level : Nat}
       oeqFunextPointwiseType (domainType.rename rho) (codomainType.rename rho)
         (leftFunctionRaw.rename rho) (rightFunctionRaw.rename rho) := by
   unfold oeqFunextPointwiseType
-  simp only [Ty.rename]
+  dsimp only [Ty.rename]
   congr 1
   exact oeqFunextPointwiseCodomain_rename rho codomainType
     leftFunctionRaw rightFunctionRaw
@@ -230,7 +230,7 @@ theorem funextReflType_rename {level : Nat}
       funextReflType (domainType.rename rho) (codomainType.rename rho)
         (applyRaw.rename rho.lift) := by
   unfold funextReflType
-  simp only [Ty.rename]
+  dsimp only [Ty.rename]
   rw [Ty.weaken_rename_commute rho codomainType]
 
 /-! ## Term.rename -/

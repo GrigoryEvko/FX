@@ -23,7 +23,7 @@ theorem RawTerm.rename_eq_modIntro_imp {sourceScope targetScope : Nat}
   cases term with
   | modIntro inner =>
     refine ⟨inner, rfl, ?_⟩
-    simp only [RawTerm.rename] at h
+    dsimp only [RawTerm.rename] at h
     have : inner.rename rho = target := by injection h
     exact this.symm
   | var _ => simp only [RawTerm.rename] at h; nomatch h
@@ -110,7 +110,7 @@ theorem RawTerm.rename_eq_idStrictRefl_imp {sourceScope targetScope : Nat}
   cases term with
   | idStrictRefl inner =>
     refine ⟨inner, rfl, ?_⟩
-    simp only [RawTerm.rename] at h
+    dsimp only [RawTerm.rename] at h
     have : inner.rename rho = target := by injection h
     exact this.symm
   | var _ => simp only [RawTerm.rename] at h; nomatch h
@@ -197,7 +197,7 @@ theorem RawTerm.rename_eq_recordIntro_imp {sourceScope targetScope : Nat}
   cases term with
   | recordIntro inner =>
     refine ⟨inner, rfl, ?_⟩
-    simp only [RawTerm.rename] at h
+    dsimp only [RawTerm.rename] at h
     have : inner.rename rho = target := by injection h
     exact this.symm
   | var _ => simp only [RawTerm.rename] at h; nomatch h
@@ -284,7 +284,7 @@ theorem RawTerm.rename_eq_pathLam_imp {sourceScope targetScope : Nat}
   cases term with
   | pathLam inner =>
     refine ⟨inner, rfl, ?_⟩
-    simp only [RawTerm.rename] at h
+    dsimp only [RawTerm.rename] at h
     have : inner.rename rho.lift = target := by injection h
     exact this.symm
   | var _ => simp only [RawTerm.rename] at h; nomatch h
@@ -373,9 +373,9 @@ theorem RawTerm.rename_eq_pair_imp {sourceScope targetScope : Nat}
   cases term with
   | pair inner1 inner2 =>
     refine ⟨inner1, inner2, rfl, ?_, ?_⟩
-    · simp only [RawTerm.rename] at h
+    · dsimp only [RawTerm.rename] at h
       injection h with _ h1; exact h1.symm
-    · simp only [RawTerm.rename] at h
+    · dsimp only [RawTerm.rename] at h
       injection h with _ _ h2; exact h2.symm
   | var _ => simp only [RawTerm.rename] at h; nomatch h
   | unit => simp only [RawTerm.rename] at h; nomatch h
@@ -463,9 +463,9 @@ theorem RawTerm.rename_eq_listCons_imp {sourceScope targetScope : Nat}
   cases term with
   | listCons inner1 inner2 =>
     refine ⟨inner1, inner2, rfl, ?_, ?_⟩
-    · simp only [RawTerm.rename] at h
+    · dsimp only [RawTerm.rename] at h
       injection h with _ h1; exact h1.symm
-    · simp only [RawTerm.rename] at h
+    · dsimp only [RawTerm.rename] at h
       injection h with _ _ h2; exact h2.symm
   | var _ => simp only [RawTerm.rename] at h; nomatch h
   | unit => simp only [RawTerm.rename] at h; nomatch h
@@ -554,7 +554,7 @@ theorem RawTerm.rename_eq_listCode_imp {sourceScope targetScope : Nat}
   cases term with
   | listCode inner =>
     refine ⟨inner, rfl, ?_⟩
-    simp only [RawTerm.rename] at h
+    dsimp only [RawTerm.rename] at h
     have : inner.rename rho = target := by injection h
     exact this.symm
   | var _ => simp only [RawTerm.rename] at h; nomatch h
@@ -643,9 +643,9 @@ theorem RawTerm.rename_eq_glueIntro_imp {sourceScope targetScope : Nat}
   cases term with
   | glueIntro inner1 inner2 =>
     refine ⟨inner1, inner2, rfl, ?_, ?_⟩
-    · simp only [RawTerm.rename] at h
+    · dsimp only [RawTerm.rename] at h
       injection h with _ h1; exact h1.symm
-    · simp only [RawTerm.rename] at h
+    · dsimp only [RawTerm.rename] at h
       injection h with _ _ h2; exact h2.symm
   | var _ => simp only [RawTerm.rename] at h; nomatch h
   | unit => simp only [RawTerm.rename] at h; nomatch h
@@ -733,9 +733,9 @@ theorem RawTerm.rename_eq_refineIntro_imp {sourceScope targetScope : Nat}
   cases term with
   | refineIntro inner1 inner2 =>
     refine ⟨inner1, inner2, rfl, ?_, ?_⟩
-    · simp only [RawTerm.rename] at h
+    · dsimp only [RawTerm.rename] at h
       injection h with _ h1; exact h1.symm
-    · simp only [RawTerm.rename] at h
+    · dsimp only [RawTerm.rename] at h
       injection h with _ _ h2; exact h2.symm
   | var _ => simp only [RawTerm.rename] at h; nomatch h
   | unit => simp only [RawTerm.rename] at h; nomatch h
@@ -823,9 +823,9 @@ theorem RawTerm.rename_eq_codataUnfold_imp {sourceScope targetScope : Nat}
   cases term with
   | codataUnfold inner1 inner2 =>
     refine ⟨inner1, inner2, rfl, ?_, ?_⟩
-    · simp only [RawTerm.rename] at h
+    · dsimp only [RawTerm.rename] at h
       injection h with _ h1; exact h1.symm
-    · simp only [RawTerm.rename] at h
+    · dsimp only [RawTerm.rename] at h
       injection h with _ _ h2; exact h2.symm
   | var _ => simp only [RawTerm.rename] at h; nomatch h
   | unit => simp only [RawTerm.rename] at h; nomatch h
@@ -911,7 +911,7 @@ theorem RawTerm.rename_eq_lam_imp {sourceScope targetScope : Nat}
   cases term with
   | lam inner =>
     refine ⟨inner, rfl, ?_⟩
-    simp only [RawTerm.rename] at h
+    dsimp only [RawTerm.rename] at h
     have : inner.rename rho.lift = target := by injection h
     exact this.symm
   | var _ => simp only [RawTerm.rename] at h; nomatch h
@@ -1007,7 +1007,7 @@ theorem RawTerm.rename_eq_piTyCode_imp {sourceScope targetScope : Nat}
       codTarget = codInner.rename rho.lift := by
   cases term with
   | piTyCode domInner codInner =>
-    simp only [RawTerm.rename] at h
+    dsimp only [RawTerm.rename] at h
     cases h
     exact ⟨domInner, codInner, rfl, rfl, rfl⟩
   | var _ => simp only [RawTerm.rename] at h; nomatch h
@@ -1120,9 +1120,9 @@ theorem RawTerm.rename_eq_transp_imp {sourceScope targetScope : Nat}
   cases term with
   | transp innerPath innerSource =>
     refine ⟨innerPath, innerSource, rfl, ?_, ?_⟩
-    · simp only [RawTerm.rename] at h
+    · dsimp only [RawTerm.rename] at h
       injection h with _ hPath; exact hPath.symm
-    · simp only [RawTerm.rename] at h
+    · dsimp only [RawTerm.rename] at h
       injection h with _ _ hSource; exact hSource.symm
   | var _ => simp only [RawTerm.rename] at h; nomatch h
   | unit => simp only [RawTerm.rename] at h; nomatch h

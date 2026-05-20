@@ -142,7 +142,7 @@ theorem equivIntroHetLeftInverseType_subst {level : Nat}
       equivIntroHetLeftInverseType (carrierA.subst sigma)
         (forwardRaw.subst sigma.forRaw) (backwardRaw.subst sigma.forRaw) := by
   unfold equivIntroHetLeftInverseType
-  simp only [Ty.subst]
+  dsimp only [Ty.subst]
   congr 1
   exact equivIntroHetLeftInverseCodomain_subst sigma carrierA forwardRaw backwardRaw
 
@@ -169,7 +169,7 @@ theorem equivIntroHetRightInverseType_subst {level : Nat}
       equivIntroHetRightInverseType (carrierB.subst sigma)
         (forwardRaw.subst sigma.forRaw) (backwardRaw.subst sigma.forRaw) := by
   unfold equivIntroHetRightInverseType
-  simp only [Ty.subst]
+  dsimp only [Ty.subst]
   congr 1
   exact equivIntroHetRightInverseCodomain_subst sigma carrierB forwardRaw backwardRaw
 
@@ -200,7 +200,7 @@ theorem oeqFunextPointwiseType_subst {level : Nat}
         (leftFunctionRaw.subst sigma.forRaw)
         (rightFunctionRaw.subst sigma.forRaw) := by
   unfold oeqFunextPointwiseType
-  simp only [Ty.subst]
+  dsimp only [Ty.subst]
   congr 1
   exact oeqFunextPointwiseCodomain_subst sigma codomainType
     leftFunctionRaw rightFunctionRaw
@@ -215,7 +215,7 @@ theorem funextReflType_subst {level : Nat}
       funextReflType (domainType.subst sigma) (codomainType.subst sigma)
         (applyRaw.subst sigma.forRaw.lift) := by
   unfold funextReflType
-  simp only [Ty.subst]
+  dsimp only [Ty.subst]
   rw [Ty.weaken_subst_commute sigma codomainType]
 
 /-! ## Term.subst -/

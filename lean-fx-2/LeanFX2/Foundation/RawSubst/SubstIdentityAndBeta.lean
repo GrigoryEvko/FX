@@ -61,153 +61,153 @@ theorem RawTerm.subst_identity {scope : Nat} (term : RawTerm scope) :
   | var position => rfl
   | unit => rfl
   | lam body bodyIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       rw [RawTerm.subst_pointwise RawTermSubst.identity_lift_pointwise body, bodyIH]
   | app fn arg fnIH argIH =>
-      simp only [RawTerm.subst]; rw [fnIH, argIH]
+      dsimp only [RawTerm.subst]; rw [fnIH, argIH]
   | pair fv sv fvIH svIH =>
-      simp only [RawTerm.subst]; rw [fvIH, svIH]
+      dsimp only [RawTerm.subst]; rw [fvIH, svIH]
   | fst pairTerm pairIH =>
-      simp only [RawTerm.subst]; rw [pairIH]
+      dsimp only [RawTerm.subst]; rw [pairIH]
   | snd pairTerm pairIH =>
-      simp only [RawTerm.subst]; rw [pairIH]
+      dsimp only [RawTerm.subst]; rw [pairIH]
   | boolTrue => rfl
   | boolFalse => rfl
   | boolElim s t e sIH tIH eIH =>
-      simp only [RawTerm.subst]; rw [sIH, tIH, eIH]
+      dsimp only [RawTerm.subst]; rw [sIH, tIH, eIH]
   | natZero => rfl
   | natSucc p pIH =>
-      simp only [RawTerm.subst]; rw [pIH]
+      dsimp only [RawTerm.subst]; rw [pIH]
   | natElim s z c sIH zIH cIH =>
-      simp only [RawTerm.subst]; rw [sIH, zIH, cIH]
+      dsimp only [RawTerm.subst]; rw [sIH, zIH, cIH]
   | natRec s z c sIH zIH cIH =>
-      simp only [RawTerm.subst]; rw [sIH, zIH, cIH]
+      dsimp only [RawTerm.subst]; rw [sIH, zIH, cIH]
   | listNil => rfl
   | listCons h t hIH tIH =>
-      simp only [RawTerm.subst]; rw [hIH, tIH]
+      dsimp only [RawTerm.subst]; rw [hIH, tIH]
   | listElim s n c sIH nIH cIH =>
-      simp only [RawTerm.subst]; rw [sIH, nIH, cIH]
+      dsimp only [RawTerm.subst]; rw [sIH, nIH, cIH]
   | optionNone => rfl
   | optionSome v vIH =>
-      simp only [RawTerm.subst]; rw [vIH]
+      dsimp only [RawTerm.subst]; rw [vIH]
   | optionMatch s n c sIH nIH cIH =>
-      simp only [RawTerm.subst]; rw [sIH, nIH, cIH]
+      dsimp only [RawTerm.subst]; rw [sIH, nIH, cIH]
   | eitherInl v vIH =>
-      simp only [RawTerm.subst]; rw [vIH]
+      dsimp only [RawTerm.subst]; rw [vIH]
   | eitherInr v vIH =>
-      simp only [RawTerm.subst]; rw [vIH]
+      dsimp only [RawTerm.subst]; rw [vIH]
   | eitherMatch s l r sIH lIH rIH =>
-      simp only [RawTerm.subst]; rw [sIH, lIH, rIH]
+      dsimp only [RawTerm.subst]; rw [sIH, lIH, rIH]
   | refl witness witnessIH =>
-      simp only [RawTerm.subst]; rw [witnessIH]
+      dsimp only [RawTerm.subst]; rw [witnessIH]
   | idJ base witness baseIH witnessIH =>
-      simp only [RawTerm.subst]; rw [baseIH, witnessIH]
+      dsimp only [RawTerm.subst]; rw [baseIH, witnessIH]
   | modIntro inner innerIH =>
-      simp only [RawTerm.subst]; rw [innerIH]
+      dsimp only [RawTerm.subst]; rw [innerIH]
   | modElim inner innerIH =>
-      simp only [RawTerm.subst]; rw [innerIH]
+      dsimp only [RawTerm.subst]; rw [innerIH]
   | subsume inner innerIH =>
-      simp only [RawTerm.subst]; rw [innerIH]
+      dsimp only [RawTerm.subst]; rw [innerIH]
   -- D1.6 cubical interval + path
   | interval0 => rfl
   | interval1 => rfl
   | intervalOpp i iIH =>
-      simp only [RawTerm.subst]; rw [iIH]
+      dsimp only [RawTerm.subst]; rw [iIH]
   | intervalMeet l r lIH rIH =>
-      simp only [RawTerm.subst]; rw [lIH, rIH]
+      dsimp only [RawTerm.subst]; rw [lIH, rIH]
   | intervalJoin l r lIH rIH =>
-      simp only [RawTerm.subst]; rw [lIH, rIH]
+      dsimp only [RawTerm.subst]; rw [lIH, rIH]
   | pathLam body bodyIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       rw [RawTerm.subst_pointwise RawTermSubst.identity_lift_pointwise body, bodyIH]
   | pathApp pathTerm intervalArg pathIH intervalIH =>
-      simp only [RawTerm.subst]; rw [pathIH, intervalIH]
+      dsimp only [RawTerm.subst]; rw [pathIH, intervalIH]
   | glueIntro baseValue partialValue baseIH partialIH =>
-      simp only [RawTerm.subst]; rw [baseIH, partialIH]
+      dsimp only [RawTerm.subst]; rw [baseIH, partialIH]
   | glueElim gluedValue gluedIH =>
-      simp only [RawTerm.subst]; rw [gluedIH]
+      dsimp only [RawTerm.subst]; rw [gluedIH]
   | transp path source pathIH sourceIH =>
-      simp only [RawTerm.subst]; rw [pathIH, sourceIH]
+      dsimp only [RawTerm.subst]; rw [pathIH, sourceIH]
   | hcomp sides cap sidesIH capIH =>
-      simp only [RawTerm.subst]; rw [sidesIH, capIH]
+      dsimp only [RawTerm.subst]; rw [sidesIH, capIH]
   -- D1.6 observational + strict equality
   | oeqRefl witness witnessIH =>
-      simp only [RawTerm.subst]; rw [witnessIH]
+      dsimp only [RawTerm.subst]; rw [witnessIH]
   | oeqJ baseCase witness baseIH witnessIH =>
-      simp only [RawTerm.subst]; rw [baseIH, witnessIH]
+      dsimp only [RawTerm.subst]; rw [baseIH, witnessIH]
   | oeqFunext pointwiseEquality pointwiseIH =>
-      simp only [RawTerm.subst]; rw [pointwiseIH]
+      dsimp only [RawTerm.subst]; rw [pointwiseIH]
   | idStrictRefl witness witnessIH =>
-      simp only [RawTerm.subst]; rw [witnessIH]
+      dsimp only [RawTerm.subst]; rw [witnessIH]
   | idStrictRec baseCase witness baseIH witnessIH =>
-      simp only [RawTerm.subst]; rw [baseIH, witnessIH]
+      dsimp only [RawTerm.subst]; rw [baseIH, witnessIH]
   -- D1.6 type equivalence
   | equivIntro fwd bwd fwdIH bwdIH =>
-      simp only [RawTerm.subst]; rw [fwdIH, bwdIH]
+      dsimp only [RawTerm.subst]; rw [fwdIH, bwdIH]
   | equivApp equivTerm argument equivIH argIH =>
-      simp only [RawTerm.subst]; rw [equivIH, argIH]
+      dsimp only [RawTerm.subst]; rw [equivIH, argIH]
   -- D1.6 refinement / record / codata
   | refineIntro rawValue predicateProof valueIH proofIH =>
-      simp only [RawTerm.subst]; rw [valueIH, proofIH]
+      dsimp only [RawTerm.subst]; rw [valueIH, proofIH]
   | refineElim refinedValue refinedIH =>
-      simp only [RawTerm.subst]; rw [refinedIH]
+      dsimp only [RawTerm.subst]; rw [refinedIH]
   | recordIntro firstField firstIH =>
-      simp only [RawTerm.subst]; rw [firstIH]
+      dsimp only [RawTerm.subst]; rw [firstIH]
   | recordProj recordValue recordIH =>
-      simp only [RawTerm.subst]; rw [recordIH]
+      dsimp only [RawTerm.subst]; rw [recordIH]
   | codataUnfold initialState transition stateIH transIH =>
-      simp only [RawTerm.subst]; rw [stateIH, transIH]
+      dsimp only [RawTerm.subst]; rw [stateIH, transIH]
   | codataDest codataValue codataIH =>
-      simp only [RawTerm.subst]; rw [codataIH]
+      dsimp only [RawTerm.subst]; rw [codataIH]
   -- D1.6 sessions, effects
   | sessionSend channel payload chIH payloadIH =>
-      simp only [RawTerm.subst]; rw [chIH, payloadIH]
+      dsimp only [RawTerm.subst]; rw [chIH, payloadIH]
   | sessionRecv channel chIH =>
-      simp only [RawTerm.subst]; rw [chIH]
+      dsimp only [RawTerm.subst]; rw [chIH]
   | effectPerform operationTag arguments tagIH argsIH =>
-      simp only [RawTerm.subst]; rw [tagIH, argsIH]
+      dsimp only [RawTerm.subst]; rw [tagIH, argsIH]
   | universeCode innerLevel => rfl
   -- CUMUL-2.1 per-shape type codes.
   | arrowCode domainCode codomainCode domainIH codomainIH =>
-      simp only [RawTerm.subst]; rw [domainIH, codomainIH]
+      dsimp only [RawTerm.subst]; rw [domainIH, codomainIH]
   | piTyCode domainCode codomainCode domainIH codomainIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       rw [RawTerm.subst_pointwise RawTermSubst.identity_lift_pointwise codomainCode,
           codomainIH, domainIH]
   | sigmaTyCode domainCode codomainCode domainIH codomainIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       rw [RawTerm.subst_pointwise RawTermSubst.identity_lift_pointwise codomainCode,
           codomainIH, domainIH]
   | productCode firstCode secondCode firstIH secondIH =>
-      simp only [RawTerm.subst]; rw [firstIH, secondIH]
+      dsimp only [RawTerm.subst]; rw [firstIH, secondIH]
   | sumCode leftCode rightCode leftIH rightIH =>
-      simp only [RawTerm.subst]; rw [leftIH, rightIH]
+      dsimp only [RawTerm.subst]; rw [leftIH, rightIH]
   | listCode elementCode elementIH =>
-      simp only [RawTerm.subst]; rw [elementIH]
+      dsimp only [RawTerm.subst]; rw [elementIH]
   | optionCode elementCode elementIH =>
-      simp only [RawTerm.subst]; rw [elementIH]
+      dsimp only [RawTerm.subst]; rw [elementIH]
   | eitherCode leftCode rightCode leftIH rightIH =>
-      simp only [RawTerm.subst]; rw [leftIH, rightIH]
+      dsimp only [RawTerm.subst]; rw [leftIH, rightIH]
   | idCode typeCode leftRaw rightRaw typeIH leftIH rightIH =>
-      simp only [RawTerm.subst]; rw [typeIH, leftIH, rightIH]
+      dsimp only [RawTerm.subst]; rw [typeIH, leftIH, rightIH]
   | equivCode leftTypeCode rightTypeCode leftIH rightIH =>
-      simp only [RawTerm.subst]; rw [leftIH, rightIH]
+      dsimp only [RawTerm.subst]; rw [leftIH, rightIH]
   | cumulUpMarker innerCodeRaw innerIH =>
-      simp only [RawTerm.subst]; rw [innerIH]
+      dsimp only [RawTerm.subst]; rw [innerIH]
   | uaToEquiv proofRaw proofIH =>
-      simp only [RawTerm.subst]; rw [proofIH]
+      dsimp only [RawTerm.subst]; rw [proofIH]
   | equivApply equivRaw argRaw equivIH argIH =>
-      simp only [RawTerm.subst]; rw [equivIH, argIH]
+      dsimp only [RawTerm.subst]; rw [equivIH, argIH]
   | pathCompose leftPathRaw rightPathRaw leftIH rightIH =>
-      simp only [RawTerm.subst]; rw [leftIH, rightIH]
+      dsimp only [RawTerm.subst]; rw [leftIH, rightIH]
   | idToEquiv proofRaw proofIH =>
-      simp only [RawTerm.subst]; rw [proofIH]
+      dsimp only [RawTerm.subst]; rw [proofIH]
   | oeqTrans firstProof secondProof firstIH secondIH =>
-      simp only [RawTerm.subst]; rw [firstIH, secondIH]
+      dsimp only [RawTerm.subst]; rw [firstIH, secondIH]
   | equivCompose firstEquiv secondEquiv firstIH secondIH =>
-      simp only [RawTerm.subst]; rw [firstIH, secondIH]
+      dsimp only [RawTerm.subst]; rw [firstIH, secondIH]
   | transpFill pathTy currentInterval source pathIH intervalIH sourceIH =>
-      simp only [RawTerm.subst]; rw [pathIH, intervalIH, sourceIH]
+      dsimp only [RawTerm.subst]; rw [pathIH, intervalIH, sourceIH]
 
 /-- Pre-composing weaken with a singleton (on RawTermSubst) gives the
 identity substitution pointwise. -/

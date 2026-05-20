@@ -82,139 +82,139 @@ theorem RawStep.par.rename {scope targetScope : Nat}
   | subsume _ innerIH => exact RawStep.par.subsume (innerIH _)
   -- Shallow β rules: contractum side requires reshape via subst0_rename_commute.
   | betaApp _ _ bodyIH argumentIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       rw [RawTerm.subst0_rename_commute _ _ rawRenaming]
       exact RawStep.par.betaApp (bodyIH _) (argumentIH _)
   | betaFstPair secondValue _ firstIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.betaFstPair (RawTerm.rename secondValue rawRenaming)
         (firstIH _)
   | betaSndPair firstValue _ secondIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.betaSndPair (RawTerm.rename firstValue rawRenaming)
         (secondIH _)
   -- Shallow ι rules: simp + ctor with renamed extra branches.
   | iotaBoolElimTrue elseBranch _ thenIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.iotaBoolElimTrue
         (RawTerm.rename elseBranch rawRenaming) (thenIH _)
   | iotaBoolElimFalse thenBranch _ elseIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.iotaBoolElimFalse
         (RawTerm.rename thenBranch rawRenaming) (elseIH _)
   | iotaNatElimZero succBranch _ zeroIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.iotaNatElimZero
         (RawTerm.rename succBranch rawRenaming) (zeroIH _)
   | iotaNatElimSucc zeroBranch _ _ predecessorIH succIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.iotaNatElimSucc
         (RawTerm.rename zeroBranch rawRenaming) (predecessorIH _) (succIH _)
   | iotaNatRecZero succBranch _ zeroIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.iotaNatRecZero
         (RawTerm.rename succBranch rawRenaming) (zeroIH _)
   | iotaNatRecSucc _ _ _ predecessorIH zeroIH succIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.iotaNatRecSucc (predecessorIH _) (zeroIH _) (succIH _)
   | iotaListElimNil consBranch _ nilIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.iotaListElimNil
         (RawTerm.rename consBranch rawRenaming) (nilIH _)
   | iotaListElimCons nilBranch _ _ _ headIH tailIH consIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.iotaListElimCons
         (RawTerm.rename nilBranch rawRenaming)
         (headIH _) (tailIH _) (consIH _)
   | iotaOptionMatchNone someBranch _ noneIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.iotaOptionMatchNone
         (RawTerm.rename someBranch rawRenaming) (noneIH _)
   | iotaOptionMatchSome noneBranch _ _ valueIH someIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.iotaOptionMatchSome
         (RawTerm.rename noneBranch rawRenaming) (valueIH _) (someIH _)
   | iotaEitherMatchInl rightBranch _ _ valueIH leftIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.iotaEitherMatchInl
         (RawTerm.rename rightBranch rawRenaming) (valueIH _) (leftIH _)
   | iotaEitherMatchInr leftBranch _ _ valueIH rightIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.iotaEitherMatchInr
         (RawTerm.rename leftBranch rawRenaming) (valueIH _) (rightIH _)
   | iotaIdJRefl witnessRaw _ baseIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.iotaIdJRefl
         (RawTerm.rename witnessRaw rawRenaming) (baseIH _)
   | iotaIdStrictRecRefl witnessRaw _ baseIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.iotaIdStrictRecRefl
         (RawTerm.rename witnessRaw rawRenaming) (baseIH _)
   -- Deep β rules.
   | betaAppDeep _ _ functionIH argumentIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       rw [RawTerm.subst0_rename_commute _ _ rawRenaming]
       exact RawStep.par.betaAppDeep (functionIH _) (argumentIH _)
   | betaFstPairDeep _ pairIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.betaFstPairDeep (pairIH _)
   | betaSndPairDeep _ pairIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.betaSndPairDeep (pairIH _)
   -- Deep ι rules.
   | iotaBoolElimTrueDeep elseBranch _ _ scrutineeIH thenIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.iotaBoolElimTrueDeep
         (RawTerm.rename elseBranch rawRenaming) (scrutineeIH _) (thenIH _)
   | iotaBoolElimFalseDeep thenBranch _ _ scrutineeIH elseIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.iotaBoolElimFalseDeep
         (RawTerm.rename thenBranch rawRenaming) (scrutineeIH _) (elseIH _)
   | iotaNatElimZeroDeep succBranch _ _ scrutineeIH zeroIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.iotaNatElimZeroDeep
         (RawTerm.rename succBranch rawRenaming) (scrutineeIH _) (zeroIH _)
   | iotaNatElimSuccDeep zeroBranch _ _ scrutineeIH succIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.iotaNatElimSuccDeep
         (RawTerm.rename zeroBranch rawRenaming) (scrutineeIH _) (succIH _)
   | iotaNatRecZeroDeep succBranch _ _ scrutineeIH zeroIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.iotaNatRecZeroDeep
         (RawTerm.rename succBranch rawRenaming) (scrutineeIH _) (zeroIH _)
   | iotaNatRecSuccDeep _ _ _ scrutineeIH zeroIH succIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.iotaNatRecSuccDeep
         (scrutineeIH _) (zeroIH _) (succIH _)
   | iotaListElimNilDeep consBranch _ _ scrutineeIH nilIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.iotaListElimNilDeep
         (RawTerm.rename consBranch rawRenaming) (scrutineeIH _) (nilIH _)
   | iotaListElimConsDeep nilBranch _ _ scrutineeIH consIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.iotaListElimConsDeep
         (RawTerm.rename nilBranch rawRenaming) (scrutineeIH _) (consIH _)
   | iotaOptionMatchNoneDeep someBranch _ _ scrutineeIH noneIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.iotaOptionMatchNoneDeep
         (RawTerm.rename someBranch rawRenaming) (scrutineeIH _) (noneIH _)
   | iotaOptionMatchSomeDeep noneBranch _ _ scrutineeIH someIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.iotaOptionMatchSomeDeep
         (RawTerm.rename noneBranch rawRenaming) (scrutineeIH _) (someIH _)
   | iotaEitherMatchInlDeep rightBranch _ _ scrutineeIH leftIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.iotaEitherMatchInlDeep
         (RawTerm.rename rightBranch rawRenaming) (scrutineeIH _) (leftIH _)
   | iotaEitherMatchInrDeep leftBranch _ _ scrutineeIH rightIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.iotaEitherMatchInrDeep
         (RawTerm.rename leftBranch rawRenaming) (scrutineeIH _) (rightIH _)
   | iotaIdJReflDeep _ _ witnessIH baseIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.iotaIdJReflDeep (witnessIH _) (baseIH _)
   | iotaIdStrictRecReflDeep _ _ witnessIH baseIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.iotaIdStrictRecReflDeep (witnessIH _) (baseIH _)
   -- D1.6 cong rules for the 27 new RawTerm ctors (pure cong; no β/ι).
   | intervalOppCong _ intervalIH =>
@@ -228,11 +228,11 @@ theorem RawStep.par.rename {scope targetScope : Nat}
   | pathAppCong _ _ pathIH intervalIH =>
       exact RawStep.par.pathAppCong (pathIH _) (intervalIH _)
   | betaPathApp _ _ bodyIH intervalIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       rw [RawTerm.subst0_rename_commute _ _ rawRenaming]
       exact RawStep.par.betaPathApp (bodyIH _) (intervalIH _)
   | betaPathAppDeep _ _ pathIH intervalIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       rw [RawTerm.subst0_rename_commute _ _ rawRenaming]
       exact RawStep.par.betaPathAppDeep (pathIH _) (intervalIH _)
   | @betaPathReflApp _ valueRawSource _ _ _ _ _ valueIH intervalIH =>
@@ -242,16 +242,16 @@ theorem RawStep.par.rename {scope targetScope : Nat}
       -- We need: valueRawSource.weaken.rename rho.lift =
       --            (valueRawSource.rename rho).weaken.
       -- That is `weaken_rename_commute`, mirroring the transpReflBeta arm.
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       rw [RawTerm.weaken_rename_commute rawRenaming valueRawSource]
       exact RawStep.par.betaPathReflApp (valueIH _) (intervalIH _)
   | glueIntroCong _ _ baseIH partialIH =>
       exact RawStep.par.glueIntroCong (baseIH _) (partialIH _)
   | betaGlueElimIntro _ _ baseIH partialIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.betaGlueElimIntro (baseIH _) (partialIH _)
   | betaGlueElimIntroDeep _ gluedIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.betaGlueElimIntroDeep (gluedIH _)
   | glueElimCong _ gluedIH =>
       exact RawStep.par.glueElimCong (gluedIH _)
@@ -261,11 +261,11 @@ theorem RawStep.par.rename {scope targetScope : Nat}
       exact RawStep.par.transpFillCong
         (pathIH _) (intervalIH _) (sourceIH _)
   | @transpReflBeta _ typeRawSource _ _ _ _ _ typeIH sourceIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       rw [RawTerm.weaken_rename_commute rawRenaming typeRawSource]
       exact RawStep.par.transpReflBeta (typeIH _) (sourceIH _)
   | @transpReflBetaDeep _ _ typeRawTarget _ _ _ _ pathIH sourceIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       have pathRenameStep := pathIH rawRenaming
       simp only [RawTerm.rename, RawTerm.weaken_rename_commute] at pathRenameStep
       exact RawStep.par.transpReflBetaDeep pathRenameStep (sourceIH _)
@@ -276,7 +276,7 @@ theorem RawStep.par.rename {scope targetScope : Nat}
       -- Need: pathBodyRawSource.weaken.rename rho.lift =
       --         (pathBodyRawSource.rename rho).weaken
       -- via `weaken_rename_commute`, mirroring the transpReflBeta arm.
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       rw [RawTerm.weaken_rename_commute rawRenaming pathBodyRawSource]
       exact RawStep.par.hcompBeta (pathBodyIH _) (capIH _)
   | @hcompBetaDeep _ _ _ _ _ _ _ sidesIH capIH =>
@@ -284,7 +284,7 @@ theorem RawStep.par.rename {scope targetScope : Nat}
       -- After rename rho, the IH gives par on renamed sides; the target
       -- becomes pathLam ((pathBodyRawTarget.weaken).rename rho.lift), which we
       -- rewrite via weaken_rename_commute to pathLam (pathBodyRawTarget.rename rho).weaken.
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       have sidesRenameStep := sidesIH rawRenaming
       simp only [RawTerm.rename, RawTerm.weaken_rename_commute] at sidesRenameStep
       exact RawStep.par.hcompBetaDeep sidesRenameStep (capIH _)
@@ -307,30 +307,30 @@ theorem RawStep.par.rename {scope targetScope : Nat}
   | refineIntroCong _ _ valueIH proofIH =>
       exact RawStep.par.refineIntroCong (valueIH _) (proofIH _)
   | betaRefineElimIntro _ _ valueIH proofIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.betaRefineElimIntro (valueIH _) (proofIH _)
   | betaRefineElimIntroDeep _ refinedIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.betaRefineElimIntroDeep (refinedIH _)
   | refineElimCong _ refinedIH =>
       exact RawStep.par.refineElimCong (refinedIH _)
   | recordIntroCong _ firstIH =>
       exact RawStep.par.recordIntroCong (firstIH _)
   | betaRecordProjIntro _ firstIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.betaRecordProjIntro (firstIH _)
   | betaRecordProjIntroDeep _ recordIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.betaRecordProjIntroDeep (recordIH _)
   | recordProjCong _ recordIH =>
       exact RawStep.par.recordProjCong (recordIH _)
   | codataUnfoldCong _ _ stateIH transitionIH =>
       exact RawStep.par.codataUnfoldCong (stateIH _) (transitionIH _)
   | betaCodataDestUnfold _ _ stateIH transitionIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.betaCodataDestUnfold (stateIH _) (transitionIH _)
   | betaCodataDestUnfoldDeep _ codataIH =>
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.betaCodataDestUnfoldDeep (codataIH _)
   | codataDestCong _ codataIH =>
       exact RawStep.par.codataDestCong (codataIH _)
@@ -379,16 +379,16 @@ theorem RawStep.par.rename {scope targetScope : Nat}
       -- RHS rename: equivApply (uaToEquiv (proof.rename rho)) (source.rename rho)
       -- Both sides are mechanical via the definition of `RawTerm.rename`
       -- on `transp`/`uaToEquiv`/`equivApply`.
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.uaBeta (proofIH _) (sourceIH _)
   | uaBetaDeep _ _ pathIH sourceIH =>
       -- D3.6-S1 deep variant: rename commutes via `RawTerm.rename` on
       -- `transp`/`equivApply`/`uaToEquiv`.  pathIH renamed gives a par
       -- step on the renamed path landing at uaToEquiv of the renamed
       -- proofTarget; the simp + RawTerm.rename pushes through.
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       have pathRenameStep := pathIH rawRenaming
-      simp only [RawTerm.rename] at pathRenameStep
+      dsimp only [RawTerm.rename] at pathRenameStep
       exact RawStep.par.uaBetaDeep pathRenameStep (sourceIH _)
   | pathComposeCong _ _ leftIH rightIH =>
       -- D3.6-S3: rename distributes over the binary pathCompose ctor.
@@ -400,15 +400,15 @@ theorem RawStep.par.rename {scope targetScope : Nat}
       -- RHS rename: transp (right.rename rho)
       --                    (transp (left.rename rho) (source.rename rho))
       -- Both sides mechanical via `RawTerm.rename` on `transp`/`pathCompose`.
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.transpCompose (leftIH _) (rightIH _) (sourceIH _)
   | transpComposeDeep _ _ pathIH sourceIH =>
       -- D3.6-S3 deep variant: rename commutes via `RawTerm.rename` on
       -- `transp`/`pathCompose`.  pathIH renamed gives a par step on the
       -- renamed path landing at pathCompose of the renamed targets.
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       have pathRenameStep := pathIH rawRenaming
-      simp only [RawTerm.rename] at pathRenameStep
+      dsimp only [RawTerm.rename] at pathRenameStep
       exact RawStep.par.transpComposeDeep pathRenameStep (sourceIH _)
   | idToEquivCong _ proofIH =>
       -- D3.6-S4: rename distributes over the unary idToEquiv ctor.
@@ -418,15 +418,15 @@ theorem RawStep.par.rename {scope targetScope : Nat}
       -- LHS rename: idToEquiv (refl (witness.rename rho))
       -- RHS rename: equivIntro (lam (var 0)) (lam (var 0)) — invariant
       -- under rename since the bound variable references the binder.
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.idToEquivRefl (witnessIH _)
   | idToEquivReflDeep _ proofIH =>
       -- D3.6-S4 deep variant: rename commutes via RawTerm.rename on
       -- idToEquiv/refl/equivIntro/lam/var.  proofIH renamed gives a par
       -- step on the renamed proof landing at refl of the renamed witness.
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       have proofRenameStep := proofIH rawRenaming
-      simp only [RawTerm.rename] at proofRenameStep
+      dsimp only [RawTerm.rename] at proofRenameStep
       exact RawStep.par.idToEquivReflDeep proofRenameStep
   | oeqTransCong _ _ firstIH secondIH =>
       -- D3.6-S5: rename distributes over the binary oeqTrans ctor.
@@ -439,32 +439,32 @@ theorem RawStep.par.rename {scope targetScope : Nat}
       -- LHS = idToEquiv (oeqTrans (firstSource.rename rho) (secondSource.rename rho))
       -- RHS = equivCompose (idToEquiv (firstTarget.rename rho))
       --                    (idToEquiv (secondTarget.rename rho))
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.idToEquivCompose (firstIH _) (secondIH _)
   | idToEquivComposeDeep _ proofIH =>
       -- D3.6-S5 deep compose-β: rename commutes via RawTerm.rename on
       -- idToEquiv/oeqTrans/equivCompose.  proofIH renamed gives a par
       -- step on the renamed proof landing at oeqTrans of renamed
       -- targets.
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       have proofRenameStep := proofIH rawRenaming
-      simp only [RawTerm.rename] at proofRenameStep
+      dsimp only [RawTerm.rename] at proofRenameStep
       exact RawStep.par.idToEquivComposeDeep proofRenameStep
   | uaReflEquivApply _ _ witnessIH sourceIH =>
       -- D3.6-S6 shallow round-trip-β: rename commutes through the
       -- equivApply/uaToEquiv/oeqRefl chain at the source side, and
       -- through the bare source raw at the target side.  Both sides
       -- mechanical via `RawTerm.rename` on the involved ctors.
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       exact RawStep.par.uaReflEquivApply (witnessIH _) (sourceIH _)
   | uaReflEquivApplyDeep _ _ equivIH sourceIH =>
       -- D3.6-S6 deep round-trip-β: rename commutes via `RawTerm.rename`
       -- on equivApply/uaToEquiv/oeqRefl.  equivIH renamed gives a par
       -- step on the renamed equiv landing at uaToEquiv (oeqRefl _) of
       -- the renamed witness; the simp + RawTerm.rename pushes through.
-      simp only [RawTerm.rename]
+      dsimp only [RawTerm.rename]
       have equivRenameStep := equivIH rawRenaming
-      simp only [RawTerm.rename] at equivRenameStep
+      dsimp only [RawTerm.rename] at equivRenameStep
       exact RawStep.par.uaReflEquivApplyDeep equivRenameStep (sourceIH _)
   | funextReflCong _ applyIH =>
       exact RawStep.par.funextReflCong (applyIH _)

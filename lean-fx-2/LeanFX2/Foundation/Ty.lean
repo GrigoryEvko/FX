@@ -248,70 +248,70 @@ theorem Ty.rename_pointwise {level : Nat}
   | bool => rfl
   | nat => rfl
   | arrow d c dIH cIH =>
-      simp only [Ty.rename]; rw [dIH renamingEq, cIH renamingEq]
+      dsimp only [Ty.rename]; rw [dIH renamingEq, cIH renamingEq]
   | piTy d c dIH cIH =>
-      simp only [Ty.rename]
+      dsimp only [Ty.rename]
       rw [dIH renamingEq, cIH (RawRenaming.lift_pointwise renamingEq)]
   | sigmaTy fT sT fIH sIH =>
-      simp only [Ty.rename]
+      dsimp only [Ty.rename]
       rw [fIH renamingEq, sIH (RawRenaming.lift_pointwise renamingEq)]
   | tyVar position =>
-      simp only [Ty.rename]; rw [renamingEq position]
+      dsimp only [Ty.rename]; rw [renamingEq position]
   | id carrier left right carrierIH =>
-      simp only [Ty.rename]
+      dsimp only [Ty.rename]
       rw [carrierIH renamingEq,
           RawTerm.rename_pointwise renamingEq left,
           RawTerm.rename_pointwise renamingEq right]
   | listType e eIH =>
-      simp only [Ty.rename]; rw [eIH renamingEq]
+      dsimp only [Ty.rename]; rw [eIH renamingEq]
   | optionType e eIH =>
-      simp only [Ty.rename]; rw [eIH renamingEq]
+      dsimp only [Ty.rename]; rw [eIH renamingEq]
   | eitherType l r lIH rIH =>
-      simp only [Ty.rename]; rw [lIH renamingEq, rIH renamingEq]
+      dsimp only [Ty.rename]; rw [lIH renamingEq, rIH renamingEq]
   | «universe» universeLevel levelLe => rfl
   | empty => rfl
   | interval => rfl
   | path carrier leftEndpoint rightEndpoint carrierIH =>
-      simp only [Ty.rename]
+      dsimp only [Ty.rename]
       rw [carrierIH renamingEq,
           RawTerm.rename_pointwise renamingEq leftEndpoint,
           RawTerm.rename_pointwise renamingEq rightEndpoint]
   | glue baseType boundaryWitness baseIH =>
-      simp only [Ty.rename]
+      dsimp only [Ty.rename]
       rw [baseIH renamingEq,
           RawTerm.rename_pointwise renamingEq boundaryWitness]
   | oeq carrier leftEndpoint rightEndpoint carrierIH =>
-      simp only [Ty.rename]
+      dsimp only [Ty.rename]
       rw [carrierIH renamingEq,
           RawTerm.rename_pointwise renamingEq leftEndpoint,
           RawTerm.rename_pointwise renamingEq rightEndpoint]
   | idStrict carrier leftEndpoint rightEndpoint carrierIH =>
-      simp only [Ty.rename]
+      dsimp only [Ty.rename]
       rw [carrierIH renamingEq,
           RawTerm.rename_pointwise renamingEq leftEndpoint,
           RawTerm.rename_pointwise renamingEq rightEndpoint]
   | equiv domainType codomainType domainIH codomainIH =>
-      simp only [Ty.rename]
+      dsimp only [Ty.rename]
       rw [domainIH renamingEq, codomainIH renamingEq]
   | refine baseType predicate baseIH =>
-      simp only [Ty.rename]
+      dsimp only [Ty.rename]
       rw [baseIH renamingEq,
           RawTerm.rename_pointwise (RawRenaming.lift_pointwise renamingEq) predicate]
   | record singleFieldType singleFieldIH =>
-      simp only [Ty.rename]
+      dsimp only [Ty.rename]
       rw [singleFieldIH renamingEq]
   | codata stateType outputType stateIH outputIH =>
-      simp only [Ty.rename]
+      dsimp only [Ty.rename]
       rw [stateIH renamingEq, outputIH renamingEq]
   | session protocolStep =>
-      simp only [Ty.rename]
+      dsimp only [Ty.rename]
       rw [RawTerm.rename_pointwise renamingEq protocolStep]
   | effect carrierType effectTag carrierIH =>
-      simp only [Ty.rename]
+      dsimp only [Ty.rename]
       rw [carrierIH renamingEq,
           RawTerm.rename_pointwise renamingEq effectTag]
   | modal modalityTag carrierType carrierIH =>
-      simp only [Ty.rename]
+      dsimp only [Ty.rename]
       rw [carrierIH renamingEq]
 
 /-- Compose two renamings on a Ty.  Mirrors `RawTerm.rename_compose`. -/
@@ -327,9 +327,9 @@ theorem Ty.rename_compose {level : Nat}
   | bool => rfl
   | nat => rfl
   | arrow d c dIH cIH =>
-      simp only [Ty.rename]; rw [dIH rho1 rho2, cIH rho1 rho2]
+      dsimp only [Ty.rename]; rw [dIH rho1 rho2, cIH rho1 rho2]
   | piTy d c dIH cIH =>
-      simp only [Ty.rename]
+      dsimp only [Ty.rename]
       rw [dIH rho1 rho2, cIH rho1.lift rho2.lift]
       congr 1
       apply Ty.rename_pointwise
@@ -340,7 +340,7 @@ theorem Ty.rename_compose {level : Nat}
         | zero => rfl
         | succ k => rfl
   | sigmaTy fT sT fIH sIH =>
-      simp only [Ty.rename]
+      dsimp only [Ty.rename]
       rw [fIH rho1 rho2, sIH rho1.lift rho2.lift]
       congr 1
       apply Ty.rename_pointwise
@@ -352,41 +352,41 @@ theorem Ty.rename_compose {level : Nat}
         | succ k => rfl
   | tyVar position => rfl
   | id carrier left right carrierIH =>
-      simp only [Ty.rename]
+      dsimp only [Ty.rename]
       rw [carrierIH rho1 rho2,
           RawTerm.rename_compose rho1 rho2 left,
           RawTerm.rename_compose rho1 rho2 right]
   | listType e eIH => simp only [Ty.rename]; rw [eIH rho1 rho2]
   | optionType e eIH => simp only [Ty.rename]; rw [eIH rho1 rho2]
   | eitherType l r lIH rIH =>
-      simp only [Ty.rename]; rw [lIH rho1 rho2, rIH rho1 rho2]
+      dsimp only [Ty.rename]; rw [lIH rho1 rho2, rIH rho1 rho2]
   | «universe» universeLevel levelLe => rfl
   | empty => rfl
   | interval => rfl
   | path carrier leftEndpoint rightEndpoint carrierIH =>
-      simp only [Ty.rename]
+      dsimp only [Ty.rename]
       rw [carrierIH rho1 rho2,
           RawTerm.rename_compose rho1 rho2 leftEndpoint,
           RawTerm.rename_compose rho1 rho2 rightEndpoint]
   | glue baseType boundaryWitness baseIH =>
-      simp only [Ty.rename]
+      dsimp only [Ty.rename]
       rw [baseIH rho1 rho2,
           RawTerm.rename_compose rho1 rho2 boundaryWitness]
   | oeq carrier leftEndpoint rightEndpoint carrierIH =>
-      simp only [Ty.rename]
+      dsimp only [Ty.rename]
       rw [carrierIH rho1 rho2,
           RawTerm.rename_compose rho1 rho2 leftEndpoint,
           RawTerm.rename_compose rho1 rho2 rightEndpoint]
   | idStrict carrier leftEndpoint rightEndpoint carrierIH =>
-      simp only [Ty.rename]
+      dsimp only [Ty.rename]
       rw [carrierIH rho1 rho2,
           RawTerm.rename_compose rho1 rho2 leftEndpoint,
           RawTerm.rename_compose rho1 rho2 rightEndpoint]
   | equiv domainType codomainType domainIH codomainIH =>
-      simp only [Ty.rename]
+      dsimp only [Ty.rename]
       rw [domainIH rho1 rho2, codomainIH rho1 rho2]
   | refine baseType predicate baseIH =>
-      simp only [Ty.rename]
+      dsimp only [Ty.rename]
       rw [baseIH rho1 rho2, RawTerm.rename_compose rho1.lift rho2.lift predicate]
       congr 1
       apply RawTerm.rename_pointwise
@@ -397,19 +397,19 @@ theorem Ty.rename_compose {level : Nat}
         | zero => rfl
         | succ k => rfl
   | record singleFieldType singleFieldIH =>
-      simp only [Ty.rename]
+      dsimp only [Ty.rename]
       rw [singleFieldIH rho1 rho2]
   | codata stateType outputType stateIH outputIH =>
-      simp only [Ty.rename]
+      dsimp only [Ty.rename]
       rw [stateIH rho1 rho2, outputIH rho1 rho2]
   | session protocolStep =>
-      simp only [Ty.rename]
+      dsimp only [Ty.rename]
       rw [RawTerm.rename_compose rho1 rho2 protocolStep]
   | effect carrierType effectTag carrierIH =>
-      simp only [Ty.rename]
+      dsimp only [Ty.rename]
       rw [carrierIH rho1 rho2, RawTerm.rename_compose rho1 rho2 effectTag]
   | modal modalityTag carrierType carrierIH =>
-      simp only [Ty.rename]
+      dsimp only [Ty.rename]
       rw [carrierIH rho1 rho2]
 
 /-- weaken-after-rename equals rename-after-weaken on Ty.  Load-bearing

@@ -29,7 +29,7 @@ theorem RawTerm.rename_eq_uaToEquiv_imp {sourceScope targetScope : Nat}
   cases term with
   | uaToEquiv inner =>
     refine ⟨inner, rfl, ?_⟩
-    simp only [RawTerm.rename] at h
+    dsimp only [RawTerm.rename] at h
     have : inner.rename rho = target := by injection h
     exact this.symm
   | var _ => simp only [RawTerm.rename] at h; nomatch h
@@ -125,7 +125,7 @@ theorem RawTerm.rename_eq_pathCompose_imp {sourceScope targetScope : Nat}
       rightTarget = rightInner.rename rho := by
   cases term with
   | pathCompose leftInner rightInner =>
-    simp only [RawTerm.rename] at h
+    dsimp only [RawTerm.rename] at h
     -- h : RawTerm.pathCompose (leftInner.rename rho) (rightInner.rename rho)
     --   = RawTerm.pathCompose leftTarget rightTarget
     -- Use RawTerm.pathCompose.injEq if available, else cases on h.
@@ -220,7 +220,7 @@ theorem RawTerm.rename_eq_idToEquiv_imp {sourceScope targetScope : Nat}
   cases term with
   | idToEquiv inner =>
     refine ⟨inner, rfl, ?_⟩
-    simp only [RawTerm.rename] at h
+    dsimp only [RawTerm.rename] at h
     have : inner.rename rho = target := by injection h
     exact this.symm
   | var _ => simp only [RawTerm.rename] at h; nomatch h
@@ -313,7 +313,7 @@ theorem RawTerm.rename_eq_oeqTrans_imp {sourceScope targetScope : Nat}
       secondTarget = secondInner.rename rho := by
   cases term with
   | oeqTrans firstInner secondInner =>
-    simp only [RawTerm.rename] at h
+    dsimp only [RawTerm.rename] at h
     cases h
     exact ⟨firstInner, secondInner, rfl, rfl, rfl⟩
   | var _ => simp only [RawTerm.rename] at h; nomatch h
@@ -406,7 +406,7 @@ theorem RawTerm.rename_eq_equivCompose_imp {sourceScope targetScope : Nat}
       secondTarget = secondInner.rename rho := by
   cases term with
   | equivCompose firstInner secondInner =>
-    simp only [RawTerm.rename] at h
+    dsimp only [RawTerm.rename] at h
     cases h
     exact ⟨firstInner, secondInner, rfl, rfl, rfl⟩
   | var _ => simp only [RawTerm.rename] at h; nomatch h

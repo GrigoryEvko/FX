@@ -201,74 +201,74 @@ theorem Ty.subst_pointwise {level : Nat}
   | bool => rfl
   | nat => rfl
   | arrow d c dIH cIH =>
-      simp only [Ty.subst]; rw [dIH forTyEq forRawEq, cIH forTyEq forRawEq]
+      dsimp only [Ty.subst]; rw [dIH forTyEq forRawEq, cIH forTyEq forRawEq]
   | piTy d c dIH cIH =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [dIH forTyEq forRawEq,
           cIH (Subst.lift_forTy_pointwise forTyEq)
               (Subst.lift_forRaw_pointwise forRawEq)]
   | sigmaTy fT sT fIH sIH =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [fIH forTyEq forRawEq,
           sIH (Subst.lift_forTy_pointwise forTyEq)
               (Subst.lift_forRaw_pointwise forRawEq)]
   | tyVar position =>
-      simp only [Ty.subst]; rw [forTyEq position]
+      dsimp only [Ty.subst]; rw [forTyEq position]
   | id carrier left right carrierIH =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [carrierIH forTyEq forRawEq,
           RawTerm.subst_pointwise forRawEq left,
           RawTerm.subst_pointwise forRawEq right]
   | listType e eIH =>
-      simp only [Ty.subst]; rw [eIH forTyEq forRawEq]
+      dsimp only [Ty.subst]; rw [eIH forTyEq forRawEq]
   | optionType e eIH =>
-      simp only [Ty.subst]; rw [eIH forTyEq forRawEq]
+      dsimp only [Ty.subst]; rw [eIH forTyEq forRawEq]
   | eitherType l r lIH rIH =>
-      simp only [Ty.subst]; rw [lIH forTyEq forRawEq, rIH forTyEq forRawEq]
+      dsimp only [Ty.subst]; rw [lIH forTyEq forRawEq, rIH forTyEq forRawEq]
   | «universe» universeLevel levelLe => rfl
   | empty => rfl
   | interval => rfl
   | path carrier leftEndpoint rightEndpoint carrierIH =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [carrierIH forTyEq forRawEq,
           RawTerm.subst_pointwise forRawEq leftEndpoint,
           RawTerm.subst_pointwise forRawEq rightEndpoint]
   | glue baseType boundaryWitness baseIH =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [baseIH forTyEq forRawEq,
           RawTerm.subst_pointwise forRawEq boundaryWitness]
   | oeq carrier leftEndpoint rightEndpoint carrierIH =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [carrierIH forTyEq forRawEq,
           RawTerm.subst_pointwise forRawEq leftEndpoint,
           RawTerm.subst_pointwise forRawEq rightEndpoint]
   | idStrict carrier leftEndpoint rightEndpoint carrierIH =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [carrierIH forTyEq forRawEq,
           RawTerm.subst_pointwise forRawEq leftEndpoint,
           RawTerm.subst_pointwise forRawEq rightEndpoint]
   | equiv domainType codomainType domainIH codomainIH =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [domainIH forTyEq forRawEq, codomainIH forTyEq forRawEq]
   | refine baseType predicate baseIH =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [baseIH forTyEq forRawEq,
           RawTerm.subst_pointwise (RawTermSubst.lift_pointwise forRawEq) predicate]
   | record singleFieldType singleFieldIH =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [singleFieldIH forTyEq forRawEq]
   | codata stateType outputType stateIH outputIH =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [stateIH forTyEq forRawEq, outputIH forTyEq forRawEq]
   | session protocolStep =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [RawTerm.subst_pointwise forRawEq protocolStep]
   | effect carrierType effectTag carrierIH =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [carrierIH forTyEq forRawEq,
           RawTerm.subst_pointwise forRawEq effectTag]
   | modal modalityTag carrierType carrierIH =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [carrierIH forTyEq forRawEq]
 
 /-! ### Renaming after substitution: Ty.subst then rename. -/
@@ -586,22 +586,22 @@ theorem Ty.subst_identity {level scope : Nat} (someType : Ty level scope) :
   | bool => rfl
   | nat => rfl
   | arrow d c dIH cIH =>
-      simp only [Ty.subst]; rw [dIH, cIH]
+      dsimp only [Ty.subst]; rw [dIH, cIH]
   | piTy d c dIH cIH =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [dIH,
           Ty.subst_pointwise Subst.identity_lift_forTy_pointwise
                              Subst.identity_lift_forRaw_pointwise c,
           cIH]
   | sigmaTy fT sT fIH sIH =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [fIH,
           Ty.subst_pointwise Subst.identity_lift_forTy_pointwise
                              Subst.identity_lift_forRaw_pointwise sT,
           sIH]
   | tyVar position => rfl
   | id carrier left right carrierIH =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [carrierIH, RawTerm.subst_identity left, RawTerm.subst_identity right]
   | listType e eIH => simp only [Ty.subst]; rw [eIH]
   | optionType e eIH => simp only [Ty.subst]; rw [eIH]
@@ -610,41 +610,41 @@ theorem Ty.subst_identity {level scope : Nat} (someType : Ty level scope) :
   | empty => rfl
   | interval => rfl
   | path carrier leftEndpoint rightEndpoint carrierIH =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [carrierIH,
           RawTerm.subst_identity leftEndpoint,
           RawTerm.subst_identity rightEndpoint]
   | glue baseType boundaryWitness baseIH =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [baseIH, RawTerm.subst_identity boundaryWitness]
   | oeq carrier leftEndpoint rightEndpoint carrierIH =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [carrierIH,
           RawTerm.subst_identity leftEndpoint,
           RawTerm.subst_identity rightEndpoint]
   | idStrict carrier leftEndpoint rightEndpoint carrierIH =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [carrierIH,
           RawTerm.subst_identity leftEndpoint,
           RawTerm.subst_identity rightEndpoint]
   | equiv domainType codomainType domainIH codomainIH =>
-      simp only [Ty.subst]; rw [domainIH, codomainIH]
+      dsimp only [Ty.subst]; rw [domainIH, codomainIH]
   | refine baseType predicate baseIH =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [baseIH,
           RawTerm.subst_pointwise (@Subst.identity_lift_forRaw_pointwise level _) predicate,
           RawTerm.subst_identity predicate]
   | record singleFieldType singleFieldIH =>
-      simp only [Ty.subst]; rw [singleFieldIH]
+      dsimp only [Ty.subst]; rw [singleFieldIH]
   | codata stateType outputType stateIH outputIH =>
-      simp only [Ty.subst]; rw [stateIH, outputIH]
+      dsimp only [Ty.subst]; rw [stateIH, outputIH]
   | session protocolStep =>
-      simp only [Ty.subst]; rw [RawTerm.subst_identity protocolStep]
+      dsimp only [Ty.subst]; rw [RawTerm.subst_identity protocolStep]
   | effect carrierType effectTag carrierIH =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [carrierIH, RawTerm.subst_identity effectTag]
   | modal modalityTag carrierType carrierIH =>
-      simp only [Ty.subst]; rw [carrierIH]
+      dsimp only [Ty.subst]; rw [carrierIH]
 
 /-- Pre-composing weaken with a singleton (Subst-level) gives the identity
 substitution on forTy pointwise. -/
@@ -759,16 +759,16 @@ theorem Ty.subst_compose {level : Nat}
   | bool => rfl
   | nat => rfl
   | arrow d c dIH cIH =>
-      simp only [Ty.subst]; rw [dIH sigma1 sigma2, cIH sigma1 sigma2]
+      dsimp only [Ty.subst]; rw [dIH sigma1 sigma2, cIH sigma1 sigma2]
   | piTy d c dIH cIH =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [dIH sigma1 sigma2, cIH sigma1.lift sigma2.lift]
       congr 1
       apply Ty.subst_pointwise
       · exact fun p => (Subst.lift_compose_forTy_pointwise sigma1 sigma2 p).symm
       · exact fun p => (Subst.lift_compose_forRaw_pointwise sigma1 sigma2 p).symm
   | sigmaTy fT sT fIH sIH =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [fIH sigma1 sigma2, sIH sigma1.lift sigma2.lift]
       congr 1
       apply Ty.subst_pointwise
@@ -776,41 +776,41 @@ theorem Ty.subst_compose {level : Nat}
       · exact fun p => (Subst.lift_compose_forRaw_pointwise sigma1 sigma2 p).symm
   | tyVar position => rfl
   | id carrier left right carrierIH =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [carrierIH sigma1 sigma2,
           RawTerm.subst_compose sigma1.forRaw sigma2.forRaw left,
           RawTerm.subst_compose sigma1.forRaw sigma2.forRaw right]
   | listType e eIH => simp only [Ty.subst]; rw [eIH sigma1 sigma2]
   | optionType e eIH => simp only [Ty.subst]; rw [eIH sigma1 sigma2]
   | eitherType l r lIH rIH =>
-      simp only [Ty.subst]; rw [lIH sigma1 sigma2, rIH sigma1 sigma2]
+      dsimp only [Ty.subst]; rw [lIH sigma1 sigma2, rIH sigma1 sigma2]
   | «universe» universeLevel levelLe => rfl
   | empty => rfl
   | interval => rfl
   | path carrier leftEndpoint rightEndpoint carrierIH =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [carrierIH sigma1 sigma2,
           RawTerm.subst_compose sigma1.forRaw sigma2.forRaw leftEndpoint,
           RawTerm.subst_compose sigma1.forRaw sigma2.forRaw rightEndpoint]
   | glue baseType boundaryWitness baseIH =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [baseIH sigma1 sigma2,
           RawTerm.subst_compose sigma1.forRaw sigma2.forRaw boundaryWitness]
   | oeq carrier leftEndpoint rightEndpoint carrierIH =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [carrierIH sigma1 sigma2,
           RawTerm.subst_compose sigma1.forRaw sigma2.forRaw leftEndpoint,
           RawTerm.subst_compose sigma1.forRaw sigma2.forRaw rightEndpoint]
   | idStrict carrier leftEndpoint rightEndpoint carrierIH =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [carrierIH sigma1 sigma2,
           RawTerm.subst_compose sigma1.forRaw sigma2.forRaw leftEndpoint,
           RawTerm.subst_compose sigma1.forRaw sigma2.forRaw rightEndpoint]
   | equiv domainType codomainType domainIH codomainIH =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [domainIH sigma1 sigma2, codomainIH sigma1 sigma2]
   | refine baseType predicate baseIH =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [baseIH sigma1 sigma2,
           RawTerm.subst_compose sigma1.forRaw.lift sigma2.forRaw.lift predicate]
       congr 1
@@ -818,20 +818,20 @@ theorem Ty.subst_compose {level : Nat}
       intro position
       exact (RawTermSubst.lift_compose_pointwise sigma1.forRaw sigma2.forRaw position).symm
   | record singleFieldType singleFieldIH =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [singleFieldIH sigma1 sigma2]
   | codata stateType outputType stateIH outputIH =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [stateIH sigma1 sigma2, outputIH sigma1 sigma2]
   | session protocolStep =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [RawTerm.subst_compose sigma1.forRaw sigma2.forRaw protocolStep]
   | effect carrierType effectTag carrierIH =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [carrierIH sigma1 sigma2,
           RawTerm.subst_compose sigma1.forRaw sigma2.forRaw effectTag]
   | modal modalityTag carrierType carrierIH =>
-      simp only [Ty.subst]
+      dsimp only [Ty.subst]
       rw [carrierIH sigma1 sigma2]
 
 /-- Pointwise: composing singleton with sigma agrees with composing

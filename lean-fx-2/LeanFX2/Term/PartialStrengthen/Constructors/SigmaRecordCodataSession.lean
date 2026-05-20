@@ -74,7 +74,7 @@ def partialStrengthenTypedPair {mode : Mode} {level : Nat}
               rw [firstRawStrengthens, secondRawStrengthens]
               rfl
             typeRenames := by
-              simp only [Ty.rename]
+              dsimp only [Ty.rename]
               rw [firstTypeRenames]
               exact congrArg (Ty.sigmaTy (targetFirstType.rename
                   strengthening.forward))

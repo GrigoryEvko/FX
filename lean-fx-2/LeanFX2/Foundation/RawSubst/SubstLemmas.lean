@@ -44,155 +44,155 @@ theorem RawTerm.subst_pointwise {sourceScope targetScope : Nat}
   intro term
   induction term generalizing targetScope with
   | var position =>
-      simp only [RawTerm.subst]; rw [substEq position]
+      dsimp only [RawTerm.subst]; rw [substEq position]
   | unit => rfl
   | lam body bodyIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       rw [bodyIH (RawTermSubst.lift_pointwise substEq)]
   | app fn arg fnIH argIH =>
-      simp only [RawTerm.subst]; rw [fnIH substEq, argIH substEq]
+      dsimp only [RawTerm.subst]; rw [fnIH substEq, argIH substEq]
   | pair fv sv fvIH svIH =>
-      simp only [RawTerm.subst]; rw [fvIH substEq, svIH substEq]
+      dsimp only [RawTerm.subst]; rw [fvIH substEq, svIH substEq]
   | fst pairTerm pairIH =>
-      simp only [RawTerm.subst]; rw [pairIH substEq]
+      dsimp only [RawTerm.subst]; rw [pairIH substEq]
   | snd pairTerm pairIH =>
-      simp only [RawTerm.subst]; rw [pairIH substEq]
+      dsimp only [RawTerm.subst]; rw [pairIH substEq]
   | boolTrue => rfl
   | boolFalse => rfl
   | boolElim s t e sIH tIH eIH =>
-      simp only [RawTerm.subst]; rw [sIH substEq, tIH substEq, eIH substEq]
+      dsimp only [RawTerm.subst]; rw [sIH substEq, tIH substEq, eIH substEq]
   | natZero => rfl
   | natSucc p pIH =>
-      simp only [RawTerm.subst]; rw [pIH substEq]
+      dsimp only [RawTerm.subst]; rw [pIH substEq]
   | natElim s z c sIH zIH cIH =>
-      simp only [RawTerm.subst]; rw [sIH substEq, zIH substEq, cIH substEq]
+      dsimp only [RawTerm.subst]; rw [sIH substEq, zIH substEq, cIH substEq]
   | natRec s z c sIH zIH cIH =>
-      simp only [RawTerm.subst]; rw [sIH substEq, zIH substEq, cIH substEq]
+      dsimp only [RawTerm.subst]; rw [sIH substEq, zIH substEq, cIH substEq]
   | listNil => rfl
   | listCons headTerm tailTerm headIH tailIH =>
-      simp only [RawTerm.subst]; rw [headIH substEq, tailIH substEq]
+      dsimp only [RawTerm.subst]; rw [headIH substEq, tailIH substEq]
   | listElim s n c sIH nIH cIH =>
-      simp only [RawTerm.subst]; rw [sIH substEq, nIH substEq, cIH substEq]
+      dsimp only [RawTerm.subst]; rw [sIH substEq, nIH substEq, cIH substEq]
   | optionNone => rfl
   | optionSome v vIH =>
-      simp only [RawTerm.subst]; rw [vIH substEq]
+      dsimp only [RawTerm.subst]; rw [vIH substEq]
   | optionMatch s n c sIH nIH cIH =>
-      simp only [RawTerm.subst]; rw [sIH substEq, nIH substEq, cIH substEq]
+      dsimp only [RawTerm.subst]; rw [sIH substEq, nIH substEq, cIH substEq]
   | eitherInl v vIH =>
-      simp only [RawTerm.subst]; rw [vIH substEq]
+      dsimp only [RawTerm.subst]; rw [vIH substEq]
   | eitherInr v vIH =>
-      simp only [RawTerm.subst]; rw [vIH substEq]
+      dsimp only [RawTerm.subst]; rw [vIH substEq]
   | eitherMatch s l r sIH lIH rIH =>
-      simp only [RawTerm.subst]; rw [sIH substEq, lIH substEq, rIH substEq]
+      dsimp only [RawTerm.subst]; rw [sIH substEq, lIH substEq, rIH substEq]
   | refl witness witnessIH =>
-      simp only [RawTerm.subst]; rw [witnessIH substEq]
+      dsimp only [RawTerm.subst]; rw [witnessIH substEq]
   | idJ base witness baseIH witnessIH =>
-      simp only [RawTerm.subst]; rw [baseIH substEq, witnessIH substEq]
+      dsimp only [RawTerm.subst]; rw [baseIH substEq, witnessIH substEq]
   | modIntro inner innerIH =>
-      simp only [RawTerm.subst]; rw [innerIH substEq]
+      dsimp only [RawTerm.subst]; rw [innerIH substEq]
   | modElim inner innerIH =>
-      simp only [RawTerm.subst]; rw [innerIH substEq]
+      dsimp only [RawTerm.subst]; rw [innerIH substEq]
   | subsume inner innerIH =>
-      simp only [RawTerm.subst]; rw [innerIH substEq]
+      dsimp only [RawTerm.subst]; rw [innerIH substEq]
   -- D1.6 cubical interval + path
   | interval0 => rfl
   | interval1 => rfl
   | intervalOpp i iIH =>
-      simp only [RawTerm.subst]; rw [iIH substEq]
+      dsimp only [RawTerm.subst]; rw [iIH substEq]
   | intervalMeet l r lIH rIH =>
-      simp only [RawTerm.subst]; rw [lIH substEq, rIH substEq]
+      dsimp only [RawTerm.subst]; rw [lIH substEq, rIH substEq]
   | intervalJoin l r lIH rIH =>
-      simp only [RawTerm.subst]; rw [lIH substEq, rIH substEq]
+      dsimp only [RawTerm.subst]; rw [lIH substEq, rIH substEq]
   | pathLam body bodyIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       rw [bodyIH (RawTermSubst.lift_pointwise substEq)]
   | pathApp pathTerm intervalArg pathIH intervalIH =>
-      simp only [RawTerm.subst]; rw [pathIH substEq, intervalIH substEq]
+      dsimp only [RawTerm.subst]; rw [pathIH substEq, intervalIH substEq]
   | glueIntro baseValue partialValue baseIH partialIH =>
-      simp only [RawTerm.subst]; rw [baseIH substEq, partialIH substEq]
+      dsimp only [RawTerm.subst]; rw [baseIH substEq, partialIH substEq]
   | glueElim gluedValue gluedIH =>
-      simp only [RawTerm.subst]; rw [gluedIH substEq]
+      dsimp only [RawTerm.subst]; rw [gluedIH substEq]
   | transp path source pathIH sourceIH =>
-      simp only [RawTerm.subst]; rw [pathIH substEq, sourceIH substEq]
+      dsimp only [RawTerm.subst]; rw [pathIH substEq, sourceIH substEq]
   | hcomp sides cap sidesIH capIH =>
-      simp only [RawTerm.subst]; rw [sidesIH substEq, capIH substEq]
+      dsimp only [RawTerm.subst]; rw [sidesIH substEq, capIH substEq]
   -- D1.6 observational + strict equality
   | oeqRefl witness witnessIH =>
-      simp only [RawTerm.subst]; rw [witnessIH substEq]
+      dsimp only [RawTerm.subst]; rw [witnessIH substEq]
   | oeqJ baseCase witness baseIH witnessIH =>
-      simp only [RawTerm.subst]; rw [baseIH substEq, witnessIH substEq]
+      dsimp only [RawTerm.subst]; rw [baseIH substEq, witnessIH substEq]
   | oeqFunext pointwiseEquality pointwiseIH =>
-      simp only [RawTerm.subst]; rw [pointwiseIH substEq]
+      dsimp only [RawTerm.subst]; rw [pointwiseIH substEq]
   | idStrictRefl witness witnessIH =>
-      simp only [RawTerm.subst]; rw [witnessIH substEq]
+      dsimp only [RawTerm.subst]; rw [witnessIH substEq]
   | idStrictRec baseCase witness baseIH witnessIH =>
-      simp only [RawTerm.subst]; rw [baseIH substEq, witnessIH substEq]
+      dsimp only [RawTerm.subst]; rw [baseIH substEq, witnessIH substEq]
   -- D1.6 type equivalence
   | equivIntro fwd bwd fwdIH bwdIH =>
-      simp only [RawTerm.subst]; rw [fwdIH substEq, bwdIH substEq]
+      dsimp only [RawTerm.subst]; rw [fwdIH substEq, bwdIH substEq]
   | equivApp equivTerm argument equivIH argIH =>
-      simp only [RawTerm.subst]; rw [equivIH substEq, argIH substEq]
+      dsimp only [RawTerm.subst]; rw [equivIH substEq, argIH substEq]
   -- D1.6 refinement / record / codata
   | refineIntro rawValue predicateProof valueIH proofIH =>
-      simp only [RawTerm.subst]; rw [valueIH substEq, proofIH substEq]
+      dsimp only [RawTerm.subst]; rw [valueIH substEq, proofIH substEq]
   | refineElim refinedValue refinedIH =>
-      simp only [RawTerm.subst]; rw [refinedIH substEq]
+      dsimp only [RawTerm.subst]; rw [refinedIH substEq]
   | recordIntro firstField firstIH =>
-      simp only [RawTerm.subst]; rw [firstIH substEq]
+      dsimp only [RawTerm.subst]; rw [firstIH substEq]
   | recordProj recordValue recordIH =>
-      simp only [RawTerm.subst]; rw [recordIH substEq]
+      dsimp only [RawTerm.subst]; rw [recordIH substEq]
   | codataUnfold initialState transition stateIH transIH =>
-      simp only [RawTerm.subst]; rw [stateIH substEq, transIH substEq]
+      dsimp only [RawTerm.subst]; rw [stateIH substEq, transIH substEq]
   | codataDest codataValue codataIH =>
-      simp only [RawTerm.subst]; rw [codataIH substEq]
+      dsimp only [RawTerm.subst]; rw [codataIH substEq]
   -- D1.6 sessions, effects
   | sessionSend channel payload chIH payloadIH =>
-      simp only [RawTerm.subst]; rw [chIH substEq, payloadIH substEq]
+      dsimp only [RawTerm.subst]; rw [chIH substEq, payloadIH substEq]
   | sessionRecv channel chIH =>
-      simp only [RawTerm.subst]; rw [chIH substEq]
+      dsimp only [RawTerm.subst]; rw [chIH substEq]
   | effectPerform operationTag arguments tagIH argsIH =>
-      simp only [RawTerm.subst]; rw [tagIH substEq, argsIH substEq]
+      dsimp only [RawTerm.subst]; rw [tagIH substEq, argsIH substEq]
   | universeCode innerLevel => rfl
   -- CUMUL-2.1 per-shape type codes.
   | arrowCode domainCode codomainCode domainIH codomainIH =>
-      simp only [RawTerm.subst]; rw [domainIH substEq, codomainIH substEq]
+      dsimp only [RawTerm.subst]; rw [domainIH substEq, codomainIH substEq]
   | piTyCode domainCode codomainCode domainIH codomainIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       rw [domainIH substEq, codomainIH (RawTermSubst.lift_pointwise substEq)]
   | sigmaTyCode domainCode codomainCode domainIH codomainIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       rw [domainIH substEq, codomainIH (RawTermSubst.lift_pointwise substEq)]
   | productCode firstCode secondCode firstIH secondIH =>
-      simp only [RawTerm.subst]; rw [firstIH substEq, secondIH substEq]
+      dsimp only [RawTerm.subst]; rw [firstIH substEq, secondIH substEq]
   | sumCode leftCode rightCode leftIH rightIH =>
-      simp only [RawTerm.subst]; rw [leftIH substEq, rightIH substEq]
+      dsimp only [RawTerm.subst]; rw [leftIH substEq, rightIH substEq]
   | listCode elementCode elementIH =>
-      simp only [RawTerm.subst]; rw [elementIH substEq]
+      dsimp only [RawTerm.subst]; rw [elementIH substEq]
   | optionCode elementCode elementIH =>
-      simp only [RawTerm.subst]; rw [elementIH substEq]
+      dsimp only [RawTerm.subst]; rw [elementIH substEq]
   | eitherCode leftCode rightCode leftIH rightIH =>
-      simp only [RawTerm.subst]; rw [leftIH substEq, rightIH substEq]
+      dsimp only [RawTerm.subst]; rw [leftIH substEq, rightIH substEq]
   | idCode typeCode leftRaw rightRaw typeIH leftIH rightIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       rw [typeIH substEq, leftIH substEq, rightIH substEq]
   | equivCode leftTypeCode rightTypeCode leftIH rightIH =>
-      simp only [RawTerm.subst]; rw [leftIH substEq, rightIH substEq]
+      dsimp only [RawTerm.subst]; rw [leftIH substEq, rightIH substEq]
   | cumulUpMarker innerCodeRaw innerIH =>
-      simp only [RawTerm.subst]; rw [innerIH substEq]
+      dsimp only [RawTerm.subst]; rw [innerIH substEq]
   | uaToEquiv proofRaw proofIH =>
-      simp only [RawTerm.subst]; rw [proofIH substEq]
+      dsimp only [RawTerm.subst]; rw [proofIH substEq]
   | equivApply equivRaw argRaw equivIH argIH =>
-      simp only [RawTerm.subst]; rw [equivIH substEq, argIH substEq]
+      dsimp only [RawTerm.subst]; rw [equivIH substEq, argIH substEq]
   | pathCompose leftPathRaw rightPathRaw leftIH rightIH =>
-      simp only [RawTerm.subst]; rw [leftIH substEq, rightIH substEq]
+      dsimp only [RawTerm.subst]; rw [leftIH substEq, rightIH substEq]
   | idToEquiv proofRaw proofIH =>
-      simp only [RawTerm.subst]; rw [proofIH substEq]
+      dsimp only [RawTerm.subst]; rw [proofIH substEq]
   | oeqTrans firstProof secondProof firstIH secondIH =>
-      simp only [RawTerm.subst]; rw [firstIH substEq, secondIH substEq]
+      dsimp only [RawTerm.subst]; rw [firstIH substEq, secondIH substEq]
   | equivCompose firstEquiv secondEquiv firstIH secondIH =>
-      simp only [RawTerm.subst]; rw [firstIH substEq, secondIH substEq]
+      dsimp only [RawTerm.subst]; rw [firstIH substEq, secondIH substEq]
   | transpFill pathTy currentInterval source pathIH intervalIH sourceIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       rw [pathIH substEq, intervalIH substEq, sourceIH substEq]
 
 /-! ### Cross-direction: rename-after-subst and subst-after-rename. -/
@@ -674,177 +674,177 @@ theorem RawTerm.subst_compose {sourceScope middleScope targetScope : Nat}
   | var position => rfl
   | unit => rfl
   | lam body bodyIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       rw [bodyIH sigma1.lift sigma2.lift]
       congr 1
       apply RawTerm.subst_pointwise
       intro p
       exact (RawTermSubst.lift_compose_pointwise sigma1 sigma2 p).symm
   | app fn arg fnIH argIH =>
-      simp only [RawTerm.subst]; rw [fnIH sigma1 sigma2, argIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [fnIH sigma1 sigma2, argIH sigma1 sigma2]
   | pair fv sv fvIH svIH =>
-      simp only [RawTerm.subst]; rw [fvIH sigma1 sigma2, svIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [fvIH sigma1 sigma2, svIH sigma1 sigma2]
   | fst pairTerm pairIH =>
-      simp only [RawTerm.subst]; rw [pairIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [pairIH sigma1 sigma2]
   | snd pairTerm pairIH =>
-      simp only [RawTerm.subst]; rw [pairIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [pairIH sigma1 sigma2]
   | boolTrue => rfl
   | boolFalse => rfl
   | boolElim s t e sIH tIH eIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       rw [sIH sigma1 sigma2, tIH sigma1 sigma2, eIH sigma1 sigma2]
   | natZero => rfl
   | natSucc p pIH =>
-      simp only [RawTerm.subst]; rw [pIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [pIH sigma1 sigma2]
   | natElim s z c sIH zIH cIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       rw [sIH sigma1 sigma2, zIH sigma1 sigma2, cIH sigma1 sigma2]
   | natRec s z c sIH zIH cIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       rw [sIH sigma1 sigma2, zIH sigma1 sigma2, cIH sigma1 sigma2]
   | listNil => rfl
   | listCons headTerm tailTerm headIH tailIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       rw [headIH sigma1 sigma2, tailIH sigma1 sigma2]
   | listElim s n c sIH nIH cIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       rw [sIH sigma1 sigma2, nIH sigma1 sigma2, cIH sigma1 sigma2]
   | optionNone => rfl
   | optionSome v vIH =>
-      simp only [RawTerm.subst]; rw [vIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [vIH sigma1 sigma2]
   | optionMatch s n c sIH nIH cIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       rw [sIH sigma1 sigma2, nIH sigma1 sigma2, cIH sigma1 sigma2]
   | eitherInl v vIH =>
-      simp only [RawTerm.subst]; rw [vIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [vIH sigma1 sigma2]
   | eitherInr v vIH =>
-      simp only [RawTerm.subst]; rw [vIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [vIH sigma1 sigma2]
   | eitherMatch s l r sIH lIH rIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       rw [sIH sigma1 sigma2, lIH sigma1 sigma2, rIH sigma1 sigma2]
   | refl witness witnessIH =>
-      simp only [RawTerm.subst]; rw [witnessIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [witnessIH sigma1 sigma2]
   | idJ base witness baseIH witnessIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       rw [baseIH sigma1 sigma2, witnessIH sigma1 sigma2]
   | modIntro inner innerIH =>
-      simp only [RawTerm.subst]; rw [innerIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [innerIH sigma1 sigma2]
   | modElim inner innerIH =>
-      simp only [RawTerm.subst]; rw [innerIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [innerIH sigma1 sigma2]
   | subsume inner innerIH =>
-      simp only [RawTerm.subst]; rw [innerIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [innerIH sigma1 sigma2]
   -- D1.6 cubical interval + path
   | interval0 => rfl
   | interval1 => rfl
   | intervalOpp i iIH =>
-      simp only [RawTerm.subst]; rw [iIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [iIH sigma1 sigma2]
   | intervalMeet l r lIH rIH =>
-      simp only [RawTerm.subst]; rw [lIH sigma1 sigma2, rIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [lIH sigma1 sigma2, rIH sigma1 sigma2]
   | intervalJoin l r lIH rIH =>
-      simp only [RawTerm.subst]; rw [lIH sigma1 sigma2, rIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [lIH sigma1 sigma2, rIH sigma1 sigma2]
   | pathLam body bodyIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       rw [bodyIH sigma1.lift sigma2.lift]
       congr 1
       apply RawTerm.subst_pointwise
       intro p
       exact (RawTermSubst.lift_compose_pointwise sigma1 sigma2 p).symm
   | pathApp pathTerm intervalArg pathIH intervalIH =>
-      simp only [RawTerm.subst]; rw [pathIH sigma1 sigma2, intervalIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [pathIH sigma1 sigma2, intervalIH sigma1 sigma2]
   | glueIntro baseValue partialValue baseIH partialIH =>
-      simp only [RawTerm.subst]; rw [baseIH sigma1 sigma2, partialIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [baseIH sigma1 sigma2, partialIH sigma1 sigma2]
   | glueElim gluedValue gluedIH =>
-      simp only [RawTerm.subst]; rw [gluedIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [gluedIH sigma1 sigma2]
   | transp path source pathIH sourceIH =>
-      simp only [RawTerm.subst]; rw [pathIH sigma1 sigma2, sourceIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [pathIH sigma1 sigma2, sourceIH sigma1 sigma2]
   | hcomp sides cap sidesIH capIH =>
-      simp only [RawTerm.subst]; rw [sidesIH sigma1 sigma2, capIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [sidesIH sigma1 sigma2, capIH sigma1 sigma2]
   -- D1.6 observational + strict equality
   | oeqRefl witness witnessIH =>
-      simp only [RawTerm.subst]; rw [witnessIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [witnessIH sigma1 sigma2]
   | oeqJ baseCase witness baseIH witnessIH =>
-      simp only [RawTerm.subst]; rw [baseIH sigma1 sigma2, witnessIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [baseIH sigma1 sigma2, witnessIH sigma1 sigma2]
   | oeqFunext pointwiseEquality pointwiseIH =>
-      simp only [RawTerm.subst]; rw [pointwiseIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [pointwiseIH sigma1 sigma2]
   | idStrictRefl witness witnessIH =>
-      simp only [RawTerm.subst]; rw [witnessIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [witnessIH sigma1 sigma2]
   | idStrictRec baseCase witness baseIH witnessIH =>
-      simp only [RawTerm.subst]; rw [baseIH sigma1 sigma2, witnessIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [baseIH sigma1 sigma2, witnessIH sigma1 sigma2]
   -- D1.6 type equivalence
   | equivIntro fwd bwd fwdIH bwdIH =>
-      simp only [RawTerm.subst]; rw [fwdIH sigma1 sigma2, bwdIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [fwdIH sigma1 sigma2, bwdIH sigma1 sigma2]
   | equivApp equivTerm argument equivIH argIH =>
-      simp only [RawTerm.subst]; rw [equivIH sigma1 sigma2, argIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [equivIH sigma1 sigma2, argIH sigma1 sigma2]
   -- D1.6 refinement / record / codata
   | refineIntro rawValue predicateProof valueIH proofIH =>
-      simp only [RawTerm.subst]; rw [valueIH sigma1 sigma2, proofIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [valueIH sigma1 sigma2, proofIH sigma1 sigma2]
   | refineElim refinedValue refinedIH =>
-      simp only [RawTerm.subst]; rw [refinedIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [refinedIH sigma1 sigma2]
   | recordIntro firstField firstIH =>
-      simp only [RawTerm.subst]; rw [firstIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [firstIH sigma1 sigma2]
   | recordProj recordValue recordIH =>
-      simp only [RawTerm.subst]; rw [recordIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [recordIH sigma1 sigma2]
   | codataUnfold initialState transition stateIH transIH =>
-      simp only [RawTerm.subst]; rw [stateIH sigma1 sigma2, transIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [stateIH sigma1 sigma2, transIH sigma1 sigma2]
   | codataDest codataValue codataIH =>
-      simp only [RawTerm.subst]; rw [codataIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [codataIH sigma1 sigma2]
   -- D1.6 sessions, effects
   | sessionSend channel payload chIH payloadIH =>
-      simp only [RawTerm.subst]; rw [chIH sigma1 sigma2, payloadIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [chIH sigma1 sigma2, payloadIH sigma1 sigma2]
   | sessionRecv channel chIH =>
-      simp only [RawTerm.subst]; rw [chIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [chIH sigma1 sigma2]
   | effectPerform operationTag arguments tagIH argsIH =>
-      simp only [RawTerm.subst]; rw [tagIH sigma1 sigma2, argsIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [tagIH sigma1 sigma2, argsIH sigma1 sigma2]
   | universeCode innerLevel => rfl
   -- CUMUL-2.1 per-shape type codes.
   | arrowCode domainCode codomainCode domainIH codomainIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       rw [domainIH sigma1 sigma2, codomainIH sigma1 sigma2]
   | piTyCode domainCode codomainCode domainIH codomainIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       rw [domainIH sigma1 sigma2, codomainIH sigma1.lift sigma2.lift]
       congr 1
       apply RawTerm.subst_pointwise
       intro position
       exact (RawTermSubst.lift_compose_pointwise sigma1 sigma2 position).symm
   | sigmaTyCode domainCode codomainCode domainIH codomainIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       rw [domainIH sigma1 sigma2, codomainIH sigma1.lift sigma2.lift]
       congr 1
       apply RawTerm.subst_pointwise
       intro position
       exact (RawTermSubst.lift_compose_pointwise sigma1 sigma2 position).symm
   | productCode firstCode secondCode firstIH secondIH =>
-      simp only [RawTerm.subst]; rw [firstIH sigma1 sigma2, secondIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [firstIH sigma1 sigma2, secondIH sigma1 sigma2]
   | sumCode leftCode rightCode leftIH rightIH =>
-      simp only [RawTerm.subst]; rw [leftIH sigma1 sigma2, rightIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [leftIH sigma1 sigma2, rightIH sigma1 sigma2]
   | listCode elementCode elementIH =>
-      simp only [RawTerm.subst]; rw [elementIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [elementIH sigma1 sigma2]
   | optionCode elementCode elementIH =>
-      simp only [RawTerm.subst]; rw [elementIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [elementIH sigma1 sigma2]
   | eitherCode leftCode rightCode leftIH rightIH =>
-      simp only [RawTerm.subst]; rw [leftIH sigma1 sigma2, rightIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [leftIH sigma1 sigma2, rightIH sigma1 sigma2]
   | idCode typeCode leftRaw rightRaw typeIH leftIH rightIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       rw [typeIH sigma1 sigma2, leftIH sigma1 sigma2, rightIH sigma1 sigma2]
   | equivCode leftTypeCode rightTypeCode leftIH rightIH =>
-      simp only [RawTerm.subst]; rw [leftIH sigma1 sigma2, rightIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [leftIH sigma1 sigma2, rightIH sigma1 sigma2]
   | cumulUpMarker innerCodeRaw innerIH =>
-      simp only [RawTerm.subst]; rw [innerIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [innerIH sigma1 sigma2]
   | uaToEquiv proofRaw proofIH =>
-      simp only [RawTerm.subst]; rw [proofIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [proofIH sigma1 sigma2]
   | equivApply equivRaw argRaw equivIH argIH =>
-      simp only [RawTerm.subst]; rw [equivIH sigma1 sigma2, argIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [equivIH sigma1 sigma2, argIH sigma1 sigma2]
   | pathCompose leftPathRaw rightPathRaw leftIH rightIH =>
-      simp only [RawTerm.subst]; rw [leftIH sigma1 sigma2, rightIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [leftIH sigma1 sigma2, rightIH sigma1 sigma2]
   | idToEquiv proofRaw proofIH =>
-      simp only [RawTerm.subst]; rw [proofIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [proofIH sigma1 sigma2]
   | oeqTrans firstProof secondProof firstIH secondIH =>
-      simp only [RawTerm.subst]; rw [firstIH sigma1 sigma2, secondIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [firstIH sigma1 sigma2, secondIH sigma1 sigma2]
   | equivCompose firstEquiv secondEquiv firstIH secondIH =>
-      simp only [RawTerm.subst]; rw [firstIH sigma1 sigma2, secondIH sigma1 sigma2]
+      dsimp only [RawTerm.subst]; rw [firstIH sigma1 sigma2, secondIH sigma1 sigma2]
   | transpFill pathTy currentInterval source pathIH intervalIH sourceIH =>
-      simp only [RawTerm.subst]
+      dsimp only [RawTerm.subst]
       rw [pathIH sigma1 sigma2, intervalIH sigma1 sigma2, sourceIH sigma1 sigma2]
 
 end LeanFX2

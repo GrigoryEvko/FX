@@ -74,7 +74,7 @@ def partialStrengthenTypedOptionSome {mode : Mode} {level : Nat}
         some (RawTerm.optionSome valueResult.targetRaw)
     rw [valueResult.rawStrengthens]
   typeRenames := by
-    simp only [Ty.rename]
+    dsimp only [Ty.rename]
     exact congrArg Ty.optionType valueResult.typeRenames
   rawRenames := by
     exact congrArg RawTerm.optionSome valueResult.rawRenames
