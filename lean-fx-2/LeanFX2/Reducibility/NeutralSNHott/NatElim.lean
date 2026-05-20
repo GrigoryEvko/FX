@@ -1,5 +1,5 @@
 import LeanFX2.Reducibility.NeutralSNHott.ElimVarShape
-import LeanFX2.Term.SN.Helpers
+import LeanFX2.Reducibility.SN.Helpers
 
 /-! # LeanFX2.Reducibility.NeutralSNHott.NatElim
 

@@ -96,6 +96,7 @@ import LeanFX2.Confluence.ChurchRosser
 import LeanFX2.Confluence.CanonicalForm
 import LeanFX2.Confluence.ConvTrans
 import LeanFX2.Confluence.RawCd
+import LeanFX2.Confluence.RawCdRename
 import LeanFX2.Confluence.RawCdDominates
 import LeanFX2.Confluence.RawCdLemma
 import LeanFX2.Confluence.RawDiamond

@@ -1,5 +1,5 @@
 import LeanFX2.Reducibility.Basic
-import LeanFX2.Term.SN.Helpers
+import LeanFX2.Reducibility.SN.Helpers
 import LeanFX2.Reducibility.StableBase.SubtermSN
 import LeanFX2.Reducibility.NeutralSNFoundation.EquivHott
 import LeanFX2.Reducibility.NeutralSNHott.NatRecAndOption
@@ -19,7 +19,7 @@ This aggregator re-exports only the surviving bypass-free modules:
 | Module                                | Role                                              |
 | ------------------------------------- | ------------------------------------------------- |
 | `Reducibility.Basic`                  | `RawTerm.isStronglyNormalizing` base inductive    |
-| `Term.SN.Helpers`                     | pure SN preservation lemmas (closed leaves / cong)|
+| `Reducibility.SN.Helpers`             | SN preservation lemmas (closed leaves / cong)     |
 | `Reducibility.StableBase.SubtermSN`   | shape-specialized subterm SN inversions           |
 | `Reducibility.NeutralSNFoundation.*`  | per-ctor atomic SN lemmas (Π/Σ/list/option/etc.)  |
 | `Reducibility.NeutralSNHott.*`        | HoTT / J-family atomic SN closures                |
