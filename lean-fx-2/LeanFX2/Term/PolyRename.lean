@@ -2,7 +2,7 @@ import LeanFX2.Term.Rename
 import LeanFX2.Term.ToPoly
 import LeanFX2.Term.PolyToTerm
 import LeanFX2.Foundation.Polygraph.PolyTerm
-import LeanFX2.Foundation.Polygraph.PolyTermAction
+import LeanFX2.Foundation.Polygraph.PolyTermAction.RawPolyTermRename
 import LeanFX2.Foundation.Polygraph.PolyTermRoundtrip
 
 /-! # `PolyTerm.rename` — typed renaming on the polygraph mirror.

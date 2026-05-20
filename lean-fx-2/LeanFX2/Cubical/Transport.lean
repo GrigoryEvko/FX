@@ -1,5 +1,5 @@
 import LeanFX2.Cubical.PathLemmas
-import LeanFX2.Reduction.Cumul
+import LeanFX2.Reduction.Cumul.Relation.Inductive
 import LeanFX2.Reduction.ParStar
 
 /-! # Cubical/Transport

@@ -2,7 +2,7 @@
 import LeanFX2.Foundation.Mode
 import LeanFX2.Foundation.RawTerm
 import LeanFX2.Foundation.RawSubst.ActionInstances
-import LeanFX2.Foundation.RawPartialRename
+import LeanFX2.Foundation.RawPartialRename.VarLemmas
 import LeanFX2.Foundation.RawPartialRenameCommute
 import LeanFX2.Foundation.RawPartialRename.Strengthen
 import LeanFX2.Foundation.RawPartialRename.UnweakenSubstCommute
@@ -75,7 +75,13 @@ import LeanFX2.Reduction.TranspPiContractumPar
 import LeanFX2.Reduction.ParStar
 import LeanFX2.Reduction.StepStarToPar
 import LeanFX2.Reduction.Compat
-import LeanFX2.Reduction.Cumul
+import LeanFX2.Reduction.Cumul.Relation.Inductive
+import LeanFX2.Reduction.Cumul.Promotion
+import LeanFX2.Reduction.Cumul.BackwardCompat
+import LeanFX2.Reduction.Cumul.SubstOuter
+import LeanFX2.Reduction.Cumul.SubstCompatCases
+import LeanFX2.Reduction.Cumul.SubstCompatCong
+import LeanFX2.Reduction.Cumul.SubstCompatTerm
 import LeanFX2.Reduction.ConvCumulHomo
 import LeanFX2.Reduction.CumulCastElim
 import LeanFX2.Reduction.CumulBenton

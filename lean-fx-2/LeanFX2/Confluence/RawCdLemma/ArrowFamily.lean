@@ -1,4 +1,4 @@
-import LeanFX2.Confluence.RawCdDominates
+import LeanFX2.Confluence.RawCd.Core
 import LeanFX2.Confluence.RawCdRename.Main
 import LeanFX2.Reduction.RawParCompatible.Substitution
 import LeanFX2.Reduction.RawParInversion.AtomicCtors

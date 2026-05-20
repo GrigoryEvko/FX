@@ -1,4 +1,4 @@
-import LeanFX2.Foundation.RawPartialRename
+import LeanFX2.Foundation.RawSubst.RenameDefs
 
 /-! # Reduction/RawParWeakenInv/Foundation — injectivity of weaken and lift
 

@@ -1,5 +1,5 @@
 import LeanFX2.Reduction.ParRed.ParInductive.Inductive
-import LeanFX2.Reduction.Cumul
+import LeanFX2.Reduction.Cumul.Relation.Inductive
 
 /-! # Cubical/Glue
 

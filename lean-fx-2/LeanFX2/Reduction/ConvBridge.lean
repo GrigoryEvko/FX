@@ -1,4 +1,4 @@
-import LeanFX2.Reduction.Cumul
+import LeanFX2.Reduction.Cumul.Relation.Inductive
 
 /-! # Reduction/ConvBridge — Conv ↔ ConvCumul bidirectional bridge.
 

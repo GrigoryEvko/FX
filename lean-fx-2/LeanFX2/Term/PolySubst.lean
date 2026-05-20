@@ -2,7 +2,7 @@ import LeanFX2.Term.Subst
 import LeanFX2.Term.ToPoly
 import LeanFX2.Term.PolyToTerm
 import LeanFX2.Foundation.Polygraph.PolyTerm
-import LeanFX2.Foundation.Polygraph.PolyTermAction
+import LeanFX2.Foundation.Polygraph.PolyTermAction.SubstCommute
 import LeanFX2.Foundation.Polygraph.PolyTermRoundtrip
 
 /-! # `PolyTerm.subst` — typed substitution on the polygraph mirror.
