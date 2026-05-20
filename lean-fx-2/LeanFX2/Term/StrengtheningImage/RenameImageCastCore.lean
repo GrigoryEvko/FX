@@ -36,7 +36,7 @@ theorem strengthenTyped?_rename_isSome_funextRefl
       true := by
   dsimp only [Term.rename]
   rw [partialStrengthenTyped?_isSome_castInvariant]
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   have domainStrengthens :
       (domainType.rename forwardRename).partialStrengthen? renameInverse
         = some domainType := by
@@ -128,7 +128,7 @@ theorem strengthenTyped?_rename_isSome_appPi
       true := by
   dsimp only [Term.rename]
   rw [partialStrengthenTyped?_isSome_castInvariant]
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   have domainStrengthens :
       (domainType.rename forwardRename).partialStrengthen? renameInverse
         = some domainType := by
@@ -221,7 +221,7 @@ theorem strengthenTyped?_rename_isSome_snd
       true := by
   dsimp only [Term.rename]
   rw [partialStrengthenTyped?_isSome_castInvariant]
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   have firstStrengthens :
       (firstType.rename forwardRename).partialStrengthen? renameInverse
         = some firstType := by
@@ -309,7 +309,7 @@ theorem strengthenTyped?_rename_isSome_pair
           renameInverse renameInverseLeft renameInverseInjects)).isSome =
       true := by
   dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   have secondTypeStrengthens :
       (secondType.rename forwardRename.lift).partialStrengthen?
           renameInverse.lift
@@ -399,7 +399,7 @@ theorem strengthenTyped?_rename_isSome_lam
           renameInverse renameInverseLeft renameInverseInjects)).isSome =
       true := by
   dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   have domainStrengthens :
       (domainType.rename forwardRename).partialStrengthen? renameInverse
         = some domainType := by
@@ -470,7 +470,7 @@ theorem strengthenTyped?_rename_isSome_lamPi
           renameInverse renameInverseLeft renameInverseInjects)).isSome =
       true := by
   dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   have domainStrengthens :
       (domainType.rename forwardRename).partialStrengthen? renameInverse
         = some domainType := by
@@ -532,7 +532,7 @@ theorem strengthenTyped?_rename_isSome_pathLam
           renameInverse renameInverseLeft renameInverseInjects)).isSome =
       true := by
   dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   have carrierStrengthens :
       (carrierType.rename forwardRename).partialStrengthen? renameInverse
         = some carrierType := by

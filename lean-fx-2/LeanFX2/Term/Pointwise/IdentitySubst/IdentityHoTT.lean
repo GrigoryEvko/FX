@@ -21,7 +21,7 @@ theorem Term.subst_identity_equivReflId_HEq
       (Term.subst (TermSubst.identity context)
         (Term.equivReflId (context := context) carrier))
       (Term.equivReflId (context := context) carrier) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.equivReflId_HEq_congr (Ty.subst_identity carrier)
 
 /-- Id-typed identity equivalence case for ordinary identity substitution. -/
@@ -38,7 +38,7 @@ theorem Term.subst_identity_equivReflIdAtId_HEq
           innerLevelLt carrier carrierRaw))
       (Term.equivReflIdAtId (context := context) innerLevel
         innerLevelLt carrier carrierRaw) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.equivReflIdAtId_HEq_congr
     (Ty.subst_identity carrier)
     (RawTerm.subst_identity carrierRaw)
@@ -55,7 +55,7 @@ theorem Term.subst_identity_funextReflAtId_HEq
           domainType codomainType applyRaw))
       (Term.funextReflAtId (context := context)
         domainType codomainType applyRaw) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.funextReflAtId_HEq_congr
     (Ty.subst_identity domainType)
     (Ty.subst_identity codomainType)
@@ -76,7 +76,7 @@ theorem Term.subst_identity_funextRefl_HEq
           domainType codomainType applyRaw))
       (Term.funextRefl (context := context)
         domainType codomainType applyRaw) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   have applyRawIdentity :
       applyRaw.subst (@Subst.identity level scope).forRaw.lift =
         applyRaw := by
@@ -144,7 +144,7 @@ theorem Term.subst_identity_oeqFunext_HEq
           rightFunctionRaw pointwiseProof))
       (Term.oeqFunext domainType codomainType leftFunctionRaw
         rightFunctionRaw pointwiseProof) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   have pointwiseCastHEq :
       HEq
         ((oeqFunextPointwiseType_subst Subst.identity domainType codomainType
@@ -195,7 +195,7 @@ theorem Term.subst_identity_transp_HEq
       (Term.transp modeIsUnivalent universeLevel universeLevelLt
         sourceType targetType sourceTypeRaw targetTypeRaw typePath
         sourceValue) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.transp_HEq_congr
     modeIsUnivalent universeLevel universeLevelLt
     (Ty.subst_identity sourceType)
@@ -225,7 +225,7 @@ theorem Term.subst_identity_refineIntro_HEq
       (Term.subst (TermSubst.identity context)
         (Term.refineIntro predicate baseValue predicateProof))
       (Term.refineIntro predicate baseValue predicateProof) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.refineIntro_HEq_congr
     (Ty.subst_identity baseType)
     (by
@@ -256,7 +256,7 @@ theorem Term.subst_identity_uaIntroHet_HEq
           equivWitness))
       (Term.uaIntroHet innerLevel innerLevelLt carrierARaw carrierBRaw
         equivWitness) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.uaIntroHet_HEq_congr
     innerLevel innerLevelLt
     (Ty.subst_identity carrierA)
@@ -295,7 +295,7 @@ theorem Term.subst_identity_equivIntroHet_HEq
       (Term.subst (TermSubst.identity context)
         (Term.equivIntroHet forward backward leftInv rightInv))
       (Term.equivIntroHet forward backward leftInv rightInv) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   have leftInvCastHEq :
       HEq
         ((equivIntroHetLeftInverseType_subst Subst.identity
@@ -341,7 +341,7 @@ theorem Term.subst_identity_funextIntroHet_HEq
           domainType codomainType applyARaw applyBRaw))
       (Term.funextIntroHet (context := context)
         domainType codomainType applyARaw applyBRaw) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.funextIntroHet_HEq_congr
     (Ty.subst_identity domainType)
     (Ty.subst_identity codomainType)
@@ -375,7 +375,7 @@ theorem Term.subst_identity_uaToEquiv_HEq
           leftTyRaw rightTyRaw proof))
       (Term.uaToEquiv innerLevel innerLevelLt leftTy rightTy
         leftTyRaw rightTyRaw proof) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.uaToEquiv_HEq_congr
     (Ty.subst_identity leftTy)
     (Ty.subst_identity rightTy)

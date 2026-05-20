@@ -27,10 +27,10 @@ theorem isAggregatorTotal_listNil {mode : Mode} {level : Nat}
     IsAggregatorTotal
       (Term.listNil (context := sourceCtx) (elementType := elementType)) := by
   intros _ _ strengthening _ _ typeStrengthens _
-  unfold Ty.partialStrengthen? at typeStrengthens
+  dsimp only [Ty.partialStrengthen?] at typeStrengthens
   split at typeStrengthens
   · next strengthenedElement elementSuccess =>
-      unfold partialStrengthenTyped?
+      dsimp only [partialStrengthenTyped?]
       split
       · next elementFails =>
           rw [elementSuccess] at elementFails
@@ -47,10 +47,10 @@ theorem isAggregatorTotal_optionNone {mode : Mode} {level : Nat}
     IsAggregatorTotal
       (Term.optionNone (context := sourceCtx) (elementType := elementType)) := by
   intros _ _ strengthening _ _ typeStrengthens _
-  unfold Ty.partialStrengthen? at typeStrengthens
+  dsimp only [Ty.partialStrengthen?] at typeStrengthens
   split at typeStrengthens
   · next strengthenedElement elementSuccess =>
-      unfold partialStrengthenTyped?
+      dsimp only [partialStrengthenTyped?]
       split
       · next elementFails =>
           rw [elementSuccess] at elementFails
@@ -88,9 +88,8 @@ theorem isAggregatorTotal_listCons {mode : Mode} {level : Nat}
       cases typeStrengthens
     · exact ⟨tgt, rfl⟩
   obtain ⟨targetElement, elementSuccess⟩ := elementSuccessExists
-  unfold partialStrengthenTyped?
-  unfold RawTerm.partialStrengthen? at rawStrengthens
-  unfold RawTerm.partialRename? at rawStrengthens
+  dsimp only [partialStrengthenTyped?]
+  dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?] at rawStrengthens
   -- rawStrengthens = Option.mapTwo head tail RawTerm.listCons = some _
   obtain ⟨_, _, headRawSuccess, tailRawSuccess, _⟩ :=
     Option.mapTwo_eq_some rawStrengthens
@@ -123,9 +122,8 @@ theorem isAggregatorTotal_intervalMeet {mode : Mode} {level : Nat}
     IsAggregatorTotal
       (Term.intervalMeet (leftValue := leftValue) (rightValue := rightValue)) := by
   intros _ _ strengthening _ _ _ rawStrengthens
-  unfold partialStrengthenTyped?
-  unfold RawTerm.partialStrengthen? at rawStrengthens
-  unfold RawTerm.partialRename? at rawStrengthens
+  dsimp only [partialStrengthenTyped?]
+  dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?] at rawStrengthens
   obtain ⟨_, _, leftRawSuccess, rightRawSuccess, _⟩ :=
     Option.mapTwo_eq_some rawStrengthens
   have intervalStrengthens :
@@ -159,9 +157,8 @@ theorem isAggregatorTotal_intervalJoin {mode : Mode} {level : Nat}
     IsAggregatorTotal
       (Term.intervalJoin (leftValue := leftValue) (rightValue := rightValue)) := by
   intros _ _ strengthening _ _ _ rawStrengthens
-  unfold partialStrengthenTyped?
-  unfold RawTerm.partialStrengthen? at rawStrengthens
-  unfold RawTerm.partialRename? at rawStrengthens
+  dsimp only [partialStrengthenTyped?]
+  dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?] at rawStrengthens
   obtain ⟨_, _, leftRawSuccess, rightRawSuccess, _⟩ :=
     Option.mapTwo_eq_some rawStrengthens
   have intervalStrengthens :
@@ -196,7 +193,7 @@ theorem isAggregatorTotal_refl {mode : Mode} {level : Nat}
   intros _ _ strengthening _ _ typeStrengthens _
   obtain ⟨_, _, _, carrierSuccess, witnessSuccess, _, _⟩ :=
     Option.mapThree_eq_some typeStrengthens
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next carrierFails =>
       rw [carrierSuccess] at carrierFails
@@ -217,7 +214,7 @@ theorem isAggregatorTotal_oeqRefl {mode : Mode} {level : Nat}
   intros _ _ strengthening _ _ typeStrengthens _
   obtain ⟨_, _, _, carrierSuccess, witnessSuccess, _, _⟩ :=
     Option.mapThree_eq_some typeStrengthens
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next carrierFails =>
       rw [carrierSuccess] at carrierFails
@@ -241,7 +238,7 @@ theorem isAggregatorTotal_idStrictRefl {mode : Mode} {level : Nat}
   intros _ _ strengthening _ _ typeStrengthens _
   obtain ⟨_, _, _, carrierSuccess, witnessSuccess, _, _⟩ :=
     Option.mapThree_eq_some typeStrengthens
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next carrierFails =>
       rw [carrierSuccess] at carrierFails
@@ -292,15 +289,14 @@ theorem isAggregatorTotal_cumulUp {mode : Mode} {level : Nat}
           strengthening.back =
         some (Ty.universe lowerLevel levelLeLow) := rfl
   -- Extract codeRaw strengthens from rawStrengthens (RawTerm.cumulUpMarker).
-  unfold RawTerm.partialStrengthen? at rawStrengthens
-  unfold RawTerm.partialRename? at rawStrengthens
+  dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?] at rawStrengthens
   split at rawStrengthens
   rotate_left
   · cases rawStrengthens
   next targetCodeRaw codeRawSuccess =>
     have codeTotalCall :=
       codeTotal strengthening universeStrengthens codeRawSuccess
-    unfold partialStrengthenTyped?
+    dsimp only [partialStrengthenTyped?]
     split
     · next codeFails =>
         rw [codeFails] at codeTotalCall
@@ -329,7 +325,7 @@ theorem isAggregatorTotal_arrowCode {mode : Mode} {level : Nat}
       RawTerm.arrowCode = some _ at rawStrengthens
   obtain ⟨_, _, domainSuccess, codomainSuccess, _⟩ :=
     Option.mapTwo_eq_some rawStrengthens
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next domainFails =>
       rw [domainSuccess] at domainFails
@@ -357,7 +353,7 @@ theorem isAggregatorTotal_piTyCode {mode : Mode} {level : Nat}
       RawTerm.piTyCode = some _ at rawStrengthens
   obtain ⟨_, _, domainSuccess, codomainLiftSuccess, _⟩ :=
     Option.mapTwo_eq_some rawStrengthens
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next domainFails =>
       rw [domainSuccess] at domainFails
@@ -384,7 +380,7 @@ theorem isAggregatorTotal_sigmaTyCode {mode : Mode} {level : Nat}
       RawTerm.sigmaTyCode = some _ at rawStrengthens
   obtain ⟨_, _, domainSuccess, codomainLiftSuccess, _⟩ :=
     Option.mapTwo_eq_some rawStrengthens
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next domainFails =>
       rw [domainSuccess] at domainFails
@@ -411,7 +407,7 @@ theorem isAggregatorTotal_productCode {mode : Mode} {level : Nat}
       RawTerm.productCode = some _ at rawStrengthens
   obtain ⟨_, _, firstSuccess, secondSuccess, _⟩ :=
     Option.mapTwo_eq_some rawStrengthens
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next firstFails =>
       rw [firstSuccess] at firstFails
@@ -437,7 +433,7 @@ theorem isAggregatorTotal_sumCode {mode : Mode} {level : Nat}
       RawTerm.sumCode = some _ at rawStrengthens
   obtain ⟨_, _, leftSuccess, rightSuccess, _⟩ :=
     Option.mapTwo_eq_some rawStrengthens
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next leftFails =>
       rw [leftSuccess] at leftFails
@@ -464,7 +460,7 @@ theorem isAggregatorTotal_listCode {mode : Mode} {level : Nat}
   rotate_left
   · cases rawStrengthens
   next targetElementCodeRaw elementSuccess =>
-    unfold partialStrengthenTyped?
+    dsimp only [partialStrengthenTyped?]
     split
     · next elementFails =>
         rw [elementSuccess] at elementFails
@@ -486,7 +482,7 @@ theorem isAggregatorTotal_optionCode {mode : Mode} {level : Nat}
   rotate_left
   · cases rawStrengthens
   next targetElementCodeRaw elementSuccess =>
-    unfold partialStrengthenTyped?
+    dsimp only [partialStrengthenTyped?]
     split
     · next elementFails =>
         rw [elementSuccess] at elementFails
@@ -507,7 +503,7 @@ theorem isAggregatorTotal_eitherCode {mode : Mode} {level : Nat}
       RawTerm.eitherCode = some _ at rawStrengthens
   obtain ⟨_, _, leftSuccess, rightSuccess, _⟩ :=
     Option.mapTwo_eq_some rawStrengthens
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next leftFails =>
       rw [leftSuccess] at leftFails
@@ -535,7 +531,7 @@ theorem isAggregatorTotal_idCode {mode : Mode} {level : Nat}
       RawTerm.idCode = some _ at rawStrengthens
   obtain ⟨_, _, _, typeCodeSuccess, leftSuccess, rightSuccess, _⟩ :=
     Option.mapThree_eq_some rawStrengthens
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next typeCodeFails =>
       rw [typeCodeSuccess] at typeCodeFails
@@ -567,7 +563,7 @@ theorem isAggregatorTotal_equivCode {mode : Mode} {level : Nat}
       RawTerm.equivCode = some _ at rawStrengthens
   obtain ⟨_, _, leftSuccess, rightSuccess, _⟩ :=
     Option.mapTwo_eq_some rawStrengthens
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next leftFails =>
       rw [leftSuccess] at leftFails

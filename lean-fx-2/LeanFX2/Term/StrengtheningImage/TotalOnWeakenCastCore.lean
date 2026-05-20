@@ -89,8 +89,8 @@ theorem isTotalOnWeaken_snd {mode : Mode} {level scope : Nat}
             (pairRaw.rename RawRenaming.weaken).snd)).strengthenTyped?.isSome = true
     rw [strengthenTyped?_isSome_castInvariant]
     exact uncastTotality
-  unfold strengthenTyped?
-  unfold partialStrengthenTyped?
+  dsimp only [strengthenTyped?]
+  dsimp only [partialStrengthenTyped?]
   split
   · next firstFails =>
       exfalso
@@ -121,7 +121,7 @@ theorem isTotalOnWeaken_snd {mode : Mode} {level scope : Nat}
       · next pairRecurse =>
           exfalso
           have totHyp := pairIH newType
-          unfold strengthenTyped? at totHyp
+          dsimp only [strengthenTyped?] at totHyp
           have : Option.isSome (none (α := StrengtheningResult
               (ContextStrengthening.dropNewest context newType)
               (Term.weaken newType pairTerm))) = true :=
@@ -196,8 +196,8 @@ theorem isTotalOnWeaken_funextRefl {mode : Mode} {level scope : Nat}
               (applyRaw.rename RawRenaming.weaken.lift))))).strengthenTyped?.isSome = true
     rw [strengthenTyped?_isSome_castInvariant]
     exact uncastTotality
-  unfold strengthenTyped?
-  unfold partialStrengthenTyped?
+  dsimp only [strengthenTyped?]
+  dsimp only [partialStrengthenTyped?]
   split
   · next domainFails =>
       exfalso
@@ -314,8 +314,8 @@ theorem isTotalOnWeaken_appPi {mode : Mode} {level scope : Nat}
           = true
     rw [strengthenTyped?_isSome_castInvariant]
     exact uncastTotality
-  unfold strengthenTyped?
-  unfold partialStrengthenTyped?
+  dsimp only [strengthenTyped?]
+  dsimp only [partialStrengthenTyped?]
   split
   · next domainFails =>
       exfalso
@@ -351,7 +351,7 @@ theorem isTotalOnWeaken_appPi {mode : Mode} {level scope : Nat}
       · next functionRecurse =>
           exfalso
           have totHyp := functionIH newType
-          unfold strengthenTyped? at totHyp
+          dsimp only [strengthenTyped?] at totHyp
           have : Option.isSome (none (α := StrengtheningResult
               (ContextStrengthening.dropNewest context newType)
               (Term.weaken newType functionTerm))) = true :=
@@ -361,7 +361,7 @@ theorem isTotalOnWeaken_appPi {mode : Mode} {level scope : Nat}
         · next argumentRecurse =>
             exfalso
             have totHyp := argumentIH newType
-            unfold strengthenTyped? at totHyp
+            dsimp only [strengthenTyped?] at totHyp
             have : Option.isSome (none (α := StrengtheningResult
                 (ContextStrengthening.dropNewest context newType)
                 (Term.weaken newType argumentTerm))) = true :=
@@ -419,8 +419,8 @@ theorem isTotalOnWeaken_pair {mode : Mode} {level scope : Nat}
   -- Rewrite via weaken_pair_unfolds to expose the inner cast explicitly,
   -- then the dispatcher's match on Term.pair head fires.
   rw [weaken_pair_unfolds newType firstValue secondValue]
-  unfold strengthenTyped?
-  unfold partialStrengthenTyped?
+  dsimp only [strengthenTyped?]
+  dsimp only [partialStrengthenTyped?]
   split
   · next secondTypeFails =>
       exfalso
@@ -441,7 +441,7 @@ theorem isTotalOnWeaken_pair {mode : Mode} {level scope : Nat}
     · next firstRecurse =>
         exfalso
         have totHyp := firstIH newType
-        unfold strengthenTyped? at totHyp
+        dsimp only [strengthenTyped?] at totHyp
         have : Option.isSome (none (α := StrengtheningResult
             (ContextStrengthening.dropNewest context newType)
             (Term.weaken newType firstValue))) = true :=
@@ -458,13 +458,13 @@ theorem isTotalOnWeaken_pair {mode : Mode} {level scope : Nat}
           -- castInvariant says (eq ▸ ...).strengthenTyped?.isSome = (...).strengthenTyped?.isSome,
           -- so secondRecurse's none contradicts.
           have totHyp := secondIH newType
-          unfold strengthenTyped? at totHyp
+          dsimp only [strengthenTyped?] at totHyp
           have invariance :=
             strengthenTyped?_isSome_castInvariant
               (Term.rename (TermRenaming.weakenStep context newType) secondValue)
               (Ty.subst0_rename_commute secondType firstType firstRaw
                 RawRenaming.weaken)
-          unfold strengthenTyped? at invariance
+          dsimp only [strengthenTyped?] at invariance
           -- invariance: (eq ▸ Term.rename ... sv).partialStrengthenTyped? _ .isSome
           --           = (Term.rename ... sv).partialStrengthenTyped? _ .isSome
           rw [secondRecurse] at invariance

@@ -35,8 +35,7 @@ theorem isAggregatorTotal_snd_with_sigma_witnesses {mode : Mode}
               some targetSecondType) :
     IsAggregatorTotal (Term.snd pairTerm) := by
   intros _ _ strengthening _ _ typeStrengthens rawStrengthens
-  unfold RawTerm.partialStrengthen? at rawStrengthens
-  unfold RawTerm.partialRename? at rawStrengthens
+  dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?] at rawStrengthens
   split at rawStrengthens
   rotate_left
   · cases rawStrengthens
@@ -59,7 +58,7 @@ theorem isAggregatorTotal_snd_with_sigma_witnesses {mode : Mode}
       rfl
     have pairTotalCall :=
       pairTotal strengthening sigmaTypeStrengthens pairRawSuccess
-    unfold partialStrengthenTyped?
+    dsimp only [partialStrengthenTyped?]
     split
     · next firstFails =>
         rw [firstSuccess] at firstFails
@@ -129,7 +128,7 @@ theorem isAggregatorTotal_appPi_with_pi_witnesses {mode : Mode} {level : Nat}
     functionTotal strengthening piTypeStrengthens functionRawSuccess
   have argumentTotalCall :=
     argumentTotal strengthening domainSuccess argumentRawSuccess
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next domainFails =>
       rw [domainSuccess] at domainFails
@@ -225,7 +224,7 @@ theorem isAggregatorTotal_transp_with_path_witnesses {mode : Mode}
     pathTotal strengthening pathTypeStrengthens pathRawSuccess
   have sourceTotalCall :=
     sourceTotal strengthening sourceTypeSuccess sourceRawSuccess
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next sourceTypeFails =>
       rw [sourceTypeSuccess] at sourceTypeFails
@@ -336,7 +335,7 @@ theorem isAggregatorTotal_effectPerform_with_opsig_witness {mode : Mode}
   have argumentsTotalCall :=
     argumentsTotal strengthening argumentCarrierSuccess
       argumentsRawSuccess
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next effectTagFails =>
       rw [effectTagSuccess] at effectTagFails

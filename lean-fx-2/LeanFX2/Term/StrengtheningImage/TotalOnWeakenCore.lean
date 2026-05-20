@@ -154,13 +154,13 @@ theorem isTotalOnWeaken_natSucc {mode : Mode} {level scope : Nat}
     IsTotalOnWeaken (Term.natSucc predecessor) := by
   intro newType
   show (strengthenTyped? (Term.natSucc (Term.weaken newType predecessor))).isSome
-  unfold strengthenTyped?
-  unfold partialStrengthenTyped?
+  dsimp only [strengthenTyped?]
+  dsimp only [partialStrengthenTyped?]
   split
   · next predRecurse =>
       exfalso
       have totHyp := predecessorIH newType
-      unfold strengthenTyped? at totHyp
+      dsimp only [strengthenTyped?] at totHyp
       have : Option.isSome (none (α := StrengtheningResult
           (ContextStrengthening.dropNewest context newType)
           (Term.weaken newType predecessor))) = true :=
@@ -178,13 +178,13 @@ theorem isTotalOnWeaken_intervalOpp {mode : Mode} {level scope : Nat}
     IsTotalOnWeaken (Term.intervalOpp point) := by
   intro newType
   show (strengthenTyped? (Term.intervalOpp (Term.weaken newType point))).isSome
-  unfold strengthenTyped?
-  unfold partialStrengthenTyped?
+  dsimp only [strengthenTyped?]
+  dsimp only [partialStrengthenTyped?]
   split
   · next pointRecurse =>
       exfalso
       have totHyp := pointIH newType
-      unfold strengthenTyped? at totHyp
+      dsimp only [strengthenTyped?] at totHyp
       have : Option.isSome (none (α := StrengtheningResult
           (ContextStrengthening.dropNewest context newType)
           (Term.weaken newType point))) = true :=
@@ -204,13 +204,13 @@ theorem isTotalOnWeaken_optionSome {mode : Mode} {level scope : Nat}
     IsTotalOnWeaken (Term.optionSome valueTerm) := by
   intro newType
   show (strengthenTyped? (Term.optionSome (Term.weaken newType valueTerm))).isSome
-  unfold strengthenTyped?
-  unfold partialStrengthenTyped?
+  dsimp only [strengthenTyped?]
+  dsimp only [partialStrengthenTyped?]
   split
   · next valueRecurse =>
       exfalso
       have totHyp := valueIH newType
-      unfold strengthenTyped? at totHyp
+      dsimp only [strengthenTyped?] at totHyp
       have : Option.isSome (none (α := StrengtheningResult
           (ContextStrengthening.dropNewest context newType)
           (Term.weaken newType valueTerm))) = true :=
@@ -230,13 +230,13 @@ theorem isTotalOnWeaken_modIntro {mode : Mode}
     IsTotalOnWeaken (Term.modIntro innerTerm) := by
   intro newType
   show (strengthenTyped? (Term.modIntro (Term.weaken newType innerTerm))).isSome
-  unfold strengthenTyped?
-  unfold partialStrengthenTyped?
+  dsimp only [strengthenTyped?]
+  dsimp only [partialStrengthenTyped?]
   split
   · next innerRecurse =>
       exfalso
       have totHyp := innerIH newType
-      unfold strengthenTyped? at totHyp
+      dsimp only [strengthenTyped?] at totHyp
       have : Option.isSome (none (α := StrengtheningResult
           (ContextStrengthening.dropNewest context newType)
           (Term.weaken newType innerTerm))) = true :=
@@ -256,13 +256,13 @@ theorem isTotalOnWeaken_modElim {mode : Mode}
     IsTotalOnWeaken (Term.modElim innerTerm) := by
   intro newType
   show (strengthenTyped? (Term.modElim (Term.weaken newType innerTerm))).isSome
-  unfold strengthenTyped?
-  unfold partialStrengthenTyped?
+  dsimp only [strengthenTyped?]
+  dsimp only [partialStrengthenTyped?]
   split
   · next innerRecurse =>
       exfalso
       have totHyp := innerIH newType
-      unfold strengthenTyped? at totHyp
+      dsimp only [strengthenTyped?] at totHyp
       have : Option.isSome (none (α := StrengtheningResult
           (ContextStrengthening.dropNewest context newType)
           (Term.weaken newType innerTerm))) = true :=
@@ -282,13 +282,13 @@ theorem isTotalOnWeaken_subsume {mode : Mode}
     IsTotalOnWeaken (Term.subsume innerTerm) := by
   intro newType
   show (strengthenTyped? (Term.subsume (Term.weaken newType innerTerm))).isSome
-  unfold strengthenTyped?
-  unfold partialStrengthenTyped?
+  dsimp only [strengthenTyped?]
+  dsimp only [partialStrengthenTyped?]
   split
   · next innerRecurse =>
       exfalso
       have totHyp := innerIH newType
-      unfold strengthenTyped? at totHyp
+      dsimp only [strengthenTyped?] at totHyp
       have : Option.isSome (none (α := StrengtheningResult
           (ContextStrengthening.dropNewest context newType)
           (Term.weaken newType innerTerm))) = true :=
@@ -314,13 +314,13 @@ theorem isTotalOnWeaken_cumulUp {mode : Mode}
   intro newType
   show (strengthenTyped? (Term.cumulUp lowerLevel higherLevel cumulMonotone
       levelLeLow levelLeHigh (Term.weaken newType typeCode))).isSome
-  unfold strengthenTyped?
-  unfold partialStrengthenTyped?
+  dsimp only [strengthenTyped?]
+  dsimp only [partialStrengthenTyped?]
   split
   · next codeRecurse =>
       exfalso
       have totHyp := codeIH newType
-      unfold strengthenTyped? at totHyp
+      dsimp only [strengthenTyped?] at totHyp
       have : Option.isSome (none (α := StrengtheningResult
           (ContextStrengthening.dropNewest context newType)
           (Term.weaken newType typeCode))) = true :=

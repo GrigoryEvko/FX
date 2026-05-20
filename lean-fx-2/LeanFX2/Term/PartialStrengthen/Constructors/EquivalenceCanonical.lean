@@ -171,8 +171,7 @@ def partialStrengthenTypedFunextRefl {mode : Mode} {level : Nat}
   rawStrengthens := by
     change RawTerm.partialRename? applyRaw strengthening.back.lift =
       some targetApplyRaw at applyStrengthens
-    unfold RawTerm.partialStrengthen? RawTerm.partialRename?
-    simp only [RawTerm.partialRename?]
+    dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?]
     rw [applyStrengthens]
   typeRenames := by
     exact
@@ -224,8 +223,7 @@ def partialStrengthenTypedFunextRefl {mode : Mode} {level : Nat}
         (by
           change RawTerm.partialRename? applyRaw strengthening.back.lift =
             some targetApplyRaw at applyStrengthens
-          unfold RawTerm.partialStrengthen? RawTerm.partialRename?
-          simp only [RawTerm.partialRename?]
+          dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?]
           rw [applyStrengthens])
 
 /-- Id-typed funext reflexivity witnesses use the same strengthened raw
@@ -279,8 +277,7 @@ def partialStrengthenTypedFunextReflAtId {mode : Mode} {level : Nat}
           some (RawTerm.lam (RawTerm.refl targetApplyRaw)) := by
       change RawTerm.partialRename? applyRaw strengthening.back.lift =
         some targetApplyRaw at applyStrengthens
-      unfold RawTerm.partialStrengthen? RawTerm.partialRename?
-      simp only [RawTerm.partialRename?]
+      dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?]
       rw [applyStrengthens]
     change
       Option.mapThree
@@ -300,8 +297,7 @@ def partialStrengthenTypedFunextReflAtId {mode : Mode} {level : Nat}
   rawStrengthens := by
     change RawTerm.partialRename? applyRaw strengthening.back.lift =
       some targetApplyRaw at applyStrengthens
-    unfold RawTerm.partialStrengthen? RawTerm.partialRename?
-    simp only [RawTerm.partialRename?]
+    dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?]
     rw [applyStrengthens]
   typeRenames := by
     exact
@@ -332,8 +328,7 @@ def partialStrengthenTypedFunextReflAtId {mode : Mode} {level : Nat}
                 some (RawTerm.lam (RawTerm.refl targetApplyRaw)) := by
             change RawTerm.partialRename? applyRaw strengthening.back.lift =
               some targetApplyRaw at applyStrengthens
-            unfold RawTerm.partialStrengthen? RawTerm.partialRename?
-            simp only [RawTerm.partialRename?]
+            dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?]
             rw [applyStrengthens]
           change
             Option.mapThree
@@ -359,8 +354,7 @@ def partialStrengthenTypedFunextReflAtId {mode : Mode} {level : Nat}
         (by
           change RawTerm.partialRename? applyRaw strengthening.back.lift =
             some targetApplyRaw at applyStrengthens
-          unfold RawTerm.partialStrengthen? RawTerm.partialRename?
-          simp only [RawTerm.partialRename?]
+          dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?]
           rw [applyStrengthens])
 
 end Term

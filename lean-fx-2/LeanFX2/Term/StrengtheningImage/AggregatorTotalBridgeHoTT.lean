@@ -64,7 +64,7 @@ theorem isAggregatorTotal_idJ_with_id_components {mode : Mode} {level : Nat}
     baseTotal strengthening typeStrengthens baseRawSuccess
   have witnessTotalCall :=
     witnessTotal strengthening idTypeStrengthens witnessRawSuccess
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next carrierFails =>
       rw [carrierSuccess] at carrierFails
@@ -143,7 +143,7 @@ theorem isAggregatorTotal_oeqJ_with_oeq_components {mode : Mode} {level : Nat}
     baseTotal strengthening typeStrengthens baseRawSuccess
   have witnessTotalCall :=
     witnessTotal strengthening oeqTypeStrengthens witnessRawSuccess
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next carrierFails =>
       rw [carrierSuccess] at carrierFails
@@ -227,7 +227,7 @@ theorem isAggregatorTotal_idStrictRec_with_idStrict_components
     baseTotal strengthening typeStrengthens baseRawSuccess
   have witnessTotalCall :=
     witnessTotal strengthening idStrictTypeStrengthens witnessRawSuccess
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next carrierFails =>
       rw [carrierSuccess] at carrierFails
@@ -289,7 +289,7 @@ theorem isAggregatorTotal_equivReflIdAtId_with_carrier {mode : Mode}
     Option.mapThree_eq_some typeStrengthens
   obtain ⟨_, carrierSuccess⟩ :=
     carrierTotal strengthening carrierRawSuccess
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next carrierFails =>
       rw [carrierSuccess] at carrierFails
@@ -342,8 +342,7 @@ theorem isAggregatorTotal_uaToEquiv_with_carrier_raws {mode : Mode}
   obtain ⟨targetLeftTy, targetRightTy, leftTySuccess, rightTySuccess, _⟩ :=
     Option.mapTwo_eq_some typeStrengthens
   -- rawStrengthens: (RawTerm.uaToEquiv proofRaw).back
-  unfold RawTerm.partialStrengthen? at rawStrengthens
-  unfold RawTerm.partialRename? at rawStrengthens
+  dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?] at rawStrengthens
   split at rawStrengthens
   rotate_left
   · cases rawStrengthens
@@ -375,7 +374,7 @@ theorem isAggregatorTotal_uaToEquiv_with_carrier_raws {mode : Mode}
       rfl
     have proofTotalCall :=
       proofTotal strengthening idTypeStrengthens proofRawSuccess
-    unfold partialStrengthenTyped?
+    dsimp only [partialStrengthenTyped?]
     split
     · next leftTyFails =>
         rw [leftTySuccess] at leftTyFails
@@ -481,7 +480,7 @@ theorem isAggregatorTotal_uaIntroHet_with_carriers {mode : Mode} {level : Nat}
     rfl
   have equivTotalCall :=
     equivTotal strengthening equivTypeStrengthens equivRawStrengthens
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next carrierAFails =>
       rw [carrierASuccess] at carrierAFails

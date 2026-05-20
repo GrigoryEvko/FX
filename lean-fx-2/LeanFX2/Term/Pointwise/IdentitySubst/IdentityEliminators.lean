@@ -29,7 +29,7 @@ theorem Term.subst_identity_app_HEq
       (Term.subst (TermSubst.identity context)
         (Term.app functionTerm argumentTerm))
       (Term.app functionTerm argumentTerm) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.app_HEq_congr
     (Ty.subst_identity domainType)
     (Ty.subst_identity codomainType)
@@ -57,7 +57,7 @@ theorem Term.subst_identity_appPi_HEq
       (Term.subst (TermSubst.identity context)
         (Term.appPi functionTerm argumentTerm))
       (Term.appPi functionTerm argumentTerm) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   have codomainIdentity :
       codomainType.subst (@Subst.identity level scope).lift = codomainType := by
     rw [Ty.subst_pointwise
@@ -114,7 +114,7 @@ theorem Term.subst_identity_pair_HEq
       (Term.subst (TermSubst.identity context)
         (Term.pair (secondType := secondType) firstValue secondValue))
       (Term.pair (secondType := secondType) firstValue secondValue) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   have secondTypeIdentity :
       secondType.subst (@Subst.identity level scope).lift = secondType := by
     rw [Ty.subst_pointwise
@@ -154,7 +154,7 @@ theorem Term.subst_identity_fst_HEq
     HEq
       (Term.subst (TermSubst.identity context) (Term.fst pairTerm))
       (Term.fst pairTerm) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   have secondTypeIdentity :
       secondType.subst (@Subst.identity level scope).lift = secondType := by
     rw [Ty.subst_pointwise
@@ -182,7 +182,7 @@ theorem Term.subst_identity_snd_HEq
       (Term.subst (TermSubst.identity context)
         (Term.snd (secondType := secondType) pairTerm))
       (Term.snd (secondType := secondType) pairTerm) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   have secondTypeIdentity :
       secondType.subst (@Subst.identity level scope).lift = secondType := by
     rw [Ty.subst_pointwise
@@ -233,7 +233,7 @@ theorem Term.subst_identity_boolElim_HEq
       (Term.subst (TermSubst.identity context)
         (Term.boolElim scrutinee thenBranch elseBranch))
       (Term.boolElim scrutinee thenBranch elseBranch) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   have motiveIdentity :
       motiveType.subst (@Subst.identity level scope).lift = motiveType := by
     rw [Ty.subst_pointwise
@@ -342,7 +342,7 @@ theorem Term.subst_identity_natElim_HEq
       (Term.subst (TermSubst.identity context)
         (Term.natElim scrutinee zeroBranch succBranch))
       (Term.natElim scrutinee zeroBranch succBranch) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.natElim_HEq_congr
     (Ty.subst_identity motiveType)
     (RawTerm.subst_identity scrutineeRaw)
@@ -374,7 +374,7 @@ theorem Term.subst_identity_natRec_HEq
       (Term.subst (TermSubst.identity context)
         (Term.natRec scrutinee zeroBranch succBranch))
       (Term.natRec scrutinee zeroBranch succBranch) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.natRec_HEq_congr
     (Ty.subst_identity motiveType)
     (RawTerm.subst_identity scrutineeRaw)
@@ -406,7 +406,7 @@ theorem Term.subst_identity_listElim_HEq
       (Term.subst (TermSubst.identity context)
         (Term.listElim scrutinee nilBranch consBranch))
       (Term.listElim scrutinee nilBranch consBranch) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.listElim_HEq_congr
     (Ty.subst_identity elementType)
     (Ty.subst_identity motiveType)
@@ -437,7 +437,7 @@ theorem Term.subst_identity_optionMatch_HEq
       (Term.subst (TermSubst.identity context)
         (Term.optionMatch scrutinee noneBranch someBranch))
       (Term.optionMatch scrutinee noneBranch someBranch) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.optionMatch_HEq_congr
     (Ty.subst_identity elementType)
     (Ty.subst_identity motiveType)
@@ -469,7 +469,7 @@ theorem Term.subst_identity_eitherMatch_HEq
       (Term.subst (TermSubst.identity context)
         (Term.eitherMatch scrutinee leftBranch rightBranch))
       (Term.eitherMatch scrutinee leftBranch rightBranch) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.eitherMatch_HEq_congr
     (Ty.subst_identity leftType)
     (Ty.subst_identity rightType)

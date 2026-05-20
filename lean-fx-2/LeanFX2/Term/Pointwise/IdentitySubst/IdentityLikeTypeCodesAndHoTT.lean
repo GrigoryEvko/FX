@@ -55,7 +55,7 @@ theorem Term.subst_identityLike_arrowCode_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.arrowCode_HEq_congr outerLevel levelLe
     (substitutionIsIdentityLike.rawSubst_eq domainCodeRaw)
     (substitutionIsIdentityLike.rawSubst_eq codomainCodeRaw)
@@ -81,7 +81,7 @@ theorem Term.subst_identityLike_piTyCode_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.piTyCode_HEq_congr outerLevel levelLe
     (substitutionIsIdentityLike.rawSubst_eq domainCodeRaw)
     ((substitutionIsIdentityLike.lift Ty.unit).rawSubst_eq codomainCodeRaw)
@@ -107,7 +107,7 @@ theorem Term.subst_identityLike_sigmaTyCode_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.sigmaTyCode_HEq_congr outerLevel levelLe
     (substitutionIsIdentityLike.rawSubst_eq domainCodeRaw)
     ((substitutionIsIdentityLike.lift Ty.unit).rawSubst_eq codomainCodeRaw)
@@ -132,7 +132,7 @@ theorem Term.subst_identityLike_productCode_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.productCode_HEq_congr outerLevel levelLe
     (substitutionIsIdentityLike.rawSubst_eq firstCodeRaw)
     (substitutionIsIdentityLike.rawSubst_eq secondCodeRaw)
@@ -157,7 +157,7 @@ theorem Term.subst_identityLike_sumCode_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.sumCode_HEq_congr outerLevel levelLe
     (substitutionIsIdentityLike.rawSubst_eq leftCodeRaw)
     (substitutionIsIdentityLike.rawSubst_eq rightCodeRaw)
@@ -182,7 +182,7 @@ theorem Term.subst_identityLike_listCode_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.listCode_HEq_congr outerLevel levelLe
     (substitutionIsIdentityLike.rawSubst_eq elementCodeRaw)
 
@@ -206,7 +206,7 @@ theorem Term.subst_identityLike_optionCode_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.optionCode_HEq_congr outerLevel levelLe
     (substitutionIsIdentityLike.rawSubst_eq elementCodeRaw)
 
@@ -230,7 +230,7 @@ theorem Term.subst_identityLike_eitherCode_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.eitherCode_HEq_congr outerLevel levelLe
     (substitutionIsIdentityLike.rawSubst_eq leftCodeRaw)
     (substitutionIsIdentityLike.rawSubst_eq rightCodeRaw)
@@ -255,7 +255,7 @@ theorem Term.subst_identityLike_idCode_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.idCode_HEq_congr outerLevel levelLe
     (substitutionIsIdentityLike.rawSubst_eq typeCodeRaw)
     (substitutionIsIdentityLike.rawSubst_eq leftRaw)
@@ -281,7 +281,7 @@ theorem Term.subst_identityLike_equivCode_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.equivCode_HEq_congr outerLevel levelLe
     (substitutionIsIdentityLike.rawSubst_eq leftTypeCodeRaw)
     (substitutionIsIdentityLike.rawSubst_eq rightTypeCodeRaw)
@@ -302,7 +302,7 @@ theorem Term.subst_identityLike_equivReflId_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.equivReflId_HEq_congr
     (substitutionIsIdentityLike.tySubst_eq carrier)
 
@@ -327,7 +327,7 @@ theorem Term.subst_identityLike_equivReflIdAtId_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.equivReflIdAtId_HEq_congr
     (substitutionIsIdentityLike.tySubst_eq carrier)
     (substitutionIsIdentityLike.rawSubst_eq carrierRaw)
@@ -351,7 +351,7 @@ theorem Term.subst_identityLike_funextReflAtId_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.funextReflAtId_HEq_congr
     (substitutionIsIdentityLike.tySubst_eq domainType)
     (substitutionIsIdentityLike.tySubst_eq codomainType)
@@ -385,7 +385,7 @@ theorem Term.subst_identityLike_uaToEquiv_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.uaToEquiv_HEq_congr
     (substitutionIsIdentityLike.tySubst_eq leftTy)
     (substitutionIsIdentityLike.tySubst_eq rightTy)
@@ -429,7 +429,7 @@ theorem Term.subst_identityLike_transp_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.transp_HEq_congr
     modeIsUnivalent universeLevel universeLevelLt
     (substitutionIsIdentityLike.tySubst_eq sourceType)
@@ -464,7 +464,7 @@ theorem Term.subst_identityLike_refineIntro_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.refineIntro_HEq_congr
     (substitutionIsIdentityLike.tySubst_eq baseType)
     ((substitutionIsIdentityLike.lift Ty.unit).rawSubst_eq predicate)
@@ -498,7 +498,7 @@ theorem Term.subst_identityLike_uaIntroHet_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.uaIntroHet_HEq_congr
     innerLevel innerLevelLt
     (substitutionIsIdentityLike.tySubst_eq carrierA)
@@ -528,7 +528,7 @@ theorem Term.subst_identityLike_funextIntroHet_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.funextIntroHet_HEq_congr
     (substitutionIsIdentityLike.tySubst_eq domainType)
     (substitutionIsIdentityLike.tySubst_eq codomainType)
@@ -554,7 +554,7 @@ theorem Term.subst_identityLike_funextRefl_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   have applyRawIdentity :
       applyRaw.subst sigma.forRaw.lift = applyRaw :=
     (substitutionIsIdentityLike.lift Ty.unit).rawSubst_eq applyRaw

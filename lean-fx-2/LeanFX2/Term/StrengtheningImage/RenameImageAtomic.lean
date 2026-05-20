@@ -55,7 +55,7 @@ private theorem partialStrengthenTyped_var_isSome_of_survives
     (partialStrengthenTyped?
         (Term.var (context := sourceCtx) sourcePosition)
         strengthening).isSome = true := by
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next noSurvival =>
       rw [noSurvival] at survives

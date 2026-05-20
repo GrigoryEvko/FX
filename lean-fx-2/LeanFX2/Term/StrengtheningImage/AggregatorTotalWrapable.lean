@@ -59,7 +59,7 @@ theorem isAggregatorTotal_funextRefl {mode : Mode} {level : Nat}
   obtain ⟨targetCodomainType, codomainSuccess, _⟩ :=
     Option.map_eq_some_inversion codomainWeakenSuccess
   -- Now discharge the dispatcher
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next domainFails =>
       rw [domainSuccess] at domainFails
@@ -108,13 +108,11 @@ theorem isAggregatorTotal_funextReflAtId {mode : Mode} {level : Nat}
   obtain ⟨_, _, domainSuccess, codomainSuccess, _⟩ :=
     Option.mapTwo_eq_some arrowSuccess
   -- Decompose lamSuccess (RawTerm.lam → RawTerm.refl → applyRaw at lift)
-  unfold RawTerm.partialStrengthen? at lamSuccess
-  unfold RawTerm.partialRename? at lamSuccess
+  dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?] at lamSuccess
   split at lamSuccess
   rotate_left
   · cases lamSuccess
   next reflWitness reflSuccess =>
-    unfold RawTerm.partialRename? at reflSuccess
     split at reflSuccess
     rotate_left
     · cases reflSuccess
@@ -123,7 +121,7 @@ theorem isAggregatorTotal_funextReflAtId {mode : Mode} {level : Nat}
           applyRaw.partialStrengthen? strengthening.back.lift =
             some targetApplyRaw := applyRawSuccess
       -- Now discharge the dispatcher
-      unfold partialStrengthenTyped?
+      dsimp only [partialStrengthenTyped?]
       split
       · next domainFails =>
           rw [domainSuccess] at domainFails
@@ -166,7 +164,7 @@ theorem isAggregatorTotal_hcomp {mode : Mode} {level : Nat}
     sidesTotal strengthening typeStrengthens sidesRawSuccess
   have capTotalCall :=
     capTotal strengthening typeStrengthens capRawSuccess
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next sidesFails =>
       rw [sidesFails] at sidesTotalCall
@@ -220,8 +218,7 @@ theorem isAggregatorTotal_oeqFunext {mode : Mode} {level : Nat}
     codomainSuccess, _⟩ :=
     Option.mapTwo_eq_some arrowSuccess
   -- rawStrengthens : (RawTerm.oeqFunext pointwiseRaw).back = some _
-  unfold RawTerm.partialStrengthen? at rawStrengthens
-  unfold RawTerm.partialRename? at rawStrengthens
+  dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?] at rawStrengthens
   split at rawStrengthens
   rotate_left
   · cases rawStrengthens
@@ -325,7 +322,7 @@ theorem isAggregatorTotal_oeqFunext {mode : Mode} {level : Nat}
     have pointwiseTotalCall :=
       pointwiseTotal strengthening pointwiseTypeStrengthens
         pointwiseStrengthenSuccess
-    unfold partialStrengthenTyped?
+    dsimp only [partialStrengthenTyped?]
     split
     · next domainFails =>
         rw [domainSuccess] at domainFails
@@ -383,8 +380,7 @@ theorem isAggregatorTotal_funextIntroHet {mode : Mode} {level : Nat}
   obtain ⟨_, _, domainSuccess, codomainSuccess, _⟩ :=
     Option.mapTwo_eq_some arrowSuccess
   -- Decompose lamAOk (RawTerm.lam → applyARaw at lift)
-  unfold RawTerm.partialStrengthen? at lamAOk
-  unfold RawTerm.partialRename? at lamAOk
+  dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?] at lamAOk
   split at lamAOk
   rotate_left
   · cases lamAOk
@@ -393,8 +389,7 @@ theorem isAggregatorTotal_funextIntroHet {mode : Mode} {level : Nat}
         applyARaw.partialStrengthen? strengthening.back.lift =
           some targetApplyARaw := applyARawRenSuccess
     -- Decompose lamBOk (RawTerm.lam → applyBRaw at lift)
-    unfold RawTerm.partialStrengthen? at lamBOk
-    unfold RawTerm.partialRename? at lamBOk
+    dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?] at lamBOk
     split at lamBOk
     rotate_left
     · cases lamBOk
@@ -403,7 +398,7 @@ theorem isAggregatorTotal_funextIntroHet {mode : Mode} {level : Nat}
           applyBRaw.partialStrengthen? strengthening.back.lift =
             some targetApplyBRaw := applyBRawRenSuccess
       -- Discharge the dispatcher
-      unfold partialStrengthenTyped?
+      dsimp only [partialStrengthenTyped?]
       split
       · next domainFails =>
           rw [domainSuccess] at domainFails
@@ -462,7 +457,7 @@ theorem isAggregatorTotal_glueIntro {mode : Mode} {level : Nat}
     baseTotal strengthening baseTypeSuccess baseRawSuccess
   have partialTotalCall :=
     partialTotal strengthening baseTypeSuccess partialRawSuccess
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next baseTypeFails =>
       rw [baseTypeSuccess] at baseTypeFails

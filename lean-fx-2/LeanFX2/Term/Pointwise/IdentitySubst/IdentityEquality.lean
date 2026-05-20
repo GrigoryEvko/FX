@@ -18,7 +18,7 @@ theorem Term.subst_identity_refl_HEq
       (Term.subst (TermSubst.identity context)
         (Term.refl (context := context) carrier rawWitness))
       (Term.refl (context := context) carrier rawWitness) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.refl_HEq_congr
     (Ty.subst_identity carrier)
     (RawTerm.subst_identity rawWitness)
@@ -43,7 +43,7 @@ theorem Term.subst_identity_idJ_HEq
       (Term.subst (TermSubst.identity context)
         (Term.idJ baseCase witness))
       (Term.idJ baseCase witness) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.idJ_HEq_congr
     (Ty.subst_identity carrier)
     (RawTerm.subst_identity leftEndpoint)
@@ -62,7 +62,7 @@ theorem Term.subst_identity_oeqRefl_HEq
       (Term.subst (TermSubst.identity context)
         (Term.oeqRefl (context := context) carrier rawWitness))
       (Term.oeqRefl (context := context) carrier rawWitness) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.oeqRefl_HEq_congr
     (Ty.subst_identity carrier)
     (RawTerm.subst_identity rawWitness)
@@ -87,7 +87,7 @@ theorem Term.subst_identity_oeqJ_HEq
       (Term.subst (TermSubst.identity context)
         (Term.oeqJ baseCase witness))
       (Term.oeqJ baseCase witness) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.oeqJ_HEq_congr
     (Ty.subst_identity carrier)
     (RawTerm.subst_identity leftEndpoint)
@@ -109,7 +109,7 @@ theorem Term.subst_identity_idStrictRefl_HEq
           rawWitness))
       (Term.idStrictRefl (context := context) modeIsStrict carrier
         rawWitness) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.idStrictRefl_HEq_congr
     modeIsStrict
     (Ty.subst_identity carrier)
@@ -136,7 +136,7 @@ theorem Term.subst_identity_idStrictRec_HEq
       (Term.subst (TermSubst.identity context)
         (Term.idStrictRec modeIsStrict baseCase witness))
       (Term.idStrictRec modeIsStrict baseCase witness) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.idStrictRec_HEq_congr
     modeIsStrict
     (Ty.subst_identity carrier)

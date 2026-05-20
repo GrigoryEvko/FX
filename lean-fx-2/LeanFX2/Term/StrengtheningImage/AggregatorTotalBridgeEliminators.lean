@@ -55,7 +55,7 @@ theorem isAggregatorTotal_natElim {mode : Mode} {level : Nat}
     zeroTotal strengthening typeStrengthens zeroRawSuccess
   have succTotalCall :=
     succTotal strengthening arrowStrengthens succRawSuccess
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next scrutineeFails =>
       rw [scrutineeFails] at scrutineeTotalCall
@@ -129,7 +129,7 @@ theorem isAggregatorTotal_natRec {mode : Mode} {level : Nat}
     zeroTotal strengthening typeStrengthens zeroRawSuccess
   have succTotalCall :=
     succTotal strengthening outerArrowStrengthens succRawSuccess
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next scrutineeFails =>
       rw [scrutineeFails] at scrutineeTotalCall
@@ -223,7 +223,7 @@ theorem isAggregatorTotal_listElim_with_element {mode : Mode} {level : Nat}
     nilTotal strengthening typeStrengthens nilRawSuccess
   have consTotalCall :=
     consTotal strengthening outerArrowStrengthens consRawSuccess
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next elementFails =>
       rw [elementSuccess] at elementFails
@@ -304,7 +304,7 @@ theorem isAggregatorTotal_optionMatch_with_element {mode : Mode} {level : Nat}
     noneTotal strengthening typeStrengthens noneRawSuccess
   have someTotalCall :=
     someTotal strengthening arrowStrengthens someRawSuccess
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next elementFails =>
       rw [elementSuccess] at elementFails
@@ -401,7 +401,7 @@ theorem isAggregatorTotal_eitherMatch_with_lr_types {mode : Mode}
     leftTotal strengthening leftArrowStrengthens leftRawSuccess
   have rightTotalCall :=
     rightTotal strengthening rightArrowStrengthens rightRawSuccess
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next leftFails =>
       rw [leftTypeSuccess] at leftFails

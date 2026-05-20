@@ -47,7 +47,7 @@ theorem strengthenTyped?_rename_isSome_oeqFunext
           renameInverse renameInverseLeft renameInverseInjects)).isSome =
       true := by
   dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   have domainStrengthens :
       (domainType.rename forwardRename).partialStrengthen? renameInverse
         = some domainType := by
@@ -174,7 +174,7 @@ theorem strengthenTyped?_rename_isSome_equivIntroHet
           renameInverse renameInverseLeft renameInverseInjects)).isSome =
       true := by
   dsimp only [Term.rename]
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   have carrierAStrengthens :
       (carrierA.rename forwardRename).partialStrengthen? renameInverse =
         some carrierA := by
@@ -292,7 +292,7 @@ theorem strengthenTyped?_rename_isSome_boolElim
       true := by
   dsimp only [Term.rename]
   rw [partialStrengthenTyped?_isSome_castInvariant]
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   have motiveStrengthens :
       (motiveType.rename forwardRename.lift).partialStrengthen?
           renameInverse.lift =

@@ -27,13 +27,13 @@ theorem isTotalOnWeaken_natElim {mode : Mode} {level scope : Nat}
       (Term.weaken newType scrutinee)
       (Term.weaken newType zeroBranch)
       (Term.weaken newType succBranch))).isSome
-  unfold strengthenTyped?
-  unfold partialStrengthenTyped?
+  dsimp only [strengthenTyped?]
+  dsimp only [partialStrengthenTyped?]
   split
   · next scrutineeRecurse =>
       exfalso
       have totHyp := scrutineeIH newType
-      unfold strengthenTyped? at totHyp
+      dsimp only [strengthenTyped?] at totHyp
       have : Option.isSome (none (α := StrengtheningResult
           (ContextStrengthening.dropNewest context newType)
           (Term.weaken newType scrutinee))) = true :=
@@ -43,7 +43,7 @@ theorem isTotalOnWeaken_natElim {mode : Mode} {level scope : Nat}
     · next zeroRecurse =>
         exfalso
         have totHyp := zeroIH newType
-        unfold strengthenTyped? at totHyp
+        dsimp only [strengthenTyped?] at totHyp
         have : Option.isSome (none (α := StrengtheningResult
             (ContextStrengthening.dropNewest context newType)
             (Term.weaken newType zeroBranch))) = true :=
@@ -53,7 +53,7 @@ theorem isTotalOnWeaken_natElim {mode : Mode} {level scope : Nat}
       · next succRecurse =>
           exfalso
           have totHyp := succIH newType
-          unfold strengthenTyped? at totHyp
+          dsimp only [strengthenTyped?] at totHyp
           have : Option.isSome (none (α := StrengtheningResult
               (ContextStrengthening.dropNewest context newType)
               (Term.weaken newType succBranch))) = true :=
@@ -80,13 +80,13 @@ theorem isTotalOnWeaken_natRec {mode : Mode} {level scope : Nat}
       (Term.weaken newType scrutinee)
       (Term.weaken newType zeroBranch)
       (Term.weaken newType succBranch))).isSome
-  unfold strengthenTyped?
-  unfold partialStrengthenTyped?
+  dsimp only [strengthenTyped?]
+  dsimp only [partialStrengthenTyped?]
   split
   · next scrutineeRecurse =>
       exfalso
       have totHyp := scrutineeIH newType
-      unfold strengthenTyped? at totHyp
+      dsimp only [strengthenTyped?] at totHyp
       have : Option.isSome (none (α := StrengtheningResult
           (ContextStrengthening.dropNewest context newType)
           (Term.weaken newType scrutinee))) = true :=
@@ -96,7 +96,7 @@ theorem isTotalOnWeaken_natRec {mode : Mode} {level scope : Nat}
     · next zeroRecurse =>
         exfalso
         have totHyp := zeroIH newType
-        unfold strengthenTyped? at totHyp
+        dsimp only [strengthenTyped?] at totHyp
         have : Option.isSome (none (α := StrengtheningResult
             (ContextStrengthening.dropNewest context newType)
             (Term.weaken newType zeroBranch))) = true :=
@@ -106,7 +106,7 @@ theorem isTotalOnWeaken_natRec {mode : Mode} {level scope : Nat}
       · next succRecurse =>
           exfalso
           have totHyp := succIH newType
-          unfold strengthenTyped? at totHyp
+          dsimp only [strengthenTyped?] at totHyp
           have : Option.isSome (none (α := StrengtheningResult
               (ContextStrengthening.dropNewest context newType)
               (Term.weaken newType succBranch))) = true :=
@@ -134,8 +134,8 @@ theorem isTotalOnWeaken_listElim {mode : Mode} {level scope : Nat}
       (Term.weaken newType scrutinee)
       (Term.weaken newType nilBranch)
       (Term.weaken newType consBranch))).isSome
-  unfold strengthenTyped?
-  unfold partialStrengthenTyped?
+  dsimp only [strengthenTyped?]
+  dsimp only [partialStrengthenTyped?]
   split
   · next elementFails =>
       exfalso
@@ -150,7 +150,7 @@ theorem isTotalOnWeaken_listElim {mode : Mode} {level scope : Nat}
     · next scrutineeRecurse =>
         exfalso
         have totHyp := scrutineeIH newType
-        unfold strengthenTyped? at totHyp
+        dsimp only [strengthenTyped?] at totHyp
         have : Option.isSome (none (α := StrengtheningResult
             (ContextStrengthening.dropNewest context newType)
             (Term.weaken newType scrutinee))) = true :=
@@ -160,7 +160,7 @@ theorem isTotalOnWeaken_listElim {mode : Mode} {level scope : Nat}
       · next nilRecurse =>
           exfalso
           have totHyp := nilIH newType
-          unfold strengthenTyped? at totHyp
+          dsimp only [strengthenTyped?] at totHyp
           have : Option.isSome (none (α := StrengtheningResult
               (ContextStrengthening.dropNewest context newType)
               (Term.weaken newType nilBranch))) = true :=
@@ -170,7 +170,7 @@ theorem isTotalOnWeaken_listElim {mode : Mode} {level scope : Nat}
         · next consRecurse =>
             exfalso
             have totHyp := consIH newType
-            unfold strengthenTyped? at totHyp
+            dsimp only [strengthenTyped?] at totHyp
             have : Option.isSome (none (α := StrengtheningResult
                 (ContextStrengthening.dropNewest context newType)
                 (Term.weaken newType consBranch))) = true :=
@@ -196,8 +196,8 @@ theorem isTotalOnWeaken_optionMatch {mode : Mode} {level scope : Nat}
       (Term.weaken newType scrutinee)
       (Term.weaken newType noneBranch)
       (Term.weaken newType someBranch))).isSome
-  unfold strengthenTyped?
-  unfold partialStrengthenTyped?
+  dsimp only [strengthenTyped?]
+  dsimp only [partialStrengthenTyped?]
   split
   · next elementFails =>
       exfalso
@@ -212,7 +212,7 @@ theorem isTotalOnWeaken_optionMatch {mode : Mode} {level scope : Nat}
     · next scrutineeRecurse =>
         exfalso
         have totHyp := scrutineeIH newType
-        unfold strengthenTyped? at totHyp
+        dsimp only [strengthenTyped?] at totHyp
         have : Option.isSome (none (α := StrengtheningResult
             (ContextStrengthening.dropNewest context newType)
             (Term.weaken newType scrutinee))) = true :=
@@ -222,7 +222,7 @@ theorem isTotalOnWeaken_optionMatch {mode : Mode} {level scope : Nat}
       · next noneRecurse =>
           exfalso
           have totHyp := noneIH newType
-          unfold strengthenTyped? at totHyp
+          dsimp only [strengthenTyped?] at totHyp
           have : Option.isSome (none (α := StrengtheningResult
               (ContextStrengthening.dropNewest context newType)
               (Term.weaken newType noneBranch))) = true :=
@@ -232,7 +232,7 @@ theorem isTotalOnWeaken_optionMatch {mode : Mode} {level scope : Nat}
         · next someRecurse =>
             exfalso
             have totHyp := someIH newType
-            unfold strengthenTyped? at totHyp
+            dsimp only [strengthenTyped?] at totHyp
             have : Option.isSome (none (α := StrengtheningResult
                 (ContextStrengthening.dropNewest context newType)
                 (Term.weaken newType someBranch))) = true :=
@@ -259,8 +259,8 @@ theorem isTotalOnWeaken_eitherMatch {mode : Mode} {level scope : Nat}
       (Term.weaken newType scrutinee)
       (Term.weaken newType leftBranch)
       (Term.weaken newType rightBranch))).isSome
-  unfold strengthenTyped?
-  unfold partialStrengthenTyped?
+  dsimp only [strengthenTyped?]
+  dsimp only [partialStrengthenTyped?]
   split
   · next leftFails =>
       exfalso
@@ -295,7 +295,7 @@ theorem isTotalOnWeaken_eitherMatch {mode : Mode} {level scope : Nat}
         · next scrutineeRecurse =>
             exfalso
             have totHyp := scrutineeIH newType
-            unfold strengthenTyped? at totHyp
+            dsimp only [strengthenTyped?] at totHyp
             have : Option.isSome (none (α := StrengtheningResult
                 (ContextStrengthening.dropNewest context newType)
                 (Term.weaken newType scrutinee))) = true :=
@@ -305,7 +305,7 @@ theorem isTotalOnWeaken_eitherMatch {mode : Mode} {level scope : Nat}
           · next leftRecurse =>
               exfalso
               have totHyp := leftIH newType
-              unfold strengthenTyped? at totHyp
+              dsimp only [strengthenTyped?] at totHyp
               have : Option.isSome (none (α := StrengtheningResult
                   (ContextStrengthening.dropNewest context newType)
                   (Term.weaken newType leftBranch))) = true :=
@@ -315,7 +315,7 @@ theorem isTotalOnWeaken_eitherMatch {mode : Mode} {level scope : Nat}
             · next rightRecurse =>
                 exfalso
                 have totHyp := rightIH newType
-                unfold strengthenTyped? at totHyp
+                dsimp only [strengthenTyped?] at totHyp
                 have : Option.isSome (none (α := StrengtheningResult
                     (ContextStrengthening.dropNewest context newType)
                     (Term.weaken newType rightBranch))) = true :=
@@ -354,8 +354,8 @@ theorem isTotalOnWeaken_effectPerform {mode : Mode} {level scope : Nat}
         canPerformOperation)
       (Term.weaken newType operationTag)
       (Term.weaken newType arguments))).isSome
-  unfold strengthenTyped?
-  unfold partialStrengthenTyped?
+  dsimp only [strengthenTyped?]
+  dsimp only [partialStrengthenTyped?]
   split
   · next effectTagFails =>
       exfalso
@@ -400,7 +400,7 @@ theorem isTotalOnWeaken_effectPerform {mode : Mode} {level scope : Nat}
         · next operationRecurse =>
             exfalso
             have totHyp := operationIH newType
-            unfold strengthenTyped? at totHyp
+            dsimp only [strengthenTyped?] at totHyp
             have : Option.isSome (none (α := StrengtheningResult
                 (ContextStrengthening.dropNewest context newType)
                 (Term.weaken newType operationTag))) = true :=
@@ -410,7 +410,7 @@ theorem isTotalOnWeaken_effectPerform {mode : Mode} {level scope : Nat}
           · next argumentsRecurse =>
               exfalso
               have totHyp := argumentsIH newType
-              unfold strengthenTyped? at totHyp
+              dsimp only [strengthenTyped?] at totHyp
               have : Option.isSome (none (α := StrengtheningResult
                   (ContextStrengthening.dropNewest context newType)
                   (Term.weaken newType arguments))) = true :=

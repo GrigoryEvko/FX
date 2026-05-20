@@ -155,20 +155,20 @@ theorem Term.weaken_subst_singleton_effectPerform_heq
             canPerformOperation operationTag arguments)))
       (Term.effectPerform effectTag effectRow operationSignature
         canPerformOperation operationTag arguments) := by
+  -- `Term.weaken` is `@[reducible]`, so each hypothesis already has the
+  -- renamed shape definitionally; no `simpa` rewrite is required.
   have operationTagWithoutCastsHEq :
       HEq
         (Term.subst (TermSubst.singleton singletonTerm)
           (Term.rename (TermRenaming.weakenStep context newType)
             operationTag))
-        operationTag := by
-    simpa only [Term.weaken] using operationTagHEq
+        operationTag := operationTagHEq
   have argumentsWithoutCastsHEq :
       HEq
         (Term.subst (TermSubst.singleton singletonTerm)
           (Term.rename (TermRenaming.weakenStep context newType)
             arguments))
-        arguments := by
-    simpa only [Term.weaken] using argumentsHEq
+        arguments := argumentsHEq
   cases operationSignature with
   | mk effectLabel argumentCarrier resultCarrier =>
     cases canPerformOperation with
@@ -444,18 +444,19 @@ theorem Term.weaken_subst_singleton_equivIntroHet_heq
         substitutedRightInvWithCast :=
     Term.type_eq_cast_heq substitutedRightInvTypeEq
       substitutedRightInvWithCast
+  -- `Term.weaken` is `@[reducible]` and `renamedLeftInv` / `renamedRightInv`
+  -- are `let`-bound to the renamed shape, so each hypothesis already matches
+  -- definitionally; no `simpa` rewrite is required.
   have leftInvWithoutCastsHEq :
       HEq
         (Term.subst (TermSubst.singleton singletonTerm)
           renamedLeftInv)
-        leftInv := by
-    simpa only [Term.weaken] using leftInvHEq
+        leftInv := leftInvHEq
   have rightInvWithoutCastsHEq :
       HEq
         (Term.subst (TermSubst.singleton singletonTerm)
           renamedRightInv)
-        rightInv := by
-    simpa only [Term.weaken] using rightInvHEq
+        rightInv := rightInvHEq
   have leftInvFullHEq :
       HEq (substitutedLeftInvTypeEq ▸ substitutedLeftInvWithCast)
         leftInv :=

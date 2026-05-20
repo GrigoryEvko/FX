@@ -56,8 +56,8 @@ theorem isTotalOnWeaken_oeqFunext {mode : Mode} {level scope : Nat}
   intro newType
   rw [weaken_oeqFunext_unfolds newType domainType codomainType
     leftFunctionRaw rightFunctionRaw pointwiseProof]
-  unfold strengthenTyped?
-  unfold partialStrengthenTyped?
+  dsimp only [strengthenTyped?]
+  dsimp only [partialStrengthenTyped?]
   split
   · next domainFails =>
       exfalso
@@ -123,14 +123,14 @@ theorem isTotalOnWeaken_oeqFunext {mode : Mode} {level scope : Nat}
               exfalso
               -- INNER CAST: pointwiseRecurse : (eq ▸ Term.rename _ pp).partialStrengthenTyped? = none
               have totHyp := pointwiseIH newType
-              unfold strengthenTyped? at totHyp
+              dsimp only [strengthenTyped?] at totHyp
               have invariance :=
                 strengthenTyped?_isSome_castInvariant
                   (Term.rename
                     (TermRenaming.weakenStep context newType) pointwiseProof)
                   (oeqFunextPointwiseType_rename RawRenaming.weaken
                     domainType codomainType leftFunctionRaw rightFunctionRaw)
-              unfold strengthenTyped? at invariance
+              dsimp only [strengthenTyped?] at invariance
               rw [pointwiseRecurse] at invariance
               rw [totHyp] at invariance
               cases invariance
@@ -195,8 +195,8 @@ theorem isTotalOnWeaken_equivIntroHet {mode : Mode} {level scope : Nat}
     IsTotalOnWeaken (Term.equivIntroHet forward backward leftInv rightInv) := by
   intro newType
   rw [weaken_equivIntroHet_unfolds newType forward backward leftInv rightInv]
-  unfold strengthenTyped?
-  unfold partialStrengthenTyped?
+  dsimp only [strengthenTyped?]
+  dsimp only [partialStrengthenTyped?]
   split
   · next carrierAFails =>
       exfalso
@@ -221,7 +221,7 @@ theorem isTotalOnWeaken_equivIntroHet {mode : Mode} {level scope : Nat}
       · next forwardRecurse =>
           exfalso
           have totHyp := forwardIH newType
-          unfold strengthenTyped? at totHyp
+          dsimp only [strengthenTyped?] at totHyp
           have : Option.isSome (none (α := StrengtheningResult
               (ContextStrengthening.dropNewest context newType)
               (Term.weaken newType forward))) = true :=
@@ -231,7 +231,7 @@ theorem isTotalOnWeaken_equivIntroHet {mode : Mode} {level scope : Nat}
         · next backwardRecurse =>
             exfalso
             have totHyp := backwardIH newType
-            unfold strengthenTyped? at totHyp
+            dsimp only [strengthenTyped?] at totHyp
             have : Option.isSome (none (α := StrengtheningResult
                 (ContextStrengthening.dropNewest context newType)
                 (Term.weaken newType backward))) = true :=
@@ -242,13 +242,13 @@ theorem isTotalOnWeaken_equivIntroHet {mode : Mode} {level scope : Nat}
               exfalso
               -- INNER CAST on leftInv
               have totHyp := leftInvIH newType
-              unfold strengthenTyped? at totHyp
+              dsimp only [strengthenTyped?] at totHyp
               have invariance :=
                 strengthenTyped?_isSome_castInvariant
                   (Term.rename (TermRenaming.weakenStep context newType) leftInv)
                   (equivIntroHetLeftInverseType_rename RawRenaming.weaken
                     carrierA forwardRaw backwardRaw)
-              unfold strengthenTyped? at invariance
+              dsimp only [strengthenTyped?] at invariance
               rw [leftInvRecurse] at invariance
               rw [totHyp] at invariance
               cases invariance
@@ -257,13 +257,13 @@ theorem isTotalOnWeaken_equivIntroHet {mode : Mode} {level scope : Nat}
                 exfalso
                 -- INNER CAST on rightInv
                 have totHyp := rightInvIH newType
-                unfold strengthenTyped? at totHyp
+                dsimp only [strengthenTyped?] at totHyp
                 have invariance :=
                   strengthenTyped?_isSome_castInvariant
                     (Term.rename (TermRenaming.weakenStep context newType) rightInv)
                     (equivIntroHetRightInverseType_rename RawRenaming.weaken
                       carrierB forwardRaw backwardRaw)
-                unfold strengthenTyped? at invariance
+                dsimp only [strengthenTyped?] at invariance
                 rw [rightInvRecurse] at invariance
                 rw [totHyp] at invariance
                 cases invariance
@@ -361,8 +361,8 @@ theorem isTotalOnWeaken_boolElim {mode : Mode} {level scope : Nat}
     rw [weaken_boolElim_unfolds newType scrutinee thenBranch elseBranch]
     rw [strengthenTyped?_isSome_castInvariant]
     exact uncastTotality
-  unfold strengthenTyped?
-  unfold partialStrengthenTyped?
+  dsimp only [strengthenTyped?]
+  dsimp only [partialStrengthenTyped?]
   split
   · next motiveFails =>
       exfalso
@@ -383,7 +383,7 @@ theorem isTotalOnWeaken_boolElim {mode : Mode} {level scope : Nat}
     · next scrutineeRecurse =>
         exfalso
         have totHyp := scrutineeIH newType
-        unfold strengthenTyped? at totHyp
+        dsimp only [strengthenTyped?] at totHyp
         have : Option.isSome (none (α := StrengtheningResult
             (ContextStrengthening.dropNewest context newType)
             (Term.weaken newType scrutinee))) = true :=
@@ -394,7 +394,7 @@ theorem isTotalOnWeaken_boolElim {mode : Mode} {level scope : Nat}
           exfalso
           -- INNER CAST on thenBranch
           have totHyp := thenIH newType
-          unfold strengthenTyped? at totHyp
+          dsimp only [strengthenTyped?] at totHyp
           change
             (partialStrengthenTyped?
               (Term.rename
@@ -406,7 +406,7 @@ theorem isTotalOnWeaken_boolElim {mode : Mode} {level scope : Nat}
                 (TermRenaming.weakenStep context newType) thenBranch)
               (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolTrue
                 RawRenaming.weaken)
-          unfold strengthenTyped? at invariance
+          dsimp only [strengthenTyped?] at invariance
           -- invariance : isSome cast = isSome uncast
           -- totHyp : isSome uncast = true
           -- => isSome cast = true
@@ -421,7 +421,7 @@ theorem isTotalOnWeaken_boolElim {mode : Mode} {level scope : Nat}
         · next elseRecurse =>
             exfalso
             have totHyp := elseIH newType
-            unfold strengthenTyped? at totHyp
+            dsimp only [strengthenTyped?] at totHyp
             change
               (partialStrengthenTyped?
                 (Term.rename
@@ -433,7 +433,7 @@ theorem isTotalOnWeaken_boolElim {mode : Mode} {level scope : Nat}
                   (TermRenaming.weakenStep context newType) elseBranch)
                 (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolFalse
                   RawRenaming.weaken)
-            unfold strengthenTyped? at invariance
+            dsimp only [strengthenTyped?] at invariance
             have isSomeCastTrue : _ = _ := invariance.trans totHyp
             have isSomeCastFalse : _ = _ := congrArg Option.isSome elseRecurse
             have contradiction : (true : Bool) = false := isSomeCastTrue.symm.trans isSomeCastFalse

@@ -238,7 +238,7 @@ theorem isAggregatorTotal_equivIntroHet_with_inv_raws {mode : Mode}
     leftInvTotal strengthening leftInvTypeStrengthens leftInvRawSuccess
   have rightInvTotalCall :=
     rightInvTotal strengthening rightInvTypeStrengthens rightInvRawSuccess
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next carrierAFails =>
       rw [carrierASuccess] at carrierAFails
@@ -328,7 +328,7 @@ theorem isAggregatorTotal_sessionSend_with_payload {mode : Mode}
       channelTotal strengthening sessionTypeStrengthens channelRawSuccess
     have payloadTotalCall :=
       payloadTotal strengthening payloadTypeSuccess payloadRawSuccess
-    unfold partialStrengthenTyped?
+    dsimp only [partialStrengthenTyped?]
     split
     · next protocolFails =>
         rw [protocolSuccess] at protocolFails
@@ -423,7 +423,7 @@ theorem isAggregatorTotal_boolElim_with_motive {mode : Mode} {level : Nat}
     thenTotal strengthening thenTypeStrengthens thenRawSuccess
   have elseTotalCall :=
     elseTotal strengthening elseTypeStrengthens elseRawSuccess
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next motiveFails =>
       rw [motiveSuccess] at motiveFails

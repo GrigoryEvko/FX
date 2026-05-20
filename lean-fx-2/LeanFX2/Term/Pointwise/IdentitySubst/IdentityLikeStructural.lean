@@ -35,7 +35,7 @@ theorem Term.subst_identityLike_pathApp_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.pathApp_HEq_congr
     modeIsUnivalent
     (substitutionIsIdentityLike.tySubst_eq carrierType)
@@ -72,7 +72,7 @@ theorem Term.subst_identityLike_glueIntro_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.glueIntro_HEq_congr
     modeIsUnivalent
     (substitutionIsIdentityLike.tySubst_eq baseType)
@@ -103,7 +103,7 @@ theorem Term.subst_identityLike_glueElim_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.glueElim_HEq_congr
     modeIsUnivalent
     (substitutionIsIdentityLike.tySubst_eq baseType)
@@ -135,7 +135,7 @@ theorem Term.subst_identityLike_hcomp_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.hcomp_HEq_congr
     modeIsUnivalent
     (substitutionIsIdentityLike.tySubst_eq carrierType)
@@ -162,7 +162,7 @@ theorem Term.subst_identityLike_recordIntro_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.recordIntro_HEq_congr
     (substitutionIsIdentityLike.tySubst_eq singleFieldType)
     (substitutionIsIdentityLike.rawSubst_eq firstRaw)
@@ -187,7 +187,7 @@ theorem Term.subst_identityLike_recordProj_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.recordProj_HEq_congr
     (substitutionIsIdentityLike.tySubst_eq singleFieldType)
     (substitutionIsIdentityLike.rawSubst_eq recordRaw)
@@ -214,7 +214,7 @@ theorem Term.subst_identityLike_refineElim_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.refineElim_HEq_congr
     (substitutionIsIdentityLike.tySubst_eq baseType)
     ((substitutionIsIdentityLike.lift Ty.unit).rawSubst_eq predicate)
@@ -245,7 +245,7 @@ theorem Term.subst_identityLike_codataUnfold_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.codataUnfold_HEq_congr
     (substitutionIsIdentityLike.tySubst_eq stateType)
     (substitutionIsIdentityLike.tySubst_eq outputType)
@@ -273,7 +273,7 @@ theorem Term.subst_identityLike_codataDest_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.codataDest_HEq_congr
     (substitutionIsIdentityLike.tySubst_eq stateType)
     (substitutionIsIdentityLike.tySubst_eq outputType)
@@ -304,7 +304,7 @@ theorem Term.subst_identityLike_sessionSend_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.sessionSend_HEq_congr
     (substitutionIsIdentityLike.rawSubst_eq protocolStep)
     (substitutionIsIdentityLike.tySubst_eq payloadType)
@@ -331,7 +331,7 @@ theorem Term.subst_identityLike_sessionRecv_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.sessionRecv_HEq_congr
     (substitutionIsIdentityLike.rawSubst_eq protocolStep)
     (substitutionIsIdentityLike.rawSubst_eq channelRaw)
@@ -362,7 +362,7 @@ theorem Term.subst_identityLike_cumulUp_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.cumulUp_HEq_congr
     (substitutionIsIdentityLike.rawSubst_eq codeRaw)
     typeCodeHEq
@@ -389,7 +389,7 @@ theorem Term.subst_identityLike_equivApp_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.equivApp_HEq_congr
     (substitutionIsIdentityLike.tySubst_eq carrierA)
     (substitutionIsIdentityLike.tySubst_eq carrierB)
@@ -419,7 +419,7 @@ theorem Term.subst_identityLike_equivApply_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.equivApply_HEq_congr
     (substitutionIsIdentityLike.tySubst_eq carrierA)
     (substitutionIsIdentityLike.tySubst_eq carrierB)

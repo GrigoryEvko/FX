@@ -112,9 +112,8 @@ theorem RawTerm.not_usesNewestSlot?_imp_weaken {scope : Nat}
     (term : RawTerm (scope + 1))
     (slotIsUnused : RawTerm.usesNewestSlot? term = false) :
     ∃ extracted : RawTerm scope, term = extracted.weaken := by
-  unfold RawTerm.usesNewestSlot? at slotIsUnused
-  unfold RawTerm.strengthen? at slotIsUnused
-  unfold RawTerm.partialStrengthen? at slotIsUnused
+  dsimp only [RawTerm.usesNewestSlot?, RawTerm.strengthen?,
+    RawTerm.partialStrengthen?] at slotIsUnused
   cases success : RawTerm.partialRename? term PartialRawRenaming.dropNewest with
   | none =>
       rw [success] at slotIsUnused
@@ -127,7 +126,7 @@ theorem RawTerm.not_usesNewestSlot?_imp_weaken {scope : Nat}
 theorem RawTerm.weaken_not_usesNewestSlot? {scope : Nat}
     (term : RawTerm scope) :
     RawTerm.usesNewestSlot? term.weaken = false := by
-  unfold RawTerm.usesNewestSlot?
+  dsimp only [RawTerm.usesNewestSlot?]
   rw [RawTerm.strengthen?_weaken term]
   rfl
 

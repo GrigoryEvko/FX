@@ -22,22 +22,22 @@ theorem Ty.rename_injective_under_injective_renaming
   induction sourceType with
   | unit =>
       intro _ _ _ otherType renameEq
-      cases otherType <;> simp only [Ty.rename] at renameEq
+      cases otherType <;> dsimp only [Ty.rename] at renameEq
       any_goals exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       rfl
   | bool =>
       intro _ _ _ otherType renameEq
-      cases otherType <;> simp only [Ty.rename] at renameEq
+      cases otherType <;> dsimp only [Ty.rename] at renameEq
       any_goals exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       rfl
   | nat =>
       intro _ _ _ otherType renameEq
-      cases otherType <;> simp only [Ty.rename] at renameEq
+      cases otherType <;> dsimp only [Ty.rename] at renameEq
       any_goals exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       rfl
   | arrow domainA codomainA domainIH codomainIH =>
       intro _ _ rhoInjective otherType renameEq
-      cases otherType <;> simp only [Ty.rename] at renameEq
+      cases otherType <;> dsimp only [Ty.rename] at renameEq
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
@@ -48,7 +48,7 @@ theorem Ty.rename_injective_under_injective_renaming
       any_goals exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
   | piTy domainA codomainA domainIH codomainIH =>
       intro _ _ rhoInjective otherType renameEq
-      cases otherType <;> simp only [Ty.rename] at renameEq
+      cases otherType <;> dsimp only [Ty.rename] at renameEq
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
@@ -60,7 +60,7 @@ theorem Ty.rename_injective_under_injective_renaming
       any_goals exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
   | sigmaTy firstA secondA firstIH secondIH =>
       intro _ _ rhoInjective otherType renameEq
-      cases otherType <;> simp only [Ty.rename] at renameEq
+      cases otherType <;> dsimp only [Ty.rename] at renameEq
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
@@ -73,7 +73,7 @@ theorem Ty.rename_injective_under_injective_renaming
       any_goals exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
   | tyVar positionA =>
       intro _ _ rhoInjective otherType renameEq
-      cases otherType <;> simp only [Ty.rename] at renameEq
+      cases otherType <;> dsimp only [Ty.rename] at renameEq
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
@@ -86,7 +86,7 @@ theorem Ty.rename_injective_under_injective_renaming
       any_goals exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
   | id carrierA leftA rightA carrierIH =>
       intro _ _ rhoInjective otherType renameEq
-      cases otherType <;> simp only [Ty.rename] at renameEq
+      cases otherType <;> dsimp only [Ty.rename] at renameEq
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
@@ -104,7 +104,7 @@ theorem Ty.rename_injective_under_injective_renaming
       any_goals exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
   | listType elementA elementIH =>
       intro _ _ rhoInjective otherType renameEq
-      cases otherType <;> simp only [Ty.rename] at renameEq
+      cases otherType <;> dsimp only [Ty.rename] at renameEq
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
@@ -119,7 +119,7 @@ theorem Ty.rename_injective_under_injective_renaming
       any_goals exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
   | optionType elementA elementIH =>
       intro _ _ rhoInjective otherType renameEq
-      cases otherType <;> simp only [Ty.rename] at renameEq
+      cases otherType <;> dsimp only [Ty.rename] at renameEq
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
@@ -135,7 +135,7 @@ theorem Ty.rename_injective_under_injective_renaming
       any_goals exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
   | eitherType leftA rightA leftIH rightIH =>
       intro _ _ rhoInjective otherType renameEq
-      cases otherType <;> simp only [Ty.rename] at renameEq
+      cases otherType <;> dsimp only [Ty.rename] at renameEq
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
@@ -152,7 +152,7 @@ theorem Ty.rename_injective_under_injective_renaming
       any_goals exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
   | «universe» universeLevelA levelLeA =>
       intro _ _ _ otherType renameEq
-      cases otherType <;> simp only [Ty.rename] at renameEq
+      cases otherType <;> dsimp only [Ty.rename] at renameEq
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
@@ -170,7 +170,7 @@ theorem Ty.rename_injective_under_injective_renaming
       any_goals exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
   | empty =>
       intro _ _ _ otherType renameEq
-      cases otherType <;> simp only [Ty.rename] at renameEq
+      cases otherType <;> dsimp only [Ty.rename] at renameEq
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
@@ -187,7 +187,7 @@ theorem Ty.rename_injective_under_injective_renaming
       any_goals exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
   | interval =>
       intro _ _ _ otherType renameEq
-      cases otherType <;> simp only [Ty.rename] at renameEq
+      cases otherType <;> dsimp only [Ty.rename] at renameEq
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
@@ -205,7 +205,7 @@ theorem Ty.rename_injective_under_injective_renaming
       any_goals exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
   | path carrierA leftA rightA carrierIH =>
       intro _ _ rhoInjective otherType renameEq
-      cases otherType <;> simp only [Ty.rename] at renameEq
+      cases otherType <;> dsimp only [Ty.rename] at renameEq
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       · exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
@@ -230,7 +230,7 @@ theorem Ty.rename_injective_under_injective_renaming
       any_goals exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
   | glue baseA boundaryA baseIH =>
       intro _ _ rhoInjective otherType renameEq
-      cases otherType <;> simp only [Ty.rename] at renameEq
+      cases otherType <;> dsimp only [Ty.rename] at renameEq
       any_goals exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       rename_i baseB boundaryB
       injection renameEq with _ baseEq boundaryEq
@@ -239,7 +239,7 @@ theorem Ty.rename_injective_under_injective_renaming
           rhoInjective boundaryB boundaryEq]
   | oeq carrierA leftA rightA carrierIH =>
       intro _ _ rhoInjective otherType renameEq
-      cases otherType <;> simp only [Ty.rename] at renameEq
+      cases otherType <;> dsimp only [Ty.rename] at renameEq
       any_goals exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       rename_i carrierB leftB rightB
       injection renameEq with _ carrierEq leftEq rightEq
@@ -250,7 +250,7 @@ theorem Ty.rename_injective_under_injective_renaming
           rhoInjective rightB rightEq]
   | idStrict carrierA leftA rightA carrierIH =>
       intro _ _ rhoInjective otherType renameEq
-      cases otherType <;> simp only [Ty.rename] at renameEq
+      cases otherType <;> dsimp only [Ty.rename] at renameEq
       any_goals exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       rename_i carrierB leftB rightB
       injection renameEq with _ carrierEq leftEq rightEq
@@ -261,7 +261,7 @@ theorem Ty.rename_injective_under_injective_renaming
           rhoInjective rightB rightEq]
   | equiv domainA codomainA domainIH codomainIH =>
       intro _ _ rhoInjective otherType renameEq
-      cases otherType <;> simp only [Ty.rename] at renameEq
+      cases otherType <;> dsimp only [Ty.rename] at renameEq
       any_goals exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       rename_i domainB codomainB
       injection renameEq with _ domainEq codomainEq
@@ -269,7 +269,7 @@ theorem Ty.rename_injective_under_injective_renaming
         codomainIH rhoInjective _ codomainEq]
   | refine baseA predicateA baseIH =>
       intro _ _ rhoInjective otherType renameEq
-      cases otherType <;> simp only [Ty.rename] at renameEq
+      cases otherType <;> dsimp only [Ty.rename] at renameEq
       any_goals exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       rename_i baseB predicateB
       injection renameEq with _ baseEq predicateEq
@@ -278,21 +278,21 @@ theorem Ty.rename_injective_under_injective_renaming
           (RawRenamingInjective.lift rhoInjective) predicateB predicateEq]
   | record singleFieldA singleFieldIH =>
       intro _ _ rhoInjective otherType renameEq
-      cases otherType <;> simp only [Ty.rename] at renameEq
+      cases otherType <;> dsimp only [Ty.rename] at renameEq
       any_goals exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       rename_i singleFieldB
       injection renameEq with _ singleFieldEq
       rw [singleFieldIH rhoInjective _ singleFieldEq]
   | codata stateA outputA stateIH outputIH =>
       intro _ _ rhoInjective otherType renameEq
-      cases otherType <;> simp only [Ty.rename] at renameEq
+      cases otherType <;> dsimp only [Ty.rename] at renameEq
       any_goals exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       rename_i stateB outputB
       injection renameEq with _ stateEq outputEq
       rw [stateIH rhoInjective _ stateEq, outputIH rhoInjective _ outputEq]
   | session protocolA =>
       intro _ _ rhoInjective otherType renameEq
-      cases otherType <;> simp only [Ty.rename] at renameEq
+      cases otherType <;> dsimp only [Ty.rename] at renameEq
       any_goals exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       rename_i protocolB
       injection renameEq with _ protocolEq
@@ -300,7 +300,7 @@ theorem Ty.rename_injective_under_injective_renaming
         rhoInjective protocolB protocolEq]
   | effect carrierA effectA carrierIH =>
       intro _ _ rhoInjective otherType renameEq
-      cases otherType <;> simp only [Ty.rename] at renameEq
+      cases otherType <;> dsimp only [Ty.rename] at renameEq
       any_goals exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       rename_i carrierB effectB
       injection renameEq with _ carrierEq effectEq
@@ -309,7 +309,7 @@ theorem Ty.rename_injective_under_injective_renaming
           rhoInjective effectB effectEq]
   | modal modalityTagA carrierA carrierIH =>
       intro _ _ rhoInjective otherType renameEq
-      cases otherType <;> simp only [Ty.rename] at renameEq
+      cases otherType <;> dsimp only [Ty.rename] at renameEq
       any_goals exact Ty.noConfusion rfl rfl (heq_of_eq renameEq)
       rename_i modalityTagB carrierB
       injection renameEq with _ tagEq carrierEq

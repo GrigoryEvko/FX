@@ -20,8 +20,8 @@ theorem isTotalOnWeaken_equivReflId {mode : Mode} {level scope : Nat}
   intro newType
   show (strengthenTyped? (Term.equivReflId
       (context := context.cons newType) carrier.weaken)).isSome
-  unfold strengthenTyped?
-  unfold partialStrengthenTyped?
+  dsimp only [strengthenTyped?]
+  dsimp only [partialStrengthenTyped?]
   split
   · next carrierFails =>
       exfalso
@@ -47,8 +47,8 @@ theorem isTotalOnWeaken_equivReflIdAtId {mode : Mode} {level scope : Nat}
   show (strengthenTyped? (Term.equivReflIdAtId
       (context := context.cons newType) innerLevel innerLevelLt
       carrier.weaken carrierRaw.weaken)).isSome
-  unfold strengthenTyped?
-  unfold partialStrengthenTyped?
+  dsimp only [strengthenTyped?]
+  dsimp only [partialStrengthenTyped?]
   split
   · next carrierFails =>
       exfalso
@@ -84,8 +84,8 @@ theorem isTotalOnWeaken_glueElim {mode : Mode} {level scope : Nat}
   intro newType
   show (strengthenTyped? (Term.glueElim modeIsUnivalent
       (Term.weaken newType gluedValue))).isSome
-  unfold strengthenTyped?
-  unfold partialStrengthenTyped?
+  dsimp only [strengthenTyped?]
+  dsimp only [partialStrengthenTyped?]
   split
   · next baseFails =>
       exfalso
@@ -110,7 +110,7 @@ theorem isTotalOnWeaken_glueElim {mode : Mode} {level scope : Nat}
       · next gluedRecurse =>
           exfalso
           have totHyp := gluedIH newType
-          unfold strengthenTyped? at totHyp
+          dsimp only [strengthenTyped?] at totHyp
           have : Option.isSome (none (α := StrengtheningResult
               (ContextStrengthening.dropNewest context newType)
               (Term.weaken newType gluedValue))) = true :=
@@ -134,13 +134,13 @@ theorem isTotalOnWeaken_hcomp {mode : Mode} {level scope : Nat}
   show (strengthenTyped? (Term.hcomp modeIsUnivalent
       (Term.weaken newType sidesValue)
       (Term.weaken newType capValue))).isSome
-  unfold strengthenTyped?
-  unfold partialStrengthenTyped?
+  dsimp only [strengthenTyped?]
+  dsimp only [partialStrengthenTyped?]
   split
   · next sidesRecurse =>
       exfalso
       have totHyp := sidesIH newType
-      unfold strengthenTyped? at totHyp
+      dsimp only [strengthenTyped?] at totHyp
       have : Option.isSome (none (α := StrengtheningResult
           (ContextStrengthening.dropNewest context newType)
           (Term.weaken newType sidesValue))) = true :=
@@ -150,7 +150,7 @@ theorem isTotalOnWeaken_hcomp {mode : Mode} {level scope : Nat}
     · next capRecurse =>
         exfalso
         have totHyp := capIH newType
-        unfold strengthenTyped? at totHyp
+        dsimp only [strengthenTyped?] at totHyp
         have : Option.isSome (none (α := StrengtheningResult
             (ContextStrengthening.dropNewest context newType)
             (Term.weaken newType capValue))) = true :=
@@ -177,8 +177,8 @@ theorem isTotalOnWeaken_glueIntro {mode : Mode} {level scope : Nat}
       baseType.weaken boundaryWitness.weaken
       (Term.weaken newType baseValue)
       (Term.weaken newType partialValue))).isSome
-  unfold strengthenTyped?
-  unfold partialStrengthenTyped?
+  dsimp only [strengthenTyped?]
+  dsimp only [partialStrengthenTyped?]
   split
   · next baseFails =>
       exfalso
@@ -203,7 +203,7 @@ theorem isTotalOnWeaken_glueIntro {mode : Mode} {level scope : Nat}
       · next baseRecurse =>
           exfalso
           have totHyp := baseIH newType
-          unfold strengthenTyped? at totHyp
+          dsimp only [strengthenTyped?] at totHyp
           have : Option.isSome (none (α := StrengtheningResult
               (ContextStrengthening.dropNewest context newType)
               (Term.weaken newType baseValue))) = true :=
@@ -213,7 +213,7 @@ theorem isTotalOnWeaken_glueIntro {mode : Mode} {level scope : Nat}
         · next partialRecurse =>
             exfalso
             have totHyp := partialIH newType
-            unfold strengthenTyped? at totHyp
+            dsimp only [strengthenTyped?] at totHyp
             have : Option.isSome (none (α := StrengtheningResult
                 (ContextStrengthening.dropNewest context newType)
                 (Term.weaken newType partialValue))) = true :=
@@ -249,8 +249,8 @@ theorem isTotalOnWeaken_transp {mode : Mode} {level scope : Nat}
       sourceTypeRaw.weaken targetTypeRaw.weaken
       (Term.weaken newType typePath)
       (Term.weaken newType sourceValue))).isSome
-  unfold strengthenTyped?
-  unfold partialStrengthenTyped?
+  dsimp only [strengthenTyped?]
+  dsimp only [partialStrengthenTyped?]
   split
   · next sourceTypeFails =>
       exfalso
@@ -295,7 +295,7 @@ theorem isTotalOnWeaken_transp {mode : Mode} {level scope : Nat}
           · next pathRecurse =>
               exfalso
               have totHyp := pathIH newType
-              unfold strengthenTyped? at totHyp
+              dsimp only [strengthenTyped?] at totHyp
               have : Option.isSome (none (α := StrengtheningResult
                   (ContextStrengthening.dropNewest context newType)
                   (Term.weaken newType typePath))) = true :=
@@ -305,7 +305,7 @@ theorem isTotalOnWeaken_transp {mode : Mode} {level scope : Nat}
             · next sourceRecurse =>
                 exfalso
                 have totHyp := sourceIH newType
-                unfold strengthenTyped? at totHyp
+                dsimp only [strengthenTyped?] at totHyp
                 have : Option.isSome (none (α := StrengtheningResult
                     (ContextStrengthening.dropNewest context newType)
                     (Term.weaken newType sourceValue))) = true :=
@@ -334,8 +334,8 @@ theorem isTotalOnWeaken_uaToEquiv {mode : Mode} {level scope : Nat}
       leftTy.weaken rightTy.weaken
       leftTyRaw.weaken rightTyRaw.weaken
       (Term.weaken newType proof))).isSome
-  unfold strengthenTyped?
-  unfold partialStrengthenTyped?
+  dsimp only [strengthenTyped?]
+  dsimp only [partialStrengthenTyped?]
   split
   · next leftTyFails =>
       exfalso
@@ -380,7 +380,7 @@ theorem isTotalOnWeaken_uaToEquiv {mode : Mode} {level scope : Nat}
           · next proofRecurse =>
               exfalso
               have totHyp := proofIH newType
-              unfold strengthenTyped? at totHyp
+              dsimp only [strengthenTyped?] at totHyp
               have : Option.isSome (none (α := StrengtheningResult
                   (ContextStrengthening.dropNewest context newType)
                   (Term.weaken newType proof))) = true :=
@@ -408,8 +408,8 @@ theorem isTotalOnWeaken_pathApp {mode : Mode} {level scope : Nat}
   show (strengthenTyped? (Term.pathApp modeIsUnivalent
       (Term.weaken newType pathTerm)
       (Term.weaken newType intervalTerm))).isSome
-  unfold strengthenTyped?
-  unfold partialStrengthenTyped?
+  dsimp only [strengthenTyped?]
+  dsimp only [partialStrengthenTyped?]
   split
   · next carrierFails =>
       exfalso
@@ -444,7 +444,7 @@ theorem isTotalOnWeaken_pathApp {mode : Mode} {level scope : Nat}
         · next pathRecurse =>
             exfalso
             have totHyp := pathIH newType
-            unfold strengthenTyped? at totHyp
+            dsimp only [strengthenTyped?] at totHyp
             have : Option.isSome (none (α := StrengtheningResult
                 (ContextStrengthening.dropNewest context newType)
                 (Term.weaken newType pathTerm))) = true :=
@@ -454,7 +454,7 @@ theorem isTotalOnWeaken_pathApp {mode : Mode} {level scope : Nat}
           · next intervalRecurse =>
               exfalso
               have totHyp := intervalIH newType
-              unfold strengthenTyped? at totHyp
+              dsimp only [strengthenTyped?] at totHyp
               have : Option.isSome (none (α := StrengtheningResult
                   (ContextStrengthening.dropNewest context newType)
                   (Term.weaken newType intervalTerm))) = true :=
@@ -484,8 +484,8 @@ theorem isTotalOnWeaken_hcompPath {mode : Mode} {level scope : Nat}
       leftEndpoint.weaken rightEndpoint.weaken
       (Term.weaken newType sidesPath)
       (Term.weaken newType capValue))).isSome
-  unfold strengthenTyped?
-  unfold partialStrengthenTyped?
+  dsimp only [strengthenTyped?]
+  dsimp only [partialStrengthenTyped?]
   split
   · next carrierFails =>
       exfalso
@@ -520,7 +520,7 @@ theorem isTotalOnWeaken_hcompPath {mode : Mode} {level scope : Nat}
         · next sidesRecurse =>
             exfalso
             have totHyp := sidesIH newType
-            unfold strengthenTyped? at totHyp
+            dsimp only [strengthenTyped?] at totHyp
             have : Option.isSome (none (α := StrengtheningResult
                 (ContextStrengthening.dropNewest context newType)
                 (Term.weaken newType sidesPath))) = true :=
@@ -530,7 +530,7 @@ theorem isTotalOnWeaken_hcompPath {mode : Mode} {level scope : Nat}
           · next capRecurse =>
               exfalso
               have totHyp := capIH newType
-              unfold strengthenTyped? at totHyp
+              dsimp only [strengthenTyped?] at totHyp
               have : Option.isSome (none (α := StrengtheningResult
                   (ContextStrengthening.dropNewest context newType)
                   (Term.weaken newType capValue))) = true :=
@@ -558,8 +558,8 @@ theorem isTotalOnWeaken_uaIntroHet {mode : Mode} {level scope : Nat}
   show (strengthenTyped? (Term.uaIntroHet innerLevel innerLevelLt
       carrierARaw.weaken carrierBRaw.weaken
       (Term.weaken newType equivWitness))).isSome
-  unfold strengthenTyped?
-  unfold partialStrengthenTyped?
+  dsimp only [strengthenTyped?]
+  dsimp only [partialStrengthenTyped?]
   split
   · next carrierAFails =>
       exfalso
@@ -624,7 +624,7 @@ theorem isTotalOnWeaken_uaIntroHet {mode : Mode} {level scope : Nat}
               · next equivRecurse =>
                   exfalso
                   have totHyp := equivIH newType
-                  unfold strengthenTyped? at totHyp
+                  dsimp only [strengthenTyped?] at totHyp
                   have : Option.isSome (none (α := StrengtheningResult
                       (ContextStrengthening.dropNewest context newType)
                       (Term.weaken newType equivWitness))) = true :=

@@ -100,45 +100,45 @@ theorem RawTerm.partialRename?_rename_compat :
   induction term generalizing srcB tgtA tgtB with
   | var position =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [compat position]
       cases partialA position <;> rfl
   | unit => intros; rfl
   | lam body bodyIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [bodyIH rhoVar.lift rhoTerm.lift partialA.lift partialB.lift
         (PartialRawRenaming.lift_compat rhoVar rhoTerm partialA partialB compat)]
       cases RawTerm.partialRename? body partialA.lift <;> rfl
   | app functionTerm argumentTerm functionIH argumentIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [functionIH rhoVar rhoTerm partialA partialB compat,
         argumentIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? functionTerm partialA <;>
         cases RawTerm.partialRename? argumentTerm partialA <;> rfl
   | pair firstValue secondValue firstIH secondIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [firstIH rhoVar rhoTerm partialA partialB compat,
         secondIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? firstValue partialA <;>
         cases RawTerm.partialRename? secondValue partialA <;> rfl
   | fst pairTerm pairIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [pairIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? pairTerm partialA <;> rfl
   | snd pairTerm pairIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [pairIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? pairTerm partialA <;> rfl
   | boolTrue => intros; rfl
   | boolFalse => intros; rfl
   | boolElim scrutinee thenBranch elseBranch scrutineeIH thenIH elseIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapThree]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapThree]
       rw [scrutineeIH rhoVar rhoTerm partialA partialB compat,
         thenIH rhoVar rhoTerm partialA partialB compat,
         elseIH rhoVar rhoTerm partialA partialB compat]
@@ -148,12 +148,12 @@ theorem RawTerm.partialRename?_rename_compat :
   | natZero => intros; rfl
   | natSucc predecessor predecessorIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [predecessorIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? predecessor partialA <;> rfl
   | natElim scrutinee zeroBranch succBranch scrutineeIH zeroIH succIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapThree]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapThree]
       rw [scrutineeIH rhoVar rhoTerm partialA partialB compat,
         zeroIH rhoVar rhoTerm partialA partialB compat,
         succIH rhoVar rhoTerm partialA partialB compat]
@@ -162,7 +162,7 @@ theorem RawTerm.partialRename?_rename_compat :
         cases RawTerm.partialRename? succBranch partialA <;> rfl
   | natRec scrutinee zeroBranch succBranch scrutineeIH zeroIH succIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapThree]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapThree]
       rw [scrutineeIH rhoVar rhoTerm partialA partialB compat,
         zeroIH rhoVar rhoTerm partialA partialB compat,
         succIH rhoVar rhoTerm partialA partialB compat]
@@ -172,14 +172,14 @@ theorem RawTerm.partialRename?_rename_compat :
   | listNil => intros; rfl
   | listCons headTerm tailTerm headIH tailIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [headIH rhoVar rhoTerm partialA partialB compat,
         tailIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? headTerm partialA <;>
         cases RawTerm.partialRename? tailTerm partialA <;> rfl
   | listElim scrutinee nilBranch consBranch scrutineeIH nilIH consIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapThree]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapThree]
       rw [scrutineeIH rhoVar rhoTerm partialA partialB compat,
         nilIH rhoVar rhoTerm partialA partialB compat,
         consIH rhoVar rhoTerm partialA partialB compat]
@@ -189,12 +189,12 @@ theorem RawTerm.partialRename?_rename_compat :
   | optionNone => intros; rfl
   | optionSome valueTerm valueIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [valueIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? valueTerm partialA <;> rfl
   | optionMatch scrutinee noneBranch someBranch scrutineeIH noneIH someIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapThree]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapThree]
       rw [scrutineeIH rhoVar rhoTerm partialA partialB compat,
         noneIH rhoVar rhoTerm partialA partialB compat,
         someIH rhoVar rhoTerm partialA partialB compat]
@@ -203,17 +203,17 @@ theorem RawTerm.partialRename?_rename_compat :
         cases RawTerm.partialRename? someBranch partialA <;> rfl
   | eitherInl valueTerm valueIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [valueIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? valueTerm partialA <;> rfl
   | eitherInr valueTerm valueIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [valueIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? valueTerm partialA <;> rfl
   | eitherMatch scrutinee leftBranch rightBranch scrutineeIH leftIH rightIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapThree]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapThree]
       rw [scrutineeIH rhoVar rhoTerm partialA partialB compat,
         leftIH rhoVar rhoTerm partialA partialB compat,
         rightIH rhoVar rhoTerm partialA partialB compat]
@@ -222,87 +222,87 @@ theorem RawTerm.partialRename?_rename_compat :
         cases RawTerm.partialRename? rightBranch partialA <;> rfl
   | refl witness witnessIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [witnessIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? witness partialA <;> rfl
   | idJ baseCase witness baseIH witnessIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [baseIH rhoVar rhoTerm partialA partialB compat,
         witnessIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? baseCase partialA <;>
         cases RawTerm.partialRename? witness partialA <;> rfl
   | modIntro innerTerm innerIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [innerIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? innerTerm partialA <;> rfl
   | modElim innerTerm innerIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [innerIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? innerTerm partialA <;> rfl
   | subsume innerTerm innerIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [innerIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? innerTerm partialA <;> rfl
   | interval0 => intros; rfl
   | interval1 => intros; rfl
   | intervalOpp intervalTerm intervalIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [intervalIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? intervalTerm partialA <;> rfl
   | intervalMeet leftInterval rightInterval leftIH rightIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [leftIH rhoVar rhoTerm partialA partialB compat,
         rightIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? leftInterval partialA <;>
         cases RawTerm.partialRename? rightInterval partialA <;> rfl
   | intervalJoin leftInterval rightInterval leftIH rightIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [leftIH rhoVar rhoTerm partialA partialB compat,
         rightIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? leftInterval partialA <;>
         cases RawTerm.partialRename? rightInterval partialA <;> rfl
   | pathLam body bodyIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [bodyIH rhoVar.lift rhoTerm.lift partialA.lift partialB.lift
         (PartialRawRenaming.lift_compat rhoVar rhoTerm partialA partialB compat)]
       cases RawTerm.partialRename? body partialA.lift <;> rfl
   | pathApp pathTerm intervalArg pathIH intervalIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [pathIH rhoVar rhoTerm partialA partialB compat,
         intervalIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? pathTerm partialA <;>
         cases RawTerm.partialRename? intervalArg partialA <;> rfl
   | glueIntro baseValue partialValue baseIH partialIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [baseIH rhoVar rhoTerm partialA partialB compat,
         partialIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? baseValue partialA <;>
         cases RawTerm.partialRename? partialValue partialA <;> rfl
   | glueElim gluedValue gluedIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [gluedIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? gluedValue partialA <;> rfl
   | transp pathTerm sourceTerm pathIH sourceIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [pathIH rhoVar rhoTerm partialA partialB compat,
         sourceIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? pathTerm partialA <;>
         cases RawTerm.partialRename? sourceTerm partialA <;> rfl
   | transpFill pathTerm intervalTerm sourceTerm pathIH intervalIH sourceIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapThree]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapThree]
       rw [pathIH rhoVar rhoTerm partialA partialB compat,
         intervalIH rhoVar rhoTerm partialA partialB compat,
         sourceIH rhoVar rhoTerm partialA partialB compat]
@@ -311,103 +311,103 @@ theorem RawTerm.partialRename?_rename_compat :
         cases RawTerm.partialRename? sourceTerm partialA <;> rfl
   | hcomp sidesTerm capTerm sidesIH capIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [sidesIH rhoVar rhoTerm partialA partialB compat,
         capIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? sidesTerm partialA <;>
         cases RawTerm.partialRename? capTerm partialA <;> rfl
   | oeqRefl witness witnessIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [witnessIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? witness partialA <;> rfl
   | oeqJ baseCase witness baseIH witnessIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [baseIH rhoVar rhoTerm partialA partialB compat,
         witnessIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? baseCase partialA <;>
         cases RawTerm.partialRename? witness partialA <;> rfl
   | oeqFunext pointwise pointwiseIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [pointwiseIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? pointwise partialA <;> rfl
   | idStrictRefl witness witnessIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [witnessIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? witness partialA <;> rfl
   | idStrictRec baseCase witness baseIH witnessIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [baseIH rhoVar rhoTerm partialA partialB compat,
         witnessIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? baseCase partialA <;>
         cases RawTerm.partialRename? witness partialA <;> rfl
   | equivIntro forwardFn backwardFn forwardIH backwardIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [forwardIH rhoVar rhoTerm partialA partialB compat,
         backwardIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? forwardFn partialA <;>
         cases RawTerm.partialRename? backwardFn partialA <;> rfl
   | equivApp equivTerm argument equivIH argumentIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [equivIH rhoVar rhoTerm partialA partialB compat,
         argumentIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? equivTerm partialA <;>
         cases RawTerm.partialRename? argument partialA <;> rfl
   | refineIntro rawValue predicateProof valueIH proofIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [valueIH rhoVar rhoTerm partialA partialB compat,
         proofIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? rawValue partialA <;>
         cases RawTerm.partialRename? predicateProof partialA <;> rfl
   | refineElim refinedValue refinedIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [refinedIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? refinedValue partialA <;> rfl
   | recordIntro firstField firstIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [firstIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? firstField partialA <;> rfl
   | recordProj recordValue recordIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [recordIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? recordValue partialA <;> rfl
   | codataUnfold initialState transition stateIH transitionIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [stateIH rhoVar rhoTerm partialA partialB compat,
         transitionIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? initialState partialA <;>
         cases RawTerm.partialRename? transition partialA <;> rfl
   | codataDest codataValue codataIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [codataIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? codataValue partialA <;> rfl
   | sessionSend channel payload channelIH payloadIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [channelIH rhoVar rhoTerm partialA partialB compat,
         payloadIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? channel partialA <;>
         cases RawTerm.partialRename? payload partialA <;> rfl
   | sessionRecv channel channelIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [channelIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? channel partialA <;> rfl
   | effectPerform operationTag arguments tagIH argumentsIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [tagIH rhoVar rhoTerm partialA partialB compat,
         argumentsIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? operationTag partialA <;>
@@ -415,14 +415,14 @@ theorem RawTerm.partialRename?_rename_compat :
   | universeCode innerLevel => intros; rfl
   | arrowCode domainCode codomainCode domainIH codomainIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [domainIH rhoVar rhoTerm partialA partialB compat,
         codomainIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? domainCode partialA <;>
         cases RawTerm.partialRename? codomainCode partialA <;> rfl
   | piTyCode domainCode codomainCode domainIH codomainIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [domainIH rhoVar rhoTerm partialA partialB compat,
         codomainIH rhoVar.lift rhoTerm.lift partialA.lift partialB.lift
           (PartialRawRenaming.lift_compat rhoVar rhoTerm partialA partialB compat)]
@@ -430,7 +430,7 @@ theorem RawTerm.partialRename?_rename_compat :
         cases RawTerm.partialRename? codomainCode partialA.lift <;> rfl
   | sigmaTyCode domainCode codomainCode domainIH codomainIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [domainIH rhoVar rhoTerm partialA partialB compat,
         codomainIH rhoVar.lift rhoTerm.lift partialA.lift partialB.lift
           (PartialRawRenaming.lift_compat rhoVar rhoTerm partialA partialB compat)]
@@ -438,38 +438,38 @@ theorem RawTerm.partialRename?_rename_compat :
         cases RawTerm.partialRename? codomainCode partialA.lift <;> rfl
   | productCode firstCode secondCode firstIH secondIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [firstIH rhoVar rhoTerm partialA partialB compat,
         secondIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? firstCode partialA <;>
         cases RawTerm.partialRename? secondCode partialA <;> rfl
   | sumCode leftCode rightCode leftIH rightIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [leftIH rhoVar rhoTerm partialA partialB compat,
         rightIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? leftCode partialA <;>
         cases RawTerm.partialRename? rightCode partialA <;> rfl
   | listCode elementCode elementIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [elementIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? elementCode partialA <;> rfl
   | optionCode elementCode elementIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [elementIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? elementCode partialA <;> rfl
   | eitherCode leftCode rightCode leftIH rightIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [leftIH rhoVar rhoTerm partialA partialB compat,
         rightIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? leftCode partialA <;>
         cases RawTerm.partialRename? rightCode partialA <;> rfl
   | idCode typeCode leftRaw rightRaw typeIH leftIH rightIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapThree]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapThree]
       rw [typeIH rhoVar rhoTerm partialA partialB compat,
         leftIH rhoVar rhoTerm partialA partialB compat,
         rightIH rhoVar rhoTerm partialA partialB compat]
@@ -478,50 +478,50 @@ theorem RawTerm.partialRename?_rename_compat :
         cases RawTerm.partialRename? rightRaw partialA <;> rfl
   | equivCode leftTypeCode rightTypeCode leftIH rightIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [leftIH rhoVar rhoTerm partialA partialB compat,
         rightIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? leftTypeCode partialA <;>
         cases RawTerm.partialRename? rightTypeCode partialA <;> rfl
   | cumulUpMarker innerCode innerIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [innerIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? innerCode partialA <;> rfl
   | uaToEquiv proofRaw proofIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [proofIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? proofRaw partialA <;> rfl
   | equivApply equivRaw argRaw equivIH argIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [equivIH rhoVar rhoTerm partialA partialB compat,
         argIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? equivRaw partialA <;>
         cases RawTerm.partialRename? argRaw partialA <;> rfl
   | pathCompose leftPathRaw rightPathRaw leftIH rightIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [leftIH rhoVar rhoTerm partialA partialB compat,
         rightIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? leftPathRaw partialA <;>
         cases RawTerm.partialRename? rightPathRaw partialA <;> rfl
   | idToEquiv proofRaw proofIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [proofIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? proofRaw partialA <;> rfl
   | oeqTrans firstProof secondProof firstIH secondIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [firstIH rhoVar rhoTerm partialA partialB compat,
         secondIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? firstProof partialA <;>
         cases RawTerm.partialRename? secondProof partialA <;> rfl
   | equivCompose firstEquiv secondEquiv firstIH secondIH =>
       intro rhoVar rhoTerm partialA partialB compat
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [firstIH rhoVar rhoTerm partialA partialB compat,
         secondIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? firstEquiv partialA <;>
@@ -537,8 +537,7 @@ theorem RawTerm.partialStrengthen?_weaken_lift
     (back : PartialRawRenaming sourceScope targetScope) :
     RawTerm.partialStrengthen? term.weaken back.lift =
       (RawTerm.partialStrengthen? term back).map RawTerm.weaken := by
-  unfold RawTerm.partialStrengthen?
-  unfold RawTerm.weaken
+  dsimp only [RawTerm.partialStrengthen?, RawTerm.weaken]
   exact RawTerm.partialRename?_rename_compat term
     RawRenaming.weaken RawRenaming.weaken back back.lift
     (PartialRawRenaming.lift_weaken_map back)
@@ -570,7 +569,7 @@ theorem RawTerm.unweaken?_rename_lift_commute {srcA tgtA : Nat}
     (term : RawTerm (srcA + 1)) (rho : RawRenaming srcA tgtA) :
     RawTerm.unweaken? (term.rename rho.lift) =
       (RawTerm.unweaken? term).map (·.rename rho) := by
-  unfold RawTerm.unweaken?
+  dsimp only [RawTerm.unweaken?]
   exact RawTerm.partialRename?_rename_compat term rho.lift rho
     PartialRawRenaming.dropNewest PartialRawRenaming.dropNewest
     (PartialRawRenaming.dropNewest_rename_lift_compat rho)

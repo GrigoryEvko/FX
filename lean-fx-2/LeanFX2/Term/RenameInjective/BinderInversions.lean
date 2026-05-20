@@ -137,7 +137,7 @@ private theorem renamedLamPi_ne_renamedFunextReflCast
     Term.noConfusion (P := False) rfl rfl rfl HEq.rfl
       (by
         unfold funextReflType
-        simp only [Ty.rename]
+        dsimp only [Ty.rename]
         exact
           heq_of_eq
             (congrArg

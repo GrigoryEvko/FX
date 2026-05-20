@@ -61,14 +61,14 @@ def partialStrengthenTypedFunextIntroHet {mode : Mode} {level : Nat}
           some (RawTerm.lam targetApplyARaw) := by
       change RawTerm.partialRename? applyARaw strengthening.back.lift =
         some targetApplyARaw at applyAStrengthens
-      unfold RawTerm.partialStrengthen? RawTerm.partialRename?
+      dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?]
       rw [applyAStrengthens]
     have rightLamStrengthens :
         (RawTerm.lam applyBRaw).partialStrengthen? strengthening.back =
           some (RawTerm.lam targetApplyBRaw) := by
       change RawTerm.partialRename? applyBRaw strengthening.back.lift =
         some targetApplyBRaw at applyBStrengthens
-      unfold RawTerm.partialStrengthen? RawTerm.partialRename?
+      dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?]
       rw [applyBStrengthens]
     change
       Option.mapThree
@@ -85,8 +85,7 @@ def partialStrengthenTypedFunextIntroHet {mode : Mode} {level : Nat}
   rawStrengthens := by
     change RawTerm.partialRename? applyARaw strengthening.back.lift =
       some targetApplyARaw at applyAStrengthens
-    unfold RawTerm.partialStrengthen? RawTerm.partialRename?
-    simp only [RawTerm.partialRename?]
+    dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?]
     rw [applyAStrengthens]
   typeRenames := by
     exact
@@ -115,7 +114,7 @@ def partialStrengthenTypedFunextIntroHet {mode : Mode} {level : Nat}
                 some (RawTerm.lam targetApplyARaw) := by
             change RawTerm.partialRename? applyARaw
               strengthening.back.lift = some targetApplyARaw at applyAStrengthens
-            unfold RawTerm.partialStrengthen? RawTerm.partialRename?
+            dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?]
             rw [applyAStrengthens]
           have rightLamStrengthens :
               (RawTerm.lam applyBRaw).partialStrengthen?
@@ -123,7 +122,7 @@ def partialStrengthenTypedFunextIntroHet {mode : Mode} {level : Nat}
                 some (RawTerm.lam targetApplyBRaw) := by
             change RawTerm.partialRename? applyBRaw
               strengthening.back.lift = some targetApplyBRaw at applyBStrengthens
-            unfold RawTerm.partialStrengthen? RawTerm.partialRename?
+            dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?]
             rw [applyBStrengthens]
           change
             Option.mapThree
@@ -149,8 +148,7 @@ def partialStrengthenTypedFunextIntroHet {mode : Mode} {level : Nat}
         (by
           change RawTerm.partialRename? applyARaw strengthening.back.lift =
             some targetApplyARaw at applyAStrengthens
-          unfold RawTerm.partialStrengthen? RawTerm.partialRename?
-          simp only [RawTerm.partialRename?]
+          dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?]
           rw [applyAStrengthens])
 
 /-- Heterogeneous univalence introduction strengthens by strengthening

@@ -31,7 +31,7 @@ theorem Term.subst_identityLike_app_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.app_HEq_congr
     (substitutionIsIdentityLike.tySubst_eq domainType)
     (substitutionIsIdentityLike.tySubst_eq codomainType)
@@ -63,7 +63,7 @@ theorem Term.subst_identityLike_appPi_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   have codomainIdentity :
       codomainType.subst sigma.lift = codomainType :=
     (substitutionIsIdentityLike.lift domainType).tySubst_eq codomainType
@@ -122,7 +122,7 @@ theorem Term.subst_identityLike_pair_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   have secondTypeIdentity :
       secondType.subst sigma.lift = secondType :=
     (substitutionIsIdentityLike.lift firstType).tySubst_eq secondType
@@ -164,7 +164,7 @@ theorem Term.subst_identityLike_fst_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   have secondTypeIdentity :
       secondType.subst sigma.lift = secondType :=
     (substitutionIsIdentityLike.lift firstType).tySubst_eq secondType
@@ -196,7 +196,7 @@ theorem Term.subst_identityLike_snd_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   have secondTypeIdentity :
       secondType.subst sigma.lift = secondType :=
     (substitutionIsIdentityLike.lift firstType).tySubst_eq secondType
@@ -249,7 +249,7 @@ theorem Term.subst_identityLike_boolElim_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   have motiveIdentity :
       motiveType.subst sigma.lift = motiveType :=
     (substitutionIsIdentityLike.lift Ty.bool).tySubst_eq motiveType
@@ -356,7 +356,7 @@ theorem Term.subst_identityLike_natElim_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.natElim_HEq_congr
     (substitutionIsIdentityLike.tySubst_eq motiveType)
     (substitutionIsIdentityLike.rawSubst_eq scrutineeRaw)
@@ -392,7 +392,7 @@ theorem Term.subst_identityLike_natRec_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.natRec_HEq_congr
     (substitutionIsIdentityLike.tySubst_eq motiveType)
     (substitutionIsIdentityLike.rawSubst_eq scrutineeRaw)
@@ -429,7 +429,7 @@ theorem Term.subst_identityLike_listElim_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.listElim_HEq_congr
     (substitutionIsIdentityLike.tySubst_eq elementType)
     (substitutionIsIdentityLike.tySubst_eq motiveType)
@@ -465,7 +465,7 @@ theorem Term.subst_identityLike_optionMatch_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.optionMatch_HEq_congr
     (substitutionIsIdentityLike.tySubst_eq elementType)
     (substitutionIsIdentityLike.tySubst_eq motiveType)
@@ -501,7 +501,7 @@ theorem Term.subst_identityLike_eitherMatch_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.eitherMatch_HEq_congr
     (substitutionIsIdentityLike.tySubst_eq leftType)
     (substitutionIsIdentityLike.tySubst_eq rightType)
@@ -527,7 +527,7 @@ theorem Term.subst_identityLike_refl_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.refl_HEq_congr
     (substitutionIsIdentityLike.tySubst_eq carrier)
     (substitutionIsIdentityLike.rawSubst_eq rawWitness)
@@ -556,7 +556,7 @@ theorem Term.subst_identityLike_idJ_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.idJ_HEq_congr
     (substitutionIsIdentityLike.tySubst_eq carrier)
     (substitutionIsIdentityLike.rawSubst_eq leftEndpoint)
@@ -582,7 +582,7 @@ theorem Term.subst_identityLike_oeqRefl_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.oeqRefl_HEq_congr
     (substitutionIsIdentityLike.tySubst_eq carrier)
     (substitutionIsIdentityLike.rawSubst_eq rawWitness)
@@ -611,7 +611,7 @@ theorem Term.subst_identityLike_oeqJ_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.oeqJ_HEq_congr
     (substitutionIsIdentityLike.tySubst_eq carrier)
     (substitutionIsIdentityLike.rawSubst_eq leftEndpoint)
@@ -640,7 +640,7 @@ theorem Term.subst_identityLike_idStrictRefl_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.idStrictRefl_HEq_congr
     modeIsStrict
     (substitutionIsIdentityLike.tySubst_eq carrier)
@@ -672,7 +672,7 @@ theorem Term.subst_identityLike_idStrictRec_HEq
   have contextsEq : targetCtx = sourceCtx :=
     eq_of_heq substitutionIsIdentityLike.contextHEq
   subst contextsEq
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.idStrictRec_HEq_congr
     modeIsStrict
     (substitutionIsIdentityLike.tySubst_eq carrier)

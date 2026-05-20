@@ -201,12 +201,14 @@ theorem Term.weaken_subst_singleton_oeqFunext_heq
         substitutedPointwiseProofWithCast :=
     Term.type_eq_cast_heq substitutedPointwiseTypeEq
       substitutedPointwiseProofWithCast
+  -- `Term.weaken` is `@[reducible]` and `renamedPointwiseProof` is
+  -- `let`-bound to the renamed shape, so this hypothesis already matches
+  -- definitionally; no `simpa` rewrite is required.
   have pointwiseWithoutCastsHEq :
       HEq
         (Term.subst (TermSubst.singleton singletonTerm)
           renamedPointwiseProof)
-        pointwiseProof := by
-    simpa only [Term.weaken] using pointwiseProofHEq
+        pointwiseProof := pointwiseProofHEq
   have pointwiseFullHEq :
       HEq (substitutedPointwiseTypeEq ▸ substitutedPointwiseProofWithCast)
         pointwiseProof :=

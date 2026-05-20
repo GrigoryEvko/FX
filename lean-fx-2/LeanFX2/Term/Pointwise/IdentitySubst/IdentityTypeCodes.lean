@@ -37,7 +37,7 @@ theorem Term.subst_identity_arrowCode_HEq
           domainCodeRaw codomainCodeRaw))
       (Term.arrowCode (context := context) outerLevel levelLe
         domainCodeRaw codomainCodeRaw) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.arrowCode_HEq_congr outerLevel levelLe
     (RawTerm.subst_identity domainCodeRaw)
     (RawTerm.subst_identity codomainCodeRaw)
@@ -56,7 +56,7 @@ theorem Term.subst_identity_piTyCode_HEq
           domainCodeRaw codomainCodeRaw))
       (Term.piTyCode (context := context) outerLevel levelLe
         domainCodeRaw codomainCodeRaw) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.piTyCode_HEq_congr outerLevel levelLe
     (RawTerm.subst_identity domainCodeRaw)
     (by
@@ -79,7 +79,7 @@ theorem Term.subst_identity_sigmaTyCode_HEq
           domainCodeRaw codomainCodeRaw))
       (Term.sigmaTyCode (context := context) outerLevel levelLe
         domainCodeRaw codomainCodeRaw) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.sigmaTyCode_HEq_congr outerLevel levelLe
     (RawTerm.subst_identity domainCodeRaw)
     (by
@@ -101,7 +101,7 @@ theorem Term.subst_identity_productCode_HEq
           firstCodeRaw secondCodeRaw))
       (Term.productCode (context := context) outerLevel levelLe
         firstCodeRaw secondCodeRaw) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.productCode_HEq_congr outerLevel levelLe
     (RawTerm.subst_identity firstCodeRaw)
     (RawTerm.subst_identity secondCodeRaw)
@@ -119,7 +119,7 @@ theorem Term.subst_identity_sumCode_HEq
           leftCodeRaw rightCodeRaw))
       (Term.sumCode (context := context) outerLevel levelLe
         leftCodeRaw rightCodeRaw) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.sumCode_HEq_congr outerLevel levelLe
     (RawTerm.subst_identity leftCodeRaw)
     (RawTerm.subst_identity rightCodeRaw)
@@ -137,7 +137,7 @@ theorem Term.subst_identity_listCode_HEq
           elementCodeRaw))
       (Term.listCode (context := context) outerLevel levelLe
         elementCodeRaw) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.listCode_HEq_congr outerLevel levelLe
     (RawTerm.subst_identity elementCodeRaw)
 
@@ -154,7 +154,7 @@ theorem Term.subst_identity_optionCode_HEq
           elementCodeRaw))
       (Term.optionCode (context := context) outerLevel levelLe
         elementCodeRaw) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.optionCode_HEq_congr outerLevel levelLe
     (RawTerm.subst_identity elementCodeRaw)
 
@@ -171,7 +171,7 @@ theorem Term.subst_identity_eitherCode_HEq
           leftCodeRaw rightCodeRaw))
       (Term.eitherCode (context := context) outerLevel levelLe
         leftCodeRaw rightCodeRaw) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.eitherCode_HEq_congr outerLevel levelLe
     (RawTerm.subst_identity leftCodeRaw)
     (RawTerm.subst_identity rightCodeRaw)
@@ -189,7 +189,7 @@ theorem Term.subst_identity_idCode_HEq
           typeCodeRaw leftRaw rightRaw))
       (Term.idCode (context := context) outerLevel levelLe
         typeCodeRaw leftRaw rightRaw) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.idCode_HEq_congr outerLevel levelLe
     (RawTerm.subst_identity typeCodeRaw)
     (RawTerm.subst_identity leftRaw)
@@ -208,7 +208,7 @@ theorem Term.subst_identity_equivCode_HEq
           leftTypeCodeRaw rightTypeCodeRaw))
       (Term.equivCode (context := context) outerLevel levelLe
         leftTypeCodeRaw rightTypeCodeRaw) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.equivCode_HEq_congr outerLevel levelLe
     (RawTerm.subst_identity leftTypeCodeRaw)
     (RawTerm.subst_identity rightTypeCodeRaw)

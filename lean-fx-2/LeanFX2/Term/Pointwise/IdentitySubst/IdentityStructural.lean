@@ -32,7 +32,7 @@ theorem Term.subst_identity_pathApp_HEq
       (Term.subst (TermSubst.identity context)
         (Term.pathApp modeIsUnivalent pathTerm intervalTerm))
       (Term.pathApp modeIsUnivalent pathTerm intervalTerm) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.pathApp_HEq_congr
     modeIsUnivalent
     (Ty.subst_identity carrierType)
@@ -64,7 +64,7 @@ theorem Term.subst_identity_glueIntro_HEq
           baseValue partialValue))
       (Term.glueIntro modeIsUnivalent baseType boundaryWitness
         baseValue partialValue) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.glueIntro_HEq_congr
     modeIsUnivalent
     (Ty.subst_identity baseType)
@@ -88,7 +88,7 @@ theorem Term.subst_identity_glueElim_HEq
       (Term.subst (TermSubst.identity context)
         (Term.glueElim modeIsUnivalent gluedValue))
       (Term.glueElim modeIsUnivalent gluedValue) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.glueElim_HEq_congr
     modeIsUnivalent
     (Ty.subst_identity baseType)
@@ -115,7 +115,7 @@ theorem Term.subst_identity_hcomp_HEq
       (Term.subst (TermSubst.identity context)
         (Term.hcomp modeIsUnivalent sidesValue capValue))
       (Term.hcomp modeIsUnivalent sidesValue capValue) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.hcomp_HEq_congr
     modeIsUnivalent
     (Ty.subst_identity carrierType)
@@ -137,7 +137,7 @@ theorem Term.subst_identity_recordIntro_HEq
       (Term.subst (TermSubst.identity context)
         (Term.recordIntro firstField))
       (Term.recordIntro firstField) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.recordIntro_HEq_congr
     (Ty.subst_identity singleFieldType)
     (RawTerm.subst_identity firstRaw)
@@ -157,7 +157,7 @@ theorem Term.subst_identity_recordProj_HEq
       (Term.subst (TermSubst.identity context)
         (Term.recordProj recordValue))
       (Term.recordProj recordValue) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.recordProj_HEq_congr
     (Ty.subst_identity singleFieldType)
     (RawTerm.subst_identity recordRaw)
@@ -178,7 +178,7 @@ theorem Term.subst_identity_refineElim_HEq
       (Term.subst (TermSubst.identity context)
         (Term.refineElim refinedValue))
       (Term.refineElim refinedValue) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.refineElim_HEq_congr
     (Ty.subst_identity baseType)
     (by
@@ -206,7 +206,7 @@ theorem Term.subst_identity_codataUnfold_HEq
       (Term.subst (TermSubst.identity context)
         (Term.codataUnfold initialState transition))
       (Term.codataUnfold initialState transition) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.codataUnfold_HEq_congr
     (Ty.subst_identity stateType)
     (Ty.subst_identity outputType)
@@ -228,7 +228,7 @@ theorem Term.subst_identity_codataDest_HEq
       (Term.subst (TermSubst.identity context)
         (Term.codataDest codataValue))
       (Term.codataDest codataValue) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.codataDest_HEq_congr
     (Ty.subst_identity stateType)
     (Ty.subst_identity outputType)
@@ -254,7 +254,7 @@ theorem Term.subst_identity_sessionSend_HEq
       (Term.subst (TermSubst.identity context)
         (Term.sessionSend protocolStep channel payload))
       (Term.sessionSend protocolStep channel payload) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.sessionSend_HEq_congr
     (RawTerm.subst_identity protocolStep)
     (Ty.subst_identity payloadType)
@@ -276,7 +276,7 @@ theorem Term.subst_identity_sessionRecv_HEq
       (Term.subst (TermSubst.identity context)
         (Term.sessionRecv channel))
       (Term.sessionRecv channel) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.sessionRecv_HEq_congr
     (RawTerm.subst_identity protocolStep)
     (RawTerm.subst_identity channelRaw)
@@ -408,7 +408,7 @@ theorem Term.subst_identity_effectPerform_HEq
           canPerformOperation operationTag arguments))
       (Term.effectPerform effectTag effectRow operationSignature
         canPerformOperation operationTag arguments) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   cases operationSignature with
   | mk effectLabel argumentCarrier resultCarrier =>
     cases canPerformOperation with
@@ -454,7 +454,7 @@ theorem Term.subst_identity_cumulUp_HEq
           levelLeLow levelLeHigh typeCode))
       (Term.cumulUp lowerLevel higherLevel cumulMonotone
         levelLeLow levelLeHigh typeCode) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.cumulUp_HEq_congr
     (RawTerm.subst_identity codeRaw)
     typeCodeHEq
@@ -477,7 +477,7 @@ theorem Term.subst_identity_equivApp_HEq
       (Term.subst (TermSubst.identity context)
         (Term.equivApp equivTerm argumentTerm))
       (Term.equivApp equivTerm argumentTerm) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.equivApp_HEq_congr
     (Ty.subst_identity carrierA)
     (Ty.subst_identity carrierB)
@@ -503,7 +503,7 @@ theorem Term.subst_identity_equivApply_HEq
       (Term.subst (TermSubst.identity context)
         (Term.equivApply equivTerm argumentTerm))
       (Term.equivApply equivTerm argumentTerm) := by
-  simp only [Term.subst]
+  dsimp only [Term.subst]
   exact Term.equivApply_HEq_congr
     (Ty.subst_identity carrierA)
     (Ty.subst_identity carrierB)

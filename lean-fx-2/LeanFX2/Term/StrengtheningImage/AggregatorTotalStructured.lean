@@ -56,7 +56,7 @@ theorem isAggregatorTotal_pair {mode : Mode} {level : Nat}
       strengthening.back_forward secondLiftSuccess firstSuccess firstRawSuccess
   have secondTotalCall :=
     secondTotal strengthening substStrengthens secondRawSuccess
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next secondTypeFails =>
       rw [secondLiftSuccess] at secondTypeFails
@@ -84,7 +84,7 @@ theorem isAggregatorTotal_equivReflId {mode : Mode} {level : Nat}
   intros _ _ strengthening _ _ typeStrengthens _
   obtain ⟨_, _, carrierSuccess, _, _⟩ :=
     Option.mapTwo_eq_some typeStrengthens
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next carrierFails =>
       rw [carrierSuccess] at carrierFails
@@ -123,7 +123,7 @@ theorem isAggregatorTotal_refineIntro {mode : Mode} {level : Nat}
         some Ty.unit := rfl
   have proofTotalCall :=
     proofTotal strengthening unitStrengthens proofRawSuccess
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next predicateFails =>
       rw [predicateLiftSuccess] at predicateFails
@@ -178,7 +178,7 @@ theorem isAggregatorTotal_codataUnfold {mode : Mode} {level : Nat}
     rfl
   have transitionTotalCall :=
     transitionTotal strengthening arrowStrengthens transitionRawSuccess
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next outputFails =>
       rw [outputSuccess] at outputFails

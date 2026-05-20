@@ -101,7 +101,7 @@ theorem isAggregatorTotal_pathApp_with_endpoints {mode : Mode} {level : Nat}
     pathTotal strengthening pathTypeStrengthens pathRawSuccess
   have intervalTotalCall :=
     intervalTotal strengthening intervalTypeStrengthens intervalRawSuccess
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next carrierFails =>
       rw [typeStrengthens] at carrierFails
@@ -191,7 +191,7 @@ theorem isAggregatorTotal_hcompPath_with_endpoints {mode : Mode} {level : Nat}
     sidesPathTotal strengthening pathTypeStrengthens sidesPathRawSuccess
   have capTotalCall :=
     capTotal strengthening typeStrengthens capRawSuccess
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next carrierFails =>
       rw [typeStrengthens] at carrierFails
@@ -242,8 +242,7 @@ theorem isAggregatorTotal_glueElim_with_boundary {mode : Mode} {level : Nat}
     IsAggregatorTotal
       (Term.glueElim modeIsUnivalent gluedValue) := by
   intros _ _ strengthening targetBaseType _ typeStrengthens rawStrengthens
-  unfold RawTerm.partialStrengthen? at rawStrengthens
-  unfold RawTerm.partialRename? at rawStrengthens
+  dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?] at rawStrengthens
   split at rawStrengthens
   rotate_left
   · cases rawStrengthens
@@ -265,7 +264,7 @@ theorem isAggregatorTotal_glueElim_with_boundary {mode : Mode} {level : Nat}
       rfl
     have gluedTotalCall :=
       gluedTotal strengthening glueTypeStrengthens gluedRawSuccess
-    unfold partialStrengthenTyped?
+    dsimp only [partialStrengthenTyped?]
     split
     · next baseFails =>
         rw [typeStrengthens] at baseFails
@@ -304,8 +303,7 @@ theorem isAggregatorTotal_codataDest_with_state {mode : Mode} {level : Nat}
             some targetStateType) :
     IsAggregatorTotal (Term.codataDest codataValue) := by
   intros _ _ strengthening targetOutputType _ typeStrengthens rawStrengthens
-  unfold RawTerm.partialStrengthen? at rawStrengthens
-  unfold RawTerm.partialRename? at rawStrengthens
+  dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?] at rawStrengthens
   split at rawStrengthens
   rotate_left
   · cases rawStrengthens
@@ -327,7 +325,7 @@ theorem isAggregatorTotal_codataDest_with_state {mode : Mode} {level : Nat}
       rfl
     have codataTotalCall :=
       codataTotal strengthening codataTypeStrengthens codataRawSuccess
-    unfold partialStrengthenTyped?
+    dsimp only [partialStrengthenTyped?]
     split
     · next stateFails =>
         rw [stateTypeSuccess] at stateFails
@@ -366,8 +364,7 @@ theorem isAggregatorTotal_fst_with_second {mode : Mode} {level : Nat}
             some targetSecondType) :
     IsAggregatorTotal (Term.fst pairTerm) := by
   intros _ _ strengthening targetFirstType _ typeStrengthens rawStrengthens
-  unfold RawTerm.partialStrengthen? at rawStrengthens
-  unfold RawTerm.partialRename? at rawStrengthens
+  dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?] at rawStrengthens
   split at rawStrengthens
   rotate_left
   · cases rawStrengthens
@@ -389,7 +386,7 @@ theorem isAggregatorTotal_fst_with_second {mode : Mode} {level : Nat}
       rfl
     have pairTotalCall :=
       pairTotal strengthening sigmaTypeStrengthens pairRawSuccess
-    unfold partialStrengthenTyped?
+    dsimp only [partialStrengthenTyped?]
     split
     · next firstFails =>
         rw [typeStrengthens] at firstFails
@@ -451,7 +448,7 @@ theorem isAggregatorTotal_equivApp_with_carrierA {mode : Mode} {level : Nat}
     equivTotal strengthening equivTypeStrengthens equivRawSuccess
   have argumentTotalCall :=
     argumentTotal strengthening carrierASuccess argumentRawSuccess
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next carrierAFails =>
       rw [carrierASuccess] at carrierAFails
@@ -516,7 +513,7 @@ theorem isAggregatorTotal_equivApply_with_carrierA {mode : Mode} {level : Nat}
     equivTotal strengthening equivTypeStrengthens equivRawSuccess
   have argumentTotalCall :=
     argumentTotal strengthening carrierASuccess argumentRawSuccess
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next carrierAFails =>
       rw [carrierASuccess] at carrierAFails
@@ -561,8 +558,7 @@ theorem isAggregatorTotal_refineElim_with_predicate {mode : Mode} {level : Nat}
             some targetPredicate) :
     IsAggregatorTotal (Term.refineElim refinedValue) := by
   intros _ _ strengthening targetBaseType _ typeStrengthens rawStrengthens
-  unfold RawTerm.partialStrengthen? at rawStrengthens
-  unfold RawTerm.partialRename? at rawStrengthens
+  dsimp only [RawTerm.partialStrengthen?, RawTerm.partialRename?] at rawStrengthens
   split at rawStrengthens
   rotate_left
   · cases rawStrengthens
@@ -584,7 +580,7 @@ theorem isAggregatorTotal_refineElim_with_predicate {mode : Mode} {level : Nat}
       rfl
     have refinedTotalCall :=
       refinedTotal strengthening refineTypeStrengthens refinedRawSuccess
-    unfold partialStrengthenTyped?
+    dsimp only [partialStrengthenTyped?]
     split
     · next baseFails =>
         rw [typeStrengthens] at baseFails
@@ -647,7 +643,7 @@ theorem isAggregatorTotal_app_with_domain {mode : Mode} {level : Nat}
     functionTotal strengthening arrowTypeStrengthens functionRawSuccess
   have argumentTotalCall :=
     argumentTotal strengthening domainSuccess argumentRawSuccess
-  unfold partialStrengthenTyped?
+  dsimp only [partialStrengthenTyped?]
   split
   · next domainFails =>
       rw [domainSuccess] at domainFails
