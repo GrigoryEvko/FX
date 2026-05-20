@@ -232,30 +232,30 @@ theorem Ty.substHet_pointwise {sourceLevel targetLevel : Nat}
   | bool => rfl
   | nat  => rfl
   | arrow d c dIH cIH =>
-      simp only [Ty.substHet]; rw [dIH forTyEq forRawEq cumulOkEq, cIH forTyEq forRawEq cumulOkEq]
+      dsimp only [Ty.substHet]; rw [dIH forTyEq forRawEq cumulOkEq, cIH forTyEq forRawEq cumulOkEq]
   | piTy d c dIH cIH =>
-      simp only [Ty.substHet]
+      dsimp only [Ty.substHet]
       rw [dIH forTyEq forRawEq cumulOkEq,
           cIH (SubstHet.lift_forTy_pointwise forTyEq)
               (SubstHet.lift_forRaw_pointwise forRawEq)
               cumulOkEq]
   | sigmaTy fT sT fIH sIH =>
-      simp only [Ty.substHet]
+      dsimp only [Ty.substHet]
       rw [fIH forTyEq forRawEq cumulOkEq,
           sIH (SubstHet.lift_forTy_pointwise forTyEq)
               (SubstHet.lift_forRaw_pointwise forRawEq)
               cumulOkEq]
   | tyVar position =>
-      simp only [Ty.substHet]; rw [forTyEq position]
+      dsimp only [Ty.substHet]; rw [forTyEq position]
   | id carrier left right carrierIH =>
-      simp only [Ty.substHet]
+      dsimp only [Ty.substHet]
       rw [carrierIH forTyEq forRawEq cumulOkEq,
           RawTerm.subst_pointwise forRawEq left,
           RawTerm.subst_pointwise forRawEq right]
   | listType e eIH => simp only [Ty.substHet]; rw [eIH forTyEq forRawEq cumulOkEq]
   | optionType e eIH => simp only [Ty.substHet]; rw [eIH forTyEq forRawEq cumulOkEq]
   | eitherType l r lIH rIH =>
-      simp only [Ty.substHet]; rw [lIH forTyEq forRawEq cumulOkEq, rIH forTyEq forRawEq cumulOkEq]
+      dsimp only [Ty.substHet]; rw [lIH forTyEq forRawEq cumulOkEq, rIH forTyEq forRawEq cumulOkEq]
   | «universe» universeLevel levelLe =>
       show Ty.universe universeLevel (Nat.le_trans levelLe sigma1.cumulOk) =
            Ty.universe universeLevel (Nat.le_trans levelLe sigma2.cumulOk)
@@ -263,42 +263,42 @@ theorem Ty.substHet_pointwise {sourceLevel targetLevel : Nat}
   | empty => rfl
   | interval => rfl
   | path carrier left right carrierIH =>
-      simp only [Ty.substHet]
+      dsimp only [Ty.substHet]
       rw [carrierIH forTyEq forRawEq cumulOkEq,
           RawTerm.subst_pointwise forRawEq left,
           RawTerm.subst_pointwise forRawEq right]
   | glue baseType boundaryWitness baseIH =>
-      simp only [Ty.substHet]
+      dsimp only [Ty.substHet]
       rw [baseIH forTyEq forRawEq cumulOkEq,
           RawTerm.subst_pointwise forRawEq boundaryWitness]
   | oeq carrier left right carrierIH =>
-      simp only [Ty.substHet]
+      dsimp only [Ty.substHet]
       rw [carrierIH forTyEq forRawEq cumulOkEq,
           RawTerm.subst_pointwise forRawEq left,
           RawTerm.subst_pointwise forRawEq right]
   | idStrict carrier left right carrierIH =>
-      simp only [Ty.substHet]
+      dsimp only [Ty.substHet]
       rw [carrierIH forTyEq forRawEq cumulOkEq,
           RawTerm.subst_pointwise forRawEq left,
           RawTerm.subst_pointwise forRawEq right]
   | equiv d c dIH cIH =>
-      simp only [Ty.substHet]; rw [dIH forTyEq forRawEq cumulOkEq, cIH forTyEq forRawEq cumulOkEq]
+      dsimp only [Ty.substHet]; rw [dIH forTyEq forRawEq cumulOkEq, cIH forTyEq forRawEq cumulOkEq]
   | refine baseType predicate baseIH =>
-      simp only [Ty.substHet]
+      dsimp only [Ty.substHet]
       rw [baseIH forTyEq forRawEq cumulOkEq,
           RawTerm.subst_pointwise (RawTermSubst.lift_pointwise forRawEq) predicate]
   | record singleFieldType singleFieldIH =>
-      simp only [Ty.substHet]; rw [singleFieldIH forTyEq forRawEq cumulOkEq]
+      dsimp only [Ty.substHet]; rw [singleFieldIH forTyEq forRawEq cumulOkEq]
   | codata stateType outputType stateIH outputIH =>
-      simp only [Ty.substHet]; rw [stateIH forTyEq forRawEq cumulOkEq, outputIH forTyEq forRawEq cumulOkEq]
+      dsimp only [Ty.substHet]; rw [stateIH forTyEq forRawEq cumulOkEq, outputIH forTyEq forRawEq cumulOkEq]
   | session protocolStep =>
-      simp only [Ty.substHet]; rw [RawTerm.subst_pointwise forRawEq protocolStep]
+      dsimp only [Ty.substHet]; rw [RawTerm.subst_pointwise forRawEq protocolStep]
   | effect carrierType effectTag carrierIH =>
-      simp only [Ty.substHet]
+      dsimp only [Ty.substHet]
       rw [carrierIH forTyEq forRawEq cumulOkEq,
           RawTerm.subst_pointwise forRawEq effectTag]
   | modal modalityTag carrierType carrierIH =>
-      simp only [Ty.substHet]; rw [carrierIH forTyEq forRawEq cumulOkEq]
+      dsimp only [Ty.substHet]; rw [carrierIH forTyEq forRawEq cumulOkEq]
 
 /-! ## Bridge laws between Subst and SubstHet
 
@@ -321,26 +321,26 @@ theorem Ty.substHet_fromSubst {level : Nat}
   | bool => rfl
   | nat  => rfl
   | arrow d c dIH cIH =>
-      simp only [Ty.substHet, Ty.subst]; rw [dIH sigma, cIH sigma]
+      dsimp only [Ty.substHet, Ty.subst]; rw [dIH sigma, cIH sigma]
   | piTy d c dIH cIH =>
-      simp only [Ty.substHet, Ty.subst]
+      dsimp only [Ty.substHet, Ty.subst]
       rw [dIH sigma]
       congr 1
       have liftEq : (SubstHet.fromSubst sigma).lift = SubstHet.fromSubst sigma.lift := rfl
       rw [liftEq, cIH sigma.lift]
   | sigmaTy fT sT fIH sIH =>
-      simp only [Ty.substHet, Ty.subst]
+      dsimp only [Ty.substHet, Ty.subst]
       rw [fIH sigma]
       congr 1
       have liftEq : (SubstHet.fromSubst sigma).lift = SubstHet.fromSubst sigma.lift := rfl
       rw [liftEq, sIH sigma.lift]
   | tyVar position => rfl
   | id carrier left right carrierIH =>
-      simp only [Ty.substHet, Ty.subst]; rw [carrierIH sigma]
+      dsimp only [Ty.substHet, Ty.subst]; rw [carrierIH sigma]
   | listType e eIH => simp only [Ty.substHet, Ty.subst]; rw [eIH sigma]
   | optionType e eIH => simp only [Ty.substHet, Ty.subst]; rw [eIH sigma]
   | eitherType l r lIH rIH =>
-      simp only [Ty.substHet, Ty.subst]; rw [lIH sigma, rIH sigma]
+      dsimp only [Ty.substHet, Ty.subst]; rw [lIH sigma, rIH sigma]
   | «universe» universeLevel levelLe =>
       show Ty.universe universeLevel
             (Nat.le_trans levelLe (SubstHet.fromSubst sigma).cumulOk) =
@@ -352,26 +352,26 @@ theorem Ty.substHet_fromSubst {level : Nat}
   | empty => rfl
   | interval => rfl
   | path carrier left right carrierIH =>
-      simp only [Ty.substHet, Ty.subst]; rw [carrierIH sigma]
+      dsimp only [Ty.substHet, Ty.subst]; rw [carrierIH sigma]
   | glue baseType boundaryWitness baseIH =>
-      simp only [Ty.substHet, Ty.subst]; rw [baseIH sigma]
+      dsimp only [Ty.substHet, Ty.subst]; rw [baseIH sigma]
   | oeq carrier left right carrierIH =>
-      simp only [Ty.substHet, Ty.subst]; rw [carrierIH sigma]
+      dsimp only [Ty.substHet, Ty.subst]; rw [carrierIH sigma]
   | idStrict carrier left right carrierIH =>
-      simp only [Ty.substHet, Ty.subst]; rw [carrierIH sigma]
+      dsimp only [Ty.substHet, Ty.subst]; rw [carrierIH sigma]
   | equiv d c dIH cIH =>
-      simp only [Ty.substHet, Ty.subst]; rw [dIH sigma, cIH sigma]
+      dsimp only [Ty.substHet, Ty.subst]; rw [dIH sigma, cIH sigma]
   | refine baseType predicate baseIH =>
-      simp only [Ty.substHet, Ty.subst]; rw [baseIH sigma]
+      dsimp only [Ty.substHet, Ty.subst]; rw [baseIH sigma]
   | record singleFieldType singleFieldIH =>
-      simp only [Ty.substHet, Ty.subst]; rw [singleFieldIH sigma]
+      dsimp only [Ty.substHet, Ty.subst]; rw [singleFieldIH sigma]
   | codata stateType outputType stateIH outputIH =>
-      simp only [Ty.substHet, Ty.subst]; rw [stateIH sigma, outputIH sigma]
+      dsimp only [Ty.substHet, Ty.subst]; rw [stateIH sigma, outputIH sigma]
   | session protocolStep => rfl
   | effect carrierType effectTag carrierIH =>
-      simp only [Ty.substHet, Ty.subst]; rw [carrierIH sigma]
+      dsimp only [Ty.substHet, Ty.subst]; rw [carrierIH sigma]
   | modal modalityTag carrierType carrierIH =>
-      simp only [Ty.substHet, Ty.subst]; rw [carrierIH sigma]
+      dsimp only [Ty.substHet, Ty.subst]; rw [carrierIH sigma]
 
 /-- The pure-cumul SubstHet (identity positions, non-trivial cumulOk)
 acts on Ty exactly as `Ty.lift_level cumulOk` does.  This makes
@@ -389,9 +389,9 @@ theorem Ty.substHet_cumul
   | bool => rfl
   | nat  => rfl
   | arrow d c dIH cIH =>
-      simp only [Ty.substHet, Ty.lift_level]; rw [dIH, cIH]
+      dsimp only [Ty.substHet, Ty.lift_level]; rw [dIH, cIH]
   | piTy d c dIH cIH =>
-      simp only [Ty.substHet, Ty.lift_level]
+      dsimp only [Ty.substHet, Ty.lift_level]
       rename_i scopeInner
       rw [dIH]
       congr 1
@@ -406,7 +406,7 @@ theorem Ty.substHet_cumul
         RawTermSubst.identity_lift_pointwise
       rw [Ty.substHet_pointwise forTyPw forRawPw rfl c, cIH]
   | sigmaTy fT sT fIH sIH =>
-      simp only [Ty.substHet, Ty.lift_level]
+      dsimp only [Ty.substHet, Ty.lift_level]
       rename_i scopeInner
       rw [fIH]
       congr 1
@@ -422,31 +422,31 @@ theorem Ty.substHet_cumul
       rw [Ty.substHet_pointwise forTyPw forRawPw rfl sT, sIH]
   | tyVar position => rfl
   | id carrier left right carrierIH =>
-      simp only [Ty.substHet, Ty.lift_level]
+      dsimp only [Ty.substHet, Ty.lift_level]
       rw [carrierIH, RawTerm.subst_identity left, RawTerm.subst_identity right]
   | listType e eIH => simp only [Ty.substHet, Ty.lift_level]; rw [eIH]
   | optionType e eIH => simp only [Ty.substHet, Ty.lift_level]; rw [eIH]
   | eitherType l r lIH rIH =>
-      simp only [Ty.substHet, Ty.lift_level]; rw [lIH, rIH]
+      dsimp only [Ty.substHet, Ty.lift_level]; rw [lIH, rIH]
   | «universe» universeLevel levelLe => rfl
   | empty => rfl
   | interval => rfl
   | path carrier left right carrierIH =>
-      simp only [Ty.substHet, Ty.lift_level]
+      dsimp only [Ty.substHet, Ty.lift_level]
       rw [carrierIH, RawTerm.subst_identity left, RawTerm.subst_identity right]
   | glue baseType boundaryWitness baseIH =>
-      simp only [Ty.substHet, Ty.lift_level]
+      dsimp only [Ty.substHet, Ty.lift_level]
       rw [baseIH, RawTerm.subst_identity boundaryWitness]
   | oeq carrier left right carrierIH =>
-      simp only [Ty.substHet, Ty.lift_level]
+      dsimp only [Ty.substHet, Ty.lift_level]
       rw [carrierIH, RawTerm.subst_identity left, RawTerm.subst_identity right]
   | idStrict carrier left right carrierIH =>
-      simp only [Ty.substHet, Ty.lift_level]
+      dsimp only [Ty.substHet, Ty.lift_level]
       rw [carrierIH, RawTerm.subst_identity left, RawTerm.subst_identity right]
   | equiv d c dIH cIH =>
-      simp only [Ty.substHet, Ty.lift_level]; rw [dIH, cIH]
+      dsimp only [Ty.substHet, Ty.lift_level]; rw [dIH, cIH]
   | refine baseType predicate baseIH =>
-      simp only [Ty.substHet, Ty.lift_level]
+      dsimp only [Ty.substHet, Ty.lift_level]
       rename_i scopeInner
       rw [baseIH]
       have predicateInv :
@@ -457,18 +457,18 @@ theorem Ty.substHet_cumul
             RawTerm.subst_identity predicate]
       rw [predicateInv]
   | record singleFieldType singleFieldIH =>
-      simp only [Ty.substHet, Ty.lift_level]; rw [singleFieldIH]
+      dsimp only [Ty.substHet, Ty.lift_level]; rw [singleFieldIH]
   | codata stateType outputType stateIH outputIH =>
-      simp only [Ty.substHet, Ty.lift_level]; rw [stateIH, outputIH]
+      dsimp only [Ty.substHet, Ty.lift_level]; rw [stateIH, outputIH]
   | session protocolStep =>
       show Ty.session (protocolStep.subst RawTermSubst.identity) =
            Ty.session protocolStep
       rw [RawTerm.subst_identity protocolStep]
   | effect carrierType effectTag carrierIH =>
-      simp only [Ty.substHet, Ty.lift_level]
+      dsimp only [Ty.substHet, Ty.lift_level]
       rw [carrierIH, RawTerm.subst_identity effectTag]
   | modal modalityTag carrierType carrierIH =>
-      simp only [Ty.substHet, Ty.lift_level]; rw [carrierIH]
+      dsimp only [Ty.substHet, Ty.lift_level]; rw [carrierIH]
 
 /-! ## Phase 12.A.B1.3-finish: rename/substHet commute lemmas
 
@@ -540,9 +540,9 @@ theorem Ty.substHet_rename_commute
   | bool => rfl
   | nat  => rfl
   | arrow d c dIH cIH =>
-      simp only [Ty.substHet, Ty.rename]; rw [dIH sigma rho, cIH sigma rho]
+      dsimp only [Ty.substHet, Ty.rename]; rw [dIH sigma rho, cIH sigma rho]
   | piTy d c dIH cIH =>
-      simp only [Ty.substHet, Ty.rename]
+      dsimp only [Ty.substHet, Ty.rename]
       rw [dIH sigma rho, cIH sigma.lift rho.lift]
       congr 1
       apply Ty.substHet_pointwise
@@ -550,7 +550,7 @@ theorem Ty.substHet_rename_commute
       · exact SubstHet.renameOutput_lift_forRaw_pointwise sigma rho
       · rfl
   | sigmaTy fT sT fIH sIH =>
-      simp only [Ty.substHet, Ty.rename]
+      dsimp only [Ty.substHet, Ty.rename]
       rw [fIH sigma rho, sIH sigma.lift rho.lift]
       congr 1
       apply Ty.substHet_pointwise
@@ -559,41 +559,41 @@ theorem Ty.substHet_rename_commute
       · rfl
   | tyVar position => rfl
   | id carrier left right carrierIH =>
-      simp only [Ty.substHet, Ty.rename]
+      dsimp only [Ty.substHet, Ty.rename]
       rw [carrierIH sigma rho,
           RawTerm.subst_rename_commute sigma.forRaw rho left,
           RawTerm.subst_rename_commute sigma.forRaw rho right]
   | listType e eIH => simp only [Ty.substHet, Ty.rename]; rw [eIH sigma rho]
   | optionType e eIH => simp only [Ty.substHet, Ty.rename]; rw [eIH sigma rho]
   | eitherType l r lIH rIH =>
-      simp only [Ty.substHet, Ty.rename]; rw [lIH sigma rho, rIH sigma rho]
+      dsimp only [Ty.substHet, Ty.rename]; rw [lIH sigma rho, rIH sigma rho]
   | «universe» universeLevel levelLe => rfl
   | empty => rfl
   | interval => rfl
   | path carrier left right carrierIH =>
-      simp only [Ty.substHet, Ty.rename]
+      dsimp only [Ty.substHet, Ty.rename]
       rw [carrierIH sigma rho,
           RawTerm.subst_rename_commute sigma.forRaw rho left,
           RawTerm.subst_rename_commute sigma.forRaw rho right]
   | glue baseType boundaryWitness baseIH =>
-      simp only [Ty.substHet, Ty.rename]
+      dsimp only [Ty.substHet, Ty.rename]
       rw [baseIH sigma rho,
           RawTerm.subst_rename_commute sigma.forRaw rho boundaryWitness]
   | oeq carrier left right carrierIH =>
-      simp only [Ty.substHet, Ty.rename]
+      dsimp only [Ty.substHet, Ty.rename]
       rw [carrierIH sigma rho,
           RawTerm.subst_rename_commute sigma.forRaw rho left,
           RawTerm.subst_rename_commute sigma.forRaw rho right]
   | idStrict carrier left right carrierIH =>
-      simp only [Ty.substHet, Ty.rename]
+      dsimp only [Ty.substHet, Ty.rename]
       rw [carrierIH sigma rho,
           RawTerm.subst_rename_commute sigma.forRaw rho left,
           RawTerm.subst_rename_commute sigma.forRaw rho right]
   | equiv d c dIH cIH =>
-      simp only [Ty.substHet, Ty.rename]
+      dsimp only [Ty.substHet, Ty.rename]
       rw [dIH sigma rho, cIH sigma rho]
   | refine baseType predicate baseIH =>
-      simp only [Ty.substHet, Ty.rename]
+      dsimp only [Ty.substHet, Ty.rename]
       rw [baseIH sigma rho,
           RawTerm.subst_rename_commute sigma.forRaw.lift rho.lift predicate]
       congr 1
@@ -601,20 +601,20 @@ theorem Ty.substHet_rename_commute
       intro position
       exact RawTermSubst.lift_then_rename_lift sigma.forRaw rho position
   | record singleFieldType singleFieldIH =>
-      simp only [Ty.substHet, Ty.rename]
+      dsimp only [Ty.substHet, Ty.rename]
       rw [singleFieldIH sigma rho]
   | codata stateType outputType stateIH outputIH =>
-      simp only [Ty.substHet, Ty.rename]
+      dsimp only [Ty.substHet, Ty.rename]
       rw [stateIH sigma rho, outputIH sigma rho]
   | session protocolStep =>
-      simp only [Ty.substHet, Ty.rename]
+      dsimp only [Ty.substHet, Ty.rename]
       rw [RawTerm.subst_rename_commute sigma.forRaw rho protocolStep]
   | effect carrierType effectTag carrierIH =>
-      simp only [Ty.substHet, Ty.rename]
+      dsimp only [Ty.substHet, Ty.rename]
       rw [carrierIH sigma rho,
           RawTerm.subst_rename_commute sigma.forRaw rho effectTag]
   | modal modalityTag carrierType carrierIH =>
-      simp only [Ty.substHet, Ty.rename]
+      dsimp only [Ty.substHet, Ty.rename]
       rw [carrierIH sigma rho]
 
 /-- Pre-compose a renaming with a SubstHet on the input side. -/
@@ -662,9 +662,9 @@ theorem Ty.rename_substHet_commute
   | bool => rfl
   | nat  => rfl
   | arrow d c dIH cIH =>
-      simp only [Ty.rename, Ty.substHet]; rw [dIH rho sigma, cIH rho sigma]
+      dsimp only [Ty.rename, Ty.substHet]; rw [dIH rho sigma, cIH rho sigma]
   | piTy d c dIH cIH =>
-      simp only [Ty.rename, Ty.substHet]
+      dsimp only [Ty.rename, Ty.substHet]
       rw [dIH rho sigma, cIH rho.lift sigma.lift]
       congr 1
       apply Ty.substHet_pointwise
@@ -672,7 +672,7 @@ theorem Ty.rename_substHet_commute
       · exact SubstHet.precomposeRenaming_lift_forRaw_pointwise rho sigma
       · rfl
   | sigmaTy fT sT fIH sIH =>
-      simp only [Ty.rename, Ty.substHet]
+      dsimp only [Ty.rename, Ty.substHet]
       rw [fIH rho sigma, sIH rho.lift sigma.lift]
       congr 1
       apply Ty.substHet_pointwise
@@ -681,41 +681,41 @@ theorem Ty.rename_substHet_commute
       · rfl
   | tyVar position => rfl
   | id carrier left right carrierIH =>
-      simp only [Ty.rename, Ty.substHet]
+      dsimp only [Ty.rename, Ty.substHet]
       rw [carrierIH rho sigma,
           RawTerm.rename_subst_commute rho sigma.forRaw left,
           RawTerm.rename_subst_commute rho sigma.forRaw right]
   | listType e eIH => simp only [Ty.rename, Ty.substHet]; rw [eIH rho sigma]
   | optionType e eIH => simp only [Ty.rename, Ty.substHet]; rw [eIH rho sigma]
   | eitherType l r lIH rIH =>
-      simp only [Ty.rename, Ty.substHet]; rw [lIH rho sigma, rIH rho sigma]
+      dsimp only [Ty.rename, Ty.substHet]; rw [lIH rho sigma, rIH rho sigma]
   | «universe» universeLevel levelLe => rfl
   | empty => rfl
   | interval => rfl
   | path carrier left right carrierIH =>
-      simp only [Ty.rename, Ty.substHet]
+      dsimp only [Ty.rename, Ty.substHet]
       rw [carrierIH rho sigma,
           RawTerm.rename_subst_commute rho sigma.forRaw left,
           RawTerm.rename_subst_commute rho sigma.forRaw right]
   | glue baseType boundaryWitness baseIH =>
-      simp only [Ty.rename, Ty.substHet]
+      dsimp only [Ty.rename, Ty.substHet]
       rw [baseIH rho sigma,
           RawTerm.rename_subst_commute rho sigma.forRaw boundaryWitness]
   | oeq carrier left right carrierIH =>
-      simp only [Ty.rename, Ty.substHet]
+      dsimp only [Ty.rename, Ty.substHet]
       rw [carrierIH rho sigma,
           RawTerm.rename_subst_commute rho sigma.forRaw left,
           RawTerm.rename_subst_commute rho sigma.forRaw right]
   | idStrict carrier left right carrierIH =>
-      simp only [Ty.rename, Ty.substHet]
+      dsimp only [Ty.rename, Ty.substHet]
       rw [carrierIH rho sigma,
           RawTerm.rename_subst_commute rho sigma.forRaw left,
           RawTerm.rename_subst_commute rho sigma.forRaw right]
   | equiv d c dIH cIH =>
-      simp only [Ty.rename, Ty.substHet]
+      dsimp only [Ty.rename, Ty.substHet]
       rw [dIH rho sigma, cIH rho sigma]
   | refine baseType predicate baseIH =>
-      simp only [Ty.rename, Ty.substHet]
+      dsimp only [Ty.rename, Ty.substHet]
       rw [baseIH rho sigma,
           RawTerm.rename_subst_commute rho.lift sigma.forRaw.lift predicate]
       congr 1
@@ -723,20 +723,20 @@ theorem Ty.rename_substHet_commute
       intro position
       exact RawTermSubst.lift_renaming_pull rho sigma.forRaw position
   | record singleFieldType singleFieldIH =>
-      simp only [Ty.rename, Ty.substHet]
+      dsimp only [Ty.rename, Ty.substHet]
       rw [singleFieldIH rho sigma]
   | codata stateType outputType stateIH outputIH =>
-      simp only [Ty.rename, Ty.substHet]
+      dsimp only [Ty.rename, Ty.substHet]
       rw [stateIH rho sigma, outputIH rho sigma]
   | session protocolStep =>
-      simp only [Ty.rename, Ty.substHet]
+      dsimp only [Ty.rename, Ty.substHet]
       rw [RawTerm.rename_subst_commute rho sigma.forRaw protocolStep]
   | effect carrierType effectTag carrierIH =>
-      simp only [Ty.rename, Ty.substHet]
+      dsimp only [Ty.rename, Ty.substHet]
       rw [carrierIH rho sigma,
           RawTerm.rename_subst_commute rho sigma.forRaw effectTag]
   | modal modalityTag carrierType carrierIH =>
-      simp only [Ty.rename, Ty.substHet]
+      dsimp only [Ty.rename, Ty.substHet]
       rw [carrierIH rho sigma]
 
 /-! ## Pointwise: lift commutes with weaken-output on SubstHet -/
@@ -847,9 +847,9 @@ theorem Ty.subst_substHet_compose
   | bool => rfl
   | nat  => rfl
   | arrow d c dIH cIH =>
-      simp only [Ty.subst, Ty.substHet]; rw [dIH sigma tau, cIH sigma tau]
+      dsimp only [Ty.subst, Ty.substHet]; rw [dIH sigma tau, cIH sigma tau]
   | piTy d c dIH cIH =>
-      simp only [Ty.subst, Ty.substHet]
+      dsimp only [Ty.subst, Ty.substHet]
       rw [dIH sigma tau, cIH sigma.lift tau.lift]
       congr 1
       apply Ty.substHet_pointwise
@@ -857,7 +857,7 @@ theorem Ty.subst_substHet_compose
       · exact fun p => (Subst.composeSubstHet_lift_forRaw_pointwise sigma tau p).symm
       · rfl
   | sigmaTy fT sT fIH sIH =>
-      simp only [Ty.subst, Ty.substHet]
+      dsimp only [Ty.subst, Ty.substHet]
       rw [fIH sigma tau, sIH sigma.lift tau.lift]
       congr 1
       apply Ty.substHet_pointwise
@@ -866,41 +866,41 @@ theorem Ty.subst_substHet_compose
       · rfl
   | tyVar position => rfl
   | id carrier left right carrierIH =>
-      simp only [Ty.subst, Ty.substHet]
+      dsimp only [Ty.subst, Ty.substHet]
       rw [carrierIH sigma tau,
           RawTerm.subst_compose sigma.forRaw tau.forRaw left,
           RawTerm.subst_compose sigma.forRaw tau.forRaw right]
   | listType e eIH => simp only [Ty.subst, Ty.substHet]; rw [eIH sigma tau]
   | optionType e eIH => simp only [Ty.subst, Ty.substHet]; rw [eIH sigma tau]
   | eitherType l r lIH rIH =>
-      simp only [Ty.subst, Ty.substHet]; rw [lIH sigma tau, rIH sigma tau]
+      dsimp only [Ty.subst, Ty.substHet]; rw [lIH sigma tau, rIH sigma tau]
   | «universe» universeLevel levelLe => rfl
   | empty => rfl
   | interval => rfl
   | path carrier left right carrierIH =>
-      simp only [Ty.subst, Ty.substHet]
+      dsimp only [Ty.subst, Ty.substHet]
       rw [carrierIH sigma tau,
           RawTerm.subst_compose sigma.forRaw tau.forRaw left,
           RawTerm.subst_compose sigma.forRaw tau.forRaw right]
   | glue baseType boundaryWitness baseIH =>
-      simp only [Ty.subst, Ty.substHet]
+      dsimp only [Ty.subst, Ty.substHet]
       rw [baseIH sigma tau,
           RawTerm.subst_compose sigma.forRaw tau.forRaw boundaryWitness]
   | oeq carrier left right carrierIH =>
-      simp only [Ty.subst, Ty.substHet]
+      dsimp only [Ty.subst, Ty.substHet]
       rw [carrierIH sigma tau,
           RawTerm.subst_compose sigma.forRaw tau.forRaw left,
           RawTerm.subst_compose sigma.forRaw tau.forRaw right]
   | idStrict carrier left right carrierIH =>
-      simp only [Ty.subst, Ty.substHet]
+      dsimp only [Ty.subst, Ty.substHet]
       rw [carrierIH sigma tau,
           RawTerm.subst_compose sigma.forRaw tau.forRaw left,
           RawTerm.subst_compose sigma.forRaw tau.forRaw right]
   | equiv d c dIH cIH =>
-      simp only [Ty.subst, Ty.substHet]
+      dsimp only [Ty.subst, Ty.substHet]
       rw [dIH sigma tau, cIH sigma tau]
   | refine baseType predicate baseIH =>
-      simp only [Ty.subst, Ty.substHet]
+      dsimp only [Ty.subst, Ty.substHet]
       rw [baseIH sigma tau,
           RawTerm.subst_compose sigma.forRaw.lift tau.forRaw.lift predicate]
       congr 1
@@ -908,20 +908,20 @@ theorem Ty.subst_substHet_compose
       intro position
       exact (RawTermSubst.lift_compose_pointwise sigma.forRaw tau.forRaw position).symm
   | record singleFieldType singleFieldIH =>
-      simp only [Ty.subst, Ty.substHet]
+      dsimp only [Ty.subst, Ty.substHet]
       rw [singleFieldIH sigma tau]
   | codata stateType outputType stateIH outputIH =>
-      simp only [Ty.subst, Ty.substHet]
+      dsimp only [Ty.subst, Ty.substHet]
       rw [stateIH sigma tau, outputIH sigma tau]
   | session protocolStep =>
-      simp only [Ty.subst, Ty.substHet]
+      dsimp only [Ty.subst, Ty.substHet]
       rw [RawTerm.subst_compose sigma.forRaw tau.forRaw protocolStep]
   | effect carrierType effectTag carrierIH =>
-      simp only [Ty.subst, Ty.substHet]
+      dsimp only [Ty.subst, Ty.substHet]
       rw [carrierIH sigma tau,
           RawTerm.subst_compose sigma.forRaw tau.forRaw effectTag]
   | modal modalityTag carrierType carrierIH =>
-      simp only [Ty.subst, Ty.substHet]
+      dsimp only [Ty.subst, Ty.substHet]
       rw [carrierIH sigma tau]
 
 /-- Lift commutes with composeSubst on forTy. -/
@@ -963,9 +963,9 @@ theorem Ty.substHet_subst_compose
   | bool => rfl
   | nat  => rfl
   | arrow d c dIH cIH =>
-      simp only [Ty.substHet, Ty.subst]; rw [dIH sigma tau, cIH sigma tau]
+      dsimp only [Ty.substHet, Ty.subst]; rw [dIH sigma tau, cIH sigma tau]
   | piTy d c dIH cIH =>
-      simp only [Ty.substHet, Ty.subst]
+      dsimp only [Ty.substHet, Ty.subst]
       rw [dIH sigma tau, cIH sigma.lift tau.lift]
       congr 1
       apply Ty.substHet_pointwise
@@ -973,7 +973,7 @@ theorem Ty.substHet_subst_compose
       · exact fun p => (SubstHet.composeSubst_lift_forRaw_pointwise sigma tau p).symm
       · rfl
   | sigmaTy fT sT fIH sIH =>
-      simp only [Ty.substHet, Ty.subst]
+      dsimp only [Ty.substHet, Ty.subst]
       rw [fIH sigma tau, sIH sigma.lift tau.lift]
       congr 1
       apply Ty.substHet_pointwise
@@ -982,41 +982,41 @@ theorem Ty.substHet_subst_compose
       · rfl
   | tyVar position => rfl
   | id carrier left right carrierIH =>
-      simp only [Ty.substHet, Ty.subst]
+      dsimp only [Ty.substHet, Ty.subst]
       rw [carrierIH sigma tau,
           RawTerm.subst_compose sigma.forRaw tau.forRaw left,
           RawTerm.subst_compose sigma.forRaw tau.forRaw right]
   | listType e eIH => simp only [Ty.substHet, Ty.subst]; rw [eIH sigma tau]
   | optionType e eIH => simp only [Ty.substHet, Ty.subst]; rw [eIH sigma tau]
   | eitherType l r lIH rIH =>
-      simp only [Ty.substHet, Ty.subst]; rw [lIH sigma tau, rIH sigma tau]
+      dsimp only [Ty.substHet, Ty.subst]; rw [lIH sigma tau, rIH sigma tau]
   | «universe» universeLevel levelLe => rfl
   | empty => rfl
   | interval => rfl
   | path carrier left right carrierIH =>
-      simp only [Ty.substHet, Ty.subst]
+      dsimp only [Ty.substHet, Ty.subst]
       rw [carrierIH sigma tau,
           RawTerm.subst_compose sigma.forRaw tau.forRaw left,
           RawTerm.subst_compose sigma.forRaw tau.forRaw right]
   | glue baseType boundaryWitness baseIH =>
-      simp only [Ty.substHet, Ty.subst]
+      dsimp only [Ty.substHet, Ty.subst]
       rw [baseIH sigma tau,
           RawTerm.subst_compose sigma.forRaw tau.forRaw boundaryWitness]
   | oeq carrier left right carrierIH =>
-      simp only [Ty.substHet, Ty.subst]
+      dsimp only [Ty.substHet, Ty.subst]
       rw [carrierIH sigma tau,
           RawTerm.subst_compose sigma.forRaw tau.forRaw left,
           RawTerm.subst_compose sigma.forRaw tau.forRaw right]
   | idStrict carrier left right carrierIH =>
-      simp only [Ty.substHet, Ty.subst]
+      dsimp only [Ty.substHet, Ty.subst]
       rw [carrierIH sigma tau,
           RawTerm.subst_compose sigma.forRaw tau.forRaw left,
           RawTerm.subst_compose sigma.forRaw tau.forRaw right]
   | equiv d c dIH cIH =>
-      simp only [Ty.substHet, Ty.subst]
+      dsimp only [Ty.substHet, Ty.subst]
       rw [dIH sigma tau, cIH sigma tau]
   | refine baseType predicate baseIH =>
-      simp only [Ty.substHet, Ty.subst]
+      dsimp only [Ty.substHet, Ty.subst]
       rw [baseIH sigma tau,
           RawTerm.subst_compose sigma.forRaw.lift tau.forRaw.lift predicate]
       congr 1
@@ -1024,20 +1024,20 @@ theorem Ty.substHet_subst_compose
       intro position
       exact (RawTermSubst.lift_compose_pointwise sigma.forRaw tau.forRaw position).symm
   | record singleFieldType singleFieldIH =>
-      simp only [Ty.substHet, Ty.subst]
+      dsimp only [Ty.substHet, Ty.subst]
       rw [singleFieldIH sigma tau]
   | codata stateType outputType stateIH outputIH =>
-      simp only [Ty.substHet, Ty.subst]
+      dsimp only [Ty.substHet, Ty.subst]
       rw [stateIH sigma tau, outputIH sigma tau]
   | session protocolStep =>
-      simp only [Ty.substHet, Ty.subst]
+      dsimp only [Ty.substHet, Ty.subst]
       rw [RawTerm.subst_compose sigma.forRaw tau.forRaw protocolStep]
   | effect carrierType effectTag carrierIH =>
-      simp only [Ty.substHet, Ty.subst]
+      dsimp only [Ty.substHet, Ty.subst]
       rw [carrierIH sigma tau,
           RawTerm.subst_compose sigma.forRaw tau.forRaw effectTag]
   | modal modalityTag carrierType carrierIH =>
-      simp only [Ty.substHet, Ty.subst]
+      dsimp only [Ty.substHet, Ty.subst]
       rw [carrierIH sigma tau]
 
 /-! ## Ty.subst0_substHet_commute via subst-substHet composition

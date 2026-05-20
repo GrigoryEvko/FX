@@ -35,7 +35,7 @@ theorem RawStep.par.cd_lemma_intervalOppCong {scope : Nat}
       RawStep.par intervalRawTarget (RawTerm.cd intervalRawSource)) :
     RawStep.par (RawTerm.intervalOpp intervalRawTarget)
       (RawTerm.cd (RawTerm.intervalOpp intervalRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.intervalOppCong intervalIH
 
 /-- `intervalMeetCong` arm. -/
@@ -47,7 +47,7 @@ theorem RawStep.par.cd_lemma_intervalMeetCong {scope : Nat}
     RawStep.par (RawTerm.intervalMeet leftRawTarget rightRawTarget)
       (RawTerm.cd (RawTerm.intervalMeet leftRawSource
         rightRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.intervalMeetCong leftIH rightIH
 
 /-- `intervalJoinCong` arm. -/
@@ -59,7 +59,7 @@ theorem RawStep.par.cd_lemma_intervalJoinCong {scope : Nat}
     RawStep.par (RawTerm.intervalJoin leftRawTarget rightRawTarget)
       (RawTerm.cd (RawTerm.intervalJoin leftRawSource
         rightRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.intervalJoinCong leftIH rightIH
 
 /-- `glueIntroCong` arm. -/
@@ -72,7 +72,7 @@ theorem RawStep.par.cd_lemma_glueIntroCong {scope : Nat}
     RawStep.par (RawTerm.glueIntro baseRawTarget partialRawTarget)
       (RawTerm.cd (RawTerm.glueIntro baseRawSource
         partialRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.glueIntroCong baseIH partialIH
 
 /-- Shallow β: `glueElim (glueIntro base partial)` contracts to base. -/
@@ -155,7 +155,7 @@ theorem RawStep.par.cd_lemma_equivIntroCong {scope : Nat}
     RawStep.par (RawTerm.equivIntro forwardRawTarget backwardRawTarget)
       (RawTerm.cd (RawTerm.equivIntro forwardRawSource
         backwardRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.equivIntroCong forwardIH backwardIH
 
 /-- `equivAppCong` arm. -/
@@ -168,7 +168,7 @@ theorem RawStep.par.cd_lemma_equivAppCong {scope : Nat}
     RawStep.par (RawTerm.equivApp equivRawTarget argumentRawTarget)
       (RawTerm.cd (RawTerm.equivApp equivRawSource
         argumentRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.equivAppCong equivIH argumentIH
 
 /-- `pathComposeCong` arm — D3.6-S3 pure cong. -/
@@ -180,7 +180,7 @@ theorem RawStep.par.cd_lemma_pathComposeCong {scope : Nat}
     RawStep.par (RawTerm.pathCompose leftRawTarget rightRawTarget)
       (RawTerm.cd (RawTerm.pathCompose leftRawSource
         rightRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.pathComposeCong leftIH rightIH
 
 /-- `oeqTransCong` arm — D3.6-S5 pure cong on oeqTrans. -/
@@ -193,7 +193,7 @@ theorem RawStep.par.cd_lemma_oeqTransCong {scope : Nat}
     RawStep.par (RawTerm.oeqTrans firstRawTarget secondRawTarget)
       (RawTerm.cd (RawTerm.oeqTrans firstRawSource
         secondRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.oeqTransCong firstIH secondIH
 
 /-- `equivComposeCong` arm — D3.6-S5 pure cong on equivCompose. -/
@@ -206,7 +206,7 @@ theorem RawStep.par.cd_lemma_equivComposeCong {scope : Nat}
     RawStep.par (RawTerm.equivCompose firstRawTarget secondRawTarget)
       (RawTerm.cd (RawTerm.equivCompose firstRawSource
         secondRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.equivComposeCong firstIH secondIH
 
 /-- `uaToEquivCong` arm — pure cong. -/
@@ -215,7 +215,7 @@ theorem RawStep.par.cd_lemma_uaToEquivCong {scope : Nat}
     (innerIH : RawStep.par innerRawTarget (RawTerm.cd innerRawSource)) :
     RawStep.par (RawTerm.uaToEquiv innerRawTarget)
       (RawTerm.cd (RawTerm.uaToEquiv innerRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.uaToEquivCong innerIH
 
 /-- `idToEquivRefl` shallow refl-β — closed identity contractum. -/
@@ -238,7 +238,7 @@ theorem RawStep.par.cd_lemma_idToEquivReflDeep {scope : Nat}
       (RawTerm.cd (RawTerm.idToEquiv proofRawSource)) := by
   obtain ⟨witnessFinal, hCdEq, _witnessStep⟩ :=
     RawStep.par.refl_inv proofIH
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   rw [hCdEq]
   simp only [RawTerm.cdIdToEquivCase]
   exact RawStep.par.idToEquivRefl (RawStep.par.refl _)

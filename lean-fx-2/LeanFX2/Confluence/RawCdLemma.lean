@@ -162,7 +162,7 @@ theorem RawStep.par.cd_lemma {scope : Nat}
   | glueElimCong _ gluedIH =>
       exact RawStep.par.cd_lemma_glueElimCong gluedIH
   | @transpCong _ pathRawSource pathRawTarget _ _ pathStep sourceStep pathIH sourceIH =>
-      simp only [RawTerm.cd, RawTerm.cdTranspCase]
+      dsimp only [RawTerm.cd, RawTerm.cdTranspCase]
       split
       case _ pathBody pathBodyEqn =>
           rw [pathBodyEqn] at pathIH
@@ -183,13 +183,13 @@ theorem RawStep.par.cd_lemma {scope : Nat}
            exact RawStep.par.transpComposeDeep pathIH sourceIH)
         | exact RawStep.par.transpCong pathIH sourceIH
   | @uaBeta _ proofRawSource _ _ _ _ sourceStep proofIH sourceIH =>
-      simp only [RawTerm.cd, RawTerm.cdTranspCase]
+      dsimp only [RawTerm.cd, RawTerm.cdTranspCase]
       exact RawStep.par.equivApplyCong
         (RawStep.par.uaToEquivCong proofIH) sourceIH
   | @uaBetaDeep _ pathRawSource _ _ _ pathStep sourceStep pathIH sourceIH =>
       obtain ⟨proofInner, cdPathEq, proofParStep⟩ :=
         RawStep.par.uaToEquiv_inv pathIH
-      simp only [RawTerm.cd, RawTerm.cdTranspCase]
+      dsimp only [RawTerm.cd, RawTerm.cdTranspCase]
       rw [cdPathEq]
       exact RawStep.par.equivApplyCong
         (RawStep.par.uaToEquivCong proofParStep) sourceIH
@@ -199,14 +199,14 @@ theorem RawStep.par.cd_lemma {scope : Nat}
       exact sourceIH
   | @transpReflBetaDeep _ pathRawSource _ _ _ pathStep sourceStep pathIH sourceIH =>
       obtain ⟨someBody, cdPathEq, bodyParStep⟩ := RawStep.par.pathLam_inv pathIH
-      simp only [RawTerm.cd, RawTerm.cdTranspCase]
+      dsimp only [RawTerm.cd, RawTerm.cdTranspCase]
       rw [cdPathEq]
       obtain ⟨innerType, hWeak⟩ := RawStep.par.weaken_inv bodyParStep
       rw [hWeak]
       simp only [RawTerm.unweaken?_weaken]
       exact sourceIH
   | transpFillCong _ _ _ pathIH intervalIH sourceIH =>
-      simp only [RawTerm.cd]
+      dsimp only [RawTerm.cd]
       exact RawStep.par.transpFillCong pathIH intervalIH sourceIH
   | hcompCong _ _ sidesIH capIH =>
       exact RawStep.par.cd_lemma_hcompCong sidesIH capIH
@@ -291,7 +291,7 @@ theorem RawStep.par.cd_lemma {scope : Nat}
   | uaToEquivCong _ innerIH =>
       exact RawStep.par.cd_lemma_uaToEquivCong innerIH
   | @equivApplyCong _ equivRawSource _ argRawSource _ _ _ equivIH argIH =>
-      simp only [RawTerm.cd]
+      dsimp only [RawTerm.cd]
       unfold RawTerm.cdEquivApplyCase
       match hCdEquiv : RawTerm.cd equivRawSource with
       | .uaToEquiv proof =>
@@ -345,18 +345,18 @@ theorem RawStep.par.cd_lemma {scope : Nat}
   | @transpCompose _ leftRawSource _ rightRawSource _ _ _
                    leftStep rightStep sourceStep
                    leftIH rightIH sourceIH =>
-      simp only [RawTerm.cd, RawTerm.cdTranspCase]
+      dsimp only [RawTerm.cd, RawTerm.cdTranspCase]
       exact RawStep.par.transpCong rightIH (RawStep.par.transpCong leftIH sourceIH)
   | @transpComposeDeep _ pathRawSource _ _ _ _
                        pathStep sourceStep pathIH sourceIH =>
       obtain ⟨leftInner, rightInner, cdPathEq, leftParStep, rightParStep⟩ :=
         RawStep.par.pathCompose_inv pathIH
-      simp only [RawTerm.cd, RawTerm.cdTranspCase]
+      dsimp only [RawTerm.cd, RawTerm.cdTranspCase]
       rw [cdPathEq]
       exact RawStep.par.transpCong rightParStep
         (RawStep.par.transpCong leftParStep sourceIH)
   | @idToEquivCong _ proofRawSource _ _ proofIH =>
-      simp only [RawTerm.cd]
+      dsimp only [RawTerm.cd]
       match hCd : RawTerm.cd proofRawSource with
       | .refl witnessRaw =>
           rw [hCd] at proofIH
@@ -400,7 +400,7 @@ theorem RawStep.par.cd_lemma {scope : Nat}
   | @idToEquivReflDeep _ proofRawSource _ proofStep proofIH =>
       obtain ⟨witnessFinal, hCdEq, _witnessStep⟩ :=
         RawStep.par.refl_inv proofIH
-      simp only [RawTerm.cd]
+      dsimp only [RawTerm.cd]
       rw [hCdEq]
       simp only [RawTerm.cdIdToEquivCase]
       exact RawStep.par.refl _
@@ -416,7 +416,7 @@ theorem RawStep.par.cd_lemma {scope : Nat}
   | @idToEquivComposeDeep _ proofRawSource firstTarget secondTarget proofStep proofIH =>
       obtain ⟨firstFinal, secondFinal, hCdEq, firstStep, secondStep⟩ :=
         RawStep.par.oeqTrans_inv proofIH
-      simp only [RawTerm.cd]
+      dsimp only [RawTerm.cd]
       rw [hCdEq]
       simp only [RawTerm.cdIdToEquivCase]
       exact RawStep.par.equivComposeCong
@@ -433,7 +433,7 @@ theorem RawStep.par.cd_lemma {scope : Nat}
         RawStep.par.uaToEquiv_inv equivIH
       obtain ⟨witnessFinal, hInnerEq, _witnessStep⟩ :=
         RawStep.par.oeqRefl_inv innerStep
-      simp only [RawTerm.cd]
+      dsimp only [RawTerm.cd]
       rw [hCdEquivEq, hInnerEq]
       simp only [RawTerm.cdEquivApplyCase, RawTerm.cdUaToEquivApplyCase]
       exact sourceIH

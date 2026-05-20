@@ -32,7 +32,7 @@ theorem RawStep.par.cd_lemma_arrowCodeCong {scope : Nat}
     RawStep.par (RawTerm.arrowCode domainRawTarget codomainRawTarget)
       (RawTerm.cd (RawTerm.arrowCode domainRawSource
         codomainRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.arrowCodeCong domainIH codomainIH
 
 /-- `piTyCodeCong` arm. -/
@@ -46,7 +46,7 @@ theorem RawStep.par.cd_lemma_piTyCodeCong {scope : Nat}
     RawStep.par (RawTerm.piTyCode domainRawTarget codomainRawTarget)
       (RawTerm.cd (RawTerm.piTyCode domainRawSource
         codomainRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.piTyCodeCong domainIH codomainIH
 
 /-- `sigmaTyCodeCong` arm. -/
@@ -60,7 +60,7 @@ theorem RawStep.par.cd_lemma_sigmaTyCodeCong {scope : Nat}
     RawStep.par (RawTerm.sigmaTyCode domainRawTarget codomainRawTarget)
       (RawTerm.cd (RawTerm.sigmaTyCode domainRawSource
         codomainRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.sigmaTyCodeCong domainIH codomainIH
 
 /-- `productCodeCong` arm. -/
@@ -73,7 +73,7 @@ theorem RawStep.par.cd_lemma_productCodeCong {scope : Nat}
     RawStep.par (RawTerm.productCode firstRawTarget secondRawTarget)
       (RawTerm.cd (RawTerm.productCode firstRawSource
         secondRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.productCodeCong firstIH secondIH
 
 /-- `sumCodeCong` arm. -/
@@ -84,7 +84,7 @@ theorem RawStep.par.cd_lemma_sumCodeCong {scope : Nat}
     (rightIH : RawStep.par rightRawTarget (RawTerm.cd rightRawSource)) :
     RawStep.par (RawTerm.sumCode leftRawTarget rightRawTarget)
       (RawTerm.cd (RawTerm.sumCode leftRawSource rightRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.sumCodeCong leftIH rightIH
 
 /-- `listCodeCong` arm. -/
@@ -94,7 +94,7 @@ theorem RawStep.par.cd_lemma_listCodeCong {scope : Nat}
       RawStep.par elementRawTarget (RawTerm.cd elementRawSource)) :
     RawStep.par (RawTerm.listCode elementRawTarget)
       (RawTerm.cd (RawTerm.listCode elementRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.listCodeCong elementIH
 
 /-- `optionCodeCong` arm. -/
@@ -104,7 +104,7 @@ theorem RawStep.par.cd_lemma_optionCodeCong {scope : Nat}
       RawStep.par elementRawTarget (RawTerm.cd elementRawSource)) :
     RawStep.par (RawTerm.optionCode elementRawTarget)
       (RawTerm.cd (RawTerm.optionCode elementRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.optionCodeCong elementIH
 
 /-- `eitherCodeCong` arm. -/
@@ -115,7 +115,7 @@ theorem RawStep.par.cd_lemma_eitherCodeCong {scope : Nat}
     (rightIH : RawStep.par rightRawTarget (RawTerm.cd rightRawSource)) :
     RawStep.par (RawTerm.eitherCode leftRawTarget rightRawTarget)
       (RawTerm.cd (RawTerm.eitherCode leftRawSource rightRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.eitherCodeCong leftIH rightIH
 
 /-- `idCodeCong` arm. -/
@@ -129,7 +129,7 @@ theorem RawStep.par.cd_lemma_idCodeCong {scope : Nat}
     RawStep.par (RawTerm.idCode typeRawTarget leftRawTarget rightRawTarget)
       (RawTerm.cd (RawTerm.idCode typeRawSource leftRawSource
         rightRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.idCodeCong typeIH leftIH rightIH
 
 /-- `equivCodeCong` arm. -/
@@ -140,7 +140,7 @@ theorem RawStep.par.cd_lemma_equivCodeCong {scope : Nat}
     (rightIH : RawStep.par rightRawTarget (RawTerm.cd rightRawSource)) :
     RawStep.par (RawTerm.equivCode leftRawTarget rightRawTarget)
       (RawTerm.cd (RawTerm.equivCode leftRawSource rightRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.equivCodeCong leftIH rightIH
 
 /-- `cumulUpMarkerCong` arm. -/
@@ -149,7 +149,7 @@ theorem RawStep.par.cd_lemma_cumulUpMarkerCong {scope : Nat}
     (innerIH : RawStep.par innerRawTarget (RawTerm.cd innerRawSource)) :
     RawStep.par (RawTerm.cumulUpMarker innerRawTarget)
       (RawTerm.cd (RawTerm.cumulUpMarker innerRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.cumulUpMarkerCong innerIH
 
 end LeanFX2

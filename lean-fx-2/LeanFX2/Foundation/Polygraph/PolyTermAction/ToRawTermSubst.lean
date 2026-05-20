@@ -70,7 +70,7 @@ theorem RawPolyTerm.toRawTerm_subst_commute :
   | unit => intro _; rfl
   | lam body bodyIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       have liftedCommute := bodyIH substitution.lift
       rw [liftedCommute]
       exact congrArg RawTerm.lam
@@ -78,129 +78,129 @@ theorem RawPolyTerm.toRawTerm_subst_commute :
           (RawPolyTermSubst.lift_toRawTermSubst_commute substitution) _)
   | app functionTerm argumentTerm functionIH argumentIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg2 RawTerm.app
         (functionIH substitution) (argumentIH substitution)
   | pair firstValue secondValue firstIH secondIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg2 RawTerm.pair
         (firstIH substitution) (secondIH substitution)
   | fst pairTerm pairIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact congrArg RawTerm.fst (pairIH substitution)
   | snd pairTerm pairIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact congrArg RawTerm.snd (pairIH substitution)
   | boolTrue => intro _; rfl
   | boolFalse => intro _; rfl
   | boolElim scrutinee thenBranch elseBranch scrutineeIH thenIH elseIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg3 RawTerm.boolElim
         (scrutineeIH substitution) (thenIH substitution)
         (elseIH substitution)
   | natZero => intro _; rfl
   | natSucc predecessor predecessorIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact congrArg RawTerm.natSucc (predecessorIH substitution)
   | natElim scrutinee zeroBranch succBranch
       scrutineeIH zeroIH succIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg3 RawTerm.natElim
         (scrutineeIH substitution) (zeroIH substitution)
         (succIH substitution)
   | natRec scrutinee zeroBranch succBranch
       scrutineeIH zeroIH succIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg3 RawTerm.natRec
         (scrutineeIH substitution) (zeroIH substitution)
         (succIH substitution)
   | listNil => intro _; rfl
   | listCons headTerm tailTerm headIH tailIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg2 RawTerm.listCons
         (headIH substitution) (tailIH substitution)
   | listElim scrutinee nilBranch consBranch
       scrutineeIH nilIH consIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg3 RawTerm.listElim
         (scrutineeIH substitution) (nilIH substitution)
         (consIH substitution)
   | optionNone => intro _; rfl
   | optionSome valueTerm valueIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact congrArg RawTerm.optionSome (valueIH substitution)
   | optionMatch scrutinee noneBranch someBranch
       scrutineeIH noneIH someIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg3 RawTerm.optionMatch
         (scrutineeIH substitution) (noneIH substitution)
         (someIH substitution)
   | eitherInl valueTerm valueIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact congrArg RawTerm.eitherInl (valueIH substitution)
   | eitherInr valueTerm valueIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact congrArg RawTerm.eitherInr (valueIH substitution)
   | eitherMatch scrutinee leftBranch rightBranch
       scrutineeIH leftIH rightIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg3 RawTerm.eitherMatch
         (scrutineeIH substitution) (leftIH substitution)
         (rightIH substitution)
   | refl rawWitness witnessIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact congrArg RawTerm.refl (witnessIH substitution)
   | idJ baseCase witness baseIH witnessIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg2 RawTerm.idJ
         (baseIH substitution) (witnessIH substitution)
   | modIntro inner innerIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact congrArg RawTerm.modIntro (innerIH substitution)
   | modElim inner innerIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact congrArg RawTerm.modElim (innerIH substitution)
   | subsume inner innerIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact congrArg RawTerm.subsume (innerIH substitution)
   | interval0 => intro _; rfl
   | interval1 => intro _; rfl
   | intervalOpp intervalTerm intervalIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact congrArg RawTerm.intervalOpp (intervalIH substitution)
   | intervalMeet leftInterval rightInterval leftIH rightIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg2 RawTerm.intervalMeet
         (leftIH substitution) (rightIH substitution)
   | intervalJoin leftInterval rightInterval leftIH rightIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg2 RawTerm.intervalJoin
         (leftIH substitution) (rightIH substitution)
   | pathLam body bodyIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       have liftedCommute := bodyIH substitution.lift
       rw [liftedCommute]
       exact congrArg RawTerm.pathLam
@@ -208,114 +208,114 @@ theorem RawPolyTerm.toRawTerm_subst_commute :
           (RawPolyTermSubst.lift_toRawTermSubst_commute substitution) _)
   | pathApp pathTerm intervalArg pathIH intervalIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg2 RawTerm.pathApp
         (pathIH substitution) (intervalIH substitution)
   | glueIntro baseValue partialValue baseIH partialIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg2 RawTerm.glueIntro
         (baseIH substitution) (partialIH substitution)
   | glueElim gluedValue gluedIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact congrArg RawTerm.glueElim (gluedIH substitution)
   | transp path source pathIH sourceIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg2 RawTerm.transp
         (pathIH substitution) (sourceIH substitution)
   | transpFill path interval source pathIH intervalIH sourceIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg3 RawTerm.transpFill
         (pathIH substitution) (intervalIH substitution) (sourceIH substitution)
   | hcomp sides cap sidesIH capIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg2 RawTerm.hcomp
         (sidesIH substitution) (capIH substitution)
   | oeqRefl witness witnessIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact congrArg RawTerm.oeqRefl (witnessIH substitution)
   | oeqJ baseCase witness baseIH witnessIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg2 RawTerm.oeqJ
         (baseIH substitution) (witnessIH substitution)
   | oeqFunext pointwiseEquality pointwiseIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact congrArg RawTerm.oeqFunext (pointwiseIH substitution)
   | idStrictRefl witness witnessIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact congrArg RawTerm.idStrictRefl (witnessIH substitution)
   | idStrictRec baseCase witness baseIH witnessIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg2 RawTerm.idStrictRec
         (baseIH substitution) (witnessIH substitution)
   | equivIntro forwardFn backwardFn forwardIH backwardIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg2 RawTerm.equivIntro
         (forwardIH substitution) (backwardIH substitution)
   | equivApp equivTerm argument equivIH argumentIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg2 RawTerm.equivApp
         (equivIH substitution) (argumentIH substitution)
   | refineIntro rawValue predicateProof rawIH proofIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg2 RawTerm.refineIntro
         (rawIH substitution) (proofIH substitution)
   | refineElim refinedValue refinedIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact congrArg RawTerm.refineElim (refinedIH substitution)
   | recordIntro firstField firstIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact congrArg RawTerm.recordIntro (firstIH substitution)
   | recordProj recordValue recordIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact congrArg RawTerm.recordProj (recordIH substitution)
   | codataUnfold initialState transition initialIH transitionIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg2 RawTerm.codataUnfold
         (initialIH substitution) (transitionIH substitution)
   | codataDest codataValue codataIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact congrArg RawTerm.codataDest (codataIH substitution)
   | sessionSend channel payload channelIH payloadIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg2 RawTerm.sessionSend
         (channelIH substitution) (payloadIH substitution)
   | sessionRecv channel channelIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact congrArg RawTerm.sessionRecv (channelIH substitution)
   | effectPerform operationTag arguments operationIH argumentsIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg2 RawTerm.effectPerform
         (operationIH substitution) (argumentsIH substitution)
   | universeCode innerLevel => intro _; rfl
   | arrowCode domainCode codomainCode domainIH codomainIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg2 RawTerm.arrowCode
         (domainIH substitution) (codomainIH substitution)
   | piTyCode domainCode codomainCode domainIH codomainIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       have liftedCommute := codomainIH substitution.lift
       rw [liftedCommute]
       exact LeanFX2.congrArg2 RawTerm.piTyCode (domainIH substitution)
@@ -323,7 +323,7 @@ theorem RawPolyTerm.toRawTerm_subst_commute :
           (RawPolyTermSubst.lift_toRawTermSubst_commute substitution) _)
   | sigmaTyCode domainCode codomainCode domainIH codomainIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       have liftedCommute := codomainIH substitution.lift
       rw [liftedCommute]
       exact LeanFX2.congrArg2 RawTerm.sigmaTyCode (domainIH substitution)
@@ -331,67 +331,67 @@ theorem RawPolyTerm.toRawTerm_subst_commute :
           (RawPolyTermSubst.lift_toRawTermSubst_commute substitution) _)
   | productCode firstCode secondCode firstIH secondIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg2 RawTerm.productCode
         (firstIH substitution) (secondIH substitution)
   | sumCode leftCode rightCode leftIH rightIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg2 RawTerm.sumCode
         (leftIH substitution) (rightIH substitution)
   | listCode elementCode elementIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact congrArg RawTerm.listCode (elementIH substitution)
   | optionCode elementCode elementIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact congrArg RawTerm.optionCode (elementIH substitution)
   | eitherCode leftCode rightCode leftIH rightIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg2 RawTerm.eitherCode
         (leftIH substitution) (rightIH substitution)
   | idCode typeCode leftRaw rightRaw typeIH leftIH rightIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg3 RawTerm.idCode
         (typeIH substitution) (leftIH substitution) (rightIH substitution)
   | equivCode leftTypeCode rightTypeCode leftIH rightIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg2 RawTerm.equivCode
         (leftIH substitution) (rightIH substitution)
   | cumulUpMarker innerCodeRaw innerIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact congrArg RawTerm.cumulUpMarker (innerIH substitution)
   | uaToEquiv proofRaw proofIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact congrArg RawTerm.uaToEquiv (proofIH substitution)
   | equivApply equivRaw argRaw equivIH argIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg2 RawTerm.equivApply
         (equivIH substitution) (argIH substitution)
   | pathCompose leftPathRaw rightPathRaw leftIH rightIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg2 RawTerm.pathCompose
         (leftIH substitution) (rightIH substitution)
   | idToEquiv proofRaw proofIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact congrArg RawTerm.idToEquiv (proofIH substitution)
   | oeqTrans firstProof secondProof firstIH secondIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg2 RawTerm.oeqTrans
         (firstIH substitution) (secondIH substitution)
   | equivCompose firstEquiv secondEquiv firstIH secondIH =>
       intro substitution
-      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      dsimp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg2 RawTerm.equivCompose
         (firstIH substitution) (secondIH substitution)
 

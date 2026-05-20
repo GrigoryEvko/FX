@@ -25,7 +25,7 @@ theorem RawStep.par.cd_lemma_listCons {scope : Nat}
     (tailIH : RawStep.par tailRawTarget (RawTerm.cd tailRawSource)) :
     RawStep.par (RawTerm.listCons headRawTarget tailRawTarget)
       (RawTerm.cd (RawTerm.listCons headRawSource tailRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.listCons headIH tailIH
 
 /-- `listElim` cong arm with nil/cons split. -/
@@ -57,7 +57,7 @@ theorem RawStep.par.cd_lemma_optionSome {scope : Nat}
     (valueIH : RawStep.par valueRawTarget (RawTerm.cd valueRawSource)) :
     RawStep.par (RawTerm.optionSome valueRawTarget)
       (RawTerm.cd (RawTerm.optionSome valueRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.optionSome valueIH
 
 /-- `optionMatch` cong arm with none/some split. -/
@@ -91,7 +91,7 @@ theorem RawStep.par.cd_lemma_eitherInl {scope : Nat}
     (valueIH : RawStep.par valueRawTarget (RawTerm.cd valueRawSource)) :
     RawStep.par (RawTerm.eitherInl valueRawTarget)
       (RawTerm.cd (RawTerm.eitherInl valueRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.eitherInl valueIH
 
 /-- `eitherInr` cong arm. -/
@@ -100,7 +100,7 @@ theorem RawStep.par.cd_lemma_eitherInr {scope : Nat}
     (valueIH : RawStep.par valueRawTarget (RawTerm.cd valueRawSource)) :
     RawStep.par (RawTerm.eitherInr valueRawTarget)
       (RawTerm.cd (RawTerm.eitherInr valueRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.eitherInr valueIH
 
 /-- `eitherMatch` cong arm with inl/inr split. -/
@@ -136,7 +136,7 @@ theorem RawStep.par.cd_lemma_iotaListElimNil {scope : Nat}
     RawStep.par nilRawTarget
       (RawTerm.cd (RawTerm.listElim RawTerm.listNil
         nilRawSource consBranch)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact nilIH
 
 /-- Shallow ι: list-elim on `listCons`. -/
@@ -153,7 +153,7 @@ theorem RawStep.par.cd_lemma_iotaListElimCons {scope : Nat}
       (RawTerm.cd (RawTerm.listElim
         (RawTerm.listCons headRawSource tailRawSource)
         nilBranch consRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.app
     (RawStep.par.app consIH headIH) tailIH
 
@@ -165,7 +165,7 @@ theorem RawStep.par.cd_lemma_iotaOptionMatchNone {scope : Nat}
     RawStep.par noneRawTarget
       (RawTerm.cd (RawTerm.optionMatch RawTerm.optionNone
         noneRawSource someBranch)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact noneIH
 
 /-- Shallow ι: option-match on `optionSome`. -/
@@ -179,7 +179,7 @@ theorem RawStep.par.cd_lemma_iotaOptionMatchSome {scope : Nat}
       (RawTerm.cd (RawTerm.optionMatch
         (RawTerm.optionSome valueRawSource)
         noneBranch someRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.app someIH valueIH
 
 /-- Shallow ι: either-match on `eitherInl`. -/
@@ -193,7 +193,7 @@ theorem RawStep.par.cd_lemma_iotaEitherMatchInl {scope : Nat}
       (RawTerm.cd (RawTerm.eitherMatch
         (RawTerm.eitherInl valueRawSource)
         leftRawSource rightBranch)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.app leftIH valueIH
 
 /-- Shallow ι: either-match on `eitherInr`. -/
@@ -207,7 +207,7 @@ theorem RawStep.par.cd_lemma_iotaEitherMatchInr {scope : Nat}
       (RawTerm.cd (RawTerm.eitherMatch
         (RawTerm.eitherInr valueRawSource)
         leftBranch rightRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.app rightIH valueIH
 
 /-- Deep ι: list-elim scrutinee develops to `listNil`. -/
@@ -221,7 +221,7 @@ theorem RawStep.par.cd_lemma_iotaListElimNilDeep {scope : Nat}
     RawStep.par nilRawTarget
       (RawTerm.cd (RawTerm.listElim scrutineeRawSource
         nilRawSource consBranch)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   have cdScrutinee := RawStep.par.listNil_inv scrutineeIH
   rw [cdScrutinee]
   exact nilIH
@@ -240,7 +240,7 @@ theorem RawStep.par.cd_lemma_iotaListElimConsDeep {scope : Nat}
       (RawTerm.app (RawTerm.app consRawTarget headAfter) tailAfter)
       (RawTerm.cd (RawTerm.listElim scrutineeRawSource
         nilBranch consRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   obtain ⟨headAfter', tailAfter', cdScrutineeEq, headParStep, tailParStep⟩ :=
     RawStep.par.listCons_inv scrutineeIH
   rw [cdScrutineeEq]
@@ -258,7 +258,7 @@ theorem RawStep.par.cd_lemma_iotaOptionMatchNoneDeep {scope : Nat}
     RawStep.par noneRawTarget
       (RawTerm.cd (RawTerm.optionMatch scrutineeRawSource
         noneRawSource someBranch)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   have cdScrutinee := RawStep.par.optionNone_inv scrutineeIH
   rw [cdScrutinee]
   exact noneIH
@@ -276,7 +276,7 @@ theorem RawStep.par.cd_lemma_iotaOptionMatchSomeDeep {scope : Nat}
     RawStep.par (RawTerm.app someRawTarget valueAfter)
       (RawTerm.cd (RawTerm.optionMatch scrutineeRawSource
         noneBranch someRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   obtain ⟨valueAfter', cdScrutineeEq, valueParStep⟩ :=
     RawStep.par.optionSome_inv scrutineeIH
   rw [cdScrutineeEq]
@@ -295,7 +295,7 @@ theorem RawStep.par.cd_lemma_iotaEitherMatchInlDeep {scope : Nat}
     RawStep.par (RawTerm.app leftRawTarget valueAfter)
       (RawTerm.cd (RawTerm.eitherMatch scrutineeRawSource
         leftRawSource rightBranch)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   obtain ⟨valueAfter', cdScrutineeEq, valueParStep⟩ :=
     RawStep.par.eitherInl_inv scrutineeIH
   rw [cdScrutineeEq]
@@ -314,7 +314,7 @@ theorem RawStep.par.cd_lemma_iotaEitherMatchInrDeep {scope : Nat}
     RawStep.par (RawTerm.app rightRawTarget valueAfter)
       (RawTerm.cd (RawTerm.eitherMatch scrutineeRawSource
         leftBranch rightRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   obtain ⟨valueAfter', cdScrutineeEq, valueParStep⟩ :=
     RawStep.par.eitherInr_inv scrutineeIH
   rw [cdScrutineeEq]

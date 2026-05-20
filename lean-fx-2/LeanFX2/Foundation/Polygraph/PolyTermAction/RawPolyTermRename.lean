@@ -283,314 +283,314 @@ theorem RawTerm.rename_toRawPoly_commute :
   | unit => intro _; rfl
   | lam body bodyIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArgLam (bodyIH rawRenaming.lift)
   | app functionTerm argumentTerm functionIH argumentIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg2 RawPolyTerm.app
         (functionIH rawRenaming) (argumentIH rawRenaming)
   | pair firstValue secondValue firstIH secondIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg2 RawPolyTerm.pair
         (firstIH rawRenaming) (secondIH rawRenaming)
   | fst pairTerm pairIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg RawPolyTerm.fst (pairIH rawRenaming)
   | snd pairTerm pairIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg RawPolyTerm.snd (pairIH rawRenaming)
   | boolTrue => intro _; rfl
   | boolFalse => intro _; rfl
   | boolElim scrutinee thenBranch elseBranch scrutineeIH thenIH elseIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg3 RawPolyTerm.boolElim
         (scrutineeIH rawRenaming) (thenIH rawRenaming)
         (elseIH rawRenaming)
   | natZero => intro _; rfl
   | natSucc predecessor predecessorIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg RawPolyTerm.natSucc (predecessorIH rawRenaming)
   | natElim scrutinee zeroBranch succBranch
       scrutineeIH zeroIH succIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg3 RawPolyTerm.natElim
         (scrutineeIH rawRenaming) (zeroIH rawRenaming)
         (succIH rawRenaming)
   | natRec scrutinee zeroBranch succBranch
       scrutineeIH zeroIH succIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg3 RawPolyTerm.natRec
         (scrutineeIH rawRenaming) (zeroIH rawRenaming)
         (succIH rawRenaming)
   | listNil => intro _; rfl
   | listCons headTerm tailTerm headIH tailIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg2 RawPolyTerm.listCons
         (headIH rawRenaming) (tailIH rawRenaming)
   | listElim scrutinee nilBranch consBranch
       scrutineeIH nilIH consIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg3 RawPolyTerm.listElim
         (scrutineeIH rawRenaming) (nilIH rawRenaming)
         (consIH rawRenaming)
   | optionNone => intro _; rfl
   | optionSome valueTerm valueIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg RawPolyTerm.optionSome (valueIH rawRenaming)
   | optionMatch scrutinee noneBranch someBranch
       scrutineeIH noneIH someIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg3 RawPolyTerm.optionMatch
         (scrutineeIH rawRenaming) (noneIH rawRenaming)
         (someIH rawRenaming)
   | eitherInl valueTerm valueIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg RawPolyTerm.eitherInl (valueIH rawRenaming)
   | eitherInr valueTerm valueIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg RawPolyTerm.eitherInr (valueIH rawRenaming)
   | eitherMatch scrutinee leftBranch rightBranch
       scrutineeIH leftIH rightIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg3 RawPolyTerm.eitherMatch
         (scrutineeIH rawRenaming) (leftIH rawRenaming)
         (rightIH rawRenaming)
   | refl rawWitness witnessIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg RawPolyTerm.refl (witnessIH rawRenaming)
   | idJ baseCase witness baseIH witnessIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg2 RawPolyTerm.idJ
         (baseIH rawRenaming) (witnessIH rawRenaming)
   | modIntro inner innerIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg RawPolyTerm.modIntro (innerIH rawRenaming)
   | modElim inner innerIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg RawPolyTerm.modElim (innerIH rawRenaming)
   | subsume inner innerIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg RawPolyTerm.subsume (innerIH rawRenaming)
   | interval0 => intro _; rfl
   | interval1 => intro _; rfl
   | intervalOpp intervalTerm intervalIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg RawPolyTerm.intervalOpp (intervalIH rawRenaming)
   | intervalMeet leftInterval rightInterval leftIH rightIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg2 RawPolyTerm.intervalMeet
         (leftIH rawRenaming) (rightIH rawRenaming)
   | intervalJoin leftInterval rightInterval leftIH rightIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg2 RawPolyTerm.intervalJoin
         (leftIH rawRenaming) (rightIH rawRenaming)
   | pathLam body bodyIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg RawPolyTerm.pathLam (bodyIH rawRenaming.lift)
   | pathApp pathTerm intervalArg pathIH intervalIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg2 RawPolyTerm.pathApp
         (pathIH rawRenaming) (intervalIH rawRenaming)
   | glueIntro baseValue partialValue baseIH partialIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg2 RawPolyTerm.glueIntro
         (baseIH rawRenaming) (partialIH rawRenaming)
   | glueElim gluedValue gluedIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg RawPolyTerm.glueElim (gluedIH rawRenaming)
   | transp path source pathIH sourceIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg2 RawPolyTerm.transp
         (pathIH rawRenaming) (sourceIH rawRenaming)
   | transpFill path interval source pathIH intervalIH sourceIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg3 RawPolyTerm.transpFill
         (pathIH rawRenaming) (intervalIH rawRenaming) (sourceIH rawRenaming)
   | hcomp sides cap sidesIH capIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg2 RawPolyTerm.hcomp
         (sidesIH rawRenaming) (capIH rawRenaming)
   | oeqRefl witness witnessIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg RawPolyTerm.oeqRefl (witnessIH rawRenaming)
   | oeqJ baseCase witness baseIH witnessIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg2 RawPolyTerm.oeqJ
         (baseIH rawRenaming) (witnessIH rawRenaming)
   | oeqFunext pointwiseEquality pointwiseIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg RawPolyTerm.oeqFunext (pointwiseIH rawRenaming)
   | idStrictRefl witness witnessIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg RawPolyTerm.idStrictRefl (witnessIH rawRenaming)
   | idStrictRec baseCase witness baseIH witnessIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg2 RawPolyTerm.idStrictRec
         (baseIH rawRenaming) (witnessIH rawRenaming)
   | equivIntro forwardFn backwardFn forwardIH backwardIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg2 RawPolyTerm.equivIntro
         (forwardIH rawRenaming) (backwardIH rawRenaming)
   | equivApp equivTerm argument equivIH argumentIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg2 RawPolyTerm.equivApp
         (equivIH rawRenaming) (argumentIH rawRenaming)
   | refineIntro rawValue predicateProof rawIH proofIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg2 RawPolyTerm.refineIntro
         (rawIH rawRenaming) (proofIH rawRenaming)
   | refineElim refinedValue refinedIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg RawPolyTerm.refineElim (refinedIH rawRenaming)
   | recordIntro firstField firstIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg RawPolyTerm.recordIntro (firstIH rawRenaming)
   | recordProj recordValue recordIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg RawPolyTerm.recordProj (recordIH rawRenaming)
   | codataUnfold initialState transition initialIH transitionIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg2 RawPolyTerm.codataUnfold
         (initialIH rawRenaming) (transitionIH rawRenaming)
   | codataDest codataValue codataIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg RawPolyTerm.codataDest (codataIH rawRenaming)
   | sessionSend channel payload channelIH payloadIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg2 RawPolyTerm.sessionSend
         (channelIH rawRenaming) (payloadIH rawRenaming)
   | sessionRecv channel channelIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg RawPolyTerm.sessionRecv (channelIH rawRenaming)
   | effectPerform operationTag arguments operationIH argumentsIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg2 RawPolyTerm.effectPerform
         (operationIH rawRenaming) (argumentsIH rawRenaming)
   | universeCode innerLevel => intro _; rfl
   | arrowCode domainCode codomainCode domainIH codomainIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg2 RawPolyTerm.arrowCode
         (domainIH rawRenaming) (codomainIH rawRenaming)
   | piTyCode domainCode codomainCode domainIH codomainIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg2 RawPolyTerm.piTyCode
         (domainIH rawRenaming) (codomainIH rawRenaming.lift)
   | sigmaTyCode domainCode codomainCode domainIH codomainIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg2 RawPolyTerm.sigmaTyCode
         (domainIH rawRenaming) (codomainIH rawRenaming.lift)
   | productCode firstCode secondCode firstIH secondIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg2 RawPolyTerm.productCode
         (firstIH rawRenaming) (secondIH rawRenaming)
   | sumCode leftCode rightCode leftIH rightIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg2 RawPolyTerm.sumCode
         (leftIH rawRenaming) (rightIH rawRenaming)
   | listCode elementCode elementIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg RawPolyTerm.listCode (elementIH rawRenaming)
   | optionCode elementCode elementIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg RawPolyTerm.optionCode (elementIH rawRenaming)
   | eitherCode leftCode rightCode leftIH rightIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg2 RawPolyTerm.eitherCode
         (leftIH rawRenaming) (rightIH rawRenaming)
   | idCode typeCode leftRaw rightRaw typeIH leftIH rightIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg3 RawPolyTerm.idCode
         (typeIH rawRenaming) (leftIH rawRenaming) (rightIH rawRenaming)
   | equivCode leftTypeCode rightTypeCode leftIH rightIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg2 RawPolyTerm.equivCode
         (leftIH rawRenaming) (rightIH rawRenaming)
   | cumulUpMarker innerCodeRaw innerIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg RawPolyTerm.cumulUpMarker (innerIH rawRenaming)
   | uaToEquiv proofRaw proofIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg RawPolyTerm.uaToEquiv (proofIH rawRenaming)
   | equivApply equivRaw argRaw equivIH argIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg2 RawPolyTerm.equivApply
         (equivIH rawRenaming) (argIH rawRenaming)
   | pathCompose leftPathRaw rightPathRaw leftIH rightIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg2 RawPolyTerm.pathCompose
         (leftIH rawRenaming) (rightIH rawRenaming)
   | idToEquiv proofRaw proofIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg RawPolyTerm.idToEquiv (proofIH rawRenaming)
   | oeqTrans firstProof secondProof firstIH secondIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg2 RawPolyTerm.oeqTrans
         (firstIH rawRenaming) (secondIH rawRenaming)
   | equivCompose firstEquiv secondEquiv firstIH secondIH =>
       intro rawRenaming
-      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      dsimp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg2 RawPolyTerm.equivCompose
         (firstIH rawRenaming) (secondIH rawRenaming)
 

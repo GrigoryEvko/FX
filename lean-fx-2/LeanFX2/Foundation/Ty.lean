@@ -513,7 +513,7 @@ theorem Ty.lift_level_refl {level : Nat}
   | sigmaTy fT sT fIH sIH => simp only [Ty.lift_level]; rw [fIH, sIH]
   | tyVar position => rfl
   | id carrier left right carrierIH =>
-      simp only [Ty.lift_level]; rw [carrierIH]
+      dsimp only [Ty.lift_level]; rw [carrierIH]
   | listType e eIH => simp only [Ty.lift_level]; rw [eIH]
   | optionType e eIH => simp only [Ty.lift_level]; rw [eIH]
   | eitherType l r lIH rIH => simp only [Ty.lift_level]; rw [lIH, rIH]
@@ -526,25 +526,25 @@ theorem Ty.lift_level_refl {level : Nat}
   | empty => rfl
   | interval => rfl
   | path carrier left right carrierIH =>
-      simp only [Ty.lift_level]; rw [carrierIH]
+      dsimp only [Ty.lift_level]; rw [carrierIH]
   | glue baseType boundaryWitness baseIH =>
-      simp only [Ty.lift_level]; rw [baseIH]
+      dsimp only [Ty.lift_level]; rw [baseIH]
   | oeq carrier left right carrierIH =>
-      simp only [Ty.lift_level]; rw [carrierIH]
+      dsimp only [Ty.lift_level]; rw [carrierIH]
   | idStrict carrier left right carrierIH =>
-      simp only [Ty.lift_level]; rw [carrierIH]
+      dsimp only [Ty.lift_level]; rw [carrierIH]
   | equiv d c dIH cIH => simp only [Ty.lift_level]; rw [dIH, cIH]
   | refine baseType predicate baseIH =>
-      simp only [Ty.lift_level]; rw [baseIH]
+      dsimp only [Ty.lift_level]; rw [baseIH]
   | record singleFieldType singleFieldIH =>
-      simp only [Ty.lift_level]; rw [singleFieldIH]
+      dsimp only [Ty.lift_level]; rw [singleFieldIH]
   | codata stateType outputType stateIH outputIH =>
-      simp only [Ty.lift_level]; rw [stateIH, outputIH]
+      dsimp only [Ty.lift_level]; rw [stateIH, outputIH]
   | session protocolStep => rfl
   | effect carrierType effectTag carrierIH =>
-      simp only [Ty.lift_level]; rw [carrierIH]
+      dsimp only [Ty.lift_level]; rw [carrierIH]
   | modal modalityTag carrierType carrierIH =>
-      simp only [Ty.lift_level]; rw [carrierIH]
+      dsimp only [Ty.lift_level]; rw [carrierIH]
 
 /-- Transitivity of level-lifting: lifting through the composite
 witness equals lifting twice.  Proof reduces to `Nat.le_trans`
@@ -566,7 +566,7 @@ theorem Ty.lift_level_trans
   | sigmaTy fT sT fIH sIH => simp only [Ty.lift_level]; rw [fIH, sIH]
   | tyVar position => rfl
   | id carrier left right carrierIH =>
-      simp only [Ty.lift_level]; rw [carrierIH]
+      dsimp only [Ty.lift_level]; rw [carrierIH]
   | listType e eIH => simp only [Ty.lift_level]; rw [eIH]
   | optionType e eIH => simp only [Ty.lift_level]; rw [eIH]
   | eitherType l r lIH rIH => simp only [Ty.lift_level]; rw [lIH, rIH]
@@ -583,25 +583,25 @@ theorem Ty.lift_level_trans
   | empty => rfl
   | interval => rfl
   | path carrier left right carrierIH =>
-      simp only [Ty.lift_level]; rw [carrierIH]
+      dsimp only [Ty.lift_level]; rw [carrierIH]
   | glue baseType boundaryWitness baseIH =>
-      simp only [Ty.lift_level]; rw [baseIH]
+      dsimp only [Ty.lift_level]; rw [baseIH]
   | oeq carrier left right carrierIH =>
-      simp only [Ty.lift_level]; rw [carrierIH]
+      dsimp only [Ty.lift_level]; rw [carrierIH]
   | idStrict carrier left right carrierIH =>
-      simp only [Ty.lift_level]; rw [carrierIH]
+      dsimp only [Ty.lift_level]; rw [carrierIH]
   | equiv d c dIH cIH => simp only [Ty.lift_level]; rw [dIH, cIH]
   | refine baseType predicate baseIH =>
-      simp only [Ty.lift_level]; rw [baseIH]
+      dsimp only [Ty.lift_level]; rw [baseIH]
   | record singleFieldType singleFieldIH =>
-      simp only [Ty.lift_level]; rw [singleFieldIH]
+      dsimp only [Ty.lift_level]; rw [singleFieldIH]
   | codata stateType outputType stateIH outputIH =>
-      simp only [Ty.lift_level]; rw [stateIH, outputIH]
+      dsimp only [Ty.lift_level]; rw [stateIH, outputIH]
   | session protocolStep => rfl
   | effect carrierType effectTag carrierIH =>
-      simp only [Ty.lift_level]; rw [carrierIH]
+      dsimp only [Ty.lift_level]; rw [carrierIH]
   | modal modalityTag carrierType carrierIH =>
-      simp only [Ty.lift_level]; rw [carrierIH]
+      dsimp only [Ty.lift_level]; rw [carrierIH]
 
 /-! ## Tier 3 / MEGA-Z2.A — `ActsOnTy` typeclass + `Ty.act` recursion engine.
 

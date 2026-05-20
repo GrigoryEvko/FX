@@ -113,7 +113,7 @@ theorem equivIntroHetLeftInverseCodomain_substHet
       equivIntroHetLeftInverseCodomain (carrierA.substHet sigma)
         (forwardRaw.subst sigma.forRaw) (backwardRaw.subst sigma.forRaw) := by
   unfold equivIntroHetLeftInverseCodomain
-  simp only [Ty.substHet, RawTerm.subst]
+  dsimp only [Ty.substHet, RawTerm.subst]
   rw [Ty.weaken_substHet_commute sigma carrierA,
       RawTerm.weaken_subst_commute sigma.forRaw backwardRaw,
       RawTerm.weaken_subst_commute sigma.forRaw forwardRaw]
@@ -128,7 +128,7 @@ theorem equivIntroHetLeftInverseType_substHet
       equivIntroHetLeftInverseType (carrierA.substHet sigma)
         (forwardRaw.subst sigma.forRaw) (backwardRaw.subst sigma.forRaw) := by
   unfold equivIntroHetLeftInverseType
-  simp only [Ty.substHet]
+  dsimp only [Ty.substHet]
   congr 1
   exact equivIntroHetLeftInverseCodomain_substHet sigma carrierA forwardRaw backwardRaw
 
@@ -142,7 +142,7 @@ theorem equivIntroHetRightInverseCodomain_substHet
       equivIntroHetRightInverseCodomain (carrierB.substHet sigma)
         (forwardRaw.subst sigma.forRaw) (backwardRaw.subst sigma.forRaw) := by
   unfold equivIntroHetRightInverseCodomain
-  simp only [Ty.substHet, RawTerm.subst]
+  dsimp only [Ty.substHet, RawTerm.subst]
   rw [Ty.weaken_substHet_commute sigma carrierB,
       RawTerm.weaken_subst_commute sigma.forRaw forwardRaw,
       RawTerm.weaken_subst_commute sigma.forRaw backwardRaw]
@@ -157,7 +157,7 @@ theorem equivIntroHetRightInverseType_substHet
       equivIntroHetRightInverseType (carrierB.substHet sigma)
         (forwardRaw.subst sigma.forRaw) (backwardRaw.subst sigma.forRaw) := by
   unfold equivIntroHetRightInverseType
-  simp only [Ty.substHet]
+  dsimp only [Ty.substHet]
   congr 1
   exact equivIntroHetRightInverseCodomain_substHet sigma carrierB forwardRaw backwardRaw
 
@@ -173,7 +173,7 @@ theorem oeqFunextPointwiseCodomain_substHet
         (leftFunctionRaw.subst sigma.forRaw)
         (rightFunctionRaw.subst sigma.forRaw) := by
   unfold oeqFunextPointwiseCodomain
-  simp only [Ty.substHet, RawTerm.subst]
+  dsimp only [Ty.substHet, RawTerm.subst]
   rw [Ty.weaken_substHet_commute sigma codomainType,
       RawTerm.weaken_subst_commute sigma.forRaw leftFunctionRaw,
       RawTerm.weaken_subst_commute sigma.forRaw rightFunctionRaw]
@@ -191,7 +191,7 @@ theorem oeqFunextPointwiseType_substHet
         (leftFunctionRaw.subst sigma.forRaw)
         (rightFunctionRaw.subst sigma.forRaw) := by
   unfold oeqFunextPointwiseType
-  simp only [Ty.substHet]
+  dsimp only [Ty.substHet]
   congr 1
   exact oeqFunextPointwiseCodomain_substHet sigma codomainType
     leftFunctionRaw rightFunctionRaw

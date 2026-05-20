@@ -23,7 +23,7 @@ theorem RawStep.par.cd_lemma_modIntro {scope : Nat}
     (innerIH : RawStep.par innerRawTarget (RawTerm.cd innerRawSource)) :
     RawStep.par (RawTerm.modIntro innerRawTarget)
       (RawTerm.cd (RawTerm.modIntro innerRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.modIntro innerIH
 
 /-- `modElim` cong arm with redex split. -/
@@ -69,7 +69,7 @@ theorem RawStep.par.cd_lemma_subsume {scope : Nat}
     (innerIH : RawStep.par innerRawTarget (RawTerm.cd innerRawSource)) :
     RawStep.par (RawTerm.subsume innerRawTarget)
       (RawTerm.cd (RawTerm.subsume innerRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.subsume innerIH
 
 /-- `refineIntroCong` arm. -/
@@ -80,7 +80,7 @@ theorem RawStep.par.cd_lemma_refineIntroCong {scope : Nat}
     (proofIH : RawStep.par proofRawTarget (RawTerm.cd proofRawSource)) :
     RawStep.par (RawTerm.refineIntro valueRawTarget proofRawTarget)
       (RawTerm.cd (RawTerm.refineIntro valueRawSource proofRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.refineIntroCong valueIH proofIH
 
 /-- Shallow β: `refineElim (refineIntro value proof)` contracts to value. -/

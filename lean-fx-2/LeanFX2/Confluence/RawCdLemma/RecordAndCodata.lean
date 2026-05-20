@@ -25,7 +25,7 @@ theorem RawStep.par.cd_lemma_recordIntroCong {scope : Nat}
     (firstIH : RawStep.par firstRawTarget (RawTerm.cd firstRawSource)) :
     RawStep.par (RawTerm.recordIntro firstRawTarget)
       (RawTerm.cd (RawTerm.recordIntro firstRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.recordIntroCong firstIH
 
 /-- Shallow β: `recordProj (recordIntro first)` contracts to first. -/
@@ -77,7 +77,7 @@ theorem RawStep.par.cd_lemma_codataUnfoldCong {scope : Nat}
     RawStep.par (RawTerm.codataUnfold stateRawTarget transitionRawTarget)
       (RawTerm.cd (RawTerm.codataUnfold stateRawSource
         transitionRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.codataUnfoldCong stateIH transitionIH
 
 /-- `codataDestCong` arm with redex split. -/
@@ -133,7 +133,7 @@ theorem RawStep.par.cd_lemma_sessionSendCong {scope : Nat}
     RawStep.par (RawTerm.sessionSend channelRawTarget payloadRawTarget)
       (RawTerm.cd (RawTerm.sessionSend channelRawSource
         payloadRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.sessionSendCong channelIH payloadIH
 
 /-- `sessionRecvCong` arm. -/
@@ -143,7 +143,7 @@ theorem RawStep.par.cd_lemma_sessionRecvCong {scope : Nat}
       RawStep.par channelRawTarget (RawTerm.cd channelRawSource)) :
     RawStep.par (RawTerm.sessionRecv channelRawTarget)
       (RawTerm.cd (RawTerm.sessionRecv channelRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.sessionRecvCong channelIH
 
 /-- `effectPerformCong` arm. -/
@@ -156,7 +156,7 @@ theorem RawStep.par.cd_lemma_effectPerformCong {scope : Nat}
     RawStep.par (RawTerm.effectPerform tagRawTarget argumentsRawTarget)
       (RawTerm.cd (RawTerm.effectPerform tagRawSource
         argumentsRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.effectPerformCong tagIH argumentsIH
 
 end LeanFX2

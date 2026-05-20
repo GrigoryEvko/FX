@@ -27,7 +27,7 @@ theorem RawStep.par.cd_lemma_reflCong {scope : Nat}
       RawStep.par rawTermTarget (RawTerm.cd rawTermSource)) :
     RawStep.par (RawTerm.refl rawTermTarget)
       (RawTerm.cd (RawTerm.refl rawTermSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.reflCong rawTermIH
 
 /-- `funextReflCong` arm — IH lives at scope + 1. -/
@@ -36,7 +36,7 @@ theorem RawStep.par.cd_lemma_funextReflCong {scope : Nat}
     (applyIH : RawStep.par applyRawTarget (RawTerm.cd applyRawSource)) :
     RawStep.par (RawTerm.lam (RawTerm.refl applyRawTarget))
       (RawTerm.cd (RawTerm.lam (RawTerm.refl applyRawSource))) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.funextReflCong applyIH
 
 /-- `funextReflAtIdCong` arm — IH lives at scope + 1. -/
@@ -45,7 +45,7 @@ theorem RawStep.par.cd_lemma_funextReflAtIdCong {scope : Nat}
     (applyIH : RawStep.par applyRawTarget (RawTerm.cd applyRawSource)) :
     RawStep.par (RawTerm.lam (RawTerm.refl applyRawTarget))
       (RawTerm.cd (RawTerm.lam (RawTerm.refl applyRawSource))) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.funextReflAtIdCong applyIH
 
 /-- `funextIntroHetCong` arm — IH lives at scope + 1. -/
@@ -55,7 +55,7 @@ theorem RawStep.par.cd_lemma_funextIntroHetCong {scope : Nat}
       RawStep.par applyARawTarget (RawTerm.cd applyARawSource)) :
     RawStep.par (RawTerm.lam (RawTerm.refl applyARawTarget))
       (RawTerm.cd (RawTerm.lam (RawTerm.refl applyARawSource))) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.funextIntroHetCong applyAIH
 
 /-- `idJ` cong arm with redex split on witness shape. -/
@@ -81,7 +81,7 @@ theorem RawStep.par.cd_lemma_iotaIdJRefl {scope : Nat}
     (baseIH : RawStep.par baseRawTarget (RawTerm.cd baseRawSource)) :
     RawStep.par baseRawTarget
       (RawTerm.cd (RawTerm.idJ baseRawSource (RawTerm.refl rawTerm))) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact baseIH
 
 /-- Shallow ι: idStrictRec on a `idStrictRefl` witness. -/
@@ -106,7 +106,7 @@ theorem RawStep.par.cd_lemma_iotaIdJReflDeep {scope : Nat}
     (baseIH : RawStep.par baseRawTarget (RawTerm.cd baseRawSource)) :
     RawStep.par baseRawTarget
       (RawTerm.cd (RawTerm.idJ baseRawSource witnessRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   obtain ⟨witnessAfter', cdWitnessEq, _⟩ :=
     RawStep.par.refl_inv witnessIH
   rw [cdWitnessEq]
@@ -136,7 +136,7 @@ theorem RawStep.par.cd_lemma_oeqReflCong {scope : Nat}
       RawStep.par witnessTarget (RawTerm.cd witnessSource)) :
     RawStep.par (RawTerm.oeqRefl witnessTarget)
       (RawTerm.cd (RawTerm.oeqRefl witnessSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.oeqReflCong witnessIH
 
 /-- `oeqJCong` arm. -/
@@ -147,7 +147,7 @@ theorem RawStep.par.cd_lemma_oeqJCong {scope : Nat}
       RawStep.par witnessTarget (RawTerm.cd witnessSource)) :
     RawStep.par (RawTerm.oeqJ baseTarget witnessTarget)
       (RawTerm.cd (RawTerm.oeqJ baseSource witnessSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.oeqJCong baseIH witnessIH
 
 /-- `oeqFunextCong` arm. -/
@@ -157,7 +157,7 @@ theorem RawStep.par.cd_lemma_oeqFunextCong {scope : Nat}
       RawStep.par pointwiseTarget (RawTerm.cd pointwiseSource)) :
     RawStep.par (RawTerm.oeqFunext pointwiseTarget)
       (RawTerm.cd (RawTerm.oeqFunext pointwiseSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.oeqFunextCong pointwiseIH
 
 /-- `idStrictReflCong` arm. -/
@@ -167,7 +167,7 @@ theorem RawStep.par.cd_lemma_idStrictReflCong {scope : Nat}
       RawStep.par witnessTarget (RawTerm.cd witnessSource)) :
     RawStep.par (RawTerm.idStrictRefl witnessTarget)
       (RawTerm.cd (RawTerm.idStrictRefl witnessSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.idStrictReflCong witnessIH
 
 /-- `idStrictRecCong` arm with redex split. -/

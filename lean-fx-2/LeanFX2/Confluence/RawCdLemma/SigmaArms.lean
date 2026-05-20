@@ -25,7 +25,7 @@ theorem RawStep.par.cd_lemma_pair {scope : Nat}
       RawStep.par secondRawTarget (RawTerm.cd secondRawSource)) :
     RawStep.par (RawTerm.pair firstRawTarget secondRawTarget)
       (RawTerm.cd (RawTerm.pair firstRawSource secondRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.pair firstIH secondIH
 
 /-- `fst` cong arm with redex split. -/
@@ -59,7 +59,7 @@ theorem RawStep.par.cd_lemma_betaFstPair {scope : Nat}
     (firstIH : RawStep.par firstRawTarget (RawTerm.cd firstRawSource)) :
     RawStep.par firstRawTarget
       (RawTerm.cd (RawTerm.fst (RawTerm.pair firstRawSource secondVal))) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact firstIH
 
 /-- Shallow β-snd on a `pair`. -/
@@ -70,7 +70,7 @@ theorem RawStep.par.cd_lemma_betaSndPair {scope : Nat}
       RawStep.par secondRawTarget (RawTerm.cd secondRawSource)) :
     RawStep.par secondRawTarget
       (RawTerm.cd (RawTerm.snd (RawTerm.pair firstVal secondRawSource))) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact secondIH
 
 /-- Deep β-fst: pair develops in cd. -/
@@ -81,7 +81,7 @@ theorem RawStep.par.cd_lemma_betaFstPairDeep {scope : Nat}
       RawStep.par (RawTerm.pair firstAfter secondAfter)
         (RawTerm.cd pairRawSource)) :
     RawStep.par firstAfter (RawTerm.cd (RawTerm.fst pairRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   obtain ⟨firstAfter', secondAfter', cdPairEq, firstParStep, _⟩ :=
     RawStep.par.pair_inv pairIH
   rw [cdPairEq]
@@ -95,7 +95,7 @@ theorem RawStep.par.cd_lemma_betaSndPairDeep {scope : Nat}
       RawStep.par (RawTerm.pair firstAfter secondAfter)
         (RawTerm.cd pairRawSource)) :
     RawStep.par secondAfter (RawTerm.cd (RawTerm.snd pairRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   obtain ⟨firstAfter', secondAfter', cdPairEq, _, secondParStep⟩ :=
     RawStep.par.pair_inv pairIH
   rw [cdPairEq]

@@ -128,7 +128,7 @@ theorem equivIntroHetLeftInverseCodomain_subst {level : Nat}
       equivIntroHetLeftInverseCodomain (carrierA.subst sigma)
         (forwardRaw.subst sigma.forRaw) (backwardRaw.subst sigma.forRaw) := by
   unfold equivIntroHetLeftInverseCodomain
-  simp only [Ty.subst, RawTerm.subst]
+  dsimp only [Ty.subst, RawTerm.subst]
   rw [Ty.weaken_subst_commute sigma carrierA,
       RawTerm.weaken_subst_commute sigma.forRaw backwardRaw,
       RawTerm.weaken_subst_commute sigma.forRaw forwardRaw]
@@ -155,7 +155,7 @@ theorem equivIntroHetRightInverseCodomain_subst {level : Nat}
       equivIntroHetRightInverseCodomain (carrierB.subst sigma)
         (forwardRaw.subst sigma.forRaw) (backwardRaw.subst sigma.forRaw) := by
   unfold equivIntroHetRightInverseCodomain
-  simp only [Ty.subst, RawTerm.subst]
+  dsimp only [Ty.subst, RawTerm.subst]
   rw [Ty.weaken_subst_commute sigma carrierB,
       RawTerm.weaken_subst_commute sigma.forRaw forwardRaw,
       RawTerm.weaken_subst_commute sigma.forRaw backwardRaw]
@@ -184,7 +184,7 @@ theorem oeqFunextPointwiseCodomain_subst {level : Nat}
         (leftFunctionRaw.subst sigma.forRaw)
         (rightFunctionRaw.subst sigma.forRaw) := by
   unfold oeqFunextPointwiseCodomain
-  simp only [Ty.subst, RawTerm.subst]
+  dsimp only [Ty.subst, RawTerm.subst]
   rw [Ty.weaken_subst_commute sigma codomainType,
       RawTerm.weaken_subst_commute sigma.forRaw leftFunctionRaw,
       RawTerm.weaken_subst_commute sigma.forRaw rightFunctionRaw]

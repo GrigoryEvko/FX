@@ -80,258 +80,258 @@ theorem RawTerm.partialRename?_rename_some
       some (term.rename targetRenaming) := by
   induction term generalizing middleScope targetScope with
   | var position =>
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [renamingSurvives position]
   | unit => rfl
   | lam body bodyIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [bodyIH sourceRenaming.lift targetRenaming.lift
         partialRenaming.lift
         (PartialRawRenaming.lift_rename_some renamingSurvives)]
   | app functionTerm argumentTerm functionIH argumentIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [functionIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         argumentIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | pair firstValue secondValue firstIH secondIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [firstIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         secondIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | fst pairTerm pairIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [pairIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | snd pairTerm pairIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [pairIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | boolTrue => rfl
   | boolFalse => rfl
   | boolElim scrutinee thenBranch elseBranch scrutineeIH thenIH elseIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapThree]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapThree]
       rw [scrutineeIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         thenIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         elseIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | natZero => rfl
   | natSucc predecessor predecessorIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [predecessorIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | natElim scrutinee zeroBranch succBranch scrutineeIH zeroIH succIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapThree]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapThree]
       rw [scrutineeIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         zeroIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         succIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | natRec scrutinee zeroBranch succBranch scrutineeIH zeroIH succIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapThree]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapThree]
       rw [scrutineeIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         zeroIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         succIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | listNil => rfl
   | listCons headTerm tailTerm headIH tailIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [headIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         tailIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | listElim scrutinee nilBranch consBranch scrutineeIH nilIH consIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapThree]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapThree]
       rw [scrutineeIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         nilIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         consIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | optionNone => rfl
   | optionSome valueTerm valueIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [valueIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | optionMatch scrutinee noneBranch someBranch scrutineeIH noneIH someIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapThree]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapThree]
       rw [scrutineeIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         noneIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         someIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | eitherInl valueTerm valueIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [valueIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | eitherInr valueTerm valueIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [valueIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | eitherMatch scrutinee leftBranch rightBranch scrutineeIH leftIH rightIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapThree]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapThree]
       rw [scrutineeIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         leftIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         rightIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | refl witness witnessIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [witnessIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | idJ baseCase witness baseIH witnessIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [baseIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         witnessIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | modIntro innerTerm innerIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [innerIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | modElim innerTerm innerIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [innerIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | subsume innerTerm innerIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [innerIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | interval0 => rfl
   | interval1 => rfl
   | intervalOpp intervalTerm intervalIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [intervalIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | intervalMeet leftInterval rightInterval leftIH rightIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [leftIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         rightIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | intervalJoin leftInterval rightInterval leftIH rightIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [leftIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         rightIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | pathLam body bodyIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [bodyIH sourceRenaming.lift targetRenaming.lift
         partialRenaming.lift
         (PartialRawRenaming.lift_rename_some renamingSurvives)]
   | pathApp pathTerm intervalArg pathIH intervalIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [pathIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         intervalIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | glueIntro baseValue partialValue baseIH partialIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [baseIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         partialIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | glueElim gluedValue gluedIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [gluedIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | transp pathTerm sourceTerm pathIH sourceIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [pathIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         sourceIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | transpFill pathTy currentInterval source pathTyIH intervalIH sourceIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapThree]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapThree]
       rw [pathTyIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         intervalIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         sourceIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | hcomp sidesTerm capTerm sidesIH capIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [sidesIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         capIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | oeqRefl witness witnessIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [witnessIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | oeqJ baseCase witness baseIH witnessIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [baseIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         witnessIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | oeqFunext pointwiseEquality pointwiseIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [pointwiseIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | idStrictRefl witness witnessIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [witnessIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | idStrictRec baseCase witness baseIH witnessIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [baseIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         witnessIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | equivIntro forwardFn backwardFn forwardIH backwardIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [forwardIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         backwardIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | equivApp equivTerm argument equivIH argumentIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [equivIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         argumentIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | refineIntro rawValue predicateProof valueIH proofIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [valueIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         proofIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | refineElim refinedValue refinedIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [refinedIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | recordIntro firstField firstIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [firstIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | recordProj recordValue recordIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [recordIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | codataUnfold initialState transition stateIH transitionIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [stateIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         transitionIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | codataDest codataValue codataIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [codataIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | sessionSend channel payload channelIH payloadIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [channelIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         payloadIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | sessionRecv channel channelIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [channelIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | effectPerform operationTag arguments tagIH argumentsIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [tagIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         argumentsIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | universeCode innerLevel => rfl
   | arrowCode domainCode codomainCode domainIH codomainIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [domainIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         codomainIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | piTyCode domainCode codomainCode domainIH codomainIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [domainIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         codomainIH sourceRenaming.lift targetRenaming.lift partialRenaming.lift
           (PartialRawRenaming.lift_rename_some renamingSurvives)]
   | sigmaTyCode domainCode codomainCode domainIH codomainIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [domainIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         codomainIH sourceRenaming.lift targetRenaming.lift partialRenaming.lift
           (PartialRawRenaming.lift_rename_some renamingSurvives)]
   | productCode firstCode secondCode firstIH secondIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [firstIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         secondIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | sumCode leftCode rightCode leftIH rightIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [leftIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         rightIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | listCode elementCode elementIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [elementIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | optionCode elementCode elementIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [elementIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | eitherCode leftCode rightCode leftIH rightIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [leftIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         rightIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | idCode typeCode leftRaw rightRaw typeIH leftIH rightIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapThree]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapThree]
       rw [typeIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         leftIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         rightIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | equivCode leftTypeCode rightTypeCode leftIH rightIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [leftIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         rightIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | cumulUpMarker innerCode innerIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [innerIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | uaToEquiv proofRaw proofIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [proofIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | equivApply equivRaw argRaw equivIH argIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [equivIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         argIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | pathCompose leftPathRaw rightPathRaw leftIH rightIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [leftIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         rightIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | idToEquiv proofRaw proofIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?]
       rw [proofIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | oeqTrans firstProof secondProof firstIH secondIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [firstIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         secondIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | equivCompose firstEquiv secondEquiv firstIH secondIH =>
-      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      dsimp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [firstIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         secondIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
 

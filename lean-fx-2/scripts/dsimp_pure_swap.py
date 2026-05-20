@@ -53,37 +53,57 @@ import re
 import sys
 from pathlib import Path
 
-# The 78-arm recursive engines whose `simp only [X]` builds a kernel-rechecked
-# certificate.  Order longest-first is irrelevant here (alternation is anchored
-# by the closing `]`), but kept readable by family.
-PURE_RECURSIVE_DEFS: list[str] = [
+# Every name that reduces DEFINITIONALLY (by iota / delta on a `def`), so
+# `dsimp only [NAME]` does the same work `simp only [NAME]` did with no
+# kernel-rechecked certificate.  All entries verified to be `def` (not
+# `theorem`): the 78-arm recursive engines, their PolyTerm/Ty siblings, the
+# conversion functions, and the structural Option helpers.  A bracket is
+# convertible iff EVERY comma-separated entry is in this set -- which auto-
+# excludes (a) propositional rewrite *theorems* like
+# `RawTerm.weaken_rename_commute` that dsimp physically cannot apply, and (b)
+# brackets carrying a local hypothesis `h` (e.g. `simp only [Term.isWHNF, h]`,
+# whose `; rfl` tail needs a different 2-tactic transform).
+ALLOWED_DEFINITIONAL: frozenset[str] = frozenset({
+    # recursive term engines
     "RawTerm.rename", "RawTerm.subst", "RawTerm.weaken",
+    "RawTerm.partialRename?", "RawTerm.partialStrengthen?",
     "Term.rename", "Term.subst", "Term.weaken",
-    "Ty.rename", "Ty.subst", "Ty.weaken",
-]
+    # type engines
+    "Ty.rename", "Ty.subst", "Ty.weaken", "Ty.substHet", "Ty.lift_level",
+    # polygraph mirror engines + conversion functions
+    "RawPolyTerm.rename", "RawPolyTerm.subst", "RawPolyTerm.toRawTerm",
+    "RawTerm.toRawPoly",
+    # confluence development function
+    "RawTerm.cd", "RawTerm.cdTranspCase",
+    # structural Option combinators (plain defs)
+    "Option.mapTwo", "Option.mapThree",
+})
 
-# A line is convertible iff, after leading whitespace and an optional `·`
-# bullet, it begins with `simp only [DEF]` whose bracket closes immediately.
-PURE_SIMP_ONLY_LINE = re.compile(
-    r'^(?P<lead>\s*(?:·\s+)?)simp only \['
-    r'(?P<engine>' + "|".join(re.escape(d) for d in PURE_RECURSIVE_DEFS) + r')'
-    r'\](?P<rest>.*)$'
+# A line is eligible iff, after leading whitespace and an optional `·` bullet,
+# it begins with `simp only [ ... ]`.  The bracket body is split on commas and
+# every element must be in ALLOWED_DEFINITIONAL for the swap to fire.
+SIMP_ONLY_LINE = re.compile(
+    r'^(?P<lead>\s*(?:·\s+)?)simp only \[(?P<body>[^\]]*)\](?P<rest>.*)$'
 )
 
 
 def convertedLine(sourceLine: str) -> str | None:
-    """Return the ``dsimp only`` rewrite of a pure-simp line, or ``None``.
+    """Return the ``dsimp only`` rewrite of an all-definitional simp line, else ``None``.
 
-    ``None`` means the line is not a pure tactic-position single-engine
-    ``simp only`` and must be left exactly as-is (mixed bracket, prose mention,
-    or unrelated tactic).
+    ``None`` means the line is not a tactic-position ``simp only`` whose bracket
+    is entirely definitional, so it must be left exactly as-is (a propositional
+    rewrite lemma, a local hypothesis, prose, or an unrelated tactic).
     """
-    matched = PURE_SIMP_ONLY_LINE.match(sourceLine)
+    matched = SIMP_ONLY_LINE.match(sourceLine)
     if matched is None:
+        return None
+    bracketEntries = [entry.strip() for entry in matched.group("body").split(",")]
+    if not bracketEntries or any(entry not in ALLOWED_DEFINITIONAL
+                                 for entry in bracketEntries):
         return None
     return (
         f"{matched.group('lead')}dsimp only "
-        f"[{matched.group('engine')}]{matched.group('rest')}"
+        f"[{matched.group('body')}]{matched.group('rest')}"
     )
 
 

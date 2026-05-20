@@ -322,16 +322,16 @@ theorem Ty.subst_rename_commute {level : Nat}
   | bool => rfl
   | nat => rfl
   | arrow d c dIH cIH =>
-      simp only [Ty.subst, Ty.rename]; rw [dIH sigma rho, cIH sigma rho]
+      dsimp only [Ty.subst, Ty.rename]; rw [dIH sigma rho, cIH sigma rho]
   | piTy d c dIH cIH =>
-      simp only [Ty.subst, Ty.rename]
+      dsimp only [Ty.subst, Ty.rename]
       rw [dIH sigma rho, cIH sigma.lift rho.lift]
       congr 1
       apply Ty.subst_pointwise
       · exact Subst.renameOutput_lift_forTy_pointwise sigma rho
       · exact Subst.renameOutput_lift_forRaw_pointwise sigma rho
   | sigmaTy fT sT fIH sIH =>
-      simp only [Ty.subst, Ty.rename]
+      dsimp only [Ty.subst, Ty.rename]
       rw [fIH sigma rho, sIH sigma.lift rho.lift]
       congr 1
       apply Ty.subst_pointwise
@@ -339,41 +339,41 @@ theorem Ty.subst_rename_commute {level : Nat}
       · exact Subst.renameOutput_lift_forRaw_pointwise sigma rho
   | tyVar position => rfl
   | id carrier left right carrierIH =>
-      simp only [Ty.subst, Ty.rename]
+      dsimp only [Ty.subst, Ty.rename]
       rw [carrierIH sigma rho,
           RawTerm.subst_rename_commute sigma.forRaw rho left,
           RawTerm.subst_rename_commute sigma.forRaw rho right]
   | listType e eIH => simp only [Ty.subst, Ty.rename]; rw [eIH sigma rho]
   | optionType e eIH => simp only [Ty.subst, Ty.rename]; rw [eIH sigma rho]
   | eitherType l r lIH rIH =>
-      simp only [Ty.subst, Ty.rename]; rw [lIH sigma rho, rIH sigma rho]
+      dsimp only [Ty.subst, Ty.rename]; rw [lIH sigma rho, rIH sigma rho]
   | «universe» universeLevel levelLe => rfl
   | empty => rfl
   | interval => rfl
   | path carrier leftEndpoint rightEndpoint carrierIH =>
-      simp only [Ty.subst, Ty.rename]
+      dsimp only [Ty.subst, Ty.rename]
       rw [carrierIH sigma rho,
           RawTerm.subst_rename_commute sigma.forRaw rho leftEndpoint,
           RawTerm.subst_rename_commute sigma.forRaw rho rightEndpoint]
   | glue baseType boundaryWitness baseIH =>
-      simp only [Ty.subst, Ty.rename]
+      dsimp only [Ty.subst, Ty.rename]
       rw [baseIH sigma rho,
           RawTerm.subst_rename_commute sigma.forRaw rho boundaryWitness]
   | oeq carrier leftEndpoint rightEndpoint carrierIH =>
-      simp only [Ty.subst, Ty.rename]
+      dsimp only [Ty.subst, Ty.rename]
       rw [carrierIH sigma rho,
           RawTerm.subst_rename_commute sigma.forRaw rho leftEndpoint,
           RawTerm.subst_rename_commute sigma.forRaw rho rightEndpoint]
   | idStrict carrier leftEndpoint rightEndpoint carrierIH =>
-      simp only [Ty.subst, Ty.rename]
+      dsimp only [Ty.subst, Ty.rename]
       rw [carrierIH sigma rho,
           RawTerm.subst_rename_commute sigma.forRaw rho leftEndpoint,
           RawTerm.subst_rename_commute sigma.forRaw rho rightEndpoint]
   | equiv domainType codomainType domainIH codomainIH =>
-      simp only [Ty.subst, Ty.rename]
+      dsimp only [Ty.subst, Ty.rename]
       rw [domainIH sigma rho, codomainIH sigma rho]
   | refine baseType predicate baseIH =>
-      simp only [Ty.subst, Ty.rename]
+      dsimp only [Ty.subst, Ty.rename]
       rw [baseIH sigma rho,
           RawTerm.subst_rename_commute sigma.forRaw.lift rho.lift predicate]
       congr 1
@@ -381,20 +381,20 @@ theorem Ty.subst_rename_commute {level : Nat}
       intro position
       exact RawTermSubst.lift_then_rename_lift sigma.forRaw rho position
   | record singleFieldType singleFieldIH =>
-      simp only [Ty.subst, Ty.rename]
+      dsimp only [Ty.subst, Ty.rename]
       rw [singleFieldIH sigma rho]
   | codata stateType outputType stateIH outputIH =>
-      simp only [Ty.subst, Ty.rename]
+      dsimp only [Ty.subst, Ty.rename]
       rw [stateIH sigma rho, outputIH sigma rho]
   | session protocolStep =>
-      simp only [Ty.subst, Ty.rename]
+      dsimp only [Ty.subst, Ty.rename]
       rw [RawTerm.subst_rename_commute sigma.forRaw rho protocolStep]
   | effect carrierType effectTag carrierIH =>
-      simp only [Ty.subst, Ty.rename]
+      dsimp only [Ty.subst, Ty.rename]
       rw [carrierIH sigma rho,
           RawTerm.subst_rename_commute sigma.forRaw rho effectTag]
   | modal modalityTag carrierType carrierIH =>
-      simp only [Ty.subst, Ty.rename]
+      dsimp only [Ty.subst, Ty.rename]
       rw [carrierIH sigma rho]
 
 /-! ### Substitution after renaming: Ty.rename then subst. -/
@@ -441,16 +441,16 @@ theorem Ty.rename_subst_commute {level : Nat}
   | bool => rfl
   | nat => rfl
   | arrow d c dIH cIH =>
-      simp only [Ty.rename, Ty.subst]; rw [dIH rho sigma, cIH rho sigma]
+      dsimp only [Ty.rename, Ty.subst]; rw [dIH rho sigma, cIH rho sigma]
   | piTy d c dIH cIH =>
-      simp only [Ty.rename, Ty.subst]
+      dsimp only [Ty.rename, Ty.subst]
       rw [dIH rho sigma, cIH rho.lift sigma.lift]
       congr 1
       apply Ty.subst_pointwise
       · exact Subst.precomposeRenaming_lift_forTy_pointwise rho sigma
       · exact Subst.precomposeRenaming_lift_forRaw_pointwise rho sigma
   | sigmaTy fT sT fIH sIH =>
-      simp only [Ty.rename, Ty.subst]
+      dsimp only [Ty.rename, Ty.subst]
       rw [fIH rho sigma, sIH rho.lift sigma.lift]
       congr 1
       apply Ty.subst_pointwise
@@ -458,41 +458,41 @@ theorem Ty.rename_subst_commute {level : Nat}
       · exact Subst.precomposeRenaming_lift_forRaw_pointwise rho sigma
   | tyVar position => rfl
   | id carrier left right carrierIH =>
-      simp only [Ty.rename, Ty.subst]
+      dsimp only [Ty.rename, Ty.subst]
       rw [carrierIH rho sigma,
           RawTerm.rename_subst_commute rho sigma.forRaw left,
           RawTerm.rename_subst_commute rho sigma.forRaw right]
   | listType e eIH => simp only [Ty.rename, Ty.subst]; rw [eIH rho sigma]
   | optionType e eIH => simp only [Ty.rename, Ty.subst]; rw [eIH rho sigma]
   | eitherType l r lIH rIH =>
-      simp only [Ty.rename, Ty.subst]; rw [lIH rho sigma, rIH rho sigma]
+      dsimp only [Ty.rename, Ty.subst]; rw [lIH rho sigma, rIH rho sigma]
   | «universe» universeLevel levelLe => rfl
   | empty => rfl
   | interval => rfl
   | path carrier leftEndpoint rightEndpoint carrierIH =>
-      simp only [Ty.rename, Ty.subst]
+      dsimp only [Ty.rename, Ty.subst]
       rw [carrierIH rho sigma,
           RawTerm.rename_subst_commute rho sigma.forRaw leftEndpoint,
           RawTerm.rename_subst_commute rho sigma.forRaw rightEndpoint]
   | glue baseType boundaryWitness baseIH =>
-      simp only [Ty.rename, Ty.subst]
+      dsimp only [Ty.rename, Ty.subst]
       rw [baseIH rho sigma,
           RawTerm.rename_subst_commute rho sigma.forRaw boundaryWitness]
   | oeq carrier leftEndpoint rightEndpoint carrierIH =>
-      simp only [Ty.rename, Ty.subst]
+      dsimp only [Ty.rename, Ty.subst]
       rw [carrierIH rho sigma,
           RawTerm.rename_subst_commute rho sigma.forRaw leftEndpoint,
           RawTerm.rename_subst_commute rho sigma.forRaw rightEndpoint]
   | idStrict carrier leftEndpoint rightEndpoint carrierIH =>
-      simp only [Ty.rename, Ty.subst]
+      dsimp only [Ty.rename, Ty.subst]
       rw [carrierIH rho sigma,
           RawTerm.rename_subst_commute rho sigma.forRaw leftEndpoint,
           RawTerm.rename_subst_commute rho sigma.forRaw rightEndpoint]
   | equiv domainType codomainType domainIH codomainIH =>
-      simp only [Ty.rename, Ty.subst]
+      dsimp only [Ty.rename, Ty.subst]
       rw [domainIH rho sigma, codomainIH rho sigma]
   | refine baseType predicate baseIH =>
-      simp only [Ty.rename, Ty.subst]
+      dsimp only [Ty.rename, Ty.subst]
       rw [baseIH rho sigma,
           RawTerm.rename_subst_commute rho.lift sigma.forRaw.lift predicate]
       congr 1
@@ -500,20 +500,20 @@ theorem Ty.rename_subst_commute {level : Nat}
       intro position
       exact RawTermSubst.lift_renaming_pull rho sigma.forRaw position
   | record singleFieldType singleFieldIH =>
-      simp only [Ty.rename, Ty.subst]
+      dsimp only [Ty.rename, Ty.subst]
       rw [singleFieldIH rho sigma]
   | codata stateType outputType stateIH outputIH =>
-      simp only [Ty.rename, Ty.subst]
+      dsimp only [Ty.rename, Ty.subst]
       rw [stateIH rho sigma, outputIH rho sigma]
   | session protocolStep =>
-      simp only [Ty.rename, Ty.subst]
+      dsimp only [Ty.rename, Ty.subst]
       rw [RawTerm.rename_subst_commute rho sigma.forRaw protocolStep]
   | effect carrierType effectTag carrierIH =>
-      simp only [Ty.rename, Ty.subst]
+      dsimp only [Ty.rename, Ty.subst]
       rw [carrierIH rho sigma,
           RawTerm.rename_subst_commute rho sigma.forRaw effectTag]
   | modal modalityTag carrierType carrierIH =>
-      simp only [Ty.rename, Ty.subst]
+      dsimp only [Ty.rename, Ty.subst]
       rw [carrierIH rho sigma]
 
 /-! ### Singleton-rename pointwise + Ty.subst0_rename_commute. -/

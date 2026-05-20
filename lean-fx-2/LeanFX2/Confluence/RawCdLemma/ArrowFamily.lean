@@ -32,7 +32,7 @@ theorem RawStep.par.cd_lemma_lam {scope : Nat}
     (bodyIH : RawStep.par bodyRawTarget (RawTerm.cd bodyRawSource)) :
     RawStep.par (RawTerm.lam bodyRawTarget)
       (RawTerm.cd (RawTerm.lam bodyRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.lam bodyIH
 
 /-- `app` cong arm with redex split. -/
@@ -62,7 +62,7 @@ theorem RawStep.par.cd_lemma_betaApp {scope : Nat}
     RawStep.par (bodyRawTarget.subst0 argumentRawTarget)
       (RawTerm.cd (RawTerm.app (RawTerm.lam bodyRawSource)
                                 argumentRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.subst0_par bodyIH argumentIH
 
 /-- Deep β-redex on app: function develops to a `lam`. -/
@@ -76,7 +76,7 @@ theorem RawStep.par.cd_lemma_betaAppDeep {scope : Nat}
       RawStep.par argumentRawTarget (RawTerm.cd argumentRawSource)) :
     RawStep.par (bodyRawTarget.subst0 argumentRawTarget)
       (RawTerm.cd (RawTerm.app functionRawSource argumentRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   obtain ⟨bodyAfter, cdFunctionEq, bodyParStep⟩ :=
     RawStep.par.lam_inv functionIH
   rw [cdFunctionEq]
@@ -88,7 +88,7 @@ theorem RawStep.par.cd_lemma_pathLamCong {scope : Nat}
     (bodyIH : RawStep.par bodyRawTarget (RawTerm.cd bodyRawSource)) :
     RawStep.par (RawTerm.pathLam bodyRawTarget)
       (RawTerm.cd (RawTerm.pathLam bodyRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.pathLamCong bodyIH
 
 /-- `pathApp` cong arm with redex split. -/

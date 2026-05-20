@@ -45,7 +45,7 @@ theorem RawStep.par.cd_lemma_natSucc {scope : Nat}
     (predIH : RawStep.par predRawTarget (RawTerm.cd predRawSource)) :
     RawStep.par (RawTerm.natSucc predRawTarget)
       (RawTerm.cd (RawTerm.natSucc predRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.natSucc predIH
 
 /-- `natElim` cong arm with zero/succ split. -/
@@ -102,7 +102,7 @@ theorem RawStep.par.cd_lemma_iotaBoolElimTrue {scope : Nat}
     RawStep.par thenRawTarget
       (RawTerm.cd (RawTerm.boolElim RawTerm.boolTrue
         thenRawSource elseBranch)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact thenIH
 
 /-- Shallow ι: bool-elim on `false`. -/
@@ -113,7 +113,7 @@ theorem RawStep.par.cd_lemma_iotaBoolElimFalse {scope : Nat}
     RawStep.par elseRawTarget
       (RawTerm.cd (RawTerm.boolElim RawTerm.boolFalse
         thenBranch elseRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact elseIH
 
 /-- Shallow ι: nat-elim on `natZero`. -/
@@ -124,7 +124,7 @@ theorem RawStep.par.cd_lemma_iotaNatElimZero {scope : Nat}
     RawStep.par zeroRawTarget
       (RawTerm.cd (RawTerm.natElim RawTerm.natZero
         zeroRawSource succBranch)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact zeroIH
 
 /-- Shallow ι: nat-elim on `natSucc`. -/
@@ -137,7 +137,7 @@ theorem RawStep.par.cd_lemma_iotaNatElimSucc {scope : Nat}
     RawStep.par (RawTerm.app succRawTarget predRawTarget)
       (RawTerm.cd (RawTerm.natElim (RawTerm.natSucc predRawSource)
         zeroBranch succRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.app succIH predIH
 
 /-- Shallow ι: nat-rec on `natZero`. -/
@@ -148,7 +148,7 @@ theorem RawStep.par.cd_lemma_iotaNatRecZero {scope : Nat}
     RawStep.par zeroRawTarget
       (RawTerm.cd (RawTerm.natRec RawTerm.natZero
         zeroRawSource succBranch)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact zeroIH
 
 /-- Shallow ι: nat-rec on `natSucc`. -/
@@ -164,7 +164,7 @@ theorem RawStep.par.cd_lemma_iotaNatRecSucc {scope : Nat}
         (RawTerm.natRec predRawTarget zeroRawTarget succRawTarget))
       (RawTerm.cd (RawTerm.natRec (RawTerm.natSucc predRawSource)
         zeroRawSource succRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   exact RawStep.par.app
     (RawStep.par.app succIH predIH)
     (RawStep.par.natRec predIH zeroIH succIH)
@@ -180,7 +180,7 @@ theorem RawStep.par.cd_lemma_iotaBoolElimTrueDeep {scope : Nat}
     RawStep.par thenRawTarget
       (RawTerm.cd (RawTerm.boolElim scrutineeRawSource
         thenRawSource elseBranch)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   have cdScrutinee := RawStep.par.boolTrue_inv scrutineeIH
   rw [cdScrutinee]
   exact thenIH
@@ -196,7 +196,7 @@ theorem RawStep.par.cd_lemma_iotaBoolElimFalseDeep {scope : Nat}
     RawStep.par elseRawTarget
       (RawTerm.cd (RawTerm.boolElim scrutineeRawSource
         thenBranch elseRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   have cdScrutinee := RawStep.par.boolFalse_inv scrutineeIH
   rw [cdScrutinee]
   exact elseIH
@@ -212,7 +212,7 @@ theorem RawStep.par.cd_lemma_iotaNatElimZeroDeep {scope : Nat}
     RawStep.par zeroRawTarget
       (RawTerm.cd (RawTerm.natElim scrutineeRawSource
         zeroRawSource succBranch)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   have cdScrutinee := RawStep.par.natZero_inv scrutineeIH
   rw [cdScrutinee]
   exact zeroIH
@@ -230,7 +230,7 @@ theorem RawStep.par.cd_lemma_iotaNatElimSuccDeep {scope : Nat}
     RawStep.par (RawTerm.app succRawTarget predRawTarget)
       (RawTerm.cd (RawTerm.natElim scrutineeRawSource
         zeroBranch succRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   obtain ⟨predAfter, cdScrutineeEq, predParStep⟩ :=
     RawStep.par.natSucc_inv scrutineeIH
   rw [cdScrutineeEq]
@@ -247,7 +247,7 @@ theorem RawStep.par.cd_lemma_iotaNatRecZeroDeep {scope : Nat}
     RawStep.par zeroRawTarget
       (RawTerm.cd (RawTerm.natRec scrutineeRawSource
         zeroRawSource succBranch)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   have cdScrutinee := RawStep.par.natZero_inv scrutineeIH
   rw [cdScrutinee]
   exact zeroIH
@@ -268,7 +268,7 @@ theorem RawStep.par.cd_lemma_iotaNatRecSuccDeep {scope : Nat}
         (RawTerm.natRec predRawTarget zeroRawTarget succRawTarget))
       (RawTerm.cd (RawTerm.natRec scrutineeRawSource
         zeroRawSource succRawSource)) := by
-  simp only [RawTerm.cd]
+  dsimp only [RawTerm.cd]
   obtain ⟨predAfter, cdScrutineeEq, predParStep⟩ :=
     RawStep.par.natSucc_inv scrutineeIH
   rw [cdScrutineeEq]
