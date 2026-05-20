@@ -1,4 +1,4 @@
-import LeanFX2.Term.PartialStrengthen.RenameImage.TypeCodes
+import LeanFX2.Term.PartialStrengthen.RenameImage.Core
 
 /-! # Term/PartialStrengthen/RenameImage/CastWrapped
 
