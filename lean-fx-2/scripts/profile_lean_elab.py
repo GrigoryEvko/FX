@@ -388,12 +388,20 @@ def write_phase_totals(
 
 
 def write_file_times(path: pathlib.Path, results: list[FileResult]) -> None:
+    # Columns: total wall, kernel-recheck (= wall - elab), elab-self.  The
+    # trace only attributes ELAB-self time per decl; the kernel `addDecl`
+    # re-typecheck of the produced term is NOT in any trace node, so it shows
+    # up only as (wall - elab).  Ranking by elab alone systematically
+    # under-ranks kernel-recheck-dominated files (e.g. big `decide`/match
+    # tables), so this table sorts by total wall.
     with path.open("w", encoding="utf-8") as output:
-        output.write("wall_seconds\tself_ms\treturn_code\tfile\n")
+        output.write("wall_s\trecheck_s\telab_s\treturn_code\tfile\n")
         for result in sorted(results, key=lambda item: item.wall_seconds, reverse=True):
-            self_ms = sum(decl.total_ms for decl in result.declarations)
+            elab_s = sum(decl.total_ms for decl in result.declarations) / 1000.0
+            recheck_s = max(0.0, result.wall_seconds - elab_s)
             output.write(
-                f"{result.wall_seconds:.3f}\t{self_ms:.1f}\t{result.return_code}\t{result.file_path}\n"
+                f"{result.wall_seconds:.3f}\t{recheck_s:.3f}\t{elab_s:.3f}\t"
+                f"{result.return_code}\t{result.file_path}\n"
             )
 
 
@@ -473,6 +481,19 @@ def main() -> int:
     failed = [result for result in results if result.return_code != 0]
     print(f"\nwrote {output_dir}")
     print(f"files={len(results)} failed={len(failed)} declarations={len(all_decls)}")
+    files_by_wall = sorted(results, key=lambda item: item.wall_seconds, reverse=True)
+    print(
+        f"\ntop {min(args.top, len(results))} files by wall time "
+        f"(total | kernel-recheck | elab), seconds:"
+    )
+    print(f"  {'total':>8} {'recheck':>8} {'elab':>8}  file")
+    for result in files_by_wall[: args.top]:
+        elab_s = sum(decl.total_ms for decl in result.declarations) / 1000.0
+        recheck_s = max(0.0, result.wall_seconds - elab_s)
+        print(
+            f"  {result.wall_seconds:8.1f} {recheck_s:8.1f} {elab_s:8.1f}  "
+            f"{result.file_path}"
+        )
     print(f"\ntop {min(args.top, len(all_decls))} declarations by elaboration time:")
     for decl in all_decls[: args.top]:
         phase, phase_ms = decl.dominant_phase()
