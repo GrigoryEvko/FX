@@ -1,4 +1,4 @@
-import LeanFX2.Foundation.RawSubst
+import LeanFX2.Foundation.RawSubst.RenameDefs
 
 /-! # Foundation/RawTermInjective — rename injectivity (D2.5.5 prerequisite)
 

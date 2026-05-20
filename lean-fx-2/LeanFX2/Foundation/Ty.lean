@@ -1,5 +1,5 @@
 import LeanFX2.Foundation.Universe
-import LeanFX2.Foundation.RawSubst
+import LeanFX2.Foundation.RawSubst.ActionInstances
 
 /-! # Ty — Layer 0 types indexed by `(level, scope)`.
 

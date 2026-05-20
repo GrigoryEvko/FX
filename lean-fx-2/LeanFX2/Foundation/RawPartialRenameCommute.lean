@@ -1,5 +1,5 @@
 import LeanFX2.Foundation.RawPartialRename
-import LeanFX2.Foundation.RawSubst
+import LeanFX2.Foundation.RawSubst.RenameDefs
 
 /-! # Foundation/RawPartialRenameCommute — `unweaken?` commutes with `rename`.
 

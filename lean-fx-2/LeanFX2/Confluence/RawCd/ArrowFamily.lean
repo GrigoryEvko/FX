@@ -1,4 +1,4 @@
-import LeanFX2.Foundation.RawSubst
+import LeanFX2.Foundation.RawSubst.SubstDefs
 
 /-! # LeanFX2.Confluence.RawCd.ArrowFamily
 

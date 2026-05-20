@@ -1,4 +1,4 @@
-import LeanFX2.Foundation.RawSubst
+import LeanFX2.Foundation.RawSubst.SubstDefs
 import LeanFX2.Foundation.RawPartialRename.TranspPiContractum
 
 /-! # Reduction/RawPar — raw-side parallel reduction.

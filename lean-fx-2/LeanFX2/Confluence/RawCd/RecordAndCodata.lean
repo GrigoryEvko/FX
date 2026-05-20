@@ -1,4 +1,4 @@
-import LeanFX2.Foundation.RawSubst
+import LeanFX2.Foundation.RawTerm
 
 /-! # LeanFX2.Confluence.RawCd.RecordAndCodata
 

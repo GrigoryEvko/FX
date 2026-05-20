@@ -1,4 +1,4 @@
-import LeanFX2.Foundation.RawSubst
+import LeanFX2.Foundation.RawSubst.SubstDefs
 
 /-! # Algo/RawWHNF — fuel-bounded weak head normal form on raw terms
 

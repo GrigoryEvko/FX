@@ -1,4 +1,4 @@
-import LeanFX2.Foundation.RawSubst
+import LeanFX2.Foundation.RawSubst.RenameDefs
 import LeanFX2.Foundation.Polygraph.PolyTerm
 
 /-! # LeanFX2.Foundation.Polygraph.PolyTermAction.RawPolyTermRename

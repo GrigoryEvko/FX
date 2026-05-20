@@ -1,4 +1,4 @@
-import LeanFX2.Foundation.RawSubst
+import LeanFX2.Foundation.RawTerm
 import LeanFX2.Foundation.RawPartialRename
 import LeanFX2.Foundation.RawPartialRename.TranspPiContractum
 import LeanFX2.Foundation.RawPartialRename.TranspPiPathRecognizer
