@@ -1,3 +1,12 @@
+import LeanFX2.Term.RenameInjective.ConstructorFamilies
+import LeanFX2.Term.RenameInjective.BinderInversions
+import LeanFX2.Term.RenameInjective.ClosedData
+import LeanFX2.Term.RenameInjective.CubicalCollections
+import LeanFX2.Term.RenameInjective.IdentityEliminators
+import LeanFX2.Term.RenameInjective.ReflexivityInterval
+import LeanFX2.Term.RenameInjective.IdentityInterval
+import LeanFX2.Term.RenameInjective.ModalStructural
+import LeanFX2.Term.RenameInjective.TypeCodes
 import LeanFX2.Term.RenameInjective.EquivIntro
 
 /-! # Term/RenameInjective

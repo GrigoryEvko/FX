@@ -1,4 +1,4 @@
-import LeanFX2.Term.RenameInjective.ReflexivityInterval
+import LeanFX2.Term.RenameInjective.Core
 
 /-! # Term/RenameInjective/ModalStructural
 

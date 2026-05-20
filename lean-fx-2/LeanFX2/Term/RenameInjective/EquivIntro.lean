@@ -1,4 +1,4 @@
-import LeanFX2.Term.RenameInjective.TypeCodes
+import LeanFX2.Term.RenameInjective.Core
 
 /-! # Term/RenameInjective/EquivIntro
 

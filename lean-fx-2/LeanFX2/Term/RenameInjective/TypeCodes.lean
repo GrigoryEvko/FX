@@ -1,4 +1,4 @@
-import LeanFX2.Term.RenameInjective.ModalStructural
+import LeanFX2.Term.RenameInjective.Core
 
 /-! # Term/RenameInjective/TypeCodes
 

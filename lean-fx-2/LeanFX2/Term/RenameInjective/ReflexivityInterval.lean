@@ -1,4 +1,4 @@
-import LeanFX2.Term.RenameInjective.IdentityEliminators
+import LeanFX2.Term.RenameInjective.Core
 
 /-! # Term/RenameInjective/ReflexivityInterval
 
