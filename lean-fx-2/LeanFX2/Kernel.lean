@@ -129,7 +129,18 @@ import LeanFX2.Reduction.CumulPattern23Bridge
 import LeanFX2.Term.SubjectReduction
 import LeanFX2.Term.SubjectReductionUniverse
 import LeanFX2.Bridge
-import LeanFX2.Reducibility
+import LeanFX2.Reducibility.Basic
+import LeanFX2.Reducibility.SN.Helpers
+import LeanFX2.Reducibility.StableBase.SubtermSN
+import LeanFX2.Reducibility.NeutralSNFoundation.EquivHott
+import LeanFX2.Reducibility.NeutralSNHott.NatRecAndOption
+import LeanFX2.Reducibility.NeutralSNIntro.Codes
+import LeanFX2.Reducibility.NeutralSNClosure.GlueEquiv
+import LeanFX2.Term.SN.DirectCases
+import LeanFX2.Reducibility.Kripke.Headline.CanonicalAndStructural
+import LeanFX2.Reducibility.Kripke.Headline.HoTTCodesAndCubical
+import LeanFX2.Reducibility.Kripke.Headline.EliminatorsAndApplications
+import LeanFX2.Reducibility.Kripke.SNExtraction
 
 -- Layer 4 - Confluence
 import LeanFX2.Confluence.Cd
