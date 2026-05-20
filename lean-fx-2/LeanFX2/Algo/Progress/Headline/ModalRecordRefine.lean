@@ -57,157 +57,157 @@ theorem Term.modElim_progress_or_step
       rw [innerEq]
       exact Or.inr ⟨_, _, _, Step.betaModElimIntro innerInner⟩
   | var =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | unit =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | lam =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | app =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | lamPi =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | appPi =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | pair =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | fst =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | snd =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | boolTrue =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | boolFalse =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | boolElim =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | natZero =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | natSucc =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | natElim =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | natRec =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | listNil =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | listCons =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | listElim =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | optionNone =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | optionSome =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | optionMatch =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | eitherInl =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | eitherInr =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | eitherMatch =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | refl =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | idJ =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | oeqRefl =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | oeqJ =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | oeqFunext =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | idStrictRefl =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | idStrictRec =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | modElim =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | subsume =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | interval0 =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | interval1 =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | intervalOpp =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | intervalMeet =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | intervalJoin =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | pathLam =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | pathApp =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | glueIntro =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | glueElim =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | transp =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | hcomp =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | recordIntro =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | recordProj =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | refineIntro =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | refineElim =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | codataUnfold =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | codataDest =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | sessionSend =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | sessionRecv =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | effectPerform =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | universeCode =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | cumulUp =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | equivReflId =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | funextRefl =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | equivReflIdAtId =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | funextReflAtId =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | equivIntroHet =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | equivApp =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | uaIntroHet =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | funextIntroHet =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | uaToEquiv =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | equivApply =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | arrowCode =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | piTyCode =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | sigmaTyCode =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | productCode =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | sumCode =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | listCode =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | optionCode =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | eitherCode =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | idCode =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
   | equivCode =>
-      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+      apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
 
 /-- Algo-layer destructor for `Term.recordIntro`.  Extracts the
 single field of a record introduction term when its `headCtor`
@@ -257,82 +257,82 @@ theorem Term.recordProj_progress_or_step
       have fieldEq := eq_of_heq fieldHeq
       rw [fieldEq]
       exact Or.inr ⟨_, _, _, Step.betaRecordProjIntro firstField⟩
-  | var => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | unit => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | lam => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | app => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | lamPi => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | appPi => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | pair => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | fst => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | snd => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | boolTrue => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | boolFalse => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | boolElim => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | natZero => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | natSucc => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | natElim => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | natRec => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | listNil => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | listCons => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | listElim => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | optionNone => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | optionSome => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | optionMatch => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | eitherInl => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | eitherInr => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | eitherMatch => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | refl => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | idJ => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | oeqRefl => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | oeqJ => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | oeqFunext => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | idStrictRefl => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | idStrictRec => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | modIntro => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | modElim => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | subsume => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | interval0 => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | interval1 => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | intervalOpp => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | intervalMeet => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | intervalJoin => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | pathLam => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | pathApp => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | glueIntro => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | glueElim => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | transp => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | hcomp => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | recordProj => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | refineIntro => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | refineElim => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | codataUnfold => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | codataDest => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | sessionSend => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | sessionRecv => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | effectPerform => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | universeCode => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | cumulUp => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | equivReflId => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | funextRefl => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | equivReflIdAtId => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | funextReflAtId => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | equivIntroHet => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | equivApp => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | uaIntroHet => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | funextIntroHet => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | uaToEquiv => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | equivApply => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | arrowCode => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | piTyCode => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | sigmaTyCode => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | productCode => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | sumCode => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | listCode => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | optionCode => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | eitherCode => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | idCode => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | equivCode => apply Or.inl; simp only [Term.isWHNF, h]; rfl
+  | var => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | unit => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | lam => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | app => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | lamPi => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | appPi => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | pair => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | fst => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | snd => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | boolTrue => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | boolFalse => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | boolElim => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | natZero => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | natSucc => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | natElim => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | natRec => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | listNil => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | listCons => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | listElim => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | optionNone => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | optionSome => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | optionMatch => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | eitherInl => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | eitherInr => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | eitherMatch => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | refl => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | idJ => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | oeqRefl => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | oeqJ => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | oeqFunext => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | idStrictRefl => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | idStrictRec => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | modIntro => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | modElim => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | subsume => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | interval0 => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | interval1 => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | intervalOpp => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | intervalMeet => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | intervalJoin => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | pathLam => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | pathApp => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | glueIntro => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | glueElim => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | transp => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | hcomp => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | recordProj => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | refineIntro => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | refineElim => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | codataUnfold => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | codataDest => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | sessionSend => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | sessionRecv => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | effectPerform => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | universeCode => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | cumulUp => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | equivReflId => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | funextRefl => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | equivReflIdAtId => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | funextReflAtId => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | equivIntroHet => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | equivApp => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | uaIntroHet => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | funextIntroHet => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | uaToEquiv => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | equivApply => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | arrowCode => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | piTyCode => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | sigmaTyCode => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | productCode => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | sumCode => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | listCode => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | optionCode => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | eitherCode => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | idCode => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | equivCode => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
 
 /-- Algo-layer destructor for `Term.refineIntro`.  Extracts the
 base value, predicate proof, and HEq witness when `headCtor`
@@ -394,82 +394,82 @@ theorem Term.refineElim_progress_or_step
       rw [refinedEq]
       exact Or.inr ⟨_, _, _,
         Step.betaRefineElimIntro predicate baseValue predicateProof⟩
-  | var => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | unit => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | lam => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | app => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | lamPi => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | appPi => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | pair => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | fst => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | snd => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | boolTrue => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | boolFalse => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | boolElim => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | natZero => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | natSucc => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | natElim => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | natRec => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | listNil => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | listCons => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | listElim => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | optionNone => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | optionSome => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | optionMatch => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | eitherInl => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | eitherInr => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | eitherMatch => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | refl => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | idJ => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | oeqRefl => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | oeqJ => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | oeqFunext => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | idStrictRefl => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | idStrictRec => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | modIntro => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | modElim => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | subsume => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | interval0 => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | interval1 => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | intervalOpp => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | intervalMeet => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | intervalJoin => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | pathLam => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | pathApp => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | glueIntro => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | glueElim => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | transp => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | hcomp => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | recordIntro => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | recordProj => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | refineElim => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | codataUnfold => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | codataDest => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | sessionSend => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | sessionRecv => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | effectPerform => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | universeCode => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | cumulUp => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | equivReflId => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | funextRefl => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | equivReflIdAtId => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | funextReflAtId => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | equivIntroHet => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | equivApp => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | uaIntroHet => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | funextIntroHet => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | uaToEquiv => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | equivApply => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | arrowCode => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | piTyCode => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | sigmaTyCode => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | productCode => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | sumCode => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | listCode => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | optionCode => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | eitherCode => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | idCode => apply Or.inl; simp only [Term.isWHNF, h]; rfl
-  | equivCode => apply Or.inl; simp only [Term.isWHNF, h]; rfl
+  | var => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | unit => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | lam => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | app => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | lamPi => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | appPi => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | pair => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | fst => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | snd => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | boolTrue => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | boolFalse => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | boolElim => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | natZero => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | natSucc => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | natElim => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | natRec => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | listNil => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | listCons => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | listElim => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | optionNone => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | optionSome => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | optionMatch => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | eitherInl => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | eitherInr => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | eitherMatch => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | refl => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | idJ => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | oeqRefl => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | oeqJ => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | oeqFunext => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | idStrictRefl => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | idStrictRec => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | modIntro => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | modElim => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | subsume => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | interval0 => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | interval1 => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | intervalOpp => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | intervalMeet => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | intervalJoin => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | pathLam => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | pathApp => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | glueIntro => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | glueElim => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | transp => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | hcomp => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | recordIntro => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | recordProj => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | refineElim => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | codataUnfold => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | codataDest => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | sessionSend => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | sessionRecv => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | effectPerform => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | universeCode => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | cumulUp => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | equivReflId => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | funextRefl => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | equivReflIdAtId => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | funextReflAtId => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | equivIntroHet => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | equivApp => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | uaIntroHet => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | funextIntroHet => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | uaToEquiv => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | equivApply => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | arrowCode => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | piTyCode => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | sigmaTyCode => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | productCode => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | sumCode => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | listCode => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | optionCode => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | eitherCode => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | idCode => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
+  | equivCode => apply Or.inl; dsimp only [Term.isWHNF]; rw [h]; decide
 
 
 end LeanFX2
