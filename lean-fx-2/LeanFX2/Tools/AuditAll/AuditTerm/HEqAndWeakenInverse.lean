@@ -114,6 +114,7 @@ pattern as commits f3df931 (RawStep.par inversions) and d2e9d4a
 #assert_no_axioms LeanFX2.Term.eta_path_shape_construct
 #assert_no_axioms LeanFX2.Term.weaken_var_unfolds
 #assert_no_axioms LeanFX2.Term.weaken_app_toRaw
+#assert_no_axioms LeanFX2.Term.weaken_pathApp_toRaw
 -- Raw/type-index strengthening facade built from the weaken-inverse layer.
 #assert_no_axioms LeanFX2.Term.partialStrengthen?
 #assert_no_axioms LeanFX2.Term.partialStrengthen?_imp_indices_rename

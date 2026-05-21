@@ -59,6 +59,7 @@ Convenience lemmas for building / projecting the eta-redex shape:
   (Fin.succ pos)` (rfl).
 * `Term.weaken_app_toRaw` — `Term.weaken (Term.app f a) = Term.app
   (Term.weaken f) (Term.weaken a)` (rfl).
+* `Term.weaken_pathApp_toRaw` — cubical path-app analog.
 
 ## Current role
 
@@ -413,6 +414,24 @@ theorem Term.weaken_app_toRaw
     Term.weaken (newType := newType) (Term.app functionTerm argumentTerm) =
       Term.app (Term.weaken (newType := newType) functionTerm)
                (Term.weaken (newType := newType) argumentTerm) := rfl
+
+/-- `Term.weaken` of `Term.pathApp` projects to the path application of
+the weakened path and weakened interval argument.  Pure structural rfl. -/
+theorem Term.weaken_pathApp_toRaw
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {newType : Ty level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {pathRaw intervalRaw : RawTerm scope}
+    (pathTerm :
+      Term context (Ty.path carrierType leftEndpoint rightEndpoint) pathRaw)
+    (intervalTerm : Term context Ty.interval intervalRaw) :
+    Term.weaken (newType := newType)
+        (Term.pathApp modeIsUnivalent pathTerm intervalTerm) =
+      Term.pathApp modeIsUnivalent
+        (Term.weaken (newType := newType) pathTerm)
+        (Term.weaken (newType := newType) intervalTerm) := rfl
 
 /-! ## Typed weaken inversions — at fixed raw shape. -/
 
