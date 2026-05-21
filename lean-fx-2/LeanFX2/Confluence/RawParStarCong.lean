@@ -1,6 +1,7 @@
 import LeanFX2.Confluence.RawDiamond
 import LeanFX2.Reduction.RawParInversion.AtomicCtors
 import LeanFX2.Reduction.RawParInversion.CubicalAndIdentity
+import LeanFX2.Reduction.RawParInversion.ModalAndAdvanced
 import LeanFX2.Reduction.RawParInversion.TypeCodes
 
 /-! # Confluence/RawParStarCong — parStar congruence rules
@@ -876,6 +877,118 @@ theorem RawStep.parStar.equivIntro_inv {scope : Nat}
       RawStep.parStar backwardFn backwardTarget :=
   RawStep.parStar.binary_inv_helper RawTerm.equivIntro
     RawStep.par.equivIntro_inv chain
+
+/-- `RawStep.parStar (modIntro inner) target` preserves the `modIntro`
+head and projects to an inner chain. -/
+theorem RawStep.parStar.modIntro_inv {scope : Nat}
+    {innerTerm target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.modIntro innerTerm) target) :
+    ∃ innerTarget,
+      target = RawTerm.modIntro innerTarget ∧
+      RawStep.parStar innerTerm innerTarget :=
+  RawStep.parStar.unary_inv_helper RawTerm.modIntro
+    RawStep.par.modIntro_inv chain
+
+/-- `RawStep.parStar (subsume inner) target` preserves the `subsume`
+head and projects to an inner chain. -/
+theorem RawStep.parStar.subsume_inv {scope : Nat}
+    {innerTerm target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.subsume innerTerm) target) :
+    ∃ innerTarget,
+      target = RawTerm.subsume innerTarget ∧
+      RawStep.parStar innerTerm innerTarget :=
+  RawStep.parStar.unary_inv_helper RawTerm.subsume
+    RawStep.par.subsume_inv chain
+
+/-- `RawStep.parStar (cumulUpMarker inner) target` preserves the
+`cumulUpMarker` head and projects to an inner-code chain. -/
+theorem RawStep.parStar.cumulUpMarker_inv {scope : Nat}
+    {innerCodeRaw target : RawTerm scope}
+    (chain : RawStep.parStar
+      (RawTerm.cumulUpMarker innerCodeRaw) target) :
+    ∃ innerTarget,
+      target = RawTerm.cumulUpMarker innerTarget ∧
+      RawStep.parStar innerCodeRaw innerTarget :=
+  RawStep.parStar.unary_inv_helper RawTerm.cumulUpMarker
+    RawStep.par.cumulUpMarker_inv chain
+
+/-- `RawStep.parStar (refineIntro value proof) target` preserves the
+`refineIntro` head and projects to value/proof chains. -/
+theorem RawStep.parStar.refineIntro_inv {scope : Nat}
+    {rawValue predicateProof target : RawTerm scope}
+    (chain :
+      RawStep.parStar
+        (RawTerm.refineIntro rawValue predicateProof) target) :
+    ∃ valueTarget proofTarget,
+      target = RawTerm.refineIntro valueTarget proofTarget ∧
+      RawStep.parStar rawValue valueTarget ∧
+      RawStep.parStar predicateProof proofTarget :=
+  RawStep.parStar.binary_inv_helper RawTerm.refineIntro
+    RawStep.par.refineIntro_inv chain
+
+/-- `RawStep.parStar (recordIntro firstField) target` preserves the
+`recordIntro` head and projects to the field chain. -/
+theorem RawStep.parStar.recordIntro_inv {scope : Nat}
+    {firstField target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.recordIntro firstField) target) :
+    ∃ firstTarget,
+      target = RawTerm.recordIntro firstTarget ∧
+      RawStep.parStar firstField firstTarget :=
+  RawStep.parStar.unary_inv_helper RawTerm.recordIntro
+    RawStep.par.recordIntro_inv chain
+
+/-- `RawStep.parStar (codataUnfold state transition) target` preserves
+the `codataUnfold` head and projects to state/transition chains. -/
+theorem RawStep.parStar.codataUnfold_inv {scope : Nat}
+    {initialState transition target : RawTerm scope}
+    (chain :
+      RawStep.parStar
+        (RawTerm.codataUnfold initialState transition) target) :
+    ∃ stateTarget transitionTarget,
+      target = RawTerm.codataUnfold stateTarget transitionTarget ∧
+      RawStep.parStar initialState stateTarget ∧
+      RawStep.parStar transition transitionTarget :=
+  RawStep.parStar.binary_inv_helper RawTerm.codataUnfold
+    RawStep.par.codataUnfold_inv chain
+
+/-- `RawStep.parStar (sessionSend channel payload) target` preserves
+the `sessionSend` head and projects to channel/payload chains. -/
+theorem RawStep.parStar.sessionSend_inv {scope : Nat}
+    {channel payload target : RawTerm scope}
+    (chain :
+      RawStep.parStar (RawTerm.sessionSend channel payload) target) :
+    ∃ channelTarget payloadTarget,
+      target = RawTerm.sessionSend channelTarget payloadTarget ∧
+      RawStep.parStar channel channelTarget ∧
+      RawStep.parStar payload payloadTarget :=
+  RawStep.parStar.binary_inv_helper RawTerm.sessionSend
+    RawStep.par.sessionSend_inv chain
+
+/-- `RawStep.parStar (sessionRecv channel) target` preserves the
+`sessionRecv` head and projects to the channel chain. -/
+theorem RawStep.parStar.sessionRecv_inv {scope : Nat}
+    {channel target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.sessionRecv channel) target) :
+    ∃ channelTarget,
+      target = RawTerm.sessionRecv channelTarget ∧
+      RawStep.parStar channel channelTarget :=
+  RawStep.parStar.unary_inv_helper RawTerm.sessionRecv
+    RawStep.par.sessionRecv_inv chain
+
+/-- `RawStep.parStar (effectPerform operation arguments) target`
+preserves the `effectPerform` head and projects to both argument
+chains. -/
+theorem RawStep.parStar.effectPerform_inv {scope : Nat}
+    {operationTag arguments target : RawTerm scope}
+    (chain :
+      RawStep.parStar
+        (RawTerm.effectPerform operationTag arguments) target) :
+    ∃ operationTarget argumentsTarget,
+      target = RawTerm.effectPerform operationTarget argumentsTarget ∧
+      RawStep.parStar operationTag operationTarget ∧
+      RawStep.parStar arguments argumentsTarget :=
+  RawStep.parStar.binary_inv_helper RawTerm.effectPerform
+    RawStep.par.effectPerform_inv chain
 
 /-- `RawStep.parStar (lam body) target` preserves the lambda head and
 projects to a body-level `parStar` chain. -/
