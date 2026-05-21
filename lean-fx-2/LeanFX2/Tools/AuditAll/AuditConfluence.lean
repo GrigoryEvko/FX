@@ -31,6 +31,10 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.fromStepStar_weakened
 #assert_no_axioms LeanFX2.Conv.fromStepStar_substituted
 #assert_no_axioms LeanFX2.Conv.fromStepStar_subst0
+#assert_no_axioms LeanFX2.Conv.fromStep_renamed
+#assert_no_axioms LeanFX2.Conv.fromStep_weakened
+#assert_no_axioms LeanFX2.Conv.fromStep_substituted
+#assert_no_axioms LeanFX2.Conv.fromStep_subst0
 
 /-! ### Asymmetric typed Conv.trans variants (#1590 PHASE7-CONV-TRANS Phase 2)
 

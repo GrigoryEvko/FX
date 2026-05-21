@@ -477,4 +477,79 @@ theorem Conv.fromStepStar_subst0
       RawStep.parStar (targetRaw.subst0 argRaw) commonRaw :=
   Conv.subst0Raw argRaw (Conv.fromStepStar chain)
 
+/-! ## Single-Step-plus-action lifters
+
+When a downstream consumer has just a single typed `Step t1 t2`
+(not yet a chain or a Conv), the four corollaries below skip the
+`Conv.fromStep` wrapping step.  Composes `Conv.fromStep` (Step →
+Conv via StepStar.fromStep) with each of the four single-action raw
+lifters.
+
+These are the natural shape for K12.28 Geuvers 1992 β-η critical
+pair consumers when a single β step or η step is the input and the
+result must be lifted through an action.  Completes the symmetric
+4×4 lift table (single-Conv, trans-Conv, chain-StepStar,
+single-Step rows × four actions). -/
+
+/-- Combine a single typed Step with a raw renaming in one ship. -/
+theorem Conv.fromStep_renamed
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {sourceType targetType : Ty level sourceScope}
+    {sourceRaw targetRaw : RawTerm sourceScope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (rawRenaming : RawRenaming sourceScope targetScope)
+    (singleStep : Step sourceTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.rename rawRenaming) commonRaw ∧
+      RawStep.parStar (targetRaw.rename rawRenaming) commonRaw :=
+  Conv.renameRaw rawRenaming (Conv.fromStep singleStep)
+
+/-- Canonical-weaken specialization of `Conv.fromStep_renamed`. -/
+theorem Conv.fromStep_weakened
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (singleStep : Step sourceTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar sourceRaw.weaken commonRaw ∧
+      RawStep.parStar targetRaw.weaken commonRaw :=
+  Conv.weakenRaw (Conv.fromStep singleStep)
+
+/-- Combine a single typed Step with a raw substitution in one ship. -/
+theorem Conv.fromStep_substituted
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {sourceType targetType : Ty level sourceScope}
+    {sourceRaw targetRaw : RawTerm sourceScope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (rawSubst : RawTermSubst sourceScope targetScope)
+    (singleStep : Step sourceTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.subst rawSubst) commonRaw ∧
+      RawStep.parStar (targetRaw.subst rawSubst) commonRaw :=
+  Conv.substRaw rawSubst (Conv.fromStep singleStep)
+
+/-- Singleton-substitution specialization of `Conv.fromStep_substituted`.
+Matches the β-redex surface form `body.subst0 arg` consumers reach
+for in K12.28 (β-η critical pair joinability) and K13 NbE β step. -/
+theorem Conv.fromStep_subst0
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level (scope + 1)}
+    {sourceType targetType : Ty level (scope + 1)}
+    {sourceRaw targetRaw : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (argRaw : RawTerm scope)
+    (singleStep : Step sourceTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.subst0 argRaw) commonRaw ∧
+      RawStep.parStar (targetRaw.subst0 argRaw) commonRaw :=
+  Conv.subst0Raw argRaw (Conv.fromStep singleStep)
+
 end LeanFX2
