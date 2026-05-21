@@ -140,6 +140,10 @@ pattern as commits f3df931 (RawStep.par inversions) and d2e9d4a
 #assert_no_axioms LeanFX2.Term.eta_lam_shape_recognize_app_of_unweaken
 #assert_no_axioms LeanFX2.Term.eta_lamPi_shape_body_construct
 #assert_no_axioms LeanFX2.Term.eta_lamPi_shape_recognize_appPi_of_unweaken
+#assert_no_axioms LeanFX2.Term.eta_pair_shape_construct
+#assert_no_axioms LeanFX2.Term.eta_pair_shape_recognize_projections
+#assert_no_axioms LeanFX2.Term.eta_record_shape_construct
+#assert_no_axioms LeanFX2.Term.eta_record_shape_recognize_projection
 #assert_no_axioms LeanFX2.Term.eta_path_shape_recognize_app_of_unweaken
 
 end LeanFX2.Tools

@@ -132,6 +132,71 @@ theorem eta_lamPi_shape_recognize_appPi_of_unweaken
   cases argumentHEq
   exact HEq.rfl
 
+/-- Sigma eta constructor: rebuild a pair from its projections. -/
+def eta_pair_shape_construct
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {pairRaw : RawTerm scope}
+    (pairTerm : Term context (Ty.sigmaTy firstType secondType) pairRaw) :
+    Term context (Ty.sigmaTy firstType secondType)
+      (RawTerm.pair (RawTerm.fst pairRaw) (RawTerm.snd pairRaw)) :=
+  Term.pair (Term.fst pairTerm) (Term.snd pairTerm)
+
+/-- Recognize the concrete Sigma eta pair arm once both projections have
+been identified. -/
+theorem eta_pair_shape_recognize_projections
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {pairRaw : RawTerm scope}
+    (pairTerm : Term context (Ty.sigmaTy firstType secondType) pairRaw)
+    (firstProjection :
+      Term context firstType (RawTerm.fst pairRaw))
+    (secondProjection :
+      Term context (secondType.subst0 firstType (RawTerm.fst pairRaw))
+        (RawTerm.snd pairRaw))
+    (firstProjectionHEq :
+      HEq firstProjection (Term.fst pairTerm))
+    (secondProjectionHEq :
+      HEq secondProjection (Term.snd pairTerm)) :
+    HEq (Term.pair firstProjection secondProjection)
+        (Term.eta_pair_shape_construct pairTerm) := by
+  cases firstProjectionHEq
+  cases secondProjectionHEq
+  rfl
+
+/-- Single-field record eta constructor: rebuild a record from its
+projection. -/
+def eta_record_shape_construct
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {singleFieldType : Ty level scope}
+    {recordRaw : RawTerm scope}
+    (recordValue : Term context (Ty.record singleFieldType) recordRaw) :
+    Term context (Ty.record singleFieldType)
+      (RawTerm.recordIntro (RawTerm.recordProj recordRaw)) :=
+  Term.recordIntro (Term.recordProj recordValue)
+
+/-- Recognize the concrete single-field record eta arm once the field
+projection has been identified. -/
+theorem eta_record_shape_recognize_projection
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {singleFieldType : Ty level scope}
+    {recordRaw : RawTerm scope}
+    (recordValue : Term context (Ty.record singleFieldType) recordRaw)
+    (fieldProjection :
+      Term context singleFieldType (RawTerm.recordProj recordRaw))
+    (fieldProjectionHEq :
+      HEq fieldProjection (Term.recordProj recordValue)) :
+    HEq (Term.recordIntro fieldProjection)
+        (Term.eta_record_shape_construct recordValue) := by
+  cases fieldProjectionHEq
+  rfl
+
 /-- Recognize the concrete path eta application arm.
 
 If a path application under an interval binder has path side in the
