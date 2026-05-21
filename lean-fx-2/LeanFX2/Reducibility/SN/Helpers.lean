@@ -161,6 +161,71 @@ theorem RawStep.parProgress.weaken_compatible {scope : Nat}
   RawStep.parProgress.rename_compatible
     RawRenaming.weaken_injective progress
 
+/-! ### Backward direction: progress-target lifts back to source scope
+
+When a progress step fires out of a renamed source, the target lives in
+the renaming image too — proved by ignoring the disequality side and
+appealing to `RawStep.par.target_in_rename_image` on the `par` half.
+These shape lifters are the natural companion to the forward
+`parProgress.rename_compatible` family above and discharge the
+"world weakening reflects through" shape that T7 (Reducible
+rename equivariance) needs at every Kripke step. -/
+
+/-- The target of a `parProgress` from a renamed source lives in the
+renaming image.  Pure projection through `RawStep.par.target_in_rename_image`
+on the `par` half of `parProgress`. -/
+theorem RawStep.parProgress.target_in_rename_image
+    {sourceScope targetScope : Nat}
+    (rho : RawRenaming sourceScope targetScope)
+    (rhoInjective :
+      ∀ leftPosition rightPosition,
+        rho leftPosition = rho rightPosition → leftPosition = rightPosition)
+    {sourceTerm : RawTerm sourceScope}
+    {targetAfter : RawTerm targetScope}
+    (progress : RawStep.parProgress (sourceTerm.rename rho) targetAfter) :
+    ∃ targetInner : RawTerm sourceScope,
+      targetAfter = targetInner.rename rho :=
+  RawStep.par.target_in_rename_image rho rhoInjective progress.1
+
+/-- Source-equality wrapper for `parProgress.target_in_rename_image`. -/
+theorem RawStep.parProgress.target_in_rename_image_of_source_eq
+    {sourceScope targetScope : Nat}
+    {renamedSource targetAfter : RawTerm targetScope}
+    {sourceTerm : RawTerm sourceScope}
+    (rho : RawRenaming sourceScope targetScope)
+    (rhoInjective :
+      ∀ leftPosition rightPosition,
+        rho leftPosition = rho rightPosition → leftPosition = rightPosition)
+    (sourceEq : renamedSource = sourceTerm.rename rho)
+    (progress : RawStep.parProgress renamedSource targetAfter) :
+    ∃ targetInner : RawTerm sourceScope,
+      targetAfter = targetInner.rename rho := by
+  cases sourceEq
+  exact RawStep.parProgress.target_in_rename_image rho rhoInjective progress
+
+/-- Canonical-weaken specialization of
+`parProgress.target_in_rename_image`. -/
+theorem RawStep.parProgress.target_in_weaken_image {scope : Nat}
+    {sourceTerm : RawTerm scope}
+    {targetAfter : RawTerm (scope + 1)}
+    (progress : RawStep.parProgress sourceTerm.weaken targetAfter) :
+    ∃ targetInner : RawTerm scope,
+      targetAfter = targetInner.weaken :=
+  RawStep.par.target_in_weaken_image progress.1
+
+/-- Source-equality wrapper for
+`parProgress.target_in_weaken_image`. -/
+theorem RawStep.parProgress.target_in_weaken_image_of_source_eq
+    {scope : Nat}
+    {weakenedSource targetAfter : RawTerm (scope + 1)}
+    {sourceTerm : RawTerm scope}
+    (sourceEq : weakenedSource = sourceTerm.weaken)
+    (progress : RawStep.parProgress weakenedSource targetAfter) :
+    ∃ targetInner : RawTerm scope,
+      targetAfter = targetInner.weaken := by
+  cases sourceEq
+  exact RawStep.parProgress.target_in_weaken_image progress
+
 /-- **Raw weakening preserves SN**: weakening preserves raw SN.
 
 Any progress step out of `source.weaken` lands in a weakened target by

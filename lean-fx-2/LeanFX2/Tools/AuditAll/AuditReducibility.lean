@@ -43,6 +43,10 @@ rather than as a generic namespace failure. -/
 #assert_no_axioms LeanFX2.RawTerm.isStronglyNormalizing_weaken
 #assert_no_axioms LeanFX2.RawStep.parProgress.rename_compatible
 #assert_no_axioms LeanFX2.RawStep.parProgress.weaken_compatible
+#assert_no_axioms LeanFX2.RawStep.parProgress.target_in_rename_image
+#assert_no_axioms LeanFX2.RawStep.parProgress.target_in_rename_image_of_source_eq
+#assert_no_axioms LeanFX2.RawStep.parProgress.target_in_weaken_image
+#assert_no_axioms LeanFX2.RawStep.parProgress.target_in_weaken_image_of_source_eq
 #assert_no_axioms LeanFX2.RawTerm.cumulUpMarker_isStronglyNormalizing
 #assert_no_axioms LeanFX2.RawTerm.natSucc_predecessor_isStronglyNormalizing
 
