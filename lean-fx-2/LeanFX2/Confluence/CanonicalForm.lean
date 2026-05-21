@@ -403,4 +403,187 @@ theorem Conv.sourceReaches_universeCode
     RawStep.parStar sourceRaw (RawTerm.universeCode innerLevel) :=
   Conv.targetReaches_universeCode (Conv.sym convertibility)
 
+/-! ## Compound canonical-head Conv corollaries
+
+Extension of the leaf-canonical-head propagation to **single-
+payload compound** heads — `natSucc`, `optionSome`, `eitherInl`,
+`eitherInr`.  Unlike the leaf case, the conclusion carries an
+existential witness for the payload's projection target plus a
+parStar chain on the payload itself.
+
+Given `Conv sourceTerm targetTerm` with sourceRaw =
+`<head> payloadSource`, we recover `∃ payloadTarget,
+parStar targetRaw (<head> payloadTarget) ∧
+parStar payloadSource payloadTarget`.  The dual signature handles
+the case where the *target* carries the compound shape.
+
+Useful for fundamental-theorem closure where a Conv connects a
+known compound-shape canonical form to an unknown term — we
+project the head AND lift the convergence to the payload.  The
+payload chain composes with downstream Reducible / canonical-form
+reasoning at one universe lower. -/
+
+/-- `Conv sourceTerm targetTerm` where source has raw
+`natSucc predecessor` forces the target's raw projection to
+reduce to `natSucc payloadTarget` and the source predecessor to
+parStar-reduce to that same `payloadTarget`. -/
+theorem Conv.targetReaches_natSucc
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {targetRaw predecessor : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.natSucc predecessor : RawTerm scope)}
+    {targetTerm : Term context targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ payloadTarget,
+      RawStep.parStar targetRaw (RawTerm.natSucc payloadTarget) ∧
+      RawStep.parStar predecessor payloadTarget := by
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨payloadTarget, joinEq, payloadChain⟩ :=
+    RawStep.parStar.natSucc_inv sourceToJoin
+  refine ⟨payloadTarget, ?_, payloadChain⟩
+  exact joinEq ▸ targetToJoin
+
+/-- `Conv sourceTerm targetTerm` where source has raw
+`optionSome value` forces the target's raw projection to reduce
+to `optionSome payloadTarget` and the source value to
+parStar-reduce to that same `payloadTarget`. -/
+theorem Conv.targetReaches_optionSome
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {targetRaw valueRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.optionSome valueRaw : RawTerm scope)}
+    {targetTerm : Term context targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ payloadTarget,
+      RawStep.parStar targetRaw (RawTerm.optionSome payloadTarget) ∧
+      RawStep.parStar valueRaw payloadTarget := by
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨payloadTarget, joinEq, payloadChain⟩ :=
+    RawStep.parStar.optionSome_inv sourceToJoin
+  refine ⟨payloadTarget, ?_, payloadChain⟩
+  exact joinEq ▸ targetToJoin
+
+/-- `Conv sourceTerm targetTerm` where source has raw
+`eitherInl value` forces the target's raw projection to reduce
+to `eitherInl payloadTarget` and the source value to
+parStar-reduce to that same `payloadTarget`. -/
+theorem Conv.targetReaches_eitherInl
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {targetRaw valueRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherInl valueRaw : RawTerm scope)}
+    {targetTerm : Term context targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ payloadTarget,
+      RawStep.parStar targetRaw (RawTerm.eitherInl payloadTarget) ∧
+      RawStep.parStar valueRaw payloadTarget := by
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨payloadTarget, joinEq, payloadChain⟩ :=
+    RawStep.parStar.eitherInl_inv sourceToJoin
+  refine ⟨payloadTarget, ?_, payloadChain⟩
+  exact joinEq ▸ targetToJoin
+
+/-- `Conv sourceTerm targetTerm` where source has raw
+`eitherInr value` forces the target's raw projection to reduce
+to `eitherInr payloadTarget` and the source value to
+parStar-reduce to that same `payloadTarget`. -/
+theorem Conv.targetReaches_eitherInr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {targetRaw valueRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherInr valueRaw : RawTerm scope)}
+    {targetTerm : Term context targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ payloadTarget,
+      RawStep.parStar targetRaw (RawTerm.eitherInr payloadTarget) ∧
+      RawStep.parStar valueRaw payloadTarget := by
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨payloadTarget, joinEq, payloadChain⟩ :=
+    RawStep.parStar.eitherInr_inv sourceToJoin
+  refine ⟨payloadTarget, ?_, payloadChain⟩
+  exact joinEq ▸ targetToJoin
+
+/-! ### Source-side mirrors of the compound canonical-head family
+
+Symmetric form: target has the compound canonical raw, source's
+raw projection is then forced to reduce to that compound shape
+with a matching payload-target chain.  Each proof is a one-line
+`Conv.sym` of the corresponding target-side theorem. -/
+
+/-- `Conv sourceTerm targetTerm` where target has raw
+`natSucc predecessor` forces the source's raw projection to
+reduce to `natSucc payloadTarget` and the target predecessor to
+parStar-reduce to that same `payloadTarget`. -/
+theorem Conv.sourceReaches_natSucc
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw predecessor : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType
+      (RawTerm.natSucc predecessor : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ payloadTarget,
+      RawStep.parStar sourceRaw (RawTerm.natSucc payloadTarget) ∧
+      RawStep.parStar predecessor payloadTarget :=
+  Conv.targetReaches_natSucc (Conv.sym convertibility)
+
+/-- `Conv sourceTerm targetTerm` where target has raw
+`optionSome value` forces the source's raw projection to reduce
+to `optionSome payloadTarget` and the target value to
+parStar-reduce to that same `payloadTarget`. -/
+theorem Conv.sourceReaches_optionSome
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw valueRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType
+      (RawTerm.optionSome valueRaw : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ payloadTarget,
+      RawStep.parStar sourceRaw (RawTerm.optionSome payloadTarget) ∧
+      RawStep.parStar valueRaw payloadTarget :=
+  Conv.targetReaches_optionSome (Conv.sym convertibility)
+
+/-- `Conv sourceTerm targetTerm` where target has raw
+`eitherInl value` forces the source's raw projection to reduce
+to `eitherInl payloadTarget` and the target value to
+parStar-reduce to that same `payloadTarget`. -/
+theorem Conv.sourceReaches_eitherInl
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw valueRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType
+      (RawTerm.eitherInl valueRaw : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ payloadTarget,
+      RawStep.parStar sourceRaw (RawTerm.eitherInl payloadTarget) ∧
+      RawStep.parStar valueRaw payloadTarget :=
+  Conv.targetReaches_eitherInl (Conv.sym convertibility)
+
+/-- `Conv sourceTerm targetTerm` where target has raw
+`eitherInr value` forces the source's raw projection to reduce
+to `eitherInr payloadTarget` and the target value to
+parStar-reduce to that same `payloadTarget`. -/
+theorem Conv.sourceReaches_eitherInr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw valueRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType
+      (RawTerm.eitherInr valueRaw : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ payloadTarget,
+      RawStep.parStar sourceRaw (RawTerm.eitherInr payloadTarget) ∧
+      RawStep.parStar valueRaw payloadTarget :=
+  Conv.targetReaches_eitherInr (Conv.sym convertibility)
+
 end LeanFX2
