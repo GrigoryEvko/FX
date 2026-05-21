@@ -876,6 +876,189 @@ private theorem RawStep.parStar.ternary_inv_helper
       RawStep.parStar thirdSource thirdTarget :=
   RawStep.parStar.ternary_inv_aux wrap parStepInv chain rfl
 
+/-- Generalized three-subterm eliminator `parStar` inversion with two
+iota/redex branches.
+
+The helper keeps both branch subchains in the redex cases.  Some
+eliminators ignore one branch after firing, but retaining the chain
+gives a uniform shape that also covers `natRec`, whose successor
+contractum mentions both branches. -/
+private theorem RawStep.parStar.ternary_two_redex_elim_inv_aux
+    {PayloadLeft PayloadRight : Type}
+    {scope : Nat}
+    (elimWrap :
+      RawTerm scope → RawTerm scope → RawTerm scope → RawTerm scope)
+    (leftIntro : PayloadLeft → RawTerm scope)
+    (rightIntro : PayloadRight → RawTerm scope)
+    (leftContractum :
+      PayloadLeft → RawTerm scope → RawTerm scope → RawTerm scope)
+    (rightContractum :
+      PayloadRight → RawTerm scope → RawTerm scope → RawTerm scope)
+    (parStepInv : ∀ {scrutineeSource firstBranch secondBranch target},
+      RawStep.par
+        (elimWrap scrutineeSource firstBranch secondBranch) target →
+        (∃ scrutineeTarget firstTarget secondTarget,
+          target = elimWrap scrutineeTarget firstTarget secondTarget ∧
+          RawStep.par scrutineeSource scrutineeTarget ∧
+          RawStep.par firstBranch firstTarget ∧
+          RawStep.par secondBranch secondTarget) ∨
+        (∃ payload firstTarget secondTarget,
+          target = leftContractum payload firstTarget secondTarget ∧
+          RawStep.par scrutineeSource (leftIntro payload) ∧
+          RawStep.par firstBranch firstTarget ∧
+          RawStep.par secondBranch secondTarget) ∨
+        (∃ payload firstTarget secondTarget,
+          target = rightContractum payload firstTarget secondTarget ∧
+          RawStep.par scrutineeSource (rightIntro payload) ∧
+          RawStep.par firstBranch firstTarget ∧
+          RawStep.par secondBranch secondTarget))
+    {source target : RawTerm scope}
+    (chain : RawStep.parStar source target) :
+    ∀ {scrutineeSource firstBranch secondBranch : RawTerm scope},
+      source = elimWrap scrutineeSource firstBranch secondBranch →
+      (∃ scrutineeTarget firstTarget secondTarget,
+        target = elimWrap scrutineeTarget firstTarget secondTarget ∧
+        RawStep.parStar scrutineeSource scrutineeTarget ∧
+        RawStep.parStar firstBranch firstTarget ∧
+        RawStep.parStar secondBranch secondTarget) ∨
+      (∃ payload firstTarget secondTarget,
+        RawStep.parStar scrutineeSource (leftIntro payload) ∧
+        RawStep.parStar firstBranch firstTarget ∧
+        RawStep.parStar secondBranch secondTarget ∧
+        RawStep.parStar
+          (leftContractum payload firstTarget secondTarget) target) ∨
+      (∃ payload firstTarget secondTarget,
+        RawStep.parStar scrutineeSource (rightIntro payload) ∧
+        RawStep.parStar firstBranch firstTarget ∧
+        RawStep.parStar secondBranch secondTarget ∧
+        RawStep.parStar
+          (rightContractum payload firstTarget secondTarget) target) := by
+  induction chain with
+  | refl _ =>
+      intro scrutineeSource firstBranch secondBranch sourceEq
+      exact Or.inl ⟨scrutineeSource, firstBranch, secondBranch, sourceEq,
+        RawStep.parStar.refl _, RawStep.parStar.refl _,
+        RawStep.parStar.refl _⟩
+  | trans firstStep restChain restIH =>
+      intro scrutineeSource firstBranch secondBranch sourceEq
+      subst sourceEq
+      cases parStepInv firstStep with
+      | inl headCase =>
+          obtain ⟨middleScrutinee, middleFirst, middleSecond, middleEq,
+            scrutineeStep, firstBranchStep, secondBranchStep⟩ := headCase
+          cases restIH middleEq with
+          | inl preservedCase =>
+              obtain ⟨targetScrutinee, targetFirst, targetSecond, targetEq,
+                scrutineeRest, firstRest, secondRest⟩ := preservedCase
+              exact Or.inl ⟨targetScrutinee, targetFirst, targetSecond,
+                targetEq,
+                RawStep.parStar.trans scrutineeStep scrutineeRest,
+                RawStep.parStar.trans firstBranchStep firstRest,
+                RawStep.parStar.trans secondBranchStep secondRest⟩
+          | inr redexCases =>
+              cases redexCases with
+              | inl leftCase =>
+                  obtain ⟨payload, targetFirst, targetSecond,
+                    scrutineeRest, firstRest, secondRest,
+                    contractumChain⟩ := leftCase
+                  exact Or.inr (Or.inl ⟨payload, targetFirst, targetSecond,
+                    RawStep.parStar.trans scrutineeStep scrutineeRest,
+                    RawStep.parStar.trans firstBranchStep firstRest,
+                    RawStep.parStar.trans secondBranchStep secondRest,
+                    contractumChain⟩)
+              | inr rightCase =>
+                  obtain ⟨payload, targetFirst, targetSecond,
+                    scrutineeRest, firstRest, secondRest,
+                    contractumChain⟩ := rightCase
+                  exact Or.inr (Or.inr ⟨payload, targetFirst, targetSecond,
+                    RawStep.parStar.trans scrutineeStep scrutineeRest,
+                    RawStep.parStar.trans firstBranchStep firstRest,
+                    RawStep.parStar.trans secondBranchStep secondRest,
+                    contractumChain⟩)
+      | inr redexCases =>
+          cases redexCases with
+          | inl leftCase =>
+              obtain ⟨payload, middleFirst, middleSecond, middleEq,
+                scrutineeStep, firstBranchStep, secondBranchStep⟩ := leftCase
+              cases middleEq
+              exact Or.inr (Or.inl ⟨payload, middleFirst, middleSecond,
+                RawStep.parStar.trans scrutineeStep
+                  (RawStep.parStar.refl _),
+                RawStep.parStar.trans firstBranchStep
+                  (RawStep.parStar.refl _),
+                RawStep.parStar.trans secondBranchStep
+                  (RawStep.parStar.refl _),
+                restChain⟩)
+          | inr rightCase =>
+              obtain ⟨payload, middleFirst, middleSecond, middleEq,
+                scrutineeStep, firstBranchStep, secondBranchStep⟩ :=
+                rightCase
+              cases middleEq
+              exact Or.inr (Or.inr ⟨payload, middleFirst, middleSecond,
+                RawStep.parStar.trans scrutineeStep
+                  (RawStep.parStar.refl _),
+                RawStep.parStar.trans firstBranchStep
+                  (RawStep.parStar.refl _),
+                RawStep.parStar.trans secondBranchStep
+                  (RawStep.parStar.refl _),
+                restChain⟩)
+
+/-- Three-subterm, two-redex eliminator inversion for an exactly wrapped
+source. -/
+private theorem RawStep.parStar.ternary_two_redex_elim_inv_helper
+    {PayloadLeft PayloadRight : Type}
+    {scope : Nat}
+    (elimWrap :
+      RawTerm scope → RawTerm scope → RawTerm scope → RawTerm scope)
+    (leftIntro : PayloadLeft → RawTerm scope)
+    (rightIntro : PayloadRight → RawTerm scope)
+    (leftContractum :
+      PayloadLeft → RawTerm scope → RawTerm scope → RawTerm scope)
+    (rightContractum :
+      PayloadRight → RawTerm scope → RawTerm scope → RawTerm scope)
+    (parStepInv : ∀ {scrutineeSource firstBranch secondBranch target},
+      RawStep.par
+        (elimWrap scrutineeSource firstBranch secondBranch) target →
+        (∃ scrutineeTarget firstTarget secondTarget,
+          target = elimWrap scrutineeTarget firstTarget secondTarget ∧
+          RawStep.par scrutineeSource scrutineeTarget ∧
+          RawStep.par firstBranch firstTarget ∧
+          RawStep.par secondBranch secondTarget) ∨
+        (∃ payload firstTarget secondTarget,
+          target = leftContractum payload firstTarget secondTarget ∧
+          RawStep.par scrutineeSource (leftIntro payload) ∧
+          RawStep.par firstBranch firstTarget ∧
+          RawStep.par secondBranch secondTarget) ∨
+        (∃ payload firstTarget secondTarget,
+          target = rightContractum payload firstTarget secondTarget ∧
+          RawStep.par scrutineeSource (rightIntro payload) ∧
+          RawStep.par firstBranch firstTarget ∧
+          RawStep.par secondBranch secondTarget))
+    {scrutineeSource firstBranch secondBranch target : RawTerm scope}
+    (chain :
+      RawStep.parStar
+        (elimWrap scrutineeSource firstBranch secondBranch) target) :
+    (∃ scrutineeTarget firstTarget secondTarget,
+      target = elimWrap scrutineeTarget firstTarget secondTarget ∧
+      RawStep.parStar scrutineeSource scrutineeTarget ∧
+      RawStep.parStar firstBranch firstTarget ∧
+      RawStep.parStar secondBranch secondTarget) ∨
+    (∃ payload firstTarget secondTarget,
+      RawStep.parStar scrutineeSource (leftIntro payload) ∧
+      RawStep.parStar firstBranch firstTarget ∧
+      RawStep.parStar secondBranch secondTarget ∧
+      RawStep.parStar
+        (leftContractum payload firstTarget secondTarget) target) ∨
+    (∃ payload firstTarget secondTarget,
+      RawStep.parStar scrutineeSource (rightIntro payload) ∧
+      RawStep.parStar firstBranch firstTarget ∧
+      RawStep.parStar secondBranch secondTarget ∧
+      RawStep.parStar
+        (rightContractum payload firstTarget secondTarget) target) :=
+  RawStep.parStar.ternary_two_redex_elim_inv_aux
+    elimWrap leftIntro rightIntro leftContractum rightContractum
+    parStepInv chain rfl
+
 /-- `RawStep.parStar (natSucc predecessor) target → ∃ target's
 predecessor with target = natSucc that predecessor and a parStar
 chain from the source predecessor to it`.
@@ -925,6 +1108,381 @@ theorem RawStep.parStar.eitherInr_inv {scope : Nat}
       RawStep.parStar valueTerm valueTarget :=
   RawStep.parStar.unary_inv_helper RawTerm.eitherInr
     RawStep.par.eitherInr_inv chain
+
+/-- `RawStep.parStar (boolElim scrutinee thenBranch elseBranch) target`
+preserves the eliminator head or fires the true/false iota branch after
+the scrutinee develops to the corresponding boolean. -/
+theorem RawStep.parStar.boolElim_inv {scope : Nat}
+    {scrutinee thenBranch elseBranch target : RawTerm scope}
+    (chain :
+      RawStep.parStar
+        (RawTerm.boolElim scrutinee thenBranch elseBranch) target) :
+    (∃ scrutineeTarget thenTarget elseTarget,
+      target = RawTerm.boolElim scrutineeTarget thenTarget elseTarget ∧
+      RawStep.parStar scrutinee scrutineeTarget ∧
+      RawStep.parStar thenBranch thenTarget ∧
+      RawStep.parStar elseBranch elseTarget) ∨
+    (∃ thenTarget elseTarget,
+      RawStep.parStar scrutinee RawTerm.boolTrue ∧
+      RawStep.parStar thenBranch thenTarget ∧
+      RawStep.parStar elseBranch elseTarget ∧
+      RawStep.parStar thenTarget target) ∨
+    (∃ thenTarget elseTarget,
+      RawStep.parStar scrutinee RawTerm.boolFalse ∧
+      RawStep.parStar thenBranch thenTarget ∧
+      RawStep.parStar elseBranch elseTarget ∧
+      RawStep.parStar elseTarget target) := by
+  cases RawStep.parStar.ternary_two_redex_elim_inv_helper
+      RawTerm.boolElim
+      (fun (_ : PUnit) => RawTerm.boolTrue)
+      (fun (_ : PUnit) => RawTerm.boolFalse)
+      (fun _ thenTarget _ => thenTarget)
+      (fun _ _ elseTarget => elseTarget)
+      (fun step => by
+        cases RawStep.par.boolElim_inv step with
+        | inl headCase =>
+            exact Or.inl headCase
+        | inr redexCases =>
+            cases redexCases with
+            | inl trueCase =>
+                obtain ⟨thenTarget, targetEq, scrutineeStep,
+                  thenStep⟩ := trueCase
+                exact Or.inr (Or.inl ⟨PUnit.unit, thenTarget, _,
+                  targetEq, scrutineeStep, thenStep, RawStep.par.refl _⟩)
+            | inr falseCase =>
+                obtain ⟨elseTarget, targetEq, scrutineeStep,
+                  elseStep⟩ := falseCase
+                exact Or.inr (Or.inr ⟨PUnit.unit, _, elseTarget,
+                  targetEq, scrutineeStep, RawStep.par.refl _, elseStep⟩))
+      chain with
+  | inl preservedCase =>
+      exact Or.inl preservedCase
+  | inr redexCases =>
+      cases redexCases with
+      | inl trueCase =>
+          obtain ⟨_, thenTarget, elseTarget, scrutineeChain,
+            thenChain, elseChain, targetChain⟩ := trueCase
+          exact Or.inr (Or.inl ⟨thenTarget, elseTarget, scrutineeChain,
+            thenChain, elseChain, targetChain⟩)
+      | inr falseCase =>
+          obtain ⟨_, thenTarget, elseTarget, scrutineeChain,
+            thenChain, elseChain, targetChain⟩ := falseCase
+          exact Or.inr (Or.inr ⟨thenTarget, elseTarget, scrutineeChain,
+            thenChain, elseChain, targetChain⟩)
+
+/-- `RawStep.parStar (natElim scrutinee zeroBranch succBranch) target`
+preserves the eliminator head or fires the zero/successor iota branch
+after the scrutinee develops to the corresponding natural constructor. -/
+theorem RawStep.parStar.natElim_inv {scope : Nat}
+    {scrutinee zeroBranch succBranch target : RawTerm scope}
+    (chain :
+      RawStep.parStar
+        (RawTerm.natElim scrutinee zeroBranch succBranch) target) :
+    (∃ scrutineeTarget zeroTarget succTarget,
+      target = RawTerm.natElim scrutineeTarget zeroTarget succTarget ∧
+      RawStep.parStar scrutinee scrutineeTarget ∧
+      RawStep.parStar zeroBranch zeroTarget ∧
+      RawStep.parStar succBranch succTarget) ∨
+    (∃ zeroTarget succTarget,
+      RawStep.parStar scrutinee RawTerm.natZero ∧
+      RawStep.parStar zeroBranch zeroTarget ∧
+      RawStep.parStar succBranch succTarget ∧
+      RawStep.parStar zeroTarget target) ∨
+    (∃ predRaw zeroTarget succTarget,
+      RawStep.parStar scrutinee (RawTerm.natSucc predRaw) ∧
+      RawStep.parStar zeroBranch zeroTarget ∧
+      RawStep.parStar succBranch succTarget ∧
+      RawStep.parStar (RawTerm.app succTarget predRaw) target) := by
+  cases RawStep.parStar.ternary_two_redex_elim_inv_helper
+      RawTerm.natElim
+      (fun (_ : PUnit) => RawTerm.natZero)
+      RawTerm.natSucc
+      (fun _ zeroTarget _ => zeroTarget)
+      (fun predRaw _ succTarget => RawTerm.app succTarget predRaw)
+      (fun step => by
+        cases RawStep.par.natElim_inv step with
+        | inl headCase =>
+            exact Or.inl headCase
+        | inr redexCases =>
+            cases redexCases with
+            | inl zeroCase =>
+                obtain ⟨zeroTarget, targetEq, scrutineeStep,
+                  zeroStep⟩ := zeroCase
+                exact Or.inr (Or.inl ⟨PUnit.unit, zeroTarget, _,
+                  targetEq, scrutineeStep, zeroStep, RawStep.par.refl _⟩)
+            | inr succCase =>
+                obtain ⟨predRaw, succTarget, targetEq, scrutineeStep,
+                  succStep⟩ := succCase
+                exact Or.inr (Or.inr ⟨predRaw, _, succTarget,
+                  targetEq, scrutineeStep, RawStep.par.refl _, succStep⟩))
+      chain with
+  | inl preservedCase =>
+      exact Or.inl preservedCase
+  | inr redexCases =>
+      cases redexCases with
+      | inl zeroCase =>
+          obtain ⟨_, zeroTarget, succTarget, scrutineeChain,
+            zeroChain, succChain, targetChain⟩ := zeroCase
+          exact Or.inr (Or.inl ⟨zeroTarget, succTarget, scrutineeChain,
+            zeroChain, succChain, targetChain⟩)
+      | inr succCase =>
+          obtain ⟨predRaw, zeroTarget, succTarget, scrutineeChain,
+            zeroChain, succChain, targetChain⟩ := succCase
+          exact Or.inr (Or.inr ⟨predRaw, zeroTarget, succTarget,
+            scrutineeChain, zeroChain, succChain, targetChain⟩)
+
+/-- `RawStep.parStar (natRec scrutinee zeroBranch succBranch) target`
+preserves the recursor head or fires zero/successor iota after the
+scrutinee develops to the corresponding natural constructor. -/
+theorem RawStep.parStar.natRec_inv {scope : Nat}
+    {scrutinee zeroBranch succBranch target : RawTerm scope}
+    (chain :
+      RawStep.parStar
+        (RawTerm.natRec scrutinee zeroBranch succBranch) target) :
+    (∃ scrutineeTarget zeroTarget succTarget,
+      target = RawTerm.natRec scrutineeTarget zeroTarget succTarget ∧
+      RawStep.parStar scrutinee scrutineeTarget ∧
+      RawStep.parStar zeroBranch zeroTarget ∧
+      RawStep.parStar succBranch succTarget) ∨
+    (∃ zeroTarget succTarget,
+      RawStep.parStar scrutinee RawTerm.natZero ∧
+      RawStep.parStar zeroBranch zeroTarget ∧
+      RawStep.parStar succBranch succTarget ∧
+      RawStep.parStar zeroTarget target) ∨
+    (∃ predRaw zeroTarget succTarget,
+      RawStep.parStar scrutinee (RawTerm.natSucc predRaw) ∧
+      RawStep.parStar zeroBranch zeroTarget ∧
+      RawStep.parStar succBranch succTarget ∧
+      RawStep.parStar
+        (RawTerm.app (RawTerm.app succTarget predRaw)
+          (RawTerm.natRec predRaw zeroTarget succTarget)) target) := by
+  cases RawStep.parStar.ternary_two_redex_elim_inv_helper
+      RawTerm.natRec
+      (fun (_ : PUnit) => RawTerm.natZero)
+      RawTerm.natSucc
+      (fun _ zeroTarget _ => zeroTarget)
+      (fun predRaw zeroTarget succTarget =>
+        RawTerm.app (RawTerm.app succTarget predRaw)
+          (RawTerm.natRec predRaw zeroTarget succTarget))
+      (fun step => by
+        cases RawStep.par.natRec_inv step with
+        | inl headCase =>
+            exact Or.inl headCase
+        | inr redexCases =>
+            cases redexCases with
+            | inl zeroCase =>
+                obtain ⟨zeroTarget, targetEq, scrutineeStep,
+                  zeroStep⟩ := zeroCase
+                exact Or.inr (Or.inl ⟨PUnit.unit, zeroTarget, _,
+                  targetEq, scrutineeStep, zeroStep, RawStep.par.refl _⟩)
+            | inr succCase =>
+                obtain ⟨predRaw, zeroTarget, succTarget, targetEq,
+                  scrutineeStep, zeroStep, succStep⟩ := succCase
+                exact Or.inr (Or.inr ⟨predRaw, zeroTarget, succTarget,
+                  targetEq, scrutineeStep, zeroStep, succStep⟩))
+      chain with
+  | inl preservedCase =>
+      exact Or.inl preservedCase
+  | inr redexCases =>
+      cases redexCases with
+      | inl zeroCase =>
+          obtain ⟨_, zeroTarget, succTarget, scrutineeChain,
+            zeroChain, succChain, targetChain⟩ := zeroCase
+          exact Or.inr (Or.inl ⟨zeroTarget, succTarget, scrutineeChain,
+            zeroChain, succChain, targetChain⟩)
+      | inr succCase =>
+          obtain ⟨predRaw, zeroTarget, succTarget, scrutineeChain,
+            zeroChain, succChain, targetChain⟩ := succCase
+          exact Or.inr (Or.inr ⟨predRaw, zeroTarget, succTarget,
+            scrutineeChain, zeroChain, succChain, targetChain⟩)
+
+/-- `RawStep.parStar (listElim scrutinee nilBranch consBranch) target`
+preserves the eliminator head or fires nil/cons iota after the
+scrutinee develops to the corresponding list constructor. -/
+theorem RawStep.parStar.listElim_inv {scope : Nat}
+    {scrutinee nilBranch consBranch target : RawTerm scope}
+    (chain :
+      RawStep.parStar
+        (RawTerm.listElim scrutinee nilBranch consBranch) target) :
+    (∃ scrutineeTarget nilTarget consTarget,
+      target = RawTerm.listElim scrutineeTarget nilTarget consTarget ∧
+      RawStep.parStar scrutinee scrutineeTarget ∧
+      RawStep.parStar nilBranch nilTarget ∧
+      RawStep.parStar consBranch consTarget) ∨
+    (∃ nilTarget consTarget,
+      RawStep.parStar scrutinee RawTerm.listNil ∧
+      RawStep.parStar nilBranch nilTarget ∧
+      RawStep.parStar consBranch consTarget ∧
+      RawStep.parStar nilTarget target) ∨
+    (∃ headRaw tailRaw nilTarget consTarget,
+      RawStep.parStar scrutinee (RawTerm.listCons headRaw tailRaw) ∧
+      RawStep.parStar nilBranch nilTarget ∧
+      RawStep.parStar consBranch consTarget ∧
+      RawStep.parStar
+        (RawTerm.app (RawTerm.app consTarget headRaw) tailRaw) target) := by
+  cases RawStep.parStar.ternary_two_redex_elim_inv_helper
+      RawTerm.listElim
+      (fun (_ : PUnit) => RawTerm.listNil)
+      (fun (payload : RawTerm scope × RawTerm scope) =>
+        RawTerm.listCons payload.1 payload.2)
+      (fun _ nilTarget _ => nilTarget)
+      (fun (payload : RawTerm scope × RawTerm scope) _ consTarget =>
+        RawTerm.app (RawTerm.app consTarget payload.1) payload.2)
+      (fun step => by
+        cases RawStep.par.listElim_inv step with
+        | inl headCase =>
+            exact Or.inl headCase
+        | inr redexCases =>
+            cases redexCases with
+            | inl nilCase =>
+                obtain ⟨nilTarget, targetEq, scrutineeStep,
+                  nilStep⟩ := nilCase
+                exact Or.inr (Or.inl ⟨PUnit.unit, nilTarget, _,
+                  targetEq, scrutineeStep, nilStep, RawStep.par.refl _⟩)
+            | inr consCase =>
+                obtain ⟨headRaw, tailRaw, consTarget, targetEq,
+                  scrutineeStep, consStep⟩ := consCase
+                exact Or.inr (Or.inr
+                  ⟨(headRaw, tailRaw), _, consTarget, targetEq,
+                    scrutineeStep, RawStep.par.refl _, consStep⟩))
+      chain with
+  | inl preservedCase =>
+      exact Or.inl preservedCase
+  | inr redexCases =>
+      cases redexCases with
+      | inl nilCase =>
+          obtain ⟨_, nilTarget, consTarget, scrutineeChain,
+            nilChain, consChain, targetChain⟩ := nilCase
+          exact Or.inr (Or.inl ⟨nilTarget, consTarget, scrutineeChain,
+            nilChain, consChain, targetChain⟩)
+      | inr consCase =>
+          obtain ⟨payload, nilTarget, consTarget, scrutineeChain,
+            nilChain, consChain, targetChain⟩ := consCase
+          exact Or.inr (Or.inr ⟨payload.1, payload.2, nilTarget,
+            consTarget, scrutineeChain, nilChain, consChain,
+            targetChain⟩)
+
+/-- `RawStep.parStar (optionMatch scrutinee noneBranch someBranch) target`
+preserves the match head or fires none/some iota after the scrutinee
+develops to the corresponding option constructor. -/
+theorem RawStep.parStar.optionMatch_inv {scope : Nat}
+    {scrutinee noneBranch someBranch target : RawTerm scope}
+    (chain :
+      RawStep.parStar
+        (RawTerm.optionMatch scrutinee noneBranch someBranch) target) :
+    (∃ scrutineeTarget noneTarget someTarget,
+      target = RawTerm.optionMatch scrutineeTarget noneTarget someTarget ∧
+      RawStep.parStar scrutinee scrutineeTarget ∧
+      RawStep.parStar noneBranch noneTarget ∧
+      RawStep.parStar someBranch someTarget) ∨
+    (∃ noneTarget someTarget,
+      RawStep.parStar scrutinee RawTerm.optionNone ∧
+      RawStep.parStar noneBranch noneTarget ∧
+      RawStep.parStar someBranch someTarget ∧
+      RawStep.parStar noneTarget target) ∨
+    (∃ valueRaw noneTarget someTarget,
+      RawStep.parStar scrutinee (RawTerm.optionSome valueRaw) ∧
+      RawStep.parStar noneBranch noneTarget ∧
+      RawStep.parStar someBranch someTarget ∧
+      RawStep.parStar (RawTerm.app someTarget valueRaw) target) := by
+  cases RawStep.parStar.ternary_two_redex_elim_inv_helper
+      RawTerm.optionMatch
+      (fun (_ : PUnit) => RawTerm.optionNone)
+      RawTerm.optionSome
+      (fun _ noneTarget _ => noneTarget)
+      (fun valueRaw _ someTarget => RawTerm.app someTarget valueRaw)
+      (fun step => by
+        cases RawStep.par.optionMatch_inv step with
+        | inl headCase =>
+            exact Or.inl headCase
+        | inr redexCases =>
+            cases redexCases with
+            | inl noneCase =>
+                obtain ⟨noneTarget, targetEq, scrutineeStep,
+                  noneStep⟩ := noneCase
+                exact Or.inr (Or.inl ⟨PUnit.unit, noneTarget, _,
+                  targetEq, scrutineeStep, noneStep, RawStep.par.refl _⟩)
+            | inr someCase =>
+                obtain ⟨valueRaw, someTarget, targetEq,
+                  scrutineeStep, someStep⟩ := someCase
+                exact Or.inr (Or.inr ⟨valueRaw, _, someTarget,
+                  targetEq, scrutineeStep, RawStep.par.refl _, someStep⟩))
+      chain with
+  | inl preservedCase =>
+      exact Or.inl preservedCase
+  | inr redexCases =>
+      cases redexCases with
+      | inl noneCase =>
+          obtain ⟨_, noneTarget, someTarget, scrutineeChain,
+            noneChain, someChain, targetChain⟩ := noneCase
+          exact Or.inr (Or.inl ⟨noneTarget, someTarget, scrutineeChain,
+            noneChain, someChain, targetChain⟩)
+      | inr someCase =>
+          obtain ⟨valueRaw, noneTarget, someTarget, scrutineeChain,
+            noneChain, someChain, targetChain⟩ := someCase
+          exact Or.inr (Or.inr ⟨valueRaw, noneTarget, someTarget,
+            scrutineeChain, noneChain, someChain, targetChain⟩)
+
+/-- `RawStep.parStar (eitherMatch scrutinee leftBranch rightBranch) target`
+preserves the match head or fires inl/inr iota after the scrutinee
+develops to the corresponding either constructor. -/
+theorem RawStep.parStar.eitherMatch_inv {scope : Nat}
+    {scrutinee leftBranch rightBranch target : RawTerm scope}
+    (chain :
+      RawStep.parStar
+        (RawTerm.eitherMatch scrutinee leftBranch rightBranch) target) :
+    (∃ scrutineeTarget leftTarget rightTarget,
+      target = RawTerm.eitherMatch scrutineeTarget leftTarget rightTarget ∧
+      RawStep.parStar scrutinee scrutineeTarget ∧
+      RawStep.parStar leftBranch leftTarget ∧
+      RawStep.parStar rightBranch rightTarget) ∨
+    (∃ valueRaw leftTarget rightTarget,
+      RawStep.parStar scrutinee (RawTerm.eitherInl valueRaw) ∧
+      RawStep.parStar leftBranch leftTarget ∧
+      RawStep.parStar rightBranch rightTarget ∧
+      RawStep.parStar (RawTerm.app leftTarget valueRaw) target) ∨
+    (∃ valueRaw leftTarget rightTarget,
+      RawStep.parStar scrutinee (RawTerm.eitherInr valueRaw) ∧
+      RawStep.parStar leftBranch leftTarget ∧
+      RawStep.parStar rightBranch rightTarget ∧
+      RawStep.parStar (RawTerm.app rightTarget valueRaw) target) := by
+  cases RawStep.parStar.ternary_two_redex_elim_inv_helper
+      RawTerm.eitherMatch
+      RawTerm.eitherInl
+      RawTerm.eitherInr
+      (fun valueRaw leftTarget _ => RawTerm.app leftTarget valueRaw)
+      (fun valueRaw _ rightTarget => RawTerm.app rightTarget valueRaw)
+      (fun step => by
+        cases RawStep.par.eitherMatch_inv step with
+        | inl headCase =>
+            exact Or.inl headCase
+        | inr redexCases =>
+            cases redexCases with
+            | inl leftCase =>
+                obtain ⟨valueRaw, leftTarget, targetEq, scrutineeStep,
+                  leftStep⟩ := leftCase
+                exact Or.inr (Or.inl ⟨valueRaw, leftTarget, _,
+                  targetEq, scrutineeStep, leftStep, RawStep.par.refl _⟩)
+            | inr rightCase =>
+                obtain ⟨valueRaw, rightTarget, targetEq, scrutineeStep,
+                  rightStep⟩ := rightCase
+                exact Or.inr (Or.inr ⟨valueRaw, _, rightTarget,
+                  targetEq, scrutineeStep, RawStep.par.refl _, rightStep⟩))
+      chain with
+  | inl preservedCase =>
+      exact Or.inl preservedCase
+  | inr redexCases =>
+      cases redexCases with
+      | inl leftCase =>
+          obtain ⟨valueRaw, leftTarget, rightTarget, scrutineeChain,
+            leftChain, rightChain, targetChain⟩ := leftCase
+          exact Or.inr (Or.inl ⟨valueRaw, leftTarget, rightTarget,
+            scrutineeChain, leftChain, rightChain, targetChain⟩)
+      | inr rightCase =>
+          obtain ⟨valueRaw, leftTarget, rightTarget, scrutineeChain,
+            leftChain, rightChain, targetChain⟩ := rightCase
+          exact Or.inr (Or.inr ⟨valueRaw, leftTarget, rightTarget,
+            scrutineeChain, leftChain, rightChain, targetChain⟩)
 
 /-- `RawStep.parStar (app function argument) target` either preserves the
 `app` head or fires function β after the function develops to a lambda. -/
