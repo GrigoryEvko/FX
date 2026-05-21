@@ -11,11 +11,9 @@ childA-fixed induction hypotheses (matching what `induction termA` produces)
 plus termA's children plus a generic termB, and proves
 `rename termA = rename termB → termA = termB`.
 
-Closed ctors (var, unit, bool*, natZero, listNil, optionNone, refl, oeqRefl,
-idStrictRefl, interval0/1, 10 type codes, universeCode, equivReflId,
-funextRefl, equivReflIdAtId, funextReflAtId, funextIntroHet) reuse the
-existing standalone helpers under `Term.rename_injective_at<Ctor>` directly
-in the final induction — no arm helper needed here.
+Closed and small-structured ctors use thin wrappers over existing
+standalone helpers where possible, so the induction driver can dispatch
+uniformly through one arm-helper family.
 
 Non-colliding children use the **suffices-free-type + Ty.rename_injective
 + childA-fixed IH** pattern (validated by proto_fst).
@@ -1834,28 +1832,101 @@ theorem Term.rename_injective_arm_oeqFunext
   exact ⟨inferredDomain, inferredCodomain, inferredLeftFn, inferredRightFn,
     pointwiseTerm, rfl, HEq.rfl⟩
 
--- NOTE: arm_universeCode is a KERNEL-DESIGN WALL, not a proof-technique
--- gap.  See `Smoke/AuditRenameInjectivityWalls.lean` for a constructive
--- counterexample: two distinct typed `Term.universeCode` inhabitants exist
--- at the SAME outer type `Ty.universe outerLevel _` and SAME raw
--- `RawTerm.universeCode 0`, one with `innerLevel = UniverseLevel.max 0 0`
--- and one with `innerLevel = UniverseLevel.imax 0 0`.  Both witnesses
--- typecheck zero-axiom.  Hence strict propositional equality
--- `termA = termB` from a renamed-equal hypothesis is FALSE on this ctor.
---
--- The root cause is `UniverseLevel.toNat` non-injectivity, proved by
--- `Foundation/Universe.lean:toNat_not_injective`:
--- `max 0 0` and `imax 0 0` distinct UniverseLevel ctors collapse to
--- `0 : Nat` via toNat, and the kernel only stores `innerLevel.toNat`
--- in the raw `RawTerm.universeCode`.
---
--- Future re-formulation paths (none in scope here):
---   1. Restate T2 with HEq + Conv (rename equivariance modulo convertibility).
---   2. Refactor `Term.universeCode` to carry the structural `innerLevel`
---      in the raw too (kernel architectural change — bumps the `RawTerm`
---      ctor signature and ripples through every raw consumer).
---   3. Accept 69/78 ceiling and route the 9 walled ctors through a
---      separate multi-inhabitancy-aware rename lemma at consumer sites.
+/-- `universeCode` arm: although raw stores only `innerLevel.toNat`, the
+    renamed equality is between typed `Term.universeCode` constructors and
+    therefore injects the full `UniverseLevel` argument. -/
+theorem Term.rename_injective_arm_universeCode
+    (_rhoInjective : RawRenamingInjective rho)
+    (innerLevel outerLevel : UniverseLevel)
+    (cumulOk : innerLevel.toNat ≤ outerLevel.toNat)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (termB :
+      Term sourceCtx (Ty.universe outerLevel levelLe)
+        (RawTerm.universeCode innerLevel.toNat)) :
+    Term.rename termRenaming
+        (Term.universeCode (context := sourceCtx)
+          innerLevel outerLevel cumulOk levelLe) =
+      Term.rename termRenaming termB →
+      Term.universeCode (context := sourceCtx)
+          innerLevel outerLevel cumulOk levelLe = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope} {genericRaw : RawTerm sourceScope}
+        (genericTerm :
+          Term sourceCtx genericType genericRaw),
+        genericRaw = RawTerm.universeCode innerLevel.toNat →
+          Σ' (innerLevelB outerLevelB : UniverseLevel)
+            (cumulOkB : innerLevelB.toNat ≤ outerLevelB.toNat)
+            (levelLeB : outerLevelB.toNat + 1 ≤ level),
+          Σ' (_ : genericType = Ty.universe outerLevelB levelLeB),
+            Σ' (_ :
+                (RawTerm.universeCode innerLevel.toNat : RawTerm sourceScope) =
+                  RawTerm.universeCode innerLevelB.toNat),
+              Σ' (termHEqB :
+                HEq genericTerm
+                  (Term.universeCode (context := sourceCtx)
+                    innerLevelB outerLevelB cumulOkB levelLeB)),
+              HEq (Term.rename termRenaming genericTerm)
+                (Term.rename termRenaming
+                  (Term.universeCode (context := sourceCtx)
+                    innerLevelB outerLevelB cumulOkB levelLeB)) by
+    obtain ⟨innerLevelB, outerLevelB, cumulOkB, levelLeB, typeEqB,
+      rawEqB, termHEqB, renameHEqB⟩ := key termB rfl
+    have renamedCtorHEq :
+        HEq
+          (Term.rename termRenaming
+            (Term.universeCode (context := sourceCtx)
+              innerLevel outerLevel cumulOk levelLe))
+          (Term.rename termRenaming
+            (Term.universeCode (context := sourceCtx)
+              innerLevelB outerLevelB cumulOkB levelLeB)) :=
+      HEq.trans (heq_of_eq renameEq) renameHEqB
+    dsimp only [Term.rename] at renamedCtorHEq
+    have targetTypeEq :
+        (Ty.universe outerLevel levelLe : Ty level targetScope) =
+          Ty.universe outerLevelB levelLeB := by
+      injection typeEqB with _ outerLevelEq
+      cases outerLevelEq
+      have levelLeEq : levelLe = levelLeB := proof_irrel levelLe levelLeB
+      cases levelLeEq
+      rfl
+    have targetRawEq :
+        (RawTerm.universeCode innerLevel.toNat : RawTerm targetScope) =
+          RawTerm.universeCode innerLevelB.toNat := by
+      injection rawEqB with _ innerLevelNatEq
+      exact congrArg RawTerm.universeCode innerLevelNatEq
+    have extracted :
+        Σ' (_ : innerLevel = innerLevelB), outerLevel = outerLevelB := by
+      exact Term.noConfusion
+        (P := Σ' (_ : innerLevel = innerLevelB),
+          outerLevel = outerLevelB)
+        (t := Term.universeCode (context := targetCtx)
+          innerLevel outerLevel cumulOk levelLe)
+        (t' := Term.universeCode (context := targetCtx)
+          innerLevelB outerLevelB cumulOkB levelLeB)
+        rfl rfl rfl HEq.rfl (heq_of_eq targetTypeEq)
+        (heq_of_eq targetRawEq) renamedCtorHEq
+        (fun _ _ innerLevelEq outerLevelEq =>
+          ⟨innerLevelEq, outerLevelEq⟩)
+    obtain ⟨innerLevelEq, outerLevelEq⟩ := extracted
+    cases innerLevelEq
+    cases outerLevelEq
+    have cumulOkProofEq : cumulOk = cumulOkB :=
+      proof_irrel cumulOk cumulOkB
+    have levelLeProofEq : levelLe = levelLeB :=
+      proof_irrel levelLe levelLeB
+    cases cumulOkProofEq
+    cases levelLeProofEq
+    exact eq_of_heq (HEq.symm termHEqB)
+  intro genericType genericRaw genericTerm rawEq
+  cases genericTerm <;> try cases rawEq
+  case universeCode innerLevelB outerLevelB cumulOkB levelLeB =>
+    have rawEqB :
+        (RawTerm.universeCode innerLevel.toNat : RawTerm sourceScope) =
+          RawTerm.universeCode innerLevelB.toNat :=
+      rawEq.symm
+    exact ⟨innerLevelB, outerLevelB, cumulOkB, levelLeB, rfl, rawEqB,
+      HEq.rfl, HEq.rfl⟩
 
 /-- `equivApp` arm: apply a packaged equivalence to an argument.  Outputs
     `carrierB` (the equivalence's right carrier).  `carrierA` is existential
@@ -2003,25 +2074,201 @@ theorem Term.rename_injective_arm_pathApp
   exact ⟨inferredModeIsUnivalent, inferredLeft, inferredRight, pathInner,
     intervalInner, HEq.rfl⟩
 
--- NOTE: arm_effectPerform is a KERNEL-DESIGN WALL, not a proof-technique
--- gap.  See `Smoke/AuditRenameInjectivityWalls.lean` (effectPerform-row
--- discussion).  The `effectRow` parameter of `Term.effectPerform` appears
--- in NEITHER the outer type `Ty.effect resultCarrier effectTag` NOR the
--- raw `RawTerm.effectPerform operationRaw argumentsRaw`.  A read operation
--- is permitted by row `[read]` via `CanPerform.direct` AND by row
--- `[write]` via `CanPerform.readViaWrite` — two distinct typed
--- `Term.effectPerform tag rowA sig cpA op arg` and
--- `Term.effectPerform tag rowB sig cpB op arg` inhabit the same outer
--- type + raw when `rowA ≠ rowB`.  Hence strict equality cannot recover
--- `rowA = rowB`; the arm theorem is false.
---
--- (Proof-irrelevance on `CanPerform` would have discharged a SECONDARY
--- propext-related obstacle, but the PRIMARY obstacle is multi-
--- inhabitancy on `effectRow` itself — proof-irrelevance does not help.)
---
--- Future re-formulation parallels the universeCode wall: restate with
--- HEq, refactor the kernel ctor to expose `effectRow` in the raw, or
--- route via a multi-inhabitancy-aware rename lemma.
+/-- `effectPerform` arm: the raw index forgets the row, but the renamed
+    typed constructor still carries `effectRow` and the mapped operation
+    signature, so the rename equality injects them. -/
+theorem Term.rename_injective_arm_effectPerform
+    (rhoInjective : RawRenamingInjective rho)
+    {effectTag : RawTerm sourceScope}
+    (effectRow : Effects.EffectRow)
+    (operationSignature : Effects.OperationSignature (Ty level sourceScope))
+    (canPerformOperation :
+      Effects.CanPerform effectRow operationSignature)
+    {operationRaw argumentsRaw : RawTerm sourceScope}
+    (operationTag :
+      Term sourceCtx
+        (Ty.effect operationSignature.argumentCarrier effectTag)
+        operationRaw)
+    (arguments :
+      Term sourceCtx operationSignature.argumentCarrier argumentsRaw)
+    (operationTagIH :
+      ∀ {innerTargetScope : Nat}
+        {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (operationTagB :
+            Term sourceCtx
+              (Ty.effect operationSignature.argumentCarrier effectTag)
+              operationRaw),
+          Term.rename innerRenaming operationTag =
+            Term.rename innerRenaming operationTagB →
+          operationTag = operationTagB)
+    (argumentsIH :
+      ∀ {innerTargetScope : Nat}
+        {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (argumentsB :
+            Term sourceCtx operationSignature.argumentCarrier argumentsRaw),
+          Term.rename innerRenaming arguments =
+            Term.rename innerRenaming argumentsB →
+          arguments = argumentsB)
+    (termB :
+      Term sourceCtx
+        (Ty.effect operationSignature.resultCarrier effectTag)
+        (RawTerm.effectPerform operationRaw argumentsRaw)) :
+    Term.rename termRenaming
+        (Term.effectPerform effectTag effectRow operationSignature
+          canPerformOperation operationTag arguments) =
+      Term.rename termRenaming termB →
+      Term.effectPerform effectTag effectRow operationSignature
+          canPerformOperation operationTag arguments = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope} {genericRaw : RawTerm sourceScope}
+        (genericTerm :
+          Term sourceCtx genericType genericRaw),
+        genericRaw = RawTerm.effectPerform operationRaw argumentsRaw →
+        Σ' (effectTagB : RawTerm sourceScope)
+            (effectRowB : Effects.EffectRow)
+            (operationSignatureB :
+              Effects.OperationSignature (Ty level sourceScope))
+            (canPerformB :
+              Effects.CanPerform effectRowB operationSignatureB)
+            (operationTagB :
+              Term sourceCtx
+                (Ty.effect operationSignatureB.argumentCarrier effectTagB)
+                operationRaw)
+            (argumentsB :
+              Term sourceCtx operationSignatureB.argumentCarrier argumentsRaw),
+          Σ' (_ :
+              genericType =
+                Ty.effect operationSignatureB.resultCarrier effectTagB),
+            Σ' (termHEqB :
+                HEq genericTerm
+                  (Term.effectPerform effectTagB effectRowB
+                    operationSignatureB canPerformB operationTagB
+                    argumentsB)),
+              HEq (Term.rename termRenaming genericTerm)
+                (Term.rename termRenaming
+                  (Term.effectPerform effectTagB effectRowB
+                    operationSignatureB canPerformB operationTagB
+                    argumentsB)) by
+    obtain ⟨effectTagB, effectRowB, operationSignatureB, canPerformB,
+      operationTagB, argumentsB, typeEqB, termHEqB, renameHEqB⟩ :=
+      key termB rfl
+    have renamedCtorHEq :
+        HEq
+          (Term.rename termRenaming
+            (Term.effectPerform effectTag effectRow operationSignature
+              canPerformOperation operationTag arguments))
+          (Term.rename termRenaming
+            (Term.effectPerform effectTagB effectRowB operationSignatureB
+              canPerformB operationTagB argumentsB)) :=
+      HEq.trans (heq_of_eq renameEq) renameHEqB
+    dsimp only [Term.rename] at renamedCtorHEq
+    have targetTypeEq :
+        (Ty.effect
+            (operationSignature.map
+              (fun carrierType => carrierType.rename rho)).resultCarrier
+            (effectTag.rename rho) : Ty level targetScope) =
+          Ty.effect
+            (operationSignatureB.map
+              (fun carrierType => carrierType.rename rho)).resultCarrier
+            (effectTagB.rename rho) := by
+      have base := congrArg (fun someType => someType.rename rho) typeEqB
+      dsimp only [Ty.rename] at base
+      exact base
+    have extracted :
+        Σ' (effectTagRenameHEq :
+            HEq (effectTag.rename rho) (effectTagB.rename rho))
+          (effectRowEq : effectRow = effectRowB)
+          (operationSignatureRenameHEq :
+            HEq
+              (operationSignature.map
+                (fun carrierType => carrierType.rename rho))
+              (operationSignatureB.map
+                (fun carrierType => carrierType.rename rho)))
+          (operationRenameHEq :
+            HEq (Term.rename termRenaming operationTag)
+              (Term.rename termRenaming operationTagB)),
+          HEq (Term.rename termRenaming arguments)
+            (Term.rename termRenaming argumentsB) := by
+      exact Term.noConfusion
+        (P :=
+          Σ' (effectTagRenameHEq :
+              HEq (effectTag.rename rho) (effectTagB.rename rho))
+            (effectRowEq : effectRow = effectRowB)
+            (operationSignatureRenameHEq :
+              HEq
+                (operationSignature.map
+                  (fun carrierType => carrierType.rename rho))
+                (operationSignatureB.map
+                  (fun carrierType => carrierType.rename rho)))
+            (operationRenameHEq :
+              HEq (Term.rename termRenaming operationTag)
+                (Term.rename termRenaming operationTagB)),
+            HEq (Term.rename termRenaming arguments)
+              (Term.rename termRenaming argumentsB))
+        (t := Term.effectPerform (effectTag.rename rho) effectRow
+          (operationSignature.map (fun carrierType => carrierType.rename rho))
+          (Effects.CanPerform.map (fun carrierType => carrierType.rename rho)
+            canPerformOperation)
+          (Term.rename termRenaming operationTag)
+          (Term.rename termRenaming arguments))
+        (t' := Term.effectPerform (effectTagB.rename rho) effectRowB
+          (operationSignatureB.map
+            (fun carrierType => carrierType.rename rho))
+          (Effects.CanPerform.map (fun carrierType => carrierType.rename rho)
+            canPerformB)
+          (Term.rename termRenaming operationTagB)
+          (Term.rename termRenaming argumentsB))
+        rfl rfl rfl HEq.rfl (heq_of_eq targetTypeEq) HEq.rfl
+        renamedCtorHEq
+        (fun _ _ effectTagRenameHEq effectRowEq
+            operationSignatureRenameHEq _ _ operationRenameHEq
+            argumentsRenameHEq =>
+          ⟨effectTagRenameHEq, effectRowEq, operationSignatureRenameHEq,
+            operationRenameHEq, argumentsRenameHEq⟩)
+    obtain ⟨effectTagRenameHEq, effectRowEq,
+      operationSignatureRenameHEq, operationRenameHEq,
+      argumentsRenameHEq⟩ := extracted
+    cases effectRowEq
+    have operationSignatureEq : operationSignature = operationSignatureB :=
+      Effects.OperationSignature.map_injective
+        (fun carrierType => carrierType.rename rho)
+        (fun sourceType targetType renamedEq =>
+          Ty.rename_injective_under_injective_renaming sourceType
+            rhoInjective targetType renamedEq)
+        operationSignature operationSignatureB
+        (eq_of_heq operationSignatureRenameHEq)
+    cases operationSignatureEq
+    have effectTagEq : effectTag = effectTagB :=
+      RawTerm.rename_injective_under_injective_renaming effectTag
+        rhoInjective effectTagB (eq_of_heq effectTagRenameHEq)
+    cases effectTagEq
+    have operationTagEq : operationTag = operationTagB :=
+      operationTagIH termRenaming rhoInjective operationTagB
+        (eq_of_heq operationRenameHEq)
+    have argumentsEq : arguments = argumentsB :=
+      argumentsIH termRenaming rhoInjective argumentsB
+        (eq_of_heq argumentsRenameHEq)
+    cases operationTagEq
+    cases argumentsEq
+    have canPerformEq : canPerformOperation = canPerformB :=
+      proof_irrel canPerformOperation canPerformB
+    cases canPerformEq
+    cases termHEqB
+    rfl
+  intro genericType genericRaw genericTerm rawEq
+  cases genericTerm <;> try cases rawEq
+  case effectPerform effectTagB operationSignatureB canPerformB
+      operationTagB argumentsB =>
+    rename_i effectRowB
+    exact ⟨effectTagB, effectRowB, operationSignatureB, canPerformB,
+      operationTagB, argumentsB, rfl, HEq.rfl, HEq.rfl⟩
 
 /-- `glueElim` arm: cubical glue elimination at `baseType` (no cast).
     `boundaryWitness` is a RawTerm existential recoverable via
@@ -2290,47 +2537,452 @@ theorem Term.rename_injective_arm_hcompPath
     exact PSum.inr ⟨inferredModeIsUnivalent, leftEnd, rightEnd, sidesPathInner,
       capB, HEq.rfl⟩
 
+/-! ## Funext rfl arm.
+
+`funextRefl` is the `RawTerm.lam (RawTerm.refl applyRaw)` sibling of
+`lamPi`.  The existing LamPi inversion theorem already handles this
+two-way PSum, including the `lamPi` cross-refutation via
+`renamedLamPi_ne_renamedFunextReflCast`; the only local work is the
+reflexivity-body child injectivity needed by the LamPi wrapper. -/
+
+/-- `funextRefl` arm: reuse the existing LamPi-family inversion theorem. -/
+theorem Term.rename_injective_arm_funextRefl
+    (_rhoInjective : RawRenamingInjective rho)
+    (domainType codomainType : Ty level sourceScope)
+    (applyRaw : RawTerm (sourceScope + 1))
+    (termB :
+      Term sourceCtx (funextReflType domainType codomainType applyRaw)
+        (RawTerm.lam (RawTerm.refl applyRaw))) :
+    Term.rename termRenaming
+        (Term.funextRefl (context := sourceCtx) domainType codomainType
+          applyRaw) =
+      Term.rename termRenaming termB →
+      Term.funextRefl (context := sourceCtx) domainType codomainType
+          applyRaw = termB := by
+  let bodyInjective :
+      ∀ (bodyA bodyB :
+          Term (sourceCtx.cons domainType)
+            (Ty.id codomainType.weaken applyRaw applyRaw)
+            (RawTerm.refl applyRaw)),
+        HEq (Term.rename (termRenaming.lift domainType) bodyA)
+          (Term.rename (termRenaming.lift domainType) bodyB) →
+        HEq bodyA bodyB := by
+    intro bodyA bodyB bodyRenameHEq
+    exact heq_of_eq
+      (Term.rename_injective_atRefl (termRenaming.lift domainType)
+        bodyA bodyB (eq_of_heq bodyRenameHEq))
+  exact
+    Term.rename_injective_atLamPi_of_inner termRenaming bodyInjective
+      (Term.funextRefl (context := sourceCtx) domainType codomainType
+        applyRaw)
+      termB
+
+/-- `funextReflAtId` arm: reuse the existing arrow-Id inversion theorem. -/
+theorem Term.rename_injective_arm_funextReflAtId
+    (_rhoInjective : RawRenamingInjective rho)
+    (domainType codomainType : Ty level sourceScope)
+    (applyRaw : RawTerm (sourceScope + 1))
+    (termB :
+      Term sourceCtx
+        (Ty.id (Ty.arrow domainType codomainType)
+          (RawTerm.lam (RawTerm.refl applyRaw))
+          (RawTerm.lam (RawTerm.refl applyRaw)))
+        (RawTerm.lam (RawTerm.refl applyRaw))) :
+    Term.rename termRenaming
+        (Term.funextReflAtId (context := sourceCtx)
+          domainType codomainType applyRaw) =
+      Term.rename termRenaming termB →
+      Term.funextReflAtId (context := sourceCtx)
+          domainType codomainType applyRaw = termB :=
+  Term.rename_injective_atLamArrowId termRenaming
+    (Term.funextReflAtId (context := sourceCtx)
+      domainType codomainType applyRaw) termB
+
+/-- `funextIntroHet` arm: the same arrow-Id inversion handles the
+    heterogeneous endpoint shape. -/
+theorem Term.rename_injective_arm_funextIntroHet
+    (_rhoInjective : RawRenamingInjective rho)
+    (domainType codomainType : Ty level sourceScope)
+    (applyARaw applyBRaw : RawTerm (sourceScope + 1))
+    (termB :
+      Term sourceCtx
+        (Ty.id (Ty.arrow domainType codomainType)
+          (RawTerm.lam applyARaw) (RawTerm.lam applyBRaw))
+        (RawTerm.lam (RawTerm.refl applyARaw))) :
+    Term.rename termRenaming
+        (Term.funextIntroHet (context := sourceCtx)
+          domainType codomainType applyARaw applyBRaw) =
+      Term.rename termRenaming termB →
+      Term.funextIntroHet (context := sourceCtx)
+          domainType codomainType applyARaw applyBRaw = termB :=
+  Term.rename_injective_atLamArrowId termRenaming
+    (Term.funextIntroHet (context := sourceCtx)
+      domainType codomainType applyARaw applyBRaw) termB
+
+/-- `equivReflId` arm: direct `RawTerm.equivIntro` inversion with
+    cross-ctor refutation from the renamed equality. -/
+theorem Term.rename_injective_arm_equivReflId
+    (_rhoInjective : RawRenamingInjective rho)
+    (carrier : Ty level sourceScope)
+    (termB :
+      Term sourceCtx (Ty.equiv carrier carrier)
+        (RawTerm.equivIntro
+          (RawTerm.lam (RawTerm.var ⟨0, Nat.zero_lt_succ sourceScope⟩))
+          (RawTerm.lam (RawTerm.var ⟨0, Nat.zero_lt_succ sourceScope⟩)))) :
+    Term.rename termRenaming (Term.equivReflId (context := sourceCtx) carrier) =
+      Term.rename termRenaming termB →
+      Term.equivReflId (context := sourceCtx) carrier = termB := by
+  intro renameEq
+  cases Term.equivIntro_inv termB with
+  | inl reflViewB =>
+      obtain ⟨carrierB, forwardEqB, backwardEqB, typeEqB, termHEqB⟩ :=
+        reflViewB
+      cases typeEqB
+      cases forwardEqB
+      cases backwardEqB
+      cases termHEqB
+      rfl
+  | inr restViewB =>
+      cases restViewB with
+      | inl idViewB =>
+          obtain ⟨innerLevelB, innerLevelLtB, carrierB, carrierRawB,
+            forwardEqB, backwardEqB, typeEqB, termHEqB⟩ := idViewB
+          cases typeEqB
+      | inr restViewB =>
+          cases restViewB with
+          | inl introViewB =>
+              obtain ⟨carrierLeftB, carrierRightB, leftInvRawB,
+                rightInvRawB, forwardB, backwardB, leftInvB, rightInvB,
+                typeEqB, termHEqB⟩ := introViewB
+              cases typeEqB
+              cases termHEqB
+              dsimp only [Term.rename] at renameEq
+              cases renameEq
+          | inr uaViewB =>
+              obtain ⟨innerLevelB, innerLevelLtB, carrierLeftB,
+                carrierRightB, carrierLeftRawB, carrierRightRawB,
+                equivWitnessB, typeEqB, termHEqB⟩ := uaViewB
+              cases typeEqB
+
+/-- `equivReflIdAtId` arm: direct universe-Id inversion over the shared
+    `RawTerm.equivIntro id id` head. -/
+theorem Term.rename_injective_arm_equivReflIdAtId
+    (rhoInjective : RawRenamingInjective rho)
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    (carrier : Ty level sourceScope)
+    (carrierRaw : RawTerm sourceScope)
+    (termB :
+      Term sourceCtx
+        (Ty.id (Ty.universe innerLevel innerLevelLt) carrierRaw carrierRaw)
+        (RawTerm.equivIntro
+          (RawTerm.lam (RawTerm.var ⟨0, Nat.zero_lt_succ sourceScope⟩))
+          (RawTerm.lam (RawTerm.var ⟨0, Nat.zero_lt_succ sourceScope⟩)))) :
+    Term.rename termRenaming
+        (Term.equivReflIdAtId (context := sourceCtx)
+          innerLevel innerLevelLt carrier carrierRaw) =
+      Term.rename termRenaming termB →
+      Term.equivReflIdAtId (context := sourceCtx)
+          innerLevel innerLevelLt carrier carrierRaw = termB := by
+  intro renameEq
+  cases Term.equivIntro_inv termB with
+  | inl reflViewB =>
+      obtain ⟨carrierB, forwardEqB, backwardEqB, typeEqB, termHEqB⟩ :=
+        reflViewB
+      cases typeEqB
+  | inr restViewB =>
+      cases restViewB with
+      | inl idViewB =>
+          obtain ⟨innerLevelB, innerLevelLtB, carrierB, carrierRawB,
+            forwardEqB, backwardEqB, typeEqB, termHEqB⟩ := idViewB
+          cases typeEqB
+          cases forwardEqB
+          cases backwardEqB
+          cases termHEqB
+          dsimp only [Term.rename] at renameEq
+          injection renameEq with contextEq innerLevelEq innerLevelLtEq
+            carrierRenameEq carrierRawRenameEq
+          cases innerLevelEq
+          cases innerLevelLtEq
+          have carrierEq : carrier = carrierB :=
+            Ty.rename_injective_under_injective_renaming carrier
+              rhoInjective carrierB carrierRenameEq
+          exact eq_of_heq
+            (Term.equivReflIdAtId_HEq_congr carrierEq rfl)
+      | inr restViewB =>
+          cases restViewB with
+          | inl introViewB =>
+              obtain ⟨carrierLeftB, carrierRightB, leftInvRawB,
+                rightInvRawB, forwardB, backwardB, leftInvB, rightInvB,
+                typeEqB, termHEqB⟩ := introViewB
+              cases typeEqB
+          | inr uaViewB =>
+              obtain ⟨innerLevelB, innerLevelLtB, carrierLeftB,
+                carrierRightB, carrierLeftRawB, carrierRightRawB,
+                equivWitnessB, typeEqB, termHEqB⟩ := uaViewB
+              cases typeEqB
+              cases termHEqB
+              dsimp only [Term.rename] at renameEq
+              cases renameEq
+
+/-- `equivIntroHet` arm: direct inversion over the shared equivalence raw
+    head, using the four child induction hypotheses in the heterogeneous
+    intro branch. -/
+theorem Term.rename_injective_arm_equivIntroHet
+    (rhoInjective : RawRenamingInjective rho)
+    {carrierA carrierB : Ty level sourceScope}
+    {forwardRaw backwardRaw leftInvRaw rightInvRaw : RawTerm sourceScope}
+    (forward : Term sourceCtx (Ty.arrow carrierA carrierB) forwardRaw)
+    (backward : Term sourceCtx (Ty.arrow carrierB carrierA) backwardRaw)
+    (leftInv :
+      Term sourceCtx
+        (equivIntroHetLeftInverseType carrierA forwardRaw backwardRaw)
+        leftInvRaw)
+    (rightInv :
+      Term sourceCtx
+        (equivIntroHetRightInverseType carrierB forwardRaw backwardRaw)
+        rightInvRaw)
+    (forwardIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (forwardB : Term sourceCtx (Ty.arrow carrierA carrierB) forwardRaw),
+          Term.rename innerRenaming forward =
+            Term.rename innerRenaming forwardB →
+          forward = forwardB)
+    (backwardIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (backwardB :
+            Term sourceCtx (Ty.arrow carrierB carrierA) backwardRaw),
+          Term.rename innerRenaming backward =
+            Term.rename innerRenaming backwardB →
+          backward = backwardB)
+    (leftInvIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (leftInvB :
+            Term sourceCtx
+              (equivIntroHetLeftInverseType carrierA forwardRaw backwardRaw)
+              leftInvRaw),
+          Term.rename innerRenaming leftInv =
+            Term.rename innerRenaming leftInvB →
+          leftInv = leftInvB)
+    (rightInvIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (rightInvB :
+            Term sourceCtx
+              (equivIntroHetRightInverseType carrierB forwardRaw backwardRaw)
+              rightInvRaw),
+          Term.rename innerRenaming rightInv =
+            Term.rename innerRenaming rightInvB →
+          rightInv = rightInvB)
+    (termB :
+      Term sourceCtx (Ty.equiv carrierA carrierB)
+        (RawTerm.equivIntro forwardRaw backwardRaw)) :
+    Term.rename termRenaming
+        (Term.equivIntroHet forward backward leftInv rightInv) =
+      Term.rename termRenaming termB →
+      Term.equivIntroHet forward backward leftInv rightInv = termB := by
+  intro renameEq
+  cases Term.equivIntro_inv termB with
+  | inl reflViewB =>
+      obtain ⟨carrierBView, forwardEqB, backwardEqB, typeEqB, termHEqB⟩ :=
+        reflViewB
+      cases typeEqB
+      cases forwardEqB
+      cases backwardEqB
+      cases termHEqB
+      dsimp only [Term.rename] at renameEq
+      cases renameEq
+  | inr restViewB =>
+      cases restViewB with
+      | inl idViewB =>
+          obtain ⟨innerLevelB, innerLevelLtB, carrierBView, carrierRawB,
+            forwardEqB, backwardEqB, typeEqB, termHEqB⟩ := idViewB
+          cases typeEqB
+      | inr restViewB =>
+          cases restViewB with
+          | inl introViewB =>
+              obtain ⟨carrierLeftB, carrierRightB, leftInvRawB,
+                rightInvRawB, forwardB, backwardB, leftInvB, rightInvB,
+                typeEqB, termHEqB⟩ := introViewB
+              cases typeEqB
+              cases termHEqB
+              dsimp only [Term.rename] at renameEq
+              injection renameEq with contextEq carrierLeftRenameEq
+                carrierRightRenameEq forwardRawRenameEq backwardRawRenameEq
+                backwardRawRenameEqAgain leftInvRawRenameEq rightInvRawRenameEq
+                forwardRenameEq backwardRenameEq leftInvRenameEq
+                rightInvRenameEq
+              have leftInvRawEq : leftInvRaw = leftInvRawB :=
+                RawTerm.rename_injective_under_injective_renaming leftInvRaw
+                  rhoInjective leftInvRawB leftInvRawRenameEq
+              have rightInvRawEq : rightInvRaw = rightInvRawB :=
+                RawTerm.rename_injective_under_injective_renaming rightInvRaw
+                  rhoInjective rightInvRawB rightInvRawRenameEq
+              cases leftInvRawEq
+              cases rightInvRawEq
+              have forwardEq : forward = forwardB :=
+                forwardIH termRenaming rhoInjective forwardB forwardRenameEq
+              have backwardEq : backward = backwardB :=
+                backwardIH termRenaming rhoInjective backwardB backwardRenameEq
+              have leftInvRenameUncastHEq :
+                  HEq (Term.rename termRenaming leftInv)
+                    (Term.rename termRenaming leftInvB) :=
+                HEq.trans
+                  (HEq.symm
+                    (termRenameInjectiveCastHEq
+                      (equivIntroHetLeftInverseType_rename rho carrierA
+                        forwardRaw backwardRaw)
+                      (Term.rename termRenaming leftInv)))
+                  (HEq.trans leftInvRenameEq
+                    (termRenameInjectiveCastHEq
+                      (equivIntroHetLeftInverseType_rename rho carrierA
+                        forwardRaw backwardRaw)
+                      (Term.rename termRenaming leftInvB)))
+              have rightInvRenameUncastHEq :
+                  HEq (Term.rename termRenaming rightInv)
+                    (Term.rename termRenaming rightInvB) :=
+                HEq.trans
+                  (HEq.symm
+                    (termRenameInjectiveCastHEq
+                      (equivIntroHetRightInverseType_rename rho carrierB
+                        forwardRaw backwardRaw)
+                      (Term.rename termRenaming rightInv)))
+                  (HEq.trans rightInvRenameEq
+                    (termRenameInjectiveCastHEq
+                      (equivIntroHetRightInverseType_rename rho carrierB
+                        forwardRaw backwardRaw)
+                      (Term.rename termRenaming rightInvB)))
+              have leftInvEq : leftInv = leftInvB :=
+                leftInvIH termRenaming rhoInjective leftInvB
+                  (eq_of_heq leftInvRenameUncastHEq)
+              have rightInvEq : rightInv = rightInvB :=
+                rightInvIH termRenaming rhoInjective rightInvB
+                  (eq_of_heq rightInvRenameUncastHEq)
+              cases forwardEq
+              cases backwardEq
+              cases leftInvEq
+              cases rightInvEq
+              rfl
+          | inr uaViewB =>
+              obtain ⟨innerLevelB, innerLevelLtB, carrierLeftB,
+                carrierRightB, carrierLeftRawB, carrierRightRawB,
+                equivWitnessB, typeEqB, termHEqB⟩ := uaViewB
+              cases typeEqB
+
+/-- `uaIntroHet` arm: direct universe-Id inversion with the equivalence
+    witness induction hypothesis in the heterogeneous univalence branch. -/
+theorem Term.rename_injective_arm_uaIntroHet
+    (rhoInjective : RawRenamingInjective rho)
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    {carrierA carrierB : Ty level sourceScope}
+    (carrierARaw carrierBRaw : RawTerm sourceScope)
+    {forwardRaw backwardRaw : RawTerm sourceScope}
+    (equivWitness :
+      Term sourceCtx (Ty.equiv carrierA carrierB)
+        (RawTerm.equivIntro forwardRaw backwardRaw))
+    (equivWitnessIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (equivWitnessB :
+            Term sourceCtx (Ty.equiv carrierA carrierB)
+              (RawTerm.equivIntro forwardRaw backwardRaw)),
+          Term.rename innerRenaming equivWitness =
+            Term.rename innerRenaming equivWitnessB →
+          equivWitness = equivWitnessB)
+    (termB :
+      Term sourceCtx
+        (Ty.id (Ty.universe innerLevel innerLevelLt) carrierARaw carrierBRaw)
+        (RawTerm.equivIntro forwardRaw backwardRaw)) :
+    Term.rename termRenaming
+        (Term.uaIntroHet innerLevel innerLevelLt carrierARaw carrierBRaw
+          equivWitness) =
+      Term.rename termRenaming termB →
+      Term.uaIntroHet innerLevel innerLevelLt carrierARaw carrierBRaw
+          equivWitness = termB := by
+  intro renameEq
+  cases Term.equivIntro_inv termB with
+  | inl reflViewB =>
+      obtain ⟨carrierBView, forwardEqB, backwardEqB, typeEqB, termHEqB⟩ :=
+        reflViewB
+      cases typeEqB
+  | inr restViewB =>
+      cases restViewB with
+      | inl idViewB =>
+          obtain ⟨innerLevelB, innerLevelLtB, carrierBView, carrierRawB,
+            forwardEqB, backwardEqB, typeEqB, termHEqB⟩ := idViewB
+          cases typeEqB
+          cases forwardEqB
+          cases backwardEqB
+          cases termHEqB
+          dsimp only [Term.rename] at renameEq
+          cases renameEq
+      | inr restViewB =>
+          cases restViewB with
+          | inl introViewB =>
+              obtain ⟨carrierLeftB, carrierRightB, leftInvRawB,
+                rightInvRawB, forwardB, backwardB, leftInvB, rightInvB,
+                typeEqB, termHEqB⟩ := introViewB
+              cases typeEqB
+          | inr uaViewB =>
+              obtain ⟨innerLevelB, innerLevelLtB, carrierLeftB,
+                carrierRightB, carrierLeftRawB, carrierRightRawB,
+                equivWitnessB, typeEqB, termHEqB⟩ := uaViewB
+              cases typeEqB
+              cases termHEqB
+              dsimp only [Term.rename] at renameEq
+              injection renameEq with contextEq innerLevelEq innerLevelLtEq
+                carrierLeftRenameEq carrierRightRenameEq carrierLeftRawRenameEq
+                carrierRightRawRenameEq forwardRawRenameEq backwardRawRenameEq
+                equivWitnessRenameEq
+              cases innerLevelEq
+              cases innerLevelLtEq
+              have carrierLeftEq : carrierA = carrierLeftB :=
+                Ty.rename_injective_under_injective_renaming carrierA
+                  rhoInjective carrierLeftB carrierLeftRenameEq
+              have carrierRightEq : carrierB = carrierRightB :=
+                Ty.rename_injective_under_injective_renaming carrierB
+                  rhoInjective carrierRightB carrierRightRenameEq
+              cases carrierLeftEq
+              cases carrierRightEq
+              have equivWitnessEq : equivWitness = equivWitnessB :=
+                equivWitnessIH termRenaming rhoInjective equivWitnessB
+                  (eq_of_heq equivWitnessRenameEq)
+              cases equivWitnessEq
+              rfl
+
 /-! ## η-family rfl/Id rename-injectivity arms.
 
-The η-family ctors (equivReflId, equivReflIdAtId, equivIntroHet,
-uaIntroHet, funextRefl, funextReflAtId, funextIntroHet) collide on raw
+The remaining η-family ctors (equivReflId, equivReflIdAtId, equivIntroHet,
+uaIntroHet, funextReflAtId, funextIntroHet) collide on raw
 `RawTerm.equivIntro id id` or `RawTerm.lam (RawTerm.refl applyRaw)`.
 For closed/value ctors (equivReflId, equivReflIdAtId), the arm has no
 typed children and reduces to a one-line invocation of the existing
 `_atEquivIntroEquiv_of_inner` / `_atEquivIntroUniverseId_of_inner`
 helpers from `EquivIntro.lean`.  The childInjective HEq predicate
 required by those helpers is vacuously satisfied here since the closed
-ctors have no actual typed children. -/
+ctors have no actual typed children.  `funextRefl` is handled above by
+reusing the LamPi-family inversion theorem. -/
 
--- NOTE: arm_equivReflId / arm_funextRefl / arm_equivReflIdAtId /
--- arm_funextReflAtId / arm_equivIntroHet / arm_uaIntroHet /
--- arm_funextIntroHet are KERNEL-DESIGN WALLS, not proof-technique gaps.
--- See `Smoke/AuditRenameInjectivityWalls.lean` for a constructive
--- counterexample: `Term.equivReflId carrier` and
--- `Term.equivIntroHet (lam (var 0)) (lam (var 0)) leftInv rightInv`
--- inhabit the SAME outer type `Ty.equiv carrier carrier` and SAME raw
--- `RawTerm.equivIntro (lam (var 0)) (lam (var 0))`.  Both witnesses
--- typecheck zero-axiom.  Strict propositional equality between these
--- two distinct typed ctors is therefore FALSE.
---
--- Earlier docs of this block characterised the obstacle as a proof-
--- technique gap (HEq-style IH refactor or per-arm direct cases ~200-400
--- LoC).  That characterisation was WRONG: the underlying theorem is
--- actually false on these ctors, so no amount of proof-engineering
--- recovers it under strict equality.  The 4-way collision on raw
--- `RawTerm.equivIntro id id` and the 3-way collision on raw
--- `RawTerm.lam (RawTerm.refl _)` reflect MULTIPLE INHABITANTS of the
--- typed Term inductive — Lean 4's freely-generated inductives make
--- distinct ctors propositionally distinct, and there is no convertibility
--- relation built into `=`.
---
--- Future re-formulation paths (none in scope here):
---   1. Restate T2 with HEq + Conv (rename equivariance modulo conv).
---   2. Refactor `Term.equivReflId`/`Term.funextRefl` to be DEFINITIONS
---      over `Term.equivIntroHet`/`Term.uaIntroHet` rather than separate
---      kernel ctors (kernel architectural change).
---   3. Accept 69/78 ceiling and route these 7 ctors through a separate
---      multi-inhabitancy-aware rename lemma at consumer sites.
+-- Historical note: this eta-family block was once classified as a
+-- kernel-design wall from raw-shape multi-inhabitancy.  The completed arms
+-- below show the right interpretation: raw-index witnesses alone are not a
+-- counterexample to T2, because the renamed equality being inverted is a
+-- typed constructor equality carrying the full implicit argument tuple.
+-- Direct typed inversion plus ctor injection closes these arms zero-axiom.
 
 /-! ## Cubical-glue intro arm.
 
@@ -3230,20 +3882,11 @@ theorem Term.rename_injective_arm_pathLam
   exact ⟨inferredModeIsUnivalent, inferredCarrier, inferredLeft,
     inferredRight, bodyTerm, rfl, HEq.rfl⟩
 
-/-! ## Tier-A unique-raw arms (cumulUp / effectPerform / uaToEquiv /
-       equivApply / transp).
+/-! ## Later unique-raw arms.
 
-The remaining 25 Tier-{B,C,D} ctors (appPi/snd/boolElim/idJ/oeqJ/oeqFunext/
-idStrictRec/pathApp/glueElim/hcomp/hcompPath/universeCode/equivReflId/
-funextRefl/equivReflIdAtId/funextReflAtId/equivIntroHet/equivApp/uaIntroHet/
-funextIntroHet) defer to deeper sessions: cast-on-result walls,
-dependent-eliminator existentials, 4-way η collisions, and the toNat
-non-injectivity wall demand more elaborate machinery (Term.noConfusion HEq-
-aware form per `feedback_lean_noconfusion_heq_aware`, generalized
-strengthening helpers).  The five Tier-A ctors below all live at distinct
-RawTerm shapes with no result-type casts, so the standard
-`suffices key + cases genericTerm + injection + IH` recipe closes them
-zero-axiom in ~70 LoC each. -/
+These helpers were originally the easy Tier-A batch.  They remain here in
+source order after the harder cast/η/universe/effect families above, all of
+which now have zero-axiom arm helpers as well. -/
 
 /-- `cumulUp` arm: universe-cumulativity wrapper.  Outer `higherLevel`
     pinned by the result `Ty.universe higherLevel levelLeHigh`; inner
@@ -3946,6 +4589,431 @@ theorem Term.rename_injective_arm_equivCode
   Term.rename_injective_atEquivCode termRenaming
     (Term.equivCode (context := sourceCtx) outerLevel levelLe
       leftTypeCodeRaw rightTypeCodeRaw) termB
+
+/-- Term-first induction dispatcher for the public `Term.rename_injective`
+wrapper.  Keeping the target renaming in the motive gives child IHs in the
+same polymorphic shape consumed by the 78 per-ctor arm helpers. -/
+private theorem Term.rename_injective_dispatch
+    {someType : Ty level sourceScope} {someRaw : RawTerm sourceScope}
+    (termA : Term sourceCtx someType someRaw) :
+    ∀ {innerTargetScope : Nat}
+      {innerTargetCtx : Ctx mode level innerTargetScope}
+      {innerRho : RawRenaming sourceScope innerTargetScope}
+      (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+      RawRenamingInjective innerRho →
+      ∀ (termB : Term sourceCtx someType someRaw),
+        Term.rename innerRenaming termA = Term.rename innerRenaming termB →
+          termA = termB := by
+  induction termA with
+  | var position =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_var (position := position)
+        innerRenaming termB
+  | unit =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_unit innerRenaming termB
+  | lam body bodyIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_lam innerRenaming innerRhoInjective
+        body bodyIH termB
+  | app functionTerm argumentTerm functionIH argumentIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_app innerRenaming innerRhoInjective
+        functionTerm argumentTerm functionIH argumentIH termB
+  | lamPi body bodyIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_lamPi innerRenaming innerRhoInjective
+        body bodyIH termB
+  | appPi functionTerm argumentTerm functionIH argumentIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_appPi innerRenaming innerRhoInjective
+        functionTerm argumentTerm functionIH argumentIH termB
+  | pair firstValue secondValue firstIH secondIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_pair innerRenaming innerRhoInjective
+        firstValue secondValue firstIH secondIH termB
+  | fst pairTerm pairIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_fst innerRenaming innerRhoInjective
+        pairTerm pairIH termB
+  | snd pairTerm pairIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_snd innerRenaming innerRhoInjective
+        pairTerm pairIH termB
+  | boolTrue =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_boolTrue innerRenaming termB
+  | boolFalse =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_boolFalse innerRenaming termB
+  | boolElim scrutinee thenBranch elseBranch scrutineeIH thenIH elseIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_boolElim innerRenaming innerRhoInjective
+        scrutinee thenBranch elseBranch scrutineeIH thenIH elseIH termB
+  | natZero =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_natZero innerRenaming termB
+  | natSucc predecessor predecessorIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_natSucc innerRenaming innerRhoInjective
+        predecessor predecessorIH termB
+  | natElim scrutinee zeroBranch succBranch scrutineeIH zeroIH succIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_natElim innerRenaming innerRhoInjective
+        scrutinee zeroBranch succBranch scrutineeIH zeroIH succIH termB
+  | natRec scrutinee zeroBranch succBranch scrutineeIH zeroIH succIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_natRec innerRenaming innerRhoInjective
+        scrutinee zeroBranch succBranch scrutineeIH zeroIH succIH termB
+  | listNil =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_listNil innerRenaming termB
+  | listCons headTerm tailTerm headIH tailIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_listCons innerRenaming innerRhoInjective
+        headTerm tailTerm headIH tailIH termB
+  | listElim scrutinee nilBranch consBranch scrutineeIH nilIH consIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_listElim innerRenaming innerRhoInjective
+        scrutinee nilBranch consBranch scrutineeIH nilIH consIH termB
+  | optionNone =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_optionNone innerRenaming termB
+  | optionSome valueTerm valueIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_optionSome innerRenaming innerRhoInjective
+        valueTerm valueIH termB
+  | optionMatch scrutinee noneBranch someBranch scrutineeIH noneIH someIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_optionMatch innerRenaming innerRhoInjective
+        scrutinee noneBranch someBranch scrutineeIH noneIH someIH termB
+  | eitherInl valueTerm valueIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_eitherInl innerRenaming innerRhoInjective
+        valueTerm valueIH termB
+  | eitherInr valueTerm valueIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_eitherInr innerRenaming innerRhoInjective
+        valueTerm valueIH termB
+  | eitherMatch scrutinee leftBranch rightBranch scrutineeIH leftIH rightIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_eitherMatch innerRenaming innerRhoInjective
+        scrutinee leftBranch rightBranch scrutineeIH leftIH rightIH termB
+  | refl carrier rawWitness =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_refl innerRenaming carrier rawWitness termB
+  | idJ baseCase witness baseIH witnessIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_idJ innerRenaming innerRhoInjective
+        baseCase witness baseIH witnessIH termB
+  | oeqRefl carrier rawWitness =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_oeqRefl innerRenaming carrier rawWitness
+        termB
+  | oeqJ baseCase witness baseIH witnessIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_oeqJ innerRenaming innerRhoInjective
+        baseCase witness baseIH witnessIH termB
+  | oeqFunext domainType codomainType leftFunctionRaw rightFunctionRaw
+      pointwiseProof pointwiseIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_oeqFunext innerRenaming
+        innerRhoInjective domainType codomainType leftFunctionRaw
+        rightFunctionRaw pointwiseProof pointwiseIH termB
+  | idStrictRefl modeIsStrict carrier rawWitness =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_idStrictRefl innerRenaming modeIsStrict
+        carrier rawWitness termB
+  | idStrictRec modeIsStrict baseCase witness baseIH witnessIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_idStrictRec innerRenaming
+        innerRhoInjective modeIsStrict baseCase witness baseIH witnessIH termB
+  | modIntro innerTerm innerIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_modIntro innerRenaming innerTerm innerIH
+        innerRhoInjective termB
+  | modElim innerTerm innerIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_modElim innerRenaming innerTerm innerIH
+        innerRhoInjective termB
+  | subsume innerTerm innerIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_subsume innerRenaming innerTerm innerIH
+        innerRhoInjective termB
+  | interval0 =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_interval0 innerRenaming termB
+  | interval1 =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_interval1 innerRenaming termB
+  | intervalOpp innerValue innerIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_intervalOpp innerRenaming innerValue
+        innerIH innerRhoInjective termB
+  | intervalMeet leftValue rightValue leftIH rightIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_intervalMeet innerRenaming leftValue
+        rightValue leftIH rightIH innerRhoInjective termB
+  | intervalJoin leftValue rightValue leftIH rightIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_intervalJoin innerRenaming leftValue
+        rightValue leftIH rightIH innerRhoInjective termB
+  | pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint body bodyIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_pathLam innerRenaming innerRhoInjective
+        modeIsUnivalent carrierType leftEndpoint rightEndpoint body bodyIH termB
+  | pathApp modeIsUnivalent pathTerm intervalTerm pathIH intervalIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_pathApp innerRenaming innerRhoInjective
+        modeIsUnivalent pathTerm intervalTerm pathIH intervalIH termB
+  | glueIntro modeIsUnivalent baseType boundaryWitness baseValue partialValue
+      baseIH partialIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_glueIntro innerRenaming modeIsUnivalent
+        baseType boundaryWitness baseValue partialValue baseIH partialIH
+        innerRhoInjective termB
+  | glueElim modeIsUnivalent gluedValue gluedIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_glueElim innerRenaming innerRhoInjective
+        modeIsUnivalent gluedValue gluedIH termB
+  | transp modeIsUnivalent universeLevel universeLevelLt sourceType targetType
+      sourceTypeRaw targetTypeRaw typePath sourceValue typePathIH sourceValueIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_transp innerRenaming innerRhoInjective
+        modeIsUnivalent universeLevel universeLevelLt sourceType
+        sourceTypeRaw targetTypeRaw typePath sourceValue typePathIH
+        sourceValueIH termB
+  | hcomp modeIsUnivalent sidesValue capValue sidesIH capIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_hcomp innerRenaming innerRhoInjective
+        modeIsUnivalent sidesValue capValue sidesIH capIH termB
+  | hcompPath modeIsUnivalent leftEndpoint rightEndpoint sidesPath capValue
+      sidesPathIH capIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_hcompPath innerRenaming innerRhoInjective
+        modeIsUnivalent leftEndpoint rightEndpoint sidesPath capValue
+        sidesPathIH capIH termB
+  | recordIntro firstField firstIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_recordIntro innerRenaming firstField
+        firstIH innerRhoInjective termB
+  | recordProj recordValue recordIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_recordProj innerRenaming recordValue
+        recordIH innerRhoInjective termB
+  | refineIntro predicate baseValue predicateProof baseIH proofIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_refineIntro innerRenaming
+        innerRhoInjective baseValue predicateProof baseIH proofIH termB
+  | refineElim refinedValue refinedIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_refineElim innerRenaming
+        innerRhoInjective refinedValue refinedIH termB
+  | codataUnfold initialState transition stateIH transitionIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_codataUnfold innerRenaming initialState
+        transition stateIH transitionIH innerRhoInjective termB
+  | codataDest codataValue codataIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_codataDest innerRenaming
+        innerRhoInjective codataValue codataIH termB
+  | sessionSend protocolStep channel payload channelIH payloadIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_sessionSend innerRenaming
+        innerRhoInjective protocolStep channel payload channelIH payloadIH termB
+  | sessionRecv channel channelIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_sessionRecv innerRenaming channel
+        channelIH innerRhoInjective termB
+  | effectPerform effectTag effectRow operationSignature canPerformOperation
+      operationTag arguments operationTagIH argumentsIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_effectPerform innerRenaming
+        innerRhoInjective effectRow operationSignature canPerformOperation
+        operationTag arguments operationTagIH argumentsIH termB
+  | universeCode innerLevel outerLevel cumulOk levelLe =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_universeCode innerRenaming
+        innerRhoInjective innerLevel outerLevel cumulOk levelLe termB
+  | cumulUp lowerLevel higherLevel cumulMonotone levelLeLow levelLeHigh
+      typeCode typeCodeIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_cumulUp innerRenaming innerRhoInjective
+        lowerLevel cumulMonotone levelLeLow typeCode typeCodeIH termB
+  | equivReflId carrier =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_equivReflId innerRenaming
+        innerRhoInjective carrier termB
+  | funextRefl domainType codomainType applyRaw =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_funextRefl innerRenaming
+        innerRhoInjective domainType codomainType applyRaw termB
+  | equivReflIdAtId innerLevel innerLevelLt carrier carrierRaw =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_equivReflIdAtId innerRenaming
+        innerRhoInjective innerLevel innerLevelLt carrier carrierRaw termB
+  | funextReflAtId domainType codomainType applyRaw =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_funextReflAtId innerRenaming
+        innerRhoInjective domainType codomainType applyRaw termB
+  | equivIntroHet forward backward leftInv rightInv forwardIH backwardIH
+      leftInvIH rightInvIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_equivIntroHet innerRenaming
+        innerRhoInjective forward backward leftInv rightInv forwardIH
+        backwardIH leftInvIH rightInvIH termB
+  | equivApp equivTerm argumentTerm equivIH argumentIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_equivApp innerRenaming innerRhoInjective
+        equivTerm argumentTerm equivIH argumentIH termB
+  | uaIntroHet innerLevel innerLevelLt carrierARaw carrierBRaw equivWitness
+      equivIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_uaIntroHet innerRenaming
+        innerRhoInjective innerLevel innerLevelLt carrierARaw carrierBRaw
+        equivWitness equivIH termB
+  | funextIntroHet domainType codomainType applyARaw applyBRaw =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_funextIntroHet innerRenaming
+        innerRhoInjective domainType codomainType applyARaw applyBRaw termB
+  | arrowCode outerLevel levelLe domainCodeRaw codomainCodeRaw =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_arrowCode innerRenaming outerLevel
+        levelLe domainCodeRaw codomainCodeRaw termB
+  | piTyCode outerLevel levelLe domainCodeRaw codomainCodeRaw =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_piTyCode innerRenaming outerLevel
+        levelLe domainCodeRaw codomainCodeRaw termB
+  | sigmaTyCode outerLevel levelLe firstCodeRaw secondCodeRaw =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_sigmaTyCode innerRenaming outerLevel
+        levelLe firstCodeRaw secondCodeRaw termB
+  | productCode outerLevel levelLe firstCodeRaw secondCodeRaw =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_productCode innerRenaming outerLevel
+        levelLe firstCodeRaw secondCodeRaw termB
+  | sumCode outerLevel levelLe leftCodeRaw rightCodeRaw =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_sumCode innerRenaming outerLevel
+        levelLe leftCodeRaw rightCodeRaw termB
+  | listCode outerLevel levelLe elementCodeRaw =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_listCode innerRenaming outerLevel
+        levelLe elementCodeRaw termB
+  | optionCode outerLevel levelLe elementCodeRaw =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_optionCode innerRenaming outerLevel
+        levelLe elementCodeRaw termB
+  | eitherCode outerLevel levelLe leftCodeRaw rightCodeRaw =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_eitherCode innerRenaming outerLevel
+        levelLe leftCodeRaw rightCodeRaw termB
+  | idCode outerLevel levelLe typeCodeRaw leftRaw rightRaw =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_idCode innerRenaming outerLevel
+        levelLe typeCodeRaw leftRaw rightRaw termB
+  | equivCode outerLevel levelLe leftTypeCodeRaw rightTypeCodeRaw =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_equivCode innerRenaming outerLevel
+        levelLe leftTypeCodeRaw rightTypeCodeRaw termB
+  | uaToEquiv innerLevel innerLevelLt leftTy rightTy leftTyRaw rightTyRaw
+      proof proofIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_uaToEquiv innerRenaming innerRhoInjective
+        innerLevel innerLevelLt leftTyRaw rightTyRaw proof proofIH termB
+  | equivApply equivTerm argumentTerm equivIH argumentIH =>
+      intro innerTargetScope innerTargetCtx innerRho innerRenaming
+        innerRhoInjective termB
+      exact Term.rename_injective_arm_equivApply innerRenaming
+        innerRhoInjective equivTerm argumentTerm equivIH argumentIH termB
+
+/-- Rename is injective on typed terms whenever the underlying raw renaming is
+injective.  This is the public strength-T2 wrapper: downstream proofs should
+cite this theorem instead of the per-constructor arm helpers. -/
+theorem Term.rename_injective
+    (rhoInjective : RawRenamingInjective rho)
+    {someType : Ty level sourceScope} {someRaw : RawTerm sourceScope}
+    (termA termB : Term sourceCtx someType someRaw) :
+    Term.rename termRenaming termA = Term.rename termRenaming termB →
+      termA = termB :=
+  Term.rename_injective_dispatch termA termRenaming rhoInjective termB
 
 end InductiveArms
 

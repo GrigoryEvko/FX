@@ -1,28 +1,28 @@
-import LeanFX2.Term
+import LeanFX2.Term.RenameInjective.InductiveArms
 
-/-! # Smoke audit: kernel-design walls for `Term.rename_injective`
+/-! # Smoke audit: raw-shape collisions for `Term.rename_injective`
 
-Documents the 9 of 78 `Term.rename_injective_arm_*` per-arm theorems that
-are **genuinely unprovable** under strict propositional equality.  Each
-witness below is a **constructed counterexample**: a pair of distinct typed
-`Term` ctors that inhabit the same outer `Ty` and the same `RawTerm` shape,
-proving that strict equality `Term.rename ρ termA = Term.rename ρ termB →
-termA = termB` is false on those raw shapes.
+This file records the raw-index multi-inhabitancy cases that originally
+looked like kernel-design walls for `Term.rename_injective`.  The witnesses
+below are still useful, but their meaning is narrower: they show that a proof
+which cases only on outer `Ty` plus `RawTerm` shape is insufficient.
 
-This converts the previously-deferred "η-family / toNat / CanPerform"
-arms from "future proof-technique work" to "kernel-design wall:
-multi-inhabitancy at the same outer-type + raw shape".
+They are **not** counterexamples to T2.  T2 assumes equality of the renamed
+typed terms, and that premise is false for the distinct witnesses below.  The
+completed proof closes the cases by inverting typed renamed constructor
+equality, where `Term.noConfusion` exposes the implicit constructor fields
+that the raw index alone forgot.
 
-## The three wall families
+## The collision families
 
-* **toNat collapse** (1 arm — `universeCode`):
+* **toNat raw collapse** (`universeCode`):
   `UniverseLevel.toNat` is non-injective (see
   `Foundation/Universe.lean:toNat_not_injective`).  `Term.universeCode`'s
   raw `RawTerm.universeCode innerLevel.toNat` shares a raw shape between
   `UniverseLevel.max 0 0` and `UniverseLevel.imax 0 0` even though those
   are distinct constructors.
 
-* **Effect-row free parameter** (1 arm — `effectPerform`):
+* **Effect-row free parameter** (`effectPerform`):
   `Term.effectPerform`'s `effectRow` data appears in neither the outer
   type `Ty.effect resultCarrier effectTag` nor the raw
   `RawTerm.effectPerform operationRaw argumentsRaw`.  A read operation
@@ -30,7 +30,7 @@ multi-inhabitancy at the same outer-type + raw shape".
   (via `.readViaWrite`), yielding two `Term` inhabitants at the same
   outer type + raw with distinct rows.
 
-* **η-collapse 4-way collision** (7 arms — `equivReflId`, `funextRefl`,
+* **eta-family raw collisions** (`equivReflId`,
   `equivReflIdAtId`, `funextReflAtId`, `equivIntroHet`, `uaIntroHet`,
   `funextIntroHet`):
   Specialized identity-equivalence/funext ctors share raw shape
@@ -41,36 +41,28 @@ multi-inhabitancy at the same outer-type + raw shape".
 
 ## Consequences for downstream tasks
 
-* `strength-T2: Term.rename_injective` per-arm — **ceiling 69 of 78**,
-  not 78.  The 9 walls below are genuine counterexamples to the
-  per-arm theorem statement; no proof technique recovers them under
-  strict propositional equality.
+* `strength-T2: Term.rename_injective` is closed at 78 of 78 arm-helper level,
+  with the public wrapper exported from
+  `Term/RenameInjective/InductiveArms.lean`.
+
+* The witnesses below are regression checks against the old raw-only proof
+  plan.  They explain why the final proof must invert equality of renamed
+  typed constructors rather than infer source equality from raw shape alone.
 
 * `strength-T1: Term.strengthenTyped?_rename_eq` — composable
   separately from T2.  T1's theorem (strengthening function returns
-  the right thing under renaming) is a different statement and is
-  not blocked by the multi-inhabitancy walls.
+  the right thing under renaming) is a different statement.
 
-* Future re-formulation paths:
-  1. Restate T2 with HEq + Conv (rename equivariance modulo
-     `Conv` / convertibility).
-  2. Refactor kernel to fold `Term.equivReflId` / `Term.funextRefl`
-     into definitions over `Term.equivIntroHet` / `Term.uaIntroHet`
-     (kernel architectural change).
-  3. Accept 69/78 as final ceiling and route the 9 ctors through
-     a separate "multi-inhabitancy aware" rename lemma.
-
-All counterexample witnesses below typecheck under
-`lake build LeanFX2 LeanFX2Audit` and are tagged with explicit
-`#print axioms` reporting "does not depend on any axioms" so the
-walls are themselves zero-axiom evidence.
+All witnesses below are tagged with explicit `#print axioms` reporting
+"does not depend on any axioms"; the final `Term.rename_injective` audit is
+printed here as well.
 -/
 
 namespace LeanFX2.RenameInjectivityWalls
 
-/-! ## Wall 1: `universeCode` — toNat non-injectivity. -/
+/-! ## Collision 1: `universeCode` — toNat non-injectivity. -/
 
-/-- Counterexample witness #1A: `universeCode` with inner level
+/-- Raw-collision witness #1A: `universeCode` with inner level
 `UniverseLevel.max 0 0`. -/
 def universeCodeMaxInhabitant
     {mode : Mode} {level scope : Nat}
@@ -87,7 +79,7 @@ def universeCodeMaxInhabitant
     (UniverseLevel.max UniverseLevel.zero UniverseLevel.zero)
     outerLevel cumulOk levelLe
 
-/-- Counterexample witness #1B: `universeCode` with inner level
+/-- Raw-collision witness #1B: `universeCode` with inner level
 `UniverseLevel.imax 0 0` — same outer type, same raw, distinct ctor. -/
 def universeCodeImaxInhabitant
     {mode : Mode} {level scope : Nat}
@@ -105,9 +97,9 @@ def universeCodeImaxInhabitant
     (UniverseLevel.imax UniverseLevel.zero UniverseLevel.zero)
     outerLevel cumulOk levelLe
 
-/-! ## Wall 2: η-collapse — `equivReflId` vs `equivIntroHet`. -/
+/-! ## Collision 2: eta-family raw shape — `equivReflId` vs `equivIntroHet`. -/
 
-/-- Counterexample witness #2A: `Term.equivReflId carrier` inhabits
+/-- Raw-collision witness #2A: `Term.equivReflId carrier` inhabits
 `Ty.equiv carrier carrier` at raw `RawTerm.equivIntro (lam (var 0))
 (lam (var 0))`. -/
 def equivReflIdInhabitant
@@ -119,7 +111,7 @@ def equivReflIdInhabitant
         (RawTerm.lam (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩))) :=
   Term.equivReflId carrier
 
-/-- Counterexample witness #2B: `Term.equivIntroHet` with identity
+/-- Raw-collision witness #2B: `Term.equivIntroHet` with identity
 lambdas as forward/backward inhabits the SAME outer type + raw as
 `equivReflId carrier` — distinct ctor, distinct typed term. -/
 def equivIntroHetInhabitant
@@ -151,9 +143,10 @@ def equivIntroHetInhabitant
 
 end LeanFX2.RenameInjectivityWalls
 
-/-! ## Axiom audit — the walls themselves are zero-axiom evidence. -/
+/-! ## Axiom audit — the collision witnesses and final wrapper are zero-axiom. -/
 
 #print axioms LeanFX2.RenameInjectivityWalls.universeCodeMaxInhabitant
 #print axioms LeanFX2.RenameInjectivityWalls.universeCodeImaxInhabitant
 #print axioms LeanFX2.RenameInjectivityWalls.equivReflIdInhabitant
 #print axioms LeanFX2.RenameInjectivityWalls.equivIntroHetInhabitant
+#print axioms LeanFX2.Term.rename_injective

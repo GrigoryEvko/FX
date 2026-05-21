@@ -1,7 +1,8 @@
-import LeanFX2.Term.RenameInjective
+import LeanFX2.Term.RenameInjective.InductiveArms
 
-/-! # Smoke: Term/RenameInjective zero-axiom audit -/
+/-! # Smoke: Term/RenameInjective trust audit -/
 
+#print axioms LeanFX2.Term.rename_injective
 #print axioms LeanFX2.Term.rename_injective_atVar
 #print axioms LeanFX2.Term.rename_injective_lam_ctor
 #print axioms LeanFX2.Term.rename_injective_app_ctor

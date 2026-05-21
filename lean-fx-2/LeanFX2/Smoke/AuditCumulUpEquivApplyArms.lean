@@ -64,53 +64,35 @@ input (= `congrArg (Ty.rename · rho) typeEqB` after
 
 Plus 53 closed/structural arms shipped previously.
 
-## Walled (verified by counterexample) — `Smoke/AuditRenameInjectivityWalls`
+## Arms shipped 2026-05-21 (Phase alpha handoff, 1 new arm)
 
-The remaining 9 of 78 arms are KERNEL-DESIGN walls, not proof-
-technique gaps.  Constructive counterexamples in
-`Smoke/AuditRenameInjectivityWalls.lean` show the strict
-propositional equality form of `rename_injective_arm_*` is FALSE
-on these ctors — distinct typed `Term` inhabitants exist at the
-same outer `Ty` and same raw, and Lean 4's freely-generated
-inductives make distinct ctors propositionally distinct.
+* `funextRefl` — reuses `Term.rename_injective_atLamPi_of_inner`,
+  with the reflexivity body child-injectivity discharged by
+  `Term.rename_injective_atRefl`.  The existing LamPi-family theorem
+  already handles the `lamPi` cross-branch via
+  `renamedLamPi_ne_renamedFunextReflCast`.
 
-### toNat-collapse wall (1 arm)
+## Final closure: 78 of 78 arms plus public wrapper
 
-`universeCode` — `UniverseLevel.toNat` is non-injective
-(`Foundation/Universe.lean:toNat_not_injective`); the raw
-`RawTerm.universeCode innerLevel.toNat` stores ONLY the
-collapsed Nat, so `Term.universeCode (max 0 0) ...` and
-`Term.universeCode (imax 0 0) ...` inhabit the same outer
-type `Ty.universe outerLevel _` and same raw
-`RawTerm.universeCode 0`, distinct typed terms.
+The old "wall" classification was too weak: the smoke witnesses in
+`Smoke/AuditRenameInjectivityWalls.lean` demonstrate raw-index
+multi-inhabitancy, but they do not refute T2.  T2 assumes equality of the
+renamed typed constructors, and that equality carries the implicit
+constructor fields needed by `Term.noConfusion`.
 
-### Effect-row free-parameter wall (1 arm)
+The final batch closes the formerly walled arms:
 
-`effectPerform` — `effectRow` appears in neither the outer
-type `Ty.effect resultCarrier effectTag` nor the raw
-`RawTerm.effectPerform op arg`.  A read operation is permitted
-by `[read]` (via `CanPerform.direct`) AND by `[write]` (via
-`CanPerform.readViaWrite`), yielding two distinct typed
-`Term.effectPerform` inhabitants at the same outer type + raw.
+* `universeCode` — injects the typed `UniverseLevel` field from renamed
+  constructor equality instead of assuming `UniverseLevel.toNat` injective.
+* `effectPerform` — injects the row/signature and recovers children through
+  `OperationSignature.map_injective`.
+* `equivReflId`, `equivReflIdAtId`, `funextReflAtId`, `equivIntroHet`,
+  `uaIntroHet`, `funextIntroHet` — direct typed inversion over the eta-family
+  raw collisions; raw-shape siblings are either the same ctor with injected
+  fields or vacuous branches with impossible renamed ctor equality.
 
-### η-family multi-inhabitancy wall (7 arms)
-
-`equivReflId / funextRefl / equivReflIdAtId / funextReflAtId /
-equivIntroHet / uaIntroHet / funextIntroHet` — kernel admits
-distinct typed inhabitants at the same outer-Ty + raw shape.
-`Smoke/AuditRenameInjectivityWalls.lean` constructs
-`Term.equivReflId carrier` and `Term.equivIntroHet (lam (var 0))
-(lam (var 0)) leftInv rightInv` BOTH at the same outer type
-`Ty.equiv carrier carrier` and same raw
-`RawTerm.equivIntro (lam (var 0)) (lam (var 0))`.
-
-## Status: 69 of 78 arms shipped zero-axiom
-
-This is the MAXIMUM achievable under the current kernel; 78/78
-is impossible without one of: (a) restating T2 with HEq + Conv,
-(b) refactoring the kernel to fold specialized ctors into
-definitions over heterogeneous ones, or (c) routing the 9
-walled ctors through a separate multi-inhabitancy-aware lemma.
+`Term.rename_injective` is now the useful downstream theorem.  Consumers
+should cite it rather than threading the per-arm helpers directly.
 -/
 
 #print axioms LeanFX2.Term.rename_injective_arm_cumulUp
@@ -129,3 +111,13 @@ walled ctors through a separate multi-inhabitancy-aware lemma.
 #print axioms LeanFX2.Term.rename_injective_arm_snd
 #print axioms LeanFX2.Term.rename_injective_arm_boolElim
 #print axioms LeanFX2.Term.rename_injective_arm_appPi
+#print axioms LeanFX2.Term.rename_injective_arm_funextRefl
+#print axioms LeanFX2.Term.rename_injective_arm_funextReflAtId
+#print axioms LeanFX2.Term.rename_injective_arm_funextIntroHet
+#print axioms LeanFX2.Term.rename_injective_arm_equivReflId
+#print axioms LeanFX2.Term.rename_injective_arm_equivReflIdAtId
+#print axioms LeanFX2.Term.rename_injective_arm_equivIntroHet
+#print axioms LeanFX2.Term.rename_injective_arm_uaIntroHet
+#print axioms LeanFX2.Term.rename_injective_arm_universeCode
+#print axioms LeanFX2.Term.rename_injective_arm_effectPerform
+#print axioms LeanFX2.Term.rename_injective
