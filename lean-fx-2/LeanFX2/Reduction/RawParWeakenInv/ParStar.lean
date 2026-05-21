@@ -105,6 +105,18 @@ theorem RawStep.parStar.target_in_weaken_image
   RawStep.parStar.target_in_rename_image RawRenaming.weaken
     RawRenaming.weaken_injective parallelChain
 
+/-- Historical canonical-weaken spelling for the multi-step target-image
+inversion.  This remains target-image only; it does not reconstruct an inner
+source-scope `parStar` chain. -/
+theorem RawStep.parStar.weaken_inv
+    {scope : Nat}
+    {sourceTerm : RawTerm scope}
+    {targetAfter : RawTerm (scope + 1)}
+    (parallelChain : RawStep.parStar sourceTerm.weaken targetAfter) :
+    ∃ targetInner : RawTerm scope,
+      targetAfter = targetInner.weaken :=
+  RawStep.parStar.target_in_weaken_image parallelChain
+
 /-- Source-equality wrapper for the canonical-weaken `parStar` target image. -/
 theorem RawStep.parStar.target_in_weaken_image_of_source_eq
     {scope : Nat}
@@ -116,5 +128,17 @@ theorem RawStep.parStar.target_in_weaken_image_of_source_eq
       targetAfter = targetInner.weaken := by
   cases sourceEq
   exact RawStep.parStar.target_in_weaken_image parallelChain
+
+/-- Source-equality wrapper for `RawStep.parStar.weaken_inv`. -/
+theorem RawStep.parStar.weaken_inv_of_source_eq
+    {scope : Nat}
+    {weakenedSource targetAfter : RawTerm (scope + 1)}
+    {sourceTerm : RawTerm scope}
+    (sourceEq : weakenedSource = sourceTerm.weaken)
+    (parallelChain : RawStep.parStar weakenedSource targetAfter) :
+    ∃ targetInner : RawTerm scope,
+      targetAfter = targetInner.weaken := by
+  cases sourceEq
+  exact RawStep.parStar.weaken_inv parallelChain
 
 end LeanFX2

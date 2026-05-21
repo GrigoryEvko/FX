@@ -29,7 +29,7 @@ import LeanFX2.Reduction.TranspPiContractumPar
 
 namespace LeanFX2.Tools
 
-/-! ## AuditReduction — 498 `#assert_no_axioms` checks. -/
+/-! ## AuditReduction — 501 `#assert_no_axioms` checks. -/
 
 #assert_no_axioms LeanFX2.Step.castSourceRaw
 #assert_no_axioms LeanFX2.Step.castTargetRaw
@@ -607,6 +607,7 @@ smoke log. -/
 #assert_no_axioms LeanFX2.RawStep.par.modIntro_inv
 #assert_no_axioms LeanFX2.RawStep.par.subsume_inv
 #assert_no_axioms LeanFX2.RawStep.par.weaken_inv
+#assert_no_axioms LeanFX2.RawStep.par.weaken_inv_of_source_eq
 
 -- RawStep.parStar inversion: transitive-reflexive-closure
 -- inversions for the closed leaves and var (no parStar step can
@@ -718,6 +719,8 @@ shapes: 5 in CubicalShape. -/
 #assert_no_axioms LeanFX2.RawStep.parStar.target_in_rename_image_of_source_eq
 #assert_no_axioms LeanFX2.RawStep.parStar.target_in_weaken_image
 #assert_no_axioms LeanFX2.RawStep.parStar.target_in_weaken_image_of_source_eq
+#assert_no_axioms LeanFX2.RawStep.parStar.weaken_inv
+#assert_no_axioms LeanFX2.RawStep.parStar.weaken_inv_of_source_eq
 #assert_no_axioms LeanFX2.Step.par.sourceRaw_in_rename_image_targetRaw_in_rename_image
 #assert_no_axioms LeanFX2.Step.par.sourceRaw_in_weaken_image_targetRaw_in_weaken_image
 #assert_no_axioms LeanFX2.Step.parStar.rename_toRawBridge
