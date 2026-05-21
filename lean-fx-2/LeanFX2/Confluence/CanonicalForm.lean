@@ -1,4 +1,5 @@
 import LeanFX2.Confluence.ChurchRosser
+import LeanFX2.Confluence.RawParStarCong
 
 /-! # Confluence/CanonicalForm — canonical-form corollaries from Conv
 
@@ -130,5 +131,161 @@ theorem Conv.canonicalForm_fromStepStar
       RawStep.parStar sourceRaw commonRaw ∧
       RawStep.parStar targetRaw commonRaw :=
   Conv.canonicalForm (Conv.fromStepStar chain)
+
+/-! ## Canonical-head target-reduction corollaries
+
+When the source of a typed `Conv` has a closed canonical-head raw
+form (e.g., `RawTerm.unit`, `RawTerm.boolTrue`), the raw common
+reduct is forced to be the same canonical head (by the
+`RawStep.parStar.<head>_inv` family in `Confluence/RawParStarCong.lean`).
+Substituting this into the target-side chain gives:
+
+  `RawStep.parStar targetRaw RawTerm.<head>`
+
+i.e. the target reduces to the same canonical head at the raw
+level.  This is the **forward** direction of "canonical form
+propagation" — the REVERSE (forcing target.toRaw = <head>) is
+false in general; cf. β-counterexample `(λx. unit) arg →β unit`
+where the source is the β-redex, not `unit` itself.
+
+These eight corollaries collapse the pattern
+`Conv.canonicalRaw cv → RawStep.parStar.<head>_inv → substitute`
+into a single named call.  Useful for NbE bridges (K13) when
+the target must be shown to compute to the same canonical head as
+the source, and for K12 fundamental-theorem closed-head closure
+clauses. -/
+
+/-- `Conv sourceTerm targetTerm` where source has raw `unit`
+forces the target's raw projection to reduce to `unit`. -/
+theorem Conv.targetReaches_unit
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType (RawTerm.unit : RawTerm scope)}
+    {targetTerm : Term context targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    RawStep.parStar targetRaw RawTerm.unit := by
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqUnit : joinRaw = RawTerm.unit :=
+    RawStep.parStar.unit_inv sourceToJoin
+  exact joinEqUnit ▸ targetToJoin
+
+/-- `Conv sourceTerm targetTerm` where source has raw `boolTrue`
+forces the target's raw projection to reduce to `boolTrue`. -/
+theorem Conv.targetReaches_boolTrue
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType (RawTerm.boolTrue : RawTerm scope)}
+    {targetTerm : Term context targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    RawStep.parStar targetRaw RawTerm.boolTrue := by
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqTrue : joinRaw = RawTerm.boolTrue :=
+    RawStep.parStar.boolTrue_inv sourceToJoin
+  exact joinEqTrue ▸ targetToJoin
+
+/-- `Conv sourceTerm targetTerm` where source has raw `boolFalse`
+forces the target's raw projection to reduce to `boolFalse`. -/
+theorem Conv.targetReaches_boolFalse
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType (RawTerm.boolFalse : RawTerm scope)}
+    {targetTerm : Term context targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    RawStep.parStar targetRaw RawTerm.boolFalse := by
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqFalse : joinRaw = RawTerm.boolFalse :=
+    RawStep.parStar.boolFalse_inv sourceToJoin
+  exact joinEqFalse ▸ targetToJoin
+
+/-- `Conv sourceTerm targetTerm` where source has raw `natZero`
+forces the target's raw projection to reduce to `natZero`. -/
+theorem Conv.targetReaches_natZero
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType (RawTerm.natZero : RawTerm scope)}
+    {targetTerm : Term context targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    RawStep.parStar targetRaw RawTerm.natZero := by
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqZero : joinRaw = RawTerm.natZero :=
+    RawStep.parStar.natZero_inv sourceToJoin
+  exact joinEqZero ▸ targetToJoin
+
+/-- `Conv sourceTerm targetTerm` where source has raw `listNil`
+forces the target's raw projection to reduce to `listNil`. -/
+theorem Conv.targetReaches_listNil
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType (RawTerm.listNil : RawTerm scope)}
+    {targetTerm : Term context targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    RawStep.parStar targetRaw RawTerm.listNil := by
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqNil : joinRaw = RawTerm.listNil :=
+    RawStep.parStar.listNil_inv sourceToJoin
+  exact joinEqNil ▸ targetToJoin
+
+/-- `Conv sourceTerm targetTerm` where source has raw `optionNone`
+forces the target's raw projection to reduce to `optionNone`. -/
+theorem Conv.targetReaches_optionNone
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType (RawTerm.optionNone : RawTerm scope)}
+    {targetTerm : Term context targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    RawStep.parStar targetRaw RawTerm.optionNone := by
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqNone : joinRaw = RawTerm.optionNone :=
+    RawStep.parStar.optionNone_inv sourceToJoin
+  exact joinEqNone ▸ targetToJoin
+
+/-- `Conv sourceTerm targetTerm` where source has raw `var position`
+forces the target's raw projection to reduce to the same `var
+position`. -/
+theorem Conv.targetReaches_var
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {targetRaw : RawTerm scope}
+    {position : Fin scope}
+    {sourceTerm : Term context sourceType (RawTerm.var position : RawTerm scope)}
+    {targetTerm : Term context targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    RawStep.parStar targetRaw (RawTerm.var position) := by
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqVar : joinRaw = RawTerm.var position :=
+    RawStep.parStar.var_inv sourceToJoin
+  exact joinEqVar ▸ targetToJoin
+
+/-- `Conv sourceTerm targetTerm` where source has raw `universeCode
+innerLevel` forces the target's raw projection to reduce to the
+same `universeCode innerLevel`. -/
+theorem Conv.targetReaches_universeCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {targetRaw : RawTerm scope}
+    {innerLevel : Nat}
+    {sourceTerm : Term context sourceType
+      (RawTerm.universeCode innerLevel : RawTerm scope)}
+    {targetTerm : Term context targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    RawStep.parStar targetRaw (RawTerm.universeCode innerLevel) := by
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqCode : joinRaw = RawTerm.universeCode innerLevel :=
+    RawStep.parStar.universeCode_inv sourceToJoin
+  exact joinEqCode ▸ targetToJoin
 
 end LeanFX2

@@ -1,4 +1,5 @@
 import LeanFX2.Tools.DependencyAudit
+import LeanFX2.Confluence.CanonicalForm
 import LeanFX2.Confluence.ConvTrans
 import LeanFX2.Confluence.RawCdLemma
 import LeanFX2.Confluence.RawDiamond
@@ -55,6 +56,17 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.symRaw_weakened
 #assert_no_axioms LeanFX2.Conv.symRaw_substituted
 #assert_no_axioms LeanFX2.Conv.symRaw_subst0
+#assert_no_axioms LeanFX2.Conv.canonicalForm
+#assert_no_axioms LeanFX2.Conv.canonicalForm_self
+#assert_no_axioms LeanFX2.Conv.canonicalForm_fromStepStar
+#assert_no_axioms LeanFX2.Conv.targetReaches_unit
+#assert_no_axioms LeanFX2.Conv.targetReaches_boolTrue
+#assert_no_axioms LeanFX2.Conv.targetReaches_boolFalse
+#assert_no_axioms LeanFX2.Conv.targetReaches_natZero
+#assert_no_axioms LeanFX2.Conv.targetReaches_listNil
+#assert_no_axioms LeanFX2.Conv.targetReaches_optionNone
+#assert_no_axioms LeanFX2.Conv.targetReaches_var
+#assert_no_axioms LeanFX2.Conv.targetReaches_universeCode
 #assert_no_axioms LeanFX2.Conv.transChains_renamed
 #assert_no_axioms LeanFX2.Conv.transChains_weakened
 #assert_no_axioms LeanFX2.Conv.transChains_substituted
