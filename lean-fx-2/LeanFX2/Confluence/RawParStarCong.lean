@@ -418,33 +418,55 @@ inside the recursive call.
 Pattern documented here for future extension to the remaining
 cong-family heads. -/
 
-/-- Auxiliary fully-generalized version of `parStar.natSucc_inv`.
-Inducts on a chain with arbitrary `source`, threading the
-natSucc-shape constraint as an explicit hypothesis so the IH can
-specialize at the natSucc-shape midpoint produced by inverting
-the first step. -/
-private theorem RawStep.parStar.natSucc_inv_aux {scope : Nat}
-    {source target : RawTerm scope}
+/-- Generalized unary-head `parStar` inversion.
+
+The source is carried as an arbitrary index plus an explicit shape
+equality so recursive calls can consume the midpoint shape recovered by
+the one-step inversion. -/
+private theorem RawStep.parStar.unary_inv_aux
+    {outerScope innerScope : Nat}
+    (wrap : RawTerm innerScope → RawTerm outerScope)
+    (parStepInv : ∀ {innerSource target},
+      RawStep.par (wrap innerSource) target →
+        ∃ innerTarget,
+          target = wrap innerTarget ∧
+          RawStep.par innerSource innerTarget)
+    {source target : RawTerm outerScope}
     (chain : RawStep.parStar source target) :
-    ∀ {predecessor : RawTerm scope},
-      source = RawTerm.natSucc predecessor →
-      ∃ predecessorTarget,
-        target = RawTerm.natSucc predecessorTarget ∧
-        RawStep.parStar predecessor predecessorTarget := by
+    ∀ {innerSource : RawTerm innerScope},
+      source = wrap innerSource →
+      ∃ innerTarget,
+        target = wrap innerTarget ∧
+        RawStep.parStar innerSource innerTarget := by
   induction chain with
   | refl _ =>
-      intro predecessor sourceEq
-      exact ⟨predecessor, sourceEq, RawStep.parStar.refl _⟩
+      intro innerSource sourceEq
+      exact ⟨innerSource, sourceEq, RawStep.parStar.refl _⟩
   | trans firstStep _ restIH =>
-      intro predecessor sourceEq
+      intro innerSource sourceEq
       subst sourceEq
-      obtain ⟨midPredecessor, midEq, predecessorStep⟩ :=
-        RawStep.par.natSucc_inv firstStep
-      obtain ⟨finalPredecessor, finalEq, predecessorStarRest⟩ :=
-        restIH midEq
-      exact ⟨finalPredecessor, finalEq,
-             RawStep.parStar.trans predecessorStep
-               predecessorStarRest⟩
+      obtain ⟨middleInner, middleEq, innerStep⟩ :=
+        parStepInv firstStep
+      obtain ⟨targetInner, targetEq, innerChainRest⟩ :=
+        restIH middleEq
+      exact ⟨targetInner, targetEq,
+        RawStep.parStar.trans innerStep innerChainRest⟩
+
+/-- Unary-head `parStar` inversion for an exactly wrapped source. -/
+private theorem RawStep.parStar.unary_inv_helper
+    {outerScope innerScope : Nat}
+    (wrap : RawTerm innerScope → RawTerm outerScope)
+    (parStepInv : ∀ {innerSource target},
+      RawStep.par (wrap innerSource) target →
+        ∃ innerTarget,
+          target = wrap innerTarget ∧
+          RawStep.par innerSource innerTarget)
+    {innerSource : RawTerm innerScope} {target : RawTerm outerScope}
+    (chain : RawStep.parStar (wrap innerSource) target) :
+    ∃ innerTarget,
+      target = wrap innerTarget ∧
+      RawStep.parStar innerSource innerTarget :=
+  RawStep.parStar.unary_inv_aux wrap parStepInv chain rfl
 
 /-- `RawStep.parStar (natSucc predecessor) target → ∃ target's
 predecessor with target = natSucc that predecessor and a parStar
@@ -460,32 +482,52 @@ theorem RawStep.parStar.natSucc_inv {scope : Nat}
     ∃ predecessorTarget,
       target = RawTerm.natSucc predecessorTarget ∧
       RawStep.parStar predecessor predecessorTarget :=
-  RawStep.parStar.natSucc_inv_aux chain rfl
+  RawStep.parStar.unary_inv_helper RawTerm.natSucc
+    RawStep.par.natSucc_inv chain
 
-/-- Auxiliary fully-generalized version of `parStar.lam_inv`.
+/-- `RawStep.parStar (optionSome value) target` preserves the
+`optionSome` head and projects to a value-level `parStar` chain. -/
+theorem RawStep.parStar.optionSome_inv {scope : Nat}
+    {valueTerm target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.optionSome valueTerm) target) :
+    ∃ valueTarget,
+      target = RawTerm.optionSome valueTarget ∧
+      RawStep.parStar valueTerm valueTarget :=
+  RawStep.parStar.unary_inv_helper RawTerm.optionSome
+    RawStep.par.optionSome_inv chain
 
-The source is generalized so the recursive call can consume the midpoint
-shape recovered from `RawStep.par.lam_inv`. -/
-private theorem RawStep.parStar.lam_inv_aux {scope : Nat}
-    {source target : RawTerm scope}
-    (chain : RawStep.parStar source target) :
-    ∀ {body : RawTerm (scope + 1)},
-      source = RawTerm.lam body →
-      ∃ bodyTarget,
-        target = RawTerm.lam bodyTarget ∧
-        RawStep.parStar body bodyTarget := by
-  induction chain with
-  | refl _ =>
-      intro body sourceEq
-      exact ⟨body, sourceEq, RawStep.parStar.refl _⟩
-  | trans firstStep _ restIH =>
-      intro body sourceEq
-      subst sourceEq
-      obtain ⟨middleBody, middleEq, bodyStep⟩ :=
-        RawStep.par.lam_inv firstStep
-      obtain ⟨targetBody, targetEq, bodyChain⟩ := restIH middleEq
-      exact ⟨targetBody, targetEq,
-        RawStep.parStar.trans bodyStep bodyChain⟩
+/-- `RawStep.parStar (eitherInl value) target` preserves the
+`eitherInl` head and projects to a value-level `parStar` chain. -/
+theorem RawStep.parStar.eitherInl_inv {scope : Nat}
+    {valueTerm target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.eitherInl valueTerm) target) :
+    ∃ valueTarget,
+      target = RawTerm.eitherInl valueTarget ∧
+      RawStep.parStar valueTerm valueTarget :=
+  RawStep.parStar.unary_inv_helper RawTerm.eitherInl
+    RawStep.par.eitherInl_inv chain
+
+/-- `RawStep.parStar (eitherInr value) target` preserves the
+`eitherInr` head and projects to a value-level `parStar` chain. -/
+theorem RawStep.parStar.eitherInr_inv {scope : Nat}
+    {valueTerm target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.eitherInr valueTerm) target) :
+    ∃ valueTarget,
+      target = RawTerm.eitherInr valueTarget ∧
+      RawStep.parStar valueTerm valueTarget :=
+  RawStep.parStar.unary_inv_helper RawTerm.eitherInr
+    RawStep.par.eitherInr_inv chain
+
+/-- `RawStep.parStar (refl witness) target` preserves the `refl` head
+and projects to a witness-level `parStar` chain. -/
+theorem RawStep.parStar.refl_inv {scope : Nat}
+    {rawWitness target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.refl rawWitness) target) :
+    ∃ witnessTarget,
+      target = RawTerm.refl witnessTarget ∧
+      RawStep.parStar rawWitness witnessTarget :=
+  RawStep.parStar.unary_inv_helper RawTerm.refl
+    RawStep.par.refl_inv chain
 
 /-- `RawStep.parStar (lam body) target` preserves the lambda head and
 projects to a body-level `parStar` chain. -/
@@ -495,32 +537,8 @@ theorem RawStep.parStar.lam_inv {scope : Nat}
     ∃ bodyTarget,
       target = RawTerm.lam bodyTarget ∧
       RawStep.parStar body bodyTarget :=
-  RawStep.parStar.lam_inv_aux chain rfl
-
-/-- Auxiliary fully-generalized version of `parStar.pathLam_inv`.
-
-This is the cubical binder counterpart of `lam_inv_aux`: one raw step
-from `pathLam body` can only reach another `pathLam`, with a body step. -/
-private theorem RawStep.parStar.pathLam_inv_aux {scope : Nat}
-    {source target : RawTerm scope}
-    (chain : RawStep.parStar source target) :
-    ∀ {body : RawTerm (scope + 1)},
-      source = RawTerm.pathLam body →
-      ∃ bodyTarget,
-        target = RawTerm.pathLam bodyTarget ∧
-        RawStep.parStar body bodyTarget := by
-  induction chain with
-  | refl _ =>
-      intro body sourceEq
-      exact ⟨body, sourceEq, RawStep.parStar.refl _⟩
-  | trans firstStep _ restIH =>
-      intro body sourceEq
-      subst sourceEq
-      obtain ⟨middleBody, middleEq, bodyStep⟩ :=
-        RawStep.par.pathLam_inv firstStep
-      obtain ⟨targetBody, targetEq, bodyChain⟩ := restIH middleEq
-      exact ⟨targetBody, targetEq,
-        RawStep.parStar.trans bodyStep bodyChain⟩
+  RawStep.parStar.unary_inv_helper RawTerm.lam
+    RawStep.par.lam_inv chain
 
 /-- `RawStep.parStar (pathLam body) target` preserves the path-lambda head
 and projects to a body-level `parStar` chain. -/
@@ -530,6 +548,7 @@ theorem RawStep.parStar.pathLam_inv {scope : Nat}
     ∃ bodyTarget,
       target = RawTerm.pathLam bodyTarget ∧
       RawStep.parStar body bodyTarget :=
-  RawStep.parStar.pathLam_inv_aux chain rfl
+  RawStep.parStar.unary_inv_helper RawTerm.pathLam
+    RawStep.par.pathLam_inv chain
 
 end LeanFX2
