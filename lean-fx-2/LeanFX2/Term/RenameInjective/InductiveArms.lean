@@ -936,18 +936,17 @@ theorem Term.rename_injective_arm_lamPi
           baseCodomainB applyRawB rfl rfl
           (heq_of_eq renameEq))
 
--- NOTE: arm_snd / arm_boolElim / arm_appPi / arm_glueElim (cast-on-result
--- ctors) hit a fundamental dep-elim wall: `Ty.subst0` is not structurally
--- injective, so given `termB : Term ... (secondType.subst0 firstType ...)
--- (RawTerm.snd pairRaw)`, inverting termB to `Term.snd pairB` with pairB
--- at `Ty.sigmaTy firstType secondType` is blocked.  Existing `Term.snd_ctor`
--- lemma assumes BOTH sides already at the sigmaTy type.  The arm-helper
--- shape (childA-fixed IH + termB-generic) needs a deeper inversion
--- infrastructure (or a different driver shape that cases on both termA AND
--- termB simultaneously) to handle these arms.  Deferring these arms — they
--- ARE tractable from the existing `*_ctor` helpers but need separate
--- inversion plumbing not yet in scope.  See InductiveArms.lean header for
--- the catalogue of arm patterns that DO ship cleanly via this driver.
+-- NOTE: arm_snd / arm_boolElim / arm_appPi (cast-on-result ctors) hit a
+-- fundamental dep-elim wall: `Ty.subst0` is not structurally injective.
+-- The suffices+free-genericType pattern succeeds for `cases genericTerm`
+-- (since the type is free), but the resulting `typeEq : codomainType.subst0
+-- ... = innerCodomain.subst0 ...` cannot be `cases`'d (Lean: "Dependent
+-- elimination failed: Failed to solve equation
+-- innerCodomain.subst (Subst.singleton ...) = codomainType.subst
+-- (Subst.singleton ...)").  Working around requires either a heterogeneous
+-- (HEq-style) IH or a deeper Ty-aligned inversion lemma.  Deferred — these
+-- arms ARE tractable but need separate inversion plumbing (`Term.snd_inv`
+-- with HEq Σ-Ty index extraction) not yet shipped.
 
 /-! ## HoTT identity-eliminator arms (idJ / oeqJ / oeqFunext / idStrictRec).
 
