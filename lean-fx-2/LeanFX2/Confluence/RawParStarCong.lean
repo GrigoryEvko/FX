@@ -632,6 +632,101 @@ theorem RawStep.parStar.optionCode_inv {scope : Nat}
   RawStep.parStar.unary_inv_helper RawTerm.optionCode
     RawStep.par.optionCode_inv chain
 
+/-- `RawStep.parStar (arrowCode domain codomain) target` preserves the
+`arrowCode` head and projects to code-level `parStar` chains. -/
+theorem RawStep.parStar.arrowCode_inv {scope : Nat}
+    {domainCode codomainCode target : RawTerm scope}
+    (chain :
+      RawStep.parStar (RawTerm.arrowCode domainCode codomainCode) target) :
+    ∃ domainTarget codomainTarget,
+      target = RawTerm.arrowCode domainTarget codomainTarget ∧
+      RawStep.parStar domainCode domainTarget ∧
+      RawStep.parStar codomainCode codomainTarget :=
+  RawStep.parStar.binary_inv_helper RawTerm.arrowCode
+    RawStep.par.arrowCode_inv chain
+
+/-- `RawStep.parStar (piTyCode domain codomain) target` preserves the
+`piTyCode` head and projects across both code payloads. -/
+theorem RawStep.parStar.piTyCode_inv {scope : Nat}
+    {domainCode : RawTerm scope}
+    {codomainCode : RawTerm (scope + 1)}
+    {target : RawTerm scope}
+    (chain :
+      RawStep.parStar (RawTerm.piTyCode domainCode codomainCode) target) :
+    ∃ (domainTarget : RawTerm scope) (codomainTarget : RawTerm (scope + 1)),
+      target = RawTerm.piTyCode domainTarget codomainTarget ∧
+      RawStep.parStar domainCode domainTarget ∧
+      RawStep.parStar codomainCode codomainTarget :=
+  RawStep.parStar.binary_inv_helper RawTerm.piTyCode
+    RawStep.par.piTyCode_inv chain
+
+/-- `RawStep.parStar (sigmaTyCode first second) target` preserves the
+`sigmaTyCode` head and projects across both code payloads. -/
+theorem RawStep.parStar.sigmaTyCode_inv {scope : Nat}
+    {firstCode : RawTerm scope}
+    {secondCode : RawTerm (scope + 1)}
+    {target : RawTerm scope}
+    (chain :
+      RawStep.parStar (RawTerm.sigmaTyCode firstCode secondCode) target) :
+    ∃ (firstTarget : RawTerm scope) (secondTarget : RawTerm (scope + 1)),
+      target = RawTerm.sigmaTyCode firstTarget secondTarget ∧
+      RawStep.parStar firstCode firstTarget ∧
+      RawStep.parStar secondCode secondTarget :=
+  RawStep.parStar.binary_inv_helper RawTerm.sigmaTyCode
+    RawStep.par.sigmaTyCode_inv chain
+
+/-- `RawStep.parStar (productCode first second) target` preserves the
+`productCode` head and projects to component code chains. -/
+theorem RawStep.parStar.productCode_inv {scope : Nat}
+    {firstCode secondCode target : RawTerm scope}
+    (chain :
+      RawStep.parStar (RawTerm.productCode firstCode secondCode) target) :
+    ∃ firstTarget secondTarget,
+      target = RawTerm.productCode firstTarget secondTarget ∧
+      RawStep.parStar firstCode firstTarget ∧
+      RawStep.parStar secondCode secondTarget :=
+  RawStep.parStar.binary_inv_helper RawTerm.productCode
+    RawStep.par.productCode_inv chain
+
+/-- `RawStep.parStar (sumCode left right) target` preserves the
+`sumCode` head and projects to component code chains. -/
+theorem RawStep.parStar.sumCode_inv {scope : Nat}
+    {leftCode rightCode target : RawTerm scope}
+    (chain :
+      RawStep.parStar (RawTerm.sumCode leftCode rightCode) target) :
+    ∃ leftTarget rightTarget,
+      target = RawTerm.sumCode leftTarget rightTarget ∧
+      RawStep.parStar leftCode leftTarget ∧
+      RawStep.parStar rightCode rightTarget :=
+  RawStep.parStar.binary_inv_helper RawTerm.sumCode
+    RawStep.par.sumCode_inv chain
+
+/-- `RawStep.parStar (eitherCode left right) target` preserves the
+`eitherCode` head and projects to component code chains. -/
+theorem RawStep.parStar.eitherCode_inv {scope : Nat}
+    {leftCode rightCode target : RawTerm scope}
+    (chain :
+      RawStep.parStar (RawTerm.eitherCode leftCode rightCode) target) :
+    ∃ leftTarget rightTarget,
+      target = RawTerm.eitherCode leftTarget rightTarget ∧
+      RawStep.parStar leftCode leftTarget ∧
+      RawStep.parStar rightCode rightTarget :=
+  RawStep.parStar.binary_inv_helper RawTerm.eitherCode
+    RawStep.par.eitherCode_inv chain
+
+/-- `RawStep.parStar (equivCode left right) target` preserves the
+`equivCode` head and projects to component code chains. -/
+theorem RawStep.parStar.equivCode_inv {scope : Nat}
+    {leftCode rightCode target : RawTerm scope}
+    (chain :
+      RawStep.parStar (RawTerm.equivCode leftCode rightCode) target) :
+    ∃ leftTarget rightTarget,
+      target = RawTerm.equivCode leftTarget rightTarget ∧
+      RawStep.parStar leftCode leftTarget ∧
+      RawStep.parStar rightCode rightTarget :=
+  RawStep.parStar.binary_inv_helper RawTerm.equivCode
+    RawStep.par.equivCode_inv chain
+
 /-- `RawStep.parStar (lam body) target` preserves the lambda head and
 projects to a body-level `parStar` chain. -/
 theorem RawStep.parStar.lam_inv {scope : Nat}
