@@ -1906,6 +1906,23 @@ theorem RawStep.parStar.glueIntro_inv {scope : Nat}
   RawStep.parStar.binary_inv_helper RawTerm.glueIntro
     RawStep.par.glueIntro_inv chain
 
+/-- `RawStep.parStar (glueElim gluedValue) target` either preserves the
+`glueElim` head or fires Glue β after the glued value develops to
+`glueIntro`. -/
+theorem RawStep.parStar.glueElim_inv {scope : Nat}
+    {gluedValue target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.glueElim gluedValue) target) :
+    (∃ gluedTarget,
+      target = RawTerm.glueElim gluedTarget ∧
+      RawStep.parStar gluedValue gluedTarget) ∨
+    (∃ baseTarget partialTarget,
+      RawStep.parStar gluedValue
+        (RawTerm.glueIntro baseTarget partialTarget) ∧
+      RawStep.parStar baseTarget target) :=
+  RawStep.parStar.binary_intro_elim_inv_helper RawTerm.glueElim
+    RawTerm.glueIntro (fun baseTarget _ => baseTarget)
+    RawStep.par.glueElim_inv chain
+
 /-- `RawStep.parStar (oeqRefl witness) target` preserves the
 `oeqRefl` head and projects to a witness chain. -/
 theorem RawStep.parStar.oeqRefl_inv {scope : Nat}
@@ -2036,6 +2053,44 @@ theorem RawStep.parStar.transpFill_inv {scope : Nat}
       RawStep.parStar sourceTerm sourceTarget :=
   RawStep.parStar.ternary_inv_helper RawTerm.transpFill
     RawStep.par.transpFill_inv chain
+
+/-- `RawStep.parStar (hcomp sides cap) target` either preserves the
+`hcomp` head or fires the constant-sides hcomp β rule after `sides`
+develops to `pathLam body.weaken`. -/
+theorem RawStep.parStar.hcomp_inv {scope : Nat}
+    {sidesTerm capTerm target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.hcomp sidesTerm capTerm) target) :
+    (∃ sidesTarget capTarget,
+      target = RawTerm.hcomp sidesTarget capTarget ∧
+      RawStep.parStar sidesTerm sidesTarget ∧
+      RawStep.parStar capTerm capTarget) ∨
+    (∃ (pathBodyTarget : RawTerm scope) (capTarget : RawTerm scope),
+      RawStep.parStar sidesTerm
+        (RawTerm.pathLam pathBodyTarget.weaken) ∧
+      RawStep.parStar capTerm capTarget ∧
+      RawStep.parStar capTarget target) :=
+  RawStep.parStar.binary_left_intro_elim_inv_helper RawTerm.hcomp
+    (fun (pathBodyTarget : RawTerm scope) =>
+      RawTerm.pathLam pathBodyTarget.weaken)
+    (fun _ capTarget => capTarget)
+    (fun step => by
+      cases RawStep.par.hcomp_inv step with
+      | inl headCase =>
+          exact Or.inl headCase
+      | inr redexCases =>
+          cases redexCases with
+          | inl shallowCase =>
+              obtain ⟨pathBodySource, capTarget, sidesEq, targetEq,
+                capStep⟩ := shallowCase
+              cases sidesEq
+              exact Or.inr ⟨pathBodySource, capTarget, targetEq,
+                RawStep.par.refl _, capStep⟩
+          | inr deepCase =>
+              obtain ⟨pathBodyTarget, capTarget, targetEq, sidesStep,
+                capStep⟩ := deepCase
+              exact Or.inr ⟨pathBodyTarget, capTarget, targetEq,
+                sidesStep, capStep⟩)
+    chain
 
 /-- `RawStep.parStar (modIntro inner) target` preserves the `modIntro`
 head and projects to an inner chain. -/
