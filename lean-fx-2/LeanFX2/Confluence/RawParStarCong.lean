@@ -526,6 +526,77 @@ private theorem RawStep.parStar.binary_inv_helper
       RawStep.parStar rightSource rightTarget :=
   RawStep.parStar.binary_inv_aux wrap parStepInv chain rfl
 
+/-- Generalized ternary-head `parStar` inversion.
+
+Used for non-redex constructors with three independently developing
+subterms, such as `idCode` and `transpFill`. -/
+private theorem RawStep.parStar.ternary_inv_aux
+    {outerScope firstScope secondScope thirdScope : Nat}
+    (wrap : RawTerm firstScope → RawTerm secondScope → RawTerm thirdScope →
+      RawTerm outerScope)
+    (parStepInv : ∀ {firstSource secondSource thirdSource target},
+      RawStep.par (wrap firstSource secondSource thirdSource) target →
+        ∃ firstTarget secondTarget thirdTarget,
+          target = wrap firstTarget secondTarget thirdTarget ∧
+          RawStep.par firstSource firstTarget ∧
+          RawStep.par secondSource secondTarget ∧
+          RawStep.par thirdSource thirdTarget)
+    {source target : RawTerm outerScope}
+    (chain : RawStep.parStar source target) :
+    ∀ {firstSource : RawTerm firstScope}
+      {secondSource : RawTerm secondScope}
+      {thirdSource : RawTerm thirdScope},
+      source = wrap firstSource secondSource thirdSource →
+      ∃ firstTarget secondTarget thirdTarget,
+        target = wrap firstTarget secondTarget thirdTarget ∧
+        RawStep.parStar firstSource firstTarget ∧
+        RawStep.parStar secondSource secondTarget ∧
+        RawStep.parStar thirdSource thirdTarget := by
+  induction chain with
+  | refl _ =>
+      intro firstSource secondSource thirdSource sourceEq
+      exact ⟨firstSource, secondSource, thirdSource, sourceEq,
+        RawStep.parStar.refl _, RawStep.parStar.refl _,
+        RawStep.parStar.refl _⟩
+  | trans firstStep _ restIH =>
+      intro firstSource secondSource thirdSource sourceEq
+      subst sourceEq
+      obtain ⟨middleFirst, middleSecond, middleThird, middleEq,
+        firstStepInner, secondStepInner, thirdStepInner⟩ :=
+        parStepInv firstStep
+      obtain ⟨targetFirst, targetSecond, targetThird, targetEq,
+        firstChainRest, secondChainRest, thirdChainRest⟩ :=
+        restIH middleEq
+      exact ⟨targetFirst, targetSecond, targetThird, targetEq,
+        RawStep.parStar.trans firstStepInner firstChainRest,
+        RawStep.parStar.trans secondStepInner secondChainRest,
+        RawStep.parStar.trans thirdStepInner thirdChainRest⟩
+
+/-- Ternary-head `parStar` inversion for an exactly wrapped source. -/
+private theorem RawStep.parStar.ternary_inv_helper
+    {outerScope firstScope secondScope thirdScope : Nat}
+    (wrap : RawTerm firstScope → RawTerm secondScope → RawTerm thirdScope →
+      RawTerm outerScope)
+    (parStepInv : ∀ {firstSource secondSource thirdSource target},
+      RawStep.par (wrap firstSource secondSource thirdSource) target →
+        ∃ firstTarget secondTarget thirdTarget,
+          target = wrap firstTarget secondTarget thirdTarget ∧
+          RawStep.par firstSource firstTarget ∧
+          RawStep.par secondSource secondTarget ∧
+          RawStep.par thirdSource thirdTarget)
+    {firstSource : RawTerm firstScope}
+    {secondSource : RawTerm secondScope}
+    {thirdSource : RawTerm thirdScope}
+    {target : RawTerm outerScope}
+    (chain :
+      RawStep.parStar (wrap firstSource secondSource thirdSource) target) :
+    ∃ firstTarget secondTarget thirdTarget,
+      target = wrap firstTarget secondTarget thirdTarget ∧
+      RawStep.parStar firstSource firstTarget ∧
+      RawStep.parStar secondSource secondTarget ∧
+      RawStep.parStar thirdSource thirdTarget :=
+  RawStep.parStar.ternary_inv_aux wrap parStepInv chain rfl
+
 /-- `RawStep.parStar (natSucc predecessor) target → ∃ target's
 predecessor with target = natSucc that predecessor and a parStar
 chain from the source predecessor to it`.
@@ -728,6 +799,21 @@ theorem RawStep.parStar.equivCode_inv {scope : Nat}
   RawStep.parStar.binary_inv_helper RawTerm.equivCode
     RawStep.par.equivCode_inv chain
 
+/-- `RawStep.parStar (idCode type left right) target` preserves the
+`idCode` head and projects to all three code chains. -/
+theorem RawStep.parStar.idCode_inv {scope : Nat}
+    {typeCode leftCode rightCode target : RawTerm scope}
+    (chain :
+      RawStep.parStar
+        (RawTerm.idCode typeCode leftCode rightCode) target) :
+    ∃ typeTarget leftTarget rightTarget,
+      target = RawTerm.idCode typeTarget leftTarget rightTarget ∧
+      RawStep.parStar typeCode typeTarget ∧
+      RawStep.parStar leftCode leftTarget ∧
+      RawStep.parStar rightCode rightTarget :=
+  RawStep.parStar.ternary_inv_helper RawTerm.idCode
+    RawStep.par.idCode_inv chain
+
 /-- `RawStep.parStar (intervalOpp interval) target` preserves the
 `intervalOpp` head and projects to an interval-level chain. -/
 theorem RawStep.parStar.intervalOpp_inv {scope : Nat}
@@ -854,6 +940,18 @@ theorem RawStep.parStar.oeqFunext_inv {scope : Nat}
   RawStep.parStar.unary_inv_helper RawTerm.oeqFunext
     RawStep.par.oeqFunext_inv chain
 
+/-- `RawStep.parStar (oeqJ base witness) target` preserves the `oeqJ`
+head and projects to base/witness chains. -/
+theorem RawStep.parStar.oeqJ_inv {scope : Nat}
+    {baseCase witness target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.oeqJ baseCase witness) target) :
+    ∃ baseTarget witnessTarget,
+      target = RawTerm.oeqJ baseTarget witnessTarget ∧
+      RawStep.parStar baseCase baseTarget ∧
+      RawStep.parStar witness witnessTarget :=
+  RawStep.parStar.binary_inv_helper RawTerm.oeqJ
+    RawStep.par.oeqJ_inv chain
+
 /-- `RawStep.parStar (idStrictRefl witness) target` preserves the
 `idStrictRefl` head and projects to a witness chain. -/
 theorem RawStep.parStar.idStrictRefl_inv {scope : Nat}
@@ -877,6 +975,35 @@ theorem RawStep.parStar.equivIntro_inv {scope : Nat}
       RawStep.parStar backwardFn backwardTarget :=
   RawStep.parStar.binary_inv_helper RawTerm.equivIntro
     RawStep.par.equivIntro_inv chain
+
+/-- `RawStep.parStar (equivApp equiv argument) target` preserves the
+`equivApp` head and projects to equiv/argument chains. -/
+theorem RawStep.parStar.equivApp_inv {scope : Nat}
+    {equivTerm argument target : RawTerm scope}
+    (chain : RawStep.parStar
+      (RawTerm.equivApp equivTerm argument) target) :
+    ∃ equivTarget argumentTarget,
+      target = RawTerm.equivApp equivTarget argumentTarget ∧
+      RawStep.parStar equivTerm equivTarget ∧
+      RawStep.parStar argument argumentTarget :=
+  RawStep.parStar.binary_inv_helper RawTerm.equivApp
+    RawStep.par.equivApp_inv chain
+
+/-- `RawStep.parStar (transpFill path interval source) target`
+preserves the `transpFill` head and projects to all three component
+chains. -/
+theorem RawStep.parStar.transpFill_inv {scope : Nat}
+    {pathTerm intervalTerm sourceTerm target : RawTerm scope}
+    (chain :
+      RawStep.parStar
+        (RawTerm.transpFill pathTerm intervalTerm sourceTerm) target) :
+    ∃ pathTarget intervalTarget sourceTarget,
+      target = RawTerm.transpFill pathTarget intervalTarget sourceTarget ∧
+      RawStep.parStar pathTerm pathTarget ∧
+      RawStep.parStar intervalTerm intervalTarget ∧
+      RawStep.parStar sourceTerm sourceTarget :=
+  RawStep.parStar.ternary_inv_helper RawTerm.transpFill
+    RawStep.par.transpFill_inv chain
 
 /-- `RawStep.parStar (modIntro inner) target` preserves the `modIntro`
 head and projects to an inner chain. -/
