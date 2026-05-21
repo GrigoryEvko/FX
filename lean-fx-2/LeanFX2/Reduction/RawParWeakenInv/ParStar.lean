@@ -78,6 +78,42 @@ theorem RawStep.parStar.subst0_compatible_same
   RawStep.parStar.subst_compatible_same
     (RawTermSubst.singleton argTerm) parallelChain
 
+/-- Heterogeneous multi-step singleton-substitution lift of
+`RawStep.par.subst0_par`.
+
+Given a body-chain `body1 ~~> body2` AND an arg-chain `arg1 ~~> arg2`
+(both at the raw multi-step parallel level), the β-redex chain
+`(body1.subst0 arg1) ~~> (body2.subst0 arg2)` follows by chaining the
+two homogeneous lifts and composing via `RawStep.parStar.append`:
+* lift body-chain at fixed `arg1`: `body1.subst0 arg1 ~~> body2.subst0 arg1`
+* lift arg-chain at fixed `body2` via `mapStep` + `RawStep.par.subst0_par`
+  with reflexive body step: `body2.subst0 arg1 ~~> body2.subst0 arg2`
+
+This is the multi-step heterogeneous form of `RawStep.par.subst0_par`.
+β-step bisimulations and Geuvers 1992 β-η critical-pair joinability
+reach for this exact shape: both sides of a redex evolve through their
+own parallel chain. -/
+theorem RawStep.parStar.subst0_par {scope : Nat}
+    {bodySource bodyTarget : RawTerm (scope + 1)}
+    {argSource argTarget : RawTerm scope}
+    (bodyChain : RawStep.parStar bodySource bodyTarget)
+    (argChain : RawStep.parStar argSource argTarget) :
+    RawStep.parStar (bodySource.subst0 argSource)
+                    (bodyTarget.subst0 argTarget) :=
+  let leftHalf :
+      RawStep.parStar (bodySource.subst0 argSource)
+                      (bodyTarget.subst0 argSource) :=
+    RawStep.parStar.subst0_compatible_same argSource bodyChain
+  let rightHalf :
+      RawStep.parStar (bodyTarget.subst0 argSource)
+                      (bodyTarget.subst0 argTarget) :=
+    RawStep.parStar.mapStep
+      (fun freshArg => bodyTarget.subst0 freshArg)
+      (fun argStep =>
+        RawStep.par.subst0_par (RawStep.par.refl bodyTarget) argStep)
+      argChain
+  RawStep.parStar.append leftHalf rightHalf
+
 private theorem RawStep.parStar.target_in_rename_image_aux
     {sourceScope targetScope : Nat}
     (rho : RawRenaming sourceScope targetScope)

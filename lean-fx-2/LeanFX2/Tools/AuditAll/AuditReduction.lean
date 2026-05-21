@@ -738,6 +738,7 @@ shapes: 5 in CubicalShape. -/
 #assert_no_axioms LeanFX2.Step.par.toRawBridge_target_in_weaken_image_of_sourceRaw_eq
 #assert_no_axioms LeanFX2.RawStep.parStar.subst_compatible_same
 #assert_no_axioms LeanFX2.RawStep.parStar.subst0_compatible_same
+#assert_no_axioms LeanFX2.RawStep.parStar.subst0_par
 #assert_no_axioms LeanFX2.Step.parStar.rename_toRawBridge
 #assert_no_axioms LeanFX2.Step.parStar.weaken_toRawBridge
 #assert_no_axioms LeanFX2.Step.parStar.subst_toRawBridge
