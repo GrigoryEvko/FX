@@ -424,6 +424,9 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Step.par.lam_targetRaw_inv_congr
 #assert_no_axioms LeanFX2.Step.par.lamPi_targetRaw_inv_congr
 #assert_no_axioms LeanFX2.Step.par.pathLam_targetRaw_inv_congr
+#assert_no_axioms LeanFX2.Step.par.lam_bodyRaw_inv_congr
+#assert_no_axioms LeanFX2.Step.par.lamPi_bodyRaw_inv_congr
+#assert_no_axioms LeanFX2.Step.par.pathLam_bodyRaw_inv_congr
 
 -- D3.6-P5 typed compositional compat — uaToEquivCong (unary, single
 -- typed subterm `proof` at `Ty.id (Ty.universe ...) leftTyRaw rightTyRaw`)
