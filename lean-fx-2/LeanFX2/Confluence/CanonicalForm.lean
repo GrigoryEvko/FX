@@ -2522,4 +2522,130 @@ theorem Conv.optionNone_ne_listCons
     RawStep.parStar.listCons_inv targetToJoin
   nomatch joinEqNone.symm.trans joinEqListCons
 
+/-! ### `listCons` vs unary compounds (4 disjointness + 1 compatibility)
+
+Completes the `listCons` canonical-head row: 4 disjointness
+pairs against the unary compound heads {natSucc, optionSome,
+eitherInl, eitherInr} plus the same-head compatibility lemma.
+Together with the 6 leaf-vs-listCons pairs above, this finishes
+the 10-cell listCons disjointness matrix and adds positive
+extraction for the listCons-vs-listCons case. -/
+
+/-- A `natSucc`-headed source and a `listCons`-headed target are
+not convertible. -/
+theorem Conv.natSucc_ne_listCons
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {predecessor headTerm tailTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.natSucc predecessor : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.listCons headTerm tailTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqNatSucc, _⟩ :=
+    RawStep.parStar.natSucc_inv sourceToJoin
+  obtain ⟨_, _, joinEqListCons, _, _⟩ :=
+    RawStep.parStar.listCons_inv targetToJoin
+  nomatch joinEqNatSucc.symm.trans joinEqListCons
+
+/-- An `optionSome`-headed source and a `listCons`-headed target
+are not convertible. -/
+theorem Conv.optionSome_ne_listCons
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {valueTerm headTerm tailTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.optionSome valueTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.listCons headTerm tailTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOptionSome, _⟩ :=
+    RawStep.parStar.optionSome_inv sourceToJoin
+  obtain ⟨_, _, joinEqListCons, _, _⟩ :=
+    RawStep.parStar.listCons_inv targetToJoin
+  nomatch joinEqOptionSome.symm.trans joinEqListCons
+
+/-- An `eitherInl`-headed source and a `listCons`-headed target
+are not convertible. -/
+theorem Conv.eitherInl_ne_listCons
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {valueTerm headTerm tailTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherInl valueTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.listCons headTerm tailTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqEitherInl, _⟩ :=
+    RawStep.parStar.eitherInl_inv sourceToJoin
+  obtain ⟨_, _, joinEqListCons, _, _⟩ :=
+    RawStep.parStar.listCons_inv targetToJoin
+  nomatch joinEqEitherInl.symm.trans joinEqListCons
+
+/-- An `eitherInr`-headed source and a `listCons`-headed target
+are not convertible. -/
+theorem Conv.eitherInr_ne_listCons
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {valueTerm headTerm tailTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherInr valueTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.listCons headTerm tailTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqEitherInr, _⟩ :=
+    RawStep.parStar.eitherInr_inv sourceToJoin
+  obtain ⟨_, _, joinEqListCons, _, _⟩ :=
+    RawStep.parStar.listCons_inv targetToJoin
+  nomatch joinEqEitherInr.symm.trans joinEqListCons
+
+/-- Two `listCons`-headed canonically-convertible terms have a
+common raw reduct for both the head subterm and the tail subterm.
+LOAD-BEARING for K12 fundamental theorem's `listElim` cons-arm ι
+firing — once disjointness rules out nil, this compatibility
+lemma extracts the canonical head + tail witnesses for the
+recursive call.  The proof mirrors the unary compatibility
+template (iter 37), with `RawTerm.listCons.inj` producing the
+pair `headJoinEq ∧ tailJoinEq` consumed by two `▸`-rewrites. -/
+theorem Conv.listCons_compatibility
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {headSrc tailSrc headTgt tailTgt : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.listCons headSrc tailSrc : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.listCons headTgt tailTgt : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ headJoin tailJoin : RawTerm scope,
+      RawStep.parStar headSrc headJoin ∧
+      RawStep.parStar headTgt headJoin ∧
+      RawStep.parStar tailSrc tailJoin ∧
+      RawStep.parStar tailTgt tailJoin := by
+  obtain ⟨_, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨headJoinSrc, tailJoinSrc, joinEqSrc,
+      headSrcInner, tailSrcInner⟩ :=
+    RawStep.parStar.listCons_inv sourceToJoin
+  obtain ⟨headJoinTgt, tailJoinTgt, joinEqTgt,
+      headTgtInner, tailTgtInner⟩ :=
+    RawStep.parStar.listCons_inv targetToJoin
+  have ⟨headJoinEq, tailJoinEq⟩ :
+      headJoinSrc = headJoinTgt ∧ tailJoinSrc = tailJoinTgt :=
+    RawTerm.listCons.inj (joinEqSrc.symm.trans joinEqTgt)
+  exact ⟨headJoinTgt, tailJoinTgt,
+    headJoinEq ▸ headSrcInner, headTgtInner,
+    tailJoinEq ▸ tailSrcInner, tailTgtInner⟩
+
 end LeanFX2
