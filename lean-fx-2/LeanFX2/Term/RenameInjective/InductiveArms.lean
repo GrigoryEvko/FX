@@ -1009,4 +1009,116 @@ theorem Term.rename_injective_arm_listNil
   Term.rename_injective_atListNil termRenaming
     (Term.listNil (context := sourceCtx) (elementType := elementType)) termB
 
+/-- `optionNone` arm: closed at the parametric `Ty.optionType elementType`. -/
+theorem Term.rename_injective_arm_optionNone
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {elementType : Ty level sourceScope}
+    (termB : Term sourceCtx (Ty.optionType elementType) RawTerm.optionNone) :
+    Term.rename termRenaming
+        (Term.optionNone (context := sourceCtx)
+          (elementType := elementType)) =
+      Term.rename termRenaming termB →
+      Term.optionNone (context := sourceCtx) (elementType := elementType) =
+        termB :=
+  Term.rename_injective_atOptionNone termRenaming
+    (Term.optionNone (context := sourceCtx) (elementType := elementType))
+    termB
+
+/-- `refl` arm: HoTT-style identity reflexivity at `Ty.id`. -/
+theorem Term.rename_injective_arm_refl
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (carrier : Ty level sourceScope)
+    (rawWitness : RawTerm sourceScope)
+    (termB :
+      Term sourceCtx (Ty.id carrier rawWitness rawWitness)
+        (RawTerm.refl rawWitness)) :
+    Term.rename termRenaming
+        (Term.refl (context := sourceCtx) carrier rawWitness) =
+      Term.rename termRenaming termB →
+      Term.refl (context := sourceCtx) carrier rawWitness = termB :=
+  Term.rename_injective_atRefl termRenaming
+    (Term.refl (context := sourceCtx) carrier rawWitness) termB
+
+/-- `oeqRefl` arm: observational-equality reflexivity at `Ty.oeq`. -/
+theorem Term.rename_injective_arm_oeqRefl
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (carrier : Ty level sourceScope)
+    (rawWitness : RawTerm sourceScope)
+    (termB :
+      Term sourceCtx (Ty.oeq carrier rawWitness rawWitness)
+        (RawTerm.oeqRefl rawWitness)) :
+    Term.rename termRenaming
+        (Term.oeqRefl (context := sourceCtx) carrier rawWitness) =
+      Term.rename termRenaming termB →
+      Term.oeqRefl (context := sourceCtx) carrier rawWitness = termB :=
+  Term.rename_injective_atOEqRefl termRenaming
+    (Term.oeqRefl (context := sourceCtx) carrier rawWitness) termB
+
+/-- `idStrictRefl` arm: strict-mode identity reflexivity at `Ty.idStrict`.
+The standalone `atIdStrictRefl` helper carries the `modeIsStrict` proof
+explicitly, so the arm helper threads it through. -/
+theorem Term.rename_injective_arm_idStrictRefl
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (modeIsStrict : mode = Mode.strict)
+    (carrier : Ty level sourceScope)
+    (rawWitness : RawTerm sourceScope)
+    (termB :
+      Term sourceCtx (Ty.idStrict carrier rawWitness rawWitness)
+        (RawTerm.idStrictRefl rawWitness)) :
+    Term.rename termRenaming
+        (Term.idStrictRefl (context := sourceCtx) modeIsStrict carrier
+          rawWitness) =
+      Term.rename termRenaming termB →
+      Term.idStrictRefl (context := sourceCtx) modeIsStrict carrier
+          rawWitness =
+        termB :=
+  Term.rename_injective_atIdStrictRefl termRenaming
+    (Term.idStrictRefl (context := sourceCtx) modeIsStrict carrier
+      rawWitness)
+    termB
+
+/-- `interval0` arm: cubical interval endpoint 0. -/
+theorem Term.rename_injective_arm_interval0
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (termB : Term sourceCtx Ty.interval RawTerm.interval0) :
+    Term.rename termRenaming (Term.interval0 (context := sourceCtx)) =
+      Term.rename termRenaming termB →
+      Term.interval0 (context := sourceCtx) = termB :=
+  Term.rename_injective_atInterval0 termRenaming
+    (Term.interval0 (context := sourceCtx)) termB
+
+/-- `interval1` arm: cubical interval endpoint 1. -/
+theorem Term.rename_injective_arm_interval1
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (termB : Term sourceCtx Ty.interval RawTerm.interval1) :
+    Term.rename termRenaming (Term.interval1 (context := sourceCtx)) =
+      Term.rename termRenaming termB →
+      Term.interval1 (context := sourceCtx) = termB :=
+  Term.rename_injective_atInterval1 termRenaming
+    (Term.interval1 (context := sourceCtx)) termB
+
 end LeanFX2
