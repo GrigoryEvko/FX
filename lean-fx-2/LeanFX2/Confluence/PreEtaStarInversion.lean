@@ -244,6 +244,96 @@ theorem pathLam_left_commonRaw_inv_congr
   exact ⟨commonType, commonRaw, commonTerm, bodyRawTarget, commonRawEq,
     leftChain, rightChain, bodyChain⟩
 
+/-- If the right endpoint of a `Conv` witness is a non-dependent lambda,
+the typed common reduct's raw projection is lambda-headed. -/
+theorem lam_right_commonRaw_inv_congr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType : Ty level scope} {sourceRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {domainType codomainType : Ty level scope}
+    {bodyRawTarget : RawTerm (scope + 1)}
+    {bodyTarget :
+      Term (context.cons domainType) codomainType.weaken bodyRawTarget}
+    (convertibility :
+      Conv sourceTerm
+        (Term.lam (codomainType := codomainType) bodyTarget)) :
+    ∃ (commonType : Ty level scope) (commonRaw : RawTerm scope)
+      (commonTerm : Term context commonType commonRaw)
+      (bodyRawCommon : RawTerm (scope + 1)),
+        commonRaw = RawTerm.lam bodyRawCommon ∧
+        StepStar sourceTerm commonTerm ∧
+        StepStar
+          (Term.lam (codomainType := codomainType) bodyTarget)
+          commonTerm ∧
+        RawStep.parStar bodyRawTarget bodyRawCommon := by
+  obtain ⟨commonType, commonRaw, commonTerm, leftChain, rightChain⟩ :=
+    convertibility
+  obtain ⟨bodyRawCommon, commonRawEq, bodyChain⟩ :=
+    StepStar.lam_targetRaw_inv_congr rightChain
+  exact ⟨commonType, commonRaw, commonTerm, bodyRawCommon, commonRawEq,
+    leftChain, rightChain, bodyChain⟩
+
+/-- If the right endpoint of a `Conv` witness is a dependent lambda, the
+typed common reduct's raw projection is lambda-headed. -/
+theorem lamPi_right_commonRaw_inv_congr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType : Ty level scope} {sourceRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
+    {bodyRawTarget : RawTerm (scope + 1)}
+    {bodyTarget : Term (context.cons domainType) codomainType bodyRawTarget}
+    (convertibility :
+      Conv sourceTerm
+        (Term.lamPi (domainType := domainType) bodyTarget)) :
+    ∃ (commonType : Ty level scope) (commonRaw : RawTerm scope)
+      (commonTerm : Term context commonType commonRaw)
+      (bodyRawCommon : RawTerm (scope + 1)),
+        commonRaw = RawTerm.lam bodyRawCommon ∧
+        StepStar sourceTerm commonTerm ∧
+        StepStar (Term.lamPi (domainType := domainType) bodyTarget)
+          commonTerm ∧
+        RawStep.parStar bodyRawTarget bodyRawCommon := by
+  obtain ⟨commonType, commonRaw, commonTerm, leftChain, rightChain⟩ :=
+    convertibility
+  obtain ⟨bodyRawCommon, commonRawEq, bodyChain⟩ :=
+    StepStar.lamPi_targetRaw_inv_congr rightChain
+  exact ⟨commonType, commonRaw, commonTerm, bodyRawCommon, commonRawEq,
+    leftChain, rightChain, bodyChain⟩
+
+/-- If the right endpoint of a `Conv` witness is a path lambda, the typed
+common reduct's raw projection is path-lambda-headed. -/
+theorem pathLam_right_commonRaw_inv_congr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType : Ty level scope} {sourceRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (carrierType : Ty level scope)
+    (leftEndpoint rightEndpoint : RawTerm scope)
+    {bodyRawTarget : RawTerm (scope + 1)}
+    {bodyTarget :
+      Term (context.cons Ty.interval) carrierType.weaken bodyRawTarget}
+    (convertibility :
+      Conv sourceTerm
+        (Term.pathLam modeIsUnivalent carrierType leftEndpoint
+          rightEndpoint bodyTarget)) :
+    ∃ (commonType : Ty level scope) (commonRaw : RawTerm scope)
+      (commonTerm : Term context commonType commonRaw)
+      (bodyRawCommon : RawTerm (scope + 1)),
+        commonRaw = RawTerm.pathLam bodyRawCommon ∧
+        StepStar sourceTerm commonTerm ∧
+        StepStar
+          (Term.pathLam modeIsUnivalent carrierType leftEndpoint
+            rightEndpoint bodyTarget)
+          commonTerm ∧
+        RawStep.parStar bodyRawTarget bodyRawCommon := by
+  obtain ⟨commonType, commonRaw, commonTerm, leftChain, rightChain⟩ :=
+    convertibility
+  obtain ⟨bodyRawCommon, commonRawEq, bodyChain⟩ :=
+    StepStar.pathLam_targetRaw_inv_congr modeIsUnivalent carrierType
+      leftEndpoint rightEndpoint rightChain
+  exact ⟨commonType, commonRaw, commonTerm, bodyRawCommon, commonRawEq,
+    leftChain, rightChain, bodyChain⟩
+
 end Conv
 
 end LeanFX2
