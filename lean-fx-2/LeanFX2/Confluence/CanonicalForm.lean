@@ -9643,4 +9643,153 @@ theorem Conv.uaToEquiv_ne_interval1
     RawStep.parStar.interval1_inv targetToJoin
   nomatch joinEqUa.symm.trans joinEqOne
 
+/-- A `uaToEquiv`-headed source and a `natSucc`-headed target are
+not convertible. -/
+theorem Conv.uaToEquiv_ne_natSucc
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {proofTerm : RawTerm scope}
+    {predecessor : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.uaToEquiv proofTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.natSucc predecessor : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqUa, _⟩ :=
+    RawStep.parStar.uaToEquiv_inv sourceToJoin
+  obtain ⟨_, joinEqSucc, _⟩ :=
+    RawStep.parStar.natSucc_inv targetToJoin
+  nomatch joinEqUa.symm.trans joinEqSucc
+
+/-- A `uaToEquiv`-headed source and an `optionSome`-headed target
+are not convertible. -/
+theorem Conv.uaToEquiv_ne_optionSome
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {proofTerm : RawTerm scope}
+    {valueTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.uaToEquiv proofTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.optionSome valueTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqUa, _⟩ :=
+    RawStep.parStar.uaToEquiv_inv sourceToJoin
+  obtain ⟨_, joinEqSome, _⟩ :=
+    RawStep.parStar.optionSome_inv targetToJoin
+  nomatch joinEqUa.symm.trans joinEqSome
+
+/-- A `uaToEquiv`-headed source and an `eitherInl`-headed target
+are not convertible. -/
+theorem Conv.uaToEquiv_ne_eitherInl
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {proofTerm : RawTerm scope}
+    {valueTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.uaToEquiv proofTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.eitherInl valueTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqUa, _⟩ :=
+    RawStep.parStar.uaToEquiv_inv sourceToJoin
+  obtain ⟨_, joinEqInl, _⟩ :=
+    RawStep.parStar.eitherInl_inv targetToJoin
+  nomatch joinEqUa.symm.trans joinEqInl
+
+/-- A `uaToEquiv`-headed source and an `eitherInr`-headed target
+are not convertible. -/
+theorem Conv.uaToEquiv_ne_eitherInr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {proofTerm : RawTerm scope}
+    {valueTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.uaToEquiv proofTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.eitherInr valueTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqUa, _⟩ :=
+    RawStep.parStar.uaToEquiv_inv sourceToJoin
+  obtain ⟨_, joinEqInr, _⟩ :=
+    RawStep.parStar.eitherInr_inv targetToJoin
+  nomatch joinEqUa.symm.trans joinEqInr
+
+/-- A `uaToEquiv`-headed source and a `listCons`-headed target
+are not convertible. -/
+theorem Conv.uaToEquiv_ne_listCons
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {proofTerm : RawTerm scope}
+    {headTerm tailTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.uaToEquiv proofTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.listCons headTerm tailTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqUa, _⟩ :=
+    RawStep.parStar.uaToEquiv_inv sourceToJoin
+  obtain ⟨_, _, joinEqCons, _, _⟩ :=
+    RawStep.parStar.listCons_inv targetToJoin
+  nomatch joinEqUa.symm.trans joinEqCons
+
+/-- A `uaToEquiv`-headed source and a `pair`-headed target are
+not convertible. -/
+theorem Conv.uaToEquiv_ne_pair
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {proofTerm : RawTerm scope}
+    {firstValue secondValue : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.uaToEquiv proofTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.pair firstValue secondValue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqUa, _⟩ :=
+    RawStep.parStar.uaToEquiv_inv sourceToJoin
+  obtain ⟨_, _, joinEqPair, _, _⟩ :=
+    RawStep.parStar.pair_inv targetToJoin
+  nomatch joinEqUa.symm.trans joinEqPair
+
+/-- A `uaToEquiv`-headed source and a `refl`-headed target are
+not convertible.  Cross-stratum HoTT-equivalence-vs-HoTT-identity:
+the univalence converter operates in the equivalence stratum,
+while refl is the identity-type introduction. -/
+theorem Conv.uaToEquiv_ne_refl
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {proofTerm : RawTerm scope}
+    {witnessTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.uaToEquiv proofTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.refl witnessTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqUa, _⟩ :=
+    RawStep.parStar.uaToEquiv_inv sourceToJoin
+  obtain ⟨_, joinEqRefl, _⟩ :=
+    RawStep.parStar.refl_inv targetToJoin
+  nomatch joinEqUa.symm.trans joinEqRefl
+
 end LeanFX2
