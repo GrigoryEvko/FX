@@ -23,5 +23,14 @@ theorem RawStep.par.weaken_inv {scope : Nat}
   RawStep.par.rename_inj_inv sourceTerm RawRenaming.weaken
     RawRenaming.weaken_injective parStep
 
+/-- Canonical-weaken instance of `target_in_rename_image`. -/
+theorem RawStep.par.target_in_weaken_image {scope : Nat}
+    {sourceTerm : RawTerm scope}
+    {targetAfter : RawTerm (scope + 1)}
+    (parStep : RawStep.par sourceTerm.weaken targetAfter) :
+    ∃ targetInner : RawTerm scope, targetAfter = targetInner.weaken :=
+  RawStep.par.target_in_rename_image RawRenaming.weaken
+    RawRenaming.weaken_injective parStep
+
 
 end LeanFX2

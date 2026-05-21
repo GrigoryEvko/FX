@@ -1213,5 +1213,44 @@ theorem RawStep.par.rename_inj_inv :
       refine ⟨RawTerm.app transitionInner stateInner, ?_⟩
       rw [hTarget, hStateEq, hTransitionEq]; rfl
 
+/-- Raw target-image surface for injective renamings.
+
+If a parallel step starts from a term in the image of an injective
+renaming, then its target is also in that image.  This is intentionally
+weaker than roadmap T5's full payload theorem, which must also recover
+`RawStep.par sourceTerm targetInner`.  `rename_inj_inv` remains the
+historical proof name for the underlying structural induction. -/
+theorem RawStep.par.target_in_rename_image {sourceScope targetScope : Nat}
+    (rho : RawRenaming sourceScope targetScope)
+    (rhoInjective :
+      ∀ leftPosition rightPosition,
+        rho leftPosition = rho rightPosition → leftPosition = rightPosition)
+    {sourceTerm : RawTerm sourceScope}
+    {targetAfter : RawTerm targetScope}
+    (parStep : RawStep.par (sourceTerm.rename rho) targetAfter) :
+    ∃ targetInner : RawTerm sourceScope,
+      targetAfter = targetInner.rename rho :=
+  RawStep.par.rename_inj_inv sourceTerm rho rhoInjective parStep
+
+/-- Source-equality wrapper for `RawStep.par.target_in_rename_image`.
+
+This matches the roadmap shape where the par source is first identified
+as a renamed source term by an equality hypothesis.  It still proves
+target-image membership only, not the full inner-step payload. -/
+theorem RawStep.par.target_in_rename_image_of_source_eq
+    {sourceScope targetScope : Nat}
+    {renamedSource targetAfter : RawTerm targetScope}
+    {sourceTerm : RawTerm sourceScope}
+    (rho : RawRenaming sourceScope targetScope)
+    (rhoInjective :
+      ∀ leftPosition rightPosition,
+        rho leftPosition = rho rightPosition → leftPosition = rightPosition)
+    (sourceEq : renamedSource = sourceTerm.rename rho)
+    (parStep : RawStep.par renamedSource targetAfter) :
+    ∃ targetInner : RawTerm sourceScope,
+      targetAfter = targetInner.rename rho := by
+  cases sourceEq
+  exact RawStep.par.target_in_rename_image rho rhoInjective parStep
+
 
 end LeanFX2
