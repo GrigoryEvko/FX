@@ -1302,6 +1302,152 @@ theorem Term.rename_injective_arm_oeqFunext
 --   "Dependent elimination failed: Failed to solve equation
 --    innerLevel.toNat = innerLevel✝.toNat"
 
+/-- `equivApp` arm: apply a packaged equivalence to an argument.  Outputs
+    `carrierB` (the equivalence's right carrier).  `carrierA` is existential
+    inside the equivalence's `Ty.equiv carrierA carrierB`. -/
+theorem Term.rename_injective_arm_equivApp
+    (rhoInjective : RawRenamingInjective rho)
+    {carrierA carrierB : Ty level sourceScope}
+    {equivRaw argumentRaw : RawTerm sourceScope}
+    (equivTerm : Term sourceCtx (Ty.equiv carrierA carrierB) equivRaw)
+    (argumentTerm : Term sourceCtx carrierA argumentRaw)
+    (equivTermIH :
+      ∀ {innerTargetScope : Nat}
+        {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (equivB :
+            Term sourceCtx (Ty.equiv carrierA carrierB) equivRaw),
+          Term.rename innerRenaming equivTerm =
+            Term.rename innerRenaming equivB →
+          equivTerm = equivB)
+    (argumentTermIH :
+      ∀ {innerTargetScope : Nat}
+        {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (argumentB : Term sourceCtx carrierA argumentRaw),
+          Term.rename innerRenaming argumentTerm =
+            Term.rename innerRenaming argumentB →
+          argumentTerm = argumentB)
+    (termB :
+      Term sourceCtx carrierB
+        (RawTerm.equivApp equivRaw argumentRaw)) :
+    Term.rename termRenaming (Term.equivApp equivTerm argumentTerm) =
+      Term.rename termRenaming termB →
+      Term.equivApp equivTerm argumentTerm = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.equivApp equivRaw argumentRaw)),
+        Σ' (inferredCarrierA : Ty level sourceScope),
+          Σ' (equivB :
+              Term sourceCtx (Ty.equiv inferredCarrierA genericType)
+                equivRaw),
+            Σ' (argumentB :
+                Term sourceCtx inferredCarrierA argumentRaw),
+              HEq genericTerm (Term.equivApp equivB argumentB) by
+    obtain ⟨inferredCarrierA, equivB, argumentB, termHEqB⟩ := key termB
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ _ carrierARenameEq _ _ _ equivRenameHEq
+      argumentRenameHEq
+    have carrierAEq : carrierA = inferredCarrierA :=
+      Ty.rename_injective_under_injective_renaming carrierA
+        rhoInjective inferredCarrierA carrierARenameEq
+    cases carrierAEq
+    rw [equivTermIH termRenaming rhoInjective equivB
+          (eq_of_heq equivRenameHEq),
+        argumentTermIH termRenaming rhoInjective argumentB
+          (eq_of_heq argumentRenameHEq)]
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredCarrierA equivB argumentB
+  exact ⟨inferredCarrierA, equivB, argumentB, HEq.rfl⟩
+
+/-! ## Cubical path application arm.
+
+`pathApp` produces a unique raw `RawTerm.pathApp pathRaw intervalRaw` and
+outputs at the path's `carrierType` (no cast).  Path's type `Ty.path
+carrierType leftEndpoint rightEndpoint` carries existentials for left/
+right endpoints (recoverable via `RawTerm.rename_injective`). -/
+
+/-- `pathApp` arm: cubical path application at carrier-aligned path. -/
+theorem Term.rename_injective_arm_pathApp
+    (rhoInjective : RawRenamingInjective rho)
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {pathRaw intervalRaw : RawTerm sourceScope}
+    (pathTerm : Term sourceCtx
+      (Ty.path carrierType leftEndpoint rightEndpoint) pathRaw)
+    (intervalTerm : Term sourceCtx Ty.interval intervalRaw)
+    (pathTermIH :
+      ∀ {innerTargetScope : Nat}
+        {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (pathB : Term sourceCtx
+            (Ty.path carrierType leftEndpoint rightEndpoint) pathRaw),
+          Term.rename innerRenaming pathTerm =
+            Term.rename innerRenaming pathB →
+          pathTerm = pathB)
+    (intervalTermIH :
+      ∀ {innerTargetScope : Nat}
+        {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (intervalB : Term sourceCtx Ty.interval intervalRaw),
+          Term.rename innerRenaming intervalTerm =
+            Term.rename innerRenaming intervalB →
+          intervalTerm = intervalB)
+    (termB : Term sourceCtx carrierType
+      (RawTerm.pathApp pathRaw intervalRaw)) :
+    Term.rename termRenaming
+        (Term.pathApp modeIsUnivalent pathTerm intervalTerm) =
+      Term.rename termRenaming termB →
+      Term.pathApp modeIsUnivalent pathTerm intervalTerm = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.pathApp pathRaw intervalRaw)),
+        Σ' (inferredModeIsUnivalent : mode = Mode.univalent),
+          Σ' (inferredLeft : RawTerm sourceScope),
+            Σ' (inferredRight : RawTerm sourceScope),
+              Σ' (pathB : Term sourceCtx
+                  (Ty.path genericType inferredLeft inferredRight) pathRaw),
+                Σ' (intervalB : Term sourceCtx Ty.interval intervalRaw),
+                  HEq genericTerm
+                    (Term.pathApp inferredModeIsUnivalent pathB intervalB) by
+    obtain ⟨_, inferredLeft, inferredRight, pathB, intervalB, termHEqB⟩ :=
+      key termB
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ leftRenameEq rightRenameEq _ _
+      pathRenameHEq intervalRenameEq
+    have leftEq : leftEndpoint = inferredLeft :=
+      RawTerm.rename_injective_under_injective_renaming leftEndpoint
+        rhoInjective inferredLeft leftRenameEq
+    have rightEq : rightEndpoint = inferredRight :=
+      RawTerm.rename_injective_under_injective_renaming rightEndpoint
+        rhoInjective inferredRight rightRenameEq
+    cases leftEq
+    cases rightEq
+    rw [pathTermIH termRenaming rhoInjective pathB (eq_of_heq pathRenameHEq),
+        intervalTermIH termRenaming rhoInjective intervalB intervalRenameEq]
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredModeIsUnivalent inferredLeft inferredRight pathInner
+    intervalInner
+  exact ⟨inferredModeIsUnivalent, inferredLeft, inferredRight, pathInner,
+    intervalInner, HEq.rfl⟩
+
 /-! ## Cubical-glue intro arm.
 
 `glueIntro` packages a base value + partial value at a shared baseType
