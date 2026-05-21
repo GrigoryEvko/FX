@@ -319,6 +319,126 @@ theorem Conv.right_commonRaw_in_weaken_image_of_targetRaw_eq
 
 /-! ## Direct raw-join packaging for rename-image Conv consumers -/
 
+/-- If the left endpoint of a `Conv` witness is a renamed typed term, then
+the raw join produced by `Conv` can be chosen inside the same raw renaming
+image. -/
+theorem Conv.renamed_left_toRawJoin_in_rename_image
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rawRenaming : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rawRenaming)
+    (rawRenamingInjective :
+      ∀ leftPosition rightPosition,
+        rawRenaming leftPosition = rawRenaming rightPosition →
+          leftPosition = rightPosition)
+    {sourceType : Ty level sourceScope}
+    {targetType : Ty level targetScope}
+    {sourceRaw : RawTerm sourceScope}
+    {targetRaw : RawTerm targetScope}
+    {sourceTerm : Term sourceCtx sourceType sourceRaw}
+    {targetTerm : Term targetCtx targetType targetRaw}
+    (convertibility : Conv (Term.rename termRenaming sourceTerm) targetTerm) :
+    ∃ commonInnerRaw : RawTerm sourceScope,
+      RawStep.parStar
+        (Term.toRaw (Term.rename termRenaming sourceTerm))
+        (commonInnerRaw.rename rawRenaming) ∧
+      RawStep.parStar targetRaw (commonInnerRaw.rename rawRenaming) := by
+  obtain ⟨_commonType, _commonRaw, _commonTerm, sourceChain, targetChain,
+      commonInnerRaw, commonEq⟩ :=
+    Conv.renamed_left_commonRaw_in_rename_image
+      termRenaming rawRenamingInjective convertibility
+  cases commonEq
+  exact ⟨commonInnerRaw,
+    Step.parStar.toRawBridge sourceChain.toParStar,
+    Step.parStar.toRawBridge targetChain.toParStar⟩
+
+/-- Canonical-weaken specialization of
+`Conv.renamed_left_toRawJoin_in_rename_image`. -/
+theorem Conv.weakened_left_toRawJoin_in_weaken_image
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (newType : Ty level scope)
+    {sourceType : Ty level scope}
+    {targetType : Ty level (scope + 1)}
+    {sourceRaw : RawTerm scope}
+    {targetRaw : RawTerm (scope + 1)}
+    {sourceTerm : Term sourceCtx sourceType sourceRaw}
+    {targetTerm : Term (sourceCtx.cons newType) targetType targetRaw}
+    (convertibility : Conv (Term.weaken newType sourceTerm) targetTerm) :
+    ∃ commonInnerRaw : RawTerm scope,
+      RawStep.parStar
+        (Term.toRaw (Term.weaken newType sourceTerm))
+        commonInnerRaw.weaken ∧
+      RawStep.parStar targetRaw commonInnerRaw.weaken := by
+  obtain ⟨_commonType, _commonRaw, _commonTerm, sourceChain, targetChain,
+      commonInnerRaw, commonEq⟩ :=
+    Conv.weakened_left_commonRaw_in_weaken_image newType convertibility
+  cases commonEq
+  exact ⟨commonInnerRaw,
+    Step.parStar.toRawBridge sourceChain.toParStar,
+    Step.parStar.toRawBridge targetChain.toParStar⟩
+
+/-- If the right endpoint of a `Conv` witness is a renamed typed term, then
+the raw join produced by `Conv` can be chosen inside the same raw renaming
+image. -/
+theorem Conv.renamed_right_toRawJoin_in_rename_image
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rawRenaming : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rawRenaming)
+    (rawRenamingInjective :
+      ∀ leftPosition rightPosition,
+        rawRenaming leftPosition = rawRenaming rightPosition →
+          leftPosition = rightPosition)
+    {sourceType : Ty level targetScope}
+    {targetType : Ty level sourceScope}
+    {sourceRaw : RawTerm targetScope}
+    {targetRaw : RawTerm sourceScope}
+    {sourceTerm : Term targetCtx sourceType sourceRaw}
+    {targetTerm : Term sourceCtx targetType targetRaw}
+    (convertibility : Conv sourceTerm (Term.rename termRenaming targetTerm)) :
+    ∃ commonInnerRaw : RawTerm sourceScope,
+      RawStep.parStar sourceRaw (commonInnerRaw.rename rawRenaming) ∧
+      RawStep.parStar
+        (Term.toRaw (Term.rename termRenaming targetTerm))
+        (commonInnerRaw.rename rawRenaming) := by
+  obtain ⟨_commonType, _commonRaw, _commonTerm, sourceChain, targetChain,
+      commonInnerRaw, commonEq⟩ :=
+    Conv.renamed_right_commonRaw_in_rename_image
+      termRenaming rawRenamingInjective convertibility
+  cases commonEq
+  exact ⟨commonInnerRaw,
+    Step.parStar.toRawBridge sourceChain.toParStar,
+    Step.parStar.toRawBridge targetChain.toParStar⟩
+
+/-- Canonical-weaken specialization of
+`Conv.renamed_right_toRawJoin_in_rename_image`. -/
+theorem Conv.weakened_right_toRawJoin_in_weaken_image
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (newType : Ty level scope)
+    {sourceType : Ty level (scope + 1)}
+    {targetType : Ty level scope}
+    {sourceRaw : RawTerm (scope + 1)}
+    {targetRaw : RawTerm scope}
+    {sourceTerm : Term (sourceCtx.cons newType) sourceType sourceRaw}
+    {targetTerm : Term sourceCtx targetType targetRaw}
+    (convertibility : Conv sourceTerm (Term.weaken newType targetTerm)) :
+    ∃ commonInnerRaw : RawTerm scope,
+      RawStep.parStar sourceRaw commonInnerRaw.weaken ∧
+      RawStep.parStar
+        (Term.toRaw (Term.weaken newType targetTerm))
+        commonInnerRaw.weaken := by
+  obtain ⟨_commonType, _commonRaw, _commonTerm, sourceChain, targetChain,
+      commonInnerRaw, commonEq⟩ :=
+    Conv.weakened_right_commonRaw_in_weaken_image newType convertibility
+  cases commonEq
+  exact ⟨commonInnerRaw,
+    Step.parStar.toRawBridge sourceChain.toParStar,
+    Step.parStar.toRawBridge targetChain.toParStar⟩
+
 /-- If the left endpoint raw projection is in a raw renaming image,
 then the raw join produced by `Conv` can be chosen inside that same
 image. -/
