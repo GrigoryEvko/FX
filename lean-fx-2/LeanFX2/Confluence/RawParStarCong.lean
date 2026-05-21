@@ -468,6 +468,63 @@ private theorem RawStep.parStar.unary_inv_helper
       RawStep.parStar innerSource innerTarget :=
   RawStep.parStar.unary_inv_aux wrap parStepInv chain rfl
 
+/-- Generalized binary-head `parStar` inversion.
+
+This is the two-subterm counterpart to `unary_inv_aux`; it threads the
+left and right subchains independently through the midpoint produced by
+the one-step inversion. -/
+private theorem RawStep.parStar.binary_inv_aux
+    {outerScope leftScope rightScope : Nat}
+    (wrap : RawTerm leftScope → RawTerm rightScope → RawTerm outerScope)
+    (parStepInv : ∀ {leftSource rightSource target},
+      RawStep.par (wrap leftSource rightSource) target →
+        ∃ leftTarget rightTarget,
+          target = wrap leftTarget rightTarget ∧
+          RawStep.par leftSource leftTarget ∧
+          RawStep.par rightSource rightTarget)
+    {source target : RawTerm outerScope}
+    (chain : RawStep.parStar source target) :
+    ∀ {leftSource : RawTerm leftScope} {rightSource : RawTerm rightScope},
+      source = wrap leftSource rightSource →
+      ∃ leftTarget rightTarget,
+        target = wrap leftTarget rightTarget ∧
+        RawStep.parStar leftSource leftTarget ∧
+        RawStep.parStar rightSource rightTarget := by
+  induction chain with
+  | refl _ =>
+      intro leftSource rightSource sourceEq
+      exact ⟨leftSource, rightSource, sourceEq,
+        RawStep.parStar.refl _, RawStep.parStar.refl _⟩
+  | trans firstStep _ restIH =>
+      intro leftSource rightSource sourceEq
+      subst sourceEq
+      obtain ⟨middleLeft, middleRight, middleEq,
+        leftStep, rightStep⟩ := parStepInv firstStep
+      obtain ⟨targetLeft, targetRight, targetEq,
+        leftChainRest, rightChainRest⟩ := restIH middleEq
+      exact ⟨targetLeft, targetRight, targetEq,
+        RawStep.parStar.trans leftStep leftChainRest,
+        RawStep.parStar.trans rightStep rightChainRest⟩
+
+/-- Binary-head `parStar` inversion for an exactly wrapped source. -/
+private theorem RawStep.parStar.binary_inv_helper
+    {outerScope leftScope rightScope : Nat}
+    (wrap : RawTerm leftScope → RawTerm rightScope → RawTerm outerScope)
+    (parStepInv : ∀ {leftSource rightSource target},
+      RawStep.par (wrap leftSource rightSource) target →
+        ∃ leftTarget rightTarget,
+          target = wrap leftTarget rightTarget ∧
+          RawStep.par leftSource leftTarget ∧
+          RawStep.par rightSource rightTarget)
+    {leftSource : RawTerm leftScope} {rightSource : RawTerm rightScope}
+    {target : RawTerm outerScope}
+    (chain : RawStep.parStar (wrap leftSource rightSource) target) :
+    ∃ leftTarget rightTarget,
+      target = wrap leftTarget rightTarget ∧
+      RawStep.parStar leftSource leftTarget ∧
+      RawStep.parStar rightSource rightTarget :=
+  RawStep.parStar.binary_inv_aux wrap parStepInv chain rfl
+
 /-- `RawStep.parStar (natSucc predecessor) target → ∃ target's
 predecessor with target = natSucc that predecessor and a parStar
 chain from the source predecessor to it`.
@@ -517,6 +574,30 @@ theorem RawStep.parStar.eitherInr_inv {scope : Nat}
       RawStep.parStar valueTerm valueTarget :=
   RawStep.parStar.unary_inv_helper RawTerm.eitherInr
     RawStep.par.eitherInr_inv chain
+
+/-- `RawStep.parStar (pair first second) target` preserves the `pair`
+head and projects to component-level `parStar` chains. -/
+theorem RawStep.parStar.pair_inv {scope : Nat}
+    {firstValue secondValue target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.pair firstValue secondValue) target) :
+    ∃ firstTarget secondTarget,
+      target = RawTerm.pair firstTarget secondTarget ∧
+      RawStep.parStar firstValue firstTarget ∧
+      RawStep.parStar secondValue secondTarget :=
+  RawStep.parStar.binary_inv_helper RawTerm.pair
+    RawStep.par.pair_inv chain
+
+/-- `RawStep.parStar (listCons head tail) target` preserves the
+`listCons` head and projects to component-level `parStar` chains. -/
+theorem RawStep.parStar.listCons_inv {scope : Nat}
+    {headTerm tailTerm target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.listCons headTerm tailTerm) target) :
+    ∃ headTarget tailTarget,
+      target = RawTerm.listCons headTarget tailTarget ∧
+      RawStep.parStar headTerm headTarget ∧
+      RawStep.parStar tailTerm tailTarget :=
+  RawStep.parStar.binary_inv_helper RawTerm.listCons
+    RawStep.par.listCons_inv chain
 
 /-- `RawStep.parStar (refl witness) target` preserves the `refl` head
 and projects to a witness-level `parStar` chain. -/
