@@ -835,6 +835,36 @@ theorem RawStep.parStar.pair_inv {scope : Nat}
   RawStep.parStar.binary_inv_helper RawTerm.pair
     RawStep.par.pair_inv chain
 
+/-- `RawStep.parStar (fst pairTerm) target` either preserves the `fst`
+head or fires pair β after the pair term develops to a pair. -/
+theorem RawStep.parStar.fst_inv {scope : Nat}
+    {pairTerm target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.fst pairTerm) target) :
+    (∃ pairTarget,
+      target = RawTerm.fst pairTarget ∧
+      RawStep.parStar pairTerm pairTarget) ∨
+    (∃ firstTarget secondTarget,
+      RawStep.parStar pairTerm (RawTerm.pair firstTarget secondTarget) ∧
+      RawStep.parStar firstTarget target) :=
+  RawStep.parStar.binary_intro_elim_inv_helper RawTerm.fst
+    RawTerm.pair (fun firstTarget _ => firstTarget)
+    RawStep.par.fst_inv chain
+
+/-- `RawStep.parStar (snd pairTerm) target` either preserves the `snd`
+head or fires pair β after the pair term develops to a pair. -/
+theorem RawStep.parStar.snd_inv {scope : Nat}
+    {pairTerm target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.snd pairTerm) target) :
+    (∃ pairTarget,
+      target = RawTerm.snd pairTarget ∧
+      RawStep.parStar pairTerm pairTarget) ∨
+    (∃ firstTarget secondTarget,
+      RawStep.parStar pairTerm (RawTerm.pair firstTarget secondTarget) ∧
+      RawStep.parStar secondTarget target) :=
+  RawStep.parStar.binary_intro_elim_inv_helper RawTerm.snd
+    RawTerm.pair (fun _ secondTarget => secondTarget)
+    RawStep.par.snd_inv chain
+
 /-- `RawStep.parStar (listCons head tail) target` preserves the
 `listCons` head and projects to component-level `parStar` chains. -/
 theorem RawStep.parStar.listCons_inv {scope : Nat}
