@@ -91,6 +91,50 @@ theorem StepStar.rename_toRawBridge
       (Term.toRaw (Term.rename termRenaming targetTerm)) :=
   Step.parStar.rename_toRawBridge termRenaming chain.toParStar
 
+/-- Canonical-weaken specialization of `Step.parStar.rename_toRawBridge`.
+
+Multi-step analogue of `Step.par.weaken_toRawBridge`.  When a typed
+`parStar` chain is weakened through one new binder via the canonical
+`TermRenaming.weakenStep`, the raw projection of the weakened source
+/ target is related by `RawStep.parStar`.  Surface form `Term.weaken
+newType _` matches what D2.5 transp/hcomp cascades, K12.20 Kripke
+chain construction, and Phase G β-η critical pair consumers reach
+for at call sites. -/
+theorem Step.parStar.weaken_toRawBridge
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (newType : Ty level scope)
+    {sourceType targetType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (parallelChain : Step.parStar sourceTerm targetTerm) :
+    RawStep.parStar
+      (Term.toRaw (Term.weaken newType sourceTerm))
+      (Term.toRaw (Term.weaken newType targetTerm)) :=
+  Step.parStar.rename_toRawBridge (TermRenaming.weakenStep context newType)
+    parallelChain
+
+/-- Canonical-weaken specialization of `StepStar.rename_toRawBridge`.
+
+The `StepStar`-input shape consumers ordinarily reach for is the
+narrow path: they ship a `StepStar` chain, ask the bridge for a raw
+`parStar` chain at the weakened term.  This skips the manual
+`chain.toParStar` + `weaken_toRawBridge` composition. -/
+theorem StepStar.weaken_toRawBridge
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (newType : Ty level scope)
+    {sourceType targetType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (chain : StepStar sourceTerm targetTerm) :
+    RawStep.parStar
+      (Term.toRaw (Term.weaken newType sourceTerm))
+      (Term.toRaw (Term.weaken newType targetTerm)) :=
+  StepStar.rename_toRawBridge (TermRenaming.weakenStep context newType) chain
+
 /-- Typed-entrypoint raw image preservation for a renamed multi-step source.
 
 If a typed `parStar` chain starts at `Term.rename termRenaming sourceTerm` and
