@@ -858,6 +858,123 @@ theorem Term.rename_injective_arm_lamPi
 -- inversion plumbing not yet in scope.  See InductiveArms.lean header for the
 -- catalogue of arm patterns that DO ship cleanly via this driver.
 
+/-! ## Record / refine intro arms (single-existential type, intro shape).
+
+Two intro-form ctors with outer-type `Ty.<wrapper> <existential>`:
+* `recordIntro` packages one field at `singleFieldType` into a Ty.record
+* `refineIntro` packages a base value + proof certificate into a Ty.refine
+
+Both mirror the `optionSome` template (free generic outer type via
+suffices, recover existential by casing the matcher's type equation).
+`refineIntro` adds a raw `predicate` payload at `(scope+1)` — the
+predicate is NOT a typed Term, so no IH consumed for it; raw equality
+follows from injection. -/
+
+/-- `recordIntro` arm: single-field record at `Ty.record singleFieldType`. -/
+theorem Term.rename_injective_arm_recordIntro
+    {singleFieldType : Ty level sourceScope}
+    {firstRaw : RawTerm sourceScope}
+    (firstField : Term sourceCtx singleFieldType firstRaw)
+    (firstIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (firstB : Term sourceCtx singleFieldType firstRaw),
+          Term.rename innerRenaming firstField =
+            Term.rename innerRenaming firstB →
+          firstField = firstB)
+    (rhoInjective : RawRenamingInjective rho)
+    (termB :
+      Term sourceCtx (Ty.record singleFieldType)
+        (RawTerm.recordIntro firstRaw)) :
+    Term.rename termRenaming (Term.recordIntro firstField) =
+      Term.rename termRenaming termB →
+      Term.recordIntro firstField = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.recordIntro firstRaw)),
+        Σ' (inferredFieldType : Ty level sourceScope),
+          Σ' (fieldTerm : Term sourceCtx inferredFieldType firstRaw),
+            Σ' (_ : genericType = Ty.record inferredFieldType),
+              HEq genericTerm (Term.recordIntro fieldTerm) by
+    obtain ⟨inferredFieldType, fieldB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqB
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ fieldRenameEq
+    exact congrArg Term.recordIntro
+      (firstIH termRenaming rhoInjective fieldB fieldRenameEq)
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredFieldType fieldTerm
+  exact ⟨inferredFieldType, fieldTerm, rfl, HEq.rfl⟩
+
+/-- `refineIntro` arm: refinement-type intro with two children (base value,
+    unit-typed proof certificate) and a raw `predicate` payload. -/
+theorem Term.rename_injective_arm_refineIntro
+    (rhoInjective : RawRenamingInjective rho)
+    {baseType : Ty level sourceScope}
+    {predicate : RawTerm (sourceScope + 1)}
+    {valueRaw proofRaw : RawTerm sourceScope}
+    (baseValue : Term sourceCtx baseType valueRaw)
+    (predicateProof : Term sourceCtx Ty.unit proofRaw)
+    (baseIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (baseB : Term sourceCtx baseType valueRaw),
+          Term.rename innerRenaming baseValue =
+            Term.rename innerRenaming baseB →
+          baseValue = baseB)
+    (proofIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (proofB : Term sourceCtx Ty.unit proofRaw),
+          Term.rename innerRenaming predicateProof =
+            Term.rename innerRenaming proofB →
+          predicateProof = proofB)
+    (termB :
+      Term sourceCtx (Ty.refine baseType predicate)
+        (RawTerm.refineIntro valueRaw proofRaw)) :
+    Term.rename termRenaming
+        (Term.refineIntro predicate baseValue predicateProof) =
+      Term.rename termRenaming termB →
+      Term.refineIntro predicate baseValue predicateProof = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.refineIntro valueRaw proofRaw)),
+        Σ' (inferredBaseType : Ty level sourceScope),
+          Σ' (inferredPredicate : RawTerm (sourceScope + 1)),
+            Σ' (baseB : Term sourceCtx inferredBaseType valueRaw),
+              Σ' (proofB : Term sourceCtx Ty.unit proofRaw),
+                Σ' (_ : genericType = Ty.refine inferredBaseType inferredPredicate),
+                  HEq genericTerm
+                    (Term.refineIntro inferredPredicate baseB proofB) by
+    obtain ⟨inferredBaseType, inferredPredicate, baseB, proofB,
+      typeEqB, termHEqB⟩ := key termB
+    -- typeEqB : Ty.refine baseType predicate = Ty.refine inferredBaseType inferredPredicate
+    -- Unifies inferredBaseType→baseType and inferredPredicate→predicate atomically,
+    -- avoiding the dep-elim wall encountered when decomposing via `injection`.
+    cases typeEqB
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ _ _ baseRenameEq proofRenameEq
+    rw [baseIH termRenaming rhoInjective baseB baseRenameEq,
+        proofIH termRenaming rhoInjective proofB proofRenameEq]
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredBaseType inferredPredicate baseTerm proofTerm
+  exact ⟨inferredBaseType, inferredPredicate, baseTerm, proofTerm,
+    rfl, HEq.rfl⟩
+
 /-! ## Modal-wrapper arms (`modIntro`/`modElim`/`subsume`).
 
 Three modal-wrapper ctors share the shape: a single child at arbitrary
