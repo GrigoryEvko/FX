@@ -248,6 +248,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Term.toRaw_subst0_rename_commute
 #assert_no_axioms LeanFX2.Term.toRaw_subst0_weaken_commute
 #assert_no_axioms LeanFX2.RawStep.par.rename_compatible
+#assert_no_axioms LeanFX2.RawStep.par.weaken_compatible
 #assert_no_axioms LeanFX2.RawStep.par.subst_compatible
 #assert_no_axioms LeanFX2.RawStep.par.subst_compatible_same
 #assert_no_axioms LeanFX2.Step.par.glueIntro
@@ -721,6 +722,7 @@ shapes: 5 in CubicalShape. -/
 #assert_no_axioms LeanFX2.RawStep.par.target_in_weaken_image
 #assert_no_axioms LeanFX2.RawStep.par.target_in_weaken_image_of_source_eq
 #assert_no_axioms LeanFX2.RawStep.parStar.rename_compatible
+#assert_no_axioms LeanFX2.RawStep.parStar.weaken_compatible
 #assert_no_axioms LeanFX2.RawStep.parStar.target_in_rename_image
 #assert_no_axioms LeanFX2.RawStep.parStar.target_in_rename_image_of_source_eq
 #assert_no_axioms LeanFX2.RawStep.parStar.target_in_weaken_image

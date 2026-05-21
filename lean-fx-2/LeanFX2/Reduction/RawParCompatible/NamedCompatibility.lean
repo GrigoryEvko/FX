@@ -25,6 +25,18 @@ theorem rename_compatible {sourceScope targetScope : Nat}
                 (afterTerm.rename rawRenaming) :=
   RawStep.par.rename rawRenaming parallelStep
 
+/-- Canonical-weaken specialization of `rename_compatible`.
+
+Surface form `beforeTerm.weaken` / `afterTerm.weaken` matches the
+shape downstream β-redex consumers (transp / hcomp cascades, Phase G
+β-η critical pair) reach for at call sites.  `RawTerm.weaken`
+definitionally unfolds to `RawTerm.rename RawRenaming.weaken`. -/
+theorem weaken_compatible {scope : Nat}
+    {beforeTerm afterTerm : RawTerm scope}
+    (parallelStep : RawStep.par beforeTerm afterTerm) :
+    RawStep.par beforeTerm.weaken afterTerm.weaken :=
+  RawStep.par.rename_compatible RawRenaming.weaken parallelStep
+
 /-- Compatibility name for raw parallel reduction under related substitutions. -/
 theorem subst_compatible {sourceScope targetScope : Nat}
     {firstSubst secondSubst : RawTermSubst sourceScope targetScope}

@@ -32,6 +32,17 @@ theorem RawStep.parStar.rename_compatible
         (RawStep.par.rename_compatible rawRenaming firstStep)
         restIH
 
+/-- Canonical-weaken specialization of `rename_compatible` for raw
+multi-step parallel chains.  Surface form `beforeTerm.weaken` /
+`afterTerm.weaken` matches the shape Phase G β-η critical pair and
+K13 NbE β step consumers reach for at call sites. -/
+theorem RawStep.parStar.weaken_compatible
+    {scope : Nat}
+    {beforeTerm afterTerm : RawTerm scope}
+    (parallelChain : RawStep.parStar beforeTerm afterTerm) :
+    RawStep.parStar beforeTerm.weaken afterTerm.weaken :=
+  RawStep.parStar.rename_compatible RawRenaming.weaken parallelChain
+
 private theorem RawStep.parStar.target_in_rename_image_aux
     {sourceScope targetScope : Nat}
     (rho : RawRenaming sourceScope targetScope)
