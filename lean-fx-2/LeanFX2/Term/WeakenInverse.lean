@@ -58,24 +58,23 @@ Convenience lemmas for building / projecting the eta-redex shape:
 * `Term.weaken_app_toRaw` — `Term.weaken (Term.app f a) = Term.app
   (Term.weaken f) (Term.weaken a)` (rfl).
 
-## Why this is the right scope for this commit
+## Current role
 
-The **full universal `Term.weakenInverse`** requires 75-ctor
-structural induction over `Term`, with each case doing 74-ctor raw
-disambiguation on `rawOrig`.  Cross-product: ~5500-7000 LoC of
-zero-axiom inversion infrastructure.  That is genuinely outside the
-scope of a single commit and demands its own milestone.
+This module is the older raw-shape inversion toolkit.  The broad
+consumer-facing weaken-image API now comes from
+`Term.strengthenTyped?_rename_eq`, `Term.unweaken?_weaken`, and the
+`weaken_inv_*` corollaries in `StrengtheningImage`.  Keep these
+per-shape tools for consumers that need constructor-level raw
+disambiguation rather than just image membership.
 
-The per-shape Layer 2 specializations shipped here cover the
-ctors actively needed by:
+The Layer 2 specializations here cover ctors actively needed by:
 
 * **D2.5.5 transpPi β cascade** — `lift_lam` Or.inr (eta) constructs
   `Term.app (Term.weaken functionTerm) (Term.var 0)`.  The CONSUMER
   (the typed eta ctor) builds this from a known `functionTerm`; the
   Layer 3 `Term.eta_shape_construct` gives the canonical builder.
   The INVERSION side (recognizing an eta-redex inside `Term.lam body`)
-  routes through Layer 2 `Term.weakenInverse_atVar` for the argument
-  and the recursive case on the function (deferred follow-up commit).
+  routes through Layer 2 `Term.weakenInverse_atVar` for the argument.
 * **K12.20.U2 Reducible.cr3 typed** — same Layer 2 pattern.
 * **CONVTRANS-B.* families** — Layer 2 destructors for relevant raw
   shapes (added per-need).
@@ -106,9 +105,7 @@ Adding a Layer 2 typed inversion at `RawTerm.C raw shape`:
 
 ## Root status
 
-Foundation infrastructure; zero axioms throughout.  All shipped
-declarations elaborated by `lake build LeanFX2` and audited by
-`lake build LeanFX2 LeanFX2Audit`. -/
+Foundation infrastructure; zero axioms throughout. -/
 
 namespace LeanFX2
 

@@ -15,28 +15,13 @@ namespace Term
 
 /-! ## Headline aggregator infrastructure
 
-The next layer above the 78 per-arm dispatcher leaves
+The layer above the 78 per-arm dispatcher leaves
 (`partialStrengthenTyped?_at<Ctor>_imp_sound`) is the full structural
-aggregator `partialStrengthenTyped?_imp_sound`: for ANY source typed
-term, if `partialStrengthenTyped?` succeeds, the result satisfies
-`StrengtheningSoundness`.  The aggregator is a 78-case structural
-induction on `Term`, with each case applying the corresponding leaf.
-
-Per-ctor IH plumbing varies (0–4 IHs depending on ctor arity and
-binder structure), so the per-arm wrappers landed in multiple
-phases (Phases 80–90); the universal headline composing all 78
-arms via structural induction on `Term` is the next milestone, and
-unblocks the long-term image-theorem closure
-(`weaken_inv_of_strengthenTyped?_some` →
-`strengthenTyped?_some_of_weaken` →
-`weaken_image_iff_strengthenTyped?_some`).
-
-This file ships the uniform soundness property `IsAggregatorSound`
-plus all 78 per-arm dispatcher wrappers
-`isAggregatorSound_<ctor>` covering every Term constructor.  The
-headline universal aggregator (`∀ sourceTerm, IsAggregatorSound
-sourceTerm`) lands in a follow-up phase as a single structural
-induction composing the 78 wrappers. -/
+aggregator: for any typed source term, a successful
+`partialStrengthenTyped?` result satisfies `StrengtheningSoundness`.
+The universal theorem itself lives in
+`AggregatorSoundUniversal.lean`; this file defines the uniform
+predicate and the per-constructor wrappers consumed by that theorem. -/
 
 /-- The aggregator-soundness property for a typed source term.
 
@@ -74,9 +59,8 @@ The proof is a single-line delegation: `intros _ _ str res suc`
 introduces the universally-quantified strengthening / result /
 success arguments, then `exact` calls the per-arm leaf.
 
-First of 78 per-arm wrappers; remaining 77 ship across Phases
-81–90.  After all 78 wrappers, the universal headline aggregator
-composes them via structural induction. -/
+This is the variable arm in the 78-wrapper family composed by
+`isAggregatorSound_universal`. -/
 theorem isAggregatorSound_var {mode : Mode} {level : Nat}
     {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
     (sourcePosition : Fin sourceScope) :

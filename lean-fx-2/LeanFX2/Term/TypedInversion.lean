@@ -49,20 +49,17 @@ newType) (Ty.arrow domainType codomainType).weaken fnRaw.weaken`,
 returns `Option (Term context (Ty.arrow domainType codomainType)
 fnRaw)`.
 
-Why Option rather than `∃ originalFn, ... = Term.weaken originalFn`?
-The existence form requires a 78-case parallel induction proving
-every typed-strengthening producer commutes with renaming
-(equivalent to extending `StrengtheningResult` with a `termRenames`
-HEq field).  Estimated ~5500-7000 LoC.  The Option form is the
-immediately-shippable infrastructure that downstream consumers can
-chain through their own structural information.
+This file keeps the older Option-form API because a few eta-planning
+consumers still want a computational discriminator.  The later
+renaming-image theorem stack now supplies the proper existence-form
+API in `StrengtheningImage`: use `Term.weaken_inv_arrow` for new
+consumer proofs that need a recovered inner term and an equality
+against `Term.weaken`.
 
-### `Ty.weaken_inj` + `Term.weakenInverse_atVarZero` — cascade prereqs
+### `Ty.weaken_inj` + `Term.weakenInverse_atVarZero`
 
-Two pieces of supporting infrastructure that the universal
-existence-form `weaken_inv_arrow` would itself rely on, plus
-the per-shape inversion needed by the typed-eta lift_lam
-consumer:
+Two supporting lemmas still used directly by typed eta-planning
+proofs and by older computational inversion call sites:
 
 * `Ty.weaken_inj` — `Ty.weaken` is injective.  Proved via the
   round-trip identity `Ty.strengthen?_weaken`.  Foundational for
@@ -185,7 +182,7 @@ def Term.app_inv_pi
         HEq genericTerm (Term.appPi fnTerm argTerm)) :=
   Term.app_inv genericTerm
 
-/-! ## `Term.weaken_inv_arrow` — typed weaken inversion at arrow type.
+/-! ## `Term.weaken_inv_arrow_option` — computational arrow check.
 
 The typed-eta redesign's `lift_lam` η-arm needs to recover the
 unweakened function from a weakened-shape `Term (ctx.cons newType)
@@ -193,43 +190,11 @@ unweakened function from a weakened-shape `Term (ctx.cons newType)
 typed term whose type and raw indices are both weakenings is in
 the image of `Term.weaken`.
 
-### Architecture
-
-The kernel already ships:
-
-* `Term.unweaken? : Term (ctx.cons newType) sourceType.weaken
-  sourceRaw.weaken → Option (Term ctx sourceType sourceRaw)` — the
-  computational inversion (`Term/PartialStrengthen.lean`).
-* `Term.usesNewestSlotTyped? : Term ... → Bool` — the boolean
-  predicate.
-* `Term.not_usesNewestSlotTyped?_imp_strengthenTyped?_some` — the
-  semantic witness exists when the slot is unused.
-
-These give the **Option-form** of typed weaken inversion at any
-type/raw indices.  The companion soundness theorem `wt = Term.weaken
-inner` when `unweaken? wt = some inner` requires extending
-`StrengtheningResult` with a `termRenames` field (HEq linking
-sourceTerm to a rename of targetTerm) — that extension cascades
-through all 78 producers, deferred to a follow-up batch.
-
-### What this section ships
-
-* `Term.weaken_inv_arrow_option` — thin arrow-typed wrapper around
-  `Term.unweaken?`.  Output: `Option (Term context (Ty.arrow
-  domainType codomainType) fnRaw)`.  Zero new infrastructure.
-  Consumers (lift_lam η-arm, decidable conversion, subject
-  reduction app cases) can refute the `none` case via structural
-  information from the context in which they invoke this lemma.
-
-### What's deferred
-
-The full **existence form** `∃ originalFn, weakenedFn = Term.weaken
-originalFn` for an OPAQUE `weakenedFn` requires extending
-`StrengtheningResult` with a `termRenames` HEq field together with
-a parallel 78-case induction proving each typed-strengthening
-producer respects renaming.  See `feedback_typed_eta_lam_inv_
-cascade_blocker_2026_05_16.md` for the structural reasoning.
-Estimated work: ~5500-7000 LoC for the full producer cascade. -/
+The full existence-form arrow inverse now lives in
+`StrengtheningImage` as `Term.weaken_inv_arrow`, derived from the
+renaming-image theorem stack.  This local definition remains as a
+thin `unweaken?` wrapper for call sites that want to compute before
+deciding which typed branch to enter. -/
 
 /-- **Arrow-typed Option-form weaken inversion**.  Thin wrapper
 around `Term.unweaken?` at known arrow type and known function-raw.
@@ -241,9 +206,8 @@ be a `Term.weaken` (e.g. the lift_lam η-arm, where the input is
 derived from a `Term.app fnTerm (Term.var 0)` body via `app_inv`)
 can refute the `none` case via their own structural analysis.
 
-This is the immediately-shippable inversion infrastructure; the
-universal existence form is gated on the `StrengtheningResult`
-`termRenames` extension. -/
+New proofs should prefer the existence form `Term.weaken_inv_arrow`
+unless they specifically need the `Option` discriminator. -/
 def Term.weaken_inv_arrow_option
     {newType : Ty level scope}
     {domainType codomainType : Ty level scope}
@@ -256,21 +220,11 @@ def Term.weaken_inv_arrow_option
   LeanFX2.Term.unweaken? (sourceType := Ty.arrow domainType codomainType)
                          (sourceRaw := fnRaw) weakenedFn
 
-/-! ## Supporting infrastructure for the typed weaken inversion cascade.
+/-! ## Supporting infrastructure for typed weaken inversion.
 
-The full existence-form `Term.weaken_inv_arrow` is a 78-case
-structural induction over `Term` whose recursive cases require
-unweaken-recovery on subterms (opaque-Ty ctors like `Term.app`,
-`Term.boolElim`, `Term.modIntro` all carry a polymorphic motive
-type that could itself be an arrow).  Shipping the universal
-existence form is genuinely ~5500-7000 LoC of structural cascade
-work, equivalent to extending `StrengtheningResult` with a
-`termRenames` HEq field (Path A in
-`project_typed_inversion_status.md`).
-
-What this section ships is the **load-bearing infrastructure** the
-universal existence form would itself rely on plus the additional
-per-shape inversion needed by the typed-eta lift_lam consumer:
+The renaming-image theorem stack made the old full-cascade plan
+obsolete.  This section records the smaller pieces that still matter
+independently of the headline existence theorem:
 
 * `Ty.weaken_inj` — `Ty.weaken` is injective.  Foundational; used
   by every step of the cascade that inverts `(Ty.arrow A B).weaken
@@ -281,11 +235,9 @@ per-shape inversion needed by the typed-eta lift_lam consumer:
   consumer recovers the argTerm of `Term.app fnTerm (Term.var 0)`
   via this helper.
 
-These two pieces together close the gap on the eta-arm consumer
-side: combined with `Term.app_inv` (already shipped) and
-`Term.weaken_inv_arrow_option` (already shipped), they let the
-consumer reach a concrete typed function source without the full
-existence-form universal weaken inverse. -/
+These two pieces still compose with `Term.app_inv` and either the
+computational `Term.weaken_inv_arrow_option` or the stronger
+`Term.weaken_inv_arrow`, depending on what the consumer needs. -/
 
 /-- **`Ty.weaken` is injective.**  Proved via the round-trip identity
 `Ty.strengthen?_weaken : T.weaken.strengthen? = some T`: if two types
