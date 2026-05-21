@@ -1768,6 +1768,84 @@ theorem Term.rename_injective_arm_refineElim
   rename_i inferredPredicate refinedTerm
   exact ⟨inferredPredicate, refinedTerm, HEq.rfl⟩
 
+/-- `pathLam` arm: cubical interval binder with body in `Ty.interval`-extended
+    context.  `RawTerm.pathLam` is uniquely produced by `Term.pathLam`, so the
+    `suffices key ... cases genericTerm` pattern lands a single arm; no PSum
+    refutation needed.  Body cast follows the `lam` template via
+    `termRenameInjectiveCastHEq` over `Ty.weaken_rename_commute`. -/
+theorem Term.rename_injective_arm_pathLam
+    (rhoInjective : RawRenamingInjective rho)
+    (modeIsUnivalent : mode = Mode.univalent)
+    (carrierType : Ty level sourceScope)
+    (leftEndpoint rightEndpoint : RawTerm sourceScope)
+    {bodyRaw : RawTerm (sourceScope + 1)}
+    (body : Term (sourceCtx.cons Ty.interval) carrierType.weaken bodyRaw)
+    (bodyIH :
+      ∀ {innerTargetScope : Nat}
+        {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming (sourceScope + 1) innerTargetScope}
+        (innerRenaming :
+          TermRenaming (sourceCtx.cons Ty.interval) innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (bodyB :
+            Term (sourceCtx.cons Ty.interval) carrierType.weaken bodyRaw),
+          Term.rename innerRenaming body = Term.rename innerRenaming bodyB →
+          body = bodyB)
+    (termB :
+      Term sourceCtx (Ty.path carrierType leftEndpoint rightEndpoint)
+        (RawTerm.pathLam bodyRaw)) :
+    Term.rename termRenaming
+        (Term.pathLam modeIsUnivalent carrierType leftEndpoint
+          rightEndpoint body) =
+      Term.rename termRenaming termB →
+      Term.pathLam modeIsUnivalent carrierType leftEndpoint
+        rightEndpoint body = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType (RawTerm.pathLam bodyRaw)),
+        Σ' (inferredModeIsUnivalent : mode = Mode.univalent),
+          Σ' (inferredCarrier : Ty level sourceScope),
+            Σ' (inferredLeft : RawTerm sourceScope),
+              Σ' (inferredRight : RawTerm sourceScope),
+                Σ' (bodyB : Term (sourceCtx.cons Ty.interval)
+                    inferredCarrier.weaken bodyRaw),
+                  Σ' (_ : genericType =
+                      Ty.path inferredCarrier inferredLeft inferredRight),
+                    HEq genericTerm
+                      (Term.pathLam inferredModeIsUnivalent inferredCarrier
+                        inferredLeft inferredRight bodyB) by
+    obtain ⟨_, inferredCarrier, inferredLeft, inferredRight, bodyB,
+      typeEqB, termHEqB⟩ := key termB
+    cases typeEqB
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ _ _ bodyRenameEq
+    have bodyRenameUncastHEq :
+        HEq (Term.rename (termRenaming.lift Ty.interval) body)
+            (Term.rename (termRenaming.lift Ty.interval) bodyB) :=
+      HEq.trans
+        (HEq.symm
+          (termRenameInjectiveCastHEq
+            (Ty.weaken_rename_commute rho carrierType)
+            (Term.rename (termRenaming.lift Ty.interval) body)))
+        (HEq.trans (heq_of_eq bodyRenameEq)
+          (termRenameInjectiveCastHEq
+            (Ty.weaken_rename_commute rho carrierType)
+            (Term.rename (termRenaming.lift Ty.interval) bodyB)))
+    have bodyEq : body = bodyB :=
+      bodyIH (termRenaming.lift Ty.interval)
+        (RawRenamingInjective.lift rhoInjective) bodyB
+        (eq_of_heq bodyRenameUncastHEq)
+    cases bodyEq
+    rfl
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredModeIsUnivalent inferredCarrier inferredLeft
+    inferredRight bodyTerm
+  exact ⟨inferredModeIsUnivalent, inferredCarrier, inferredLeft,
+    inferredRight, bodyTerm, rfl, HEq.rfl⟩
+
 /-! ## Closed-ctor arms (one-liners reusing existing standalone helpers)
 
 For closed constructors (no child terms, just `Term.<ctor>` at a fixed type),
