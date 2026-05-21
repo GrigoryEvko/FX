@@ -109,7 +109,9 @@ pattern as commits f3df931 (RawStep.par inversions) and d2e9d4a
 #assert_no_axioms LeanFX2.Term.weakenInverse_atNatZero
 #assert_no_axioms LeanFX2.Term.weakenInverse_atVar
 -- Layer 3: cascade construction + projection helpers.
+#assert_no_axioms LeanFX2.Term.eta_lam_shape_construct
 #assert_no_axioms LeanFX2.Term.eta_shape_construct
+#assert_no_axioms LeanFX2.Term.eta_path_shape_construct
 #assert_no_axioms LeanFX2.Term.weaken_var_unfolds
 #assert_no_axioms LeanFX2.Term.weaken_app_toRaw
 -- Raw/type-index strengthening facade built from the weaken-inverse layer.
@@ -125,11 +127,9 @@ pattern as commits f3df931 (RawStep.par inversions) and d2e9d4a
 #assert_no_axioms LeanFX2.Term.app_inv
 #assert_no_axioms LeanFX2.Term.app_inv_arrow
 #assert_no_axioms LeanFX2.Term.app_inv_pi
--- Typed weaken inversion at arrow type (Option form).  See
--- LeanFX2.Term.TypedInversion section "weaken_inv_arrow" for the
--- gap analysis on the universal existence form.
+-- Typed weaken inversion at arrow type (Option form).
 #assert_no_axioms LeanFX2.Term.weaken_inv_arrow_option
--- Supporting infrastructure for the typed weaken inversion cascade.
+-- Supporting infrastructure for typed weaken inversion and eta-shape builders.
 #assert_no_axioms LeanFX2.Ty.weaken_inj
 #assert_no_axioms LeanFX2.Term.weakenInverse_atVarZero
 

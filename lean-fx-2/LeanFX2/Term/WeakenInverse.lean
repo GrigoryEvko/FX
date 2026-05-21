@@ -49,10 +49,12 @@ land per-need in follow-up commits.
 
 Convenience lemmas for building / projecting the eta-redex shape:
 
-* `Term.eta_shape_construct` — builds
+* `Term.eta_lam_shape_construct` / `Term.eta_shape_construct` — builds
   `Term.app (Term.weaken functionTerm) (Term.var 0)` from
   `functionTerm`.  The load-bearing constructor for D2.5.5's typed
   eta ctors.
+* `Term.eta_path_shape_construct` — cubical path analog, building
+  `Term.pathApp (Term.weaken pathTerm) (Term.var 0)`.
 * `Term.weaken_var_unfolds` — `Term.weaken (Term.var pos) = Term.var
   (Fin.succ pos)` (rfl).
 * `Term.weaken_app_toRaw` — `Term.weaken (Term.app f a) = Term.app
@@ -559,7 +561,7 @@ HEq are sufficient infrastructure.
 The raw form is `(RawTerm.app fRaw.weaken (RawTerm.var ⟨0, _⟩))` —
 the function's raw is weakened (per Term.weaken's projection), the
 argument's raw is `var 0` (the new binder). -/
-def Term.eta_shape_construct
+def Term.eta_lam_shape_construct
     {domainType codomainType : Ty level scope}
     {fRaw : RawTerm scope}
     (functionTerm : Term context (Ty.arrow domainType codomainType) fRaw) :
@@ -568,6 +570,25 @@ def Term.eta_shape_construct
   Term.app (Term.weaken (newType := domainType) functionTerm)
            (Term.var (context := context.cons domainType)
                      ⟨0, Nat.zero_lt_succ scope⟩)
+
+/-- Backward-compatible name for the non-dependent lambda eta-shape builder. -/
+abbrev Term.eta_shape_construct := @Term.eta_lam_shape_construct
+
+/-- Cubical path eta-shape constructor:
+`pathApp (weaken pathTerm) (var 0)` under an interval binder. -/
+def Term.eta_path_shape_construct
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint pathRaw : RawTerm scope}
+    (pathTerm :
+      Term context (Ty.path carrierType leftEndpoint rightEndpoint) pathRaw) :
+    Term (context.cons Ty.interval) carrierType.weaken
+      (RawTerm.pathApp pathRaw.weaken
+        (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩)) :=
+  Term.pathApp modeIsUnivalent
+    (Term.weaken (newType := Ty.interval) pathTerm)
+    (Term.var (context := context.cons Ty.interval)
+      ⟨0, Nat.zero_lt_succ scope⟩)
 
 /-! ### Companion: definitional unfolding of Term.weaken on Term.var.
 
