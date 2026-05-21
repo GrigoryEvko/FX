@@ -240,6 +240,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Step.par.betaPathAppDeep
 #assert_no_axioms LeanFX2.Step.par.toRawBridge
 #assert_no_axioms LeanFX2.Step.par.rename_toRawBridge
+#assert_no_axioms LeanFX2.Step.par.weaken_toRawBridge
 #assert_no_axioms LeanFX2.Step.par.renamed_source_targetRaw_in_rename_image
 #assert_no_axioms LeanFX2.Step.par.weakened_source_targetRaw_in_weaken_image
 #assert_no_axioms LeanFX2.Step.par.renamed_source_toRawBridge_target_in_rename_image

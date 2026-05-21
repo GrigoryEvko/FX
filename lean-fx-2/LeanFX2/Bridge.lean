@@ -419,6 +419,29 @@ theorem Step.par.rename_toRawBridge
   exact RawStep.par.rename rawRenaming
     (Step.par.toRawBridge parallelStep)
 
+/-- Canonical-weaken specialization of `Step.par.rename_toRawBridge`.
+
+When a typed parallel step is weakened through one new binder via the
+canonical `TermRenaming.weakenStep`, the raw projection of the
+weakened source / target is related by `RawStep.par`.  Consumers that
+reach for `Term.weaken newType _` surface form (D2.5 transp / hcomp
+cascade, K12.20 fundamental lemma, Phase G β-η critical pair) prefer
+this corollary over composing `rename_toRawBridge` with
+`weakenStep` at every call site. -/
+theorem Step.par.weaken_toRawBridge
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (newType : Ty level scope)
+    {sourceType targetType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (parallelStep : Step.par sourceTerm targetTerm) :
+    RawStep.par (Term.toRaw (Term.weaken newType sourceTerm))
+                (Term.toRaw (Term.weaken newType targetTerm)) :=
+  Step.par.rename_toRawBridge (TermRenaming.weakenStep context newType)
+    parallelStep
+
 /-- Typed-entrypoint raw image preservation for a renamed source.
 
 If a typed parallel step starts at `Term.rename termRenaming sourceTerm`
