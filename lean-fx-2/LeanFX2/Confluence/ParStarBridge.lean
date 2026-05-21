@@ -135,6 +135,83 @@ theorem StepStar.weaken_toRawBridge
       (Term.toRaw (Term.weaken newType targetTerm)) :=
   StepStar.rename_toRawBridge (TermRenaming.weakenStep context newType) chain
 
+/-- Raw-image compatibility for typed multi-step parallel reduction
+after a typed substitution.
+
+Multi-step analogue of `Step.par.subst_toRawBridge`: projects the typed
+`parStar` chain to raw, then uses raw `parStar` subst-compatibility
+lifted by `mapStep`. -/
+theorem Step.parStar.subst_toRawBridge
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    {sourceType targetType : Ty level sourceScope}
+    {sourceRaw targetRaw : RawTerm sourceScope}
+    {sourceTerm : Term sourceCtx sourceType sourceRaw}
+    {targetTerm : Term sourceCtx targetType targetRaw}
+    (parallelChain : Step.parStar sourceTerm targetTerm) :
+    RawStep.parStar (Term.toRaw (Term.subst termSubst sourceTerm))
+                    (Term.toRaw (Term.subst termSubst targetTerm)) := by
+  rw [Term.toRaw_subst termSubst sourceTerm,
+      Term.toRaw_subst termSubst targetTerm]
+  exact RawStep.parStar.subst_compatible_same sigma.forRaw
+    (Step.parStar.toRawBridge parallelChain)
+
+/-- Singleton-substitution specialization of `Step.parStar.subst_toRawBridge`.
+
+The multi-step β-redex shape: `Term.subst0 body argTerm` for both
+source and target of the typed `parStar` chain.  Surface form is what
+K12.21 fundamental lemma multi-step β-arm and the Phase G β-η critical
+pair joinability cascade reach for at call sites. -/
+theorem Step.parStar.subst0_toRawBridge
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {substituent : Ty level scope}
+    {argRaw : RawTerm scope}
+    (argTerm : Term sourceCtx substituent argRaw)
+    {sourceType targetType : Ty level (scope + 1)}
+    {sourceRaw targetRaw : RawTerm (scope + 1)}
+    {sourceTerm : Term (sourceCtx.cons substituent) sourceType sourceRaw}
+    {targetTerm : Term (sourceCtx.cons substituent) targetType targetRaw}
+    (parallelChain : Step.parStar sourceTerm targetTerm) :
+    RawStep.parStar (Term.toRaw (Term.subst0 sourceTerm argTerm))
+                    (Term.toRaw (Term.subst0 targetTerm argTerm)) :=
+  Step.parStar.subst_toRawBridge (TermSubst.singleton argTerm) parallelChain
+
+/-- `StepStar` variant of `Step.parStar.subst_toRawBridge`. -/
+theorem StepStar.subst_toRawBridge
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    {sourceType targetType : Ty level sourceScope}
+    {sourceRaw targetRaw : RawTerm sourceScope}
+    {sourceTerm : Term sourceCtx sourceType sourceRaw}
+    {targetTerm : Term sourceCtx targetType targetRaw}
+    (chain : StepStar sourceTerm targetTerm) :
+    RawStep.parStar (Term.toRaw (Term.subst termSubst sourceTerm))
+                    (Term.toRaw (Term.subst termSubst targetTerm)) :=
+  Step.parStar.subst_toRawBridge termSubst chain.toParStar
+
+/-- Singleton-substitution `StepStar` variant. -/
+theorem StepStar.subst0_toRawBridge
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {substituent : Ty level scope}
+    {argRaw : RawTerm scope}
+    (argTerm : Term sourceCtx substituent argRaw)
+    {sourceType targetType : Ty level (scope + 1)}
+    {sourceRaw targetRaw : RawTerm (scope + 1)}
+    {sourceTerm : Term (sourceCtx.cons substituent) sourceType sourceRaw}
+    {targetTerm : Term (sourceCtx.cons substituent) targetType targetRaw}
+    (chain : StepStar sourceTerm targetTerm) :
+    RawStep.parStar (Term.toRaw (Term.subst0 sourceTerm argTerm))
+                    (Term.toRaw (Term.subst0 targetTerm argTerm)) :=
+  Step.parStar.subst0_toRawBridge argTerm chain.toParStar
+
 /-- Typed-entrypoint raw image preservation for a renamed multi-step source.
 
 If a typed `parStar` chain starts at `Term.rename termRenaming sourceTerm` and

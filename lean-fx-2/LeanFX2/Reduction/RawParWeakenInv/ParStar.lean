@@ -43,6 +43,24 @@ theorem RawStep.parStar.weaken_compatible
     RawStep.parStar beforeTerm.weaken afterTerm.weaken :=
   RawStep.parStar.rename_compatible RawRenaming.weaken parallelChain
 
+/-- Multi-step lift of `RawStep.par.subst_compatible_same`.
+
+Raw multi-step parallel reduction is preserved by applying the same
+substitution to both sides of the chain.  Proved via `mapStep` lift
+through the single-step compatibility theorem, per the
+`feedback_lean_mapStep_pattern.md` discipline. -/
+theorem RawStep.parStar.subst_compatible_same
+    {sourceScope targetScope : Nat}
+    (rawSubst : RawTermSubst sourceScope targetScope)
+    {beforeTerm afterTerm : RawTerm sourceScope}
+    (parallelChain : RawStep.parStar beforeTerm afterTerm) :
+    RawStep.parStar (beforeTerm.subst rawSubst)
+                    (afterTerm.subst rawSubst) :=
+  RawStep.parStar.mapStep
+    (fun term => term.subst rawSubst)
+    (fun step => RawStep.par.subst_compatible_same rawSubst step)
+    parallelChain
+
 private theorem RawStep.parStar.target_in_rename_image_aux
     {sourceScope targetScope : Nat}
     (rho : RawRenaming sourceScope targetScope)
