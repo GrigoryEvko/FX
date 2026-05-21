@@ -125,6 +125,203 @@ theorem Term.rename_injective_arm_lam
   cases bodyEq
   rfl
 
+/-- `optionSome` arm: single parametric child, no cast.  Uses the
+    type-free suffices pattern with a packed wrapper typeEq, matching the
+    standalone `atOptionSome` helper's shape. -/
+theorem Term.rename_injective_arm_optionSome
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (rhoInjective : RawRenamingInjective rho)
+    {elementType : Ty level sourceScope}
+    {valueRaw : RawTerm sourceScope}
+    (valueA : Term sourceCtx elementType valueRaw)
+    (valueIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (valueB : Term sourceCtx elementType valueRaw),
+          Term.rename innerRenaming valueA = Term.rename innerRenaming valueB →
+          valueA = valueB)
+    (termB : Term sourceCtx (Ty.optionType elementType)
+      (RawTerm.optionSome valueRaw)) :
+    Term.rename termRenaming (Term.optionSome valueA) =
+      Term.rename termRenaming termB →
+      Term.optionSome valueA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType (RawTerm.optionSome valueRaw)),
+        Σ' (inferredElementType : Ty level sourceScope),
+          Σ' (valueTerm : Term sourceCtx inferredElementType valueRaw),
+            Σ' (_ : genericType = Ty.optionType inferredElementType),
+              HEq genericTerm (Term.optionSome valueTerm) by
+    obtain ⟨inferredElementType, valueB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqB
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ valueRenameEq
+    exact congrArg Term.optionSome
+      (valueIH termRenaming rhoInjective valueB valueRenameEq)
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredElementType valueTerm
+  exact ⟨inferredElementType, valueTerm, rfl, HEq.rfl⟩
+
+/-- `eitherInl` arm: single parametric child within a binary type wrapper.
+    Both `leftType` and `rightType` are existential in the ctor; only
+    `leftType` flows back to the value's type. -/
+theorem Term.rename_injective_arm_eitherInl
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (rhoInjective : RawRenamingInjective rho)
+    {leftCarrierType rightCarrierType : Ty level sourceScope}
+    {valueRaw : RawTerm sourceScope}
+    (valueA : Term sourceCtx leftCarrierType valueRaw)
+    (valueIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (valueB : Term sourceCtx leftCarrierType valueRaw),
+          Term.rename innerRenaming valueA = Term.rename innerRenaming valueB →
+          valueA = valueB)
+    (termB : Term sourceCtx (Ty.eitherType leftCarrierType rightCarrierType)
+      (RawTerm.eitherInl valueRaw)) :
+    Term.rename termRenaming (Term.eitherInl valueA) =
+      Term.rename termRenaming termB →
+      Term.eitherInl valueA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType (RawTerm.eitherInl valueRaw)),
+        Σ' (inferredLeftType inferredRightType : Ty level sourceScope),
+          Σ' (valueTerm : Term sourceCtx inferredLeftType valueRaw),
+            Σ' (_ : genericType = Ty.eitherType inferredLeftType inferredRightType),
+              HEq genericTerm
+                (Term.eitherInl (rightType := inferredRightType) valueTerm) by
+    obtain ⟨inferredLeftType, inferredRightType, valueB, typeEqB, termHEqB⟩ :=
+      key termB
+    cases typeEqB
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ _ valueRenameEq
+    exact congrArg (Term.eitherInl (rightType := rightCarrierType))
+      (valueIH termRenaming rhoInjective valueB valueRenameEq)
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i leftTypeInferred rightTypeInferred valueTerm
+  exact ⟨leftTypeInferred, rightTypeInferred, valueTerm, rfl, HEq.rfl⟩
+
+/-- `eitherInr` arm: mirror of `eitherInl` on the right injection. -/
+theorem Term.rename_injective_arm_eitherInr
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (rhoInjective : RawRenamingInjective rho)
+    {leftCarrierType rightCarrierType : Ty level sourceScope}
+    {valueRaw : RawTerm sourceScope}
+    (valueA : Term sourceCtx rightCarrierType valueRaw)
+    (valueIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (valueB : Term sourceCtx rightCarrierType valueRaw),
+          Term.rename innerRenaming valueA = Term.rename innerRenaming valueB →
+          valueA = valueB)
+    (termB : Term sourceCtx (Ty.eitherType leftCarrierType rightCarrierType)
+      (RawTerm.eitherInr valueRaw)) :
+    Term.rename termRenaming (Term.eitherInr valueA) =
+      Term.rename termRenaming termB →
+      Term.eitherInr valueA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType (RawTerm.eitherInr valueRaw)),
+        Σ' (inferredLeftType inferredRightType : Ty level sourceScope),
+          Σ' (valueTerm : Term sourceCtx inferredRightType valueRaw),
+            Σ' (_ : genericType = Ty.eitherType inferredLeftType inferredRightType),
+              HEq genericTerm
+                (Term.eitherInr (leftType := inferredLeftType) valueTerm) by
+    obtain ⟨inferredLeftType, inferredRightType, valueB, typeEqB, termHEqB⟩ :=
+      key termB
+    cases typeEqB
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ _ valueRenameEq
+    exact congrArg (Term.eitherInr (leftType := leftCarrierType))
+      (valueIH termRenaming rhoInjective valueB valueRenameEq)
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i leftTypeInferred rightTypeInferred valueTerm
+  exact ⟨leftTypeInferred, rightTypeInferred, valueTerm, rfl, HEq.rfl⟩
+
+/-- `listCons` arm: two non-colliding children at the same element type,
+    no cast on either.  Type-free suffices with packed wrapper typeEq. -/
+theorem Term.rename_injective_arm_listCons
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (rhoInjective : RawRenamingInjective rho)
+    {elementType : Ty level sourceScope}
+    {headRaw tailRaw : RawTerm sourceScope}
+    (headA : Term sourceCtx elementType headRaw)
+    (tailA : Term sourceCtx (Ty.listType elementType) tailRaw)
+    (headIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (headB : Term sourceCtx elementType headRaw),
+          Term.rename innerRenaming headA = Term.rename innerRenaming headB →
+          headA = headB)
+    (tailIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (tailB : Term sourceCtx (Ty.listType elementType) tailRaw),
+          Term.rename innerRenaming tailA = Term.rename innerRenaming tailB →
+          tailA = tailB)
+    (termB : Term sourceCtx (Ty.listType elementType)
+      (RawTerm.listCons headRaw tailRaw)) :
+    Term.rename termRenaming (Term.listCons headA tailA) =
+      Term.rename termRenaming termB →
+      Term.listCons headA tailA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.listCons headRaw tailRaw)),
+        Σ' (inferredElementType : Ty level sourceScope),
+          Σ' (headTerm : Term sourceCtx inferredElementType headRaw),
+            Σ' (tailTerm :
+                Term sourceCtx (Ty.listType inferredElementType) tailRaw),
+              Σ' (_ : genericType = Ty.listType inferredElementType),
+                HEq genericTerm (Term.listCons headTerm tailTerm) by
+    obtain ⟨inferredElementType, headB, tailB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqB
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ _ headRenameEq tailRenameEq
+    rw [headIH termRenaming rhoInjective headB headRenameEq,
+        tailIH termRenaming rhoInjective tailB tailRenameEq]
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredElementType headTerm tailTerm
+  exact ⟨inferredElementType, headTerm, tailTerm, rfl, HEq.rfl⟩
+
 /-- `natSucc` arm: single closed-type child (Ty.nat), no cast, no existential. -/
 theorem Term.rename_injective_arm_natSucc
     {mode : Mode} {level sourceScope targetScope : Nat}
