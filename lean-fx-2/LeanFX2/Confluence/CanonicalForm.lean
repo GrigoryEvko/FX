@@ -9465,4 +9465,182 @@ theorem Conv.intervalJoin_ne_refl
     RawStep.parStar.refl_inv targetToJoin
   nomatch joinEqJoin.symm.trans joinEqRefl
 
+/-! ### `uaToEquiv` row — HoTT univalence-to-equivalence converter
+
+The `uaToEquiv` head wraps a univalence proof to obtain an
+equivalence.  It is unary at the raw level (one component proof
+sub-term), and no current `Step.par` rule β-reduces
+`uaToEquiv proof` to a non-uaToEquiv canonical head — the
+non-disjunctive `RawStep.parStar.uaToEquiv_inv` lemma at
+`RawParStarCong.lean:2228` confirms the head is preserved through
+every parallel chain.
+
+Source destructure follows the 3-binder unary pattern:
+  `obtain ⟨_, joinEqUa, _⟩ := RawStep.parStar.uaToEquiv_inv sourceToJoin`
+
+Opening this row brings the HoTT equivalence stratum to three
+source-head rows ({oeqTrans, equivCompose, uaToEquiv}). -/
+
+/-- A `uaToEquiv`-headed source and a `unit`-headed target are
+not convertible. -/
+theorem Conv.uaToEquiv_ne_unit
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {proofTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.uaToEquiv proofTerm : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.unit : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqUa, _⟩ :=
+    RawStep.parStar.uaToEquiv_inv sourceToJoin
+  have joinEqUnit : joinRaw = RawTerm.unit :=
+    RawStep.parStar.unit_inv targetToJoin
+  nomatch joinEqUa.symm.trans joinEqUnit
+
+/-- A `uaToEquiv`-headed source and a `boolTrue`-headed target
+are not convertible. -/
+theorem Conv.uaToEquiv_ne_boolTrue
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {proofTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.uaToEquiv proofTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.boolTrue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqUa, _⟩ :=
+    RawStep.parStar.uaToEquiv_inv sourceToJoin
+  have joinEqTrue : joinRaw = RawTerm.boolTrue :=
+    RawStep.parStar.boolTrue_inv targetToJoin
+  nomatch joinEqUa.symm.trans joinEqTrue
+
+/-- A `uaToEquiv`-headed source and a `boolFalse`-headed target
+are not convertible. -/
+theorem Conv.uaToEquiv_ne_boolFalse
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {proofTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.uaToEquiv proofTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.boolFalse : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqUa, _⟩ :=
+    RawStep.parStar.uaToEquiv_inv sourceToJoin
+  have joinEqFalse : joinRaw = RawTerm.boolFalse :=
+    RawStep.parStar.boolFalse_inv targetToJoin
+  nomatch joinEqUa.symm.trans joinEqFalse
+
+/-- A `uaToEquiv`-headed source and a `natZero`-headed target
+are not convertible. -/
+theorem Conv.uaToEquiv_ne_natZero
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {proofTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.uaToEquiv proofTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.natZero : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqUa, _⟩ :=
+    RawStep.parStar.uaToEquiv_inv sourceToJoin
+  have joinEqZero : joinRaw = RawTerm.natZero :=
+    RawStep.parStar.natZero_inv targetToJoin
+  nomatch joinEqUa.symm.trans joinEqZero
+
+/-- A `uaToEquiv`-headed source and a `listNil`-headed target
+are not convertible. -/
+theorem Conv.uaToEquiv_ne_listNil
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {proofTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.uaToEquiv proofTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.listNil : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqUa, _⟩ :=
+    RawStep.parStar.uaToEquiv_inv sourceToJoin
+  have joinEqNil : joinRaw = RawTerm.listNil :=
+    RawStep.parStar.listNil_inv targetToJoin
+  nomatch joinEqUa.symm.trans joinEqNil
+
+/-- A `uaToEquiv`-headed source and an `optionNone`-headed target
+are not convertible. -/
+theorem Conv.uaToEquiv_ne_optionNone
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {proofTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.uaToEquiv proofTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.optionNone : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqUa, _⟩ :=
+    RawStep.parStar.uaToEquiv_inv sourceToJoin
+  have joinEqNone : joinRaw = RawTerm.optionNone :=
+    RawStep.parStar.optionNone_inv targetToJoin
+  nomatch joinEqUa.symm.trans joinEqNone
+
+/-- A `uaToEquiv`-headed source and an `interval0`-headed target
+are not convertible.  Cross-stratum HoTT-vs-cubical: the
+univalence-to-equivalence converter operates in the HoTT
+equivalence stratum, while interval0 is a cubical-interval leaf. -/
+theorem Conv.uaToEquiv_ne_interval0
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {proofTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.uaToEquiv proofTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.interval0 : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqUa, _⟩ :=
+    RawStep.parStar.uaToEquiv_inv sourceToJoin
+  have joinEqZero : joinRaw = RawTerm.interval0 :=
+    RawStep.parStar.interval0_inv targetToJoin
+  nomatch joinEqUa.symm.trans joinEqZero
+
+/-- A `uaToEquiv`-headed source and an `interval1`-headed target
+are not convertible.  Cross-stratum HoTT-vs-cubical: same
+argument as `uaToEquiv_ne_interval0`. -/
+theorem Conv.uaToEquiv_ne_interval1
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {proofTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.uaToEquiv proofTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.interval1 : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqUa, _⟩ :=
+    RawStep.parStar.uaToEquiv_inv sourceToJoin
+  have joinEqOne : joinRaw = RawTerm.interval1 :=
+    RawStep.parStar.interval1_inv targetToJoin
+  nomatch joinEqUa.symm.trans joinEqOne
+
 end LeanFX2
