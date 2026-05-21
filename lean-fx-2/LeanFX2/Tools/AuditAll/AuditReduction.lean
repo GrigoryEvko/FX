@@ -242,6 +242,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Step.par.rename_toRawBridge
 #assert_no_axioms LeanFX2.Step.par.renamed_source_targetRaw_in_rename_image
 #assert_no_axioms LeanFX2.Step.par.weakened_source_targetRaw_in_weaken_image
+#assert_no_axioms LeanFX2.Step.par.renamed_source_toRawBridge_target_in_rename_image
+#assert_no_axioms LeanFX2.Step.par.weakened_source_toRawBridge_target_in_weaken_image
 #assert_no_axioms LeanFX2.Step.par.subst_toRawBridge
 #assert_no_axioms LeanFX2.Term.toRaw_subst0_rename_commute
 #assert_no_axioms LeanFX2.Term.toRaw_subst0_weaken_commute
@@ -727,6 +729,8 @@ shapes: 5 in CubicalShape. -/
 #assert_no_axioms LeanFX2.RawStep.parStar.weaken_inv_of_source_eq
 #assert_no_axioms LeanFX2.Step.par.sourceRaw_in_rename_image_targetRaw_in_rename_image
 #assert_no_axioms LeanFX2.Step.par.sourceRaw_in_weaken_image_targetRaw_in_weaken_image
+#assert_no_axioms LeanFX2.Step.par.toRawBridge_target_in_rename_image_of_sourceRaw_eq
+#assert_no_axioms LeanFX2.Step.par.toRawBridge_target_in_weaken_image_of_sourceRaw_eq
 #assert_no_axioms LeanFX2.Step.parStar.rename_toRawBridge
 #assert_no_axioms LeanFX2.Step.parStar.renamed_source_targetRaw_in_rename_image
 #assert_no_axioms LeanFX2.Step.parStar.weakened_source_targetRaw_in_weaken_image

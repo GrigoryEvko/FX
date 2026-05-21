@@ -513,6 +513,107 @@ theorem Step.par.sourceRaw_in_weaken_image_targetRaw_in_weaken_image
   RawStep.par.target_in_weaken_image_of_source_eq sourceEq
     (Step.par.toRawBridge parallelStep)
 
+/-! ## Direct raw-step packaging for rename-image consumers -/
+
+/-- Direct raw-step packaging of
+`Step.par.renamed_source_targetRaw_in_rename_image`.
+
+If a typed parallel step starts at a renamed typed term, its raw projection can
+be targeted directly at a raw term in the same renaming image. -/
+theorem Step.par.renamed_source_toRawBridge_target_in_rename_image
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rawRenaming : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rawRenaming)
+    (rawRenamingInjective :
+      ∀ leftPosition rightPosition,
+        rawRenaming leftPosition = rawRenaming rightPosition →
+          leftPosition = rightPosition)
+    {sourceType : Ty level sourceScope}
+    {targetType : Ty level targetScope}
+    {sourceRaw : RawTerm sourceScope}
+    {targetRaw : RawTerm targetScope}
+    {sourceTerm : Term sourceCtx sourceType sourceRaw}
+    {targetTerm : Term targetCtx targetType targetRaw}
+    (parallelStep : Step.par (Term.rename termRenaming sourceTerm) targetTerm) :
+    ∃ targetInnerRaw : RawTerm sourceScope,
+      RawStep.par
+        (Term.toRaw (Term.rename termRenaming sourceTerm))
+        (targetInnerRaw.rename rawRenaming) := by
+  obtain ⟨targetInnerRaw, targetEq⟩ :=
+    Step.par.renamed_source_targetRaw_in_rename_image
+      termRenaming rawRenamingInjective parallelStep
+  cases targetEq
+  exact ⟨targetInnerRaw, Step.par.toRawBridge parallelStep⟩
+
+/-- Canonical-weaken specialization of
+`Step.par.renamed_source_toRawBridge_target_in_rename_image`. -/
+theorem Step.par.weakened_source_toRawBridge_target_in_weaken_image
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (newType : Ty level scope)
+    {sourceType : Ty level scope}
+    {targetType : Ty level (scope + 1)}
+    {sourceRaw : RawTerm scope}
+    {targetRaw : RawTerm (scope + 1)}
+    {sourceTerm : Term sourceCtx sourceType sourceRaw}
+    {targetTerm : Term (sourceCtx.cons newType) targetType targetRaw}
+    (parallelStep : Step.par (Term.weaken newType sourceTerm) targetTerm) :
+    ∃ targetInnerRaw : RawTerm scope,
+      RawStep.par
+        (Term.toRaw (Term.weaken newType sourceTerm))
+        targetInnerRaw.weaken := by
+  obtain ⟨targetInnerRaw, targetEq⟩ :=
+    Step.par.weakened_source_targetRaw_in_weaken_image newType parallelStep
+  cases targetEq
+  exact ⟨targetInnerRaw, Step.par.toRawBridge parallelStep⟩
+
+/-- Direct raw-step packaging of
+`Step.par.sourceRaw_in_rename_image_targetRaw_in_rename_image`. -/
+theorem Step.par.toRawBridge_target_in_rename_image_of_sourceRaw_eq
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {targetCtx : Ctx mode level targetScope}
+    {rawRenaming : RawRenaming sourceScope targetScope}
+    (rawRenamingInjective :
+      ∀ leftPosition rightPosition,
+        rawRenaming leftPosition = rawRenaming rightPosition →
+          leftPosition = rightPosition)
+    {sourceType targetType : Ty level targetScope}
+    {sourceRaw targetRaw : RawTerm targetScope}
+    {sourceInnerRaw : RawTerm sourceScope}
+    {sourceTerm : Term targetCtx sourceType sourceRaw}
+    {targetTerm : Term targetCtx targetType targetRaw}
+    (sourceEq : sourceRaw = sourceInnerRaw.rename rawRenaming)
+    (parallelStep : Step.par sourceTerm targetTerm) :
+    ∃ targetInnerRaw : RawTerm sourceScope,
+      RawStep.par sourceRaw (targetInnerRaw.rename rawRenaming) := by
+  obtain ⟨targetInnerRaw, targetEq⟩ :=
+    Step.par.sourceRaw_in_rename_image_targetRaw_in_rename_image
+      rawRenamingInjective sourceEq parallelStep
+  cases targetEq
+  exact ⟨targetInnerRaw, Step.par.toRawBridge parallelStep⟩
+
+/-- Canonical-weaken specialization of
+`Step.par.toRawBridge_target_in_rename_image_of_sourceRaw_eq`. -/
+theorem Step.par.toRawBridge_target_in_weaken_image_of_sourceRaw_eq
+    {mode : Mode} {level scope : Nat}
+    {targetCtx : Ctx mode level (scope + 1)}
+    {sourceType targetType : Ty level (scope + 1)}
+    {sourceRaw targetRaw : RawTerm (scope + 1)}
+    {sourceInnerRaw : RawTerm scope}
+    {sourceTerm : Term targetCtx sourceType sourceRaw}
+    {targetTerm : Term targetCtx targetType targetRaw}
+    (sourceEq : sourceRaw = sourceInnerRaw.weaken)
+    (parallelStep : Step.par sourceTerm targetTerm) :
+    ∃ targetInnerRaw : RawTerm scope,
+      RawStep.par sourceRaw targetInnerRaw.weaken := by
+  obtain ⟨targetInnerRaw, targetEq⟩ :=
+    Step.par.sourceRaw_in_weaken_image_targetRaw_in_weaken_image
+      sourceEq parallelStep
+  cases targetEq
+  exact ⟨targetInnerRaw, Step.par.toRawBridge parallelStep⟩
+
 /-- Raw-image compatibility for typed parallel reduction after a typed
 substitution.
 
