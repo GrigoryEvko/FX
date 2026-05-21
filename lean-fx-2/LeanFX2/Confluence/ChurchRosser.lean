@@ -157,6 +157,39 @@ theorem Conv.canonicalRaw
       RawStep.parStar targetRaw commonRaw :=
   Conv.toRawJoin convertibility
 
+/-- Raw join from `Conv.refl`.  Both chains are reflexive `parStar`.
+
+Pure delegation through `Conv.canonicalRaw ∘ Conv.refl`.  Useful when
+downstream consumers want an explicit raw join witness without first
+constructing a `Conv` value at the call site. -/
+theorem Conv.reflRaw
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {someType : Ty level scope} {someRaw : RawTerm scope}
+    (someTerm : Term context someType someRaw) :
+    ∃ commonRaw,
+      RawStep.parStar someRaw commonRaw ∧
+      RawStep.parStar someRaw commonRaw :=
+  Conv.canonicalRaw (Conv.refl someTerm)
+
+/-- Raw join with source/target chains swapped — raw projection of
+`Conv.sym`.
+
+Pure delegation through `Conv.canonicalRaw ∘ Conv.sym`.  Useful when
+the downstream consumer expects the target-side `parStar` chain first
+(e.g., backward-chaining proof strategies, NbE bridges that read off
+the target endpoint). -/
+theorem Conv.symRaw
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar targetRaw commonRaw ∧
+      RawStep.parStar sourceRaw commonRaw :=
+  Conv.canonicalRaw (Conv.sym convertibility)
+
 /-- **Raw-level transitivity** for typed Conv.  Given two typed
 Conv triangles meeting at `middleTerm`, produce a raw common
 reduct reachable from both `sourceRaw` and `farRaw`.

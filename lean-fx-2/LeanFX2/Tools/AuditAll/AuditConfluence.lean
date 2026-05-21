@@ -18,6 +18,8 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.transChains
 #assert_no_axioms LeanFX2.Conv.toRawJoin
 #assert_no_axioms LeanFX2.Conv.canonicalRaw
+#assert_no_axioms LeanFX2.Conv.reflRaw
+#assert_no_axioms LeanFX2.Conv.symRaw
 #assert_no_axioms LeanFX2.Conv.transRaw
 #assert_no_axioms LeanFX2.Conv.renameRaw
 #assert_no_axioms LeanFX2.Conv.weakenRaw
