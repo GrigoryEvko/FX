@@ -398,6 +398,20 @@ theorem RawStep.parStar.universeCode_inv {innerLevel : Nat}
   RawStep.parStar.canonical_inv_helper
     RawStep.par.universeCode_inv chain
 
+/-- `RawStep.parStar interval0 target → target = interval0`. -/
+theorem RawStep.parStar.interval0_inv
+    {target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.interval0 : RawTerm scope) target) :
+    target = RawTerm.interval0 :=
+  RawStep.parStar.canonical_inv_helper RawStep.par.interval0_inv chain
+
+/-- `RawStep.parStar interval1 target → target = interval1`. -/
+theorem RawStep.parStar.interval1_inv
+    {target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.interval1 : RawTerm scope) target) :
+    target = RawTerm.interval1 :=
+  RawStep.parStar.canonical_inv_helper RawStep.par.interval1_inv chain
+
 /-! ### Cong-family parStar inversions
 
 The canonical-head family above covers vacuous-source ctors with
