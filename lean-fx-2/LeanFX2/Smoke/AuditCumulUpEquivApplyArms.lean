@@ -64,43 +64,53 @@ input (= `congrArg (Ty.rename · rho) typeEqB` after
 
 Plus 53 closed/structural arms shipped previously.
 
-## Deferred — concrete Lean blockers
+## Walled (verified by counterexample) — `Smoke/AuditRenameInjectivityWalls`
 
-### toNat non-injectivity wall (1 arm)
+The remaining 9 of 78 arms are KERNEL-DESIGN walls, not proof-
+technique gaps.  Constructive counterexamples in
+`Smoke/AuditRenameInjectivityWalls.lean` show the strict
+propositional equality form of `rename_injective_arm_*` is FALSE
+on these ctors — distinct typed `Term` inhabitants exist at the
+same outer `Ty` and same raw, and Lean 4's freely-generated
+inductives make distinct ctors propositionally distinct.
 
-`universeCode` — `RawTerm.universeCode innerLevel.toNat` forgets
-the universe expression structure.  `cases genericTerm` fails:
-```
-Dependent elimination failed: Failed to solve equation
-  innerLevel.toNat = innerLevel✝.toNat
-```
-See `Foundation/Universe.lean:toNat_not_injective` for proof that
-`UniverseLevel.toNat` cannot be reversed.
+### toNat-collapse wall (1 arm)
 
-### Effects.CanPerform Prop wall (1 arm)
+`universeCode` — `UniverseLevel.toNat` is non-injective
+(`Foundation/Universe.lean:toNat_not_injective`); the raw
+`RawTerm.universeCode innerLevel.toNat` stores ONLY the
+collapsed Nat, so `Term.universeCode (max 0 0) ...` and
+`Term.universeCode (imax 0 0) ...` inhabit the same outer
+type `Ty.universe outerLevel _` and same raw
+`RawTerm.universeCode 0`, distinct typed terms.
 
-`effectPerform` — injection on
-`Term.rename effectPerform = Term.rename effectPerform`
-produces a heterogeneous Prop equation
-`Effects.CanPerform.map _ canPerformA = Effects.CanPerform.map _ canPerformB`
-that cannot be discharged without proof irrelevance (propext-free).
+### Effect-row free-parameter wall (1 arm)
 
-### η-family 4-way collision (7 arms)
+`effectPerform` — `effectRow` appears in neither the outer
+type `Ty.effect resultCarrier effectTag` nor the raw
+`RawTerm.effectPerform op arg`.  A read operation is permitted
+by `[read]` (via `CanPerform.direct`) AND by `[write]` (via
+`CanPerform.readViaWrite`), yielding two distinct typed
+`Term.effectPerform` inhabitants at the same outer type + raw.
+
+### η-family multi-inhabitancy wall (7 arms)
 
 `equivReflId / funextRefl / equivReflIdAtId / funextReflAtId /
-equivIntroHet / uaIntroHet / funextIntroHet` — collide on raw
-shapes `RawTerm.equivIntro id id` (4-way) and `RawTerm.lam
-(RawTerm.refl _)` (3-way).  Existing `_of_inner` helpers in
-`EquivIntro.lean` take HEq-style `childInjective`; the arm
-signature has childA-fixed IHs.  Bridging requires either
-strengthening the rename_injective driver to thread HEq-style IHs
-or per-arm direct-cases proofs (~200-400 LoC each).
+equivIntroHet / uaIntroHet / funextIntroHet` — kernel admits
+distinct typed inhabitants at the same outer-Ty + raw shape.
+`Smoke/AuditRenameInjectivityWalls.lean` constructs
+`Term.equivReflId carrier` and `Term.equivIntroHet (lam (var 0))
+(lam (var 0)) leftInv rightInv` BOTH at the same outer type
+`Ty.equiv carrier carrier` and same raw
+`RawTerm.equivIntro (lam (var 0)) (lam (var 0))`.
 
 ## Status: 69 of 78 arms shipped zero-axiom
 
-9 arms deferred due to fundamental dep-elim walls or HEq-style-IH
-gaps documented above (toNat non-injectivity 1, Effects.CanPerform
-Prop 1, η-family 7).
+This is the MAXIMUM achievable under the current kernel; 78/78
+is impossible without one of: (a) restating T2 with HEq + Conv,
+(b) refactoring the kernel to fold specialized ctors into
+definitions over heterogeneous ones, or (c) routing the 9
+walled ctors through a separate multi-inhabitancy-aware lemma.
 -/
 
 #print axioms LeanFX2.Term.rename_injective_arm_cumulUp

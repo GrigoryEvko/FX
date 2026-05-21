@@ -1834,21 +1834,28 @@ theorem Term.rename_injective_arm_oeqFunext
   exact ⟨inferredDomain, inferredCodomain, inferredLeftFn, inferredRightFn,
     pointwiseTerm, rfl, HEq.rfl⟩
 
--- NOTE: arm_universeCode is structurally blocked by the toNat
--- non-injectivity wall (see `Foundation/Universe.lean:toNat_not_injective`).
--- `RawTerm.universeCode innerLevel.toNat` forgets the universe expression
--- structure: `UniverseLevel.max 0 0` and `UniverseLevel.imax 0 0` both
--- produce the same Nat height but are distinct constructors.  Even though
--- Term.rename is the identity on universeCode (rename doesn't see innerLevel),
--- `cases genericTerm` for a typed term whose raw is
--- `RawTerm.universeCode innerLevel.toNat` cannot pin innerLevel uniquely.
--- The induction-on-termA driver's IH does not encode an "innerLevel was
--- recovered" witness, so the arm cannot close.  Deferred to a future
--- session that ships a UniverseLevel-aware raw-inversion helper.
+-- NOTE: arm_universeCode is a KERNEL-DESIGN WALL, not a proof-technique
+-- gap.  See `Smoke/AuditRenameInjectivityWalls.lean` for a constructive
+-- counterexample: two distinct typed `Term.universeCode` inhabitants exist
+-- at the SAME outer type `Ty.universe outerLevel _` and SAME raw
+-- `RawTerm.universeCode 0`, one with `innerLevel = UniverseLevel.max 0 0`
+-- and one with `innerLevel = UniverseLevel.imax 0 0`.  Both witnesses
+-- typecheck zero-axiom.  Hence strict propositional equality
+-- `termA = termB` from a renamed-equal hypothesis is FALSE on this ctor.
 --
--- The Lean error message:
---   "Dependent elimination failed: Failed to solve equation
---    innerLevel.toNat = innerLevel✝.toNat"
+-- The root cause is `UniverseLevel.toNat` non-injectivity, proved by
+-- `Foundation/Universe.lean:toNat_not_injective`:
+-- `max 0 0` and `imax 0 0` distinct UniverseLevel ctors collapse to
+-- `0 : Nat` via toNat, and the kernel only stores `innerLevel.toNat`
+-- in the raw `RawTerm.universeCode`.
+--
+-- Future re-formulation paths (none in scope here):
+--   1. Restate T2 with HEq + Conv (rename equivariance modulo convertibility).
+--   2. Refactor `Term.universeCode` to carry the structural `innerLevel`
+--      in the raw too (kernel architectural change — bumps the `RawTerm`
+--      ctor signature and ripples through every raw consumer).
+--   3. Accept 69/78 ceiling and route the 9 walled ctors through a
+--      separate multi-inhabitancy-aware rename lemma at consumer sites.
 
 /-- `equivApp` arm: apply a packaged equivalence to an argument.  Outputs
     `carrierB` (the equivalence's right carrier).  `carrierA` is existential
@@ -1996,13 +2003,25 @@ theorem Term.rename_injective_arm_pathApp
   exact ⟨inferredModeIsUnivalent, inferredLeft, inferredRight, pathInner,
     intervalInner, HEq.rfl⟩
 
--- NOTE: arm_effectPerform deferred: the Effects.CanPerform proof field
--- is a Prop, and injection on `Term.rename effectPerform = Term.rename
--- effectPerform` produces a heterogeneous Prop equation
--- `Effects.CanPerform.map _ canPerformA = Effects.CanPerform.map _ canPerformB`
--- that cannot be discharged without proof irrelevance (propext-free).
--- The arm requires either a heterogeneous CanPerform.map_injective helper
--- or a Prop-stripping inversion lemma not yet shipped.
+-- NOTE: arm_effectPerform is a KERNEL-DESIGN WALL, not a proof-technique
+-- gap.  See `Smoke/AuditRenameInjectivityWalls.lean` (effectPerform-row
+-- discussion).  The `effectRow` parameter of `Term.effectPerform` appears
+-- in NEITHER the outer type `Ty.effect resultCarrier effectTag` NOR the
+-- raw `RawTerm.effectPerform operationRaw argumentsRaw`.  A read operation
+-- is permitted by row `[read]` via `CanPerform.direct` AND by row
+-- `[write]` via `CanPerform.readViaWrite` — two distinct typed
+-- `Term.effectPerform tag rowA sig cpA op arg` and
+-- `Term.effectPerform tag rowB sig cpB op arg` inhabit the same outer
+-- type + raw when `rowA ≠ rowB`.  Hence strict equality cannot recover
+-- `rowA = rowB`; the arm theorem is false.
+--
+-- (Proof-irrelevance on `CanPerform` would have discharged a SECONDARY
+-- propext-related obstacle, but the PRIMARY obstacle is multi-
+-- inhabitancy on `effectRow` itself — proof-irrelevance does not help.)
+--
+-- Future re-formulation parallels the universeCode wall: restate with
+-- HEq, refactor the kernel ctor to expose `effectRow` in the raw, or
+-- route via a multi-inhabitancy-aware rename lemma.
 
 /-- `glueElim` arm: cubical glue elimination at `baseType` (no cast).
     `boundaryWitness` is a RawTerm existential recoverable via
@@ -2285,27 +2304,33 @@ ctors have no actual typed children. -/
 
 -- NOTE: arm_equivReflId / arm_funextRefl / arm_equivReflIdAtId /
 -- arm_funextReflAtId / arm_equivIntroHet / arm_uaIntroHet /
--- arm_funextIntroHet deferred: these 4-way (equivIntro) and 3-way
--- (lam-refl) collisions require the heavy machinery from EquivIntro.lean
--- and the not-yet-shipped lam-refl inversion family.  The shipped
--- `_of_inner` helpers (atEquivIntroEquiv / atEquivIntroUniverseId) take
--- termA + termB BOTH heterogeneous + an HEq-style childInjective —
--- but the arm signature has childA-fixed IHs.  Bridging the two
--- requires either:
---   * Strengthening the IHs from childA-fixed to HEq-style (deep
---     dispatcher refactor in the rename_injective driver), or
---   * Writing a per-arm direct cases proof that re-derives the 4-way
---     PSum locally and threads childA-fixed IHs (each arm ~200-400
---     LoC of cases gymnastics).
--- Both options exceed the current session budget.  Deferred to a
--- future session focused on the η-family.
+-- arm_funextIntroHet are KERNEL-DESIGN WALLS, not proof-technique gaps.
+-- See `Smoke/AuditRenameInjectivityWalls.lean` for a constructive
+-- counterexample: `Term.equivReflId carrier` and
+-- `Term.equivIntroHet (lam (var 0)) (lam (var 0)) leftInv rightInv`
+-- inhabit the SAME outer type `Ty.equiv carrier carrier` and SAME raw
+-- `RawTerm.equivIntro (lam (var 0)) (lam (var 0))`.  Both witnesses
+-- typecheck zero-axiom.  Strict propositional equality between these
+-- two distinct typed ctors is therefore FALSE.
 --
--- Attempted approach (commit reverted): suffices+free-genericType +
--- cases-on-genericTerm yields all 4 ctors producing the raw shape.
--- The required Σ' must include `genericType = Ty.equiv carrier carrier`
--- equation; non-target branches (equivReflIdAtId/equivIntroHet/uaIntroHet
--- for equivReflId arm) cannot construct this equation without dispatching
--- on the OUTER arm-pinned type — circular.
+-- Earlier docs of this block characterised the obstacle as a proof-
+-- technique gap (HEq-style IH refactor or per-arm direct cases ~200-400
+-- LoC).  That characterisation was WRONG: the underlying theorem is
+-- actually false on these ctors, so no amount of proof-engineering
+-- recovers it under strict equality.  The 4-way collision on raw
+-- `RawTerm.equivIntro id id` and the 3-way collision on raw
+-- `RawTerm.lam (RawTerm.refl _)` reflect MULTIPLE INHABITANTS of the
+-- typed Term inductive — Lean 4's freely-generated inductives make
+-- distinct ctors propositionally distinct, and there is no convertibility
+-- relation built into `=`.
+--
+-- Future re-formulation paths (none in scope here):
+--   1. Restate T2 with HEq + Conv (rename equivariance modulo conv).
+--   2. Refactor `Term.equivReflId`/`Term.funextRefl` to be DEFINITIONS
+--      over `Term.equivIntroHet`/`Term.uaIntroHet` rather than separate
+--      kernel ctors (kernel architectural change).
+--   3. Accept 69/78 ceiling and route these 7 ctors through a separate
+--      multi-inhabitancy-aware rename lemma at consumer sites.
 
 /-! ## Cubical-glue intro arm.
 
