@@ -24,14 +24,23 @@ use the existing `Term.*_inv` propext-clean inversion defs from
 
 namespace LeanFX2
 
+/-! ## Shared rename/context binders.
+
+Every arm helper in this file operates over the same source-to-target
+renaming setup.  Hoisted into a `section` + `variable` block to keep
+each per-arm signature focused on the ctor-specific binders. -/
+
+section InductiveArms
+
+variable {mode : Mode} {level sourceScope targetScope : Nat}
+variable {sourceCtx : Ctx mode level sourceScope}
+variable {targetCtx : Ctx mode level targetScope}
+variable {rho : RawRenaming sourceScope targetScope}
+variable (termRenaming : TermRenaming sourceCtx targetCtx rho)
+
 /-- `fst` arm: existential `secondType` reconciled via `Ty.rename_injective`,
     childA-fixed `pairIH`.  Non-colliding raw `RawTerm.fst`. -/
 theorem Term.rename_injective_arm_fst
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     (rhoInjective : RawRenamingInjective rho)
     {firstType : Ty level sourceScope} {secondTypeA : Ty level (sourceScope + 1)}
     {pairRaw : RawTerm sourceScope}
@@ -77,11 +86,6 @@ theorem Term.rename_injective_arm_fst
     Uses `Term.lam_arrow_inv` to invert termB cleanly (refutes
     lamPi/funextRefl/funextReflAtId/funextIntroHet siblings via arrow type). -/
 theorem Term.rename_injective_arm_lam
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     (rhoInjective : RawRenamingInjective rho)
     {domainType codomainType : Ty level sourceScope}
     {bodyRaw : RawTerm (sourceScope + 1)}
@@ -129,11 +133,6 @@ theorem Term.rename_injective_arm_lam
     type-free suffices pattern with a packed wrapper typeEq, matching the
     standalone `atOptionSome` helper's shape. -/
 theorem Term.rename_injective_arm_optionSome
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     (rhoInjective : RawRenamingInjective rho)
     {elementType : Ty level sourceScope}
     {valueRaw : RawTerm sourceScope}
@@ -175,11 +174,6 @@ theorem Term.rename_injective_arm_optionSome
     Both `leftType` and `rightType` are existential in the ctor; only
     `leftType` flows back to the value's type. -/
 theorem Term.rename_injective_arm_eitherInl
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     (rhoInjective : RawRenamingInjective rho)
     {leftCarrierType rightCarrierType : Ty level sourceScope}
     {valueRaw : RawTerm sourceScope}
@@ -221,11 +215,6 @@ theorem Term.rename_injective_arm_eitherInl
 
 /-- `eitherInr` arm: mirror of `eitherInl` on the right injection. -/
 theorem Term.rename_injective_arm_eitherInr
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     (rhoInjective : RawRenamingInjective rho)
     {leftCarrierType rightCarrierType : Ty level sourceScope}
     {valueRaw : RawTerm sourceScope}
@@ -268,11 +257,6 @@ theorem Term.rename_injective_arm_eitherInr
 /-- `listCons` arm: two non-colliding children at the same element type,
     no cast on either.  Type-free suffices with packed wrapper typeEq. -/
 theorem Term.rename_injective_arm_listCons
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     (rhoInjective : RawRenamingInjective rho)
     {elementType : Ty level sourceScope}
     {headRaw tailRaw : RawTerm sourceScope}
@@ -324,11 +308,6 @@ theorem Term.rename_injective_arm_listCons
 
 /-- `natSucc` arm: single closed-type child (Ty.nat), no cast, no existential. -/
 theorem Term.rename_injective_arm_natSucc
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     (rhoInjective : RawRenamingInjective rho)
     {predecessorRaw : RawTerm sourceScope}
     (predecessorA : Term sourceCtx Ty.nat predecessorRaw)
@@ -369,11 +348,6 @@ theorem Term.rename_injective_arm_natSucc
     no cast.  motiveType IS the result type so no wrapper packing needed —
     `genericType` directly plays the role of motiveType. -/
 theorem Term.rename_injective_arm_natElim
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     (rhoInjective : RawRenamingInjective rho)
     {motiveType : Ty level sourceScope}
     {scrutineeRaw zeroRaw succRaw : RawTerm sourceScope}
@@ -440,11 +414,6 @@ theorem Term.rename_injective_arm_natElim
     succBranch's type carrying the recursor's two-argument arrow.  Same
     motiveType-as-result pattern, no cast, no wrapper. -/
 theorem Term.rename_injective_arm_natRec
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     (rhoInjective : RawRenamingInjective rho)
     {motiveType : Ty level sourceScope}
     {scrutineeRaw zeroRaw succRaw : RawTerm sourceScope}
@@ -515,11 +484,6 @@ theorem Term.rename_injective_arm_natRec
     The inferred elementType needs reconciling with outer elementType via
     `Ty.rename_injective` from the injection's elementType.rename equation. -/
 theorem Term.rename_injective_arm_listElim
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     (rhoInjective : RawRenamingInjective rho)
     {elementType motiveType : Ty level sourceScope}
     {scrutineeRaw nilRaw consRaw : RawTerm sourceScope}
@@ -599,11 +563,6 @@ theorem Term.rename_injective_arm_listElim
     typed scrutinee + value-typed someBranch.  Same reconcile-via-
     `Ty.rename_injective` pattern. -/
 theorem Term.rename_injective_arm_optionMatch
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     (rhoInjective : RawRenamingInjective rho)
     {elementType motiveType : Ty level sourceScope}
     {scrutineeRaw noneRaw someRaw : RawTerm sourceScope}
@@ -677,11 +636,6 @@ theorem Term.rename_injective_arm_optionMatch
     as result) plus 3 children.  Both leftType and rightType need
     reconciling via `Ty.rename_injective`. -/
 theorem Term.rename_injective_arm_eitherMatch
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     (rhoInjective : RawRenamingInjective rho)
     {leftType rightType motiveType : Ty level sourceScope}
     {scrutineeRaw leftRaw rightRaw : RawTerm sourceScope}
@@ -766,11 +720,6 @@ theorem Term.rename_injective_arm_eitherMatch
     sigmaTy wrapper typeEq; uncasts `secondValue`'s rename HEq mirroring
     `arm_lam`'s body-uncast pattern. -/
 theorem Term.rename_injective_arm_pair
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     (rhoInjective : RawRenamingInjective rho)
     {firstType : Ty level sourceScope}
     {secondType : Ty level (sourceScope + 1)}
@@ -855,11 +804,6 @@ theorem Term.rename_injective_arm_pair
     refutes the funextRefl arm via the existing
     `renamedLamPi_ne_renamedFunextReflCast` cross-refutation. -/
 theorem Term.rename_injective_arm_lamPi
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     (rhoInjective : RawRenamingInjective rho)
     {domainType : Ty level sourceScope}
     {codomainType : Ty level (sourceScope + 1)}
@@ -924,11 +868,6 @@ standalone helpers ship zero-axiom. -/
 
 /-- `var` arm: vacuous IHs (no children).  Forwards to `atVar`. -/
 theorem Term.rename_injective_arm_var
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     {position : Fin sourceScope}
     (termB :
       Term sourceCtx (varType sourceCtx position) (RawTerm.var position)) :
@@ -938,11 +877,6 @@ theorem Term.rename_injective_arm_var
 
 /-- `unit` arm: closed-type unit term. -/
 theorem Term.rename_injective_arm_unit
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     (termB : Term sourceCtx Ty.unit RawTerm.unit) :
     Term.rename termRenaming (Term.unit (context := sourceCtx)) =
       Term.rename termRenaming termB →
@@ -952,11 +886,6 @@ theorem Term.rename_injective_arm_unit
 
 /-- `boolTrue` arm. -/
 theorem Term.rename_injective_arm_boolTrue
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     (termB : Term sourceCtx Ty.bool RawTerm.boolTrue) :
     Term.rename termRenaming (Term.boolTrue (context := sourceCtx)) =
       Term.rename termRenaming termB →
@@ -966,11 +895,6 @@ theorem Term.rename_injective_arm_boolTrue
 
 /-- `boolFalse` arm. -/
 theorem Term.rename_injective_arm_boolFalse
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     (termB : Term sourceCtx Ty.bool RawTerm.boolFalse) :
     Term.rename termRenaming (Term.boolFalse (context := sourceCtx)) =
       Term.rename termRenaming termB →
@@ -980,11 +904,6 @@ theorem Term.rename_injective_arm_boolFalse
 
 /-- `natZero` arm. -/
 theorem Term.rename_injective_arm_natZero
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     (termB : Term sourceCtx Ty.nat RawTerm.natZero) :
     Term.rename termRenaming (Term.natZero (context := sourceCtx)) =
       Term.rename termRenaming termB →
@@ -994,11 +913,6 @@ theorem Term.rename_injective_arm_natZero
 
 /-- `listNil` arm: closed at the parametric `Ty.listType elementType`. -/
 theorem Term.rename_injective_arm_listNil
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     {elementType : Ty level sourceScope}
     (termB : Term sourceCtx (Ty.listType elementType) RawTerm.listNil) :
     Term.rename termRenaming
@@ -1011,11 +925,6 @@ theorem Term.rename_injective_arm_listNil
 
 /-- `optionNone` arm: closed at the parametric `Ty.optionType elementType`. -/
 theorem Term.rename_injective_arm_optionNone
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     {elementType : Ty level sourceScope}
     (termB : Term sourceCtx (Ty.optionType elementType) RawTerm.optionNone) :
     Term.rename termRenaming
@@ -1030,11 +939,6 @@ theorem Term.rename_injective_arm_optionNone
 
 /-- `refl` arm: HoTT-style identity reflexivity at `Ty.id`. -/
 theorem Term.rename_injective_arm_refl
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     (carrier : Ty level sourceScope)
     (rawWitness : RawTerm sourceScope)
     (termB :
@@ -1049,11 +953,6 @@ theorem Term.rename_injective_arm_refl
 
 /-- `oeqRefl` arm: observational-equality reflexivity at `Ty.oeq`. -/
 theorem Term.rename_injective_arm_oeqRefl
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     (carrier : Ty level sourceScope)
     (rawWitness : RawTerm sourceScope)
     (termB :
@@ -1070,11 +969,6 @@ theorem Term.rename_injective_arm_oeqRefl
 The standalone `atIdStrictRefl` helper carries the `modeIsStrict` proof
 explicitly, so the arm helper threads it through. -/
 theorem Term.rename_injective_arm_idStrictRefl
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     (modeIsStrict : mode = Mode.strict)
     (carrier : Ty level sourceScope)
     (rawWitness : RawTerm sourceScope)
@@ -1095,11 +989,6 @@ theorem Term.rename_injective_arm_idStrictRefl
 
 /-- `interval0` arm: cubical interval endpoint 0. -/
 theorem Term.rename_injective_arm_interval0
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     (termB : Term sourceCtx Ty.interval RawTerm.interval0) :
     Term.rename termRenaming (Term.interval0 (context := sourceCtx)) =
       Term.rename termRenaming termB →
@@ -1109,11 +998,6 @@ theorem Term.rename_injective_arm_interval0
 
 /-- `interval1` arm: cubical interval endpoint 1. -/
 theorem Term.rename_injective_arm_interval1
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     (termB : Term sourceCtx Ty.interval RawTerm.interval1) :
     Term.rename termRenaming (Term.interval1 (context := sourceCtx)) =
       Term.rename termRenaming termB →
@@ -1131,11 +1015,6 @@ universe constructor. -/
 
 /-- `arrowCode` arm: encoded arrow type code. -/
 theorem Term.rename_injective_arm_arrowCode
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     (outerLevel : UniverseLevel)
     (levelLe : outerLevel.toNat + 1 ≤ level)
     (domainCodeRaw codomainCodeRaw : RawTerm sourceScope)
@@ -1153,11 +1032,6 @@ theorem Term.rename_injective_arm_arrowCode
 
 /-- `piTyCode` arm: encoded dependent-Π type code. -/
 theorem Term.rename_injective_arm_piTyCode
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     (outerLevel : UniverseLevel)
     (levelLe : outerLevel.toNat + 1 ≤ level)
     (domainCodeRaw : RawTerm sourceScope)
@@ -1176,11 +1050,6 @@ theorem Term.rename_injective_arm_piTyCode
 
 /-- `sigmaTyCode` arm: encoded dependent-Σ type code. -/
 theorem Term.rename_injective_arm_sigmaTyCode
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     (outerLevel : UniverseLevel)
     (levelLe : outerLevel.toNat + 1 ≤ level)
     (firstCodeRaw : RawTerm sourceScope)
@@ -1199,11 +1068,6 @@ theorem Term.rename_injective_arm_sigmaTyCode
 
 /-- `productCode` arm: encoded non-dependent product type code. -/
 theorem Term.rename_injective_arm_productCode
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     (outerLevel : UniverseLevel)
     (levelLe : outerLevel.toNat + 1 ≤ level)
     (firstCodeRaw secondCodeRaw : RawTerm sourceScope)
@@ -1221,11 +1085,6 @@ theorem Term.rename_injective_arm_productCode
 
 /-- `sumCode` arm: encoded non-dependent sum type code. -/
 theorem Term.rename_injective_arm_sumCode
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     (outerLevel : UniverseLevel)
     (levelLe : outerLevel.toNat + 1 ≤ level)
     (leftCodeRaw rightCodeRaw : RawTerm sourceScope)
@@ -1243,11 +1102,6 @@ theorem Term.rename_injective_arm_sumCode
 
 /-- `listCode` arm: encoded list type code. -/
 theorem Term.rename_injective_arm_listCode
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     (outerLevel : UniverseLevel)
     (levelLe : outerLevel.toNat + 1 ≤ level)
     (elementCodeRaw : RawTerm sourceScope)
@@ -1265,11 +1119,6 @@ theorem Term.rename_injective_arm_listCode
 
 /-- `optionCode` arm: encoded option type code. -/
 theorem Term.rename_injective_arm_optionCode
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     (outerLevel : UniverseLevel)
     (levelLe : outerLevel.toNat + 1 ≤ level)
     (elementCodeRaw : RawTerm sourceScope)
@@ -1287,11 +1136,6 @@ theorem Term.rename_injective_arm_optionCode
 
 /-- `eitherCode` arm: encoded either type code. -/
 theorem Term.rename_injective_arm_eitherCode
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     (outerLevel : UniverseLevel)
     (levelLe : outerLevel.toNat + 1 ≤ level)
     (leftCodeRaw rightCodeRaw : RawTerm sourceScope)
@@ -1310,11 +1154,6 @@ theorem Term.rename_injective_arm_eitherCode
 /-- `idCode` arm: encoded HoTT identity type code with type-code +
 endpoint-raws. -/
 theorem Term.rename_injective_arm_idCode
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     (outerLevel : UniverseLevel)
     (levelLe : outerLevel.toNat + 1 ≤ level)
     (typeCodeRaw leftRaw rightRaw : RawTerm sourceScope)
@@ -1333,11 +1172,6 @@ theorem Term.rename_injective_arm_idCode
 /-- `equivCode` arm: encoded equivalence type code between two type
 codes. -/
 theorem Term.rename_injective_arm_equivCode
-    {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rho)
     (outerLevel : UniverseLevel)
     (levelLe : outerLevel.toNat + 1 ≤ level)
     (leftTypeCodeRaw rightTypeCodeRaw : RawTerm sourceScope)
@@ -1352,5 +1186,7 @@ theorem Term.rename_injective_arm_equivCode
   Term.rename_injective_atEquivCode termRenaming
     (Term.equivCode (context := sourceCtx) outerLevel levelLe
       leftTypeCodeRaw rightTypeCodeRaw) termB
+
+end InductiveArms
 
 end LeanFX2
