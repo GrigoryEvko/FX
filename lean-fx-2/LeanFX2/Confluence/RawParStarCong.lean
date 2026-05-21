@@ -645,6 +645,109 @@ private theorem RawStep.parStar.binary_intro_elim_inv_helper {scope : Nat}
   RawStep.parStar.binary_intro_elim_inv_aux elimWrap introWrap
     contractum parStepInv chain rfl
 
+/-- Generalized binary eliminator `parStar` inversion for redex parents
+whose β arm is triggered by the left subterm developing to a unary
+intro, while the right subterm develops independently.
+
+This covers application-like heads such as `app` and `pathApp`. -/
+private theorem RawStep.parStar.binary_left_intro_elim_inv_aux
+    {outerScope leftScope rightScope introScope : Nat}
+    (elimWrap :
+      RawTerm leftScope → RawTerm rightScope → RawTerm outerScope)
+    (introWrap : RawTerm introScope → RawTerm leftScope)
+    (contractum :
+      RawTerm introScope → RawTerm rightScope → RawTerm outerScope)
+    (parStepInv : ∀ {leftSource rightSource target},
+      RawStep.par (elimWrap leftSource rightSource) target →
+        (∃ leftTarget rightTarget,
+          target = elimWrap leftTarget rightTarget ∧
+          RawStep.par leftSource leftTarget ∧
+          RawStep.par rightSource rightTarget) ∨
+        (∃ introTarget rightTarget,
+          target = contractum introTarget rightTarget ∧
+          RawStep.par leftSource (introWrap introTarget) ∧
+          RawStep.par rightSource rightTarget))
+    {source target : RawTerm outerScope}
+    (chain : RawStep.parStar source target) :
+    ∀ {leftSource : RawTerm leftScope}
+      {rightSource : RawTerm rightScope},
+      source = elimWrap leftSource rightSource →
+      (∃ leftTarget rightTarget,
+        target = elimWrap leftTarget rightTarget ∧
+        RawStep.parStar leftSource leftTarget ∧
+        RawStep.parStar rightSource rightTarget) ∨
+      (∃ introTarget rightTarget,
+        RawStep.parStar leftSource (introWrap introTarget) ∧
+        RawStep.parStar rightSource rightTarget ∧
+        RawStep.parStar (contractum introTarget rightTarget) target) := by
+  induction chain with
+  | refl _ =>
+      intro leftSource rightSource sourceEq
+      exact Or.inl ⟨leftSource, rightSource, sourceEq,
+        RawStep.parStar.refl _, RawStep.parStar.refl _⟩
+  | trans firstStep restChain restIH =>
+      intro leftSource rightSource sourceEq
+      subst sourceEq
+      cases parStepInv firstStep with
+      | inl headCase =>
+          obtain ⟨middleLeft, middleRight, middleEq, leftStep,
+            rightStep⟩ := headCase
+          cases restIH middleEq with
+          | inl preservedCase =>
+              obtain ⟨targetLeft, targetRight, targetEq, leftChainRest,
+                rightChainRest⟩ := preservedCase
+              exact Or.inl ⟨targetLeft, targetRight, targetEq,
+                RawStep.parStar.trans leftStep leftChainRest,
+                RawStep.parStar.trans rightStep rightChainRest⟩
+          | inr firedCase =>
+              obtain ⟨introTarget, rightTarget, introChainRest,
+                rightChainRest, contractumChain⟩ := firedCase
+              exact Or.inr ⟨introTarget, rightTarget,
+                RawStep.parStar.trans leftStep introChainRest,
+                RawStep.parStar.trans rightStep rightChainRest,
+                contractumChain⟩
+      | inr betaCase =>
+          obtain ⟨introTarget, rightTarget, middleEq, leftStep,
+            rightStep⟩ := betaCase
+          cases middleEq
+          exact Or.inr ⟨introTarget, rightTarget,
+            RawStep.parStar.trans leftStep (RawStep.parStar.refl _),
+            RawStep.parStar.trans rightStep (RawStep.parStar.refl _),
+            restChain⟩
+
+/-- Application-like `parStar` inversion for an exactly wrapped source. -/
+private theorem RawStep.parStar.binary_left_intro_elim_inv_helper
+    {outerScope leftScope rightScope introScope : Nat}
+    (elimWrap :
+      RawTerm leftScope → RawTerm rightScope → RawTerm outerScope)
+    (introWrap : RawTerm introScope → RawTerm leftScope)
+    (contractum :
+      RawTerm introScope → RawTerm rightScope → RawTerm outerScope)
+    (parStepInv : ∀ {leftSource rightSource target},
+      RawStep.par (elimWrap leftSource rightSource) target →
+        (∃ leftTarget rightTarget,
+          target = elimWrap leftTarget rightTarget ∧
+          RawStep.par leftSource leftTarget ∧
+          RawStep.par rightSource rightTarget) ∨
+        (∃ introTarget rightTarget,
+          target = contractum introTarget rightTarget ∧
+          RawStep.par leftSource (introWrap introTarget) ∧
+          RawStep.par rightSource rightTarget))
+    {leftSource : RawTerm leftScope}
+    {rightSource : RawTerm rightScope}
+    {target : RawTerm outerScope}
+    (chain : RawStep.parStar (elimWrap leftSource rightSource) target) :
+    (∃ leftTarget rightTarget,
+      target = elimWrap leftTarget rightTarget ∧
+      RawStep.parStar leftSource leftTarget ∧
+      RawStep.parStar rightSource rightTarget) ∨
+    (∃ introTarget rightTarget,
+      RawStep.parStar leftSource (introWrap introTarget) ∧
+      RawStep.parStar rightSource rightTarget ∧
+      RawStep.parStar (contractum introTarget rightTarget) target) :=
+  RawStep.parStar.binary_left_intro_elim_inv_aux elimWrap introWrap
+    contractum parStepInv chain rfl
+
 /-- Generalized binary-head `parStar` inversion.
 
 This is the two-subterm counterpart to `unary_inv_aux`; it threads the
@@ -822,6 +925,26 @@ theorem RawStep.parStar.eitherInr_inv {scope : Nat}
       RawStep.parStar valueTerm valueTarget :=
   RawStep.parStar.unary_inv_helper RawTerm.eitherInr
     RawStep.par.eitherInr_inv chain
+
+/-- `RawStep.parStar (app function argument) target` either preserves the
+`app` head or fires function β after the function develops to a lambda. -/
+theorem RawStep.parStar.app_inv {scope : Nat}
+    {functionTerm argumentTerm target : RawTerm scope}
+    (chain :
+      RawStep.parStar
+        (RawTerm.app functionTerm argumentTerm) target) :
+    (∃ functionTarget argumentTarget,
+      target = RawTerm.app functionTarget argumentTarget ∧
+      RawStep.parStar functionTerm functionTarget ∧
+      RawStep.parStar argumentTerm argumentTarget) ∨
+    (∃ bodyTarget argumentTarget,
+      RawStep.parStar functionTerm (RawTerm.lam bodyTarget) ∧
+      RawStep.parStar argumentTerm argumentTarget ∧
+      RawStep.parStar (bodyTarget.subst0 argumentTarget) target) :=
+  RawStep.parStar.binary_left_intro_elim_inv_helper RawTerm.app
+    RawTerm.lam (fun bodyTarget argumentTarget =>
+      bodyTarget.subst0 argumentTarget)
+    RawStep.par.app_inv chain
 
 /-- `RawStep.parStar (pair first second) target` preserves the `pair`
 head and projects to component-level `parStar` chains. -/
@@ -1082,6 +1205,25 @@ theorem RawStep.parStar.pathCompose_inv {scope : Nat}
       RawStep.parStar rightPath rightTarget :=
   RawStep.parStar.binary_inv_helper RawTerm.pathCompose
     RawStep.par.pathCompose_inv chain
+
+/-- `RawStep.parStar (pathApp path interval) target` either preserves the
+`pathApp` head or fires path β after the path develops to a path lambda. -/
+theorem RawStep.parStar.pathApp_inv {scope : Nat}
+    {pathTerm intervalArg target : RawTerm scope}
+    (chain :
+      RawStep.parStar (RawTerm.pathApp pathTerm intervalArg) target) :
+    (∃ pathTarget intervalTarget,
+      target = RawTerm.pathApp pathTarget intervalTarget ∧
+      RawStep.parStar pathTerm pathTarget ∧
+      RawStep.parStar intervalArg intervalTarget) ∨
+    (∃ bodyTarget intervalTarget,
+      RawStep.parStar pathTerm (RawTerm.pathLam bodyTarget) ∧
+      RawStep.parStar intervalArg intervalTarget ∧
+      RawStep.parStar (bodyTarget.subst0 intervalTarget) target) :=
+  RawStep.parStar.binary_left_intro_elim_inv_helper RawTerm.pathApp
+    RawTerm.pathLam (fun bodyTarget intervalTarget =>
+      bodyTarget.subst0 intervalTarget)
+    RawStep.par.pathApp_inv chain
 
 /-- `RawStep.parStar (oeqTrans first second) target` preserves the
 `oeqTrans` head and projects to proof chains. -/
