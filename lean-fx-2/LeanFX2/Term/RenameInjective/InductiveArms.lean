@@ -1,5 +1,6 @@
 import LeanFX2.Term.RenameInjective
 import LeanFX2.Term.TypedInversion
+import LeanFX2.Term.RenameInjective.CastInversions
 
 /-! # Term/RenameInjective/InductiveArms
 

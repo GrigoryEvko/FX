@@ -1,5 +1,6 @@
 import LeanFX2.Term.RenameInjective.ConstructorFamilies
 import LeanFX2.Term.RenameInjective.BinderInversions
+import LeanFX2.Term.RenameInjective.CastInversions
 import LeanFX2.Term.RenameInjective.ClosedData
 import LeanFX2.Term.RenameInjective.CubicalCollections
 import LeanFX2.Term.RenameInjective.IdentityEliminators
