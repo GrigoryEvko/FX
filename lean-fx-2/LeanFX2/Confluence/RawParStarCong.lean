@@ -1011,6 +1011,46 @@ theorem RawStep.parStar.refl_inv {scope : Nat}
   RawStep.parStar.unary_inv_helper RawTerm.refl
     RawStep.par.refl_inv chain
 
+/-- `RawStep.parStar (idJ base witness) target` either preserves the `idJ`
+head or fires identity ι after the witness develops to reflexivity. -/
+theorem RawStep.parStar.idJ_inv {scope : Nat}
+    {baseCase witness target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.idJ baseCase witness) target) :
+    (∃ baseTarget witnessTarget,
+      target = RawTerm.idJ baseTarget witnessTarget ∧
+      RawStep.parStar baseCase baseTarget ∧
+      RawStep.parStar witness witnessTarget) ∨
+    (∃ witnessTarget baseTarget,
+      RawStep.parStar witness (RawTerm.refl witnessTarget) ∧
+      RawStep.parStar baseCase baseTarget ∧
+      RawStep.parStar baseTarget target) := by
+  cases RawStep.parStar.binary_left_intro_elim_inv_helper
+      (fun witnessTerm baseTerm => RawTerm.idJ baseTerm witnessTerm)
+      RawTerm.refl (fun _ baseTarget => baseTarget)
+      (fun step => by
+        cases RawStep.par.idJ_inv step with
+        | inl headCase =>
+            obtain ⟨baseTarget, witnessTarget, targetEq, baseStep,
+              witnessStep⟩ := headCase
+            exact Or.inl ⟨witnessTarget, baseTarget, targetEq,
+              witnessStep, baseStep⟩
+        | inr betaCase =>
+            obtain ⟨witnessTarget, baseTarget, targetEq, witnessStep,
+              baseStep⟩ := betaCase
+            exact Or.inr ⟨witnessTarget, baseTarget, targetEq,
+              witnessStep, baseStep⟩)
+      chain with
+  | inl preservedCase =>
+      obtain ⟨witnessTarget, baseTarget, targetEq, witnessChain,
+        baseChain⟩ := preservedCase
+      exact Or.inl ⟨baseTarget, witnessTarget, targetEq, baseChain,
+        witnessChain⟩
+  | inr firedCase =>
+      obtain ⟨witnessTarget, baseTarget, witnessChain, baseChain,
+        targetChain⟩ := firedCase
+      exact Or.inr ⟨witnessTarget, baseTarget, witnessChain, baseChain,
+        targetChain⟩
+
 /-- `RawStep.parStar (listCode element) target` preserves the
 `listCode` head and projects to an element-code `parStar` chain. -/
 theorem RawStep.parStar.listCode_inv {scope : Nat}
@@ -1310,6 +1350,49 @@ theorem RawStep.parStar.idStrictRefl_inv {scope : Nat}
       RawStep.parStar witness witnessTarget :=
   RawStep.parStar.unary_inv_helper RawTerm.idStrictRefl
     RawStep.par.idStrictRefl_inv chain
+
+/-- `RawStep.parStar (idStrictRec base witness) target` either preserves
+the strict recursor head or fires strict-identity ι after the witness
+develops to strict reflexivity. -/
+theorem RawStep.parStar.idStrictRec_inv {scope : Nat}
+    {baseCase witness target : RawTerm scope}
+    (chain : RawStep.parStar
+      (RawTerm.idStrictRec baseCase witness) target) :
+    (∃ baseTarget witnessTarget,
+      target = RawTerm.idStrictRec baseTarget witnessTarget ∧
+      RawStep.parStar baseCase baseTarget ∧
+      RawStep.parStar witness witnessTarget) ∨
+    (∃ witnessTarget baseTarget,
+      RawStep.parStar witness (RawTerm.idStrictRefl witnessTarget) ∧
+      RawStep.parStar baseCase baseTarget ∧
+      RawStep.parStar baseTarget target) := by
+  cases RawStep.parStar.binary_left_intro_elim_inv_helper
+      (fun witnessTerm baseTerm =>
+        RawTerm.idStrictRec baseTerm witnessTerm)
+      RawTerm.idStrictRefl (fun _ baseTarget => baseTarget)
+      (fun step => by
+        cases RawStep.par.idStrictRec_inv step with
+        | inl headCase =>
+            obtain ⟨baseTarget, witnessTarget, targetEq, baseStep,
+              witnessStep⟩ := headCase
+            exact Or.inl ⟨witnessTarget, baseTarget, targetEq,
+              witnessStep, baseStep⟩
+        | inr betaCase =>
+            obtain ⟨witnessTarget, baseTarget, targetEq, witnessStep,
+              baseStep⟩ := betaCase
+            exact Or.inr ⟨witnessTarget, baseTarget, targetEq,
+              witnessStep, baseStep⟩)
+      chain with
+  | inl preservedCase =>
+      obtain ⟨witnessTarget, baseTarget, targetEq, witnessChain,
+        baseChain⟩ := preservedCase
+      exact Or.inl ⟨baseTarget, witnessTarget, targetEq, baseChain,
+        witnessChain⟩
+  | inr firedCase =>
+      obtain ⟨witnessTarget, baseTarget, witnessChain, baseChain,
+        targetChain⟩ := firedCase
+      exact Or.inr ⟨witnessTarget, baseTarget, witnessChain, baseChain,
+        targetChain⟩
 
 /-- `RawStep.parStar (equivIntro forward backward) target` preserves
 the `equivIntro` head and projects to both function chains. -/
