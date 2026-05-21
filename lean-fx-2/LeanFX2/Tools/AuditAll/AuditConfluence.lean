@@ -187,6 +187,12 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.eitherInr_ne_pair
 #assert_no_axioms LeanFX2.Conv.listCons_ne_pair
 #assert_no_axioms LeanFX2.Conv.pair_compatibility
+#assert_no_axioms LeanFX2.Conv.unit_ne_refl
+#assert_no_axioms LeanFX2.Conv.boolTrue_ne_refl
+#assert_no_axioms LeanFX2.Conv.boolFalse_ne_refl
+#assert_no_axioms LeanFX2.Conv.natZero_ne_refl
+#assert_no_axioms LeanFX2.Conv.listNil_ne_refl
+#assert_no_axioms LeanFX2.Conv.optionNone_ne_refl
 #assert_no_axioms LeanFX2.Conv.transChains_renamed
 #assert_no_axioms LeanFX2.Conv.transChains_weakened
 #assert_no_axioms LeanFX2.Conv.transChains_substituted

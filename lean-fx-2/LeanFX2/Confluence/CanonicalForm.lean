@@ -2936,4 +2936,136 @@ theorem Conv.pair_compatibility
     firstJoinEq ▸ firstSrcInner, firstTgtInner,
     secondJoinEq ▸ secondSrcInner, secondTgtInner⟩
 
+/-! ### `refl` canonical-head disjointness (HoTT identity intro)
+
+`refl` is the third canonical compound head added to the matrix.
+It is the unary witness-carrying intro for HoTT identity types
+(`Ty.id`, `Ty.oeq`, `Ty.idStrict`).  Although K12.23 HOTT cases
+shipped without consuming this row, the lemmas remain useful for
+K12.24 cubical cases and downstream NbE work (K13.17 quote at
+identity types must canonicalize to `refl` shape).
+
+Proof shape identical to the unary-compound template (iters 33,
+34) — `refl_inv` returns `∃ witnessTarget, target = RawTerm.refl
+witnessTarget ∧ RawStep.parStar witness witnessTarget`, same
+3-component existential as natSucc/optionSome.
+
+This iter ships the 6 leaf-vs-refl pairs; iter 43 will close
+the row with 4 unary-compound-vs-refl + 2 binary-vs-refl +
+refl compatibility. -/
+
+/-- A `unit`-headed source and a `refl`-headed target are not
+convertible. -/
+theorem Conv.unit_ne_refl
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {witnessTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType (RawTerm.unit : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.refl witnessTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqUnit : joinRaw = RawTerm.unit :=
+    RawStep.parStar.unit_inv sourceToJoin
+  obtain ⟨_, joinEqRefl, _⟩ :=
+    RawStep.parStar.refl_inv targetToJoin
+  nomatch joinEqUnit.symm.trans joinEqRefl
+
+/-- A `boolTrue`-headed source and a `refl`-headed target are not
+convertible. -/
+theorem Conv.boolTrue_ne_refl
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {witnessTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType (RawTerm.boolTrue : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.refl witnessTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqTrue : joinRaw = RawTerm.boolTrue :=
+    RawStep.parStar.boolTrue_inv sourceToJoin
+  obtain ⟨_, joinEqRefl, _⟩ :=
+    RawStep.parStar.refl_inv targetToJoin
+  nomatch joinEqTrue.symm.trans joinEqRefl
+
+/-- A `boolFalse`-headed source and a `refl`-headed target are
+not convertible. -/
+theorem Conv.boolFalse_ne_refl
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {witnessTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType (RawTerm.boolFalse : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.refl witnessTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqFalse : joinRaw = RawTerm.boolFalse :=
+    RawStep.parStar.boolFalse_inv sourceToJoin
+  obtain ⟨_, joinEqRefl, _⟩ :=
+    RawStep.parStar.refl_inv targetToJoin
+  nomatch joinEqFalse.symm.trans joinEqRefl
+
+/-- A `natZero`-headed source and a `refl`-headed target are not
+convertible. -/
+theorem Conv.natZero_ne_refl
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {witnessTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType (RawTerm.natZero : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.refl witnessTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqZero : joinRaw = RawTerm.natZero :=
+    RawStep.parStar.natZero_inv sourceToJoin
+  obtain ⟨_, joinEqRefl, _⟩ :=
+    RawStep.parStar.refl_inv targetToJoin
+  nomatch joinEqZero.symm.trans joinEqRefl
+
+/-- A `listNil`-headed source and a `refl`-headed target are not
+convertible. -/
+theorem Conv.listNil_ne_refl
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {witnessTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType (RawTerm.listNil : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.refl witnessTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqNil : joinRaw = RawTerm.listNil :=
+    RawStep.parStar.listNil_inv sourceToJoin
+  obtain ⟨_, joinEqRefl, _⟩ :=
+    RawStep.parStar.refl_inv targetToJoin
+  nomatch joinEqNil.symm.trans joinEqRefl
+
+/-- An `optionNone`-headed source and a `refl`-headed target are
+not convertible. -/
+theorem Conv.optionNone_ne_refl
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {witnessTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType (RawTerm.optionNone : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.refl witnessTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqNone : joinRaw = RawTerm.optionNone :=
+    RawStep.parStar.optionNone_inv sourceToJoin
+  obtain ⟨_, joinEqRefl, _⟩ :=
+    RawStep.parStar.refl_inv targetToJoin
+  nomatch joinEqNone.symm.trans joinEqRefl
+
 end LeanFX2
