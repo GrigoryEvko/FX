@@ -510,4 +510,255 @@ theorem Term.rename_injective_arm_natRec
   rename_i scrutineeTerm zeroBranchTerm succBranchTerm
   exact ⟨scrutineeTerm, zeroBranchTerm, succBranchTerm, HEq.rfl⟩
 
+/-- `listElim` arm: 3 children with both elementType (existential at the
+    scrutinee carrier) and motiveType (result type, hence genericType).
+    The inferred elementType needs reconciling with outer elementType via
+    `Ty.rename_injective` from the injection's elementType.rename equation. -/
+theorem Term.rename_injective_arm_listElim
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (rhoInjective : RawRenamingInjective rho)
+    {elementType motiveType : Ty level sourceScope}
+    {scrutineeRaw nilRaw consRaw : RawTerm sourceScope}
+    (scrutineeA : Term sourceCtx (Ty.listType elementType) scrutineeRaw)
+    (nilBranchA : Term sourceCtx motiveType nilRaw)
+    (consBranchA : Term sourceCtx
+      (Ty.arrow elementType (Ty.arrow (Ty.listType elementType) motiveType))
+      consRaw)
+    (scrutineeIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (scrutineeB : Term sourceCtx (Ty.listType elementType) scrutineeRaw),
+          Term.rename innerRenaming scrutineeA =
+            Term.rename innerRenaming scrutineeB →
+          scrutineeA = scrutineeB)
+    (nilBranchIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (nilBranchB : Term sourceCtx motiveType nilRaw),
+          Term.rename innerRenaming nilBranchA =
+            Term.rename innerRenaming nilBranchB →
+          nilBranchA = nilBranchB)
+    (consBranchIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (consBranchB : Term sourceCtx
+            (Ty.arrow elementType
+              (Ty.arrow (Ty.listType elementType) motiveType))
+            consRaw),
+          Term.rename innerRenaming consBranchA =
+            Term.rename innerRenaming consBranchB →
+          consBranchA = consBranchB)
+    (termB : Term sourceCtx motiveType
+      (RawTerm.listElim scrutineeRaw nilRaw consRaw)) :
+    Term.rename termRenaming (Term.listElim scrutineeA nilBranchA consBranchA) =
+      Term.rename termRenaming termB →
+      Term.listElim scrutineeA nilBranchA consBranchA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.listElim scrutineeRaw nilRaw consRaw)),
+        Σ' (inferredElementType : Ty level sourceScope),
+          Σ' (scrutineeTerm :
+              Term sourceCtx (Ty.listType inferredElementType) scrutineeRaw),
+            Σ' (nilTerm : Term sourceCtx genericType nilRaw),
+              Σ' (consTerm :
+                  Term sourceCtx
+                    (Ty.arrow inferredElementType
+                      (Ty.arrow (Ty.listType inferredElementType) genericType))
+                    consRaw),
+                HEq genericTerm
+                  (Term.listElim scrutineeTerm nilTerm consTerm) by
+    obtain ⟨inferredElementType, scrutineeB, nilB, consB, termHEqB⟩ := key termB
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ _ elemRenameEq _ _ _ _ scrTermHEq nilTermHEq consTermHEq
+    have elementTypeEq : elementType = inferredElementType :=
+      Ty.rename_injective_under_injective_renaming elementType
+        rhoInjective inferredElementType elemRenameEq
+    cases elementTypeEq
+    rw [scrutineeIH termRenaming rhoInjective scrutineeB (eq_of_heq scrTermHEq),
+        nilBranchIH termRenaming rhoInjective nilB nilTermHEq,
+        consBranchIH termRenaming rhoInjective consB (eq_of_heq consTermHEq)]
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredElementType scrutineeTerm nilTerm consTerm
+  exact ⟨inferredElementType, scrutineeTerm, nilTerm, consTerm, HEq.rfl⟩
+
+/-- `optionMatch` arm: structurally identical to `listElim` with element-
+    typed scrutinee + value-typed someBranch.  Same reconcile-via-
+    `Ty.rename_injective` pattern. -/
+theorem Term.rename_injective_arm_optionMatch
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (rhoInjective : RawRenamingInjective rho)
+    {elementType motiveType : Ty level sourceScope}
+    {scrutineeRaw noneRaw someRaw : RawTerm sourceScope}
+    (scrutineeA : Term sourceCtx (Ty.optionType elementType) scrutineeRaw)
+    (noneBranchA : Term sourceCtx motiveType noneRaw)
+    (someBranchA : Term sourceCtx (Ty.arrow elementType motiveType) someRaw)
+    (scrutineeIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (scrutineeB : Term sourceCtx (Ty.optionType elementType) scrutineeRaw),
+          Term.rename innerRenaming scrutineeA =
+            Term.rename innerRenaming scrutineeB →
+          scrutineeA = scrutineeB)
+    (noneBranchIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (noneBranchB : Term sourceCtx motiveType noneRaw),
+          Term.rename innerRenaming noneBranchA =
+            Term.rename innerRenaming noneBranchB →
+          noneBranchA = noneBranchB)
+    (someBranchIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (someBranchB :
+            Term sourceCtx (Ty.arrow elementType motiveType) someRaw),
+          Term.rename innerRenaming someBranchA =
+            Term.rename innerRenaming someBranchB →
+          someBranchA = someBranchB)
+    (termB : Term sourceCtx motiveType
+      (RawTerm.optionMatch scrutineeRaw noneRaw someRaw)) :
+    Term.rename termRenaming (Term.optionMatch scrutineeA noneBranchA someBranchA) =
+      Term.rename termRenaming termB →
+      Term.optionMatch scrutineeA noneBranchA someBranchA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.optionMatch scrutineeRaw noneRaw someRaw)),
+        Σ' (inferredElementType : Ty level sourceScope),
+          Σ' (scrutineeTerm :
+              Term sourceCtx (Ty.optionType inferredElementType) scrutineeRaw),
+            Σ' (noneTerm : Term sourceCtx genericType noneRaw),
+              Σ' (someTerm :
+                  Term sourceCtx
+                    (Ty.arrow inferredElementType genericType) someRaw),
+                HEq genericTerm
+                  (Term.optionMatch scrutineeTerm noneTerm someTerm) by
+    obtain ⟨inferredElementType, scrutineeB, noneB, someB, termHEqB⟩ := key termB
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ _ elemRenameEq _ _ _ _ scrTermHEq noneTermHEq someTermHEq
+    have elementTypeEq : elementType = inferredElementType :=
+      Ty.rename_injective_under_injective_renaming elementType
+        rhoInjective inferredElementType elemRenameEq
+    cases elementTypeEq
+    rw [scrutineeIH termRenaming rhoInjective scrutineeB (eq_of_heq scrTermHEq),
+        noneBranchIH termRenaming rhoInjective noneB noneTermHEq,
+        someBranchIH termRenaming rhoInjective someB (eq_of_heq someTermHEq)]
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredElementType scrutineeTerm noneTerm someTerm
+  exact ⟨inferredElementType, scrutineeTerm, noneTerm, someTerm, HEq.rfl⟩
+
+/-- `eitherMatch` arm: three existentials (leftType, rightType, motiveType
+    as result) plus 3 children.  Both leftType and rightType need
+    reconciling via `Ty.rename_injective`. -/
+theorem Term.rename_injective_arm_eitherMatch
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (rhoInjective : RawRenamingInjective rho)
+    {leftType rightType motiveType : Ty level sourceScope}
+    {scrutineeRaw leftRaw rightRaw : RawTerm sourceScope}
+    (scrutineeA : Term sourceCtx (Ty.eitherType leftType rightType) scrutineeRaw)
+    (leftBranchA : Term sourceCtx (Ty.arrow leftType motiveType) leftRaw)
+    (rightBranchA : Term sourceCtx (Ty.arrow rightType motiveType) rightRaw)
+    (scrutineeIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (scrutineeB :
+            Term sourceCtx (Ty.eitherType leftType rightType) scrutineeRaw),
+          Term.rename innerRenaming scrutineeA =
+            Term.rename innerRenaming scrutineeB →
+          scrutineeA = scrutineeB)
+    (leftBranchIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (leftBranchB :
+            Term sourceCtx (Ty.arrow leftType motiveType) leftRaw),
+          Term.rename innerRenaming leftBranchA =
+            Term.rename innerRenaming leftBranchB →
+          leftBranchA = leftBranchB)
+    (rightBranchIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (rightBranchB :
+            Term sourceCtx (Ty.arrow rightType motiveType) rightRaw),
+          Term.rename innerRenaming rightBranchA =
+            Term.rename innerRenaming rightBranchB →
+          rightBranchA = rightBranchB)
+    (termB : Term sourceCtx motiveType
+      (RawTerm.eitherMatch scrutineeRaw leftRaw rightRaw)) :
+    Term.rename termRenaming
+        (Term.eitherMatch scrutineeA leftBranchA rightBranchA) =
+      Term.rename termRenaming termB →
+      Term.eitherMatch scrutineeA leftBranchA rightBranchA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.eitherMatch scrutineeRaw leftRaw rightRaw)),
+        Σ' (inferredLeftType inferredRightType : Ty level sourceScope),
+          Σ' (scrutineeTerm : Term sourceCtx
+              (Ty.eitherType inferredLeftType inferredRightType) scrutineeRaw),
+            Σ' (leftTerm : Term sourceCtx
+                (Ty.arrow inferredLeftType genericType) leftRaw),
+              Σ' (rightTerm : Term sourceCtx
+                  (Ty.arrow inferredRightType genericType) rightRaw),
+                HEq genericTerm
+                  (Term.eitherMatch scrutineeTerm leftTerm rightTerm) by
+    obtain ⟨inferredLeftType, inferredRightType, scrutineeB, leftB, rightB,
+      termHEqB⟩ := key termB
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ _ leftRenameEq rightRenameEq _ _ _ _
+      scrTermHEq leftTermHEq rightTermHEq
+    have leftTypeEq : leftType = inferredLeftType :=
+      Ty.rename_injective_under_injective_renaming leftType
+        rhoInjective inferredLeftType leftRenameEq
+    have rightTypeEq : rightType = inferredRightType :=
+      Ty.rename_injective_under_injective_renaming rightType
+        rhoInjective inferredRightType rightRenameEq
+    cases leftTypeEq
+    cases rightTypeEq
+    rw [scrutineeIH termRenaming rhoInjective scrutineeB (eq_of_heq scrTermHEq),
+        leftBranchIH termRenaming rhoInjective leftB (eq_of_heq leftTermHEq),
+        rightBranchIH termRenaming rhoInjective rightB (eq_of_heq rightTermHEq)]
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredLeftType inferredRightType scrutineeTerm leftTerm rightTerm
+  exact ⟨inferredLeftType, inferredRightType, scrutineeTerm, leftTerm,
+    rightTerm, HEq.rfl⟩
+
 end LeanFX2
