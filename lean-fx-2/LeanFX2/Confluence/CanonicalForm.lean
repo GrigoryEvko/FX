@@ -6877,4 +6877,160 @@ theorem Conv.equivCode_ne_refl
     RawStep.parStar.refl_inv targetToJoin
   nomatch joinEqEquiv.symm.trans joinEqRefl
 
+/-- A `idCode`-headed source and a `unit`-headed target are not
+convertible.  Opens the identity-type-code row of the canonical-
+head matrix: `idCode` is the TERNARY type-code for the HOTT
+identity type former (carrying a type code plus left and right
+endpoint codes).  First non-binary canonical head — destructure
+expands to ⟨_, _, _, joinEqId, _, _, _⟩ from ternary_inv_helper. -/
+theorem Conv.idCode_ne_unit
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {typeCode leftCode rightCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.idCode typeCode leftCode rightCode : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.unit : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, _, joinEqId, _, _, _⟩ :=
+    RawStep.parStar.idCode_inv sourceToJoin
+  have joinEqUnit : joinRaw = RawTerm.unit :=
+    RawStep.parStar.unit_inv targetToJoin
+  nomatch joinEqId.symm.trans joinEqUnit
+
+/-- A `idCode`-headed source and a `boolTrue`-headed target are not
+convertible.  Type-code vs boolean-leaf disjointness. -/
+theorem Conv.idCode_ne_boolTrue
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {typeCode leftCode rightCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.idCode typeCode leftCode rightCode : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.boolTrue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, _, joinEqId, _, _, _⟩ :=
+    RawStep.parStar.idCode_inv sourceToJoin
+  have joinEqTrue : joinRaw = RawTerm.boolTrue :=
+    RawStep.parStar.boolTrue_inv targetToJoin
+  nomatch joinEqId.symm.trans joinEqTrue
+
+/-- A `idCode`-headed source and a `boolFalse`-headed target are not
+convertible.  Type-code vs boolean-leaf disjointness. -/
+theorem Conv.idCode_ne_boolFalse
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {typeCode leftCode rightCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.idCode typeCode leftCode rightCode : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.boolFalse : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, _, joinEqId, _, _, _⟩ :=
+    RawStep.parStar.idCode_inv sourceToJoin
+  have joinEqFalse : joinRaw = RawTerm.boolFalse :=
+    RawStep.parStar.boolFalse_inv targetToJoin
+  nomatch joinEqId.symm.trans joinEqFalse
+
+/-- A `idCode`-headed source and a `natZero`-headed target are not
+convertible.  Type-code vs nat-leaf disjointness. -/
+theorem Conv.idCode_ne_natZero
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {typeCode leftCode rightCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.idCode typeCode leftCode rightCode : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.natZero : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, _, joinEqId, _, _, _⟩ :=
+    RawStep.parStar.idCode_inv sourceToJoin
+  have joinEqZero : joinRaw = RawTerm.natZero :=
+    RawStep.parStar.natZero_inv targetToJoin
+  nomatch joinEqId.symm.trans joinEqZero
+
+/-- A `idCode`-headed source and a `listNil`-headed target are not
+convertible.  Type-code vs nullary-list-leaf disjointness. -/
+theorem Conv.idCode_ne_listNil
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {typeCode leftCode rightCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.idCode typeCode leftCode rightCode : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.listNil : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, _, joinEqId, _, _, _⟩ :=
+    RawStep.parStar.idCode_inv sourceToJoin
+  have joinEqNil : joinRaw = RawTerm.listNil :=
+    RawStep.parStar.listNil_inv targetToJoin
+  nomatch joinEqId.symm.trans joinEqNil
+
+/-- A `idCode`-headed source and a `optionNone`-headed target are
+not convertible.  Type-code vs nullary-option-leaf disjointness. -/
+theorem Conv.idCode_ne_optionNone
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {typeCode leftCode rightCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.idCode typeCode leftCode rightCode : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.optionNone : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, _, joinEqId, _, _, _⟩ :=
+    RawStep.parStar.idCode_inv sourceToJoin
+  have joinEqNone : joinRaw = RawTerm.optionNone :=
+    RawStep.parStar.optionNone_inv targetToJoin
+  nomatch joinEqId.symm.trans joinEqNone
+
+/-- A `idCode`-headed source and a `interval0`-headed target are not
+convertible.  Type-code vs cubical-interval-leaf disjointness. -/
+theorem Conv.idCode_ne_interval0
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {typeCode leftCode rightCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.idCode typeCode leftCode rightCode : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.interval0 : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, _, joinEqId, _, _, _⟩ :=
+    RawStep.parStar.idCode_inv sourceToJoin
+  have joinEqZero : joinRaw = RawTerm.interval0 :=
+    RawStep.parStar.interval0_inv targetToJoin
+  nomatch joinEqId.symm.trans joinEqZero
+
+/-- A `idCode`-headed source and a `interval1`-headed target are not
+convertible.  Type-code vs cubical-interval-leaf disjointness. -/
+theorem Conv.idCode_ne_interval1
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {typeCode leftCode rightCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.idCode typeCode leftCode rightCode : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.interval1 : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, _, joinEqId, _, _, _⟩ :=
+    RawStep.parStar.idCode_inv sourceToJoin
+  have joinEqOne : joinRaw = RawTerm.interval1 :=
+    RawStep.parStar.interval1_inv targetToJoin
+  nomatch joinEqId.symm.trans joinEqOne
+
 end LeanFX2
