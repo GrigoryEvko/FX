@@ -402,4 +402,79 @@ theorem Conv.transRaw_subst0
   Conv.transRaw_substituted (RawTermSubst.singleton argRaw)
     firstConvertibility secondConvertibility
 
+/-! ## StepStar-chain-plus-action lifters
+
+When a downstream consumer has a typed one-sided `StepStar` chain
+instead of a two-sided `Conv`, the four corollaries below skip the
+explicit `Conv.fromStepStar` wrapping step.  Composes
+`Conv.fromStepStar` (chain → Conv, target as common reduct) with
+each of the four single-action raw lifters (renameRaw / weakenRaw /
+substRaw / subst0Raw).
+
+Pipeline: `Conv.<action>Raw <action-arg> (Conv.fromStepStar chain)`.
+The midpoint of the resulting raw join is the target endpoint of
+the chain, transported through the action.  Useful for Phase 7 SR
+chain consumers and K13 NbE β-step consumers that have a single
+typed reduction direction. -/
+
+/-- Combine a typed StepStar chain with a raw renaming in one ship. -/
+theorem Conv.fromStepStar_renamed
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {sourceType targetType : Ty level sourceScope}
+    {sourceRaw targetRaw : RawTerm sourceScope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (rawRenaming : RawRenaming sourceScope targetScope)
+    (chain : StepStar sourceTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.rename rawRenaming) commonRaw ∧
+      RawStep.parStar (targetRaw.rename rawRenaming) commonRaw :=
+  Conv.renameRaw rawRenaming (Conv.fromStepStar chain)
+
+/-- Canonical-weaken specialization of `Conv.fromStepStar_renamed`. -/
+theorem Conv.fromStepStar_weakened
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (chain : StepStar sourceTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar sourceRaw.weaken commonRaw ∧
+      RawStep.parStar targetRaw.weaken commonRaw :=
+  Conv.weakenRaw (Conv.fromStepStar chain)
+
+/-- Combine a typed StepStar chain with a raw substitution in one ship. -/
+theorem Conv.fromStepStar_substituted
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {sourceType targetType : Ty level sourceScope}
+    {sourceRaw targetRaw : RawTerm sourceScope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (rawSubst : RawTermSubst sourceScope targetScope)
+    (chain : StepStar sourceTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.subst rawSubst) commonRaw ∧
+      RawStep.parStar (targetRaw.subst rawSubst) commonRaw :=
+  Conv.substRaw rawSubst (Conv.fromStepStar chain)
+
+/-- Singleton-substitution specialization of
+`Conv.fromStepStar_substituted`. -/
+theorem Conv.fromStepStar_subst0
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level (scope + 1)}
+    {sourceType targetType : Ty level (scope + 1)}
+    {sourceRaw targetRaw : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (argRaw : RawTerm scope)
+    (chain : StepStar sourceTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.subst0 argRaw) commonRaw ∧
+      RawStep.parStar (targetRaw.subst0 argRaw) commonRaw :=
+  Conv.subst0Raw argRaw (Conv.fromStepStar chain)
+
 end LeanFX2
