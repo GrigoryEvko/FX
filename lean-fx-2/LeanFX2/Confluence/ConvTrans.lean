@@ -375,6 +375,90 @@ theorem Conv.trans_fromStepRight
     Conv sourceTerm targetTerm :=
   Conv.trans_step_right firstConv reverseStep
 
+/-! ## Asymmetric typed Conv-trans → raw join projections
+
+When a consumer takes the typed asymmetric trans variants
+(`Conv.trans_chainLeft` / `Conv.trans_chainRight` /
+`Conv.trans_step_left` / `Conv.trans_step_right`) and immediately
+projects the resulting typed Conv to a raw join via
+`Conv.canonicalRaw`, the composition is a one-line corollary.
+Shipping these saves the intermediate typed-Conv binding at call
+sites that ultimately want raw output (e.g., bridges to
+`RawStep.parStar.confluence`-based downstream work).
+
+Each corollary is `Conv.canonicalRaw ∘ Conv.trans_<asymmetric>`. -/
+
+/-- Raw-join projection of `Conv.trans_chainLeft`.
+
+Given `StepStar source middle` and `Conv middle target`, produce a
+raw common reduct reachable from both `sourceRaw` and `targetRaw`.
+The chain is prepended to the second Conv's source-side chain via
+`StepStar.append` (no confluence required — the typed midpoint is
+inherited from the input Conv). -/
+theorem Conv.transRaw_chainLeft
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType middleType targetType : Ty level scope}
+    {sourceRaw middleRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (firstChain : StepStar sourceTerm middleTerm)
+    (secondConv : Conv middleTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar sourceRaw commonRaw ∧
+      RawStep.parStar targetRaw commonRaw :=
+  Conv.canonicalRaw (Conv.trans_chainLeft firstChain secondConv)
+
+/-- Raw-join projection of `Conv.trans_chainRight`.
+
+Given `Conv source middle` and a *reverse* chain `target →* middle`,
+produce a raw join.  Symmetric to `transRaw_chainLeft`. -/
+theorem Conv.transRaw_chainRight
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType middleType targetType : Ty level scope}
+    {sourceRaw middleRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (firstConv : Conv sourceTerm middleTerm)
+    (reverseChain : StepStar targetTerm middleTerm) :
+    ∃ commonRaw,
+      RawStep.parStar sourceRaw commonRaw ∧
+      RawStep.parStar targetRaw commonRaw :=
+  Conv.canonicalRaw (Conv.trans_chainRight firstConv reverseChain)
+
+/-- Raw-join projection of `Conv.trans_step_left`.  Single-step
+variant of `Conv.transRaw_chainLeft`. -/
+theorem Conv.transRaw_stepLeft
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType middleType targetType : Ty level scope}
+    {sourceRaw middleRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (firstStep : Step sourceTerm middleTerm)
+    (secondConv : Conv middleTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar sourceRaw commonRaw ∧
+      RawStep.parStar targetRaw commonRaw :=
+  Conv.canonicalRaw (Conv.trans_step_left firstStep secondConv)
+
+/-- Raw-join projection of `Conv.trans_step_right`.  Single-step
+variant of `Conv.transRaw_chainRight` (reverse direction). -/
+theorem Conv.transRaw_stepRight
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType middleType targetType : Ty level scope}
+    {sourceRaw middleRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (firstConv : Conv sourceTerm middleTerm)
+    (reverseStep : Step targetTerm middleTerm) :
+    ∃ commonRaw,
+      RawStep.parStar sourceRaw commonRaw ∧
+      RawStep.parStar targetRaw commonRaw :=
+  Conv.canonicalRaw (Conv.trans_step_right firstConv reverseStep)
+
 /-! ## Cong-rule via Conv chain in closed-type fragment
 
 For `IsClosedTy`-typed terms, every `Step` (and `StepStar`) preserves

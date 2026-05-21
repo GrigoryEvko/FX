@@ -56,6 +56,10 @@ needed for these subsets. -/
 #assert_no_axioms LeanFX2.Conv.trans_fromStepRight
 #assert_no_axioms LeanFX2.Conv.trans_refl_left
 #assert_no_axioms LeanFX2.Conv.trans_refl_right
+#assert_no_axioms LeanFX2.Conv.transRaw_chainLeft
+#assert_no_axioms LeanFX2.Conv.transRaw_chainRight
+#assert_no_axioms LeanFX2.Conv.transRaw_stepLeft
+#assert_no_axioms LeanFX2.Conv.transRaw_stepRight
 
 /-! ### Raw-level confluence machinery (#1508)
 
