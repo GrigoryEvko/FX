@@ -415,6 +415,13 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.pathCompose_ne_optionNone
 #assert_no_axioms LeanFX2.Conv.pathCompose_ne_interval0
 #assert_no_axioms LeanFX2.Conv.pathCompose_ne_interval1
+#assert_no_axioms LeanFX2.Conv.pathCompose_ne_natSucc
+#assert_no_axioms LeanFX2.Conv.pathCompose_ne_optionSome
+#assert_no_axioms LeanFX2.Conv.pathCompose_ne_eitherInl
+#assert_no_axioms LeanFX2.Conv.pathCompose_ne_eitherInr
+#assert_no_axioms LeanFX2.Conv.pathCompose_ne_listCons
+#assert_no_axioms LeanFX2.Conv.pathCompose_ne_pair
+#assert_no_axioms LeanFX2.Conv.pathCompose_ne_refl
 #assert_no_axioms LeanFX2.Conv.transChains_renamed
 #assert_no_axioms LeanFX2.Conv.transChains_weakened
 #assert_no_axioms LeanFX2.Conv.transChains_substituted
