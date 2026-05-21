@@ -7,6 +7,8 @@ import LeanFX2.Confluence.RawCdLemma
 import LeanFX2.Confluence.RawCdRename
 import LeanFX2.Confluence.RawDiamond
 import LeanFX2.Confluence.RawParStarCong
+import LeanFX2.Confluence.ParStarBridge
+import LeanFX2.Confluence.ConvBridge
 import LeanFX2.Reduction.RawParCompatible.NamedCompatibility
 import LeanFX2.Reduction.Compat.Cubical
 import LeanFX2.Reduction.Compat.HoTT.IdentityFamily
@@ -236,7 +238,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Step.par.betaPathAppDeep
 #assert_no_axioms LeanFX2.Step.par.toRawBridge
 #assert_no_axioms LeanFX2.Step.par.rename_toRawBridge
+#assert_no_axioms LeanFX2.Step.par.renamed_source_targetRaw_in_rename_image
+#assert_no_axioms LeanFX2.Step.par.weakened_source_targetRaw_in_weaken_image
 #assert_no_axioms LeanFX2.Step.par.subst_toRawBridge
+#assert_no_axioms LeanFX2.Term.toRaw_subst0_rename_commute
 #assert_no_axioms LeanFX2.RawStep.par.rename_compatible
 #assert_no_axioms LeanFX2.RawStep.par.subst_compatible
 #assert_no_axioms LeanFX2.RawStep.par.subst_compatible_same
@@ -633,6 +638,24 @@ or compound payloads): 12 in BinderShape.  Cubical/HoTT-specific
 shapes: 5 in CubicalShape. -/
 
 #assert_no_axioms LeanFX2.RawStep.par.rename_inj_inv
+#assert_no_axioms LeanFX2.RawStep.par.target_in_rename_image
+#assert_no_axioms LeanFX2.RawStep.par.target_in_rename_image_of_source_eq
+#assert_no_axioms LeanFX2.RawStep.par.target_in_weaken_image
+#assert_no_axioms LeanFX2.RawStep.parStar.rename_compatible
+#assert_no_axioms LeanFX2.RawStep.parStar.target_in_rename_image
+#assert_no_axioms LeanFX2.RawStep.parStar.target_in_weaken_image
+#assert_no_axioms LeanFX2.Step.parStar.rename_toRawBridge
+#assert_no_axioms LeanFX2.Step.parStar.renamed_source_targetRaw_in_rename_image
+#assert_no_axioms LeanFX2.Step.parStar.weakened_source_targetRaw_in_weaken_image
+#assert_no_axioms LeanFX2.StepStar.rename_toRawBridge
+#assert_no_axioms LeanFX2.StepStar.renamed_source_targetRaw_in_rename_image
+#assert_no_axioms LeanFX2.StepStar.weakened_source_targetRaw_in_weaken_image
+#assert_no_axioms LeanFX2.Conv.rename_toRawJoin
+#assert_no_axioms LeanFX2.Conv.weaken_toRawJoin
+#assert_no_axioms LeanFX2.Conv.renamed_left_commonRaw_in_rename_image
+#assert_no_axioms LeanFX2.Conv.weakened_left_commonRaw_in_weaken_image
+#assert_no_axioms LeanFX2.Conv.renamed_right_commonRaw_in_rename_image
+#assert_no_axioms LeanFX2.Conv.weakened_right_commonRaw_in_weaken_image
 
 -- AtomShape1: 7 closed-leaf shape inversions
 #assert_no_axioms LeanFX2.RawTerm.rename_eq_boolTrue_imp
