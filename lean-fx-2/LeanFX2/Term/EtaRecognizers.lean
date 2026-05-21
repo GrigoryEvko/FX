@@ -197,6 +197,35 @@ theorem eta_record_shape_recognize_projection
   cases fieldProjectionHEq
   rfl
 
+/-- Generic modal eta constructor for the current `modIntro`/`modElim`
+typed core. -/
+def eta_modal_shape_construct
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {innerType : Ty level scope}
+    {modalRaw : RawTerm scope}
+    (modalTerm : Term context innerType modalRaw) :
+    Term context innerType
+      (RawTerm.modIntro (RawTerm.modElim modalRaw)) :=
+  Term.modIntro (Term.modElim modalTerm)
+
+/-- Recognize the concrete generic modal eta arm once the eliminated
+modal payload has been identified. -/
+theorem eta_modal_shape_recognize_elim
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {innerType : Ty level scope}
+    {modalRaw : RawTerm scope}
+    (modalTerm : Term context innerType modalRaw)
+    (eliminatedTerm :
+      Term context innerType (RawTerm.modElim modalRaw))
+    (eliminatedTermHEq :
+      HEq eliminatedTerm (Term.modElim modalTerm)) :
+    HEq (Term.modIntro eliminatedTerm)
+        (Term.eta_modal_shape_construct modalTerm) := by
+  cases eliminatedTermHEq
+  rfl
+
 /-- Recognize the concrete path eta application arm.
 
 If a path application under an interval binder has path side in the
