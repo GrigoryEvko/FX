@@ -181,6 +181,110 @@ theorem Step.parStar.sourceRaw_in_weaken_image_targetRaw_in_weaken_image
   RawStep.parStar.target_in_weaken_image_of_source_eq sourceEq
     (Step.parStar.toRawBridge parallelChain)
 
+/-! ## Direct raw-chain packaging for rename-image parStar consumers -/
+
+/-- Direct raw-chain packaging of
+`Step.parStar.renamed_source_targetRaw_in_rename_image`.
+
+If a typed `parStar` chain starts at a renamed typed term, its raw projection
+can be targeted directly at a raw term in the same renaming image. -/
+theorem Step.parStar.renamed_source_toRawBridge_target_in_rename_image
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rawRenaming : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rawRenaming)
+    (rawRenamingInjective :
+      ∀ leftPosition rightPosition,
+        rawRenaming leftPosition = rawRenaming rightPosition →
+          leftPosition = rightPosition)
+    {sourceType : Ty level sourceScope}
+    {targetType : Ty level targetScope}
+    {sourceRaw : RawTerm sourceScope}
+    {targetRaw : RawTerm targetScope}
+    {sourceTerm : Term sourceCtx sourceType sourceRaw}
+    {targetTerm : Term targetCtx targetType targetRaw}
+    (parallelChain :
+      Step.parStar (Term.rename termRenaming sourceTerm) targetTerm) :
+    ∃ targetInnerRaw : RawTerm sourceScope,
+      RawStep.parStar
+        (Term.toRaw (Term.rename termRenaming sourceTerm))
+        (targetInnerRaw.rename rawRenaming) := by
+  obtain ⟨targetInnerRaw, targetEq⟩ :=
+    Step.parStar.renamed_source_targetRaw_in_rename_image
+      termRenaming rawRenamingInjective parallelChain
+  cases targetEq
+  exact ⟨targetInnerRaw, Step.parStar.toRawBridge parallelChain⟩
+
+/-- Canonical-weaken specialization of
+`Step.parStar.renamed_source_toRawBridge_target_in_rename_image`. -/
+theorem Step.parStar.weakened_source_toRawBridge_target_in_weaken_image
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (newType : Ty level scope)
+    {sourceType : Ty level scope}
+    {targetType : Ty level (scope + 1)}
+    {sourceRaw : RawTerm scope}
+    {targetRaw : RawTerm (scope + 1)}
+    {sourceTerm : Term sourceCtx sourceType sourceRaw}
+    {targetTerm : Term (sourceCtx.cons newType) targetType targetRaw}
+    (parallelChain :
+      Step.parStar (Term.weaken newType sourceTerm) targetTerm) :
+    ∃ targetInnerRaw : RawTerm scope,
+      RawStep.parStar
+        (Term.toRaw (Term.weaken newType sourceTerm))
+        targetInnerRaw.weaken := by
+  obtain ⟨targetInnerRaw, targetEq⟩ :=
+    Step.parStar.weakened_source_targetRaw_in_weaken_image
+      newType parallelChain
+  cases targetEq
+  exact ⟨targetInnerRaw, Step.parStar.toRawBridge parallelChain⟩
+
+/-- Direct raw-chain packaging of
+`Step.parStar.sourceRaw_in_rename_image_targetRaw_in_rename_image`. -/
+theorem Step.parStar.toRawBridge_target_in_rename_image_of_sourceRaw_eq
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {targetCtx : Ctx mode level targetScope}
+    {rawRenaming : RawRenaming sourceScope targetScope}
+    (rawRenamingInjective :
+      ∀ leftPosition rightPosition,
+        rawRenaming leftPosition = rawRenaming rightPosition →
+          leftPosition = rightPosition)
+    {sourceType targetType : Ty level targetScope}
+    {sourceRaw targetRaw : RawTerm targetScope}
+    {sourceInnerRaw : RawTerm sourceScope}
+    {sourceTerm : Term targetCtx sourceType sourceRaw}
+    {targetTerm : Term targetCtx targetType targetRaw}
+    (sourceEq : sourceRaw = sourceInnerRaw.rename rawRenaming)
+    (parallelChain : Step.parStar sourceTerm targetTerm) :
+    ∃ targetInnerRaw : RawTerm sourceScope,
+      RawStep.parStar sourceRaw (targetInnerRaw.rename rawRenaming) := by
+  obtain ⟨targetInnerRaw, targetEq⟩ :=
+    Step.parStar.sourceRaw_in_rename_image_targetRaw_in_rename_image
+      rawRenamingInjective sourceEq parallelChain
+  cases targetEq
+  exact ⟨targetInnerRaw, Step.parStar.toRawBridge parallelChain⟩
+
+/-- Canonical-weaken specialization of
+`Step.parStar.toRawBridge_target_in_rename_image_of_sourceRaw_eq`. -/
+theorem Step.parStar.toRawBridge_target_in_weaken_image_of_sourceRaw_eq
+    {mode : Mode} {level scope : Nat}
+    {targetCtx : Ctx mode level (scope + 1)}
+    {sourceType targetType : Ty level (scope + 1)}
+    {sourceRaw targetRaw : RawTerm (scope + 1)}
+    {sourceInnerRaw : RawTerm scope}
+    {sourceTerm : Term targetCtx sourceType sourceRaw}
+    {targetTerm : Term targetCtx targetType targetRaw}
+    (sourceEq : sourceRaw = sourceInnerRaw.weaken)
+    (parallelChain : Step.parStar sourceTerm targetTerm) :
+    ∃ targetInnerRaw : RawTerm scope,
+      RawStep.parStar sourceRaw targetInnerRaw.weaken := by
+  obtain ⟨targetInnerRaw, targetEq⟩ :=
+    Step.parStar.sourceRaw_in_weaken_image_targetRaw_in_weaken_image
+      sourceEq parallelChain
+  cases targetEq
+  exact ⟨targetInnerRaw, Step.parStar.toRawBridge parallelChain⟩
+
 /-- `StepStar` variant of
 `Step.parStar.renamed_source_targetRaw_in_rename_image`.
 
@@ -261,6 +365,91 @@ theorem StepStar.sourceRaw_in_weaken_image_targetRaw_in_weaken_image
     ∃ targetInnerRaw : RawTerm scope,
       targetRaw = targetInnerRaw.weaken :=
   Step.parStar.sourceRaw_in_weaken_image_targetRaw_in_weaken_image
+    sourceEq chain.toParStar
+
+/-- `StepStar` variant of
+`Step.parStar.renamed_source_toRawBridge_target_in_rename_image`. -/
+theorem StepStar.renamed_source_toRawBridge_target_in_rename_image
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rawRenaming : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rawRenaming)
+    (rawRenamingInjective :
+      ∀ leftPosition rightPosition,
+        rawRenaming leftPosition = rawRenaming rightPosition →
+          leftPosition = rightPosition)
+    {sourceType : Ty level sourceScope}
+    {targetType : Ty level targetScope}
+    {sourceRaw : RawTerm sourceScope}
+    {targetRaw : RawTerm targetScope}
+    {sourceTerm : Term sourceCtx sourceType sourceRaw}
+    {targetTerm : Term targetCtx targetType targetRaw}
+    (chain : StepStar (Term.rename termRenaming sourceTerm) targetTerm) :
+    ∃ targetInnerRaw : RawTerm sourceScope,
+      RawStep.parStar
+        (Term.toRaw (Term.rename termRenaming sourceTerm))
+        (targetInnerRaw.rename rawRenaming) :=
+  Step.parStar.renamed_source_toRawBridge_target_in_rename_image
+    termRenaming rawRenamingInjective chain.toParStar
+
+/-- Canonical-weaken `StepStar` variant of
+`Step.parStar.weakened_source_toRawBridge_target_in_weaken_image`. -/
+theorem StepStar.weakened_source_toRawBridge_target_in_weaken_image
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (newType : Ty level scope)
+    {sourceType : Ty level scope}
+    {targetType : Ty level (scope + 1)}
+    {sourceRaw : RawTerm scope}
+    {targetRaw : RawTerm (scope + 1)}
+    {sourceTerm : Term sourceCtx sourceType sourceRaw}
+    {targetTerm : Term (sourceCtx.cons newType) targetType targetRaw}
+    (chain : StepStar (Term.weaken newType sourceTerm) targetTerm) :
+    ∃ targetInnerRaw : RawTerm scope,
+      RawStep.parStar
+        (Term.toRaw (Term.weaken newType sourceTerm))
+        targetInnerRaw.weaken :=
+  Step.parStar.weakened_source_toRawBridge_target_in_weaken_image
+    newType chain.toParStar
+
+/-- `StepStar` variant of
+`Step.parStar.toRawBridge_target_in_rename_image_of_sourceRaw_eq`. -/
+theorem StepStar.toRawBridge_target_in_rename_image_of_sourceRaw_eq
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {targetCtx : Ctx mode level targetScope}
+    {rawRenaming : RawRenaming sourceScope targetScope}
+    (rawRenamingInjective :
+      ∀ leftPosition rightPosition,
+        rawRenaming leftPosition = rawRenaming rightPosition →
+          leftPosition = rightPosition)
+    {sourceType targetType : Ty level targetScope}
+    {sourceRaw targetRaw : RawTerm targetScope}
+    {sourceInnerRaw : RawTerm sourceScope}
+    {sourceTerm : Term targetCtx sourceType sourceRaw}
+    {targetTerm : Term targetCtx targetType targetRaw}
+    (sourceEq : sourceRaw = sourceInnerRaw.rename rawRenaming)
+    (chain : StepStar sourceTerm targetTerm) :
+    ∃ targetInnerRaw : RawTerm sourceScope,
+      RawStep.parStar sourceRaw (targetInnerRaw.rename rawRenaming) :=
+  Step.parStar.toRawBridge_target_in_rename_image_of_sourceRaw_eq
+    rawRenamingInjective sourceEq chain.toParStar
+
+/-- Canonical-weaken `StepStar` variant of
+`Step.parStar.toRawBridge_target_in_weaken_image_of_sourceRaw_eq`. -/
+theorem StepStar.toRawBridge_target_in_weaken_image_of_sourceRaw_eq
+    {mode : Mode} {level scope : Nat}
+    {targetCtx : Ctx mode level (scope + 1)}
+    {sourceType targetType : Ty level (scope + 1)}
+    {sourceRaw targetRaw : RawTerm (scope + 1)}
+    {sourceInnerRaw : RawTerm scope}
+    {sourceTerm : Term targetCtx sourceType sourceRaw}
+    {targetTerm : Term targetCtx targetType targetRaw}
+    (sourceEq : sourceRaw = sourceInnerRaw.weaken)
+    (chain : StepStar sourceTerm targetTerm) :
+    ∃ targetInnerRaw : RawTerm scope,
+      RawStep.parStar sourceRaw targetInnerRaw.weaken :=
+  Step.parStar.toRawBridge_target_in_weaken_image_of_sourceRaw_eq
     sourceEq chain.toParStar
 
 /-- **Projection-confluence** for typed multi-step parallel

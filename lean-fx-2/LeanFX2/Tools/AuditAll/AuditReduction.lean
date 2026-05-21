@@ -732,6 +732,10 @@ shapes: 5 in CubicalShape. -/
 #assert_no_axioms LeanFX2.Step.parStar.weakened_source_targetRaw_in_weaken_image
 #assert_no_axioms LeanFX2.Step.parStar.sourceRaw_in_rename_image_targetRaw_in_rename_image
 #assert_no_axioms LeanFX2.Step.parStar.sourceRaw_in_weaken_image_targetRaw_in_weaken_image
+#assert_no_axioms LeanFX2.Step.parStar.renamed_source_toRawBridge_target_in_rename_image
+#assert_no_axioms LeanFX2.Step.parStar.weakened_source_toRawBridge_target_in_weaken_image
+#assert_no_axioms LeanFX2.Step.parStar.toRawBridge_target_in_rename_image_of_sourceRaw_eq
+#assert_no_axioms LeanFX2.Step.parStar.toRawBridge_target_in_weaken_image_of_sourceRaw_eq
 #assert_no_axioms LeanFX2.Step.parStar.lam_targetRaw_inv_congr
 #assert_no_axioms LeanFX2.Step.parStar.lamPi_targetRaw_inv_congr
 #assert_no_axioms LeanFX2.Step.parStar.pathLam_targetRaw_inv_congr
@@ -743,6 +747,10 @@ shapes: 5 in CubicalShape. -/
 #assert_no_axioms LeanFX2.StepStar.weakened_source_targetRaw_in_weaken_image
 #assert_no_axioms LeanFX2.StepStar.sourceRaw_in_rename_image_targetRaw_in_rename_image
 #assert_no_axioms LeanFX2.StepStar.sourceRaw_in_weaken_image_targetRaw_in_weaken_image
+#assert_no_axioms LeanFX2.StepStar.renamed_source_toRawBridge_target_in_rename_image
+#assert_no_axioms LeanFX2.StepStar.weakened_source_toRawBridge_target_in_weaken_image
+#assert_no_axioms LeanFX2.StepStar.toRawBridge_target_in_rename_image_of_sourceRaw_eq
+#assert_no_axioms LeanFX2.StepStar.toRawBridge_target_in_weaken_image_of_sourceRaw_eq
 #assert_no_axioms LeanFX2.StepStar.lam_targetRaw_inv_congr
 #assert_no_axioms LeanFX2.StepStar.lamPi_targetRaw_inv_congr
 #assert_no_axioms LeanFX2.StepStar.pathLam_targetRaw_inv_congr
