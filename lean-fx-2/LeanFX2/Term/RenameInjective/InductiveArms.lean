@@ -1121,4 +1121,236 @@ theorem Term.rename_injective_arm_interval1
   Term.rename_injective_atInterval1 termRenaming
     (Term.interval1 (context := sourceCtx)) termB
 
+/-! ## Type-code arms — 10 closed wrappers at `Ty.universe` outer type.
+
+Each type code is an encoded type living inside the universe `Ty.universe
+outerLevel levelLe`.  The raw is the code-name applied to its
+component code raws.  No child IH needed — the at-helpers internally
+close via a free-`genericType`-via-suffices pattern with cases on the
+universe constructor. -/
+
+/-- `arrowCode` arm: encoded arrow type code. -/
+theorem Term.rename_injective_arm_arrowCode
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (domainCodeRaw codomainCodeRaw : RawTerm sourceScope)
+    (termB : Term sourceCtx (Ty.universe outerLevel levelLe)
+      (RawTerm.arrowCode domainCodeRaw codomainCodeRaw)) :
+    Term.rename termRenaming
+        (Term.arrowCode (context := sourceCtx) outerLevel levelLe
+          domainCodeRaw codomainCodeRaw) =
+      Term.rename termRenaming termB →
+      Term.arrowCode (context := sourceCtx) outerLevel levelLe
+          domainCodeRaw codomainCodeRaw = termB :=
+  Term.rename_injective_atArrowCode termRenaming
+    (Term.arrowCode (context := sourceCtx) outerLevel levelLe
+      domainCodeRaw codomainCodeRaw) termB
+
+/-- `piTyCode` arm: encoded dependent-Π type code. -/
+theorem Term.rename_injective_arm_piTyCode
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (domainCodeRaw : RawTerm sourceScope)
+    (codomainCodeRaw : RawTerm (sourceScope + 1))
+    (termB : Term sourceCtx (Ty.universe outerLevel levelLe)
+      (RawTerm.piTyCode domainCodeRaw codomainCodeRaw)) :
+    Term.rename termRenaming
+        (Term.piTyCode (context := sourceCtx) outerLevel levelLe
+          domainCodeRaw codomainCodeRaw) =
+      Term.rename termRenaming termB →
+      Term.piTyCode (context := sourceCtx) outerLevel levelLe
+          domainCodeRaw codomainCodeRaw = termB :=
+  Term.rename_injective_atPiTyCode termRenaming
+    (Term.piTyCode (context := sourceCtx) outerLevel levelLe
+      domainCodeRaw codomainCodeRaw) termB
+
+/-- `sigmaTyCode` arm: encoded dependent-Σ type code. -/
+theorem Term.rename_injective_arm_sigmaTyCode
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (firstCodeRaw : RawTerm sourceScope)
+    (secondCodeRaw : RawTerm (sourceScope + 1))
+    (termB : Term sourceCtx (Ty.universe outerLevel levelLe)
+      (RawTerm.sigmaTyCode firstCodeRaw secondCodeRaw)) :
+    Term.rename termRenaming
+        (Term.sigmaTyCode (context := sourceCtx) outerLevel levelLe
+          firstCodeRaw secondCodeRaw) =
+      Term.rename termRenaming termB →
+      Term.sigmaTyCode (context := sourceCtx) outerLevel levelLe
+          firstCodeRaw secondCodeRaw = termB :=
+  Term.rename_injective_atSigmaTyCode termRenaming
+    (Term.sigmaTyCode (context := sourceCtx) outerLevel levelLe
+      firstCodeRaw secondCodeRaw) termB
+
+/-- `productCode` arm: encoded non-dependent product type code. -/
+theorem Term.rename_injective_arm_productCode
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (firstCodeRaw secondCodeRaw : RawTerm sourceScope)
+    (termB : Term sourceCtx (Ty.universe outerLevel levelLe)
+      (RawTerm.productCode firstCodeRaw secondCodeRaw)) :
+    Term.rename termRenaming
+        (Term.productCode (context := sourceCtx) outerLevel levelLe
+          firstCodeRaw secondCodeRaw) =
+      Term.rename termRenaming termB →
+      Term.productCode (context := sourceCtx) outerLevel levelLe
+          firstCodeRaw secondCodeRaw = termB :=
+  Term.rename_injective_atProductCode termRenaming
+    (Term.productCode (context := sourceCtx) outerLevel levelLe
+      firstCodeRaw secondCodeRaw) termB
+
+/-- `sumCode` arm: encoded non-dependent sum type code. -/
+theorem Term.rename_injective_arm_sumCode
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (leftCodeRaw rightCodeRaw : RawTerm sourceScope)
+    (termB : Term sourceCtx (Ty.universe outerLevel levelLe)
+      (RawTerm.sumCode leftCodeRaw rightCodeRaw)) :
+    Term.rename termRenaming
+        (Term.sumCode (context := sourceCtx) outerLevel levelLe
+          leftCodeRaw rightCodeRaw) =
+      Term.rename termRenaming termB →
+      Term.sumCode (context := sourceCtx) outerLevel levelLe
+          leftCodeRaw rightCodeRaw = termB :=
+  Term.rename_injective_atSumCode termRenaming
+    (Term.sumCode (context := sourceCtx) outerLevel levelLe
+      leftCodeRaw rightCodeRaw) termB
+
+/-- `listCode` arm: encoded list type code. -/
+theorem Term.rename_injective_arm_listCode
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (elementCodeRaw : RawTerm sourceScope)
+    (termB : Term sourceCtx (Ty.universe outerLevel levelLe)
+      (RawTerm.listCode elementCodeRaw)) :
+    Term.rename termRenaming
+        (Term.listCode (context := sourceCtx) outerLevel levelLe
+          elementCodeRaw) =
+      Term.rename termRenaming termB →
+      Term.listCode (context := sourceCtx) outerLevel levelLe
+          elementCodeRaw = termB :=
+  Term.rename_injective_atListCode termRenaming
+    (Term.listCode (context := sourceCtx) outerLevel levelLe
+      elementCodeRaw) termB
+
+/-- `optionCode` arm: encoded option type code. -/
+theorem Term.rename_injective_arm_optionCode
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (elementCodeRaw : RawTerm sourceScope)
+    (termB : Term sourceCtx (Ty.universe outerLevel levelLe)
+      (RawTerm.optionCode elementCodeRaw)) :
+    Term.rename termRenaming
+        (Term.optionCode (context := sourceCtx) outerLevel levelLe
+          elementCodeRaw) =
+      Term.rename termRenaming termB →
+      Term.optionCode (context := sourceCtx) outerLevel levelLe
+          elementCodeRaw = termB :=
+  Term.rename_injective_atOptionCode termRenaming
+    (Term.optionCode (context := sourceCtx) outerLevel levelLe
+      elementCodeRaw) termB
+
+/-- `eitherCode` arm: encoded either type code. -/
+theorem Term.rename_injective_arm_eitherCode
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (leftCodeRaw rightCodeRaw : RawTerm sourceScope)
+    (termB : Term sourceCtx (Ty.universe outerLevel levelLe)
+      (RawTerm.eitherCode leftCodeRaw rightCodeRaw)) :
+    Term.rename termRenaming
+        (Term.eitherCode (context := sourceCtx) outerLevel levelLe
+          leftCodeRaw rightCodeRaw) =
+      Term.rename termRenaming termB →
+      Term.eitherCode (context := sourceCtx) outerLevel levelLe
+          leftCodeRaw rightCodeRaw = termB :=
+  Term.rename_injective_atEitherCode termRenaming
+    (Term.eitherCode (context := sourceCtx) outerLevel levelLe
+      leftCodeRaw rightCodeRaw) termB
+
+/-- `idCode` arm: encoded HoTT identity type code with type-code +
+endpoint-raws. -/
+theorem Term.rename_injective_arm_idCode
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (typeCodeRaw leftRaw rightRaw : RawTerm sourceScope)
+    (termB : Term sourceCtx (Ty.universe outerLevel levelLe)
+      (RawTerm.idCode typeCodeRaw leftRaw rightRaw)) :
+    Term.rename termRenaming
+        (Term.idCode (context := sourceCtx) outerLevel levelLe
+          typeCodeRaw leftRaw rightRaw) =
+      Term.rename termRenaming termB →
+      Term.idCode (context := sourceCtx) outerLevel levelLe
+          typeCodeRaw leftRaw rightRaw = termB :=
+  Term.rename_injective_atIdCode termRenaming
+    (Term.idCode (context := sourceCtx) outerLevel levelLe
+      typeCodeRaw leftRaw rightRaw) termB
+
+/-- `equivCode` arm: encoded equivalence type code between two type
+codes. -/
+theorem Term.rename_injective_arm_equivCode
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (leftTypeCodeRaw rightTypeCodeRaw : RawTerm sourceScope)
+    (termB : Term sourceCtx (Ty.universe outerLevel levelLe)
+      (RawTerm.equivCode leftTypeCodeRaw rightTypeCodeRaw)) :
+    Term.rename termRenaming
+        (Term.equivCode (context := sourceCtx) outerLevel levelLe
+          leftTypeCodeRaw rightTypeCodeRaw) =
+      Term.rename termRenaming termB →
+      Term.equivCode (context := sourceCtx) outerLevel levelLe
+          leftTypeCodeRaw rightTypeCodeRaw = termB :=
+  Term.rename_injective_atEquivCode termRenaming
+    (Term.equivCode (context := sourceCtx) outerLevel levelLe
+      leftTypeCodeRaw rightTypeCodeRaw) termB
+
 end LeanFX2
