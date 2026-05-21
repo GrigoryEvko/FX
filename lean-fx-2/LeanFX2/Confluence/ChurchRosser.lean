@@ -594,6 +594,102 @@ through each canonical action.  Useful when reduction sequences are
 the natural input form (e.g. compiler optimization passes that
 record their work as a sequence of reduction steps). -/
 
+/-! ## Two-Step-plus-action lifters
+
+When a consumer has two consecutive typed single `Step`s (not chains)
+the four corollaries below skip the manual `StepStar.fromStep` lift
+step.  Compose `Conv.transChains` with each canonical raw action,
+applied through the existing `Conv.<action>Raw` projection.
+
+Pipeline: `Conv.<action>Raw <action-arg>
+  (Conv.transChains (StepStar.fromStep firstStep)
+                    (StepStar.fromStep secondStep))`.
+
+Useful when reduction sequences arrive as a list of `Step` witnesses
+(e.g. a compiler optimization pass that emits one `Step` per
+rewrite) — saves the per-call site `StepStar.fromStep` wrapping. -/
+
+/-- Combine two typed single Steps with a raw renaming.  Same shape
+as `Conv.transChains_renamed` but takes `Step` instead of `StepStar`
+on each leg, lifting each via `StepStar.fromStep`. -/
+theorem Conv.transRaw_twoSteps_renamed
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {sourceType middleType farType : Ty level sourceScope}
+    {sourceRaw middleRaw farRaw : RawTerm sourceScope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {farTerm : Term context farType farRaw}
+    (rawRenaming : RawRenaming sourceScope targetScope)
+    (firstStep : Step sourceTerm middleTerm)
+    (secondStep : Step middleTerm farTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.rename rawRenaming) commonRaw ∧
+      RawStep.parStar (farRaw.rename rawRenaming) commonRaw :=
+  Conv.renameRaw rawRenaming
+    (Conv.transChains (StepStar.fromStep firstStep)
+                      (StepStar.fromStep secondStep))
+
+/-- Canonical-weaken specialization of `Conv.transRaw_twoSteps_renamed`. -/
+theorem Conv.transRaw_twoSteps_weakened
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType middleType farType : Ty level scope}
+    {sourceRaw middleRaw farRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {farTerm : Term context farType farRaw}
+    (firstStep : Step sourceTerm middleTerm)
+    (secondStep : Step middleTerm farTerm) :
+    ∃ commonRaw,
+      RawStep.parStar sourceRaw.weaken commonRaw ∧
+      RawStep.parStar farRaw.weaken commonRaw :=
+  Conv.weakenRaw
+    (Conv.transChains (StepStar.fromStep firstStep)
+                      (StepStar.fromStep secondStep))
+
+/-- Combine two typed single Steps with a raw substitution. -/
+theorem Conv.transRaw_twoSteps_substituted
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {sourceType middleType farType : Ty level sourceScope}
+    {sourceRaw middleRaw farRaw : RawTerm sourceScope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {farTerm : Term context farType farRaw}
+    (rawSubst : RawTermSubst sourceScope targetScope)
+    (firstStep : Step sourceTerm middleTerm)
+    (secondStep : Step middleTerm farTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.subst rawSubst) commonRaw ∧
+      RawStep.parStar (farRaw.subst rawSubst) commonRaw :=
+  Conv.substRaw rawSubst
+    (Conv.transChains (StepStar.fromStep firstStep)
+                      (StepStar.fromStep secondStep))
+
+/-- Singleton-substitution specialization of
+`Conv.transRaw_twoSteps_substituted`.  This is the natural
+β-redex-after-two-rewrites shape downstream Geuvers 1992 β-η critical
+pair (K12.28) consumers reach for when both sides of the pair are
+single-Step reductions inside a binder. -/
+theorem Conv.transRaw_twoSteps_subst0
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level (scope + 1)}
+    {sourceType middleType farType : Ty level (scope + 1)}
+    {sourceRaw middleRaw farRaw : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {farTerm : Term context farType farRaw}
+    (argRaw : RawTerm scope)
+    (firstStep : Step sourceTerm middleTerm)
+    (secondStep : Step middleTerm farTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.subst0 argRaw) commonRaw ∧
+      RawStep.parStar (farRaw.subst0 argRaw) commonRaw :=
+  Conv.subst0Raw argRaw
+    (Conv.transChains (StepStar.fromStep firstStep)
+                      (StepStar.fromStep secondStep))
+
 /-- Combine two typed StepStar chains with a raw renaming. -/
 theorem Conv.transChains_renamed
     {mode : Mode} {level sourceScope targetScope : Nat}
