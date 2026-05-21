@@ -1,5 +1,6 @@
 import LeanFX2.Confluence.RawDiamond
 import LeanFX2.Reduction.RawParInversion.AtomicCtors
+import LeanFX2.Reduction.RawParInversion.CubicalAndIdentity
 import LeanFX2.Reduction.RawParInversion.TypeCodes
 
 /-! # Confluence/RawParStarCong — parStar congruence rules
@@ -460,5 +461,75 @@ theorem RawStep.parStar.natSucc_inv {scope : Nat}
       target = RawTerm.natSucc predecessorTarget ∧
       RawStep.parStar predecessor predecessorTarget :=
   RawStep.parStar.natSucc_inv_aux chain rfl
+
+/-- Auxiliary fully-generalized version of `parStar.lam_inv`.
+
+The source is generalized so the recursive call can consume the midpoint
+shape recovered from `RawStep.par.lam_inv`. -/
+private theorem RawStep.parStar.lam_inv_aux {scope : Nat}
+    {source target : RawTerm scope}
+    (chain : RawStep.parStar source target) :
+    ∀ {body : RawTerm (scope + 1)},
+      source = RawTerm.lam body →
+      ∃ bodyTarget,
+        target = RawTerm.lam bodyTarget ∧
+        RawStep.parStar body bodyTarget := by
+  induction chain with
+  | refl _ =>
+      intro body sourceEq
+      exact ⟨body, sourceEq, RawStep.parStar.refl _⟩
+  | trans firstStep _ restIH =>
+      intro body sourceEq
+      subst sourceEq
+      obtain ⟨middleBody, middleEq, bodyStep⟩ :=
+        RawStep.par.lam_inv firstStep
+      obtain ⟨targetBody, targetEq, bodyChain⟩ := restIH middleEq
+      exact ⟨targetBody, targetEq,
+        RawStep.parStar.trans bodyStep bodyChain⟩
+
+/-- `RawStep.parStar (lam body) target` preserves the lambda head and
+projects to a body-level `parStar` chain. -/
+theorem RawStep.parStar.lam_inv {scope : Nat}
+    {body : RawTerm (scope + 1)} {target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.lam body) target) :
+    ∃ bodyTarget,
+      target = RawTerm.lam bodyTarget ∧
+      RawStep.parStar body bodyTarget :=
+  RawStep.parStar.lam_inv_aux chain rfl
+
+/-- Auxiliary fully-generalized version of `parStar.pathLam_inv`.
+
+This is the cubical binder counterpart of `lam_inv_aux`: one raw step
+from `pathLam body` can only reach another `pathLam`, with a body step. -/
+private theorem RawStep.parStar.pathLam_inv_aux {scope : Nat}
+    {source target : RawTerm scope}
+    (chain : RawStep.parStar source target) :
+    ∀ {body : RawTerm (scope + 1)},
+      source = RawTerm.pathLam body →
+      ∃ bodyTarget,
+        target = RawTerm.pathLam bodyTarget ∧
+        RawStep.parStar body bodyTarget := by
+  induction chain with
+  | refl _ =>
+      intro body sourceEq
+      exact ⟨body, sourceEq, RawStep.parStar.refl _⟩
+  | trans firstStep _ restIH =>
+      intro body sourceEq
+      subst sourceEq
+      obtain ⟨middleBody, middleEq, bodyStep⟩ :=
+        RawStep.par.pathLam_inv firstStep
+      obtain ⟨targetBody, targetEq, bodyChain⟩ := restIH middleEq
+      exact ⟨targetBody, targetEq,
+        RawStep.parStar.trans bodyStep bodyChain⟩
+
+/-- `RawStep.parStar (pathLam body) target` preserves the path-lambda head
+and projects to a body-level `parStar` chain. -/
+theorem RawStep.parStar.pathLam_inv {scope : Nat}
+    {body : RawTerm (scope + 1)} {target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.pathLam body) target) :
+    ∃ bodyTarget,
+      target = RawTerm.pathLam bodyTarget ∧
+      RawStep.parStar body bodyTarget :=
+  RawStep.parStar.pathLam_inv_aux chain rfl
 
 end LeanFX2
