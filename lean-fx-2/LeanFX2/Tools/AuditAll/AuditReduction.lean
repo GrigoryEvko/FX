@@ -242,6 +242,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Step.par.weakened_source_targetRaw_in_weaken_image
 #assert_no_axioms LeanFX2.Step.par.subst_toRawBridge
 #assert_no_axioms LeanFX2.Term.toRaw_subst0_rename_commute
+#assert_no_axioms LeanFX2.Term.toRaw_subst0_weaken_commute
 #assert_no_axioms LeanFX2.RawStep.par.rename_compatible
 #assert_no_axioms LeanFX2.RawStep.par.subst_compatible
 #assert_no_axioms LeanFX2.RawStep.par.subst_compatible_same

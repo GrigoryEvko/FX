@@ -564,4 +564,28 @@ theorem Term.toRaw_subst0_rename_commute
     (bodyRaw.rename rawRenaming.lift).subst0 (argumentRaw.rename rawRenaming)
   exact RawTerm.subst0_rename_commute bodyRaw argumentRaw rawRenaming
 
+/-- Canonical-weaken specialization of `Term.toRaw_subst0_rename_commute`.
+
+This is the raw β endpoint used by η/weakening consumers: weakening a
+singleton-substitution result has the same raw projection as singleton
+substitution after weakening the argument and weakening the body under the
+lifted binder renaming. -/
+theorem Term.toRaw_subst0_weaken_commute
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (newType : Ty level scope)
+    {substituent : Ty level scope}
+    {argumentRaw : RawTerm scope}
+    {codomainType : Ty level (scope + 1)}
+    {bodyRaw : RawTerm (scope + 1)}
+    (bodyTerm : Term (context.cons substituent) codomainType bodyRaw)
+    (argumentTerm : Term context substituent argumentRaw) :
+    (Term.weaken newType (Term.subst0 bodyTerm argumentTerm)).toRaw =
+      (Term.subst0
+        (Term.rename ((TermRenaming.weakenStep context newType).lift
+          substituent) bodyTerm)
+        (Term.weaken newType argumentTerm)).toRaw :=
+  Term.toRaw_subst0_rename_commute
+    (TermRenaming.weakenStep context newType) bodyTerm argumentTerm
+
 end LeanFX2
