@@ -459,6 +459,83 @@ theorem Conv.transRaw_stepRight
       RawStep.parStar targetRaw commonRaw :=
   Conv.canonicalRaw (Conv.trans_step_right firstConv reverseStep)
 
+/-! ## Two-chain / two-step → raw join projections
+
+The symmetric counterparts to the asymmetric variants above:
+when both sides are already chains (or single steps), we don't need
+to package one through `Conv` first.  `Conv.transChains` produces a
+`Conv` directly via `StepStar.append`; the raw projection follows
+by `Conv.canonicalRaw`. -/
+
+/-- Two chains `source →* middle →* target` give a raw common
+reduct reachable from both `sourceRaw` and `targetRaw`. -/
+theorem Conv.transRaw_chains
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType middleType targetType : Ty level scope}
+    {sourceRaw middleRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (firstChain : StepStar sourceTerm middleTerm)
+    (secondChain : StepStar middleTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar sourceRaw commonRaw ∧
+      RawStep.parStar targetRaw commonRaw :=
+  Conv.canonicalRaw (Conv.transChains firstChain secondChain)
+
+/-- Two single steps `source ⟶ middle ⟶ target` give a raw common
+reduct.  Both are lifted to chains via `StepStar.fromStep` and
+composed via `Conv.transChains`. -/
+theorem Conv.transRaw_twoSteps
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType middleType targetType : Ty level scope}
+    {sourceRaw middleRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (firstStep : Step sourceTerm middleTerm)
+    (secondStep : Step middleTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar sourceRaw commonRaw ∧
+      RawStep.parStar targetRaw commonRaw :=
+  Conv.canonicalRaw
+    (Conv.transChains (StepStar.fromStep firstStep)
+                      (StepStar.fromStep secondStep))
+
+/-- A chain followed by a single step `source →* middle ⟶ target`
+gives a raw common reduct. -/
+theorem Conv.transRaw_chainStep
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType middleType targetType : Ty level scope}
+    {sourceRaw middleRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (firstChain : StepStar sourceTerm middleTerm)
+    (secondStep : Step middleTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar sourceRaw commonRaw ∧
+      RawStep.parStar targetRaw commonRaw :=
+  Conv.canonicalRaw
+    (Conv.transChains firstChain (StepStar.fromStep secondStep))
+
+/-- A single step followed by a chain `source ⟶ middle →* target`
+gives a raw common reduct. -/
+theorem Conv.transRaw_stepChain
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType middleType targetType : Ty level scope}
+    {sourceRaw middleRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (firstStep : Step sourceTerm middleTerm)
+    (secondChain : StepStar middleTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar sourceRaw commonRaw ∧
+      RawStep.parStar targetRaw commonRaw :=
+  Conv.canonicalRaw
+    (Conv.transChains (StepStar.fromStep firstStep) secondChain)
+
 /-! ## Cong-rule via Conv chain in closed-type fragment
 
 For `IsClosedTy`-typed terms, every `Step` (and `StepStar`) preserves
