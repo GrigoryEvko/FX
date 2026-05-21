@@ -41,6 +41,14 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Term.weaken_inv_effect
 #assert_no_axioms LeanFX2.Term.weaken_inv_modal
 #assert_no_axioms LeanFX2.Term.rename_image_of_strengthenTyped?_some
+#assert_no_axioms LeanFX2.RawRenamingInjective.of_partialInverseLeft
+#assert_no_axioms LeanFX2.Term.rename_image_iff_strengthenTyped?_some
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_result_target_heq
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_result_eq_fromRename
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_eq
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_weaken_eq
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_weaken_isSome
+#assert_no_axioms LeanFX2.Term.unweaken?_weaken
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_isSome
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_some
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_isSome_var
