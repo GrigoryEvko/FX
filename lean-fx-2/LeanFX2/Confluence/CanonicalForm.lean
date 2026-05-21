@@ -1620,4 +1620,138 @@ theorem Conv.universeCode_level_eq
     joinEq1.symm.trans joinEq2
   injection codeEq
 
+/-! ## Leaf-vs-compound disjointness
+
+Extension of the iter 32 leaf-vs-leaf disjointness grid to the
+case where one Conv side is a closed-leaf canonical head and the
+other is a unary-compound canonical head (`natSucc`, `optionSome`,
+`eitherInl`, `eitherInr`).  The pattern is the same — distinct
+ctors at the join produce `nomatch` — but compound `*_inv` lemmas
+return ∃ tuples instead of plain Eq, so we `obtain` the head
+equality witness.
+
+The most load-bearing entry is `Conv.natZero_ne_natSucc`, which
+the K12 fundamental theorem's `natElim` case needs to rule out
+convertibility between the zero branch's scrutinee and a non-zero
+canonical Nat — closure of the ι-firing dispatch.  The remaining
+five (`unit_ne_natSucc`, `boolTrue_ne_natSucc`, etc.) extend the
+grid for completeness and document the disjointness regardless of
+the specific scrutinee shape encountered downstream. -/
+
+/-- A `unit`-headed source and a `natSucc`-headed target are not
+convertible. -/
+theorem Conv.unit_ne_natSucc
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {predecessor : RawTerm scope}
+    {sourceTerm : Term context sourceType (RawTerm.unit : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.natSucc predecessor : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqUnit : joinRaw = RawTerm.unit :=
+    RawStep.parStar.unit_inv sourceToJoin
+  obtain ⟨_, joinEqNatSucc, _⟩ :=
+    RawStep.parStar.natSucc_inv targetToJoin
+  nomatch joinEqUnit.symm.trans joinEqNatSucc
+
+/-- A `boolTrue`-headed source and a `natSucc`-headed target are
+not convertible. -/
+theorem Conv.boolTrue_ne_natSucc
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {predecessor : RawTerm scope}
+    {sourceTerm : Term context sourceType (RawTerm.boolTrue : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.natSucc predecessor : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqTrue : joinRaw = RawTerm.boolTrue :=
+    RawStep.parStar.boolTrue_inv sourceToJoin
+  obtain ⟨_, joinEqNatSucc, _⟩ :=
+    RawStep.parStar.natSucc_inv targetToJoin
+  nomatch joinEqTrue.symm.trans joinEqNatSucc
+
+/-- A `boolFalse`-headed source and a `natSucc`-headed target are
+not convertible. -/
+theorem Conv.boolFalse_ne_natSucc
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {predecessor : RawTerm scope}
+    {sourceTerm : Term context sourceType (RawTerm.boolFalse : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.natSucc predecessor : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqFalse : joinRaw = RawTerm.boolFalse :=
+    RawStep.parStar.boolFalse_inv sourceToJoin
+  obtain ⟨_, joinEqNatSucc, _⟩ :=
+    RawStep.parStar.natSucc_inv targetToJoin
+  nomatch joinEqFalse.symm.trans joinEqNatSucc
+
+/-- A `natZero`-headed source and a `natSucc`-headed target are
+not convertible.  LOAD-BEARING for K12 fundamental theorem's
+`natElim` case — the ι-firing dispatch on a canonical Nat
+scrutinee uses this to rule out the zero/non-zero ambiguity. -/
+theorem Conv.natZero_ne_natSucc
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {predecessor : RawTerm scope}
+    {sourceTerm : Term context sourceType (RawTerm.natZero : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.natSucc predecessor : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqZero : joinRaw = RawTerm.natZero :=
+    RawStep.parStar.natZero_inv sourceToJoin
+  obtain ⟨_, joinEqNatSucc, _⟩ :=
+    RawStep.parStar.natSucc_inv targetToJoin
+  nomatch joinEqZero.symm.trans joinEqNatSucc
+
+/-- A `listNil`-headed source and a `natSucc`-headed target are
+not convertible. -/
+theorem Conv.listNil_ne_natSucc
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {predecessor : RawTerm scope}
+    {sourceTerm : Term context sourceType (RawTerm.listNil : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.natSucc predecessor : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqNil : joinRaw = RawTerm.listNil :=
+    RawStep.parStar.listNil_inv sourceToJoin
+  obtain ⟨_, joinEqNatSucc, _⟩ :=
+    RawStep.parStar.natSucc_inv targetToJoin
+  nomatch joinEqNil.symm.trans joinEqNatSucc
+
+/-- An `optionNone`-headed source and a `natSucc`-headed target
+are not convertible. -/
+theorem Conv.optionNone_ne_natSucc
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {predecessor : RawTerm scope}
+    {sourceTerm : Term context sourceType (RawTerm.optionNone : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.natSucc predecessor : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqNone : joinRaw = RawTerm.optionNone :=
+    RawStep.parStar.optionNone_inv sourceToJoin
+  obtain ⟨_, joinEqNatSucc, _⟩ :=
+    RawStep.parStar.natSucc_inv targetToJoin
+  nomatch joinEqNone.symm.trans joinEqNatSucc
+
 end LeanFX2
