@@ -129,6 +129,7 @@ import LeanFX2.Reduction.CumulPattern23Bridge
 import LeanFX2.Term.SubjectReduction
 import LeanFX2.Term.SubjectReductionUniverse
 import LeanFX2.Bridge
+import LeanFX2.Reduction.ParRed.PreEtaInversion
 import LeanFX2.Reducibility.Basic
 import LeanFX2.Reducibility.SN.Helpers
 import LeanFX2.Reducibility.StableBase.SubtermSN
