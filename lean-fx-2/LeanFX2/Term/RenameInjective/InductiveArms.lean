@@ -930,6 +930,74 @@ theorem Term.rename_injective_arm_codataUnfold
   exact ⟨inferredStateType, inferredOutputType, stateTerm, transitionTerm,
     rfl, HEq.rfl⟩
 
+/-- `sessionSend` arm: session send wrapping channel + payload.  The payload
+    type is existential at the Term ctor level; recovered via
+    `Ty.rename_injective_under_injective_renaming`. -/
+theorem Term.rename_injective_arm_sessionSend
+    (rhoInjective : RawRenamingInjective rho)
+    (protocolStep : RawTerm sourceScope)
+    {payloadType : Ty level sourceScope}
+    {channelRaw payloadRaw : RawTerm sourceScope}
+    (channel : Term sourceCtx (Ty.session protocolStep) channelRaw)
+    (payload : Term sourceCtx payloadType payloadRaw)
+    (channelIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (channelB : Term sourceCtx (Ty.session protocolStep) channelRaw),
+          Term.rename innerRenaming channel =
+            Term.rename innerRenaming channelB →
+          channel = channelB)
+    (payloadIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (payloadB : Term sourceCtx payloadType payloadRaw),
+          Term.rename innerRenaming payload =
+            Term.rename innerRenaming payloadB →
+          payload = payloadB)
+    (termB :
+      Term sourceCtx (Ty.session protocolStep)
+        (RawTerm.sessionSend channelRaw payloadRaw)) :
+    Term.rename termRenaming (Term.sessionSend protocolStep channel payload) =
+      Term.rename termRenaming termB →
+      Term.sessionSend protocolStep channel payload = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.sessionSend channelRaw payloadRaw)),
+        Σ' (inferredProtocolStep : RawTerm sourceScope),
+          Σ' (inferredPayloadType : Ty level sourceScope),
+            Σ' (channelB :
+                Term sourceCtx (Ty.session inferredProtocolStep) channelRaw),
+              Σ' (payloadB : Term sourceCtx inferredPayloadType payloadRaw),
+                Σ' (_ : genericType = Ty.session inferredProtocolStep),
+                  HEq genericTerm
+                    (Term.sessionSend inferredProtocolStep channelB
+                      payloadB) by
+    obtain ⟨inferredProtocolStep, inferredPayloadType, channelB, payloadB,
+      typeEqB, termHEqB⟩ := key termB
+    cases typeEqB
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ payloadTypeRenameEq _ _
+      channelRenameEq payloadRenameHEq
+    have payloadTypeEq : payloadType = inferredPayloadType :=
+      Ty.rename_injective_under_injective_renaming payloadType
+        rhoInjective inferredPayloadType payloadTypeRenameEq
+    cases payloadTypeEq
+    rw [channelIH termRenaming rhoInjective channelB channelRenameEq,
+        payloadIH termRenaming rhoInjective payloadB
+          (eq_of_heq payloadRenameHEq)]
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredProtocolStep inferredPayloadType channelTerm payloadTerm
+  exact ⟨inferredProtocolStep, inferredPayloadType, channelTerm, payloadTerm,
+    rfl, HEq.rfl⟩
+
 /-- `sessionRecv` arm: session receive wrapping a channel at fixed protocol. -/
 theorem Term.rename_injective_arm_sessionRecv
     {protocolStep : RawTerm sourceScope}
