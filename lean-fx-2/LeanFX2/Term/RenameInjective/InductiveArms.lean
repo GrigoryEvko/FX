@@ -1448,6 +1448,14 @@ theorem Term.rename_injective_arm_pathApp
   exact ⟨inferredModeIsUnivalent, inferredLeft, inferredRight, pathInner,
     intervalInner, HEq.rfl⟩
 
+-- NOTE: arm_effectPerform deferred: the Effects.CanPerform proof field
+-- is a Prop, and injection on `Term.rename effectPerform = Term.rename
+-- effectPerform` produces a heterogeneous Prop equation
+-- `Effects.CanPerform.map _ canPerformA = Effects.CanPerform.map _ canPerformB`
+-- that cannot be discharged without proof irrelevance (propext-free).
+-- The arm requires either a heterogeneous CanPerform.map_injective helper
+-- or a Prop-stripping inversion lemma not yet shipped.
+
 /-! ## Cubical-glue intro arm.
 
 `glueIntro` packages a base value + partial value at a shared baseType
