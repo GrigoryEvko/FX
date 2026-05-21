@@ -67,6 +67,47 @@ theorem eta_lam_shape_recognize_app_of_unweaken
   cases argumentHEq
   rfl
 
+/-- Recognize the concrete path eta application arm.
+
+If a path application under an interval binder has path side in the
+weakening image of a path term, and its interval argument is the newest
+variable, then the application is heterogeneously equal to the
+canonical `eta_path_shape_construct` for the recovered outer-scope
+path. -/
+theorem eta_path_shape_recognize_app_of_unweaken
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint pathRaw : RawTerm scope}
+    (pathTerm :
+      Term (context.cons Ty.interval)
+        (Ty.path carrierType leftEndpoint rightEndpoint).weaken
+        pathRaw.weaken)
+    (intervalTerm :
+      Term (context.cons Ty.interval)
+        Ty.interval
+        (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩))
+    {originalPath :
+      Term context (Ty.path carrierType leftEndpoint rightEndpoint) pathRaw}
+    (pathUnweaken :
+      Term.unweaken? pathTerm = some originalPath) :
+    HEq (Term.pathApp modeIsUnivalent pathTerm intervalTerm)
+        (Term.eta_path_shape_construct modeIsUnivalent originalPath) := by
+  have pathHEq :
+      HEq pathTerm
+        (Term.weaken (newType := Ty.interval) originalPath) :=
+    Term.weaken_inv_path pathTerm pathUnweaken
+  obtain ⟨_, intervalHEq⟩ :=
+    Term.weakenInverse_atVarZero
+      (context := context)
+      (newType := Ty.interval)
+      (weakenedTerm := intervalTerm)
+  unfold Term.eta_path_shape_construct
+  cases pathHEq
+  cases intervalHEq
+  rfl
+
 end Term
 
 end LeanFX2
