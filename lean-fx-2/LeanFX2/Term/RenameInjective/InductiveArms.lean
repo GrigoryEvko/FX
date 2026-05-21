@@ -1942,6 +1942,79 @@ theorem Term.rename_injective_arm_cumulUp
   exact ⟨inferredLower, inferredHigher, inferredCumul, inferredLeLow,
     inferredLeHigh, inferredTypeCode, rfl, HEq.rfl⟩
 
+/-- `equivApply` arm: univalence-β application.  Outer `carrierB` pinned
+    by result; inner `carrierA` is existential, recovered via
+    `Ty.rename_injective_under_injective_renaming` on the renamed Ty.equiv
+    head's first argument.  Two typed subterms `equivTerm`/`argumentTerm`
+    discharge via their type-fixed IHs once carrierA aligns. -/
+theorem Term.rename_injective_arm_equivApply
+    (rhoInjective : RawRenamingInjective rho)
+    {carrierA carrierB : Ty level sourceScope}
+    {equivRaw argumentRaw : RawTerm sourceScope}
+    (equivTerm : Term sourceCtx (Ty.equiv carrierA carrierB) equivRaw)
+    (argumentTerm : Term sourceCtx carrierA argumentRaw)
+    (equivTermIH :
+      ∀ {innerTargetScope : Nat}
+        {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (equivB :
+            Term sourceCtx (Ty.equiv carrierA carrierB) equivRaw),
+          Term.rename innerRenaming equivTerm =
+            Term.rename innerRenaming equivB →
+          equivTerm = equivB)
+    (argumentTermIH :
+      ∀ {innerTargetScope : Nat}
+        {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (argumentB : Term sourceCtx carrierA argumentRaw),
+          Term.rename innerRenaming argumentTerm =
+            Term.rename innerRenaming argumentB →
+          argumentTerm = argumentB)
+    (termB :
+      Term sourceCtx carrierB
+        (RawTerm.equivApply equivRaw argumentRaw)) :
+    Term.rename termRenaming (Term.equivApply equivTerm argumentTerm) =
+      Term.rename termRenaming termB →
+      Term.equivApply equivTerm argumentTerm = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.equivApply equivRaw argumentRaw)),
+        Σ' (inferredCarrierA : Ty level sourceScope),
+          Σ' (equivB :
+              Term sourceCtx (Ty.equiv inferredCarrierA genericType)
+                equivRaw),
+            Σ' (argumentB :
+                Term sourceCtx inferredCarrierA argumentRaw),
+              HEq genericTerm (Term.equivApply equivB argumentB) by
+    obtain ⟨inferredCarrierA, equivB, argumentB, termHEqB⟩ := key termB
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ _ carrierARenameEq _ _ _ equivRenameHEq
+      argumentRenameHEq
+    have carrierAEq : carrierA = inferredCarrierA :=
+      Ty.rename_injective_under_injective_renaming carrierA
+        rhoInjective inferredCarrierA carrierARenameEq
+    cases carrierAEq
+    have equivEq : equivTerm = equivB :=
+      equivTermIH termRenaming rhoInjective equivB
+        (eq_of_heq equivRenameHEq)
+    have argumentEq : argumentTerm = argumentB :=
+      argumentTermIH termRenaming rhoInjective argumentB
+        (eq_of_heq argumentRenameHEq)
+    cases equivEq
+    cases argumentEq
+    rfl
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredCarrierA equivTermB argumentTermB
+  exact ⟨inferredCarrierA, equivTermB, argumentTermB, HEq.rfl⟩
+
 /-! ## Closed-ctor arms (one-liners reusing existing standalone helpers)
 
 For closed constructors (no child terms, just `Term.<ctor>` at a fixed type),
