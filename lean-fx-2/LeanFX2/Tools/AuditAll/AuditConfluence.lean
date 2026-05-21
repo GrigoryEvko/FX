@@ -83,6 +83,12 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.sourceReaches_optionSome
 #assert_no_axioms LeanFX2.Conv.sourceReaches_eitherInl
 #assert_no_axioms LeanFX2.Conv.sourceReaches_eitherInr
+#assert_no_axioms LeanFX2.Conv.targetReaches_refl
+#assert_no_axioms LeanFX2.Conv.targetReaches_pair
+#assert_no_axioms LeanFX2.Conv.targetReaches_listCons
+#assert_no_axioms LeanFX2.Conv.sourceReaches_refl
+#assert_no_axioms LeanFX2.Conv.sourceReaches_pair
+#assert_no_axioms LeanFX2.Conv.sourceReaches_listCons
 #assert_no_axioms LeanFX2.Conv.transChains_renamed
 #assert_no_axioms LeanFX2.Conv.transChains_weakened
 #assert_no_axioms LeanFX2.Conv.transChains_substituted

@@ -586,4 +586,151 @@ theorem Conv.sourceReaches_eitherInr
       RawStep.parStar valueRaw payloadTarget :=
   Conv.targetReaches_eitherInr (Conv.sym convertibility)
 
+/-! ## Value-introduction Conv corollaries (refl / pair / listCons)
+
+Three more value-level cong-only canonical-head Conv corollaries:
+the identity-type intro `refl`, the dependent-pair intro `pair`,
+and the list intro `listCons`.  Each `<head>_inv` lemma in
+`Confluence/RawParStarCong.lean` (lines 1820, 1862, 1874) is
+pure-cong (no β/ι firing), so the Conv corollary follows the
+same pattern as the compound-head family but with one or two
+payload chains.
+
+These complete the value-level introduction-form Conv grid:
+nullary canonical introductions (`unit`, `boolTrue`, `boolFalse`,
+`natZero`, `listNil`, `optionNone` — iter 26 leaf family), unary
+canonical introductions (`natSucc`, `optionSome`, `eitherInl`,
+`eitherInr` — iter 28 compound family), and now the binary
+introductions (`pair`, `listCons`) plus the identity-intro
+(`refl`).  Downstream consumers: K12 fundamental theorem arms
+for `fst`/`snd` (pair scrutinee), `listElim` (listCons scrutinee),
+and `idJ` (refl scrutinee). -/
+
+/-- `Conv sourceTerm targetTerm` where source has raw
+`refl rawWitness` forces the target's raw projection to reduce
+to `refl witnessTarget` for some `witnessTarget` and the source
+witness to parStar-reduce to that same `witnessTarget`. -/
+theorem Conv.targetReaches_refl
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {targetRaw rawWitness : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.refl rawWitness : RawTerm scope)}
+    {targetTerm : Term context targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ witnessTarget,
+      RawStep.parStar targetRaw (RawTerm.refl witnessTarget) ∧
+      RawStep.parStar rawWitness witnessTarget := by
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨witnessTarget, joinEq, witnessChain⟩ :=
+    RawStep.parStar.refl_inv sourceToJoin
+  refine ⟨witnessTarget, ?_, witnessChain⟩
+  exact joinEq ▸ targetToJoin
+
+/-- `Conv sourceTerm targetTerm` where source has raw
+`pair firstValue secondValue` forces the target's raw projection
+to reduce to `pair firstTarget secondTarget` and the two source
+components to parStar-reduce to the matching projections. -/
+theorem Conv.targetReaches_pair
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {targetRaw firstValue secondValue : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.pair firstValue secondValue : RawTerm scope)}
+    {targetTerm : Term context targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ firstTarget secondTarget,
+      RawStep.parStar targetRaw (RawTerm.pair firstTarget secondTarget) ∧
+      RawStep.parStar firstValue firstTarget ∧
+      RawStep.parStar secondValue secondTarget := by
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨firstTarget, secondTarget, joinEq, firstChain, secondChain⟩ :=
+    RawStep.parStar.pair_inv sourceToJoin
+  refine ⟨firstTarget, secondTarget, ?_, firstChain, secondChain⟩
+  exact joinEq ▸ targetToJoin
+
+/-- `Conv sourceTerm targetTerm` where source has raw
+`listCons headTerm tailTerm` forces the target's raw projection
+to reduce to `listCons headTarget tailTarget` and both head and
+tail components to parStar-reduce to the matching projections. -/
+theorem Conv.targetReaches_listCons
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {targetRaw headTerm tailTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.listCons headTerm tailTerm : RawTerm scope)}
+    {targetTerm : Term context targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ headTarget tailTarget,
+      RawStep.parStar targetRaw (RawTerm.listCons headTarget tailTarget) ∧
+      RawStep.parStar headTerm headTarget ∧
+      RawStep.parStar tailTerm tailTarget := by
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨headTarget, tailTarget, joinEq, headChain, tailChain⟩ :=
+    RawStep.parStar.listCons_inv sourceToJoin
+  refine ⟨headTarget, tailTarget, ?_, headChain, tailChain⟩
+  exact joinEq ▸ targetToJoin
+
+/-! ### Source-side mirrors of the value-introduction family
+
+Each proof is a one-line `Conv.sym` composition over the
+corresponding target-side theorem.  Used when the canonical
+intro shape sits on the *target* of the Conv. -/
+
+/-- `Conv sourceTerm targetTerm` where target has raw
+`refl rawWitness` forces the source's raw projection to reduce
+to `refl witnessTarget` for some `witnessTarget` and the target
+witness to parStar-reduce to that same `witnessTarget`. -/
+theorem Conv.sourceReaches_refl
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw rawWitness : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType
+      (RawTerm.refl rawWitness : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ witnessTarget,
+      RawStep.parStar sourceRaw (RawTerm.refl witnessTarget) ∧
+      RawStep.parStar rawWitness witnessTarget :=
+  Conv.targetReaches_refl (Conv.sym convertibility)
+
+/-- `Conv sourceTerm targetTerm` where target has raw
+`pair firstValue secondValue` forces the source's raw projection
+to reduce to `pair firstTarget secondTarget` and the two target
+components to parStar-reduce to the matching projections. -/
+theorem Conv.sourceReaches_pair
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw firstValue secondValue : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType
+      (RawTerm.pair firstValue secondValue : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ firstTarget secondTarget,
+      RawStep.parStar sourceRaw (RawTerm.pair firstTarget secondTarget) ∧
+      RawStep.parStar firstValue firstTarget ∧
+      RawStep.parStar secondValue secondTarget :=
+  Conv.targetReaches_pair (Conv.sym convertibility)
+
+/-- `Conv sourceTerm targetTerm` where target has raw
+`listCons headTerm tailTerm` forces the source's raw projection
+to reduce to `listCons headTarget tailTarget` and both head and
+tail components to parStar-reduce to the matching projections. -/
+theorem Conv.sourceReaches_listCons
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw headTerm tailTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType
+      (RawTerm.listCons headTerm tailTerm : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ headTarget tailTarget,
+      RawStep.parStar sourceRaw (RawTerm.listCons headTarget tailTarget) ∧
+      RawStep.parStar headTerm headTarget ∧
+      RawStep.parStar tailTerm tailTarget :=
+  Conv.targetReaches_listCons (Conv.sym convertibility)
+
 end LeanFX2
