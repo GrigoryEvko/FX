@@ -2105,6 +2105,135 @@ theorem Term.rename_injective_arm_uaToEquiv
     inferredRightTy, inferredLeftTyRaw, inferredRightTyRaw, proofTerm,
     rfl, HEq.rfl⟩
 
+/-- `transp` arm: cubical transport across a `Ty.path` of universes.
+    Outer `targetType` pinned by result type.  Existentials:
+    `modeIsUnivalent` (Mode prop eq), `universeLevel`, `universeLevelLt`,
+    `sourceType` (Ty), `sourceTypeRaw`/`targetTypeRaw` (raw payloads).
+    Two typed subterms `typePath` + `sourceValue` with their own IHs.
+    Discharge: cases modeEq/universeLevelEq/universeLevelLtEq, then
+    Ty.rename_injective for sourceType, RawTerm.rename_injective twice
+    for the raw payloads, then typed IHs via eq_of_heq. -/
+theorem Term.rename_injective_arm_transp
+    (rhoInjective : RawRenamingInjective rho)
+    (modeIsUnivalent : mode = Mode.univalent)
+    {targetType : Ty level sourceScope}
+    {pathRaw sourceRaw : RawTerm sourceScope}
+    (universeLevel : UniverseLevel)
+    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+    (sourceType : Ty level sourceScope)
+    (sourceTypeRaw targetTypeRaw : RawTerm sourceScope)
+    (typePath :
+      Term sourceCtx
+        (Ty.path (Ty.universe universeLevel universeLevelLt)
+          sourceTypeRaw targetTypeRaw)
+        pathRaw)
+    (sourceValue : Term sourceCtx sourceType sourceRaw)
+    (typePathIH :
+      ∀ {innerTargetScope : Nat}
+        {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (typePathB : Term sourceCtx
+            (Ty.path (Ty.universe universeLevel universeLevelLt)
+              sourceTypeRaw targetTypeRaw)
+            pathRaw),
+          Term.rename innerRenaming typePath =
+            Term.rename innerRenaming typePathB →
+          typePath = typePathB)
+    (sourceValueIH :
+      ∀ {innerTargetScope : Nat}
+        {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (sourceValueB : Term sourceCtx sourceType sourceRaw),
+          Term.rename innerRenaming sourceValue =
+            Term.rename innerRenaming sourceValueB →
+          sourceValue = sourceValueB)
+    (termB : Term sourceCtx targetType
+        (RawTerm.transp pathRaw sourceRaw)) :
+    Term.rename termRenaming
+        (Term.transp modeIsUnivalent universeLevel universeLevelLt
+          sourceType targetType sourceTypeRaw targetTypeRaw typePath
+          sourceValue) =
+      Term.rename termRenaming termB →
+      Term.transp modeIsUnivalent universeLevel universeLevelLt
+        sourceType targetType sourceTypeRaw targetTypeRaw typePath
+        sourceValue = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.transp pathRaw sourceRaw)),
+        Σ' (inferredModeIsUnivalent : mode = Mode.univalent),
+          Σ' (inferredUniverseLevel : UniverseLevel),
+            Σ' (inferredUniverseLevelLt :
+                inferredUniverseLevel.toNat + 1 ≤ level),
+              Σ' (inferredSourceType : Ty level sourceScope),
+                Σ' (inferredTargetType : Ty level sourceScope),
+                  Σ' (inferredSourceTypeRaw : RawTerm sourceScope),
+                    Σ' (inferredTargetTypeRaw : RawTerm sourceScope),
+                      Σ' (typePathB :
+                          Term sourceCtx
+                            (Ty.path
+                              (Ty.universe inferredUniverseLevel
+                                inferredUniverseLevelLt)
+                              inferredSourceTypeRaw
+                              inferredTargetTypeRaw)
+                            pathRaw),
+                        Σ' (sourceValueB :
+                            Term sourceCtx inferredSourceType sourceRaw),
+                          Σ' (_ : genericType = inferredTargetType),
+                            HEq genericTerm
+                              (Term.transp inferredModeIsUnivalent
+                                inferredUniverseLevel
+                                inferredUniverseLevelLt
+                                inferredSourceType inferredTargetType
+                                inferredSourceTypeRaw
+                                inferredTargetTypeRaw typePathB
+                                sourceValueB) by
+    obtain ⟨_, _, _, _, _, _, _, typePathB, sourceValueB,
+      typeEqB, termHEqB⟩ := key termB
+    cases typeEqB
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ universeLevelEq universeLevelLtEq
+      sourceTypeRenameEq _ sourceTypeRawRenameEq targetTypeRawRenameEq
+      _ _ typePathRenameHEq sourceValueRenameHEq
+    cases universeLevelEq
+    cases universeLevelLtEq
+    have sourceTypeEq : sourceType = _ :=
+      Ty.rename_injective_under_injective_renaming sourceType
+        rhoInjective _ sourceTypeRenameEq
+    cases sourceTypeEq
+    have sourceTypeRawEq : sourceTypeRaw = _ :=
+      RawTerm.rename_injective_under_injective_renaming sourceTypeRaw
+        rhoInjective _ sourceTypeRawRenameEq
+    cases sourceTypeRawEq
+    have targetTypeRawEq : targetTypeRaw = _ :=
+      RawTerm.rename_injective_under_injective_renaming targetTypeRaw
+        rhoInjective _ targetTypeRawRenameEq
+    cases targetTypeRawEq
+    have typePathEq : typePath = typePathB :=
+      typePathIH termRenaming rhoInjective typePathB
+        (eq_of_heq typePathRenameHEq)
+    have sourceValueEq : sourceValue = sourceValueB :=
+      sourceValueIH termRenaming rhoInjective sourceValueB
+        (eq_of_heq sourceValueRenameHEq)
+    cases typePathEq
+    cases sourceValueEq
+    rfl
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredModeIsUnivalent inferredUniverseLevel
+    inferredUniverseLevelLt inferredSourceType inferredSourceTypeRaw
+    inferredTargetTypeRaw typePathTerm sourceValueTerm
+  exact ⟨inferredModeIsUnivalent, inferredUniverseLevel,
+    inferredUniverseLevelLt, inferredSourceType, genericType,
+    inferredSourceTypeRaw, inferredTargetTypeRaw, typePathTerm,
+    sourceValueTerm, rfl, HEq.rfl⟩
+
 /-! ## Closed-ctor arms (one-liners reusing existing standalone helpers)
 
 For closed constructors (no child terms, just `Term.<ctor>` at a fixed type),
