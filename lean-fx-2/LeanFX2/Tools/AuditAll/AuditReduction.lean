@@ -7,6 +7,7 @@ import LeanFX2.Confluence.RawCdLemma
 import LeanFX2.Confluence.RawCdRename
 import LeanFX2.Confluence.RawDiamond
 import LeanFX2.Confluence.RawParStarCong
+import LeanFX2.Confluence.PreEtaStarInversion
 import LeanFX2.Confluence.ParStarBridge
 import LeanFX2.Confluence.ConvBridge
 import LeanFX2.Reduction.RawParCompatible.NamedCompatibility
@@ -661,6 +662,9 @@ shapes: 5 in CubicalShape. -/
 #assert_no_axioms LeanFX2.Step.parStar.weakened_source_targetRaw_in_weaken_image
 #assert_no_axioms LeanFX2.Step.parStar.sourceRaw_in_rename_image_targetRaw_in_rename_image
 #assert_no_axioms LeanFX2.Step.parStar.sourceRaw_in_weaken_image_targetRaw_in_weaken_image
+#assert_no_axioms LeanFX2.Step.parStar.lam_targetRaw_inv_congr
+#assert_no_axioms LeanFX2.Step.parStar.lamPi_targetRaw_inv_congr
+#assert_no_axioms LeanFX2.Step.parStar.pathLam_targetRaw_inv_congr
 #assert_no_axioms LeanFX2.StepStar.rename_toRawBridge
 #assert_no_axioms LeanFX2.StepStar.renamed_source_targetRaw_in_rename_image
 #assert_no_axioms LeanFX2.StepStar.weakened_source_targetRaw_in_weaken_image
