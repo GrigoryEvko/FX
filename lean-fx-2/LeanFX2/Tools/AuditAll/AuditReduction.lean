@@ -29,7 +29,7 @@ import LeanFX2.Reduction.TranspPiContractumPar
 
 namespace LeanFX2.Tools
 
-/-! ## AuditReduction — 443 `#assert_no_axioms` checks. -/
+/-! ## AuditReduction — 450 `#assert_no_axioms` checks. -/
 
 #assert_no_axioms LeanFX2.Step.castSourceRaw
 #assert_no_axioms LeanFX2.Step.castTargetRaw
@@ -627,6 +627,13 @@ smoke log. -/
 #assert_no_axioms LeanFX2.RawStep.parStar.listCons_inv
 #assert_no_axioms LeanFX2.RawStep.parStar.listCode_inv
 #assert_no_axioms LeanFX2.RawStep.parStar.optionCode_inv
+#assert_no_axioms LeanFX2.RawStep.parStar.arrowCode_inv
+#assert_no_axioms LeanFX2.RawStep.parStar.piTyCode_inv
+#assert_no_axioms LeanFX2.RawStep.parStar.sigmaTyCode_inv
+#assert_no_axioms LeanFX2.RawStep.parStar.productCode_inv
+#assert_no_axioms LeanFX2.RawStep.parStar.sumCode_inv
+#assert_no_axioms LeanFX2.RawStep.parStar.eitherCode_inv
+#assert_no_axioms LeanFX2.RawStep.parStar.equivCode_inv
 #assert_no_axioms LeanFX2.RawStep.parStar.lam_inv
 #assert_no_axioms LeanFX2.RawStep.parStar.pathLam_inv
 #assert_no_axioms LeanFX2.RawStep.parStar.listNil_inv
