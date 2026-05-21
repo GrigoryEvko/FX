@@ -2015,6 +2015,96 @@ theorem Term.rename_injective_arm_equivApply
   rename_i inferredCarrierA equivTermB argumentTermB
   exact ⟨inferredCarrierA, equivTermB, argumentTermB, HEq.rfl⟩
 
+/-- `uaToEquiv` arm: univalence-β extractor.  Outer `leftTy`/`rightTy`
+    pinned by result `Ty.equiv`; inner `innerLevel`/`innerLevelLt`/
+    `leftTyRaw`/`rightTyRaw` are existentials carried in Σ' chain.
+    Five raw existentials handled via `RawTerm.rename_injective_under_
+    injective_renaming` after level alignment via `cases innerLevelEq`. -/
+theorem Term.rename_injective_arm_uaToEquiv
+    (rhoInjective : RawRenamingInjective rho)
+    {leftTy rightTy : Ty level sourceScope}
+    {proofRaw : RawTerm sourceScope}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    (leftTyRaw rightTyRaw : RawTerm sourceScope)
+    (proof : Term sourceCtx
+        (Ty.id (Ty.universe innerLevel innerLevelLt) leftTyRaw rightTyRaw)
+        proofRaw)
+    (proofIH :
+      ∀ {innerTargetScope : Nat}
+        {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (proofB : Term sourceCtx
+            (Ty.id (Ty.universe innerLevel innerLevelLt)
+              leftTyRaw rightTyRaw)
+            proofRaw),
+          Term.rename innerRenaming proof =
+            Term.rename innerRenaming proofB →
+          proof = proofB)
+    (termB : Term sourceCtx (Ty.equiv leftTy rightTy)
+        (RawTerm.uaToEquiv proofRaw)) :
+    Term.rename termRenaming
+        (Term.uaToEquiv innerLevel innerLevelLt leftTy rightTy
+          leftTyRaw rightTyRaw proof) =
+      Term.rename termRenaming termB →
+      Term.uaToEquiv innerLevel innerLevelLt leftTy rightTy
+        leftTyRaw rightTyRaw proof = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.uaToEquiv proofRaw)),
+        Σ' (inferredInnerLevel : UniverseLevel),
+          Σ' (inferredInnerLevelLt :
+              inferredInnerLevel.toNat + 1 ≤ level),
+            Σ' (inferredLeftTy : Ty level sourceScope),
+              Σ' (inferredRightTy : Ty level sourceScope),
+                Σ' (inferredLeftTyRaw : RawTerm sourceScope),
+                  Σ' (inferredRightTyRaw : RawTerm sourceScope),
+                    Σ' (proofB : Term sourceCtx
+                        (Ty.id (Ty.universe inferredInnerLevel
+                            inferredInnerLevelLt)
+                          inferredLeftTyRaw inferredRightTyRaw)
+                        proofRaw),
+                      Σ' (_ : genericType =
+                          Ty.equiv inferredLeftTy inferredRightTy),
+                        HEq genericTerm
+                          (Term.uaToEquiv inferredInnerLevel
+                            inferredInnerLevelLt inferredLeftTy
+                            inferredRightTy inferredLeftTyRaw
+                            inferredRightTyRaw proofB) by
+    obtain ⟨inferredInnerLevel, inferredInnerLevelLt, _, _,
+      inferredLeftTyRaw, inferredRightTyRaw, proofB,
+      typeEqB, termHEqB⟩ := key termB
+    cases typeEqB
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ _ innerLevelEq _ _ leftRawRenameEq
+      rightRawRenameEq _ proofRenameHEq
+    cases innerLevelEq
+    have leftRawEq : leftTyRaw = inferredLeftTyRaw :=
+      RawTerm.rename_injective_under_injective_renaming leftTyRaw
+        rhoInjective inferredLeftTyRaw leftRawRenameEq
+    have rightRawEq : rightTyRaw = inferredRightTyRaw :=
+      RawTerm.rename_injective_under_injective_renaming rightTyRaw
+        rhoInjective inferredRightTyRaw rightRawRenameEq
+    cases leftRawEq
+    cases rightRawEq
+    have proofEq : proof = proofB :=
+      proofIH termRenaming rhoInjective proofB
+        (eq_of_heq proofRenameHEq)
+    cases proofEq
+    rfl
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredInnerLevel inferredInnerLevelLt inferredLeftTy
+    inferredRightTy inferredLeftTyRaw inferredRightTyRaw proofTerm
+  exact ⟨inferredInnerLevel, inferredInnerLevelLt, inferredLeftTy,
+    inferredRightTy, inferredLeftTyRaw, inferredRightTyRaw, proofTerm,
+    rfl, HEq.rfl⟩
+
 /-! ## Closed-ctor arms (one-liners reusing existing standalone helpers)
 
 For closed constructors (no child terms, just `Term.<ctor>` at a fixed type),
