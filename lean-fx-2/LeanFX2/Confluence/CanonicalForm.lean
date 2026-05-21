@@ -2782,4 +2782,158 @@ theorem Conv.optionNone_ne_pair
     RawStep.parStar.pair_inv targetToJoin
   nomatch joinEqNone.symm.trans joinEqPair
 
+/-! ### `pair` vs unary compounds + binary `listCons` + compatibility
+
+Completes the `pair` canonical-head row started in iter 40.
+Adds the 4 unary-compound-vs-pair disjointness pairs, the first
+binary-vs-binary disjointness (listCons-vs-pair), and the
+same-head pair compatibility extraction lemma.
+
+The binary-vs-binary case (`Conv.listCons_ne_pair`) is novel —
+both inv lemmas return existential triples, so both `obtain`
+destructures discard 4 components each.  The refutation logic
+is unchanged: chain the two head-shape equations through
+.symm/.trans, then `nomatch` refutes the impossible
+`RawTerm.listCons _ _ = RawTerm.pair _ _`. -/
+
+/-- A `natSucc`-headed source and a `pair`-headed target are not
+convertible. -/
+theorem Conv.natSucc_ne_pair
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {predecessor firstValue secondValue : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.natSucc predecessor : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.pair firstValue secondValue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqNatSucc, _⟩ :=
+    RawStep.parStar.natSucc_inv sourceToJoin
+  obtain ⟨_, _, joinEqPair, _, _⟩ :=
+    RawStep.parStar.pair_inv targetToJoin
+  nomatch joinEqNatSucc.symm.trans joinEqPair
+
+/-- An `optionSome`-headed source and a `pair`-headed target are
+not convertible. -/
+theorem Conv.optionSome_ne_pair
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {valueTerm firstValue secondValue : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.optionSome valueTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.pair firstValue secondValue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOptionSome, _⟩ :=
+    RawStep.parStar.optionSome_inv sourceToJoin
+  obtain ⟨_, _, joinEqPair, _, _⟩ :=
+    RawStep.parStar.pair_inv targetToJoin
+  nomatch joinEqOptionSome.symm.trans joinEqPair
+
+/-- An `eitherInl`-headed source and a `pair`-headed target are
+not convertible. -/
+theorem Conv.eitherInl_ne_pair
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {valueTerm firstValue secondValue : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherInl valueTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.pair firstValue secondValue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqEitherInl, _⟩ :=
+    RawStep.parStar.eitherInl_inv sourceToJoin
+  obtain ⟨_, _, joinEqPair, _, _⟩ :=
+    RawStep.parStar.pair_inv targetToJoin
+  nomatch joinEqEitherInl.symm.trans joinEqPair
+
+/-- An `eitherInr`-headed source and a `pair`-headed target are
+not convertible. -/
+theorem Conv.eitherInr_ne_pair
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {valueTerm firstValue secondValue : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherInr valueTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.pair firstValue secondValue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqEitherInr, _⟩ :=
+    RawStep.parStar.eitherInr_inv sourceToJoin
+  obtain ⟨_, _, joinEqPair, _, _⟩ :=
+    RawStep.parStar.pair_inv targetToJoin
+  nomatch joinEqEitherInr.symm.trans joinEqPair
+
+/-- A `listCons`-headed source and a `pair`-headed target are
+not convertible.  First binary-vs-binary disjointness pair —
+both sides yield existential-triple inv-obtain patterns, but
+the refutation logic via `nomatch` on the inter-ctor equation
+remains the same as unary cases. -/
+theorem Conv.listCons_ne_pair
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {headTerm tailTerm firstValue secondValue : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.listCons headTerm tailTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.pair firstValue secondValue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqListCons, _, _⟩ :=
+    RawStep.parStar.listCons_inv sourceToJoin
+  obtain ⟨_, _, joinEqPair, _, _⟩ :=
+    RawStep.parStar.pair_inv targetToJoin
+  nomatch joinEqListCons.symm.trans joinEqPair
+
+/-- Two `pair`-headed canonically-convertible terms have a
+common raw reduct for both the first and second components.
+LOAD-BEARING for K12 fundamental theorem's β-redex cases on
+`fst` / `snd` (K12.21) — once a Σ-typed scrutinee canonicalizes
+to `pair head tail`, this compatibility lemma extracts the
+canonical first/second witnesses for the projection β to apply.
+Mirrors `listCons_compatibility` (iter 39) — same binary-arity
+template with `RawTerm.pair.inj` producing `firstEq ∧ secondEq`. -/
+theorem Conv.pair_compatibility
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstSrc secondSrc firstTgt secondTgt : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.pair firstSrc secondSrc : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.pair firstTgt secondTgt : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ firstJoin secondJoin : RawTerm scope,
+      RawStep.parStar firstSrc firstJoin ∧
+      RawStep.parStar firstTgt firstJoin ∧
+      RawStep.parStar secondSrc secondJoin ∧
+      RawStep.parStar secondTgt secondJoin := by
+  obtain ⟨_, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨firstJoinSrc, secondJoinSrc, joinEqSrc,
+      firstSrcInner, secondSrcInner⟩ :=
+    RawStep.parStar.pair_inv sourceToJoin
+  obtain ⟨firstJoinTgt, secondJoinTgt, joinEqTgt,
+      firstTgtInner, secondTgtInner⟩ :=
+    RawStep.parStar.pair_inv targetToJoin
+  have ⟨firstJoinEq, secondJoinEq⟩ :
+      firstJoinSrc = firstJoinTgt ∧ secondJoinSrc = secondJoinTgt :=
+    RawTerm.pair.inj (joinEqSrc.symm.trans joinEqTgt)
+  exact ⟨firstJoinTgt, secondJoinTgt,
+    firstJoinEq ▸ firstSrcInner, firstTgtInner,
+    secondJoinEq ▸ secondSrcInner, secondTgtInner⟩
+
 end LeanFX2
