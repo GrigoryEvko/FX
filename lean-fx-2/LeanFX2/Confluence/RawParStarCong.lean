@@ -866,6 +866,199 @@ private theorem RawStep.parStar.binary_left_intro_elim_inv_helper
   RawStep.parStar.binary_left_intro_elim_inv_aux elimWrap introWrap
     contractum parStepInv chain rfl
 
+/-- Generalized binary eliminator `parStar` inversion where the left
+subterm may trigger one of three redex families.
+
+This is the raw shape of `transp`: the path side can develop to a
+constant `pathLam`, a `uaToEquiv`, or a `pathCompose`, and each family
+has its own contractum. -/
+private theorem RawStep.parStar.binary_left_three_redex_elim_inv_aux
+    {PayloadFirst PayloadSecond PayloadThird : Type}
+    {outerScope leftScope rightScope : Nat}
+    (elimWrap :
+      RawTerm leftScope → RawTerm rightScope → RawTerm outerScope)
+    (firstIntro : PayloadFirst → RawTerm leftScope)
+    (secondIntro : PayloadSecond → RawTerm leftScope)
+    (thirdIntro : PayloadThird → RawTerm leftScope)
+    (firstContractum :
+      PayloadFirst → RawTerm rightScope → RawTerm outerScope)
+    (secondContractum :
+      PayloadSecond → RawTerm rightScope → RawTerm outerScope)
+    (thirdContractum :
+      PayloadThird → RawTerm rightScope → RawTerm outerScope)
+    (parStepInv : ∀ {leftSource rightSource target},
+      RawStep.par (elimWrap leftSource rightSource) target →
+        (∃ leftTarget rightTarget,
+          target = elimWrap leftTarget rightTarget ∧
+          RawStep.par leftSource leftTarget ∧
+          RawStep.par rightSource rightTarget) ∨
+        (∃ payload rightTarget,
+          target = firstContractum payload rightTarget ∧
+          RawStep.par leftSource (firstIntro payload) ∧
+          RawStep.par rightSource rightTarget) ∨
+        (∃ payload rightTarget,
+          target = secondContractum payload rightTarget ∧
+          RawStep.par leftSource (secondIntro payload) ∧
+          RawStep.par rightSource rightTarget) ∨
+        (∃ payload rightTarget,
+          target = thirdContractum payload rightTarget ∧
+          RawStep.par leftSource (thirdIntro payload) ∧
+          RawStep.par rightSource rightTarget))
+    {source target : RawTerm outerScope}
+    (chain : RawStep.parStar source target) :
+    ∀ {leftSource : RawTerm leftScope} {rightSource : RawTerm rightScope},
+      source = elimWrap leftSource rightSource →
+      (∃ leftTarget rightTarget,
+        target = elimWrap leftTarget rightTarget ∧
+        RawStep.parStar leftSource leftTarget ∧
+        RawStep.parStar rightSource rightTarget) ∨
+      (∃ payload rightTarget,
+        RawStep.parStar leftSource (firstIntro payload) ∧
+        RawStep.parStar rightSource rightTarget ∧
+        RawStep.parStar (firstContractum payload rightTarget) target) ∨
+      (∃ payload rightTarget,
+        RawStep.parStar leftSource (secondIntro payload) ∧
+        RawStep.parStar rightSource rightTarget ∧
+        RawStep.parStar (secondContractum payload rightTarget) target) ∨
+      (∃ payload rightTarget,
+        RawStep.parStar leftSource (thirdIntro payload) ∧
+        RawStep.parStar rightSource rightTarget ∧
+        RawStep.parStar (thirdContractum payload rightTarget) target) := by
+  induction chain with
+  | refl _ =>
+      intro leftSource rightSource sourceEq
+      exact Or.inl ⟨leftSource, rightSource, sourceEq,
+        RawStep.parStar.refl _, RawStep.parStar.refl _⟩
+  | trans firstStep restChain restIH =>
+      intro leftSource rightSource sourceEq
+      subst sourceEq
+      cases parStepInv firstStep with
+      | inl headCase =>
+          obtain ⟨middleLeft, middleRight, middleEq, leftStep,
+            rightStep⟩ := headCase
+          cases restIH middleEq with
+          | inl preservedCase =>
+              obtain ⟨targetLeft, targetRight, targetEq, leftRest,
+                rightRest⟩ := preservedCase
+              exact Or.inl ⟨targetLeft, targetRight, targetEq,
+                RawStep.parStar.trans leftStep leftRest,
+                RawStep.parStar.trans rightStep rightRest⟩
+          | inr redexCases =>
+              cases redexCases with
+              | inl firstCase =>
+                  obtain ⟨payload, rightTarget, leftRest, rightRest,
+                    contractumChain⟩ := firstCase
+                  exact Or.inr (Or.inl ⟨payload, rightTarget,
+                    RawStep.parStar.trans leftStep leftRest,
+                    RawStep.parStar.trans rightStep rightRest,
+                    contractumChain⟩)
+              | inr moreRedexCases =>
+                  cases moreRedexCases with
+                  | inl secondCase =>
+                      obtain ⟨payload, rightTarget, leftRest, rightRest,
+                        contractumChain⟩ := secondCase
+                      exact Or.inr (Or.inr (Or.inl ⟨payload, rightTarget,
+                        RawStep.parStar.trans leftStep leftRest,
+                        RawStep.parStar.trans rightStep rightRest,
+                        contractumChain⟩))
+                  | inr thirdCase =>
+                      obtain ⟨payload, rightTarget, leftRest, rightRest,
+                        contractumChain⟩ := thirdCase
+                      exact Or.inr (Or.inr (Or.inr ⟨payload, rightTarget,
+                        RawStep.parStar.trans leftStep leftRest,
+                        RawStep.parStar.trans rightStep rightRest,
+                        contractumChain⟩))
+      | inr redexCases =>
+          cases redexCases with
+          | inl firstCase =>
+              obtain ⟨payload, rightTarget, middleEq, leftStep,
+                rightStep⟩ := firstCase
+              cases middleEq
+              exact Or.inr (Or.inl ⟨payload, rightTarget,
+                RawStep.parStar.trans leftStep (RawStep.parStar.refl _),
+                RawStep.parStar.trans rightStep (RawStep.parStar.refl _),
+                restChain⟩)
+          | inr moreRedexCases =>
+              cases moreRedexCases with
+              | inl secondCase =>
+                  obtain ⟨payload, rightTarget, middleEq, leftStep,
+                    rightStep⟩ := secondCase
+                  cases middleEq
+                  exact Or.inr (Or.inr (Or.inl ⟨payload, rightTarget,
+                    RawStep.parStar.trans leftStep
+                      (RawStep.parStar.refl _),
+                    RawStep.parStar.trans rightStep
+                      (RawStep.parStar.refl _),
+                    restChain⟩))
+              | inr thirdCase =>
+                  obtain ⟨payload, rightTarget, middleEq, leftStep,
+                    rightStep⟩ := thirdCase
+                  cases middleEq
+                  exact Or.inr (Or.inr (Or.inr ⟨payload, rightTarget,
+                    RawStep.parStar.trans leftStep
+                      (RawStep.parStar.refl _),
+                    RawStep.parStar.trans rightStep
+                      (RawStep.parStar.refl _),
+                    restChain⟩))
+
+/-- Binary-left, three-redex eliminator inversion for an exactly wrapped
+source. -/
+private theorem RawStep.parStar.binary_left_three_redex_elim_inv_helper
+    {PayloadFirst PayloadSecond PayloadThird : Type}
+    {outerScope leftScope rightScope : Nat}
+    (elimWrap :
+      RawTerm leftScope → RawTerm rightScope → RawTerm outerScope)
+    (firstIntro : PayloadFirst → RawTerm leftScope)
+    (secondIntro : PayloadSecond → RawTerm leftScope)
+    (thirdIntro : PayloadThird → RawTerm leftScope)
+    (firstContractum :
+      PayloadFirst → RawTerm rightScope → RawTerm outerScope)
+    (secondContractum :
+      PayloadSecond → RawTerm rightScope → RawTerm outerScope)
+    (thirdContractum :
+      PayloadThird → RawTerm rightScope → RawTerm outerScope)
+    (parStepInv : ∀ {leftSource rightSource target},
+      RawStep.par (elimWrap leftSource rightSource) target →
+        (∃ leftTarget rightTarget,
+          target = elimWrap leftTarget rightTarget ∧
+          RawStep.par leftSource leftTarget ∧
+          RawStep.par rightSource rightTarget) ∨
+        (∃ payload rightTarget,
+          target = firstContractum payload rightTarget ∧
+          RawStep.par leftSource (firstIntro payload) ∧
+          RawStep.par rightSource rightTarget) ∨
+        (∃ payload rightTarget,
+          target = secondContractum payload rightTarget ∧
+          RawStep.par leftSource (secondIntro payload) ∧
+          RawStep.par rightSource rightTarget) ∨
+        (∃ payload rightTarget,
+          target = thirdContractum payload rightTarget ∧
+          RawStep.par leftSource (thirdIntro payload) ∧
+          RawStep.par rightSource rightTarget))
+    {leftSource : RawTerm leftScope}
+    {rightSource : RawTerm rightScope}
+    {target : RawTerm outerScope}
+    (chain : RawStep.parStar (elimWrap leftSource rightSource) target) :
+    (∃ leftTarget rightTarget,
+      target = elimWrap leftTarget rightTarget ∧
+      RawStep.parStar leftSource leftTarget ∧
+      RawStep.parStar rightSource rightTarget) ∨
+    (∃ payload rightTarget,
+      RawStep.parStar leftSource (firstIntro payload) ∧
+      RawStep.parStar rightSource rightTarget ∧
+      RawStep.parStar (firstContractum payload rightTarget) target) ∨
+    (∃ payload rightTarget,
+      RawStep.parStar leftSource (secondIntro payload) ∧
+      RawStep.parStar rightSource rightTarget ∧
+      RawStep.parStar (secondContractum payload rightTarget) target) ∨
+    (∃ payload rightTarget,
+      RawStep.parStar leftSource (thirdIntro payload) ∧
+      RawStep.parStar rightSource rightTarget ∧
+      RawStep.parStar (thirdContractum payload rightTarget) target) :=
+  RawStep.parStar.binary_left_three_redex_elim_inv_aux
+    elimWrap firstIntro secondIntro thirdIntro firstContractum
+    secondContractum thirdContractum parStepInv chain rfl
+
 /-- Generalized binary-head `parStar` inversion.
 
 This is the two-subterm counterpart to `unary_inv_aux`; it threads the
@@ -2260,6 +2453,133 @@ theorem RawStep.parStar.transpFill_inv {scope : Nat}
       RawStep.parStar sourceTerm sourceTarget :=
   RawStep.parStar.ternary_inv_helper RawTerm.transpFill
     RawStep.par.transpFill_inv chain
+
+/-- `RawStep.parStar (transp path source) target` either preserves the
+`transp` head, fires constant-path transport, fires univalence
+transport, or distributes over path composition after the path develops
+to the corresponding raw head. -/
+theorem RawStep.parStar.transp_inv {scope : Nat}
+    {pathTerm sourceTerm target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.transp pathTerm sourceTerm) target) :
+    (∃ pathTarget sourceTarget,
+      target = RawTerm.transp pathTarget sourceTarget ∧
+      RawStep.parStar pathTerm pathTarget ∧
+      RawStep.parStar sourceTerm sourceTarget) ∨
+    (∃ (typeRawTarget : RawTerm scope) (sourceTarget : RawTerm scope),
+      RawStep.parStar pathTerm (RawTerm.pathLam typeRawTarget.weaken) ∧
+      RawStep.parStar sourceTerm sourceTarget ∧
+      RawStep.parStar sourceTarget target) ∨
+    (∃ proofRawTarget sourceTarget,
+      RawStep.parStar pathTerm (RawTerm.uaToEquiv proofRawTarget) ∧
+      RawStep.parStar sourceTerm sourceTarget ∧
+      RawStep.parStar
+        (RawTerm.equivApply (RawTerm.uaToEquiv proofRawTarget)
+          sourceTarget)
+        target) ∨
+    (∃ leftRawTarget rightRawTarget sourceTarget,
+      RawStep.parStar pathTerm
+        (RawTerm.pathCompose leftRawTarget rightRawTarget) ∧
+      RawStep.parStar sourceTerm sourceTarget ∧
+      RawStep.parStar
+        (RawTerm.transp rightRawTarget
+          (RawTerm.transp leftRawTarget sourceTarget))
+        target) := by
+  cases RawStep.parStar.binary_left_three_redex_elim_inv_helper
+      RawTerm.transp
+      (fun (typeRawTarget : RawTerm scope) =>
+        RawTerm.pathLam typeRawTarget.weaken)
+      RawTerm.uaToEquiv
+      (fun (payload : RawTerm scope × RawTerm scope) =>
+        RawTerm.pathCompose payload.1 payload.2)
+      (fun _ sourceTarget => sourceTarget)
+      (fun proofRawTarget sourceTarget =>
+        RawTerm.equivApply (RawTerm.uaToEquiv proofRawTarget)
+          sourceTarget)
+      (fun (payload : RawTerm scope × RawTerm scope) sourceTarget =>
+        RawTerm.transp payload.2
+          (RawTerm.transp payload.1 sourceTarget))
+      (fun step => by
+        cases RawStep.par.transp_inv step with
+        | inl headCase =>
+            exact Or.inl headCase
+        | inr redexCases =>
+            cases redexCases with
+            | inl reflShallow =>
+                obtain ⟨typeRawSource, sourceTarget, pathEq, targetEq,
+                  sourceStep⟩ := reflShallow
+                cases pathEq
+                exact Or.inr (Or.inl ⟨typeRawSource, sourceTarget,
+                  targetEq, RawStep.par.refl _, sourceStep⟩)
+            | inr moreRedexCases =>
+                cases moreRedexCases with
+                | inl reflDeep =>
+                    obtain ⟨typeRawTarget, sourceTarget, targetEq,
+                      pathStep, sourceStep⟩ := reflDeep
+                    exact Or.inr (Or.inl ⟨typeRawTarget, sourceTarget,
+                      targetEq, pathStep, sourceStep⟩)
+                | inr moreRedexCases =>
+                    cases moreRedexCases with
+                    | inl uaShallow =>
+                        obtain ⟨proofRawSource, proofRawTarget,
+                          sourceTarget, pathEq, targetEq, proofStep,
+                          sourceStep⟩ := uaShallow
+                        cases pathEq
+                        exact Or.inr (Or.inr (Or.inl
+                          ⟨proofRawTarget, sourceTarget, targetEq,
+                            RawStep.par.uaToEquivCong proofStep,
+                            sourceStep⟩))
+                    | inr moreRedexCases =>
+                        cases moreRedexCases with
+                        | inl uaDeep =>
+                            obtain ⟨proofRawTarget, sourceTarget,
+                              targetEq, pathStep, sourceStep⟩ := uaDeep
+                            exact Or.inr (Or.inr (Or.inl
+                              ⟨proofRawTarget, sourceTarget, targetEq,
+                                pathStep, sourceStep⟩))
+                        | inr moreRedexCases =>
+                            cases moreRedexCases with
+                            | inl composeShallow =>
+                                obtain ⟨leftRawSource, leftRawTarget,
+                                  rightRawSource, rightRawTarget,
+                                  sourceTarget, pathEq, targetEq, leftStep,
+                                  rightStep, sourceStep⟩ := composeShallow
+                                cases pathEq
+                                exact Or.inr (Or.inr (Or.inr
+                                  ⟨(leftRawTarget, rightRawTarget),
+                                    sourceTarget, targetEq,
+                                    RawStep.par.pathComposeCong leftStep
+                                      rightStep,
+                                    sourceStep⟩))
+                            | inr composeDeep =>
+                                obtain ⟨leftRawTarget, rightRawTarget,
+                                  sourceTarget, targetEq, pathStep,
+                                  sourceStep⟩ := composeDeep
+                                exact Or.inr (Or.inr (Or.inr
+                                  ⟨(leftRawTarget, rightRawTarget),
+                                    sourceTarget, targetEq, pathStep,
+                                    sourceStep⟩)))
+      chain with
+  | inl preservedCase =>
+      exact Or.inl preservedCase
+  | inr redexCases =>
+      cases redexCases with
+      | inl reflCase =>
+          obtain ⟨typeRawTarget, sourceTarget, pathChain, sourceChain,
+            targetChain⟩ := reflCase
+          exact Or.inr (Or.inl ⟨typeRawTarget, sourceTarget,
+            pathChain, sourceChain, targetChain⟩)
+      | inr moreRedexCases =>
+          cases moreRedexCases with
+          | inl uaCase =>
+              obtain ⟨proofRawTarget, sourceTarget, pathChain,
+                sourceChain, targetChain⟩ := uaCase
+              exact Or.inr (Or.inr (Or.inl ⟨proofRawTarget,
+                sourceTarget, pathChain, sourceChain, targetChain⟩))
+          | inr composeCase =>
+              obtain ⟨payload, sourceTarget, pathChain, sourceChain,
+                targetChain⟩ := composeCase
+              exact Or.inr (Or.inr (Or.inr ⟨payload.1, payload.2,
+                sourceTarget, pathChain, sourceChain, targetChain⟩))
 
 /-- `RawStep.parStar (hcomp sides cap) target` either preserves the
 `hcomp` head or fires the constant-sides hcomp β rule after `sides`
