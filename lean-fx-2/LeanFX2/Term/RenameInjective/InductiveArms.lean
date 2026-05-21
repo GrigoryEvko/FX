@@ -1516,6 +1516,168 @@ theorem Term.rename_injective_arm_intervalJoin
   rename_i leftTerm rightTerm
   exact ⟨leftTerm, rightTerm, rfl, HEq.rfl⟩
 
+/-! ## Projection-form arms (single-child elim shapes).
+
+Three single-child projection ctors whose OUTPUT type matches a sub-component
+of the child's type (no `subst0` cast on the output, distinguishing them from
+the cast-wall family `appPi`/`snd`/`boolElim`/…):
+
+* `recordProj`  : child at `Ty.record singleFieldType`, output `singleFieldType`.
+  `singleFieldType` is the output type so the matcher unifies it directly with
+  `genericType` — no Ty existential needed.
+* `codataDest`  : child at `Ty.codata stateType outputType`, output `outputType`.
+  `outputType` aligns with `genericType`; `stateType` is purely existential
+  (only in child's type) and recovered via `Ty.rename_injective_under_injective_renaming`.
+* `refineElim`  : child at `Ty.refine baseType predicate`, output `baseType`.
+  `baseType` aligns with `genericType`; the raw `predicate` is purely
+  existential and recovered via `RawTerm.rename_injective_under_injective_renaming`
+  under `rho.lift` (predicate lives at `scope + 1`). -/
+
+/-- `recordProj` arm: single-field record projection.  `singleFieldType` IS the
+    output type so no Ty existential — the `cases genericTerm` matcher unifies
+    the inferred field type with `genericType` directly.  Mirrors the `natElim`
+    pattern (motiveType-as-result). -/
+theorem Term.rename_injective_arm_recordProj
+    {singleFieldType : Ty level sourceScope}
+    {recordRaw : RawTerm sourceScope}
+    (recordValue : Term sourceCtx (Ty.record singleFieldType) recordRaw)
+    (recordIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (recordB : Term sourceCtx (Ty.record singleFieldType) recordRaw),
+          Term.rename innerRenaming recordValue =
+            Term.rename innerRenaming recordB →
+          recordValue = recordB)
+    (rhoInjective : RawRenamingInjective rho)
+    (termB :
+      Term sourceCtx singleFieldType (RawTerm.recordProj recordRaw)) :
+    Term.rename termRenaming (Term.recordProj recordValue) =
+      Term.rename termRenaming termB →
+      Term.recordProj recordValue = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm :
+          Term sourceCtx genericType (RawTerm.recordProj recordRaw)),
+        Σ' (recordB :
+            Term sourceCtx (Ty.record genericType) recordRaw),
+          HEq genericTerm (Term.recordProj recordB) by
+    obtain ⟨recordB, termHEqB⟩ := key termB
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ recordRenameEq
+    exact congrArg Term.recordProj
+      (recordIH termRenaming rhoInjective recordB recordRenameEq)
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i recordTerm
+  exact ⟨recordTerm, HEq.rfl⟩
+
+/-- `codataDest` arm: codata observation.  `outputType` aligns with
+    `genericType`; `stateType` recovered as a Ty existential via the
+    matcher's rename-injectivity. -/
+theorem Term.rename_injective_arm_codataDest
+    (rhoInjective : RawRenamingInjective rho)
+    {stateType outputType : Ty level sourceScope}
+    {codataRaw : RawTerm sourceScope}
+    (codataValue :
+      Term sourceCtx (Ty.codata stateType outputType) codataRaw)
+    (codataIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (codataB :
+            Term sourceCtx (Ty.codata stateType outputType) codataRaw),
+          Term.rename innerRenaming codataValue =
+            Term.rename innerRenaming codataB →
+          codataValue = codataB)
+    (termB :
+      Term sourceCtx outputType (RawTerm.codataDest codataRaw)) :
+    Term.rename termRenaming (Term.codataDest codataValue) =
+      Term.rename termRenaming termB →
+      Term.codataDest codataValue = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm :
+          Term sourceCtx genericType (RawTerm.codataDest codataRaw)),
+        Σ' (inferredStateType : Ty level sourceScope),
+          Σ' (codataB :
+              Term sourceCtx (Ty.codata inferredStateType genericType)
+                codataRaw),
+            HEq genericTerm (Term.codataDest codataB) by
+    obtain ⟨inferredStateType, codataB, termHEqB⟩ := key termB
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ _ stateTypeRenameEq _ _ codataRenameHEq
+    have stateTypeEq : stateType = inferredStateType :=
+      Ty.rename_injective_under_injective_renaming stateType
+        rhoInjective inferredStateType stateTypeRenameEq
+    cases stateTypeEq
+    exact congrArg Term.codataDest
+      (codataIH termRenaming rhoInjective codataB
+        (eq_of_heq codataRenameHEq))
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredStateType codataTerm
+  exact ⟨inferredStateType, codataTerm, HEq.rfl⟩
+
+/-- `refineElim` arm: refinement-type elimination.  `baseType` aligns with
+    `genericType`; raw `predicate` recovered as a RawTerm existential via
+    `RawTerm.rename_injective_under_injective_renaming` under `rho.lift`
+    (predicate lives at `scope + 1`). -/
+theorem Term.rename_injective_arm_refineElim
+    (rhoInjective : RawRenamingInjective rho)
+    {baseType : Ty level sourceScope}
+    {predicate : RawTerm (sourceScope + 1)}
+    {refinedRaw : RawTerm sourceScope}
+    (refinedValue :
+      Term sourceCtx (Ty.refine baseType predicate) refinedRaw)
+    (refinedIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (refinedB :
+            Term sourceCtx (Ty.refine baseType predicate) refinedRaw),
+          Term.rename innerRenaming refinedValue =
+            Term.rename innerRenaming refinedB →
+          refinedValue = refinedB)
+    (termB :
+      Term sourceCtx baseType (RawTerm.refineElim refinedRaw)) :
+    Term.rename termRenaming (Term.refineElim refinedValue) =
+      Term.rename termRenaming termB →
+      Term.refineElim refinedValue = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm :
+          Term sourceCtx genericType (RawTerm.refineElim refinedRaw)),
+        Σ' (inferredPredicate : RawTerm (sourceScope + 1)),
+          Σ' (refinedB :
+              Term sourceCtx (Ty.refine genericType inferredPredicate)
+                refinedRaw),
+            HEq genericTerm (Term.refineElim refinedB) by
+    obtain ⟨inferredPredicate, refinedB, termHEqB⟩ := key termB
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ predicateRenameEq _ refinedRenameHEq
+    have predicateEq : predicate = inferredPredicate :=
+      RawTerm.rename_injective_under_injective_renaming predicate
+        (RawRenamingInjective.lift rhoInjective) inferredPredicate
+        predicateRenameEq
+    cases predicateEq
+    exact congrArg Term.refineElim
+      (refinedIH termRenaming rhoInjective refinedB
+        (eq_of_heq refinedRenameHEq))
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredPredicate refinedTerm
+  exact ⟨inferredPredicate, refinedTerm, HEq.rfl⟩
+
 /-! ## Closed-ctor arms (one-liners reusing existing standalone helpers)
 
 For closed constructors (no child terms, just `Term.<ctor>` at a fixed type),
