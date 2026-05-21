@@ -206,6 +206,13 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.interval0_ne_natZero
 #assert_no_axioms LeanFX2.Conv.interval0_ne_listNil
 #assert_no_axioms LeanFX2.Conv.interval0_ne_optionNone
+#assert_no_axioms LeanFX2.Conv.interval0_ne_natSucc
+#assert_no_axioms LeanFX2.Conv.interval0_ne_optionSome
+#assert_no_axioms LeanFX2.Conv.interval0_ne_eitherInl
+#assert_no_axioms LeanFX2.Conv.interval0_ne_eitherInr
+#assert_no_axioms LeanFX2.Conv.interval0_ne_listCons
+#assert_no_axioms LeanFX2.Conv.interval0_ne_pair
+#assert_no_axioms LeanFX2.Conv.interval0_ne_refl
 #assert_no_axioms LeanFX2.Conv.transChains_renamed
 #assert_no_axioms LeanFX2.Conv.transChains_weakened
 #assert_no_axioms LeanFX2.Conv.transChains_substituted
