@@ -79,6 +79,68 @@ theorem pathLam_targetRaw_inv_congr
       RawStep.parStar bodyRawSource bodyRawTarget :=
   RawStep.parStar.pathLam_inv (Step.parStar.toRawBridge parallelChain)
 
+/-- Known-target raw-body inversion for a multi-step chain between
+non-dependent lambdas. -/
+theorem lam_bodyRaw_inv_congr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {bodyRawSource bodyRawTarget : RawTerm (scope + 1)}
+    {bodySource :
+      Term (context.cons domainType) codomainType.weaken bodyRawSource}
+    {bodyTarget :
+      Term (context.cons domainType) codomainType.weaken bodyRawTarget}
+    (parallelChain :
+      Step.parStar
+        (Term.lam (codomainType := codomainType) bodySource)
+        (Term.lam (codomainType := codomainType) bodyTarget)) :
+    RawStep.parStar bodyRawSource bodyRawTarget := by
+  obtain ⟨bodyRawTarget', targetEq, bodyChain⟩ :=
+    Step.parStar.lam_targetRaw_inv_congr parallelChain
+  cases targetEq
+  exact bodyChain
+
+/-- Known-target raw-body inversion for a multi-step chain between
+dependent lambdas. -/
+theorem lamPi_bodyRaw_inv_congr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
+    {bodyRawSource bodyRawTarget : RawTerm (scope + 1)}
+    {bodySource : Term (context.cons domainType) codomainType bodyRawSource}
+    {bodyTarget : Term (context.cons domainType) codomainType bodyRawTarget}
+    (parallelChain :
+      Step.parStar (Term.lamPi (domainType := domainType) bodySource)
+        (Term.lamPi (domainType := domainType) bodyTarget)) :
+    RawStep.parStar bodyRawSource bodyRawTarget := by
+  obtain ⟨bodyRawTarget', targetEq, bodyChain⟩ :=
+    Step.parStar.lamPi_targetRaw_inv_congr parallelChain
+  cases targetEq
+  exact bodyChain
+
+/-- Known-target raw-body inversion for a multi-step chain between
+path lambdas. -/
+theorem pathLam_bodyRaw_inv_congr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (carrierType : Ty level scope)
+    (leftEndpoint rightEndpoint : RawTerm scope)
+    {bodyRawSource bodyRawTarget : RawTerm (scope + 1)}
+    {bodySource :
+      Term (context.cons Ty.interval) carrierType.weaken bodyRawSource}
+    {bodyTarget :
+      Term (context.cons Ty.interval) carrierType.weaken bodyRawTarget}
+    (parallelChain :
+      Step.parStar
+        (Term.pathLam modeIsUnivalent carrierType leftEndpoint
+          rightEndpoint bodySource)
+        (Term.pathLam modeIsUnivalent carrierType leftEndpoint
+          rightEndpoint bodyTarget)) :
+    RawStep.parStar bodyRawSource bodyRawTarget := by
+  obtain ⟨bodyRawTarget', targetEq, bodyChain⟩ :=
+    Step.parStar.pathLam_targetRaw_inv_congr modeIsUnivalent carrierType
+      leftEndpoint rightEndpoint parallelChain
+  cases targetEq
+  exact bodyChain
+
 end Step.parStar
 
 namespace StepStar
@@ -142,6 +204,56 @@ theorem pathLam_targetRaw_inv_congr
       targetRaw = RawTerm.pathLam bodyRawTarget ∧
       RawStep.parStar bodyRawSource bodyRawTarget :=
   Step.parStar.pathLam_targetRaw_inv_congr modeIsUnivalent carrierType
+    leftEndpoint rightEndpoint chain.toParStar
+
+/-- `StepStar` known-target raw-body inversion for non-dependent lambdas. -/
+theorem lam_bodyRaw_inv_congr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {bodyRawSource bodyRawTarget : RawTerm (scope + 1)}
+    {bodySource :
+      Term (context.cons domainType) codomainType.weaken bodyRawSource}
+    {bodyTarget :
+      Term (context.cons domainType) codomainType.weaken bodyRawTarget}
+    (chain :
+      StepStar
+        (Term.lam (codomainType := codomainType) bodySource)
+        (Term.lam (codomainType := codomainType) bodyTarget)) :
+    RawStep.parStar bodyRawSource bodyRawTarget :=
+  Step.parStar.lam_bodyRaw_inv_congr chain.toParStar
+
+/-- `StepStar` known-target raw-body inversion for dependent lambdas. -/
+theorem lamPi_bodyRaw_inv_congr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
+    {bodyRawSource bodyRawTarget : RawTerm (scope + 1)}
+    {bodySource : Term (context.cons domainType) codomainType bodyRawSource}
+    {bodyTarget : Term (context.cons domainType) codomainType bodyRawTarget}
+    (chain :
+      StepStar (Term.lamPi (domainType := domainType) bodySource)
+        (Term.lamPi (domainType := domainType) bodyTarget)) :
+    RawStep.parStar bodyRawSource bodyRawTarget :=
+  Step.parStar.lamPi_bodyRaw_inv_congr chain.toParStar
+
+/-- `StepStar` known-target raw-body inversion for path lambdas. -/
+theorem pathLam_bodyRaw_inv_congr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (carrierType : Ty level scope)
+    (leftEndpoint rightEndpoint : RawTerm scope)
+    {bodyRawSource bodyRawTarget : RawTerm (scope + 1)}
+    {bodySource :
+      Term (context.cons Ty.interval) carrierType.weaken bodyRawSource}
+    {bodyTarget :
+      Term (context.cons Ty.interval) carrierType.weaken bodyRawTarget}
+    (chain :
+      StepStar
+        (Term.pathLam modeIsUnivalent carrierType leftEndpoint
+          rightEndpoint bodySource)
+        (Term.pathLam modeIsUnivalent carrierType leftEndpoint
+          rightEndpoint bodyTarget)) :
+    RawStep.parStar bodyRawSource bodyRawTarget :=
+  Step.parStar.pathLam_bodyRaw_inv_congr modeIsUnivalent carrierType
     leftEndpoint rightEndpoint chain.toParStar
 
 end StepStar
@@ -333,6 +445,90 @@ theorem pathLam_right_commonRaw_inv_congr
       leftEndpoint rightEndpoint rightChain
   exact ⟨commonType, commonRaw, commonTerm, bodyRawCommon, commonRawEq,
     leftChain, rightChain, bodyChain⟩
+
+/-- Raw body common-reduct corollary for convertible non-dependent
+lambdas. -/
+theorem lam_bodyRaw_common_join
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {leftBodyRaw rightBodyRaw : RawTerm (scope + 1)}
+    {leftBody :
+      Term (context.cons domainType) codomainType.weaken leftBodyRaw}
+    {rightBody :
+      Term (context.cons domainType) codomainType.weaken rightBodyRaw}
+    (convertibility :
+      Conv
+        (Term.lam (codomainType := codomainType) leftBody)
+        (Term.lam (codomainType := codomainType) rightBody)) :
+    ∃ commonBodyRaw,
+      RawStep.parStar leftBodyRaw commonBodyRaw ∧
+      RawStep.parStar rightBodyRaw commonBodyRaw := by
+  obtain ⟨commonType, commonRaw, commonTerm, leftChain, rightChain⟩ :=
+    convertibility
+  obtain ⟨leftCommonBodyRaw, leftRawEq, leftBodyChain⟩ :=
+    StepStar.lam_targetRaw_inv_congr leftChain
+  obtain ⟨rightCommonBodyRaw, rightRawEq, rightBodyChain⟩ :=
+    StepStar.lam_targetRaw_inv_congr rightChain
+  cases leftRawEq
+  cases rightRawEq
+  exact ⟨leftCommonBodyRaw, leftBodyChain, rightBodyChain⟩
+
+/-- Raw body common-reduct corollary for convertible dependent
+lambdas. -/
+theorem lamPi_bodyRaw_common_join
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
+    {leftBodyRaw rightBodyRaw : RawTerm (scope + 1)}
+    {leftBody : Term (context.cons domainType) codomainType leftBodyRaw}
+    {rightBody : Term (context.cons domainType) codomainType rightBodyRaw}
+    (convertibility :
+      Conv
+        (Term.lamPi (domainType := domainType) leftBody)
+        (Term.lamPi (domainType := domainType) rightBody)) :
+    ∃ commonBodyRaw,
+      RawStep.parStar leftBodyRaw commonBodyRaw ∧
+      RawStep.parStar rightBodyRaw commonBodyRaw := by
+  obtain ⟨commonType, commonRaw, commonTerm, leftChain, rightChain⟩ :=
+    convertibility
+  obtain ⟨leftCommonBodyRaw, leftRawEq, leftBodyChain⟩ :=
+    StepStar.lamPi_targetRaw_inv_congr leftChain
+  obtain ⟨rightCommonBodyRaw, rightRawEq, rightBodyChain⟩ :=
+    StepStar.lamPi_targetRaw_inv_congr rightChain
+  cases leftRawEq
+  cases rightRawEq
+  exact ⟨leftCommonBodyRaw, leftBodyChain, rightBodyChain⟩
+
+/-- Raw body common-reduct corollary for convertible path lambdas. -/
+theorem pathLam_bodyRaw_common_join
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (carrierType : Ty level scope)
+    (leftEndpoint rightEndpoint : RawTerm scope)
+    {leftBodyRaw rightBodyRaw : RawTerm (scope + 1)}
+    {leftBody :
+      Term (context.cons Ty.interval) carrierType.weaken leftBodyRaw}
+    {rightBody :
+      Term (context.cons Ty.interval) carrierType.weaken rightBodyRaw}
+    (convertibility :
+      Conv
+        (Term.pathLam modeIsUnivalent carrierType leftEndpoint
+          rightEndpoint leftBody)
+        (Term.pathLam modeIsUnivalent carrierType leftEndpoint
+          rightEndpoint rightBody)) :
+    ∃ commonBodyRaw,
+      RawStep.parStar leftBodyRaw commonBodyRaw ∧
+      RawStep.parStar rightBodyRaw commonBodyRaw := by
+  obtain ⟨commonType, commonRaw, commonTerm, leftChain, rightChain⟩ :=
+    convertibility
+  obtain ⟨leftCommonBodyRaw, leftRawEq, leftBodyChain⟩ :=
+    StepStar.pathLam_targetRaw_inv_congr modeIsUnivalent carrierType
+      leftEndpoint rightEndpoint leftChain
+  obtain ⟨rightCommonBodyRaw, rightRawEq, rightBodyChain⟩ :=
+    StepStar.pathLam_targetRaw_inv_congr modeIsUnivalent carrierType
+      leftEndpoint rightEndpoint rightChain
+  cases leftRawEq
+  cases rightRawEq
+  exact ⟨leftCommonBodyRaw, leftBodyChain, rightBodyChain⟩
 
 end Conv
 

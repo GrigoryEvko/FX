@@ -735,6 +735,9 @@ shapes: 5 in CubicalShape. -/
 #assert_no_axioms LeanFX2.Step.parStar.lam_targetRaw_inv_congr
 #assert_no_axioms LeanFX2.Step.parStar.lamPi_targetRaw_inv_congr
 #assert_no_axioms LeanFX2.Step.parStar.pathLam_targetRaw_inv_congr
+#assert_no_axioms LeanFX2.Step.parStar.lam_bodyRaw_inv_congr
+#assert_no_axioms LeanFX2.Step.parStar.lamPi_bodyRaw_inv_congr
+#assert_no_axioms LeanFX2.Step.parStar.pathLam_bodyRaw_inv_congr
 #assert_no_axioms LeanFX2.StepStar.rename_toRawBridge
 #assert_no_axioms LeanFX2.StepStar.renamed_source_targetRaw_in_rename_image
 #assert_no_axioms LeanFX2.StepStar.weakened_source_targetRaw_in_weaken_image
@@ -743,6 +746,9 @@ shapes: 5 in CubicalShape. -/
 #assert_no_axioms LeanFX2.StepStar.lam_targetRaw_inv_congr
 #assert_no_axioms LeanFX2.StepStar.lamPi_targetRaw_inv_congr
 #assert_no_axioms LeanFX2.StepStar.pathLam_targetRaw_inv_congr
+#assert_no_axioms LeanFX2.StepStar.lam_bodyRaw_inv_congr
+#assert_no_axioms LeanFX2.StepStar.lamPi_bodyRaw_inv_congr
+#assert_no_axioms LeanFX2.StepStar.pathLam_bodyRaw_inv_congr
 #assert_no_axioms LeanFX2.Conv.rename_toRawJoin
 #assert_no_axioms LeanFX2.Conv.weaken_toRawJoin
 #assert_no_axioms LeanFX2.Conv.lam_left_commonRaw_inv_congr
@@ -751,6 +757,9 @@ shapes: 5 in CubicalShape. -/
 #assert_no_axioms LeanFX2.Conv.lam_right_commonRaw_inv_congr
 #assert_no_axioms LeanFX2.Conv.lamPi_right_commonRaw_inv_congr
 #assert_no_axioms LeanFX2.Conv.pathLam_right_commonRaw_inv_congr
+#assert_no_axioms LeanFX2.Conv.lam_bodyRaw_common_join
+#assert_no_axioms LeanFX2.Conv.lamPi_bodyRaw_common_join
+#assert_no_axioms LeanFX2.Conv.pathLam_bodyRaw_common_join
 #assert_no_axioms LeanFX2.Conv.renamed_left_commonRaw_in_rename_image
 #assert_no_axioms LeanFX2.Conv.weakened_left_commonRaw_in_weaken_image
 #assert_no_axioms LeanFX2.Conv.left_commonRaw_in_rename_image_of_sourceRaw_eq
