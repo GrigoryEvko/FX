@@ -2127,4 +2127,142 @@ theorem Conv.optionNone_ne_eitherInr
     RawStep.parStar.eitherInr_inv targetToJoin
   nomatch joinEqNone.symm.trans joinEqEitherInr
 
+/-! ## Compound-vs-compound disjointness
+
+The 6 unordered pairs over the 4 unary canonical compound heads
+`{natSucc, optionSome, eitherInl, eitherInr}` — distinct
+compound heads at the two Conv ends cannot share a join.  Both
+sides require the ∃-tuple `obtain` from compound `*_inv` lemmas;
+the distinct outer ctors then discharge via `nomatch`.
+
+Most load-bearing entry is `Conv.eitherInl_ne_eitherInr` — used
+by K12 fundamental theorem's `eitherMatch` case to rule out the
+Left/Right ambiguity on a canonical Either scrutinee (parallel
+to optionMatch's None/Some shipped in iter 34).  Together with
+the leaf-vs-compound grid (iters 33-35), this completes the
+unary-canonical disjointness matrix: 24 leaf×compound + 6
+compound×compound = 30 pairs total. -/
+
+/-- A `natSucc`-headed source and an `optionSome`-headed target
+are not convertible. -/
+theorem Conv.natSucc_ne_optionSome
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {predecessor valueTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.natSucc predecessor : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.optionSome valueTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqNatSucc, _⟩ :=
+    RawStep.parStar.natSucc_inv sourceToJoin
+  obtain ⟨_, joinEqOptionSome, _⟩ :=
+    RawStep.parStar.optionSome_inv targetToJoin
+  nomatch joinEqNatSucc.symm.trans joinEqOptionSome
+
+/-- A `natSucc`-headed source and an `eitherInl`-headed target
+are not convertible. -/
+theorem Conv.natSucc_ne_eitherInl
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {predecessor valueTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.natSucc predecessor : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.eitherInl valueTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqNatSucc, _⟩ :=
+    RawStep.parStar.natSucc_inv sourceToJoin
+  obtain ⟨_, joinEqEitherInl, _⟩ :=
+    RawStep.parStar.eitherInl_inv targetToJoin
+  nomatch joinEqNatSucc.symm.trans joinEqEitherInl
+
+/-- A `natSucc`-headed source and an `eitherInr`-headed target
+are not convertible. -/
+theorem Conv.natSucc_ne_eitherInr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {predecessor valueTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.natSucc predecessor : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.eitherInr valueTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqNatSucc, _⟩ :=
+    RawStep.parStar.natSucc_inv sourceToJoin
+  obtain ⟨_, joinEqEitherInr, _⟩ :=
+    RawStep.parStar.eitherInr_inv targetToJoin
+  nomatch joinEqNatSucc.symm.trans joinEqEitherInr
+
+/-- An `optionSome`-headed source and an `eitherInl`-headed
+target are not convertible. -/
+theorem Conv.optionSome_ne_eitherInl
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {valueTermSrc valueTermTgt : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.optionSome valueTermSrc : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.eitherInl valueTermTgt : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOptionSome, _⟩ :=
+    RawStep.parStar.optionSome_inv sourceToJoin
+  obtain ⟨_, joinEqEitherInl, _⟩ :=
+    RawStep.parStar.eitherInl_inv targetToJoin
+  nomatch joinEqOptionSome.symm.trans joinEqEitherInl
+
+/-- An `optionSome`-headed source and an `eitherInr`-headed
+target are not convertible. -/
+theorem Conv.optionSome_ne_eitherInr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {valueTermSrc valueTermTgt : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.optionSome valueTermSrc : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.eitherInr valueTermTgt : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOptionSome, _⟩ :=
+    RawStep.parStar.optionSome_inv sourceToJoin
+  obtain ⟨_, joinEqEitherInr, _⟩ :=
+    RawStep.parStar.eitherInr_inv targetToJoin
+  nomatch joinEqOptionSome.symm.trans joinEqEitherInr
+
+/-- An `eitherInl`-headed source and an `eitherInr`-headed target
+are not convertible.  LOAD-BEARING for K12 fundamental theorem's
+`eitherMatch` case — the ι-firing dispatch on a canonical Either
+scrutinee uses this to rule out the Left/Right ambiguity. -/
+theorem Conv.eitherInl_ne_eitherInr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {valueTermSrc valueTermTgt : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherInl valueTermSrc : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.eitherInr valueTermTgt : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqEitherInl, _⟩ :=
+    RawStep.parStar.eitherInl_inv sourceToJoin
+  obtain ⟨_, joinEqEitherInr, _⟩ :=
+    RawStep.parStar.eitherInr_inv targetToJoin
+  nomatch joinEqEitherInl.symm.trans joinEqEitherInr
+
 end LeanFX2
