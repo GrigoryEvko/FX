@@ -266,6 +266,133 @@ theorem eta_refine_shape_recognize_elim
   cases proofProjectionHEq
   rfl
 
+/-- Codata eta constructor for the current unfold/dest typed core.
+
+The present core has `codataUnfold` and `codataDest`, but no typed
+projection that recovers an unfold state and transition from an
+arbitrary codata value.  The honest recognizer therefore works at the
+intro payload boundary: once callers have identified the state and
+transition payloads, the eta-shaped codata value is canonical. -/
+def eta_codata_shape_construct
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {stateType outputType : Ty level scope}
+    {stateRaw transitionRaw : RawTerm scope}
+    (initialState : Term context stateType stateRaw)
+    (transition : Term context (Ty.arrow stateType outputType) transitionRaw) :
+    Term context (Ty.codata stateType outputType)
+      (RawTerm.codataUnfold stateRaw transitionRaw) :=
+  Term.codataUnfold initialState transition
+
+/-- Recognize the concrete codata eta intro arm once both unfold
+payloads have been identified. -/
+theorem eta_codata_shape_recognize_unfold
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {stateType outputType : Ty level scope}
+    {stateRaw transitionRaw : RawTerm scope}
+    (initialState : Term context stateType stateRaw)
+    (transition : Term context (Ty.arrow stateType outputType) transitionRaw)
+    (observedState : Term context stateType stateRaw)
+    (observedTransition :
+      Term context (Ty.arrow stateType outputType) transitionRaw)
+    (stateHEq : HEq observedState initialState)
+    (transitionHEq : HEq observedTransition transition) :
+    HEq (Term.codataUnfold observedState observedTransition)
+        (Term.eta_codata_shape_construct initialState transition) := by
+  cases stateHEq
+  cases transitionHEq
+  rfl
+
+/-- Equivalence eta constructor for the current `equivIntroHet`
+typed core.
+
+The equivalence introduction carries computational forward/backward
+maps plus proof payloads.  There is currently no inverse-projection
+term constructor, so the recognizer is payload-explicit just like the
+refinement recognizer above. -/
+def eta_equiv_shape_construct
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierA carrierB : Ty level scope}
+    {forwardRaw backwardRaw leftInvRaw rightInvRaw : RawTerm scope}
+    (forward : Term context (Ty.arrow carrierA carrierB) forwardRaw)
+    (backward : Term context (Ty.arrow carrierB carrierA) backwardRaw)
+    (leftInv :
+      Term context
+        (equivIntroHetLeftInverseType carrierA forwardRaw backwardRaw)
+        leftInvRaw)
+    (rightInv :
+      Term context
+        (equivIntroHetRightInverseType carrierB forwardRaw backwardRaw)
+        rightInvRaw) :
+    Term context (Ty.equiv carrierA carrierB)
+      (RawTerm.equivIntro forwardRaw backwardRaw) :=
+  Term.equivIntroHet forward backward leftInv rightInv
+
+/-- Recognize the concrete equivalence eta intro arm once all explicit
+payloads have been identified. -/
+theorem eta_equiv_shape_recognize_intro
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierA carrierB : Ty level scope}
+    {forwardRaw backwardRaw leftInvRaw rightInvRaw : RawTerm scope}
+    (forward : Term context (Ty.arrow carrierA carrierB) forwardRaw)
+    (backward : Term context (Ty.arrow carrierB carrierA) backwardRaw)
+    (leftInv :
+      Term context
+        (equivIntroHetLeftInverseType carrierA forwardRaw backwardRaw)
+        leftInvRaw)
+    (rightInv :
+      Term context
+        (equivIntroHetRightInverseType carrierB forwardRaw backwardRaw)
+        rightInvRaw)
+    (observedForward : Term context (Ty.arrow carrierA carrierB) forwardRaw)
+    (observedBackward : Term context (Ty.arrow carrierB carrierA) backwardRaw)
+    (observedLeftInv :
+      Term context
+        (equivIntroHetLeftInverseType carrierA forwardRaw backwardRaw)
+        leftInvRaw)
+    (observedRightInv :
+      Term context
+        (equivIntroHetRightInverseType carrierB forwardRaw backwardRaw)
+        rightInvRaw)
+    (forwardHEq : HEq observedForward forward)
+    (backwardHEq : HEq observedBackward backward)
+    (leftInvHEq : HEq observedLeftInv leftInv)
+    (rightInvHEq : HEq observedRightInv rightInv) :
+    HEq
+      (Term.equivIntroHet observedForward observedBackward
+        observedLeftInv observedRightInv)
+      (Term.eta_equiv_shape_construct forward backward leftInv rightInv) := by
+  cases forwardHEq
+  cases backwardHEq
+  cases leftInvHEq
+  cases rightInvHEq
+  rfl
+
+/-- Unit eta constructor. -/
+def eta_unit_shape_construct
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} :
+    Term context Ty.unit RawTerm.unit :=
+  Term.unit
+
+/-- Recognize the unique typed unit eta shape. -/
+theorem eta_unit_shape_recognize
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (unitValue : Term context Ty.unit RawTerm.unit) :
+    HEq unitValue (Term.eta_unit_shape_construct (context := context)) := by
+  suffices key :
+      ∀ {genericType : Ty level scope}
+        (genericTerm : Term context genericType RawTerm.unit),
+        HEq genericTerm (Term.eta_unit_shape_construct (context := context)) by
+    exact key unitValue
+  intro genericType genericTerm
+  cases genericTerm
+  rfl
+
 /-- Recognize the concrete path eta application arm.
 
 If a path application under an interval binder has path side in the
