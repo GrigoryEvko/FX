@@ -1198,6 +1198,110 @@ theorem Term.rename_injective_arm_idStrictRec
   exact ⟨inferredModeIsStrict, inferredCarrier, inferredLeft, inferredRight,
     baseTerm, witnessTerm, HEq.rfl⟩
 
+/-- `oeqFunext` arm: observational-funext intro with explicit domain/codomain
+    type fields plus left/right function raws.  Pointwise proof is at
+    `oeqFunextPointwiseType ...` which carries a `Ty.weaken`-style cast on
+    rename.  Result type is `Ty.oeq (Ty.arrow domain codomain) leftFn rightFn`
+    — structurally injective, so suffices+free-genericType+cases works. -/
+theorem Term.rename_injective_arm_oeqFunext
+    (rhoInjective : RawRenamingInjective rho)
+    (domainType codomainType : Ty level sourceScope)
+    (leftFunctionRaw rightFunctionRaw : RawTerm sourceScope)
+    {pointwiseRaw : RawTerm sourceScope}
+    (pointwiseProof :
+      Term sourceCtx
+        (oeqFunextPointwiseType domainType codomainType
+          leftFunctionRaw rightFunctionRaw)
+        pointwiseRaw)
+    (pointwiseIH :
+      ∀ {innerTargetScope : Nat}
+        {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (pointwiseB :
+            Term sourceCtx
+              (oeqFunextPointwiseType domainType codomainType
+                leftFunctionRaw rightFunctionRaw)
+              pointwiseRaw),
+          Term.rename innerRenaming pointwiseProof =
+            Term.rename innerRenaming pointwiseB →
+          pointwiseProof = pointwiseB)
+    (termB :
+      Term sourceCtx
+        (Ty.oeq (Ty.arrow domainType codomainType)
+          leftFunctionRaw rightFunctionRaw)
+        (RawTerm.oeqFunext pointwiseRaw)) :
+    Term.rename termRenaming
+        (Term.oeqFunext domainType codomainType leftFunctionRaw
+          rightFunctionRaw pointwiseProof) =
+      Term.rename termRenaming termB →
+      Term.oeqFunext domainType codomainType leftFunctionRaw
+        rightFunctionRaw pointwiseProof = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.oeqFunext pointwiseRaw)),
+        Σ' (inferredDomain : Ty level sourceScope),
+          Σ' (inferredCodomain : Ty level sourceScope),
+            Σ' (inferredLeftFn : RawTerm sourceScope),
+              Σ' (inferredRightFn : RawTerm sourceScope),
+                Σ' (pointwiseB :
+                    Term sourceCtx
+                      (oeqFunextPointwiseType inferredDomain inferredCodomain
+                        inferredLeftFn inferredRightFn)
+                      pointwiseRaw),
+                  Σ' (_ : genericType =
+                      Ty.oeq (Ty.arrow inferredDomain inferredCodomain)
+                        inferredLeftFn inferredRightFn),
+                    HEq genericTerm
+                      (Term.oeqFunext inferredDomain inferredCodomain
+                        inferredLeftFn inferredRightFn pointwiseB) by
+    obtain ⟨_, _, _, _, pointwiseB, typeEq, termHEqB⟩ := key termB
+    cases typeEq
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ _ _ _ pointwiseRenameHEq
+    have pointwiseRenameUncastHEq :
+        HEq (Term.rename termRenaming pointwiseProof)
+            (Term.rename termRenaming pointwiseB) :=
+      HEq.trans
+        (HEq.symm
+          (termRenameInjectiveCastHEq
+            (oeqFunextPointwiseType_rename rho domainType codomainType
+              leftFunctionRaw rightFunctionRaw)
+            (Term.rename termRenaming pointwiseProof)))
+        (HEq.trans (heq_of_eq pointwiseRenameHEq)
+          (termRenameInjectiveCastHEq
+            (oeqFunextPointwiseType_rename rho domainType codomainType
+              leftFunctionRaw rightFunctionRaw)
+            (Term.rename termRenaming pointwiseB)))
+    rw [pointwiseIH termRenaming rhoInjective pointwiseB
+          (eq_of_heq pointwiseRenameUncastHEq)]
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredDomain inferredCodomain inferredLeftFn inferredRightFn
+    pointwiseTerm
+  exact ⟨inferredDomain, inferredCodomain, inferredLeftFn, inferredRightFn,
+    pointwiseTerm, rfl, HEq.rfl⟩
+
+-- NOTE: arm_universeCode is structurally blocked by the toNat
+-- non-injectivity wall (see `Foundation/Universe.lean:toNat_not_injective`).
+-- `RawTerm.universeCode innerLevel.toNat` forgets the universe expression
+-- structure: `UniverseLevel.max 0 0` and `UniverseLevel.imax 0 0` both
+-- produce the same Nat height but are distinct constructors.  Even though
+-- Term.rename is the identity on universeCode (rename doesn't see innerLevel),
+-- `cases genericTerm` for a typed term whose raw is
+-- `RawTerm.universeCode innerLevel.toNat` cannot pin innerLevel uniquely.
+-- The induction-on-termA driver's IH does not encode an "innerLevel was
+-- recovered" witness, so the arm cannot close.  Deferred to a future
+-- session that ships a UniverseLevel-aware raw-inversion helper.
+--
+-- The Lean error message:
+--   "Dependent elimination failed: Failed to solve equation
+--    innerLevel.toNat = innerLevel✝.toNat"
+
 /-! ## Cubical-glue intro arm.
 
 `glueIntro` packages a base value + partial value at a shared baseType
