@@ -193,4 +193,46 @@ theorem Conv.transRaw
     RawStep.parStar.append sourceToFirstJoin firstJoinToCommon,
     RawStep.parStar.append farToSecondJoin secondJoinToCommon⟩
 
+/-- **Raw-level rename equivariance** for typed Conv (T6 forward direction,
+raw output flavor).
+
+Given a typed `Conv sourceTerm targetTerm` and a raw renaming `rho`, the raw
+projections of source and target — under `rho` — still admit a common raw
+reduct.  Pipeline:
+
+1. Project the typed Conv to a raw join via `Conv.canonicalRaw`.
+2. Apply `RawStep.parStar.rename_compatible` to each chain so both sides land
+   at `joinRaw.rename rho`.
+3. Package the result as the new raw join.
+
+This is the analog of `Conv.transRaw` but for renaming instead of
+transitivity.  A full typed `Conv (Term.rename ...) (Term.rename ...)` lift
+requires either:
+
+* context-changing `StepStar.mapStep` infrastructure (single-step typed Step
+  rename equivariance per ctor, ~75 cases), or
+* subject reduction to lift the raw join back to a typed common reduct.
+
+Both are Phase 7 work.  Until then, the raw form is what consumers actually
+need: typed convertibility under renaming is preserved by typing
+(elaboration-time invariant), so once renamed source and target raws agree
+at the raw level their typed renamings are convertible by construction. -/
+theorem Conv.renameRaw
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {sourceType targetType : Ty level sourceScope}
+    {sourceRaw targetRaw : RawTerm sourceScope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (rawRenaming : RawRenaming sourceScope targetScope)
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.rename rawRenaming) commonRaw ∧
+      RawStep.parStar (targetRaw.rename rawRenaming) commonRaw := by
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  exact ⟨joinRaw.rename rawRenaming,
+    RawStep.parStar.rename_compatible rawRenaming sourceToJoin,
+    RawStep.parStar.rename_compatible rawRenaming targetToJoin⟩
+
 end LeanFX2
