@@ -1,5 +1,5 @@
-import LeanFX2.Term.StrengtheningImage.AggregatorTotalBridgeCasts
 import LeanFX2.Term.PartialStrengthen.RenameImage.CastWrapped
+import LeanFX2.Term.PartialStrengthen.RenameImage.Atomic
 
 /-! # Term/StrengtheningImage/RenameImageAtomic
 

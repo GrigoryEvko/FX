@@ -1,4 +1,6 @@
 import LeanFX2.Term.StrengtheningImage.RenameImageCastAdvanced
+import LeanFX2.Term.PartialStrengthen.RenameImage.Cubical
+import LeanFX2.Term.PartialStrengthen.RenameImage.Effects
 
 /-! # Term/StrengtheningImage/RenameImageCubicalEffect
 

@@ -1,4 +1,5 @@
 import LeanFX2.Term.StrengtheningImage.RenameImageRecursive
+import LeanFX2.Term.PartialStrengthen.RenameImage.TypeCodes
 
 /-! # Term/StrengtheningImage/RenameImageTypeCodes
 

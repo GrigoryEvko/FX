@@ -1,4 +1,7 @@
 import LeanFX2.Term.StrengtheningImage.RenameImageTypeCodes
+import LeanFX2.Term.PartialStrengthen.RenameImage.CodataProjection
+import LeanFX2.Term.PartialStrengthen.RenameImage.Equivalence
+import LeanFX2.Term.PartialStrengthen.RenameImage.RefineSession
 
 /-! # Term/StrengtheningImage/RenameImageHoTTStructured
 
