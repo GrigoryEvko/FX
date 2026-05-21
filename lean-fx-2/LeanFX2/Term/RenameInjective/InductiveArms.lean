@@ -936,17 +936,267 @@ theorem Term.rename_injective_arm_lamPi
           baseCodomainB applyRawB rfl rfl
           (heq_of_eq renameEq))
 
--- NOTE: arm_snd / arm_boolElim / arm_appPi (and other cast-on-result ctors)
--- hit a fundamental dep-elim wall: `Ty.subst0` is not structurally injective,
--- so given `termB : Term ... (secondType.subst0 firstType ...) (RawTerm.snd pairRaw)`,
--- inverting termB to `Term.snd pairB` with pairB at `Ty.sigmaTy firstType secondType`
--- is blocked.  Existing `Term.snd_ctor` lemma assumes BOTH sides already at the
--- sigmaTy type.  The arm-helper shape (childA-fixed IH + termB-generic) needs
--- a deeper inversion infrastructure (or a different driver shape that cases on
--- both termA AND termB simultaneously) to handle these arms.  Deferring these
--- arms — they're tractable from the existing `*_ctor` helpers but need separate
--- inversion plumbing not yet in scope.  See InductiveArms.lean header for the
--- catalogue of arm patterns that DO ship cleanly via this driver.
+-- NOTE: arm_snd / arm_boolElim / arm_appPi / arm_glueElim (cast-on-result
+-- ctors) hit a fundamental dep-elim wall: `Ty.subst0` is not structurally
+-- injective, so given `termB : Term ... (secondType.subst0 firstType ...)
+-- (RawTerm.snd pairRaw)`, inverting termB to `Term.snd pairB` with pairB
+-- at `Ty.sigmaTy firstType secondType` is blocked.  Existing `Term.snd_ctor`
+-- lemma assumes BOTH sides already at the sigmaTy type.  The arm-helper
+-- shape (childA-fixed IH + termB-generic) needs a deeper inversion
+-- infrastructure (or a different driver shape that cases on both termA AND
+-- termB simultaneously) to handle these arms.  Deferring these arms — they
+-- ARE tractable from the existing `*_ctor` helpers but need separate
+-- inversion plumbing not yet in scope.  See InductiveArms.lean header for
+-- the catalogue of arm patterns that DO ship cleanly via this driver.
+
+/-! ## HoTT identity-eliminator arms (idJ / oeqJ / oeqFunext / idStrictRec).
+
+These J-family eliminators output at `motiveType` (no cast), with a single
+witness child at an `Ty.id carrier left right`-shaped existential carrier.
+The arm closes via suffices+free-genericType+cases-on-genericTerm, then
+aligns existentials via `Ty.rename_injective` (carrier) and
+`RawTerm.rename_injective` (left/right endpoints) before firing the
+witnessIH at the realigned types. -/
+
+/-- `idJ` arm: HoTT identity-eliminator at carrier-aligned witness type. -/
+theorem Term.rename_injective_arm_idJ
+    (rhoInjective : RawRenamingInjective rho)
+    {carrier : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {motiveType : Ty level sourceScope}
+    {baseRaw witnessRaw : RawTerm sourceScope}
+    (baseCase : Term sourceCtx motiveType baseRaw)
+    (witness :
+      Term sourceCtx (Ty.id carrier leftEndpoint rightEndpoint) witnessRaw)
+    (baseIH :
+      ∀ {innerTargetScope : Nat}
+        {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (baseB : Term sourceCtx motiveType baseRaw),
+          Term.rename innerRenaming baseCase =
+            Term.rename innerRenaming baseB →
+          baseCase = baseB)
+    (witnessIH :
+      ∀ {innerTargetScope : Nat}
+        {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (witnessB :
+            Term sourceCtx (Ty.id carrier leftEndpoint rightEndpoint)
+              witnessRaw),
+          Term.rename innerRenaming witness =
+            Term.rename innerRenaming witnessB →
+          witness = witnessB)
+    (termB :
+      Term sourceCtx motiveType (RawTerm.idJ baseRaw witnessRaw)) :
+    Term.rename termRenaming (Term.idJ baseCase witness) =
+      Term.rename termRenaming termB →
+      Term.idJ baseCase witness = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.idJ baseRaw witnessRaw)),
+        Σ' (inferredCarrier : Ty level sourceScope),
+          Σ' (inferredLeft : RawTerm sourceScope),
+            Σ' (inferredRight : RawTerm sourceScope),
+              Σ' (baseB : Term sourceCtx genericType baseRaw),
+                Σ' (witnessB :
+                    Term sourceCtx
+                      (Ty.id inferredCarrier inferredLeft inferredRight)
+                      witnessRaw),
+                  HEq genericTerm (Term.idJ baseB witnessB) by
+    obtain ⟨inferredCarrier, inferredLeft, inferredRight, baseB, witnessB,
+      termHEqB⟩ := key termB
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ _ carrierRenameEq leftRenameEq rightRenameEq
+      _ _ _ baseRenameEq witnessRenameHEq
+    have carrierEq : carrier = inferredCarrier :=
+      Ty.rename_injective_under_injective_renaming carrier
+        rhoInjective inferredCarrier carrierRenameEq
+    have leftEq : leftEndpoint = inferredLeft :=
+      RawTerm.rename_injective_under_injective_renaming leftEndpoint
+        rhoInjective inferredLeft leftRenameEq
+    have rightEq : rightEndpoint = inferredRight :=
+      RawTerm.rename_injective_under_injective_renaming rightEndpoint
+        rhoInjective inferredRight rightRenameEq
+    cases carrierEq
+    cases leftEq
+    cases rightEq
+    rw [baseIH termRenaming rhoInjective baseB baseRenameEq,
+        witnessIH termRenaming rhoInjective witnessB (eq_of_heq witnessRenameHEq)]
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredCarrier inferredLeft inferredRight baseTerm witnessTerm
+  exact ⟨inferredCarrier, inferredLeft, inferredRight, baseTerm, witnessTerm,
+    HEq.rfl⟩
+
+/-- `oeqJ` arm: observational equality eliminator (parallel to idJ). -/
+theorem Term.rename_injective_arm_oeqJ
+    (rhoInjective : RawRenamingInjective rho)
+    {carrier : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {motiveType : Ty level sourceScope}
+    {baseRaw witnessRaw : RawTerm sourceScope}
+    (baseCase : Term sourceCtx motiveType baseRaw)
+    (witness :
+      Term sourceCtx (Ty.oeq carrier leftEndpoint rightEndpoint) witnessRaw)
+    (baseIH :
+      ∀ {innerTargetScope : Nat}
+        {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (baseB : Term sourceCtx motiveType baseRaw),
+          Term.rename innerRenaming baseCase =
+            Term.rename innerRenaming baseB →
+          baseCase = baseB)
+    (witnessIH :
+      ∀ {innerTargetScope : Nat}
+        {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (witnessB :
+            Term sourceCtx (Ty.oeq carrier leftEndpoint rightEndpoint)
+              witnessRaw),
+          Term.rename innerRenaming witness =
+            Term.rename innerRenaming witnessB →
+          witness = witnessB)
+    (termB :
+      Term sourceCtx motiveType (RawTerm.oeqJ baseRaw witnessRaw)) :
+    Term.rename termRenaming (Term.oeqJ baseCase witness) =
+      Term.rename termRenaming termB →
+      Term.oeqJ baseCase witness = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.oeqJ baseRaw witnessRaw)),
+        Σ' (inferredCarrier : Ty level sourceScope),
+          Σ' (inferredLeft : RawTerm sourceScope),
+            Σ' (inferredRight : RawTerm sourceScope),
+              Σ' (baseB : Term sourceCtx genericType baseRaw),
+                Σ' (witnessB :
+                    Term sourceCtx
+                      (Ty.oeq inferredCarrier inferredLeft inferredRight)
+                      witnessRaw),
+                  HEq genericTerm (Term.oeqJ baseB witnessB) by
+    obtain ⟨inferredCarrier, inferredLeft, inferredRight, baseB, witnessB,
+      termHEqB⟩ := key termB
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ _ carrierRenameEq leftRenameEq rightRenameEq
+      _ _ _ baseRenameEq witnessRenameHEq
+    have carrierEq : carrier = inferredCarrier :=
+      Ty.rename_injective_under_injective_renaming carrier
+        rhoInjective inferredCarrier carrierRenameEq
+    have leftEq : leftEndpoint = inferredLeft :=
+      RawTerm.rename_injective_under_injective_renaming leftEndpoint
+        rhoInjective inferredLeft leftRenameEq
+    have rightEq : rightEndpoint = inferredRight :=
+      RawTerm.rename_injective_under_injective_renaming rightEndpoint
+        rhoInjective inferredRight rightRenameEq
+    cases carrierEq
+    cases leftEq
+    cases rightEq
+    rw [baseIH termRenaming rhoInjective baseB baseRenameEq,
+        witnessIH termRenaming rhoInjective witnessB
+          (eq_of_heq witnessRenameHEq)]
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredCarrier inferredLeft inferredRight baseTerm witnessTerm
+  exact ⟨inferredCarrier, inferredLeft, inferredRight, baseTerm, witnessTerm,
+    HEq.rfl⟩
+
+/-- `idStrictRec` arm: strict-identity recursor.  Has additional
+    `modeIsStrict : mode = Mode.strict` Prop equation. -/
+theorem Term.rename_injective_arm_idStrictRec
+    (rhoInjective : RawRenamingInjective rho)
+    (modeIsStrict : mode = Mode.strict)
+    {carrier : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {motiveType : Ty level sourceScope}
+    {baseRaw witnessRaw : RawTerm sourceScope}
+    (baseCase : Term sourceCtx motiveType baseRaw)
+    (witness :
+      Term sourceCtx (Ty.idStrict carrier leftEndpoint rightEndpoint)
+        witnessRaw)
+    (baseIH :
+      ∀ {innerTargetScope : Nat}
+        {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (baseB : Term sourceCtx motiveType baseRaw),
+          Term.rename innerRenaming baseCase =
+            Term.rename innerRenaming baseB →
+          baseCase = baseB)
+    (witnessIH :
+      ∀ {innerTargetScope : Nat}
+        {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (witnessB :
+            Term sourceCtx
+              (Ty.idStrict carrier leftEndpoint rightEndpoint)
+              witnessRaw),
+          Term.rename innerRenaming witness =
+            Term.rename innerRenaming witnessB →
+          witness = witnessB)
+    (termB :
+      Term sourceCtx motiveType (RawTerm.idStrictRec baseRaw witnessRaw)) :
+    Term.rename termRenaming (Term.idStrictRec modeIsStrict baseCase witness) =
+      Term.rename termRenaming termB →
+      Term.idStrictRec modeIsStrict baseCase witness = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.idStrictRec baseRaw witnessRaw)),
+        Σ' (inferredModeIsStrict : mode = Mode.strict),
+          Σ' (inferredCarrier : Ty level sourceScope),
+            Σ' (inferredLeft : RawTerm sourceScope),
+              Σ' (inferredRight : RawTerm sourceScope),
+                Σ' (baseB : Term sourceCtx genericType baseRaw),
+                  Σ' (witnessB :
+                      Term sourceCtx
+                        (Ty.idStrict inferredCarrier inferredLeft inferredRight)
+                        witnessRaw),
+                    HEq genericTerm
+                      (Term.idStrictRec inferredModeIsStrict baseB witnessB) by
+    obtain ⟨_, inferredCarrier, inferredLeft, inferredRight, baseB, witnessB,
+      termHEqB⟩ := key termB
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ _ carrierRenameEq leftRenameEq rightRenameEq
+      _ _ _ baseRenameEq witnessRenameHEq
+    have carrierEq : carrier = inferredCarrier :=
+      Ty.rename_injective_under_injective_renaming carrier
+        rhoInjective inferredCarrier carrierRenameEq
+    have leftEq : leftEndpoint = inferredLeft :=
+      RawTerm.rename_injective_under_injective_renaming leftEndpoint
+        rhoInjective inferredLeft leftRenameEq
+    have rightEq : rightEndpoint = inferredRight :=
+      RawTerm.rename_injective_under_injective_renaming rightEndpoint
+        rhoInjective inferredRight rightRenameEq
+    cases carrierEq
+    cases leftEq
+    cases rightEq
+    rw [baseIH termRenaming rhoInjective baseB baseRenameEq,
+        witnessIH termRenaming rhoInjective witnessB
+          (eq_of_heq witnessRenameHEq)]
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredModeIsStrict inferredCarrier inferredLeft inferredRight
+    baseTerm witnessTerm
+  exact ⟨inferredModeIsStrict, inferredCarrier, inferredLeft, inferredRight,
+    baseTerm, witnessTerm, HEq.rfl⟩
 
 /-! ## Cubical-glue intro arm.
 
