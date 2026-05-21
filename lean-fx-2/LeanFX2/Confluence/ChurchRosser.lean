@@ -235,4 +235,26 @@ theorem Conv.renameRaw
     RawStep.parStar.rename_compatible rawRenaming sourceToJoin,
     RawStep.parStar.rename_compatible rawRenaming targetToJoin⟩
 
+/-- Canonical-weaken specialization of `Conv.renameRaw`.
+
+A typed Conv lifts to a raw join at the weaken image of source / target.
+The result matches the surface form `sourceRaw.weaken` / `targetRaw.weaken`
+that downstream β-redex consumers (Phase G β-η critical pair, K13 NbE
+under canonical-weaken) reach for most often.
+
+`RawTerm.weaken` definitionally unfolds to `RawTerm.rename RawRenaming.weaken`
+so the proof is a direct call to `Conv.renameRaw`. -/
+theorem Conv.weakenRaw
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar sourceRaw.weaken commonRaw ∧
+      RawStep.parStar targetRaw.weaken commonRaw :=
+  Conv.renameRaw RawRenaming.weaken convertibility
+
 end LeanFX2
