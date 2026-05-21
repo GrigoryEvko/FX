@@ -858,6 +858,80 @@ theorem Term.rename_injective_arm_lamPi
 -- inversion plumbing not yet in scope.  See InductiveArms.lean header for the
 -- catalogue of arm patterns that DO ship cleanly via this driver.
 
+/-! ## Cubical-glue intro arm.
+
+`glueIntro` packages a base value + partial value at a shared baseType
+into a Ty.glue typed at (baseType, boundaryWitness).  Both children at
+fixed baseType (explicit ctor argument).  The mode = Mode.univalent
+witness is an explicit Prop equation slot. -/
+
+/-- `glueIntro` arm: cubical glue intro with 2 children at shared baseType. -/
+theorem Term.rename_injective_arm_glueIntro
+    (modeIsUnivalent : mode = Mode.univalent)
+    (baseType : Ty level sourceScope)
+    (boundaryWitness : RawTerm sourceScope)
+    {baseRaw partialRaw : RawTerm sourceScope}
+    (baseValue : Term sourceCtx baseType baseRaw)
+    (partialValue : Term sourceCtx baseType partialRaw)
+    (baseIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (baseB : Term sourceCtx baseType baseRaw),
+          Term.rename innerRenaming baseValue =
+            Term.rename innerRenaming baseB →
+          baseValue = baseB)
+    (partialIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (partialB : Term sourceCtx baseType partialRaw),
+          Term.rename innerRenaming partialValue =
+            Term.rename innerRenaming partialB →
+          partialValue = partialB)
+    (rhoInjective : RawRenamingInjective rho)
+    (termB :
+      Term sourceCtx (Ty.glue baseType boundaryWitness)
+        (RawTerm.glueIntro baseRaw partialRaw)) :
+    Term.rename termRenaming
+        (Term.glueIntro modeIsUnivalent baseType boundaryWitness
+          baseValue partialValue) =
+      Term.rename termRenaming termB →
+      Term.glueIntro modeIsUnivalent baseType boundaryWitness
+          baseValue partialValue = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.glueIntro baseRaw partialRaw)),
+        Σ' (inferredModeIsUnivalent : mode = Mode.univalent),
+          Σ' (inferredBaseType : Ty level sourceScope),
+            Σ' (inferredBoundary : RawTerm sourceScope),
+              Σ' (baseB : Term sourceCtx inferredBaseType baseRaw),
+                Σ' (partialB : Term sourceCtx inferredBaseType partialRaw),
+                  Σ' (_ :
+                      genericType =
+                        Ty.glue inferredBaseType inferredBoundary),
+                    HEq genericTerm
+                      (Term.glueIntro inferredModeIsUnivalent
+                        inferredBaseType inferredBoundary baseB partialB) by
+    obtain ⟨inferredModeIsUnivalent, inferredBaseType, inferredBoundary,
+      baseB, partialB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqB
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ _ _ baseRenameEq partialRenameEq
+    rw [baseIH termRenaming rhoInjective baseB baseRenameEq,
+        partialIH termRenaming rhoInjective partialB partialRenameEq]
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredModeIsUnivalent inferredBaseType inferredBoundary
+    baseTerm partialTerm
+  exact ⟨inferredModeIsUnivalent, inferredBaseType, inferredBoundary,
+    baseTerm, partialTerm, rfl, HEq.rfl⟩
+
 /-! ## Codata / session arms (parametric intro shapes).
 
 * `codataUnfold` packages initial state + transition into a Ty.codata.  Two
