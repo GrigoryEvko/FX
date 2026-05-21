@@ -1356,4 +1356,268 @@ theorem Conv.sourceReaches_uaToEquiv
       RawStep.parStar proofTerm proofTarget :=
   Conv.targetReaches_uaToEquiv (Conv.sym convertibility)
 
+/-! ## Leaf canonical-head disjointness lemmas
+
+If two distinct leaf canonical heads sit at the two ends of a
+Conv, no common reduct can satisfy both inversions — `noConfusion`
+refutes via ctor disjointness.
+
+Each impossibility proof follows the same shape:
+  1. `Conv.canonicalRaw` extracts the join `joinRaw`.
+  2. `RawStep.parStar.<headLeft>_inv` forces `joinRaw = headLeft`.
+  3. `RawStep.parStar.<headRight>_inv` forces `joinRaw = headRight`.
+  4. `Eq.trans` produces `headLeft = headRight`.
+  5. `nomatch` discharges via ctor disjointness (auto-generated
+     noConfusion mechanism with motive inferred from goal).
+
+The construction is symmetric in source/target — `Conv.sym` flips
+the lemma, so we ship only one direction per unordered pair.  Used
+in K12 fundamental-theorem closure to rule out impossible
+canonical-canonical Conv pairs (e.g. when a Conv with one side a
+canonical boolTrue can't have the other side a canonical
+boolFalse). -/
+
+/-- A `unit`-headed source and a `boolTrue`-headed target are
+not convertible. -/
+theorem Conv.unit_ne_boolTrue
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceTerm : Term context sourceType (RawTerm.unit : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.boolTrue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqUnit : joinRaw = RawTerm.unit :=
+    RawStep.parStar.unit_inv sourceToJoin
+  have joinEqTrue : joinRaw = RawTerm.boolTrue :=
+    RawStep.parStar.boolTrue_inv targetToJoin
+  nomatch joinEqUnit.symm.trans joinEqTrue
+
+/-- A `unit`-headed source and a `boolFalse`-headed target are
+not convertible. -/
+theorem Conv.unit_ne_boolFalse
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceTerm : Term context sourceType (RawTerm.unit : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.boolFalse : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqUnit : joinRaw = RawTerm.unit :=
+    RawStep.parStar.unit_inv sourceToJoin
+  have joinEqFalse : joinRaw = RawTerm.boolFalse :=
+    RawStep.parStar.boolFalse_inv targetToJoin
+  nomatch joinEqUnit.symm.trans joinEqFalse
+
+/-- A `unit`-headed source and a `natZero`-headed target are
+not convertible. -/
+theorem Conv.unit_ne_natZero
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceTerm : Term context sourceType (RawTerm.unit : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.natZero : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqUnit : joinRaw = RawTerm.unit :=
+    RawStep.parStar.unit_inv sourceToJoin
+  have joinEqZero : joinRaw = RawTerm.natZero :=
+    RawStep.parStar.natZero_inv targetToJoin
+  nomatch joinEqUnit.symm.trans joinEqZero
+
+/-- A `unit`-headed source and a `listNil`-headed target are
+not convertible. -/
+theorem Conv.unit_ne_listNil
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceTerm : Term context sourceType (RawTerm.unit : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.listNil : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqUnit : joinRaw = RawTerm.unit :=
+    RawStep.parStar.unit_inv sourceToJoin
+  have joinEqNil : joinRaw = RawTerm.listNil :=
+    RawStep.parStar.listNil_inv targetToJoin
+  nomatch joinEqUnit.symm.trans joinEqNil
+
+/-- A `unit`-headed source and an `optionNone`-headed target are
+not convertible. -/
+theorem Conv.unit_ne_optionNone
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceTerm : Term context sourceType (RawTerm.unit : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.optionNone : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqUnit : joinRaw = RawTerm.unit :=
+    RawStep.parStar.unit_inv sourceToJoin
+  have joinEqNone : joinRaw = RawTerm.optionNone :=
+    RawStep.parStar.optionNone_inv targetToJoin
+  nomatch joinEqUnit.symm.trans joinEqNone
+
+/-- A `boolTrue`-headed source and a `boolFalse`-headed target
+are not convertible.  Most-used impossibility — closure for the
+`boolElim` fundamental-theorem ι-firing path requires that a
+boolTrue-shape Conv excludes the boolFalse branch and vice
+versa. -/
+theorem Conv.boolTrue_ne_boolFalse
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceTerm : Term context sourceType (RawTerm.boolTrue : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.boolFalse : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqTrue : joinRaw = RawTerm.boolTrue :=
+    RawStep.parStar.boolTrue_inv sourceToJoin
+  have joinEqFalse : joinRaw = RawTerm.boolFalse :=
+    RawStep.parStar.boolFalse_inv targetToJoin
+  nomatch joinEqTrue.symm.trans joinEqFalse
+
+/-- A `boolTrue`-headed source and a `natZero`-headed target are
+not convertible. -/
+theorem Conv.boolTrue_ne_natZero
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceTerm : Term context sourceType (RawTerm.boolTrue : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.natZero : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqTrue : joinRaw = RawTerm.boolTrue :=
+    RawStep.parStar.boolTrue_inv sourceToJoin
+  have joinEqZero : joinRaw = RawTerm.natZero :=
+    RawStep.parStar.natZero_inv targetToJoin
+  nomatch joinEqTrue.symm.trans joinEqZero
+
+/-- A `boolFalse`-headed source and a `natZero`-headed target
+are not convertible. -/
+theorem Conv.boolFalse_ne_natZero
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceTerm : Term context sourceType (RawTerm.boolFalse : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.natZero : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqFalse : joinRaw = RawTerm.boolFalse :=
+    RawStep.parStar.boolFalse_inv sourceToJoin
+  have joinEqZero : joinRaw = RawTerm.natZero :=
+    RawStep.parStar.natZero_inv targetToJoin
+  nomatch joinEqFalse.symm.trans joinEqZero
+
+/-- A `natZero`-headed source and a `listNil`-headed target are
+not convertible. -/
+theorem Conv.natZero_ne_listNil
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceTerm : Term context sourceType (RawTerm.natZero : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.listNil : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqZero : joinRaw = RawTerm.natZero :=
+    RawStep.parStar.natZero_inv sourceToJoin
+  have joinEqNil : joinRaw = RawTerm.listNil :=
+    RawStep.parStar.listNil_inv targetToJoin
+  nomatch joinEqZero.symm.trans joinEqNil
+
+/-- A `natZero`-headed source and an `optionNone`-headed target
+are not convertible. -/
+theorem Conv.natZero_ne_optionNone
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceTerm : Term context sourceType (RawTerm.natZero : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.optionNone : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqZero : joinRaw = RawTerm.natZero :=
+    RawStep.parStar.natZero_inv sourceToJoin
+  have joinEqNone : joinRaw = RawTerm.optionNone :=
+    RawStep.parStar.optionNone_inv targetToJoin
+  nomatch joinEqZero.symm.trans joinEqNone
+
+/-- A `listNil`-headed source and an `optionNone`-headed target
+are not convertible. -/
+theorem Conv.listNil_ne_optionNone
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceTerm : Term context sourceType (RawTerm.listNil : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.optionNone : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqNil : joinRaw = RawTerm.listNil :=
+    RawStep.parStar.listNil_inv sourceToJoin
+  have joinEqNone : joinRaw = RawTerm.optionNone :=
+    RawStep.parStar.optionNone_inv targetToJoin
+  nomatch joinEqNil.symm.trans joinEqNone
+
+/-! ## Parameterized-leaf uniqueness lemmas
+
+For parameterized leaves (`var P`, `universeCode N`) the
+canonical-form propagation gives the same head structure on both
+ends; the additional uniqueness lemma forces the inner data to
+match.  Used in K12 fundamental theorem closure when both
+endpoints are known to be at the same canonical-leaf head with
+data and we need to derive data equality. -/
+
+/-- Two `var`-headed convertible terms have equal positions. -/
+theorem Conv.var_position_eq
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {position1 position2 : Fin scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.var position1 : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.var position2 : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    position1 = position2 := by
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEq1 : joinRaw = RawTerm.var position1 :=
+    RawStep.parStar.var_inv sourceToJoin
+  have joinEq2 : joinRaw = RawTerm.var position2 :=
+    RawStep.parStar.var_inv targetToJoin
+  have varEq : RawTerm.var position1 = RawTerm.var position2 :=
+    joinEq1.symm.trans joinEq2
+  injection varEq
+
+/-- Two `universeCode`-headed convertible terms have equal inner
+levels. -/
+theorem Conv.universeCode_level_eq
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {innerLevel1 innerLevel2 : Nat}
+    {sourceTerm : Term context sourceType
+      (RawTerm.universeCode innerLevel1 : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.universeCode innerLevel2 : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    innerLevel1 = innerLevel2 := by
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEq1 : joinRaw = RawTerm.universeCode innerLevel1 :=
+    RawStep.parStar.universeCode_inv sourceToJoin
+  have joinEq2 : joinRaw = RawTerm.universeCode innerLevel2 :=
+    RawStep.parStar.universeCode_inv targetToJoin
+  have codeEq :
+      RawTerm.universeCode innerLevel1 = RawTerm.universeCode innerLevel2 :=
+    joinEq1.symm.trans joinEq2
+  injection codeEq
+
 end LeanFX2
