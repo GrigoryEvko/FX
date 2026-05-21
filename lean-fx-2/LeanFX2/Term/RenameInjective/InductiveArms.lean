@@ -365,4 +365,149 @@ theorem Term.rename_injective_arm_natSucc
   rename_i predecessorTerm
   exact ⟨predecessorTerm, rfl, HEq.rfl⟩
 
+/-- `natElim` arm: 3 children (Ty.nat scrutinee + 2 branches at motiveType),
+    no cast.  motiveType IS the result type so no wrapper packing needed —
+    `genericType` directly plays the role of motiveType. -/
+theorem Term.rename_injective_arm_natElim
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (rhoInjective : RawRenamingInjective rho)
+    {motiveType : Ty level sourceScope}
+    {scrutineeRaw zeroRaw succRaw : RawTerm sourceScope}
+    (scrutineeA : Term sourceCtx Ty.nat scrutineeRaw)
+    (zeroBranchA : Term sourceCtx motiveType zeroRaw)
+    (succBranchA : Term sourceCtx (Ty.arrow Ty.nat motiveType) succRaw)
+    (scrutineeIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (scrutineeB : Term sourceCtx Ty.nat scrutineeRaw),
+          Term.rename innerRenaming scrutineeA =
+            Term.rename innerRenaming scrutineeB →
+          scrutineeA = scrutineeB)
+    (zeroBranchIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (zeroBranchB : Term sourceCtx motiveType zeroRaw),
+          Term.rename innerRenaming zeroBranchA =
+            Term.rename innerRenaming zeroBranchB →
+          zeroBranchA = zeroBranchB)
+    (succBranchIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (succBranchB :
+            Term sourceCtx (Ty.arrow Ty.nat motiveType) succRaw),
+          Term.rename innerRenaming succBranchA =
+            Term.rename innerRenaming succBranchB →
+          succBranchA = succBranchB)
+    (termB : Term sourceCtx motiveType
+      (RawTerm.natElim scrutineeRaw zeroRaw succRaw)) :
+    Term.rename termRenaming (Term.natElim scrutineeA zeroBranchA succBranchA) =
+      Term.rename termRenaming termB →
+      Term.natElim scrutineeA zeroBranchA succBranchA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.natElim scrutineeRaw zeroRaw succRaw)),
+        Σ' (scrutineeTerm : Term sourceCtx Ty.nat scrutineeRaw),
+          Σ' (zeroBranchTerm : Term sourceCtx genericType zeroRaw),
+            Σ' (succBranchTerm :
+                Term sourceCtx (Ty.arrow Ty.nat genericType) succRaw),
+              HEq genericTerm
+                (Term.natElim scrutineeTerm zeroBranchTerm succBranchTerm) by
+    obtain ⟨scrutineeB, zeroBranchB, succBranchB, termHEqB⟩ := key termB
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ _ _ scrTermEq zeroTermEq succTermEq
+    rw [scrutineeIH termRenaming rhoInjective scrutineeB scrTermEq,
+        zeroBranchIH termRenaming rhoInjective zeroBranchB zeroTermEq,
+        succBranchIH termRenaming rhoInjective succBranchB succTermEq]
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i scrutineeTerm zeroBranchTerm succBranchTerm
+  exact ⟨scrutineeTerm, zeroBranchTerm, succBranchTerm, HEq.rfl⟩
+
+/-- `natRec` arm: 3 children, structurally identical to `natElim` modulo the
+    succBranch's type carrying the recursor's two-argument arrow.  Same
+    motiveType-as-result pattern, no cast, no wrapper. -/
+theorem Term.rename_injective_arm_natRec
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (rhoInjective : RawRenamingInjective rho)
+    {motiveType : Ty level sourceScope}
+    {scrutineeRaw zeroRaw succRaw : RawTerm sourceScope}
+    (scrutineeA : Term sourceCtx Ty.nat scrutineeRaw)
+    (zeroBranchA : Term sourceCtx motiveType zeroRaw)
+    (succBranchA :
+      Term sourceCtx (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)) succRaw)
+    (scrutineeIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (scrutineeB : Term sourceCtx Ty.nat scrutineeRaw),
+          Term.rename innerRenaming scrutineeA =
+            Term.rename innerRenaming scrutineeB →
+          scrutineeA = scrutineeB)
+    (zeroBranchIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (zeroBranchB : Term sourceCtx motiveType zeroRaw),
+          Term.rename innerRenaming zeroBranchA =
+            Term.rename innerRenaming zeroBranchB →
+          zeroBranchA = zeroBranchB)
+    (succBranchIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (succBranchB :
+            Term sourceCtx
+              (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)) succRaw),
+          Term.rename innerRenaming succBranchA =
+            Term.rename innerRenaming succBranchB →
+          succBranchA = succBranchB)
+    (termB : Term sourceCtx motiveType
+      (RawTerm.natRec scrutineeRaw zeroRaw succRaw)) :
+    Term.rename termRenaming (Term.natRec scrutineeA zeroBranchA succBranchA) =
+      Term.rename termRenaming termB →
+      Term.natRec scrutineeA zeroBranchA succBranchA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.natRec scrutineeRaw zeroRaw succRaw)),
+        Σ' (scrutineeTerm : Term sourceCtx Ty.nat scrutineeRaw),
+          Σ' (zeroBranchTerm : Term sourceCtx genericType zeroRaw),
+            Σ' (succBranchTerm :
+                Term sourceCtx
+                  (Ty.arrow Ty.nat (Ty.arrow genericType genericType)) succRaw),
+              HEq genericTerm
+                (Term.natRec scrutineeTerm zeroBranchTerm succBranchTerm) by
+    obtain ⟨scrutineeB, zeroBranchB, succBranchB, termHEqB⟩ := key termB
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ _ _ scrTermEq zeroTermEq succTermEq
+    rw [scrutineeIH termRenaming rhoInjective scrutineeB scrTermEq,
+        zeroBranchIH termRenaming rhoInjective zeroBranchB zeroTermEq,
+        succBranchIH termRenaming rhoInjective succBranchB succTermEq]
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i scrutineeTerm zeroBranchTerm succBranchTerm
+  exact ⟨scrutineeTerm, zeroBranchTerm, succBranchTerm, HEq.rfl⟩
+
 end LeanFX2
