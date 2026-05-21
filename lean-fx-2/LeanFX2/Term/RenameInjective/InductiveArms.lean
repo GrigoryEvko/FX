@@ -1846,6 +1846,102 @@ theorem Term.rename_injective_arm_pathLam
   exact ⟨inferredModeIsUnivalent, inferredCarrier, inferredLeft,
     inferredRight, bodyTerm, rfl, HEq.rfl⟩
 
+/-! ## Tier-A unique-raw arms (cumulUp / effectPerform / uaToEquiv /
+       equivApply / transp).
+
+The remaining 25 Tier-{B,C,D} ctors (appPi/snd/boolElim/idJ/oeqJ/oeqFunext/
+idStrictRec/pathApp/glueElim/hcomp/hcompPath/universeCode/equivReflId/
+funextRefl/equivReflIdAtId/funextReflAtId/equivIntroHet/equivApp/uaIntroHet/
+funextIntroHet) defer to deeper sessions: cast-on-result walls,
+dependent-eliminator existentials, 4-way η collisions, and the toNat
+non-injectivity wall demand more elaborate machinery (Term.noConfusion HEq-
+aware form per `feedback_lean_noconfusion_heq_aware`, generalized
+strengthening helpers).  The five Tier-A ctors below all live at distinct
+RawTerm shapes with no result-type casts, so the standard
+`suffices key + cases genericTerm + injection + IH` recipe closes them
+zero-axiom in ~70 LoC each. -/
+
+/-- `cumulUp` arm: universe-cumulativity wrapper.  Outer `higherLevel`
+    pinned by the result `Ty.universe higherLevel levelLeHigh`; inner
+    `lowerLevel`, `cumulMonotone`, `levelLeLow` are existentials carried
+    in the Σ' chain.  Raw is the unique non-colliding
+    `RawTerm.cumulUpMarker codeRaw`.  Discharges via `injection renameEq`
+    on `Term.rename` of `cumulUp` (no result cast). -/
+theorem Term.rename_injective_arm_cumulUp
+    (rhoInjective : RawRenamingInjective rho)
+    {higherLevel : UniverseLevel}
+    {levelLeHigh : higherLevel.toNat + 1 ≤ level}
+    {codeRaw : RawTerm sourceScope}
+    (lowerLevel : UniverseLevel)
+    (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
+    (levelLeLow : lowerLevel.toNat + 1 ≤ level)
+    (typeCode : Term sourceCtx (Ty.universe lowerLevel levelLeLow) codeRaw)
+    (typeCodeIH :
+      ∀ {innerTargetScope : Nat}
+        {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (typeCodeB :
+            Term sourceCtx (Ty.universe lowerLevel levelLeLow) codeRaw),
+          Term.rename innerRenaming typeCode =
+            Term.rename innerRenaming typeCodeB →
+          typeCode = typeCodeB)
+    (termB :
+      Term sourceCtx (Ty.universe higherLevel levelLeHigh)
+        (RawTerm.cumulUpMarker codeRaw)) :
+    Term.rename termRenaming
+        (Term.cumulUp (context := sourceCtx) lowerLevel higherLevel
+          cumulMonotone levelLeLow levelLeHigh typeCode) =
+      Term.rename termRenaming termB →
+      Term.cumulUp (context := sourceCtx) lowerLevel higherLevel
+          cumulMonotone levelLeLow levelLeHigh typeCode = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm :
+          Term sourceCtx genericType (RawTerm.cumulUpMarker codeRaw)),
+        Σ' (inferredLowerLevel : UniverseLevel),
+          Σ' (inferredHigherLevel : UniverseLevel),
+            Σ' (inferredCumulMonotone :
+                inferredLowerLevel.toNat ≤ inferredHigherLevel.toNat),
+              Σ' (inferredLevelLeLow :
+                  inferredLowerLevel.toNat + 1 ≤ level),
+                Σ' (inferredLevelLeHigh :
+                    inferredHigherLevel.toNat + 1 ≤ level),
+                  Σ' (typeCodeB :
+                      Term sourceCtx
+                        (Ty.universe inferredLowerLevel
+                          inferredLevelLeLow) codeRaw),
+                    Σ' (_ : genericType =
+                        Ty.universe inferredHigherLevel
+                          inferredLevelLeHigh),
+                      HEq genericTerm
+                        (Term.cumulUp (context := sourceCtx)
+                          inferredLowerLevel inferredHigherLevel
+                          inferredCumulMonotone inferredLevelLeLow
+                          inferredLevelLeHigh typeCodeB) by
+    obtain ⟨_, _, _, _, _, typeCodeB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqB
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with lowerLevelEq _ cumulMonotoneEq levelLeLowEq _
+      typeCodeRenameHEq
+    cases lowerLevelEq
+    cases cumulMonotoneEq
+    cases levelLeLowEq
+    have typeCodeEq : typeCode = typeCodeB :=
+      typeCodeIH termRenaming rhoInjective typeCodeB
+        (eq_of_heq typeCodeRenameHEq)
+    cases typeCodeEq
+    rfl
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredLower inferredHigher inferredCumul inferredLeLow
+    inferredLeHigh inferredTypeCode
+  exact ⟨inferredLower, inferredHigher, inferredCumul, inferredLeLow,
+    inferredLeHigh, inferredTypeCode, rfl, HEq.rfl⟩
+
 /-! ## Closed-ctor arms (one-liners reusing existing standalone helpers)
 
 For closed constructors (no child terms, just `Term.<ctor>` at a fixed type),
