@@ -678,6 +678,9 @@ shapes: 5 in CubicalShape. -/
 #assert_no_axioms LeanFX2.Conv.lam_left_commonRaw_inv_congr
 #assert_no_axioms LeanFX2.Conv.lamPi_left_commonRaw_inv_congr
 #assert_no_axioms LeanFX2.Conv.pathLam_left_commonRaw_inv_congr
+#assert_no_axioms LeanFX2.Conv.lam_right_commonRaw_inv_congr
+#assert_no_axioms LeanFX2.Conv.lamPi_right_commonRaw_inv_congr
+#assert_no_axioms LeanFX2.Conv.pathLam_right_commonRaw_inv_congr
 #assert_no_axioms LeanFX2.Conv.renamed_left_commonRaw_in_rename_image
 #assert_no_axioms LeanFX2.Conv.weakened_left_commonRaw_in_weaken_image
 #assert_no_axioms LeanFX2.Conv.left_commonRaw_in_rename_image_of_sourceRaw_eq
