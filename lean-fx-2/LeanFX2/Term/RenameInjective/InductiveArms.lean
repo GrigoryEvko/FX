@@ -1456,6 +1456,273 @@ theorem Term.rename_injective_arm_pathApp
 -- The arm requires either a heterogeneous CanPerform.map_injective helper
 -- or a Prop-stripping inversion lemma not yet shipped.
 
+/-- `glueElim` arm: cubical glue elimination at `baseType` (no cast).
+    `boundaryWitness` is a RawTerm existential recoverable via
+    `RawTerm.rename_injective`. -/
+theorem Term.rename_injective_arm_glueElim
+    (rhoInjective : RawRenamingInjective rho)
+    (modeIsUnivalent : mode = Mode.univalent)
+    {baseType : Ty level sourceScope}
+    {boundaryWitness gluedRaw : RawTerm sourceScope}
+    (gluedValue :
+      Term sourceCtx (Ty.glue baseType boundaryWitness) gluedRaw)
+    (gluedValueIH :
+      ∀ {innerTargetScope : Nat}
+        {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (gluedB :
+            Term sourceCtx (Ty.glue baseType boundaryWitness) gluedRaw),
+          Term.rename innerRenaming gluedValue =
+            Term.rename innerRenaming gluedB →
+          gluedValue = gluedB)
+    (termB :
+      Term sourceCtx baseType (RawTerm.glueElim gluedRaw)) :
+    Term.rename termRenaming (Term.glueElim modeIsUnivalent gluedValue) =
+      Term.rename termRenaming termB →
+      Term.glueElim modeIsUnivalent gluedValue = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.glueElim gluedRaw)),
+        Σ' (inferredModeIsUnivalent : mode = Mode.univalent),
+          Σ' (inferredBoundary : RawTerm sourceScope),
+            Σ' (gluedB :
+                Term sourceCtx (Ty.glue genericType inferredBoundary)
+                  gluedRaw),
+              HEq genericTerm
+                (Term.glueElim inferredModeIsUnivalent gluedB) by
+    obtain ⟨_, inferredBoundary, gluedB, termHEqB⟩ := key termB
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ boundaryRenameEq _ gluedRenameHEq
+    have boundaryEq : boundaryWitness = inferredBoundary :=
+      RawTerm.rename_injective_under_injective_renaming boundaryWitness
+        rhoInjective inferredBoundary boundaryRenameEq
+    cases boundaryEq
+    rw [gluedValueIH termRenaming rhoInjective gluedB
+          (eq_of_heq gluedRenameHEq)]
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredModeIsUnivalent inferredBoundary gluedTerm
+  exact ⟨inferredModeIsUnivalent, inferredBoundary, gluedTerm, HEq.rfl⟩
+
+/-! ## Cubical hcomp collision pair (hcomp / hcompPath).
+
+Both produce raw `RawTerm.hcomp sidesRaw capRaw`.  hcomp's sides is at
+the carrierType; hcompPath's sides is at `Ty.path carrierType leftEnd
+rightEnd`.  `cases genericTerm` yields both branches; cross-refutation
+between them via `Term.noConfusion` on the bare ctors after rename. -/
+
+/-- `hcomp` arm: homogeneous cubical composition.  Collides with `hcompPath`
+    at raw `RawTerm.hcomp`.  Refutes hcompPath case via noConfusion. -/
+theorem Term.rename_injective_arm_hcomp
+    (rhoInjective : RawRenamingInjective rho)
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    {sidesRaw capRaw : RawTerm sourceScope}
+    (sidesValue : Term sourceCtx carrierType sidesRaw)
+    (capValue : Term sourceCtx carrierType capRaw)
+    (sidesValueIH :
+      ∀ {innerTargetScope : Nat}
+        {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (sidesB : Term sourceCtx carrierType sidesRaw),
+          Term.rename innerRenaming sidesValue =
+            Term.rename innerRenaming sidesB →
+          sidesValue = sidesB)
+    (capValueIH :
+      ∀ {innerTargetScope : Nat}
+        {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (capB : Term sourceCtx carrierType capRaw),
+          Term.rename innerRenaming capValue =
+            Term.rename innerRenaming capB →
+          capValue = capB)
+    (termB :
+      Term sourceCtx carrierType (RawTerm.hcomp sidesRaw capRaw)) :
+    Term.rename termRenaming
+        (Term.hcomp modeIsUnivalent sidesValue capValue) =
+      Term.rename termRenaming termB →
+      Term.hcomp modeIsUnivalent sidesValue capValue = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.hcomp sidesRaw capRaw)),
+        (Σ' (inferredModeIsUnivalent : mode = Mode.univalent)
+            (sidesB : Term sourceCtx genericType sidesRaw)
+            (capB : Term sourceCtx genericType capRaw),
+            HEq genericTerm
+              (Term.hcomp inferredModeIsUnivalent sidesB capB)) ⊕'
+        (Σ' (inferredModeIsUnivalent : mode = Mode.univalent)
+            (leftEndpoint : RawTerm sourceScope)
+            (rightEndpoint : RawTerm sourceScope)
+            (sidesPath :
+              Term sourceCtx
+                (Ty.path genericType leftEndpoint rightEndpoint) sidesRaw)
+            (capB : Term sourceCtx genericType capRaw),
+            HEq genericTerm
+              (Term.hcompPath inferredModeIsUnivalent leftEndpoint
+                rightEndpoint sidesPath capB)) by
+    cases key termB with
+    | inl caseHcomp =>
+        obtain ⟨_, sidesB, capB, termHEqB⟩ := caseHcomp
+        cases termHEqB
+        dsimp only [Term.rename] at renameEq
+        injection renameEq with _ _ _ _ _ sidesRenameEq capRenameEq
+        rw [sidesValueIH termRenaming rhoInjective sidesB sidesRenameEq,
+            capValueIH termRenaming rhoInjective capB capRenameEq]
+    | inr caseHcompPath =>
+        obtain ⟨_, leftEnd, rightEnd, sidesPath, capB, termHEqB⟩ := caseHcompPath
+        cases termHEqB
+        exfalso
+        -- Refute Term.hcomp = Term.hcompPath via noConfusion (different ctors).
+        have collisionHEq :
+            HEq (Term.hcomp modeIsUnivalent
+                  (Term.rename termRenaming sidesValue)
+                  (Term.rename termRenaming capValue))
+                (Term.hcompPath modeIsUnivalent
+                  (leftEnd.rename rho) (rightEnd.rename rho)
+                  (Term.rename termRenaming sidesPath)
+                  (Term.rename termRenaming capB)) :=
+          heq_of_eq renameEq
+        exact Term.noConfusion (P := False)
+          (t := Term.hcomp modeIsUnivalent
+                  (Term.rename termRenaming sidesValue)
+                  (Term.rename termRenaming capValue))
+          (t' := Term.hcompPath modeIsUnivalent
+                  (leftEnd.rename rho) (rightEnd.rename rho)
+                  (Term.rename termRenaming sidesPath)
+                  (Term.rename termRenaming capB))
+          rfl rfl rfl HEq.rfl HEq.rfl HEq.rfl
+          collisionHEq
+  intro genericType genericTerm
+  cases genericTerm
+  case hcomp inferredModeIsUnivalent sidesB capB =>
+    exact PSum.inl ⟨inferredModeIsUnivalent, sidesB, capB, HEq.rfl⟩
+  case hcompPath inferredModeIsUnivalent leftEnd rightEnd sidesPath capB =>
+    exact PSum.inr ⟨inferredModeIsUnivalent, leftEnd, rightEnd, sidesPath,
+      capB, HEq.rfl⟩
+
+/-- `hcompPath` arm: path-shaped homogeneous composition.  Refutes `hcomp`
+    sibling via Term.noConfusion. -/
+theorem Term.rename_injective_arm_hcompPath
+    (rhoInjective : RawRenamingInjective rho)
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    (leftEndpoint rightEndpoint : RawTerm sourceScope)
+    {sidesPathRaw capRaw : RawTerm sourceScope}
+    (sidesPath :
+      Term sourceCtx
+        (Ty.path carrierType leftEndpoint rightEndpoint) sidesPathRaw)
+    (capValue : Term sourceCtx carrierType capRaw)
+    (sidesPathIH :
+      ∀ {innerTargetScope : Nat}
+        {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (sidesPathB :
+            Term sourceCtx
+              (Ty.path carrierType leftEndpoint rightEndpoint) sidesPathRaw),
+          Term.rename innerRenaming sidesPath =
+            Term.rename innerRenaming sidesPathB →
+          sidesPath = sidesPathB)
+    (capValueIH :
+      ∀ {innerTargetScope : Nat}
+        {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (capB : Term sourceCtx carrierType capRaw),
+          Term.rename innerRenaming capValue =
+            Term.rename innerRenaming capB →
+          capValue = capB)
+    (termB :
+      Term sourceCtx carrierType (RawTerm.hcomp sidesPathRaw capRaw)) :
+    Term.rename termRenaming
+        (Term.hcompPath modeIsUnivalent leftEndpoint rightEndpoint
+          sidesPath capValue) =
+      Term.rename termRenaming termB →
+      Term.hcompPath modeIsUnivalent leftEndpoint rightEndpoint
+        sidesPath capValue = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.hcomp sidesPathRaw capRaw)),
+        (Σ' (inferredModeIsUnivalent : mode = Mode.univalent)
+            (sidesB : Term sourceCtx genericType sidesPathRaw)
+            (capB : Term sourceCtx genericType capRaw),
+            HEq genericTerm
+              (Term.hcomp inferredModeIsUnivalent sidesB capB)) ⊕'
+        (Σ' (inferredModeIsUnivalent : mode = Mode.univalent)
+            (leftEnd : RawTerm sourceScope)
+            (rightEnd : RawTerm sourceScope)
+            (sidesPathInner :
+              Term sourceCtx
+                (Ty.path genericType leftEnd rightEnd) sidesPathRaw)
+            (capB : Term sourceCtx genericType capRaw),
+            HEq genericTerm
+              (Term.hcompPath inferredModeIsUnivalent leftEnd
+                rightEnd sidesPathInner capB)) by
+    cases key termB with
+    | inl caseHcomp =>
+        obtain ⟨_, sidesB, capB, termHEqB⟩ := caseHcomp
+        cases termHEqB
+        exfalso
+        have collisionHEq :
+            HEq (Term.hcompPath modeIsUnivalent
+                  (leftEndpoint.rename rho) (rightEndpoint.rename rho)
+                  (Term.rename termRenaming sidesPath)
+                  (Term.rename termRenaming capValue))
+                (Term.hcomp modeIsUnivalent
+                  (Term.rename termRenaming sidesB)
+                  (Term.rename termRenaming capB)) :=
+          heq_of_eq renameEq
+        exact Term.noConfusion (P := False)
+          (t := Term.hcompPath modeIsUnivalent
+                  (leftEndpoint.rename rho) (rightEndpoint.rename rho)
+                  (Term.rename termRenaming sidesPath)
+                  (Term.rename termRenaming capValue))
+          (t' := Term.hcomp modeIsUnivalent
+                  (Term.rename termRenaming sidesB)
+                  (Term.rename termRenaming capB))
+          rfl rfl rfl HEq.rfl HEq.rfl HEq.rfl
+          collisionHEq
+    | inr caseHcompPath =>
+        obtain ⟨_, inferredLeftEnd, inferredRightEnd, sidesPathInner, capB,
+          termHEqB⟩ := caseHcompPath
+        cases termHEqB
+        dsimp only [Term.rename] at renameEq
+        injection renameEq with _ _ _ leftRenameEq rightRenameEq _ _
+          sidesPathRenameHEq capRenameEq
+        have leftEq : leftEndpoint = inferredLeftEnd :=
+          RawTerm.rename_injective_under_injective_renaming leftEndpoint
+            rhoInjective inferredLeftEnd leftRenameEq
+        have rightEq : rightEndpoint = inferredRightEnd :=
+          RawTerm.rename_injective_under_injective_renaming rightEndpoint
+            rhoInjective inferredRightEnd rightRenameEq
+        cases leftEq
+        cases rightEq
+        rw [sidesPathIH termRenaming rhoInjective sidesPathInner
+              (eq_of_heq sidesPathRenameHEq),
+            capValueIH termRenaming rhoInjective capB capRenameEq]
+  intro genericType genericTerm
+  cases genericTerm
+  case hcomp inferredModeIsUnivalent sidesB capB =>
+    exact PSum.inl ⟨inferredModeIsUnivalent, sidesB, capB, HEq.rfl⟩
+  case hcompPath inferredModeIsUnivalent leftEnd rightEnd sidesPathInner capB =>
+    exact PSum.inr ⟨inferredModeIsUnivalent, leftEnd, rightEnd, sidesPathInner,
+      capB, HEq.rfl⟩
+
 /-! ## Cubical-glue intro arm.
 
 `glueIntro` packages a base value + partial value at a shared baseType
