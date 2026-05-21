@@ -5783,4 +5783,159 @@ theorem Conv.productCode_ne_interval1
     RawStep.parStar.interval1_inv targetToJoin
   nomatch joinEqProduct.symm.trans joinEqOne
 
+/-- A `productCode`-headed source and a `natSucc`-headed target are
+not convertible.  Type-code vs unary-compound data-leaf
+disjointness. -/
+theorem Conv.productCode_ne_natSucc
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {predecessor : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.productCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.natSucc predecessor : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqProduct, _, _⟩ :=
+    RawStep.parStar.productCode_inv sourceToJoin
+  obtain ⟨_, joinEqSucc, _⟩ :=
+    RawStep.parStar.natSucc_inv targetToJoin
+  nomatch joinEqProduct.symm.trans joinEqSucc
+
+/-- A `productCode`-headed source and a `optionSome`-headed target
+are not convertible.  Type-code vs unary-compound option-leaf
+disjointness. -/
+theorem Conv.productCode_ne_optionSome
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {valueTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.productCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.optionSome valueTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqProduct, _, _⟩ :=
+    RawStep.parStar.productCode_inv sourceToJoin
+  obtain ⟨_, joinEqSome, _⟩ :=
+    RawStep.parStar.optionSome_inv targetToJoin
+  nomatch joinEqProduct.symm.trans joinEqSome
+
+/-- A `productCode`-headed source and a `eitherInl`-headed target
+are not convertible.  Type-code vs unary-compound either-leaf
+disjointness. -/
+theorem Conv.productCode_ne_eitherInl
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {valueTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.productCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.eitherInl valueTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqProduct, _, _⟩ :=
+    RawStep.parStar.productCode_inv sourceToJoin
+  obtain ⟨_, joinEqInl, _⟩ :=
+    RawStep.parStar.eitherInl_inv targetToJoin
+  nomatch joinEqProduct.symm.trans joinEqInl
+
+/-- A `productCode`-headed source and a `eitherInr`-headed target
+are not convertible.  Type-code vs unary-compound either-leaf
+disjointness. -/
+theorem Conv.productCode_ne_eitherInr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {valueTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.productCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.eitherInr valueTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqProduct, _, _⟩ :=
+    RawStep.parStar.productCode_inv sourceToJoin
+  obtain ⟨_, joinEqInr, _⟩ :=
+    RawStep.parStar.eitherInr_inv targetToJoin
+  nomatch joinEqProduct.symm.trans joinEqInr
+
+/-- A `productCode`-headed source and a `listCons`-headed target are
+not convertible.  Type-code vs binary-compound list-leaf
+disjointness. -/
+theorem Conv.productCode_ne_listCons
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {headTerm tailTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.productCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.listCons headTerm tailTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqProduct, _, _⟩ :=
+    RawStep.parStar.productCode_inv sourceToJoin
+  obtain ⟨_, _, joinEqCons, _, _⟩ :=
+    RawStep.parStar.listCons_inv targetToJoin
+  nomatch joinEqProduct.symm.trans joinEqCons
+
+/-- A `productCode`-headed source and a `pair`-headed target are not
+convertible.  Type-code vs binary-compound product-leaf disjointness
+— `productCode` is the type-code for the non-dependent product type
+former and `pair` is its value-level constructor; they live at
+different syntactic strata. -/
+theorem Conv.productCode_ne_pair
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {firstValue secondValue : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.productCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.pair firstValue secondValue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqProduct, _, _⟩ :=
+    RawStep.parStar.productCode_inv sourceToJoin
+  obtain ⟨_, _, joinEqPair, _, _⟩ :=
+    RawStep.parStar.pair_inv targetToJoin
+  nomatch joinEqProduct.symm.trans joinEqPair
+
+/-- A `productCode`-headed source and a `refl`-headed target are not
+convertible.  Type-code vs HOTT witness-carrier disjointness. -/
+theorem Conv.productCode_ne_refl
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {witnessTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.productCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.refl witnessTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqProduct, _, _⟩ :=
+    RawStep.parStar.productCode_inv sourceToJoin
+  obtain ⟨_, joinEqRefl, _⟩ :=
+    RawStep.parStar.refl_inv targetToJoin
+  nomatch joinEqProduct.symm.trans joinEqRefl
+
 end LeanFX2
