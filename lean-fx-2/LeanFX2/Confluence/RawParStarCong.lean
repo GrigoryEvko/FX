@@ -562,6 +562,89 @@ private theorem RawStep.parStar.unary_payload_elim_inv_helper {scope : Nat}
   RawStep.parStar.unary_payload_elim_inv_aux elimWrap introWrap
     parStepInv chain rfl
 
+/-- Generalized unary eliminator `parStar` inversion for eliminators whose
+β arm returns a contractum built from a two-field developed intro.
+
+This covers raw eliminators such as `refineElim` and `codataDest`:
+the source subterm may develop structurally, or it may develop to a
+two-field intro whose β contractum then continues reducing. -/
+private theorem RawStep.parStar.binary_intro_elim_inv_aux {scope : Nat}
+    (elimWrap : RawTerm scope → RawTerm scope)
+    (introWrap contractum :
+      RawTerm scope → RawTerm scope → RawTerm scope)
+    (parStepInv : ∀ {innerSource target},
+      RawStep.par (elimWrap innerSource) target →
+        (∃ innerTarget,
+          target = elimWrap innerTarget ∧
+          RawStep.par innerSource innerTarget) ∨
+        (∃ firstTarget secondTarget,
+          target = contractum firstTarget secondTarget ∧
+          RawStep.par innerSource (introWrap firstTarget secondTarget)))
+    {source target : RawTerm scope}
+    (chain : RawStep.parStar source target) :
+    ∀ {innerSource : RawTerm scope},
+      source = elimWrap innerSource →
+      (∃ innerTarget,
+        target = elimWrap innerTarget ∧
+        RawStep.parStar innerSource innerTarget) ∨
+      (∃ firstTarget secondTarget,
+        RawStep.parStar innerSource (introWrap firstTarget secondTarget) ∧
+        RawStep.parStar (contractum firstTarget secondTarget) target) := by
+  induction chain with
+  | refl _ =>
+      intro innerSource sourceEq
+      exact Or.inl ⟨innerSource, sourceEq, RawStep.parStar.refl _⟩
+  | trans firstStep restChain restIH =>
+      intro innerSource sourceEq
+      subst sourceEq
+      cases parStepInv firstStep with
+      | inl headCase =>
+          obtain ⟨middleInner, middleEq, innerStep⟩ := headCase
+          cases restIH middleEq with
+          | inl preservedCase =>
+              obtain ⟨targetInner, targetEq, innerChainRest⟩ :=
+                preservedCase
+              exact Or.inl ⟨targetInner, targetEq,
+                RawStep.parStar.trans innerStep innerChainRest⟩
+          | inr firedCase =>
+              obtain ⟨firstTarget, secondTarget, introChainRest,
+                contractumChain⟩ := firedCase
+              exact Or.inr ⟨firstTarget, secondTarget,
+                RawStep.parStar.trans innerStep introChainRest,
+                contractumChain⟩
+      | inr betaCase =>
+          obtain ⟨firstTarget, secondTarget, middleEq, introStep⟩ :=
+            betaCase
+          cases middleEq
+          exact Or.inr ⟨firstTarget, secondTarget,
+            RawStep.parStar.trans introStep (RawStep.parStar.refl _),
+            restChain⟩
+
+/-- Binary-intro eliminator `parStar` inversion for an exactly wrapped
+source. -/
+private theorem RawStep.parStar.binary_intro_elim_inv_helper {scope : Nat}
+    (elimWrap : RawTerm scope → RawTerm scope)
+    (introWrap contractum :
+      RawTerm scope → RawTerm scope → RawTerm scope)
+    (parStepInv : ∀ {innerSource target},
+      RawStep.par (elimWrap innerSource) target →
+        (∃ innerTarget,
+          target = elimWrap innerTarget ∧
+          RawStep.par innerSource innerTarget) ∨
+        (∃ firstTarget secondTarget,
+          target = contractum firstTarget secondTarget ∧
+          RawStep.par innerSource (introWrap firstTarget secondTarget)))
+    {innerSource target : RawTerm scope}
+    (chain : RawStep.parStar (elimWrap innerSource) target) :
+    (∃ innerTarget,
+      target = elimWrap innerTarget ∧
+      RawStep.parStar innerSource innerTarget) ∨
+    (∃ firstTarget secondTarget,
+      RawStep.parStar innerSource (introWrap firstTarget secondTarget) ∧
+      RawStep.parStar (contractum firstTarget secondTarget) target) :=
+  RawStep.parStar.binary_intro_elim_inv_aux elimWrap introWrap
+    contractum parStepInv chain rfl
+
 /-- Generalized binary-head `parStar` inversion.
 
 This is the two-subterm counterpart to `unary_inv_aux`; it threads the
@@ -1161,6 +1244,23 @@ theorem RawStep.parStar.refineIntro_inv {scope : Nat}
   RawStep.parStar.binary_inv_helper RawTerm.refineIntro
     RawStep.par.refineIntro_inv chain
 
+/-- `RawStep.parStar (refineElim refinedValue) target` either preserves
+the `refineElim` head or fires refinement β after the refined value
+develops to a `refineIntro`. -/
+theorem RawStep.parStar.refineElim_inv {scope : Nat}
+    {refinedValue target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.refineElim refinedValue) target) :
+    (∃ refinedTarget,
+      target = RawTerm.refineElim refinedTarget ∧
+      RawStep.parStar refinedValue refinedTarget) ∨
+    (∃ valueTarget proofTarget,
+      RawStep.parStar refinedValue
+        (RawTerm.refineIntro valueTarget proofTarget) ∧
+      RawStep.parStar valueTarget target) :=
+  RawStep.parStar.binary_intro_elim_inv_helper RawTerm.refineElim
+    RawTerm.refineIntro (fun valueTarget _ => valueTarget)
+    RawStep.par.refineElim_inv chain
+
 /-- `RawStep.parStar (recordIntro firstField) target` preserves the
 `recordIntro` head and projects to the field chain. -/
 theorem RawStep.parStar.recordIntro_inv {scope : Nat}
@@ -1200,6 +1300,24 @@ theorem RawStep.parStar.codataUnfold_inv {scope : Nat}
       RawStep.parStar transition transitionTarget :=
   RawStep.parStar.binary_inv_helper RawTerm.codataUnfold
     RawStep.par.codataUnfold_inv chain
+
+/-- `RawStep.parStar (codataDest codataValue) target` either preserves
+the `codataDest` head or fires codata β after the codata value develops
+to an unfold. -/
+theorem RawStep.parStar.codataDest_inv {scope : Nat}
+    {codataValue target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.codataDest codataValue) target) :
+    (∃ codataTarget,
+      target = RawTerm.codataDest codataTarget ∧
+      RawStep.parStar codataValue codataTarget) ∨
+    (∃ stateTarget transitionTarget,
+      RawStep.parStar codataValue
+        (RawTerm.codataUnfold stateTarget transitionTarget) ∧
+      RawStep.parStar (RawTerm.app transitionTarget stateTarget) target) :=
+  RawStep.parStar.binary_intro_elim_inv_helper RawTerm.codataDest
+    RawTerm.codataUnfold
+    (fun stateTarget transitionTarget => RawTerm.app transitionTarget stateTarget)
+    RawStep.par.codataDest_inv chain
 
 /-- `RawStep.parStar (sessionSend channel payload) target` preserves
 the `sessionSend` head and projects to channel/payload chains. -/
