@@ -59,6 +59,26 @@ theorem subst_compatible_same {sourceScope targetScope : Nat}
     (fun position => RawStep.par.refl (rawSubst position))
     parallelStep
 
+/-- Singleton-substitution specialization of `subst_compatible_same`.
+
+Surface form `body.subst0 arg` matches the β-redex shape downstream
+K12.28 Geuvers 1992 critical-pair joinability and K13 NbE β-step
+consumers reach for: reducing the body of a singleton β-redex while
+the argument stays fixed.
+
+`RawTerm.subst0 body arg` is `@[reducible]` defined as
+`body.subst (RawTermSubst.singleton arg)`
+(`Foundation/RawSubst/SubstDefs.lean:200`), so this is a direct
+call to `subst_compatible_same`. -/
+theorem subst0_compatible_same {scope : Nat}
+    (argTerm : RawTerm scope)
+    {beforeBody afterBody : RawTerm (scope + 1)}
+    (parallelStep : RawStep.par beforeBody afterBody) :
+    RawStep.par (beforeBody.subst0 argTerm)
+                (afterBody.subst0 argTerm) :=
+  RawStep.par.subst_compatible_same
+    (RawTermSubst.singleton argTerm) parallelStep
+
 end par
 
 end RawStep

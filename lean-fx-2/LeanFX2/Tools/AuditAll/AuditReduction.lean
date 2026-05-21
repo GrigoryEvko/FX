@@ -253,6 +253,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.RawStep.par.weaken_compatible
 #assert_no_axioms LeanFX2.RawStep.par.subst_compatible
 #assert_no_axioms LeanFX2.RawStep.par.subst_compatible_same
+#assert_no_axioms LeanFX2.RawStep.par.subst0_compatible_same
 #assert_no_axioms LeanFX2.Step.par.glueIntro
 #assert_no_axioms LeanFX2.Step.par.glueIntroCong
 #assert_no_axioms LeanFX2.Step.par.glueElim
@@ -736,6 +737,7 @@ shapes: 5 in CubicalShape. -/
 #assert_no_axioms LeanFX2.Step.par.toRawBridge_target_in_rename_image_of_sourceRaw_eq
 #assert_no_axioms LeanFX2.Step.par.toRawBridge_target_in_weaken_image_of_sourceRaw_eq
 #assert_no_axioms LeanFX2.RawStep.parStar.subst_compatible_same
+#assert_no_axioms LeanFX2.RawStep.parStar.subst0_compatible_same
 #assert_no_axioms LeanFX2.Step.parStar.rename_toRawBridge
 #assert_no_axioms LeanFX2.Step.parStar.weaken_toRawBridge
 #assert_no_axioms LeanFX2.Step.parStar.subst_toRawBridge

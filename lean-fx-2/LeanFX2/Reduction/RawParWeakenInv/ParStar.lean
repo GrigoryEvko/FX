@@ -61,6 +61,23 @@ theorem RawStep.parStar.subst_compatible_same
     (fun step => RawStep.par.subst_compatible_same rawSubst step)
     parallelChain
 
+/-- Singleton-substitution specialization of
+`RawStep.parStar.subst_compatible_same`.
+
+Surface form `body.subst0 arg` matches the β-redex shape downstream
+K12.28 Geuvers 1992 critical-pair joinability and K13 NbE β-step
+consumers reach for at the raw multi-step level.  Specializes the
+general subst compatibility theorem to `RawTermSubst.singleton`. -/
+theorem RawStep.parStar.subst0_compatible_same
+    {scope : Nat}
+    (argTerm : RawTerm scope)
+    {beforeBody afterBody : RawTerm (scope + 1)}
+    (parallelChain : RawStep.parStar beforeBody afterBody) :
+    RawStep.parStar (beforeBody.subst0 argTerm)
+                    (afterBody.subst0 argTerm) :=
+  RawStep.parStar.subst_compatible_same
+    (RawTermSubst.singleton argTerm) parallelChain
+
 private theorem RawStep.parStar.target_in_rename_image_aux
     {sourceScope targetScope : Nat}
     (rho : RawRenaming sourceScope targetScope)
