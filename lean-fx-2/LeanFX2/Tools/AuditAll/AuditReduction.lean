@@ -20,6 +20,7 @@ import LeanFX2.Reduction.Compat.Misc
 import LeanFX2.Reduction.Compat.TypeCodes
 import LeanFX2.Reduction.ConvBridge
 import LeanFX2.Reduction.ParRed.CongAliases
+import LeanFX2.Reduction.ParRed.PreEtaInversion
 import LeanFX2.Reduction.Step.Casts
 import LeanFX2.Reduction.ParRed.ParCasts
 import LeanFX2.Reduction.RawParWeakenInv.Weaken
@@ -419,6 +420,9 @@ namespace LeanFX2.Tools
 -- cast surfaced in the inner Step.par premise).
 #assert_no_axioms LeanFX2.Step.par.pathLamCong.rename_compatible
 #assert_no_axioms LeanFX2.Step.par.pathLamCong.subst_compatible
+#assert_no_axioms LeanFX2.Step.par.lam_targetRaw_inv_congr
+#assert_no_axioms LeanFX2.Step.par.lamPi_targetRaw_inv_congr
+#assert_no_axioms LeanFX2.Step.par.pathLam_targetRaw_inv_congr
 
 -- D3.6-P5 typed compositional compat — uaToEquivCong (unary, single
 -- typed subterm `proof` at `Ty.id (Ty.universe ...) leftTyRaw rightTyRaw`)
