@@ -74,6 +74,26 @@ theorem RawStep.parStar.target_in_rename_image
   RawStep.parStar.target_in_rename_image_aux rho rhoInjective
     parallelChain rfl
 
+/-- Source-equality wrapper for `RawStep.parStar.target_in_rename_image`.
+
+This is the multi-step roadmap shape: the chain source is identified as a
+rename image by an equality hypothesis instead of being definitionally a
+renamed term. -/
+theorem RawStep.parStar.target_in_rename_image_of_source_eq
+    {sourceScope targetScope : Nat}
+    {renamedSource targetAfter : RawTerm targetScope}
+    {sourceTerm : RawTerm sourceScope}
+    (rho : RawRenaming sourceScope targetScope)
+    (rhoInjective :
+      ∀ leftPosition rightPosition,
+        rho leftPosition = rho rightPosition → leftPosition = rightPosition)
+    (sourceEq : renamedSource = sourceTerm.rename rho)
+    (parallelChain : RawStep.parStar renamedSource targetAfter) :
+    ∃ targetInner : RawTerm sourceScope,
+      targetAfter = targetInner.rename rho := by
+  cases sourceEq
+  exact RawStep.parStar.target_in_rename_image rho rhoInjective parallelChain
+
 /-- Canonical-weaken instance of `RawStep.parStar.target_in_rename_image`. -/
 theorem RawStep.parStar.target_in_weaken_image
     {scope : Nat}
@@ -84,5 +104,17 @@ theorem RawStep.parStar.target_in_weaken_image
       targetAfter = targetInner.weaken :=
   RawStep.parStar.target_in_rename_image RawRenaming.weaken
     RawRenaming.weaken_injective parallelChain
+
+/-- Source-equality wrapper for the canonical-weaken `parStar` target image. -/
+theorem RawStep.parStar.target_in_weaken_image_of_source_eq
+    {scope : Nat}
+    {weakenedSource targetAfter : RawTerm (scope + 1)}
+    {sourceTerm : RawTerm scope}
+    (sourceEq : weakenedSource = sourceTerm.weaken)
+    (parallelChain : RawStep.parStar weakenedSource targetAfter) :
+    ∃ targetInner : RawTerm scope,
+      targetAfter = targetInner.weaken := by
+  cases sourceEq
+  exact RawStep.parStar.target_in_weaken_image parallelChain
 
 end LeanFX2

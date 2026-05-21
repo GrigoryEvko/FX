@@ -157,6 +157,60 @@ theorem Conv.weakened_left_commonRaw_in_weaken_image
   exact ⟨commonType, commonRaw, commonTerm, sourceChain, targetChain,
     StepStar.weakened_source_targetRaw_in_weaken_image newType sourceChain⟩
 
+/-- If the left endpoint raw projection of a `Conv` witness is in a raw
+renaming image, then the typed common reduct's raw projection is also in that
+image. -/
+theorem Conv.left_commonRaw_in_rename_image_of_sourceRaw_eq
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {targetCtx : Ctx mode level targetScope}
+    {rawRenaming : RawRenaming sourceScope targetScope}
+    (rawRenamingInjective :
+      ∀ leftPosition rightPosition,
+        rawRenaming leftPosition = rawRenaming rightPosition →
+          leftPosition = rightPosition)
+    {sourceType targetType : Ty level targetScope}
+    {sourceRaw targetRaw : RawTerm targetScope}
+    {sourceInnerRaw : RawTerm sourceScope}
+    {sourceTerm : Term targetCtx sourceType sourceRaw}
+    {targetTerm : Term targetCtx targetType targetRaw}
+    (sourceEq : sourceRaw = sourceInnerRaw.rename rawRenaming)
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ (commonType : Ty level targetScope) (commonRaw : RawTerm targetScope)
+      (commonTerm : Term targetCtx commonType commonRaw),
+      StepStar sourceTerm commonTerm ∧
+      StepStar targetTerm commonTerm ∧
+      ∃ commonInnerRaw : RawTerm sourceScope,
+        commonRaw = commonInnerRaw.rename rawRenaming := by
+  obtain ⟨commonType, commonRaw, commonTerm, sourceChain, targetChain⟩ :=
+    convertibility
+  exact ⟨commonType, commonRaw, commonTerm, sourceChain, targetChain,
+    StepStar.sourceRaw_in_rename_image_targetRaw_in_rename_image
+      rawRenamingInjective sourceEq sourceChain⟩
+
+/-- Canonical-weaken specialization of
+`Conv.left_commonRaw_in_rename_image_of_sourceRaw_eq`. -/
+theorem Conv.left_commonRaw_in_weaken_image_of_sourceRaw_eq
+    {mode : Mode} {level scope : Nat}
+    {targetCtx : Ctx mode level (scope + 1)}
+    {sourceType targetType : Ty level (scope + 1)}
+    {sourceRaw targetRaw : RawTerm (scope + 1)}
+    {sourceInnerRaw : RawTerm scope}
+    {sourceTerm : Term targetCtx sourceType sourceRaw}
+    {targetTerm : Term targetCtx targetType targetRaw}
+    (sourceEq : sourceRaw = sourceInnerRaw.weaken)
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ (commonType : Ty level (scope + 1)) (commonRaw : RawTerm (scope + 1))
+      (commonTerm : Term targetCtx commonType commonRaw),
+      StepStar sourceTerm commonTerm ∧
+      StepStar targetTerm commonTerm ∧
+      ∃ commonInnerRaw : RawTerm scope,
+        commonRaw = commonInnerRaw.weaken := by
+  obtain ⟨commonType, commonRaw, commonTerm, sourceChain, targetChain⟩ :=
+    convertibility
+  exact ⟨commonType, commonRaw, commonTerm, sourceChain, targetChain,
+    StepStar.sourceRaw_in_weaken_image_targetRaw_in_weaken_image
+      sourceEq sourceChain⟩
+
 /-- Right-endpoint variant of
 `Conv.renamed_left_commonRaw_in_rename_image`. -/
 theorem Conv.renamed_right_commonRaw_in_rename_image
@@ -210,5 +264,57 @@ theorem Conv.weakened_right_commonRaw_in_weaken_image
     convertibility
   exact ⟨commonType, commonRaw, commonTerm, sourceChain, targetChain,
     StepStar.weakened_source_targetRaw_in_weaken_image newType targetChain⟩
+
+/-- Right-endpoint variant of
+`Conv.left_commonRaw_in_rename_image_of_sourceRaw_eq`. -/
+theorem Conv.right_commonRaw_in_rename_image_of_targetRaw_eq
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {targetCtx : Ctx mode level targetScope}
+    {rawRenaming : RawRenaming sourceScope targetScope}
+    (rawRenamingInjective :
+      ∀ leftPosition rightPosition,
+        rawRenaming leftPosition = rawRenaming rightPosition →
+          leftPosition = rightPosition)
+    {sourceType targetType : Ty level targetScope}
+    {sourceRaw targetRaw : RawTerm targetScope}
+    {targetInnerRaw : RawTerm sourceScope}
+    {sourceTerm : Term targetCtx sourceType sourceRaw}
+    {targetTerm : Term targetCtx targetType targetRaw}
+    (targetEq : targetRaw = targetInnerRaw.rename rawRenaming)
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ (commonType : Ty level targetScope) (commonRaw : RawTerm targetScope)
+      (commonTerm : Term targetCtx commonType commonRaw),
+      StepStar sourceTerm commonTerm ∧
+      StepStar targetTerm commonTerm ∧
+      ∃ commonInnerRaw : RawTerm sourceScope,
+        commonRaw = commonInnerRaw.rename rawRenaming := by
+  obtain ⟨commonType, commonRaw, commonTerm, sourceChain, targetChain⟩ :=
+    convertibility
+  exact ⟨commonType, commonRaw, commonTerm, sourceChain, targetChain,
+    StepStar.sourceRaw_in_rename_image_targetRaw_in_rename_image
+      rawRenamingInjective targetEq targetChain⟩
+
+/-- Canonical-weaken right-endpoint source-equality variant. -/
+theorem Conv.right_commonRaw_in_weaken_image_of_targetRaw_eq
+    {mode : Mode} {level scope : Nat}
+    {targetCtx : Ctx mode level (scope + 1)}
+    {sourceType targetType : Ty level (scope + 1)}
+    {sourceRaw targetRaw : RawTerm (scope + 1)}
+    {targetInnerRaw : RawTerm scope}
+    {sourceTerm : Term targetCtx sourceType sourceRaw}
+    {targetTerm : Term targetCtx targetType targetRaw}
+    (targetEq : targetRaw = targetInnerRaw.weaken)
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ (commonType : Ty level (scope + 1)) (commonRaw : RawTerm (scope + 1))
+      (commonTerm : Term targetCtx commonType commonRaw),
+      StepStar sourceTerm commonTerm ∧
+      StepStar targetTerm commonTerm ∧
+      ∃ commonInnerRaw : RawTerm scope,
+        commonRaw = commonInnerRaw.weaken := by
+  obtain ⟨commonType, commonRaw, commonTerm, sourceChain, targetChain⟩ :=
+    convertibility
+  exact ⟨commonType, commonRaw, commonTerm, sourceChain, targetChain,
+    StepStar.sourceRaw_in_weaken_image_targetRaw_in_weaken_image
+      targetEq targetChain⟩
 
 end LeanFX2

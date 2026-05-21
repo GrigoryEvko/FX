@@ -139,6 +139,48 @@ theorem Step.parStar.weakened_source_targetRaw_in_weaken_image
   RawStep.parStar.target_in_weaken_image
     (Step.parStar.toRawBridge parallelChain)
 
+/-- Typed `parStar` raw image preservation from a raw source equality.
+
+This is the multi-step T5 source-equality shape at the typed entrypoint.  It
+stays at raw/index level and therefore does not require subject reduction. -/
+theorem Step.parStar.sourceRaw_in_rename_image_targetRaw_in_rename_image
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {targetCtx : Ctx mode level targetScope}
+    {rawRenaming : RawRenaming sourceScope targetScope}
+    (rawRenamingInjective :
+      ∀ leftPosition rightPosition,
+        rawRenaming leftPosition = rawRenaming rightPosition →
+          leftPosition = rightPosition)
+    {sourceType targetType : Ty level targetScope}
+    {sourceRaw targetRaw : RawTerm targetScope}
+    {sourceInnerRaw : RawTerm sourceScope}
+    {sourceTerm : Term targetCtx sourceType sourceRaw}
+    {targetTerm : Term targetCtx targetType targetRaw}
+    (sourceEq : sourceRaw = sourceInnerRaw.rename rawRenaming)
+    (parallelChain : Step.parStar sourceTerm targetTerm) :
+    ∃ targetInnerRaw : RawTerm sourceScope,
+      targetRaw = targetInnerRaw.rename rawRenaming :=
+  RawStep.parStar.target_in_rename_image_of_source_eq rawRenaming
+    rawRenamingInjective sourceEq
+    (Step.parStar.toRawBridge parallelChain)
+
+/-- Canonical-weaken specialization of
+`Step.parStar.sourceRaw_in_rename_image_targetRaw_in_rename_image`. -/
+theorem Step.parStar.sourceRaw_in_weaken_image_targetRaw_in_weaken_image
+    {mode : Mode} {level scope : Nat}
+    {targetCtx : Ctx mode level (scope + 1)}
+    {sourceType targetType : Ty level (scope + 1)}
+    {sourceRaw targetRaw : RawTerm (scope + 1)}
+    {sourceInnerRaw : RawTerm scope}
+    {sourceTerm : Term targetCtx sourceType sourceRaw}
+    {targetTerm : Term targetCtx targetType targetRaw}
+    (sourceEq : sourceRaw = sourceInnerRaw.weaken)
+    (parallelChain : Step.parStar sourceTerm targetTerm) :
+    ∃ targetInnerRaw : RawTerm scope,
+      targetRaw = targetInnerRaw.weaken :=
+  RawStep.parStar.target_in_weaken_image_of_source_eq sourceEq
+    (Step.parStar.toRawBridge parallelChain)
+
 /-- `StepStar` variant of
 `Step.parStar.renamed_source_targetRaw_in_rename_image`.
 
@@ -183,6 +225,43 @@ theorem StepStar.weakened_source_targetRaw_in_weaken_image
       targetRaw = targetInnerRaw.weaken :=
   Step.parStar.weakened_source_targetRaw_in_weaken_image
     newType chain.toParStar
+
+/-- `StepStar` raw image preservation from a raw source equality. -/
+theorem StepStar.sourceRaw_in_rename_image_targetRaw_in_rename_image
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {targetCtx : Ctx mode level targetScope}
+    {rawRenaming : RawRenaming sourceScope targetScope}
+    (rawRenamingInjective :
+      ∀ leftPosition rightPosition,
+        rawRenaming leftPosition = rawRenaming rightPosition →
+          leftPosition = rightPosition)
+    {sourceType targetType : Ty level targetScope}
+    {sourceRaw targetRaw : RawTerm targetScope}
+    {sourceInnerRaw : RawTerm sourceScope}
+    {sourceTerm : Term targetCtx sourceType sourceRaw}
+    {targetTerm : Term targetCtx targetType targetRaw}
+    (sourceEq : sourceRaw = sourceInnerRaw.rename rawRenaming)
+    (chain : StepStar sourceTerm targetTerm) :
+    ∃ targetInnerRaw : RawTerm sourceScope,
+      targetRaw = targetInnerRaw.rename rawRenaming :=
+  Step.parStar.sourceRaw_in_rename_image_targetRaw_in_rename_image
+    rawRenamingInjective sourceEq chain.toParStar
+
+/-- Canonical-weaken `StepStar` source-equality variant. -/
+theorem StepStar.sourceRaw_in_weaken_image_targetRaw_in_weaken_image
+    {mode : Mode} {level scope : Nat}
+    {targetCtx : Ctx mode level (scope + 1)}
+    {sourceType targetType : Ty level (scope + 1)}
+    {sourceRaw targetRaw : RawTerm (scope + 1)}
+    {sourceInnerRaw : RawTerm scope}
+    {sourceTerm : Term targetCtx sourceType sourceRaw}
+    {targetTerm : Term targetCtx targetType targetRaw}
+    (sourceEq : sourceRaw = sourceInnerRaw.weaken)
+    (chain : StepStar sourceTerm targetTerm) :
+    ∃ targetInnerRaw : RawTerm scope,
+      targetRaw = targetInnerRaw.weaken :=
+  Step.parStar.sourceRaw_in_weaken_image_targetRaw_in_weaken_image
+    sourceEq chain.toParStar
 
 /-- **Projection-confluence** for typed multi-step parallel
 reduction.  Two typed chains from a common source produce raw

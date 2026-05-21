@@ -32,5 +32,15 @@ theorem RawStep.par.target_in_weaken_image {scope : Nat}
   RawStep.par.target_in_rename_image RawRenaming.weaken
     RawRenaming.weaken_injective parStep
 
+/-- Source-equality wrapper for canonical-weaken one-step target image. -/
+theorem RawStep.par.target_in_weaken_image_of_source_eq {scope : Nat}
+    {weakenedSource targetAfter : RawTerm (scope + 1)}
+    {sourceTerm : RawTerm scope}
+    (sourceEq : weakenedSource = sourceTerm.weaken)
+    (parStep : RawStep.par weakenedSource targetAfter) :
+    ∃ targetInner : RawTerm scope, targetAfter = targetInner.weaken := by
+  cases sourceEq
+  exact RawStep.par.target_in_weaken_image parStep
+
 
 end LeanFX2

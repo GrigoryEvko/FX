@@ -471,6 +471,48 @@ theorem Step.par.weakened_source_targetRaw_in_weaken_image
   RawStep.par.target_in_weaken_image
     (Step.par.toRawBridge parallelStep)
 
+/-- Typed-entrypoint raw image preservation from a raw source equality.
+
+This is the one-step roadmap shape for typed consumers that know only that the
+source raw projection is a rename image, not that the typed source is literally
+a `Term.rename`. -/
+theorem Step.par.sourceRaw_in_rename_image_targetRaw_in_rename_image
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {targetCtx : Ctx mode level targetScope}
+    {rawRenaming : RawRenaming sourceScope targetScope}
+    (rawRenamingInjective :
+      ∀ leftPosition rightPosition,
+        rawRenaming leftPosition = rawRenaming rightPosition →
+          leftPosition = rightPosition)
+    {sourceType targetType : Ty level targetScope}
+    {sourceRaw targetRaw : RawTerm targetScope}
+    {sourceInnerRaw : RawTerm sourceScope}
+    {sourceTerm : Term targetCtx sourceType sourceRaw}
+    {targetTerm : Term targetCtx targetType targetRaw}
+    (sourceEq : sourceRaw = sourceInnerRaw.rename rawRenaming)
+    (parallelStep : Step.par sourceTerm targetTerm) :
+    ∃ targetInnerRaw : RawTerm sourceScope,
+      targetRaw = targetInnerRaw.rename rawRenaming :=
+  RawStep.par.target_in_rename_image_of_source_eq rawRenaming
+    rawRenamingInjective sourceEq (Step.par.toRawBridge parallelStep)
+
+/-- Canonical-weaken specialization of
+`Step.par.sourceRaw_in_rename_image_targetRaw_in_rename_image`. -/
+theorem Step.par.sourceRaw_in_weaken_image_targetRaw_in_weaken_image
+    {mode : Mode} {level scope : Nat}
+    {targetCtx : Ctx mode level (scope + 1)}
+    {sourceType targetType : Ty level (scope + 1)}
+    {sourceRaw targetRaw : RawTerm (scope + 1)}
+    {sourceInnerRaw : RawTerm scope}
+    {sourceTerm : Term targetCtx sourceType sourceRaw}
+    {targetTerm : Term targetCtx targetType targetRaw}
+    (sourceEq : sourceRaw = sourceInnerRaw.weaken)
+    (parallelStep : Step.par sourceTerm targetTerm) :
+    ∃ targetInnerRaw : RawTerm scope,
+      targetRaw = targetInnerRaw.weaken :=
+  RawStep.par.target_in_weaken_image_of_source_eq sourceEq
+    (Step.par.toRawBridge parallelStep)
+
 /-- Raw-image compatibility for typed parallel reduction after a typed
 substitution.
 
