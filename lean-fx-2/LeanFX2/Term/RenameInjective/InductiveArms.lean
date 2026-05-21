@@ -858,6 +858,144 @@ theorem Term.rename_injective_arm_lamPi
 -- inversion plumbing not yet in scope.  See InductiveArms.lean header for the
 -- catalogue of arm patterns that DO ship cleanly via this driver.
 
+/-! ## Modal-wrapper arms (`modIntro`/`modElim`/`subsume`).
+
+Three modal-wrapper ctors share the shape: a single child at arbitrary
+`innerType`, with the OUTER type equal to the child's type (no
+projection, no cast).  Each maps `RawTerm.<wrapper> innerRaw` 1-1 to the
+typed ctor.  No existential type leak — the matcher unifies the ctor's
+local `{innerType}` directly with the arm-bound `innerType`.
+
+NOTE: even though `Mode` lives at `Ctx`, the ctor signature treats both
+input and output context as the same `{context : Ctx mode level scope}`
+for the current modal kernel layer.  When the K12.25 cross-mode
+extension lands (CUMUL-7.1, #1689-#1694), `modIntroCross` /
+`modElimCross` will get separate arm helpers; these three are for the
+same-mode case. -/
+
+/-- `modIntro` arm: same-mode modal introduction wrapper. -/
+theorem Term.rename_injective_arm_modIntro
+    {innerType : Ty level sourceScope}
+    {innerRaw : RawTerm sourceScope}
+    (innerTerm : Term sourceCtx innerType innerRaw)
+    (innerIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (innerB : Term sourceCtx innerType innerRaw),
+          Term.rename innerRenaming innerTerm =
+            Term.rename innerRenaming innerB →
+          innerTerm = innerB)
+    (rhoInjective : RawRenamingInjective rho)
+    (termB :
+      Term sourceCtx innerType (RawTerm.modIntro innerRaw)) :
+    Term.rename termRenaming (Term.modIntro innerTerm) =
+      Term.rename termRenaming termB →
+      Term.modIntro innerTerm = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm :
+          Term sourceCtx genericType (RawTerm.modIntro innerRaw)),
+        Σ' (inferredInnerType : Ty level sourceScope),
+          Σ' (innerB : Term sourceCtx inferredInnerType innerRaw),
+            Σ' (_ : genericType = inferredInnerType),
+              HEq genericTerm (Term.modIntro innerB) by
+    obtain ⟨inferredInnerType, innerB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqB
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ innerRenameEq
+    exact congrArg Term.modIntro
+      (innerIH termRenaming rhoInjective innerB innerRenameEq)
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i innerTermB
+  exact ⟨genericType, innerTermB, rfl, HEq.rfl⟩
+
+/-- `modElim` arm: same-mode modal elimination wrapper. -/
+theorem Term.rename_injective_arm_modElim
+    {innerType : Ty level sourceScope}
+    {innerRaw : RawTerm sourceScope}
+    (innerTerm : Term sourceCtx innerType innerRaw)
+    (innerIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (innerB : Term sourceCtx innerType innerRaw),
+          Term.rename innerRenaming innerTerm =
+            Term.rename innerRenaming innerB →
+          innerTerm = innerB)
+    (rhoInjective : RawRenamingInjective rho)
+    (termB :
+      Term sourceCtx innerType (RawTerm.modElim innerRaw)) :
+    Term.rename termRenaming (Term.modElim innerTerm) =
+      Term.rename termRenaming termB →
+      Term.modElim innerTerm = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm :
+          Term sourceCtx genericType (RawTerm.modElim innerRaw)),
+        Σ' (inferredInnerType : Ty level sourceScope),
+          Σ' (innerB : Term sourceCtx inferredInnerType innerRaw),
+            Σ' (_ : genericType = inferredInnerType),
+              HEq genericTerm (Term.modElim innerB) by
+    obtain ⟨inferredInnerType, innerB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqB
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ innerRenameEq
+    exact congrArg Term.modElim
+      (innerIH termRenaming rhoInjective innerB innerRenameEq)
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i innerTermB
+  exact ⟨genericType, innerTermB, rfl, HEq.rfl⟩
+
+/-- `subsume` arm: cumulativity/subsumption wrapper at same mode. -/
+theorem Term.rename_injective_arm_subsume
+    {innerType : Ty level sourceScope}
+    {innerRaw : RawTerm sourceScope}
+    (innerTerm : Term sourceCtx innerType innerRaw)
+    (innerIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (innerB : Term sourceCtx innerType innerRaw),
+          Term.rename innerRenaming innerTerm =
+            Term.rename innerRenaming innerB →
+          innerTerm = innerB)
+    (rhoInjective : RawRenamingInjective rho)
+    (termB :
+      Term sourceCtx innerType (RawTerm.subsume innerRaw)) :
+    Term.rename termRenaming (Term.subsume innerTerm) =
+      Term.rename termRenaming termB →
+      Term.subsume innerTerm = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm :
+          Term sourceCtx genericType (RawTerm.subsume innerRaw)),
+        Σ' (inferredInnerType : Ty level sourceScope),
+          Σ' (innerB : Term sourceCtx inferredInnerType innerRaw),
+            Σ' (_ : genericType = inferredInnerType),
+              HEq genericTerm (Term.subsume innerB) by
+    obtain ⟨inferredInnerType, innerB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqB
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ innerRenameEq
+    exact congrArg Term.subsume
+      (innerIH termRenaming rhoInjective innerB innerRenameEq)
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i innerTermB
+  exact ⟨genericType, innerTermB, rfl, HEq.rfl⟩
+
 /-! ## Interval-operation arms (closed outer type, closed child types).
 
 Three cubical interval operations (`intervalOpp` unary, `intervalMeet`/`Join`
