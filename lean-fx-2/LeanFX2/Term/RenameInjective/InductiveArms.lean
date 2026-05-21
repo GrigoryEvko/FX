@@ -1,6 +1,7 @@
 import LeanFX2.Term.RenameInjective
 import LeanFX2.Term.TypedInversion
 import LeanFX2.Term.RenameInjective.CastInversions
+import LeanFX2.Term.Pointwise.PointwiseAndCompositionInfrastructure.CastHEq
 
 /-! # Term/RenameInjective/InductiveArms
 
@@ -950,6 +951,551 @@ the `dsimp`'d `renameEq` to extract `Ty`-existential equalities via
 `Ty.rename_injective_under_injective_renaming`, and finally invoke
 child IHs to close.
 -/
+
+/-- `snd` arm: Σ-second-projection with `subst0`-shaped cast on the result
+    type.  No raw collision (`RawTerm.snd` is uniquely produced by
+    `Term.snd`).  Uses `Term.snd_raw_inv` to invert `termB` into a typed
+    `Term.snd pairTermB` HEq-shape with existential `firstTypeB`,
+    `secondTypeB`, plus a propositional `typeEqB` for the outer subst0
+    type.  Builds a bare-`Term.snd` HEq by stripping the cast on both
+    `Term.rename`-applied snds (using `termRenameInjectiveCastHEq`), then
+    uses `Term.noConfusion`'s HEq-aware decomposition to extract
+    `firstType.rename HEq firstTypeB.rename` and the analogous secondType
+    HEq plus the underlying pair HEq.  `Ty.rename_injective_under_injective_renaming`
+    collapses the rename equalities to component equalities;
+    after `cases`-specialization, the pair IH closes. -/
+theorem Term.rename_injective_arm_snd
+    (rhoInjective : RawRenamingInjective rho)
+    {firstType : Ty level sourceScope}
+    {secondTypeA : Ty level (sourceScope + 1)}
+    {pairRaw : RawTerm sourceScope}
+    (pairA : Term sourceCtx (Ty.sigmaTy firstType secondTypeA) pairRaw)
+    (pairIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (pairB : Term sourceCtx (Ty.sigmaTy firstType secondTypeA) pairRaw),
+          Term.rename innerRenaming pairA = Term.rename innerRenaming pairB →
+          pairA = pairB)
+    (termB : Term sourceCtx (secondTypeA.subst0 firstType (RawTerm.fst pairRaw))
+      (RawTerm.snd pairRaw)) :
+    Term.rename termRenaming (Term.snd pairA) =
+      Term.rename termRenaming termB →
+      Term.snd pairA = termB := by
+  intro renameEq
+  obtain ⟨firstTypeB, secondTypeB, pairTermB, typeEqB, termHEqB⟩ :=
+    Term.snd_raw_inv termB
+  -- Lift termHEqB through Term.rename using Term.rename_heq_of_eq.
+  have renamedTermBHEq :
+      HEq (Term.rename termRenaming termB)
+          (Term.rename termRenaming (Term.snd pairTermB)) :=
+    Term.rename_heq_of_eq termRenaming typeEqB rfl termHEqB
+  -- Build the bare-snd HEq by stripping the subst0_rename_commute cast on
+  -- both sides of `renameEq` (combined with `renamedTermBHEq`).
+  have sndRenameHEq :
+      HEq
+        (Term.snd (Term.rename termRenaming pairA))
+        (Term.snd (Term.rename termRenaming pairTermB)) :=
+    HEq.trans
+      (HEq.symm
+        (termRenameInjectiveCastHEq
+          (Ty.subst0_rename_commute secondTypeA firstType
+            (RawTerm.fst pairRaw) rho).symm
+          (Term.snd (Term.rename termRenaming pairA))))
+      (HEq.trans (HEq.trans (heq_of_eq renameEq) renamedTermBHEq)
+        (termRenameInjectiveCastHEq
+          (Ty.subst0_rename_commute secondTypeB firstTypeB
+            (RawTerm.fst pairRaw) rho).symm
+          (Term.snd (Term.rename termRenaming pairTermB))))
+  -- Outer renamed type equation, derived from typeEqB via congrArg.  Lean
+  -- reduces the renamed `subst0` via `Ty.subst0_rename_commute` when
+  -- inferring the outer-type HEq for `Term.noConfusion`; rewrite our
+  -- equation to the post-commute form so Lean accepts it.
+  have outerRenamedTypeEq :
+      (secondTypeA.rename rho.lift).subst0 (firstType.rename rho)
+          ((RawTerm.fst pairRaw).rename rho) =
+        (secondTypeB.rename rho.lift).subst0 (firstTypeB.rename rho)
+          ((RawTerm.fst pairRaw).rename rho) := by
+    have base := congrArg (fun outerType => outerType.rename rho) typeEqB
+    simp only [Ty.subst0_rename_commute] at base
+    exact base
+  -- Use Term.noConfusion's HEq-aware decomposition to extract the
+  -- existential HEqs (renamed firstType/secondType) plus the pair HEq.
+  have extracted :
+      Σ' (firstRenameHEq :
+            HEq (firstType.rename rho) (firstTypeB.rename rho))
+         (secondRenameHEq :
+            HEq (secondTypeA.rename rho.lift) (secondTypeB.rename rho.lift)),
+         HEq (Term.rename termRenaming pairA)
+             (Term.rename termRenaming pairTermB) := by
+    exact Term.noConfusion
+      (P := Σ' (firstRenameHEq :
+            HEq (firstType.rename rho) (firstTypeB.rename rho))
+         (secondRenameHEq :
+            HEq (secondTypeA.rename rho.lift) (secondTypeB.rename rho.lift)),
+         HEq (Term.rename termRenaming pairA)
+             (Term.rename termRenaming pairTermB))
+      (t := Term.snd (Term.rename termRenaming pairA))
+      (t' := Term.snd (Term.rename termRenaming pairTermB))
+      rfl rfl rfl HEq.rfl (heq_of_eq outerRenamedTypeEq) HEq.rfl sndRenameHEq
+      (fun _ _ firstRenameHEq secondRenameHEq _ pairsRenameHEq =>
+        ⟨firstRenameHEq, secondRenameHEq, pairsRenameHEq⟩)
+  obtain ⟨firstRenameHEq, secondRenameHEq, pairsRenameHEq⟩ := extracted
+  have firstTypeEq : firstType = firstTypeB :=
+    Ty.rename_injective_under_injective_renaming firstType rhoInjective
+      firstTypeB (eq_of_heq firstRenameHEq)
+  cases firstTypeEq
+  have secondTypeEq : secondTypeA = secondTypeB :=
+    Ty.rename_injective_under_injective_renaming secondTypeA
+      (RawRenamingInjective.lift rhoInjective) secondTypeB
+      (eq_of_heq secondRenameHEq)
+  cases secondTypeEq
+  -- Now pairA and pairTermB live at the same sigmaTy; pairsRenameHEq is a
+  -- homogeneous Eq, so pairIH applies.
+  have pairTermEq : pairA = pairTermB :=
+    pairIH termRenaming rhoInjective pairTermB (eq_of_heq pairsRenameHEq)
+  cases pairTermEq
+  -- termHEqB now has aligned outer types; cases collapses HEq to Eq via rfl.
+  cases termHEqB
+  rfl
+
+/-- `boolElim` arm: bool eliminator with `subst0`-shaped cast on the
+    result type plus two cast-on-result children at `motiveType.subst0
+    Ty.bool RawTerm.boolTrue` / `motiveType.subst0 Ty.bool RawTerm.boolFalse`.
+    No raw collision.  Uses `Term.boolElim_raw_inv` to invert `termB` into
+    a typed `Term.boolElim scrutineeB thenB elseB` shape with existential
+    `motiveTypeB` and a propositional `typeEqB` for the outer subst0
+    type.  Builds a bare-`Term.boolElim` HEq by stripping the outer cast
+    on both `Term.rename`-applied elims (using `termRenameInjectiveCastHEq`),
+    then uses `Term.noConfusion`'s HEq-aware decomposition to extract the
+    `motiveType.rename` HEq and the three child HEqs.  The motive
+    realignment via `Ty.rename_injective_under_injective_renaming` brings
+    both elims to the same motive; the children's casts are individually
+    stripped before invoking the child IHs. -/
+theorem Term.rename_injective_arm_boolElim
+    (rhoInjective : RawRenamingInjective rho)
+    {motiveType : Ty level (sourceScope + 1)}
+    {scrutineeRaw thenRaw elseRaw : RawTerm sourceScope}
+    (scrutineeA : Term sourceCtx Ty.bool scrutineeRaw)
+    (thenA :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw)
+    (elseA :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw)
+    (scrutineeIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (scrutineeB : Term sourceCtx Ty.bool scrutineeRaw),
+          Term.rename innerRenaming scrutineeA =
+            Term.rename innerRenaming scrutineeB →
+          scrutineeA = scrutineeB)
+    (thenIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (thenB :
+            Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw),
+          Term.rename innerRenaming thenA = Term.rename innerRenaming thenB →
+          thenA = thenB)
+    (elseIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (elseB :
+            Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw),
+          Term.rename innerRenaming elseA = Term.rename innerRenaming elseB →
+          elseA = elseB)
+    (termB :
+      Term sourceCtx (motiveType.subst0 Ty.bool scrutineeRaw)
+        (RawTerm.boolElim scrutineeRaw thenRaw elseRaw)) :
+    Term.rename termRenaming
+        (Term.boolElim scrutineeA thenA elseA) =
+      Term.rename termRenaming termB →
+      Term.boolElim scrutineeA thenA elseA = termB := by
+  intro renameEq
+  obtain ⟨motiveTypeB, scrutineeB, thenBranchB, elseBranchB, typeEqB,
+    termHEqB⟩ := Term.boolElim_raw_inv termB
+  -- Lift termHEqB through Term.rename using Term.rename_heq_of_eq.
+  have renamedTermBHEq :
+      HEq (Term.rename termRenaming termB)
+          (Term.rename termRenaming
+            (Term.boolElim scrutineeB thenBranchB elseBranchB)) :=
+    Term.rename_heq_of_eq termRenaming typeEqB rfl termHEqB
+  -- Build bare-boolElim HEq by stripping the subst0_rename_commute cast on
+  -- both sides of `renameEq` (combined with `renamedTermBHEq`).  The
+  -- reduced-form HEq `step1`/`step2` between `Term.rename termRenaming
+  -- (Term.boolElim …)` and the cast-form `Term.boolElim (rename …) (cast₁ ▸ …)
+  -- (cast₂ ▸ …)` is established by `dsimp only [Term.rename]` exposing the
+  -- definitional reduction (which the chained `HEq.trans` cannot resolve via
+  -- type inference alone because of the metavariables in the boolElim
+  -- children's positions).
+  have boolElimAExpand :
+      Term.rename termRenaming (Term.boolElim scrutineeA thenA elseA) =
+        (Ty.subst0_rename_commute motiveType Ty.bool scrutineeRaw rho).symm ▸
+          Term.boolElim
+            (motiveType := motiveType.rename rho.lift)
+            (Term.rename termRenaming scrutineeA)
+            (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolTrue rho ▸
+              Term.rename termRenaming thenA)
+            (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolFalse rho ▸
+              Term.rename termRenaming elseA) := by
+    dsimp only [Term.rename]
+  have boolElimBExpand :
+      Term.rename termRenaming (Term.boolElim scrutineeB thenBranchB elseBranchB) =
+        (Ty.subst0_rename_commute motiveTypeB Ty.bool scrutineeRaw rho).symm ▸
+          Term.boolElim
+            (motiveType := motiveTypeB.rename rho.lift)
+            (Term.rename termRenaming scrutineeB)
+            (Ty.subst0_rename_commute motiveTypeB Ty.bool RawTerm.boolTrue rho ▸
+              Term.rename termRenaming thenBranchB)
+            (Ty.subst0_rename_commute motiveTypeB Ty.bool RawTerm.boolFalse rho ▸
+              Term.rename termRenaming elseBranchB) := by
+    dsimp only [Term.rename]
+  have boolElimRenameHEq :
+      HEq
+        (Term.boolElim
+          (motiveType := motiveType.rename rho.lift)
+          (Term.rename termRenaming scrutineeA)
+          (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolTrue rho ▸
+            Term.rename termRenaming thenA)
+          (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolFalse rho ▸
+            Term.rename termRenaming elseA))
+        (Term.boolElim
+          (motiveType := motiveTypeB.rename rho.lift)
+          (Term.rename termRenaming scrutineeB)
+          (Ty.subst0_rename_commute motiveTypeB Ty.bool RawTerm.boolTrue rho ▸
+            Term.rename termRenaming thenBranchB)
+          (Ty.subst0_rename_commute motiveTypeB Ty.bool RawTerm.boolFalse rho ▸
+            Term.rename termRenaming elseBranchB)) := by
+    have step1 :
+        HEq
+          (Term.boolElim
+            (motiveType := motiveType.rename rho.lift)
+            (Term.rename termRenaming scrutineeA)
+            (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolTrue rho ▸
+              Term.rename termRenaming thenA)
+            (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolFalse rho ▸
+              Term.rename termRenaming elseA))
+          (Term.rename termRenaming (Term.boolElim scrutineeA thenA elseA)) := by
+      rw [boolElimAExpand]
+      exact HEq.symm (termRenameInjectiveCastHEq _ _)
+    have step2 :
+        HEq (Term.rename termRenaming (Term.boolElim scrutineeB thenBranchB elseBranchB))
+            (Term.boolElim
+              (motiveType := motiveTypeB.rename rho.lift)
+              (Term.rename termRenaming scrutineeB)
+              (Ty.subst0_rename_commute motiveTypeB Ty.bool RawTerm.boolTrue rho ▸
+                Term.rename termRenaming thenBranchB)
+              (Ty.subst0_rename_commute motiveTypeB Ty.bool RawTerm.boolFalse rho ▸
+                Term.rename termRenaming elseBranchB)) := by
+      rw [boolElimBExpand]
+      exact termRenameInjectiveCastHEq _ _
+    exact HEq.trans step1
+      (HEq.trans (heq_of_eq renameEq) (HEq.trans renamedTermBHEq step2))
+  -- Outer renamed type equation derived from typeEqB via congrArg +
+  -- Ty.subst0_rename_commute reduction to match Lean's inferred form.
+  have outerRenamedTypeEq :
+      (motiveType.rename rho.lift).subst0 (Ty.bool.rename rho)
+          (scrutineeRaw.rename rho) =
+        (motiveTypeB.rename rho.lift).subst0 (Ty.bool.rename rho)
+          (scrutineeRaw.rename rho) := by
+    have base := congrArg (fun outerType => outerType.rename rho) typeEqB
+    simp only [Ty.subst0_rename_commute] at base
+    exact base
+  -- Use Term.noConfusion's HEq-aware decomposition to extract the
+  -- motive HEq plus the three child HEqs.  Named-arg style for
+  -- `t`/`t'` lets Lean infer the 14 implicits without collision.
+  have extracted :
+      Σ' (motiveRenameHEq :
+            HEq (motiveType.rename rho.lift) (motiveTypeB.rename rho.lift))
+         (scrRenameHEq :
+            HEq (Term.rename termRenaming scrutineeA)
+                (Term.rename termRenaming scrutineeB))
+         (thenRenameHEq :
+            HEq (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolTrue rho ▸
+                  Term.rename termRenaming thenA)
+                (Ty.subst0_rename_commute motiveTypeB Ty.bool RawTerm.boolTrue rho ▸
+                  Term.rename termRenaming thenBranchB)),
+         HEq (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolFalse rho ▸
+                Term.rename termRenaming elseA)
+             (Ty.subst0_rename_commute motiveTypeB Ty.bool RawTerm.boolFalse rho ▸
+                Term.rename termRenaming elseBranchB) := by
+    let bareLHS :
+        Term targetCtx
+          ((motiveType.rename rho.lift).subst0 Ty.bool (scrutineeRaw.rename rho))
+          ((scrutineeRaw.rename rho).boolElim (thenRaw.rename rho)
+            (elseRaw.rename rho)) :=
+      Term.boolElim
+        (motiveType := motiveType.rename rho.lift)
+        (Term.rename termRenaming scrutineeA)
+        (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolTrue rho ▸
+          Term.rename termRenaming thenA)
+        (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolFalse rho ▸
+          Term.rename termRenaming elseA)
+    let bareRHS :
+        Term targetCtx
+          ((motiveTypeB.rename rho.lift).subst0 Ty.bool (scrutineeRaw.rename rho))
+          ((scrutineeRaw.rename rho).boolElim (thenRaw.rename rho)
+            (elseRaw.rename rho)) :=
+      Term.boolElim
+        (motiveType := motiveTypeB.rename rho.lift)
+        (Term.rename termRenaming scrutineeB)
+        (Ty.subst0_rename_commute motiveTypeB Ty.bool RawTerm.boolTrue rho ▸
+          Term.rename termRenaming thenBranchB)
+        (Ty.subst0_rename_commute motiveTypeB Ty.bool RawTerm.boolFalse rho ▸
+          Term.rename termRenaming elseBranchB)
+    have hh : HEq bareLHS bareRHS := boolElimRenameHEq
+    exact Term.noConfusion
+      (P := Σ' (motiveRenameHEq :
+            HEq (motiveType.rename rho.lift) (motiveTypeB.rename rho.lift))
+         (scrRenameHEq :
+            HEq (Term.rename termRenaming scrutineeA)
+                (Term.rename termRenaming scrutineeB))
+         (thenRenameHEq :
+            HEq (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolTrue rho ▸
+                  Term.rename termRenaming thenA)
+                (Ty.subst0_rename_commute motiveTypeB Ty.bool RawTerm.boolTrue rho ▸
+                  Term.rename termRenaming thenBranchB)),
+         HEq (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolFalse rho ▸
+                Term.rename termRenaming elseA)
+             (Ty.subst0_rename_commute motiveTypeB Ty.bool RawTerm.boolFalse rho ▸
+                Term.rename termRenaming elseBranchB))
+      (t := bareLHS) (t' := bareRHS)
+      rfl rfl rfl HEq.rfl (heq_of_eq outerRenamedTypeEq) HEq.rfl
+      hh
+      (fun _ _ motiveRenameHEq _ _ _ scrRenameHEq thenRenameHEq elseRenameHEq =>
+        ⟨motiveRenameHEq, scrRenameHEq, thenRenameHEq, elseRenameHEq⟩)
+  obtain ⟨motiveRenameHEq, scrRenameHEq, thenRenameHEqCast, elseRenameHEqCast⟩ :=
+    extracted
+  have motiveTypeEq : motiveType = motiveTypeB :=
+    Ty.rename_injective_under_injective_renaming motiveType
+      (RawRenamingInjective.lift rhoInjective) motiveTypeB
+      (eq_of_heq motiveRenameHEq)
+  cases motiveTypeEq
+  -- Strip the subst0 casts from then/else child HEqs.
+  have thenRenameUncastHEq :
+      HEq (Term.rename termRenaming thenA)
+        (Term.rename termRenaming thenBranchB) :=
+    HEq.trans
+      (HEq.symm
+        (termRenameInjectiveCastHEq
+          (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolTrue rho)
+          (Term.rename termRenaming thenA)))
+      (HEq.trans thenRenameHEqCast
+        (termRenameInjectiveCastHEq
+          (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolTrue rho)
+          (Term.rename termRenaming thenBranchB)))
+  have elseRenameUncastHEq :
+      HEq (Term.rename termRenaming elseA)
+        (Term.rename termRenaming elseBranchB) :=
+    HEq.trans
+      (HEq.symm
+        (termRenameInjectiveCastHEq
+          (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolFalse rho)
+          (Term.rename termRenaming elseA)))
+      (HEq.trans elseRenameHEqCast
+        (termRenameInjectiveCastHEq
+          (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolFalse rho)
+          (Term.rename termRenaming elseBranchB)))
+  have scrutineeEq : scrutineeA = scrutineeB :=
+    scrutineeIH termRenaming rhoInjective scrutineeB (eq_of_heq scrRenameHEq)
+  have thenEq : thenA = thenBranchB :=
+    thenIH termRenaming rhoInjective thenBranchB
+      (eq_of_heq thenRenameUncastHEq)
+  have elseEq : elseA = elseBranchB :=
+    elseIH termRenaming rhoInjective elseBranchB
+      (eq_of_heq elseRenameUncastHEq)
+  cases scrutineeEq
+  cases thenEq
+  cases elseEq
+  cases termHEqB
+  rfl
+
+/-- `appPi` arm: dependent-Π application with `subst0`-shaped cast on the
+    result type.  Raw collision with `Term.app` (both produce
+    `RawTerm.app fnRaw argRaw`); uses `Term.app_inv` to invert termB into
+    a disjoint sum and refutes the `Term.app`-branch via HEq-aware
+    `Term.noConfusion`.  In the `Term.appPi` branch, the outer cast is
+    stripped via `termRenameInjectiveCastHEq` to expose bare `Term.appPi`
+    ctors, then `injection` extracts the existential equalities; child
+    IHs close after type realignment. -/
+theorem Term.rename_injective_arm_appPi
+    (rhoInjective : RawRenamingInjective rho)
+    {domainType : Ty level sourceScope}
+    {codomainType : Ty level (sourceScope + 1)}
+    {functionRaw argumentRaw : RawTerm sourceScope}
+    (functionTerm :
+      Term sourceCtx (Ty.piTy domainType codomainType) functionRaw)
+    (argumentTerm : Term sourceCtx domainType argumentRaw)
+    (functionIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (functionB :
+            Term sourceCtx (Ty.piTy domainType codomainType) functionRaw),
+          Term.rename innerRenaming functionTerm =
+            Term.rename innerRenaming functionB →
+          functionTerm = functionB)
+    (argumentIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (argumentB : Term sourceCtx domainType argumentRaw),
+          Term.rename innerRenaming argumentTerm =
+            Term.rename innerRenaming argumentB →
+          argumentTerm = argumentB)
+    (termB :
+      Term sourceCtx (codomainType.subst0 domainType argumentRaw)
+        (RawTerm.app functionRaw argumentRaw)) :
+    Term.rename termRenaming (Term.appPi functionTerm argumentTerm) =
+      Term.rename termRenaming termB →
+      Term.appPi functionTerm argumentTerm = termB := by
+  intro renameEq
+  cases Term.app_inv termB with
+  | inl caseApp =>
+      -- `termB = Term.app fnTermB argTermB` (sibling collision).  Refute
+      -- via HEq-aware Term.noConfusion: `Term.rename termRenaming (Term.appPi …)`
+      -- reduces to `subst0_rename_commute.symm ▸ Term.appPi (rename fnA) (rename argA)`
+      -- whose underlying ctor is `Term.appPi`; `Term.rename termRenaming (Term.app …)`
+      -- reduces to `Term.app (rename fnB) (rename argB)`.  The cast on LHS is
+      -- stripped via `termRenameInjectiveCastHEq` to expose the bare
+      -- `Term.appPi` ctor, then refuted against `Term.app` via
+      -- `Term.noConfusion`'s HEq-aware form.
+      obtain ⟨siblingDomain, fnTermB, argTermB, appHEq⟩ := caseApp
+      cases appHEq
+      exfalso
+      have lhsHEq :
+          HEq (Term.rename termRenaming (Term.appPi functionTerm argumentTerm))
+              (Term.appPi (Term.rename termRenaming functionTerm)
+                          (Term.rename termRenaming argumentTerm)) :=
+        termRenameInjectiveCastHEq
+          (Ty.subst0_rename_commute codomainType domainType argumentRaw rho).symm
+          (Term.appPi (Term.rename termRenaming functionTerm)
+                      (Term.rename termRenaming argumentTerm))
+      have appPiVsAppHEq :
+          HEq (Term.appPi (Term.rename termRenaming functionTerm)
+                          (Term.rename termRenaming argumentTerm))
+              (Term.app (Term.rename termRenaming fnTermB)
+                        (Term.rename termRenaming argTermB)) := by
+        have rhsExpand :
+            Term.rename termRenaming (Term.app fnTermB argTermB) =
+              Term.app (Term.rename termRenaming fnTermB)
+                       (Term.rename termRenaming argTermB) := rfl
+        exact HEq.trans (HEq.symm lhsHEq)
+          (HEq.trans (heq_of_eq renameEq) (heq_of_eq rhsExpand))
+      -- `Term.noConfusion` distinguishes `Term.appPi` from `Term.app` via
+      -- the HEq-aware refutation; the constructor-mismatch closes False.
+      apply Term.noConfusion (P := False)
+        (t := Term.appPi (Term.rename termRenaming functionTerm)
+                         (Term.rename termRenaming argumentTerm))
+        (t' := Term.app (Term.rename termRenaming fnTermB)
+                        (Term.rename termRenaming argTermB))
+        rfl rfl rfl HEq.rfl
+        (heq_of_eq
+          (Ty.subst0_rename_commute codomainType domainType argumentRaw rho).symm)
+        HEq.rfl
+      exact appPiVsAppHEq
+  | inr caseAppPi =>
+      obtain ⟨innerDomain, innerCodomain, eqProof, fnTermB, argTermB,
+        appPiHEq⟩ := caseAppPi
+      -- `eqProof : innerCodomain.subst0 innerDomain argumentRaw =
+      --            codomainType.subst0 domainType argumentRaw`.  We cannot
+      -- structurally invert this (subst0 is reducible).  Use
+      -- `Term.rename_heq_of_eq` to lift `appPiHEq` through `Term.rename`,
+      -- then strip the outer cast on both sides via
+      -- `termRenameInjectiveCastHEq`, then use `Term.noConfusion`'s
+      -- HEq-aware decomposition to extract the existential HEqs plus the
+      -- child HEqs.
+      have renamedTermBHEq :
+          HEq (Term.rename termRenaming termB)
+              (Term.rename termRenaming (Term.appPi fnTermB argTermB)) :=
+        Term.rename_heq_of_eq termRenaming eqProof.symm rfl appPiHEq
+      have appPiRenameHEq :
+          HEq
+            (Term.appPi (Term.rename termRenaming functionTerm)
+                        (Term.rename termRenaming argumentTerm))
+            (Term.appPi (Term.rename termRenaming fnTermB)
+                        (Term.rename termRenaming argTermB)) :=
+        HEq.trans
+          (HEq.symm
+            (termRenameInjectiveCastHEq
+              (Ty.subst0_rename_commute codomainType domainType argumentRaw rho).symm
+              (Term.appPi (Term.rename termRenaming functionTerm)
+                          (Term.rename termRenaming argumentTerm))))
+          (HEq.trans (HEq.trans (heq_of_eq renameEq) renamedTermBHEq)
+            (termRenameInjectiveCastHEq
+              (Ty.subst0_rename_commute innerCodomain innerDomain argumentRaw rho).symm
+              (Term.appPi (Term.rename termRenaming fnTermB)
+                          (Term.rename termRenaming argTermB))))
+      -- Outer renamed type equation: derive from eqProof.symm via congrArg,
+      -- then rewrite via Ty.subst0_rename_commute to match Lean's inferred form.
+      have outerRenamedTypeEq :
+          (codomainType.rename rho.lift).subst0 (domainType.rename rho)
+              (argumentRaw.rename rho) =
+            (innerCodomain.rename rho.lift).subst0 (innerDomain.rename rho)
+              (argumentRaw.rename rho) := by
+        have base :=
+          congrArg (fun outerType => outerType.rename rho) eqProof.symm
+        simp only [Ty.subst0_rename_commute] at base
+        exact base
+      -- Use Term.noConfusion's HEq-aware decomposition to extract the
+      -- existential HEqs (renamed domain/codomain) plus the function and
+      -- argument HEqs.
+      have extracted :
+          Σ' (domainRenameHEq :
+                HEq (domainType.rename rho) (innerDomain.rename rho))
+             (codomainRenameHEq :
+                HEq (codomainType.rename rho.lift) (innerCodomain.rename rho.lift))
+             (fnRenameHEq :
+                HEq (Term.rename termRenaming functionTerm)
+                    (Term.rename termRenaming fnTermB)),
+             HEq (Term.rename termRenaming argumentTerm)
+                 (Term.rename termRenaming argTermB) := by
+        exact Term.noConfusion
+          (P := Σ' (domainRenameHEq :
+                HEq (domainType.rename rho) (innerDomain.rename rho))
+             (codomainRenameHEq :
+                HEq (codomainType.rename rho.lift) (innerCodomain.rename rho.lift))
+             (fnRenameHEq :
+                HEq (Term.rename termRenaming functionTerm)
+                    (Term.rename termRenaming fnTermB)),
+             HEq (Term.rename termRenaming argumentTerm)
+                 (Term.rename termRenaming argTermB))
+          (t := Term.appPi (Term.rename termRenaming functionTerm)
+                           (Term.rename termRenaming argumentTerm))
+          (t' := Term.appPi (Term.rename termRenaming fnTermB)
+                            (Term.rename termRenaming argTermB))
+          rfl rfl rfl HEq.rfl (heq_of_eq outerRenamedTypeEq) HEq.rfl
+          appPiRenameHEq
+          (fun _ _ domainRenameHEq codomainRenameHEq _ _ fnRenameHEq argRenameHEq =>
+            ⟨domainRenameHEq, codomainRenameHEq, fnRenameHEq, argRenameHEq⟩)
+      obtain ⟨domainRenameHEq, codomainRenameHEq, fnRenameHEq, argRenameHEq⟩ :=
+        extracted
+      have domainEq : domainType = innerDomain :=
+        Ty.rename_injective_under_injective_renaming domainType
+          rhoInjective innerDomain (eq_of_heq domainRenameHEq)
+      cases domainEq
+      have codomainEq : codomainType = innerCodomain :=
+        Ty.rename_injective_under_injective_renaming codomainType
+          (RawRenamingInjective.lift rhoInjective) innerCodomain
+          (eq_of_heq codomainRenameHEq)
+      cases codomainEq
+      have functionEq : functionTerm = fnTermB :=
+        functionIH termRenaming rhoInjective fnTermB
+          (eq_of_heq fnRenameHEq)
+      have argumentEq : argumentTerm = argTermB :=
+        argumentIH termRenaming rhoInjective argTermB
+          (eq_of_heq argRenameHEq)
+      cases functionEq
+      cases argumentEq
+      cases appPiHEq
+      rfl
 
 /-! ## HoTT identity-eliminator arms (idJ / oeqJ / oeqFunext / idStrictRec).
 
