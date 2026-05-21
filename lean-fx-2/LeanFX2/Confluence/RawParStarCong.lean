@@ -562,6 +562,124 @@ private theorem RawStep.parStar.unary_payload_elim_inv_helper {scope : Nat}
   RawStep.parStar.unary_payload_elim_inv_aux elimWrap introWrap
     parStepInv chain rfl
 
+/-- Generalized unary eliminator `parStar` inversion with two redex
+families.
+
+This is used by raw `idToEquiv`: the proof argument may develop
+structurally, to `refl`, or to `oeqTrans`, with two different
+contractum families. -/
+private theorem RawStep.parStar.unary_two_redex_elim_inv_aux
+    {PayloadLeft PayloadRight : Type}
+    {scope : Nat}
+    (elimWrap : RawTerm scope → RawTerm scope)
+    (leftIntro : PayloadLeft → RawTerm scope)
+    (rightIntro : PayloadRight → RawTerm scope)
+    (leftContractum : PayloadLeft → RawTerm scope)
+    (rightContractum : PayloadRight → RawTerm scope)
+    (parStepInv : ∀ {innerSource target},
+      RawStep.par (elimWrap innerSource) target →
+        (∃ innerTarget,
+          target = elimWrap innerTarget ∧
+          RawStep.par innerSource innerTarget) ∨
+        (∃ payload,
+          target = leftContractum payload ∧
+          RawStep.par innerSource (leftIntro payload)) ∨
+        (∃ payload,
+          target = rightContractum payload ∧
+          RawStep.par innerSource (rightIntro payload)))
+    {source target : RawTerm scope}
+    (chain : RawStep.parStar source target) :
+    ∀ {innerSource : RawTerm scope},
+      source = elimWrap innerSource →
+      (∃ innerTarget,
+        target = elimWrap innerTarget ∧
+        RawStep.parStar innerSource innerTarget) ∨
+      (∃ payload,
+        RawStep.parStar innerSource (leftIntro payload) ∧
+        RawStep.parStar (leftContractum payload) target) ∨
+      (∃ payload,
+        RawStep.parStar innerSource (rightIntro payload) ∧
+        RawStep.parStar (rightContractum payload) target) := by
+  induction chain with
+  | refl _ =>
+      intro innerSource sourceEq
+      exact Or.inl ⟨innerSource, sourceEq, RawStep.parStar.refl _⟩
+  | trans firstStep restChain restIH =>
+      intro innerSource sourceEq
+      subst sourceEq
+      cases parStepInv firstStep with
+      | inl headCase =>
+          obtain ⟨middleInner, middleEq, innerStep⟩ := headCase
+          cases restIH middleEq with
+          | inl preservedCase =>
+              obtain ⟨targetInner, targetEq, innerChainRest⟩ :=
+                preservedCase
+              exact Or.inl ⟨targetInner, targetEq,
+                RawStep.parStar.trans innerStep innerChainRest⟩
+          | inr redexCases =>
+              cases redexCases with
+              | inl leftCase =>
+                  obtain ⟨payload, introChainRest,
+                    contractumChain⟩ := leftCase
+                  exact Or.inr (Or.inl ⟨payload,
+                    RawStep.parStar.trans innerStep introChainRest,
+                    contractumChain⟩)
+              | inr rightCase =>
+                  obtain ⟨payload, introChainRest,
+                    contractumChain⟩ := rightCase
+                  exact Or.inr (Or.inr ⟨payload,
+                    RawStep.parStar.trans innerStep introChainRest,
+                    contractumChain⟩)
+      | inr redexCases =>
+          cases redexCases with
+          | inl leftCase =>
+              obtain ⟨payload, middleEq, innerStep⟩ := leftCase
+              cases middleEq
+              exact Or.inr (Or.inl ⟨payload,
+                RawStep.parStar.trans innerStep (RawStep.parStar.refl _),
+                restChain⟩)
+          | inr rightCase =>
+              obtain ⟨payload, middleEq, innerStep⟩ := rightCase
+              cases middleEq
+              exact Or.inr (Or.inr ⟨payload,
+                RawStep.parStar.trans innerStep (RawStep.parStar.refl _),
+                restChain⟩)
+
+/-- Unary, two-redex eliminator inversion for an exactly wrapped source. -/
+private theorem RawStep.parStar.unary_two_redex_elim_inv_helper
+    {PayloadLeft PayloadRight : Type}
+    {scope : Nat}
+    (elimWrap : RawTerm scope → RawTerm scope)
+    (leftIntro : PayloadLeft → RawTerm scope)
+    (rightIntro : PayloadRight → RawTerm scope)
+    (leftContractum : PayloadLeft → RawTerm scope)
+    (rightContractum : PayloadRight → RawTerm scope)
+    (parStepInv : ∀ {innerSource target},
+      RawStep.par (elimWrap innerSource) target →
+        (∃ innerTarget,
+          target = elimWrap innerTarget ∧
+          RawStep.par innerSource innerTarget) ∨
+        (∃ payload,
+          target = leftContractum payload ∧
+          RawStep.par innerSource (leftIntro payload)) ∨
+        (∃ payload,
+          target = rightContractum payload ∧
+          RawStep.par innerSource (rightIntro payload)))
+    {innerSource target : RawTerm scope}
+    (chain : RawStep.parStar (elimWrap innerSource) target) :
+    (∃ innerTarget,
+      target = elimWrap innerTarget ∧
+      RawStep.parStar innerSource innerTarget) ∨
+    (∃ payload,
+      RawStep.parStar innerSource (leftIntro payload) ∧
+      RawStep.parStar (leftContractum payload) target) ∨
+    (∃ payload,
+      RawStep.parStar innerSource (rightIntro payload) ∧
+      RawStep.parStar (rightContractum payload) target) :=
+  RawStep.parStar.unary_two_redex_elim_inv_aux
+    elimWrap leftIntro rightIntro leftContractum rightContractum
+    parStepInv chain rfl
+
 /-- Generalized unary eliminator `parStar` inversion for eliminators whose
 β arm returns a contractum built from a two-field developed intro.
 
@@ -1740,6 +1858,95 @@ theorem RawStep.parStar.idCode_inv {scope : Nat}
       RawStep.parStar rightCode rightTarget :=
   RawStep.parStar.ternary_inv_helper RawTerm.idCode
     RawStep.par.idCode_inv chain
+
+/-- `RawStep.parStar (idToEquiv proofSource) target` either preserves
+the `idToEquiv` head, fires the reflexivity contractum after the proof
+develops to `refl`, or fires the composition contractum after the proof
+develops to `oeqTrans`. -/
+theorem RawStep.parStar.idToEquiv_inv {scope : Nat}
+    {proofSource target : RawTerm scope}
+    (chain :
+      RawStep.parStar (RawTerm.idToEquiv proofSource) target) :
+    (∃ proofTarget,
+      target = RawTerm.idToEquiv proofTarget ∧
+      RawStep.parStar proofSource proofTarget) ∨
+    (∃ witnessTarget,
+      RawStep.parStar proofSource (RawTerm.refl witnessTarget) ∧
+      RawStep.parStar
+        (RawTerm.equivIntro
+          (RawTerm.lam (RawTerm.var (Fin.mk 0 (Nat.zero_lt_succ _))))
+          (RawTerm.lam (RawTerm.var (Fin.mk 0 (Nat.zero_lt_succ _)))))
+        target) ∨
+    (∃ firstTarget secondTarget,
+      RawStep.parStar proofSource
+        (RawTerm.oeqTrans firstTarget secondTarget) ∧
+      RawStep.parStar
+        (RawTerm.equivCompose
+          (RawTerm.idToEquiv firstTarget)
+          (RawTerm.idToEquiv secondTarget))
+        target) := by
+  cases RawStep.parStar.unary_two_redex_elim_inv_helper
+      RawTerm.idToEquiv
+      RawTerm.refl
+      (fun (payload : RawTerm scope × RawTerm scope) =>
+        RawTerm.oeqTrans payload.1 payload.2)
+      (fun _ =>
+        RawTerm.equivIntro
+          (RawTerm.lam (RawTerm.var (Fin.mk 0 (Nat.zero_lt_succ _))))
+          (RawTerm.lam (RawTerm.var (Fin.mk 0 (Nat.zero_lt_succ _)))))
+      (fun (payload : RawTerm scope × RawTerm scope) =>
+        RawTerm.equivCompose
+          (RawTerm.idToEquiv payload.1)
+          (RawTerm.idToEquiv payload.2))
+      (fun step => by
+        cases RawStep.par.idToEquiv_inv step with
+        | inl headCase =>
+            exact Or.inl headCase
+        | inr redexCases =>
+            cases redexCases with
+            | inl reflShallow =>
+                obtain ⟨witnessSource, witnessTarget, proofEq,
+                  targetEq, witnessStep⟩ := reflShallow
+                cases proofEq
+                exact Or.inr (Or.inl ⟨witnessTarget, targetEq,
+                  RawStep.par.reflCong witnessStep⟩)
+            | inr moreRedexCases =>
+                cases moreRedexCases with
+                | inl reflDeep =>
+                    obtain ⟨witnessTarget, targetEq, proofStep⟩ :=
+                      reflDeep
+                    exact Or.inr (Or.inl ⟨witnessTarget, targetEq,
+                      proofStep⟩)
+                | inr composeCases =>
+                    cases composeCases with
+                    | inl composeShallow =>
+                        obtain ⟨firstSource, secondSource, firstTarget,
+                          secondTarget, proofEq, targetEq, firstStep,
+                          secondStep⟩ := composeShallow
+                        cases proofEq
+                        exact Or.inr (Or.inr
+                          ⟨(firstTarget, secondTarget), targetEq,
+                            RawStep.par.oeqTransCong firstStep
+                              secondStep⟩)
+                    | inr composeDeep =>
+                        obtain ⟨firstTarget, secondTarget, targetEq,
+                          proofStep⟩ := composeDeep
+                        exact Or.inr (Or.inr
+                          ⟨(firstTarget, secondTarget), targetEq,
+                            proofStep⟩))
+      chain with
+  | inl preservedCase =>
+      exact Or.inl preservedCase
+  | inr redexCases =>
+      cases redexCases with
+      | inl reflCase =>
+          obtain ⟨witnessTarget, proofChain, targetChain⟩ := reflCase
+          exact Or.inr (Or.inl ⟨witnessTarget, proofChain,
+            targetChain⟩)
+      | inr composeCase =>
+          obtain ⟨payload, proofChain, targetChain⟩ := composeCase
+          exact Or.inr (Or.inr ⟨payload.1, payload.2, proofChain,
+            targetChain⟩)
 
 /-- `RawStep.parStar (equivApply equivalence argument) target` either
 preserves the `equivApply` head or fires the ua-refl round-trip β rule
