@@ -235,6 +235,13 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.universeCode_ne_optionNone
 #assert_no_axioms LeanFX2.Conv.universeCode_ne_interval0
 #assert_no_axioms LeanFX2.Conv.universeCode_ne_interval1
+#assert_no_axioms LeanFX2.Conv.universeCode_ne_natSucc
+#assert_no_axioms LeanFX2.Conv.universeCode_ne_optionSome
+#assert_no_axioms LeanFX2.Conv.universeCode_ne_eitherInl
+#assert_no_axioms LeanFX2.Conv.universeCode_ne_eitherInr
+#assert_no_axioms LeanFX2.Conv.universeCode_ne_listCons
+#assert_no_axioms LeanFX2.Conv.universeCode_ne_pair
+#assert_no_axioms LeanFX2.Conv.universeCode_ne_refl
 #assert_no_axioms LeanFX2.Conv.transChains_renamed
 #assert_no_axioms LeanFX2.Conv.transChains_weakened
 #assert_no_axioms LeanFX2.Conv.transChains_substituted
