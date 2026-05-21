@@ -62,7 +62,7 @@ theorem eta_lam_shape_recognize_app_of_unweaken
       (context := context)
       (newType := domainType)
       (weakenedTerm := argumentTerm)
-  unfold Term.eta_lam_shape_construct
+  dsimp only [Term.eta_lam_shape_construct]
   cases functionHEq
   cases argumentHEq
   rfl
@@ -127,7 +127,7 @@ theorem eta_lamPi_shape_recognize_appPi_of_unweaken
       (context := context)
       (newType := domainType)
       (weakenedTerm := argumentTerm)
-  unfold Term.eta_lamPi_shape_body_construct
+  dsimp only [Term.eta_lamPi_shape_body_construct]
   cases functionHEq
   cases argumentHEq
   exact HEq.rfl
@@ -429,7 +429,7 @@ theorem eta_path_shape_recognize_app_of_unweaken
       (context := context)
       (newType := Ty.interval)
       (weakenedTerm := intervalTerm)
-  unfold Term.eta_path_shape_construct
+  dsimp only [Term.eta_path_shape_construct]
   cases pathHEq
   cases intervalHEq
   rfl
