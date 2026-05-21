@@ -5,6 +5,7 @@ import LeanFX2.Reduction.RawParWeakenInv.BinderShape
 import LeanFX2.Reduction.RawParWeakenInv.CubicalShape
 import LeanFX2.Reduction.RawParWeakenInv.HeadlineRenameInjInv
 import LeanFX2.Reduction.RawParWeakenInv.Weaken
+import LeanFX2.Reduction.RawParWeakenInv.ParStar
 
 /-! # LeanFX2.Reduction.RawParWeakenInv — par-step weaken-image preservation (shim)
 
