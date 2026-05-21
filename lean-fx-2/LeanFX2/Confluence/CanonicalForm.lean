@@ -1754,4 +1754,131 @@ theorem Conv.optionNone_ne_natSucc
     RawStep.parStar.natSucc_inv targetToJoin
   nomatch joinEqNone.symm.trans joinEqNatSucc
 
+/-! ## Leaf-vs-optionSome disjointness
+
+Same shape as the leaf-vs-natSucc grid above, with `optionSome` in
+the compound role.  Load-bearing entry is
+`Conv.optionNone_ne_optionSome`, used by K12 fundamental theorem's
+`optionMatch` ι-firing dispatch to rule out the None/Some
+ambiguity on a canonical Option scrutinee.  The remaining five
+(`unit_ne_optionSome`, `boolTrue_ne_optionSome`, etc.) extend the
+grid for completeness across the closed-leaf canonical heads. -/
+
+/-- A `unit`-headed source and an `optionSome`-headed target are
+not convertible. -/
+theorem Conv.unit_ne_optionSome
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {valueTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType (RawTerm.unit : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.optionSome valueTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqUnit : joinRaw = RawTerm.unit :=
+    RawStep.parStar.unit_inv sourceToJoin
+  obtain ⟨_, joinEqOptionSome, _⟩ :=
+    RawStep.parStar.optionSome_inv targetToJoin
+  nomatch joinEqUnit.symm.trans joinEqOptionSome
+
+/-- A `boolTrue`-headed source and an `optionSome`-headed target
+are not convertible. -/
+theorem Conv.boolTrue_ne_optionSome
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {valueTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType (RawTerm.boolTrue : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.optionSome valueTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqTrue : joinRaw = RawTerm.boolTrue :=
+    RawStep.parStar.boolTrue_inv sourceToJoin
+  obtain ⟨_, joinEqOptionSome, _⟩ :=
+    RawStep.parStar.optionSome_inv targetToJoin
+  nomatch joinEqTrue.symm.trans joinEqOptionSome
+
+/-- A `boolFalse`-headed source and an `optionSome`-headed target
+are not convertible. -/
+theorem Conv.boolFalse_ne_optionSome
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {valueTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType (RawTerm.boolFalse : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.optionSome valueTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqFalse : joinRaw = RawTerm.boolFalse :=
+    RawStep.parStar.boolFalse_inv sourceToJoin
+  obtain ⟨_, joinEqOptionSome, _⟩ :=
+    RawStep.parStar.optionSome_inv targetToJoin
+  nomatch joinEqFalse.symm.trans joinEqOptionSome
+
+/-- A `natZero`-headed source and an `optionSome`-headed target
+are not convertible. -/
+theorem Conv.natZero_ne_optionSome
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {valueTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType (RawTerm.natZero : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.optionSome valueTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqZero : joinRaw = RawTerm.natZero :=
+    RawStep.parStar.natZero_inv sourceToJoin
+  obtain ⟨_, joinEqOptionSome, _⟩ :=
+    RawStep.parStar.optionSome_inv targetToJoin
+  nomatch joinEqZero.symm.trans joinEqOptionSome
+
+/-- A `listNil`-headed source and an `optionSome`-headed target
+are not convertible. -/
+theorem Conv.listNil_ne_optionSome
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {valueTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType (RawTerm.listNil : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.optionSome valueTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqNil : joinRaw = RawTerm.listNil :=
+    RawStep.parStar.listNil_inv sourceToJoin
+  obtain ⟨_, joinEqOptionSome, _⟩ :=
+    RawStep.parStar.optionSome_inv targetToJoin
+  nomatch joinEqNil.symm.trans joinEqOptionSome
+
+/-- An `optionNone`-headed source and an `optionSome`-headed
+target are not convertible.  LOAD-BEARING for K12 fundamental
+theorem's `optionMatch` case — the ι-firing dispatch on a
+canonical Option scrutinee uses this to rule out the None/Some
+ambiguity. -/
+theorem Conv.optionNone_ne_optionSome
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {valueTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType (RawTerm.optionNone : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.optionSome valueTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqNone : joinRaw = RawTerm.optionNone :=
+    RawStep.parStar.optionNone_inv sourceToJoin
+  obtain ⟨_, joinEqOptionSome, _⟩ :=
+    RawStep.parStar.optionSome_inv targetToJoin
+  nomatch joinEqNone.symm.trans joinEqOptionSome
+
 end LeanFX2
