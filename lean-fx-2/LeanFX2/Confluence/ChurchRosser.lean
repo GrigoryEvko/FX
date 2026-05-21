@@ -305,4 +305,101 @@ theorem Conv.subst0Raw
       RawStep.parStar (targetRaw.subst0 argRaw) commonRaw :=
   Conv.substRaw (RawTermSubst.singleton argRaw) convertibility
 
+/-! ## Trans-plus-action composition lifters
+
+The four `Conv.transRaw_*` corollaries below compose `Conv.transRaw`
+with each of the four canonical raw actions (rename / weaken / subst /
+subst0) in a single ship.  Each is the natural shape downstream K12.28
+β-η critical pair and K13 NbE β step consumers reach for: a chain of
+two typed Convs (t1 ~ t2, t2 ~ t3) lifted to a raw join under an
+action.
+
+Pipeline: pull the raw join out of `Conv.transRaw` (which extracts
+two raw joins via `canonicalRaw`, then patches them via raw
+confluence), then propagate both arms through the action via the
+matching raw multi-step compatibility theorem
+(`rename_compatible` / `subst_compatible_same`). -/
+
+/-- Combine `Conv.transRaw` with a raw renaming in one ship.  Useful
+when chaining two typed Convs and then needing the raw join at a
+renamed surface form (e.g. lifting a Conv chain through a renaming
+inside a cd cascade arm). -/
+theorem Conv.transRaw_renamed
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {sourceType middleType farType : Ty level sourceScope}
+    {sourceRaw middleRaw farRaw : RawTerm sourceScope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {farTerm : Term context farType farRaw}
+    (rawRenaming : RawRenaming sourceScope targetScope)
+    (firstConvertibility : Conv sourceTerm middleTerm)
+    (secondConvertibility : Conv middleTerm farTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.rename rawRenaming) commonRaw ∧
+      RawStep.parStar (farRaw.rename rawRenaming) commonRaw := by
+  obtain ⟨joinRaw, sourceToJoin, farToJoin⟩ :=
+    Conv.transRaw firstConvertibility secondConvertibility
+  exact ⟨joinRaw.rename rawRenaming,
+    RawStep.parStar.rename_compatible rawRenaming sourceToJoin,
+    RawStep.parStar.rename_compatible rawRenaming farToJoin⟩
+
+/-- Canonical-weaken specialization of `Conv.transRaw_renamed`. -/
+theorem Conv.transRaw_weakened
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType middleType farType : Ty level scope}
+    {sourceRaw middleRaw farRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {farTerm : Term context farType farRaw}
+    (firstConvertibility : Conv sourceTerm middleTerm)
+    (secondConvertibility : Conv middleTerm farTerm) :
+    ∃ commonRaw,
+      RawStep.parStar sourceRaw.weaken commonRaw ∧
+      RawStep.parStar farRaw.weaken commonRaw :=
+  Conv.transRaw_renamed RawRenaming.weaken
+    firstConvertibility secondConvertibility
+
+/-- Combine `Conv.transRaw` with a raw substitution in one ship. -/
+theorem Conv.transRaw_substituted
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {sourceType middleType farType : Ty level sourceScope}
+    {sourceRaw middleRaw farRaw : RawTerm sourceScope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {farTerm : Term context farType farRaw}
+    (rawSubst : RawTermSubst sourceScope targetScope)
+    (firstConvertibility : Conv sourceTerm middleTerm)
+    (secondConvertibility : Conv middleTerm farTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.subst rawSubst) commonRaw ∧
+      RawStep.parStar (farRaw.subst rawSubst) commonRaw := by
+  obtain ⟨joinRaw, sourceToJoin, farToJoin⟩ :=
+    Conv.transRaw firstConvertibility secondConvertibility
+  exact ⟨joinRaw.subst rawSubst,
+    RawStep.parStar.subst_compatible_same rawSubst sourceToJoin,
+    RawStep.parStar.subst_compatible_same rawSubst farToJoin⟩
+
+/-- Singleton-substitution specialization of `Conv.transRaw_substituted`.
+Matches the β-redex surface form `body.subst0 arg` that K12.28
+Geuvers 1992 β-η critical pair joinability consumers reach for. -/
+theorem Conv.transRaw_subst0
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level (scope + 1)}
+    {sourceType middleType farType : Ty level (scope + 1)}
+    {sourceRaw middleRaw farRaw : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {farTerm : Term context farType farRaw}
+    (argRaw : RawTerm scope)
+    (firstConvertibility : Conv sourceTerm middleTerm)
+    (secondConvertibility : Conv middleTerm farTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.subst0 argRaw) commonRaw ∧
+      RawStep.parStar (farRaw.subst0 argRaw) commonRaw :=
+  Conv.transRaw_substituted (RawTermSubst.singleton argRaw)
+    firstConvertibility secondConvertibility
+
 end LeanFX2
