@@ -21,6 +21,8 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.transRaw
 #assert_no_axioms LeanFX2.Conv.renameRaw
 #assert_no_axioms LeanFX2.Conv.weakenRaw
+#assert_no_axioms LeanFX2.Conv.substRaw
+#assert_no_axioms LeanFX2.Conv.subst0Raw
 
 /-! ### Asymmetric typed Conv.trans variants (#1590 PHASE7-CONV-TRANS Phase 2)
 
