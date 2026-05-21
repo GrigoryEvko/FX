@@ -2265,4 +2265,125 @@ theorem Conv.eitherInl_ne_eitherInr
     RawStep.parStar.eitherInr_inv targetToJoin
   nomatch joinEqEitherInl.symm.trans joinEqEitherInr
 
+/-! ### Same-head compatibility lemmas (positive matrix half)
+
+The disjointness lemmas above answer "when do two canonical heads
+not match."  The compatibility lemmas below answer the dual:
+"when they DO match, what does that tell us about the inner
+subterms?"  Each produces a common raw reduct for the inner
+parameter on both sides — the raw-level analog of typed Conv on
+the inner subterm.  K12 fundamental theorem's ι-firing dispatch
+on a canonical scrutinee uses these to descend into the canonical
+witness once the head has been pinned down by the disjointness
+matrix.
+
+The pattern is the obvious dual: extract both `parStar` chains,
+invert under the matching head's `_inv` lemma, identify the two
+inner joins via constructor injectivity, then transport one chain
+along that equation. -/
+
+/-- Two `natSucc`-headed canonically-convertible terms have a
+common raw reduct for their predecessor subterms. -/
+theorem Conv.natSucc_compatibility
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {predecessorSrc predecessorTgt : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.natSucc predecessorSrc : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.natSucc predecessorTgt : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ predecessorJoin : RawTerm scope,
+      RawStep.parStar predecessorSrc predecessorJoin ∧
+      RawStep.parStar predecessorTgt predecessorJoin := by
+  obtain ⟨_, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨predecessorJoinSrc, joinEqSrc, sourceInner⟩ :=
+    RawStep.parStar.natSucc_inv sourceToJoin
+  obtain ⟨predecessorJoinTgt, joinEqTgt, targetInner⟩ :=
+    RawStep.parStar.natSucc_inv targetToJoin
+  have predecessorJoinEq :
+      predecessorJoinSrc = predecessorJoinTgt :=
+    RawTerm.natSucc.inj (joinEqSrc.symm.trans joinEqTgt)
+  exact ⟨predecessorJoinTgt,
+    predecessorJoinEq ▸ sourceInner, targetInner⟩
+
+/-- Two `optionSome`-headed canonically-convertible terms have a
+common raw reduct for their payload subterms. -/
+theorem Conv.optionSome_compatibility
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {valueSrc valueTgt : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.optionSome valueSrc : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.optionSome valueTgt : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ valueJoin : RawTerm scope,
+      RawStep.parStar valueSrc valueJoin ∧
+      RawStep.parStar valueTgt valueJoin := by
+  obtain ⟨_, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨valueJoinSrc, joinEqSrc, sourceInner⟩ :=
+    RawStep.parStar.optionSome_inv sourceToJoin
+  obtain ⟨valueJoinTgt, joinEqTgt, targetInner⟩ :=
+    RawStep.parStar.optionSome_inv targetToJoin
+  have valueJoinEq : valueJoinSrc = valueJoinTgt :=
+    RawTerm.optionSome.inj (joinEqSrc.symm.trans joinEqTgt)
+  exact ⟨valueJoinTgt, valueJoinEq ▸ sourceInner, targetInner⟩
+
+/-- Two `eitherInl`-headed canonically-convertible terms have a
+common raw reduct for their left-payload subterms.  LOAD-BEARING
+for K12 fundamental theorem's `eitherMatch` Left-canonical ι
+firing — once disjointness rules out Right, this compatibility
+lemma extracts the canonical Left witness. -/
+theorem Conv.eitherInl_compatibility
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {valueSrc valueTgt : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherInl valueSrc : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.eitherInl valueTgt : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ valueJoin : RawTerm scope,
+      RawStep.parStar valueSrc valueJoin ∧
+      RawStep.parStar valueTgt valueJoin := by
+  obtain ⟨_, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨valueJoinSrc, joinEqSrc, sourceInner⟩ :=
+    RawStep.parStar.eitherInl_inv sourceToJoin
+  obtain ⟨valueJoinTgt, joinEqTgt, targetInner⟩ :=
+    RawStep.parStar.eitherInl_inv targetToJoin
+  have valueJoinEq : valueJoinSrc = valueJoinTgt :=
+    RawTerm.eitherInl.inj (joinEqSrc.symm.trans joinEqTgt)
+  exact ⟨valueJoinTgt, valueJoinEq ▸ sourceInner, targetInner⟩
+
+/-- Two `eitherInr`-headed canonically-convertible terms have a
+common raw reduct for their right-payload subterms.  LOAD-BEARING
+for K12 fundamental theorem's `eitherMatch` Right-canonical ι
+firing — once disjointness rules out Left, this compatibility
+lemma extracts the canonical Right witness. -/
+theorem Conv.eitherInr_compatibility
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {valueSrc valueTgt : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherInr valueSrc : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.eitherInr valueTgt : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ valueJoin : RawTerm scope,
+      RawStep.parStar valueSrc valueJoin ∧
+      RawStep.parStar valueTgt valueJoin := by
+  obtain ⟨_, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨valueJoinSrc, joinEqSrc, sourceInner⟩ :=
+    RawStep.parStar.eitherInr_inv sourceToJoin
+  obtain ⟨valueJoinTgt, joinEqTgt, targetInner⟩ :=
+    RawStep.parStar.eitherInr_inv targetToJoin
+  have valueJoinEq : valueJoinSrc = valueJoinTgt :=
+    RawTerm.eitherInr.inj (joinEqSrc.symm.trans joinEqTgt)
+  exact ⟨valueJoinTgt, valueJoinEq ▸ sourceInner, targetInner⟩
+
 end LeanFX2

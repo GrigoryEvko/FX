@@ -160,6 +160,10 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.optionSome_ne_eitherInl
 #assert_no_axioms LeanFX2.Conv.optionSome_ne_eitherInr
 #assert_no_axioms LeanFX2.Conv.eitherInl_ne_eitherInr
+#assert_no_axioms LeanFX2.Conv.natSucc_compatibility
+#assert_no_axioms LeanFX2.Conv.optionSome_compatibility
+#assert_no_axioms LeanFX2.Conv.eitherInl_compatibility
+#assert_no_axioms LeanFX2.Conv.eitherInr_compatibility
 #assert_no_axioms LeanFX2.Conv.transChains_renamed
 #assert_no_axioms LeanFX2.Conv.transChains_weakened
 #assert_no_axioms LeanFX2.Conv.transChains_substituted
