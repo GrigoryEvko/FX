@@ -2648,4 +2648,138 @@ theorem Conv.listCons_compatibility
     headJoinEq ▸ headSrcInner, headTgtInner,
     tailJoinEq ▸ tailSrcInner, tailTgtInner⟩
 
+/-! ### `pair` canonical-head disjointness (binary Σ-intro head)
+
+`pair` is the second binary canonical head added to the matrix.
+It is load-bearing for K12 fundamental theorem's β-redex case
+on `fst` / `snd` (K12.21) — once a Σ-typed scrutinee
+canonicalizes, the projection's β rule fires against `pair head
+tail`, and these disjointness lemmas formally rule out the case
+where canonicalization yields a non-pair head.
+
+Proof shape identical to iters 33-39's leaf-vs-compound pattern:
+the leaf-side inv returns plain Eq, the pair-side inv returns
+an existential triple `⟨_, _, joinEqPair, _, _⟩` whose only
+relevant component is the head-shape equation joinEqPair.  The
+`nomatch` refutation chains the two equations through .symm /
+.trans, producing an impossible `RawTerm.<leaf> = RawTerm.pair _ _`.
+
+This iter ships the 6 leaf-vs-pair pairs; the 4 unary-compound-
+vs-pair + listCons-vs-pair + pair compatibility ship in the
+next iteration. -/
+
+/-- A `unit`-headed source and a `pair`-headed target are not
+convertible. -/
+theorem Conv.unit_ne_pair
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstValue secondValue : RawTerm scope}
+    {sourceTerm : Term context sourceType (RawTerm.unit : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.pair firstValue secondValue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqUnit : joinRaw = RawTerm.unit :=
+    RawStep.parStar.unit_inv sourceToJoin
+  obtain ⟨_, _, joinEqPair, _, _⟩ :=
+    RawStep.parStar.pair_inv targetToJoin
+  nomatch joinEqUnit.symm.trans joinEqPair
+
+/-- A `boolTrue`-headed source and a `pair`-headed target are not
+convertible. -/
+theorem Conv.boolTrue_ne_pair
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstValue secondValue : RawTerm scope}
+    {sourceTerm : Term context sourceType (RawTerm.boolTrue : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.pair firstValue secondValue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqTrue : joinRaw = RawTerm.boolTrue :=
+    RawStep.parStar.boolTrue_inv sourceToJoin
+  obtain ⟨_, _, joinEqPair, _, _⟩ :=
+    RawStep.parStar.pair_inv targetToJoin
+  nomatch joinEqTrue.symm.trans joinEqPair
+
+/-- A `boolFalse`-headed source and a `pair`-headed target are not
+convertible. -/
+theorem Conv.boolFalse_ne_pair
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstValue secondValue : RawTerm scope}
+    {sourceTerm : Term context sourceType (RawTerm.boolFalse : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.pair firstValue secondValue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqFalse : joinRaw = RawTerm.boolFalse :=
+    RawStep.parStar.boolFalse_inv sourceToJoin
+  obtain ⟨_, _, joinEqPair, _, _⟩ :=
+    RawStep.parStar.pair_inv targetToJoin
+  nomatch joinEqFalse.symm.trans joinEqPair
+
+/-- A `natZero`-headed source and a `pair`-headed target are not
+convertible. -/
+theorem Conv.natZero_ne_pair
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstValue secondValue : RawTerm scope}
+    {sourceTerm : Term context sourceType (RawTerm.natZero : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.pair firstValue secondValue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqZero : joinRaw = RawTerm.natZero :=
+    RawStep.parStar.natZero_inv sourceToJoin
+  obtain ⟨_, _, joinEqPair, _, _⟩ :=
+    RawStep.parStar.pair_inv targetToJoin
+  nomatch joinEqZero.symm.trans joinEqPair
+
+/-- A `listNil`-headed source and a `pair`-headed target are not
+convertible. -/
+theorem Conv.listNil_ne_pair
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstValue secondValue : RawTerm scope}
+    {sourceTerm : Term context sourceType (RawTerm.listNil : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.pair firstValue secondValue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqNil : joinRaw = RawTerm.listNil :=
+    RawStep.parStar.listNil_inv sourceToJoin
+  obtain ⟨_, _, joinEqPair, _, _⟩ :=
+    RawStep.parStar.pair_inv targetToJoin
+  nomatch joinEqNil.symm.trans joinEqPair
+
+/-- An `optionNone`-headed source and a `pair`-headed target are
+not convertible. -/
+theorem Conv.optionNone_ne_pair
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstValue secondValue : RawTerm scope}
+    {sourceTerm : Term context sourceType (RawTerm.optionNone : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.pair firstValue secondValue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqNone : joinRaw = RawTerm.optionNone :=
+    RawStep.parStar.optionNone_inv sourceToJoin
+  obtain ⟨_, _, joinEqPair, _, _⟩ :=
+    RawStep.parStar.pair_inv targetToJoin
+  nomatch joinEqNone.symm.trans joinEqPair
+
 end LeanFX2
