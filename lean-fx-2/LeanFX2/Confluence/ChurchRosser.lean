@@ -690,6 +690,171 @@ theorem Conv.transRaw_twoSteps_subst0
     (Conv.transChains (StepStar.fromStep firstStep)
                       (StepStar.fromStep secondStep))
 
+/-! ## Chain-then-Step-plus-action lifters
+
+When the first leg is a `StepStar` chain and the second leg is a
+single `Step`, these compose into a Conv (via `transChains` after
+lifting the Step) and project to raw under each canonical action.
+
+Pipeline: `Conv.<action>Raw <action-arg>
+  (Conv.transChains firstChain (StepStar.fromStep secondStep))`.
+
+Saves the per-call site `StepStar.fromStep` wrap when only the
+second leg is a single Step.  Mirror of the `stepChain` family (first
+leg single Step, second leg chain) — together they cover the
+asymmetric chain/step composition shapes downstream consumers reach
+for at boundary cong-rule arms. -/
+
+/-- Combine a chain + single Step with a raw renaming. -/
+theorem Conv.transRaw_chainStep_renamed
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {sourceType middleType farType : Ty level sourceScope}
+    {sourceRaw middleRaw farRaw : RawTerm sourceScope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {farTerm : Term context farType farRaw}
+    (rawRenaming : RawRenaming sourceScope targetScope)
+    (firstChain : StepStar sourceTerm middleTerm)
+    (secondStep : Step middleTerm farTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.rename rawRenaming) commonRaw ∧
+      RawStep.parStar (farRaw.rename rawRenaming) commonRaw :=
+  Conv.renameRaw rawRenaming
+    (Conv.transChains firstChain (StepStar.fromStep secondStep))
+
+/-- Canonical-weaken specialization of `Conv.transRaw_chainStep_renamed`. -/
+theorem Conv.transRaw_chainStep_weakened
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType middleType farType : Ty level scope}
+    {sourceRaw middleRaw farRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {farTerm : Term context farType farRaw}
+    (firstChain : StepStar sourceTerm middleTerm)
+    (secondStep : Step middleTerm farTerm) :
+    ∃ commonRaw,
+      RawStep.parStar sourceRaw.weaken commonRaw ∧
+      RawStep.parStar farRaw.weaken commonRaw :=
+  Conv.weakenRaw
+    (Conv.transChains firstChain (StepStar.fromStep secondStep))
+
+/-- Combine a chain + single Step with a raw substitution. -/
+theorem Conv.transRaw_chainStep_substituted
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {sourceType middleType farType : Ty level sourceScope}
+    {sourceRaw middleRaw farRaw : RawTerm sourceScope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {farTerm : Term context farType farRaw}
+    (rawSubst : RawTermSubst sourceScope targetScope)
+    (firstChain : StepStar sourceTerm middleTerm)
+    (secondStep : Step middleTerm farTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.subst rawSubst) commonRaw ∧
+      RawStep.parStar (farRaw.subst rawSubst) commonRaw :=
+  Conv.substRaw rawSubst
+    (Conv.transChains firstChain (StepStar.fromStep secondStep))
+
+/-- Singleton-substitution specialization of
+`Conv.transRaw_chainStep_substituted`. -/
+theorem Conv.transRaw_chainStep_subst0
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level (scope + 1)}
+    {sourceType middleType farType : Ty level (scope + 1)}
+    {sourceRaw middleRaw farRaw : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {farTerm : Term context farType farRaw}
+    (argRaw : RawTerm scope)
+    (firstChain : StepStar sourceTerm middleTerm)
+    (secondStep : Step middleTerm farTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.subst0 argRaw) commonRaw ∧
+      RawStep.parStar (farRaw.subst0 argRaw) commonRaw :=
+  Conv.subst0Raw argRaw
+    (Conv.transChains firstChain (StepStar.fromStep secondStep))
+
+/-! ## Step-then-Chain-plus-action lifters
+
+Mirror of the `chainStep` family: first leg is a single `Step`,
+second leg is a `StepStar` chain.  Composes via `transChains` after
+lifting the first Step. -/
+
+/-- Combine a single Step + chain with a raw renaming. -/
+theorem Conv.transRaw_stepChain_renamed
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {sourceType middleType farType : Ty level sourceScope}
+    {sourceRaw middleRaw farRaw : RawTerm sourceScope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {farTerm : Term context farType farRaw}
+    (rawRenaming : RawRenaming sourceScope targetScope)
+    (firstStep : Step sourceTerm middleTerm)
+    (secondChain : StepStar middleTerm farTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.rename rawRenaming) commonRaw ∧
+      RawStep.parStar (farRaw.rename rawRenaming) commonRaw :=
+  Conv.renameRaw rawRenaming
+    (Conv.transChains (StepStar.fromStep firstStep) secondChain)
+
+/-- Canonical-weaken specialization of `Conv.transRaw_stepChain_renamed`. -/
+theorem Conv.transRaw_stepChain_weakened
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType middleType farType : Ty level scope}
+    {sourceRaw middleRaw farRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {farTerm : Term context farType farRaw}
+    (firstStep : Step sourceTerm middleTerm)
+    (secondChain : StepStar middleTerm farTerm) :
+    ∃ commonRaw,
+      RawStep.parStar sourceRaw.weaken commonRaw ∧
+      RawStep.parStar farRaw.weaken commonRaw :=
+  Conv.weakenRaw
+    (Conv.transChains (StepStar.fromStep firstStep) secondChain)
+
+/-- Combine a single Step + chain with a raw substitution. -/
+theorem Conv.transRaw_stepChain_substituted
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {sourceType middleType farType : Ty level sourceScope}
+    {sourceRaw middleRaw farRaw : RawTerm sourceScope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {farTerm : Term context farType farRaw}
+    (rawSubst : RawTermSubst sourceScope targetScope)
+    (firstStep : Step sourceTerm middleTerm)
+    (secondChain : StepStar middleTerm farTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.subst rawSubst) commonRaw ∧
+      RawStep.parStar (farRaw.subst rawSubst) commonRaw :=
+  Conv.substRaw rawSubst
+    (Conv.transChains (StepStar.fromStep firstStep) secondChain)
+
+/-- Singleton-substitution specialization of
+`Conv.transRaw_stepChain_substituted`. -/
+theorem Conv.transRaw_stepChain_subst0
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level (scope + 1)}
+    {sourceType middleType farType : Ty level (scope + 1)}
+    {sourceRaw middleRaw farRaw : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {farTerm : Term context farType farRaw}
+    (argRaw : RawTerm scope)
+    (firstStep : Step sourceTerm middleTerm)
+    (secondChain : StepStar middleTerm farTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.subst0 argRaw) commonRaw ∧
+      RawStep.parStar (farRaw.subst0 argRaw) commonRaw :=
+  Conv.subst0Raw argRaw
+    (Conv.transChains (StepStar.fromStep firstStep) secondChain)
+
 /-- Combine two typed StepStar chains with a raw renaming. -/
 theorem Conv.transChains_renamed
     {mode : Mode} {level sourceScope targetScope : Nat}

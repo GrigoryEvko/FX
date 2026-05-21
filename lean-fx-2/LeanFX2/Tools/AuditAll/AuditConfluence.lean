@@ -45,6 +45,14 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.transRaw_twoSteps_weakened
 #assert_no_axioms LeanFX2.Conv.transRaw_twoSteps_substituted
 #assert_no_axioms LeanFX2.Conv.transRaw_twoSteps_subst0
+#assert_no_axioms LeanFX2.Conv.transRaw_chainStep_renamed
+#assert_no_axioms LeanFX2.Conv.transRaw_chainStep_weakened
+#assert_no_axioms LeanFX2.Conv.transRaw_chainStep_substituted
+#assert_no_axioms LeanFX2.Conv.transRaw_chainStep_subst0
+#assert_no_axioms LeanFX2.Conv.transRaw_stepChain_renamed
+#assert_no_axioms LeanFX2.Conv.transRaw_stepChain_weakened
+#assert_no_axioms LeanFX2.Conv.transRaw_stepChain_substituted
+#assert_no_axioms LeanFX2.Conv.transRaw_stepChain_subst0
 
 /-! ### Asymmetric typed Conv.trans variants (#1590 PHASE7-CONV-TRANS Phase 2)
 
