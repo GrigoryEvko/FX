@@ -727,6 +727,156 @@ theorem RawStep.parStar.equivCode_inv {scope : Nat}
   RawStep.parStar.binary_inv_helper RawTerm.equivCode
     RawStep.par.equivCode_inv chain
 
+/-- `RawStep.parStar (intervalOpp interval) target` preserves the
+`intervalOpp` head and projects to an interval-level chain. -/
+theorem RawStep.parStar.intervalOpp_inv {scope : Nat}
+    {intervalTerm target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.intervalOpp intervalTerm) target) :
+    ∃ intervalTarget,
+      target = RawTerm.intervalOpp intervalTarget ∧
+      RawStep.parStar intervalTerm intervalTarget :=
+  RawStep.parStar.unary_inv_helper RawTerm.intervalOpp
+    RawStep.par.intervalOpp_inv chain
+
+/-- `RawStep.parStar (intervalMeet left right) target` preserves the
+`intervalMeet` head and projects to component chains. -/
+theorem RawStep.parStar.intervalMeet_inv {scope : Nat}
+    {leftInterval rightInterval target : RawTerm scope}
+    (chain :
+      RawStep.parStar
+        (RawTerm.intervalMeet leftInterval rightInterval) target) :
+    ∃ leftTarget rightTarget,
+      target = RawTerm.intervalMeet leftTarget rightTarget ∧
+      RawStep.parStar leftInterval leftTarget ∧
+      RawStep.parStar rightInterval rightTarget :=
+  RawStep.parStar.binary_inv_helper RawTerm.intervalMeet
+    RawStep.par.intervalMeet_inv chain
+
+/-- `RawStep.parStar (intervalJoin left right) target` preserves the
+`intervalJoin` head and projects to component chains. -/
+theorem RawStep.parStar.intervalJoin_inv {scope : Nat}
+    {leftInterval rightInterval target : RawTerm scope}
+    (chain :
+      RawStep.parStar
+        (RawTerm.intervalJoin leftInterval rightInterval) target) :
+    ∃ leftTarget rightTarget,
+      target = RawTerm.intervalJoin leftTarget rightTarget ∧
+      RawStep.parStar leftInterval leftTarget ∧
+      RawStep.parStar rightInterval rightTarget :=
+  RawStep.parStar.binary_inv_helper RawTerm.intervalJoin
+    RawStep.par.intervalJoin_inv chain
+
+/-- `RawStep.parStar (uaToEquiv proof) target` preserves the
+`uaToEquiv` head and projects to a proof chain. -/
+theorem RawStep.parStar.uaToEquiv_inv {scope : Nat}
+    {proofTerm target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.uaToEquiv proofTerm) target) :
+    ∃ proofTarget,
+      target = RawTerm.uaToEquiv proofTarget ∧
+      RawStep.parStar proofTerm proofTarget :=
+  RawStep.parStar.unary_inv_helper RawTerm.uaToEquiv
+    RawStep.par.uaToEquiv_inv chain
+
+/-- `RawStep.parStar (pathCompose left right) target` preserves the
+`pathCompose` head and projects to component path chains. -/
+theorem RawStep.parStar.pathCompose_inv {scope : Nat}
+    {leftPath rightPath target : RawTerm scope}
+    (chain :
+      RawStep.parStar (RawTerm.pathCompose leftPath rightPath) target) :
+    ∃ leftTarget rightTarget,
+      target = RawTerm.pathCompose leftTarget rightTarget ∧
+      RawStep.parStar leftPath leftTarget ∧
+      RawStep.parStar rightPath rightTarget :=
+  RawStep.parStar.binary_inv_helper RawTerm.pathCompose
+    RawStep.par.pathCompose_inv chain
+
+/-- `RawStep.parStar (oeqTrans first second) target` preserves the
+`oeqTrans` head and projects to proof chains. -/
+theorem RawStep.parStar.oeqTrans_inv {scope : Nat}
+    {firstProof secondProof target : RawTerm scope}
+    (chain :
+      RawStep.parStar (RawTerm.oeqTrans firstProof secondProof) target) :
+    ∃ firstTarget secondTarget,
+      target = RawTerm.oeqTrans firstTarget secondTarget ∧
+      RawStep.parStar firstProof firstTarget ∧
+      RawStep.parStar secondProof secondTarget :=
+  RawStep.parStar.binary_inv_helper RawTerm.oeqTrans
+    RawStep.par.oeqTrans_inv chain
+
+/-- `RawStep.parStar (equivCompose first second) target` preserves the
+`equivCompose` head and projects to equivalence chains. -/
+theorem RawStep.parStar.equivCompose_inv {scope : Nat}
+    {firstEquiv secondEquiv target : RawTerm scope}
+    (chain :
+      RawStep.parStar
+        (RawTerm.equivCompose firstEquiv secondEquiv) target) :
+    ∃ firstTarget secondTarget,
+      target = RawTerm.equivCompose firstTarget secondTarget ∧
+      RawStep.parStar firstEquiv firstTarget ∧
+      RawStep.parStar secondEquiv secondTarget :=
+  RawStep.parStar.binary_inv_helper RawTerm.equivCompose
+    RawStep.par.equivCompose_inv chain
+
+/-- `RawStep.parStar (glueIntro base partial) target` preserves the
+`glueIntro` head and projects to component chains. -/
+theorem RawStep.parStar.glueIntro_inv {scope : Nat}
+    {baseValue partialValue target : RawTerm scope}
+    (chain :
+      RawStep.parStar (RawTerm.glueIntro baseValue partialValue) target) :
+    ∃ baseTarget partialTarget,
+      target = RawTerm.glueIntro baseTarget partialTarget ∧
+      RawStep.parStar baseValue baseTarget ∧
+      RawStep.parStar partialValue partialTarget :=
+  RawStep.parStar.binary_inv_helper RawTerm.glueIntro
+    RawStep.par.glueIntro_inv chain
+
+/-- `RawStep.parStar (oeqRefl witness) target` preserves the
+`oeqRefl` head and projects to a witness chain. -/
+theorem RawStep.parStar.oeqRefl_inv {scope : Nat}
+    {witness target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.oeqRefl witness) target) :
+    ∃ witnessTarget,
+      target = RawTerm.oeqRefl witnessTarget ∧
+      RawStep.parStar witness witnessTarget :=
+  RawStep.parStar.unary_inv_helper RawTerm.oeqRefl
+    RawStep.par.oeqRefl_inv chain
+
+/-- `RawStep.parStar (oeqFunext pointwise) target` preserves the
+`oeqFunext` head and projects to a pointwise-proof chain. -/
+theorem RawStep.parStar.oeqFunext_inv {scope : Nat}
+    {pointwiseEquality target : RawTerm scope}
+    (chain : RawStep.parStar
+      (RawTerm.oeqFunext pointwiseEquality) target) :
+    ∃ pointwiseTarget,
+      target = RawTerm.oeqFunext pointwiseTarget ∧
+      RawStep.parStar pointwiseEquality pointwiseTarget :=
+  RawStep.parStar.unary_inv_helper RawTerm.oeqFunext
+    RawStep.par.oeqFunext_inv chain
+
+/-- `RawStep.parStar (idStrictRefl witness) target` preserves the
+`idStrictRefl` head and projects to a witness chain. -/
+theorem RawStep.parStar.idStrictRefl_inv {scope : Nat}
+    {witness target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.idStrictRefl witness) target) :
+    ∃ witnessTarget,
+      target = RawTerm.idStrictRefl witnessTarget ∧
+      RawStep.parStar witness witnessTarget :=
+  RawStep.parStar.unary_inv_helper RawTerm.idStrictRefl
+    RawStep.par.idStrictRefl_inv chain
+
+/-- `RawStep.parStar (equivIntro forward backward) target` preserves
+the `equivIntro` head and projects to both function chains. -/
+theorem RawStep.parStar.equivIntro_inv {scope : Nat}
+    {forwardFn backwardFn target : RawTerm scope}
+    (chain :
+      RawStep.parStar (RawTerm.equivIntro forwardFn backwardFn) target) :
+    ∃ forwardTarget backwardTarget,
+      target = RawTerm.equivIntro forwardTarget backwardTarget ∧
+      RawStep.parStar forwardFn forwardTarget ∧
+      RawStep.parStar backwardFn backwardTarget :=
+  RawStep.parStar.binary_inv_helper RawTerm.equivIntro
+    RawStep.par.equivIntro_inv chain
+
 /-- `RawStep.parStar (lam body) target` preserves the lambda head and
 projects to a body-level `parStar` chain. -/
 theorem RawStep.parStar.lam_inv {scope : Nat}
