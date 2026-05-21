@@ -761,4 +761,103 @@ theorem Term.rename_injective_arm_eitherMatch
   exact ⟨inferredLeftType, inferredRightType, scrutineeTerm, leftTerm,
     rightTerm, HEq.rfl⟩
 
+/-- `pair` arm: two children, cast on `secondValue` via
+    `Ty.subst0_rename_commute`.  Uses type-free suffices with a packed
+    sigmaTy wrapper typeEq; uncasts `secondValue`'s rename HEq mirroring
+    `arm_lam`'s body-uncast pattern. -/
+theorem Term.rename_injective_arm_pair
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (rhoInjective : RawRenamingInjective rho)
+    {firstType : Ty level sourceScope}
+    {secondType : Ty level (sourceScope + 1)}
+    {firstRaw secondRaw : RawTerm sourceScope}
+    (firstValueA : Term sourceCtx firstType firstRaw)
+    (secondValueA : Term sourceCtx (secondType.subst0 firstType firstRaw) secondRaw)
+    (firstIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (firstValueB : Term sourceCtx firstType firstRaw),
+          Term.rename innerRenaming firstValueA =
+            Term.rename innerRenaming firstValueB →
+          firstValueA = firstValueB)
+    (secondIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (secondValueB :
+            Term sourceCtx (secondType.subst0 firstType firstRaw) secondRaw),
+          Term.rename innerRenaming secondValueA =
+            Term.rename innerRenaming secondValueB →
+          secondValueA = secondValueB)
+    (termB : Term sourceCtx (Ty.sigmaTy firstType secondType)
+      (RawTerm.pair firstRaw secondRaw)) :
+    Term.rename termRenaming (Term.pair firstValueA secondValueA) =
+      Term.rename termRenaming termB →
+      Term.pair firstValueA secondValueA = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.pair firstRaw secondRaw)),
+        Σ' (inferredFirstType : Ty level sourceScope),
+          Σ' (inferredSecondType : Ty level (sourceScope + 1)),
+            Σ' (firstValueB :
+                Term sourceCtx inferredFirstType firstRaw),
+              Σ' (secondValueB : Term sourceCtx
+                  (inferredSecondType.subst0 inferredFirstType firstRaw)
+                  secondRaw),
+                Σ' (_ : genericType =
+                    Ty.sigmaTy inferredFirstType inferredSecondType),
+                  HEq genericTerm (Term.pair firstValueB secondValueB) by
+    obtain ⟨inferredFirstType, inferredSecondType, firstValueB, secondValueB,
+      typeEq, termHEqB⟩ := key termB
+    cases typeEq
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ _ _ firstRenameEq secondRenameHEq
+    have secondRenameUncastHEq :
+        HEq (Term.rename termRenaming secondValueA)
+          (Term.rename termRenaming secondValueB) :=
+      HEq.trans
+        (HEq.symm
+          (termRenameInjectiveCastHEq
+            (Ty.subst0_rename_commute secondType firstType firstRaw rho)
+            (Term.rename termRenaming secondValueA)))
+        (HEq.trans (heq_of_eq secondRenameHEq)
+          (termRenameInjectiveCastHEq
+            (Ty.subst0_rename_commute secondType firstType firstRaw rho)
+            (Term.rename termRenaming secondValueB)))
+    have firstEq : firstValueA = firstValueB :=
+      firstIH termRenaming rhoInjective firstValueB firstRenameEq
+    have secondEq : secondValueA = secondValueB :=
+      secondIH termRenaming rhoInjective secondValueB
+        (eq_of_heq secondRenameUncastHEq)
+    cases firstEq
+    cases secondEq
+    rfl
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredFirstType inferredSecondType firstValueTerm secondValueTerm
+  exact ⟨inferredFirstType, inferredSecondType, firstValueTerm, secondValueTerm,
+    rfl, HEq.rfl⟩
+
+-- NOTE: arm_snd / arm_boolElim / arm_appPi (and other cast-on-result ctors)
+-- hit a fundamental dep-elim wall: `Ty.subst0` is not structurally injective,
+-- so given `termB : Term ... (secondType.subst0 firstType ...) (RawTerm.snd pairRaw)`,
+-- inverting termB to `Term.snd pairB` with pairB at `Ty.sigmaTy firstType secondType`
+-- is blocked.  Existing `Term.snd_ctor` lemma assumes BOTH sides already at the
+-- sigmaTy type.  The arm-helper shape (childA-fixed IH + termB-generic) needs
+-- a deeper inversion infrastructure (or a different driver shape that cases on
+-- both termA AND termB simultaneously) to handle these arms.  Deferring these
+-- arms — they're tractable from the existing `*_ctor` helpers but need separate
+-- inversion plumbing not yet in scope.  See InductiveArms.lean header for the
+-- catalogue of arm patterns that DO ship cleanly via this driver.
+
 end LeanFX2
