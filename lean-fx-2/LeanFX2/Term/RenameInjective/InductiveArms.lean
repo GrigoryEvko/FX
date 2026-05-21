@@ -937,17 +937,19 @@ theorem Term.rename_injective_arm_lamPi
           baseCodomainB applyRawB rfl rfl
           (heq_of_eq renameEq))
 
--- NOTE: arm_snd / arm_boolElim / arm_appPi (cast-on-result ctors) hit a
--- fundamental dep-elim wall: `Ty.subst0` is not structurally injective.
--- The suffices+free-genericType pattern succeeds for `cases genericTerm`
--- (since the type is free), but the resulting `typeEq : codomainType.subst0
--- ... = innerCodomain.subst0 ...` cannot be `cases`'d (Lean: "Dependent
--- elimination failed: Failed to solve equation
--- innerCodomain.subst (Subst.singleton ...) = codomainType.subst
--- (Subst.singleton ...)").  Working around requires either a heterogeneous
--- (HEq-style) IH or a deeper Ty-aligned inversion lemma.  Deferred — these
--- arms ARE tractable but need separate inversion plumbing (`Term.snd_inv`
--- with HEq Σ-Ty index extraction) not yet shipped.
+/-! ## Cast-on-result arms: `snd`, `boolElim`, `appPi`.
+
+These ctors carry a `Ty.subst0_rename_commute` cast on the result type of
+`Term.rename`.  The wall: `cases typeEq` on `subst0` fails because
+`Ty.subst0` is not structurally injective.
+
+The fix: invert `termB` via `Term.snd_raw_inv` / `Term.boolElim_raw_inv` /
+`Term.app_inv` (from `CastInversions.lean`), then strip the cast on both
+sides via `termRenameInjectiveCastHEq`, then use raw-level injection on
+the `dsimp`'d `renameEq` to extract `Ty`-existential equalities via
+`Ty.rename_injective_under_injective_renaming`, and finally invoke
+child IHs to close.
+-/
 
 /-! ## HoTT identity-eliminator arms (idJ / oeqJ / oeqFunext / idStrictRec).
 
