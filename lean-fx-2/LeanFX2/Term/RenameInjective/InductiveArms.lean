@@ -82,6 +82,96 @@ theorem Term.rename_injective_arm_fst
   rename_i inferredSecondType pairTerm
   exact ⟨inferredSecondType, pairTerm, HEq.rfl⟩
 
+/-- `app` arm: arrow application with `RawTerm.app` collision raw (shared
+    with `appPi`).  Uses `Term.app_inv` to invert termB into a disjoint sum;
+    the `appPi` branch refutes via constructor-mismatch on `renameEq`
+    (`Term.app … = Term.appPi …` is impossible by Term ctor noConfusion).
+    `domainType` is the Ty existential (only in function child's type),
+    recovered via `Ty.rename_injective_under_injective_renaming`. -/
+theorem Term.rename_injective_arm_app
+    (rhoInjective : RawRenamingInjective rho)
+    {domainType codomainType : Ty level sourceScope}
+    {functionRaw argumentRaw : RawTerm sourceScope}
+    (functionTerm :
+      Term sourceCtx (Ty.arrow domainType codomainType) functionRaw)
+    (argumentTerm : Term sourceCtx domainType argumentRaw)
+    (functionIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (functionB :
+            Term sourceCtx (Ty.arrow domainType codomainType) functionRaw),
+          Term.rename innerRenaming functionTerm =
+            Term.rename innerRenaming functionB →
+          functionTerm = functionB)
+    (argumentIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (argumentB : Term sourceCtx domainType argumentRaw),
+          Term.rename innerRenaming argumentTerm =
+            Term.rename innerRenaming argumentB →
+          argumentTerm = argumentB)
+    (termB :
+      Term sourceCtx codomainType (RawTerm.app functionRaw argumentRaw)) :
+    Term.rename termRenaming (Term.app functionTerm argumentTerm) =
+      Term.rename termRenaming termB →
+      Term.app functionTerm argumentTerm = termB := by
+  intro renameEq
+  cases Term.app_inv termB with
+  | inl caseApp =>
+      obtain ⟨innerDomain, fnTermB, argTermB, appHEq⟩ := caseApp
+      cases appHEq
+      dsimp only [Term.rename] at renameEq
+      injection renameEq with _ _ domainRenameEq _ _ _ fnRenameHEq argRenameHEq
+      have domainEq : domainType = innerDomain :=
+        Ty.rename_injective_under_injective_renaming domainType
+          rhoInjective innerDomain domainRenameEq
+      cases domainEq
+      rw [functionIH termRenaming rhoInjective fnTermB
+            (eq_of_heq fnRenameHEq),
+          argumentIH termRenaming rhoInjective argTermB
+            (eq_of_heq argRenameHEq)]
+  | inr caseAppPi =>
+      obtain ⟨innerDomain, innerCodomain, eqProof, fnTermB, argTermB,
+        appPiHEq⟩ := caseAppPi
+      cases eqProof
+      cases appPiHEq
+      exfalso
+      -- termB definitionally equals `Term.appPi fnTermB argTermB` at the
+      -- shared type `(innerCodomain.subst0 innerDomain argumentRaw)`.
+      -- `Term.rename` of `Term.appPi` carries a `Ty.subst0_rename_commute`
+      -- cast on its result; strip it via `termRenameInjectiveCastHEq` to
+      -- expose the bare `Term.appPi` ctor, then refute against `Term.app`
+      -- via `Term.noConfusion`'s HEq-aware form (handles the residual
+      -- Ty-index mismatch as an HEq parameter, no type-alignment needed).
+      have rhsHEq :
+          HEq (Term.rename termRenaming (Term.appPi fnTermB argTermB))
+              (Term.appPi (Term.rename termRenaming fnTermB)
+                          (Term.rename termRenaming argTermB)) :=
+        termRenameInjectiveCastHEq
+          (Ty.subst0_rename_commute innerCodomain innerDomain argumentRaw rho).symm
+          (Term.appPi (Term.rename termRenaming fnTermB)
+                      (Term.rename termRenaming argTermB))
+      have appHEq :
+          HEq (Term.app (Term.rename termRenaming functionTerm)
+                        (Term.rename termRenaming argumentTerm))
+              (Term.appPi (Term.rename termRenaming fnTermB)
+                          (Term.rename termRenaming argTermB)) :=
+        HEq.trans (heq_of_eq renameEq) rhsHEq
+      apply Term.noConfusion (P := False)
+        (t := Term.app (Term.rename termRenaming functionTerm)
+                       (Term.rename termRenaming argumentTerm))
+        (t' := Term.appPi (Term.rename termRenaming fnTermB)
+                          (Term.rename termRenaming argTermB))
+        rfl rfl rfl HEq.rfl
+        (heq_of_eq
+          (Ty.subst0_rename_commute innerCodomain innerDomain argumentRaw rho))
+        HEq.rfl
+      exact appHEq
+
 /-- `lam` arm: cast-bearing binder body at the `RawTerm.lam` collision raw.
     Uses `Term.lam_arrow_inv` to invert termB cleanly (refutes
     lamPi/funextRefl/funextReflAtId/funextIntroHet siblings via arrow type). -/
