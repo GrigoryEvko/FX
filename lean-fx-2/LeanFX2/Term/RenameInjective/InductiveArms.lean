@@ -914,4 +914,99 @@ theorem Term.rename_injective_arm_lamPi
 -- inversion plumbing not yet in scope.  See InductiveArms.lean header for the
 -- catalogue of arm patterns that DO ship cleanly via this driver.
 
+/-! ## Closed-ctor arms (one-liners reusing existing standalone helpers)
+
+For closed constructors (no child terms, just `Term.<ctor>` at a fixed type),
+the `induction termA` IHs are vacuous (no child IHs needed).  The arm helper
+is a one-line wrapper around the existing `Term.rename_injective_at<Ctor>`
+standalone helper.  All of these are zero-axiom by construction since the
+standalone helpers ship zero-axiom. -/
+
+/-- `var` arm: vacuous IHs (no children).  Forwards to `atVar`. -/
+theorem Term.rename_injective_arm_var
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {position : Fin sourceScope}
+    (termB :
+      Term sourceCtx (varType sourceCtx position) (RawTerm.var position)) :
+    Term.rename termRenaming (Term.var position) =
+      Term.rename termRenaming termB → Term.var position = termB :=
+  Term.rename_injective_atVar termRenaming (Term.var position) termB
+
+/-- `unit` arm: closed-type unit term. -/
+theorem Term.rename_injective_arm_unit
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (termB : Term sourceCtx Ty.unit RawTerm.unit) :
+    Term.rename termRenaming (Term.unit (context := sourceCtx)) =
+      Term.rename termRenaming termB →
+      Term.unit (context := sourceCtx) = termB :=
+  Term.rename_injective_atUnit termRenaming (Term.unit (context := sourceCtx))
+    termB
+
+/-- `boolTrue` arm. -/
+theorem Term.rename_injective_arm_boolTrue
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (termB : Term sourceCtx Ty.bool RawTerm.boolTrue) :
+    Term.rename termRenaming (Term.boolTrue (context := sourceCtx)) =
+      Term.rename termRenaming termB →
+      Term.boolTrue (context := sourceCtx) = termB :=
+  Term.rename_injective_atBoolTrue termRenaming
+    (Term.boolTrue (context := sourceCtx)) termB
+
+/-- `boolFalse` arm. -/
+theorem Term.rename_injective_arm_boolFalse
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (termB : Term sourceCtx Ty.bool RawTerm.boolFalse) :
+    Term.rename termRenaming (Term.boolFalse (context := sourceCtx)) =
+      Term.rename termRenaming termB →
+      Term.boolFalse (context := sourceCtx) = termB :=
+  Term.rename_injective_atBoolFalse termRenaming
+    (Term.boolFalse (context := sourceCtx)) termB
+
+/-- `natZero` arm. -/
+theorem Term.rename_injective_arm_natZero
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (termB : Term sourceCtx Ty.nat RawTerm.natZero) :
+    Term.rename termRenaming (Term.natZero (context := sourceCtx)) =
+      Term.rename termRenaming termB →
+      Term.natZero (context := sourceCtx) = termB :=
+  Term.rename_injective_atNatZero termRenaming
+    (Term.natZero (context := sourceCtx)) termB
+
+/-- `listNil` arm: closed at the parametric `Ty.listType elementType`. -/
+theorem Term.rename_injective_arm_listNil
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {elementType : Ty level sourceScope}
+    (termB : Term sourceCtx (Ty.listType elementType) RawTerm.listNil) :
+    Term.rename termRenaming
+        (Term.listNil (context := sourceCtx) (elementType := elementType)) =
+      Term.rename termRenaming termB →
+      Term.listNil (context := sourceCtx) (elementType := elementType) =
+        termB :=
+  Term.rename_injective_atListNil termRenaming
+    (Term.listNil (context := sourceCtx) (elementType := elementType)) termB
+
 end LeanFX2
