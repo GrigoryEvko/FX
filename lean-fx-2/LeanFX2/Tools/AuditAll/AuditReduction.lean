@@ -768,6 +768,10 @@ shapes: 5 in CubicalShape. -/
 #assert_no_axioms LeanFX2.Conv.weakened_right_commonRaw_in_weaken_image
 #assert_no_axioms LeanFX2.Conv.right_commonRaw_in_rename_image_of_targetRaw_eq
 #assert_no_axioms LeanFX2.Conv.right_commonRaw_in_weaken_image_of_targetRaw_eq
+#assert_no_axioms LeanFX2.Conv.left_toRawJoin_in_rename_image_of_sourceRaw_eq
+#assert_no_axioms LeanFX2.Conv.left_toRawJoin_in_weaken_image_of_sourceRaw_eq
+#assert_no_axioms LeanFX2.Conv.right_toRawJoin_in_rename_image_of_targetRaw_eq
+#assert_no_axioms LeanFX2.Conv.right_toRawJoin_in_weaken_image_of_targetRaw_eq
 
 -- AtomShape1: 7 closed-leaf shape inversions
 #assert_no_axioms LeanFX2.RawTerm.rename_eq_boolTrue_imp
