@@ -483,6 +483,85 @@ private theorem RawStep.parStar.unary_inv_helper
       RawStep.parStar innerSource innerTarget :=
   RawStep.parStar.unary_inv_aux wrap parStepInv chain rfl
 
+/-- Generalized unary eliminator `parStar` inversion for eliminators whose
+β arm returns a developed payload directly.
+
+For a chain from `elimWrap innerSource`, either the whole chain preserves
+the eliminator head, or some step fires β after `innerSource` develops to
+`introWrap payloadTarget`, followed by an arbitrary tail chain from that
+payload. -/
+private theorem RawStep.parStar.unary_payload_elim_inv_aux {scope : Nat}
+    (elimWrap introWrap : RawTerm scope → RawTerm scope)
+    (parStepInv : ∀ {innerSource target},
+      RawStep.par (elimWrap innerSource) target →
+        (∃ innerTarget,
+          target = elimWrap innerTarget ∧
+          RawStep.par innerSource innerTarget) ∨
+        (∃ payloadTarget,
+          target = payloadTarget ∧
+          RawStep.par innerSource (introWrap payloadTarget)))
+    {source target : RawTerm scope}
+    (chain : RawStep.parStar source target) :
+    ∀ {innerSource : RawTerm scope},
+      source = elimWrap innerSource →
+      (∃ innerTarget,
+        target = elimWrap innerTarget ∧
+        RawStep.parStar innerSource innerTarget) ∨
+      (∃ payloadTarget,
+        RawStep.parStar innerSource (introWrap payloadTarget) ∧
+        RawStep.parStar payloadTarget target) := by
+  induction chain with
+  | refl _ =>
+      intro innerSource sourceEq
+      exact Or.inl ⟨innerSource, sourceEq, RawStep.parStar.refl _⟩
+  | trans firstStep restChain restIH =>
+      intro innerSource sourceEq
+      subst sourceEq
+      cases parStepInv firstStep with
+      | inl headCase =>
+          obtain ⟨middleInner, middleEq, innerStep⟩ := headCase
+          cases restIH middleEq with
+          | inl preservedCase =>
+              obtain ⟨targetInner, targetEq, innerChainRest⟩ :=
+                preservedCase
+              exact Or.inl ⟨targetInner, targetEq,
+                RawStep.parStar.trans innerStep innerChainRest⟩
+          | inr firedCase =>
+              obtain ⟨payloadTarget, introChainRest, payloadChain⟩ :=
+                firedCase
+              exact Or.inr ⟨payloadTarget,
+                RawStep.parStar.trans innerStep introChainRest,
+                payloadChain⟩
+      | inr betaCase =>
+          obtain ⟨payloadTarget, middleEq, introStep⟩ := betaCase
+          cases middleEq
+          exact Or.inr ⟨_,
+            RawStep.parStar.trans introStep (RawStep.parStar.refl _),
+            restChain⟩
+
+/-- Unary payload-eliminator `parStar` inversion for an exactly wrapped
+source. -/
+private theorem RawStep.parStar.unary_payload_elim_inv_helper {scope : Nat}
+    (elimWrap introWrap : RawTerm scope → RawTerm scope)
+    (parStepInv : ∀ {innerSource target},
+      RawStep.par (elimWrap innerSource) target →
+        (∃ innerTarget,
+          target = elimWrap innerTarget ∧
+          RawStep.par innerSource innerTarget) ∨
+        (∃ payloadTarget,
+          target = payloadTarget ∧
+          RawStep.par innerSource (introWrap payloadTarget)))
+    {innerSource target : RawTerm scope}
+    (chain : RawStep.parStar (elimWrap innerSource) target) :
+    (∃ innerTarget,
+      target = elimWrap innerTarget ∧
+      RawStep.parStar innerSource innerTarget) ∨
+    (∃ payloadTarget,
+      RawStep.parStar innerSource (introWrap payloadTarget) ∧
+      RawStep.parStar payloadTarget target) :=
+  RawStep.parStar.unary_payload_elim_inv_aux elimWrap introWrap
+    parStepInv chain rfl
+
 /-- Generalized binary-head `parStar` inversion.
 
 This is the two-subterm counterpart to `unary_inv_aux`; it threads the
@@ -1030,6 +1109,21 @@ theorem RawStep.parStar.modIntro_inv {scope : Nat}
   RawStep.parStar.unary_inv_helper RawTerm.modIntro
     RawStep.par.modIntro_inv chain
 
+/-- `RawStep.parStar (modElim inner) target` either preserves the
+`modElim` head or fires modal β after the inner term develops to a
+`modIntro` payload. -/
+theorem RawStep.parStar.modElim_inv {scope : Nat}
+    {innerTerm target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.modElim innerTerm) target) :
+    (∃ innerTarget,
+      target = RawTerm.modElim innerTarget ∧
+      RawStep.parStar innerTerm innerTarget) ∨
+    (∃ payloadTarget,
+      RawStep.parStar innerTerm (RawTerm.modIntro payloadTarget) ∧
+      RawStep.parStar payloadTarget target) :=
+  RawStep.parStar.unary_payload_elim_inv_helper RawTerm.modElim
+    RawTerm.modIntro RawStep.par.modElim_inv chain
+
 /-- `RawStep.parStar (subsume inner) target` preserves the `subsume`
 head and projects to an inner chain. -/
 theorem RawStep.parStar.subsume_inv {scope : Nat}
@@ -1077,6 +1171,21 @@ theorem RawStep.parStar.recordIntro_inv {scope : Nat}
       RawStep.parStar firstField firstTarget :=
   RawStep.parStar.unary_inv_helper RawTerm.recordIntro
     RawStep.par.recordIntro_inv chain
+
+/-- `RawStep.parStar (recordProj recordValue) target` either preserves
+the `recordProj` head or fires record β after the record develops to a
+`recordIntro` field. -/
+theorem RawStep.parStar.recordProj_inv {scope : Nat}
+    {recordValue target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.recordProj recordValue) target) :
+    (∃ recordTarget,
+      target = RawTerm.recordProj recordTarget ∧
+      RawStep.parStar recordValue recordTarget) ∨
+    (∃ firstTarget,
+      RawStep.parStar recordValue (RawTerm.recordIntro firstTarget) ∧
+      RawStep.parStar firstTarget target) :=
+  RawStep.parStar.unary_payload_elim_inv_helper RawTerm.recordProj
+    RawTerm.recordIntro RawStep.par.recordProj_inv chain
 
 /-- `RawStep.parStar (codataUnfold state transition) target` preserves
 the `codataUnfold` head and projects to state/transition chains. -/
