@@ -858,6 +858,121 @@ theorem Term.rename_injective_arm_lamPi
 -- inversion plumbing not yet in scope.  See InductiveArms.lean header for the
 -- catalogue of arm patterns that DO ship cleanly via this driver.
 
+/-! ## Codata / session arms (parametric intro shapes).
+
+* `codataUnfold` packages initial state + transition into a Ty.codata.  Two
+  existential types (stateType, outputType); both children at composed shapes.
+* `sessionRecv` packages a channel into a Ty.session.  Single existential
+  RawTerm `protocolStep` (no Ty existential); single child at session type.
+
+Both follow the cases-typeEqB pattern established in `refineIntro`. -/
+
+/-- `codataUnfold` arm: codata producer wrapping initial state + transition. -/
+theorem Term.rename_injective_arm_codataUnfold
+    {stateType outputType : Ty level sourceScope}
+    {stateRaw transitionRaw : RawTerm sourceScope}
+    (initialState : Term sourceCtx stateType stateRaw)
+    (transition :
+      Term sourceCtx (Ty.arrow stateType outputType) transitionRaw)
+    (stateIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (stateB : Term sourceCtx stateType stateRaw),
+          Term.rename innerRenaming initialState =
+            Term.rename innerRenaming stateB →
+          initialState = stateB)
+    (transitionIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (transitionB :
+            Term sourceCtx (Ty.arrow stateType outputType) transitionRaw),
+          Term.rename innerRenaming transition =
+            Term.rename innerRenaming transitionB →
+          transition = transitionB)
+    (rhoInjective : RawRenamingInjective rho)
+    (termB :
+      Term sourceCtx (Ty.codata stateType outputType)
+        (RawTerm.codataUnfold stateRaw transitionRaw)) :
+    Term.rename termRenaming (Term.codataUnfold initialState transition) =
+      Term.rename termRenaming termB →
+      Term.codataUnfold initialState transition = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.codataUnfold stateRaw transitionRaw)),
+        Σ' (inferredStateType : Ty level sourceScope),
+          Σ' (inferredOutputType : Ty level sourceScope),
+            Σ' (stateB : Term sourceCtx inferredStateType stateRaw),
+              Σ' (transitionB :
+                  Term sourceCtx
+                    (Ty.arrow inferredStateType inferredOutputType)
+                    transitionRaw),
+                Σ' (_ : genericType =
+                    Ty.codata inferredStateType inferredOutputType),
+                  HEq genericTerm
+                    (Term.codataUnfold stateB transitionB) by
+    obtain ⟨inferredStateType, inferredOutputType, stateB, transitionB,
+      typeEqB, termHEqB⟩ := key termB
+    cases typeEqB
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ _ _ stateRenameEq transitionRenameEq
+    rw [stateIH termRenaming rhoInjective stateB stateRenameEq,
+        transitionIH termRenaming rhoInjective transitionB transitionRenameEq]
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredStateType inferredOutputType stateTerm transitionTerm
+  exact ⟨inferredStateType, inferredOutputType, stateTerm, transitionTerm,
+    rfl, HEq.rfl⟩
+
+/-- `sessionRecv` arm: session receive wrapping a channel at fixed protocol. -/
+theorem Term.rename_injective_arm_sessionRecv
+    {protocolStep : RawTerm sourceScope}
+    {channelRaw : RawTerm sourceScope}
+    (channel : Term sourceCtx (Ty.session protocolStep) channelRaw)
+    (channelIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (channelB : Term sourceCtx (Ty.session protocolStep) channelRaw),
+          Term.rename innerRenaming channel =
+            Term.rename innerRenaming channelB →
+          channel = channelB)
+    (rhoInjective : RawRenamingInjective rho)
+    (termB :
+      Term sourceCtx (Ty.session protocolStep)
+        (RawTerm.sessionRecv channelRaw)) :
+    Term.rename termRenaming (Term.sessionRecv channel) =
+      Term.rename termRenaming termB →
+      Term.sessionRecv channel = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm : Term sourceCtx genericType
+          (RawTerm.sessionRecv channelRaw)),
+        Σ' (inferredProtocolStep : RawTerm sourceScope),
+          Σ' (channelB :
+              Term sourceCtx (Ty.session inferredProtocolStep) channelRaw),
+            Σ' (_ : genericType = Ty.session inferredProtocolStep),
+              HEq genericTerm (Term.sessionRecv channelB) by
+    obtain ⟨inferredProtocolStep, channelB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqB
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ channelRenameEq
+    exact congrArg Term.sessionRecv
+      (channelIH termRenaming rhoInjective channelB channelRenameEq)
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i inferredProtocolStep channelTerm
+  exact ⟨inferredProtocolStep, channelTerm, rfl, HEq.rfl⟩
+
 /-! ## Record / refine intro arms (single-existential type, intro shape).
 
 Two intro-form ctors with outer-type `Ty.<wrapper> <existential>`:
