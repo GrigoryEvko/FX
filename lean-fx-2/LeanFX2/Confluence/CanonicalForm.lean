@@ -288,4 +288,119 @@ theorem Conv.targetReaches_universeCode
     RawStep.parStar.universeCode_inv sourceToJoin
   exact joinEqCode ▸ targetToJoin
 
+/-! ## Source-side canonical-head Conv corollaries
+
+Symmetric variants of the `targetReaches_<head>` family: given a
+`Conv sourceTerm targetTerm` where the **target** has a canonical
+raw head, the **source** is forced to reduce to that head.  Each
+proof is a one-line `Conv.sym` of the iter 26 theorem above.
+
+These complete the canonical-form propagation grid: source→target
+AND target→source for the eight canonical heads `unit`,
+`boolTrue`, `boolFalse`, `natZero`, `listNil`, `optionNone`, `var`,
+`universeCode`.  Useful for fundamental-theorem closed-head
+closure clauses where the canonical normal form sits on either
+side of the Conv. -/
+
+/-- `Conv sourceTerm targetTerm` where target has raw `unit`
+forces the source's raw projection to reduce to `unit`. -/
+theorem Conv.sourceReaches_unit
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType (RawTerm.unit : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    RawStep.parStar sourceRaw RawTerm.unit :=
+  Conv.targetReaches_unit (Conv.sym convertibility)
+
+/-- `Conv sourceTerm targetTerm` where target has raw `boolTrue`
+forces the source's raw projection to reduce to `boolTrue`. -/
+theorem Conv.sourceReaches_boolTrue
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType (RawTerm.boolTrue : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    RawStep.parStar sourceRaw RawTerm.boolTrue :=
+  Conv.targetReaches_boolTrue (Conv.sym convertibility)
+
+/-- `Conv sourceTerm targetTerm` where target has raw `boolFalse`
+forces the source's raw projection to reduce to `boolFalse`. -/
+theorem Conv.sourceReaches_boolFalse
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType (RawTerm.boolFalse : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    RawStep.parStar sourceRaw RawTerm.boolFalse :=
+  Conv.targetReaches_boolFalse (Conv.sym convertibility)
+
+/-- `Conv sourceTerm targetTerm` where target has raw `natZero`
+forces the source's raw projection to reduce to `natZero`. -/
+theorem Conv.sourceReaches_natZero
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType (RawTerm.natZero : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    RawStep.parStar sourceRaw RawTerm.natZero :=
+  Conv.targetReaches_natZero (Conv.sym convertibility)
+
+/-- `Conv sourceTerm targetTerm` where target has raw `listNil`
+forces the source's raw projection to reduce to `listNil`. -/
+theorem Conv.sourceReaches_listNil
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType (RawTerm.listNil : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    RawStep.parStar sourceRaw RawTerm.listNil :=
+  Conv.targetReaches_listNil (Conv.sym convertibility)
+
+/-- `Conv sourceTerm targetTerm` where target has raw `optionNone`
+forces the source's raw projection to reduce to `optionNone`. -/
+theorem Conv.sourceReaches_optionNone
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType (RawTerm.optionNone : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    RawStep.parStar sourceRaw RawTerm.optionNone :=
+  Conv.targetReaches_optionNone (Conv.sym convertibility)
+
+/-- `Conv sourceTerm targetTerm` where target has raw `var position`
+forces the source's raw projection to reduce to the same
+`var position`. -/
+theorem Conv.sourceReaches_var
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    {position : Fin scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType (RawTerm.var position : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    RawStep.parStar sourceRaw (RawTerm.var position) :=
+  Conv.targetReaches_var (Conv.sym convertibility)
+
+/-- `Conv sourceTerm targetTerm` where target has raw `universeCode
+innerLevel` forces the source's raw projection to reduce to the
+same `universeCode innerLevel`. -/
+theorem Conv.sourceReaches_universeCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    {innerLevel : Nat}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType
+      (RawTerm.universeCode innerLevel : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    RawStep.parStar sourceRaw (RawTerm.universeCode innerLevel) :=
+  Conv.targetReaches_universeCode (Conv.sym convertibility)
+
 end LeanFX2

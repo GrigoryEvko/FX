@@ -67,6 +67,14 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.targetReaches_optionNone
 #assert_no_axioms LeanFX2.Conv.targetReaches_var
 #assert_no_axioms LeanFX2.Conv.targetReaches_universeCode
+#assert_no_axioms LeanFX2.Conv.sourceReaches_unit
+#assert_no_axioms LeanFX2.Conv.sourceReaches_boolTrue
+#assert_no_axioms LeanFX2.Conv.sourceReaches_boolFalse
+#assert_no_axioms LeanFX2.Conv.sourceReaches_natZero
+#assert_no_axioms LeanFX2.Conv.sourceReaches_listNil
+#assert_no_axioms LeanFX2.Conv.sourceReaches_optionNone
+#assert_no_axioms LeanFX2.Conv.sourceReaches_var
+#assert_no_axioms LeanFX2.Conv.sourceReaches_universeCode
 #assert_no_axioms LeanFX2.Conv.transChains_renamed
 #assert_no_axioms LeanFX2.Conv.transChains_weakened
 #assert_no_axioms LeanFX2.Conv.transChains_substituted
