@@ -9138,4 +9138,182 @@ theorem Conv.intervalMeet_ne_refl
     RawStep.parStar.refl_inv targetToJoin
   nomatch joinEqMeet.symm.trans joinEqRefl
 
+/-! ### `intervalJoin` row — cubical-interval lattice join operator
+
+The `intervalJoin` head is the cubical-interval ∨ (lattice join) on
+the interval `I`.  No current `Step.par` rule reduces
+`intervalJoin x y` to a non-Join canonical head, so the head is
+preserved through every parallel chain.  Together with
+`intervalMeet` (lattice ∧) and `intervalOpp` (involution), the row
+completes the Heyting-algebra operator triple for the cubical
+interval stratum at the canonical-head disjointness matrix.
+
+Binary source destructure follows the
+`RawStep.parStar.intervalJoin_inv` 5-binder pattern:
+  `obtain ⟨_, _, joinEqJoin, _, _⟩ := RawStep.parStar.intervalJoin_inv sourceToJoin` -/
+
+/-- An `intervalJoin`-headed source and a `unit`-headed target are
+not convertible. -/
+theorem Conv.intervalJoin_ne_unit
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {leftInterval rightInterval : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.intervalJoin leftInterval rightInterval : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.unit : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqJoin, _, _⟩ :=
+    RawStep.parStar.intervalJoin_inv sourceToJoin
+  have joinEqUnit : joinRaw = RawTerm.unit :=
+    RawStep.parStar.unit_inv targetToJoin
+  nomatch joinEqJoin.symm.trans joinEqUnit
+
+/-- An `intervalJoin`-headed source and a `boolTrue`-headed target
+are not convertible. -/
+theorem Conv.intervalJoin_ne_boolTrue
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {leftInterval rightInterval : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.intervalJoin leftInterval rightInterval : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.boolTrue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqJoin, _, _⟩ :=
+    RawStep.parStar.intervalJoin_inv sourceToJoin
+  have joinEqTrue : joinRaw = RawTerm.boolTrue :=
+    RawStep.parStar.boolTrue_inv targetToJoin
+  nomatch joinEqJoin.symm.trans joinEqTrue
+
+/-- An `intervalJoin`-headed source and a `boolFalse`-headed target
+are not convertible. -/
+theorem Conv.intervalJoin_ne_boolFalse
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {leftInterval rightInterval : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.intervalJoin leftInterval rightInterval : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.boolFalse : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqJoin, _, _⟩ :=
+    RawStep.parStar.intervalJoin_inv sourceToJoin
+  have joinEqFalse : joinRaw = RawTerm.boolFalse :=
+    RawStep.parStar.boolFalse_inv targetToJoin
+  nomatch joinEqJoin.symm.trans joinEqFalse
+
+/-- An `intervalJoin`-headed source and a `natZero`-headed target
+are not convertible. -/
+theorem Conv.intervalJoin_ne_natZero
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {leftInterval rightInterval : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.intervalJoin leftInterval rightInterval : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.natZero : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqJoin, _, _⟩ :=
+    RawStep.parStar.intervalJoin_inv sourceToJoin
+  have joinEqZero : joinRaw = RawTerm.natZero :=
+    RawStep.parStar.natZero_inv targetToJoin
+  nomatch joinEqJoin.symm.trans joinEqZero
+
+/-- An `intervalJoin`-headed source and a `listNil`-headed target
+are not convertible. -/
+theorem Conv.intervalJoin_ne_listNil
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {leftInterval rightInterval : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.intervalJoin leftInterval rightInterval : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.listNil : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqJoin, _, _⟩ :=
+    RawStep.parStar.intervalJoin_inv sourceToJoin
+  have joinEqNil : joinRaw = RawTerm.listNil :=
+    RawStep.parStar.listNil_inv targetToJoin
+  nomatch joinEqJoin.symm.trans joinEqNil
+
+/-- An `intervalJoin`-headed source and an `optionNone`-headed
+target are not convertible. -/
+theorem Conv.intervalJoin_ne_optionNone
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {leftInterval rightInterval : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.intervalJoin leftInterval rightInterval : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.optionNone : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqJoin, _, _⟩ :=
+    RawStep.parStar.intervalJoin_inv sourceToJoin
+  have joinEqNone : joinRaw = RawTerm.optionNone :=
+    RawStep.parStar.optionNone_inv targetToJoin
+  nomatch joinEqJoin.symm.trans joinEqNone
+
+/-- An `intervalJoin`-headed source and an `interval0`-headed
+target are not convertible.  Cross-stratum cubical: the join
+operator preserves head through every parallel chain (no β-rule
+collapsing join to a canonical endpoint at the current kernel
+state), while interval0 is a canonical leaf. -/
+theorem Conv.intervalJoin_ne_interval0
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {leftInterval rightInterval : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.intervalJoin leftInterval rightInterval : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.interval0 : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqJoin, _, _⟩ :=
+    RawStep.parStar.intervalJoin_inv sourceToJoin
+  have joinEqZero : joinRaw = RawTerm.interval0 :=
+    RawStep.parStar.interval0_inv targetToJoin
+  nomatch joinEqJoin.symm.trans joinEqZero
+
+/-- An `intervalJoin`-headed source and an `interval1`-headed
+target are not convertible.  Cross-stratum cubical: same argument
+as `intervalJoin_ne_interval0` — head is preserved through every
+parallel chain, while interval1 is a canonical leaf. -/
+theorem Conv.intervalJoin_ne_interval1
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {leftInterval rightInterval : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.intervalJoin leftInterval rightInterval : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.interval1 : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqJoin, _, _⟩ :=
+    RawStep.parStar.intervalJoin_inv sourceToJoin
+  have joinEqOne : joinRaw = RawTerm.interval1 :=
+    RawStep.parStar.interval1_inv targetToJoin
+  nomatch joinEqJoin.symm.trans joinEqOne
+
 end LeanFX2
