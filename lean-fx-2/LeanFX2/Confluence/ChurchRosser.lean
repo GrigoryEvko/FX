@@ -742,6 +742,131 @@ theorem Conv.fromStepReverse_subst0
       RawStep.parStar (targetRaw.subst0 argRaw) commonRaw :=
   Conv.subst0Raw argRaw (Conv.fromStepReverse reverseStep)
 
+/-! ## refl × action raw lifters
+
+`Conv.reflRaw` is the canonical no-reduction witness: `parStar.refl`
+on both sides.  Lifting it through each action collapses to
+`⟨someRaw.<action>, parStar.refl, parStar.refl⟩` via the unified
+`Conv.<action>Raw` pipeline — useful as the canonical "trivial" raw
+join under an action when a consumer needs an identity element. -/
+
+/-- Raw-rename projection of `Conv.refl`.  Both chains are
+reflexive `parStar` on `someRaw.rename rho`. -/
+theorem Conv.reflRaw_renamed
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {someType : Ty level sourceScope} {someRaw : RawTerm sourceScope}
+    (rawRenaming : RawRenaming sourceScope targetScope)
+    (someTerm : Term context someType someRaw) :
+    ∃ commonRaw,
+      RawStep.parStar (someRaw.rename rawRenaming) commonRaw ∧
+      RawStep.parStar (someRaw.rename rawRenaming) commonRaw :=
+  Conv.renameRaw rawRenaming (Conv.refl someTerm)
+
+/-- Canonical-weaken specialization of `Conv.reflRaw_renamed`. -/
+theorem Conv.reflRaw_weakened
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {someType : Ty level scope} {someRaw : RawTerm scope}
+    (someTerm : Term context someType someRaw) :
+    ∃ commonRaw,
+      RawStep.parStar someRaw.weaken commonRaw ∧
+      RawStep.parStar someRaw.weaken commonRaw :=
+  Conv.weakenRaw (Conv.refl someTerm)
+
+/-- Raw-subst projection of `Conv.refl`. -/
+theorem Conv.reflRaw_substituted
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {someType : Ty level sourceScope} {someRaw : RawTerm sourceScope}
+    (rawSubst : RawTermSubst sourceScope targetScope)
+    (someTerm : Term context someType someRaw) :
+    ∃ commonRaw,
+      RawStep.parStar (someRaw.subst rawSubst) commonRaw ∧
+      RawStep.parStar (someRaw.subst rawSubst) commonRaw :=
+  Conv.substRaw rawSubst (Conv.refl someTerm)
+
+/-- Singleton-substitution specialization of
+`Conv.reflRaw_substituted`. -/
+theorem Conv.reflRaw_subst0
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level (scope + 1)}
+    {someType : Ty level (scope + 1)} {someRaw : RawTerm (scope + 1)}
+    (argRaw : RawTerm scope)
+    (someTerm : Term context someType someRaw) :
+    ∃ commonRaw,
+      RawStep.parStar (someRaw.subst0 argRaw) commonRaw ∧
+      RawStep.parStar (someRaw.subst0 argRaw) commonRaw :=
+  Conv.subst0Raw argRaw (Conv.refl someTerm)
+
+/-! ## sym × action raw lifters
+
+`Conv.symRaw` swaps the source/target raw-projection slots.  Each
+action variant applies the swap *after* lifting through the action,
+giving the consumer a target-side-first raw join under any of the
+four canonical actions.  Useful for backward-chaining strategies and
+NbE bridges that expect the target endpoint first. -/
+
+/-- Raw-rename projection of `Conv.sym`. -/
+theorem Conv.symRaw_renamed
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {sourceType targetType : Ty level sourceScope}
+    {sourceRaw targetRaw : RawTerm sourceScope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (rawRenaming : RawRenaming sourceScope targetScope)
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (targetRaw.rename rawRenaming) commonRaw ∧
+      RawStep.parStar (sourceRaw.rename rawRenaming) commonRaw :=
+  Conv.renameRaw rawRenaming (Conv.sym convertibility)
+
+/-- Canonical-weaken specialization of `Conv.symRaw_renamed`. -/
+theorem Conv.symRaw_weakened
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar targetRaw.weaken commonRaw ∧
+      RawStep.parStar sourceRaw.weaken commonRaw :=
+  Conv.weakenRaw (Conv.sym convertibility)
+
+/-- Raw-subst projection of `Conv.sym`. -/
+theorem Conv.symRaw_substituted
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {sourceType targetType : Ty level sourceScope}
+    {sourceRaw targetRaw : RawTerm sourceScope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (rawSubst : RawTermSubst sourceScope targetScope)
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (targetRaw.subst rawSubst) commonRaw ∧
+      RawStep.parStar (sourceRaw.subst rawSubst) commonRaw :=
+  Conv.substRaw rawSubst (Conv.sym convertibility)
+
+/-- Singleton-substitution specialization of
+`Conv.symRaw_substituted`. -/
+theorem Conv.symRaw_subst0
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level (scope + 1)}
+    {sourceType targetType : Ty level (scope + 1)}
+    {sourceRaw targetRaw : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (argRaw : RawTerm scope)
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (targetRaw.subst0 argRaw) commonRaw ∧
+      RawStep.parStar (sourceRaw.subst0 argRaw) commonRaw :=
+  Conv.subst0Raw argRaw (Conv.sym convertibility)
+
 /-! ## Two-chain-plus-action lifters
 
 When a consumer has two consecutive typed `StepStar` chains

@@ -47,6 +47,14 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.fromStepReverse_weakened
 #assert_no_axioms LeanFX2.Conv.fromStepReverse_substituted
 #assert_no_axioms LeanFX2.Conv.fromStepReverse_subst0
+#assert_no_axioms LeanFX2.Conv.reflRaw_renamed
+#assert_no_axioms LeanFX2.Conv.reflRaw_weakened
+#assert_no_axioms LeanFX2.Conv.reflRaw_substituted
+#assert_no_axioms LeanFX2.Conv.reflRaw_subst0
+#assert_no_axioms LeanFX2.Conv.symRaw_renamed
+#assert_no_axioms LeanFX2.Conv.symRaw_weakened
+#assert_no_axioms LeanFX2.Conv.symRaw_substituted
+#assert_no_axioms LeanFX2.Conv.symRaw_subst0
 #assert_no_axioms LeanFX2.Conv.transChains_renamed
 #assert_no_axioms LeanFX2.Conv.transChains_weakened
 #assert_no_axioms LeanFX2.Conv.transChains_substituted
