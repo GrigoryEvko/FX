@@ -585,6 +585,163 @@ theorem Conv.fromStep_subst0
       RawStep.parStar (targetRaw.subst0 argRaw) commonRaw :=
   Conv.subst0Raw argRaw (Conv.fromStep singleStep)
 
+/-! ## Reverse-direction chain / step lifters
+
+`Conv.fromStepStar` builds `Conv source target` from a forward chain
+`source →* target`.  Downstream consumers sometimes have the chain
+in the *reverse* direction (`target →* source`) — e.g., when a typed
+reduction was discovered from a normal form back to a redex.  The
+canonical fix is `Conv.sym ∘ Conv.fromStepStar`.
+
+These five reverse-direction wrappers ship that composition under the
+canonical name `Conv.fromStepStarReverse`, plus the matching raw-action
+variants.  Each is one line, no induction, no confluence. -/
+
+/-- A *reverse* `StepStar` chain `target →* source` witnesses
+convertibility of `source` and `target`.  Just `Conv.sym` of
+`Conv.fromStepStar` applied to the reverse chain. -/
+theorem Conv.fromStepStarReverse
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (reverseChain : StepStar targetTerm sourceTerm) :
+    Conv sourceTerm targetTerm :=
+  Conv.sym (Conv.fromStepStar reverseChain)
+
+/-- Raw-rename projection of `Conv.fromStepStarReverse`. -/
+theorem Conv.fromStepStarReverse_renamed
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {sourceType targetType : Ty level sourceScope}
+    {sourceRaw targetRaw : RawTerm sourceScope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (rawRenaming : RawRenaming sourceScope targetScope)
+    (reverseChain : StepStar targetTerm sourceTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.rename rawRenaming) commonRaw ∧
+      RawStep.parStar (targetRaw.rename rawRenaming) commonRaw :=
+  Conv.renameRaw rawRenaming (Conv.fromStepStarReverse reverseChain)
+
+/-- Canonical-weaken specialization of `Conv.fromStepStarReverse_renamed`. -/
+theorem Conv.fromStepStarReverse_weakened
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (reverseChain : StepStar targetTerm sourceTerm) :
+    ∃ commonRaw,
+      RawStep.parStar sourceRaw.weaken commonRaw ∧
+      RawStep.parStar targetRaw.weaken commonRaw :=
+  Conv.weakenRaw (Conv.fromStepStarReverse reverseChain)
+
+/-- Raw-subst projection of `Conv.fromStepStarReverse`. -/
+theorem Conv.fromStepStarReverse_substituted
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {sourceType targetType : Ty level sourceScope}
+    {sourceRaw targetRaw : RawTerm sourceScope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (rawSubst : RawTermSubst sourceScope targetScope)
+    (reverseChain : StepStar targetTerm sourceTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.subst rawSubst) commonRaw ∧
+      RawStep.parStar (targetRaw.subst rawSubst) commonRaw :=
+  Conv.substRaw rawSubst (Conv.fromStepStarReverse reverseChain)
+
+/-- Singleton-substitution specialization of
+`Conv.fromStepStarReverse_substituted`. -/
+theorem Conv.fromStepStarReverse_subst0
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level (scope + 1)}
+    {sourceType targetType : Ty level (scope + 1)}
+    {sourceRaw targetRaw : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (argRaw : RawTerm scope)
+    (reverseChain : StepStar targetTerm sourceTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.subst0 argRaw) commonRaw ∧
+      RawStep.parStar (targetRaw.subst0 argRaw) commonRaw :=
+  Conv.subst0Raw argRaw (Conv.fromStepStarReverse reverseChain)
+
+/-- Single-step reverse variant: a `Step target source` witnesses
+convertibility of `source` and `target`. -/
+theorem Conv.fromStepReverse
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (reverseStep : Step targetTerm sourceTerm) :
+    Conv sourceTerm targetTerm :=
+  Conv.fromStepStarReverse (StepStar.fromStep reverseStep)
+
+/-- Raw-rename projection of `Conv.fromStepReverse`. -/
+theorem Conv.fromStepReverse_renamed
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {sourceType targetType : Ty level sourceScope}
+    {sourceRaw targetRaw : RawTerm sourceScope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (rawRenaming : RawRenaming sourceScope targetScope)
+    (reverseStep : Step targetTerm sourceTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.rename rawRenaming) commonRaw ∧
+      RawStep.parStar (targetRaw.rename rawRenaming) commonRaw :=
+  Conv.renameRaw rawRenaming (Conv.fromStepReverse reverseStep)
+
+/-- Canonical-weaken specialization of `Conv.fromStepReverse_renamed`. -/
+theorem Conv.fromStepReverse_weakened
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (reverseStep : Step targetTerm sourceTerm) :
+    ∃ commonRaw,
+      RawStep.parStar sourceRaw.weaken commonRaw ∧
+      RawStep.parStar targetRaw.weaken commonRaw :=
+  Conv.weakenRaw (Conv.fromStepReverse reverseStep)
+
+/-- Raw-subst projection of `Conv.fromStepReverse`. -/
+theorem Conv.fromStepReverse_substituted
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {sourceType targetType : Ty level sourceScope}
+    {sourceRaw targetRaw : RawTerm sourceScope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (rawSubst : RawTermSubst sourceScope targetScope)
+    (reverseStep : Step targetTerm sourceTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.subst rawSubst) commonRaw ∧
+      RawStep.parStar (targetRaw.subst rawSubst) commonRaw :=
+  Conv.substRaw rawSubst (Conv.fromStepReverse reverseStep)
+
+/-- Singleton-substitution specialization of
+`Conv.fromStepReverse_substituted`. -/
+theorem Conv.fromStepReverse_subst0
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level (scope + 1)}
+    {sourceType targetType : Ty level (scope + 1)}
+    {sourceRaw targetRaw : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (argRaw : RawTerm scope)
+    (reverseStep : Step targetTerm sourceTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.subst0 argRaw) commonRaw ∧
+      RawStep.parStar (targetRaw.subst0 argRaw) commonRaw :=
+  Conv.subst0Raw argRaw (Conv.fromStepReverse reverseStep)
+
 /-! ## Two-chain-plus-action lifters
 
 When a consumer has two consecutive typed `StepStar` chains
