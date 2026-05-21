@@ -246,6 +246,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Step.par.renamed_source_toRawBridge_target_in_rename_image
 #assert_no_axioms LeanFX2.Step.par.weakened_source_toRawBridge_target_in_weaken_image
 #assert_no_axioms LeanFX2.Step.par.subst_toRawBridge
+#assert_no_axioms LeanFX2.Step.par.subst0_toRawBridge
 #assert_no_axioms LeanFX2.Term.toRaw_subst0_rename_commute
 #assert_no_axioms LeanFX2.Term.toRaw_subst0_weaken_commute
 #assert_no_axioms LeanFX2.RawStep.par.rename_compatible

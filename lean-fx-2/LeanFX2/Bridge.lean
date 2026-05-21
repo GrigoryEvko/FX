@@ -661,6 +661,28 @@ theorem Step.par.subst_toRawBridge
     (fun position => RawStep.par.refl (sigma.forRaw position))
     (Step.par.toRawBridge parallelStep)
 
+/-- Singleton-substitution specialization of `Step.par.subst_toRawBridge`.
+
+When a typed parallel step is applied under a single-variable β-substitution
+via `Term.subst0 _ argTerm`, the raw projection of source / target is related
+by `RawStep.par`.  Surface form `Term.subst0 body arg` is what β-redex
+consumers (D2.5 transp/hcomp cascades, K12.21 fundamental lemma's
+β-arm, Phase G β-η critical pair) reach for at call sites. -/
+theorem Step.par.subst0_toRawBridge
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {substituent : Ty level scope}
+    {argRaw : RawTerm scope}
+    (argTerm : Term sourceCtx substituent argRaw)
+    {sourceType targetType : Ty level (scope + 1)}
+    {sourceRaw targetRaw : RawTerm (scope + 1)}
+    {sourceTerm : Term (sourceCtx.cons substituent) sourceType sourceRaw}
+    {targetTerm : Term (sourceCtx.cons substituent) targetType targetRaw}
+    (parallelStep : Step.par sourceTerm targetTerm) :
+    RawStep.par (Term.toRaw (Term.subst0 sourceTerm argTerm))
+                (Term.toRaw (Term.subst0 targetTerm argTerm)) :=
+  Step.par.subst_toRawBridge (TermSubst.singleton argTerm) parallelStep
+
 /-- Raw projection of the Tier-3 `subst0`/rename commutation law.
 
 The full typed theorem also has to relate the intrinsic `Term` values
