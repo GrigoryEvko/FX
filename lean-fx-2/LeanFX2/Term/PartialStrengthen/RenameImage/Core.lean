@@ -97,8 +97,7 @@ Ty index.
 When the source Term is wrapped in a type-equality cast `typeEq ▸
 sourceTerm`, the dispatcher's `.isSome` result is the same as the
 un-cast form.  The transport is structural on Eq: `cases typeEq`
-peels the cast cleanly.  This is the `partialStrengthen?` analog of
-`strengthenTyped?_isSome_castInvariant` in StrengtheningImage. -/
+peels the cast cleanly. -/
 theorem partialStrengthenTyped?_isSome_castInvariant
     {mode : Mode} {level : Nat}
     {sourceScope targetScope : Nat}
