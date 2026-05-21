@@ -7839,4 +7839,176 @@ theorem Conv.pathCompose_ne_refl
     RawStep.parStar.refl_inv targetToJoin
   nomatch joinEqPath.symm.trans joinEqRefl
 
+/-! ## oeqTrans row of canonical-head disjointness matrix
+
+`RawTerm.oeqTrans firstProof secondProof` is the HoTT observational-
+equality transitivity operator — combines two observational-equality
+proofs at consecutive endpoints into one composite proof.  This is
+the inner-mode analog of `pathCompose`: pathCompose composes path
+witnesses, oeqTrans composes observational-equality witnesses.
+
+Binary source destructure (5-binder shape, mirrors pathCompose):
+  `obtain ⟨_, _, joinEqOeq, _, _⟩ :=
+     RawStep.parStar.oeqTrans_inv sourceToJoin` -/
+
+/-- A `oeqTrans`-headed source and a `unit`-headed target are not
+convertible.  HoTT observational transitivity vs unit-leaf
+disjointness. -/
+theorem Conv.oeqTrans_ne_unit
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstProof secondProof : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqTrans firstProof secondProof : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.unit : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqOeq, _, _⟩ :=
+    RawStep.parStar.oeqTrans_inv sourceToJoin
+  have joinEqUnit : joinRaw = RawTerm.unit :=
+    RawStep.parStar.unit_inv targetToJoin
+  nomatch joinEqOeq.symm.trans joinEqUnit
+
+/-- A `oeqTrans`-headed source and a `boolTrue`-headed target are
+not convertible. -/
+theorem Conv.oeqTrans_ne_boolTrue
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstProof secondProof : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqTrans firstProof secondProof : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.boolTrue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqOeq, _, _⟩ :=
+    RawStep.parStar.oeqTrans_inv sourceToJoin
+  have joinEqTrue : joinRaw = RawTerm.boolTrue :=
+    RawStep.parStar.boolTrue_inv targetToJoin
+  nomatch joinEqOeq.symm.trans joinEqTrue
+
+/-- A `oeqTrans`-headed source and a `boolFalse`-headed target are
+not convertible. -/
+theorem Conv.oeqTrans_ne_boolFalse
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstProof secondProof : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqTrans firstProof secondProof : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.boolFalse : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqOeq, _, _⟩ :=
+    RawStep.parStar.oeqTrans_inv sourceToJoin
+  have joinEqFalse : joinRaw = RawTerm.boolFalse :=
+    RawStep.parStar.boolFalse_inv targetToJoin
+  nomatch joinEqOeq.symm.trans joinEqFalse
+
+/-- A `oeqTrans`-headed source and a `natZero`-headed target are
+not convertible. -/
+theorem Conv.oeqTrans_ne_natZero
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstProof secondProof : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqTrans firstProof secondProof : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.natZero : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqOeq, _, _⟩ :=
+    RawStep.parStar.oeqTrans_inv sourceToJoin
+  have joinEqZero : joinRaw = RawTerm.natZero :=
+    RawStep.parStar.natZero_inv targetToJoin
+  nomatch joinEqOeq.symm.trans joinEqZero
+
+/-- A `oeqTrans`-headed source and a `listNil`-headed target are
+not convertible. -/
+theorem Conv.oeqTrans_ne_listNil
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstProof secondProof : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqTrans firstProof secondProof : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.listNil : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqOeq, _, _⟩ :=
+    RawStep.parStar.oeqTrans_inv sourceToJoin
+  have joinEqNil : joinRaw = RawTerm.listNil :=
+    RawStep.parStar.listNil_inv targetToJoin
+  nomatch joinEqOeq.symm.trans joinEqNil
+
+/-- A `oeqTrans`-headed source and an `optionNone`-headed target
+are not convertible. -/
+theorem Conv.oeqTrans_ne_optionNone
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstProof secondProof : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqTrans firstProof secondProof : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.optionNone : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqOeq, _, _⟩ :=
+    RawStep.parStar.oeqTrans_inv sourceToJoin
+  have joinEqNone : joinRaw = RawTerm.optionNone :=
+    RawStep.parStar.optionNone_inv targetToJoin
+  nomatch joinEqOeq.symm.trans joinEqNone
+
+/-- A `oeqTrans`-headed source and an `interval0`-headed target
+are not convertible. -/
+theorem Conv.oeqTrans_ne_interval0
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstProof secondProof : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqTrans firstProof secondProof : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.interval0 : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqOeq, _, _⟩ :=
+    RawStep.parStar.oeqTrans_inv sourceToJoin
+  have joinEqZero : joinRaw = RawTerm.interval0 :=
+    RawStep.parStar.interval0_inv targetToJoin
+  nomatch joinEqOeq.symm.trans joinEqZero
+
+/-- A `oeqTrans`-headed source and an `interval1`-headed target
+are not convertible. -/
+theorem Conv.oeqTrans_ne_interval1
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstProof secondProof : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqTrans firstProof secondProof : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.interval1 : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqOeq, _, _⟩ :=
+    RawStep.parStar.oeqTrans_inv sourceToJoin
+  have joinEqOne : joinRaw = RawTerm.interval1 :=
+    RawStep.parStar.interval1_inv targetToJoin
+  nomatch joinEqOeq.symm.trans joinEqOne
+
 end LeanFX2
