@@ -1,4 +1,5 @@
 import LeanFX2.Term.StrengtheningImage.TotalOnWeakenHeadlines
+import LeanFX2.Term.StrengtheningImage.RenameImageInterface
 
 /-! # Term/StrengtheningImage
 

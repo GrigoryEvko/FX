@@ -42,6 +42,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Term.weaken_inv_modal
 #assert_no_axioms LeanFX2.Term.rename_image_of_strengthenTyped?_some
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_isSome
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_some
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_isSome_var
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_isSome_unit
 #assert_no_axioms LeanFX2.Term.strengthenTyped?_rename_isSome_boolTrue
