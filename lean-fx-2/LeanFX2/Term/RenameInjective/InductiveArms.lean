@@ -1723,6 +1723,35 @@ theorem Term.rename_injective_arm_hcompPath
     exact PSum.inr ⟨inferredModeIsUnivalent, leftEnd, rightEnd, sidesPathInner,
       capB, HEq.rfl⟩
 
+/-! ## η-family rfl/Id rename-injectivity arms.
+
+The η-family ctors (equivReflId, equivReflIdAtId, equivIntroHet,
+uaIntroHet, funextRefl, funextReflAtId, funextIntroHet) collide on raw
+`RawTerm.equivIntro id id` or `RawTerm.lam (RawTerm.refl applyRaw)`.
+For closed/value ctors (equivReflId, equivReflIdAtId), the arm has no
+typed children and reduces to a one-line invocation of the existing
+`_atEquivIntroEquiv_of_inner` / `_atEquivIntroUniverseId_of_inner`
+helpers from `EquivIntro.lean`.  The childInjective HEq predicate
+required by those helpers is vacuously satisfied here since the closed
+ctors have no actual typed children. -/
+
+-- NOTE: arm_equivReflId / arm_funextRefl / arm_equivReflIdAtId /
+-- arm_funextReflAtId / arm_equivIntroHet / arm_uaIntroHet /
+-- arm_funextIntroHet deferred: these 4-way (equivIntro) and 3-way
+-- (lam-refl) collisions require the heavy machinery from EquivIntro.lean
+-- and the not-yet-shipped lam-refl inversion family.  The shipped
+-- `_of_inner` helpers (atEquivIntroEquiv / atEquivIntroUniverseId) take
+-- termA + termB BOTH heterogeneous + an HEq-style childInjective —
+-- but the arm signature has childA-fixed IHs.  Bridging the two
+-- requires either:
+--   * Strengthening the IHs from childA-fixed to HEq-style (deep
+--     dispatcher refactor in the rename_injective driver), or
+--   * Writing a per-arm direct cases proof that re-derives the 4-way
+--     PSum locally and threads childA-fixed IHs (each arm ~200-400
+--     LoC of cases gymnastics).
+-- Both options exceed the current session budget.  Deferred to a
+-- future session focused on the η-family.
+
 /-! ## Cubical-glue intro arm.
 
 `glueIntro` packages a base value + partial value at a shared baseType
