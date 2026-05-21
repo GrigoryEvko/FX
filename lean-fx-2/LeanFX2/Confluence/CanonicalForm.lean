@@ -3229,4 +3229,117 @@ theorem Conv.refl_compatibility
     RawTerm.refl.inj (joinEqSrc.symm.trans joinEqTgt)
   exact ⟨witnessJoinTgt, witnessJoinEq ▸ sourceInner, targetInner⟩
 
+/-- A `interval0`-headed source and a `unit`-headed target are not
+convertible. -/
+theorem Conv.interval0_ne_unit
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.interval0 : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.unit : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqInterval : joinRaw = RawTerm.interval0 :=
+    RawStep.parStar.interval0_inv sourceToJoin
+  have joinEqUnit : joinRaw = RawTerm.unit :=
+    RawStep.parStar.unit_inv targetToJoin
+  nomatch joinEqInterval.symm.trans joinEqUnit
+
+/-- A `interval0`-headed source and a `boolTrue`-headed target are not
+convertible. -/
+theorem Conv.interval0_ne_boolTrue
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.interval0 : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.boolTrue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqInterval : joinRaw = RawTerm.interval0 :=
+    RawStep.parStar.interval0_inv sourceToJoin
+  have joinEqTrue : joinRaw = RawTerm.boolTrue :=
+    RawStep.parStar.boolTrue_inv targetToJoin
+  nomatch joinEqInterval.symm.trans joinEqTrue
+
+/-- A `interval0`-headed source and a `boolFalse`-headed target are
+not convertible. -/
+theorem Conv.interval0_ne_boolFalse
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.interval0 : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.boolFalse : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqInterval : joinRaw = RawTerm.interval0 :=
+    RawStep.parStar.interval0_inv sourceToJoin
+  have joinEqFalse : joinRaw = RawTerm.boolFalse :=
+    RawStep.parStar.boolFalse_inv targetToJoin
+  nomatch joinEqInterval.symm.trans joinEqFalse
+
+/-- A `interval0`-headed source and a `natZero`-headed target are not
+convertible. -/
+theorem Conv.interval0_ne_natZero
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.interval0 : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.natZero : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqInterval : joinRaw = RawTerm.interval0 :=
+    RawStep.parStar.interval0_inv sourceToJoin
+  have joinEqZero : joinRaw = RawTerm.natZero :=
+    RawStep.parStar.natZero_inv targetToJoin
+  nomatch joinEqInterval.symm.trans joinEqZero
+
+/-- A `interval0`-headed source and a `listNil`-headed target are not
+convertible. -/
+theorem Conv.interval0_ne_listNil
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.interval0 : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.listNil : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqInterval : joinRaw = RawTerm.interval0 :=
+    RawStep.parStar.interval0_inv sourceToJoin
+  have joinEqNil : joinRaw = RawTerm.listNil :=
+    RawStep.parStar.listNil_inv targetToJoin
+  nomatch joinEqInterval.symm.trans joinEqNil
+
+/-- A `interval0`-headed source and a `optionNone`-headed target are
+not convertible. -/
+theorem Conv.interval0_ne_optionNone
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.interval0 : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.optionNone : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  have joinEqInterval : joinRaw = RawTerm.interval0 :=
+    RawStep.parStar.interval0_inv sourceToJoin
+  have joinEqNone : joinRaw = RawTerm.optionNone :=
+    RawStep.parStar.optionNone_inv targetToJoin
+  nomatch joinEqInterval.symm.trans joinEqNone
+
 end LeanFX2

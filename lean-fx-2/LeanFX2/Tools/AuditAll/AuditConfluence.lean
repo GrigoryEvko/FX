@@ -200,6 +200,12 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.listCons_ne_refl
 #assert_no_axioms LeanFX2.Conv.pair_ne_refl
 #assert_no_axioms LeanFX2.Conv.refl_compatibility
+#assert_no_axioms LeanFX2.Conv.interval0_ne_unit
+#assert_no_axioms LeanFX2.Conv.interval0_ne_boolTrue
+#assert_no_axioms LeanFX2.Conv.interval0_ne_boolFalse
+#assert_no_axioms LeanFX2.Conv.interval0_ne_natZero
+#assert_no_axioms LeanFX2.Conv.interval0_ne_listNil
+#assert_no_axioms LeanFX2.Conv.interval0_ne_optionNone
 #assert_no_axioms LeanFX2.Conv.transChains_renamed
 #assert_no_axioms LeanFX2.Conv.transChains_weakened
 #assert_no_axioms LeanFX2.Conv.transChains_substituted
