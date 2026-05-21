@@ -7514,4 +7514,179 @@ theorem Conv.glueIntro_ne_refl
     RawStep.parStar.refl_inv targetToJoin
   nomatch joinEqGlue.symm.trans joinEqRefl
 
+/-! ## pathCompose row of canonical-head disjointness matrix
+
+`RawTerm.pathCompose leftPath rightPath` is the HoTT-family path
+composition operator — combines two path witnesses (proofs of
+identity) at consecutive endpoints into one composite witness.
+Admitting it to the matrix extends canonical-head disjointness
+into the HoTT path-witness fragment beyond just the identity
+introduction `refl`.
+
+Binary source destructure (5-binder shape, mirrors glueIntro):
+  `obtain ⟨_, _, joinEqPath, _, _⟩ :=
+     RawStep.parStar.pathCompose_inv sourceToJoin` -/
+
+/-- A `pathCompose`-headed source and a `unit`-headed target are
+not convertible.  HoTT path composition vs unit-leaf disjointness. -/
+theorem Conv.pathCompose_ne_unit
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {leftPath rightPath : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.pathCompose leftPath rightPath : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.unit : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPath, _, _⟩ :=
+    RawStep.parStar.pathCompose_inv sourceToJoin
+  have joinEqUnit : joinRaw = RawTerm.unit :=
+    RawStep.parStar.unit_inv targetToJoin
+  nomatch joinEqPath.symm.trans joinEqUnit
+
+/-- A `pathCompose`-headed source and a `boolTrue`-headed target
+are not convertible. -/
+theorem Conv.pathCompose_ne_boolTrue
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {leftPath rightPath : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.pathCompose leftPath rightPath : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.boolTrue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPath, _, _⟩ :=
+    RawStep.parStar.pathCompose_inv sourceToJoin
+  have joinEqTrue : joinRaw = RawTerm.boolTrue :=
+    RawStep.parStar.boolTrue_inv targetToJoin
+  nomatch joinEqPath.symm.trans joinEqTrue
+
+/-- A `pathCompose`-headed source and a `boolFalse`-headed target
+are not convertible. -/
+theorem Conv.pathCompose_ne_boolFalse
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {leftPath rightPath : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.pathCompose leftPath rightPath : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.boolFalse : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPath, _, _⟩ :=
+    RawStep.parStar.pathCompose_inv sourceToJoin
+  have joinEqFalse : joinRaw = RawTerm.boolFalse :=
+    RawStep.parStar.boolFalse_inv targetToJoin
+  nomatch joinEqPath.symm.trans joinEqFalse
+
+/-- A `pathCompose`-headed source and a `natZero`-headed target are
+not convertible. -/
+theorem Conv.pathCompose_ne_natZero
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {leftPath rightPath : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.pathCompose leftPath rightPath : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.natZero : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPath, _, _⟩ :=
+    RawStep.parStar.pathCompose_inv sourceToJoin
+  have joinEqZero : joinRaw = RawTerm.natZero :=
+    RawStep.parStar.natZero_inv targetToJoin
+  nomatch joinEqPath.symm.trans joinEqZero
+
+/-- A `pathCompose`-headed source and a `listNil`-headed target are
+not convertible. -/
+theorem Conv.pathCompose_ne_listNil
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {leftPath rightPath : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.pathCompose leftPath rightPath : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.listNil : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPath, _, _⟩ :=
+    RawStep.parStar.pathCompose_inv sourceToJoin
+  have joinEqNil : joinRaw = RawTerm.listNil :=
+    RawStep.parStar.listNil_inv targetToJoin
+  nomatch joinEqPath.symm.trans joinEqNil
+
+/-- A `pathCompose`-headed source and an `optionNone`-headed target
+are not convertible. -/
+theorem Conv.pathCompose_ne_optionNone
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {leftPath rightPath : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.pathCompose leftPath rightPath : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.optionNone : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPath, _, _⟩ :=
+    RawStep.parStar.pathCompose_inv sourceToJoin
+  have joinEqNone : joinRaw = RawTerm.optionNone :=
+    RawStep.parStar.optionNone_inv targetToJoin
+  nomatch joinEqPath.symm.trans joinEqNone
+
+/-- A `pathCompose`-headed source and an `interval0`-headed target
+are not convertible.  HoTT path composition vs cubical-leaf
+disjointness — notable since both inhabit the path/cubical theory
+but at orthogonal strata: pathCompose composes proof witnesses,
+while interval0 is a dimension-0 endpoint inhabiting the cube. -/
+theorem Conv.pathCompose_ne_interval0
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {leftPath rightPath : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.pathCompose leftPath rightPath : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.interval0 : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPath, _, _⟩ :=
+    RawStep.parStar.pathCompose_inv sourceToJoin
+  have joinEqZero : joinRaw = RawTerm.interval0 :=
+    RawStep.parStar.interval0_inv targetToJoin
+  nomatch joinEqPath.symm.trans joinEqZero
+
+/-- A `pathCompose`-headed source and an `interval1`-headed target
+are not convertible. -/
+theorem Conv.pathCompose_ne_interval1
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {leftPath rightPath : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.pathCompose leftPath rightPath : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.interval1 : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPath, _, _⟩ :=
+    RawStep.parStar.pathCompose_inv sourceToJoin
+  have joinEqOne : joinRaw = RawTerm.interval1 :=
+    RawStep.parStar.interval1_inv targetToJoin
+  nomatch joinEqPath.symm.trans joinEqOne
+
 end LeanFX2
