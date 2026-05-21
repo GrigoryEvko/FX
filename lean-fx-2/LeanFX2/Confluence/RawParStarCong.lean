@@ -610,6 +610,28 @@ theorem RawStep.parStar.refl_inv {scope : Nat}
   RawStep.parStar.unary_inv_helper RawTerm.refl
     RawStep.par.refl_inv chain
 
+/-- `RawStep.parStar (listCode element) target` preserves the
+`listCode` head and projects to an element-code `parStar` chain. -/
+theorem RawStep.parStar.listCode_inv {scope : Nat}
+    {elementCode target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.listCode elementCode) target) :
+    ∃ elementTarget,
+      target = RawTerm.listCode elementTarget ∧
+      RawStep.parStar elementCode elementTarget :=
+  RawStep.parStar.unary_inv_helper RawTerm.listCode
+    RawStep.par.listCode_inv chain
+
+/-- `RawStep.parStar (optionCode element) target` preserves the
+`optionCode` head and projects to an element-code `parStar` chain. -/
+theorem RawStep.parStar.optionCode_inv {scope : Nat}
+    {elementCode target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.optionCode elementCode) target) :
+    ∃ elementTarget,
+      target = RawTerm.optionCode elementTarget ∧
+      RawStep.parStar elementCode elementTarget :=
+  RawStep.parStar.unary_inv_helper RawTerm.optionCode
+    RawStep.par.optionCode_inv chain
+
 /-- `RawStep.parStar (lam body) target` preserves the lambda head and
 projects to a body-level `parStar` chain. -/
 theorem RawStep.parStar.lam_inv {scope : Nat}
