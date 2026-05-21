@@ -1183,6 +1183,49 @@ theorem RawStep.parStar.idCode_inv {scope : Nat}
   RawStep.parStar.ternary_inv_helper RawTerm.idCode
     RawStep.par.idCode_inv chain
 
+/-- `RawStep.parStar (equivApply equivalence argument) target` either
+preserves the `equivApply` head or fires the ua-refl round-trip β rule
+after the equivalence develops to `uaToEquiv (oeqRefl witness)`. -/
+theorem RawStep.parStar.equivApply_inv {scope : Nat}
+    {equivRaw argRaw target : RawTerm scope}
+    (chain :
+      RawStep.parStar (RawTerm.equivApply equivRaw argRaw) target) :
+    (∃ equivTarget argTarget,
+      target = RawTerm.equivApply equivTarget argTarget ∧
+      RawStep.parStar equivRaw equivTarget ∧
+      RawStep.parStar argRaw argTarget) ∨
+    (∃ witnessTarget sourceTarget,
+      RawStep.parStar equivRaw
+        (RawTerm.uaToEquiv (RawTerm.oeqRefl witnessTarget)) ∧
+      RawStep.parStar argRaw sourceTarget ∧
+      RawStep.parStar sourceTarget target) := by
+  exact RawStep.parStar.binary_left_intro_elim_inv_helper
+    RawTerm.equivApply
+    (fun witnessTarget =>
+      RawTerm.uaToEquiv (RawTerm.oeqRefl witnessTarget))
+    (fun _ sourceTarget => sourceTarget)
+    (fun step => by
+      cases RawStep.par.equivApply_inv step with
+      | inl headCase =>
+          exact Or.inl headCase
+      | inr redexCases =>
+          cases redexCases with
+          | inl shallowCase =>
+              obtain ⟨witnessSource, witnessTarget, sourceTarget,
+                equivEq, targetEq, witnessStep, sourceStep⟩ :=
+                shallowCase
+              cases equivEq
+              exact Or.inr ⟨witnessTarget, sourceTarget, targetEq,
+                RawStep.par.uaToEquivCong
+                  (RawStep.par.oeqReflCong witnessStep),
+                sourceStep⟩
+          | inr deepCase =>
+              obtain ⟨witnessTarget, sourceTarget, targetEq, equivStep,
+                sourceStep⟩ := deepCase
+              exact Or.inr ⟨witnessTarget, sourceTarget, targetEq,
+                equivStep, sourceStep⟩)
+    chain
+
 /-- `RawStep.parStar (intervalOpp interval) target` preserves the
 `intervalOpp` head and projects to an interval-level chain. -/
 theorem RawStep.parStar.intervalOpp_inv {scope : Nat}
