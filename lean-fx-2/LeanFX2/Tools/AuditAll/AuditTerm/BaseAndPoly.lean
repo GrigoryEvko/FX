@@ -1,6 +1,7 @@
 import LeanFX2.Tools.DependencyAudit
 import LeanFX2.Term.Subst
 import LeanFX2.Term.RenameInjective
+import LeanFX2.Term.RenameInjective.InductiveArms
 import LeanFX2.Term.Inversion
 import LeanFX2.Term.Bridge
 import LeanFX2.Algo.Progress
@@ -17,6 +18,7 @@ namespace LeanFX2.Tools
 
 #assert_no_axioms LeanFX2.Term.subst
 #assert_no_axioms LeanFX2.Term.rename
+#assert_no_axioms LeanFX2.Term.rename_injective
 #assert_no_axioms LeanFX2.Term.rename_injective_atVar
 #assert_no_axioms LeanFX2.Term.rename_injective_lam_ctor
 #assert_no_axioms LeanFX2.Term.rename_injective_app_ctor
