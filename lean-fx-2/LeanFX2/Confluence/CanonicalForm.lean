@@ -6251,4 +6251,159 @@ theorem Conv.sumCode_ne_refl
     RawStep.parStar.refl_inv targetToJoin
   nomatch joinEqSum.symm.trans joinEqRefl
 
+/-- A `eitherCode`-headed source and a `unit`-headed target are not
+convertible.  Opens the either-type-code row of the canonical-head
+matrix: `eitherCode` is the flat-binary type-code for the tagged
+disjoint-union type former, dual to `sumCode` at the parametric
+level. -/
+theorem Conv.eitherCode_ne_unit
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.unit : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEither, _, _⟩ :=
+    RawStep.parStar.eitherCode_inv sourceToJoin
+  have joinEqUnit : joinRaw = RawTerm.unit :=
+    RawStep.parStar.unit_inv targetToJoin
+  nomatch joinEqEither.symm.trans joinEqUnit
+
+/-- A `eitherCode`-headed source and a `boolTrue`-headed target are
+not convertible.  Type-code vs boolean-leaf disjointness. -/
+theorem Conv.eitherCode_ne_boolTrue
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.boolTrue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEither, _, _⟩ :=
+    RawStep.parStar.eitherCode_inv sourceToJoin
+  have joinEqTrue : joinRaw = RawTerm.boolTrue :=
+    RawStep.parStar.boolTrue_inv targetToJoin
+  nomatch joinEqEither.symm.trans joinEqTrue
+
+/-- A `eitherCode`-headed source and a `boolFalse`-headed target are
+not convertible.  Type-code vs boolean-leaf disjointness. -/
+theorem Conv.eitherCode_ne_boolFalse
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.boolFalse : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEither, _, _⟩ :=
+    RawStep.parStar.eitherCode_inv sourceToJoin
+  have joinEqFalse : joinRaw = RawTerm.boolFalse :=
+    RawStep.parStar.boolFalse_inv targetToJoin
+  nomatch joinEqEither.symm.trans joinEqFalse
+
+/-- A `eitherCode`-headed source and a `natZero`-headed target are
+not convertible.  Type-code vs nat-leaf disjointness. -/
+theorem Conv.eitherCode_ne_natZero
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.natZero : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEither, _, _⟩ :=
+    RawStep.parStar.eitherCode_inv sourceToJoin
+  have joinEqZero : joinRaw = RawTerm.natZero :=
+    RawStep.parStar.natZero_inv targetToJoin
+  nomatch joinEqEither.symm.trans joinEqZero
+
+/-- A `eitherCode`-headed source and a `listNil`-headed target are
+not convertible.  Type-code vs nullary-list-leaf disjointness. -/
+theorem Conv.eitherCode_ne_listNil
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.listNil : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEither, _, _⟩ :=
+    RawStep.parStar.eitherCode_inv sourceToJoin
+  have joinEqNil : joinRaw = RawTerm.listNil :=
+    RawStep.parStar.listNil_inv targetToJoin
+  nomatch joinEqEither.symm.trans joinEqNil
+
+/-- A `eitherCode`-headed source and a `optionNone`-headed target are
+not convertible.  Type-code vs nullary-option-leaf disjointness. -/
+theorem Conv.eitherCode_ne_optionNone
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.optionNone : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEither, _, _⟩ :=
+    RawStep.parStar.eitherCode_inv sourceToJoin
+  have joinEqNone : joinRaw = RawTerm.optionNone :=
+    RawStep.parStar.optionNone_inv targetToJoin
+  nomatch joinEqEither.symm.trans joinEqNone
+
+/-- A `eitherCode`-headed source and a `interval0`-headed target are
+not convertible.  Type-code vs cubical-interval-leaf disjointness. -/
+theorem Conv.eitherCode_ne_interval0
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.interval0 : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEither, _, _⟩ :=
+    RawStep.parStar.eitherCode_inv sourceToJoin
+  have joinEqZero : joinRaw = RawTerm.interval0 :=
+    RawStep.parStar.interval0_inv targetToJoin
+  nomatch joinEqEither.symm.trans joinEqZero
+
+/-- A `eitherCode`-headed source and a `interval1`-headed target are
+not convertible.  Type-code vs cubical-interval-leaf disjointness. -/
+theorem Conv.eitherCode_ne_interval1
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.interval1 : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEither, _, _⟩ :=
+    RawStep.parStar.eitherCode_inv sourceToJoin
+  have joinEqOne : joinRaw = RawTerm.interval1 :=
+    RawStep.parStar.interval1_inv targetToJoin
+  nomatch joinEqEither.symm.trans joinEqOne
+
 end LeanFX2
