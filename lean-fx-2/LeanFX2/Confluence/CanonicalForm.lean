@@ -8162,4 +8162,178 @@ theorem Conv.oeqTrans_ne_refl
     RawStep.parStar.refl_inv targetToJoin
   nomatch joinEqOeq.symm.trans joinEqRefl
 
+/-! ## equivCompose row of canonical-head disjointness matrix
+
+`RawTerm.equivCompose firstEquiv secondEquiv` is the HoTT
+equivalence-composition operator — combines two type equivalences
+at consecutive endpoints into one composite equivalence.  This is
+the equivalence-stratum analog of `pathCompose` (path stratum) and
+`oeqTrans` (observational-equality stratum), extending HoTT-fragment
+matrix coverage to the equivalence layer.
+
+Binary source destructure (5-binder shape, mirrors pathCompose /
+oeqTrans):
+  `obtain ⟨_, _, joinEqEquiv, _, _⟩ :=
+     RawStep.parStar.equivCompose_inv sourceToJoin` -/
+
+/-- An `equivCompose`-headed source and a `unit`-headed target are
+not convertible.  HoTT equivalence composition vs unit-leaf
+disjointness. -/
+theorem Conv.equivCompose_ne_unit
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstEquiv secondEquiv : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.equivCompose firstEquiv secondEquiv : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.unit : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEquiv, _, _⟩ :=
+    RawStep.parStar.equivCompose_inv sourceToJoin
+  have joinEqUnit : joinRaw = RawTerm.unit :=
+    RawStep.parStar.unit_inv targetToJoin
+  nomatch joinEqEquiv.symm.trans joinEqUnit
+
+/-- An `equivCompose`-headed source and a `boolTrue`-headed target
+are not convertible. -/
+theorem Conv.equivCompose_ne_boolTrue
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstEquiv secondEquiv : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.equivCompose firstEquiv secondEquiv : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.boolTrue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEquiv, _, _⟩ :=
+    RawStep.parStar.equivCompose_inv sourceToJoin
+  have joinEqTrue : joinRaw = RawTerm.boolTrue :=
+    RawStep.parStar.boolTrue_inv targetToJoin
+  nomatch joinEqEquiv.symm.trans joinEqTrue
+
+/-- An `equivCompose`-headed source and a `boolFalse`-headed target
+are not convertible. -/
+theorem Conv.equivCompose_ne_boolFalse
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstEquiv secondEquiv : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.equivCompose firstEquiv secondEquiv : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.boolFalse : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEquiv, _, _⟩ :=
+    RawStep.parStar.equivCompose_inv sourceToJoin
+  have joinEqFalse : joinRaw = RawTerm.boolFalse :=
+    RawStep.parStar.boolFalse_inv targetToJoin
+  nomatch joinEqEquiv.symm.trans joinEqFalse
+
+/-- An `equivCompose`-headed source and a `natZero`-headed target
+are not convertible. -/
+theorem Conv.equivCompose_ne_natZero
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstEquiv secondEquiv : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.equivCompose firstEquiv secondEquiv : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.natZero : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEquiv, _, _⟩ :=
+    RawStep.parStar.equivCompose_inv sourceToJoin
+  have joinEqZero : joinRaw = RawTerm.natZero :=
+    RawStep.parStar.natZero_inv targetToJoin
+  nomatch joinEqEquiv.symm.trans joinEqZero
+
+/-- An `equivCompose`-headed source and a `listNil`-headed target
+are not convertible. -/
+theorem Conv.equivCompose_ne_listNil
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstEquiv secondEquiv : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.equivCompose firstEquiv secondEquiv : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.listNil : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEquiv, _, _⟩ :=
+    RawStep.parStar.equivCompose_inv sourceToJoin
+  have joinEqNil : joinRaw = RawTerm.listNil :=
+    RawStep.parStar.listNil_inv targetToJoin
+  nomatch joinEqEquiv.symm.trans joinEqNil
+
+/-- An `equivCompose`-headed source and an `optionNone`-headed
+target are not convertible. -/
+theorem Conv.equivCompose_ne_optionNone
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstEquiv secondEquiv : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.equivCompose firstEquiv secondEquiv : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.optionNone : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEquiv, _, _⟩ :=
+    RawStep.parStar.equivCompose_inv sourceToJoin
+  have joinEqNone : joinRaw = RawTerm.optionNone :=
+    RawStep.parStar.optionNone_inv targetToJoin
+  nomatch joinEqEquiv.symm.trans joinEqNone
+
+/-- An `equivCompose`-headed source and an `interval0`-headed target
+are not convertible. -/
+theorem Conv.equivCompose_ne_interval0
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstEquiv secondEquiv : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.equivCompose firstEquiv secondEquiv : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.interval0 : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEquiv, _, _⟩ :=
+    RawStep.parStar.equivCompose_inv sourceToJoin
+  have joinEqZero : joinRaw = RawTerm.interval0 :=
+    RawStep.parStar.interval0_inv targetToJoin
+  nomatch joinEqEquiv.symm.trans joinEqZero
+
+/-- An `equivCompose`-headed source and an `interval1`-headed target
+are not convertible. -/
+theorem Conv.equivCompose_ne_interval1
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstEquiv secondEquiv : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.equivCompose firstEquiv secondEquiv : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.interval1 : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEquiv, _, _⟩ :=
+    RawStep.parStar.equivCompose_inv sourceToJoin
+  have joinEqOne : joinRaw = RawTerm.interval1 :=
+    RawStep.parStar.interval1_inv targetToJoin
+  nomatch joinEqEquiv.symm.trans joinEqOne
+
 end LeanFX2
