@@ -75,8 +75,8 @@ proofs and by older computational inversion call sites:
 
 ## Root status
 
-Foundation; zero axioms throughout.  Verified via `lake build
-LeanFX2 LeanFX2Audit`. -/
+Foundation; zero axioms throughout.  Use narrow module builds for
+inner-loop verification; broad audit belongs to phase-level closeout. -/
 
 namespace LeanFX2
 
