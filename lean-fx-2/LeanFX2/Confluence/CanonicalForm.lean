@@ -4982,4 +4982,167 @@ theorem Conv.arrowCode_ne_refl
     RawStep.parStar.refl_inv targetToJoin
   nomatch joinEqArrow.symm.trans joinEqRefl
 
+/-- A `piTyCode`-headed source and a `unit`-headed target are not
+convertible.  Opens the binder-binding type-code row of the
+canonical-head matrix: `piTyCode` is the type-code for the
+dependent-Π type former with its codomain in extended scope. -/
+theorem Conv.piTyCode_ne_unit
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {domainCode : RawTerm scope}
+    {codomainCode : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType
+      (RawTerm.piTyCode domainCode codomainCode : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.unit : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPi, _, _⟩ :=
+    RawStep.parStar.piTyCode_inv sourceToJoin
+  have joinEqUnit : joinRaw = RawTerm.unit :=
+    RawStep.parStar.unit_inv targetToJoin
+  nomatch joinEqPi.symm.trans joinEqUnit
+
+/-- A `piTyCode`-headed source and a `boolTrue`-headed target are
+not convertible.  Type-code vs boolean-leaf disjointness. -/
+theorem Conv.piTyCode_ne_boolTrue
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {domainCode : RawTerm scope}
+    {codomainCode : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType
+      (RawTerm.piTyCode domainCode codomainCode : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.boolTrue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPi, _, _⟩ :=
+    RawStep.parStar.piTyCode_inv sourceToJoin
+  have joinEqTrue : joinRaw = RawTerm.boolTrue :=
+    RawStep.parStar.boolTrue_inv targetToJoin
+  nomatch joinEqPi.symm.trans joinEqTrue
+
+/-- A `piTyCode`-headed source and a `boolFalse`-headed target are
+not convertible.  Type-code vs boolean-leaf disjointness. -/
+theorem Conv.piTyCode_ne_boolFalse
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {domainCode : RawTerm scope}
+    {codomainCode : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType
+      (RawTerm.piTyCode domainCode codomainCode : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.boolFalse : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPi, _, _⟩ :=
+    RawStep.parStar.piTyCode_inv sourceToJoin
+  have joinEqFalse : joinRaw = RawTerm.boolFalse :=
+    RawStep.parStar.boolFalse_inv targetToJoin
+  nomatch joinEqPi.symm.trans joinEqFalse
+
+/-- A `piTyCode`-headed source and a `natZero`-headed target are
+not convertible.  Type-code vs nat-leaf disjointness. -/
+theorem Conv.piTyCode_ne_natZero
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {domainCode : RawTerm scope}
+    {codomainCode : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType
+      (RawTerm.piTyCode domainCode codomainCode : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.natZero : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPi, _, _⟩ :=
+    RawStep.parStar.piTyCode_inv sourceToJoin
+  have joinEqZero : joinRaw = RawTerm.natZero :=
+    RawStep.parStar.natZero_inv targetToJoin
+  nomatch joinEqPi.symm.trans joinEqZero
+
+/-- A `piTyCode`-headed source and a `listNil`-headed target are
+not convertible.  Type-code vs data-leaf disjointness. -/
+theorem Conv.piTyCode_ne_listNil
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {domainCode : RawTerm scope}
+    {codomainCode : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType
+      (RawTerm.piTyCode domainCode codomainCode : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.listNil : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPi, _, _⟩ :=
+    RawStep.parStar.piTyCode_inv sourceToJoin
+  have joinEqNil : joinRaw = RawTerm.listNil :=
+    RawStep.parStar.listNil_inv targetToJoin
+  nomatch joinEqPi.symm.trans joinEqNil
+
+/-- A `piTyCode`-headed source and a `optionNone`-headed target are
+not convertible.  Type-code vs data-leaf disjointness. -/
+theorem Conv.piTyCode_ne_optionNone
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {domainCode : RawTerm scope}
+    {codomainCode : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType
+      (RawTerm.piTyCode domainCode codomainCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.optionNone : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPi, _, _⟩ :=
+    RawStep.parStar.piTyCode_inv sourceToJoin
+  have joinEqNone : joinRaw = RawTerm.optionNone :=
+    RawStep.parStar.optionNone_inv targetToJoin
+  nomatch joinEqPi.symm.trans joinEqNone
+
+/-- A `piTyCode`-headed source and a `interval0`-headed target are
+not convertible.  Type-code vs cubical-endpoint disjointness. -/
+theorem Conv.piTyCode_ne_interval0
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {domainCode : RawTerm scope}
+    {codomainCode : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType
+      (RawTerm.piTyCode domainCode codomainCode : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.interval0 : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPi, _, _⟩ :=
+    RawStep.parStar.piTyCode_inv sourceToJoin
+  have joinEqZero : joinRaw = RawTerm.interval0 :=
+    RawStep.parStar.interval0_inv targetToJoin
+  nomatch joinEqPi.symm.trans joinEqZero
+
+/-- A `piTyCode`-headed source and a `interval1`-headed target are
+not convertible.  Type-code vs cubical-endpoint disjointness. -/
+theorem Conv.piTyCode_ne_interval1
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {domainCode : RawTerm scope}
+    {codomainCode : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType
+      (RawTerm.piTyCode domainCode codomainCode : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.interval1 : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPi, _, _⟩ :=
+    RawStep.parStar.piTyCode_inv sourceToJoin
+  have joinEqOne : joinRaw = RawTerm.interval1 :=
+    RawStep.parStar.interval1_inv targetToJoin
+  nomatch joinEqPi.symm.trans joinEqOne
+
 end LeanFX2
