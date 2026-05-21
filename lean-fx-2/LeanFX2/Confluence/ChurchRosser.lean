@@ -552,4 +552,81 @@ theorem Conv.fromStep_subst0
       RawStep.parStar (targetRaw.subst0 argRaw) commonRaw :=
   Conv.subst0Raw argRaw (Conv.fromStep singleStep)
 
+/-! ## Two-chain-plus-action lifters
+
+When a consumer has two consecutive typed `StepStar` chains
+(t1 → t2 → t3, both monotonic) the four corollaries below
+chain-compose them via `Conv.transChains` and lift the result
+through each canonical action.  Useful when reduction sequences are
+the natural input form (e.g. compiler optimization passes that
+record their work as a sequence of reduction steps). -/
+
+/-- Combine two typed StepStar chains with a raw renaming. -/
+theorem Conv.transChains_renamed
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {sourceType middleType farType : Ty level sourceScope}
+    {sourceRaw middleRaw farRaw : RawTerm sourceScope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {farTerm : Term context farType farRaw}
+    (rawRenaming : RawRenaming sourceScope targetScope)
+    (firstChain : StepStar sourceTerm middleTerm)
+    (secondChain : StepStar middleTerm farTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.rename rawRenaming) commonRaw ∧
+      RawStep.parStar (farRaw.rename rawRenaming) commonRaw :=
+  Conv.renameRaw rawRenaming (Conv.transChains firstChain secondChain)
+
+/-- Canonical-weaken specialization of `Conv.transChains_renamed`. -/
+theorem Conv.transChains_weakened
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType middleType farType : Ty level scope}
+    {sourceRaw middleRaw farRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {farTerm : Term context farType farRaw}
+    (firstChain : StepStar sourceTerm middleTerm)
+    (secondChain : StepStar middleTerm farTerm) :
+    ∃ commonRaw,
+      RawStep.parStar sourceRaw.weaken commonRaw ∧
+      RawStep.parStar farRaw.weaken commonRaw :=
+  Conv.weakenRaw (Conv.transChains firstChain secondChain)
+
+/-- Combine two typed StepStar chains with a raw substitution. -/
+theorem Conv.transChains_substituted
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {sourceType middleType farType : Ty level sourceScope}
+    {sourceRaw middleRaw farRaw : RawTerm sourceScope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {farTerm : Term context farType farRaw}
+    (rawSubst : RawTermSubst sourceScope targetScope)
+    (firstChain : StepStar sourceTerm middleTerm)
+    (secondChain : StepStar middleTerm farTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.subst rawSubst) commonRaw ∧
+      RawStep.parStar (farRaw.subst rawSubst) commonRaw :=
+  Conv.substRaw rawSubst (Conv.transChains firstChain secondChain)
+
+/-- Singleton-substitution specialization of
+`Conv.transChains_substituted`. -/
+theorem Conv.transChains_subst0
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level (scope + 1)}
+    {sourceType middleType farType : Ty level (scope + 1)}
+    {sourceRaw middleRaw farRaw : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {farTerm : Term context farType farRaw}
+    (argRaw : RawTerm scope)
+    (firstChain : StepStar sourceTerm middleTerm)
+    (secondChain : StepStar middleTerm farTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.subst0 argRaw) commonRaw ∧
+      RawStep.parStar (farRaw.subst0 argRaw) commonRaw :=
+  Conv.subst0Raw argRaw (Conv.transChains firstChain secondChain)
+
 end LeanFX2
