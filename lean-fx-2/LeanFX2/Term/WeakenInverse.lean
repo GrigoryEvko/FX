@@ -609,6 +609,26 @@ def Term.eta_path_shape_construct
     (Term.var (context := context.cons Ty.interval)
       ⟨0, Nat.zero_lt_succ scope⟩)
 
+/-- Raw projection of `Term.eta_lam_shape_construct`. -/
+theorem Term.eta_lam_shape_toRaw
+    {domainType codomainType : Ty level scope}
+    {fRaw : RawTerm scope}
+    (functionTerm : Term context (Ty.arrow domainType codomainType) fRaw) :
+    (Term.eta_lam_shape_construct functionTerm).toRaw =
+      RawTerm.app fRaw.weaken
+        (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩) := rfl
+
+/-- Raw projection of `Term.eta_path_shape_construct`. -/
+theorem Term.eta_path_shape_toRaw
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint pathRaw : RawTerm scope}
+    (pathTerm :
+      Term context (Ty.path carrierType leftEndpoint rightEndpoint) pathRaw) :
+    (Term.eta_path_shape_construct modeIsUnivalent pathTerm).toRaw =
+      RawTerm.pathApp pathRaw.weaken
+        (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩) := rfl
+
 /-! ### Companion: definitional unfolding of Term.weaken on Term.var.
 
 `Term.weaken newType (Term.var pos') = Term.var (Fin.succ pos')`

@@ -112,6 +112,8 @@ pattern as commits f3df931 (RawStep.par inversions) and d2e9d4a
 #assert_no_axioms LeanFX2.Term.eta_lam_shape_construct
 #assert_no_axioms LeanFX2.Term.eta_shape_construct
 #assert_no_axioms LeanFX2.Term.eta_path_shape_construct
+#assert_no_axioms LeanFX2.Term.eta_lam_shape_toRaw
+#assert_no_axioms LeanFX2.Term.eta_path_shape_toRaw
 #assert_no_axioms LeanFX2.Term.weaken_var_unfolds
 #assert_no_axioms LeanFX2.Term.weaken_app_toRaw
 #assert_no_axioms LeanFX2.Term.weaken_pathApp_toRaw
