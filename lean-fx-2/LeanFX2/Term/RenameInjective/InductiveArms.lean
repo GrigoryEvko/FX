@@ -1750,6 +1750,13 @@ ctors have no actual typed children. -/
 --     LoC of cases gymnastics).
 -- Both options exceed the current session budget.  Deferred to a
 -- future session focused on the η-family.
+--
+-- Attempted approach (commit reverted): suffices+free-genericType +
+-- cases-on-genericTerm yields all 4 ctors producing the raw shape.
+-- The required Σ' must include `genericType = Ty.equiv carrier carrier`
+-- equation; non-target branches (equivReflIdAtId/equivIntroHet/uaIntroHet
+-- for equivReflId arm) cannot construct this equation without dispatching
+-- on the OUTER arm-pinned type — circular.
 
 /-! ## Cubical-glue intro arm.
 
