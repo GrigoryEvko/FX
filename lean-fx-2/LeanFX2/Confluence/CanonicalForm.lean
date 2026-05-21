@@ -1038,4 +1038,322 @@ theorem Conv.sourceReaches_equivCode
       RawStep.parStar rightCode rightTarget :=
   Conv.targetReaches_equivCode (Conv.sym convertibility)
 
+/-! ## Binder-scoped type-code Conv corollaries (piTyCode / sigmaTyCode)
+
+Two type codes carry a binder bump: `piTyCode` has its codomain
+at `RawTerm (scope + 1)` and `sigmaTyCode` has its second-payload
+at `RawTerm (scope + 1)`.  The Conv corollary signatures stay
+identical in shape to the homogeneous family — the bump lives in
+the type of the codomain/second binder, not in the structure of
+the corollary itself.  The parStar chain on the bumped payload
+operates purely at the raw level over `RawTerm (scope + 1)`. -/
+
+/-- `Conv sourceTerm targetTerm` where source has raw
+`piTyCode domainCode codomainCode` forces the target's raw
+projection to reduce to `piTyCode domainTarget codomainTarget`
+with codomain target at scope+1, and both source codes
+parStar-reduce to those matching targets. -/
+theorem Conv.targetReaches_piTyCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {targetRaw : RawTerm scope}
+    {domainCode : RawTerm scope}
+    {codomainCode : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType
+      (RawTerm.piTyCode domainCode codomainCode : RawTerm scope)}
+    {targetTerm : Term context targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ (domainTarget : RawTerm scope) (codomainTarget : RawTerm (scope + 1)),
+      RawStep.parStar targetRaw
+        (RawTerm.piTyCode domainTarget codomainTarget) ∧
+      RawStep.parStar domainCode domainTarget ∧
+      RawStep.parStar codomainCode codomainTarget := by
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨domainTarget, codomainTarget, joinEq, domainChain, codomainChain⟩ :=
+    RawStep.parStar.piTyCode_inv sourceToJoin
+  refine ⟨domainTarget, codomainTarget, ?_, domainChain, codomainChain⟩
+  exact joinEq ▸ targetToJoin
+
+/-- `Conv sourceTerm targetTerm` where source has raw
+`sigmaTyCode firstCode secondCode` forces the target's raw
+projection to reduce to `sigmaTyCode firstTarget secondTarget`
+with second target at scope+1, and both source codes
+parStar-reduce to those matching targets. -/
+theorem Conv.targetReaches_sigmaTyCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {targetRaw : RawTerm scope}
+    {firstCode : RawTerm scope}
+    {secondCode : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType
+      (RawTerm.sigmaTyCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ (firstTarget : RawTerm scope) (secondTarget : RawTerm (scope + 1)),
+      RawStep.parStar targetRaw
+        (RawTerm.sigmaTyCode firstTarget secondTarget) ∧
+      RawStep.parStar firstCode firstTarget ∧
+      RawStep.parStar secondCode secondTarget := by
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨firstTarget, secondTarget, joinEq, firstChain, secondChain⟩ :=
+    RawStep.parStar.sigmaTyCode_inv sourceToJoin
+  refine ⟨firstTarget, secondTarget, ?_, firstChain, secondChain⟩
+  exact joinEq ▸ targetToJoin
+
+/-- Source-side mirror of `targetReaches_piTyCode`. -/
+theorem Conv.sourceReaches_piTyCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    {domainCode : RawTerm scope}
+    {codomainCode : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType
+      (RawTerm.piTyCode domainCode codomainCode : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ (domainTarget : RawTerm scope) (codomainTarget : RawTerm (scope + 1)),
+      RawStep.parStar sourceRaw
+        (RawTerm.piTyCode domainTarget codomainTarget) ∧
+      RawStep.parStar domainCode domainTarget ∧
+      RawStep.parStar codomainCode codomainTarget :=
+  Conv.targetReaches_piTyCode (Conv.sym convertibility)
+
+/-- Source-side mirror of `targetReaches_sigmaTyCode`. -/
+theorem Conv.sourceReaches_sigmaTyCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    {firstCode : RawTerm scope}
+    {secondCode : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType
+      (RawTerm.sigmaTyCode firstCode secondCode : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ (firstTarget : RawTerm scope) (secondTarget : RawTerm (scope + 1)),
+      RawStep.parStar sourceRaw
+        (RawTerm.sigmaTyCode firstTarget secondTarget) ∧
+      RawStep.parStar firstCode firstTarget ∧
+      RawStep.parStar secondCode secondTarget :=
+  Conv.targetReaches_sigmaTyCode (Conv.sym convertibility)
+
+/-! ## Ternary type-code Conv corollaries (idCode)
+
+`idCode` carries three homogeneous-scope payloads (type code +
+left witness code + right witness code).  The Conv corollary
+mirrors the pattern of binary heads with one extra payload. -/
+
+/-- `Conv sourceTerm targetTerm` where source has raw
+`idCode typeCode leftCode rightCode` forces the target's raw
+projection to reduce to `idCode typeTarget leftTarget rightTarget`
+and all three source codes parStar-reduce to matching targets. -/
+theorem Conv.targetReaches_idCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {targetRaw typeCode leftCode rightCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.idCode typeCode leftCode rightCode : RawTerm scope)}
+    {targetTerm : Term context targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ typeTarget leftTarget rightTarget,
+      RawStep.parStar targetRaw
+        (RawTerm.idCode typeTarget leftTarget rightTarget) ∧
+      RawStep.parStar typeCode typeTarget ∧
+      RawStep.parStar leftCode leftTarget ∧
+      RawStep.parStar rightCode rightTarget := by
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨typeTarget, leftTarget, rightTarget,
+      joinEq, typeChain, leftChain, rightChain⟩ :=
+    RawStep.parStar.idCode_inv sourceToJoin
+  refine ⟨typeTarget, leftTarget, rightTarget, ?_,
+    typeChain, leftChain, rightChain⟩
+  exact joinEq ▸ targetToJoin
+
+/-- Source-side mirror of `targetReaches_idCode`. -/
+theorem Conv.sourceReaches_idCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw typeCode leftCode rightCode : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType
+      (RawTerm.idCode typeCode leftCode rightCode : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ typeTarget leftTarget rightTarget,
+      RawStep.parStar sourceRaw
+        (RawTerm.idCode typeTarget leftTarget rightTarget) ∧
+      RawStep.parStar typeCode typeTarget ∧
+      RawStep.parStar leftCode leftTarget ∧
+      RawStep.parStar rightCode rightTarget :=
+  Conv.targetReaches_idCode (Conv.sym convertibility)
+
+/-! ## Interval-operation Conv corollaries (intervalOpp / intervalMeet / intervalJoin)
+
+Cubical-layer interval operations: `intervalOpp` is unary
+(negation), `intervalMeet` and `intervalJoin` are binary lattice
+operations.  Each cong-only `<head>_inv` lifts cleanly to a Conv
+corollary.  Useful for cubical-layer reasoning where a Conv
+connects two interval-shaped expressions in a Path / Glue
+context. -/
+
+/-- `Conv sourceTerm targetTerm` where source has raw
+`intervalOpp intervalTerm` forces the target's raw projection
+to reduce to `intervalOpp intervalTarget` and the source
+interval to parStar-reduce to that same `intervalTarget`. -/
+theorem Conv.targetReaches_intervalOpp
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {targetRaw intervalTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.intervalOpp intervalTerm : RawTerm scope)}
+    {targetTerm : Term context targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ intervalTarget,
+      RawStep.parStar targetRaw (RawTerm.intervalOpp intervalTarget) ∧
+      RawStep.parStar intervalTerm intervalTarget := by
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨intervalTarget, joinEq, intervalChain⟩ :=
+    RawStep.parStar.intervalOpp_inv sourceToJoin
+  refine ⟨intervalTarget, ?_, intervalChain⟩
+  exact joinEq ▸ targetToJoin
+
+/-- `Conv sourceTerm targetTerm` where source has raw
+`intervalMeet leftInterval rightInterval` forces the target's
+raw projection to reduce to `intervalMeet leftTarget rightTarget`
+and both source intervals parStar-reduce to matching targets. -/
+theorem Conv.targetReaches_intervalMeet
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {targetRaw leftInterval rightInterval : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.intervalMeet leftInterval rightInterval : RawTerm scope)}
+    {targetTerm : Term context targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ leftTarget rightTarget,
+      RawStep.parStar targetRaw
+        (RawTerm.intervalMeet leftTarget rightTarget) ∧
+      RawStep.parStar leftInterval leftTarget ∧
+      RawStep.parStar rightInterval rightTarget := by
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨leftTarget, rightTarget, joinEq, leftChain, rightChain⟩ :=
+    RawStep.parStar.intervalMeet_inv sourceToJoin
+  refine ⟨leftTarget, rightTarget, ?_, leftChain, rightChain⟩
+  exact joinEq ▸ targetToJoin
+
+/-- `Conv sourceTerm targetTerm` where source has raw
+`intervalJoin leftInterval rightInterval` forces the target's
+raw projection to reduce to `intervalJoin leftTarget rightTarget`
+and both source intervals parStar-reduce to matching targets. -/
+theorem Conv.targetReaches_intervalJoin
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {targetRaw leftInterval rightInterval : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.intervalJoin leftInterval rightInterval : RawTerm scope)}
+    {targetTerm : Term context targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ leftTarget rightTarget,
+      RawStep.parStar targetRaw
+        (RawTerm.intervalJoin leftTarget rightTarget) ∧
+      RawStep.parStar leftInterval leftTarget ∧
+      RawStep.parStar rightInterval rightTarget := by
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨leftTarget, rightTarget, joinEq, leftChain, rightChain⟩ :=
+    RawStep.parStar.intervalJoin_inv sourceToJoin
+  refine ⟨leftTarget, rightTarget, ?_, leftChain, rightChain⟩
+  exact joinEq ▸ targetToJoin
+
+/-- Source-side mirror of `targetReaches_intervalOpp`. -/
+theorem Conv.sourceReaches_intervalOpp
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw intervalTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType
+      (RawTerm.intervalOpp intervalTerm : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ intervalTarget,
+      RawStep.parStar sourceRaw (RawTerm.intervalOpp intervalTarget) ∧
+      RawStep.parStar intervalTerm intervalTarget :=
+  Conv.targetReaches_intervalOpp (Conv.sym convertibility)
+
+/-- Source-side mirror of `targetReaches_intervalMeet`. -/
+theorem Conv.sourceReaches_intervalMeet
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw leftInterval rightInterval : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType
+      (RawTerm.intervalMeet leftInterval rightInterval : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ leftTarget rightTarget,
+      RawStep.parStar sourceRaw
+        (RawTerm.intervalMeet leftTarget rightTarget) ∧
+      RawStep.parStar leftInterval leftTarget ∧
+      RawStep.parStar rightInterval rightTarget :=
+  Conv.targetReaches_intervalMeet (Conv.sym convertibility)
+
+/-- Source-side mirror of `targetReaches_intervalJoin`. -/
+theorem Conv.sourceReaches_intervalJoin
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw leftInterval rightInterval : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType
+      (RawTerm.intervalJoin leftInterval rightInterval : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ leftTarget rightTarget,
+      RawStep.parStar sourceRaw
+        (RawTerm.intervalJoin leftTarget rightTarget) ∧
+      RawStep.parStar leftInterval leftTarget ∧
+      RawStep.parStar rightInterval rightTarget :=
+  Conv.targetReaches_intervalJoin (Conv.sym convertibility)
+
+/-! ## HoTT-special `uaToEquiv` Conv corollaries
+
+`uaToEquiv` is the (cong arm only — we lift the head-preserving
+branch, leaving the β/oeqTrans branches to dedicated future
+work).  Treated here as a unary cong inversion via the
+`uaToEquiv_inv` lemma at line 2228 of `RawParStarCong.lean`. -/
+
+/-- `Conv sourceTerm targetTerm` where source has raw
+`uaToEquiv proofTerm` forces the target's raw projection to
+reduce to `uaToEquiv proofTarget` and the source proof to
+parStar-reduce to that same `proofTarget`. -/
+theorem Conv.targetReaches_uaToEquiv
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {targetRaw proofTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.uaToEquiv proofTerm : RawTerm scope)}
+    {targetTerm : Term context targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ proofTarget,
+      RawStep.parStar targetRaw (RawTerm.uaToEquiv proofTarget) ∧
+      RawStep.parStar proofTerm proofTarget := by
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨proofTarget, joinEq, proofChain⟩ :=
+    RawStep.parStar.uaToEquiv_inv sourceToJoin
+  refine ⟨proofTarget, ?_, proofChain⟩
+  exact joinEq ▸ targetToJoin
+
+/-- Source-side mirror of `targetReaches_uaToEquiv`. -/
+theorem Conv.sourceReaches_uaToEquiv
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw proofTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType
+      (RawTerm.uaToEquiv proofTerm : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ proofTarget,
+      RawStep.parStar sourceRaw (RawTerm.uaToEquiv proofTarget) ∧
+      RawStep.parStar proofTerm proofTarget :=
+  Conv.targetReaches_uaToEquiv (Conv.sym convertibility)
+
 end LeanFX2
