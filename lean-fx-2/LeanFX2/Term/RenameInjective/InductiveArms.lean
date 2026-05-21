@@ -848,6 +848,60 @@ theorem Term.rename_injective_arm_pair
   exact ⟨inferredFirstType, inferredSecondType, firstValueTerm, secondValueTerm,
     rfl, HEq.rfl⟩
 
+/-- `lamPi` arm: binder-η collision raw `RawTerm.lam` is shared between
+    `Term.lamPi` and `Term.funextRefl` (when the codomain reduces to a
+    Π-typed shape).  Uses `Term.lam_pi_inv` (BinderInversions.lean:256)
+    to invert `termB` propext-cleanly into a PSum {lamPi, funextRefl} and
+    refutes the funextRefl arm via the existing
+    `renamedLamPi_ne_renamedFunextReflCast` cross-refutation. -/
+theorem Term.rename_injective_arm_lamPi
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (rhoInjective : RawRenamingInjective rho)
+    {domainType : Ty level sourceScope}
+    {codomainType : Ty level (sourceScope + 1)}
+    {bodyRaw : RawTerm (sourceScope + 1)}
+    (body : Term (sourceCtx.cons domainType) codomainType bodyRaw)
+    (bodyIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming (sourceScope + 1) innerTargetScope}
+        (innerRenaming :
+          TermRenaming (sourceCtx.cons domainType) innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (bodyB : Term (sourceCtx.cons domainType) codomainType bodyRaw),
+          Term.rename innerRenaming body = Term.rename innerRenaming bodyB →
+          body = bodyB)
+    (termB :
+      Term sourceCtx (Ty.piTy domainType codomainType) (RawTerm.lam bodyRaw)) :
+    Term.rename termRenaming (Term.lamPi body) =
+      Term.rename termRenaming termB → Term.lamPi body = termB := by
+  intro renameEq
+  cases Term.lam_pi_inv termB with
+  | inl lamView =>
+      obtain ⟨bodyB, termHEqB⟩ := lamView
+      cases termHEqB
+      dsimp only [Term.rename] at renameEq
+      injection renameEq with contextEq domainRenameEq codomainRenameEq
+        bodyRawRenameEq bodyRawRenameEqAgain bodyRenameEq
+      have bodyEq : body = bodyB :=
+        bodyIH (termRenaming.lift domainType)
+          (RawRenamingInjective.lift rhoInjective) bodyB bodyRenameEq
+      cases bodyEq
+      rfl
+  | inr reflView =>
+      obtain ⟨baseCodomainB, applyRawB, bodyRawEqB, codomainEqB, termHEqB⟩ :=
+        reflView
+      cases bodyRawEqB
+      cases codomainEqB
+      cases termHEqB
+      exact False.elim
+        (renamedLamPi_ne_renamedFunextReflCast termRenaming body
+          baseCodomainB applyRawB rfl rfl
+          (heq_of_eq renameEq))
+
 -- NOTE: arm_snd / arm_boolElim / arm_appPi (and other cast-on-result ctors)
 -- hit a fundamental dep-elim wall: `Ty.subst0` is not structurally injective,
 -- so given `termB : Term ... (secondType.subst0 firstType ...) (RawTerm.snd pairRaw)`,

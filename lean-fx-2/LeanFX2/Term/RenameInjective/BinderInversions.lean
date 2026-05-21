@@ -95,7 +95,7 @@ private theorem rawTerm_ne_refl_self
   | transpFill pathTy currentInterval source pathIH intervalIH sourceIH =>
       cases rawEq
 
-private theorem renamedLamPi_ne_renamedFunextReflCast
+theorem renamedLamPi_ne_renamedFunextReflCast
     {mode : Mode} {level sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
     {targetCtx : Ctx mode level targetScope}
