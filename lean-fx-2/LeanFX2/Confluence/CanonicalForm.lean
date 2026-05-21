@@ -733,4 +733,309 @@ theorem Conv.sourceReaches_listCons
       RawStep.parStar tailTerm tailTarget :=
   Conv.targetReaches_listCons (Conv.sym convertibility)
 
+/-! ## Type-code Conv corollaries (homogeneous-scope family)
+
+Lift the type-code parStar inversions (lines 1925-2038 of
+`Confluence/RawParStarCong.lean`) to Conv corollaries.  Type
+codes are RawTerm-level representations of types — they carry no
+binder bumps and the cong rules are pure preservation (no β/ι
+firing).  The seven heads in this homogeneous-scope batch:
+
+  - `listCode`     (unary; element type code)
+  - `optionCode`   (unary; element type code)
+  - `arrowCode`    (binary; domain + codomain code)
+  - `productCode`  (binary; first + second code)
+  - `sumCode`      (binary; left + right code)
+  - `eitherCode`   (binary; left + right code)
+  - `equivCode`    (binary; left + right code)
+
+Each Conv corollary uses `Conv.canonicalRaw` + the corresponding
+`<head>_inv` to project the head through the chain.  Useful for
+K12.16 `cumulUp` and K12.14 `refine` fundamental-theorem closures
+that work with type-code scrutinees, and for any downstream
+universe-polymorphism reasoning where a Conv connects two type
+codes. -/
+
+/-- `Conv sourceTerm targetTerm` where source has raw
+`listCode elementCode` forces the target's raw projection to
+reduce to `listCode elementTarget` and the source element code
+to parStar-reduce to that same `elementTarget`. -/
+theorem Conv.targetReaches_listCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {targetRaw elementCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.listCode elementCode : RawTerm scope)}
+    {targetTerm : Term context targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ elementTarget,
+      RawStep.parStar targetRaw (RawTerm.listCode elementTarget) ∧
+      RawStep.parStar elementCode elementTarget := by
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨elementTarget, joinEq, elementChain⟩ :=
+    RawStep.parStar.listCode_inv sourceToJoin
+  refine ⟨elementTarget, ?_, elementChain⟩
+  exact joinEq ▸ targetToJoin
+
+/-- `Conv sourceTerm targetTerm` where source has raw
+`optionCode elementCode` forces the target's raw projection to
+reduce to `optionCode elementTarget` and the source element code
+to parStar-reduce to that same `elementTarget`. -/
+theorem Conv.targetReaches_optionCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {targetRaw elementCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.optionCode elementCode : RawTerm scope)}
+    {targetTerm : Term context targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ elementTarget,
+      RawStep.parStar targetRaw (RawTerm.optionCode elementTarget) ∧
+      RawStep.parStar elementCode elementTarget := by
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨elementTarget, joinEq, elementChain⟩ :=
+    RawStep.parStar.optionCode_inv sourceToJoin
+  refine ⟨elementTarget, ?_, elementChain⟩
+  exact joinEq ▸ targetToJoin
+
+/-- `Conv sourceTerm targetTerm` where source has raw
+`arrowCode domainCode codomainCode` forces the target's raw
+projection to reduce to `arrowCode domainTarget codomainTarget`
+and both source codes to parStar-reduce to those matching
+targets. -/
+theorem Conv.targetReaches_arrowCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {targetRaw domainCode codomainCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.arrowCode domainCode codomainCode : RawTerm scope)}
+    {targetTerm : Term context targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ domainTarget codomainTarget,
+      RawStep.parStar targetRaw
+        (RawTerm.arrowCode domainTarget codomainTarget) ∧
+      RawStep.parStar domainCode domainTarget ∧
+      RawStep.parStar codomainCode codomainTarget := by
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨domainTarget, codomainTarget, joinEq, domainChain, codomainChain⟩ :=
+    RawStep.parStar.arrowCode_inv sourceToJoin
+  refine ⟨domainTarget, codomainTarget, ?_, domainChain, codomainChain⟩
+  exact joinEq ▸ targetToJoin
+
+/-- `Conv sourceTerm targetTerm` where source has raw
+`productCode firstCode secondCode` forces the target's raw
+projection to reduce to `productCode firstTarget secondTarget`
+and both source codes to parStar-reduce to those matching
+targets. -/
+theorem Conv.targetReaches_productCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {targetRaw firstCode secondCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.productCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ firstTarget secondTarget,
+      RawStep.parStar targetRaw
+        (RawTerm.productCode firstTarget secondTarget) ∧
+      RawStep.parStar firstCode firstTarget ∧
+      RawStep.parStar secondCode secondTarget := by
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨firstTarget, secondTarget, joinEq, firstChain, secondChain⟩ :=
+    RawStep.parStar.productCode_inv sourceToJoin
+  refine ⟨firstTarget, secondTarget, ?_, firstChain, secondChain⟩
+  exact joinEq ▸ targetToJoin
+
+/-- `Conv sourceTerm targetTerm` where source has raw
+`sumCode leftCode rightCode` forces the target's raw projection
+to reduce to `sumCode leftTarget rightTarget` and both source
+codes to parStar-reduce to those matching targets. -/
+theorem Conv.targetReaches_sumCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {targetRaw leftCode rightCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.sumCode leftCode rightCode : RawTerm scope)}
+    {targetTerm : Term context targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ leftTarget rightTarget,
+      RawStep.parStar targetRaw
+        (RawTerm.sumCode leftTarget rightTarget) ∧
+      RawStep.parStar leftCode leftTarget ∧
+      RawStep.parStar rightCode rightTarget := by
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨leftTarget, rightTarget, joinEq, leftChain, rightChain⟩ :=
+    RawStep.parStar.sumCode_inv sourceToJoin
+  refine ⟨leftTarget, rightTarget, ?_, leftChain, rightChain⟩
+  exact joinEq ▸ targetToJoin
+
+/-- `Conv sourceTerm targetTerm` where source has raw
+`eitherCode leftCode rightCode` forces the target's raw
+projection to reduce to `eitherCode leftTarget rightTarget` and
+both source codes to parStar-reduce to those matching
+targets. -/
+theorem Conv.targetReaches_eitherCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {targetRaw leftCode rightCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherCode leftCode rightCode : RawTerm scope)}
+    {targetTerm : Term context targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ leftTarget rightTarget,
+      RawStep.parStar targetRaw
+        (RawTerm.eitherCode leftTarget rightTarget) ∧
+      RawStep.parStar leftCode leftTarget ∧
+      RawStep.parStar rightCode rightTarget := by
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨leftTarget, rightTarget, joinEq, leftChain, rightChain⟩ :=
+    RawStep.parStar.eitherCode_inv sourceToJoin
+  refine ⟨leftTarget, rightTarget, ?_, leftChain, rightChain⟩
+  exact joinEq ▸ targetToJoin
+
+/-- `Conv sourceTerm targetTerm` where source has raw
+`equivCode leftCode rightCode` forces the target's raw
+projection to reduce to `equivCode leftTarget rightTarget` and
+both source codes to parStar-reduce to those matching
+targets. -/
+theorem Conv.targetReaches_equivCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {targetRaw leftCode rightCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.equivCode leftCode rightCode : RawTerm scope)}
+    {targetTerm : Term context targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ leftTarget rightTarget,
+      RawStep.parStar targetRaw
+        (RawTerm.equivCode leftTarget rightTarget) ∧
+      RawStep.parStar leftCode leftTarget ∧
+      RawStep.parStar rightCode rightTarget := by
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨leftTarget, rightTarget, joinEq, leftChain, rightChain⟩ :=
+    RawStep.parStar.equivCode_inv sourceToJoin
+  refine ⟨leftTarget, rightTarget, ?_, leftChain, rightChain⟩
+  exact joinEq ▸ targetToJoin
+
+/-! ### Source-side mirrors of the type-code homogeneous family
+
+Each proof is a one-line `Conv.sym` composition of the
+corresponding target-side theorem.  Used when the type-code
+shape sits on the *target* of the Conv. -/
+
+/-- Source-side mirror of `targetReaches_listCode`. -/
+theorem Conv.sourceReaches_listCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw elementCode : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType
+      (RawTerm.listCode elementCode : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ elementTarget,
+      RawStep.parStar sourceRaw (RawTerm.listCode elementTarget) ∧
+      RawStep.parStar elementCode elementTarget :=
+  Conv.targetReaches_listCode (Conv.sym convertibility)
+
+/-- Source-side mirror of `targetReaches_optionCode`. -/
+theorem Conv.sourceReaches_optionCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw elementCode : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType
+      (RawTerm.optionCode elementCode : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ elementTarget,
+      RawStep.parStar sourceRaw (RawTerm.optionCode elementTarget) ∧
+      RawStep.parStar elementCode elementTarget :=
+  Conv.targetReaches_optionCode (Conv.sym convertibility)
+
+/-- Source-side mirror of `targetReaches_arrowCode`. -/
+theorem Conv.sourceReaches_arrowCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw domainCode codomainCode : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType
+      (RawTerm.arrowCode domainCode codomainCode : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ domainTarget codomainTarget,
+      RawStep.parStar sourceRaw
+        (RawTerm.arrowCode domainTarget codomainTarget) ∧
+      RawStep.parStar domainCode domainTarget ∧
+      RawStep.parStar codomainCode codomainTarget :=
+  Conv.targetReaches_arrowCode (Conv.sym convertibility)
+
+/-- Source-side mirror of `targetReaches_productCode`. -/
+theorem Conv.sourceReaches_productCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw firstCode secondCode : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType
+      (RawTerm.productCode firstCode secondCode : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ firstTarget secondTarget,
+      RawStep.parStar sourceRaw
+        (RawTerm.productCode firstTarget secondTarget) ∧
+      RawStep.parStar firstCode firstTarget ∧
+      RawStep.parStar secondCode secondTarget :=
+  Conv.targetReaches_productCode (Conv.sym convertibility)
+
+/-- Source-side mirror of `targetReaches_sumCode`. -/
+theorem Conv.sourceReaches_sumCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw leftCode rightCode : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType
+      (RawTerm.sumCode leftCode rightCode : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ leftTarget rightTarget,
+      RawStep.parStar sourceRaw
+        (RawTerm.sumCode leftTarget rightTarget) ∧
+      RawStep.parStar leftCode leftTarget ∧
+      RawStep.parStar rightCode rightTarget :=
+  Conv.targetReaches_sumCode (Conv.sym convertibility)
+
+/-- Source-side mirror of `targetReaches_eitherCode`. -/
+theorem Conv.sourceReaches_eitherCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw leftCode rightCode : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType
+      (RawTerm.eitherCode leftCode rightCode : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ leftTarget rightTarget,
+      RawStep.parStar sourceRaw
+        (RawTerm.eitherCode leftTarget rightTarget) ∧
+      RawStep.parStar leftCode leftTarget ∧
+      RawStep.parStar rightCode rightTarget :=
+  Conv.targetReaches_eitherCode (Conv.sym convertibility)
+
+/-- Source-side mirror of `targetReaches_equivCode`. -/
+theorem Conv.sourceReaches_equivCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw leftCode rightCode : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType
+      (RawTerm.equivCode leftCode rightCode : RawTerm scope)}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ leftTarget rightTarget,
+      RawStep.parStar sourceRaw
+        (RawTerm.equivCode leftTarget rightTarget) ∧
+      RawStep.parStar leftCode leftTarget ∧
+      RawStep.parStar rightCode rightTarget :=
+  Conv.targetReaches_equivCode (Conv.sym convertibility)
+
 end LeanFX2
