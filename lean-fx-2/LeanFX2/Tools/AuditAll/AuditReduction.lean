@@ -474,6 +474,7 @@ the D3.6-P5 typed cong promotion above. -/
 #assert_no_axioms LeanFX2.RawStep.par.glueElimCong
 #assert_no_axioms LeanFX2.RawStep.par.transpCong
 #assert_no_axioms LeanFX2.RawStep.par.transp_inv
+#assert_no_axioms LeanFX2.RawStep.par.transpFill_inv
 #assert_no_axioms LeanFX2.RawStep.par.hcompCong
 
 -- HOTT observational equality + strict-id family — cong + inversion
