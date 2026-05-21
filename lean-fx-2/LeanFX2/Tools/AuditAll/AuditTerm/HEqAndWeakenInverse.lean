@@ -2,6 +2,7 @@ import LeanFX2.Tools.DependencyAudit
 import LeanFX2.Term.HEqCongr
 import LeanFX2.Term.WeakenInverse
 import LeanFX2.Term.TypedInversion
+import LeanFX2.Term.EtaRecognizers
 
 /-! # AuditTerm.HEqAndWeakenInverse — HEq congruence and typed inversion gates. -/
 
@@ -135,5 +136,7 @@ pattern as commits f3df931 (RawStep.par inversions) and d2e9d4a
 -- Supporting infrastructure for typed weaken inversion and eta-shape builders.
 #assert_no_axioms LeanFX2.Ty.weaken_inj
 #assert_no_axioms LeanFX2.Term.weakenInverse_atVarZero
+-- T12 eta recognizer staging: app-arm recognizer for lambda eta shapes.
+#assert_no_axioms LeanFX2.Term.eta_lam_shape_recognize_app_of_unweaken
 
 end LeanFX2.Tools
