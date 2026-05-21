@@ -41,6 +41,8 @@ rather than as a generic namespace failure. -/
 #assert_no_axioms LeanFX2.RawTerm.lam_isStronglyNormalizing
 #assert_no_axioms LeanFX2.RawTerm.isStronglyNormalizing.step_preserves
 #assert_no_axioms LeanFX2.RawTerm.isStronglyNormalizing_weaken
+#assert_no_axioms LeanFX2.RawStep.parProgress.rename_compatible
+#assert_no_axioms LeanFX2.RawStep.parProgress.weaken_compatible
 #assert_no_axioms LeanFX2.RawTerm.cumulUpMarker_isStronglyNormalizing
 #assert_no_axioms LeanFX2.RawTerm.natSucc_predecessor_isStronglyNormalizing
 

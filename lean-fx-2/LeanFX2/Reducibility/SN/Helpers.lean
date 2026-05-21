@@ -1,7 +1,9 @@
 import LeanFX2.Reducibility.Basic
 import LeanFX2.Reduction.RawParCompatible.Substitution
+import LeanFX2.Reduction.RawParCompatible.NamedCompatibility
 import LeanFX2.Reduction.RawParWeakenInv.Weaken
 import LeanFX2.Term.Rename
+import LeanFX2.Foundation.RawTermInjective
 
 /-! # LeanFX2.Reducibility.SN.Helpers — SN preservation lemmas
 
@@ -123,6 +125,41 @@ theorem RawTerm.isStronglyNormalizing.step_preserves {scope : Nat}
     RawTerm.isStronglyNormalizing target := by
   cases sourceIsSN with
   | intro _ closure => exact closure target progressStep
+
+/-- Raw parallel-progress reduction is forward-equivariant under any
+injective renaming.  The `par`-step survives `rename_compatible`
+directly; distinctness of the renamed pair follows from raw rename
+injectivity (`RawTerm.rename_injective_under_injective_renaming`).
+
+Workhorse for upcoming T7 `Reducible.rename_equivariant` and for any
+SN/Kripke step where a non-trivial reduction must be lifted through a
+renaming (e.g. world weakening at a non-canonical renaming, transport
+of progress witnesses through binder lifts). -/
+theorem RawStep.parProgress.rename_compatible
+    {sourceScope targetScope : Nat}
+    {rho : RawRenaming sourceScope targetScope}
+    (rhoInjective : RawRenamingInjective rho)
+    {beforeTerm afterTerm : RawTerm sourceScope}
+    (progress : RawStep.parProgress beforeTerm afterTerm) :
+    RawStep.parProgress (beforeTerm.rename rho) (afterTerm.rename rho) :=
+  ⟨RawStep.par.rename_compatible rho progress.1,
+   fun renameEq =>
+     progress.2
+       (RawTerm.rename_injective_under_injective_renaming
+         beforeTerm rhoInjective afterTerm renameEq)⟩
+
+/-- Canonical-weaken specialization of `RawStep.parProgress.rename_compatible`.
+
+Discharges the injectivity hypothesis via `RawRenaming.weaken_injective`
+so callers writing in terms of `RawTerm.weaken` get a one-line lift.
+Mirror of the existing `RawStep.par.weaken_compatible` shape at the
+parallel-progress layer. -/
+theorem RawStep.parProgress.weaken_compatible {scope : Nat}
+    {beforeTerm afterTerm : RawTerm scope}
+    (progress : RawStep.parProgress beforeTerm afterTerm) :
+    RawStep.parProgress beforeTerm.weaken afterTerm.weaken :=
+  RawStep.parProgress.rename_compatible
+    RawRenaming.weaken_injective progress
 
 /-- **Raw weakening preserves SN**: weakening preserves raw SN.
 
