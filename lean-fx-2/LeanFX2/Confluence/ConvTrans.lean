@@ -536,6 +536,300 @@ theorem Conv.transRaw_stepChain
   Conv.canonicalRaw
     (Conv.transChains (StepStar.fromStep firstStep) secondChain)
 
+/-! ## Asymmetric `{chainLeft, chainRight, stepLeft, stepRight}` × action lifters
+
+The four asymmetric trans variants above (`Conv.trans_chainLeft` /
+`Conv.trans_chainRight` / `Conv.trans_step_left` / `Conv.trans_step_right`)
+package a chain (or step) plus a `Conv` into a typed `Conv source target`
+without invoking confluence.  Composing the typed result with the Conv-axis
+raw projections (`Conv.renameRaw` / `Conv.weakenRaw` / `Conv.substRaw` /
+`Conv.subst0Raw` from `ChurchRosser.lean`) yields 16 one-line raw-join
+corollaries — every cell of the (input shape) × (action) grid.
+
+Consumers reach for these whenever they have an asymmetric
+chain+Conv input and want a raw join under a structural action (rename,
+weaken, subst, subst0) in one call.  Typical downstream sites: transp-
+cascade subst-equivariance lemmas and the future Step.eta cong-rule
+lifters of Phase F. -/
+
+/-- Raw-rename projection of `Conv.trans_chainLeft`. -/
+theorem Conv.transRaw_chainLeft_renamed
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {sourceType middleType targetType : Ty level sourceScope}
+    {sourceRaw middleRaw targetRaw : RawTerm sourceScope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (rawRenaming : RawRenaming sourceScope targetScope)
+    (firstChain : StepStar sourceTerm middleTerm)
+    (secondConv : Conv middleTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.rename rawRenaming) commonRaw ∧
+      RawStep.parStar (targetRaw.rename rawRenaming) commonRaw :=
+  Conv.renameRaw rawRenaming (Conv.trans_chainLeft firstChain secondConv)
+
+/-- Canonical-weaken specialization of
+`Conv.transRaw_chainLeft_renamed`. -/
+theorem Conv.transRaw_chainLeft_weakened
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType middleType targetType : Ty level scope}
+    {sourceRaw middleRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (firstChain : StepStar sourceTerm middleTerm)
+    (secondConv : Conv middleTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar sourceRaw.weaken commonRaw ∧
+      RawStep.parStar targetRaw.weaken commonRaw :=
+  Conv.weakenRaw (Conv.trans_chainLeft firstChain secondConv)
+
+/-- Raw-subst projection of `Conv.trans_chainLeft`. -/
+theorem Conv.transRaw_chainLeft_substituted
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {sourceType middleType targetType : Ty level sourceScope}
+    {sourceRaw middleRaw targetRaw : RawTerm sourceScope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (rawSubst : RawTermSubst sourceScope targetScope)
+    (firstChain : StepStar sourceTerm middleTerm)
+    (secondConv : Conv middleTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.subst rawSubst) commonRaw ∧
+      RawStep.parStar (targetRaw.subst rawSubst) commonRaw :=
+  Conv.substRaw rawSubst (Conv.trans_chainLeft firstChain secondConv)
+
+/-- Singleton-substitution specialization of
+`Conv.transRaw_chainLeft_substituted`. -/
+theorem Conv.transRaw_chainLeft_subst0
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level (scope + 1)}
+    {sourceType middleType targetType : Ty level (scope + 1)}
+    {sourceRaw middleRaw targetRaw : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (argRaw : RawTerm scope)
+    (firstChain : StepStar sourceTerm middleTerm)
+    (secondConv : Conv middleTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.subst0 argRaw) commonRaw ∧
+      RawStep.parStar (targetRaw.subst0 argRaw) commonRaw :=
+  Conv.subst0Raw argRaw (Conv.trans_chainLeft firstChain secondConv)
+
+/-- Raw-rename projection of `Conv.trans_chainRight`. -/
+theorem Conv.transRaw_chainRight_renamed
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {sourceType middleType targetType : Ty level sourceScope}
+    {sourceRaw middleRaw targetRaw : RawTerm sourceScope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (rawRenaming : RawRenaming sourceScope targetScope)
+    (firstConv : Conv sourceTerm middleTerm)
+    (reverseChain : StepStar targetTerm middleTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.rename rawRenaming) commonRaw ∧
+      RawStep.parStar (targetRaw.rename rawRenaming) commonRaw :=
+  Conv.renameRaw rawRenaming (Conv.trans_chainRight firstConv reverseChain)
+
+/-- Canonical-weaken specialization of
+`Conv.transRaw_chainRight_renamed`. -/
+theorem Conv.transRaw_chainRight_weakened
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType middleType targetType : Ty level scope}
+    {sourceRaw middleRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (firstConv : Conv sourceTerm middleTerm)
+    (reverseChain : StepStar targetTerm middleTerm) :
+    ∃ commonRaw,
+      RawStep.parStar sourceRaw.weaken commonRaw ∧
+      RawStep.parStar targetRaw.weaken commonRaw :=
+  Conv.weakenRaw (Conv.trans_chainRight firstConv reverseChain)
+
+/-- Raw-subst projection of `Conv.trans_chainRight`. -/
+theorem Conv.transRaw_chainRight_substituted
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {sourceType middleType targetType : Ty level sourceScope}
+    {sourceRaw middleRaw targetRaw : RawTerm sourceScope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (rawSubst : RawTermSubst sourceScope targetScope)
+    (firstConv : Conv sourceTerm middleTerm)
+    (reverseChain : StepStar targetTerm middleTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.subst rawSubst) commonRaw ∧
+      RawStep.parStar (targetRaw.subst rawSubst) commonRaw :=
+  Conv.substRaw rawSubst (Conv.trans_chainRight firstConv reverseChain)
+
+/-- Singleton-substitution specialization of
+`Conv.transRaw_chainRight_substituted`. -/
+theorem Conv.transRaw_chainRight_subst0
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level (scope + 1)}
+    {sourceType middleType targetType : Ty level (scope + 1)}
+    {sourceRaw middleRaw targetRaw : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (argRaw : RawTerm scope)
+    (firstConv : Conv sourceTerm middleTerm)
+    (reverseChain : StepStar targetTerm middleTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.subst0 argRaw) commonRaw ∧
+      RawStep.parStar (targetRaw.subst0 argRaw) commonRaw :=
+  Conv.subst0Raw argRaw (Conv.trans_chainRight firstConv reverseChain)
+
+/-- Raw-rename projection of `Conv.trans_step_left`.  Single-step
+variant of `Conv.transRaw_chainLeft_renamed`. -/
+theorem Conv.transRaw_stepLeft_renamed
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {sourceType middleType targetType : Ty level sourceScope}
+    {sourceRaw middleRaw targetRaw : RawTerm sourceScope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (rawRenaming : RawRenaming sourceScope targetScope)
+    (firstStep : Step sourceTerm middleTerm)
+    (secondConv : Conv middleTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.rename rawRenaming) commonRaw ∧
+      RawStep.parStar (targetRaw.rename rawRenaming) commonRaw :=
+  Conv.renameRaw rawRenaming (Conv.trans_step_left firstStep secondConv)
+
+/-- Canonical-weaken specialization of
+`Conv.transRaw_stepLeft_renamed`. -/
+theorem Conv.transRaw_stepLeft_weakened
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType middleType targetType : Ty level scope}
+    {sourceRaw middleRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (firstStep : Step sourceTerm middleTerm)
+    (secondConv : Conv middleTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar sourceRaw.weaken commonRaw ∧
+      RawStep.parStar targetRaw.weaken commonRaw :=
+  Conv.weakenRaw (Conv.trans_step_left firstStep secondConv)
+
+/-- Raw-subst projection of `Conv.trans_step_left`. -/
+theorem Conv.transRaw_stepLeft_substituted
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {sourceType middleType targetType : Ty level sourceScope}
+    {sourceRaw middleRaw targetRaw : RawTerm sourceScope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (rawSubst : RawTermSubst sourceScope targetScope)
+    (firstStep : Step sourceTerm middleTerm)
+    (secondConv : Conv middleTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.subst rawSubst) commonRaw ∧
+      RawStep.parStar (targetRaw.subst rawSubst) commonRaw :=
+  Conv.substRaw rawSubst (Conv.trans_step_left firstStep secondConv)
+
+/-- Singleton-substitution specialization of
+`Conv.transRaw_stepLeft_substituted`. -/
+theorem Conv.transRaw_stepLeft_subst0
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level (scope + 1)}
+    {sourceType middleType targetType : Ty level (scope + 1)}
+    {sourceRaw middleRaw targetRaw : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (argRaw : RawTerm scope)
+    (firstStep : Step sourceTerm middleTerm)
+    (secondConv : Conv middleTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.subst0 argRaw) commonRaw ∧
+      RawStep.parStar (targetRaw.subst0 argRaw) commonRaw :=
+  Conv.subst0Raw argRaw (Conv.trans_step_left firstStep secondConv)
+
+/-- Raw-rename projection of `Conv.trans_step_right`.  Single-reverse-
+step variant of `Conv.transRaw_chainRight_renamed`. -/
+theorem Conv.transRaw_stepRight_renamed
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {sourceType middleType targetType : Ty level sourceScope}
+    {sourceRaw middleRaw targetRaw : RawTerm sourceScope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (rawRenaming : RawRenaming sourceScope targetScope)
+    (firstConv : Conv sourceTerm middleTerm)
+    (reverseStep : Step targetTerm middleTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.rename rawRenaming) commonRaw ∧
+      RawStep.parStar (targetRaw.rename rawRenaming) commonRaw :=
+  Conv.renameRaw rawRenaming (Conv.trans_step_right firstConv reverseStep)
+
+/-- Canonical-weaken specialization of
+`Conv.transRaw_stepRight_renamed`. -/
+theorem Conv.transRaw_stepRight_weakened
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType middleType targetType : Ty level scope}
+    {sourceRaw middleRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (firstConv : Conv sourceTerm middleTerm)
+    (reverseStep : Step targetTerm middleTerm) :
+    ∃ commonRaw,
+      RawStep.parStar sourceRaw.weaken commonRaw ∧
+      RawStep.parStar targetRaw.weaken commonRaw :=
+  Conv.weakenRaw (Conv.trans_step_right firstConv reverseStep)
+
+/-- Raw-subst projection of `Conv.trans_step_right`. -/
+theorem Conv.transRaw_stepRight_substituted
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {sourceType middleType targetType : Ty level sourceScope}
+    {sourceRaw middleRaw targetRaw : RawTerm sourceScope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (rawSubst : RawTermSubst sourceScope targetScope)
+    (firstConv : Conv sourceTerm middleTerm)
+    (reverseStep : Step targetTerm middleTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.subst rawSubst) commonRaw ∧
+      RawStep.parStar (targetRaw.subst rawSubst) commonRaw :=
+  Conv.substRaw rawSubst (Conv.trans_step_right firstConv reverseStep)
+
+/-- Singleton-substitution specialization of
+`Conv.transRaw_stepRight_substituted`. -/
+theorem Conv.transRaw_stepRight_subst0
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level (scope + 1)}
+    {sourceType middleType targetType : Ty level (scope + 1)}
+    {sourceRaw middleRaw targetRaw : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (argRaw : RawTerm scope)
+    (firstConv : Conv sourceTerm middleTerm)
+    (reverseStep : Step targetTerm middleTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.subst0 argRaw) commonRaw ∧
+      RawStep.parStar (targetRaw.subst0 argRaw) commonRaw :=
+  Conv.subst0Raw argRaw (Conv.trans_step_right firstConv reverseStep)
+
 /-! ## Cong-rule via Conv chain in closed-type fragment
 
 For `IsClosedTy`-typed terms, every `Step` (and `StepStar`) preserves
