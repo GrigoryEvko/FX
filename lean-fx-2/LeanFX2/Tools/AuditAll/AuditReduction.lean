@@ -618,6 +618,8 @@ smoke log. -/
 #assert_no_axioms LeanFX2.RawStep.parStar.boolTrue_inv
 #assert_no_axioms LeanFX2.RawStep.parStar.natZero_inv
 #assert_no_axioms LeanFX2.RawStep.parStar.natSucc_inv
+#assert_no_axioms LeanFX2.RawStep.parStar.lam_inv
+#assert_no_axioms LeanFX2.RawStep.parStar.pathLam_inv
 #assert_no_axioms LeanFX2.RawStep.parStar.listNil_inv
 #assert_no_axioms LeanFX2.RawStep.parStar.optionNone_inv
 
