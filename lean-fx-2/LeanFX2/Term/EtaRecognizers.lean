@@ -226,6 +226,46 @@ theorem eta_modal_shape_recognize_elim
   cases eliminatedTermHEq
   rfl
 
+/-- Refinement eta constructor with an explicit proof payload.
+
+The refined term supplies the underlying value through `refineElim`.
+The proof payload is not recoverable from the refined value, so callers
+provide the proof term that appears in the eta-shaped introduction. -/
+def eta_refine_shape_construct
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {baseType : Ty level scope}
+    {predicate : RawTerm (scope + 1)}
+    {refinedRaw proofRaw : RawTerm scope}
+    (refinedValue : Term context (Ty.refine baseType predicate) refinedRaw)
+    (predicateProof : Term context Ty.unit proofRaw) :
+    Term context (Ty.refine baseType predicate)
+      (RawTerm.refineIntro (RawTerm.refineElim refinedRaw) proofRaw) :=
+  Term.refineIntro predicate (Term.refineElim refinedValue) predicateProof
+
+/-- Recognize the concrete refinement eta arm once both the eliminated
+base value and explicit proof payload have been identified. -/
+theorem eta_refine_shape_recognize_elim
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {baseType : Ty level scope}
+    {predicate : RawTerm (scope + 1)}
+    {refinedRaw proofRaw : RawTerm scope}
+    (refinedValue : Term context (Ty.refine baseType predicate) refinedRaw)
+    (predicateProof : Term context Ty.unit proofRaw)
+    (baseProjection :
+      Term context baseType (RawTerm.refineElim refinedRaw))
+    (proofProjection : Term context Ty.unit proofRaw)
+    (baseProjectionHEq :
+      HEq baseProjection (Term.refineElim refinedValue))
+    (proofProjectionHEq :
+      HEq proofProjection predicateProof) :
+    HEq (Term.refineIntro predicate baseProjection proofProjection)
+        (Term.eta_refine_shape_construct refinedValue predicateProof) := by
+  cases baseProjectionHEq
+  cases proofProjectionHEq
+  rfl
+
 /-- Recognize the concrete path eta application arm.
 
 If a path application under an interval binder has path side in the
