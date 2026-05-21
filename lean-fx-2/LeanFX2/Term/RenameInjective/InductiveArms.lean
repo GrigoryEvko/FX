@@ -858,6 +858,152 @@ theorem Term.rename_injective_arm_lamPi
 -- inversion plumbing not yet in scope.  See InductiveArms.lean header for the
 -- catalogue of arm patterns that DO ship cleanly via this driver.
 
+/-! ## Interval-operation arms (closed outer type, closed child types).
+
+Three cubical interval operations (`intervalOpp` unary, `intervalMeet`/`Join`
+binary) all live at outer `Ty.interval` and take children at `Ty.interval`.
+No existentials, no casts — mirrors the `natSucc`/`listCons` template with
+`Ty.interval` substituted for the closed scalar type. -/
+
+/-- `intervalOpp` arm: unary cubical opposite at `Ty.interval`. -/
+theorem Term.rename_injective_arm_intervalOpp
+    {innerRaw : RawTerm sourceScope}
+    (innerValue : Term sourceCtx Ty.interval innerRaw)
+    (innerIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (innerB : Term sourceCtx Ty.interval innerRaw),
+          Term.rename innerRenaming innerValue =
+            Term.rename innerRenaming innerB →
+          innerValue = innerB)
+    (rhoInjective : RawRenamingInjective rho)
+    (termB :
+      Term sourceCtx Ty.interval (RawTerm.intervalOpp innerRaw)) :
+    Term.rename termRenaming (Term.intervalOpp innerValue) =
+      Term.rename termRenaming termB →
+      Term.intervalOpp innerValue = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm :
+          Term sourceCtx genericType (RawTerm.intervalOpp innerRaw)),
+        Σ' (innerTerm : Term sourceCtx Ty.interval innerRaw),
+          Σ' (_ : genericType = Ty.interval),
+            HEq genericTerm (Term.intervalOpp innerTerm) by
+    obtain ⟨innerB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqB
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ innerRenameEq
+    exact congrArg Term.intervalOpp
+      (innerIH termRenaming rhoInjective innerB innerRenameEq)
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i innerTerm
+  exact ⟨innerTerm, rfl, HEq.rfl⟩
+
+/-- `intervalMeet` arm: binary cubical meet at `Ty.interval`. -/
+theorem Term.rename_injective_arm_intervalMeet
+    {leftRaw rightRaw : RawTerm sourceScope}
+    (leftValue : Term sourceCtx Ty.interval leftRaw)
+    (rightValue : Term sourceCtx Ty.interval rightRaw)
+    (leftIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (leftB : Term sourceCtx Ty.interval leftRaw),
+          Term.rename innerRenaming leftValue =
+            Term.rename innerRenaming leftB →
+          leftValue = leftB)
+    (rightIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (rightB : Term sourceCtx Ty.interval rightRaw),
+          Term.rename innerRenaming rightValue =
+            Term.rename innerRenaming rightB →
+          rightValue = rightB)
+    (rhoInjective : RawRenamingInjective rho)
+    (termB :
+      Term sourceCtx Ty.interval (RawTerm.intervalMeet leftRaw rightRaw)) :
+    Term.rename termRenaming (Term.intervalMeet leftValue rightValue) =
+      Term.rename termRenaming termB →
+      Term.intervalMeet leftValue rightValue = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm :
+          Term sourceCtx genericType (RawTerm.intervalMeet leftRaw rightRaw)),
+        Σ' (leftTerm : Term sourceCtx Ty.interval leftRaw),
+          Σ' (rightTerm : Term sourceCtx Ty.interval rightRaw),
+            Σ' (_ : genericType = Ty.interval),
+              HEq genericTerm (Term.intervalMeet leftTerm rightTerm) by
+    obtain ⟨leftB, rightB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqB
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ leftRenameEq rightRenameEq
+    rw [leftIH termRenaming rhoInjective leftB leftRenameEq,
+        rightIH termRenaming rhoInjective rightB rightRenameEq]
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i leftTerm rightTerm
+  exact ⟨leftTerm, rightTerm, rfl, HEq.rfl⟩
+
+/-- `intervalJoin` arm: binary cubical join at `Ty.interval`. -/
+theorem Term.rename_injective_arm_intervalJoin
+    {leftRaw rightRaw : RawTerm sourceScope}
+    (leftValue : Term sourceCtx Ty.interval leftRaw)
+    (rightValue : Term sourceCtx Ty.interval rightRaw)
+    (leftIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (leftB : Term sourceCtx Ty.interval leftRaw),
+          Term.rename innerRenaming leftValue =
+            Term.rename innerRenaming leftB →
+          leftValue = leftB)
+    (rightIH :
+      ∀ {innerTargetScope : Nat} {innerTargetCtx : Ctx mode level innerTargetScope}
+        {innerRho : RawRenaming sourceScope innerTargetScope}
+        (innerRenaming : TermRenaming sourceCtx innerTargetCtx innerRho),
+        RawRenamingInjective innerRho →
+        ∀ (rightB : Term sourceCtx Ty.interval rightRaw),
+          Term.rename innerRenaming rightValue =
+            Term.rename innerRenaming rightB →
+          rightValue = rightB)
+    (rhoInjective : RawRenamingInjective rho)
+    (termB :
+      Term sourceCtx Ty.interval (RawTerm.intervalJoin leftRaw rightRaw)) :
+    Term.rename termRenaming (Term.intervalJoin leftValue rightValue) =
+      Term.rename termRenaming termB →
+      Term.intervalJoin leftValue rightValue = termB := by
+  intro renameEq
+  suffices key :
+      ∀ {genericType : Ty level sourceScope}
+        (genericTerm :
+          Term sourceCtx genericType (RawTerm.intervalJoin leftRaw rightRaw)),
+        Σ' (leftTerm : Term sourceCtx Ty.interval leftRaw),
+          Σ' (rightTerm : Term sourceCtx Ty.interval rightRaw),
+            Σ' (_ : genericType = Ty.interval),
+              HEq genericTerm (Term.intervalJoin leftTerm rightTerm) by
+    obtain ⟨leftB, rightB, typeEqB, termHEqB⟩ := key termB
+    cases typeEqB
+    cases termHEqB
+    dsimp only [Term.rename] at renameEq
+    injection renameEq with _ _ _ _ leftRenameEq rightRenameEq
+    rw [leftIH termRenaming rhoInjective leftB leftRenameEq,
+        rightIH termRenaming rhoInjective rightB rightRenameEq]
+  intro genericType genericTerm
+  cases genericTerm
+  rename_i leftTerm rightTerm
+  exact ⟨leftTerm, rightTerm, rfl, HEq.rfl⟩
+
 /-! ## Closed-ctor arms (one-liners reusing existing standalone helpers)
 
 For closed constructors (no child terms, just `Term.<ctor>` at a fixed type),
