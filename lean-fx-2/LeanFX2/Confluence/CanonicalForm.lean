@@ -14411,4 +14411,172 @@ theorem Conv.effectPerform_ne_refl
     RawStep.parStar.refl_inv targetToJoin
   nomatch joinEqPerform.symm.trans joinEqRefl
 
+/-- A `sessionSend`-headed source and a `unit`-headed target are
+not convertible.  Disjoint canonical heads at the raw level:
+session send packages a channel with a payload to perform an
+output protocol step, whereas `unit` is the canonical inhabitant
+of the unit type — they cannot share a canonical reduct. -/
+theorem Conv.sessionSend_ne_unit
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {channel payload : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.sessionSend channel payload : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.unit : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqSessionSend, _, _⟩ :=
+    RawStep.parStar.sessionSend_inv sourceToJoin
+  have joinEqUnit : joinRaw = RawTerm.unit :=
+    RawStep.parStar.unit_inv targetToJoin
+  nomatch joinEqSessionSend.symm.trans joinEqUnit
+
+/-- A `sessionSend`-headed source and a `boolTrue`-headed target
+are not convertible.  Session send versus the Bool true value —
+distinct canonical heads at the raw level. -/
+theorem Conv.sessionSend_ne_boolTrue
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {channel payload : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.sessionSend channel payload : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.boolTrue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqSessionSend, _, _⟩ :=
+    RawStep.parStar.sessionSend_inv sourceToJoin
+  have joinEqTrue : joinRaw = RawTerm.boolTrue :=
+    RawStep.parStar.boolTrue_inv targetToJoin
+  nomatch joinEqSessionSend.symm.trans joinEqTrue
+
+/-- A `sessionSend`-headed source and a `boolFalse`-headed target
+are not convertible.  Same argument as the `boolTrue` companion. -/
+theorem Conv.sessionSend_ne_boolFalse
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {channel payload : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.sessionSend channel payload : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.boolFalse : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqSessionSend, _, _⟩ :=
+    RawStep.parStar.sessionSend_inv sourceToJoin
+  have joinEqFalse : joinRaw = RawTerm.boolFalse :=
+    RawStep.parStar.boolFalse_inv targetToJoin
+  nomatch joinEqSessionSend.symm.trans joinEqFalse
+
+/-- A `sessionSend`-headed source and a `natZero`-headed target are
+not convertible.  Session send versus the Nat zero — disjoint
+canonical heads. -/
+theorem Conv.sessionSend_ne_natZero
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {channel payload : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.sessionSend channel payload : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.natZero : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqSessionSend, _, _⟩ :=
+    RawStep.parStar.sessionSend_inv sourceToJoin
+  have joinEqZero : joinRaw = RawTerm.natZero :=
+    RawStep.parStar.natZero_inv targetToJoin
+  nomatch joinEqSessionSend.symm.trans joinEqZero
+
+/-- A `sessionSend`-headed source and a `listNil`-headed target are
+not convertible.  Session send versus the empty list — distinct
+canonical heads at the raw level. -/
+theorem Conv.sessionSend_ne_listNil
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {channel payload : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.sessionSend channel payload : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.listNil : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqSessionSend, _, _⟩ :=
+    RawStep.parStar.sessionSend_inv sourceToJoin
+  have joinEqNil : joinRaw = RawTerm.listNil :=
+    RawStep.parStar.listNil_inv targetToJoin
+  nomatch joinEqSessionSend.symm.trans joinEqNil
+
+/-- A `sessionSend`-headed source and an `optionNone`-headed target
+are not convertible.  Session send versus the empty option —
+distinct canonical heads. -/
+theorem Conv.sessionSend_ne_optionNone
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {channel payload : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.sessionSend channel payload : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.optionNone : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqSessionSend, _, _⟩ :=
+    RawStep.parStar.sessionSend_inv sourceToJoin
+  have joinEqNone : joinRaw = RawTerm.optionNone :=
+    RawStep.parStar.optionNone_inv targetToJoin
+  nomatch joinEqSessionSend.symm.trans joinEqNone
+
+/-- A `sessionSend`-headed source and an `interval0`-headed target
+are not convertible.  Cross-stratum session-vs-cubical: session
+send lives at the protocol stratum, while `interval0` is the
+cubical interval's zero endpoint — they cannot share a canonical
+reduct. -/
+theorem Conv.sessionSend_ne_interval0
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {channel payload : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.sessionSend channel payload : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.interval0 : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqSessionSend, _, _⟩ :=
+    RawStep.parStar.sessionSend_inv sourceToJoin
+  have joinEqZero : joinRaw = RawTerm.interval0 :=
+    RawStep.parStar.interval0_inv targetToJoin
+  nomatch joinEqSessionSend.symm.trans joinEqZero
+
+/-- A `sessionSend`-headed source and an `interval1`-headed target
+are not convertible.  Cross-stratum session-vs-cubical: symmetric
+companion to `sessionSend_ne_interval0`. -/
+theorem Conv.sessionSend_ne_interval1
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {channel payload : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.sessionSend channel payload : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.interval1 : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqSessionSend, _, _⟩ :=
+    RawStep.parStar.sessionSend_inv sourceToJoin
+  have joinEqOne : joinRaw = RawTerm.interval1 :=
+    RawStep.parStar.interval1_inv targetToJoin
+  nomatch joinEqSessionSend.symm.trans joinEqOne
+
 end LeanFX2
