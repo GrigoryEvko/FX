@@ -99,6 +99,7 @@ supporting predicates ever reach an axiom. -/
 #assert_no_axioms LeanFX2.DispatchAtom
 #assert_no_axioms LeanFX2.RawStep.par.lift_full_pair
 #assert_no_axioms LeanFX2.RawStep.par.lift_full_hcomp
+#assert_no_axioms LeanFX2.RawStep.par.lift_full_equivApply
 
 /-! ## Reviewer-facing log — `#print axioms` -/
 
@@ -107,5 +108,6 @@ supporting predicates ever reach an axiom. -/
 #print axioms LeanFX2.DispatchAtom
 #print axioms LeanFX2.RawStep.par.lift_full_pair
 #print axioms LeanFX2.RawStep.par.lift_full_hcomp
+#print axioms LeanFX2.RawStep.par.lift_full_equivApply
 
 end LeanFX2.SmokeConvTransCUniversalChain

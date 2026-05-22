@@ -281,6 +281,54 @@ lemmas) ✅ closed 2026-05-07 — no longer a cutover blocker.
 Premature cutover would orphan the lean-fx codebase before
 lean-fx-2 reaches feature parity.
 
+## unblock-E Family — kernel-extension matrix (CONVTRANS-C universal chain)
+
+CONVTRANS-C Phase A1 (#1734) ships `lift_full_term` as a
+`DispatchAtom`-gated dispatcher over Term ctors.  5 leaves remain
+structurally blocked on missing typed `Step.par` β kernel rules
+(unblock-A.leaf.{equivApply, appPi, transp, hcomp, hcompPath} =
+#2013–#2017).  Family E ships those kernel extensions, then closes
+the leaves and drops the `DispatchAtom` gate.
+
+### Leaf-by-leaf coverage
+
+| Leaf | Blocker | TypedCtor | Cascade | Close | LoC |
+|------|---------|-----------|---------|-------|-----|
+| #2013 equivApply | typed `Step.par.uaReflEquivApply{,Deep}` | #2057 | #2058 | #2059 | ~600 |
+| #2014 appPi | typed `Step.par.piEta` η bridge | #2060 | #2061 | #2062 | ~1100 |
+| #2015 transp | 5 typed deep+ua+compose β arms | #2063 | #2064 | #2065 | ~1300 |
+| #2016 hcomp | vacuity via TermPathLamExcludes + path-typed extension | (vac) #2066 ✅ | #2067 ← #2069 | (vac) | ~350 |
+| #2017 hcompPath | relax `Step.par.hcompBeta` + add `hcompBetaDeep` | #2068 | (folded) | #2069 | ~600 |
+
+#2066 unblock-E.hcomp.ClosedCarrier shipped 2026-05-22 at commit
+`cf43720b` via Term.pathLam_excludes_closedTy vacuity (no new
+kernel β ctor required).  Path-typed carrier (#2067) routes
+through Term.hcompPath once #2068/#2069 ship.
+
+### Close-out chain
+
+After all 5 leaves close: drop the `DispatchAtom` restriction
+(#2070, parallels #2018), ship `Step.parStar.invertRaw` chain
+induction headline (#2072, parallels #2019), final CONVTRANS-C
+audit + downstream migration (#2073, parallels #2020).
+
+### Parallelization
+
+#2057/#2060/#2063/#2068 are independent kernel extensions with no
+inter-family cascade dependencies — perfectly parallelizable
+across sibling sessions.  #2067 hcomp.PathCarrier waits on #2069
+hcompPath.Close since path-typed hcomp routes through the new
+hcompPath β rules.
+
+### Downstream consumers unblocked
+
+* CONVTRANS-C #1734 → #1735 typed `Conv.trans` → #1736 audit
+* strength-T5 #1961 (par-back form #2022) ← already shipped raw
+  injectivity headline #2021 (`RawStep.par.rename_inj_inv`)
+* strength-T6 #1962 / T7 #1963 → K12.27 SN, K12.28 β-η-CR
+* D2.5 cubical cascade (D2.5.5–9) ← shares Step.eta blocker
+  with the broader Geuvers 1992 lift in unblock-D.geuvers (#2038)
+
 ## Critical-path summary (v1.0 requirements)
 
 The v1.0 milestone ("100% proven kernel") gates on:

@@ -628,5 +628,8 @@ theorem RawStep.par.lift_full_term
   | hcomp modeIsUnivalent carrierClosed sidesValue capValue sidesLift capLift =>
     exact RawStep.par.lift_full_hcomp modeIsUnivalent carrierClosed
             sidesValue capValue sidesLift capLift rawStep
+  | equivApply equivValue argumentValue equivLift argumentLift =>
+    exact RawStep.par.lift_full_equivApply equivValue argumentValue
+            equivLift argumentLift rawStep
 
 end LeanFX2

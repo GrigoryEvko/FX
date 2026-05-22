@@ -6,6 +6,8 @@ import LeanFX2.Reduction.RawParInversion.CubicalAndIdentity
 import LeanFX2.Reduction.RawParInversion.RedexParents
 import LeanFX2.Foundation.IsClosedTyAtBinder
 import LeanFX2.Foundation.TermPathLamExcludes
+import LeanFX2.Foundation.TermUaToEquivExcludesOeqRefl
+import LeanFX2.Reduction.RawParInversion.TypeCodes
 
 /-! # LeanFX2.Term.PreservesTerm.HeterogeneousElim
 
@@ -496,5 +498,66 @@ theorem RawStep.par.lift_full_hcomp
   · subst targetEq
     obtain ⟨pathLamTypedTarget, _⟩ := sidesLift sidesStep
     exact (Term.pathLam_excludes_closedTy pathLamTypedTarget carrierClosed).elim
+
+/-- **CONVTRANS-C Phase A1 follow-up — full lift for `Term.equivApply`
+(#2059 unblock-E.uaBeta.Close).**
+
+The β arms of `RawStep.par.equivApply_inv` (`uaReflEquivApply` /
+`uaReflEquivApplyDeep`, RawPar/Inductive.lean:1367,1392) force the
+typed equiv value (or its parallel-reduct) to have raw projection
+`RawTerm.uaToEquiv (RawTerm.oeqRefl _)`.  This is uninhabited at the
+typed level because `Term.uaToEquiv` requires its `proof` field at
+type `Ty.id ...` while `Term.oeqRefl` produces `Ty.oeq ...`;
+`Term.uaToEquiv_excludes_oeqRefl_witness` (Foundation/
+TermUaToEquivExcludesOeqRefl.lean, #2057) refutes the impossible
+shape via Ty constructor injectivity.
+
+The cong arm builds `Step.par.equivApplyCong` from the IHs on the
+equiv and argument subterms.  Both source and target equiv values
+land at the SAME `Ty.equiv carrierA carrierB` type (the cong rule
+preserves the carrier pair), so the IHs require no type cast.
+
+Closes #2013 unblock-A.leaf.equivApply WITHOUT any new typed β
+kernel ctor — the raw β rules that exist are vacuous against the
+typed intrinsic representation, exactly mirroring how
+`lift_full_hcomp` (#2066) discharged the closed-carrier hcomp leaf
+via `TermPathLamExcludes`. -/
+theorem RawStep.par.lift_full_equivApply
+    {carrierA carrierB : Ty level scope}
+    {equivRaw argumentRaw : RawTerm scope}
+    (equivValue :
+      Term context (Ty.equiv carrierA carrierB) equivRaw)
+    (argumentValue : Term context carrierA argumentRaw)
+    (equivLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par equivRaw targetRawIH →
+      ∃ equivTarget :
+          Term context (Ty.equiv carrierA carrierB) targetRawIH,
+        Step.par equivValue equivTarget)
+    (argumentLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par argumentRaw targetRawIH →
+      ∃ argumentTarget : Term context carrierA targetRawIH,
+        Step.par argumentValue argumentTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep :
+      RawStep.par (RawTerm.equivApply equivRaw argumentRaw) targetRaw) :
+    ∃ (targetType : Ty level scope)
+      (targetTerm : Term context targetType targetRaw),
+      Step.par (Term.equivApply equivValue argumentValue) targetTerm := by
+  rcases RawStep.par.equivApply_inv rawStep with
+    ⟨equivTargetRaw, argumentTargetRaw, targetEq, equivStep, argumentStep⟩
+    | ⟨witnessSource, _witnessTarget, _sourceTarget,
+        equivEq, _targetEq, _witnessStep, _sourceStep⟩
+    | ⟨_witnessTarget, _sourceTarget, targetEq, equivStep, _sourceStep⟩
+  · subst targetEq
+    obtain ⟨equivTermTarget, equivTypedStep⟩ := equivLift equivStep
+    obtain ⟨argumentTermTarget, argumentTypedStep⟩ := argumentLift argumentStep
+    refine ⟨carrierB,
+      Term.equivApply equivTermTarget argumentTermTarget, ?_⟩
+    exact Step.par.equivApplyCong equivTypedStep argumentTypedStep
+  · subst equivEq
+    exact (Term.uaToEquiv_excludes_oeqRefl_witness equivValue).elim
+  · subst targetEq
+    obtain ⟨equivTermTarget, _⟩ := equivLift equivStep
+    exact (Term.uaToEquiv_excludes_oeqRefl_witness equivTermTarget).elim
 
 end LeanFX2

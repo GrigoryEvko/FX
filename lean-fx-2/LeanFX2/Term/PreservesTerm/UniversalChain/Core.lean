@@ -1134,5 +1134,40 @@ inductive DispatchAtom :
                                 sidesValue capValue
                     : Term context carrierType
                                    (RawTerm.hcomp sidesRaw capRaw))
+  /-- Univalence-β application (Term.equivApply).  Both β arms of
+  `RawStep.par.equivApply_inv` (uaReflEquivApply / uaReflEquivApplyDeep)
+  force the typed equiv value (or its parallel-reduct) to have raw
+  projection `RawTerm.uaToEquiv (RawTerm.oeqRefl _)` — impossible at
+  the typed level because `Term.uaToEquiv` requires its proof field
+  at `Ty.id ...` while `Term.oeqRefl` produces `Ty.oeq ...`.  The
+  foundation lemma `Term.uaToEquiv_excludes_oeqRefl_witness`
+  (Foundation/TermUaToEquivExcludesOeqRefl.lean, #2057) refutes the
+  impossible shape; the cong arm uses both subterm IHs to build
+  `Step.par.equivApplyCong`.  Both source and target equivs live at
+  the SAME `Ty.equiv carrierA carrierB` type and both arguments at
+  `carrierA`, so the IHs require no type cast.  Consumed by
+  `RawStep.par.lift_full_equivApply` (HeterogeneousElim.lean).
+  Closes #2013 unblock-A.leaf.equivApply via vacuity — no new typed
+  Step.par β kernel ctor needed. -/
+  | equivApply {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {carrierA carrierB : Ty level scope}
+      {equivRaw argumentRaw : RawTerm scope}
+      (equivValue :
+        Term context (Ty.equiv carrierA carrierB) equivRaw)
+      (argumentValue : Term context carrierA argumentRaw)
+      (equivLift : ∀ {targetRawIH : RawTerm scope},
+        RawStep.par equivRaw targetRawIH →
+        ∃ equivTarget :
+            Term context (Ty.equiv carrierA carrierB) targetRawIH,
+          Step.par equivValue equivTarget)
+      (argumentLift : ∀ {targetRawIH : RawTerm scope},
+        RawStep.par argumentRaw targetRawIH →
+        ∃ argumentTarget : Term context carrierA targetRawIH,
+          Step.par argumentValue argumentTarget) :
+      DispatchAtom (Term.equivApply (context := context)
+                                    equivValue argumentValue
+                    : Term context carrierB
+                        (RawTerm.equivApply equivRaw argumentRaw))
 
 end LeanFX2
