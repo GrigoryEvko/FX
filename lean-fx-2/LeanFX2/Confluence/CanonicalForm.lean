@@ -14678,6 +14678,205 @@ theorem Conv.effectPerform_ne_intervalMeet
     RawStep.parStar.intervalMeet_inv targetToJoin
   nomatch joinEqPerform.symm.trans joinEqIntervalMeet
 
+/-- An `effectPerform`-headed source and an `intervalOpp`-headed
+target are not convertible.  Effect perform versus interval-negation
+operation — distinct canonical heads at the raw level. -/
+theorem Conv.effectPerform_ne_intervalOpp
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {operationTag arguments : RawTerm scope}
+    {intervalTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.effectPerform operationTag arguments : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.intervalOpp intervalTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPerform, _, _⟩ :=
+    RawStep.parStar.effectPerform_inv sourceToJoin
+  obtain ⟨_, joinEqIntervalOpp, _⟩ :=
+    RawStep.parStar.intervalOpp_inv targetToJoin
+  nomatch joinEqPerform.symm.trans joinEqIntervalOpp
+
+/-- An `effectPerform`-headed source and a `listCode`-headed
+target are not convertible.  Effect perform versus list-type code
+— distinct canonical heads at the raw level. -/
+theorem Conv.effectPerform_ne_listCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {operationTag arguments : RawTerm scope}
+    {elementCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.effectPerform operationTag arguments : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.listCode elementCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPerform, _, _⟩ :=
+    RawStep.parStar.effectPerform_inv sourceToJoin
+  obtain ⟨_, joinEqListCode, _⟩ :=
+    RawStep.parStar.listCode_inv targetToJoin
+  nomatch joinEqPerform.symm.trans joinEqListCode
+
+/-- An `effectPerform`-headed source and a `modIntro`-headed
+target are not convertible.  Effect perform versus modality
+introduction — distinct canonical heads at the raw level. -/
+theorem Conv.effectPerform_ne_modIntro
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {operationTag arguments : RawTerm scope}
+    {innerTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.effectPerform operationTag arguments : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.modIntro innerTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPerform, _, _⟩ :=
+    RawStep.parStar.effectPerform_inv sourceToJoin
+  obtain ⟨_, joinEqModIntro, _⟩ :=
+    RawStep.parStar.modIntro_inv targetToJoin
+  nomatch joinEqPerform.symm.trans joinEqModIntro
+
+/-- An `effectPerform`-headed source and an `oeqFunext`-headed
+target are not convertible.  Effect perform versus observational-
+equality functional-extensionality witness — distinct canonical
+heads at the raw level. -/
+theorem Conv.effectPerform_ne_oeqFunext
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {operationTag arguments : RawTerm scope}
+    {pointwiseProof : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.effectPerform operationTag arguments : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.oeqFunext pointwiseProof : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPerform, _, _⟩ :=
+    RawStep.parStar.effectPerform_inv sourceToJoin
+  obtain ⟨_, joinEqOeqFunext, _⟩ :=
+    RawStep.parStar.oeqFunext_inv targetToJoin
+  nomatch joinEqPerform.symm.trans joinEqOeqFunext
+
+/-- An `effectPerform`-headed source and an `oeqJ`-headed target
+are not convertible.  Effect perform versus observational-equality
+eliminator (J) — distinct canonical heads at the raw level. -/
+theorem Conv.effectPerform_ne_oeqJ
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {operationTag arguments : RawTerm scope}
+    {baseCase witness : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.effectPerform operationTag arguments : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.oeqJ baseCase witness : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPerform, _, _⟩ :=
+    RawStep.parStar.effectPerform_inv sourceToJoin
+  obtain ⟨_, _, joinEqOeqJ, _, _⟩ :=
+    RawStep.parStar.oeqJ_inv targetToJoin
+  nomatch joinEqPerform.symm.trans joinEqOeqJ
+
+/-- An `effectPerform`-headed source and an `oeqRefl`-headed
+target are not convertible.  Effect perform versus observational-
+equality reflexivity — distinct canonical heads at the raw level. -/
+theorem Conv.effectPerform_ne_oeqRefl
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {operationTag arguments : RawTerm scope}
+    {witnessTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.effectPerform operationTag arguments : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.oeqRefl witnessTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPerform, _, _⟩ :=
+    RawStep.parStar.effectPerform_inv sourceToJoin
+  obtain ⟨_, joinEqOeqRefl, _⟩ :=
+    RawStep.parStar.oeqRefl_inv targetToJoin
+  nomatch joinEqPerform.symm.trans joinEqOeqRefl
+
+/-- An `effectPerform`-headed source and an `oeqTrans`-headed
+target are not convertible.  Effect perform versus observational-
+equality transitivity — distinct canonical heads at the raw level. -/
+theorem Conv.effectPerform_ne_oeqTrans
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {operationTag arguments : RawTerm scope}
+    {firstProof secondProof : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.effectPerform operationTag arguments : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.oeqTrans firstProof secondProof : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPerform, _, _⟩ :=
+    RawStep.parStar.effectPerform_inv sourceToJoin
+  obtain ⟨_, _, joinEqOeqTrans, _, _⟩ :=
+    RawStep.parStar.oeqTrans_inv targetToJoin
+  nomatch joinEqPerform.symm.trans joinEqOeqTrans
+
+/-- An `effectPerform`-headed source and an `optionCode`-headed
+target are not convertible.  Effect perform versus option-type
+code — distinct canonical heads at the raw level. -/
+theorem Conv.effectPerform_ne_optionCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {operationTag arguments : RawTerm scope}
+    {elementCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.effectPerform operationTag arguments : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.optionCode elementCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPerform, _, _⟩ :=
+    RawStep.parStar.effectPerform_inv sourceToJoin
+  obtain ⟨_, joinEqOptionCode, _⟩ :=
+    RawStep.parStar.optionCode_inv targetToJoin
+  nomatch joinEqPerform.symm.trans joinEqOptionCode
+
+/-- An `effectPerform`-headed source and a `pathCompose`-headed
+target are not convertible.  Effect perform versus path-composition
+operation — distinct canonical heads at the raw level. -/
+theorem Conv.effectPerform_ne_pathCompose
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {operationTag arguments : RawTerm scope}
+    {leftPath rightPath : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.effectPerform operationTag arguments : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.pathCompose leftPath rightPath : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPerform, _, _⟩ :=
+    RawStep.parStar.effectPerform_inv sourceToJoin
+  obtain ⟨_, _, joinEqPathCompose, _, _⟩ :=
+    RawStep.parStar.pathCompose_inv targetToJoin
+  nomatch joinEqPerform.symm.trans joinEqPathCompose
+
 /-- A `sessionSend`-headed source and a `unit`-headed target are
 not convertible.  Disjoint canonical heads at the raw level:
 session send packages a channel with a payload to perform an
