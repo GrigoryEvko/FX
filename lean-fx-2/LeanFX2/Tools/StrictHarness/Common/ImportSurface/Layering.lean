@@ -12,10 +12,39 @@ def isSubjectReductionMetatheoryModuleName (moduleName : Name) : Bool :=
     moduleName == `LeanFX2.Term.SubjectReductionUniverse
 
 /-- Reduction modules that are metatheorems about conversion or canonical
-forms, not primitive reduction infrastructure. -/
+forms, not primitive reduction infrastructure.
+
+Each of these lives under the `Reduction/` namespace for theorem-naming
+convenience but semantically depends on the Bridge layer (Layer 3 in
+`productionImportLayer?`).
+
+* `Reduction.ConvCanonical` / `Reduction.ConvCongIsClosedTy` —
+  conversion-canonical / conversion-congruence statements that consume
+  bridge content.
+* `Reduction.ParRed.PreEtaInversion` — typed binder-headed inversion
+  for `Step.par`; uses `Step.par.toRawBridge` from
+  `LeanFX2.Bridge` to project to raw inversions. -/
 def isReductionMetatheoryModuleName (moduleName : Name) : Bool :=
   moduleName == `LeanFX2.Reduction.ConvCanonical ||
-    moduleName == `LeanFX2.Reduction.ConvCongIsClosedTy
+    moduleName == `LeanFX2.Reduction.ConvCongIsClosedTy ||
+    moduleName == `LeanFX2.Reduction.ParRed.PreEtaInversion
+
+/-- Reduction modules that are Confluence-layer metatheorems.
+
+These live under `Reduction/` for theorem-naming convenience but
+transitively depend on `Confluence.RawDiamond` and therefore semantically
+sit at the Confluence layer (Layer 4 in `productionImportLayer?`).
+
+* `Reduction.RawParWeakenInv.ParStar` — `parStar` chain lift of the
+  per-ctor rename-image preservation lemmas; the chain induction
+  consumes the diamond-property infrastructure from
+  `Confluence.RawDiamond`.
+
+The shim umbrella `Reduction.RawParWeakenInv` intentionally does NOT
+re-export this module so the Reduction-layer (Layer 2) gate stays
+clean. -/
+def isConfluenceParStarModuleName (moduleName : Name) : Bool :=
+  moduleName == `LeanFX2.Reduction.RawParWeakenInv.ParStar
 
 /-- Cross-theory bridge modules depend on HoTT, Cubical, or Modal layers and
 therefore must not be classified with the low-level typed/raw bridge. -/
@@ -50,6 +79,8 @@ def productionImportLayer? (moduleName : Name) : Option Nat :=
     some 3
   else if isReductionMetatheoryModuleName moduleName then
     some 3
+  else if isConfluenceParStarModuleName moduleName then
+    some 4
   else if isCrossTheoryBridgeModuleName moduleName then
     some 13
   else if (`LeanFX2.Foundation).isPrefixOf moduleName then

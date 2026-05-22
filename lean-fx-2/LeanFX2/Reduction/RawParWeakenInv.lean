@@ -5,7 +5,6 @@ import LeanFX2.Reduction.RawParWeakenInv.BinderShape
 import LeanFX2.Reduction.RawParWeakenInv.CubicalShape
 import LeanFX2.Reduction.RawParWeakenInv.HeadlineRenameInjInv
 import LeanFX2.Reduction.RawParWeakenInv.Weaken
-import LeanFX2.Reduction.RawParWeakenInv.ParStar
 
 /-! # LeanFX2.Reduction.RawParWeakenInv — par-step weaken-image preservation (shim)
 
@@ -25,6 +24,20 @@ the headline induction and its specialization:
 | `CubicalShape` | D3.6 cubical inversions (uaToEquiv ... equivCompose) |
 | `HeadlineRenameInjInv` | the headline `rename_inj_inv` induction |
 | `Weaken` | `weaken_inv` specialization |
+
+## Layer note
+
+The `RawParWeakenInv.ParStar` sub-module (`parStar` chain lift of the
+single-step compatibility lemmas) is intentionally NOT re-exported by
+this umbrella.  It transitively depends on `Confluence.RawDiamond` and
+therefore lives at the Confluence semantic layer (Layer 4 in
+`productionImportLayer?`), not the Reduction layer.  Production
+consumers that need its lemmas (`Confluence/ConvBridge.lean`,
+`Confluence/ParStarBridge.lean`, `Confluence/ChurchRosser.lean`) import
+`LeanFX2.Reduction.RawParWeakenInv.ParStar` directly through
+`ParStarBridge`'s explicit edge.  Keeping that edge out of the umbrella
+preserves the Reduction-layer (Layer 2) import discipline gate
+`#assert_production_layer_imports_clean`.
 
 ## Root status
 
