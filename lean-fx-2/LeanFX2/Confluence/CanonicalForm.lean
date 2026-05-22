@@ -19767,6 +19767,206 @@ theorem Conv.recordIntro_ne_refl
     RawStep.parStar.refl_inv targetToJoin
   nomatch joinEqRecord.symm.trans joinEqRefl
 
+/-- A `recordIntro`-headed source and a `refineIntro`-headed target are
+not convertible.  Record introduction versus refinement-type
+introduction — distinct canonical heads at the raw level. -/
+theorem Conv.recordIntro_ne_refineIntro
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstField : RawTerm scope}
+    {rawValue predicateProof : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.recordIntro firstField : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.refineIntro rawValue predicateProof : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqRecord, _⟩ :=
+    RawStep.parStar.recordIntro_inv sourceToJoin
+  obtain ⟨_, _, joinEqRefine, _, _⟩ :=
+    RawStep.parStar.refineIntro_inv targetToJoin
+  nomatch joinEqRecord.symm.trans joinEqRefine
+
+/-- A `recordIntro`-headed source and a `sessionRecv`-headed target are
+not convertible.  Record introduction versus session-receive primitive
+— distinct canonical heads at the raw level. -/
+theorem Conv.recordIntro_ne_sessionRecv
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstField : RawTerm scope}
+    {channel : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.recordIntro firstField : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sessionRecv channel : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqRecord, _⟩ :=
+    RawStep.parStar.recordIntro_inv sourceToJoin
+  obtain ⟨_, joinEqRecv, _⟩ :=
+    RawStep.parStar.sessionRecv_inv targetToJoin
+  nomatch joinEqRecord.symm.trans joinEqRecv
+
+/-- A `recordIntro`-headed source and a `sessionSend`-headed target are
+not convertible.  Record introduction versus session-send primitive —
+distinct canonical heads at the raw level. -/
+theorem Conv.recordIntro_ne_sessionSend
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstField : RawTerm scope}
+    {channel payload : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.recordIntro firstField : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sessionSend channel payload : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqRecord, _⟩ :=
+    RawStep.parStar.recordIntro_inv sourceToJoin
+  obtain ⟨_, _, joinEqSend, _, _⟩ :=
+    RawStep.parStar.sessionSend_inv targetToJoin
+  nomatch joinEqRecord.symm.trans joinEqSend
+
+/-- A `recordIntro`-headed source and a `sigmaTyCode`-headed target are
+not convertible.  Record introduction versus dependent-pair type code —
+distinct canonical heads at the raw level. -/
+theorem Conv.recordIntro_ne_sigmaTyCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstField : RawTerm scope}
+    {firstSigmaCode : RawTerm scope}
+    {secondSigmaCode : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType
+      (RawTerm.recordIntro firstField : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sigmaTyCode firstSigmaCode secondSigmaCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqRecord, _⟩ :=
+    RawStep.parStar.recordIntro_inv sourceToJoin
+  obtain ⟨_, _, joinEqSigma, _, _⟩ :=
+    RawStep.parStar.sigmaTyCode_inv targetToJoin
+  nomatch joinEqRecord.symm.trans joinEqSigma
+
+/-- A `recordIntro`-headed source and a `subsume`-headed target are not
+convertible.  Record introduction versus subsumption coercion —
+distinct canonical heads at the raw level. -/
+theorem Conv.recordIntro_ne_subsume
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstField : RawTerm scope}
+    {innerSubsumed : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.recordIntro firstField : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.subsume innerSubsumed : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqRecord, _⟩ :=
+    RawStep.parStar.recordIntro_inv sourceToJoin
+  obtain ⟨_, joinEqSubsume, _⟩ :=
+    RawStep.parStar.subsume_inv targetToJoin
+  nomatch joinEqRecord.symm.trans joinEqSubsume
+
+/-- A `recordIntro`-headed source and a `sumCode`-headed target are not
+convertible.  Record introduction versus disjoint-union type code —
+distinct canonical heads at the raw level. -/
+theorem Conv.recordIntro_ne_sumCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstField : RawTerm scope}
+    {firstSumCode secondSumCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.recordIntro firstField : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sumCode firstSumCode secondSumCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqRecord, _⟩ :=
+    RawStep.parStar.recordIntro_inv sourceToJoin
+  obtain ⟨_, _, joinEqSum, _, _⟩ :=
+    RawStep.parStar.sumCode_inv targetToJoin
+  nomatch joinEqRecord.symm.trans joinEqSum
+
+/-- A `recordIntro`-headed source and a `transpFill`-headed target are
+not convertible.  Record introduction versus cubical transport filler
+— distinct canonical heads at the raw level. -/
+theorem Conv.recordIntro_ne_transpFill
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstField : RawTerm scope}
+    {pathTerm intervalTerm sourceRawTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.recordIntro firstField : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.transpFill pathTerm intervalTerm sourceRawTerm :
+        RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqRecord, _⟩ :=
+    RawStep.parStar.recordIntro_inv sourceToJoin
+  obtain ⟨_, _, _, joinEqFill, _, _, _⟩ :=
+    RawStep.parStar.transpFill_inv targetToJoin
+  nomatch joinEqRecord.symm.trans joinEqFill
+
+/-- A `recordIntro`-headed source and a `uaToEquiv`-headed target are
+not convertible.  Record introduction versus univalence-to-equivalence
+primitive — distinct canonical heads at the raw level. -/
+theorem Conv.recordIntro_ne_uaToEquiv
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstField : RawTerm scope}
+    {proofTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.recordIntro firstField : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.uaToEquiv proofTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqRecord, _⟩ :=
+    RawStep.parStar.recordIntro_inv sourceToJoin
+  obtain ⟨_, joinEqUa, _⟩ :=
+    RawStep.parStar.uaToEquiv_inv targetToJoin
+  nomatch joinEqRecord.symm.trans joinEqUa
+
+/-- A `recordIntro`-headed source and a `universeCode`-headed target are
+not convertible.  Record introduction versus universe-level type code —
+distinct canonical heads at the raw level. -/
+theorem Conv.recordIntro_ne_universeCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstField : RawTerm scope}
+    {innerLevel : Nat}
+    {sourceTerm : Term context sourceType
+      (RawTerm.recordIntro firstField : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.universeCode innerLevel : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqRecord, _⟩ :=
+    RawStep.parStar.recordIntro_inv sourceToJoin
+  have joinEqUniv : joinRaw = RawTerm.universeCode innerLevel :=
+    RawStep.parStar.universeCode_inv targetToJoin
+  nomatch joinEqRecord.symm.trans joinEqUniv
+
 /-- A `refineIntro`-headed source and a `unit`-headed target are not
 convertible.  Disjoint canonical heads at the raw level: refinement
 introduction packages a value with a predicate proof to inhabit a
