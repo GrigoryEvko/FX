@@ -80,6 +80,7 @@ import LeanFX2.Term.PartialStrengthen.RenameImage.Effects
 import LeanFX2.Term.PartialStrengthen.RenameImage.CastWrapped
 import LeanFX2.Term.WeakenInverse
 import LeanFX2.Term.TypedInversion
+import LeanFX2.Term.EtaRecognizers
 import LeanFX2.Term.StrengtheningImage.TotalOnWeakenHeadlines
 import LeanFX2.Term.PolyToTerm
 import LeanFX2.Term.ToPoly

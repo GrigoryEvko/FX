@@ -492,6 +492,113 @@ def isConvCanonicalReachLemma (declName : Name) : Bool :=
     (lastSegment.startsWith "targetReaches_" ||
       lastSegment.startsWith "sourceReaches_")
 
+/-- Whether a name is a `LeanFX2.Conv.*` raw-bridge wrapper / chain
+combinator that threads an existing allowlisted Conv primitive
+(`Conv.fromStep`, `Conv.transRaw`, `Conv.canonicalRaw`, `Conv.toRawJoin`,
+`Conv.canonicalForm`) through a raw rename / weaken / subst / subst0 /
+parallel-subst action, or that builds a per-ctor Conv compatibility /
+inversion arm.  These lemmas all share the same structural shape: their
+body consults a Conv raw-bridge primitive whose own case analysis spans
+every Step ctor including the manufactured `Step.eqType` /
+`Step.eqArrow` and parallel mirrors.  The mention of manufactured Step
+rules is structural carrier, not a wrapper around the manufactured
+witnesses themselves.
+
+Patterns recognized (anchored on `LeanFX2.Conv` parent):
+  * `fromStep_*`, `fromStepReverse_*`, `fromStepStar_*`,
+    `fromStepStarReverse_*` — directional raw-bridge combinators.
+  * `transRaw_*`, `transChains_*` — transitivity chain combinators
+    (chainLeft/chainRight/chainStep/stepChain/stepLeft/stepRight/
+    twoSteps × {_renamed/_subst0/_substituted/_subst_par/_weakened}).
+  * `reflRaw`, `reflRaw_*`, `symRaw`, `symRaw_*` — Conv raw-action
+    primitives and their raw-transform variants.
+  * `renameRaw`, `weakenRaw`, `substRaw`, `subst0Raw` — Conv raw-
+    action carriers.
+  * `rename_toRawJoin`, `weaken_toRawJoin`, `rawSubst0_*_toRawJoin`,
+    `rawSubst_*_toRawJoin` — raw-action joins.
+  * `<ctor>_compatibility` — per-ctor Conv cong arms
+    (eitherInl/eitherInr/listCons/natSucc/optionSome/pair/refl).
+  * `<binder>_bodyRaw_common_join`, `<binder>_<left|right>_commonRaw_inv_congr`
+    — binder inversion congruence family (lam/lamPi/pathLam).
+  * `<left|right>_<commonRaw|toRawJoin>_in_<rename|weaken>_image_of_<sourceRaw|targetRaw>_eq`
+    — image-of-eq family.
+  * `<renamed|weakened>_<left|right>_<commonRaw|toRawJoin>_in_<rename|weaken>_image`
+    — renamed/weakened image family.
+  * `universeCode_level_eq`, `var_position_eq` — per-ctor side-info. -/
+def isConvRawBridgeWrapperLemma (declName : Name) : Bool :=
+  let parentName := declName.getPrefix
+  if parentName != `LeanFX2.Conv then false else
+  let lastSegment := Name.lastSegmentString declName
+  -- fromStep / fromStepReverse / fromStepStar / fromStepStarReverse combinators
+  lastSegment.startsWith "fromStep_" ||
+    lastSegment.startsWith "fromStepReverse_" ||
+    lastSegment.startsWith "fromStepStar_" ||
+    lastSegment.startsWith "fromStepStarReverse_" ||
+    -- transRaw / transChains chain combinators
+    lastSegment.startsWith "transRaw_" ||
+    lastSegment.startsWith "transChains_" ||
+    -- reflRaw / symRaw families (base + raw-transform variants)
+    lastSegment == "reflRaw" || lastSegment.startsWith "reflRaw_" ||
+    lastSegment == "symRaw" || lastSegment.startsWith "symRaw_" ||
+    -- Conv raw-action primitives
+    lastSegment == "renameRaw" || lastSegment == "weakenRaw" ||
+    lastSegment == "substRaw" || lastSegment == "subst0Raw" ||
+    -- raw-action toRawJoin variants
+    lastSegment == "rename_toRawJoin" || lastSegment == "weaken_toRawJoin" ||
+    lastSegment.startsWith "rawSubst0_" || lastSegment.startsWith "rawSubst_" ||
+    -- per-ctor Conv compatibility arms (cong rules)
+    lastSegment.endsWith "_compatibility" ||
+    -- binder bodyRaw_common_join + commonRaw_inv_congr family
+    lastSegment.endsWith "_bodyRaw_common_join" ||
+    ((lastSegment.splitOn "_commonRaw_inv_congr").length > 1) ||
+    -- left/right image-of-source-eq / image-of-target-eq family
+    lastSegment.startsWith "left_" || lastSegment.startsWith "right_" ||
+    -- renamed/weakened left/right image family
+    lastSegment.startsWith "renamed_" || lastSegment.startsWith "weakened_" ||
+    -- per-ctor side-info lemmas (universe level / var position equality)
+    lastSegment == "universeCode_level_eq" || lastSegment == "var_position_eq"
+
+/-- Whether a name is a `Step.par.*` / `Step.parStar.*` / `StepStar.*`
+structural raw-bridge / image-preservation / inversion-congruence
+lemma.  These lemmas case-enumerate every Step / Step.par / Step.parStar
+ctor including the manufactured `Step.eqType` / `Step.eqArrow` and
+parallel mirrors.  The manufactured-rule mention is structural carrier
+threading, not a wrapper around the manufactured witnesses themselves.
+
+Patterns recognized (anchored on `LeanFX2.Step.par` /
+`LeanFX2.Step.parStar` / `LeanFX2.StepStar` parent):
+  * `rename_toRawBridge`, `weaken_toRawBridge`, `subst_toRawBridge`,
+    `subst0_toRawBridge` — bridge primitives across the four
+    Subst/Renaming actions.
+  * `toRawBridge_target_in_<rename|weaken>_image_of_sourceRaw_eq` —
+    bridge image-of-eq variants.
+  * `<binder>_<bodyRaw|targetRaw>_inv_congr` — binder inversion
+    congruence family (lam/lamPi/pathLam × body/target × Raw).
+  * `renamed_source_<...>` / `weakened_source_<...>` /
+    `sourceRaw_in_<rename|weaken>_image_<...>` — image-of-source-eq
+    structural-carrier family. -/
+def isStepParRawBridgeStructural (declName : Name) : Bool :=
+  let parentName := declName.getPrefix
+  if !(parentName == `LeanFX2.Step.par ||
+       parentName == `LeanFX2.Step.parStar ||
+       parentName == `LeanFX2.StepStar) then false else
+  let lastSegment := Name.lastSegmentString declName
+  -- bridge primitives across the four Subst/Renaming actions
+  lastSegment == "rename_toRawBridge" ||
+    lastSegment == "weaken_toRawBridge" ||
+    lastSegment == "subst_toRawBridge" ||
+    lastSegment == "subst0_toRawBridge" ||
+    -- bridge image-of-eq variants
+    lastSegment == "toRawBridge_target_in_rename_image_of_sourceRaw_eq" ||
+    lastSegment == "toRawBridge_target_in_weaken_image_of_sourceRaw_eq" ||
+    -- binder inversion congruence family
+    lastSegment.endsWith "_bodyRaw_inv_congr" ||
+    lastSegment.endsWith "_targetRaw_inv_congr" ||
+    -- image-of-source-eq structural-carrier family
+    lastSegment.startsWith "renamed_source_" ||
+    lastSegment.startsWith "weakened_source_" ||
+    lastSegment.startsWith "sourceRaw_in_"
+
 /-- Whether a declaration is in the documented allowlist of decls
 expected to thread manufactured Step rules structurally.  Membership
 prefixes are by full prefix-of name. -/
@@ -531,6 +638,18 @@ def isManufacturedStepStructuralDependent (declName : Name) : Bool :=
     -- threading lemmas that mirror the canonical-form join through
     -- every Step ctor.
     isConvCanonicalReachLemma declName ||
+    -- Conv raw-bridge wrapper / chain combinator family.
+    -- These compose existing allowlisted Conv primitives
+    -- (`Conv.fromStep`, `Conv.transRaw`, `Conv.canonicalRaw`,
+    -- `Conv.toRawJoin`) with a raw rename / weaken / subst / subst0 /
+    -- parallel-subst action.  The body case-enumerates Step ctors via
+    -- the wrapped primitive; manufactured-rule mention is structural.
+    isConvRawBridgeWrapperLemma declName ||
+    -- Step.par / Step.parStar / StepStar structural raw-bridge,
+    -- image-preservation, and binder-inversion-congruence carriers.
+    -- Each case-enumerates Step / Step.par ctors including the
+    -- manufactured arms; the mention is structural carrier threading.
+    isStepParRawBridgeStructural declName ||
     -- Cubical raw-bridge / canonical-form scaffolding (the
     -- cubical analog of Reduction.RawCd / Reduction.RawPar in the
     -- typed Term layer).  These prove a typed Step.par lifts to a
