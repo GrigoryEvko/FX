@@ -887,5 +887,13 @@ transp arm to discharge the dispatch. -/
 #assert_no_axioms LeanFX2.Conv.arrowCode_ne_equivCompose
 #assert_no_axioms LeanFX2.Conv.arrowCode_ne_equivIntro
 #assert_no_axioms LeanFX2.Conv.arrowCode_ne_glueIntro
+#assert_no_axioms LeanFX2.Conv.arrowCode_ne_idCode
+#assert_no_axioms LeanFX2.Conv.arrowCode_ne_idStrictRefl
+#assert_no_axioms LeanFX2.Conv.arrowCode_ne_intervalJoin
+#assert_no_axioms LeanFX2.Conv.arrowCode_ne_intervalMeet
+#assert_no_axioms LeanFX2.Conv.arrowCode_ne_intervalOpp
+#assert_no_axioms LeanFX2.Conv.arrowCode_ne_listCode
+#assert_no_axioms LeanFX2.Conv.arrowCode_ne_modIntro
+#assert_no_axioms LeanFX2.Conv.arrowCode_ne_oeqFunext
 
 end LeanFX2.Tools
