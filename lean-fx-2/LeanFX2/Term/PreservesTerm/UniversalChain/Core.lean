@@ -666,5 +666,31 @@ inductive DispatchAtom :
                     : Term context (Ty.id (Ty.universe innerLevel innerLevelLt)
                                           carrierARaw carrierBRaw)
                                    (RawTerm.equivIntro forwardRaw backwardRaw))
+  /-- Boolean dependent eliminator.  Motive is at scope+1 so the two
+  branches live at distinct closed types after substituting the
+  Boolean value.  The two `IsClosedTy` witnesses (one per branch type
+  after `subst0`) let the driver fix each branch's target type under
+  parallel reduction — no new under-subst0 SR lemma required. -/
+  | boolElim {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {motiveType : Ty level (scope + 1)}
+      (thenTypeClosed :
+        IsClosedTy (motiveType.subst0 Ty.bool RawTerm.boolTrue))
+      (elseTypeClosed :
+        IsClosedTy (motiveType.subst0 Ty.bool RawTerm.boolFalse))
+      {scrutineeRaw thenRaw elseRaw : RawTerm scope}
+      (scrutinee : Term context Ty.bool scrutineeRaw)
+      (thenBranch :
+        Term context (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw)
+      (elseBranch :
+        Term context (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw)
+      (scrutDispatch : DispatchAtom scrutinee)
+      (thenDispatch : DispatchAtom thenBranch)
+      (elseDispatch : DispatchAtom elseBranch) :
+      DispatchAtom (Term.boolElim (motiveType := motiveType) scrutinee
+                                   thenBranch elseBranch
+                    : Term context (motiveType.subst0 Ty.bool scrutineeRaw)
+                                   (RawTerm.boolElim scrutineeRaw thenRaw
+                                                     elseRaw))
 
 end LeanFX2

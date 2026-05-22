@@ -4,6 +4,7 @@ import LeanFX2.Term.PreservesTerm.SchematicValueCtors
 import LeanFX2.Term.PreservesTerm.TypeCodeLifts
 import LeanFX2.Term.PreservesTerm.TwoTyAtomsAndCong
 import LeanFX2.Term.PreservesTerm.TwoTyEliminators
+import LeanFX2.Term.PreservesTerm.HeterogeneousElim
 import LeanFX2.Term.SubjectReductionPar
 
 /-! # LeanFX2.Term.PreservesTerm.UniversalChain.LiftFullTerm
@@ -527,5 +528,27 @@ theorem RawStep.par.lift_full_term
         equivWitnessStep rfl
     subst equivEq
     exact ⟨equivWitnessTarget, equivWitnessStep⟩
+  | boolElim thenTypeClosed elseTypeClosed scrutinee thenBranch elseBranch
+             _ _ _ ihScrut ihThen ihElse =>
+    refine RawStep.par.lift_full_boolElim scrutinee thenBranch elseBranch
+                                           ?_ ?_ ?_ rawStep
+    · intro _ scrutRawStep
+      obtain ⟨scrutTargetType, scrutTarget, scrutStep⟩ := ihScrut scrutRawStep
+      have boolEq : scrutTargetType = Ty.bool :=
+        Step.par.preserves_isClosedTy IsClosedTy.bool scrutStep rfl
+      subst boolEq
+      exact ⟨scrutTarget, scrutStep⟩
+    · intro _ thenRawStep
+      obtain ⟨thenTargetType, thenTarget, thenStep⟩ := ihThen thenRawStep
+      have thenEq : thenTargetType = _ :=
+        Step.par.preserves_isClosedTy thenTypeClosed thenStep rfl
+      subst thenEq
+      exact ⟨thenTarget, thenStep⟩
+    · intro _ elseRawStep
+      obtain ⟨elseTargetType, elseTarget, elseStep⟩ := ihElse elseRawStep
+      have elseEq : elseTargetType = _ :=
+        Step.par.preserves_isClosedTy elseTypeClosed elseStep rfl
+      subst elseEq
+      exact ⟨elseTarget, elseStep⟩
 
 end LeanFX2
