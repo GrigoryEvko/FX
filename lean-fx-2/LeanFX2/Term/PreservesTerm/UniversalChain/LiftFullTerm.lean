@@ -603,5 +603,15 @@ theorem RawStep.par.lift_full_term
   | sessionSend protocolStep channel payload channelLift payloadLift =>
     exact RawStep.par.lift_full_sessionSend protocolStep channel payload
             channelLift payloadLift rawStep
+  | effectPerform effectTag effectRow operationSignature canPerformOperation
+                  operationTag arguments operationLift argumentsLift =>
+    exact RawStep.par.lift_full_effectPerform effectTag effectRow
+            operationSignature canPerformOperation operationTag arguments
+            operationLift argumentsLift rawStep
+  | oeqFunext domainType codomainType leftFunctionRaw rightFunctionRaw
+              pointwiseProof pointwiseLift =>
+    exact RawStep.par.lift_full_oeqFunext domainType codomainType
+            leftFunctionRaw rightFunctionRaw pointwiseProof pointwiseLift
+            rawStep
 
 end LeanFX2

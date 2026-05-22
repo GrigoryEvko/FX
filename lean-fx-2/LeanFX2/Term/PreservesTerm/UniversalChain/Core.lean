@@ -962,5 +962,67 @@ inductive DispatchAtom :
       DispatchAtom (Term.sessionSend protocolStep channel payload
                     : Term context (Ty.session protocolStep)
                         (RawTerm.sessionSend channelRaw payloadRaw))
+  /-- Algebraic-effect perform.  Takes an operation tag + arguments;
+  target is `Ty.effect operationSignature.resultCarrier effectTag`.
+  Consumed by `RawStep.par.lift_full_effectPerform`. -/
+  | effectPerform {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (effectTag : RawTerm scope)
+      (effectRow : Effects.EffectRow)
+      (operationSignature : Effects.OperationSignature (Ty level scope))
+      (canPerformOperation :
+        Effects.CanPerform effectRow operationSignature)
+      {operationRaw argumentsRaw : RawTerm scope}
+      (operationTag :
+        Term context (Ty.effect operationSignature.argumentCarrier effectTag)
+                     operationRaw)
+      (arguments :
+        Term context operationSignature.argumentCarrier argumentsRaw)
+      (operationLift : ∀ {targetRawIH : RawTerm scope},
+        RawStep.par operationRaw targetRawIH →
+        ∃ operationTarget :
+            Term context (Ty.effect operationSignature.argumentCarrier effectTag)
+                         targetRawIH,
+          Step.par operationTag operationTarget)
+      (argumentsLift : ∀ {targetRawIH : RawTerm scope},
+        RawStep.par argumentsRaw targetRawIH →
+        ∃ argumentsTarget :
+            Term context operationSignature.argumentCarrier targetRawIH,
+          Step.par arguments argumentsTarget) :
+      DispatchAtom
+        (Term.effectPerform effectTag effectRow operationSignature
+          canPerformOperation operationTag arguments
+         : Term context (Ty.effect operationSignature.resultCarrier effectTag)
+             (RawTerm.effectPerform operationRaw argumentsRaw))
+  /-- Observational-equality function-extensionality introduction.  One
+  typed child `pointwiseProof` at `oeqFunextPointwiseType` (a `Ty.piTy`
+  not in `IsClosedTy`).  Target is
+  `Ty.oeq (Ty.arrow domainType codomainType) leftFunctionRaw rightFunctionRaw`.
+  Consumed by `RawStep.par.lift_full_oeqFunext`. -/
+  | oeqFunext {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (domainType codomainType : Ty level scope)
+      (leftFunctionRaw rightFunctionRaw : RawTerm scope)
+      {pointwiseRaw : RawTerm scope}
+      (pointwiseProof :
+        Term context
+          (oeqFunextPointwiseType domainType codomainType
+            leftFunctionRaw rightFunctionRaw)
+          pointwiseRaw)
+      (pointwiseLift : ∀ {targetRawIH : RawTerm scope},
+        RawStep.par pointwiseRaw targetRawIH →
+        ∃ pointwiseTarget :
+            Term context
+              (oeqFunextPointwiseType domainType codomainType
+                leftFunctionRaw rightFunctionRaw)
+              targetRawIH,
+          Step.par pointwiseProof pointwiseTarget) :
+      DispatchAtom
+        (Term.oeqFunext domainType codomainType
+          leftFunctionRaw rightFunctionRaw pointwiseProof
+         : Term context
+             (Ty.oeq (Ty.arrow domainType codomainType)
+                     leftFunctionRaw rightFunctionRaw)
+             (RawTerm.oeqFunext pointwiseRaw))
 
 end LeanFX2
