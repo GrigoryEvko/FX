@@ -10576,6 +10576,149 @@ theorem Conv.pathCompose_ne_refl
     RawStep.parStar.refl_inv targetToJoin
   nomatch joinEqPath.symm.trans joinEqRefl
 
+/-! ### `pathCompose` row compound targets (alphabetically > pathCompose)
+
+Binary source destructure (5-binder shape):
+  `obtain ⟨_, _, joinEqPathCompose, _, _⟩ :=
+     RawStep.parStar.pathCompose_inv sourceToJoin`
+
+Lower-source companions (arrowCode through optionCode) are
+already covered via `Conv.symm` of the corresponding lower-source
+rows shipped in prior iterations. -/
+
+/-- A `pathCompose`-headed source and a `piTyCode`-headed target
+are not convertible.  Cubical path composition versus Π-type code
+(binder-shape codomain at `scope + 1`). -/
+theorem Conv.pathCompose_ne_piTyCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {leftPath rightPath : RawTerm scope}
+    {domainCode : RawTerm scope}
+    {codomainCode : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType
+      (RawTerm.pathCompose leftPath rightPath : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.piTyCode domainCode codomainCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPathCompose, _, _⟩ :=
+    RawStep.parStar.pathCompose_inv sourceToJoin
+  obtain ⟨_, _, joinEqPiTyCode, _, _⟩ :=
+    RawStep.parStar.piTyCode_inv targetToJoin
+  nomatch joinEqPathCompose.symm.trans joinEqPiTyCode
+
+/-- A `pathCompose`-headed source and a `productCode`-headed target
+are not convertible.  Cubical path composition versus non-dependent
+product-type code. -/
+theorem Conv.pathCompose_ne_productCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {leftPath rightPath : RawTerm scope}
+    {firstCode secondCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.pathCompose leftPath rightPath : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.productCode firstCode secondCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPathCompose, _, _⟩ :=
+    RawStep.parStar.pathCompose_inv sourceToJoin
+  obtain ⟨_, _, joinEqProductCode, _, _⟩ :=
+    RawStep.parStar.productCode_inv targetToJoin
+  nomatch joinEqPathCompose.symm.trans joinEqProductCode
+
+/-- A `pathCompose`-headed source and a `recordIntro`-headed target
+are not convertible.  Cubical path composition versus record-value
+introduction. -/
+theorem Conv.pathCompose_ne_recordIntro
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {leftPath rightPath : RawTerm scope}
+    {firstField : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.pathCompose leftPath rightPath : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.recordIntro firstField : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPathCompose, _, _⟩ :=
+    RawStep.parStar.pathCompose_inv sourceToJoin
+  obtain ⟨_, joinEqRecord, _⟩ :=
+    RawStep.parStar.recordIntro_inv targetToJoin
+  nomatch joinEqPathCompose.symm.trans joinEqRecord
+
+/-- A `pathCompose`-headed source and a `refineIntro`-headed target
+are not convertible.  Cubical path composition versus refinement-
+type introduction. -/
+theorem Conv.pathCompose_ne_refineIntro
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {leftPath rightPath : RawTerm scope}
+    {rawValue predicateProof : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.pathCompose leftPath rightPath : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.refineIntro rawValue predicateProof : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPathCompose, _, _⟩ :=
+    RawStep.parStar.pathCompose_inv sourceToJoin
+  obtain ⟨_, _, joinEqRefineIntro, _, _⟩ :=
+    RawStep.parStar.refineIntro_inv targetToJoin
+  nomatch joinEqPathCompose.symm.trans joinEqRefineIntro
+
+/-- A `pathCompose`-headed source and a `sessionRecv`-headed target
+are not convertible.  Cubical path composition versus session-
+receive operation. -/
+theorem Conv.pathCompose_ne_sessionRecv
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {leftPath rightPath : RawTerm scope}
+    {channel : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.pathCompose leftPath rightPath : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sessionRecv channel : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPathCompose, _, _⟩ :=
+    RawStep.parStar.pathCompose_inv sourceToJoin
+  obtain ⟨_, joinEqSessionRecv, _⟩ :=
+    RawStep.parStar.sessionRecv_inv targetToJoin
+  nomatch joinEqPathCompose.symm.trans joinEqSessionRecv
+
+/-- A `pathCompose`-headed source and a `sessionSend`-headed target
+are not convertible.  Cubical path composition versus session-send
+operation. -/
+theorem Conv.pathCompose_ne_sessionSend
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {leftPath rightPath : RawTerm scope}
+    {channel payload : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.pathCompose leftPath rightPath : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sessionSend channel payload : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPathCompose, _, _⟩ :=
+    RawStep.parStar.pathCompose_inv sourceToJoin
+  obtain ⟨_, _, joinEqSessionSend, _, _⟩ :=
+    RawStep.parStar.sessionSend_inv targetToJoin
+  nomatch joinEqPathCompose.symm.trans joinEqSessionSend
+
 /-! ## oeqTrans row of canonical-head disjointness matrix
 
 `RawTerm.oeqTrans firstProof secondProof` is the HoTT observational-
