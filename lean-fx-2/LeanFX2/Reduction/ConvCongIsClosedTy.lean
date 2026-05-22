@@ -1171,6 +1171,100 @@ theorem Conv.natElim_cong
     (fun stepSucc => Step.natElimSucc stepSucc)
     scrutConv zeroConv succConv
 
+/-- Conv cong on `Term.equivApp` varying both equivTerm + argument
+positions at closed carriers.  equivTerm at `Ty.equiv carrierA
+carrierB` (closed via `IsClosedTy.equiv` from both carriers
+closed), argumentTerm at `carrierA` (closed by hypothesis).  Result
+type `carrierB` is unrelated to the lifter. -/
+theorem Conv.equivApp_cong
+    {carrierA carrierB : Ty level scope}
+    (closedCarrierA : IsClosedTy carrierA)
+    (closedCarrierB : IsClosedTy carrierB)
+    {equivRawA equivRawB argumentRawA argumentRawB : RawTerm scope}
+    {equivTermA : Term context (Ty.equiv carrierA carrierB) equivRawA}
+    {equivTermB : Term context (Ty.equiv carrierA carrierB) equivRawB}
+    {argumentTermA : Term context carrierA argumentRawA}
+    {argumentTermB : Term context carrierA argumentRawB}
+    (equivConv : Conv equivTermA equivTermB)
+    (argumentConv : Conv argumentTermA argumentTermB) :
+    Conv (Term.equivApp equivTermA argumentTermA)
+         (Term.equivApp equivTermB argumentTermB) :=
+  Conv.cong2_at_isClosedTy
+    (resultTy := carrierB)
+    (IsClosedTy.equiv closedCarrierA closedCarrierB)
+    closedCarrierA
+    (wrapRaw := fun equivRaw argRaw => RawTerm.equivApp equivRaw argRaw)
+    (fun equivTerm argTerm => Term.equivApp equivTerm argTerm)
+    (fun stepEquiv => Step.equivAppEquiv stepEquiv)
+    (@fun _ _ _ leftTerm _ _ stepArg =>
+      Step.equivAppArgument leftTerm stepArg)
+    equivConv argumentConv
+
+/-- Conv cong on `Term.equivApply` varying both equivTerm + argument
+positions at closed carriers.  Same shape as `equivApp_cong` modulo
+the raw projection: `Term.equivApply` carries `RawTerm.equivApply`
+where `equivApp` carries `RawTerm.equivApp`.  Both are typed mirrors
+of the same congruence shape. -/
+theorem Conv.equivApply_cong
+    {carrierA carrierB : Ty level scope}
+    (closedCarrierA : IsClosedTy carrierA)
+    (closedCarrierB : IsClosedTy carrierB)
+    {equivRawA equivRawB argumentRawA argumentRawB : RawTerm scope}
+    {equivTermA : Term context (Ty.equiv carrierA carrierB) equivRawA}
+    {equivTermB : Term context (Ty.equiv carrierA carrierB) equivRawB}
+    {argumentTermA : Term context carrierA argumentRawA}
+    {argumentTermB : Term context carrierA argumentRawB}
+    (equivConv : Conv equivTermA equivTermB)
+    (argumentConv : Conv argumentTermA argumentTermB) :
+    Conv (Term.equivApply equivTermA argumentTermA)
+         (Term.equivApply equivTermB argumentTermB) :=
+  Conv.cong2_at_isClosedTy
+    (resultTy := carrierB)
+    (IsClosedTy.equiv closedCarrierA closedCarrierB)
+    closedCarrierA
+    (wrapRaw := fun equivRaw argRaw => RawTerm.equivApply equivRaw argRaw)
+    (fun equivTerm argTerm => Term.equivApply equivTerm argTerm)
+    (fun stepEquiv => Step.equivApplyEquiv stepEquiv)
+    (@fun _ _ _ leftTerm _ _ stepArg =>
+      Step.equivApplyArgument leftTerm stepArg)
+    equivConv argumentConv
+
+/-- Conv cong on `Term.glueIntro` varying both baseValue + partialValue
+positions at closed baseType.  Both sub-positions live at the same
+closed type; result type `Ty.glue baseType boundaryWitness` is not
+in `IsClosedTy` (glue carries a raw boundary witness) but the
+lifter only requires sub-position closure.  modeIsUnivalent,
+baseType, and boundaryWitness flow through as static parameters. -/
+theorem Conv.glueIntro_cong
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {baseType : Ty level scope}
+    (closedBase : IsClosedTy baseType)
+    (boundaryWitness : RawTerm scope)
+    {baseRawA baseRawB partialRawA partialRawB : RawTerm scope}
+    {baseValueA : Term context baseType baseRawA}
+    {baseValueB : Term context baseType baseRawB}
+    {partialValueA : Term context baseType partialRawA}
+    {partialValueB : Term context baseType partialRawB}
+    (baseConv : Conv baseValueA baseValueB)
+    (partialConv : Conv partialValueA partialValueB) :
+    Conv (Term.glueIntro modeIsUnivalent baseType boundaryWitness
+            baseValueA partialValueA)
+         (Term.glueIntro modeIsUnivalent baseType boundaryWitness
+            baseValueB partialValueB) :=
+  Conv.cong2_at_isClosedTy
+    (resultTy := Ty.glue baseType boundaryWitness)
+    closedBase closedBase
+    (wrapRaw := fun baseRaw partialRaw =>
+      RawTerm.glueIntro baseRaw partialRaw)
+    (fun baseTerm partialTerm =>
+      Term.glueIntro modeIsUnivalent baseType boundaryWitness
+        baseTerm partialTerm)
+    (fun stepBase => Step.glueIntroBase modeIsUnivalent stepBase)
+    (fun stepPartial => Step.glueIntroPartial modeIsUnivalent stepPartial)
+    baseConv partialConv
+
 /-- Conv cong on `Term.cumulUp`'s typeCode position.  Inner type
 `Ty.universe lowerLevel levelLeLow` is closed via
 `IsClosedTy.universe`; result type `Ty.universe higherLevel

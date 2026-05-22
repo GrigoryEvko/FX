@@ -181,7 +181,14 @@ namespace LeanFX2.Tools
 --     (closed via IsClosedTy.universe) and result Ty.universe
 --     higherLevel.  Universe-level + cumulMonotone parameters
 --     thread through Step.cumulUpInner.
---   Coverage at 50/78 ctors with `Conv.<ctor>_cong` mirror.
-#assert_conv_cong_coverage_budget LeanFX2.Term 28
+--   2026-05-22 ratchet 28 → 25 after 3 binary cong rules landed via
+--     Conv.cong2_at_isClosedTy: equivApp_cong, equivApply_cong,
+--     glueIntro_cong.  equivApp / equivApply share the same
+--     (equiv, argument) closure pattern at carrierA + carrierB;
+--     glueIntro varies (baseValue, partialValue) both at closed
+--     baseType with modeIsUnivalent + boundaryWitness threaded
+--     through Step.glueIntroBase / Step.glueIntroPartial.
+--   Coverage at 53/78 ctors with `Conv.<ctor>_cong` mirror.
+#assert_conv_cong_coverage_budget LeanFX2.Term 25
 
 end LeanFX2.Tools
