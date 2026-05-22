@@ -10644,4 +10644,163 @@ theorem Conv.oeqFunext_ne_interval1
     RawStep.parStar.interval1_inv targetToJoin
   nomatch joinEqOeqFunext.symm.trans joinEqOne
 
+/-- An `oeqFunext`-headed source and a `natSucc`-headed target
+are not convertible.  Funext-style observational equality versus
+the Nat successor — disjoint canonical heads at the raw level. -/
+theorem Conv.oeqFunext_ne_natSucc
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {pointwiseProof : RawTerm scope}
+    {predecessor : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqFunext pointwiseProof : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.natSucc predecessor : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOeqFunext, _⟩ :=
+    RawStep.parStar.oeqFunext_inv sourceToJoin
+  obtain ⟨_, joinEqSucc, _⟩ :=
+    RawStep.parStar.natSucc_inv targetToJoin
+  nomatch joinEqOeqFunext.symm.trans joinEqSucc
+
+/-- An `oeqFunext`-headed source and an `optionSome`-headed
+target are not convertible.  Funext versus inhabited Option —
+disjoint canonical heads. -/
+theorem Conv.oeqFunext_ne_optionSome
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {pointwiseProof : RawTerm scope}
+    {valueTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqFunext pointwiseProof : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.optionSome valueTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOeqFunext, _⟩ :=
+    RawStep.parStar.oeqFunext_inv sourceToJoin
+  obtain ⟨_, joinEqSome, _⟩ :=
+    RawStep.parStar.optionSome_inv targetToJoin
+  nomatch joinEqOeqFunext.symm.trans joinEqSome
+
+/-- An `oeqFunext`-headed source and an `eitherInl`-headed target
+are not convertible.  Funext versus the left injection of Either
+— disjoint canonical heads. -/
+theorem Conv.oeqFunext_ne_eitherInl
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {pointwiseProof : RawTerm scope}
+    {valueTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqFunext pointwiseProof : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.eitherInl valueTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOeqFunext, _⟩ :=
+    RawStep.parStar.oeqFunext_inv sourceToJoin
+  obtain ⟨_, joinEqInl, _⟩ :=
+    RawStep.parStar.eitherInl_inv targetToJoin
+  nomatch joinEqOeqFunext.symm.trans joinEqInl
+
+/-- An `oeqFunext`-headed source and an `eitherInr`-headed target
+are not convertible.  Symmetric to the `eitherInl` companion. -/
+theorem Conv.oeqFunext_ne_eitherInr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {pointwiseProof : RawTerm scope}
+    {valueTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqFunext pointwiseProof : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.eitherInr valueTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOeqFunext, _⟩ :=
+    RawStep.parStar.oeqFunext_inv sourceToJoin
+  obtain ⟨_, joinEqInr, _⟩ :=
+    RawStep.parStar.eitherInr_inv targetToJoin
+  nomatch joinEqOeqFunext.symm.trans joinEqInr
+
+/-- An `oeqFunext`-headed source and a `listCons`-headed target
+are not convertible.  Funext versus a list cons cell — distinct
+canonical heads.  `listCons` is binary, so the inversion lemma
+packs the head and tail develop chains together. -/
+theorem Conv.oeqFunext_ne_listCons
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {pointwiseProof : RawTerm scope}
+    {headTerm tailTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqFunext pointwiseProof : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.listCons headTerm tailTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOeqFunext, _⟩ :=
+    RawStep.parStar.oeqFunext_inv sourceToJoin
+  obtain ⟨_, _, joinEqCons, _, _⟩ :=
+    RawStep.parStar.listCons_inv targetToJoin
+  nomatch joinEqOeqFunext.symm.trans joinEqCons
+
+/-- An `oeqFunext`-headed source and a `pair`-headed target are
+not convertible.  Funext versus a Σ-pair inhabitant — distinct
+canonical heads.  `pair` is binary; the inversion lemma packs
+both component develop chains together. -/
+theorem Conv.oeqFunext_ne_pair
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {pointwiseProof : RawTerm scope}
+    {firstValue secondValue : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqFunext pointwiseProof : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.pair firstValue secondValue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOeqFunext, _⟩ :=
+    RawStep.parStar.oeqFunext_inv sourceToJoin
+  obtain ⟨_, _, joinEqPair, _, _⟩ :=
+    RawStep.parStar.pair_inv targetToJoin
+  nomatch joinEqOeqFunext.symm.trans joinEqPair
+
+/-- An `oeqFunext`-headed source and a `refl`-headed target are
+not convertible.  Cross-stratum HoTT-observational-vs-HoTT-
+identity: `oeqFunext` introduces observational equality via
+pointwise function witnessing (funext principle), while `refl`
+introduces HoTT identity-type reflexivity for the `Ty.id` family.
+Both inhabit equality-flavored types semantically, but their
+syntactic raw heads remain disjoint through any parStar chain. -/
+theorem Conv.oeqFunext_ne_refl
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {pointwiseProof : RawTerm scope}
+    {hottWitness : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqFunext pointwiseProof : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.refl hottWitness : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOeqFunext, _⟩ :=
+    RawStep.parStar.oeqFunext_inv sourceToJoin
+  obtain ⟨_, joinEqRefl, _⟩ :=
+    RawStep.parStar.refl_inv targetToJoin
+  nomatch joinEqOeqFunext.symm.trans joinEqRefl
+
 end LeanFX2
