@@ -35,5 +35,8 @@ namespace LeanFX2.SmokePhase7BConvCanonical
 #print axioms LeanFX2.Conv.natElimZero_cong_nat
 #print axioms LeanFX2.Conv.natRecZero_cong_unit
 #print axioms LeanFX2.Conv.intervalOpp_cong
+#print axioms LeanFX2.Conv.cong2_at_isClosedTy
+#print axioms LeanFX2.Conv.intervalMeet_cong
+#print axioms LeanFX2.Conv.intervalJoin_cong
 
 end LeanFX2.SmokePhase7BConvCanonical

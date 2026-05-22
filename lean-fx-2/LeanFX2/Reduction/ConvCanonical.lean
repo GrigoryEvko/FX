@@ -425,4 +425,58 @@ theorem Conv.intervalOpp_cong
     (fun step => Step.intervalOppInner step)
     innerConv
 
+/-! ## Binary cong rules at `Ty.interval`
+
+Use the 2-arg lifter `Conv.cong2_at_isClosedTy` (declared in
+`ConvCongIsClosedTy.lean`) to assemble per-position `Step` cong
+rules `Step.intervalMeet{Left,Right}` / `Step.intervalJoin{Left,Right}`
+into a single binary `Conv` cong rule.  No `Conv.trans` needed —
+the lifter sequences the two single-position StepStar lifts via
+`StepStar.append`.
+-/
+
+/-- Cong rule: simultaneous `Conv` on both arguments of
+`Term.intervalMeet`.  Both arguments live at the closed
+`Ty.interval`, so subject reduction holds unconditionally. -/
+theorem Conv.intervalMeet_cong
+    {leftRawA leftRawB rightRawA rightRawB : RawTerm scope}
+    {leftTermA : Term context Ty.interval leftRawA}
+    {leftTermB : Term context Ty.interval leftRawB}
+    {rightTermA : Term context Ty.interval rightRawA}
+    {rightTermB : Term context Ty.interval rightRawB}
+    (leftConv : Conv leftTermA leftTermB)
+    (rightConv : Conv rightTermA rightTermB) :
+    Conv (Term.intervalMeet leftTermA rightTermA)
+         (Term.intervalMeet leftTermB rightTermB) :=
+  Conv.cong2_at_isClosedTy
+    (resultTy := Ty.interval) IsClosedTy.interval IsClosedTy.interval
+    (wrapRaw := fun leftRaw rightRaw =>
+      RawTerm.intervalMeet leftRaw rightRaw)
+    (fun leftTerm rightTerm => Term.intervalMeet leftTerm rightTerm)
+    (fun stepLeft => Step.intervalMeetLeft stepLeft)
+    (fun stepRight => Step.intervalMeetRight stepRight)
+    leftConv rightConv
+
+/-- Cong rule: simultaneous `Conv` on both arguments of
+`Term.intervalJoin`.  Mirrors `intervalMeet_cong` at the
+join-position cong ctors `Step.intervalJoin{Left,Right}`. -/
+theorem Conv.intervalJoin_cong
+    {leftRawA leftRawB rightRawA rightRawB : RawTerm scope}
+    {leftTermA : Term context Ty.interval leftRawA}
+    {leftTermB : Term context Ty.interval leftRawB}
+    {rightTermA : Term context Ty.interval rightRawA}
+    {rightTermB : Term context Ty.interval rightRawB}
+    (leftConv : Conv leftTermA leftTermB)
+    (rightConv : Conv rightTermA rightTermB) :
+    Conv (Term.intervalJoin leftTermA rightTermA)
+         (Term.intervalJoin leftTermB rightTermB) :=
+  Conv.cong2_at_isClosedTy
+    (resultTy := Ty.interval) IsClosedTy.interval IsClosedTy.interval
+    (wrapRaw := fun leftRaw rightRaw =>
+      RawTerm.intervalJoin leftRaw rightRaw)
+    (fun leftTerm rightTerm => Term.intervalJoin leftTerm rightTerm)
+    (fun stepLeft => Step.intervalJoinLeft stepLeft)
+    (fun stepRight => Step.intervalJoinRight stepRight)
+    leftConv rightConv
+
 end LeanFX2
