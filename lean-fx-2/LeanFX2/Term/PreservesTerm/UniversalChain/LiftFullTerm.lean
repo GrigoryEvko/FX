@@ -586,5 +586,9 @@ theorem RawStep.par.lift_full_term
   | idStrictRec modeIsStrict baseCase witness baseLift witnessLift =>
     exact RawStep.par.lift_full_idStrictRec modeIsStrict baseCase witness
             baseLift witnessLift rawStep
+  | fst pairTerm pairLift =>
+    exact RawStep.par.lift_full_fst pairTerm pairLift rawStep
+  | snd pairTerm pairLift =>
+    exact RawStep.par.lift_full_snd pairTerm pairLift rawStep
 
 end LeanFX2

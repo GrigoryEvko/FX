@@ -829,5 +829,43 @@ inductive DispatchAtom :
       DispatchAtom (Term.idStrictRec modeIsStrict baseCase witness
                     : Term context motiveType
                         (RawTerm.idStrictRec baseRaw witnessRaw))
+  /-- Σ-type first projection.  Target type is `firstType` (the first
+  component of the sigmaTy); the cong arm preserves this exactly, and
+  the β-deep arm produces the first value of the pair (also at
+  `firstType`).  Bake the pair lifter as data — pair type is
+  `Ty.sigmaTy firstType secondType`, not in `IsClosedTy` due to the
+  binder in `secondType`.  Consumed by `RawStep.par.lift_full_fst`. -/
+  | fst {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
+      {pairRaw : RawTerm scope}
+      (pairTerm : Term context (Ty.sigmaTy firstType secondType) pairRaw)
+      (pairLift : ∀ {targetRawIH : RawTerm scope},
+        RawStep.par pairRaw targetRawIH →
+        ∃ pairTarget :
+            Term context (Ty.sigmaTy firstType secondType) targetRawIH,
+          Step.par pairTerm pairTarget) :
+      DispatchAtom (Term.fst (secondType := secondType) pairTerm
+                    : Term context firstType (RawTerm.fst pairRaw))
+  /-- Σ-type second projection.  Target type is
+  `secondType.subst0 firstType (RawTerm.fst pairRaw)` — depends on
+  pairRaw, so cong steps produce a type-changed target at
+  `secondType.subst0 firstType (RawTerm.fst pairTargetRaw)`.  The
+  existential in `lift_full_snd` absorbs the gap.  Consumed by
+  `RawStep.par.lift_full_snd`. -/
+  | snd {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
+      {pairRaw : RawTerm scope}
+      (pairTerm : Term context (Ty.sigmaTy firstType secondType) pairRaw)
+      (pairLift : ∀ {targetRawIH : RawTerm scope},
+        RawStep.par pairRaw targetRawIH →
+        ∃ pairTarget :
+            Term context (Ty.sigmaTy firstType secondType) targetRawIH,
+          Step.par pairTerm pairTarget) :
+      DispatchAtom (Term.snd (secondType := secondType) pairTerm
+                    : Term context (secondType.subst0 firstType
+                                                       (RawTerm.fst pairRaw))
+                        (RawTerm.snd pairRaw))
 
 end LeanFX2
