@@ -230,5 +230,11 @@ only (`dsimp only` unfold + nested `match` + `cases` on impossible
 #assert_no_axioms LeanFX2.RawTerm.partialRename?_subsume_isSome
 #assert_no_axioms LeanFX2.RawTerm.partialRename?_intervalOpp_isSome
 #assert_no_axioms LeanFX2.RawTerm.partialRename?_glueElim_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_idJ_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_intervalMeet_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_intervalJoin_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_pathApp_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_glueIntro_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_transp_isSome
 
 end LeanFX2.Tools
