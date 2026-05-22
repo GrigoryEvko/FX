@@ -892,4 +892,318 @@ theorem Conv.codataDest_cong
     (fun step => Step.codataDestValue step)
     codataConv
 
+/-! ## Ternary lifter — three closed sub-positions
+
+`Conv.cong3_at_isClosedTy` generalises `cong2_at_isClosedTy` to a
+three-position wrapper.  Each sub-position carries its own closed
+type, its own SR-applicable existential extraction, and its own
+per-position Step cong rule.  Internally three applications of
+`StepStar.lift_at_isClosedTy` are composed via two
+`StepStar.append`s: vary first position keeping the other two at
+source raws, then second keeping first at its mid reduct and third
+at source raw, then third keeping first and second at mid reducts.
+
+The lifter unlocks per-ctor `_cong` budget-gate matchers for
+3-position recursor ctors (listElim, optionMatch, eitherMatch,
+natElim, natRec) whose motive type is closed — these no longer
+need three separate `_<position>_cong_isClosedTy` rules at call
+sites.  The existing per-position rules remain in the kernel as
+single-arrow specialisations of `cong_at_isClosedTy`. -/
+
+/-- Generic 3-arg Conv-level cong rule at three closed sub-positions.
+Composes via two `StepStar.append`s + per-position
+`StepStar.lift_at_isClosedTy`. -/
+theorem Conv.cong3_at_isClosedTy
+    {firstClosedTy secondClosedTy thirdClosedTy resultTy : Ty level scope}
+    (firstIsClosed : IsClosedTy firstClosedTy)
+    (secondIsClosed : IsClosedTy secondClosedTy)
+    (thirdIsClosed : IsClosedTy thirdClosedTy)
+    {wrapRaw : RawTerm scope → RawTerm scope → RawTerm scope → RawTerm scope}
+    (wrap : ∀ {firstRaw secondRaw thirdRaw : RawTerm scope},
+            Term context firstClosedTy firstRaw →
+            Term context secondClosedTy secondRaw →
+            Term context thirdClosedTy thirdRaw →
+            Term context resultTy (wrapRaw firstRaw secondRaw thirdRaw))
+    (stepWrapFirst :
+      ∀ {firstSourceRaw firstTargetRaw secondRaw thirdRaw : RawTerm scope}
+        {firstSourceTerm : Term context firstClosedTy firstSourceRaw}
+        {firstTargetTerm : Term context firstClosedTy firstTargetRaw}
+        {secondTerm : Term context secondClosedTy secondRaw}
+        {thirdTerm : Term context thirdClosedTy thirdRaw},
+        Step firstSourceTerm firstTargetTerm →
+        Step (wrap firstSourceTerm secondTerm thirdTerm)
+             (wrap firstTargetTerm secondTerm thirdTerm))
+    (stepWrapSecond :
+      ∀ {firstRaw secondSourceRaw secondTargetRaw thirdRaw : RawTerm scope}
+        {firstTerm : Term context firstClosedTy firstRaw}
+        {secondSourceTerm : Term context secondClosedTy secondSourceRaw}
+        {secondTargetTerm : Term context secondClosedTy secondTargetRaw}
+        {thirdTerm : Term context thirdClosedTy thirdRaw},
+        Step secondSourceTerm secondTargetTerm →
+        Step (wrap firstTerm secondSourceTerm thirdTerm)
+             (wrap firstTerm secondTargetTerm thirdTerm))
+    (stepWrapThird :
+      ∀ {firstRaw secondRaw thirdSourceRaw thirdTargetRaw : RawTerm scope}
+        {firstTerm : Term context firstClosedTy firstRaw}
+        {secondTerm : Term context secondClosedTy secondRaw}
+        {thirdSourceTerm : Term context thirdClosedTy thirdSourceRaw}
+        {thirdTargetTerm : Term context thirdClosedTy thirdTargetRaw},
+        Step thirdSourceTerm thirdTargetTerm →
+        Step (wrap firstTerm secondTerm thirdSourceTerm)
+             (wrap firstTerm secondTerm thirdTargetTerm))
+    {firstSrcRaw firstTgtRaw secondSrcRaw secondTgtRaw
+     thirdSrcRaw thirdTgtRaw : RawTerm scope}
+    {firstSrcTerm : Term context firstClosedTy firstSrcRaw}
+    {firstTgtTerm : Term context firstClosedTy firstTgtRaw}
+    {secondSrcTerm : Term context secondClosedTy secondSrcRaw}
+    {secondTgtTerm : Term context secondClosedTy secondTgtRaw}
+    {thirdSrcTerm : Term context thirdClosedTy thirdSrcRaw}
+    {thirdTgtTerm : Term context thirdClosedTy thirdTgtRaw}
+    (firstConv : Conv firstSrcTerm firstTgtTerm)
+    (secondConv : Conv secondSrcTerm secondTgtTerm)
+    (thirdConv : Conv thirdSrcTerm thirdTgtTerm) :
+    Conv (wrap firstSrcTerm secondSrcTerm thirdSrcTerm)
+         (wrap firstTgtTerm secondTgtTerm thirdTgtTerm) := by
+  obtain ⟨midFirstType, midFirstRaw, midFirstTerm,
+          firstChainA, firstChainB⟩ := firstConv
+  obtain ⟨midSecondType, midSecondRaw, midSecondTerm,
+          secondChainA, secondChainB⟩ := secondConv
+  obtain ⟨midThirdType, midThirdRaw, midThirdTerm,
+          thirdChainA, thirdChainB⟩ := thirdConv
+  have midFirstIsClosed : midFirstType = firstClosedTy :=
+    StepStar.preserves_isClosedTy firstIsClosed firstChainA rfl
+  have midSecondIsClosed : midSecondType = secondClosedTy :=
+    StepStar.preserves_isClosedTy secondIsClosed secondChainA rfl
+  have midThirdIsClosed : midThirdType = thirdClosedTy :=
+    StepStar.preserves_isClosedTy thirdIsClosed thirdChainA rfl
+  cases midFirstIsClosed
+  cases midSecondIsClosed
+  cases midThirdIsClosed
+  refine ⟨resultTy, _, wrap midFirstTerm midSecondTerm midThirdTerm, ?_, ?_⟩
+  · have firstVariation :
+        StepStar (wrap firstSrcTerm secondSrcTerm thirdSrcTerm)
+                 (wrap midFirstTerm secondSrcTerm thirdSrcTerm) :=
+      StepStar.lift_at_isClosedTy firstIsClosed
+        (fun firstTerm => wrap firstTerm secondSrcTerm thirdSrcTerm)
+        (fun stepFirst => stepWrapFirst stepFirst)
+        firstChainA rfl rfl
+    have secondVariation :
+        StepStar (wrap midFirstTerm secondSrcTerm thirdSrcTerm)
+                 (wrap midFirstTerm midSecondTerm thirdSrcTerm) :=
+      StepStar.lift_at_isClosedTy secondIsClosed
+        (fun secondTerm => wrap midFirstTerm secondTerm thirdSrcTerm)
+        (fun stepSecond => stepWrapSecond stepSecond)
+        secondChainA rfl rfl
+    have thirdVariation :
+        StepStar (wrap midFirstTerm midSecondTerm thirdSrcTerm)
+                 (wrap midFirstTerm midSecondTerm midThirdTerm) :=
+      StepStar.lift_at_isClosedTy thirdIsClosed
+        (fun thirdTerm => wrap midFirstTerm midSecondTerm thirdTerm)
+        (fun stepThird => stepWrapThird stepThird)
+        thirdChainA rfl rfl
+    exact StepStar.append (StepStar.append firstVariation secondVariation)
+                          thirdVariation
+  · have firstVariation :
+        StepStar (wrap firstTgtTerm secondTgtTerm thirdTgtTerm)
+                 (wrap midFirstTerm secondTgtTerm thirdTgtTerm) :=
+      StepStar.lift_at_isClosedTy firstIsClosed
+        (fun firstTerm => wrap firstTerm secondTgtTerm thirdTgtTerm)
+        (fun stepFirst => stepWrapFirst stepFirst)
+        firstChainB rfl rfl
+    have secondVariation :
+        StepStar (wrap midFirstTerm secondTgtTerm thirdTgtTerm)
+                 (wrap midFirstTerm midSecondTerm thirdTgtTerm) :=
+      StepStar.lift_at_isClosedTy secondIsClosed
+        (fun secondTerm => wrap midFirstTerm secondTerm thirdTgtTerm)
+        (fun stepSecond => stepWrapSecond stepSecond)
+        secondChainB rfl rfl
+    have thirdVariation :
+        StepStar (wrap midFirstTerm midSecondTerm thirdTgtTerm)
+                 (wrap midFirstTerm midSecondTerm midThirdTerm) :=
+      StepStar.lift_at_isClosedTy thirdIsClosed
+        (fun thirdTerm => wrap midFirstTerm midSecondTerm thirdTerm)
+        (fun stepThird => stepWrapThird stepThird)
+        thirdChainB rfl rfl
+    exact StepStar.append (StepStar.append firstVariation secondVariation)
+                          thirdVariation
+
+/-! ## Recursor cong rules via cong3
+
+Each `Conv.<recursor>_cong` varies all three positions
+simultaneously, with closure premises on the relevant carrier
+types.  All five recursors share the non-dep motive shape
+(`motiveType : Ty level scope`); the dependent-motive refactor in
+K07.1-K07.5 will require a different lifter once shipped. -/
+
+/-- Conv cong on `Term.listElim` varying all three positions
+(scrutinee, nilBranch, consBranch) at closed element + motive
+types. -/
+theorem Conv.listElim_cong
+    {elementType motiveType : Ty level scope}
+    (closedElement : IsClosedTy elementType)
+    (closedMotive : IsClosedTy motiveType)
+    {scrutRawA scrutRawB nilRawA nilRawB consRawA consRawB : RawTerm scope}
+    {scrutA : Term context (Ty.listType elementType) scrutRawA}
+    {scrutB : Term context (Ty.listType elementType) scrutRawB}
+    {nilA : Term context motiveType nilRawA}
+    {nilB : Term context motiveType nilRawB}
+    {consA : Term context (Ty.arrow elementType
+                            (Ty.arrow (Ty.listType elementType) motiveType))
+                          consRawA}
+    {consB : Term context (Ty.arrow elementType
+                            (Ty.arrow (Ty.listType elementType) motiveType))
+                          consRawB}
+    (scrutConv : Conv scrutA scrutB)
+    (nilConv : Conv nilA nilB)
+    (consConv : Conv consA consB) :
+    Conv (Term.listElim scrutA nilA consA)
+         (Term.listElim scrutB nilB consB) :=
+  Conv.cong3_at_isClosedTy
+    (resultTy := motiveType)
+    (IsClosedTy.listType closedElement)
+    closedMotive
+    (IsClosedTy.arrow closedElement
+       (IsClosedTy.arrow (IsClosedTy.listType closedElement) closedMotive))
+    (wrapRaw := fun scrutRaw nilRaw consRaw =>
+      RawTerm.listElim scrutRaw nilRaw consRaw)
+    (fun scrutTerm nilTerm consTerm => Term.listElim scrutTerm nilTerm consTerm)
+    (fun stepScrut => Step.listElimScrutinee stepScrut)
+    (fun stepNil => Step.listElimNil stepNil)
+    (fun stepCons => Step.listElimCons stepCons)
+    scrutConv nilConv consConv
+
+/-- Conv cong on `Term.optionMatch` varying all three positions
+(scrutinee, noneBranch, someBranch) at closed element + motive
+types. -/
+theorem Conv.optionMatch_cong
+    {elementType motiveType : Ty level scope}
+    (closedElement : IsClosedTy elementType)
+    (closedMotive : IsClosedTy motiveType)
+    {scrutRawA scrutRawB noneRawA noneRawB someRawA someRawB : RawTerm scope}
+    {scrutA : Term context (Ty.optionType elementType) scrutRawA}
+    {scrutB : Term context (Ty.optionType elementType) scrutRawB}
+    {noneA : Term context motiveType noneRawA}
+    {noneB : Term context motiveType noneRawB}
+    {someA : Term context (Ty.arrow elementType motiveType) someRawA}
+    {someB : Term context (Ty.arrow elementType motiveType) someRawB}
+    (scrutConv : Conv scrutA scrutB)
+    (noneConv : Conv noneA noneB)
+    (someConv : Conv someA someB) :
+    Conv (Term.optionMatch scrutA noneA someA)
+         (Term.optionMatch scrutB noneB someB) :=
+  Conv.cong3_at_isClosedTy
+    (resultTy := motiveType)
+    (IsClosedTy.optionType closedElement)
+    closedMotive
+    (IsClosedTy.arrow closedElement closedMotive)
+    (wrapRaw := fun scrutRaw noneRaw someRaw =>
+      RawTerm.optionMatch scrutRaw noneRaw someRaw)
+    (fun scrutTerm noneTerm someTerm =>
+      Term.optionMatch scrutTerm noneTerm someTerm)
+    (fun stepScrut => Step.optionMatchScrutinee stepScrut)
+    (fun stepNone => Step.optionMatchNone stepNone)
+    (fun stepSome => Step.optionMatchSome stepSome)
+    scrutConv noneConv someConv
+
+/-- Conv cong on `Term.eitherMatch` varying all three positions
+(scrutinee, leftBranch, rightBranch) at closed left/right/motive
+types. -/
+theorem Conv.eitherMatch_cong
+    {leftType rightType motiveType : Ty level scope}
+    (closedLeft : IsClosedTy leftType)
+    (closedRight : IsClosedTy rightType)
+    (closedMotive : IsClosedTy motiveType)
+    {scrutRawA scrutRawB leftRawA leftRawB rightRawA rightRawB : RawTerm scope}
+    {scrutA : Term context (Ty.eitherType leftType rightType) scrutRawA}
+    {scrutB : Term context (Ty.eitherType leftType rightType) scrutRawB}
+    {leftA : Term context (Ty.arrow leftType motiveType) leftRawA}
+    {leftB : Term context (Ty.arrow leftType motiveType) leftRawB}
+    {rightA : Term context (Ty.arrow rightType motiveType) rightRawA}
+    {rightB : Term context (Ty.arrow rightType motiveType) rightRawB}
+    (scrutConv : Conv scrutA scrutB)
+    (leftConv : Conv leftA leftB)
+    (rightConv : Conv rightA rightB) :
+    Conv (Term.eitherMatch scrutA leftA rightA)
+         (Term.eitherMatch scrutB leftB rightB) :=
+  Conv.cong3_at_isClosedTy
+    (resultTy := motiveType)
+    (IsClosedTy.eitherType closedLeft closedRight)
+    (IsClosedTy.arrow closedLeft closedMotive)
+    (IsClosedTy.arrow closedRight closedMotive)
+    (wrapRaw := fun scrutRaw leftRaw rightRaw =>
+      RawTerm.eitherMatch scrutRaw leftRaw rightRaw)
+    (fun scrutTerm leftTerm rightTerm =>
+      Term.eitherMatch scrutTerm leftTerm rightTerm)
+    (fun stepScrut => Step.eitherMatchScrutinee stepScrut)
+    (fun stepLeft => Step.eitherMatchLeft stepLeft)
+    (fun stepRight => Step.eitherMatchRight stepRight)
+    scrutConv leftConv rightConv
+
+/-- Conv cong on `Term.natElim` varying all three positions
+(scrutinee, zeroBranch, succBranch) at closed motive.  Scrutinee
+sits at `Ty.nat` (unconditionally closed via `IsClosedTy.nat`). -/
+theorem Conv.natElim_cong
+    {motiveType : Ty level scope}
+    (closedMotive : IsClosedTy motiveType)
+    {scrutRawA scrutRawB zeroRawA zeroRawB succRawA succRawB : RawTerm scope}
+    {scrutA : Term context Ty.nat scrutRawA}
+    {scrutB : Term context Ty.nat scrutRawB}
+    {zeroA : Term context motiveType zeroRawA}
+    {zeroB : Term context motiveType zeroRawB}
+    {succA : Term context (Ty.arrow Ty.nat motiveType) succRawA}
+    {succB : Term context (Ty.arrow Ty.nat motiveType) succRawB}
+    (scrutConv : Conv scrutA scrutB)
+    (zeroConv : Conv zeroA zeroB)
+    (succConv : Conv succA succB) :
+    Conv (Term.natElim scrutA zeroA succA)
+         (Term.natElim scrutB zeroB succB) :=
+  Conv.cong3_at_isClosedTy
+    (resultTy := motiveType)
+    IsClosedTy.nat
+    closedMotive
+    (IsClosedTy.arrow IsClosedTy.nat closedMotive)
+    (wrapRaw := fun scrutRaw zeroRaw succRaw =>
+      RawTerm.natElim scrutRaw zeroRaw succRaw)
+    (fun scrutTerm zeroTerm succTerm =>
+      Term.natElim scrutTerm zeroTerm succTerm)
+    (fun stepScrut => Step.natElimScrutinee stepScrut)
+    (fun stepZero => Step.natElimZero stepZero)
+    (fun stepSucc => Step.natElimSucc stepSucc)
+    scrutConv zeroConv succConv
+
+/-- Conv cong on `Term.natRec` varying all three positions
+(scrutinee, zeroBranch, succBranch) at closed motive.  succBranch's
+type is `arrow nat (arrow motive motive)`. -/
+theorem Conv.natRec_cong
+    {motiveType : Ty level scope}
+    (closedMotive : IsClosedTy motiveType)
+    {scrutRawA scrutRawB zeroRawA zeroRawB succRawA succRawB : RawTerm scope}
+    {scrutA : Term context Ty.nat scrutRawA}
+    {scrutB : Term context Ty.nat scrutRawB}
+    {zeroA : Term context motiveType zeroRawA}
+    {zeroB : Term context motiveType zeroRawB}
+    {succA :
+      Term context (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)) succRawA}
+    {succB :
+      Term context (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)) succRawB}
+    (scrutConv : Conv scrutA scrutB)
+    (zeroConv : Conv zeroA zeroB)
+    (succConv : Conv succA succB) :
+    Conv (Term.natRec scrutA zeroA succA)
+         (Term.natRec scrutB zeroB succB) :=
+  Conv.cong3_at_isClosedTy
+    (resultTy := motiveType)
+    IsClosedTy.nat
+    closedMotive
+    (IsClosedTy.arrow IsClosedTy.nat
+       (IsClosedTy.arrow closedMotive closedMotive))
+    (wrapRaw := fun scrutRaw zeroRaw succRaw =>
+      RawTerm.natRec scrutRaw zeroRaw succRaw)
+    (fun scrutTerm zeroTerm succTerm =>
+      Term.natRec scrutTerm zeroTerm succTerm)
+    (fun stepScrut => Step.natRecScrutinee stepScrut)
+    (fun stepZero => Step.natRecZero stepZero)
+    (fun stepSucc => Step.natRecSucc stepSucc)
+    scrutConv zeroConv succConv
+
 end LeanFX2

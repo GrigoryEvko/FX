@@ -30,3 +30,9 @@ import LeanFX2.Reduction.ConvCongIsClosedTy
 #print axioms LeanFX2.Conv.refineIntro_cong
 #print axioms LeanFX2.Conv.recordProj_cong
 #print axioms LeanFX2.Conv.codataDest_cong
+#print axioms LeanFX2.Conv.cong3_at_isClosedTy
+#print axioms LeanFX2.Conv.listElim_cong
+#print axioms LeanFX2.Conv.optionMatch_cong
+#print axioms LeanFX2.Conv.eitherMatch_cong
+#print axioms LeanFX2.Conv.natElim_cong
+#print axioms LeanFX2.Conv.natRec_cong

@@ -166,7 +166,17 @@ namespace LeanFX2.Tools
 --     resultTy = Ty.refine baseType predicate is NOT in IsClosedTy
 --     (refine carries a raw predicate binder) but that's fine — the
 --     lifter only requires SUB-POSITION closure, not result closure.
---   Coverage at 44/78 ctors with `Conv.<ctor>_cong` mirror.
-#assert_conv_cong_coverage_budget LeanFX2.Term 34
+--   2026-05-22 ratchet 34 → 29 after Conv.cong3_at_isClosedTy lifter
+--     landed (3-position generalisation of cong2 via two
+--     StepStar.appends) + 5 recursor specialisations:
+--     Conv.{listElim,optionMatch,eitherMatch,natElim,natRec}_cong.
+--     All recursors use the non-dep motive shape (motiveType :
+--     Ty level scope, K07.1–K07.5 dep-motive refactor pending);
+--     scrutinee/branches each vary at the corresponding closed
+--     carrier (listType/optionType/eitherType/nat) + arrow over
+--     closed motive.  natElim's scrutinee at Ty.nat uses
+--     IsClosedTy.nat unconditionally.
+--   Coverage at 49/78 ctors with `Conv.<ctor>_cong` mirror.
+#assert_conv_cong_coverage_budget LeanFX2.Term 29
 
 end LeanFX2.Tools
