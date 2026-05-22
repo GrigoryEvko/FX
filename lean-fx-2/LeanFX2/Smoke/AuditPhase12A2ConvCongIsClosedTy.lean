@@ -27,5 +27,6 @@ import LeanFX2.Reduction.ConvCongIsClosedTy
 #print axioms LeanFX2.Conv.modIntro_cong
 #print axioms LeanFX2.Conv.modElim_cong
 #print axioms LeanFX2.Conv.subsume_cong
+#print axioms LeanFX2.Conv.refineIntro_cong
 #print axioms LeanFX2.Conv.recordProj_cong
 #print axioms LeanFX2.Conv.codataDest_cong

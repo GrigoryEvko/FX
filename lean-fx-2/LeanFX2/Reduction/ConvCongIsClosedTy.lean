@@ -837,6 +837,41 @@ theorem Conv.recordProj_cong
     (fun step => Step.recordProjRecord step)
     recordConv
 
+/-- Conv cong on `Term.refineIntro`'s two value positions
+(baseValue at `baseType`, predicateProof at `Ty.unit`).  Only the
+sub-position types need closure for the lifter to apply; the
+result type `Ty.refine baseType predicate` itself is not in
+`IsClosedTy` (refine carries a raw predicate binder, see
+`Foundation/IsClosedTy.lean:131`), and that is fine — only the
+sub-position constrains the SR intermediate.
+
+`Ty.unit` is unconditionally closed via `IsClosedTy.unit`, so the
+proof position closure is hard-wired. -/
+theorem Conv.refineIntro_cong
+    {baseType : Ty level scope}
+    (closedBase : IsClosedTy baseType)
+    {predicate : RawTerm (scope + 1)}
+    {valueRawA valueRawB proofRawA proofRawB : RawTerm scope}
+    {baseValueA : Term context baseType valueRawA}
+    {baseValueB : Term context baseType valueRawB}
+    {predicateProofA : Term context Ty.unit proofRawA}
+    {predicateProofB : Term context Ty.unit proofRawB}
+    (valueConv : Conv baseValueA baseValueB)
+    (proofConv : Conv predicateProofA predicateProofB) :
+    Conv (Term.refineIntro predicate baseValueA predicateProofA)
+         (Term.refineIntro predicate baseValueB predicateProofB) :=
+  Conv.cong2_at_isClosedTy
+    (resultTy := Ty.refine baseType predicate)
+    closedBase
+    IsClosedTy.unit
+    (wrapRaw := fun valueRaw proofRaw =>
+      RawTerm.refineIntro valueRaw proofRaw)
+    (fun baseValue predicateProof =>
+      Term.refineIntro predicate baseValue predicateProof)
+    (fun stepValue => Step.refineIntroValue stepValue)
+    (fun stepProof => Step.refineIntroProof stepProof)
+    valueConv proofConv
+
 /-- Conv cong on `Term.codataDest`'s codata position at a closed
 codata type.  The result type is the closed `outputType` component
 of the codata. -/

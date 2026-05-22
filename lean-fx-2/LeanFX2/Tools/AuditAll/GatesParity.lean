@@ -160,7 +160,13 @@ namespace LeanFX2.Tools
 --     modElim / subsume preserve type (closedTy = resultTy);
 --     recordProj / codataDest project from a closed parametric
 --     wrapper down to a closed sub-component.
---   Coverage at 43/78 ctors with `Conv.<ctor>_cong` mirror.
-#assert_conv_cong_coverage_budget LeanFX2.Term 35
+--   2026-05-22 ratchet 35 → 34 after refineIntro_cong landed via
+--     Conv.cong2_at_isClosedTy.  baseValue varies at closed baseType,
+--     predicateProof varies at IsClosedTy.unit (unconditional).
+--     resultTy = Ty.refine baseType predicate is NOT in IsClosedTy
+--     (refine carries a raw predicate binder) but that's fine — the
+--     lifter only requires SUB-POSITION closure, not result closure.
+--   Coverage at 44/78 ctors with `Conv.<ctor>_cong` mirror.
+#assert_conv_cong_coverage_budget LeanFX2.Term 34
 
 end LeanFX2.Tools
