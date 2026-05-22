@@ -16261,4 +16261,204 @@ theorem Conv.codataUnfold_ne_universeCode
     RawStep.parStar.universeCode_inv targetToJoin
   nomatch joinEqCodataUnfold.symm.trans joinEqUniv
 
+/-- A `cumulUpMarker`-headed source and an `effectPerform`-headed
+target are not convertible.  Universe cumulativity marker versus
+effect-performance form — distinct canonical heads at the raw
+level. -/
+theorem Conv.cumulUpMarker_ne_effectPerform
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {innerCode : RawTerm scope}
+    {operation payload : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.cumulUpMarker innerCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.effectPerform operation payload : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqCumul, _⟩ :=
+    RawStep.parStar.cumulUpMarker_inv sourceToJoin
+  obtain ⟨_, _, joinEqEffect, _, _⟩ :=
+    RawStep.parStar.effectPerform_inv targetToJoin
+  nomatch joinEqCumul.symm.trans joinEqEffect
+
+/-- A `cumulUpMarker`-headed source and an `eitherCode`-headed
+target are not convertible.  Universe cumulativity marker versus
+sum type-code — distinct canonical heads at the raw level. -/
+theorem Conv.cumulUpMarker_ne_eitherCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {innerCode : RawTerm scope}
+    {leftCode rightCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.cumulUpMarker innerCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.eitherCode leftCode rightCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqCumul, _⟩ :=
+    RawStep.parStar.cumulUpMarker_inv sourceToJoin
+  obtain ⟨_, _, joinEqEither, _, _⟩ :=
+    RawStep.parStar.eitherCode_inv targetToJoin
+  nomatch joinEqCumul.symm.trans joinEqEither
+
+/-- A `cumulUpMarker`-headed source and an `equivCode`-headed
+target are not convertible.  Universe cumulativity marker versus
+equivalence type-code — distinct canonical heads at the raw level. -/
+theorem Conv.cumulUpMarker_ne_equivCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {innerCode : RawTerm scope}
+    {leftCode rightCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.cumulUpMarker innerCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.equivCode leftCode rightCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqCumul, _⟩ :=
+    RawStep.parStar.cumulUpMarker_inv sourceToJoin
+  obtain ⟨_, _, joinEqEquivCode, _, _⟩ :=
+    RawStep.parStar.equivCode_inv targetToJoin
+  nomatch joinEqCumul.symm.trans joinEqEquivCode
+
+/-- A `cumulUpMarker`-headed source and an `equivCompose`-headed
+target are not convertible.  Universe cumulativity marker versus
+equivalence-composition operation — distinct canonical heads. -/
+theorem Conv.cumulUpMarker_ne_equivCompose
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {innerCode : RawTerm scope}
+    {firstEquiv secondEquiv : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.cumulUpMarker innerCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.equivCompose firstEquiv secondEquiv : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqCumul, _⟩ :=
+    RawStep.parStar.cumulUpMarker_inv sourceToJoin
+  obtain ⟨_, _, joinEqEquivCompose, _, _⟩ :=
+    RawStep.parStar.equivCompose_inv targetToJoin
+  nomatch joinEqCumul.symm.trans joinEqEquivCompose
+
+/-- A `cumulUpMarker`-headed source and an `equivIntro`-headed
+target are not convertible.  Universe cumulativity marker versus
+equivalence introduction — distinct canonical heads. -/
+theorem Conv.cumulUpMarker_ne_equivIntro
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {innerCode : RawTerm scope}
+    {forwardMap backwardMap : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.cumulUpMarker innerCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.equivIntro forwardMap backwardMap : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqCumul, _⟩ :=
+    RawStep.parStar.cumulUpMarker_inv sourceToJoin
+  obtain ⟨_, _, joinEqEquivIntro, _, _⟩ :=
+    RawStep.parStar.equivIntro_inv targetToJoin
+  nomatch joinEqCumul.symm.trans joinEqEquivIntro
+
+/-- A `cumulUpMarker`-headed source and a `glueIntro`-headed target
+are not convertible.  Universe cumulativity marker versus cubical
+glue introduction — distinct canonical heads at the raw level. -/
+theorem Conv.cumulUpMarker_ne_glueIntro
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {innerCode : RawTerm scope}
+    {baseCarrier glueCarrier : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.cumulUpMarker innerCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.glueIntro baseCarrier glueCarrier : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqCumul, _⟩ :=
+    RawStep.parStar.cumulUpMarker_inv sourceToJoin
+  obtain ⟨_, _, joinEqGlueIntro, _, _⟩ :=
+    RawStep.parStar.glueIntro_inv targetToJoin
+  nomatch joinEqCumul.symm.trans joinEqGlueIntro
+
+/-- A `cumulUpMarker`-headed source and an `idCode`-headed target
+are not convertible.  Universe cumulativity marker versus
+identity-type code (ternary at the raw level) — distinct canonical
+heads. -/
+theorem Conv.cumulUpMarker_ne_idCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {innerCode : RawTerm scope}
+    {typeCode leftCode rightCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.cumulUpMarker innerCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.idCode typeCode leftCode rightCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqCumul, _⟩ :=
+    RawStep.parStar.cumulUpMarker_inv sourceToJoin
+  obtain ⟨_, _, _, joinEqIdCode, _, _, _⟩ :=
+    RawStep.parStar.idCode_inv targetToJoin
+  nomatch joinEqCumul.symm.trans joinEqIdCode
+
+/-- A `cumulUpMarker`-headed source and an `idStrictRefl`-headed
+target are not convertible.  Universe cumulativity marker versus
+strict-identity reflexivity witness — distinct canonical heads. -/
+theorem Conv.cumulUpMarker_ne_idStrictRefl
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {innerCode : RawTerm scope}
+    {witness : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.cumulUpMarker innerCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.idStrictRefl witness : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqCumul, _⟩ :=
+    RawStep.parStar.cumulUpMarker_inv sourceToJoin
+  obtain ⟨_, joinEqStrictRefl, _⟩ :=
+    RawStep.parStar.idStrictRefl_inv targetToJoin
+  nomatch joinEqCumul.symm.trans joinEqStrictRefl
+
+/-- A `cumulUpMarker`-headed source and an `intervalJoin`-headed
+target are not convertible.  Universe cumulativity marker versus
+interval-join operation — distinct canonical heads at the raw level. -/
+theorem Conv.cumulUpMarker_ne_intervalJoin
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {innerCode : RawTerm scope}
+    {leftInterval rightInterval : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.cumulUpMarker innerCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.intervalJoin leftInterval rightInterval : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqCumul, _⟩ :=
+    RawStep.parStar.cumulUpMarker_inv sourceToJoin
+  obtain ⟨_, _, joinEqIntervalJoin, _, _⟩ :=
+    RawStep.parStar.intervalJoin_inv targetToJoin
+  nomatch joinEqCumul.symm.trans joinEqIntervalJoin
+
 end LeanFX2
