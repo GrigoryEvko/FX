@@ -717,6 +717,14 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.oeqFunext_ne_listCons
 #assert_no_axioms LeanFX2.Conv.oeqFunext_ne_pair
 #assert_no_axioms LeanFX2.Conv.oeqFunext_ne_refl
+#assert_no_axioms LeanFX2.Conv.oeqFunext_ne_oeqJ
+#assert_no_axioms LeanFX2.Conv.oeqFunext_ne_oeqRefl
+#assert_no_axioms LeanFX2.Conv.oeqFunext_ne_oeqTrans
+#assert_no_axioms LeanFX2.Conv.oeqFunext_ne_optionCode
+#assert_no_axioms LeanFX2.Conv.oeqFunext_ne_pathCompose
+#assert_no_axioms LeanFX2.Conv.oeqFunext_ne_piTyCode
+#assert_no_axioms LeanFX2.Conv.oeqFunext_ne_productCode
+#assert_no_axioms LeanFX2.Conv.oeqFunext_ne_recordIntro
 #assert_no_axioms LeanFX2.Conv.cumulUpMarker_ne_unit
 #assert_no_axioms LeanFX2.Conv.cumulUpMarker_ne_boolTrue
 #assert_no_axioms LeanFX2.Conv.cumulUpMarker_ne_boolFalse
