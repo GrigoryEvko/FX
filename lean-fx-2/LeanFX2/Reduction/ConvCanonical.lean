@@ -401,4 +401,28 @@ theorem Conv.natRecZero_cong_unit
     (fun term => Term.natRec scrutinee term succBranch)
     (fun step => Step.natRecZero step) zeroConv
 
+/-! ## Unary cong rule at `Ty.interval`
+
+Mirrors `Conv.natSucc_cong` at the closed `Ty.interval` carrier: a
+single-arg cong rule for `Term.intervalOpp` consumes `Conv` on the
+inner interval value and produces `Conv` on the negated wrapper.
+`IsClosedTy.interval` discharges the subject-reduction step
+unconditionally — no closedness hypothesis required from the caller.
+-/
+
+/-- Cong rule: `Conv` on interval-typed inner values lifts to `Conv`
+on their `Term.intervalOpp` wrappers.  1-step parameterization of
+`Conv.cong_at_isClosedTy` at `IsClosedTy.interval`. -/
+theorem Conv.intervalOpp_cong
+    {innerRawA innerRawB : RawTerm scope}
+    {innerTermA : Term context Ty.interval innerRawA}
+    {innerTermB : Term context Ty.interval innerRawB}
+    (innerConv : Conv innerTermA innerTermB) :
+    Conv (Term.intervalOpp innerTermA) (Term.intervalOpp innerTermB) :=
+  Conv.cong_at_isClosedTy
+    (resultTy := Ty.interval) IsClosedTy.interval
+    (wrapRaw := RawTerm.intervalOpp) (fun term => Term.intervalOpp term)
+    (fun step => Step.intervalOppInner step)
+    innerConv
+
 end LeanFX2
