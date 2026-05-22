@@ -736,6 +736,74 @@ theorem partialStrengthenTyped?_isSome_target_glueIntro
               next _ _ =>
                   rfl
 
+/-! ## Binary-recursive with single non-binder type side: codataUnfold
+
+`Term.codataUnfold initialState transition` constructs a
+`Ty.codata stateType outputType` value from an initial state and
+a transition function `stateType -> outputType`.  Dispatcher arm
+triple-splits over: outputType strengthening (back, non-binder),
+initialState IH, transition IH.
+
+Note: the dispatcher's outputType check uses
+`strengthening.back` (NOT `.back.lift`) — codata outputs at the
+same scope as the state, not under a binder.
+
+Pattern category: binary-recursive with single non-binder type
+side.  Triple-split.  Same shape as glueIntro minus the
+boundary-witness side and the modeIsUnivalent hypothesis.
+
+Uses `Term.codataUnfoldDestruct` from
+`Term/PreservesTerm/InlineDestructors.lean`. -/
+/-- Target-direction totality at `Term.codataUnfold`. -/
+theorem partialStrengthenTyped?_isSome_target_codataUnfold
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {stateType outputType : Ty level sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    {stateRaw transitionRaw : RawTerm sourceScope}
+    (targetTerm :
+      Term sourceCtx (Ty.codata stateType outputType)
+        (RawTerm.codataUnfold stateRaw transitionRaw))
+    (outputStrengthens :
+      (outputType.partialStrengthen? strengthening.back).isSome = true)
+    (stateIH :
+      ∀ (initialState : Term sourceCtx stateType stateRaw),
+        (partialStrengthenTyped? initialState strengthening).isSome
+          = true)
+    (transitionIH :
+      ∀ (transition :
+            Term sourceCtx (Ty.arrow stateType outputType) transitionRaw),
+        (partialStrengthenTyped? transition strengthening).isSome
+          = true) :
+    (partialStrengthenTyped? targetTerm strengthening).isSome = true := by
+  obtain ⟨initialState, transition, heq⟩ :=
+    Term.codataUnfoldDestruct targetTerm
+  have targetEq :
+      targetTerm = Term.codataUnfold initialState transition :=
+    eq_of_heq heq
+  subst targetEq
+  have stateResult := stateIH initialState
+  have transitionResult := transitionIH transition
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noOutput =>
+      rw [noOutput] at outputStrengthens
+      cases outputStrengthens
+  next _ _ =>
+      split
+      next noState =>
+          rw [noState] at stateResult
+          cases stateResult
+      next _ _ =>
+          split
+          next noTransition =>
+              rw [noTransition] at transitionResult
+              cases transitionResult
+          next _ _ =>
+              rfl
+
 end Term
 
 end LeanFX2
