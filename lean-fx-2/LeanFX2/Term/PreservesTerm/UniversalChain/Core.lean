@@ -692,5 +692,43 @@ inductive DispatchAtom :
                     : Term context (motiveType.subst0 Ty.bool scrutineeRaw)
                                    (RawTerm.boolElim scrutineeRaw thenRaw
                                                      elseRaw))
+  /-- Heterogeneous-carrier equivalence introduction.  Both `forward`
+  and `backward` sit at `Ty.arrow` (closed via `IsClosedTy.arrow`), so
+  their step targets fix typewise.  The two inverse witnesses (leftInv,
+  rightInv) live at types parametric in `forwardRaw`/`backwardRaw`; the
+  cong rule preserves the same raw witness while retargeting the type
+  index, so the caller supplies retargeting functions for each. -/
+  | equivIntroHet {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {carrierA carrierB : Ty level scope}
+      (carrierAClosed : IsClosedTy carrierA)
+      (carrierBClosed : IsClosedTy carrierB)
+      {forwardRaw backwardRaw leftInvRaw rightInvRaw : RawTerm scope}
+      (forward : Term context (Ty.arrow carrierA carrierB) forwardRaw)
+      (backward : Term context (Ty.arrow carrierB carrierA) backwardRaw)
+      (leftInv :
+        Term context
+          (equivIntroHetLeftInverseType carrierA forwardRaw backwardRaw)
+          leftInvRaw)
+      (rightInv :
+        Term context
+          (equivIntroHetRightInverseType carrierB forwardRaw backwardRaw)
+          rightInvRaw)
+      (leftInvRetarget :
+        ∀ (forwardTarget backwardTarget : RawTerm scope),
+          Term context
+            (equivIntroHetLeftInverseType carrierA forwardTarget backwardTarget)
+            leftInvRaw)
+      (rightInvRetarget :
+        ∀ (forwardTarget backwardTarget : RawTerm scope),
+          Term context
+            (equivIntroHetRightInverseType carrierB forwardTarget backwardTarget)
+            rightInvRaw)
+      (forwardDispatch : DispatchAtom forward)
+      (backwardDispatch : DispatchAtom backward) :
+      DispatchAtom (Term.equivIntroHet (context := context) forward backward
+                                        leftInv rightInv
+                    : Term context (Ty.equiv carrierA carrierB)
+                                   (RawTerm.equivIntro forwardRaw backwardRaw))
 
 end LeanFX2

@@ -550,5 +550,26 @@ theorem RawStep.par.lift_full_term
         Step.par.preserves_isClosedTy elseTypeClosed elseStep rfl
       subst elseEq
       exact ⟨elseTarget, elseStep⟩
+  | equivIntroHet carrierAClosed carrierBClosed forward backward leftInv rightInv
+                  leftInvRetarget rightInvRetarget _ _ ihForward ihBackward =>
+    refine RawStep.par.lift_full_equivIntroHet forward backward leftInv rightInv
+                                                ?_ ?_ leftInvRetarget
+                                                rightInvRetarget rawStep
+    · intro _ forwardRawStep
+      obtain ⟨forwardTargetType, forwardTarget, forwardStep⟩ :=
+        ihForward forwardRawStep
+      have arrowEq : forwardTargetType = _ :=
+        Step.par.preserves_isClosedTy
+          (IsClosedTy.arrow carrierAClosed carrierBClosed) forwardStep rfl
+      subst arrowEq
+      exact ⟨forwardTarget, forwardStep⟩
+    · intro _ backwardRawStep
+      obtain ⟨backwardTargetType, backwardTarget, backwardStep⟩ :=
+        ihBackward backwardRawStep
+      have arrowEq : backwardTargetType = _ :=
+        Step.par.preserves_isClosedTy
+          (IsClosedTy.arrow carrierBClosed carrierAClosed) backwardStep rfl
+      subst arrowEq
+      exact ⟨backwardTarget, backwardStep⟩
 
 end LeanFX2
