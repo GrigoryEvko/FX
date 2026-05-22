@@ -1366,6 +1366,47 @@ inductive Step.par :
       Step.par intervalSource intervalTarget →
       Step.par (Term.pathApp modeIsUnivalent pathSource intervalSource)
                (Term.subst0 bodyTarget intervalTarget)
+  /-- Deep parallel β for funextRefl-shaped Π function: dependent
+  function parallel-reduces *to* a literal `funextRefl A B applyRaw`,
+  then contracts.
+
+  Mirrors `betaAppPiDeep` for the funextRefl-shape Pi instead of the
+  literal lamPi-shape.  Required by `lift_full_appPi` to discharge
+  the funextRefl arm of the typed-canonical destructor
+  `Term.lamPi_or_funextRefl_destruct` — the disjunctive destructor
+  surfaces both `Term.lamPi body` and
+  `Term.funextRefl A B applyRaw` as possible canonical reducts of a
+  `RawTerm.lam`-shaped raw term at `Ty.piTy`.
+
+  The target's type carries `Ty.id codomainType.weaken applyRawTarget
+  applyRawTarget`-flavoured weaken-subst because `funextRefl`'s Pi
+  codomain is `Ty.id codomainType.weaken applyRaw applyRaw`; the
+  `.subst0 argument` distributes through `Ty.id` and `Ty.weaken`
+  definitionally per `Foundation/Ty.lean:757-760`.
+
+  Raw-layer bridge: this Deep variant bridges to the same raw rule
+  `RawStep.par.betaAppDeep` as `betaAppPiDeep` (see `Bridge.lean`)
+  because `(RawTerm.refl applyRawTarget).subst0 argRawTarget` reduces
+  definitionally to `RawTerm.refl (applyRawTarget.subst0
+  argRawTarget)` per `SubstDefs.lean:92`. -/
+  | betaFunextReflAppDeep {mode level scope} {context : Ctx mode level scope}
+      {domainType : Ty level scope} {codomainType : Ty level scope}
+      {applyRawTarget : RawTerm (scope + 1)}
+      {argumentRawSource argumentRawTarget : RawTerm scope}
+      {functionRawSourceOuter : RawTerm scope}
+      {functionTermSource :
+        Term context
+          (funextReflType domainType codomainType applyRawTarget)
+          functionRawSourceOuter}
+      {argumentSource : Term context domainType argumentRawSource}
+      {argumentTarget : Term context domainType argumentRawTarget} :
+      Step.par functionTermSource
+               (Term.funextRefl (context := context)
+                                domainType codomainType applyRawTarget) →
+      Step.par argumentSource argumentTarget →
+      Step.par (Term.appPi functionTermSource argumentSource)
+               (Term.refl (codomainType.weaken.subst0 domainType argumentRawTarget)
+                          (applyRawTarget.subst0 argumentRawTarget))
   /-- Deep cubical Glue β: glued value develops to a `glueIntro`. -/
   | betaGlueElimIntroDeep {mode level scope}
       {context : Ctx mode level scope}

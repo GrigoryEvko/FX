@@ -926,6 +926,33 @@ inductive DispatchAtom :
       DispatchAtom (Term.pathApp modeIsUnivalent pathTerm intervalTerm
                     : Term context carrierType
                         (RawTerm.pathApp pathRaw intervalRaw))
+  /-- Dependent Π-application.  Target type is
+  `codomainType.subst0 domainType argumentRaw` (cong-arm) or
+  `codomainType.subst0 domainType argumentTargetRaw` /
+  `Ty.id ... ` (β-arm via lamPi/funextRefl);
+  the existential in `lift_full_appPi` absorbs the type gap.  Pattern
+  B (inline lifts) because the codomainType lives at scope+1, ruling
+  out the IsClosedTy + recursive-DispatchAtom pattern used by `app`.
+  Consumed by `RawStep.par.lift_full_appPi` to close #2014. -/
+  | appPi {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {domainType : Ty level scope}
+      {codomainType : Ty level (scope + 1)}
+      {functionRaw argumentRaw : RawTerm scope}
+      (functionTerm : Term context (Ty.piTy domainType codomainType) functionRaw)
+      (argumentTerm : Term context domainType argumentRaw)
+      (functionLift : ∀ {targetRawIH : RawTerm scope},
+        RawStep.par functionRaw targetRawIH →
+        ∃ functionTarget :
+            Term context (Ty.piTy domainType codomainType) targetRawIH,
+          Step.par functionTerm functionTarget)
+      (argumentLift : ∀ {targetRawIH : RawTerm scope},
+        RawStep.par argumentRaw targetRawIH →
+        ∃ argumentTarget : Term context domainType targetRawIH,
+          Step.par argumentTerm argumentTarget) :
+      DispatchAtom (Term.appPi (context := context) functionTerm argumentTerm
+                    : Term context (codomainType.subst0 domainType argumentRaw)
+                        (RawTerm.app functionRaw argumentRaw))
   /-- Session-type receive.  Target stays at `Ty.session protocolStep`.
   Consumed by `RawStep.par.lift_full_sessionRecv`. -/
   | sessionRecv {mode : Mode} {level scope : Nat}

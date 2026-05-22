@@ -253,6 +253,17 @@ theorem Step.par.toRawBridge
       exact RawStep.par.betaAppDeep ihFunction ihArgument
   | betaPathAppDeep _ _ _ ihPath ihInterval =>
       exact RawStep.par.betaPathAppDeep ihPath ihInterval
+  | betaFunextReflAppDeep _ _ ihFunction ihArgument =>
+      -- functionTermSource steps to Term.funextRefl A B applyRawTarget,
+      -- whose raw form is RawTerm.lam (RawTerm.refl applyRawTarget).
+      -- ihFunction : RawStep.par functionRawSourceOuter
+      --              (RawTerm.lam (RawTerm.refl applyRawTarget)).
+      -- ihArgument : RawStep.par argumentRawSource argumentRawTarget.
+      -- RawStep.par.betaAppDeep produces target
+      -- (RawTerm.refl applyRawTarget).subst0 argRawTarget which is
+      -- RawTerm.refl (applyRawTarget.subst0 argRawTarget) by the
+      -- definitional refl-through-subst0 distribution.
+      exact RawStep.par.betaAppDeep ihFunction ihArgument
   | betaGlueElimIntroDeep _ _ ihGlued =>
       exact RawStep.par.betaGlueElimIntroDeep ihGlued
   | betaRecordProjIntroDeep _ ihRecord =>

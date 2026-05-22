@@ -161,6 +161,74 @@ def Term.lamDestruct
   case funextReflAtId _ _ _ => nomatch someTypeIsArrow
   case funextIntroHet _ _ _ _ => nomatch someTypeIsArrow
 
+/-- Disjunctive destructor for `Term ctx (Ty.piTy A B) (RawTerm.lam _)`:
+exactly two inhabitants under this index pair — generic `Term.lamPi body`
+or the special funextRefl shape `Term.funextRefl A B' applyRaw` where
+`B = Ty.id B'.weaken applyRaw applyRaw` and body = `RawTerm.refl applyRaw`.
+
+The other Term ctors producing `RawTerm.lam _` raw projections are
+either typed at `Ty.arrow` (`Term.lam`) or at `Ty.id (Ty.arrow ...)`
+(`Term.funextReflAtId`, `Term.funextIntroHet`) — all refuted by the
+type index via `Ty` constructor injectivity / mismatch.
+
+Consumed by `RawStep.par.lift_full_appPi` to discharge the typed
+β-deep arm: when `Term.appPi functionTerm argumentTerm` reduces via
+`RawStep.par.betaApp`, the lifted `functionCanonical` shape is
+exactly the `Ty.piTy + RawTerm.lam` collision point this destructor
+resolves. -/
+def Term.lamPi_or_funextRefl_destruct
+    {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
+    {bodyRaw : RawTerm (scope + 1)}
+    (someTerm :
+      Term context (Ty.piTy domainType codomainType) (RawTerm.lam bodyRaw)) :
+    PSum
+      (Σ' (body : Term (context.cons domainType) codomainType bodyRaw),
+          HEq someTerm
+              (Term.lamPi (context := context)
+                          (codomainType := codomainType) body))
+      (Σ' (codomainBase : Ty level scope)
+          (applyRaw : RawTerm (scope + 1))
+          (_codomainEq :
+            codomainType = Ty.id codomainBase.weaken applyRaw applyRaw)
+          (_bodyEq : bodyRaw = RawTerm.refl applyRaw),
+          HEq someTerm
+              (Term.funextRefl (context := context)
+                                domainType codomainBase applyRaw)) := by
+  suffices key :
+      ∀ {someType : Ty level scope}
+        (genericTerm : Term context someType (RawTerm.lam bodyRaw)),
+        someType = Ty.piTy domainType codomainType →
+        PSum
+          (Σ' (body : Term (context.cons domainType) codomainType bodyRaw),
+              HEq genericTerm
+                  (Term.lamPi (context := context)
+                              (codomainType := codomainType) body))
+          (Σ' (codomainBase : Ty level scope)
+              (applyRaw : RawTerm (scope + 1))
+              (_codomainEq :
+                codomainType = Ty.id codomainBase.weaken applyRaw applyRaw)
+              (_bodyEq : bodyRaw = RawTerm.refl applyRaw),
+              HEq genericTerm
+                  (Term.funextRefl (context := context)
+                                    domainType codomainBase applyRaw)) by
+    exact key someTerm rfl
+  intro someType genericTerm someTypeIsPiTy
+  cases genericTerm
+  case lam _innerDomain _innerCodomain _body =>
+    nomatch someTypeIsPiTy
+  case lamPi innerDomain innerCodomain body =>
+    have piEq := Ty.piTy.inj someTypeIsPiTy
+    cases piEq.1
+    cases piEq.2
+    exact PSum.inl ⟨body, HEq.rfl⟩
+  case funextRefl innerDomain innerCodomain applyRaw =>
+    -- ctor type: Ty.piTy innerDomain (Ty.id innerCodomain.weaken applyRaw applyRaw)
+    have piEq := Ty.piTy.inj someTypeIsPiTy
+    cases piEq.1
+    exact PSum.inr ⟨innerCodomain, applyRaw, piEq.2.symm, rfl, HEq.rfl⟩
+  case funextReflAtId _ _ _ => nomatch someTypeIsPiTy
+  case funextIntroHet _ _ _ _ => nomatch someTypeIsPiTy
+
 /-- Destructor for `Term.codataUnfold`. -/
 def Term.codataUnfoldDestruct
     {stateType outputType : Ty level scope}

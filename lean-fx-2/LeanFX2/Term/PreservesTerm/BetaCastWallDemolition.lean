@@ -244,4 +244,89 @@ def Term.idReflDestruct
   cases idEq.1
   exact ⟨idEq.2.1, idEq.2.2, HEq.rfl⟩
 
+/-- **β cast wall demolition — Term.appPi full lift.**  Mirrors
+`lift_full_app` but for the dependent Π-typed application.  Two-Ty
+existential absorbs the cong arm (target at `codomainType`) and TWO
+β-deep arms via the `Term.lamPi_or_funextRefl_destruct` disjunctive
+destructor:
+
+* Sum.inl (lamPi) — usual β through `Step.par.betaAppPiDeep`.
+* Sum.inr (funextRefl) — Pi-shape collision arm, β through
+  `Step.par.betaFunextReflAppDeep`.  The `codomainType` is forced
+  to `Ty.id codomainBase.weaken applyRaw applyRaw` by `codomainEq`,
+  realigning the typed signature.
+
+This leaf closes #2014 / unblock-A.leaf.appPi (Path B).  The
+mandatory `Step.par.betaFunextReflAppDeep` typed ctor was shipped
+alongside this theorem in `ParRed/ParInductive/Inductive.lean`. -/
+theorem RawStep.par.lift_full_appPi
+    {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
+    {functionRaw argumentRaw : RawTerm scope}
+    (functionTerm : Term context (Ty.piTy domainType codomainType) functionRaw)
+    (argumentTerm : Term context domainType argumentRaw)
+    (functionLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par functionRaw targetRawIH →
+      ∃ functionTarget :
+          Term context (Ty.piTy domainType codomainType) targetRawIH,
+        Step.par functionTerm functionTarget)
+    (argumentLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par argumentRaw targetRawIH →
+      ∃ argumentTarget : Term context domainType targetRawIH,
+        Step.par argumentTerm argumentTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.app functionRaw argumentRaw) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par (Term.appPi functionTerm argumentTerm) targetTerm := by
+  rcases RawStep.par.app_inv rawStep with
+    ⟨functionTargetRaw, argumentTargetRaw, eq, functionStep, argumentStep⟩
+    | ⟨bodyTargetRaw, argumentTargetRaw, eq, functionToLam, argumentStep⟩
+  · -- cong arm: target stays at codomainType (modulo subst that is rfl
+    -- when codomainType doesn't reference the binder; covered by Step.par.appPi).
+    obtain ⟨functionTarget, functionStepTyped⟩ := functionLift functionStep
+    obtain ⟨argumentTarget, argumentStepTyped⟩ := argumentLift argumentStep
+    cases eq
+    refine ⟨codomainType.subst0 domainType argumentTargetRaw,
+            Term.appPi functionTarget argumentTarget, ?_⟩
+    exact Step.par.appPi functionStepTyped argumentStepTyped
+  · -- β-deep arm: function raw-reduces to lam bodyTargetRaw.  Use the
+    -- disjunctive destructor to discover whether the canonical Term is
+    -- a Term.lamPi (Sum.inl) or a Term.funextRefl (Sum.inr).
+    obtain ⟨functionCanonical, functionStepTyped⟩ := functionLift functionToLam
+    obtain ⟨argumentTarget, argumentStepTyped⟩ := argumentLift argumentStep
+    rcases Term.lamPi_or_funextRefl_destruct functionCanonical with
+      ⟨bodyTerm, bodyHeq⟩ | ⟨codomainBase, applyRaw, codomainEq, bodyEq, bodyHeq⟩
+    · -- Sum.inl: functionCanonical is HEq to Term.lamPi bodyTerm.
+      have bodyEq' :
+          functionCanonical =
+            Term.lamPi (context := context) (codomainType := codomainType) bodyTerm :=
+        eq_of_heq bodyHeq
+      rw [bodyEq'] at functionStepTyped
+      cases eq
+      refine ⟨codomainType.subst0 domainType argumentTargetRaw,
+              Term.subst0 bodyTerm argumentTarget, ?_⟩
+      exact Step.par.betaAppPiDeep
+              (functionRawSourceOuter := functionRaw)
+              functionStepTyped argumentStepTyped
+    · -- Sum.inr: functionCanonical is HEq to Term.funextRefl ... applyRaw at
+      -- type Ty.piTy domainType (Ty.id codomainBase.weaken applyRaw applyRaw).
+      -- Use codomainEq to realign codomainType, then bodyEq to pin
+      -- bodyTargetRaw = RawTerm.refl applyRaw, then HEq becomes Eq.
+      cases codomainEq
+      cases bodyEq
+      have bodyEq' :
+          functionCanonical =
+            Term.funextRefl (context := context)
+                            domainType codomainBase applyRaw :=
+        eq_of_heq bodyHeq
+      rw [bodyEq'] at functionStepTyped
+      cases eq
+      refine
+        ⟨Ty.id (codomainBase.weaken.subst0 domainType argumentTargetRaw)
+                (applyRaw.subst0 argumentTargetRaw)
+                (applyRaw.subst0 argumentTargetRaw),
+          Term.refl (codomainBase.weaken.subst0 domainType argumentTargetRaw)
+                    (applyRaw.subst0 argumentTargetRaw), ?_⟩
+      exact Step.par.betaFunextReflAppDeep
+              functionStepTyped argumentStepTyped
+
 end LeanFX2

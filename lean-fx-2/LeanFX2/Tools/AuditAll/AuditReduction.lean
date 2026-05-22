@@ -26,6 +26,8 @@ import LeanFX2.Reduction.Step.Casts
 import LeanFX2.Reduction.ParRed.ParCasts
 import LeanFX2.Reduction.RawParWeakenInv.Weaken
 import LeanFX2.Reduction.TranspPiContractumPar
+import LeanFX2.Term.PreservesTerm.InlineDestructors
+import LeanFX2.Term.PreservesTerm.BetaCastWallDemolition
 
 namespace LeanFX2.Tools
 
@@ -156,6 +158,18 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.RawStep.par.betaPathReflApp
 #assert_no_axioms LeanFX2.Step.betaPathReflApp
 #assert_no_axioms LeanFX2.Step.par.betaPathReflApp
+-- unblock-G appPi cascade (Path B for #2014): Pi-shape collision between
+-- Term.lamPi and Term.funextRefl at Ty.piTy/RawTerm.lam resolved via
+-- typed-only betaFunextReflApp ctors + Conv bridge + destructor +
+-- universal-dispatcher leaf.  Raw side reuses RawStep.par.betaApp via
+-- the definitional (RawTerm.refl x).subst0 = RawTerm.refl (x.subst0)
+-- distribution; typed-only parity tracked in isDocumentedTypedOnlyParity.
+#assert_no_axioms LeanFX2.Step.betaFunextReflApp
+#assert_no_axioms LeanFX2.Step.par.betaFunextReflApp
+#assert_no_axioms LeanFX2.Step.par.betaFunextReflAppDeep
+#assert_no_axioms LeanFX2.ConvCumul.betaFunextReflAppCumul
+#assert_no_axioms LeanFX2.Term.lamPi_or_funextRefl_destruct
+#assert_no_axioms LeanFX2.RawStep.par.lift_full_appPi
 -- D3.6-S1 univalence-β raw rules (kernel-internal univalence-β —
 -- raw-only confluence-closure mechanism, listed in
 -- `isDocumentedRawOnlyParity` since `Term.uaToEquiv` produces

@@ -13,6 +13,7 @@ import LeanFX2.Term.PreservesTerm.TypeCodeLifts
 import LeanFX2.Term.PreservesTerm.EliminatorFunextFamily
 import LeanFX2.Term.PreservesTerm.TwoTyAtomsAndCong
 import LeanFX2.Term.PreservesTerm.TwoTyEliminators
+import LeanFX2.Term.PreservesTerm.UniversalChain
 
 /-! # LeanFX2.Term.PreservesTerm — Term substitution preservation (shim)
 

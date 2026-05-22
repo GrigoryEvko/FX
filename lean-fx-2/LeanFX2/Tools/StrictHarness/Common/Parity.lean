@@ -279,6 +279,14 @@ def isDocumentedTypedOnlyParity (typedCtorName : Name) : Bool :=
   suffix == "eqType" || suffix == "eqArrow" ||
   suffix == "eqTypeHet" || suffix == "eqArrowHet" ||
   suffix == "cumulUpInner" || suffix == "cumulUpInnerCong" ||
+  -- Section C.1: funextRefl β bridge (Pi-shape collision unblock,
+  -- #2014/#2090-#2100).  At raw level, funextRefl produces
+  -- `RawTerm.lam (RawTerm.refl _)`, which the raw cascade dispatches
+  -- through the existing `betaAppDeep` ctor on `RawTerm.lam`.  The
+  -- typed layer needs separate ctors because funextRefl carries
+  -- type-level Pi/id information that distinguishes its η-reduct
+  -- from a plain lamPi β.
+  suffix == "betaFunextReflApp" || suffix == "betaFunextReflAppDeep" ||
   -- Section D: heterogeneous equiv/UA intro (MEGA-Z8 — typed-level
   -- heterogeneous variants needed for cross-type observational
   -- reasoning; raw doesn't track types).

@@ -598,6 +598,9 @@ theorem RawStep.par.lift_full_term
   | pathApp modeIsUnivalent pathTerm intervalTerm pathLift intervalLift =>
     exact RawStep.par.lift_full_pathApp modeIsUnivalent pathTerm intervalTerm
             pathLift intervalLift rawStep
+  | appPi functionTerm argumentTerm functionLift argumentLift =>
+    exact RawStep.par.lift_full_appPi functionTerm argumentTerm
+            functionLift argumentLift rawStep
   | sessionRecv channel channelLift =>
     exact RawStep.par.lift_full_sessionRecv channel channelLift rawStep
   | sessionSend protocolStep channel payload channelLift payloadLift =>
