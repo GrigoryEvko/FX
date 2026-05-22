@@ -7030,6 +7030,207 @@ theorem Conv.eitherCode_ne_piTyCode
     RawStep.parStar.piTyCode_inv targetToJoin
   nomatch joinEqEither.symm.trans joinEqPiTyCode
 
+/-- An `eitherCode`-headed source and a `productCode`-headed target
+are not convertible.  Either type code versus product-type code —
+distinct canonical type-code heads at the raw level. -/
+theorem Conv.eitherCode_ne_productCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {productFirstCode productSecondCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.productCode productFirstCode productSecondCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEither, _, _⟩ :=
+    RawStep.parStar.eitherCode_inv sourceToJoin
+  obtain ⟨_, _, joinEqProductCode, _, _⟩ :=
+    RawStep.parStar.productCode_inv targetToJoin
+  nomatch joinEqEither.symm.trans joinEqProductCode
+
+/-- An `eitherCode`-headed source and a `recordIntro`-headed target
+are not convertible.  Either type code versus record introduction
+— distinct canonical heads at the raw level. -/
+theorem Conv.eitherCode_ne_recordIntro
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {firstField : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.recordIntro firstField : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEither, _, _⟩ :=
+    RawStep.parStar.eitherCode_inv sourceToJoin
+  obtain ⟨_, joinEqRecordIntro, _⟩ :=
+    RawStep.parStar.recordIntro_inv targetToJoin
+  nomatch joinEqEither.symm.trans joinEqRecordIntro
+
+/-- An `eitherCode`-headed source and a `refineIntro`-headed target
+are not convertible.  Either type code versus refinement-type
+introduction — distinct canonical heads at the raw level. -/
+theorem Conv.eitherCode_ne_refineIntro
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {rawValue predicateProof : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.refineIntro rawValue predicateProof : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEither, _, _⟩ :=
+    RawStep.parStar.eitherCode_inv sourceToJoin
+  obtain ⟨_, _, joinEqRefineIntro, _, _⟩ :=
+    RawStep.parStar.refineIntro_inv targetToJoin
+  nomatch joinEqEither.symm.trans joinEqRefineIntro
+
+/-- An `eitherCode`-headed source and a `sessionRecv`-headed target
+are not convertible.  Either type code versus session-receive
+operation — distinct canonical heads at the raw level. -/
+theorem Conv.eitherCode_ne_sessionRecv
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {channel : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sessionRecv channel : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEither, _, _⟩ :=
+    RawStep.parStar.eitherCode_inv sourceToJoin
+  obtain ⟨_, joinEqSessionRecv, _⟩ :=
+    RawStep.parStar.sessionRecv_inv targetToJoin
+  nomatch joinEqEither.symm.trans joinEqSessionRecv
+
+/-- An `eitherCode`-headed source and a `sessionSend`-headed target
+are not convertible.  Either type code versus session-send
+operation — distinct canonical heads at the raw level. -/
+theorem Conv.eitherCode_ne_sessionSend
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {channel payload : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sessionSend channel payload : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEither, _, _⟩ :=
+    RawStep.parStar.eitherCode_inv sourceToJoin
+  obtain ⟨_, _, joinEqSessionSend, _, _⟩ :=
+    RawStep.parStar.sessionSend_inv targetToJoin
+  nomatch joinEqEither.symm.trans joinEqSessionSend
+
+/-- An `eitherCode`-headed source and a `sigmaTyCode`-headed target
+are not convertible.  Either type code versus Σ-type code —
+distinct canonical type-code heads at the raw level. -/
+theorem Conv.eitherCode_ne_sigmaTyCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {sigmaDomainCode : RawTerm scope}
+    {sigmaCodomainCode : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sigmaTyCode sigmaDomainCode sigmaCodomainCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEither, _, _⟩ :=
+    RawStep.parStar.eitherCode_inv sourceToJoin
+  obtain ⟨_, _, joinEqSigmaTyCode, _, _⟩ :=
+    RawStep.parStar.sigmaTyCode_inv targetToJoin
+  nomatch joinEqEither.symm.trans joinEqSigmaTyCode
+
+/-- An `eitherCode`-headed source and a `subsume`-headed target are
+not convertible.  Either type code versus modal subsumption —
+distinct canonical heads at the raw level. -/
+theorem Conv.eitherCode_ne_subsume
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {innerSubsumed : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.subsume innerSubsumed : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEither, _, _⟩ :=
+    RawStep.parStar.eitherCode_inv sourceToJoin
+  obtain ⟨_, joinEqSubsume, _⟩ :=
+    RawStep.parStar.subsume_inv targetToJoin
+  nomatch joinEqEither.symm.trans joinEqSubsume
+
+/-- An `eitherCode`-headed source and a `sumCode`-headed target are
+not convertible.  Either type code versus sum-type code — distinct
+canonical type-code heads at the raw level. -/
+theorem Conv.eitherCode_ne_sumCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {sumFirstCode sumSecondCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sumCode sumFirstCode sumSecondCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEither, _, _⟩ :=
+    RawStep.parStar.eitherCode_inv sourceToJoin
+  obtain ⟨_, _, joinEqSumCode, _, _⟩ :=
+    RawStep.parStar.sumCode_inv targetToJoin
+  nomatch joinEqEither.symm.trans joinEqSumCode
+
+/-- An `eitherCode`-headed source and a `transpFill`-headed target
+are not convertible.  Either type code versus transport-fill
+operation — distinct canonical heads at the raw level.  Ternary
+target — three trailing slots in the inversion tuple. -/
+theorem Conv.eitherCode_ne_transpFill
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {pathTerm intervalTerm sourceRawTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.transpFill pathTerm intervalTerm sourceRawTerm :
+        RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEither, _, _⟩ :=
+    RawStep.parStar.eitherCode_inv sourceToJoin
+  obtain ⟨_, _, _, joinEqTranspFill, _, _, _⟩ :=
+    RawStep.parStar.transpFill_inv targetToJoin
+  nomatch joinEqEither.symm.trans joinEqTranspFill
+
 /-- A `equivCode`-headed source and a `unit`-headed target are not
 convertible.  Opens the equivalence-type-code row of the
 canonical-head matrix: `equivCode` is the flat-binary type-code
