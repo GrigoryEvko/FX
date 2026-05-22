@@ -73,6 +73,101 @@ theorem Conv.cong_at_isClosedTy
   · exact StepStar.lift_at_isClosedTy
             closedTyIsClosed wrap stepWrap chainB rfl rfl
 
+/-! ## Binary lifter — two closed sub-positions
+
+`Conv.cong2_at_isClosedTy` generalises `cong_at_isClosedTy` to a
+binary wrapper.  Each sub-position has its own (possibly distinct)
+closed type, its own SR-applicable existential extraction, and its
+own per-position Step cong rule.  Internally we compose two
+applications of `StepStar.lift_at_isClosedTy` via
+`StepStar.append`: first vary the left position keeping the right
+fixed at the source raw, then vary the right keeping the left
+fixed at its mid reduct.  No `Conv.trans` required (CONVTRANS-D
+#1735 is still pending). -/
+
+/-- Generic 2-arg Conv-level cong rule at two closed sub-positions.
+Composes via `StepStar.append` + per-position
+`StepStar.lift_at_isClosedTy`. -/
+theorem Conv.cong2_at_isClosedTy
+    {leftClosedTy rightClosedTy resultTy : Ty level scope}
+    (leftIsClosed : IsClosedTy leftClosedTy)
+    (rightIsClosed : IsClosedTy rightClosedTy)
+    {wrapRaw : RawTerm scope → RawTerm scope → RawTerm scope}
+    (wrap : ∀ {leftRaw rightRaw : RawTerm scope},
+            Term context leftClosedTy leftRaw →
+            Term context rightClosedTy rightRaw →
+            Term context resultTy (wrapRaw leftRaw rightRaw))
+    (stepWrapLeft :
+      ∀ {leftSourceRaw leftTargetRaw rightRaw : RawTerm scope}
+        {leftSourceTerm : Term context leftClosedTy leftSourceRaw}
+        {leftTargetTerm : Term context leftClosedTy leftTargetRaw}
+        {rightTerm : Term context rightClosedTy rightRaw},
+        Step leftSourceTerm leftTargetTerm →
+        Step (wrap leftSourceTerm rightTerm)
+             (wrap leftTargetTerm rightTerm))
+    (stepWrapRight :
+      ∀ {leftRaw rightSourceRaw rightTargetRaw : RawTerm scope}
+        {leftTerm : Term context leftClosedTy leftRaw}
+        {rightSourceTerm : Term context rightClosedTy rightSourceRaw}
+        {rightTargetTerm : Term context rightClosedTy rightTargetRaw},
+        Step rightSourceTerm rightTargetTerm →
+        Step (wrap leftTerm rightSourceTerm)
+             (wrap leftTerm rightTargetTerm))
+    {leftSrcRaw leftTgtRaw rightSrcRaw rightTgtRaw : RawTerm scope}
+    {leftSrcTerm : Term context leftClosedTy leftSrcRaw}
+    {leftTgtTerm : Term context leftClosedTy leftTgtRaw}
+    {rightSrcTerm : Term context rightClosedTy rightSrcRaw}
+    {rightTgtTerm : Term context rightClosedTy rightTgtRaw}
+    (leftConv : Conv leftSrcTerm leftTgtTerm)
+    (rightConv : Conv rightSrcTerm rightTgtTerm) :
+    Conv (wrap leftSrcTerm rightSrcTerm)
+         (wrap leftTgtTerm rightTgtTerm) := by
+  obtain ⟨midLeftType, midLeftRaw, midLeftTerm,
+          leftChainA, leftChainB⟩ := leftConv
+  obtain ⟨midRightType, midRightRaw, midRightTerm,
+          rightChainA, rightChainB⟩ := rightConv
+  have midLeftIsClosed : midLeftType = leftClosedTy :=
+    StepStar.preserves_isClosedTy leftIsClosed leftChainA rfl
+  have midRightIsClosed : midRightType = rightClosedTy :=
+    StepStar.preserves_isClosedTy rightIsClosed rightChainA rfl
+  cases midLeftIsClosed
+  cases midRightIsClosed
+  refine ⟨resultTy, _, wrap midLeftTerm midRightTerm, ?_, ?_⟩
+  · have leftVariation :
+        StepStar (wrap leftSrcTerm rightSrcTerm)
+                 (wrap midLeftTerm rightSrcTerm) :=
+      StepStar.lift_at_isClosedTy
+        leftIsClosed
+        (fun leftTerm => wrap leftTerm rightSrcTerm)
+        (fun stepLeft => stepWrapLeft stepLeft)
+        leftChainA rfl rfl
+    have rightVariation :
+        StepStar (wrap midLeftTerm rightSrcTerm)
+                 (wrap midLeftTerm midRightTerm) :=
+      StepStar.lift_at_isClosedTy
+        rightIsClosed
+        (fun rightTerm => wrap midLeftTerm rightTerm)
+        (fun stepRight => stepWrapRight stepRight)
+        rightChainA rfl rfl
+    exact StepStar.append leftVariation rightVariation
+  · have leftVariation :
+        StepStar (wrap leftTgtTerm rightTgtTerm)
+                 (wrap midLeftTerm rightTgtTerm) :=
+      StepStar.lift_at_isClosedTy
+        leftIsClosed
+        (fun leftTerm => wrap leftTerm rightTgtTerm)
+        (fun stepLeft => stepWrapLeft stepLeft)
+        leftChainB rfl rfl
+    have rightVariation :
+        StepStar (wrap midLeftTerm rightTgtTerm)
+                 (wrap midLeftTerm midRightTerm) :=
+      StepStar.lift_at_isClosedTy
+        rightIsClosed
+        (fun rightTerm => wrap midLeftTerm rightTerm)
+        (fun stepRight => stepWrapRight stepRight)
+        rightChainB rfl rfl
+    exact StepStar.append leftVariation rightVariation
+
 /-! ## Worked corollaries via the generic helper
 
 Each is a one-line specialization parameterizing
@@ -181,6 +276,32 @@ theorem Conv.listCons_tail_cong_isClosedTy
     (fun term => Term.listCons headTerm term)
     (fun step => Step.listConsTail step)
     tailConv
+
+/-- True binary cong on both positions of `Term.listCons` when
+element type is closed.  Composes the head and tail step lifts via
+`Conv.cong2_at_isClosedTy` — no need for `Conv.trans` to combine
+the two single-position rules above. -/
+theorem Conv.listCons_cong_isClosedTy
+    {elementType : Ty level scope}
+    (closedElement : IsClosedTy elementType)
+    {headRawA headRawB tailRawA tailRawB : RawTerm scope}
+    {headTermA : Term context elementType headRawA}
+    {headTermB : Term context elementType headRawB}
+    {tailTermA : Term context (Ty.listType elementType) tailRawA}
+    {tailTermB : Term context (Ty.listType elementType) tailRawB}
+    (headConv : Conv headTermA headTermB)
+    (tailConv : Conv tailTermA tailTermB) :
+    Conv (Term.listCons headTermA tailTermA)
+         (Term.listCons headTermB tailTermB) :=
+  Conv.cong2_at_isClosedTy
+    (resultTy := Ty.listType elementType)
+    closedElement (IsClosedTy.listType closedElement)
+    (wrapRaw := fun headRaw tailRaw =>
+      RawTerm.listCons headRaw tailRaw)
+    (fun headTerm tailTerm => Term.listCons headTerm tailTerm)
+    (fun stepHead => Step.listConsHead stepHead)
+    (fun stepTail => Step.listConsTail stepTail)
+    headConv tailConv
 
 /-! ## Eliminator scrutinee cong rules
 
@@ -504,102 +625,5 @@ theorem Conv.natRecSucc_cong_isClosedTy
     (fun term => Term.natRec scrutinee zeroBranch term)
     (fun step => Step.natRecSucc step)
     succConv
-
-/-! ## Binary lifter — two closed sub-positions
-
-`Conv.cong2_at_isClosedTy` generalises `cong_at_isClosedTy` to a
-binary wrapper.  Each sub-position has its own (possibly distinct)
-closed type, its own SR-applicable existential extraction, and its
-own per-position Step cong rule.  Internally we compose two
-applications of `StepStar.lift_at_isClosedTy` via
-`StepStar.append`: first vary the left position keeping the right
-fixed at the source raw, then vary the right keeping the left
-fixed at its mid reduct.  No `Conv.trans` required (CONVTRANS-D
-#1735 is still pending). -/
-
-/-- Generic 2-arg Conv-level cong rule at two closed sub-positions.
-Composes via `StepStar.append` + per-position
-`StepStar.lift_at_isClosedTy`. -/
-theorem Conv.cong2_at_isClosedTy
-    {leftClosedTy rightClosedTy resultTy : Ty level scope}
-    (leftIsClosed : IsClosedTy leftClosedTy)
-    (rightIsClosed : IsClosedTy rightClosedTy)
-    {wrapRaw : RawTerm scope → RawTerm scope → RawTerm scope}
-    (wrap : ∀ {leftRaw rightRaw : RawTerm scope},
-            Term context leftClosedTy leftRaw →
-            Term context rightClosedTy rightRaw →
-            Term context resultTy (wrapRaw leftRaw rightRaw))
-    (stepWrapLeft :
-      ∀ {leftSourceRaw leftTargetRaw rightRaw : RawTerm scope}
-        {leftSourceTerm : Term context leftClosedTy leftSourceRaw}
-        {leftTargetTerm : Term context leftClosedTy leftTargetRaw}
-        {rightTerm : Term context rightClosedTy rightRaw},
-        Step leftSourceTerm leftTargetTerm →
-        Step (wrap leftSourceTerm rightTerm)
-             (wrap leftTargetTerm rightTerm))
-    (stepWrapRight :
-      ∀ {leftRaw rightSourceRaw rightTargetRaw : RawTerm scope}
-        {leftTerm : Term context leftClosedTy leftRaw}
-        {rightSourceTerm : Term context rightClosedTy rightSourceRaw}
-        {rightTargetTerm : Term context rightClosedTy rightTargetRaw},
-        Step rightSourceTerm rightTargetTerm →
-        Step (wrap leftTerm rightSourceTerm)
-             (wrap leftTerm rightTargetTerm))
-    {leftSrcRaw leftTgtRaw rightSrcRaw rightTgtRaw : RawTerm scope}
-    {leftSrcTerm : Term context leftClosedTy leftSrcRaw}
-    {leftTgtTerm : Term context leftClosedTy leftTgtRaw}
-    {rightSrcTerm : Term context rightClosedTy rightSrcRaw}
-    {rightTgtTerm : Term context rightClosedTy rightTgtRaw}
-    (leftConv : Conv leftSrcTerm leftTgtTerm)
-    (rightConv : Conv rightSrcTerm rightTgtTerm) :
-    Conv (wrap leftSrcTerm rightSrcTerm)
-         (wrap leftTgtTerm rightTgtTerm) := by
-  obtain ⟨midLeftType, midLeftRaw, midLeftTerm,
-          leftChainA, leftChainB⟩ := leftConv
-  obtain ⟨midRightType, midRightRaw, midRightTerm,
-          rightChainA, rightChainB⟩ := rightConv
-  have midLeftIsClosed : midLeftType = leftClosedTy :=
-    StepStar.preserves_isClosedTy leftIsClosed leftChainA rfl
-  have midRightIsClosed : midRightType = rightClosedTy :=
-    StepStar.preserves_isClosedTy rightIsClosed rightChainA rfl
-  cases midLeftIsClosed
-  cases midRightIsClosed
-  refine ⟨resultTy, _, wrap midLeftTerm midRightTerm, ?_, ?_⟩
-  · -- Chain from left source: vary left, then vary right.
-    have leftVariation :
-        StepStar (wrap leftSrcTerm rightSrcTerm)
-                 (wrap midLeftTerm rightSrcTerm) :=
-      StepStar.lift_at_isClosedTy
-        leftIsClosed
-        (fun leftTerm => wrap leftTerm rightSrcTerm)
-        (fun stepLeft => stepWrapLeft stepLeft)
-        leftChainA rfl rfl
-    have rightVariation :
-        StepStar (wrap midLeftTerm rightSrcTerm)
-                 (wrap midLeftTerm midRightTerm) :=
-      StepStar.lift_at_isClosedTy
-        rightIsClosed
-        (fun rightTerm => wrap midLeftTerm rightTerm)
-        (fun stepRight => stepWrapRight stepRight)
-        rightChainA rfl rfl
-    exact StepStar.append leftVariation rightVariation
-  · -- Chain from left target: same structure, B-side chains.
-    have leftVariation :
-        StepStar (wrap leftTgtTerm rightTgtTerm)
-                 (wrap midLeftTerm rightTgtTerm) :=
-      StepStar.lift_at_isClosedTy
-        leftIsClosed
-        (fun leftTerm => wrap leftTerm rightTgtTerm)
-        (fun stepLeft => stepWrapLeft stepLeft)
-        leftChainB rfl rfl
-    have rightVariation :
-        StepStar (wrap midLeftTerm rightTgtTerm)
-                 (wrap midLeftTerm midRightTerm) :=
-      StepStar.lift_at_isClosedTy
-        rightIsClosed
-        (fun rightTerm => wrap midLeftTerm rightTerm)
-        (fun stepRight => stepWrapRight stepRight)
-        rightChainB rfl rfl
-    exact StepStar.append leftVariation rightVariation
 
 end LeanFX2
