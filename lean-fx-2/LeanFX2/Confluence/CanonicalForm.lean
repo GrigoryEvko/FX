@@ -12641,4 +12641,161 @@ theorem Conv.equivIntro_ne_interval1
     RawStep.parStar.interval1_inv targetToJoin
   nomatch joinEqEquivIntro.symm.trans joinEqOne
 
+/-- An `equivIntro`-headed source and a `natSucc`-headed target
+are not convertible.  HoTT equivalence introduction versus the
+Nat successor — distinct canonical heads at the raw level. -/
+theorem Conv.equivIntro_ne_natSucc
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {forwardFn backwardFn : RawTerm scope}
+    {predecessor : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.equivIntro forwardFn backwardFn : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.natSucc predecessor : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEquivIntro, _, _⟩ :=
+    RawStep.parStar.equivIntro_inv sourceToJoin
+  obtain ⟨_, joinEqSucc, _⟩ :=
+    RawStep.parStar.natSucc_inv targetToJoin
+  nomatch joinEqEquivIntro.symm.trans joinEqSucc
+
+/-- An `equivIntro`-headed source and an `optionSome`-headed
+target are not convertible.  HoTT equivalence introduction versus
+inhabited Option — disjoint canonical heads. -/
+theorem Conv.equivIntro_ne_optionSome
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {forwardFn backwardFn : RawTerm scope}
+    {valueTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.equivIntro forwardFn backwardFn : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.optionSome valueTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEquivIntro, _, _⟩ :=
+    RawStep.parStar.equivIntro_inv sourceToJoin
+  obtain ⟨_, joinEqSome, _⟩ :=
+    RawStep.parStar.optionSome_inv targetToJoin
+  nomatch joinEqEquivIntro.symm.trans joinEqSome
+
+/-- An `equivIntro`-headed source and an `eitherInl`-headed
+target are not convertible.  HoTT equivalence introduction versus
+the left injection of Either — disjoint canonical heads. -/
+theorem Conv.equivIntro_ne_eitherInl
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {forwardFn backwardFn : RawTerm scope}
+    {valueTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.equivIntro forwardFn backwardFn : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.eitherInl valueTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEquivIntro, _, _⟩ :=
+    RawStep.parStar.equivIntro_inv sourceToJoin
+  obtain ⟨_, joinEqInl, _⟩ :=
+    RawStep.parStar.eitherInl_inv targetToJoin
+  nomatch joinEqEquivIntro.symm.trans joinEqInl
+
+/-- An `equivIntro`-headed source and an `eitherInr`-headed
+target are not convertible.  Symmetric to the `eitherInl`
+companion. -/
+theorem Conv.equivIntro_ne_eitherInr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {forwardFn backwardFn : RawTerm scope}
+    {valueTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.equivIntro forwardFn backwardFn : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.eitherInr valueTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEquivIntro, _, _⟩ :=
+    RawStep.parStar.equivIntro_inv sourceToJoin
+  obtain ⟨_, joinEqInr, _⟩ :=
+    RawStep.parStar.eitherInr_inv targetToJoin
+  nomatch joinEqEquivIntro.symm.trans joinEqInr
+
+/-- An `equivIntro`-headed source and a `listCons`-headed target
+are not convertible.  HoTT equivalence introduction versus the
+non-empty list constructor — disjoint canonical heads at the
+raw level. -/
+theorem Conv.equivIntro_ne_listCons
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {forwardFn backwardFn : RawTerm scope}
+    {headValue tailValue : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.equivIntro forwardFn backwardFn : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.listCons headValue tailValue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEquivIntro, _, _⟩ :=
+    RawStep.parStar.equivIntro_inv sourceToJoin
+  obtain ⟨_, _, joinEqCons, _, _⟩ :=
+    RawStep.parStar.listCons_inv targetToJoin
+  nomatch joinEqEquivIntro.symm.trans joinEqCons
+
+/-- An `equivIntro`-headed source and a `pair`-headed target are
+not convertible.  HoTT equivalence introduction versus the
+Σ-pair inhabitant — distinct canonical heads. -/
+theorem Conv.equivIntro_ne_pair
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {forwardFn backwardFn : RawTerm scope}
+    {firstValue secondValue : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.equivIntro forwardFn backwardFn : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.pair firstValue secondValue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEquivIntro, _, _⟩ :=
+    RawStep.parStar.equivIntro_inv sourceToJoin
+  obtain ⟨_, _, joinEqPair, _, _⟩ :=
+    RawStep.parStar.pair_inv targetToJoin
+  nomatch joinEqEquivIntro.symm.trans joinEqPair
+
+/-- An `equivIntro`-headed source and a `refl`-headed target are
+not convertible.  HoTT equivalence introduction versus HoTT
+identity-type reflexivity introduction — both live at the HoTT
+layer but at distinct strata (equivalence vs identity); they
+are distinct ctors that cannot share a canonical raw reduct. -/
+theorem Conv.equivIntro_ne_refl
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {forwardFn backwardFn : RawTerm scope}
+    {hottWitness : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.equivIntro forwardFn backwardFn : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.refl hottWitness : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEquivIntro, _, _⟩ :=
+    RawStep.parStar.equivIntro_inv sourceToJoin
+  obtain ⟨_, joinEqRefl, _⟩ :=
+    RawStep.parStar.refl_inv targetToJoin
+  nomatch joinEqEquivIntro.symm.trans joinEqRefl
+
 end LeanFX2
