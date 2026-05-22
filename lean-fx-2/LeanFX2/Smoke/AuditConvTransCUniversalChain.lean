@@ -14,30 +14,41 @@ The headline `lift_full_term` assembles the per-ctor
 into a universal Term-induction dispatcher restricted to a
 `DispatchAtom` domain (escape hatch (iv) — partial domain).
 
-This Phase A1 commit ships:
+This commit ships (current coverage 58/78 Term ctors):
 
 * `StepParExists sourceTerm targetRaw` — headline existential
   `Prop`: target type, target Term, typed `Step.par` from source.
-* `DispatchAtom sourceTerm` — predicate enumerating the 25
-  dispatchable Term ctors:
-  * 10 closed-leaf atoms: `unit`, `boolTrue`, `boolFalse`,
-    `natZero`, `interval0`, `interval1`, `listNil`, `optionNone`,
-    `var`, `universeCode`.
-  * 10 type-code ctors: `arrowCode`, `piTyCode`, `sigmaTyCode`,
-    `productCode`, `sumCode`, `listCode`, `optionCode`,
-    `eitherCode`, `idCode`, `equivCode`.
-  * 5 schematic-value ctors: `oeqRefl`, `refl`, `idStrictRefl`,
-    `equivReflId`, `equivReflIdAtId`.
+* `DispatchAtom sourceTerm` — predicate enumerating the
+  dispatchable Term ctors.  Initial Phase A1 carried 25 ctors
+  (10 closed-leaf atoms + 10 type-code ctors + 5 schematic-value
+  ctors).  Phase A1 follow-up commits extended to 58 ctors,
+  adding closed-type cong arms (arrow/list/option/either/nat),
+  Π-cong arms (lam/lamPi/app), record/codata/refine/glue
+  ctors, modal arms (modIntro/modElim/subsume × 8 modalities),
+  identity-type ctors (id/idStrict/oeq leaves), boolElim
+  (with per-branch closure witnesses), equivIntroHet, and the
+  schematic funext ctors (funextRefl, funextReflAtId).
 * `RawStep.par.lift_full_term dispatch rawStep` — universal driver
   theorem: pattern-matches on `dispatch` and routes through the
   matching `lift_full_<ctor>`.
 
-Phase A1 follow-up commits extend `DispatchAtom` to cover the
-remaining clean-dispatchable ctors; wall ctors (`pair`, `appPi`,
-`transp`, `hcomp`, `hcompPath`, `funextRefl`, `funextReflAtId`,
-`funextIntroHet`, `uaToEquiv`, `equivApply`) remain out-of-domain
-for `DispatchAtom` until Phase A2 ships their `lift_full_<ctor>`
-variants.
+Remaining 20 ctors (fst/snd/idJ/oeqJ/idStrictRec/refineElim/
+glueElim/pathApp/effectPerform/sessionRecv/sessionSend/oeqFunext
++ 8 leaf-needing ctors pair/funextIntroHet/uaToEquiv/equivApply/
+appPi/transp/hcomp/hcompPath) are blocked on structural
+infrastructure:
+
+* fst/snd need a sigma-preservation lemma; the analogue of
+  `Step.par.preserves_isClosedTy` is FALSE for non-closed
+  `secondType : Ty level (scope + 1)` because boolElim-style
+  cong rules reduce `motiveType.subst0 _ raw1 = Ty.sigmaTy fst snd`
+  to `motiveType.subst0 _ raw2` where `snd` may depend on var 0.
+* idJ/oeqJ/idStrictRec/refineElim/glueElim/pathApp need
+  per-type-former preservation lemmas (id/refine/glue/path).
+* effectPerform/sessionRecv/sessionSend need closure witnesses
+  on effect-row / session-protocol payloads.
+* The 8 leaf-needing ctors require new `lift_full_<ctor>`
+  shipped first.
 
 ## Three escape hatches — outcome
 
