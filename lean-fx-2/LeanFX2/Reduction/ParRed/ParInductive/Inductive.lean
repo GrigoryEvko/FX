@@ -650,6 +650,46 @@ inductive Step.par :
           (leftEndpoint := capRawSource) (rightEndpoint := capRawSource)
           sidesPath capValueSource)
         capValueTarget
+  /-- Deep cubical hcomp β: when the sides develops via a raw parallel
+  step to the constant-path shape `RawTerm.pathLam capRawSource.weaken`
+  and the cap reduces to a target value, the whole `Term.hcompPath`
+  reduces to that cap target.
+
+  Mirrors `RawStep.par.hcompBetaDeep` (RawPar/Inductive.lean:758) at
+  homogeneous endpoints (path type `Ty.path carrierType capRawSource
+  capRawSource`).  The shallow `hcompBeta` above fires when sides is
+  LITERALLY the constant-path shape; this deep variant fires when sides
+  develops to that shape under one parallel step.
+
+  The path-reduction premise is RAW (`RawStep.par sidesPathRawSource
+  (RawTerm.pathLam capRawSource.weaken)`), not typed — the typed
+  sidesPath develops its raw projection under the same raw step,
+  which the cubical β rule consumes without re-typing the developed
+  intermediate.  Matches `transpReflBetaDeep`'s raw-step-premise
+  pattern (Inductive.lean:601).
+
+  Heterogeneous-endpoint Deep variants (sides at `Ty.path carrierType
+  leftEndpoint rightEndpoint` with leftEndpoint ≠ rightEndpoint) are
+  ROADMAP debt under unblock-E leaf-coverage. -/
+  | hcompBetaDeep {mode level scope} {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
+      {carrierType : Ty level scope}
+      {sidesPathRawSource capRawSource capRawTarget : RawTerm scope}
+      (sidesPath :
+        Term context
+          (Ty.path carrierType capRawSource capRawSource)
+          sidesPathRawSource)
+      (sidesPathStep :
+        RawStep.par sidesPathRawSource
+          (RawTerm.pathLam capRawSource.weaken))
+      {capValueSource : Term context carrierType capRawSource}
+      {capValueTarget : Term context carrierType capRawTarget} :
+      Step.par capValueSource capValueTarget →
+      Step.par
+        (Term.hcompPath modeIsUnivalent
+          (leftEndpoint := capRawSource) (rightEndpoint := capRawSource)
+          sidesPath capValueSource)
+        capValueTarget
   /-- Parallel-cong: homogeneous composition reduces in sides and cap. -/
   | hcomp {mode level scope} {context : Ctx mode level scope}
       (modeIsUnivalent : mode = Mode.univalent)

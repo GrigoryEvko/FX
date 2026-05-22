@@ -140,23 +140,16 @@ def isDocumentedRawOnlyParity (rawCtorName : Name) : Bool :=
   -- `Confluence/RawCd.lean`.
   suffix == "uaReflEquivApply" ||
   suffix == "uaReflEquivApplyDeep" ||
-  -- Section I: D2.5.2 cubical hcomp-β raw-only deep variant.
-  -- Headline rule: `hcomp (pathLam X.weaken) cap ⟶ cap` —
-  -- homogeneous composition with constant-path sides reduces to the
-  -- cap (the boundary box is trivially filled).  The shallow form
-  -- `hcompBeta` ships its typed mirror `Step.par.hcompBeta` in
-  -- Phase B (Reduction/Step.lean + ParRed/ParInductive.lean +
-  -- ParStepLift.lean + ConvBridge.lean), so the shallow form is NO
-  -- LONGER listed as documented raw-only.  The deep variant
-  -- `hcompBetaDeep` (sides develops to `pathLam X.weaken` via
-  -- parallel reduction) remains raw-only: its typed mirror would
-  -- need `Step.par.hcompBetaDeep` with a path-reduction premise
-  -- across a heterogeneous `sidesRawSource` raw shape, which is a
-  -- pure confluence-closure mechanism (parallels
-  -- `transpReflBetaDeep`).  Activated through `cdHcompCase`'s
-  -- `pathLam` arm in `Confluence/RawCd.lean` and discharged in
-  -- cd_lemma / cd_dominates via `RawStep.par.weaken_inv`.
-  suffix == "hcompBetaDeep" ||
+  -- Section I: D2.5.2 cubical hcomp-β.  Both shallow `hcompBeta` and
+  -- deep `hcompBetaDeep` now ship typed mirrors at homogeneous
+  -- endpoints (`Reduction/ParRed/ParInductive/Inductive.lean`),
+  -- removing both from the documented raw-only list.  The deep
+  -- typed mirror mirrors `transpReflBetaDeep`'s shape with a raw
+  -- path-reduction premise `RawStep.par sidesPathRawSource
+  -- (RawTerm.pathLam capRawSource.weaken)` and a typed cap-step
+  -- premise.  Heterogeneous-endpoint Deep variants remain ROADMAP
+  -- debt under unblock-E leaf-coverage (`Term.hcompPath` is fixed
+  -- at homogeneous `Ty.path carrierType capRawSource capRawSource`).
   -- Section J: D2.5.6-Blocker-A `transpFillCong` raw-only cong rule.
   -- `RawTerm.transpFill pathTy currentInterval source` is the CCHM
   -- cubical fill ctor — a raw-only vocabulary that exists to give

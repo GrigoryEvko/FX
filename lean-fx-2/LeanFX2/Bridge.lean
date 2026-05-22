@@ -140,6 +140,8 @@ theorem Step.par.toRawBridge
       exact RawStep.par.transpReflBetaDeep pathStep ihSource
   | hcompBeta _ _ _ ihCap =>
       exact RawStep.par.hcompBeta (RawStep.par.refl _) ihCap
+  | hcompBetaDeep _ _ sidesPathStep _ ihCap =>
+      exact RawStep.par.hcompBetaDeep sidesPathStep ihCap
   | hcomp _ _ _ ihSides ihCap =>
       exact RawStep.par.hcompCong ihSides ihCap
   | recordIntroCong _ ihFirst =>
