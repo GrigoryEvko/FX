@@ -547,6 +547,44 @@ theorem Conv.right_toRawJoin_in_weaken_image_of_targetRaw_eq
     Step.parStar.toRawBridge sourceChain.toParStar,
     Step.parStar.toRawBridge targetChain.toParStar⟩
 
+/-- Multi-position parallel-substitution raw join from typed Conv.
+
+Given a typed `Conv sourceTerm targetTerm` and two raw substitutions
+`firstSubst`, `secondSubst` related single-step pointwise via
+`substsRelated`, produce a common raw reduct of the two substituted
+endpoints `sourceRaw.subst firstSubst` and `targetRaw.subst secondSubst`.
+
+Strategy: project Conv to a raw join via `Conv.toRawJoin`, then
+lift both endpoint chains:
+
+* source half via `RawStep.parStar.subst_par substsRelated`
+  (heterogeneous subst lift, lands at `commonRaw.subst secondSubst`),
+* target half via `RawStep.parStar.subst_compatible_same secondSubst`
+  (pin-subst lift, also lands at `commonRaw.subst secondSubst`).
+
+K12.28 Geuvers β-η critical-pair joinability and K13 NbE β-step under
+parallel-substitution chains reach for this shape: a β-redex whose
+substitution itself evolves in lock-step with the body. -/
+theorem Conv.rawSubst_par_toRawJoin
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    {targetScope : Nat}
+    {firstSubst secondSubst : RawTermSubst scope targetScope}
+    (substsRelated : ∀ position,
+      RawStep.par (firstSubst position) (secondSubst position))
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.subst firstSubst) commonRaw ∧
+      RawStep.parStar (targetRaw.subst secondSubst) commonRaw := by
+  obtain ⟨commonRaw, sourceChain, targetChain⟩ := Conv.toRawJoin convertibility
+  exact ⟨commonRaw.subst secondSubst,
+    RawStep.parStar.subst_par substsRelated sourceChain,
+    RawStep.parStar.subst_compatible_same secondSubst targetChain⟩
+
 /-- Heterogeneous β-redex raw join.
 
 Given two typed Conv witnesses — one for the body (under-binder), one for

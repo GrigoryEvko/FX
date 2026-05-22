@@ -18,6 +18,7 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.fromStep
 #assert_no_axioms LeanFX2.Conv.transChains
 #assert_no_axioms LeanFX2.Conv.toRawJoin
+#assert_no_axioms LeanFX2.Conv.rawSubst_par_toRawJoin
 #assert_no_axioms LeanFX2.Conv.rawSubst0_par_toRawJoin
 #assert_no_axioms LeanFX2.Conv.rawSubst0_arg_toRawJoin
 #assert_no_axioms LeanFX2.Conv.canonicalRaw
