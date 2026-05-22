@@ -2085,6 +2085,336 @@ theorem partialStrengthenTyped?_isSome_target_equivApply
               next _ _ =>
                   rfl
 
+/-! ## Variable: var
+
+`Term.var position` survives strengthening iff
+`strengthening.back position` returns some.  Pre-destructured
+pattern with explicit `position` and survives-hypothesis. -/
+/-- Target-direction totality at `Term.var`. -/
+theorem partialStrengthenTyped?_isSome_target_var
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (position : Fin sourceScope)
+    (survivesStrengthening :
+      (strengthening.back position).isSome = true) :
+    (partialStrengthenTyped? (Term.var (context := sourceCtx) position)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noPosition =>
+      rw [noPosition] at survivesStrengthening
+      cases survivesStrengthening
+  next _ _ =>
+      rfl
+
+/-! ## Closed-inductive recursors: boolElim, natElim, natRec,
+    listElim, optionMatch, eitherMatch
+
+Six eliminators on closed-inductive types.  Each is pre-
+destructured (operand IHs supplied directly).  Type-side shapes
+vary:
+
+* boolElim — 1 Ty side at binder (motiveType at scope+1).
+* natElim, natRec — NO Ty side, 3 operand IHs only.
+* listElim, optionMatch — 1 Ty side at back (elementType).
+* eitherMatch — 3 Ty sides at back (leftType, rightType,
+  motiveType). -/
+/-- Target-direction totality at `Term.boolElim`. -/
+theorem partialStrengthenTyped?_isSome_target_boolElim
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {motiveType : Ty level (sourceScope + 1)}
+    {scrutineeRaw thenRaw elseRaw : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (scrutinee : Term sourceCtx Ty.bool scrutineeRaw)
+    (thenBranch :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw)
+    (elseBranch :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw)
+    (motiveLiftedStrengthens :
+      (motiveType.partialStrengthen? strengthening.back.lift).isSome
+        = true)
+    (scrutineeIH :
+      (partialStrengthenTyped? scrutinee strengthening).isSome = true)
+    (thenIH :
+      (partialStrengthenTyped? thenBranch strengthening).isSome = true)
+    (elseIH :
+      (partialStrengthenTyped? elseBranch strengthening).isSome = true) :
+    (partialStrengthenTyped?
+        (Term.boolElim scrutinee thenBranch elseBranch)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noMotive =>
+      rw [noMotive] at motiveLiftedStrengthens
+      cases motiveLiftedStrengthens
+  next _ _ =>
+      split
+      next noScrutinee =>
+          rw [noScrutinee] at scrutineeIH
+          cases scrutineeIH
+      next _ _ =>
+          split
+          next noThen =>
+              rw [noThen] at thenIH
+              cases thenIH
+          next _ _ =>
+              split
+              next noElse =>
+                  rw [noElse] at elseIH
+                  cases elseIH
+              next _ _ =>
+                  rfl
+
+/-- Target-direction totality at `Term.natElim`.  No Ty side. -/
+theorem partialStrengthenTyped?_isSome_target_natElim
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {motiveType : Ty level sourceScope}
+    {scrutineeRaw zeroRaw succRaw : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (scrutinee : Term sourceCtx Ty.nat scrutineeRaw)
+    (zeroBranch : Term sourceCtx motiveType zeroRaw)
+    (succBranch :
+      Term sourceCtx (Ty.arrow Ty.nat motiveType) succRaw)
+    (scrutineeIH :
+      (partialStrengthenTyped? scrutinee strengthening).isSome = true)
+    (zeroIH :
+      (partialStrengthenTyped? zeroBranch strengthening).isSome = true)
+    (succIH :
+      (partialStrengthenTyped? succBranch strengthening).isSome = true) :
+    (partialStrengthenTyped?
+        (Term.natElim scrutinee zeroBranch succBranch)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noScrutinee =>
+      rw [noScrutinee] at scrutineeIH
+      cases scrutineeIH
+  next _ _ =>
+      split
+      next noZero =>
+          rw [noZero] at zeroIH
+          cases zeroIH
+      next _ _ =>
+          split
+          next noSucc =>
+              rw [noSucc] at succIH
+              cases succIH
+          next _ _ =>
+              rfl
+
+/-- Target-direction totality at `Term.natRec`.  Same shape as
+`natElim` but `succBranch` takes the recursive call as second
+argument. -/
+theorem partialStrengthenTyped?_isSome_target_natRec
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {motiveType : Ty level sourceScope}
+    {scrutineeRaw zeroRaw succRaw : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (scrutinee : Term sourceCtx Ty.nat scrutineeRaw)
+    (zeroBranch : Term sourceCtx motiveType zeroRaw)
+    (succBranch :
+      Term sourceCtx
+        (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)) succRaw)
+    (scrutineeIH :
+      (partialStrengthenTyped? scrutinee strengthening).isSome = true)
+    (zeroIH :
+      (partialStrengthenTyped? zeroBranch strengthening).isSome = true)
+    (succIH :
+      (partialStrengthenTyped? succBranch strengthening).isSome = true) :
+    (partialStrengthenTyped?
+        (Term.natRec scrutinee zeroBranch succBranch)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noScrutinee =>
+      rw [noScrutinee] at scrutineeIH
+      cases scrutineeIH
+  next _ _ =>
+      split
+      next noZero =>
+          rw [noZero] at zeroIH
+          cases zeroIH
+      next _ _ =>
+          split
+          next noSucc =>
+              rw [noSucc] at succIH
+              cases succIH
+          next _ _ =>
+              rfl
+
+/-- Target-direction totality at `Term.listElim`. -/
+theorem partialStrengthenTyped?_isSome_target_listElim
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {elementType motiveType : Ty level sourceScope}
+    {scrutineeRaw nilRaw consRaw : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (scrutinee : Term sourceCtx (Ty.listType elementType) scrutineeRaw)
+    (nilBranch : Term sourceCtx motiveType nilRaw)
+    (consBranch :
+      Term sourceCtx
+        (Ty.arrow elementType
+          (Ty.arrow (Ty.listType elementType) motiveType)) consRaw)
+    (elementStrengthens :
+      (elementType.partialStrengthen? strengthening.back).isSome
+        = true)
+    (scrutineeIH :
+      (partialStrengthenTyped? scrutinee strengthening).isSome = true)
+    (nilIH :
+      (partialStrengthenTyped? nilBranch strengthening).isSome = true)
+    (consIH :
+      (partialStrengthenTyped? consBranch strengthening).isSome = true) :
+    (partialStrengthenTyped?
+        (Term.listElim scrutinee nilBranch consBranch)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noElement =>
+      rw [noElement] at elementStrengthens
+      cases elementStrengthens
+  next _ _ =>
+      split
+      next noScrutinee =>
+          rw [noScrutinee] at scrutineeIH
+          cases scrutineeIH
+      next _ _ =>
+          split
+          next noNil =>
+              rw [noNil] at nilIH
+              cases nilIH
+          next _ _ =>
+              split
+              next noCons =>
+                  rw [noCons] at consIH
+                  cases consIH
+              next _ _ =>
+                  rfl
+
+/-- Target-direction totality at `Term.optionMatch`. -/
+theorem partialStrengthenTyped?_isSome_target_optionMatch
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {elementType motiveType : Ty level sourceScope}
+    {scrutineeRaw noneRaw someRaw : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (scrutinee : Term sourceCtx (Ty.optionType elementType) scrutineeRaw)
+    (noneBranch : Term sourceCtx motiveType noneRaw)
+    (someBranch :
+      Term sourceCtx (Ty.arrow elementType motiveType) someRaw)
+    (elementStrengthens :
+      (elementType.partialStrengthen? strengthening.back).isSome
+        = true)
+    (scrutineeIH :
+      (partialStrengthenTyped? scrutinee strengthening).isSome = true)
+    (noneIH :
+      (partialStrengthenTyped? noneBranch strengthening).isSome = true)
+    (someIH :
+      (partialStrengthenTyped? someBranch strengthening).isSome = true) :
+    (partialStrengthenTyped?
+        (Term.optionMatch scrutinee noneBranch someBranch)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noElement =>
+      rw [noElement] at elementStrengthens
+      cases elementStrengthens
+  next _ _ =>
+      split
+      next noScrutinee =>
+          rw [noScrutinee] at scrutineeIH
+          cases scrutineeIH
+      next _ _ =>
+          split
+          next noNone =>
+              rw [noNone] at noneIH
+              cases noneIH
+          next _ _ =>
+              split
+              next noSome =>
+                  rw [noSome] at someIH
+                  cases someIH
+              next _ _ =>
+                  rfl
+
+/-- Target-direction totality at `Term.eitherMatch`. -/
+theorem partialStrengthenTyped?_isSome_target_eitherMatch
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {leftType rightType motiveType : Ty level sourceScope}
+    {scrutineeRaw leftRaw rightRaw : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (scrutinee :
+      Term sourceCtx (Ty.eitherType leftType rightType) scrutineeRaw)
+    (leftBranch :
+      Term sourceCtx (Ty.arrow leftType motiveType) leftRaw)
+    (rightBranch :
+      Term sourceCtx (Ty.arrow rightType motiveType) rightRaw)
+    (leftStrengthens :
+      (leftType.partialStrengthen? strengthening.back).isSome = true)
+    (rightStrengthens :
+      (rightType.partialStrengthen? strengthening.back).isSome = true)
+    (motiveStrengthens :
+      (motiveType.partialStrengthen? strengthening.back).isSome = true)
+    (scrutineeIH :
+      (partialStrengthenTyped? scrutinee strengthening).isSome = true)
+    (leftIH :
+      (partialStrengthenTyped? leftBranch strengthening).isSome = true)
+    (rightIH :
+      (partialStrengthenTyped? rightBranch strengthening).isSome = true) :
+    (partialStrengthenTyped?
+        (Term.eitherMatch scrutinee leftBranch rightBranch)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noLeft =>
+      rw [noLeft] at leftStrengthens
+      cases leftStrengthens
+  next _ _ =>
+      split
+      next noRight =>
+          rw [noRight] at rightStrengthens
+          cases rightStrengthens
+      next _ _ =>
+          split
+          next noMotive =>
+              rw [noMotive] at motiveStrengthens
+              cases motiveStrengthens
+          next _ _ =>
+              split
+              next noScrutinee =>
+                  rw [noScrutinee] at scrutineeIH
+                  cases scrutineeIH
+              next _ _ =>
+                  split
+                  next noLeftBranch =>
+                      rw [noLeftBranch] at leftIH
+                      cases leftIH
+                  next _ _ =>
+                      split
+                      next noRightBranch =>
+                          rw [noRightBranch] at rightIH
+                          cases rightIH
+                      next _ _ =>
+                          rfl
+
 /-- Target-direction totality at `Term.equivCode`. -/
 theorem partialStrengthenTyped?_isSome_target_equivCode
     {mode : Mode} {level : Nat}
