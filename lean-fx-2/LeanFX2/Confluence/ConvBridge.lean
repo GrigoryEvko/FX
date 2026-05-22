@@ -547,4 +547,50 @@ theorem Conv.right_toRawJoin_in_weaken_image_of_targetRaw_eq
     Step.parStar.toRawBridge sourceChain.toParStar,
     Step.parStar.toRawBridge targetChain.toParStar⟩
 
+/-- Raw-only renaming variant of `Conv.rename_toRawJoin`.
+
+Given a typed convertibility witness `Conv sourceTerm targetTerm` and a raw
+renaming `rawRenaming`, the renamed raw projections `sourceRaw.rename
+rawRenaming` and `targetRaw.rename rawRenaming` share a common raw reduct.
+Unlike `Conv.rename_toRawJoin`, this requires no typed `TermRenaming` —
+useful when downstream consumers (Conv.trans backward inversion, K13 NbE
+soundness) only need raw-level equivariance and prefer not to thread a
+typing morphism through. -/
+theorem Conv.rawRename_toRawJoin
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    {targetScope : Nat}
+    (rawRenaming : RawRenaming scope targetScope)
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.rename rawRenaming) commonRaw ∧
+      RawStep.parStar (targetRaw.rename rawRenaming) commonRaw := by
+  obtain ⟨commonRaw, sourceChain, targetChain⟩ := Conv.toRawJoin convertibility
+  exact ⟨commonRaw.rename rawRenaming,
+    RawStep.parStar.rename_compatible rawRenaming sourceChain,
+    RawStep.parStar.rename_compatible rawRenaming targetChain⟩
+
+/-- Canonical-weaken specialization of `Conv.rawRename_toRawJoin`.
+
+Surface form `sourceRaw.weaken` / `targetRaw.weaken` matches the shape K13
+NbE β-step consumers reach for at call sites: lift a Conv witness through
+the canonical weakening into the under-binder world without leaving the
+raw layer. -/
+theorem Conv.rawWeaken_toRawJoin
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar sourceRaw.weaken commonRaw ∧
+      RawStep.parStar targetRaw.weaken commonRaw :=
+  Conv.rawRename_toRawJoin RawRenaming.weaken convertibility
+
 end LeanFX2
