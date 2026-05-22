@@ -437,6 +437,7 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.equivCode_ne_sumCode
 #assert_no_axioms LeanFX2.Conv.equivCode_ne_transpFill
 #assert_no_axioms LeanFX2.Conv.equivCode_ne_uaToEquiv
+#assert_no_axioms LeanFX2.Conv.equivCode_ne_universeCode
 #assert_no_axioms LeanFX2.Conv.idCode_ne_unit
 #assert_no_axioms LeanFX2.Conv.idCode_ne_boolTrue
 #assert_no_axioms LeanFX2.Conv.idCode_ne_boolFalse

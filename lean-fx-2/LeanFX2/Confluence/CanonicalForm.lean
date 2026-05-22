@@ -8194,6 +8194,30 @@ theorem Conv.equivCode_ne_uaToEquiv
     RawStep.parStar.uaToEquiv_inv targetToJoin
   nomatch joinEqEquiv.symm.trans joinEqUaToEquiv
 
+/-- An `equivCode`-headed source and a `universeCode`-headed target
+are not convertible.  Equivalence type code versus universe-type
+code at a specific level — distinct canonical type-code heads at
+the raw level.  Nullary target — direct equality inversion closes
+the equivCode source row. -/
+theorem Conv.equivCode_ne_universeCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {innerLevel : Nat}
+    {sourceTerm : Term context sourceType
+      (RawTerm.equivCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.universeCode innerLevel : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEquiv, _, _⟩ :=
+    RawStep.parStar.equivCode_inv sourceToJoin
+  have joinEqUniv : joinRaw = RawTerm.universeCode innerLevel :=
+    RawStep.parStar.universeCode_inv targetToJoin
+  nomatch joinEqEquiv.symm.trans joinEqUniv
+
 /-- A `idCode`-headed source and a `unit`-headed target are not
 convertible.  Opens the identity-type-code row of the canonical-
 head matrix: `idCode` is the TERNARY type-code for the HOTT
