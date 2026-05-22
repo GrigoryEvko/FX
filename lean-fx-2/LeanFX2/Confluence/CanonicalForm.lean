@@ -5671,6 +5671,272 @@ theorem Conv.piTyCode_ne_refl
     RawStep.parStar.refl_inv targetToJoin
   nomatch joinEqPi.symm.trans joinEqRefl
 
+/-! ### `piTyCode` row compound targets (alphabetically > piTyCode)
+
+Binary source destructure with binder codomain (5-binder shape):
+  `obtain ⟨_, _, joinEqPiTyCode, _, _⟩ :=
+     RawStep.parStar.piTyCode_inv sourceToJoin`
+
+Source binders: `{domainCode : RawTerm scope}` plus
+`{codomainCode : RawTerm (scope + 1)}` (binder-scoped codomain).
+Lower-source companions (arrowCode through pathCompose) are
+already covered via `Conv.symm` of the corresponding lower-source
+rows. -/
+
+/-- A `piTyCode`-headed source and a `productCode`-headed target
+are not convertible.  Π-type code (binder-shape codomain) versus
+non-dependent product-type code. -/
+theorem Conv.piTyCode_ne_productCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {domainCode : RawTerm scope}
+    {codomainCode : RawTerm (scope + 1)}
+    {firstCode secondCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.piTyCode domainCode codomainCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.productCode firstCode secondCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPiTyCode, _, _⟩ :=
+    RawStep.parStar.piTyCode_inv sourceToJoin
+  obtain ⟨_, _, joinEqProductCode, _, _⟩ :=
+    RawStep.parStar.productCode_inv targetToJoin
+  nomatch joinEqPiTyCode.symm.trans joinEqProductCode
+
+/-- A `piTyCode`-headed source and a `recordIntro`-headed target
+are not convertible.  Π-type code (type-code stratum) versus
+record-value introduction (value stratum). -/
+theorem Conv.piTyCode_ne_recordIntro
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {domainCode : RawTerm scope}
+    {codomainCode : RawTerm (scope + 1)}
+    {firstField : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.piTyCode domainCode codomainCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.recordIntro firstField : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPiTyCode, _, _⟩ :=
+    RawStep.parStar.piTyCode_inv sourceToJoin
+  obtain ⟨_, joinEqRecord, _⟩ :=
+    RawStep.parStar.recordIntro_inv targetToJoin
+  nomatch joinEqPiTyCode.symm.trans joinEqRecord
+
+/-- A `piTyCode`-headed source and a `refineIntro`-headed target
+are not convertible.  Π-type code versus refinement-type
+introduction (value paired with predicate proof). -/
+theorem Conv.piTyCode_ne_refineIntro
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {domainCode : RawTerm scope}
+    {codomainCode : RawTerm (scope + 1)}
+    {rawValue predicateProof : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.piTyCode domainCode codomainCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.refineIntro rawValue predicateProof : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPiTyCode, _, _⟩ :=
+    RawStep.parStar.piTyCode_inv sourceToJoin
+  obtain ⟨_, _, joinEqRefineIntro, _, _⟩ :=
+    RawStep.parStar.refineIntro_inv targetToJoin
+  nomatch joinEqPiTyCode.symm.trans joinEqRefineIntro
+
+/-- A `piTyCode`-headed source and a `sessionRecv`-headed target
+are not convertible.  Π-type code versus session-receive
+operation. -/
+theorem Conv.piTyCode_ne_sessionRecv
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {domainCode : RawTerm scope}
+    {codomainCode : RawTerm (scope + 1)}
+    {channel : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.piTyCode domainCode codomainCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sessionRecv channel : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPiTyCode, _, _⟩ :=
+    RawStep.parStar.piTyCode_inv sourceToJoin
+  obtain ⟨_, joinEqSessionRecv, _⟩ :=
+    RawStep.parStar.sessionRecv_inv targetToJoin
+  nomatch joinEqPiTyCode.symm.trans joinEqSessionRecv
+
+/-- A `piTyCode`-headed source and a `sessionSend`-headed target
+are not convertible.  Π-type code versus session-send operation. -/
+theorem Conv.piTyCode_ne_sessionSend
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {domainCode : RawTerm scope}
+    {codomainCode : RawTerm (scope + 1)}
+    {channel payload : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.piTyCode domainCode codomainCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sessionSend channel payload : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPiTyCode, _, _⟩ :=
+    RawStep.parStar.piTyCode_inv sourceToJoin
+  obtain ⟨_, _, joinEqSessionSend, _, _⟩ :=
+    RawStep.parStar.sessionSend_inv targetToJoin
+  nomatch joinEqPiTyCode.symm.trans joinEqSessionSend
+
+/-- A `piTyCode`-headed source and a `sigmaTyCode`-headed target
+are not convertible.  Π-type code versus Σ-type code — both have
+binder-shape codomains, but on distinct dependent-pair ctors. -/
+theorem Conv.piTyCode_ne_sigmaTyCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {domainCode : RawTerm scope}
+    {codomainCode : RawTerm (scope + 1)}
+    {firstCode : RawTerm scope}
+    {secondCode : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType
+      (RawTerm.piTyCode domainCode codomainCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sigmaTyCode firstCode secondCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPiTyCode, _, _⟩ :=
+    RawStep.parStar.piTyCode_inv sourceToJoin
+  obtain ⟨_, _, joinEqSigmaTyCode, _, _⟩ :=
+    RawStep.parStar.sigmaTyCode_inv targetToJoin
+  nomatch joinEqPiTyCode.symm.trans joinEqSigmaTyCode
+
+/-- A `piTyCode`-headed source and a `subsume`-headed target are
+not convertible.  Π-type code versus modal subsumption. -/
+theorem Conv.piTyCode_ne_subsume
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {domainCode : RawTerm scope}
+    {codomainCode : RawTerm (scope + 1)}
+    {innerTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.piTyCode domainCode codomainCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.subsume innerTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPiTyCode, _, _⟩ :=
+    RawStep.parStar.piTyCode_inv sourceToJoin
+  obtain ⟨_, joinEqSubsume, _⟩ :=
+    RawStep.parStar.subsume_inv targetToJoin
+  nomatch joinEqPiTyCode.symm.trans joinEqSubsume
+
+/-- A `piTyCode`-headed source and a `sumCode`-headed target are
+not convertible.  Π-type code versus sum-type code — distinct
+type-code ctors. -/
+theorem Conv.piTyCode_ne_sumCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {domainCode : RawTerm scope}
+    {codomainCode : RawTerm (scope + 1)}
+    {leftCodeSum rightCodeSum : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.piTyCode domainCode codomainCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sumCode leftCodeSum rightCodeSum : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPiTyCode, _, _⟩ :=
+    RawStep.parStar.piTyCode_inv sourceToJoin
+  obtain ⟨_, _, joinEqSumCode, _, _⟩ :=
+    RawStep.parStar.sumCode_inv targetToJoin
+  nomatch joinEqPiTyCode.symm.trans joinEqSumCode
+
+/-- A `piTyCode`-headed source and a `transpFill`-headed target are
+not convertible.  Π-type code (type-code stratum) versus cubical
+transport-fill — ternary target, 7-tuple inversion. -/
+theorem Conv.piTyCode_ne_transpFill
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {domainCode : RawTerm scope}
+    {codomainCode : RawTerm (scope + 1)}
+    {pathTerm intervalTerm sourceRawTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.piTyCode domainCode codomainCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.transpFill pathTerm intervalTerm sourceRawTerm :
+        RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPiTyCode, _, _⟩ :=
+    RawStep.parStar.piTyCode_inv sourceToJoin
+  obtain ⟨_, _, _, joinEqTranspFill, _, _, _⟩ :=
+    RawStep.parStar.transpFill_inv targetToJoin
+  nomatch joinEqPiTyCode.symm.trans joinEqTranspFill
+
+/-- A `piTyCode`-headed source and a `uaToEquiv`-headed target are
+not convertible.  Π-type code versus univalence-to-equivalence
+converter. -/
+theorem Conv.piTyCode_ne_uaToEquiv
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {domainCode : RawTerm scope}
+    {codomainCode : RawTerm (scope + 1)}
+    {proofTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.piTyCode domainCode codomainCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.uaToEquiv proofTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPiTyCode, _, _⟩ :=
+    RawStep.parStar.piTyCode_inv sourceToJoin
+  obtain ⟨_, joinEqUaToEquiv, _⟩ :=
+    RawStep.parStar.uaToEquiv_inv targetToJoin
+  nomatch joinEqPiTyCode.symm.trans joinEqUaToEquiv
+
+/-- A `piTyCode`-headed source and a `universeCode`-headed target
+are not convertible.  Π-type code versus universe-type code —
+nullary target via direct equality inversion; closes the
+`piTyCode` source row. -/
+theorem Conv.piTyCode_ne_universeCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {domainCode : RawTerm scope}
+    {codomainCode : RawTerm (scope + 1)}
+    {innerLevel : Nat}
+    {sourceTerm : Term context sourceType
+      (RawTerm.piTyCode domainCode codomainCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.universeCode innerLevel : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPiTyCode, _, _⟩ :=
+    RawStep.parStar.piTyCode_inv sourceToJoin
+  have joinEqUniv : joinRaw = RawTerm.universeCode innerLevel :=
+    RawStep.parStar.universeCode_inv targetToJoin
+  nomatch joinEqPiTyCode.symm.trans joinEqUniv
+
 /-- A `sigmaTyCode`-headed source and a `unit`-headed target are
 not convertible.  Opens the dependent-Σ type-code row of the
 canonical-head matrix: `sigmaTyCode` is the type-code for the
