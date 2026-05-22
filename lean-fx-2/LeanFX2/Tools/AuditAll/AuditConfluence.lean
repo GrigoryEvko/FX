@@ -22,6 +22,7 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.rawWeaken_toRawJoin
 #assert_no_axioms LeanFX2.Conv.rawSubst_toRawJoin
 #assert_no_axioms LeanFX2.Conv.rawSubst0_toRawJoin
+#assert_no_axioms LeanFX2.Conv.rawSubst0_par_toRawJoin
 #assert_no_axioms LeanFX2.Conv.canonicalRaw
 #assert_no_axioms LeanFX2.Conv.reflRaw
 #assert_no_axioms LeanFX2.Conv.symRaw

@@ -640,4 +640,40 @@ theorem Conv.rawSubst0_toRawJoin
       RawStep.parStar (targetRaw.subst0 argRaw) commonRaw :=
   Conv.rawSubst_toRawJoin (RawTermSubst.singleton argRaw) convertibility
 
+/-- Heterogeneous β-redex raw join.
+
+Given two typed Conv witnesses — one for the body (under-binder), one for
+the argument — produce a raw join of the β-redex shapes
+`bodySourceRaw.subst0 argSourceRaw` and `bodyTargetRaw.subst0 argTargetRaw`.
+Both endpoints evolve through their own chain, meeting at the substituted
+midpoints.
+
+This matches the shape K12.28 Geuvers 1992 β-η critical-pair joinability
+and K13.18 NbE β-step soundness need: a β-redex where neither the body nor
+the argument is pinned across the Conv. -/
+theorem Conv.rawSubst0_par_toRawJoin
+    {mode : Mode} {level scope : Nat}
+    {bodyContext : Ctx mode level (scope + 1)}
+    {argContext : Ctx mode level scope}
+    {bodySourceType bodyTargetType : Ty level (scope + 1)}
+    {argSourceType argTargetType : Ty level scope}
+    {bodySourceRaw bodyTargetRaw : RawTerm (scope + 1)}
+    {argSourceRaw argTargetRaw : RawTerm scope}
+    {bodySource : Term bodyContext bodySourceType bodySourceRaw}
+    {bodyTarget : Term bodyContext bodyTargetType bodyTargetRaw}
+    {argSource : Term argContext argSourceType argSourceRaw}
+    {argTarget : Term argContext argTargetType argTargetRaw}
+    (bodyConvertibility : Conv bodySource bodyTarget)
+    (argConvertibility : Conv argSource argTarget) :
+    ∃ commonRaw,
+      RawStep.parStar (bodySourceRaw.subst0 argSourceRaw) commonRaw ∧
+      RawStep.parStar (bodyTargetRaw.subst0 argTargetRaw) commonRaw := by
+  obtain ⟨bodyMidRaw, bodySourceChain, bodyTargetChain⟩ :=
+    Conv.toRawJoin bodyConvertibility
+  obtain ⟨argMidRaw, argSourceChain, argTargetChain⟩ :=
+    Conv.toRawJoin argConvertibility
+  exact ⟨bodyMidRaw.subst0 argMidRaw,
+    RawStep.parStar.subst0_par bodySourceChain argSourceChain,
+    RawStep.parStar.subst0_par bodyTargetChain argTargetChain⟩
+
 end LeanFX2
