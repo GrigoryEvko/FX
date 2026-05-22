@@ -912,5 +912,14 @@ transp arm to discharge the dispatch. -/
 #assert_no_axioms LeanFX2.Conv.arrowCode_ne_transpFill
 #assert_no_axioms LeanFX2.Conv.arrowCode_ne_uaToEquiv
 #assert_no_axioms LeanFX2.Conv.arrowCode_ne_universeCode
+#assert_no_axioms LeanFX2.Conv.codataUnfold_ne_cumulUpMarker
+#assert_no_axioms LeanFX2.Conv.codataUnfold_ne_effectPerform
+#assert_no_axioms LeanFX2.Conv.codataUnfold_ne_eitherCode
+#assert_no_axioms LeanFX2.Conv.codataUnfold_ne_equivCode
+#assert_no_axioms LeanFX2.Conv.codataUnfold_ne_equivCompose
+#assert_no_axioms LeanFX2.Conv.codataUnfold_ne_equivIntro
+#assert_no_axioms LeanFX2.Conv.codataUnfold_ne_glueIntro
+#assert_no_axioms LeanFX2.Conv.codataUnfold_ne_idCode
+#assert_no_axioms LeanFX2.Conv.codataUnfold_ne_idStrictRefl
 
 end LeanFX2.Tools
