@@ -255,5 +255,15 @@ only (`dsimp only` unfold + nested `match` + `cases` on impossible
 #assert_no_axioms LeanFX2.RawTerm.partialRename?_cumulUpMarker_isSome
 #assert_no_axioms LeanFX2.RawTerm.partialRename?_uaToEquiv_isSome
 #assert_no_axioms LeanFX2.RawTerm.partialRename?_idToEquiv_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_hcomp_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_oeqJ_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_idStrictRec_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_equivIntro_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_equivApp_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_refineIntro_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_codataUnfold_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_sessionSend_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_effectPerform_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_arrowCode_isSome
 
 end LeanFX2.Tools

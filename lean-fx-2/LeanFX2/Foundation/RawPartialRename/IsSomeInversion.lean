@@ -898,6 +898,224 @@ theorem partialRename?_idToEquiv_isSome
   | none => rw [proofBranch] at composite; cases composite
   | some _ => rfl
 
+/-- Inversion of `RawTerm.hcomp` partial-renaming `.isSome`. -/
+theorem partialRename?_hcomp_isSome
+    (back : PartialRawRenaming sourceScope targetScope)
+    (sides cap : RawTerm sourceScope)
+    (composite :
+      ((RawTerm.hcomp sides cap).partialRename? back).isSome = true) :
+    (sides.partialRename? back).isSome = true ∧
+      (cap.partialRename? back).isSome = true := by
+  dsimp only [RawTerm.partialRename?, Option.mapTwo] at composite
+  refine ⟨?_, ?_⟩
+  · match sidesBranch : sides.partialRename? back with
+    | none => rw [sidesBranch] at composite; cases composite
+    | some _ => rfl
+  · match capBranch : cap.partialRename? back with
+    | none =>
+        rw [capBranch] at composite
+        match sidesBranch : sides.partialRename? back with
+        | none => rw [sidesBranch] at composite; cases composite
+        | some _ => rw [sidesBranch] at composite; cases composite
+    | some _ => rfl
+
+/-- Inversion of `RawTerm.oeqJ` partial-renaming `.isSome`. -/
+theorem partialRename?_oeqJ_isSome
+    (back : PartialRawRenaming sourceScope targetScope)
+    (baseCase witness : RawTerm sourceScope)
+    (composite :
+      ((RawTerm.oeqJ baseCase witness).partialRename? back).isSome = true) :
+    (baseCase.partialRename? back).isSome = true ∧
+      (witness.partialRename? back).isSome = true := by
+  dsimp only [RawTerm.partialRename?, Option.mapTwo] at composite
+  refine ⟨?_, ?_⟩
+  · match baseBranch : baseCase.partialRename? back with
+    | none => rw [baseBranch] at composite; cases composite
+    | some _ => rfl
+  · match witnessBranch : witness.partialRename? back with
+    | none =>
+        rw [witnessBranch] at composite
+        match baseBranch : baseCase.partialRename? back with
+        | none => rw [baseBranch] at composite; cases composite
+        | some _ => rw [baseBranch] at composite; cases composite
+    | some _ => rfl
+
+/-- Inversion of `RawTerm.idStrictRec` partial-renaming `.isSome`. -/
+theorem partialRename?_idStrictRec_isSome
+    (back : PartialRawRenaming sourceScope targetScope)
+    (baseCase witness : RawTerm sourceScope)
+    (composite :
+      ((RawTerm.idStrictRec baseCase witness).partialRename? back).isSome
+        = true) :
+    (baseCase.partialRename? back).isSome = true ∧
+      (witness.partialRename? back).isSome = true := by
+  dsimp only [RawTerm.partialRename?, Option.mapTwo] at composite
+  refine ⟨?_, ?_⟩
+  · match baseBranch : baseCase.partialRename? back with
+    | none => rw [baseBranch] at composite; cases composite
+    | some _ => rfl
+  · match witnessBranch : witness.partialRename? back with
+    | none =>
+        rw [witnessBranch] at composite
+        match baseBranch : baseCase.partialRename? back with
+        | none => rw [baseBranch] at composite; cases composite
+        | some _ => rw [baseBranch] at composite; cases composite
+    | some _ => rfl
+
+/-- Inversion of `RawTerm.equivIntro` partial-renaming `.isSome`. -/
+theorem partialRename?_equivIntro_isSome
+    (back : PartialRawRenaming sourceScope targetScope)
+    (forwardFn backwardFn : RawTerm sourceScope)
+    (composite :
+      ((RawTerm.equivIntro forwardFn backwardFn).partialRename? back).isSome
+        = true) :
+    (forwardFn.partialRename? back).isSome = true ∧
+      (backwardFn.partialRename? back).isSome = true := by
+  dsimp only [RawTerm.partialRename?, Option.mapTwo] at composite
+  refine ⟨?_, ?_⟩
+  · match fwdBranch : forwardFn.partialRename? back with
+    | none => rw [fwdBranch] at composite; cases composite
+    | some _ => rfl
+  · match bwdBranch : backwardFn.partialRename? back with
+    | none =>
+        rw [bwdBranch] at composite
+        match fwdBranch : forwardFn.partialRename? back with
+        | none => rw [fwdBranch] at composite; cases composite
+        | some _ => rw [fwdBranch] at composite; cases composite
+    | some _ => rfl
+
+/-- Inversion of `RawTerm.equivApp` partial-renaming `.isSome`. -/
+theorem partialRename?_equivApp_isSome
+    (back : PartialRawRenaming sourceScope targetScope)
+    (equivTerm argument : RawTerm sourceScope)
+    (composite :
+      ((RawTerm.equivApp equivTerm argument).partialRename? back).isSome
+        = true) :
+    (equivTerm.partialRename? back).isSome = true ∧
+      (argument.partialRename? back).isSome = true := by
+  dsimp only [RawTerm.partialRename?, Option.mapTwo] at composite
+  refine ⟨?_, ?_⟩
+  · match equivBranch : equivTerm.partialRename? back with
+    | none => rw [equivBranch] at composite; cases composite
+    | some _ => rfl
+  · match argBranch : argument.partialRename? back with
+    | none =>
+        rw [argBranch] at composite
+        match equivBranch : equivTerm.partialRename? back with
+        | none => rw [equivBranch] at composite; cases composite
+        | some _ => rw [equivBranch] at composite; cases composite
+    | some _ => rfl
+
+/-- Inversion of `RawTerm.refineIntro` partial-renaming `.isSome`. -/
+theorem partialRename?_refineIntro_isSome
+    (back : PartialRawRenaming sourceScope targetScope)
+    (rawValue predicateProof : RawTerm sourceScope)
+    (composite :
+      ((RawTerm.refineIntro rawValue predicateProof).partialRename?
+          back).isSome = true) :
+    (rawValue.partialRename? back).isSome = true ∧
+      (predicateProof.partialRename? back).isSome = true := by
+  dsimp only [RawTerm.partialRename?, Option.mapTwo] at composite
+  refine ⟨?_, ?_⟩
+  · match valueBranch : rawValue.partialRename? back with
+    | none => rw [valueBranch] at composite; cases composite
+    | some _ => rfl
+  · match predicateBranch : predicateProof.partialRename? back with
+    | none =>
+        rw [predicateBranch] at composite
+        match valueBranch : rawValue.partialRename? back with
+        | none => rw [valueBranch] at composite; cases composite
+        | some _ => rw [valueBranch] at composite; cases composite
+    | some _ => rfl
+
+/-- Inversion of `RawTerm.codataUnfold` partial-renaming `.isSome`. -/
+theorem partialRename?_codataUnfold_isSome
+    (back : PartialRawRenaming sourceScope targetScope)
+    (initialState transition : RawTerm sourceScope)
+    (composite :
+      ((RawTerm.codataUnfold initialState transition).partialRename?
+          back).isSome = true) :
+    (initialState.partialRename? back).isSome = true ∧
+      (transition.partialRename? back).isSome = true := by
+  dsimp only [RawTerm.partialRename?, Option.mapTwo] at composite
+  refine ⟨?_, ?_⟩
+  · match initBranch : initialState.partialRename? back with
+    | none => rw [initBranch] at composite; cases composite
+    | some _ => rfl
+  · match transBranch : transition.partialRename? back with
+    | none =>
+        rw [transBranch] at composite
+        match initBranch : initialState.partialRename? back with
+        | none => rw [initBranch] at composite; cases composite
+        | some _ => rw [initBranch] at composite; cases composite
+    | some _ => rfl
+
+/-- Inversion of `RawTerm.sessionSend` partial-renaming `.isSome`. -/
+theorem partialRename?_sessionSend_isSome
+    (back : PartialRawRenaming sourceScope targetScope)
+    (channel payload : RawTerm sourceScope)
+    (composite :
+      ((RawTerm.sessionSend channel payload).partialRename? back).isSome
+        = true) :
+    (channel.partialRename? back).isSome = true ∧
+      (payload.partialRename? back).isSome = true := by
+  dsimp only [RawTerm.partialRename?, Option.mapTwo] at composite
+  refine ⟨?_, ?_⟩
+  · match channelBranch : channel.partialRename? back with
+    | none => rw [channelBranch] at composite; cases composite
+    | some _ => rfl
+  · match payloadBranch : payload.partialRename? back with
+    | none =>
+        rw [payloadBranch] at composite
+        match channelBranch : channel.partialRename? back with
+        | none => rw [channelBranch] at composite; cases composite
+        | some _ => rw [channelBranch] at composite; cases composite
+    | some _ => rfl
+
+/-- Inversion of `RawTerm.effectPerform` partial-renaming `.isSome`. -/
+theorem partialRename?_effectPerform_isSome
+    (back : PartialRawRenaming sourceScope targetScope)
+    (operationTag arguments : RawTerm sourceScope)
+    (composite :
+      ((RawTerm.effectPerform operationTag arguments).partialRename?
+          back).isSome = true) :
+    (operationTag.partialRename? back).isSome = true ∧
+      (arguments.partialRename? back).isSome = true := by
+  dsimp only [RawTerm.partialRename?, Option.mapTwo] at composite
+  refine ⟨?_, ?_⟩
+  · match opBranch : operationTag.partialRename? back with
+    | none => rw [opBranch] at composite; cases composite
+    | some _ => rfl
+  · match argsBranch : arguments.partialRename? back with
+    | none =>
+        rw [argsBranch] at composite
+        match opBranch : operationTag.partialRename? back with
+        | none => rw [opBranch] at composite; cases composite
+        | some _ => rw [opBranch] at composite; cases composite
+    | some _ => rfl
+
+/-- Inversion of `RawTerm.arrowCode` partial-renaming `.isSome`. -/
+theorem partialRename?_arrowCode_isSome
+    (back : PartialRawRenaming sourceScope targetScope)
+    (domainCode codomainCode : RawTerm sourceScope)
+    (composite :
+      ((RawTerm.arrowCode domainCode codomainCode).partialRename?
+          back).isSome = true) :
+    (domainCode.partialRename? back).isSome = true ∧
+      (codomainCode.partialRename? back).isSome = true := by
+  dsimp only [RawTerm.partialRename?, Option.mapTwo] at composite
+  refine ⟨?_, ?_⟩
+  · match domainBranch : domainCode.partialRename? back with
+    | none => rw [domainBranch] at composite; cases composite
+    | some _ => rfl
+  · match codomainBranch : codomainCode.partialRename? back with
+    | none =>
+        rw [codomainBranch] at composite
+        match domainBranch : domainCode.partialRename? back with
+        | none => rw [domainBranch] at composite; cases composite
+        | some _ => rw [domainBranch] at composite; cases composite
+    | some _ => rfl
+
 end RawTerm
 
 end LeanFX2
