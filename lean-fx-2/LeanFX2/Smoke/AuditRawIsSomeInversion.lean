@@ -46,5 +46,18 @@ namespace LeanFX2.Smoke.AuditRawIsSomeInversion
 #print axioms LeanFX2.RawTerm.partialRename?_listElim_isSome
 #print axioms LeanFX2.RawTerm.partialRename?_optionMatch_isSome
 #print axioms LeanFX2.RawTerm.partialRename?_eitherMatch_isSome
+#print axioms LeanFX2.RawTerm.partialRename?_oeqRefl_isSome
+#print axioms LeanFX2.RawTerm.partialRename?_oeqFunext_isSome
+#print axioms LeanFX2.RawTerm.partialRename?_idStrictRefl_isSome
+#print axioms LeanFX2.RawTerm.partialRename?_refineElim_isSome
+#print axioms LeanFX2.RawTerm.partialRename?_recordIntro_isSome
+#print axioms LeanFX2.RawTerm.partialRename?_recordProj_isSome
+#print axioms LeanFX2.RawTerm.partialRename?_codataDest_isSome
+#print axioms LeanFX2.RawTerm.partialRename?_sessionRecv_isSome
+#print axioms LeanFX2.RawTerm.partialRename?_listCode_isSome
+#print axioms LeanFX2.RawTerm.partialRename?_optionCode_isSome
+#print axioms LeanFX2.RawTerm.partialRename?_cumulUpMarker_isSome
+#print axioms LeanFX2.RawTerm.partialRename?_uaToEquiv_isSome
+#print axioms LeanFX2.RawTerm.partialRename?_idToEquiv_isSome
 
 end LeanFX2.Smoke.AuditRawIsSomeInversion

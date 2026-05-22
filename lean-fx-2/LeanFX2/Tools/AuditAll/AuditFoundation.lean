@@ -242,5 +242,18 @@ only (`dsimp only` unfold + nested `match` + `cases` on impossible
 #assert_no_axioms LeanFX2.RawTerm.partialRename?_listElim_isSome
 #assert_no_axioms LeanFX2.RawTerm.partialRename?_optionMatch_isSome
 #assert_no_axioms LeanFX2.RawTerm.partialRename?_eitherMatch_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_oeqRefl_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_oeqFunext_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_idStrictRefl_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_refineElim_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_recordIntro_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_recordProj_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_codataDest_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_sessionRecv_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_listCode_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_optionCode_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_cumulUpMarker_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_uaToEquiv_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_idToEquiv_isSome
 
 end LeanFX2.Tools
