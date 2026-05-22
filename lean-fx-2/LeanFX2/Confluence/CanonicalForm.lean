@@ -4891,6 +4891,162 @@ theorem Conv.optionCode_ne_sessionRecv
     RawStep.parStar.sessionRecv_inv targetToJoin
   nomatch joinEqOptionCode.symm.trans joinEqSessionRecv
 
+/-- An `optionCode`-headed source and a `sessionSend`-headed target
+are not convertible.  Option-type code versus session-send
+operation. -/
+theorem Conv.optionCode_ne_sessionSend
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {elementCode : RawTerm scope}
+    {channel payload : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.optionCode elementCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sessionSend channel payload : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOptionCode, _⟩ :=
+    RawStep.parStar.optionCode_inv sourceToJoin
+  obtain ⟨_, _, joinEqSessionSend, _, _⟩ :=
+    RawStep.parStar.sessionSend_inv targetToJoin
+  nomatch joinEqOptionCode.symm.trans joinEqSessionSend
+
+/-- An `optionCode`-headed source and a `sigmaTyCode`-headed target
+are not convertible.  Option-type code versus Σ-type code (binder-
+shape codomain). -/
+theorem Conv.optionCode_ne_sigmaTyCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {elementCode : RawTerm scope}
+    {firstCode : RawTerm scope}
+    {secondCode : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType
+      (RawTerm.optionCode elementCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sigmaTyCode firstCode secondCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOptionCode, _⟩ :=
+    RawStep.parStar.optionCode_inv sourceToJoin
+  obtain ⟨_, _, joinEqSigmaTyCode, _, _⟩ :=
+    RawStep.parStar.sigmaTyCode_inv targetToJoin
+  nomatch joinEqOptionCode.symm.trans joinEqSigmaTyCode
+
+/-- An `optionCode`-headed source and a `subsume`-headed target are
+not convertible.  Option-type code versus modal subsumption. -/
+theorem Conv.optionCode_ne_subsume
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {elementCode : RawTerm scope}
+    {innerTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.optionCode elementCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.subsume innerTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOptionCode, _⟩ :=
+    RawStep.parStar.optionCode_inv sourceToJoin
+  obtain ⟨_, joinEqSubsume, _⟩ :=
+    RawStep.parStar.subsume_inv targetToJoin
+  nomatch joinEqOptionCode.symm.trans joinEqSubsume
+
+/-- An `optionCode`-headed source and a `sumCode`-headed target are
+not convertible.  Option-type code versus sum-type code — both
+parametric containers, distinct ctors. -/
+theorem Conv.optionCode_ne_sumCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {elementCode : RawTerm scope}
+    {leftCodeSum rightCodeSum : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.optionCode elementCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sumCode leftCodeSum rightCodeSum : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOptionCode, _⟩ :=
+    RawStep.parStar.optionCode_inv sourceToJoin
+  obtain ⟨_, _, joinEqSumCode, _, _⟩ :=
+    RawStep.parStar.sumCode_inv targetToJoin
+  nomatch joinEqOptionCode.symm.trans joinEqSumCode
+
+/-- An `optionCode`-headed source and a `transpFill`-headed target
+are not convertible.  Option-type code (type-code stratum) versus
+cubical transport-fill — ternary target, 7-tuple inversion. -/
+theorem Conv.optionCode_ne_transpFill
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {elementCode : RawTerm scope}
+    {pathTerm intervalTerm sourceRawTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.optionCode elementCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.transpFill pathTerm intervalTerm sourceRawTerm :
+        RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOptionCode, _⟩ :=
+    RawStep.parStar.optionCode_inv sourceToJoin
+  obtain ⟨_, _, _, joinEqTranspFill, _, _, _⟩ :=
+    RawStep.parStar.transpFill_inv targetToJoin
+  nomatch joinEqOptionCode.symm.trans joinEqTranspFill
+
+/-- An `optionCode`-headed source and a `uaToEquiv`-headed target
+are not convertible.  Option-type code versus univalence-to-
+equivalence converter. -/
+theorem Conv.optionCode_ne_uaToEquiv
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {elementCode : RawTerm scope}
+    {proofTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.optionCode elementCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.uaToEquiv proofTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOptionCode, _⟩ :=
+    RawStep.parStar.optionCode_inv sourceToJoin
+  obtain ⟨_, joinEqUaToEquiv, _⟩ :=
+    RawStep.parStar.uaToEquiv_inv targetToJoin
+  nomatch joinEqOptionCode.symm.trans joinEqUaToEquiv
+
+/-- An `optionCode`-headed source and a `universeCode`-headed
+target are not convertible.  Option-type code versus universe-type
+code — nullary target, direct equality inversion; closes the
+`optionCode` source row. -/
+theorem Conv.optionCode_ne_universeCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {elementCode : RawTerm scope}
+    {innerLevel : Nat}
+    {sourceTerm : Term context sourceType
+      (RawTerm.optionCode elementCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.universeCode innerLevel : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOptionCode, _⟩ :=
+    RawStep.parStar.optionCode_inv sourceToJoin
+  have joinEqUniv : joinRaw = RawTerm.universeCode innerLevel :=
+    RawStep.parStar.universeCode_inv targetToJoin
+  nomatch joinEqOptionCode.symm.trans joinEqUniv
+
 /-- A `arrowCode`-headed source and a `unit`-headed target are not
 convertible.  Opens the binary type-code row of the canonical-head
 matrix: `arrowCode` is the type-code for the simple-arrow type
