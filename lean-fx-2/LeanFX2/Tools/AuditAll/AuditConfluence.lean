@@ -366,6 +366,15 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.eitherCode_ne_listCons
 #assert_no_axioms LeanFX2.Conv.eitherCode_ne_pair
 #assert_no_axioms LeanFX2.Conv.eitherCode_ne_refl
+#assert_no_axioms LeanFX2.Conv.eitherCode_ne_equivCode
+#assert_no_axioms LeanFX2.Conv.eitherCode_ne_equivCompose
+#assert_no_axioms LeanFX2.Conv.eitherCode_ne_equivIntro
+#assert_no_axioms LeanFX2.Conv.eitherCode_ne_glueIntro
+#assert_no_axioms LeanFX2.Conv.eitherCode_ne_idCode
+#assert_no_axioms LeanFX2.Conv.eitherCode_ne_idStrictRefl
+#assert_no_axioms LeanFX2.Conv.eitherCode_ne_intervalJoin
+#assert_no_axioms LeanFX2.Conv.eitherCode_ne_intervalMeet
+#assert_no_axioms LeanFX2.Conv.eitherCode_ne_intervalOpp
 #assert_no_axioms LeanFX2.Conv.equivCode_ne_unit
 #assert_no_axioms LeanFX2.Conv.equivCode_ne_boolTrue
 #assert_no_axioms LeanFX2.Conv.equivCode_ne_boolFalse

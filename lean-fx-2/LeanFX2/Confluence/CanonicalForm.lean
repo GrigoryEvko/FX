@@ -6632,6 +6632,204 @@ theorem Conv.eitherCode_ne_refl
     RawStep.parStar.refl_inv targetToJoin
   nomatch joinEqEither.symm.trans joinEqRefl
 
+/-- An `eitherCode`-headed source and an `equivCode`-headed target
+are not convertible.  Either type code versus equivalence type
+code — distinct canonical type-code heads at the raw level. -/
+theorem Conv.eitherCode_ne_equivCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {leftCode rightCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.equivCode leftCode rightCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEither, _, _⟩ :=
+    RawStep.parStar.eitherCode_inv sourceToJoin
+  obtain ⟨_, _, joinEqEquivCode, _, _⟩ :=
+    RawStep.parStar.equivCode_inv targetToJoin
+  nomatch joinEqEither.symm.trans joinEqEquivCode
+
+/-- An `eitherCode`-headed source and an `equivCompose`-headed
+target are not convertible.  Either type code versus equivalence
+composition — distinct canonical heads at the raw level. -/
+theorem Conv.eitherCode_ne_equivCompose
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {firstEquiv secondEquiv : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.equivCompose firstEquiv secondEquiv : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEither, _, _⟩ :=
+    RawStep.parStar.eitherCode_inv sourceToJoin
+  obtain ⟨_, _, joinEqEquivCompose, _, _⟩ :=
+    RawStep.parStar.equivCompose_inv targetToJoin
+  nomatch joinEqEither.symm.trans joinEqEquivCompose
+
+/-- An `eitherCode`-headed source and an `equivIntro`-headed
+target are not convertible.  Either type code versus equivalence
+introduction witness — distinct canonical heads at the raw level. -/
+theorem Conv.eitherCode_ne_equivIntro
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {forwardMap backwardMap : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.equivIntro forwardMap backwardMap : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEither, _, _⟩ :=
+    RawStep.parStar.eitherCode_inv sourceToJoin
+  obtain ⟨_, _, joinEqEquivIntro, _, _⟩ :=
+    RawStep.parStar.equivIntro_inv targetToJoin
+  nomatch joinEqEither.symm.trans joinEqEquivIntro
+
+/-- An `eitherCode`-headed source and a `glueIntro`-headed target
+are not convertible.  Either type code versus cubical glue
+introduction — distinct canonical heads at the raw level. -/
+theorem Conv.eitherCode_ne_glueIntro
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {baseCarrier glueCarrier : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.glueIntro baseCarrier glueCarrier : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEither, _, _⟩ :=
+    RawStep.parStar.eitherCode_inv sourceToJoin
+  obtain ⟨_, _, joinEqGlueIntro, _, _⟩ :=
+    RawStep.parStar.glueIntro_inv targetToJoin
+  nomatch joinEqEither.symm.trans joinEqGlueIntro
+
+/-- An `eitherCode`-headed source and an `idCode`-headed target are
+not convertible.  Either type code versus identity-type code
+(ternary at the raw level) — distinct canonical heads. -/
+theorem Conv.eitherCode_ne_idCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {typeCode leftCode rightCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.idCode typeCode leftCode rightCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEither, _, _⟩ :=
+    RawStep.parStar.eitherCode_inv sourceToJoin
+  obtain ⟨_, _, _, joinEqIdCode, _, _, _⟩ :=
+    RawStep.parStar.idCode_inv targetToJoin
+  nomatch joinEqEither.symm.trans joinEqIdCode
+
+/-- An `eitherCode`-headed source and an `idStrictRefl`-headed
+target are not convertible.  Either type code versus strict-identity
+reflexivity witness — distinct canonical heads at the raw level. -/
+theorem Conv.eitherCode_ne_idStrictRefl
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {witness : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.idStrictRefl witness : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEither, _, _⟩ :=
+    RawStep.parStar.eitherCode_inv sourceToJoin
+  obtain ⟨_, joinEqStrictRefl, _⟩ :=
+    RawStep.parStar.idStrictRefl_inv targetToJoin
+  nomatch joinEqEither.symm.trans joinEqStrictRefl
+
+/-- An `eitherCode`-headed source and an `intervalJoin`-headed
+target are not convertible.  Either type code versus interval-join
+operation — distinct canonical heads at the raw level. -/
+theorem Conv.eitherCode_ne_intervalJoin
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {leftInterval rightInterval : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.intervalJoin leftInterval rightInterval : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEither, _, _⟩ :=
+    RawStep.parStar.eitherCode_inv sourceToJoin
+  obtain ⟨_, _, joinEqIntervalJoin, _, _⟩ :=
+    RawStep.parStar.intervalJoin_inv targetToJoin
+  nomatch joinEqEither.symm.trans joinEqIntervalJoin
+
+/-- An `eitherCode`-headed source and an `intervalMeet`-headed
+target are not convertible.  Either type code versus interval-meet
+operation — distinct canonical heads at the raw level. -/
+theorem Conv.eitherCode_ne_intervalMeet
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {leftInterval rightInterval : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.intervalMeet leftInterval rightInterval : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEither, _, _⟩ :=
+    RawStep.parStar.eitherCode_inv sourceToJoin
+  obtain ⟨_, _, joinEqIntervalMeet, _, _⟩ :=
+    RawStep.parStar.intervalMeet_inv targetToJoin
+  nomatch joinEqEither.symm.trans joinEqIntervalMeet
+
+/-- An `eitherCode`-headed source and an `intervalOpp`-headed
+target are not convertible.  Either type code versus interval-negation
+operation — distinct canonical heads at the raw level. -/
+theorem Conv.eitherCode_ne_intervalOpp
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {intervalTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.intervalOpp intervalTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEither, _, _⟩ :=
+    RawStep.parStar.eitherCode_inv sourceToJoin
+  obtain ⟨_, joinEqIntervalOpp, _⟩ :=
+    RawStep.parStar.intervalOpp_inv targetToJoin
+  nomatch joinEqEither.symm.trans joinEqIntervalOpp
+
 /-- A `equivCode`-headed source and a `unit`-headed target are not
 convertible.  Opens the equivalence-type-code row of the
 canonical-head matrix: `equivCode` is the flat-binary type-code
