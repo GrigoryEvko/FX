@@ -7,6 +7,7 @@ import LeanFX2.Foundation.RawPartialRename.Swap01
 import LeanFX2.Foundation.RawPartialRename.TranspPiContractum
 import LeanFX2.Foundation.RawPartialRename.TranspPiPathRecognizer
 import LeanFX2.Foundation.TyStrengthen
+import LeanFX2.Foundation.TyStrengthenInversion
 import LeanFX2.Foundation.TyRenameInjective
 import LeanFX2.Foundation.Polygraph.Wellfounded
 import LeanFX2.Foundation.Polygraph.DecEq
@@ -169,5 +170,33 @@ direct structural reasoning on `Fin` (per `feedback_lean_fin_cases_axiom.md`
 
 #assert_no_axioms LeanFX2.RawRenaming.weaken_injective
 #assert_no_axioms LeanFX2.RawRenaming.lift_injective
+
+/-! ### Ty per-ctor `partialStrengthen?_<ctor>_isSome` inversion lemmas
+
+18 zero-axiom inversion lemmas decomposing
+`((Ty.<ctor> args).partialStrengthen? back).isSome = true` into
+per-sub-field `.isSome = true` facts.  Foundational for the eventual
+universal typed-strengthening driver (Block B
+`Step.par.preserves_rename_image`, #2022).  See
+`Foundation/TyStrengthenInversion.lean`. -/
+
+#assert_no_axioms LeanFX2.Ty.partialStrengthen?_arrow_isSome
+#assert_no_axioms LeanFX2.Ty.partialStrengthen?_piTy_isSome
+#assert_no_axioms LeanFX2.Ty.partialStrengthen?_sigmaTy_isSome
+#assert_no_axioms LeanFX2.Ty.partialStrengthen?_listType_isSome
+#assert_no_axioms LeanFX2.Ty.partialStrengthen?_optionType_isSome
+#assert_no_axioms LeanFX2.Ty.partialStrengthen?_eitherType_isSome
+#assert_no_axioms LeanFX2.Ty.partialStrengthen?_refine_isSome
+#assert_no_axioms LeanFX2.Ty.partialStrengthen?_codata_isSome
+#assert_no_axioms LeanFX2.Ty.partialStrengthen?_equiv_isSome
+#assert_no_axioms LeanFX2.Ty.partialStrengthen?_modal_isSome
+#assert_no_axioms LeanFX2.Ty.partialStrengthen?_record_isSome
+#assert_no_axioms LeanFX2.Ty.partialStrengthen?_session_isSome
+#assert_no_axioms LeanFX2.Ty.partialStrengthen?_effect_isSome
+#assert_no_axioms LeanFX2.Ty.partialStrengthen?_glue_isSome
+#assert_no_axioms LeanFX2.Ty.partialStrengthen?_id_isSome
+#assert_no_axioms LeanFX2.Ty.partialStrengthen?_path_isSome
+#assert_no_axioms LeanFX2.Ty.partialStrengthen?_oeq_isSome
+#assert_no_axioms LeanFX2.Ty.partialStrengthen?_idStrict_isSome
 
 end LeanFX2.Tools
