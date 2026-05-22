@@ -297,13 +297,19 @@ the leaves and drops the `DispatchAtom` gate.
 | #2013 equivApply | typed `Step.par.uaReflEquivApply{,Deep}` ✅ | #2057 ✅ | #2058 ✅ | #2059 ✅ | ~600 |
 | #2014 appPi | typed `Step.par.piEta` η bridge ✅ | #2060 ✅ | #2061 ✅ | #2062 ✅ | ~1100 |
 | #2015 transp | 1 typed `Step.par.transpReflBetaDeep` (4 raw arms vacuous via #2101) | #2063 | #2064 | #2065 | ~600 |
-| #2016 hcomp | vacuity via TermPathLamExcludes + path-typed extension | (vac) #2066 ✅ | #2067 ← #2069 | (vac) | ~350 |
-| #2017 hcompPath | relax `Step.par.hcompBeta` + add `hcompBetaDeep` | #2068 ✅ | (folded into #2068) ✅ | #2069 | ~600 |
+| #2016 hcomp | vacuity via TermPathLamExcludes + path-typed extension | (vac) #2066 ✅ | #2067 ✅ via #2069 | (vac) | ~350 |
+| #2017 hcompPath | relax `Step.par.hcompBeta` + add `hcompBetaDeep` | #2068 ✅ | (folded into #2068) ✅ | #2069 ✅ | ~600 |
 
 #2066 unblock-E.hcomp.ClosedCarrier shipped 2026-05-22 at commit
 `cf43720b` via Term.pathLam_excludes_closedTy vacuity (no new
-kernel β ctor required).  Path-typed carrier (#2067) routes
-through Term.hcompPath once #2068/#2069 ship.
+kernel β ctor required).  Path-typed carrier (#2067) is delivered
+by the union of #2066 (closed-carrier hcomp leaf) + #2068
+(hcompBetaDeep typed ctor) + #2069 (hcompPath leaf + DispatchAtom
+arm + driver) — at the universal dispatcher level, `Term.hcomp`
+and `Term.hcompPath` are routed via distinct DispatchAtom ctors
+(closed vs path carrier), each consuming its own
+`lift_full_hcomp` / `lift_full_hcompPath` leaf.  Closing #2067
+2026-05-23 alongside #2069.
 
 #2068 unblock-E.hcompPath.RelaxedBeta shipped 2026-05-23 across
 commits `fec5de89` (typed `Step.par.hcompBetaDeep` ctor) and
@@ -393,9 +399,10 @@ audit + downstream migration (#2073, parallels #2020).
 
 #2057/#2060/#2063/#2068 are independent kernel extensions with no
 inter-family cascade dependencies — perfectly parallelizable
-across sibling sessions.  #2067 hcomp.PathCarrier waits on #2069
-hcompPath.Close since path-typed hcomp routes through the new
-hcompPath β rules.
+across sibling sessions.  #2067 hcomp.PathCarrier closed
+2026-05-23 alongside #2069 hcompPath.Close (delivered by the
+union of #2066/#2068/#2069 — path-typed routing through
+`Term.hcompPath` is wired at the DispatchAtom layer).
 
 ### Downstream consumers unblocked
 
