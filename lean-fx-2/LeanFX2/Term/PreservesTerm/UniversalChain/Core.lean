@@ -730,5 +730,29 @@ inductive DispatchAtom :
                                         leftInv rightInv
                     : Term context (Ty.equiv carrierA carrierB)
                                    (RawTerm.equivIntro forwardRaw backwardRaw))
+  /-- Universe-funext rfl-witness at arrow-codomain types.  No Term
+  children, no IH closure data — the leaf consumes only a raw step. -/
+  | funextRefl {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (domainType codomainType : Ty level scope)
+      (applyRaw : RawTerm (scope + 1)) :
+      DispatchAtom (Term.funextRefl (context := context)
+                                     domainType codomainType applyRaw
+                    : Term context
+                        (funextReflType domainType codomainType applyRaw)
+                        (RawTerm.lam (RawTerm.refl applyRaw)))
+  /-- Universe-funext rfl-witness at `Ty.id (Ty.arrow ...) ...`.  Same
+  schematic shape as `funextRefl`; no Term children. -/
+  | funextReflAtId {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (domainType codomainType : Ty level scope)
+      (applyRaw : RawTerm (scope + 1)) :
+      DispatchAtom (Term.funextReflAtId (context := context)
+                                         domainType codomainType applyRaw
+                    : Term context
+                        (Ty.id (Ty.arrow domainType codomainType)
+                               (RawTerm.lam (RawTerm.refl applyRaw))
+                               (RawTerm.lam (RawTerm.refl applyRaw)))
+                        (RawTerm.lam (RawTerm.refl applyRaw)))
 
 end LeanFX2

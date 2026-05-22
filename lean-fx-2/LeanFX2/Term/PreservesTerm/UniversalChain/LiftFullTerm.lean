@@ -5,6 +5,7 @@ import LeanFX2.Term.PreservesTerm.TypeCodeLifts
 import LeanFX2.Term.PreservesTerm.TwoTyAtomsAndCong
 import LeanFX2.Term.PreservesTerm.TwoTyEliminators
 import LeanFX2.Term.PreservesTerm.HeterogeneousElim
+import LeanFX2.Term.PreservesTerm.EliminatorFunextFamily
 import LeanFX2.Term.SubjectReductionPar
 
 /-! # LeanFX2.Term.PreservesTerm.UniversalChain.LiftFullTerm
@@ -571,5 +572,10 @@ theorem RawStep.par.lift_full_term
           (IsClosedTy.arrow carrierBClosed carrierAClosed) backwardStep rfl
       subst arrowEq
       exact ⟨backwardTarget, backwardStep⟩
+  | funextRefl domainType codomainType applyRaw =>
+    exact RawStep.par.lift_funextRefl domainType codomainType applyRaw rawStep
+  | funextReflAtId domainType codomainType applyRaw =>
+    exact RawStep.par.lift_funextReflAtId domainType codomainType applyRaw
+            rawStep
 
 end LeanFX2
