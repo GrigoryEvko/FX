@@ -298,12 +298,44 @@ the leaves and drops the `DispatchAtom` gate.
 | #2014 appPi | typed `Step.par.piEta` η bridge ✅ | #2060 ✅ | #2061 ✅ | #2062 ✅ | ~1100 |
 | #2015 transp | 1 typed `Step.par.transpReflBetaDeep` (4 raw arms vacuous via #2101) | #2063 | #2064 | #2065 | ~600 |
 | #2016 hcomp | vacuity via TermPathLamExcludes + path-typed extension | (vac) #2066 ✅ | #2067 ← #2069 | (vac) | ~350 |
-| #2017 hcompPath | relax `Step.par.hcompBeta` + add `hcompBetaDeep` | #2068 | (folded) | #2069 | ~600 |
+| #2017 hcompPath | relax `Step.par.hcompBeta` + add `hcompBetaDeep` | #2068 ✅ | (folded into #2068) ✅ | #2069 | ~600 |
 
 #2066 unblock-E.hcomp.ClosedCarrier shipped 2026-05-22 at commit
 `cf43720b` via Term.pathLam_excludes_closedTy vacuity (no new
 kernel β ctor required).  Path-typed carrier (#2067) routes
 through Term.hcompPath once #2068/#2069 ship.
+
+#2068 unblock-E.hcompPath.RelaxedBeta shipped 2026-05-23 across
+commits `fec5de89` (typed `Step.par.hcompBetaDeep` ctor) and
+`c2efbc7c` (polygraph StepLabel ordinal 112 + Dim1Extraction
+reverse map + AuditAll `#assert_no_axioms` gate + Smoke
+reviewer-log update — mirroring the #2064 transpReflBetaDeep
+cascade structure).  Homogeneous-endpoint case only; heterogeneous
+endpoints remain ROADMAP debt under unblock-E leaf-coverage.
+
+#2069 unblock-E.hcompPath.Close design note (2026-05-23):
+the leaf `RawStep.par.lift_full_hcompPath` consumes
+`RawStep.par.hcomp_inv`'s 3-arm disjunction (cong + shallow β +
+deep β).  Cong arm routes to `Step.par.hcompPathCong`; shallow β
+needs typed `Step.par.hcompBeta` with `commonEndpoint =
+pathBodyRawSource = capRawSource`; deep β routes to the new
+`Step.par.hcompBetaDeep`.  Open question: shallow β arm requires
+relating typed sidesPath's body-raw `pathBodyRawSource` to the
+homogeneous endpoint `commonEndpoint = capRawSource`.  Raw
+inversion alone does not force this; the typed sidesPath at
+`Ty.path carrier commonEndpoint commonEndpoint` projecting raw
+`RawTerm.pathLam pathBodyRawSource.weaken` does NOT structurally
+imply `pathBodyRawSource = commonEndpoint`.  Resolution paths:
+(a) ship a Term.pathLam inversion lemma `pathLam_raw_body_eq_endpoint`
+extracting the equality from typed sidesPath, or
+(b) restrict DispatchAtom.hcompPath to fire only via the deep
+β arm (Step.par.hcompBetaDeep handles both shallow + deep
+cases since shallow = deep via RawStep.par.refl on sides).
+Option (b) is cleaner — Step.par.hcompBetaDeep's
+`sidesPathStep : RawStep.par sidesPathRawSource (RawTerm.pathLam
+capRawSource.weaken)` accepts `RawStep.par.refl` when
+`sidesPathRawSource = RawTerm.pathLam capRawSource.weaken` (the
+shallow-β case).
 
 #2101 unblock-E.transp.VacuityFoundations shipped 2026-05-22 at
 commit `b931b4ff` (Foundation/TermTranspPathVacuity.lean):
