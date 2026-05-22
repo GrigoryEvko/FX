@@ -181,6 +181,60 @@ theorem partialStrengthenTyped?_isSome_target_interval1
   subst targetEq
   rfl
 
+/-! ## Compound ctor: natSucc
+
+The first compound (single-recursive) constructor in the target-
+direction cascade.  Unlike closed-atomic ctors, `Term.natSucc`
+carries a predecessor `Term sourceCtx Ty.nat predRaw` and the
+dispatcher recursively strengthens the predecessor.  The proof
+takes the predecessor's totality as an inductive hypothesis and
+recovers the predecessor via `Term.natSuccDestruct`.
+
+The dispatcher's natSucc arm cannot reduce definitionally to its
+match-equation form (the `match X : ... with` colon-binding syntax
+prevents kernel-level iota reduction on the outer recursive call).
+We unfold the arm via `dsimp only [partialStrengthenTyped?]` —
+unfolding `partialStrengthenTyped?` at a known constructor `Term.natSucc`
+picks the corresponding arm at constant cost (no 78-case sweep,
+since the head constructor is concrete).  The subsequent `split`
+case-analyses the recursive call.  This mirrors the established
+source-direction pattern at
+`RenameImageUnary.lean`'s `strengthenTyped?_rename_isSome_natSucc_of_childIsSome`. -/
+/-- Target-direction totality at `Term.natSucc`.
+
+Takes the predecessor's totality (`predIH`) as an inductive
+hypothesis, recovers the predecessor via `Term.natSuccDestruct`,
+substitutes, then case-splits on the recursive call's outcome.
+The `none` branch is discharged by absurdity against `predIH`;
+the `some` branch closes by definitional reduction. -/
+theorem partialStrengthenTyped?_isSome_target_natSucc
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    {predRaw : RawTerm sourceScope}
+    (targetTerm :
+      Term sourceCtx (Ty.nat (level := level) (scope := sourceScope))
+        (RawTerm.natSucc predRaw))
+    (predIH :
+      ∀ (predTerm :
+            Term sourceCtx (Ty.nat (level := level) (scope := sourceScope))
+              predRaw),
+        (partialStrengthenTyped? predTerm strengthening).isSome = true) :
+    (partialStrengthenTyped? targetTerm strengthening).isSome = true := by
+  obtain ⟨predTerm, heq⟩ := Term.natSuccDestruct targetTerm
+  have targetEq : targetTerm = Term.natSucc predTerm := eq_of_heq heq
+  subst targetEq
+  have ihResult := predIH predTerm
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noPredSuccess =>
+      rw [noPredSuccess] at ihResult
+      cases ihResult
+  next _ _ =>
+      rfl
+
 end Term
 
 end LeanFX2
