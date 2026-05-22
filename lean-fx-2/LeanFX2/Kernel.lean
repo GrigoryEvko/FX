@@ -5,6 +5,7 @@ import LeanFX2.Foundation.RawSubst.ActionInstances
 import LeanFX2.Foundation.RawPartialRename.VarLemmas
 import LeanFX2.Foundation.RawPartialRenameCommute
 import LeanFX2.Foundation.RawPartialRename.Strengthen
+import LeanFX2.Foundation.RawPartialRename.IsSomeInversion
 import LeanFX2.Foundation.RawPartialRename.UnweakenSubstCommute
 import LeanFX2.Foundation.RawPartialRename.UnweakenSubstDispatch
 import LeanFX2.Foundation.RawPartialRename.Swap01

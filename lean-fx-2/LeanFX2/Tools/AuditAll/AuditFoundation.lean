@@ -6,6 +6,7 @@ import LeanFX2.Foundation.RawPartialRename.UnweakenSubstDispatch
 import LeanFX2.Foundation.RawPartialRename.Swap01
 import LeanFX2.Foundation.RawPartialRename.TranspPiContractum
 import LeanFX2.Foundation.RawPartialRename.TranspPiPathRecognizer
+import LeanFX2.Foundation.RawPartialRename.IsSomeInversion
 import LeanFX2.Foundation.TyStrengthen
 import LeanFX2.Foundation.TyStrengthenInversion
 import LeanFX2.Foundation.TyRenameInjective
@@ -198,5 +199,22 @@ universal typed-strengthening driver (Block B
 #assert_no_axioms LeanFX2.Ty.partialStrengthen?_path_isSome
 #assert_no_axioms LeanFX2.Ty.partialStrengthen?_oeq_isSome
 #assert_no_axioms LeanFX2.Ty.partialStrengthen?_idStrict_isSome
+
+/-! ### RawTerm per-ctor `partialRename?_<ctor>_isSome` inversion pilot
+
+6 zero-axiom inversion lemmas decomposing
+`((RawTerm.<ctor> args).partialRename? back).isSome = true` into
+per-sub-field `.isSome = true` facts.  Raw-side siblings of the
+Ty inversion lemmas above; pilot covers lam/app/pair/fst/snd/listCons
+to validate the recipe across binder, Option.mapTwo, and direct
+match shapes.  Future ralph cycles can clone for the remaining
+65+ RawTerm ctors.  See `Foundation/RawPartialRename/IsSomeInversion.lean`. -/
+
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_lam_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_app_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_pair_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_fst_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_snd_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_listCons_isSome
 
 end LeanFX2.Tools
