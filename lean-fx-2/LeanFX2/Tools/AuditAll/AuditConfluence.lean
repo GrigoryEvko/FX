@@ -802,6 +802,14 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.oeqJ_ne_productCode
 #assert_no_axioms LeanFX2.Conv.oeqJ_ne_recordIntro
 #assert_no_axioms LeanFX2.Conv.oeqJ_ne_refineIntro
+#assert_no_axioms LeanFX2.Conv.oeqJ_ne_sessionRecv
+#assert_no_axioms LeanFX2.Conv.oeqJ_ne_sessionSend
+#assert_no_axioms LeanFX2.Conv.oeqJ_ne_sigmaTyCode
+#assert_no_axioms LeanFX2.Conv.oeqJ_ne_subsume
+#assert_no_axioms LeanFX2.Conv.oeqJ_ne_sumCode
+#assert_no_axioms LeanFX2.Conv.oeqJ_ne_transpFill
+#assert_no_axioms LeanFX2.Conv.oeqJ_ne_uaToEquiv
+#assert_no_axioms LeanFX2.Conv.oeqJ_ne_universeCode
 #assert_no_axioms LeanFX2.Conv.modIntro_ne_unit
 #assert_no_axioms LeanFX2.Conv.modIntro_ne_boolTrue
 #assert_no_axioms LeanFX2.Conv.modIntro_ne_boolFalse

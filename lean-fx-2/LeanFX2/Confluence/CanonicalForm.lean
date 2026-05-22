@@ -16293,6 +16293,188 @@ theorem Conv.oeqJ_ne_refineIntro
     RawStep.parStar.refineIntro_inv targetToJoin
   nomatch joinEqOeqJ.symm.trans joinEqRefineIntro
 
+/-- An `oeqJ`-headed source and a `sessionRecv`-headed target are
+not convertible.  Observational-equality J recursor versus session-
+receive operation — distinct canonical heads at the raw level. -/
+theorem Conv.oeqJ_ne_sessionRecv
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {baseCase witness : RawTerm scope}
+    {channel : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqJ baseCase witness : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sessionRecv channel : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqOeqJ, _, _⟩ :=
+    RawStep.parStar.oeqJ_inv sourceToJoin
+  obtain ⟨_, joinEqSessionRecv, _⟩ :=
+    RawStep.parStar.sessionRecv_inv targetToJoin
+  nomatch joinEqOeqJ.symm.trans joinEqSessionRecv
+
+/-- An `oeqJ`-headed source and a `sessionSend`-headed target are
+not convertible.  Observational-equality J recursor versus session-
+send operation — distinct canonical heads at the raw level. -/
+theorem Conv.oeqJ_ne_sessionSend
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {baseCase witness : RawTerm scope}
+    {channel payload : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqJ baseCase witness : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sessionSend channel payload : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqOeqJ, _, _⟩ :=
+    RawStep.parStar.oeqJ_inv sourceToJoin
+  obtain ⟨_, _, joinEqSessionSend, _, _⟩ :=
+    RawStep.parStar.sessionSend_inv targetToJoin
+  nomatch joinEqOeqJ.symm.trans joinEqSessionSend
+
+/-- An `oeqJ`-headed source and a `sigmaTyCode`-headed target are
+not convertible.  Observational-equality J recursor versus Σ-type
+code — the binder-shape codomain at `scope + 1` is structurally
+disjoint from the J recursor head. -/
+theorem Conv.oeqJ_ne_sigmaTyCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {baseCase witness : RawTerm scope}
+    {firstCode : RawTerm scope}
+    {secondCode : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqJ baseCase witness : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sigmaTyCode firstCode secondCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqOeqJ, _, _⟩ :=
+    RawStep.parStar.oeqJ_inv sourceToJoin
+  obtain ⟨_, _, joinEqSigmaTyCode, _, _⟩ :=
+    RawStep.parStar.sigmaTyCode_inv targetToJoin
+  nomatch joinEqOeqJ.symm.trans joinEqSigmaTyCode
+
+/-- An `oeqJ`-headed source and a `subsume`-headed target are not
+convertible.  Observational-equality J recursor versus modal
+subsumption — distinct canonical heads at the raw level. -/
+theorem Conv.oeqJ_ne_subsume
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {baseCase witness : RawTerm scope}
+    {innerTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqJ baseCase witness : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.subsume innerTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqOeqJ, _, _⟩ :=
+    RawStep.parStar.oeqJ_inv sourceToJoin
+  obtain ⟨_, joinEqSubsume, _⟩ :=
+    RawStep.parStar.subsume_inv targetToJoin
+  nomatch joinEqOeqJ.symm.trans joinEqSubsume
+
+/-- An `oeqJ`-headed source and a `sumCode`-headed target are not
+convertible.  Observational-equality J recursor versus sum-type
+code — distinct canonical heads at the raw level. -/
+theorem Conv.oeqJ_ne_sumCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {baseCase witness : RawTerm scope}
+    {leftCodeSum rightCodeSum : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqJ baseCase witness : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sumCode leftCodeSum rightCodeSum : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqOeqJ, _, _⟩ :=
+    RawStep.parStar.oeqJ_inv sourceToJoin
+  obtain ⟨_, _, joinEqSumCode, _, _⟩ :=
+    RawStep.parStar.sumCode_inv targetToJoin
+  nomatch joinEqOeqJ.symm.trans joinEqSumCode
+
+/-- An `oeqJ`-headed source and a `transpFill`-headed target are
+not convertible.  Observational-equality J recursor versus cubical
+transport-fill — ternary target, 7-tuple inversion at the cubical
+stratum versus binary HoTT-stratum source. -/
+theorem Conv.oeqJ_ne_transpFill
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {baseCase witness : RawTerm scope}
+    {pathTerm intervalTerm sourceRawTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqJ baseCase witness : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.transpFill pathTerm intervalTerm sourceRawTerm :
+        RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqOeqJ, _, _⟩ :=
+    RawStep.parStar.oeqJ_inv sourceToJoin
+  obtain ⟨_, _, _, joinEqTranspFill, _, _, _⟩ :=
+    RawStep.parStar.transpFill_inv targetToJoin
+  nomatch joinEqOeqJ.symm.trans joinEqTranspFill
+
+/-- An `oeqJ`-headed source and a `uaToEquiv`-headed target are
+not convertible.  Observational-equality J recursor versus the
+univalence-to-equivalence converter — distinct HoTT semantic
+strata, neither postnormalizes to the other. -/
+theorem Conv.oeqJ_ne_uaToEquiv
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {baseCase witness : RawTerm scope}
+    {proofTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqJ baseCase witness : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.uaToEquiv proofTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqOeqJ, _, _⟩ :=
+    RawStep.parStar.oeqJ_inv sourceToJoin
+  obtain ⟨_, joinEqUaToEquiv, _⟩ :=
+    RawStep.parStar.uaToEquiv_inv targetToJoin
+  nomatch joinEqOeqJ.symm.trans joinEqUaToEquiv
+
+/-- An `oeqJ`-headed source and a `universeCode`-headed target are
+not convertible.  Observational-equality J recursor versus
+universe-type code — nullary target, direct equality inversion;
+closes the `oeqJ` source row. -/
+theorem Conv.oeqJ_ne_universeCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {baseCase witness : RawTerm scope}
+    {innerLevel : Nat}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqJ baseCase witness : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.universeCode innerLevel : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqOeqJ, _, _⟩ :=
+    RawStep.parStar.oeqJ_inv sourceToJoin
+  have joinEqUniv : joinRaw = RawTerm.universeCode innerLevel :=
+    RawStep.parStar.universeCode_inv targetToJoin
+  nomatch joinEqOeqJ.symm.trans joinEqUniv
+
 /-- A `modIntro`-headed source and a `unit`-headed target are not
 convertible.  Disjoint canonical heads at the raw level: the
 modality introduction form is the universal box/diamond/flat/
