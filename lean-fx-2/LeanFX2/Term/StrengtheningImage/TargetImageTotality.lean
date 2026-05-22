@@ -2610,6 +2610,104 @@ theorem partialStrengthenTyped?_isSome_target_idStrictRec
                   next _ _ =>
                       rfl
 
+/-- Target-direction totality at `Term.pathApp` (cubical path
+application: path-of-paths plus interval value). -/
+theorem partialStrengthenTyped?_isSome_target_pathApp
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {pathRaw intervalRaw : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (pathTerm :
+      Term sourceCtx
+        (Ty.path carrierType leftEndpoint rightEndpoint) pathRaw)
+    (intervalTerm : Term sourceCtx Ty.interval intervalRaw)
+    (carrierStrengthens :
+      (carrierType.partialStrengthen? strengthening.back).isSome = true)
+    (leftStrengthens :
+      (leftEndpoint.partialStrengthen? strengthening.back).isSome = true)
+    (rightStrengthens :
+      (rightEndpoint.partialStrengthen? strengthening.back).isSome = true)
+    (pathIH :
+      (partialStrengthenTyped? pathTerm strengthening).isSome = true)
+    (intervalIH :
+      (partialStrengthenTyped? intervalTerm strengthening).isSome = true) :
+    (partialStrengthenTyped?
+        (Term.pathApp modeIsUnivalent pathTerm intervalTerm)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noCarrier =>
+      rw [noCarrier] at carrierStrengthens
+      cases carrierStrengthens
+  next _ _ =>
+      split
+      next noLeft =>
+          rw [noLeft] at leftStrengthens
+          cases leftStrengthens
+      next _ _ =>
+          split
+          next noRight =>
+              rw [noRight] at rightStrengthens
+              cases rightStrengthens
+          next _ _ =>
+              split
+              next noPath =>
+                  rw [noPath] at pathIH
+                  cases pathIH
+              next _ _ =>
+                  split
+                  next noInterval =>
+                      rw [noInterval] at intervalIH
+                      cases intervalIH
+                  next _ _ =>
+                      rfl
+
+/-- Target-direction totality at `Term.glueElim` (cubical glue
+destructor). -/
+theorem partialStrengthenTyped?_isSome_target_glueElim
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {baseType : Ty level sourceScope}
+    {boundaryWitness gluedRaw : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (gluedValue :
+      Term sourceCtx (Ty.glue baseType boundaryWitness) gluedRaw)
+    (baseStrengthens :
+      (baseType.partialStrengthen? strengthening.back).isSome = true)
+    (boundaryStrengthens :
+      (boundaryWitness.partialStrengthen? strengthening.back).isSome
+        = true)
+    (gluedIH :
+      (partialStrengthenTyped? gluedValue strengthening).isSome = true) :
+    (partialStrengthenTyped?
+        (Term.glueElim modeIsUnivalent gluedValue)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noBase =>
+      rw [noBase] at baseStrengthens
+      cases baseStrengthens
+  next _ _ =>
+      split
+      next noBoundary =>
+          rw [noBoundary] at boundaryStrengthens
+          cases boundaryStrengthens
+      next _ _ =>
+          split
+          next noGlued =>
+              rw [noGlued] at gluedIH
+              cases gluedIH
+          next _ _ =>
+              rfl
+
 end Term
 
 end LeanFX2
