@@ -22579,6 +22579,140 @@ theorem Conv.sessionSend_ne_refl
     RawStep.parStar.refl_inv targetToJoin
   nomatch joinEqSessionSend.symm.trans joinEqRefl
 
+/-- A `sessionSend`-headed source and a `sigmaTyCode`-headed target are
+not convertible.  Session send versus dependent-pair type code —
+distinct canonical heads at the raw level. -/
+theorem Conv.sessionSend_ne_sigmaTyCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {channel payload : RawTerm scope}
+    {firstSigmaCode : RawTerm scope}
+    {secondSigmaCode : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType
+      (RawTerm.sessionSend channel payload : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sigmaTyCode firstSigmaCode secondSigmaCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqSend, _, _⟩ :=
+    RawStep.parStar.sessionSend_inv sourceToJoin
+  obtain ⟨_, _, joinEqSigma, _, _⟩ :=
+    RawStep.parStar.sigmaTyCode_inv targetToJoin
+  nomatch joinEqSend.symm.trans joinEqSigma
+
+/-- A `sessionSend`-headed source and a `subsume`-headed target are not
+convertible.  Session send versus subsumption coercion — distinct
+canonical heads at the raw level. -/
+theorem Conv.sessionSend_ne_subsume
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {channel payload : RawTerm scope}
+    {innerSubsumed : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.sessionSend channel payload : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.subsume innerSubsumed : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqSend, _, _⟩ :=
+    RawStep.parStar.sessionSend_inv sourceToJoin
+  obtain ⟨_, joinEqSubsume, _⟩ :=
+    RawStep.parStar.subsume_inv targetToJoin
+  nomatch joinEqSend.symm.trans joinEqSubsume
+
+/-- A `sessionSend`-headed source and a `sumCode`-headed target are not
+convertible.  Session send versus disjoint-union type code — distinct
+canonical heads at the raw level. -/
+theorem Conv.sessionSend_ne_sumCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {channel payload : RawTerm scope}
+    {firstSumCode secondSumCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.sessionSend channel payload : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sumCode firstSumCode secondSumCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqSend, _, _⟩ :=
+    RawStep.parStar.sessionSend_inv sourceToJoin
+  obtain ⟨_, _, joinEqSum, _, _⟩ :=
+    RawStep.parStar.sumCode_inv targetToJoin
+  nomatch joinEqSend.symm.trans joinEqSum
+
+/-- A `sessionSend`-headed source and a `transpFill`-headed target are
+not convertible.  Session send versus cubical transport filler —
+distinct canonical heads at the raw level. -/
+theorem Conv.sessionSend_ne_transpFill
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {channel payload : RawTerm scope}
+    {pathTerm intervalTerm sourceRawTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.sessionSend channel payload : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.transpFill pathTerm intervalTerm sourceRawTerm :
+        RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqSend, _, _⟩ :=
+    RawStep.parStar.sessionSend_inv sourceToJoin
+  obtain ⟨_, _, _, joinEqFill, _, _, _⟩ :=
+    RawStep.parStar.transpFill_inv targetToJoin
+  nomatch joinEqSend.symm.trans joinEqFill
+
+/-- A `sessionSend`-headed source and a `uaToEquiv`-headed target are
+not convertible.  Session send versus univalence-to-equivalence
+primitive — distinct canonical heads at the raw level. -/
+theorem Conv.sessionSend_ne_uaToEquiv
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {channel payload : RawTerm scope}
+    {proofTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.sessionSend channel payload : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.uaToEquiv proofTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqSend, _, _⟩ :=
+    RawStep.parStar.sessionSend_inv sourceToJoin
+  obtain ⟨_, joinEqUa, _⟩ :=
+    RawStep.parStar.uaToEquiv_inv targetToJoin
+  nomatch joinEqSend.symm.trans joinEqUa
+
+/-- A `sessionSend`-headed source and a `universeCode`-headed target are
+not convertible.  Session send versus universe-level type code —
+distinct canonical heads at the raw level. -/
+theorem Conv.sessionSend_ne_universeCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {channel payload : RawTerm scope}
+    {innerLevel : Nat}
+    {sourceTerm : Term context sourceType
+      (RawTerm.sessionSend channel payload : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.universeCode innerLevel : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqSend, _, _⟩ :=
+    RawStep.parStar.sessionSend_inv sourceToJoin
+  have joinEqUniv : joinRaw = RawTerm.universeCode innerLevel :=
+    RawStep.parStar.universeCode_inv targetToJoin
+  nomatch joinEqSend.symm.trans joinEqUniv
+
 /-! ## Compound × compound disjointness — arrowCode row (open)
 
 Opens the compound × compound matrix.  The previous tiers established

@@ -1055,6 +1055,12 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.sessionSend_ne_listCons
 #assert_no_axioms LeanFX2.Conv.sessionSend_ne_pair
 #assert_no_axioms LeanFX2.Conv.sessionSend_ne_refl
+#assert_no_axioms LeanFX2.Conv.sessionSend_ne_sigmaTyCode
+#assert_no_axioms LeanFX2.Conv.sessionSend_ne_subsume
+#assert_no_axioms LeanFX2.Conv.sessionSend_ne_sumCode
+#assert_no_axioms LeanFX2.Conv.sessionSend_ne_transpFill
+#assert_no_axioms LeanFX2.Conv.sessionSend_ne_uaToEquiv
+#assert_no_axioms LeanFX2.Conv.sessionSend_ne_universeCode
 #assert_no_axioms LeanFX2.Conv.transChains_renamed
 #assert_no_axioms LeanFX2.Conv.transChains_weakened
 #assert_no_axioms LeanFX2.Conv.transChains_substituted
