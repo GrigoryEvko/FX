@@ -14410,6 +14410,28 @@ theorem Conv.uaToEquiv_ne_refl
     RawStep.parStar.refl_inv targetToJoin
   nomatch joinEqUa.symm.trans joinEqRefl
 
+/-- A `uaToEquiv`-headed source and a `universeCode`-headed target are
+not convertible.  Univalence-to-equivalence primitive versus universe-
+level type code — distinct canonical heads at the raw level. -/
+theorem Conv.uaToEquiv_ne_universeCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {proofTerm : RawTerm scope}
+    {innerLevel : Nat}
+    {sourceTerm : Term context sourceType
+      (RawTerm.uaToEquiv proofTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.universeCode innerLevel : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqUa, _⟩ :=
+    RawStep.parStar.uaToEquiv_inv sourceToJoin
+  have joinEqUniv : joinRaw = RawTerm.universeCode innerLevel :=
+    RawStep.parStar.universeCode_inv targetToJoin
+  nomatch joinEqUa.symm.trans joinEqUniv
+
 /-! ### `oeqRefl` row — HoTT observational-equality reflexivity
 
 The `oeqRefl` head is the introduction form for inner-mode

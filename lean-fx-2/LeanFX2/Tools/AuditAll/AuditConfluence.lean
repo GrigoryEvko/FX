@@ -717,6 +717,7 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.uaToEquiv_ne_listCons
 #assert_no_axioms LeanFX2.Conv.uaToEquiv_ne_pair
 #assert_no_axioms LeanFX2.Conv.uaToEquiv_ne_refl
+#assert_no_axioms LeanFX2.Conv.uaToEquiv_ne_universeCode
 #assert_no_axioms LeanFX2.Conv.oeqRefl_ne_unit
 #assert_no_axioms LeanFX2.Conv.oeqRefl_ne_boolTrue
 #assert_no_axioms LeanFX2.Conv.oeqRefl_ne_boolFalse
