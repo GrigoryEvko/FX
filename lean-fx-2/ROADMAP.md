@@ -413,7 +413,7 @@ union of #2066/#2068/#2069 — path-typed routing through
 * D2.5 cubical cascade (D2.5.5–9) ← shares Step.eta blocker
   with the broader Geuvers 1992 lift in unblock-D.geuvers (#2038)
 
-### Block B (#2022 unblock-B.t5.par) — strategy RFC 2026-05-23
+### Block B (#2022 unblock-B.t5.par) — strategy RFC 2026-05-23 (revised)
 
 The typed `Step.par.preserves_rename_image` lifts the raw
 `RawStep.par.rename_inj_inv` (#2021 ✅) to the typed layer.  The
@@ -421,74 +421,109 @@ shape:
 
 ```lean
 theorem Step.par.preserves_rename_image
-    {ctx : Ctx mode level scope}
-    {sourceTy : Ty level scope}
-    {sourceRaw : RawTerm scope}
-    (sourceTerm : Term ctx sourceTy sourceRaw)
-    {targetRho : Renaming scope targetScope}
-    (rhoInjective : RawRenamingInjective targetRho.forRaw)
-    {targetAfter : Term ctx' sourceTy.rename targetRho targetRawAfter}
-    (parStep : Step.par (Term.rename targetRho sourceTerm) targetAfter) :
-    ∃ (innerRaw : RawTerm scope)
-      (innerTerm : Term ctx sourceTy innerRaw),
-      targetRawAfter = innerRaw.rename targetRho.forRaw ∧
-      targetAfter = Term.rename targetRho innerTerm ∧
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {forwardRename : RawRenaming sourceScope targetScope}
+    (typedRenaming : TermRenaming sourceCtx targetCtx forwardRename)
+    (renameInverse : PartialRawRenaming targetScope sourceScope)
+    (renameInverseLeft : ∀ p, renameInverse (forwardRename p) = some p)
+    (renameInverseInjects : ∀ tp sp,
+      renameInverse tp = some sp → tp = forwardRename sp)
+    {sourceType : Ty level sourceScope}
+    {sourceRaw : RawTerm sourceScope}
+    (sourceTerm : Term sourceCtx sourceType sourceRaw)
+    {targetAfterType : Ty level targetScope}
+    {targetAfterRaw : RawTerm targetScope}
+    {targetAfter : Term targetCtx targetAfterType targetAfterRaw}
+    (parStep : Step.par (Term.rename typedRenaming sourceTerm) targetAfter) :
+    ∃ (innerType : Ty level sourceScope)
+      (innerRaw : RawTerm sourceScope)
+      (innerTerm : Term sourceCtx innerType innerRaw),
+      HEq targetAfter (Term.rename typedRenaming innerTerm) ∧
       Step.par sourceTerm innerTerm
 ```
 
-Two implementation paths:
+**Reality audit (corrected 2026-05-23 mid-session)**: T1, T3, and the
+78-case `isAggregatorSound_universal` umbrella ARE all shipped:
 
-**Path A: Compose via T1 + raw inversion (~30-50 LoC).**
-Project the typed parStep to raw via `Step.par.toRawBridge`,
-apply `RawStep.par.rename_inj_inv` to get the raw image witness,
-then strengthen back to typed via `Term.strengthenTyped?` (T1
-umbrella, #1978).  PRECONDITION: #1978 must ship the
-78-case structural induction headline
-`Term.strengthenTyped?_rename_eq` first.  Per-ctor lemmas under
-`PartialStrengthen/RenameImage/*.lean` exist (verified
-2026-05-23) but the universal headline is deferred.
+* T1 `strengthenTyped?_rename_eq` at
+  `Term/StrengtheningImage/RenameImageInterface.lean:314` (#1952 ✅).
+* T3 `rename_image_iff_strengthenTyped?_some` at
+  `Term/StrengtheningImage/RenameImageInterface.lean:90` (#1954 ✅) —
+  iff packaging giving both image-recovery directions.
+* `isAggregatorSound_universal` at
+  `Term/StrengtheningImage/AggregatorSoundUniversal.lean:34` — 78-case
+  structural induction headline composing per-ctor wrappers.
 
-**Path B: Direct structural induction (~500 LoC dep-cast
-threading).**  Mirror `RawStep.par.rename_inj_inv`'s 67-ctor
-induction at the typed layer with `Step.par.toRawBridge` and
-per-arm typed witnesses.  Per `Reduction/Compat.lean:48`
-advisory, this path was explicitly avoided in D2.10 — chooses to
-go compositional with per-cong cong combinators instead.
+The prior RFC's premise that "#1978 must ship first" was a misread —
+#1978 is `strength-integrate-phase-A-5: Close Phase A.5 deferred
+follow-up` (an integration follow-up, not the T1 umbrella).  T1 +
+T3 + universal headline are all already-shipped infrastructure.
 
-**Recommended path: A.**  Reasons:
-* T1 headline (#1978) is needed for downstream consumers
-  (strength-integrate-K12-27 #1982, unblock-D.k1227-sn #2044) so
-  shipping it is justified independently.
-* Path B's 500-LoC budget breaks the "no expensive tactics" /loop
-  discipline — the dep-cast threading historically required
-  `decide`-class tactics that we're banned from reintroducing.
-* T1 closure also unblocks #1985
-  (strength-integrate-HeadlineRenameInjInv collapses a 250-LoC
-  blocker to a T2 citation).
+**Remaining Path A composition (~30-80 LoC, single commit)**:
 
-**Sub-cascade for Block B (#2022 → #2026)**:
-1. **Prerequisite: ship #1978** T1 headline (78-case structural
-   induction over Term, composing per-ctor lemmas under
-   `PartialStrengthen/RenameImage/*.lean`).  Estimated ~200 LoC
-   given per-ctor lemmas already exist.
-2. **#2022 par**: Path A composition (~30-50 LoC) — project,
-   invert, strengthen.
-3. **#2023 weaken**: Specialize #2022 to `RawRenaming.weaken`
-   via `RawRenaming.weaken_injective` (~20 LoC).
-4. **#2024 parStar**: `Step.parStar.preserves_rename_image` chain
-   version via mapStep over `Step.par` chain (~30 LoC).
-5. **#2025 stepStar**: `StepStar.preserves_rename_image`
-   single-step chain variant via `Step.toPar.toStar` ladder
-   (~20 LoC).
-6. **#2026 audit**: Smoke audit gates + downstream consumer
-   migration log (~30 LoC).
+1. Project parStep to raw via `Step.par.toRawBridge` → `RawStep.par
+   (sourceRaw.rename forwardRename) targetAfterRaw`.
+2. Apply `RawStep.par.rename_inj_inv` (rho-injectivity from
+   `RawRenamingInjective.of_partialInverseLeft`) → `∃ innerRaw,
+   targetAfterRaw = innerRaw.rename forwardRename`.
+3. Apply T3 (←direction) to `targetAfter : Term targetCtx
+   targetAfterType (innerRaw.rename forwardRename)` to recover
+   `(sourceTerm', renamedEq) : ∃ st, targetAfter = Term.rename _ st`.
+   PRECONDITION for T3: `targetAfterType = sourceType.rename forwardRename`
+   (subject reduction at types — see "Real remaining blocker" below).
+4. Step.par packaging from raw step + typed image equality.
+
+**Real remaining blocker — type preservation under Step.par**: T3's
+←direction requires the target term to live at exactly
+`sourceType.rename forwardRename`, but a generic Step.par's target
+type `targetAfterType` is just "what the typing rule yields", not
+automatically equal to the rename of `sourceType`.  For most Step.par
+ctors (refl, cong) targetAfterType = sourceType (preserved
+definitionally); for β/ι rules the type may genuinely change via a
+substitution (e.g. `betaAppPi`'s target type is
+`codomainType.subst0 argument`).  M06 strong subject reduction
+(#1566 PENDING) provides exactly this missing fact; its absence is
+why Path A in full generality still needs work.
+
+Implementable subcases (no SR needed): refl, all cong rules whose
+typing is preserved, all β rules where the source dependent type
+matches the target via a separately-shipped substitution lemma.  The
+β-app case is already covered by `Step.preserves_ty_arrow`
+(M06 ✅ at `Term/SubjectReductionGeneral.lean:754`).
+
+**Path B (direct structural induction) is now also viable**:
+Replicating `RawStep.par.rename_inj_inv`'s 67-ctor structure at the
+typed layer pays the type-tracking cost case-by-case but avoids
+needing M06 as a precondition since each ctor's typing is known.
+Per the warrior-mentality discipline, splitting this into
+per-family files (atomic, single-subterm-cong, β, ι, etc.) keeps
+each piece reviewable.
+
+**Recommended path (revised)**: A *for atomic/cong cases* + B-style
+direct induction *for β/ι cases that exercise type substitution*.
+Hybrid approach lets Block B ship incrementally without waiting on
+M06 #1566 completion.
+
+**Sub-cascade for Block B (#2022 → #2026, revised)**:
+1. **#2022 par**: Hybrid Path A+B for `Step.par.preserves_rename_image`.
+   Start with atomic/cong cases (~50 LoC via T1+T3 composition), then
+   add β-family arms case-by-case as their preservation lemmas mature.
+2. **#2023 weaken**: Specialize #2022 to `RawRenaming.weaken` via
+   `RawRenaming.weaken_injective` (~20 LoC).
+3. **#2024 parStar**: chain version via mapStep over Step.par (~30 LoC).
+4. **#2025 stepStar**: single-step chain variant via Step.toPar.toStar (~20 LoC).
+5. **#2026 audit**: Smoke audit gates + downstream consumer migration log.
 
 Total Block B budget: ~330 LoC across 6 commits, single warrior
 session feasible per the warrior mentality discipline.
 
-**Block B blocker**: #1978 must ship first.  Block C (#2027-2034
-typed Conv rename equivariance) and Block D (#2035-2044 final
-headlines) all chain off Block B.
+**Block B blocker (revised)**: M06 #1566 (full subject reduction at
+all type formers) is a soft blocker — Block B can ship atomic/cong
+cases without it; the β/ι cases needing type-level subst preservation
+gate on M06 progress.  Block C (#2027-2034 typed Conv rename
+equivariance) and Block D (#2035-2044 final headlines) chain off
+Block B's complete closure.
 
 ## Critical-path summary (v1.0 requirements)
 
