@@ -26,13 +26,54 @@ parametric: closed iff each component is closed.
 
 * `tyVar position` — refers to a context-bound type
 * `id carrier left right` — endpoints are RawTerm; depend on scope
+* `oeq carrier left right`, `idStrict carrier left right` — same
+  reason: raw endpoints can reference bound variables
+* `path carrier left right` — cubical analogue with raw endpoints
+* `glue baseType ...`, `refine carrier predicate` — raw payloads
+* `session protocolStep`, `effect tag carrier` — raw payloads
 * `piTy d c`, `sigmaTy f s` — codomain at `scope+1` depends on a
   bound variable; not invariant under arbitrary substitution
+
+## Why these exclusions matter for SR
+
+`Ty.subst0_raw_invariance_isClosedTy` (Term/SubjectReductionGeneral)
+says: if `someType.subst0 argType raw1 = closedType`, then
+`someType.subst0 argType raw2 = closedType`.  This propagates
+through `Step.par.preserves_isClosedTy` to give the source-reduction
+property used by every closure-witnessed dispatch arm.
+
+For a non-closed type former with a RawTerm payload (e.g. `Ty.id`),
+the analogous statement is FALSE in general: substituting raw1 vs
+raw2 into the surrounding context produces id-types whose left/right
+endpoints differ.  Extending IsClosedTy with an `id` ctor would
+require an additional `IsClosedRawTerm` companion predicate
+witnessing var-0-freeness of the raw endpoints (~100 LoC).  Same
+applies to oeq/idStrict/path/glue/refine/session/effect.
+
+For binder types (`piTy`, `sigmaTy`), the `secondType` at scope+1
+can reference the bound var.  Extending to these requires either
+(a) restricting to "var-0-free" secondType (via IsClosedRawTerm on
+the secondType's raw projection), or (b) a different witness shape
+that propagates dependent typing through the cong rules of
+`Step.par.boolElim`/`Step.par.natElim` etc.
 
 The kernel-sprint.md §1.4 plan calls out a few additional closed
 ctors (`empty`, `interval`, `universe lvl`, `record fields`).  Those
 land when their ctor lands; the predicate is additive — adding a
 ctor adds one new constructor case here.
+
+## Downstream consumers
+
+The 4 boolElim/equivIntroHet/funextRefl/funextReflAtId DispatchAtom
+arms (CONVTRANS-C, commits 24088d96 / 371e6e1e / f9eacf8f) embed
+IsClosedTy witnesses on already-substituted concrete branch types
+(e.g. `motiveType.subst0 Ty.bool RawTerm.boolTrue`) — sidestepping
+the binder-payload issue because the substitution is concrete.
+
+The 20 remaining unblock-A.dispatch.* tasks (fst/snd/idJ/oeqJ/
+idStrictRec/refineElim/glueElim/pathApp/effectPerform/sessionRecv/
+sessionSend/oeqFunext + 8 leaf-needing ctors) require the predicate
+extension described above before they can land.
 
 ## Decidability
 
