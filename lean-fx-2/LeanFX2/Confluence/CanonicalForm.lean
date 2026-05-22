@@ -15163,4 +15163,181 @@ theorem Conv.arrowCode_ne_oeqFunext
     RawStep.parStar.oeqFunext_inv targetToJoin
   nomatch joinEqArrow.symm.trans joinEqOeqFunext
 
+/-- A `arrowCode`-headed source and an `oeqJ`-headed target are
+not convertible.  Type-code versus observational-equality J
+recursor — distinct canonical heads at the raw level. -/
+theorem Conv.arrowCode_ne_oeqJ
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {domainCode codomainCode : RawTerm scope}
+    {baseCase witness : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.arrowCode domainCode codomainCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.oeqJ baseCase witness : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqArrow, _, _⟩ :=
+    RawStep.parStar.arrowCode_inv sourceToJoin
+  obtain ⟨_, _, joinEqOeqJ, _, _⟩ :=
+    RawStep.parStar.oeqJ_inv targetToJoin
+  nomatch joinEqArrow.symm.trans joinEqOeqJ
+
+/-- A `arrowCode`-headed source and an `oeqRefl`-headed target are
+not convertible.  Type-code versus observational-equality reflexivity
+witness — distinct canonical heads. -/
+theorem Conv.arrowCode_ne_oeqRefl
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {domainCode codomainCode : RawTerm scope}
+    {witness : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.arrowCode domainCode codomainCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.oeqRefl witness : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqArrow, _, _⟩ :=
+    RawStep.parStar.arrowCode_inv sourceToJoin
+  obtain ⟨_, joinEqOeqRefl, _⟩ :=
+    RawStep.parStar.oeqRefl_inv targetToJoin
+  nomatch joinEqArrow.symm.trans joinEqOeqRefl
+
+/-- A `arrowCode`-headed source and an `oeqTrans`-headed target are
+not convertible.  Type-code versus observational-equality
+transitivity witness — distinct canonical heads. -/
+theorem Conv.arrowCode_ne_oeqTrans
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {domainCode codomainCode : RawTerm scope}
+    {firstEquality secondEquality : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.arrowCode domainCode codomainCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.oeqTrans firstEquality secondEquality : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqArrow, _, _⟩ :=
+    RawStep.parStar.arrowCode_inv sourceToJoin
+  obtain ⟨_, _, joinEqOeqTrans, _, _⟩ :=
+    RawStep.parStar.oeqTrans_inv targetToJoin
+  nomatch joinEqArrow.symm.trans joinEqOeqTrans
+
+/-- A `arrowCode`-headed source and an `optionCode`-headed target
+are not convertible.  Both type-codes but for distinct families:
+arrow type versus option type former. -/
+theorem Conv.arrowCode_ne_optionCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {domainCode codomainCode : RawTerm scope}
+    {elementCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.arrowCode domainCode codomainCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.optionCode elementCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqArrow, _, _⟩ :=
+    RawStep.parStar.arrowCode_inv sourceToJoin
+  obtain ⟨_, joinEqOptionCode, _⟩ :=
+    RawStep.parStar.optionCode_inv targetToJoin
+  nomatch joinEqArrow.symm.trans joinEqOptionCode
+
+/-- A `arrowCode`-headed source and a `pathCompose`-headed target
+are not convertible.  Type-code versus path-composition operation —
+distinct canonical heads at the raw level. -/
+theorem Conv.arrowCode_ne_pathCompose
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {domainCode codomainCode : RawTerm scope}
+    {firstPath secondPath : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.arrowCode domainCode codomainCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.pathCompose firstPath secondPath : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqArrow, _, _⟩ :=
+    RawStep.parStar.arrowCode_inv sourceToJoin
+  obtain ⟨_, _, joinEqPathCompose, _, _⟩ :=
+    RawStep.parStar.pathCompose_inv targetToJoin
+  nomatch joinEqArrow.symm.trans joinEqPathCompose
+
+/-- A `arrowCode`-headed source and a `piTyCode`-headed target are
+not convertible.  Both type-codes but for distinct families: simple
+arrow versus dependent Π — siblings at the type-code level. -/
+theorem Conv.arrowCode_ne_piTyCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {domainCode codomainCode : RawTerm scope}
+    {piDomainCode : RawTerm scope}
+    {piCodomainCode : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType
+      (RawTerm.arrowCode domainCode codomainCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.piTyCode piDomainCode piCodomainCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqArrow, _, _⟩ :=
+    RawStep.parStar.arrowCode_inv sourceToJoin
+  obtain ⟨_, _, joinEqPiTy, _, _⟩ :=
+    RawStep.parStar.piTyCode_inv targetToJoin
+  nomatch joinEqArrow.symm.trans joinEqPiTy
+
+/-- A `arrowCode`-headed source and a `productCode`-headed target
+are not convertible.  Both type-codes but for distinct families:
+arrow type versus product type former. -/
+theorem Conv.arrowCode_ne_productCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {domainCode codomainCode : RawTerm scope}
+    {firstCode secondCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.arrowCode domainCode codomainCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.productCode firstCode secondCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqArrow, _, _⟩ :=
+    RawStep.parStar.arrowCode_inv sourceToJoin
+  obtain ⟨_, _, joinEqProduct, _, _⟩ :=
+    RawStep.parStar.productCode_inv targetToJoin
+  nomatch joinEqArrow.symm.trans joinEqProduct
+
+/-- A `arrowCode`-headed source and a `recordIntro`-headed target
+are not convertible.  Type-code versus record-introduction form —
+distinct canonical heads at the raw level. -/
+theorem Conv.arrowCode_ne_recordIntro
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {domainCode codomainCode : RawTerm scope}
+    {firstField : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.arrowCode domainCode codomainCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.recordIntro firstField : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqArrow, _, _⟩ :=
+    RawStep.parStar.arrowCode_inv sourceToJoin
+  obtain ⟨_, joinEqRecord, _⟩ :=
+    RawStep.parStar.recordIntro_inv targetToJoin
+  nomatch joinEqArrow.symm.trans joinEqRecord
+
 end LeanFX2
