@@ -1003,6 +1003,13 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.sessionRecv_ne_listCons
 #assert_no_axioms LeanFX2.Conv.sessionRecv_ne_pair
 #assert_no_axioms LeanFX2.Conv.sessionRecv_ne_refl
+#assert_no_axioms LeanFX2.Conv.sessionRecv_ne_sessionSend
+#assert_no_axioms LeanFX2.Conv.sessionRecv_ne_sigmaTyCode
+#assert_no_axioms LeanFX2.Conv.sessionRecv_ne_subsume
+#assert_no_axioms LeanFX2.Conv.sessionRecv_ne_sumCode
+#assert_no_axioms LeanFX2.Conv.sessionRecv_ne_transpFill
+#assert_no_axioms LeanFX2.Conv.sessionRecv_ne_uaToEquiv
+#assert_no_axioms LeanFX2.Conv.sessionRecv_ne_universeCode
 #assert_no_axioms LeanFX2.Conv.codataUnfold_ne_unit
 #assert_no_axioms LeanFX2.Conv.codataUnfold_ne_boolTrue
 #assert_no_axioms LeanFX2.Conv.codataUnfold_ne_boolFalse
