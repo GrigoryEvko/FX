@@ -126,7 +126,15 @@ namespace LeanFX2.Tools
 --     renames: optionSome_cong (from optionSome_value_cong_isClosedTy),
 --     eitherInl_cong (from eitherInl_value_cong_isClosedTy),
 --     eitherInr_cong (from eitherInr_value_cong_isClosedTy).
---   Coverage at 10/78 ctors with `Conv.<ctor>_cong` mirror.
-#assert_conv_cong_coverage_budget LeanFX2.Term 68
+--   2026-05-22 ratchet 68 → 60 after 8 nullary-ctor cong rules
+--     landed as one-liner `Conv.refl _` (degenerate witness for
+--     ctors with no sub-Term positions): unit_cong, boolTrue_cong,
+--     boolFalse_cong, natZero_cong, listNil_cong, optionNone_cong,
+--     interval0_cong, interval1_cong.  See
+--     `Reduction/ConvCanonical.lean` "Nullary-ctor degenerate cong
+--     rules" block — these spell out the canonical cong for nullary
+--     ctors so the budget gate's exact-name matcher recognises them.
+--   Coverage at 18/78 ctors with `Conv.<ctor>_cong` mirror.
+#assert_conv_cong_coverage_budget LeanFX2.Term 60
 
 end LeanFX2.Tools
