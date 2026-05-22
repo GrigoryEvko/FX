@@ -566,6 +566,42 @@ theorem partialStrengthenTyped?_isSome_target_subsume
   next _ _ =>
       rfl
 
+/-! ## Single-recursive ctor with type-wrapping: recordIntro
+
+`Term.recordIntro` wraps `firstField : Term sourceCtx
+singleFieldType firstRaw` in `Ty.record singleFieldType`.  Same
+single-recursive shape as `optionSome` — no type-level side
+condition.  Uses `Term.recordIntroDestruct` from
+`Term/PreservesTerm/InlineDestructors.lean`. -/
+/-- Target-direction totality at `Term.recordIntro`. -/
+theorem partialStrengthenTyped?_isSome_target_recordIntro
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {singleFieldType : Ty level sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    {firstRaw : RawTerm sourceScope}
+    (targetTerm :
+      Term sourceCtx (Ty.record singleFieldType)
+        (RawTerm.recordIntro firstRaw))
+    (fieldIH :
+      ∀ (firstField : Term sourceCtx singleFieldType firstRaw),
+        (partialStrengthenTyped? firstField strengthening).isSome
+          = true) :
+    (partialStrengthenTyped? targetTerm strengthening).isSome = true := by
+  obtain ⟨firstField, heq⟩ := Term.recordIntroDestruct targetTerm
+  have targetEq : targetTerm = Term.recordIntro firstField := eq_of_heq heq
+  subst targetEq
+  have ihResult := fieldIH firstField
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noFieldSuccess =>
+      rw [noFieldSuccess] at ihResult
+      cases ihResult
+  next _ _ =>
+      rfl
+
 end Term
 
 end LeanFX2
