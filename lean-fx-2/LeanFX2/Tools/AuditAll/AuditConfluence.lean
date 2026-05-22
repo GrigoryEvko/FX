@@ -461,6 +461,14 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.idCode_ne_modIntro
 #assert_no_axioms LeanFX2.Conv.idCode_ne_oeqFunext
 #assert_no_axioms LeanFX2.Conv.idCode_ne_oeqJ
+#assert_no_axioms LeanFX2.Conv.idCode_ne_oeqRefl
+#assert_no_axioms LeanFX2.Conv.idCode_ne_oeqTrans
+#assert_no_axioms LeanFX2.Conv.idCode_ne_optionCode
+#assert_no_axioms LeanFX2.Conv.idCode_ne_pathCompose
+#assert_no_axioms LeanFX2.Conv.idCode_ne_piTyCode
+#assert_no_axioms LeanFX2.Conv.idCode_ne_productCode
+#assert_no_axioms LeanFX2.Conv.idCode_ne_recordIntro
+#assert_no_axioms LeanFX2.Conv.idCode_ne_refineIntro
 #assert_no_axioms LeanFX2.Conv.glueIntro_ne_unit
 #assert_no_axioms LeanFX2.Conv.glueIntro_ne_boolTrue
 #assert_no_axioms LeanFX2.Conv.glueIntro_ne_boolFalse
