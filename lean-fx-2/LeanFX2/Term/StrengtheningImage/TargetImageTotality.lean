@@ -1260,6 +1260,191 @@ theorem partialStrengthenTyped?_isSome_target_universeCode
         strengthening).isSome = true := by
   rfl
 
+/-! ## Identity-type introducers: refl, oeqRefl
+
+`Term.refl` and `Term.oeqRefl` carry no operand `Term`s — only
+explicit `(carrier : Ty)` + `(rawWitness : RawTerm)` data.  The
+dispatcher takes both as carrier + raw sides, returning `some`
+directly without recursion.  Pre-destructured (no HEq destructor
+needed); two side strengthenings drive a double-split. -/
+/-- Target-direction totality at `Term.refl` (HoTT/observational
+identity introduction).  No operand IH; double-split over
+`carrier` Ty-side and `rawWitness` raw-side. -/
+theorem partialStrengthenTyped?_isSome_target_refl
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (carrier : Ty level sourceScope)
+    (rawWitness : RawTerm sourceScope)
+    (carrierStrengthens :
+      (carrier.partialStrengthen? strengthening.back).isSome = true)
+    (witnessStrengthens :
+      (rawWitness.partialStrengthen? strengthening.back).isSome = true) :
+    (partialStrengthenTyped?
+        (Term.refl (context := sourceCtx) carrier rawWitness)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noCarrier =>
+      rw [noCarrier] at carrierStrengthens
+      cases carrierStrengthens
+  next _ _ =>
+      split
+      next noWitness =>
+          rw [noWitness] at witnessStrengthens
+          cases witnessStrengthens
+      next _ _ =>
+          rfl
+
+/-- Target-direction totality at `Term.oeqRefl` (observational
+equality reflexivity).  Same shape as `refl`. -/
+theorem partialStrengthenTyped?_isSome_target_oeqRefl
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (carrier : Ty level sourceScope)
+    (rawWitness : RawTerm sourceScope)
+    (carrierStrengthens :
+      (carrier.partialStrengthen? strengthening.back).isSome = true)
+    (witnessStrengthens :
+      (rawWitness.partialStrengthen? strengthening.back).isSome = true) :
+    (partialStrengthenTyped?
+        (Term.oeqRefl (context := sourceCtx) carrier rawWitness)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noCarrier =>
+      rw [noCarrier] at carrierStrengthens
+      cases carrierStrengthens
+  next _ _ =>
+      split
+      next noWitness =>
+          rw [noWitness] at witnessStrengthens
+          cases witnessStrengthens
+      next _ _ =>
+          rfl
+
+/-! ## Session communication primitives: sessionRecv, sessionSend
+
+`Term.sessionRecv` reads from a session channel; `Term.sessionSend`
+writes to it.  Both take a `channel : Term context
+(Ty.session protocolStep) channelRaw`; sessionSend additionally
+takes a `payload : Term context payloadType payloadRaw`.
+
+The dispatcher arm for sessionSend takes `protocolStep` as an
+explicit `RawTerm scope` argument (NOT implicit) so it appears
+directly in the wrapper signature.  Both ctors require raw
+strengthening of `protocolStep` (the session protocol step);
+sessionSend additionally requires payloadType strengthening. -/
+/-- Target-direction totality at `Term.sessionRecv`.  Single-
+recursive on the channel operand + one raw-side strengthening on
+`protocolStep`. -/
+theorem partialStrengthenTyped?_isSome_target_sessionRecv
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {protocolStep channelRaw : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (channel : Term sourceCtx (Ty.session protocolStep) channelRaw)
+    (protocolStrengthens :
+      (protocolStep.partialStrengthen? strengthening.back).isSome = true)
+    (channelIH :
+      (partialStrengthenTyped? channel strengthening).isSome = true) :
+    (partialStrengthenTyped?
+        (Term.sessionRecv channel) strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noProtocol =>
+      rw [noProtocol] at protocolStrengthens
+      cases protocolStrengthens
+  next _ _ =>
+      split
+      next noChannel =>
+          rw [noChannel] at channelIH
+          cases channelIH
+      next _ _ =>
+          rfl
+
+/-- Target-direction totality at `Term.sessionSend`.  Binary-
+recursive (channel + payload).  Dispatcher arm splits over
+`protocolStep` raw strengthening + channel IH + payload IH. -/
+theorem partialStrengthenTyped?_isSome_target_sessionSend
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {payloadType : Ty level sourceScope}
+    {channelRaw payloadRaw : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (protocolStep : RawTerm sourceScope)
+    (channel : Term sourceCtx (Ty.session protocolStep) channelRaw)
+    (payload : Term sourceCtx payloadType payloadRaw)
+    (protocolStrengthens :
+      (protocolStep.partialStrengthen? strengthening.back).isSome = true)
+    (channelIH :
+      (partialStrengthenTyped? channel strengthening).isSome = true)
+    (payloadIH :
+      (partialStrengthenTyped? payload strengthening).isSome = true) :
+    (partialStrengthenTyped?
+        (Term.sessionSend protocolStep channel payload) strengthening).isSome
+      = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noProtocol =>
+      rw [noProtocol] at protocolStrengthens
+      cases protocolStrengthens
+  next _ _ =>
+      split
+      next noChannel =>
+          rw [noChannel] at channelIH
+          cases channelIH
+      next _ _ =>
+          split
+          next noPayload =>
+              rw [noPayload] at payloadIH
+              cases payloadIH
+          next _ _ =>
+              rfl
+
+/-! ## Universe cumulativity: cumulUp
+
+`Term.cumulUp` lifts a `typeCode : Term ctx (Ty.universe
+lowerLevel _) codeRaw` to `Term ctx (Ty.universe higherLevel _)`
+via cumulativity.  No type-side, no raw-side — only the typeCode
+operand IH (the level attributes are erased once the typeCode IH
+fires).  Single-recursive, attribute-heavy shape. -/
+/-- Target-direction totality at `Term.cumulUp`. -/
+theorem partialStrengthenTyped?_isSome_target_cumulUp
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {codeRaw : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (lowerLevel higherLevel : UniverseLevel)
+    (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
+    (levelLeLow : lowerLevel.toNat + 1 ≤ level)
+    (levelLeHigh : higherLevel.toNat + 1 ≤ level)
+    (typeCode : Term sourceCtx (Ty.universe lowerLevel levelLeLow) codeRaw)
+    (codeIH :
+      (partialStrengthenTyped? typeCode strengthening).isSome = true) :
+    (partialStrengthenTyped?
+        (Term.cumulUp lowerLevel higherLevel cumulMonotone
+          levelLeLow levelLeHigh typeCode) strengthening).isSome
+      = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noCode =>
+      rw [noCode] at codeIH
+      cases codeIH
+  next _ _ =>
+      rfl
+
 end Term
 
 end LeanFX2
