@@ -115,14 +115,18 @@ namespace LeanFX2.Tools
 -- D3.6-P4: `Term.equivApply` lacks a `Conv.equivApplyCong` direct
 -- mirror (Conv lifting via `Conv.fromStep`); bumps to 76.
 -- RATCHET ACTIVE (2026-05-22): Conv-cong coverage gate armed at the
--- current floor (debt 71/78).  Recent ratchet history:
+-- current floor.  Recent ratchet history:
 --   2026-05-11 muted at 76 (informational only)
 --   2026-05-22 un-muted at 71 after intervalMeet/Join_cong (+2) and
 --     three closed-Ty cong renames (+3): listCons_cong (from
 --     listCons_cong_isClosedTy), recordIntro_cong (from
 --     recordIntroField_cong_isClosedTy), codataUnfold_cong (from
---     codataUnfold_cong_isClosedTy).  Gate now fails on regression
---     (new Term ctor without cong mirror, or removed cong rule).
-#assert_conv_cong_coverage_budget LeanFX2.Term 71
+--     codataUnfold_cong_isClosedTy).
+--   2026-05-22 ratchet 71 → 68 after three more closed-Ty cong
+--     renames: optionSome_cong (from optionSome_value_cong_isClosedTy),
+--     eitherInl_cong (from eitherInl_value_cong_isClosedTy),
+--     eitherInr_cong (from eitherInr_value_cong_isClosedTy).
+--   Coverage at 10/78 ctors with `Conv.<ctor>_cong` mirror.
+#assert_conv_cong_coverage_budget LeanFX2.Term 68
 
 end LeanFX2.Tools

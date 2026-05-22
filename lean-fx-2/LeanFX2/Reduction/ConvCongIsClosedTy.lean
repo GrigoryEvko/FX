@@ -180,8 +180,12 @@ proof; same proof obligations are factored into the generic
 helper. -/
 
 /-- Conv cong on `Term.optionSome`'s value position when element
-type is closed. -/
-theorem Conv.optionSome_value_cong_isClosedTy
+type is closed.
+
+Named `Conv.optionSome_cong` (term-ctor perspective) so the
+`#assert_conv_cong_coverage_budget` gate's exact-name matcher
+recognises this as the `Term.optionSome` cong mirror. -/
+theorem Conv.optionSome_cong
     {elementType : Ty level scope}
     (closedElement : IsClosedTy elementType)
     {valueRawA valueRawB : RawTerm scope}
@@ -198,8 +202,12 @@ theorem Conv.optionSome_value_cong_isClosedTy
     valueConv
 
 /-- Conv cong on `Term.eitherInl`'s value position when left type
-is closed.  rightType need not be closed. -/
-theorem Conv.eitherInl_value_cong_isClosedTy
+is closed.  rightType need not be closed.
+
+Named `Conv.eitherInl_cong` (term-ctor perspective) so the
+`#assert_conv_cong_coverage_budget` gate's exact-name matcher
+recognises this as the `Term.eitherInl` cong mirror. -/
+theorem Conv.eitherInl_cong
     {leftType rightType : Ty level scope}
     (closedLeft : IsClosedTy leftType)
     {valueRawA valueRawB : RawTerm scope}
@@ -217,8 +225,12 @@ theorem Conv.eitherInl_value_cong_isClosedTy
     valueConv
 
 /-- Conv cong on `Term.eitherInr`'s value position when right type
-is closed.  leftType need not be closed. -/
-theorem Conv.eitherInr_value_cong_isClosedTy
+is closed.  leftType need not be closed.
+
+Named `Conv.eitherInr_cong` (term-ctor perspective) so the
+`#assert_conv_cong_coverage_budget` gate's exact-name matcher
+recognises this as the `Term.eitherInr` cong mirror. -/
+theorem Conv.eitherInr_cong
     {leftType rightType : Ty level scope}
     (closedRight : IsClosedTy rightType)
     {valueRawA valueRawB : RawTerm scope}
