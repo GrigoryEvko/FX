@@ -273,5 +273,10 @@ only (`dsimp only` unfold + nested `match` + `cases` on impossible
 #assert_no_axioms LeanFX2.RawTerm.partialRename?_pathCompose_isSome
 #assert_no_axioms LeanFX2.RawTerm.partialRename?_oeqTrans_isSome
 #assert_no_axioms LeanFX2.RawTerm.partialRename?_equivCompose_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_pathLam_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_piTyCode_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_sigmaTyCode_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_transpFill_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_idCode_isSome
 
 end LeanFX2.Tools

@@ -1292,6 +1292,153 @@ theorem partialRename?_equivCompose_isSome
         | some _ => rw [firstBranch] at composite; cases composite
     | some _ => rfl
 
+/-- Inversion of `RawTerm.pathLam` partial-renaming `.isSome`.
+
+Path-binder variant of `lam`: the body strengthens under the lifted
+back-renaming. -/
+theorem partialRename?_pathLam_isSome
+    (back : PartialRawRenaming sourceScope targetScope)
+    (body : RawTerm (sourceScope + 1))
+    (composite :
+      ((RawTerm.pathLam body).partialRename? back).isSome = true) :
+    (body.partialRename? back.lift).isSome = true := by
+  dsimp only [RawTerm.partialRename?] at composite
+  match bodyBranch : body.partialRename? back.lift with
+  | none => rw [bodyBranch] at composite; cases composite
+  | some _ => rfl
+
+/-- Inversion of `RawTerm.piTyCode` partial-renaming `.isSome`.
+
+Partial-binder shape: domain code at base scope; codomain code at
+lifted scope (binds one variable).  Both must strengthen. -/
+theorem partialRename?_piTyCode_isSome
+    (back : PartialRawRenaming sourceScope targetScope)
+    (domainCode : RawTerm sourceScope)
+    (codomainCode : RawTerm (sourceScope + 1))
+    (composite :
+      ((RawTerm.piTyCode domainCode codomainCode).partialRename?
+          back).isSome = true) :
+    (domainCode.partialRename? back).isSome = true ∧
+      (codomainCode.partialRename? back.lift).isSome = true := by
+  dsimp only [RawTerm.partialRename?, Option.mapTwo] at composite
+  refine ⟨?_, ?_⟩
+  · match domainBranch : domainCode.partialRename? back with
+    | none => rw [domainBranch] at composite; cases composite
+    | some _ => rfl
+  · match codomainBranch : codomainCode.partialRename? back.lift with
+    | none =>
+        rw [codomainBranch] at composite
+        match domainBranch : domainCode.partialRename? back with
+        | none => rw [domainBranch] at composite; cases composite
+        | some _ => rw [domainBranch] at composite; cases composite
+    | some _ => rfl
+
+/-- Inversion of `RawTerm.sigmaTyCode` partial-renaming `.isSome`.
+
+Partial-binder shape: domain code at base scope; codomain code at
+lifted scope (binds one variable).  Both must strengthen. -/
+theorem partialRename?_sigmaTyCode_isSome
+    (back : PartialRawRenaming sourceScope targetScope)
+    (domainCode : RawTerm sourceScope)
+    (codomainCode : RawTerm (sourceScope + 1))
+    (composite :
+      ((RawTerm.sigmaTyCode domainCode codomainCode).partialRename?
+          back).isSome = true) :
+    (domainCode.partialRename? back).isSome = true ∧
+      (codomainCode.partialRename? back.lift).isSome = true := by
+  dsimp only [RawTerm.partialRename?, Option.mapTwo] at composite
+  refine ⟨?_, ?_⟩
+  · match domainBranch : domainCode.partialRename? back with
+    | none => rw [domainBranch] at composite; cases composite
+    | some _ => rfl
+  · match codomainBranch : codomainCode.partialRename? back.lift with
+    | none =>
+        rw [codomainBranch] at composite
+        match domainBranch : domainCode.partialRename? back with
+        | none => rw [domainBranch] at composite; cases composite
+        | some _ => rw [domainBranch] at composite; cases composite
+    | some _ => rfl
+
+/-- Inversion of `RawTerm.transpFill` partial-renaming `.isSome`.
+
+Ternary mapThree shape: path type, current interval, and source
+all strengthen. -/
+theorem partialRename?_transpFill_isSome
+    (back : PartialRawRenaming sourceScope targetScope)
+    (pathTy currentInterval source : RawTerm sourceScope)
+    (composite :
+      ((RawTerm.transpFill pathTy currentInterval source).partialRename?
+          back).isSome = true) :
+    (pathTy.partialRename? back).isSome = true ∧
+      (currentInterval.partialRename? back).isSome = true ∧
+        (source.partialRename? back).isSome = true := by
+  dsimp only [RawTerm.partialRename?, Option.mapThree] at composite
+  refine ⟨?_, ?_, ?_⟩
+  · match pathBranch : pathTy.partialRename? back with
+    | none => rw [pathBranch] at composite; cases composite
+    | some _ => rfl
+  · match intervalBranch : currentInterval.partialRename? back with
+    | none =>
+        rw [intervalBranch] at composite
+        match pathBranch : pathTy.partialRename? back with
+        | none => rw [pathBranch] at composite; cases composite
+        | some _ => rw [pathBranch] at composite; cases composite
+    | some _ => rfl
+  · match sourceBranch : source.partialRename? back with
+    | none =>
+        rw [sourceBranch] at composite
+        match pathBranch : pathTy.partialRename? back with
+        | none => rw [pathBranch] at composite; cases composite
+        | some _ =>
+            match intervalBranch : currentInterval.partialRename? back with
+            | none =>
+                rw [pathBranch, intervalBranch] at composite
+                cases composite
+            | some _ =>
+                rw [pathBranch, intervalBranch] at composite
+                cases composite
+    | some _ => rfl
+
+/-- Inversion of `RawTerm.idCode` partial-renaming `.isSome`.
+
+Ternary mapThree shape: type code, left raw, and right raw all
+strengthen. -/
+theorem partialRename?_idCode_isSome
+    (back : PartialRawRenaming sourceScope targetScope)
+    (typeCode leftRaw rightRaw : RawTerm sourceScope)
+    (composite :
+      ((RawTerm.idCode typeCode leftRaw rightRaw).partialRename?
+          back).isSome = true) :
+    (typeCode.partialRename? back).isSome = true ∧
+      (leftRaw.partialRename? back).isSome = true ∧
+        (rightRaw.partialRename? back).isSome = true := by
+  dsimp only [RawTerm.partialRename?, Option.mapThree] at composite
+  refine ⟨?_, ?_, ?_⟩
+  · match typeBranch : typeCode.partialRename? back with
+    | none => rw [typeBranch] at composite; cases composite
+    | some _ => rfl
+  · match leftBranch : leftRaw.partialRename? back with
+    | none =>
+        rw [leftBranch] at composite
+        match typeBranch : typeCode.partialRename? back with
+        | none => rw [typeBranch] at composite; cases composite
+        | some _ => rw [typeBranch] at composite; cases composite
+    | some _ => rfl
+  · match rightBranch : rightRaw.partialRename? back with
+    | none =>
+        rw [rightBranch] at composite
+        match typeBranch : typeCode.partialRename? back with
+        | none => rw [typeBranch] at composite; cases composite
+        | some _ =>
+            match leftBranch : leftRaw.partialRename? back with
+            | none =>
+                rw [typeBranch, leftBranch] at composite
+                cases composite
+            | some _ =>
+                rw [typeBranch, leftBranch] at composite
+                cases composite
+    | some _ => rfl
+
 end RawTerm
 
 end LeanFX2
