@@ -553,6 +553,34 @@ theorem Conv.fromStepStar_subst0
       RawStep.parStar (targetRaw.subst0 argRaw) commonRaw :=
   Conv.subst0Raw argRaw (Conv.fromStepStar chain)
 
+/-- Multi-position parallel-substitution sibling of
+`Conv.fromStepStar_substituted`.
+
+Combines a typed `StepStar` chain with the heterogeneous parallel-subst
+action `Conv.rawSubst_par_toRawJoin`: given two raw substitutions
+`firstSubst` / `secondSubst` related single-step pointwise, the typed
+chain (wrapped as a Conv) lifts to a raw join at differently-substituted
+endpoints `sourceRaw.subst firstSubst` and `targetRaw.subst secondSubst`.
+
+Pure delegation: `Conv.rawSubst_par_toRawJoin` after `Conv.fromStepStar`.
+Mirrors the `_renamed / _weakened / _substituted / _subst0` family
+pattern for parallel-subst chain consumers. -/
+theorem Conv.fromStepStar_subst_par
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {sourceType targetType : Ty level sourceScope}
+    {sourceRaw targetRaw : RawTerm sourceScope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    {firstSubst secondSubst : RawTermSubst sourceScope targetScope}
+    (substsRelated : ∀ position,
+      RawStep.par (firstSubst position) (secondSubst position))
+    (chain : StepStar sourceTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.subst firstSubst) commonRaw ∧
+      RawStep.parStar (targetRaw.subst secondSubst) commonRaw :=
+  Conv.rawSubst_par_toRawJoin substsRelated (Conv.fromStepStar chain)
+
 /-! ## Single-Step-plus-action lifters
 
 When a downstream consumer has just a single typed `Step t1 t2`
@@ -627,6 +655,30 @@ theorem Conv.fromStep_subst0
       RawStep.parStar (sourceRaw.subst0 argRaw) commonRaw ∧
       RawStep.parStar (targetRaw.subst0 argRaw) commonRaw :=
   Conv.subst0Raw argRaw (Conv.fromStep singleStep)
+
+/-- Multi-position parallel-substitution sibling of
+`Conv.fromStep_substituted`.
+
+Combines a single typed `Step` with the parallel-subst action
+`Conv.rawSubst_par_toRawJoin` via `Conv.fromStep`.  Same family
+pattern as the `fromStepStar_subst_par` sibling but at single-step
+granularity.  Useful when a single β-step or η-step plus a pointwise-
+related substitution pair is the input shape.  -/
+theorem Conv.fromStep_subst_par
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {sourceType targetType : Ty level sourceScope}
+    {sourceRaw targetRaw : RawTerm sourceScope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    {firstSubst secondSubst : RawTermSubst sourceScope targetScope}
+    (substsRelated : ∀ position,
+      RawStep.par (firstSubst position) (secondSubst position))
+    (singleStep : Step sourceTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.subst firstSubst) commonRaw ∧
+      RawStep.parStar (targetRaw.subst secondSubst) commonRaw :=
+  Conv.rawSubst_par_toRawJoin substsRelated (Conv.fromStep singleStep)
 
 /-! ## Reverse-direction chain / step lifters
 
