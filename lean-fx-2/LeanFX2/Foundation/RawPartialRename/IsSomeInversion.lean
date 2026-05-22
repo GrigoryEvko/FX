@@ -458,6 +458,246 @@ theorem partialRename?_transp_isSome
         | some _ => rw [pathBranch] at composite; cases composite
     | some _ => rfl
 
+/-- Inversion of `RawTerm.boolElim` partial-renaming `.isSome`.
+
+If the composite boolElim strengthens, scrutinee, then-branch, and
+else-branch all strengthen. -/
+theorem partialRename?_boolElim_isSome
+    (back : PartialRawRenaming sourceScope targetScope)
+    (scrutinee thenBranch elseBranch : RawTerm sourceScope)
+    (composite :
+      ((RawTerm.boolElim scrutinee thenBranch elseBranch).partialRename?
+          back).isSome = true) :
+    (scrutinee.partialRename? back).isSome = true ∧
+      (thenBranch.partialRename? back).isSome = true ∧
+        (elseBranch.partialRename? back).isSome = true := by
+  dsimp only [RawTerm.partialRename?, Option.mapThree] at composite
+  refine ⟨?_, ?_, ?_⟩
+  · match scrutBranch : scrutinee.partialRename? back with
+    | none => rw [scrutBranch] at composite; cases composite
+    | some _ => rfl
+  · match thenBr : thenBranch.partialRename? back with
+    | none =>
+        rw [thenBr] at composite
+        match scrutBranch : scrutinee.partialRename? back with
+        | none => rw [scrutBranch] at composite; cases composite
+        | some _ => rw [scrutBranch] at composite; cases composite
+    | some _ => rfl
+  · match elseBr : elseBranch.partialRename? back with
+    | none =>
+        rw [elseBr] at composite
+        match scrutBranch : scrutinee.partialRename? back with
+        | none => rw [scrutBranch] at composite; cases composite
+        | some _ =>
+            match thenBr : thenBranch.partialRename? back with
+            | none =>
+                rw [scrutBranch, thenBr] at composite
+                cases composite
+            | some _ =>
+                rw [scrutBranch, thenBr] at composite
+                cases composite
+    | some _ => rfl
+
+/-- Inversion of `RawTerm.natElim` partial-renaming `.isSome`.
+
+If the composite natElim strengthens, scrutinee, zero-branch, and
+successor-branch all strengthen. -/
+theorem partialRename?_natElim_isSome
+    (back : PartialRawRenaming sourceScope targetScope)
+    (scrutinee zeroBranch succBranch : RawTerm sourceScope)
+    (composite :
+      ((RawTerm.natElim scrutinee zeroBranch succBranch).partialRename?
+          back).isSome = true) :
+    (scrutinee.partialRename? back).isSome = true ∧
+      (zeroBranch.partialRename? back).isSome = true ∧
+        (succBranch.partialRename? back).isSome = true := by
+  dsimp only [RawTerm.partialRename?, Option.mapThree] at composite
+  refine ⟨?_, ?_, ?_⟩
+  · match scrutBranch : scrutinee.partialRename? back with
+    | none => rw [scrutBranch] at composite; cases composite
+    | some _ => rfl
+  · match zeroBr : zeroBranch.partialRename? back with
+    | none =>
+        rw [zeroBr] at composite
+        match scrutBranch : scrutinee.partialRename? back with
+        | none => rw [scrutBranch] at composite; cases composite
+        | some _ => rw [scrutBranch] at composite; cases composite
+    | some _ => rfl
+  · match succBr : succBranch.partialRename? back with
+    | none =>
+        rw [succBr] at composite
+        match scrutBranch : scrutinee.partialRename? back with
+        | none => rw [scrutBranch] at composite; cases composite
+        | some _ =>
+            match zeroBr : zeroBranch.partialRename? back with
+            | none =>
+                rw [scrutBranch, zeroBr] at composite
+                cases composite
+            | some _ =>
+                rw [scrutBranch, zeroBr] at composite
+                cases composite
+    | some _ => rfl
+
+/-- Inversion of `RawTerm.natRec` partial-renaming `.isSome`.
+
+If the composite natRec strengthens, scrutinee, zero-branch, and
+successor-branch all strengthen. -/
+theorem partialRename?_natRec_isSome
+    (back : PartialRawRenaming sourceScope targetScope)
+    (scrutinee zeroBranch succBranch : RawTerm sourceScope)
+    (composite :
+      ((RawTerm.natRec scrutinee zeroBranch succBranch).partialRename?
+          back).isSome = true) :
+    (scrutinee.partialRename? back).isSome = true ∧
+      (zeroBranch.partialRename? back).isSome = true ∧
+        (succBranch.partialRename? back).isSome = true := by
+  dsimp only [RawTerm.partialRename?, Option.mapThree] at composite
+  refine ⟨?_, ?_, ?_⟩
+  · match scrutBranch : scrutinee.partialRename? back with
+    | none => rw [scrutBranch] at composite; cases composite
+    | some _ => rfl
+  · match zeroBr : zeroBranch.partialRename? back with
+    | none =>
+        rw [zeroBr] at composite
+        match scrutBranch : scrutinee.partialRename? back with
+        | none => rw [scrutBranch] at composite; cases composite
+        | some _ => rw [scrutBranch] at composite; cases composite
+    | some _ => rfl
+  · match succBr : succBranch.partialRename? back with
+    | none =>
+        rw [succBr] at composite
+        match scrutBranch : scrutinee.partialRename? back with
+        | none => rw [scrutBranch] at composite; cases composite
+        | some _ =>
+            match zeroBr : zeroBranch.partialRename? back with
+            | none =>
+                rw [scrutBranch, zeroBr] at composite
+                cases composite
+            | some _ =>
+                rw [scrutBranch, zeroBr] at composite
+                cases composite
+    | some _ => rfl
+
+/-- Inversion of `RawTerm.listElim` partial-renaming `.isSome`.
+
+If the composite listElim strengthens, scrutinee, nil-branch, and
+cons-branch all strengthen. -/
+theorem partialRename?_listElim_isSome
+    (back : PartialRawRenaming sourceScope targetScope)
+    (scrutinee nilBranch consBranch : RawTerm sourceScope)
+    (composite :
+      ((RawTerm.listElim scrutinee nilBranch consBranch).partialRename?
+          back).isSome = true) :
+    (scrutinee.partialRename? back).isSome = true ∧
+      (nilBranch.partialRename? back).isSome = true ∧
+        (consBranch.partialRename? back).isSome = true := by
+  dsimp only [RawTerm.partialRename?, Option.mapThree] at composite
+  refine ⟨?_, ?_, ?_⟩
+  · match scrutBranch : scrutinee.partialRename? back with
+    | none => rw [scrutBranch] at composite; cases composite
+    | some _ => rfl
+  · match nilBr : nilBranch.partialRename? back with
+    | none =>
+        rw [nilBr] at composite
+        match scrutBranch : scrutinee.partialRename? back with
+        | none => rw [scrutBranch] at composite; cases composite
+        | some _ => rw [scrutBranch] at composite; cases composite
+    | some _ => rfl
+  · match consBr : consBranch.partialRename? back with
+    | none =>
+        rw [consBr] at composite
+        match scrutBranch : scrutinee.partialRename? back with
+        | none => rw [scrutBranch] at composite; cases composite
+        | some _ =>
+            match nilBr : nilBranch.partialRename? back with
+            | none =>
+                rw [scrutBranch, nilBr] at composite
+                cases composite
+            | some _ =>
+                rw [scrutBranch, nilBr] at composite
+                cases composite
+    | some _ => rfl
+
+/-- Inversion of `RawTerm.optionMatch` partial-renaming `.isSome`.
+
+If the composite optionMatch strengthens, scrutinee, none-branch, and
+some-branch all strengthen. -/
+theorem partialRename?_optionMatch_isSome
+    (back : PartialRawRenaming sourceScope targetScope)
+    (scrutinee noneBranch someBranch : RawTerm sourceScope)
+    (composite :
+      ((RawTerm.optionMatch scrutinee noneBranch someBranch).partialRename?
+          back).isSome = true) :
+    (scrutinee.partialRename? back).isSome = true ∧
+      (noneBranch.partialRename? back).isSome = true ∧
+        (someBranch.partialRename? back).isSome = true := by
+  dsimp only [RawTerm.partialRename?, Option.mapThree] at composite
+  refine ⟨?_, ?_, ?_⟩
+  · match scrutBranch : scrutinee.partialRename? back with
+    | none => rw [scrutBranch] at composite; cases composite
+    | some _ => rfl
+  · match noneBr : noneBranch.partialRename? back with
+    | none =>
+        rw [noneBr] at composite
+        match scrutBranch : scrutinee.partialRename? back with
+        | none => rw [scrutBranch] at composite; cases composite
+        | some _ => rw [scrutBranch] at composite; cases composite
+    | some _ => rfl
+  · match someBr : someBranch.partialRename? back with
+    | none =>
+        rw [someBr] at composite
+        match scrutBranch : scrutinee.partialRename? back with
+        | none => rw [scrutBranch] at composite; cases composite
+        | some _ =>
+            match noneBr : noneBranch.partialRename? back with
+            | none =>
+                rw [scrutBranch, noneBr] at composite
+                cases composite
+            | some _ =>
+                rw [scrutBranch, noneBr] at composite
+                cases composite
+    | some _ => rfl
+
+/-- Inversion of `RawTerm.eitherMatch` partial-renaming `.isSome`.
+
+If the composite eitherMatch strengthens, scrutinee, left-branch,
+and right-branch all strengthen. -/
+theorem partialRename?_eitherMatch_isSome
+    (back : PartialRawRenaming sourceScope targetScope)
+    (scrutinee leftBranch rightBranch : RawTerm sourceScope)
+    (composite :
+      ((RawTerm.eitherMatch scrutinee leftBranch rightBranch).partialRename?
+          back).isSome = true) :
+    (scrutinee.partialRename? back).isSome = true ∧
+      (leftBranch.partialRename? back).isSome = true ∧
+        (rightBranch.partialRename? back).isSome = true := by
+  dsimp only [RawTerm.partialRename?, Option.mapThree] at composite
+  refine ⟨?_, ?_, ?_⟩
+  · match scrutBranch : scrutinee.partialRename? back with
+    | none => rw [scrutBranch] at composite; cases composite
+    | some _ => rfl
+  · match leftBr : leftBranch.partialRename? back with
+    | none =>
+        rw [leftBr] at composite
+        match scrutBranch : scrutinee.partialRename? back with
+        | none => rw [scrutBranch] at composite; cases composite
+        | some _ => rw [scrutBranch] at composite; cases composite
+    | some _ => rfl
+  · match rightBr : rightBranch.partialRename? back with
+    | none =>
+        rw [rightBr] at composite
+        match scrutBranch : scrutinee.partialRename? back with
+        | none => rw [scrutBranch] at composite; cases composite
+        | some _ =>
+            match leftBr : leftBranch.partialRename? back with
+            | none =>
+                rw [scrutBranch, leftBr] at composite
+                cases composite
+            | some _ =>
+                rw [scrutBranch, leftBr] at composite
+                cases composite
+    | some _ => rfl
+
 end RawTerm
 
 end LeanFX2

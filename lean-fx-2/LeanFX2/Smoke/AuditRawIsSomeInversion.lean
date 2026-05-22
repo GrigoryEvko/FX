@@ -40,5 +40,11 @@ namespace LeanFX2.Smoke.AuditRawIsSomeInversion
 #print axioms LeanFX2.RawTerm.partialRename?_pathApp_isSome
 #print axioms LeanFX2.RawTerm.partialRename?_glueIntro_isSome
 #print axioms LeanFX2.RawTerm.partialRename?_transp_isSome
+#print axioms LeanFX2.RawTerm.partialRename?_boolElim_isSome
+#print axioms LeanFX2.RawTerm.partialRename?_natElim_isSome
+#print axioms LeanFX2.RawTerm.partialRename?_natRec_isSome
+#print axioms LeanFX2.RawTerm.partialRename?_listElim_isSome
+#print axioms LeanFX2.RawTerm.partialRename?_optionMatch_isSome
+#print axioms LeanFX2.RawTerm.partialRename?_eitherMatch_isSome
 
 end LeanFX2.Smoke.AuditRawIsSomeInversion
