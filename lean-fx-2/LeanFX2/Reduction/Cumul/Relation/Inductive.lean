@@ -1177,6 +1177,28 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
             (Term.weaken Ty.interval valueTerm))
           intervalTerm)
         valueTerm
+  /-- β-reduction at a funextRefl-shaped Π function:
+  `appPi (funextRefl A B applyRaw) argument ⟶
+   refl (B.weaken.subst0 A argRaw) (applyRaw.subst0 argRaw)`.
+
+  Mirror of `Step.betaFunextReflApp` (`Reduction/Step/Inductive.lean`).
+  `Term.funextRefl A B applyRaw` shares the `Ty.piTy A (Ty.id ...)`
+  + `RawTerm.lam (RawTerm.refl applyRaw)` index slot with
+  `Term.lamPi`, and the generic `betaAppPiCumul` requires a
+  `Term.lamPi` source.  This rule covers the funextRefl source;
+  see `Foundation/TermHelpers.lean:funextReflType` for the
+  collision invariant. -/
+  | betaFunextReflAppCumul
+      {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      (domainType : Ty level scope) (codomainType : Ty level scope)
+      {applyRaw : RawTerm (scope + 1)} {argumentRaw : RawTerm scope}
+      (argumentTerm : Term context domainType argumentRaw) :
+      ConvCumul
+        (Term.appPi (Term.funextRefl domainType codomainType applyRaw)
+                    argumentTerm)
+        (Term.refl (context := context)
+                   (codomainType.weaken.subst0 domainType argumentRaw)
+                   (applyRaw.subst0 argumentRaw))
   /-- Cubical Glue β-reduction: `glueElim (glueIntro base partial) ⟶ base`.
   Mirror of `Step.betaGlueElimIntro`. -/
   | betaGlueElimIntroCumul

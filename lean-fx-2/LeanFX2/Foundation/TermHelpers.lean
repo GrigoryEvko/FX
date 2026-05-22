@@ -79,7 +79,22 @@ Under one fresh `carrierA` binder, this is the identity type
   Ty.piTy domainType
     (oeqFunextPointwiseCodomain codomainType leftFunctionRaw rightFunctionRaw)
 
-/-- Type of the canonical funext reflexivity witness. -/
+/-- Type of the canonical funext reflexivity witness.
+
+**Pi-shape collision invariant.**  `funextReflType` reduces to
+`Ty.piTy domainType (Ty.id ...)`, making `Term.funextRefl` (which
+inhabits this type at raw form `RawTerm.lam (RawTerm.refl applyRaw)`)
+share the `Ty.piTy A B` + `RawTerm.lam C` index slot with the generic
+`Term.lamPi`.  Any destructor over `Term context (Ty.piTy A B)
+(RawTerm.lam _)` MUST disambiguate via the codomain shape — `Ty.id`
+codomain admits funextRefl, anything else is necessarily lamPi.
+Naïve `nomatch` refutation on `funextRefl` in a `lamPi` destructor
+will fail with "Missing cases: Eq.refl" because the equation
+`Ty.piTy A' (Ty.id ...) = Ty.piTy A B` is NOT a constructor
+mismatch.  Cross-reference: `funextReflPiShape`-style restriction
+hypothesis or disjunctive destructor (cf.
+`Term.lamPi_narrow_destruct` / `Term.lamPi_or_funextRefl_destruct`
+under the universal-chain dispatcher). -/
 @[reducible] def funextReflType {level scope : Nat}
     (domainType codomainType : Ty level scope)
     (applyRaw : RawTerm (scope + 1)) : Ty level scope :=

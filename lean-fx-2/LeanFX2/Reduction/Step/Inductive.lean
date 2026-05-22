@@ -891,6 +891,41 @@ inductive Step :
             (Term.weaken Ty.interval valueTerm))
           intervalTerm)
         valueTerm
+  /-- β-reduction for funextRefl-shaped Pi function:
+  `appPi (funextRefl A B applyRaw) arg ⟶ refl (applyRaw[arg/0])`.
+
+  ## Why this is a primitive Step ctor (mirrors betaPathReflApp)
+
+  `Term.funextRefl A B applyRaw` is a typed lambda whose
+  * type `Ty.piTy A (Ty.id B.weaken applyRaw applyRaw)` collides
+    structurally with `Term.lamPi`'s generic Pi shape
+    (see `Foundation/TermHelpers.lean:funextReflType` for the full
+    collision invariant);
+  * raw form `RawTerm.lam (RawTerm.refl applyRaw)` fires generic
+    `RawStep.par.betaApp` at the raw layer (no new raw ctor required:
+    `(RawTerm.refl applyRaw).subst0 argRaw = RawTerm.refl
+    (applyRaw.subst0 argRaw)` distributes structurally).
+
+  At the TYPED layer `Step.betaAppPi` requires its source's function
+  to be `Term.lamPi body`; it does not cover `Term.funextRefl`
+  sources.  This ctor closes the gap: the typed β-reduct is
+  `Term.refl carrier' (applyRaw.subst0 argRaw)` at carrier
+  `B.weaken.subst0 A argRaw` (propositionally equal to `B` via
+  `Ty.weaken_subst_singleton`).  The source type
+  `(Ty.id B.weaken applyRaw applyRaw).subst0 A argRaw`
+  reduces by `Ty.act` distribution to `Ty.id (B.weaken.subst0 A argRaw)
+  (applyRaw.subst0 argRaw) (applyRaw.subst0 argRaw)` — matching the
+  target's `Ty.id` shape structurally with no propositional cast at
+  the ctor declaration. -/
+  | betaFunextReflApp {mode level scope} {context : Ctx mode level scope}
+      (domainType : Ty level scope) (codomainType : Ty level scope)
+      {applyRaw : RawTerm (scope + 1)} {argumentRaw : RawTerm scope}
+      (argumentTerm : Term context domainType argumentRaw) :
+      Step
+        (Term.appPi (Term.funextRefl domainType codomainType applyRaw)
+                    argumentTerm)
+        (Term.refl (codomainType.weaken.subst0 domainType argumentRaw)
+                   (applyRaw.subst0 argumentRaw))
   /-- Step inside `glueIntro`'s base value. -/
   | glueIntroBase {mode level scope} {context : Ctx mode level scope}
       (modeIsUnivalent : mode = Mode.univalent)

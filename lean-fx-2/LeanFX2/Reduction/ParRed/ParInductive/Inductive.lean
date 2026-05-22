@@ -904,6 +904,36 @@ inductive Step.par :
             (Term.weaken Ty.interval valueSource))
           intervalSource)
         valueTarget
+  /-- Parallel β for funextRefl-shaped Π function:
+  `appPi (funextRefl A B applyRawSource) argumentSource ⟶
+   refl (B.weaken.subst0 A argumentRawTarget) (applyRawTarget.subst0 argumentRawTarget)`.
+
+  This is the typed parallel-step mirror of `Step.betaFunextReflApp`
+  (`Reduction/Step/Inductive.lean`).  Two parallel side-conditions:
+
+  * `RawStep.par applyRawSource applyRawTarget` — funextRefl's raw
+    payload `applyRaw` can step in parallel (mirroring
+    `funextReflCong`'s raw-payload cong rule).
+  * `Step.par argumentSource argumentTarget` — argument can step in
+    parallel.
+
+  The target's type `Ty.id (B.weaken.subst0 A argumentRawTarget) ...`
+  matches the source's β-reduced type `(Ty.id B.weaken applyRaw
+  applyRaw).subst0 A argumentRaw` via `Ty.act` distribution on
+  `Ty.id`. -/
+  | betaFunextReflApp {mode level scope} {context : Ctx mode level scope}
+      (domainType : Ty level scope) (codomainType : Ty level scope)
+      {applyRawSource applyRawTarget : RawTerm (scope + 1)}
+      {argumentRawSource argumentRawTarget : RawTerm scope}
+      {argumentSource : Term context domainType argumentRawSource}
+      {argumentTarget : Term context domainType argumentRawTarget} :
+      RawStep.par applyRawSource applyRawTarget →
+      Step.par argumentSource argumentTarget →
+      Step.par
+        (Term.appPi (Term.funextRefl domainType codomainType applyRawSource)
+                    argumentSource)
+        (Term.refl (codomainType.weaken.subst0 domainType argumentRawTarget)
+                   (applyRawTarget.subst0 argumentRawTarget))
   /-- Shallow cubical Glue β: `unglue (glue base partial) ⟶ base`. -/
   | betaGlueElimIntro {mode level scope} {context : Ctx mode level scope}
       (modeIsUnivalent : mode = Mode.univalent)

@@ -182,6 +182,9 @@ theorem Step.toPar
       exact Step.par.betaPathReflApp modeIsUnivalent carrierType
         leftEndpoint rightEndpoint
         (Step.par.refl valueTerm) (Step.par.refl intervalTerm)
+  | betaFunextReflApp domainType codomainType argumentTerm =>
+      exact Step.par.betaFunextReflApp domainType codomainType
+        (RawStep.par.refl _) (Step.par.refl argumentTerm)
   | glueIntroBase modeIsUnivalent singleStep singleStepIH =>
       exact Step.par.glueIntroCong modeIsUnivalent
         singleStepIH (Step.par.refl _)

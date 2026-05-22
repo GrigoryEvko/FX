@@ -185,6 +185,14 @@ theorem Step.par.toRawBridge
       -- ihInterval : RawStep.par intervalRawSource intervalRawTarget.
       -- Direct lift to the new raw ctor.
       exact RawStep.par.betaPathReflApp ihValue ihInterval
+  | betaFunextReflApp _ _ applyStep _ argIH =>
+      -- Source raw: app (lam (refl applyRawSource)) argumentRawSource.
+      -- Target raw: refl (applyRawTarget.subst0 argumentRawTarget).
+      -- applyStep : RawStep.par applyRawSource applyRawTarget.
+      -- argIH : RawStep.par argumentRawSource argumentRawTarget.
+      -- Discharge via generic RawStep.par.betaApp: refl-cong on body, subst0
+      -- distributes through refl definitionally so the target collapses.
+      exact RawStep.par.betaApp (RawStep.par.reflCong applyStep) argIH
   | betaGlueElimIntro _ _ _ ihBase ihPartial =>
       exact RawStep.par.betaGlueElimIntro ihBase ihPartial
   | betaRecordProjIntro _ ihFirst =>

@@ -222,6 +222,8 @@ theorem Step.toConvCumul
       valueTerm intervalTerm =>
       exact ConvCumul.betaPathReflAppCumul modeIsUnivalent carrierType
         leftEndpoint rightEndpoint valueTerm intervalTerm
+  | betaFunextReflApp domainType codomainType argumentTerm =>
+      exact ConvCumul.betaFunextReflAppCumul domainType codomainType argumentTerm
   | glueIntroBase modeIsUnivalent _ ih =>
       exact ConvCumul.glueIntroCong modeIsUnivalent
         ih (ConvCumul.refl _)
