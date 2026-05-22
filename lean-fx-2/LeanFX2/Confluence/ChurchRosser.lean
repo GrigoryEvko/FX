@@ -765,6 +765,29 @@ theorem Conv.fromStepStarReverse_subst0
       RawStep.parStar (targetRaw.subst0 argRaw) commonRaw :=
   Conv.subst0Raw argRaw (Conv.fromStepStarReverse reverseChain)
 
+/-- Multi-position parallel-substitution sibling of
+`Conv.fromStepStarReverse_substituted`.
+
+A reverse `StepStar` chain plus pointwise-related substitutions lifts
+to a raw join at the differently-substituted endpoints.  Pure
+delegation: `Conv.rawSubst_par_toRawJoin` after `Conv.fromStepStarReverse`. -/
+theorem Conv.fromStepStarReverse_subst_par
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {sourceType targetType : Ty level sourceScope}
+    {sourceRaw targetRaw : RawTerm sourceScope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    {firstSubst secondSubst : RawTermSubst sourceScope targetScope}
+    (substsRelated : ∀ position,
+      RawStep.par (firstSubst position) (secondSubst position))
+    (reverseChain : StepStar targetTerm sourceTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.subst firstSubst) commonRaw ∧
+      RawStep.parStar (targetRaw.subst secondSubst) commonRaw :=
+  Conv.rawSubst_par_toRawJoin substsRelated
+    (Conv.fromStepStarReverse reverseChain)
+
 /-- Single-step reverse variant: a `Step target source` witnesses
 convertibility of `source` and `target`. -/
 theorem Conv.fromStepReverse
@@ -836,6 +859,29 @@ theorem Conv.fromStepReverse_subst0
       RawStep.parStar (sourceRaw.subst0 argRaw) commonRaw ∧
       RawStep.parStar (targetRaw.subst0 argRaw) commonRaw :=
   Conv.subst0Raw argRaw (Conv.fromStepReverse reverseStep)
+
+/-- Multi-position parallel-substitution sibling of
+`Conv.fromStepReverse_substituted`.
+
+A single typed reverse Step plus pointwise-related substitutions
+lifts to a raw join at the differently-substituted endpoints.  Pure
+delegation: `Conv.rawSubst_par_toRawJoin` after `Conv.fromStepReverse`. -/
+theorem Conv.fromStepReverse_subst_par
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {sourceType targetType : Ty level sourceScope}
+    {sourceRaw targetRaw : RawTerm sourceScope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    {firstSubst secondSubst : RawTermSubst sourceScope targetScope}
+    (substsRelated : ∀ position,
+      RawStep.par (firstSubst position) (secondSubst position))
+    (reverseStep : Step targetTerm sourceTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.subst firstSubst) commonRaw ∧
+      RawStep.parStar (targetRaw.subst secondSubst) commonRaw :=
+  Conv.rawSubst_par_toRawJoin substsRelated
+    (Conv.fromStepReverse reverseStep)
 
 /-! ## refl × action raw lifters
 

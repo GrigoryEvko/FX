@@ -49,11 +49,13 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.fromStepStarReverse_weakened
 #assert_no_axioms LeanFX2.Conv.fromStepStarReverse_substituted
 #assert_no_axioms LeanFX2.Conv.fromStepStarReverse_subst0
+#assert_no_axioms LeanFX2.Conv.fromStepStarReverse_subst_par
 #assert_no_axioms LeanFX2.Conv.fromStepReverse
 #assert_no_axioms LeanFX2.Conv.fromStepReverse_renamed
 #assert_no_axioms LeanFX2.Conv.fromStepReverse_weakened
 #assert_no_axioms LeanFX2.Conv.fromStepReverse_substituted
 #assert_no_axioms LeanFX2.Conv.fromStepReverse_subst0
+#assert_no_axioms LeanFX2.Conv.fromStepReverse_subst_par
 #assert_no_axioms LeanFX2.Conv.reflRaw_renamed
 #assert_no_axioms LeanFX2.Conv.reflRaw_weakened
 #assert_no_axioms LeanFX2.Conv.reflRaw_substituted
