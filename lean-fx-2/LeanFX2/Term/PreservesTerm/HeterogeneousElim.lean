@@ -1,7 +1,9 @@
 import LeanFX2.Term.PreservesTerm.BetaCastWallDemolition
 import LeanFX2.Term.PreservesTerm.InlineDestructors
+import LeanFX2.Reduction.RawParInversion.AtomicCtors
 import LeanFX2.Reduction.RawParInversion.CubicalAndIdentity
 import LeanFX2.Reduction.RawParInversion.RedexParents
+import LeanFX2.Foundation.IsClosedTyAtBinder
 
 /-! # LeanFX2.Term.PreservesTerm.HeterogeneousElim
 
@@ -355,5 +357,85 @@ theorem RawStep.par.lift_full_boolElim
     cases eq
     refine ⟨motiveType.subst0 Ty.bool RawTerm.boolFalse, elseTarget, ?_⟩
     exact Step.par.iotaBoolElimFalseDeep thenBranch scrutStepTyped elseStepTyped
+
+/-! ## Σ-introduction: Term.pair full lift via `IsClosedTyAtBinder`
+
+The pair cong arm has secondValueTarget at
+`secondType.subst0 firstType firstRawTarget`, but the secondLift IH
+yields a term at `secondType.subst0 firstType firstRawSource`.  When
+`secondType` is in the image of `Ty.weaken`, both substitutions equal
+`inner` (Foundation/IsClosedTyAtBinder.lean's `subst0_invariant`), so
+a direct `▸`-cast bridges the gap zero-axiom.  Step.par's parallel
+form of pair (RawStep.par.pair) admits both first and second
+components reducing simultaneously, unlike single-step Step which has
+only `pairRight` — the parallel layer is precisely where this
+transport problem appears. -/
+
+/-- Transport-preservation for `Step.par`: when target type is
+rewritten along a Ty-level equality, the parallel-step relation is
+unchanged.  Provable by `cases` on the type equality (no propext —
+Eq elimination on indexed-Ty is structural). -/
+private theorem Step.par.cast_target_eq
+    {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {source : Term context sourceType sourceRaw}
+    {target : Term context sourceType targetRaw}
+    (typesEq : sourceType = targetType)
+    (step : Step.par source target) :
+    Step.par source (typesEq ▸ target) := by
+  cases typesEq
+  exact step
+
+/-- **β cast wall demolition — Term.pair full lift.**  Σ-introduction
+cong has source's secondValue at the source's subst, target's at the
+target's subst — differing in `firstRaw`.  Under
+`IsClosedTyAtBinder secondType`, the two substs are propositionally
+equal (Foundation/IsClosedTyAtBinder.lean's `subst0_invariant`); we
+transport the IH-produced secondTarget via `▸` and `cast_target_eq`
+recovers the Step.par relation. -/
+theorem RawStep.par.lift_full_pair
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
+    (secondTypeClosed : IsClosedTyAtBinder secondType)
+    {firstRawSource secondRawSource : RawTerm scope}
+    (firstValueSource : Term context firstType firstRawSource)
+    (secondValueSource :
+      Term context (secondType.subst0 firstType firstRawSource)
+                    secondRawSource)
+    (firstLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par firstRawSource targetRawIH →
+      ∃ firstValueTarget : Term context firstType targetRawIH,
+        Step.par firstValueSource firstValueTarget)
+    (secondLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par secondRawSource targetRawIH →
+      ∃ secondValueTarget :
+          Term context (secondType.subst0 firstType firstRawSource)
+                        targetRawIH,
+        Step.par secondValueSource secondValueTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep :
+      RawStep.par (RawTerm.pair firstRawSource secondRawSource) targetRaw) :
+    ∃ (targetType : Ty level scope)
+      (targetTerm : Term context targetType targetRaw),
+      Step.par (Term.pair (secondType := secondType)
+                          firstValueSource secondValueSource)
+               targetTerm := by
+  obtain ⟨firstTargetRaw, secondTargetRaw, eq, firstStep, secondStep⟩ :=
+    RawStep.par.pair_inv rawStep
+  cases eq
+  obtain ⟨firstValueTarget, firstStepTyped⟩ := firstLift firstStep
+  obtain ⟨secondValueTargetAtSource, secondStepTyped⟩ := secondLift secondStep
+  have typesEq :
+      secondType.subst0 firstType firstRawSource =
+      secondType.subst0 firstType firstTargetRaw :=
+    secondTypeClosed.subst0_invariant firstType firstRawSource firstTargetRaw
+  let secondValueTarget :
+      Term context (secondType.subst0 firstType firstTargetRaw) secondTargetRaw :=
+    typesEq ▸ secondValueTargetAtSource
+  refine ⟨Ty.sigmaTy firstType secondType,
+          Term.pair (secondType := secondType) firstValueTarget secondValueTarget,
+          ?_⟩
+  exact Step.par.pair firstStepTyped
+          (Step.par.cast_target_eq typesEq secondStepTyped)
 
 end LeanFX2

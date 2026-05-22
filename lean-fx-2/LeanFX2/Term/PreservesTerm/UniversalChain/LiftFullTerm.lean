@@ -622,5 +622,8 @@ theorem RawStep.par.lift_full_term
       RawStep.par.lift_uaToEquiv innerLevel innerLevelLt leftTy rightTy
                                   leftTyRaw rightTyRaw proof proofLift rawStep
     exact ⟨Ty.equiv leftTy rightTy, proofTarget, proofStep⟩
+  | pair secondTypeClosed firstValue secondValue firstLift secondLift =>
+    exact RawStep.par.lift_full_pair secondTypeClosed firstValue secondValue
+            firstLift secondLift rawStep
 
 end LeanFX2

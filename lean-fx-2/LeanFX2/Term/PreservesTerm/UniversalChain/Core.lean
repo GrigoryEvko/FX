@@ -1,6 +1,7 @@
 import LeanFX2.Reduction.ParRed.ParInductive.Inductive
 import LeanFX2.Term
 import LeanFX2.Foundation.IsClosedTy
+import LeanFX2.Foundation.IsClosedTyAtBinder
 
 /-! # LeanFX2.Term.PreservesTerm.UniversalChain.Core
 
@@ -1069,5 +1070,37 @@ inductive DispatchAtom :
                                     leftTy rightTy leftTyRaw rightTyRaw proof
                     : Term context (Ty.equiv leftTy rightTy)
                         (RawTerm.uaToEquiv proofRaw))
+  /-- Σ-introduction (Term.pair).  The second component's type
+  depends on the first's raw form via `secondType.subst0 firstType
+  firstRaw`; the cong rule `Step.par.pair` admits both components
+  reducing in parallel, but the secondLift IH only produces a target
+  at the SOURCE subst — not the target subst.  The
+  `IsClosedTyAtBinder secondType` hypothesis is the meta-unblocker:
+  when `secondType` is in the image of `Ty.weaken`, both substs are
+  propositionally equal (subst0_invariant), so a `▸`-cast bridges the
+  gap.  Consumed by `RawStep.par.lift_full_pair`. -/
+  | pair {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
+      (secondTypeClosed : IsClosedTyAtBinder secondType)
+      {firstRawSource secondRawSource : RawTerm scope}
+      (firstValueSource : Term context firstType firstRawSource)
+      (secondValueSource :
+        Term context (secondType.subst0 firstType firstRawSource)
+                      secondRawSource)
+      (firstLift : ∀ {targetRawIH : RawTerm scope},
+        RawStep.par firstRawSource targetRawIH →
+        ∃ firstValueTarget : Term context firstType targetRawIH,
+          Step.par firstValueSource firstValueTarget)
+      (secondLift : ∀ {targetRawIH : RawTerm scope},
+        RawStep.par secondRawSource targetRawIH →
+        ∃ secondValueTarget :
+            Term context (secondType.subst0 firstType firstRawSource)
+                          targetRawIH,
+          Step.par secondValueSource secondValueTarget) :
+      DispatchAtom (Term.pair (secondType := secondType)
+                              firstValueSource secondValueSource
+                    : Term context (Ty.sigmaTy firstType secondType)
+                        (RawTerm.pair firstRawSource secondRawSource))
 
 end LeanFX2
