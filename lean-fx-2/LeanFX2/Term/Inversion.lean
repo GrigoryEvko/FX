@@ -272,6 +272,52 @@ def Term.eitherInrDestruct
   cases eitherEq.2
   exact ⟨valueTerm, HEq.rfl⟩
 
+/-! `Term.modIntroDestruct` ships in `Term/PreservesTerm/InlineDestructors.lean`
+alongside `recordIntroDestruct`, `refineIntroDestruct`, `glueIntroDestruct`,
+`lamDestruct`, and `codataUnfoldDestruct`. -/
+
+/-- Destructor for `Term.modElim`: extract the inner modal term. -/
+def Term.modElimDestruct
+    {innerType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    (someTerm : Term context innerType (RawTerm.modElim innerRaw)) :
+    Σ' (innerTerm : Term context innerType innerRaw),
+       HEq someTerm (Term.modElim innerTerm) := by
+  suffices key :
+      ∀ {someType : Ty level scope}
+        (genericTerm :
+          Term context someType (RawTerm.modElim innerRaw)),
+        someType = innerType →
+        Σ' (innerTerm : Term context innerType innerRaw),
+           HEq genericTerm (Term.modElim innerTerm) by
+    exact key someTerm rfl
+  intro someType genericTerm someTypeEq
+  cases genericTerm
+  rename_i innerTerm
+  cases someTypeEq
+  exact ⟨innerTerm, HEq.rfl⟩
+
+/-- Destructor for `Term.subsume`: extract the inner term. -/
+def Term.subsumeDestruct
+    {innerType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    (someTerm : Term context innerType (RawTerm.subsume innerRaw)) :
+    Σ' (innerTerm : Term context innerType innerRaw),
+       HEq someTerm (Term.subsume innerTerm) := by
+  suffices key :
+      ∀ {someType : Ty level scope}
+        (genericTerm :
+          Term context someType (RawTerm.subsume innerRaw)),
+        someType = innerType →
+        Σ' (innerTerm : Term context innerType innerRaw),
+           HEq genericTerm (Term.subsume innerTerm) by
+    exact key someTerm rfl
+  intro someType genericTerm someTypeEq
+  cases genericTerm
+  rename_i innerTerm
+  cases someTypeEq
+  exact ⟨innerTerm, HEq.rfl⟩
+
 /-! ## Raw-form recovery helpers — see `Algo/RawWHNF.lean`
 
 When `Term.headStep?` dispatches via `scrutinee.headCtor`, it

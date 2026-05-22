@@ -1,5 +1,6 @@
 import LeanFX2.Term.StrengtheningImage.RenameImageInterface
 import LeanFX2.Term.Inversion
+import LeanFX2.Term.PreservesTerm.InlineDestructors
 
 /-! # Term/StrengtheningImage/TargetImageTotality
 
@@ -466,6 +467,104 @@ theorem partialStrengthenTyped?_isSome_target_pair
               cases secondResult
           next _ _ =>
               rfl
+
+/-! ## Type-preserving modal ctors: modIntro, modElim, subsume
+
+These three ctors are type-preserving in the Layer-0 kernel
+(Layer 6 may extend modIntro/subsume with mode-shifting variants;
+see CLAUDE.md "forward-compat with mode-changing modal ctors").
+Current dispatcher arm:
+
+```
+| @Term.modIntro _ _ _ _ _ _ innerTerm =>
+    match partialStrengthenTyped? innerTerm strengthening with
+    | none => none
+    | some innerResult => some (partialStrengthenTypedModIntro innerResult)
+```
+
+Same single-recursive shape as `natSucc`, no type-level side
+condition.  Three destructors live in
+`Term/{Inversion,PreservesTerm/InlineDestructors}.lean`. -/
+/-- Target-direction totality at `Term.modIntro`. -/
+theorem partialStrengthenTyped?_isSome_target_modIntro
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {innerType : Ty level sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    {innerRaw : RawTerm sourceScope}
+    (targetTerm :
+      Term sourceCtx innerType (RawTerm.modIntro innerRaw))
+    (innerIH :
+      ∀ (innerTerm : Term sourceCtx innerType innerRaw),
+        (partialStrengthenTyped? innerTerm strengthening).isSome = true) :
+    (partialStrengthenTyped? targetTerm strengthening).isSome = true := by
+  obtain ⟨innerTerm, heq⟩ := Term.modIntroDestruct targetTerm
+  have targetEq : targetTerm = Term.modIntro innerTerm := eq_of_heq heq
+  subst targetEq
+  have ihResult := innerIH innerTerm
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noInnerSuccess =>
+      rw [noInnerSuccess] at ihResult
+      cases ihResult
+  next _ _ =>
+      rfl
+
+/-- Target-direction totality at `Term.modElim`. -/
+theorem partialStrengthenTyped?_isSome_target_modElim
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {innerType : Ty level sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    {innerRaw : RawTerm sourceScope}
+    (targetTerm :
+      Term sourceCtx innerType (RawTerm.modElim innerRaw))
+    (innerIH :
+      ∀ (innerTerm : Term sourceCtx innerType innerRaw),
+        (partialStrengthenTyped? innerTerm strengthening).isSome = true) :
+    (partialStrengthenTyped? targetTerm strengthening).isSome = true := by
+  obtain ⟨innerTerm, heq⟩ := Term.modElimDestruct targetTerm
+  have targetEq : targetTerm = Term.modElim innerTerm := eq_of_heq heq
+  subst targetEq
+  have ihResult := innerIH innerTerm
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noInnerSuccess =>
+      rw [noInnerSuccess] at ihResult
+      cases ihResult
+  next _ _ =>
+      rfl
+
+/-- Target-direction totality at `Term.subsume`. -/
+theorem partialStrengthenTyped?_isSome_target_subsume
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {innerType : Ty level sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    {innerRaw : RawTerm sourceScope}
+    (targetTerm :
+      Term sourceCtx innerType (RawTerm.subsume innerRaw))
+    (innerIH :
+      ∀ (innerTerm : Term sourceCtx innerType innerRaw),
+        (partialStrengthenTyped? innerTerm strengthening).isSome = true) :
+    (partialStrengthenTyped? targetTerm strengthening).isSome = true := by
+  obtain ⟨innerTerm, heq⟩ := Term.subsumeDestruct targetTerm
+  have targetEq : targetTerm = Term.subsume innerTerm := eq_of_heq heq
+  subst targetEq
+  have ihResult := innerIH innerTerm
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noInnerSuccess =>
+      rw [noInnerSuccess] at ihResult
+      cases ihResult
+  next _ _ =>
+      rfl
 
 end Term
 
