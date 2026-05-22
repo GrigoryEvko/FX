@@ -971,5 +971,9 @@ transp arm to discharge the dispatch. -/
 #assert_no_axioms LeanFX2.Conv.cumulUpMarker_ne_sessionSend
 #assert_no_axioms LeanFX2.Conv.cumulUpMarker_ne_sigmaTyCode
 #assert_no_axioms LeanFX2.Conv.cumulUpMarker_ne_subsume
+#assert_no_axioms LeanFX2.Conv.cumulUpMarker_ne_sumCode
+#assert_no_axioms LeanFX2.Conv.cumulUpMarker_ne_transpFill
+#assert_no_axioms LeanFX2.Conv.cumulUpMarker_ne_uaToEquiv
+#assert_no_axioms LeanFX2.Conv.cumulUpMarker_ne_universeCode
 
 end LeanFX2.Tools
