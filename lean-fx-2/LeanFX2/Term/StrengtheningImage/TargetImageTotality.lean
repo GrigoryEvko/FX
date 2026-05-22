@@ -2870,6 +2870,317 @@ theorem partialStrengthenTyped?_isSome_target_hcompPath
                   next _ _ =>
                       rfl
 
+/-- Target-direction totality at `Term.oeqFunext` (observational
+funext: pointwise-equality at two functions yields oeq-of-arrow). -/
+theorem partialStrengthenTyped?_isSome_target_oeqFunext
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (domainType codomainType : Ty level sourceScope)
+    (leftFunctionRaw rightFunctionRaw : RawTerm sourceScope)
+    {pointwiseRaw : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (pointwiseProof :
+      Term sourceCtx
+        (oeqFunextPointwiseType domainType codomainType
+          leftFunctionRaw rightFunctionRaw)
+        pointwiseRaw)
+    (domainStrengthens :
+      (domainType.partialStrengthen? strengthening.back).isSome = true)
+    (codomainStrengthens :
+      (codomainType.partialStrengthen? strengthening.back).isSome = true)
+    (leftStrengthens :
+      (leftFunctionRaw.partialStrengthen? strengthening.back).isSome
+        = true)
+    (rightStrengthens :
+      (rightFunctionRaw.partialStrengthen? strengthening.back).isSome
+        = true)
+    (pointwiseIH :
+      (partialStrengthenTyped? pointwiseProof strengthening).isSome
+        = true) :
+    (partialStrengthenTyped?
+        (Term.oeqFunext domainType codomainType
+          leftFunctionRaw rightFunctionRaw pointwiseProof)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noDomain =>
+      rw [noDomain] at domainStrengthens
+      cases domainStrengthens
+  next _ _ =>
+      split
+      next noCodomain =>
+          rw [noCodomain] at codomainStrengthens
+          cases codomainStrengthens
+      next _ _ =>
+          split
+          next noLeft =>
+              rw [noLeft] at leftStrengthens
+              cases leftStrengthens
+          next _ _ =>
+              split
+              next noRight =>
+                  rw [noRight] at rightStrengthens
+                  cases rightStrengthens
+              next _ _ =>
+                  split
+                  next noPointwise =>
+                      rw [noPointwise] at pointwiseIH
+                      cases pointwiseIH
+                  next _ _ =>
+                      rfl
+
+/-- Target-direction totality at `Term.equivIntroHet` (build a typed
+equivalence at heterogeneous carriers from 4 operand inhabitants). -/
+theorem partialStrengthenTyped?_isSome_target_equivIntroHet
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {carrierA carrierB : Ty level sourceScope}
+    {forwardRaw backwardRaw leftInvRaw rightInvRaw : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (forward : Term sourceCtx (Ty.arrow carrierA carrierB) forwardRaw)
+    (backward : Term sourceCtx (Ty.arrow carrierB carrierA) backwardRaw)
+    (leftInv :
+      Term sourceCtx
+        (equivIntroHetLeftInverseType carrierA forwardRaw backwardRaw)
+        leftInvRaw)
+    (rightInv :
+      Term sourceCtx
+        (equivIntroHetRightInverseType carrierB forwardRaw backwardRaw)
+        rightInvRaw)
+    (carrierAStrengthens :
+      (carrierA.partialStrengthen? strengthening.back).isSome = true)
+    (carrierBStrengthens :
+      (carrierB.partialStrengthen? strengthening.back).isSome = true)
+    (forwardIH :
+      (partialStrengthenTyped? forward strengthening).isSome = true)
+    (backwardIH :
+      (partialStrengthenTyped? backward strengthening).isSome = true)
+    (leftInvIH :
+      (partialStrengthenTyped? leftInv strengthening).isSome = true)
+    (rightInvIH :
+      (partialStrengthenTyped? rightInv strengthening).isSome = true) :
+    (partialStrengthenTyped?
+        (Term.equivIntroHet forward backward leftInv rightInv)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noCarrierA =>
+      rw [noCarrierA] at carrierAStrengthens
+      cases carrierAStrengthens
+  next _ _ =>
+      split
+      next noCarrierB =>
+          rw [noCarrierB] at carrierBStrengthens
+          cases carrierBStrengthens
+      next _ _ =>
+          split
+          next noForward =>
+              rw [noForward] at forwardIH
+              cases forwardIH
+          next _ _ =>
+              split
+              next noBackward =>
+                  rw [noBackward] at backwardIH
+                  cases backwardIH
+              next _ _ =>
+                  split
+                  next noLeftInv =>
+                      rw [noLeftInv] at leftInvIH
+                      cases leftInvIH
+                  next _ _ =>
+                      split
+                      next noRightInv =>
+                          rw [noRightInv] at rightInvIH
+                          cases rightInvIH
+                      next _ _ =>
+                          rfl
+
+/-- Target-direction totality at `Term.uaIntroHet` (univalence-
+introduction at heterogeneous carriers; path-at-universe from
+equivalence witness). -/
+theorem partialStrengthenTyped?_isSome_target_uaIntroHet
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    {carrierA carrierB : Ty level sourceScope}
+    (carrierARaw carrierBRaw : RawTerm sourceScope)
+    {forwardRaw backwardRaw : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (equivWitness :
+      Term sourceCtx (Ty.equiv carrierA carrierB)
+        (RawTerm.equivIntro forwardRaw backwardRaw))
+    (carrierAStrengthens :
+      (carrierA.partialStrengthen? strengthening.back).isSome = true)
+    (carrierBStrengthens :
+      (carrierB.partialStrengthen? strengthening.back).isSome = true)
+    (carrierARawStrengthens :
+      (carrierARaw.partialStrengthen? strengthening.back).isSome = true)
+    (carrierBRawStrengthens :
+      (carrierBRaw.partialStrengthen? strengthening.back).isSome = true)
+    (forwardRawStrengthens :
+      (forwardRaw.partialStrengthen? strengthening.back).isSome = true)
+    (backwardRawStrengthens :
+      (backwardRaw.partialStrengthen? strengthening.back).isSome = true)
+    (equivIH :
+      (partialStrengthenTyped? equivWitness strengthening).isSome
+        = true) :
+    (partialStrengthenTyped?
+        (Term.uaIntroHet innerLevel innerLevelLt
+          carrierARaw carrierBRaw equivWitness)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noCarrierA =>
+      rw [noCarrierA] at carrierAStrengthens
+      cases carrierAStrengthens
+  next _ _ =>
+      split
+      next noCarrierB =>
+          rw [noCarrierB] at carrierBStrengthens
+          cases carrierBStrengthens
+      next _ _ =>
+          split
+          next noCarrierARaw =>
+              rw [noCarrierARaw] at carrierARawStrengthens
+              cases carrierARawStrengthens
+          next _ _ =>
+              split
+              next noCarrierBRaw =>
+                  rw [noCarrierBRaw] at carrierBRawStrengthens
+                  cases carrierBRawStrengthens
+              next _ _ =>
+                  split
+                  next noForwardRaw =>
+                      rw [noForwardRaw] at forwardRawStrengthens
+                      cases forwardRawStrengthens
+                  next _ _ =>
+                      split
+                      next noBackwardRaw =>
+                          rw [noBackwardRaw] at backwardRawStrengthens
+                          cases backwardRawStrengthens
+                      next _ _ =>
+                          split
+                          next noEquiv =>
+                              rw [noEquiv] at equivIH
+                              cases equivIH
+                          next _ _ =>
+                              rfl
+
+/-- Target-direction totality at `Term.funextIntroHet` (heterogeneous
+funext-intro at Id-of-arrow; closed-atomic, no operand IH — both
+raw apply payloads live at `scope+1` and check against
+`strengthening.back.lift`). -/
+theorem partialStrengthenTyped?_isSome_target_funextIntroHet
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (domainType codomainType : Ty level sourceScope)
+    (applyARaw applyBRaw : RawTerm (sourceScope + 1))
+    (domainStrengthens :
+      (domainType.partialStrengthen? strengthening.back).isSome = true)
+    (codomainStrengthens :
+      (codomainType.partialStrengthen? strengthening.back).isSome = true)
+    (applyAStrengthens :
+      (applyARaw.partialStrengthen? strengthening.back.lift).isSome
+        = true)
+    (applyBStrengthens :
+      (applyBRaw.partialStrengthen? strengthening.back.lift).isSome
+        = true) :
+    (partialStrengthenTyped?
+        (Term.funextIntroHet (context := sourceCtx)
+          domainType codomainType applyARaw applyBRaw)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noDomain =>
+      rw [noDomain] at domainStrengthens
+      cases domainStrengthens
+  next _ _ =>
+      split
+      next noCodomain =>
+          rw [noCodomain] at codomainStrengthens
+          cases codomainStrengthens
+      next _ _ =>
+          split
+          next noApplyA =>
+              rw [noApplyA] at applyAStrengthens
+              cases applyAStrengthens
+          next _ _ =>
+              split
+              next noApplyB =>
+                  rw [noApplyB] at applyBStrengthens
+                  cases applyBStrengthens
+              next _ _ =>
+                  rfl
+
+/-- Target-direction totality at `Term.uaToEquiv` (univalence-
+elimination: turn a path-at-universe into a typed equivalence). -/
+theorem partialStrengthenTyped?_isSome_target_uaToEquiv
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    (leftTy rightTy : Ty level sourceScope)
+    (leftTyRaw rightTyRaw : RawTerm sourceScope)
+    {proofRaw : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (proof :
+      Term sourceCtx
+        (Ty.id (Ty.universe innerLevel innerLevelLt) leftTyRaw rightTyRaw)
+        proofRaw)
+    (leftTyStrengthens :
+      (leftTy.partialStrengthen? strengthening.back).isSome = true)
+    (rightTyStrengthens :
+      (rightTy.partialStrengthen? strengthening.back).isSome = true)
+    (leftRawStrengthens :
+      (leftTyRaw.partialStrengthen? strengthening.back).isSome = true)
+    (rightRawStrengthens :
+      (rightTyRaw.partialStrengthen? strengthening.back).isSome = true)
+    (proofIH :
+      (partialStrengthenTyped? proof strengthening).isSome = true) :
+    (partialStrengthenTyped?
+        (Term.uaToEquiv innerLevel innerLevelLt
+          leftTy rightTy leftTyRaw rightTyRaw proof)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noLeftTy =>
+      rw [noLeftTy] at leftTyStrengthens
+      cases leftTyStrengthens
+  next _ _ =>
+      split
+      next noRightTy =>
+          rw [noRightTy] at rightTyStrengthens
+          cases rightTyStrengthens
+      next _ _ =>
+          split
+          next noLeftRaw =>
+              rw [noLeftRaw] at leftRawStrengthens
+              cases leftRawStrengthens
+          next _ _ =>
+              split
+              next noRightRaw =>
+                  rw [noRightRaw] at rightRawStrengthens
+                  cases rightRawStrengthens
+              next _ _ =>
+                  split
+                  next noProof =>
+                      rw [noProof] at proofIH
+                      cases proofIH
+                  next _ _ =>
+                      rfl
+
 end Term
 
 end LeanFX2
