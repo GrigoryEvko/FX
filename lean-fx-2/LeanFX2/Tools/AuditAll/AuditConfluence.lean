@@ -513,6 +513,15 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.equivCompose_ne_listCons
 #assert_no_axioms LeanFX2.Conv.equivCompose_ne_pair
 #assert_no_axioms LeanFX2.Conv.equivCompose_ne_refl
+#assert_no_axioms LeanFX2.Conv.equivCompose_ne_equivIntro
+#assert_no_axioms LeanFX2.Conv.equivCompose_ne_glueIntro
+#assert_no_axioms LeanFX2.Conv.equivCompose_ne_idCode
+#assert_no_axioms LeanFX2.Conv.equivCompose_ne_idStrictRefl
+#assert_no_axioms LeanFX2.Conv.equivCompose_ne_intervalJoin
+#assert_no_axioms LeanFX2.Conv.equivCompose_ne_intervalMeet
+#assert_no_axioms LeanFX2.Conv.equivCompose_ne_intervalOpp
+#assert_no_axioms LeanFX2.Conv.equivCompose_ne_listCode
+#assert_no_axioms LeanFX2.Conv.equivCompose_ne_modIntro
 #assert_no_axioms LeanFX2.Conv.intervalOpp_ne_unit
 #assert_no_axioms LeanFX2.Conv.intervalOpp_ne_boolTrue
 #assert_no_axioms LeanFX2.Conv.intervalOpp_ne_boolFalse

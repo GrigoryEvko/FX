@@ -9828,6 +9828,210 @@ theorem Conv.equivCompose_ne_refl
     RawStep.parStar.refl_inv targetToJoin
   nomatch joinEqEquiv.symm.trans joinEqRefl
 
+/-- An `equivCompose`-headed source and an `equivIntro`-headed
+target are not convertible.  Equivalence composition versus
+equivalence introduction witness — distinct canonical heads at the
+raw level.  Opens equivCompose's compound-target sweep. -/
+theorem Conv.equivCompose_ne_equivIntro
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstEquiv secondEquiv : RawTerm scope}
+    {forwardMap backwardMap : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.equivCompose firstEquiv secondEquiv : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.equivIntro forwardMap backwardMap : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqCompose, _, _⟩ :=
+    RawStep.parStar.equivCompose_inv sourceToJoin
+  obtain ⟨_, _, joinEqEquivIntro, _, _⟩ :=
+    RawStep.parStar.equivIntro_inv targetToJoin
+  nomatch joinEqCompose.symm.trans joinEqEquivIntro
+
+/-- An `equivCompose`-headed source and a `glueIntro`-headed target
+are not convertible.  Equivalence composition versus cubical glue
+introduction — distinct canonical heads at the raw level. -/
+theorem Conv.equivCompose_ne_glueIntro
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstEquiv secondEquiv : RawTerm scope}
+    {baseCarrier glueCarrier : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.equivCompose firstEquiv secondEquiv : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.glueIntro baseCarrier glueCarrier : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqCompose, _, _⟩ :=
+    RawStep.parStar.equivCompose_inv sourceToJoin
+  obtain ⟨_, _, joinEqGlueIntro, _, _⟩ :=
+    RawStep.parStar.glueIntro_inv targetToJoin
+  nomatch joinEqCompose.symm.trans joinEqGlueIntro
+
+/-- An `equivCompose`-headed source and an `idCode`-headed target
+are not convertible.  Equivalence composition versus identity-type
+code — distinct canonical heads at the raw level.  Ternary target
+expansion in the inversion tuple. -/
+theorem Conv.equivCompose_ne_idCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstEquiv secondEquiv : RawTerm scope}
+    {typeCode leftCode rightCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.equivCompose firstEquiv secondEquiv : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.idCode typeCode leftCode rightCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqCompose, _, _⟩ :=
+    RawStep.parStar.equivCompose_inv sourceToJoin
+  obtain ⟨_, _, _, joinEqIdCode, _, _, _⟩ :=
+    RawStep.parStar.idCode_inv targetToJoin
+  nomatch joinEqCompose.symm.trans joinEqIdCode
+
+/-- An `equivCompose`-headed source and an `idStrictRefl`-headed
+target are not convertible.  Equivalence composition versus strict-
+identity reflexivity witness — distinct canonical heads at the raw
+level. -/
+theorem Conv.equivCompose_ne_idStrictRefl
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstEquiv secondEquiv : RawTerm scope}
+    {witness : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.equivCompose firstEquiv secondEquiv : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.idStrictRefl witness : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqCompose, _, _⟩ :=
+    RawStep.parStar.equivCompose_inv sourceToJoin
+  obtain ⟨_, joinEqStrictRefl, _⟩ :=
+    RawStep.parStar.idStrictRefl_inv targetToJoin
+  nomatch joinEqCompose.symm.trans joinEqStrictRefl
+
+/-- An `equivCompose`-headed source and an `intervalJoin`-headed
+target are not convertible.  Equivalence composition versus
+interval-join operation — distinct canonical heads at the raw
+level. -/
+theorem Conv.equivCompose_ne_intervalJoin
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstEquiv secondEquiv : RawTerm scope}
+    {leftInterval rightInterval : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.equivCompose firstEquiv secondEquiv : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.intervalJoin leftInterval rightInterval : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqCompose, _, _⟩ :=
+    RawStep.parStar.equivCompose_inv sourceToJoin
+  obtain ⟨_, _, joinEqIntervalJoin, _, _⟩ :=
+    RawStep.parStar.intervalJoin_inv targetToJoin
+  nomatch joinEqCompose.symm.trans joinEqIntervalJoin
+
+/-- An `equivCompose`-headed source and an `intervalMeet`-headed
+target are not convertible.  Equivalence composition versus
+interval-meet operation — distinct canonical heads at the raw
+level. -/
+theorem Conv.equivCompose_ne_intervalMeet
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstEquiv secondEquiv : RawTerm scope}
+    {leftInterval rightInterval : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.equivCompose firstEquiv secondEquiv : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.intervalMeet leftInterval rightInterval : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqCompose, _, _⟩ :=
+    RawStep.parStar.equivCompose_inv sourceToJoin
+  obtain ⟨_, _, joinEqIntervalMeet, _, _⟩ :=
+    RawStep.parStar.intervalMeet_inv targetToJoin
+  nomatch joinEqCompose.symm.trans joinEqIntervalMeet
+
+/-- An `equivCompose`-headed source and an `intervalOpp`-headed
+target are not convertible.  Equivalence composition versus
+interval-negation operation — distinct canonical heads at the raw
+level. -/
+theorem Conv.equivCompose_ne_intervalOpp
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstEquiv secondEquiv : RawTerm scope}
+    {intervalTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.equivCompose firstEquiv secondEquiv : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.intervalOpp intervalTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqCompose, _, _⟩ :=
+    RawStep.parStar.equivCompose_inv sourceToJoin
+  obtain ⟨_, joinEqIntervalOpp, _⟩ :=
+    RawStep.parStar.intervalOpp_inv targetToJoin
+  nomatch joinEqCompose.symm.trans joinEqIntervalOpp
+
+/-- An `equivCompose`-headed source and a `listCode`-headed target
+are not convertible.  Equivalence composition versus list-type
+code — distinct canonical heads at the raw level. -/
+theorem Conv.equivCompose_ne_listCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstEquiv secondEquiv : RawTerm scope}
+    {elementCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.equivCompose firstEquiv secondEquiv : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.listCode elementCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqCompose, _, _⟩ :=
+    RawStep.parStar.equivCompose_inv sourceToJoin
+  obtain ⟨_, joinEqListCode, _⟩ :=
+    RawStep.parStar.listCode_inv targetToJoin
+  nomatch joinEqCompose.symm.trans joinEqListCode
+
+/-- An `equivCompose`-headed source and a `modIntro`-headed target
+are not convertible.  Equivalence composition versus modality
+introduction — distinct canonical heads at the raw level. -/
+theorem Conv.equivCompose_ne_modIntro
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstEquiv secondEquiv : RawTerm scope}
+    {innerTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.equivCompose firstEquiv secondEquiv : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.modIntro innerTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqCompose, _, _⟩ :=
+    RawStep.parStar.equivCompose_inv sourceToJoin
+  obtain ⟨_, joinEqModIntro, _⟩ :=
+    RawStep.parStar.modIntro_inv targetToJoin
+  nomatch joinEqCompose.symm.trans joinEqModIntro
+
 /-! ## intervalOpp row of canonical-head disjointness matrix
 
 `RawTerm.intervalOpp intervalTerm` is the cubical interval opposite
