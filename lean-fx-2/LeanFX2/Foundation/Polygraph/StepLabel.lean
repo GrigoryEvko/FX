@@ -188,6 +188,7 @@ inductive StepLabel : Type
   | eqTypeHet
   | eqArrowHet
   | transpReflBetaDeep
+  | hcompBetaDeep
   deriving Repr
 
 /-- The canonical 0..109 index of a `StepLabel`, in source order of
@@ -307,6 +308,7 @@ def StepLabel.index : StepLabel → Nat
   | eqArrowHet => 109
   | betaFunextReflApp => 110
   | transpReflBetaDeep => 111
+  | hcompBetaDeep => 112
 
 /-- The dim-1 polygraph cell witnessed by this rewrite-rule label.
 Every label maps to `PolyCell.arrow (.atom 0) (.atom 0) (label.index)`

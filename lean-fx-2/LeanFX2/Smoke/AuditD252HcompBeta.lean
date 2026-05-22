@@ -12,6 +12,8 @@ import LeanFX2.Confluence.ChurchRosser
 import LeanFX2.Confluence.CanonicalForm
 import LeanFX2.Foundation.RawPartialRename
 import LeanFX2.Foundation.RawPartialRenameCommute
+import LeanFX2.Foundation.Polygraph.StepLabel
+import LeanFX2.Foundation.Polygraph.Dim1Extraction
 
 /-! # AuditD252HcompBeta — D2.5.2 hcomp-β cascade zero-axiom audit
 (Phases A + B).
@@ -77,12 +79,18 @@ cubical, `hcomp [φ → λi. anything] cap` reduces to the cap when the
 sides are constant in the cube direction (the filler is the cap
 itself).
 
-The deep ctor (`hcompBetaDeep`) remains raw-only — its typed mirror
-would need `Step.par.hcompBetaDeep` with a path-reduction premise
-across a heterogeneous `sidesRawSource` raw shape, which is a pure
-confluence-closure mechanism (parallels `transpReflBetaDeep`).
-Phase B leaves the deep ctor documented raw-only via
-`isDocumentedRawOnlyParity` Section I.
+The deep ctor (`hcompBetaDeep`) now ships a typed mirror as well —
+`Step.par.hcompBetaDeep` (Reduction/ParRed/ParInductive.lean) added
+in commit fec5de89 (unblock-E.hcompPath.RelaxedBeta, #2068).  Carries
+the raw path-reduction premise `RawStep.par sidesPathRawSource
+(RawTerm.pathLam capRawSource.weaken)` plus the typed cap step;
+mirrors the `transpReflBetaDeep` precedent (#2063) at the hcomp
+head.  Restricted to homogeneous endpoints
+(`Ty.path carrierType capRawSource capRawSource`) because
+`Term.hcompPath` is fixed at homogeneous endpoints; heterogeneous-
+endpoint Deep variants remain ROADMAP debt under
+unblock-E leaf-coverage.  Parity exception in
+`isDocumentedRawOnlyParity` Section I was removed.
 
 ## Confluence preserved
 
@@ -112,7 +120,12 @@ Every declaration below must report "does not depend on any axioms".
 -- Typed ctors + bridge mirrors (Phase B)
 #print axioms LeanFX2.Step.hcompBeta
 #print axioms LeanFX2.Step.par.hcompBeta
+#print axioms LeanFX2.Step.par.hcompBetaDeep
 #print axioms LeanFX2.ConvCumul.betaHcompPathCumul
+
+-- Polygraph cascade for hcompBetaDeep (ordinal 112)
+#print axioms LeanFX2.Foundation.Polygraph.StepLabel.index
+#print axioms LeanFX2.Foundation.Polygraph.StepLabel.fromIndex?
 
 -- Headline confluence theorems remain zero-axiom after Phases A + B
 #print axioms LeanFX2.RawStep.par.cd_lemma

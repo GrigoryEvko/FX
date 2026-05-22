@@ -101,11 +101,16 @@ namespace LeanFX2.Tools
 -- Step.par.hcompBeta, ConvCumul.betaHcompPathCumul, bridge arms in
 -- ParStepLift / ConvBridge / Bridge) extends the cascade to the
 -- typed layer, mirroring the D2.5.4 transpReflBeta cascade.  The
--- deep raw-only ctor `hcompBetaDeep` is documented raw-only via
--- `isDocumentedRawOnlyParity` Section I (no typed mirror — same
--- precedent as `transpReflBetaDeep`).
+-- deep ctor `hcompBetaDeep` now ships a typed mirror at homogeneous
+-- endpoints (`Ty.path carrierType capRawSource capRawSource`) via
+-- commit fec5de89 — the parity exception in
+-- `isDocumentedRawOnlyParity` Section I was removed in that commit.
+-- Heterogeneous-endpoint Deep variants remain ROADMAP debt under
+-- unblock-E leaf-coverage (`Term.hcompPath` is fixed at homogeneous
+-- endpoints so heterogeneous Deep would require a new ctor).
 #assert_no_axioms LeanFX2.RawStep.par.hcompBeta
 #assert_no_axioms LeanFX2.RawStep.par.hcompBetaDeep
+#assert_no_axioms LeanFX2.Step.par.hcompBetaDeep
 #assert_no_axioms LeanFX2.RawTerm.cdHcompCase
 #assert_no_axioms LeanFX2.RawTerm.cdHcompCase_rename
 -- D2.5.5 transpPi β-rule Phase F prep (cdTranspPiCase helper + rename
