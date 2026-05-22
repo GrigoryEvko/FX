@@ -2708,6 +2708,168 @@ theorem partialStrengthenTyped?_isSome_target_glueElim
           next _ _ =>
               rfl
 
+/-- Target-direction totality at `Term.transp` (cubical transport
+along a universe-level path). -/
+theorem partialStrengthenTyped?_isSome_target_transp
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (universeLevel : UniverseLevel)
+    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+    (sourceType targetType : Ty level sourceScope)
+    (sourceTypeRaw targetTypeRaw : RawTerm sourceScope)
+    {pathRaw sourceRaw : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (typePath :
+      Term sourceCtx
+        (Ty.path (Ty.universe universeLevel universeLevelLt)
+          sourceTypeRaw targetTypeRaw)
+        pathRaw)
+    (sourceValue : Term sourceCtx sourceType sourceRaw)
+    (sourceTypeStrengthens :
+      (sourceType.partialStrengthen? strengthening.back).isSome = true)
+    (targetTypeStrengthens :
+      (targetType.partialStrengthen? strengthening.back).isSome = true)
+    (sourceRawStrengthens :
+      (sourceTypeRaw.partialStrengthen? strengthening.back).isSome = true)
+    (targetRawStrengthens :
+      (targetTypeRaw.partialStrengthen? strengthening.back).isSome = true)
+    (pathIH :
+      (partialStrengthenTyped? typePath strengthening).isSome = true)
+    (sourceIH :
+      (partialStrengthenTyped? sourceValue strengthening).isSome = true) :
+    (partialStrengthenTyped?
+        (Term.transp modeIsUnivalent universeLevel universeLevelLt
+          sourceType targetType sourceTypeRaw targetTypeRaw
+          typePath sourceValue)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noSourceType =>
+      rw [noSourceType] at sourceTypeStrengthens
+      cases sourceTypeStrengthens
+  next _ _ =>
+      split
+      next noTargetType =>
+          rw [noTargetType] at targetTypeStrengthens
+          cases targetTypeStrengthens
+      next _ _ =>
+          split
+          next noSourceRaw =>
+              rw [noSourceRaw] at sourceRawStrengthens
+              cases sourceRawStrengthens
+          next _ _ =>
+              split
+              next noTargetRaw =>
+                  rw [noTargetRaw] at targetRawStrengthens
+                  cases targetRawStrengthens
+              next _ _ =>
+                  split
+                  next noPath =>
+                      rw [noPath] at pathIH
+                      cases pathIH
+                  next _ _ =>
+                      split
+                      next noSource =>
+                          rw [noSource] at sourceIH
+                          cases sourceIH
+                      next _ _ =>
+                          rfl
+
+/-- Target-direction totality at `Term.hcomp` (homogeneous cubical
+composition; congruence-only carrier).  No Ty/raw sides checked by
+the dispatcher — only the two operand IHs. -/
+theorem partialStrengthenTyped?_isSome_target_hcomp
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    {sidesRaw capRaw : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (sidesValue : Term sourceCtx carrierType sidesRaw)
+    (capValue : Term sourceCtx carrierType capRaw)
+    (sidesIH :
+      (partialStrengthenTyped? sidesValue strengthening).isSome = true)
+    (capIH :
+      (partialStrengthenTyped? capValue strengthening).isSome = true) :
+    (partialStrengthenTyped?
+        (Term.hcomp modeIsUnivalent sidesValue capValue)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noSides =>
+      rw [noSides] at sidesIH
+      cases sidesIH
+  next _ _ =>
+      split
+      next noCap =>
+          rw [noCap] at capIH
+          cases capIH
+      next _ _ =>
+          rfl
+
+/-- Target-direction totality at `Term.hcompPath` (path-shaped
+homogeneous composition; D2.5.2 hcompBeta target). -/
+theorem partialStrengthenTyped?_isSome_target_hcompPath
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    (leftEndpoint rightEndpoint : RawTerm sourceScope)
+    {sidesPathRaw capRaw : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (sidesPath :
+      Term sourceCtx (Ty.path carrierType leftEndpoint rightEndpoint)
+        sidesPathRaw)
+    (capValue : Term sourceCtx carrierType capRaw)
+    (carrierStrengthens :
+      (carrierType.partialStrengthen? strengthening.back).isSome = true)
+    (leftStrengthens :
+      (leftEndpoint.partialStrengthen? strengthening.back).isSome = true)
+    (rightStrengthens :
+      (rightEndpoint.partialStrengthen? strengthening.back).isSome = true)
+    (sidesIH :
+      (partialStrengthenTyped? sidesPath strengthening).isSome = true)
+    (capIH :
+      (partialStrengthenTyped? capValue strengthening).isSome = true) :
+    (partialStrengthenTyped?
+        (Term.hcompPath modeIsUnivalent leftEndpoint rightEndpoint
+          sidesPath capValue)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noCarrier =>
+      rw [noCarrier] at carrierStrengthens
+      cases carrierStrengthens
+  next _ _ =>
+      split
+      next noLeft =>
+          rw [noLeft] at leftStrengthens
+          cases leftStrengthens
+      next _ _ =>
+          split
+          next noRight =>
+              rw [noRight] at rightStrengthens
+              cases rightStrengthens
+          next _ _ =>
+              split
+              next noSides =>
+                  rw [noSides] at sidesIH
+                  cases sidesIH
+              next _ _ =>
+                  split
+                  next noCap =>
+                      rw [noCap] at capIH
+                      cases capIH
+                  next _ _ =>
+                      rfl
+
 end Term
 
 end LeanFX2
