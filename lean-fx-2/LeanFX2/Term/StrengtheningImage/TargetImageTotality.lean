@@ -663,6 +663,79 @@ theorem partialStrengthenTyped?_isSome_target_refineIntro
           next _ _ =>
               rfl
 
+/-! ## Binary-recursive with two non-binder type sides: glueIntro
+
+`Term.glueIntro` introduces a `Ty.glue baseType boundaryWitness`
+value via a base part + partial part, gated by
+`modeIsUnivalent : mode = Mode.univalent`.  Dispatcher arm
+quadruple-splits over: baseType strengthening (back, non-binder),
+boundaryWitness strengthening (back, non-binder), baseValue IH,
+partialValue IH.  Mode hypothesis is forwarded to the destructor;
+all four splits use plain `strengthening.back` (no `.lift`).
+
+Uses `Term.glueIntroDestruct` from
+`Term/PreservesTerm/InlineDestructors.lean`. -/
+/-- Target-direction totality at `Term.glueIntro`. -/
+theorem partialStrengthenTyped?_isSome_target_glueIntro
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (baseType : Ty level sourceScope)
+    (boundaryWitness : RawTerm sourceScope)
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    {baseRaw partialRaw : RawTerm sourceScope}
+    (targetTerm :
+      Term sourceCtx (Ty.glue baseType boundaryWitness)
+        (RawTerm.glueIntro baseRaw partialRaw))
+    (baseTypeStrengthens :
+      (baseType.partialStrengthen? strengthening.back).isSome = true)
+    (boundaryStrengthens :
+      (boundaryWitness.partialStrengthen? strengthening.back).isSome
+        = true)
+    (baseIH :
+      ∀ (baseValue : Term sourceCtx baseType baseRaw),
+        (partialStrengthenTyped? baseValue strengthening).isSome = true)
+    (partialIH :
+      ∀ (partialValue : Term sourceCtx baseType partialRaw),
+        (partialStrengthenTyped? partialValue strengthening).isSome
+          = true) :
+    (partialStrengthenTyped? targetTerm strengthening).isSome = true := by
+  obtain ⟨baseValue, partialValue, heq⟩ :=
+    Term.glueIntroDestruct modeIsUnivalent baseType boundaryWitness
+      targetTerm
+  have targetEq :
+      targetTerm =
+        Term.glueIntro modeIsUnivalent baseType boundaryWitness
+          baseValue partialValue :=
+    eq_of_heq heq
+  subst targetEq
+  have baseResult := baseIH baseValue
+  have partialResult := partialIH partialValue
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noBaseType =>
+      rw [noBaseType] at baseTypeStrengthens
+      cases baseTypeStrengthens
+  next _ _ =>
+      split
+      next noBoundary =>
+          rw [noBoundary] at boundaryStrengthens
+          cases boundaryStrengthens
+      next _ _ =>
+          split
+          next noBase =>
+              rw [noBase] at baseResult
+              cases baseResult
+          next _ _ =>
+              split
+              next noPartial =>
+                  rw [noPartial] at partialResult
+                  cases partialResult
+              next _ _ =>
+                  rfl
+
 end Term
 
 end LeanFX2
