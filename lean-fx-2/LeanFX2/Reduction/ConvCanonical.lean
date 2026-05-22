@@ -586,4 +586,118 @@ theorem Conv.funextReflAtId_cong
          (Term.funextReflAtId (context := context) domainType codomainType applyRaw) :=
   Conv.refl _
 
+/-! ## Degenerate cong rules for reflexive observational / strict identity
+
+`Term.oeqRefl` (HoTT-flavoured observational `refl`) and
+`Term.idStrictRefl` (strict-mode `refl`) carry only `Ty` + `RawTerm`
+data — no Term children.  Like `Term.refl`, the cong rule
+degenerates to `Conv.refl _`. -/
+
+theorem Conv.oeqRefl_cong
+    {carrier : Ty level scope} {rawWitness : RawTerm scope} :
+    Conv (Term.oeqRefl (context := context) carrier rawWitness)
+         (Term.oeqRefl (context := context) carrier rawWitness) :=
+  Conv.refl _
+
+theorem Conv.idStrictRefl_cong
+    {modeIsStrict : mode = Mode.strict}
+    {carrier : Ty level scope} {rawWitness : RawTerm scope} :
+    Conv (Term.idStrictRefl (context := context) modeIsStrict carrier rawWitness)
+         (Term.idStrictRefl (context := context) modeIsStrict carrier rawWitness) :=
+  Conv.refl _
+
+/-! ## Degenerate cong rules for type codes
+
+The 10 `Term.<X>Code` ctors (`arrowCode`, `piTyCode`, `sigmaTyCode`,
+`productCode`, `sumCode`, `listCode`, `optionCode`, `eitherCode`,
+`idCode`, `equivCode`) carry only `UniverseLevel` markers + level-
+bound proofs + `RawTerm` schematic payloads.  No sub-Term children.
+Each cong rule degenerates to `Conv.refl _`. -/
+
+theorem Conv.arrowCode_cong
+    {outerLevel : UniverseLevel} {levelLe : outerLevel.toNat + 1 ≤ level}
+    {domainCodeRaw codomainCodeRaw : RawTerm scope} :
+    Conv (Term.arrowCode (context := context) outerLevel levelLe
+            domainCodeRaw codomainCodeRaw)
+         (Term.arrowCode (context := context) outerLevel levelLe
+            domainCodeRaw codomainCodeRaw) :=
+  Conv.refl _
+
+theorem Conv.piTyCode_cong
+    {outerLevel : UniverseLevel} {levelLe : outerLevel.toNat + 1 ≤ level}
+    {domainCodeRaw : RawTerm scope} {codomainCodeRaw : RawTerm (scope + 1)} :
+    Conv (Term.piTyCode (context := context) outerLevel levelLe
+            domainCodeRaw codomainCodeRaw)
+         (Term.piTyCode (context := context) outerLevel levelLe
+            domainCodeRaw codomainCodeRaw) :=
+  Conv.refl _
+
+theorem Conv.sigmaTyCode_cong
+    {outerLevel : UniverseLevel} {levelLe : outerLevel.toNat + 1 ≤ level}
+    {domainCodeRaw : RawTerm scope} {codomainCodeRaw : RawTerm (scope + 1)} :
+    Conv (Term.sigmaTyCode (context := context) outerLevel levelLe
+            domainCodeRaw codomainCodeRaw)
+         (Term.sigmaTyCode (context := context) outerLevel levelLe
+            domainCodeRaw codomainCodeRaw) :=
+  Conv.refl _
+
+theorem Conv.productCode_cong
+    {outerLevel : UniverseLevel} {levelLe : outerLevel.toNat + 1 ≤ level}
+    {firstCodeRaw secondCodeRaw : RawTerm scope} :
+    Conv (Term.productCode (context := context) outerLevel levelLe
+            firstCodeRaw secondCodeRaw)
+         (Term.productCode (context := context) outerLevel levelLe
+            firstCodeRaw secondCodeRaw) :=
+  Conv.refl _
+
+theorem Conv.sumCode_cong
+    {outerLevel : UniverseLevel} {levelLe : outerLevel.toNat + 1 ≤ level}
+    {leftCodeRaw rightCodeRaw : RawTerm scope} :
+    Conv (Term.sumCode (context := context) outerLevel levelLe
+            leftCodeRaw rightCodeRaw)
+         (Term.sumCode (context := context) outerLevel levelLe
+            leftCodeRaw rightCodeRaw) :=
+  Conv.refl _
+
+theorem Conv.listCode_cong
+    {outerLevel : UniverseLevel} {levelLe : outerLevel.toNat + 1 ≤ level}
+    {elementCodeRaw : RawTerm scope} :
+    Conv (Term.listCode (context := context) outerLevel levelLe elementCodeRaw)
+         (Term.listCode (context := context) outerLevel levelLe elementCodeRaw) :=
+  Conv.refl _
+
+theorem Conv.optionCode_cong
+    {outerLevel : UniverseLevel} {levelLe : outerLevel.toNat + 1 ≤ level}
+    {elementCodeRaw : RawTerm scope} :
+    Conv (Term.optionCode (context := context) outerLevel levelLe elementCodeRaw)
+         (Term.optionCode (context := context) outerLevel levelLe elementCodeRaw) :=
+  Conv.refl _
+
+theorem Conv.eitherCode_cong
+    {outerLevel : UniverseLevel} {levelLe : outerLevel.toNat + 1 ≤ level}
+    {leftCodeRaw rightCodeRaw : RawTerm scope} :
+    Conv (Term.eitherCode (context := context) outerLevel levelLe
+            leftCodeRaw rightCodeRaw)
+         (Term.eitherCode (context := context) outerLevel levelLe
+            leftCodeRaw rightCodeRaw) :=
+  Conv.refl _
+
+theorem Conv.idCode_cong
+    {outerLevel : UniverseLevel} {levelLe : outerLevel.toNat + 1 ≤ level}
+    {typeCodeRaw leftRaw rightRaw : RawTerm scope} :
+    Conv (Term.idCode (context := context) outerLevel levelLe
+            typeCodeRaw leftRaw rightRaw)
+         (Term.idCode (context := context) outerLevel levelLe
+            typeCodeRaw leftRaw rightRaw) :=
+  Conv.refl _
+
+theorem Conv.equivCode_cong
+    {outerLevel : UniverseLevel} {levelLe : outerLevel.toNat + 1 ≤ level}
+    {leftTypeCodeRaw rightTypeCodeRaw : RawTerm scope} :
+    Conv (Term.equivCode (context := context) outerLevel levelLe
+            leftTypeCodeRaw rightTypeCodeRaw)
+         (Term.equivCode (context := context) outerLevel levelLe
+            leftTypeCodeRaw rightTypeCodeRaw) :=
+  Conv.refl _
+
 end LeanFX2

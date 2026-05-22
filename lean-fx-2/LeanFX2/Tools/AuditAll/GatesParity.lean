@@ -141,7 +141,14 @@ namespace LeanFX2.Tools
 --     equivReflId_cong, funextRefl_cong, equivReflIdAtId_cong,
 --     funextReflAtId_cong.  Same one-liner `Conv.refl _` pattern
 --     as the nullary block — no premise to thread.
---   Coverage at 25/78 ctors with `Conv.<ctor>_cong` mirror.
-#assert_conv_cong_coverage_budget LeanFX2.Term 53
+--   2026-05-22 ratchet 53 → 41 after 12 more degenerate cong rules
+--     (2 reflexive-identity + 10 type-code): oeqRefl_cong,
+--     idStrictRefl_cong, arrowCode_cong, piTyCode_cong,
+--     sigmaTyCode_cong, productCode_cong, sumCode_cong,
+--     listCode_cong, optionCode_cong, eitherCode_cong, idCode_cong,
+--     equivCode_cong.  All carry only Ty + RawTerm + UniverseLevel
+--     data — no Term children — so cong is `Conv.refl _`.
+--   Coverage at 37/78 ctors with `Conv.<ctor>_cong` mirror.
+#assert_conv_cong_coverage_budget LeanFX2.Term 41
 
 end LeanFX2.Tools
