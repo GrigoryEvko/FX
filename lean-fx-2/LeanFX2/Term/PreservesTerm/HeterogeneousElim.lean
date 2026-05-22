@@ -1,9 +1,11 @@
 import LeanFX2.Term.PreservesTerm.BetaCastWallDemolition
 import LeanFX2.Term.PreservesTerm.InlineDestructors
+import LeanFX2.Term.PreservesTerm.TwoTyAtomsAndCong
 import LeanFX2.Reduction.RawParInversion.AtomicCtors
 import LeanFX2.Reduction.RawParInversion.CubicalAndIdentity
 import LeanFX2.Reduction.RawParInversion.RedexParents
 import LeanFX2.Foundation.IsClosedTyAtBinder
+import LeanFX2.Foundation.TermPathLamExcludes
 
 /-! # LeanFX2.Term.PreservesTerm.HeterogeneousElim
 
@@ -437,5 +439,62 @@ theorem RawStep.par.lift_full_pair
           ?_⟩
   exact Step.par.pair firstStepTyped
           (Step.par.cast_target_eq typesEq secondStepTyped)
+
+/-- **Closed-carrier hcomp full lift via vacuity.**
+
+The raw `hcomp_inv` produces three disjuncts: cong + `hcompBeta`
+(shallow β when sides develops the constant-path shape from the
+start) + `hcompBetaDeep` (when sides reduces to the constant-path
+shape via parallel step).  Both β arms force the typed sides
+value to be a `Term.pathLam`, which is uninhabited at a closed
+carrier type via `Term.pathLam_excludes_closedTy`
+(Foundation/TermPathLamExcludes.lean, commit 92fa8c42) — closed
+types have no `Ty.path` ctor, but the only Term ctor projecting
+to `RawTerm.pathLam` returns at `Ty.path`.
+
+The cong arm routes to the existing two-Ty cong wrapper
+`RawStep.par.lift_full_hcomp_cong` (TwoTyAtomsAndCong.lean:452).
+
+Together: closed-carrier `Term.hcomp` admits a typed parallel
+reduction lift WITHOUT any new typed β kernel ctor — the β rules
+that exist at the raw layer are vacuous against the typed
+intrinsic representation under the closed-carrier precondition.
+
+This closes the closed-carrier half of unblock-A.leaf.hcomp
+(#2016).  Path-typed carriers remain (#2067) and route through
+`Term.hcompPath` once the hcompPath β kernel rules ship
+(#2068/#2069). -/
+theorem RawStep.par.lift_full_hcomp
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level scope}
+    (carrierClosed : IsClosedTy carrierType)
+    {sidesRaw capRaw : RawTerm scope}
+    (sidesValue : Term context carrierType sidesRaw)
+    (capValue : Term context carrierType capRaw)
+    (sidesLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par sidesRaw targetRawIH →
+      ∃ sidesTarget : Term context carrierType targetRawIH,
+        Step.par sidesValue sidesTarget)
+    (capLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par capRaw targetRawIH →
+      ∃ capTarget : Term context carrierType targetRawIH,
+        Step.par capValue capTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.hcomp sidesRaw capRaw) targetRaw) :
+    ∃ (targetType : Ty level scope)
+      (targetTerm : Term context targetType targetRaw),
+      Step.par (Term.hcomp modeIsUnivalent sidesValue capValue) targetTerm := by
+  rcases RawStep.par.hcomp_inv rawStep with
+    ⟨sidesTargetRaw, capTargetRaw, targetEq, sidesStep, capStep⟩
+    | ⟨pathBodyRawSource, capTargetRaw, sidesEq, _targetEq, _capStep⟩
+    | ⟨pathBodyRawTarget, capTargetRaw, targetEq, sidesStep, _capStep⟩
+  · subst targetEq
+    exact RawStep.par.lift_full_hcomp_cong modeIsUnivalent sidesValue capValue
+            sidesLift capLift sidesStep capStep
+  · subst sidesEq
+    exact (Term.pathLam_excludes_closedTy sidesValue carrierClosed).elim
+  · subst targetEq
+    obtain ⟨pathLamTypedTarget, _⟩ := sidesLift sidesStep
+    exact (Term.pathLam_excludes_closedTy pathLamTypedTarget carrierClosed).elim
 
 end LeanFX2

@@ -1102,5 +1102,37 @@ inductive DispatchAtom :
                               firstValueSource secondValueSource
                     : Term context (Ty.sigmaTy firstType secondType)
                         (RawTerm.pair firstRawSource secondRawSource))
+  /-- Cubical homogeneous composition (Term.hcomp) at a closed
+  carrier.  Both sidesValue and capValue share carrierType, so a
+  single `IsClosedTy carrierType` witness pins the SR-bridge type
+  for both children's Lift IHs.  The two β arms of `hcomp_inv`
+  (hcompBeta + hcompBetaDeep) force the typed sides value to have
+  raw form `RawTerm.pathLam ...`, which is uninhabited at a closed
+  carrier via `Term.pathLam_excludes_closedTy` — closed types
+  exclude `Ty.path`, but the only Term ctor projecting to
+  `RawTerm.pathLam` returns at `Ty.path`.  Consumed by
+  `RawStep.par.lift_full_hcomp` (HeterogeneousElim.lean).  Closes
+  closed-carrier half of #2016; path-typed carriers (#2067) route
+  through `Term.hcompPath` once #2068/#2069 ship. -/
+  | hcomp {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
+      {carrierType : Ty level scope}
+      (carrierClosed : IsClosedTy carrierType)
+      {sidesRaw capRaw : RawTerm scope}
+      (sidesValue : Term context carrierType sidesRaw)
+      (capValue : Term context carrierType capRaw)
+      (sidesLift : ∀ {targetRawIH : RawTerm scope},
+        RawStep.par sidesRaw targetRawIH →
+        ∃ sidesTarget : Term context carrierType targetRawIH,
+          Step.par sidesValue sidesTarget)
+      (capLift : ∀ {targetRawIH : RawTerm scope},
+        RawStep.par capRaw targetRawIH →
+        ∃ capTarget : Term context carrierType targetRawIH,
+          Step.par capValue capTarget) :
+      DispatchAtom (Term.hcomp (context := context) modeIsUnivalent
+                                sidesValue capValue
+                    : Term context carrierType
+                                   (RawTerm.hcomp sidesRaw capRaw))
 
 end LeanFX2

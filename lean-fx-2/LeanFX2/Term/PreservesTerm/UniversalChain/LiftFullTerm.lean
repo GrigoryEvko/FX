@@ -625,5 +625,8 @@ theorem RawStep.par.lift_full_term
   | pair secondTypeClosed firstValue secondValue firstLift secondLift =>
     exact RawStep.par.lift_full_pair secondTypeClosed firstValue secondValue
             firstLift secondLift rawStep
+  | hcomp modeIsUnivalent carrierClosed sidesValue capValue sidesLift capLift =>
+    exact RawStep.par.lift_full_hcomp modeIsUnivalent carrierClosed
+            sidesValue capValue sidesLift capLift rawStep
 
 end LeanFX2
