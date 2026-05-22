@@ -20290,6 +20290,184 @@ theorem Conv.refineIntro_ne_refl
     RawStep.parStar.refl_inv targetToJoin
   nomatch joinEqRefineIntro.symm.trans joinEqRefl
 
+/-- A `refineIntro`-headed source and a `sessionRecv`-headed target are
+not convertible.  Refinement introduction versus session-receive
+primitive — distinct canonical heads at the raw level. -/
+theorem Conv.refineIntro_ne_sessionRecv
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {rawValue predicateProof : RawTerm scope}
+    {channel : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.refineIntro rawValue predicateProof : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sessionRecv channel : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqRefineIntro, _, _⟩ :=
+    RawStep.parStar.refineIntro_inv sourceToJoin
+  obtain ⟨_, joinEqRecv, _⟩ :=
+    RawStep.parStar.sessionRecv_inv targetToJoin
+  nomatch joinEqRefineIntro.symm.trans joinEqRecv
+
+/-- A `refineIntro`-headed source and a `sessionSend`-headed target are
+not convertible.  Refinement introduction versus session-send primitive
+— distinct canonical heads at the raw level. -/
+theorem Conv.refineIntro_ne_sessionSend
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {rawValue predicateProof : RawTerm scope}
+    {channel payload : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.refineIntro rawValue predicateProof : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sessionSend channel payload : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqRefineIntro, _, _⟩ :=
+    RawStep.parStar.refineIntro_inv sourceToJoin
+  obtain ⟨_, _, joinEqSend, _, _⟩ :=
+    RawStep.parStar.sessionSend_inv targetToJoin
+  nomatch joinEqRefineIntro.symm.trans joinEqSend
+
+/-- A `refineIntro`-headed source and a `sigmaTyCode`-headed target are
+not convertible.  Refinement introduction versus dependent-pair type
+code — distinct canonical heads at the raw level. -/
+theorem Conv.refineIntro_ne_sigmaTyCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {rawValue predicateProof : RawTerm scope}
+    {firstSigmaCode : RawTerm scope}
+    {secondSigmaCode : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType
+      (RawTerm.refineIntro rawValue predicateProof : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sigmaTyCode firstSigmaCode secondSigmaCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqRefineIntro, _, _⟩ :=
+    RawStep.parStar.refineIntro_inv sourceToJoin
+  obtain ⟨_, _, joinEqSigma, _, _⟩ :=
+    RawStep.parStar.sigmaTyCode_inv targetToJoin
+  nomatch joinEqRefineIntro.symm.trans joinEqSigma
+
+/-- A `refineIntro`-headed source and a `subsume`-headed target are not
+convertible.  Refinement introduction versus subsumption coercion —
+distinct canonical heads at the raw level. -/
+theorem Conv.refineIntro_ne_subsume
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {rawValue predicateProof : RawTerm scope}
+    {innerSubsumed : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.refineIntro rawValue predicateProof : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.subsume innerSubsumed : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqRefineIntro, _, _⟩ :=
+    RawStep.parStar.refineIntro_inv sourceToJoin
+  obtain ⟨_, joinEqSubsume, _⟩ :=
+    RawStep.parStar.subsume_inv targetToJoin
+  nomatch joinEqRefineIntro.symm.trans joinEqSubsume
+
+/-- A `refineIntro`-headed source and a `sumCode`-headed target are not
+convertible.  Refinement introduction versus disjoint-union type code
+— distinct canonical heads at the raw level. -/
+theorem Conv.refineIntro_ne_sumCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {rawValue predicateProof : RawTerm scope}
+    {firstSumCode secondSumCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.refineIntro rawValue predicateProof : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sumCode firstSumCode secondSumCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqRefineIntro, _, _⟩ :=
+    RawStep.parStar.refineIntro_inv sourceToJoin
+  obtain ⟨_, _, joinEqSum, _, _⟩ :=
+    RawStep.parStar.sumCode_inv targetToJoin
+  nomatch joinEqRefineIntro.symm.trans joinEqSum
+
+/-- A `refineIntro`-headed source and a `transpFill`-headed target are
+not convertible.  Refinement introduction versus cubical transport
+filler — distinct canonical heads at the raw level. -/
+theorem Conv.refineIntro_ne_transpFill
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {rawValue predicateProof : RawTerm scope}
+    {pathTerm intervalTerm sourceRawTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.refineIntro rawValue predicateProof : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.transpFill pathTerm intervalTerm sourceRawTerm :
+        RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqRefineIntro, _, _⟩ :=
+    RawStep.parStar.refineIntro_inv sourceToJoin
+  obtain ⟨_, _, _, joinEqFill, _, _, _⟩ :=
+    RawStep.parStar.transpFill_inv targetToJoin
+  nomatch joinEqRefineIntro.symm.trans joinEqFill
+
+/-- A `refineIntro`-headed source and a `uaToEquiv`-headed target are
+not convertible.  Refinement introduction versus univalence-to-
+equivalence primitive — distinct canonical heads at the raw level. -/
+theorem Conv.refineIntro_ne_uaToEquiv
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {rawValue predicateProof : RawTerm scope}
+    {proofTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.refineIntro rawValue predicateProof : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.uaToEquiv proofTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqRefineIntro, _, _⟩ :=
+    RawStep.parStar.refineIntro_inv sourceToJoin
+  obtain ⟨_, joinEqUa, _⟩ :=
+    RawStep.parStar.uaToEquiv_inv targetToJoin
+  nomatch joinEqRefineIntro.symm.trans joinEqUa
+
+/-- A `refineIntro`-headed source and a `universeCode`-headed target are
+not convertible.  Refinement introduction versus universe-level type
+code — distinct canonical heads at the raw level. -/
+theorem Conv.refineIntro_ne_universeCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {rawValue predicateProof : RawTerm scope}
+    {innerLevel : Nat}
+    {sourceTerm : Term context sourceType
+      (RawTerm.refineIntro rawValue predicateProof : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.universeCode innerLevel : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqRefineIntro, _, _⟩ :=
+    RawStep.parStar.refineIntro_inv sourceToJoin
+  have joinEqUniv : joinRaw = RawTerm.universeCode innerLevel :=
+    RawStep.parStar.universeCode_inv targetToJoin
+  nomatch joinEqRefineIntro.symm.trans joinEqUniv
+
 /-- A `sessionRecv`-headed source and a `unit`-headed target are not
 convertible.  Disjoint canonical heads at the raw level: the session
 receive operation suspends pending message arrival on a session-typed
