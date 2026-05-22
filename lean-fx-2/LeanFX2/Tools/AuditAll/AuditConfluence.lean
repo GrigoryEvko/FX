@@ -468,6 +468,15 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.glueIntro_ne_listCons
 #assert_no_axioms LeanFX2.Conv.glueIntro_ne_pair
 #assert_no_axioms LeanFX2.Conv.glueIntro_ne_refl
+#assert_no_axioms LeanFX2.Conv.glueIntro_ne_idCode
+#assert_no_axioms LeanFX2.Conv.glueIntro_ne_idStrictRefl
+#assert_no_axioms LeanFX2.Conv.glueIntro_ne_intervalJoin
+#assert_no_axioms LeanFX2.Conv.glueIntro_ne_intervalMeet
+#assert_no_axioms LeanFX2.Conv.glueIntro_ne_intervalOpp
+#assert_no_axioms LeanFX2.Conv.glueIntro_ne_listCode
+#assert_no_axioms LeanFX2.Conv.glueIntro_ne_modIntro
+#assert_no_axioms LeanFX2.Conv.glueIntro_ne_oeqFunext
+#assert_no_axioms LeanFX2.Conv.glueIntro_ne_oeqJ
 #assert_no_axioms LeanFX2.Conv.pathCompose_ne_unit
 #assert_no_axioms LeanFX2.Conv.pathCompose_ne_boolTrue
 #assert_no_axioms LeanFX2.Conv.pathCompose_ne_boolFalse
