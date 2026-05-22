@@ -754,5 +754,31 @@ inductive DispatchAtom :
                                (RawTerm.lam (RawTerm.refl applyRaw))
                                (RawTerm.lam (RawTerm.refl applyRaw)))
                         (RawTerm.lam (RawTerm.refl applyRaw)))
+  /-- HoTT-J identity eliminator.  Result type `motiveType` is fixed
+  through the cong rule and the iota-refl rule (both preserve
+  `motiveType`).  The witness has type `Ty.id carrier left right` which
+  is not in `IsClosedTy`, so we bake fixed-Ty IH lifters directly as
+  data — the caller supplies them when constructing the dispatch
+  witness.  Consumed by `RawStep.par.lift_full_idJ`. -/
+  | idJ {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {carrier : Ty level scope} {leftEndpoint rightEndpoint : RawTerm scope}
+      {motiveType : Ty level scope}
+      {baseRaw witnessRaw : RawTerm scope}
+      (baseCase : Term context motiveType baseRaw)
+      (witness :
+        Term context (Ty.id carrier leftEndpoint rightEndpoint) witnessRaw)
+      (baseLift : ∀ {targetRawIH : RawTerm scope},
+        RawStep.par baseRaw targetRawIH →
+        ∃ baseTarget : Term context motiveType targetRawIH,
+          Step.par baseCase baseTarget)
+      (witnessLift : ∀ {targetRawIH : RawTerm scope},
+        RawStep.par witnessRaw targetRawIH →
+        ∃ witnessTarget :
+            Term context (Ty.id carrier leftEndpoint rightEndpoint) targetRawIH,
+          Step.par witness witnessTarget) :
+      DispatchAtom (Term.idJ baseCase witness
+                    : Term context motiveType
+                        (RawTerm.idJ baseRaw witnessRaw))
 
 end LeanFX2

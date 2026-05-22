@@ -577,5 +577,8 @@ theorem RawStep.par.lift_full_term
   | funextReflAtId domainType codomainType applyRaw =>
     exact RawStep.par.lift_funextReflAtId domainType codomainType applyRaw
             rawStep
+  | idJ baseCase witness baseLift witnessLift =>
+    exact RawStep.par.lift_full_idJ baseCase witness baseLift witnessLift
+            rawStep
 
 end LeanFX2
