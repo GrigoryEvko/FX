@@ -613,5 +613,14 @@ theorem RawStep.par.lift_full_term
     exact RawStep.par.lift_full_oeqFunext domainType codomainType
             leftFunctionRaw rightFunctionRaw pointwiseProof pointwiseLift
             rawStep
+  | funextIntroHet domainType codomainType applyARaw applyBRaw =>
+    exact RawStep.par.lift_funextIntroHet domainType codomainType
+            applyARaw applyBRaw rawStep
+  | uaToEquiv innerLevel innerLevelLt leftTy rightTy leftTyRaw rightTyRaw
+              proof proofLift =>
+    obtain ⟨proofTarget, proofStep⟩ :=
+      RawStep.par.lift_uaToEquiv innerLevel innerLevelLt leftTy rightTy
+                                  leftTyRaw rightTyRaw proof proofLift rawStep
+    exact ⟨Ty.equiv leftTy rightTy, proofTarget, proofStep⟩
 
 end LeanFX2

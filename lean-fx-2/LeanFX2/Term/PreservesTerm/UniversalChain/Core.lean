@@ -1024,5 +1024,50 @@ inductive DispatchAtom :
              (Ty.oeq (Ty.arrow domainType codomainType)
                      leftFunctionRaw rightFunctionRaw)
              (RawTerm.oeqFunext pointwiseRaw))
+  /-- Heterogeneous funext introduction.  Schematic-leaf shape: only
+  raw-level binder + refl payloads, no typed Term children.  The cong
+  rule `Step.par.funextIntroHetCong` admits independent par-steps on
+  each side via internal `RawStep.par.refl` machinery.  Consumed by
+  `RawStep.par.lift_funextIntroHet`. -/
+  | funextIntroHet {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (domainType codomainType : Ty level scope)
+      (applyARaw applyBRaw : RawTerm (scope + 1)) :
+      DispatchAtom (Term.funextIntroHet (context := context)
+                                         domainType codomainType
+                                         applyARaw applyBRaw
+                    : Term context
+                        (Ty.id (Ty.arrow domainType codomainType)
+                               (RawTerm.lam applyARaw)
+                               (RawTerm.lam applyBRaw))
+                        (RawTerm.lam (RawTerm.refl applyARaw)))
+  /-- Univalence axiom application: convert a type-level equality
+  proof to an equivalence.  Single typed child `proof` at
+  `Ty.id (Ty.universe innerLevel _) leftTyRaw rightTyRaw`; target type
+  is `Ty.equiv leftTy rightTy`.  Consumed by
+  `RawStep.par.lift_uaToEquiv`. -/
+  | uaToEquiv {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (innerLevel : UniverseLevel)
+      (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+      (leftTy rightTy : Ty level scope)
+      (leftTyRaw rightTyRaw : RawTerm scope)
+      {proofRaw : RawTerm scope}
+      (proof :
+        Term context
+          (Ty.id (Ty.universe innerLevel innerLevelLt) leftTyRaw rightTyRaw)
+          proofRaw)
+      (proofLift : ∀ {targetRawIH : RawTerm scope},
+        RawStep.par proofRaw targetRawIH →
+        ∃ proofTarget :
+            Term context
+              (Ty.id (Ty.universe innerLevel innerLevelLt)
+                     leftTyRaw rightTyRaw)
+              targetRawIH,
+          Step.par proof proofTarget) :
+      DispatchAtom (Term.uaToEquiv (context := context) innerLevel innerLevelLt
+                                    leftTy rightTy leftTyRaw rightTyRaw proof
+                    : Term context (Ty.equiv leftTy rightTy)
+                        (RawTerm.uaToEquiv proofRaw))
 
 end LeanFX2
