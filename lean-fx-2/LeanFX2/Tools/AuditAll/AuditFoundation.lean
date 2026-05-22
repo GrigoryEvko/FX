@@ -200,15 +200,19 @@ universal typed-strengthening driver (Block B
 #assert_no_axioms LeanFX2.Ty.partialStrengthen?_oeq_isSome
 #assert_no_axioms LeanFX2.Ty.partialStrengthen?_idStrict_isSome
 
-/-! ### RawTerm per-ctor `partialRename?_<ctor>_isSome` inversion pilot
+/-! ### RawTerm per-ctor `partialRename?_<ctor>_isSome` inversion
 
-6 zero-axiom inversion lemmas decomposing
+Zero-axiom inversion lemmas decomposing
 `((RawTerm.<ctor> args).partialRename? back).isSome = true` into
 per-sub-field `.isSome = true` facts.  Raw-side siblings of the
-Ty inversion lemmas above; pilot covers lam/app/pair/fst/snd/listCons
-to validate the recipe across binder, Option.mapTwo, and direct
-match shapes.  Future ralph cycles can clone for the remaining
-65+ RawTerm ctors.  See `Foundation/RawPartialRename/IsSomeInversion.lean`. -/
+Ty inversion lemmas above; current coverage includes the original
+pilot (lam, app, pair, fst, snd, listCons — binder + binary +
+single-child shapes) and the single-child non-binder expansion
+batch (natSucc, optionSome, eitherInl, eitherInr, refl, modIntro,
+modElim, subsume, intervalOpp, glueElim).  Recipe is mechanically
+identical for the remaining ctors and uses definitional tactics
+only (`dsimp only` unfold + nested `match` + `cases` on impossible
+`none` arms).  See `Foundation/RawPartialRename/IsSomeInversion.lean`. -/
 
 #assert_no_axioms LeanFX2.RawTerm.partialRename?_lam_isSome
 #assert_no_axioms LeanFX2.RawTerm.partialRename?_app_isSome
@@ -216,5 +220,15 @@ match shapes.  Future ralph cycles can clone for the remaining
 #assert_no_axioms LeanFX2.RawTerm.partialRename?_fst_isSome
 #assert_no_axioms LeanFX2.RawTerm.partialRename?_snd_isSome
 #assert_no_axioms LeanFX2.RawTerm.partialRename?_listCons_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_natSucc_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_optionSome_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_eitherInl_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_eitherInr_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_refl_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_modIntro_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_modElim_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_subsume_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_intervalOpp_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_glueElim_isSome
 
 end LeanFX2.Tools

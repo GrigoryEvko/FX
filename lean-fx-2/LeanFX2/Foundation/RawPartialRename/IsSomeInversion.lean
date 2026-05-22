@@ -168,6 +168,147 @@ theorem partialRename?_listCons_isSome
         | some _ => rw [headBranch] at composite; cases composite
     | some _ => rfl
 
+/-- Inversion of `RawTerm.natSucc` partial-renaming `.isSome`.
+
+If the composite natSucc strengthens, the predecessor strengthens. -/
+theorem partialRename?_natSucc_isSome
+    (back : PartialRawRenaming sourceScope targetScope)
+    (predecessor : RawTerm sourceScope)
+    (composite :
+      ((RawTerm.natSucc predecessor).partialRename? back).isSome = true) :
+    (predecessor.partialRename? back).isSome = true := by
+  dsimp only [RawTerm.partialRename?] at composite
+  match predecessorBranch : predecessor.partialRename? back with
+  | none => rw [predecessorBranch] at composite; cases composite
+  | some _ => rfl
+
+/-- Inversion of `RawTerm.optionSome` partial-renaming `.isSome`.
+
+If the composite optionSome strengthens, the wrapped value strengthens. -/
+theorem partialRename?_optionSome_isSome
+    (back : PartialRawRenaming sourceScope targetScope)
+    (valueTerm : RawTerm sourceScope)
+    (composite :
+      ((RawTerm.optionSome valueTerm).partialRename? back).isSome = true) :
+    (valueTerm.partialRename? back).isSome = true := by
+  dsimp only [RawTerm.partialRename?] at composite
+  match valueBranch : valueTerm.partialRename? back with
+  | none => rw [valueBranch] at composite; cases composite
+  | some _ => rfl
+
+/-- Inversion of `RawTerm.eitherInl` partial-renaming `.isSome`.
+
+If the composite eitherInl strengthens, the wrapped value strengthens. -/
+theorem partialRename?_eitherInl_isSome
+    (back : PartialRawRenaming sourceScope targetScope)
+    (valueTerm : RawTerm sourceScope)
+    (composite :
+      ((RawTerm.eitherInl valueTerm).partialRename? back).isSome = true) :
+    (valueTerm.partialRename? back).isSome = true := by
+  dsimp only [RawTerm.partialRename?] at composite
+  match valueBranch : valueTerm.partialRename? back with
+  | none => rw [valueBranch] at composite; cases composite
+  | some _ => rfl
+
+/-- Inversion of `RawTerm.eitherInr` partial-renaming `.isSome`.
+
+If the composite eitherInr strengthens, the wrapped value strengthens. -/
+theorem partialRename?_eitherInr_isSome
+    (back : PartialRawRenaming sourceScope targetScope)
+    (valueTerm : RawTerm sourceScope)
+    (composite :
+      ((RawTerm.eitherInr valueTerm).partialRename? back).isSome = true) :
+    (valueTerm.partialRename? back).isSome = true := by
+  dsimp only [RawTerm.partialRename?] at composite
+  match valueBranch : valueTerm.partialRename? back with
+  | none => rw [valueBranch] at composite; cases composite
+  | some _ => rfl
+
+/-- Inversion of `RawTerm.refl` partial-renaming `.isSome`.
+
+If the composite refl strengthens, the witness strengthens. -/
+theorem partialRename?_refl_isSome
+    (back : PartialRawRenaming sourceScope targetScope)
+    (rawWitness : RawTerm sourceScope)
+    (composite :
+      ((RawTerm.refl rawWitness).partialRename? back).isSome = true) :
+    (rawWitness.partialRename? back).isSome = true := by
+  dsimp only [RawTerm.partialRename?] at composite
+  match witnessBranch : rawWitness.partialRename? back with
+  | none => rw [witnessBranch] at composite; cases composite
+  | some _ => rfl
+
+/-- Inversion of `RawTerm.modIntro` partial-renaming `.isSome`.
+
+If the composite modIntro strengthens, the wrapped raw strengthens. -/
+theorem partialRename?_modIntro_isSome
+    (back : PartialRawRenaming sourceScope targetScope)
+    (raw : RawTerm sourceScope)
+    (composite :
+      ((RawTerm.modIntro raw).partialRename? back).isSome = true) :
+    (raw.partialRename? back).isSome = true := by
+  dsimp only [RawTerm.partialRename?] at composite
+  match rawBranch : raw.partialRename? back with
+  | none => rw [rawBranch] at composite; cases composite
+  | some _ => rfl
+
+/-- Inversion of `RawTerm.modElim` partial-renaming `.isSome`.
+
+If the composite modElim strengthens, the wrapped raw strengthens. -/
+theorem partialRename?_modElim_isSome
+    (back : PartialRawRenaming sourceScope targetScope)
+    (raw : RawTerm sourceScope)
+    (composite :
+      ((RawTerm.modElim raw).partialRename? back).isSome = true) :
+    (raw.partialRename? back).isSome = true := by
+  dsimp only [RawTerm.partialRename?] at composite
+  match rawBranch : raw.partialRename? back with
+  | none => rw [rawBranch] at composite; cases composite
+  | some _ => rfl
+
+/-- Inversion of `RawTerm.subsume` partial-renaming `.isSome`.
+
+If the composite subsume strengthens, the wrapped raw strengthens. -/
+theorem partialRename?_subsume_isSome
+    (back : PartialRawRenaming sourceScope targetScope)
+    (raw : RawTerm sourceScope)
+    (composite :
+      ((RawTerm.subsume raw).partialRename? back).isSome = true) :
+    (raw.partialRename? back).isSome = true := by
+  dsimp only [RawTerm.partialRename?] at composite
+  match rawBranch : raw.partialRename? back with
+  | none => rw [rawBranch] at composite; cases composite
+  | some _ => rfl
+
+/-- Inversion of `RawTerm.intervalOpp` partial-renaming `.isSome`.
+
+If the composite intervalOpp strengthens, the interval child strengthens. -/
+theorem partialRename?_intervalOpp_isSome
+    (back : PartialRawRenaming sourceScope targetScope)
+    (intervalTerm : RawTerm sourceScope)
+    (composite :
+      ((RawTerm.intervalOpp intervalTerm).partialRename? back).isSome
+        = true) :
+    (intervalTerm.partialRename? back).isSome = true := by
+  dsimp only [RawTerm.partialRename?] at composite
+  match intervalBranch : intervalTerm.partialRename? back with
+  | none => rw [intervalBranch] at composite; cases composite
+  | some _ => rfl
+
+/-- Inversion of `RawTerm.glueElim` partial-renaming `.isSome`.
+
+If the composite glueElim strengthens, the glued value strengthens. -/
+theorem partialRename?_glueElim_isSome
+    (back : PartialRawRenaming sourceScope targetScope)
+    (gluedValue : RawTerm sourceScope)
+    (composite :
+      ((RawTerm.glueElim gluedValue).partialRename? back).isSome = true) :
+    (gluedValue.partialRename? back).isSome = true := by
+  dsimp only [RawTerm.partialRename?] at composite
+  match gluedBranch : gluedValue.partialRename? back with
+  | none => rw [gluedBranch] at composite; cases composite
+  | some _ => rfl
+
 end RawTerm
 
 end LeanFX2
