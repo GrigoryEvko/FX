@@ -602,6 +602,67 @@ theorem partialStrengthenTyped?_isSome_target_recordIntro
   next _ _ =>
       rfl
 
+/-! ## Binary-recursive with binder-side predicate: refineIntro
+
+`Term.refineIntro` wraps `baseValue : Term context baseType
+valueRaw` together with `predicateProof : Term context Ty.unit
+proofRaw` to inhabit `Ty.refine baseType predicate`.  The
+predicate is a `RawTerm (scope + 1)` (binder under refinement
+variable), so the dispatcher's side condition uses
+`strengthening.back.lift`.  Same triple-split shape as `pair`
+but with a single base IH and a proof IH instead of dual data
+IHs.  Uses `Term.refineIntroDestruct` from
+`Term/PreservesTerm/InlineDestructors.lean`. -/
+/-- Target-direction totality at `Term.refineIntro`. -/
+theorem partialStrengthenTyped?_isSome_target_refineIntro
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {baseType : Ty level sourceScope}
+    (predicate : RawTerm (sourceScope + 1))
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    {valueRaw proofRaw : RawTerm sourceScope}
+    (targetTerm :
+      Term sourceCtx (Ty.refine baseType predicate)
+        (RawTerm.refineIntro valueRaw proofRaw))
+    (predicateLiftedStrengthens :
+      (predicate.partialStrengthen? strengthening.back.lift).isSome
+        = true)
+    (baseIH :
+      ∀ (baseValue : Term sourceCtx baseType valueRaw),
+        (partialStrengthenTyped? baseValue strengthening).isSome = true)
+    (proofIH :
+      ∀ (predicateProof : Term sourceCtx Ty.unit proofRaw),
+        (partialStrengthenTyped? predicateProof strengthening).isSome
+          = true) :
+    (partialStrengthenTyped? targetTerm strengthening).isSome = true := by
+  obtain ⟨baseValue, predicateProof, heq⟩ :=
+    Term.refineIntroDestruct predicate targetTerm
+  have targetEq :
+      targetTerm = Term.refineIntro predicate baseValue predicateProof :=
+    eq_of_heq heq
+  subst targetEq
+  have baseResult := baseIH baseValue
+  have proofResult := proofIH predicateProof
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noPredicateSuccess =>
+      rw [noPredicateSuccess] at predicateLiftedStrengthens
+      cases predicateLiftedStrengthens
+  next _ _ =>
+      split
+      next noBaseSuccess =>
+          rw [noBaseSuccess] at baseResult
+          cases baseResult
+      next _ _ =>
+          split
+          next noProofSuccess =>
+              rw [noProofSuccess] at proofResult
+              cases proofResult
+          next _ _ =>
+              rfl
+
 end Term
 
 end LeanFX2
