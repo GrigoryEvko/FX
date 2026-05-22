@@ -33,6 +33,7 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.transRaw_weakened
 #assert_no_axioms LeanFX2.Conv.transRaw_substituted
 #assert_no_axioms LeanFX2.Conv.transRaw_subst0
+#assert_no_axioms LeanFX2.Conv.transRaw_subst_par
 #assert_no_axioms LeanFX2.Conv.fromStepStar_renamed
 #assert_no_axioms LeanFX2.Conv.fromStepStar_weakened
 #assert_no_axioms LeanFX2.Conv.fromStepStar_substituted

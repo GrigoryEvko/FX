@@ -435,6 +435,49 @@ theorem Conv.transRaw_subst0
   Conv.transRaw_substituted (RawTermSubst.singleton argRaw)
     firstConvertibility secondConvertibility
 
+/-- Multi-position parallel-substitution sibling of
+`Conv.transRaw_substituted`.
+
+Combines two-Conv transitivity with the heterogeneous parallel-subst
+lift `RawStep.parStar.subst_par`: given two raw substitutions
+`firstSubst` / `secondSubst` related single-step pointwise, the
+trans-composed Conv lifts to a raw join at differently-substituted
+endpoints `sourceRaw.subst firstSubst` and `farRaw.subst secondSubst`.
+
+Strategy:
+1. Compose the two Convs via `Conv.transRaw` to a common joinRaw.
+2. Source half: `RawStep.parStar.subst_par` lifts source-chain through
+   the pointwise-related substs; lands at `joinRaw.subst secondSubst`.
+3. Far half: `RawStep.parStar.subst_compatible_same secondSubst` pins
+   far-chain at secondSubst; also lands at `joinRaw.subst secondSubst`.
+
+Mirrors the family pattern of `transRaw_<action>` (renamed / weakened
+/ substituted / subst0) with the new parallel-subst action.  K12.28
+Geuvers β-η critical-pair joinability and K13 NbE β-step under
+parallel substitution chains reach for this shape when a chain of
+typed Convs must fuse with substitution-evolution. -/
+theorem Conv.transRaw_subst_par
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {sourceType middleType farType : Ty level sourceScope}
+    {sourceRaw middleRaw farRaw : RawTerm sourceScope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {farTerm : Term context farType farRaw}
+    {firstSubst secondSubst : RawTermSubst sourceScope targetScope}
+    (substsRelated : ∀ position,
+      RawStep.par (firstSubst position) (secondSubst position))
+    (firstConvertibility : Conv sourceTerm middleTerm)
+    (secondConvertibility : Conv middleTerm farTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.subst firstSubst) commonRaw ∧
+      RawStep.parStar (farRaw.subst secondSubst) commonRaw := by
+  obtain ⟨joinRaw, sourceToJoin, farToJoin⟩ :=
+    Conv.transRaw firstConvertibility secondConvertibility
+  exact ⟨joinRaw.subst secondSubst,
+    RawStep.parStar.subst_par substsRelated sourceToJoin,
+    RawStep.parStar.subst_compatible_same secondSubst farToJoin⟩
+
 /-! ## StepStar-chain-plus-action lifters
 
 When a downstream consumer has a typed one-sided `StepStar` chain
