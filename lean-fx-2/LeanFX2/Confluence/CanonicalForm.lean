@@ -7231,6 +7231,51 @@ theorem Conv.eitherCode_ne_transpFill
     RawStep.parStar.transpFill_inv targetToJoin
   nomatch joinEqEither.symm.trans joinEqTranspFill
 
+/-- An `eitherCode`-headed source and a `uaToEquiv`-headed target
+are not convertible.  Either type code versus univalence-to-
+equivalence bridge — distinct canonical heads at the raw level. -/
+theorem Conv.eitherCode_ne_uaToEquiv
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {proofTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.uaToEquiv proofTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEither, _, _⟩ :=
+    RawStep.parStar.eitherCode_inv sourceToJoin
+  obtain ⟨_, joinEqUaToEquiv, _⟩ :=
+    RawStep.parStar.uaToEquiv_inv targetToJoin
+  nomatch joinEqEither.symm.trans joinEqUaToEquiv
+
+/-- An `eitherCode`-headed source and a `universeCode`-headed target
+are not convertible.  Either type code versus universe-type code at
+a specific level — distinct canonical type-code heads at the raw
+level.  Nullary target — direct equality inversion closes the row. -/
+theorem Conv.eitherCode_ne_universeCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {innerLevel : Nat}
+    {sourceTerm : Term context sourceType
+      (RawTerm.eitherCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.universeCode innerLevel : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqEither, _, _⟩ :=
+    RawStep.parStar.eitherCode_inv sourceToJoin
+  have joinEqUniv : joinRaw = RawTerm.universeCode innerLevel :=
+    RawStep.parStar.universeCode_inv targetToJoin
+  nomatch joinEqEither.symm.trans joinEqUniv
+
 /-- A `equivCode`-headed source and a `unit`-headed target are not
 convertible.  Opens the equivalence-type-code row of the
 canonical-head matrix: `equivCode` is the flat-binary type-code
