@@ -114,6 +114,52 @@ theorem RawStep.parStar.subst0_par {scope : Nat}
       argChain
   RawStep.parStar.append leftHalf rightHalf
 
+/-- Multi-position parallel-substitution lift for raw multi-step chains.
+
+Generalizes `RawStep.parStar.subst0_par` from singleton β to arbitrary
+substitutions: given
+
+* a body-chain `bodySource ⟶* bodyTarget` (any length), and
+* a single-step pointwise relation `firstSubst position ⟶ secondSubst
+  position` for every position,
+
+produce a chain `bodySource.subst firstSubst ⟶* bodyTarget.subst
+secondSubst`.  The body's multi-step chain decouples from the
+single-step nature of the per-position substitution update.
+
+Proof composes via `RawStep.parStar.append`:
+* lift body-chain at fixed `firstSubst` via `subst_compatible_same`
+  (`bodySource.subst firstSubst ⟶* bodyTarget.subst firstSubst`).
+* lift pointwise-related substs at fixed `bodyTarget` via the
+  single-step `RawStep.par.subst_par` with reflexive body step,
+  injected into `parStar` via `RawStep.par.toStar`.
+
+K12.28 Geuvers β-η critical pair joinability and K13 NbE β-step
+substitution-evolution consumers reach for this shape when a typed
+substitution chain (e.g. through a parametric subst lift) needs to
+fuse with a body chain. -/
+theorem RawStep.parStar.subst_par {sourceScope targetScope : Nat}
+    {firstSubst secondSubst : RawTermSubst sourceScope targetScope}
+    (substsRelated : ∀ position,
+      RawStep.par (firstSubst position) (secondSubst position))
+    {bodySource bodyTarget : RawTerm sourceScope}
+    (bodyChain : RawStep.parStar bodySource bodyTarget) :
+    RawStep.parStar (bodySource.subst firstSubst)
+                    (bodyTarget.subst secondSubst) :=
+  let leftHalf :
+      RawStep.parStar (bodySource.subst firstSubst)
+                      (bodyTarget.subst firstSubst) :=
+    RawStep.parStar.subst_compatible_same firstSubst bodyChain
+  let rightHalfStep :
+      RawStep.par (bodyTarget.subst firstSubst)
+                  (bodyTarget.subst secondSubst) :=
+    RawStep.par.subst_par substsRelated (RawStep.par.refl bodyTarget)
+  let rightHalf :
+      RawStep.parStar (bodyTarget.subst firstSubst)
+                      (bodyTarget.subst secondSubst) :=
+    RawStep.par.toStar rightHalfStep
+  RawStep.parStar.append leftHalf rightHalf
+
 private theorem RawStep.parStar.target_in_rename_image_aux
     {sourceScope targetScope : Nat}
     (rho : RawRenaming sourceScope targetScope)
