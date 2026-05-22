@@ -14565,6 +14565,198 @@ theorem Conv.oeqFunext_ne_recordIntro
     RawStep.parStar.recordIntro_inv targetToJoin
   nomatch joinEqOeqFunext.symm.trans joinEqRecord
 
+/-- An `oeqFunext`-headed source and a `refineIntro`-headed target
+are not convertible. -/
+theorem Conv.oeqFunext_ne_refineIntro
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {pointwiseEquality : RawTerm scope}
+    {rawValue predicateProof : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqFunext pointwiseEquality : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.refineIntro rawValue predicateProof : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOeqFunext, _⟩ :=
+    RawStep.parStar.oeqFunext_inv sourceToJoin
+  obtain ⟨_, _, joinEqRefineIntro, _, _⟩ :=
+    RawStep.parStar.refineIntro_inv targetToJoin
+  nomatch joinEqOeqFunext.symm.trans joinEqRefineIntro
+
+/-- An `oeqFunext`-headed source and a `sessionRecv`-headed target are
+not convertible. -/
+theorem Conv.oeqFunext_ne_sessionRecv
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {pointwiseEquality : RawTerm scope}
+    {channel : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqFunext pointwiseEquality : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sessionRecv channel : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOeqFunext, _⟩ :=
+    RawStep.parStar.oeqFunext_inv sourceToJoin
+  obtain ⟨_, joinEqSessionRecv, _⟩ :=
+    RawStep.parStar.sessionRecv_inv targetToJoin
+  nomatch joinEqOeqFunext.symm.trans joinEqSessionRecv
+
+/-- An `oeqFunext`-headed source and a `sessionSend`-headed target are
+not convertible. -/
+theorem Conv.oeqFunext_ne_sessionSend
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {pointwiseEquality : RawTerm scope}
+    {channel payload : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqFunext pointwiseEquality : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sessionSend channel payload : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOeqFunext, _⟩ :=
+    RawStep.parStar.oeqFunext_inv sourceToJoin
+  obtain ⟨_, _, joinEqSessionSend, _, _⟩ :=
+    RawStep.parStar.sessionSend_inv targetToJoin
+  nomatch joinEqOeqFunext.symm.trans joinEqSessionSend
+
+/-- An `oeqFunext`-headed source and a `sigmaTyCode`-headed target are
+not convertible. -/
+theorem Conv.oeqFunext_ne_sigmaTyCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {pointwiseEquality : RawTerm scope}
+    {firstCode : RawTerm scope}
+    {secondCode : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqFunext pointwiseEquality : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sigmaTyCode firstCode secondCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOeqFunext, _⟩ :=
+    RawStep.parStar.oeqFunext_inv sourceToJoin
+  obtain ⟨_, _, joinEqSigmaTyCode, _, _⟩ :=
+    RawStep.parStar.sigmaTyCode_inv targetToJoin
+  nomatch joinEqOeqFunext.symm.trans joinEqSigmaTyCode
+
+/-- An `oeqFunext`-headed source and a `subsume`-headed target are not
+convertible. -/
+theorem Conv.oeqFunext_ne_subsume
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {pointwiseEquality : RawTerm scope}
+    {innerTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqFunext pointwiseEquality : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.subsume innerTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOeqFunext, _⟩ :=
+    RawStep.parStar.oeqFunext_inv sourceToJoin
+  obtain ⟨_, joinEqSubsume, _⟩ :=
+    RawStep.parStar.subsume_inv targetToJoin
+  nomatch joinEqOeqFunext.symm.trans joinEqSubsume
+
+/-- An `oeqFunext`-headed source and a `sumCode`-headed target are not
+convertible. -/
+theorem Conv.oeqFunext_ne_sumCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {pointwiseEquality : RawTerm scope}
+    {leftCodeSum rightCodeSum : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqFunext pointwiseEquality : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sumCode leftCodeSum rightCodeSum : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOeqFunext, _⟩ :=
+    RawStep.parStar.oeqFunext_inv sourceToJoin
+  obtain ⟨_, _, joinEqSumCode, _, _⟩ :=
+    RawStep.parStar.sumCode_inv targetToJoin
+  nomatch joinEqOeqFunext.symm.trans joinEqSumCode
+
+/-- An `oeqFunext`-headed source and a `transpFill`-headed target are
+not convertible.  Ternary target, 7-tuple inversion. -/
+theorem Conv.oeqFunext_ne_transpFill
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {pointwiseEquality : RawTerm scope}
+    {pathTerm intervalTerm sourceRawTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqFunext pointwiseEquality : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.transpFill pathTerm intervalTerm sourceRawTerm :
+        RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOeqFunext, _⟩ :=
+    RawStep.parStar.oeqFunext_inv sourceToJoin
+  obtain ⟨_, _, _, joinEqTranspFill, _, _, _⟩ :=
+    RawStep.parStar.transpFill_inv targetToJoin
+  nomatch joinEqOeqFunext.symm.trans joinEqTranspFill
+
+/-- An `oeqFunext`-headed source and a `uaToEquiv`-headed target are
+not convertible. -/
+theorem Conv.oeqFunext_ne_uaToEquiv
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {pointwiseEquality : RawTerm scope}
+    {proofTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqFunext pointwiseEquality : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.uaToEquiv proofTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOeqFunext, _⟩ :=
+    RawStep.parStar.oeqFunext_inv sourceToJoin
+  obtain ⟨_, joinEqUaToEquiv, _⟩ :=
+    RawStep.parStar.uaToEquiv_inv targetToJoin
+  nomatch joinEqOeqFunext.symm.trans joinEqUaToEquiv
+
+/-- An `oeqFunext`-headed source and a `universeCode`-headed target
+are not convertible.  Nullary target, direct equality inversion;
+closes the `oeqFunext` source row. -/
+theorem Conv.oeqFunext_ne_universeCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {pointwiseEquality : RawTerm scope}
+    {innerLevel : Nat}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqFunext pointwiseEquality : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.universeCode innerLevel : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOeqFunext, _⟩ :=
+    RawStep.parStar.oeqFunext_inv sourceToJoin
+  have joinEqUniv : joinRaw = RawTerm.universeCode innerLevel :=
+    RawStep.parStar.universeCode_inv targetToJoin
+  nomatch joinEqOeqFunext.symm.trans joinEqUniv
+
 /-! ### `cumulUpMarker` row — universe-cumulativity marker
 
 The `cumulUpMarker` head wraps an inner code (typically a type
