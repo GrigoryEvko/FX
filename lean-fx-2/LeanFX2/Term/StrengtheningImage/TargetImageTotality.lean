@@ -1445,6 +1445,183 @@ theorem partialStrengthenTyped?_isSome_target_cumulUp
   next _ _ =>
       rfl
 
+/-! ## Equivalence- and funext-reflexivity family
+
+Five ctors construct reflexivity witnesses for equivalence and
+funext types.  None take operand `Term`s — only attribute params
+(Ty + RawTerm), so wrappers are closed-atomic-with-sides shape.
+
+* `equivReflId` — single Ty-side (`carrier`).  Single-split.
+* `equivReflIdAtId` — Ty-side + Raw-side + 2 attributes.  Double-split.
+* `funextRefl` — 2 Ty-sides + 1 lifted-Raw-side.  Triple-split.
+* `funextReflAtId` — same shape as funextRefl.
+* `idStrictRefl` — mode hypothesis + Ty-side + Raw-side.
+  Double-split (mode forwarded as ctor parameter). -/
+/-- Target-direction totality at `Term.equivReflId`. -/
+theorem partialStrengthenTyped?_isSome_target_equivReflId
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (carrier : Ty level sourceScope)
+    (carrierStrengthens :
+      (carrier.partialStrengthen? strengthening.back).isSome = true) :
+    (partialStrengthenTyped?
+        (Term.equivReflId (context := sourceCtx) carrier)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noCarrier =>
+      rw [noCarrier] at carrierStrengthens
+      cases carrierStrengthens
+  next _ _ =>
+      rfl
+
+/-- Target-direction totality at `Term.equivReflIdAtId`. -/
+theorem partialStrengthenTyped?_isSome_target_equivReflIdAtId
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    (carrier : Ty level sourceScope)
+    (carrierRaw : RawTerm sourceScope)
+    (carrierStrengthens :
+      (carrier.partialStrengthen? strengthening.back).isSome = true)
+    (carrierRawStrengthens :
+      (carrierRaw.partialStrengthen? strengthening.back).isSome = true) :
+    (partialStrengthenTyped?
+        (Term.equivReflIdAtId (context := sourceCtx)
+          innerLevel innerLevelLt carrier carrierRaw)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noCarrier =>
+      rw [noCarrier] at carrierStrengthens
+      cases carrierStrengthens
+  next _ _ =>
+      split
+      next noCarrierRaw =>
+          rw [noCarrierRaw] at carrierRawStrengthens
+          cases carrierRawStrengthens
+      next _ _ =>
+          rfl
+
+/-- Target-direction totality at `Term.funextRefl`.
+
+The dispatcher arm checks `applyRaw.partialStrengthen?
+strengthening.back.lift` — `applyRaw` lives at `scope + 1` under
+the function-body binder, so the lifted strengthening applies. -/
+theorem partialStrengthenTyped?_isSome_target_funextRefl
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (domainType codomainType : Ty level sourceScope)
+    (applyRaw : RawTerm (sourceScope + 1))
+    (domainStrengthens :
+      (domainType.partialStrengthen? strengthening.back).isSome = true)
+    (codomainStrengthens :
+      (codomainType.partialStrengthen? strengthening.back).isSome = true)
+    (applyStrengthens :
+      (applyRaw.partialStrengthen? strengthening.back.lift).isSome
+        = true) :
+    (partialStrengthenTyped?
+        (Term.funextRefl (context := sourceCtx)
+          domainType codomainType applyRaw)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noDomain =>
+      rw [noDomain] at domainStrengthens
+      cases domainStrengthens
+  next _ _ =>
+      split
+      next noCodomain =>
+          rw [noCodomain] at codomainStrengthens
+          cases codomainStrengthens
+      next _ _ =>
+          split
+          next noApply =>
+              rw [noApply] at applyStrengthens
+              cases applyStrengthens
+          next _ _ =>
+              rfl
+
+/-- Target-direction totality at `Term.funextReflAtId`.  Same
+shape as `funextRefl` — only the target type differs. -/
+theorem partialStrengthenTyped?_isSome_target_funextReflAtId
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (domainType codomainType : Ty level sourceScope)
+    (applyRaw : RawTerm (sourceScope + 1))
+    (domainStrengthens :
+      (domainType.partialStrengthen? strengthening.back).isSome = true)
+    (codomainStrengthens :
+      (codomainType.partialStrengthen? strengthening.back).isSome = true)
+    (applyStrengthens :
+      (applyRaw.partialStrengthen? strengthening.back.lift).isSome
+        = true) :
+    (partialStrengthenTyped?
+        (Term.funextReflAtId (context := sourceCtx)
+          domainType codomainType applyRaw)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noDomain =>
+      rw [noDomain] at domainStrengthens
+      cases domainStrengthens
+  next _ _ =>
+      split
+      next noCodomain =>
+          rw [noCodomain] at codomainStrengthens
+          cases codomainStrengthens
+      next _ _ =>
+          split
+          next noApply =>
+              rw [noApply] at applyStrengthens
+              cases applyStrengthens
+          next _ _ =>
+              rfl
+
+/-- Target-direction totality at `Term.idStrictRefl`. -/
+theorem partialStrengthenTyped?_isSome_target_idStrictRefl
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (modeIsStrict : mode = Mode.strict)
+    (carrier : Ty level sourceScope)
+    (rawWitness : RawTerm sourceScope)
+    (carrierStrengthens :
+      (carrier.partialStrengthen? strengthening.back).isSome = true)
+    (witnessStrengthens :
+      (rawWitness.partialStrengthen? strengthening.back).isSome = true) :
+    (partialStrengthenTyped?
+        (Term.idStrictRefl (context := sourceCtx)
+          modeIsStrict carrier rawWitness)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noCarrier =>
+      rw [noCarrier] at carrierStrengthens
+      cases carrierStrengthens
+  next _ _ =>
+      split
+      next noWitness =>
+          rw [noWitness] at witnessStrengthens
+          cases witnessStrengthens
+      next _ _ =>
+          rfl
+
 end Term
 
 end LeanFX2
