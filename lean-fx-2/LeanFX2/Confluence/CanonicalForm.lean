@@ -8530,6 +8530,195 @@ theorem Conv.idCode_ne_refl
     RawStep.parStar.refl_inv targetToJoin
   nomatch joinEqId.symm.trans joinEqRefl
 
+/-! ## idCode row of canonical-head disjointness matrix
+
+`RawTerm.idCode typeCode leftCode rightCode` is the HOTT identity-
+type code — the ternary type-code carrying the underlying type
+plus both endpoint codes.  Extending the matrix into the identity-
+type-code fragment is the next alphabetical compound source row
+after `glueIntro`.
+
+Ternary source destructure (7-binder shape):
+  `obtain ⟨_, _, _, joinEqId, _, _, _⟩ :=
+     RawStep.parStar.idCode_inv sourceToJoin` -/
+
+/-- An `idCode`-headed source and an `idStrictRefl`-headed target
+are not convertible.  Identity-type CODE versus strict-identity
+proof — the type-code stratum versus the proof-witness stratum
+of identity equality, distinct canonical heads at the raw level. -/
+theorem Conv.idCode_ne_idStrictRefl
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {typeCode leftCode rightCode : RawTerm scope}
+    {witnessTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.idCode typeCode leftCode rightCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.idStrictRefl witnessTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, _, joinEqId, _, _, _⟩ :=
+    RawStep.parStar.idCode_inv sourceToJoin
+  obtain ⟨_, joinEqIdStrict, _⟩ :=
+    RawStep.parStar.idStrictRefl_inv targetToJoin
+  nomatch joinEqId.symm.trans joinEqIdStrict
+
+/-- An `idCode`-headed source and an `intervalJoin`-headed target
+are not convertible.  Identity-type code versus cubical interval
+maximum — distinct canonical heads at the raw level. -/
+theorem Conv.idCode_ne_intervalJoin
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {typeCode leftCode rightCode : RawTerm scope}
+    {leftInterval rightInterval : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.idCode typeCode leftCode rightCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.intervalJoin leftInterval rightInterval : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, _, joinEqId, _, _, _⟩ :=
+    RawStep.parStar.idCode_inv sourceToJoin
+  obtain ⟨_, _, joinEqJoin, _, _⟩ :=
+    RawStep.parStar.intervalJoin_inv targetToJoin
+  nomatch joinEqId.symm.trans joinEqJoin
+
+/-- An `idCode`-headed source and an `intervalMeet`-headed target
+are not convertible.  Identity-type code versus cubical interval
+minimum — distinct canonical heads at the raw level. -/
+theorem Conv.idCode_ne_intervalMeet
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {typeCode leftCode rightCode : RawTerm scope}
+    {leftInterval rightInterval : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.idCode typeCode leftCode rightCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.intervalMeet leftInterval rightInterval : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, _, joinEqId, _, _, _⟩ :=
+    RawStep.parStar.idCode_inv sourceToJoin
+  obtain ⟨_, _, joinEqMeet, _, _⟩ :=
+    RawStep.parStar.intervalMeet_inv targetToJoin
+  nomatch joinEqId.symm.trans joinEqMeet
+
+/-- An `idCode`-headed source and an `intervalOpp`-headed target
+are not convertible.  Identity-type code versus cubical interval
+inversion — distinct canonical heads at the raw level. -/
+theorem Conv.idCode_ne_intervalOpp
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {typeCode leftCode rightCode : RawTerm scope}
+    {intervalTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.idCode typeCode leftCode rightCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.intervalOpp intervalTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, _, joinEqId, _, _, _⟩ :=
+    RawStep.parStar.idCode_inv sourceToJoin
+  obtain ⟨_, joinEqOpp, _⟩ :=
+    RawStep.parStar.intervalOpp_inv targetToJoin
+  nomatch joinEqId.symm.trans joinEqOpp
+
+/-- An `idCode`-headed source and a `listCode`-headed target are
+not convertible.  Identity-type code versus list-type code —
+distinct type-former codes at the raw level. -/
+theorem Conv.idCode_ne_listCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {typeCode leftCode rightCode : RawTerm scope}
+    {elementCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.idCode typeCode leftCode rightCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.listCode elementCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, _, joinEqId, _, _, _⟩ :=
+    RawStep.parStar.idCode_inv sourceToJoin
+  obtain ⟨_, joinEqListCode, _⟩ :=
+    RawStep.parStar.listCode_inv targetToJoin
+  nomatch joinEqId.symm.trans joinEqListCode
+
+/-- An `idCode`-headed source and a `modIntro`-headed target are
+not convertible.  Identity-type code versus modal introduction —
+distinct canonical heads at the raw level. -/
+theorem Conv.idCode_ne_modIntro
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {typeCode leftCode rightCode : RawTerm scope}
+    {innerTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.idCode typeCode leftCode rightCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.modIntro innerTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, _, joinEqId, _, _, _⟩ :=
+    RawStep.parStar.idCode_inv sourceToJoin
+  obtain ⟨_, joinEqMod, _⟩ :=
+    RawStep.parStar.modIntro_inv targetToJoin
+  nomatch joinEqId.symm.trans joinEqMod
+
+/-- An `idCode`-headed source and an `oeqFunext`-headed target are
+not convertible.  Identity-type code versus observational-equality
+function-extensionality witness — distinct canonical heads. -/
+theorem Conv.idCode_ne_oeqFunext
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {typeCode leftCode rightCode : RawTerm scope}
+    {pointwiseEquality : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.idCode typeCode leftCode rightCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.oeqFunext pointwiseEquality : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, _, joinEqId, _, _, _⟩ :=
+    RawStep.parStar.idCode_inv sourceToJoin
+  obtain ⟨_, joinEqFunext, _⟩ :=
+    RawStep.parStar.oeqFunext_inv targetToJoin
+  nomatch joinEqId.symm.trans joinEqFunext
+
+/-- An `idCode`-headed source and an `oeqJ`-headed target are not
+convertible.  Identity-type code (HOTT identity) versus observational-
+equality eliminator J — distinct canonical heads. -/
+theorem Conv.idCode_ne_oeqJ
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {typeCode leftCode rightCode : RawTerm scope}
+    {baseCase witness : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.idCode typeCode leftCode rightCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.oeqJ baseCase witness : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, _, joinEqId, _, _, _⟩ :=
+    RawStep.parStar.idCode_inv sourceToJoin
+  obtain ⟨_, _, joinEqOeqJ, _, _⟩ :=
+    RawStep.parStar.oeqJ_inv targetToJoin
+  nomatch joinEqId.symm.trans joinEqOeqJ
+
 /-! ## glueIntro row of canonical-head disjointness matrix
 
 `RawTerm.glueIntro baseValue partialValue` is the cubical `Glue`

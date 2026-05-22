@@ -453,6 +453,14 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.idCode_ne_listCons
 #assert_no_axioms LeanFX2.Conv.idCode_ne_pair
 #assert_no_axioms LeanFX2.Conv.idCode_ne_refl
+#assert_no_axioms LeanFX2.Conv.idCode_ne_idStrictRefl
+#assert_no_axioms LeanFX2.Conv.idCode_ne_intervalJoin
+#assert_no_axioms LeanFX2.Conv.idCode_ne_intervalMeet
+#assert_no_axioms LeanFX2.Conv.idCode_ne_intervalOpp
+#assert_no_axioms LeanFX2.Conv.idCode_ne_listCode
+#assert_no_axioms LeanFX2.Conv.idCode_ne_modIntro
+#assert_no_axioms LeanFX2.Conv.idCode_ne_oeqFunext
+#assert_no_axioms LeanFX2.Conv.idCode_ne_oeqJ
 #assert_no_axioms LeanFX2.Conv.glueIntro_ne_unit
 #assert_no_axioms LeanFX2.Conv.glueIntro_ne_boolTrue
 #assert_no_axioms LeanFX2.Conv.glueIntro_ne_boolFalse
