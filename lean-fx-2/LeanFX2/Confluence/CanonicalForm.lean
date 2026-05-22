@@ -10719,6 +10719,140 @@ theorem Conv.pathCompose_ne_sessionSend
     RawStep.parStar.sessionSend_inv targetToJoin
   nomatch joinEqPathCompose.symm.trans joinEqSessionSend
 
+/-- A `pathCompose`-headed source and a `sigmaTyCode`-headed target
+are not convertible.  Cubical path composition versus Σ-type code
+(binder-shape codomain). -/
+theorem Conv.pathCompose_ne_sigmaTyCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {leftPath rightPath : RawTerm scope}
+    {firstCode : RawTerm scope}
+    {secondCode : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType
+      (RawTerm.pathCompose leftPath rightPath : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sigmaTyCode firstCode secondCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPathCompose, _, _⟩ :=
+    RawStep.parStar.pathCompose_inv sourceToJoin
+  obtain ⟨_, _, joinEqSigmaTyCode, _, _⟩ :=
+    RawStep.parStar.sigmaTyCode_inv targetToJoin
+  nomatch joinEqPathCompose.symm.trans joinEqSigmaTyCode
+
+/-- A `pathCompose`-headed source and a `subsume`-headed target are
+not convertible.  Cubical path composition versus modal subsumption. -/
+theorem Conv.pathCompose_ne_subsume
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {leftPath rightPath : RawTerm scope}
+    {innerTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.pathCompose leftPath rightPath : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.subsume innerTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPathCompose, _, _⟩ :=
+    RawStep.parStar.pathCompose_inv sourceToJoin
+  obtain ⟨_, joinEqSubsume, _⟩ :=
+    RawStep.parStar.subsume_inv targetToJoin
+  nomatch joinEqPathCompose.symm.trans joinEqSubsume
+
+/-- A `pathCompose`-headed source and a `sumCode`-headed target are
+not convertible.  Cubical path composition versus sum-type code. -/
+theorem Conv.pathCompose_ne_sumCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {leftPath rightPath : RawTerm scope}
+    {leftCodeSum rightCodeSum : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.pathCompose leftPath rightPath : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sumCode leftCodeSum rightCodeSum : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPathCompose, _, _⟩ :=
+    RawStep.parStar.pathCompose_inv sourceToJoin
+  obtain ⟨_, _, joinEqSumCode, _, _⟩ :=
+    RawStep.parStar.sumCode_inv targetToJoin
+  nomatch joinEqPathCompose.symm.trans joinEqSumCode
+
+/-- A `pathCompose`-headed source and a `transpFill`-headed target
+are not convertible.  Cubical path composition versus cubical
+transport-fill — same-stratum cubical disjointness; ternary target,
+7-tuple inversion. -/
+theorem Conv.pathCompose_ne_transpFill
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {leftPath rightPath : RawTerm scope}
+    {pathTerm intervalTerm sourceRawTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.pathCompose leftPath rightPath : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.transpFill pathTerm intervalTerm sourceRawTerm :
+        RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPathCompose, _, _⟩ :=
+    RawStep.parStar.pathCompose_inv sourceToJoin
+  obtain ⟨_, _, _, joinEqTranspFill, _, _, _⟩ :=
+    RawStep.parStar.transpFill_inv targetToJoin
+  nomatch joinEqPathCompose.symm.trans joinEqTranspFill
+
+/-- A `pathCompose`-headed source and a `uaToEquiv`-headed target
+are not convertible.  Cubical path composition versus univalence-
+to-equivalence converter. -/
+theorem Conv.pathCompose_ne_uaToEquiv
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {leftPath rightPath : RawTerm scope}
+    {proofTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.pathCompose leftPath rightPath : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.uaToEquiv proofTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPathCompose, _, _⟩ :=
+    RawStep.parStar.pathCompose_inv sourceToJoin
+  obtain ⟨_, joinEqUaToEquiv, _⟩ :=
+    RawStep.parStar.uaToEquiv_inv targetToJoin
+  nomatch joinEqPathCompose.symm.trans joinEqUaToEquiv
+
+/-- A `pathCompose`-headed source and a `universeCode`-headed target
+are not convertible.  Cubical path composition versus universe-type
+code — nullary target via direct equality inversion; closes the
+`pathCompose` source row. -/
+theorem Conv.pathCompose_ne_universeCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {leftPath rightPath : RawTerm scope}
+    {innerLevel : Nat}
+    {sourceTerm : Term context sourceType
+      (RawTerm.pathCompose leftPath rightPath : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.universeCode innerLevel : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPathCompose, _, _⟩ :=
+    RawStep.parStar.pathCompose_inv sourceToJoin
+  have joinEqUniv : joinRaw = RawTerm.universeCode innerLevel :=
+    RawStep.parStar.universeCode_inv targetToJoin
+  nomatch joinEqPathCompose.symm.trans joinEqUniv
+
 /-! ## oeqTrans row of canonical-head disjointness matrix
 
 `RawTerm.oeqTrans firstProof secondProof` is the HoTT observational-
