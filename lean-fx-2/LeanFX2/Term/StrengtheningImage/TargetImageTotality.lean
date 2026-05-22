@@ -896,6 +896,89 @@ theorem partialStrengthenTyped?_isSome_target_snd
           next _ _ =>
               rfl
 
+/-! ## Eliminator projections: recordProj, refineElim
+
+`Term.recordProj recordValue` projects the single field of a
+record value, returning at `singleFieldType`.  `Term.refineElim
+refinedValue` extracts the base value from a refinement.  Both
+take pre-destructured subterm inputs (same shape as fst/snd) —
+the subterm's raw form is existential at the output's index.
+
+recordProj double-splits: singleFieldType strengthening (back)
++ recordValue IH.  refineElim triple-splits: baseType (back) +
+predicate (back.lift, binder-side) + refinedValue IH. -/
+/-- Target-direction totality at `Term.recordProj`. -/
+theorem partialStrengthenTyped?_isSome_target_recordProj
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {singleFieldType : Ty level sourceScope}
+    {recordRaw : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (recordValue :
+      Term sourceCtx (Ty.record singleFieldType) recordRaw)
+    (fieldStrengthens :
+      (singleFieldType.partialStrengthen? strengthening.back).isSome
+        = true)
+    (recordIH :
+      (partialStrengthenTyped? recordValue strengthening).isSome
+        = true) :
+    (partialStrengthenTyped? (Term.recordProj recordValue)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noField =>
+      rw [noField] at fieldStrengthens
+      cases fieldStrengthens
+  next _ _ =>
+      split
+      next noRecord =>
+          rw [noRecord] at recordIH
+          cases recordIH
+      next _ _ =>
+          rfl
+
+/-- Target-direction totality at `Term.refineElim`. -/
+theorem partialStrengthenTyped?_isSome_target_refineElim
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {baseType : Ty level sourceScope}
+    {predicate : RawTerm (sourceScope + 1)}
+    {refinedRaw : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (refinedValue :
+      Term sourceCtx (Ty.refine baseType predicate) refinedRaw)
+    (baseStrengthens :
+      (baseType.partialStrengthen? strengthening.back).isSome = true)
+    (predicateLiftedStrengthens :
+      (predicate.partialStrengthen? strengthening.back.lift).isSome
+        = true)
+    (refinedIH :
+      (partialStrengthenTyped? refinedValue strengthening).isSome
+        = true) :
+    (partialStrengthenTyped? (Term.refineElim refinedValue)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noBase =>
+      rw [noBase] at baseStrengthens
+      cases baseStrengthens
+  next _ _ =>
+      split
+      next noPredicate =>
+          rw [noPredicate] at predicateLiftedStrengthens
+          cases predicateLiftedStrengthens
+      next _ _ =>
+          split
+          next noRefined =>
+              rw [noRefined] at refinedIH
+              cases refinedIH
+          next _ _ =>
+              rfl
+
 end Term
 
 end LeanFX2
