@@ -156,6 +156,7 @@ def StepLabel.fromIndex? : Nat → Option StepLabel
   | 108 => some StepLabel.eqTypeHet
   | 109 => some StepLabel.eqArrowHet
   | 110 => some StepLabel.betaFunextReflApp
+  | 111 => some StepLabel.transpReflBetaDeep
   | _ => none
 
 /-- Extract the `StepLabel` encoded in a dim-1 polygraph cell at

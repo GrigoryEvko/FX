@@ -57,13 +57,15 @@ namespace LeanFX2.Tools
 -- reviewer-facing log `Smoke/AuditPhase12A2D254.lean` only — this
 -- block (D3.6-S2 verification, #1683) brings the cascade up to the
 -- canonical strict-harness audit-gate standard alongside D3.6-S1
--- `uaBeta` above.  The deep raw-only ctor `transpReflBetaDeep` is
--- documented raw-only via `isDocumentedRawOnlyParity` (no typed
--- mirror — see Section C of `Tools/StrictHarness/Common.lean`).
+-- `uaBeta` above.  The deep ctor `transpReflBetaDeep` now ships a
+-- typed mirror (homogeneous-only at `sourceType = sourceType`,
+-- heterogeneous-endpoint debt tracked in ROADMAP.md); parity
+-- exception was removed in commit 5350183f.
 #assert_no_axioms LeanFX2.RawStep.par.transpReflBeta
 #assert_no_axioms LeanFX2.RawStep.par.transpReflBetaDeep
 #assert_no_axioms LeanFX2.Step.transpReflBeta
 #assert_no_axioms LeanFX2.Step.par.transpReflBeta
+#assert_no_axioms LeanFX2.Step.par.transpReflBetaDeep
 -- Step.par exact-name congruence aliases.  These do not add reduction
 -- behavior; they expose legacy congruence constructors under the
 -- `Step.par.<TermCtor>Cong` names used by the strict dashboard.

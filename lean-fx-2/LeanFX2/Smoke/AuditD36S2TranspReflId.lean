@@ -87,10 +87,14 @@ namespace LeanFX2
 
 -- ============================
 -- Section B: D2.5.4 typed + par mirror
+-- (transpReflBetaDeep typed mirror added in unblock-E.transp.Cascade /
+-- commit 5350183f — homogeneous-only at `sourceType = sourceType`,
+-- heterogeneous-endpoint debt tracked in ROADMAP.md)
 -- ============================
 
 #print axioms Step.transpReflBeta
 #print axioms Step.par.transpReflBeta
+#print axioms Step.par.transpReflBetaDeep
 
 -- ============================
 -- Section C: D2.5.8 betaPathReflApp cascade — raw + typed + par mirror
