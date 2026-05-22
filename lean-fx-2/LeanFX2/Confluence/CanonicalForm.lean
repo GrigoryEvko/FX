@@ -11818,4 +11818,174 @@ theorem Conv.subsume_ne_refl
     RawStep.parStar.refl_inv targetToJoin
   nomatch joinEqSubsume.symm.trans joinEqRefl
 
+/-- An `oeqJ`-headed source and a `unit`-headed target are not
+convertible.  Disjoint canonical heads at the raw level: the
+observational-equality J recursor is a HoTT-stratum elimination
+form, whereas `unit` is the canonical inhabitant of the unit
+type — neither can postnormalize to the other. -/
+theorem Conv.oeqJ_ne_unit
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {baseCase witness : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqJ baseCase witness : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.unit : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqOeqJ, _, _⟩ :=
+    RawStep.parStar.oeqJ_inv sourceToJoin
+  have joinEqUnit : joinRaw = RawTerm.unit :=
+    RawStep.parStar.unit_inv targetToJoin
+  nomatch joinEqOeqJ.symm.trans joinEqUnit
+
+/-- An `oeqJ`-headed source and a `boolTrue`-headed target are
+not convertible.  Symmetric to the `unit` companion: the
+observational-equality J recursor and the Bool true value have
+syntactically disjoint canonical heads at the raw level. -/
+theorem Conv.oeqJ_ne_boolTrue
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {baseCase witness : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqJ baseCase witness : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.boolTrue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqOeqJ, _, _⟩ :=
+    RawStep.parStar.oeqJ_inv sourceToJoin
+  have joinEqTrue : joinRaw = RawTerm.boolTrue :=
+    RawStep.parStar.boolTrue_inv targetToJoin
+  nomatch joinEqOeqJ.symm.trans joinEqTrue
+
+/-- An `oeqJ`-headed source and a `boolFalse`-headed target are
+not convertible.  Same argument as the `boolTrue` companion,
+just with the opposite boolean canonical form. -/
+theorem Conv.oeqJ_ne_boolFalse
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {baseCase witness : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqJ baseCase witness : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.boolFalse : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqOeqJ, _, _⟩ :=
+    RawStep.parStar.oeqJ_inv sourceToJoin
+  have joinEqFalse : joinRaw = RawTerm.boolFalse :=
+    RawStep.parStar.boolFalse_inv targetToJoin
+  nomatch joinEqOeqJ.symm.trans joinEqFalse
+
+/-- An `oeqJ`-headed source and a `natZero`-headed target are
+not convertible.  HoTT observational-equality J recursor versus
+the Nat zero canonical form — disjoint canonical heads. -/
+theorem Conv.oeqJ_ne_natZero
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {baseCase witness : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqJ baseCase witness : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.natZero : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqOeqJ, _, _⟩ :=
+    RawStep.parStar.oeqJ_inv sourceToJoin
+  have joinEqZero : joinRaw = RawTerm.natZero :=
+    RawStep.parStar.natZero_inv targetToJoin
+  nomatch joinEqOeqJ.symm.trans joinEqZero
+
+/-- An `oeqJ`-headed source and a `listNil`-headed target are
+not convertible.  The HoTT observational-equality J recursor and
+the empty list have distinct canonical heads at the raw level. -/
+theorem Conv.oeqJ_ne_listNil
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {baseCase witness : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqJ baseCase witness : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.listNil : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqOeqJ, _, _⟩ :=
+    RawStep.parStar.oeqJ_inv sourceToJoin
+  have joinEqNil : joinRaw = RawTerm.listNil :=
+    RawStep.parStar.listNil_inv targetToJoin
+  nomatch joinEqOeqJ.symm.trans joinEqNil
+
+/-- An `oeqJ`-headed source and an `optionNone`-headed target
+are not convertible.  HoTT observational-equality J versus the
+empty option — distinct canonical heads at the raw level. -/
+theorem Conv.oeqJ_ne_optionNone
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {baseCase witness : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqJ baseCase witness : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.optionNone : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqOeqJ, _, _⟩ :=
+    RawStep.parStar.oeqJ_inv sourceToJoin
+  have joinEqNone : joinRaw = RawTerm.optionNone :=
+    RawStep.parStar.optionNone_inv targetToJoin
+  nomatch joinEqOeqJ.symm.trans joinEqNone
+
+/-- An `oeqJ`-headed source and an `interval0`-headed target are
+not convertible.  Cross-stratum HoTT-vs-cubical: the HoTT
+observational-equality J recursor lives at the HoTT identity
+stratum, while `interval0` is the cubical interval's zero
+endpoint — they cannot share a canonical reduct. -/
+theorem Conv.oeqJ_ne_interval0
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {baseCase witness : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqJ baseCase witness : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.interval0 : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqOeqJ, _, _⟩ :=
+    RawStep.parStar.oeqJ_inv sourceToJoin
+  have joinEqZero : joinRaw = RawTerm.interval0 :=
+    RawStep.parStar.interval0_inv targetToJoin
+  nomatch joinEqOeqJ.symm.trans joinEqZero
+
+/-- An `oeqJ`-headed source and an `interval1`-headed target are
+not convertible.  Cross-stratum HoTT-vs-cubical: same argument
+as `oeqJ_ne_interval0`. -/
+theorem Conv.oeqJ_ne_interval1
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {baseCase witness : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqJ baseCase witness : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.interval1 : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqOeqJ, _, _⟩ :=
+    RawStep.parStar.oeqJ_inv sourceToJoin
+  have joinEqOne : joinRaw = RawTerm.interval1 :=
+    RawStep.parStar.interval1_inv targetToJoin
+  nomatch joinEqOeqJ.symm.trans joinEqOne
+
 end LeanFX2
