@@ -210,6 +210,17 @@ namespace LeanFX2.Tools
 -- `IsClosedTy` extension — the secondType/raw-endpoint
 -- dependencies do not fit the closed-leaves recursion of
 -- `IsClosedTy`.
+--
+-- Meta-unblocker: `Foundation/IsClosedRawTerm.lean` — a Prop-valued
+-- predicate witnessing var-0-freeness of raw endpoints.  Combined
+-- with per-family SR helpers (one per Ty shape with raw payload),
+-- it unblocks all dispatch.* + leaf.* arms whose blocker is raw
+-- payload preservation under `Step.par`.  See
+-- `Foundation/IsClosedTy.lean:46-58` for the design sketch;
+-- existing `RawTerm.unweaken?` from
+-- `Foundation/RawPartialRename/UnweakenInversion.lean` provides
+-- the Option-form witness equivalent
+-- (`raw.unweaken?.isSome ↔ IsClosedRawTerm raw`).
 #assert_conv_cong_coverage_budget LeanFX2.Term 25
 
 end LeanFX2.Tools
