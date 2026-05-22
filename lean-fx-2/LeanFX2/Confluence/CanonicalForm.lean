@@ -11489,4 +11489,179 @@ theorem Conv.transpFill_ne_refl
     RawStep.parStar.refl_inv targetToJoin
   nomatch joinEqTranspFill.symm.trans joinEqRefl
 
+/-! ### `subsume` row — modal subsumption stratum
+
+The `subsume` head wraps an inner term and lifts it through a
+modal-subtyping coercion (e.g. boxing of a discrete value, or
+implicit upcast across a flat/sharp modality boundary).  Distinct
+from the universe-cumulativity marker (`cumulUpMarker`, which is
+the explicit universe-level shift), `subsume` is the modal-shape
+coercion at the term level.  Unary at the raw level, and the
+non-disjunctive `RawStep.parStar.subsume_inv` lemma at
+`RawParStarCong.lean:2650` confirms the head is preserved through
+every parallel reduction chain.
+
+Eight leaf disjointness lemmas cover the unary `subsume` source
+versus every nullary canonical target. -/
+
+/-- A `subsume`-headed source and a `unit`-headed target are
+not convertible.  Modal subsumption versus the unit value —
+disjoint canonical heads at the raw level. -/
+theorem Conv.subsume_ne_unit
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {innerSubsumed : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.subsume innerSubsumed : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.unit : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqSubsume, _⟩ :=
+    RawStep.parStar.subsume_inv sourceToJoin
+  have joinEqUnit : joinRaw = RawTerm.unit :=
+    RawStep.parStar.unit_inv targetToJoin
+  nomatch joinEqSubsume.symm.trans joinEqUnit
+
+/-- A `subsume`-headed source and a `boolTrue`-headed target are
+not convertible.  Same argument as the `unit` companion. -/
+theorem Conv.subsume_ne_boolTrue
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {innerSubsumed : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.subsume innerSubsumed : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.boolTrue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqSubsume, _⟩ :=
+    RawStep.parStar.subsume_inv sourceToJoin
+  have joinEqTrue : joinRaw = RawTerm.boolTrue :=
+    RawStep.parStar.boolTrue_inv targetToJoin
+  nomatch joinEqSubsume.symm.trans joinEqTrue
+
+/-- A `subsume`-headed source and a `boolFalse`-headed target
+are not convertible.  Symmetric to the `boolTrue` companion. -/
+theorem Conv.subsume_ne_boolFalse
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {innerSubsumed : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.subsume innerSubsumed : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.boolFalse : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqSubsume, _⟩ :=
+    RawStep.parStar.subsume_inv sourceToJoin
+  have joinEqFalse : joinRaw = RawTerm.boolFalse :=
+    RawStep.parStar.boolFalse_inv targetToJoin
+  nomatch joinEqSubsume.symm.trans joinEqFalse
+
+/-- A `subsume`-headed source and a `natZero`-headed target are
+not convertible.  Modal subsumption versus Nat zero — distinct
+canonical heads. -/
+theorem Conv.subsume_ne_natZero
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {innerSubsumed : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.subsume innerSubsumed : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.natZero : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqSubsume, _⟩ :=
+    RawStep.parStar.subsume_inv sourceToJoin
+  have joinEqZero : joinRaw = RawTerm.natZero :=
+    RawStep.parStar.natZero_inv targetToJoin
+  nomatch joinEqSubsume.symm.trans joinEqZero
+
+/-- A `subsume`-headed source and a `listNil`-headed target are
+not convertible.  Modal subsumption versus the empty list —
+distinct canonical heads. -/
+theorem Conv.subsume_ne_listNil
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {innerSubsumed : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.subsume innerSubsumed : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.listNil : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqSubsume, _⟩ :=
+    RawStep.parStar.subsume_inv sourceToJoin
+  have joinEqNil : joinRaw = RawTerm.listNil :=
+    RawStep.parStar.listNil_inv targetToJoin
+  nomatch joinEqSubsume.symm.trans joinEqNil
+
+/-- A `subsume`-headed source and an `optionNone`-headed target
+are not convertible.  Modal subsumption versus the empty option
+— distinct canonical heads. -/
+theorem Conv.subsume_ne_optionNone
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {innerSubsumed : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.subsume innerSubsumed : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.optionNone : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqSubsume, _⟩ :=
+    RawStep.parStar.subsume_inv sourceToJoin
+  have joinEqNone : joinRaw = RawTerm.optionNone :=
+    RawStep.parStar.optionNone_inv targetToJoin
+  nomatch joinEqSubsume.symm.trans joinEqNone
+
+/-- A `subsume`-headed source and an `interval0`-headed target
+are not convertible.  Cross-stratum modal-vs-cubical: distinct
+semantic strata. -/
+theorem Conv.subsume_ne_interval0
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {innerSubsumed : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.subsume innerSubsumed : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.interval0 : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqSubsume, _⟩ :=
+    RawStep.parStar.subsume_inv sourceToJoin
+  have joinEqZero : joinRaw = RawTerm.interval0 :=
+    RawStep.parStar.interval0_inv targetToJoin
+  nomatch joinEqSubsume.symm.trans joinEqZero
+
+/-- A `subsume`-headed source and an `interval1`-headed target
+are not convertible.  Symmetric to the `interval0` companion. -/
+theorem Conv.subsume_ne_interval1
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {innerSubsumed : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.subsume innerSubsumed : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.interval1 : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqSubsume, _⟩ :=
+    RawStep.parStar.subsume_inv sourceToJoin
+  have joinEqOne : joinRaw = RawTerm.interval1 :=
+    RawStep.parStar.interval1_inv targetToJoin
+  nomatch joinEqSubsume.symm.trans joinEqOne
+
 end LeanFX2
