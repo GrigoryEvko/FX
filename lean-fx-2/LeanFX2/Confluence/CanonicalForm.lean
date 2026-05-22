@@ -7221,6 +7221,73 @@ theorem Conv.sumCode_ne_refl
     RawStep.parStar.refl_inv targetToJoin
   nomatch joinEqSum.symm.trans joinEqRefl
 
+/-- A `sumCode`-headed source and a `transpFill`-headed target are not
+convertible.  Disjoint-union type code versus cubical transport filler
+— distinct canonical heads at the raw level. -/
+theorem Conv.sumCode_ne_transpFill
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {pathTerm intervalTerm sourceRawTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.sumCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.transpFill pathTerm intervalTerm sourceRawTerm :
+        RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqSum, _, _⟩ :=
+    RawStep.parStar.sumCode_inv sourceToJoin
+  obtain ⟨_, _, _, joinEqFill, _, _, _⟩ :=
+    RawStep.parStar.transpFill_inv targetToJoin
+  nomatch joinEqSum.symm.trans joinEqFill
+
+/-- A `sumCode`-headed source and a `uaToEquiv`-headed target are not
+convertible.  Disjoint-union type code versus univalence-to-equivalence
+primitive — distinct canonical heads at the raw level. -/
+theorem Conv.sumCode_ne_uaToEquiv
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {proofTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.sumCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.uaToEquiv proofTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqSum, _, _⟩ :=
+    RawStep.parStar.sumCode_inv sourceToJoin
+  obtain ⟨_, joinEqUa, _⟩ :=
+    RawStep.parStar.uaToEquiv_inv targetToJoin
+  nomatch joinEqSum.symm.trans joinEqUa
+
+/-- A `sumCode`-headed source and a `universeCode`-headed target are
+not convertible.  Disjoint-union type code versus universe-level type
+code — distinct canonical heads at the raw level. -/
+theorem Conv.sumCode_ne_universeCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {innerLevel : Nat}
+    {sourceTerm : Term context sourceType
+      (RawTerm.sumCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.universeCode innerLevel : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqSum, _, _⟩ :=
+    RawStep.parStar.sumCode_inv sourceToJoin
+  have joinEqUniv : joinRaw = RawTerm.universeCode innerLevel :=
+    RawStep.parStar.universeCode_inv targetToJoin
+  nomatch joinEqSum.symm.trans joinEqUniv
+
 /-- A `eitherCode`-headed source and a `unit`-headed target are not
 convertible.  Opens the either-type-code row of the canonical-head
 matrix: `eitherCode` is the flat-binary type-code for the tagged
