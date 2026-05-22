@@ -13290,4 +13290,159 @@ theorem Conv.refineIntro_ne_interval1
     RawStep.parStar.interval1_inv targetToJoin
   nomatch joinEqRefineIntro.symm.trans joinEqOne
 
+/-- A `refineIntro`-headed source and a `natSucc`-headed target are
+not convertible.  Refinement introduction versus the Nat successor
+— distinct canonical heads at the raw level. -/
+theorem Conv.refineIntro_ne_natSucc
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {rawValue predicateProof : RawTerm scope}
+    {predecessor : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.refineIntro rawValue predicateProof : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.natSucc predecessor : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqRefineIntro, _, _⟩ :=
+    RawStep.parStar.refineIntro_inv sourceToJoin
+  obtain ⟨_, joinEqSucc, _⟩ :=
+    RawStep.parStar.natSucc_inv targetToJoin
+  nomatch joinEqRefineIntro.symm.trans joinEqSucc
+
+/-- A `refineIntro`-headed source and an `optionSome`-headed target
+are not convertible.  Refinement introduction versus inhabited
+Option — disjoint canonical heads. -/
+theorem Conv.refineIntro_ne_optionSome
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {rawValue predicateProof : RawTerm scope}
+    {valueTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.refineIntro rawValue predicateProof : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.optionSome valueTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqRefineIntro, _, _⟩ :=
+    RawStep.parStar.refineIntro_inv sourceToJoin
+  obtain ⟨_, joinEqSome, _⟩ :=
+    RawStep.parStar.optionSome_inv targetToJoin
+  nomatch joinEqRefineIntro.symm.trans joinEqSome
+
+/-- A `refineIntro`-headed source and an `eitherInl`-headed target
+are not convertible.  Refinement introduction versus the left
+injection of Either — disjoint canonical heads. -/
+theorem Conv.refineIntro_ne_eitherInl
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {rawValue predicateProof : RawTerm scope}
+    {valueTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.refineIntro rawValue predicateProof : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.eitherInl valueTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqRefineIntro, _, _⟩ :=
+    RawStep.parStar.refineIntro_inv sourceToJoin
+  obtain ⟨_, joinEqInl, _⟩ :=
+    RawStep.parStar.eitherInl_inv targetToJoin
+  nomatch joinEqRefineIntro.symm.trans joinEqInl
+
+/-- A `refineIntro`-headed source and an `eitherInr`-headed target
+are not convertible.  Symmetric to the `eitherInl` companion. -/
+theorem Conv.refineIntro_ne_eitherInr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {rawValue predicateProof : RawTerm scope}
+    {valueTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.refineIntro rawValue predicateProof : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.eitherInr valueTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqRefineIntro, _, _⟩ :=
+    RawStep.parStar.refineIntro_inv sourceToJoin
+  obtain ⟨_, joinEqInr, _⟩ :=
+    RawStep.parStar.eitherInr_inv targetToJoin
+  nomatch joinEqRefineIntro.symm.trans joinEqInr
+
+/-- A `refineIntro`-headed source and a `listCons`-headed target
+are not convertible.  Refinement introduction versus the non-empty
+list constructor — disjoint canonical heads at the raw level. -/
+theorem Conv.refineIntro_ne_listCons
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {rawValue predicateProof : RawTerm scope}
+    {headValue tailValue : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.refineIntro rawValue predicateProof : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.listCons headValue tailValue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqRefineIntro, _, _⟩ :=
+    RawStep.parStar.refineIntro_inv sourceToJoin
+  obtain ⟨_, _, joinEqCons, _, _⟩ :=
+    RawStep.parStar.listCons_inv targetToJoin
+  nomatch joinEqRefineIntro.symm.trans joinEqCons
+
+/-- A `refineIntro`-headed source and a `pair`-headed target are
+not convertible.  Refinement introduction versus the Σ-pair
+inhabitant — distinct canonical heads at the raw level. -/
+theorem Conv.refineIntro_ne_pair
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {rawValue predicateProof : RawTerm scope}
+    {firstValue secondValue : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.refineIntro rawValue predicateProof : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.pair firstValue secondValue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqRefineIntro, _, _⟩ :=
+    RawStep.parStar.refineIntro_inv sourceToJoin
+  obtain ⟨_, _, joinEqPair, _, _⟩ :=
+    RawStep.parStar.pair_inv targetToJoin
+  nomatch joinEqRefineIntro.symm.trans joinEqPair
+
+/-- A `refineIntro`-headed source and a `refl`-headed target are
+not convertible.  Cross-stratum refine-vs-HoTT-identity: refinement
+introduction lives at the refinement-type stratum, while `refl` is
+the HoTT identity-type reflexivity introduction — they cannot share
+a canonical raw reduct. -/
+theorem Conv.refineIntro_ne_refl
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {rawValue predicateProof : RawTerm scope}
+    {hottWitness : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.refineIntro rawValue predicateProof : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.refl hottWitness : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqRefineIntro, _, _⟩ :=
+    RawStep.parStar.refineIntro_inv sourceToJoin
+  obtain ⟨_, joinEqRefl, _⟩ :=
+    RawStep.parStar.refl_inv targetToJoin
+  nomatch joinEqRefineIntro.symm.trans joinEqRefl
+
 end LeanFX2
