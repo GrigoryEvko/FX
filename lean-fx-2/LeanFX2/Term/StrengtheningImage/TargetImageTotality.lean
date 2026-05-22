@@ -360,6 +360,113 @@ theorem partialStrengthenTyped?_isSome_target_eitherInr
       next _ _ =>
           rfl
 
+/-! ## Binary-recursive ctor: listCons
+
+First binary (two-recursive) ctor in the target-direction cascade.
+`Term.listCons` carries `headTerm` and `tailTerm`.  Dispatcher
+recursively strengthens both with no type-level side condition.
+Two IH hypotheses; two nested `split`s. -/
+/-- Target-direction totality at `Term.listCons`. -/
+theorem partialStrengthenTyped?_isSome_target_listCons
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {elementType : Ty level sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    {headRaw tailRaw : RawTerm sourceScope}
+    (targetTerm :
+      Term sourceCtx (Ty.listType elementType)
+        (RawTerm.listCons headRaw tailRaw))
+    (headIH :
+      ∀ (headTerm : Term sourceCtx elementType headRaw),
+        (partialStrengthenTyped? headTerm strengthening).isSome = true)
+    (tailIH :
+      ∀ (tailTerm :
+            Term sourceCtx (Ty.listType elementType) tailRaw),
+        (partialStrengthenTyped? tailTerm strengthening).isSome = true) :
+    (partialStrengthenTyped? targetTerm strengthening).isSome = true := by
+  obtain ⟨headTerm, tailTerm, heq⟩ := Term.listConsDestruct targetTerm
+  have targetEq : targetTerm = Term.listCons headTerm tailTerm :=
+    eq_of_heq heq
+  subst targetEq
+  have headResult := headIH headTerm
+  have tailResult := tailIH tailTerm
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noHeadSuccess =>
+      rw [noHeadSuccess] at headResult
+      cases headResult
+  next _ _ =>
+      split
+      next noTailSuccess =>
+          rw [noTailSuccess] at tailResult
+          cases tailResult
+      next _ _ =>
+          rfl
+
+/-! ## Binary-recursive ctor with dependent-type side condition: pair
+
+`Term.pair` carries `firstValue : Term sourceCtx firstType firstRaw`
+and `secondValue : Term sourceCtx (secondType.subst0 firstType
+firstRaw) secondRaw`, where `secondType : Ty level (sourceScope + 1)`
+lives under a binder.  The dispatcher's first action is to strengthen
+`secondType` via `strengthening.back.lift` (lifting the partial
+inverse across the binder), then two recursive calls.
+
+This pattern combines the dependent-type side condition (cf. eitherInl)
+with the binary recursion (cf. listCons).  The hypothesis name carries
+`Lifted` to flag that the partial inverse is lifted across the binder. -/
+/-- Target-direction totality at `Term.pair`. -/
+theorem partialStrengthenTyped?_isSome_target_pair
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {firstType : Ty level sourceScope}
+    {secondType : Ty level (sourceScope + 1)}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    {firstRaw secondRaw : RawTerm sourceScope}
+    (targetTerm :
+      Term sourceCtx (Ty.sigmaTy firstType secondType)
+        (RawTerm.pair firstRaw secondRaw))
+    (secondTypeLiftedStrengthens :
+      (secondType.partialStrengthen? strengthening.back.lift).isSome
+        = true)
+    (firstIH :
+      ∀ (firstValue : Term sourceCtx firstType firstRaw),
+        (partialStrengthenTyped? firstValue strengthening).isSome = true)
+    (secondIH :
+      ∀ (secondValue :
+            Term sourceCtx
+              (secondType.subst0 firstType firstRaw) secondRaw),
+        (partialStrengthenTyped? secondValue strengthening).isSome
+          = true) :
+    (partialStrengthenTyped? targetTerm strengthening).isSome = true := by
+  obtain ⟨firstValue, secondValue, heq⟩ := Term.pairDestruct targetTerm
+  have targetEq : targetTerm = Term.pair firstValue secondValue :=
+    eq_of_heq heq
+  subst targetEq
+  have firstResult := firstIH firstValue
+  have secondResult := secondIH secondValue
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noSecondTypeSuccess =>
+      rw [noSecondTypeSuccess] at secondTypeLiftedStrengthens
+      cases secondTypeLiftedStrengthens
+  next _ _ =>
+      split
+      next noFirstSuccess =>
+          rw [noFirstSuccess] at firstResult
+          cases firstResult
+      next _ _ =>
+          split
+          next noSecondSuccess =>
+              rw [noSecondSuccess] at secondResult
+              cases secondResult
+          next _ _ =>
+              rfl
+
 end Term
 
 end LeanFX2
