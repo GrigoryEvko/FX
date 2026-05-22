@@ -527,4 +527,63 @@ theorem Conv.interval1_cong :
     Conv (Term.interval1 (context := context)) (Term.interval1 (context := context)) :=
   Conv.refl _
 
+/-! ## Degenerate cong rules for type-level-only Term ctors
+
+The following Term ctors carry only type-level data (`Ty` indices,
+`RawTerm` schematic payloads, `UniverseLevel` markers, `Fin`
+positions) and have no sub-Term arguments.  From the cong-rule
+perspective they behave exactly like nullary ctors above — there
+is no premise to thread — so each cong rule degenerates to
+`Conv.refl _`.
+
+Covers `Term.{var, refl, universeCode, equivReflId, funextRefl,
+equivReflIdAtId, funextReflAtId}`. -/
+
+theorem Conv.var_cong {position : Fin scope} :
+    Conv (Term.var (context := context) position)
+         (Term.var (context := context) position) :=
+  Conv.refl _
+
+theorem Conv.refl_cong
+    {carrier : Ty level scope} {rawWitness : RawTerm scope} :
+    Conv (Term.refl (context := context) carrier rawWitness)
+         (Term.refl (context := context) carrier rawWitness) :=
+  Conv.refl _
+
+theorem Conv.universeCode_cong
+    {innerLevel outerLevel : UniverseLevel}
+    {cumulOk : innerLevel.toNat ≤ outerLevel.toNat}
+    {levelLe : outerLevel.toNat + 1 ≤ level} :
+    Conv (Term.universeCode (context := context) innerLevel outerLevel cumulOk levelLe)
+         (Term.universeCode (context := context) innerLevel outerLevel cumulOk levelLe) :=
+  Conv.refl _
+
+theorem Conv.equivReflId_cong {carrier : Ty level scope} :
+    Conv (Term.equivReflId (context := context) carrier)
+         (Term.equivReflId (context := context) carrier) :=
+  Conv.refl _
+
+theorem Conv.funextRefl_cong
+    {domainType codomainType : Ty level scope}
+    {applyRaw : RawTerm (scope + 1)} :
+    Conv (Term.funextRefl (context := context) domainType codomainType applyRaw)
+         (Term.funextRefl (context := context) domainType codomainType applyRaw) :=
+  Conv.refl _
+
+theorem Conv.equivReflIdAtId_cong
+    {innerLevel : UniverseLevel}
+    {innerLevelLt : innerLevel.toNat + 1 ≤ level}
+    {carrier : Ty level scope}
+    {carrierRaw : RawTerm scope} :
+    Conv (Term.equivReflIdAtId (context := context) innerLevel innerLevelLt carrier carrierRaw)
+         (Term.equivReflIdAtId (context := context) innerLevel innerLevelLt carrier carrierRaw) :=
+  Conv.refl _
+
+theorem Conv.funextReflAtId_cong
+    {domainType codomainType : Ty level scope}
+    {applyRaw : RawTerm (scope + 1)} :
+    Conv (Term.funextReflAtId (context := context) domainType codomainType applyRaw)
+         (Term.funextReflAtId (context := context) domainType codomainType applyRaw) :=
+  Conv.refl _
+
 end LeanFX2

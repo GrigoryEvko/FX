@@ -46,5 +46,12 @@ namespace LeanFX2.SmokePhase7BConvCanonical
 #print axioms LeanFX2.Conv.optionNone_cong
 #print axioms LeanFX2.Conv.interval0_cong
 #print axioms LeanFX2.Conv.interval1_cong
+#print axioms LeanFX2.Conv.var_cong
+#print axioms LeanFX2.Conv.refl_cong
+#print axioms LeanFX2.Conv.universeCode_cong
+#print axioms LeanFX2.Conv.equivReflId_cong
+#print axioms LeanFX2.Conv.funextRefl_cong
+#print axioms LeanFX2.Conv.equivReflIdAtId_cong
+#print axioms LeanFX2.Conv.funextReflAtId_cong
 
 end LeanFX2.SmokePhase7BConvCanonical

@@ -134,7 +134,14 @@ namespace LeanFX2.Tools
 --     `Reduction/ConvCanonical.lean` "Nullary-ctor degenerate cong
 --     rules" block — these spell out the canonical cong for nullary
 --     ctors so the budget gate's exact-name matcher recognises them.
---   Coverage at 18/78 ctors with `Conv.<ctor>_cong` mirror.
-#assert_conv_cong_coverage_budget LeanFX2.Term 60
+--   2026-05-22 ratchet 60 → 53 after 7 more degenerate cong rules
+--     for type-level-only Term ctors (no sub-Term children, only
+--     `Ty` indices / `RawTerm` payloads / `UniverseLevel` markers /
+--     `Fin` positions): var_cong, refl_cong, universeCode_cong,
+--     equivReflId_cong, funextRefl_cong, equivReflIdAtId_cong,
+--     funextReflAtId_cong.  Same one-liner `Conv.refl _` pattern
+--     as the nullary block — no premise to thread.
+--   Coverage at 25/78 ctors with `Conv.<ctor>_cong` mirror.
+#assert_conv_cong_coverage_budget LeanFX2.Term 53
 
 end LeanFX2.Tools
