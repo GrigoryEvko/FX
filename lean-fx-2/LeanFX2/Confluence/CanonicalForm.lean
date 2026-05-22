@@ -17628,6 +17628,95 @@ theorem Conv.subsume_ne_refl
     RawStep.parStar.refl_inv targetToJoin
   nomatch joinEqSubsume.symm.trans joinEqRefl
 
+/-- A `subsume`-headed source and a `sumCode`-headed target are not
+convertible.  Subsumption coercion versus disjoint-union type code —
+distinct canonical heads at the raw level. -/
+theorem Conv.subsume_ne_sumCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {innerSubsumed : RawTerm scope}
+    {firstSumCode secondSumCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.subsume innerSubsumed : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sumCode firstSumCode secondSumCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqSubsume, _⟩ :=
+    RawStep.parStar.subsume_inv sourceToJoin
+  obtain ⟨_, _, joinEqSum, _, _⟩ :=
+    RawStep.parStar.sumCode_inv targetToJoin
+  nomatch joinEqSubsume.symm.trans joinEqSum
+
+/-- A `subsume`-headed source and a `transpFill`-headed target are not
+convertible.  Subsumption coercion versus cubical transport filler —
+distinct canonical heads at the raw level. -/
+theorem Conv.subsume_ne_transpFill
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {innerSubsumed : RawTerm scope}
+    {pathTerm intervalTerm sourceRawTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.subsume innerSubsumed : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.transpFill pathTerm intervalTerm sourceRawTerm :
+        RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqSubsume, _⟩ :=
+    RawStep.parStar.subsume_inv sourceToJoin
+  obtain ⟨_, _, _, joinEqFill, _, _, _⟩ :=
+    RawStep.parStar.transpFill_inv targetToJoin
+  nomatch joinEqSubsume.symm.trans joinEqFill
+
+/-- A `subsume`-headed source and a `uaToEquiv`-headed target are not
+convertible.  Subsumption coercion versus univalence-to-equivalence
+primitive — distinct canonical heads at the raw level. -/
+theorem Conv.subsume_ne_uaToEquiv
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {innerSubsumed : RawTerm scope}
+    {proofTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.subsume innerSubsumed : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.uaToEquiv proofTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqSubsume, _⟩ :=
+    RawStep.parStar.subsume_inv sourceToJoin
+  obtain ⟨_, joinEqUa, _⟩ :=
+    RawStep.parStar.uaToEquiv_inv targetToJoin
+  nomatch joinEqSubsume.symm.trans joinEqUa
+
+/-- A `subsume`-headed source and a `universeCode`-headed target are
+not convertible.  Subsumption coercion versus universe-level type code
+— distinct canonical heads at the raw level. -/
+theorem Conv.subsume_ne_universeCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {innerSubsumed : RawTerm scope}
+    {innerLevel : Nat}
+    {sourceTerm : Term context sourceType
+      (RawTerm.subsume innerSubsumed : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.universeCode innerLevel : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqSubsume, _⟩ :=
+    RawStep.parStar.subsume_inv sourceToJoin
+  have joinEqUniv : joinRaw = RawTerm.universeCode innerLevel :=
+    RawStep.parStar.universeCode_inv targetToJoin
+  nomatch joinEqSubsume.symm.trans joinEqUniv
+
 /-- An `oeqJ`-headed source and a `unit`-headed target are not
 convertible.  Disjoint canonical heads at the raw level: the
 observational-equality J recursor is a HoTT-stratum elimination

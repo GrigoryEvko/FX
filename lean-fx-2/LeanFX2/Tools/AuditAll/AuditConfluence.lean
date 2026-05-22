@@ -859,6 +859,10 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.subsume_ne_listCons
 #assert_no_axioms LeanFX2.Conv.subsume_ne_pair
 #assert_no_axioms LeanFX2.Conv.subsume_ne_refl
+#assert_no_axioms LeanFX2.Conv.subsume_ne_sumCode
+#assert_no_axioms LeanFX2.Conv.subsume_ne_transpFill
+#assert_no_axioms LeanFX2.Conv.subsume_ne_uaToEquiv
+#assert_no_axioms LeanFX2.Conv.subsume_ne_universeCode
 #assert_no_axioms LeanFX2.Conv.oeqJ_ne_unit
 #assert_no_axioms LeanFX2.Conv.oeqJ_ne_boolTrue
 #assert_no_axioms LeanFX2.Conv.oeqJ_ne_boolFalse
