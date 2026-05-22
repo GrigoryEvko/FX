@@ -189,6 +189,27 @@ namespace LeanFX2.Tools
 --     baseType with modeIsUnivalent + boundaryWitness threaded
 --     through Step.glueIntroBase / Step.glueIntroPartial.
 --   Coverage at 53/78 ctors with `Conv.<ctor>_cong` mirror.
+--
+-- The remaining 25 debt-bearing ctors share a structural barrier:
+-- their input sub-positions live at types NOT in `IsClosedTy`, so
+-- the cong-at-closed-Ty lifter (which relies on
+-- `Step.par.preserves_isClosedTy` to fix target types under
+-- parallel reduction) does not apply directly.  Breakdown:
+--   binders (lam, lamPi, pathLam) — body lives at scope+1
+--   sigmaTy-shaped (pair, fst, snd) — secondType at scope+1
+--   appPi — codomainType.subst0 depends on argument raw
+--   dep-motive eliminators (boolElim, idJ, oeqJ, idStrictRec,
+--     oeqFunext) — result type depends on scrutinee raw
+--   id/glue/transp/path-input ctors (pathApp, glueElim, transp,
+--     hcomp, hcompPath, refineElim, sessionSend, sessionRecv,
+--     effectPerform, equivIntroHet, uaIntroHet, funextIntroHet,
+--     uaToEquiv) — input type carries raw endpoints/payloads.
+-- Future ratchet of this gate requires per-family SR helpers
+-- (`Step.par.preserves_sigmaTy_shape`,
+--  `Step.par.preserves_id_carrier`, etc.) NOT a generic
+-- `IsClosedTy` extension — the secondType/raw-endpoint
+-- dependencies do not fit the closed-leaves recursion of
+-- `IsClosedTy`.
 #assert_conv_cong_coverage_budget LeanFX2.Term 25
 
 end LeanFX2.Tools
