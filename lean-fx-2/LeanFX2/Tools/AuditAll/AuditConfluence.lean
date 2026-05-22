@@ -531,6 +531,15 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.equivCompose_ne_piTyCode
 #assert_no_axioms LeanFX2.Conv.equivCompose_ne_productCode
 #assert_no_axioms LeanFX2.Conv.equivCompose_ne_recordIntro
+#assert_no_axioms LeanFX2.Conv.equivCompose_ne_refineIntro
+#assert_no_axioms LeanFX2.Conv.equivCompose_ne_sessionRecv
+#assert_no_axioms LeanFX2.Conv.equivCompose_ne_sessionSend
+#assert_no_axioms LeanFX2.Conv.equivCompose_ne_sigmaTyCode
+#assert_no_axioms LeanFX2.Conv.equivCompose_ne_subsume
+#assert_no_axioms LeanFX2.Conv.equivCompose_ne_sumCode
+#assert_no_axioms LeanFX2.Conv.equivCompose_ne_transpFill
+#assert_no_axioms LeanFX2.Conv.equivCompose_ne_uaToEquiv
+#assert_no_axioms LeanFX2.Conv.equivCompose_ne_universeCode
 #assert_no_axioms LeanFX2.Conv.intervalOpp_ne_unit
 #assert_no_axioms LeanFX2.Conv.intervalOpp_ne_boolTrue
 #assert_no_axioms LeanFX2.Conv.intervalOpp_ne_boolFalse
