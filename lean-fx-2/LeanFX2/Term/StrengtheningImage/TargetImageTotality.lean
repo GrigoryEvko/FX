@@ -235,6 +235,42 @@ theorem partialStrengthenTyped?_isSome_target_natSucc
   next _ _ =>
       rfl
 
+/-! ## Compound ctor: optionSome
+
+Same single-recursive shape as `natSucc`.  `Term.optionSome` carries
+a `valueTerm : Term sourceCtx elementType valueRaw`.  The dispatcher
+recursively strengthens `valueTerm`; no type-level side condition
+on `elementType` (recovered post-hoc from `valueResult.targetType`).
+Proof mirrors `partialStrengthenTyped?_isSome_target_natSucc` via
+`Term.optionSomeDestruct`. -/
+/-- Target-direction totality at `Term.optionSome`. -/
+theorem partialStrengthenTyped?_isSome_target_optionSome
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {elementType : Ty level sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    {valueRaw : RawTerm sourceScope}
+    (targetTerm :
+      Term sourceCtx (Ty.optionType elementType)
+        (RawTerm.optionSome valueRaw))
+    (valueIH :
+      ∀ (valueTerm : Term sourceCtx elementType valueRaw),
+        (partialStrengthenTyped? valueTerm strengthening).isSome = true) :
+    (partialStrengthenTyped? targetTerm strengthening).isSome = true := by
+  obtain ⟨valueTerm, heq⟩ := Term.optionSomeDestruct targetTerm
+  have targetEq : targetTerm = Term.optionSome valueTerm := eq_of_heq heq
+  subst targetEq
+  have ihResult := valueIH valueTerm
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noValueSuccess =>
+      rw [noValueSuccess] at ihResult
+      cases ihResult
+  next _ _ =>
+      rfl
+
 end Term
 
 end LeanFX2
