@@ -11137,4 +11137,193 @@ theorem Conv.cumulUpMarker_ne_refl
     RawStep.parStar.refl_inv targetToJoin
   nomatch joinEqCumulUp.symm.trans joinEqRefl
 
+/-! ### `transpFill` row — cubical Kan-op filler
+
+The `transpFill` head is the kernel's cubical Kan filler — given
+a path proof, an interval position, and a source value, it
+produces the partial fill of the source along the path at the
+specified interval position.  Ternary at the raw level (three
+sub-witnesses), and the non-disjunctive
+`RawStep.parStar.transpFill_inv` lemma at
+`RawParStarCong.lean:2444` confirms the head is preserved through
+every parallel reduction chain.  The inversion returns three
+witness targets plus three step chains (7-component destructure).
+
+Lives at the cubical Kan-op stratum, distinct from HoTT-equality,
+universe-cumulativity, and the cubical-base layer (interval
+endpoints + lattice operations).  Eight leaf disjointness lemmas
+cover the ternary `transpFill` source versus every nullary
+canonical target. -/
+
+/-- A `transpFill`-headed source and a `unit`-headed target are
+not convertible.  Cubical Kan filler versus the unit value —
+disjoint canonical heads at the raw level. -/
+theorem Conv.transpFill_ne_unit
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {pathTerm intervalTerm sourceRawTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.transpFill pathTerm intervalTerm sourceRawTerm :
+        RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.unit : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, _, joinEqTranspFill, _, _, _⟩ :=
+    RawStep.parStar.transpFill_inv sourceToJoin
+  have joinEqUnit : joinRaw = RawTerm.unit :=
+    RawStep.parStar.unit_inv targetToJoin
+  nomatch joinEqTranspFill.symm.trans joinEqUnit
+
+/-- A `transpFill`-headed source and a `boolTrue`-headed target
+are not convertible.  Same argument as the `unit` companion. -/
+theorem Conv.transpFill_ne_boolTrue
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {pathTerm intervalTerm sourceRawTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.transpFill pathTerm intervalTerm sourceRawTerm :
+        RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.boolTrue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, _, joinEqTranspFill, _, _, _⟩ :=
+    RawStep.parStar.transpFill_inv sourceToJoin
+  have joinEqTrue : joinRaw = RawTerm.boolTrue :=
+    RawStep.parStar.boolTrue_inv targetToJoin
+  nomatch joinEqTranspFill.symm.trans joinEqTrue
+
+/-- A `transpFill`-headed source and a `boolFalse`-headed target
+are not convertible.  Symmetric to the `boolTrue` companion. -/
+theorem Conv.transpFill_ne_boolFalse
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {pathTerm intervalTerm sourceRawTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.transpFill pathTerm intervalTerm sourceRawTerm :
+        RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.boolFalse : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, _, joinEqTranspFill, _, _, _⟩ :=
+    RawStep.parStar.transpFill_inv sourceToJoin
+  have joinEqFalse : joinRaw = RawTerm.boolFalse :=
+    RawStep.parStar.boolFalse_inv targetToJoin
+  nomatch joinEqTranspFill.symm.trans joinEqFalse
+
+/-- A `transpFill`-headed source and a `natZero`-headed target
+are not convertible.  Cubical Kan filler versus Nat zero —
+distinct canonical heads. -/
+theorem Conv.transpFill_ne_natZero
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {pathTerm intervalTerm sourceRawTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.transpFill pathTerm intervalTerm sourceRawTerm :
+        RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.natZero : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, _, joinEqTranspFill, _, _, _⟩ :=
+    RawStep.parStar.transpFill_inv sourceToJoin
+  have joinEqZero : joinRaw = RawTerm.natZero :=
+    RawStep.parStar.natZero_inv targetToJoin
+  nomatch joinEqTranspFill.symm.trans joinEqZero
+
+/-- A `transpFill`-headed source and a `listNil`-headed target
+are not convertible.  Cubical Kan filler versus the empty list
+— distinct canonical heads. -/
+theorem Conv.transpFill_ne_listNil
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {pathTerm intervalTerm sourceRawTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.transpFill pathTerm intervalTerm sourceRawTerm :
+        RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.listNil : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, _, joinEqTranspFill, _, _, _⟩ :=
+    RawStep.parStar.transpFill_inv sourceToJoin
+  have joinEqNil : joinRaw = RawTerm.listNil :=
+    RawStep.parStar.listNil_inv targetToJoin
+  nomatch joinEqTranspFill.symm.trans joinEqNil
+
+/-- A `transpFill`-headed source and an `optionNone`-headed
+target are not convertible.  Cubical Kan filler versus the
+empty option — distinct canonical heads. -/
+theorem Conv.transpFill_ne_optionNone
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {pathTerm intervalTerm sourceRawTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.transpFill pathTerm intervalTerm sourceRawTerm :
+        RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.optionNone : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, _, joinEqTranspFill, _, _, _⟩ :=
+    RawStep.parStar.transpFill_inv sourceToJoin
+  have joinEqNone : joinRaw = RawTerm.optionNone :=
+    RawStep.parStar.optionNone_inv targetToJoin
+  nomatch joinEqTranspFill.symm.trans joinEqNone
+
+/-- A `transpFill`-headed source and an `interval0`-headed
+target are not convertible.  Cubical Kan filler versus the
+cubical interval zero endpoint — even though both inhabit the
+cubical stratum, the Kan-op layer and the interval-base layer
+are syntactically distinguishable at the raw level. -/
+theorem Conv.transpFill_ne_interval0
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {pathTerm intervalTerm sourceRawTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.transpFill pathTerm intervalTerm sourceRawTerm :
+        RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.interval0 : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, _, joinEqTranspFill, _, _, _⟩ :=
+    RawStep.parStar.transpFill_inv sourceToJoin
+  have joinEqZero : joinRaw = RawTerm.interval0 :=
+    RawStep.parStar.interval0_inv targetToJoin
+  nomatch joinEqTranspFill.symm.trans joinEqZero
+
+/-- A `transpFill`-headed source and an `interval1`-headed
+target are not convertible.  Symmetric to the `interval0`
+companion. -/
+theorem Conv.transpFill_ne_interval1
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {pathTerm intervalTerm sourceRawTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.transpFill pathTerm intervalTerm sourceRawTerm :
+        RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.interval1 : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, _, joinEqTranspFill, _, _, _⟩ :=
+    RawStep.parStar.transpFill_inv sourceToJoin
+  have joinEqOne : joinRaw = RawTerm.interval1 :=
+    RawStep.parStar.interval1_inv targetToJoin
+  nomatch joinEqTranspFill.symm.trans joinEqOne
+
 end LeanFX2

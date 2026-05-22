@@ -572,6 +572,14 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.cumulUpMarker_ne_listCons
 #assert_no_axioms LeanFX2.Conv.cumulUpMarker_ne_pair
 #assert_no_axioms LeanFX2.Conv.cumulUpMarker_ne_refl
+#assert_no_axioms LeanFX2.Conv.transpFill_ne_unit
+#assert_no_axioms LeanFX2.Conv.transpFill_ne_boolTrue
+#assert_no_axioms LeanFX2.Conv.transpFill_ne_boolFalse
+#assert_no_axioms LeanFX2.Conv.transpFill_ne_natZero
+#assert_no_axioms LeanFX2.Conv.transpFill_ne_listNil
+#assert_no_axioms LeanFX2.Conv.transpFill_ne_optionNone
+#assert_no_axioms LeanFX2.Conv.transpFill_ne_interval0
+#assert_no_axioms LeanFX2.Conv.transpFill_ne_interval1
 #assert_no_axioms LeanFX2.Conv.transChains_renamed
 #assert_no_axioms LeanFX2.Conv.transChains_weakened
 #assert_no_axioms LeanFX2.Conv.transChains_substituted
