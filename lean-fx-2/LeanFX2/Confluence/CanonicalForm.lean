@@ -10803,4 +10803,180 @@ theorem Conv.oeqFunext_ne_refl
     RawStep.parStar.refl_inv targetToJoin
   nomatch joinEqOeqFunext.symm.trans joinEqRefl
 
+/-! ### `cumulUpMarker` row — universe-cumulativity marker
+
+The `cumulUpMarker` head wraps an inner code (typically a type
+code at universe level `N`) and lifts it to a code at universe
+level `N+1`.  Lives at the universe-cumulativity stratum,
+orthogonal to HoTT, cubical, and modal strata.  Unary at the raw
+level (one inner-code witness), and the non-disjunctive
+`RawStep.parStar.cumulUpMarker_inv` lemma at
+`RawParStarCong.lean:2661` confirms the head is preserved through
+every parallel reduction chain.  Eight leaf disjointness lemmas
+cover the unary `cumulUpMarker` source versus every nullary
+canonical target. -/
+
+/-- A `cumulUpMarker`-headed source and a `unit`-headed target
+are not convertible.  Universe-cumulativity wrapping versus the
+unit value — disjoint canonical heads at the raw level. -/
+theorem Conv.cumulUpMarker_ne_unit
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {innerCodeRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.cumulUpMarker innerCodeRaw : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.unit : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqCumulUp, _⟩ :=
+    RawStep.parStar.cumulUpMarker_inv sourceToJoin
+  have joinEqUnit : joinRaw = RawTerm.unit :=
+    RawStep.parStar.unit_inv targetToJoin
+  nomatch joinEqCumulUp.symm.trans joinEqUnit
+
+/-- A `cumulUpMarker`-headed source and a `boolTrue`-headed
+target are not convertible.  Same argument as the `unit`
+companion: distinct canonical heads at the raw level. -/
+theorem Conv.cumulUpMarker_ne_boolTrue
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {innerCodeRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.cumulUpMarker innerCodeRaw : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.boolTrue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqCumulUp, _⟩ :=
+    RawStep.parStar.cumulUpMarker_inv sourceToJoin
+  have joinEqTrue : joinRaw = RawTerm.boolTrue :=
+    RawStep.parStar.boolTrue_inv targetToJoin
+  nomatch joinEqCumulUp.symm.trans joinEqTrue
+
+/-- A `cumulUpMarker`-headed source and a `boolFalse`-headed
+target are not convertible.  Symmetric to the `boolTrue`
+companion. -/
+theorem Conv.cumulUpMarker_ne_boolFalse
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {innerCodeRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.cumulUpMarker innerCodeRaw : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.boolFalse : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqCumulUp, _⟩ :=
+    RawStep.parStar.cumulUpMarker_inv sourceToJoin
+  have joinEqFalse : joinRaw = RawTerm.boolFalse :=
+    RawStep.parStar.boolFalse_inv targetToJoin
+  nomatch joinEqCumulUp.symm.trans joinEqFalse
+
+/-- A `cumulUpMarker`-headed source and a `natZero`-headed target
+are not convertible.  Universe-cumulativity wrapping versus the
+Nat zero — disjoint canonical heads at the raw level. -/
+theorem Conv.cumulUpMarker_ne_natZero
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {innerCodeRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.cumulUpMarker innerCodeRaw : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.natZero : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqCumulUp, _⟩ :=
+    RawStep.parStar.cumulUpMarker_inv sourceToJoin
+  have joinEqZero : joinRaw = RawTerm.natZero :=
+    RawStep.parStar.natZero_inv targetToJoin
+  nomatch joinEqCumulUp.symm.trans joinEqZero
+
+/-- A `cumulUpMarker`-headed source and a `listNil`-headed target
+are not convertible.  Universe-cumulativity wrapping versus the
+empty list — distinct canonical heads. -/
+theorem Conv.cumulUpMarker_ne_listNil
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {innerCodeRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.cumulUpMarker innerCodeRaw : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.listNil : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqCumulUp, _⟩ :=
+    RawStep.parStar.cumulUpMarker_inv sourceToJoin
+  have joinEqNil : joinRaw = RawTerm.listNil :=
+    RawStep.parStar.listNil_inv targetToJoin
+  nomatch joinEqCumulUp.symm.trans joinEqNil
+
+/-- A `cumulUpMarker`-headed source and an `optionNone`-headed
+target are not convertible.  Universe-cumulativity wrapping
+versus the empty option — distinct canonical heads. -/
+theorem Conv.cumulUpMarker_ne_optionNone
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {innerCodeRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.cumulUpMarker innerCodeRaw : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.optionNone : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqCumulUp, _⟩ :=
+    RawStep.parStar.cumulUpMarker_inv sourceToJoin
+  have joinEqNone : joinRaw = RawTerm.optionNone :=
+    RawStep.parStar.optionNone_inv targetToJoin
+  nomatch joinEqCumulUp.symm.trans joinEqNone
+
+/-- A `cumulUpMarker`-headed source and an `interval0`-headed
+target are not convertible.  Cross-stratum cumulativity-versus-
+cubical: distinct semantic universes. -/
+theorem Conv.cumulUpMarker_ne_interval0
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {innerCodeRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.cumulUpMarker innerCodeRaw : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.interval0 : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqCumulUp, _⟩ :=
+    RawStep.parStar.cumulUpMarker_inv sourceToJoin
+  have joinEqZero : joinRaw = RawTerm.interval0 :=
+    RawStep.parStar.interval0_inv targetToJoin
+  nomatch joinEqCumulUp.symm.trans joinEqZero
+
+/-- A `cumulUpMarker`-headed source and an `interval1`-headed
+target are not convertible.  Symmetric to the `interval0`
+companion. -/
+theorem Conv.cumulUpMarker_ne_interval1
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {innerCodeRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.cumulUpMarker innerCodeRaw : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.interval1 : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqCumulUp, _⟩ :=
+    RawStep.parStar.cumulUpMarker_inv sourceToJoin
+  have joinEqOne : joinRaw = RawTerm.interval1 :=
+    RawStep.parStar.interval1_inv targetToJoin
+  nomatch joinEqCumulUp.symm.trans joinEqOne
+
 end LeanFX2
