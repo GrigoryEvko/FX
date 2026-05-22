@@ -9054,6 +9054,205 @@ theorem Conv.glueIntro_ne_oeqJ
     RawStep.parStar.oeqJ_inv targetToJoin
   nomatch joinEqGlue.symm.trans joinEqOeqJ
 
+/-- A `glueIntro`-headed source and an `oeqRefl`-headed target are not
+convertible.  Cubical glue introduction versus observational-equality
+reflexivity — distinct canonical heads at the raw level. -/
+theorem Conv.glueIntro_ne_oeqRefl
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {baseValue partialValue : RawTerm scope}
+    {witnessTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.glueIntro baseValue partialValue : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.oeqRefl witnessTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqGlue, _, _⟩ :=
+    RawStep.parStar.glueIntro_inv sourceToJoin
+  obtain ⟨_, joinEqOeqRefl, _⟩ :=
+    RawStep.parStar.oeqRefl_inv targetToJoin
+  nomatch joinEqGlue.symm.trans joinEqOeqRefl
+
+/-- A `glueIntro`-headed source and an `oeqTrans`-headed target are not
+convertible.  Cubical glue introduction versus observational-equality
+transitivity — distinct canonical heads at the raw level. -/
+theorem Conv.glueIntro_ne_oeqTrans
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {baseValue partialValue : RawTerm scope}
+    {firstProof secondProof : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.glueIntro baseValue partialValue : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.oeqTrans firstProof secondProof : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqGlue, _, _⟩ :=
+    RawStep.parStar.glueIntro_inv sourceToJoin
+  obtain ⟨_, _, joinEqOeqTrans, _, _⟩ :=
+    RawStep.parStar.oeqTrans_inv targetToJoin
+  nomatch joinEqGlue.symm.trans joinEqOeqTrans
+
+/-- A `glueIntro`-headed source and an `optionCode`-headed target are
+not convertible.  Cubical glue introduction versus option-type code
+— distinct canonical heads at the raw level. -/
+theorem Conv.glueIntro_ne_optionCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {baseValue partialValue : RawTerm scope}
+    {elementCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.glueIntro baseValue partialValue : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.optionCode elementCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqGlue, _, _⟩ :=
+    RawStep.parStar.glueIntro_inv sourceToJoin
+  obtain ⟨_, joinEqOptionCode, _⟩ :=
+    RawStep.parStar.optionCode_inv targetToJoin
+  nomatch joinEqGlue.symm.trans joinEqOptionCode
+
+/-- A `glueIntro`-headed source and a `pathCompose`-headed target are
+not convertible.  Cubical glue introduction versus path composition
+— distinct canonical heads at the raw level. -/
+theorem Conv.glueIntro_ne_pathCompose
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {baseValue partialValue : RawTerm scope}
+    {leftPath rightPath : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.glueIntro baseValue partialValue : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.pathCompose leftPath rightPath : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqGlue, _, _⟩ :=
+    RawStep.parStar.glueIntro_inv sourceToJoin
+  obtain ⟨_, _, joinEqPathCompose, _, _⟩ :=
+    RawStep.parStar.pathCompose_inv targetToJoin
+  nomatch joinEqGlue.symm.trans joinEqPathCompose
+
+/-- A `glueIntro`-headed source and a `piTyCode`-headed target are not
+convertible.  Cubical glue introduction versus Π-type code — distinct
+canonical heads at the raw level. -/
+theorem Conv.glueIntro_ne_piTyCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {baseValue partialValue : RawTerm scope}
+    {domainCode : RawTerm scope}
+    {codomainCode : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType
+      (RawTerm.glueIntro baseValue partialValue : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.piTyCode domainCode codomainCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqGlue, _, _⟩ :=
+    RawStep.parStar.glueIntro_inv sourceToJoin
+  obtain ⟨_, _, joinEqPiTyCode, _, _⟩ :=
+    RawStep.parStar.piTyCode_inv targetToJoin
+  nomatch joinEqGlue.symm.trans joinEqPiTyCode
+
+/-- A `glueIntro`-headed source and a `productCode`-headed target are
+not convertible.  Cubical glue introduction versus product-type code
+— distinct canonical heads at the raw level. -/
+theorem Conv.glueIntro_ne_productCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {baseValue partialValue : RawTerm scope}
+    {firstCode secondCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.glueIntro baseValue partialValue : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.productCode firstCode secondCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqGlue, _, _⟩ :=
+    RawStep.parStar.glueIntro_inv sourceToJoin
+  obtain ⟨_, _, joinEqProductCode, _, _⟩ :=
+    RawStep.parStar.productCode_inv targetToJoin
+  nomatch joinEqGlue.symm.trans joinEqProductCode
+
+/-- A `glueIntro`-headed source and a `recordIntro`-headed target are
+not convertible.  Cubical glue introduction versus record introduction
+— distinct canonical heads at the raw level. -/
+theorem Conv.glueIntro_ne_recordIntro
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {baseValue partialValue : RawTerm scope}
+    {firstField : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.glueIntro baseValue partialValue : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.recordIntro firstField : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqGlue, _, _⟩ :=
+    RawStep.parStar.glueIntro_inv sourceToJoin
+  obtain ⟨_, joinEqRecordIntro, _⟩ :=
+    RawStep.parStar.recordIntro_inv targetToJoin
+  nomatch joinEqGlue.symm.trans joinEqRecordIntro
+
+/-- A `glueIntro`-headed source and a `refineIntro`-headed target are
+not convertible.  Cubical glue introduction versus refinement-type
+introduction — distinct canonical heads at the raw level. -/
+theorem Conv.glueIntro_ne_refineIntro
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {baseValue partialValue : RawTerm scope}
+    {rawValue predicateProof : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.glueIntro baseValue partialValue : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.refineIntro rawValue predicateProof : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqGlue, _, _⟩ :=
+    RawStep.parStar.glueIntro_inv sourceToJoin
+  obtain ⟨_, _, joinEqRefineIntro, _, _⟩ :=
+    RawStep.parStar.refineIntro_inv targetToJoin
+  nomatch joinEqGlue.symm.trans joinEqRefineIntro
+
+/-- A `glueIntro`-headed source and a `sessionRecv`-headed target are
+not convertible.  Cubical glue introduction versus session-receive
+operation — distinct canonical heads at the raw level. -/
+theorem Conv.glueIntro_ne_sessionRecv
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {baseValue partialValue : RawTerm scope}
+    {channel : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.glueIntro baseValue partialValue : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sessionRecv channel : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqGlue, _, _⟩ :=
+    RawStep.parStar.glueIntro_inv sourceToJoin
+  obtain ⟨_, joinEqSessionRecv, _⟩ :=
+    RawStep.parStar.sessionRecv_inv targetToJoin
+  nomatch joinEqGlue.symm.trans joinEqSessionRecv
+
 /-! ## pathCompose row of canonical-head disjointness matrix
 
 `RawTerm.pathCompose leftPath rightPath` is the HoTT-family path
