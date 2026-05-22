@@ -69,5 +69,13 @@ namespace LeanFX2.Smoke.AuditRawIsSomeInversion
 #print axioms LeanFX2.RawTerm.partialRename?_sessionSend_isSome
 #print axioms LeanFX2.RawTerm.partialRename?_effectPerform_isSome
 #print axioms LeanFX2.RawTerm.partialRename?_arrowCode_isSome
+#print axioms LeanFX2.RawTerm.partialRename?_productCode_isSome
+#print axioms LeanFX2.RawTerm.partialRename?_sumCode_isSome
+#print axioms LeanFX2.RawTerm.partialRename?_eitherCode_isSome
+#print axioms LeanFX2.RawTerm.partialRename?_equivCode_isSome
+#print axioms LeanFX2.RawTerm.partialRename?_equivApply_isSome
+#print axioms LeanFX2.RawTerm.partialRename?_pathCompose_isSome
+#print axioms LeanFX2.RawTerm.partialRename?_oeqTrans_isSome
+#print axioms LeanFX2.RawTerm.partialRename?_equivCompose_isSome
 
 end LeanFX2.Smoke.AuditRawIsSomeInversion
