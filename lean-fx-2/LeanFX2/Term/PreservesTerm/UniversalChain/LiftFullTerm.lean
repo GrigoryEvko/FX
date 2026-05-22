@@ -590,5 +590,18 @@ theorem RawStep.par.lift_full_term
     exact RawStep.par.lift_full_fst pairTerm pairLift rawStep
   | snd pairTerm pairLift =>
     exact RawStep.par.lift_full_snd pairTerm pairLift rawStep
+  | refineElim refinedValue refinedLift =>
+    exact RawStep.par.lift_full_refineElim refinedValue refinedLift rawStep
+  | glueElim modeIsUnivalent gluedValue gluedLift =>
+    exact RawStep.par.lift_full_glueElim modeIsUnivalent gluedValue gluedLift
+            rawStep
+  | pathApp modeIsUnivalent pathTerm intervalTerm pathLift intervalLift =>
+    exact RawStep.par.lift_full_pathApp modeIsUnivalent pathTerm intervalTerm
+            pathLift intervalLift rawStep
+  | sessionRecv channel channelLift =>
+    exact RawStep.par.lift_full_sessionRecv channel channelLift rawStep
+  | sessionSend protocolStep channel payload channelLift payloadLift =>
+    exact RawStep.par.lift_full_sessionSend protocolStep channel payload
+            channelLift payloadLift rawStep
 
 end LeanFX2

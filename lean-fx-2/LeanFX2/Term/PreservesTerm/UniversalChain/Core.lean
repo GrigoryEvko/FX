@@ -867,5 +867,100 @@ inductive DispatchAtom :
                     : Term context (secondType.subst0 firstType
                                                        (RawTerm.fst pairRaw))
                         (RawTerm.snd pairRaw))
+  /-- Refinement-type elimination.  Target is the underlying baseType
+  (refineElim strips the proof component).  Consumed by
+  `RawStep.par.lift_full_refineElim`. -/
+  | refineElim {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {baseType : Ty level scope}
+      {predicate : RawTerm (scope + 1)}
+      {refinedRaw : RawTerm scope}
+      (refinedValue : Term context (Ty.refine baseType predicate) refinedRaw)
+      (refinedLift : ∀ {targetRawIH : RawTerm scope},
+        RawStep.par refinedRaw targetRawIH →
+        ∃ refinedTarget :
+            Term context (Ty.refine baseType predicate) targetRawIH,
+          Step.par refinedValue refinedTarget) :
+      DispatchAtom (Term.refineElim refinedValue
+                    : Term context baseType (RawTerm.refineElim refinedRaw))
+  /-- Cubical glue elimination.  Univalent-mode-only.  Target is the
+  underlying baseType.  Consumed by `RawStep.par.lift_full_glueElim`. -/
+  | glueElim {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
+      {baseType : Ty level scope}
+      {boundaryWitness : RawTerm scope}
+      {gluedRaw : RawTerm scope}
+      (gluedValue : Term context (Ty.glue baseType boundaryWitness) gluedRaw)
+      (gluedLift : ∀ {targetRawIH : RawTerm scope},
+        RawStep.par gluedRaw targetRawIH →
+        ∃ gluedTarget :
+            Term context (Ty.glue baseType boundaryWitness) targetRawIH,
+          Step.par gluedValue gluedTarget) :
+      DispatchAtom (Term.glueElim modeIsUnivalent gluedValue
+                    : Term context baseType (RawTerm.glueElim gluedRaw))
+  /-- Cubical path application.  Univalent-mode-only.  Target type is
+  the carrier (cong-arm) or `carrier.weaken.subst0 Ty.interval ...`
+  (β-arm via pathLam); the existential in `lift_full_pathApp` absorbs
+  the type gap.  Consumed by `RawStep.par.lift_full_pathApp`. -/
+  | pathApp {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
+      {carrierType : Ty level scope}
+      {leftEndpoint rightEndpoint : RawTerm scope}
+      {pathRaw intervalRaw : RawTerm scope}
+      (pathTerm :
+        Term context (Ty.path carrierType leftEndpoint rightEndpoint) pathRaw)
+      (intervalTerm : Term context Ty.interval intervalRaw)
+      (pathLift : ∀ {targetRawIH : RawTerm scope},
+        RawStep.par pathRaw targetRawIH →
+        ∃ pathTarget :
+            Term context (Ty.path carrierType leftEndpoint rightEndpoint)
+                         targetRawIH,
+          Step.par pathTerm pathTarget)
+      (intervalLift : ∀ {targetRawIH : RawTerm scope},
+        RawStep.par intervalRaw targetRawIH →
+        ∃ intervalTarget : Term context Ty.interval targetRawIH,
+          Step.par intervalTerm intervalTarget) :
+      DispatchAtom (Term.pathApp modeIsUnivalent pathTerm intervalTerm
+                    : Term context carrierType
+                        (RawTerm.pathApp pathRaw intervalRaw))
+  /-- Session-type receive.  Target stays at `Ty.session protocolStep`.
+  Consumed by `RawStep.par.lift_full_sessionRecv`. -/
+  | sessionRecv {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {protocolStep : RawTerm scope}
+      {channelRaw : RawTerm scope}
+      (channel : Term context (Ty.session protocolStep) channelRaw)
+      (channelLift : ∀ {targetRawIH : RawTerm scope},
+        RawStep.par channelRaw targetRawIH →
+        ∃ channelTarget :
+            Term context (Ty.session protocolStep) targetRawIH,
+          Step.par channel channelTarget) :
+      DispatchAtom (Term.sessionRecv channel
+                    : Term context (Ty.session protocolStep)
+                        (RawTerm.sessionRecv channelRaw))
+  /-- Session-type send.  Two typed children (channel + payload).
+  Target stays at `Ty.session protocolStep`.  Consumed by
+  `RawStep.par.lift_full_sessionSend`. -/
+  | sessionSend {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (protocolStep : RawTerm scope)
+      {payloadType : Ty level scope}
+      {channelRaw payloadRaw : RawTerm scope}
+      (channel : Term context (Ty.session protocolStep) channelRaw)
+      (payload : Term context payloadType payloadRaw)
+      (channelLift : ∀ {targetRawIH : RawTerm scope},
+        RawStep.par channelRaw targetRawIH →
+        ∃ channelTarget :
+            Term context (Ty.session protocolStep) targetRawIH,
+          Step.par channel channelTarget)
+      (payloadLift : ∀ {targetRawIH : RawTerm scope},
+        RawStep.par payloadRaw targetRawIH →
+        ∃ payloadTarget : Term context payloadType targetRawIH,
+          Step.par payload payloadTarget) :
+      DispatchAtom (Term.sessionSend protocolStep channel payload
+                    : Term context (Ty.session protocolStep)
+                        (RawTerm.sessionSend channelRaw payloadRaw))
 
 end LeanFX2
