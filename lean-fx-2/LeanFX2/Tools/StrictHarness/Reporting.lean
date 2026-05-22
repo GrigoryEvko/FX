@@ -465,7 +465,17 @@ def isConvCongThreadingLemma (declName : Name) : Bool :=
     -- simultaneously via `StepStar.append` composition; transitively
     -- references the full Step enum (including manufactured arms)
     -- through Step→Step.par→StepStar threading.
-    lastSegment.startsWith "cong2_"
+    lastSegment.startsWith "cong2_" ||
+    -- Ternary variant: `cong3_<suffix>` shape
+    -- (e.g. `cong3_at_isClosedTy`).  Same structural pattern as
+    -- `cong2_` but lifts Conv across three positions via two
+    -- consecutive `StepStar.append` compositions.  Added by the
+    -- 5-recursor cong specialisation (listElim / optionMatch /
+    -- eitherMatch / natElim / natRec, each requiring three
+    -- positions to vary independently — scrutinee + per-branch
+    -- bodies + motive).  Same manufactured-Step transitive
+    -- reference as the cong2_ variant.
+    lastSegment.startsWith "cong3_"
 
 /-- Whether a name's last segment matches a Conv-disjointness theorem
 of the form `Conv.<source>_ne_<target>` and the parent namespace is
