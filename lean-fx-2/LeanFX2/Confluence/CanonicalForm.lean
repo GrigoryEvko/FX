@@ -13767,4 +13767,171 @@ theorem Conv.sessionRecv_ne_refl
     RawStep.parStar.refl_inv targetToJoin
   nomatch joinEqSessionRecv.symm.trans joinEqRefl
 
+/-- A `codataUnfold`-headed source and a `unit`-headed target are
+not convertible.  Disjoint canonical heads at the raw level: codata
+unfold packages an initial state and a transition function to
+produce a coinductive stream, whereas `unit` is the canonical
+inhabitant of the unit type — they cannot share a canonical reduct. -/
+theorem Conv.codataUnfold_ne_unit
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {initialState transition : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.codataUnfold initialState transition : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.unit : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqCodataUnfold, _, _⟩ :=
+    RawStep.parStar.codataUnfold_inv sourceToJoin
+  have joinEqUnit : joinRaw = RawTerm.unit :=
+    RawStep.parStar.unit_inv targetToJoin
+  nomatch joinEqCodataUnfold.symm.trans joinEqUnit
+
+/-- A `codataUnfold`-headed source and a `boolTrue`-headed target
+are not convertible.  Codata unfold versus the Bool true value —
+distinct canonical heads at the raw level. -/
+theorem Conv.codataUnfold_ne_boolTrue
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {initialState transition : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.codataUnfold initialState transition : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.boolTrue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqCodataUnfold, _, _⟩ :=
+    RawStep.parStar.codataUnfold_inv sourceToJoin
+  have joinEqTrue : joinRaw = RawTerm.boolTrue :=
+    RawStep.parStar.boolTrue_inv targetToJoin
+  nomatch joinEqCodataUnfold.symm.trans joinEqTrue
+
+/-- A `codataUnfold`-headed source and a `boolFalse`-headed target
+are not convertible.  Same argument as the `boolTrue` companion. -/
+theorem Conv.codataUnfold_ne_boolFalse
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {initialState transition : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.codataUnfold initialState transition : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.boolFalse : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqCodataUnfold, _, _⟩ :=
+    RawStep.parStar.codataUnfold_inv sourceToJoin
+  have joinEqFalse : joinRaw = RawTerm.boolFalse :=
+    RawStep.parStar.boolFalse_inv targetToJoin
+  nomatch joinEqCodataUnfold.symm.trans joinEqFalse
+
+/-- A `codataUnfold`-headed source and a `natZero`-headed target
+are not convertible.  Codata unfold versus the Nat zero — disjoint
+canonical heads. -/
+theorem Conv.codataUnfold_ne_natZero
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {initialState transition : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.codataUnfold initialState transition : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.natZero : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqCodataUnfold, _, _⟩ :=
+    RawStep.parStar.codataUnfold_inv sourceToJoin
+  have joinEqZero : joinRaw = RawTerm.natZero :=
+    RawStep.parStar.natZero_inv targetToJoin
+  nomatch joinEqCodataUnfold.symm.trans joinEqZero
+
+/-- A `codataUnfold`-headed source and a `listNil`-headed target
+are not convertible.  Codata unfold versus the empty list —
+distinct canonical heads at the raw level. -/
+theorem Conv.codataUnfold_ne_listNil
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {initialState transition : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.codataUnfold initialState transition : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.listNil : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqCodataUnfold, _, _⟩ :=
+    RawStep.parStar.codataUnfold_inv sourceToJoin
+  have joinEqNil : joinRaw = RawTerm.listNil :=
+    RawStep.parStar.listNil_inv targetToJoin
+  nomatch joinEqCodataUnfold.symm.trans joinEqNil
+
+/-- A `codataUnfold`-headed source and an `optionNone`-headed
+target are not convertible.  Codata unfold versus the empty option
+— distinct canonical heads. -/
+theorem Conv.codataUnfold_ne_optionNone
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {initialState transition : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.codataUnfold initialState transition : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.optionNone : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqCodataUnfold, _, _⟩ :=
+    RawStep.parStar.codataUnfold_inv sourceToJoin
+  have joinEqNone : joinRaw = RawTerm.optionNone :=
+    RawStep.parStar.optionNone_inv targetToJoin
+  nomatch joinEqCodataUnfold.symm.trans joinEqNone
+
+/-- A `codataUnfold`-headed source and an `interval0`-headed target
+are not convertible.  Cross-stratum codata-vs-cubical: codata unfold
+lives at the coinductive stratum, while `interval0` is the cubical
+interval's zero endpoint — they cannot share a canonical reduct. -/
+theorem Conv.codataUnfold_ne_interval0
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {initialState transition : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.codataUnfold initialState transition : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.interval0 : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqCodataUnfold, _, _⟩ :=
+    RawStep.parStar.codataUnfold_inv sourceToJoin
+  have joinEqZero : joinRaw = RawTerm.interval0 :=
+    RawStep.parStar.interval0_inv targetToJoin
+  nomatch joinEqCodataUnfold.symm.trans joinEqZero
+
+/-- A `codataUnfold`-headed source and an `interval1`-headed target
+are not convertible.  Cross-stratum codata-vs-cubical: symmetric
+companion to `codataUnfold_ne_interval0`. -/
+theorem Conv.codataUnfold_ne_interval1
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {initialState transition : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.codataUnfold initialState transition : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.interval1 : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqCodataUnfold, _, _⟩ :=
+    RawStep.parStar.codataUnfold_inv sourceToJoin
+  have joinEqOne : joinRaw = RawTerm.interval1 :=
+    RawStep.parStar.interval1_inv targetToJoin
+  nomatch joinEqCodataUnfold.symm.trans joinEqOne
+
 end LeanFX2
