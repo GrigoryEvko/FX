@@ -15943,4 +15943,206 @@ theorem Conv.codataUnfold_ne_oeqTrans
     RawStep.parStar.oeqTrans_inv targetToJoin
   nomatch joinEqCodataUnfold.symm.trans joinEqOeqTrans
 
+/-- A `codataUnfold`-headed source and an `optionCode`-headed target
+are not convertible.  Codata unfold versus option-type code —
+distinct canonical heads at the raw level. -/
+theorem Conv.codataUnfold_ne_optionCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {initialState transition : RawTerm scope}
+    {elementCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.codataUnfold initialState transition : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.optionCode elementCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqCodataUnfold, _, _⟩ :=
+    RawStep.parStar.codataUnfold_inv sourceToJoin
+  obtain ⟨_, joinEqOptionCode, _⟩ :=
+    RawStep.parStar.optionCode_inv targetToJoin
+  nomatch joinEqCodataUnfold.symm.trans joinEqOptionCode
+
+/-- A `codataUnfold`-headed source and a `pathCompose`-headed target
+are not convertible.  Codata unfold versus path-composition
+operation — distinct canonical heads at the raw level. -/
+theorem Conv.codataUnfold_ne_pathCompose
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {initialState transition : RawTerm scope}
+    {firstPath secondPath : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.codataUnfold initialState transition : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.pathCompose firstPath secondPath : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqCodataUnfold, _, _⟩ :=
+    RawStep.parStar.codataUnfold_inv sourceToJoin
+  obtain ⟨_, _, joinEqPathCompose, _, _⟩ :=
+    RawStep.parStar.pathCompose_inv targetToJoin
+  nomatch joinEqCodataUnfold.symm.trans joinEqPathCompose
+
+/-- A `codataUnfold`-headed source and a `piTyCode`-headed target
+are not convertible.  Codata unfold versus dependent Π type code
+(binary at the raw level: domain code + codomain code under a
+binder) — distinct canonical heads. -/
+theorem Conv.codataUnfold_ne_piTyCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {initialState transition : RawTerm scope}
+    {piDomainCode : RawTerm scope}
+    {piCodomainCode : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType
+      (RawTerm.codataUnfold initialState transition : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.piTyCode piDomainCode piCodomainCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqCodataUnfold, _, _⟩ :=
+    RawStep.parStar.codataUnfold_inv sourceToJoin
+  obtain ⟨_, _, joinEqPiTy, _, _⟩ :=
+    RawStep.parStar.piTyCode_inv targetToJoin
+  nomatch joinEqCodataUnfold.symm.trans joinEqPiTy
+
+/-- A `codataUnfold`-headed source and a `productCode`-headed target
+are not convertible.  Codata unfold versus product type code —
+distinct canonical heads at the raw level. -/
+theorem Conv.codataUnfold_ne_productCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {initialState transition : RawTerm scope}
+    {firstCode secondCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.codataUnfold initialState transition : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.productCode firstCode secondCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqCodataUnfold, _, _⟩ :=
+    RawStep.parStar.codataUnfold_inv sourceToJoin
+  obtain ⟨_, _, joinEqProduct, _, _⟩ :=
+    RawStep.parStar.productCode_inv targetToJoin
+  nomatch joinEqCodataUnfold.symm.trans joinEqProduct
+
+/-- A `codataUnfold`-headed source and a `recordIntro`-headed target
+are not convertible.  Codata unfold versus record introduction —
+distinct canonical heads at the raw level. -/
+theorem Conv.codataUnfold_ne_recordIntro
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {initialState transition : RawTerm scope}
+    {firstField : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.codataUnfold initialState transition : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.recordIntro firstField : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqCodataUnfold, _, _⟩ :=
+    RawStep.parStar.codataUnfold_inv sourceToJoin
+  obtain ⟨_, joinEqRecord, _⟩ :=
+    RawStep.parStar.recordIntro_inv targetToJoin
+  nomatch joinEqCodataUnfold.symm.trans joinEqRecord
+
+/-- A `codataUnfold`-headed source and a `refineIntro`-headed target
+are not convertible.  Codata unfold versus refinement-introduction
+form — distinct canonical heads at the raw level. -/
+theorem Conv.codataUnfold_ne_refineIntro
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {initialState transition : RawTerm scope}
+    {rawValue predicateProof : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.codataUnfold initialState transition : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.refineIntro rawValue predicateProof : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqCodataUnfold, _, _⟩ :=
+    RawStep.parStar.codataUnfold_inv sourceToJoin
+  obtain ⟨_, _, joinEqRefine, _, _⟩ :=
+    RawStep.parStar.refineIntro_inv targetToJoin
+  nomatch joinEqCodataUnfold.symm.trans joinEqRefine
+
+/-- A `codataUnfold`-headed source and a `sessionRecv`-headed target
+are not convertible.  Codata unfold versus session-receive form —
+distinct canonical heads at the raw level. -/
+theorem Conv.codataUnfold_ne_sessionRecv
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {initialState transition : RawTerm scope}
+    {channel : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.codataUnfold initialState transition : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sessionRecv channel : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqCodataUnfold, _, _⟩ :=
+    RawStep.parStar.codataUnfold_inv sourceToJoin
+  obtain ⟨_, joinEqSessionRecv, _⟩ :=
+    RawStep.parStar.sessionRecv_inv targetToJoin
+  nomatch joinEqCodataUnfold.symm.trans joinEqSessionRecv
+
+/-- A `codataUnfold`-headed source and a `sessionSend`-headed target
+are not convertible.  Codata unfold versus session-send form —
+distinct canonical heads at the raw level. -/
+theorem Conv.codataUnfold_ne_sessionSend
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {initialState transition : RawTerm scope}
+    {channel payload : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.codataUnfold initialState transition : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sessionSend channel payload : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqCodataUnfold, _, _⟩ :=
+    RawStep.parStar.codataUnfold_inv sourceToJoin
+  obtain ⟨_, _, joinEqSessionSend, _, _⟩ :=
+    RawStep.parStar.sessionSend_inv targetToJoin
+  nomatch joinEqCodataUnfold.symm.trans joinEqSessionSend
+
+/-- A `codataUnfold`-headed source and a `sigmaTyCode`-headed target
+are not convertible.  Codata unfold versus dependent Σ type code
+(binary at the raw level: first code + second code under a binder)
+— distinct canonical heads. -/
+theorem Conv.codataUnfold_ne_sigmaTyCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {initialState transition : RawTerm scope}
+    {sigmaFirstCode : RawTerm scope}
+    {sigmaSecondCode : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType
+      (RawTerm.codataUnfold initialState transition : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sigmaTyCode sigmaFirstCode sigmaSecondCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqCodataUnfold, _, _⟩ :=
+    RawStep.parStar.codataUnfold_inv sourceToJoin
+  obtain ⟨_, _, joinEqSigmaTy, _, _⟩ :=
+    RawStep.parStar.sigmaTyCode_inv targetToJoin
+  nomatch joinEqCodataUnfold.symm.trans joinEqSigmaTy
+
 end LeanFX2
