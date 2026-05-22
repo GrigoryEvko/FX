@@ -979,6 +979,157 @@ theorem partialStrengthenTyped?_isSome_target_refineElim
           next _ _ =>
               rfl
 
+/-! ## Function application family: app, appPi, codataDest
+
+These three ctors share the "pre-destructured binary recursion"
+shape: two operand IHs + 1-2 non-binder type sides (or 1
+non-binder + 1 binder-side for appPi).  All have existential raw
+forms in their subterms, so the wrapper takes the subterms
+directly.
+
+* `app`: 4-split (domainType + codomainType non-binder
+  + functionTerm IH + argumentTerm IH).
+* `appPi`: 4-split (domainType + codomainType binder-side
+  + functionTerm IH + argumentTerm IH).
+* `codataDest`: 3-split (stateType + outputType non-binder
+  + codataValue IH). -/
+/-- Target-direction totality at `Term.app`. -/
+theorem partialStrengthenTyped?_isSome_target_app
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {domainType codomainType : Ty level sourceScope}
+    {functionRaw argumentRaw : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (functionTerm :
+      Term sourceCtx (Ty.arrow domainType codomainType) functionRaw)
+    (argumentTerm : Term sourceCtx domainType argumentRaw)
+    (domainStrengthens :
+      (domainType.partialStrengthen? strengthening.back).isSome = true)
+    (codomainStrengthens :
+      (codomainType.partialStrengthen? strengthening.back).isSome
+        = true)
+    (functionIH :
+      (partialStrengthenTyped? functionTerm strengthening).isSome
+        = true)
+    (argumentIH :
+      (partialStrengthenTyped? argumentTerm strengthening).isSome
+        = true) :
+    (partialStrengthenTyped? (Term.app functionTerm argumentTerm)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noDomain =>
+      rw [noDomain] at domainStrengthens
+      cases domainStrengthens
+  next _ _ =>
+      split
+      next noCodomain =>
+          rw [noCodomain] at codomainStrengthens
+          cases codomainStrengthens
+      next _ _ =>
+          split
+          next noFunction =>
+              rw [noFunction] at functionIH
+              cases functionIH
+          next _ _ =>
+              split
+              next noArgument =>
+                  rw [noArgument] at argumentIH
+                  cases argumentIH
+              next _ _ =>
+                  rfl
+
+/-- Target-direction totality at `Term.appPi` (dependent Π
+application).  Same 4-split shape as app but `codomainType`
+lives at scope+1. -/
+theorem partialStrengthenTyped?_isSome_target_appPi
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {domainType : Ty level sourceScope}
+    {codomainType : Ty level (sourceScope + 1)}
+    {functionRaw argumentRaw : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (functionTerm :
+      Term sourceCtx (Ty.piTy domainType codomainType) functionRaw)
+    (argumentTerm : Term sourceCtx domainType argumentRaw)
+    (domainStrengthens :
+      (domainType.partialStrengthen? strengthening.back).isSome = true)
+    (codomainLiftedStrengthens :
+      (codomainType.partialStrengthen? strengthening.back.lift).isSome
+        = true)
+    (functionIH :
+      (partialStrengthenTyped? functionTerm strengthening).isSome
+        = true)
+    (argumentIH :
+      (partialStrengthenTyped? argumentTerm strengthening).isSome
+        = true) :
+    (partialStrengthenTyped? (Term.appPi functionTerm argumentTerm)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noDomain =>
+      rw [noDomain] at domainStrengthens
+      cases domainStrengthens
+  next _ _ =>
+      split
+      next noCodomain =>
+          rw [noCodomain] at codomainLiftedStrengthens
+          cases codomainLiftedStrengthens
+      next _ _ =>
+          split
+          next noFunction =>
+              rw [noFunction] at functionIH
+              cases functionIH
+          next _ _ =>
+              split
+              next noArgument =>
+                  rw [noArgument] at argumentIH
+                  cases argumentIH
+              next _ _ =>
+                  rfl
+
+/-- Target-direction totality at `Term.codataDest`. -/
+theorem partialStrengthenTyped?_isSome_target_codataDest
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {stateType outputType : Ty level sourceScope}
+    {codataRaw : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (codataValue :
+      Term sourceCtx (Ty.codata stateType outputType) codataRaw)
+    (stateStrengthens :
+      (stateType.partialStrengthen? strengthening.back).isSome = true)
+    (outputStrengthens :
+      (outputType.partialStrengthen? strengthening.back).isSome = true)
+    (codataIH :
+      (partialStrengthenTyped? codataValue strengthening).isSome
+        = true) :
+    (partialStrengthenTyped? (Term.codataDest codataValue)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noState =>
+      rw [noState] at stateStrengthens
+      cases stateStrengthens
+  next _ _ =>
+      split
+      next noOutput =>
+          rw [noOutput] at outputStrengthens
+          cases outputStrengthens
+      next _ _ =>
+          split
+          next noCodata =>
+              rw [noCodata] at codataIH
+              cases codataIH
+          next _ _ =>
+              rfl
+
 end Term
 
 end LeanFX2
