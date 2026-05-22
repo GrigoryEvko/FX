@@ -13168,6 +13168,176 @@ theorem Conv.oeqRefl_ne_refl
     RawStep.parStar.refl_inv targetToJoin
   nomatch joinEqOeqRefl.symm.trans joinEqRefl
 
+/-! ### `oeqRefl` row — HoTT observational reflexivity (compound targets)
+
+The `oeqRefl` head introduces inner-mode observational equality
+from a single witness sub-term.  Unary at the raw level
+(`{witnessTerm : RawTerm scope}`); the inversion lemma
+`RawStep.parStar.oeqRefl_inv` returns a 3-tuple
+`⟨_, joinEqOeqRefl, _⟩`.  The leaf/value-intro entries above
+cover all nullary and value-intro targets; the compound entries
+below cover every canonical head alphabetically greater than
+`oeqRefl` (the upper-triangular matrix half).  Cases lower than
+`oeqRefl` are covered via `Conv.symm` of the corresponding
+already-shipped lower-source companions (`oeqFunext_ne_oeqRefl`,
+`oeqJ_ne_oeqRefl`). -/
+
+/-- An `oeqRefl`-headed source and an `oeqTrans`-headed target are
+not convertible.  Observational reflexivity versus observational
+transitivity composition — distinct ctors within the same HoTT
+observational stratum, structurally disjoint at the raw level. -/
+theorem Conv.oeqRefl_ne_oeqTrans
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {witnessTerm : RawTerm scope}
+    {firstProof secondProof : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqRefl witnessTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.oeqTrans firstProof secondProof : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOeqRefl, _⟩ :=
+    RawStep.parStar.oeqRefl_inv sourceToJoin
+  obtain ⟨_, _, joinEqOeqTrans, _, _⟩ :=
+    RawStep.parStar.oeqTrans_inv targetToJoin
+  nomatch joinEqOeqRefl.symm.trans joinEqOeqTrans
+
+/-- An `oeqRefl`-headed source and an `optionCode`-headed target
+are not convertible.  Observational reflexivity versus the option-
+type code — distinct canonical heads. -/
+theorem Conv.oeqRefl_ne_optionCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {witnessTerm : RawTerm scope}
+    {elementCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqRefl witnessTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.optionCode elementCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOeqRefl, _⟩ :=
+    RawStep.parStar.oeqRefl_inv sourceToJoin
+  obtain ⟨_, joinEqOptionCode, _⟩ :=
+    RawStep.parStar.optionCode_inv targetToJoin
+  nomatch joinEqOeqRefl.symm.trans joinEqOptionCode
+
+/-- An `oeqRefl`-headed source and a `pathCompose`-headed target
+are not convertible.  HoTT observational reflexivity versus cubical
+path composition — distinct equality strata. -/
+theorem Conv.oeqRefl_ne_pathCompose
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {witnessTerm : RawTerm scope}
+    {leftPath rightPath : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqRefl witnessTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.pathCompose leftPath rightPath : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOeqRefl, _⟩ :=
+    RawStep.parStar.oeqRefl_inv sourceToJoin
+  obtain ⟨_, _, joinEqPathCompose, _, _⟩ :=
+    RawStep.parStar.pathCompose_inv targetToJoin
+  nomatch joinEqOeqRefl.symm.trans joinEqPathCompose
+
+/-- An `oeqRefl`-headed source and a `piTyCode`-headed target are
+not convertible.  Observational reflexivity versus Π-type code
+(binder-shape codomain at `scope + 1`). -/
+theorem Conv.oeqRefl_ne_piTyCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {witnessTerm : RawTerm scope}
+    {domainCode : RawTerm scope}
+    {codomainCode : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqRefl witnessTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.piTyCode domainCode codomainCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOeqRefl, _⟩ :=
+    RawStep.parStar.oeqRefl_inv sourceToJoin
+  obtain ⟨_, _, joinEqPiTyCode, _, _⟩ :=
+    RawStep.parStar.piTyCode_inv targetToJoin
+  nomatch joinEqOeqRefl.symm.trans joinEqPiTyCode
+
+/-- An `oeqRefl`-headed source and a `productCode`-headed target
+are not convertible.  Observational reflexivity versus non-
+dependent product-type code. -/
+theorem Conv.oeqRefl_ne_productCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {witnessTerm : RawTerm scope}
+    {firstCode secondCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqRefl witnessTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.productCode firstCode secondCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOeqRefl, _⟩ :=
+    RawStep.parStar.oeqRefl_inv sourceToJoin
+  obtain ⟨_, _, joinEqProductCode, _, _⟩ :=
+    RawStep.parStar.productCode_inv targetToJoin
+  nomatch joinEqOeqRefl.symm.trans joinEqProductCode
+
+/-- An `oeqRefl`-headed source and a `recordIntro`-headed target
+are not convertible.  Observational reflexivity versus record-
+value introduction. -/
+theorem Conv.oeqRefl_ne_recordIntro
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {witnessTerm : RawTerm scope}
+    {firstField : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqRefl witnessTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.recordIntro firstField : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOeqRefl, _⟩ :=
+    RawStep.parStar.oeqRefl_inv sourceToJoin
+  obtain ⟨_, joinEqRecord, _⟩ :=
+    RawStep.parStar.recordIntro_inv targetToJoin
+  nomatch joinEqOeqRefl.symm.trans joinEqRecord
+
+/-- An `oeqRefl`-headed source and a `refineIntro`-headed target
+are not convertible.  Observational reflexivity versus refinement-
+type introduction (value paired with predicate proof). -/
+theorem Conv.oeqRefl_ne_refineIntro
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {witnessTerm : RawTerm scope}
+    {rawValue predicateProof : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqRefl witnessTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.refineIntro rawValue predicateProof : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOeqRefl, _⟩ :=
+    RawStep.parStar.oeqRefl_inv sourceToJoin
+  obtain ⟨_, _, joinEqRefineIntro, _, _⟩ :=
+    RawStep.parStar.refineIntro_inv targetToJoin
+  nomatch joinEqOeqRefl.symm.trans joinEqRefineIntro
+
 /-! ### `idStrictRefl` row — HoTT strict-identity reflexivity
 
 The `idStrictRefl` head introduces strict-mode identity-type
