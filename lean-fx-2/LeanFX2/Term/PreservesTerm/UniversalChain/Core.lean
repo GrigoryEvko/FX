@@ -780,5 +780,54 @@ inductive DispatchAtom :
       DispatchAtom (Term.idJ baseCase witness
                     : Term context motiveType
                         (RawTerm.idJ baseRaw witnessRaw))
+  /-- Observational-J identity eliminator.  Same shape as `idJ` but
+  with `Ty.oeq` instead of `Ty.id`.  No iota-arm at the raw level —
+  oeqRefl reduces only via cong.  Consumed by
+  `RawStep.par.lift_full_oeqJ`. -/
+  | oeqJ {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {carrier : Ty level scope} {leftEndpoint rightEndpoint : RawTerm scope}
+      {motiveType : Ty level scope}
+      {baseRaw witnessRaw : RawTerm scope}
+      (baseCase : Term context motiveType baseRaw)
+      (witness :
+        Term context (Ty.oeq carrier leftEndpoint rightEndpoint) witnessRaw)
+      (baseLift : ∀ {targetRawIH : RawTerm scope},
+        RawStep.par baseRaw targetRawIH →
+        ∃ baseTarget : Term context motiveType targetRawIH,
+          Step.par baseCase baseTarget)
+      (witnessLift : ∀ {targetRawIH : RawTerm scope},
+        RawStep.par witnessRaw targetRawIH →
+        ∃ witnessTarget :
+            Term context (Ty.oeq carrier leftEndpoint rightEndpoint) targetRawIH,
+          Step.par witness witnessTarget) :
+      DispatchAtom (Term.oeqJ baseCase witness
+                    : Term context motiveType
+                        (RawTerm.oeqJ baseRaw witnessRaw))
+  /-- Strict-identity recursor.  Same shape as `idJ` with `Ty.idStrict`
+  in place of `Ty.id`.  Mode must be `Mode.strict` (carried as
+  hypothesis).  Consumed by `RawStep.par.lift_full_idStrictRec`. -/
+  | idStrictRec {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (modeIsStrict : mode = Mode.strict)
+      {carrier : Ty level scope} {leftEndpoint rightEndpoint : RawTerm scope}
+      {motiveType : Ty level scope}
+      {baseRaw witnessRaw : RawTerm scope}
+      (baseCase : Term context motiveType baseRaw)
+      (witness :
+        Term context (Ty.idStrict carrier leftEndpoint rightEndpoint) witnessRaw)
+      (baseLift : ∀ {targetRawIH : RawTerm scope},
+        RawStep.par baseRaw targetRawIH →
+        ∃ baseTarget : Term context motiveType targetRawIH,
+          Step.par baseCase baseTarget)
+      (witnessLift : ∀ {targetRawIH : RawTerm scope},
+        RawStep.par witnessRaw targetRawIH →
+        ∃ witnessTarget :
+            Term context (Ty.idStrict carrier leftEndpoint rightEndpoint)
+                         targetRawIH,
+          Step.par witness witnessTarget) :
+      DispatchAtom (Term.idStrictRec modeIsStrict baseCase witness
+                    : Term context motiveType
+                        (RawTerm.idStrictRec baseRaw witnessRaw))
 
 end LeanFX2

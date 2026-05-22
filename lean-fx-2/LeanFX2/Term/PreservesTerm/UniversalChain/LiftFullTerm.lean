@@ -580,5 +580,11 @@ theorem RawStep.par.lift_full_term
   | idJ baseCase witness baseLift witnessLift =>
     exact RawStep.par.lift_full_idJ baseCase witness baseLift witnessLift
             rawStep
+  | oeqJ baseCase witness baseLift witnessLift =>
+    exact RawStep.par.lift_full_oeqJ baseCase witness baseLift witnessLift
+            rawStep
+  | idStrictRec modeIsStrict baseCase witness baseLift witnessLift =>
+    exact RawStep.par.lift_full_idStrictRec modeIsStrict baseCase witness
+            baseLift witnessLift rawStep
 
 end LeanFX2
