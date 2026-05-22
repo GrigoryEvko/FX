@@ -551,6 +551,75 @@ inductive Step.par :
           sourceType sourceType
           typeRaw typeRaw typePath sourceValueSource)
         sourceValueTarget
+  /-- Deep cubical transport β at a homogeneous typed path that
+  DEVELOPS to a constant `pathLam`: when the path raw `pathRawSource`
+  par-reduces to `RawTerm.pathLam typeRawTarget.weaken` (a constant
+  path with body independent of the bound interval), and the source
+  value par-steps to a target value, the whole `transp` reduces to
+  the source target.
+
+  Typed mirror of `RawStep.par.transpReflBetaDeep`
+  (`Reduction/RawPar.lean`) at homogeneous endpoints — the typed
+  `Term.transp`'s source and target Ty are pinned to a single
+  `sourceType`, and the typed path's endpoint raws are both
+  `typeRaw`.  The path's RAW projection `pathRawSource` is
+  unconstrained at the LHS (matching the deep variant's permissive
+  shape: anything that develops to a constant pathLam) — the
+  `pathStep` premise carries the development.
+
+  Cascade role: this ctor is the typed-level discharge for the
+  `transpReflBetaDeep` arm of `RawStep.par.transp_inv`
+  (`Reduction/RawParInversion/CubicalAndIdentity.lean:362`) inside
+  the future `RawStep.par.lift_full_transp` leaf (#2065).  Without
+  it, the deep raw arm cannot be lifted to a typed `Step.par`
+  witness without composing two steps (path-cong + shallow-β),
+  which would require a `Step.parStar` rather than a single
+  `Step.par`.
+
+  Heterogeneous-endpoint case (`sourceType ≠ targetType` on
+  `Term.transp`) remains an open architectural item documented in
+  ROADMAP.md → unblock-E leaf-coverage section.  The typed kernel's
+  `Term.pathLam` admits independent endpoint annotations
+  (Term.lean:337-345) so heterogeneous-pathLam-projected transps
+  are inhabited; this ctor handles only the homogeneous fragment.
+
+  Premises:
+  * `pathStep : RawStep.par pathRawSource (RawTerm.pathLam
+    typeRawTarget.weaken)` — the path develops to a constant
+    pathLam.  The post-development body raw is
+    `typeRawTarget.weaken`, which need NOT equal `typeRaw.weaken`
+    (the LHS path's syntactic endpoint raws):  the typed path's
+    endpoint annotations are pinned at `typeRaw`, but the
+    post-step body raw can be any `typeRawTarget`.
+  * `Step.par sourceValueSource sourceValueTarget` — inner source
+    development.
+
+  Cumulative role with existing shallow `transpReflBeta`: the
+  shallow variant fires when the LHS path is LITERALLY
+  `RawTerm.pathLam typeRaw.weaken`; the deep variant fires when it
+  develops to such a shape under one parallel step. -/
+  | transpReflBetaDeep {mode level scope} {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
+      (universeLevel : UniverseLevel)
+      (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+      (sourceType : Ty level scope)
+      {typeRaw pathRawSource typeRawTarget : RawTerm scope}
+      {sourceRawSource sourceRawTarget : RawTerm scope}
+      (typePath :
+        Term context
+          (Ty.path (Ty.universe universeLevel universeLevelLt)
+            typeRaw typeRaw)
+          pathRawSource)
+      (pathStep :
+        RawStep.par pathRawSource (RawTerm.pathLam typeRawTarget.weaken))
+      {sourceValueSource : Term context sourceType sourceRawSource}
+      {sourceValueTarget : Term context sourceType sourceRawTarget} :
+      Step.par sourceValueSource sourceValueTarget →
+      Step.par
+        (Term.transp modeIsUnivalent universeLevel universeLevelLt
+          sourceType sourceType
+          typeRaw typeRaw typePath sourceValueSource)
+        sourceValueTarget
   /-- D2.5.2 Phase B: par-level mirror of `Step.hcompBeta`.
 
   Source `Term.hcompPath` at the constant-path sides `pathLam

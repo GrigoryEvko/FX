@@ -136,6 +136,8 @@ theorem Step.par.toRawBridge
       exact RawStep.par.transpCong ihPath ihSource
   | transpReflBeta _ _ _ _ _ _ ihSource =>
       exact RawStep.par.transpReflBeta (RawStep.par.refl _) ihSource
+  | transpReflBetaDeep _ _ _ _ _ pathStep _ ihSource =>
+      exact RawStep.par.transpReflBetaDeep pathStep ihSource
   | hcompBeta _ _ _ ihCap =>
       exact RawStep.par.hcompBeta (RawStep.par.refl _) ihCap
   | hcomp _ _ _ ihSides ihCap =>

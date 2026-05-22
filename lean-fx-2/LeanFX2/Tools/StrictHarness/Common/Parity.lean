@@ -57,16 +57,12 @@ def isDocumentedRawOnlyParity (rawCtorName : Name) : Bool :=
   -- Section B: refl cong rule (typed Term.refl uses different reduction
   -- shape; raw reflCong is structural-only).
   suffix == "reflCong" ||
-  -- Section C: deep cubical β rule for transp-at-constant-path.  The typed
-  -- mirror would require Step.par.transpReflBetaDeep with a path-reduction
-  -- premise across heterogeneous `pathRawSource` raw shape; this is a
-  -- raw-only confluence-closure mechanism (D2.5.4-G).  Typed transp β is
-  -- already covered through `Step.par.transpReflBeta` (shallow form,
-  -- shipped) for the typed bridge target #1555 — which is itself a
-  -- confluence-only mechanism when combined with cd's `cdTranspCase`
-  -- β-firing.  The deep par ctor exists purely to close the cd cascade
-  -- via `RawStep.par.weaken_inv` (Phase G.0).
-  suffix == "transpReflBetaDeep" ||
+  -- Section C: D2.5.4-G deep cubical β rule for transp-at-constant-path.
+  -- Typed mirror `Step.par.transpReflBetaDeep` shipped 2026-05-22 at
+  -- homogeneous endpoints (`Reduction/ParRed/ParInductive/Inductive.lean`),
+  -- so this entry is removed.  See ROADMAP.md → unblock-E leaf-coverage
+  -- for the heterogeneous-endpoint follow-up still tracked as
+  -- architectural debt (Term.transp + Term.pathLam endpoint laxity).
   -- D2.5.5 transpPi β (CCHM transport through Π type).  Shallow
   -- (`transpPiBeta`) and deep (`transpPiBetaDeep`) variants ship
   -- raw-only; typed `Step.transpPi` mirror is deferred to ticket
