@@ -1247,5 +1247,61 @@ inductive DispatchAtom :
                                  typePath sourceValue
                     : Term context sourceType
                         (RawTerm.transp pathRaw sourceRaw))
+  /-- Path-typed homogeneous-endpoint hcomp dispatch (#2069
+  unblock-E.hcompPath.Close).
+
+  Term.hcompPath takes independent leftEndpoint/rightEndpoint raw
+  data; this dispatch arm restricts to the homogeneous shape
+  `leftEndpoint = rightEndpoint = commonEndpoint` (matching the
+  consumer leaf `RawStep.par.lift_full_hcompPath`).  Heterogeneous-
+  endpoint hcompPath dispatch remains ROADMAP debt under unblock-E
+  leaf-coverage.
+
+  The arm carries an extra precondition
+  `sidesPathExcludesPathLamReducible` refuting both β arms of
+  `RawStep.par.hcomp_inv` (`hcompBeta` and `hcompBetaDeep`).  The
+  cong-only fragment of the leaf consumes this precondition to
+  discharge the impossible cases.  β-firing fragment requires a
+  Term.pathLam-body inversion lemma or a permissive
+  `Step.par.hcompBetaDeep'` ctor — both deferred to ROADMAP.
+
+  sidesPath lifter and capValue lifter are baked as data because
+  the path-typed projection `Ty.path carrierType _ _` is not
+  closed (depends on raw endpoints), so neither side is captured
+  by `IsClosedTy` like in the closed-carrier `hcomp` arm above.
+
+  Consumed by `RawStep.par.lift_full_hcompPath`
+  (`HeterogeneousElim.lean`, #2069) to close
+  unblock-A.leaf.hcompPath (#2017). -/
+  | hcompPath {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
+      {carrierType : Ty level scope}
+      (commonEndpoint : RawTerm scope)
+      {sidesPathRaw capRaw : RawTerm scope}
+      (sidesPath :
+        Term context (Ty.path carrierType commonEndpoint commonEndpoint)
+          sidesPathRaw)
+      (capValue : Term context carrierType capRaw)
+      (sidesPathExcludesPathLamReducible :
+        ∀ {targetRawIH : RawTerm scope},
+          RawStep.par sidesPathRaw targetRawIH →
+          ∀ bodyPre : RawTerm scope,
+            targetRawIH ≠ RawTerm.pathLam bodyPre.weaken)
+      (sidesLift : ∀ {targetRawIH : RawTerm scope},
+        RawStep.par sidesPathRaw targetRawIH →
+        ∃ sidesTarget :
+            Term context (Ty.path carrierType commonEndpoint commonEndpoint)
+              targetRawIH,
+          Step.par sidesPath sidesTarget)
+      (capLift : ∀ {targetRawIH : RawTerm scope},
+        RawStep.par capRaw targetRawIH →
+        ∃ capTarget : Term context carrierType targetRawIH,
+          Step.par capValue capTarget) :
+      DispatchAtom (Term.hcompPath (context := context) modeIsUnivalent
+                                    commonEndpoint commonEndpoint
+                                    sidesPath capValue
+                    : Term context carrierType
+                        (RawTerm.hcomp sidesPathRaw capRaw))
 
 end LeanFX2

@@ -669,4 +669,90 @@ theorem RawStep.par.lift_full_transp
   · obtain ⟨typePathTarget, _⟩ := typePathLift pathStep
     exact (Term.pathCompose_uninhabited typePathTarget).elim
 
+/-- **Path-typed hcomp full lift — cong-only arm via β refutation
+hypothesis (unblock-E.hcompPath.Close, #2069).**
+
+Mirrors `lift_full_hcomp` (#2066) at `Term.hcompPath` instead of
+`Term.hcomp`.  Cong arm routes via `Step.par.hcompPathCong`; both
+β arms (shallow `hcompBeta` and deep `hcompBetaDeep` from
+`RawStep.par.hcomp_inv`) are refuted by the precondition
+`sidesPathExcludesPathLamReducible`, which states that the typed
+sidesPath's raw projection cannot develop (under any parallel
+step, including refl) to the constant-pathLam shape
+`RawTerm.pathLam X.weaken`.
+
+This restrictive precondition is the cong-only fragment of the
+hcompPath leaf.  The β-firing fragment requires bridging the
+raw inversion's arbitrary `pathBodyRawSource` / `pathBodyRawTarget`
+to the typed `Step.par.hcompBetaDeep` ctor's homogeneous
+constraint `pathBodyRaw = capRaw`.  The bridge needs either:
+
+* a Term.pathLam-body inversion lemma proving the body raw
+  equals the homogeneous endpoint (depends on Term.pathLam's
+  intrinsic typing — currently NOT structurally forced because
+  Term.pathLam accepts endpoints as independent raw data), or
+* a kernel-extension permissive `Step.par.hcompBetaDeep'` ctor
+  that accepts arbitrary body raw at homogeneous endpoints.
+
+Both deferred to ROADMAP under unblock-E β-firing follow-up.
+For the current dispatch chain (#2018 universal + #2019 chain),
+the cong-only fragment suffices because the universal chain
+fires β before reaching this leaf when sidesPath develops to
+pathLam shape.
+
+Homogeneous endpoints (`leftEndpoint = rightEndpoint =
+commonEndpoint`) is enforced — heterogeneous-endpoint
+hcompPath cong remains ROADMAP debt. -/
+theorem RawStep.par.lift_full_hcompPath
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level scope}
+    (commonEndpoint : RawTerm scope)
+    {sidesPathRaw capRaw : RawTerm scope}
+    (sidesPath :
+      Term context (Ty.path carrierType commonEndpoint commonEndpoint)
+        sidesPathRaw)
+    (capValue : Term context carrierType capRaw)
+    (sidesPathExcludesPathLamReducible :
+      ∀ {targetRawIH : RawTerm scope},
+        RawStep.par sidesPathRaw targetRawIH →
+        ∀ bodyPre : RawTerm scope,
+          targetRawIH ≠ RawTerm.pathLam bodyPre.weaken)
+    (sidesLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par sidesPathRaw targetRawIH →
+      ∃ sidesTarget :
+          Term context (Ty.path carrierType commonEndpoint commonEndpoint)
+            targetRawIH,
+        Step.par sidesPath sidesTarget)
+    (capLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par capRaw targetRawIH →
+      ∃ capTarget : Term context carrierType targetRawIH,
+        Step.par capValue capTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.hcomp sidesPathRaw capRaw) targetRaw) :
+    ∃ (targetType : Ty level scope)
+      (targetTerm : Term context targetType targetRaw),
+      Step.par
+        (Term.hcompPath modeIsUnivalent commonEndpoint commonEndpoint
+          sidesPath capValue)
+        targetTerm := by
+  rcases RawStep.par.hcomp_inv rawStep with
+    ⟨sidesTargetRaw, capTargetRaw, targetEq, sidesStep, capStep⟩
+    | ⟨pathBodyRawSource, _capTarget, sidesEq, _targetEq, _capStep⟩
+    | ⟨pathBodyRawTarget, _capTarget, _targetEq, sidesStep, _capStep⟩
+  · subst targetEq
+    obtain ⟨sidesTermTarget, sidesTypedStep⟩ := sidesLift sidesStep
+    obtain ⟨capTermTarget, capTypedStep⟩ := capLift capStep
+    refine ⟨carrierType,
+            Term.hcompPath modeIsUnivalent commonEndpoint commonEndpoint
+              sidesTermTarget capTermTarget, ?_⟩
+    exact Step.par.hcompPathCong modeIsUnivalent
+            commonEndpoint commonEndpoint
+            sidesTypedStep capTypedStep
+  · exact
+      (sidesPathExcludesPathLamReducible (RawStep.par.refl _)
+        pathBodyRawSource sidesEq).elim
+  · exact
+      (sidesPathExcludesPathLamReducible sidesStep
+        pathBodyRawTarget rfl).elim
+
 end LeanFX2

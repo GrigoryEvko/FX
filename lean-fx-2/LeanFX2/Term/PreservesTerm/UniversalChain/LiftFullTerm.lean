@@ -641,5 +641,10 @@ theorem RawStep.par.lift_full_term
         universeLevelLt sourceType typeRaw typePath sourceValue
         typePathLift sourceValueLift rawStep
     exact ⟨sourceType, targetTerm, transpStep⟩
+  | hcompPath modeIsUnivalent commonEndpoint sidesPath capValue
+              sidesPathExcludesPathLamReducible sidesLift capLift =>
+    exact RawStep.par.lift_full_hcompPath modeIsUnivalent commonEndpoint
+            sidesPath capValue sidesPathExcludesPathLamReducible
+            sidesLift capLift rawStep
 
 end LeanFX2
