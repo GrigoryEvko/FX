@@ -953,5 +953,14 @@ transp arm to discharge the dispatch. -/
 #assert_no_axioms LeanFX2.Conv.cumulUpMarker_ne_idCode
 #assert_no_axioms LeanFX2.Conv.cumulUpMarker_ne_idStrictRefl
 #assert_no_axioms LeanFX2.Conv.cumulUpMarker_ne_intervalJoin
+#assert_no_axioms LeanFX2.Conv.cumulUpMarker_ne_intervalMeet
+#assert_no_axioms LeanFX2.Conv.cumulUpMarker_ne_intervalOpp
+#assert_no_axioms LeanFX2.Conv.cumulUpMarker_ne_listCode
+#assert_no_axioms LeanFX2.Conv.cumulUpMarker_ne_modIntro
+#assert_no_axioms LeanFX2.Conv.cumulUpMarker_ne_oeqFunext
+#assert_no_axioms LeanFX2.Conv.cumulUpMarker_ne_oeqJ
+#assert_no_axioms LeanFX2.Conv.cumulUpMarker_ne_oeqRefl
+#assert_no_axioms LeanFX2.Conv.cumulUpMarker_ne_oeqTrans
+#assert_no_axioms LeanFX2.Conv.cumulUpMarker_ne_optionCode
 
 end LeanFX2.Tools
