@@ -1002,5 +1002,8 @@ transp arm to discharge the dispatch. -/
 #assert_no_axioms LeanFX2.Conv.effectPerform_ne_sigmaTyCode
 #assert_no_axioms LeanFX2.Conv.effectPerform_ne_subsume
 #assert_no_axioms LeanFX2.Conv.effectPerform_ne_sumCode
+#assert_no_axioms LeanFX2.Conv.effectPerform_ne_transpFill
+#assert_no_axioms LeanFX2.Conv.effectPerform_ne_uaToEquiv
+#assert_no_axioms LeanFX2.Conv.effectPerform_ne_universeCode
 
 end LeanFX2.Tools

@@ -15077,6 +15077,75 @@ theorem Conv.effectPerform_ne_sumCode
     RawStep.parStar.sumCode_inv targetToJoin
   nomatch joinEqPerform.symm.trans joinEqSumCode
 
+/-- An `effectPerform`-headed source and a `transpFill`-headed
+target are not convertible.  Effect perform versus transport-fill
+operation — distinct canonical heads at the raw level.  Ternary
+target — three trailing slots in the inversion tuple. -/
+theorem Conv.effectPerform_ne_transpFill
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {operationTag arguments : RawTerm scope}
+    {pathTerm intervalTerm sourceRawTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.effectPerform operationTag arguments : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.transpFill pathTerm intervalTerm sourceRawTerm :
+        RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPerform, _, _⟩ :=
+    RawStep.parStar.effectPerform_inv sourceToJoin
+  obtain ⟨_, _, _, joinEqTranspFill, _, _, _⟩ :=
+    RawStep.parStar.transpFill_inv targetToJoin
+  nomatch joinEqPerform.symm.trans joinEqTranspFill
+
+/-- An `effectPerform`-headed source and a `uaToEquiv`-headed
+target are not convertible.  Effect perform versus univalence-to-
+equivalence bridge — distinct canonical heads at the raw level. -/
+theorem Conv.effectPerform_ne_uaToEquiv
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {operationTag arguments : RawTerm scope}
+    {proofTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.effectPerform operationTag arguments : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.uaToEquiv proofTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPerform, _, _⟩ :=
+    RawStep.parStar.effectPerform_inv sourceToJoin
+  obtain ⟨_, joinEqUaToEquiv, _⟩ :=
+    RawStep.parStar.uaToEquiv_inv targetToJoin
+  nomatch joinEqPerform.symm.trans joinEqUaToEquiv
+
+/-- An `effectPerform`-headed source and a `universeCode`-headed
+target are not convertible.  Effect perform versus universe-type
+code at a specific level — distinct canonical heads at the raw
+level.  Nullary target — direct equality inversion. -/
+theorem Conv.effectPerform_ne_universeCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {operationTag arguments : RawTerm scope}
+    {innerLevel : Nat}
+    {sourceTerm : Term context sourceType
+      (RawTerm.effectPerform operationTag arguments : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.universeCode innerLevel : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqPerform, _, _⟩ :=
+    RawStep.parStar.effectPerform_inv sourceToJoin
+  have joinEqUniv : joinRaw = RawTerm.universeCode innerLevel :=
+    RawStep.parStar.universeCode_inv targetToJoin
+  nomatch joinEqPerform.symm.trans joinEqUniv
+
 /-- A `sessionSend`-headed source and a `unit`-headed target are
 not convertible.  Disjoint canonical heads at the raw level:
 session send packages a channel with a payload to perform an
