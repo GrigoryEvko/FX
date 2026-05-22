@@ -25,5 +25,6 @@ namespace LeanFX2.SmokeIsClosedRawTerm
 #print axioms LeanFX2.IsClosedRawTerm.imp_weaken
 #print axioms LeanFX2.IsClosedRawTerm.of_weaken_eq
 #print axioms LeanFX2.IsClosedRawTerm.weaken_self
+#print axioms LeanFX2.IsClosedRawTerm.subst_singleton_invariant
 
 end LeanFX2.SmokeIsClosedRawTerm

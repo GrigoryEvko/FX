@@ -1,4 +1,5 @@
 import LeanFX2.Foundation.RawPartialRename.UnweakenInversion
+import LeanFX2.Foundation.RawSubst.SubstIdentityAndBeta
 
 /-! # Foundation/IsClosedRawTerm — Prop-valued var-0-freeness witness
 
@@ -96,5 +97,26 @@ incremented scope — `inner.weaken = inner.weaken` is the witness. -/
 theorem IsClosedRawTerm.weaken_self {scope : Nat} (inner : RawTerm scope) :
     IsClosedRawTerm (inner.weaken : RawTerm (scope + 1)) :=
   ⟨inner, rfl⟩
+
+/-- **Load-bearing subst-invariance lemma.**  A closed raw term at
+`scope + 1` is invariant under singleton substitution — every singleton
+substitution yields the same result.  Direct corollary of
+`RawTerm.weaken_subst_singleton`: substituting any singleton through
+a weakened raw annihilates the singleton.
+
+This is the raw-side counterpart to `Ty.subst0_raw_invariance_isClosedTy`
+and underpins extending `IsClosedTy` with raw-payload-carrying ctors
+(`id`, `oeq`, `idStrict`, `path`, `glue`, `refine`, `session`, `effect`):
+when those ctors carry `IsClosedRawTerm` hypotheses on their raw
+endpoints, the `Ty.subst0_raw_invariance` arm for the new ctor uses
+this lemma to discharge the raw-payload subgoal. -/
+theorem IsClosedRawTerm.subst_singleton_invariant {scope : Nat}
+    {raw : RawTerm (scope + 1)} (closed : IsClosedRawTerm raw)
+    (raw1 raw2 : RawTerm scope) :
+    raw.subst (RawTermSubst.singleton raw1) =
+      raw.subst (RawTermSubst.singleton raw2) := by
+  obtain ⟨inner, weakenEq⟩ := closed
+  subst weakenEq
+  rw [RawTerm.weaken_subst_singleton, RawTerm.weaken_subst_singleton]
 
 end LeanFX2
