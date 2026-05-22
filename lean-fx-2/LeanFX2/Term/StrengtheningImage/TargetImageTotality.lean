@@ -3181,6 +3181,211 @@ theorem partialStrengthenTyped?_isSome_target_uaToEquiv
                   next _ _ =>
                       rfl
 
+/-- Target-direction totality at `Term.lam` (non-dependent arrow
+intro).  Body lives at `Ctx.cons sourceCtx domainType` and the
+dispatcher lifts the strengthening via the strengthening-success
+witness; the body IH is parametric over `(targetDomainType,
+domainSuccess)`. -/
+theorem partialStrengthenTyped?_isSome_target_lam
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {domainType codomainType : Ty level sourceScope}
+    {bodyRaw : RawTerm (sourceScope + 1)}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (body :
+      Term (sourceCtx.cons domainType) codomainType.weaken bodyRaw)
+    (domainStrengthens :
+      (domainType.partialStrengthen? strengthening.back).isSome = true)
+    (codomainStrengthens :
+      (codomainType.partialStrengthen? strengthening.back).isSome = true)
+    (bodyIH : ∀ (targetDomainType : Ty level targetScope)
+        (domainSuccess :
+          domainType.partialStrengthen? strengthening.back
+            = some targetDomainType),
+      (partialStrengthenTyped? body
+        (strengthening.lift domainType targetDomainType
+          domainSuccess)).isSome = true) :
+    (partialStrengthenTyped? (Term.lam body) strengthening).isSome
+      = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noDomain =>
+      rw [noDomain] at domainStrengthens
+      cases domainStrengthens
+  next targetDomain domainSuccess =>
+      split
+      next noCodomain =>
+          rw [noCodomain] at codomainStrengthens
+          cases codomainStrengthens
+      next _ _ =>
+          have bodyResult := bodyIH targetDomain domainSuccess
+          split
+          next noBody =>
+              rw [noBody] at bodyResult
+              cases bodyResult
+          next _ _ =>
+              rfl
+
+/-- Target-direction totality at `Term.lamPi` (dependent Π intro).
+codomainType lives at `scope+1` (in lifted context); the dispatcher
+only checks domainType. -/
+theorem partialStrengthenTyped?_isSome_target_lamPi
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {domainType : Ty level sourceScope}
+    {codomainType : Ty level (sourceScope + 1)}
+    {bodyRaw : RawTerm (sourceScope + 1)}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (body : Term (sourceCtx.cons domainType) codomainType bodyRaw)
+    (domainStrengthens :
+      (domainType.partialStrengthen? strengthening.back).isSome = true)
+    (bodyIH : ∀ (targetDomainType : Ty level targetScope)
+        (domainSuccess :
+          domainType.partialStrengthen? strengthening.back
+            = some targetDomainType),
+      (partialStrengthenTyped? body
+        (strengthening.lift domainType targetDomainType
+          domainSuccess)).isSome = true) :
+    (partialStrengthenTyped? (Term.lamPi body) strengthening).isSome
+      = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noDomain =>
+      rw [noDomain] at domainStrengthens
+      cases domainStrengthens
+  next targetDomain domainSuccess =>
+      have bodyResult := bodyIH targetDomain domainSuccess
+      split
+      next noBody =>
+          rw [noBody] at bodyResult
+          cases bodyResult
+      next _ _ =>
+          rfl
+
+/-- Target-direction totality at `Term.pathLam` (cubical path
+abstraction; binder is always `Ty.interval`, no parametric body IH
+needed). -/
+theorem partialStrengthenTyped?_isSome_target_pathLam
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (carrierType : Ty level sourceScope)
+    (leftEndpoint rightEndpoint : RawTerm sourceScope)
+    {bodyRaw : RawTerm (sourceScope + 1)}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (body :
+      Term (sourceCtx.cons Ty.interval) carrierType.weaken bodyRaw)
+    (carrierStrengthens :
+      (carrierType.partialStrengthen? strengthening.back).isSome = true)
+    (leftStrengthens :
+      (leftEndpoint.partialStrengthen? strengthening.back).isSome = true)
+    (rightStrengthens :
+      (rightEndpoint.partialStrengthen? strengthening.back).isSome = true)
+    (bodyIH :
+      (partialStrengthenTyped? body
+        (strengthening.lift Ty.interval Ty.interval rfl)).isSome
+          = true) :
+    (partialStrengthenTyped?
+        (Term.pathLam modeIsUnivalent carrierType
+          leftEndpoint rightEndpoint body)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noCarrier =>
+      rw [noCarrier] at carrierStrengthens
+      cases carrierStrengthens
+  next _ _ =>
+      split
+      next noLeft =>
+          rw [noLeft] at leftStrengthens
+          cases leftStrengthens
+      next _ _ =>
+          split
+          next noRight =>
+              rw [noRight] at rightStrengthens
+              cases rightStrengthens
+          next _ _ =>
+              split
+              next noBody =>
+                  rw [noBody] at bodyIH
+                  cases bodyIH
+              next _ _ =>
+                  rfl
+
+/-- Target-direction totality at `Term.effectPerform` (algebraic
+effect operation invocation).  The dispatcher checks effectTag raw
+side and the two `operationSignature` carriers; operandTag +
+arguments are operand IHs. -/
+theorem partialStrengthenTyped?_isSome_target_effectPerform
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (effectTag : RawTerm sourceScope)
+    (effectRow : Effects.EffectRow)
+    (operationSignature : Effects.OperationSignature (Ty level sourceScope))
+    (canPerformOperation :
+      Effects.CanPerform effectRow operationSignature)
+    {operationRaw argumentsRaw : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (operationTag :
+      Term sourceCtx
+        (Ty.effect operationSignature.argumentCarrier effectTag)
+        operationRaw)
+    (arguments :
+      Term sourceCtx operationSignature.argumentCarrier argumentsRaw)
+    (effectTagStrengthens :
+      (effectTag.partialStrengthen? strengthening.back).isSome = true)
+    (argumentCarrierStrengthens :
+      (operationSignature.argumentCarrier.partialStrengthen?
+        strengthening.back).isSome = true)
+    (resultCarrierStrengthens :
+      (operationSignature.resultCarrier.partialStrengthen?
+        strengthening.back).isSome = true)
+    (operationIH :
+      (partialStrengthenTyped? operationTag strengthening).isSome
+        = true)
+    (argumentsIH :
+      (partialStrengthenTyped? arguments strengthening).isSome = true) :
+    (partialStrengthenTyped?
+        (Term.effectPerform (context := sourceCtx)
+          effectTag effectRow operationSignature canPerformOperation
+          operationTag arguments)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noEffectTag =>
+      rw [noEffectTag] at effectTagStrengthens
+      cases effectTagStrengthens
+  next _ _ =>
+      split
+      next noArgumentCarrier =>
+          rw [noArgumentCarrier] at argumentCarrierStrengthens
+          cases argumentCarrierStrengthens
+      next _ _ =>
+          split
+          next noResultCarrier =>
+              rw [noResultCarrier] at resultCarrierStrengthens
+              cases resultCarrierStrengthens
+          next _ _ =>
+              split
+              next noOperation =>
+                  rw [noOperation] at operationIH
+                  cases operationIH
+              next _ _ =>
+                  split
+                  next noArguments =>
+                      rw [noArguments] at argumentsIH
+                      cases argumentsIH
+                  next _ _ =>
+                      rfl
+
 end Term
 
 end LeanFX2
