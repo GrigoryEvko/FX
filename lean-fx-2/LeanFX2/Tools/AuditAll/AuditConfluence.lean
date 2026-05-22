@@ -647,6 +647,14 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.equivIntro_ne_listCons
 #assert_no_axioms LeanFX2.Conv.equivIntro_ne_pair
 #assert_no_axioms LeanFX2.Conv.equivIntro_ne_refl
+#assert_no_axioms LeanFX2.Conv.recordIntro_ne_unit
+#assert_no_axioms LeanFX2.Conv.recordIntro_ne_boolTrue
+#assert_no_axioms LeanFX2.Conv.recordIntro_ne_boolFalse
+#assert_no_axioms LeanFX2.Conv.recordIntro_ne_natZero
+#assert_no_axioms LeanFX2.Conv.recordIntro_ne_listNil
+#assert_no_axioms LeanFX2.Conv.recordIntro_ne_optionNone
+#assert_no_axioms LeanFX2.Conv.recordIntro_ne_interval0
+#assert_no_axioms LeanFX2.Conv.recordIntro_ne_interval1
 #assert_no_axioms LeanFX2.Conv.transChains_renamed
 #assert_no_axioms LeanFX2.Conv.transChains_weakened
 #assert_no_axioms LeanFX2.Conv.transChains_substituted
