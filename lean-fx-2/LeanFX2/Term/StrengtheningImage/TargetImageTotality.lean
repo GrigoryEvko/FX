@@ -271,6 +271,95 @@ theorem partialStrengthenTyped?_isSome_target_optionSome
   next _ _ =>
       rfl
 
+/-! ## Compound ctors with type-side condition: eitherInl, eitherInr
+
+`Term.eitherInl` carries a payload `valueTerm : Term sourceCtx
+leftType valueRaw` and a phantom `rightType` index.  The dispatcher
+must first strengthen the phantom side's `Ty` (here `rightType`)
+since it appears in the reconstructed `Ty.eitherType` of the
+`StrengtheningResult.targetType`.
+
+For target-direction usage in the universal headline, the
+phantom-side `Ty.partialStrengthen?` hypothesis is satisfied
+automatically when target = source.rename rho (cf. existing
+`Ty.partialStrengthen?_rename_some` in the source-direction
+pipeline).  We expose the hypothesis here as a precondition;
+the universal-headline driver discharges it from the
+renaming-image assumption. -/
+/-- Target-direction totality at `Term.eitherInl`. -/
+theorem partialStrengthenTyped?_isSome_target_eitherInl
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {leftType rightType : Ty level sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    {valueRaw : RawTerm sourceScope}
+    (targetTerm :
+      Term sourceCtx (Ty.eitherType leftType rightType)
+        (RawTerm.eitherInl valueRaw))
+    (rightStrengthens :
+      (rightType.partialStrengthen? strengthening.back).isSome = true)
+    (valueIH :
+      ∀ (valueTerm : Term sourceCtx leftType valueRaw),
+        (partialStrengthenTyped? valueTerm strengthening).isSome = true) :
+    (partialStrengthenTyped? targetTerm strengthening).isSome = true := by
+  obtain ⟨valueTerm, heq⟩ := Term.eitherInlDestruct targetTerm
+  have targetEq :
+      targetTerm = Term.eitherInl (rightType := rightType) valueTerm :=
+    eq_of_heq heq
+  subst targetEq
+  have ihResult := valueIH valueTerm
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noRightSuccess =>
+      rw [noRightSuccess] at rightStrengthens
+      cases rightStrengthens
+  next _ _ =>
+      split
+      next noValueSuccess =>
+          rw [noValueSuccess] at ihResult
+          cases ihResult
+      next _ _ =>
+          rfl
+
+/-- Target-direction totality at `Term.eitherInr`. -/
+theorem partialStrengthenTyped?_isSome_target_eitherInr
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {leftType rightType : Ty level sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    {valueRaw : RawTerm sourceScope}
+    (targetTerm :
+      Term sourceCtx (Ty.eitherType leftType rightType)
+        (RawTerm.eitherInr valueRaw))
+    (leftStrengthens :
+      (leftType.partialStrengthen? strengthening.back).isSome = true)
+    (valueIH :
+      ∀ (valueTerm : Term sourceCtx rightType valueRaw),
+        (partialStrengthenTyped? valueTerm strengthening).isSome = true) :
+    (partialStrengthenTyped? targetTerm strengthening).isSome = true := by
+  obtain ⟨valueTerm, heq⟩ := Term.eitherInrDestruct targetTerm
+  have targetEq :
+      targetTerm = Term.eitherInr (leftType := leftType) valueTerm :=
+    eq_of_heq heq
+  subst targetEq
+  have ihResult := valueIH valueTerm
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noLeftSuccess =>
+      rw [noLeftSuccess] at leftStrengthens
+      cases leftStrengthens
+  next _ _ =>
+      split
+      next noValueSuccess =>
+          rw [noValueSuccess] at ihResult
+          cases ihResult
+      next _ _ =>
+          rfl
+
 end Term
 
 end LeanFX2
