@@ -413,6 +413,83 @@ union of #2066/#2068/#2069 — path-typed routing through
 * D2.5 cubical cascade (D2.5.5–9) ← shares Step.eta blocker
   with the broader Geuvers 1992 lift in unblock-D.geuvers (#2038)
 
+### Block B (#2022 unblock-B.t5.par) — strategy RFC 2026-05-23
+
+The typed `Step.par.preserves_rename_image` lifts the raw
+`RawStep.par.rename_inj_inv` (#2021 ✅) to the typed layer.  The
+shape:
+
+```lean
+theorem Step.par.preserves_rename_image
+    {ctx : Ctx mode level scope}
+    {sourceTy : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    (sourceTerm : Term ctx sourceTy sourceRaw)
+    {targetRho : Renaming scope targetScope}
+    (rhoInjective : RawRenamingInjective targetRho.forRaw)
+    {targetAfter : Term ctx' sourceTy.rename targetRho targetRawAfter}
+    (parStep : Step.par (Term.rename targetRho sourceTerm) targetAfter) :
+    ∃ (innerRaw : RawTerm scope)
+      (innerTerm : Term ctx sourceTy innerRaw),
+      targetRawAfter = innerRaw.rename targetRho.forRaw ∧
+      targetAfter = Term.rename targetRho innerTerm ∧
+      Step.par sourceTerm innerTerm
+```
+
+Two implementation paths:
+
+**Path A: Compose via T1 + raw inversion (~30-50 LoC).**
+Project the typed parStep to raw via `Step.par.toRawBridge`,
+apply `RawStep.par.rename_inj_inv` to get the raw image witness,
+then strengthen back to typed via `Term.strengthenTyped?` (T1
+umbrella, #1978).  PRECONDITION: #1978 must ship the
+78-case structural induction headline
+`Term.strengthenTyped?_rename_eq` first.  Per-ctor lemmas under
+`PartialStrengthen/RenameImage/*.lean` exist (verified
+2026-05-23) but the universal headline is deferred.
+
+**Path B: Direct structural induction (~500 LoC dep-cast
+threading).**  Mirror `RawStep.par.rename_inj_inv`'s 67-ctor
+induction at the typed layer with `Step.par.toRawBridge` and
+per-arm typed witnesses.  Per `Reduction/Compat.lean:48`
+advisory, this path was explicitly avoided in D2.10 — chooses to
+go compositional with per-cong cong combinators instead.
+
+**Recommended path: A.**  Reasons:
+* T1 headline (#1978) is needed for downstream consumers
+  (strength-integrate-K12-27 #1982, unblock-D.k1227-sn #2044) so
+  shipping it is justified independently.
+* Path B's 500-LoC budget breaks the "no expensive tactics" /loop
+  discipline — the dep-cast threading historically required
+  `decide`-class tactics that we're banned from reintroducing.
+* T1 closure also unblocks #1985
+  (strength-integrate-HeadlineRenameInjInv collapses a 250-LoC
+  blocker to a T2 citation).
+
+**Sub-cascade for Block B (#2022 → #2026)**:
+1. **Prerequisite: ship #1978** T1 headline (78-case structural
+   induction over Term, composing per-ctor lemmas under
+   `PartialStrengthen/RenameImage/*.lean`).  Estimated ~200 LoC
+   given per-ctor lemmas already exist.
+2. **#2022 par**: Path A composition (~30-50 LoC) — project,
+   invert, strengthen.
+3. **#2023 weaken**: Specialize #2022 to `RawRenaming.weaken`
+   via `RawRenaming.weaken_injective` (~20 LoC).
+4. **#2024 parStar**: `Step.parStar.preserves_rename_image` chain
+   version via mapStep over `Step.par` chain (~30 LoC).
+5. **#2025 stepStar**: `StepStar.preserves_rename_image`
+   single-step chain variant via `Step.toPar.toStar` ladder
+   (~20 LoC).
+6. **#2026 audit**: Smoke audit gates + downstream consumer
+   migration log (~30 LoC).
+
+Total Block B budget: ~330 LoC across 6 commits, single warrior
+session feasible per the warrior mentality discipline.
+
+**Block B blocker**: #1978 must ship first.  Block C (#2027-2034
+typed Conv rename equivariance) and Block D (#2035-2044 final
+headlines) all chain off Block B.
+
 ## Critical-path summary (v1.0 requirements)
 
 The v1.0 milestone ("100% proven kernel") gates on:
