@@ -303,6 +303,63 @@ theorem Conv.listCons_cong_isClosedTy
     (fun stepTail => Step.listConsTail stepTail)
     headConv tailConv
 
+/-! ## Record + codata closed-Ty cong rules
+
+Single-field record introduction is unary; codata unfolding is
+binary (state + transition).  Both consume the closed-Ty witness
+catalog (`IsClosedTy.record` / `IsClosedTy.codata` / `IsClosedTy.arrow`)
+to discharge SR through the wrapper positions. -/
+
+/-- Conv cong on `Term.recordIntro`'s single field when the
+underlying single-field type is closed.  Unary specialisation of
+`cong_at_isClosedTy` at `IsClosedTy.record`. -/
+theorem Conv.recordIntroField_cong_isClosedTy
+    {singleFieldType : Ty level scope}
+    (closedSingleField : IsClosedTy singleFieldType)
+    {fieldRawA fieldRawB : RawTerm scope}
+    {fieldTermA : Term context singleFieldType fieldRawA}
+    {fieldTermB : Term context singleFieldType fieldRawB}
+    (fieldConv : Conv fieldTermA fieldTermB) :
+    Conv (Term.recordIntro fieldTermA) (Term.recordIntro fieldTermB) :=
+  Conv.cong_at_isClosedTy
+    (resultTy := Ty.record singleFieldType)
+    closedSingleField
+    (wrapRaw := RawTerm.recordIntro)
+    (fun fieldTerm => Term.recordIntro fieldTerm)
+    (fun step => Step.recordIntroField step)
+    fieldConv
+
+/-- Conv cong on both `Term.codataUnfold` positions (initial state
+and transition function) when both component types are closed.
+Binary specialisation of `cong2_at_isClosedTy` at `IsClosedTy.codata`.
+The transition position carries `Ty.arrow stateType outputType`,
+discharged via `IsClosedTy.arrow` from the closed components. -/
+theorem Conv.codataUnfold_cong_isClosedTy
+    {stateType outputType : Ty level scope}
+    (closedState : IsClosedTy stateType)
+    (closedOutput : IsClosedTy outputType)
+    {stateRawA stateRawB transitionRawA transitionRawB : RawTerm scope}
+    {stateTermA : Term context stateType stateRawA}
+    {stateTermB : Term context stateType stateRawB}
+    {transitionTermA :
+      Term context (Ty.arrow stateType outputType) transitionRawA}
+    {transitionTermB :
+      Term context (Ty.arrow stateType outputType) transitionRawB}
+    (stateConv : Conv stateTermA stateTermB)
+    (transitionConv : Conv transitionTermA transitionTermB) :
+    Conv (Term.codataUnfold stateTermA transitionTermA)
+         (Term.codataUnfold stateTermB transitionTermB) :=
+  Conv.cong2_at_isClosedTy
+    (resultTy := Ty.codata stateType outputType)
+    closedState (IsClosedTy.arrow closedState closedOutput)
+    (wrapRaw := fun stateRaw transitionRaw =>
+      RawTerm.codataUnfold stateRaw transitionRaw)
+    (fun stateTerm transitionTerm =>
+      Term.codataUnfold stateTerm transitionTerm)
+    (fun stepState => Step.codataUnfoldState stepState)
+    (fun stepTransition => Step.codataUnfoldTransition stepTransition)
+    stateConv transitionConv
+
 /-! ## Eliminator scrutinee cong rules
 
 For each list/option/either eliminator, when the element/component

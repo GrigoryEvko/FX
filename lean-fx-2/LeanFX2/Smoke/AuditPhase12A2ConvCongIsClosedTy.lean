@@ -8,6 +8,8 @@ import LeanFX2.Reduction.ConvCongIsClosedTy
 #print axioms LeanFX2.Conv.listCons_head_cong_isClosedTy
 #print axioms LeanFX2.Conv.listCons_tail_cong_isClosedTy
 #print axioms LeanFX2.Conv.listCons_cong_isClosedTy
+#print axioms LeanFX2.Conv.recordIntroField_cong_isClosedTy
+#print axioms LeanFX2.Conv.codataUnfold_cong_isClosedTy
 #print axioms LeanFX2.Conv.listElim_scrutinee_cong_isClosedTy
 #print axioms LeanFX2.Conv.optionMatch_scrutinee_cong_isClosedTy
 #print axioms LeanFX2.Conv.eitherMatch_scrutinee_cong_isClosedTy
