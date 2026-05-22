@@ -593,4 +593,51 @@ theorem Conv.rawWeaken_toRawJoin
       RawStep.parStar targetRaw.weaken commonRaw :=
   Conv.rawRename_toRawJoin RawRenaming.weaken convertibility
 
+/-- Raw-only substitution variant of the typed-Conv → raw-join projection.
+
+Given a typed `Conv sourceTerm targetTerm` and a raw substitution `rawSubst`,
+the substituted raw projections `sourceRaw.subst rawSubst` and
+`targetRaw.subst rawSubst` share a common raw reduct.  Useful for downstream
+backward-inversion consumers (K12.28 Geuvers β-η critical pair, K13 NbE
+β-step) that need substitution equivariance at the raw layer without
+threading a typed substitution morphism. -/
+theorem Conv.rawSubst_toRawJoin
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    {targetScope : Nat}
+    (rawSubst : RawTermSubst scope targetScope)
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.subst rawSubst) commonRaw ∧
+      RawStep.parStar (targetRaw.subst rawSubst) commonRaw := by
+  obtain ⟨commonRaw, sourceChain, targetChain⟩ := Conv.toRawJoin convertibility
+  exact ⟨commonRaw.subst rawSubst,
+    RawStep.parStar.subst_compatible_same rawSubst sourceChain,
+    RawStep.parStar.subst_compatible_same rawSubst targetChain⟩
+
+/-- Singleton-substitution specialization of `Conv.rawSubst_toRawJoin`.
+
+Surface form `sourceRaw.subst0 argRaw` / `targetRaw.subst0 argRaw` matches
+the β-redex shape that K12.28 Geuvers 1992 critical-pair joinability and
+K13.18 NbE β-step consumers reach for at the raw layer.  Pins the argument
+across both endpoints; for heterogeneous arg-chains use
+`RawStep.parStar.subst0_par` directly. -/
+theorem Conv.rawSubst0_toRawJoin
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level (scope + 1)}
+    {sourceType targetType : Ty level (scope + 1)}
+    {sourceRaw targetRaw : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (argRaw : RawTerm scope)
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ commonRaw,
+      RawStep.parStar (sourceRaw.subst0 argRaw) commonRaw ∧
+      RawStep.parStar (targetRaw.subst0 argRaw) commonRaw :=
+  Conv.rawSubst_toRawJoin (RawTermSubst.singleton argRaw) convertibility
+
 end LeanFX2
