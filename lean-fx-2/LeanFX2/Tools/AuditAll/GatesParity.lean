@@ -152,7 +152,15 @@ namespace LeanFX2.Tools
 --     appLeft + appRight via cong2_at_isClosedTy (closed-domain +
 --     closed-codomain binary cong).  Composes two single-position
 --     StepStar lifts inside one budget-gate-matching name.
---   Coverage at 38/78 ctors with `Conv.<ctor>_cong` mirror.
-#assert_conv_cong_coverage_budget LeanFX2.Term 40
+--   2026-05-22 ratchet 40 → 35 after 5 closed-Ty unary cong rules
+--     landed in ConvCongIsClosedTy.lean: modIntro_cong, modElim_cong,
+--     subsume_cong, recordProj_cong, codataDest_cong.  Each is a
+--     ~12-line specialization of Conv.cong_at_isClosedTy at the
+--     ctor's Step.<name>Inner / Step.<name>Value rule.  modIntro /
+--     modElim / subsume preserve type (closedTy = resultTy);
+--     recordProj / codataDest project from a closed parametric
+--     wrapper down to a closed sub-component.
+--   Coverage at 43/78 ctors with `Conv.<ctor>_cong` mirror.
+#assert_conv_cong_coverage_budget LeanFX2.Term 35
 
 end LeanFX2.Tools

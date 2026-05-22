@@ -737,4 +737,124 @@ theorem Conv.natRecSucc_cong_isClosedTy
     (fun step => Step.natRecSucc step)
     succConv
 
+/-! ## Closed-Ty single-position cong rules for modal + projector ctors
+
+The next batch of `_cong` rules covers Term ctors with a single
+sub-Term position whose sub-position type is closed.  Each is a
+~12-line specialization of `Conv.cong_at_isClosedTy`.
+
+Coverage matrix (Term ctor ↔ Step ctor ↔ IsClosedTy ctor):
+
+| Term ctor       | Step ctor           | IsClosedTy ctor  |
+|-----------------|---------------------|------------------|
+| modIntro        | Step.modIntroInner  | (innerType)      |
+| modElim         | Step.modElimInner   | (innerType)      |
+| subsume         | Step.subsumeInner   | (innerType)      |
+| recordProj      | Step.recordProjRecord | record(closed) |
+| codataDest      | Step.codataDestValue  | codata(closed,closed) |
+
+`modIntro` / `modElim` / `subsume` preserve type (innerType in /
+innerType out), so closedTy = resultTy = innerType.
+`recordProj` and `codataDest` project the closed inner type to a
+sub-component of the result. -/
+
+/-- Conv cong on `Term.modIntro`'s inner position at a closed inner
+type.  The modal carrier is closed, so `Term.modIntro` (which
+preserves the underlying type) ships zero-axiom via the closed-type
+lifter. -/
+theorem Conv.modIntro_cong
+    {innerType : Ty level scope}
+    (closedInner : IsClosedTy innerType)
+    {innerRawA innerRawB : RawTerm scope}
+    {innerTermA : Term context innerType innerRawA}
+    {innerTermB : Term context innerType innerRawB}
+    (innerConv : Conv innerTermA innerTermB) :
+    Conv (Term.modIntro innerTermA) (Term.modIntro innerTermB) :=
+  Conv.cong_at_isClosedTy
+    (resultTy := innerType)
+    closedInner
+    (wrapRaw := RawTerm.modIntro)
+    (fun term => Term.modIntro term)
+    (fun step => Step.modIntroInner step)
+    innerConv
+
+/-- Conv cong on `Term.modElim`'s inner position at a closed inner
+type.  Same shape as `modIntro_cong` — `modElim` preserves the
+underlying type. -/
+theorem Conv.modElim_cong
+    {innerType : Ty level scope}
+    (closedInner : IsClosedTy innerType)
+    {innerRawA innerRawB : RawTerm scope}
+    {innerTermA : Term context innerType innerRawA}
+    {innerTermB : Term context innerType innerRawB}
+    (innerConv : Conv innerTermA innerTermB) :
+    Conv (Term.modElim innerTermA) (Term.modElim innerTermB) :=
+  Conv.cong_at_isClosedTy
+    (resultTy := innerType)
+    closedInner
+    (wrapRaw := RawTerm.modElim)
+    (fun term => Term.modElim term)
+    (fun step => Step.modElimInner step)
+    innerConv
+
+/-- Conv cong on `Term.subsume`'s inner position at a closed inner
+type.  Same shape as `modIntro_cong` — `subsume` preserves the
+underlying type (mode/level cumulativity is in the carrier, not the
+type). -/
+theorem Conv.subsume_cong
+    {innerType : Ty level scope}
+    (closedInner : IsClosedTy innerType)
+    {innerRawA innerRawB : RawTerm scope}
+    {innerTermA : Term context innerType innerRawA}
+    {innerTermB : Term context innerType innerRawB}
+    (innerConv : Conv innerTermA innerTermB) :
+    Conv (Term.subsume innerTermA) (Term.subsume innerTermB) :=
+  Conv.cong_at_isClosedTy
+    (resultTy := innerType)
+    closedInner
+    (wrapRaw := RawTerm.subsume)
+    (fun term => Term.subsume term)
+    (fun step => Step.subsumeInner step)
+    innerConv
+
+/-- Conv cong on `Term.recordProj`'s record position at a closed
+single-field record type.  The result type is the closed
+`singleFieldType` (one field per the current single-field record
+spec). -/
+theorem Conv.recordProj_cong
+    {singleFieldType : Ty level scope}
+    (closedSingleField : IsClosedTy singleFieldType)
+    {recordRawA recordRawB : RawTerm scope}
+    {recordValueA : Term context (Ty.record singleFieldType) recordRawA}
+    {recordValueB : Term context (Ty.record singleFieldType) recordRawB}
+    (recordConv : Conv recordValueA recordValueB) :
+    Conv (Term.recordProj recordValueA) (Term.recordProj recordValueB) :=
+  Conv.cong_at_isClosedTy
+    (resultTy := singleFieldType)
+    (IsClosedTy.record closedSingleField)
+    (wrapRaw := RawTerm.recordProj)
+    (fun term => Term.recordProj term)
+    (fun step => Step.recordProjRecord step)
+    recordConv
+
+/-- Conv cong on `Term.codataDest`'s codata position at a closed
+codata type.  The result type is the closed `outputType` component
+of the codata. -/
+theorem Conv.codataDest_cong
+    {stateType outputType : Ty level scope}
+    (closedState : IsClosedTy stateType)
+    (closedOutput : IsClosedTy outputType)
+    {codataRawA codataRawB : RawTerm scope}
+    {codataValueA : Term context (Ty.codata stateType outputType) codataRawA}
+    {codataValueB : Term context (Ty.codata stateType outputType) codataRawB}
+    (codataConv : Conv codataValueA codataValueB) :
+    Conv (Term.codataDest codataValueA) (Term.codataDest codataValueB) :=
+  Conv.cong_at_isClosedTy
+    (resultTy := outputType)
+    (IsClosedTy.codata closedState closedOutput)
+    (wrapRaw := RawTerm.codataDest)
+    (fun term => Term.codataDest term)
+    (fun step => Step.codataDestValue step)
+    codataConv
+
 end LeanFX2
