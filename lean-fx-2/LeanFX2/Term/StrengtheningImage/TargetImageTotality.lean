@@ -1622,6 +1622,350 @@ theorem partialStrengthenTyped?_isSome_target_idStrictRefl
       next _ _ =>
           rfl
 
+/-! ## TypeCode family (CUMUL-2.4 schematic-raw type-code ctors)
+
+The 10 typeCode ctors construct value-shaped representatives of
+the FX type formers at the `Ty.universe outerLevel levelLe`
+type.  All carry:
+
+* 2 attribute params: `outerLevel : UniverseLevel`,
+  `levelLe : outerLevel.toNat + 1 ≤ level`.
+* 1-3 schematic RawTerm-typed payloads (NOT Term operands).
+* No operand IH — payloads are pure raws, strengthened directly
+  via `partialStrengthen?`.
+
+Three sub-shapes by payload count:
+
+* Single-raw: listCode, optionCode (1-split).
+* Binary-raw at back-back: arrowCode, productCode, sumCode,
+  eitherCode, equivCode (2-split, all at `strengthening.back`).
+* Binary-raw with binder-side: piTyCode, sigmaTyCode (2-split,
+  codomain at `strengthening.back.lift`).
+* Ternary-raw at back-back-back: idCode (3-split). -/
+/-- Target-direction totality at `Term.arrowCode`. -/
+theorem partialStrengthenTyped?_isSome_target_arrowCode
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (domainCodeRaw codomainCodeRaw : RawTerm sourceScope)
+    (domainStrengthens :
+      (domainCodeRaw.partialStrengthen? strengthening.back).isSome
+        = true)
+    (codomainStrengthens :
+      (codomainCodeRaw.partialStrengthen? strengthening.back).isSome
+        = true) :
+    (partialStrengthenTyped?
+        (Term.arrowCode (context := sourceCtx)
+          outerLevel levelLe domainCodeRaw codomainCodeRaw)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noDomain =>
+      rw [noDomain] at domainStrengthens
+      cases domainStrengthens
+  next _ _ =>
+      split
+      next noCodomain =>
+          rw [noCodomain] at codomainStrengthens
+          cases codomainStrengthens
+      next _ _ =>
+          rfl
+
+/-- Target-direction totality at `Term.piTyCode`.  Codomain
+strengthens under the binder via `strengthening.back.lift`. -/
+theorem partialStrengthenTyped?_isSome_target_piTyCode
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (domainCodeRaw : RawTerm sourceScope)
+    (codomainCodeRaw : RawTerm (sourceScope + 1))
+    (domainStrengthens :
+      (domainCodeRaw.partialStrengthen? strengthening.back).isSome
+        = true)
+    (codomainLiftedStrengthens :
+      (codomainCodeRaw.partialStrengthen? strengthening.back.lift).isSome
+        = true) :
+    (partialStrengthenTyped?
+        (Term.piTyCode (context := sourceCtx)
+          outerLevel levelLe domainCodeRaw codomainCodeRaw)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noDomain =>
+      rw [noDomain] at domainStrengthens
+      cases domainStrengthens
+  next _ _ =>
+      split
+      next noCodomain =>
+          rw [noCodomain] at codomainLiftedStrengthens
+          cases codomainLiftedStrengthens
+      next _ _ =>
+          rfl
+
+/-- Target-direction totality at `Term.sigmaTyCode`.  Same shape
+as `piTyCode` — codomain under binder. -/
+theorem partialStrengthenTyped?_isSome_target_sigmaTyCode
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (domainCodeRaw : RawTerm sourceScope)
+    (codomainCodeRaw : RawTerm (sourceScope + 1))
+    (domainStrengthens :
+      (domainCodeRaw.partialStrengthen? strengthening.back).isSome
+        = true)
+    (codomainLiftedStrengthens :
+      (codomainCodeRaw.partialStrengthen? strengthening.back.lift).isSome
+        = true) :
+    (partialStrengthenTyped?
+        (Term.sigmaTyCode (context := sourceCtx)
+          outerLevel levelLe domainCodeRaw codomainCodeRaw)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noDomain =>
+      rw [noDomain] at domainStrengthens
+      cases domainStrengthens
+  next _ _ =>
+      split
+      next noCodomain =>
+          rw [noCodomain] at codomainLiftedStrengthens
+          cases codomainLiftedStrengthens
+      next _ _ =>
+          rfl
+
+/-- Target-direction totality at `Term.productCode`. -/
+theorem partialStrengthenTyped?_isSome_target_productCode
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (firstCodeRaw secondCodeRaw : RawTerm sourceScope)
+    (firstStrengthens :
+      (firstCodeRaw.partialStrengthen? strengthening.back).isSome
+        = true)
+    (secondStrengthens :
+      (secondCodeRaw.partialStrengthen? strengthening.back).isSome
+        = true) :
+    (partialStrengthenTyped?
+        (Term.productCode (context := sourceCtx)
+          outerLevel levelLe firstCodeRaw secondCodeRaw)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noFirst =>
+      rw [noFirst] at firstStrengthens
+      cases firstStrengthens
+  next _ _ =>
+      split
+      next noSecond =>
+          rw [noSecond] at secondStrengthens
+          cases secondStrengthens
+      next _ _ =>
+          rfl
+
+/-- Target-direction totality at `Term.sumCode`. -/
+theorem partialStrengthenTyped?_isSome_target_sumCode
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (leftCodeRaw rightCodeRaw : RawTerm sourceScope)
+    (leftStrengthens :
+      (leftCodeRaw.partialStrengthen? strengthening.back).isSome = true)
+    (rightStrengthens :
+      (rightCodeRaw.partialStrengthen? strengthening.back).isSome
+        = true) :
+    (partialStrengthenTyped?
+        (Term.sumCode (context := sourceCtx)
+          outerLevel levelLe leftCodeRaw rightCodeRaw)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noLeft =>
+      rw [noLeft] at leftStrengthens
+      cases leftStrengthens
+  next _ _ =>
+      split
+      next noRight =>
+          rw [noRight] at rightStrengthens
+          cases rightStrengthens
+      next _ _ =>
+          rfl
+
+/-- Target-direction totality at `Term.listCode`.  Single raw
+payload — single-split. -/
+theorem partialStrengthenTyped?_isSome_target_listCode
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (elementCodeRaw : RawTerm sourceScope)
+    (elementStrengthens :
+      (elementCodeRaw.partialStrengthen? strengthening.back).isSome
+        = true) :
+    (partialStrengthenTyped?
+        (Term.listCode (context := sourceCtx)
+          outerLevel levelLe elementCodeRaw)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noElement =>
+      rw [noElement] at elementStrengthens
+      cases elementStrengthens
+  next _ _ =>
+      rfl
+
+/-- Target-direction totality at `Term.optionCode`.  Same shape
+as `listCode`. -/
+theorem partialStrengthenTyped?_isSome_target_optionCode
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (elementCodeRaw : RawTerm sourceScope)
+    (elementStrengthens :
+      (elementCodeRaw.partialStrengthen? strengthening.back).isSome
+        = true) :
+    (partialStrengthenTyped?
+        (Term.optionCode (context := sourceCtx)
+          outerLevel levelLe elementCodeRaw)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noElement =>
+      rw [noElement] at elementStrengthens
+      cases elementStrengthens
+  next _ _ =>
+      rfl
+
+/-- Target-direction totality at `Term.eitherCode`. -/
+theorem partialStrengthenTyped?_isSome_target_eitherCode
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (leftCodeRaw rightCodeRaw : RawTerm sourceScope)
+    (leftStrengthens :
+      (leftCodeRaw.partialStrengthen? strengthening.back).isSome = true)
+    (rightStrengthens :
+      (rightCodeRaw.partialStrengthen? strengthening.back).isSome
+        = true) :
+    (partialStrengthenTyped?
+        (Term.eitherCode (context := sourceCtx)
+          outerLevel levelLe leftCodeRaw rightCodeRaw)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noLeft =>
+      rw [noLeft] at leftStrengthens
+      cases leftStrengthens
+  next _ _ =>
+      split
+      next noRight =>
+          rw [noRight] at rightStrengthens
+          cases rightStrengthens
+      next _ _ =>
+          rfl
+
+/-- Target-direction totality at `Term.idCode`.  Three raw
+payloads (typeCodeRaw + leftRaw + rightRaw). -/
+theorem partialStrengthenTyped?_isSome_target_idCode
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (typeCodeRaw leftRaw rightRaw : RawTerm sourceScope)
+    (typeStrengthens :
+      (typeCodeRaw.partialStrengthen? strengthening.back).isSome = true)
+    (leftStrengthens :
+      (leftRaw.partialStrengthen? strengthening.back).isSome = true)
+    (rightStrengthens :
+      (rightRaw.partialStrengthen? strengthening.back).isSome = true) :
+    (partialStrengthenTyped?
+        (Term.idCode (context := sourceCtx)
+          outerLevel levelLe typeCodeRaw leftRaw rightRaw)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noType =>
+      rw [noType] at typeStrengthens
+      cases typeStrengthens
+  next _ _ =>
+      split
+      next noLeft =>
+          rw [noLeft] at leftStrengthens
+          cases leftStrengthens
+      next _ _ =>
+          split
+          next noRight =>
+              rw [noRight] at rightStrengthens
+              cases rightStrengthens
+          next _ _ =>
+              rfl
+
+/-- Target-direction totality at `Term.equivCode`. -/
+theorem partialStrengthenTyped?_isSome_target_equivCode
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (leftTypeCodeRaw rightTypeCodeRaw : RawTerm sourceScope)
+    (leftStrengthens :
+      (leftTypeCodeRaw.partialStrengthen? strengthening.back).isSome
+        = true)
+    (rightStrengthens :
+      (rightTypeCodeRaw.partialStrengthen? strengthening.back).isSome
+        = true) :
+    (partialStrengthenTyped?
+        (Term.equivCode (context := sourceCtx)
+          outerLevel levelLe leftTypeCodeRaw rightTypeCodeRaw)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noLeft =>
+      rw [noLeft] at leftStrengthens
+      cases leftStrengthens
+  next _ _ =>
+      split
+      next noRight =>
+          rw [noRight] at rightStrengthens
+          cases rightStrengthens
+      next _ _ =>
+          rfl
+
 end Term
 
 end LeanFX2
