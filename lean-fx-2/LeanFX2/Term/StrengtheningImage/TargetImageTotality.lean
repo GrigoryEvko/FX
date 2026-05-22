@@ -804,6 +804,98 @@ theorem partialStrengthenTyped?_isSome_target_codataUnfold
           next _ _ =>
               rfl
 
+/-! ## Sigma projections with existential secondType: fst, snd
+
+`Term.fst pairTerm` and `Term.snd pairTerm` project from a
+dependent sigma `Ty.sigmaTy firstType secondType` at `pairRaw`.
+Because `secondType` is existential at the projected term's type
+index (fst's output is `firstType` alone; snd's output is
+`secondType.subst0 firstType ...`, dependent on the hidden fst),
+the wrapper departs from the destructor-with-HEq pattern: it
+takes pairTerm directly.  The universal driver knows secondType
+from its case match on `Term.fst pairTerm` / `Term.snd pairTerm`
+and passes pairTerm in concretely.
+
+Both ctors triple-split over: firstType strengthening (back),
+secondType strengthening (back.lift, binder-side), pairTerm IH. -/
+/-- Target-direction totality at `Term.fst`. -/
+theorem partialStrengthenTyped?_isSome_target_fst
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {firstType : Ty level sourceScope}
+    {secondType : Ty level (sourceScope + 1)}
+    {pairRaw : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (pairTerm :
+      Term sourceCtx (Ty.sigmaTy firstType secondType) pairRaw)
+    (firstStrengthens :
+      (firstType.partialStrengthen? strengthening.back).isSome = true)
+    (secondLiftedStrengthens :
+      (secondType.partialStrengthen? strengthening.back.lift).isSome
+        = true)
+    (pairIH :
+      (partialStrengthenTyped? pairTerm strengthening).isSome = true) :
+    (partialStrengthenTyped? (Term.fst pairTerm) strengthening).isSome
+      = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noFirst =>
+      rw [noFirst] at firstStrengthens
+      cases firstStrengthens
+  next _ _ =>
+      split
+      next noSecond =>
+          rw [noSecond] at secondLiftedStrengthens
+          cases secondLiftedStrengthens
+      next _ _ =>
+          split
+          next noPair =>
+              rw [noPair] at pairIH
+              cases pairIH
+          next _ _ =>
+              rfl
+
+/-- Target-direction totality at `Term.snd`. -/
+theorem partialStrengthenTyped?_isSome_target_snd
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {firstType : Ty level sourceScope}
+    {secondType : Ty level (sourceScope + 1)}
+    {pairRaw : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (pairTerm :
+      Term sourceCtx (Ty.sigmaTy firstType secondType) pairRaw)
+    (firstStrengthens :
+      (firstType.partialStrengthen? strengthening.back).isSome = true)
+    (secondLiftedStrengthens :
+      (secondType.partialStrengthen? strengthening.back.lift).isSome
+        = true)
+    (pairIH :
+      (partialStrengthenTyped? pairTerm strengthening).isSome = true) :
+    (partialStrengthenTyped? (Term.snd pairTerm) strengthening).isSome
+      = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noFirst =>
+      rw [noFirst] at firstStrengthens
+      cases firstStrengthens
+  next _ _ =>
+      split
+      next noSecond =>
+          rw [noSecond] at secondLiftedStrengthens
+          cases secondLiftedStrengthens
+      next _ _ =>
+          split
+          next noPair =>
+              rw [noPair] at pairIH
+              cases pairIH
+          next _ _ =>
+              rfl
+
 end Term
 
 end LeanFX2
