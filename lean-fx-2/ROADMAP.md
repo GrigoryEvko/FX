@@ -294,9 +294,9 @@ the leaves and drops the `DispatchAtom` gate.
 
 | Leaf | Blocker | TypedCtor | Cascade | Close | LoC |
 |------|---------|-----------|---------|-------|-----|
-| #2013 equivApply | typed `Step.par.uaReflEquivApply{,Deep}` | #2057 | #2058 | #2059 | ~600 |
-| #2014 appPi | typed `Step.par.piEta` η bridge | #2060 | #2061 | #2062 | ~1100 |
-| #2015 transp | 5 typed deep+ua+compose β arms | #2063 | #2064 | #2065 | ~1300 |
+| #2013 equivApply | typed `Step.par.uaReflEquivApply{,Deep}` ✅ | #2057 ✅ | #2058 ✅ | #2059 ✅ | ~600 |
+| #2014 appPi | typed `Step.par.piEta` η bridge ✅ | #2060 ✅ | #2061 ✅ | #2062 ✅ | ~1100 |
+| #2015 transp | 1 typed `Step.par.transpReflBetaDeep` (4 raw arms vacuous via #2101) | #2063 | #2064 | #2065 | ~600 |
 | #2016 hcomp | vacuity via TermPathLamExcludes + path-typed extension | (vac) #2066 ✅ | #2067 ← #2069 | (vac) | ~350 |
 | #2017 hcompPath | relax `Step.par.hcompBeta` + add `hcompBetaDeep` | #2068 | (folded) | #2069 | ~600 |
 
@@ -304,6 +304,51 @@ the leaves and drops the `DispatchAtom` gate.
 `cf43720b` via Term.pathLam_excludes_closedTy vacuity (no new
 kernel β ctor required).  Path-typed carrier (#2067) routes
 through Term.hcompPath once #2068/#2069 ship.
+
+#2101 unblock-E.transp.VacuityFoundations shipped 2026-05-22 at
+commit `b931b4ff` (Foundation/TermTranspPathVacuity.lean):
+
+* `Term.uaToEquiv_excludes_pathTy` — refutes a typed Term at
+  `Ty.path` whose raw projects to `RawTerm.uaToEquiv _` (the
+  only Term ctor producing that raw shape lands at `Ty.equiv`,
+  not `Ty.path`).
+* `Term.pathCompose_uninhabited` — no typed Term has raw
+  `RawTerm.pathCompose _ _` (Term.pathCompose deferred to v1.1
+  #1574 D3.10).
+
+Discharges 4 of the 7 arms of `RawStep.par.transp_inv` via
+vacuity: `uaBeta`, `uaBetaDeep`, `transpCompose`,
+`transpComposeDeep`.  Reduces #2063 scope from "ship 5 typed
+deep+ua+compose β arms" to "ship 1 typed
+`Step.par.transpReflBetaDeep` ctor".
+
+### #2083 Pi-shape collision audit (closed 2026-05-22)
+
+Audit finding: NONE of the remaining leaves (#2015, #2016,
+#2017) exhibit the Pi-shape collision pattern (one raw form,
+multiple typed ctors) that gated #2014 appPi.
+
+* #2015 transp — only `Term.transp` produces `RawTerm.transp`.
+  Architectural blocker is **heterogeneous endpoint annotation**:
+  `Term.transp` admits `sourceType ≠ targetType` and
+  `sourceTypeRaw ≠ targetTypeRaw` as independent constructor data
+  (Term.lean:411).  The existing typed `Step.par.transpReflBeta`
+  requires homogeneous endpoints, so a heterogeneous transp
+  whose path projects to `RawTerm.pathLam X.weaken` cannot use
+  the existing shallow ctor.  `Term.pathLam` (Term.lean:337-345)
+  takes endpoint raws as independent data with no constraint
+  requiring `leftEndpoint = body[i:=0]`, so heterogeneous
+  pathLam-projected paths ARE inhabited at the typed level.
+  Resolution path for #2063: ship a heterogeneous
+  `Step.par.transpReflBetaDeep` typed ctor whose result type
+  carries the developed-path's target raw, bypassing the
+  homogeneity requirement.
+* #2016 hcomp — only `Term.hcomp` (closed-carrier) produces
+  `RawTerm.hcomp` at non-path carriers.  Closed-carrier case
+  shipped via vacuity (#2066).
+* #2017 hcompPath — `Term.hcompPath` is the path-carrier ctor;
+  distinct from `Term.hcomp`.  No collision; needs the relaxed
+  `Step.par.hcompBeta` typed mirror (#2068).
 
 ### Close-out chain
 
