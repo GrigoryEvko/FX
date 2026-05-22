@@ -17366,6 +17366,52 @@ theorem Conv.transpFill_ne_refl
     RawStep.parStar.refl_inv targetToJoin
   nomatch joinEqTranspFill.symm.trans joinEqRefl
 
+/-- A `transpFill`-headed source and a `uaToEquiv`-headed target are
+not convertible.  Cubical transport filler versus univalence-to-
+equivalence primitive — distinct canonical heads at the raw level. -/
+theorem Conv.transpFill_ne_uaToEquiv
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {pathTerm intervalTerm sourceRawTerm : RawTerm scope}
+    {proofTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.transpFill pathTerm intervalTerm sourceRawTerm :
+        RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.uaToEquiv proofTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, _, joinEqFill, _, _, _⟩ :=
+    RawStep.parStar.transpFill_inv sourceToJoin
+  obtain ⟨_, joinEqUa, _⟩ :=
+    RawStep.parStar.uaToEquiv_inv targetToJoin
+  nomatch joinEqFill.symm.trans joinEqUa
+
+/-- A `transpFill`-headed source and a `universeCode`-headed target are
+not convertible.  Cubical transport filler versus universe-level type
+code — distinct canonical heads at the raw level. -/
+theorem Conv.transpFill_ne_universeCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {pathTerm intervalTerm sourceRawTerm : RawTerm scope}
+    {innerLevel : Nat}
+    {sourceTerm : Term context sourceType
+      (RawTerm.transpFill pathTerm intervalTerm sourceRawTerm :
+        RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.universeCode innerLevel : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, _, joinEqFill, _, _, _⟩ :=
+    RawStep.parStar.transpFill_inv sourceToJoin
+  have joinEqUniv : joinRaw = RawTerm.universeCode innerLevel :=
+    RawStep.parStar.universeCode_inv targetToJoin
+  nomatch joinEqFill.symm.trans joinEqUniv
+
 /-! ### `subsume` row — modal subsumption stratum
 
 The `subsume` head wraps an inner term and lifts it through a

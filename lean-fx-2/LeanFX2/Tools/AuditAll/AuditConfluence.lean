@@ -847,6 +847,8 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.transpFill_ne_listCons
 #assert_no_axioms LeanFX2.Conv.transpFill_ne_pair
 #assert_no_axioms LeanFX2.Conv.transpFill_ne_refl
+#assert_no_axioms LeanFX2.Conv.transpFill_ne_uaToEquiv
+#assert_no_axioms LeanFX2.Conv.transpFill_ne_universeCode
 #assert_no_axioms LeanFX2.Conv.subsume_ne_unit
 #assert_no_axioms LeanFX2.Conv.subsume_ne_boolTrue
 #assert_no_axioms LeanFX2.Conv.subsume_ne_boolFalse
