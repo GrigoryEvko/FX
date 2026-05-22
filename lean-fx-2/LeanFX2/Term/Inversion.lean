@@ -403,6 +403,30 @@ theorem Term.natZero_unique
     HEq term1 term2 := by
   cases term1; cases term2; rfl
 
+/-- Two `Term ctx _ .interval0` values are HEq.
+
+`Term.interval0` is a closed-atomic constructor with no parameters
+and a fixed type index `Ty.interval`.  The HEq inversion follows the
+unit/boolTrue/boolFalse/natZero pattern: `cases term1; cases term2;
+rfl` eliminates all non-interval0 constructors by raw-index
+disjointness. -/
+theorem Term.interval0_unique
+    {ty1 ty2 : Ty level scope}
+    (term1 : Term context ty1 (RawTerm.interval0 (scope := scope)))
+    (term2 : Term context ty2 (RawTerm.interval0 (scope := scope))) :
+    HEq term1 term2 := by
+  cases term1; cases term2; rfl
+
+/-- Two `Term ctx _ .interval1` values are HEq.
+
+Mirror of `Term.interval0_unique`. -/
+theorem Term.interval1_unique
+    {ty1 ty2 : Ty level scope}
+    (term1 : Term context ty1 (RawTerm.interval1 (scope := scope)))
+    (term2 : Term context ty2 (RawTerm.interval1 (scope := scope))) :
+    HEq term1 term2 := by
+  cases term1; cases term2; rfl
+
 /-- Two `Term ctx _ .listNil` values are HEq (forced equal element types). -/
 theorem Term.listNil_unique
     {ty1 ty2 : Ty level scope}

@@ -134,6 +134,53 @@ theorem partialStrengthenTyped?_isSome_target_natZero
   subst targetEq
   rfl
 
+/-- Target-direction totality at `Term.interval0`.
+
+Consumes the `Term.interval0_unique` HEq inversion shipped in
+`Term/Inversion.lean`. -/
+theorem partialStrengthenTyped?_isSome_target_interval0
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (targetTerm :
+      Term sourceCtx (Ty.interval (level := level) (scope := sourceScope))
+        (RawTerm.interval0 (scope := sourceScope))) :
+    (partialStrengthenTyped? targetTerm strengthening).isSome = true := by
+  have heq :
+      HEq targetTerm
+        (Term.interval0 (context := sourceCtx) (level := level)) :=
+    Term.interval0_unique targetTerm
+      (Term.interval0 (context := sourceCtx) (level := level))
+  have targetEq :
+      targetTerm = Term.interval0 (context := sourceCtx) (level := level) :=
+    eq_of_heq heq
+  subst targetEq
+  rfl
+
+/-- Target-direction totality at `Term.interval1`. -/
+theorem partialStrengthenTyped?_isSome_target_interval1
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (targetTerm :
+      Term sourceCtx (Ty.interval (level := level) (scope := sourceScope))
+        (RawTerm.interval1 (scope := sourceScope))) :
+    (partialStrengthenTyped? targetTerm strengthening).isSome = true := by
+  have heq :
+      HEq targetTerm
+        (Term.interval1 (context := sourceCtx) (level := level)) :=
+    Term.interval1_unique targetTerm
+      (Term.interval1 (context := sourceCtx) (level := level))
+  have targetEq :
+      targetTerm = Term.interval1 (context := sourceCtx) (level := level) :=
+    eq_of_heq heq
+  subst targetEq
+  rfl
+
 end Term
 
 end LeanFX2
