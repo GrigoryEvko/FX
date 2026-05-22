@@ -1196,5 +1196,56 @@ inductive DispatchAtom :
                                     equivValue argumentValue
                     : Term context carrierB
                         (RawTerm.equivApply equivRaw argumentRaw))
+  /-- Homogeneous-endpoint cubical transport.  The typed `Term.transp`
+  ctor admits independent `sourceType`/`targetType` Ty parameters and
+  independent `sourceTypeRaw`/`targetTypeRaw` raw endpoints, but the
+  typed Step.par.transpReflBetaDeep ctor (#2063) requires the
+  homogeneous case (`sourceType = targetType`, both endpoint raws =
+  `typeRaw`).  This dispatch arm restricts to that homogeneous shape;
+  heterogeneous-endpoint transp dispatch is open debt in ROADMAP.md →
+  unblock-E leaf-coverage section.
+
+  Path's typed projection lives at `Ty.path (Ty.universe ...) typeRaw
+  typeRaw` — not in `IsClosedTy` due to the universe dependency — so
+  we bake the path lifter as data.  Source value's type is the
+  homogeneous `sourceType`, also baked as data via `sourceValueLift`.
+
+  Consumed by `RawStep.par.lift_full_transp`
+  (`HeterogeneousElim.lean`, #2065) to close
+  unblock-A.leaf.transp via vacuity (uaBeta/uaBetaDeep refuted by
+  `Term.uaToEquiv_excludes_pathTy`; transpCompose/Deep refuted by
+  `Term.pathCompose_uninhabited`) plus the typed
+  `Step.par.transpReflBetaDeep` for the surviving β arms. -/
+  | transp {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
+      (universeLevel : UniverseLevel)
+      (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+      (sourceType : Ty level scope)
+      (typeRaw : RawTerm scope)
+      {pathRaw sourceRaw : RawTerm scope}
+      (typePath :
+        Term context
+          (Ty.path (Ty.universe universeLevel universeLevelLt) typeRaw typeRaw)
+          pathRaw)
+      (sourceValue : Term context sourceType sourceRaw)
+      (typePathLift : ∀ {targetRawIH : RawTerm scope},
+        RawStep.par pathRaw targetRawIH →
+        ∃ typePathTarget :
+            Term context
+              (Ty.path (Ty.universe universeLevel universeLevelLt)
+                typeRaw typeRaw)
+              targetRawIH,
+          Step.par typePath typePathTarget)
+      (sourceValueLift : ∀ {targetRawIH : RawTerm scope},
+        RawStep.par sourceRaw targetRawIH →
+        ∃ sourceValueTarget : Term context sourceType targetRawIH,
+          Step.par sourceValue sourceValueTarget) :
+      DispatchAtom (Term.transp (context := context) modeIsUnivalent
+                                 universeLevel universeLevelLt
+                                 sourceType sourceType typeRaw typeRaw
+                                 typePath sourceValue
+                    : Term context sourceType
+                        (RawTerm.transp pathRaw sourceRaw))
 
 end LeanFX2

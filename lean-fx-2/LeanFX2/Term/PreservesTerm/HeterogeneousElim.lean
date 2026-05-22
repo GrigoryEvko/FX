@@ -1,4 +1,5 @@
 import LeanFX2.Term.PreservesTerm.BetaCastWallDemolition
+import LeanFX2.Term.PreservesTerm.EliminatorShallowBeta
 import LeanFX2.Term.PreservesTerm.InlineDestructors
 import LeanFX2.Term.PreservesTerm.TwoTyAtomsAndCong
 import LeanFX2.Reduction.RawParInversion.AtomicCtors
@@ -6,6 +7,7 @@ import LeanFX2.Reduction.RawParInversion.CubicalAndIdentity
 import LeanFX2.Reduction.RawParInversion.RedexParents
 import LeanFX2.Foundation.IsClosedTyAtBinder
 import LeanFX2.Foundation.TermPathLamExcludes
+import LeanFX2.Foundation.TermTranspPathVacuity
 import LeanFX2.Foundation.TermUaToEquivExcludesOeqRefl
 import LeanFX2.Reduction.RawParInversion.TypeCodes
 
@@ -559,5 +561,112 @@ theorem RawStep.par.lift_full_equivApply
   · subst targetEq
     obtain ⟨equivTermTarget, _⟩ := equivLift equivStep
     exact (Term.uaToEquiv_excludes_oeqRefl_witness equivTermTarget).elim
+
+/-- **Closed-carrier transp full lift — homogeneous endpoints.**
+
+The raw `transp_inv` (`Reduction/RawParInversion/CubicalAndIdentity.lean:315`)
+enumerates SEVEN disjuncts under a `RawTerm.transp pathRaw sourceRaw` head:
+
+1. **cong (transpCong)** — both children par-step independently
+2. **transpReflBeta** (shallow β at literal `RawTerm.pathLam typeRaw.weaken`)
+3. **transpReflBetaDeep** (deep β: `pathRaw → pathLam typeRawTarget.weaken`)
+4. **uaBeta** (shallow β at `RawTerm.uaToEquiv`)
+5. **uaBetaDeep** (deep ua β: `pathRaw → uaToEquiv ...`)
+6. **transpCompose** (shallow β at `RawTerm.pathCompose`)
+7. **transpComposeDeep** (deep compose β: `pathRaw → pathCompose ...`)
+
+Strategy mirrors `lift_full_hcomp` (#2066) and `lift_full_equivApply`
+(#2059): vacuity foundations refute typed-impossible β arms; existing
+typed ctors lift the structurally-viable arms.
+
+* Arm 1 routes to `RawStep.par.lift_transp_cong`
+  (`EliminatorShallowBeta.lean:48`).
+* Arms 2-3 both lift via `Step.par.transpReflBetaDeep` (the typed ctor
+  shipped in #2063).  Arm 2 uses `RawStep.par.refl` as the path step
+  (the path is already at the constant-pathLam shape).  Arm 3 forwards
+  the inversion's `pathStep` premise directly.
+* Arms 4-5 refuted by `Term.uaToEquiv_excludes_pathTy` (#2101): no
+  typed Term inhabits `Ty.path ... (RawTerm.uaToEquiv _)` because the
+  only Term ctor producing that raw lands at `Ty.equiv`, not `Ty.path`.
+* Arms 6-7 refuted by `Term.pathCompose_uninhabited` (#2101): the typed
+  kernel ships ZERO ctors producing `RawTerm.pathCompose _ _` (deferred
+  to v1.1 via #1574 D3.10-PATH-COMPOSE-HOTT).
+
+Homogeneous endpoint case (`sourceType = targetType`, both endpoint
+raws `= typeRaw`) is what the typed Step.par.transpReflBetaDeep
+supports per its #2063 scope; heterogeneous-endpoint transp is open
+debt in ROADMAP.md → unblock-E leaf-coverage section.
+
+Closes #2015 unblock-E.transp.Close via vacuity + the single new typed
+ctor from #2063. -/
+theorem RawStep.par.lift_full_transp
+    (modeIsUnivalent : mode = Mode.univalent)
+    (universeLevel : UniverseLevel)
+    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+    (sourceType : Ty level scope)
+    (typeRaw : RawTerm scope)
+    {pathRaw sourceRaw : RawTerm scope}
+    (typePath :
+      Term context
+        (Ty.path (Ty.universe universeLevel universeLevelLt) typeRaw typeRaw)
+        pathRaw)
+    (sourceValue : Term context sourceType sourceRaw)
+    (typePathLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par pathRaw targetRawIH →
+      ∃ typePathTarget :
+          Term context
+            (Ty.path (Ty.universe universeLevel universeLevelLt)
+              typeRaw typeRaw)
+            targetRawIH,
+        Step.par typePath typePathTarget)
+    (sourceValueLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par sourceRaw targetRawIH →
+      ∃ sourceValueTarget : Term context sourceType targetRawIH,
+        Step.par sourceValue sourceValueTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.transp pathRaw sourceRaw) targetRaw) :
+    ∃ targetTerm : Term context sourceType targetRaw,
+      Step.par
+        (Term.transp modeIsUnivalent universeLevel universeLevelLt
+          sourceType sourceType typeRaw typeRaw typePath sourceValue)
+        targetTerm := by
+  rcases RawStep.par.transp_inv rawStep with
+    ⟨pathTargetRaw, sourceTargetRaw, targetEq, pathStep, sourceStep⟩
+    | ⟨_typeRawSource, _sourceTargetRaw, pathEq, targetEq, sourceStep⟩
+    | ⟨_typeRawTarget, _sourceTargetRaw, targetEq, pathStep, sourceStep⟩
+    | ⟨_proofRawSource, _proofRawTarget, _sourceTargetRaw,
+        pathEq, _targetEq, _proofStep, _sourceStep⟩
+    | ⟨_proofRawTarget, _sourceTargetRaw, _targetEq, pathStep,
+        _sourceStep⟩
+    | ⟨_leftRawSource, _leftRawTarget, _rightRawSource, _rightRawTarget,
+        _sourceTargetRaw, pathEq, _targetEq, _leftStep, _rightStep,
+        _sourceStep⟩
+    | ⟨_leftRawTarget, _rightRawTarget, _sourceTargetRaw,
+        _targetEq, pathStep, _sourceStep⟩
+  · subst targetEq
+    exact RawStep.par.lift_transp_cong modeIsUnivalent universeLevel
+            universeLevelLt sourceType sourceType typeRaw typeRaw
+            typePath sourceValue typePathLift sourceValueLift
+            pathStep sourceStep
+  · subst pathEq
+    subst targetEq
+    obtain ⟨sourceValueTarget, sourceStepTyped⟩ := sourceValueLift sourceStep
+    refine ⟨sourceValueTarget, ?_⟩
+    exact Step.par.transpReflBetaDeep modeIsUnivalent universeLevel
+            universeLevelLt sourceType typePath
+            (RawStep.par.refl _) sourceStepTyped
+  · subst targetEq
+    obtain ⟨sourceValueTarget, sourceStepTyped⟩ := sourceValueLift sourceStep
+    refine ⟨sourceValueTarget, ?_⟩
+    exact Step.par.transpReflBetaDeep modeIsUnivalent universeLevel
+            universeLevelLt sourceType typePath pathStep sourceStepTyped
+  · subst pathEq
+    exact (Term.uaToEquiv_excludes_pathTy typePath).elim
+  · obtain ⟨typePathTarget, _⟩ := typePathLift pathStep
+    exact (Term.uaToEquiv_excludes_pathTy typePathTarget).elim
+  · subst pathEq
+    exact (Term.pathCompose_uninhabited typePath).elim
+  · obtain ⟨typePathTarget, _⟩ := typePathLift pathStep
+    exact (Term.pathCompose_uninhabited typePathTarget).elim
 
 end LeanFX2

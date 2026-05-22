@@ -634,5 +634,12 @@ theorem RawStep.par.lift_full_term
   | equivApply equivValue argumentValue equivLift argumentLift =>
     exact RawStep.par.lift_full_equivApply equivValue argumentValue
             equivLift argumentLift rawStep
+  | transp modeIsUnivalent universeLevel universeLevelLt sourceType
+           typeRaw typePath sourceValue typePathLift sourceValueLift =>
+    obtain ⟨targetTerm, transpStep⟩ :=
+      RawStep.par.lift_full_transp modeIsUnivalent universeLevel
+        universeLevelLt sourceType typeRaw typePath sourceValue
+        typePathLift sourceValueLift rawStep
+    exact ⟨sourceType, targetTerm, transpStep⟩
 
 end LeanFX2
