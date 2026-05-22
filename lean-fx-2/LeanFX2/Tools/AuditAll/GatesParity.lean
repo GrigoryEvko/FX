@@ -148,7 +148,11 @@ namespace LeanFX2.Tools
 --     listCode_cong, optionCode_cong, eitherCode_cong, idCode_cong,
 --     equivCode_cong.  All carry only Ty + RawTerm + UniverseLevel
 --     data — no Term children — so cong is `Conv.refl _`.
---   Coverage at 37/78 ctors with `Conv.<ctor>_cong` mirror.
-#assert_conv_cong_coverage_budget LeanFX2.Term 41
+--   2026-05-22 ratchet 41 → 40 after app_cong consolidated
+--     appLeft + appRight via cong2_at_isClosedTy (closed-domain +
+--     closed-codomain binary cong).  Composes two single-position
+--     StepStar lifts inside one budget-gate-matching name.
+--   Coverage at 38/78 ctors with `Conv.<ctor>_cong` mirror.
+#assert_conv_cong_coverage_budget LeanFX2.Term 40
 
 end LeanFX2.Tools
