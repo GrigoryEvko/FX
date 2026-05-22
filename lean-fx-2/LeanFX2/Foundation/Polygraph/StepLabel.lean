@@ -143,6 +143,7 @@ inductive StepLabel : Type
   | pathAppInterval
   | betaPathApp
   | betaPathReflApp
+  | betaFunextReflApp
   | glueIntroBase
   | glueIntroPartial
   | glueElimValue
@@ -303,6 +304,7 @@ def StepLabel.index : StepLabel → Nat
   | eqArrow => 107
   | eqTypeHet => 108
   | eqArrowHet => 109
+  | betaFunextReflApp => 110
 
 /-- The dim-1 polygraph cell witnessed by this rewrite-rule label.
 Every label maps to `PolyCell.arrow (.atom 0) (.atom 0) (label.index)`
