@@ -2448,6 +2448,168 @@ theorem partialStrengthenTyped?_isSome_target_equivCode
       next _ _ =>
           rfl
 
+/-- Target-direction totality at `Term.idJ` (HoTT J recursor). -/
+theorem partialStrengthenTyped?_isSome_target_idJ
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {carrier motiveType : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {baseRaw witnessRaw : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (baseCase : Term sourceCtx motiveType baseRaw)
+    (witness :
+      Term sourceCtx (Ty.id carrier leftEndpoint rightEndpoint) witnessRaw)
+    (carrierStrengthens :
+      (carrier.partialStrengthen? strengthening.back).isSome = true)
+    (leftStrengthens :
+      (leftEndpoint.partialStrengthen? strengthening.back).isSome = true)
+    (rightStrengthens :
+      (rightEndpoint.partialStrengthen? strengthening.back).isSome = true)
+    (baseIH :
+      (partialStrengthenTyped? baseCase strengthening).isSome = true)
+    (witnessIH :
+      (partialStrengthenTyped? witness strengthening).isSome = true) :
+    (partialStrengthenTyped?
+        (Term.idJ baseCase witness) strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noCarrier =>
+      rw [noCarrier] at carrierStrengthens
+      cases carrierStrengthens
+  next _ _ =>
+      split
+      next noLeft =>
+          rw [noLeft] at leftStrengthens
+          cases leftStrengthens
+      next _ _ =>
+          split
+          next noRight =>
+              rw [noRight] at rightStrengthens
+              cases rightStrengthens
+          next _ _ =>
+              split
+              next noBase =>
+                  rw [noBase] at baseIH
+                  cases baseIH
+              next _ _ =>
+                  split
+                  next noWitness =>
+                      rw [noWitness] at witnessIH
+                      cases witnessIH
+                  next _ _ =>
+                      rfl
+
+/-- Target-direction totality at `Term.oeqJ` (observational J recursor). -/
+theorem partialStrengthenTyped?_isSome_target_oeqJ
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {carrier motiveType : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {baseRaw witnessRaw : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (baseCase : Term sourceCtx motiveType baseRaw)
+    (witness :
+      Term sourceCtx (Ty.oeq carrier leftEndpoint rightEndpoint) witnessRaw)
+    (carrierStrengthens :
+      (carrier.partialStrengthen? strengthening.back).isSome = true)
+    (leftStrengthens :
+      (leftEndpoint.partialStrengthen? strengthening.back).isSome = true)
+    (rightStrengthens :
+      (rightEndpoint.partialStrengthen? strengthening.back).isSome = true)
+    (baseIH :
+      (partialStrengthenTyped? baseCase strengthening).isSome = true)
+    (witnessIH :
+      (partialStrengthenTyped? witness strengthening).isSome = true) :
+    (partialStrengthenTyped?
+        (Term.oeqJ baseCase witness) strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noCarrier =>
+      rw [noCarrier] at carrierStrengthens
+      cases carrierStrengthens
+  next _ _ =>
+      split
+      next noLeft =>
+          rw [noLeft] at leftStrengthens
+          cases leftStrengthens
+      next _ _ =>
+          split
+          next noRight =>
+              rw [noRight] at rightStrengthens
+              cases rightStrengthens
+          next _ _ =>
+              split
+              next noBase =>
+                  rw [noBase] at baseIH
+                  cases baseIH
+              next _ _ =>
+                  split
+                  next noWitness =>
+                      rw [noWitness] at witnessIH
+                      cases witnessIH
+                  next _ _ =>
+                      rfl
+
+/-- Target-direction totality at `Term.idStrictRec` (strict-id recursor). -/
+theorem partialStrengthenTyped?_isSome_target_idStrictRec
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (modeIsStrict : mode = Mode.strict)
+    {carrier motiveType : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {baseRaw witnessRaw : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (baseCase : Term sourceCtx motiveType baseRaw)
+    (witness :
+      Term sourceCtx (Ty.idStrict carrier leftEndpoint rightEndpoint)
+        witnessRaw)
+    (carrierStrengthens :
+      (carrier.partialStrengthen? strengthening.back).isSome = true)
+    (leftStrengthens :
+      (leftEndpoint.partialStrengthen? strengthening.back).isSome = true)
+    (rightStrengthens :
+      (rightEndpoint.partialStrengthen? strengthening.back).isSome = true)
+    (baseIH :
+      (partialStrengthenTyped? baseCase strengthening).isSome = true)
+    (witnessIH :
+      (partialStrengthenTyped? witness strengthening).isSome = true) :
+    (partialStrengthenTyped?
+        (Term.idStrictRec modeIsStrict baseCase witness)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noCarrier =>
+      rw [noCarrier] at carrierStrengthens
+      cases carrierStrengthens
+  next _ _ =>
+      split
+      next noLeft =>
+          rw [noLeft] at leftStrengthens
+          cases leftStrengthens
+      next _ _ =>
+          split
+          next noRight =>
+              rw [noRight] at rightStrengthens
+              cases rightStrengthens
+          next _ _ =>
+              split
+              next noBase =>
+                  rw [noBase] at baseIH
+                  cases baseIH
+              next _ _ =>
+                  split
+                  next noWitness =>
+                      rw [noWitness] at witnessIH
+                      cases witnessIH
+                  next _ _ =>
+                      rfl
+
 end Term
 
 end LeanFX2
