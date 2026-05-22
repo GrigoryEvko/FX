@@ -676,4 +676,28 @@ theorem Conv.rawSubst0_par_toRawJoin
     RawStep.parStar.subst0_par bodySourceChain argSourceChain,
     RawStep.parStar.subst0_par bodyTargetChain argTargetChain⟩
 
+/-- Argument-only β-redex raw join.
+
+Dual to `Conv.rawSubst0_toRawJoin` (which pins the argument and varies the
+body): here the body raw form is pinned, and a Conv witness governs the
+argument.  Useful when an external β-step manipulates only the argument
+side while the body has already canonicalized. -/
+theorem Conv.rawSubst0_arg_toRawJoin
+    {mode : Mode} {level scope : Nat}
+    {argContext : Ctx mode level scope}
+    {argSourceType argTargetType : Ty level scope}
+    {argSourceRaw argTargetRaw : RawTerm scope}
+    {argSource : Term argContext argSourceType argSourceRaw}
+    {argTarget : Term argContext argTargetType argTargetRaw}
+    (bodyRaw : RawTerm (scope + 1))
+    (argConvertibility : Conv argSource argTarget) :
+    ∃ commonRaw,
+      RawStep.parStar (bodyRaw.subst0 argSourceRaw) commonRaw ∧
+      RawStep.parStar (bodyRaw.subst0 argTargetRaw) commonRaw := by
+  obtain ⟨argMidRaw, argSourceChain, argTargetChain⟩ :=
+    Conv.toRawJoin argConvertibility
+  exact ⟨bodyRaw.subst0 argMidRaw,
+    RawStep.parStar.subst0_par (RawStep.parStar.refl bodyRaw) argSourceChain,
+    RawStep.parStar.subst0_par (RawStep.parStar.refl bodyRaw) argTargetChain⟩
+
 end LeanFX2
