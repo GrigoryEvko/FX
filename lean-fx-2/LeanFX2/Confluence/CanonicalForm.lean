@@ -13511,6 +13511,199 @@ theorem Conv.idStrictRefl_ne_refl
     RawStep.parStar.refl_inv targetToJoin
   nomatch joinEqIdStrictRefl.symm.trans joinEqRefl
 
+/-! ## idStrictRefl row of canonical-head disjointness matrix
+
+`RawTerm.idStrictRefl witness` is the unary canonical witness of
+strict observational identity (HoTT 2LTT-strict-mode reflexivity).
+Compound source × compound target entries strictly upper-
+triangular by alphabetic ordering; targets ≤ idStrictRefl
+(including the entire idCode and glueIntro rows) are already
+covered by `Conv.symm` of the prior source-row entries.
+
+Unary source destructure (3-binder shape):
+  `obtain ⟨_, joinEqIdStrictRefl, _⟩ :=
+     RawStep.parStar.idStrictRefl_inv sourceToJoin` -/
+
+/-- An `idStrictRefl`-headed source and an `intervalJoin`-headed
+target are not convertible.  Strict-identity reflexivity versus
+cubical interval maximum — distinct canonical heads. -/
+theorem Conv.idStrictRefl_ne_intervalJoin
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {witnessTerm : RawTerm scope}
+    {leftInterval rightInterval : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.idStrictRefl witnessTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.intervalJoin leftInterval rightInterval : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqIdStrictRefl, _⟩ :=
+    RawStep.parStar.idStrictRefl_inv sourceToJoin
+  obtain ⟨_, _, joinEqIntervalJoin, _, _⟩ :=
+    RawStep.parStar.intervalJoin_inv targetToJoin
+  nomatch joinEqIdStrictRefl.symm.trans joinEqIntervalJoin
+
+/-- An `idStrictRefl`-headed source and an `intervalMeet`-headed
+target are not convertible.  Strict-identity reflexivity versus
+cubical interval minimum — distinct canonical heads. -/
+theorem Conv.idStrictRefl_ne_intervalMeet
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {witnessTerm : RawTerm scope}
+    {leftInterval rightInterval : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.idStrictRefl witnessTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.intervalMeet leftInterval rightInterval : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqIdStrictRefl, _⟩ :=
+    RawStep.parStar.idStrictRefl_inv sourceToJoin
+  obtain ⟨_, _, joinEqIntervalMeet, _, _⟩ :=
+    RawStep.parStar.intervalMeet_inv targetToJoin
+  nomatch joinEqIdStrictRefl.symm.trans joinEqIntervalMeet
+
+/-- An `idStrictRefl`-headed source and an `intervalOpp`-headed
+target are not convertible.  Strict-identity reflexivity versus
+cubical interval inversion — distinct canonical heads. -/
+theorem Conv.idStrictRefl_ne_intervalOpp
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {witnessTerm : RawTerm scope}
+    {intervalTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.idStrictRefl witnessTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.intervalOpp intervalTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqIdStrictRefl, _⟩ :=
+    RawStep.parStar.idStrictRefl_inv sourceToJoin
+  obtain ⟨_, joinEqIntervalOpp, _⟩ :=
+    RawStep.parStar.intervalOpp_inv targetToJoin
+  nomatch joinEqIdStrictRefl.symm.trans joinEqIntervalOpp
+
+/-- An `idStrictRefl`-headed source and a `listCode`-headed target
+are not convertible.  Strict-identity reflexivity versus list-type
+code — distinct canonical heads at the raw level. -/
+theorem Conv.idStrictRefl_ne_listCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {witnessTerm : RawTerm scope}
+    {elementCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.idStrictRefl witnessTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.listCode elementCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqIdStrictRefl, _⟩ :=
+    RawStep.parStar.idStrictRefl_inv sourceToJoin
+  obtain ⟨_, joinEqListCode, _⟩ :=
+    RawStep.parStar.listCode_inv targetToJoin
+  nomatch joinEqIdStrictRefl.symm.trans joinEqListCode
+
+/-- An `idStrictRefl`-headed source and a `modIntro`-headed target
+are not convertible.  Strict-identity reflexivity versus modal
+introduction — distinct canonical heads. -/
+theorem Conv.idStrictRefl_ne_modIntro
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {witnessTerm : RawTerm scope}
+    {innerTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.idStrictRefl witnessTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.modIntro innerTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqIdStrictRefl, _⟩ :=
+    RawStep.parStar.idStrictRefl_inv sourceToJoin
+  obtain ⟨_, joinEqMod, _⟩ :=
+    RawStep.parStar.modIntro_inv targetToJoin
+  nomatch joinEqIdStrictRefl.symm.trans joinEqMod
+
+/-- An `idStrictRefl`-headed source and an `oeqFunext`-headed target
+are not convertible.  Strict-identity reflexivity (2LTT-strict
+mode) versus observational-equality function-extensionality
+witness (2LTT-observational mode) — distinct mode-of-equality
+fragments. -/
+theorem Conv.idStrictRefl_ne_oeqFunext
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {witnessTerm : RawTerm scope}
+    {pointwiseEquality : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.idStrictRefl witnessTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.oeqFunext pointwiseEquality : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqIdStrictRefl, _⟩ :=
+    RawStep.parStar.idStrictRefl_inv sourceToJoin
+  obtain ⟨_, joinEqFunext, _⟩ :=
+    RawStep.parStar.oeqFunext_inv targetToJoin
+  nomatch joinEqIdStrictRefl.symm.trans joinEqFunext
+
+/-- An `idStrictRefl`-headed source and an `oeqJ`-headed target are
+not convertible.  Strict-identity reflexivity versus observational-
+equality eliminator J — strict-mode versus observational-mode
+identity, distinct canonical heads. -/
+theorem Conv.idStrictRefl_ne_oeqJ
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {witnessTerm : RawTerm scope}
+    {baseCase oeqJWitness : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.idStrictRefl witnessTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.oeqJ baseCase oeqJWitness : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqIdStrictRefl, _⟩ :=
+    RawStep.parStar.idStrictRefl_inv sourceToJoin
+  obtain ⟨_, _, joinEqOeqJ, _, _⟩ :=
+    RawStep.parStar.oeqJ_inv targetToJoin
+  nomatch joinEqIdStrictRefl.symm.trans joinEqOeqJ
+
+/-- An `idStrictRefl`-headed source and an `oeqRefl`-headed target
+are not convertible.  Strict-mode versus observational-mode
+reflexivity — two distinct HoTT 2LTT equality-mode reflexivity
+witnesses. -/
+theorem Conv.idStrictRefl_ne_oeqRefl
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {witnessTerm : RawTerm scope}
+    {oeqWitness : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.idStrictRefl witnessTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.oeqRefl oeqWitness : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqIdStrictRefl, _⟩ :=
+    RawStep.parStar.idStrictRefl_inv sourceToJoin
+  obtain ⟨_, joinEqOeqRefl, _⟩ :=
+    RawStep.parStar.oeqRefl_inv targetToJoin
+  nomatch joinEqIdStrictRefl.symm.trans joinEqOeqRefl
+
 /-! ### `oeqFunext` row — HoTT observational-equality funext
 
 The `oeqFunext` head introduces observational equality between

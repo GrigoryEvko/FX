@@ -679,6 +679,14 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.idStrictRefl_ne_listCons
 #assert_no_axioms LeanFX2.Conv.idStrictRefl_ne_pair
 #assert_no_axioms LeanFX2.Conv.idStrictRefl_ne_refl
+#assert_no_axioms LeanFX2.Conv.idStrictRefl_ne_intervalJoin
+#assert_no_axioms LeanFX2.Conv.idStrictRefl_ne_intervalMeet
+#assert_no_axioms LeanFX2.Conv.idStrictRefl_ne_intervalOpp
+#assert_no_axioms LeanFX2.Conv.idStrictRefl_ne_listCode
+#assert_no_axioms LeanFX2.Conv.idStrictRefl_ne_modIntro
+#assert_no_axioms LeanFX2.Conv.idStrictRefl_ne_oeqFunext
+#assert_no_axioms LeanFX2.Conv.idStrictRefl_ne_oeqJ
+#assert_no_axioms LeanFX2.Conv.idStrictRefl_ne_oeqRefl
 #assert_no_axioms LeanFX2.Conv.oeqFunext_ne_unit
 #assert_no_axioms LeanFX2.Conv.oeqFunext_ne_boolTrue
 #assert_no_axioms LeanFX2.Conv.oeqFunext_ne_boolFalse
