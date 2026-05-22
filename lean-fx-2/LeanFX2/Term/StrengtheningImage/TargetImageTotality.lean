@@ -1933,6 +1933,158 @@ theorem partialStrengthenTyped?_isSome_target_idCode
           next _ _ =>
               rfl
 
+/-! ## Parametric leaves: listNil, optionNone
+
+Both are "closed-atomic-with-Ty-side": carry an `elementType : Ty
+level scope` IMPLICIT parameter and no operand IH.  Dispatcher
+recurses on `elementType.partialStrengthen?` only.  Single-split.
+elementType passed via named-implicit binding `(elementType := ...)`. -/
+/-- Target-direction totality at `Term.listNil`. -/
+theorem partialStrengthenTyped?_isSome_target_listNil
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (elementType : Ty level sourceScope)
+    (elementStrengthens :
+      (elementType.partialStrengthen? strengthening.back).isSome
+        = true) :
+    (partialStrengthenTyped?
+        (Term.listNil (context := sourceCtx)
+          (elementType := elementType))
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noElement =>
+      rw [noElement] at elementStrengthens
+      cases elementStrengthens
+  next _ _ =>
+      rfl
+
+/-- Target-direction totality at `Term.optionNone`. -/
+theorem partialStrengthenTyped?_isSome_target_optionNone
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (elementType : Ty level sourceScope)
+    (elementStrengthens :
+      (elementType.partialStrengthen? strengthening.back).isSome
+        = true) :
+    (partialStrengthenTyped?
+        (Term.optionNone (context := sourceCtx)
+          (elementType := elementType))
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noElement =>
+      rw [noElement] at elementStrengthens
+      cases elementStrengthens
+  next _ _ =>
+      rfl
+
+/-! ## Equivalence applicators: equivApp, equivApply
+
+Both are binary-recursive with two non-binder Ty sides (carrierA +
+carrierB) and two operand IHs (equivTerm + argumentTerm).
+Pre-destructured pattern.  Quadruple-split. -/
+/-- Target-direction totality at `Term.equivApp`. -/
+theorem partialStrengthenTyped?_isSome_target_equivApp
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {carrierA carrierB : Ty level sourceScope}
+    {equivRaw argumentRaw : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (equivTerm :
+      Term sourceCtx (Ty.equiv carrierA carrierB) equivRaw)
+    (argumentTerm : Term sourceCtx carrierA argumentRaw)
+    (carrierAStrengthens :
+      (carrierA.partialStrengthen? strengthening.back).isSome = true)
+    (carrierBStrengthens :
+      (carrierB.partialStrengthen? strengthening.back).isSome = true)
+    (equivIH :
+      (partialStrengthenTyped? equivTerm strengthening).isSome
+        = true)
+    (argumentIH :
+      (partialStrengthenTyped? argumentTerm strengthening).isSome
+        = true) :
+    (partialStrengthenTyped? (Term.equivApp equivTerm argumentTerm)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noCarrierA =>
+      rw [noCarrierA] at carrierAStrengthens
+      cases carrierAStrengthens
+  next _ _ =>
+      split
+      next noCarrierB =>
+          rw [noCarrierB] at carrierBStrengthens
+          cases carrierBStrengthens
+      next _ _ =>
+          split
+          next noEquiv =>
+              rw [noEquiv] at equivIH
+              cases equivIH
+          next _ _ =>
+              split
+              next noArgument =>
+                  rw [noArgument] at argumentIH
+                  cases argumentIH
+              next _ _ =>
+                  rfl
+
+/-- Target-direction totality at `Term.equivApply`.  Same shape
+as `equivApp`. -/
+theorem partialStrengthenTyped?_isSome_target_equivApply
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {carrierA carrierB : Ty level sourceScope}
+    {equivRaw argumentRaw : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (equivTerm :
+      Term sourceCtx (Ty.equiv carrierA carrierB) equivRaw)
+    (argumentTerm : Term sourceCtx carrierA argumentRaw)
+    (carrierAStrengthens :
+      (carrierA.partialStrengthen? strengthening.back).isSome = true)
+    (carrierBStrengthens :
+      (carrierB.partialStrengthen? strengthening.back).isSome = true)
+    (equivIH :
+      (partialStrengthenTyped? equivTerm strengthening).isSome
+        = true)
+    (argumentIH :
+      (partialStrengthenTyped? argumentTerm strengthening).isSome
+        = true) :
+    (partialStrengthenTyped? (Term.equivApply equivTerm argumentTerm)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noCarrierA =>
+      rw [noCarrierA] at carrierAStrengthens
+      cases carrierAStrengthens
+  next _ _ =>
+      split
+      next noCarrierB =>
+          rw [noCarrierB] at carrierBStrengthens
+          cases carrierBStrengthens
+      next _ _ =>
+          split
+          next noEquiv =>
+              rw [noEquiv] at equivIH
+              cases equivIH
+          next _ _ =>
+              split
+              next noArgument =>
+                  rw [noArgument] at argumentIH
+                  cases argumentIH
+              next _ _ =>
+                  rfl
+
 /-- Target-direction totality at `Term.equivCode`. -/
 theorem partialStrengthenTyped?_isSome_target_equivCode
     {mode : Mode} {level : Nat}
