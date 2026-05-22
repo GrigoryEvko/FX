@@ -10466,4 +10466,182 @@ theorem Conv.idStrictRefl_ne_refl
     RawStep.parStar.refl_inv targetToJoin
   nomatch joinEqIdStrictRefl.symm.trans joinEqRefl
 
+/-! ### `oeqFunext` row — HoTT observational-equality funext
+
+The `oeqFunext` head introduces observational equality between
+two functions from a witness of their pointwise equality.  Lives
+at the HoTT observational stratum (same as `oeqRefl` / `oeqTrans`)
+but encodes the funext principle: pointwise equality yields
+function-level equality.  Unary at the raw level (one pointwise-
+proof witness), and the non-disjunctive
+`RawStep.parStar.oeqFunext_inv` lemma at `RawParStarCong.lean:2339`
+confirms the head is preserved through every parallel reduction
+chain.  Eight leaf disjointness lemmas cover the unary `oeqFunext`
+source versus every nullary canonical target. -/
+
+/-- An `oeqFunext`-headed source and a `unit`-headed target are
+not convertible.  Disjoint canonical heads at the raw level: the
+funext-style observational-equality introduction cannot
+postnormalize to the unit value. -/
+theorem Conv.oeqFunext_ne_unit
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {pointwiseProof : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqFunext pointwiseProof : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.unit : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOeqFunext, _⟩ :=
+    RawStep.parStar.oeqFunext_inv sourceToJoin
+  have joinEqUnit : joinRaw = RawTerm.unit :=
+    RawStep.parStar.unit_inv targetToJoin
+  nomatch joinEqOeqFunext.symm.trans joinEqUnit
+
+/-- An `oeqFunext`-headed source and a `boolTrue`-headed target
+are not convertible.  Symmetric to the `unit` companion: the
+canonical heads are syntactically disjoint at the raw level. -/
+theorem Conv.oeqFunext_ne_boolTrue
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {pointwiseProof : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqFunext pointwiseProof : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.boolTrue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOeqFunext, _⟩ :=
+    RawStep.parStar.oeqFunext_inv sourceToJoin
+  have joinEqTrue : joinRaw = RawTerm.boolTrue :=
+    RawStep.parStar.boolTrue_inv targetToJoin
+  nomatch joinEqOeqFunext.symm.trans joinEqTrue
+
+/-- An `oeqFunext`-headed source and a `boolFalse`-headed target
+are not convertible.  Same argument as the `boolTrue` companion,
+just with the opposite boolean canonical form. -/
+theorem Conv.oeqFunext_ne_boolFalse
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {pointwiseProof : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqFunext pointwiseProof : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.boolFalse : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOeqFunext, _⟩ :=
+    RawStep.parStar.oeqFunext_inv sourceToJoin
+  have joinEqFalse : joinRaw = RawTerm.boolFalse :=
+    RawStep.parStar.boolFalse_inv targetToJoin
+  nomatch joinEqOeqFunext.symm.trans joinEqFalse
+
+/-- An `oeqFunext`-headed source and a `natZero`-headed target
+are not convertible.  HoTT funext introduction versus the Nat
+zero — disjoint canonical heads. -/
+theorem Conv.oeqFunext_ne_natZero
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {pointwiseProof : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqFunext pointwiseProof : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.natZero : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOeqFunext, _⟩ :=
+    RawStep.parStar.oeqFunext_inv sourceToJoin
+  have joinEqZero : joinRaw = RawTerm.natZero :=
+    RawStep.parStar.natZero_inv targetToJoin
+  nomatch joinEqOeqFunext.symm.trans joinEqZero
+
+/-- An `oeqFunext`-headed source and a `listNil`-headed target
+are not convertible.  Funext versus the empty list — distinct
+canonical heads at the raw level. -/
+theorem Conv.oeqFunext_ne_listNil
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {pointwiseProof : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqFunext pointwiseProof : RawTerm scope)}
+    {targetTerm : Term context targetType (RawTerm.listNil : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOeqFunext, _⟩ :=
+    RawStep.parStar.oeqFunext_inv sourceToJoin
+  have joinEqNil : joinRaw = RawTerm.listNil :=
+    RawStep.parStar.listNil_inv targetToJoin
+  nomatch joinEqOeqFunext.symm.trans joinEqNil
+
+/-- An `oeqFunext`-headed source and an `optionNone`-headed
+target are not convertible.  Funext versus the empty option —
+distinct canonical heads at the raw level. -/
+theorem Conv.oeqFunext_ne_optionNone
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {pointwiseProof : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqFunext pointwiseProof : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.optionNone : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOeqFunext, _⟩ :=
+    RawStep.parStar.oeqFunext_inv sourceToJoin
+  have joinEqNone : joinRaw = RawTerm.optionNone :=
+    RawStep.parStar.optionNone_inv targetToJoin
+  nomatch joinEqOeqFunext.symm.trans joinEqNone
+
+/-- An `oeqFunext`-headed source and an `interval0`-headed target
+are not convertible.  Cross-stratum HoTT-vs-cubical: the HoTT
+funext introduction lives in the observational-equality stratum,
+while `interval0` is the cubical interval's zero endpoint. -/
+theorem Conv.oeqFunext_ne_interval0
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {pointwiseProof : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqFunext pointwiseProof : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.interval0 : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOeqFunext, _⟩ :=
+    RawStep.parStar.oeqFunext_inv sourceToJoin
+  have joinEqZero : joinRaw = RawTerm.interval0 :=
+    RawStep.parStar.interval0_inv targetToJoin
+  nomatch joinEqOeqFunext.symm.trans joinEqZero
+
+/-- An `oeqFunext`-headed source and an `interval1`-headed target
+are not convertible.  Cross-stratum HoTT-vs-cubical: same argument
+as `oeqFunext_ne_interval0`. -/
+theorem Conv.oeqFunext_ne_interval1
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {pointwiseProof : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.oeqFunext pointwiseProof : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.interval1 : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqOeqFunext, _⟩ :=
+    RawStep.parStar.oeqFunext_inv sourceToJoin
+  have joinEqOne : joinRaw = RawTerm.interval1 :=
+    RawStep.parStar.interval1_inv targetToJoin
+  nomatch joinEqOeqFunext.symm.trans joinEqOne
+
 end LeanFX2
