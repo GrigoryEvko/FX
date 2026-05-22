@@ -877,4 +877,15 @@ transp arm to discharge the dispatch. -/
 #assert_no_axioms LeanFX2.RawTerm.cdTranspPiCase_eq_contractum_of_some
 #assert_no_axioms LeanFX2.RawTerm.cdTranspPiCase_eq_transp_of_none
 
+/-! ## Compound × compound disjointness — arrowCode row -/
+
+#assert_no_axioms LeanFX2.Conv.arrowCode_ne_codataUnfold
+#assert_no_axioms LeanFX2.Conv.arrowCode_ne_cumulUpMarker
+#assert_no_axioms LeanFX2.Conv.arrowCode_ne_effectPerform
+#assert_no_axioms LeanFX2.Conv.arrowCode_ne_eitherCode
+#assert_no_axioms LeanFX2.Conv.arrowCode_ne_equivCode
+#assert_no_axioms LeanFX2.Conv.arrowCode_ne_equivCompose
+#assert_no_axioms LeanFX2.Conv.arrowCode_ne_equivIntro
+#assert_no_axioms LeanFX2.Conv.arrowCode_ne_glueIntro
+
 end LeanFX2.Tools
