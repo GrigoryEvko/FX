@@ -6570,6 +6570,228 @@ theorem Conv.productCode_ne_refl
     RawStep.parStar.refl_inv targetToJoin
   nomatch joinEqProduct.symm.trans joinEqRefl
 
+/-- A `productCode`-headed source and a `recordIntro`-headed target are
+not convertible.  Product-type-code versus record introduction —
+distinct canonical heads at the raw level. -/
+theorem Conv.productCode_ne_recordIntro
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {firstField : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.productCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.recordIntro firstField : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqProduct, _, _⟩ :=
+    RawStep.parStar.productCode_inv sourceToJoin
+  obtain ⟨_, joinEqRecord, _⟩ :=
+    RawStep.parStar.recordIntro_inv targetToJoin
+  nomatch joinEqProduct.symm.trans joinEqRecord
+
+/-- A `productCode`-headed source and a `refineIntro`-headed target are
+not convertible.  Product type code versus refinement introduction —
+distinct canonical heads at the raw level. -/
+theorem Conv.productCode_ne_refineIntro
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {rawValue predicateProof : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.productCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.refineIntro rawValue predicateProof : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqProduct, _, _⟩ :=
+    RawStep.parStar.productCode_inv sourceToJoin
+  obtain ⟨_, _, joinEqRefine, _, _⟩ :=
+    RawStep.parStar.refineIntro_inv targetToJoin
+  nomatch joinEqProduct.symm.trans joinEqRefine
+
+/-- A `productCode`-headed source and a `sessionRecv`-headed target are
+not convertible.  Product type code versus session-receive primitive —
+distinct canonical heads at the raw level. -/
+theorem Conv.productCode_ne_sessionRecv
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {channel : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.productCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sessionRecv channel : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqProduct, _, _⟩ :=
+    RawStep.parStar.productCode_inv sourceToJoin
+  obtain ⟨_, joinEqRecv, _⟩ :=
+    RawStep.parStar.sessionRecv_inv targetToJoin
+  nomatch joinEqProduct.symm.trans joinEqRecv
+
+/-- A `productCode`-headed source and a `sessionSend`-headed target are
+not convertible.  Product type code versus session-send primitive —
+distinct canonical heads at the raw level. -/
+theorem Conv.productCode_ne_sessionSend
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {channel payload : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.productCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sessionSend channel payload : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqProduct, _, _⟩ :=
+    RawStep.parStar.productCode_inv sourceToJoin
+  obtain ⟨_, _, joinEqSend, _, _⟩ :=
+    RawStep.parStar.sessionSend_inv targetToJoin
+  nomatch joinEqProduct.symm.trans joinEqSend
+
+/-- A `productCode`-headed source and a `sigmaTyCode`-headed target are
+not convertible.  Product type code versus dependent-pair type code —
+distinct canonical heads at the raw level. -/
+theorem Conv.productCode_ne_sigmaTyCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {firstSigmaCode : RawTerm scope}
+    {secondSigmaCode : RawTerm (scope + 1)}
+    {sourceTerm : Term context sourceType
+      (RawTerm.productCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sigmaTyCode firstSigmaCode secondSigmaCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqProduct, _, _⟩ :=
+    RawStep.parStar.productCode_inv sourceToJoin
+  obtain ⟨_, _, joinEqSigma, _, _⟩ :=
+    RawStep.parStar.sigmaTyCode_inv targetToJoin
+  nomatch joinEqProduct.symm.trans joinEqSigma
+
+/-- A `productCode`-headed source and a `subsume`-headed target are not
+convertible.  Product type code versus subsumption coercion — distinct
+canonical heads at the raw level. -/
+theorem Conv.productCode_ne_subsume
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {innerSubsumed : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.productCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.subsume innerSubsumed : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqProduct, _, _⟩ :=
+    RawStep.parStar.productCode_inv sourceToJoin
+  obtain ⟨_, joinEqSubsume, _⟩ :=
+    RawStep.parStar.subsume_inv targetToJoin
+  nomatch joinEqProduct.symm.trans joinEqSubsume
+
+/-- A `productCode`-headed source and a `sumCode`-headed target are not
+convertible.  Product type code versus disjoint-union type code —
+distinct canonical heads at the raw level. -/
+theorem Conv.productCode_ne_sumCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {firstSumCode secondSumCode : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.productCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.sumCode firstSumCode secondSumCode : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqProduct, _, _⟩ :=
+    RawStep.parStar.productCode_inv sourceToJoin
+  obtain ⟨_, _, joinEqSum, _, _⟩ :=
+    RawStep.parStar.sumCode_inv targetToJoin
+  nomatch joinEqProduct.symm.trans joinEqSum
+
+/-- A `productCode`-headed source and a `transpFill`-headed target are
+not convertible.  Product type code versus cubical transport filler —
+distinct canonical heads at the raw level. -/
+theorem Conv.productCode_ne_transpFill
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {pathTerm intervalTerm sourceRawTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.productCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.transpFill pathTerm intervalTerm sourceRawTerm :
+        RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqProduct, _, _⟩ :=
+    RawStep.parStar.productCode_inv sourceToJoin
+  obtain ⟨_, _, _, joinEqFill, _, _, _⟩ :=
+    RawStep.parStar.transpFill_inv targetToJoin
+  nomatch joinEqProduct.symm.trans joinEqFill
+
+/-- A `productCode`-headed source and a `uaToEquiv`-headed target are
+not convertible.  Product type code versus univalence-to-equivalence
+primitive — distinct canonical heads at the raw level. -/
+theorem Conv.productCode_ne_uaToEquiv
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {proofTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.productCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.uaToEquiv proofTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqProduct, _, _⟩ :=
+    RawStep.parStar.productCode_inv sourceToJoin
+  obtain ⟨_, joinEqUa, _⟩ :=
+    RawStep.parStar.uaToEquiv_inv targetToJoin
+  nomatch joinEqProduct.symm.trans joinEqUa
+
+/-- A `productCode`-headed source and a `universeCode`-headed target are
+not convertible.  Product type code versus universe-level type code —
+distinct canonical heads at the raw level. -/
+theorem Conv.productCode_ne_universeCode
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {firstCode secondCode : RawTerm scope}
+    {innerLevel : Nat}
+    {sourceTerm : Term context sourceType
+      (RawTerm.productCode firstCode secondCode : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.universeCode innerLevel : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, _, joinEqProduct, _, _⟩ :=
+    RawStep.parStar.productCode_inv sourceToJoin
+  have joinEqUniv : joinRaw = RawTerm.universeCode innerLevel :=
+    RawStep.parStar.universeCode_inv targetToJoin
+  nomatch joinEqProduct.symm.trans joinEqUniv
+
 /-- A `sumCode`-headed source and a `unit`-headed target are not
 convertible.  Opens the sum-type-code row of the canonical-head
 matrix: `sumCode` is the flat-binary type-code for the disjoint-
