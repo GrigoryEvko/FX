@@ -1130,6 +1130,136 @@ theorem partialStrengthenTyped?_isSome_target_codataDest
           next _ _ =>
               rfl
 
+/-! ## Interval algebra family: intervalOpp, intervalMeet, intervalJoin
+
+The three interval-algebra ctors all carry operand `Term`s at
+the closed type `Ty.interval` and produce a result at the same
+closed type.  No type-side condition is required — the dispatcher
+recurses directly on operands.  All three use the pre-destructured
+pattern (no HEq destructors needed; the universal driver supplies
+the operands from its own case match). -/
+/-- Target-direction totality at `Term.intervalOpp` (unary
+interval operation).  Single-recursive: same shape as `natSucc`
+but pre-destructured (no `Term.intervalOppDestruct` needed). -/
+theorem partialStrengthenTyped?_isSome_target_intervalOpp
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {innerRaw : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (innerValue :
+      Term sourceCtx (Ty.interval (level := level)
+        (scope := sourceScope)) innerRaw)
+    (innerIH :
+      (partialStrengthenTyped? innerValue strengthening).isSome
+        = true) :
+    (partialStrengthenTyped? (Term.intervalOpp innerValue)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noInner =>
+      rw [noInner] at innerIH
+      cases innerIH
+  next _ _ =>
+      rfl
+
+/-- Target-direction totality at `Term.intervalMeet`.  Binary
+recursion on two operands, no type-side. -/
+theorem partialStrengthenTyped?_isSome_target_intervalMeet
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {leftRaw rightRaw : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (leftValue :
+      Term sourceCtx (Ty.interval (level := level)
+        (scope := sourceScope)) leftRaw)
+    (rightValue :
+      Term sourceCtx (Ty.interval (level := level)
+        (scope := sourceScope)) rightRaw)
+    (leftIH :
+      (partialStrengthenTyped? leftValue strengthening).isSome
+        = true)
+    (rightIH :
+      (partialStrengthenTyped? rightValue strengthening).isSome
+        = true) :
+    (partialStrengthenTyped? (Term.intervalMeet leftValue rightValue)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noLeft =>
+      rw [noLeft] at leftIH
+      cases leftIH
+  next _ _ =>
+      split
+      next noRight =>
+          rw [noRight] at rightIH
+          cases rightIH
+      next _ _ =>
+          rfl
+
+/-- Target-direction totality at `Term.intervalJoin`.  Same
+shape as `intervalMeet`. -/
+theorem partialStrengthenTyped?_isSome_target_intervalJoin
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {leftRaw rightRaw : RawTerm sourceScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (leftValue :
+      Term sourceCtx (Ty.interval (level := level)
+        (scope := sourceScope)) leftRaw)
+    (rightValue :
+      Term sourceCtx (Ty.interval (level := level)
+        (scope := sourceScope)) rightRaw)
+    (leftIH :
+      (partialStrengthenTyped? leftValue strengthening).isSome
+        = true)
+    (rightIH :
+      (partialStrengthenTyped? rightValue strengthening).isSome
+        = true) :
+    (partialStrengthenTyped? (Term.intervalJoin leftValue rightValue)
+        strengthening).isSome = true := by
+  dsimp only [partialStrengthenTyped?]
+  split
+  next noLeft =>
+      rw [noLeft] at leftIH
+      cases leftIH
+  next _ _ =>
+      split
+      next noRight =>
+          rw [noRight] at rightIH
+          cases rightIH
+      next _ _ =>
+          rfl
+
+/-! ## Universe-code family: universeCode
+
+`Term.universeCode` is "closed-atomic-with-attributes": it
+carries no recursive operand — only attribute parameters
+(`innerLevel`, `outerLevel`, `cumulOk`, `levelLe`).  The
+dispatcher returns `some` directly with no recursion.  Same
+shape as `interval0`/`unit` (closed-atomic) except via the
+pre-destructured pattern (no HEq destructor needed). -/
+/-- Target-direction totality at `Term.universeCode`. -/
+theorem partialStrengthenTyped?_isSome_target_universeCode
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (innerLevel outerLevel : UniverseLevel)
+    (cumulOk : innerLevel.toNat ≤ outerLevel.toNat)
+    (levelLe : outerLevel.toNat + 1 ≤ level) :
+    (partialStrengthenTyped?
+        (Term.universeCode (context := sourceCtx)
+          innerLevel outerLevel cumulOk levelLe)
+        strengthening).isSome = true := by
+  rfl
+
 end Term
 
 end LeanFX2
