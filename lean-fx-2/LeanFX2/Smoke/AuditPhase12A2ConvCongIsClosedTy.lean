@@ -36,3 +36,4 @@ import LeanFX2.Reduction.ConvCongIsClosedTy
 #print axioms LeanFX2.Conv.eitherMatch_cong
 #print axioms LeanFX2.Conv.natElim_cong
 #print axioms LeanFX2.Conv.natRec_cong
+#print axioms LeanFX2.Conv.cumulUp_cong

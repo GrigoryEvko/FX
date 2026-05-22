@@ -176,7 +176,12 @@ namespace LeanFX2.Tools
 --     carrier (listType/optionType/eitherType/nat) + arrow over
 --     closed motive.  natElim's scrutinee at Ty.nat uses
 --     IsClosedTy.nat unconditionally.
---   Coverage at 49/78 ctors with `Conv.<ctor>_cong` mirror.
-#assert_conv_cong_coverage_budget LeanFX2.Term 29
+--   2026-05-22 ratchet 29 → 28 after cumulUp_cong landed via
+--     Conv.cong_at_isClosedTy.  Inner type Ty.universe lowerLevel
+--     (closed via IsClosedTy.universe) and result Ty.universe
+--     higherLevel.  Universe-level + cumulMonotone parameters
+--     thread through Step.cumulUpInner.
+--   Coverage at 50/78 ctors with `Conv.<ctor>_cong` mirror.
+#assert_conv_cong_coverage_budget LeanFX2.Term 28
 
 end LeanFX2.Tools

@@ -1171,6 +1171,35 @@ theorem Conv.natElim_cong
     (fun stepSucc => Step.natElimSucc stepSucc)
     scrutConv zeroConv succConv
 
+/-- Conv cong on `Term.cumulUp`'s typeCode position.  Inner type
+`Ty.universe lowerLevel levelLeLow` is closed via
+`IsClosedTy.universe`; result type `Ty.universe higherLevel
+levelLeHigh` is unrelated to the lifter (only sub-position closure
+matters).  The level parameters and the cumulMonotone witness flow
+through `Step.cumulUpInner` to the inner step. -/
+theorem Conv.cumulUp_cong
+    (lowerLevel higherLevel : UniverseLevel)
+    (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
+    (levelLeLow : lowerLevel.toNat + 1 ≤ level)
+    (levelLeHigh : higherLevel.toNat + 1 ≤ level)
+    {codeRawA codeRawB : RawTerm scope}
+    {typeCodeA : Term context (Ty.universe lowerLevel levelLeLow) codeRawA}
+    {typeCodeB : Term context (Ty.universe lowerLevel levelLeLow) codeRawB}
+    (codeConv : Conv typeCodeA typeCodeB) :
+    Conv (Term.cumulUp lowerLevel higherLevel cumulMonotone
+            levelLeLow levelLeHigh typeCodeA)
+         (Term.cumulUp lowerLevel higherLevel cumulMonotone
+            levelLeLow levelLeHigh typeCodeB) :=
+  Conv.cong_at_isClosedTy
+    (resultTy := Ty.universe higherLevel levelLeHigh)
+    (IsClosedTy.universe lowerLevel levelLeLow)
+    (wrapRaw := RawTerm.cumulUpMarker)
+    (fun term => Term.cumulUp lowerLevel higherLevel cumulMonotone
+                              levelLeLow levelLeHigh term)
+    (fun step => Step.cumulUpInner lowerLevel higherLevel cumulMonotone
+                                    levelLeLow levelLeHigh step)
+    codeConv
+
 /-- Conv cong on `Term.natRec` varying all three positions
 (scrutinee, zeroBranch, succBranch) at closed motive.  succBranch's
 type is `arrow nat (arrow motive motive)`. -/
