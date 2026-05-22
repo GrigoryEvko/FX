@@ -460,6 +460,38 @@ def isConvCongThreadingLemma (declName : Name) : Bool :=
     -- Standalone `cong_<suffix>` shape (e.g. `cong_at_isClosedTy`).
     lastSegment.startsWith "cong_"
 
+/-- Whether a name's last segment matches a Conv-disjointness theorem
+of the form `Conv.<source>_ne_<target>` and the parent namespace is
+`LeanFX2.Conv`.  These theorems prove `¬ Conv s t` for two terms with
+distinct canonical heads via `Conv.canonicalRaw` + per-head
+`RawStep.parStar.<head>_inv` lemmas, transitively touching the
+manufactured `Step.eqType` / `Step.par.eqType` arms through the
+canonical-form raw join.  The mention is structural scaffolding for
+the upper-triangular canonical-head-mismatch matrix that supports
+`strength-T6` (`Conv.rename_equivariant`), not a wrapper around a
+manufactured-witness conclusion. -/
+def isConvDisjointnessLemma (declName : Name) : Bool :=
+  let parentName := declName.getPrefix
+  let lastSegment := Name.lastSegmentString declName
+  -- Restrict to `LeanFX2.Conv.*` namespace.
+  parentName == `LeanFX2.Conv &&
+    -- `_ne_` infix anywhere in the last segment.
+    ((lastSegment.splitOn "_ne_").length > 1)
+
+/-- Whether a name's last segment matches a Conv canonical-form
+reach-target theorem of the form `Conv.targetReaches_<head>` or
+`Conv.sourceReaches_<head>`.  These are scaffolding lemmas that
+prove a canonical-head Conv reaches its target side via parStar +
+the canonical-form raw join, threading every Step ctor through the
+case analysis.  The mention of manufactured Step rules is
+structural carrier, not wrapper. -/
+def isConvCanonicalReachLemma (declName : Name) : Bool :=
+  let parentName := declName.getPrefix
+  let lastSegment := Name.lastSegmentString declName
+  parentName == `LeanFX2.Conv &&
+    (lastSegment.startsWith "targetReaches_" ||
+      lastSegment.startsWith "sourceReaches_")
+
 /-- Whether a declaration is in the documented allowlist of decls
 expected to thread manufactured Step rules structurally.  Membership
 prefixes are by full prefix-of name. -/
@@ -487,6 +519,18 @@ def isManufacturedStepStructuralDependent (declName : Name) : Bool :=
     -- ctors by enumerating all Step ctors per cong arm; mention of
     -- the manufactured rules is structural.
     isConvCongThreadingLemma declName ||
+    -- Conv-disjointness scaffolding: `Conv.<source>_ne_<target>`
+    -- theorems for the canonical-head-mismatch matrix supporting
+    -- `strength-T6`.  Each one threads `Conv.canonicalRaw` (already
+    -- allowlisted) + per-head `RawStep.parStar.<head>_inv` lemmas to
+    -- refute convertibility via raw-ctor injectivity — mention of
+    -- manufactured Step rules is purely structural carrier.
+    isConvDisjointnessLemma declName ||
+    -- Conv canonical-form reach-target scaffolding:
+    -- `Conv.targetReaches_<head>` / `Conv.sourceReaches_<head>`
+    -- threading lemmas that mirror the canonical-form join through
+    -- every Step ctor.
+    isConvCanonicalReachLemma declName ||
     -- Cubical raw-bridge / canonical-form scaffolding (the
     -- cubical analog of Reduction.RawCd / Reduction.RawPar in the
     -- typed Term layer).  These prove a typed Step.par lifts to a
