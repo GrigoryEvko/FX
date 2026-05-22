@@ -10303,4 +10303,167 @@ theorem Conv.idStrictRefl_ne_interval1
     RawStep.parStar.interval1_inv targetToJoin
   nomatch joinEqIdStrictRefl.symm.trans joinEqOne
 
+/-- An `idStrictRefl`-headed source and a `natSucc`-headed
+target are not convertible.  The source introduces strict-identity
+reflexivity at a witness; the target inhabits Nat with a
+successor.  Distinct canonical heads at the raw level. -/
+theorem Conv.idStrictRefl_ne_natSucc
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {witnessTerm : RawTerm scope}
+    {predecessor : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.idStrictRefl witnessTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.natSucc predecessor : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqIdStrictRefl, _⟩ :=
+    RawStep.parStar.idStrictRefl_inv sourceToJoin
+  obtain ⟨_, joinEqSucc, _⟩ :=
+    RawStep.parStar.natSucc_inv targetToJoin
+  nomatch joinEqIdStrictRefl.symm.trans joinEqSucc
+
+/-- An `idStrictRefl`-headed source and an `optionSome`-headed
+target are not convertible.  Strict-identity reflexivity versus
+inhabited Option — disjoint canonical heads. -/
+theorem Conv.idStrictRefl_ne_optionSome
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {witnessTerm : RawTerm scope}
+    {valueTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.idStrictRefl witnessTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.optionSome valueTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqIdStrictRefl, _⟩ :=
+    RawStep.parStar.idStrictRefl_inv sourceToJoin
+  obtain ⟨_, joinEqSome, _⟩ :=
+    RawStep.parStar.optionSome_inv targetToJoin
+  nomatch joinEqIdStrictRefl.symm.trans joinEqSome
+
+/-- An `idStrictRefl`-headed source and an `eitherInl`-headed
+target are not convertible.  Strict-identity reflexivity versus
+the left injection of an Either — disjoint canonical heads. -/
+theorem Conv.idStrictRefl_ne_eitherInl
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {witnessTerm : RawTerm scope}
+    {valueTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.idStrictRefl witnessTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.eitherInl valueTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqIdStrictRefl, _⟩ :=
+    RawStep.parStar.idStrictRefl_inv sourceToJoin
+  obtain ⟨_, joinEqInl, _⟩ :=
+    RawStep.parStar.eitherInl_inv targetToJoin
+  nomatch joinEqIdStrictRefl.symm.trans joinEqInl
+
+/-- An `idStrictRefl`-headed source and an `eitherInr`-headed
+target are not convertible.  Symmetric to the `eitherInl`
+companion above; same proof up to the right-versus-left
+injection ctor distinction. -/
+theorem Conv.idStrictRefl_ne_eitherInr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {witnessTerm : RawTerm scope}
+    {valueTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.idStrictRefl witnessTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.eitherInr valueTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqIdStrictRefl, _⟩ :=
+    RawStep.parStar.idStrictRefl_inv sourceToJoin
+  obtain ⟨_, joinEqInr, _⟩ :=
+    RawStep.parStar.eitherInr_inv targetToJoin
+  nomatch joinEqIdStrictRefl.symm.trans joinEqInr
+
+/-- An `idStrictRefl`-headed source and a `listCons`-headed target
+are not convertible.  Strict-identity reflexivity versus a list
+cons cell — disjoint canonical heads.  `listCons` is binary, so
+the inversion lemma packs the head and tail develop chains
+together. -/
+theorem Conv.idStrictRefl_ne_listCons
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {witnessTerm : RawTerm scope}
+    {headTerm tailTerm : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.idStrictRefl witnessTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.listCons headTerm tailTerm : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqIdStrictRefl, _⟩ :=
+    RawStep.parStar.idStrictRefl_inv sourceToJoin
+  obtain ⟨_, _, joinEqCons, _, _⟩ :=
+    RawStep.parStar.listCons_inv targetToJoin
+  nomatch joinEqIdStrictRefl.symm.trans joinEqCons
+
+/-- An `idStrictRefl`-headed source and a `pair`-headed target
+are not convertible.  Strict-identity reflexivity versus a Σ-pair
+inhabitant — disjoint canonical heads.  `pair` is binary, so the
+inversion lemma packs both component develop chains together. -/
+theorem Conv.idStrictRefl_ne_pair
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {witnessTerm : RawTerm scope}
+    {firstValue secondValue : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.idStrictRefl witnessTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.pair firstValue secondValue : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqIdStrictRefl, _⟩ :=
+    RawStep.parStar.idStrictRefl_inv sourceToJoin
+  obtain ⟨_, _, joinEqPair, _, _⟩ :=
+    RawStep.parStar.pair_inv targetToJoin
+  nomatch joinEqIdStrictRefl.symm.trans joinEqPair
+
+/-- An `idStrictRefl`-headed source and a `refl`-headed target
+are not convertible.  Cross-stratum identity-reflexivity:
+`idStrictRefl` introduces the strict (definitional) identity-type
+reflexivity, while `refl` introduces the HoTT identity-type
+reflexivity (intro for `Ty.id`).  Both inhabit identity-flavored
+type families, but at distinct strata that the kernel keeps
+disjoint at the raw level. -/
+theorem Conv.idStrictRefl_ne_refl
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {witnessTerm : RawTerm scope}
+    {hottWitness : RawTerm scope}
+    {sourceTerm : Term context sourceType
+      (RawTerm.idStrictRefl witnessTerm : RawTerm scope)}
+    {targetTerm : Term context targetType
+      (RawTerm.refl hottWitness : RawTerm scope)} :
+    ¬ Conv sourceTerm targetTerm := by
+  intro convertibility
+  obtain ⟨joinRaw, sourceToJoin, targetToJoin⟩ :=
+    Conv.canonicalRaw convertibility
+  obtain ⟨_, joinEqIdStrictRefl, _⟩ :=
+    RawStep.parStar.idStrictRefl_inv sourceToJoin
+  obtain ⟨_, joinEqRefl, _⟩ :=
+    RawStep.parStar.refl_inv targetToJoin
+  nomatch joinEqIdStrictRefl.symm.trans joinEqRefl
+
 end LeanFX2
