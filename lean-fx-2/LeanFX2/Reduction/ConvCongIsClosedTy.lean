@@ -280,8 +280,12 @@ theorem Conv.listCons_tail_cong_isClosedTy
 /-- True binary cong on both positions of `Term.listCons` when
 element type is closed.  Composes the head and tail step lifts via
 `Conv.cong2_at_isClosedTy` — no need for `Conv.trans` to combine
-the two single-position rules above. -/
-theorem Conv.listCons_cong_isClosedTy
+the two single-position rules above.
+
+Named `Conv.listCons_cong` (term-ctor perspective) so the
+`#assert_conv_cong_coverage_budget` gate's exact-name matcher
+recognises this as the `Term.listCons` cong mirror. -/
+theorem Conv.listCons_cong
     {elementType : Ty level scope}
     (closedElement : IsClosedTy elementType)
     {headRawA headRawB tailRawA tailRawB : RawTerm scope}
@@ -312,8 +316,12 @@ to discharge SR through the wrapper positions. -/
 
 /-- Conv cong on `Term.recordIntro`'s single field when the
 underlying single-field type is closed.  Unary specialisation of
-`cong_at_isClosedTy` at `IsClosedTy.record`. -/
-theorem Conv.recordIntroField_cong_isClosedTy
+`cong_at_isClosedTy` at `IsClosedTy.record`.
+
+Named `Conv.recordIntro_cong` (term-ctor perspective) so the
+`#assert_conv_cong_coverage_budget` gate's exact-name matcher
+recognises this as the `Term.recordIntro` cong mirror. -/
+theorem Conv.recordIntro_cong
     {singleFieldType : Ty level scope}
     (closedSingleField : IsClosedTy singleFieldType)
     {fieldRawA fieldRawB : RawTerm scope}
@@ -333,8 +341,12 @@ theorem Conv.recordIntroField_cong_isClosedTy
 and transition function) when both component types are closed.
 Binary specialisation of `cong2_at_isClosedTy` at `IsClosedTy.codata`.
 The transition position carries `Ty.arrow stateType outputType`,
-discharged via `IsClosedTy.arrow` from the closed components. -/
-theorem Conv.codataUnfold_cong_isClosedTy
+discharged via `IsClosedTy.arrow` from the closed components.
+
+Named `Conv.codataUnfold_cong` (term-ctor perspective) so the
+`#assert_conv_cong_coverage_budget` gate's exact-name matcher
+recognises this as the `Term.codataUnfold` cong mirror. -/
+theorem Conv.codataUnfold_cong
     {stateType outputType : Ty level scope}
     (closedState : IsClosedTy stateType)
     (closedOutput : IsClosedTy outputType)

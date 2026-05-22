@@ -458,7 +458,14 @@ def isConvCongThreadingLemma (declName : Name) : Bool :=
     -- Substring match for `_cong_` infix anywhere in the segment.
     ((lastSegment.splitOn "_cong_").length > 1) ||
     -- Standalone `cong_<suffix>` shape (e.g. `cong_at_isClosedTy`).
-    lastSegment.startsWith "cong_"
+    lastSegment.startsWith "cong_" ||
+    -- Binary variant: `cong2_<suffix>` shape
+    -- (e.g. `cong2_at_isClosedTy`).  Same structural pattern as
+    -- `cong_at_isClosedTy` but lifts Conv across two positions
+    -- simultaneously via `StepStar.append` composition; transitively
+    -- references the full Step enum (including manufactured arms)
+    -- through Step→Step.par→StepStar threading.
+    lastSegment.startsWith "cong2_"
 
 /-- Whether a name's last segment matches a Conv-disjointness theorem
 of the form `Conv.<source>_ne_<target>` and the parent namespace is
