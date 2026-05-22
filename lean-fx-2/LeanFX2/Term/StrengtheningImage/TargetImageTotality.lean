@@ -65,6 +65,75 @@ theorem partialStrengthenTyped?_isSome_target_unit
   subst targetEq
   rfl
 
+/-- Target-direction totality at `Term.boolTrue`.
+
+Mirror of `partialStrengthenTyped?_isSome_target_unit` with
+`Term.boolTrue_unique` powering the inversion. -/
+theorem partialStrengthenTyped?_isSome_target_boolTrue
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (targetTerm :
+      Term sourceCtx (Ty.bool (level := level) (scope := sourceScope))
+        (RawTerm.boolTrue (scope := sourceScope))) :
+    (partialStrengthenTyped? targetTerm strengthening).isSome = true := by
+  have heq :
+      HEq targetTerm
+        (Term.boolTrue (context := sourceCtx) (level := level)) :=
+    Term.boolTrue_unique targetTerm
+      (Term.boolTrue (context := sourceCtx) (level := level))
+  have targetEq :
+      targetTerm = Term.boolTrue (context := sourceCtx) (level := level) :=
+    eq_of_heq heq
+  subst targetEq
+  rfl
+
+/-- Target-direction totality at `Term.boolFalse`. -/
+theorem partialStrengthenTyped?_isSome_target_boolFalse
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (targetTerm :
+      Term sourceCtx (Ty.bool (level := level) (scope := sourceScope))
+        (RawTerm.boolFalse (scope := sourceScope))) :
+    (partialStrengthenTyped? targetTerm strengthening).isSome = true := by
+  have heq :
+      HEq targetTerm
+        (Term.boolFalse (context := sourceCtx) (level := level)) :=
+    Term.boolFalse_unique targetTerm
+      (Term.boolFalse (context := sourceCtx) (level := level))
+  have targetEq :
+      targetTerm = Term.boolFalse (context := sourceCtx) (level := level) :=
+    eq_of_heq heq
+  subst targetEq
+  rfl
+
+/-- Target-direction totality at `Term.natZero`. -/
+theorem partialStrengthenTyped?_isSome_target_natZero
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (targetTerm :
+      Term sourceCtx (Ty.nat (level := level) (scope := sourceScope))
+        (RawTerm.natZero (scope := sourceScope))) :
+    (partialStrengthenTyped? targetTerm strengthening).isSome = true := by
+  have heq :
+      HEq targetTerm
+        (Term.natZero (context := sourceCtx) (level := level)) :=
+    Term.natZero_unique targetTerm
+      (Term.natZero (context := sourceCtx) (level := level))
+  have targetEq :
+      targetTerm = Term.natZero (context := sourceCtx) (level := level) :=
+    eq_of_heq heq
+  subst targetEq
+  rfl
+
 end Term
 
 end LeanFX2
