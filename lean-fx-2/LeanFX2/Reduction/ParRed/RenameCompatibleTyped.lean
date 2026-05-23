@@ -2479,6 +2479,67 @@ theorem rename_compatible_typed_betaFstPair
       Term.rename termRenaming secondValueSource)
     firstStep
 
+/-- β arm `betaGlueElimIntro` of typed-Step.par rename equivariance (shallow glue
+elimination, two sub-derivations, cast-free).  `glueElim (glueIntro base partial)
+⟶ base'` with `Step.par base base'`; the discarded partial component reduces in
+parallel.  Both `base` and `partial` live at the non-dependent `baseType`, and the
+`glueElim` / `glueIntro` rename arms are cast-free, so the redex unfolds with no
+`subst0` transport and the reduct (`baseTarget`) is substitution-free — a
+definitional push after `dsimp`. -/
+theorem rename_compatible_typed_betaGlueElimIntro
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (modeIsUnivalent : mode = Mode.univalent)
+    {baseType : Ty level sourceScope}
+    {boundaryWitness : RawTerm sourceScope}
+    {baseRawSource baseRawTarget partialRawSource partialRawTarget :
+      RawTerm sourceScope}
+    {baseSource : Term sourceCtx baseType baseRawSource}
+    {baseTarget : Term sourceCtx baseType baseRawTarget}
+    {partialSource : Term sourceCtx baseType partialRawSource}
+    {partialTarget : Term sourceCtx baseType partialRawTarget}
+    (baseStep :
+      Step.par (Term.rename termRenaming baseSource)
+               (Term.rename termRenaming baseTarget))
+    (partialStep :
+      Step.par (Term.rename termRenaming partialSource)
+               (Term.rename termRenaming partialTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.glueElim modeIsUnivalent
+          (Term.glueIntro modeIsUnivalent baseType boundaryWitness
+            baseSource partialSource)))
+      (Term.rename termRenaming baseTarget) := by
+  dsimp only [Term.rename]
+  exact Step.par.betaGlueElimIntro modeIsUnivalent baseStep partialStep
+
+/-- β arm `betaRecordProjIntro` of typed-Step.par rename equivariance (shallow
+single-field record projection, single sub-derivation, cast-free).  `recordProj
+(recordIntro field) ⟶ field'` with `Step.par field field'`.  The single field
+lives at the non-dependent `singleFieldType`; `recordProj` / `recordIntro` rename
+structurally, so the reduct (`firstTarget`) is substitution-free. -/
+theorem rename_compatible_typed_betaRecordProjIntro
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {singleFieldType : Ty level sourceScope}
+    {firstRawSource firstRawTarget : RawTerm sourceScope}
+    {firstSource : Term sourceCtx singleFieldType firstRawSource}
+    {firstTarget : Term sourceCtx singleFieldType firstRawTarget}
+    (firstStep :
+      Step.par (Term.rename termRenaming firstSource)
+               (Term.rename termRenaming firstTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.recordProj (Term.recordIntro firstSource)))
+      (Term.rename termRenaming firstTarget) := by
+  dsimp only [Term.rename]
+  exact Step.par.betaRecordProjIntro firstStep
+
 end Step.par
 
 end LeanFX2
