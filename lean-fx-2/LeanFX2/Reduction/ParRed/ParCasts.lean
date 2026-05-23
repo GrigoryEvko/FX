@@ -40,6 +40,41 @@ theorem Step.par.castTargetType
   cases typeEquality
   exact parallelStep
 
+/-- Cancellation dual of `castTargetType`: a `Step.par` whose target is a
+`typeEquality ▸ targetTerm` reduces to one whose target is the bare `targetTerm`.
+Needed by the `betaSndPair` rename-equivariance arms, where the constructor forces
+the target into the `subst0`-distributed type `secondType.rename·.subst0 …` while the
+goal wants it at the renamed-original `(secondType.subst0 …).rename ρ` — the two
+agree only via `Ty.subst0_rename_commute` (a type INDEX), and the renamed argument
+must be presented to the constructor pre-cast, leaving exactly one residual cast on
+the output to peel.  Zero-axiom — `cases` on the type equality collapses the `▸`. -/
+theorem Step.par.castTargetType_cancel
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetTypeOriginal targetTypeReplacement : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    (typeEquality : targetTypeOriginal = targetTypeReplacement)
+    {sourceTerm : Term context sourceType sourceRaw}
+    (targetTerm : Term context targetTypeOriginal targetRaw)
+    (parallelStep : Step.par sourceTerm (typeEquality ▸ targetTerm)) :
+    Step.par sourceTerm targetTerm := by
+  cases typeEquality
+  exact parallelStep
+
+/-- Cancellation dual of `castSourceType`: a `Step.par` whose source is a
+`typeEquality ▸ sourceTerm` reduces to one whose source is the bare `sourceTerm`.
+Source-side mirror of `castTargetType_cancel`. -/
+theorem Step.par.castSourceType_cancel
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceTypeOriginal sourceTypeReplacement targetType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    (typeEquality : sourceTypeOriginal = sourceTypeReplacement)
+    (sourceTerm : Term context sourceTypeOriginal sourceRaw)
+    {targetTerm : Term context targetType targetRaw}
+    (parallelStep : Step.par (typeEquality ▸ sourceTerm) targetTerm) :
+    Step.par sourceTerm targetTerm := by
+  cases typeEquality
+  exact parallelStep
+
 theorem Step.par.castSourceRaw
     {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
     {sourceType targetType : Ty level scope}

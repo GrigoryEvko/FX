@@ -4335,6 +4335,176 @@ theorem rename_compatible_typed_betaPathAppDeep
           (Term.rename (termRenaming.lift Ty.interval) bodyTarget)))
       (Term.subst0_rename_commute termRenaming bodyTarget intervalTarget).symm)
 
+/-- HEq congruence for the `betaPathReflApp` source: given the pathLam body's
+raw equality plus its `HEq`, the two `pathApp (pathLam … body) interval` terms
+are `HEq`.  `subst` the body raw (which makes the indices defeq) then `cases`
+the now-homogeneous body `HEq` — the `betaPathReflApp` analog of
+`transp_typePath_heqCongr`.  Zero-axiom. -/
+theorem pathReflApp_body_heqCongr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (carrierType : Ty level scope)
+    (leftEndpoint rightEndpoint : RawTerm scope)
+    {bodyRawA bodyRawB : RawTerm (scope + 1)} {intervalRaw : RawTerm scope}
+    (bodyRawEq : bodyRawA = bodyRawB)
+    {bodyA : Term (context.cons Ty.interval) carrierType.weaken bodyRawA}
+    {bodyB : Term (context.cons Ty.interval) carrierType.weaken bodyRawB}
+    (bodyHeq : HEq bodyA bodyB)
+    (intervalTerm : Term context Ty.interval intervalRaw) :
+    HEq
+      (Term.pathApp modeIsUnivalent
+        (Term.pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint bodyA)
+        intervalTerm)
+      (Term.pathApp modeIsUnivalent
+        (Term.pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint bodyB)
+        intervalTerm) := by
+  cases bodyRawEq
+  cases bodyHeq
+  rfl
+
+/-- β arm `betaPathReflApp` of typed-Step.par rename equivariance: cubical path
+β at a constant (`weaken`ed) body — `pathApp (pathLam value.weaken) interval ⟶
+value`.  The reduct is `valueTarget` at the bare `carrierType`, cast-free.  The
+source obstruction mirrors `transpReflBeta`: the renamed pathLam body
+`weakenComm ▸ rename(lift)(weaken value)` differs from the constructor's
+`weaken (rename value)` heterogeneously, reconciled by `Term.rename_weaken_commute`
+(term-level) + `type_eq_cast_heq`; bridged into the `Step.par` by
+`castSourceTermHeq` + `pathReflApp_body_heqCongr`, with the raw index aligned by
+`RawTerm.weaken_rename_commute`.  Zero-axiom. -/
+theorem rename_compatible_typed_betaPathReflApp
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (modeIsUnivalent : mode = Mode.univalent)
+    (carrierType : Ty level sourceScope)
+    (leftEndpoint rightEndpoint : RawTerm sourceScope)
+    {valueRawSource valueRawTarget intervalRawSource intervalRawTarget : RawTerm sourceScope}
+    {valueSource : Term sourceCtx carrierType valueRawSource}
+    {valueTarget : Term sourceCtx carrierType valueRawTarget}
+    {intervalSource : Term sourceCtx Ty.interval intervalRawSource}
+    {intervalTarget : Term sourceCtx Ty.interval intervalRawTarget}
+    (valueStep :
+      Step.par (Term.rename termRenaming valueSource)
+               (Term.rename termRenaming valueTarget))
+    (intervalStep :
+      Step.par (Term.rename termRenaming intervalSource)
+               (Term.rename termRenaming intervalTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.pathApp modeIsUnivalent
+          (Term.pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint
+            (Term.weaken Ty.interval valueSource))
+          intervalSource))
+      (Term.rename termRenaming valueTarget) := by
+  dsimp only [Term.rename]
+  have weakenComm := Ty.weaken_rename_commute rho carrierType
+  refine Step.par.castSourceTermHeq ?rawEq ?heq
+    (Step.par.betaPathReflApp modeIsUnivalent (carrierType.rename rho)
+      (leftEndpoint.rename rho) (rightEndpoint.rename rho) valueStep intervalStep)
+  · exact congrArg
+      (fun bodyRaw =>
+        RawTerm.pathApp (RawTerm.pathLam bodyRaw) (intervalRawSource.rename rho))
+      (RawTerm.weaken_rename_commute rho valueRawSource).symm
+  · exact pathReflApp_body_heqCongr modeIsUnivalent (carrierType.rename rho)
+      (leftEndpoint.rename rho) (rightEndpoint.rename rho)
+      (RawTerm.weaken_rename_commute rho valueRawSource).symm
+      (HEq.trans
+        (Term.rename_weaken_commute termRenaming Ty.interval valueSource).symm
+        (Term.type_eq_cast_heq weakenComm
+          (Term.rename (termRenaming.lift Ty.interval)
+            (Term.weaken Ty.interval valueSource))).symm)
+      (Term.rename termRenaming intervalSource)
+
+/-- β arm `betaSndPair` of typed-Step.par rename equivariance: shallow Σ-snd
+projection `snd (pair a b) ⟶ b'` with `Step.par b b'`.
+
+Unlike `betaFstPair` (whose reduct lives at the bare `firstType`), the `snd` reduct
+lives at `secondType.subst0 firstType (RawTerm.fst pairRaw)`, and the `snd` rename
+arm carries a `Ty.subst0_rename_commute` cast on the projection witness
+`RawTerm.fst (RawTerm.pair firstRaw secondRawSource)`.  This is the type index where
+gap #1950 (`RawTerm.fst (RawTerm.pair x y)` does not β-reduce to `x` definitionally)
+would bite — but it bites only the *substitution* direction.  For *renaming*, the
+un-reduced projection appears identically on both the goal source (via the `snd`
+arm's cast) and the constructor source (the `snd`-of-`pair` type formula), so it
+cancels; only the `subst0`-distribution transport on the reduct remains.  The
+renamed argument is presented to the constructor pre-cast (both endpoints lifted to
+the distributed type), and the residual output cast is peeled by
+`castTargetType_cancel`.  Zero-axiom. -/
+theorem rename_compatible_typed_betaSndPair
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {firstType : Ty level sourceScope} {secondType : Ty level (sourceScope + 1)}
+    {firstRaw : RawTerm sourceScope}
+    {secondRawSource secondRawTarget : RawTerm sourceScope}
+    (firstValue : Term sourceCtx firstType firstRaw)
+    {secondValueSource :
+      Term sourceCtx (secondType.subst0 firstType firstRaw) secondRawSource}
+    {secondValueTarget :
+      Term sourceCtx (secondType.subst0 firstType firstRaw) secondRawTarget}
+    (secondStep :
+      Step.par (Term.rename termRenaming secondValueSource)
+               (Term.rename termRenaming secondValueTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.snd (Term.pair (secondType := secondType)
+          firstValue secondValueSource)))
+      (Term.rename termRenaming secondValueTarget) := by
+  dsimp only [Term.rename]
+  exact Step.par.castSourceType
+    (Ty.subst0_rename_commute secondType firstType
+      (RawTerm.fst (RawTerm.pair firstRaw secondRawSource)) rho).symm
+    (Step.par.castTargetType_cancel
+      (Ty.subst0_rename_commute secondType firstType firstRaw rho)
+      (Term.rename termRenaming secondValueTarget)
+      (Step.par.betaSndPair (Term.rename termRenaming firstValue)
+        (Step.par.castTargetType
+          (Ty.subst0_rename_commute secondType firstType firstRaw rho)
+          (Step.par.castSourceType
+            (Ty.subst0_rename_commute secondType firstType firstRaw rho)
+            secondStep))))
+
+/-- Deep β arm `betaSndPairDeep` of typed-Step.par rename equivariance: the scrutinee
+of `snd` reduces in parallel to a pair (`Step.par pairSource (pair a b)`), and
+`snd pairSource ⟶ b`.  The renamed premise's pair-shaped target already carries the
+`subst0`-distribution cast on its second component (from the `pair` rename arm), so it
+feeds the constructor directly; only the `snd` source cast (`castSourceType`) and the
+reduct's `subst0`-distribution transport (`castTargetType_cancel`) wrap the result —
+the same gap-#1950-cancels-under-rename mechanism as the shallow arm.  Zero-axiom. -/
+theorem rename_compatible_typed_betaSndPairDeep
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {firstType : Ty level sourceScope} {secondType : Ty level (sourceScope + 1)}
+    {pairRawSource firstRawTarget secondRawTarget : RawTerm sourceScope}
+    {pairTermSource :
+      Term sourceCtx (Ty.sigmaTy firstType secondType) pairRawSource}
+    {firstValueTarget : Term sourceCtx firstType firstRawTarget}
+    {secondValueTarget :
+      Term sourceCtx (secondType.subst0 firstType firstRawTarget) secondRawTarget}
+    (pairStep :
+      Step.par (Term.rename termRenaming pairTermSource)
+               (Term.rename termRenaming
+                 (Term.pair (secondType := secondType)
+                   firstValueTarget secondValueTarget))) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.snd (secondType := secondType) pairTermSource))
+      (Term.rename termRenaming secondValueTarget) := by
+  dsimp only [Term.rename] at pairStep ⊢
+  exact Step.par.castSourceType
+    (Ty.subst0_rename_commute secondType firstType (RawTerm.fst pairRawSource) rho).symm
+    (Step.par.castTargetType_cancel
+      (Ty.subst0_rename_commute secondType firstType firstRawTarget rho)
+      (Term.rename termRenaming secondValueTarget)
+      (Step.par.betaSndPairDeep pairStep))
+
 end Step.par
 
 end LeanFX2

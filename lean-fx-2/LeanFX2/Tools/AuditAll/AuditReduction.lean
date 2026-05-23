@@ -969,6 +969,7 @@ constructor — pure definitional, no induction, no cast on the `refl`
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_hcomp
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_pathLam
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaFstPair
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaSndPair
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaGlueElimIntro
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaRecordProjIntro
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaModElimIntro
@@ -980,6 +981,9 @@ constructor — pure definitional, no induction, no cast on the `refl`
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaRecordProjIntroDeep
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaRefineElimIntroDeep
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaFstPairDeep
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaSndPairDeep
+#assert_no_axioms LeanFX2.Step.par.castTargetType_cancel
+#assert_no_axioms LeanFX2.Step.par.castSourceType_cancel
 #assert_no_axioms LeanFX2.Step.par.castSourceTermHeq
 #assert_no_axioms LeanFX2.Step.par.castTargetTermHeq
 #assert_no_axioms LeanFX2.Step.par.transp_typePath_heqCongr
@@ -1022,5 +1026,7 @@ constructor — pure definitional, no induction, no cast on the `refl`
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaAppDeep
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaAppPiDeep
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaPathAppDeep
+#assert_no_axioms LeanFX2.Step.par.pathReflApp_body_heqCongr
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaPathReflApp
 
 end LeanFX2.Tools
