@@ -3666,6 +3666,359 @@ theorem rename_compatible_typed_betaAppPi
         (Term.rename termRenaming argumentTarget)))
     (Term.subst0_rename_commute termRenaming bodyTarget argumentTarget).symm
 
+/-- Deep ι arm `iotaNatElimZeroDeep`: scrutinee parallel-reduces to `natZero`,
+then `natElim` fires to the zero branch.  Cast-free (non-dependent motive);
+`natZero` renames to itself so the scrutinee step transports definitionally. -/
+theorem rename_compatible_typed_iotaNatElimZeroDeep
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {motiveType : Ty level sourceScope}
+    {scrutineeRaw zeroRawSource zeroRawTarget succRaw : RawTerm sourceScope}
+    {scrutinee : Term sourceCtx Ty.nat scrutineeRaw}
+    {zeroSource : Term sourceCtx motiveType zeroRawSource}
+    {zeroTarget : Term sourceCtx motiveType zeroRawTarget}
+    (succBranch : Term sourceCtx (Ty.arrow Ty.nat motiveType) succRaw)
+    (scrutineeStep :
+      Step.par (Term.rename termRenaming scrutinee)
+               (Term.rename termRenaming Term.natZero))
+    (zeroStep :
+      Step.par (Term.rename termRenaming zeroSource)
+               (Term.rename termRenaming zeroTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.natElim scrutinee zeroSource succBranch))
+      (Term.rename termRenaming zeroTarget) := by
+  dsimp only [Term.rename] at scrutineeStep ⊢
+  exact Step.par.iotaNatElimZeroDeep (Term.rename termRenaming succBranch)
+    scrutineeStep zeroStep
+
+/-- Deep ι arm `iotaNatElimSuccDeep`: scrutinee reduces to `natSucc pred`,
+then `natElim` fires to `app succTarget pred`.  Cast-free. -/
+theorem rename_compatible_typed_iotaNatElimSuccDeep
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {motiveType : Ty level sourceScope}
+    {scrutineeRaw predecessorRaw zeroRaw succRawSource succRawTarget : RawTerm sourceScope}
+    {scrutinee : Term sourceCtx Ty.nat scrutineeRaw}
+    {predecessor : Term sourceCtx Ty.nat predecessorRaw}
+    (zeroBranch : Term sourceCtx motiveType zeroRaw)
+    {succSource : Term sourceCtx (Ty.arrow Ty.nat motiveType) succRawSource}
+    {succTarget : Term sourceCtx (Ty.arrow Ty.nat motiveType) succRawTarget}
+    (scrutineeStep :
+      Step.par (Term.rename termRenaming scrutinee)
+               (Term.rename termRenaming (Term.natSucc predecessor)))
+    (succStep :
+      Step.par (Term.rename termRenaming succSource)
+               (Term.rename termRenaming succTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.natElim scrutinee zeroBranch succSource))
+      (Term.rename termRenaming (Term.app succTarget predecessor)) := by
+  dsimp only [Term.rename] at scrutineeStep ⊢
+  exact Step.par.iotaNatElimSuccDeep (Term.rename termRenaming zeroBranch)
+    scrutineeStep succStep
+
+/-- Deep ι arm `iotaNatRecZeroDeep`: mirrors `iotaNatElimZeroDeep` for
+`natRec` with the recursor successor type.  Cast-free. -/
+theorem rename_compatible_typed_iotaNatRecZeroDeep
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {motiveType : Ty level sourceScope}
+    {scrutineeRaw zeroRawSource zeroRawTarget succRaw : RawTerm sourceScope}
+    {scrutinee : Term sourceCtx Ty.nat scrutineeRaw}
+    {zeroSource : Term sourceCtx motiveType zeroRawSource}
+    {zeroTarget : Term sourceCtx motiveType zeroRawTarget}
+    (succBranch :
+      Term sourceCtx (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)) succRaw)
+    (scrutineeStep :
+      Step.par (Term.rename termRenaming scrutinee)
+               (Term.rename termRenaming Term.natZero))
+    (zeroStep :
+      Step.par (Term.rename termRenaming zeroSource)
+               (Term.rename termRenaming zeroTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.natRec scrutinee zeroSource succBranch))
+      (Term.rename termRenaming zeroTarget) := by
+  dsimp only [Term.rename] at scrutineeStep ⊢
+  exact Step.par.iotaNatRecZeroDeep (Term.rename termRenaming succBranch)
+    scrutineeStep zeroStep
+
+/-- Deep ι arm `iotaNatRecSuccDeep`: scrutinee reduces to `natSucc pred`,
+then `natRec` fires to the nested `app`/`natRec` reduct.  Cast-free. -/
+theorem rename_compatible_typed_iotaNatRecSuccDeep
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {motiveType : Ty level sourceScope}
+    {scrutineeRaw predecessorRaw zeroRawSource zeroRawTarget
+     succRawSource succRawTarget : RawTerm sourceScope}
+    {scrutinee : Term sourceCtx Ty.nat scrutineeRaw}
+    {predecessor : Term sourceCtx Ty.nat predecessorRaw}
+    {zeroSource : Term sourceCtx motiveType zeroRawSource}
+    {zeroTarget : Term sourceCtx motiveType zeroRawTarget}
+    {succSource :
+      Term sourceCtx (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)) succRawSource}
+    {succTarget :
+      Term sourceCtx (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)) succRawTarget}
+    (scrutineeStep :
+      Step.par (Term.rename termRenaming scrutinee)
+               (Term.rename termRenaming (Term.natSucc predecessor)))
+    (zeroStep :
+      Step.par (Term.rename termRenaming zeroSource)
+               (Term.rename termRenaming zeroTarget))
+    (succStep :
+      Step.par (Term.rename termRenaming succSource)
+               (Term.rename termRenaming succTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.natRec scrutinee zeroSource succSource))
+      (Term.rename termRenaming
+        (Term.app (Term.app succTarget predecessor)
+                  (Term.natRec predecessor zeroTarget succTarget))) := by
+  dsimp only [Term.rename] at scrutineeStep ⊢
+  exact Step.par.iotaNatRecSuccDeep scrutineeStep zeroStep succStep
+
+/-- Deep ι arm `iotaListElimNilDeep`: scrutinee reduces to `listNil`, then
+`listElim` fires to the nil branch.  Cast-free. -/
+theorem rename_compatible_typed_iotaListElimNilDeep
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {elementType motiveType : Ty level sourceScope}
+    {scrutineeRaw nilRawSource nilRawTarget consRaw : RawTerm sourceScope}
+    {scrutinee : Term sourceCtx (Ty.listType elementType) scrutineeRaw}
+    {nilSource : Term sourceCtx motiveType nilRawSource}
+    {nilTarget : Term sourceCtx motiveType nilRawTarget}
+    (consBranch :
+      Term sourceCtx
+        (Ty.arrow elementType (Ty.arrow (Ty.listType elementType) motiveType)) consRaw)
+    (scrutineeStep :
+      Step.par (Term.rename termRenaming scrutinee)
+               (Term.rename termRenaming (Term.listNil (elementType := elementType))))
+    (nilStep :
+      Step.par (Term.rename termRenaming nilSource)
+               (Term.rename termRenaming nilTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.listElim scrutinee nilSource consBranch))
+      (Term.rename termRenaming nilTarget) := by
+  dsimp only [Term.rename] at scrutineeStep ⊢
+  exact Step.par.iotaListElimNilDeep (Term.rename termRenaming consBranch)
+    scrutineeStep nilStep
+
+/-- Deep ι arm `iotaListElimConsDeep`: scrutinee reduces to `listCons h t`,
+then `listElim` fires to the nested `app` reduct.  Cast-free. -/
+theorem rename_compatible_typed_iotaListElimConsDeep
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {elementType motiveType : Ty level sourceScope}
+    {scrutineeRaw headRaw tailRaw nilRaw consRawSource consRawTarget : RawTerm sourceScope}
+    {scrutinee : Term sourceCtx (Ty.listType elementType) scrutineeRaw}
+    {headTerm : Term sourceCtx elementType headRaw}
+    {tailTerm : Term sourceCtx (Ty.listType elementType) tailRaw}
+    (nilBranch : Term sourceCtx motiveType nilRaw)
+    {consSource :
+      Term sourceCtx
+        (Ty.arrow elementType (Ty.arrow (Ty.listType elementType) motiveType)) consRawSource}
+    {consTarget :
+      Term sourceCtx
+        (Ty.arrow elementType (Ty.arrow (Ty.listType elementType) motiveType)) consRawTarget}
+    (scrutineeStep :
+      Step.par (Term.rename termRenaming scrutinee)
+               (Term.rename termRenaming (Term.listCons headTerm tailTerm)))
+    (consStep :
+      Step.par (Term.rename termRenaming consSource)
+               (Term.rename termRenaming consTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.listElim scrutinee nilBranch consSource))
+      (Term.rename termRenaming
+        (Term.app (Term.app consTarget headTerm) tailTerm)) := by
+  dsimp only [Term.rename] at scrutineeStep ⊢
+  exact Step.par.iotaListElimConsDeep (Term.rename termRenaming nilBranch)
+    scrutineeStep consStep
+
+/-- Deep ι arm `iotaOptionMatchNoneDeep`: scrutinee reduces to `optionNone`,
+then `optionMatch` fires to the none branch.  Cast-free. -/
+theorem rename_compatible_typed_iotaOptionMatchNoneDeep
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {elementType motiveType : Ty level sourceScope}
+    {scrutineeRaw noneRawSource noneRawTarget someRaw : RawTerm sourceScope}
+    {scrutinee : Term sourceCtx (Ty.optionType elementType) scrutineeRaw}
+    {noneSource : Term sourceCtx motiveType noneRawSource}
+    {noneTarget : Term sourceCtx motiveType noneRawTarget}
+    (someBranch : Term sourceCtx (Ty.arrow elementType motiveType) someRaw)
+    (scrutineeStep :
+      Step.par (Term.rename termRenaming scrutinee)
+               (Term.rename termRenaming (Term.optionNone (elementType := elementType))))
+    (noneStep :
+      Step.par (Term.rename termRenaming noneSource)
+               (Term.rename termRenaming noneTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.optionMatch scrutinee noneSource someBranch))
+      (Term.rename termRenaming noneTarget) := by
+  dsimp only [Term.rename] at scrutineeStep ⊢
+  exact Step.par.iotaOptionMatchNoneDeep (Term.rename termRenaming someBranch)
+    scrutineeStep noneStep
+
+/-- Deep ι arm `iotaOptionMatchSomeDeep`: scrutinee reduces to `optionSome v`,
+then `optionMatch` fires to `app someTarget v`.  Cast-free. -/
+theorem rename_compatible_typed_iotaOptionMatchSomeDeep
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {elementType motiveType : Ty level sourceScope}
+    {scrutineeRaw valueRaw noneRaw someRawSource someRawTarget : RawTerm sourceScope}
+    {scrutinee : Term sourceCtx (Ty.optionType elementType) scrutineeRaw}
+    {valueTerm : Term sourceCtx elementType valueRaw}
+    (noneBranch : Term sourceCtx motiveType noneRaw)
+    {someSource : Term sourceCtx (Ty.arrow elementType motiveType) someRawSource}
+    {someTarget : Term sourceCtx (Ty.arrow elementType motiveType) someRawTarget}
+    (scrutineeStep :
+      Step.par (Term.rename termRenaming scrutinee)
+               (Term.rename termRenaming (Term.optionSome valueTerm)))
+    (someStep :
+      Step.par (Term.rename termRenaming someSource)
+               (Term.rename termRenaming someTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.optionMatch scrutinee noneBranch someSource))
+      (Term.rename termRenaming (Term.app someTarget valueTerm)) := by
+  dsimp only [Term.rename] at scrutineeStep ⊢
+  exact Step.par.iotaOptionMatchSomeDeep (Term.rename termRenaming noneBranch)
+    scrutineeStep someStep
+
+/-- Deep ι arm `iotaEitherMatchInlDeep`: scrutinee reduces to `eitherInl v`,
+then `eitherMatch` fires to `app leftTarget v`.  Cast-free. -/
+theorem rename_compatible_typed_iotaEitherMatchInlDeep
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {leftType rightType motiveType : Ty level sourceScope}
+    {scrutineeRaw valueRaw leftRawSource leftRawTarget rightRaw : RawTerm sourceScope}
+    {scrutinee : Term sourceCtx (Ty.eitherType leftType rightType) scrutineeRaw}
+    {valueTerm : Term sourceCtx leftType valueRaw}
+    {leftSource : Term sourceCtx (Ty.arrow leftType motiveType) leftRawSource}
+    {leftTarget : Term sourceCtx (Ty.arrow leftType motiveType) leftRawTarget}
+    (rightBranch : Term sourceCtx (Ty.arrow rightType motiveType) rightRaw)
+    (scrutineeStep :
+      Step.par (Term.rename termRenaming scrutinee)
+               (Term.rename termRenaming (Term.eitherInl (rightType := rightType) valueTerm)))
+    (leftStep :
+      Step.par (Term.rename termRenaming leftSource)
+               (Term.rename termRenaming leftTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.eitherMatch scrutinee leftSource rightBranch))
+      (Term.rename termRenaming (Term.app leftTarget valueTerm)) := by
+  dsimp only [Term.rename] at scrutineeStep ⊢
+  exact Step.par.iotaEitherMatchInlDeep (Term.rename termRenaming rightBranch)
+    scrutineeStep leftStep
+
+/-- Deep ι arm `iotaEitherMatchInrDeep`: scrutinee reduces to `eitherInr v`,
+then `eitherMatch` fires to `app rightTarget v`.  Cast-free. -/
+theorem rename_compatible_typed_iotaEitherMatchInrDeep
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {leftType rightType motiveType : Ty level sourceScope}
+    {scrutineeRaw valueRaw leftRaw rightRawSource rightRawTarget : RawTerm sourceScope}
+    {scrutinee : Term sourceCtx (Ty.eitherType leftType rightType) scrutineeRaw}
+    {valueTerm : Term sourceCtx rightType valueRaw}
+    (leftBranch : Term sourceCtx (Ty.arrow leftType motiveType) leftRaw)
+    {rightSource : Term sourceCtx (Ty.arrow rightType motiveType) rightRawSource}
+    {rightTarget : Term sourceCtx (Ty.arrow rightType motiveType) rightRawTarget}
+    (scrutineeStep :
+      Step.par (Term.rename termRenaming scrutinee)
+               (Term.rename termRenaming (Term.eitherInr (leftType := leftType) valueTerm)))
+    (rightStep :
+      Step.par (Term.rename termRenaming rightSource)
+               (Term.rename termRenaming rightTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.eitherMatch scrutinee leftBranch rightSource))
+      (Term.rename termRenaming (Term.app rightTarget valueTerm)) := by
+  dsimp only [Term.rename] at scrutineeStep ⊢
+  exact Step.par.iotaEitherMatchInrDeep (Term.rename termRenaming leftBranch)
+    scrutineeStep rightStep
+
+/-- Deep ι arm `iotaIdJReflDeep`: witness reduces to `refl`, then `idJ` fires
+to the base.  Cast-free (non-dependent motive); `refl` renames structurally. -/
+theorem rename_compatible_typed_iotaIdJReflDeep
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (carrier : Ty level sourceScope) (endpoint : RawTerm sourceScope)
+    {motiveType : Ty level sourceScope}
+    {baseRawSource baseRawTarget witnessRawSource : RawTerm sourceScope}
+    {baseSource : Term sourceCtx motiveType baseRawSource}
+    {baseTarget : Term sourceCtx motiveType baseRawTarget}
+    {witnessSource : Term sourceCtx (Ty.id carrier endpoint endpoint) witnessRawSource}
+    (witnessStep :
+      Step.par (Term.rename termRenaming witnessSource)
+               (Term.rename termRenaming (Term.refl carrier endpoint)))
+    (baseStep :
+      Step.par (Term.rename termRenaming baseSource)
+               (Term.rename termRenaming baseTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.idJ (carrier := carrier) (leftEndpoint := endpoint)
+          (rightEndpoint := endpoint) baseSource witnessSource))
+      (Term.rename termRenaming baseTarget) := by
+  dsimp only [Term.rename] at witnessStep ⊢
+  exact Step.par.iotaIdJReflDeep witnessStep baseStep
+
+/-- Deep strict-id ι arm `iotaIdStrictRecReflDeep`: witness reduces to
+`idStrictRefl`, then strict rec fires to the base.  Cast-free; the mode
+proof `modeIsStrict` is preserved by renaming. -/
+theorem rename_compatible_typed_iotaIdStrictRecReflDeep
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (modeIsStrict : mode = Mode.strict)
+    (carrier : Ty level sourceScope) (endpoint : RawTerm sourceScope)
+    {motiveType : Ty level sourceScope}
+    {baseRawSource baseRawTarget witnessRawSource : RawTerm sourceScope}
+    {baseSource : Term sourceCtx motiveType baseRawSource}
+    {baseTarget : Term sourceCtx motiveType baseRawTarget}
+    {witnessSource : Term sourceCtx (Ty.idStrict carrier endpoint endpoint) witnessRawSource}
+    (witnessStep :
+      Step.par (Term.rename termRenaming witnessSource)
+               (Term.rename termRenaming (Term.idStrictRefl modeIsStrict carrier endpoint)))
+    (baseStep :
+      Step.par (Term.rename termRenaming baseSource)
+               (Term.rename termRenaming baseTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.idStrictRec (carrier := carrier) (leftEndpoint := endpoint)
+          (rightEndpoint := endpoint) modeIsStrict baseSource witnessSource))
+      (Term.rename termRenaming baseTarget) := by
+  dsimp only [Term.rename] at witnessStep ⊢
+  exact Step.par.iotaIdStrictRecReflDeep modeIsStrict witnessStep baseStep
+
 end Step.par
 
 end LeanFX2

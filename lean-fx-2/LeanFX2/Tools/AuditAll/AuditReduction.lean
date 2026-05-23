@@ -1004,5 +1004,17 @@ constructor — pure definitional, no induction, no cast on the `refl`
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaBoolElimFalse
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaApp
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaAppPi
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaNatElimZeroDeep
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaNatElimSuccDeep
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaNatRecZeroDeep
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaNatRecSuccDeep
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaListElimNilDeep
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaListElimConsDeep
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaOptionMatchNoneDeep
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaOptionMatchSomeDeep
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaEitherMatchInlDeep
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaEitherMatchInrDeep
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaIdJReflDeep
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaIdStrictRecReflDeep
 
 end LeanFX2.Tools
