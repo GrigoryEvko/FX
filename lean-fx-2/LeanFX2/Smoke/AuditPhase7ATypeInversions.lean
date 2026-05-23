@@ -20,6 +20,8 @@ namespace LeanFX2.SmokePhase7ATypeInversions
 #print axioms LeanFX2.Term.boolFalse_ty_inv
 #print axioms LeanFX2.Term.natZero_ty_inv
 #print axioms LeanFX2.Term.natSucc_ty_inv
+#print axioms LeanFX2.Term.interval0_ty_inv
+#print axioms LeanFX2.Term.interval1_ty_inv
 #print axioms LeanFX2.Term.listNil_ty_inv
 #print axioms LeanFX2.Term.listCons_ty_inv
 #print axioms LeanFX2.Term.optionNone_ty_inv

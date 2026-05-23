@@ -88,6 +88,29 @@ theorem Term.natZero_ty_inv
   cases someTerm
   rfl
 
+/-- `Term ctx _ .interval0` forces `ty = Ty.interval`.
+
+`Term.interval0` is a closed-atomic ctor fixed at `Ty.interval`
+(per `LeanFX2/Term.lean`), so the inversion reduces to `cases
+someTerm; rfl` — the same pattern as `unit_ty_inv` / `natZero_ty_inv`.
+Companion to `Term.interval0_unique` shipped in the same file. -/
+theorem Term.interval0_ty_inv
+    {someType : Ty level scope}
+    (someTerm : Term context someType (RawTerm.interval0 (scope := scope))) :
+    someType = Ty.interval := by
+  cases someTerm
+  rfl
+
+/-- `Term ctx _ .interval1` forces `ty = Ty.interval`.
+
+Mirror of `Term.interval0_ty_inv`. -/
+theorem Term.interval1_ty_inv
+    {someType : Ty level scope}
+    (someTerm : Term context someType (RawTerm.interval1 (scope := scope))) :
+    someType = Ty.interval := by
+  cases someTerm
+  rfl
+
 /-- `Term ctx _ (.natSucc _)` forces `ty = Ty.nat`. -/
 theorem Term.natSucc_ty_inv
     {someType : Ty level scope}
