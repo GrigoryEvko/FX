@@ -57,4 +57,54 @@ namespace LeanFX2.Smoke.AuditStrengtheningImageHeadlines
 #print axioms LeanFX2.Term.IsTotalOnWeaken
 #print axioms LeanFX2.Term.isTotalOnWeaken_universal
 
+-- Per-Ty `weaken_inv_<Ty>` family — 28 zero-axiom corollaries
+-- packaging weakening-image strengthening at every Ty shape (see
+-- strength-T4-{closed,binder,parametric,id-family,cubical,
+-- advanced} task family and `Tools/AuditAll/AuditTerm/
+-- StrengtheningImage.lean:18-44, 172).
+
+-- Special: secondary right-inverse forms.
+#print axioms LeanFX2.Term.weaken_inv_of_unweaken?_some
+
+-- Closed Ty (6): primitive types with no payload structure.
+#print axioms LeanFX2.Term.weaken_inv_unit
+#print axioms LeanFX2.Term.weaken_inv_bool
+#print axioms LeanFX2.Term.weaken_inv_nat
+#print axioms LeanFX2.Term.weaken_inv_empty
+#print axioms LeanFX2.Term.weaken_inv_interval
+#print axioms LeanFX2.Term.weaken_inv_universe
+
+-- Binder Ty (4): types that bind a new variable in their body.
+#print axioms LeanFX2.Term.weaken_inv_pi
+#print axioms LeanFX2.Term.weaken_inv_sigma
+#print axioms LeanFX2.Term.weaken_inv_path
+#print axioms LeanFX2.Term.weaken_inv_refine
+
+-- Universe-poly + function-arrow specializations.
+#print axioms LeanFX2.Term.weaken_inv_tyVar
+#print axioms LeanFX2.Term.weaken_inv_arrow
+
+-- Parametric Ty (3): single-argument inductive type formers.
+#print axioms LeanFX2.Term.weaken_inv_listType
+#print axioms LeanFX2.Term.weaken_inv_optionType
+#print axioms LeanFX2.Term.weaken_inv_eitherType
+
+-- Identity-family Ty (4): HoTT identity + observational + strict.
+#print axioms LeanFX2.Term.weaken_inv_id
+#print axioms LeanFX2.Term.weaken_inv_oeq
+#print axioms LeanFX2.Term.weaken_inv_idStrict
+#print axioms LeanFX2.Term.weaken_inv_equiv
+
+-- Cubical Ty (1): glue type at cubical-mode binders.
+#print axioms LeanFX2.Term.weaken_inv_glue
+
+-- Advanced Ty (4): record / codata / session / effect.
+#print axioms LeanFX2.Term.weaken_inv_record
+#print axioms LeanFX2.Term.weaken_inv_codata
+#print axioms LeanFX2.Term.weaken_inv_session
+#print axioms LeanFX2.Term.weaken_inv_effect
+
+-- Modal Ty (1): modality-shifted carrier.
+#print axioms LeanFX2.Term.weaken_inv_modal
+
 end LeanFX2.Smoke.AuditStrengtheningImageHeadlines
