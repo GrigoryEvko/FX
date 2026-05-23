@@ -2,6 +2,8 @@ import LeanFX2.Reduction.ParRed.ParInductive
 import LeanFX2.Reduction.ParRed.ParCasts
 import LeanFX2.Term.Rename
 import LeanFX2.Term.Pointwise.PointwiseAndCompositionInfrastructure.CastHEq
+import LeanFX2.Term.Pointwise.PointwiseAndCompositionInfrastructure.SingletonPrecompose
+import LeanFX2.Term.Subst0RenameCommute
 import LeanFX2.Reduction.RawParCompatible.NamedCompatibility
 
 /-! # Reduction/ParRed/RenameCompatibleTyped
@@ -3542,6 +3544,77 @@ theorem rename_compatible_typed_iotaBoolElimFalse
           (trueCommute ▸ Term.rename termRenaming thenBranch)
           (Step.par.castSourceType falseCommute
             (Step.par.castTargetType falseCommute elseStep)))))
+
+/-- β arm `betaApp` of typed-Step.par rename equivariance.
+
+`(λx. body) arg ⟶ body[arg/x]` for the non-dependent application.
+This is the hardest arm: the reduct `subst0 bodyTarget argumentTarget`
+develops into a substitution, so the renamed reduct must commute via
+**T8** (`Term.subst0_rename_commute`), and the non-dependent lam carries
+the body at `codomainType.weaken` so the body-cast is reconciled by
+`Term.subst0_body_heq_of_eq` over `Ty.weaken_rename_commute`.  The
+source matches the `betaApp` redex definitionally (the `app`/`lam`
+rename arms bake in exactly the `weaken_rename_commute` body cast).  The
+reduct's type/raw gap is closed by `castTargetType` (Ty-level
+`subst0_rename_commute` + the weaken congruence) then `castTargetTermHeq`
+(raw-level `subst0_rename_commute` + the composite HEq).  Zero-axiom. -/
+theorem rename_compatible_typed_betaApp
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {domainType codomainType : Ty level sourceScope}
+    {bodyRawSource bodyRawTarget : RawTerm (sourceScope + 1)}
+    {argumentRawSource argumentRawTarget : RawTerm sourceScope}
+    {bodySource : Term (sourceCtx.cons domainType) codomainType.weaken bodyRawSource}
+    {bodyTarget : Term (sourceCtx.cons domainType) codomainType.weaken bodyRawTarget}
+    {argumentSource : Term sourceCtx domainType argumentRawSource}
+    {argumentTarget : Term sourceCtx domainType argumentRawTarget}
+    (bodyStep :
+      Step.par (Term.rename (termRenaming.lift domainType) bodySource)
+               (Term.rename (termRenaming.lift domainType) bodyTarget))
+    (argumentStep :
+      Step.par (Term.rename termRenaming argumentSource)
+               (Term.rename termRenaming argumentTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.app (Term.lam (codomainType := codomainType) bodySource) argumentSource))
+      (Term.rename termRenaming (Term.subst0 bodyTarget argumentTarget)) := by
+  dsimp only [Term.rename]
+  have weakenComm := Ty.weaken_rename_commute rho codomainType
+  -- Ty-level alignment of the renamed reduct's type: the `betaApp` constructor
+  -- pins the codomain at `(codomainType.rename rho).weaken`, whereas the goal's
+  -- naturally-renamed reduct sits at `((codomainType.weaken).subst0 …).rename rho`.
+  have tyAlign :
+      ((codomainType.rename rho).weaken).subst0 (domainType.rename rho)
+            (argumentRawTarget.rename rho)
+        = ((codomainType.weaken).subst0 domainType argumentRawTarget).rename rho :=
+    ((Ty.subst0_rename_commute codomainType.weaken domainType argumentRawTarget rho).trans
+      (congrArg
+        (fun codomain =>
+          Ty.subst0 codomain (domainType.rename rho) (argumentRawTarget.rename rho))
+        weakenComm)).symm
+  -- Elaborate the `castTargetType`-wrapped constructor FIRST (as a non-hole
+  -- argument) so its concrete target pins `targetOriginal`; the raw-index HEq is
+  -- deferred to the trailing `exact`, dodging the `▸` higher-order metavar.
+  refine Step.par.castTargetTermHeq
+    (RawTerm.subst0_rename_commute bodyRawTarget argumentRawTarget rho).symm
+    ?heqBridge
+    (Step.par.castTargetType tyAlign
+      (Step.par.betaApp
+        (Step.par.castSourceType weakenComm (Step.par.castTargetType weakenComm bodyStep))
+        argumentStep))
+  exact HEq.trans
+    (Term.type_eq_cast_heq tyAlign
+      (Term.subst0
+        (weakenComm ▸ Term.rename (termRenaming.lift domainType) bodyTarget)
+        (Term.rename termRenaming argumentTarget)))
+    (HEq.trans
+      (Term.subst0_body_heq_of_eq weakenComm.symm rfl
+        (Term.type_eq_cast_heq weakenComm
+          (Term.rename (termRenaming.lift domainType) bodyTarget)))
+      (Term.subst0_rename_commute termRenaming bodyTarget argumentTarget).symm)
 
 end Step.par
 
