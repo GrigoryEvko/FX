@@ -1,4 +1,5 @@
 import LeanFX2.Foundation.Polygraph.RawPolyTermFlat
+import LeanFX2.Foundation.Polygraph.RawPolyTermFlatToLegacy
 import LeanFX2.Tools.DependencyAudit
 import LeanFX2.Tools.StrictHarness.TrustEscape
 
@@ -48,7 +49,9 @@ namespace LeanFX2.SmokeRawPolyTermFlat
 #assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTermFlatChildren.pairFlat
 #assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTermFlatChildren.binderShape
 #assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTermFlatChildren.tripleFlat
+#assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTermFlat.toLegacy
 
+#print axioms LeanFX2.Foundation.Polygraph.RawPolyTermFlat.toLegacy
 #print axioms LeanFX2.Foundation.Polygraph.Generator.payload
 #print axioms LeanFX2.Foundation.Polygraph.RawPolyTermFlat
 #print axioms LeanFX2.Foundation.Polygraph.RawPolyTermFlatChildren
