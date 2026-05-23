@@ -908,5 +908,8 @@ constructor — pure definitional, no induction, no cast on the `refl`
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_modElim
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_subsume
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_lam
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_appPi
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_snd
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_pair
 
 end LeanFX2.Tools

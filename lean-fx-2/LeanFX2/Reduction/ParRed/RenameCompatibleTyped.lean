@@ -563,6 +563,117 @@ theorem rename_compatible_typed_lam
     (Step.par.castTargetType (Ty.weaken_rename_commute rho codomainType)
       (Step.par.castSourceType (Ty.weaken_rename_commute rho codomainType) bodyStep))
 
+/-- Cong arm `appPi` of typed-Step.par rename equivariance (cast-bearing).
+
+Dependent Π application reduces in function and argument.  `Term.rename`
+casts the whole `appPi` result by `(Ty.subst0_rename_commute …).symm`,
+and crucially the source and target casts DIFFER (they depend on
+`argumentRawSource` vs `argumentRawTarget`).  So the two endpoints are
+transported separately: `castSourceType` with the source cast,
+`castTargetType` with the target cast, around `Step.par.appPi`. -/
+theorem rename_compatible_typed_appPi
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {domainType : Ty level sourceScope} {codomainType : Ty level (sourceScope + 1)}
+    {functionRawSource functionRawTarget
+     argumentRawSource argumentRawTarget : RawTerm sourceScope}
+    {functionTermSource :
+      Term sourceCtx (Ty.piTy domainType codomainType) functionRawSource}
+    {functionTermTarget :
+      Term sourceCtx (Ty.piTy domainType codomainType) functionRawTarget}
+    {argumentTermSource : Term sourceCtx domainType argumentRawSource}
+    {argumentTermTarget : Term sourceCtx domainType argumentRawTarget}
+    (functionStep :
+      Step.par (Term.rename termRenaming functionTermSource)
+               (Term.rename termRenaming functionTermTarget))
+    (argumentStep :
+      Step.par (Term.rename termRenaming argumentTermSource)
+               (Term.rename termRenaming argumentTermTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.appPi functionTermSource argumentTermSource))
+      (Term.rename termRenaming (Term.appPi functionTermTarget argumentTermTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.castTargetType
+    (Ty.subst0_rename_commute codomainType domainType argumentRawTarget rho).symm
+    (Step.par.castSourceType
+      (Ty.subst0_rename_commute codomainType domainType argumentRawSource rho).symm
+      (Step.par.appPi functionStep argumentStep))
+
+/-- Cong arm `snd` of typed-Step.par rename equivariance (cast-bearing).
+
+Second projection reduces in its pair.  `Term.rename` casts the `snd`
+result by `(Ty.subst0_rename_commute … (RawTerm.fst pairRaw) …).symm`;
+source and target casts differ (`RawTerm.fst pairRawSource` vs
+`…Target`), so transport each endpoint separately. -/
+theorem rename_compatible_typed_snd
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {firstType : Ty level sourceScope} {secondType : Ty level (sourceScope + 1)}
+    {pairRawSource pairRawTarget : RawTerm sourceScope}
+    {pairTermSource :
+      Term sourceCtx (Ty.sigmaTy firstType secondType) pairRawSource}
+    {pairTermTarget :
+      Term sourceCtx (Ty.sigmaTy firstType secondType) pairRawTarget}
+    (pairStep :
+      Step.par (Term.rename termRenaming pairTermSource)
+               (Term.rename termRenaming pairTermTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.snd (secondType := secondType) pairTermSource))
+      (Term.rename termRenaming (Term.snd (secondType := secondType) pairTermTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.castTargetType
+    (Ty.subst0_rename_commute secondType firstType (RawTerm.fst pairRawTarget) rho).symm
+    (Step.par.castSourceType
+      (Ty.subst0_rename_commute secondType firstType (RawTerm.fst pairRawSource) rho).symm
+      (Step.par.snd pairStep))
+
+/-- Cong arm `pair` of typed-Step.par rename equivariance (cast-bearing).
+
+Pair reduces in both components.  Unlike appPi/snd the cast sits on the
+SECOND component inside the pair (forward `Ty.subst0_rename_commute`,
+not `.symm`), so the second-component step is transported (source and
+target casts differ via `firstRawSource`/`firstRawTarget`) while the
+first component is cast-free. -/
+theorem rename_compatible_typed_pair
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {firstType : Ty level sourceScope} {secondType : Ty level (sourceScope + 1)}
+    {firstRawSource firstRawTarget
+     secondRawSource secondRawTarget : RawTerm sourceScope}
+    {firstValueSource : Term sourceCtx firstType firstRawSource}
+    {firstValueTarget : Term sourceCtx firstType firstRawTarget}
+    {secondValueSource :
+      Term sourceCtx (secondType.subst0 firstType firstRawSource) secondRawSource}
+    {secondValueTarget :
+      Term sourceCtx (secondType.subst0 firstType firstRawTarget) secondRawTarget}
+    (firstStep :
+      Step.par (Term.rename termRenaming firstValueSource)
+               (Term.rename termRenaming firstValueTarget))
+    (secondStep :
+      Step.par (Term.rename termRenaming secondValueSource)
+               (Term.rename termRenaming secondValueTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.pair (secondType := secondType) firstValueSource secondValueSource))
+      (Term.rename termRenaming
+        (Term.pair (secondType := secondType) firstValueTarget secondValueTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.pair firstStep
+    (Step.par.castTargetType
+      (Ty.subst0_rename_commute secondType firstType firstRawTarget rho)
+      (Step.par.castSourceType
+        (Ty.subst0_rename_commute secondType firstType firstRawSource rho)
+        secondStep))
+
 end Step.par
 
 end LeanFX2
