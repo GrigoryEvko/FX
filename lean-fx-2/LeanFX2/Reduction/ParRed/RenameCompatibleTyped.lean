@@ -2126,6 +2126,113 @@ theorem rename_compatible_typed_funextReflCong
       (Step.par.funextReflCong (domainType.rename rho) (codomainType.rename rho)
         (RawStep.par.rename_compatible rho.lift applyStep)))
 
+/-- Cong arm `equivIntroHetCong` of typed-Step.par rename equivariance (typed-IH,
+two function sub-derivations + cast-bearing inverse witnesses).  `Term.equivIntroHet`
+packages a forward function, a backward function, and two inverse-law witnesses
+(`leftInv` at `equivIntroHetLeftInverseType`, `rightInv` at
+`equivIntroHetRightInverseType`); the cong reduces only in the forward/backward
+positions and lets the inverse witnesses be replaced freely (their types shift
+with the reduced functions, with no canonical reduced witness to relate).  Under
+renaming, `Term.rename`'s own `equivIntroHet` arm inserts
+`equivIntroHetLeftInverseType_rename ▸` / `equivIntroHetRightInverseType_rename ▸`
+casts into BOTH endpoints, so after `dsimp only [Term.rename]` those casts already
+sit in the goal — the constructor's implicit witness args unify against them
+directly, and only the two function premises are threaded. -/
+theorem rename_compatible_typed_equivIntroHetCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {carrierA carrierB : Ty level sourceScope}
+    {forwardRawSource forwardRawTarget
+     backwardRawSource backwardRawTarget : RawTerm sourceScope}
+    {forwardSource : Term sourceCtx (Ty.arrow carrierA carrierB) forwardRawSource}
+    {forwardTarget : Term sourceCtx (Ty.arrow carrierA carrierB) forwardRawTarget}
+    {backwardSource : Term sourceCtx (Ty.arrow carrierB carrierA) backwardRawSource}
+    {backwardTarget : Term sourceCtx (Ty.arrow carrierB carrierA) backwardRawTarget}
+    {leftInvSourceRaw rightInvSourceRaw
+     leftInvTargetRaw rightInvTargetRaw : RawTerm sourceScope}
+    {leftInvSource :
+      Term sourceCtx
+        (equivIntroHetLeftInverseType carrierA forwardRawSource backwardRawSource)
+        leftInvSourceRaw}
+    {rightInvSource :
+      Term sourceCtx
+        (equivIntroHetRightInverseType carrierB forwardRawSource backwardRawSource)
+        rightInvSourceRaw}
+    {leftInvTarget :
+      Term sourceCtx
+        (equivIntroHetLeftInverseType carrierA forwardRawTarget backwardRawTarget)
+        leftInvTargetRaw}
+    {rightInvTarget :
+      Term sourceCtx
+        (equivIntroHetRightInverseType carrierB forwardRawTarget backwardRawTarget)
+        rightInvTargetRaw}
+    (forwardStep :
+      Step.par (Term.rename termRenaming forwardSource)
+               (Term.rename termRenaming forwardTarget))
+    (backwardStep :
+      Step.par (Term.rename termRenaming backwardSource)
+               (Term.rename termRenaming backwardTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.equivIntroHet forwardSource backwardSource leftInvSource rightInvSource))
+      (Term.rename termRenaming
+        (Term.equivIntroHet forwardTarget backwardTarget leftInvTarget rightInvTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.equivIntroHetCong forwardStep backwardStep
+
+/-- Cong arm `equivIntroCong` of typed-Step.par rename equivariance.  Raw-name
+parity alias of `equivIntroHetCong` — identical signature and `Term.equivIntroHet`
+carrier, differing only in that the underlying raw constructor is named
+`RawStep.par.equivIntroCong`.  Same proof shape: thread the two renamed function
+premises; the rename-arm casts on the inverse witnesses are read off the goal. -/
+theorem rename_compatible_typed_equivIntroCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {carrierA carrierB : Ty level sourceScope}
+    {forwardRawSource forwardRawTarget
+     backwardRawSource backwardRawTarget : RawTerm sourceScope}
+    {forwardSource : Term sourceCtx (Ty.arrow carrierA carrierB) forwardRawSource}
+    {forwardTarget : Term sourceCtx (Ty.arrow carrierA carrierB) forwardRawTarget}
+    {backwardSource : Term sourceCtx (Ty.arrow carrierB carrierA) backwardRawSource}
+    {backwardTarget : Term sourceCtx (Ty.arrow carrierB carrierA) backwardRawTarget}
+    {leftInvSourceRaw rightInvSourceRaw
+     leftInvTargetRaw rightInvTargetRaw : RawTerm sourceScope}
+    {leftInvSource :
+      Term sourceCtx
+        (equivIntroHetLeftInverseType carrierA forwardRawSource backwardRawSource)
+        leftInvSourceRaw}
+    {rightInvSource :
+      Term sourceCtx
+        (equivIntroHetRightInverseType carrierB forwardRawSource backwardRawSource)
+        rightInvSourceRaw}
+    {leftInvTarget :
+      Term sourceCtx
+        (equivIntroHetLeftInverseType carrierA forwardRawTarget backwardRawTarget)
+        leftInvTargetRaw}
+    {rightInvTarget :
+      Term sourceCtx
+        (equivIntroHetRightInverseType carrierB forwardRawTarget backwardRawTarget)
+        rightInvTargetRaw}
+    (forwardStep :
+      Step.par (Term.rename termRenaming forwardSource)
+               (Term.rename termRenaming forwardTarget))
+    (backwardStep :
+      Step.par (Term.rename termRenaming backwardSource)
+               (Term.rename termRenaming backwardTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.equivIntroHet forwardSource backwardSource leftInvSource rightInvSource))
+      (Term.rename termRenaming
+        (Term.equivIntroHet forwardTarget backwardTarget leftInvTarget rightInvTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.equivIntroCong forwardStep backwardStep
+
 end Step.par
 
 end LeanFX2
