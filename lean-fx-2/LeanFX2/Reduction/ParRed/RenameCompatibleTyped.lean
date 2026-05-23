@@ -1032,6 +1032,211 @@ theorem rename_compatible_typed_refineElimCong
   dsimp only [Term.rename]
   exact Step.par.refineElimCong refinedStep
 
+/-- Cong arm `pathAppCong` of typed-Step.par rename equivariance.
+
+Path application reduces in path and interval argument.  `Term.rename` on
+`pathApp` is cast-free (path at structurally-renaming `Ty.path`, interval at
+closed `Ty.interval`); the univalence side condition
+`modeIsUnivalent : mode = Mode.univalent` rides through unchanged. -/
+theorem rename_compatible_typed_pathAppCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {pathRawSource pathRawTarget intervalRawSource intervalRawTarget : RawTerm sourceScope}
+    {pathSource :
+      Term sourceCtx (Ty.path carrierType leftEndpoint rightEndpoint) pathRawSource}
+    {pathTarget :
+      Term sourceCtx (Ty.path carrierType leftEndpoint rightEndpoint) pathRawTarget}
+    {intervalSource : Term sourceCtx Ty.interval intervalRawSource}
+    {intervalTarget : Term sourceCtx Ty.interval intervalRawTarget}
+    (pathStep :
+      Step.par (Term.rename termRenaming pathSource)
+               (Term.rename termRenaming pathTarget))
+    (intervalStep :
+      Step.par (Term.rename termRenaming intervalSource)
+               (Term.rename termRenaming intervalTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.pathApp modeIsUnivalent pathSource intervalSource))
+      (Term.rename termRenaming (Term.pathApp modeIsUnivalent pathTarget intervalTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.pathAppCong modeIsUnivalent pathStep intervalStep
+
+/-- Cong arm `glueIntroCong` of typed-Step.par rename equivariance.
+
+Glue introduction reduces in base value and partial value, both at the
+non-dependent `baseType`.  Cast-free; `baseType` / `boundaryWitness` /
+`modeIsUnivalent` ride through unchanged (renamed in the node, the ctor
+infers its implicits to match). -/
+theorem rename_compatible_typed_glueIntroCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (modeIsUnivalent : mode = Mode.univalent)
+    {baseType : Ty level sourceScope}
+    {boundaryWitness : RawTerm sourceScope}
+    {baseRawSource baseRawTarget partialRawSource partialRawTarget : RawTerm sourceScope}
+    {baseSource : Term sourceCtx baseType baseRawSource}
+    {baseTarget : Term sourceCtx baseType baseRawTarget}
+    {partialSource : Term sourceCtx baseType partialRawSource}
+    {partialTarget : Term sourceCtx baseType partialRawTarget}
+    (baseStep :
+      Step.par (Term.rename termRenaming baseSource)
+               (Term.rename termRenaming baseTarget))
+    (partialStep :
+      Step.par (Term.rename termRenaming partialSource)
+               (Term.rename termRenaming partialTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.glueIntro modeIsUnivalent baseType boundaryWitness baseSource partialSource))
+      (Term.rename termRenaming
+        (Term.glueIntro modeIsUnivalent baseType boundaryWitness baseTarget partialTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.glueIntroCong modeIsUnivalent baseStep partialStep
+
+/-- Cong arm `glueElimCong` of typed-Step.par rename equivariance.
+
+Glue elimination reduces in its glued value, at the structurally-renaming
+`Ty.glue baseType boundaryWitness`.  Cast-free, one sub-step. -/
+theorem rename_compatible_typed_glueElimCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (modeIsUnivalent : mode = Mode.univalent)
+    {baseType : Ty level sourceScope}
+    {boundaryWitness : RawTerm sourceScope}
+    {gluedRawSource gluedRawTarget : RawTerm sourceScope}
+    {gluedSource : Term sourceCtx (Ty.glue baseType boundaryWitness) gluedRawSource}
+    {gluedTarget : Term sourceCtx (Ty.glue baseType boundaryWitness) gluedRawTarget}
+    (gluedStep :
+      Step.par (Term.rename termRenaming gluedSource)
+               (Term.rename termRenaming gluedTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.glueElim modeIsUnivalent gluedSource))
+      (Term.rename termRenaming (Term.glueElim modeIsUnivalent gluedTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.glueElimCong modeIsUnivalent gluedStep
+
+/-- Cong arm `transpCong` of typed-Step.par rename equivariance.
+
+Transport reduces in its type-path and source value.  Despite the heavy
+index list (univalence side condition, universe level + bound, source/target
+types and their raw codes), `Term.rename` on `transp` is cast-free — every
+`Ty`/`RawTerm` index renames structurally.  The four explicit type/raw-code
+arguments of `Step.par.transpCong` are left as `_`: `exact` solves them by
+unifying against the renamed goal (and the renamed sub-step types). -/
+theorem rename_compatible_typed_transpCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (modeIsUnivalent : mode = Mode.univalent)
+    (universeLevel : UniverseLevel)
+    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+    {sourceType targetType : Ty level sourceScope}
+    {sourceTypeRaw targetTypeRaw : RawTerm sourceScope}
+    {pathRawSource pathRawTarget sourceRawSource sourceRawTarget : RawTerm sourceScope}
+    {typePathSource :
+      Term sourceCtx
+        (Ty.path (Ty.universe universeLevel universeLevelLt) sourceTypeRaw targetTypeRaw)
+        pathRawSource}
+    {typePathTarget :
+      Term sourceCtx
+        (Ty.path (Ty.universe universeLevel universeLevelLt) sourceTypeRaw targetTypeRaw)
+        pathRawTarget}
+    {sourceValueSource : Term sourceCtx sourceType sourceRawSource}
+    {sourceValueTarget : Term sourceCtx sourceType sourceRawTarget}
+    (typePathStep :
+      Step.par (Term.rename termRenaming typePathSource)
+               (Term.rename termRenaming typePathTarget))
+    (sourceValueStep :
+      Step.par (Term.rename termRenaming sourceValueSource)
+               (Term.rename termRenaming sourceValueTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.transp modeIsUnivalent universeLevel universeLevelLt sourceType targetType
+          sourceTypeRaw targetTypeRaw typePathSource sourceValueSource))
+      (Term.rename termRenaming
+        (Term.transp modeIsUnivalent universeLevel universeLevelLt sourceType targetType
+          sourceTypeRaw targetTypeRaw typePathTarget sourceValueTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.transpCong modeIsUnivalent universeLevel universeLevelLt _ _ _ _
+    typePathStep sourceValueStep
+
+/-- Cong arm `hcompCong` of typed-Step.par rename equivariance.
+
+Homogeneous composition reduces in sides and cap, both at the non-dependent
+`carrierType`.  Cast-free, two sub-steps. -/
+theorem rename_compatible_typed_hcompCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    {sidesRawSource sidesRawTarget capRawSource capRawTarget : RawTerm sourceScope}
+    {sidesSource : Term sourceCtx carrierType sidesRawSource}
+    {sidesTarget : Term sourceCtx carrierType sidesRawTarget}
+    {capSource : Term sourceCtx carrierType capRawSource}
+    {capTarget : Term sourceCtx carrierType capRawTarget}
+    (sidesStep :
+      Step.par (Term.rename termRenaming sidesSource)
+               (Term.rename termRenaming sidesTarget))
+    (capStep :
+      Step.par (Term.rename termRenaming capSource)
+               (Term.rename termRenaming capTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.hcomp modeIsUnivalent sidesSource capSource))
+      (Term.rename termRenaming (Term.hcomp modeIsUnivalent sidesTarget capTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.hcompCong modeIsUnivalent sidesStep capStep
+
+/-- Cong arm `hcompPathCong` of typed-Step.par rename equivariance.
+
+Path-shaped homogeneous composition reduces in its path-typed sides and its
+cap.  Cast-free; the explicit `leftEndpoint` / `rightEndpoint` raw codes of
+`Step.par.hcompPathCong` are passed as `_` and solved by `exact` against the
+renamed goal (and the renamed path sub-step type). -/
+theorem rename_compatible_typed_hcompPathCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {sidesPathRawSource sidesPathRawTarget capRawSource capRawTarget : RawTerm sourceScope}
+    {sidesPathSource :
+      Term sourceCtx (Ty.path carrierType leftEndpoint rightEndpoint) sidesPathRawSource}
+    {sidesPathTarget :
+      Term sourceCtx (Ty.path carrierType leftEndpoint rightEndpoint) sidesPathRawTarget}
+    {capSource : Term sourceCtx carrierType capRawSource}
+    {capTarget : Term sourceCtx carrierType capRawTarget}
+    (sidesPathStep :
+      Step.par (Term.rename termRenaming sidesPathSource)
+               (Term.rename termRenaming sidesPathTarget))
+    (capStep :
+      Step.par (Term.rename termRenaming capSource)
+               (Term.rename termRenaming capTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.hcompPath modeIsUnivalent leftEndpoint rightEndpoint sidesPathSource capSource))
+      (Term.rename termRenaming
+        (Term.hcompPath modeIsUnivalent leftEndpoint rightEndpoint sidesPathTarget capTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.hcompPathCong modeIsUnivalent _ _ sidesPathStep capStep
+
 end Step.par
 
 end LeanFX2
