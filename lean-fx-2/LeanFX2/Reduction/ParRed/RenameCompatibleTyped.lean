@@ -1518,6 +1518,252 @@ theorem rename_compatible_typed_funextIntroHetCong
     (RawStep.par.rename_compatible rho.lift applyAStep)
     (RawStep.par.rename_compatible rho.lift applyBStep)
 
+/-- Cong arm `arrowCodeCong` of typed-Step.par rename equivariance (raw-premise).
+`Term.arrowCode` is the universe code for the function type; both of its
+payloads are RAW codes at `scope`, so the cong reduces via two `RawStep.par`
+premises transported through `RawStep.par.rename_compatible rho`.  The
+`levelLe` universe-bound proof is scope-independent and passes through the
+renamed reduct unchanged.  Cast-free. -/
+theorem rename_compatible_typed_arrowCodeCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {domainCodeRawSource domainCodeRawTarget
+     codomainCodeRawSource codomainCodeRawTarget : RawTerm sourceScope}
+    (domainStep : RawStep.par domainCodeRawSource domainCodeRawTarget)
+    (codomainStep : RawStep.par codomainCodeRawSource codomainCodeRawTarget) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.arrowCode outerLevel levelLe domainCodeRawSource codomainCodeRawSource))
+      (Term.rename termRenaming
+        (Term.arrowCode outerLevel levelLe domainCodeRawTarget codomainCodeRawTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.arrowCodeCong outerLevel levelLe
+    (RawStep.par.rename_compatible rho domainStep)
+    (RawStep.par.rename_compatible rho codomainStep)
+
+/-- Cong arm `piTyCodeCong` of typed-Step.par rename equivariance (raw-premise,
+binder-shape).  `Term.piTyCode`'s codomain code lives at `scope + 1`, so its
+premise transports through `RawStep.par.rename_compatible rho.lift` while the
+domain code uses `rho`.  Cast-free. -/
+theorem rename_compatible_typed_piTyCodeCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {domainCodeRawSource domainCodeRawTarget : RawTerm sourceScope}
+    {codomainCodeRawSource codomainCodeRawTarget : RawTerm (sourceScope + 1)}
+    (domainStep : RawStep.par domainCodeRawSource domainCodeRawTarget)
+    (codomainStep : RawStep.par codomainCodeRawSource codomainCodeRawTarget) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.piTyCode outerLevel levelLe domainCodeRawSource codomainCodeRawSource))
+      (Term.rename termRenaming
+        (Term.piTyCode outerLevel levelLe domainCodeRawTarget codomainCodeRawTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.piTyCodeCong outerLevel levelLe
+    (RawStep.par.rename_compatible rho domainStep)
+    (RawStep.par.rename_compatible rho.lift codomainStep)
+
+/-- Cong arm `sigmaTyCodeCong` of typed-Step.par rename equivariance (raw-premise,
+binder-shape).  Like `piTyCodeCong`, the second code lives at `scope + 1` and
+transports through `rho.lift`; the first code uses `rho`.  Cast-free. -/
+theorem rename_compatible_typed_sigmaTyCodeCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {firstCodeRawSource firstCodeRawTarget : RawTerm sourceScope}
+    {secondCodeRawSource secondCodeRawTarget : RawTerm (sourceScope + 1)}
+    (firstStep : RawStep.par firstCodeRawSource firstCodeRawTarget)
+    (secondStep : RawStep.par secondCodeRawSource secondCodeRawTarget) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.sigmaTyCode outerLevel levelLe firstCodeRawSource secondCodeRawSource))
+      (Term.rename termRenaming
+        (Term.sigmaTyCode outerLevel levelLe firstCodeRawTarget secondCodeRawTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.sigmaTyCodeCong outerLevel levelLe
+    (RawStep.par.rename_compatible rho firstStep)
+    (RawStep.par.rename_compatible rho.lift secondStep)
+
+/-- Cong arm `productCodeCong` of typed-Step.par rename equivariance (raw-premise).
+Both component codes are at `scope`, transported through `rho`.  Cast-free. -/
+theorem rename_compatible_typed_productCodeCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {firstCodeRawSource firstCodeRawTarget
+     secondCodeRawSource secondCodeRawTarget : RawTerm sourceScope}
+    (firstStep : RawStep.par firstCodeRawSource firstCodeRawTarget)
+    (secondStep : RawStep.par secondCodeRawSource secondCodeRawTarget) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.productCode outerLevel levelLe firstCodeRawSource secondCodeRawSource))
+      (Term.rename termRenaming
+        (Term.productCode outerLevel levelLe firstCodeRawTarget secondCodeRawTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.productCodeCong outerLevel levelLe
+    (RawStep.par.rename_compatible rho firstStep)
+    (RawStep.par.rename_compatible rho secondStep)
+
+/-- Cong arm `sumCodeCong` of typed-Step.par rename equivariance (raw-premise).
+Both side codes are at `scope`, transported through `rho`.  Cast-free. -/
+theorem rename_compatible_typed_sumCodeCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {leftCodeRawSource leftCodeRawTarget
+     rightCodeRawSource rightCodeRawTarget : RawTerm sourceScope}
+    (leftStep : RawStep.par leftCodeRawSource leftCodeRawTarget)
+    (rightStep : RawStep.par rightCodeRawSource rightCodeRawTarget) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.sumCode outerLevel levelLe leftCodeRawSource rightCodeRawSource))
+      (Term.rename termRenaming
+        (Term.sumCode outerLevel levelLe leftCodeRawTarget rightCodeRawTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.sumCodeCong outerLevel levelLe
+    (RawStep.par.rename_compatible rho leftStep)
+    (RawStep.par.rename_compatible rho rightStep)
+
+/-- Cong arm `listCodeCong` of typed-Step.par rename equivariance (raw-premise,
+single payload).  The element code at `scope` transports through `rho`.
+Cast-free. -/
+theorem rename_compatible_typed_listCodeCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {elementCodeRawSource elementCodeRawTarget : RawTerm sourceScope}
+    (elementStep : RawStep.par elementCodeRawSource elementCodeRawTarget) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.listCode outerLevel levelLe elementCodeRawSource))
+      (Term.rename termRenaming
+        (Term.listCode outerLevel levelLe elementCodeRawTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.listCodeCong outerLevel levelLe
+    (RawStep.par.rename_compatible rho elementStep)
+
+/-- Cong arm `optionCodeCong` of typed-Step.par rename equivariance (raw-premise,
+single payload).  The element code at `scope` transports through `rho`.
+Cast-free. -/
+theorem rename_compatible_typed_optionCodeCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {elementCodeRawSource elementCodeRawTarget : RawTerm sourceScope}
+    (elementStep : RawStep.par elementCodeRawSource elementCodeRawTarget) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.optionCode outerLevel levelLe elementCodeRawSource))
+      (Term.rename termRenaming
+        (Term.optionCode outerLevel levelLe elementCodeRawTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.optionCodeCong outerLevel levelLe
+    (RawStep.par.rename_compatible rho elementStep)
+
+/-- Cong arm `eitherCodeCong` of typed-Step.par rename equivariance (raw-premise).
+Both side codes are at `scope`, transported through `rho`.  Cast-free. -/
+theorem rename_compatible_typed_eitherCodeCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {leftCodeRawSource leftCodeRawTarget
+     rightCodeRawSource rightCodeRawTarget : RawTerm sourceScope}
+    (leftStep : RawStep.par leftCodeRawSource leftCodeRawTarget)
+    (rightStep : RawStep.par rightCodeRawSource rightCodeRawTarget) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.eitherCode outerLevel levelLe leftCodeRawSource rightCodeRawSource))
+      (Term.rename termRenaming
+        (Term.eitherCode outerLevel levelLe leftCodeRawTarget rightCodeRawTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.eitherCodeCong outerLevel levelLe
+    (RawStep.par.rename_compatible rho leftStep)
+    (RawStep.par.rename_compatible rho rightStep)
+
+/-- Cong arm `idCodeCong` of typed-Step.par rename equivariance (raw-premise,
+three payloads).  Carrier code and both endpoints are at `scope`, transported
+through `rho`.  Cast-free. -/
+theorem rename_compatible_typed_idCodeCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {carrierCodeRawSource carrierCodeRawTarget
+     leftRawSource leftRawTarget rightRawSource rightRawTarget : RawTerm sourceScope}
+    (carrierStep : RawStep.par carrierCodeRawSource carrierCodeRawTarget)
+    (leftStep : RawStep.par leftRawSource leftRawTarget)
+    (rightStep : RawStep.par rightRawSource rightRawTarget) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.idCode outerLevel levelLe carrierCodeRawSource leftRawSource rightRawSource))
+      (Term.rename termRenaming
+        (Term.idCode outerLevel levelLe carrierCodeRawTarget leftRawTarget rightRawTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.idCodeCong outerLevel levelLe
+    (RawStep.par.rename_compatible rho carrierStep)
+    (RawStep.par.rename_compatible rho leftStep)
+    (RawStep.par.rename_compatible rho rightStep)
+
+/-- Cong arm `equivCodeCong` of typed-Step.par rename equivariance (raw-premise).
+Both carrier codes are at `scope`, transported through `rho`.  Cast-free. -/
+theorem rename_compatible_typed_equivCodeCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {carrierARawSource carrierARawTarget
+     carrierBRawSource carrierBRawTarget : RawTerm sourceScope}
+    (carrierAStep : RawStep.par carrierARawSource carrierARawTarget)
+    (carrierBStep : RawStep.par carrierBRawSource carrierBRawTarget) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.equivCode outerLevel levelLe carrierARawSource carrierBRawSource))
+      (Term.rename termRenaming
+        (Term.equivCode outerLevel levelLe carrierARawTarget carrierBRawTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.equivCodeCong outerLevel levelLe
+    (RawStep.par.rename_compatible rho carrierAStep)
+    (RawStep.par.rename_compatible rho carrierBStep)
+
 end Step.par
 
 end LeanFX2
