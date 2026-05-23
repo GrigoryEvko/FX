@@ -7,10 +7,12 @@ typed children of a Generator cell and computes the output `Ty`
 CAST-FREE — the same pattern shown to work in `Generator.outputTypeAppPi`
 (the P2.0 spike artifact).
 
-## Coverage in this commit
+## Coverage
 
-The full Π/Σ family — 5 extractors mirroring `Term`'s Π/Σ ctors at
-`LeanFX2/Term.lean:104-146`:
+The Π/Σ + closed-type-recursor families — 12 extractors mirroring
+`Term`'s 12 corresponding ctors at `LeanFX2/Term.lean:104-234`:
+
+**Π/Σ family** (6 extractors at `LeanFX2/Term.lean:104-146`):
 
 * `outputTypeApp` — non-dependent function application:
   `Ty.arrow A B → A → B`.
@@ -25,10 +27,27 @@ The full Π/Σ family — 5 extractors mirroring `Term`'s Π/Σ ctors at
 * `outputTypeSnd` — dependent pair second projection:
   `Term ctx (Ty.sigmaTy A B) pairRaw → B.subst0 A (RawTerm.fst pairRaw)`.
 
+**Closed-type recursor family** (6 extractors at
+`LeanFX2/Term.lean:152-234`):
+
+* `outputTypeBoolElim` — dependent bool eliminator: motive lives at
+  `Ty level (scope + 1)`; output is
+  `motiveType.subst0 Ty.bool scrutineeRaw`.
+* `outputTypeNatElim` — non-dependent nat eliminator: output is the
+  motive `Ty level scope` itself.
+* `outputTypeNatRec` — non-dependent nat recursor: output is the
+  motive.
+* `outputTypeListElim` — non-dependent list eliminator: output is
+  the motive.
+* `outputTypeOptionMatch` — non-dependent option matcher: output is
+  the motive.
+* `outputTypeEitherMatch` — non-dependent either matcher: output is
+  the motive.
+
 Plus the P2.0-shipped `outputTypeAppPi` (in `Generator.lean`) which
-covers dependent function application.  Together these 7 extractors
-form the complete polygraph outputType vocabulary for the Π/Σ core
-of the kernel.
+covers dependent function application.  Together these 13 extractors
+cover the Π/Σ core + the closed-type recursor vocabulary of the
+kernel (13 of 74 outputType ctors).
 
 ## Method
 
@@ -252,5 +271,227 @@ theorem Generator.outputTypeSnd_matches_Term_snd
       Term context (Ty.sigmaTy firstType secondType) pairRaw) :
     Generator.outputTypeSnd pairTerm =
       secondType.subst0 firstType (RawTerm.fst pairRaw) := rfl
+
+/-! ### Bool eliminator (dependent motive) -/
+
+/-- **Output type for `gen_boolElim`**.  The dependent bool
+eliminator has motive `Ty level (scope + 1)`.  The output type
+`motiveType.subst0 Ty.bool scrutineeRaw` substitutes the
+scrutinee's raw form into the motive — the SAME substitution
+pattern that `outputTypeAppPi` and `outputTypeSnd` exhibit, just
+applied to a different family.
+
+Lean's higher-order unifier pulls `motiveType` from EITHER branch
+(the then-branch has type `motiveType.subst0 Ty.bool RawTerm.boolTrue`;
+the else-branch has type `motiveType.subst0 Ty.bool RawTerm.boolFalse`);
+the unification problem is `?motive.subst0 Ty.bool <known> = <given>`,
+which Lean solves when `Ty.subst0` is `@[reducible]` and the given
+type structure exposes the substitution shape. -/
+def Generator.outputTypeBoolElim {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {motiveType : Ty level (scope + 1)}
+    {scrutineeRaw thenRaw elseRaw : RawTerm scope}
+    (scrutinee : Term context Ty.bool scrutineeRaw)
+    (thenBranch :
+      Term context (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw)
+    (elseBranch :
+      Term context (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw) :
+    Ty level scope :=
+  let _scrutineeWitness := scrutinee
+  let _thenWitness := thenBranch
+  let _elseWitness := elseBranch
+  motiveType.subst0 Ty.bool scrutineeRaw
+
+/-- Definitional match against `Term.boolElim`'s legacy output type.
+`Term.boolElim scrutinee thenBranch elseBranch` has type
+`Term context (motiveType.subst0 Ty.bool scrutineeRaw) (RawTerm.boolElim
+scrutineeRaw thenRaw elseRaw)`. -/
+theorem Generator.outputTypeBoolElim_matches_Term_boolElim
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {motiveType : Ty level (scope + 1)}
+    {scrutineeRaw thenRaw elseRaw : RawTerm scope}
+    (scrutinee : Term context Ty.bool scrutineeRaw)
+    (thenBranch :
+      Term context (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw)
+    (elseBranch :
+      Term context (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw) :
+    Generator.outputTypeBoolElim scrutinee thenBranch elseBranch =
+      motiveType.subst0 Ty.bool scrutineeRaw := rfl
+
+/-! ### Nat eliminator (non-dependent) -/
+
+/-- **Output type for `gen_natElim`**.  The non-dependent nat
+eliminator has motive `Ty level scope`; output is the motive
+itself.  Lean's unifier pins `motiveType` directly from the
+zero-branch's type index (no substitution). -/
+def Generator.outputTypeNatElim {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {motiveType : Ty level scope}
+    {scrutineeRaw zeroRaw succRaw : RawTerm scope}
+    (scrutinee : Term context Ty.nat scrutineeRaw)
+    (zeroBranch : Term context motiveType zeroRaw)
+    (succBranch :
+      Term context (Ty.arrow Ty.nat motiveType) succRaw) :
+    Ty level scope :=
+  let _scrutineeWitness := scrutinee
+  let _zeroWitness := zeroBranch
+  let _succWitness := succBranch
+  motiveType
+
+/-- Definitional match against `Term.natElim`'s legacy output type. -/
+theorem Generator.outputTypeNatElim_matches_Term_natElim
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {motiveType : Ty level scope}
+    {scrutineeRaw zeroRaw succRaw : RawTerm scope}
+    (scrutinee : Term context Ty.nat scrutineeRaw)
+    (zeroBranch : Term context motiveType zeroRaw)
+    (succBranch :
+      Term context (Ty.arrow Ty.nat motiveType) succRaw) :
+    Generator.outputTypeNatElim scrutinee zeroBranch succBranch =
+      motiveType := rfl
+
+/-! ### Nat recursor (non-dependent) -/
+
+/-- **Output type for `gen_natRec`**.  Same shape as `natElim` but
+with succ-branch type `Ty.arrow Ty.nat (Ty.arrow motiveType
+motiveType)` — the recursor passes both the predecessor and the
+accumulated result.  Output is still just the motive. -/
+def Generator.outputTypeNatRec {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {motiveType : Ty level scope}
+    {scrutineeRaw zeroRaw succRaw : RawTerm scope}
+    (scrutinee : Term context Ty.nat scrutineeRaw)
+    (zeroBranch : Term context motiveType zeroRaw)
+    (succBranch :
+      Term context
+        (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)) succRaw) :
+    Ty level scope :=
+  let _scrutineeWitness := scrutinee
+  let _zeroWitness := zeroBranch
+  let _succWitness := succBranch
+  motiveType
+
+/-- Definitional match against `Term.natRec`'s legacy output type. -/
+theorem Generator.outputTypeNatRec_matches_Term_natRec
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {motiveType : Ty level scope}
+    {scrutineeRaw zeroRaw succRaw : RawTerm scope}
+    (scrutinee : Term context Ty.nat scrutineeRaw)
+    (zeroBranch : Term context motiveType zeroRaw)
+    (succBranch :
+      Term context
+        (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)) succRaw) :
+    Generator.outputTypeNatRec scrutinee zeroBranch succBranch =
+      motiveType := rfl
+
+/-! ### List eliminator (non-dependent) -/
+
+/-- **Output type for `gen_listElim`**.  Non-dependent list
+eliminator: motive is `Ty level scope`; output is the motive
+itself.  Both `elementType` (from the scrutinee) and `motiveType`
+(from the nil-branch) are pinned by Lean's unifier. -/
+def Generator.outputTypeListElim {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType motiveType : Ty level scope}
+    {scrutineeRaw nilRaw consRaw : RawTerm scope}
+    (scrutinee : Term context (Ty.listType elementType) scrutineeRaw)
+    (nilBranch : Term context motiveType nilRaw)
+    (consBranch :
+      Term context
+        (Ty.arrow elementType
+          (Ty.arrow (Ty.listType elementType) motiveType)) consRaw) :
+    Ty level scope :=
+  let _scrutineeWitness := scrutinee
+  let _nilWitness := nilBranch
+  let _consWitness := consBranch
+  motiveType
+
+/-- Definitional match against `Term.listElim`'s legacy output type. -/
+theorem Generator.outputTypeListElim_matches_Term_listElim
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType motiveType : Ty level scope}
+    {scrutineeRaw nilRaw consRaw : RawTerm scope}
+    (scrutinee : Term context (Ty.listType elementType) scrutineeRaw)
+    (nilBranch : Term context motiveType nilRaw)
+    (consBranch :
+      Term context
+        (Ty.arrow elementType
+          (Ty.arrow (Ty.listType elementType) motiveType)) consRaw) :
+    Generator.outputTypeListElim scrutinee nilBranch consBranch =
+      motiveType := rfl
+
+/-! ### Option matcher (non-dependent) -/
+
+/-- **Output type for `gen_optionMatch`**.  Non-dependent option
+matcher: motive `Ty level scope`; output is the motive. -/
+def Generator.outputTypeOptionMatch {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType motiveType : Ty level scope}
+    {scrutineeRaw noneRaw someRaw : RawTerm scope}
+    (scrutinee :
+      Term context (Ty.optionType elementType) scrutineeRaw)
+    (noneBranch : Term context motiveType noneRaw)
+    (someBranch :
+      Term context (Ty.arrow elementType motiveType) someRaw) :
+    Ty level scope :=
+  let _scrutineeWitness := scrutinee
+  let _noneWitness := noneBranch
+  let _someWitness := someBranch
+  motiveType
+
+/-- Definitional match against `Term.optionMatch`'s legacy output type. -/
+theorem Generator.outputTypeOptionMatch_matches_Term_optionMatch
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType motiveType : Ty level scope}
+    {scrutineeRaw noneRaw someRaw : RawTerm scope}
+    (scrutinee :
+      Term context (Ty.optionType elementType) scrutineeRaw)
+    (noneBranch : Term context motiveType noneRaw)
+    (someBranch :
+      Term context (Ty.arrow elementType motiveType) someRaw) :
+    Generator.outputTypeOptionMatch scrutinee noneBranch someBranch =
+      motiveType := rfl
+
+/-! ### Either matcher (non-dependent) -/
+
+/-- **Output type for `gen_eitherMatch`**.  Non-dependent either
+matcher: motive `Ty level scope`; output is the motive.  Pulls
+`leftType`, `rightType`, and `motiveType` via implicit
+unification from the scrutinee and the two branches. -/
+def Generator.outputTypeEitherMatch {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {leftType rightType motiveType : Ty level scope}
+    {scrutineeRaw leftBranchRaw rightBranchRaw : RawTerm scope}
+    (scrutinee :
+      Term context (Ty.eitherType leftType rightType) scrutineeRaw)
+    (leftBranch :
+      Term context (Ty.arrow leftType motiveType) leftBranchRaw)
+    (rightBranch :
+      Term context (Ty.arrow rightType motiveType) rightBranchRaw) :
+    Ty level scope :=
+  let _scrutineeWitness := scrutinee
+  let _leftWitness := leftBranch
+  let _rightWitness := rightBranch
+  motiveType
+
+/-- Definitional match against `Term.eitherMatch`'s legacy output type. -/
+theorem Generator.outputTypeEitherMatch_matches_Term_eitherMatch
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {leftType rightType motiveType : Ty level scope}
+    {scrutineeRaw leftBranchRaw rightBranchRaw : RawTerm scope}
+    (scrutinee :
+      Term context (Ty.eitherType leftType rightType) scrutineeRaw)
+    (leftBranch :
+      Term context (Ty.arrow leftType motiveType) leftBranchRaw)
+    (rightBranch :
+      Term context (Ty.arrow rightType motiveType) rightBranchRaw) :
+    Generator.outputTypeEitherMatch scrutinee leftBranch rightBranch =
+      motiveType := rfl
 
 end LeanFX2.Foundation.Polygraph
