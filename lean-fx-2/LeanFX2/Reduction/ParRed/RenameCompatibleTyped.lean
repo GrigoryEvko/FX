@@ -274,6 +274,191 @@ theorem rename_compatible_typed_eitherInr
   dsimp only [Term.rename]
   exact Step.par.eitherInr valueStep
 
+/-- Cong arm `natElim` of typed-Step.par rename equivariance.
+
+Nat elimination reduces in scrutinee, zero branch, and successor
+branch.  The motive is non-dependent (`Ty level scope`), so the
+result type is closed under renaming and `Term.rename` carries no
+cast — definitional push. -/
+theorem rename_compatible_typed_natElim
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {motiveType : Ty level sourceScope}
+    {scrutineeRawSource scrutineeRawTarget zeroRawSource zeroRawTarget
+     succRawSource succRawTarget : RawTerm sourceScope}
+    {scrutineeSource : Term sourceCtx Ty.nat scrutineeRawSource}
+    {scrutineeTarget : Term sourceCtx Ty.nat scrutineeRawTarget}
+    {zeroSource : Term sourceCtx motiveType zeroRawSource}
+    {zeroTarget : Term sourceCtx motiveType zeroRawTarget}
+    {succSource : Term sourceCtx (Ty.arrow Ty.nat motiveType) succRawSource}
+    {succTarget : Term sourceCtx (Ty.arrow Ty.nat motiveType) succRawTarget}
+    (scrutineeStep :
+      Step.par (Term.rename termRenaming scrutineeSource)
+               (Term.rename termRenaming scrutineeTarget))
+    (zeroStep :
+      Step.par (Term.rename termRenaming zeroSource)
+               (Term.rename termRenaming zeroTarget))
+    (succStep :
+      Step.par (Term.rename termRenaming succSource)
+               (Term.rename termRenaming succTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.natElim scrutineeSource zeroSource succSource))
+      (Term.rename termRenaming (Term.natElim scrutineeTarget zeroTarget succTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.natElim scrutineeStep zeroStep succStep
+
+/-- Cong arm `natRec` of typed-Step.par rename equivariance.
+
+Nat recursion reduces in scrutinee, zero branch, and successor
+branch.  Non-dependent motive, cast-free push. -/
+theorem rename_compatible_typed_natRec
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {motiveType : Ty level sourceScope}
+    {scrutineeRawSource scrutineeRawTarget zeroRawSource zeroRawTarget
+     succRawSource succRawTarget : RawTerm sourceScope}
+    {scrutineeSource : Term sourceCtx Ty.nat scrutineeRawSource}
+    {scrutineeTarget : Term sourceCtx Ty.nat scrutineeRawTarget}
+    {zeroSource : Term sourceCtx motiveType zeroRawSource}
+    {zeroTarget : Term sourceCtx motiveType zeroRawTarget}
+    {succSource :
+      Term sourceCtx (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)) succRawSource}
+    {succTarget :
+      Term sourceCtx (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)) succRawTarget}
+    (scrutineeStep :
+      Step.par (Term.rename termRenaming scrutineeSource)
+               (Term.rename termRenaming scrutineeTarget))
+    (zeroStep :
+      Step.par (Term.rename termRenaming zeroSource)
+               (Term.rename termRenaming zeroTarget))
+    (succStep :
+      Step.par (Term.rename termRenaming succSource)
+               (Term.rename termRenaming succTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.natRec scrutineeSource zeroSource succSource))
+      (Term.rename termRenaming (Term.natRec scrutineeTarget zeroTarget succTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.natRec scrutineeStep zeroStep succStep
+
+/-- Cong arm `listElim` of typed-Step.par rename equivariance.
+
+List elimination reduces in scrutinee, nil branch, and cons branch.
+Non-dependent motive over structurally-renaming `Ty.listType`,
+cast-free push. -/
+theorem rename_compatible_typed_listElim
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {elementType motiveType : Ty level sourceScope}
+    {scrutineeRawSource scrutineeRawTarget nilRawSource nilRawTarget
+     consRawSource consRawTarget : RawTerm sourceScope}
+    {scrutineeSource : Term sourceCtx (Ty.listType elementType) scrutineeRawSource}
+    {scrutineeTarget : Term sourceCtx (Ty.listType elementType) scrutineeRawTarget}
+    {nilSource : Term sourceCtx motiveType nilRawSource}
+    {nilTarget : Term sourceCtx motiveType nilRawTarget}
+    {consSource :
+      Term sourceCtx
+        (Ty.arrow elementType (Ty.arrow (Ty.listType elementType) motiveType))
+        consRawSource}
+    {consTarget :
+      Term sourceCtx
+        (Ty.arrow elementType (Ty.arrow (Ty.listType elementType) motiveType))
+        consRawTarget}
+    (scrutineeStep :
+      Step.par (Term.rename termRenaming scrutineeSource)
+               (Term.rename termRenaming scrutineeTarget))
+    (nilStep :
+      Step.par (Term.rename termRenaming nilSource)
+               (Term.rename termRenaming nilTarget))
+    (consStep :
+      Step.par (Term.rename termRenaming consSource)
+               (Term.rename termRenaming consTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.listElim scrutineeSource nilSource consSource))
+      (Term.rename termRenaming (Term.listElim scrutineeTarget nilTarget consTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.listElim scrutineeStep nilStep consStep
+
+/-- Cong arm `optionMatch` of typed-Step.par rename equivariance.
+
+Option matching reduces in scrutinee, none branch, and some branch.
+Non-dependent motive over structurally-renaming `Ty.optionType`,
+cast-free push. -/
+theorem rename_compatible_typed_optionMatch
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {elementType motiveType : Ty level sourceScope}
+    {scrutineeRawSource scrutineeRawTarget noneRawSource noneRawTarget
+     someRawSource someRawTarget : RawTerm sourceScope}
+    {scrutineeSource : Term sourceCtx (Ty.optionType elementType) scrutineeRawSource}
+    {scrutineeTarget : Term sourceCtx (Ty.optionType elementType) scrutineeRawTarget}
+    {noneSource : Term sourceCtx motiveType noneRawSource}
+    {noneTarget : Term sourceCtx motiveType noneRawTarget}
+    {someSource : Term sourceCtx (Ty.arrow elementType motiveType) someRawSource}
+    {someTarget : Term sourceCtx (Ty.arrow elementType motiveType) someRawTarget}
+    (scrutineeStep :
+      Step.par (Term.rename termRenaming scrutineeSource)
+               (Term.rename termRenaming scrutineeTarget))
+    (noneStep :
+      Step.par (Term.rename termRenaming noneSource)
+               (Term.rename termRenaming noneTarget))
+    (someStep :
+      Step.par (Term.rename termRenaming someSource)
+               (Term.rename termRenaming someTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.optionMatch scrutineeSource noneSource someSource))
+      (Term.rename termRenaming (Term.optionMatch scrutineeTarget noneTarget someTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.optionMatch scrutineeStep noneStep someStep
+
+/-- Cong arm `eitherMatch` of typed-Step.par rename equivariance.
+
+Either matching reduces in scrutinee, left branch, and right branch.
+Non-dependent motive over structurally-renaming `Ty.eitherType`,
+cast-free push. -/
+theorem rename_compatible_typed_eitherMatch
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {leftType rightType motiveType : Ty level sourceScope}
+    {scrutineeRawSource scrutineeRawTarget leftRawSource leftRawTarget
+     rightRawSource rightRawTarget : RawTerm sourceScope}
+    {scrutineeSource :
+      Term sourceCtx (Ty.eitherType leftType rightType) scrutineeRawSource}
+    {scrutineeTarget :
+      Term sourceCtx (Ty.eitherType leftType rightType) scrutineeRawTarget}
+    {leftSource : Term sourceCtx (Ty.arrow leftType motiveType) leftRawSource}
+    {leftTarget : Term sourceCtx (Ty.arrow leftType motiveType) leftRawTarget}
+    {rightSource : Term sourceCtx (Ty.arrow rightType motiveType) rightRawSource}
+    {rightTarget : Term sourceCtx (Ty.arrow rightType motiveType) rightRawTarget}
+    (scrutineeStep :
+      Step.par (Term.rename termRenaming scrutineeSource)
+               (Term.rename termRenaming scrutineeTarget))
+    (leftStep :
+      Step.par (Term.rename termRenaming leftSource)
+               (Term.rename termRenaming leftTarget))
+    (rightStep :
+      Step.par (Term.rename termRenaming rightSource)
+               (Term.rename termRenaming rightTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.eitherMatch scrutineeSource leftSource rightSource))
+      (Term.rename termRenaming (Term.eitherMatch scrutineeTarget leftTarget rightTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.eitherMatch scrutineeStep leftStep rightStep
+
 end Step.par
 
 end LeanFX2

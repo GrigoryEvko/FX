@@ -899,5 +899,10 @@ constructor — pure definitional, no induction, no cast on the `refl`
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_optionSome
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_eitherInl
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_eitherInr
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_natElim
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_natRec
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_listElim
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_optionMatch
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_eitherMatch
 
 end LeanFX2.Tools
