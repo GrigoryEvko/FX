@@ -4019,6 +4019,162 @@ theorem rename_compatible_typed_iotaIdStrictRecReflDeep
   dsimp only [Term.rename] at witnessStep ⊢
   exact Step.par.iotaIdStrictRecReflDeep modeIsStrict witnessStep baseStep
 
+/-- Shallow cubical β arm `betaPathApp`: `(pathLam body) @ interval ⟶
+body[interval]`.  Structurally identical to `betaApp` — the `pathLam` body
+lives at `carrierType.weaken` (so the `pathLam` rename arm carries the
+`weaken_rename_commute` body cast, reconciled by `subst0_body_heq_of_eq`),
+the reduct develops into `subst0` (bridged by **T8**), and the `pathApp`
+rename arm is itself cast-free so the source needs no realignment.  The
+substituent is `Ty.interval`; `modeIsUnivalent` threads unchanged.
+Zero-axiom. -/
+theorem rename_compatible_typed_betaPathApp
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {bodyRawSource bodyRawTarget : RawTerm (sourceScope + 1)}
+    {intervalRawSource intervalRawTarget : RawTerm sourceScope}
+    {bodySource : Term (sourceCtx.cons Ty.interval) carrierType.weaken bodyRawSource}
+    {bodyTarget : Term (sourceCtx.cons Ty.interval) carrierType.weaken bodyRawTarget}
+    {intervalSource : Term sourceCtx Ty.interval intervalRawSource}
+    {intervalTarget : Term sourceCtx Ty.interval intervalRawTarget}
+    (bodyStep :
+      Step.par (Term.rename (termRenaming.lift Ty.interval) bodySource)
+               (Term.rename (termRenaming.lift Ty.interval) bodyTarget))
+    (intervalStep :
+      Step.par (Term.rename termRenaming intervalSource)
+               (Term.rename termRenaming intervalTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.pathApp modeIsUnivalent
+          (Term.pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint bodySource)
+          intervalSource))
+      (Term.rename termRenaming (Term.subst0 bodyTarget intervalTarget)) := by
+  dsimp only [Term.rename]
+  have weakenComm := Ty.weaken_rename_commute rho carrierType
+  have tyAlign :
+      ((carrierType.rename rho).weaken).subst0 Ty.interval (intervalRawTarget.rename rho)
+        = ((carrierType.weaken).subst0 Ty.interval intervalRawTarget).rename rho :=
+    ((Ty.subst0_rename_commute carrierType.weaken Ty.interval intervalRawTarget rho).trans
+      (congrArg
+        (fun codomain =>
+          Ty.subst0 codomain Ty.interval (intervalRawTarget.rename rho))
+        weakenComm)).symm
+  refine Step.par.castTargetTermHeq
+    (RawTerm.subst0_rename_commute bodyRawTarget intervalRawTarget rho).symm
+    ?heqBridge
+    (Step.par.castTargetType tyAlign
+      (Step.par.betaPathApp modeIsUnivalent
+        (Step.par.castSourceType weakenComm (Step.par.castTargetType weakenComm bodyStep))
+        intervalStep))
+  exact HEq.trans
+    (Term.type_eq_cast_heq tyAlign
+      (Term.subst0
+        (weakenComm ▸ Term.rename (termRenaming.lift Ty.interval) bodyTarget)
+        (Term.rename termRenaming intervalTarget)))
+    (HEq.trans
+      (Term.subst0_body_heq_of_eq weakenComm.symm rfl
+        (Term.type_eq_cast_heq weakenComm
+          (Term.rename (termRenaming.lift Ty.interval) bodyTarget)))
+      (Term.subst0_rename_commute termRenaming bodyTarget intervalTarget).symm)
+
+/-- Deep ι arm `iotaBoolElimTrueDeep`: scrutinee parallel-reduces to
+`boolTrue`, then `boolElim` fires to the then branch.  Cast-bearing
+(dependent motive): the `boolElim` rename arm carries an OUTER
+`subst0_rename_commute` cast at the SCRUTINEE raw (`scrutineeCommute`,
+distinct from the `trueCommute` branch cast since the scrutinee is a
+variable here), plus per-branch `trueCommute`/`falseCommute` casts.
+Mirrors the non-Deep `iotaBoolElimTrue` cast stack with the outer source
+realignment switched to `scrutineeCommute`.  Zero-axiom. -/
+theorem rename_compatible_typed_iotaBoolElimTrueDeep
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {motiveType : Ty level (sourceScope + 1)}
+    {scrutineeRaw thenRawSource thenRawTarget elseRaw : RawTerm sourceScope}
+    {scrutinee : Term sourceCtx Ty.bool scrutineeRaw}
+    {thenSource :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRawSource}
+    {thenTarget :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRawTarget}
+    (elseBranch :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw)
+    (scrutineeStep :
+      Step.par (Term.rename termRenaming scrutinee)
+               (Term.rename termRenaming Term.boolTrue))
+    (thenStep :
+      Step.par (Term.rename termRenaming thenSource)
+               (Term.rename termRenaming thenTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.boolElim scrutinee thenSource elseBranch))
+      (Term.rename termRenaming thenTarget) := by
+  dsimp only [Term.rename] at scrutineeStep ⊢
+  have scrutineeCommute := Ty.subst0_rename_commute motiveType Ty.bool scrutineeRaw rho
+  have trueCommute := Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolTrue rho
+  have falseCommute := Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolFalse rho
+  exact Step.par.castTargetTermHeq rfl
+    (HEq.trans
+      (Term.type_eq_cast_heq trueCommute.symm (trueCommute ▸ Term.rename termRenaming thenTarget))
+      (Term.type_eq_cast_heq trueCommute (Term.rename termRenaming thenTarget)))
+    (Step.par.castTargetType trueCommute.symm
+      (Step.par.castSourceType scrutineeCommute.symm
+        (Step.par.iotaBoolElimTrueDeep
+          (falseCommute ▸ Term.rename termRenaming elseBranch)
+          scrutineeStep
+          (Step.par.castSourceType trueCommute
+            (Step.par.castTargetType trueCommute thenStep)))))
+
+/-- Deep ι arm `iotaBoolElimFalseDeep`: scrutinee parallel-reduces to
+`boolFalse`, then `boolElim` fires to the else branch.  Mirror of
+`iotaBoolElimTrueDeep` with the reduct cast `falseCommute` (the else
+branch reduces) and the same outer `scrutineeCommute` source
+realignment.  Zero-axiom. -/
+theorem rename_compatible_typed_iotaBoolElimFalseDeep
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {motiveType : Ty level (sourceScope + 1)}
+    {scrutineeRaw thenRaw elseRawSource elseRawTarget : RawTerm sourceScope}
+    {scrutinee : Term sourceCtx Ty.bool scrutineeRaw}
+    (thenBranch :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw)
+    {elseSource :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRawSource}
+    {elseTarget :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRawTarget}
+    (scrutineeStep :
+      Step.par (Term.rename termRenaming scrutinee)
+               (Term.rename termRenaming Term.boolFalse))
+    (elseStep :
+      Step.par (Term.rename termRenaming elseSource)
+               (Term.rename termRenaming elseTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.boolElim scrutinee thenBranch elseSource))
+      (Term.rename termRenaming elseTarget) := by
+  dsimp only [Term.rename] at scrutineeStep ⊢
+  have scrutineeCommute := Ty.subst0_rename_commute motiveType Ty.bool scrutineeRaw rho
+  have trueCommute := Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolTrue rho
+  have falseCommute := Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolFalse rho
+  exact Step.par.castTargetTermHeq rfl
+    (HEq.trans
+      (Term.type_eq_cast_heq falseCommute.symm (falseCommute ▸ Term.rename termRenaming elseTarget))
+      (Term.type_eq_cast_heq falseCommute (Term.rename termRenaming elseTarget)))
+    (Step.par.castTargetType falseCommute.symm
+      (Step.par.castSourceType scrutineeCommute.symm
+        (Step.par.iotaBoolElimFalseDeep
+          (trueCommute ▸ Term.rename termRenaming thenBranch)
+          scrutineeStep
+          (Step.par.castSourceType falseCommute
+            (Step.par.castTargetType falseCommute elseStep)))))
+
 end Step.par
 
 end LeanFX2
