@@ -935,5 +935,8 @@ constructor — pure definitional, no induction, no cast on the `refl`
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_effectPerformCong
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_cumulUpInnerCong
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_eqType
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_reflCong
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_funextReflAtIdCong
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_funextIntroHetCong
 
 end LeanFX2.Tools

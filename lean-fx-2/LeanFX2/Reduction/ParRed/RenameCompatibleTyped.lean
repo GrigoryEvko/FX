@@ -1,6 +1,7 @@
 import LeanFX2.Reduction.ParRed.ParInductive
 import LeanFX2.Reduction.ParRed.ParCasts
 import LeanFX2.Term.Rename
+import LeanFX2.Reduction.RawParCompatible.NamedCompatibility
 
 /-! # Reduction/ParRed/RenameCompatibleTyped
 
@@ -1444,6 +1445,78 @@ theorem rename_compatible_typed_eqType
       (Term.rename termRenaming (Term.equivReflId carrier)) := by
   dsimp only [Term.rename]
   exact Step.par.eqType innerLevel innerLevelLt (carrier.rename rho) (carrierRaw.rename rho)
+
+/-- Cong arm `reflCong` of typed-Step.par rename equivariance (raw-premise).
+
+`Term.refl` carries its witness as a RAW term, so its parallel-cong reduces
+via a `RawStep.par` premise, not a typed sub-step.  The headline induction's
+`reflCong` case therefore has no typed IH — instead we transport the raw
+premise through `RawStep.par.rename_compatible rho` to land at the renamed
+raw witnesses, and feed that into `Step.par.reflCong` with the renamed
+carrier.  Cast-free (`Term.refl` renames carrier + witness structurally).
+This is the template for the raw-premise cong family (refl / funext /
+type-codes). -/
+theorem rename_compatible_typed_reflCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (carrier : Ty level sourceScope)
+    {witnessRawSource witnessRawTarget : RawTerm sourceScope}
+    (witnessStep : RawStep.par witnessRawSource witnessRawTarget) :
+    Step.par
+      (Term.rename termRenaming (Term.refl carrier witnessRawSource))
+      (Term.rename termRenaming (Term.refl carrier witnessRawTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.reflCong (carrier.rename rho)
+    (RawStep.par.rename_compatible rho witnessStep)
+
+/-- Cong arm `funextReflAtIdCong` of typed-Step.par rename equivariance
+(raw-premise).  `Term.funextReflAtId` carries its pointwise-apply body as a
+RAW term at `scope + 1`, so the cong reduces via a `RawStep.par` premise.
+Transport it through `RawStep.par.rename_compatible rho.lift` (the body lives
+under one binder, hence the lifted renaming) and feed `Step.par`
+`.funextReflAtIdCong` with the renamed domain/codomain.  Cast-free. -/
+theorem rename_compatible_typed_funextReflAtIdCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (domainType codomainType : Ty level sourceScope)
+    {applyRawSource applyRawTarget : RawTerm (sourceScope + 1)}
+    (applyStep : RawStep.par applyRawSource applyRawTarget) :
+    Step.par
+      (Term.rename termRenaming (Term.funextReflAtId domainType codomainType applyRawSource))
+      (Term.rename termRenaming (Term.funextReflAtId domainType codomainType applyRawTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.funextReflAtIdCong (domainType.rename rho) (codomainType.rename rho)
+    (RawStep.par.rename_compatible rho.lift applyStep)
+
+/-- Cong arm `funextIntroHetCong` of typed-Step.par rename equivariance
+(raw-premise, two payloads).  `Term.funextIntroHet` carries TWO raw apply
+bodies at `scope + 1`, so the cong reduces via two `RawStep.par` premises;
+transport each through `RawStep.par.rename_compatible rho.lift`.  Cast-free. -/
+theorem rename_compatible_typed_funextIntroHetCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (domainType codomainType : Ty level sourceScope)
+    {applyARawSource applyARawTarget applyBRawSource applyBRawTarget : RawTerm (sourceScope + 1)}
+    (applyAStep : RawStep.par applyARawSource applyARawTarget)
+    (applyBStep : RawStep.par applyBRawSource applyBRawTarget) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.funextIntroHet domainType codomainType applyARawSource applyBRawSource))
+      (Term.rename termRenaming
+        (Term.funextIntroHet domainType codomainType applyARawTarget applyBRawTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.funextIntroHetCong (domainType.rename rho) (codomainType.rename rho)
+    (RawStep.par.rename_compatible rho.lift applyAStep)
+    (RawStep.par.rename_compatible rho.lift applyBStep)
 
 end Step.par
 
