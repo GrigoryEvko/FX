@@ -1764,6 +1764,186 @@ theorem rename_compatible_typed_equivCodeCong
     (RawStep.par.rename_compatible rho carrierAStep)
     (RawStep.par.rename_compatible rho carrierBStep)
 
+/-- Cong arm `equivAppCong` of typed-Step.par rename equivariance (typed-IH).
+`Term.equivApp` applies an equivalence to an argument; both are typed
+sub-terms, so the cong threads two typed `Step.par` sub-derivations (delivered
+pre-renamed as hypotheses).  `Term.rename` on `equivApp` recurses structurally
+on both children with no outer type cast (`Ty.equiv` and the carriers are
+non-binder), so the push is definitional. -/
+theorem rename_compatible_typed_equivAppCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {carrierA carrierB : Ty level sourceScope}
+    {equivRawSource equivRawTarget
+     argumentRawSource argumentRawTarget : RawTerm sourceScope}
+    {equivSource : Term sourceCtx (Ty.equiv carrierA carrierB) equivRawSource}
+    {equivTarget : Term sourceCtx (Ty.equiv carrierA carrierB) equivRawTarget}
+    {argumentSource : Term sourceCtx carrierA argumentRawSource}
+    {argumentTarget : Term sourceCtx carrierA argumentRawTarget}
+    (equivStep :
+      Step.par (Term.rename termRenaming equivSource)
+               (Term.rename termRenaming equivTarget))
+    (argumentStep :
+      Step.par (Term.rename termRenaming argumentSource)
+               (Term.rename termRenaming argumentTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.equivApp equivSource argumentSource))
+      (Term.rename termRenaming (Term.equivApp equivTarget argumentTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.equivAppCong equivStep argumentStep
+
+/-- Cong arm `equivApplyCong` of typed-Step.par rename equivariance (typed-IH).
+Univalence-β application `Term.equivApply` mirrors `equivApp`: two typed
+sub-terms (equivalence + argument), two typed `Step.par` sub-derivations, a
+cast-free structural rename.  Definitional push. -/
+theorem rename_compatible_typed_equivApplyCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {carrierA carrierB : Ty level sourceScope}
+    {equivRawSource equivRawTarget
+     argumentRawSource argumentRawTarget : RawTerm sourceScope}
+    {equivSource : Term sourceCtx (Ty.equiv carrierA carrierB) equivRawSource}
+    {equivTarget : Term sourceCtx (Ty.equiv carrierA carrierB) equivRawTarget}
+    {argumentSource : Term sourceCtx carrierA argumentRawSource}
+    {argumentTarget : Term sourceCtx carrierA argumentRawTarget}
+    (equivStep :
+      Step.par (Term.rename termRenaming equivSource)
+               (Term.rename termRenaming equivTarget))
+    (argumentStep :
+      Step.par (Term.rename termRenaming argumentSource)
+               (Term.rename termRenaming argumentTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.equivApply equivSource argumentSource))
+      (Term.rename termRenaming (Term.equivApply equivTarget argumentTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.equivApplyCong equivStep argumentStep
+
+/-- Cong arm `uaIntroHetCong` of typed-Step.par rename equivariance (typed-IH,
+single sub-term).  `Term.uaIntroHet` packages an equivalence witness under a
+universe-level + cumul-witness header and two schematic carrier raws; the cong
+reduces in the single typed `equivWitness` sub-term.  `Term.rename` renames the
+carrier raws via `rho` and recurses on the witness with no cast — the witness's
+raw `RawTerm.equivIntro _ _` renames pointwise.  The scope-independent
+`innerLevel`/`innerLevelLt` pass through unchanged. -/
+theorem rename_compatible_typed_uaIntroHetCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    {carrierA carrierB : Ty level sourceScope}
+    (carrierARaw carrierBRaw : RawTerm sourceScope)
+    {forwardRawSource forwardRawTarget
+     backwardRawSource backwardRawTarget : RawTerm sourceScope}
+    {equivWitnessSource :
+      Term sourceCtx (Ty.equiv carrierA carrierB)
+        (RawTerm.equivIntro forwardRawSource backwardRawSource)}
+    {equivWitnessTarget :
+      Term sourceCtx (Ty.equiv carrierA carrierB)
+        (RawTerm.equivIntro forwardRawTarget backwardRawTarget)}
+    (equivWitnessStep :
+      Step.par (Term.rename termRenaming equivWitnessSource)
+               (Term.rename termRenaming equivWitnessTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.uaIntroHet innerLevel innerLevelLt carrierARaw carrierBRaw equivWitnessSource))
+      (Term.rename termRenaming
+        (Term.uaIntroHet innerLevel innerLevelLt carrierARaw carrierBRaw equivWitnessTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.uaIntroHetCong innerLevel innerLevelLt
+    (carrierARaw.rename rho) (carrierBRaw.rename rho) equivWitnessStep
+
+/-- Cong arm `uaToEquivCong` of typed-Step.par rename equivariance (typed-IH,
+single sub-term).  The univalence-β extractor `Term.uaToEquiv` reduces in its
+single typed `proof` sub-term (a path at the universe).  `Term.rename` renames
+the two carrier types + two schematic type-code raws via `rho` and recurses on
+the proof; the proof's type `Ty.id (Ty.universe ...) leftTyRaw rightTyRaw`
+renames with the universe constant and the endpoints via `rho`.  No cast. -/
+theorem rename_compatible_typed_uaToEquivCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    (leftTy rightTy : Ty level sourceScope)
+    (leftTyRaw rightTyRaw : RawTerm sourceScope)
+    {proofRawSource proofRawTarget : RawTerm sourceScope}
+    {proofSource :
+      Term sourceCtx
+        (Ty.id (Ty.universe innerLevel innerLevelLt) leftTyRaw rightTyRaw)
+        proofRawSource}
+    {proofTarget :
+      Term sourceCtx
+        (Ty.id (Ty.universe innerLevel innerLevelLt) leftTyRaw rightTyRaw)
+        proofRawTarget}
+    (proofStep :
+      Step.par (Term.rename termRenaming proofSource)
+               (Term.rename termRenaming proofTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.uaToEquiv innerLevel innerLevelLt leftTy rightTy
+          leftTyRaw rightTyRaw proofSource))
+      (Term.rename termRenaming
+        (Term.uaToEquiv innerLevel innerLevelLt leftTy rightTy
+          leftTyRaw rightTyRaw proofTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.uaToEquivCong innerLevel innerLevelLt
+    (leftTy.rename rho) (rightTy.rename rho)
+    (leftTyRaw.rename rho) (rightTyRaw.rename rho) proofStep
+
+/-- Cong arm `oeqReflCong` of typed-Step.par rename equivariance (raw-premise).
+`Term.oeqRefl` is an observational-equality refl whose witness is a RAW term, so
+the cong reduces via a `RawStep.par` premise transported through
+`RawStep.par.rename_compatible rho`.  The carrier renames structurally.
+Cast-free. -/
+theorem rename_compatible_typed_oeqReflCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (carrier : Ty level sourceScope)
+    {witnessRawSource witnessRawTarget : RawTerm sourceScope}
+    (witnessStep : RawStep.par witnessRawSource witnessRawTarget) :
+    Step.par
+      (Term.rename termRenaming (Term.oeqRefl carrier witnessRawSource))
+      (Term.rename termRenaming (Term.oeqRefl carrier witnessRawTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.oeqReflCong (RawStep.par.rename_compatible rho witnessStep)
+
+/-- Cong arm `idStrictReflCong` of typed-Step.par rename equivariance
+(raw-premise).  `Term.idStrictRefl` is the strict-identity refl (only in
+`Mode.strict`); its witness is a RAW term so the cong reduces via a
+`RawStep.par` premise transported through `RawStep.par.rename_compatible rho`.
+Renaming is mode-preserving, so the `modeIsStrict` proof rides through unchanged;
+the carrier renames structurally.  Cast-free. -/
+theorem rename_compatible_typed_idStrictReflCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (modeIsStrict : mode = Mode.strict)
+    (carrier : Ty level sourceScope)
+    {witnessRawSource witnessRawTarget : RawTerm sourceScope}
+    (witnessStep : RawStep.par witnessRawSource witnessRawTarget) :
+    Step.par
+      (Term.rename termRenaming (Term.idStrictRefl modeIsStrict carrier witnessRawSource))
+      (Term.rename termRenaming (Term.idStrictRefl modeIsStrict carrier witnessRawTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.idStrictReflCong modeIsStrict
+    (RawStep.par.rename_compatible rho witnessStep)
+
 end Step.par
 
 end LeanFX2
