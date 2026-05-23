@@ -494,4 +494,199 @@ theorem Generator.outputTypeEitherMatch_matches_Term_eitherMatch
     Generator.outputTypeEitherMatch scrutinee leftBranch rightBranch =
       motiveType := rfl
 
+/-! ### HoTT identity types — refl + J + equivApp -/
+
+/-- **Output type for `gen_refl`**.  The reflexivity proof of HoTT
+identity at carrier `T` and witness `w` has type
+`Ty.id T w w` — both endpoints are the same witness.  Unlike most
+extractors in this file, `gen_refl`'s "children" are the explicit
+type/witness parameters (no typed child needed: refl is constructor-
+nullary at the RawTerm level beyond carrying its witness).
+
+The extractor takes the carrier and the raw witness directly. -/
+def Generator.outputTypeRefl {mode : Mode} {level scope : Nat}
+    (_context : Ctx mode level scope)
+    (carrier : Ty level scope) (rawWitness : RawTerm scope) :
+    Ty level scope :=
+  Ty.id carrier rawWitness rawWitness
+
+/-- Definitional match against `Term.refl`'s legacy output type.
+`Term.refl carrier rawWitness` has type `Term context (Ty.id carrier
+rawWitness rawWitness) (RawTerm.refl rawWitness)`. -/
+theorem Generator.outputTypeRefl_matches_Term_refl
+    {mode : Mode} {level scope : Nat}
+    (context : Ctx mode level scope)
+    (carrier : Ty level scope) (rawWitness : RawTerm scope) :
+    Generator.outputTypeRefl context carrier rawWitness =
+      Ty.id carrier rawWitness rawWitness := rfl
+
+/-- **Output type for `gen_idJ`**.  The HoTT J eliminator with
+non-dependent motive `Ty level scope` returns the motive directly.
+Lean's unifier pulls `motiveType` from the base-case's type index;
+`carrier`, `leftEndpoint`, `rightEndpoint` come from the witness's
+`Ty.id` index. -/
+def Generator.outputTypeIdJ {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    (baseCase : Term context motiveType baseRaw)
+    (witness :
+      Term context (Ty.id carrier leftEndpoint rightEndpoint) witnessRaw) :
+    Ty level scope :=
+  let _baseWitness := baseCase
+  let _witnessWitness := witness
+  motiveType
+
+/-- Definitional match against `Term.idJ`'s legacy output type. -/
+theorem Generator.outputTypeIdJ_matches_Term_idJ
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    (baseCase : Term context motiveType baseRaw)
+    (witness :
+      Term context (Ty.id carrier leftEndpoint rightEndpoint) witnessRaw) :
+    Generator.outputTypeIdJ baseCase witness = motiveType := rfl
+
+/-! ### Observational equality — oeqRefl + oeqJ -/
+
+/-- **Output type for `gen_oeqRefl`**.  Observational-equality
+reflexivity at carrier `T` and witness `w`; output is
+`Ty.oeq T w w`. -/
+def Generator.outputTypeOeqRefl {mode : Mode} {level scope : Nat}
+    (_context : Ctx mode level scope)
+    (carrier : Ty level scope) (rawWitness : RawTerm scope) :
+    Ty level scope :=
+  Ty.oeq carrier rawWitness rawWitness
+
+/-- Definitional match against `Term.oeqRefl`'s legacy output type. -/
+theorem Generator.outputTypeOeqRefl_matches_Term_oeqRefl
+    {mode : Mode} {level scope : Nat}
+    (context : Ctx mode level scope)
+    (carrier : Ty level scope) (rawWitness : RawTerm scope) :
+    Generator.outputTypeOeqRefl context carrier rawWitness =
+      Ty.oeq carrier rawWitness rawWitness := rfl
+
+/-- **Output type for `gen_oeqJ`**.  The observational-J eliminator
+with non-dependent motive returns the motive.  Mirrors `outputTypeIdJ`
+but at `Ty.oeq` instead of `Ty.id`. -/
+def Generator.outputTypeOeqJ {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    (baseCase : Term context motiveType baseRaw)
+    (witness :
+      Term context (Ty.oeq carrier leftEndpoint rightEndpoint) witnessRaw) :
+    Ty level scope :=
+  let _baseWitness := baseCase
+  let _witnessWitness := witness
+  motiveType
+
+/-- Definitional match against `Term.oeqJ`'s legacy output type. -/
+theorem Generator.outputTypeOeqJ_matches_Term_oeqJ
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    (baseCase : Term context motiveType baseRaw)
+    (witness :
+      Term context (Ty.oeq carrier leftEndpoint rightEndpoint) witnessRaw) :
+    Generator.outputTypeOeqJ baseCase witness = motiveType := rfl
+
+/-! ### Strict identity types — idStrictRefl + idStrictRec -/
+
+/-- **Output type for `gen_idStrictRefl`**.  Strict-identity reflexivity
+at carrier `T` and witness `w`; output is `Ty.idStrict T w w`.  The
+strict-mode constraint `mode = Mode.strict` is carried as a propositional
+input mirroring `Term.idStrictRefl`'s signature. -/
+def Generator.outputTypeIdStrictRefl {mode : Mode} {level scope : Nat}
+    (_context : Ctx mode level scope)
+    (_modeIsStrict : mode = Mode.strict)
+    (carrier : Ty level scope) (rawWitness : RawTerm scope) :
+    Ty level scope :=
+  Ty.idStrict carrier rawWitness rawWitness
+
+/-- Definitional match against `Term.idStrictRefl`'s legacy output type. -/
+theorem Generator.outputTypeIdStrictRefl_matches_Term_idStrictRefl
+    {mode : Mode} {level scope : Nat}
+    (context : Ctx mode level scope)
+    (modeIsStrict : mode = Mode.strict)
+    (carrier : Ty level scope) (rawWitness : RawTerm scope) :
+    Generator.outputTypeIdStrictRefl context modeIsStrict carrier rawWitness =
+      Ty.idStrict carrier rawWitness rawWitness := rfl
+
+/-- **Output type for `gen_idStrictRec`**.  Strict-identity recursor
+with non-dependent motive returns the motive.  Mirrors `outputTypeIdJ`
+but at `Ty.idStrict` and carrying the strict-mode constraint. -/
+def Generator.outputTypeIdStrictRec {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (_modeIsStrict : mode = Mode.strict)
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    (baseCase : Term context motiveType baseRaw)
+    (witness :
+      Term context
+        (Ty.idStrict carrier leftEndpoint rightEndpoint) witnessRaw) :
+    Ty level scope :=
+  let _baseWitness := baseCase
+  let _witnessWitness := witness
+  motiveType
+
+/-- Definitional match against `Term.idStrictRec`'s legacy output type. -/
+theorem Generator.outputTypeIdStrictRec_matches_Term_idStrictRec
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsStrict : mode = Mode.strict)
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    (baseCase : Term context motiveType baseRaw)
+    (witness :
+      Term context
+        (Ty.idStrict carrier leftEndpoint rightEndpoint) witnessRaw) :
+    Generator.outputTypeIdStrictRec modeIsStrict baseCase witness =
+      motiveType := rfl
+
+/-! ### Type equivalence application -/
+
+/-- **Output type for `gen_equivApp`**.  Apply a packaged equivalence
+`Ty.equiv carrierA carrierB` to an argument of `carrierA`; output is
+`carrierB`.  Both carriers come from the equivalence's `Ty.equiv`
+index; the argument confirms `carrierA`. -/
+def Generator.outputTypeEquivApp {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierA carrierB : Ty level scope}
+    {equivRaw argumentRaw : RawTerm scope}
+    (equivTerm :
+      Term context (Ty.equiv carrierA carrierB) equivRaw)
+    (argumentTerm : Term context carrierA argumentRaw) :
+    Ty level scope :=
+  let _equivWitness := equivTerm
+  let _argumentWitness := argumentTerm
+  carrierB
+
+/-- Definitional match against `Term.equivApp`'s legacy output type.
+`Term.equivApp equivTerm argumentTerm` has type `Term context
+carrierB (RawTerm.equivApp equivRaw argumentRaw)`. -/
+theorem Generator.outputTypeEquivApp_matches_Term_equivApp
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierA carrierB : Ty level scope}
+    {equivRaw argumentRaw : RawTerm scope}
+    (equivTerm :
+      Term context (Ty.equiv carrierA carrierB) equivRaw)
+    (argumentTerm : Term context carrierA argumentRaw) :
+    Generator.outputTypeEquivApp equivTerm argumentTerm = carrierB := rfl
+
 end LeanFX2.Foundation.Polygraph

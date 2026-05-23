@@ -1,11 +1,11 @@
 import LeanFX2.Foundation.Polygraph.GeneratorOutputType
 import LeanFX2.Tools.DependencyAudit
 
-/-! # AuditGeneratorOutputType — zero-axiom audit for the P2.2 Π/Σ + recursor families.
+/-! # AuditGeneratorOutputType — zero-axiom audit for the P2.2 Π/Σ + recursor + HOTT families.
 
 Smoke gates for accelerate-P2.2 (#2123) — per-Generator outputType
-extractors, currently covering 12 of the 74 ctors (Π/Σ + closed-type
-recursors).
+extractors, currently covering 19 of the 74 ctors (Π/Σ + closed-type
+recursors + HOTT identity / observational / strict identity / equiv-app).
 
 ## Coverage
 
@@ -30,11 +30,28 @@ Twelve extractors + twelve matching `rfl` theorems across two families:
 * `Generator.outputTypeOptionMatch` — non-dep option matcher.
 * `Generator.outputTypeEitherMatch` — non-dep either matcher.
 
-Plus the P2.0-shipped `Generator.outputTypeAppPi` (in `Generator.lean`)
-for dependent function application — 13 of 74 outputType ctors covered.
+**HoTT identity + observational + strict-identity + equivApp family**
+(7 ctors at `LeanFX2/Term.lean:236-294, 791-797`):
 
-All clean = P2.2 Π/Σ + recursor extractor PASS.  The remaining 61
-extractors (HOTT / cubical / modal / type-code / record / codata /
+* `Generator.outputTypeRefl` — HoTT identity-type reflexivity:
+  `Ty.id carrier rawWitness rawWitness`.
+* `Generator.outputTypeIdJ` — non-dep HoTT J eliminator.
+* `Generator.outputTypeOeqRefl` — observational reflexivity:
+  `Ty.oeq carrier rawWitness rawWitness`.
+* `Generator.outputTypeOeqJ` — non-dep observational J eliminator.
+* `Generator.outputTypeIdStrictRefl` — strict-identity reflexivity
+  (carries `mode = Mode.strict` hypothesis):
+  `Ty.idStrict carrier rawWitness rawWitness`.
+* `Generator.outputTypeIdStrictRec` — non-dep strict-identity
+  recursor (carries `mode = Mode.strict` hypothesis).
+* `Generator.outputTypeEquivApp` — equivalence application:
+  `Ty.equiv carrierA carrierB → carrierA → carrierB`.
+
+Plus the P2.0-shipped `Generator.outputTypeAppPi` (in `Generator.lean`)
+for dependent function application — 20 of 74 outputType ctors covered.
+
+All clean = P2.2 Π/Σ + recursor + HOTT extractor PASS.  The remaining
+54 extractors (cubical / modal / type-code / record / codata /
 session / effect / P-S vocabulary / transpFill) land in subsequent
 P2.2 batches.
 -/
@@ -65,6 +82,20 @@ namespace LeanFX2.SmokeGeneratorOutputType
 #assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeOptionMatch_matches_Term_optionMatch
 #assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEitherMatch
 #assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEitherMatch_matches_Term_eitherMatch
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeRefl
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeRefl_matches_Term_refl
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeIdJ
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeIdJ_matches_Term_idJ
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeOeqRefl
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeOeqRefl_matches_Term_oeqRefl
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeOeqJ
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeOeqJ_matches_Term_oeqJ
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeIdStrictRefl
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeIdStrictRefl_matches_Term_idStrictRefl
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeIdStrictRec
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeIdStrictRec_matches_Term_idStrictRec
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEquivApp
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEquivApp_matches_Term_equivApp
 
 #print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeApp
 #print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeApp_matches_Term_app
@@ -90,5 +121,19 @@ namespace LeanFX2.SmokeGeneratorOutputType
 #print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeOptionMatch_matches_Term_optionMatch
 #print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEitherMatch
 #print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEitherMatch_matches_Term_eitherMatch
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeRefl
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeRefl_matches_Term_refl
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeIdJ
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeIdJ_matches_Term_idJ
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeOeqRefl
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeOeqRefl_matches_Term_oeqRefl
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeOeqJ
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeOeqJ_matches_Term_oeqJ
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeIdStrictRefl
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeIdStrictRefl_matches_Term_idStrictRefl
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeIdStrictRec
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeIdStrictRec_matches_Term_idStrictRec
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEquivApp
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEquivApp_matches_Term_equivApp
 
 end LeanFX2.SmokeGeneratorOutputType
