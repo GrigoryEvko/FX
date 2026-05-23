@@ -973,5 +973,6 @@ constructor — pure definitional, no induction, no cast on the `refl`
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaRecordProjIntro
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaModElimIntro
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaRefineElimIntro
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaCodataDestUnfold
 
 end LeanFX2.Tools

@@ -2596,6 +2596,42 @@ theorem rename_compatible_typed_betaRefineElimIntro
   dsimp only [Term.rename]
   exact Step.par.betaRefineElimIntro valueStep proofStep
 
+/-- β arm `betaCodataDestUnfold` of typed-Step.par rename equivariance (shallow
+codata observation, two sub-derivations, cast-free).  `codataDest (codataUnfold
+state transition) ⟶ app transition' state'` with `Step.par state state'` and
+`Step.par transition transition'`.  The reduct is a NON-dependent `Term.app` (the
+transition has arrow type `Ty.arrow stateType outputType`, so its result type is
+`outputType` with no `subst0`), and `codataDest` / `codataUnfold` / `app` all
+rename structurally — so both the redex and the application reduct are cast-free
+under `Term.rename`. -/
+theorem rename_compatible_typed_betaCodataDestUnfold
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {stateType outputType : Ty level sourceScope}
+    {stateRawSource stateRawTarget transitionRawSource transitionRawTarget :
+      RawTerm sourceScope}
+    {stateSource : Term sourceCtx stateType stateRawSource}
+    {stateTarget : Term sourceCtx stateType stateRawTarget}
+    {transitionSource :
+      Term sourceCtx (Ty.arrow stateType outputType) transitionRawSource}
+    {transitionTarget :
+      Term sourceCtx (Ty.arrow stateType outputType) transitionRawTarget}
+    (stateStep :
+      Step.par (Term.rename termRenaming stateSource)
+               (Term.rename termRenaming stateTarget))
+    (transitionStep :
+      Step.par (Term.rename termRenaming transitionSource)
+               (Term.rename termRenaming transitionTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.codataDest (Term.codataUnfold stateSource transitionSource)))
+      (Term.rename termRenaming (Term.app transitionTarget stateTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.betaCodataDestUnfold stateStep transitionStep
+
 end Step.par
 
 end LeanFX2
