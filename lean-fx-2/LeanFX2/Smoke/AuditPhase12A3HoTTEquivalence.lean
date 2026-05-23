@@ -20,3 +20,9 @@ import LeanFX2.HoTT.Equivalence
 #print axioms LeanFX2.IsContr.values_equal
 #print axioms LeanFX2.IsEquiv.identity
 #print axioms LeanFX2.Equiv.boolNot
+
+-- Equivalence-structure type names (definitions, not just members)
+#print axioms LeanFX2.Equiv
+#print axioms LeanFX2.IsContr
+#print axioms LeanFX2.IsEquiv
+#print axioms LeanFX2.Fiber

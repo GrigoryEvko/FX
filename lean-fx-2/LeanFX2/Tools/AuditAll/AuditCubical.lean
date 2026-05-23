@@ -10,6 +10,8 @@ import LeanFX2.HoTT.Funext
 import LeanFX2.HoTT.FunextFull
 import LeanFX2.HoTT.Path.Groupoid
 import LeanFX2.HoTT.Univalence
+import LeanFX2.HoTT.Identity
+import LeanFX2.HoTT.Observational
 
 namespace LeanFX2.Tools
 
@@ -71,7 +73,14 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Cubical.constantTypeTransport_sourceCong
 #assert_no_axioms LeanFX2.Cubical.constantTypeTransport_sourceCong_toRawBridge
 #assert_no_axioms LeanFX2.Cubical.constantTypeTransport_sourceConvCumul
+#assert_no_axioms LeanFX2.Cubical.constantTypeTransport_betaParStep
+#assert_no_axioms LeanFX2.Cubical.constantTypeTransport_betaParStep_toRawBridge
+#assert_no_axioms LeanFX2.Cubical.constantTypeTransport_betaParStar
 #assert_no_axioms LeanFX2.Cubical.constantTypeTransport_betaConvCumul
+#assert_no_axioms LeanFX2.Equiv
+#assert_no_axioms LeanFX2.IsContr
+#assert_no_axioms LeanFX2.IsEquiv
+#assert_no_axioms LeanFX2.Fiber
 #assert_no_axioms LeanFX2.Equiv.refl
 #assert_no_axioms LeanFX2.Equiv.symm
 #assert_no_axioms LeanFX2.Equiv.trans
@@ -105,5 +114,32 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.PathGroupoidLaws.instance
 #assert_no_axioms LeanFX2.Path.trans_left_cancel
 #assert_no_axioms LeanFX2.Path.trans_right_cancel
+
+/-! ## Identity-type ι rule (`J base (refl x) ⟶ base`) — the
+identity eliminator computation rule.  Per the project's
+HIT/identity-eliminator commitment these must be axiom-clean. -/
+
+#assert_no_axioms LeanFX2.Step.idJ_refl
+#assert_no_axioms LeanFX2.Conv.idJ_refl_baseCase
+
+/-! ## Observational-equality eliminator family (`HoTT/Observational.lean`).
+The equivalence-relation laws, function congruence, transport,
+substitution, and structured-type decomposition rules. -/
+
+#assert_no_axioms LeanFX2.OEq.refl
+#assert_no_axioms LeanFX2.OEq.sym
+#assert_no_axioms LeanFX2.OEq.trans
+#assert_no_axioms LeanFX2.OEq.cong
+#assert_no_axioms LeanFX2.OEq.cong2
+#assert_no_axioms LeanFX2.OEq.transport
+#assert_no_axioms LeanFX2.OEq.subst
+#assert_no_axioms LeanFX2.OEqDecomposeProd.to_components
+#assert_no_axioms LeanFX2.OEqDecomposeProd.from_components
+#assert_no_axioms LeanFX2.OEqDecomposeSum.inl_components
+#assert_no_axioms LeanFX2.OEqDecomposeSum.inr_components
+#assert_no_axioms LeanFX2.OEqDecomposeSum.inl_inr_impossible
+#assert_no_axioms LeanFX2.OEqDecomposePiSetWise.to_pointwise
+#assert_no_axioms LeanFX2.OEqUIP.uip_set
+#assert_no_axioms LeanFX2.OEqType.to_equiv
 
 end LeanFX2.Tools

@@ -1,4 +1,5 @@
 import LeanFX2.Modal.Foundation
+import LeanFX2.Modal.Ghost
 
 /-! # Smoke/Modal — modal computation rules.
 
@@ -34,3 +35,12 @@ namespace LeanFX2.Smoke
 -- TODO: modal smoke examples
 
 end LeanFX2.Smoke
+
+-- Modal/Ghost: ghost-mode endo-modality + idempotency / identity-compose
+-- laws.  Reviewer-facing axiom log; machine gate is in
+-- Tools/AuditAll/AuditModalTwoCell.lean.
+#print axioms LeanFX2.Modality.ghost
+#print axioms LeanFX2.Modality.ghost_idempotent
+#print axioms LeanFX2.Modality.ghost_compose_identity_right
+#print axioms LeanFX2.Modality.ghost_compose_identity_left
+#print axioms LeanFX2.Modality.ghost_absorbs_diamond
