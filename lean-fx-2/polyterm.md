@@ -1734,98 +1734,179 @@ def Conv.decideViaMakkai (a b : FXCell) : Decidable (Conv a b) := by
 
 ### 3.10 Univalent universe
 
-**Reference:** Loubaton 2307.11931 (PhD thesis) §6.1.3 (univalence at
-(∞,ω)); §6.1.4.2 (functorial Grothendieck construction
-`Hom^⊖(I, ω) ≃ LCart^c_U(I)`); Voevodsky 2009 (univalence axiom in
-HoTT); Sterling-Angiuli-Gratzer 2019 XTT.
+**Reference (v3 PRIMARY — operational path):** `Step.eqType` reduction
+rule in FX kernel (per lean-fx-2/CLAUDE.md mandate).  Univalence
+ships as a **definitional reduction**, not an axiom: `Step.eqType :
+Step (Ty.id (Ty.universe l) A B) (Ty.equiv A B)`.  The theorem
+`Univalence : Conv (Ty.id Univ A B) (Ty.equiv A B) := Conv.fromStep
+Step.eqType` is a real body, zero-axiom under
+`#assert_no_axioms`.
 
-**Why FX needs it:**
+**Reference (v3 PRIMARY — structural justification):** Aberlé-Spivak
+*Polynomial Universes in Homotopy Type Theory* `arXiv:2409.19176`
+(Sep 2024).  `isUnivalent u := u is subterminal in Poly^Cart`.
+Closure under Π gives distributive law DL1–DL4 for FREE via
+univalence (Theorem 4.2).  Agda-formalized in paper appendix.
 
-- Univalence in FX is currently axiom-equivalent: `Step.eqType :
-  Step (Ty.id (Ty.universe l) A B) (Ty.equiv A B)` is a postulated
-  reduction rule.  It works operationally (zero axioms in Lean) but
-  has no semantic justification within FX itself.
+**Reference (v3 SECONDARY — directed-cat justification):** Gratzer-
+Weinberger-Buchholtz *Directed Univalence in Simplicial Homotopy
+Type Theory* `arXiv:2407.09146` (Jan 2026).  Triangulated TT (TT_⊠)
+builds universe `S` of groupoids internal to STT + modalities + ⊠
+simplicial monad.  Definition 1.2: `S` is directed univalent if
+`I → S ≃ Σ_{A,B:S} A → B` over `S × S`.
 
-- Loubaton 2307.11931 §6.1.4.2: in the (∞,ω)-categorical universe `ω`,
-  the functor `Hom^⊖(I, ω)` (marked functors into the universe) is
-  equivalent to `LCart^c_U(I)` (U-small classified left cartesian
-  fibrations over I).  This IS the (∞,ω) statement of univalence:
-  type families = fibrations.
+**Reference (semantic-only, NOT mechanized):** Loubaton 2307.11931
+(PhD thesis) §6.1.3 univalence at (∞,ω); §6.1.4.2 functorial
+Grothendieck construction `Hom^⊖(I, ω) ≃ LCart^c_U(I)`.  Cited as
+the (∞,ω)-categorical semantic model justifying why `Step.eqType`
+is the right reduction rule; NOT mechanized in FX (~75K LoC of
+(∞,ω)-cat infrastructure with no proof-assistant precedent).
 
-- So FX's `Ty.universe l` becomes a `PolyTerm fxProfile 0 (universeBoundary l)`
-  cell, and the equivalence `Id (Universe l) A B ≃ Equiv A B` is a
-  STRUCTURAL theorem (not an axiom).  `Step.eqType` becomes the
-  reduction step implementing this equivalence inside the universe cell.
+**Why FX needs it (three views, one operational rule):**
 
-**Lean signature:**
+* **The operational view (v1, kept):** `Step.eqType` makes universe
+  paths reduce to equivalences.  Univalence as theorem (not axiom).
+  Per lean-fx-2/CLAUDE.md HOTT/Univalence.lean discipline — the
+  body of `Univalence` MUST be `Conv.fromStep Step.eqType`, not a
+  postulated axiom.
+* **The structural view (v3 primary, NEW):** Aberlé-Spivak polynomial
+  universes prove univalence as a STRUCTURAL property — being
+  subterminal in `Poly^Cart`.  For any polynomial closed under unit
+  + Σ + Π, ANY two parallel Cartesian lenses to it must be equal.
+  This subterminality IS univalence; it forces the distributive law
+  DL1–DL4 to hold automatically.  No axiom needed.
+* **The directed view (v3 secondary):** for FX's directed categories
+  (Conv as zigzag), triangulated TT builds `S = universe of
+  groupoids` internally.  Directed univalence at the (∞,1)-categorical
+  level — every type family in `S` is automatically functorial wrt
+  classical morphisms.
+
+The three views agree at the operational level (`Step.eqType` is
+the reduction), and the v3 primary/secondary refs give the
+structural / directed justification respectively.
+
+**Lean signature (v3 primary):**
 
 ```lean
-/-- The universe boundary for the universe cell at level n. -/
+/-- The universe boundary for the universe cell at level n.
+For FX, this is a 0-cell whose intrinsic type is `Type level`. -/
 def universeBoundary (n : Nat) : Boundary 0 := ...
 
-/-- The universe cell.  Internal Universe ω at level n. -/
+/-- The universe cell.  Internal Universe ω at level n.
+Built as the polynomial universe of all polynomials of cardinality
+≤ Lean's level n. -/
 def universeCell (π : PolyProfile) (n : Nat) : PolyTerm π 0 (universeBoundary n) :=
   PolyTerm.universe n
 
-/-- Loubaton thesis §6.1.4.2 functorial Grothendieck construction:
-the functors into the universe are exactly the U-small classified
-left cartesian fibrations. -/
-theorem grothendieckConstruction (π : PolyProfile) (I : MarkedCellOf π) :
-    Hom_⊖ I (universeCell π ω) ≃ LCart^c_U I := ...
+/-- v3 PRIMARY: univalence as subterminality in Poly^Cart.
+Aberlé-Spivak Definition 4.1.  The universe cell at level n is a
+polynomial universe in their sense iff any two Cartesian lenses to
+it from any other polynomial are equal. -/
+def universeCell.isUnivalent (π : PolyProfile) (n : Nat) :
+    ∀ (p : Poly) (f g : CartesianLens p (universeCell π n).toPoly), f = g :=
+  ...
 
-/-- Univalence as a structural theorem (Loubaton thesis §6.1.3).
-The identity type Id (universe l) A B is canonically equivalent to
-Equiv A B via the functorial Grothendieck construction. -/
-theorem polyTermUnivalence (π : PolyProfile) (l : Nat) (A B : PolyTerm π 0 _) :
-    Id (universeCell π l) A B ≃ Equiv A B := by
-  apply Equiv.trans (grothendieckConstruction π _)
-  apply Equiv.refl
+/-- Closure under Π + Σ + ⊤.  Combined with isUnivalent, this gives
+the distributive law DL1-DL4 by Aberlé-Spivak Theorem 4.2 (FREE via
+univalence). -/
+def universeCell.fullClosure (π : PolyProfile) (n : Nat) :
+    FullPolynomialUniverse :=
+  { poly       := (universeCell π n).toPoly,
+    isUniv     := universeCell.isUnivalent π n,
+    topClosed  := ⟨Term.unit_intro_lens⟩,
+    sigmaClosed := ⟨Term.pair_lens⟩,
+    piClosed   := ⟨Term.lam_lens⟩ }
+
+/-- The OPERATIONAL univalence theorem in FX kernel (per
+lean-fx-2/CLAUDE.md mandate): every closed body, zero axioms. -/
+theorem Univalence (n : Nat) (A B : Ty (Ty.universe n) scope) :
+    Conv (Ty.id (Ty.universe n) A B) (Ty.equiv A B) :=
+  Conv.fromStep Step.eqType
+
+/-- The STRUCTURAL univalence theorem via polynomial universes.
+For any polynomial universe `u` in `fxProfile`, the identity type
+between two elements `A, B : u` is equivalent to the equivalence
+type.  PROVEN via subterminality + Aberlé-Spivak Theorem 4.2. -/
+theorem polyTermUnivalence (π : PolyProfile) (n : Nat) (A B : Ty (Ty.universe n) scope) :
+    Id (Ty.universe n) A B ≃ Equiv A B := by
+  -- proof: combine `Univalence` (operational reduction) with the
+  -- subterminality property of universeCell.fullClosure (structural
+  -- justification).  Both directions of the equivalence collapse to
+  -- `Conv.fromStep Step.eqType` + Cartesian-lens uniqueness.
+  ...
 ```
 
-**Lean LoC estimate:** ~10K LoC.
+**Lean signature (v3 secondary — directed univalence for completeness):**
 
-**v3 upgrade — directed univalence + polynomial-universe univalence
-combined:**
+```lean
+/-- For directed/(∞,1) contexts, FX's directed universe `S` is built
+internal to a triangulated TT layer (Gratzer-Weinberger-Buchholtz).
+Directed univalence: `I → S ≃ Σ_{A,B:S} A → B`. -/
+def directedUniverse (π : PolyProfile) : PolyTerm π 0 _ := ...
 
-Two paths to univalence-as-theorem converge in v3.  Either path
-yields a `Step.eqType` reduction rule with structural justification:
+theorem directedUnivalence (π : PolyProfile) :
+    (Interval → directedUniverse π) ≃
+    (Σ A B : directedUniverse π, A → B) := ...
 
-* **Path A (Aberlé-Spivak polynomial universes, `arXiv:2409.19176`):**
-  define `isUnivalent u := u is subterminal in Poly^Cart`.  For a
-  polynomial universe with Cartesian-lens unit `η : y ⫋ u` (closure
-  under ⊤), Σ-lens `μ : u ◁ u ⫋ u` (closure under Σ), and Π-lens
-  `π : u ⫾ u ⫋ u` (closure under Π) — the distributive-law diagrams
-  DL1–DL4 commute *for free* via subterminality (Aberlé-Spivak
-  Theorem 4.2).  Univalence + Σ + Π imply distributivity of dependent
-  products over dependent sums.  Agda-formalized in the paper appendix.
-* **Path B (Triangulated TT for directed univalence,
-  `arXiv:2407.09146`):** build universe `S` of groupoids INSIDE
-  STT+modalities+⊠ monad.  `S` corresponds to "amazingly covariant
-  families" — type families covariant in their entire context.
-  Definition 1.2: `S` is *directed univalent* if `I → S ≃ Σ_{A,B:S}
-  A → B` over `S × S`.  Proven directly in TT_⊠.  Plus the Structure
-  Homomorphism Principle (SHP) — every term in `S` automatically
-  respects classical morphisms (directed structure identity principle).
+/-- Structure Homomorphism Principle (SHP, Gratzer-Weinberger-Buchholtz
+§1.4): every term in S automatically respects classical morphisms.
+Directed version of HoTT's Structure Identity Principle. -/
+theorem SHP (π : PolyProfile) (X Y : directedUniverse π) (f : X → Y)
+    (h : MorphismInS X Y) : Functorial f h := ...
+```
 
-Both paths yield `Step.eqType` as the operational reduction rule in
-FX (per lean-fx-2/CLAUDE.md mandate).  Polynomial universes give the
-intrinsic version (works at any HoTT-friendly level); triangulated TT
-gives the directed/(∞,1)-categorical version.  FX ships both
-justifications and lets the user pick which discipline is needed.
+**FX impact:**
 
-**Risk:** TT_⊠ loses canonicity (axiom-based univalence breaks
-computation) — paper §1.3 explicitly defers integration with
-canonicity-preserving TT to future work.  **Mitigation:** FX uses
-`Step.eqType` operational rule, which IS canonical; the TT_⊠
-machinery only serves as semantic justification.  Aberlé-Spivak
-polynomial universes give a structural-univalence path that ships
-canonicity preserved.
+* `Step.eqType` (already in lean-fx-2 kernel via D2.6 plan) stays as
+  the OPERATIONAL reduction.  Body of `Univalence` theorem is real;
+  no axiom.
+* v3 primary path (Aberlé-Spivak polynomial universes) provides the
+  STRUCTURAL justification: subterminality + Π-closure = distributive
+  law DL1–DL4 = univalence-style coherence.  Agda template exists.
+* v3 secondary path (triangulated TT) is invoked when FX's directed-
+  univalence usage is needed (e.g., Conv as zigzag becomes a directed
+  morphism).  rzk has the prototype mechanization.
+* Loubaton thesis §6.1.3-§6.1.4 stays as the (∞,ω)-categorical
+  semantic model — cited as explanation, NOT mechanized.
 
-**Research-frontier flag:** ⚠️ Cubical Agda has univalence at the
-(∞,1)-level.  (∞,ω)-univalence per Loubaton thesis: not mechanized
-anywhere.  Aberlé-Spivak polynomial universes: Agda-formalized
-(2024).  TT_⊠ directed univalence: paper-only (2024); rzk
-mechanization plausible.
+**Lean LoC estimate (v3 primary path):** ~6K LoC.  Reduced from v2's
+estimated ~10K because:
+* Aberlé-Spivak's subterminality is checkable per-polynomial in
+  finite time (closure-under-Π is the bulk of the work, ~3K LoC).
+* Distributive law DL1–DL4 derive FROM univalence; no separate
+  proof obligations.
+* Operational `Step.eqType` rule is already shipped via D2.6.
+
+**v3 LoC budget (alternative v3 secondary path via TT_⊠):** ~12K LoC
+additional if FX wants directed univalence + SHP.  TT_⊠'s 10 axioms
+need to be discharged or paid for as semantic-only justifications.
+
+**Mechanizability:**
+
+* v3 primary (Aberlé-Spivak): **Agda-formalized** in the paper
+  appendix.  Lean port = direct translation, ~6K LoC.
+* v3 secondary (Gratzer-Weinberger-Buchholtz): **rzk-prototyped**
+  per Kud23 (Kudasov 2023 rzk implementation).  Lean port needs the
+  rzk semantics ⇒ Lean compilation, ~12K LoC.
+* Loubaton thesis (∞,ω) univalence: **NOT mechanized anywhere.**
+  Cited as model justification only.
+
+**v3 watch:**
+
+* TT_⊠ loses canonicity per its §1.3.  FX's `Step.eqType` operational
+  rule sidesteps this — canonicity preserved at the kernel level via
+  the reduction; semantic justification via Aberlé-Spivak (canonicity-
+  preserving) is the primary structural argument.
+* Mixing the v3 primary (Aberlé-Spivak) and secondary (TT_⊠) paths
+  requires care: TT_⊠ adds the ⊠ simplicial monad axiomatically; not
+  every FX polynomial universe needs the simplicial structure.  FX's
+  default is the v3 primary path; v3 secondary is opt-in per profile.
+
+**Research-frontier flag:** ⚠️ The combination of polynomial
+universes (Aberlé-Spivak) with directed univalence (Gratzer-
+Weinberger-Buchholtz) is not mechanized in any proof assistant.
+FX would be first-mover for the COMBINATION.  Individual axes:
+Aberlé-Spivak in Agda, Gratzer-Weinberger-Buchholtz in rzk.
 
 ---
 
