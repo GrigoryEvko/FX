@@ -2540,6 +2540,62 @@ theorem rename_compatible_typed_betaRecordProjIntro
   dsimp only [Term.rename]
   exact Step.par.betaRecordProjIntro firstStep
 
+/-- β arm `betaModElimIntro` of typed-Step.par rename equivariance (shallow modal
+elimination, single sub-derivation, cast-free).  `modElim (modIntro x) ⟶ x'` with
+`Step.par x x'`.  `modIntro` / `modElim` rename structurally over the
+non-dependent `innerType`, so the reduct (`innerTarget`) is substitution-free. -/
+theorem rename_compatible_typed_betaModElimIntro
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {innerType : Ty level sourceScope}
+    {innerRawSource innerRawTarget : RawTerm sourceScope}
+    {innerSource : Term sourceCtx innerType innerRawSource}
+    {innerTarget : Term sourceCtx innerType innerRawTarget}
+    (innerStep :
+      Step.par (Term.rename termRenaming innerSource)
+               (Term.rename termRenaming innerTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.modElim (Term.modIntro innerSource)))
+      (Term.rename termRenaming innerTarget) := by
+  dsimp only [Term.rename]
+  exact Step.par.betaModElimIntro innerStep
+
+/-- β arm `betaRefineElimIntro` of typed-Step.par rename equivariance (shallow
+refinement elimination, two sub-derivations, cast-free).  `refineElim (refineIntro
+pred value proof) ⟶ value'` with `Step.par value value'`; the erased proof
+component (at `Ty.unit`) reduces in parallel.  The refinement predicate lives at
+`scope + 1` and renames via `rho.lift` with no `▸`, the value at the non-dependent
+`baseType`, so the reduct (`valueTarget`) is substitution-free. -/
+theorem rename_compatible_typed_betaRefineElimIntro
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {baseType : Ty level sourceScope}
+    {predicate : RawTerm (sourceScope + 1)}
+    {valueRawSource valueRawTarget proofRawSource proofRawTarget :
+      RawTerm sourceScope}
+    {valueSource : Term sourceCtx baseType valueRawSource}
+    {valueTarget : Term sourceCtx baseType valueRawTarget}
+    {proofSource : Term sourceCtx Ty.unit proofRawSource}
+    {proofTarget : Term sourceCtx Ty.unit proofRawTarget}
+    (valueStep :
+      Step.par (Term.rename termRenaming valueSource)
+               (Term.rename termRenaming valueTarget))
+    (proofStep :
+      Step.par (Term.rename termRenaming proofSource)
+               (Term.rename termRenaming proofTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.refineElim (Term.refineIntro predicate valueSource proofSource)))
+      (Term.rename termRenaming valueTarget) := by
+  dsimp only [Term.rename]
+  exact Step.par.betaRefineElimIntro valueStep proofStep
+
 end Step.par
 
 end LeanFX2
