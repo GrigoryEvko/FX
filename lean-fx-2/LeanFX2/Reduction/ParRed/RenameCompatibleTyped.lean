@@ -1,4 +1,5 @@
 import LeanFX2.Reduction.ParRed.ParInductive
+import LeanFX2.Reduction.ParRed.ParCasts
 import LeanFX2.Term.Rename
 
 /-! # Reduction/ParRed/RenameCompatibleTyped
@@ -526,6 +527,41 @@ theorem rename_compatible_typed_subsume
       (Term.rename termRenaming (Term.subsume innerTarget)) := by
   dsimp only [Term.rename]
   exact Step.par.subsume innerStep
+
+/-- Cong arm `lam` of typed-Step.par rename equivariance (cast-bearing pilot).
+
+Non-dependent arrow lambda reduces in its body.  Unlike the cast-free
+arms, `Term.rename` on `lam` carries a `Ty.weaken_rename_commute`
+cast: the renamed body lands at `codomainType.weaken.rename rho.lift`
+but the `lam` ctor needs it at `(codomainType.rename rho).weaken`.
+
+Because the cong rule keeps `codomainType` fixed across source and
+target, the SAME cast applies to both endpoints, so the entire body
+`Step.par` transports along one equality `h ▸ bodyStep` — `▸`
+rewrites the shared `Ty` index in both positions simultaneously,
+exploiting `Step.par`'s heterogeneous source/target indices.  This is
+the reusable cast-transport pattern for the rest of the cast-bearing
+cluster (appPi / snd / pair / boolElim / cubical). -/
+theorem rename_compatible_typed_lam
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {domainType codomainType : Ty level sourceScope}
+    {bodyRawSource bodyRawTarget : RawTerm (sourceScope + 1)}
+    {bodySource : Term (sourceCtx.cons domainType) codomainType.weaken bodyRawSource}
+    {bodyTarget : Term (sourceCtx.cons domainType) codomainType.weaken bodyRawTarget}
+    (bodyStep :
+      Step.par (Term.rename (termRenaming.lift domainType) bodySource)
+               (Term.rename (termRenaming.lift domainType) bodyTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.lam (codomainType := codomainType) bodySource))
+      (Term.rename termRenaming (Term.lam (codomainType := codomainType) bodyTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.lam
+    (Step.par.castTargetType (Ty.weaken_rename_commute rho codomainType)
+      (Step.par.castSourceType (Ty.weaken_rename_commute rho codomainType) bodyStep))
 
 end Step.par
 
