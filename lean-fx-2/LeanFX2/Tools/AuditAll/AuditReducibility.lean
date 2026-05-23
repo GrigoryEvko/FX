@@ -104,6 +104,8 @@ applied at identity renaming + SN extraction) -/
 #assert_no_axioms LeanFX2.ReducibleK.fundamental_var_nat
 #assert_no_axioms LeanFX2.ReducibleK.fundamental_var_empty
 #assert_no_axioms LeanFX2.ReducibleK.fundamental_var_interval
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_interval0
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_interval1
 #assert_no_axioms LeanFX2.ReducibleK.fundamental_intervalOpp
 #assert_no_axioms LeanFX2.ReducibleK.fundamental_intervalMeet
 #assert_no_axioms LeanFX2.ReducibleK.fundamental_intervalJoin
@@ -113,6 +115,68 @@ applied at identity renaming + SN extraction) -/
 #assert_no_axioms LeanFX2.ReducibleK.fundamental_equivApply
 #assert_no_axioms LeanFX2.ReducibleK.fundamental_pathApp
 #assert_no_axioms LeanFX2.ReducibleK.fundamental_glueElim
+
+/-! ### Kripke fundamental-theorem SN-extraction cases (the `_sn`
+family in `Fundamental/StructuralSN.lean`, `Fundamental/SNEliminators.lean`,
+and `Fundamental/HoTTCodesAndEffects.lean`).  Each `fundamental_X_sn`
+discharges the Kripke reducibility predicate at the identity renaming
+for constructor `X` and extracts strong normalization from it; together
+they are the per-constructor body of the fundamental theorem and feed
+the SN-via-Kripke headlines below.  The broad `#audit_namespace LeanFX2`
+sweep already covers them; promoted to explicit per-decl gates here so a
+future axiom regression in any single case fails `lake build LeanFX2Audit`
+at the decl level.  Added 2026-05-23 to close the 51-case delta between
+the curated gate and the current fundamental-theorem surface. -/
+
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_refl_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_oeqRefl_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_idStrictRefl_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_pair_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_fst_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_snd_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_lam_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_lamPi_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_recordIntro_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_recordProj_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_refineIntro_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_refineElim_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_modIntro_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_modElim_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_subsume_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_cumulUp_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_codataUnfold_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_sessionRecv_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_sessionSend_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_effectPerform_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_boolElim_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_idJ_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_oeqJ_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_idStrictRec_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_pathLam_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_glueIntro_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_glueElim_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_equivApp_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_equivApply_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_equivReflId_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_equivReflIdAtId_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_equivIntroHet_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_uaToEquiv_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_uaIntroHet_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_funextRefl_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_funextReflAtId_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_funextIntroHet_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_oeqFunext_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_universeCode_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_arrowCode_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_piTyCode_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_sigmaTyCode_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_productCode_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_sumCode_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_listCode_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_optionCode_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_eitherCode_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_idCode_sn
+#assert_no_axioms LeanFX2.ReducibleK.fundamental_equivCode_sn
 
 /-! ### Kripke SN-via-Kripke headlines (Headline.lean) -/
 

@@ -6,6 +6,10 @@ import LeanFX2.Confluence.RawDiamond
 import LeanFX2.Confluence.RawParStarCong
 import LeanFX2.Confluence.RawCdDominates
 import LeanFX2.Confluence.RawCdRename
+import LeanFX2.Confluence.RawCd
+import LeanFX2.Confluence.CdLemma
+import LeanFX2.Confluence.Diamond
+import LeanFX2.Confluence.ChurchRosser
 
 namespace LeanFX2.Tools
 
@@ -1153,6 +1157,33 @@ files. -/
 #assert_no_axioms LeanFX2.RawStep.par.cd_lemma
 #assert_no_axioms LeanFX2.RawStep.par.diamond
 #assert_no_axioms LeanFX2.RawStep.parStar.confluence
+
+/-! ### Complete-development function and typed-input confluence headlines
+
+`RawTerm.cd` is the complete-development function at the heart of the
+Tait-Martin-Löf cascade — every cd/diamond/Church-Rosser result is
+defined in terms of it.  It carried only a reviewer-facing
+`#print axioms` log (`Smoke/AuditPhase6ARawCd.lean`) and the broad
+namespace sweep; this promotes it to a curated strict gate matching
+the discipline of the raw headlines above.
+
+The typed-input, raw-output confluence headlines (`Step.par.diamondRaw`,
+`Step.par.cdLemmaRaw`, `Step.par.cdDominatesRaw`, the `Step.parStar` /
+`StepStar` Church-Rosser theorems) lift their raw counterparts through
+`Step.par.toRawBridge` / `Step.parStar.toRawConfluence`.  They were
+checked only via `#print axioms` in `Smoke/AuditPhase4ConfluenceTyped.lean`
+and `Smoke/AuditPhase12A3Day3.lean`; same promotion as the raw headlines. -/
+
+#assert_no_axioms LeanFX2.RawTerm.cd
+
+#assert_no_axioms LeanFX2.Step.par.cdLemmaRaw
+#assert_no_axioms LeanFX2.Step.par.cdDominatesRaw
+#assert_no_axioms LeanFX2.Step.par.cdLemmaRaw_refl
+#assert_no_axioms LeanFX2.Step.parStar.cdDominatesRawSingle
+#assert_no_axioms LeanFX2.Step.par.diamondRaw
+#assert_no_axioms LeanFX2.Step.par.diamondRawCd
+#assert_no_axioms LeanFX2.Step.parStar.churchRosserRaw
+#assert_no_axioms LeanFX2.StepStar.churchRosserRaw
 
 /-! ### parStar cong-rule lifter (mapStep pattern, #1646)
 

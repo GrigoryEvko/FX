@@ -101,6 +101,16 @@ import LeanFX2.Reducibility.Kripke.SNExtraction
 #print axioms LeanFX2.ReducibleK.fundamental_effectPerform_sn
 #print axioms LeanFX2.ReducibleK.fundamental_uaIntroHet_sn
 #print axioms LeanFX2.ReducibleK.fundamental_equivReflIdAtId_sn
+-- Eliminator SN-extraction cases (boolElim / idJ / oeqJ / idStrictRec /
+-- modElim / equivApp / equivApply).  Added 2026-05-23 to align the smoke
+-- log with the full fundamental-theorem `_sn` surface.
+#print axioms LeanFX2.ReducibleK.fundamental_boolElim_sn
+#print axioms LeanFX2.ReducibleK.fundamental_idJ_sn
+#print axioms LeanFX2.ReducibleK.fundamental_oeqJ_sn
+#print axioms LeanFX2.ReducibleK.fundamental_idStrictRec_sn
+#print axioms LeanFX2.ReducibleK.fundamental_modElim_sn
+#print axioms LeanFX2.ReducibleK.fundamental_equivApp_sn
+#print axioms LeanFX2.ReducibleK.fundamental_equivApply_sn
 #print axioms LeanFX2.Term.var_strong_normalization_via_kripke
 #print axioms LeanFX2.Term.pair_strong_normalization_via_kripke
 #print axioms LeanFX2.Term.fst_strong_normalization_via_kripke
