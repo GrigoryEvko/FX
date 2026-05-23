@@ -29,8 +29,18 @@ namespace LeanFX2.Tools
 
 -- False-in-result-type kernel decl census.  Theorems whose result type
 -- mentions False are evidence of vacuous reasoning or contradiction
--- discharge.  Tight ratchet at zero — currently clean.
-#assert_false_in_result_type_budget LeanFX2 0
+-- discharge.  Budget at 4 admits the four dispatcher-vacuity lemmas
+-- shipped with the unblock-E hcomp / unblock-E transp / unblock-G
+-- appPi leaves.  These are intentional negative-information lemmas
+-- consumed by `Term/PreservesTerm/UniversalChain/*` to discharge
+-- impossible dispatcher arms:
+--   * `Term.pathLam_excludes_closedTy`           — hcomp closed-carrier
+--   * `Term.uaToEquiv_excludes_oeqRefl_witness`  — uaToEquiv leaf
+--   * `Term.uaToEquiv_excludes_pathTy`           — uaToEquiv leaf
+--   * `Term.pathCompose_uninhabited`             — transp leaf
+-- Future replacements with `¬ P` shapes are encouraged but not
+-- required; the budget tracks the literal `False` head occurrence.
+#assert_false_in_result_type_budget LeanFX2 4
 
 -- Term/RawTerm ctor delta.  Term currently has 78 ctors and RawTerm has
 -- 74.  The delta tracks manufactured typed constructors sharing raw

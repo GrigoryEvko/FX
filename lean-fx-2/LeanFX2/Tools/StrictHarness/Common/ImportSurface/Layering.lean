@@ -11,6 +11,61 @@ def isSubjectReductionMetatheoryModuleName (moduleName : Name) : Bool :=
     moduleName == `LeanFX2.Term.SubjectReductionGeneral ||
     moduleName == `LeanFX2.Term.SubjectReductionUniverse
 
+/-- Modules whose physical location is `Term/PreservesTerm/` for
+namespace clustering but whose semantic dependency graph is purely
+Term-layer (Layer 1).  These are NOT preservation-bridge modules —
+they ship pure Term-layer helpers and have no `Reduction.*` imports.
+
+* `Term.PreservesTerm.InlineDestructors` — Term-layer inversion
+  helpers consumed both by sibling preservation modules and by
+  `Term.StrengtheningImage.TargetImageTotality` (which itself is
+  Layer 1). -/
+def isPreservesTermLayerOneModuleName (moduleName : Name) : Bool :=
+  moduleName == `LeanFX2.Term.PreservesTerm.InlineDestructors
+
+/-- Term-preservation bridge modules live under `Term/PreservesTerm/` for
+theorem-naming convenience but transitively depend on `Reduction.ParRed`
+and `Reduction.RawParInversion` (Layer 2).
+
+The entire `LeanFX2.Term.PreservesTerm.*` subtree is lifted to Layer 2
+EXCEPT the modules explicitly listed in
+`isPreservesTermLayerOneModuleName` (which ship pure Term-layer
+helpers despite their directory placement).
+
+Every other file in PreservesTerm either (a) directly imports a
+`Reduction.ParRed.*` / `Reduction.RawParInversion.*` module, or
+(b) imports a sibling that does.  Tracking them individually would
+require an ever-growing per-file allowlist whose only function is to
+mirror the directory listing, so we collapse to a prefix match.
+
+Role: lift parallel-reduction inversions and constructor-shape
+exclusions into typed-Term preservation lemmas — semantically a
+Reduction-layer concern, not a Term-layer one. -/
+def isPreservesTermBridgeModuleName (moduleName : Name) : Bool :=
+  (`LeanFX2.Term.PreservesTerm).isPrefixOf moduleName &&
+    !isPreservesTermLayerOneModuleName moduleName
+
+/-- Term-vacuity / exclusion bridges live under `Foundation/` for
+namespace-locality with raw infrastructure, but transitively depend on
+`LeanFX2.Term` (Layer 1).
+
+Their role is to state and prove vacuity / exclusion lemmas about typed
+`Term` constructors that downstream raw-layer dispatchers consume to
+discharge inadmissible branches.
+
+Files in this allowlist:
+
+* `Foundation.TermPathLamExcludes` — typed-`Term.pathLam` vacuity used
+  by the hcomp dispatcher arm.
+* `Foundation.TermTranspPathVacuity` — typed-`Term.transp` path-shape
+  vacuity used by the transp dispatcher arm.
+* `Foundation.TermUaToEquivExcludesOeqRefl` — typed-`Term.uaToEquiv`
+  exclusion used by the uaToEquiv dispatcher arm. -/
+def isFoundationTermBridgeModuleName (moduleName : Name) : Bool :=
+  moduleName == `LeanFX2.Foundation.TermPathLamExcludes ||
+    moduleName == `LeanFX2.Foundation.TermTranspPathVacuity ||
+    moduleName == `LeanFX2.Foundation.TermUaToEquivExcludesOeqRefl
+
 /-- Reduction modules that are metatheorems about conversion or canonical
 forms, not primitive reduction infrastructure.
 
@@ -83,6 +138,10 @@ def productionImportLayer? (moduleName : Name) : Option Nat :=
     some 4
   else if isCrossTheoryBridgeModuleName moduleName then
     some 13
+  else if isPreservesTermBridgeModuleName moduleName then
+    some 2
+  else if isFoundationTermBridgeModuleName moduleName then
+    some 1
   else if (`LeanFX2.Foundation).isPrefixOf moduleName then
     some 0
   else if moduleName == `LeanFX2.Term ||
