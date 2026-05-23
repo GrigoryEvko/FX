@@ -1944,6 +1944,84 @@ theorem rename_compatible_typed_idStrictReflCong
   exact Step.par.idStrictReflCong modeIsStrict
     (RawStep.par.rename_compatible rho witnessStep)
 
+/-- Cong arm `pathLamCong` of typed-Step.par rename equivariance (cast-bearing,
+binder).  A cubical path-lambda reduces in its body, which lives at the WEAKENED
+carrier `carrierType.weaken` under an interval binder.  `Term.rename` on
+`pathLam` recurses the body under the lifted renaming and then transports its
+type by `Ty.weaken_rename_commute rho carrierType` (rename-past-weaken commute).
+The body type is the SAME on both source and target endpoints (it depends only
+on `carrierType`, fixed across the reduction), so the single body step is cast
+on BOTH endpoints by the one equality before assembling `pathLamCong`. -/
+theorem rename_compatible_typed_pathLamCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (modeIsUnivalent : mode = Mode.univalent)
+    (carrierType : Ty level sourceScope)
+    (leftEndpoint rightEndpoint : RawTerm sourceScope)
+    {bodyRawSource bodyRawTarget : RawTerm (sourceScope + 1)}
+    {bodySource : Term (sourceCtx.cons Ty.interval) carrierType.weaken bodyRawSource}
+    {bodyTarget : Term (sourceCtx.cons Ty.interval) carrierType.weaken bodyRawTarget}
+    (bodyStep :
+      Step.par (Term.rename (termRenaming.lift Ty.interval) bodySource)
+               (Term.rename (termRenaming.lift Ty.interval) bodyTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint bodySource))
+      (Term.rename termRenaming
+        (Term.pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint bodyTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.pathLamCong modeIsUnivalent
+    (Step.par.castTargetType (Ty.weaken_rename_commute rho carrierType)
+      (Step.par.castSourceType (Ty.weaken_rename_commute rho carrierType) bodyStep))
+
+/-- Cong arm `oeqFunextCong` of typed-Step.par rename equivariance (cast-bearing).
+Observational-equality funext reduces in its single pointwise-equality proof,
+whose type is `oeqFunextPointwiseType domainType codomainType leftFunctionRaw
+rightFunctionRaw`.  `Term.rename` on `oeqFunext` recurses the proof and
+transports its type by `oeqFunextPointwiseType_rename` (the schematic
+type renames structurally).  The proof type is fixed across the reduction
+(the function raws are explicit ctor args, not the reduced child), so cast the
+single proof step on BOTH endpoints by the one equality before assembling
+`oeqFunextCong`. -/
+theorem rename_compatible_typed_oeqFunextCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (domainType codomainType : Ty level sourceScope)
+    (leftFunctionRaw rightFunctionRaw : RawTerm sourceScope)
+    {pointwiseRawSource pointwiseRawTarget : RawTerm sourceScope}
+    {pointwiseSource :
+      Term sourceCtx
+        (oeqFunextPointwiseType domainType codomainType leftFunctionRaw rightFunctionRaw)
+        pointwiseRawSource}
+    {pointwiseTarget :
+      Term sourceCtx
+        (oeqFunextPointwiseType domainType codomainType leftFunctionRaw rightFunctionRaw)
+        pointwiseRawTarget}
+    (pointwiseStep :
+      Step.par (Term.rename termRenaming pointwiseSource)
+               (Term.rename termRenaming pointwiseTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.oeqFunext domainType codomainType leftFunctionRaw rightFunctionRaw pointwiseSource))
+      (Term.rename termRenaming
+        (Term.oeqFunext domainType codomainType leftFunctionRaw rightFunctionRaw pointwiseTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.oeqFunextCong (domainType.rename rho) (codomainType.rename rho)
+    (leftFunctionRaw.rename rho) (rightFunctionRaw.rename rho)
+    (Step.par.castTargetType
+      (oeqFunextPointwiseType_rename rho domainType codomainType
+        leftFunctionRaw rightFunctionRaw)
+      (Step.par.castSourceType
+        (oeqFunextPointwiseType_rename rho domainType codomainType
+          leftFunctionRaw rightFunctionRaw)
+        pointwiseStep))
+
 end Step.par
 
 end LeanFX2
