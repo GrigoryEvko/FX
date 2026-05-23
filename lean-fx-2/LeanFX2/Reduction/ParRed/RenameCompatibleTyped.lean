@@ -2632,6 +2632,63 @@ theorem rename_compatible_typed_betaCodataDestUnfold
   dsimp only [Term.rename]
   exact Step.par.betaCodataDestUnfold stateStep transitionStep
 
+/-- β arm `betaModElimIntroDeep` of typed-Step.par rename equivariance (deep modal
+elimination, develops-to premise, cast-free).  `modElim x ⟶ y` when `x` develops
+to `modIntro y` (premise `Step.par x (modIntro y)`).  The reduct (`innerTarget`)
+is substitution-free at the non-dependent `innerType`, and the develops-to premise
+mentions only the cast-free `modIntro` intro form — so stating the premise in
+intro-of-rename form (`Term.modIntro (Term.rename … innerTarget)`, defeq to
+`Term.rename … (Term.modIntro innerTarget)`) lets `exact` close with no
+double-transport.  The headline IH supplies exactly this renamed develops-to
+premise. -/
+theorem rename_compatible_typed_betaModElimIntroDeep
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {innerType : Ty level sourceScope}
+    {innerRawSource innerRawTarget : RawTerm sourceScope}
+    {innerSource : Term sourceCtx innerType innerRawSource}
+    {innerTarget : Term sourceCtx innerType innerRawTarget}
+    (innerStep :
+      Step.par (Term.rename termRenaming innerSource)
+               (Term.modIntro (Term.rename termRenaming innerTarget))) :
+    Step.par
+      (Term.rename termRenaming (Term.modElim innerSource))
+      (Term.rename termRenaming innerTarget) := by
+  dsimp only [Term.rename]
+  exact Step.par.betaModElimIntroDeep innerStep
+
+/-- β arm `betaCodataDestUnfoldDeep` of typed-Step.par rename equivariance (deep
+codata observation, develops-to premise, cast-free).  `codataDest c ⟶ app
+transition state` when `c` develops to `codataUnfold state transition`.  The
+reduct is a non-dependent `Term.app`, and the develops-to premise mentions only
+the cast-free `codataUnfold` intro form — so stating the premise in
+intro-of-rename form lets `exact` close with no double-transport. -/
+theorem rename_compatible_typed_betaCodataDestUnfoldDeep
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {stateType outputType : Ty level sourceScope}
+    {codataRawSource stateRawTarget transitionRawTarget : RawTerm sourceScope}
+    {codataSource :
+      Term sourceCtx (Ty.codata stateType outputType) codataRawSource}
+    {stateTarget : Term sourceCtx stateType stateRawTarget}
+    {transitionTarget :
+      Term sourceCtx (Ty.arrow stateType outputType) transitionRawTarget}
+    (codataStep :
+      Step.par (Term.rename termRenaming codataSource)
+               (Term.codataUnfold (Term.rename termRenaming stateTarget)
+                 (Term.rename termRenaming transitionTarget))) :
+    Step.par
+      (Term.rename termRenaming (Term.codataDest codataSource))
+      (Term.rename termRenaming (Term.app transitionTarget stateTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.betaCodataDestUnfoldDeep codataStep
+
 end Step.par
 
 end LeanFX2
