@@ -689,4 +689,165 @@ theorem Generator.outputTypeEquivApp_matches_Term_equivApp
     (argumentTerm : Term context carrierA argumentRaw) :
     Generator.outputTypeEquivApp equivTerm argumentTerm = carrierB := rfl
 
+/-! ### Modal family (`modIntro` / `modElim` / `subsume`)
+
+Layer 1 ships RAW-SIDE SCAFFOLDING ONLY (see comment block at
+`Term.lean:295-300`): the Phase 1 modal trio preserves `innerType`
+without applying any `Ty.modal` wrapper.  When Layer 6 lands the
+real modality 1-cells, these three extractors will be refactored to
+take a `Modality` + produce `Ty.modal modality innerType`.  Today,
+they ship as identity extractors. -/
+
+/-- `Term.modIntro`'s output is its inner term's type (Phase 1
+scaffolding). -/
+def Generator.outputTypeModIntro {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {innerType : Ty level scope} {innerRaw : RawTerm scope}
+    (innerTerm : Term context innerType innerRaw) :
+    Ty level scope :=
+  let _witness := innerTerm
+  innerType
+
+/-- Definitional match against `Term.modIntro`'s output type. -/
+theorem Generator.outputTypeModIntro_matches_Term_modIntro
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {innerType : Ty level scope} {innerRaw : RawTerm scope}
+    (innerTerm : Term context innerType innerRaw) :
+    Generator.outputTypeModIntro innerTerm = innerType := rfl
+
+/-- `Term.modElim`'s output is its inner term's type (Phase 1
+scaffolding). -/
+def Generator.outputTypeModElim {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {innerType : Ty level scope} {innerRaw : RawTerm scope}
+    (innerTerm : Term context innerType innerRaw) :
+    Ty level scope :=
+  let _witness := innerTerm
+  innerType
+
+/-- Definitional match against `Term.modElim`'s output type. -/
+theorem Generator.outputTypeModElim_matches_Term_modElim
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {innerType : Ty level scope} {innerRaw : RawTerm scope}
+    (innerTerm : Term context innerType innerRaw) :
+    Generator.outputTypeModElim innerTerm = innerType := rfl
+
+/-- `Term.subsume`'s output is its inner term's type (Phase 1
+scaffolding). -/
+def Generator.outputTypeSubsume {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {innerType : Ty level scope} {innerRaw : RawTerm scope}
+    (innerTerm : Term context innerType innerRaw) :
+    Ty level scope :=
+  let _witness := innerTerm
+  innerType
+
+/-- Definitional match against `Term.subsume`'s output type. -/
+theorem Generator.outputTypeSubsume_matches_Term_subsume
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {innerType : Ty level scope} {innerRaw : RawTerm scope}
+    (innerTerm : Term context innerType innerRaw) :
+    Generator.outputTypeSubsume innerTerm = innerType := rfl
+
+/-! ### Cubical interval family
+
+Five extractors mirroring `Term.interval0`, `Term.interval1`,
+`Term.intervalOpp`, `Term.intervalMeet`, `Term.intervalJoin` (see
+`Term.lean:314-336`).  All five return `Ty.interval` regardless of
+children — interval0/interval1 are arity-0 nullaries; intervalOpp
+is unary; intervalMeet/intervalJoin are binary.  The output is
+constant across children because `Ty.interval` carries no
+parameters beyond `level`/`scope` (universe-agnostic). -/
+
+/-- `Term.interval0`'s output is `Ty.interval`. -/
+def Generator.outputTypeInterval0 (mode : Mode) (level scope : Nat)
+    (context : Ctx mode level scope) :
+    Ty level scope :=
+  let _witness := context
+  Ty.interval
+
+/-- Definitional match against `Term.interval0`'s output type. -/
+theorem Generator.outputTypeInterval0_matches_Term_interval0
+    (mode : Mode) (level scope : Nat)
+    (context : Ctx mode level scope) :
+    Generator.outputTypeInterval0 mode level scope context =
+      (Ty.interval : Ty level scope) := rfl
+
+/-- `Term.interval1`'s output is `Ty.interval`. -/
+def Generator.outputTypeInterval1 (mode : Mode) (level scope : Nat)
+    (context : Ctx mode level scope) :
+    Ty level scope :=
+  let _witness := context
+  Ty.interval
+
+/-- Definitional match against `Term.interval1`'s output type. -/
+theorem Generator.outputTypeInterval1_matches_Term_interval1
+    (mode : Mode) (level scope : Nat)
+    (context : Ctx mode level scope) :
+    Generator.outputTypeInterval1 mode level scope context =
+      (Ty.interval : Ty level scope) := rfl
+
+/-- `Term.intervalOpp`'s output is `Ty.interval`. -/
+def Generator.outputTypeIntervalOpp {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {innerRaw : RawTerm scope}
+    (innerValue : Term context Ty.interval innerRaw) :
+    Ty level scope :=
+  let _witness := innerValue
+  Ty.interval
+
+/-- Definitional match against `Term.intervalOpp`'s output type. -/
+theorem Generator.outputTypeIntervalOpp_matches_Term_intervalOpp
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {innerRaw : RawTerm scope}
+    (innerValue : Term context Ty.interval innerRaw) :
+    Generator.outputTypeIntervalOpp innerValue =
+      (Ty.interval : Ty level scope) := rfl
+
+/-- `Term.intervalMeet`'s output is `Ty.interval`. -/
+def Generator.outputTypeIntervalMeet {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {leftRaw rightRaw : RawTerm scope}
+    (leftValue : Term context Ty.interval leftRaw)
+    (rightValue : Term context Ty.interval rightRaw) :
+    Ty level scope :=
+  let _leftWitness := leftValue
+  let _rightWitness := rightValue
+  Ty.interval
+
+/-- Definitional match against `Term.intervalMeet`'s output type. -/
+theorem Generator.outputTypeIntervalMeet_matches_Term_intervalMeet
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {leftRaw rightRaw : RawTerm scope}
+    (leftValue : Term context Ty.interval leftRaw)
+    (rightValue : Term context Ty.interval rightRaw) :
+    Generator.outputTypeIntervalMeet leftValue rightValue =
+      (Ty.interval : Ty level scope) := rfl
+
+/-- `Term.intervalJoin`'s output is `Ty.interval`. -/
+def Generator.outputTypeIntervalJoin {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {leftRaw rightRaw : RawTerm scope}
+    (leftValue : Term context Ty.interval leftRaw)
+    (rightValue : Term context Ty.interval rightRaw) :
+    Ty level scope :=
+  let _leftWitness := leftValue
+  let _rightWitness := rightValue
+  Ty.interval
+
+/-- Definitional match against `Term.intervalJoin`'s output type. -/
+theorem Generator.outputTypeIntervalJoin_matches_Term_intervalJoin
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {leftRaw rightRaw : RawTerm scope}
+    (leftValue : Term context Ty.interval leftRaw)
+    (rightValue : Term context Ty.interval rightRaw) :
+    Generator.outputTypeIntervalJoin leftValue rightValue =
+      (Ty.interval : Ty level scope) := rfl
+
 end LeanFX2.Foundation.Polygraph

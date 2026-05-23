@@ -96,6 +96,22 @@ namespace LeanFX2.SmokeGeneratorOutputType
 #assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeIdStrictRec_matches_Term_idStrictRec
 #assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEquivApp
 #assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEquivApp_matches_Term_equivApp
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeModIntro
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeModIntro_matches_Term_modIntro
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeModElim
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeModElim_matches_Term_modElim
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeSubsume
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeSubsume_matches_Term_subsume
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeInterval0
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeInterval0_matches_Term_interval0
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeInterval1
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeInterval1_matches_Term_interval1
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeIntervalOpp
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeIntervalOpp_matches_Term_intervalOpp
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeIntervalMeet
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeIntervalMeet_matches_Term_intervalMeet
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeIntervalJoin
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeIntervalJoin_matches_Term_intervalJoin
 
 #print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeApp
 #print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeApp_matches_Term_app
@@ -135,5 +151,21 @@ namespace LeanFX2.SmokeGeneratorOutputType
 #print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeIdStrictRec_matches_Term_idStrictRec
 #print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEquivApp
 #print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEquivApp_matches_Term_equivApp
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeModIntro
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeModIntro_matches_Term_modIntro
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeModElim
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeModElim_matches_Term_modElim
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeSubsume
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeSubsume_matches_Term_subsume
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeInterval0
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeInterval0_matches_Term_interval0
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeInterval1
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeInterval1_matches_Term_interval1
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeIntervalOpp
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeIntervalOpp_matches_Term_intervalOpp
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeIntervalMeet
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeIntervalMeet_matches_Term_intervalMeet
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeIntervalJoin
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeIntervalJoin_matches_Term_intervalJoin
 
 end LeanFX2.SmokeGeneratorOutputType
