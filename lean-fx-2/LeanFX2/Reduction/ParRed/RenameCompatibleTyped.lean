@@ -4175,6 +4175,166 @@ theorem rename_compatible_typed_iotaBoolElimFalseDeep
           (Step.par.castSourceType falseCommute
             (Step.par.castTargetType falseCommute elseStep)))))
 
+/-- Deep β arm `betaAppDeep`: the function parallel-reduces *to* a literal
+`lam`, then `app` contracts.  Same reduct stack as `betaApp` (the renamed
+`lam` target carries the `weaken_rename_commute` body cast, reconciled by
+`subst0_body_heq_of_eq` + T8); the `app` source is cast-free so the
+function-step is passed straight to the constructor.  Zero-axiom. -/
+theorem rename_compatible_typed_betaAppDeep
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {domainType codomainType : Ty level sourceScope}
+    {bodyRawTarget : RawTerm (sourceScope + 1)}
+    {argumentRawSource argumentRawTarget functionRawSourceOuter : RawTerm sourceScope}
+    {functionTermSource :
+      Term sourceCtx (Ty.arrow domainType codomainType) functionRawSourceOuter}
+    {bodyTarget : Term (sourceCtx.cons domainType) codomainType.weaken bodyRawTarget}
+    {argumentSource : Term sourceCtx domainType argumentRawSource}
+    {argumentTarget : Term sourceCtx domainType argumentRawTarget}
+    (functionStep :
+      Step.par (Term.rename termRenaming functionTermSource)
+               (Term.rename termRenaming
+                 (Term.lam (codomainType := codomainType) bodyTarget)))
+    (argumentStep :
+      Step.par (Term.rename termRenaming argumentSource)
+               (Term.rename termRenaming argumentTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.app functionTermSource argumentSource))
+      (Term.rename termRenaming (Term.subst0 bodyTarget argumentTarget)) := by
+  dsimp only [Term.rename] at functionStep ⊢
+  have weakenComm := Ty.weaken_rename_commute rho codomainType
+  have tyAlign :
+      ((codomainType.rename rho).weaken).subst0 (domainType.rename rho)
+            (argumentRawTarget.rename rho)
+        = ((codomainType.weaken).subst0 domainType argumentRawTarget).rename rho :=
+    ((Ty.subst0_rename_commute codomainType.weaken domainType argumentRawTarget rho).trans
+      (congrArg
+        (fun codomain =>
+          Ty.subst0 codomain (domainType.rename rho) (argumentRawTarget.rename rho))
+        weakenComm)).symm
+  refine Step.par.castTargetTermHeq
+    (RawTerm.subst0_rename_commute bodyRawTarget argumentRawTarget rho).symm
+    ?heqBridge
+    (Step.par.castTargetType tyAlign
+      (Step.par.betaAppDeep
+        (functionRawSource := bodyRawTarget.rename rho.lift) functionStep argumentStep))
+  exact HEq.trans
+    (Term.type_eq_cast_heq tyAlign
+      (Term.subst0
+        (weakenComm ▸ Term.rename (termRenaming.lift domainType) bodyTarget)
+        (Term.rename termRenaming argumentTarget)))
+    (HEq.trans
+      (Term.subst0_body_heq_of_eq weakenComm.symm rfl
+        (Term.type_eq_cast_heq weakenComm
+          (Term.rename (termRenaming.lift domainType) bodyTarget)))
+      (Term.subst0_rename_commute termRenaming bodyTarget argumentTarget).symm)
+
+/-- Deep β arm `betaAppPiDeep`: the dependent function parallel-reduces *to*
+a literal `lamPi`, then `appPi` contracts.  Same reduct stack as
+`betaAppPi` (cast-free `lamPi` body => reduct bridge is exactly T8); the
+`appPi` source carries the `subst0_rename_commute` cast realigned by
+`castSourceType`.  Zero-axiom. -/
+theorem rename_compatible_typed_betaAppPiDeep
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {domainType : Ty level sourceScope} {codomainType : Ty level (sourceScope + 1)}
+    {bodyRawTarget : RawTerm (sourceScope + 1)}
+    {argumentRawSource argumentRawTarget functionRawSourceOuter : RawTerm sourceScope}
+    {functionTermSource :
+      Term sourceCtx (Ty.piTy domainType codomainType) functionRawSourceOuter}
+    {bodyTarget : Term (sourceCtx.cons domainType) codomainType bodyRawTarget}
+    {argumentSource : Term sourceCtx domainType argumentRawSource}
+    {argumentTarget : Term sourceCtx domainType argumentRawTarget}
+    (functionStep :
+      Step.par (Term.rename termRenaming functionTermSource)
+               (Term.rename termRenaming
+                 (Term.lamPi (domainType := domainType) bodyTarget)))
+    (argumentStep :
+      Step.par (Term.rename termRenaming argumentSource)
+               (Term.rename termRenaming argumentTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.appPi functionTermSource argumentSource))
+      (Term.rename termRenaming (Term.subst0 bodyTarget argumentTarget)) := by
+  dsimp only [Term.rename] at functionStep ⊢
+  refine Step.par.castTargetTermHeq
+    (RawTerm.subst0_rename_commute bodyRawTarget argumentRawTarget rho).symm
+    ?heqBridge
+    (Step.par.castTargetType
+      (Ty.subst0_rename_commute codomainType domainType argumentRawTarget rho).symm
+      (Step.par.castSourceType
+        (Ty.subst0_rename_commute codomainType domainType argumentRawSource rho).symm
+        (Step.par.betaAppPiDeep functionStep argumentStep)))
+  exact HEq.trans
+    (Term.type_eq_cast_heq
+      (Ty.subst0_rename_commute codomainType domainType argumentRawTarget rho).symm
+      (Term.subst0 (Term.rename (termRenaming.lift domainType) bodyTarget)
+        (Term.rename termRenaming argumentTarget)))
+    (Term.subst0_rename_commute termRenaming bodyTarget argumentTarget).symm
+
+/-- Deep cubical β arm `betaPathAppDeep`: the path term parallel-reduces *to*
+a literal `pathLam`, then `pathApp` contracts.  Same reduct stack as
+`betaPathApp` (weaken body cast + T8); the `pathApp` source is cast-free so
+the path-step is passed straight to the constructor.  `modeIsUnivalent`
+threads unchanged.  Zero-axiom. -/
+theorem rename_compatible_typed_betaPathAppDeep
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {pathRawSource intervalRawSource intervalRawTarget : RawTerm sourceScope}
+    {bodyRawTarget : RawTerm (sourceScope + 1)}
+    {pathSource :
+      Term sourceCtx (Ty.path carrierType leftEndpoint rightEndpoint) pathRawSource}
+    {bodyTarget : Term (sourceCtx.cons Ty.interval) carrierType.weaken bodyRawTarget}
+    {intervalSource : Term sourceCtx Ty.interval intervalRawSource}
+    {intervalTarget : Term sourceCtx Ty.interval intervalRawTarget}
+    (pathStep :
+      Step.par (Term.rename termRenaming pathSource)
+               (Term.rename termRenaming
+                 (Term.pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint
+                   bodyTarget)))
+    (intervalStep :
+      Step.par (Term.rename termRenaming intervalSource)
+               (Term.rename termRenaming intervalTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.pathApp modeIsUnivalent pathSource intervalSource))
+      (Term.rename termRenaming (Term.subst0 bodyTarget intervalTarget)) := by
+  dsimp only [Term.rename] at pathStep ⊢
+  have weakenComm := Ty.weaken_rename_commute rho carrierType
+  have tyAlign :
+      ((carrierType.rename rho).weaken).subst0 Ty.interval (intervalRawTarget.rename rho)
+        = ((carrierType.weaken).subst0 Ty.interval intervalRawTarget).rename rho :=
+    ((Ty.subst0_rename_commute carrierType.weaken Ty.interval intervalRawTarget rho).trans
+      (congrArg
+        (fun codomain =>
+          Ty.subst0 codomain Ty.interval (intervalRawTarget.rename rho))
+        weakenComm)).symm
+  refine Step.par.castTargetTermHeq
+    (RawTerm.subst0_rename_commute bodyRawTarget intervalRawTarget rho).symm
+    ?heqBridge
+    (Step.par.castTargetType tyAlign
+      (Step.par.betaPathAppDeep modeIsUnivalent pathStep intervalStep))
+  exact HEq.trans
+    (Term.type_eq_cast_heq tyAlign
+      (Term.subst0
+        (weakenComm ▸ Term.rename (termRenaming.lift Ty.interval) bodyTarget)
+        (Term.rename termRenaming intervalTarget)))
+    (HEq.trans
+      (Term.subst0_body_heq_of_eq weakenComm.symm rfl
+        (Term.type_eq_cast_heq weakenComm
+          (Term.rename (termRenaming.lift Ty.interval) bodyTarget)))
+      (Term.subst0_rename_commute termRenaming bodyTarget intervalTarget).symm)
+
 end Step.par
 
 end LeanFX2

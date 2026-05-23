@@ -1019,5 +1019,8 @@ constructor — pure definitional, no induction, no cast on the `refl`
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaPathApp
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaBoolElimTrueDeep
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaBoolElimFalseDeep
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaAppDeep
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaAppPiDeep
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaPathAppDeep
 
 end LeanFX2.Tools
