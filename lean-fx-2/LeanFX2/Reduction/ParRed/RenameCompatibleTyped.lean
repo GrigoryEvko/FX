@@ -3017,6 +3017,52 @@ theorem rename_compatible_typed_hcompBeta
       pathRawCommute.symm (eqRec_heq _ _)
       (Term.rename termRenaming capValueSource)
 
+/-- β arm `hcompBetaDeep` of typed-Step.par rename equivariance (deep cubical hcomp at
+a sides path that DEVELOPS to the constant `pathLam capRawSource.weaken`).  Unlike the
+shallow `hcompBeta`, the typed `sidesPath` here carries a FREE raw `sidesPathRawSource`,
+so it renames purely structurally — NO `Step.par.castSourceTermHeq` is needed on the
+composition.  The single non-trivial step is the RAW develops-to premise `sidesPathStep
+: RawStep.par sidesPathRawSource (pathLam capRawSource.weaken)`: renaming it via
+`RawStep.par.rename` gives target `(pathLam capRawSource.weaken).rename rho`, which the
+constructor wants as `pathLam ((capRawSource.rename rho).weaken)` — bridged by a single
+`▸` with `RawTerm.weaken_rename_commute` (on a plain `RawTerm` index of `RawStep.par`,
+no dependent-typing tangle).  The reduct (`capValueTarget`) is at the plain `carrierType`,
+cast-free.  Mirrors `rename_compatible_typed_transpReflBetaDeep`. -/
+theorem rename_compatible_typed_hcompBetaDeep
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    {sidesPathRawSource capRawSource capRawTarget : RawTerm sourceScope}
+    (sidesPath :
+      Term sourceCtx (Ty.path carrierType capRawSource capRawSource)
+        sidesPathRawSource)
+    (sidesPathStep :
+      RawStep.par sidesPathRawSource (RawTerm.pathLam capRawSource.weaken))
+    {capValueSource : Term sourceCtx carrierType capRawSource}
+    {capValueTarget : Term sourceCtx carrierType capRawTarget}
+    (capStep :
+      Step.par (Term.rename termRenaming capValueSource)
+               (Term.rename termRenaming capValueTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.hcompPath modeIsUnivalent
+          (leftEndpoint := capRawSource) (rightEndpoint := capRawSource)
+          sidesPath capValueSource))
+      (Term.rename termRenaming capValueTarget) := by
+  have targetRawCommute :
+      (RawTerm.pathLam capRawSource.weaken).rename rho
+        = RawTerm.pathLam ((capRawSource.rename rho).weaken) :=
+    congrArg RawTerm.pathLam (RawTerm.weaken_rename_commute rho capRawSource)
+  dsimp only [Term.rename]
+  exact Step.par.hcompBetaDeep modeIsUnivalent
+    (Term.rename termRenaming sidesPath)
+    (targetRawCommute ▸ RawStep.par.rename rho sidesPathStep)
+    capStep
+
 end Step.par
 
 end LeanFX2
