@@ -1098,4 +1098,255 @@ theorem Generator.outputTypeEffectPerform_matches_Term_effectPerform
         operationSignature canPerformOperation operationTag arguments =
       Ty.effect operationSignature.resultCarrier effectTag := rfl
 
+/-! ### Variable lookup (`var`)
+
+Mirrors `Term.lean:97-99`.  The output type is `varType context
+position` — context-and-position-dependent.  Unlike every previous
+extractor in this file, the output depends on a non-Ty index, so
+the extractor takes `position` explicitly. -/
+
+/-- `Term.var`'s output is `varType context position` (the type
+recorded at the given de Bruijn position). -/
+def Generator.outputTypeVar {mode : Mode} {level scope : Nat}
+    (context : Ctx mode level scope)
+    (position : Fin scope) :
+    Ty level scope :=
+  varType context position
+
+/-- Definitional match against `Term.var`'s output type. -/
+theorem Generator.outputTypeVar_matches_Term_var
+    {mode : Mode} {level scope : Nat}
+    (context : Ctx mode level scope)
+    (position : Fin scope) :
+    Generator.outputTypeVar context position =
+      varType context position := rfl
+
+/-! ### Unit (`unit`)
+
+Mirrors `Term.lean:101-102`.  Nullary, returns `Ty.unit`. -/
+
+/-- `Term.unit`'s output is `Ty.unit`. -/
+def Generator.outputTypeUnit (mode : Mode) (level scope : Nat)
+    (context : Ctx mode level scope) :
+    Ty level scope :=
+  let _witness := context
+  Ty.unit
+
+/-- Definitional match against `Term.unit`'s output type. -/
+theorem Generator.outputTypeUnit_matches_Term_unit
+    (mode : Mode) (level scope : Nat)
+    (context : Ctx mode level scope) :
+    Generator.outputTypeUnit mode level scope context =
+      (Ty.unit : Ty level scope) := rfl
+
+/-! ### Booleans (`boolTrue` / `boolFalse`)
+
+Mirrors `Term.lean:148-151`.  Nullary, both return `Ty.bool`. -/
+
+/-- `Term.boolTrue`'s output is `Ty.bool`. -/
+def Generator.outputTypeBoolTrue (mode : Mode) (level scope : Nat)
+    (context : Ctx mode level scope) :
+    Ty level scope :=
+  let _witness := context
+  Ty.bool
+
+/-- Definitional match against `Term.boolTrue`'s output type. -/
+theorem Generator.outputTypeBoolTrue_matches_Term_boolTrue
+    (mode : Mode) (level scope : Nat)
+    (context : Ctx mode level scope) :
+    Generator.outputTypeBoolTrue mode level scope context =
+      (Ty.bool : Ty level scope) := rfl
+
+/-- `Term.boolFalse`'s output is `Ty.bool`. -/
+def Generator.outputTypeBoolFalse (mode : Mode) (level scope : Nat)
+    (context : Ctx mode level scope) :
+    Ty level scope :=
+  let _witness := context
+  Ty.bool
+
+/-- Definitional match against `Term.boolFalse`'s output type. -/
+theorem Generator.outputTypeBoolFalse_matches_Term_boolFalse
+    (mode : Mode) (level scope : Nat)
+    (context : Ctx mode level scope) :
+    Generator.outputTypeBoolFalse mode level scope context =
+      (Ty.bool : Ty level scope) := rfl
+
+/-! ### Naturals (`natZero` / `natSucc`)
+
+Mirrors `Term.lean:163-168`.  `natZero` is nullary; `natSucc` is
+unary on `Ty.nat`.  Both return `Ty.nat`. -/
+
+/-- `Term.natZero`'s output is `Ty.nat`. -/
+def Generator.outputTypeNatZero (mode : Mode) (level scope : Nat)
+    (context : Ctx mode level scope) :
+    Ty level scope :=
+  let _witness := context
+  Ty.nat
+
+/-- Definitional match against `Term.natZero`'s output type. -/
+theorem Generator.outputTypeNatZero_matches_Term_natZero
+    (mode : Mode) (level scope : Nat)
+    (context : Ctx mode level scope) :
+    Generator.outputTypeNatZero mode level scope context =
+      (Ty.nat : Ty level scope) := rfl
+
+/-- `Term.natSucc`'s output is `Ty.nat`. -/
+def Generator.outputTypeNatSucc {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {predecessorRaw : RawTerm scope}
+    (predecessor : Term context Ty.nat predecessorRaw) :
+    Ty level scope :=
+  let _witness := predecessor
+  Ty.nat
+
+/-- Definitional match against `Term.natSucc`'s output type. -/
+theorem Generator.outputTypeNatSucc_matches_Term_natSucc
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {predecessorRaw : RawTerm scope}
+    (predecessor : Term context Ty.nat predecessorRaw) :
+    Generator.outputTypeNatSucc predecessor =
+      (Ty.nat : Ty level scope) := rfl
+
+/-! ### Lists (`listNil` / `listCons`)
+
+Mirrors `Term.lean:184-192`.  Both produce `Ty.listType elementType`.
+`listNil` is nullary in raw-term arity; the element type is supplied
+as an explicit parameter so the extractor's output type is fully
+determined (the corresponding typed Term ctor takes `elementType` as
+an implicit, but here we cannot infer it without a child to pin
+it). -/
+
+/-- `Term.listNil`'s output is `Ty.listType elementType`. -/
+def Generator.outputTypeListNil {mode : Mode} {level scope : Nat}
+    (context : Ctx mode level scope)
+    (elementType : Ty level scope) :
+    Ty level scope :=
+  let _witness := context
+  Ty.listType elementType
+
+/-- Definitional match against `Term.listNil`'s output type. -/
+theorem Generator.outputTypeListNil_matches_Term_listNil
+    {mode : Mode} {level scope : Nat}
+    (context : Ctx mode level scope)
+    (elementType : Ty level scope) :
+    Generator.outputTypeListNil context elementType =
+      Ty.listType elementType := rfl
+
+/-- `Term.listCons`'s output is `Ty.listType elementType`. -/
+def Generator.outputTypeListCons {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {headRaw tailRaw : RawTerm scope}
+    (headTerm : Term context elementType headRaw)
+    (tailTerm : Term context (Ty.listType elementType) tailRaw) :
+    Ty level scope :=
+  let _headWitness := headTerm
+  let _tailWitness := tailTerm
+  Ty.listType elementType
+
+/-- Definitional match against `Term.listCons`'s output type. -/
+theorem Generator.outputTypeListCons_matches_Term_listCons
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {headRaw tailRaw : RawTerm scope}
+    (headTerm : Term context elementType headRaw)
+    (tailTerm : Term context (Ty.listType elementType) tailRaw) :
+    Generator.outputTypeListCons headTerm tailTerm =
+      Ty.listType elementType := rfl
+
+/-! ### Options (`optionNone` / `optionSome`)
+
+Mirrors `Term.lean:202-209`.  Both produce `Ty.optionType
+elementType`.  Same nullary-needs-explicit-element story as
+`listNil`. -/
+
+/-- `Term.optionNone`'s output is `Ty.optionType elementType`. -/
+def Generator.outputTypeOptionNone {mode : Mode} {level scope : Nat}
+    (context : Ctx mode level scope)
+    (elementType : Ty level scope) :
+    Ty level scope :=
+  let _witness := context
+  Ty.optionType elementType
+
+/-- Definitional match against `Term.optionNone`'s output type. -/
+theorem Generator.outputTypeOptionNone_matches_Term_optionNone
+    {mode : Mode} {level scope : Nat}
+    (context : Ctx mode level scope)
+    (elementType : Ty level scope) :
+    Generator.outputTypeOptionNone context elementType =
+      Ty.optionType elementType := rfl
+
+/-- `Term.optionSome`'s output is `Ty.optionType elementType`. -/
+def Generator.outputTypeOptionSome {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {valueRaw : RawTerm scope}
+    (valueTerm : Term context elementType valueRaw) :
+    Ty level scope :=
+  let _witness := valueTerm
+  Ty.optionType elementType
+
+/-- Definitional match against `Term.optionSome`'s output type. -/
+theorem Generator.outputTypeOptionSome_matches_Term_optionSome
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {valueRaw : RawTerm scope}
+    (valueTerm : Term context elementType valueRaw) :
+    Generator.outputTypeOptionSome valueTerm =
+      Ty.optionType elementType := rfl
+
+/-! ### Eithers (`eitherInl` / `eitherInr`)
+
+Mirrors `Term.lean:218-227`.  Both produce `Ty.eitherType leftType
+rightType`.  Each is unary in raw-term arity but the OTHER side's
+type is implicit-yet-needed in the output, so we expose both as
+extractor parameters. -/
+
+/-- `Term.eitherInl`'s output is `Ty.eitherType leftType rightType`. -/
+def Generator.outputTypeEitherInl {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {leftType : Ty level scope}
+    (rightType : Ty level scope)
+    {valueRaw : RawTerm scope}
+    (valueTerm : Term context leftType valueRaw) :
+    Ty level scope :=
+  let _witness := valueTerm
+  Ty.eitherType leftType rightType
+
+/-- Definitional match against `Term.eitherInl`'s output type. -/
+theorem Generator.outputTypeEitherInl_matches_Term_eitherInl
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {leftType : Ty level scope}
+    (rightType : Ty level scope)
+    {valueRaw : RawTerm scope}
+    (valueTerm : Term context leftType valueRaw) :
+    Generator.outputTypeEitherInl rightType valueTerm =
+      Ty.eitherType leftType rightType := rfl
+
+/-- `Term.eitherInr`'s output is `Ty.eitherType leftType rightType`. -/
+def Generator.outputTypeEitherInr {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (leftType : Ty level scope)
+    {rightType : Ty level scope}
+    {valueRaw : RawTerm scope}
+    (valueTerm : Term context rightType valueRaw) :
+    Ty level scope :=
+  let _witness := valueTerm
+  Ty.eitherType leftType rightType
+
+/-- Definitional match against `Term.eitherInr`'s output type. -/
+theorem Generator.outputTypeEitherInr_matches_Term_eitherInr
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (leftType : Ty level scope)
+    {rightType : Ty level scope}
+    {valueRaw : RawTerm scope}
+    (valueTerm : Term context rightType valueRaw) :
+    Generator.outputTypeEitherInr leftType valueTerm =
+      Ty.eitherType leftType rightType := rfl
+
 end LeanFX2.Foundation.Polygraph

@@ -130,6 +130,30 @@ namespace LeanFX2.SmokeGeneratorOutputType
 #assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeSessionRecv_matches_Term_sessionRecv
 #assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEffectPerform
 #assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEffectPerform_matches_Term_effectPerform
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeVar
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeVar_matches_Term_var
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeUnit
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeUnit_matches_Term_unit
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeBoolTrue
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeBoolTrue_matches_Term_boolTrue
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeBoolFalse
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeBoolFalse_matches_Term_boolFalse
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeNatZero
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeNatZero_matches_Term_natZero
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeNatSucc
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeNatSucc_matches_Term_natSucc
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeListNil
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeListNil_matches_Term_listNil
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeListCons
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeListCons_matches_Term_listCons
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeOptionNone
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeOptionNone_matches_Term_optionNone
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeOptionSome
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeOptionSome_matches_Term_optionSome
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEitherInl
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEitherInl_matches_Term_eitherInl
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEitherInr
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEitherInr_matches_Term_eitherInr
 
 #print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeApp
 #print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeApp_matches_Term_app
@@ -203,5 +227,29 @@ namespace LeanFX2.SmokeGeneratorOutputType
 #print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeSessionRecv_matches_Term_sessionRecv
 #print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEffectPerform
 #print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEffectPerform_matches_Term_effectPerform
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeVar
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeVar_matches_Term_var
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeUnit
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeUnit_matches_Term_unit
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeBoolTrue
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeBoolTrue_matches_Term_boolTrue
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeBoolFalse
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeBoolFalse_matches_Term_boolFalse
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeNatZero
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeNatZero_matches_Term_natZero
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeNatSucc
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeNatSucc_matches_Term_natSucc
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeListNil
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeListNil_matches_Term_listNil
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeListCons
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeListCons_matches_Term_listCons
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeOptionNone
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeOptionNone_matches_Term_optionNone
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeOptionSome
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeOptionSome_matches_Term_optionSome
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEitherInl
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEitherInl_matches_Term_eitherInl
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEitherInr
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEitherInr_matches_Term_eitherInr
 
 end LeanFX2.SmokeGeneratorOutputType
