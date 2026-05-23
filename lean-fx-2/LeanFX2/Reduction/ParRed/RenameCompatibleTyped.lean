@@ -674,6 +674,74 @@ theorem rename_compatible_typed_pair
         (Ty.subst0_rename_commute secondType firstType firstRawSource rho)
         secondStep))
 
+/-- Cong arm `boolElim` of typed-Step.par rename equivariance (cast-bearing, mixed).
+
+Boolean elimination reduces in scrutinee and both branches.  This is the
+first arm to combine BOTH cast directions in a single term.  `Term.rename`
+on `boolElim` carries three `Ty.subst0_rename_commute` casts:
+
+  * an OUTER `.symm` cast on the whole result, keyed on the scrutinee raw
+    (`scrutineeRaw`), so the source and target casts DIFFER — transported
+    separately, exactly the `appPi`/`snd` pattern; and
+  * two INNER forward casts on the then/else branches, keyed on the CLOSED
+    raw constants `RawTerm.boolTrue` / `RawTerm.boolFalse`.  Closed constants
+    rename to themselves by `rfl`, so the SAME equality serves both endpoints
+    of each branch step — the constant-keyed flavour of the `pair` cast.
+
+Reconstruct inside-out: cast each branch step forward to the renamed motive
+`(motiveType.rename rho.lift).subst0 Ty.bool <const>` (both endpoints via the
+one constant-keyed equality), assemble `Step.par.boolElim` (its `motiveType`
+implicit is inferred from the cast branch types), then transport the assembled
+step's two endpoints by the differing scrutinee-keyed `.symm` casts. -/
+theorem rename_compatible_typed_boolElim
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {motiveType : Ty level (sourceScope + 1)}
+    {scrutineeRawSource scrutineeRawTarget thenRawSource thenRawTarget
+     elseRawSource elseRawTarget : RawTerm sourceScope}
+    {scrutineeSource : Term sourceCtx Ty.bool scrutineeRawSource}
+    {scrutineeTarget : Term sourceCtx Ty.bool scrutineeRawTarget}
+    {thenSource :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRawSource}
+    {thenTarget :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRawTarget}
+    {elseSource :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRawSource}
+    {elseTarget :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRawTarget}
+    (scrutineeStep :
+      Step.par (Term.rename termRenaming scrutineeSource)
+               (Term.rename termRenaming scrutineeTarget))
+    (thenStep :
+      Step.par (Term.rename termRenaming thenSource)
+               (Term.rename termRenaming thenTarget))
+    (elseStep :
+      Step.par (Term.rename termRenaming elseSource)
+               (Term.rename termRenaming elseTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.boolElim scrutineeSource thenSource elseSource))
+      (Term.rename termRenaming (Term.boolElim scrutineeTarget thenTarget elseTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.castTargetType
+    (Ty.subst0_rename_commute motiveType Ty.bool scrutineeRawTarget rho).symm
+    (Step.par.castSourceType
+      (Ty.subst0_rename_commute motiveType Ty.bool scrutineeRawSource rho).symm
+      (Step.par.boolElim
+        scrutineeStep
+        (Step.par.castTargetType
+          (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolTrue rho)
+          (Step.par.castSourceType
+            (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolTrue rho)
+            thenStep))
+        (Step.par.castTargetType
+          (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolFalse rho)
+          (Step.par.castSourceType
+            (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolFalse rho)
+            elseStep))))
+
 end Step.par
 
 end LeanFX2
