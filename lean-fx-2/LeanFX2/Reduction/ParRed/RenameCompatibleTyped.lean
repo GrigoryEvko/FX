@@ -1,6 +1,7 @@
 import LeanFX2.Reduction.ParRed.ParInductive
 import LeanFX2.Reduction.ParRed.ParCasts
 import LeanFX2.Term.Rename
+import LeanFX2.Term.Pointwise.PointwiseAndCompositionInfrastructure.CastHEq
 import LeanFX2.Reduction.RawParCompatible.NamedCompatibility
 
 /-! # Reduction/ParRed/RenameCompatibleTyped
@@ -3455,6 +3456,92 @@ theorem rename_compatible_typed_iotaIdStrictRecRefl
   dsimp only [Term.rename]
   exact Step.par.iotaIdStrictRecRefl modeIsStrict (carrier.rename rho)
     (endpoint.rename rho) baseStep
+
+/-- ι arm `iotaBoolElimTrue` of typed-Step.par rename equivariance.
+
+`boolElim true t e ⟶ t'` reduces only the then branch; the else branch
+is carried unchanged.  Cast-bearing: the motive is dependent
+(`Ty level (scope+1)`), so the branch and result types are
+`motiveType.subst0 Ty.bool _`, which renaming reshapes via
+`Ty.subst0_rename_commute`.  `Term.rename` of the source `boolElim`
+already bakes in the result cast (`commTrue.symm ▸ …`), matched by the
+outer `castSourceType`.  The bare-`thenTarget` reduct needs a cast
+round-trip that does not cancel definitionally, closed by an
+`eqRec_heq` HEq cancellation through `castTargetTermHeq`. -/
+theorem rename_compatible_typed_iotaBoolElimTrue
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {motiveType : Ty level (sourceScope + 1)}
+    {thenRawSource thenRawTarget elseRaw : RawTerm sourceScope}
+    {thenSource :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRawSource}
+    {thenTarget :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRawTarget}
+    (elseBranch :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw)
+    (thenStep :
+      Step.par (Term.rename termRenaming thenSource)
+               (Term.rename termRenaming thenTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.boolElim Term.boolTrue thenSource elseBranch))
+      (Term.rename termRenaming thenTarget) := by
+  dsimp only [Term.rename]
+  have trueCommute := Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolTrue rho
+  have falseCommute := Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolFalse rho
+  exact Step.par.castTargetTermHeq rfl
+    (HEq.trans
+      (Term.type_eq_cast_heq trueCommute.symm (trueCommute ▸ Term.rename termRenaming thenTarget))
+      (Term.type_eq_cast_heq trueCommute (Term.rename termRenaming thenTarget)))
+    (Step.par.castTargetType trueCommute.symm
+      (Step.par.castSourceType trueCommute.symm
+        (Step.par.iotaBoolElimTrue
+          (falseCommute ▸ Term.rename termRenaming elseBranch)
+          (Step.par.castSourceType trueCommute
+            (Step.par.castTargetType trueCommute thenStep)))))
+
+/-- ι arm `iotaBoolElimFalse` of typed-Step.par rename equivariance.
+
+`boolElim false t e ⟶ e'`; mirror of `iotaBoolElimTrue` with the else
+branch reducing and the then branch carried.  The result/scrutinee cast
+is `falseCommute` (scrutinee `boolFalse`); same `eqRec_heq` HEq
+cancellation on the bare-`elseTarget` reduct. -/
+theorem rename_compatible_typed_iotaBoolElimFalse
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {motiveType : Ty level (sourceScope + 1)}
+    {thenRaw elseRawSource elseRawTarget : RawTerm sourceScope}
+    (thenBranch :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw)
+    {elseSource :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRawSource}
+    {elseTarget :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRawTarget}
+    (elseStep :
+      Step.par (Term.rename termRenaming elseSource)
+               (Term.rename termRenaming elseTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.boolElim Term.boolFalse thenBranch elseSource))
+      (Term.rename termRenaming elseTarget) := by
+  dsimp only [Term.rename]
+  have trueCommute := Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolTrue rho
+  have falseCommute := Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolFalse rho
+  exact Step.par.castTargetTermHeq rfl
+    (HEq.trans
+      (Term.type_eq_cast_heq falseCommute.symm
+        (falseCommute ▸ Term.rename termRenaming elseTarget))
+      (Term.type_eq_cast_heq falseCommute (Term.rename termRenaming elseTarget)))
+    (Step.par.castTargetType falseCommute.symm
+      (Step.par.castSourceType falseCommute.symm
+        (Step.par.iotaBoolElimFalse
+          (trueCommute ▸ Term.rename termRenaming thenBranch)
+          (Step.par.castSourceType falseCommute
+            (Step.par.castTargetType falseCommute elseStep)))))
 
 end Step.par
 
