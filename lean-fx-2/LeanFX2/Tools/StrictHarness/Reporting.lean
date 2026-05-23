@@ -624,7 +624,15 @@ def isStepParRawBridgeStructural (declName : Name) : Bool :=
     -- around a manufactured-witness conclusion.  Supports the typed
     -- rename-equivariance work (unblock-C.t6.stepCompat).
     lastSegment.startsWith "rename_compatible_typed_" ||
-    lastSegment.startsWith "subst_compatible_typed_"
+    lastSegment.startsWith "subst_compatible_typed_" ||
+    -- the per-arm lemmas above are combined by the headline aggregators
+    -- `Step.par.rename_compatible_typed` / `Step.parStar.rename_compatible_typed`
+    -- (and the subst mirrors).  The headline IS a structural carrier that
+    -- threads the already-allowlisted per-arm manufactured arms; it is not a
+    -- new wrapper around a manufactured-witness conclusion.  Supports the
+    -- typed rename-equivariance chain (unblock-C.t6.stepCompat / stepStarCompat).
+    lastSegment == "rename_compatible_typed" ||
+    lastSegment == "subst_compatible_typed"
 
 /-- Whether a declaration is in the documented allowlist of decls
 expected to thread manufactured Step rules structurally.  Membership
@@ -732,6 +740,16 @@ def isManufacturedStepStructuralDependent (declName : Name) : Bool :=
     declName == `LeanFX2.Conv.toRawCheckConvWitness ||
     declName == `LeanFX2.Conv.toRawJoin ||
     declName == `LeanFX2.Conv.toConvCumul ||
+    -- Conv rename-equivariance parallel-join family (unblock-C.t6.forward).
+    -- `Conv.toParJoin` projects Conv's single-step `StepStar` chains to
+    -- `Step.parStar` via the allowlisted `StepStar.toParStar`; the rename /
+    -- weaken equivariance variants then thread
+    -- `Step.parStar.rename_compatible_typed` (allowlisted above).  The
+    -- manufactured-arm mention is structural carrier threading, not a wrapper
+    -- around a manufactured witness.
+    declName == `LeanFX2.Conv.toParJoin ||
+    declName == `LeanFX2.Conv.rename_equivariant_fwd_parJoin ||
+    declName == `LeanFX2.Conv.weaken_equivariant_fwd_parJoin ||
     -- HoTT and Cubical headline-adjacent files where the manufactured
     -- rules are the explicit subject (Conv.fromStep applications).
     (`LeanFX2.HoTT.Univalence).isPrefixOf declName ||
