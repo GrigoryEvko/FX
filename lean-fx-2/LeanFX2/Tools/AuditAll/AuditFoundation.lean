@@ -294,4 +294,19 @@ only (`dsimp only` unfold + nested `match` + `cases` on impossible
 #assert_no_axioms LeanFX2.RawTerm.partialRename?_interval1_isSome
 #assert_no_axioms LeanFX2.RawTerm.partialRename?_universeCode_isSome
 
+-- Closed-atomic Ty unconditional inversion lemmas (Foundation/
+-- TyStrengthenInversion.lean tail).  Each closed-atomic Ty ctor's
+-- `partialStrengthen?` arm returns `some <self>` unconditionally
+-- (matching the RawTerm closed-atomic family above); the
+-- `.isSome = true` witness reduces to `rfl`.  These gates lock the
+-- zero-axiom contract on the 6 Ty-side inversion siblings consumed
+-- by the eventual T5 universal driver for #2022 unblock-B.t5.par
+-- when the Term-side recursion hits a closed-atomic Ty arm.
+#assert_no_axioms LeanFX2.Ty.partialStrengthen?_unit_isSome
+#assert_no_axioms LeanFX2.Ty.partialStrengthen?_bool_isSome
+#assert_no_axioms LeanFX2.Ty.partialStrengthen?_nat_isSome
+#assert_no_axioms LeanFX2.Ty.partialStrengthen?_empty_isSome
+#assert_no_axioms LeanFX2.Ty.partialStrengthen?_interval_isSome
+#assert_no_axioms LeanFX2.Ty.partialStrengthen?_universe_isSome
+
 end LeanFX2.Tools

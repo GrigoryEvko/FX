@@ -499,6 +499,60 @@ theorem partialStrengthen?_idStrict_isSome
                 cases composite
     | some _ => rfl
 
+/-! ## Closed-atomic unconditional inversions
+
+For nullary `Ty` constructors (`unit`, `bool`, `nat`, `empty`,
+`interval`) and the universe ctor whose payload is propositional data
+(`universeLevel : Nat` + `levelLe : universeLevel < level + 1`),
+`partialStrengthen?` returns `some <self>` unconditionally — the
+strengthen arm carries no sub-`Ty` to recurse on, so the `.isSome =
+true` witness reduces to `rfl`.
+
+These lemmas are the closed-atomic siblings of the 18 multi-child
+inversion lemmas above.  They are consumed by the eventual universal
+typed-strengthening driver for `Step.par.preserves_rename_image`
+(#2022 `unblock-B.t5.par`) when the Term-side recursion hits a
+closed-atomic Ty arm (e.g. `Term.unit : Term ctx Ty.unit raw`). -/
+
+theorem partialStrengthen?_unit_isSome
+    (back : PartialRawRenaming sourceScope targetScope) :
+    ((Ty.unit : Ty level sourceScope).partialStrengthen? back).isSome
+      = true :=
+  rfl
+
+theorem partialStrengthen?_bool_isSome
+    (back : PartialRawRenaming sourceScope targetScope) :
+    ((Ty.bool : Ty level sourceScope).partialStrengthen? back).isSome
+      = true :=
+  rfl
+
+theorem partialStrengthen?_nat_isSome
+    (back : PartialRawRenaming sourceScope targetScope) :
+    ((Ty.nat : Ty level sourceScope).partialStrengthen? back).isSome
+      = true :=
+  rfl
+
+theorem partialStrengthen?_empty_isSome
+    (back : PartialRawRenaming sourceScope targetScope) :
+    ((Ty.empty : Ty level sourceScope).partialStrengthen? back).isSome
+      = true :=
+  rfl
+
+theorem partialStrengthen?_interval_isSome
+    (back : PartialRawRenaming sourceScope targetScope) :
+    ((Ty.interval : Ty level sourceScope).partialStrengthen? back).isSome
+      = true :=
+  rfl
+
+theorem partialStrengthen?_universe_isSome
+    (back : PartialRawRenaming sourceScope targetScope)
+    (universeLevel : UniverseLevel)
+    (levelLe : universeLevel.toNat + 1 ≤ level) :
+    ((Ty.universe universeLevel levelLe :
+        Ty level sourceScope).partialStrengthen? back).isSome
+      = true :=
+  rfl
+
 end Ty
 
 end LeanFX2
