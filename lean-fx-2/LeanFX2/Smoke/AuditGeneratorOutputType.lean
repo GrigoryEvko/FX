@@ -176,6 +176,22 @@ namespace LeanFX2.SmokeGeneratorOutputType
 #assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeIdCode_matches_Term_idCode
 #assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEquivCode
 #assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEquivCode_matches_Term_equivCode
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypePathLam
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypePathLam_matches_Term_pathLam
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypePathApp
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypePathApp_matches_Term_pathApp
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeGlueIntro
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeGlueIntro_matches_Term_glueIntro
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeGlueElim
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeGlueElim_matches_Term_glueElim
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeTransp
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeTransp_matches_Term_transp
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeHcomp
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeHcomp_matches_Term_hcomp
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeUaToEquiv
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeUaToEquiv_matches_Term_uaToEquiv
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEquivApply
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEquivApply_matches_Term_equivApply
 
 #print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeApp
 #print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeApp_matches_Term_app
@@ -295,5 +311,21 @@ namespace LeanFX2.SmokeGeneratorOutputType
 #print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeIdCode_matches_Term_idCode
 #print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEquivCode
 #print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEquivCode_matches_Term_equivCode
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypePathLam
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypePathLam_matches_Term_pathLam
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypePathApp
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypePathApp_matches_Term_pathApp
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeGlueIntro
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeGlueIntro_matches_Term_glueIntro
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeGlueElim
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeGlueElim_matches_Term_glueElim
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeTransp
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeTransp_matches_Term_transp
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeHcomp
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeHcomp_matches_Term_hcomp
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeUaToEquiv
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeUaToEquiv_matches_Term_uaToEquiv
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEquivApply
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEquivApply_matches_Term_equivApply
 
 end LeanFX2.SmokeGeneratorOutputType

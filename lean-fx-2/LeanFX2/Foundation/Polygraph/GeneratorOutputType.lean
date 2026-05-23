@@ -1626,4 +1626,274 @@ theorem Generator.outputTypeEquivCode_matches_Term_equivCode
         leftTypeCodeRaw rightTypeCodeRaw =
       Ty.universe outerLevel levelLe := rfl
 
+/-! ### Cubical family (`pathLam` / `pathApp` / `glueIntro` /
+`glueElim` / `transp` / `hcomp`)
+
+Mirrors `Term.lean:337-433`.  All six require
+`modeIsUnivalent : mode = Mode.univalent` evidence — cubical
+operations only inhabit univalent mode.
+
+* `pathLam` — Π-binder over interval; output `Ty.path carrier
+  leftEndpoint rightEndpoint`.
+* `pathApp` — apply path to interval value; output is the
+  carrier (non-dependent).
+* `glueIntro` / `glueElim` — Ty.glue intro/elim.
+* `transp` — schematic universe-level transport, output is the
+  user-supplied `targetType`.
+* `hcomp` — homogeneous composition, preserves carrier. -/
+
+/-- `Term.pathLam`'s output is `Ty.path carrierType leftEndpoint
+rightEndpoint`. -/
+def Generator.outputTypePathLam {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (carrierType : Ty level scope)
+    (leftEndpoint rightEndpoint : RawTerm scope)
+    {bodyRaw : RawTerm (scope + 1)}
+    (body : Term (context.cons Ty.interval) carrierType.weaken bodyRaw) :
+    Ty level scope :=
+  let _modeWitness := modeIsUnivalent
+  let _bodyWitness := body
+  Ty.path carrierType leftEndpoint rightEndpoint
+
+/-- Definitional match against `Term.pathLam`'s output type. -/
+theorem Generator.outputTypePathLam_matches_Term_pathLam
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (carrierType : Ty level scope)
+    (leftEndpoint rightEndpoint : RawTerm scope)
+    {bodyRaw : RawTerm (scope + 1)}
+    (body : Term (context.cons Ty.interval) carrierType.weaken bodyRaw) :
+    Generator.outputTypePathLam modeIsUnivalent carrierType
+        leftEndpoint rightEndpoint body =
+      Ty.path carrierType leftEndpoint rightEndpoint := rfl
+
+/-- `Term.pathApp`'s output is `carrierType` (non-dependent). -/
+def Generator.outputTypePathApp {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {pathRaw intervalRaw : RawTerm scope}
+    (pathTerm : Term context
+      (Ty.path carrierType leftEndpoint rightEndpoint) pathRaw)
+    (intervalTerm : Term context Ty.interval intervalRaw) :
+    Ty level scope :=
+  let _modeWitness := modeIsUnivalent
+  let _pathWitness := pathTerm
+  let _intervalWitness := intervalTerm
+  carrierType
+
+/-- Definitional match against `Term.pathApp`'s output type. -/
+theorem Generator.outputTypePathApp_matches_Term_pathApp
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {pathRaw intervalRaw : RawTerm scope}
+    (pathTerm : Term context
+      (Ty.path carrierType leftEndpoint rightEndpoint) pathRaw)
+    (intervalTerm : Term context Ty.interval intervalRaw) :
+    Generator.outputTypePathApp modeIsUnivalent pathTerm intervalTerm =
+      carrierType := rfl
+
+/-- `Term.glueIntro`'s output is `Ty.glue baseType boundaryWitness`. -/
+def Generator.outputTypeGlueIntro {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (baseType : Ty level scope)
+    (boundaryWitness : RawTerm scope)
+    {baseRaw partialRaw : RawTerm scope}
+    (baseValue : Term context baseType baseRaw)
+    (partialValue : Term context baseType partialRaw) :
+    Ty level scope :=
+  let _modeWitness := modeIsUnivalent
+  let _baseWitness := baseValue
+  let _partialWitness := partialValue
+  Ty.glue baseType boundaryWitness
+
+/-- Definitional match against `Term.glueIntro`'s output type. -/
+theorem Generator.outputTypeGlueIntro_matches_Term_glueIntro
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (baseType : Ty level scope)
+    (boundaryWitness : RawTerm scope)
+    {baseRaw partialRaw : RawTerm scope}
+    (baseValue : Term context baseType baseRaw)
+    (partialValue : Term context baseType partialRaw) :
+    Generator.outputTypeGlueIntro modeIsUnivalent baseType
+        boundaryWitness baseValue partialValue =
+      Ty.glue baseType boundaryWitness := rfl
+
+/-- `Term.glueElim`'s output is `baseType`. -/
+def Generator.outputTypeGlueElim {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {baseType : Ty level scope}
+    {boundaryWitness gluedRaw : RawTerm scope}
+    (gluedValue : Term context (Ty.glue baseType boundaryWitness) gluedRaw) :
+    Ty level scope :=
+  let _modeWitness := modeIsUnivalent
+  let _gluedWitness := gluedValue
+  baseType
+
+/-- Definitional match against `Term.glueElim`'s output type. -/
+theorem Generator.outputTypeGlueElim_matches_Term_glueElim
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {baseType : Ty level scope}
+    {boundaryWitness gluedRaw : RawTerm scope}
+    (gluedValue : Term context (Ty.glue baseType boundaryWitness) gluedRaw) :
+    Generator.outputTypeGlueElim modeIsUnivalent gluedValue = baseType := rfl
+
+/-- `Term.transp`'s output is the user-supplied `targetType` —
+schematic universe-level transport doesn't compute the target
+from the source. -/
+def Generator.outputTypeTransp {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (universeLevel : UniverseLevel)
+    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+    (sourceType targetType : Ty level scope)
+    (sourceTypeRaw targetTypeRaw : RawTerm scope)
+    {pathRaw sourceRaw : RawTerm scope}
+    (typePath : Term context
+      (Ty.path (Ty.universe universeLevel universeLevelLt)
+        sourceTypeRaw targetTypeRaw)
+      pathRaw)
+    (sourceValue : Term context sourceType sourceRaw) :
+    Ty level scope :=
+  let _modeWitness := modeIsUnivalent
+  let _pathWitness := typePath
+  let _sourceWitness := sourceValue
+  targetType
+
+/-- Definitional match against `Term.transp`'s output type. -/
+theorem Generator.outputTypeTransp_matches_Term_transp
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (universeLevel : UniverseLevel)
+    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+    (sourceType targetType : Ty level scope)
+    (sourceTypeRaw targetTypeRaw : RawTerm scope)
+    {pathRaw sourceRaw : RawTerm scope}
+    (typePath : Term context
+      (Ty.path (Ty.universe universeLevel universeLevelLt)
+        sourceTypeRaw targetTypeRaw)
+      pathRaw)
+    (sourceValue : Term context sourceType sourceRaw) :
+    Generator.outputTypeTransp modeIsUnivalent universeLevel
+        universeLevelLt sourceType targetType sourceTypeRaw
+        targetTypeRaw typePath sourceValue =
+      targetType := rfl
+
+/-- `Term.hcomp`'s output preserves `carrierType` (homogeneous
+composition). -/
+def Generator.outputTypeHcomp {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level scope}
+    {sidesRaw capRaw : RawTerm scope}
+    (sidesValue : Term context carrierType sidesRaw)
+    (capValue : Term context carrierType capRaw) :
+    Ty level scope :=
+  let _modeWitness := modeIsUnivalent
+  let _sidesWitness := sidesValue
+  let _capWitness := capValue
+  carrierType
+
+/-- Definitional match against `Term.hcomp`'s output type. -/
+theorem Generator.outputTypeHcomp_matches_Term_hcomp
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level scope}
+    {sidesRaw capRaw : RawTerm scope}
+    (sidesValue : Term context carrierType sidesRaw)
+    (capValue : Term context carrierType capRaw) :
+    Generator.outputTypeHcomp modeIsUnivalent sidesValue capValue =
+      carrierType := rfl
+
+/-! ### P-S vocabulary: typed mirrors (`uaToEquiv` / `equivApply`)
+
+Mirrors `Term.lean:1074-1138`.
+
+* `uaToEquiv` — package an identity proof into an equivalence
+  (univalence-β intro); output `Ty.equiv leftTy rightTy`.
+* `equivApply` — apply a packaged equivalence to a source-side
+  argument; output `carrierB`.
+
+The remaining P-S Generator entries (`idToEquiv`, `pathCompose`,
+`oeqTrans`, `equivCompose`, `cumulUpMarker`, `transpFill`,
+`oeqFunext`, `equivIntroHet`) either have no typed Term mirror
+yet (raw-only) or have one whose extractor needs structured-helper
+support deferred to a later P2.2 slice. -/
+
+/-- `Term.uaToEquiv`'s output is `Ty.equiv leftTy rightTy` — the
+user supplies both endpoints explicitly since the typed proof
+witness lives at a different shape (`Ty.id`). -/
+def Generator.outputTypeUaToEquiv {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    (leftTy rightTy : Ty level scope)
+    (leftTyRaw rightTyRaw : RawTerm scope)
+    {proofRaw : RawTerm scope}
+    (proof : Term context
+              (Ty.id (Ty.universe innerLevel innerLevelLt)
+                     leftTyRaw rightTyRaw)
+              proofRaw) :
+    Ty level scope :=
+  let _innerWitness := innerLevel
+  let _proofWitness := proof
+  Ty.equiv leftTy rightTy
+
+/-- Definitional match against `Term.uaToEquiv`'s output type. -/
+theorem Generator.outputTypeUaToEquiv_matches_Term_uaToEquiv
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    (leftTy rightTy : Ty level scope)
+    (leftTyRaw rightTyRaw : RawTerm scope)
+    {proofRaw : RawTerm scope}
+    (proof : Term context
+              (Ty.id (Ty.universe innerLevel innerLevelLt)
+                     leftTyRaw rightTyRaw)
+              proofRaw) :
+    Generator.outputTypeUaToEquiv innerLevel innerLevelLt
+        leftTy rightTy leftTyRaw rightTyRaw proof =
+      Ty.equiv leftTy rightTy := rfl
+
+/-- `Term.equivApply`'s output is `carrierB` — same shape as
+`Term.equivApp` but a SEPARATE Generator extractor because the
+raw side differs (`RawTerm.equivApply` vs `RawTerm.equivApp`).
+The two raw ctors mark different reduction targets — equivApply
+is the univalence-β reduct of `transp at (uaToEquiv e) arg`. -/
+def Generator.outputTypeEquivApply {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierA carrierB : Ty level scope}
+    {equivRaw argumentRaw : RawTerm scope}
+    (equivTerm : Term context (Ty.equiv carrierA carrierB) equivRaw)
+    (argumentTerm : Term context carrierA argumentRaw) :
+    Ty level scope :=
+  let _equivWitness := equivTerm
+  let _argumentWitness := argumentTerm
+  carrierB
+
+/-- Definitional match against `Term.equivApply`'s output type. -/
+theorem Generator.outputTypeEquivApply_matches_Term_equivApply
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierA carrierB : Ty level scope}
+    {equivRaw argumentRaw : RawTerm scope}
+    (equivTerm : Term context (Ty.equiv carrierA carrierB) equivRaw)
+    (argumentTerm : Term context carrierA argumentRaw) :
+    Generator.outputTypeEquivApply equivTerm argumentTerm = carrierB := rfl
+
 end LeanFX2.Foundation.Polygraph
