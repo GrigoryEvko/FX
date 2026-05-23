@@ -960,4 +960,40 @@ theorem Term.rename_rename
         (Term.rename_rename firstTermRenaming secondTermRenaming operationTag)
         (Term.rename_rename firstTermRenaming secondTermRenaming arguments)
 
+/-- Renaming commutes with single-binder weakening (the substrate the ScR engine's
+binder var(k+1) entry case needs).  `weaken X t = rename (weakenStep) t`, so each
+side is a composite rename; the two raw composites
+`compose weaken rho.lift` and `compose rho weaken` are definitionally equal (rfl per
+position via `RawRenaming.weaken_lift_commute`), so functoriality on both sides plus
+`rename_pointwise_HEq` (rfl) joins them. -/
+theorem Term.rename_weaken_commute
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (newType : Ty level sourceScope)
+    {someType : Ty level sourceScope} {raw : RawTerm sourceScope}
+    (term : Term sourceCtx someType raw) :
+    HEq (Term.rename (termRenaming.lift newType) (Term.weaken newType term))
+        (Term.weaken (newType.rename rho) (Term.rename termRenaming term)) :=
+  -- LHS: rename (tr.lift) (rename (weakenStep) term) ≅ rename (compose weaken rho.lift) term.
+  -- RHS: rename (weakenStep) (rename tr term) ≅ rename (compose rho weaken) term.
+  -- The two composite raws coincide definitionally, so the pointwise (rfl) bridge joins
+  -- the two composite renamings.
+  HEq.trans
+    (Term.rename_rename (TermRenaming.weakenStep sourceCtx newType)
+      (termRenaming.lift newType) term)
+    (HEq.trans
+      (Term.rename_pointwise_HEq
+        (rho1 := RawRenaming.compose RawRenaming.weaken rho.lift)
+        (rho2 := RawRenaming.compose rho RawRenaming.weaken)
+        (fun _ => rfl)
+        (TermRenaming.compose (TermRenaming.weakenStep sourceCtx newType)
+          (termRenaming.lift newType))
+        (TermRenaming.compose termRenaming
+          (TermRenaming.weakenStep targetCtx (newType.rename rho))) term)
+      (Term.rename_rename termRenaming
+        (TermRenaming.weakenStep targetCtx (newType.rename rho)) term).symm)
+
 end LeanFX2
