@@ -459,6 +459,74 @@ theorem rename_compatible_typed_eitherMatch
   dsimp only [Term.rename]
   exact Step.par.eitherMatch scrutineeStep leftStep rightStep
 
+/-- Cong arm `modIntro` of typed-Step.par rename equivariance.
+
+Modal introduction reduces in its payload.  `Term.rename` on
+`modIntro` carries no cast (structural modal-type rename), so the
+push is definitional. -/
+theorem rename_compatible_typed_modIntro
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {innerType : Ty level sourceScope}
+    {innerRawSource innerRawTarget : RawTerm sourceScope}
+    {innerSource : Term sourceCtx innerType innerRawSource}
+    {innerTarget : Term sourceCtx innerType innerRawTarget}
+    (innerStep :
+      Step.par (Term.rename termRenaming innerSource)
+               (Term.rename termRenaming innerTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.modIntro innerSource))
+      (Term.rename termRenaming (Term.modIntro innerTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.modIntro innerStep
+
+/-- Cong arm `modElim` of typed-Step.par rename equivariance.
+
+Modal elimination reduces in its payload.  Cast-free push. -/
+theorem rename_compatible_typed_modElim
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {innerType : Ty level sourceScope}
+    {innerRawSource innerRawTarget : RawTerm sourceScope}
+    {innerSource : Term sourceCtx innerType innerRawSource}
+    {innerTarget : Term sourceCtx innerType innerRawTarget}
+    (innerStep :
+      Step.par (Term.rename termRenaming innerSource)
+               (Term.rename termRenaming innerTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.modElim innerSource))
+      (Term.rename termRenaming (Term.modElim innerTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.modElim innerStep
+
+/-- Cong arm `subsume` of typed-Step.par rename equivariance.
+
+Cumulativity subsumption reduces in its payload.  Cast-free push. -/
+theorem rename_compatible_typed_subsume
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {innerType : Ty level sourceScope}
+    {innerRawSource innerRawTarget : RawTerm sourceScope}
+    {innerSource : Term sourceCtx innerType innerRawSource}
+    {innerTarget : Term sourceCtx innerType innerRawTarget}
+    (innerStep :
+      Step.par (Term.rename termRenaming innerSource)
+               (Term.rename termRenaming innerTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.subsume innerSource))
+      (Term.rename termRenaming (Term.subsume innerTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.subsume innerStep
+
 end Step.par
 
 end LeanFX2
