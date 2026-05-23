@@ -1,6 +1,6 @@
 import LeanFX2.Term
 
-/-! # Foundation/Polygraph/Generator — accelerate-P2.0 + P2.1 scaffold.
+/-! # Foundation/Polygraph/Generator — accelerate-P2.0 + P2.1.
 
 The polygraph re-foundation pivots from the K11 "73-ctor mirror
 inductive" `RawPolyTerm` to a Generator-coded substrate where ONE
@@ -8,139 +8,446 @@ inductive" `RawPolyTerm` to a Generator-coded substrate where ONE
 `Generator : Type` and a `children` family computed from
 `Generator.arity`.  This file ships:
 
-* `Generator` — a representative-subset enum (10 ctors covering the
-  three shape-classes: atomic, closed-type, dependent-output)
-  illustrating the design.  The full 78-summand Generator (accelerate-P2.1
-  proper) extends this template.
-* `Generator.arity` — total `Generator → Nat` lookup, the child count
-  per Generator.
-* `Generator.binderShifts` — per-child binder lift table (non-dependent
-  `List Nat`); the position family `B(g)` indexing the polynomial
-  functor.  The list-length-vs-arity discipline lemma
-  `binderShifts_length_eq_arity` recovers the total-function guarantee
-  without paying the propext tax that a `Fin g.arity`-indexed form
-  would incur (see the function's own docstring).
-* `Generator.outputTypeAppPi` — the **spike's load-bearing question**:
-  given the typed children of an `appPi` cell, can the dependent output
-  type `codomain.subst0 domain argRaw` be extracted CAST-FREE (no
-  `Eq.mpr`, no `HEq.cast`, no propext leak)?  This file demonstrates
-  it CAN — see the `appPi_outputType_castfree` worked example below,
-  which is `rfl`-verified zero-axiom.
+* `Generator` (P2.1, #2122) — the **full 74-summand enum**, one
+  ctor per `LeanFX2.RawTerm` constructor.  Every later layer
+  (RawPolyTerm at P2.3, PolyTerm at P2.4, the generic polygraph
+  fold at P3.5) inducts ONCE over this enum instead of per-ctor
+  over RawTerm.
+* `Generator.arity` (P2.1) — total `Generator → Nat` lookup
+  returning the number of `RawTerm`-valued children per
+  Generator.  Atomic ctors return 0; unary ctors return 1; the
+  longest payload (ternary recursors / `idCode` / `transpFill`)
+  returns 3.
+* `Generator.binderShifts` (P2.1) — per-child binder-shift table
+  encoded as a non-dependent `List Nat` to dodge the Fin-indexed
+  match-compiler propext leak documented in
+  `feedback_lean_zero_axiom_match.md`.  Only four ctors carry a
+  non-zero shift: `lam` / `pathLam` (the body lives under one
+  fresh variable) and `piTyCode` / `sigmaTyCode` (the codomain
+  lives at `scope + 1`).  The discipline lemma
+  `binderShifts_length_eq_arity` recovers the total-function
+  invariant `binderShifts.length = arity`.
+* `Generator.outputTypeAppPi` (P2.0, #2121) — the
+  **spike artifact** demonstrating that dependent output types
+  can be extracted CAST-FREE from typed children when each child
+  is supplied as a fully-typed `Term context ty raw` value.
+  `rfl`-verified; see the trailing comment block for the
+  spike's preliminary verdict and the deferred opaque-children
+  case (P2.2).
 
-## Spike verdict (preliminary): PASS for the dependent case under
-sufficient-information conditions.
+## P2.1 ship verdict
 
-The clean answer is: when each child is supplied as a fully-typed
-`Term context ty raw` value, the parent's output type is computable
-by pattern-matching the function child's `ty` index (which is fixed
-by `Term`'s indexed-inductive signature).  Lean's unifier resolves
-the dependent indices definitionally; no cast is needed.  The full
-P2.2 outputType shape function will instantiate the same pattern
-for every dependent Generator.
+74 enum ctors + 74 arity entries + 74 binderShifts entries, all
+zero-axiom under the strict harness.  Length lemma
+`binderShifts_length_eq_arity` closes via `cases <;> rfl` (74
+arms, each `[0,0,..,0].length = N` proven definitionally).
 
-The case that remains OPEN (deferred to the P2.2 full enumeration)
-is the WHEN-CHILDREN-ARE-OPAQUE case: if `children` is stored as a
-generic `Vector ChildEntry (arity g)` (heterogeneous storage), then
-the dependent indices are erased and the outputType extraction needs
-a `WellTyped` witness.  The well-typed witness scheme is sketched in
-the trailing comment block.
+## P2.0 spike verdict (preliminary): PASS for the typed-children
+dependent case.
+
+When each child arrives as a typed `Term context ty raw`, the
+parent's output type is computable by pattern-matching the
+function child's `ty` index (pinned by `Term`'s indexed-inductive
+signature).  Lean's unifier resolves dependent indices
+definitionally; no cast needed.  The full P2.2 outputType
+shape-function will instantiate the same pattern for every
+dependent Generator.
+
+The case that remains OPEN (deferred to P2.2) is the
+WHEN-CHILDREN-ARE-OPAQUE case: if `children` is stored as a
+generic `Vector ChildEntry (arity g)` (heterogeneous storage),
+then the dependent indices are erased and the outputType
+extraction needs a `WellTyped` witness.  The well-typed witness
+scheme is sketched in the trailing comment block.
 
 ## Why this matters
 
-A single Generator-coded `mk` ctor obsoletes the per-ctor cascade tax
-that currently dominates kernel evolution: adding a new ctor under
-the legacy scheme costs ~80 cong arms across ~13 files (per the
-betaFunextReflApp precedent, commit 2090-2100); under the Generator
-scheme it costs ONE new `Generator` summand + ONE entry in `arity` +
-ONE entry in `outputType`.  Confluence (P3.5) inducts over `Generator`
-once instead of re-proving per ctor.  The polygraph fold (P3.8) and
-distributed evaluator (P5.1) read the generator coding directly.
+A single Generator-coded `mk` ctor obsoletes the per-ctor
+cascade tax that currently dominates kernel evolution: adding a
+new ctor under the legacy scheme costs ~80 cong arms across ~13
+files (per the betaFunextReflApp precedent, commit 2090-2100);
+under the Generator scheme it costs ONE new `Generator` summand
++ ONE entry in `arity` + ONE entry in `outputType`.  Confluence
+(P3.5) inducts over `Generator` once instead of re-proving per
+ctor.  The polygraph fold (P3.8) and distributed evaluator
+(P5.1) read the generator coding directly.
 
 ## Not yet in scope
 
-* Full 78-summand `Generator` enum (accelerate-P2.1 proper).
-* `outputType` for all 78 ctors (accelerate-P2.2).
-* `RawPolyTerm := mk g children` honest nested inductive (P2.3) and
-  the typed `PolyTerm` mirror (P2.4).
+* `Generator.outputType` for all 74 ctors (accelerate-P2.2).
+* `RawPolyTerm := mk g children` honest nested inductive (P2.3).
+* Typed `PolyTerm` mirror (P2.4).
 * Generic `act` / `rename` / `subst` over `Generator` (P2.8).
 * Generic `cd` / `cd_lemma` (P3.5) — the cascade obsoleter.
-
-This file is a *spike artifact*, not the full Phase-2 ship.
 -/
 
 namespace LeanFX2.Foundation.Polygraph
 
-/-- Representative-subset Generator enum (10 of the 78 seed summands).
+/-- Full 74-summand polygraph generator enum.  Mirrors
+`LeanFX2.RawTerm`'s 74 constructors one-to-one (see
+`Foundation/RawTerm.lean`).  Grouped by family with comments
+matching the RawTerm source's grouping.
 
-The full enum (accelerate-P2.1) has one summand per `RawTerm` ctor;
-this subset is curated to exercise all three shape-classes:
-
-* **Atomic** (no children, no dependent indices): `gen_unit`,
-  `gen_boolTrue`, `gen_boolFalse`.
-* **Closed-type** (children, but output type does NOT depend on
-  children's raw form): `gen_lam`, `gen_app`, `gen_pair`, `gen_fst`.
-* **Dependent-output** (output type DOES depend on a child's raw
-  form): `gen_appPi` (codomain substitutes the argument's raw),
-  `gen_snd` (second type substitutes `RawTerm.fst pairRaw`).
-
-`gen_var` is included as an atomic-with-payload case (carries a
-de Bruijn index but no children). -/
+Each Generator name is the RawTerm ctor name prefixed with
+`gen_`.  This preserves the bijection at the name level: a
+reader who knows RawTerm's vocabulary recognizes every summand
+immediately. -/
 inductive Generator : Type
+  -- Variable + unit
   | gen_var
   | gen_unit
+  -- Function intro/elim (covers arrow and Π applications)
   | gen_lam
   | gen_app
-  | gen_appPi
+  -- Pair intro/elim (covers non-dep and Σ)
   | gen_pair
   | gen_fst
   | gen_snd
+  -- Booleans
   | gen_boolTrue
   | gen_boolFalse
+  | gen_boolElim
+  -- Naturals
+  | gen_natZero
+  | gen_natSucc
+  | gen_natElim
+  | gen_natRec
+  -- Lists
+  | gen_listNil
+  | gen_listCons
+  | gen_listElim
+  -- Options
+  | gen_optionNone
+  | gen_optionSome
+  | gen_optionMatch
+  -- Eithers
+  | gen_eitherInl
+  | gen_eitherInr
+  | gen_eitherMatch
+  -- Identity types
+  | gen_refl
+  | gen_idJ
+  -- Modal (Layer 6 references; raw-side ctors land from day 1)
+  | gen_modIntro
+  | gen_modElim
+  | gen_subsume
+  -- Cubical interval endpoints + lattice operations
+  | gen_interval0
+  | gen_interval1
+  | gen_intervalOpp
+  | gen_intervalMeet
+  | gen_intervalJoin
+  -- Cubical path types (intro = lambda over interval, elim = path app)
+  | gen_pathLam
+  | gen_pathApp
+  -- Cubical glue + transport / composition
+  | gen_glueIntro
+  | gen_glueElim
+  | gen_transp
+  | gen_hcomp
+  -- Observational equality (set-level OEq) — refl, J eliminator, funext
+  | gen_oeqRefl
+  | gen_oeqJ
+  | gen_oeqFunext
+  -- Strict (definitional) identity — refl + eliminator
+  | gen_idStrictRefl
+  | gen_idStrictRec
+  -- Type equivalence
+  | gen_equivIntro
+  | gen_equivApp
+  -- Refinement types
+  | gen_refineIntro
+  | gen_refineElim
+  -- Record types
+  | gen_recordIntro
+  | gen_recordProj
+  -- Codata
+  | gen_codataUnfold
+  | gen_codataDest
+  -- Session-typed channels
+  | gen_sessionSend
+  | gen_sessionRecv
+  -- Algebraic effects
+  | gen_effectPerform
+  -- Universe-code term (innerLevel : Nat payload, no RawTerm children)
+  | gen_universeCode
+  -- CUMUL-2.1: per-shape type-code constructors (atom-shape)
+  | gen_arrowCode
+  -- CUMUL-2.1: per-shape type-code constructors (binder-shape)
+  | gen_piTyCode
+  | gen_sigmaTyCode
+  -- CUMUL-2.1: more atom-shape codes
+  | gen_productCode
+  | gen_sumCode
+  | gen_listCode
+  | gen_optionCode
+  | gen_eitherCode
+  | gen_idCode
+  | gen_equivCode
+  -- CUMUL-2.6: cumulativity marker
+  | gen_cumulUpMarker
+  -- D3.6-P1/P2: univalence-to-equiv vocabulary
+  | gen_uaToEquiv
+  | gen_equivApply
+  -- D3.6-S3/S4/S5: cubical/HOTT composition vocabulary
+  | gen_pathCompose
+  | gen_idToEquiv
+  | gen_oeqTrans
+  | gen_equivCompose
+  -- D2.5.6-Blocker-A: cubical fill operation
+  | gen_transpFill
   deriving DecidableEq
 
-/-- The child count per `Generator`.  `lam` and binder ctors count
-their body as ONE child even though it lives at `scope + 1` — the
-binder shift is recorded separately by `binderShiftsOf`. -/
+/-- The child count per `Generator`.  Each entry equals the
+number of `RawTerm`-valued payload fields in the corresponding
+`RawTerm` constructor.  `var` carries a `Fin scope` position but
+that does NOT count as a child (it lives at the variable layer,
+not the polygraph fold input).  `universeCode` carries a `Nat`
+payload, similarly not a child. -/
 def Generator.arity : Generator → Nat
-  | .gen_var       => 0  -- carries Fin scope position, no children
-  | .gen_unit      => 0
-  | .gen_lam       => 1  -- body
-  | .gen_app       => 2  -- function, argument
-  | .gen_appPi     => 2  -- function, argument
-  | .gen_pair      => 2  -- firstValue, secondValue
-  | .gen_fst       => 1  -- pair
-  | .gen_snd       => 1  -- pair
-  | .gen_boolTrue  => 0
-  | .gen_boolFalse => 0
+  -- Variable + unit (no RawTerm children)
+  | .gen_var          => 0  -- Fin scope payload, not a child
+  | .gen_unit         => 0
+  -- Function
+  | .gen_lam          => 1  -- body
+  | .gen_app          => 2  -- functionTerm, argumentTerm
+  -- Pair
+  | .gen_pair         => 2  -- firstValue, secondValue
+  | .gen_fst          => 1  -- pairTerm
+  | .gen_snd          => 1  -- pairTerm
+  -- Booleans
+  | .gen_boolTrue     => 0
+  | .gen_boolFalse    => 0
+  | .gen_boolElim     => 3  -- scrutinee, thenBranch, elseBranch
+  -- Naturals
+  | .gen_natZero      => 0
+  | .gen_natSucc      => 1  -- predecessor
+  | .gen_natElim      => 3  -- scrutinee, zeroBranch, succBranch
+  | .gen_natRec       => 3  -- scrutinee, zeroBranch, succBranch
+  -- Lists
+  | .gen_listNil      => 0
+  | .gen_listCons     => 2  -- headTerm, tailTerm
+  | .gen_listElim     => 3  -- scrutinee, nilBranch, consBranch
+  -- Options
+  | .gen_optionNone   => 0
+  | .gen_optionSome   => 1  -- valueTerm
+  | .gen_optionMatch  => 3  -- scrutinee, noneBranch, someBranch
+  -- Eithers
+  | .gen_eitherInl    => 1  -- valueTerm
+  | .gen_eitherInr    => 1  -- valueTerm
+  | .gen_eitherMatch  => 3  -- scrutinee, leftBranch, rightBranch
+  -- Identity types
+  | .gen_refl         => 1  -- rawWitness
+  | .gen_idJ          => 2  -- baseCase, witness
+  -- Modal
+  | .gen_modIntro     => 1  -- raw
+  | .gen_modElim      => 1  -- raw
+  | .gen_subsume      => 1  -- raw
+  -- Cubical interval
+  | .gen_interval0    => 0
+  | .gen_interval1    => 0
+  | .gen_intervalOpp  => 1  -- intervalTerm
+  | .gen_intervalMeet => 2  -- leftInterval, rightInterval
+  | .gen_intervalJoin => 2  -- leftInterval, rightInterval
+  -- Cubical path
+  | .gen_pathLam      => 1  -- body
+  | .gen_pathApp      => 2  -- pathTerm, intervalArg
+  -- Cubical glue / transport / composition
+  | .gen_glueIntro    => 2  -- baseValue, partialValue
+  | .gen_glueElim     => 1  -- gluedValue
+  | .gen_transp       => 2  -- path, source
+  | .gen_hcomp        => 2  -- sides, cap
+  -- Observational equality
+  | .gen_oeqRefl      => 1  -- witness
+  | .gen_oeqJ         => 2  -- baseCase, witness
+  | .gen_oeqFunext    => 1  -- pointwiseEquality
+  -- Strict identity
+  | .gen_idStrictRefl => 1  -- witness
+  | .gen_idStrictRec  => 2  -- baseCase, witness
+  -- Type equivalence
+  | .gen_equivIntro   => 2  -- forwardFn, backwardFn
+  | .gen_equivApp     => 2  -- equivTerm, argument
+  -- Refinement
+  | .gen_refineIntro  => 2  -- rawValue, predicateProof
+  | .gen_refineElim   => 1  -- refinedValue
+  -- Record
+  | .gen_recordIntro  => 1  -- firstField
+  | .gen_recordProj   => 1  -- recordValue
+  -- Codata
+  | .gen_codataUnfold => 2  -- initialState, transition
+  | .gen_codataDest   => 1  -- codataValue
+  -- Sessions
+  | .gen_sessionSend  => 2  -- channel, payload
+  | .gen_sessionRecv  => 1  -- channel
+  -- Effects
+  | .gen_effectPerform => 2 -- operationTag, arguments
+  -- Universe code (Nat payload, no RawTerm children)
+  | .gen_universeCode => 0
+  -- Per-shape type codes (atom-shape)
+  | .gen_arrowCode    => 2  -- domainCode, codomainCode
+  -- Per-shape type codes (binder-shape)
+  | .gen_piTyCode     => 2  -- domainCode, codomainCode (codomain at scope+1)
+  | .gen_sigmaTyCode  => 2  -- domainCode, codomainCode (codomain at scope+1)
+  -- More atom-shape codes
+  | .gen_productCode  => 2  -- firstCode, secondCode
+  | .gen_sumCode      => 2  -- leftCode, rightCode
+  | .gen_listCode     => 1  -- elementCode
+  | .gen_optionCode   => 1  -- elementCode
+  | .gen_eitherCode   => 2  -- leftCode, rightCode
+  | .gen_idCode       => 3  -- typeCode, leftRaw, rightRaw
+  | .gen_equivCode    => 2  -- leftTypeCode, rightTypeCode
+  -- Cumulativity marker
+  | .gen_cumulUpMarker => 1 -- innerCodeRaw
+  -- Univalence-to-equiv vocabulary
+  | .gen_uaToEquiv    => 1  -- proofRaw
+  | .gen_equivApply   => 2  -- equivRaw, argRaw
+  -- Composition vocabulary
+  | .gen_pathCompose  => 2  -- leftPathRaw, rightPathRaw
+  | .gen_idToEquiv    => 1  -- proofRaw
+  | .gen_oeqTrans     => 2  -- firstProof, secondProof
+  | .gen_equivCompose => 2  -- firstEquiv, secondEquiv
+  -- Cubical fill
+  | .gen_transpFill   => 3  -- pathTy, currentInterval, source
 
-/-- The per-child binder shifts as a non-dependent `List Nat` table.
-The list length equals `Generator.arity g` (by construction); the i-th
-entry is the number of fresh binders introduced over the i-th child.
-Examples: `lam` shifts its body by `1`; `app` does not shift its
-children; recursors with motives shift their motive child by `1` (not
-yet in this subset).
+/-- The per-child binder shifts as a non-dependent `List Nat`
+table.  The list length equals `Generator.arity g` (by
+construction, verified by `binderShifts_length_eq_arity`).  Each
+list entry is the number of fresh binders introduced over the
+corresponding child.
+
+**Non-zero entries** (only four constructors carry binders):
+
+* `gen_lam` — body lives under one fresh value binder, shift `1`.
+* `gen_pathLam` — body lives under one fresh interval binder,
+  shift `1`.
+* `gen_piTyCode` — codomain lives at `scope + 1`, shift on the
+  second child is `1`.  Mirrors `RawTerm.piTyCode`'s codomain
+  index.
+* `gen_sigmaTyCode` — codomain lives at `scope + 1`, shift on the
+  second child is `1`.  Mirrors `RawTerm.sigmaTyCode`'s codomain
+  index.
+
+All other ctors have all-zero shifts.
 
 **Why a `List Nat` rather than `Fin g.arity → Nat`**:
 indexed-by-arity-zero Fin destructuring leaks propext via Lean's
-match compilation (see `feedback_lean_zero_axiom_match.md`).  Returning
-a `List Nat` keeps the function arity-independent at the type level, so
-each arm is a closed term — no dependent reduction, no propext.  A
-length-check theorem (`binderShifts_length_eq_arity`) recovers the
-total-function discipline. -/
+match compilation (see `feedback_lean_zero_axiom_match.md`).
+Returning a `List Nat` keeps the function arity-independent at the
+type level, so each arm is a closed term — no dependent reduction,
+no propext.  The length-check theorem
+`binderShifts_length_eq_arity` recovers the total-function
+discipline. -/
 def Generator.binderShifts : Generator → List Nat
-  | .gen_var       => []
-  | .gen_unit      => []
-  | .gen_lam       => [1]                 -- body under one fresh binder
-  | .gen_app       => [0, 0]              -- function, argument
-  | .gen_appPi     => [0, 0]
-  | .gen_pair      => [0, 0]
-  | .gen_fst       => [0]
-  | .gen_snd       => [0]
-  | .gen_boolTrue  => []
-  | .gen_boolFalse => []
+  -- Variable + unit
+  | .gen_var          => []
+  | .gen_unit         => []
+  -- Function
+  | .gen_lam          => [1]                 -- body under one fresh binder
+  | .gen_app          => [0, 0]
+  -- Pair
+  | .gen_pair         => [0, 0]
+  | .gen_fst          => [0]
+  | .gen_snd          => [0]
+  -- Booleans
+  | .gen_boolTrue     => []
+  | .gen_boolFalse    => []
+  | .gen_boolElim     => [0, 0, 0]
+  -- Naturals
+  | .gen_natZero      => []
+  | .gen_natSucc      => [0]
+  | .gen_natElim      => [0, 0, 0]
+  | .gen_natRec       => [0, 0, 0]
+  -- Lists
+  | .gen_listNil      => []
+  | .gen_listCons     => [0, 0]
+  | .gen_listElim     => [0, 0, 0]
+  -- Options
+  | .gen_optionNone   => []
+  | .gen_optionSome   => [0]
+  | .gen_optionMatch  => [0, 0, 0]
+  -- Eithers
+  | .gen_eitherInl    => [0]
+  | .gen_eitherInr    => [0]
+  | .gen_eitherMatch  => [0, 0, 0]
+  -- Identity types
+  | .gen_refl         => [0]
+  | .gen_idJ          => [0, 0]
+  -- Modal
+  | .gen_modIntro     => [0]
+  | .gen_modElim      => [0]
+  | .gen_subsume      => [0]
+  -- Cubical interval
+  | .gen_interval0    => []
+  | .gen_interval1    => []
+  | .gen_intervalOpp  => [0]
+  | .gen_intervalMeet => [0, 0]
+  | .gen_intervalJoin => [0, 0]
+  -- Cubical path
+  | .gen_pathLam      => [1]                 -- body under one fresh interval binder
+  | .gen_pathApp      => [0, 0]
+  -- Cubical glue / transport / composition
+  | .gen_glueIntro    => [0, 0]
+  | .gen_glueElim     => [0]
+  | .gen_transp       => [0, 0]
+  | .gen_hcomp        => [0, 0]
+  -- Observational equality
+  | .gen_oeqRefl      => [0]
+  | .gen_oeqJ         => [0, 0]
+  | .gen_oeqFunext    => [0]
+  -- Strict identity
+  | .gen_idStrictRefl => [0]
+  | .gen_idStrictRec  => [0, 0]
+  -- Type equivalence
+  | .gen_equivIntro   => [0, 0]
+  | .gen_equivApp     => [0, 0]
+  -- Refinement
+  | .gen_refineIntro  => [0, 0]
+  | .gen_refineElim   => [0]
+  -- Record
+  | .gen_recordIntro  => [0]
+  | .gen_recordProj   => [0]
+  -- Codata
+  | .gen_codataUnfold => [0, 0]
+  | .gen_codataDest   => [0]
+  -- Sessions
+  | .gen_sessionSend  => [0, 0]
+  | .gen_sessionRecv  => [0]
+  -- Effects
+  | .gen_effectPerform => [0, 0]
+  -- Universe code
+  | .gen_universeCode => []
+  -- Per-shape type codes (atom-shape)
+  | .gen_arrowCode    => [0, 0]
+  -- Per-shape type codes (binder-shape)
+  | .gen_piTyCode     => [0, 1]              -- codomain at scope + 1
+  | .gen_sigmaTyCode  => [0, 1]              -- codomain at scope + 1
+  -- More atom-shape codes
+  | .gen_productCode  => [0, 0]
+  | .gen_sumCode      => [0, 0]
+  | .gen_listCode     => [0]
+  | .gen_optionCode   => [0]
+  | .gen_eitherCode   => [0, 0]
+  | .gen_idCode       => [0, 0, 0]
+  | .gen_equivCode    => [0, 0]
+  -- Cumulativity marker
+  | .gen_cumulUpMarker => [0]
+  -- Univalence-to-equiv vocabulary
+  | .gen_uaToEquiv    => [0]
+  | .gen_equivApply   => [0, 0]
+  -- Composition vocabulary
+  | .gen_pathCompose  => [0, 0]
+  | .gen_idToEquiv    => [0]
+  | .gen_oeqTrans     => [0, 0]
+  | .gen_equivCompose => [0, 0]
+  -- Cubical fill
+  | .gen_transpFill   => [0, 0, 0]
 
-/-- The `binderShifts` table has length exactly `arity g`.  Proof is
-case-analysis on `g`; each arm closes via `rfl`. -/
+/-- The `binderShifts` table has length exactly `arity g`.
+Proof is case-analysis on `g`; each of the 74 arms closes via
+`rfl` (`[].length = 0`, `[x].length = 1`, etc.).  Recovers the
+total-function discipline that a `Fin g.arity → Nat` signature
+would carry at the type level (but at the cost of a propext
+leak — see `binderShifts`'s docstring). -/
 theorem Generator.binderShifts_length_eq_arity (g : Generator) :
     g.binderShifts.length = g.arity := by
   cases g <;> rfl
@@ -148,11 +455,11 @@ theorem Generator.binderShifts_length_eq_arity (g : Generator) :
 /-! ## The spike: dependent-output extraction without casts.
 
 The load-bearing question of accelerate-P2.0: when a Generator's
-output type depends on a child's TYPE INDEX (like `appPi`, where the
-output is `codomainType.subst0 domainType argumentRaw` and
-`codomainType`/`domainType` come from the function child's `Ty.piTy`
-index), can the outputType be computed in a way Lean's unifier
-accepts WITHOUT `Eq.mpr`, `HEq.cast`, or propext leakage?
+output type depends on a child's TYPE INDEX (like `appPi`, where
+the output is `codomainType.subst0 domainType argumentRaw` and
+`codomainType`/`domainType` come from the function child's
+`Ty.piTy` index), can the outputType be computed in a way Lean's
+unifier accepts WITHOUT `Eq.mpr`, `HEq.cast`, or propext leakage?
 
 The answer is **YES** when each child is provided as a fully-typed
 `Term context ty raw` value: the indexed-inductive signature of

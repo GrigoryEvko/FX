@@ -1,33 +1,51 @@
 import LeanFX2.Foundation.Polygraph.Generator
 import LeanFX2.Tools.DependencyAudit
+import LeanFX2.Tools.StrictHarness.TrustEscape
 
-/-! # AuditGenerator — zero-axiom audit for the polygraph Generator spike.
+/-! # AuditGenerator — zero-axiom audit for the polygraph Generator.
 
-Smoke gates for accelerate-P2.0 (#2121) — the GO/NO-GO spike on whether
-the polygraph re-foundation's `Generator`-coded dependent output types
-can be extracted cast-free.
+Smoke gates for **two consecutive ships** along the polygraph re-foundation:
+
+* accelerate-P2.0 (#2121) — the GO/NO-GO spike on whether dependent
+  output types extract cast-free from typed children.
+* accelerate-P2.1 (#2122) — the full 74-summand `Generator` enum +
+  `arity` + `binderShifts` (one summand per `RawTerm` ctor).
 
 ## Coverage
 
-* `Generator` enum (10 ctors covering atomic / closed-type / dependent
-  shape-classes).
-* `Generator.arity` total lookup function.
-* `Generator.binderShifts` per-child binder-shift table (non-dependent
-  `List Nat` to dodge the Fin-indexed propext leak — see file header).
-* `Generator.binderShifts_length_eq_arity` discipline lemma.
-* **`Generator.outputTypeAppPi`** — the load-bearing spike artifact:
-  extracts the dependent `appPi` output type from typed children
-  cast-free.
+* `Generator` enum — 74 ctors mirroring `LeanFX2.RawTerm`.  The
+  ctor-count ratchet below pins the bijection.
+* `Generator.arity` — total `Generator → Nat` lookup.
+* `Generator.binderShifts` — per-child binder-shift table as a
+  non-dependent `List Nat` (Fin-indexed dependent matches leak
+  propext — see `feedback_lean_zero_axiom_match.md`).
+* `Generator.binderShifts_length_eq_arity` — discipline lemma
+  recovering the total-function invariant `binderShifts.length =
+  arity`, closed by `cases <;> rfl` across all 74 arms.
+* `Generator.outputTypeAppPi` — the load-bearing P2.0 spike
+  artifact: extracts the dependent `appPi` output type from typed
+  children cast-free.
 * `Generator.outputTypeAppPi_matches_Term_appPi` — the spike's
-  headline rfl-verified equality showing the Generator output type
-  matches `Term.appPi`'s output type definitionally.
+  headline rfl-verified equality.
 
-All clean = SPIKE-PASS (preliminary, dependent-typed-children case).
-The opaque-children case (P2.2) is documented in
-`Foundation/Polygraph/Generator.lean` trailing comment block.
+All `#assert_no_axioms` clean = SPIKE-PASS + enum bijection lock-in.
+The opaque-children outputType case (P2.2) is documented in the
+Generator file's trailing comment block.
+
+## Bijection invariant
+
+The `#assert_inductive_ctor_count_ratchet` below holds the
+`Generator` ctor count at 74 — equal to `LeanFX2.RawTerm`'s ctor
+count (pinned at 74 by `Tools/AuditAll/GatesIndCount.lean:20`).
+If a new `RawTerm` ctor lands, both ratchets must be bumped
+together; the polygraph relies on the bijection.
 -/
 
 namespace LeanFX2.SmokeGenerator
+
+-- Ctor-count ratchet: locks Generator at 74 ctors, matching RawTerm.
+#assert_inductive_ctor_count_ratchet
+  LeanFX2.Foundation.Polygraph.Generator 74
 
 #assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.arity
 #assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.binderShifts
