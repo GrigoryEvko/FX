@@ -511,63 +511,151 @@ complexes (Steiner 1993, ABGMMM book §17.4); opetopes (Baez-Dolan
   the colimit-completion of globular sets under wreath products).
   Picking per-dim shape is a profile choice over Θ subobjects.
 
-**Lean signature:**
+**v3 PRIMARY recipe — stricter polygraphs via regular directed
+complexes (Chanavat `arXiv:2509.26563`, Hadzihasanovic
+`arXiv:2404.05728`):**
+
+Instead of cataloguing six shapes (globular / cubical / simplicial /
+opetopic / Θ / Steiner) as separate inductive families and then
+mediating between them, v3 ships ONE substrate that subsumes all six.
+
+**Regular directed complex (Hadzihasanovic):** an oriented graded
+poset `P` where every closed singleton `cl{x}` is a *molecule* —
+a composable arrangement of lower-dim cells built inductively from
+the point via two operations: **pasting** (`U #ₖ V` at matching
+k-boundary) and **rewrite** (`U ⇒ V` between same-dim round
+molecules).  Every regular directed complex carries a canonical
+strict ω-categorical structure on its molecules.
+
+**Stricter ω-category (Chanavat Definition 2.13):** a composition
+structure `C` such that for every finite regular directed complex
+`P` and every `P`-matching family of cells, there is a UNIQUE
+amalgamation.  Equivalently: stricter n-cats are obtained from
+strict n-cats by additionally imposing the higher exchange laws
+governed by regular directed complexes.
+
+**Why "stricter" is exactly what FX wants:** strict n-categories
+are TOO strict for the cubical / cells-with-orientation needs of
+FX (path types, transport, hcomp).  But weak ω-categories (e.g.
+Batanin's) are too LOOSE for mechanization.  Stricter ω-cats hit
+the sweet spot — strict enough to admit pasting-as-universal,
+loose enough to support directed cells with non-trivial
+orientation data (cubical paths, glue boundaries, modal commuting
+squares).
+
+**The six shapes as instances:**
+
+* Globular cell = `Mol(globe_n)` where `globe_n` is the n-globe
+  regular directed complex.
+* Cubical cell with connections = `Mol(cube_n)` where `cube_n` is
+  the n-cube regular directed complex with BCH connections.
+* Simplicial Δⁿ = `Mol(simplex_n)`.
+* Baez-Dolan opetope = `Mol(opetope_n)` for the appropriate regular
+  directed complex.
+* Joyal Θ-cell = `Mol(theta_n)`.
+* Steiner parity complex = `Mol(parity_n)` (Steiner directed
+  complexes ARE special-case regular directed complexes).
+
+All six live as values of one inductive `RegularDirectedComplex` +
+one definition `Mol : RegularDirectedComplex → CompositionStructure`.
+
+**Lean signature (v3 primary):**
 
 ```lean
-inductive CellShape where
-  /-- Burroni globular cells (D, s, t): one source, one target. -/
-  | globular     : CellShape
+/-- An oriented graded poset: a finite poset graded by dim + per-element
+orientation data partitioning the cofaces into input vs output. -/
+structure OrientedGradedPoset where
+  carrier        : Type u
+  dim            : carrier → Nat
+  faces          : carrier → Finset carrier
+  cofaceSplit    : (x : carrier) → Finset carrier × Finset carrier
+                   -- (∇⁻ x, ∇⁺ x) input vs output cofaces
+  cofaceUnion    : ∀ x, (cofaceSplit x).1 ∪ (cofaceSplit x).2 =
+                        { y | y ∈ faces x }
+  cofaceDisjoint : ∀ x, (cofaceSplit x).1 ∩ (cofaceSplit x).2 = ∅
 
-  /-- BCH cubes with connections + reversals + diagonal.  Used at
-  the dimensions where cubical paths and Kan operations live.  -/
-  | cubical      : CubicalVariant → CellShape
+/-- A regular directed complex (Hadzihasanovic): an oriented graded
+poset where every closed singleton is a molecule.  Molecules are
+inductively defined: the point is a molecule; pasting at matching
+k-boundary preserves molecule; rewrite of round molecules at total
+boundary preserves molecule. -/
+inductive RegularDirectedComplex : Type u where
+  | mk : (P : OrientedGradedPoset) →
+         (∀ x, IsMolecule P (P.closedSingleton x)) →
+         RegularDirectedComplex
 
-  /-- Simplicial Δⁿ.  Used for complicial / nerve interpretations
-  and as fallback shape for opetopic compatibility. -/
-  | simplicial   : CellShape
+/-- The IsMolecule inductive predicate, by structural induction on
+the build operations of Hadzihasanovic. -/
+inductive IsMolecule (P : OrientedGradedPoset) : SubPoset P → Prop where
+  | point     : ∀ x, P.dim x = 0 → IsMolecule P (point x)
+  | paste     : ∀ U V k, IsMolecule P U → IsMolecule P V →
+                MatchingBoundary U V k →
+                IsMolecule P (pasteAt U V k)
+  | rewrite   : ∀ U V, IsMolecule P U → IsMolecule P V →
+                IsRound U → IsRound V →
+                SameTotalBoundary U V →
+                IsMolecule P (rewriteAtTopDim U V)
 
-  /-- Baez–Dolan opetopes, generated inductively by the polynomial
-  monad construction.  Used at the dimensions where multi-port
-  pasting matters (confluence, coherence). -/
-  | opetopic     : Opetope → CellShape
+/-- Six classical shapes as values of RegularDirectedComplex. -/
+def globe : Nat → RegularDirectedComplex := ...
+def cube : Nat → RegularDirectedComplex := ...
+def simplex : Nat → RegularDirectedComplex := ...
+def opetope : Nat → RegularDirectedComplex := ...
+def theta : Nat → RegularDirectedComplex := ...
+def parityComplex : Nat → RegularDirectedComplex := ...
 
-  /-- Joyal Θ-cells via wreath product Θ_n ≀ ⋯ ≀ Θ_n.
-  Universal shape; every other shape embeds here. -/
-  | theta        : ThetaCell → CellShape
+/-- Mol(P): the canonical strict ω-categorical structure on molecules
+of a regular directed complex.  Chanavat Definition 2.6. -/
+def Mol (P : RegularDirectedComplex) : CompositionStructure := ...
 
-  /-- Steiner parity complex (Steiner 1993).
-  Used for cells with directed combinatorics that don't fit
-  globularly (oriented simplices, orientals).  -/
-  | steiner      : ParityComplex → CellShape
+/-- Stricter ω-categories (Chanavat Definition 2.13): composition
+structures where every P-matching family has a unique amalgamation
+for every finite regular directed complex P. -/
+structure StricterOmegaCat where
+  underlying : CompositionStructure
+  amalgamation_unique :
+    ∀ (P : RegularDirectedComplex) (F : MatchingFamily underlying P),
+    ∃! G : Mol P → underlying, ∀ x, G x = F x
 
-  /-- Berger–Moerdijk generalized Reedy.  Used as a shape combinator
-  for cost-tropical weighted reduction. -/
-  | reedy        : GenReedy → CellShape
-
-  /-- Pratt HDA precubical cell.  Used for true concurrency
-  (Mazurkiewicz independence relation as cube subdivision). -/
-  | hda          : HDACube → CellShape
-
-  /-- Cartesian shape combinator: cells of shape (S × T) at the
-  combined dimension. -/
-  | prod         : CellShape → CellShape → CellShape
-
-  /-- Joyal wreath shape combinator. -/
-  | wreath       : CellShape → CellShape → CellShape
-  deriving DecidableEq
+/-- FX's shape family is a function (d : Nat) → RegularDirectedComplex.
+Different profiles pick different per-dim shapes; all coexist under
+the same stricter-ω-cat framework. -/
+def CellShape : Type := Nat → RegularDirectedComplex
 ```
 
-The shape family in a profile is a function `(d : Nat) → CellShape`.
-Two profiles agree if their shape families agree pointwise.
+**Why this is shippable:**
 
-**Lean LoC estimate:** ~12K LoC for the full shape catalogue + their
-boundary operations + their composition combinatorics + per-shape
-decidable equality and serialization.
+* **Hadzihasanovic's framework is constructive** — every operation
+  (pasting, rewrite, faces, dim) is computable on finite oriented
+  graded posets.  Lean port = ~3K LoC of poset machinery + ~2K LoC
+  of regular-directed-complex inductive + ~2K LoC of Mol functor.
+* **Chanavat's theorem (Lemma 2.20) is algorithmic** — given a
+  finite regular directed complex P, the stricter-ω-cat conditions
+  reduce to checking each P-matching family has unique amalgamation,
+  which is a finite-state check.
+* **The reflective inclusion ωCat^> ⊂ ωCat** (Proposition 2.59) gives
+  a free functor (reflector r) that strictifies any strict ω-cat into
+  a stricter one.  Lean port: ~1K LoC.
 
-**Research-frontier flag:** ⚠️ Steiner and opetopic shapes are not
-mechanized in any proof assistant; we're first-mover.  Globular,
-cubical, simplicial are standard.  Joyal Θ has partial mechanization
-in Coq (Bauer-Cisinski) and could port to Lean.
+**Lean LoC estimate (v3 primary):** ~8K LoC.  Half the v2 estimate
+because we no longer maintain six separate shape catalogues.
+
+**Mechanizability:** Hadzihasanovic's regular directed complexes
+have a partial implementation in `homotopy.io` (the dim-finite
+diagrammatic proof assistant) — that establishes the algorithm
+exists.  Lean port is novel but algorithmic.  Chanavat's paper
+gives all the explicit constructions (Section 2 has every formula
+needed).
+
+**v3 watch:**
+
+* Chanavat's main result Theorem 4.21 (folk model structure on
+  nCat^> right-transferred from diagrammatic model) is heavy
+  category theory.  FX doesn't need the full model structure to
+  use stricter polygraphs as a shape framework — we only need the
+  underlying composition structure + pasting theorem.
+* Gray product (Definition 2.53) preserved under suspension (Theorem
+  2.84) — useful for FX's Axis 6 complicial Gray module.
 
 ### 3.2 Algebraic theory
 
@@ -622,25 +710,136 @@ structure PolyMonad (shapes : Nat → CellShape) extends PolyFunctor shapes wher
   unitR         : ∀ d a, ...
   beckChevalley : ∀ d, ...                           -- pullback square commutes
   cartesian     : ∀ d, ...                           -- naturality squares are pullbacks
-
-/-- A specific polynomial monad: T-polygraphs (the book's §18.1).
-For any finitary monad T on Glob_∞, the T-polygraph polynomial monad. -/
-def TPolyMonad (T : FinitaryMonad GlobInf) : PolyMonad (fun _ => .globular) := ...
-
-/-- A specific polynomial monad: Batanin's weak ω-cat operad.
-This one is NOT finitary (uses the violet operad construction); only
-realizable as polynomial because polynomial monads are more general
-than finitary monads. -/
-def BataninWeakOmega : PolyMonad bataninShapes := ...
 ```
 
-**Lean LoC estimate:** ~10K LoC for the polynomial-monad framework
-+ canonical examples (T-polygraph instance, Batanin instance, FX's
-21-graded-modal instance).
+**v3 PRIMARY recipe — Polynomial UNIVERSES (Aberlé-Spivak
+`arXiv:2409.19176`):**
 
-**Research-frontier flag:** ⚠️ Mathlib has partial polynomial functor
-support (`Mathlib.CategoryTheory.Functor.Polynomial`).  Polynomial
-monads on Glob_∞ specifically: not mechanized.
+The v3 upgrade replaces the abstract polynomial-monad framework with
+a CONCRETE definition: a polynomial universe is a polynomial functor
+that is SUBTERMINAL in `Poly^Cart` (the category of polynomials with
+Cartesian lenses).  This makes "univalence" a structural property
+of the polynomial, not an external axiom.
+
+```lean
+/-- A polynomial functor in HoTT, in the language of dependent lenses.
+Aberlé-Spivak §3.  A polynomial p = (A, B) corresponds to the
+endofunctor P_p(y) = Σ_{a:A} y^{B[a]} on the category Type. -/
+structure Poly (ℓ κ : Level) where
+  A : Type ℓ
+  B : A → Type κ
+
+/-- A Cartesian lens between polynomials.  Aberlé-Spivak §3.
+A morphism (f, f♯) : p ⫋ q with f : p.A → q.A and
+f♯ : (a : p.A) → q.B (f a) → p.B a such that for each a, f♯ a is
+an equivalence. -/
+structure CartesianLens (p q : Poly) where
+  forward  : p.A → q.A
+  backward : (a : p.A) → q.B (forward a) → p.B a
+  isCart   : ∀ a, IsEquiv (backward a)
+
+/-- A polynomial universe (Aberlé-Spivak Definition 4.1): a polynomial
+that is subterminal in Poly^Cart.  Equivalently: for any other
+polynomial p, there is at most one Cartesian lens p ⫋ u. -/
+def isUnivalent (u : Poly) : Prop :=
+  ∀ {p : Poly}, ∀ (f g : CartesianLens p u), f = g
+
+structure PolynomialUniverse where
+  poly        : Poly
+  isUniv      : isUnivalent poly
+
+/-- ⫋ Σ-closure: a Cartesian lens μ : (u ◁ u) ⫋ u from the composite
+of u with itself to u itself.  Closure under Σ-types. -/
+structure SigmaClosed (u : PolynomialUniverse) where
+  mu : CartesianLens (u.poly.compose u.poly) u.poly
+
+/-- ⫋ Π-closure: a Cartesian lens π : (u ⫾ u) ⫋ u from the
+"function" composite ⫾ to u.  Closure under Π-types. -/
+structure PiClosed (u : PolynomialUniverse) where
+  pi : CartesianLens (u.poly.functionalComp u.poly) u.poly
+
+/-- ⫋ ⊤-closure (Aberlé-Spivak): a Cartesian lens η : y ⫋ u from
+the identity polynomial y to u.  Closure under unit type. -/
+structure TopClosed (u : PolynomialUniverse) where
+  eta : CartesianLens Poly.identity u.poly
+
+/-- A FULL polynomial universe: closed under unit + Σ + Π.  Then
+Aberlé-Spivak Theorem 4.2 gives the distributive law for FREE via
+the univalence subterminality. -/
+structure FullPolynomialUniverse extends PolynomialUniverse where
+  topClosed   : TopClosed self
+  sigmaClosed : SigmaClosed self
+  piClosed    : PiClosed self
+
+/-- THE main theorem (Aberlé-Spivak Theorem 4.2): closure under Π
+yields the distributive law DL1-DL4 of u (as monad via SigmaClosed)
+over itself FOR FREE via univalence.  No additional axioms needed. -/
+theorem distributiveLawFromUnivalence (u : FullPolynomialUniverse) :
+    DistributiveLaw u.sigmaClosed.mu u.piClosed.pi :=
+  -- proof: any two parallel Cartesian lenses to u must be equal by
+  -- isUnivalent; the distributive-law diagrams (DL1-DL4) commute
+  -- because both paths are Cartesian lenses with the same source
+  -- and target.
+  univalenceDistributivityProof u
+
+/-- FX kernel's algebraic structure as a polynomial universe instance.
+The fxProfile's 78 Generators each represent one polynomial; the
+universe is the supremum (terminal among all of them). -/
+def fxPolynomialUniverse : FullPolynomialUniverse := {
+  poly := fxKernelPolynomial,  -- the 78-generator polynomial
+  isUniv := fxIsSubterminal,  -- proved via Cartesian-lens unique
+  topClosed := { eta := Term.unit_intro_lens },
+  sigmaClosed := { mu := Term.pair_lens },
+  piClosed := { pi := Term.lam_lens }
+}
+
+/-- T-polygraph instance: special case where each polynomial is
+constructed via a finitary monad T on Glob_∞.  Subsumed by the more
+general polynomial-universe formulation when T is univalent. -/
+def TPolyUniverse (T : FinitaryMonad GlobInf) : FullPolynomialUniverse := ...
+
+/-- Rezk completion of List (Aberlé-Spivak Example 5.2): the
+polynomial-universe analog of Bishop finite sets.  Witnesses
+commutative-monoid structure for free finite sets. -/
+def RezkListUniverse : FullPolynomialUniverse := ...
+```
+
+**FX impact:**
+
+* `fxPolynomialUniverse` ships as ONE structure with three Cartesian
+  lenses (`eta` / `mu` / `pi`) instead of a polynomial-monad-with-
+  Beck-Chevalley + naturality + cartesianness + manual proofs of
+  multAssoc + unitL + unitR.  Distributivity DL1-DL4 falls out by
+  Theorem 4.2 from univalence + closure-under-Π, with zero extra
+  proof obligations.
+* Adding a new typed Term ctor = adding one Generator with its
+  output type + one Cartesian-lens projection witness.  No need
+  to re-prove monad laws.
+* The Rezk completion construction (Example 5.2) is the template
+  for promoting non-univalent polynomials to univalent ones; this
+  is how FX imports Mathlib lemmas as polygraph extensions.
+
+**Lean LoC estimate (v3 primary):** ~6K LoC.  Reduced from v2 ~10K
+because closure-under-Π gives distributive law for free; no need
+to mechanize Beck-Chevalley + cartesianness separately.
+
+**Mechanizability:** Aberlé-Spivak's paper IS Agda-formalized
+(appendix A — the HoTT lemmas + isEquiv + Iso ↔ Equiv machinery
++ Poly definition + Cartesian lens definition + isUnivalent
+predicate + distributive law theorem all in Agda).  Lean port =
+direct translation; the Agda code is the working template.
+
+**v3 watch:**
+
+* Aberlé-Spivak works in HoTT.  Lean 4 is intensional but supports
+  enough HoTT for univalent-polynomial machinery (function
+  extensionality + path induction in Lean's `Eq` type).  The
+  isUnivalent predicate only requires Π-equality of Cartesian
+  lenses, which is decidable when the polynomial has finitely
+  many generators (fxPolynomialUniverse).
+* The "distributive law from univalence" trick (Theorem 4.2) is
+  THE key — what would normally be 4 commuting diagrams (DL1-DL4)
+  becomes ONE univalence application.
 
 ### 3.3 Verity stratification
 
@@ -759,7 +958,135 @@ structure Saturation (S : Stratification _ _) where
     horn.thinAt level → S.thin dim filler
 ```
 
-**Lean LoC estimate:** ~5K LoC.
+**v3 PRIMARY recipe — saturation via cubical coherent contractions
+(Malbos-Massacrier-Struth `arXiv:2511.16852`):**
+
+The v2 saturation axis gives the SHAPE of saturation (which markings
+make sense semantically); v3 adds the COMPUTATIONAL ENGINE that
+constructs the saturated marking from the polygraph's rewrite system.
+
+**Cubical contraction (Malbos-Massacrier-Struth Definition 3.1.5):**
+a family `σ` of lax transformations indexed by k-cells, each `σ_f`
+filling f's source-to-target gap with a thin cell.  Contractions
+extend the choice of normal forms (sections of the projection
+`C → C_p`) to higher dimensions recursively.
+
+**The headline theorem (Theorem 3.2.5):** every contracting
+ω-groupoid is acyclic — i.e., every k-square (k≥p) admits a filler.
+Constructively gives the saturated marking.
+
+**Cubical versions of the classical rewriting results:**
+
+* **Cubical Newman's lemma (Proposition 4.1.4):** for a Noetherian
+  p-ARS, every map `A_2 : LB(X_C) → LCf(X_C)` from local branchings
+  to local confluence fillers extends to global branchings.  Proof is
+  Noetherian induction in direction i; pasting of A_2 cubes provides
+  the global filler.
+* **Cubical Church-Rosser (Proposition 4.1.7):** for the same p-ARS,
+  the extension `A_2 : B(X_C) → Cf(X_C)` induces a map
+  `B : X_C^{T_i} → CR(X_C)` from zigzags to Church-Rosser fillers.
+* **Cubical Squier coherence (§4.3):** for convergent terminating
+  p-ARS, every parallel coherence cell admits a filler in terms of
+  contraction sections + thin cells.
+
+**The "cube law" derived geometrically (§4.2.3):** for a 3-branching
+(f₁, f₂, f₃), the residual computation `f|g := ∂_{i+1}^+ A_2(f,g)`
+satisfies `(f_i|f_j)(f_k|f_j) = (f_i|f_k)(f_j|f_k)` for pairwise
+distinct i,j,k ∈ {1,2,3}.  Geometrically: cube faces commute.
+Equation 4.1.2 falls out from the cubical relations of cubical
+categories — NO axiom needed.
+
+**Lean signature (v3 primary):**
+
+```lean
+/-- A cubical (ω,p)-category: ω-cat with R_i-invertibility for cells
+in dim > p.  Malbos-Massacrier-Struth §2.2. -/
+structure CubicalOmegaPCategory (p : Nat) where
+  underlying : CubicalOmegaCat
+  invertibility : ∀ {k} (h : k > p) (cell : underlying.cells k) {i : Fin k}
+                  (shell : underlying.RiInvertibleShell cell i),
+                  ∃ inv, underlying.RiInverse cell i inv
+
+/-- A contraction on a (ω,p)-category: a family of lax transformations
+σ_f filling each f : C_k for p ≤ k < n with a thin cell σ_f : f → x̂
+where x̂ is the normal form of f's source.  Malbos-Massacrier-Struth
+Definition 3.1.5. -/
+structure Contraction (C : CubicalOmegaPCategory p) where
+  section_  : C.cells p → C.cells p
+  thin_witness : ∀ {k} (h : p ≤ k) (f : C.cells k),
+                 ∃ σf : LaxTransformation C, σf.source = f ∧
+                 σf.target = (f.shape.normalForm section_)
+
+/-- THE main theorem (Malbos-Massacrier-Struth Theorem 3.2.5):
+every contracting ω-groupoid is ACYCLIC — every k-square admits a
+filler.  Proof by folding + unfolding using maps ψ_i, Ψ_j, Φ_k
+that rotate cube faces in direction 1. -/
+theorem contractingImpliesAcyclic (C : CubicalOmegaPCategory 0)
+    (groupoid : ∀ k, IsGroupoid (C.cells k))
+    (σ : Contraction C) :
+    ∀ k (S : C.Square k), ∃ A : C.cells (k+1), A.boundary = S := by
+  -- Folding maps ψ_i, Ψ_j, Φ_k rotate cube faces in direction 1;
+  -- contraction σ fills the unfolded representation; unfolding
+  -- recovers a filler of the original square.
+  ...
+
+/-- Cubical version of Newman's lemma.  Theorem 4.1.4. -/
+theorem cubicalNewman (X_C : pARS C) (noeth : X_C.IsNoetherian)
+    (A_2 : X_C.LocalBranchings → X_C.LocalConfluenceFillers) :
+    ∃ extension : X_C.Branchings → X_C.ConfluenceFillers,
+      extension.restrictsTo A_2 := ...
+
+/-- The saturated marking on fxProfile's polygraph, derived from
+the contraction structure given by FX's convergent rewrite system
+(termination via K12 SN + confluence via cd_lemma). -/
+def fxSaturationViaContractions : Saturation fxStratification where
+  level := .omegaSat
+  isMaximal := fxIsMaximal  -- proved by Theorem 3.2.5 applied to FX
+  thinFillers := fxThinFillersViaContraction
+```
+
+**FX impact:**
+
+* Replaces the abstract "saturation = thinness predicate that exists
+  somehow" with a CONSTRUCTIVE saturation built from FX's convergent
+  rewrite system.  K12 SN + cd_lemma confluence + contraction
+  structure ⇒ saturated marking is COMPUTABLE.
+* Newman + Church-Rosser + Squier all derive from the cubical
+  contraction structure — no need for separate per-rule confluence
+  / coherence proofs at the saturation layer.  Existing FX cd_lemma
+  cascade work (already shipped K11.17 cd_lemma.toDim2Cell etc.)
+  becomes the operational engine; this axis is its categorical
+  justification.
+* The cube law (§4.2.3) replaces the explicit Mac Lane pentagon
+  postulation in FX's modal coherence work.  Pentagon falls out
+  geometrically.
+
+**Lean LoC estimate (v3 primary):** ~7K LoC, distributed:
+* Cubical (ω,p)-category structure (Malbos-Massacrier-Struth §2.1):
+  ~2K LoC (face maps, degeneracies, connections, composition,
+  invertibility).
+* Contraction structure (§3.1) + acyclicity theorem (§3.2.5): ~2.5K
+  LoC including folding/unfolding maps.
+* Cubical Newman + Church-Rosser + Squier (§4.1-4.3): ~1.5K LoC.
+* Integration with FX cd_lemma cascade (existing K11.17 etc.): ~1K
+  LoC bridge code.
+
+**Mechanizability:** Malbos-Massacrier-Struth's paper is NOT
+mechanized in any proof assistant.  But the proofs are computational
+(folding + unfolding maps are explicit operations; contraction
+filling is a recursive structural argument).  Lean port is novel
+but algorithmic.
+
+**v3 watch:**
+
+* Theorem 3.2.5 requires the (ω,p)-category to be a GROUPOID for
+  acyclicity.  FX's polygraph is NOT a groupoid (steps have
+  direction).  Mitigation: apply Theorem 3.2.5 at the saturated
+  marking level — once the saturated marking is computed, the
+  groupoid hypothesis is satisfied for the thin sub-category.
+* Cube law (§4.2.3) holds geometrically; in FX terms, residuals
+  f|g satisfy `(f₁|f₂)(f₃|f₂) = (f₁|f₃)(f₂|f₃)` as a consequence
+  of cubical relations, not a postulated axiom.
 
 ### 3.5 Enrichment ladder
 
