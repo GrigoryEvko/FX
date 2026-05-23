@@ -3191,6 +3191,211 @@ theorem rename_compatible_typed_iotaNatRecSucc
   dsimp only [Term.rename]
   exact Step.par.iotaNatRecSucc predecessorStep zeroStep succStep
 
+/-- ι arm `iotaListElimNil` of typed-Step.par rename equivariance.
+
+`listElim nil n c ⟶ n'` reduces only the nil branch; the cons branch
+is carried unchanged.  Non-dependent motive over structurally-renaming
+`Ty.listType`, so `Term.rename` pushes through `listElim` and the
+`listNil` scrutinee cast-free. -/
+theorem rename_compatible_typed_iotaListElimNil
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {elementType motiveType : Ty level sourceScope}
+    {nilRawSource nilRawTarget consRaw : RawTerm sourceScope}
+    {nilSource : Term sourceCtx motiveType nilRawSource}
+    {nilTarget : Term sourceCtx motiveType nilRawTarget}
+    (consBranch :
+      Term sourceCtx
+        (Ty.arrow elementType (Ty.arrow (Ty.listType elementType) motiveType)) consRaw)
+    (nilStep :
+      Step.par (Term.rename termRenaming nilSource)
+               (Term.rename termRenaming nilTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.listElim (elementType := elementType) Term.listNil nilSource consBranch))
+      (Term.rename termRenaming nilTarget) := by
+  dsimp only [Term.rename]
+  exact Step.par.iotaListElimNil (Term.rename termRenaming consBranch) nilStep
+
+/-- ι arm `iotaListElimCons` of typed-Step.par rename equivariance.
+
+`listElim (cons h t) n c ⟶ c' h' t'` reduces head, tail, and cons
+branch; the nil branch is carried unchanged.  Non-dependent motive,
+so `Term.rename` pushes through `listElim`, `listCons`, and the nested
+`app` reduct cast-free. -/
+theorem rename_compatible_typed_iotaListElimCons
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {elementType motiveType : Ty level sourceScope}
+    {headRawSource headRawTarget tailRawSource tailRawTarget
+     nilRaw consRawSource consRawTarget : RawTerm sourceScope}
+    {headSource : Term sourceCtx elementType headRawSource}
+    {headTarget : Term sourceCtx elementType headRawTarget}
+    {tailSource : Term sourceCtx (Ty.listType elementType) tailRawSource}
+    {tailTarget : Term sourceCtx (Ty.listType elementType) tailRawTarget}
+    (nilBranch : Term sourceCtx motiveType nilRaw)
+    {consSource :
+      Term sourceCtx
+        (Ty.arrow elementType (Ty.arrow (Ty.listType elementType) motiveType))
+        consRawSource}
+    {consTarget :
+      Term sourceCtx
+        (Ty.arrow elementType (Ty.arrow (Ty.listType elementType) motiveType))
+        consRawTarget}
+    (headStep :
+      Step.par (Term.rename termRenaming headSource)
+               (Term.rename termRenaming headTarget))
+    (tailStep :
+      Step.par (Term.rename termRenaming tailSource)
+               (Term.rename termRenaming tailTarget))
+    (consStep :
+      Step.par (Term.rename termRenaming consSource)
+               (Term.rename termRenaming consTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.listElim (Term.listCons headSource tailSource) nilBranch consSource))
+      (Term.rename termRenaming (Term.app (Term.app consTarget headTarget) tailTarget))
+    := by
+  dsimp only [Term.rename]
+  exact Step.par.iotaListElimCons (Term.rename termRenaming nilBranch)
+    headStep tailStep consStep
+
+/-- ι arm `iotaOptionMatchNone` of typed-Step.par rename equivariance.
+
+`optionMatch none n s ⟶ n'` reduces only the none branch; the some
+branch is carried unchanged.  Non-dependent motive, cast-free push. -/
+theorem rename_compatible_typed_iotaOptionMatchNone
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {elementType motiveType : Ty level sourceScope}
+    {noneRawSource noneRawTarget someRaw : RawTerm sourceScope}
+    {noneSource : Term sourceCtx motiveType noneRawSource}
+    {noneTarget : Term sourceCtx motiveType noneRawTarget}
+    (someBranch : Term sourceCtx (Ty.arrow elementType motiveType) someRaw)
+    (noneStep :
+      Step.par (Term.rename termRenaming noneSource)
+               (Term.rename termRenaming noneTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.optionMatch (elementType := elementType) Term.optionNone
+          noneSource someBranch))
+      (Term.rename termRenaming noneTarget) := by
+  dsimp only [Term.rename]
+  exact Step.par.iotaOptionMatchNone (Term.rename termRenaming someBranch) noneStep
+
+/-- ι arm `iotaOptionMatchSome` of typed-Step.par rename equivariance.
+
+`optionMatch (some v) n s ⟶ s' v'` reduces value and some branch; the
+none branch is carried unchanged.  Non-dependent motive, so
+`Term.rename` pushes through `optionMatch`, `optionSome`, and the `app`
+reduct cast-free. -/
+theorem rename_compatible_typed_iotaOptionMatchSome
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {elementType motiveType : Ty level sourceScope}
+    {valueRawSource valueRawTarget noneRaw
+     someRawSource someRawTarget : RawTerm sourceScope}
+    {valueSource : Term sourceCtx elementType valueRawSource}
+    {valueTarget : Term sourceCtx elementType valueRawTarget}
+    (noneBranch : Term sourceCtx motiveType noneRaw)
+    {someSource : Term sourceCtx (Ty.arrow elementType motiveType) someRawSource}
+    {someTarget : Term sourceCtx (Ty.arrow elementType motiveType) someRawTarget}
+    (valueStep :
+      Step.par (Term.rename termRenaming valueSource)
+               (Term.rename termRenaming valueTarget))
+    (someStep :
+      Step.par (Term.rename termRenaming someSource)
+               (Term.rename termRenaming someTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.optionMatch (Term.optionSome valueSource) noneBranch someSource))
+      (Term.rename termRenaming (Term.app someTarget valueTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.iotaOptionMatchSome (Term.rename termRenaming noneBranch)
+    valueStep someStep
+
+/-- ι arm `iotaEitherMatchInl` of typed-Step.par rename equivariance.
+
+`eitherMatch (inl v) lb rb ⟶ lb' v'` reduces value and left branch;
+the right branch is carried unchanged.  Non-dependent motive, so
+`Term.rename` pushes through `eitherMatch`, `eitherInl`, and the `app`
+reduct cast-free. -/
+theorem rename_compatible_typed_iotaEitherMatchInl
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {leftType rightType motiveType : Ty level sourceScope}
+    {valueRawSource valueRawTarget leftRawSource leftRawTarget rightRaw
+     : RawTerm sourceScope}
+    {valueSource : Term sourceCtx leftType valueRawSource}
+    {valueTarget : Term sourceCtx leftType valueRawTarget}
+    {leftSource : Term sourceCtx (Ty.arrow leftType motiveType) leftRawSource}
+    {leftTarget : Term sourceCtx (Ty.arrow leftType motiveType) leftRawTarget}
+    (rightBranch : Term sourceCtx (Ty.arrow rightType motiveType) rightRaw)
+    (valueStep :
+      Step.par (Term.rename termRenaming valueSource)
+               (Term.rename termRenaming valueTarget))
+    (leftStep :
+      Step.par (Term.rename termRenaming leftSource)
+               (Term.rename termRenaming leftTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.eitherMatch (Term.eitherInl (rightType := rightType) valueSource)
+          leftSource rightBranch))
+      (Term.rename termRenaming (Term.app leftTarget valueTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.iotaEitherMatchInl (Term.rename termRenaming rightBranch)
+    valueStep leftStep
+
+/-- ι arm `iotaEitherMatchInr` of typed-Step.par rename equivariance.
+
+`eitherMatch (inr v) lb rb ⟶ rb' v'` reduces value and right branch;
+the left branch is carried unchanged.  Non-dependent motive, so
+`Term.rename` pushes through `eitherMatch`, `eitherInr`, and the `app`
+reduct cast-free. -/
+theorem rename_compatible_typed_iotaEitherMatchInr
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {leftType rightType motiveType : Ty level sourceScope}
+    {valueRawSource valueRawTarget leftRaw rightRawSource rightRawTarget
+     : RawTerm sourceScope}
+    {valueSource : Term sourceCtx rightType valueRawSource}
+    {valueTarget : Term sourceCtx rightType valueRawTarget}
+    (leftBranch : Term sourceCtx (Ty.arrow leftType motiveType) leftRaw)
+    {rightSource : Term sourceCtx (Ty.arrow rightType motiveType) rightRawSource}
+    {rightTarget : Term sourceCtx (Ty.arrow rightType motiveType) rightRawTarget}
+    (valueStep :
+      Step.par (Term.rename termRenaming valueSource)
+               (Term.rename termRenaming valueTarget))
+    (rightStep :
+      Step.par (Term.rename termRenaming rightSource)
+               (Term.rename termRenaming rightTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.eitherMatch (Term.eitherInr (leftType := leftType) valueSource)
+          leftBranch rightSource))
+      (Term.rename termRenaming (Term.app rightTarget valueTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.iotaEitherMatchInr (Term.rename termRenaming leftBranch)
+    valueStep rightStep
+
 end Step.par
 
 end LeanFX2

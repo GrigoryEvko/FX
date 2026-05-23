@@ -992,5 +992,11 @@ constructor — pure definitional, no induction, no cast on the `refl`
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaNatElimSucc
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaNatRecZero
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaNatRecSucc
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaListElimNil
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaListElimCons
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaOptionMatchNone
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaOptionMatchSome
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaEitherMatchInl
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaEitherMatchInr
 
 end LeanFX2.Tools
