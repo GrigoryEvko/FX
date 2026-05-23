@@ -125,5 +125,9 @@ namespace LeanFX2.SmokeConvTransStepParRename
 #print axioms LeanFX2.Step.par.hcompPath_sidesPath_heqCongr
 #print axioms LeanFX2.Step.par.rename_compatible_typed_hcompBeta
 #print axioms LeanFX2.Step.par.rename_compatible_typed_hcompBetaDeep
+#print axioms LeanFX2.Step.par.rename_compatible_typed_iotaNatElimZero
+#print axioms LeanFX2.Step.par.rename_compatible_typed_iotaNatElimSucc
+#print axioms LeanFX2.Step.par.rename_compatible_typed_iotaNatRecZero
+#print axioms LeanFX2.Step.par.rename_compatible_typed_iotaNatRecSucc
 
 end LeanFX2.SmokeConvTransStepParRename

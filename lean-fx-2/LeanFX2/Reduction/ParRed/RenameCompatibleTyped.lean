@@ -3063,6 +3063,134 @@ theorem rename_compatible_typed_hcompBetaDeep
     (targetRawCommute ▸ RawStep.par.rename rho sidesPathStep)
     capStep
 
+/-- ι arm `iotaNatElimZero` of typed-Step.par rename equivariance.
+
+`natElim 0 z s ⟶ z'` reduces only the zero branch; the successor
+branch is carried unchanged.  The motive is non-dependent
+(`Ty level scope`), so `Term.rename` pushes through `natElim` and the
+literal `natZero` scrutinee cast-free — the reduct `zeroTarget` sits at
+the redex's type `motiveType`. -/
+theorem rename_compatible_typed_iotaNatElimZero
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {motiveType : Ty level sourceScope}
+    {zeroRawSource zeroRawTarget succRaw : RawTerm sourceScope}
+    {zeroSource : Term sourceCtx motiveType zeroRawSource}
+    {zeroTarget : Term sourceCtx motiveType zeroRawTarget}
+    (succBranch : Term sourceCtx (Ty.arrow Ty.nat motiveType) succRaw)
+    (zeroStep :
+      Step.par (Term.rename termRenaming zeroSource)
+               (Term.rename termRenaming zeroTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.natElim Term.natZero zeroSource succBranch))
+      (Term.rename termRenaming zeroTarget) := by
+  dsimp only [Term.rename]
+  exact Step.par.iotaNatElimZero (Term.rename termRenaming succBranch) zeroStep
+
+/-- ι arm `iotaNatElimSucc` of typed-Step.par rename equivariance.
+
+`natElim (succ n) z s ⟶ s' n'` reduces the predecessor and successor
+branches; the zero branch is carried unchanged.  Non-dependent motive,
+so `Term.rename` pushes through `natElim`, `natSucc`, and the `app`
+reduct cast-free. -/
+theorem rename_compatible_typed_iotaNatElimSucc
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {motiveType : Ty level sourceScope}
+    {predecessorRawSource predecessorRawTarget zeroRaw
+     succRawSource succRawTarget : RawTerm sourceScope}
+    {predecessorSource : Term sourceCtx Ty.nat predecessorRawSource}
+    {predecessorTarget : Term sourceCtx Ty.nat predecessorRawTarget}
+    (zeroBranch : Term sourceCtx motiveType zeroRaw)
+    {succSource : Term sourceCtx (Ty.arrow Ty.nat motiveType) succRawSource}
+    {succTarget : Term sourceCtx (Ty.arrow Ty.nat motiveType) succRawTarget}
+    (predecessorStep :
+      Step.par (Term.rename termRenaming predecessorSource)
+               (Term.rename termRenaming predecessorTarget))
+    (succStep :
+      Step.par (Term.rename termRenaming succSource)
+               (Term.rename termRenaming succTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.natElim (Term.natSucc predecessorSource) zeroBranch succSource))
+      (Term.rename termRenaming (Term.app succTarget predecessorTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.iotaNatElimSucc (Term.rename termRenaming zeroBranch)
+    predecessorStep succStep
+
+/-- ι arm `iotaNatRecZero` of typed-Step.par rename equivariance.
+
+`natRec 0 z s ⟶ z'`; mirrors `iotaNatElimZero` with the `natRec`
+successor type `arrow nat (arrow motiveType motiveType)`.  Cast-free. -/
+theorem rename_compatible_typed_iotaNatRecZero
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {motiveType : Ty level sourceScope}
+    {zeroRawSource zeroRawTarget succRaw : RawTerm sourceScope}
+    {zeroSource : Term sourceCtx motiveType zeroRawSource}
+    {zeroTarget : Term sourceCtx motiveType zeroRawTarget}
+    (succBranch :
+      Term sourceCtx (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)) succRaw)
+    (zeroStep :
+      Step.par (Term.rename termRenaming zeroSource)
+               (Term.rename termRenaming zeroTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.natRec Term.natZero zeroSource succBranch))
+      (Term.rename termRenaming zeroTarget) := by
+  dsimp only [Term.rename]
+  exact Step.par.iotaNatRecZero (Term.rename termRenaming succBranch) zeroStep
+
+/-- ι arm `iotaNatRecSucc` of typed-Step.par rename equivariance.
+
+`natRec (succ n) z s ⟶ s' n' (natRec n' z' s')` reduces the
+predecessor, zero, and successor branches.  Non-dependent motive, so
+`Term.rename` pushes through `natRec`, `natSucc`, and the nested
+`app`/`natRec` reduct cast-free. -/
+theorem rename_compatible_typed_iotaNatRecSucc
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {motiveType : Ty level sourceScope}
+    {predecessorRawSource predecessorRawTarget
+     zeroRawSource zeroRawTarget
+     succRawSource succRawTarget : RawTerm sourceScope}
+    {predecessorSource : Term sourceCtx Ty.nat predecessorRawSource}
+    {predecessorTarget : Term sourceCtx Ty.nat predecessorRawTarget}
+    {zeroSource : Term sourceCtx motiveType zeroRawSource}
+    {zeroTarget : Term sourceCtx motiveType zeroRawTarget}
+    {succSource :
+      Term sourceCtx (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)) succRawSource}
+    {succTarget :
+      Term sourceCtx (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)) succRawTarget}
+    (predecessorStep :
+      Step.par (Term.rename termRenaming predecessorSource)
+               (Term.rename termRenaming predecessorTarget))
+    (zeroStep :
+      Step.par (Term.rename termRenaming zeroSource)
+               (Term.rename termRenaming zeroTarget))
+    (succStep :
+      Step.par (Term.rename termRenaming succSource)
+               (Term.rename termRenaming succTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.natRec (Term.natSucc predecessorSource) zeroSource succSource))
+      (Term.rename termRenaming
+        (Term.app (Term.app succTarget predecessorTarget)
+                  (Term.natRec predecessorTarget zeroTarget succTarget))) := by
+  dsimp only [Term.rename]
+  exact Step.par.iotaNatRecSucc predecessorStep zeroStep succStep
+
 end Step.par
 
 end LeanFX2
