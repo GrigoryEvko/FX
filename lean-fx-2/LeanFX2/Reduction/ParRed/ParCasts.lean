@@ -75,6 +75,31 @@ theorem Step.par.castSourceType_cancel
   cases typeEquality
   exact parallelStep
 
+/-- HEq-bridged target type cancel: a `Step.par` whose target lives at one type
+reduces to one whose target lives at a propositionally-equal type, given a `HEq`
+witnessing the two targets agree.  Unlike `castTargetType_cancel` (which forces
+Lean to UNIFY a `▸`-cast against the supplied `Step.par`'s target — impossible when
+the cast proof is a metavariable, the `betaFunextReflAppDeep` situation), this
+takes the bridging `HEq` as DATA supplied at the call site.  Lean then only
+defeq-CHECKS the supplied `HEq` against the step's target — proof-irrelevance makes
+the check succeed regardless of which propositional proof built the original cast.
+Proof: `cases` the type equality (homogenizing the two targets) then `cases` the
+now-homogeneous `HEq`.  Zero-axiom. -/
+theorem Step.par.castTargetTypeHeq
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetTypeOriginal targetTypeReplacement : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetOriginal : Term context targetTypeOriginal targetRaw}
+    {targetReplacement : Term context targetTypeReplacement targetRaw}
+    (typeEquality : targetTypeOriginal = targetTypeReplacement)
+    (targetHeq : HEq targetReplacement targetOriginal)
+    (parallelStep : Step.par sourceTerm targetOriginal) :
+    Step.par sourceTerm targetReplacement := by
+  cases typeEquality
+  cases targetHeq
+  exact parallelStep
+
 theorem Step.par.castSourceRaw
     {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
     {sourceType targetType : Ty level scope}

@@ -123,6 +123,11 @@ namespace LeanFX2.SmokeConvTransStepParRename
 #print axioms LeanFX2.Step.par.rename_compatible_typed_betaSndPairDeep
 #print axioms LeanFX2.Step.par.castTargetType_cancel
 #print axioms LeanFX2.Step.par.castSourceType_cancel
+#print axioms LeanFX2.Step.par.castTargetTypeHeq
+#print axioms LeanFX2.Step.par.appPi_function_heqCongr
+#print axioms LeanFX2.Step.par.refl_heqCongr
+#print axioms LeanFX2.Step.par.rename_compatible_typed_betaFunextReflApp
+#print axioms LeanFX2.Step.par.rename_compatible_typed_betaFunextReflAppDeep
 #print axioms LeanFX2.Step.par.transp_typePath_heqCongr
 #print axioms LeanFX2.Step.par.rename_compatible_typed_transpReflBeta
 #print axioms LeanFX2.Step.par.rename_compatible_typed_transpReflBetaDeep

@@ -1028,5 +1028,10 @@ constructor — pure definitional, no induction, no cast on the `refl`
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaPathAppDeep
 #assert_no_axioms LeanFX2.Step.par.pathReflApp_body_heqCongr
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaPathReflApp
+#assert_no_axioms LeanFX2.Step.par.appPi_function_heqCongr
+#assert_no_axioms LeanFX2.Step.par.refl_heqCongr
+#assert_no_axioms LeanFX2.Step.par.castTargetTypeHeq
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaFunextReflApp
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaFunextReflAppDeep
 
 end LeanFX2.Tools

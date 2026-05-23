@@ -4417,6 +4417,247 @@ theorem rename_compatible_typed_betaPathReflApp
             (Term.weaken Ty.interval valueSource))).symm)
       (Term.rename termRenaming intervalSource)
 
+/-- HEq congruence for `Term.appPi` over a function that differs only by a
+codomain type-index transport: when the two functions share a raw index and are
+`HEq` (their `Ty.piTy` codomains being propositionally equal), the two applications
+are `HEq`.  `subst` the codomain equality (making the two Π types defeq) then `cases`
+the now-homogeneous function `HEq`.  Consumed by the `betaFunextReflApp` source
+bridge, where the renamed `funextRefl` carries a `funextReflType_rename` cast on its
+Π codomain.  Zero-axiom. -/
+theorem appPi_function_heqCongr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    (domainType : Ty level scope) {codomainA codomainB : Ty level (scope + 1)}
+    (codomainEq : codomainA = codomainB)
+    {functionRaw : RawTerm scope}
+    {functionA : Term context (Ty.piTy domainType codomainA) functionRaw}
+    {functionB : Term context (Ty.piTy domainType codomainB) functionRaw}
+    (functionHeq : HEq functionA functionB)
+    {argumentRaw : RawTerm scope} (argumentTerm : Term context domainType argumentRaw) :
+    HEq (Term.appPi functionA argumentTerm) (Term.appPi functionB argumentTerm) := by
+  cases codomainEq
+  cases functionHeq
+  rfl
+
+/-- HEq congruence for `Term.refl` over its carrier type and raw witness: equal
+carriers and equal witnesses give `HEq`-equal `refl`s.  Bridges the `betaFunextReflApp`
+reduct, whose `Term.refl` carrier (`codomainType.weaken.subst0 …`) and witness
+(`applyRawTarget.subst0 …`) each pick up a `*_rename_commute` transport under renaming.
+Zero-axiom. -/
+theorem refl_heqCongr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {carrierA carrierB : Ty level scope} {witnessA witnessB : RawTerm scope}
+    (carrierEq : carrierA = carrierB) (witnessEq : witnessA = witnessB) :
+    HEq (Term.refl (context := context) carrierA witnessA)
+        (Term.refl (context := context) carrierB witnessB) := by
+  cases carrierEq
+  cases witnessEq
+  rfl
+
+/-- β arm `betaFunextReflApp` of typed-Step.par rename equivariance: applying the
+canonical funext-refl witness to an argument, `appPi (funextRefl A B applyRaw) arg ⟶
+refl (B.weaken.subst0 A arg)(applyRaw.subst0 arg)`.  The hardest arm in the file: the
+renamed source nests two type casts (the `appPi`-result `subst0_rename_commute` cast
+and the `funextRefl` `funextReflType_rename` codomain cast), and the `Term.refl` reduct
+needs both a carrier type-index transport (`subst0`+`weaken` distribution) and a
+`RawTerm.refl` witness raw-index transport (`RawTerm.subst0_rename_commute`).  The raw
+`applyRaw` premise lifts via `RawStep.par.rename`.  Source/target are bridged separately
+by `castSourceType`+`castSourceTermHeq` / `castTargetType`+`castTargetTermHeq`, with the
+HEqs supplied by `appPi_function_heqCongr` / `refl_heqCongr`.  Zero-axiom. -/
+theorem rename_compatible_typed_betaFunextReflApp
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (domainType codomainType : Ty level sourceScope)
+    {applyRawSource applyRawTarget : RawTerm (sourceScope + 1)}
+    {argumentRawSource argumentRawTarget : RawTerm sourceScope}
+    {argumentSource : Term sourceCtx domainType argumentRawSource}
+    {argumentTarget : Term sourceCtx domainType argumentRawTarget}
+    (rawStep : RawStep.par applyRawSource applyRawTarget)
+    (argStep :
+      Step.par (Term.rename termRenaming argumentSource)
+               (Term.rename termRenaming argumentTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.appPi (Term.funextRefl domainType codomainType applyRawSource)
+                    argumentSource))
+      (Term.rename termRenaming
+        (Term.refl (codomainType.weaken.subst0 domainType argumentRawTarget)
+                   (applyRawTarget.subst0 argumentRawTarget))) := by
+  dsimp only [Term.rename]
+  -- Reduct (target) bridges: witness raw + carrier type, both via `subst0`/`weaken`
+  -- rename-commute.
+  have witnessEqTgt :
+      (applyRawTarget.rename rho.lift).subst0 (argumentRawTarget.rename rho)
+        = (applyRawTarget.subst0 argumentRawTarget).rename rho :=
+    (RawTerm.subst0_rename_commute applyRawTarget argumentRawTarget rho).symm
+  have carrierEqTgt :
+      (codomainType.rename rho).weaken.subst0 (domainType.rename rho) (argumentRawTarget.rename rho)
+        = (codomainType.weaken.subst0 domainType argumentRawTarget).rename rho :=
+    ((Ty.subst0_rename_commute codomainType.weaken domainType argumentRawTarget rho).trans
+      (congrArg (fun w => Ty.subst0 w (domainType.rename rho) (argumentRawTarget.rename rho))
+        (Ty.weaken_rename_commute rho codomainType))).symm
+  have tgtTyEq :
+      Ty.id ((codomainType.rename rho).weaken.subst0 (domainType.rename rho) (argumentRawTarget.rename rho))
+          ((applyRawTarget.rename rho.lift).subst0 (argumentRawTarget.rename rho))
+          ((applyRawTarget.rename rho.lift).subst0 (argumentRawTarget.rename rho))
+        = (Ty.id (codomainType.weaken.subst0 domainType argumentRawTarget)
+            (applyRawTarget.subst0 argumentRawTarget)
+            (applyRawTarget.subst0 argumentRawTarget)).rename rho := by
+    rw [carrierEqTgt, witnessEqTgt]; rfl
+  -- Source type bridge: the `appPi`-result `subst0` of the renamed funext-refl Π
+  -- codomain equals the renamed original result type.
+  have srcTyEq :
+      Ty.subst0 (Ty.id (codomainType.rename rho).weaken (applyRawSource.rename rho.lift)
+            (applyRawSource.rename rho.lift))
+          (domainType.rename rho) (argumentRawSource.rename rho)
+        = (Ty.subst0 (Ty.id codomainType.weaken applyRawSource applyRawSource)
+            domainType argumentRawSource).rename rho :=
+    ((Ty.subst0_rename_commute (Ty.id codomainType.weaken applyRawSource applyRawSource)
+        domainType argumentRawSource rho).trans
+      (congrArg (fun w => Ty.subst0 (Ty.id w (applyRawSource.rename rho.lift)
+          (applyRawSource.rename rho.lift)) (domainType.rename rho) (argumentRawSource.rename rho))
+        (Ty.weaken_rename_commute rho codomainType))).symm
+  -- Source funext-refl codomain bridge (for the `appPi` function HEq).
+  have codomainEqSrc :
+      Ty.id (codomainType.rename rho).weaken (applyRawSource.rename rho.lift)
+          (applyRawSource.rename rho.lift)
+        = (Ty.id codomainType.weaken applyRawSource applyRawSource).rename rho.lift :=
+    congrArg (fun w => Ty.id w (applyRawSource.rename rho.lift) (applyRawSource.rename rho.lift))
+      (Ty.weaken_rename_commute rho codomainType).symm
+  refine Step.par.castSourceTermHeq rfl ?srcHeq
+    (Step.par.castSourceType srcTyEq
+      (Step.par.castTargetTermHeq (congrArg RawTerm.refl witnessEqTgt) ?tgtHeq
+        (Step.par.castTargetType tgtTyEq
+          (Step.par.betaFunextReflApp (domainType.rename rho) (codomainType.rename rho)
+            (RawStep.par.rename rho.lift rawStep) argStep))))
+  case tgtHeq =>
+    exact HEq.trans (Term.type_eq_cast_heq tgtTyEq _) (refl_heqCongr carrierEqTgt witnessEqTgt)
+  case srcHeq =>
+    exact HEq.trans (Term.type_eq_cast_heq srcTyEq _)
+      (HEq.trans
+        (appPi_function_heqCongr (domainType.rename rho) codomainEqSrc
+          (Term.type_eq_cast_heq
+            (funextReflType_rename rho domainType codomainType applyRawSource).symm
+            (Term.funextRefl (domainType.rename rho) (codomainType.rename rho)
+              (applyRawSource.rename rho.lift))).symm
+          (Term.rename termRenaming argumentSource))
+        (Term.type_eq_cast_heq
+          (Ty.subst0_rename_commute (Ty.id codomainType.weaken applyRawSource applyRawSource)
+            domainType argumentRawSource rho).symm _).symm)
+
+/-- Deep β arm `betaFunextReflAppDeep` of typed-Step.par rename equivariance: the
+function position of the application reduces in parallel to a funext-refl witness
+(`Step.par functionTermSource (funextRefl A B applyRaw)`), and `appPi functionTermSource
+arg ⟶ refl (B.weaken.subst0 A arg)(applyRaw.subst0 arg)`.
+
+Simpler than the shallow arm on the SOURCE side — the application's function is a
+general `functionTermSource`, not a literal `funextRefl`, so the renamed source carries
+only the outer `appPi`-result `subst0_rename_commute` cast (no inner `funextReflType_rename`
+cast), and `castSourceType` alone discharges it (proof-irrelevance absorbs which cast
+proof).  The function-step premise's `funextRefl` target picks up the
+`funextReflType_rename` cast under renaming, peeled by `castTargetType_cancel`.  The
+reduct bridges (`tgtTyEq` / `tgtRaw` / `tgtHeq`) are identical to the shallow arm.
+Zero-axiom. -/
+theorem rename_compatible_typed_betaFunextReflAppDeep
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {domainType codomainType : Ty level sourceScope}
+    {applyRawTarget : RawTerm (sourceScope + 1)}
+    {argumentRawSource argumentRawTarget : RawTerm sourceScope}
+    {functionRawSourceOuter : RawTerm sourceScope}
+    {functionTermSource :
+      Term sourceCtx (funextReflType domainType codomainType applyRawTarget)
+        functionRawSourceOuter}
+    {argumentSource : Term sourceCtx domainType argumentRawSource}
+    {argumentTarget : Term sourceCtx domainType argumentRawTarget}
+    (functionStep :
+      Step.par (Term.rename termRenaming functionTermSource)
+               (Term.rename termRenaming
+                 (Term.funextRefl (context := sourceCtx)
+                   domainType codomainType applyRawTarget)))
+    (argStep :
+      Step.par (Term.rename termRenaming argumentSource)
+               (Term.rename termRenaming argumentTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.appPi functionTermSource argumentSource))
+      (Term.rename termRenaming
+        (Term.refl (codomainType.weaken.subst0 domainType argumentRawTarget)
+                   (applyRawTarget.subst0 argumentRawTarget))) := by
+  dsimp only [Term.rename] at functionStep ⊢
+  have witnessEqTgt :
+      (applyRawTarget.rename rho.lift).subst0 (argumentRawTarget.rename rho)
+        = (applyRawTarget.subst0 argumentRawTarget).rename rho :=
+    (RawTerm.subst0_rename_commute applyRawTarget argumentRawTarget rho).symm
+  have carrierEqTgt :
+      (codomainType.rename rho).weaken.subst0 (domainType.rename rho) (argumentRawTarget.rename rho)
+        = (codomainType.weaken.subst0 domainType argumentRawTarget).rename rho :=
+    ((Ty.subst0_rename_commute codomainType.weaken domainType argumentRawTarget rho).trans
+      (congrArg (fun w => Ty.subst0 w (domainType.rename rho) (argumentRawTarget.rename rho))
+        (Ty.weaken_rename_commute rho codomainType))).symm
+  have tgtTyEq :
+      Ty.id ((codomainType.rename rho).weaken.subst0 (domainType.rename rho) (argumentRawTarget.rename rho))
+          ((applyRawTarget.rename rho.lift).subst0 (argumentRawTarget.rename rho))
+          ((applyRawTarget.rename rho.lift).subst0 (argumentRawTarget.rename rho))
+        = (Ty.id (codomainType.weaken.subst0 domainType argumentRawTarget)
+            (applyRawTarget.subst0 argumentRawTarget)
+            (applyRawTarget.subst0 argumentRawTarget)).rename rho := by
+    rw [carrierEqTgt, witnessEqTgt]; rfl
+  have srcTyEq :
+      Ty.subst0 (Ty.id (codomainType.rename rho).weaken (applyRawTarget.rename rho.lift)
+            (applyRawTarget.rename rho.lift))
+          (domainType.rename rho) (argumentRawSource.rename rho)
+        = (Ty.subst0 (Ty.id codomainType.weaken applyRawTarget applyRawTarget)
+            domainType argumentRawSource).rename rho :=
+    ((Ty.subst0_rename_commute (Ty.id codomainType.weaken applyRawTarget applyRawTarget)
+        domainType argumentRawSource rho).trans
+      (congrArg (fun w => Ty.subst0 (Ty.id w (applyRawTarget.rename rho.lift)
+          (applyRawTarget.rename rho.lift)) (domainType.rename rho) (argumentRawSource.rename rho))
+        (Ty.weaken_rename_commute rho codomainType))).symm
+  -- Source function codomain bridge (for the `appPi` function HEq): the renamed
+  -- function lives at the bare-renamed `funextReflType`, the goal's `appPi` sees it
+  -- through the `Ty.piTy`/`Ty.id` rename arms — the two codomains agree by
+  -- `weaken_rename_commute`.
+  have codomainEqSrc :
+      Ty.id (codomainType.rename rho).weaken (applyRawTarget.rename rho.lift)
+          (applyRawTarget.rename rho.lift)
+        = (Ty.id codomainType.weaken applyRawTarget applyRawTarget).rename rho.lift :=
+    congrArg (fun w => Ty.id w (applyRawTarget.rename rho.lift) (applyRawTarget.rename rho.lift))
+      (Ty.weaken_rename_commute rho codomainType).symm
+  refine Step.par.castSourceTermHeq rfl ?srcHeq
+    (Step.par.castSourceType srcTyEq
+      (Step.par.castTargetTermHeq (congrArg RawTerm.refl witnessEqTgt) ?tgtHeq
+        (Step.par.castTargetType tgtTyEq
+          (Step.par.betaFunextReflAppDeep
+            (Step.par.castTargetTypeHeq
+              (funextReflType_rename rho domainType codomainType applyRawTarget)
+              (Term.type_eq_cast_heq
+                (funextReflType_rename rho domainType codomainType applyRawTarget).symm
+                (Term.funextRefl (context := targetCtx) (domainType.rename rho)
+                  (codomainType.rename rho) (applyRawTarget.rename rho.lift))).symm
+              (Step.par.castSourceType
+                (funextReflType_rename rho domainType codomainType applyRawTarget)
+                functionStep))
+            argStep))))
+  case tgtHeq =>
+    exact HEq.trans (Term.type_eq_cast_heq tgtTyEq _) (refl_heqCongr carrierEqTgt witnessEqTgt)
+  case srcHeq =>
+    exact HEq.trans (Term.type_eq_cast_heq srcTyEq _)
+      (HEq.trans
+        (appPi_function_heqCongr (domainType.rename rho) codomainEqSrc
+          (Term.type_eq_cast_heq
+            (funextReflType_rename rho domainType codomainType applyRawTarget)
+            (Term.rename termRenaming functionTermSource))
+          (Term.rename termRenaming argumentSource))
+        (Term.type_eq_cast_heq
+          (Ty.subst0_rename_commute (Ty.id codomainType.weaken applyRawTarget applyRawTarget)
+            domainType argumentRawSource rho).symm _).symm)
+
 /-- β arm `betaSndPair` of typed-Step.par rename equivariance: shallow Σ-snd
 projection `snd (pair a b) ⟶ b'` with `Step.par b b'`.
 
