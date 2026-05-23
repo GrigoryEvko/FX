@@ -1033,5 +1033,7 @@ constructor — pure definitional, no induction, no cast on the `refl`
 #assert_no_axioms LeanFX2.Step.par.castTargetTypeHeq
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaFunextReflApp
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaFunextReflAppDeep
+-- Universal headline (#2027): all-133-constructor induction composing the per-arm theorems.
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed
 
 end LeanFX2.Tools
