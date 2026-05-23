@@ -3616,6 +3616,56 @@ theorem rename_compatible_typed_betaApp
           (Term.rename (termRenaming.lift domainType) bodyTarget)))
       (Term.subst0_rename_commute termRenaming bodyTarget argumentTarget).symm)
 
+/-- β arm `betaAppPi` of typed-Step.par rename equivariance.
+
+`(λx. body) arg ⟶ body[arg/x]` for the dependent Π application.  Simpler
+than `betaApp`: the dependent `lamPi` body lives at `codomainType` (a
+`Ty (scope+1)`) rather than `codomainType.weaken`, so the `lamPi` rename
+arm is cast-free and the reduct bridge is exactly **T8**
+(`Term.subst0_rename_commute`) — no `subst0_body_heq_of_eq` weaken
+reconciliation.  The `appPi` rename arm DOES carry an outer
+`Ty.subst0_rename_commute` cast on the β-redex result type, so the source
+is realigned by `castSourceType`; the reduct's Ty index by
+`castTargetType` and raw index by `castTargetTermHeq`.  Zero-axiom. -/
+theorem rename_compatible_typed_betaAppPi
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {domainType : Ty level sourceScope} {codomainType : Ty level (sourceScope + 1)}
+    {bodyRawSource bodyRawTarget : RawTerm (sourceScope + 1)}
+    {argumentRawSource argumentRawTarget : RawTerm sourceScope}
+    {bodySource : Term (sourceCtx.cons domainType) codomainType bodyRawSource}
+    {bodyTarget : Term (sourceCtx.cons domainType) codomainType bodyRawTarget}
+    {argumentSource : Term sourceCtx domainType argumentRawSource}
+    {argumentTarget : Term sourceCtx domainType argumentRawTarget}
+    (bodyStep :
+      Step.par (Term.rename (termRenaming.lift domainType) bodySource)
+               (Term.rename (termRenaming.lift domainType) bodyTarget))
+    (argumentStep :
+      Step.par (Term.rename termRenaming argumentSource)
+               (Term.rename termRenaming argumentTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.appPi (Term.lamPi (domainType := domainType) bodySource) argumentSource))
+      (Term.rename termRenaming (Term.subst0 bodyTarget argumentTarget)) := by
+  dsimp only [Term.rename]
+  refine Step.par.castTargetTermHeq
+    (RawTerm.subst0_rename_commute bodyRawTarget argumentRawTarget rho).symm
+    ?heqBridge
+    (Step.par.castTargetType
+      (Ty.subst0_rename_commute codomainType domainType argumentRawTarget rho).symm
+      (Step.par.castSourceType
+        (Ty.subst0_rename_commute codomainType domainType argumentRawSource rho).symm
+        (Step.par.betaAppPi bodyStep argumentStep)))
+  exact HEq.trans
+    (Term.type_eq_cast_heq
+      (Ty.subst0_rename_commute codomainType domainType argumentRawTarget rho).symm
+      (Term.subst0 (Term.rename (termRenaming.lift domainType) bodyTarget)
+        (Term.rename termRenaming argumentTarget)))
+    (Term.subst0_rename_commute termRenaming bodyTarget argumentTarget).symm
+
 end Step.par
 
 end LeanFX2

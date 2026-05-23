@@ -140,5 +140,6 @@ namespace LeanFX2.SmokeConvTransStepParRename
 #print axioms LeanFX2.Step.par.rename_compatible_typed_iotaBoolElimTrue
 #print axioms LeanFX2.Step.par.rename_compatible_typed_iotaBoolElimFalse
 #print axioms LeanFX2.Step.par.rename_compatible_typed_betaApp
+#print axioms LeanFX2.Step.par.rename_compatible_typed_betaAppPi
 
 end LeanFX2.SmokeConvTransStepParRename
