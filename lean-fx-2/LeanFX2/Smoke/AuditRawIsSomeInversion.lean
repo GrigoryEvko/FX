@@ -8,10 +8,12 @@ Reviewer-facing `#print axioms` gate for the zero-axiom
 
 Raw-side siblings of the Ty inversion lemmas; current coverage
 spans binder (lam), Option.mapTwo binary (app, pair, listCons),
-direct-match single-child (fst, snd), and 10 additional
-single-child non-binder ctors (natSucc, optionSome, eitherInl,
-eitherInr, refl, modIntro, modElim, subsume, intervalOpp,
-glueElim).
+direct-match single-child (fst, snd), 10 additional single-child
+non-binder ctors (natSucc, optionSome, eitherInl, eitherInr, refl,
+modIntro, modElim, subsume, intervalOpp, glueElim), plus 9
+closed-atomic unconditional ctors (boolTrue / boolFalse /
+interval0 / interval1 / listNil / natZero / optionNone / unit /
+universeCode).
 
 Each `#print axioms` line below must report
 "does not depend on any axioms" — strict Layer K gate. -/
@@ -82,5 +84,16 @@ namespace LeanFX2.Smoke.AuditRawIsSomeInversion
 #print axioms LeanFX2.RawTerm.partialRename?_sigmaTyCode_isSome
 #print axioms LeanFX2.RawTerm.partialRename?_transpFill_isSome
 #print axioms LeanFX2.RawTerm.partialRename?_idCode_isSome
+
+-- Closed-atomic unconditional ctors (rfl-proved one-liners).
+#print axioms LeanFX2.RawTerm.partialRename?_boolTrue_isSome
+#print axioms LeanFX2.RawTerm.partialRename?_boolFalse_isSome
+#print axioms LeanFX2.RawTerm.partialRename?_interval0_isSome
+#print axioms LeanFX2.RawTerm.partialRename?_interval1_isSome
+#print axioms LeanFX2.RawTerm.partialRename?_listNil_isSome
+#print axioms LeanFX2.RawTerm.partialRename?_natZero_isSome
+#print axioms LeanFX2.RawTerm.partialRename?_optionNone_isSome
+#print axioms LeanFX2.RawTerm.partialRename?_unit_isSome
+#print axioms LeanFX2.RawTerm.partialRename?_universeCode_isSome
 
 end LeanFX2.Smoke.AuditRawIsSomeInversion
