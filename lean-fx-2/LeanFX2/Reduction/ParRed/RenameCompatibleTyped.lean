@@ -3396,6 +3396,66 @@ theorem rename_compatible_typed_iotaEitherMatchInr
   exact Step.par.iotaEitherMatchInr (Term.rename termRenaming leftBranch)
     valueStep rightStep
 
+/-- ι arm `iotaIdJRefl` of typed-Step.par rename equivariance.
+
+`J base (refl c e) ⟶ base'` reduces only the base case; the `refl`
+witness is canonical.  Non-dependent motive (the J dep-motive refactor
+has not landed), so `Term.rename` pushes through `idJ` and the `refl`
+scrutinee — `refl` renames structurally to `refl (c.rename) (e.rename)`
+— cast-free, the reduct `baseTarget` at `motiveType`. -/
+theorem rename_compatible_typed_iotaIdJRefl
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (carrier : Ty level sourceScope) (endpoint : RawTerm sourceScope)
+    {motiveType : Ty level sourceScope}
+    {baseRawSource baseRawTarget : RawTerm sourceScope}
+    {baseSource : Term sourceCtx motiveType baseRawSource}
+    {baseTarget : Term sourceCtx motiveType baseRawTarget}
+    (baseStep :
+      Step.par (Term.rename termRenaming baseSource)
+               (Term.rename termRenaming baseTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.idJ (carrier := carrier) (leftEndpoint := endpoint)
+          (rightEndpoint := endpoint) baseSource (Term.refl carrier endpoint)))
+      (Term.rename termRenaming baseTarget) := by
+  dsimp only [Term.rename]
+  exact Step.par.iotaIdJRefl (carrier.rename rho) (endpoint.rename rho) baseStep
+
+/-- ι arm `iotaIdStrictRecRefl` of typed-Step.par rename equivariance.
+
+`idStrictRec base (idStrictRefl c e) ⟶ base'` in strict mode.  The mode
+proof `modeIsStrict` is preserved by renaming; `idStrictRefl` renames
+structurally; non-dependent motive — cast-free push to the reduct
+`baseTarget` at `motiveType`. -/
+theorem rename_compatible_typed_iotaIdStrictRecRefl
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (modeIsStrict : mode = Mode.strict)
+    (carrier : Ty level sourceScope) (endpoint : RawTerm sourceScope)
+    {motiveType : Ty level sourceScope}
+    {baseRawSource baseRawTarget : RawTerm sourceScope}
+    {baseSource : Term sourceCtx motiveType baseRawSource}
+    {baseTarget : Term sourceCtx motiveType baseRawTarget}
+    (baseStep :
+      Step.par (Term.rename termRenaming baseSource)
+               (Term.rename termRenaming baseTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.idStrictRec (carrier := carrier) (leftEndpoint := endpoint)
+          (rightEndpoint := endpoint) modeIsStrict baseSource
+          (Term.idStrictRefl modeIsStrict carrier endpoint)))
+      (Term.rename termRenaming baseTarget) := by
+  dsimp only [Term.rename]
+  exact Step.par.iotaIdStrictRecRefl modeIsStrict (carrier.rename rho)
+    (endpoint.rename rho) baseStep
+
 end Step.par
 
 end LeanFX2

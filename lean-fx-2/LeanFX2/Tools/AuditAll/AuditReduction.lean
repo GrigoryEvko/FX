@@ -998,5 +998,7 @@ constructor — pure definitional, no induction, no cast on the `refl`
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaOptionMatchSome
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaEitherMatchInl
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaEitherMatchInr
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaIdJRefl
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaIdStrictRecRefl
 
 end LeanFX2.Tools

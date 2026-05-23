@@ -135,5 +135,7 @@ namespace LeanFX2.SmokeConvTransStepParRename
 #print axioms LeanFX2.Step.par.rename_compatible_typed_iotaOptionMatchSome
 #print axioms LeanFX2.Step.par.rename_compatible_typed_iotaEitherMatchInl
 #print axioms LeanFX2.Step.par.rename_compatible_typed_iotaEitherMatchInr
+#print axioms LeanFX2.Step.par.rename_compatible_typed_iotaIdJRefl
+#print axioms LeanFX2.Step.par.rename_compatible_typed_iotaIdStrictRecRefl
 
 end LeanFX2.SmokeConvTransStepParRename
