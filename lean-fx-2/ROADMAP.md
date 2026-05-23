@@ -525,6 +525,21 @@ gate on M06 progress.  Block C (#2027-2034 typed Conv rename
 equivariance) and Block D (#2035-2044 final headlines) chain off
 Block B's complete closure.
 
+**Block C progress**: #2027 (`Step.par.rename_compatible_typed`,
+133-arm) and #2028 (`Step.parStar.rename_compatible_typed` chain) ✅
+shipped zero-axiom.  #2029 (`Conv.rename_equivariant_fwd`) PARTIAL —
+shipped the typed PARALLEL-JOIN forward form (`Conv.toParJoin`,
+`Conv.rename_equivariant_fwd_parJoin`, `Conv.weaken_equivariant_fwd_parJoin`
+in `Reduction/ConvRenameParJoin.lean`, commit 0e66232c), the typed
+strengthening of `Conv.renameRaw`.  The literal `Conv (rename _)
+(rename _)` StepStar form remains: `Conv` is over single-step
+`StepStar`, so it needs `StepStar.rename_compatible_typed` ←
+single-step `Step.rename_compatible_typed` (~107-arm) OR
+`Step.par.toStepStar` (par→Step* decomposition, ~133-arm but cast-free
+— also closes `Step* = parStar`).  #2028's parallel-closure compat
+cannot land back in `StepStar`.  No new kernel ctor needed; both are
+large proofs.  `Step.par.toStepStar` is the recommended next step.
+
 ## Critical-path summary (v1.0 requirements)
 
 The v1.0 milestone ("100% proven kernel") gates on:
