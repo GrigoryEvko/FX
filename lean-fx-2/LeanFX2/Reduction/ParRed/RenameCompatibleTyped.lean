@@ -2022,6 +2022,110 @@ theorem rename_compatible_typed_oeqFunextCong
           leftFunctionRaw rightFunctionRaw)
         pointwiseStep))
 
+/-- Reduction arm `eqArrow` of typed-Step.par rename equivariance (0-premise,
+target-cast).  The funext rfl-fragment reduction `funextReflAtId → funextRefl`
+carries no Step.par premises.  `Term.rename` on the source (`funextReflAtId`) is
+cast-free, but on the target (`funextRefl`) it transports the type by
+`(funextReflType_rename ...).symm`.  So re-apply `Step.par.eqArrow` at the
+renamed args and cast only its TARGET endpoint by that one equality. -/
+theorem rename_compatible_typed_eqArrow
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (domainType codomainType : Ty level sourceScope)
+    (applyRaw : RawTerm (sourceScope + 1)) :
+    Step.par
+      (Term.rename termRenaming (Term.funextReflAtId domainType codomainType applyRaw))
+      (Term.rename termRenaming (Term.funextRefl domainType codomainType applyRaw)) := by
+  dsimp only [Term.rename]
+  exact Step.par.castTargetType
+    (funextReflType_rename rho domainType codomainType applyRaw).symm
+    (Step.par.eqArrow (domainType.rename rho) (codomainType.rename rho)
+      (applyRaw.rename rho.lift))
+
+/-- Reduction arm `eqTypeHet` of typed-Step.par rename equivariance (0-premise,
+cast-free).  Heterogeneous univalence `uaIntroHet ... equivWitness → equivWitness`
+carries no premises; the source (`uaIntroHet`) renames cast-free and the target
+is the bare witness (recursive `Term.rename`).  Re-apply `Step.par.eqTypeHet` at
+the renamed schematic raws and renamed witness; the witness's raw stays
+`RawTerm.equivIntro _ _` after renaming, matching the ctor's index. -/
+theorem rename_compatible_typed_eqTypeHet
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    {carrierA carrierB : Ty level sourceScope}
+    (carrierARaw carrierBRaw : RawTerm sourceScope)
+    {forwardRaw backwardRaw : RawTerm sourceScope}
+    (equivWitness :
+      Term sourceCtx (Ty.equiv carrierA carrierB)
+        (RawTerm.equivIntro forwardRaw backwardRaw)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.uaIntroHet innerLevel innerLevelLt carrierARaw carrierBRaw equivWitness))
+      (Term.rename termRenaming equivWitness) := by
+  dsimp only [Term.rename]
+  exact Step.par.eqTypeHet innerLevel innerLevelLt
+    (carrierARaw.rename rho) (carrierBRaw.rename rho)
+    (Term.rename termRenaming equivWitness)
+
+/-- Reduction arm `eqArrowHet` of typed-Step.par rename equivariance (0-premise,
+target-cast).  Heterogeneous funext `funextIntroHet ... applyARaw applyBRaw →
+funextRefl ... applyARaw` carries no premises; the source (`funextIntroHet`)
+renames cast-free, the target (`funextRefl`) transports by
+`(funextReflType_rename ... applyARaw).symm` (keyed on the target's applyARaw).
+Re-apply `Step.par.eqArrowHet` at renamed args, cast only the TARGET. -/
+theorem rename_compatible_typed_eqArrowHet
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (domainType codomainType : Ty level sourceScope)
+    (applyARaw applyBRaw : RawTerm (sourceScope + 1)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.funextIntroHet domainType codomainType applyARaw applyBRaw))
+      (Term.rename termRenaming
+        (Term.funextRefl domainType codomainType applyARaw)) := by
+  dsimp only [Term.rename]
+  exact Step.par.castTargetType
+    (funextReflType_rename rho domainType codomainType applyARaw).symm
+    (Step.par.eqArrowHet (domainType.rename rho) (codomainType.rename rho)
+      (applyARaw.rename rho.lift) (applyBRaw.rename rho.lift))
+
+/-- Cong arm `funextReflCong` of typed-Step.par rename equivariance (raw-premise,
+both-endpoints cast-bearing).  `Term.funextRefl` carries its applyRaw payload as
+a RAW term at `scope + 1`, so the cong reduces via a `RawStep.par` premise
+through `RawStep.par.rename_compatible rho.lift`.  Both endpoints' `Term.rename`
+transport by `(funextReflType_rename ...).symm` — keyed on the SOURCE applyRaw
+for the source endpoint and the TARGET applyRaw for the target endpoint, so the
+two casts differ and each endpoint is transported separately. -/
+theorem rename_compatible_typed_funextReflCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (domainType codomainType : Ty level sourceScope)
+    {applyRawSource applyRawTarget : RawTerm (sourceScope + 1)}
+    (applyStep : RawStep.par applyRawSource applyRawTarget) :
+    Step.par
+      (Term.rename termRenaming (Term.funextRefl domainType codomainType applyRawSource))
+      (Term.rename termRenaming (Term.funextRefl domainType codomainType applyRawTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.castTargetType
+    (funextReflType_rename rho domainType codomainType applyRawTarget).symm
+    (Step.par.castSourceType
+      (funextReflType_rename rho domainType codomainType applyRawSource).symm
+      (Step.par.funextReflCong (domainType.rename rho) (codomainType.rename rho)
+        (RawStep.par.rename_compatible rho.lift applyStep)))
+
 end Step.par
 
 end LeanFX2
