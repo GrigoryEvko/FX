@@ -192,6 +192,10 @@ namespace LeanFX2.SmokeGeneratorOutputType
 #assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeUaToEquiv_matches_Term_uaToEquiv
 #assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEquivApply
 #assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEquivApply_matches_Term_equivApply
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeOeqFunext
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeOeqFunext_matches_Term_oeqFunext
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEquivIntroHet
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEquivIntroHet_matches_Term_equivIntroHet
 
 #print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeApp
 #print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeApp_matches_Term_app
@@ -327,5 +331,9 @@ namespace LeanFX2.SmokeGeneratorOutputType
 #print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeUaToEquiv_matches_Term_uaToEquiv
 #print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEquivApply
 #print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEquivApply_matches_Term_equivApply
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeOeqFunext
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeOeqFunext_matches_Term_oeqFunext
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEquivIntroHet
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEquivIntroHet_matches_Term_equivIntroHet
 
 end LeanFX2.SmokeGeneratorOutputType

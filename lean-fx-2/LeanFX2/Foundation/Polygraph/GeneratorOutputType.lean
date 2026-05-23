@@ -1896,4 +1896,100 @@ theorem Generator.outputTypeEquivApply_matches_Term_equivApply
     (argumentTerm : Term context carrierA argumentRaw) :
     Generator.outputTypeEquivApply equivTerm argumentTerm = carrierB := rfl
 
+/-! ### Helper-record-dependent extractors (`oeqFunext` / `equivIntroHet`)
+
+Mirrors `Term.lean:262-275` (`oeqFunext`) and `Term.lean:771-786`
+(`equivIntroHet`).
+
+These two extractors are the LAST P2.2 typed-mirror entries; both
+take typed witness subterms whose types involve structured helper
+functions from `Foundation/TermHelpers.lean`
+(`oeqFunextPointwiseType`, `equivIntroHetLeftInverseType`,
+`equivIntroHetRightInverseType`).  The helpers are
+`@[reducible]`-class shapes computable from explicit Ty + raw
+parameters — the extractor signatures thread the same parameters
+through so Lean's elaborator can definitionally reduce the
+typed-witness types when checking the rfl proof. -/
+
+/-- `Term.oeqFunext`'s output is `Ty.oeq (Ty.arrow domainType
+codomainType) leftFunctionRaw rightFunctionRaw` — observational
+function-extensionality witness built from a pointwise proof. -/
+def Generator.outputTypeOeqFunext {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    (leftFunctionRaw rightFunctionRaw : RawTerm scope)
+    {pointwiseRaw : RawTerm scope}
+    (pointwiseProof :
+      Term context
+        (oeqFunextPointwiseType domainType codomainType
+          leftFunctionRaw rightFunctionRaw)
+        pointwiseRaw) :
+    Ty level scope :=
+  let _proofWitness := pointwiseProof
+  Ty.oeq (Ty.arrow domainType codomainType)
+    leftFunctionRaw rightFunctionRaw
+
+/-- Definitional match against `Term.oeqFunext`'s output type. -/
+theorem Generator.outputTypeOeqFunext_matches_Term_oeqFunext
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    (leftFunctionRaw rightFunctionRaw : RawTerm scope)
+    {pointwiseRaw : RawTerm scope}
+    (pointwiseProof :
+      Term context
+        (oeqFunextPointwiseType domainType codomainType
+          leftFunctionRaw rightFunctionRaw)
+        pointwiseRaw) :
+    Generator.outputTypeOeqFunext domainType codomainType
+        leftFunctionRaw rightFunctionRaw pointwiseProof =
+      Ty.oeq (Ty.arrow domainType codomainType)
+        leftFunctionRaw rightFunctionRaw := rfl
+
+/-- `Term.equivIntroHet`'s output is `Ty.equiv carrierA carrierB`
+— heterogeneous-carrier equivalence packaged from forward +
+backward + leftInv + rightInv subterms.  The two inverse subterms
+have types built from `equivIntroHetLeftInverseType` /
+`equivIntroHetRightInverseType` helpers; the carrier endpoints
+are pinned by `forward`'s typed shape. -/
+def Generator.outputTypeEquivIntroHet {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierA carrierB : Ty level scope}
+    {forwardRaw backwardRaw leftInvRaw rightInvRaw : RawTerm scope}
+    (forward : Term context (Ty.arrow carrierA carrierB) forwardRaw)
+    (backward : Term context (Ty.arrow carrierB carrierA) backwardRaw)
+    (leftInv :
+      Term context
+        (equivIntroHetLeftInverseType carrierA forwardRaw backwardRaw)
+        leftInvRaw)
+    (rightInv :
+      Term context
+        (equivIntroHetRightInverseType carrierB forwardRaw backwardRaw)
+        rightInvRaw) :
+    Ty level scope :=
+  let _forwardWitness := forward
+  let _backwardWitness := backward
+  let _leftInvWitness := leftInv
+  let _rightInvWitness := rightInv
+  Ty.equiv carrierA carrierB
+
+/-- Definitional match against `Term.equivIntroHet`'s output type. -/
+theorem Generator.outputTypeEquivIntroHet_matches_Term_equivIntroHet
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierA carrierB : Ty level scope}
+    {forwardRaw backwardRaw leftInvRaw rightInvRaw : RawTerm scope}
+    (forward : Term context (Ty.arrow carrierA carrierB) forwardRaw)
+    (backward : Term context (Ty.arrow carrierB carrierA) backwardRaw)
+    (leftInv :
+      Term context
+        (equivIntroHetLeftInverseType carrierA forwardRaw backwardRaw)
+        leftInvRaw)
+    (rightInv :
+      Term context
+        (equivIntroHetRightInverseType carrierB forwardRaw backwardRaw)
+        rightInvRaw) :
+    Generator.outputTypeEquivIntroHet forward backward leftInv rightInv =
+      Ty.equiv carrierA carrierB := rfl
+
 end LeanFX2.Foundation.Polygraph
