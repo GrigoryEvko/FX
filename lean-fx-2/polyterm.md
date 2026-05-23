@@ -1138,13 +1138,120 @@ def materialize : EnrichmentLadder → NiceModelCategory
   | .omegaRung l   => omegaLimit (materialize l)
 ```
 
-**Lean LoC estimate:** ~15K LoC.  This includes the construction of
-`tSeg(A)` for arbitrary nice model A, plus the proof that the
-construction preserves nice model structure (Loubaton 3.1.2.13).
+**v3 PRIMARY recipe — synthetic ∞-category theory inside type theory
+via Gratzer-Weinberger-Buchholtz + Rasekh follow-ups:**
 
-**Research-frontier flag:** ⚠️ Segal categories partial in Mathlib via
-`Mathlib.CategoryTheory.Limits.Shapes.RegularMono`.  Full `tSeg(A)`
-for arbitrary A: not mechanized.
+The v3 upgrade replaces "construct tSeg(A) externally for arbitrary
+nice model A" with "axiomatize Segal + Rezk conditions on types
+INSIDE FX's type theory using STT+modalities".  This is the
+synthetic-vs-analytic shift documented in Gratzer-Weinberger-
+Buchholtz `arXiv:2407.09146` §1.4: instead of building (∞,n)-cats
+as an external object and showing they form a model category,
+DEFINE category-flavored types directly via predicates inside the
+type theory.
+
+**Two synthetic enrichment recipes shipped in 2024-2025:**
+
+* **Riehl-Shulman STT (`arXiv:1705.07442` + extensions):** types
+  carry a directed interval `𝕀` and Segal types are types where
+  `Δ² → A ≃ Λ²₁ → A`.  Rezk types add `isIso(f) ≃ a = b`.  An
+  (∞,1)-cat is exactly a Segal+Rezk type.
+* **Gratzer-Weinberger-Buchholtz triangulated TT
+  (`arXiv:2407.09146`):** extends STT with modalities (♭, ♯, op,
+  ⊠ simplicial monad) + 10 axioms.  Builds the universe `S` of
+  groupoids; constructs presheaves, Yoneda, Kan extensions internal
+  to the type theory.
+* **Rasekh follow-ups** (`arXiv:2604.18668`, 2501.13229,
+  2602.02218): cocartesian fibrations + closure properties + Yoneda
+  embedding + Quillen's Theorem A — all proved internally in `rzk`
+  (mechanized).
+* **Sterling's pi-systems / NbE-for-categories** (paper-only, 2024):
+  computational version that preserves canonicity.
+
+**For FX's ladder:**
+
+* (∞,0) rung = HSet (h-level 2) — already constructed via Step.eqType
+  + UIP discipline.
+* (∞,1) rung = Segal+Rezk type (synthetic, via STT discipline).
+* (∞,2) rung = "directed univalent universe" S (Gratzer-Weinberger-
+  Buchholtz).  Internal to STT+modalities.
+* (∞,ω) rung = limit; constructive iff each (∞,n) rung is decidable.
+* Math-automation extension rung = "polygraph-presented profile"
+  per §3.8 profile-fibration axis.
+
+**Lean signature (v3 primary):**
+
+```lean
+/-- A Segal type: a type A whose Δ² → A reduces uniquely to a span
+of arrows.  Riehl-Shulman §3.  Synthetic (∞,1)-category.
+Lean's `Eq`-based interval ≅ Riehl-Shulman directed interval. -/
+def IsSegal (A : Type u) : Prop :=
+  ∀ (a b c : A) (f : Hom a b) (g : Hom b c),
+  ∃! (h : Hom a c), ComposesTo f g h
+
+/-- A Rezk type: a Segal type where homotopy-equivalences coincide
+with definitional equality. -/
+def IsRezk (A : Type u) [seg : IsSegal A] : Prop :=
+  ∀ (a b : A), IsIso (a = b) (HomEquiv a b)
+
+/-- The ladder, NOT recursive — directly indexed by levels.
+Each level is a type-theoretic predicate, no external model cat. -/
+inductive Rung where
+  | hLevel  : Nat → Rung    -- (∞, 0..n) via h-level predicates
+  | segal   : Rung           -- Segal type discipline (∞,1)
+  | rezk    : Rung           -- Rezk type discipline (∞,1)-cat
+  | directed : Rung          -- Gratzer-W-B universe S (∞,2)+
+  | omegaLimit : Rung        -- limit of the tower
+
+/-- Materialize a rung into the predicate it represents.  Replaces
+v2 "tSeg construction" with synthetic-predicate-on-type. -/
+def Rung.predicate : Rung → (Type u → Prop)
+  | .hLevel n   => HasHLevel n
+  | .segal      => IsSegal
+  | .rezk       => fun A => ∃ (s : IsSegal A), IsRezk A
+  | .directed   => IsDirectedUnivalent  -- per arXiv:2407.09146 Def 1.2
+  | .omegaLimit => fun A => ∀ n, Rung.hLevel n |>.predicate A  -- limit
+
+/-- An enrichment is a choice of rung per dimension. -/
+def Enrichment := Nat → Rung
+
+/-- FX's enrichment profile.  Most dims at hLevel 2 (HSet);
+specific dims unlock higher rungs as needed by FX features. -/
+def fxEnrichment : Enrichment := fun
+  | 0 => .hLevel 2                  -- Terms are HSets
+  | 1 => .segal                     -- Step relations form Segal type
+  | 2 => .rezk                      -- Step.par chains form Rezk type
+  | 3 => .directed                  -- Conv as directed univalent univ
+  | _ => .omegaLimit                -- limit (for math automation)
+```
+
+**FX impact:**
+
+* Replaces v2 ~15K LoC `tSeg(A)` construction with v3 ~3K LoC of
+  synthetic predicates inside FX.
+* Reuses §3.10 polynomial-universe + triangulated-TT machinery
+  for the higher rungs.
+* (∞,n) rungs become OPT-IN per profile dimension; no need to ship
+  every rung for every FX deployment.
+
+**Lean LoC estimate (v3 primary):** ~3K LoC for the rung enum + per-
+rung predicates + fxEnrichment instance.  Massive reduction from
+v2 ~15K LoC.
+
+**Mechanizability:**
+
+* Riehl-Shulman STT: rzk-prototyped (Kud23).
+* Gratzer-Weinberger-Buchholtz TT_⊠: rzk-prototyped + paper-form.
+* Rasekh fibrations: ✅ rzk-mechanized.
+
+**v3 watch:**
+
+* Synthetic vs analytic shift means we lose the ability to import
+  "an arbitrary Quillen model category" as a rung.  FX trades that
+  generality for mechanizability.
+* For FX's "polygraph-of-polygraphs" math-automation use case
+  (§3.8), the synthetic rung approach DOES compose: nested
+  profile towers can each pick rungs independently.
 
 ### 3.6 Complicial Gray module
 
@@ -1206,14 +1313,98 @@ structure ComplicialGrayModule (A : NiceModelCategory) extends GrayModule A wher
   acyclicEpsilon : ∀ a (ε : Bool), IsAcyclicCofib ({ε} ⋆ a → [1]_t ⋆ a)
 ```
 
-**Lean LoC estimate:** ~25K LoC.  The full ComplicialGray construction
-is the heaviest single layer; it includes the Gray tensor formula,
-Gray cylinder + cone formulas (Loubaton 2207.08504 §2.3), and the
-naturality squares.
+**v3 PRIMARY — Stage 1 ALREADY SHIPPED via K11.x:**
 
-**Research-frontier flag:** ⚠️ Gray tensor at the strict ω-cat level
-mechanized in Coq (Maltsiniotis-Métayer); the (∞,ω) complicial version
-(Loubaton 2207.08504) is unmechanized.
+The v3 upgrade promotes the existing K11.x infrastructure (already
+landed in `LeanFX2/Foundation/Polygraph/`) to PRIMARY status, with
+the (∞,ω) complicial extension as Stage 2 follow-on.  Stage 1
+delivers the strict-ω-cat Gray tensor + vertical/horizontal
+composition + interchange, which is enough for FX's concurrency +
+frame-rule + polarization use cases.
+
+**Stage 1 (✅ SHIPPED in `Foundation/Polygraph/`):**
+
+| Component | File | Status |
+|---|---|---|
+| Vertical composition + assoc + unit | `VerticalComp.lean` (169 LoC) | ✅ shipped |
+| Horizontal composition + assoc + unit | `HorizontalComp.lean` (156 LoC) | ✅ shipped |
+| Interchange law (Eckmann-Hilton at K11.6) | `Laws.lean` (78 LoC) | ✅ shipped |
+| Free n-category construction (Burroni adjoint) | `FreeCategory.lean` (178 LoC) | ✅ shipped |
+| PolyCell well-foundedness + DecidableEq | `Wellfounded.lean` + `DecEq.lean` (260 LoC) | ✅ shipped |
+
+Total Stage 1 LoC: ~840 LoC ALREADY IN TREE, zero-axiom under
+strict harness.  This is the operational Gray-tensor + interchange
+machinery that FX needs for concurrency + frame-rule + polarization.
+
+**Stage 2 (REQUIRED follow-on, ~15K LoC):**
+
+The complicial (∞,ω) extension per Loubaton 2207.08504 §3.1.5.4 +
+Verity 2008 §6 explicit formulas.  Stage 2 adds:
+
+* `acyclicLambda` + `acyclicEpsilon` acyclic-cofibration witnesses.
+* Gray cylinder + Gray cone + Gray ◦-cone (Loubaton §2.3.1 formulas).
+* Truncation compatibility (truncations commute with Gray tensor).
+* Naturality squares for the Gray module structure.
+
+Maltsiniotis-Métayer `arXiv:0712.0617` Coq mechanization of strict-
+ω-cat Gray tensor provides the algorithmic foundation; Loubaton's
+extension to complicial is formula-level work, not new mathematics.
+
+**Why Stage 2 is shippable (not de-scoped as in v2):**
+
+* Verity's formulas are case-by-case algorithmic recipes (Verity
+  2008 §3-§4, restated Riehl 2016 §4-§5).
+* Loubaton's complicial extension adds marking-tracking but no new
+  categorical structure.
+* ABGMMM book §17 catalogs the formulas needed.
+* Combined with §3.4 cubical contraction saturation (the v3 rewrite),
+  Stage 2 ComplicialGray + saturation share the cubical-cell-pasting
+  algorithm — many lemmas reuse.
+
+**Why FX needs it (v3 framing):**
+
+- The Gray tensor `⊗` is the "right" tensor product on (∞,ω)-cats,
+  asymmetric (not symmetric monoidal): `A ⊗ B` distinguishes
+  horizontal vs vertical composition.
+
+- Concurrent execution = horizontal composition with disjoint
+  footprint.  Frame rule = interchange.  **K11.6 interchange law
+  already shipped** — Stage 1 directly provides FX's concurrency
+  primitive.
+
+- Polarization (Levy CBPV + Pédrot-Tabareau ∂CBPV) is encoded via
+  complicial Gray: positive cells are thin under `_⋆[1]`, negative
+  cells under `[1]⋆_`.  Requires Stage 2 (the marking-aware
+  cylinder + cone).
+
+- Cubical operations (transp, hcomp, Kan filling) factor through
+  Gray cylinder + Gray cone (Loubaton §2.2.3).  Requires Stage 2.
+
+**v3 watch:**
+
+* Stage 1 ↔ Stage 2 split is the v3 upgrade.  v1/v2 doc treated
+  the full (∞,ω) complicial as one monolithic block (~25K LoC,
+  "research-frontier flag").  v3 splits: Stage 1 is shipped
+  (~840 LoC); Stage 2 is committed but smaller (~15K LoC) because
+  it builds on the K11.x foundation.
+* If Stage 2 hits an (∞,ω)-mechanization wall, fall back to:
+  Stage 1 only → lose univalence-as-theorem partial structural
+  proof, lose proper polarization, lose proper cubical-via-Gray
+  factoring.  But keep: concurrency frame rule, free n-cat
+  construction, interchange law.  Net cost of fallback: ~5K LoC of
+  alternative explicit constructions for the lost capabilities.
+
+**Lean LoC estimate (v3 total):** ~15.8K LoC total = ~840 LoC
+already shipped (Stage 1) + ~15K LoC pending (Stage 2).  Reduced
+from v2 ~25K LoC because Stage 1 deletes the abstract `GrayModule`
+struct in favor of the concrete K11.x infrastructure.
+
+**Mechanizability:**
+
+* Stage 1: ✅ ALREADY SHIPPED in `Foundation/Polygraph/`.
+* Stage 2: Maltsiniotis-Métayer arXiv:0712.0617 Coq mechanization
+  is the template for strict-ω-cat Gray tensor.  Loubaton 2207.08504
+  §3.1.5 is paper-only but formula-explicit.
 
 ### 3.7 ∞-Topos base — multi-focus commuting cohesions
 
