@@ -154,6 +154,28 @@ namespace LeanFX2.SmokeGeneratorOutputType
 #assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEitherInl_matches_Term_eitherInl
 #assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEitherInr
 #assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEitherInr_matches_Term_eitherInr
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeUniverseCode
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeUniverseCode_matches_Term_universeCode
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeArrowCode
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeArrowCode_matches_Term_arrowCode
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypePiTyCode
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypePiTyCode_matches_Term_piTyCode
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeSigmaTyCode
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeSigmaTyCode_matches_Term_sigmaTyCode
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeProductCode
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeProductCode_matches_Term_productCode
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeSumCode
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeSumCode_matches_Term_sumCode
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeListCode
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeListCode_matches_Term_listCode
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeOptionCode
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeOptionCode_matches_Term_optionCode
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEitherCode
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEitherCode_matches_Term_eitherCode
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeIdCode
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeIdCode_matches_Term_idCode
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEquivCode
+#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEquivCode_matches_Term_equivCode
 
 #print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeApp
 #print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeApp_matches_Term_app
@@ -251,5 +273,27 @@ namespace LeanFX2.SmokeGeneratorOutputType
 #print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEitherInl_matches_Term_eitherInl
 #print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEitherInr
 #print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEitherInr_matches_Term_eitherInr
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeUniverseCode
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeUniverseCode_matches_Term_universeCode
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeArrowCode
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeArrowCode_matches_Term_arrowCode
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypePiTyCode
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypePiTyCode_matches_Term_piTyCode
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeSigmaTyCode
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeSigmaTyCode_matches_Term_sigmaTyCode
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeProductCode
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeProductCode_matches_Term_productCode
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeSumCode
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeSumCode_matches_Term_sumCode
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeListCode
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeListCode_matches_Term_listCode
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeOptionCode
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeOptionCode_matches_Term_optionCode
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEitherCode
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEitherCode_matches_Term_eitherCode
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeIdCode
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeIdCode_matches_Term_idCode
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEquivCode
+#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeEquivCode_matches_Term_equivCode
 
 end LeanFX2.SmokeGeneratorOutputType

@@ -1349,4 +1349,281 @@ theorem Generator.outputTypeEitherInr_matches_Term_eitherInr
     Generator.outputTypeEitherInr leftType valueTerm =
       Ty.eitherType leftType rightType := rfl
 
+/-! ### Type-code family (11 ctors, CUMUL-2.4)
+
+Mirrors `Term.lean:583-1028` (`universeCode`, `arrowCode`, `piTyCode`,
+`sigmaTyCode`, `productCode`, `sumCode`, `listCode`, `optionCode`,
+`eitherCode`, `idCode`, `equivCode`).
+
+These are VALUE-shaped (schematic raw) per CUMUL-2.4 discipline —
+the raw payload carries the to-be-decoded type structure, but no
+typed-child obligations.  Every extractor follows the uniform shape:
+
+* takes `outerLevel : UniverseLevel` + `levelLe : outerLevel.toNat
+  + 1 ≤ level` + the raw-payload arguments,
+* returns `Ty.universe outerLevel levelLe`.
+
+The uniformity is the whole point — each type code packages its
+syntactic shape inside the raw payload, while the typed Term layer
+just records "this is a type code inhabiting `Ty.universe N`". -/
+
+/-- `Term.universeCode`'s output is `Ty.universe outerLevel levelLe`.
+The inner level + cumulativity witness are recorded on the raw side. -/
+def Generator.outputTypeUniverseCode {mode : Mode} {level scope : Nat}
+    (context : Ctx mode level scope)
+    (innerLevel outerLevel : UniverseLevel)
+    (cumulOk : innerLevel.toNat ≤ outerLevel.toNat)
+    (levelLe : outerLevel.toNat + 1 ≤ level) :
+    Ty level scope :=
+  let _contextWitness := context
+  let _innerWitness := innerLevel
+  let _cumulWitness := cumulOk
+  Ty.universe outerLevel levelLe
+
+/-- Definitional match against `Term.universeCode`'s output type. -/
+theorem Generator.outputTypeUniverseCode_matches_Term_universeCode
+    {mode : Mode} {level scope : Nat}
+    (context : Ctx mode level scope)
+    (innerLevel outerLevel : UniverseLevel)
+    (cumulOk : innerLevel.toNat ≤ outerLevel.toNat)
+    (levelLe : outerLevel.toNat + 1 ≤ level) :
+    Generator.outputTypeUniverseCode context innerLevel outerLevel
+        cumulOk levelLe =
+      Ty.universe outerLevel levelLe := rfl
+
+/-- `Term.arrowCode`'s output is `Ty.universe outerLevel levelLe`. -/
+def Generator.outputTypeArrowCode {mode : Mode} {level scope : Nat}
+    (context : Ctx mode level scope)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (domainCodeRaw codomainCodeRaw : RawTerm scope) :
+    Ty level scope :=
+  let _contextWitness := context
+  let _domainWitness := domainCodeRaw
+  let _codomainWitness := codomainCodeRaw
+  Ty.universe outerLevel levelLe
+
+/-- Definitional match against `Term.arrowCode`'s output type. -/
+theorem Generator.outputTypeArrowCode_matches_Term_arrowCode
+    {mode : Mode} {level scope : Nat}
+    (context : Ctx mode level scope)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (domainCodeRaw codomainCodeRaw : RawTerm scope) :
+    Generator.outputTypeArrowCode context outerLevel levelLe
+        domainCodeRaw codomainCodeRaw =
+      Ty.universe outerLevel levelLe := rfl
+
+/-- `Term.piTyCode`'s output is `Ty.universe outerLevel levelLe`.
+Codomain raw lives at `scope + 1` (Π binder). -/
+def Generator.outputTypePiTyCode {mode : Mode} {level scope : Nat}
+    (context : Ctx mode level scope)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (domainCodeRaw : RawTerm scope)
+    (codomainCodeRaw : RawTerm (scope + 1)) :
+    Ty level scope :=
+  let _contextWitness := context
+  let _domainWitness := domainCodeRaw
+  let _codomainWitness := codomainCodeRaw
+  Ty.universe outerLevel levelLe
+
+/-- Definitional match against `Term.piTyCode`'s output type. -/
+theorem Generator.outputTypePiTyCode_matches_Term_piTyCode
+    {mode : Mode} {level scope : Nat}
+    (context : Ctx mode level scope)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (domainCodeRaw : RawTerm scope)
+    (codomainCodeRaw : RawTerm (scope + 1)) :
+    Generator.outputTypePiTyCode context outerLevel levelLe
+        domainCodeRaw codomainCodeRaw =
+      Ty.universe outerLevel levelLe := rfl
+
+/-- `Term.sigmaTyCode`'s output is `Ty.universe outerLevel levelLe`.
+Codomain raw lives at `scope + 1` (Σ binder). -/
+def Generator.outputTypeSigmaTyCode {mode : Mode} {level scope : Nat}
+    (context : Ctx mode level scope)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (domainCodeRaw : RawTerm scope)
+    (codomainCodeRaw : RawTerm (scope + 1)) :
+    Ty level scope :=
+  let _contextWitness := context
+  let _domainWitness := domainCodeRaw
+  let _codomainWitness := codomainCodeRaw
+  Ty.universe outerLevel levelLe
+
+/-- Definitional match against `Term.sigmaTyCode`'s output type. -/
+theorem Generator.outputTypeSigmaTyCode_matches_Term_sigmaTyCode
+    {mode : Mode} {level scope : Nat}
+    (context : Ctx mode level scope)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (domainCodeRaw : RawTerm scope)
+    (codomainCodeRaw : RawTerm (scope + 1)) :
+    Generator.outputTypeSigmaTyCode context outerLevel levelLe
+        domainCodeRaw codomainCodeRaw =
+      Ty.universe outerLevel levelLe := rfl
+
+/-- `Term.productCode`'s output is `Ty.universe outerLevel levelLe`. -/
+def Generator.outputTypeProductCode {mode : Mode} {level scope : Nat}
+    (context : Ctx mode level scope)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (firstCodeRaw secondCodeRaw : RawTerm scope) :
+    Ty level scope :=
+  let _contextWitness := context
+  let _firstWitness := firstCodeRaw
+  let _secondWitness := secondCodeRaw
+  Ty.universe outerLevel levelLe
+
+/-- Definitional match against `Term.productCode`'s output type. -/
+theorem Generator.outputTypeProductCode_matches_Term_productCode
+    {mode : Mode} {level scope : Nat}
+    (context : Ctx mode level scope)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (firstCodeRaw secondCodeRaw : RawTerm scope) :
+    Generator.outputTypeProductCode context outerLevel levelLe
+        firstCodeRaw secondCodeRaw =
+      Ty.universe outerLevel levelLe := rfl
+
+/-- `Term.sumCode`'s output is `Ty.universe outerLevel levelLe`. -/
+def Generator.outputTypeSumCode {mode : Mode} {level scope : Nat}
+    (context : Ctx mode level scope)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (leftCodeRaw rightCodeRaw : RawTerm scope) :
+    Ty level scope :=
+  let _contextWitness := context
+  let _leftWitness := leftCodeRaw
+  let _rightWitness := rightCodeRaw
+  Ty.universe outerLevel levelLe
+
+/-- Definitional match against `Term.sumCode`'s output type. -/
+theorem Generator.outputTypeSumCode_matches_Term_sumCode
+    {mode : Mode} {level scope : Nat}
+    (context : Ctx mode level scope)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (leftCodeRaw rightCodeRaw : RawTerm scope) :
+    Generator.outputTypeSumCode context outerLevel levelLe
+        leftCodeRaw rightCodeRaw =
+      Ty.universe outerLevel levelLe := rfl
+
+/-- `Term.listCode`'s output is `Ty.universe outerLevel levelLe`. -/
+def Generator.outputTypeListCode {mode : Mode} {level scope : Nat}
+    (context : Ctx mode level scope)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (elementCodeRaw : RawTerm scope) :
+    Ty level scope :=
+  let _contextWitness := context
+  let _elementWitness := elementCodeRaw
+  Ty.universe outerLevel levelLe
+
+/-- Definitional match against `Term.listCode`'s output type. -/
+theorem Generator.outputTypeListCode_matches_Term_listCode
+    {mode : Mode} {level scope : Nat}
+    (context : Ctx mode level scope)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (elementCodeRaw : RawTerm scope) :
+    Generator.outputTypeListCode context outerLevel levelLe
+        elementCodeRaw =
+      Ty.universe outerLevel levelLe := rfl
+
+/-- `Term.optionCode`'s output is `Ty.universe outerLevel levelLe`. -/
+def Generator.outputTypeOptionCode {mode : Mode} {level scope : Nat}
+    (context : Ctx mode level scope)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (elementCodeRaw : RawTerm scope) :
+    Ty level scope :=
+  let _contextWitness := context
+  let _elementWitness := elementCodeRaw
+  Ty.universe outerLevel levelLe
+
+/-- Definitional match against `Term.optionCode`'s output type. -/
+theorem Generator.outputTypeOptionCode_matches_Term_optionCode
+    {mode : Mode} {level scope : Nat}
+    (context : Ctx mode level scope)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (elementCodeRaw : RawTerm scope) :
+    Generator.outputTypeOptionCode context outerLevel levelLe
+        elementCodeRaw =
+      Ty.universe outerLevel levelLe := rfl
+
+/-- `Term.eitherCode`'s output is `Ty.universe outerLevel levelLe`. -/
+def Generator.outputTypeEitherCode {mode : Mode} {level scope : Nat}
+    (context : Ctx mode level scope)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (leftCodeRaw rightCodeRaw : RawTerm scope) :
+    Ty level scope :=
+  let _contextWitness := context
+  let _leftWitness := leftCodeRaw
+  let _rightWitness := rightCodeRaw
+  Ty.universe outerLevel levelLe
+
+/-- Definitional match against `Term.eitherCode`'s output type. -/
+theorem Generator.outputTypeEitherCode_matches_Term_eitherCode
+    {mode : Mode} {level scope : Nat}
+    (context : Ctx mode level scope)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (leftCodeRaw rightCodeRaw : RawTerm scope) :
+    Generator.outputTypeEitherCode context outerLevel levelLe
+        leftCodeRaw rightCodeRaw =
+      Ty.universe outerLevel levelLe := rfl
+
+/-- `Term.idCode`'s output is `Ty.universe outerLevel levelLe`. -/
+def Generator.outputTypeIdCode {mode : Mode} {level scope : Nat}
+    (context : Ctx mode level scope)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (typeCodeRaw leftRaw rightRaw : RawTerm scope) :
+    Ty level scope :=
+  let _contextWitness := context
+  let _typeCodeWitness := typeCodeRaw
+  let _leftWitness := leftRaw
+  let _rightWitness := rightRaw
+  Ty.universe outerLevel levelLe
+
+/-- Definitional match against `Term.idCode`'s output type. -/
+theorem Generator.outputTypeIdCode_matches_Term_idCode
+    {mode : Mode} {level scope : Nat}
+    (context : Ctx mode level scope)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (typeCodeRaw leftRaw rightRaw : RawTerm scope) :
+    Generator.outputTypeIdCode context outerLevel levelLe
+        typeCodeRaw leftRaw rightRaw =
+      Ty.universe outerLevel levelLe := rfl
+
+/-- `Term.equivCode`'s output is `Ty.universe outerLevel levelLe`. -/
+def Generator.outputTypeEquivCode {mode : Mode} {level scope : Nat}
+    (context : Ctx mode level scope)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (leftTypeCodeRaw rightTypeCodeRaw : RawTerm scope) :
+    Ty level scope :=
+  let _contextWitness := context
+  let _leftWitness := leftTypeCodeRaw
+  let _rightWitness := rightTypeCodeRaw
+  Ty.universe outerLevel levelLe
+
+/-- Definitional match against `Term.equivCode`'s output type. -/
+theorem Generator.outputTypeEquivCode_matches_Term_equivCode
+    {mode : Mode} {level scope : Nat}
+    (context : Ctx mode level scope)
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (leftTypeCodeRaw rightTypeCodeRaw : RawTerm scope) :
+    Generator.outputTypeEquivCode context outerLevel levelLe
+        leftTypeCodeRaw rightTypeCodeRaw =
+      Ty.universe outerLevel levelLe := rfl
+
 end LeanFX2.Foundation.Polygraph
