@@ -26,6 +26,7 @@ import LeanFX2.Reduction.Step.Casts
 import LeanFX2.Reduction.ParRed.ParCasts
 import LeanFX2.Reduction.ParRed.RenameCompatibleTyped
 import LeanFX2.Reduction.ParRed.RenameCompatibleTypedStar
+import LeanFX2.Reduction.ConvRenameParJoin
 import LeanFX2.Reduction.RawParWeakenInv.Weaken
 import LeanFX2.Reduction.TranspPiContractumPar
 import LeanFX2.Term.PreservesTerm.InlineDestructors
@@ -1038,5 +1039,10 @@ constructor — pure definitional, no induction, no cast on the `refl`
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed
 -- Chain version (#2028): parStar lift of the single-step headline.
 #assert_no_axioms LeanFX2.Step.parStar.rename_compatible_typed
+-- Typed Conv rename equivariance, forward (#2029, parallel-join flavor):
+-- typed Conv → typed parallel join, preserved under renaming / weakening.
+#assert_no_axioms LeanFX2.Conv.toParJoin
+#assert_no_axioms LeanFX2.Conv.rename_equivariant_fwd_parJoin
+#assert_no_axioms LeanFX2.Conv.weaken_equivariant_fwd_parJoin
 
 end LeanFX2.Tools

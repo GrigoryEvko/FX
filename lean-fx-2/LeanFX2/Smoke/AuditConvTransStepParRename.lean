@@ -1,5 +1,6 @@
 import LeanFX2.Reduction.ParRed.RenameCompatibleTyped
 import LeanFX2.Reduction.ParRed.RenameCompatibleTypedStar
+import LeanFX2.Reduction.ConvRenameParJoin
 
 /-! # Smoke/AuditConvTransStepParRename — typed `Step.par` rename-equivariance arms
 
@@ -173,5 +174,9 @@ namespace LeanFX2.SmokeConvTransStepParRename
 #print axioms LeanFX2.Step.par.rename_compatible_typed_betaPathAppDeep
 #print axioms LeanFX2.Step.par.pathReflApp_body_heqCongr
 #print axioms LeanFX2.Step.par.rename_compatible_typed_betaPathReflApp
+-- #2029 unblock-C.t6.forward: typed Conv rename equivariance (parallel-join flavor)
+#print axioms LeanFX2.Conv.toParJoin
+#print axioms LeanFX2.Conv.rename_equivariant_fwd_parJoin
+#print axioms LeanFX2.Conv.weaken_equivariant_fwd_parJoin
 
 end LeanFX2.SmokeConvTransStepParRename
