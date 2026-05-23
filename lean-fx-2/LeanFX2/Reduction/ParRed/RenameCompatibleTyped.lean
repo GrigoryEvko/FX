@@ -2898,6 +2898,56 @@ theorem rename_compatible_typed_transpReflBeta
       pathRawCommute.symm (eqRec_heq _ _)
       (Term.rename termRenaming sourceValueSource)
 
+/-- β arm `transpReflBetaDeep` of typed-Step.par rename equivariance (deep cubical
+transport at a path that DEVELOPS to a constant `pathLam`).  Unlike the shallow
+`transpReflBeta`, the typed `typePath` here carries a FREE raw `pathRawSource`, so
+it renames purely structurally — NO `Step.par.castSourceTermHeq` is needed on the
+transport.  The single non-trivial step is the RAW develops-to premise `pathStep :
+RawStep.par pathRawSource (pathLam typeRawTarget.weaken)`: renaming it via
+`RawStep.par.rename` gives target `(pathLam typeRawTarget.weaken).rename rho`, which
+the constructor wants as `pathLam ((typeRawTarget.rename rho).weaken)` — bridged by a
+single `▸` with `RawTerm.weaken_rename_commute` (on a plain `RawTerm` index of
+`RawStep.par`, no dependent-typing tangle).  The reduct (`sourceValueTarget`) is at
+the plain `sourceType`, cast-free. -/
+theorem rename_compatible_typed_transpReflBetaDeep
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (modeIsUnivalent : mode = Mode.univalent)
+    (universeLevel : UniverseLevel)
+    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+    (sourceType : Ty level sourceScope)
+    {typeRaw pathRawSource typeRawTarget : RawTerm sourceScope}
+    {sourceRawSource sourceRawTarget : RawTerm sourceScope}
+    (typePath :
+      Term sourceCtx
+        (Ty.path (Ty.universe universeLevel universeLevelLt) typeRaw typeRaw)
+        pathRawSource)
+    (pathStep :
+      RawStep.par pathRawSource (RawTerm.pathLam typeRawTarget.weaken))
+    {sourceValueSource : Term sourceCtx sourceType sourceRawSource}
+    {sourceValueTarget : Term sourceCtx sourceType sourceRawTarget}
+    (sourceStep :
+      Step.par (Term.rename termRenaming sourceValueSource)
+               (Term.rename termRenaming sourceValueTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.transp modeIsUnivalent universeLevel universeLevelLt
+          sourceType sourceType typeRaw typeRaw typePath sourceValueSource))
+      (Term.rename termRenaming sourceValueTarget) := by
+  have targetRawCommute :
+      (RawTerm.pathLam typeRawTarget.weaken).rename rho
+        = RawTerm.pathLam ((typeRawTarget.rename rho).weaken) :=
+    congrArg RawTerm.pathLam (RawTerm.weaken_rename_commute rho typeRawTarget)
+  dsimp only [Term.rename]
+  exact Step.par.transpReflBetaDeep modeIsUnivalent universeLevel universeLevelLt
+    (sourceType.rename rho)
+    (Term.rename termRenaming typePath)
+    (targetRawCommute ▸ RawStep.par.rename rho pathStep)
+    sourceStep
+
 end Step.par
 
 end LeanFX2
