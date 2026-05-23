@@ -27,6 +27,8 @@ namespace LeanFX2.Smoke
 #print axioms LeanFX2.Term.rename_weaken_commute
 #print axioms LeanFX2.TermSubst.renameOutput_lift_entry_HEq
 #print axioms LeanFX2.Term.subst_rename_commute
+#print axioms LeanFX2.TermSubst.precomposeRenaming_lift_entry_HEq
+#print axioms LeanFX2.Term.rename_subst_commute
 #print axioms LeanFX2.Term.subst0_rename_commute
 
 end LeanFX2.Smoke
