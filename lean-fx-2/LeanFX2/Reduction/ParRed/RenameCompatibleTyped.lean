@@ -850,6 +850,188 @@ theorem rename_compatible_typed_idStrictRecCong
   dsimp only [Term.rename]
   exact Step.par.idStrictRecCong modeIsStrict baseStep witnessStep
 
+/-- Cong arm `intervalOppCong` of typed-Step.par rename equivariance.
+
+Interval negation reduces in its operand.  `Ty.interval` is closed, so
+`Term.rename` carries no cast and the push is definitional. -/
+theorem rename_compatible_typed_intervalOppCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {innerRawSource innerRawTarget : RawTerm sourceScope}
+    {innerSource : Term sourceCtx Ty.interval innerRawSource}
+    {innerTarget : Term sourceCtx Ty.interval innerRawTarget}
+    (innerStep :
+      Step.par (Term.rename termRenaming innerSource)
+               (Term.rename termRenaming innerTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.intervalOpp innerSource))
+      (Term.rename termRenaming (Term.intervalOpp innerTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.intervalOppCong innerStep
+
+/-- Cong arm `intervalMeetCong` of typed-Step.par rename equivariance.
+
+Interval meet reduces in both arguments, each at the closed `Ty.interval`.
+Cast-free definitional push, two sub-steps. -/
+theorem rename_compatible_typed_intervalMeetCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {leftRawSource leftRawTarget rightRawSource rightRawTarget : RawTerm sourceScope}
+    {leftSource : Term sourceCtx Ty.interval leftRawSource}
+    {leftTarget : Term sourceCtx Ty.interval leftRawTarget}
+    {rightSource : Term sourceCtx Ty.interval rightRawSource}
+    {rightTarget : Term sourceCtx Ty.interval rightRawTarget}
+    (leftStep :
+      Step.par (Term.rename termRenaming leftSource)
+               (Term.rename termRenaming leftTarget))
+    (rightStep :
+      Step.par (Term.rename termRenaming rightSource)
+               (Term.rename termRenaming rightTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.intervalMeet leftSource rightSource))
+      (Term.rename termRenaming (Term.intervalMeet leftTarget rightTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.intervalMeetCong leftStep rightStep
+
+/-- Cong arm `intervalJoinCong` of typed-Step.par rename equivariance.
+
+Interval join reduces in both arguments at the closed `Ty.interval`.
+Cast-free definitional push, two sub-steps. -/
+theorem rename_compatible_typed_intervalJoinCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {leftRawSource leftRawTarget rightRawSource rightRawTarget : RawTerm sourceScope}
+    {leftSource : Term sourceCtx Ty.interval leftRawSource}
+    {leftTarget : Term sourceCtx Ty.interval leftRawTarget}
+    {rightSource : Term sourceCtx Ty.interval rightRawSource}
+    {rightTarget : Term sourceCtx Ty.interval rightRawTarget}
+    (leftStep :
+      Step.par (Term.rename termRenaming leftSource)
+               (Term.rename termRenaming leftTarget))
+    (rightStep :
+      Step.par (Term.rename termRenaming rightSource)
+               (Term.rename termRenaming rightTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.intervalJoin leftSource rightSource))
+      (Term.rename termRenaming (Term.intervalJoin leftTarget rightTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.intervalJoinCong leftStep rightStep
+
+/-- Cong arm `recordIntroCong` of typed-Step.par rename equivariance.
+
+Single-field record introduction reduces in its field.  The field sits at
+the non-dependent `singleFieldType`, so `Term.rename` is cast-free —
+definitional push, one sub-step. -/
+theorem rename_compatible_typed_recordIntroCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {singleFieldType : Ty level sourceScope}
+    {firstRawSource firstRawTarget : RawTerm sourceScope}
+    {firstSource : Term sourceCtx singleFieldType firstRawSource}
+    {firstTarget : Term sourceCtx singleFieldType firstRawTarget}
+    (firstStep :
+      Step.par (Term.rename termRenaming firstSource)
+               (Term.rename termRenaming firstTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.recordIntro firstSource))
+      (Term.rename termRenaming (Term.recordIntro firstTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.recordIntroCong firstStep
+
+/-- Cong arm `recordProjCong` of typed-Step.par rename equivariance.
+
+Single-field record projection reduces in its record, which sits at the
+structurally-renaming `Ty.record singleFieldType`.  Cast-free definitional
+push, one sub-step. -/
+theorem rename_compatible_typed_recordProjCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {singleFieldType : Ty level sourceScope}
+    {recordRawSource recordRawTarget : RawTerm sourceScope}
+    {recordSource : Term sourceCtx (Ty.record singleFieldType) recordRawSource}
+    {recordTarget : Term sourceCtx (Ty.record singleFieldType) recordRawTarget}
+    (recordStep :
+      Step.par (Term.rename termRenaming recordSource)
+               (Term.rename termRenaming recordTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.recordProj recordSource))
+      (Term.rename termRenaming (Term.recordProj recordTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.recordProjCong recordStep
+
+/-- Cong arm `refineIntroCong` of typed-Step.par rename equivariance.
+
+Refinement introduction reduces in its value and its (unit) proof.  The
+refinement predicate is type-level data carried unchanged (renamed to
+`predicate.rename rho.lift` by `Term.rename`, and `Step.par.refineIntroCong`
+infers its own predicate implicit to match), the value sits at the
+non-dependent `baseType`, the proof at the closed `Ty.unit` — so the push is
+definitional and cast-free, two sub-steps. -/
+theorem rename_compatible_typed_refineIntroCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {baseType : Ty level sourceScope}
+    {predicate : RawTerm (sourceScope + 1)}
+    {valueRawSource valueRawTarget proofRawSource proofRawTarget : RawTerm sourceScope}
+    {valueSource : Term sourceCtx baseType valueRawSource}
+    {valueTarget : Term sourceCtx baseType valueRawTarget}
+    {proofSource : Term sourceCtx Ty.unit proofRawSource}
+    {proofTarget : Term sourceCtx Ty.unit proofRawTarget}
+    (valueStep :
+      Step.par (Term.rename termRenaming valueSource)
+               (Term.rename termRenaming valueTarget))
+    (proofStep :
+      Step.par (Term.rename termRenaming proofSource)
+               (Term.rename termRenaming proofTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.refineIntro predicate valueSource proofSource))
+      (Term.rename termRenaming (Term.refineIntro predicate valueTarget proofTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.refineIntroCong valueStep proofStep
+
+/-- Cong arm `refineElimCong` of typed-Step.par rename equivariance.
+
+Refinement elimination reduces in its refined value, which sits at the
+structurally-renaming `Ty.refine baseType predicate`.  Cast-free
+definitional push, one sub-step. -/
+theorem rename_compatible_typed_refineElimCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {baseType : Ty level sourceScope}
+    {predicate : RawTerm (sourceScope + 1)}
+    {refinedRawSource refinedRawTarget : RawTerm sourceScope}
+    {refinedSource : Term sourceCtx (Ty.refine baseType predicate) refinedRawSource}
+    {refinedTarget : Term sourceCtx (Ty.refine baseType predicate) refinedRawTarget}
+    (refinedStep :
+      Step.par (Term.rename termRenaming refinedSource)
+               (Term.rename termRenaming refinedTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.refineElim refinedSource))
+      (Term.rename termRenaming (Term.refineElim refinedTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.refineElimCong refinedStep
+
 end Step.par
 
 end LeanFX2
