@@ -25,6 +25,7 @@ import LeanFX2.Reduction.ParRed.PreEtaInversion
 import LeanFX2.Reduction.Step.Casts
 import LeanFX2.Reduction.ParRed.ParCasts
 import LeanFX2.Reduction.ParRed.RenameCompatibleTyped
+import LeanFX2.Reduction.ParRed.RenameCompatibleTypedStar
 import LeanFX2.Reduction.RawParWeakenInv.Weaken
 import LeanFX2.Reduction.TranspPiContractumPar
 import LeanFX2.Term.PreservesTerm.InlineDestructors
@@ -1035,5 +1036,7 @@ constructor — pure definitional, no induction, no cast on the `refl`
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaFunextReflAppDeep
 -- Universal headline (#2027): all-133-constructor induction composing the per-arm theorems.
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed
+-- Chain version (#2028): parStar lift of the single-step headline.
+#assert_no_axioms LeanFX2.Step.parStar.rename_compatible_typed
 
 end LeanFX2.Tools
