@@ -18,6 +18,8 @@ blocker).
   forward rename join along a further `Step.parStar` chain.
 * `Conv.weaken_equivariant_fwd_parJoin_sym` — canonical-weaken specialization of
   the symmetric form.
+* `Conv.rename_equivariant_fwd_parJoin_toRaw` — raw projection of both arms to
+  `RawStep.parStar` via `Step.parStar.toRawBridge`.
 
 Every `#print axioms` below must print "does not depend on any axioms".
 
@@ -30,5 +32,6 @@ namespace LeanFX2.SmokeConvBeta
 #print axioms LeanFX2.Conv.rename_equivariant_fwd_parJoin_sym
 #print axioms LeanFX2.Conv.rename_equivariant_fwd_parJoin_extend
 #print axioms LeanFX2.Conv.weaken_equivariant_fwd_parJoin_sym
+#print axioms LeanFX2.Conv.rename_equivariant_fwd_parJoin_toRaw
 
 end LeanFX2.SmokeConvBeta

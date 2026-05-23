@@ -1,4 +1,5 @@
 import LeanFX2.Reduction.ConvRenameParJoin
+import LeanFX2.Confluence.ParStarBridge
 
 /-! # Reduction/ConvRenameParJoinExtra — companions of the forward rename parallel-join
 
@@ -32,9 +33,15 @@ chain-extending consumers reach for without re-deriving the rename lift.
 * `Conv.weaken_equivariant_fwd_parJoin_sym` — canonical-weaken specialization of
   the symmetric form, mirroring `Conv.weaken_equivariant_fwd_parJoin`'s
   specialization of the forward headline.
+* `Conv.rename_equivariant_fwd_parJoin_toRaw` — raw projection: project both arms
+  of the typed forward rename join down to `RawStep.parStar` on `RawTerm` via
+  `Step.parStar.toRawBridge`, presenting the endpoints as `(toRaw _).rename rho`.
+  This is the raw-join shape `RawStep.parStar.confluence` and the
+  `Conv.renameRaw` consumers (Church-Rosser corollary) reach for.
 
-Zero-axiom — `Conv.sym` and `Step.parStar.append` are zero-axiom, and the rename
-arm reuses #2028 exactly as the forward headline does. -/
+Zero-axiom — `Conv.sym`, `Step.parStar.append`, and `Step.parStar.toRawBridge`
+are zero-axiom, and the rename arm reuses #2028 exactly as the forward headline
+does. -/
 
 namespace LeanFX2
 
@@ -126,5 +133,37 @@ theorem Conv.weaken_equivariant_fwd_parJoin_sym
         (Term.rename (TermRenaming.weakenStep context newType) sourceTerm) midTerm :=
   Conv.rename_equivariant_fwd_parJoin_sym (TermRenaming.weakenStep context newType)
     convertibility
+
+/-- **T6 forward rename equivariance — raw projection.**  Project both arms of the
+typed forward rename parallel join down to a RAW parallel join on `RawTerm`.
+
+The typed join (`Conv.rename_equivariant_fwd_parJoin`) gives two typed
+`Step.parStar` arms reaching a typed common reduct.  Applying
+`Step.parStar.toRawBridge` to each arm yields raw `RawStep.parStar` chains over
+the underlying `RawTerm`s; rewriting the renamed endpoints with `Term.toRaw_rename`
+presents the raw sources as `(toRaw source).rename rho` / `(toRaw target).rename
+rho`.  This is the raw-join shape consumed by `RawStep.parStar.confluence` and the
+`Conv.renameRaw` Church-Rosser corollary — the typed strengthening shipped in the
+forward headline, projected back to the raw layer where confluence completes the
+join. -/
+theorem Conv.rename_equivariant_fwd_parJoin_toRaw
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {sourceType targetType : Ty level sourceScope}
+    {sourceRaw targetRaw : RawTerm sourceScope}
+    {sourceTerm : Term sourceCtx sourceType sourceRaw}
+    {targetTerm : Term sourceCtx targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ midRaw : RawTerm targetScope,
+      RawStep.parStar (sourceRaw.rename rho) midRaw ∧
+      RawStep.parStar (targetRaw.rename rho) midRaw := by
+  obtain ⟨_, midRaw, midTerm, sourceArm, targetArm⟩ :=
+    Conv.rename_equivariant_fwd_parJoin termRenaming convertibility
+  exact ⟨midRaw,
+    Step.parStar.toRawBridge sourceArm,
+    Step.parStar.toRawBridge targetArm⟩
 
 end LeanFX2
