@@ -2233,6 +2233,108 @@ theorem rename_compatible_typed_equivIntroCong
   dsimp only [Term.rename]
   exact Step.par.equivIntroCong forwardStep backwardStep
 
+/-- Cong arm `pathApp` of typed-Step.par rename equivariance (typed-IH, two
+sub-derivations, cast-free).  `Term.pathApp` applies a path to an interval point;
+the cong reduces in both the path and interval positions.  Both subterms live at
+the unshifted `scope` and the carrier types (`Ty.path …`, `Ty.interval`) rename
+structurally, so `Term.rename`'s `pathApp` arm carries no cast — a definitional
+push closes the goal once the two renamed sub-steps are supplied.  This is the
+bare-named cong half of the `pathApp` / `pathAppCong` raw-name-parity pair (both
+are genuine `Step.par` constructors producing `Term.pathApp` reducts; the headline
+induction needs one arm per constructor).  The `modeIsUnivalent` witness is shared
+by both endpoints (renaming preserves mode) and threaded explicitly. -/
+theorem rename_compatible_typed_pathApp
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {pathRawSource pathRawTarget intervalRawSource intervalRawTarget :
+      RawTerm sourceScope}
+    {pathSource :
+      Term sourceCtx (Ty.path carrierType leftEndpoint rightEndpoint) pathRawSource}
+    {pathTarget :
+      Term sourceCtx (Ty.path carrierType leftEndpoint rightEndpoint) pathRawTarget}
+    {intervalSource : Term sourceCtx Ty.interval intervalRawSource}
+    {intervalTarget : Term sourceCtx Ty.interval intervalRawTarget}
+    (pathStep :
+      Step.par (Term.rename termRenaming pathSource)
+               (Term.rename termRenaming pathTarget))
+    (intervalStep :
+      Step.par (Term.rename termRenaming intervalSource)
+               (Term.rename termRenaming intervalTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.pathApp modeIsUnivalent pathSource intervalSource))
+      (Term.rename termRenaming (Term.pathApp modeIsUnivalent pathTarget intervalTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.pathApp modeIsUnivalent pathStep intervalStep
+
+/-- Cong arm `glueIntro` of typed-Step.par rename equivariance (typed-IH, two
+sub-derivations, cast-free).  `Term.glueIntro` packages a base value and a partial
+value (both at `baseType`) under a boundary witness; the cong reduces in both
+value positions.  `baseType` and `boundaryWitness` rename structurally, the two
+values at unshifted `scope`, so the `Term.rename` `glueIntro` arm is cast-free.
+Bare-named half of the `glueIntro` / `glueIntroCong` raw-name-parity pair. -/
+theorem rename_compatible_typed_glueIntro
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (modeIsUnivalent : mode = Mode.univalent)
+    {baseType : Ty level sourceScope}
+    {boundaryWitness : RawTerm sourceScope}
+    {baseRawSource baseRawTarget partialRawSource partialRawTarget :
+      RawTerm sourceScope}
+    {baseSource : Term sourceCtx baseType baseRawSource}
+    {baseTarget : Term sourceCtx baseType baseRawTarget}
+    {partialSource : Term sourceCtx baseType partialRawSource}
+    {partialTarget : Term sourceCtx baseType partialRawTarget}
+    (baseStep :
+      Step.par (Term.rename termRenaming baseSource)
+               (Term.rename termRenaming baseTarget))
+    (partialStep :
+      Step.par (Term.rename termRenaming partialSource)
+               (Term.rename termRenaming partialTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.glueIntro modeIsUnivalent baseType boundaryWitness baseSource partialSource))
+      (Term.rename termRenaming
+        (Term.glueIntro modeIsUnivalent baseType boundaryWitness baseTarget partialTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.glueIntro modeIsUnivalent baseStep partialStep
+
+/-- Cong arm `glueElim` of typed-Step.par rename equivariance (typed-IH, single
+sub-derivation, cast-free).  `Term.glueElim` extracts the base value from a glued
+value at `Ty.glue baseType boundaryWitness`; the cong reduces in the glued value.
+`Ty.glue` renames structurally, so the `Term.rename` `glueElim` arm carries no
+cast.  Bare-named half of the `glueElim` / `glueElimCong` raw-name-parity pair. -/
+theorem rename_compatible_typed_glueElim
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (modeIsUnivalent : mode = Mode.univalent)
+    {baseType : Ty level sourceScope}
+    {boundaryWitness : RawTerm sourceScope}
+    {gluedRawSource gluedRawTarget : RawTerm sourceScope}
+    {gluedSource :
+      Term sourceCtx (Ty.glue baseType boundaryWitness) gluedRawSource}
+    {gluedTarget :
+      Term sourceCtx (Ty.glue baseType boundaryWitness) gluedRawTarget}
+    (gluedStep :
+      Step.par (Term.rename termRenaming gluedSource)
+               (Term.rename termRenaming gluedTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.glueElim modeIsUnivalent gluedSource))
+      (Term.rename termRenaming (Term.glueElim modeIsUnivalent gluedTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.glueElim modeIsUnivalent gluedStep
+
 end Step.par
 
 end LeanFX2
