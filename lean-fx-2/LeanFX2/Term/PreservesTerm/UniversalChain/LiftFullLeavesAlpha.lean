@@ -103,6 +103,144 @@ theorem DispatchAtom.ofVar
                                  (RawTerm.var position)) :=
   DispatchAtom.var position
 
+/-! ## Recursive closed-value `DispatchAtom` builders
+
+The closed-value constructors are dispatchable whenever their typed
+children are, threading the inner `DispatchAtom` witnesses (and an
+`IsClosedTy` witness on the element/inner type where the matching
+dispatch arm requires one).  These builders make the recursive
+`DispatchAtom` family composable — the shape a totality theorem
+folds over. -/
+
+/-- `Term.natSucc` is dispatchable when its predecessor is. -/
+theorem DispatchAtom.ofNatSucc
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {predRaw : RawTerm scope}
+    {predecessor : Term context Ty.nat predRaw}
+    (predDispatch : DispatchAtom predecessor) :
+    DispatchAtom (Term.natSucc (context := context) predecessor
+                  : Term context Ty.nat (RawTerm.natSucc predRaw)) :=
+  DispatchAtom.natSucc predecessor predDispatch
+
+/-- `Term.intervalOpp` is dispatchable when its inner value is. -/
+theorem DispatchAtom.ofIntervalOpp
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {innerRaw : RawTerm scope}
+    {innerValue : Term context Ty.interval innerRaw}
+    (innerDispatch : DispatchAtom innerValue) :
+    DispatchAtom (Term.intervalOpp (context := context) innerValue
+                  : Term context Ty.interval (RawTerm.intervalOpp innerRaw)) :=
+  DispatchAtom.intervalOpp innerValue innerDispatch
+
+/-- `Term.intervalJoin` is dispatchable when both sides are. -/
+theorem DispatchAtom.ofIntervalJoin
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {leftRaw rightRaw : RawTerm scope}
+    {leftValue : Term context Ty.interval leftRaw}
+    {rightValue : Term context Ty.interval rightRaw}
+    (leftDispatch : DispatchAtom leftValue)
+    (rightDispatch : DispatchAtom rightValue) :
+    DispatchAtom (Term.intervalJoin (context := context) leftValue rightValue
+                  : Term context Ty.interval (RawTerm.intervalJoin leftRaw rightRaw)) :=
+  DispatchAtom.intervalJoin leftValue rightValue leftDispatch rightDispatch
+
+/-- `Term.intervalMeet` is dispatchable when both sides are. -/
+theorem DispatchAtom.ofIntervalMeet
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {leftRaw rightRaw : RawTerm scope}
+    {leftValue : Term context Ty.interval leftRaw}
+    {rightValue : Term context Ty.interval rightRaw}
+    (leftDispatch : DispatchAtom leftValue)
+    (rightDispatch : DispatchAtom rightValue) :
+    DispatchAtom (Term.intervalMeet (context := context) leftValue rightValue
+                  : Term context Ty.interval (RawTerm.intervalMeet leftRaw rightRaw)) :=
+  DispatchAtom.intervalMeet leftValue rightValue leftDispatch rightDispatch
+
+/-- `Term.listCons` is dispatchable when its head/tail are dispatchable
+and the element type is closed. -/
+theorem DispatchAtom.ofListCons
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {elementType : Ty level scope}
+    (elementClosed : IsClosedTy elementType)
+    {headRaw tailRaw : RawTerm scope}
+    {headTerm : Term context elementType headRaw}
+    {tailTerm : Term context (Ty.listType elementType) tailRaw}
+    (headDispatch : DispatchAtom headTerm)
+    (tailDispatch : DispatchAtom tailTerm) :
+    DispatchAtom (Term.listCons (context := context) headTerm tailTerm
+                  : Term context (Ty.listType elementType)
+                                 (RawTerm.listCons headRaw tailRaw)) :=
+  DispatchAtom.listCons elementClosed headTerm tailTerm headDispatch tailDispatch
+
+/-- `Term.optionSome` is dispatchable when its value is dispatchable and
+the element type is closed. -/
+theorem DispatchAtom.ofOptionSome
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {elementType : Ty level scope}
+    (elementClosed : IsClosedTy elementType)
+    {valueRaw : RawTerm scope}
+    {valueTerm : Term context elementType valueRaw}
+    (valueDispatch : DispatchAtom valueTerm) :
+    DispatchAtom (Term.optionSome (context := context) valueTerm
+                  : Term context (Ty.optionType elementType)
+                                 (RawTerm.optionSome valueRaw)) :=
+  DispatchAtom.optionSome elementClosed valueTerm valueDispatch
+
+/-- `Term.eitherInl` is dispatchable when its value is dispatchable and
+the left type is closed. -/
+theorem DispatchAtom.ofEitherInl
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {leftType rightType : Ty level scope}
+    (leftClosed : IsClosedTy leftType)
+    {valueRaw : RawTerm scope}
+    {valueTerm : Term context leftType valueRaw}
+    (valueDispatch : DispatchAtom valueTerm) :
+    DispatchAtom (Term.eitherInl (context := context) (rightType := rightType) valueTerm
+                  : Term context (Ty.eitherType leftType rightType)
+                                 (RawTerm.eitherInl valueRaw)) :=
+  DispatchAtom.eitherInl leftClosed valueTerm valueDispatch
+
+/-- `Term.eitherInr` is dispatchable when its value is dispatchable and
+the right type is closed. -/
+theorem DispatchAtom.ofEitherInr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {leftType rightType : Ty level scope}
+    (rightClosed : IsClosedTy rightType)
+    {valueRaw : RawTerm scope}
+    {valueTerm : Term context rightType valueRaw}
+    (valueDispatch : DispatchAtom valueTerm) :
+    DispatchAtom (Term.eitherInr (context := context) (leftType := leftType) valueTerm
+                  : Term context (Ty.eitherType leftType rightType)
+                                 (RawTerm.eitherInr valueRaw)) :=
+  DispatchAtom.eitherInr rightClosed valueTerm valueDispatch
+
+/-- `Term.recordIntro` is dispatchable when its field is dispatchable
+and the field type is closed. -/
+theorem DispatchAtom.ofRecordIntro
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {singleFieldType : Ty level scope}
+    (fieldClosed : IsClosedTy singleFieldType)
+    {firstRaw : RawTerm scope}
+    {firstField : Term context singleFieldType firstRaw}
+    (fieldDispatch : DispatchAtom firstField) :
+    DispatchAtom (Term.recordIntro (context := context) firstField
+                  : Term context (Ty.record singleFieldType)
+                                 (RawTerm.recordIntro firstRaw)) :=
+  DispatchAtom.recordIntro fieldClosed firstField fieldDispatch
+
+/-- `Term.recordProj` is dispatchable when its record value is
+dispatchable and the field type is closed. -/
+theorem DispatchAtom.ofRecordProj
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {singleFieldType : Ty level scope}
+    (fieldClosed : IsClosedTy singleFieldType)
+    {recordRaw : RawTerm scope}
+    {recordValue : Term context (Ty.record singleFieldType) recordRaw}
+    (recordDispatch : DispatchAtom recordValue) :
+    DispatchAtom (Term.recordProj (context := context) recordValue
+                  : Term context singleFieldType (RawTerm.recordProj recordRaw)) :=
+  DispatchAtom.recordProj fieldClosed recordValue recordDispatch
+
 /-! ## Derived universal lifts
 
 Combining an atomic builder with the dispatcher gives a
@@ -205,5 +343,75 @@ theorem RawStep.par.lift_universal_var
                                   (RawTerm.var position))
                   targetRaw :=
   RawStep.par.lift_full_term (DispatchAtom.ofVar position) rawStep
+
+/-! ## Derived universal lifts for recursive closed-value ctors
+
+These thread the inner `DispatchAtom` witness through the recursive
+builder, then dispatch — giving a `StepParExists` for the recursive
+source without a top-level `DispatchAtom` hypothesis. -/
+
+/-- Universal lift for `Term.natSucc`, given a dispatchable predecessor. -/
+theorem RawStep.par.lift_universal_natSucc
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {predRaw : RawTerm scope}
+    {predecessor : Term context Ty.nat predRaw}
+    (predDispatch : DispatchAtom predecessor)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.natSucc predRaw) targetRaw) :
+    StepParExists (Term.natSucc (context := context) predecessor
+                   : Term context Ty.nat (RawTerm.natSucc predRaw))
+                  targetRaw :=
+  RawStep.par.lift_full_term (DispatchAtom.ofNatSucc predDispatch) rawStep
+
+/-- Universal lift for `Term.intervalOpp`, given a dispatchable inner. -/
+theorem RawStep.par.lift_universal_intervalOpp
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {innerRaw : RawTerm scope}
+    {innerValue : Term context Ty.interval innerRaw}
+    (innerDispatch : DispatchAtom innerValue)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.intervalOpp innerRaw) targetRaw) :
+    StepParExists (Term.intervalOpp (context := context) innerValue
+                   : Term context Ty.interval (RawTerm.intervalOpp innerRaw))
+                  targetRaw :=
+  RawStep.par.lift_full_term (DispatchAtom.ofIntervalOpp innerDispatch) rawStep
+
+/-- Universal lift for `Term.listCons`, given closed element type plus
+dispatchable head and tail. -/
+theorem RawStep.par.lift_universal_listCons
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {elementType : Ty level scope}
+    (elementClosed : IsClosedTy elementType)
+    {headRaw tailRaw : RawTerm scope}
+    {headTerm : Term context elementType headRaw}
+    {tailTerm : Term context (Ty.listType elementType) tailRaw}
+    (headDispatch : DispatchAtom headTerm)
+    (tailDispatch : DispatchAtom tailTerm)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.listCons headRaw tailRaw) targetRaw) :
+    StepParExists (Term.listCons (context := context) headTerm tailTerm
+                   : Term context (Ty.listType elementType)
+                                  (RawTerm.listCons headRaw tailRaw))
+                  targetRaw :=
+  RawStep.par.lift_full_term
+    (DispatchAtom.ofListCons elementClosed headDispatch tailDispatch) rawStep
+
+/-- Universal lift for `Term.optionSome`, given closed element type plus
+a dispatchable value. -/
+theorem RawStep.par.lift_universal_optionSome
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {elementType : Ty level scope}
+    (elementClosed : IsClosedTy elementType)
+    {valueRaw : RawTerm scope}
+    {valueTerm : Term context elementType valueRaw}
+    (valueDispatch : DispatchAtom valueTerm)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.optionSome valueRaw) targetRaw) :
+    StepParExists (Term.optionSome (context := context) valueTerm
+                   : Term context (Ty.optionType elementType)
+                                  (RawTerm.optionSome valueRaw))
+                  targetRaw :=
+  RawStep.par.lift_full_term
+    (DispatchAtom.ofOptionSome elementClosed valueDispatch) rawStep
 
 end LeanFX2

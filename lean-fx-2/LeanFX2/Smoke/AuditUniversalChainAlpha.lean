@@ -24,7 +24,15 @@ axioms).
   `lift_universal_interval1`, `lift_universal_listNil`,
   `lift_universal_optionNone`, `lift_universal_var` — combine the
   builder with `RawStep.par.lift_full_term` to lift a raw step to
-  the typed layer with no `DispatchAtom` hypothesis exposed. -/
+  the typed layer with no `DispatchAtom` hypothesis exposed.
+* Recursive closed-value `DispatchAtom` builders (10): `ofNatSucc`,
+  `ofIntervalOpp`, `ofIntervalJoin`, `ofIntervalMeet`, `ofListCons`,
+  `ofOptionSome`, `ofEitherInl`, `ofEitherInr`, `ofRecordIntro`,
+  `ofRecordProj` — thread inner dispatch witnesses (plus an
+  `IsClosedTy` witness where the arm requires one).
+* Recursive derived universal lifts (4): `lift_universal_natSucc`,
+  `lift_universal_intervalOpp`, `lift_universal_listCons`,
+  `lift_universal_optionSome`. -/
 
 namespace LeanFX2.SmokeUniversalChainAlpha
 
@@ -48,6 +56,20 @@ namespace LeanFX2.SmokeUniversalChainAlpha
 #assert_no_axioms LeanFX2.RawStep.par.lift_universal_listNil
 #assert_no_axioms LeanFX2.RawStep.par.lift_universal_optionNone
 #assert_no_axioms LeanFX2.RawStep.par.lift_universal_var
+#assert_no_axioms LeanFX2.DispatchAtom.ofNatSucc
+#assert_no_axioms LeanFX2.DispatchAtom.ofIntervalOpp
+#assert_no_axioms LeanFX2.DispatchAtom.ofIntervalJoin
+#assert_no_axioms LeanFX2.DispatchAtom.ofIntervalMeet
+#assert_no_axioms LeanFX2.DispatchAtom.ofListCons
+#assert_no_axioms LeanFX2.DispatchAtom.ofOptionSome
+#assert_no_axioms LeanFX2.DispatchAtom.ofEitherInl
+#assert_no_axioms LeanFX2.DispatchAtom.ofEitherInr
+#assert_no_axioms LeanFX2.DispatchAtom.ofRecordIntro
+#assert_no_axioms LeanFX2.DispatchAtom.ofRecordProj
+#assert_no_axioms LeanFX2.RawStep.par.lift_universal_natSucc
+#assert_no_axioms LeanFX2.RawStep.par.lift_universal_intervalOpp
+#assert_no_axioms LeanFX2.RawStep.par.lift_universal_listCons
+#assert_no_axioms LeanFX2.RawStep.par.lift_universal_optionSome
 
 /-! ## Reviewer-facing log — `#print axioms` -/
 
@@ -69,5 +91,19 @@ namespace LeanFX2.SmokeUniversalChainAlpha
 #print axioms LeanFX2.RawStep.par.lift_universal_listNil
 #print axioms LeanFX2.RawStep.par.lift_universal_optionNone
 #print axioms LeanFX2.RawStep.par.lift_universal_var
+#print axioms LeanFX2.DispatchAtom.ofNatSucc
+#print axioms LeanFX2.DispatchAtom.ofIntervalOpp
+#print axioms LeanFX2.DispatchAtom.ofIntervalJoin
+#print axioms LeanFX2.DispatchAtom.ofIntervalMeet
+#print axioms LeanFX2.DispatchAtom.ofListCons
+#print axioms LeanFX2.DispatchAtom.ofOptionSome
+#print axioms LeanFX2.DispatchAtom.ofEitherInl
+#print axioms LeanFX2.DispatchAtom.ofEitherInr
+#print axioms LeanFX2.DispatchAtom.ofRecordIntro
+#print axioms LeanFX2.DispatchAtom.ofRecordProj
+#print axioms LeanFX2.RawStep.par.lift_universal_natSucc
+#print axioms LeanFX2.RawStep.par.lift_universal_intervalOpp
+#print axioms LeanFX2.RawStep.par.lift_universal_listCons
+#print axioms LeanFX2.RawStep.par.lift_universal_optionSome
 
 end LeanFX2.SmokeUniversalChainAlpha
