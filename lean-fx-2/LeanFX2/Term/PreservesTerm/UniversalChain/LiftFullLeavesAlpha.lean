@@ -414,4 +414,47 @@ theorem RawStep.par.lift_universal_optionSome
   RawStep.par.lift_full_term
     (DispatchAtom.ofOptionSome elementClosed valueDispatch) rawStep
 
+/-! ## Canonical nat-literal totality
+
+The canonical natural-number values (`natZero`, and `natSucc` of a
+canonical value) are dispatchable by construction.  `natLiteral`
+builds the Term for a `Nat` count, and `natLiteral_isDispatchable`
+proves it dispatchable by structural recursion on the count.  This is
+the first totality fragment toward #2070: a whole constructor family
+whose dispatch witness is produced with no caller-supplied data. -/
+
+/-- The raw form of a canonical nat literal — iterated `RawTerm.natSucc`
+over `RawTerm.natZero`.  Matches the raw index of `natLiteral`. -/
+def rawNatLiteral {scope : Nat} : (count : Nat) → RawTerm scope
+  | 0 => RawTerm.natZero
+  | count + 1 => RawTerm.natSucc (rawNatLiteral count)
+
+/-- The canonical `Term.nat` value for a literal count, built as an
+iterated `Term.natSucc` over `Term.natZero`. -/
+def natLiteral {mode : Mode} {level scope : Nat} {context : Ctx mode level scope} :
+    (count : Nat) →
+    Term context (Ty.nat (level := level)) (rawNatLiteral count)
+  | 0 => Term.natZero
+  | count + 1 => Term.natSucc (natLiteral count)
+
+/-- Every canonical nat literal is dispatchable.  Structural recursion
+on the count: `natZero` is an atom, `natSucc` threads the predecessor's
+dispatch witness through `DispatchAtom.ofNatSucc`. -/
+theorem natLiteral_isDispatchable
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope} :
+    (count : Nat) →
+    DispatchAtom (natLiteral (context := context) (level := level) count)
+  | 0 => DispatchAtom.ofNatZero
+  | count + 1 => DispatchAtom.ofNatSucc (natLiteral_isDispatchable count)
+
+/-- Universal lift for any canonical nat literal — no `DispatchAtom`
+hypothesis exposed; the witness is built internally from the count. -/
+theorem RawStep.par.lift_universal_natLiteral
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    (count : Nat)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (rawNatLiteral count) targetRaw) :
+    StepParExists (natLiteral (context := context) (level := level) count) targetRaw :=
+  RawStep.par.lift_full_term (natLiteral_isDispatchable count) rawStep
+
 end LeanFX2

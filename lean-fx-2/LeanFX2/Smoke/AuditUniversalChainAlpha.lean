@@ -32,7 +32,11 @@ axioms).
   `IsClosedTy` witness where the arm requires one).
 * Recursive derived universal lifts (4): `lift_universal_natSucc`,
   `lift_universal_intervalOpp`, `lift_universal_listCons`,
-  `lift_universal_optionSome`. -/
+  `lift_universal_optionSome`.
+* Canonical nat-literal totality (4): `rawNatLiteral`, `natLiteral`,
+  `natLiteral_isDispatchable`, `lift_universal_natLiteral` — a whole
+  constructor family proven dispatchable by structural recursion on
+  the count, with no caller-supplied dispatch data. -/
 
 namespace LeanFX2.SmokeUniversalChainAlpha
 
@@ -70,6 +74,10 @@ namespace LeanFX2.SmokeUniversalChainAlpha
 #assert_no_axioms LeanFX2.RawStep.par.lift_universal_intervalOpp
 #assert_no_axioms LeanFX2.RawStep.par.lift_universal_listCons
 #assert_no_axioms LeanFX2.RawStep.par.lift_universal_optionSome
+#assert_no_axioms LeanFX2.rawNatLiteral
+#assert_no_axioms LeanFX2.natLiteral
+#assert_no_axioms LeanFX2.natLiteral_isDispatchable
+#assert_no_axioms LeanFX2.RawStep.par.lift_universal_natLiteral
 
 /-! ## Reviewer-facing log — `#print axioms` -/
 
@@ -105,5 +113,9 @@ namespace LeanFX2.SmokeUniversalChainAlpha
 #print axioms LeanFX2.RawStep.par.lift_universal_intervalOpp
 #print axioms LeanFX2.RawStep.par.lift_universal_listCons
 #print axioms LeanFX2.RawStep.par.lift_universal_optionSome
+#print axioms LeanFX2.rawNatLiteral
+#print axioms LeanFX2.natLiteral
+#print axioms LeanFX2.natLiteral_isDispatchable
+#print axioms LeanFX2.RawStep.par.lift_universal_natLiteral
 
 end LeanFX2.SmokeUniversalChainAlpha
