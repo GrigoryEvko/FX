@@ -850,4 +850,252 @@ theorem Generator.outputTypeIntervalJoin_matches_Term_intervalJoin
     Generator.outputTypeIntervalJoin leftValue rightValue =
       (Ty.interval : Ty level scope) := rfl
 
+/-! ### Record family (`recordIntro` / `recordProj`)
+
+Mirrors `Term.lean:483-497`.  Single-field records — multi-field
+surface records elaborate to nested single-field records.
+
+* `recordIntro` wraps its child's type in `Ty.record`.
+* `recordProj` projects out the wrapped type. -/
+
+/-- `Term.recordIntro`'s output wraps the field type in `Ty.record`. -/
+def Generator.outputTypeRecordIntro {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {singleFieldType : Ty level scope}
+    {firstRaw : RawTerm scope}
+    (firstField : Term context singleFieldType firstRaw) :
+    Ty level scope :=
+  let _witness := firstField
+  Ty.record singleFieldType
+
+/-- Definitional match against `Term.recordIntro`'s output type. -/
+theorem Generator.outputTypeRecordIntro_matches_Term_recordIntro
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {singleFieldType : Ty level scope}
+    {firstRaw : RawTerm scope}
+    (firstField : Term context singleFieldType firstRaw) :
+    Generator.outputTypeRecordIntro firstField =
+      Ty.record singleFieldType := rfl
+
+/-- `Term.recordProj`'s output is the field type carried by the
+record value. -/
+def Generator.outputTypeRecordProj {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {singleFieldType : Ty level scope}
+    {recordRaw : RawTerm scope}
+    (recordValue : Term context (Ty.record singleFieldType) recordRaw) :
+    Ty level scope :=
+  let _witness := recordValue
+  singleFieldType
+
+/-- Definitional match against `Term.recordProj`'s output type. -/
+theorem Generator.outputTypeRecordProj_matches_Term_recordProj
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {singleFieldType : Ty level scope}
+    {recordRaw : RawTerm scope}
+    (recordValue : Term context (Ty.record singleFieldType) recordRaw) :
+    Generator.outputTypeRecordProj recordValue = singleFieldType := rfl
+
+/-! ### Refinement family (`refineIntro` / `refineElim`)
+
+Mirrors `Term.lean:498-518`.  `refineIntro` packages a base value with
+a unit-typed proof certificate; `refineElim` forgets the proof. -/
+
+/-- `Term.refineIntro`'s output is `Ty.refine baseType predicate`. -/
+def Generator.outputTypeRefineIntro {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {baseType : Ty level scope}
+    (predicate : RawTerm (scope + 1))
+    {valueRaw proofRaw : RawTerm scope}
+    (baseValue : Term context baseType valueRaw)
+    (predicateProof : Term context Ty.unit proofRaw) :
+    Ty level scope :=
+  let _valueWitness := baseValue
+  let _proofWitness := predicateProof
+  Ty.refine baseType predicate
+
+/-- Definitional match against `Term.refineIntro`'s output type. -/
+theorem Generator.outputTypeRefineIntro_matches_Term_refineIntro
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {baseType : Ty level scope}
+    (predicate : RawTerm (scope + 1))
+    {valueRaw proofRaw : RawTerm scope}
+    (baseValue : Term context baseType valueRaw)
+    (predicateProof : Term context Ty.unit proofRaw) :
+    Generator.outputTypeRefineIntro predicate baseValue predicateProof =
+      Ty.refine baseType predicate := rfl
+
+/-- `Term.refineElim`'s output is the base type of the refinement. -/
+def Generator.outputTypeRefineElim {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {baseType : Ty level scope}
+    {predicate : RawTerm (scope + 1)}
+    {refinedRaw : RawTerm scope}
+    (refinedValue : Term context (Ty.refine baseType predicate) refinedRaw) :
+    Ty level scope :=
+  let _witness := refinedValue
+  baseType
+
+/-- Definitional match against `Term.refineElim`'s output type. -/
+theorem Generator.outputTypeRefineElim_matches_Term_refineElim
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {baseType : Ty level scope}
+    {predicate : RawTerm (scope + 1)}
+    {refinedRaw : RawTerm scope}
+    (refinedValue : Term context (Ty.refine baseType predicate) refinedRaw) :
+    Generator.outputTypeRefineElim refinedValue = baseType := rfl
+
+/-! ### Codata family (`codataUnfold` / `codataDest`)
+
+Mirrors `Term.lean:519-537`.  `codataUnfold` packages a state +
+transition into a `Ty.codata`; `codataDest` observes one output. -/
+
+/-- `Term.codataUnfold`'s output is `Ty.codata stateType outputType`. -/
+def Generator.outputTypeCodataUnfold {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {stateType outputType : Ty level scope}
+    {stateRaw transitionRaw : RawTerm scope}
+    (initialState : Term context stateType stateRaw)
+    (transition : Term context (Ty.arrow stateType outputType) transitionRaw) :
+    Ty level scope :=
+  let _stateWitness := initialState
+  let _transitionWitness := transition
+  Ty.codata stateType outputType
+
+/-- Definitional match against `Term.codataUnfold`'s output type. -/
+theorem Generator.outputTypeCodataUnfold_matches_Term_codataUnfold
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {stateType outputType : Ty level scope}
+    {stateRaw transitionRaw : RawTerm scope}
+    (initialState : Term context stateType stateRaw)
+    (transition : Term context (Ty.arrow stateType outputType) transitionRaw) :
+    Generator.outputTypeCodataUnfold initialState transition =
+      Ty.codata stateType outputType := rfl
+
+/-- `Term.codataDest`'s output is the codata's output type. -/
+def Generator.outputTypeCodataDest {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {stateType outputType : Ty level scope}
+    {codataRaw : RawTerm scope}
+    (codataValue : Term context (Ty.codata stateType outputType) codataRaw) :
+    Ty level scope :=
+  let _witness := codataValue
+  outputType
+
+/-- Definitional match against `Term.codataDest`'s output type. -/
+theorem Generator.outputTypeCodataDest_matches_Term_codataDest
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {stateType outputType : Ty level scope}
+    {codataRaw : RawTerm scope}
+    (codataValue : Term context (Ty.codata stateType outputType) codataRaw) :
+    Generator.outputTypeCodataDest codataValue = outputType := rfl
+
+/-! ### Session family (`sessionSend` / `sessionRecv`)
+
+Mirrors `Term.lean:538-558`.  Both preserve the session carrier — the
+typed core currently records `Ty.session protocolStep` and exposes
+congruence parity; protocol-state advancement is the Sessions layer's
+job. -/
+
+/-- `Term.sessionSend`'s output preserves `Ty.session protocolStep`. -/
+def Generator.outputTypeSessionSend {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (protocolStep : RawTerm scope)
+    {payloadType : Ty level scope}
+    {channelRaw payloadRaw : RawTerm scope}
+    (channel : Term context (Ty.session protocolStep) channelRaw)
+    (payload : Term context payloadType payloadRaw) :
+    Ty level scope :=
+  let _channelWitness := channel
+  let _payloadWitness := payload
+  Ty.session protocolStep
+
+/-- Definitional match against `Term.sessionSend`'s output type. -/
+theorem Generator.outputTypeSessionSend_matches_Term_sessionSend
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (protocolStep : RawTerm scope)
+    {payloadType : Ty level scope}
+    {channelRaw payloadRaw : RawTerm scope}
+    (channel : Term context (Ty.session protocolStep) channelRaw)
+    (payload : Term context payloadType payloadRaw) :
+    Generator.outputTypeSessionSend protocolStep channel payload =
+      Ty.session protocolStep := rfl
+
+/-- `Term.sessionRecv`'s output preserves `Ty.session protocolStep`. -/
+def Generator.outputTypeSessionRecv {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {protocolStep : RawTerm scope}
+    {channelRaw : RawTerm scope}
+    (channel : Term context (Ty.session protocolStep) channelRaw) :
+    Ty level scope :=
+  let _witness := channel
+  Ty.session protocolStep
+
+/-- Definitional match against `Term.sessionRecv`'s output type. -/
+theorem Generator.outputTypeSessionRecv_matches_Term_sessionRecv
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {protocolStep : RawTerm scope}
+    {channelRaw : RawTerm scope}
+    (channel : Term context (Ty.session protocolStep) channelRaw) :
+    Generator.outputTypeSessionRecv channel =
+      Ty.session protocolStep := rfl
+
+/-! ### Effect family (`effectPerform`)
+
+Mirrors `Term.lean:559-582`.  `effectPerform` carries an
+`Effects.EffectRow`, an `Effects.OperationSignature`, and a
+`CanPerform` evidence witness; the result type is `Ty.effect
+operationSignature.resultCarrier effectTag`. -/
+
+/-- `Term.effectPerform`'s output is
+`Ty.effect operationSignature.resultCarrier effectTag`. -/
+def Generator.outputTypeEffectPerform {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (effectTag : RawTerm scope)
+    (effectRow : Effects.EffectRow)
+    (operationSignature : Effects.OperationSignature (Ty level scope))
+    (canPerformOperation :
+      Effects.CanPerform effectRow operationSignature)
+    {operationRaw argumentsRaw : RawTerm scope}
+    (operationTag :
+      Term context
+        (Ty.effect operationSignature.argumentCarrier effectTag)
+        operationRaw)
+    (arguments :
+      Term context operationSignature.argumentCarrier argumentsRaw) :
+    Ty level scope :=
+  let _effectRowWitness := effectRow
+  let _canPerformWitness := canPerformOperation
+  let _operationWitness := operationTag
+  let _argumentsWitness := arguments
+  Ty.effect operationSignature.resultCarrier effectTag
+
+/-- Definitional match against `Term.effectPerform`'s output type. -/
+theorem Generator.outputTypeEffectPerform_matches_Term_effectPerform
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (effectTag : RawTerm scope)
+    (effectRow : Effects.EffectRow)
+    (operationSignature : Effects.OperationSignature (Ty level scope))
+    (canPerformOperation :
+      Effects.CanPerform effectRow operationSignature)
+    {operationRaw argumentsRaw : RawTerm scope}
+    (operationTag :
+      Term context
+        (Ty.effect operationSignature.argumentCarrier effectTag)
+        operationRaw)
+    (arguments :
+      Term context operationSignature.argumentCarrier argumentsRaw) :
+    Generator.outputTypeEffectPerform effectTag effectRow
+        operationSignature canPerformOperation operationTag arguments =
+      Ty.effect operationSignature.resultCarrier effectTag := rfl
+
 end LeanFX2.Foundation.Polygraph
