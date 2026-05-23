@@ -153,6 +153,127 @@ theorem rename_compatible_typed_lamPi
   dsimp only [Term.rename]
   exact Step.par.lamPi bodyStep
 
+/-- Cong arm `natSucc` of typed-Step.par rename equivariance.
+
+Successor reduces in its predecessor.  `Ty.nat` is closed, so
+`Term.rename` on `natSucc` carries no type cast and the push is
+definitional. -/
+theorem rename_compatible_typed_natSucc
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {predecessorRawSource predecessorRawTarget : RawTerm sourceScope}
+    {predecessorSource : Term sourceCtx Ty.nat predecessorRawSource}
+    {predecessorTarget : Term sourceCtx Ty.nat predecessorRawTarget}
+    (predecessorStep :
+      Step.par (Term.rename termRenaming predecessorSource)
+               (Term.rename termRenaming predecessorTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.natSucc predecessorSource))
+      (Term.rename termRenaming (Term.natSucc predecessorTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.natSucc predecessorStep
+
+/-- Cong arm `listCons` of typed-Step.par rename equivariance.
+
+Cons reduces in both head and tail.  `Ty.listType` renames
+structurally (no `subst0`), so `Term.rename` carries no cast and the
+push is definitional. -/
+theorem rename_compatible_typed_listCons
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {elementType : Ty level sourceScope}
+    {headRawSource headRawTarget tailRawSource tailRawTarget : RawTerm sourceScope}
+    {headSource : Term sourceCtx elementType headRawSource}
+    {headTarget : Term sourceCtx elementType headRawTarget}
+    {tailSource : Term sourceCtx (Ty.listType elementType) tailRawSource}
+    {tailTarget : Term sourceCtx (Ty.listType elementType) tailRawTarget}
+    (headStep :
+      Step.par (Term.rename termRenaming headSource)
+               (Term.rename termRenaming headTarget))
+    (tailStep :
+      Step.par (Term.rename termRenaming tailSource)
+               (Term.rename termRenaming tailTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.listCons headSource tailSource))
+      (Term.rename termRenaming (Term.listCons headTarget tailTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.listCons headStep tailStep
+
+/-- Cong arm `optionSome` of typed-Step.par rename equivariance.
+
+Some reduces in its payload.  `Ty.optionType` renames structurally,
+so the push is definitional and cast-free. -/
+theorem rename_compatible_typed_optionSome
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {elementType : Ty level sourceScope}
+    {valueRawSource valueRawTarget : RawTerm sourceScope}
+    {valueSource : Term sourceCtx elementType valueRawSource}
+    {valueTarget : Term sourceCtx elementType valueRawTarget}
+    (valueStep :
+      Step.par (Term.rename termRenaming valueSource)
+               (Term.rename termRenaming valueTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.optionSome valueSource))
+      (Term.rename termRenaming (Term.optionSome valueTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.optionSome valueStep
+
+/-- Cong arm `eitherInl` of typed-Step.par rename equivariance.
+
+Left injection reduces in its payload.  `Ty.eitherType` renames
+structurally, so the push is definitional and cast-free. -/
+theorem rename_compatible_typed_eitherInl
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {leftType rightType : Ty level sourceScope}
+    {valueRawSource valueRawTarget : RawTerm sourceScope}
+    {valueSource : Term sourceCtx leftType valueRawSource}
+    {valueTarget : Term sourceCtx leftType valueRawTarget}
+    (valueStep :
+      Step.par (Term.rename termRenaming valueSource)
+               (Term.rename termRenaming valueTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.eitherInl (rightType := rightType) valueSource))
+      (Term.rename termRenaming (Term.eitherInl (rightType := rightType) valueTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.eitherInl valueStep
+
+/-- Cong arm `eitherInr` of typed-Step.par rename equivariance.
+
+Right injection reduces in its payload.  `Ty.eitherType` renames
+structurally, so the push is definitional and cast-free. -/
+theorem rename_compatible_typed_eitherInr
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {leftType rightType : Ty level sourceScope}
+    {valueRawSource valueRawTarget : RawTerm sourceScope}
+    {valueSource : Term sourceCtx rightType valueRawSource}
+    {valueTarget : Term sourceCtx rightType valueRawTarget}
+    (valueStep :
+      Step.par (Term.rename termRenaming valueSource)
+               (Term.rename termRenaming valueTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.eitherInr (leftType := leftType) valueSource))
+      (Term.rename termRenaming (Term.eitherInr (leftType := leftType) valueTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.eitherInr valueStep
+
 end Step.par
 
 end LeanFX2
