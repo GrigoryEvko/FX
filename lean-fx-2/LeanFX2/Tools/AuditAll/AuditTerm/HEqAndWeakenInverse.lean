@@ -3,6 +3,7 @@ import LeanFX2.Term.HEqCongr
 import LeanFX2.Term.WeakenInverse
 import LeanFX2.Term.TypedInversion
 import LeanFX2.Term.EtaRecognizers
+import LeanFX2.Term.Inversion
 
 /-! # AuditTerm.HEqAndWeakenInverse — HEq congruence and typed inversion gates. -/
 
@@ -155,5 +156,43 @@ pattern as commits f3df931 (RawStep.par inversions) and d2e9d4a
 #assert_no_axioms LeanFX2.Term.eta_unit_shape_construct
 #assert_no_axioms LeanFX2.Term.eta_unit_shape_recognize
 #assert_no_axioms LeanFX2.Term.eta_path_shape_recognize_app_of_unweaken
+
+/-! ## Phase 7.A Term type-inversion lemmas — strict per-decl axiom gates.
+
+Promotes the informational `#print axioms` smoke gates in
+`Smoke/AuditPhase7ATypeInversions.lean` to build-failing
+`#assert_no_axioms` regression gates.  Each `_ty_inv` lemma recovers
+the typed `Ty` index from a `Term ctx ty (RawTerm.<ctor> ...)` whose
+raw shape unambiguously determines its type former; each `_unique`
+lemma extends the inversion with HEq uniqueness on closed-atomic
+shapes whose typed witness is canonically unique.  Together they
+form the foundation for Phase 7 subject-reduction cong cases. -/
+
+-- 15 `_ty_inv` inversions for unambiguous-raw-shape Term ctors.
+#assert_no_axioms LeanFX2.Term.unit_ty_inv
+#assert_no_axioms LeanFX2.Term.boolTrue_ty_inv
+#assert_no_axioms LeanFX2.Term.boolFalse_ty_inv
+#assert_no_axioms LeanFX2.Term.natZero_ty_inv
+#assert_no_axioms LeanFX2.Term.natSucc_ty_inv
+#assert_no_axioms LeanFX2.Term.interval0_ty_inv
+#assert_no_axioms LeanFX2.Term.interval1_ty_inv
+#assert_no_axioms LeanFX2.Term.listNil_ty_inv
+#assert_no_axioms LeanFX2.Term.listCons_ty_inv
+#assert_no_axioms LeanFX2.Term.optionNone_ty_inv
+#assert_no_axioms LeanFX2.Term.optionSome_ty_inv
+#assert_no_axioms LeanFX2.Term.eitherInl_ty_inv
+#assert_no_axioms LeanFX2.Term.eitherInr_ty_inv
+#assert_no_axioms LeanFX2.Term.refl_ty_inv
+#assert_no_axioms LeanFX2.Term.pair_ty_inv
+
+-- 8 `_unique` HEq uniqueness lemmas for closed-atomic Term ctors.
+#assert_no_axioms LeanFX2.Term.unit_unique
+#assert_no_axioms LeanFX2.Term.boolTrue_unique
+#assert_no_axioms LeanFX2.Term.boolFalse_unique
+#assert_no_axioms LeanFX2.Term.natZero_unique
+#assert_no_axioms LeanFX2.Term.interval0_unique
+#assert_no_axioms LeanFX2.Term.interval1_unique
+#assert_no_axioms LeanFX2.Term.listNil_unique
+#assert_no_axioms LeanFX2.Term.optionNone_unique
 
 end LeanFX2.Tools

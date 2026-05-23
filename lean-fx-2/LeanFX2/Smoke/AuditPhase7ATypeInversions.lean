@@ -35,6 +35,8 @@ namespace LeanFX2.SmokePhase7ATypeInversions
 #print axioms LeanFX2.Term.boolTrue_unique
 #print axioms LeanFX2.Term.boolFalse_unique
 #print axioms LeanFX2.Term.natZero_unique
+#print axioms LeanFX2.Term.interval0_unique
+#print axioms LeanFX2.Term.interval1_unique
 #print axioms LeanFX2.Term.listNil_unique
 #print axioms LeanFX2.Term.optionNone_unique
 
