@@ -58,6 +58,71 @@ theorem rename_compatible_typed_refl
              (Term.rename termRenaming someTerm) :=
   Step.par.refl (Term.rename termRenaming someTerm)
 
+/-- Cong arm `fst` of typed-Step.par rename equivariance.
+
+If the renamed pair sub-step `Step.par (rename pairSource) (rename
+pairTarget)` holds, then the renamed first-projection step holds too.
+`Term.rename` on the `fst` ctor carries no type cast, so pushing the
+rename through is definitional (`dsimp only [Term.rename]`); the
+result is `Step.par.fst` applied to the supplied sub-step.  Single
+sub-step premise, no induction hypothesis, no cast — the minimal
+delta from the reflexive arm. -/
+theorem rename_compatible_typed_fst
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {firstType : Ty level sourceScope}
+    {secondType : Ty level (sourceScope + 1)}
+    {pairRawSource pairRawTarget : RawTerm sourceScope}
+    {pairTermSource :
+      Term sourceCtx (Ty.sigmaTy firstType secondType) pairRawSource}
+    {pairTermTarget :
+      Term sourceCtx (Ty.sigmaTy firstType secondType) pairRawTarget}
+    (pairStep :
+      Step.par (Term.rename termRenaming pairTermSource)
+               (Term.rename termRenaming pairTermTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.fst (secondType := secondType) pairTermSource))
+      (Term.rename termRenaming (Term.fst (secondType := secondType) pairTermTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.fst pairStep
+
+/-- Cong arm `app` of typed-Step.par rename equivariance.
+
+Non-dependent application reduces in both the function and the
+argument position.  `Term.rename` on the `app` ctor carries no type
+cast (the `Ty.arrow` result renames automatically), so the rename
+push is definitional and the result is `Step.par.app` applied to the
+two renamed sub-steps.  Two sub-step premises, no cast. -/
+theorem rename_compatible_typed_app
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {domainType codomainType : Ty level sourceScope}
+    {functionRawSource functionRawTarget
+     argumentRawSource argumentRawTarget : RawTerm sourceScope}
+    {functionTermSource :
+      Term sourceCtx (Ty.arrow domainType codomainType) functionRawSource}
+    {functionTermTarget :
+      Term sourceCtx (Ty.arrow domainType codomainType) functionRawTarget}
+    {argumentTermSource : Term sourceCtx domainType argumentRawSource}
+    {argumentTermTarget : Term sourceCtx domainType argumentRawTarget}
+    (functionStep :
+      Step.par (Term.rename termRenaming functionTermSource)
+               (Term.rename termRenaming functionTermTarget))
+    (argumentStep :
+      Step.par (Term.rename termRenaming argumentTermSource)
+               (Term.rename termRenaming argumentTermTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.app functionTermSource argumentTermSource))
+      (Term.rename termRenaming (Term.app functionTermTarget argumentTermTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.app functionStep argumentStep
+
 end Step.par
 
 end LeanFX2
