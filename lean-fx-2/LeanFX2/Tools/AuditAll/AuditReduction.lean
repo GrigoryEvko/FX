@@ -933,5 +933,7 @@ constructor — pure definitional, no induction, no cast on the `refl`
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_sessionSendCong
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_sessionRecvCong
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_effectPerformCong
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_cumulUpInnerCong
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_eqType
 
 end LeanFX2.Tools

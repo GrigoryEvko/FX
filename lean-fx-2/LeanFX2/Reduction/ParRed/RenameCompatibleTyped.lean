@@ -1385,6 +1385,66 @@ theorem rename_compatible_typed_effectPerformCong
   dsimp only [Term.rename]
   exact Step.par.effectPerformCong operationStep argumentsStep
 
+/-- Cong arm `cumulUpInnerCong` of typed-Step.par rename equivariance.
+
+Universe cumulativity-up reduces in its inner type code, at the closed-ish
+`Ty.universe lowerLevel levelLeLow` (the universe level + bound proofs ride
+through unchanged — renaming touches neither).  `Term.rename` on `cumulUp`
+is cast-free (it reconstructs the ctor at `targetCtx` and recurses on the
+code), so the push is definitional, one sub-step. -/
+theorem rename_compatible_typed_cumulUpInnerCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (lowerLevel higherLevel : UniverseLevel)
+    (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
+    (levelLeLow : lowerLevel.toNat + 1 ≤ level)
+    (levelLeHigh : higherLevel.toNat + 1 ≤ level)
+    {codeSourceRaw codeTargetRaw : RawTerm sourceScope}
+    {typeCodeSource : Term sourceCtx (Ty.universe lowerLevel levelLeLow) codeSourceRaw}
+    {typeCodeTarget : Term sourceCtx (Ty.universe lowerLevel levelLeLow) codeTargetRaw}
+    (typeCodeStep :
+      Step.par (Term.rename termRenaming typeCodeSource)
+               (Term.rename termRenaming typeCodeTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.cumulUp lowerLevel higherLevel cumulMonotone levelLeLow levelLeHigh typeCodeSource))
+      (Term.rename termRenaming
+        (Term.cumulUp lowerLevel higherLevel cumulMonotone levelLeLow levelLeHigh typeCodeTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.cumulUpInnerCong lowerLevel higherLevel cumulMonotone
+    levelLeLow levelLeHigh typeCodeStep
+
+/-- Reduction arm `eqType` of typed-Step.par rename equivariance.
+
+The first NON-congruence arm: `eqType` is the univalence rfl-fragment
+reduction `equivReflIdAtId ⟶ equivReflId` (source and target are DIFFERENT
+constructors), so there is no recursive sub-step premise — the headline
+induction's `eqType` case has no IH.  Both endpoints rename cast-free
+(`equivReflIdAtId innerLevel innerLevelLt (carrier.rename rho)
+(carrierRaw.rename rho)` and `equivReflId (carrier.rename rho)`), so after
+`dsimp` the goal IS the renamed instance of the same rule; re-apply
+`Step.par.eqType` at the renamed `carrier` / `carrierRaw`.  This is the
+template for the β/ι reduction arms still to come. -/
+theorem rename_compatible_typed_eqType
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    (carrier : Ty level sourceScope)
+    (carrierRaw : RawTerm sourceScope) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.equivReflIdAtId innerLevel innerLevelLt carrier carrierRaw))
+      (Term.rename termRenaming (Term.equivReflId carrier)) := by
+  dsimp only [Term.rename]
+  exact Step.par.eqType innerLevel innerLevelLt (carrier.rename rho) (carrierRaw.rename rho)
+
 end Step.par
 
 end LeanFX2
