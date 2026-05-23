@@ -10,8 +10,9 @@ import LeanFX2.Term.HEqCongr.Atomic.TypeCodes
 import LeanFX2.Term.HEqCongr.Atomic.Cubical
 import LeanFX2.Term.HEqCongr.Atomic.HeterogeneousIntro
 import LeanFX2.Term.HEqCongr.Compound.IdentityModalHoTT
+import LeanFX2.Term.RenameSubstCommute.Binders
 
-/-! # LeanFX2.Term.RenameSubstCommute  (WIP — strength-T8 infrastructure)
+/-! # LeanFX2.Term.RenameSubstCommute  (strength-T8 — dispatcher driver)
 
 Typed term-level rename/subst FUSION: substituting into a renamed term equals
 substituting by the input-precomposed substitution.  This is the typed mirror of
@@ -34,64 +35,6 @@ first; the structural arms are filled incrementally.  NOT imported by the kernel
 NOT committed until every arm is discharged and `#assert_no_axioms` is clean. -/
 
 namespace LeanFX2
-
-/-- Lifted Ty rename/subst fusion: at `scope+1` the fusion factors through the *lifted*
-precomposed substitution.  `Ty.rename_subst_commute` at the lifted renaming/subst yields
-`precomposeRenaming rho.lift sigma.lift`, bridged to `(precomposeRenaming rho sigma).lift`
-(the form a `scope+1` Ty index carries after the term node lifts) by `Ty.subst_pointwise`
-and the two `precomposeRenaming_lift_*_pointwise` lemmas — no `funext`, so the strict
-axiom gate holds.  Used for the Σ-codomain of `fst` and the binder codomains. -/
-theorem Ty.rename_subst_commute_lift {level scope middleScope targetScope : Nat}
-    (rho : RawRenaming scope middleScope)
-    (sigma : Subst level middleScope targetScope)
-    (someType : Ty level (scope + 1)) :
-    (someType.rename rho.lift).subst sigma.lift =
-      someType.subst (Subst.precomposeRenaming rho sigma).lift :=
-  (Ty.rename_subst_commute rho.lift sigma.lift someType).trans
-    (Ty.subst_pointwise
-      (Subst.precomposeRenaming_lift_forTy_pointwise rho sigma)
-      (Subst.precomposeRenaming_lift_forRaw_pointwise rho sigma)
-      someType)
-
-/-- Lifted raw rename/subst fusion: the raw-index analogue of `Ty.rename_subst_commute_lift`,
-for the `scope+1` *raw* indices carried by `refineElim`/`refineIntro` predicates, the
-`piTyCode`/`sigmaTyCode` codomain codes, and the `funextReflAtId`/`funextIntroHet` apply
-witnesses.  Same shape: `RawTerm.rename_subst_commute` at the lifted renaming/subst yields
-`fun p => sigma.lift.forRaw (rho.lift p)`, bridged to `(precomposeRenaming rho sigma).lift.forRaw`
-by `RawTerm.subst_pointwise` + `precomposeRenaming_lift_forRaw_pointwise` — no `funext`. -/
-theorem RawTerm.rename_subst_commute_lift {level scope middleScope targetScope : Nat}
-    (rho : RawRenaming scope middleScope)
-    (sigma : Subst level middleScope targetScope)
-    (raw : RawTerm (scope + 1)) :
-    (raw.rename rho.lift).subst sigma.lift.forRaw =
-      raw.subst (Subst.precomposeRenaming rho sigma).lift.forRaw :=
-  (RawTerm.rename_subst_commute rho.lift sigma.lift.forRaw raw).trans
-    (RawTerm.subst_pointwise
-      (Subst.precomposeRenaming_lift_forRaw_pointwise rho sigma) raw)
-
-/-- Signature-level rename/subst fusion: mapping an operation signature's carriers by
-`rename ρ` then `subst σ` equals mapping by `subst (precomposeRenaming ρ σ)`.  The
-`effectPerform` arm's signature index is transformed exactly this way (map twice on
-rename-then-subst vs once on the precomposition).  Pure per-field congruence over the
-two carrier `Ty` fields via `Ty.rename_subst_commute` — no funext. -/
-theorem Effects.OperationSignature.map_rename_subst_commute
-    {level scope middleScope targetScope : Nat}
-    (rho : RawRenaming scope middleScope)
-    (sigma : Subst level middleScope targetScope)
-    (operation : Effects.OperationSignature (Ty level scope)) :
-    (operation.map (fun carrierType => carrierType.rename rho)).map
-        (fun carrierType => carrierType.subst sigma)
-      = operation.map
-          (fun carrierType =>
-            carrierType.subst (Subst.precomposeRenaming rho sigma)) := by
-  show Effects.OperationSignature.mk operation.effectLabel
-        ((operation.argumentCarrier.rename rho).subst sigma)
-        ((operation.resultCarrier.rename rho).subst sigma)
-      = Effects.OperationSignature.mk operation.effectLabel
-        (operation.argumentCarrier.subst (Subst.precomposeRenaming rho sigma))
-        (operation.resultCarrier.subst (Subst.precomposeRenaming rho sigma))
-  rw [Ty.rename_subst_commute rho sigma operation.argumentCarrier,
-      Ty.rename_subst_commute rho sigma operation.resultCarrier]
 
 /-- Term-level rename/subst fusion (HEq form): `(t.rename ρ).subst σ` is heterogeneously
 equal to `t.subst (precomposeRenaming ρ σ)`.  The two sides differ in both the Ty index
@@ -787,132 +730,21 @@ theorem Term.rename_subst_commute
             (Term.type_eq_symm_cast_heq
               (Ty.subst0_subst_commute motiveType Ty.bool scrutineeRaw
                 (Subst.precomposeRenaming rho sigma))).symm))
-  -- Dep Π binder.  Body type is `codomainType` (scope+1) directly (no weaken cast).
-  -- IH on body bridges `subst (ts.lift) (rename (tr.lift) body)` to
-  -- `subst (precompose (tr.lift)(ts.lift)) body`; the cross-sigma `subst_pointwise_HEq`
-  -- then bridges to `subst ((precompose tr ts).lift) body` over the divergent target
-  -- contexts (cast back via `subst_targetCtx_cast_HEq`, entry HEq from the precompose-lift
-  -- entry lemma + `targetCtx_cast_entry_HEq`).
-  | _, _, .lamPi (domainType := domainType) (codomainType := codomainType)
-                (bodyRaw := bodyRaw) body =>
-      let domainEqTy := Ty.rename_subst_commute rho sigma domainType
-      let targetCtxEq := congrArg (Ctx.cons targetCtx) domainEqTy.symm
-      let secondTermSubst :=
-        (TermSubst.precomposeRenaming termRenaming termSubst).lift domainType
-      let entryHEqAligned := fun position =>
-        HEq.trans
-          (TermSubst.precomposeRenaming_lift_entry_HEq termRenaming termSubst
-            domainType position)
-          (TermSubst.targetCtx_cast_entry_HEq targetCtxEq secondTermSubst
-            position).symm
-      Term.lamPi_HEq_congr
-        domainEqTy
-        (Ty.rename_subst_commute_lift rho sigma codomainType)
-        (RawTerm.rename_subst_commute_lift rho sigma bodyRaw)
-        (HEq.trans
-          (Term.rename_subst_commute (termRenaming.lift domainType)
-            (termSubst.lift (domainType.rename rho)) body)
-          (HEq.trans
-            (Term.subst_pointwise_HEq
-              (Subst.precomposeRenaming_lift_forTy_pointwise rho sigma)
-              (Subst.precomposeRenaming_lift_forRaw_pointwise rho sigma)
-              entryHEqAligned body)
-            (Term.subst_targetCtx_cast_HEq targetCtxEq secondTermSubst body)))
-  -- Non-dep arrow binder.  Same core as `lamPi`, but body type is `codomainType.weaken`
-  -- (base-scope codomain), so an extra `weaken` cast wraps both sides: peel the LHS
-  -- weaken+rename casts, run the shared core, re-apply the RHS weaken cast.
-  | _, _, .lam (domainType := domainType) (codomainType := codomainType)
-              (bodyRaw := bodyRaw) body =>
-      let domainEqTy := Ty.rename_subst_commute rho sigma domainType
-      let targetCtxEq := congrArg (Ctx.cons targetCtx) domainEqTy.symm
-      let secondTermSubst :=
-        (TermSubst.precomposeRenaming termRenaming termSubst).lift domainType
-      let entryHEqAligned := fun position =>
-        HEq.trans
-          (TermSubst.precomposeRenaming_lift_entry_HEq termRenaming termSubst
-            domainType position)
-          (TermSubst.targetCtx_cast_entry_HEq targetCtxEq secondTermSubst
-            position).symm
-      Term.lam_HEq_congr
-        domainEqTy
-        (Ty.rename_subst_commute rho sigma codomainType)
-        (RawTerm.rename_subst_commute_lift rho sigma bodyRaw)
-        (HEq.trans
-          (Term.type_eq_cast_heq
-            (Ty.weaken_subst_commute sigma (codomainType.rename rho))
-            (Term.subst (termSubst.lift (domainType.rename rho))
-              (Ty.weaken_rename_commute rho codomainType ▸
-                Term.rename (termRenaming.lift domainType) body)))
-          (HEq.trans
-            (Term.subst_type_eq_cast_heq (termSubst.lift (domainType.rename rho))
-              (Ty.weaken_rename_commute rho codomainType)
-              (Term.rename (termRenaming.lift domainType) body))
-            (HEq.trans
-              (Term.rename_subst_commute (termRenaming.lift domainType)
-                (termSubst.lift (domainType.rename rho)) body)
-              (HEq.trans
-                (Term.subst_pointwise_HEq
-                  (Subst.precomposeRenaming_lift_forTy_pointwise rho sigma)
-                  (Subst.precomposeRenaming_lift_forRaw_pointwise rho sigma)
-                  entryHEqAligned body)
-                (HEq.trans
-                  (Term.subst_targetCtx_cast_HEq targetCtxEq secondTermSubst body)
-                  (Term.type_eq_cast_heq
-                    (Ty.weaken_subst_commute (Subst.precomposeRenaming rho sigma)
-                      codomainType)
-                    (Term.subst
-                      ((TermSubst.precomposeRenaming termRenaming termSubst).lift
-                        domainType)
-                      body)).symm)))))
-  -- Path binder.  Binds the closed type `Ty.interval` (fixed under both rename and
-  -- subst), so the target contexts coincide definitionally.  Otherwise lam-shaped
-  -- (weaken cast on `carrierType.weaken`).
-  | _, _, .pathLam (carrierType := carrierType) (leftEndpoint := leftEndpoint)
-                  (rightEndpoint := rightEndpoint) (bodyRaw := bodyRaw)
-                  modeIsUnivalent body =>
-      let domainEqTy := Ty.rename_subst_commute rho sigma Ty.interval
-      let targetCtxEq := congrArg (Ctx.cons targetCtx) domainEqTy.symm
-      let secondTermSubst :=
-        (TermSubst.precomposeRenaming termRenaming termSubst).lift Ty.interval
-      let entryHEqAligned := fun position =>
-        HEq.trans
-          (TermSubst.precomposeRenaming_lift_entry_HEq termRenaming termSubst
-            Ty.interval position)
-          (TermSubst.targetCtx_cast_entry_HEq targetCtxEq secondTermSubst
-            position).symm
-      Term.pathLam_HEq_congr
-        modeIsUnivalent
-        (Ty.rename_subst_commute rho sigma carrierType)
-        (RawTerm.rename_subst_commute rho sigma.forRaw leftEndpoint)
-        (RawTerm.rename_subst_commute rho sigma.forRaw rightEndpoint)
-        (RawTerm.rename_subst_commute_lift rho sigma bodyRaw)
-        (HEq.trans
-          (Term.type_eq_cast_heq
-            (Ty.weaken_subst_commute sigma (carrierType.rename rho))
-            (Term.subst (termSubst.lift Ty.interval)
-              (Ty.weaken_rename_commute rho carrierType ▸
-                Term.rename (termRenaming.lift Ty.interval) body)))
-          (HEq.trans
-            (Term.subst_type_eq_cast_heq (termSubst.lift Ty.interval)
-              (Ty.weaken_rename_commute rho carrierType)
-              (Term.rename (termRenaming.lift Ty.interval) body))
-            (HEq.trans
-              (Term.rename_subst_commute (termRenaming.lift Ty.interval)
-                (termSubst.lift Ty.interval) body)
-              (HEq.trans
-                (Term.subst_pointwise_HEq
-                  (Subst.precomposeRenaming_lift_forTy_pointwise rho sigma)
-                  (Subst.precomposeRenaming_lift_forRaw_pointwise rho sigma)
-                  entryHEqAligned body)
-                (HEq.trans
-                  (Term.subst_targetCtx_cast_HEq targetCtxEq secondTermSubst body)
-                  (Term.type_eq_cast_heq
-                    (Ty.weaken_subst_commute (Subst.precomposeRenaming rho sigma)
-                      carrierType)
-                    (Term.subst
-                      ((TermSubst.precomposeRenaming termRenaming termSubst).lift
-                        Ty.interval)
-                      body)).symm)))))
+  -- Binder arms dispatch to the standalone fusion lemmas in
+  -- `RenameSubstCommute/Binders.lean` (parallelizable; the recursion supplies the
+  -- body fusion HEq as the hypothesis each lemma takes).
+  | _, _, .lamPi (domainType := domainType) body =>
+      Term.rename_subst_commute_lamPi termRenaming termSubst body
+        (Term.rename_subst_commute (termRenaming.lift domainType)
+          (termSubst.lift (domainType.rename rho)) body)
+  | _, _, .lam (domainType := domainType) body =>
+      Term.rename_subst_commute_lam termRenaming termSubst body
+        (Term.rename_subst_commute (termRenaming.lift domainType)
+          (termSubst.lift (domainType.rename rho)) body)
+  | _, _, .pathLam modeIsUnivalent _ _ _ body =>
+      Term.rename_subst_commute_pathLam termRenaming termSubst modeIsUnivalent body
+        (Term.rename_subst_commute (termRenaming.lift Ty.interval)
+          (termSubst.lift Ty.interval) body)
   -- Effect perform: `Term.rename`/`Term.subst` map the operation signature (and the
   -- Prop-valued `CanPerform`) by acting on each carrier `Ty`, so the two sides carry
   -- DIFFERENT signatures bridged by `map_rename_subst_commute`.  The generalised
