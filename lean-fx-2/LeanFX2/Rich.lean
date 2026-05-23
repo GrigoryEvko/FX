@@ -160,6 +160,8 @@ import LeanFX2.Term.Pointwise
 import LeanFX2.Term.RenameInjective
 import LeanFX2.Term.HEqCongr
 import LeanFX2.Term.StrengtheningImage
+import LeanFX2.Term.Subst0RenameCommute
+import LeanFX2.Reduction.ParRed.RenameCompatibleTyped
 import LeanFX2.Reduction.RawParInversion
 import LeanFX2.Reduction.ParRed
 import LeanFX2.Reduction.ConvCumulHomo

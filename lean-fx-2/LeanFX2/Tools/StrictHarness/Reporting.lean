@@ -614,7 +614,17 @@ def isStepParRawBridgeStructural (declName : Name) : Bool :=
     -- image-of-source-eq structural-carrier family
     lastSegment.startsWith "renamed_source_" ||
     lastSegment.startsWith "weakened_source_" ||
-    lastSegment.startsWith "sourceRaw_in_"
+    lastSegment.startsWith "sourceRaw_in_" ||
+    -- typed rename/subst compatibility per-Step-arm family.  Each
+    -- `Step.par.rename_compatible_typed_<arm>` (and the subst mirror)
+    -- proves a single Step.par arm commutes with renaming/substitution;
+    -- the manufactured arms (`eqType` / `eqArrow` / `eqTypeHet` /
+    -- `eqArrowHet`) appear because the arm IS the manufactured rule, so
+    -- the dependency is structural carrier threading, not a wrapper
+    -- around a manufactured-witness conclusion.  Supports the typed
+    -- rename-equivariance work (unblock-C.t6.stepCompat).
+    lastSegment.startsWith "rename_compatible_typed_" ||
+    lastSegment.startsWith "subst_compatible_typed_"
 
 /-- Whether a declaration is in the documented allowlist of decls
 expected to thread manufactured Step rules structurally.  Membership
