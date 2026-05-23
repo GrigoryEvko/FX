@@ -1044,5 +1044,10 @@ constructor — pure definitional, no induction, no cast on the `refl`
 #assert_no_axioms LeanFX2.Conv.toParJoin
 #assert_no_axioms LeanFX2.Conv.rename_equivariant_fwd_parJoin
 #assert_no_axioms LeanFX2.Conv.weaken_equivariant_fwd_parJoin
+-- Canonical-weaken specializations of `_extend` / `_toRaw` companions
+-- (ConvRenameParJoinExtra).  Composes the general-renaming companions at
+-- `TermRenaming.weakenStep`, no fresh kernel induction.
+#assert_no_axioms LeanFX2.Conv.weaken_equivariant_fwd_parJoin_extend
+#assert_no_axioms LeanFX2.Conv.weaken_equivariant_fwd_parJoin_toRaw
 
 end LeanFX2.Tools

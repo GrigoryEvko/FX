@@ -38,6 +38,12 @@ chain-extending consumers reach for without re-deriving the rename lift.
   `Step.parStar.toRawBridge`, presenting the endpoints as `(toRaw _).rename rho`.
   This is the raw-join shape `RawStep.parStar.confluence` and the
   `Conv.renameRaw` consumers (Church-Rosser corollary) reach for.
+* `Conv.weaken_equivariant_fwd_parJoin_extend` — canonical-weaken specialization
+  of `_extend`.  Common-reduct chain extension at one-binder weakening, the shape
+  β-redex consumers reach for under canonical weaken.
+* `Conv.weaken_equivariant_fwd_parJoin_toRaw` — canonical-weaken specialization
+  of `_toRaw`.  Raw projection at one-binder weakening, the raw-join shape Geuvers
+  β-η critical-pair consumers reach for under canonical weaken.
 
 Zero-axiom — `Conv.sym`, `Step.parStar.append`, and `Step.parStar.toRawBridge`
 are zero-axiom, and the rename arm reuses #2028 exactly as the forward headline
@@ -165,5 +171,70 @@ theorem Conv.rename_equivariant_fwd_parJoin_toRaw
   exact ⟨midRaw,
     Step.parStar.toRawBridge sourceArm,
     Step.parStar.toRawBridge targetArm⟩
+
+/-- Canonical-weaken specialization of `Conv.rename_equivariant_fwd_parJoin_extend`.
+
+A typed `Conv source target` lifts to a typed parallel join between the one-binder
+weakenings of `source` and `target` in `context.cons newType`, with BOTH arms then
+advanced along ANY further `Step.parStar` chain out of the common reduct.
+Instantiates the general `_extend` at `termRenaming := TermRenaming.weakenStep
+context newType`, mirroring how `Conv.weaken_equivariant_fwd_parJoin` /
+`Conv.weaken_equivariant_fwd_parJoin_sym` specialize the headline and symmetric
+forms.  This is the shape β-redex consumers under canonical weaken (e.g. Geuvers
+β-η critical pair when the bound variable is weakened past one fresh binder)
+reach for. -/
+theorem Conv.weaken_equivariant_fwd_parJoin_extend
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (newType : Ty level scope)
+    (convertibility : Conv sourceTerm targetTerm)
+    {furtherType : Ty level (scope + 1)} {furtherRaw : RawTerm (scope + 1)}
+    {furtherTerm : Term (context.cons newType) furtherType furtherRaw}
+    (extendChain :
+      ∀ {commonType : Ty level (scope + 1)} {commonRaw : RawTerm (scope + 1)}
+        (commonReduct : Term (context.cons newType) commonType commonRaw),
+        Step.parStar
+          (Term.rename (TermRenaming.weakenStep context newType) sourceTerm)
+          commonReduct →
+        Step.parStar
+          (Term.rename (TermRenaming.weakenStep context newType) targetTerm)
+          commonReduct →
+        Step.parStar commonReduct furtherTerm) :
+    Step.parStar
+      (Term.rename (TermRenaming.weakenStep context newType) sourceTerm)
+      furtherTerm ∧
+    Step.parStar
+      (Term.rename (TermRenaming.weakenStep context newType) targetTerm)
+      furtherTerm :=
+  Conv.rename_equivariant_fwd_parJoin_extend
+    (TermRenaming.weakenStep context newType) convertibility extendChain
+
+/-- Canonical-weaken specialization of `Conv.rename_equivariant_fwd_parJoin_toRaw`.
+
+A typed `Conv source target` projects to a RAW parallel join between the
+one-binder-weakened raw forms `sourceRaw.rename RawRenaming.weaken` and
+`targetRaw.rename RawRenaming.weaken`.  Instantiates the general `_toRaw` at
+`termRenaming := TermRenaming.weakenStep context newType`; under
+`TermRenaming.weakenStep`'s defining equation
+`rho := RawRenaming.weaken` (Term/Rename.lean:89), the raw endpoints come out
+exactly as `RawRenaming.weaken`-renamed.  This is the raw-join shape Geuvers β-η
+critical-pair consumers under canonical weaken (e.g. `RawStep.parStar.confluence`
+applied to the weakened arms) reach for. -/
+theorem Conv.weaken_equivariant_fwd_parJoin_toRaw
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (newType : Ty level scope)
+    (convertibility : Conv sourceTerm targetTerm) :
+    ∃ midRaw : RawTerm (scope + 1),
+      RawStep.parStar (sourceRaw.rename RawRenaming.weaken) midRaw ∧
+      RawStep.parStar (targetRaw.rename RawRenaming.weaken) midRaw :=
+  Conv.rename_equivariant_fwd_parJoin_toRaw
+    (TermRenaming.weakenStep context newType) convertibility
 
 end LeanFX2
