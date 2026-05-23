@@ -89,4 +89,52 @@ theorem Step.par.castTargetTerm
   exact parallelStep
 
 
+/-! ## Heterogeneous source/target casts.
+
+The six `Eq`-based helpers above transport ONE index of a single term, or
+swap a term for a propositionally-equal one at the SAME indices.  They cannot
+bridge two terms that live at DIFFERENT raw indices — the situation that arises
+in the typed rename-equivariance arms for eliminators carrying a `pathLam
+(_.weaken)` payload (`transpReflBeta`, `hcompBeta`, …), where the goal's
+naturally-renamed argument has raw `(_.weaken).rename rho.lift` while the
+constructor pins it at `(_.rename rho).weaken`.  The two are equal only via
+`RawTerm.weaken_rename_commute`, which sits on a type INDEX, so the terms differ
+heterogeneously (`HEq`, not `Eq`).
+
+These two helpers close that gap: given the raw-index equality AND a `HEq`
+between the two terms, transport the `Step.par`.  Proof is `subst` the raw
+equality (which makes the two index-types defeq) then `cases` the now-homogeneous
+`HEq` — zero-axiom, no `propext` / `Quot.sound` / `Classical.choice`. -/
+
+theorem Step.par.castSourceTermHeq
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRawOriginal sourceRawReplacement targetRaw : RawTerm scope}
+    (rawEquality : sourceRawOriginal = sourceRawReplacement)
+    {sourceOriginal : Term context sourceType sourceRawOriginal}
+    {sourceReplacement : Term context sourceType sourceRawReplacement}
+    {targetTerm : Term context targetType targetRaw}
+    (sourceHeq : HEq sourceOriginal sourceReplacement)
+    (parallelStep : Step.par sourceOriginal targetTerm) :
+    Step.par sourceReplacement targetTerm := by
+  cases rawEquality
+  cases sourceHeq
+  exact parallelStep
+
+theorem Step.par.castTargetTermHeq
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw targetRawOriginal targetRawReplacement : RawTerm scope}
+    (rawEquality : targetRawOriginal = targetRawReplacement)
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetOriginal : Term context targetType targetRawOriginal}
+    {targetReplacement : Term context targetType targetRawReplacement}
+    (targetHeq : HEq targetOriginal targetReplacement)
+    (parallelStep : Step.par sourceTerm targetOriginal) :
+    Step.par sourceTerm targetReplacement := by
+  cases rawEquality
+  cases targetHeq
+  exact parallelStep
+
+
 end LeanFX2
