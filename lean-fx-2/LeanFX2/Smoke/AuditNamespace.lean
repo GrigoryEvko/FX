@@ -124,6 +124,8 @@ import LeanFX2.Smoke.AuditPhase9DSynth
 import LeanFX2.Smoke.AuditPhase9EEval
 import LeanFX2.Smoke.AuditPhase9FCheckEval
 import LeanFX2.Smoke.AuditPhase9GSoundness
+import LeanFX2.Smoke.AuditRawIsSomeInversion
+import LeanFX2.Smoke.AuditTyStrengthenInversion
 import LeanFX2.Smoke.AuditUnivalenceFull
 import LeanFX2.Smoke.AuditUnivalenceTransport
 import LeanFX2.Smoke.Bridge
