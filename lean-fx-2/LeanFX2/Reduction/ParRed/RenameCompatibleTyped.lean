@@ -2442,6 +2442,43 @@ theorem rename_compatible_typed_pathLam
     (Step.par.castTargetType (Ty.weaken_rename_commute rho carrierType)
       (Step.par.castSourceType (Ty.weaken_rename_commute rho carrierType) bodyStep))
 
+/-- β arm `betaFstPair` of typed-Step.par rename equivariance (shallow Σ first
+projection, single sub-derivation).  `Term.fst (Term.pair a b) ⟶ a'` with
+`Step.par a a'`; the discarded second component `b` is carried as an explicit
+constructor argument.  Under renaming, the redex unfolds through the `fst` arm
+(cast-free) and the `pair` arm (which transports its second component by
+`Ty.subst0_rename_commute secondType firstType firstRawSource rho`), so the
+reconstructed `secondValueSource` supplied to `Step.par.betaFstPair` carries the
+SAME forward cast that the `Term.rename` `pair` arm placed in the goal — the
+`exact` then rebuilds the identical renamed redex.  The reduct side
+(`firstValueTarget`) is substitution-free, so no cast there. -/
+theorem rename_compatible_typed_betaFstPair
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {firstType : Ty level sourceScope} {secondType : Ty level (sourceScope + 1)}
+    {firstRawSource firstRawTarget : RawTerm sourceScope}
+    {secondRawSource : RawTerm sourceScope}
+    {firstValueSource : Term sourceCtx firstType firstRawSource}
+    {firstValueTarget : Term sourceCtx firstType firstRawTarget}
+    (secondValueSource :
+      Term sourceCtx (secondType.subst0 firstType firstRawSource) secondRawSource)
+    (firstStep :
+      Step.par (Term.rename termRenaming firstValueSource)
+               (Term.rename termRenaming firstValueTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.fst (Term.pair (secondType := secondType)
+          firstValueSource secondValueSource)))
+      (Term.rename termRenaming firstValueTarget) := by
+  dsimp only [Term.rename]
+  exact Step.par.betaFstPair
+    (Ty.subst0_rename_commute secondType firstType firstRawSource rho ▸
+      Term.rename termRenaming secondValueSource)
+    firstStep
+
 end Step.par
 
 end LeanFX2
