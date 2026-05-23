@@ -2689,6 +2689,125 @@ theorem rename_compatible_typed_betaCodataDestUnfoldDeep
   dsimp only [Term.rename]
   exact Step.par.betaCodataDestUnfoldDeep codataStep
 
+/-- β arm `betaGlueElimIntroDeep` of typed-Step.par rename equivariance (deep
+cubical Glue elimination, develops-to premise, cast-free).  `glueElim g ⟶ base`
+when `g` develops to `glueIntro base partial`.  The reduct (`baseTarget`) lives at
+the non-dependent `baseType`, and `glueIntro` / `glueElim` rename structurally
+(`baseType` and `boundaryWitness` via `.rename rho`, no `▸`).  Stating the
+develops-to premise in whole-rename form (`Term.rename … (Term.glueIntro …)`,
+exactly the headline IH) and normalising both sides with `dsimp only [Term.rename]`
+lets `exact` close with no double-transport. -/
+theorem rename_compatible_typed_betaGlueElimIntroDeep
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (modeIsUnivalent : mode = Mode.univalent)
+    {baseType : Ty level sourceScope}
+    {boundaryWitness : RawTerm sourceScope}
+    {gluedRawSource baseRawTarget partialRawTarget : RawTerm sourceScope}
+    {gluedSource :
+      Term sourceCtx (Ty.glue baseType boundaryWitness) gluedRawSource}
+    {baseTarget : Term sourceCtx baseType baseRawTarget}
+    {partialTarget : Term sourceCtx baseType partialRawTarget}
+    (gluedStep :
+      Step.par (Term.rename termRenaming gluedSource)
+               (Term.rename termRenaming
+                 (Term.glueIntro modeIsUnivalent baseType boundaryWitness
+                   baseTarget partialTarget))) :
+    Step.par
+      (Term.rename termRenaming (Term.glueElim modeIsUnivalent gluedSource))
+      (Term.rename termRenaming baseTarget) := by
+  dsimp only [Term.rename] at gluedStep ⊢
+  exact Step.par.betaGlueElimIntroDeep modeIsUnivalent gluedStep
+
+/-- β arm `betaRecordProjIntroDeep` of typed-Step.par rename equivariance (deep
+single-field record projection, develops-to premise, cast-free).  `recordProj r ⟶
+field` when `r` develops to `recordIntro field`.  The single field lives at the
+non-dependent `singleFieldType`; `recordProj` / `recordIntro` rename structurally,
+so the reduct (`firstTarget`) is substitution-free. -/
+theorem rename_compatible_typed_betaRecordProjIntroDeep
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {singleFieldType : Ty level sourceScope}
+    {recordRawSource firstRawTarget : RawTerm sourceScope}
+    {recordSource : Term sourceCtx (Ty.record singleFieldType) recordRawSource}
+    {firstTarget : Term sourceCtx singleFieldType firstRawTarget}
+    (recordStep :
+      Step.par (Term.rename termRenaming recordSource)
+               (Term.rename termRenaming (Term.recordIntro firstTarget))) :
+    Step.par
+      (Term.rename termRenaming (Term.recordProj recordSource))
+      (Term.rename termRenaming firstTarget) := by
+  dsimp only [Term.rename] at recordStep ⊢
+  exact Step.par.betaRecordProjIntroDeep recordStep
+
+/-- β arm `betaRefineElimIntroDeep` of typed-Step.par rename equivariance (deep
+refinement elimination, develops-to premise, cast-free).  `refineElim r ⟶ value`
+when `r` develops to `refineIntro pred value proof`.  The value lives at the
+non-dependent `baseType` and the predicate at `scope + 1` renames via `rho.lift`
+with no `▸`, so the reduct (`valueTarget`) is substitution-free. -/
+theorem rename_compatible_typed_betaRefineElimIntroDeep
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {baseType : Ty level sourceScope}
+    {predicate : RawTerm (sourceScope + 1)}
+    {refinedRawSource valueRawTarget proofRawTarget : RawTerm sourceScope}
+    {refinedSource : Term sourceCtx (Ty.refine baseType predicate) refinedRawSource}
+    {valueTarget : Term sourceCtx baseType valueRawTarget}
+    {proofTarget : Term sourceCtx Ty.unit proofRawTarget}
+    (refinedStep :
+      Step.par (Term.rename termRenaming refinedSource)
+               (Term.rename termRenaming
+                 (Term.refineIntro predicate valueTarget proofTarget))) :
+    Step.par
+      (Term.rename termRenaming (Term.refineElim refinedSource))
+      (Term.rename termRenaming valueTarget) := by
+  dsimp only [Term.rename] at refinedStep ⊢
+  exact Step.par.betaRefineElimIntroDeep refinedStep
+
+/-- β arm `betaFstPairDeep` of typed-Step.par rename equivariance (deep Σ-fst
+projection, develops-to premise, cast-free reduct).  `fst p ⟶ first` when `p`
+develops to `pair first second`.  The reduct (`firstValueTarget`) lives at the
+non-dependent `firstType`; `fst` renames cast-free.  The pair-rename arm DOES place
+a `Ty.subst0_rename_commute ▸` cast — but only on the SECOND component
+(`secondValueTarget` at `secondType.subst0 …`), which the constructor's
+existential absorbs and the conclusion discards.  So the double-transport
+obstruction (which blocks `betaSndPair`, whose reduct IS the cast-bearing second
+component) does not arise here. -/
+theorem rename_compatible_typed_betaFstPairDeep
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {firstType : Ty level sourceScope}
+    {secondType : Ty level (sourceScope + 1)}
+    {pairRawSource firstRawTarget secondRawTarget : RawTerm sourceScope}
+    {pairTermSource :
+      Term sourceCtx (Ty.sigmaTy firstType secondType) pairRawSource}
+    {firstValueTarget : Term sourceCtx firstType firstRawTarget}
+    {secondValueTarget :
+      Term sourceCtx (secondType.subst0 firstType firstRawTarget) secondRawTarget}
+    (pairStep :
+      Step.par (Term.rename termRenaming pairTermSource)
+               (Term.rename termRenaming
+                 (Term.pair (secondType := secondType)
+                   firstValueTarget secondValueTarget))) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.fst (secondType := secondType) pairTermSource))
+      (Term.rename termRenaming firstValueTarget) := by
+  dsimp only [Term.rename] at pairStep ⊢
+  exact Step.par.betaFstPairDeep pairStep
+
 end Step.par
 
 end LeanFX2
