@@ -1439,6 +1439,82 @@ theorem partialRename?_idCode_isSome
                 cases composite
     | some _ => rfl
 
+/-! ## Closed-atomic unconditional inversions
+
+For nullary `RawTerm` constructors (`unit`, `boolTrue`, `boolFalse`,
+`natZero`, `listNil`, `optionNone`, `interval0`, `interval1`,
+`universeCode`), `partialRename?` returns `some <self>` unconditionally
+(see `Foundation/RawPartialRename/Function.lean`: each closed-atomic
+arm is `_ => some <self>`).  No sub-field hypotheses to extract;
+the inversion shape collapses to the unconditional `.isSome = true`
+witness exposed here for API symmetry with the multi-child inversion
+lemmas above.  Each proof reduces to `rfl` via the dispatcher's
+definitional unfolding. -/
+
+/-- Inversion of `RawTerm.unit` partial-renaming `.isSome`.
+
+`RawTerm.unit` is a nullary atomic constructor; `partialRename?`
+unconditionally returns `some RawTerm.unit`, so `.isSome` is `true`
+without any sub-field hypothesis. -/
+theorem partialRename?_unit_isSome
+    (back : PartialRawRenaming sourceScope targetScope) :
+    ((RawTerm.unit : RawTerm sourceScope).partialRename? back).isSome = true :=
+  rfl
+
+/-- Inversion of `RawTerm.boolTrue` partial-renaming `.isSome`. -/
+theorem partialRename?_boolTrue_isSome
+    (back : PartialRawRenaming sourceScope targetScope) :
+    ((RawTerm.boolTrue : RawTerm sourceScope).partialRename? back).isSome = true :=
+  rfl
+
+/-- Inversion of `RawTerm.boolFalse` partial-renaming `.isSome`. -/
+theorem partialRename?_boolFalse_isSome
+    (back : PartialRawRenaming sourceScope targetScope) :
+    ((RawTerm.boolFalse : RawTerm sourceScope).partialRename? back).isSome = true :=
+  rfl
+
+/-- Inversion of `RawTerm.natZero` partial-renaming `.isSome`. -/
+theorem partialRename?_natZero_isSome
+    (back : PartialRawRenaming sourceScope targetScope) :
+    ((RawTerm.natZero : RawTerm sourceScope).partialRename? back).isSome = true :=
+  rfl
+
+/-- Inversion of `RawTerm.listNil` partial-renaming `.isSome`. -/
+theorem partialRename?_listNil_isSome
+    (back : PartialRawRenaming sourceScope targetScope) :
+    ((RawTerm.listNil : RawTerm sourceScope).partialRename? back).isSome = true :=
+  rfl
+
+/-- Inversion of `RawTerm.optionNone` partial-renaming `.isSome`. -/
+theorem partialRename?_optionNone_isSome
+    (back : PartialRawRenaming sourceScope targetScope) :
+    ((RawTerm.optionNone : RawTerm sourceScope).partialRename? back).isSome = true :=
+  rfl
+
+/-- Inversion of `RawTerm.interval0` partial-renaming `.isSome`. -/
+theorem partialRename?_interval0_isSome
+    (back : PartialRawRenaming sourceScope targetScope) :
+    ((RawTerm.interval0 : RawTerm sourceScope).partialRename? back).isSome = true :=
+  rfl
+
+/-- Inversion of `RawTerm.interval1` partial-renaming `.isSome`. -/
+theorem partialRename?_interval1_isSome
+    (back : PartialRawRenaming sourceScope targetScope) :
+    ((RawTerm.interval1 : RawTerm sourceScope).partialRename? back).isSome = true :=
+  rfl
+
+/-- Inversion of `RawTerm.universeCode` partial-renaming `.isSome`.
+
+The `innerLevel : Nat` payload is scope-free attribute data; the
+dispatcher returns `some (RawTerm.universeCode innerLevel)`
+unconditionally. -/
+theorem partialRename?_universeCode_isSome
+    (back : PartialRawRenaming sourceScope targetScope)
+    (innerLevel : Nat) :
+    ((RawTerm.universeCode innerLevel : RawTerm sourceScope).partialRename? back).isSome
+      = true :=
+  rfl
+
 end RawTerm
 
 end LeanFX2

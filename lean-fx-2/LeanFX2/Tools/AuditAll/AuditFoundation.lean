@@ -279,4 +279,19 @@ only (`dsimp only` unfold + nested `match` + `cases` on impossible
 #assert_no_axioms LeanFX2.RawTerm.partialRename?_transpFill_isSome
 #assert_no_axioms LeanFX2.RawTerm.partialRename?_idCode_isSome
 
+-- Closed-atomic unconditional inversion lemmas (Foundation/RawPartialRename/
+-- IsSomeInversion.lean tail).  Each ctor's `partialRename?` arm returns
+-- `some <self>` unconditionally, so `.isSome = true` is a `rfl` proof.  These
+-- gates lock the zero-axiom contract on the 9 closed-atomic inversion siblings
+-- consumed by the eventual T5 universal driver for #2022 unblock-B.t5.par.
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_unit_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_boolTrue_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_boolFalse_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_natZero_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_listNil_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_optionNone_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_interval0_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_interval1_isSome
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_universeCode_isSome
+
 end LeanFX2.Tools
