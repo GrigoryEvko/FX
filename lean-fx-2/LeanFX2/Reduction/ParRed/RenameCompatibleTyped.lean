@@ -742,6 +742,114 @@ theorem rename_compatible_typed_boolElim
             (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolFalse rho)
             elseStep))))
 
+/-- Cong arm `idJ` of typed-Step.par rename equivariance.
+
+HoTT identity-elimination (J) reduces in its base case and its identity
+witness.  `Term.rename` on `idJ` is cast-free — the witness sits at the
+structurally-renaming `Ty.id carrier leftEndpoint rightEndpoint` and the
+base at the non-dependent `motiveType`, so the rename push is definitional
+(`dsimp only [Term.rename]`) and the result is `Step.par.idJ` on the two
+renamed sub-steps. -/
+theorem rename_compatible_typed_idJ
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {carrier : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {motiveType : Ty level sourceScope}
+    {baseRawSource baseRawTarget witnessRawSource witnessRawTarget : RawTerm sourceScope}
+    {baseSource : Term sourceCtx motiveType baseRawSource}
+    {baseTarget : Term sourceCtx motiveType baseRawTarget}
+    {witnessSource :
+      Term sourceCtx (Ty.id carrier leftEndpoint rightEndpoint) witnessRawSource}
+    {witnessTarget :
+      Term sourceCtx (Ty.id carrier leftEndpoint rightEndpoint) witnessRawTarget}
+    (baseStep :
+      Step.par (Term.rename termRenaming baseSource)
+               (Term.rename termRenaming baseTarget))
+    (witnessStep :
+      Step.par (Term.rename termRenaming witnessSource)
+               (Term.rename termRenaming witnessTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.idJ baseSource witnessSource))
+      (Term.rename termRenaming (Term.idJ baseTarget witnessTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.idJ baseStep witnessStep
+
+/-- Cong arm `oeqJCong` of typed-Step.par rename equivariance.
+
+Observational-equality elimination (J) reduces in its base case and its
+observational witness.  Cast-free: the witness sits at the structurally-
+renaming `Ty.oeq carrier leftEndpoint rightEndpoint`, the base at the
+non-dependent `motiveType` — definitional push, then `Step.par.oeqJCong`. -/
+theorem rename_compatible_typed_oeqJCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {carrier : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {motiveType : Ty level sourceScope}
+    {baseRawSource baseRawTarget witnessRawSource witnessRawTarget : RawTerm sourceScope}
+    {baseSource : Term sourceCtx motiveType baseRawSource}
+    {baseTarget : Term sourceCtx motiveType baseRawTarget}
+    {witnessSource :
+      Term sourceCtx (Ty.oeq carrier leftEndpoint rightEndpoint) witnessRawSource}
+    {witnessTarget :
+      Term sourceCtx (Ty.oeq carrier leftEndpoint rightEndpoint) witnessRawTarget}
+    (baseStep :
+      Step.par (Term.rename termRenaming baseSource)
+               (Term.rename termRenaming baseTarget))
+    (witnessStep :
+      Step.par (Term.rename termRenaming witnessSource)
+               (Term.rename termRenaming witnessTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.oeqJ baseSource witnessSource))
+      (Term.rename termRenaming (Term.oeqJ baseTarget witnessTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.oeqJCong baseStep witnessStep
+
+/-- Cong arm `idStrictRecCong` of typed-Step.par rename equivariance.
+
+Strict-identity recursion reduces in its base case and its strict-identity
+witness.  Cast-free: the witness sits at the structurally-renaming
+`Ty.idStrict carrier leftEndpoint rightEndpoint`, the base at the
+non-dependent `motiveType`.  The mode-side condition `modeIsStrict :
+mode = Mode.strict` threads through unchanged (renaming does not touch the
+mode index), so the push is definitional and the result is
+`Step.par.idStrictRecCong modeIsStrict` on the two renamed sub-steps. -/
+theorem rename_compatible_typed_idStrictRecCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (modeIsStrict : mode = Mode.strict)
+    {carrier : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {motiveType : Ty level sourceScope}
+    {baseRawSource baseRawTarget witnessRawSource witnessRawTarget : RawTerm sourceScope}
+    {baseSource : Term sourceCtx motiveType baseRawSource}
+    {baseTarget : Term sourceCtx motiveType baseRawTarget}
+    {witnessSource :
+      Term sourceCtx (Ty.idStrict carrier leftEndpoint rightEndpoint) witnessRawSource}
+    {witnessTarget :
+      Term sourceCtx (Ty.idStrict carrier leftEndpoint rightEndpoint) witnessRawTarget}
+    (baseStep :
+      Step.par (Term.rename termRenaming baseSource)
+               (Term.rename termRenaming baseTarget))
+    (witnessStep :
+      Step.par (Term.rename termRenaming witnessSource)
+               (Term.rename termRenaming witnessTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.idStrictRec modeIsStrict baseSource witnessSource))
+      (Term.rename termRenaming (Term.idStrictRec modeIsStrict baseTarget witnessTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.idStrictRecCong modeIsStrict baseStep witnessStep
+
 end Step.par
 
 end LeanFX2
