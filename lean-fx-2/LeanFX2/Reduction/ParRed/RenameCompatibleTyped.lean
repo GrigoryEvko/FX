@@ -123,6 +123,36 @@ theorem rename_compatible_typed_app
   dsimp only [Term.rename]
   exact Step.par.app functionStep argumentStep
 
+/-- Cong arm `lamPi` of typed-Step.par rename equivariance.
+
+Dependent Π lambda reduces in its body.  `Term.rename` on the `lamPi`
+ctor carries no outer type cast — the body recurses under the lifted
+renaming `termRenaming.lift domainType` (extending the renaming past
+one binder), and the `Ty.piTy` result renames automatically.  So the
+push is definitional and the result is `Step.par.lamPi` applied to the
+body sub-step taken under the lifted renaming. -/
+theorem rename_compatible_typed_lamPi
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {domainType : Ty level sourceScope}
+    {codomainType : Ty level (sourceScope + 1)}
+    {bodyRawSource bodyRawTarget : RawTerm (sourceScope + 1)}
+    {bodySource :
+      Term (sourceCtx.cons domainType) codomainType bodyRawSource}
+    {bodyTarget :
+      Term (sourceCtx.cons domainType) codomainType bodyRawTarget}
+    (bodyStep :
+      Step.par (Term.rename (termRenaming.lift domainType) bodySource)
+               (Term.rename (termRenaming.lift domainType) bodyTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.lamPi (domainType := domainType) bodySource))
+      (Term.rename termRenaming (Term.lamPi (domainType := domainType) bodyTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.lamPi bodyStep
+
 end Step.par
 
 end LeanFX2

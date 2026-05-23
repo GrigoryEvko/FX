@@ -24,6 +24,7 @@ import LeanFX2.Reduction.ParRed.CongAliases
 import LeanFX2.Reduction.ParRed.PreEtaInversion
 import LeanFX2.Reduction.Step.Casts
 import LeanFX2.Reduction.ParRed.ParCasts
+import LeanFX2.Reduction.ParRed.RenameCompatibleTyped
 import LeanFX2.Reduction.RawParWeakenInv.Weaken
 import LeanFX2.Reduction.TranspPiContractumPar
 import LeanFX2.Term.PreservesTerm.InlineDestructors
@@ -879,5 +880,19 @@ compat arm. -/
 #assert_no_axioms LeanFX2.RawTerm.subst0_subst_commute
 #assert_no_axioms LeanFX2.RawTermSubst.par_lift
 #assert_no_axioms LeanFX2.RawTerm.subst_par_pointwise
+
+/-! ### Typed Step.par rename-equivariance forward arms (T6 / unblock-C)
+
+Per-constructor arms of the typed `Step.par.rename_compatible_typed`
+forward direction.  Each pushes `Term.rename` through one Term
+constructor definitionally and reapplies the matching `Step.par` cong
+constructor — pure definitional, no induction, no cast on the `refl`
+/ `fst` / `app` / `lamPi` arms.  These compose into the eventual
+`Step.par`-induction headline that lifts to `Conv.rename_equivariant`. -/
+
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_refl
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_fst
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_app
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_lamPi
 
 end LeanFX2.Tools
