@@ -982,5 +982,7 @@ constructor — pure definitional, no induction, no cast on the `refl`
 #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaFstPairDeep
 #assert_no_axioms LeanFX2.Step.par.castSourceTermHeq
 #assert_no_axioms LeanFX2.Step.par.castTargetTermHeq
+#assert_no_axioms LeanFX2.Step.par.transp_typePath_heqCongr
+#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_transpReflBeta
 
 end LeanFX2.Tools
