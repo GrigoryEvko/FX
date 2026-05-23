@@ -540,6 +540,38 @@ single-step `Step.rename_compatible_typed` (~107-arm) OR
 cannot land back in `StepStar`.  No new kernel ctor needed; both are
 large proofs.  `Step.par.toStepStar` is the recommended next step.
 
+**Parallel-agent findings 2026-05-23 (two disjoint elite agents on master)**:
+
+* **Block A/E (#2018/#2070 `lift_full_term_universal`)**: `DispatchAtom`
+  ALREADY covers 78/78 `Term` ctors and every `RawStep.par.lift_full_<ctor>`
+  leaf + the `lift_full_term` dispatcher are shipped/green — so there are NO
+  uncovered leaves to fill.  The TRUE residual of "drop the DispatchAtom gate"
+  is constructing `DispatchAtom` WITNESSES, i.e. a `∀ term, DispatchAtom term`
+  totality — which is structurally PARTIAL: many `DispatchAtom` arms carry
+  irreducible data (baked `*Lift` callbacks for fst/snd/idJ/pathApp/transp/...,
+  `Mode.univalent`/`Mode.strict` proofs, `IsClosedTy`/`IsClosedTyAtBinder`
+  witnesses that are FALSE for non-closed `Ty.id`/`Ty.piTy`).  So
+  `lift_full_term_universal` necessarily reduces to the closed/canonical
+  fragment.  Shipped that fragment (commits 9461f6aa/4dea8b3a/89ac4cb2):
+  19 `DispatchAtom.of<ctor>` builders + gate-free `RawStep.par.lift_universal_<ctor>`
+  lifts for the atomic + closed-recursive ctors, plus `natLiteral_isDispatchable`
+  (whole-family dispatch totality by structural recursion, zero caller data) in
+  `Term/PreservesTerm/UniversalChain/LiftFullLeavesAlpha.lean`.  Next: extend the
+  canonical-fragment totality; the data-carrying ctors are blocked-by-design, not
+  merely hard.
+
+* **Block C (#2033 ConvCumul)**: `ConvCumul` (`Cumul/Relation/Inductive.lean`)
+  is a substantive INDUCTIVE relation (refl/viaUp/sym/trans + ~50 cong ctors),
+  NOT a `StepStar`/`parStar` join — its `viaUp` ctor is a universe PROMOTION with
+  no `Step` witness.  So there is NO `ConvCumul.toParJoin` projection and the
+  parJoin approach is structurally inapplicable (do not fabricate a join).
+  Instead shipped (commits edbd2597/f544b304) 4 zero-axiom parJoin-form companions
+  of the #2029 forward equivariance in `Reduction/ConvRenameParJoinExtra.lean`:
+  `Conv.rename_equivariant_fwd_parJoin_{sym,extend,toRaw}` +
+  `Conv.weaken_equivariant_fwd_parJoin_sym`.  Note: there is NO typed
+  `Step.parStar.subst_compatible` (only raw), so a subst-axis parJoin is not yet
+  buildable.
+
 ## Critical-path summary (v1.0 requirements)
 
 The v1.0 milestone ("100% proven kernel") gates on:
