@@ -1237,6 +1237,154 @@ theorem rename_compatible_typed_hcompPathCong
   dsimp only [Term.rename]
   exact Step.par.hcompPathCong modeIsUnivalent _ _ sidesPathStep capStep
 
+/-- Cong arm `codataUnfoldCong` of typed-Step.par rename equivariance.
+
+Codata unfold reduces in its seed state and its transition function.  State
+at the non-dependent `stateType`, transition at the structurally-renaming
+`Ty.arrow stateType outputType`.  Cast-free, two sub-steps. -/
+theorem rename_compatible_typed_codataUnfoldCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {stateType outputType : Ty level sourceScope}
+    {stateRawSource stateRawTarget transitionRawSource transitionRawTarget : RawTerm sourceScope}
+    {stateSource : Term sourceCtx stateType stateRawSource}
+    {stateTarget : Term sourceCtx stateType stateRawTarget}
+    {transitionSource : Term sourceCtx (Ty.arrow stateType outputType) transitionRawSource}
+    {transitionTarget : Term sourceCtx (Ty.arrow stateType outputType) transitionRawTarget}
+    (stateStep :
+      Step.par (Term.rename termRenaming stateSource)
+               (Term.rename termRenaming stateTarget))
+    (transitionStep :
+      Step.par (Term.rename termRenaming transitionSource)
+               (Term.rename termRenaming transitionTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.codataUnfold stateSource transitionSource))
+      (Term.rename termRenaming (Term.codataUnfold stateTarget transitionTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.codataUnfoldCong stateStep transitionStep
+
+/-- Cong arm `codataDestCong` of typed-Step.par rename equivariance.
+
+Codata destruction reduces in its codata value, at the structurally-renaming
+`Ty.codata stateType outputType`.  Cast-free, one sub-step. -/
+theorem rename_compatible_typed_codataDestCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {stateType outputType : Ty level sourceScope}
+    {codataRawSource codataRawTarget : RawTerm sourceScope}
+    {codataSource : Term sourceCtx (Ty.codata stateType outputType) codataRawSource}
+    {codataTarget : Term sourceCtx (Ty.codata stateType outputType) codataRawTarget}
+    (codataStep :
+      Step.par (Term.rename termRenaming codataSource)
+               (Term.rename termRenaming codataTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.codataDest codataSource))
+      (Term.rename termRenaming (Term.codataDest codataTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.codataDestCong codataStep
+
+/-- Cong arm `sessionSendCong` of typed-Step.par rename equivariance.
+
+Session send reduces in its channel and payload.  Channel at the
+structurally-renaming `Ty.session protocolStep`, payload at the non-dependent
+`payloadType`; the protocol-step raw rides through (renamed in the node, the
+ctor infers its implicit to match).  Cast-free, two sub-steps. -/
+theorem rename_compatible_typed_sessionSendCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {protocolStep : RawTerm sourceScope}
+    {payloadType : Ty level sourceScope}
+    {channelRawSource channelRawTarget payloadRawSource payloadRawTarget : RawTerm sourceScope}
+    {channelSource : Term sourceCtx (Ty.session protocolStep) channelRawSource}
+    {channelTarget : Term sourceCtx (Ty.session protocolStep) channelRawTarget}
+    {payloadSource : Term sourceCtx payloadType payloadRawSource}
+    {payloadTarget : Term sourceCtx payloadType payloadRawTarget}
+    (channelStep :
+      Step.par (Term.rename termRenaming channelSource)
+               (Term.rename termRenaming channelTarget))
+    (payloadStep :
+      Step.par (Term.rename termRenaming payloadSource)
+               (Term.rename termRenaming payloadTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.sessionSend protocolStep channelSource payloadSource))
+      (Term.rename termRenaming (Term.sessionSend protocolStep channelTarget payloadTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.sessionSendCong channelStep payloadStep
+
+/-- Cong arm `sessionRecvCong` of typed-Step.par rename equivariance.
+
+Session receive reduces in its channel, at the structurally-renaming
+`Ty.session protocolStep`.  Cast-free, one sub-step. -/
+theorem rename_compatible_typed_sessionRecvCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {protocolStep : RawTerm sourceScope}
+    {channelRawSource channelRawTarget : RawTerm sourceScope}
+    {channelSource : Term sourceCtx (Ty.session protocolStep) channelRawSource}
+    {channelTarget : Term sourceCtx (Ty.session protocolStep) channelRawTarget}
+    (channelStep :
+      Step.par (Term.rename termRenaming channelSource)
+               (Term.rename termRenaming channelTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.sessionRecv channelSource))
+      (Term.rename termRenaming (Term.sessionRecv channelTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.sessionRecvCong channelStep
+
+/-- Cong arm `effectPerformCong` of typed-Step.par rename equivariance.
+
+Effect perform reduces in its operation term and its argument bundle.
+`Term.rename` renames `effectTag`, `.map`s the operation signature and the
+`CanPerform` witness, and recurses on the two terms — all structural, no
+type cast.  Every effect-payload index (`effectTag` / `effectRow` /
+`operationSignature` / `canPerformOperation`) is implicit in
+`Step.par.effectPerformCong`, so the bare two-step application elaborates and
+`exact` resolves the implicits against the renamed goal. -/
+theorem rename_compatible_typed_effectPerformCong
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {effectTag : RawTerm sourceScope}
+    {effectRow : Effects.EffectRow}
+    {operationSignature : Effects.OperationSignature (Ty level sourceScope)}
+    {canPerformOperation : Effects.CanPerform effectRow operationSignature}
+    {operationRawSource operationRawTarget argumentsRawSource argumentsRawTarget : RawTerm sourceScope}
+    {operationSource :
+      Term sourceCtx (Ty.effect operationSignature.argumentCarrier effectTag) operationRawSource}
+    {operationTarget :
+      Term sourceCtx (Ty.effect operationSignature.argumentCarrier effectTag) operationRawTarget}
+    {argumentsSource : Term sourceCtx operationSignature.argumentCarrier argumentsRawSource}
+    {argumentsTarget : Term sourceCtx operationSignature.argumentCarrier argumentsRawTarget}
+    (operationStep :
+      Step.par (Term.rename termRenaming operationSource)
+               (Term.rename termRenaming operationTarget))
+    (argumentsStep :
+      Step.par (Term.rename termRenaming argumentsSource)
+               (Term.rename termRenaming argumentsTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.effectPerform effectTag effectRow operationSignature
+          canPerformOperation operationSource argumentsSource))
+      (Term.rename termRenaming
+        (Term.effectPerform effectTag effectRow operationSignature
+          canPerformOperation operationTarget argumentsTarget)) := by
+  dsimp only [Term.rename]
+  exact Step.par.effectPerformCong operationStep argumentsStep
+
 end Step.par
 
 end LeanFX2
