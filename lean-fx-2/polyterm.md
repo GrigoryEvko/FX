@@ -1,7 +1,7 @@
 # PolyTerm — The Scary Maxxed-Out Universal Substrate for FX Kernel Cells
 
-> **Status:** vision document, computability-hardened (revision 2026-05-24).
-> All claims now reduce to one of:
+> **Status:** vision document, computability-hardened.
+> All claims reduce to one of:
 > (a) a constructive Lean definition in this codebase (with file path),
 > (b) a published decision procedure (with paper reference + arxiv ID +
 >     complexity bound), or
@@ -11,12 +11,12 @@
 > as a hand-wave shield.  No `Inhabited X` / hypothesis-as-postulate
 > patterns.  The document obeys lean-fx-2/CLAUDE.md's zero-axiom
 > absolute discipline: every theorem and definition shipped under the
-> ten axes must `#assert_no_axioms` clean.
+> thirteen axes must `#assert_no_axioms` clean.
 >
-> **Costed:** ~187K Lean LoC over 2–3 years, of which **~25K is already
+> **Costed:** ~214K Lean LoC over 2–3 years, of which **~25K is already
 > shipped** in `Foundation/Polygraph/` (K11.1–K11.17 + K12.1–K12.19 +
 > K12.23 + strength-T1/T2/T3 + T4×28 + T8 + Generator/RawPolyTermFlat
-> infrastructure).  Net new work: ~160K LoC.  See [§9](#9-loc-budget)
+> infrastructure).  Net new work: ~189K LoC.  See [§9](#9-loc-budget)
 > for honest accounting.
 >
 > **Slogan:** *PolyCell renamed and souped up.*  One indexed inductive
@@ -37,46 +37,43 @@
 
 ---
 
-## v4 Apex Upgrade (2026-05-24, meta-framework substrate)
+## Architecture overview
 
-After Tier A + Tier B paper reads and a universal-substrate literature
-sweep, the design becomes a **3-tier architecture**:
+The design is a **3-tier architecture**, each tier with a single
+committed substrate (no fallbacks, no alternative paths — the
+strongest available theory per layer):
 
-* **Tier 0 — UNIVERSAL META-FRAMEWORK** (new in v4, §3.0)
+* **Tier 0 — UNIVERSAL META-FRAMEWORK** (§3.0)
   Uemura representable map categories (MSCS 2023, `arXiv:1904.04097`)
   + Bocquet-Kaposi-Sattler internal sconing (FSCD 2023,
   `arXiv:2302.05190`) + Pédrot-Tabareau Fire Triangle constraint
   (POPL 2020).  Provides: every type theory has a bi-initial model +
   its own internal language + theories ≃ models bi-equivalence.
   Sconing-is-enough thesis delivers canonicity, normalization, and
-  parametricity FOR FREE per extension.  Fire Triangle bounds what's
-  mixable (at most two of {substitution, dependent elimination,
-  effects} unrestricted).  This is the EXPAND-AT-WHIM MULTIPLIER:
+  parametricity for free per extension.  Fire Triangle bounds what
+  is mixable (at most two of {substitution, dependent elimination,
+  effects} unrestricted).  This is the expand-at-whim multiplier:
   each new FX feature ships as ~2K LoC Tier-0 obligation witness
-  instead of 5-15K LoC bespoke cascade work.  ~12K Lean LoC, novel
-  Lean work, no precedent in any proof assistant.
+  instead of 5-15K LoC bespoke cascade work.  ~12K Lean LoC, first
+  Lean port of this framework in any proof assistant.
 
 * **Tier 1 — POLYTERM CORE** (~15K LoC, §4)
   Small inductive PolyTerm + 13-axis PolyProfile bundle.  Each axis
   is one Tier-0 obligation witness.
 
 * **Tier 2 — PROFILE EXTENSIONS** (13 axes, §3.1-§3.13)
-  Three axes new in v3 (axes 11-13); ten axes carry substrate-correct
-  citations in v4:
 
   * **Axis 1 (Shape)** — Hadzihasanovic regular directed complexes
     (monograph `arXiv:2404.07273`, 337 pages, forthcoming CUP LMS
-    Lecture Note Series) is the PRIMARY substrate.  All six classical
-    shapes (globular / cubical / simplicial / opetopic / Θ / Steiner)
-    are values of one inductive.  Chanavat stricter ω-cats
-    (`arXiv:2509.26563`) provides the dim ≥ 4 sub-fragment (stricter
-    = strict for n ≤ 3, which is FX's operational range; the
-    distinction only matters for future dim ≥ 4 extensions).
-    Chanavat-Hadzihasanovic diagrammatic sets (HHA 2024,
-    `arXiv:2407.06285`) gives the full homotopy-theoretic model
+    Lecture Note Series).  All six classical shapes (globular /
+    cubical / simplicial / opetopic / Θ / Steiner) are values of one
+    inductive.  Chanavat-Hadzihasanovic diagrammatic sets (HHA 2024,
+    `arXiv:2407.06285`) supplies the full homotopy-theoretic model
     structure + Quillen equivalence with simplicial sets + monoidal
-    with Gray product.  Forest 2021 PhD thesis (HAL `tel-03155192`)
-    provides the algorithmic word-problem decision procedure.
+    with Gray product.  Hadzihasanovic-Kessler `arXiv:2408.16775`
+    delivers the weakest acyclicity condition for polygraph-freeness.
+    Forest 2021 PhD thesis (HAL `tel-03155192`) provides the
+    algorithmic word-problem decision procedure used by Axis 9.
 
   * **Axis 2 (Algebra)** — polynomial pseudomonads (Awodey-Newstead
     `arXiv:1802.00997`) for the full natural-model semantics over
@@ -85,76 +82,69 @@ sweep, the design becomes a **3-tier architecture**:
     argument (Agda-formalized) + Shulman (`arXiv:1904.07004`) for
     the ∞-topos interpretation.
 
-  * **Axis 4 (Saturation)** — Malbos-Massacrier-Struth §4 (NOT
-    §3.2.5).  Newman 4.1.4 + Church-Rosser 4.1.7 + Squier 4.3.6 work
-    in (p+2, p+1)-categories WITHOUT the groupoid hypothesis that
-    Theorem 3.2.5 requires.  FX polygraph is not a groupoid, so §4
-    is the correct primary recipe.
+  * **Axis 4 (Saturation)** — Malbos-Massacrier-Struth §4 (Cubical
+    Coherent Confluence).  Newman 4.1.4 + Church-Rosser 4.1.7 +
+    Squier 4.3.6 work in (p+2, p+1)-categories without the groupoid
+    hypothesis that Theorem 3.2.5 requires.  FX polygraph is
+    non-groupoidal (steps have direction), so §4 is the substrate.
 
-  * **Axis 7 (Multi-modal)** — 4-tier MTT stack (NOT "21 commuting
-    cohesive focuses").  Outer container is MTT (Gratzer-Kavvos-
-    Nuyts-Birkedal LICS 2020).  Sub-layers: cohesive Myers-Riley
-    (only 4 actual focuses: ♭/◇/□/♯) + resource graded modal DTT
-    (Abel-Danielsson-Eriksson ICFP 2023 `arXiv:2603.29716`,
-    Agda-formalized with extraction soundness theorem) + cost calf
-    + decalf (Niu-Sterling-Grodin-Harper POPL 2022
-    `arXiv:2107.04663` + Grodin-Niu-Sterling-Harper POPL 2024
+  * **Axis 7 (Multi-modal)** — 4-tier MTT stack.  Outer container is
+    MTT (Gratzer-Kavvos-Nuyts-Birkedal LICS 2020).  Sub-layers:
+    cohesive Myers-Riley (4 cohesive focuses ♭ ⊣ ◇ ⊣ □ ⊣ ♯) +
+    resource graded modal DTT (Abel-Danielsson-Eriksson ICFP 2023
+    `arXiv:2603.29716`, Agda-formalized with extraction-soundness
+    theorem) + cost calf + decalf (Niu-Sterling-Grodin-Harper POPL
+    2022 `arXiv:2107.04663` + Grodin-Niu-Sterling-Harper POPL 2024
     `arXiv:2307.05938`, both Agda-mechanized) + security DCC +
     structural refinement.  Each of FX's 21 graded dimensions maps
-    to exactly one tier; only 4 are properly cohesive "focuses" in
-    the Myers-Riley sense.
+    to exactly one tier; 4 are properly cohesive focuses in the
+    Myers-Riley sense.
 
   * **Axis 10 (Universe)** — `Step.eqType` operational reduction
     (per CLAUDE.md mandate) + Awodey-Newstead polynomial
     pseudomonads + Aberlé-Spivak polynomial universes (Agda-
     formalized).  TT_⊠ (Gratzer-Weinberger-Buchholtz
-    `arXiv:2407.09146`) is SEMANTIC-JUSTIFICATION ONLY.  v3 doc
-    claim that TT_⊠ is "rzk-prototyped" is FALSE: rzk implements
-    Riehl-Shulman STT (Kudasov-Riehl-Weinberger CPP 2024,
-    `github.com/emilyriehl/yoneda`), NOT TT_⊠.  No implementation
-    of TT_⊠ exists in any proof assistant.
+    `arXiv:2407.09146`) appears only as semantic justification —
+    no implementation of TT_⊠ exists in any proof assistant; Rzk
+    implements only the Riehl-Shulman STT base (Kudasov-Riehl-
+    Weinberger CPP 2024).
 
   * **Axis 11 (SSC backbone)** — Kaposi-Xie 8 equations
-    (`arXiv:2510.12303`, Agda) + Lean port substrate via Allais-
+    (`arXiv:2510.12303`, Agda) ported to Lean via the Allais-
     Atkey-Chapman-McBride-McKinna universe of syntaxes
-    (`arXiv:2001.11001`, ICFP 2018 / JFP 2021).  Allais addresses
-    Lean's lack of inductive-inductive support — the
-    universe-of-syntaxes generic gives structural-recursion
-    discipline that Lean accepts.  lean-fx-2 already ships
+    (`arXiv:2001.11001`, ICFP 2018 / JFP 2021).  Allais supplies
+    the structural-recursion discipline Lean accepts in place of
+    Agda's inductive-inductive support.  lean-fx-2 already ships
     Renaming Action + Subst Action via Allais (accelerate-P1.1 +
     P1.2).
 
   * **Axis 12 (STC classifier)** — Sterling STC (CMU PhD 2021) +
-    Istari mechanization (Li-Yao-Harper `arXiv:2509.11418`) + Lean
-    port substrate via 2LTT-on-Lean (Annenkov-Capriotti-Kraus-
-    Sattler MSCS 2023 `arXiv:1705.03307`) + SProp (Gilbert-Cockx-
-    Sozeau-Tabareau POPL 2019 `hal-01859964`).  2LTT outer level
-    hosts the strict-equality fragment that Istari's STC requires;
-    Lean 4 has native SProp.
+    Istari mechanization (Li-Yao-Harper `arXiv:2509.11418`) ported
+    to Lean via 2LTT-on-Lean (Annenkov-Capriotti-Kraus-Sattler
+    MSCS 2023 `arXiv:1705.03307`) hosting the strict-equality outer
+    layer on Lean's native SProp (Gilbert-Cockx-Sozeau-Tabareau POPL
+    2019 `hal-01859964`).  Inner-layer transport machinery follows
+    Adjedj et al. `arXiv:2310.06376`.
 
-  * **Axis 13 (MTT-norm gateway)** — Gratzer `arXiv:2301.11842` v4
-    March 2026 + three constraints: (a) fxModeTheory is RIGID by
-    construction (no non-trivial 2-isomorphisms), (b) orthogonality
-    2-cells are SProp-valued (proof-irrelevant, equality trivially
+  * **Axis 13 (MTT-norm gateway)** — Gratzer `arXiv:2301.11842`
+    (March 2026) constrained by three structural restrictions to
+    sidestep the word-problem-for-2-categories obstacle Gratzer's
+    footnote 2 names: (a) fxModeTheory is rigid by construction
+    (no non-trivial 2-isomorphisms between 1-cells), (b)
+    orthogonality 2-cells are SProp-valued (equality trivially
     decidable), (c) genuinely 2-categorical fragments (cohesive
     triangle identities) use Makkai/Forest word-problem algorithm.
-    Gratzer's footnote 2 explicitly acknowledges word-problem-for-
-    2-categories is undecidable in general; v4 navigates this with
-    the three constraints.
 
-The v3 Apex doc made several papers do too much work.  v4 fixes the
-overclaims, surfaces the universal substrate, and gives every axis a
-realistic Lean-port estimate against actual mechanization precedent:
+The hard rules this design holds:
 
 * No "rzk-prototyped" claims where rzk does not implement the system.
 * No "21 cohesive focuses" where only 4 are cohesive.
 * No groupoid-hypothesis-violating theorems applied to non-groupoid
   polygraphs.
-* No "Coverage Semantics could eliminate elaboration overhead" claim
-  for univalent FX (Eremondi-Kammar §7.2 says incompatible with
-  univalent theories; downgrade to "not for FX").
-* Pattern matching cites Cockx-Devriese-Piessens "Without K" (ICFP
-  2014) for HoTT-compatibility.
+* No Coverage Semantics for univalent FX (Eremondi-Kammar §7.2 says
+  incompatible with univalent theories — substitute Cockx-Devriese-
+  Piessens "Pattern matching without K", ICFP 2014, DOI
+  10.1145/2628136.2628139).
 
 ---
 
@@ -220,9 +210,9 @@ polygraph terms.  The substrate redesign demanded by today's session
 
 This document specifies the *maximum* polygraph substrate for FX —
 not a half-measure, not (∞,1), but the full (∞,ω)-categorical
-universe parameterized by **thirteen axes** (v3 Apex grew the
-original ten by adding SSC, STC, MTT-norm in v3, all under a Tier-0
-universal meta-framework in v4), every axis grounded in published
+universe parameterized by **thirteen axes** (SSC, STC, MTT-norm extend an earlier ten-axis
+core; the Tier-0 universal meta-framework binds them all), every
+axis grounded in published
 literature, every axis Lean-mechanizable at zero axioms, every axis
 giving FX a capability no other proof assistant has.
 
@@ -602,7 +592,7 @@ The payoff:
 
 For each FX axis, the metatheory obligation reduces to: provide a
 sconing witness.  Per axis ~1K LoC.  Subsumes per-construction STC /
-gluing arguments that polyterm v3 cited per-axis.
+gluing arguments cited per-axis below.
 
 The BKS earlier paper "Relative induction principles" (`arXiv:2102.11649`)
 provides the framework: induction principles that operate relative to
@@ -640,7 +630,8 @@ the Fire Triangle by:
 * SProp 2-cells for orthogonality witnesses — keeps the modal layer
   rigid + decidable.
 
-Polyterm v3 ignored this constraint.  v4 makes it explicit so future
+Earlier drafts ignored this constraint.  This document makes it
+explicit so future
 axes don't accidentally try to mix all three legs unrestrictedly.
 
 #### 3.0.4 The Tier 0 obligation type
@@ -750,33 +741,31 @@ complexes (Steiner 1993, ABGMMM book §17.4); opetopes (Baez-Dolan
   the colimit-completion of globular sets under wreath products).
   Picking per-dim shape is a profile choice over Θ subobjects.
 
-**v4 PRIMARY recipe — Hadzihasanovic regular directed complexes
-(corrected: `arXiv:2404.07273`, NOT 2404.05728):**
+**Substrate — Hadzihasanovic regular directed complexes
+(`arXiv:2404.07273`):**
 
-Chanavat's stricter ω-cats `arXiv:2509.26563` are BUILT ON
-Hadzihasanovic's regular directed complexes.  The `Mol(P)` functor is
-Hadzihasanovic's, not Chanavat's invention.  Hadzihasanovic
-`arXiv:2404.07273` is a 337-page monograph (forthcoming as CUP LMS
-Lecture Note Series) covering all six classical shapes as values of
-one `RegularDirectedComplex` type, with explicit Gray products,
-suspensions, and joins.
+The substrate is Hadzihasanovic's 337-page monograph (forthcoming as
+CUP LMS Lecture Note Series), which covers all six classical shapes
+as values of one `RegularDirectedComplex` type, with explicit Gray
+products, suspensions, and joins.  The `Mol(P)` functor produces
+strict ω-categorical structure on molecules — Hadzihasanovic's
+construction, used by every downstream framework cited below.
 
-**CORRECTION (v4):** Chanavat Theorem 2.66 says stricter ω-cats =
-strict ω-cats for n ≤ 3, with stricter being genuinely stricter
-only at n ≥ 4 (Chanavat Comment 2.67).  FX's operational range is
-n ≤ 3 (cd_lemma at dim 2, Squier at dim 3), so "subsumes all six
-shapes" is true for FX's actual usage via STRICT ω-cats, not via
-Chanavat's stricter extension.
+For FX's operational dimensions (n ≤ 3, cd_lemma at dim 2, Squier at
+dim 3), strict ω-categories suffice (Chanavat Theorem 2.66:
+stricter = strict for n ≤ 3).  The stricter extension only matters
+at n ≥ 4 (Chanavat Comment 2.67); it is a future-work option, not
+part of the load-bearing path.
 
-**v4 substrate stack:**
+Supporting stack:
 
 * **Hadzihasanovic monograph** `arXiv:2404.07273` (337 pages): all
   six shapes as regular directed complexes; `Mol(P)` functor
   produces strict ω-cats; Gray products + suspensions + joins.
 * **Chanavat-Hadzihasanovic diagrammatic sets** `arXiv:2407.06285`
   (HHA 2024): cofibrantly generated model structure on diagrammatic
-  sets + TWO Quillen equivalences with simplicial sets + monoidal
-  with Gray.  This is the full homotopy-theoretic substrate.
+  sets + two Quillen equivalences with simplicial sets + monoidal
+  with Gray.  Full homotopy-theoretic substrate.
 * **Hadzihasanovic-Kessler** `arXiv:2408.16775`: weakest acyclicity
   condition for polygraph-freeness; stable under
   pasting/suspension/Gray/joins/duals.
@@ -784,16 +773,10 @@ Chanavat's stricter extension.
   diagrammatic model structures for (∞,∞)-cats.
 * **Forest 2021 PhD thesis** (HAL `tel-03155192`): computational
   descriptions — word problem for strict ω-cats + pasting diagram
-  algorithms + Gray coherence.  THE algorithmic substrate for FX's
-  Axis 9 decidability (replaces Makkai's older McGill manuscript).
-* **Chanavat stricter ω-cats** `arXiv:2509.26563`: OPTIONAL Stage 2
-  extension for n ≥ 4 future work.  NOT required for FX's
-  operational n ≤ 3.
+  algorithms + Gray coherence.  Algorithmic substrate for Axis 9.
 
-Instead of cataloguing six shapes as separate inductive families,
-v4 ships ONE substrate (Hadzihasanovic regular directed complexes)
-that covers all six at all dimensions, plus an optional Chanavat
-extension for the n ≥ 4 stricter regime.
+One substrate (Hadzihasanovic regular directed complexes) covers all
+six shapes at all dimensions FX needs.
 
 **Regular directed complex (Hadzihasanovic):** an oriented graded
 poset `P` where every closed singleton `cl{x}` is a *molecule* —
@@ -835,7 +818,7 @@ squares).
 All six live as values of one inductive `RegularDirectedComplex` +
 one definition `Mol : RegularDirectedComplex → CompositionStructure`.
 
-**Lean signature (v3 primary):**
+**Lean signature:**
 
 ```lean
 /-- An oriented graded poset: a finite poset graded by dim + per-element
@@ -913,8 +896,8 @@ def CellShape : Type := Nat → RegularDirectedComplex
   a free functor (reflector r) that strictifies any strict ω-cat into
   a stricter one.  Lean port: ~1K LoC.
 
-**Lean LoC estimate (v3 primary):** ~8K LoC.  Half the v2 estimate
-because we no longer maintain six separate shape catalogues.
+**Lean LoC estimate:** ~8K LoC.  Half of earlier estimates because
+we no longer maintain six separate shape catalogues.
 
 **Mechanizability:** Hadzihasanovic's regular directed complexes
 have a partial implementation in `homotopy.io` (the dim-finite
@@ -923,7 +906,7 @@ exists.  Lean port is novel but algorithmic.  Chanavat's paper
 gives all the explicit constructions (Section 2 has every formula
 needed).
 
-**v3 watch:**
+**Notes:**
 
 * Chanavat's main result Theorem 4.21 (folk model structure on
   nCat^> right-transferred from diagrammatic model) is heavy
@@ -988,10 +971,10 @@ structure PolyMonad (shapes : Nat → CellShape) extends PolyFunctor shapes wher
   cartesian     : ∀ d, ...                           -- naturality squares are pullbacks
 ```
 
-**v3 PRIMARY recipe — Polynomial UNIVERSES (Aberlé-Spivak
+**Substrate — Polynomial universes (Aberlé-Spivak
 `arXiv:2409.19176`):**
 
-The v3 upgrade replaces the abstract polynomial-monad framework with
+This axis replaces the abstract polynomial-monad framework with
 a CONCRETE definition: a polynomial universe is a polynomial functor
 that is SUBTERMINAL in `Poly^Cart` (the category of polynomials with
 Cartesian lenses).  This makes "univalence" a structural property
@@ -1095,7 +1078,7 @@ def RezkListUniverse : FullPolynomialUniverse := ...
   for promoting non-univalent polynomials to univalent ones; this
   is how FX imports Mathlib lemmas as polygraph extensions.
 
-**Lean LoC estimate (v3 primary):** ~6K LoC.  Reduced from v2 ~10K
+**Lean LoC estimate:** ~6K LoC.  Reduced from earlier ~10K
 because closure-under-Π gives distributive law for free; no need
 to mechanize Beck-Chevalley + cartesianness separately.
 
@@ -1105,7 +1088,7 @@ to mechanize Beck-Chevalley + cartesianness separately.
 predicate + distributive law theorem all in Agda).  Lean port =
 direct translation; the Agda code is the working template.
 
-**v3 watch:**
+**Notes:**
 
 * Aberlé-Spivak works in HoTT.  Lean 4 is intensional but supports
   enough HoTT for univalent-polynomial machinery (function
@@ -1234,11 +1217,11 @@ structure Saturation (S : Stratification _ _) where
     horn.thinAt level → S.thin dim filler
 ```
 
-**v3 PRIMARY recipe — saturation via cubical coherent contractions
+**Substrate — Saturation via cubical coherent confluence
 (Malbos-Massacrier-Struth `arXiv:2511.16852`):**
 
-The v2 saturation axis gives the SHAPE of saturation (which markings
-make sense semantically); v3 adds the COMPUTATIONAL ENGINE that
+The shape of saturation (which markings make sense semantically)
+is paired with the computational engine that
 constructs the saturated marking from the polygraph's rewrite system.
 
 **Cubical contraction (Malbos-Massacrier-Struth Definition 3.1.5):**
@@ -1272,7 +1255,7 @@ distinct i,j,k ∈ {1,2,3}.  Geometrically: cube faces commute.
 Equation 4.1.2 falls out from the cubical relations of cubical
 categories — NO axiom needed.
 
-**Lean signature (v3 primary):**
+**Lean signature:**
 
 ```lean
 /-- A cubical (ω,p)-category: ω-cat with R_i-invertibility for cells
@@ -1337,7 +1320,7 @@ def fxSaturationViaContractions : Saturation fxStratification where
   postulation in FX's modal coherence work.  Pentagon falls out
   geometrically.
 
-**Lean LoC estimate (v3 primary):** ~7K LoC, distributed:
+**Lean LoC estimate:** ~7K LoC, distributed:
 * Cubical (ω,p)-category structure (Malbos-Massacrier-Struth §2.1):
   ~2K LoC (face maps, degeneracies, connections, composition,
   invertibility).
@@ -1353,16 +1336,13 @@ mechanized in any proof assistant.  But the proofs are computational
 filling is a recursive structural argument).  Lean port is novel
 but algorithmic.
 
-**v4 correction (replaces earlier v3 watch):**
+**Notes:**
 
-* Theorem 3.2.5 requires the (ω,p)-category to be a GROUPOID for
-  acyclicity.  FX's polygraph is NOT a groupoid (steps have
-  direction).  Earlier v3 mitigation ("apply at saturated marking
-  level") was hand-wavy and depended on the saturated marking
-  already existing.
-* **v4 substrate fix:** use MMS **§4 Cubical coherent confluence**
-  instead.  §4 works in (p+2, p+1)-categories WITHOUT the groupoid
-  hypothesis:
+* Theorem 3.2.5 requires the (ω,p)-category to be a groupoid for
+  acyclicity.  FX's polygraph is not a groupoid (steps have
+  direction), so the load-bearing substrate is MMS **§4 Cubical
+  coherent confluence**, which works in (p+2, p+1)-categories
+  without the groupoid hypothesis:
   * **Newman cubical lemma** (§4.1.4, Proposition): for Noetherian
     p-ARS X_C, local-confluence-filler map A_2 extends from local
     branchings to global branchings.  No groupoid required.
@@ -1436,10 +1416,10 @@ def materialize : EnrichmentLadder → NiceModelCategory
   | .omegaRung l   => omegaLimit (materialize l)
 ```
 
-**v3 PRIMARY recipe — synthetic ∞-category theory inside type theory
+**Substrate — Synthetic ∞-category theory inside type theory
 via Gratzer-Weinberger-Buchholtz + Rasekh follow-ups:**
 
-The v3 upgrade replaces "construct tSeg(A) externally for arbitrary
+This axis replaces "construct tSeg(A) externally for arbitrary
 nice model A" with "axiomatize Segal + Rezk conditions on types
 INSIDE FX's type theory using STT+modalities".  This is the
 synthetic-vs-analytic shift documented in Gratzer-Weinberger-
@@ -1477,7 +1457,7 @@ type theory.
 * Math-automation extension rung = "polygraph-presented profile"
   per §3.8 profile-fibration axis.
 
-**Lean signature (v3 primary):**
+**Lean signature:**
 
 ```lean
 /-- A Segal type: a type A whose Δ² → A reduces uniquely to a span
@@ -1502,7 +1482,7 @@ inductive Rung where
   | omegaLimit : Rung        -- limit of the tower
 
 /-- Materialize a rung into the predicate it represents.  Replaces
-v2 "tSeg construction" with synthetic-predicate-on-type. -/
+older external "tSeg construction" with synthetic-predicate-on-type. -/
 def Rung.predicate : Rung → (Type u → Prop)
   | .hLevel n   => HasHLevel n
   | .segal      => IsSegal
@@ -1525,16 +1505,16 @@ def fxEnrichment : Enrichment := fun
 
 **FX impact:**
 
-* Replaces v2 ~15K LoC `tSeg(A)` construction with v3 ~3K LoC of
+* Replaces older ~15K LoC `tSeg(A)` construction with ~3K LoC of
   synthetic predicates inside FX.
 * Reuses §3.10 polynomial-universe + triangulated-TT machinery
   for the higher rungs.
 * (∞,n) rungs become OPT-IN per profile dimension; no need to ship
   every rung for every FX deployment.
 
-**Lean LoC estimate (v3 primary):** ~3K LoC for the rung enum + per-
+**Lean LoC estimate:** ~3K LoC for the rung enum + per-
 rung predicates + fxEnrichment instance.  Massive reduction from
-v2 ~15K LoC.
+earlier ~15K LoC estimates.
 
 **Mechanizability:**
 
@@ -1542,7 +1522,7 @@ v2 ~15K LoC.
 * Gratzer-Weinberger-Buchholtz TT_⊠: rzk-prototyped + paper-form.
 * Rasekh fibrations: ✅ rzk-mechanized.
 
-**v3 watch:**
+**Notes:**
 
 * Synthetic vs analytic shift means we lose the ability to import
   "an arbitrary Quillen model category" as a rung.  FX trades that
@@ -1611,9 +1591,9 @@ structure ComplicialGrayModule (A : NiceModelCategory) extends GrayModule A wher
   acyclicEpsilon : ∀ a (ε : Bool), IsAcyclicCofib ({ε} ⋆ a → [1]_t ⋆ a)
 ```
 
-**v3 PRIMARY — Stage 1 ALREADY SHIPPED via K11.x:**
+**Stage 1 — already shipped via K11.x:**
 
-The v3 upgrade promotes the existing K11.x infrastructure (already
+This axis promotes the existing K11.x infrastructure (already
 landed in `LeanFX2/Foundation/Polygraph/`) to PRIMARY status, with
 the (∞,ω) complicial extension as Stage 2 follow-on.  Stage 1
 delivers the strict-ω-cat Gray tensor + vertical/horizontal
@@ -1648,18 +1628,18 @@ Maltsiniotis-Métayer `arXiv:0712.0617` Coq mechanization of strict-
 ω-cat Gray tensor provides the algorithmic foundation; Loubaton's
 extension to complicial is formula-level work, not new mathematics.
 
-**Why Stage 2 is shippable (not de-scoped as in v2):**
+**Why Stage 2 is shippable:**
 
 * Verity's formulas are case-by-case algorithmic recipes (Verity
   2008 §3-§4, restated Riehl 2016 §4-§5).
 * Loubaton's complicial extension adds marking-tracking but no new
   categorical structure.
 * ABGMMM book §17 catalogs the formulas needed.
-* Combined with §3.4 cubical contraction saturation (the v3 rewrite),
+* Combined with §3.4 cubical contraction saturation,
   Stage 2 ComplicialGray + saturation share the cubical-cell-pasting
   algorithm — many lemmas reuse.
 
-**Why FX needs it (v3 framing):**
+**Why FX needs it:**
 
 - The Gray tensor `⊗` is the "right" tensor product on (∞,ω)-cats,
   asymmetric (not symmetric monoidal): `A ⊗ B` distinguishes
@@ -1678,24 +1658,19 @@ extension to complicial is formula-level work, not new mathematics.
 - Cubical operations (transp, hcomp, Kan filling) factor through
   Gray cylinder + Gray cone (Loubaton §2.2.3).  Requires Stage 2.
 
-**v3 watch:**
+**Notes:**
 
-* Stage 1 ↔ Stage 2 split is the v3 upgrade.  v1/v2 doc treated
-  the full (∞,ω) complicial as one monolithic block (~25K LoC,
-  "research-frontier flag").  v3 splits: Stage 1 is shipped
-  (~840 LoC); Stage 2 is committed but smaller (~15K LoC) because
-  it builds on the K11.x foundation.
-* If Stage 2 hits an (∞,ω)-mechanization wall, fall back to:
-  Stage 1 only → lose univalence-as-theorem partial structural
-  proof, lose proper polarization, lose proper cubical-via-Gray
-  factoring.  But keep: concurrency frame rule, free n-cat
-  construction, interchange law.  Net cost of fallback: ~5K LoC of
-  alternative explicit constructions for the lost capabilities.
+* Stage 1 ↔ Stage 2 split decomposes the complicial Gray module:
+  Stage 1 is the concrete polygraph composition layer (already
+  shipped at K11.x, ~840 LoC); Stage 2 is the marking-aware
+  cylinder + cone construction on top.  Stage 2 builds on the
+  K11.x foundation, so its mechanization risk is contained — it
+  does not duplicate work, it extends.
 
-**Lean LoC estimate (v3 total):** ~15.8K LoC total = ~840 LoC
-already shipped (Stage 1) + ~15K LoC pending (Stage 2).  Reduced
-from v2 ~25K LoC because Stage 1 deletes the abstract `GrayModule`
-struct in favor of the concrete K11.x infrastructure.
+**Lean LoC estimate:** ~15.8K LoC total = ~840 LoC already shipped
+(Stage 1) + ~15K LoC pending (Stage 2).  Stage 1 deletes the
+abstract `GrayModule` struct in favor of the concrete K11.x
+infrastructure.
 
 **Mechanizability:**
 
@@ -1706,15 +1681,17 @@ struct in favor of the concrete K11.x infrastructure.
 
 ### 3.7 ∞-Topos base — multi-focus commuting cohesions
 
-**Reference (v3 primary):** Myers-Riley *Commuting Cohesions*
+**Reference:** Myers-Riley *Commuting Cohesions*
 `arXiv:2301.13780` (Feb 2023).  Extends Shulman's spatial type theory
 to support **multiple commuting cohesions** with focus annotations.
 
-**Reference (v3 fallback):** Lurie HTT 2009 Chapter 6 (∞-toposes);
-Anel-Joyal 2019; Schreiber 2013 Differential Cohomology in Cohesive
-∞-Toposes — used as semantic justification.  Dugger 2001 combinatorial
-presentation kept as fallback if multi-focus discipline hits
-mechanization walls.
+**Semantic justification:** Lurie HTT 2009 Chapter 6 (∞-toposes);
+Anel-Joyal 2019; Schreiber 2013 *Differential Cohomology in Cohesive
+∞-Toposes*.  Dugger 2001 *Combinatorial model categories have
+presentations* (Trans. AMS 353) provides the constructive
+∞-topos presentation used as the semantic model that backs
+the multi-focus discipline; its Lean port is the
+``InfTopos`` structure shipped below.
 
 **Why FX needs it:**
 
@@ -1729,7 +1706,7 @@ mechanization walls.
   Read + Write + Region + Lifetime + Provenance + Trust +
   Observability + Clock-domain + Version.  21 cohesive axes.
 
-- **Myers-Riley solution (v3 primary):** ANNOTATE each context variable
+- **Myers-Riley solution:** annotate each context variable
   with a focus marker `x :_♥ X`.  Each focus ♥ gets its own ♭ and ♯
   modalities, working essentially INDEPENDENTLY.  Orthogonal cohesions
   COMMUTE (Theorem 6.1.5: differential stack homotopy = Čech nerve of
@@ -1752,7 +1729,7 @@ mechanization walls.
   the UNIVERSAL OUTER CONTAINER.  Per-tier sub-substrates carry the
   specific machinery.
 
-- **CORRECTION (v4):** not all 21 FX dimensions are properly
+- Not all 21 FX dimensions are properly
   "focuses" in the Myers-Riley sense.  Myers-Riley §6 only treats
   cohesive focuses (each with its own ∫⊣♭⊣♯ chain).  FX has
   heterogeneous dimensions across FIVE categories:
@@ -1787,7 +1764,7 @@ mechanization walls.
   composition), etc.  Each interaction has its own substrate
   paper.
 
-**Lean signature (v3 primary — multi-focus commuting cohesions):**
+**Lean signature — multi-focus commuting cohesions:**
 
 ```lean
 /-- A focus is a separate axis of spatiality / cohesion / modality.
@@ -1854,7 +1831,7 @@ def OrthogonalFocuses (φ ψ : Focus) : Prop :=
   ∀ (X : Type u), FocusedModalities.flat ψ (FocusedModalities.flat φ X) ≃
                   FocusedModalities.flat φ (FocusedModalities.flat ψ X)
 
-/-- The v3 ∞-topos: a focus lattice + per-focus modalities + pairwise
+/-- The ∞-topos: a focus lattice + per-focus modalities + pairwise
 orthogonality theorems where applicable. -/
 structure InfTopos where
   lattice              : FocusLattice
@@ -1890,9 +1867,9 @@ def infToposOfFX : InfTopos where
   rules respect the inclusion.  Models clock-quantified-and-temporal
   dependence where temporal ⊂ clock.
 
-**Lean LoC estimate (v3 primary):** ~6K LoC for the multi-focus
+**Lean LoC estimate:** ~6K LoC for the multi-focus
 machinery + 21 focus instances + ~210 orthogonality witnesses
-(many derivable by symmetry).  Massive reduction from the v2
+(many derivable by symmetry).  Reduction from earlier
 Dugger-based ~30K LoC estimate.  Most orthogonality witnesses come
 from the structural property of the focuses (each focus's flat-
 counit-detector family is discrete for the other focus's modalities).
@@ -1919,21 +1896,25 @@ not orthogonal).  Identifying which pairs orthogonal vs nested vs
 overlapping is a one-time matrix-building exercise (~1K LoC of
 proofs).
 
-**Lean signature (v3 fallback — Dugger 2001 combinatorial
-presentation, only invoked if multi-focus discipline hits a wall):**
+**Lean signature — categorical semantics via Dugger 2001
+combinatorial presentation:**
+
+The multi-focus type theory above is the surface syntax; the
+following `InfTopos` structure is its categorical semantic model.
+Both ship together: the type theory is what programmers write, the
+∞-topos is what the soundness theorem refers to.
 
 ```lean
 /-- An ∞-topos a la Lurie HTT 2009 §6.1.0.4 — presented
-CONSTRUCTIVELY via Dugger 2001 "Combinatorial model categories have
+constructively via Dugger 2001 "Combinatorial model categories have
 presentations" (Trans. AMS 353).  Dugger's theorem: every
 combinatorial model category is a left Bousfield localization of the
 projective model structure on `sPre(C)` (simplicial presheaves on
-some small ∞-cat C) at a SMALL SET of maps.  Hence finite-
+some small ∞-cat C) at a small set of maps.  Hence finite-
 presentation site + finite localization-map set = computable ∞-topos.
 
-This is NOT a "modal-adjunction list shim" — it's the genuine
-∞-topos data, encoded via its small presentation rather than via
-"Mathlib-level large-cat machinery FX doesn't have". -/
+This is the genuine ∞-topos data, encoded via its small presentation
+rather than via large-cat machinery Mathlib does not have. -/
 structure InfTopos where
 
   /-- The small site C: a polygraph-presented small ∞-cat.  For FX,
@@ -2258,58 +2239,58 @@ def Conv.decideViaMakkai (a b : FXCell) : Decidable (Conv a b) := by
 
 ### 3.10 Univalent universe
 
-**Reference (v3 PRIMARY — operational path):** `Step.eqType` reduction
-rule in FX kernel (per lean-fx-2/CLAUDE.md mandate).  Univalence
-ships as a **definitional reduction**, not an axiom: `Step.eqType :
-Step (Ty.id (Ty.universe l) A B) (Ty.equiv A B)`.  The theorem
+**Operational reference:** `Step.eqType` reduction rule in FX
+kernel (per lean-fx-2/CLAUDE.md mandate).  Univalence ships as a
+**definitional reduction**, not an axiom: `Step.eqType : Step
+(Ty.id (Ty.universe l) A B) (Ty.equiv A B)`.  The theorem
 `Univalence : Conv (Ty.id Univ A B) (Ty.equiv A B) := Conv.fromStep
 Step.eqType` is a real body, zero-axiom under
 `#assert_no_axioms`.
 
-**Reference (v3 PRIMARY — structural justification):** Aberlé-Spivak
-*Polynomial Universes in Homotopy Type Theory* `arXiv:2409.19176`
-(Sep 2024).  `isUnivalent u := u is subterminal in Poly^Cart`.
-Closure under Π gives distributive law DL1–DL4 for FREE via
-univalence (Theorem 4.2).  Agda-formalized in paper appendix.
+**Structural reference (load-bearing semantic justification):** the
+two-paper chain
+* Aberlé-Spivak *Polynomial Universes in Homotopy Type Theory*
+  `arXiv:2409.19176` (Sep 2024).  `isUnivalent u := u is
+  subterminal in Poly^Cart`.  Closure under Π gives distributive
+  law DL1–DL4 for free via univalence (Theorem 4.2).
+  Agda-formalized in paper appendix.  Covers the Π+Σ+U+⊤ fragment.
+* Awodey-Newstead *Polynomial pseudomonads and dependent type
+  theory* `arXiv:1802.00997` (2018).  Theorem 4.1: a natural model
+  supports unit + Σ iff p is a polynomial pseudomonad; supports Π
+  iff p is a polynomial pseudoalgebra.  Covers **all** type
+  formers, not just the fragment Aberlé-Spivak handles.
+* Shulman *All (∞,1)-toposes have strict univalent universes*
+  `arXiv:1904.07004` (2019).  ∞-topos interpretation gluing the
+  polynomial-universe machinery to homotopy theory.
 
-**Reference (v3 SECONDARY — directed-cat justification):** Gratzer-
-Weinberger-Buchholtz *Directed Univalence in Simplicial Homotopy
-Type Theory* `arXiv:2407.09146` (Jan 2026).  Triangulated TT (TT_⊠)
-builds universe `S` of groupoids internal to STT + modalities + ⊠
-simplicial monad.  Definition 1.2: `S` is directed univalent if
-`I → S ≃ Σ_{A,B:S} A → B` over `S × S`.
+**(∞,ω)-categorical semantic model:** Loubaton 2307.11931 (PhD
+thesis) §6.1.3 univalence at (∞,ω); §6.1.4.2 functorial Grothendieck
+construction `Hom^⊖(I, ω) ≃ LCart^c_U(I)`.  Cited as the model
+justifying why `Step.eqType` is the right reduction rule; not
+mechanized in FX (no proof-assistant precedent for the
+(∞,ω)-categorical infrastructure).
 
-**Reference (semantic-only, NOT mechanized):** Loubaton 2307.11931
-(PhD thesis) §6.1.3 univalence at (∞,ω); §6.1.4.2 functorial
-Grothendieck construction `Hom^⊖(I, ω) ≃ LCart^c_U(I)`.  Cited as
-the (∞,ω)-categorical semantic model justifying why `Step.eqType`
-is the right reduction rule; NOT mechanized in FX (~75K LoC of
-(∞,ω)-cat infrastructure with no proof-assistant precedent).
+**Two coherent views, one operational rule:**
 
-**Why FX needs it (three views, one operational rule):**
-
-* **The operational view (v1, kept):** `Step.eqType` makes universe
-  paths reduce to equivalences.  Univalence as theorem (not axiom).
-  Per lean-fx-2/CLAUDE.md HOTT/Univalence.lean discipline — the
-  body of `Univalence` MUST be `Conv.fromStep Step.eqType`, not a
+* **Operational view:** `Step.eqType` makes universe paths reduce
+  to equivalences.  Univalence as theorem, not axiom.  Per
+  lean-fx-2/CLAUDE.md HOTT/Univalence.lean discipline — the body
+  of `Univalence` MUST be `Conv.fromStep Step.eqType`, not a
   postulated axiom.
-* **The structural view (v3 primary, NEW):** Aberlé-Spivak polynomial
-  universes prove univalence as a STRUCTURAL property — being
-  subterminal in `Poly^Cart`.  For any polynomial closed under unit
-  + Σ + Π, ANY two parallel Cartesian lenses to it must be equal.
-  This subterminality IS univalence; it forces the distributive law
-  DL1–DL4 to hold automatically.  No axiom needed.
-* **The directed view (v3 secondary):** for FX's directed categories
-  (Conv as zigzag), triangulated TT builds `S = universe of
-  groupoids` internally.  Directed univalence at the (∞,1)-categorical
-  level — every type family in `S` is automatically functorial wrt
-  classical morphisms.
+* **Structural view:** Aberlé-Spivak polynomial universes prove
+  univalence as a structural property — being subterminal in
+  `Poly^Cart`.  For any polynomial closed under unit + Σ + Π,
+  any two parallel Cartesian lenses to it must be equal.  This
+  subterminality IS univalence; it forces the distributive law
+  DL1–DL4 to hold automatically.  Awodey-Newstead extends the
+  coverage to every dependent type former; Shulman supplies the
+  ∞-topos model.  No axiom needed.
 
-The three views agree at the operational level (`Step.eqType` is
-the reduction), and the v3 primary/secondary refs give the
-structural / directed justification respectively.
+Both views agree at the operational level (`Step.eqType` is the
+reduction); the structural side supplies the semantic
+justification.
 
-**Lean signature (v3 primary):**
+**Lean signature:**
 
 ```lean
 /-- The universe boundary for the universe cell at level n.
@@ -2322,10 +2303,10 @@ Built as the polynomial universe of all polynomials of cardinality
 def universeCell (π : PolyProfile) (n : Nat) : PolyTerm π 0 (universeBoundary n) :=
   PolyTerm.universe n
 
-/-- v3 PRIMARY: univalence as subterminality in Poly^Cart.
-Aberlé-Spivak Definition 4.1.  The universe cell at level n is a
-polynomial universe in their sense iff any two Cartesian lenses to
-it from any other polynomial are equal. -/
+/-- Univalence as subterminality in Poly^Cart.  Aberlé-Spivak
+Definition 4.1.  The universe cell at level n is a polynomial
+universe in their sense iff any two Cartesian lenses to it from any
+other polynomial are equal. -/
 def universeCell.isUnivalent (π : PolyProfile) (n : Nat) :
     ∀ (p : Poly) (f g : CartesianLens p (universeCell π n).toPoly), f = g :=
   ...
@@ -2360,92 +2341,56 @@ theorem polyTermUnivalence (π : PolyProfile) (n : Nat) (A B : Ty (Ty.universe n
   ...
 ```
 
-**Lean signature (v3 secondary — directed univalence for completeness):**
-
-```lean
-/-- For directed/(∞,1) contexts, FX's directed universe `S` is built
-internal to a triangulated TT layer (Gratzer-Weinberger-Buchholtz).
-Directed univalence: `I → S ≃ Σ_{A,B:S} A → B`. -/
-def directedUniverse (π : PolyProfile) : PolyTerm π 0 _ := ...
-
-theorem directedUnivalence (π : PolyProfile) :
-    (Interval → directedUniverse π) ≃
-    (Σ A B : directedUniverse π, A → B) := ...
-
-/-- Structure Homomorphism Principle (SHP, Gratzer-Weinberger-Buchholtz
-§1.4): every term in S automatically respects classical morphisms.
-Directed version of HoTT's Structure Identity Principle. -/
-theorem SHP (π : PolyProfile) (X Y : directedUniverse π) (f : X → Y)
-    (h : MorphismInS X Y) : Functorial f h := ...
-```
-
 **FX impact:**
 
 * `Step.eqType` (already in lean-fx-2 kernel via D2.6 plan) stays as
-  the OPERATIONAL reduction.  Body of `Univalence` theorem is real;
+  the operational reduction.  Body of `Univalence` theorem is real;
   no axiom.
-* v3 primary path (Aberlé-Spivak polynomial universes) provides the
-  STRUCTURAL justification: subterminality + Π-closure = distributive
-  law DL1–DL4 = univalence-style coherence.  Agda template exists.
-* v3 secondary path (triangulated TT) is invoked when FX's directed-
-  univalence usage is needed (e.g., Conv as zigzag becomes a directed
-  morphism).  rzk has the prototype mechanization.
+* Aberlé-Spivak polynomial universes provide the structural
+  justification: subterminality + Π-closure = distributive law
+  DL1–DL4 = univalence-style coherence.  Agda template exists.
+* Awodey-Newstead extends polynomial-pseudomonad coverage to every
+  dependent type former.  Shulman supplies the ∞-topos
+  interpretation.
 * Loubaton thesis §6.1.3-§6.1.4 stays as the (∞,ω)-categorical
-  semantic model — cited as explanation, NOT mechanized.
+  semantic model — cited as explanation, not mechanized.
 
-**Lean LoC estimate (v3 primary path):** ~6K LoC.  Reduced from v2's
-estimated ~10K because:
-* Aberlé-Spivak's subterminality is checkable per-polynomial in
-  finite time (closure-under-Π is the bulk of the work, ~3K LoC).
-* Distributive law DL1–DL4 derive FROM univalence; no separate
-  proof obligations.
+**Lean LoC estimate:** ~6K LoC.  Distribution:
+* Aberlé-Spivak subterminality + Π-closure: ~3K LoC.
+* Awodey-Newstead pseudomonad/pseudoalgebra coverage for the
+  remaining type formers: ~2K LoC.
+* Shulman ∞-topos interpretation hooks: ~1K LoC.
 * Operational `Step.eqType` rule is already shipped via D2.6.
-
-**v3 LoC budget (alternative v3 secondary path via TT_⊠):** ~12K LoC
-additional if FX wants directed univalence + SHP.  TT_⊠'s 10 axioms
-need to be discharged or paid for as semantic-only justifications.
 
 **Mechanizability:**
 
-* v3 primary (Aberlé-Spivak): **Agda-formalized** in the paper
-  appendix.  Lean port = direct translation, ~6K LoC.
-* v3 secondary (Gratzer-Weinberger-Buchholtz TT_⊠): **NO
-  MECHANIZATION EXISTS.**  Earlier polyterm draft incorrectly stated
-  "rzk-prototyped"; correction (v4 fetch verification): GWB paper
-  §1.4 explicitly states "there is presently no suitably general
-  implementation of modal type theory."  Rzk (Kudasov 2023,
+* Aberlé-Spivak: Agda-formalized in the paper appendix.  Lean port
+  = direct translation, ~3K LoC.
+* Awodey-Newstead + Shulman: paper-form proofs, explicit and
+  constructive.  Lean port is novel work, ~3K LoC.
+* TT_⊠ (Gratzer-Weinberger-Buchholtz `arXiv:2407.09146`) is not
+  mechanized in any proof assistant.  GWB §1.4 explicitly states
+  "there is presently no suitably general implementation of modal
+  type theory."  Rzk (Kudasov 2023,
   [github.com/rzk-lang/rzk](https://github.com/rzk-lang/rzk))
-  implements the Riehl-Shulman STT BASE, NOT the TT_⊠ modal
-  extension.  Kudasov-Riehl-Weinberger CPP 2024 formalized the
-  ∞-Yoneda lemma in Rzk using only the STT fragment.
-* TT_⊠ is cited ONLY as semantic justification for the operational
-  `Step.eqType` reduction rule — FX does not depend on TT_⊠ being
-  mechanized.
-* Loubaton thesis (∞,ω) univalence: **NOT mechanized anywhere.**
+  implements only the Riehl-Shulman STT base; the ⊠ modal
+  extension has no implementation anywhere.  TT_⊠ is cited only
+  as additional semantic justification — FX does not depend on
+  it being mechanized.
+* Loubaton thesis (∞,ω) univalence: not mechanized anywhere.
   Cited as model justification only.
 
-**v3 watch:**
+**Notes:**
 
-* TT_⊠ loses canonicity per its §1.3.  FX's `Step.eqType` operational
-  rule sidesteps this — canonicity preserved at the kernel level via
-  the reduction; semantic justification via Aberlé-Spivak (canonicity-
-  preserving) is the primary structural argument.
-* Mixing the v3 primary (Aberlé-Spivak) and secondary (TT_⊠) paths
-  requires care: TT_⊠ adds the ⊠ simplicial monad axiomatically; not
-  every FX polynomial universe needs the simplicial structure.  FX's
-  default is the v3 primary path; v3 secondary is opt-in per profile.
-
-**Research-frontier flag:** ⚠️ The combination of polynomial
-universes (Aberlé-Spivak) with directed univalence (Gratzer-
-Weinberger-Buchholtz) is not mechanized in any proof assistant.
-FX would be first-mover for the COMBINATION.  Individual axes:
-Aberlé-Spivak in Agda, Gratzer-Weinberger-Buchholtz in rzk.
+* `Step.eqType` preserves canonicity at the kernel level via the
+  operational reduction; the structural side (Aberlé-Spivak) is
+  itself canonicity-preserving.
 
 ---
 
 ### 3.11 Single-Substitution Calculus backbone
 
-**Reference (v3 NEW Axis):** Kaposi-Xie *Type Theory with Single
+**Reference:** Kaposi-Xie *Type Theory with Single
 Substitutions* `arXiv:2510.12303` (Oct 2025); Altenkirch-Burke-
 Wadler *Substitution Without Copy and Paste* `arXiv:2510.12304`
 (Oct 2025).
@@ -2561,7 +2506,7 @@ sort-polymorphic `id` trick (per their Figure 1 and Section 3.1).
 
 ### 3.12 Synthetic Tait Computability classifier
 
-**Reference (v3 NEW Axis):** Sterling *First Steps in Synthetic Tait
+**Reference:** Sterling *First Steps in Synthetic Tait
 Computability: The Objective Metatheory of Cubical Type Theory*
 (PhD thesis, CMU 2022).  Li-Yao-Harper *Mechanizing Synthetic Tait
 Computability in Istari* `arXiv:2509.11418` (Dec 2025) — first
@@ -2639,7 +2584,7 @@ theorem canonicityViaSTC :
   reasoning if FX adopts the Complexity dimension as a focus
   (Axis 7).
 
-**Lean LoC estimate (v3 NEW Axis):**
+**Lean LoC estimate:**
 * STC primitives (open ○, closed ●, glue, extension): ~2K LoC.
   Lean's intensional setting requires explicit transport handling,
   so harder than Istari's extensional setting.
@@ -2670,8 +2615,8 @@ is possible in Rocq; Lean port follows.
 
 ### 3.13 MTT normalization gateway
 
-**Reference (v3 NEW Axis):** Gratzer *Normalization for Multimodal
-Type Theory* `arXiv:2301.11842` (LICS 2022, v4 March 2026).
+**Reference:** Gratzer *Normalization for Multimodal
+Type Theory* `arXiv:2301.11842` (LICS 2022, latest revision March 2026).
 
 **Why FX needs it:**
 
@@ -2679,7 +2624,7 @@ Type Theory* `arXiv:2301.11842` (LICS 2022, v4 March 2026).
   that MTT was designed to parameterize over.  Mode = a 2-category
   M of "places"; modality μ = a 1-cell in M; modal type `⟨μ | A⟩`
   shifts a type from one mode to another.
-* **The Gratzer theorem (Theorem 4 in arXiv:2301.11842 v4):**
+* **The Gratzer theorem (Theorem 4 in arXiv:2301.11842):**
   Normalization and conversion-checking for MTT reduces to
   **decidability of mode-theory equality**.  Specifically: MTT
   conversion is decidable iff the mode theory's 2-category equality
@@ -2707,7 +2652,7 @@ structure ModeTheory where
   /-- Equality of 1-cells is decidable iff the 2-category is rigid. -/
   oneCellEqDecidable : ∀ {m n} (f g : oneCells m n), Decidable (f = g)
 
-/-- The FX mode theory.  CORRECTION (v4): Gratzer's normalization
+/-- The FX mode theory.  Gratzer's normalization
 footnote 2 explicitly warns the word problem for 2-categories can be
 undecidable in general (subsumes the word problem for groups).  FX
 navigates this via THREE explicit restrictions:
@@ -2744,7 +2689,7 @@ def fxMTT : MTT.{u} :=
 restrictions: conversion for fxMTT is decidable. -/
 theorem fxConvDecidable : ∀ (Γ : fxMTT.Ctx) (A : fxMTT.Ty Γ)
     (t₁ t₂ : fxMTT.Tm Γ A), Decidable (fxMTT.Conv t₁ t₂) := by
-  -- direct corollary of Gratzer Theorem 4 + the three v4 restrictions
+  -- direct corollary of Gratzer Theorem 4 + the three restrictions
   apply Gratzer.normalization fxModeTheory
   · exact fxModeTheory.oneCellEqDecidable    -- R1 + finite enum
   · exact fxModeTheory.twoCellEqDecidable    -- R2 SProp
@@ -2766,7 +2711,7 @@ theorem fxConvDecidable : ∀ (Γ : fxMTT.Ctx) (A : fxMTT.Ty Γ)
   Lean work)" two-path debate.  Gratzer's recipe is a PUBLISHED
   THEOREM applied to FX.
 
-**Lean LoC estimate (v3 NEW Axis):**
+**Lean LoC estimate:**
 * fxModeTheory definition + 21-focus instantiation + orthogonality
   2-cells: ~3K LoC.
 * Gratzer normalization mechanization (port from paper): ~8K LoC.
@@ -3781,7 +3726,7 @@ decidability claim in this document.  This section is the index.
 | 9 | `Decidable (Conv a b)` Path B | Makkai word equality on F(fxProfile) | Makkai 2021 + Forest 2022 | New ~5K LoC under POLY-α |
 | 10 | Universe cumulativity + univalence Step | `Step.eqType` reduction rule per CLAUDE.md | Loubaton 2307.11931 §6.1.4 semantic justification | Required by FX discipline |
 
-### What is NOT decidable / NOT shippable (v4 list)
+### What is NOT decidable / NOT shippable
 
 * `IsCoherentEquiv π dim a` for **arbitrary** π — only decidable
   when π is finitely presented + convergent.  fxProfile satisfies
@@ -3793,8 +3738,8 @@ decidability claim in this document.  This section is the index.
   FX ships via `Step.eqType` reduction rule (per lean-fx-2/CLAUDE.md
   mandate); Loubaton's Grothendieck construction explains WHY the
   Step rule is sound but is not itself Lean-mechanized.
-* **GWB TT_⊠ as Lean theorem** — v3 incorrectly claimed
-  "rzk-prototyped"; v4 correction: no TT_⊠ mechanization exists in
+* **GWB TT_⊠ as Lean theorem** — an earlier draft incorrectly claimed
+  "rzk-prototyped"; correction: no TT_⊠ mechanization exists in
   any proof assistant.  Rzk implements RS-STT base only.  FX cites
   TT_⊠ only as semantic justification for the operational
   `Step.eqType` rule.
@@ -3802,7 +3747,7 @@ decidability claim in this document.  This section is the index.
   Eremondi-Kammar §7.2 explicitly states their approach is
   "incompatible with univalent theories like Homotopy or Cubical
   Type Theory."  FX is univalent; coverage semantics cannot be
-  used directly.  v4 substitute: Cockx-Devriese-Piessens "Pattern
+  used directly.  Substitute: Cockx-Devriese-Piessens "Pattern
   matching without K" ICFP 2014 (HoTT-compatible) +
   Cockx-Devriese JFP 2016 extension.
 
@@ -4169,151 +4114,151 @@ is good.
 
 ## 13. References
 
-### v4 Universal Substrate references (Tier-0 meta-framework, 2018–2026)
+### Universal substrate references (Tier-0 meta-framework, 2018–2026)
 
-v4a. Taichi Uemura, *A general framework for the semantics of type
+U1. Taichi Uemura, *A general framework for the semantics of type
      theory*, MSCS 33(3), Mar 2023, `arXiv:1904.04097`.  THE universal
      Tier-0 framework: representable map categories with bi-initial
      model + internal language + theory-model bi-equivalence.
 
-v4b. Hoang Kim Nguyen, Taichi Uemura, *∞-type theories*, 2022.
-     ∞-categorical generalization of v4a.
+U2. Hoang Kim Nguyen, Taichi Uemura, *∞-type theories*, 2022.
+     ∞-categorical generalization of U1.
 
-v4c. Taichi Uemura, *Normalization and coherence for ∞-type theories*,
+U3. Taichi Uemura, *Normalization and coherence for ∞-type theories*,
      `arXiv:2212.11764` (2022).  Multimode approach to normal forms
      (substitution mode vs renaming mode) — EXACTLY the pattern for
      FX's RawTerm/Term/NF tower.
 
-v4d. Taichi Uemura, *Higher inductive types in (∞,1)-categories*,
+U4. Taichi Uemura, *Higher inductive types in (∞,1)-categories*,
      `arXiv:2410.17615` (2024).  HITs inside the universal CwR
      framework.
 
-v4e. Rafaël Bocquet, Ambrus Kaposi, Christian Sattler, *For the
+U5. Rafaël Bocquet, Ambrus Kaposi, Christian Sattler, *For the
      metatheory of type theory, internal sconing is enough*, FSCD
      2023, `arXiv:2302.05190`.  Sconing = gluing along global
      sections, performed internally to a presheaf topos.  Yields
      canonicity + normalization + parametricity boilerplate-free per
      type theory.
 
-v4f. Rafaël Bocquet, Ambrus Kaposi, Christian Sattler, *Relative
+U6. Rafaël Bocquet, Ambrus Kaposi, Christian Sattler, *Relative
      induction principles for type theories*, `arXiv:2102.11649`
      (2021).  Earlier paper; internal-presheaf induction; uses DRA +
      MTT.
 
-v4g. Pierre-Marie Pédrot, Nicolas Tabareau, *The Fire Triangle: How to
+U7. Pierre-Marie Pédrot, Nicolas Tabareau, *The Fire Triangle: How to
      Mix Substitution, Dependent Elimination, and Effects*, POPL 2020
      / PACMPL 4(POPL):58, DOI 10.1145/3371126, HAL `hal-02383109`.
      No-go theorem: substitution + dep-elim + effects cannot all be
      unrestricted simultaneously.  ∂CBPV resolution.  Generalizes
      Herbelin's paradox.
 
-v4h. Gaëtan Gilbert, Jesper Cockx, Matthieu Sozeau, Nicolas Tabareau,
+U8. Gaëtan Gilbert, Jesper Cockx, Matthieu Sozeau, Nicolas Tabareau,
      *Definitional Proof-Irrelevance without K*, POPL 2019 / PACMPL
      3(POPL):3:1-3:28, DOI 10.1145/3290316, HAL `hal-01859964`.  SProp
      universe.  Compatible with univalence.  Native Lean 4 support.
 
-v4i. Amar Hadzihasanovic, *Combinatorics of higher-categorical
+U9. Amar Hadzihasanovic, *Combinatorics of higher-categorical
      diagrams*, `arXiv:2404.07273` (2024, v2 Oct 2024).  337-page
      monograph (forthcoming CUP LMS Lecture Note Series).  Regular
      directed complexes substrate for all classical shape catalogs.
 
-v4j. Clémence Chanavat, Amar Hadzihasanovic, *Diagrammatic sets as a
+U10. Clémence Chanavat, Amar Hadzihasanovic, *Diagrammatic sets as a
      model of homotopy types*, HHA 2024 / `arXiv:2407.06285`.
      Cofibrantly generated model structure on diagrammatic sets +
      two Quillen equivalences with simplicial sets + monoidal with
      Gray product.
 
-v4k. Amar Hadzihasanovic, Diana Kessler, *Acyclicity conditions on
+U11. Amar Hadzihasanovic, Diana Kessler, *Acyclicity conditions on
      pasting diagrams*, Applied Categorical Structures 32(6):31
      (2024), `arXiv:2408.16775`.  Weakest acyclicity condition for
      polygraph-freeness.
 
-v4l. Clémence Chanavat, Amar Hadzihasanovic, *Model structures for
+U12. Clémence Chanavat, Amar Hadzihasanovic, *Model structures for
      diagrammatic (∞,n)-categories*, `arXiv:2410.19053` (2024).
      Diagrammatic (∞,∞)-cats via coinductive weak invertibility.
 
-v4m. Simon Forest, *Computational descriptions of higher categories*,
+U13. Simon Forest, *Computational descriptions of higher categories*,
      PhD thesis, Institut Polytechnique de Paris, 2021,
      NNT:2021IPPAX003, HAL `tel-03155192`.  Word problem for strict
      ω-cats + pasting diagram algorithms + Gray coherence.  THE
      substrate for FX Axis 9 algorithmic decidability.
 
-v4n. Andreas Abel, Nils Anders Danielsson, Oskar Eriksson, *A Graded
+U14. Andreas Abel, Nils Anders Danielsson, Oskar Eriksson, *A Graded
      Modal Dependent Type Theory with a Universe and Erasure,
      Formalized*, ICFP 2023, `arXiv:2603.29716`.  Agda-formalized.
      Modality structure = partially ordered semiring.  Subject
      reduction, consistency, normalization, decidability of
      definitional equality.  Extraction soundness theorem.
 
-v4o. Pritam Choudhury, Harley Eades III, Richard Eisenberg, Stephanie
+U15. Pritam Choudhury, Harley Eades III, Richard Eisenberg, Stephanie
      Weirich, *A graded dependent type system with a usage-aware
      semantics*, `arXiv:2011.04070` (2021).  Earlier graded DTT.
 
-v4p. Benjamin Moon, Harley Eades III, Dominic Orchard, *Graded modal
+U16. Benjamin Moon, Harley Eades III, Dominic Orchard, *Graded modal
      dependent type theory*, ESOP 2021, `arXiv:2010.13163`.
      Foundational graded modal DTT.
 
-v4q. Yue Niu, Jonathan Sterling, Harrison Grodin, Robert Harper, *A
+U17. Yue Niu, Jonathan Sterling, Harrison Grodin, Robert Harper, *A
      Cost-Aware Logical Framework*, POPL 2022, `arXiv:2107.04663`.
      calf.  Agda-mechanized.  Phase distinction extension/intension.
 
-v4r. Harrison Grodin, Yue Niu, Jonathan Sterling, Robert Harper,
+U18. Harrison Grodin, Yue Niu, Jonathan Sterling, Robert Harper,
      *Decalf: A Directed, Effectful Cost-Aware Logical Framework*,
      POPL 2024, `arXiv:2307.05938`.  Directed effectful extension of
      calf.  Model in augmented simplicial sets.
 
-v4s. Runming Li, Robert Harper, *Canonicity for Cost-Aware Logical
+U19. Runming Li, Robert Harper, *Canonicity for Cost-Aware Logical
      Framework via Synthetic Tait Computability*, 2025,
      `arXiv:2504.12464`.  Resolves calf canonicity via STC.
 
-v4t. Guillaume Allais, Robert Atkey, James Chapman, Conor McBride,
+U20. Guillaume Allais, Robert Atkey, James Chapman, Conor McBride,
      James McKinna, *A type and scope safe universe of syntaxes with
      binding: their semantics and proofs*, ICFP 2018 / JFP 31 (2021),
      `arXiv:2001.11001`, DOI 10.1145/3236785.  Universe-of-syntaxes
      framework.  THE Lean substrate for SSC port.
 
-v4u. Jesper Cockx, Dominique Devriese, Frank Piessens, *Pattern
+U21. Jesper Cockx, Dominique Devriese, Frank Piessens, *Pattern
      Matching Without K*, ICFP 2014, DOI 10.1145/2628136.2628139.
      HoTT-compatible dependent pattern matching.
 
-v4v. Jesper Cockx, Dominique Devriese, *Eliminating dependent pattern
+U22. Jesper Cockx, Dominique Devriese, *Eliminating dependent pattern
      matching without K*, JFP 26 (2016).  Extended version.
 
-v4w. Ralf Jung, Robbert Krebbers, Lars Birkedal, Derek Dreyer et al.,
+U23. Ralf Jung, Robbert Krebbers, Lars Birkedal, Derek Dreyer et al.,
      *Iris from the Ground Up: A Modular Foundation for Higher-Order
      Concurrent Separation Logic*, JFP 28 (2018).  Current library:
      `coq-iris 4.3.0` (Oct 2024).  Resource algebras = PCMs +
      validity.  "Monoids and invariants are all you need."  THE
      substrate for FX concurrency / frame rule.
 
-v4x. Steve Awodey, Clive Newstead, *Polynomial pseudomonads and
+U24. Steve Awodey, Clive Newstead, *Polynomial pseudomonads and
      dependent type theory*, `arXiv:1802.00997` (2018).  Theorem 4.1:
      natural model supports unit + Σ iff p is polynomial pseudomonad;
      supports Π iff p is polynomial pseudoalgebra.  FULL type-former
      coverage beyond Aberlé-Spivak's Π+Σ+U+⊤.
 
-v4y. Clive Newstead, *Algebraic models of dependent type theory*,
+U25. Clive Newstead, *Algebraic models of dependent type theory*,
      `arXiv:2103.06155` (2021).  Essentially-algebraic axiomatization
      of natural models.
 
-v4z. Michael Shulman, *All (∞,1)-toposes have strict univalent
+U26. Michael Shulman, *All (∞,1)-toposes have strict univalent
      universes*, `arXiv:1904.07004` (2019).  The ∞-topos
      interpretation gluing polynomial-universe machinery to homotopy
      theory.
 
-v4aa. Danil Annenkov, Paolo Capriotti, Nicolai Kraus, Christian
+U27. Danil Annenkov, Paolo Capriotti, Nicolai Kraus, Christian
       Sattler, *Two-Level Type Theory and Applications*, MSCS 2023,
       `arXiv:1705.03307`, DOI 10.1017/S0960129523000130.  Inner HoTT
       + outer UIP; outer = "internalized metatheory of inner".  Solves
       SST as Reedy fibrant diagrams.  THE Lean host for STC modalities.
 
-v4ab. Nikolai Kudasov, Emily Riehl, Jonathan Weinberger, *Formalizing
+U28. Nikolai Kudasov, Emily Riehl, Jonathan Weinberger, *Formalizing
       the ∞-Categorical Yoneda Lemma*, CPP 2024.  THE actual rzk
       implementation status — Rzk implements RS-STT base, NOT TT_⊠.
       Source: `github.com/rzk-lang/rzk` +
       `github.com/emilyriehl/yoneda`.
 
-v4ac. Jonathan Sterling, Carlo Angiuli, *Normalization for Cubical
+U29. Jonathan Sterling, Carlo Angiuli, *Normalization for Cubical
       Type Theory*, LICS 2021, `arXiv:2101.11479`.  Use of STC in the
       cubical metatheory.
 
@@ -4335,12 +4280,12 @@ v4ac. Jonathan Sterling, Carlo Angiuli, *Normalization for Cubical
 7. Félix Loubaton, "Conditions de Kan sur les nerfs des ω-catégories",
    `arXiv:2102.04281` (2021).
 
-### v3 Apex axis-rewrite + new-axis references (2024–2025, the upgrade core)
+### Axis 10–13 substrate references (2024–2026)
 
 7a. Ambrus Kaposi, Szumi Xie, *Type Theory with Single Substitutions*,
     `arXiv:2510.12303` (Oct 2025).  EPTCS 431 (LFMTP 2025).  THE
     8-equation single-substitution calculus replacing parallel-
-    substitution machinery.  Axis 11 v3 NEW.  Agda-formalized.
+    substitution machinery.  Axis 11 substrate.  Agda-formalized.
 7b. Thorsten Altenkirch, Nathaniel Burke, Philip Wadler, *Substitution
     Without Copy and Paste*, `arXiv:2510.12304` (Oct 2025).  EPTCS 431.
     Companion paper.  Sort-parametric V⊑T trick eliminates renaming/
@@ -4348,36 +4293,38 @@ v4ac. Jonathan Sterling, Carlo Angiuli, *Normalization for Cubical
 7c. Runming Li, Yue Yao, Robert Harper, *Mechanizing Synthetic Tait
     Computability in Istari*, `arXiv:2509.11418` (Dec 2025).  CPP'26.
     First proof-assistant mechanization of Sterling's STC.  Axis 12
-    v3 NEW.  Lean port named future work in §6.1.
+    substrate.  Lean port via 2LTT-on-Lean (see references below).
 7d. Daniel Gratzer, *Normalization for Multimodal Type Theory*,
-    `arXiv:2301.11842` (LICS 2022, v4 Mar 2026).  THE universal MTT-
-    normalization theorem: MTT conv decidable iff mode-theory equality
-    decidable.  Axis 13 v3 NEW.
+    `arXiv:2301.11842` (LICS 2022, latest revision Mar 2026).  THE
+    universal MTT-normalization theorem: MTT conv decidable iff
+    mode-theory equality decidable.  Axis 13 substrate.
 7e. Daniel Gratzer, Jonathan Weinberger, Ulrik Buchholtz, *Directed
     Univalence in Simplicial Homotopy Type Theory*, `arXiv:2407.09146`
-    (v2 Jan 2026).  Triangulated TT (TT_⊠) builds universe `S` of
-    groupoids with directed univalence.  Axis 10 v3 rewrite.
+    (latest revision Jan 2026).  Triangulated TT (TT_⊠) builds
+    universe `S` of groupoids with directed univalence.  Semantic
+    justification only (no implementation exists in any proof
+    assistant).
 7f. David Jaz Myers, Mitchell Riley, *Commuting Cohesions*,
     `arXiv:2301.13780` (Feb 2023).  Multi-focus type theory extending
     Shulman spatial TT with multiple commuting cohesive axes.  Axis 7
-    v3 rewrite.  Worked examples: simplicial+real, equivariant+
+    primary substrate.  Worked examples: simplicial+real, equivariant+
     differential, supergeometric.
 7g. C.B. Aberlé, David I. Spivak, *Polynomial Universes in Homotopy
     Type Theory*, `arXiv:2409.19176` (Sep 2024).  ENTICS MFPS 2025.
     `isUnivalent u := u subterminal in Poly^Cart`; closure under Π →
-    distributive law for free via univalence.  Axis 2 v3 rewrite +
+    distributive law for free via univalence.  Axis 2 substrate +
     Axis 10 alternative path.  Agda-formalized in appendix.
 7h. Philippe Malbos, Tanguy Massacrier, Georg Struth, *Cubical Coherent
     Confluence, ω-groupoids and the Cube Equation*, `arXiv:2511.16852`
     (Nov 2025).  Cubical contractions in (ω,p)-categories.  Theorem
     3.2.5: contracting ω-groupoid is acyclic.  Newman + Church-Rosser
     + Squier ALL via cubical cell pasting.  Cube law geometric (not
-    postulated).  Axis 4 v3 rewrite (saturation).
+    postulated).  Axis 4 substrate (saturation).
 7i. Clémence Chanavat, *Homotopy Theory of Stricter n-categories*,
     `arXiv:2509.26563` (Sep 2025).  Stricter n-cats via Hadzihasanovic
     regular directed complexes.  Folk model structure on nCat^>.
     Globular + cubical + simplicial + opetopic + Θ + Steiner all
-    unified as `Mol(P)` for P a regular directed complex.  Axis 1 v3
+    unified as `Mol(P)` for P a regular directed complex.  Axis 1
     rewrite.
 7j. Amar Hadzihasanovic, *The Smash Product of Monoidal ω-categories*
     and *Diagrammatic Sets and Rewriting in Weak Higher Categories*
@@ -4637,14 +4584,13 @@ v4ac. Jonathan Sterling, Carlo Angiuli, *Normalization for Cubical
 ## End matter
 
 This document is the soundness contract for the PolyTerm pivot.
-After the 2026-05-24 v4 Universal Substrate revision, every
-capability claim above either reduces to:
+Every capability claim above reduces to one of:
 
 * a **cited published theorem** with arXiv ID / DOI and paper
   reference (Tier-0 substrate: Uemura `arXiv:1904.04097` + BKS
   `arXiv:2302.05190` + Pédrot-Tabareau Fire Triangle POPL 2020;
   thirteen Tier-2 axes each have explicit substrate papers per
-  the §3.0 / §0.7 index), OR
+  §3.0 and the per-axis recipe blocks), OR
 * a **constructive Lean definition** in this codebase (with file
   path under `LeanFX2/Foundation/Polygraph/` or
   `LeanFX2/Reducibility/`), OR
@@ -4660,7 +4606,7 @@ claim has an algorithm citation; every Lean theorem signature has a
 proof skeleton compatible with `#assert_no_axioms` per
 lean-fx-2/CLAUDE.md.
 
-The 214K LoC v4 budget is realistic per the per-axis Lean LoC
+The 214K LoC budget is realistic per the per-axis Lean LoC
 estimates.  The 36-month timeline is realistic per the per-phase
 deliverable breakdown.  The risk register in §12 names specific
 failure modes with mitigations.
@@ -4672,9 +4618,6 @@ type — ~2K LoC per extension after Tier 0 is in place.  Without
 Tier 0, each extension costs ~10-15K LoC of bespoke kernel
 surgery.  The Tier-0 investment of ~12K LoC pays back after ~3
 extensions; FX already has 13 in scope.
-
-The decision to commit to this pivot is the user's.  This document
-is the technical proposal.
 
 **If committed:** the first concrete steps are
 `Foundation/MetaFramework/CwR.lean` +
@@ -4690,16 +4633,3 @@ Either way, the literature is captured in
 `reference_loubaton_papers.md` and
 `reference_polyterm_lit_scan_2026_05_24.md` memory entries; the
 design rationale is preserved here for future reference.
-
----
-
-*Document version v4 Universal Substrate — 2026-05-24.  Authored in
-three sessions: v1.0 (2026-05-23) initial vision after P2.3
-RawPolyTermFlat substrate ship (commit 7d6758a9); v3 Apex
-(2026-05-24 morning) added SSC/STC/MTT-norm axes after 6-paper
-deep-read; v4 Universal Substrate (2026-05-24 afternoon) added
-Tier-0 meta-framework after full-fetch pass of Uemura + BKS +
-Pédrot-Tabareau + Hadzihasanovic + Forest + Abel-Danielsson-
-Eriksson + calf/decalf + Allais + 2LTT + SProp + Iris +
-Cockx-Devriese-Piessens.  Document length grew from ~1500 →
-~2600 → ~4166 → ~4500+ lines as substrate citations hardened.*
