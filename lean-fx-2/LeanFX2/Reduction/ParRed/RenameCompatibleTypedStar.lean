@@ -1,6 +1,17 @@
 import LeanFX2.Reduction.ParRed.RenameCompatibleTyped
 import LeanFX2.Reduction.ParStar
 
+/-! # RenameCompatibleTypedStar — TODO POLYCELL: BODY DISABLED
+
+Body depends on cd_lemma / Conv.canonical_form / parStar.confluence /
+RawStep.parStar orchestration deleted in commit c2efaccf (cascade-fake
+bulldoze).  Replacement: FXcdLemma / FXConv view defs per polycell.md §5.
+Imports are preserved at top so downstream transitive imports still work.
+-/
+
+/- TODO POLYCELL: original body preserved as block comment
+
+
 /-! # Reduction/ParRed/RenameCompatibleTypedStar
 
 Chain version of typed rename-compatibility (#2028 unblock-C.t6.stepStarCompat).
@@ -49,3 +60,5 @@ theorem rename_compatible_typed
 end Step.parStar
 
 end LeanFX2
+
+-/

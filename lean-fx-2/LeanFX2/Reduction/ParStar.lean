@@ -1,5 +1,16 @@
 import LeanFX2.Reduction.ParRed.ParInductive.Inductive
 
+/-! # ParStar — TODO POLYCELL: BODY DISABLED
+
+Body depends on cd_lemma / Conv.canonical_form / parStar.confluence /
+RawStep.parStar orchestration deleted in commit c2efaccf (cascade-fake
+bulldoze).  Replacement: FXcdLemma / FXConv view defs per polycell.md §5.
+Imports are preserved at top so downstream transitive imports still work.
+-/
+
+/- TODO POLYCELL: original body preserved as block comment
+
+
 /-! # Reduction/ParStar — reflexive-transitive closure of Step.par
 
 `Step.parStar source target : Prop` is the multi-step parallel-
@@ -104,3 +115,5 @@ theorem Step.parStar.append
       exact Step.parStar.trans firstStep (restIH secondChain)
 
 end LeanFX2
+
+-/

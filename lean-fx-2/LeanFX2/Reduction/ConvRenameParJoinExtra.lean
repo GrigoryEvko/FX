@@ -1,6 +1,17 @@
 import LeanFX2.Reduction.ConvRenameParJoin
 import LeanFX2.Confluence.ParStarBridge
 
+/-! # ConvRenameParJoinExtra — TODO POLYCELL: BODY DISABLED
+
+Body depends on cd_lemma / Conv.canonical_form / parStar.confluence /
+RawStep.parStar orchestration deleted in commit c2efaccf (cascade-fake
+bulldoze).  Replacement: FXcdLemma / FXConv view defs per polycell.md §5.
+Imports are preserved at top so downstream transitive imports still work.
+-/
+
+/- TODO POLYCELL: original body preserved as block comment
+
+
 /-! # Reduction/ConvRenameParJoinExtra — companions of the forward rename parallel-join
 
 This file extends `ConvRenameParJoin.lean` with three additional parallel-join
@@ -238,3 +249,5 @@ theorem Conv.weaken_equivariant_fwd_parJoin_toRaw
     (TermRenaming.weakenStep context newType) convertibility
 
 end LeanFX2
+
+-/

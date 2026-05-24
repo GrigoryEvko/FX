@@ -465,6 +465,12 @@ theorem Step.par.weaken_toRawBridge
   Step.par.rename_toRawBridge (TermRenaming.weakenStep context newType)
     parallelStep
 
+/- TODO POLYCELL: this block (lines 468-661) consumed RawStep.par.target_in_rename_image,
+target_in_weaken_image, and target_in_rename_image_of_source_eq, all deleted in commit
+c2efaccf with the cascade bulldoze.  Replacement lives in polycell.md §5 as FXcdLemma view
+defs over PolyTerm.  Subsequent theorems (Step.par.subst_toRawBridge onward at line 668)
+stay live since they do not depend on the deleted symbols.
+
 /-- Typed-entrypoint raw image preservation for a renamed source.
 
 If a typed parallel step starts at `Term.rename termRenaming sourceTerm`
@@ -659,6 +665,8 @@ theorem Step.par.toRawBridge_target_in_weaken_image_of_sourceRaw_eq
       sourceEq parallelStep
   cases targetEq
   exact ⟨targetInnerRaw, Step.par.toRawBridge parallelStep⟩
+
+-/
 
 /-- Raw-image compatibility for typed parallel reduction after a typed
 substitution.

@@ -1,5 +1,16 @@
 import LeanFX2.Reduction.Cumul.Relation.Inductive
 
+/-! # ConvBridge — TODO POLYCELL: BODY DISABLED
+
+Body depends on cd_lemma / Conv.canonical_form / parStar.confluence /
+RawStep.parStar orchestration deleted in commit c2efaccf (cascade-fake
+bulldoze).  Replacement: FXcdLemma / FXConv view defs per polycell.md §5.
+Imports are preserved at top so downstream transitive imports still work.
+-/
+
+/- TODO POLYCELL: original body preserved as block comment
+
+
 /-! # Reduction/ConvBridge — Conv ↔ ConvCumul bidirectional bridge.
 
 Phase 12.A.B15 ConvCumul-bridge layer.  Ships a real (non-trivial)
@@ -913,3 +924,5 @@ theorem Conv.refl_inverse_identity
     ConvCumul.refl_toConv someTerm = Conv.refl someTerm := rfl
 
 end LeanFX2
+
+-/

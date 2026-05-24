@@ -2,6 +2,17 @@ import LeanFX2.Reduction.Conv
 import LeanFX2.Confluence.ParStarBridge
 import LeanFX2.Confluence.RawParStarCong
 
+/-! # PreEtaStarInversion — TODO POLYCELL: BODY DISABLED
+
+Body depends on cd_lemma / Conv.canonical_form / parStar.confluence /
+RawStep.parStar orchestration deleted in commit c2efaccf (cascade-fake
+bulldoze).  Replacement: FXcdLemma / FXConv view defs per polycell.md §5.
+Imports are preserved at top so downstream transitive imports still work.
+-/
+
+/- TODO POLYCELL: original body preserved as block comment
+
+
 /-! # LeanFX2.Confluence.PreEtaStarInversion
 
 Raw-projection inversion lemmas for binder-headed typed `Step.parStar`
@@ -533,3 +544,5 @@ theorem pathLam_bodyRaw_common_join
 end Conv
 
 end LeanFX2
+
+-/

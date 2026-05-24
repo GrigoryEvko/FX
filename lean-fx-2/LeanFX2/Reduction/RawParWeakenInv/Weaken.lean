@@ -1,6 +1,16 @@
 import LeanFX2.Reduction.RawParWeakenInv.Foundation
 import LeanFX2.Reduction.RawParWeakenInv.HeadlineRenameInjInv
 
+/-! # Weaken — TODO POLYCELL: BODY DISABLED
+
+Body depends on Step.parStar / RawStep.par.rename_inj_inv (from wrapped
+Reduction/ParStar.lean and RawParWeakenInv/HeadlineRenameInjInv.lean).
+Replacement: FXcdLemma / FXConv view defs per polycell.md §5.
+-/
+
+/- TODO POLYCELL: original body preserved as block comment
+
+
 /-! # Reduction/RawParWeakenInv/Weaken — specialization to canonical weaken
 
 The user-facing `RawStep.par.weaken_inv`: if `RawStep.par
@@ -54,3 +64,5 @@ theorem RawStep.par.target_in_weaken_image_of_source_eq {scope : Nat}
 
 
 end LeanFX2
+
+-/

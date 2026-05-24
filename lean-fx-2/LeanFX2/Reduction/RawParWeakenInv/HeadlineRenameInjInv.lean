@@ -9,6 +9,17 @@ import LeanFX2.Reduction.RawParWeakenInv.AtomShape2
 import LeanFX2.Reduction.RawParWeakenInv.BinderShape
 import LeanFX2.Reduction.RawParWeakenInv.CubicalShape
 
+/-! # HeadlineRenameInjInv — TODO POLYCELL: BODY DISABLED
+
+Body depends on cd_lemma / Conv.canonical_form / parStar.confluence /
+RawStep.parStar orchestration deleted in commit c2efaccf (cascade-fake
+bulldoze).  Replacement: FXcdLemma / FXConv view defs per polycell.md §5.
+Imports are preserved at top so downstream transitive imports still work.
+-/
+
+/- TODO POLYCELL: original body preserved as block comment
+
+
 /-! # Reduction/RawParWeakenInv/HeadlineRenameInjInv — par-step preserves the image of an injective renaming
 
 The headline `RawStep.par.rename_inj_inv`: if `RawStep.par
@@ -1254,3 +1265,5 @@ theorem RawStep.par.target_in_rename_image_of_source_eq
 
 
 end LeanFX2
+
+-/

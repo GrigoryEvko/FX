@@ -4,6 +4,17 @@ import LeanFX2.Reduction.RawParRename
 import LeanFX2.Reduction.RawParInversion.TypeCodes
 import LeanFX2.Reduction.RawParWeakenInv.Weaken
 
+/-! # TranspPiContractumPar — TODO POLYCELL: BODY DISABLED
+
+Body depends on cd_lemma / Conv.canonical_form / parStar.confluence /
+RawStep.parStar orchestration deleted in commit c2efaccf (cascade-fake
+bulldoze).  Replacement: FXcdLemma / FXConv view defs per polycell.md §5.
+Imports are preserved at top so downstream transitive imports still work.
+-/
+
+/- TODO POLYCELL: original body preserved as block comment
+
+
 /-! # LeanFX2.Reduction.TranspPiContractumPar
 
 Reduction-layer Phase F prep for D2.5.5: parallel-step
@@ -165,3 +176,5 @@ theorem RawTerm.matchTranspPiBetaShape?_par_some {scope : Nat}
           innerDomainTarget codomainCodeTarget
 
 end LeanFX2
+
+-/

@@ -1,6 +1,16 @@
 import LeanFX2.Reduction.ParStar
 import LeanFX2.Reduction.ParRed.ParStepLift
 
+/-! # StepStarToPar — TODO POLYCELL: BODY DISABLED
+
+Body depends on Step.parStar / RawStep.par.rename_inj_inv (from wrapped
+Reduction/ParStar.lean and RawParWeakenInv/HeadlineRenameInjInv.lean).
+Replacement: FXcdLemma / FXConv view defs per polycell.md §5.
+-/
+
+/- TODO POLYCELL: original body preserved as block comment
+
+
 /-! # Reduction/StepStarToPar — lift StepStar to Step.parStar
 
 Each `Step` lifts to `Step.par` via `Step.toPar`.  Each
@@ -31,3 +41,5 @@ theorem StepStar.toParStar
       exact Step.parStar.trans (Step.toPar single) restIH
 
 end LeanFX2
+
+-/

@@ -4,6 +4,17 @@ import LeanFX2.Bridge
 import LeanFX2.Confluence.RawDiamond
 import LeanFX2.Reduction.RawParWeakenInv.ParStar
 
+/-! # ParStarBridge — TODO POLYCELL: BODY DISABLED
+
+Body depends on cd_lemma / Conv.canonical_form / parStar.confluence /
+RawStep.parStar orchestration deleted in commit c2efaccf (cascade-fake
+bulldoze).  Replacement: FXcdLemma / FXConv view defs per polycell.md §5.
+Imports are preserved at top so downstream transitive imports still work.
+-/
+
+/- TODO POLYCELL: original body preserved as block comment
+
+
 /-! # Confluence/ParStarBridge — typed multi-step parallel chains
 project to raw multi-step parallel chains, and the raw projections
 of any two typed chains from a common source converge.
@@ -602,3 +613,5 @@ theorem Step.parStar.toRawConfluence
     (Step.parStar.toRawBridge rightChain)
 
 end LeanFX2
+
+-/

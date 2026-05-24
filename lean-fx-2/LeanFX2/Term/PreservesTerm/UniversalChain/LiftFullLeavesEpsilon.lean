@@ -1,6 +1,17 @@
 import LeanFX2.Term.PreservesTerm.UniversalChain.LiftFullTerm
 import LeanFX2.Term.PreservesTerm.UniversalChain.LiftFullLeavesAlpha
 
+/-! # LiftFullLeavesEpsilon — TODO POLYCELL: BODY DISABLED
+
+Body depends on cd_lemma / Conv.canonical_form / parStar.confluence /
+RawStep.parStar / lift_full_term orchestration deleted in commit c2efaccf.
+Replacement lives in polycell.md §5 as FXcdLemma view defs over PolyTerm.
+Imports preserved at top so downstream transitive imports still work.
+-/
+
+/- TODO POLYCELL: original body preserved as block comment
+
+
 /-! # LeanFX2.Term.PreservesTerm.UniversalChain.LiftFullLeavesEpsilon
 
 Witness-builder layer for the CONVTRANS-C universal chain close-out
@@ -705,3 +716,5 @@ theorem RawStep.par.lift_universal_intervalLiteral
   RawStep.par.lift_full_term (intervalLiteral_isDispatchable expr) rawStep
 
 end LeanFX2
+
+-/

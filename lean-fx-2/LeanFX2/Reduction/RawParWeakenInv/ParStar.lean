@@ -1,6 +1,17 @@
 import LeanFX2.Confluence.RawDiamond
 import LeanFX2.Reduction.RawParCompatible.NamedCompatibility
 
+/-! # ParStar — TODO POLYCELL: BODY DISABLED
+
+Body depends on cd_lemma / Conv.canonical_form / parStar.confluence /
+RawStep.parStar orchestration deleted in commit c2efaccf (cascade-fake
+bulldoze).  Replacement: FXcdLemma / FXConv view defs per polycell.md §5.
+Imports are preserved at top so downstream transitive imports still work.
+-/
+
+/- TODO POLYCELL: original body preserved as block comment
+
+
 /-! # Reduction/RawParWeakenInv/ParStar
 
 Multi-step raw rename-image preservation for `RawStep.parStar`.
@@ -270,3 +281,5 @@ theorem RawStep.parStar.weaken_inv_of_source_eq
   exact RawStep.parStar.weaken_inv parallelChain
 
 end LeanFX2
+
+-/

@@ -3,6 +3,17 @@ import LeanFX2.HoTT.Path.Composition
 import LeanFX2.Reduction.Step.Inductive
 import LeanFX2.Reduction.Conv
 
+/-! # TranspCompose — TODO POLYCELL: BODY DISABLED
+
+Body depends on cd_lemma / Conv.canonical_form / parStar.confluence /
+RawStep.parStar orchestration deleted in commit c2efaccf (cascade-fake
+bulldoze).  Replacement: FXcdLemma / FXConv view defs per polycell.md §5.
+Imports are preserved at top so downstream transitive imports still work.
+-/
+
+/- TODO POLYCELL: original body preserved as block comment
+
+
 /-! # HoTT/TranspCompose — D3.6-S3 transp distributes over path composition.
 
 Phase D3.6-S3 ships the headline kernel-level statement that transport
@@ -318,3 +329,5 @@ example (someValue : Nat) :
   Path.transport_compose (fun _ => Nat) (Path.refl 0) (Path.refl 0) someValue
 
 end LeanFX2
+
+-/

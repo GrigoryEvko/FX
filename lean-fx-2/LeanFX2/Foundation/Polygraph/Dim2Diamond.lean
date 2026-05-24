@@ -1,5 +1,16 @@
 import LeanFX2.Foundation.Polygraph.StepLabel
 
+/-! # Dim2Diamond — TODO POLYCELL: BODY DISABLED
+
+Body depends on cd_lemma / Conv.canonical_form / parStar.confluence /
+RawStep.parStar orchestration deleted in commit c2efaccf (cascade-fake
+bulldoze).  Replacement: FXcdLemma / FXConv view defs per polycell.md §5.
+Imports are preserved at top so downstream transitive imports still work.
+-/
+
+/- TODO POLYCELL: original body preserved as block comment
+
+
 /-! # `Diamond.toDim2Cell` — dim-2 cell embedding (K11.17)
 
 K11.14 ships dim-1 polygraph cells (one per `StepLabel`).  K11.17
@@ -81,3 +92,5 @@ def Diamond.toDim2Cell (leftSide rightSide : StepLabel) : PolyCell 2 0 0 :=
   PolyCell.cell leftSide.toDim1Cell rightSide.toDim1Cell 0
 
 end LeanFX2.Foundation.Polygraph
+
+-/

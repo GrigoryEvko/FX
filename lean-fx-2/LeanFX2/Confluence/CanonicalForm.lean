@@ -1,6 +1,17 @@
 import LeanFX2.Confluence.ChurchRosser
 import LeanFX2.Confluence.RawParStarCong
 
+/-! # CanonicalForm — TODO POLYCELL: BODY DISABLED
+
+Body depends on cd_lemma / Conv.canonical_form / parStar.confluence /
+RawStep.parStar orchestration deleted in commit c2efaccf (cascade-fake
+bulldoze).  Replacement: FXcdLemma / FXConv view defs per polycell.md §5.
+Imports are preserved at top so downstream transitive imports still work.
+-/
+
+/- TODO POLYCELL: original body preserved as block comment
+
+
 /-! # Confluence/CanonicalForm — canonical-form corollaries from Conv
 
 In lean-fx-2, `Conv := ∃-StepStar` packaging — so the
@@ -25214,3 +25225,5 @@ theorem Conv.cumulUpMarker_ne_universeCode
   nomatch joinEqCumul.symm.trans joinEqUniv
 
 end LeanFX2
+
+-/

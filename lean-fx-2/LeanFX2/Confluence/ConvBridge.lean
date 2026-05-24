@@ -2,6 +2,17 @@ import LeanFX2.Reduction.Conv
 import LeanFX2.Reduction.StepStarToPar
 import LeanFX2.Confluence.ParStarBridge
 
+/-! # ConvBridge — TODO POLYCELL: BODY DISABLED
+
+Body depends on cd_lemma / Conv.canonical_form / parStar.confluence /
+RawStep.parStar orchestration deleted in commit c2efaccf (cascade-fake
+bulldoze).  Replacement: FXcdLemma / FXConv view defs per polycell.md §5.
+Imports are preserved at top so downstream transitive imports still work.
+-/
+
+/- TODO POLYCELL: original body preserved as block comment
+
+
 /-! # Confluence/ConvBridge — raw projection of typed Conv
 
 Combines Phase 6.D's `Step.parStar.toRawConfluence` with Phase
@@ -646,3 +657,5 @@ theorem Conv.rawSubst0_arg_toRawJoin
     RawStep.parStar.subst0_par (RawStep.parStar.refl bodyRaw) argTargetChain⟩
 
 end LeanFX2
+
+-/

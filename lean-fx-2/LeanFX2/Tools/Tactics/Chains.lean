@@ -2,6 +2,17 @@ import LeanFX2.Confluence.RawDiamond
 import LeanFX2.Reduction.ParStar
 import LeanFX2.Reduction.StepStar
 
+/-! # Chains — TODO POLYCELL: BODY DISABLED
+
+Body depends on cd_lemma / Conv.canonical_form / parStar.confluence /
+RawStep.parStar orchestration deleted in commit c2efaccf (cascade-fake
+bulldoze).  Replacement: FXcdLemma / FXConv view defs per polycell.md §5.
+Imports are preserved at top so downstream transitive imports still work.
+-/
+
+/- TODO POLYCELL: original body preserved as block comment
+
+
 /-! # Tools/Tactics/Chains
 
 Small chain-building tactic shorthands for reflexive-transitive closures.
@@ -130,3 +141,5 @@ macro_rules
       `(tactic| exact LeanFX2.RawStep.parStar.append $firstChain $secondChain)
 
 end LeanFX2.Tools.Tactics
+
+-/

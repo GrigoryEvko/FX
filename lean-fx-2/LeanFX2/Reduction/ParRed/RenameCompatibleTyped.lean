@@ -6,6 +6,17 @@ import LeanFX2.Term.Pointwise.PointwiseAndCompositionInfrastructure.SingletonPre
 import LeanFX2.Term.Subst0RenameCommute
 import LeanFX2.Reduction.RawParCompatible.NamedCompatibility
 
+/-! # RenameCompatibleTyped — TODO POLYCELL: BODY DISABLED
+
+Body depends on cd_lemma / Conv.canonical_form / parStar.confluence /
+RawStep.parStar orchestration deleted in commit c2efaccf (cascade-fake
+bulldoze).  Replacement: FXcdLemma / FXConv view defs per polycell.md §5.
+Imports are preserved at top so downstream transitive imports still work.
+-/
+
+/- TODO POLYCELL: original body preserved as block comment
+
+
 /-! # Reduction/ParRed/RenameCompatibleTyped
 
 Phase A.0 of the typed `Step.par.rename_compatible_typed` headline
@@ -4911,3 +4922,5 @@ theorem rename_compatible_typed
 end Step.par
 
 end LeanFX2
+
+-/

@@ -1,5 +1,16 @@
 import LeanFX2.Reduction.RawParWeakenInv.Foundation
 
+/-! # BinderShape — TODO POLYCELL: BODY DISABLED
+
+Body depends on cd_lemma / Conv.canonical_form / parStar.confluence /
+RawStep.parStar orchestration deleted in commit c2efaccf (cascade-fake
+bulldoze).  Replacement: FXcdLemma / FXConv view defs per polycell.md §5.
+Imports are preserved at top so downstream transitive imports still work.
+-/
+
+/- TODO POLYCELL: original body preserved as block comment
+
+
 /-! # Reduction/RawParWeakenInv/BinderShape — rename-shape inversion for compound and binder ctors
 
 Shape inversions for compound/binder ctors: `modIntro`, `idStrictRefl`,
@@ -1200,3 +1211,5 @@ theorem RawTerm.rename_eq_transp_imp {sourceScope targetScope : Nat}
 
 
 end LeanFX2
+
+-/

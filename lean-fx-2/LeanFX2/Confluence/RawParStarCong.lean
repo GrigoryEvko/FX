@@ -4,6 +4,17 @@ import LeanFX2.Reduction.RawParInversion.CubicalAndIdentity
 import LeanFX2.Reduction.RawParInversion.ModalAndAdvanced
 import LeanFX2.Reduction.RawParInversion.TypeCodes
 
+/-! # RawParStarCong — TODO POLYCELL: BODY DISABLED
+
+Body depends on cd_lemma / Conv.canonical_form / parStar.confluence /
+RawStep.parStar orchestration deleted in commit c2efaccf (cascade-fake
+bulldoze).  Replacement: FXcdLemma / FXConv view defs per polycell.md §5.
+Imports are preserved at top so downstream transitive imports still work.
+-/
+
+/- TODO POLYCELL: original body preserved as block comment
+
+
 /-! # Confluence/RawParStarCong — parStar congruence rules
 
 `RawStep.parStar` (the reflexive-transitive closure of `RawStep.par`)
@@ -2819,3 +2830,5 @@ theorem RawStep.parStar.pathLam_inv {scope : Nat}
     RawStep.par.pathLam_inv chain
 
 end LeanFX2
+
+-/

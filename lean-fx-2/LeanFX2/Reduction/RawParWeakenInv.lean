@@ -6,6 +6,17 @@ import LeanFX2.Reduction.RawParWeakenInv.CubicalShape
 import LeanFX2.Reduction.RawParWeakenInv.HeadlineRenameInjInv
 import LeanFX2.Reduction.RawParWeakenInv.Weaken
 
+/-! # RawParWeakenInv — TODO POLYCELL: BODY DISABLED
+
+Body depends on cd_lemma / Conv.canonical_form / parStar.confluence /
+RawStep.parStar orchestration deleted in commit c2efaccf (cascade-fake
+bulldoze).  Replacement: FXcdLemma / FXConv view defs per polycell.md §5.
+Imports are preserved at top so downstream transitive imports still work.
+-/
+
+/- TODO POLYCELL: original body preserved as block comment
+
+
 /-! # LeanFX2.Reduction.RawParWeakenInv — par-step weaken-image preservation (shim)
 
 The headline `RawStep.par.weaken_inv : par X.weaken Y → ∃ Y', Y = Y'.weaken`
@@ -42,3 +53,5 @@ preserves the Reduction-layer (Layer 2) import discipline gate
 ## Root status
 
 Kernel `theorem`s with bodies, zero-axiom. -/
+
+-/

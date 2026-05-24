@@ -2,6 +2,17 @@ import LeanFX2.Reduction.Conv
 import LeanFX2.Reduction.StepStarToPar
 import LeanFX2.Reduction.ParRed.RenameCompatibleTypedStar
 
+/-! # ConvRenameParJoin — TODO POLYCELL: BODY DISABLED
+
+Body depends on cd_lemma / Conv.canonical_form / parStar.confluence /
+RawStep.parStar orchestration deleted in commit c2efaccf (cascade-fake
+bulldoze).  Replacement: FXcdLemma / FXConv view defs per polycell.md §5.
+Imports are preserved at top so downstream transitive imports still work.
+-/
+
+/- TODO POLYCELL: original body preserved as block comment
+
+
 /-! # Reduction/ConvRenameParJoin — typed Conv rename equivariance (forward, parallel-join flavor)
 
 This file ships the **forward direction** of T6 (`Conv.rename_equivariant`,
@@ -145,3 +156,5 @@ theorem Conv.weaken_equivariant_fwd_parJoin
     convertibility
 
 end LeanFX2
+
+-/

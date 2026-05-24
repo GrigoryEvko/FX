@@ -2,6 +2,17 @@ import LeanFX2.Algo.RawWHNF.Evaluator
 import LeanFX2.Algo.RawWHNFCorrect.Base
 import LeanFX2.Algo.RawWHNFCorrect.ElimInversions
 
+/-! # Headline — TODO POLYCELL: BODY DISABLED
+
+Body depends on cd_lemma / Conv.canonical_form / parStar.confluence /
+RawStep.parStar orchestration deleted in commit c2efaccf (cascade-fake
+bulldoze).  Replacement: FXcdLemma / FXConv view defs per polycell.md §5.
+Imports are preserved at top so downstream transitive imports still work.
+-/
+
+/- TODO POLYCELL: original body preserved as block comment
+
+
 /-! # LeanFX2.Algo.RawWHNFCorrect.Headline — `whnf_reaches`
 
 The headline soundness theorem for the raw WHNF evaluator: every
@@ -736,3 +747,5 @@ theorem RawTerm.whnf_reaches : ∀ (fuel : Nat) {scope : Nat}
     | equivCompose _ _ => exact RawStep.parStar.refl _
 
 end LeanFX2
+
+-/

@@ -2,6 +2,17 @@ import LeanFX2.Cubical.PathLemmas
 import LeanFX2.Reduction.Cumul.Relation.Inductive
 import LeanFX2.Reduction.ParStar
 
+/-! # Transport — TODO POLYCELL: BODY DISABLED
+
+Body depends on cd_lemma / Conv.canonical_form / parStar.confluence /
+RawStep.parStar / lift_full_term orchestration deleted in commit c2efaccf.
+Replacement lives in polycell.md §5 as FXcdLemma view defs over PolyTerm.
+Imports preserved at top so downstream transitive imports still work.
+-/
+
+/- TODO POLYCELL: original body preserved as block comment
+
+
 /-! # Cubical/Transport
 
 Transport helpers for cubical paths.
@@ -270,3 +281,5 @@ theorem constantTypeTransport_betaConvCumul
 
 end Cubical
 end LeanFX2
+
+-/

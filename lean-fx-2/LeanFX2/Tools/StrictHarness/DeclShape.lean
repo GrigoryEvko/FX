@@ -1,6 +1,17 @@
 import LeanFX2.Tools.StrictHarness.Common
 import LeanFX2.Tools.StrictHarness.Census
 
+/-! # DeclShape — TODO POLYCELL: BODY DISABLED
+
+Body depends on cd_lemma / Conv.canonical_form / parStar.confluence /
+RawStep.parStar orchestration deleted in commit c2efaccf (cascade-fake
+bulldoze).  Replacement: FXcdLemma / FXConv view defs per polycell.md §5.
+Imports are preserved at top so downstream transitive imports still work.
+-/
+
+/- TODO POLYCELL: original body preserved as block comment
+
+
 namespace LeanFX2.Tools
 
 open Lean Elab Command
@@ -632,3 +643,5 @@ elab "#assert_reduction_compat_coverage_budget " parInductiveSyntax:ident
 
 
 end LeanFX2.Tools
+
+-/

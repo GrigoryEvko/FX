@@ -1,6 +1,16 @@
 import LeanFX2.Term.SubjectReductionGeneral
 import LeanFX2.Reduction.ParStar
 
+/-! # SubjectReductionPar — TODO POLYCELL: BODY DISABLED
+
+Body depends on Step.parStar / RawStep.par.rename_inj_inv (from wrapped
+Reduction/ParStar.lean and RawParWeakenInv/HeadlineRenameInjInv.lean).
+Replacement: FXcdLemma / FXConv view defs per polycell.md §5.
+-/
+
+/- TODO POLYCELL: original body preserved as block comment
+
+
 /-! # Term/SubjectReductionPar — parallel-step subject reduction for closed types
 
 Mirrors `Step.preserves_isClosedTy` (`Term/SubjectReductionGeneral.lean`)
@@ -87,3 +97,5 @@ theorem Step.parStar.preserves_isClosedTy
       exact tailIH (Step.par.preserves_isClosedTy sourceClosed head sourceIsClosed)
 
 end LeanFX2
+
+-/

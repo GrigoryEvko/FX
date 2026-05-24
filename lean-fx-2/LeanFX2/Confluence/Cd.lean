@@ -1,5 +1,16 @@
 import LeanFX2.Term.Bridge
 
+/-! # Cd — TODO POLYCELL: BODY DISABLED
+
+Body depends on cd_lemma / Conv.canonical_form / parStar.confluence /
+RawStep.parStar orchestration deleted in commit c2efaccf (cascade-fake
+bulldoze).  Replacement: FXcdLemma / FXConv view defs per polycell.md §5.
+Imports are preserved at top so downstream transitive imports still work.
+-/
+
+/- TODO POLYCELL: original body preserved as block comment
+
+
 /-! # Confluence/Cd — complete-development at the raw projection of typed Terms
 
 The Tait-Martin-Löf complete development `RawTerm.cd` already
@@ -125,3 +136,5 @@ theorem Term.cdRaw_optionNone
       = RawTerm.optionNone := rfl
 
 end LeanFX2
+
+-/

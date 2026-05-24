@@ -161,6 +161,13 @@ theorem RawStep.parProgress.weaken_compatible {scope : Nat}
   RawStep.parProgress.rename_compatible
     RawRenaming.weaken_injective progress
 
+/- TODO POLYCELL: SN backward-direction section consumed
+RawStep.par.target_in_rename_image, target_in_weaken_image, and weaken_inv —
+all deleted in commit c2efaccf with the cascade bulldoze.  Replacement lives in
+polycell.md §5 as FXcdLemma view defs over PolyTerm.  cumulUpMarker / natSucc
+SN theorems below at lines 282+ stay live since they do not depend on the
+deleted symbols.
+
 /-! ### Backward direction: progress-target lifts back to source scope
 
 When a progress step fires out of a renamed source, the target lives in
@@ -276,6 +283,8 @@ theorem Term.isStronglyNormalizing_weaken
     (sourceIsSN : Term.isStronglyNormalizing sourceTerm) :
     Term.isStronglyNormalizing (Term.weaken newType sourceTerm) :=
   RawTerm.isStronglyNormalizing_weaken sourceIsSN
+
+-/
 
 /-- `RawTerm.cumulUpMarker inner` is strongly normalizing whenever
 `inner` is.  Powers the cross-universe cumulUp Term-level helper.

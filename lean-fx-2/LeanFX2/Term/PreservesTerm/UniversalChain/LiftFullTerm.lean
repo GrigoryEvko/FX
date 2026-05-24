@@ -8,6 +8,17 @@ import LeanFX2.Term.PreservesTerm.HeterogeneousElim
 import LeanFX2.Term.PreservesTerm.EliminatorFunextFamily
 import LeanFX2.Term.SubjectReductionPar
 
+/-! # LiftFullTerm — TODO POLYCELL: BODY DISABLED
+
+Body depends on Step.par.preserves_isClosedTy from Term/SubjectReductionPar.lean,
+which was wrapped in commit c2efaccf (cascade bulldoze).  Replacement lives in
+polycell.md §5 as FXcdLemma view defs over PolyTerm.  Imports preserved at top
+so downstream transitive imports still work.
+-/
+
+/- TODO POLYCELL: original body preserved as block comment
+
+
 /-! # LeanFX2.Term.PreservesTerm.UniversalChain.LiftFullTerm
 
 Driver theorem for the CONVTRANS-C universal chain lift.  The domain
@@ -648,3 +659,5 @@ theorem RawStep.par.lift_full_term
             sidesLift capLift rawStep
 
 end LeanFX2
+
+-/
