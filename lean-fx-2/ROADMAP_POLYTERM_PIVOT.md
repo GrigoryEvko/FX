@@ -4,10 +4,10 @@
 > reconfiguration of the accelerate-* roadmap under the PolyTerm
 > architectural pivot.  Replaces the per-phase task structure in
 > `ROADMAP.md` for everything past commits `7d6758a9` (P2.3 substrate)
-> and `ca101887` (polyterm.md design doc).  Pre-pivot roadmap kept
+> and `ca101887` (polycell.md design doc).  Pre-pivot roadmap kept
 > in `ROADMAP.md` for historical reference.
 >
-> **Design reference:** `polyterm.md` (2259 lines, ten-axis substrate).
+> **Design reference:** `polycell.md` (2259 lines, ten-axis substrate).
 > **Literature reference:** `reference_loubaton_papers.md` memory.
 >
 > **Pivot decision posture:** SOFT pivot — start POLY-α immediately as
@@ -23,7 +23,7 @@
 ### What we are doing
 
 1.  **Pivot the substrate.**  Long-term destination is the
-    ten-axis `PolyTerm π dim source target` per polyterm.md.
+    ten-axis `PolyTerm π dim source target` per polycell.md.
     FX kernel becomes one profile instance.  Cascade tax disappears.
     Conv decidable via ωcE.  Univalence structural.
 2.  **Start POLY-α immediately**, as atomic shippable Lean files,
@@ -275,7 +275,7 @@ on substrate.
 
 Close #2125 P2.4, #2126 P2.5, #2127 P2.8, #2128 P3.1,
 #2129 P3.2, #2130 P3.4, #2131 P3.5 as **CANCELLED — subsumed by
-PolyTerm POLY-X** with explicit pointer to polyterm.md section.
+PolyTerm POLY-X** with explicit pointer to polycell.md section.
 
 Close #2132 P3.12 as **REDIRECTED** to POLY-α commit 5 (decidable
 Conv via ωcE).
@@ -293,7 +293,7 @@ Marked CANCELLED-by-PolyTerm with explicit subsumption pointer.
 
 | Task | Cancelled because |
 |---|---|
-| #2125 P2.4 PolyTerm intrinsic mirror | polyterm.md §5: FXTerm is a view definition on FXCell, no separate inductive |
+| #2125 P2.4 PolyTerm intrinsic mirror | polycell.md §5: FXTerm is a view definition on FXCell, no separate inductive |
 | #2126 P2.5 PolyTerm.toRawPoly_rfl | Subsumed by POLY-α commit 4 + commit 5 (the bridge IS the erasure) |
 | #2127 P2.8 PolyTerm rename/subst | Subsumed by POLY-β AXIS 2 (polynomial monad multiplication) |
 | (K11.8 RawPolyTerm) | Already CANCELLED (fake mirror) — deleted in Tier 1 |
@@ -303,23 +303,23 @@ Marked CANCELLED-by-PolyTerm with explicit subsumption pointer.
 
 | Task | Cancelled because |
 |---|---|
-| #2128 P3.1 PolyTerm.subject_reduction | polyterm.md §6: SR is profile-level theorem under saturation discipline |
-| #2129 P3.2 PolyTerm.strong_normalization | polyterm.md §6: SN is profile-level theorem |
-| #2130 P3.4 PolyStep dim-1 generators | polyterm.md §3.2: dim-1 cells of PolyTerm via AXIS 2 |
-| #2131 P3.5 PolyStep.cd/cd_lemma generic | polyterm.md §3.4: subsumed by AXIS 4 saturation closure |
-| #1788 P3.6 RawValueTerm | polyterm.md §6: values are NF predicates on PolyTerm |
-| #1789 P3.7 ValueTerm typed mirror | polyterm.md §6: ditto |
-| #1793 P3.8 PolyTerm.eval | polyterm.md §3.6: eval = polygraph fold via AXIS 6 |
-| #1804 P3.9 ValueTerm.quote | polyterm.md §3.6: quote = inverse fold |
-| #1805 P3.10 nbe roundtrip | polyterm.md §3.6: roundtrip from fold/unfold |
-| #1807 P3.11 Conv.decide via NF | polyterm.md §3.9: subsumed by POLY-α ωcE morphism search |
+| #2128 P3.1 PolyTerm.subject_reduction | polycell.md §6: SR is profile-level theorem under saturation discipline |
+| #2129 P3.2 PolyTerm.strong_normalization | polycell.md §6: SN is profile-level theorem |
+| #2130 P3.4 PolyStep dim-1 generators | polycell.md §3.2: dim-1 cells of PolyTerm via AXIS 2 |
+| #2131 P3.5 PolyStep.cd/cd_lemma generic | polycell.md §3.4: subsumed by AXIS 4 saturation closure |
+| #1788 P3.6 RawValueTerm | polycell.md §6: values are NF predicates on PolyTerm |
+| #1789 P3.7 ValueTerm typed mirror | polycell.md §6: ditto |
+| #1793 P3.8 PolyTerm.eval | polycell.md §3.6: eval = polygraph fold via AXIS 6 |
+| #1804 P3.9 ValueTerm.quote | polycell.md §3.6: quote = inverse fold |
+| #1805 P3.10 nbe roundtrip | polycell.md §3.6: roundtrip from fold/unfold |
+| #1807 P3.11 Conv.decide via NF | polycell.md §3.9: subsumed by POLY-α ωcE morphism search |
 | #2132 P3.12 typecheck_decidable | **REDIRECTED** to POLY-α commit 5 (faster path) |
 
 ### Phase D2.5.x cubical β cascade (10 cancelled)
 
 | Task | Cancelled because |
 |---|---|
-| #1651-1657 D2.5.5 transpPi (E/F/G/H/I/J/K) | polyterm.md §3.1: cubical β is topos op on cubical-shape cells (AXIS 7) |
+| #1651-1657 D2.5.5 transpPi (E/F/G/H/I/J/K) | polycell.md §3.1: cubical β is topos op on cubical-shape cells (AXIS 7) |
 | #1658-1668 D2.5.6 transpSigma (A-K) | Same |
 | #1669-1673 D2.5.7 transp{List,Option,Either,Record} | Same |
 | #1675 D2.5.9 glueAtFace | Same |
@@ -329,7 +329,7 @@ Marked CANCELLED-by-PolyTerm with explicit subsumption pointer.
 
 | Task | Cancelled because |
 |---|---|
-| #1427-1430, 1689-1698 CUMUL-7.x | polyterm.md §3.7: modal topos handles cumul + cross-mode definitionally |
+| #1427-1430, 1689-1698 CUMUL-7.x | polycell.md §3.7: modal topos handles cumul + cross-mode definitionally |
 
 ### Phase K20 self-hosting (deferred not cancelled)
 
@@ -450,7 +450,7 @@ the proof migrates from per-ctor (current) to generic over Generator
 
 ## Tier 4 — explicit ABANDON (not now)
 
-Per polyterm.md §12 risk register, these are flagged as
+Per polycell.md §12 risk register, these are flagged as
 research-frontier-with-no-mitigation if hit head-on.  We do
 NOT attempt them until POLY-δ stabilizes.
 
@@ -460,11 +460,11 @@ NOT attempt them until POLY-δ stabilizes.
 | Multi-axis stratification (thinness varying by shape + by sortFamily) | Verity Theorem 2.4 only handles per-cell; per-(shape, sort) is open |
 | Profile-of-profiles depth > ω | Cisinski ω-loc is the limit; beyond needs un-published research |
 | (∞,∞) directed all the way (per Riehl-Shulman / Weaver-Licata) | (∞,1) directed mechanized; (∞,ω) directed is open |
-| Mathlib full-import polygraph translation | Possible per polyterm.md §6 but ~50K LoC; defer to v4 |
+| Mathlib full-import polygraph translation | Possible per polycell.md §6 but ~50K LoC; defer to v4 |
 
 ---
 
-## Risk register (focused on pivot, subset of polyterm.md §12)
+## Risk register (focused on pivot, subset of polycell.md §12)
 
 ### POLY-α-specific risks
 
@@ -582,7 +582,7 @@ These need explicit user input before being acted on.
 ## Status as of 2026-05-23
 
 **Shipped:**
-- Polyterm design doc: `polyterm.md` (2259 lines) at commit ca101887
+- Polyterm design doc: `polycell.md` (2259 lines) at commit ca101887
 - Reference memory: `reference_loubaton_papers.md`
 - This pivot roadmap doc (you are reading it)
 
@@ -607,7 +607,7 @@ These need explicit user input before being acted on.
   buy (univalence-as-theorem, concurrency, modal cohesion, math
   automation) are all nice-to-have, not blockers
 
-**Maximalist version (per polyterm.md):**
+**Maximalist version (per polycell.md):**
 - 36 months, ~187K LoC, full ten-axis substrate, FX becomes the
   first proof assistant with (∞,ω)-categories internalized
 
