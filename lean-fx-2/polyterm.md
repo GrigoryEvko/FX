@@ -254,22 +254,24 @@ theorem extendProfile_preserves_admissible
     AdmissibleProfile (base.extend ext)
 ```
 
-This is the "extend at whim, inherit everything" mechanism.  New
+This is the "extend at whim, inherit everything" *aspiration*.  New
 features are NOT new `Term` constructors; they are admitted profile
-extensions whose interaction laws + metatheory preservation are
-verified once per extension and checked compositionally.  Aberlé's
+extensions whose interaction laws + metatheory preservation must be
+verified per extension and (target) checked compositionally.  Aberlé's
 2026 polynomial-functor compositional verification framework
-(`arXiv:2604.01303`) supplies the per-extension substrate; the
-composition primitive is the **FX PolyCell Cellular Tensor Theorem**
-introduced as §3.0.7 — our own load-bearing contribution that
-extends Almeida 2025 vol I (`arXiv:2511.13547`, syntactic GAT tensor)
-with three additional pillars (Bocquet-Kaposi-Sattler internal
-sconing, our own ProfileCapabilities meet semantics, Crans 1999 /
-Steiner 2004 Gray-tensor universal property lifted to admissible
-profiles).  The composite theorem ships the universal property NOW
-without waiting for Almeida vol II (in preparation), with explicit
-honest capability tracking and structural Zwart-Marsden no-go
-discharge.
+(`arXiv:2604.01303`) supplies a per-extension substrate; the intended
+composition primitive is the **FX PolyCell Cellular Tensor target
+theorem** described as §3.0.7 — an FX-original research program
+extending Almeida 2025 vol I (`arXiv:2511.13547`, syntactic GAT
+tensor) with three additional candidate pillars (Bocquet-Kaposi-
+Sattler internal sconing, our own ProfileCapabilities honesty ledger,
+Crans 1999 / Steiner 2004 Gray-tensor universal property at the
+strict single-sort level, intended to lift to admissible
+sort-stratified profiles).  This composite is NOT a landed Lean
+result; §3.0.7 lays out the target obligations.  Until those
+obligations close, the extension calculus in §3.14 uses explicit
+per-pair bilax / distributive-law witnesses and explicit no-go
+rejection — no universal-property-as-corollary shortcut.
 
 The slogan is **PolyCell renamed and souped up**.  The K11.1 `PolyCell`
 (dim-indexed, source/target intrinsic, real Burroni cells) is the
@@ -770,11 +772,16 @@ This combination is what makes the per-axis citations honest — none
 of them individually justify the "scary" framing, but together with
 the Tier 0 universal substrate they do.
 
-#### 3.0.7 The FX PolyCell Cellular Tensor Theorem — our own pillar
+#### 3.0.7 The FX PolyCell Cellular Tensor — FX-original target theorem (research program)
 
 The four pillars above (Uemura, BKS sconing, Fire Triangle, Hadzihasanovic
 shapes) are imported from published literature.  This subsection introduces
-the **first FX-original load-bearing theorem** at the Tier 0 layer.
+an **FX-original target theorem** at the Tier 0 layer — a research program,
+NOT a landed Lean result.  The statement, its proof obligations, and its
+relationship to four published source pillars are laid out below; until
+the Lean mechanization closes the obligations, the calculus in §3.14
+uses **explicit bilax / distributive-law witnesses and explicit no-go
+rejection**, NOT the universal property as a one-line corollary.
 
 **Why we need our own pillar.**  Daniel Almeida's *A monoidal category
 of dependently sorted algebraic theories I: syntax* (`arXiv:2511.13547`,
@@ -807,18 +814,25 @@ a vol II [Alm26] that is *in preparation* as of 2026:
   article.  We will return to this problem in [Alm26]."
 * (D5) The `Mod(A ⊗ B, Fam) ≅ Mod(A, Mod(B))` equation (abstract).
 
-FX does NOT wait for vol II.  Vol II's deferred results are framed
-in the most general setting (arbitrary GATs, arbitrary theory
+FX does not have to wait for vol II.  Vol II's deferred results are
+framed in the most general setting (arbitrary GATs, arbitrary theory
 morphisms), where the "laboriousness" Almeida cites is paper-math
-combinatorics.  FX's setting is **narrower**: profiles are
-admissible (finite generators, decidable equality, SProp-valued
-coherence cells per §3.13's three rigidity restrictions).  In the
-narrower setting, the universal property is computable.  We ship it
-NOW as our own theorem.
+combinatorics.  FX's setting is **narrower**: profiles are admissible
+(finite generators, decidable equality, SProp-valued coherence cells
+per §3.13's three rigidity restrictions).  We **conjecture** the
+universal property is mechanizable in this narrower setting via the
+four-pillar composition below — but every (T*) statement remains a
+*target obligation* against a Lean mechanization that has not yet
+been written.  The hard part is exactly the lift from Almeida-style
+GAT tensor + Crans/Steiner strict Gray tensor into sort-stratified
+dependent profiles with admissibility, capabilities, sconing, and
+bilax coherence.  That lift may be right, but it is not a
+one-paragraph corollary.
 
-**Statement — the FX PolyCell Cellular Tensor Theorem.**  Let
+**Target statement — the FX PolyCell Cellular Tensor.**  Let
 π_A and π_B be admissible PolyCell profiles with ProfileCapabilities
-κ_A and κ_B (see §3.14 for the capabilities record).  Then:
+κ_A and κ_B (see §3.14 for the capabilities record).  We aim to
+prove:
 
 * (T1) **Cellular tensor exists.**  There is a profile
   `π_A ⊗_{cell} π_B` computed by:
@@ -840,15 +854,24 @@ NOW as our own theorem.
   Both admissibility witnesses sconing into the same presheaf topos;
   their composite witnesses admissibility of the tensor.  ~1K LoC.
 
-* (T3) **Capability meet semantics.**  The ProfileCapabilities of
-  the tensor is the meet of the factors' capabilities:
+* (T3) **Capability meet as honesty ledger (upper bound, not
+  substitute for interaction proofs).**  The ProfileCapabilities of
+  the tensor is at most the meet of the factors' capabilities:
   ```
-  capabilities(π_A ⊗_{cell} π_B) = κ_A ⊓ κ_B
+  capabilities(π_A ⊗_{cell} π_B) ≤ κ_A ⊓ κ_B
   ```
-  Tensor of an SN profile with a non-SN profile is non-SN.  Tensor of
-  a canonical profile with a classical profile is non-canonical.
-  Tensor of a Mahlo-strength profile with a ZFC-strength profile
-  records the stronger ambient theory.  No false subsumption.  ~1K LoC.
+  Tensor of an SN profile with a non-SN profile is at best non-SN.
+  Tensor of a canonical profile with a classical profile is at best
+  non-canonical.  This is a NECESSARY condition, not a SUFFICIENT one
+  — two SN/canonical profiles can still interact badly if the tensor
+  introduces new term-equality axioms (vol I Table 1's u⊗v ≡ u•v
+  row) that create rewrite loops or break canonicity.  The meet is
+  an honesty *ledger* that says "no advertised property survives if
+  it was absent in either factor"; it does NOT discharge the actual
+  interaction proof.  Each new extension must still ship explicit
+  per-pair distributive-law witnesses where required.  ~1K LoC for
+  the ledger; the per-pair proofs live in §3.14's
+  `bilaxCompatibility` field and §3.0.7's no-go register.
 
 * (T4) **Universal property at the polygraph level (Crans-Steiner-
   Gray lift).**  For any admissible profile π_C with morphisms
@@ -871,53 +894,81 @@ NOW as our own theorem.
   Crans-Steiner-Gray gives the lax symmetry coherence that vol I's
   §8 closing defers.  ~500 LoC.
 
-* (T7) **Structural no-go discharge (Zwart-Marsden).**  When
-  `κ_A ⊓ κ_B = ⊥` (e.g., probability × powerset × state, or any
-  triple in the Zwart-Marsden no-go table `arXiv:1812.09515`), the
-  cellular tensor still exists but its capabilities meet is bottom
-  and the result is honestly marked degenerate.  This discharges the
-  no-go theorems STRUCTURALLY: no per-pair distributive-law search,
-  no algorithmic exception.  The admission contract reports which
-  prior capability collides with the new extension.  ~500 LoC.
+* (T7) **No-go register and explicit rejection.**  When two
+  extensions hit a published Zwart-Marsden no-go cell (e.g.,
+  probability × powerset, or any triple in the Zwart-Marsden no-go
+  catalogue `arXiv:1811.06460`), or when the user cannot supply a
+  bilax-compatibility witness for (T4), the admission contract
+  **rejects the extension** and returns a constructive collision
+  certificate naming the prior capability and the missing law.
+  Failure of bilax compatibility does NOT silently become "lattice
+  bottom" — that would be sloppy.  It either rejects the extension
+  outright, or admits it as **syntax-only** (the generators are
+  added but no metatheory transfer is asserted); the user picks
+  which posture per extension.  The no-go register is a static
+  table cross-referenced against the Zwart-Marsden catalogue, not a
+  computed lattice value.  ~500 LoC.
 
-* (T8) **Self-extension (Mathlib import).**  Iterated tensors
-  `π_FX ⊗ π_Probability ⊗ π_SDG ⊗ π_Quantum ⊗ ...` are associative
-  by (T5) up to lax 3-cell; the chain of extensions in §3.15 is
-  computed by left-to-right reduction of cellular tensors with
-  associator re-bracketing.  This is the mechanism by which
-  Mathlib's ~1.5M LoC of mathematics can be imported as a chain of
-  `ProfileExtension` values: each Mathlib theorem becomes a generator
-  in a profile, profiles tensor with FX, the universal property
-  guarantees the import is conservative-extension.
+* (T8) **Iterated tensoring (mechanism, not conservativity).**
+  Iterated tensors `π_FX ⊗ π_Probability ⊗ π_SDG ⊗ π_Quantum ⊗ ...`
+  are associative by (T5) up to lax 3-cell; the chain of extensions
+  in §3.15 is computed by left-to-right reduction with associator
+  re-bracketing.  This is the *mechanism* for building extension
+  chains, NOT a free conservativity guarantee.  Importing a
+  third-party theorem library (e.g. Mathlib) via this mechanism
+  requires, separately: (i) a proof-object translation that
+  preserves the source library's typing, (ii) an explicit
+  consistency-strength accounting (which Mathlib axioms are
+  imported, against which ambient theory), (iii) per-import
+  conservativity proofs against the target FX profile.  The
+  universal property of (T4) discharges only the cellular-composition
+  side; it does NOT by itself make imported theorem-generators
+  conservative.  Each library import is its own project.
 
-**Why this is NOT in any published paper.**  No published work
-combines all four ingredients: (i) the syntactic GAT tensor
-construction (Almeida vol I 2025), (ii) BKS internal sconing for
-metatheory preservation (Bocquet-Kaposi-Sattler 2023), (iii)
-ProfileCapabilities meet semantics for honest tensor capability
-algebra (our own design), (iv) Crans-Steiner-Gray Gray-tensor
-universal property lifted to sort-stratified admissible profiles
-(Crans 1999 / Steiner 2004 + ABGMMM 2023 §17).
+**Why this is an open research program, not a corollary.**  No
+published work combines all four ingredients: (i) the syntactic
+GAT tensor construction (Almeida vol I 2025), (ii) BKS internal
+sconing for metatheory preservation (Bocquet-Kaposi-Sattler 2023),
+(iii) a ProfileCapabilities honesty ledger (our own design), (iv)
+Crans-Steiner-Gray Gray-tensor universal property at the level of
+strict single-sort polygraphs (Crans 1999 / Steiner 2004 + ABGMMM
+2023 §17).
 
-Almeida vol I 2025 alone defers (T4)-(T6) to vol II.  Crans-Steiner
-alone covers (T4) for strict single-sort polygraphs but not for
-sort-stratified profiles with admissibility.  BKS sconing alone
-gives (T2) but not (T1)-(T7).  The composite theorem (T1)-(T8) is
-FX-original.
+The hard part is the **lift** from (iv) — which lives at strict
+single-sort polygraphs — to sort-stratified DEPENDENT profiles with
+admissibility, capabilities, sconing, and bilax coherence.  Crans
+1999 is scoped to Gray-categories; Steiner 2004 to ω-categories /
+chain complexes; neither covers sort-stratified GAT cells with
+dependent boundaries.  Almeida vol I 2025 covers the GAT side but
+explicitly defers the universal property to vol II.  BKS sconing
+covers metatheory transfer along one CwR morphism but does not
+automatically lift to a cellular tensor of profiles.
+
+The composite (T1)-(T8) is FX-original BECAUSE no paper has done
+the lift; it is also UNPROVEN BECAUSE no paper has done the lift.
+This subsection is a research program statement, not a victory
+lap.
 
 **Comparison with vol II [Alm26] when it eventually ships.**  Vol II
-will prove (D1)-(D5) at the maximum-generality GAT level.  Our
-theorem proves the FX-relevant projection (T1)-(T8) at the
-admissible-profile level using the four-pillar composition.  When
-vol II ships, FX can specialize its theorem to vol II's stronger
-results (the admissibility restriction will become a corollary of
-vol II's full universal property).  Until vol II ships, FX has its
-own load-bearing pillar that does not depend on unpublished
-mathematics.
+is planned to prove (D1)-(D5) at the maximum-generality GAT level.
+Our target theorem aims for the FX-relevant projection (T1)-(T8) at
+the admissible-profile level using the four-pillar composition.
+When vol II ships, FX may be able to specialize against it
+(admissibility restriction becoming a corollary of vol II's full
+universal property), or FX may discover during the lift attempt
+that the projection requires additional restrictions vol II does
+not need.  Until either FX's mechanization or vol II ships, neither
+result is available; this section flags FX's intended direction.
 
-**Lean signature (Cellular Tensor headline theorem):**
+**Lean target signature (NOT shipped; sketch only):**  The block below
+is a Lean *target signature* indicating the intended type of each
+(T*) statement once mechanized.  Bodies are placeholders.  These
+declarations DO NOT EXIST in the lean-fx-2 tree as of this commit;
+shipping them is the research program §3.0.7 describes.
 
 ```lean
+-- Lean target sketch — proof bodies are NOT written; this is the
+-- target-theorem signature, not a shipped result.
 namespace LeanFX2.Foundation.Polygraph.CellularTensor
 
 /-- The cellular tensor of two admissible PolyCell profiles.
@@ -990,51 +1041,59 @@ profile chain (T8).
 * ProfileCapabilities meet is a finite-enum lattice meet computed by
   Lean's `Decidable` instance.
 
-**Reference triangle for the FX Cellular Tensor:**
+**Reference triangle for the FX Cellular Tensor target:**
 * Daniel Almeida, *A monoidal category of dependently sorted
   algebraic theories I: syntax*, `arXiv:2511.13547` (Nov 2025).
-  Supplies (T1).  119 pages.  Vol II [Alm26] in preparation
-  supplies (D1)-(D5) which our theorem sidesteps.
+  Supplies (T1).  119 pages.  Vol II [Alm26] in preparation aims to
+  supply (D1)-(D5); FX aims at the admissible-profile projection
+  without waiting, neither result currently shipped.
 * Sjoerd Crans, *A tensor product for Gray-categories*, Theory and
-  Applications of Categories 5 (1999), 12-69.  Supplies (T4) for
-  strict polygraphs in the single-sort case.
+  Applications of Categories 5 (1999), 12-69.  Supplies the
+  Gray-tensor universal property at the strict Gray-category /
+  single-sort level (not the sort-stratified-dependent level FX
+  needs); (T4) is the *aim* of the lift, not Crans's theorem.
 * Richard Steiner, *Omega-categories and chain complexes*, Homology,
   Homotopy and Applications 6 (2004), 175-200.  Extends Crans to
-  the chain-complex side; supplies the explicit chain-complex Gray
-  formulas needed for Lean mechanization.
+  the chain-complex / ω-category side; background monoidal
+  machinery on strict ω-categories.
 * Bocquet-Kaposi-Sattler, *For the metatheory of type theory,
   internal sconing is enough*, `arXiv:2302.05190` (FSCD 2023).
-  Supplies (T2).
+  Supplies (T2) for one CwR morphism; extending to the cellular
+  tensor of two profiles is part of the lift.
 * Ara-Burroni-Guiraud-Malbos-Métayer-Mimram, *Polygraphs: From
   Rewriting to Higher Categories*, `arXiv:2312.00429` (Dec 2023).
   Cambridge University Press 2023.  §17 surveys Gray tensors with
-  full formulas; substrate for the (T4) lift.
+  full formulas; substrate the (T4) lift would build on.
 * Zwart-Marsden, *No-go theorems for distributive laws*, LICS 2019,
-  `arXiv:1812.09515`.  Supplies the no-go inventory that (T7)
-  discharges structurally.
-* Our own design supplies (T3) ProfileCapabilities meet semantics
-  and (T7) structural no-go discharge.  Composite theorem is
-  FX-original.
+  `arXiv:1811.06460`.  Supplies the no-go catalogue that (T7)
+  cross-references for explicit rejection of colliding extensions.
+* Our own design supplies the ProfileCapabilities honesty ledger
+  (T3, upper bound only — not interaction proof) and the explicit
+  no-go register (T7).  The composite (T1)–(T8) is FX-original
+  *as a target*; whether it mechanizes is an open program.
 
-**Status in the LoC budget.**  ~5K LoC added on top of the existing
-Tier 0 budget.  Updated Tier 0 total: ~17K LoC (12K base + 5K
-Cellular Tensor).  Pays back when FX ships its 3rd profile
-extension (each extension uses the universal property to discharge
-its admission obligation; without (T4), each extension would need
-a bespoke admissibility-preservation proof costing ~3K LoC).
+**Status in the LoC budget.**  ~5K LoC *target* added on top of the
+existing Tier 0 budget.  Updated Tier 0 total IF the program closes:
+~17K LoC (12K base + 5K Cellular Tensor).  No current Lean code in
+the lean-fx-2 tree implements any of the five `CellularTensor/*.lean`
+files referenced above.  If/when shipped, expected payback after
+~3 profile extensions because each later extension can cite the
+universal property instead of bespoke admissibility-preservation
+proofs; the per-extension cost falls from ~3K LoC to ~1K LoC.
+Failure mode: if the lift is harder than estimated, §3.14 reverts
+to per-pair witnesses indefinitely.
 
-**What this gives FX that no other proof assistant has.**  The
-ability to compose admissible type theories with a mechanized
-universal property, with explicit honest capability tracking,
-without depending on unpublished math (vol II) or hand-wavy
-"composes per pair" claims.  This is the load-bearing structural
-mechanism for §3.14's profile-extension calculus and §3.15's
-demonstration profile catalog.  Every entry in §3.15 (Probabilistic-
-Iris FX, Differential-SDG FX, Quantum-Linear FX, ...) ships as a
-cellular tensor of its prerequisite profiles with FX, with
-admissibility preserved by (T2), capabilities tracked honestly by
-(T3), and the universal property discharging the implementation/
-specification obligation by (T4).
+**What this would give FX if (T1)-(T8) mechanize.**  The ability to
+compose admissible type theories with a mechanized universal
+property, with explicit honest capability tracking, without
+depending on unpublished math (vol II).  If achieved, this becomes
+a structural mechanism for §3.14's profile-extension calculus and
+§3.15's demonstration profile catalog.  Until then, §3.14 uses
+**explicit bilax-compatibility witnesses** per extension and an
+**explicit no-go register** against the Zwart-Marsden catalogue;
+§3.15's entries (Probabilistic-Iris FX, Differential-SDG FX,
+Quantum-Linear FX, ...) each require their own per-pair admission
+proofs against the existing axes, not a free corollary from §3.0.7.
 
 ### 3.1 Shape per dim
 
@@ -3106,7 +3165,7 @@ dependent polynomials as pre/post specifications; wiring diagrams as
 composition.  Plus the categorical machinery the calculus inherits:
 Uemura CwR morphisms (`arXiv:1904.04097`), Beck distributive laws +
 Garner weak distributive laws (FoSSaCS 2020 `arXiv:2003.07304`),
-Zwart-Marsden no-go theorems (LICS 2019 `arXiv:1812.09515`),
+Zwart-Marsden no-go theorems (LICS 2019 `arXiv:1811.06460`),
 Hirschhorn left Bousfield localization (AMS 2003).
 
 **Composition primitive (§3.0.7).**  The composition of two
@@ -3278,12 +3337,13 @@ structure ProfileLens (rich base : PolyProfile) where
   preservesErase : PreservesErase lift forget
 ```
 
-**Why this prevents the cascade reappearing as profile obligations:**
+**Why this aims to prevent the cascade reappearing as profile obligations:**
 
-The eight projections of `ProfileExtension` are not eight
-independent proof obligations.  They are eight views of one
-categorical object — a CwR morphism + AWFS extension pair.  A
-feature author writes:
+The eight projections of `ProfileExtension` are intended to be eight
+views of one categorical object — a CwR morphism + AWFS extension
+pair — *if* §3.0.7 (T1)-(T8) mechanize as targeted.  Until then they
+remain eight per-extension proof obligations that the author must
+discharge individually.  A feature author writes:
 
 ```lean
 def addProbability : ProfileExtension fxProfile where
@@ -3293,13 +3353,19 @@ def addProbability : ProfileExtension fxProfile where
                                                  -- as dep poly
   wiringLaw           := markovWiringComposes   -- discharged from
                                                  -- Markov-cat laws
-  interactionMatrix   := {                      -- per existing axis
+  bilaxCompatibility  := {                      -- per existing axis,
+                                                 -- supplied EXPLICITLY
+                                                 -- per §3.14 + §3.0.7
+                                                 -- (T4); no free
+                                                 -- universal-property
+                                                 -- corollary yet
     cohesive   := probabilityCommutesWithFlatSharp,
     resource   := probabilityWeaklyDistributesOverLinear,  -- Garner
     cost       := probabilityCostBoundedByEntropy,
     security   := probabilityRespectsDeclassification,
-    effect     := MarsdenZwartTable.probabilityVsExceptions -- NO-GO
-                                                            -- recorded
+    effect     := MarsdenZwartTable.probabilityVsExceptions
+                  -- NO-GO registered; admission contract REJECTS
+                  -- the extension or admits it syntax-only per (T7)
   }
   forgetfulLens      := probabilityForgetfulLens
   metatheoryWitness  := sconingLiftsProbability
@@ -3313,10 +3379,13 @@ cascade does NOT reappear because:
    `interfacePolynomial`, processed by one generic dispatcher.
 2. **No per-feature SR / SN proofs** — `metatheoryWitness` plugs
    into the universal sconing argument once.
-3. **No per-feature cd_lemma rewrites** — AWFS extension composes
-   with the existing AWFS automatically.
-4. **No per-feature erasure proof** — `erasureWitness` plugs into
-   the realizability tripos once.
+3. **Per-feature cd_lemma rewrites are reduced, not eliminated** —
+   AWFS extension composes with the existing AWFS *when the bilax
+   coherence witness is supplied*; in the no-witness or no-go case
+   the extension is admitted only as syntax-only or rejected.
+4. **Per-feature erasure proof still required** — `erasureWitness`
+   plugs into the realizability tripos when supplied; FX does not
+   discharge erasure soundness automatically.
 
 **The composition algebra — distributive laws and their failures:**
 
@@ -3335,8 +3404,8 @@ table of known compositions:
 | Cohesive + Resource | One-way (cohesive→resource) | Myers-Riley §6.4 |
 | Probability + Powerset + State | Triple no-go | Zwart-Marsden LICS 2019 |
 
-Every new `ProfileExtension.interactionMatrix` must cite where it
-sits in this table.  Extensions that hit a no-go cell are rejected
+Every new `ProfileExtension.bilaxCompatibility` field must cite where
+it sits in this table.  Extensions that hit a no-go cell are rejected
 at the admission step — the user is told *which* prior extension
 their feature collides with and *which* distributive law would
 need to exist.
@@ -4817,78 +4886,92 @@ share repo + design doc.  Possibility of joint paper "First
 mechanization of (∞,ω)-categories in a proof assistant" if alignment
 is good.
 
-### 12.5 What FX extends beyond the published literature — our own contributions
+### 12.5 What FX aims to extend beyond the published literature — target contributions
 
 The FX PolyTerm design is mostly an integration of published
 mathematics into one mechanizable substrate.  This subsection
-enumerates the *original* contributions where FX goes beyond what
-any single paper has shipped.
+enumerates the *target* contributions where FX aims to go beyond
+what any single paper has shipped.  Every item is a research
+program, not a landed Lean result.
 
-**Original contribution 1 — The FX PolyCell Cellular Tensor Theorem
-(§3.0.7).**  Composite of four published pillars plus our own
-capability layer:
+**Target contribution 1 — The FX PolyCell Cellular Tensor (§3.0.7).**
+Intended composite of four published pillars plus our own capability
+ledger:
 * Almeida 2025 vol I supplies the syntactic GAT tensor (T1).
 * Bocquet-Kaposi-Sattler 2023 supplies internal sconing
-  preservation (T2).
+  preservation (T2) for one CwR morphism — extending it to a
+  cellular tensor of profiles is part of the lift.
 * Crans 1999 + Steiner 2004 + ABGMMM 2023 supply the Gray-tensor
-  universal property on strict polygraphs (T4 base case).
-* Our design supplies ProfileCapabilities meet semantics (T3),
-  the lift of (T4) from strict single-sort polygraphs to sort-
-  stratified admissible profiles, structural Zwart-Marsden no-go
-  discharge via empty capability meet (T7), and the iterated tensor
-  composition (T8) used for Mathlib import.
+  universal property on strict single-sort polygraphs (T4 base
+  case).
+* Our design adds: a ProfileCapabilities honesty ledger (T3, as
+  upper bound, not substitute for interaction proofs), the
+  proposed lift of (T4) from strict single-sort polygraphs to
+  sort-stratified DEPENDENT profiles with admissibility, and an
+  explicit no-go register cross-referenced against Zwart-Marsden
+  rather than a "capabilities = ⊥" silent failure (T7).
 
-The composite theorem is FX-original.  Vol II [Alm26], in
-preparation, will eventually prove a stronger result at the
-maximum-generality GAT level; FX's theorem is the
-admissible-profile projection that ships NOW without waiting.
+The composite (T1)–(T8) would be FX-original IF the lift mechanizes.
+Vol II [Alm26], in preparation, aims to prove a stronger result at
+the maximum-generality GAT level; FX's program aims for the
+admissible-profile projection without waiting.  Neither is shipped.
 
-**Original contribution 2 — ProfileCapabilities honesty record.**  Per
-§3.14, every admissible profile MUST declare a `ProfileCapabilities`
-record listing what it provides (subject reduction, confluence,
-normalization, canonicity, decidable conversion, decidable
-typechecking, productivity, erasure soundness) and its consistency
-strength relative to the ambient theory (Lean 4, ZFC, ZFC + I,
-ZFC + Mahlo, ...).  No published framework has this honest-capability
-discipline at the profile level.  Cellular tensor meets capabilities
-structurally — tensor of two profiles is the meet of their
-capabilities.  This prevents the "fake subsumption" failure mode
-where a framework claims to subsume many type theories but silently
-loses key properties under composition.
+**Target contribution 2 — ProfileCapabilities honesty ledger.**  Per
+§3.14, every admissible profile is required to declare a
+`ProfileCapabilities` record listing what it provides (subject
+reduction, confluence, normalization, canonicity, decidable
+conversion, decidable typechecking, productivity, erasure
+soundness) and its consistency strength relative to the ambient
+theory (Lean 4, ZFC, ZFC + I, ZFC + Mahlo, ...).  We are unaware
+of a published framework with this discipline at the profile
+level.  The ledger is a NECESSARY-condition tracker — tensor of
+two profiles has at most the meet of their capabilities — not a
+sufficient-condition substitute for the actual interaction proofs.
+It catches "fake subsumption" early (a framework that claims many
+type theories but silently loses properties under composition gets
+flagged at the ledger level), but it does not replace per-pair
+admission work.
 
-**Original contribution 3 — The 4-tier multi-modal stack with explicit
+**Target contribution 3 — A 4-tier multi-modal stack with explicit
 Fire-Triangle navigation (§3.7).**  Cohesive / Resource / Cost /
 Security / Structural tiers, each with its own substrate paper,
 composed via MTT (Gratzer-Kavvos-Nuyts-Birkedal 2020) as outer
 container.  Per-tier Fire-Triangle leg restriction (calf/decalf
 restrict effects, MTT restricts substitution, SProp restricts
 dependent elimination) so no axis violates Pédrot-Tabareau 2020.
-Composition by the cellular tensor; no axis hides a Fire-Triangle
-violation.  No published framework has this 4-tier honest navigation.
+Composition target: cellular tensor.  Honest disclaimer: each
+cross-tier interaction is its own proof obligation; this section
+is a navigation plan, not a discharged metatheorem.
 
-**Original contribution 4 — The accept-or-reject-honestly admission
-contract.**  Per §3.14, `extendProfile` is a function that either
-returns a new admissible profile OR returns a constructive rejection
-witness naming which prior capability collided with the new
-extension and which distributive law would need to exist.  No
-silent failure, no "we hope it composes" cells.  This makes the
-admission decidable per extension, in contrast to the open-ended
-"add features as needed" of most extensible-frameworks.
+**Target contribution 4 — Accept-or-reject-honestly admission
+contract.**  Per §3.14, `extendProfile` is intended as a function
+that either returns a new admissible profile OR returns a
+constructive rejection witness naming which prior capability
+collided with the new extension and which distributive law would
+need to exist.  No silent failure, no "we hope it composes" cells.
+This would make admission decidable per extension, but only after
+the per-pair witnesses are supplied — the contract is a discipline,
+not a free decision procedure.
 
-**Original contribution 5 — Self-hosting kernel FX as L5 meta-profile
-(§3.15).**  The Self-Hosting Kernel FX profile reflects PolyCell into
-itself: FX reasons about its own profile space inside itself, using
-the reflection profile (Axis 12 STC) to internalize ProfileExtension.
-This closes the loop: the FX Cellular Tensor Theorem becomes a
-theorem FX can prove ABOUT FX, from inside FX.  No published
-framework has this self-hosting + extension calculus closure.
+**Target contribution 5 — Self-hosting kernel FX as L5 meta-profile
+(§3.15).**  The Self-Hosting Kernel FX profile would reflect
+PolyCell into itself: FX reasoning about its own profile space
+inside itself, using the reflection profile (Axis 12 STC) to
+internalize ProfileExtension.  If achieved, this closes the loop:
+the FX Cellular Tensor target theorem becomes statable inside FX.
+We do not know any published framework that has this closure;
+whether it mechanizes in Lean within FX's lifetime is an open
+research question.
 
-**Original contribution 6 — The 13-axis profile bundle with
-mechanized cross-axis coherence.**  Per §4, every admissible profile
-specifies thirteen axes whose cross-axis consistency is a finite-
-state check.  No published framework bundles this many graded /
-modal / cohesive / cubical / topos axes into one mechanically
-checkable record.
+**Target contribution 6 — The 13-axis profile bundle with mechanized
+cross-axis coherence.**  Per §4, every admissible profile would
+specify thirteen axes whose cross-axis consistency is a target
+finite-state check.  No published framework that we are aware of
+bundles this many graded / modal / cohesive / cubical / topos axes
+into one mechanically checkable record.  The bundle itself is a
+data structure; whether all 13 axes mechanize cleanly together
+under strict zero-axiom discipline remains a separate proof
+obligation per axis.
 
 **What FX does NOT extend.**  Bound 1 (Pédrot-Tabareau Fire Triangle),
 Bound 3 (Gödel II), Bound 4 (Lean 4 metatheoretic strength), Bound 5
@@ -5068,7 +5151,7 @@ U29. Jonathan Sterling, Carlo Angiuli, *Normalization for Cubical
       Type Theory*, LICS 2021, `arXiv:2101.11479`.  Use of STC in the
       cubical metatheory.
 
-### FX Cellular Tensor pillar (§3.0.7) references
+### FX Cellular Tensor target theorem (§3.0.7) — reference triangle
 
 CT1. Daniel Almeida, *A monoidal category of dependently sorted
       algebraic theories I: syntax*, `arXiv:2511.13547` (Nov 2025),
@@ -5089,37 +5172,36 @@ CT1. Daniel Almeida, *A monoidal category of dependently sorted
       GAT-morphisms (Remark 6.7, page 82), closed monoidal structure
       and pentagon coherence (Remark 7.5, page 96), hexagon
       coherence for symmetry (§8 closing, page 98), the equation
-      Mod(A ⊗ B, Fam) ≅ Mod(A, Mod(B)) (abstract).  Supplies (T1)
-      of the FX Cellular Tensor.
+      Mod(A ⊗ B, Fam) ≅ Mod(A, Mod(B)) (abstract).  Supplies (T1) of
+      the FX Cellular Tensor *target*; the universal property is in
+      the deferred volume, not in vol I.
 CT2. Sjoerd Crans, *A tensor product for Gray-categories*, Theory
       and Applications of Categories 5 (1999), 12-69.
-      <http://www.tac.mta.ca/tac/volumes/1999/n2/n2.pdf>.  THE
-      Gray-tensor universal property on strict polygraphs: lax
-      bifunctors classified by morphisms out of the tensor.  Supplies
-      (T4) of the FX Cellular Tensor (lifted to admissible profiles
-      via BKS sconing).
+      <http://www.tac.mta.ca/tac/volumes/1999/n2/n2.pdf>.  Gray-tensor
+      universal property scoped to **Gray-categories** (strict, single-
+      sort).  Lifting it to sort-stratified dependent profiles is the
+      hard part FX's (T4) target attempts; Crans does not do that
+      lift.
 CT3. Richard Steiner, *Omega-categories and chain complexes*,
       Homology, Homotopy and Applications 6 (2004), 175-200.
-      Extends Crans 1999 to ω-categories via the chain-complex side;
-      supplies the explicit chain-complex Gray-tensor formulas
-      needed for Lean mechanization at every dimension.
+      Extends Crans 1999 to **ω-categories** via the chain-complex
+      side; supplies background monoidal machinery on strict
+      ω-categories, not on sort-stratified DEPENDENT profiles.
 CT4. Maaike Zwart, Dan Marsden, *No-go theorems for distributive
-      laws*, LICS 2019, `arXiv:1812.09515`.  Categorical no-go
+      laws*, LICS 2019, `arXiv:1811.06460`.  Categorical no-go
       catalogue: probability × powerset (Varacca-Winskel 2006),
       triple no-go for probability × powerset × state, generalized
       framework.  Supplies the no-go inventory that (T7) of the FX
-      Cellular Tensor discharges structurally via capability meet
-      `= ⊥`.
+      Cellular Tensor cross-references for **explicit rejection** of
+      colliding extensions (not silent capability-meet collapse).
 CT5. Daniel Almeida, *A monoidal category of dependently sorted
       algebraic theories II: categorical aspects*, [Alm26],
-      **IN PREPARATION** as of 2026.  Will eventually supply
+      **IN PREPARATION** as of 2026.  Planned to supply
       functoriality of ⊗ on GAT-morphisms, closed monoidal structure
       on GAT, pentagon coherence, hexagon coherence, the
-      Mod(A⊗B, Fam) ≅ Mod(A, Mod(B)) equation.  FX does NOT wait for
-      vol II — the FX Cellular Tensor (§3.0.7) ships the universal
-      property NOW for admissible profiles via Crans-Steiner +
-      BKS lift, with the admissibility restriction making vol II's
-      heavier machinery unnecessary in the FX setting.
+      Mod(A⊗B, Fam) ≅ Mod(A, Mod(B)) equation.  Whether FX's lift
+      attempt or vol II ships first is an open race; until either
+      lands, both results are intended-but-unshipped.
 
 ### Loubaton's papers (primary)
 
