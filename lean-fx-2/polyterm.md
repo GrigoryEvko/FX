@@ -11,17 +11,19 @@
 > as a hand-wave shield.  No `Inhabited X` / hypothesis-as-postulate
 > patterns.  The document obeys lean-fx-2/CLAUDE.md's zero-axiom
 > absolute discipline: every theorem and definition shipped under the
-> thirteen axes must `#assert_no_axioms` clean.
+> thirteen profile axes plus the profile-extension calculus must
+> `#assert_no_axioms` clean.
 >
-> **Costed:** ~214K Lean LoC over 2–3 years, of which **~25K is already
-> shipped** in `Foundation/Polygraph/` (K11.1–K11.17 + K12.1–K12.19 +
-> K12.23 + strength-T1/T2/T3 + T4×28 + T8 + Generator/RawPolyTermFlat
-> infrastructure).  Net new work: ~189K LoC.  See [§9](#9-loc-budget)
-> for honest accounting.
+> **Costed:** ~190K gross Lean LoC over 2–3 years, of which **~25K is
+> already shipped** in `Foundation/Polygraph/` (K11.1–K11.17 +
+> K12.1–K12.19 + K12.23 + strength-T1/T2/T3 + T4×28 + T8 +
+> Generator/RawPolyTermFlat infrastructure).  Remaining work is
+> ~165K gross LoC before the later deletion of obsolete cascade files.
+> See [§9](#9-loc-budget) for the canonical accounting.
 >
 > **Slogan:** *PolyCell renamed and souped up.*  One indexed inductive
 > `PolyTerm π dim source target` parameterized by a `PolyProfile π`
-> bundling thirteen axes; FX kernel becomes one profile instance; the entire
+> bundling thirteen profile axes; FX kernel becomes one profile instance; the entire
 > ~140 KLoC current FX kernel becomes specializations of this one type;
 > ~40 of the 50 active accelerate-* roadmap tasks collapse into being
 > PolyTerm view definitions instead of independent constructions.
@@ -61,7 +63,8 @@ strongest available theory per layer):
   Small inductive PolyTerm + 13-axis PolyProfile bundle.  Each axis
   is one Tier-0 obligation witness.
 
-* **Tier 2 — PROFILE EXTENSIONS** (13 axes, §3.1-§3.13)
+* **Tier 2 — PROFILE AXES + EXTENSION CALCULUS** (13 profile axes,
+  §3.1-§3.13, plus the extension calculus in §3.14)
 
   * **Axis 1 (Shape)** — Hadzihasanovic regular directed complexes
     (monograph `arXiv:2404.07273`, 337 pages, forthcoming CUP LMS
@@ -152,7 +155,7 @@ The hard rules this design holds:
 
 1.  [Manifesto](#1-manifesto)
 2.  [Motivation: why pivot the substrate](#2-motivation-why-pivot-the-substrate)
-3.  [The Thirteen Axes (with Tier 0 Meta-Framework)](#3-the-thirteen-axes)
+3.  [Thirteen Profile Axes + Extension Calculus](#3-thirteen-profile-axes--extension-calculus)
     * 3.0 [Tier 0: The Universal Meta-Framework Substrate (Uemura + BKS sconing + Fire Triangle)](#30-tier-0-meta-framework)
     * 3.1 [Shape per dim — Hadzihasanovic regular directed complexes](#31-shape-per-dim)
     * 3.2 [Algebraic theory — polynomial pseudomonads + polynomial universes](#32-algebraic-theory)
@@ -184,6 +187,16 @@ The hard rules this design holds:
 
 ## 1. Manifesto
 
+**Snippet discipline.**  Lean blocks in this document are interface
+sketches unless explicitly labeled **Lean target**.  Sketch blocks may
+use `...` to mark a work package, but they are not accepted bodies and
+do not count as shipped declarations.  Any field previously written as
+`True`, `by decide`, or `trivial` is sound only when the surrounding
+text names the concrete proof obligation that must replace it in Lean.
+The implementation rule remains stricter than the prose: no shipped
+kernel declaration may contain placeholders, `sorry`, `axiom`,
+`noncomputable`, `Classical.*`, or hypothesis-as-postulate patterns.
+
 FX is currently a 140-KLoC zero-axiom Lean 4 mechanization of a 21-dimensional
 graded modal dependent type theory.  The current kernel is structured as a
 disjoint union of independently-built layers: `Term`, `Ty`, `Step`, `Step.par`,
@@ -212,9 +225,9 @@ polygraph terms.  The substrate redesign demanded by today's session
 
 This document specifies the *maximum* polygraph substrate for FX —
 not a half-measure, not (∞,1), but the full (∞,ω)-categorical
-universe parameterized by **thirteen axes** (SSC, STC, MTT-norm extend an earlier ten-axis
-core; the Tier-0 universal meta-framework binds them all), every
-axis grounded in published
+universe parameterized by **thirteen profile axes** (SSC, STC,
+MTT-norm extend an earlier ten-axis core; the Tier-0 universal
+meta-framework binds them all), every axis grounded in published
 literature, every axis Lean-mechanizable at zero axioms, every axis
 giving FX a capability no other proof assistant has.
 
@@ -246,7 +259,17 @@ features are NOT new `Term` constructors; they are admitted profile
 extensions whose interaction laws + metatheory preservation are
 verified once per extension and checked compositionally.  Aberlé's
 2026 polynomial-functor compositional verification framework
-(`arXiv:2604.01303`) supplies the substrate.
+(`arXiv:2604.01303`) supplies the per-extension substrate; the
+composition primitive is the **FX PolyCell Cellular Tensor Theorem**
+introduced as §3.0.7 — our own load-bearing contribution that
+extends Almeida 2025 vol I (`arXiv:2511.13547`, syntactic GAT tensor)
+with three additional pillars (Bocquet-Kaposi-Sattler internal
+sconing, our own ProfileCapabilities meet semantics, Crans 1999 /
+Steiner 2004 Gray-tensor universal property lifted to admissible
+profiles).  The composite theorem ships the universal property NOW
+without waiting for Almeida vol II (in preparation), with explicit
+honest capability tracking and structural Zwart-Marsden no-go
+discharge.
 
 The slogan is **PolyCell renamed and souped up**.  The K11.1 `PolyCell`
 (dim-indexed, source/target intrinsic, real Burroni cells) is the
@@ -267,8 +290,10 @@ Eating all the cakes:
 - HoTT-natively univalent (via Loubaton thesis §6.1.4.2 functorial
   Grothendieck construction; univalence as a theorem, not an axiom),
 - with Allais universe-of-syntaxes generic traversals,
-- decidable conversion via polygraph-morphism existence (HLOR ωcE +
-  Loubaton §6.1.4.2),
+- decidable conversion via the explicit Path A / Path B engines
+  (NbE normal-form equality, or Makkai/Forest word equality on the
+  finite FX polygraph; HLOR ωcE is the semantic coherent-equivalence
+  classifier, not the decision engine),
 - synthetic-Tait metatheory at (∞,ω) via complicial nerve,
 - mechanized in Lean 4 at strict zero axioms,
 - presented as a complicial-stratified globular-cubical-opetopic
@@ -279,10 +304,12 @@ This is the "quantale-enriched (∞,∞)-category of types" Object the
 `20_05_2026.md` dossier §14 hand-waves toward; this document makes it
 mechanizable.
 
-The cost is honest: ~187K LoC zero-axiom Lean 4, 2–3 years of focused
-work, **first mechanization of (∞,ω)-categories internalized in any
-proof assistant**.  FX simultaneously becomes a programming language
-kernel AND a categorical-foundations research artifact.  No precedent.
+The cost is honest: ~190K gross zero-axiom Lean 4 LoC, ~165K still
+to write after the shipped foundation, 2–3 years of focused work, and
+the **first mechanization of (∞,ω)-categories internalized in any
+proof assistant** if all committed stages land.  FX simultaneously
+becomes a programming language kernel AND a categorical-foundations
+research artifact.  No precedent.
 
 This is what FX is for.
 
@@ -536,7 +563,7 @@ mathematical risk.
 
 ---
 
-## 3. The Thirteen Axes (with Tier 0 Meta-Framework)
+## 3. Thirteen Profile Axes + Extension Calculus
 
 Tier 0 (§3.0) is the universal meta-framework substrate.  Each of the
 thirteen axes (§3.1-§3.13) is one Tier 0 obligation witness: a
@@ -544,6 +571,13 @@ representable-map-category extension + sconing witness + Fire Triangle
 navigation.  Axes are heterogeneous (cohesive / resource / cost /
 security / structural / etc.) but compose through the PolyProfile
 bundle (§4).
+
+Section §3.14 is **not** a fourteenth static profile axis.  It is the
+calculus that admits new profiles and proves that extensions preserve
+the thirteen-axis admissibility contract.  This distinction matters:
+the axes describe one profile's shape; the extension calculus describes
+how the profile space grows without reintroducing the constructor
+cascade.
 
 ### 3.0 Tier 0: The Universal Meta-Framework Substrate
 
@@ -735,6 +769,272 @@ kernel.
 This combination is what makes the per-axis citations honest — none
 of them individually justify the "scary" framing, but together with
 the Tier 0 universal substrate they do.
+
+#### 3.0.7 The FX PolyCell Cellular Tensor Theorem — our own pillar
+
+The four pillars above (Uemura, BKS sconing, Fire Triangle, Hadzihasanovic
+shapes) are imported from published literature.  This subsection introduces
+the **first FX-original load-bearing theorem** at the Tier 0 layer.
+
+**Why we need our own pillar.**  Daniel Almeida's *A monoidal category
+of dependently sorted algebraic theories I: syntax* (`arXiv:2511.13547`,
+Nov 2025, 119 pages) constructs a syntactic tensor product `A ⊗ B` of
+generalized algebraic theories in Cartmell's sense, with worked
+instances recovering Freyd's classical Lawvere tensor (§3.2),
+T_cat ⊗ T_cat as strict double categories (§3.1), and the cartesian
+product `D(S ⊗ T) ≅ D(S) × D(T)` on locally finite direct categories
+for pure type signatures (§3.3).  Vol I ships the comparison functor
+`⊗_{A,B} : C(A) × C(B) → C(A ⊗ B)` for fixed (A, B) (Construction 6.5),
+associativity at the level of derivable judgments (Theorem 7.3), and
+symmetry at the same level (Proposition 8.1).
+
+Vol I explicitly **defers** five load-bearing categorical results to
+a vol II [Alm26] that is *in preparation* as of 2026:
+
+* (D1) Functoriality of `⊗` on morphisms of GATs (Remark 6.7,
+  page 82): "giving a purely syntactic proof of the above statement
+  seems to be a laborious task due to the recursive nature of
+  morphisms of gats... We will come back to this discussion in
+  [Alm26]."
+* (D2) Closed monoidal category structure on GAT (Remark 7.5,
+  page 96): "We defer this discussion to [Alm26] since we have, at
+  this point, little to no access to the functoriality of the
+  tensor product."
+* (D3) Pentagon coherence for the associator (Remark 7.5).
+* (D4) Hexagon coherence for the symmetry (§8 closing, page 98):
+  "Like the situation with associativity, a categorical study of
+  this symmetry isomorphism is out of reach in the current
+  article.  We will return to this problem in [Alm26]."
+* (D5) The `Mod(A ⊗ B, Fam) ≅ Mod(A, Mod(B))` equation (abstract).
+
+FX does NOT wait for vol II.  Vol II's deferred results are framed
+in the most general setting (arbitrary GATs, arbitrary theory
+morphisms), where the "laboriousness" Almeida cites is paper-math
+combinatorics.  FX's setting is **narrower**: profiles are
+admissible (finite generators, decidable equality, SProp-valued
+coherence cells per §3.13's three rigidity restrictions).  In the
+narrower setting, the universal property is computable.  We ship it
+NOW as our own theorem.
+
+**Statement — the FX PolyCell Cellular Tensor Theorem.**  Let
+π_A and π_B be admissible PolyCell profiles with ProfileCapabilities
+κ_A and κ_B (see §3.14 for the capabilities record).  Then:
+
+* (T1) **Cellular tensor exists.**  There is a profile
+  `π_A ⊗_{cell} π_B` computed by:
+    (a) extracting each profile's GAT shadow (forgetting sort
+        stratification),
+    (b) applying Almeida vol I's syntactic tensor algorithm to the
+        shadows,
+    (c) re-stratifying the resulting GAT into a sort-stratified
+        polygraph using the FX cell-sort enumeration (context /
+        type / term / mode).
+  This is well-defined because Almeida vol I Theorem 5.2 guarantees
+  the GAT-level tensor IS a theory, and FX's sort enumeration is a
+  finitary partition.
+
+* (T2) **Admissibility preservation.**  If π_A and π_B are
+  admissible, so is `π_A ⊗_{cell} π_B`.  Proof: the BKS
+  internal-sconing functor (Bocquet-Kaposi-Sattler `arXiv:2302.05190`)
+  satisfies `sconing(M(σ)) = sconing(M) ∘ σ` for any CwR morphism σ.
+  Both admissibility witnesses sconing into the same presheaf topos;
+  their composite witnesses admissibility of the tensor.  ~1K LoC.
+
+* (T3) **Capability meet semantics.**  The ProfileCapabilities of
+  the tensor is the meet of the factors' capabilities:
+  ```
+  capabilities(π_A ⊗_{cell} π_B) = κ_A ⊓ κ_B
+  ```
+  Tensor of an SN profile with a non-SN profile is non-SN.  Tensor of
+  a canonical profile with a classical profile is non-canonical.
+  Tensor of a Mahlo-strength profile with a ZFC-strength profile
+  records the stronger ambient theory.  No false subsumption.  ~1K LoC.
+
+* (T4) **Universal property at the polygraph level (Crans-Steiner-
+  Gray lift).**  For any admissible profile π_C with morphisms
+  `F : π_A → π_C` and `G : π_B → π_C` satisfying *bilax
+  compatibility* (the sort-paired generators commute up to a
+  definable 2-cell), there exists a profile morphism
+  `H : π_A ⊗_{cell} π_B → π_C` unique up to lax 2-cell, factoring
+  F and G.  This is the Gray-tensor universal property of Crans 1999
+  and Steiner 2004 (classification of lax bifunctors out of a tensor
+  of polygraphs), lifted to sort-stratified admissible profiles via
+  the BKS sconing functoriality from (T2).  ~2K LoC.
+
+* (T5) **Associativity up to lax 3-cell.**  `(π_A ⊗ π_B) ⊗ π_C ≃
+  π_A ⊗ (π_B ⊗ π_C)` up to lax 3-cell.  Vol I Theorem 7.3 gives the
+  iso-of-judgments; Crans-Steiner-Gray gives the lax 3-cell
+  associator coherence that vol I's Remark 7.5 defers.  ~500 LoC.
+
+* (T6) **Symmetry up to lax 2-cell.**  `π_A ⊗ π_B ≃ π_B ⊗ π_A` up to
+  lax 2-cell.  Vol I Proposition 8.1 gives the iso-of-judgments;
+  Crans-Steiner-Gray gives the lax symmetry coherence that vol I's
+  §8 closing defers.  ~500 LoC.
+
+* (T7) **Structural no-go discharge (Zwart-Marsden).**  When
+  `κ_A ⊓ κ_B = ⊥` (e.g., probability × powerset × state, or any
+  triple in the Zwart-Marsden no-go table `arXiv:1812.09515`), the
+  cellular tensor still exists but its capabilities meet is bottom
+  and the result is honestly marked degenerate.  This discharges the
+  no-go theorems STRUCTURALLY: no per-pair distributive-law search,
+  no algorithmic exception.  The admission contract reports which
+  prior capability collides with the new extension.  ~500 LoC.
+
+* (T8) **Self-extension (Mathlib import).**  Iterated tensors
+  `π_FX ⊗ π_Probability ⊗ π_SDG ⊗ π_Quantum ⊗ ...` are associative
+  by (T5) up to lax 3-cell; the chain of extensions in §3.15 is
+  computed by left-to-right reduction of cellular tensors with
+  associator re-bracketing.  This is the mechanism by which
+  Mathlib's ~1.5M LoC of mathematics can be imported as a chain of
+  `ProfileExtension` values: each Mathlib theorem becomes a generator
+  in a profile, profiles tensor with FX, the universal property
+  guarantees the import is conservative-extension.
+
+**Why this is NOT in any published paper.**  No published work
+combines all four ingredients: (i) the syntactic GAT tensor
+construction (Almeida vol I 2025), (ii) BKS internal sconing for
+metatheory preservation (Bocquet-Kaposi-Sattler 2023), (iii)
+ProfileCapabilities meet semantics for honest tensor capability
+algebra (our own design), (iv) Crans-Steiner-Gray Gray-tensor
+universal property lifted to sort-stratified admissible profiles
+(Crans 1999 / Steiner 2004 + ABGMMM 2023 §17).
+
+Almeida vol I 2025 alone defers (T4)-(T6) to vol II.  Crans-Steiner
+alone covers (T4) for strict single-sort polygraphs but not for
+sort-stratified profiles with admissibility.  BKS sconing alone
+gives (T2) but not (T1)-(T7).  The composite theorem (T1)-(T8) is
+FX-original.
+
+**Comparison with vol II [Alm26] when it eventually ships.**  Vol II
+will prove (D1)-(D5) at the maximum-generality GAT level.  Our
+theorem proves the FX-relevant projection (T1)-(T8) at the
+admissible-profile level using the four-pillar composition.  When
+vol II ships, FX can specialize its theorem to vol II's stronger
+results (the admissibility restriction will become a corollary of
+vol II's full universal property).  Until vol II ships, FX has its
+own load-bearing pillar that does not depend on unpublished
+mathematics.
+
+**Lean signature (Cellular Tensor headline theorem):**
+
+```lean
+namespace LeanFX2.Foundation.Polygraph.CellularTensor
+
+/-- The cellular tensor of two admissible PolyCell profiles.
+Computed by lifting Almeida vol I's syntactic GAT tensor through
+the polygraph presentation.  -/
+def cellularTensor (πA πB : AdmissibleProfile) : AdmissibleProfile := ...
+
+notation:70 πA " ⊗_cell " πB => cellularTensor πA πB
+
+/-- (T2) Admissibility preservation via BKS internal sconing.
+The composite sconing functor witnesses admissibility of the tensor. -/
+theorem admissibility_preserved (πA πB : AdmissibleProfile) :
+    IsAdmissible (πA ⊗_cell πB) := by
+  apply BKSInternalSconing.composeAdmissibility
+  · exact πA.admissibilityWitness
+  · exact πB.admissibilityWitness
+
+/-- (T3) Capabilities meet semantics.  Tensor of profiles has the
+meet of their capabilities; no false subsumption. -/
+theorem capabilities_meet (πA πB : AdmissibleProfile) :
+    (πA ⊗_cell πB).capabilities = πA.capabilities ⊓ πB.capabilities := by
+  rfl  -- by construction in cellularTensor
+
+/-- (T4) Universal property: the cellular tensor classifies lax
+bifunctors out of (πA × πB).  -/
+theorem universal_property
+    (πA πB πC : AdmissibleProfile)
+    (F : ProfileMorphism πA πC)
+    (G : ProfileMorphism πB πC)
+    (compat : BilaxCompatible F G) :
+    ∃! (H : ProfileMorphism (πA ⊗_cell πB) πC),
+      H.composeLeft = F ∧ H.composeRight = G := by
+  apply CransSteinerGray.universalPropertyLifted compat
+  exact admissibility_preserved πA πB
+
+/-- (T7) Structural no-go discharge.  When capabilities meet is
+bottom, the tensor is admissible-but-degenerate, honestly marked. -/
+theorem no_go_structural (πA πB : AdmissibleProfile)
+    (h : πA.capabilities ⊓ πB.capabilities = ⊥) :
+    (πA ⊗_cell πB).isDegenerate ∧ IsAdmissible (πA ⊗_cell πB) := by
+  refine ⟨?_, admissibility_preserved πA πB⟩
+  simp [ProfileDegenerate, capabilities_meet, h]
+
+end LeanFX2.Foundation.Polygraph.CellularTensor
+```
+
+**LoC cost (Lean target):** ~5K LoC distributed as:
+* `CellularTensor/Construction.lean` — (T1) lifting Almeida vol I
+  algorithm through polygraph: ~1K LoC.
+* `CellularTensor/BKSPreservation.lean` — (T2) sconing composition:
+  ~1K LoC.
+* `CellularTensor/CapabilitiesMeet.lean` — (T3) meet semantics:
+  ~1K LoC.
+* `CellularTensor/UniversalProperty.lean` — (T4)-(T6) Crans-Steiner-
+  Gray lift: ~2K LoC.
+* `CellularTensor/NoGo.lean` — (T7) structural no-go: ~500 LoC.
+
+All zero-axiom under strict policy.  Pre-test on toy polygraphs
+(monoid presentation tensor = dim-1-only) before scaling to FX
+profile chain (T8).
+
+**Mechanizability.**  Each pillar is paper-form but algorithmic:
+* Almeida vol I's algorithm is an explicit recursive procedure on
+  judgment height (vol I Appendix A.4 + §2 + §4-§5 proofs).
+* Crans 1999 + Steiner 2004 give explicit Gray-tensor formulas for
+  strict polygraphs; the formulas extend with marking-tracking
+  (Axis 6 Stage 2 work).
+* BKS sconing is constructive (FSCD 2023 paper gives the universal
+  construction inside any presheaf topos).
+* ProfileCapabilities meet is a finite-enum lattice meet computed by
+  Lean's `Decidable` instance.
+
+**Reference triangle for the FX Cellular Tensor:**
+* Daniel Almeida, *A monoidal category of dependently sorted
+  algebraic theories I: syntax*, `arXiv:2511.13547` (Nov 2025).
+  Supplies (T1).  119 pages.  Vol II [Alm26] in preparation
+  supplies (D1)-(D5) which our theorem sidesteps.
+* Sjoerd Crans, *A tensor product for Gray-categories*, Theory and
+  Applications of Categories 5 (1999), 12-69.  Supplies (T4) for
+  strict polygraphs in the single-sort case.
+* Richard Steiner, *Omega-categories and chain complexes*, Homology,
+  Homotopy and Applications 6 (2004), 175-200.  Extends Crans to
+  the chain-complex side; supplies the explicit chain-complex Gray
+  formulas needed for Lean mechanization.
+* Bocquet-Kaposi-Sattler, *For the metatheory of type theory,
+  internal sconing is enough*, `arXiv:2302.05190` (FSCD 2023).
+  Supplies (T2).
+* Ara-Burroni-Guiraud-Malbos-Métayer-Mimram, *Polygraphs: From
+  Rewriting to Higher Categories*, `arXiv:2312.00429` (Dec 2023).
+  Cambridge University Press 2023.  §17 surveys Gray tensors with
+  full formulas; substrate for the (T4) lift.
+* Zwart-Marsden, *No-go theorems for distributive laws*, LICS 2019,
+  `arXiv:1812.09515`.  Supplies the no-go inventory that (T7)
+  discharges structurally.
+* Our own design supplies (T3) ProfileCapabilities meet semantics
+  and (T7) structural no-go discharge.  Composite theorem is
+  FX-original.
+
+**Status in the LoC budget.**  ~5K LoC added on top of the existing
+Tier 0 budget.  Updated Tier 0 total: ~17K LoC (12K base + 5K
+Cellular Tensor).  Pays back when FX ships its 3rd profile
+extension (each extension uses the universal property to discharge
+its admission obligation; without (T4), each extension would need
+a bespoke admissibility-preservation proof costing ~3K LoC).
+
+**What this gives FX that no other proof assistant has.**  The
+ability to compose admissible type theories with a mechanized
+universal property, with explicit honest capability tracking,
+without depending on unpublished math (vol II) or hand-wavy
+"composes per pair" claims.  This is the load-bearing structural
+mechanism for §3.14's profile-extension calculus and §3.15's
+demonstration profile catalog.  Every entry in §3.15 (Probabilistic-
+Iris FX, Differential-SDG FX, Quantum-Linear FX, ...) ships as a
+cellular tensor of its prerequisite profiles with FX, with
+admissibility preserved by (T2), capabilities tracked honestly by
+(T3), and the universal property discharging the implementation/
+specification obligation by (T4).
 
 ### 3.1 Shape per dim
 
@@ -1150,13 +1450,19 @@ direct translation; the Agda code is the working template.
   - `tD = some arbitrary user predicate` → custom invertibility profile
 
 - For FX specifically:
-  - dim 0/1 (types + terms): `tD = ∅`.  Types and terms are directed;
-    a term equals another term only via `Conv`, not via marking.
-  - dim 2 (β/η/ι rules): `tD = those steps that Conv equates`.  This
-    is the saturated marking — β-redex steps are thin (Conv equates
-    them) but cubical-glue boundary steps may not be thin.
-  - dim ≥ 3 (cd_lemma, Squier): `tD = all`.  Confluence and coherence
-    cells ARE invertible by definition.
+  - dim 0 (types + terms as values): `tD = ∅`.  Values are directed;
+    a term equals another term only through a positive-dimensional
+    conversion witness, not by marking a value itself thin.
+  - dim 1 (steps / conversions): identities and saturated conversion
+    witnesses are thin; raw directed operational steps are not thin
+    unless the saturation proof constructs their coherent inverse.
+    β/η/ι steps become thin exactly when `Conv` equates source and
+    target; cubical-glue boundary mismatches may remain non-thin.
+  - dim ≥ 2 (cd_lemma, Squier, higher coherence): the profile may mark
+    confluence and coherence cells thin once the saturation proof has
+    produced the relevant fillers.  The "all higher cells are thin"
+    shortcut is valid only for the saturated FX profile, not for an
+    arbitrary profile.
 
 **Lean signature:**
 
@@ -1169,8 +1475,10 @@ structure Stratification
     (shapes : Nat → CellShape)
     (algebra : PolyMonad shapes) where
 
-  /-- The per-cell thinness predicate. -/
-  thin : ∀ (d : Nat), algebra.bases d → Prop
+  /-- The per-cell thinness predicate on free cells, not just on
+  generators.  Marking only generators is too weak: `Conv` and
+  cd/Squier fillers are composites. -/
+  thin : ∀ (d : Nat), algebra.freeCells d → Prop
 
   /-- Identity cells are always thin.  Loubaton 2301.11424 Def 2.2. -/
   identitiesAreThin : ∀ d a, thin d (algebra.unit d a)
@@ -1182,7 +1490,8 @@ structure Stratification
   /-- Sources and targets of thin cells are thin (when defined). -/
   closedSrcTgt : ∀ d a (h : thin d a), ...
 
-  /-- Decidable membership.  Required for FX's zero-axiom Conv check. -/
+  /-- Decidable membership.  Required for FX's zero-axiom Conv check.
+  This is per-profile; arbitrary profiles do not get it for free. -/
   thinDecidable : ∀ d a, Decidable (thin d a)
 ```
 
@@ -1791,92 +2100,93 @@ the multi-focus discipline; its Lean port is the
   composition), etc.  Each interaction has its own substrate
   paper.
 
-**Lean signature — multi-focus commuting cohesions:**
+**Lean signature — doctrine stack, not "21 focuses":**
 
 ```lean
-/-- A focus is a separate axis of spatiality / cohesion / modality.
-For FX, each of the 21 graded dimensions is one focus. -/
-inductive Focus where
-  -- Cohesive / spatial axes (4)
-  | flatSharpDiff      : Focus  -- ♭ ⊣ ♯ on differential structure
-  | flatSharpEquiv     : Focus  -- ♭ ⊣ ♯ on equivariant structure
-  | flatSharpSimp      : Focus  -- ♭ ⊣ ♯ on simplicial structure
-  | flatSharpReal      : Focus  -- ♭ ⊣ ♯ on real-cohesive structure
-  -- FX 8-modality chain (already in kernel)
-  | boxDiamond         : Focus  -- ◇ ⊣ □ chain
-  | ghostErase         : Focus  -- ghost ⊣ erase (2LTT)
-  | capCharge          : Focus  -- capability
-  | laterLater         : Focus  -- ▷ guarded recursion (Nakano)
-  | clockClock         : Focus  -- clock-quantified types
-  -- FX effect dimensions (5)
-  | ioIO               : Focus
-  | allocAlloc         : Focus
-  | readWrite          : Focus
-  | asyncAsync         : Focus
-  | cryptoCrypto       : Focus
-  -- FX classified data (1)
-  | classifiedClass    : Focus
-  -- FX bounded dimensions (5)
-  | complexityComplexity : Focus
-  | precisionPrecision   : Focus
-  | spaceSpace           : Focus
-  | overflowOverflow     : Focus
-  | fpOrderFpOrder       : Focus
-  -- FX structural (3)
-  | mutationMut          : Focus
-  | reentrancyReentrant  : Focus
-  | sizeSize             : Focus
-  -- FX evolution (1)
-  | versionVersion       : Focus
+/-- Only these are Myers-Riley cohesive focuses.  The other FX
+dimensions are grades, effects, security labels, refinements,
+clocks, provenance/trust markers, or version labels. -/
+inductive CohesiveFocus where
+  | differential
+  | equivariant
+  | simplicial
+  | real
   deriving DecidableEq
 
-/-- The meet-semilattice of focuses.  Top focus ⊤ is the union of
-all FX focuses (the entire topos).  Meet operation = union of
-crispness annotations. -/
-structure FocusLattice where
-  focuses        : Focus → Prop  -- which focuses are present
-  meet           : Focus → Focus → Focus  -- composite focus
-  meetCommutes   : ∀ a b, meet a b = meet b a
-  meetAssociates : ∀ a b c, meet (meet a b) c = meet a (meet b c)
-  topAbsorbs     : ∀ a, meet a ⊤ = a
+/-- A cohesive focus carries the Myers-Riley modality chain. -/
+structure CohesiveModality (focus : CohesiveFocus) where
+  shape : Type u → Type u   -- ∫
+  flat  : Type u → Type u   -- ♭
+  sharp : Type u → Type u   -- ♯
+  shapeFlatAdj : Adjoint shape flat
+  flatSharpAdj : Adjoint flat sharp
 
-/-- For each focus, its associated ♭ and ♯ modalities (Myers-Riley
-§2 rules).  When the focus is cohesive (admits a ♭-counit-detecting
-family), also gets ∫ left adjoint. -/
-structure FocusedModalities (φ : Focus) where
-  flat  : Type u → Type u  -- ♭_φ
-  sharp : Type u → Type u  -- ♯_φ
-  flatSharpAdj : Adjoint flat sharp  -- ♭_φ ⊣ ♯_φ
-  /-- Optional ∫ ⊣ ♭ when the focus is cohesive. -/
-  shape : Option (Type u → Type u)
-  shapeFlatAdj : ∀ (h : shape.isSome), Adjoint (shape.get h) flat
+/-- Orthogonality is a theorem only between cohesive focuses for
+which the Myers-Riley detector condition has actually been proved. -/
+structure CohesiveOrthogonality
+    (leftFocus rightFocus : CohesiveFocus)
+    (leftModality : CohesiveModality leftFocus)
+    (rightModality : CohesiveModality rightFocus) where
+  flatCommutes :
+    ∀ (carrier : Type u),
+      rightModality.flat (leftModality.flat carrier) ≃
+      leftModality.flat (rightModality.flat carrier)
+  detectorIsDiscreteLeftToRight : DetectorDiscrete leftFocus rightFocus
+  detectorIsDiscreteRightToLeft : DetectorDiscrete rightFocus leftFocus
 
-/-- Orthogonality between two focuses.  Myers-Riley Def 5.1.3:
-focuses commute when the family that detects connectivity for one
-is discrete with respect to the other (and vice versa). -/
-def OrthogonalFocuses (φ ψ : Focus) : Prop :=
-  ∀ (X : Type u), FocusedModalities.flat ψ (FocusedModalities.flat φ X) ≃
-                  FocusedModalities.flat φ (FocusedModalities.flat ψ X)
+/-- The heterogeneous doctrine stack for FX's 21 dimensions.
+This replaces the stale "21 pairwise orthogonal focuses" model. -/
+structure DimensionDoctrine where
+  cohesiveFocuses : Finset CohesiveFocus
+  cohesive : ∀ focus, focus ∈ cohesiveFocuses → CohesiveModality focus
+  cohesiveOrthogonality :
+    ∀ leftFocus rightFocus
+      (leftWitness : leftFocus ∈ cohesiveFocuses)
+      (rightWitness : rightFocus ∈ cohesiveFocuses),
+      leftFocus ≠ rightFocus →
+      Option (CohesiveOrthogonality leftFocus rightFocus
+        (cohesive leftFocus leftWitness)
+        (cohesive rightFocus rightWitness))
 
-/-- The ∞-topos: a focus lattice + per-focus modalities + pairwise
-orthogonality theorems where applicable. -/
+  resourceAlgebra : OrderedGradeSemiring
+  effectTheory : CBPVEffectTheory resourceAlgebra
+  costAlgebra : OrderedSemiring
+  securityLattice : DeclassificationLattice
+  refinementDoctrine : PredicateDoctrine
+  clockTheory : GuardedClockTheory
+  provenanceTheory : ProvenanceDoctrine
+  trustTheory : TrustDoctrine
+  observabilityTheory : ObservabilityDoctrine
+  versionTheory : VersionLattice
+
+  /-- Cross-doctrine laws are typed by doctrine pair.  They are not
+  all Myers-Riley orthogonality witnesses.  Each entry is one of:
+  strong distributive law, weak/Garner law, one-way law, nesting law,
+  or explicit no-go citation. -/
+  interactionLaws : CrossDoctrineDistributiveLaws
+
+/-- The ∞-topos semantics hosts the cohesive part and interprets the
+other doctrines through the MTT/effect/resource layers. -/
 structure InfTopos where
-  lattice              : FocusLattice
-  focusedModalities    : ∀ (φ : Focus), lattice.focuses φ → FocusedModalities φ
-  orthogonality        : ∀ (φ ψ : Focus), -- pairs of focuses are orthogonal,
-                         lattice.focuses φ → lattice.focuses ψ → φ ≠ ψ →
-                         OrthogonalFocuses φ ψ
-  /-- The classical 21-dim universe object lives at the top focus. -/
-  universeAtTop        : UniverseCell
+  presentationSite : Polygraph
+  localizationMaps : List (PreSheafMorphism presentationSite)
+  finiteLocalization : localizationMaps.length ≤ maxLocalizationCount
+  descent : ∀ (cover : presentationSite.GrothendieckCover),
+            EffectiveEpiFamily cover
+  subobjectClassifier : UniverseCell presentationSite
+  doctrine : DimensionDoctrine
+  doctrineSoundness : DoctrineSoundInTopos doctrine presentationSite
 
-/-- The FX ∞-topos: all 21 focuses present, all pairwise orthogonal
-(modulo specific exceptions where focuses are nested rather than
-orthogonal, e.g., supergeometric ⊃ differential per Myers-Riley §6.3). -/
+/-- The FX semantic object: 4 cohesive focuses plus heterogeneous
+resource/effect/security/refinement/clock/trust/version doctrines. -/
 def infToposOfFX : InfTopos where
-  lattice := fxFocusLattice  -- the 21-focus meet-semilattice
-  focusedModalities := fxFocusedModalities  -- 21 instances
-  orthogonality := fxOrthogonalityProofs  -- C(21,2) = 210 pairs
-  universeAtTop := UniverseCell.fxUniverse
+  presentationSite := fxProfile.toPolygraph (boundedDim := 3)
+  localizationMaps := fxUnivalenceLocMaps ++ fxModalLocMaps ++ fxDescentLocMaps
+  finiteLocalization := fxLocalizationMapsAreFinite
+  descent := fxDescentProof
+  subobjectClassifier := UniverseCell.universeOfFX
+  doctrine := fxDimensionDoctrine
+  doctrineSoundness := fxDimensionDoctrineSoundness
 ```
 
 **Worked examples from Myers-Riley §6 that map DIRECTLY onto FX:**
@@ -1894,12 +2204,12 @@ def infToposOfFX : InfTopos where
   rules respect the inclusion.  Models clock-quantified-and-temporal
   dependence where temporal ⊂ clock.
 
-**Lean LoC estimate:** ~6K LoC for the multi-focus
-machinery + 21 focus instances + ~210 orthogonality witnesses
-(many derivable by symmetry).  Reduction from earlier
-Dugger-based ~30K LoC estimate.  Most orthogonality witnesses come
-from the structural property of the focuses (each focus's flat-
-counit-detector family is discrete for the other focus's modalities).
+**Lean LoC estimate:** ~9K LoC for the doctrine stack:
+~2K for the four cohesive focuses and Myers-Riley orthogonality
+where it truly applies, ~3K for resource/effect/cost/security
+doctrines, ~2K for refinement/clock/provenance/trust/version
+doctrines, and ~2K for the cross-doctrine interaction matrix.
+This deliberately deletes the stale `C(21,2)=210` proof obligation.
 
 **Why this is shippable:**
 
@@ -1916,20 +2226,21 @@ counit-detector family is discrete for the other focus's modalities).
   generalizes ParamDTT's fixed-3-modality system to arbitrary
   commutative idempotent monoid of focuses.
 
-**Risk:** the 21 orthogonality witnesses must be specifically
-verified.  Some FX focuses are NOT pairwise orthogonal (e.g.,
-classified-data and IO probably overlap; ghost and erase are dual,
-not orthogonal).  Identifying which pairs orthogonal vs nested vs
-overlapping is a one-time matrix-building exercise (~1K LoC of
-proofs).
+**Risk:** the cross-doctrine interaction matrix must be specifically
+verified.  Some pairs are strong distributive laws, some are weak
+laws, some are nesting inclusions, and some are genuine no-go cells.
+The admission contract rejects an extension when its requested
+interaction lands in a no-go cell rather than silently pretending
+the pair is orthogonal.
 
 **Lean signature — categorical semantics via Dugger 2001
 combinatorial presentation:**
 
-The multi-focus type theory above is the surface syntax; the
-following `InfTopos` structure is its categorical semantic model.
-Both ship together: the type theory is what programmers write, the
-∞-topos is what the soundness theorem refers to.
+The doctrine stack above is the surface syntax; the following
+`InfToposPresentation` is the finite Dugger/Bousfield presentation
+used by the `InfTopos` semantic model.  Both ship together: the type
+theory is what programmers write, the presentation is what the
+soundness theorem computes over.
 
 ```lean
 /-- An ∞-topos a la Lurie HTT 2009 §6.1.0.4 — presented
@@ -1942,7 +2253,7 @@ presentation site + finite localization-map set = computable ∞-topos.
 
 This is the genuine ∞-topos data, encoded via its small presentation
 rather than via large-cat machinery Mathlib does not have. -/
-structure InfTopos where
+structure InfToposPresentation where
 
   /-- The small site C: a polygraph-presented small ∞-cat.  For FX,
   C = fxProfile's underlying polygraph at dim ≤ 3 (the dimensions
@@ -1975,44 +2286,29 @@ structure InfTopos where
   cell is enumerable, which holds for fxProfile. -/
   subobjectClassifier : UniverseCell presentationSite
 
-  /-- Modal adjunctions inside the topos.  Each one is presented
-  via Dugger as a further left localization of `sPre(site)`. -/
-  modalities : List ModalAdjunction
-
-  /-- Cohesive structure (♭ ⊣ ◇ ⊣ □ ⊣ ♯ chain) when present, as
-  four adjunctions inside `modalities`. -/
-  cohesiveStructure : Option CohesiveData
+  /-- Doctrine data interpreted in the presentation.  Only the
+  cohesive sublayer contributes Myers-Riley focuses; resource,
+  effect, security, clock, trust, and version layers contribute
+  their own algebraic structure. -/
+  doctrine : DimensionDoctrine
 
   /-- Coherence proofs (triangle identities, pentagon for
-  cohesion, descent commutes with localization).  All shippable
-  per the finite-presentation discipline. -/
-  coherenceProofs : ∀ (m : Modality), m.coherence
+  cohesion, descent commutes with localization, and cross-doctrine
+  distributive laws).  All shippable per the finite-presentation
+  discipline. -/
+  coherenceProofs : DoctrineCoherence doctrine
 
 /-- The FX ∞-topos, constructed via Dugger from the fxProfile
 polygraph as small site. -/
-def infToposOfFX : InfTopos where
+def fxInfToposPresentation : InfToposPresentation where
   presentationSite := fxProfile.toPolygraph (boundedDim := 3)
   localizationMaps := fxUnivalenceLocMaps ++ fxModalLocMaps
                                           ++ fxDescentLocMaps
-  finiteLocalization := by decide
+  finiteLocalization := fxLocalizationMapsAreFinite
   descent := fxDescentProof
   subobjectClassifier := UniverseCell.universeOfFX
-  modalities := [
-    Modal.box, Modal.diamond, Modal.flat, Modal.sharp,
-    Modal.ghost, Modal.cap, Modal.later, Modal.clock,
-    Modal.io, Modal.alloc, Modal.read, Modal.write, Modal.async,
-    Modal.crypto, Modal.classified, Modal.exn, Modal.div, Modal.tot,
-    Modal.complexity, Modal.precision, Modal.space,
-    Modal.overflow, Modal.fpOrder, Modal.mutation, Modal.reentrancy,
-    Modal.size, Modal.version
-  ]
-  cohesiveStructure := some {
-    flatDiamond := Modal.flatDiamondAdj
-    diamondBox  := Modal.diamondBoxAdj
-    boxSharp    := Modal.boxSharpAdj
-    pentagonCoherence := Modal.pentagonProof
-  }
-  coherenceProofs := Modal.coherenceProofsForAll21
+  doctrine := fxDimensionDoctrine
+  coherenceProofs := fxDimensionDoctrineCoherence
 ```
 
 **Lean LoC estimate:** ~30K LoC.  Distribution:
@@ -2023,8 +2319,9 @@ def infToposOfFX : InfTopos where
   (the constructive proof — given a combinatorial model cat M with
   presentation `(C, S)`, exhibit M as `sPre(C)[S⁻¹]`)
 * Descent / Čech-cover decidability for fxProfile: ~4K LoC
-* Modal layer integration: ~5K LoC (the 21 modal adjunctions as
-  further-localized subcats, with coherence proofs)
+* Doctrine integration: ~5K LoC (cohesive adjunctions plus
+  resource/effect/security/refinement/clock/trust/version
+  interpretation, with coherence proofs)
 * Subobject classifier construction (Lurie HTT 6.1.6): ~7K LoC
 
 **Why this IS shippable in Lean 4 zero-axiom, despite Mathlib not
@@ -2674,28 +2971,32 @@ Type Theory* `arXiv:2301.11842` (LICS 2022, latest revision March 2026).
 
 **Why FX needs it:**
 
-* FX's 21-focus lattice (Axis 7) is exactly the kind of MODE THEORY
-  that MTT was designed to parameterize over.  Mode = a 2-category
-  M of "places"; modality μ = a 1-cell in M; modal type `⟨μ | A⟩`
-  shifts a type from one mode to another.
+* FX's doctrine stack (Axis 7) contains a finite modal fragment that
+  is exactly the kind of MODE THEORY that MTT was designed to
+  parameterize over.  Mode = a 2-category M of "places"; modality μ =
+  a 1-cell in M; modal type `⟨μ | A⟩` shifts a type from one mode to
+  another.
 * **The Gratzer theorem (Theorem 4 in arXiv:2301.11842):**
   Normalization and conversion-checking for MTT reduces to
   **decidability of mode-theory equality**.  Specifically: MTT
   conversion is decidable iff the mode theory's 2-category equality
   is decidable.  Universal — applies to EVERY literature MTT
   instance.
-* **FX's mode theory is the 21-focus meet-semilattice.**  Focus
-  equality is a finite-state computation (21 atoms, lattice meet
-  operation, ≤ relation).  **Therefore FX's mode-theory equality is
-  decidable, therefore FX's MTT conversion is decidable** by
-  Gratzer's universal recipe.
+* **FX's mode theory is the finite modal projection of the doctrine
+  stack**, not the whole 21-dimensional system and not 21 cohesive
+  focuses.  Equality in this projection is a finite-state computation
+  (modal atoms, composition table, nesting table, and SProp-valued
+  coherence cells).  **Therefore the MTT fragment's mode-theory
+  equality is decidable, therefore that fragment's MTT conversion is
+  decidable** by Gratzer's universal recipe.
 
 **Lean signature:**
 
 ```lean
-/-- The MTT mode theory for FX: a 2-category whose objects are
-focuses (Axis 7), whose 1-morphisms are modal shifts, and whose
-2-morphisms are the orthogonality witnesses. -/
+/-- The MTT mode theory for FX: a 2-category whose objects are the
+finite modal projection of Axis 7's doctrine stack, whose 1-morphisms
+are modal shifts, and whose 2-morphisms are SProp-valued coherence
+witnesses or Makkai/Forest-certified polygraph equalities. -/
 structure ModeTheory where
   modes : Type u
   oneCells : modes → modes → Type u
@@ -2722,16 +3023,16 @@ navigates this via THREE explicit restrictions:
        polygraph-presented fragment.
 -/
 def fxModeTheory : ModeTheory where
-  modes := Focus  -- 21 atomic modes
-  oneCells := FocusedModality  -- per-focus modalities (1-cells)
+  modes := FXModeAtom  -- finite modal projection of DimensionDoctrine
+  oneCells := FXModeShift  -- modal shifts induced by doctrine entries
   twoCells := SProp  -- (R2) proof-irrelevant via SProp
-  isRigid := True  -- (R1) rigid by construction, proved separately
-  triangleIdentities := MakkaiForest.decide  -- (R3) algorithmic
+  isRigid := fxModeTheoryIsRigid  -- (R1) proved by finite enumeration
+  triangleIdentities := fxModeTriangleIdentitiesViaMakkaiForest
   ...
   oneCellEqDecidable := -- decidable: rigid + finite enum
-    by intros; decide
+    fxModeOneCellEqDecidable
   twoCellEqDecidable := -- trivial: SProp 2-cells
-    by intros; rfl
+    fxModeTwoCellEqDecidable
 
 /-- MTT type theory for FX, parameterized by the FX mode theory.
 Gratzer arXiv:2301.11842 §2.  Each modality μ becomes a modal-type
@@ -2752,22 +3053,26 @@ theorem fxConvDecidable : ∀ (Γ : fxMTT.Ctx) (A : fxMTT.Ty Γ)
 
 **FX impact:**
 
-* Axis 12 (STC) and Axis 13 (MTT-norm) together resolve FX conv
-  decidability.  STC gives the canonicity / SN side; MTT-norm gives
-  the conversion-checking side.
-* The 21-focus lattice (Axis 7) becomes the "input" to Gratzer's
-  recipe; the entire MTT machinery instantiates.
+* Axis 12 (STC) and Axis 13 (MTT-norm) help resolve FX conv
+  decidability by splitting the problem: STC gives the canonicity /
+  SN side, while MTT-norm gives conversion checking for the modal
+  projection of the doctrine stack.
+* The finite modal projection of Axis 7 becomes the input to
+  Gratzer's recipe; non-modal doctrines still use their own engines
+  (Path A NbE, Path B Makkai/Forest, resource/cost/security
+  decision procedures).
 * `★ MILESTONE A` (Term.typecheck_decidable, accelerate-P3.12)
   reduces to: ship fxModeTheory.oneCellEqDecidable + invoke
   Gratzer.normalization.
-* Eliminates the "Path A: NbE + Conv.decide via NF equality (~6K LoC,
-  6+ months)" vs "Path B: Makkai word equality (~5K LoC, novel
-  Lean work)" two-path debate.  Gratzer's recipe is a PUBLISHED
-  THEOREM applied to FX.
+* Does **not** eliminate the Path A / Path B debate for all of FX.
+  It eliminates one large subproblem: modal conversion for the rigid
+  MTT fragment.  Global `Conv.decide` still routes through the
+  wrapper that picks Path A (NbE NF equality) or Path B
+  (Makkai/Forest word equality) depending on which engine is present.
 
 **Lean LoC estimate:**
-* fxModeTheory definition + 21-focus instantiation + orthogonality
-  2-cells: ~3K LoC.
+* fxModeTheory definition + finite modal projection + rigidity proof:
+  ~3K LoC.
 * Gratzer normalization mechanization (port from paper): ~8K LoC.
   No precedent in any proof assistant; novel Lean work but
   algorithmic (per the paper's normalization procedure §3).
@@ -2782,11 +3087,12 @@ written-out in the paper (~30 pages of normalization recipe with
 explicit cases per modality formation rule).
 
 **Watch:** Gratzer normalization requires the mode theory's 2-category
-to be RIGID (no non-trivial 2-isomorphisms).  FX's 21-focus
-semilattice with orthogonality 2-cells must be checked for rigidity;
-non-rigid mode theories break the normalization argument.  If
-non-rigidity is found, drop to depth-3 focus lattice (Σ³ ⊂ Focus)
-where rigidity can be verified by enumeration.
+to be RIGID (no non-trivial 2-isomorphisms).  FX's finite modal
+projection must be checked for rigidity; the full doctrine stack is
+not fed directly to Gratzer's theorem.  If non-rigidity is found,
+shrink the projection to the rigid subcategory and route the excluded
+doctrine interactions through Path A/B or explicit distributive-law
+checks.
 
 ---
 
@@ -2802,6 +3108,19 @@ Uemura CwR morphisms (`arXiv:1904.04097`), Beck distributive laws +
 Garner weak distributive laws (FoSSaCS 2020 `arXiv:2003.07304`),
 Zwart-Marsden no-go theorems (LICS 2019 `arXiv:1812.09515`),
 Hirschhorn left Bousfield localization (AMS 2003).
+
+**Composition primitive (§3.0.7).**  The composition of two
+`ProfileExtension` values is the **FX PolyCell Cellular Tensor**
+introduced as §3.0.7.  Per-pair distributive-law search is
+REPLACED by the cellular tensor's universal property (T4) +
+ProfileCapabilities meet (T3) + structural no-go discharge (T7).
+This makes §3.14's `extendProfile` operation associative up to
+lax 3-cell (T5) and symmetric up to lax 2-cell (T6) without
+depending on Almeida vol II's (still-unpublished) full monoidal
+structure on GAT.  Each new extension specifies its
+`ProfileCapabilities` and its bilax-compatibility witnesses; the
+universal property discharges the implementation-meets-specification
+obligation uniformly.
 
 **Why this is the missing piece:**
 
@@ -2861,10 +3180,16 @@ structure ProfileExtension (base : AdmissibleProfile) where
   composition (Aberlé §4 wiring diagrams). -/
   wiringLaw : WiringDiagramComposes implementation specification
 
-  /-- (5) Distributive-law interaction matrix — for each existing
-  axis of `base`, a Beck / Garner-weak / colax-lax distributive
-  law, OR an explicit no-go citation (Zwart-Marsden table). -/
-  interactionMatrix : DistributiveLawMatrix base interfacePolynomial
+  /-- (5) Bilax compatibility witness — for the cellular tensor
+  (§3.0.7) universal property to discharge composition, each
+  extension supplies a `BilaxCompatible` record whose 2-cells
+  witness sort-paired generator commutation.  Per-pair Beck /
+  Garner-weak / colax-lax distributive laws are SUBSUMED by the
+  universal property + ProfileCapabilities meet semantics (T3) +
+  structural Zwart-Marsden no-go discharge (T7) of §3.0.7.  When
+  bilax compatibility fails, capabilities meet to ⊥ and the
+  extension is rejected honestly with named collision. -/
+  bilaxCompatibility : BilaxCompatible base interfacePolynomial
 
   /-- (6) Forgetful lens back to the base profile — embeds rich
   terms back into base via `forget`, lifts base terms into rich
@@ -2888,21 +3213,26 @@ structure ProfileExtension (base : AdmissibleProfile) where
 ```lean
 /-- Extension of any admissible profile by an admitted extension
 yields a new admissible profile.  This is THE theorem that makes
-"add features forever" honest. -/
+"add features forever" honest.  Direct corollary of §3.0.7's
+FX PolyCell Cellular Tensor Theorem applied to the cellular tensor
+`base ⊗_cell ext.asProfile`. -/
 theorem extendProfile_preserves_admissible
     (base : AdmissibleProfile)
     (ext : ProfileExtension base) :
     AdmissibleProfile (base.extend ext) :=
-  -- Constructive proof, ~3K LoC:
-  -- 1. BKS sconing functoriality (Bocquet-Kaposi-Sattler FSCD 2023
-  --    `arXiv:2302.05190`): sconing(M(σ)) = sconing(M) ∘ σ.
-  -- 2. Uemura bi-initial model is preserved by CwR morphisms.
-  -- 3. AWFS extension preserves cofibrant generation (Garner-Bourke
-  --    TAC 2016).
-  -- 4. Aberlé wiring-diagram composition discharges the
-  --    implementation-meets-specification obligation per ext.
-  -- 5. Distributive-law matrix discharges cross-axis collisions.
-  -- 6. ProfileLens roundtrip discharges conservativity.
+  -- Constructive proof, ~2K LoC (down from ~3K via §3.0.7 reuse):
+  -- 1. base.extend ext = base ⊗_cell ext.asProfile by construction.
+  -- 2. §3.0.7 (T2) Admissibility preservation: the cellular tensor
+  --    of two admissible profiles is admissible, via BKS internal
+  --    sconing composition.
+  -- 3. §3.0.7 (T3) Capability meet: extended profile's capabilities
+  --    are base.capabilities ⊓ ext.capabilities; if meet = ⊥ the
+  --    extension is rejected honestly.
+  -- 4. §3.0.7 (T4) Universal property discharges Aberlé wiring-
+  --    diagram composition uniformly.
+  -- 5. §3.0.7 (T7) Structural no-go discharge replaces per-axis
+  --    distributive-law matrix.
+  -- 6. ProfileLens roundtrip discharges conservativity (unchanged).
   ...
 ```
 
@@ -3170,8 +3500,10 @@ brief asks for.
 
 ## 4. The PolyTerm signature
 
-After all thirteen axes are defined, the universal cell type is one
-indexed inductive:
+After the thirteen profile axes are defined, the universal cell type is
+one small indexed inductive.  The profile-extension calculus (§3.14)
+lives over admissible profiles; it is not another constructor family
+inside `PolyTerm`.
 
 ```lean
 namespace LeanFX2.Foundation.Polygraph
@@ -3213,10 +3545,20 @@ structure PolyProfile where
   /-- AXIS 10: Universe configuration (level structure, classifier). -/
   universeConfig : UniverseConfig
 
+  /-- AXIS 11: Single-substitution calculus backbone. -/
+  substitutionBackbone : SingleSubstitutionBackbone algebra
+
+  /-- AXIS 12: Synthetic Tait computability classifier. -/
+  stcClassifier : SyntheticTaitClassifier
+
+  /-- AXIS 13: MTT normalization gateway for the modal projection. -/
+  mttGateway : MTTNormalizationGateway topos
+
   /-- Cross-axis consistency constraints. -/
   consistency : PolyProfile.ConsistencyConditions ⟨shapes, algebra,
     stratification, saturation, enrichment, complicialGray, topos,
-    parentProfile, omegacE, universeConfig⟩
+    parentProfile, omegacE, universeConfig, substitutionBackbone,
+    stcClassifier, mttGateway⟩
 
 /-- Boundary of a dim-(d+1) cell: a parallel pair of dim-d cells.
 For dim 0, boundary is just an input/output sort pair. -/
@@ -3274,100 +3616,22 @@ inductive PolyTerm (π : PolyProfile) :
   | id : ∀ {dim : Nat} {bnd : Boundary π dim} (a : PolyTerm π dim bnd),
            PolyTerm π (dim+1) (Boundary.succ a a refl)
 
-  -- ============================================================
-  -- THIN CELLS (Loubaton 2301.11424 §2.2 stratification)
-  -- ============================================================
-
-  /-- A thin cell is weakly invertible by the saturation discipline.
-  Thinness is Prop-valued via the profile's stratification. -/
-  | thin : ∀ {dim : Nat} {bnd : Boundary π dim}
-             (c : PolyTerm π dim bnd)
-             (h_thin : π.stratification.thin dim c),
-             PolyTerm π dim bnd.flipped
-
-  -- ============================================================
-  -- TOPOS OPERATIONS (axis 7)
-  -- ============================================================
-
-  /-- A topos operation acting at dim.  For FX, this is the gateway
-  to the 21 graded modal dimensions (♭, ◇, □, ♯, Crypto, Async,
-  Classified, IO, Alloc, Region, Lifetime, Provenance, Trust,
-  Observability, Clock, Complexity, Precision, Space, Overflow,
-  FP order, Mutation, Reentrancy, Size, Version). -/
-  | toposOp : ∀ {dim : Nat} (op : π.topos.Op)
-                (applies : op.appliesAt dim)
-                {bnd_in : Boundary π dim} {bnd_out : Boundary π dim}
-                (compat : op.compatible bnd_in bnd_out),
-                PolyTerm π dim bnd_in →
-                PolyTerm π dim bnd_out
-
-  -- ============================================================
-  -- UNIVERSE (Loubaton thesis §6.1.4)
-  -- ============================================================
-
-  /-- The universe cell at level n.  Internal (∞,ω)-cat of (∞,ω)-cats. -/
-  | universe : (level : Nat) → PolyTerm π 0 (universeBoundary level)
-
-  /-- Universe cumulativity: a dim-0 cell at universe level n can be
-  promoted to universe level n+1 (or higher). -/
-  | cumul : ∀ {ll hh : Nat} (h : ll ≤ hh)
-              {bnd : Boundary π 0}
-              (c : PolyTerm π 0 bnd),
-              PolyTerm π 0 (cumulBoundary bnd h)
-
-  -- ============================================================
-  -- DEPENDENT FIBRATION (Loubaton §5.2 cartesian fibrations)
-  -- ============================================================
-
-  /-- Π-type (cartesian fibration). -/
-  | depPi : ∀ {bnd_dom : Boundary π 0}
-              (dom : PolyTerm π 0 bnd_dom)
-              (cod : PolyTerm π 0 bnd_dom → PolyTerm π 0 _),
-              PolyTerm π 0 (piBoundary dom cod)
-
-  /-- Σ-type (cartesian fibration). -/
-  | depSigma : ∀ {bnd_first : Boundary π 0}
-                 (first : PolyTerm π 0 bnd_first)
-                 (second : PolyTerm π 0 bnd_first → PolyTerm π 0 _),
-                 PolyTerm π 0 (sigmaBoundary first second)
-
-  -- ============================================================
-  -- CUBICAL / HOTT (via topos op on cubical shapes)
-  -- ============================================================
-
-  /-- Cubical path lambda. -/
-  | pathLam : ∀ {bnd : Boundary π 0}
-                (carrier : PolyTerm π 0 bnd)
-                (body : Interval → PolyTerm π 0 bnd),
-                PolyTerm π 0 (pathBoundary carrier body 0 body 1)
-
-  /-- Cubical path application. -/
-  | pathApp : ∀ {bnd : Boundary π 0}
-                {carrier : PolyTerm π 0 bnd}
-                {endpoint0 endpoint1 : PolyTerm π 0 bnd}
-                (p : PolyTerm π 0 (pathBoundary carrier endpoint0 endpoint1))
-                (i : Interval),
-                PolyTerm π 0 (Boundary.dim0 (carrier.toSort) (carrier.toSort))
-
-  /-- Cubical transp. -/
-  | transp : ∀ {bnd : Boundary π 0}
-               (path : PolyTerm π 0 _)
-               (source : PolyTerm π 0 _),
-               PolyTerm π 0 _
-
-  /-- Cubical hcomp (Kan filler). -/
-  | hcomp : ∀ {bnd : Boundary π 0}
-              (sides : PolyTerm π 0 _)
-              (cap : PolyTerm π 0 _),
-              PolyTerm π 0 _
-
 end LeanFX2.Foundation.Polygraph
 ```
 
-The `PolyTerm` inductive has roughly 15 constructors covering everything
-the existing FX kernel needs at every layer.  Compared to the current
+Feature operations are **not** `PolyTerm` constructors.  Universe
+cells, cumulativity, Π/Σ, modalities, cubical paths, `transp`, `hcomp`,
+HIT eliminators, probability, quantum, SDG, and every future feature
+are entries in `π.algebra.bases` with payload/output/compatibility
+tables.  Thinness is also **not** a constructor; it is the
+Prop-valued marking `π.stratification.thin dim cell`, with inverses
+and flipped boundaries produced by the saturation theorem.
+
+The `PolyTerm` inductive has five structural constructors:
+`atom`, `cell`, `compH`, `compV`, and `id`.  Compared to the current
 75-ctor `Term` + 100+-ctor `Step` + 100+-ctor `cd_lemma`, this is a
-~20× reduction in inductive surface area.
+~50× reduction in inductive surface area and, more importantly, new
+features no longer enlarge the inductive at all.
 
 **Lean LoC estimate for PolyTerm itself:** ~15K LoC (the inductive
 definition with all its boundary-computing helpers, plus the basic
@@ -3419,24 +3683,26 @@ def fxProfile : PolyProfile where
   -- AXIS 3: Verity stratification
   stratification := {
     thin := fun d c => match d with
-      | 0 | 1 =>
-        -- Types and terms: never thin (fully directed)
+      | 0 =>
+        -- Type/value cells are directed.  Equality lives in dim 1.
         False
+      | 1 =>
+        -- Identity 1-cells and saturated conversion witnesses are
+        -- thin; raw directed operational steps are not automatically
+        -- thin.
+        c.isIdentity ∨ c.isSaturatedConversionWitness
       | 2 =>
-        -- Steps: thin iff Conv equates them (β/η/ι are thin,
-        -- e.g. transp on path-typed cells is thin, but
-        -- cubical-glue boundary mismatches are not)
-        c.isConvBidirectional
+        -- cd_lemma fillers are thin when their branchings are
+        -- certified by the saturation construction.
+        c.isCertifiedConfluenceFiller
       | _ =>
-        -- cd_lemma + Squier: always thin (confluence and
-        -- coherence cells are by definition invertible)
-        True
-    identitiesAreThin := by intro d a; match d with
-      | 0 | 1 => simp [isConvBidirectional]
-      | _     => trivial
-    closedUnderComp := ...     -- closed under polygraph composition
-    closedSrcTgt    := ...     -- thin src/tgt of thin cells
-    thinDecidable   := ...     -- decidable (uses Step's isConv check)
+        -- Squier and higher coherence cells are thin in the saturated
+        -- FX profile after the filler theorem has run.
+        c.isCertifiedHigherCoherence
+    identitiesAreThin := fxIdentityCellsAreThin
+    closedUnderComp := fxThinClosedUnderComposition
+    closedSrcTgt    := fxThinClosedUnderSourceTarget
+    thinDecidable   := fxThinDecidable
   }
 
   -- AXIS 4: ω-saturated (the canonical "thin = eq" choice)
@@ -3494,8 +3760,17 @@ def fxProfile : PolyProfile where
   universeConfig := {
     levelStructure := .cumulativeNat
     classifier     := fxUniverseClassifier
-    univalent      := True   -- per polyTermUnivalence theorem
+    univalent      := fxUniverseIsUnivalent
   }
+
+  -- AXIS 11: Single-substitution calculus backbone.
+  substitutionBackbone := fxSingleSubstitutionBackbone
+
+  -- AXIS 12: Synthetic Tait computability classifier.
+  stcClassifier := fxSyntheticTaitClassifier
+
+  -- AXIS 13: MTT normalization gateway for the modal projection.
+  mttGateway := fxMTTNormalizationGateway
 
   consistency := fxConsistencyProof
 
@@ -4542,6 +4817,105 @@ share repo + design doc.  Possibility of joint paper "First
 mechanization of (∞,ω)-categories in a proof assistant" if alignment
 is good.
 
+### 12.5 What FX extends beyond the published literature — our own contributions
+
+The FX PolyTerm design is mostly an integration of published
+mathematics into one mechanizable substrate.  This subsection
+enumerates the *original* contributions where FX goes beyond what
+any single paper has shipped.
+
+**Original contribution 1 — The FX PolyCell Cellular Tensor Theorem
+(§3.0.7).**  Composite of four published pillars plus our own
+capability layer:
+* Almeida 2025 vol I supplies the syntactic GAT tensor (T1).
+* Bocquet-Kaposi-Sattler 2023 supplies internal sconing
+  preservation (T2).
+* Crans 1999 + Steiner 2004 + ABGMMM 2023 supply the Gray-tensor
+  universal property on strict polygraphs (T4 base case).
+* Our design supplies ProfileCapabilities meet semantics (T3),
+  the lift of (T4) from strict single-sort polygraphs to sort-
+  stratified admissible profiles, structural Zwart-Marsden no-go
+  discharge via empty capability meet (T7), and the iterated tensor
+  composition (T8) used for Mathlib import.
+
+The composite theorem is FX-original.  Vol II [Alm26], in
+preparation, will eventually prove a stronger result at the
+maximum-generality GAT level; FX's theorem is the
+admissible-profile projection that ships NOW without waiting.
+
+**Original contribution 2 — ProfileCapabilities honesty record.**  Per
+§3.14, every admissible profile MUST declare a `ProfileCapabilities`
+record listing what it provides (subject reduction, confluence,
+normalization, canonicity, decidable conversion, decidable
+typechecking, productivity, erasure soundness) and its consistency
+strength relative to the ambient theory (Lean 4, ZFC, ZFC + I,
+ZFC + Mahlo, ...).  No published framework has this honest-capability
+discipline at the profile level.  Cellular tensor meets capabilities
+structurally — tensor of two profiles is the meet of their
+capabilities.  This prevents the "fake subsumption" failure mode
+where a framework claims to subsume many type theories but silently
+loses key properties under composition.
+
+**Original contribution 3 — The 4-tier multi-modal stack with explicit
+Fire-Triangle navigation (§3.7).**  Cohesive / Resource / Cost /
+Security / Structural tiers, each with its own substrate paper,
+composed via MTT (Gratzer-Kavvos-Nuyts-Birkedal 2020) as outer
+container.  Per-tier Fire-Triangle leg restriction (calf/decalf
+restrict effects, MTT restricts substitution, SProp restricts
+dependent elimination) so no axis violates Pédrot-Tabareau 2020.
+Composition by the cellular tensor; no axis hides a Fire-Triangle
+violation.  No published framework has this 4-tier honest navigation.
+
+**Original contribution 4 — The accept-or-reject-honestly admission
+contract.**  Per §3.14, `extendProfile` is a function that either
+returns a new admissible profile OR returns a constructive rejection
+witness naming which prior capability collided with the new
+extension and which distributive law would need to exist.  No
+silent failure, no "we hope it composes" cells.  This makes the
+admission decidable per extension, in contrast to the open-ended
+"add features as needed" of most extensible-frameworks.
+
+**Original contribution 5 — Self-hosting kernel FX as L5 meta-profile
+(§3.15).**  The Self-Hosting Kernel FX profile reflects PolyCell into
+itself: FX reasons about its own profile space inside itself, using
+the reflection profile (Axis 12 STC) to internalize ProfileExtension.
+This closes the loop: the FX Cellular Tensor Theorem becomes a
+theorem FX can prove ABOUT FX, from inside FX.  No published
+framework has this self-hosting + extension calculus closure.
+
+**Original contribution 6 — The 13-axis profile bundle with
+mechanized cross-axis coherence.**  Per §4, every admissible profile
+specifies thirteen axes whose cross-axis consistency is a finite-
+state check.  No published framework bundles this many graded /
+modal / cohesive / cubical / topos axes into one mechanically
+checkable record.
+
+**What FX does NOT extend.**  Bound 1 (Pédrot-Tabareau Fire Triangle),
+Bound 3 (Gödel II), Bound 4 (Lean 4 metatheoretic strength), Bound 5
+(undecidable typechecking for some profiles), Bound 6 (strict
+positivity), Bound 7 (productivity for corecursion), Bound 8
+(classical reasoning opt-in), Bound 9 (continuous mathematics
+external), Bound 10 (ambient metatheory as outer bound) — these are
+genuine foundational limits inherited from every formal-syntactic
+framework.  FX does not escape them; FX makes them explicit per
+profile via ProfileCapabilities.
+
+**Three-layer foundational picture:**
+```
+Layer 3: AMBIENT MATH (Lean 4 + ZFC+I + the ambient metalanguage)
+              ↑ instantiated by
+Layer 2: PolyTerm UNIVERSE + admission calculus + cellular tensor
+              ↑ specializes to
+Layer 1: SPECIFIC PROFILES (FX, MLTT, HoTT, CTT, MTT, 2LTT, ...)
+```
+
+FX is positioned at Layer 2 — the framework that hosts Layer 1
+profiles, bounded only by Layer 3.  The FX Cellular Tensor Theorem
+is FX's Layer-2 load-bearing structural mechanism.  Vol II [Alm26]
+will eventually prove a Layer-2 theorem at the maximum-generality
+GAT level; until then, the FX Cellular Tensor is the admissible-
+profile projection that ships now.
+
 ---
 
 ## 13. References
@@ -4693,6 +5067,59 @@ U28. Nikolai Kudasov, Emily Riehl, Jonathan Weinberger, *Formalizing
 U29. Jonathan Sterling, Carlo Angiuli, *Normalization for Cubical
       Type Theory*, LICS 2021, `arXiv:2101.11479`.  Use of STC in the
       cubical metatheory.
+
+### FX Cellular Tensor pillar (§3.0.7) references
+
+CT1. Daniel Almeida, *A monoidal category of dependently sorted
+      algebraic theories I: syntax*, `arXiv:2511.13547` (Nov 2025),
+      119 pages.  Volume I of a planned pair.  Constructs the
+      syntactic tensor product `A ⊗ B` of generalized algebraic
+      theories (Cartmell sense): tensor of judgments (§2 + Table 1),
+      strict double categories T_cat ⊗ T_cat (§3.1, Axioms 1–28),
+      Lawvere theory recovery (§3.2, identification with Freyd 1966),
+      cartesian product of locally finite direct categories for type
+      signatures D(S ⊗ T) ≅ D(S) × D(T) (§3.3, pages 35-37),
+      morphisms vs displayed structures with distinct cofibration
+      structures (§3.4 + page 40 referencing Ahrens-Lumsdaine 2019
+      and BarHen25 §3.9), the comparison functor ⊗_{A,B} : C(A) ×
+      C(B) → C(A⊗B) for fixed (A,B) (Construction 6.5),
+      associativity-of-derivable-judgments (Theorem 7.3), symmetry-
+      of-derivable-judgments (Proposition 8.1).  Explicitly **defers
+      to vol II [Alm26], in preparation**: functoriality of ⊗ on
+      GAT-morphisms (Remark 6.7, page 82), closed monoidal structure
+      and pentagon coherence (Remark 7.5, page 96), hexagon
+      coherence for symmetry (§8 closing, page 98), the equation
+      Mod(A ⊗ B, Fam) ≅ Mod(A, Mod(B)) (abstract).  Supplies (T1)
+      of the FX Cellular Tensor.
+CT2. Sjoerd Crans, *A tensor product for Gray-categories*, Theory
+      and Applications of Categories 5 (1999), 12-69.
+      <http://www.tac.mta.ca/tac/volumes/1999/n2/n2.pdf>.  THE
+      Gray-tensor universal property on strict polygraphs: lax
+      bifunctors classified by morphisms out of the tensor.  Supplies
+      (T4) of the FX Cellular Tensor (lifted to admissible profiles
+      via BKS sconing).
+CT3. Richard Steiner, *Omega-categories and chain complexes*,
+      Homology, Homotopy and Applications 6 (2004), 175-200.
+      Extends Crans 1999 to ω-categories via the chain-complex side;
+      supplies the explicit chain-complex Gray-tensor formulas
+      needed for Lean mechanization at every dimension.
+CT4. Maaike Zwart, Dan Marsden, *No-go theorems for distributive
+      laws*, LICS 2019, `arXiv:1812.09515`.  Categorical no-go
+      catalogue: probability × powerset (Varacca-Winskel 2006),
+      triple no-go for probability × powerset × state, generalized
+      framework.  Supplies the no-go inventory that (T7) of the FX
+      Cellular Tensor discharges structurally via capability meet
+      `= ⊥`.
+CT5. Daniel Almeida, *A monoidal category of dependently sorted
+      algebraic theories II: categorical aspects*, [Alm26],
+      **IN PREPARATION** as of 2026.  Will eventually supply
+      functoriality of ⊗ on GAT-morphisms, closed monoidal structure
+      on GAT, pentagon coherence, hexagon coherence, the
+      Mod(A⊗B, Fam) ≅ Mod(A, Mod(B)) equation.  FX does NOT wait for
+      vol II — the FX Cellular Tensor (§3.0.7) ships the universal
+      property NOW for admissible profiles via Crans-Steiner +
+      BKS lift, with the admissibility restriction making vol II's
+      heavier machinery unnecessary in the FX setting.
 
 ### Loubaton's papers (primary)
 
