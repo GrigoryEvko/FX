@@ -1,5 +1,3 @@
-import LeanFX2.Confluence.RawCdLemma
-
 /-! # Confluence/RawDiamond — diamond + Church-Rosser at the raw level
 
 The diamond property and confluence at the raw level follow

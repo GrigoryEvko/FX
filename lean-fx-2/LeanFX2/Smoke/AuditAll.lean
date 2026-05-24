@@ -1,5 +1,4 @@
 import LeanFX2.Tools.AuditAll
-import LeanFX2.Smoke.AuditNamespace
 import LeanFX2.Smoke.ImportSurface
 
 /-! # Smoke/AuditAll - reviewer-facing audit entrypoint

@@ -2,10 +2,6 @@ import LeanFX2.Tools.DependencyAudit
 import LeanFX2.Tools.AuditGen
 import LeanFX2.Tools.StrictHarness
 import LeanFX2.Bridge
-import LeanFX2.Confluence.RawCd
-import LeanFX2.Confluence.RawCdLemma
-import LeanFX2.Confluence.RawCdRename
-import LeanFX2.Confluence.RawDiamond
 import LeanFX2.Confluence.RawParStarCong
 import LeanFX2.Confluence.PreEtaStarInversion
 import LeanFX2.Confluence.ParStarBridge

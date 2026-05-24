@@ -169,8 +169,6 @@ import LeanFX2.Reduction.ParRed
 import LeanFX2.Reduction.ConvCumulHomo
 import LeanFX2.Reduction.Cumul
 import LeanFX2.Reduction.CumulAllais
-import LeanFX2.Confluence.RawCd
-import LeanFX2.Confluence.RawCdRename
 import LeanFX2.Reducibility
 
 /-! # LeanFX2.Rich

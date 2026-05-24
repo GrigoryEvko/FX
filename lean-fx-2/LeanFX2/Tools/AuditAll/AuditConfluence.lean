@@ -1,12 +1,7 @@
 import LeanFX2.Tools.DependencyAudit
 import LeanFX2.Confluence.CanonicalForm
 import LeanFX2.Confluence.ConvTrans
-import LeanFX2.Confluence.RawCdLemma
-import LeanFX2.Confluence.RawDiamond
 import LeanFX2.Confluence.RawParStarCong
-import LeanFX2.Confluence.RawCdDominates
-import LeanFX2.Confluence.RawCdRename
-import LeanFX2.Confluence.RawCd
 import LeanFX2.Confluence.CdLemma
 import LeanFX2.Confluence.Diamond
 import LeanFX2.Confluence.ChurchRosser

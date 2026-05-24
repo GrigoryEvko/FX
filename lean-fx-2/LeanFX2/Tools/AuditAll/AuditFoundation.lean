@@ -13,7 +13,6 @@ import LeanFX2.Foundation.TyRenameInjective
 import LeanFX2.Foundation.Polygraph.Wellfounded
 import LeanFX2.Foundation.Polygraph.DecEq
 import LeanFX2.Foundation.Polygraph.FreeCategory
-import LeanFX2.Confluence.RawCd
 import LeanFX2.Reduction.RawParWeakenInv.Foundation
 
 namespace LeanFX2.Tools
