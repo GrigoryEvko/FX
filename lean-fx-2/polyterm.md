@@ -21,7 +21,7 @@
 >
 > **Slogan:** *PolyCell renamed and souped up.*  One indexed inductive
 > `PolyTerm π dim source target` parameterized by a `PolyProfile π`
-> bundling ten axes; FX kernel becomes one profile instance; the entire
+> bundling thirteen axes; FX kernel becomes one profile instance; the entire
 > ~140 KLoC current FX kernel becomes specializations of this one type;
 > ~40 of the 50 active accelerate-* roadmap tasks collapse into being
 > PolyTerm view definitions instead of independent constructions.
@@ -167,6 +167,8 @@ The hard rules this design holds:
     * 3.11 [Single-Substitution Calculus backbone (Kaposi-Xie + Allais Lean port)](#311-single-substitution-calculus)
     * 3.12 [Synthetic Tait Computability classifier (Istari STC + 2LTT-on-Lean)](#312-synthetic-tait-computability)
     * 3.13 [MTT normalization gateway (Gratzer + rigid mode theory)](#313-mtt-normalization-gateway)
+    * 3.14 [Profile Extension Calculus — the load-bearing addition (Aberlé + Bousfield + ∞-cosmos)](#314-profile-extension-calculus)
+    * 3.15 [Demonstration profiles — what the extension calculus enables](#315-demonstration-profiles)
 4.  [The PolyTerm signature](#4-the-polyterm-signature)
 5.  [FX kernel as one profile instance](#5-fx-kernel-as-one-profile-instance)
 6.  [Capabilities matrix](#6-capabilities-matrix)
@@ -222,12 +224,37 @@ categories + Bocquet-Kaposi-Sattler internal sconing + Pédrot-
 Tabareau Fire Triangle).  See §3.0 for the universal substrate that
 makes the framework genuinely scary AND mechanizable.
 
+**The deeper thesis — PolyTerm is a profile-extension calculus, not
+thirteen static axes.**  The thirteen axes describe the *shape* of
+any single admissible profile.  The **profile-extension calculus**
+(§3.14) describes the *space* of admissible profiles and the
+mechanism by which new features are admitted into it.  FX is the
+first admissible profile.  Every future feature — probability,
+differentiation, quantum, distributed protocols, scientific
+simulation, self-hosting — ships as a `ProfileExtension` satisfying
+the admission contract.  The headline theorem is:
+
+```lean
+theorem extendProfile_preserves_admissible
+    (base : AdmissibleProfile)
+    (ext : ProfileExtension base) :
+    AdmissibleProfile (base.extend ext)
+```
+
+This is the "extend at whim, inherit everything" mechanism.  New
+features are NOT new `Term` constructors; they are admitted profile
+extensions whose interaction laws + metatheory preservation are
+verified once per extension and checked compositionally.  Aberlé's
+2026 polynomial-functor compositional verification framework
+(`arXiv:2604.01303`) supplies the substrate.
+
 The slogan is **PolyCell renamed and souped up**.  The K11.1 `PolyCell`
 (dim-indexed, source/target intrinsic, real Burroni cells) is the
 skeleton.  The other twelve axes are the flesh.  At the end you have
 one inductive type `PolyTerm π dim source target` parameterized by a
 thirteen-field `PolyProfile π`, with FX kernel as one specific
-instance of the profile.
+instance of the profile — but *that profile is reached and grown by
+the extension calculus*, not assembled by hand.
 
 Eating all the cakes:
 - A graded (Atkey-McBride 2018 + Wood-Atkey 2022 corrected Lam rule),
@@ -2034,7 +2061,7 @@ fibration applied to the categorification of profile data.
 
 **Why FX needs it:**
 
-- A `PolyProfile` bundles all ten axes.  But different profile choices
+- A `PolyProfile` bundles all thirteen axes.  But different profile choices
   may DEPEND on each other: e.g. the choice of shape at dim n+1 may
   depend on which generators exist at dim n; the choice of saturation
   at dim 3 may depend on which β-rules fire at dim 2.
@@ -2057,7 +2084,7 @@ structure ProfileMorphism (π₁ π₂ : PolyProfile) where
   shapeHom         : ∀ d, π₁.shapes d ⟶ π₂.shapes d
   algebraHom       : PolyMonadHom π₁.algebra π₂.algebra
   stratificationHom : ∀ d a, π₁.stratification.thin d a → π₂.stratification.thin d (algebraHom.translate a)
-  -- … and so on for all ten axes …
+  -- … and so on for all thirteen axes …
 
 /-- The category of profiles. -/
 def ProfileCat : Category PolyProfile where
@@ -2385,6 +2412,33 @@ theorem polyTermUnivalence (π : PolyProfile) (n : Nat) (A B : Ty (Ty.universe n
 * `Step.eqType` preserves canonicity at the kernel level via the
   operational reduction; the structural side (Aberlé-Spivak) is
   itself canonicity-preserving.
+
+**Three-tiered univalence discipline (Cavallo-Höfer 2026 warning):**
+
+Cavallo-Höfer *Univalence without function extensionality*
+`arXiv:2605.00812` (May 2026) proves that **categorical univalence
+does NOT imply function extensionality**.  This means PolyTerm
+must distinguish three separate principles and never infer one
+from another:
+
+1. **Operational univalence** — FX's `Step.eqType` reduction rule.
+   This is the kernel-level fact `Conv (Ty.id Univ A B) (Ty.equiv
+   A B)`.  It is what FX programmers actually use.
+2. **Polynomial / categorical univalence** — the universe object
+   is subterminal in `Poly^Cart` (Aberlé-Spivak).  This is the
+   structural justification.
+3. **Consumer extensionality** — function extensionality,
+   propositional extensionality, transport laws.  These are what
+   *downstream code* depends on for actual proofs.
+
+**The danger:** a profile that establishes only (2) may *not*
+provide (3).  Each `ProfileExtension` MUST explicitly record which
+extensionality principles it provides, and `ProfileExtension.
+metatheoryWitness` must check that any extension claiming "I am
+univalent" specifies which tier.  The current `fxProfile` provides
+all three (Funext via `Step.eqArrow`, Univalence via
+`Step.eqType`, propext via `Step.eqProp`); future profiles may
+provide only subsets and must declare so.
 
 ---
 
@@ -2736,15 +2790,393 @@ where rigidity can be verified by enumeration.
 
 ---
 
+### 3.14 Profile Extension Calculus — the load-bearing addition
+
+**Reference:** C.B. Aberlé, *Compositional Program Verification with
+Polynomial Functors in Dependent Type Theory*, `arXiv:2604.01303`
+(Apr 2026, Agda-formalized).  Program interfaces as polynomial
+functors; implementations as Kleisli morphisms for the free monad;
+dependent polynomials as pre/post specifications; wiring diagrams as
+composition.  Plus the categorical machinery the calculus inherits:
+Uemura CwR morphisms (`arXiv:1904.04097`), Beck distributive laws +
+Garner weak distributive laws (FoSSaCS 2020 `arXiv:2003.07304`),
+Zwart-Marsden no-go theorems (LICS 2019 `arXiv:1812.09515`),
+Hirschhorn left Bousfield localization (AMS 2003).
+
+**Why this is the missing piece:**
+
+The previous thirteen axes describe what a profile *contains*.  They
+do not describe how a profile *grows*.  Without an extension
+calculus, every new feature is a hand-built `PolyProfile` instance —
+the cascade tax has moved from `Term` constructors into profile
+obligations rather than disappearing.
+
+The extension calculus turns "add a feature" from a 5–15K LoC
+artisanal proof effort into ONE structured obligation discharged
+against ONE generic admission theorem.  This is the mechanism that
+makes "expand at whim, inherit everything" honest rather than
+aspirational.
+
+**Reframing the thesis:**
+
+> PolyTerm is not a 13-axis object.  PolyTerm is a small kernel plus
+> a profile-extension calculus.  FX is the first admissible profile.
+> Every future feature — probability, differentiation, quantum,
+> distributed protocols, scientific simulation, self-hosting — ships
+> as a `ProfileExtension` satisfying the admission contract.  The
+> "thirteen axes" describe the *shape* of any single admissible
+> profile; the calculus describes the *space* of admissible
+> profiles.
+
+**Substrate — one obligation, six views:**
+
+A `ProfileExtension` is fundamentally a representable-map-category
+morphism `σ : base.signature → extended.signature` equipped with an
+algebraic weak factorization system (AWFS) extension over the
+existing rewrite system.  The six "fields" below are projections of
+this single mathematical object, not six independent obligations:
+
+```lean
+/-- A profile extension.  ONE categorical object (CwR morphism +
+AWFS extension) presented as SIX named projections so feature
+authors can populate each role separately. -/
+structure ProfileExtension (base : AdmissibleProfile) where
+  /-- (1) Aberlé-Spivak: the polynomial-functor interface added by
+  this extension.  Generators + their arities + their dependent
+  payloads. -/
+  interfacePolynomial : PolynomialInterface base.signature
+
+  /-- (2) Kleisli implementation for the free monad of the
+  interface — the actual reduction behavior of the new
+  generators. -/
+  implementation : KleisliImplementation interfacePolynomial
+
+  /-- (3) Dependent-polynomial specification — pre/post conditions
+  encoded as a dependent polynomial.  Refinement-type contracts at
+  the feature boundary. -/
+  specification : DependentPolynomialSpec interfacePolynomial
+
+  /-- (4) Wiring-diagram composition law — proves that the
+  implementation satisfies the specification under interface
+  composition (Aberlé §4 wiring diagrams). -/
+  wiringLaw : WiringDiagramComposes implementation specification
+
+  /-- (5) Distributive-law interaction matrix — for each existing
+  axis of `base`, a Beck / Garner-weak / colax-lax distributive
+  law, OR an explicit no-go citation (Zwart-Marsden table). -/
+  interactionMatrix : DistributiveLawMatrix base interfacePolynomial
+
+  /-- (6) Forgetful lens back to the base profile — embeds rich
+  terms back into base via `forget`, lifts base terms into rich
+  via `lift`, with roundtrip laws guaranteeing conservativity. -/
+  forgetfulLens : ProfileLens (base.extendRaw interfacePolynomial) base
+
+  /-- (7) Metatheory-preservation witness — proves the BKS sconing
+  argument lifts through the extension, so canonicity /
+  normalization / parametricity transfer to the extended
+  profile. -/
+  metatheoryWitness : PreservesAdmissibility base interfacePolynomial
+
+  /-- (8) Erasure-preservation witness — proves the realizability
+  tripos for the base lifts to the extension, so runtime erasure
+  + compiler correctness transfer. -/
+  erasureWitness : PreservesRuntimeErasure base interfacePolynomial
+```
+
+**The headline admission theorem:**
+
+```lean
+/-- Extension of any admissible profile by an admitted extension
+yields a new admissible profile.  This is THE theorem that makes
+"add features forever" honest. -/
+theorem extendProfile_preserves_admissible
+    (base : AdmissibleProfile)
+    (ext : ProfileExtension base) :
+    AdmissibleProfile (base.extend ext) :=
+  -- Constructive proof, ~3K LoC:
+  -- 1. BKS sconing functoriality (Bocquet-Kaposi-Sattler FSCD 2023
+  --    `arXiv:2302.05190`): sconing(M(σ)) = sconing(M) ∘ σ.
+  -- 2. Uemura bi-initial model is preserved by CwR morphisms.
+  -- 3. AWFS extension preserves cofibrant generation (Garner-Bourke
+  --    TAC 2016).
+  -- 4. Aberlé wiring-diagram composition discharges the
+  --    implementation-meets-specification obligation per ext.
+  -- 5. Distributive-law matrix discharges cross-axis collisions.
+  -- 6. ProfileLens roundtrip discharges conservativity.
+  ...
+```
+
+**Lens discipline — the conservative-extension guarantee:**
+
+A feature extension MUST include a lens back to the base profile.
+The forward direction (`lift`) embeds old FX terms into the richer
+profile.  The backward direction (`forget`) drops the new
+structure.  Roundtrip laws guarantee that adding a feature does NOT
+silently break existing code.
+
+```lean
+/-- A profile lens from a rich profile to a base profile.
+Conservative-extension witness: existing FX programs keep their
+typing, reduction, Conv, erasure, and compiled behavior under any
+admitted extension. -/
+structure ProfileLens (rich base : PolyProfile) where
+  forget : ∀ {dim boundary},
+           PolyTerm rich dim boundary →
+           PolyTerm base dim (boundary.forget)
+
+  lift : ∀ {dim boundary},
+         PolyTerm base dim boundary →
+         PolyTerm rich dim (boundary.lift)
+
+  /-- Round-trip law: lifting then forgetting is the identity on
+  base terms.  This is the conservativity witness. -/
+  forget_lift : ∀ {dim boundary} (cell : PolyTerm base dim boundary),
+                forget (lift cell) = cell
+
+  /-- Typing preservation: a typable base term remains typable
+  after lifting, with the same type up to lens transport. -/
+  preservesTyping : PreservesTyping lift forget
+
+  /-- Conv preservation: convertible base terms remain convertible
+  in the rich profile.  Equivalent base terms are equivalent in
+  the extension. -/
+  preservesConv : PreservesConv lift forget
+
+  /-- Erasure preservation: the compiled binary of a base term is
+  unchanged by lifting then forgetting.  Existing FX binaries are
+  bit-identical under any admitted extension. -/
+  preservesErase : PreservesErase lift forget
+```
+
+**Why this prevents the cascade reappearing as profile obligations:**
+
+The eight projections of `ProfileExtension` are not eight
+independent proof obligations.  They are eight views of one
+categorical object — a CwR morphism + AWFS extension pair.  A
+feature author writes:
+
+```lean
+def addProbability : ProfileExtension fxProfile where
+  interfacePolynomial := probabilityInterface   -- Markov polynomial
+  implementation      := samplingKleisli        -- Giry monad Kleisli
+  specification       := bayesianContract       -- conditioning
+                                                 -- as dep poly
+  wiringLaw           := markovWiringComposes   -- discharged from
+                                                 -- Markov-cat laws
+  interactionMatrix   := {                      -- per existing axis
+    cohesive   := probabilityCommutesWithFlatSharp,
+    resource   := probabilityWeaklyDistributesOverLinear,  -- Garner
+    cost       := probabilityCostBoundedByEntropy,
+    security   := probabilityRespectsDeclassification,
+    effect     := MarsdenZwartTable.probabilityVsExceptions -- NO-GO
+                                                            -- recorded
+  }
+  forgetfulLens      := probabilityForgetfulLens
+  metatheoryWitness  := sconingLiftsProbability
+  erasureWitness     := samplingErasureIsTripos
+```
+
+and `extendProfile_preserves_admissible` does the rest.  The
+cascade does NOT reappear because:
+
+1. **No new `Term` constructors** — generators live in
+   `interfacePolynomial`, processed by one generic dispatcher.
+2. **No per-feature SR / SN proofs** — `metatheoryWitness` plugs
+   into the universal sconing argument once.
+3. **No per-feature cd_lemma rewrites** — AWFS extension composes
+   with the existing AWFS automatically.
+4. **No per-feature erasure proof** — `erasureWitness` plugs into
+   the realizability tripos once.
+
+**The composition algebra — distributive laws and their failures:**
+
+Two extensions `σ : base → mid` and `τ : mid → top` compose into
+`τ ∘ σ : base → top` iff a distributive law witness exists.  The
+table of known compositions:
+
+| Pair | Distributive law | Reference |
+|---|---|---|
+| State + Reader | Strong (Beck 1969) | classical |
+| State + Probability | Strong | Plotkin-Power 2002 |
+| Probability + Powerset | Weak (Garner) | Garner FoSSaCS 2020 |
+| Probability + Exceptions | NONE (no-go) | Varacca-Winskel 2006 |
+| Exception + Continuation | Strong | Filinski 1994 |
+| Linear + Probability | Colax-lax | Cheng-Gurski-Riehl 2014 |
+| Cohesive + Resource | One-way (cohesive→resource) | Myers-Riley §6.4 |
+| Probability + Powerset + State | Triple no-go | Zwart-Marsden LICS 2019 |
+
+Every new `ProfileExtension.interactionMatrix` must cite where it
+sits in this table.  Extensions that hit a no-go cell are rejected
+at the admission step — the user is told *which* prior extension
+their feature collides with and *which* distributive law would
+need to exist.
+
+**The localization view — adding features as Bousfield localization:**
+
+Equivalently (and this is the deeper view): adding a feature to FX
+is a **left Bousfield localization** of the FX type theory at a new
+class of arrows = new equations / new reductions.
+
+```
+T₀          = pure MLTT with universes
+T_FX        = Loc(T₀, {β, η, modal, cubical, …, MTT-norm arrows})
+T_FX_prob   = Loc(T_FX, {sample, observe, Bayes arrows})
+T_FX_prob_q = Loc(T_FX_prob, {qubit, measure, no-clone arrows})
+…
+```
+
+Bousfield localization is **associative** when generating sets are
+disjoint, and the obstruction to commutativity is precisely a
+homotopy 2-cell — Mac Lane's coherence becomes the calculus of
+feature composition.  Hirschhorn 2003 *Model Categories and Their
+Localizations* gives the algorithm; the small-object argument
+makes it constructive when the localizing set is finite per
+extension.
+
+The `extendProfile` operation IS left Bousfield localization at
+the arrows generated by `ext.interfacePolynomial`.  The admission
+theorem IS the small-object argument applied to that localization.
+
+**The ∞-cosmos ambient universe:**
+
+Tier 0 currently cites Uemura's 2-category framework
+(`arXiv:1904.04097`).  The strict frontier is the **Riehl-Verity
+∞-cosmos** lift: `CwR∞` is an (∞,2)-category designed to be "the
+category of all (∞,1)-category-of-CwRs" without size issues
+(Riehl-Verity *Elements of ∞-Category Theory*, CUP 2022,
+`arXiv:1910.07635`).
+
+- Type theories are objects of the ∞-cosmos `CwR∞`
+- Extensions are arrows
+- Conservative extensions are fully faithful arrows
+- Uemura's bi-initial model is the adjoint that the ∞-cosmos
+  adjoint functor theorem provides
+- Composition of extensions = composition of arrows, with the
+  ∞-cosmos's own coherence handling the "third level" of obligation
+
+For FX, the practical upshot is that `extendProfile` composes
+associatively up to a definable 2-cell, and the composition of
+admission witnesses is itself admissible.
+
+**Lean LoC estimate (Axis 14):** ~7K LoC.  Distribution:
+
+* `ProfileExtension` structure + the 8 projections: ~1K LoC.
+* `ProfileLens` + roundtrip laws: ~1K LoC.
+* `DistributiveLawMatrix` + the no-go citation table: ~1K LoC.
+* `extendProfile` operation: ~500 LoC.
+* `extendProfile_preserves_admissible` headline theorem: ~3K LoC.
+* `BousfieldLocalize` equivalence proof + Hirschhorn small-object
+  argument applied: ~500 LoC.
+
+**Mechanizability:**
+
+* Aberlé `arXiv:2604.01303` is Agda-formalized (paper Apr 2026).
+  Lean port is direct translation of the polynomial-functor /
+  wiring-diagram machinery.
+* Garner weak distributive laws (FoSSaCS 2020) are paper-form but
+  fully constructive — Lean port is novel.
+* Hirschhorn's left Bousfield localization is a classic, fully
+  constructive given a finite localizing set.
+* Riehl-Verity ∞-cosmos is paper-form; FX would be first
+  proof-assistant implementation of the ∞-cosmos calculus, but
+  only the 2-truncation (= Uemura's framework) is needed for the
+  admission theorem to ship.
+
+**Notes:**
+
+* The thirteen axes (§3.1-§3.13) become the *shape* of any single
+  admissible profile.  Axis 14 is the *generator* of the space of
+  profiles.  Both ship.
+* Composition is per-profile, not global: each extension records
+  per-pair distributive-law evidence (or no-go citation).  There
+  is no "all extensions compose" theorem; there cannot be one
+  (Zwart-Marsden no-go).
+* The reverse-mathematical strength of each extension should be
+  recorded: which extension needs Univalence, which needs SN,
+  which needs decidable conv.  The composition obligation
+  includes a strength-compatibility check.
+
+### 3.15 Demonstration profiles — what the extension calculus enables
+
+Once Axis 14 is in place, the following profiles ship as
+`ProfileExtension` values over `fxProfile`, not as bespoke kernel
+forks.  Each carries the eight admission obligations described
+above.  Profiles are classified by their **PolyTerm Level** —
+the depth of structural change they make to the profile space:
+
+| Level | What changes |
+|---|---|
+| **L1 Feature**       | Adds generators + payloads.  Conservative by construction. |
+| **L2 Rewrite**       | Adds reductions.  Must prove SN + confluence preservation. |
+| **L3 Doctrine**      | Adds a new modal / resource / effect / security doctrine. |
+| **L4 Universe**      | Adds a new model / universe / classifier object. |
+| **L5 Meta-profile**  | Generates, checks, or transforms other profiles. |
+
+#### Catalog of admissible target profiles
+
+| Profile | Level | What it enables | Prerequisite extensions / substrate |
+|---|---|---|---|
+| **Probabilistic-Iris FX** | L3-L4 | `sample`, `observe`, Bayesian conditioning, randomized algorithms, probabilistic heap programs, frame-preserving updates on probabilistic resources | Lohse et al. *Amaryllis* `arXiv:2605.13765` (probabilistic Iris, Rocq-mechanized 2026); Giry monad + measure-theoretic substrate; Markov category interaction laws |
+| **Differential-SDG FX** | L3-L4 | Differentiable programs, AD proofs, infinitesimals, tangent types, smooth control, machine-learning programs with verified gradients | Tangent categories (Rosický-Cockett-Cruttwell); differential linear logic (Ehrhard); SDG modality; interaction with linear-resource axis |
+| **Quantum-Linear FX** | L4 | Qubits, no-cloning by type, circuit extraction, measurement effects, quantum error correction with formal certificates | Linear DTT impredicativity (Speight-van der Weide `arXiv:2602.08846`); dagger compact categories; ZX-calculus; stabilizer formalization; measurement effect doctrine |
+| **Verified Hardware FX** | L2-L3 | RTL/Verilog extraction, clock domains, pipeline correctness proofs, hardware/software contracts | Clock-domain doctrine (already in `fxProfile`); bitvector semantics; temporal/session layer; synthesis-preserving erasure witness |
+| **Distributed-Protocol FX** | L3 | Multiparty sessions, actor systems, consensus proofs, fault domains, replay/ordering guarantees | Session types (already in `fxProfile`); separation logic (via Iris substrate); trace semantics; async/failure distributive laws |
+| **Crypto / ZK FX** | L3-L4 | Constant-time proofs, zk-SNARK circuits, protocol transcripts, leakage budgets, proof-carrying crypto | Security lattice (already in `fxProfile`); CT observability axis; arithmetic-circuit polynomial substrate; randomness/probability interaction |
+| **Synthetic Algebraic Geometry FX** | L4 | Schemes and stacks internally, sheaf semantics, derived-geometry hooks, synthetic Stone duality | Coquand-Höfer-Sattler *Constructive higher sheaf models* `arXiv:2605.15126` (May 2026); cohesive/topos profile; polynomial-universe integration |
+| **Mathlib Import FX** | L5 | Mathlib theorems imported as profile extensions; lemmas become cells / generators with proof-preserving lenses | `ProfileExtension` calculus (Axis 14); theorem-to-generator translator; conservative lens back to Lean/Mathlib |
+| **Self-Hosting Kernel FX** | L5 | FX defines FX in FX; verified compiler / kernel; reflection and reification | Reflection profile (Axis 12 STC); staged metaprogramming; proof-producing elaborator; trust + erasure discipline |
+| **Causal / Decision FX** | L3-L4 | Causal graphs, interventions, counterfactuals, policy verification | Markov categories (Fritz); Probabilistic-Iris FX as prereq; Pearl do-calculus laws as rewrite system; identifiability checker |
+| **Resource-Economics FX** | L3 | Budgets, gas, latency, energy, memory, cloud-cost as first-class verified dimensions | Ordered semiring / quantale of costs; calf/decalf (already in `fxProfile`); resource algebra interaction; extraction-cost theorem |
+| **Reversible / Thermodynamic FX** | L3-L4 | Reversible programs, energy bounds (Landauer), invertible interpreters, low-power circuits | Invertible categories (Heunen-Karvonen); dagger structure; linearity prereq; Bennett-style reversible computation substrate |
+| **Secure Agentic Workflow FX** | L3-L5 | LLM agents with typed permissions, audit trails, tool-use proofs, safe delegation | Capability algebra (lattice); provenance + trust dimensions (already in `fxProfile`); temporal contracts; effect handlers |
+| **Scientific Simulation FX** | L4 | PDE / ODE solvers with verified error bounds, units, meshes, stability proofs | Numeric tower (already in `fxProfile`); interval / error analysis; Differential-SDG FX as prereq; finite-element formalization |
+| **Polyglot Contract FX** | L5 | One contract verified across Rust / C / Verilog / Python / Lean extraction targets | Multi-target semantics; representation lenses; ABI profiles; compiler-correctness witness per target |
+
+**Five highest-value profiles** (ROI on math investment):
+
+1. **Probabilistic-Iris FX** — most "new power per math risk"; recent
+   Rocq mechanization exists (Amaryllis); composes cleanly with
+   the existing Iris resource-algebra substrate (§3.7 resource
+   tier).
+2. **Differential-SDG FX** — unlocks ML / control / physics
+   simultaneously while fitting the modal doctrine; cohesive
+   structure already in place.
+3. **Quantum-Linear FX** — flashy but real; the linearity axis
+   already aligns with no-cloning structurally.
+4. **Distributed-Protocol FX** — very FX-native because sessions,
+   effects, and resources already exist; mostly a doctrine-tier
+   extension over composed primitives.
+5. **Self-Hosting Kernel FX** — long-term capstone; makes
+   PolyTerm prove its own extension machinery from inside,
+   closing the loop.
+
+**Honest scope statement:**
+
+With the current document *without Axis 14*, every profile in the
+catalog above must be hand-built as its own `PolyProfile`
+instance.  That works but does not give "extend at whim" — each
+profile costs a full cascade.
+
+With Axis 14, every profile in the catalog ships as a
+`ProfileExtension` value, with `extendProfile_preserves_admissible`
+discharging all metatheory.  Future FX features that have never
+been thought of yet (energy-budget contracts? differential privacy
+budgets? proof-carrying smart-contract code?  *anything*) become
+new `ProfileExtension` values added to the catalog without kernel
+work.  This is the "infinite times" mechanism Grigory's design
+brief asks for.
+
+---
+
 ## 4. The PolyTerm signature
 
-After all ten axes are defined, the universal cell type is one
+After all thirteen axes are defined, the universal cell type is one
 indexed inductive:
 
 ```lean
 namespace LeanFX2.Foundation.Polygraph
 
-/-- The PolyProfile bundles all ten axes.  Each axis is a structure
+/-- The PolyProfile bundles all thirteen axes.  Each axis is a structure
 field; consistency constraints link them. -/
 structure PolyProfile where
   /-- AXIS 1: Per-dim shape family. -/
@@ -2951,7 +3383,7 @@ Putting it all together — FX's kernel is one specific `PolyProfile`:
 ```lean
 namespace LeanFX2
 
-/-- The FX kernel profile.  All ten axes specialized. -/
+/-- The FX kernel profile.  All thirteen axes specialized. -/
 def fxProfile : PolyProfile where
 
   -- AXIS 1: Shapes per dim
@@ -3532,11 +3964,11 @@ Univalence becomes a theorem.
 
 ### Phase POLY-ζ — PolyTerm assembly + FX profile (months 24-30, ~30K LoC)
 
-**Goal:** assemble all ten axes into PolyProfile + define
+**Goal:** assemble all thirteen axes into PolyProfile + define
 fxProfile + ship FXCell type.
 
 **Deliverables:**
-- `Foundation/Polygraph/PolyProfile.lean` — bundled ten axes
+- `Foundation/Polygraph/PolyProfile.lean` — bundled thirteen axes
 - `Foundation/Polygraph/PolyTerm.lean` — the universal cell type
 - `LeanFX2/FxProfile.lean` — FX as a profile instance
 - `LeanFX2/FxCellViews.lean` — FXType, FXTerm, FXStep, FXConv as views
