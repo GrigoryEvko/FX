@@ -99,5 +99,11 @@ namespace FX1.LeanKernel
 #print axioms LeanFX2.FX1.LeanKernel.check
 #print axioms LeanFX2.FX1.LeanKernel.check_sound
 
+-- K18.7: eta reduction `lam (app f bvar0) -> f` where `f.weaken`
+-- captures the "bvar0 not in f" side condition structurally.
+#print axioms LeanFX2.FX1.LeanKernel.Step.etaStep
+#print axioms LeanFX2.FX1.LeanKernel.Step.etaStep_const_body
+#print axioms LeanFX2.FX1.LeanKernel.Step.etaStep_bvar_body
+
 end FX1.LeanKernel
 end LeanFX2
