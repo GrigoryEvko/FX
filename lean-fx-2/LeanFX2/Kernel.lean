@@ -32,14 +32,6 @@ import LeanFX2.Foundation.Polygraph.VerticalComp
 import LeanFX2.Foundation.Polygraph.HorizontalComp
 import LeanFX2.Foundation.Polygraph.Laws
 import LeanFX2.Foundation.Polygraph.FreeCategory
-import LeanFX2.Foundation.Polygraph.RawPolyTerm
-import LeanFX2.Foundation.Polygraph.PolyTerm
-import LeanFX2.Foundation.Polygraph.PolyTermRoundtrip
-import LeanFX2.Foundation.Polygraph.PolyTermAction.RawPolyTermRename
-import LeanFX2.Foundation.Polygraph.PolyTermAction.RawPolyTermSubst
-import LeanFX2.Foundation.Polygraph.PolyTermAction.SubstCommute
-import LeanFX2.Foundation.Polygraph.PolyTermAction.ToRawTermRename
-import LeanFX2.Foundation.Polygraph.PolyTermAction.ToRawTermSubst
 import LeanFX2.Foundation.Polygraph.StepLabel
 import LeanFX2.Foundation.Polygraph.Dim1Extraction
 import LeanFX2.Foundation.Polygraph.Dim1Equivalence
@@ -84,10 +76,6 @@ import LeanFX2.Term.WeakenInverse
 import LeanFX2.Term.TypedInversion
 import LeanFX2.Term.EtaRecognizers
 import LeanFX2.Term.StrengtheningImage.TotalOnWeakenHeadlines
-import LeanFX2.Term.PolyToTerm
-import LeanFX2.Term.ToPoly
-import LeanFX2.Term.PolyRename
-import LeanFX2.Term.PolySubst
 import LeanFX2.Term.PreservesTerm.HeterogeneousElim
 
 -- Layer 2 - Reduction

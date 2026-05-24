@@ -5,14 +5,8 @@ import LeanFX2.Term.RenameInjective.InductiveArms
 import LeanFX2.Term.Inversion
 import LeanFX2.Term.Bridge
 import LeanFX2.Algo.Progress
-import LeanFX2.Term.PolyToTerm
-import LeanFX2.Term.ToPoly
-import LeanFX2.Term.PolyRename
-import LeanFX2.Term.PolySubst
-import LeanFX2.Foundation.Polygraph.PolyTermAction.ToRawTermRename
-import LeanFX2.Foundation.Polygraph.PolyTermAction.ToRawTermSubst
 
-/-! # AuditTerm.BaseAndPoly — core Term, progress, and polygraph bridge gates. -/
+/-! # AuditTerm.BaseAndPoly — core Term gates (Poly half retired with fake-mirror cluster). -/
 
 namespace LeanFX2.Tools
 
@@ -249,74 +243,5 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Term.app_progress_or_step
 -- M05.D.2 unified Wright-Felleisen progress headline (#1565, #1737).
 #assert_no_axioms LeanFX2.Term.progress_or_step
-
--- K11.10-A (#1752): RawTerm.toRawPoly raw-level forward map.
-#assert_no_axioms LeanFX2.RawTerm.toRawPoly
-
--- K11.11 (#1748): PolyTerm.toTerm typed backward bijection (77 ctors).
-#assert_no_axioms LeanFX2.PolyTerm.toTerm
-
--- K11.10-B (#1752): Term.toPoly typed forward bijection (77 ctors,
--- 11 K11.12-driven `▸` casts on raw-in-Ty constructors).
-#assert_no_axioms LeanFX2.Term.toPoly
-
--- K11.13 Phase A (#1745): raw-layer `RawPolyTerm.rename` + commute
--- with `RawTerm.toRawPoly`.
-#assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.rename
-#assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.weaken
-#assert_no_axioms LeanFX2.RawTerm.rename_toRawPoly_commute
-#assert_no_axioms LeanFX2.RawTerm.weaken_toRawPoly_commute
-
--- K11.13 Phase B (#1745): raw-layer `RawPolyTerm.subst` + commute
--- with `RawTerm.toRawPoly` along the pointwise-converted
--- substitution.
-#assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.subst
-#assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.subst0
-#assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTermSubst.lift_pointwise
-#assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.subst_pointwise
-#assert_no_axioms LeanFX2.RawTermSubst.toRawPolySubst
-#assert_no_axioms LeanFX2.RawTermSubst.lift_toRawPolySubst_commute
-#assert_no_axioms LeanFX2.RawTerm.subst_toRawPoly_commute
-#assert_no_axioms LeanFX2.RawTerm.subst0_toRawPoly_commute
-
--- K11.13 Phase C-1 (#1745): reverse-direction rename commute —
--- `RawPolyTerm.toRawTerm` commutes with `RawPolyTerm.rename`.  Bridge
--- lemma for the typed `PolyTerm.rename` Phase C-2 follow-up, where 11
--- raw-in-Ty ctors embed `argumentPolyRaw.toRawTerm` inside their
--- kernel `Ty` index and need a single rewrite at the cast.
-#assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.toRawTerm_rename_commute
-#assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.weaken_toRawTerm_commute
-
--- K11.13 Phase C-2 (#1745): typed `PolyTerm.rename` via composition
--- through `Term.rename`.  Routes `polyTerm` → `toTerm` → `Term.rename`
--- → `.toPoly` and casts the raw-payload index from
--- `(rawPoly.toRawTerm.rename rho).toRawPoly` to `rawPoly.rename rho`
--- using Phase A's commute + K11.12's roundtrip.  `PolyTerm.weaken` is
--- the canonical single-binder corollary.
-#assert_no_axioms LeanFX2.PolyTerm.rename
-#assert_no_axioms LeanFX2.PolyTerm.weaken
-
--- K11.13 Phase D (#1745): typed `PolyTerm.subst` via composition
--- through `Term.subst`.  Mirrors Phase C-2's pattern: routes
--- `polyTerm` → `toTerm` → `Term.subst` → `.toPoly` and casts the
--- raw-payload index from `(rawPoly.toRawTerm.subst sigma.forRaw).toRawPoly`
--- to `rawPoly.subst sigma.forRaw.toRawPolySubst` using Phase B's
--- commute + K11.12's roundtrip.  `PolyTerm.subst0` is the canonical
--- β-reduction corollary.
-#assert_no_axioms LeanFX2.PolyTerm.subst
-#assert_no_axioms LeanFX2.PolyTerm.subst0
-
--- K11.13 Phase C-1S (#1745): reverse-direction subst commute —
--- `RawPolyTerm.toRawTerm` commutes with `RawPolyTerm.subst`.  Mirror
--- of Phase C-1 for subst.  Bridge `RawPolyTermSubst.toRawTermSubst`
--- projects each substituent through `toRawTerm`; `lift_*_commute` uses
--- Phase C-1's rename commute for the succ-position weakening case;
--- 73-case structural induction headline uses the lift commute for
--- binder cases (lam / pathLam / piTyCode / sigmaTyCode); `subst0`
--- corollary closes the β-reduction singleton form.
-#assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTermSubst.toRawTermSubst
-#assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTermSubst.lift_toRawTermSubst_commute
-#assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.toRawTerm_subst_commute
-#assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.subst0_toRawTerm_commute
 
 end LeanFX2.Tools

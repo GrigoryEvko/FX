@@ -13,7 +13,6 @@ import LeanFX2.Foundation.TyRenameInjective
 import LeanFX2.Foundation.Polygraph.Wellfounded
 import LeanFX2.Foundation.Polygraph.DecEq
 import LeanFX2.Foundation.Polygraph.FreeCategory
-import LeanFX2.Foundation.Polygraph.PolyTermRoundtrip
 import LeanFX2.Confluence.RawCd
 import LeanFX2.Reduction.RawParWeakenInv.Foundation
 
@@ -150,16 +149,6 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.Polygraph.FreeTwoCategoryAt.identity_right
 #assert_no_axioms LeanFX2.Foundation.Polygraph.FreeTwoCategoryAt.fromGenerator
 #assert_no_axioms LeanFX2.Foundation.Polygraph.FreeTwoCategoryAt.fromGenerator_length_eq_one
-
-#assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTerm
-#assert_no_axioms LeanFX2.Foundation.Polygraph.instDecidableEqRawPolyTerm
-
-#assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.toRawTerm
-#assert_no_axioms LeanFX2.PolyTerm
-
--- K11.12 (#1749): raw-level roundtrip identity in both directions.
-#assert_no_axioms LeanFX2.RawTerm.toRawPoly_toRawTerm
-#assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.toRawTerm_toRawPoly
 
 /-! ### RawRenaming weaken/lift injectivity (RawStep.par.weaken_inv prereq)
 
