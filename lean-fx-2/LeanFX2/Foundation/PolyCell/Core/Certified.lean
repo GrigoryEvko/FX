@@ -386,6 +386,19 @@ theorem toCertifiedChild_rawCell {profile : PolyProfile}
     certifiedDescriptorChild.toCertifiedChild.rawCell =
       rawDescriptor.rawCell := rfl
 
+/-- Forgetting descriptor-indexed child evidence to a raw descriptor returns
+the descriptor it was indexed by. -/
+theorem toCertifiedChild_toRawDescriptor {profile : PolyProfile}
+    {cellSort : CellSort} {cellDimension scope : Nat}
+    {rawDescriptor :
+      RawChildDescriptor profile cellSort cellDimension scope}
+    (certifiedDescriptorChild :
+      CertifiedChildForRawDescriptor rawDescriptor) :
+    certifiedDescriptorChild.toCertifiedChild.toRawDescriptor =
+      rawDescriptor := by
+  cases rawDescriptor
+  rfl
+
 end CertifiedChildForRawDescriptor
 
 /-- Certified child spine indexed by the raw descriptor spine it certifies. -/
@@ -461,6 +474,36 @@ theorem certifiedChildSpineRawDescriptors_arity_eq
       CellChildren (CertifiedChild profile) parentScope childSpecs) :
     (certifiedChildSpineRawDescriptors certifiedChildren).arity =
       certifiedChildren.arity := rfl
+
+namespace CertifiedChildSpineForRawDescriptors
+
+/-- Descriptor-indexed certified children erase back to the raw descriptor
+spine they were indexed by. -/
+theorem toCertifiedChildren_rawDescriptors_eq {profile : PolyProfile}
+    {parentScope : Nat} {childSpecs : List ChildSpec}
+    {rawDescriptors : RawChildDescriptors profile parentScope childSpecs}
+    (certifiedDescriptors :
+      CertifiedChildSpineForRawDescriptors profile parentScope
+        rawDescriptors) :
+    certifiedChildSpineRawDescriptors
+      certifiedDescriptors.toCertifiedChildren =
+      rawDescriptors := by
+  induction certifiedDescriptors with
+  | nil => rfl
+  | cons certifiedDescriptorChild _remainingCertifiedDescriptors
+      remainingInduction =>
+      change
+        CellChildren.cons
+          certifiedDescriptorChild.toCertifiedChild.toRawDescriptor
+          (certifiedChildSpineRawDescriptors
+            _remainingCertifiedDescriptors.toCertifiedChildren) =
+        _
+      rw [
+        CertifiedChildForRawDescriptor.toCertifiedChild_toRawDescriptor,
+        remainingInduction
+      ]
+
+end CertifiedChildSpineForRawDescriptors
 
 /-- Certified child spine for the first finite application payload. -/
 def applicationVarZeroVarOneChildren {profile : PolyProfile} {scope : Nat}
