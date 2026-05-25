@@ -1559,6 +1559,27 @@ theorem FXTermConstructorName.constructorIndex_val
     (constructorName : FXTermConstructorName) :
     constructorName.constructorIndex.val = constructorName.cellId := rfl
 
+theorem FXTermConstructorName.cellId_injective
+    {leftName rightName : FXTermConstructorName}
+    (hasSameCellId : leftName.cellId = rightName.cellId) :
+    leftName = rightName := by
+  have hasSameDecode : some leftName = some rightName := by
+    rw [← FXTermConstructorName.ofCellId?_cellId leftName]
+    rw [← FXTermConstructorName.ofCellId?_cellId rightName]
+    rw [hasSameCellId]
+  cases hasSameDecode
+  rfl
+
+theorem FXTermConstructorName.constructorIndex_injective
+    {leftName rightName : FXTermConstructorName}
+    (hasSameConstructorIndex :
+      leftName.constructorIndex = rightName.constructorIndex) :
+    leftName = rightName := by
+  apply FXTermConstructorName.cellId_injective
+  rw [← FXTermConstructorName.constructorIndex_val leftName]
+  rw [← FXTermConstructorName.constructorIndex_val rightName]
+  exact congrArg Fin.val hasSameConstructorIndex
+
 /-- Names for the current `Ty` constructor-id block.
 
 This names the provisional dim-0 type ids only.  It does not decode payloads
@@ -1716,6 +1737,48 @@ theorem FXTypeConstructorName.cellId_eq_firstTypeCellId_add_localCellId
     (constructorName : FXTypeConstructorName) :
     constructorName.cellId =
       PolyTerm.firstTypeCellId + constructorName.localCellId := rfl
+
+theorem FXTypeConstructorName.localCellId_injective
+    {leftName rightName : FXTypeConstructorName}
+    (hasSameLocalCellId : leftName.localCellId = rightName.localCellId) :
+    leftName = rightName := by
+  have hasSameDecode : some leftName = some rightName := by
+    rw [← FXTypeConstructorName.ofLocalCellId?_localCellId leftName]
+    rw [← FXTypeConstructorName.ofLocalCellId?_localCellId rightName]
+    rw [hasSameLocalCellId]
+  cases hasSameDecode
+  rfl
+
+theorem FXTypeConstructorName.cellId_injective
+    {leftName rightName : FXTypeConstructorName}
+    (hasSameCellId : leftName.cellId = rightName.cellId) :
+    leftName = rightName := by
+  have hasSameDecode : some leftName = some rightName := by
+    rw [← FXTypeConstructorName.ofCellId?_cellId leftName]
+    rw [← FXTypeConstructorName.ofCellId?_cellId rightName]
+    rw [hasSameCellId]
+  cases hasSameDecode
+  rfl
+
+theorem FXTypeConstructorName.constructorIndex_injective
+    {leftName rightName : FXTypeConstructorName}
+    (hasSameConstructorIndex :
+      leftName.constructorIndex = rightName.constructorIndex) :
+    leftName = rightName := by
+  apply FXTypeConstructorName.localCellId_injective
+  rw [← FXTypeConstructorName.constructorIndex_val leftName]
+  rw [← FXTypeConstructorName.constructorIndex_val rightName]
+  exact congrArg Fin.val hasSameConstructorIndex
+
+theorem FXTypeConstructorName.ofCellId?_termConstructorCellId
+    (constructorName : FXTermConstructorName) :
+    FXTypeConstructorName.ofCellId? constructorName.cellId = none := by
+  cases constructorName <;> rfl
+
+theorem FXTermConstructorName.ofCellId?_typeConstructorCellId
+    (constructorName : FXTypeConstructorName) :
+    FXTermConstructorName.ofCellId? constructorName.cellId = none := by
+  cases constructorName <;> rfl
 
 private theorem nat_sub_lt_left_of_lt_add_structural {offset value count : Nat}
     (hasLowerBound : offset ≤ value)
