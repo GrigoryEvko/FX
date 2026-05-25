@@ -63,7 +63,8 @@ def wrongChildShapeSentinel : Nat := 9003
 
 It decodes to `var 0` applied to `var 1`.  This is a checker fixture, not a
 claim that the application is fully typed by the legacy kernel. -/
-def applicationVarZeroVarOnePayload : Nat := 9100
+def applicationVarZeroVarOnePayload : Nat :=
+  LeanFX2.Foundation.PolyCell.Core.applicationVarZeroVarOnePayload
 
 /-- Application payload whose decoded function child is a type cell. -/
 def applicationTypeAsFunctionPayload : Nat := 9101

@@ -123,6 +123,10 @@ def applicationGeneratorSpec : GeneratorSpec where
     ChildSpec.termSameScope
   ]
 
+/-- First finite application payload whose decoded children are `var 0` and
+`var 1` at the parent scope. -/
+def applicationVarZeroVarOnePayload : Nat := 9100
+
 /-- Target metadata for the nullary unit type. -/
 def unitTypeGeneratorSpec : GeneratorSpec where
   cellId := PolyTerm.firstTypeCellId

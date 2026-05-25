@@ -1,4 +1,4 @@
-import LeanFX2.Foundation.PolyCell.Core.GeneratorSpec
+import LeanFX2.Foundation.PolyCell.Core.CellChildren
 /-!
 # Certified — Intrinsic Boundary Layer for Raw PolyTerms
 
@@ -34,7 +34,8 @@ inductive SupportedGeneratorSpec : GeneratorSpec → Type where
   /-- Lambda term generator. Payload decoding is not implemented yet. -/
   | lambda :
       SupportedGeneratorSpec lambdaGeneratorSpec
-  /-- Application term generator. Payload decoding is not implemented yet. -/
+  /-- Application term generator. Only the first finite decoded payload is
+  certified today. -/
   | application :
       SupportedGeneratorSpec applicationGeneratorSpec
   /-- Nullary unit type generator. -/
@@ -65,9 +66,10 @@ inductive SupportedRuleSpec : RuleSpec → Type where
 
 /-- Payload evidence for atom generators that are already safe to certify.
 
-The absence of constructors for lambda/application/pi/context-extension is
-intentional: until payload decoding is real, those atoms cannot be certified
-by this file. -/
+The absence of constructors for lambda/pi/context-extension is intentional:
+until payload decoding is real, those atoms cannot be certified by this file.
+Application gets only the first finite decoded payload through a separate
+`PolyCell` constructor that demands certified child terms. -/
 inductive AtomPayloadEvidence :
     (generatorSpec : GeneratorSpec) → (scope : Nat) → (payload : Nat) → Type where
   /-- A variable payload is certified only when the de Bruijn index is inside
@@ -107,6 +109,19 @@ inductive PolyCell (profile : PolyProfile) :
       AtomPayloadEvidence generatorSpec scope payload →
       PolyCell profile generatorSpec.cellSort 0 scope ()
         (.atom generatorSpec.cellId payload)
+
+  /-- Certified application for the first finite decoded payload.
+
+  The constructor is deliberately narrow: it certifies only the payload whose
+  decoded children are `var 0` and `var 1`, and it requires those two children
+  to already be certified in the same scope. -/
+  | applicationVarZeroVarOne {scope : Nat} :
+      PolyCell profile .term 0 scope ()
+        (.atom variableGeneratorSpec.cellId 0) →
+      PolyCell profile .term 0 scope ()
+        (.atom variableGeneratorSpec.cellId 1) →
+      PolyCell profile .term 0 scope ()
+        (.atom applicationGeneratorSpec.cellId applicationVarZeroVarOnePayload)
 
   /-- Certified generating cell between certified endpoints.
 
@@ -186,6 +201,63 @@ def linearMode {profile : PolyProfile} {scope : Nat} :
   .atom SupportedGeneratorSpec.linearMode
     AtomPayloadEvidence.linearMode
 
+/-- The first certified application payload requires certified `var 0` and
+`var 1` children. -/
+def applicationVarZeroVarOneCell {profile : PolyProfile} {scope : Nat}
+    (functionCell :
+      PolyCell profile .term 0 scope ()
+        (.atom variableGeneratorSpec.cellId 0))
+    (argumentCell :
+      PolyCell profile .term 0 scope ()
+        (.atom variableGeneratorSpec.cellId 1)) :
+    PolyCell profile .term 0 scope ()
+      (.atom applicationGeneratorSpec.cellId applicationVarZeroVarOnePayload) :=
+  .applicationVarZeroVarOne functionCell argumentCell
+
+/-- Certified child descriptor used by non-nullary generator certificates. -/
+structure CertifiedChild
+    (profile : PolyProfile) (cellSort : CellSort)
+    (cellDimension : CellDim) (scope : Nat) where
+  /-- Raw erasure of the certified child. -/
+  rawCell : PolyTerm profile cellDimension
+  /-- Boundary index of the certified child. -/
+  cellBoundary : CellBoundary profile cellSort cellDimension scope
+  /-- Certified child witness. -/
+  certifiedCell :
+    PolyCell profile cellSort cellDimension scope cellBoundary rawCell
+
+namespace CertifiedChild
+
+/-- Package a certified child from its raw-indexed witness. -/
+def ofCell {profile : PolyProfile} {cellSort : CellSort}
+    {cellDimension scope : Nat}
+    {cellBoundary : CellBoundary profile cellSort cellDimension scope}
+    {rawCell : PolyTerm profile cellDimension}
+    (certifiedCell :
+      PolyCell profile cellSort cellDimension scope cellBoundary rawCell) :
+    CertifiedChild profile cellSort cellDimension scope where
+  rawCell := rawCell
+  cellBoundary := cellBoundary
+  certifiedCell := certifiedCell
+
+end CertifiedChild
+
+/-- Certified child spine for the first finite application payload. -/
+def applicationVarZeroVarOneChildren {profile : PolyProfile} {scope : Nat}
+    (functionCell :
+      PolyCell profile .term 0 scope ()
+        (.atom variableGeneratorSpec.cellId 0))
+    (argumentCell :
+      PolyCell profile .term 0 scope ()
+        (.atom variableGeneratorSpec.cellId 1)) :
+    CellChildren.ForGenerator (CertifiedChild profile) scope
+      applicationGeneratorSpec :=
+  CellChildren.cons
+    (CertifiedChild.ofCell functionCell)
+    (CellChildren.cons
+      (CertifiedChild.ofCell argumentCell)
+      CellChildren.nil)
+
 /-- Raw erasure of the variable-cell helper is definitional. -/
 theorem raw_variableCell {profile : PolyProfile} {scope index : Nat}
     (hasIndexWithinScope : index < scope) :
@@ -206,6 +278,31 @@ theorem raw_unitType {profile : PolyProfile} {scope : Nat} :
 theorem raw_linearMode {profile : PolyProfile} {scope : Nat} :
     (linearMode (profile := profile) (scope := scope)).raw =
       PolyTerm.atom (profile := profile) linearModeGeneratorSpec.cellId 0 := rfl
+
+/-- Raw erasure of the first certified application helper is definitional. -/
+theorem raw_applicationVarZeroVarOne {profile : PolyProfile} {scope : Nat}
+    (functionCell :
+      PolyCell profile .term 0 scope ()
+        (.atom variableGeneratorSpec.cellId 0))
+    (argumentCell :
+      PolyCell profile .term 0 scope ()
+        (.atom variableGeneratorSpec.cellId 1)) :
+    (applicationVarZeroVarOneCell functionCell argumentCell).raw =
+      PolyTerm.atom (profile := profile) applicationGeneratorSpec.cellId
+        applicationVarZeroVarOnePayload := rfl
+
+/-- The certified child spine for the first application payload has the
+application generator arity. -/
+theorem applicationVarZeroVarOneChildren_arity_eq_generator
+    {profile : PolyProfile} {scope : Nat}
+    (functionCell :
+      PolyCell profile .term 0 scope ()
+        (.atom variableGeneratorSpec.cellId 0))
+    (argumentCell :
+      PolyCell profile .term 0 scope ()
+        (.atom variableGeneratorSpec.cellId 1)) :
+    (applicationVarZeroVarOneChildren functionCell argumentCell).arity =
+      applicationGeneratorSpec.arity := rfl
 
 end PolyCell
 
