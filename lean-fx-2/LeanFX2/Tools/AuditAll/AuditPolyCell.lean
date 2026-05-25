@@ -635,6 +635,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXDimOneContextCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXDimOneModeCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXDimTwoTermCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXDimTwoTermArrow
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXTermThinCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXTypeThinCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXContextThinCell
@@ -644,6 +645,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXContextArrow
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXModeArrow
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXTermThinArrow
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXDimTwoTermThinArrow
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXStructuralConv
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXTypeThinArrow
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXContextThinArrow
@@ -668,6 +670,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifiedSeedTermIdentityTwiceThin
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifiedSeedTermStepArrow
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifiedSeedTermGeneratingStep
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifiedSeedTermStepIdentityArrow
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifiedSeedTermStepIdentityThinArrow
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifiedSeedTermIdentityThinArrow
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifiedSeedTypeIdentityThinArrow
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifiedSeedContextIdentityThinArrow
@@ -727,6 +731,12 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifiedSeedTermGeneratingStep_target
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifiedSeedTermGeneratingStep_isGeneratingStepCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifiedSeedTermGeneratingStep_isStepCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifiedSeedTermStepIdentityArrow_raw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifiedSeedTermStepIdentityArrow_source
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifiedSeedTermStepIdentityArrow_target
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifiedSeedTermStepIdentityThinArrow_raw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifiedSeedTermStepIdentityThinArrow_source
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifiedSeedTermStepIdentityThinArrow_target
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifiedSeedTermIdentityThinArrow_raw
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifiedSeedTermIdentityThinArrow_source
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifiedSeedTermIdentityThinArrow_target

@@ -454,6 +454,11 @@ abbrev CertifiedFXDimOneModeCell (scope : Nat) :=
 abbrev CertifiedFXDimTwoTermCell (scope : Nat) :=
   CertifiedFXCell .term 2 scope
 
+/-- Endpoint-indexed certified term arrow at dimension 2. -/
+abbrev CertifiedFXDimTwoTermArrow (scope : Nat)
+    (sourceRaw targetRaw : PolyTerm fxProfile 1) :=
+  CertifiedFXArrow .term 1 scope sourceRaw targetRaw
+
 /-- Certified thin term cell at dimension 1.
 
 This is a structural thin cell, not yet the final legacy `Conv` bridge. -/
@@ -496,6 +501,11 @@ abbrev CertifiedFXModeArrow (scope : Nat)
 abbrev CertifiedFXTermThinArrow (scope : Nat)
     (sourceRaw targetRaw : PolyTerm fxProfile 0) :=
   CertifiedFXThinArrow .term 0 scope sourceRaw targetRaw
+
+/-- Endpoint-indexed certified thin term arrow at dimension 2. -/
+abbrev CertifiedFXDimTwoTermThinArrow (scope : Nat)
+    (sourceRaw targetRaw : PolyTerm fxProfile 1) :=
+  CertifiedFXThinArrow .term 1 scope sourceRaw targetRaw
 
 /-- Certified structural term conversion at dimension 1.
 
@@ -662,6 +672,21 @@ def certifiedSeedTermGeneratingStep :
       (NegativeProbes.alternateTermAtom fxProfile) where
   certifiedArrow := certifiedSeedTermStepArrow
   hasGeneratingStepCell := rfl
+
+/-- Endpoint-indexed dim-2 arrow for the identity over the seed term step. -/
+def certifiedSeedTermStepIdentityArrow :
+    CertifiedFXDimTwoTermArrow NegativeProbes.defaultInferScope
+      (NegativeProbes.termStepVarZeroVarOneRawCell fxProfile)
+      (NegativeProbes.termStepVarZeroVarOneRawCell fxProfile) :=
+  CertifiedFXArrow.identity certifiedSeedTermStep
+
+/-- Endpoint-indexed dim-2 thin arrow for the identity over the seed term
+step. -/
+def certifiedSeedTermStepIdentityThinArrow :
+    CertifiedFXDimTwoTermThinArrow NegativeProbes.defaultInferScope
+      (NegativeProbes.termStepVarZeroVarOneRawCell fxProfile)
+      (NegativeProbes.termStepVarZeroVarOneRawCell fxProfile) :=
+  CertifiedFXThinArrow.identity certifiedSeedTermStep
 
 /-- Endpoint-indexed thin arrow for the seed term identity. -/
 def certifiedSeedTermIdentityThinArrow :
@@ -903,6 +928,32 @@ theorem certifiedSeedTermGeneratingStep_isGeneratingStepCell :
 
 theorem certifiedSeedTermGeneratingStep_isStepCell :
     certifiedSeedTermGeneratingStep.toRaw.isStepCell = true := rfl
+
+theorem certifiedSeedTermStepIdentityArrow_raw :
+    certifiedSeedTermStepIdentityArrow.toRaw =
+      PolyTerm.identity
+        (NegativeProbes.termStepVarZeroVarOneRawCell fxProfile) := rfl
+
+theorem certifiedSeedTermStepIdentityArrow_source :
+    certifiedSeedTermStepIdentityArrow.source =
+      NegativeProbes.termStepVarZeroVarOneRawCell fxProfile := rfl
+
+theorem certifiedSeedTermStepIdentityArrow_target :
+    certifiedSeedTermStepIdentityArrow.target =
+      NegativeProbes.termStepVarZeroVarOneRawCell fxProfile := rfl
+
+theorem certifiedSeedTermStepIdentityThinArrow_raw :
+    certifiedSeedTermStepIdentityThinArrow.toRaw =
+      PolyTerm.identity
+        (NegativeProbes.termStepVarZeroVarOneRawCell fxProfile) := rfl
+
+theorem certifiedSeedTermStepIdentityThinArrow_source :
+    certifiedSeedTermStepIdentityThinArrow.source =
+      NegativeProbes.termStepVarZeroVarOneRawCell fxProfile := rfl
+
+theorem certifiedSeedTermStepIdentityThinArrow_target :
+    certifiedSeedTermStepIdentityThinArrow.target =
+      NegativeProbes.termStepVarZeroVarOneRawCell fxProfile := rfl
 
 theorem certifiedSeedTermIdentityThinArrow_raw :
     certifiedSeedTermIdentityThinArrow.toRaw =
