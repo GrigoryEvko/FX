@@ -639,6 +639,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.constructorIndex_val_ofCell?_toCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.constructorName?_ofCell?_toCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.constructorName?_ofCell?_toCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.constructorName?_ofCell?_ofConstructorIndex_toCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.constructorName?_ofCell?_ofConstructorIndex_toCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.ofCell?_ofType_toCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.ofCell?_ofTypeConstructorName_toCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.ofCell?_ofTerm_toCell

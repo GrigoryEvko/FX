@@ -4419,6 +4419,25 @@ theorem FXType.constructorName?_ofCell?_toCell (typeCell : FXType) :
           exact FXType.constructorName?_ofCell?_of_isTypeCell
             (.atom cellId payload) hasTypeCell
 
+theorem FXTerm.constructorName?_ofCell?_ofConstructorIndex_toCell
+    (constructorIndex : Fin termGeneratorCount) (payload : Nat) :
+    (FXTerm.ofCell?
+        (FXTerm.ofConstructorIndex constructorIndex payload).toCell).bind
+        FXTerm.constructorName? =
+      FXTermConstructorName.ofCellId? constructorIndex.val := by
+  rw [FXTerm.constructorName?_ofCell?_toCell]
+  rfl
+
+theorem FXType.constructorName?_ofCell?_ofConstructorIndex_toCell
+    (constructorIndex : Fin typeGeneratorCount) (payload : Nat) :
+    (FXType.ofCell?
+        (FXType.ofConstructorIndex constructorIndex payload).toCell).bind
+        FXType.constructorName? =
+      FXTypeConstructorName.ofCellId?
+        (PolyTerm.firstTypeCellId + constructorIndex.val) := by
+  rw [FXType.constructorName?_ofCell?_toCell]
+  rfl
+
 theorem FXTerm.ofCell?_ofType_toCell (typeCell : FXType) :
     FXTerm.ofCell? typeCell.toCell = none := by
   exact FXTerm.ofCell?_of_not_isTermCell typeCell.toCell
