@@ -2550,6 +2550,102 @@ theorem FXDimZeroCellIdClass.isOutsideCurrentGeneratorRange_classifyTypeConstruc
       false := by
   cases constructorName <;> rfl
 
+theorem FXDimZeroCellIdClass.isTermConstructor_classifyTermConstructorIndex
+    (constructorIndex : Fin termGeneratorCount) :
+    (classifyDimZeroCellId constructorIndex.val).isTermConstructor =
+      true := by
+  unfold classifyDimZeroCellId
+  rw [dif_pos constructorIndex.isLt]
+  rfl
+
+theorem FXDimZeroCellIdClass.isTypeConstructor_classifyTermConstructorIndex
+    (constructorIndex : Fin termGeneratorCount) :
+    (classifyDimZeroCellId constructorIndex.val).isTypeConstructor =
+      false := by
+  unfold classifyDimZeroCellId
+  rw [dif_pos constructorIndex.isLt]
+  rfl
+
+theorem FXDimZeroCellIdClass.isOutsideCurrentGeneratorRange_classifyTermConstructorIndex
+    (constructorIndex : Fin termGeneratorCount) :
+    (classifyDimZeroCellId constructorIndex.val).isOutsideCurrentGeneratorRange =
+      false := by
+  unfold classifyDimZeroCellId
+  rw [dif_pos constructorIndex.isLt]
+  rfl
+
+theorem FXDimZeroCellIdClass.isTermConstructor_classifyTypeConstructorIndex
+    (constructorIndex : Fin typeGeneratorCount) :
+    (classifyDimZeroCellId
+      (PolyTerm.firstTypeCellId + constructorIndex.val)).isTermConstructor =
+      false := by
+  unfold classifyDimZeroCellId
+  have hasNoTermRange :
+      ¬PolyTerm.firstTypeCellId + constructorIndex.val <
+        termGeneratorCount := by
+    change
+      ¬PolyTerm.firstTypeCellId + constructorIndex.val <
+        PolyTerm.firstTypeCellId
+    exact Nat.not_lt_of_ge (Nat.le_add_right _ _)
+  have hasCurrentRange :
+      PolyTerm.firstTypeCellId + constructorIndex.val <
+        totalGeneratorCount := by
+    change
+      PolyTerm.firstTypeCellId + constructorIndex.val <
+        PolyTerm.typeCellIdLimit
+    exact Nat.add_lt_add_left constructorIndex.isLt
+      PolyTerm.firstTypeCellId
+  rw [dif_neg hasNoTermRange, dif_pos hasCurrentRange]
+  rfl
+
+theorem FXDimZeroCellIdClass.isTypeConstructor_classifyTypeConstructorIndex
+    (constructorIndex : Fin typeGeneratorCount) :
+    (classifyDimZeroCellId
+      (PolyTerm.firstTypeCellId + constructorIndex.val)).isTypeConstructor =
+      true := by
+  unfold classifyDimZeroCellId
+  have hasNoTermRange :
+      ¬PolyTerm.firstTypeCellId + constructorIndex.val <
+        termGeneratorCount := by
+    change
+      ¬PolyTerm.firstTypeCellId + constructorIndex.val <
+        PolyTerm.firstTypeCellId
+    exact Nat.not_lt_of_ge (Nat.le_add_right _ _)
+  have hasCurrentRange :
+      PolyTerm.firstTypeCellId + constructorIndex.val <
+        totalGeneratorCount := by
+    change
+      PolyTerm.firstTypeCellId + constructorIndex.val <
+        PolyTerm.typeCellIdLimit
+    exact Nat.add_lt_add_left constructorIndex.isLt
+      PolyTerm.firstTypeCellId
+  rw [dif_neg hasNoTermRange, dif_pos hasCurrentRange]
+  rfl
+
+theorem FXDimZeroCellIdClass.isOutsideCurrentGeneratorRange_classifyTypeConstructorIndex
+    (constructorIndex : Fin typeGeneratorCount) :
+    (classifyDimZeroCellId
+      (PolyTerm.firstTypeCellId + constructorIndex.val)).isOutsideCurrentGeneratorRange =
+      false := by
+  unfold classifyDimZeroCellId
+  have hasNoTermRange :
+      ¬PolyTerm.firstTypeCellId + constructorIndex.val <
+        termGeneratorCount := by
+    change
+      ¬PolyTerm.firstTypeCellId + constructorIndex.val <
+        PolyTerm.firstTypeCellId
+    exact Nat.not_lt_of_ge (Nat.le_add_right _ _)
+  have hasCurrentRange :
+      PolyTerm.firstTypeCellId + constructorIndex.val <
+        totalGeneratorCount := by
+    change
+      PolyTerm.firstTypeCellId + constructorIndex.val <
+        PolyTerm.typeCellIdLimit
+    exact Nat.add_lt_add_left constructorIndex.isLt
+      PolyTerm.firstTypeCellId
+  rw [dif_neg hasNoTermRange, dif_pos hasCurrentRange]
+  rfl
+
 theorem FXDimZeroCellIdClass.isTermConstructor_classifyOutsideCurrentGeneratorRange
     (cellId : CellId) (hasOutsideRange : totalGeneratorCount ≤ cellId) :
     (classifyDimZeroCellId cellId).isTermConstructor = false := by
@@ -3534,6 +3630,28 @@ theorem FXType.constructorName?_ofCellId?_of_isTypeConstructor
       rw [nat_add_sub_cancel_of_le_structural hasLowerBound]
     · rw [dif_neg hasCurrentRange] at hasTypeConstructor
       cases hasTypeConstructor
+
+theorem FXTerm.constructorName?_ofCellId?_ofConstructorIndex
+    (constructorIndex : Fin termGeneratorCount) (payload : Nat) :
+    (FXTerm.ofCellId? constructorIndex.val payload).bind
+        FXTerm.constructorName? =
+      FXTermConstructorName.ofCellId? constructorIndex.val := by
+  exact FXTerm.constructorName?_ofCellId?_of_isTermConstructor
+    constructorIndex.val payload
+    (FXDimZeroCellIdClass.isTermConstructor_classifyTermConstructorIndex
+      constructorIndex)
+
+theorem FXType.constructorName?_ofCellId?_ofConstructorIndex
+    (constructorIndex : Fin typeGeneratorCount) (payload : Nat) :
+    (FXType.ofCellId?
+        (PolyTerm.firstTypeCellId + constructorIndex.val) payload).bind
+        FXType.constructorName? =
+      FXTypeConstructorName.ofCellId?
+        (PolyTerm.firstTypeCellId + constructorIndex.val) := by
+  exact FXType.constructorName?_ofCellId?_of_isTypeConstructor
+    (PolyTerm.firstTypeCellId + constructorIndex.val) payload
+    (FXDimZeroCellIdClass.isTypeConstructor_classifyTypeConstructorIndex
+      constructorIndex)
 
 theorem FXTerm.constructorIndex_val_eq_cellId (term : FXTerm) :
     term.constructorIndex.val = term.cellId := by
