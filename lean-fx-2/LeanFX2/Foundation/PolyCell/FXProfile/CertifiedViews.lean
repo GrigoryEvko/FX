@@ -399,10 +399,40 @@ abbrev CertifiedFXTermArrow (scope : Nat)
     (sourceRaw targetRaw : PolyTerm fxProfile 0) :=
   CertifiedFXArrow .term 0 scope sourceRaw targetRaw
 
+/-- Endpoint-indexed certified type arrow at dimension 1. -/
+abbrev CertifiedFXTypeArrow (scope : Nat)
+    (sourceRaw targetRaw : PolyTerm fxProfile 0) :=
+  CertifiedFXArrow .type 0 scope sourceRaw targetRaw
+
+/-- Endpoint-indexed certified context arrow at dimension 1. -/
+abbrev CertifiedFXContextArrow (scope : Nat)
+    (sourceRaw targetRaw : PolyTerm fxProfile 0) :=
+  CertifiedFXArrow .context 0 scope sourceRaw targetRaw
+
+/-- Endpoint-indexed certified mode arrow at dimension 1. -/
+abbrev CertifiedFXModeArrow (scope : Nat)
+    (sourceRaw targetRaw : PolyTerm fxProfile 0) :=
+  CertifiedFXArrow .mode 0 scope sourceRaw targetRaw
+
 /-- Endpoint-indexed certified thin term arrow at dimension 1. -/
 abbrev CertifiedFXTermThinArrow (scope : Nat)
     (sourceRaw targetRaw : PolyTerm fxProfile 0) :=
   CertifiedFXThinArrow .term 0 scope sourceRaw targetRaw
+
+/-- Endpoint-indexed certified thin type arrow at dimension 1. -/
+abbrev CertifiedFXTypeThinArrow (scope : Nat)
+    (sourceRaw targetRaw : PolyTerm fxProfile 0) :=
+  CertifiedFXThinArrow .type 0 scope sourceRaw targetRaw
+
+/-- Endpoint-indexed certified thin context arrow at dimension 1. -/
+abbrev CertifiedFXContextThinArrow (scope : Nat)
+    (sourceRaw targetRaw : PolyTerm fxProfile 0) :=
+  CertifiedFXThinArrow .context 0 scope sourceRaw targetRaw
+
+/-- Endpoint-indexed certified thin mode arrow at dimension 1. -/
+abbrev CertifiedFXModeThinArrow (scope : Nat)
+    (sourceRaw targetRaw : PolyTerm fxProfile 0) :=
+  CertifiedFXThinArrow .mode 0 scope sourceRaw targetRaw
 
 /-- Seed certified term view from the current dim-0 ingress subset. -/
 def certifiedSeedTerm :
@@ -544,6 +574,27 @@ def certifiedSeedTermIdentityThinArrow :
       (NegativeProbes.seedTermAtom fxProfile)
       (NegativeProbes.seedTermAtom fxProfile) :=
   CertifiedFXThinArrow.identity certifiedSeedTerm
+
+/-- Endpoint-indexed thin arrow for the seed type identity. -/
+def certifiedSeedTypeIdentityThinArrow :
+    CertifiedFXTypeThinArrow NegativeProbes.defaultInferScope
+      (NegativeProbes.seedTypeAtom fxProfile)
+      (NegativeProbes.seedTypeAtom fxProfile) :=
+  CertifiedFXThinArrow.identity certifiedSeedType
+
+/-- Endpoint-indexed thin arrow for the seed context identity. -/
+def certifiedSeedContextIdentityThinArrow :
+    CertifiedFXContextThinArrow NegativeProbes.defaultInferScope
+      (NegativeProbes.seedContextAtom fxProfile)
+      (NegativeProbes.seedContextAtom fxProfile) :=
+  CertifiedFXThinArrow.identity certifiedSeedContext
+
+/-- Endpoint-indexed thin arrow for the seed mode identity. -/
+def certifiedSeedModeIdentityThinArrow :
+    CertifiedFXModeThinArrow NegativeProbes.defaultInferScope
+      (NegativeProbes.seedModeAtom fxProfile)
+      (NegativeProbes.seedModeAtom fxProfile) :=
+  CertifiedFXThinArrow.identity certifiedSeedMode
 
 /-- Endpoint-indexed thin arrow for the seed term identity composed with
 itself. -/
@@ -707,6 +758,42 @@ theorem certifiedSeedTermIdentityThinArrow_source :
 theorem certifiedSeedTermIdentityThinArrow_target :
     certifiedSeedTermIdentityThinArrow.target =
       NegativeProbes.seedTermAtom fxProfile := rfl
+
+theorem certifiedSeedTypeIdentityThinArrow_raw :
+    certifiedSeedTypeIdentityThinArrow.toRaw =
+      PolyTerm.identity (NegativeProbes.seedTypeAtom fxProfile) := rfl
+
+theorem certifiedSeedTypeIdentityThinArrow_source :
+    certifiedSeedTypeIdentityThinArrow.source =
+      NegativeProbes.seedTypeAtom fxProfile := rfl
+
+theorem certifiedSeedTypeIdentityThinArrow_target :
+    certifiedSeedTypeIdentityThinArrow.target =
+      NegativeProbes.seedTypeAtom fxProfile := rfl
+
+theorem certifiedSeedContextIdentityThinArrow_raw :
+    certifiedSeedContextIdentityThinArrow.toRaw =
+      PolyTerm.identity (NegativeProbes.seedContextAtom fxProfile) := rfl
+
+theorem certifiedSeedContextIdentityThinArrow_source :
+    certifiedSeedContextIdentityThinArrow.source =
+      NegativeProbes.seedContextAtom fxProfile := rfl
+
+theorem certifiedSeedContextIdentityThinArrow_target :
+    certifiedSeedContextIdentityThinArrow.target =
+      NegativeProbes.seedContextAtom fxProfile := rfl
+
+theorem certifiedSeedModeIdentityThinArrow_raw :
+    certifiedSeedModeIdentityThinArrow.toRaw =
+      PolyTerm.identity (NegativeProbes.seedModeAtom fxProfile) := rfl
+
+theorem certifiedSeedModeIdentityThinArrow_source :
+    certifiedSeedModeIdentityThinArrow.source =
+      NegativeProbes.seedModeAtom fxProfile := rfl
+
+theorem certifiedSeedModeIdentityThinArrow_target :
+    certifiedSeedModeIdentityThinArrow.target =
+      NegativeProbes.seedModeAtom fxProfile := rfl
 
 theorem certifiedSeedTermIdentityTwiceThinArrow_raw :
     certifiedSeedTermIdentityTwiceThinArrow.toRaw =
