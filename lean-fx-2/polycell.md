@@ -4602,6 +4602,7 @@ representable and computably rejected.
 | TCB.7g derived certified identity cells | `1b346406` | Certified identity cells are now derived from already certified base packages and exposed through certified FX views for seed term/type/context/mode cells plus the seed dim-1 term-step.  No raw identity dispatcher is added. |
 | TCB.7h expanded hostile rejection probes | `d647fada` | The negative catalog now covers application decoder sentinels, pi/context-cons sentinels, malformed identity bases, unsupported term-step variants, and well-screened `compH`.  Probe counts are ratcheted and every new rejection is audited. |
 | TCB.7i headline negative-probe theorems | `178b3cfa` | The negative catalog is partitioned by rejection family, with audited headline theorems for each inference, expected-shape, and certification-policy family.  Global probe counts are still ratcheted through the family lists. |
+| TCB.7j derived certified vertical composites | `3875a56b` | Certified vertical composition is now exposed only over already certified cells whose middle endpoint is definitionally shared.  A seed term-identity composite is available as a certified FX dim-1 term view; arbitrary raw `compV` ingress remains unsupported. |
 
 **Deliverables (NEW only):**
 
@@ -4627,9 +4628,10 @@ representable and computably rejected.
 | TCB.7g derived certified identity cells | `Foundation/PolyCell/Core/Certified.lean`, `Foundation/PolyCell/Core/Check.lean`, `Foundation/PolyCell/FXProfile/CertifiedViews.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds `identityCell` and `certifiedIdentityPackage`, deriving identity certificates only from already certified base cells. | Seed identity views erase definitionally to raw identity cells; malformed raw identity bases still reject through the screen; no raw identity ingress dispatcher is committed; `AuditPolyCell` keeps zero axiom and anti-vacuity budgets. |
 | TCB.7h expanded hostile rejection probes | `Foundation/PolyCell/Core/NegativeProbes.lean`, `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds hostile application decoder sentinel probes, pi/context-cons payload sentinel probes, raw identity over malformed base, extra unsupported term-step variants, and `compH` over well-screened operands. | Inference probes ratchet to 32 and certification probes to 6; every new fixture has a definitional rejection theorem and an audit entry; malformed application sentinels preserve `badPayload`, `wrongArity`, or `wrongChildShape` precisely. |
 | TCB.7i headline negative-probe theorems | `Foundation/PolyCell/Core/NegativeProbes.lean`, `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Groups inference, expected-shape, and certification probes by rejection family and adds audited headline theorems for each family. | Family counts plus global counts are ratcheted; the headline theorems are computable consequences of the existing checker runners and keep all hostile fixtures as regression data. |
-| TCB.7j certified FX operational views | `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | Future `FXStep`, `FXConv`, `FXCdLemma` as projections of certified positive-dimensional cells and thinness certificates. | Existing raw subtype views remain compatibility-only; new operational code uses certified views only after the corresponding positive-dimensional certification exists. |
+| TCB.7j derived certified vertical composites | `Foundation/PolyCell/Core/Certified.lean`, `Foundation/PolyCell/Core/Check.lean`, `Foundation/PolyCell/FXProfile/CertifiedViews.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds a certified vertical-composite helper and package over already certified cells whose shared middle endpoint is part of the type. | Raw erasure is definitional; the seed term identity composed with itself is exposed as a certified dim-1 term view; no equality casts or raw `compV` dispatcher are introduced. |
+| TCB.7k certified FX operational views | `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | Future `FXStep`, `FXConv`, `FXCdLemma` as projections of certified positive-dimensional cells and thinness certificates. | Existing raw subtype views remain compatibility-only; new operational code uses certified views only after the corresponding positive-dimensional certification exists. |
 
-**Implementation order after TCB.7i:**
+**Implementation order after TCB.7j:**
 
 1.  Do not broaden application by adding more one-off parent
     constructors.  The next application slice is a propext-free certified
@@ -4639,12 +4641,12 @@ representable and computably rejected.
 2.  If the reusable certified-child spine cannot be made audit-clean,
     keep using the decoder plus generic screen gate and move to
     positive-dimensional certification instead of weakening the TCB.
-3.  Continue positive-dimensional certification in this order:
-    vertical composition with definitional middle matching.  A
-    propext-free raw dispatcher for the already certified `.cell` fixture
-    remains desirable but blocked by audit evidence until a new pattern
-    is found.  Derived identity is complete for already certified bases;
-    raw identity ingress remains untrusted.  Certified `compH` remains
+3.  Continue positive-dimensional certification without broadening raw
+    ingress.  A propext-free raw dispatcher for the already certified
+    `.cell` fixture remains desirable but blocked by audit evidence until
+    a new pattern is found.  Derived identity and derived vertical
+    composition are complete for already certified inputs; raw identity
+    and raw `compV` ingress remain untrusted.  Certified `compH` remains
     blocked on real Gray-boundary semantics.
 4.  Keep the propext-free boundary-screen discipline: no `propext`,
     `Quot.sound`, `Classical`, `Inhabited`, `Nonempty`, hidden `False`
