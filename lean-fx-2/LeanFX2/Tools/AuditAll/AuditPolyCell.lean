@@ -556,6 +556,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.ofCellId?_ofConstructorName
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.ofCellId?_ofTypeConstructorIndex
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.ofCellId?_ofTermConstructorIndex
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.ofCellId?_ofTypeConstructorName
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.ofCellId?_ofTermConstructorName
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.ofCellId?_ofOutsideCurrentGeneratorRange
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.ofCellId?_ofOutsideCurrentGeneratorRange
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.ofCell?
@@ -586,7 +588,9 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.payload_ofCell?_toCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.constructorIndex_val_ofCell?_toCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.ofCell?_ofType_toCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.ofCell?_ofTypeConstructorName_toCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.ofCell?_ofTerm_toCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.ofCell?_ofTermConstructorName_toCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.ofCell?_ofOutsideCurrentGeneratorRange
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.ofCell?_ofOutsideCurrentGeneratorRange
 

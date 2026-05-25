@@ -3088,6 +3088,16 @@ theorem FXType.ofCellId?_ofTermConstructorIndex
   unfold classifyDimZeroCellId
   rw [dif_pos constructorIndex.isLt]
 
+theorem FXTerm.ofCellId?_ofTypeConstructorName
+    (constructorName : FXTypeConstructorName) (payload : Nat) :
+    FXTerm.ofCellId? constructorName.cellId payload = none := by
+  cases constructorName <;> rfl
+
+theorem FXType.ofCellId?_ofTermConstructorName
+    (constructorName : FXTermConstructorName) (payload : Nat) :
+    FXType.ofCellId? constructorName.cellId payload = none := by
+  cases constructorName <;> rfl
+
 theorem FXTerm.ofCellId?_ofOutsideCurrentGeneratorRange
     (cellId : CellId) (payload : Nat)
     (hasOutsideRange : totalGeneratorCount ≤ cellId) :
@@ -3728,6 +3738,14 @@ theorem FXTerm.ofCell?_ofType_toCell (typeCell : FXType) :
             exact Nat.not_lt_of_ge hasLowerBound
           rw [dif_neg hasNoTermRange, dif_pos hasCurrentRange]
 
+theorem FXTerm.ofCell?_ofTypeConstructorName_toCell
+    (constructorName : FXTypeConstructorName) (payload : Nat) :
+    FXTerm.ofCell?
+        (FXType.ofConstructorName constructorName payload).toCell =
+      none := by
+  change FXTerm.ofCellId? constructorName.cellId payload = none
+  exact FXTerm.ofCellId?_ofTypeConstructorName constructorName payload
+
 theorem FXType.ofCell?_ofTerm_toCell (term : FXTerm) :
     FXType.ofCell? term.toCell = none := by
   cases term with
@@ -3741,6 +3759,14 @@ theorem FXType.ofCell?_ofTerm_toCell (term : FXTerm) :
             change cellId < PolyTerm.termCellIdLimit
             exact of_decide_eq_true hRange
           rw [dif_pos hasTermRange]
+
+theorem FXType.ofCell?_ofTermConstructorName_toCell
+    (constructorName : FXTermConstructorName) (payload : Nat) :
+    FXType.ofCell?
+        (FXTerm.ofConstructorName constructorName payload).toCell =
+      none := by
+  change FXType.ofCellId? constructorName.cellId payload = none
+  exact FXType.ofCellId?_ofTermConstructorName constructorName payload
 
 theorem FXTerm.ofCell?_ofOutsideCurrentGeneratorRange
     (cellId : CellId) (payload : Nat)
