@@ -64,11 +64,11 @@ def MetatheoreticCapabilities.bot : MetatheoreticCapabilities where
 
 theorem MetatheoreticCapabilities.meet_comm (capA capB : MetatheoreticCapabilities) :
     capA.meet capB = capB.meet capA := by
-  cases capA; cases capB; simp [meet, Bool.and_comm]
+  cases capA; cases capB; unfold meet; congr 1 <;> apply Bool.and_comm
 
 theorem MetatheoreticCapabilities.meet_idempotent (cap : MetatheoreticCapabilities) :
     cap.meet cap = cap := by
-  cases cap; simp [meet, Bool.and_self]
+  cases cap; unfold meet; congr 1 <;> apply Bool.and_self
 
 inductive ConsistencyStrength : Type where
   | leanCore
