@@ -47,6 +47,18 @@ def toCertifiedCell {cellSort : CellSort} {cellDimension scope : Nat}
       cell.cellBoundary cell.rawCell :=
   cell.certifiedCell
 
+/-- Source endpoint of a certified positive-dimensional FX cell. -/
+def sourceRaw {cellSort : CellSort} {cellDimension scope : Nat}
+    (cell : CertifiedFXCell cellSort (cellDimension + 1) scope) :
+    PolyTerm fxProfile cellDimension :=
+  cell.cellBoundary.1
+
+/-- Target endpoint of a certified positive-dimensional FX cell. -/
+def targetRaw {cellSort : CellSort} {cellDimension scope : Nat}
+    (cell : CertifiedFXCell cellSort (cellDimension + 1) scope) :
+    PolyTerm fxProfile cellDimension :=
+  cell.cellBoundary.2
+
 end CertifiedFXCell
 
 /-- Certified FX context cell at dimension 0. -/
@@ -180,31 +192,87 @@ theorem certifiedSeedTermStep_raw :
     certifiedSeedTermStep.toRaw =
       NegativeProbes.termStepVarZeroVarOneRawCell fxProfile := rfl
 
+theorem certifiedSeedTermStep_sourceRaw :
+    certifiedSeedTermStep.sourceRaw =
+      NegativeProbes.seedTermAtom fxProfile := rfl
+
+theorem certifiedSeedTermStep_targetRaw :
+    certifiedSeedTermStep.targetRaw =
+      NegativeProbes.alternateTermAtom fxProfile := rfl
+
 theorem certifiedSeedTermIdentity_raw :
     certifiedSeedTermIdentity.toRaw =
       PolyTerm.identity (NegativeProbes.seedTermAtom fxProfile) := rfl
+
+theorem certifiedSeedTermIdentity_sourceRaw :
+    certifiedSeedTermIdentity.sourceRaw =
+      NegativeProbes.seedTermAtom fxProfile := rfl
+
+theorem certifiedSeedTermIdentity_targetRaw :
+    certifiedSeedTermIdentity.targetRaw =
+      NegativeProbes.seedTermAtom fxProfile := rfl
 
 theorem certifiedSeedTypeIdentity_raw :
     certifiedSeedTypeIdentity.toRaw =
       PolyTerm.identity (NegativeProbes.seedTypeAtom fxProfile) := rfl
 
+theorem certifiedSeedTypeIdentity_sourceRaw :
+    certifiedSeedTypeIdentity.sourceRaw =
+      NegativeProbes.seedTypeAtom fxProfile := rfl
+
+theorem certifiedSeedTypeIdentity_targetRaw :
+    certifiedSeedTypeIdentity.targetRaw =
+      NegativeProbes.seedTypeAtom fxProfile := rfl
+
 theorem certifiedSeedContextIdentity_raw :
     certifiedSeedContextIdentity.toRaw =
       PolyTerm.identity (NegativeProbes.seedContextAtom fxProfile) := rfl
 
+theorem certifiedSeedContextIdentity_sourceRaw :
+    certifiedSeedContextIdentity.sourceRaw =
+      NegativeProbes.seedContextAtom fxProfile := rfl
+
+theorem certifiedSeedContextIdentity_targetRaw :
+    certifiedSeedContextIdentity.targetRaw =
+      NegativeProbes.seedContextAtom fxProfile := rfl
+
 theorem certifiedSeedModeIdentity_raw :
     certifiedSeedModeIdentity.toRaw =
       PolyTerm.identity (NegativeProbes.seedModeAtom fxProfile) := rfl
+
+theorem certifiedSeedModeIdentity_sourceRaw :
+    certifiedSeedModeIdentity.sourceRaw =
+      NegativeProbes.seedModeAtom fxProfile := rfl
+
+theorem certifiedSeedModeIdentity_targetRaw :
+    certifiedSeedModeIdentity.targetRaw =
+      NegativeProbes.seedModeAtom fxProfile := rfl
 
 theorem certifiedSeedTermStepIdentity_raw :
     certifiedSeedTermStepIdentity.toRaw =
       PolyTerm.identity
         (NegativeProbes.termStepVarZeroVarOneRawCell fxProfile) := rfl
 
+theorem certifiedSeedTermStepIdentity_sourceRaw :
+    certifiedSeedTermStepIdentity.sourceRaw =
+      NegativeProbes.termStepVarZeroVarOneRawCell fxProfile := rfl
+
+theorem certifiedSeedTermStepIdentity_targetRaw :
+    certifiedSeedTermStepIdentity.targetRaw =
+      NegativeProbes.termStepVarZeroVarOneRawCell fxProfile := rfl
+
 theorem certifiedSeedTermIdentityTwice_raw :
     certifiedSeedTermIdentityTwice.toRaw =
       PolyTerm.compV
         (PolyTerm.identity (NegativeProbes.seedTermAtom fxProfile))
         (PolyTerm.identity (NegativeProbes.seedTermAtom fxProfile)) := rfl
+
+theorem certifiedSeedTermIdentityTwice_sourceRaw :
+    certifiedSeedTermIdentityTwice.sourceRaw =
+      NegativeProbes.seedTermAtom fxProfile := rfl
+
+theorem certifiedSeedTermIdentityTwice_targetRaw :
+    certifiedSeedTermIdentityTwice.targetRaw =
+      NegativeProbes.seedTermAtom fxProfile := rfl
 
 end LeanFX2.Foundation.PolyCell.FXProfile
