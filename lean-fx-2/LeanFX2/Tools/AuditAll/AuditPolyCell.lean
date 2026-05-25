@@ -348,6 +348,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXStep.target?_eq_source?_of_boundaryEvidence
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.cellId
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.cellId
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXCellAtZero.cellId
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXCellAtZero.payload
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXStep.seq
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXStep.seqChecked
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXStep.endpointEvidence_seqChecked
@@ -568,6 +570,12 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.ofCell?_of_not_isTermCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.toCell?_ofCell?_of_isTypeCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.ofCell?_of_not_isTypeCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.cellId_ofCell?_of_isTermCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.payload_ofCell?_of_isTermCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.constructorIndex_val_ofCell?_of_isTermCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.cellId_ofCell?_of_isTypeCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.payload_ofCell?_of_isTypeCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.constructorIndex_val_ofCell?_of_isTypeCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.ofCell?_ofConstructorIndex_toCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.ofCell?_ofConstructorName_toCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.ofCell?_ofConstructorName_toCell
