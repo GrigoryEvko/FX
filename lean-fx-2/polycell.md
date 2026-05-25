@@ -4614,6 +4614,7 @@ representable and computably rejected.
 | TCB.7s descriptor-indexed certified child spines | `e97831e1` | `CertifiedChildForRawDescriptor` and `CertifiedChildSpineForRawDescriptors` index certified child evidence by the raw descriptor spine it certifies.  The first application child package now exposes a descriptor-indexed spine over the decoder output and forgets back to the ordinary certified child spine.  No equality-field trust, new constructor family, raw dispatcher, or new accepted payload is added. |
 | TCB.7t descriptor spine erasure | `9c935bef` | Descriptor-indexed certified child evidence now erases back to exactly the raw descriptor it certifies, and descriptor-indexed certified spines erase back to exactly the raw descriptor spine they certify.  This is generic theorem-level glue only: no new raw dispatcher, constructor family, or accepted payload is added. |
 | TCB.7u certified operational names | `1b87a346` | Certified generating term steps now have an endpoint-indexed view requiring raw erasure to be a single generating dim-1 cell, and structural conversions are named as the current certified-thin term arrows.  This adds operational names over existing certified arrows/thin arrows only: no raw dispatcher, no legacy `Step`/`Conv` bridge, no cd/coherence view, and no new accepted payload is added. |
+| TCB.7v exact rejection family heads | `ca2b66bc` | Negative-probe headline theorems now bind each finite family to one exact rejection reason, instead of only checking each probe's stored expected reason.  This is a computable Bool-level theorem layer over the existing screens and certification policy; it adds no raw ingress, no new probes, no logical non-inhabitation claim, and no accepted payload. |
 
 **Deliverables (NEW only):**
 
@@ -4651,8 +4652,9 @@ representable and computably rejected.
 | TCB.7s descriptor-indexed certified child spines | `Foundation/PolyCell/Core/Certified.lean`, `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds descriptor-indexed certified children/spines where the certified cell raw index is the descriptor's raw cell.  The first application child package exposes this descriptor-indexed spine over the current decoder output. | The indexed spine forgets to ordinary certified children and preserves arity; it does not store a raw-equality proof field and does not broaden application ingress. |
 | TCB.7t descriptor spine erasure | `Foundation/PolyCell/Core/Certified.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds generic erasure theorems for `CertifiedChildForRawDescriptor` and `CertifiedChildSpineForRawDescriptors`: forgetting descriptor-indexed evidence to ordinary certified children and then to raw descriptors returns the descriptor spine in the index. | Both theorems are audit-gated and structural; no equality-field trust, raw dispatcher, certified constructor, or accepted payload is added. |
 | TCB.7u certified operational names | `Foundation/PolyCell/FXProfile/CertifiedViews.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds `CertifiedFXGeneratingStep` over endpoint-indexed certified term arrows plus `CertifiedFXStructuralConv` as the current structural-thin term-arrow name.  Seed generating-step and structural-reflexivity fixtures expose audited raw/source/target theorems. | The generating-step view requires `isGeneratingStepCell = true`; structural conversion is only identity/thin-vertical-composite thinness.  This is not the legacy `Step`/`Conv` bridge and adds no new raw ingress, certified constructors, cd fillers, or accepted payloads. |
+| TCB.7v exact rejection family heads | `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds exact-reason family runners and audited theorem heads for inference, expected-shape, and certification-policy negative families. | Each finite family is checked against one named `CellCheckRejection`; this remains executable screen/policy evidence, not a theorem that no `PolyCell` inhabitant exists.  No new raw cells are admitted. |
 
-**Implementation order after TCB.7u:**
+**Implementation order after TCB.7v:**
 
 1.  Do not broaden application by adding more one-off parent
     constructors.  Descriptor-indexed child spines over
@@ -4701,22 +4703,19 @@ representable and computably rejected.
 8.  Legacy bridge: connect the existing intrinsic kernel judgments to
     certified views only after the checker has nonempty accepted
     witnesses and the audit proves every new declaration axiom-free.
-9.  For each new negative-probe family, prefer a small headline theorem
-    over a broad informal claim.  The headline should state exactly which
-    checker or certification policy rejects the finite probe family, for
-    example malformed payloads, wrong arity, wrong child sort, wrong
-    child dimension, wrong child scope, wrong expected sort, bad
-    endpoint, bad vertical boundary,
-    unsupported `compH`, or screen-passing but unsupported certification.
-    Over time, fold those executable families under well-scoped PolyCell
-    theorem heads such as "this finite family has no certified inhabitant"
-    or "this finite family cannot pass this expected-shape checker", but
-    only after the statement is non-vacuous and grounded in an explicit
-    finite probe list or a real constructor-index obstruction.  Stronger
-    non-inhabitation theorems are allowed only when they follow from
-    certified constructors and indices without excluded middle, `propext`,
-    `Classical`, `Inhabited`, `Nonempty`, or empty-domain tricks.  Keep the
-    theorem name scoped to the actual obstruction: infer-screen rejection,
+9.  For each new negative-probe family, keep both theorem layers:
+    (a) the existing "stored expected reason rejects" headline and
+    (b) the TCB.7v exact-reason headline saying the whole finite family
+    rejects as one named `CellCheckRejection`.  Over time, fold those
+    executable families under well-scoped PolyCell theorem heads such as
+    "this finite family has no certified inhabitant" or "this finite
+    family cannot pass this expected-shape checker", but only after the
+    statement is non-vacuous and grounded in an explicit finite probe list
+    or a real constructor-index obstruction.  Stronger non-inhabitation
+    theorems are allowed only when they follow from certified constructors
+    and indices without excluded middle, `propext`, `Classical`,
+    `Inhabited`, `Nonempty`, or empty-domain tricks.  Keep the theorem name
+    scoped to the actual obstruction: infer-screen rejection,
     expected-shape rejection, certification-policy rejection,
     child-descriptor mismatch, boundary mismatch, or constructor-index
     non-inhabitation.
