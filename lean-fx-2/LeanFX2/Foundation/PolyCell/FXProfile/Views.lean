@@ -1281,4 +1281,46 @@ theorem firstTypeCellId_eq_termGeneratorCount :
 theorem typeCellIdLimit_eq_totalGeneratorCount :
     PolyTerm.typeCellIdLimit = totalGeneratorCount := rfl
 
+/-- Construct an FX term from a checked index into the current term-id block. -/
+def FXTerm.ofConstructorIndex (constructorIndex : Fin termGeneratorCount)
+    (payload : Nat) : FXTerm :=
+  ⟨.atom constructorIndex.val payload, by
+    change decide (constructorIndex.val < PolyTerm.termCellIdLimit) = true
+    exact decide_eq_true constructorIndex.isLt⟩
+
+/-- Construct an FX type from a checked index into the current type-id block. -/
+def FXType.ofConstructorIndex (constructorIndex : Fin typeGeneratorCount)
+    (payload : Nat) : FXType :=
+  ⟨.atom (PolyTerm.firstTypeCellId + constructorIndex.val) payload, by
+    change
+      (decide
+          (PolyTerm.firstTypeCellId ≤
+            PolyTerm.firstTypeCellId + constructorIndex.val) &&
+        decide
+          (PolyTerm.firstTypeCellId + constructorIndex.val <
+            PolyTerm.typeCellIdLimit)) = true
+    have hasLowerBound :
+        decide
+          (PolyTerm.firstTypeCellId ≤
+            PolyTerm.firstTypeCellId + constructorIndex.val) = true :=
+      decide_eq_true (Nat.le_add_right _ _)
+    have hasUpperBound :
+        decide
+          (PolyTerm.firstTypeCellId + constructorIndex.val <
+            PolyTerm.typeCellIdLimit) = true :=
+      decide_eq_true (Nat.add_lt_add_left constructorIndex.isLt
+        PolyTerm.firstTypeCellId)
+    rw [hasLowerBound, hasUpperBound]
+    rfl⟩
+
+theorem FXTerm.cellId_ofConstructorIndex
+    (constructorIndex : Fin termGeneratorCount) (payload : Nat) :
+    (FXTerm.ofConstructorIndex constructorIndex payload).cellId =
+      constructorIndex.val := rfl
+
+theorem FXType.cellId_ofConstructorIndex
+    (constructorIndex : Fin typeGeneratorCount) (payload : Nat) :
+    (FXType.ofConstructorIndex constructorIndex payload).cellId =
+      PolyTerm.firstTypeCellId + constructorIndex.val := rfl
+
 end LeanFX2.Foundation.PolyCell.FXProfile

@@ -398,6 +398,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.totalGeneratorCount_eq_currentTermAndTypeConstructors
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.firstTypeCellId_eq_termGeneratorCount
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.typeCellIdLimit_eq_totalGeneratorCount
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.ofConstructorIndex
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.ofConstructorIndex
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.cellId_ofConstructorIndex
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.cellId_ofConstructorIndex
 
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Stratification.isPositiveDimension
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Stratification.isPositiveDimension_zero
