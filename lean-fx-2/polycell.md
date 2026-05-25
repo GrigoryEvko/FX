@@ -4620,6 +4620,7 @@ representable and computably rejected.
 | TCB.7y dim-two seed term arrow | `493ecacf` | The identity over the seed dim-1 term step is now exposed as endpoint-indexed dim-2 term arrow and thin-arrow views, with audited definitional raw/source/target theorems.  No checker change, raw ingress, new probe, certified constructor, or accepted payload is added. |
 | TCB.7z rejection-reason coverage matrix | `aa34f94f` | Every `CellCheckRejection` constructor is now mapped to the exact nonempty negative-probe family or families that cover it, with an audited headline theorem over `CellCheckRejection.all`.  This is still executable checker coverage, not a `False` theorem or certified-cell non-inhabitation claim. |
 | TCB.7aa accepted-ingress coverage matrix | `c4858ea1` | The current finite accepted ingress fixtures now have audited shape-coverage headlines: seed term/type/context/mode atoms, `app(var 0, var 1)`, and the direct `termStep(var 0, var 1)` path.  This adds no raw ingress, no accepted payload, no probe, no dispatcher, and no non-inhabitation claim. |
+| TCB.7ab application expected-shape probes | `75d6d741` | Expected-shape hostile probes now cover the accepted application checked as type/context/mode, and preserve malformed application `badPayload`, `wrongArity`, and `wrongChildShape` rejections through `checkRawCellAs?`.  The rejection-reason coverage matrix now requires these expected-shape families where they exist. |
 
 **Deliverables (NEW only):**
 
@@ -4663,8 +4664,9 @@ representable and computably rejected.
 | TCB.7y dim-two seed term arrow | `Foundation/PolyCell/FXProfile/CertifiedViews.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds dim-2 endpoint-indexed term arrow/thin-arrow aliases and seed identity-over-step views. | All raw/source/target theorems are definitional and audit-gated; no new certified constructors, checker acceptance, raw ingress, or negative-probe theorem shape is added. |
 | TCB.7z rejection-reason coverage matrix | `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds per-`CellCheckRejection` coverage dispatch plus a headline over `CellCheckRejection.all`. | Adding a rejection constructor forces a new coverage branch; reasons with both inference and certification probes require both exact families.  No probe, checker acceptance, raw ingress, or non-inhabitation theorem is added. |
 | TCB.7aa accepted-ingress coverage matrix | `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds accepted-ingress shape coverage for the current finite positive domain: four seed dim-0 atoms, the accepted application fixture, and the direct dim-1 term-step fixture. | Coverage checks acceptance, dimension, and sort; generic raw-erasure theorem heads remain separate.  No raw dispatcher, accepted payload, negative probe, or non-inhabitation theorem is added. |
+| TCB.7ab application expected-shape probes | `Foundation/PolyCell/Core/NegativeProbes.lean`, `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds three application wrong-sort expected-shape probes plus three malformed-application expected-shape pass-through probes. | Expected-shape probe count ratchets to 15; wrong-sort expected-shape probes ratchet to 12; bad-payload, wrong-arity, and wrong-child-shape expected-shape families are nonempty and exact-reason audited.  No accepted raw input or certified constructor is added. |
 
-**Implementation order after TCB.7aa:**
+**Implementation order after TCB.7ab:**
 
 1.  Do not broaden application by adding more one-off parent
     constructors.  Descriptor-indexed child spines over
