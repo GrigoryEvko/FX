@@ -11,10 +11,16 @@ import LeanFX2.Reduction.Cumul.Promotion
 
 namespace LeanFX2.Tools
 
-/-! ## AuditConvCumul — 52 `#assert_no_axioms` checks. -/
+/-! ## AuditConvCumul — curated `#assert_no_axioms` checks.
+
+TODO POLYCELL: a few `_toConv` cascade bridge declarations referenced
+by the old audit list are no longer present after the cascade bulldoze.
+They remain documented below as stale missing targets rather than being
+silently audited. -/
 
 #assert_no_axioms LeanFX2.ConvCumul.betaModElimIntroCumul
-#assert_no_axioms LeanFX2.ConvCumul.betaModElimIntroCumul_toConv
+-- TODO POLYCELL stale missing:
+-- #assert_no_axioms LeanFX2.ConvCumul.betaModElimIntroCumul_toConv
 #assert_no_axioms LeanFX2.ConvCumul.intervalOppCong
 #assert_no_axioms LeanFX2.ConvCumul.intervalMeetCong
 #assert_no_axioms LeanFX2.ConvCumul.intervalJoinCong
@@ -38,12 +44,14 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.ConvCumul.recordIntroCong
 #assert_no_axioms LeanFX2.ConvCumul.recordProjCong
 #assert_no_axioms LeanFX2.ConvCumul.betaRecordProjIntroCumul
-#assert_no_axioms LeanFX2.ConvCumul.betaRecordProjIntroCumul_toConv
+-- TODO POLYCELL stale missing:
+-- #assert_no_axioms LeanFX2.ConvCumul.betaRecordProjIntroCumul_toConv
 #assert_no_axioms LeanFX2.ConvCumul.subst_compatible_recordIntro_allais
 #assert_no_axioms LeanFX2.ConvCumul.subst_compatible_recordProj_allais
 #assert_no_axioms LeanFX2.ConvCumul.idStrictRecCong
 #assert_no_axioms LeanFX2.ConvCumul.iotaIdStrictRecReflCumul
-#assert_no_axioms LeanFX2.ConvCumul.iotaIdStrictRecReflCumul_toConv
+-- TODO POLYCELL stale missing:
+-- #assert_no_axioms LeanFX2.ConvCumul.iotaIdStrictRecReflCumul_toConv
 #assert_no_axioms LeanFX2.ConvCumul.subst_compatible_idStrictRefl_allais
 #assert_no_axioms LeanFX2.ConvCumul.subst_compatible_idStrictRec_allais
 #assert_no_axioms LeanFX2.ConvCumul.equivAppCong
@@ -56,7 +64,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.ConvCumul.codataUnfoldCong
 #assert_no_axioms LeanFX2.ConvCumul.codataDestCong
 #assert_no_axioms LeanFX2.ConvCumul.betaCodataDestUnfoldCumul
-#assert_no_axioms LeanFX2.ConvCumul.betaCodataDestUnfoldCumul_toConv
+-- TODO POLYCELL stale missing:
+-- #assert_no_axioms LeanFX2.ConvCumul.betaCodataDestUnfoldCumul_toConv
 #assert_no_axioms LeanFX2.ConvCumul.subst_compatible_codataUnfold_allais
 #assert_no_axioms LeanFX2.ConvCumul.subst_compatible_codataDest_allais
 #assert_no_axioms LeanFX2.ConvCumul.sessionSendCong
@@ -102,30 +111,30 @@ base arms (var / unit / cumulUp) — the load-bearing core of
 plumbing.  These thread the cross-level cumul relation back into the
 homogeneous `Conv` relation that the conversion checker consumes. -/
 
-#assert_no_axioms LeanFX2.ConvCumul.refl_toConv
-#assert_no_axioms LeanFX2.ConvCumul.toConv_toConvCumul_refl
-#assert_no_axioms LeanFX2.ConvCumul.sym_via_refl
-#assert_no_axioms LeanFX2.ConvCumul.refl_inverse_identity
-#assert_no_axioms LeanFX2.ConvCumul.refl_inverse_roundtrip_B
-#assert_no_axioms LeanFX2.ConvCumul.betaApp_roundtrip_eq
-#assert_no_axioms LeanFX2.ConvCumul.betaAppCumul_toConv
-#assert_no_axioms LeanFX2.ConvCumul.betaAppPiCumul_toConv
-#assert_no_axioms LeanFX2.ConvCumul.betaFstPairCumul_toConv
-#assert_no_axioms LeanFX2.ConvCumul.betaSndPairCumul_toConv
-#assert_no_axioms LeanFX2.ConvCumul.betaPathAppCumul_toConv
-#assert_no_axioms LeanFX2.ConvCumul.betaGlueElimIntroCumul_toConv
-#assert_no_axioms LeanFX2.ConvCumul.iotaBoolElimTrueCumul_toConv
-#assert_no_axioms LeanFX2.ConvCumul.iotaBoolElimFalseCumul_toConv
-#assert_no_axioms LeanFX2.ConvCumul.iotaNatElimZeroCumul_toConv
-#assert_no_axioms LeanFX2.ConvCumul.iotaNatElimSuccCumul_toConv
-#assert_no_axioms LeanFX2.ConvCumul.iotaNatRecZeroCumul_toConv
-#assert_no_axioms LeanFX2.ConvCumul.iotaNatRecSuccCumul_toConv
-#assert_no_axioms LeanFX2.ConvCumul.iotaListElimNilCumul_toConv
-#assert_no_axioms LeanFX2.ConvCumul.iotaListElimConsCumul_toConv
-#assert_no_axioms LeanFX2.ConvCumul.iotaOptionMatchNoneCumul_toConv
-#assert_no_axioms LeanFX2.ConvCumul.iotaOptionMatchSomeCumul_toConv
-#assert_no_axioms LeanFX2.ConvCumul.iotaEitherMatchInlCumul_toConv
-#assert_no_axioms LeanFX2.ConvCumul.iotaEitherMatchInrCumul_toConv
-#assert_no_axioms LeanFX2.ConvCumul.iotaIdJReflCumul_toConv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.ConvCumul.refl_toConv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.ConvCumul.toConv_toConvCumul_refl
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.ConvCumul.sym_via_refl
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.ConvCumul.refl_inverse_identity
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.ConvCumul.refl_inverse_roundtrip_B
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.ConvCumul.betaApp_roundtrip_eq
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.ConvCumul.betaAppCumul_toConv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.ConvCumul.betaAppPiCumul_toConv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.ConvCumul.betaFstPairCumul_toConv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.ConvCumul.betaSndPairCumul_toConv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.ConvCumul.betaPathAppCumul_toConv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.ConvCumul.betaGlueElimIntroCumul_toConv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.ConvCumul.iotaBoolElimTrueCumul_toConv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.ConvCumul.iotaBoolElimFalseCumul_toConv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.ConvCumul.iotaNatElimZeroCumul_toConv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.ConvCumul.iotaNatElimSuccCumul_toConv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.ConvCumul.iotaNatRecZeroCumul_toConv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.ConvCumul.iotaNatRecSuccCumul_toConv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.ConvCumul.iotaListElimNilCumul_toConv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.ConvCumul.iotaListElimConsCumul_toConv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.ConvCumul.iotaOptionMatchNoneCumul_toConv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.ConvCumul.iotaOptionMatchSomeCumul_toConv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.ConvCumul.iotaEitherMatchInlCumul_toConv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.ConvCumul.iotaEitherMatchInrCumul_toConv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.ConvCumul.iotaIdJReflCumul_toConv
 
 end LeanFX2.Tools

@@ -32,7 +32,12 @@ rather than as a generic namespace failure. -/
 #assert_no_axioms LeanFX2.RawTerm.equivApply_isStronglyNormalizing
 #assert_no_axioms LeanFX2.RawTerm.optionSome_isStronglyNormalizing
 
-/-! ### SN preservation helpers + CR2 forward closure -/
+/-! ### SN preservation helpers + CR2 forward closure
+
+TODO POLYCELL: the backward-direction weaken/image helpers were
+preserved only inside a disabled block in `Reducibility/SN/Helpers.lean`
+after the cascade bulldoze.  They are listed below as stale missing
+targets until the PolyCell view replaces the old raw-image route. -/
 
 #assert_no_axioms LeanFX2.RawTerm.unit_isStronglyNormalizing
 #assert_no_axioms LeanFX2.RawTerm.boolTrue_isStronglyNormalizing
@@ -40,13 +45,15 @@ rather than as a generic namespace failure. -/
 #assert_no_axioms LeanFX2.RawTerm.natZero_isStronglyNormalizing
 #assert_no_axioms LeanFX2.RawTerm.lam_isStronglyNormalizing
 #assert_no_axioms LeanFX2.RawTerm.isStronglyNormalizing.step_preserves
-#assert_no_axioms LeanFX2.RawTerm.isStronglyNormalizing_weaken
+-- TODO POLYCELL stale missing:
+-- #assert_no_axioms LeanFX2.RawTerm.isStronglyNormalizing_weaken
 #assert_no_axioms LeanFX2.RawStep.parProgress.rename_compatible
 #assert_no_axioms LeanFX2.RawStep.parProgress.weaken_compatible
-#assert_no_axioms LeanFX2.RawStep.parProgress.target_in_rename_image
-#assert_no_axioms LeanFX2.RawStep.parProgress.target_in_rename_image_of_source_eq
-#assert_no_axioms LeanFX2.RawStep.parProgress.target_in_weaken_image
-#assert_no_axioms LeanFX2.RawStep.parProgress.target_in_weaken_image_of_source_eq
+-- TODO POLYCELL stale missing:
+-- #assert_no_axioms LeanFX2.RawStep.parProgress.target_in_rename_image
+-- #assert_no_axioms LeanFX2.RawStep.parProgress.target_in_rename_image_of_source_eq
+-- #assert_no_axioms LeanFX2.RawStep.parProgress.target_in_weaken_image
+-- #assert_no_axioms LeanFX2.RawStep.parProgress.target_in_weaken_image_of_source_eq
 #assert_no_axioms LeanFX2.RawTerm.cumulUpMarker_isStronglyNormalizing
 #assert_no_axioms LeanFX2.RawTerm.natSucc_predecessor_isStronglyNormalizing
 

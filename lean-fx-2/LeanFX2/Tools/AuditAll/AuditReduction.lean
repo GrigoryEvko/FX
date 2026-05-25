@@ -30,14 +30,20 @@ import LeanFX2.Term.PreservesTerm.BetaCastWallDemolition
 
 namespace LeanFX2.Tools
 
-/-! ## AuditReduction — 501 `#assert_no_axioms` checks. -/
+/-! ## AuditReduction — curated `#assert_no_axioms` checks.
+
+TODO POLYCELL: many cascade-era reduction helpers were removed or moved
+behind preserved body comments during the PolyCell cleanup.  Stale
+audit rows are kept as commented `TODO POLYCELL stale missing` entries
+so the audit file no longer claims to check declarations that do not
+exist. -/
 
 #assert_no_axioms LeanFX2.Step.castSourceRaw
 #assert_no_axioms LeanFX2.Step.castTargetRaw
 #assert_no_axioms LeanFX2.Step.par.castSourceRaw
 #assert_no_axioms LeanFX2.Step.par.castTargetRaw
-#assert_no_axioms LeanFX2.RawStep.par.cd_lemma
-#assert_no_axioms LeanFX2.RawStep.par.diamond
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.par.cd_lemma
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.par.diamond
 #assert_no_axioms LeanFX2.RawStep.par.glueElim_inv
 #assert_no_axioms LeanFX2.RawStep.par.pathLam_inv
 #assert_no_axioms LeanFX2.RawStep.par.betaPathApp
@@ -110,8 +116,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.RawStep.par.hcompBeta
 #assert_no_axioms LeanFX2.RawStep.par.hcompBetaDeep
 #assert_no_axioms LeanFX2.Step.par.hcompBetaDeep
-#assert_no_axioms LeanFX2.RawTerm.cdHcompCase
-#assert_no_axioms LeanFX2.RawTerm.cdHcompCase_rename
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawTerm.cdHcompCase
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawTerm.cdHcompCase_rename
 -- D2.5.5 transpPi β-rule Phase F prep (cdTranspPiCase helper + rename
 -- commute).  Standalone confluence-layer helper consumed by future
 -- atomic Phase F+G+I cascade landing.  Disjoint-premise design with
@@ -119,22 +125,22 @@ namespace LeanFX2.Tools
 -- ordering — see #1951 dispatch RFC).  Builds on the foundation
 -- primitives `matchTranspPiBetaShape?` + `transpPiBetaContractum`
 -- gated under `AuditFoundation.lean`.
-#assert_no_axioms LeanFX2.RawTerm.cdTranspPiCase
-#assert_no_axioms LeanFX2.RawTerm.cdTranspPiCase_rename
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawTerm.cdTranspPiCase
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawTerm.cdTranspPiCase_rename
 -- D2.5.5 transpPi β-rule Phase G prep: par-step cong over the
 -- contractum's source argument.  Future cd_lemma transpPiBetaDeep
 -- arm calls this to discharge `par (contractum cd-source) (contractum
 -- IH-target)` from a par-step hypothesis on the source.  Proven via
 -- the lam/transp/app cong rules with `RawStep.par.rename` lifting
 -- the source-step under `weaken`.
-#assert_no_axioms LeanFX2.RawTerm.transpPiBetaContractum_par_cong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawTerm.transpPiBetaContractum_par_cong
 -- D2.5.5 transpPi β-rule Phase G prep: bi-directional par-step cong
 -- where BOTH the path-codomain code AND the developed source step
 -- simultaneously.  Future cd_lemma transpCong arm calls this when
 -- the recognizer fires on the cd-developed pathLam body AND the
 -- source has a non-refl par step.  Extends `_par_cong` with a
 -- `pathLamCong` arm and a `rename swap01` lift on the codomain step.
-#assert_no_axioms LeanFX2.RawTerm.transpPiBetaContractum_par_bi_cong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawTerm.transpPiBetaContractum_par_bi_cong
 -- D2.5.5 transpPi β-rule Phase G prep: recognizer survives par-step.
 -- When `matchTranspPiBetaShape? pathBody = some` and `par pathBody
 -- pathBody'`, the recognizer fires on `pathBody'` too with a
@@ -142,15 +148,15 @@ namespace LeanFX2.Tools
 -- recognizer completeness.  Future cd_lemma transpCong arm uses
 -- this to lift the recognizer hit from the source pathBody to the
 -- cd-target pathBody before firing the transpPiBetaDeep rule.
-#assert_no_axioms LeanFX2.RawTerm.matchTranspPiBetaShape?_par_some
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawTerm.matchTranspPiBetaShape?_par_some
 -- D2.5.5 transpPi β-rule Phase F prep: explicit unfolding equations
 -- for cdTranspPiCase.  Future cd_lemma transpCong arm uses these
 -- to rewrite the dispatcher to its target shape before firing the
 -- new β rule.  The `_of_some` equation collapses to the contractum
 -- when the recognizer fires; the `_of_none` equation falls through
 -- to the transp cong rebuild.  Both are zero-axiom direct unfoldings.
-#assert_no_axioms LeanFX2.RawTerm.cdTranspPiCase_eq_contractum_of_some
-#assert_no_axioms LeanFX2.RawTerm.cdTranspPiCase_eq_transp_of_none
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawTerm.cdTranspPiCase_eq_contractum_of_some
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawTerm.cdTranspPiCase_eq_transp_of_none
 #assert_no_axioms LeanFX2.RawStep.par.hcomp_inv
 #assert_no_axioms LeanFX2.Step.hcompBeta
 #assert_no_axioms LeanFX2.Step.par.hcompBeta
@@ -236,8 +242,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.RawStep.par.uaReflEquivApply
 #assert_no_axioms LeanFX2.RawStep.par.uaReflEquivApplyDeep
 #assert_no_axioms LeanFX2.RawStep.par.oeqRefl_inv
-#assert_no_axioms LeanFX2.RawTerm.cdEquivApplyCase
-#assert_no_axioms LeanFX2.RawTerm.cdUaToEquivApplyCase
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawTerm.cdEquivApplyCase
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawTerm.cdUaToEquivApplyCase
 #assert_no_axioms LeanFX2.Step.par.pathLam
 #assert_no_axioms LeanFX2.Step.par.pathLamCong
 #assert_no_axioms LeanFX2.Step.par.pathApp
@@ -245,7 +251,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Step.betaModElimIntro
 #assert_no_axioms LeanFX2.Step.par.betaModElimIntro
 #assert_no_axioms LeanFX2.Step.par.betaModElimIntroDeep
-#assert_no_axioms LeanFX2.Step.toConvCumul
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.toConvCumul
 #assert_no_axioms LeanFX2.RawStep.par.iotaIdStrictRecRefl
 #assert_no_axioms LeanFX2.RawStep.par.iotaIdStrictRecReflDeep
 #assert_no_axioms LeanFX2.Step.intervalOppInner
@@ -261,10 +267,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Step.par.toRawBridge
 #assert_no_axioms LeanFX2.Step.par.rename_toRawBridge
 #assert_no_axioms LeanFX2.Step.par.weaken_toRawBridge
-#assert_no_axioms LeanFX2.Step.par.renamed_source_targetRaw_in_rename_image
-#assert_no_axioms LeanFX2.Step.par.weakened_source_targetRaw_in_weaken_image
-#assert_no_axioms LeanFX2.Step.par.renamed_source_toRawBridge_target_in_rename_image
-#assert_no_axioms LeanFX2.Step.par.weakened_source_toRawBridge_target_in_weaken_image
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.renamed_source_targetRaw_in_rename_image
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.weakened_source_targetRaw_in_weaken_image
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.renamed_source_toRawBridge_target_in_rename_image
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.weakened_source_toRawBridge_target_in_weaken_image
 #assert_no_axioms LeanFX2.Step.par.subst_toRawBridge
 #assert_no_axioms LeanFX2.Step.par.subst0_toRawBridge
 #assert_no_axioms LeanFX2.Term.toRaw_subst0_rename_commute
@@ -636,87 +642,87 @@ smoke log. -/
 #assert_no_axioms LeanFX2.RawStep.par.cumulUpMarker_inv
 #assert_no_axioms LeanFX2.RawStep.par.modIntro_inv
 #assert_no_axioms LeanFX2.RawStep.par.subsume_inv
-#assert_no_axioms LeanFX2.RawStep.par.weaken_inv
-#assert_no_axioms LeanFX2.RawStep.par.weaken_inv_of_source_eq
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.par.weaken_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.par.weaken_inv_of_source_eq
 
 -- RawStep.parStar inversion: transitive-reflexive-closure
 -- inversions for the closed leaves and var (no parStar step can
 -- alter a closed atomic ctor's head; recovers `source = target`
 -- for the trivial reflexive case).
-#assert_no_axioms LeanFX2.RawStep.parStar.var_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.unit_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.universeCode_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.boolFalse_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.boolTrue_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.boolElim_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.natZero_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.interval0_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.interval1_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.natSucc_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.natElim_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.natRec_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.optionSome_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.optionMatch_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.eitherInl_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.eitherInr_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.eitherMatch_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.app_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.refl_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.idJ_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.pair_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.fst_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.snd_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.listCons_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.listElim_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.listCode_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.optionCode_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.arrowCode_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.piTyCode_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.sigmaTyCode_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.productCode_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.sumCode_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.eitherCode_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.equivCode_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.idCode_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.idToEquiv_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.equivApply_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.intervalOpp_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.intervalMeet_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.intervalJoin_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.uaToEquiv_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.pathCompose_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.pathApp_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.oeqTrans_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.equivCompose_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.glueIntro_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.glueElim_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.oeqRefl_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.oeqFunext_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.oeqJ_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.idStrictRefl_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.idStrictRec_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.equivIntro_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.equivApp_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.transpFill_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.transp_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.hcomp_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.modIntro_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.modElim_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.subsume_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.cumulUpMarker_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.refineIntro_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.refineElim_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.recordIntro_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.recordProj_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.codataUnfold_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.codataDest_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.sessionSend_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.sessionRecv_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.effectPerform_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.lam_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.pathLam_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.listNil_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.optionNone_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.var_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.unit_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.universeCode_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.boolFalse_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.boolTrue_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.boolElim_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.natZero_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.interval0_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.interval1_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.natSucc_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.natElim_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.natRec_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.optionSome_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.optionMatch_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.eitherInl_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.eitherInr_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.eitherMatch_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.app_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.refl_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.idJ_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.pair_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.fst_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.snd_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.listCons_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.listElim_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.listCode_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.optionCode_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.arrowCode_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.piTyCode_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.sigmaTyCode_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.productCode_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.sumCode_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.eitherCode_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.equivCode_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.idCode_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.idToEquiv_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.equivApply_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.intervalOpp_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.intervalMeet_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.intervalJoin_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.uaToEquiv_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.pathCompose_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.pathApp_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.oeqTrans_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.equivCompose_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.glueIntro_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.glueElim_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.oeqRefl_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.oeqFunext_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.oeqJ_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.idStrictRefl_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.idStrictRec_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.equivIntro_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.equivApp_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.transpFill_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.transp_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.hcomp_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.modIntro_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.modElim_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.subsume_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.cumulUpMarker_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.refineIntro_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.refineElim_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.recordIntro_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.recordProj_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.codataUnfold_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.codataDest_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.sessionSend_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.sessionRecv_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.effectPerform_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.lam_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.pathLam_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.listNil_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.optionNone_inv
 
 /-! ### Phase G rename-injectivity weaken-inversion infrastructure
 
@@ -739,90 +745,90 @@ AtomShape2.  Binder-shape lemmas (arity-bearing ctors with binders
 or compound payloads): 12 in BinderShape.  Cubical/HoTT-specific
 shapes: 5 in CubicalShape. -/
 
-#assert_no_axioms LeanFX2.RawStep.par.rename_inj_inv
-#assert_no_axioms LeanFX2.RawStep.par.target_in_rename_image
-#assert_no_axioms LeanFX2.RawStep.par.target_in_rename_image_of_source_eq
-#assert_no_axioms LeanFX2.RawStep.par.target_in_weaken_image
-#assert_no_axioms LeanFX2.RawStep.par.target_in_weaken_image_of_source_eq
-#assert_no_axioms LeanFX2.RawStep.parStar.rename_compatible
-#assert_no_axioms LeanFX2.RawStep.parStar.weaken_compatible
-#assert_no_axioms LeanFX2.RawStep.parStar.target_in_rename_image
-#assert_no_axioms LeanFX2.RawStep.parStar.target_in_rename_image_of_source_eq
-#assert_no_axioms LeanFX2.RawStep.parStar.target_in_weaken_image
-#assert_no_axioms LeanFX2.RawStep.parStar.target_in_weaken_image_of_source_eq
-#assert_no_axioms LeanFX2.RawStep.parStar.weaken_inv
-#assert_no_axioms LeanFX2.RawStep.parStar.weaken_inv_of_source_eq
-#assert_no_axioms LeanFX2.Step.par.sourceRaw_in_rename_image_targetRaw_in_rename_image
-#assert_no_axioms LeanFX2.Step.par.sourceRaw_in_weaken_image_targetRaw_in_weaken_image
-#assert_no_axioms LeanFX2.Step.par.toRawBridge_target_in_rename_image_of_sourceRaw_eq
-#assert_no_axioms LeanFX2.Step.par.toRawBridge_target_in_weaken_image_of_sourceRaw_eq
-#assert_no_axioms LeanFX2.RawStep.parStar.subst_compatible_same
-#assert_no_axioms LeanFX2.RawStep.parStar.subst0_compatible_same
-#assert_no_axioms LeanFX2.RawStep.parStar.subst0_par
-#assert_no_axioms LeanFX2.RawStep.parStar.subst_par
-#assert_no_axioms LeanFX2.Step.parStar.rename_toRawBridge
-#assert_no_axioms LeanFX2.Step.parStar.weaken_toRawBridge
-#assert_no_axioms LeanFX2.Step.parStar.subst_toRawBridge
-#assert_no_axioms LeanFX2.Step.parStar.subst0_toRawBridge
-#assert_no_axioms LeanFX2.Step.parStar.renamed_source_targetRaw_in_rename_image
-#assert_no_axioms LeanFX2.Step.parStar.weakened_source_targetRaw_in_weaken_image
-#assert_no_axioms LeanFX2.Step.parStar.sourceRaw_in_rename_image_targetRaw_in_rename_image
-#assert_no_axioms LeanFX2.Step.parStar.sourceRaw_in_weaken_image_targetRaw_in_weaken_image
-#assert_no_axioms LeanFX2.Step.parStar.renamed_source_toRawBridge_target_in_rename_image
-#assert_no_axioms LeanFX2.Step.parStar.weakened_source_toRawBridge_target_in_weaken_image
-#assert_no_axioms LeanFX2.Step.parStar.toRawBridge_target_in_rename_image_of_sourceRaw_eq
-#assert_no_axioms LeanFX2.Step.parStar.toRawBridge_target_in_weaken_image_of_sourceRaw_eq
-#assert_no_axioms LeanFX2.Step.parStar.lam_targetRaw_inv_congr
-#assert_no_axioms LeanFX2.Step.parStar.lamPi_targetRaw_inv_congr
-#assert_no_axioms LeanFX2.Step.parStar.pathLam_targetRaw_inv_congr
-#assert_no_axioms LeanFX2.Step.parStar.lam_bodyRaw_inv_congr
-#assert_no_axioms LeanFX2.Step.parStar.lamPi_bodyRaw_inv_congr
-#assert_no_axioms LeanFX2.Step.parStar.pathLam_bodyRaw_inv_congr
-#assert_no_axioms LeanFX2.StepStar.rename_toRawBridge
-#assert_no_axioms LeanFX2.StepStar.weaken_toRawBridge
-#assert_no_axioms LeanFX2.StepStar.subst_toRawBridge
-#assert_no_axioms LeanFX2.StepStar.subst0_toRawBridge
-#assert_no_axioms LeanFX2.StepStar.renamed_source_targetRaw_in_rename_image
-#assert_no_axioms LeanFX2.StepStar.weakened_source_targetRaw_in_weaken_image
-#assert_no_axioms LeanFX2.StepStar.sourceRaw_in_rename_image_targetRaw_in_rename_image
-#assert_no_axioms LeanFX2.StepStar.sourceRaw_in_weaken_image_targetRaw_in_weaken_image
-#assert_no_axioms LeanFX2.StepStar.renamed_source_toRawBridge_target_in_rename_image
-#assert_no_axioms LeanFX2.StepStar.weakened_source_toRawBridge_target_in_weaken_image
-#assert_no_axioms LeanFX2.StepStar.toRawBridge_target_in_rename_image_of_sourceRaw_eq
-#assert_no_axioms LeanFX2.StepStar.toRawBridge_target_in_weaken_image_of_sourceRaw_eq
-#assert_no_axioms LeanFX2.StepStar.lam_targetRaw_inv_congr
-#assert_no_axioms LeanFX2.StepStar.lamPi_targetRaw_inv_congr
-#assert_no_axioms LeanFX2.StepStar.pathLam_targetRaw_inv_congr
-#assert_no_axioms LeanFX2.StepStar.lam_bodyRaw_inv_congr
-#assert_no_axioms LeanFX2.StepStar.lamPi_bodyRaw_inv_congr
-#assert_no_axioms LeanFX2.StepStar.pathLam_bodyRaw_inv_congr
-#assert_no_axioms LeanFX2.Conv.rename_toRawJoin
-#assert_no_axioms LeanFX2.Conv.weaken_toRawJoin
-#assert_no_axioms LeanFX2.Conv.lam_left_commonRaw_inv_congr
-#assert_no_axioms LeanFX2.Conv.lamPi_left_commonRaw_inv_congr
-#assert_no_axioms LeanFX2.Conv.pathLam_left_commonRaw_inv_congr
-#assert_no_axioms LeanFX2.Conv.lam_right_commonRaw_inv_congr
-#assert_no_axioms LeanFX2.Conv.lamPi_right_commonRaw_inv_congr
-#assert_no_axioms LeanFX2.Conv.pathLam_right_commonRaw_inv_congr
-#assert_no_axioms LeanFX2.Conv.lam_bodyRaw_common_join
-#assert_no_axioms LeanFX2.Conv.lamPi_bodyRaw_common_join
-#assert_no_axioms LeanFX2.Conv.pathLam_bodyRaw_common_join
-#assert_no_axioms LeanFX2.Conv.renamed_left_commonRaw_in_rename_image
-#assert_no_axioms LeanFX2.Conv.weakened_left_commonRaw_in_weaken_image
-#assert_no_axioms LeanFX2.Conv.renamed_left_toRawJoin_in_rename_image
-#assert_no_axioms LeanFX2.Conv.weakened_left_toRawJoin_in_weaken_image
-#assert_no_axioms LeanFX2.Conv.left_commonRaw_in_rename_image_of_sourceRaw_eq
-#assert_no_axioms LeanFX2.Conv.left_commonRaw_in_weaken_image_of_sourceRaw_eq
-#assert_no_axioms LeanFX2.Conv.renamed_right_commonRaw_in_rename_image
-#assert_no_axioms LeanFX2.Conv.weakened_right_commonRaw_in_weaken_image
-#assert_no_axioms LeanFX2.Conv.renamed_right_toRawJoin_in_rename_image
-#assert_no_axioms LeanFX2.Conv.weakened_right_toRawJoin_in_weaken_image
-#assert_no_axioms LeanFX2.Conv.right_commonRaw_in_rename_image_of_targetRaw_eq
-#assert_no_axioms LeanFX2.Conv.right_commonRaw_in_weaken_image_of_targetRaw_eq
-#assert_no_axioms LeanFX2.Conv.left_toRawJoin_in_rename_image_of_sourceRaw_eq
-#assert_no_axioms LeanFX2.Conv.left_toRawJoin_in_weaken_image_of_sourceRaw_eq
-#assert_no_axioms LeanFX2.Conv.right_toRawJoin_in_rename_image_of_targetRaw_eq
-#assert_no_axioms LeanFX2.Conv.right_toRawJoin_in_weaken_image_of_targetRaw_eq
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.par.rename_inj_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.par.target_in_rename_image
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.par.target_in_rename_image_of_source_eq
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.par.target_in_weaken_image
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.par.target_in_weaken_image_of_source_eq
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.rename_compatible
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.weaken_compatible
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.target_in_rename_image
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.target_in_rename_image_of_source_eq
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.target_in_weaken_image
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.target_in_weaken_image_of_source_eq
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.weaken_inv
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.weaken_inv_of_source_eq
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.sourceRaw_in_rename_image_targetRaw_in_rename_image
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.sourceRaw_in_weaken_image_targetRaw_in_weaken_image
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.toRawBridge_target_in_rename_image_of_sourceRaw_eq
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.toRawBridge_target_in_weaken_image_of_sourceRaw_eq
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.subst_compatible_same
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.subst0_compatible_same
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.subst0_par
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawStep.parStar.subst_par
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.parStar.rename_toRawBridge
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.parStar.weaken_toRawBridge
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.parStar.subst_toRawBridge
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.parStar.subst0_toRawBridge
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.parStar.renamed_source_targetRaw_in_rename_image
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.parStar.weakened_source_targetRaw_in_weaken_image
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.parStar.sourceRaw_in_rename_image_targetRaw_in_rename_image
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.parStar.sourceRaw_in_weaken_image_targetRaw_in_weaken_image
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.parStar.renamed_source_toRawBridge_target_in_rename_image
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.parStar.weakened_source_toRawBridge_target_in_weaken_image
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.parStar.toRawBridge_target_in_rename_image_of_sourceRaw_eq
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.parStar.toRawBridge_target_in_weaken_image_of_sourceRaw_eq
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.parStar.lam_targetRaw_inv_congr
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.parStar.lamPi_targetRaw_inv_congr
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.parStar.pathLam_targetRaw_inv_congr
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.parStar.lam_bodyRaw_inv_congr
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.parStar.lamPi_bodyRaw_inv_congr
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.parStar.pathLam_bodyRaw_inv_congr
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.StepStar.rename_toRawBridge
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.StepStar.weaken_toRawBridge
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.StepStar.subst_toRawBridge
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.StepStar.subst0_toRawBridge
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.StepStar.renamed_source_targetRaw_in_rename_image
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.StepStar.weakened_source_targetRaw_in_weaken_image
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.StepStar.sourceRaw_in_rename_image_targetRaw_in_rename_image
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.StepStar.sourceRaw_in_weaken_image_targetRaw_in_weaken_image
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.StepStar.renamed_source_toRawBridge_target_in_rename_image
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.StepStar.weakened_source_toRawBridge_target_in_weaken_image
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.StepStar.toRawBridge_target_in_rename_image_of_sourceRaw_eq
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.StepStar.toRawBridge_target_in_weaken_image_of_sourceRaw_eq
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.StepStar.lam_targetRaw_inv_congr
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.StepStar.lamPi_targetRaw_inv_congr
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.StepStar.pathLam_targetRaw_inv_congr
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.StepStar.lam_bodyRaw_inv_congr
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.StepStar.lamPi_bodyRaw_inv_congr
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.StepStar.pathLam_bodyRaw_inv_congr
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Conv.rename_toRawJoin
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Conv.weaken_toRawJoin
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Conv.lam_left_commonRaw_inv_congr
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Conv.lamPi_left_commonRaw_inv_congr
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Conv.pathLam_left_commonRaw_inv_congr
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Conv.lam_right_commonRaw_inv_congr
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Conv.lamPi_right_commonRaw_inv_congr
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Conv.pathLam_right_commonRaw_inv_congr
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Conv.lam_bodyRaw_common_join
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Conv.lamPi_bodyRaw_common_join
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Conv.pathLam_bodyRaw_common_join
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Conv.renamed_left_commonRaw_in_rename_image
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Conv.weakened_left_commonRaw_in_weaken_image
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Conv.renamed_left_toRawJoin_in_rename_image
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Conv.weakened_left_toRawJoin_in_weaken_image
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Conv.left_commonRaw_in_rename_image_of_sourceRaw_eq
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Conv.left_commonRaw_in_weaken_image_of_sourceRaw_eq
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Conv.renamed_right_commonRaw_in_rename_image
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Conv.weakened_right_commonRaw_in_weaken_image
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Conv.renamed_right_toRawJoin_in_rename_image
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Conv.weakened_right_toRawJoin_in_weaken_image
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Conv.right_commonRaw_in_rename_image_of_targetRaw_eq
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Conv.right_commonRaw_in_weaken_image_of_targetRaw_eq
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Conv.left_toRawJoin_in_rename_image_of_sourceRaw_eq
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Conv.left_toRawJoin_in_weaken_image_of_sourceRaw_eq
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Conv.right_toRawJoin_in_rename_image_of_targetRaw_eq
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Conv.right_toRawJoin_in_weaken_image_of_targetRaw_eq
 
 -- AtomShape1: 7 closed-leaf shape inversions
 #assert_no_axioms LeanFX2.RawTerm.rename_eq_boolTrue_imp
@@ -841,18 +847,18 @@ shapes: 5 in CubicalShape. -/
 #assert_no_axioms LeanFX2.RawTerm.rename_eq_refl_imp
 
 -- BinderShape: 12 binder-bearing or compound-payload shape inversions
-#assert_no_axioms LeanFX2.RawTerm.rename_eq_modIntro_imp
-#assert_no_axioms LeanFX2.RawTerm.rename_eq_idStrictRefl_imp
-#assert_no_axioms LeanFX2.RawTerm.rename_eq_recordIntro_imp
-#assert_no_axioms LeanFX2.RawTerm.rename_eq_pathLam_imp
-#assert_no_axioms LeanFX2.RawTerm.rename_eq_lam_imp
-#assert_no_axioms LeanFX2.RawTerm.rename_eq_pair_imp
-#assert_no_axioms LeanFX2.RawTerm.rename_eq_listCons_imp
-#assert_no_axioms LeanFX2.RawTerm.rename_eq_refineIntro_imp
-#assert_no_axioms LeanFX2.RawTerm.rename_eq_glueIntro_imp
-#assert_no_axioms LeanFX2.RawTerm.rename_eq_codataUnfold_imp
-#assert_no_axioms LeanFX2.RawTerm.rename_eq_transp_imp
-#assert_no_axioms LeanFX2.RawTerm.rename_eq_piTyCode_imp
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawTerm.rename_eq_modIntro_imp
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawTerm.rename_eq_idStrictRefl_imp
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawTerm.rename_eq_recordIntro_imp
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawTerm.rename_eq_pathLam_imp
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawTerm.rename_eq_lam_imp
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawTerm.rename_eq_pair_imp
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawTerm.rename_eq_listCons_imp
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawTerm.rename_eq_refineIntro_imp
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawTerm.rename_eq_glueIntro_imp
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawTerm.rename_eq_codataUnfold_imp
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawTerm.rename_eq_transp_imp
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.RawTerm.rename_eq_piTyCode_imp
 
 -- CubicalShape: 5 cubical/HoTT-specific shape inversions
 #assert_no_axioms LeanFX2.RawTerm.rename_eq_uaToEquiv_imp
@@ -888,162 +894,162 @@ constructor — pure definitional, no induction, no cast on the `refl`
 / `fst` / `app` / `lamPi` arms.  These compose into the eventual
 `Step.par`-induction headline that lifts to `Conv.rename_equivariant`. -/
 
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_refl
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_fst
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_app
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_lamPi
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_natSucc
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_listCons
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_optionSome
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_eitherInl
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_eitherInr
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_natElim
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_natRec
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_listElim
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_optionMatch
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_eitherMatch
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_modIntro
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_modElim
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_subsume
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_lam
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_appPi
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_snd
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_pair
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_boolElim
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_idJ
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_oeqJCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_idStrictRecCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_intervalOppCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_intervalMeetCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_intervalJoinCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_recordIntroCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_recordProjCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_refineIntroCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_refineElimCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_pathAppCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_glueIntroCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_glueElimCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_transpCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_hcompCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_hcompPathCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_codataUnfoldCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_codataDestCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_sessionSendCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_sessionRecvCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_effectPerformCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_cumulUpInnerCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_eqType
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_reflCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_funextReflAtIdCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_funextIntroHetCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_arrowCodeCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_piTyCodeCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_sigmaTyCodeCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_productCodeCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_sumCodeCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_listCodeCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_optionCodeCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_eitherCodeCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_idCodeCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_equivCodeCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_equivAppCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_equivApplyCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_uaIntroHetCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_uaToEquivCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_oeqReflCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_idStrictReflCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_pathLamCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_oeqFunextCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_eqArrow
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_eqTypeHet
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_eqArrowHet
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_funextReflCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_equivIntroHetCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_equivIntroCong
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_pathApp
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_glueIntro
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_glueElim
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_transp
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_hcomp
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_pathLam
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaFstPair
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaSndPair
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaGlueElimIntro
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaRecordProjIntro
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaModElimIntro
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaRefineElimIntro
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaCodataDestUnfold
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaModElimIntroDeep
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaCodataDestUnfoldDeep
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaGlueElimIntroDeep
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaRecordProjIntroDeep
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaRefineElimIntroDeep
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaFstPairDeep
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaSndPairDeep
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_refl
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_fst
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_app
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_lamPi
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_natSucc
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_listCons
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_optionSome
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_eitherInl
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_eitherInr
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_natElim
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_natRec
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_listElim
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_optionMatch
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_eitherMatch
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_modIntro
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_modElim
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_subsume
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_lam
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_appPi
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_snd
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_pair
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_boolElim
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_idJ
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_oeqJCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_idStrictRecCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_intervalOppCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_intervalMeetCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_intervalJoinCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_recordIntroCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_recordProjCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_refineIntroCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_refineElimCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_pathAppCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_glueIntroCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_glueElimCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_transpCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_hcompCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_hcompPathCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_codataUnfoldCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_codataDestCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_sessionSendCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_sessionRecvCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_effectPerformCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_cumulUpInnerCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_eqType
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_reflCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_funextReflAtIdCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_funextIntroHetCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_arrowCodeCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_piTyCodeCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_sigmaTyCodeCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_productCodeCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_sumCodeCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_listCodeCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_optionCodeCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_eitherCodeCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_idCodeCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_equivCodeCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_equivAppCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_equivApplyCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_uaIntroHetCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_uaToEquivCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_oeqReflCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_idStrictReflCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_pathLamCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_oeqFunextCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_eqArrow
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_eqTypeHet
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_eqArrowHet
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_funextReflCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_equivIntroHetCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_equivIntroCong
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_pathApp
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_glueIntro
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_glueElim
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_transp
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_hcomp
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_pathLam
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaFstPair
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaSndPair
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaGlueElimIntro
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaRecordProjIntro
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaModElimIntro
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaRefineElimIntro
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaCodataDestUnfold
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaModElimIntroDeep
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaCodataDestUnfoldDeep
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaGlueElimIntroDeep
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaRecordProjIntroDeep
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaRefineElimIntroDeep
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaFstPairDeep
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaSndPairDeep
 #assert_no_axioms LeanFX2.Step.par.castTargetType_cancel
 #assert_no_axioms LeanFX2.Step.par.castSourceType_cancel
 #assert_no_axioms LeanFX2.Step.par.castSourceTermHeq
 #assert_no_axioms LeanFX2.Step.par.castTargetTermHeq
-#assert_no_axioms LeanFX2.Step.par.transp_typePath_heqCongr
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_transpReflBeta
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_transpReflBetaDeep
-#assert_no_axioms LeanFX2.Step.par.hcompPath_sidesPath_heqCongr
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_hcompBeta
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_hcompBetaDeep
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaNatElimZero
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaNatElimSucc
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaNatRecZero
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaNatRecSucc
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaListElimNil
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaListElimCons
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaOptionMatchNone
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaOptionMatchSome
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaEitherMatchInl
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaEitherMatchInr
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaIdJRefl
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaIdStrictRecRefl
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaBoolElimTrue
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaBoolElimFalse
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaApp
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaAppPi
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaNatElimZeroDeep
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaNatElimSuccDeep
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaNatRecZeroDeep
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaNatRecSuccDeep
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaListElimNilDeep
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaListElimConsDeep
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaOptionMatchNoneDeep
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaOptionMatchSomeDeep
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaEitherMatchInlDeep
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaEitherMatchInrDeep
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaIdJReflDeep
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaIdStrictRecReflDeep
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaPathApp
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaBoolElimTrueDeep
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaBoolElimFalseDeep
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaAppDeep
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaAppPiDeep
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaPathAppDeep
-#assert_no_axioms LeanFX2.Step.par.pathReflApp_body_heqCongr
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaPathReflApp
-#assert_no_axioms LeanFX2.Step.par.appPi_function_heqCongr
-#assert_no_axioms LeanFX2.Step.par.refl_heqCongr
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.transp_typePath_heqCongr
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_transpReflBeta
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_transpReflBetaDeep
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.hcompPath_sidesPath_heqCongr
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_hcompBeta
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_hcompBetaDeep
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaNatElimZero
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaNatElimSucc
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaNatRecZero
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaNatRecSucc
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaListElimNil
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaListElimCons
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaOptionMatchNone
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaOptionMatchSome
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaEitherMatchInl
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaEitherMatchInr
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaIdJRefl
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaIdStrictRecRefl
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaBoolElimTrue
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaBoolElimFalse
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaApp
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaAppPi
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaNatElimZeroDeep
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaNatElimSuccDeep
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaNatRecZeroDeep
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaNatRecSuccDeep
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaListElimNilDeep
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaListElimConsDeep
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaOptionMatchNoneDeep
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaOptionMatchSomeDeep
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaEitherMatchInlDeep
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaEitherMatchInrDeep
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaIdJReflDeep
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaIdStrictRecReflDeep
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaPathApp
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaBoolElimTrueDeep
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_iotaBoolElimFalseDeep
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaAppDeep
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaAppPiDeep
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaPathAppDeep
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.pathReflApp_body_heqCongr
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaPathReflApp
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.appPi_function_heqCongr
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.refl_heqCongr
 #assert_no_axioms LeanFX2.Step.par.castTargetTypeHeq
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaFunextReflApp
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaFunextReflAppDeep
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaFunextReflApp
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed_betaFunextReflAppDeep
 -- Universal headline (#2027): all-133-constructor induction composing the per-arm theorems.
-#assert_no_axioms LeanFX2.Step.par.rename_compatible_typed
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.par.rename_compatible_typed
 -- Chain version (#2028): parStar lift of the single-step headline.
-#assert_no_axioms LeanFX2.Step.parStar.rename_compatible_typed
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Step.parStar.rename_compatible_typed
 -- Typed Conv rename equivariance, forward (#2029, parallel-join flavor):
 -- typed Conv → typed parallel join, preserved under renaming / weakening.
-#assert_no_axioms LeanFX2.Conv.toParJoin
-#assert_no_axioms LeanFX2.Conv.rename_equivariant_fwd_parJoin
-#assert_no_axioms LeanFX2.Conv.weaken_equivariant_fwd_parJoin
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Conv.toParJoin
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Conv.rename_equivariant_fwd_parJoin
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Conv.weaken_equivariant_fwd_parJoin
 -- Canonical-weaken specializations of `_extend` / `_toRaw` companions
 -- (ConvRenameParJoinExtra).  Composes the general-renaming companions at
 -- `TermRenaming.weakenStep`, no fresh kernel induction.
-#assert_no_axioms LeanFX2.Conv.weaken_equivariant_fwd_parJoin_extend
-#assert_no_axioms LeanFX2.Conv.weaken_equivariant_fwd_parJoin_toRaw
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Conv.weaken_equivariant_fwd_parJoin_extend
+-- TODO POLYCELL stale missing: #assert_no_axioms LeanFX2.Conv.weaken_equivariant_fwd_parJoin_toRaw
 
 end LeanFX2.Tools
