@@ -83,6 +83,53 @@ theorem OmegacECell.length_append {dimension : Nat}
           Nat.succ remainingCells.length + secondCells.length
       rw [inductionHypothesis, Nat.succ_add]
 
+/-- Numeric slot projection distributes over scaffold-list append. -/
+theorem OmegacECell.slotValuesOfList_append {dimension : Nat}
+    (firstCells secondCells : List (OmegacECell dimension)) :
+    OmegacECell.slotValuesOfList dimension (firstCells ++ secondCells) =
+      OmegacECell.slotValuesOfList dimension firstCells ++
+        OmegacECell.slotValuesOfList dimension secondCells := by
+  induction firstCells with
+  | nil =>
+      change
+        OmegacECell.slotValuesOfList dimension secondCells =
+          OmegacECell.slotValuesOfList dimension secondCells
+      rfl
+  | cons cell remainingCells inductionHypothesis =>
+      change
+        OmegacECell.slotValueOf cell ::
+            OmegacECell.slotValuesOfList dimension
+              (remainingCells ++ secondCells) =
+          OmegacECell.slotValueOf cell ::
+            (OmegacECell.slotValuesOfList dimension remainingCells ++
+              OmegacECell.slotValuesOfList dimension secondCells)
+      exact congrArg (List.cons (OmegacECell.slotValueOf cell))
+        inductionHypothesis
+
+/-- Declared-index projection distributes over scaffold-list append. -/
+theorem OmegacECell.declaredIndexValuesOfList_append {dimension : Nat}
+    (firstCells secondCells : List (OmegacECell dimension)) :
+    OmegacECell.declaredIndexValuesOfList dimension
+        (firstCells ++ secondCells) =
+      OmegacECell.declaredIndexValuesOfList dimension firstCells ++
+        OmegacECell.declaredIndexValuesOfList dimension secondCells := by
+  induction firstCells with
+  | nil =>
+      change
+        OmegacECell.declaredIndexValuesOfList dimension secondCells =
+          OmegacECell.declaredIndexValuesOfList dimension secondCells
+      rfl
+  | cons cell remainingCells inductionHypothesis =>
+      change
+        OmegacECell.declaredIndexValueOf cell ::
+            OmegacECell.declaredIndexValuesOfList dimension
+              (remainingCells ++ secondCells) =
+          OmegacECell.declaredIndexValueOf cell ::
+            (OmegacECell.declaredIndexValuesOfList dimension remainingCells ++
+              OmegacECell.declaredIndexValuesOfList dimension secondCells)
+      exact congrArg (List.cons (OmegacECell.declaredIndexValueOf cell))
+        inductionHypothesis
+
 /-- Suspending a list preserves numeric slot values pointwise. -/
 theorem OmegacECell.slotValuesOfList_suspendList {dimension : Nat}
     (cells : List (OmegacECell dimension)) :
@@ -161,6 +208,15 @@ theorem OmegacECell.normalizeSlotValue_zero :
 theorem OmegacECell.normalizeSlotValue_one :
     OmegacECell.normalizeSlotValue 1 = 1 := rfl
 
+/-- Slot-value normalization is idempotent. -/
+theorem OmegacECell.normalizeSlotValue_idempotent (slotValue : Nat) :
+    OmegacECell.normalizeSlotValue
+        (OmegacECell.normalizeSlotValue slotValue) =
+      OmegacECell.normalizeSlotValue slotValue := by
+  cases slotValue with
+  | zero => rfl
+  | succ _ => rfl
+
 /-- Reading back a generator decoded from a raw slot returns the normalized
 numeric code. -/
 theorem OmegacECell.slotValueOf_atSlotValue (dimension : Nat)
@@ -198,6 +254,66 @@ theorem OmegacECell.length_normalizeSlotValues
   | cons slotValue remainingSlotValues inductionHypothesis =>
       dsimp only [OmegacECell.normalizeSlotValues, List.length]
       rw [inductionHypothesis]
+
+/-- Decoding raw slot lists distributes over append. -/
+theorem OmegacECell.cellsOfSlotValues_append (dimension : Nat)
+    (firstSlotValues secondSlotValues : List Nat) :
+    OmegacECell.cellsOfSlotValues dimension
+        (firstSlotValues ++ secondSlotValues) =
+      OmegacECell.cellsOfSlotValues dimension firstSlotValues ++
+        OmegacECell.cellsOfSlotValues dimension secondSlotValues := by
+  induction firstSlotValues with
+  | nil =>
+      change
+        OmegacECell.cellsOfSlotValues dimension secondSlotValues =
+          OmegacECell.cellsOfSlotValues dimension secondSlotValues
+      rfl
+  | cons slotValue remainingSlotValues inductionHypothesis =>
+      change
+        OmegacECell.atSlotValue dimension slotValue ::
+            OmegacECell.cellsOfSlotValues dimension
+              (remainingSlotValues ++ secondSlotValues) =
+          OmegacECell.atSlotValue dimension slotValue ::
+            (OmegacECell.cellsOfSlotValues dimension remainingSlotValues ++
+              OmegacECell.cellsOfSlotValues dimension secondSlotValues)
+      exact congrArg (List.cons (OmegacECell.atSlotValue dimension slotValue))
+        inductionHypothesis
+
+/-- Slot-list normalization distributes over append. -/
+theorem OmegacECell.normalizeSlotValues_append
+    (firstSlotValues secondSlotValues : List Nat) :
+    OmegacECell.normalizeSlotValues (firstSlotValues ++ secondSlotValues) =
+      OmegacECell.normalizeSlotValues firstSlotValues ++
+        OmegacECell.normalizeSlotValues secondSlotValues := by
+  induction firstSlotValues with
+  | nil =>
+      change
+        OmegacECell.normalizeSlotValues secondSlotValues =
+          OmegacECell.normalizeSlotValues secondSlotValues
+      rfl
+  | cons slotValue remainingSlotValues inductionHypothesis =>
+      change
+        OmegacECell.normalizeSlotValue slotValue ::
+            OmegacECell.normalizeSlotValues
+              (remainingSlotValues ++ secondSlotValues) =
+          OmegacECell.normalizeSlotValue slotValue ::
+            (OmegacECell.normalizeSlotValues remainingSlotValues ++
+              OmegacECell.normalizeSlotValues secondSlotValues)
+      exact congrArg (List.cons (OmegacECell.normalizeSlotValue slotValue))
+        inductionHypothesis
+
+/-- Slot-list normalization is idempotent. -/
+theorem OmegacECell.normalizeSlotValues_idempotent
+    (slotValues : List Nat) :
+    OmegacECell.normalizeSlotValues
+        (OmegacECell.normalizeSlotValues slotValues) =
+      OmegacECell.normalizeSlotValues slotValues := by
+  induction slotValues with
+  | nil => rfl
+  | cons slotValue remainingSlotValues inductionHypothesis =>
+      dsimp only [OmegacECell.normalizeSlotValues]
+      rw [OmegacECell.normalizeSlotValue_idempotent slotValue,
+        inductionHypothesis]
 
 /-- Reading back decoded raw slots returns the normalized raw slot list. -/
 theorem OmegacECell.slotValuesOfList_cellsOfSlotValues
@@ -289,6 +405,29 @@ theorem suspend_append_cells {dimension : Nat}
   dsimp only [append, suspend]
   exact OmegacECell.suspendList_append firstWord.cells secondWord.cells
 
+/-- Numeric slot projection distributes over scaffold-word append. -/
+theorem slotValues_append {dimension : Nat}
+    (firstWord secondWord : OmegacEWord dimension) :
+    (append firstWord secondWord).slotValues =
+      firstWord.slotValues ++ secondWord.slotValues := by
+  cases firstWord with
+  | mk firstCells =>
+      cases secondWord with
+      | mk secondCells =>
+          exact OmegacECell.slotValuesOfList_append firstCells secondCells
+
+/-- Numeric declared-index projection distributes over scaffold-word append. -/
+theorem declaredIndexValues_append {dimension : Nat}
+    (firstWord secondWord : OmegacEWord dimension) :
+    (append firstWord secondWord).declaredIndexValues =
+      firstWord.declaredIndexValues ++ secondWord.declaredIndexValues := by
+  cases firstWord with
+  | mk firstCells =>
+      cases secondWord with
+      | mk secondCells =>
+          exact OmegacECell.declaredIndexValuesOfList_append
+            firstCells secondCells
+
 /-- Suspension preserves numeric slot values pointwise. -/
 theorem slotValues_suspend {dimension : Nat}
     (word : OmegacEWord dimension) :
@@ -352,6 +491,29 @@ theorem length_empty : empty.length = 0 := rfl
 theorem length_singleton (slotValue : Nat) :
     (singleton slotValue).length = 1 := rfl
 
+/-- Appending word codes adds their lengths. -/
+theorem length_append (firstCode secondCode : OmegacEWordCode) :
+    (append firstCode secondCode).length =
+      firstCode.length + secondCode.length := by
+  cases firstCode with
+  | mk firstSlotValues =>
+      cases secondCode with
+      | mk secondSlotValues =>
+          induction firstSlotValues with
+          | nil =>
+              change secondSlotValues.length = 0 + secondSlotValues.length
+              rw [Nat.zero_add]
+          | cons slotValue remainingSlotValues inductionHypothesis =>
+              change
+                (remainingSlotValues ++ secondSlotValues).length =
+                  remainingSlotValues.length + secondSlotValues.length
+                at inductionHypothesis
+              change
+                Nat.succ ((remainingSlotValues ++ secondSlotValues).length) =
+                  Nat.succ remainingSlotValues.length +
+                    secondSlotValues.length
+              rw [inductionHypothesis, Nat.succ_add]
+
 /-- Normalization preserves word-code length. -/
 theorem length_normalize (code : OmegacEWordCode) :
     code.normalize.length = code.length := by
@@ -359,12 +521,46 @@ theorem length_normalize (code : OmegacEWordCode) :
   | mk slotValues =>
       exact OmegacECell.length_normalizeSlotValues slotValues
 
+/-- Normalization distributes over word-code append. -/
+theorem normalize_append (firstCode secondCode : OmegacEWordCode) :
+    (append firstCode secondCode).normalize =
+      append firstCode.normalize secondCode.normalize := by
+  cases firstCode with
+  | mk firstSlotValues =>
+      cases secondCode with
+      | mk secondSlotValues =>
+          exact congrArg OmegacEWordCode.mk
+            (OmegacECell.normalizeSlotValues_append
+              firstSlotValues secondSlotValues)
+
+/-- Word-code normalization is idempotent. -/
+theorem normalize_idempotent (code : OmegacEWordCode) :
+    code.normalize.normalize = code.normalize := by
+  cases code with
+  | mk slotValues =>
+      exact congrArg OmegacEWordCode.mk
+        (OmegacECell.normalizeSlotValues_idempotent slotValues)
+
 /-- Decoding preserves word-code length. -/
 theorem length_toWord (dimension : Nat) (code : OmegacEWordCode) :
     (code.toWord dimension).length = code.length := by
   cases code with
   | mk slotValues =>
       exact OmegacECell.length_cellsOfSlotValues dimension slotValues
+
+/-- Decoding word-code append is scaffold-word append. -/
+theorem toWord_append (dimension : Nat)
+    (firstCode secondCode : OmegacEWordCode) :
+    (append firstCode secondCode).toWord dimension =
+      OmegacEWord.append (firstCode.toWord dimension)
+        (secondCode.toWord dimension) := by
+  cases firstCode with
+  | mk firstSlotValues =>
+      cases secondCode with
+      | mk secondSlotValues =>
+          exact congrArg OmegacEWord.mk
+            (OmegacECell.cellsOfSlotValues_append dimension
+              firstSlotValues secondSlotValues)
 
 /-- Encoding a decoded word yields the normalized word code. -/
 theorem ofWord_toWord (dimension : Nat) (code : OmegacEWordCode) :
@@ -374,6 +570,18 @@ theorem ofWord_toWord (dimension : Nat) (code : OmegacEWordCode) :
       dsimp only [ofWord, toWord, OmegacEWord.slotValues, normalize]
       exact congrArg OmegacEWordCode.mk
         (OmegacECell.slotValuesOfList_cellsOfSlotValues dimension slotValues)
+
+/-- Encoding scaffold-word append is word-code append. -/
+theorem ofWord_append {dimension : Nat}
+    (firstWord secondWord : OmegacEWord dimension) :
+    ofWord (OmegacEWord.append firstWord secondWord) =
+      append (ofWord firstWord) (ofWord secondWord) := by
+  cases firstWord with
+  | mk firstCells =>
+      cases secondWord with
+      | mk secondCells =>
+          exact congrArg OmegacEWordCode.mk
+            (OmegacECell.slotValuesOfList_append firstCells secondCells)
 
 /-- Encoding a suspended scaffold word preserves its code. -/
 theorem ofWord_suspend {dimension : Nat}
