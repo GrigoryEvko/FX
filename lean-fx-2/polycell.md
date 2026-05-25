@@ -3887,29 +3887,40 @@ inductive CellCheckRejection where
   | badBoundaryEndpoint
   | badVerticalBoundary
   | unsupportedCompH
+  | unsupportedCertification
 
 /-- Infer a certified package from raw input.
 
-This is the only trusted ingress from raw syntax.  Payload decoding is raw
-parsing only: decoders return `RawChildDescriptors` and local payload facts,
-never `PolyCell` and never a child spine whose carrier is certified cells.
-Certified `CellChildren` is built only here after recursively certifying each
-raw child against the generator's `ChildSpec`. -/
-def inferRawCell? (raw : PolyTerm fxProfile dim) :
+This is the current TCB.6j ingress, not the final recursive checker.  It
+certifies only dim-0 atoms whose payload evidence is implemented in the
+certified layer: in-scope variables, unit type, empty context, and linear
+mode.  Other raw dim-0 atoms remain representable and reject either with the
+screen's structural reason or with `unsupportedCertification` when they screen
+successfully but lack a certified constructor. -/
+structure CertifiedRawCellResult (profile : PolyProfile) (scope : Nat) where
+  cellDimension : CellDim
+  inputCode : List Nat
+  rawCell : PolyTerm profile cellDimension
+  cellSort : CellSort
+  cellBoundary : CellBoundary profile cellSort cellDimension scope
+  certifiedCell :
+    PolyCell profile cellSort cellDimension scope cellBoundary rawCell
+  hasInputCode :
+    hasSameNatList inputCode (rawCellCode rawCell) = true
+
+def inferRawCell? (scope : Nat) (raw : PolyTerm fxProfile 0) :
     Except CellCheckRejection
-      (Σ sort, Σ scope, Σ boundary,
-        PolyCell fxProfile sort dim scope boundary raw) := ...
+      (CertifiedRawCellResult fxProfile scope) := ...
 
 /-- Check raw input against an expected certified shape.
 
 `wrongSort` is a rejection of this expected-shape checker.  Bare inference
 has no external sort expectation, so it fails with generator, payload, child,
-or boundary-specific reasons instead. -/
+boundary, or unsupported-certification reasons instead. -/
 def checkRawCellAs? (expectedSort : CellSort) (expectedScope : Nat)
-    (expectedBoundary : CellBoundary fxProfile expectedSort dim expectedScope)
-    (raw : PolyTerm fxProfile dim) :
+    (raw : PolyTerm fxProfile 0) :
     Except CellCheckRejection
-      (PolyCell fxProfile expectedSort dim expectedScope expectedBoundary raw) := ...
+      (CertifiedRawCellResult fxProfile expectedScope) := ...
 
 end LeanFX2.Foundation.PolyCell.Core
 ```
@@ -3951,6 +3962,7 @@ failed invariant it can identify:
 | source/target endpoint is not itself certified | reject `badBoundaryEndpoint` |
 | vertical composite middle endpoint does not match definitionally | reject `badVerticalBoundary` |
 | raw `compH` before Axis 6 certification | reject `unsupportedCompH` |
+| structurally screened raw cell has no certified constructor in the current ingress domain | reject `unsupportedCertification` |
 
 **Negative probes.**  The checker must be developed against a concrete
 catalog of malformed raw inputs, not only against positive examples:
@@ -3969,6 +3981,10 @@ catalog of malformed raw inputs, not only against positive examples:
   while applications whose function or argument child decodes to a type
   cell, or whose decoded argument is outside scope, must reject as
   `wrongChildShape`;
+- current certified ingress must reject the structurally screened
+  `app(var 0, var 1)` fixture as `unsupportedCertification` until
+  application child certification exists, and must preserve
+  `wrongChildShape` for malformed application payloads;
 - generated dim-1 cells over uncertified endpoints must reject as
   `badBoundaryEndpoint`;
 - generated term-step cells over context or type endpoints must reject
@@ -3994,6 +4010,9 @@ its expected rejection.  Probe data alone is not a soundness result.
 Expected-shape checking must call the recursive structural screen before
 comparing sorts; a sort-only inference helper is not allowed to accept a
 bad payload just because the raw id has the requested sort.
+Certified-ingress probes are separate from screen probes: every accepted
+result must contain an actual `PolyCell`, while every malformed or
+not-yet-certified raw cell must have an executable rejection theorem.
 
 This is the operational answer to "show what is nonsense": raw cells
 can be displayed and diagnosed, but only accepted cells can inhabit
@@ -4522,6 +4541,7 @@ representable and computably rejected.
 | TCB.6g decoded-child fold | `d3329d83` | Application screening now consumes decoded `RawChildDescriptors` through a generic child-spec fold, with audited positive and negative fold theorems.  The fold still returns only screen results, not certified child cells. |
 | TCB.6h certified seed packages | `90e6192e` | `CertifiedRawCell` packages carry an actual `PolyCell` over the original raw input for the four payload-evidenced seed atoms: variable 0 in scope 4, unit type, empty context, and linear mode.  This is not a general raw-to-certified checker and does not certify application payloads. |
 | TCB.6i expanded malformed probes | `d97e1dbd` | The negative catalog now covers application argument sort failure, application out-of-scope child failure, known rule ids used at unsupported endpoint dimensions, and extra context/type/term/mode expected-shape confusion cases.  All new probes have executable rejection theorems and audit entries. |
+| TCB.6j dim-0 certified ingress | `d1c3f65c` | `inferRawCell?` and `checkRawCellAs?` return `CertifiedRawCellResult` for the payload-evidenced dim-0 atom subset only: in-scope variables, unit type, empty context, and linear mode.  Structurally screened but uncertified atoms reject as `unsupportedCertification`, and malformed dim-0 probes keep executable rejection theorems. |
 
 **Deliverables (NEW only):**
 
@@ -4537,33 +4557,37 @@ representable and computably rejected.
 | TCB.6a executable rejection screen | `Foundation/PolyCell/Core/Check.lean` | Computable recursive screen over the supported generator/rule tables; rejects unknown ids, malformed payloads, wrong arity/child-shape sentinels, wrong expected sort, bad endpoints, bad vertical boundaries, and unsupported raw `compH`. | Every executable theorem is audited axiom-free; the catalog runner proves all current inference and expected-shape negative probes are rejected. |
 | TCB.6h certified seed packages | `Foundation/PolyCell/Core/Check.lean` | `CertifiedRawCell` dependent package plus concrete packages for the payload-evidenced seed atoms only. | Each package erases definitionally to its named raw fixture; no application, lambda, pi, context-cons, generated cell, vertical composite, or raw `compH` is certified by this task. |
 | TCB.6i expanded malformed probes | `Foundation/PolyCell/Core/NegativeProbes.lean`, `Foundation/PolyCell/Core/Check.lean` | More hostile fixtures for application argument position, child scope failure, rule dimension misuse, and cross-sort expected-shape checks. | Probe counts are ratcheted; each new malformed input has a definitional rejection theorem and an audit harness assertion. |
-| TCB.6j raw-to-certified checker | `Foundation/PolyCell/Core/Check.lean` | Computable `inferRawCell?` and expected-shape `checkRawCellAs?` returning a certified dependent package or rejection reason, implemented without `propext`, `Classical`, `Inhabited`, or `Nonempty`. | Soundness theorem: every `accepted` result contains a `PolyCell`; accepted witnesses exist only for the named supported generator subset; every negative probe keeps an executable rejection theorem. |
+| TCB.6j dim-0 certified ingress | `Foundation/PolyCell/Core/Check.lean` | Computable `inferRawCell?` and expected-shape `checkRawCellAs?` returning `CertifiedRawCellResult` or a rejection reason for dim-0 raw atoms, implemented without `propext`, `Classical`, `Inhabited`, or `Nonempty`. | Every accepted result contains a `PolyCell`; accepted witnesses exist only for in-scope variables, unit type, empty context, and linear mode; application fixtures screen structurally but reject certification until child certification exists. |
 | TCB.7 certified FX views | `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | `FXContext`, `FXType`, `FXTerm`, `FXStep`, `FXConv`, `FXCdLemma` as projections of certified cells. | Existing raw subtype views remain compatibility-only; new code uses certified views; audit harness covers both. |
 
-**Implementation order after TCB.6i:**
+**Implementation order after TCB.6j:**
 
-1.  `Check.lean` phase C: expose a propext-free `inferRawCell?` /
-    `checkRawCellAs?` returning either a rejection reason or a
-    `CertifiedRawCell`-style dependent package.  The first accepted
-    domain must be exactly the payload-evidenced seed atoms unless a new
-    generator family also ships real payload evidence and child
-    certification in the same slice.  Every `NegativeProbes` entry must
-    keep a theorem stating that the checker returns its expected
-    rejection.
-2.  Keep the propext-free boundary-screen discipline: no `propext`,
+1.  Extend dim-0 certification to the first non-nullary generator
+    family only after its payload decoder, certified child recursion, and
+    `CellChildren` construction all exist in the same slice.  The current
+    `app(var 0, var 1)` fixture must keep returning
+    `unsupportedCertification` until that happens.
+2.  Generalize certification beyond dim 0 only after a propext-free
+    boundary representation is proven by audit.  Do not reintroduce the
+    failed dimension-polymorphic dependent pattern route.
+3.  Add positive-dimensional certification in this order: generated
+    `.cell` over already certified endpoints, then `identity`, then
+    vertical composition with definitional middle matching.  Certified
+    `compH` remains blocked on real Gray-boundary semantics.
+4.  Keep the propext-free boundary-screen discipline: no `propext`,
     `Quot.sound`, `Classical`, `Inhabited`, `Nonempty`, hidden `False`
     equation dependents, or weakened audit budgets.  The failed
     direct-dependent-pattern route is not acceptable.
-3.  Add negative probes before each new accepted family: malformed
+5.  Add negative probes before each new accepted family: malformed
     payload sentinel, wrong arity, wrong child sort/dimension/scope,
     expected-shape sort confusion, bad endpoint, and bad vertical
     boundary where the family can participate in positive-dimensional
     cells.  Raw nonsense must remain representable and the certified
     layer must reject it by computation.
-4.  `CertifiedViews.lean`: define the certified FX context/type/term/
+6.  `CertifiedViews.lean`: define the certified FX context/type/term/
     step/conversion projections; keep old raw subtype views as
     compatibility shims.
-5.  Legacy bridge: connect the existing intrinsic kernel judgments to
+7.  Legacy bridge: connect the existing intrinsic kernel judgments to
     certified views only after the checker has nonempty accepted
     witnesses and the audit proves every new declaration axiom-free.
 
@@ -4575,7 +4599,8 @@ payload 0), and must not provide
 constructors for non-nullary atoms or `compH`.  The screen phase must
 add concrete positive screen witnesses for every currently
 payload-evidenced generator and concrete rejected witnesses for every
-`CellCheckRejection` constructor, including `unsupportedCompH`.  Later
+`CellCheckRejection` constructor, including `unsupportedCompH` and
+`unsupportedCertification`.  Later
 payload-decoder work extends the accepted-generator domain one generator
 family at a time.  No soundness theorem may be accepted if its
 supported-generator domain is empty.
