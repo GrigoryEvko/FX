@@ -269,4 +269,65 @@ def PolyTerm.isStepCell {profile : PolyProfile} :
   | true => false
   | false => true
 
+/-- Strict generator-level dim-1 step recognizer.
+
+Unlike `isStepCell`, this accepts only raw dim-1 generator cells and rejects
+vertical composites, horizontal composites, and identities.  It is the smaller
+recognizer new PolyCell code should prefer when it needs one generating rewrite
+edge rather than a raw step expression.
+
+At dimension 1, the complement of `isComposite` is exactly the `.cell`
+constructor: dim-0 atoms cannot inhabit this indexed type.  Defining the
+recognizer through the existing generic discriminator avoids an extra
+dimension-refining match in the PolyCell TCB. -/
+def PolyTerm.isGeneratingStepCell {profile : PolyProfile} :
+    PolyTerm profile 1 → Bool := fun step => !step.isComposite
+
+theorem PolyTerm.isGeneratingStepCell_cell {profile : PolyProfile}
+    (ruleId : CellId) (source target : PolyTerm profile 0) :
+    (PolyTerm.cell ruleId source target).isGeneratingStepCell = true := rfl
+
+theorem PolyTerm.isGeneratingStepCell_compV {profile : PolyProfile}
+    (first second : PolyTerm profile 1) :
+    (PolyTerm.compV first second).isGeneratingStepCell = false := rfl
+
+theorem PolyTerm.isGeneratingStepCell_compH {profile : PolyProfile}
+    (left right : PolyTerm profile 1) :
+    (PolyTerm.compH left right).isGeneratingStepCell = false := rfl
+
+theorem PolyTerm.isGeneratingStepCell_identity {profile : PolyProfile}
+    (base : PolyTerm profile 0) :
+    (PolyTerm.identity base).isGeneratingStepCell = false := rfl
+
+theorem PolyTerm.isIdentity_false_of_isComposite_false
+    {profile : PolyProfile} {dimension : CellDim}
+    (term : PolyTerm profile dimension)
+    (hasNotComposite : term.isComposite = false) :
+    term.isIdentity = false := by
+  cases term with
+  | atom _ _ =>
+      rfl
+  | cell _ _ _ =>
+      rfl
+  | compV _ _ =>
+      cases hasNotComposite
+  | compH _ _ =>
+      cases hasNotComposite
+  | identity _ =>
+      cases hasNotComposite
+
+theorem PolyTerm.isStepCell_of_isGeneratingStepCell
+    {profile : PolyProfile}
+    (step : PolyTerm profile 1)
+    (hasGeneratingStepCell : step.isGeneratingStepCell = true) :
+    step.isStepCell = true := by
+  unfold PolyTerm.isGeneratingStepCell at hasGeneratingStepCell
+  cases hasComposite : step.isComposite with
+  | false =>
+      unfold PolyTerm.isStepCell
+      rw [PolyTerm.isIdentity_false_of_isComposite_false step hasComposite]
+  | true =>
+      rw [hasComposite] at hasGeneratingStepCell
+      cases hasGeneratingStepCell
+
 end LeanFX2.Foundation.PolyCell.Core

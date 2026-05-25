@@ -115,6 +115,14 @@ def FXTerm := { cell : FXCellAt 0 // cell.isTermCell = true }
 This is not yet a boundary-checked reduction semantics. -/
 def FXStep := { cell : FXCellAt 1 // cell.isStepCell = true }
 
+/-- Generator-level FX step view: a single dim-1 generator cell.
+
+This stricter view rejects vertical composites, horizontal composites, and
+identities.  It is still not a typed legacy `Step` bridge; it only shrinks the
+raw view to one generating rewrite edge. -/
+def FXGeneratingStep :=
+  { cell : FXCellAt 1 // cell.isGeneratingStepCell = true }
+
 /-- Provisional conversion view.  Thinness is not enforced yet. -/
 def FXConv := FXCellAt 1
 
@@ -139,10 +147,18 @@ Boundary compatibility is not checked by this constructor. -/
 def FXStep.mk (ruleId : CellId) (source target : FXCellAt 0) : FXStep :=
   ⟨.cell ruleId source target, rfl⟩
 
+/-- Construct a generator-level FX step from a rule id plus source and target
+cells.  Boundary compatibility is still external evidence. -/
+def FXGeneratingStep.mk
+    (ruleId : CellId) (source target : FXCellAt 0) : FXGeneratingStep :=
+  ⟨.cell ruleId source target, rfl⟩
+
 /-- Extract the underlying PolyTerm from a view type. -/
 def FXTerm.toCell (term : FXTerm) : FXCellAt 0 := term.val
 def FXType.toCell (typeCell : FXType) : FXCellAt 0 := typeCell.val
 def FXStep.toCell (step : FXStep) : FXCellAt 1 := step.val
+def FXGeneratingStep.toCell (step : FXGeneratingStep) : FXCellAt 1 :=
+  step.val
 
 /-- Try to recover the provisional FX-step view from a dim-1 cell.
 This only checks the current non-identity step recognizer.  It does not verify
@@ -150,6 +166,13 @@ operational rule validity or thinness. -/
 def FXStep.ofCell? (cell : FXCellAt 1) : Option FXStep :=
   if hasStepCell : cell.isStepCell = true then
     some ⟨cell, hasStepCell⟩
+  else
+    none
+
+/-- Try to recover the stricter generator-step view from a dim-1 cell. -/
+def FXGeneratingStep.ofCell? (cell : FXCellAt 1) : Option FXGeneratingStep :=
+  if hasGeneratingStepCell : cell.isGeneratingStepCell = true then
+    some ⟨cell, hasGeneratingStepCell⟩
   else
     none
 
@@ -163,6 +186,11 @@ theorem FXType.toCell_isTypeCell (typeCell : FXType) :
 
 theorem FXStep.toCell_isStepCell (step : FXStep) :
     step.toCell.isStepCell = true := by
+  exact step.property
+
+theorem FXGeneratingStep.toCell_isGeneratingStepCell
+    (step : FXGeneratingStep) :
+    step.toCell.isGeneratingStepCell = true := by
   exact step.property
 
 theorem FXStep.toCell?_ofCell?_of_isStepCell (cell : FXCellAt 1)
@@ -215,6 +243,73 @@ theorem FXStep.ofCell?_identity (base : FXCellAt 0) :
     (by
       intro hasStepCell
       cases hasStepCell)
+
+theorem FXGeneratingStep.toCell?_ofCell?_of_isGeneratingStepCell
+    (cell : FXCellAt 1)
+    (hasGeneratingStepCell : cell.isGeneratingStepCell = true) :
+    Option.map FXGeneratingStep.toCell (FXGeneratingStep.ofCell? cell) =
+      some cell := by
+  unfold FXGeneratingStep.ofCell?
+  rw [dif_pos hasGeneratingStepCell]
+  rfl
+
+theorem FXGeneratingStep.ofCell?_of_not_isGeneratingStepCell
+    (cell : FXCellAt 1)
+    (hasNotGeneratingStepCell : cell.isGeneratingStepCell ≠ true) :
+    FXGeneratingStep.ofCell? cell = none := by
+  unfold FXGeneratingStep.ofCell?
+  rw [dif_neg hasNotGeneratingStepCell]
+
+theorem FXGeneratingStep.toCell?_ofCell?_toCell
+    (step : FXGeneratingStep) :
+    Option.map FXGeneratingStep.toCell
+        (FXGeneratingStep.ofCell? step.toCell) =
+      some step.toCell := by
+  exact FXGeneratingStep.toCell?_ofCell?_of_isGeneratingStepCell
+    step.toCell step.toCell_isGeneratingStepCell
+
+theorem FXGeneratingStep.toCell?_ofCell?_cell
+    (ruleId : CellId) (source target : FXCellAt 0) :
+    Option.map FXGeneratingStep.toCell
+        (FXGeneratingStep.ofCell? (.cell ruleId source target)) =
+      some (.cell ruleId source target) := by
+  exact FXGeneratingStep.toCell?_ofCell?_of_isGeneratingStepCell
+    (.cell ruleId source target) rfl
+
+theorem FXGeneratingStep.ofCell?_compV
+    (first second : FXCellAt 1) :
+    FXGeneratingStep.ofCell? (.compV first second) = none := by
+  exact FXGeneratingStep.ofCell?_of_not_isGeneratingStepCell
+    (.compV first second)
+    (by
+      intro hasGeneratingStepCell
+      cases hasGeneratingStepCell)
+
+theorem FXGeneratingStep.ofCell?_compH
+    (left right : FXCellAt 1) :
+    FXGeneratingStep.ofCell? (.compH left right) = none := by
+  exact FXGeneratingStep.ofCell?_of_not_isGeneratingStepCell
+    (.compH left right)
+    (by
+      intro hasGeneratingStepCell
+      cases hasGeneratingStepCell)
+
+theorem FXGeneratingStep.ofCell?_identity (base : FXCellAt 0) :
+    FXGeneratingStep.ofCell? (.identity base) = none := by
+  exact FXGeneratingStep.ofCell?_of_not_isGeneratingStepCell
+    (.identity base)
+    (by
+      intro hasGeneratingStepCell
+      cases hasGeneratingStepCell)
+
+/-- Every generator-level step is accepted by the broader provisional step view. -/
+def FXGeneratingStep.toStep (step : FXGeneratingStep) : FXStep :=
+  ⟨step.toCell,
+    PolyTerm.isStepCell_of_isGeneratingStepCell
+      step.toCell step.toCell_isGeneratingStepCell⟩
+
+theorem FXGeneratingStep.toStep_toCell (step : FXGeneratingStep) :
+    step.toStep.toCell = step.toCell := rfl
 
 theorem isTypeCell_false_of_isTermCell (cell : FXCellAt 0)
     (hasTermCell : cell.isTermCell = true) :
