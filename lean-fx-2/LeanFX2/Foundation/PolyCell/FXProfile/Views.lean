@@ -2078,6 +2078,44 @@ theorem FXTerm.toCell_ofConstructorIndex_constructorIndex_payload
       | atom cellId payload =>
           rfl
 
+theorem FXTerm.toCell_eq_atom_cellId_payload (term : FXTerm) :
+    term.toCell = .atom term.cellId term.payload := by
+  cases term with
+  | mk cell hRange =>
+      cases cell with
+      | atom cellId payload =>
+          rfl
+
+theorem FXTerm.cellId_eq_of_toCell_eq
+    {leftTerm rightTerm : FXTerm}
+    (hasSameCell : leftTerm.toCell = rightTerm.toCell) :
+    leftTerm.cellId = rightTerm.cellId := by
+  cases leftTerm with
+  | mk leftCell leftRange =>
+      cases rightTerm with
+      | mk rightCell rightRange =>
+          cases leftCell with
+          | atom leftCellId leftPayload =>
+              cases rightCell with
+              | atom rightCellId rightPayload =>
+                  cases hasSameCell
+                  rfl
+
+theorem FXTerm.payload_eq_of_toCell_eq
+    {leftTerm rightTerm : FXTerm}
+    (hasSameCell : leftTerm.toCell = rightTerm.toCell) :
+    leftTerm.payload = rightTerm.payload := by
+  cases leftTerm with
+  | mk leftCell leftRange =>
+      cases rightTerm with
+      | mk rightCell rightRange =>
+          cases leftCell with
+          | atom leftCellId leftPayload =>
+              cases rightCell with
+              | atom rightCellId rightPayload =>
+                  cases hasSameCell
+                  rfl
+
 theorem FXType.cellId_ofConstructorIndex
     (constructorIndex : Fin typeGeneratorCount) (payload : Nat) :
     (FXType.ofConstructorIndex constructorIndex payload).cellId =
@@ -2180,6 +2218,98 @@ theorem FXType.toCell_ofConstructorIndex_constructorIndex_payload
           have hasLowerBound : PolyTerm.firstTypeCellId ≤ cellId :=
             of_decide_eq_true hasLowerBoundDecide
           rw [nat_add_sub_cancel_of_le_structural hasLowerBound]
+
+theorem FXType.toCell_eq_atom_cellId_payload (typeCell : FXType) :
+    typeCell.toCell = .atom typeCell.cellId typeCell.payload := by
+  cases typeCell with
+  | mk cell hRange =>
+      cases cell with
+      | atom cellId payload =>
+          rfl
+
+theorem FXType.cellId_eq_of_toCell_eq
+    {leftType rightType : FXType}
+    (hasSameCell : leftType.toCell = rightType.toCell) :
+    leftType.cellId = rightType.cellId := by
+  cases leftType with
+  | mk leftCell leftRange =>
+      cases rightType with
+      | mk rightCell rightRange =>
+          cases leftCell with
+          | atom leftCellId leftPayload =>
+              cases rightCell with
+              | atom rightCellId rightPayload =>
+                  cases hasSameCell
+                  rfl
+
+theorem FXType.payload_eq_of_toCell_eq
+    {leftType rightType : FXType}
+    (hasSameCell : leftType.toCell = rightType.toCell) :
+    leftType.payload = rightType.payload := by
+  cases leftType with
+  | mk leftCell leftRange =>
+      cases rightType with
+      | mk rightCell rightRange =>
+          cases leftCell with
+          | atom leftCellId leftPayload =>
+              cases rightCell with
+              | atom rightCellId rightPayload =>
+                  cases hasSameCell
+                  rfl
+
+theorem FXTerm.constructorName_eq_ofConstructorName_toCell_eq
+    {leftName rightName : FXTermConstructorName}
+    {leftPayload rightPayload : Nat}
+    (hasSameCell :
+      (FXTerm.ofConstructorName leftName leftPayload).toCell =
+        (FXTerm.ofConstructorName rightName rightPayload).toCell) :
+    leftName = rightName := by
+  apply FXTermConstructorName.cellId_injective
+  have hasSameCellId :=
+    FXTerm.cellId_eq_of_toCell_eq hasSameCell
+  rw [FXTerm.cellId_ofConstructorName] at hasSameCellId
+  rw [FXTerm.cellId_ofConstructorName] at hasSameCellId
+  exact hasSameCellId
+
+theorem FXTerm.payload_eq_ofConstructorName_toCell_eq
+    {leftName rightName : FXTermConstructorName}
+    {leftPayload rightPayload : Nat}
+    (hasSameCell :
+      (FXTerm.ofConstructorName leftName leftPayload).toCell =
+        (FXTerm.ofConstructorName rightName rightPayload).toCell) :
+    leftPayload = rightPayload := by
+  have hasSamePayload :=
+    FXTerm.payload_eq_of_toCell_eq hasSameCell
+  rw [FXTerm.payload_ofConstructorName] at hasSamePayload
+  rw [FXTerm.payload_ofConstructorName] at hasSamePayload
+  exact hasSamePayload
+
+theorem FXType.constructorName_eq_ofConstructorName_toCell_eq
+    {leftName rightName : FXTypeConstructorName}
+    {leftPayload rightPayload : Nat}
+    (hasSameCell :
+      (FXType.ofConstructorName leftName leftPayload).toCell =
+        (FXType.ofConstructorName rightName rightPayload).toCell) :
+    leftName = rightName := by
+  apply FXTypeConstructorName.cellId_injective
+  have hasSameCellId :=
+    FXType.cellId_eq_of_toCell_eq hasSameCell
+  rw [FXType.cellId_ofConstructorName] at hasSameCellId
+  rw [FXType.cellId_ofConstructorName] at hasSameCellId
+  exact hasSameCellId
+
+theorem FXType.payload_eq_ofConstructorName_toCell_eq
+    {leftName rightName : FXTypeConstructorName}
+    {leftPayload rightPayload : Nat}
+    (hasSameCell :
+      (FXType.ofConstructorName leftName leftPayload).toCell =
+        (FXType.ofConstructorName rightName rightPayload).toCell) :
+    leftPayload = rightPayload := by
+  have hasSamePayload :=
+    FXType.payload_eq_of_toCell_eq hasSameCell
+  rw [FXType.payload_ofConstructorName] at hasSamePayload
+  rw [FXType.payload_ofConstructorName] at hasSamePayload
+  exact hasSamePayload
 
 /-- Decode a current term constructor id and payload into an FX term view. -/
 def FXTerm.ofCellId? (cellId : CellId) (payload : Nat) : Option FXTerm :=
