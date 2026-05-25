@@ -123,6 +123,13 @@ def applicationGeneratorSpec : GeneratorSpec where
     ChildSpec.termSameScope
   ]
 
+/-- Target metadata for the nullary unit type. -/
+def unitTypeGeneratorSpec : GeneratorSpec where
+  cellId := PolyTerm.firstTypeCellId
+  cellSort := .type
+  cellDimension := 0
+  childSpecs := []
+
 /-- Target metadata for dependent function types. -/
 def piTypeGeneratorSpec : GeneratorSpec where
   cellId := PolyTerm.firstTypeCellId + 4
@@ -175,6 +182,9 @@ theorem applicationGeneratorSpec_childSpecs :
     applicationGeneratorSpec.childSpecs =
       [ChildSpec.termSameScope, ChildSpec.termSameScope] := rfl
 
+theorem unitTypeGeneratorSpec_childSpecs :
+    unitTypeGeneratorSpec.childSpecs = [] := rfl
+
 theorem piTypeGeneratorSpec_childSpecs :
     piTypeGeneratorSpec.childSpecs =
       [ChildSpec.typeSameScope, ChildSpec.typeUnderBinder] := rfl
@@ -190,6 +200,12 @@ theorem contextConsGeneratorSpec_childSpecs :
 theorem lambdaGeneratorSpec_arity :
     lambdaGeneratorSpec.arity = 2 := rfl
 
+theorem applicationGeneratorSpec_arity :
+    applicationGeneratorSpec.arity = 2 := rfl
+
+theorem unitTypeGeneratorSpec_arity :
+    unitTypeGeneratorSpec.arity = 0 := rfl
+
 theorem piTypeGeneratorSpec_arity :
     piTypeGeneratorSpec.arity = 2 := rfl
 
@@ -199,8 +215,14 @@ theorem contextConsGeneratorSpec_arity :
 theorem piTypeGeneratorSpec_cellId :
     piTypeGeneratorSpec.cellId = 82 := rfl
 
+theorem unitTypeGeneratorSpec_cellId :
+    unitTypeGeneratorSpec.cellId = 78 := rfl
+
 theorem contextEmptyGeneratorSpec_cellId :
     contextEmptyGeneratorSpec.cellId = 103 := rfl
+
+theorem unitTypeGeneratorSpec_cellId_eq_declared :
+    unitTypeGeneratorSpec.cellId = PolyTerm.firstTypeCellId := rfl
 
 theorem contextConsGeneratorSpec_cellId :
     contextConsGeneratorSpec.cellId = 104 := rfl

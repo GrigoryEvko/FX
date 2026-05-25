@@ -37,6 +37,9 @@ inductive SupportedGeneratorSpec : GeneratorSpec → Type where
   /-- Application term generator. Payload decoding is not implemented yet. -/
   | application :
       SupportedGeneratorSpec applicationGeneratorSpec
+  /-- Nullary unit type generator. -/
+  | unitType :
+      SupportedGeneratorSpec unitTypeGeneratorSpec
   /-- Dependent-function type generator. Payload decoding is not implemented yet. -/
   | piType :
       SupportedGeneratorSpec piTypeGeneratorSpec
@@ -72,6 +75,9 @@ inductive AtomPayloadEvidence :
   /-- Empty context has the unique accepted payload 0. -/
   | contextEmpty {scope : Nat} :
       AtomPayloadEvidence contextEmptyGeneratorSpec scope 0
+  /-- Unit type has the unique accepted payload 0. -/
+  | unitType {scope : Nat} :
+      AtomPayloadEvidence unitTypeGeneratorSpec scope 0
 
 /-- Certified cell indexed by sort, dimension, scope, boundary, and raw erasure.
 
@@ -160,6 +166,13 @@ def contextEmpty {profile : PolyProfile} {scope : Nat} :
   .atom SupportedGeneratorSpec.contextEmpty
     AtomPayloadEvidence.contextEmpty
 
+/-- The unit-type helper certifies exactly the raw unit-type atom. -/
+def unitType {profile : PolyProfile} {scope : Nat} :
+    PolyCell profile .type 0 scope ()
+      (.atom unitTypeGeneratorSpec.cellId 0) :=
+  .atom SupportedGeneratorSpec.unitType
+    AtomPayloadEvidence.unitType
+
 /-- Raw erasure of the variable-cell helper is definitional. -/
 theorem raw_variableCell {profile : PolyProfile} {scope index : Nat}
     (hasIndexWithinScope : index < scope) :
@@ -170,6 +183,11 @@ theorem raw_variableCell {profile : PolyProfile} {scope index : Nat}
 theorem raw_contextEmpty {profile : PolyProfile} {scope : Nat} :
     (contextEmpty (profile := profile) (scope := scope)).raw =
       PolyTerm.atom (profile := profile) contextEmptyGeneratorSpec.cellId 0 := rfl
+
+/-- Raw erasure of the unit-type helper is definitional. -/
+theorem raw_unitType {profile : PolyProfile} {scope : Nat} :
+    (unitType (profile := profile) (scope := scope)).raw =
+      PolyTerm.atom (profile := profile) unitTypeGeneratorSpec.cellId 0 := rfl
 
 end PolyCell
 

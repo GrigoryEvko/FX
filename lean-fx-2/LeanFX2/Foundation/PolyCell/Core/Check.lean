@@ -7,8 +7,8 @@ import LeanFX2.Foundation.PolyCell.Core.NegativeProbes
 This file is phase A of the raw-to-certified checker.  It is deliberately a
 screen, not the final certification function: successful screening returns
 `Unit`, not a `PolyCell`.  The current executable rejection theorems cover
-the dim-0 malformed raw probes; positive-dimensional probes remain fixtures
-until the boundary screen can satisfy the strict TCB audit.
+both dim-0 and positive-dimensional malformed raw probes through the same
+executable screen and audit harness.
 -/
 
 namespace LeanFX2.Foundation.PolyCell.Core
@@ -81,6 +81,8 @@ def lookupGeneratorSpec? (cellId : CellId) : Option KnownGeneratorSpec :=
     some ⟨lambdaGeneratorSpec, SupportedGeneratorSpec.lambda⟩
   else if Nat.beq cellId applicationGeneratorSpec.cellId then
     some ⟨applicationGeneratorSpec, SupportedGeneratorSpec.application⟩
+  else if Nat.beq cellId unitTypeGeneratorSpec.cellId then
+    some ⟨unitTypeGeneratorSpec, SupportedGeneratorSpec.unitType⟩
   else if Nat.beq cellId piTypeGeneratorSpec.cellId then
     some ⟨piTypeGeneratorSpec, SupportedGeneratorSpec.piType⟩
   else if Nat.beq cellId contextEmptyGeneratorSpec.cellId then
@@ -113,6 +115,11 @@ def screenAtomPayload? {generatorSpec : GeneratorSpec}
     else
       Except.error .badPayload
   | SupportedGeneratorSpec.contextEmpty =>
+    if payload = 0 then
+      Except.ok ()
+    else
+      Except.error .badPayload
+  | SupportedGeneratorSpec.unitType =>
     if payload = 0 then
       Except.ok ()
     else
@@ -317,6 +324,10 @@ theorem lookupGeneratorSpec?_contextEmpty :
     lookupGeneratorSpec? contextEmptyGeneratorSpec.cellId =
       some ⟨contextEmptyGeneratorSpec, SupportedGeneratorSpec.contextEmpty⟩ := rfl
 
+theorem lookupGeneratorSpec?_unitType :
+    lookupGeneratorSpec? unitTypeGeneratorSpec.cellId =
+      some ⟨unitTypeGeneratorSpec, SupportedGeneratorSpec.unitType⟩ := rfl
+
 theorem lookupGeneratorSpec?_unsupportedBeforeLambda :
     lookupGeneratorSpec? (lambdaGeneratorSpec.cellId - 1) = none := rfl
 
@@ -363,6 +374,14 @@ theorem screenRawCell0As?_variable_three_scope_four {profile : PolyProfile} :
 theorem screenRawCell0?_contextEmpty {profile : PolyProfile} {scope : Nat} :
     screenRawCell0? (profile := profile) scope
       (PolyTerm.atom contextEmptyGeneratorSpec.cellId 0) = Except.ok () := rfl
+
+theorem screenRawCell0?_unitType {profile : PolyProfile} {scope : Nat} :
+    screenRawCell0? (profile := profile) scope
+      (PolyTerm.atom unitTypeGeneratorSpec.cellId 0) = Except.ok () := rfl
+
+theorem screenRawCell0As?_unitType {profile : PolyProfile} {scope : Nat} :
+    screenRawCell0As? (profile := profile) .type scope
+      (PolyTerm.atom unitTypeGeneratorSpec.cellId 0) = Except.ok () := rfl
 
 theorem screenRawCell?_matchedVerticalBoundary_scope_four
     {profile : PolyProfile} :
