@@ -4542,6 +4542,7 @@ representable and computably rejected.
 | TCB.6h certified seed packages | `90e6192e` | `CertifiedRawCell` packages carry an actual `PolyCell` over the original raw input for the four payload-evidenced seed atoms: variable 0 in scope 4, unit type, empty context, and linear mode.  This is not a general raw-to-certified checker and does not certify application payloads. |
 | TCB.6i expanded malformed probes | `d97e1dbd` | The negative catalog now covers application argument sort failure, application out-of-scope child failure, known rule ids used at unsupported endpoint dimensions, and extra context/type/term/mode expected-shape confusion cases.  All new probes have executable rejection theorems and audit entries. |
 | TCB.6j dim-0 certified ingress | `d1c3f65c` | `inferRawCell?` and `checkRawCellAs?` return `CertifiedRawCellResult` for the payload-evidenced dim-0 atom subset only: in-scope variables, unit type, empty context, and linear mode.  Structurally screened but uncertified atoms reject as `unsupportedCertification`, and malformed dim-0 probes keep executable rejection theorems. |
+| TCB.7a certified seed views | `9ba62a55` | `CertifiedFXCell` and seed `CertifiedFXContext` / `CertifiedFXType` / `CertifiedFXTerm` / `CertifiedFXMode` views wrap actual `PolyCell` witnesses over `fxProfile`.  There is still no certified conversion/thinness view and no new non-nullary certification power. |
 
 **Deliverables (NEW only):**
 
@@ -4558,7 +4559,8 @@ representable and computably rejected.
 | TCB.6h certified seed packages | `Foundation/PolyCell/Core/Check.lean` | `CertifiedRawCell` dependent package plus concrete packages for the payload-evidenced seed atoms only. | Each package erases definitionally to its named raw fixture; no application, lambda, pi, context-cons, generated cell, vertical composite, or raw `compH` is certified by this task. |
 | TCB.6i expanded malformed probes | `Foundation/PolyCell/Core/NegativeProbes.lean`, `Foundation/PolyCell/Core/Check.lean` | More hostile fixtures for application argument position, child scope failure, rule dimension misuse, and cross-sort expected-shape checks. | Probe counts are ratcheted; each new malformed input has a definitional rejection theorem and an audit harness assertion. |
 | TCB.6j dim-0 certified ingress | `Foundation/PolyCell/Core/Check.lean` | Computable `inferRawCell?` and expected-shape `checkRawCellAs?` returning `CertifiedRawCellResult` or a rejection reason for dim-0 raw atoms, implemented without `propext`, `Classical`, `Inhabited`, or `Nonempty`. | Every accepted result contains a `PolyCell`; accepted witnesses exist only for in-scope variables, unit type, empty context, and linear mode; application fixtures screen structurally but reject certification until child certification exists. |
-| TCB.7 certified FX views | `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | `FXContext`, `FXType`, `FXTerm`, `FXStep`, `FXConv`, `FXCdLemma` as projections of certified cells. | Existing raw subtype views remain compatibility-only; new code uses certified views; audit harness covers both. |
+| TCB.7a certified seed views | `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | `CertifiedFXCell` plus certified seed projections for context/type/term/mode over the current dim-0 ingress subset. | Every view carries an actual `PolyCell`; raw-erasure theorems are definitional; conversion/thinness and full step/coherence views remain unimplemented. |
+| TCB.7b certified FX operational views | `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | Future `FXStep`, `FXConv`, `FXCdLemma` as projections of certified positive-dimensional cells and thinness certificates. | Existing raw subtype views remain compatibility-only; new operational code uses certified views only after the corresponding positive-dimensional certification exists. |
 
 **Implementation order after TCB.6j:**
 
@@ -4584,8 +4586,10 @@ representable and computably rejected.
     boundary where the family can participate in positive-dimensional
     cells.  Raw nonsense must remain representable and the certified
     layer must reject it by computation.
-6.  `CertifiedViews.lean`: define the certified FX context/type/term/
-    step/conversion projections; keep old raw subtype views as
+6.  Extend `CertifiedViews.lean` only as the checker gains real
+    certified inhabitants: context/type/term/mode seed views are live;
+    step/conversion/coherence views must wait for positive-dimensional
+    certification and thinness data.  Keep old raw subtype views as
     compatibility shims.
 7.  Legacy bridge: connect the existing intrinsic kernel judgments to
     certified views only after the checker has nonempty accepted
