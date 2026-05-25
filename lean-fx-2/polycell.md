@@ -1,4 +1,4 @@
-# PolyTerm — The Scary Maxxed-Out Universal Substrate for FX Kernel Cells
+# PolyCell — Raw Input + Certified Universal Substrate for FX Kernel Cells
 
 > **Status:** vision document, computability-hardened.
 > All claims reduce to one of:
@@ -21,12 +21,13 @@
 > ~165K gross LoC before the later deletion of obsolete cascade files.
 > See [§9](#9-loc-budget) for the canonical accounting.
 >
-> **Slogan:** *PolyCell renamed and souped up.*  One indexed inductive
-> `PolyTerm π dim source target` parameterized by a `PolyProfile π`
-> bundling thirteen profile axes; FX kernel becomes one profile instance; the entire
-> ~140 KLoC current FX kernel becomes specializations of this one type;
-> ~40 of the 50 active accelerate-* roadmap tasks collapse into being
-> PolyTerm view definitions instead of independent constructions.
+> **Slogan:** *permissive raw cells, intrinsic certified cells.*  Raw
+> `PolyTerm π dim` is the input / serialization layer and may represent
+> nonsense so the checker can reject it.  Certified `PolyCell π sort dim
+> scope boundary raw` is the kernel layer and has constructors only for
+> sorted, scoped, boundary-compatible cells.  FX kernel objects become
+> projections of certified cells over one `PolyProfile π`; raw nonsense
+> must map to `none` / `rejected reason`, never to a certificate.
 >
 > **Reference axis sources:** see [§13 References](#13-references).  The
 > three load-bearing references are Loubaton's 2023 PhD thesis
@@ -51,17 +52,20 @@ strongest available theory per layer):
   `arXiv:2302.05190`) + Pédrot-Tabareau Fire Triangle constraint
   (POPL 2020).  Provides: every type theory has a bi-initial model +
   its own internal language + theories ≃ models bi-equivalence.
-  Sconing-is-enough thesis delivers canonicity, normalization, and
-  parametricity for free per extension.  Fire Triangle bounds what
-  is mixable (at most two of {substitution, dependent elimination,
-  effects} unrestricted).  This is the expand-at-whim multiplier:
+  Sconing-is-enough thesis reduces canonicity, normalization, and
+  parametricity to a concrete internal-sconing witness per extension.
+  Fire Triangle bounds what is mixable (at most two of {substitution,
+  dependent elimination, effects} unrestricted).  This is the
+  expand-at-whim multiplier:
   each new FX feature ships as ~2K LoC Tier-0 obligation witness
   instead of 5-15K LoC bespoke cascade work.  ~12K Lean LoC, first
   Lean port of this framework in any proof assistant.
 
-* **Tier 1 — POLYTERM CORE** (~15K LoC, §4)
-  Small inductive PolyTerm + 13-axis PolyProfile bundle.  Each axis
-  is one Tier-0 obligation witness.
+* **Tier 1 — POLYCELL CORE** (~15K LoC, §4)
+  A two-layer core: permissive raw `PolyTerm` for input data, plus
+  intrinsic certified `PolyCell` indexed by sort, dimension, scope,
+  boundary, and raw syntax.  Each axis is one Tier-0 obligation
+  witness attached to the profile, not a new raw constructor family.
 
 * **Tier 2 — PROFILE AXES + EXTENSION CALCULUS** (13 profile axes,
   §3.1-§3.13, plus the extension calculus in §3.14)
@@ -172,7 +176,7 @@ The hard rules this design holds:
     * 3.13 [MTT normalization gateway (Gratzer + rigid mode theory)](#313-mtt-normalization-gateway)
     * 3.14 [Profile Extension Calculus — the load-bearing addition (Aberlé + Bousfield + ∞-cosmos)](#314-profile-extension-calculus)
     * 3.15 [Demonstration profiles — what the extension calculus enables](#315-demonstration-profiles)
-4.  [The PolyTerm signature](#4-the-polyterm-signature)
+4.  [The raw/certified PolyCell signature](#4-the-rawcertified-polycell-signature)
 5.  [FX kernel as one profile instance](#5-fx-kernel-as-one-profile-instance)
 6.  [Capabilities matrix](#6-capabilities-matrix)
 7.  [Cascade obsolescence — what existing work collapses](#7-cascade-obsolescence)
@@ -237,7 +241,7 @@ categories + Bocquet-Kaposi-Sattler internal sconing + Pédrot-
 Tabareau Fire Triangle).  See §3.0 for the universal substrate that
 makes the framework genuinely scary AND mechanizable.
 
-**The deeper thesis — PolyTerm is a profile-extension calculus, not
+**The deeper thesis — PolyCell is a profile-extension calculus, not
 thirteen static axes.**  The thirteen axes describe the *shape* of
 any single admissible profile.  The **profile-extension calculus**
 (§3.14) describes the *space* of admissible profiles and the
@@ -273,13 +277,14 @@ obligations close, the extension calculus in §3.14 uses explicit
 per-pair bilax / distributive-law witnesses and explicit no-go
 rejection — no universal-property-as-corollary shortcut.
 
-The slogan is **PolyCell renamed and souped up**.  The K11.1 `PolyCell`
-(dim-indexed, source/target intrinsic, real Burroni cells) is the
-skeleton.  The other twelve axes are the flesh.  At the end you have
-one inductive type `PolyTerm π dim source target` parameterized by a
-thirteen-field `PolyProfile π`, with FX kernel as one specific
-instance of the profile — but *that profile is reached and grown by
-the extension calculus*, not assembled by hand.
+The slogan is **permissive raw cells, intrinsic certified cells**.
+The K11.1 `PolyCell` (dim-indexed, source/target intrinsic, real
+Burroni cells) is the skeleton.  The other twelve axes are the flesh.
+At the end you have raw `PolyTerm π dim` as the input format and
+certified `PolyCell π sort dim scope boundary raw` as the kernel
+inhabitant type, both parameterized by a thirteen-field `PolyProfile
+π`.  FX is one specific profile, reached and grown by the extension
+calculus, not assembled by hand.
 
 Eating all the cakes:
 - A graded (Atkey-McBride 2018 + Wood-Atkey 2022 corrected Lam rule),
@@ -357,10 +362,11 @@ This refutation is correct *for the current K11 design*, where
 PolyCell is just data + ParallelPair + composition laws and the
 proof of confluence stays Prop-side.
 
-The PolyTerm proposal here resolves the wall by **making the
+The PolyCell proposal here resolves the wall by **making the
 substrate carry both the cells AND the markings**:
 
-- Cells are Type-side (PolyTerm constructors).
+- Cells are Type-side (certified `PolyCell` constructors over raw
+  `PolyTerm` input).
 - Markings are Prop-side (Loubaton's `tD ⊆ D` per-cell thinness).
 - Conv = "cell is in the saturated marking" (Prop, via Riehl-Verity
   saturation criterion).
@@ -375,7 +381,8 @@ marking.
 ### 2.3 Conv decidability — two independent published paths
 
 Decidability of Conv has TWO concrete published decision procedures
-under PolyTerm.  Either suffices for `★ MILESTONE A`; we ship both
+under the certified PolyCell target.  Either suffices for
+`★ MILESTONE A`; we ship both
 as redundant paths because the first one we hit may reveal Lean
 mechanization issues, and having a backup avoids pivot collapse.
 
@@ -404,10 +411,10 @@ DecidableEq on η-long NF  ─→  Conv.decide via NF equality
   observational, Mörtberg-Spadetto for cubical decidable conv).
 
 **Path B — Makkai-Mimram word problem on free ω-cat** (the polygraph
-path, semantically aligned with the PolyTerm substrate):
+path, semantically aligned with the PolyCell substrate):
 
 ```
-PolyTerm extracted as Generator-based polygraph X with finite
+Certified PolyCell extracted as Generator-based polygraph X with finite
 generators per dim  ─→  FX rewrite as convergent presentation
 (K12 SN + cd_lemma gives confluence)  ─→  word equality in
 F(X) decidable via Makkai's algorithm  ─→  Conv = word equality
@@ -458,13 +465,13 @@ published and what's not.
 **Net for MILESTONE A:** Path A (NbE) is on the critical path
 because K12 + K13 work is already in flight and follows the
 Adjedj et al. recipe.  Path B (Makkai) is the backup + semantic
-alignment with PolyTerm; if Path A hits an unforeseen Lean
+alignment with the certified PolyCell substrate; if Path A hits an unforeseen Lean
 mechanization wall, Path B is independently sufficient.  Both
 paths converge on the same `Decidable (Conv a b)` instance.
 CONVTRANS-D, K12.28, K13.20 collapse via Path A's standard
 recipe.
 
-### 2.4 Concurrency / distribution come for free
+### 2.4 Concurrency / distribution wait on certified `compH`
 
 The `20_05_2026.md` dossier §2.7 conjectures that K11.5 (horizontal
 composition) + K11.6 (interchange / Eckmann-Hilton) IS the separation
@@ -472,21 +479,32 @@ logic frame rule at the polygraph level.  The conjecture is *correct
 in structure but loses typing* in the current K11 design because the
 typed Term is separate from the polygraph.
 
-PolyTerm fixes this: `compH` (horizontal composition, Loubaton Gray
-module §3.1.4) takes two typed cells with disjoint footprints and
-produces a typed cell with combined footprint.  Interchange
-(K11.6, already shipped zero-axiom) is the frame rule **at the typed
-level**.
+The raw layer does **not** fix this.  Raw `PolyTerm.compH` is input
+syntax only: it can represent a proposed horizontal composition, but
+it does not certify disjoint footprints, Gray-boundary matching, or a
+typed frame rule.
 
-So `par(f, g)` typechecks ⟺ `footprint(f) ⊓ footprint(g) = ⊥` in
-the permission semiring (FX's existing graded usage dimension).
-The frame rule isn't a separately-proved theorem; it's the typing
-rule of `compH`.
+The certified layer fixes this only after Axis 6 is real.  A future
+certified `PolyCell.compH` must take two certified cells, a
+computable Gray boundary, and a disjoint-footprint / matching witness,
+then produce a certified cell over the combined footprint.
+Interchange (K11.6, already shipped zero-axiom for the current raw
+scaffold) becomes the frame rule **only when lifted to that certified
+constructor**.
 
-Distribution / GPU evaluation (P5.1) becomes a polygraph fold with
-`compH` for parallel partitions and `compV` for sequential commits.
-BSP-sync is the saturation closure.  ZERO additional infrastructure
-beyond what PolyTerm already gives.
+So the target rule is:
+
+```text
+par(f, g) typechecks only if
+  footprint(f) and footprint(g) are disjoint
+  and their Gray boundaries match.
+```
+
+Until that constructor exists, the raw-to-certified checker must
+reject raw `compH` with `unsupportedCompH`, not silently accept it.
+Distribution / GPU evaluation (P5.1) is therefore deferred: it
+requires certified `compH` for parallel partitions, certified `compV`
+for sequential commits, and explicit BSP-sync / saturation laws.
 
 ### 2.5 Modal / cohesive / polarized / linear / guarded all in one kernel
 
@@ -495,7 +513,7 @@ ghost, cap, later, clock) with hand-rolled adjunction lemmas.  Adding a
 ninth modality (e.g. graded `▷` per Nakano, or differential `∂` per
 Kock-Lawvere SDG) requires re-doing the adjunction chain by hand.
 
-PolyTerm puts the entire modal layer in the `topos` axis (axis 7,
+PolyCell puts the entire modal layer in the `topos` axis (axis 7,
 Lurie ∞-topos with modal adjunctions as topos structure).  Adding a
 new modality = adding one `ModalAdjunction` entry to the topos profile.
 No cascade.
@@ -536,9 +554,10 @@ FX as polygraph extensions: types become atoms, lemmas become
 1-cells, coherence becomes 2-cells, Squier 3-cells handle critical
 pair joinability.
 
-This is implementable in PolyTerm: Mathlib's ~1.5M LoC of mathematics
+This is implementable in the certified PolyCell target: Mathlib's ~1.5M LoC of mathematics
 maps to a sequence of `Generator` value extensions, with each
-Mathlib theorem becoming one dim-1 cell in `PolyTerm fxProfile`.
+Mathlib theorem becoming one dim-1 certified cell over
+`PolyTerm fxProfile` raw syntax.
 The conversion is mostly mechanical; the win is that FX-extensions
 inherit Mathlib's full mathematical content.
 
@@ -584,7 +603,7 @@ cascade.
 ### 3.0 Tier 0: The Universal Meta-Framework Substrate
 
 Before the thirteen axes: a universal Tier 0 substrate that all axes
-are built on.  This is what makes PolyTerm's "expand FX at whim"
+are built on.  This is what makes PolyCell's "expand FX at whim"
 architectural promise concrete.  Each axis becomes one categorical
 obligation against the meta-framework, ~2K LoC instead of 5-15K LoC
 bespoke cascade work per new feature.  The 12K LoC investment in
@@ -635,7 +654,7 @@ language gives back the extension's syntax.  Codata, sessions,
 machines, contracts, etc. all become objects in a single categorical
 hierarchy with a uniform universal property.
 
-#### 3.0.2 Internal sconing — metatheory for free
+#### 3.0.2 Internal sconing — metatheory by explicit witness
 
 The BKS thesis (FSCD 2023): **sconing alone (not general gluing) is
 enough for the metatheory**.  Two key moves:
@@ -645,17 +664,21 @@ enough for the metatheory**.  Two key moves:
 * Perform the construction INTERNAL to a presheaf topos; externalize
   at the end.
 
-The payoff:
+The payoff, after the witness is actually constructed:
 
-* **Canonicity** falls out as one boilerplate-free induction
+* **Canonicity** is derived from one boilerplate-free induction
   principle.
-* **Normalization** falls out as another (Uemura `arXiv:2212.11764`
-  refines this via substitution-mode + renaming-mode separation).
-* **Syntactic parametricity** falls out as a third.
+* **Normalization** is derived from another (Uemura
+  `arXiv:2212.11764` refines this via substitution-mode +
+  renaming-mode separation).
+* **Syntactic parametricity** is derived as a third.
 
 For each FX axis, the metatheory obligation reduces to: provide a
-sconing witness.  Per axis ~1K LoC.  Subsumes per-construction STC /
-gluing arguments cited per-axis below.
+concrete sconing witness plus the Fire Triangle accounting for that
+axis.  Per axis ~1K LoC.  This is a smaller proof obligation than
+per-construction STC / gluing arguments, but it is still a proof
+obligation; no arbitrary profile gets canonicity or normalization by
+being merely named in the table.
 
 The BKS earlier paper "Relative induction principles" (`arXiv:2102.11649`)
 provides the framework: induction principles that operate relative to
@@ -699,19 +722,19 @@ axes don't accidentally try to mix all three legs unrestrictedly.
 
 #### 3.0.4 The Tier 0 obligation type
 
-Every PolyTerm axis is a tuple (Categorical structure, Sconing
+Every PolyCell axis is a tuple (Categorical structure, Sconing
 witness, Fire Triangle navigation):
 
 ```lean
-/-- A PolyTerm axis is a Tier-0 obligation: a representable-map-category
+/-- A PolyCell axis is a Tier-0 obligation: a representable-map-category
 extension to FX's base type theory, together with a sconing witness
-that delivers canonicity, normalization, and parametricity. -/
+from which canonicity, normalization, and parametricity are derived. -/
 structure AxisObligation where
   /-- The categorical structure being added (Uemura RMC extension). -/
   rmcExtension : RepresentableMapCategory.Extension fxBaseRMC
 
-  /-- The sconing witness (BKS internal sconing) that delivers
-  metatheory for free. -/
+  /-- The sconing witness (BKS internal sconing) used to derive the
+  metatheory. -/
   sconingWitness : InternalSconing rmcExtension
 
   /-- Fire Triangle navigation: which of {subst, depElim, effects}
@@ -753,12 +776,12 @@ axis complexity.
 
 #### 3.0.6 Why this is genuinely scarier than its source papers
 
-Each source paper handles one axis (or one metatheorem).  PolyTerm
+Each source paper handles one axis (or one metatheorem).  PolyCell
 with Tier 0 substrate gives FX the combined strength of all of them:
 
 * Uemura provides universality (every type theory in one framework).
-* BKS provides metatheory for free (sconing once, all three
-  metatheorems).
+* BKS provides a compact metatheory route (sconing witness once, then
+  derive the three metatheorems).
 * Fire Triangle provides budget constraint (knowing what's unmixable
   saves wasted attempts).
 * All thirteen axes plug into the same Tier 0 obligation type.
@@ -1608,7 +1631,7 @@ structure Saturation (S : Stratification _ _) where
 
   /-- Riehl-Verity 2022 +1-Cat thinness rules.  Encodes which fillers
   must exist for the stratification to be properly saturated. -/
-  thinFillers : ∀ {dim} (horn : Horn dim) (filler : PolyTerm _ dim _),
+  thinFillers : ∀ {dim} (horn : Horn dim) (filler : CertifiedCell _ _ dim _),
     horn.thinAt level → S.thin dim filler
 ```
 
@@ -2427,9 +2450,9 @@ fibration applied to the categorification of profile data.
   section of the fibration.
 
 - Cisinski 2019 shows how to handle self-reference in this fibration
-  via ω-localization without paradox.  This is what lets `PolyTerm
-  fxProfile 0 (universeBoundary)` contain `fxProfile` itself — the
-  universe-of-universes problem at the polygraph level.
+  via ω-localization without paradox.  This is what lets a certified
+  universe cell over raw `PolyTerm fxProfile 0` classify `fxProfile`
+  itself — the universe-of-universes problem at the polygraph level.
 
 **Lean signature:**
 
@@ -2680,11 +2703,12 @@ justification.
 For FX, this is a 0-cell whose intrinsic type is `Type level`. -/
 def universeBoundary (n : Nat) : Boundary 0 := ...
 
-/-- The universe cell.  Internal Universe ω at level n.
-Built as the polynomial universe of all polynomials of cardinality
-≤ Lean's level n. -/
-def universeCell (π : PolyProfile) (n : Nat) : PolyTerm π 0 (universeBoundary n) :=
-  PolyTerm.universe n
+/-- The certified universe cell.  Internal Universe ω at level n.
+The raw payload stores the level; certification proves it is the
+universe generator at sort `.type`. -/
+def universeCell (π : PolyProfile) (n : Nat) :
+    CertifiedCell π .type 0 scope :=
+  certifyUniverseGenerator n
 
 /-- Univalence as subterminality in Poly^Cart.  Aberlé-Spivak
 Definition 4.1.  The universe cell at level n is a polynomial
@@ -2773,9 +2797,9 @@ theorem polyTermUnivalence (π : PolyProfile) (n : Nat) (A B : Ty (Ty.universe n
 
 Cavallo-Höfer *Univalence without function extensionality*
 `arXiv:2605.00812` (May 2026) proves that **categorical univalence
-does NOT imply function extensionality**.  This means PolyTerm
-must distinguish three separate principles and never infer one
-from another:
+does NOT imply function extensionality**.  This means PolyCell must
+distinguish three separate principles and never infer one from
+another:
 
 1. **Operational univalence** — FX's `Step.eqType` reduction rule.
    This is the kernel-level fact `Conv (Ty.id Univ A B) (Ty.equiv
@@ -3197,8 +3221,8 @@ aspirational.
 
 **Reframing the thesis:**
 
-> PolyTerm is not a 13-axis object.  PolyTerm is a small kernel plus
-> a profile-extension calculus.  FX is the first admissible profile.
+> PolyCell is not a 13-axis object.  PolyCell is a small raw/certified
+> kernel plus a profile-extension calculus.  FX is the first admissible profile.
 > Every future feature — probability, differentiation, quantum,
 > distributed protocols, scientific simulation, self-hosting — ships
 > as a `ProfileExtension` satisfying the admission contract.  The
@@ -3309,17 +3333,18 @@ Conservative-extension witness: existing FX programs keep their
 typing, reduction, Conv, erasure, and compiled behavior under any
 admitted extension. -/
 structure ProfileLens (rich base : PolyProfile) where
-  forget : ∀ {dim boundary},
-           PolyTerm rich dim boundary →
-           PolyTerm base dim (boundary.forget)
+  forget : ∀ {sort dim scope boundary raw},
+           PolyCell rich sort dim scope boundary raw →
+           CertifiedCell base sort dim scope
 
-  lift : ∀ {dim boundary},
-         PolyTerm base dim boundary →
-         PolyTerm rich dim (boundary.lift)
+  lift : ∀ {sort dim scope boundary raw},
+         PolyCell base sort dim scope boundary raw →
+         CertifiedCell rich sort dim scope
 
   /-- Round-trip law: lifting then forgetting is the identity on
   base terms.  This is the conservativity witness. -/
-  forget_lift : ∀ {dim boundary} (cell : PolyTerm base dim boundary),
+  forget_lift : ∀ {sort dim scope boundary raw}
+      (cell : PolyCell base sort dim scope boundary raw),
                 forget (lift cell) = cell
 
   /-- Typing preservation: a typable base term remains typable
@@ -3500,7 +3525,7 @@ admission witnesses is itself admissible.
 Once Axis 14 is in place, the following profiles ship as
 `ProfileExtension` values over `fxProfile`, not as bespoke kernel
 forks.  Each carries the eight admission obligations described
-above.  Profiles are classified by their **PolyTerm Level** —
+above.  Profiles are classified by their **PolyCell Level** —
 the depth of structural change they make to the profile space:
 
 | Level | What changes |
@@ -3545,9 +3570,9 @@ the depth of structural change they make to the profile space:
 4. **Distributed-Protocol FX** — very FX-native because sessions,
    effects, and resources already exist; mostly a doctrine-tier
    extension over composed primitives.
-5. **Self-Hosting Kernel FX** — long-term capstone; makes
-   PolyTerm prove its own extension machinery from inside,
-   closing the loop.
+5. **Self-Hosting Kernel FX** — long-term capstone; makes the
+   certified PolyCell kernel prove its own extension machinery from
+   inside, closing the loop.
 
 **Honest scope statement:**
 
@@ -3567,12 +3592,38 @@ brief asks for.
 
 ---
 
-## 4. The PolyTerm signature
+## 4. The raw/certified PolyCell signature
 
-After the thirteen profile axes are defined, the universal cell type is
-one small indexed inductive.  The profile-extension calculus (§3.14)
-lives over admissible profiles; it is not another constructor family
-inside `PolyTerm`.
+After the thirteen profile axes are defined, the trusted kernel surface
+has two layers.
+
+1.  `PolyTerm π dim` is raw syntax.  It is deliberately permissive:
+    imported data, serialized cells, broken generator ids, wrong arity,
+    bad sort choices, bad vertical composites, and future `compH`
+    experiments must all be representable so the checker can say
+    `false` / `none` / `rejected reason`.
+2.  `PolyCell π sort dim scope boundary raw` is certified syntax.  It
+    is indexed by the raw cell it certifies, and its constructors are
+    the only trusted introduction rules.  Ill-sorted, ill-scoped, or
+    boundary-incompatible cells are unconstructable at this layer.
+
+This mirrors the existing kernel pattern:
+
+```lean
+RawTerm scope                         -- permissive-ish syntax
+Term ctx type raw                     -- intrinsic typed certificate
+
+PolyTerm profile dim                  -- permissive raw cell syntax
+PolyCell profile sort dim scope b raw -- intrinsic certified cell
+```
+
+The profile-extension calculus (§3.14) lives over admissible profiles;
+it is not another constructor family inside raw `PolyTerm`.
+
+The Lean block below is a target shape, not a claim that the current
+files already expose these fields.  The rollout in §10 splits it into
+small modules so each invariant can be audited before downstream views
+depend on it.
 
 ```lean
 namespace LeanFX2.Foundation.Polygraph
@@ -3629,66 +3680,163 @@ structure PolyProfile where
     parentProfile, omegacE, universeConfig, substitutionBackbone,
     stcClassifier, mttGateway⟩
 
-/-- Boundary of a dim-(d+1) cell: a parallel pair of dim-d cells.
-For dim 0, boundary is just an input/output sort pair. -/
-inductive Boundary : (π : PolyProfile) → (dim : Nat) → Type where
-  | dim0  : ∀ {π}, π.algebra.inputSorts 0 → π.algebra.inputSorts 0 → Boundary π 0
-  | succ  : ∀ {π dim}, (src tgt : PolyTerm π dim _) →
-            ParallelPair src tgt →
-            Boundary π (dim+1)
+/-- Raw syntax.  This layer is input data, not the trusted invariant. -/
+inductive PolyTerm (π : PolyProfile) : Nat → Type where
+  | atom :
+      (cellId : Nat) →
+      (payload : Nat) →
+      PolyTerm π 0
+  | cell :
+      {dim : Nat} →
+      (ruleId : Nat) →
+      PolyTerm π dim →
+      PolyTerm π dim →
+      PolyTerm π (dim + 1)
+  | compV :
+      {dim : Nat} →
+      PolyTerm π (dim + 1) →
+      PolyTerm π (dim + 1) →
+      PolyTerm π (dim + 1)
+  | compH :
+      {dim : Nat} →
+      PolyTerm π (dim + 1) →
+      PolyTerm π (dim + 1) →
+      PolyTerm π (dim + 1)
+  | identity :
+      {dim : Nat} →
+      PolyTerm π dim →
+      PolyTerm π (dim + 1)
 
-/-- THE universal cell type.  Burroni PolyCell renamed and souped up. -/
-inductive PolyTerm (π : PolyProfile) :
-    (dim : Nat) → Boundary π dim → Type where
+/-- Sorts are the visible strata of the one FX cell substrate.
+These are not separate syntaxes glued later: terms, types, contexts,
+mode/grade/effect/protocol data all live in one certified cell world. -/
+inductive CellSort where
+  | context
+  | type
+  | term
+  | mode
+  | effect
+  | grade
+  | protocol
+  deriving DecidableEq, Repr
 
-  -- ============================================================
-  -- DIM 0: atomic generators (term-cells in the Cartesian polygraph)
-  -- ============================================================
-  | atom : (g : π.algebra.bases 0) →
-           (payload : π.algebra.payloadType g) →
-           PolyTerm π 0 (π.boundary0Of g)
+/-- One expected child position of a generator.
 
-  -- ============================================================
-  -- DIM n+1: cells between parallel n-cells
-  -- ============================================================
-  | cell : ∀ {dim : Nat} {bnd : Boundary π (dim+1)},
-           (rule : π.algebra.bases (dim+1)) →
-           π.algebra.compatible (dim+1) rule bnd →
-           PolyTerm π (dim+1) bnd
+`scopeShift` is not arity.  A lambda has arity two but one child lives
+under `scope + 1`; a context extension has several children at the same
+scope.  This table is the concrete polynomial fiber / list of directions
+for the generator. -/
+structure ChildSpec where
+  sort : CellSort
+  dim : Nat
+  scopeShift : Nat
+  deriving DecidableEq, Repr
 
-  -- ============================================================
-  -- COMPOSITION CTORS (Loubaton Gray module §3.1.4)
-  -- ============================================================
+/-- Boundary of a certified cell.  Dim-0 cells are vertices; higher cells
+have a source/target pair of lower-dimensional certified raw endpoints. -/
+def CellBoundary (π : PolyProfile) :
+    CellSort → Nat → Nat → Type
+  | _, 0, _ => Unit
+  | sort, dim + 1, scope =>
+      PolyTerm π dim × PolyTerm π dim
 
-  /-- Horizontal composition at level i.  Two cells of dim ≥ i+1
-  with matching i-boundary compose horizontally. -/
-  | compH : ∀ {dim i : Nat} (h_le : i ≤ dim)
-              {bnd₁ bnd₂ : Boundary π dim} {bnd_glued : Boundary π dim}
-              (matching : MatchesAt i bnd₁ bnd₂ bnd_glued),
-              PolyTerm π dim bnd₁ →
-              PolyTerm π dim bnd₂ →
-              PolyTerm π dim bnd_glued
+/-- Heterogeneous child list dictated by generator metadata.
 
-  /-- Vertical composition: two cells of the same dim with matching
-  top-dim boundary compose. -/
-  | compV : ∀ {dim : Nat} {a b c : PolyTerm π dim _}
-              (h : (target a) = (source b)),
-              PolyTerm π dim _ →
-              PolyTerm π dim _ →
-              PolyTerm π dim _
+This is mutually recursive with `PolyCell`: child positions are not
+raw Nats, they are already-certified cells at the sort, dimension, and
+scope determined by the generator's polynomial fiber. -/
+mutual
+inductive CellChildren (π : PolyProfile) :
+    List ChildSpec → Nat → Type where
+  | nil :
+      CellChildren π [] scope
+  | cons :
+      PolyCell π spec.sort spec.dim (scope + spec.scopeShift)
+        childBoundary childRaw →
+      CellChildren π rest scope →
+      CellChildren π (spec :: rest) scope
 
-  -- ============================================================
-  -- IDENTITY (Loubaton truncation layer)
-  -- ============================================================
+/-- Certified cell syntax.  This is the trusted layer.  It is indexed by
+the raw syntax it certifies, so erasure back to raw is definitional.
 
-  /-- Identity cell at dim+1, source = target = given dim cell. -/
-  | id : ∀ {dim : Nat} {bnd : Boundary π dim} (a : PolyTerm π dim bnd),
-           PolyTerm π (dim+1) (Boundary.succ a a refl)
+There is deliberately no certified `compH` constructor here until the
+Gray tensor boundary formula and disjoint-footprint/matching condition
+are mechanized.  Raw `PolyTerm.compH` remains available as input data;
+the checker must reject it at this stage. -/
+inductive PolyCell (π : PolyProfile) :
+    (sort : CellSort) →
+    (dim : Nat) →
+    (scope : Nat) →
+    CellBoundary π sort dim scope →
+    PolyTerm π dim →
+    Type where
+
+  | atom :
+      (generator : π.algebra.sortedGenerators sort) →
+      {payload : Nat} →
+      (children : CellChildren π generator.children scope) →
+      (hasPayloadDecoded :
+        π.algebra.decodeChildren generator payload = some children) →
+      PolyCell π sort 0 scope () (.atom generator.cellId payload)
+
+  | cell :
+      {sort : CellSort} →
+      {dim scope : Nat} →
+      (rule : π.algebra.sortedRules sort dim) →
+      {source target : PolyTerm π dim} →
+      {sourceBoundary targetBoundary : CellBoundary π sort dim scope} →
+      PolyCell π sort dim scope sourceBoundary source →
+      PolyCell π sort dim scope targetBoundary target →
+      π.algebra.ruleAcceptsBoundary rule source target →
+      PolyCell π sort (dim + 1) scope
+        (source, target)
+        (.cell rule.cellId source target)
+
+  | compV :
+      {sort : CellSort} →
+      {dim scope : Nat} →
+      {source middle target : PolyTerm π dim} →
+      {firstRaw secondRaw : PolyTerm π (dim + 1)} →
+      PolyCell π sort (dim + 1) scope (source, middle) firstRaw →
+      PolyCell π sort (dim + 1) scope (middle, target) secondRaw →
+      PolyCell π sort (dim + 1) scope
+        (source, target)
+        (.compV firstRaw secondRaw)
+
+  | identity :
+      {sort : CellSort} →
+      {dim scope : Nat} →
+      {boundary : CellBoundary π sort dim scope} →
+      {baseRaw : PolyTerm π dim} →
+      PolyCell π sort dim scope boundary baseRaw →
+      PolyCell π sort (dim + 1) scope
+        (baseRaw, baseRaw)
+        (.identity baseRaw)
+end
+
+/-- Why a raw cell failed certification. -/
+inductive CellCheckRejection where
+  | unknownGenerator
+  | wrongSort
+  | badPayload
+  | wrongArity
+  | wrongChildShape
+  | badBoundaryEndpoint
+  | badVerticalBoundary
+  | unsupportedCompH
+
+/-- The only way raw input enters the trusted layer: a computable checker
+that either returns a certified cell package or rejects the raw syntax
+with a concrete reason. -/
+def checkRawCell? (raw : PolyTerm fxProfile dim) :
+    Except CellCheckRejection
+      (Σ sort, Σ scope, Σ boundary,
+        PolyCell fxProfile sort dim scope boundary raw) := ...
 
 end LeanFX2.Foundation.Polygraph
 ```
 
-Feature operations are **not** `PolyTerm` constructors.  Universe
+Feature operations are **not** raw `PolyTerm` constructors.  Universe
 cells, cumulativity, Π/Σ, modalities, cubical paths, `transp`, `hcomp`,
 HIT eliminators, probability, quantum, SDG, and every future feature
 are entries in `π.algebra.bases` with payload/output/compatibility
@@ -3696,16 +3844,44 @@ tables.  Thinness is also **not** a constructor; it is the
 Prop-valued marking `π.stratification.thin dim cell`, with inverses
 and flipped boundaries produced by the saturation theorem.
 
-The `PolyTerm` inductive has five structural constructors:
-`atom`, `cell`, `compH`, `compV`, and `id`.  Compared to the current
-75-ctor `Term` + 100+-ctor `Step` + 100+-ctor `cd_lemma`, this is a
-~50× reduction in inductive surface area and, more importantly, new
-features no longer enlarge the inductive at all.
+The raw `PolyTerm` inductive has five structural constructors:
+`atom`, `cell`, `compH`, `compV`, and `identity`.  The certified
+`PolyCell` layer initially exposes only `atom`, `cell`, `compV`, and
+`identity`; certified `compH` is blocked until Axis 6 has real Gray
+boundary semantics.  Compared to the current 75-ctor `Term` +
+100+-ctor `Step` + 100+-ctor `cd_lemma`, this is a ~50× reduction in
+inductive surface area and, more importantly, new features no longer
+enlarge the raw inductive at all.
 
-**Lean LoC estimate for PolyTerm itself:** ~15K LoC (the inductive
-definition with all its boundary-computing helpers, plus the basic
-recursor / induction principles, plus the structural functions
-`source`, `target`, `dim`, `isThin`).
+**Nonsense policy.**  Nonsense is allowed only in raw input.  Certified
+cells must make nonsense unconstructable.  The bridge from raw to
+certified must be a computable checker whose successful result carries
+the certificate; malformed raw cells return `none` or a structured
+rejection reason.
+
+**Rejection taxonomy.**  The checker must say `false` at the smallest
+failed invariant it can identify:
+
+| Raw problem | Certified response |
+|---|---|
+| unknown generator id | reject `unknownGenerator` |
+| generator used at the wrong sort | reject `wrongSort` |
+| payload fails to decode | reject `badPayload` |
+| decoded child count does not match `ChildSpec` length | reject `wrongArity` |
+| child sort/dimension/scope disagrees with `ChildSpec` | reject `wrongChildShape` |
+| source/target endpoint is not itself certified | reject `badBoundaryEndpoint` |
+| vertical composite middle endpoint does not match definitionally | reject `badVerticalBoundary` |
+| raw `compH` before Axis 6 certification | reject `unsupportedCompH` |
+
+This is the operational answer to "show what is nonsense": raw cells
+can be displayed and diagnosed, but only accepted cells can inhabit
+`PolyCell`.
+
+**Lean LoC estimate for PolyCell core itself:** ~15K LoC (raw syntax,
+generator metadata, `ChildSpec` / `CellChildren`, certified boundary
+indices, the raw-to-certified checker, basic recursors / induction
+principles, and structural functions `source`, `target`, `dim`,
+`isThin`).
 
 ---
 
@@ -3843,58 +4019,70 @@ def fxProfile : PolyProfile where
 
   consistency := fxConsistencyProof
 
-/-- The unified FX cell type. -/
-def FXCell := PolyTerm fxProfile
+/-- Raw FX cell input.  This is not a kernel certificate. -/
+def FXRawCell := PolyTerm fxProfile
+
+/-- Certified FX cell package. -/
+def FXCell :=
+  Σ sort, Σ dim, Σ scope, Σ boundary, Σ raw,
+    PolyCell fxProfile sort dim scope boundary raw
 
 end LeanFX2
 ```
 
-The existing FX kernel layers are specializations of `FXCell`:
+The existing FX kernel layers are projections of certified cells, not
+post-hoc predicates on raw Nat payloads:
 
 ```lean
 namespace LeanFX2
 
-/-- A type (universe-of-types element). -/
-def FXType :=
-  { c : FXCell // c.dim = 0 ∧ c.encodesType }
+/-- Certified context cell. -/
+def FXContext (scope : Nat) (raw : FXRawCell 0) :=
+  PolyCell fxProfile .context 0 scope () raw
 
-/-- A term (typed value). -/
-def FXTerm :=
-  { c : FXCell // c.dim = 0 ∧ c.encodesValue }
+/-- Certified type cell. -/
+def FXType (scope : Nat) (raw : FXRawCell 0) :=
+  PolyCell fxProfile .type 0 scope () raw
 
-/-- A reduction step (dim-1 cell, not thin). -/
-def FXStep :=
-  { c : FXCell // c.dim = 1 ∧ ¬c.isThin }
+/-- Certified term cell.  The eventual typed bridge refines this with a
+context cell and a type cell, exactly like `Term ctx type raw`. -/
+def FXTerm (scope : Nat) (raw : FXRawCell 0) :=
+  PolyCell fxProfile .term 0 scope () raw
 
-/-- A conversion (dim-1 cell, thin = coherent equivalence). -/
-def FXConv :=
-  { c : FXCell // c.dim = 1 ∧ c.isThin }
+/-- Certified generating step or vertical composite over one sort.
+Raw horizontal composition is rejected until Axis 6 certifies it. -/
+def FXStep (sort : CellSort) (scope : Nat)
+    (source target : FXRawCell 0) (raw : FXRawCell 1) :=
+  PolyCell fxProfile sort 1 scope (source, target) raw
 
-/-- A confluence proof (dim-2 cell). -/
-def FXcdLemma :=
-  { c : FXCell // c.dim = 2 }
+/-- Certified conversion is a certified dim-1 cell plus a thinness
+certificate from the stratification layer. -/
+def FXConv (sort : CellSort) (scope : Nat)
+    (source target : FXRawCell 0) (raw : FXRawCell 1) :=
+  { cell : FXStep sort scope source target raw //
+      fxProfile.stratification.thin 1 raw = true }
 
-/-- A Squier coherence (dim ≥ 3 cell). -/
-def FXSquier :=
-  { c : FXCell // c.dim ≥ 3 }
-
-/-- A modal modality (topos op on a dim-0 cell). -/
-def FXModalApp (m : ModalAdjunction) :=
-  { c : FXCell // c.dim = 0 ∧ c.outerMostTopos = m }
+/-- Certified confluence filler. -/
+def FXCdLemma (sort : CellSort) (scope : Nat)
+    (source target : FXRawCell 1) (raw : FXRawCell 2) :=
+  PolyCell fxProfile sort 2 scope (source, target) raw
 
 end LeanFX2
 ```
 
 This means the existing 80+ kernel files become **view definitions**
-on the one PolyTerm type, not independent inductives.  All the cascade
-work disappears.
+over the certified cell layer, not independent inductives and not raw
+subtypes of Nat-coded cells.  All cascade work disappears only after
+the certified checker and the legacy round-trip bridge are real.
 
 ---
 
 ## 6. Capabilities matrix
 
 Each row is a capability FX could have.  Columns are: status before
-PolyTerm, status after PolyTerm, mechanism.
+the certified PolyCell target, status after the target proof exists,
+and the mechanism.  The "After" column is not current implementation
+status unless a row explicitly says "shipped".
 
 | Capability | Before | After | Mechanism |
 |---|---|---|---|
@@ -3912,11 +4100,11 @@ PolyTerm, status after PolyTerm, mechanism.
 | Guarded recursion ▷ | Not implemented | Topos modality entry | axis 7 |
 | Universe cumulativity | Per-shape type code family + 11 cumul rules | universe ctor + cumul ctor | axis 10 |
 | NbE eval | K13 pending (~5K LoC) | Polygraph fold | axes 5, 6 |
-| EGraph extraction | K14 pending (~3K LoC) | Cell-set quotient of PolyTerm | axes 2, 3 |
-| Reflection | K15 pending | PolyTerm IS reflective by construction | axes 2, 8 |
+| EGraph extraction | K14 pending (~3K LoC) | Cell-set quotient of certified cells, not raw syntax alone | axes 2, 3 |
+| Reflection | K15 pending | Reflection after the profile fibration and certified bridge exist | axes 2, 8 |
 | FX-in-FX bootstrap | K20 pending | FX kernel = profile instance, FX0 = simpler instance | axis 8 |
-| Concurrency (par) | D5 pending; ad-hoc | Horizontal composition with disjoint footprint | axes 6, 7 |
-| Distribution / GPU | P5.1 pending | Cell-partition fold; compH + compV + BSP-sync | axis 6 |
+| Concurrency (par) | D5 pending; ad-hoc | Deferred until certified `compH` has Gray boundary + disjoint-footprint witnesses | axes 6, 7 |
+| Distribution / GPU | P5.1 pending | Deferred until certified `compH`, certified `compV`, and BSP-sync laws exist | axis 6 |
 | Cost-tropical optimal reduction | K11.19 pending | Cell weights + tropical semiring on Reedy shapes | axes 1, 2 |
 | Synthetic Tait | Era S pending (~10K LoC) | (∞,ω)-cat complicial nerve gives synthetic Tait | axes 5, 6, 10 |
 | Strict ∞-cat vs weak (∞,ω) bridge | Not addressed | Loubaton 2301.11424 Quillen adjunction | axis 4, axis 6 |
@@ -3934,17 +4122,20 @@ Total capabilities directly addressed: **27**.  Of which:
 
 ## 7. Cascade obsolescence
 
-The accelerate-* roadmap has 50+ tasks.  Under PolyTerm, the table
-below shows what collapses.
+The accelerate-* roadmap has 50+ tasks.  Under the certified PolyCell
+target, the table below shows which cascades disappear and which proof
+obligations replace them.  In this section, **Subsumed** means
+"subsumed after the named certified layer / profile theorem exists",
+not "already implemented in the current raw scaffold."
 
 ### Phase 0 — close M04 SN + GAPs
 
-| Task | Status under PolyTerm |
+| Task | Status under certified PolyCell target |
 |---|---|
 | P0.1 Step.eta | **Subsumed**: Step.eta is a Generator value + payload entry, not a Step ctor. The cascade is one extension. |
-| P0.2 Step.par.eta + Compat/cd arms | **Subsumed**: parallel reduction is a polygraph operation; cong + cd_lemma are generic theorems. |
+| P0.2 Step.par.eta + Compat/cd arms | **Deferred through Axis 6**: raw parallel cells are representable now; certified parallel reduction waits for real Gray boundary/disjointness. |
 | P0.3 Reducible.rename_equivariant (T7) | **Subsumed**: renaming is a polygraph morphism, equivariance is structural. |
-| P0.4 Reducible.cr3 + U2 compound arms | **Subsumed**: Reducible at PolyTerm level inherits CR3 from the saturation discipline. |
+| P0.4 Reducible.cr3 + U2 compound arms | **Subsumed after certification**: Reducible over certified PolyCells inherits CR3 only after the saturation discipline is proved for the profile. |
 | P0.5 ReducibleSubst.lift | **Subsumed**: substitution is the polynomial-monad multiplication. |
 | P0.6 fundamental_lam (Wood/Atkey 2022) | **Direct port**: the Wood-Atkey corrected rule lives at the toposOp axis (axis 7). |
 | P0.7 fundamental_betaRedex | **Subsumed**: β-redex cases are uniform across Generator values. |
@@ -3954,9 +4145,8 @@ below shows what collapses.
 | P0.11 Step.iotaOeqJRefl | **Subsumed**: one Generator value + reduction. |
 | P0.12 Term.emptyElim | **Subsumed**: one Generator value at dim 0. |
 
-**Phase 0 collapses to: 1 substantive task** (write the FX profile's
-fundamental theorem at the PolyTerm level).  ~3K LoC instead of ~50K
-LoC cascaded.
+**Phase 0 target collapse:** one substantive profile theorem after the
+certified bridge exists.  This is not a current raw-PolyTerm claim.
 
 ### Phase 1 — Allais Kit
 
@@ -3979,13 +4169,14 @@ LoC cascaded.
 | P2.1 Generator enum + arity | **Already shipped** ✅ (today commit bb2e7e2d). Subsumed into algebra. |
 | P2.2 outputType shape-function | **Already shipped** ✅ (commits up to 36d592e9). Subsumed into algebra. |
 | P2.3 RawPolyTerm honest nested | **Already shipped** ✅ (today commit 7d6758a9 RawPolyTermFlat). Becomes one shape instance in axis 1. |
-| P2.4 PolyTerm intrinsic mirror | **Subsumed**: PolyTerm IS the typed mirror — no separate inductive. |
+| P2.4 PolyTerm intrinsic mirror | **Reframed**: raw `PolyTerm` stays permissive; certified `PolyCell` is the intrinsic mirror. |
 | P2.5 PolyTerm.toRawPoly_rfl | **Subsumed**: erasure is a polygraph morphism to the dim-0 truncation. |
-| P2.6/P2.7 Term ⇌ PolyTerm bijection | **Subsumed**: FXTerm is a view definition on PolyTerm. |
+| P2.6/P2.7 Term ⇌ PolyTerm bijection | **Reframed**: `FXTerm` is a certified-cell projection after the raw-to-certified checker and legacy bridge are real. |
 | P2.8 generic rename/subst | **Subsumed**: polynomial-monad multiplication. |
 
-**Phase 2 collapses to: 0 new tasks.**  Already mostly done in current
-substrate work; rebranded as PolyTerm shape instances.
+**Phase 2 target collapse:** no new legacy cascade tasks after
+POLY-TCB and the certified bridge exist.  Current raw-substrate work is
+only a precursor.
 
 ### Phase 3 — metatheory + decidable Conv (★ MILESTONE A)
 
@@ -3994,17 +4185,19 @@ substrate work; rebranded as PolyTerm shape instances.
 | P3.1 PolyTerm.subject_reduction | **Subsumed**: SR is a profile-level theorem, one per profile. |
 | P3.2 PolyTerm.strong_normalization | **Subsumed**: SN ditto. |
 | P3.3 Step.parStar.confluent | **Subsumed**: confluence is the saturation Property of axis 4. |
-| P3.4 PolyStep dim-1 generators | **Subsumed**: dim-1 cells of PolyTerm. |
-| P3.5 PolyStep.cd / cd_lemma generic | **Subsumed**: cd_lemma is the per-profile theorem at dim 2; saturation discipline gives it for free. |
+| P3.4 PolyStep dim-1 generators | **Subsumed**: dim-1 certified cells over raw `PolyTerm` endpoints. |
+| P3.5 PolyStep.cd / cd_lemma generic | **Subsumed after proof**: cd_lemma is the per-profile theorem at dim 2 once saturation supplies the certified fillers. |
 | P3.6/P3.7 RawValueTerm / ValueTerm | **Subsumed**: values are normal-form predicates on PolyTerm. |
 | P3.8 PolyTerm.eval | **Subsumed**: NbE = polygraph fold. |
 | P3.9 ValueTerm.quote | **Subsumed**: quote = inverse of fold. |
 | P3.10 nbe roundtrip | **Subsumed**: polygraph fold + unfold composition. |
-| P3.11 Conv.decide | **Subsumed**: via ωcE polygraph morphism search (axis 9). |
-| **P3.12 typecheck_decidable (★ MILESTONE A)** | **Direct ship via axis 9 + axis 10.** |
+| P3.11 Conv.decide | **Path A or Path B only**: NbE normal-form equality, or Makkai/Forest word equality over the finite certified polygraph. ωcE remains the semantic coherent-equivalence classifier, not the decision engine. |
+| **P3.12 typecheck_decidable (★ MILESTONE A)** | **After Conv.decide plus the certified raw-to-kernel bridge.** |
 
-**Phase 3 collapses to: 1 substantive task** (write the FXCell
-typecheck via Conv-as-ωcE-morphism-search).  ~3K LoC instead of ~20K.
+**Phase 3 target collapse:** typechecking is one certified checker
+pipeline only after Conv.decide is supplied by Path A or Path B and
+the legacy bridge is real.  There is no Conv-as-ωcE-morphism-search
+shortcut in the trusted plan.
 
 ### Phase 4 — voracious math
 
@@ -4027,11 +4220,12 @@ generator extensions one math area at a time).  Each is ~2-3K LoC.
 
 | Task | Status |
 |---|---|
-| P5.1 evalDistributed_sound | **Subsumed**: cell-partition polygraph fold with compH/compV/BSP-sync. |
-| P5.2 EGraph extraction | **Subsumed**: cell-set quotient of PolyTerm by congruence. |
+| P5.1 evalDistributed_sound | **Deferred through Axis 6**: cell-partition fold needs certified `compH` with Gray boundary/disjointness plus BSP-sync laws. |
+| P5.2 EGraph extraction | **Subsumed after certification**: quotient certified cells by generated congruence; raw `PolyTerm` alone is not enough. |
 
-**Phase 5 collapses to: 0 new substantive tasks.** The infrastructure
-is built into axes 6, 8.
+**Phase 5 collapses only after Axis 6 and Axis 8 are real.** Until
+then, raw `compH` remains input syntax and is rejected by the
+certified checker.
 
 ### Summary
 
@@ -4045,14 +4239,14 @@ is built into axes 6, 8.
 | P5 | 2 tasks ~10K LoC | 0 new | ∞ |
 | **TOTAL** | **49 tasks ~135K LoC** | **8 tasks ~20K LoC** | **~7×** |
 
-Plus the ~170K LoC PolyTerm substrate itself, but **most of that
+Plus the ~170K LoC PolyCell substrate itself, but **most of that
 ~170K is one-time foundation work that doesn't recur per ctor**, while
 the existing ~135K of cascade work scales linearly with new ctors.
 Crossing the break-even point: roughly the next ~50 new ctors.
 
 For FX's expected lifetime (~200+ new ctors over 5 years for math
 import, modal layer expansion, cubical Kan ops, HIT zoo, measure
-theory, differential geometry, etc.), the PolyTerm investment **pays
+theory, differential geometry, etc.), the PolyCell investment **pays
 back ~3× over** in cascade savings alone, before counting the
 capability wins.
 
@@ -4060,15 +4254,15 @@ capability wins.
 
 ## 8. Migration plan
 
-Existing files → PolyTerm equivalent.
+Existing files → certified PolyCell target.
 
 ### Foundation layer
 
-| Current file | LoC | PolyTerm equivalent |
+| Current file | LoC | Certified PolyCell target |
 |---|---|---|
 | `Foundation/RawTerm.lean` | 540 | Dim-0 cells with `globular` shape; Generator enum already shipped |
 | `Foundation/Ty.lean` | 280 | Universe cells (dim 0 with universe boundary) + dim-0 cells with type-flag |
-| `Foundation/Term.lean` | 940 | `FXTerm` view definition on `PolyTerm fxProfile` |
+| `Foundation/Term.lean` | 940 | `FXTerm` projection from certified `PolyCell fxProfile .term` |
 | `Foundation/Subst.lean` | 460 | Polynomial-monad multiplication (axis 2) |
 | `Foundation/Action.lean` | 403 | Polynomial-monad action axiom (axis 2) |
 | `Foundation/Context.lean` | 200 | Cell-set with linear position structure |
@@ -4082,7 +4276,7 @@ Existing files → PolyTerm equivalent.
 
 ### Reduction layer
 
-| Current file | LoC | PolyTerm equivalent |
+| Current file | LoC | Certified PolyCell target |
 |---|---|---|
 | `Reduction/Step/Inductive.lean` | 1800 | `FXStep` view definition; ctors become axis 2 generators at dim 1 |
 | `Reduction/Step/Compat.lean` (×6) | ~3K | **Subsumed** by polynomial-monad multiplication |
@@ -4092,7 +4286,7 @@ Existing files → PolyTerm equivalent.
 
 ### Confluence layer
 
-| Current file | LoC | PolyTerm equivalent |
+| Current file | LoC | Certified PolyCell target |
 |---|---|---|
 | `Reduction/RawCdLemma/*.lean` | ~8K | **Subsumed** by saturation closure proof (axis 4) |
 | `Reduction/CdLemma/*.lean` | ~5K | **Subsumed** ditto |
@@ -4100,7 +4294,7 @@ Existing files → PolyTerm equivalent.
 
 ### Modal / cubical / HoTT layer
 
-| Current file | LoC | PolyTerm equivalent |
+| Current file | LoC | Certified PolyCell target |
 |---|---|---|
 | `Modal/*.lean` | ~5K | Topos modality entries (axis 7) |
 | `HoTT/*.lean` | ~3K | Cubical-shape cells (axis 1) + universe ctors (axis 10) |
@@ -4109,7 +4303,7 @@ Existing files → PolyTerm equivalent.
 
 ### Tools / smoke / audit layer
 
-| Current file | LoC | PolyTerm equivalent |
+| Current file | LoC | Certified PolyCell target |
 |---|---|---|
 | `Tools/DependencyAudit.lean` | 300 | Keep as-is (works on any Lean inductive). |
 | `Smoke/*.lean` | ~3K | **Reduced** to per-profile smoke (one set of audits per profile, not per ctor). |
@@ -4126,8 +4320,8 @@ Existing files → PolyTerm equivalent.
 | Tools/Smoke | ~4K | ~2K | -2K |
 | **Migration TOTAL** | **~54.5K** | **~14K** | **-40K** |
 
-Plus the ~170K of new PolyTerm substrate, but minus the ~40K of
-deleted existing code: net code base after PolyTerm migration is
+Plus the ~170K of new PolyCell substrate, but minus the ~40K of
+deleted existing code: net code base after PolyCell migration is
 roughly the same total size (~150K LoC), but with **drastically
 better extensibility**, structural soundness, and capability surface.
 
@@ -4149,7 +4343,7 @@ Honest accounting per axis:
 | 8 | Profile fibration | ~10K | None for Cisinski ω-loc |
 | 9 | ωcE classifier | ~5K | None |
 | 10 | Univalent universe | ~10K | Cubical Agda has (∞,1); (∞,ω) no |
-| — | PolyTerm core inductive | ~15K | None for this design |
+| — | PolyCell raw/certified core | ~15K | None for this design |
 | — | fxProfile instance | ~20K | — |
 | — | FX kernel migration | ~25K | — |
 | **GRAND TOTAL** | | **~187K** | **First-ever mechanization** |
@@ -4166,7 +4360,7 @@ Roughly the size of Lean's own kernel implementation.
 
 For comparison:
 - Current accelerate-* roadmap: ~135K LoC over ~12 months as designed
-- PolyTerm pivot: ~187K LoC over ~24-36 months as designed
+- PolyCell pivot: ~187K LoC over ~24-36 months as designed
 - Cost difference: ~50K LoC + ~12-24 more months for **~3× capability
   surface** + **frontier-research mechanization** + **fundamentally
   unblocked future expansion**
@@ -4176,6 +4370,48 @@ For comparison:
 ## 10. Phased rollout
 
 Realistic ship plan in dependency order.
+
+### Phase POLY-TCB — raw/certified trust boundary (immediate, ~4K NEW LoC)
+
+**Goal:** stop treating Nat-coded raw cells as trusted kernel
+inhabitants.  Keep raw `PolyTerm` permissive, then introduce a
+certified layer that makes ill-sorted, ill-scoped, and
+boundary-incompatible cells unconstructable.  Raw nonsense must be
+representable and computably rejected.
+
+**Already shipped in this direction:**
+
+| Task | Commit | Provides |
+|---|---|---|
+| TCB.0 generator-step view | `196a4d9d` | `FXGeneratingStep` rejects `compV`, `compH`, and `identity`; audit gates assert zero axioms for the new recognizer and view. |
+
+**Deliverables (NEW only):**
+
+| Task | File(s) | Content | Acceptance |
+|---|---|---|---|
+| TCB.1 sort vocabulary | `Foundation/PolyCell/Core/CellSort.lean` | `CellSort` enum for `context`, `type`, `term`, `mode`, `effect`, `grade`, `protocol`; decidable equality; no semantics. | `#assert_no_axioms CellSort`; no `Inhabited`/`Classical`; audit gate added. |
+| TCB.2 generator child specs | `Foundation/PolyCell/Core/GeneratorSpec.lean` | `ChildSpec`, `GeneratorSpec`, `RuleSpec`; scope shift separated from arity; first concrete specs for `var`, `lam`, `app`, `piTy`, `ctxEmpty`, `ctxCons`, and the current dim-1 step-generator shell. | `lam` child table has type child at scope+0 and term body at scope+1; `piTy` codomain is type at scope+1; all facts are definitional or simple cases. |
+| TCB.3 heterogeneous children | `Foundation/PolyCell/Core/CellChildren.lean` | `CellChildren : List ChildSpec -> Nat -> Type`; constructors force child sort/dim/scope from the spec list. | It is impossible to build a lambda body child at `.type` or at the wrong scope without a Lean type error; audit gate added. |
+| TCB.4 certified boundary layer | `Foundation/PolyCell/Core/Certified.lean` | `CellBoundary` and `PolyCell profile sort dim scope boundary raw` with constructors `atom`, `cell`, `compV`, `identity`; **no certified `compH`**. | Bad `compV` with mismatched middle endpoint has no constructor; raw `compH` has no certified introduction rule. |
+| TCB.5 raw rejection result | `Foundation/PolyCell/Core/CheckResult.lean` | Structured rejection enum, not just `Option`, so the checker can say which invariant failed. | Rejections distinguish unknown generator, wrong sort, bad payload, wrong arity, wrong child shape, bad boundary endpoint, bad vertical boundary, and unsupported `compH`. |
+| TCB.6 raw-to-certified checker | `Foundation/PolyCell/Core/Check.lean` | Computable `checkRawCell?` returning a certified dependent package or rejection reason. | Soundness theorem: every `accepted` result contains a `PolyCell`; no theorem claims completeness beyond the listed generator subset. |
+| TCB.7 certified FX views | `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | `FXContext`, `FXType`, `FXTerm`, `FXStep`, `FXConv`, `FXCdLemma` as projections of certified cells. | Existing raw subtype views remain compatibility-only; new code uses certified views; audit harness covers both. |
+
+**Non-goals in POLY-TCB:**
+
+- Do not delete raw `PolyTerm`; it is the input format and rejection
+  target.
+- Do not certify `compH` until Axis 6 supplies a real Gray tensor
+  boundary formula and disjoint-footprint/matching condition.
+- Do not claim typed legacy equivalence, subject reduction, confluence,
+  or decidable conversion.  This phase certifies shape/sort/scope and
+  vertical boundary structure only.
+
+**Verification gate:** every new declaration added to
+`AuditPolyCell.lean`; `lake build LeanFX2.Foundation.PolyCell...`;
+`lake build LeanFX2.Tools.AuditAll.AuditPolyCell`; `lake build
+LeanFX2.Tools.AuditAll`; forbidden-token scan over touched PolyCell
+files.
 
 ### Phase POLY-0 — already shipped foundation (~7K LoC done)
 
@@ -4302,23 +4538,25 @@ Univalence becomes a theorem.
 - `Foundation/Polygraph/UniverseCell.lean` — universe ctors
 - `Foundation/Polygraph/GrothendieckConstruction.lean` — Loubaton
   thesis §6.1.4 functorial Grothendieck
-- `Foundation/Polygraph/PolyTermUnivalence.lean` — univalence as theorem
+- `Foundation/Polygraph/PolyCellUnivalence.lean` — univalence as theorem
 
-**Acceptance:** `polyTermUnivalence` theorem shipped zero-axiom.
+**Acceptance:** `polyCellUnivalence` theorem shipped zero-axiom.
 
-### Phase POLY-ζ — PolyTerm assembly + FX profile (months 24-30, ~30K LoC)
+### Phase POLY-ζ — PolyCell assembly + FX profile (months 24-30, ~30K LoC)
 
 **Goal:** assemble all thirteen axes into PolyProfile + define
 fxProfile + ship FXCell type.
 
 **Deliverables:**
 - `Foundation/Polygraph/PolyProfile.lean` — bundled thirteen axes
-- `Foundation/Polygraph/PolyTerm.lean` — the universal cell type
+- `Foundation/Polygraph/PolyTerm.lean` — permissive raw cell syntax
+- `Foundation/Polygraph/PolyCell.lean` — certified cell type
 - `LeanFX2/FxProfile.lean` — FX as a profile instance
 - `LeanFX2/FxCellViews.lean` — FXType, FXTerm, FXStep, FXConv as views
 
-**Acceptance:** PolyTerm typechecks zero-axiom; fxProfile satisfies
-consistency conditions; view definitions agree with current types.
+**Acceptance:** raw `PolyTerm` and certified `PolyCell` typecheck
+zero-axiom; fxProfile satisfies consistency conditions; view
+definitions agree with current types through the checked bridge.
 
 ### Phase POLY-η — Migration (months 30-36, ~25K LoC delete + ~10K LoC translate)
 
@@ -4332,7 +4570,8 @@ delete obsolete cascade machinery.
 - Delete all D2.5.x cascade machinery (~12K LoC)
 - Migrate `Reduction/Step.lean` + `Step.par.lean` + etc. to FXCell
   views (~5K LoC translation, ~5K LoC compat shims)
-- Update `Algo.Check` to use ωcE-based Conv (~2K LoC)
+- Update `Algo.Check` to use Conv from Path A (NbE) or Path B
+  (Makkai/Forest word equality), not ωcE search (~2K LoC)
 
 **Acceptance:** all existing FX tests pass; full `LeanFX2Audit`
 green; downstream consumers (FX1, FX1.LeanKernel, ULB) unchanged.
@@ -4456,24 +4695,27 @@ encoding.  Use `Nat`-indexed sequence + explicit colimit, not Lean's
 
 ### Axis 10 (Universe)
 
-The universe cell ctor is one `PolyTerm` ctor with `(level : Nat)`
-payload.  The Grothendieck construction `Hom^⊖(I, ω) ≃ LCart^c_U(I)`
-is a Quillen equivalence in Loubaton thesis; mechanizing the
-*equivalence* (not just claiming it) is the zero-axiom path.
+The universe generator is one profile entry whose raw payload carries
+`(level : Nat)` and whose certified constructor proves it is a
+well-formed type/universe cell.  The Grothendieck construction
+`Hom^⊖(I, ω) ≃ LCart^c_U(I)` is a Quillen equivalence in Loubaton
+thesis; mechanizing the *equivalence* (not just claiming it) is the
+zero-axiom path.
 
 **Watch:** the equivalence requires constructing the left/right
 adjoint pairs explicitly.  Loubaton's thesis gives the construction
 in §6.1.4; ~3K LoC of careful translation.
 
-### PolyTerm core
+### PolyCell core
 
-The big indexed inductive must avoid the propext traps documented
+The certified indexed layer must avoid the propext traps documented
 in `feedback_lean_zero_axiom_match` + `feedback_lean_indexed_partial_match`:
 - No wildcard matches on the dim parameter
 - Boundary destructuring uses explicit pattern + `nomatch` for
   impossible-by-index cases
-- The `thin` ctor's invariant flipping is captured via boundary
-  manipulation, not via `Eq.rec` (which would use propext)
+- Thinness is a stratification predicate / marking, not a certified
+  constructor.  Any inverse/flipped-boundary operation must be a
+  derived theorem over marked cells, not an `Eq.rec` shortcut.
 
 This is the riskiest design point — the recipe in `feedback_lean_match_propext_recipe`
 (8 concrete patterns for propext-clean match) applies throughout.
@@ -4569,7 +4811,8 @@ within the literature's reach), and out-of-scope (de-scoped).
 ### Risk: Lean 4 elaborator capacity
 
 The PolyProfile is a structure with ~10 nested-structure fields.
-PolyTerm is an indexed inductive over PolyProfile.  Lean 4.29's
+The certified PolyCell layer is indexed over PolyProfile, sort,
+dimension, scope, boundary, and raw syntax.  Lean 4.29's
 elaborator gets slow on heavy structure-of-structures patterns; we've
 already seen 78-arm Term inductions take ~1474s for `simp` (per
 [[feedback_perf_antipatterns]]).
@@ -4577,24 +4820,29 @@ already seen 78-arm Term inductions take ~1474s for `simp` (per
 **Mitigation:** Lean 5 (when released) reportedly has better support
 for parameterized inductives.  Fallback: use `@[reducible]` aggressively
 on the profile fields, plus careful unification hints.  Fallback²:
-split PolyTerm into per-axis sub-inductives + a `PolyTermBundle`
-wrapper, sacrificing some uniformity for elaboration speed.
+split the certified layer into per-axis sub-inductives plus a
+`PolyCellBundle` wrapper, sacrificing some uniformity for elaboration
+speed.
 
 ### Risk: Strict positivity
 
-The `thin` ctor: `(c : PolyTerm π dim bnd) → (h_thin : π.stratification.thin dim c) → PolyTerm π dim bnd.flipped`.
+The rejected design was a `thin` constructor:
+`(cell : PolyTerm π dim bnd) →
+ (hasThin : π.stratification.thin dim cell) →
+ PolyTerm π dim bnd.flipped`.
 
-The `bnd.flipped` part creates a NEW PolyTerm of the same dim with
-the boundary flipped.  This is HIT-like (an equivalence-style ctor).
-Lean's strict-positivity checker may reject.
+The `bnd.flipped` part would create a new raw cell of the same dim
+with the boundary flipped.  This is HIT-like (an equivalence-style
+constructor), and Lean's strict-positivity checker may reject it.
 
 **Mitigation:** encode `thin` not as a ctor but as a `Prop`-valued
 predicate, with the flipped variant derivable.  Loubaton 2301.11424's
 left semi-model structure suggests this: thin cells are not new
-generators, they are markings on existing cells.  Refactor: `PolyTerm`
-ctor `thin` becomes `thinMarking : (c : PolyTerm π dim bnd) → Prop`
-and the "flipped" variant `c.thinInverse` is a defined function
-(produced from the marking).
+generators, they are markings on existing cells.  Final rule:
+`PolyTerm` has no thin constructor, `PolyCell` has no thin
+constructor, and `FXConv` is a certified dim-1 cell plus a thinness
+certificate from the stratification layer.  Any inverse/flipped
+variant is derived from the marking.
 
 ### Risk: Profile self-reference (axis 8)
 
@@ -4642,8 +4890,9 @@ gaps.
 4. Univalence in FX ships as a `Step.eqType` reduction rule per
    lean-fx-2/CLAUDE.md mandate (definitional, with `#assert_no_axioms`
    clean theorem body) — independent of whether the Loubaton-level
-   semantic justification mechanizes.  PolyTerm INHERITS this; it
-   does NOT depend on the (∞,ω)-semantic proof being Lean-mechanized.
+   semantic justification mechanizes.  The certified PolyCell bridge
+   inherits this operational rule; it does NOT depend on the
+   (∞,ω)-semantic proof being Lean-mechanized.
 
 ### Open math questions (require new work)
 
@@ -4695,7 +4944,7 @@ The original 2026-05-23 draft over-claimed.  The first revision
 (2026-05-24 morning) over-de-scoped — three items got marked
 "research-only" when each has a published constructive route.  This
 section corrects: each component below IS in scope for the
-PolyTerm pivot, with cited algorithm + LoC estimate + ship stages.
+PolyCell pivot, with cited algorithm + LoC estimate + ship stages.
 
 ### In scope: Full ∞-topos object via Dugger 2001 presentation (axis 7)
 
@@ -4888,7 +5137,7 @@ is good.
 
 ### 12.5 What FX aims to extend beyond the published literature — target contributions
 
-The FX PolyTerm design is mostly an integration of published
+The FX PolyCell design is mostly an integration of published
 mathematics into one mechanizable substrate.  This subsection
 enumerates the *target* contributions where FX aims to go beyond
 what any single paper has shipped.  Every item is a research
@@ -4987,7 +5236,7 @@ profile via ProfileCapabilities.
 ```
 Layer 3: AMBIENT MATH (Lean 4 + ZFC+I + the ambient metalanguage)
               ↑ instantiated by
-Layer 2: PolyTerm UNIVERSE + admission calculus + cellular tensor
+Layer 2: PolyCell raw/certified universe + admission calculus + cellular tensor
               ↑ specializes to
 Layer 1: SPECIFIC PROFILES (FX, MLTT, HoTT, CTT, MTT, 2LTT, ...)
 ```
@@ -5524,7 +5773,7 @@ CT5. Daniel Almeida, *A monoidal category of dependently sorted
 
 ## End matter
 
-This document is the soundness contract for the PolyTerm pivot.
+This document is the soundness contract for the PolyCell pivot.
 Every capability claim above reduces to one of:
 
 * a **cited published theorem** with arXiv ID / DOI and paper
@@ -5540,7 +5789,7 @@ Every capability claim above reduces to one of:
   2000 + Smith; the only out-of-scope items are TT_⊠ Lean
   mechanization and Coverage Semantics for univalent FX).
 
-No `IsX : Prop` placeholder predicates ship under the PolyTerm
+No `IsX : Prop` placeholder predicates ship under the PolyCell
 substrate.  No "research-frontier flag" stands in for a missing
 proof.  No `Inhabited X` for unconstructible X.  Every decidability
 claim has an algorithm citation; every Lean theorem signature has a
