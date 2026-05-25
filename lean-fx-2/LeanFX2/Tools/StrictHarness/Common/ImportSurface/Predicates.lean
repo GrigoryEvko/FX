@@ -247,6 +247,30 @@ def formatDirectImportRecords
     String.intercalate "; "
       (directImportRecords.toList.map DirectImportRecord.format)
 
+/-! ## Host-heavy import census helpers -/
+
+/-- Does this direct import point from a project module to a host-heavy
+module that should stay rare and visible? -/
+def isHostHeavyDirectImportModuleName (moduleName : Name) : Bool :=
+  (`Lean).isPrefixOf moduleName ||
+    (`Lake).isPrefixOf moduleName ||
+    (`Std).isPrefixOf moduleName ||
+    (`Mathlib).isPrefixOf moduleName ||
+    (`Classical).isPrefixOf moduleName ||
+    (`Quot).isPrefixOf moduleName
+
+/-- Explicit allowlist for direct host-heavy imports anywhere inside
+`LeanFX2.*`.
+
+Only the audit implementation itself may import Lean elaborator APIs. FX1's
+temporary `Init.Prelude` imports are intentionally not host-heavy here: the
+FX1-specific source and declaration gates police them separately. -/
+def isAllowedHostHeavyDirectImport
+    (directImportRecord : DirectImportRecord) :
+    Bool :=
+  directImportRecord.sourceModuleName == `LeanFX2.Tools.DependencyAudit &&
+    directImportRecord.importedModuleName == `Lean
+
 /-! ## Public umbrella isolation -/
 
 /-- Public umbrella modules that should remain entrypoints, not convenient

@@ -488,6 +488,35 @@ def claimsFalseResultType (constantInfo : ConstantInfo) : Bool :=
   | .const `False _ => true
   | _ => doesExprMentionConst `False constantInfo.type
 
+elab "#assert_true_in_result_type_budget " namespaceSyntax:ident
+    trueBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let namespaceName := namespaceSyntax.getId
+  let trueBudget := trueBudgetSyntax.getNat
+  let targetNames := namespaceAuditTargets environment namespaceName
+  let mut violations : Array Name := #[]
+  for targetName in targetNames do
+    if !isKernelTierProductionDecl targetName then
+      continue
+    match environment.find? targetName with
+    | some constantInfo =>
+        if claimsTrueResultType constantInfo then
+          violations := violations.push targetName
+    | none => pure ()
+  recordAuditCount `true_in_result_type violations.size
+  if violations.size <= trueBudget then
+    logInfo
+      (s!"True-in-result-type budget ok: {namespaceName} " ++
+      s!"({violations.size}/{trueBudget} kernel decls mention True " ++
+      "in result type)")
+  else
+    let perDeclLines := violations.toList.take 20 |>.map fun declName =>
+      s!"  - {declName}"
+    let header :=
+      s!"True-in-result-type budget FAILED for {namespaceName}: " ++
+      s!"{violations.size} dependents exceed budget {trueBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines)
+
 elab "#assert_false_in_result_type_budget " namespaceSyntax:ident
     falseBudgetSyntax:num : command => do
   let environment ← getEnv

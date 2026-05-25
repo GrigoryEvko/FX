@@ -38,6 +38,18 @@ def formatViolationList (violations : Array StrictViolation) : String :=
 
 /-! ## Detection helpers -/
 
+/-- Whether a decl name lives inside a kernel-tier production namespace where
+axiom-adjacent dependencies get scrutinised by the strict harness. -/
+def isKernelTierProductionDecl (declName : Name) : Bool :=
+  (`LeanFX2.Term).isPrefixOf declName ||
+    (`LeanFX2.Foundation).isPrefixOf declName ||
+    (`LeanFX2.Reduction).isPrefixOf declName ||
+    (`LeanFX2.Confluence).isPrefixOf declName ||
+    (`LeanFX2.HoTT).isPrefixOf declName ||
+    (`LeanFX2.Cubical).isPrefixOf declName ||
+    (`LeanFX2.Modal).isPrefixOf declName ||
+    (`LeanFX2.Graded).isPrefixOf declName
+
 /-- Detect direct references to `Classical.*` constants other than
 `Classical.choice` (already caught as an axiom). -/
 def collectClassicalReferences

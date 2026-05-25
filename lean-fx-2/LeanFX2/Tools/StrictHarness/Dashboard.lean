@@ -125,22 +125,9 @@ elab "#audit_debt_dashboard " termInductiveSyntax:ident
     if totalCtorCount >= bridgeUncoveredCount then
       totalCtorCount - bridgeUncoveredCount
     else 0
-  -- Step.par cong-rule coverage matrix.
-  let stepParCongUncoveredCount :=
-    (stepParCongCoverageDebtRecordsForInductive
-      environment termInductiveName).size
-  let stepParCongCoveredCount :=
-    if totalCtorCount >= stepParCongUncoveredCount then
-      totalCtorCount - stepParCongUncoveredCount
-    else 0
-  -- Conv cong-rule coverage matrix.
-  let convCongUncoveredCount :=
-    (convCongCoverageDebtRecordsForInductive
-      environment termInductiveName).size
-  let convCongCoveredCount :=
-    if totalCtorCount >= convCongUncoveredCount then
-      totalCtorCount - convCongUncoveredCount
-    else 0
+  -- Legacy cascade coverage matrices live in DeclShape.lean, whose body is
+  -- TODO POLYCELL-disabled until the PolyCell confluence views replace them.
+  let legacyCascadeCoverageStatus := "TODO POLYCELL disabled"
   -- First-loop counts: read from the audit-count env extension cache,
   -- which the corresponding budget gates populate during their elab.
   -- Skipping the recomputation here avoids ~30s of redundant
@@ -156,18 +143,13 @@ elab "#audit_debt_dashboard " termInductiveSyntax:ident
     lookupAuditCountOrZero environment `forbidden_decl_shape
   let singleStepConvClaimCount :=
     lookupAuditCountOrZero environment `single_step_conv_claim
-  -- All-raw-payload Term ctor count.
-  let allRawPayloadCount :=
-    (allRawPayloadDebtRecordsForInductive
-      environment termInductiveName).size
+  -- All-raw-payload and Reduction.Compat coverage lived in the same disabled
+  -- legacy cascade gate. Keep the dashboard explicit instead of pretending the
+  -- old counts are still active.
   -- Value-shaped type-code constructors.
   let valueTypeCodeCount :=
     (valueTypeCodeDebtRecordsForInductive
       environment termInductiveName).size
-  -- Reduction.Compat coverage debt for Step.par cong rules.
-  let reductionCompatUncoveredCount :=
-    (reductionCompatCoverageDebtRecordsForInductive
-      environment `LeanFX2.Step.par).size
   -- toRaw projection coverage.
   let toRawUncoveredCount :=
     (toRawCoverageDebtRecordsForInductive
@@ -232,6 +214,8 @@ elab "#audit_debt_dashboard " termInductiveSyntax:ident
     lookupAuditCountOrZero environment `eq_rewriting_dependent
   let reducibleDeclCount :=
     lookupAuditCountOrZero environment `reducible_decl
+  let trueResultTypeCount :=
+    lookupAuditCountOrZero environment `true_in_result_type
   let falseResultTypeCount :=
     lookupAuditCountOrZero environment `false_in_result_type
   let dependentPairDependentCount :=
@@ -338,11 +322,9 @@ elab "#audit_debt_dashboard " termInductiveSyntax:ident
       s!"{bridgeCoveredCount}/{totalCtorCount} " ++
       s!"({totalCtorCount - bridgeCoveredCount} unbridged)",
     s!"    Step.par cong (Step.par.*Cong):              " ++
-      s!"{stepParCongCoveredCount}/{totalCtorCount} " ++
-      s!"({totalCtorCount - stepParCongCoveredCount} uncovered)",
+      legacyCascadeCoverageStatus,
     s!"    Conv cong (Conv.*Cong / Conv.*_cong):        " ++
-      s!"{convCongCoveredCount}/{totalCtorCount} " ++
-      s!"({totalCtorCount - convCongCoveredCount} uncovered)",
+      legacyCascadeCoverageStatus,
     s!"    toRaw projection (Term.toRaw_*):             " ++
       s!"{toRawCoveredCount}/{totalCtorCount} " ++
       s!"({totalCtorCount - toRawCoveredCount} uncovered)",
@@ -371,11 +353,11 @@ elab "#audit_debt_dashboard " termInductiveSyntax:ident
     s!"    Single-step Conv claims (Conv.fromStep wraps): " ++
       s!"{singleStepConvClaimCount}",
     s!"    All-raw-payload Term ctors (untyped wrappers): " ++
-      s!"{allRawPayloadCount}",
+      legacyCascadeCoverageStatus,
     s!"    Value-shaped type-code Term ctors (*Code):     " ++
       s!"{valueTypeCodeCount}",
     s!"    Step.par cong rules w/o full Compat coverage:  " ++
-      s!"{reductionCompatUncoveredCount}",
+      legacyCascadeCoverageStatus,
     "  ──────────────────────────────────────────────────────────",
     "  AXIOM-ADJACENT DEPENDENCY CENSUS",
     s!"    Inhabited / Nonempty / Classical.choice deps:  " ++
@@ -412,6 +394,8 @@ elab "#audit_debt_dashboard " termInductiveSyntax:ident
       s!"{eqRewritingDependentCount}",
     s!"    Reducible / abbrev kernel decls:               " ++
       s!"{reducibleDeclCount}",
+    s!"    True-in-result-type kernel decls:              " ++
+      s!"{trueResultTypeCount}",
     s!"    False-in-result-type kernel decls:             " ++
       s!"{falseResultTypeCount}",
     s!"    Sigma / PSigma / Sum / PSum / PProd deps:      " ++
