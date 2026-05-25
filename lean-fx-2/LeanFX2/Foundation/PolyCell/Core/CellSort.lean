@@ -28,7 +28,7 @@ inductive CellSort where
   | grade
   /-- Protocol cells: session/protocol-state data. -/
   | protocol
-  deriving DecidableEq, Repr
+  deriving DecidableEq
 
 namespace CellSort
 

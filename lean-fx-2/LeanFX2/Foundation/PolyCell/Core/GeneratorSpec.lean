@@ -1,7 +1,7 @@
 import LeanFX2.Foundation.PolyCell.Core.CellSort
 import LeanFX2.Foundation.PolyCell.Core.PolyTerm
 /-!
-# GeneratorSpec — First Sort/Child Metadata for Certified PolyCells
+# GeneratorSpec — First Sort/Child Metadata for PolyCells
 
 This file begins the metadata layer that will let the raw-to-certified checker
 reject malformed raw cells.  It is intentionally only a table of computable
@@ -22,7 +22,7 @@ structure ChildSpec where
   cellDimension : CellDim
   /-- Scope increment applied to this child relative to the parent scope. -/
   scopeShift : Nat
-  deriving DecidableEq, Repr
+  deriving DecidableEq
 
 namespace ChildSpec
 
@@ -68,15 +68,15 @@ end ChildSpec
 structure GeneratorSpec where
   /-- Raw cell id used by `PolyTerm.atom`. -/
   cellId : CellId
-  /-- Sort certified for this generator. -/
+  /-- Sort declared for this generator. -/
   cellSort : CellSort
-  /-- Dimension certified for this generator.  Current seed generators are
+  /-- Dimension declared for this generator.  Current seed generators are
   dim zero, but the field is explicit so later metadata does not need a
   different record. -/
   cellDimension : CellDim
   /-- Ordered child positions expected by this generator. -/
   childSpecs : List ChildSpec
-  deriving DecidableEq, Repr
+  deriving DecidableEq
 
 namespace GeneratorSpec
 
@@ -93,8 +93,8 @@ structure RuleSpec where
   /-- Sort of the source and target endpoints. -/
   cellSort : CellSort
   /-- Dimension of the source and target endpoints. -/
-  sourceDimension : CellDim
-  deriving DecidableEq, Repr
+  endpointDimension : CellDim
+  deriving DecidableEq
 
 /-- Legacy-compatible id for the current `var` term constructor. -/
 def variableGeneratorSpec : GeneratorSpec where
@@ -159,8 +159,11 @@ def contextConsGeneratorSpec : GeneratorSpec where
 def termStepRuleSpec : RuleSpec where
   ruleId := 0
   cellSort := .term
-  sourceDimension := 0
+  endpointDimension := 0
 
+/-- Definitional ratchets for the seed metadata table.
+These facts do not certify raw cells; they only make table drift visible to
+the audit harness. -/
 theorem variableGeneratorSpec_childSpecs :
     variableGeneratorSpec.childSpecs = [] := rfl
 
@@ -202,7 +205,16 @@ theorem contextEmptyGeneratorSpec_cellId :
 theorem contextConsGeneratorSpec_cellId :
     contextConsGeneratorSpec.cellId = 104 := rfl
 
-theorem termStepRuleSpec_sourceDimension :
-    termStepRuleSpec.sourceDimension = 0 := rfl
+theorem piTypeGeneratorSpec_cellId_eq_declared :
+    piTypeGeneratorSpec.cellId = PolyTerm.firstTypeCellId + 4 := rfl
+
+theorem contextEmptyGeneratorSpec_cellId_eq_declared :
+    contextEmptyGeneratorSpec.cellId = PolyTerm.typeCellIdLimit := rfl
+
+theorem contextConsGeneratorSpec_cellId_eq_declared :
+    contextConsGeneratorSpec.cellId = PolyTerm.typeCellIdLimit + 1 := rfl
+
+theorem termStepRuleSpec_endpointDimension :
+    termStepRuleSpec.endpointDimension = 0 := rfl
 
 end LeanFX2.Foundation.PolyCell.Core
