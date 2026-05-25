@@ -779,6 +779,16 @@ def isInferNegativeProbeRejected {profile : PolyProfile}
       hasSameRejectionCode rejection probe.expectedRejection
   | Except.ok _ => false
 
+/-- Does the executable screen reject this inference-level probe with this
+specific rejection reason? -/
+def isInferNegativeProbeRejectedWith {profile : PolyProfile}
+    (targetRejection : CellCheckRejection)
+    (probe : RawInferNegativeProbe profile) : Bool :=
+  match screenRawCell? (profile := profile) probe.scope probe.rawCell with
+  | Except.error rejection =>
+      hasSameRejectionCode rejection targetRejection
+  | Except.ok _ => false
+
 /-- Does the executable expected-shape screen reject this probe as expected? -/
 def isExpectedShapeNegativeProbeRejected {profile : PolyProfile}
     (probe : RawExpectedShapeNegativeProbe profile) : Bool :=
@@ -789,6 +799,18 @@ def isExpectedShapeNegativeProbeRejected {profile : PolyProfile}
       hasSameRejectionCode rejection probe.expectedRejection
   | Except.ok _ => false
 
+/-- Does the executable expected-shape screen reject this probe with this
+specific rejection reason? -/
+def isExpectedShapeNegativeProbeRejectedWith {profile : PolyProfile}
+    (targetRejection : CellCheckRejection)
+    (probe : RawExpectedShapeNegativeProbe profile) : Bool :=
+  match
+      screenRawCellAs? (profile := profile)
+        probe.expectedSort probe.expectedScope probe.rawCell with
+  | Except.error rejection =>
+      hasSameRejectionCode rejection targetRejection
+  | Except.ok _ => false
+
 /-- Check every inference-level negative probe in a list. -/
 def areInferNegativeProbesRejected {profile : PolyProfile} :
     List (RawInferNegativeProbe profile) → Bool
@@ -797,6 +819,16 @@ def areInferNegativeProbesRejected {profile : PolyProfile} :
       isInferNegativeProbeRejected probe &&
         areInferNegativeProbesRejected remainingProbes
 
+/-- Check that every inference-level negative probe in a list rejects with
+one specific rejection reason. -/
+def areInferNegativeProbesRejectedWith {profile : PolyProfile}
+    (targetRejection : CellCheckRejection) :
+    List (RawInferNegativeProbe profile) → Bool
+  | [] => true
+  | probe :: remainingProbes =>
+      isInferNegativeProbeRejectedWith targetRejection probe &&
+        areInferNegativeProbesRejectedWith targetRejection remainingProbes
+
 /-- Check every expected-shape negative probe in a list. -/
 def areExpectedShapeNegativeProbesRejected {profile : PolyProfile} :
     List (RawExpectedShapeNegativeProbe profile) → Bool
@@ -804,6 +836,17 @@ def areExpectedShapeNegativeProbesRejected {profile : PolyProfile} :
   | probe :: remainingProbes =>
       isExpectedShapeNegativeProbeRejected probe &&
         areExpectedShapeNegativeProbesRejected remainingProbes
+
+/-- Check that every expected-shape negative probe in a list rejects with
+one specific rejection reason. -/
+def areExpectedShapeNegativeProbesRejectedWith {profile : PolyProfile}
+    (targetRejection : CellCheckRejection) :
+    List (RawExpectedShapeNegativeProbe profile) → Bool
+  | [] => true
+  | probe :: remainingProbes =>
+      isExpectedShapeNegativeProbeRejectedWith targetRejection probe &&
+        areExpectedShapeNegativeProbesRejectedWith
+          targetRejection remainingProbes
 
 /-- Expected-shape screen for dim-0 callers that know the sort they require. -/
 def screenRawCell0As? {profile : PolyProfile}
@@ -937,6 +980,15 @@ def isCertificationNegativeProbeRejected {profile : PolyProfile}
     (certificationRejectionAfterScreen? probe.scope probe.rawCell)
     probe.expectedRejection
 
+/-- Does the certification-stage rejection policy reject this probe with this
+specific rejection reason? -/
+def isCertificationNegativeProbeRejectedWith {profile : PolyProfile}
+    (targetRejection : CellCheckRejection)
+    (probe : RawCertificationNegativeProbe profile) : Bool :=
+  hasSameRejectionCode
+    (certificationRejectionAfterScreen? probe.scope probe.rawCell)
+    targetRejection
+
 /-- Check every certified-ingress negative probe in a list. -/
 def areCertificationNegativeProbesRejected {profile : PolyProfile} :
     List (RawCertificationNegativeProbe profile) → Bool
@@ -944,6 +996,17 @@ def areCertificationNegativeProbesRejected {profile : PolyProfile} :
   | probe :: remainingProbes =>
       isCertificationNegativeProbeRejected probe &&
         areCertificationNegativeProbesRejected remainingProbes
+
+/-- Check that every certified-ingress negative probe in a list rejects with
+one specific rejection reason. -/
+def areCertificationNegativeProbesRejectedWith {profile : PolyProfile}
+    (targetRejection : CellCheckRejection) :
+    List (RawCertificationNegativeProbe profile) → Bool
+  | [] => true
+  | probe :: remainingProbes =>
+      isCertificationNegativeProbeRejectedWith targetRejection probe &&
+        areCertificationNegativeProbesRejectedWith
+          targetRejection remainingProbes
 
 /-- Expected-shape wrapper for the dim-0 certified ingress. -/
 def checkRawCellAs? {profile : PolyProfile} (expectedSort : CellSort)
@@ -2291,6 +2354,97 @@ theorem unsupportedCompHCertificationNegativeProbes_rejected_by_policy
 theorem unsupportedCertificationNegativeProbes_rejected_by_policy
     (profile : PolyProfile) :
     areCertificationNegativeProbesRejected
+      (NegativeProbes.unsupportedCertificationNegativeProbes profile) =
+      true := rfl
+
+/-- Exact-reason headline: all unknown-generator inference probes reject as
+`unknownGenerator`. -/
+theorem unknownGeneratorInferNegativeProbes_rejected_with_unknownGenerator
+    (profile : PolyProfile) :
+    areInferNegativeProbesRejectedWith .unknownGenerator
+      (NegativeProbes.unknownGeneratorInferNegativeProbes profile) = true :=
+  rfl
+
+/-- Exact-reason headline: all bad-payload inference probes reject as
+`badPayload`. -/
+theorem badPayloadInferNegativeProbes_rejected_with_badPayload
+    (profile : PolyProfile) :
+    areInferNegativeProbesRejectedWith .badPayload
+      (NegativeProbes.badPayloadInferNegativeProbes profile) = true := rfl
+
+/-- Exact-reason headline: all wrong-arity inference probes reject as
+`wrongArity`. -/
+theorem wrongArityInferNegativeProbes_rejected_with_wrongArity
+    (profile : PolyProfile) :
+    areInferNegativeProbesRejectedWith .wrongArity
+      (NegativeProbes.wrongArityInferNegativeProbes profile) = true := rfl
+
+/-- Exact-reason headline: all wrong-child-shape inference probes reject as
+`wrongChildShape`. -/
+theorem wrongChildShapeInferNegativeProbes_rejected_with_wrongChildShape
+    (profile : PolyProfile) :
+    areInferNegativeProbesRejectedWith .wrongChildShape
+      (NegativeProbes.wrongChildShapeInferNegativeProbes profile) = true :=
+  rfl
+
+/-- Exact-reason headline: all bad-endpoint inference probes reject as
+`badBoundaryEndpoint`. -/
+theorem
+    badBoundaryEndpointInferNegativeProbes_rejected_with_badBoundaryEndpoint
+    (profile : PolyProfile) :
+    areInferNegativeProbesRejectedWith .badBoundaryEndpoint
+      (NegativeProbes.badBoundaryEndpointInferNegativeProbes profile) =
+      true := rfl
+
+/-- Exact-reason headline: all bad-vertical-boundary probes reject as
+`badVerticalBoundary`. -/
+theorem
+    badVerticalBoundaryInferNegativeProbes_rejected_with_badVerticalBoundary
+    (profile : PolyProfile) :
+    areInferNegativeProbesRejectedWith .badVerticalBoundary
+      (NegativeProbes.badVerticalBoundaryInferNegativeProbes profile) =
+      true := rfl
+
+/-- Exact-reason headline: all unsupported-`compH` inference probes reject as
+`unsupportedCompH`. -/
+theorem unsupportedCompHInferNegativeProbes_rejected_with_unsupportedCompH
+    (profile : PolyProfile) :
+    areInferNegativeProbesRejectedWith .unsupportedCompH
+      (NegativeProbes.unsupportedCompHInferNegativeProbes profile) = true :=
+  rfl
+
+/-- Exact-reason headline: all wrong-sort expected-shape probes reject as
+`wrongSort`. -/
+theorem wrongSortExpectedShapeNegativeProbes_rejected_with_wrongSort
+    (profile : PolyProfile) :
+    areExpectedShapeNegativeProbesRejectedWith .wrongSort
+      (NegativeProbes.wrongSortExpectedShapeNegativeProbes profile) = true :=
+  rfl
+
+/-- Exact-reason headline: certification preserves bad-endpoint failures as
+`badBoundaryEndpoint`. -/
+theorem
+    badBoundaryEndpointCertificationNegativeProbes_rejected_with_badBoundaryEndpoint
+    (profile : PolyProfile) :
+    areCertificationNegativeProbesRejectedWith .badBoundaryEndpoint
+      (NegativeProbes.badBoundaryEndpointCertificationNegativeProbes
+        profile) = true := rfl
+
+/-- Exact-reason headline: certification preserves unsupported `compH` as
+`unsupportedCompH`. -/
+theorem
+    unsupportedCompHCertificationNegativeProbes_rejected_with_unsupportedCompH
+    (profile : PolyProfile) :
+    areCertificationNegativeProbesRejectedWith .unsupportedCompH
+      (NegativeProbes.unsupportedCompHCertificationNegativeProbes
+        profile) = true := rfl
+
+/-- Exact-reason headline: all screen-passing but uncertified probes reject as
+`unsupportedCertification`. -/
+theorem
+    unsupportedCertificationNegativeProbes_rejected_with_unsupportedCertification
+    (profile : PolyProfile) :
+    areCertificationNegativeProbesRejectedWith .unsupportedCertification
       (NegativeProbes.unsupportedCertificationNegativeProbes profile) =
       true := rfl
 
