@@ -214,6 +214,17 @@ def applicationVarZeroVarOneCell {profile : PolyProfile} {scope : Nat}
       (.atom applicationGeneratorSpec.cellId applicationVarZeroVarOnePayload) :=
   .applicationVarZeroVarOne functionCell argumentCell
 
+/-- Derive a certified identity cell from an already certified base cell. -/
+def identityCell {profile : PolyProfile} {cellSort : CellSort}
+    {cellDimension scope : Nat}
+    {cellBoundary : CellBoundary profile cellSort cellDimension scope}
+    {baseRaw : PolyTerm profile cellDimension}
+    (baseCell :
+      PolyCell profile cellSort cellDimension scope cellBoundary baseRaw) :
+    PolyCell profile cellSort (cellDimension + 1) scope
+      (baseRaw, baseRaw) (.identity baseRaw) :=
+  .identity baseCell
+
 /-- Certified child descriptor used by non-nullary generator certificates. -/
 structure CertifiedChild
     (profile : PolyProfile) (cellSort : CellSort)
@@ -290,6 +301,16 @@ theorem raw_applicationVarZeroVarOne {profile : PolyProfile} {scope : Nat}
     (applicationVarZeroVarOneCell functionCell argumentCell).raw =
       PolyTerm.atom (profile := profile) applicationGeneratorSpec.cellId
         applicationVarZeroVarOnePayload := rfl
+
+/-- Raw erasure of a derived identity cell is definitional. -/
+theorem raw_identityCell {profile : PolyProfile} {cellSort : CellSort}
+    {cellDimension scope : Nat}
+    {cellBoundary : CellBoundary profile cellSort cellDimension scope}
+    {baseRaw : PolyTerm profile cellDimension}
+    (baseCell :
+      PolyCell profile cellSort cellDimension scope cellBoundary baseRaw) :
+    (identityCell baseCell).raw =
+      PolyTerm.identity (profile := profile) baseRaw := rfl
 
 /-- The certified child spine for the first application payload has the
 application generator arity. -/

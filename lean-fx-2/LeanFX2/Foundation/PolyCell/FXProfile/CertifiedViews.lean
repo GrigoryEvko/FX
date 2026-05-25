@@ -68,6 +68,22 @@ thinness/conversion classification remain separate later layers. -/
 abbrev CertifiedFXDimOneTermCell (scope : Nat) :=
   CertifiedFXCell .term 1 scope
 
+/-- Certified structural type cell at dimension 1. -/
+abbrev CertifiedFXDimOneTypeCell (scope : Nat) :=
+  CertifiedFXCell .type 1 scope
+
+/-- Certified structural context cell at dimension 1. -/
+abbrev CertifiedFXDimOneContextCell (scope : Nat) :=
+  CertifiedFXCell .context 1 scope
+
+/-- Certified structural mode cell at dimension 1. -/
+abbrev CertifiedFXDimOneModeCell (scope : Nat) :=
+  CertifiedFXCell .mode 1 scope
+
+/-- Certified structural term cell at dimension 2. -/
+abbrev CertifiedFXDimTwoTermCell (scope : Nat) :=
+  CertifiedFXCell .term 2 scope
+
 /-- Seed certified term view from the current dim-0 ingress subset. -/
 def certifiedSeedTerm :
     CertifiedFXTerm NegativeProbes.defaultInferScope :=
@@ -108,6 +124,36 @@ def certifiedSeedTermStep :
   CertifiedFXCell.ofCertifiedRawCell
     (Check.certifiedSeedTermStepPackage (profile := fxProfile))
 
+/-- Certified identity over the seed term fixture. -/
+def certifiedSeedTermIdentity :
+    CertifiedFXDimOneTermCell NegativeProbes.defaultInferScope :=
+  CertifiedFXCell.ofCertifiedRawCell
+    (Check.certifiedSeedTermIdentityPackage (profile := fxProfile))
+
+/-- Certified identity over the seed type fixture. -/
+def certifiedSeedTypeIdentity :
+    CertifiedFXDimOneTypeCell NegativeProbes.defaultInferScope :=
+  CertifiedFXCell.ofCertifiedRawCell
+    (Check.certifiedSeedTypeIdentityPackage (profile := fxProfile))
+
+/-- Certified identity over the seed context fixture. -/
+def certifiedSeedContextIdentity :
+    CertifiedFXDimOneContextCell NegativeProbes.defaultInferScope :=
+  CertifiedFXCell.ofCertifiedRawCell
+    (Check.certifiedSeedContextIdentityPackage (profile := fxProfile))
+
+/-- Certified identity over the seed mode fixture. -/
+def certifiedSeedModeIdentity :
+    CertifiedFXDimOneModeCell NegativeProbes.defaultInferScope :=
+  CertifiedFXCell.ofCertifiedRawCell
+    (Check.certifiedSeedModeIdentityPackage (profile := fxProfile))
+
+/-- Certified identity over the seed dim-1 term-step fixture. -/
+def certifiedSeedTermStepIdentity :
+    CertifiedFXDimTwoTermCell NegativeProbes.defaultInferScope :=
+  CertifiedFXCell.ofCertifiedRawCell
+    (Check.certifiedSeedTermStepIdentityPackage (profile := fxProfile))
+
 theorem certifiedSeedTerm_raw :
     certifiedSeedTerm.toRaw = NegativeProbes.seedTermAtom fxProfile := rfl
 
@@ -127,5 +173,26 @@ theorem certifiedApplicationVarZeroVarOne_raw :
 theorem certifiedSeedTermStep_raw :
     certifiedSeedTermStep.toRaw =
       NegativeProbes.termStepVarZeroVarOneRawCell fxProfile := rfl
+
+theorem certifiedSeedTermIdentity_raw :
+    certifiedSeedTermIdentity.toRaw =
+      PolyTerm.identity (NegativeProbes.seedTermAtom fxProfile) := rfl
+
+theorem certifiedSeedTypeIdentity_raw :
+    certifiedSeedTypeIdentity.toRaw =
+      PolyTerm.identity (NegativeProbes.seedTypeAtom fxProfile) := rfl
+
+theorem certifiedSeedContextIdentity_raw :
+    certifiedSeedContextIdentity.toRaw =
+      PolyTerm.identity (NegativeProbes.seedContextAtom fxProfile) := rfl
+
+theorem certifiedSeedModeIdentity_raw :
+    certifiedSeedModeIdentity.toRaw =
+      PolyTerm.identity (NegativeProbes.seedModeAtom fxProfile) := rfl
+
+theorem certifiedSeedTermStepIdentity_raw :
+    certifiedSeedTermStepIdentity.toRaw =
+      PolyTerm.identity
+        (NegativeProbes.termStepVarZeroVarOneRawCell fxProfile) := rfl
 
 end LeanFX2.Foundation.PolyCell.FXProfile

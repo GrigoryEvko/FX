@@ -644,6 +644,18 @@ def certifiedTermStepVarZeroVarOnePackage {profile : PolyProfile}
       certifiedEndpoints.sourceCell
       certifiedEndpoints.targetCell
 
+/-- Derived certified identity package over an already certified base cell.
+
+This is a certified-layer operation, not a raw ingress dispatcher: malformed
+raw identity bases cannot use it because they have no certified base package. -/
+def certifiedIdentityPackage {profile : PolyProfile} {scope : Nat}
+    {dimension : CellDim} {baseRaw : PolyTerm profile dimension}
+    (certifiedBase : CertifiedRawCell profile scope baseRaw) :
+    CertifiedRawCell profile scope (PolyTerm.identity baseRaw) where
+  cellSort := certifiedBase.cellSort
+  cellBoundary := (baseRaw, baseRaw)
+  certifiedCell := PolyCell.identityCell certifiedBase.certifiedCell
+
 /-- Infer the raw sort from current metadata without certifying the payload. -/
 def inferRawCellSort? {profile : PolyProfile} {dimension : CellDim} :
     PolyTerm profile dimension → Except CellCheckRejection CellSort
@@ -950,6 +962,42 @@ def certifiedSeedTermStepPackage {profile : PolyProfile} :
       (Nat.zero_lt_succ 3)
       (Nat.succ_lt_succ (Nat.zero_lt_succ 2)))
 
+/-- Certified identity over the seed term fixture. -/
+def certifiedSeedTermIdentityPackage {profile : PolyProfile} :
+    CertifiedRawCell profile NegativeProbes.defaultInferScope
+      (PolyTerm.identity (NegativeProbes.seedTermAtom profile)) :=
+  certifiedIdentityPackage
+    (certifiedSeedTermPackage (profile := profile))
+
+/-- Certified identity over the seed type fixture. -/
+def certifiedSeedTypeIdentityPackage {profile : PolyProfile} :
+    CertifiedRawCell profile NegativeProbes.defaultInferScope
+      (PolyTerm.identity (NegativeProbes.seedTypeAtom profile)) :=
+  certifiedIdentityPackage
+    (certifiedSeedTypePackage (profile := profile))
+
+/-- Certified identity over the seed context fixture. -/
+def certifiedSeedContextIdentityPackage {profile : PolyProfile} :
+    CertifiedRawCell profile NegativeProbes.defaultInferScope
+      (PolyTerm.identity (NegativeProbes.seedContextAtom profile)) :=
+  certifiedIdentityPackage
+    (certifiedSeedContextPackage (profile := profile))
+
+/-- Certified identity over the seed mode fixture. -/
+def certifiedSeedModeIdentityPackage {profile : PolyProfile} :
+    CertifiedRawCell profile NegativeProbes.defaultInferScope
+      (PolyTerm.identity (NegativeProbes.seedModeAtom profile)) :=
+  certifiedIdentityPackage
+    (certifiedSeedModePackage (profile := profile))
+
+/-- Certified identity over the seed dim-1 term-step fixture. -/
+def certifiedSeedTermStepIdentityPackage {profile : PolyProfile} :
+    CertifiedRawCell profile NegativeProbes.defaultInferScope
+      (PolyTerm.identity
+        (NegativeProbes.termStepVarZeroVarOneRawCell profile)) :=
+  certifiedIdentityPackage
+    (certifiedSeedTermStepPackage (profile := profile))
+
 theorem lookupGeneratorSpec?_variable :
     lookupGeneratorSpec? variableGeneratorSpec.cellId =
       some ⟨variableGeneratorSpec, SupportedGeneratorSpec.variable⟩ := rfl
@@ -1022,6 +1070,13 @@ theorem certifiedTermStepVarZeroVarOnePackage_raw
     (certifiedTermStepVarZeroVarOnePackage (profile := profile)
       certifiedEndpoints).certifiedCell.raw =
       NegativeProbes.termStepVarZeroVarOneRawCell profile := rfl
+
+theorem certifiedIdentityPackage_raw
+    {profile : PolyProfile} {scope : Nat}
+    {dimension : CellDim} {baseRaw : PolyTerm profile dimension}
+    (certifiedBase : CertifiedRawCell profile scope baseRaw) :
+    (certifiedIdentityPackage certifiedBase).certifiedCell.raw =
+      PolyTerm.identity (profile := profile) baseRaw := rfl
 
 theorem certifyApplicationVarZeroVarOneChildren?_scope_zero_rejects
     {profile : PolyProfile} :
@@ -1292,6 +1347,29 @@ theorem certifiedSeedModePackage_raw {profile : PolyProfile} :
 theorem certifiedSeedTermStepPackage_raw {profile : PolyProfile} :
     (certifiedSeedTermStepPackage (profile := profile)).certifiedCell.raw =
       NegativeProbes.termStepVarZeroVarOneRawCell profile := rfl
+
+theorem certifiedSeedTermIdentityPackage_raw {profile : PolyProfile} :
+    (certifiedSeedTermIdentityPackage (profile := profile)).certifiedCell.raw =
+      PolyTerm.identity (NegativeProbes.seedTermAtom profile) := rfl
+
+theorem certifiedSeedTypeIdentityPackage_raw {profile : PolyProfile} :
+    (certifiedSeedTypeIdentityPackage (profile := profile)).certifiedCell.raw =
+      PolyTerm.identity (NegativeProbes.seedTypeAtom profile) := rfl
+
+theorem certifiedSeedContextIdentityPackage_raw {profile : PolyProfile} :
+    (certifiedSeedContextIdentityPackage
+      (profile := profile)).certifiedCell.raw =
+      PolyTerm.identity (NegativeProbes.seedContextAtom profile) := rfl
+
+theorem certifiedSeedModeIdentityPackage_raw {profile : PolyProfile} :
+    (certifiedSeedModeIdentityPackage (profile := profile)).certifiedCell.raw =
+      PolyTerm.identity (NegativeProbes.seedModeAtom profile) := rfl
+
+theorem certifiedSeedTermStepIdentityPackage_raw {profile : PolyProfile} :
+    (certifiedSeedTermStepIdentityPackage
+      (profile := profile)).certifiedCell.raw =
+      PolyTerm.identity
+        (NegativeProbes.termStepVarZeroVarOneRawCell profile) := rfl
 
 theorem inferRawCell?_seedTerm_sort {profile : PolyProfile} :
     certifiedResultSort?
