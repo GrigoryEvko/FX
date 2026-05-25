@@ -580,6 +580,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.ofCellId?_ofOutsideCurrentGeneratorRange
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.ofCellId?_isSome_eq_classifyCellId_isTermConstructor
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.ofCellId?_isSome_eq_classifyCellId_isTypeConstructor
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.toCell?_ofCellId?_of_isTermConstructor
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.toCell?_ofCellId?_of_isTypeConstructor
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.ofCell?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.ofCell?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.ofCell?_isSome_eq_classifyCellId_isTermConstructor
