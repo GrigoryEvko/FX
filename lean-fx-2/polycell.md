@@ -3799,11 +3799,16 @@ This is metadata support, not a proof of operational reduction semantics. -/
 inductive SupportedRuleSpec : RuleSpec -> Type where
   | termStep : SupportedRuleSpec termStepRuleSpec
 
-/-- Payload evidence for atoms currently safe to certify.
+/-- First finite application payload whose decoded children are `var 0`
+and `var 1` at the parent scope. -/
+def applicationVarZeroVarOnePayload : Nat := 9100
 
-There are deliberately no constructors yet for lambda/application/pi/context
-extension.  Those non-nullary generators wait for real payload decoding and
-child certification. -/
+/-- Payload evidence for nullary atoms currently safe to certify.
+
+There are deliberately no constructors here for lambda/pi/context extension.
+Application is certified only through the separate finite-payload constructor
+below, because it must demand certified child cells rather than bare payload
+evidence. -/
 inductive AtomPayloadEvidence :
     (generatorSpec : GeneratorSpec) -> (scope : Nat) -> (payload : Nat) -> Type where
   | variable {scope index : Nat} :
@@ -3839,6 +3844,15 @@ inductive PolyCell (profile : PolyProfile) :
       AtomPayloadEvidence generator scope payload →
       PolyCell profile generator.cellSort 0 scope ()
         (.atom generator.cellId payload)
+
+  | applicationVarZeroVarOne :
+      {scope : Nat} →
+      PolyCell profile .term 0 scope ()
+        (.atom variableGeneratorSpec.cellId 0) →
+      PolyCell profile .term 0 scope ()
+        (.atom variableGeneratorSpec.cellId 1) →
+      PolyCell profile .term 0 scope ()
+        (.atom applicationGeneratorSpec.cellId applicationVarZeroVarOnePayload)
 
   | cell :
       {scope : Nat} →
@@ -3891,12 +3905,14 @@ inductive CellCheckRejection where
 
 /-- Infer a certified package from raw input.
 
-This is the current TCB.6j ingress, not the final recursive checker.  It
-certifies only dim-0 atoms whose payload evidence is implemented in the
-certified layer: in-scope variables, unit type, empty context, and linear
-mode.  Other raw dim-0 atoms remain representable and reject either with the
-screen's structural reason or with `unsupportedCertification` when they screen
-successfully but lack a certified constructor. -/
+This is the current TCB.7b ingress, not the final recursive checker.  It
+certifies only the dim-0 subset whose constructors are implemented in the
+certified layer: in-scope variables, unit type, empty context, linear mode,
+and the single finite application payload `app(var 0, var 1)` at scopes where
+both decoded variables are in scope.  Other raw dim-0 atoms remain
+representable and reject either with the screen's structural reason or with
+`unsupportedCertification` when they screen successfully but lack a certified
+constructor. -/
 structure CertifiedRawCellResult (profile : PolyProfile) (scope : Nat) where
   cellDimension : CellDim
   inputCode : List Nat
@@ -3981,10 +3997,11 @@ catalog of malformed raw inputs, not only against positive examples:
   while applications whose function or argument child decodes to a type
   cell, or whose decoded argument is outside scope, must reject as
   `wrongChildShape`;
-- current certified ingress must reject the structurally screened
-  `app(var 0, var 1)` fixture as `unsupportedCertification` until
-  application child certification exists, and must preserve
-  `wrongChildShape` for malformed application payloads;
+- current certified ingress accepts the structurally screened
+  `app(var 0, var 1)` fixture only when `var 0` and `var 1` are both
+  certifiable in the same scope; scope 0 and scope 1 reject as
+  `wrongChildShape`, and malformed application payloads preserve their
+  `wrongChildShape` rejection;
 - generated dim-1 cells over uncertified endpoints must reject as
   `badBoundaryEndpoint`;
 - generated term-step cells over context or type endpoints must reject
@@ -4543,6 +4560,7 @@ representable and computably rejected.
 | TCB.6i expanded malformed probes | `d97e1dbd` | The negative catalog now covers application argument sort failure, application out-of-scope child failure, known rule ids used at unsupported endpoint dimensions, and extra context/type/term/mode expected-shape confusion cases.  All new probes have executable rejection theorems and audit entries. |
 | TCB.6j dim-0 certified ingress | `d1c3f65c` | `inferRawCell?` and `checkRawCellAs?` return `CertifiedRawCellResult` for the payload-evidenced dim-0 atom subset only: in-scope variables, unit type, empty context, and linear mode.  Structurally screened but uncertified atoms reject as `unsupportedCertification`, and malformed dim-0 probes keep executable rejection theorems. |
 | TCB.7a certified seed views | `9ba62a55` | `CertifiedFXCell` and seed `CertifiedFXContext` / `CertifiedFXType` / `CertifiedFXTerm` / `CertifiedFXMode` views wrap actual `PolyCell` witnesses over `fxProfile`.  There is still no certified conversion/thinness view and no new non-nullary certification power. |
+| TCB.7b first certified application payload | `2765ef03` | `app(var 0, var 1)` is the first non-nullary dim-0 term payload admitted to the certified layer.  It is accepted only at scopes where both decoded variables are certified; scope 0/1 and malformed application payloads still reject by computation.  This is not general application certification. |
 
 **Deliverables (NEW only):**
 
@@ -4558,17 +4576,19 @@ representable and computably rejected.
 | TCB.6a executable rejection screen | `Foundation/PolyCell/Core/Check.lean` | Computable recursive screen over the supported generator/rule tables; rejects unknown ids, malformed payloads, wrong arity/child-shape sentinels, wrong expected sort, bad endpoints, bad vertical boundaries, and unsupported raw `compH`. | Every executable theorem is audited axiom-free; the catalog runner proves all current inference and expected-shape negative probes are rejected. |
 | TCB.6h certified seed packages | `Foundation/PolyCell/Core/Check.lean` | `CertifiedRawCell` dependent package plus concrete packages for the payload-evidenced seed atoms only. | Each package erases definitionally to its named raw fixture; no application, lambda, pi, context-cons, generated cell, vertical composite, or raw `compH` is certified by this task. |
 | TCB.6i expanded malformed probes | `Foundation/PolyCell/Core/NegativeProbes.lean`, `Foundation/PolyCell/Core/Check.lean` | More hostile fixtures for application argument position, child scope failure, rule dimension misuse, and cross-sort expected-shape checks. | Probe counts are ratcheted; each new malformed input has a definitional rejection theorem and an audit harness assertion. |
-| TCB.6j dim-0 certified ingress | `Foundation/PolyCell/Core/Check.lean` | Computable `inferRawCell?` and expected-shape `checkRawCellAs?` returning `CertifiedRawCellResult` or a rejection reason for dim-0 raw atoms, implemented without `propext`, `Classical`, `Inhabited`, or `Nonempty`. | Every accepted result contains a `PolyCell`; accepted witnesses exist only for in-scope variables, unit type, empty context, and linear mode; application fixtures screen structurally but reject certification until child certification exists. |
+| TCB.6j dim-0 certified ingress | `Foundation/PolyCell/Core/Check.lean` | Computable `inferRawCell?` and expected-shape `checkRawCellAs?` returning `CertifiedRawCellResult` or a rejection reason for dim-0 raw atoms, implemented without `propext`, `Classical`, `Inhabited`, or `Nonempty`. | Every accepted result contains a `PolyCell`; at this stage accepted witnesses were only in-scope variables, unit type, empty context, and linear mode.  Application certification starts later at TCB.7b. |
 | TCB.7a certified seed views | `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | `CertifiedFXCell` plus certified seed projections for context/type/term/mode over the current dim-0 ingress subset. | Every view carries an actual `PolyCell`; raw-erasure theorems are definitional; conversion/thinness and full step/coherence views remain unimplemented. |
-| TCB.7b certified FX operational views | `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | Future `FXStep`, `FXConv`, `FXCdLemma` as projections of certified positive-dimensional cells and thinness certificates. | Existing raw subtype views remain compatibility-only; new operational code uses certified views only after the corresponding positive-dimensional certification exists. |
+| TCB.7b first certified application payload | `Foundation/PolyCell/Core/GeneratorSpec.lean`, `Foundation/PolyCell/Core/Certified.lean`, `Foundation/PolyCell/Core/Check.lean`, `Foundation/PolyCell/Core/NegativeProbes.lean`, `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | The finite payload `9100` is admitted as `app(var 0, var 1)` only through certified `var 0` and `var 1` child witnesses. | Scope 0/1 reject as `wrongChildShape`; type-as-function, type-as-argument, and out-of-scope application fixtures still reject; the accepted result and FX view erase definitionally to the raw fixture; all declarations are in `AuditPolyCell`. |
+| TCB.7c certified FX operational views | `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | Future `FXStep`, `FXConv`, `FXCdLemma` as projections of certified positive-dimensional cells and thinness certificates. | Existing raw subtype views remain compatibility-only; new operational code uses certified views only after the corresponding positive-dimensional certification exists. |
 
-**Implementation order after TCB.6j:**
+**Implementation order after TCB.7b:**
 
-1.  Extend dim-0 certification to the first non-nullary generator
-    family only after its payload decoder, certified child recursion, and
-    `CellChildren` construction all exist in the same slice.  The current
-    `app(var 0, var 1)` fixture must keep returning
-    `unsupportedCertification` until that happens.
+1.  Do not generalize application by copying the bespoke
+    `app(var 0, var 1)` constructor.  The next application slice must
+    factor the finite fixture through a computable certified-child
+    decoder, so every newly accepted payload carries a `CellChildren`
+    spine of actual `PolyCell` witnesses and every failed child reports
+    `wrongChildShape`.
 2.  Generalize certification beyond dim 0 only after a propext-free
     boundary representation is proven by audit.  Do not reintroduce the
     failed dimension-polymorphic dependent pattern route.
