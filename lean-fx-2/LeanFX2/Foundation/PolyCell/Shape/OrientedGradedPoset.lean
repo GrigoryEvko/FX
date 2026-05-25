@@ -1,12 +1,13 @@
 /-!
 # Oriented Graded Poset (Hadzihasanovic 2024)
 
-The atomic combinatorial substrate from which ALL cell shapes are built.
-An oriented graded poset is a finite set graded by dimension with each
-element's cofaces partitioned into input (source) and output (target).
+The current Axis 1 interface for finite oriented graded posets.  An
+oriented graded poset is a finite list of cells graded by dimension, with
+each cell's cofaces partitioned into input and output cofaces.
 
-From this single structure, globes, cubes, simplices, opetopes, Θ-cells,
-and Steiner complexes all arise as specific instances.
+This file only provides the interface plus empty and point examples.  It
+does not construct the classical shape families, molecule category, or the
+Hadzihasanovic regular-directed-complex package.
 
 Reference: arXiv:2404.07273 §1.1-1.2 (337-page monograph).
 Zero external dependencies.

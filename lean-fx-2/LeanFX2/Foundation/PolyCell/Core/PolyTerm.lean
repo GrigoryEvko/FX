@@ -1,13 +1,15 @@
 import LeanFX2.Foundation.PolyCell.Core.PolyProfile
 /-!
-# PolyTerm — THE 5-Constructor Universal Cell Type
+# PolyTerm — Structural Cell Syntax
 
-The single indexed inductive that REPLACES the current 75-ctor Term +
-112-ctor Step + 133-ctor Step.par with 5 structural constructors.
+This file defines the small indexed syntax that the PolyCell plan wants to
+grow into the future cell substrate.  The current implementation is only the
+structural core: constructor ids and payloads are `Nat`, boundary compatibility
+is not indexed into the type, and no legacy replacement bridge is present here.
 
 Features (Π, Σ, modal, cubical, etc.) are NOT constructors — they are
-entries in the profile's algebra. Adding a new feature = adding one
-Generator value. Zero cascade.
+intended to be entries in the profile's algebra.  The present file does not
+yet prove that adding such entries avoids every legacy cascade.
 
 The 5 constructors:
 - atom: dim-0 generators (terms and types)
@@ -16,7 +18,7 @@ The 5 constructors:
 - compH: horizontal composition (parallel/concurrent cells)
 - identity: degenerate higher cell (identity on a lower cell)
 
-Reference: polycell.md §4.
+Reference target: polycell.md §4.
 Zero external dependencies.
 -/
 
@@ -28,14 +30,10 @@ abbrev CellDim := Nat
 /-- A cell identifier within a profile (which generator produced it). -/
 abbrev CellId := Nat
 
-/-- THE universal cell type. Parameterized by PolyProfile, indexed by
-dimension. This is the type that collapses the cascade:
-
-- Current FX: 75 Term ctors + 112 Step ctors + 133 Step.par ctors = 320+
-- PolyTerm: 5 structural ctors, REGARDLESS of generator count.
-
-Induction over PolyTerm is ALWAYS a 5-case split. Adding generators
-to the profile does NOT add constructors — it adds values to `cellId`. -/
+/-- Structural cell syntax parameterized by a profile and indexed by dimension.
+Induction over this syntax has five constructor cases.  Generator-specific
+well-formedness, payload decoding, and boundary checks are deliberately outside
+this inductive until the corresponding profile axes are mechanized. -/
 inductive PolyTerm (profile : PolyProfile) : (dimension : CellDim) → Type where
   /-- Dim-0 generator: an atomic cell (term or type). The `cellId`
   identifies WHICH of the profile's generators produced this cell.
@@ -85,7 +83,10 @@ def PolyTerm.dim {profile : PolyProfile} {dimension : CellDim} :
 def PolyTerm.isAtom {profile : PolyProfile} {dimension : CellDim} :
     PolyTerm profile dimension → Bool
   | .atom _ _ => true
-  | _ => false
+  | .cell _ _ _ => false
+  | .compV _ _ => false
+  | .compH _ _ => false
+  | .identity _ => false
 
 /-- Is this a composite cell (built via compV/compH/identity)? -/
 def PolyTerm.isComposite {profile : PolyProfile} {dimension : CellDim} :
@@ -93,7 +94,17 @@ def PolyTerm.isComposite {profile : PolyProfile} {dimension : CellDim} :
   | .compV _ _ => true
   | .compH _ _ => true
   | .identity _ => true
-  | _ => false
+  | .atom _ _ => false
+  | .cell _ _ _ => false
+
+/-- Is this an identity cell? -/
+def PolyTerm.isIdentity {profile : PolyProfile} {dimension : CellDim} :
+    PolyTerm profile dimension → Bool
+  | .identity _ => true
+  | .atom _ _ => false
+  | .cell _ _ _ => false
+  | .compV _ _ => false
+  | .compH _ _ => false
 
 /-- Structural size (for well-founded recursion). -/
 def PolyTerm.size {profile : PolyProfile} {dimension : CellDim} :
@@ -107,28 +118,43 @@ def PolyTerm.size {profile : PolyProfile} {dimension : CellDim} :
 /-- Size is always positive. -/
 theorem PolyTerm.size_pos {profile : PolyProfile} {dimension : CellDim}
     (term : PolyTerm profile dimension) : term.size > 0 := by
-  cases term <;> unfold size <;> omega
+  cases term with
+  | atom _ _ =>
+      exact Nat.zero_lt_one
+  | cell _ source target =>
+      dsimp [PolyTerm.size]
+      exact Nat.add_pos_left
+        (Nat.add_pos_left Nat.zero_lt_one source.size) target.size
+  | compV first second =>
+      dsimp [PolyTerm.size]
+      exact Nat.add_pos_left
+        (Nat.add_pos_left Nat.zero_lt_one first.size) second.size
+  | compH left right =>
+      dsimp [PolyTerm.size]
+      exact Nat.add_pos_left
+        (Nat.add_pos_left Nat.zero_lt_one left.size) right.size
+  | identity base =>
+      dsimp [PolyTerm.size]
+      exact Nat.add_pos_left Nat.zero_lt_one base.size
 
 /-- Every FX term is a PolyTerm at dim 0. -/
 abbrev FXCell (profile : PolyProfile) := PolyTerm profile
 
-/-- Type cells: dim-0 atoms that represent types. -/
+/-- Provisional type-cell recognizer using the current raw id range convention. -/
 def PolyTerm.isTypeCell {profile : PolyProfile} :
     PolyTerm profile 0 → Bool
   | .atom cellId _ => cellId ≥ 64  -- type-code generators are ids 64-77
-  | _ => false
 
-/-- Term cells: dim-0 atoms that represent values. -/
+/-- Provisional term-cell recognizer using the current raw id range convention. -/
 def PolyTerm.isTermCell {profile : PolyProfile} :
     PolyTerm profile 0 → Bool
   | .atom cellId _ => cellId < 64  -- term generators are ids 0-63
-  | _ => false
 
-/-- Step cells: dim-1 cells (non-identity). -/
+/-- Provisional dim-1 step recognizer.  It has no thinness or boundary check. -/
 def PolyTerm.isStepCell {profile : PolyProfile} :
-    PolyTerm profile 1 → Bool
-  | .cell _ _ _ => true
-  | .identity _ => false
-  | _ => true
+    PolyTerm profile 1 → Bool := fun term =>
+  match term.isIdentity with
+  | true => false
+  | false => true
 
 end LeanFX2.Foundation.PolyCell.Core

@@ -7,11 +7,13 @@ endofunctor P_p(Y) = Σ (a : A), B a → Y on Type.
 
 The category Poly has polynomials as objects and lenses as morphisms.
 Cartesian lenses (where backward maps are equivalences) form the
-subcategory Poly^Cart whose subterminality IS univalence.
+subcategory Poly^Cart whose subterminality is the polynomial-univalence
+notion used by the current Axis 2 slice.
 
-For FX: each Generator g corresponds to a polynomial with one position
-and g.arity-many directions. The full kernel is the coproduct of 78
-such polynomials.
+For the planned faithful FX generator model, each Generator g should
+correspond to a polynomial with one position and g.arity-many directions,
+and the generator interface should be their coproduct.  The current
+`fxProfile` intentionally records only the smaller monomial scaffold.
 
 Reference: arXiv:2409.19176 §3.
 Zero external dependencies.
@@ -153,9 +155,9 @@ def CartesianLens.compose {polyA polyB polyC : Poly.{u, v}}
   }
 
 theorem Poly.identity_eval_equiv (targetType : Type w) :
-    Poly.identity.eval targetType = ((position : Unit) × (Unit → targetType)) := rfl
+    Poly.identity.eval targetType = ((_ : Unit) × (Unit → targetType)) := rfl
 
 theorem Poly.constant_eval_equiv (targetType : Type w) :
-    Poly.constant.eval targetType = ((position : Unit) × (Empty → targetType)) := rfl
+    Poly.constant.eval targetType = ((_ : Unit) × (Empty → targetType)) := rfl
 
 end LeanFX2.Foundation.PolyCell.Algebra

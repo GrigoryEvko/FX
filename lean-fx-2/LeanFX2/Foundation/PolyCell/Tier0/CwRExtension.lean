@@ -2,9 +2,12 @@ import LeanFX2.Foundation.PolyCell.Tier0.RepresentableMapCategory
 /-!
 # CwR Extensions and Type-Former Classification (Uemura §4-5)
 
-A CwR extension adds new type formers to an existing type theory.
-Uemura's key theorem: type formers biject with representable natural
-transformations in the slice category C/U over the universe object.
+A CwR extension is intended to add new type formers to an existing type
+theory.  Uemura's key theorem says type formers biject with representable
+natural transformations in the slice category C/U over the universe object.
+This file records the computable slice, natural-transformation, type-former,
+and extension records; it does not prove the Uemura bijection theorem or
+construct concrete Pi/Sigma/Id extensions.
 
 Adding Π-types = adding one representable nat-trans π : (Σ_{A:U} U^A) → U.
 Adding Σ-types = adding one representable nat-trans σ : (Σ_{A:U} U^A) → U.
@@ -21,6 +24,116 @@ namespace LeanFX2.Foundation.PolyCell.Tier0
 
 universe u v
 
+/-- Construction-level ledger for the current CwR-extension subsystem. -/
+inductive CwRExtensionConstructionLevel where
+  | sliceInterface
+  | naturalTransformationInterface
+  | typeFormerRecord
+  | extensionComposition
+  | concreteTypeFormerInstances
+  | uemuraBijectionTheorem
+  | conservativeExtensionTheorem
+  deriving DecidableEq, Repr
+
+def CwRExtensionConstructionLevel.hasSliceInterface :
+    CwRExtensionConstructionLevel → Bool
+  | .sliceInterface => true
+  | .naturalTransformationInterface => true
+  | .typeFormerRecord => true
+  | .extensionComposition => true
+  | .concreteTypeFormerInstances => true
+  | .uemuraBijectionTheorem => true
+  | .conservativeExtensionTheorem => true
+
+def CwRExtensionConstructionLevel.hasNaturalTransformationInterface :
+    CwRExtensionConstructionLevel → Bool
+  | .sliceInterface => false
+  | .naturalTransformationInterface => true
+  | .typeFormerRecord => true
+  | .extensionComposition => true
+  | .concreteTypeFormerInstances => true
+  | .uemuraBijectionTheorem => true
+  | .conservativeExtensionTheorem => true
+
+def CwRExtensionConstructionLevel.hasTypeFormerRecord :
+    CwRExtensionConstructionLevel → Bool
+  | .sliceInterface => false
+  | .naturalTransformationInterface => false
+  | .typeFormerRecord => true
+  | .extensionComposition => true
+  | .concreteTypeFormerInstances => true
+  | .uemuraBijectionTheorem => true
+  | .conservativeExtensionTheorem => true
+
+def CwRExtensionConstructionLevel.hasExtensionComposition :
+    CwRExtensionConstructionLevel → Bool
+  | .sliceInterface => false
+  | .naturalTransformationInterface => false
+  | .typeFormerRecord => false
+  | .extensionComposition => true
+  | .concreteTypeFormerInstances => true
+  | .uemuraBijectionTheorem => true
+  | .conservativeExtensionTheorem => true
+
+def CwRExtensionConstructionLevel.hasConcreteTypeFormerInstances :
+    CwRExtensionConstructionLevel → Bool
+  | .sliceInterface => false
+  | .naturalTransformationInterface => false
+  | .typeFormerRecord => false
+  | .extensionComposition => false
+  | .concreteTypeFormerInstances => true
+  | .uemuraBijectionTheorem => true
+  | .conservativeExtensionTheorem => true
+
+def CwRExtensionConstructionLevel.hasUemuraBijectionTheorem :
+    CwRExtensionConstructionLevel → Bool
+  | .sliceInterface => false
+  | .naturalTransformationInterface => false
+  | .typeFormerRecord => false
+  | .extensionComposition => false
+  | .concreteTypeFormerInstances => false
+  | .uemuraBijectionTheorem => true
+  | .conservativeExtensionTheorem => true
+
+def CwRExtensionConstructionLevel.hasConservativeExtensionTheorem :
+    CwRExtensionConstructionLevel → Bool
+  | .sliceInterface => false
+  | .naturalTransformationInterface => false
+  | .typeFormerRecord => false
+  | .extensionComposition => false
+  | .concreteTypeFormerInstances => false
+  | .uemuraBijectionTheorem => false
+  | .conservativeExtensionTheorem => true
+
+/-- Present status: interface records and definitional extension composition. -/
+def fxCwRExtensionConstructionLevel : CwRExtensionConstructionLevel :=
+  .extensionComposition
+
+theorem fxCwRExtensionConstructionLevel_eq :
+    fxCwRExtensionConstructionLevel = .extensionComposition := rfl
+
+theorem fxCwRExtension_hasSliceInterface :
+    fxCwRExtensionConstructionLevel.hasSliceInterface = true := rfl
+
+theorem fxCwRExtension_hasNaturalTransformationInterface :
+    fxCwRExtensionConstructionLevel.hasNaturalTransformationInterface = true := rfl
+
+theorem fxCwRExtension_hasTypeFormerRecord :
+    fxCwRExtensionConstructionLevel.hasTypeFormerRecord = true := rfl
+
+theorem fxCwRExtension_hasExtensionComposition :
+    fxCwRExtensionConstructionLevel.hasExtensionComposition = true := rfl
+
+theorem fxCwRExtension_hasNoConcreteTypeFormerInstances :
+    fxCwRExtensionConstructionLevel.hasConcreteTypeFormerInstances = false := rfl
+
+theorem fxCwRExtension_hasNoUemuraBijectionTheorem :
+    fxCwRExtensionConstructionLevel.hasUemuraBijectionTheorem = false := rfl
+
+theorem fxCwRExtension_hasNoConservativeExtensionTheorem :
+    fxCwRExtensionConstructionLevel.hasConservativeExtensionTheorem = false :=
+  rfl
+
 /-- The slice category C/U: objects are morphisms into U (= types in context);
 morphisms are commutative triangles. -/
 structure SliceObject (category : RawCategory.{u, v})
@@ -34,24 +147,35 @@ structure SliceMorphism (category : RawCategory.{u, v})
   underlying : category.Morphism source.domain target.domain
   commutes : category.compose underlying target.projection = source.projection
 
+/-- A functorial object family over the slice category C/U. -/
+structure SliceFamily (category : RawCategory.{u, v})
+    {universeObject : category.Object} where
+  objectAt : SliceObject category universeObject → category.Object
+  mapMorphism : {sliceA sliceB : SliceObject category universeObject} →
+                SliceMorphism category sliceA sliceB →
+                category.Morphism (objectAt sliceA) (objectAt sliceB)
+
 /-- A natural transformation between two functors on a slice category,
 encoded as a family of morphisms indexed by slice objects. -/
 structure SliceNatTrans (category : RawCategory.{u, v})
     {universeObject : category.Object}
-    (sourceFamily targetFamily : SliceObject category universeObject → category.Object) where
+    (sourceFamily targetFamily : SliceFamily category) where
   component : (sliceObj : SliceObject category universeObject) →
-              category.Morphism (sourceFamily sliceObj) (targetFamily sliceObj)
+              category.Morphism
+                (sourceFamily.objectAt sliceObj)
+                (targetFamily.objectAt sliceObj)
   naturality : ∀ (sliceA sliceB : SliceObject category universeObject)
-    (_ : SliceMorphism category sliceA sliceB),
-    True  -- naturality square commutes (simplified — full version needs
-          -- functorial action on sourceFamily/targetFamily)
+    (sliceMorphism : SliceMorphism category sliceA sliceB),
+    category.compose
+        (sourceFamily.mapMorphism sliceMorphism)
+        (component sliceB) =
+      category.compose
+        (component sliceA)
+        (targetFamily.mapMorphism sliceMorphism)
 
-/-- A type former in a CwR is a representable natural transformation
-in the slice C/U. It classifies a way to form new types from old.
-
-Concretely: given a "parameter shape" (what inputs the type former takes)
-and a "result" (the output type), the type former is the universal
-map from parameter-families to result-types. -/
+/-- A type-former record in a CwR: a parameter object in the slice C/U and
+a result map back to the universe, together with representability evidence
+for that result map. -/
 structure TypeFormer (cwrCategory : RepresentableMapCategory.{u, v})
     (universeObject : cwrCategory.underlying.Object) where
   /-- The "parameter object" in C/U — describes what data the type
@@ -63,9 +187,8 @@ structure TypeFormer (cwrCategory : RepresentableMapCategory.{u, v})
   (= produces a new type from the parameters). -/
   resultMap : cwrCategory.underlying.Morphism parameterObject.domain universeObject
 
-  /-- The result map is representable (in the CwR sense). This is what
-  makes it a LEGITIMATE type former — it has the correct universal
-  property for dependent elimination. -/
+  /-- The result map is representable in the CwR sense.  This records the
+  universal-property obligation for the type former. -/
   resultIsRepresentable : cwrCategory.representableMaps.member resultMap
 
 /-- A CwR extension: a conservative CwR-morphism that adds new type formers
@@ -88,7 +211,7 @@ structure CwRExtension (baseCwR : RepresentableMapCategory.{u, v}) where
   already representable in base. Existing programs don't change type. -/
   isConservative : inclusion.isConservative
 
-/-- Compose two extensions sequentially (adding Π then Σ). -/
+/-- Compose two extension records sequentially. -/
 def CwRExtension.compose
     {baseCwR : RepresentableMapCategory.{u, v}}
     (firstExtension : CwRExtension baseCwR)

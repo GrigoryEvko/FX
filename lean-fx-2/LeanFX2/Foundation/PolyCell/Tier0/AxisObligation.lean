@@ -16,59 +16,90 @@ inductive FireTriangleLeg : Type where
   | effects
   deriving DecidableEq, Repr
 
+/-- Finite status for a metatheoretic capability in the current ledger.
+
+This is intentionally not proof of the theorem named by the field. It is the
+computable capability bound used by profile-extension bookkeeping. -/
+inductive CapabilityStatus where
+  | available
+  | unavailable
+  deriving DecidableEq, Repr
+
+def CapabilityStatus.rank : CapabilityStatus → Nat
+  | .available => 1
+  | .unavailable => 0
+
+def CapabilityStatus.ofRank : Nat → CapabilityStatus
+  | 1 => .available
+  | _ => .unavailable
+
+def CapabilityStatus.meet (statusA statusB : CapabilityStatus) :
+    CapabilityStatus :=
+  CapabilityStatus.ofRank (Nat.min statusA.rank statusB.rank)
+
+theorem CapabilityStatus.meet_comm
+    (statusA statusB : CapabilityStatus) :
+    statusA.meet statusB = statusB.meet statusA := by
+  cases statusA <;> cases statusB <;> rfl
+
+theorem CapabilityStatus.meet_idempotent
+    (status : CapabilityStatus) :
+    status.meet status = status := by
+  cases status <;> rfl
+
 structure MetatheoreticCapabilities where
-  preservesCanonicity : Bool
-  preservesNormalization : Bool
-  preservesParametricity : Bool
-  preservesSubjectReduction : Bool
-  preservesConfluence : Bool
-  preservesStrongNormalization : Bool
-  preservesDecidableConversion : Bool
-  preservesDecidableTypechecking : Bool
+  canonicityStatus : CapabilityStatus
+  normalizationStatus : CapabilityStatus
+  parametricityStatus : CapabilityStatus
+  subjectReductionStatus : CapabilityStatus
+  confluenceStatus : CapabilityStatus
+  strongNormalizationStatus : CapabilityStatus
+  decidableConversionStatus : CapabilityStatus
+  decidableTypecheckingStatus : CapabilityStatus
   deriving DecidableEq, Repr
 
 def MetatheoreticCapabilities.meet
     (capA capB : MetatheoreticCapabilities) :
     MetatheoreticCapabilities where
-  preservesCanonicity := capA.preservesCanonicity && capB.preservesCanonicity
-  preservesNormalization := capA.preservesNormalization && capB.preservesNormalization
-  preservesParametricity := capA.preservesParametricity && capB.preservesParametricity
-  preservesSubjectReduction := capA.preservesSubjectReduction && capB.preservesSubjectReduction
-  preservesConfluence := capA.preservesConfluence && capB.preservesConfluence
-  preservesStrongNormalization := capA.preservesStrongNormalization && capB.preservesStrongNormalization
-  preservesDecidableConversion := capA.preservesDecidableConversion && capB.preservesDecidableConversion
-  preservesDecidableTypechecking := capA.preservesDecidableTypechecking && capB.preservesDecidableTypechecking
+  canonicityStatus := capA.canonicityStatus.meet capB.canonicityStatus
+  normalizationStatus := capA.normalizationStatus.meet capB.normalizationStatus
+  parametricityStatus := capA.parametricityStatus.meet capB.parametricityStatus
+  subjectReductionStatus := capA.subjectReductionStatus.meet capB.subjectReductionStatus
+  confluenceStatus := capA.confluenceStatus.meet capB.confluenceStatus
+  strongNormalizationStatus := capA.strongNormalizationStatus.meet capB.strongNormalizationStatus
+  decidableConversionStatus := capA.decidableConversionStatus.meet capB.decidableConversionStatus
+  decidableTypecheckingStatus := capA.decidableTypecheckingStatus.meet capB.decidableTypecheckingStatus
 
 instance : Min MetatheoreticCapabilities where
   min := MetatheoreticCapabilities.meet
 
 def MetatheoreticCapabilities.top : MetatheoreticCapabilities where
-  preservesCanonicity := true
-  preservesNormalization := true
-  preservesParametricity := true
-  preservesSubjectReduction := true
-  preservesConfluence := true
-  preservesStrongNormalization := true
-  preservesDecidableConversion := true
-  preservesDecidableTypechecking := true
+  canonicityStatus := .available
+  normalizationStatus := .available
+  parametricityStatus := .available
+  subjectReductionStatus := .available
+  confluenceStatus := .available
+  strongNormalizationStatus := .available
+  decidableConversionStatus := .available
+  decidableTypecheckingStatus := .available
 
 def MetatheoreticCapabilities.bot : MetatheoreticCapabilities where
-  preservesCanonicity := false
-  preservesNormalization := false
-  preservesParametricity := false
-  preservesSubjectReduction := false
-  preservesConfluence := false
-  preservesStrongNormalization := false
-  preservesDecidableConversion := false
-  preservesDecidableTypechecking := false
+  canonicityStatus := .unavailable
+  normalizationStatus := .unavailable
+  parametricityStatus := .unavailable
+  subjectReductionStatus := .unavailable
+  confluenceStatus := .unavailable
+  strongNormalizationStatus := .unavailable
+  decidableConversionStatus := .unavailable
+  decidableTypecheckingStatus := .unavailable
 
 theorem MetatheoreticCapabilities.meet_comm (capA capB : MetatheoreticCapabilities) :
     capA.meet capB = capB.meet capA := by
-  cases capA; cases capB; unfold meet; congr 1 <;> apply Bool.and_comm
+  cases capA; cases capB; unfold meet; congr 1 <;> apply CapabilityStatus.meet_comm
 
 theorem MetatheoreticCapabilities.meet_idempotent (cap : MetatheoreticCapabilities) :
     cap.meet cap = cap := by
-  cases cap; unfold meet; congr 1 <;> apply Bool.and_self
+  cases cap; unfold meet; congr 1 <;> apply CapabilityStatus.meet_idempotent
 
 inductive ConsistencyStrength : Type where
   | leanCore

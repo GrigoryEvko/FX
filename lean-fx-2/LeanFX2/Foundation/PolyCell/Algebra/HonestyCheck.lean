@@ -4,7 +4,8 @@ import LeanFX2.Foundation.PolyCell.Algebra.IsUnivalent
 
 Verify the SIMPLEST case of the distributive-law-from-univalence theorem:
 the identity polynomial `y` (Position = Unit, Direction = fun () => Unit)
-is univalent, and Theorem 4.2 applies trivially.
+is pointwise subterminal, and the current forward-map equality lemma
+applies trivially.
 
 If this FAILS, our CartesianLens/IsUnivalent definitions are broken.
 -/
@@ -19,6 +20,7 @@ example : IsUnivalent Poly.constant := constant_isUnivalent
 
 -- Step 3: Build a PolynomialUniverse from Poly.identity
 def identityUniverse : PolynomialUniverse where
+  constructionLevel := .pointwiseSubterminality
   poly := Poly.identity
   univalent := identity_isUnivalent
 
@@ -41,24 +43,24 @@ def identityFullUniverse : FullPolynomialUniverse where
   sigmaClosed := identitySigmaClosed
   piClosed := identityPiClosed
 
--- Step 8: THE KEY TEST — Theorem 4.2 applies and gives distributive law
--- Any two Cartesian lenses to the identity polynomial agree on forward.
--- This is trivial (both must map to ()) but demonstrates the MECHANISM.
+-- Step 8: The current forward-map equality lemma applies.
+-- Any two Cartesian lenses to the identity polynomial agree pointwise on forward.
+-- This is trivial (both must map to ()) but checks the mechanism.
 example (source : Poly)
-    (lensA lensB : CartesianLens source Poly.identity) :
-    lensA.toLens.forward = lensB.toLens.forward :=
-  distributiveLaw_from_univalence identityFullUniverse source lensA lensB
+    (lensA lensB : CartesianLens source Poly.identity)
+    (position : source.Position) :
+    lensA.toLens.forward position = lensB.toLens.forward position :=
+  distributiveLaw_from_univalence identityFullUniverse source lensA lensB position
 
--- Step 9: Verify the theorem body is real (not sorry, not axiom)
+-- Step 9: Verify the theorem bodies are real kernel terms.
 #print axioms identityFullUniverse
 #print axioms distributiveLaw_from_univalence
 
 -- HONESTY ASSESSMENT: The identity polynomial case is trivially true
 -- (Unit has only one element, so all forward maps must agree at ()).
--- The NON-TRIVIAL case is fxProfile's polynomial with 78 positions —
--- there, univalence requires that the 78-Generator polynomial is
--- subterminal (which it IS, because we encode it as Unit-position
--- with Fin 78 directions, not Fin 78 positions with Unit directions).
--- This design choice (Unit positions) is what makes univalence provable.
+-- The current FX algebra polynomial is also Unit-position, with Fin 78
+-- directions.  That gives a real pointwise subterminality proof, but it
+-- is not the planned 78-generator coproduct model and must not be used as
+-- evidence for the later closure or monad-distributive-law packages.
 
 end LeanFX2.Foundation.PolyCell.Algebra
