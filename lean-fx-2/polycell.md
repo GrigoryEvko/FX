@@ -4607,6 +4607,7 @@ representable and computably rejected.
 | TCB.7l structural thinness seed | `b3e745f3` | Certified thinness is now an intrinsic predicate generated only by identity cells and vertical composition of already thin cells.  Thin FX views exist for seed identities and the seed identity composite; arbitrary generating steps are not thin. |
 | TCB.7m endpoint-indexed certified arrows | `6d666e98` | Certified positive-dimensional FX arrows now carry source and target endpoints in the view type itself.  Vertical composition requires a definitionally shared middle endpoint, and thin arrows preserve the same endpoint discipline.  This is still structural: no legacy `Step`/`Conv` bridge, no raw dispatcher, and no generating-step thinness. |
 | TCB.7n arrow endpoint theorem heads | `4673b627` | Certified and certified-thin arrows now have generic audited source/target theorems for identity and vertical composition.  These are theorem heads over already certified data, not new raw ingress or new thinness power. |
+| TCB.7o multi-sort thin identity arrows | `b7b203f6` | Endpoint-indexed thin identity arrows are now exposed for the seed type, context, and mode cells, matching the existing term identity arrow discipline.  This confirms the certified view layer is not term-only; type/context/mode cells use the same endpoint-indexed substrate without any new raw ingress. |
 
 **Deliverables (NEW only):**
 
@@ -4637,9 +4638,10 @@ representable and computably rejected.
 | TCB.7l structural thinness seed | `Foundation/PolyCell/Core/Certified.lean`, `Foundation/PolyCell/FXProfile/CertifiedViews.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds `PolyCell.ThinCell` with exactly two constructors: identity and vertical composition of thin cells.  Adds certified thin FX views for seed identities and the seed term identity composite. | No arbitrary generating step is classified thin; thin views still carry the underlying certified cell and audited definitional raw/source/target theorems. |
 | TCB.7m endpoint-indexed certified arrows | `Foundation/PolyCell/FXProfile/CertifiedViews.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds `CertifiedFXArrow` and `CertifiedFXThinArrow`, where the source and target endpoints are parameters of the view type. | Arrow identity and vertical composition erase definitionally to raw identity and raw `compV`; vertical composition type-checks only when the middle endpoint is shared; thin arrows compose only from thin arrows. |
 | TCB.7n arrow endpoint theorem heads | `Foundation/PolyCell/FXProfile/CertifiedViews.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds generic theorem heads for source and target endpoints of certified-arrow identity and vertical composition, mirrored for certified thin arrows. | Every theorem is definitional and audit-gated; no new certified constructors, raw dispatchers, or operational classifications are added. |
-| TCB.7o certified FX operational views | `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | Future `FXStep`, `FXConv`, `FXCdLemma` as projections of certified positive-dimensional cells and thinness certificates. | Existing raw subtype views remain compatibility-only; new operational code uses certified views only after the corresponding positive-dimensional certification, thinness data, and operational predicates exist. |
+| TCB.7o multi-sort thin identity arrows | `Foundation/PolyCell/FXProfile/CertifiedViews.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds type/context/mode endpoint-indexed arrow aliases and seed thin identity arrows with definitional raw/source/target theorems. | The new arrows are derived only from already certified seed cells and structural identity thinness; no checker acceptance domain changes. |
+| TCB.7p certified FX operational views | `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | Future `FXStep`, `FXConv`, `FXCdLemma` as projections of certified positive-dimensional cells and thinness certificates. | Existing raw subtype views remain compatibility-only; new operational code uses certified views only after the corresponding positive-dimensional certification, thinness data, and operational predicates exist. |
 
-**Implementation order after TCB.7n:**
+**Implementation order after TCB.7o:**
 
 1.  Do not broaden application by adding more one-off parent
     constructors.  The next application slice is a propext-free certified
@@ -4676,10 +4678,10 @@ representable and computably rejected.
 7.  Extend `CertifiedViews.lean` only as the checker gains real
     certified inhabitants: context/type/term/mode seed views,
     positive-dimensional endpoint projections, endpoint-indexed arrows,
-    and structural thin views are live; step, conversion, and coherence
-    views must wait for positive-dimensional certification plus
-    operational data.  Keep old raw subtype views as compatibility
-    shims.
+    multi-sort identity thin arrows, and structural thin views are live;
+    step, conversion, and coherence views must wait for
+    positive-dimensional certification plus operational data.  Keep old
+    raw subtype views as compatibility shims.
 8.  Legacy bridge: connect the existing intrinsic kernel judgments to
     certified views only after the checker has nonempty accepted
     witnesses and the audit proves every new declaration axiom-free.
