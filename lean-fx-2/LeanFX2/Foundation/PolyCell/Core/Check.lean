@@ -212,6 +212,32 @@ def screenChildResultAs?
         Except.error .wrongChildShape
   | Except.error _ => Except.error .wrongChildShape
 
+/-- Screen every raw child descriptor against its declared child spec.
+
+The caller supplies the recursive raw-cell screen.  This keeps descriptor
+screening generic without making it construct certified child cells. -/
+def screenRawChildDescriptorsWith? {profile : PolyProfile}
+    (screenRawChild :
+      {childDimension : CellDim} →
+        Nat → PolyTerm profile childDimension →
+          Except CellCheckRejection CellSort)
+    (parentScope : Nat) :
+    {childSpecs : List ChildSpec} →
+      RawChildDescriptors profile parentScope childSpecs →
+        Except CellCheckRejection Unit
+  | [], CellChildren.nil => Except.ok ()
+  | childSpec :: _remainingSpecs,
+      CellChildren.cons childDescriptor remainingDescriptors =>
+        match
+            screenChildResultAs? childSpec.cellSort
+              (screenRawChild (childSpec.expectedScope parentScope)
+                childDescriptor.rawCell),
+            screenRawChildDescriptorsWith? screenRawChild parentScope
+              remainingDescriptors with
+        | Except.ok (), Except.ok () => Except.ok ()
+        | Except.error rejection, _ => Except.error rejection
+        | _, Except.error rejection => Except.error rejection
+
 /-- Fuelled recursive executable screen for raw cells at any dimension.
 
 The result is only the inferred sort.  It deliberately does not construct a
@@ -229,38 +255,14 @@ def screenRawCellWithFuel? {profile : PolyProfile}
       | .atom cellId payload =>
           if Nat.beq cellId applicationGeneratorSpec.cellId then
             match decodeApplicationPayload? (profile := profile) scope payload with
-            | Except.ok _children =>
-                if payload = NegativeProbes.applicationVarZeroVarOnePayload then
-                  match
-                      screenChildResultAs? .term
-                        (screenRawCellWithFuel? fuel scope
-                          (NegativeProbes.seedTermAtom profile)),
-                      screenChildResultAs? .term
-                        (screenRawCellWithFuel? fuel scope
-                          (NegativeProbes.alternateTermAtom profile)) with
-                  | Except.ok (), Except.ok () =>
-                      Except.ok applicationGeneratorSpec.cellSort
-                  | Except.error rejection, _ =>
-                      Except.error rejection
-                  | _, Except.error rejection =>
-                      Except.error rejection
-                else if payload =
-                    NegativeProbes.applicationTypeAsFunctionPayload then
-                  match
-                      screenChildResultAs? .term
-                        (screenRawCellWithFuel? fuel scope
-                          (NegativeProbes.seedTypeAtom profile)),
-                      screenChildResultAs? .term
-                        (screenRawCellWithFuel? fuel scope
-                          (NegativeProbes.seedTermAtom profile)) with
-                  | Except.ok (), Except.ok () =>
-                      Except.ok applicationGeneratorSpec.cellSort
-                  | Except.error rejection, _ =>
-                      Except.error rejection
-                  | _, Except.error rejection =>
-                      Except.error rejection
-                else
-                  Except.error .badPayload
+            | Except.ok children =>
+                match
+                    screenRawChildDescriptorsWith? (profile := profile)
+                      (fun childScope childRaw =>
+                        screenRawCellWithFuel? fuel childScope childRaw)
+                      scope children with
+                | Except.ok () => Except.ok applicationGeneratorSpec.cellSort
+                | Except.error rejection => Except.error rejection
             | Except.error rejection => Except.error rejection
           else
             match lookupGeneratorSpec? cellId with
@@ -508,6 +510,30 @@ theorem decodeApplicationPayload?_typeAsFunction
         (RawChildDescriptors.application
           (NegativeProbes.seedTypeAtom profile)
           (NegativeProbes.seedTermAtom profile)) := rfl
+
+theorem screenRawChildDescriptorsWith?_applicationVarZeroVarOne
+    {profile : PolyProfile} :
+    screenRawChildDescriptorsWith? (profile := profile)
+      (fun {childDimension} childScope
+          (childRaw : PolyTerm profile childDimension) =>
+        screenRawCellWithFuel? 63 childScope childRaw)
+      NegativeProbes.defaultInferScope
+      (RawChildDescriptors.application
+        (NegativeProbes.seedTermAtom profile)
+        (NegativeProbes.alternateTermAtom profile)) =
+      Except.ok () := rfl
+
+theorem screenRawChildDescriptorsWith?_applicationTypeAsFunction_rejects
+    {profile : PolyProfile} :
+    screenRawChildDescriptorsWith? (profile := profile)
+      (fun {childDimension} childScope
+          (childRaw : PolyTerm profile childDimension) =>
+        screenRawCellWithFuel? 63 childScope childRaw)
+      NegativeProbes.defaultInferScope
+      (RawChildDescriptors.application
+        (NegativeProbes.seedTypeAtom profile)
+        (NegativeProbes.seedTermAtom profile)) =
+      Except.error .wrongChildShape := rfl
 
 theorem screenRawCell0?_applicationVarZeroVarOne
     {profile : PolyProfile} :

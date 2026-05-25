@@ -241,6 +241,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenAtomPayload?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenEndpointResultAs?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenChildResultAs?
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawChildDescriptorsWith?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCellWithFuel?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawCellSort?
@@ -274,6 +275,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell0As?_linearMode
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.decodeApplicationPayload?_varZeroVarOne
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.decodeApplicationPayload?_typeAsFunction
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawChildDescriptorsWith?_applicationVarZeroVarOne
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawChildDescriptorsWith?_applicationTypeAsFunction_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell0?_applicationVarZeroVarOne
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell0As?_applicationVarZeroVarOne
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell0?_applicationTypeAsFunction_rejects
