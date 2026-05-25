@@ -1,6 +1,7 @@
 import LeanFX2.Foundation.PolyCell.Tier0.FireTriangle
 import LeanFX2.Foundation.PolyCell.Tier0.RepresentableMapCategory
 import LeanFX2.Foundation.PolyCell.Tier0.CwRExtension
+import LeanFX2.Foundation.PolyCell.Tier0.InternalSconing
 /-!
 # PolyCell Tier 0 — Zero-Axiom Audit Gate
 
@@ -29,3 +30,8 @@ This is the PolyCell-specific enforcement of the zero-axiom discipline.
 #print axioms LeanFX2.Foundation.PolyCell.Tier0.CwRExtension.compose
 #print axioms LeanFX2.Foundation.PolyCell.Tier0.CwRExtension.identity
 #print axioms LeanFX2.Foundation.PolyCell.Tier0.CwRExtension.typeFormerCount
+
+-- Tier0/InternalSconing.lean
+#print axioms LeanFX2.Foundation.PolyCell.Tier0.SconingMorphism.identity
+#print axioms LeanFX2.Foundation.PolyCell.Tier0.SconingMorphism.comp
+#print axioms LeanFX2.Foundation.PolyCell.Tier0.SconingObject.tautological
