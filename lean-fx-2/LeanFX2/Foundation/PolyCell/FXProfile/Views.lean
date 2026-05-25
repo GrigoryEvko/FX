@@ -1318,6 +1318,21 @@ private theorem nat_add_sub_cancel_left_structural (offset value : Nat) :
       rw [Nat.succ_add, Nat.succ_sub_succ_eq_sub]
       exact offsetInduction
 
+private theorem nat_add_sub_cancel_of_le_structural {offset value : Nat}
+    (hasLowerBound : offset ≤ value) :
+    offset + (value - offset) = value := by
+  induction offset generalizing value with
+  | zero =>
+      rw [Nat.zero_add, Nat.sub_zero]
+  | succ previousOffset offsetInduction =>
+      cases value with
+      | zero =>
+          cases hasLowerBound
+      | succ previousValue =>
+          rw [Nat.succ_sub_succ_eq_sub]
+          rw [Nat.succ_add]
+          rw [offsetInduction (Nat.le_of_succ_le_succ hasLowerBound)]
+
 /-- The checked local constructor index of an FX term atom. -/
 def FXTerm.constructorIndex (term : FXTerm) : Fin termGeneratorCount :=
   match term with
@@ -1418,6 +1433,24 @@ theorem FXTerm.constructorIndex_val_ofConstructorIndex
     (FXTerm.ofConstructorIndex constructorIndex payload).constructorIndex.val =
       constructorIndex.val := rfl
 
+theorem FXTerm.cellId_eq_constructorIndex_val (term : FXTerm) :
+    term.cellId = term.constructorIndex.val := by
+  cases term with
+  | mk cell hRange =>
+      cases cell with
+      | atom cellId payload =>
+          rfl
+
+theorem FXTerm.toCell_ofConstructorIndex_constructorIndex_payload
+    (term : FXTerm) :
+    (FXTerm.ofConstructorIndex term.constructorIndex term.payload).toCell =
+      term.toCell := by
+  cases term with
+  | mk cell hRange =>
+      cases cell with
+      | atom cellId payload =>
+          rfl
+
 theorem FXType.cellId_ofConstructorIndex
     (constructorIndex : Fin typeGeneratorCount) (payload : Nat) :
     (FXType.ofConstructorIndex constructorIndex payload).cellId =
@@ -1437,5 +1470,65 @@ theorem FXType.constructorIndex_val_ofConstructorIndex
       PolyTerm.firstTypeCellId = constructorIndex.val
   exact nat_add_sub_cancel_left_structural
     PolyTerm.firstTypeCellId constructorIndex.val
+
+theorem FXType.cellId_eq_firstTypeCellId_add_constructorIndex_val
+    (typeCell : FXType) :
+    typeCell.cellId =
+      PolyTerm.firstTypeCellId + typeCell.constructorIndex.val := by
+  cases typeCell with
+  | mk cell hRange =>
+      cases cell with
+      | atom cellId payload =>
+          change
+            cellId =
+              PolyTerm.firstTypeCellId +
+                (cellId - PolyTerm.firstTypeCellId)
+          change
+            (decide (PolyTerm.firstTypeCellId ≤ cellId) &&
+              decide (cellId < PolyTerm.typeCellIdLimit)) = true at hRange
+          have hasLowerBoundDecide :
+              decide (PolyTerm.firstTypeCellId ≤ cellId) = true := by
+            cases hasLowerBool :
+                decide (PolyTerm.firstTypeCellId ≤ cellId) with
+            | false =>
+                rw [hasLowerBool] at hRange
+                cases hRange
+            | true =>
+                rfl
+          have hasLowerBound : PolyTerm.firstTypeCellId ≤ cellId :=
+            of_decide_eq_true hasLowerBoundDecide
+          rw [nat_add_sub_cancel_of_le_structural hasLowerBound]
+
+theorem FXType.toCell_ofConstructorIndex_constructorIndex_payload
+    (typeCell : FXType) :
+    (FXType.ofConstructorIndex
+        typeCell.constructorIndex typeCell.payload).toCell =
+      typeCell.toCell := by
+  cases typeCell with
+  | mk cell hRange =>
+      cases cell with
+      | atom cellId payload =>
+          change
+            (PolyTerm.atom
+                (PolyTerm.firstTypeCellId +
+                  (cellId - PolyTerm.firstTypeCellId))
+                payload :
+              FXCellAt 0) =
+              .atom cellId payload
+          change
+            (decide (PolyTerm.firstTypeCellId ≤ cellId) &&
+              decide (cellId < PolyTerm.typeCellIdLimit)) = true at hRange
+          have hasLowerBoundDecide :
+              decide (PolyTerm.firstTypeCellId ≤ cellId) = true := by
+            cases hasLowerBool :
+                decide (PolyTerm.firstTypeCellId ≤ cellId) with
+            | false =>
+                rw [hasLowerBool] at hRange
+                cases hRange
+            | true =>
+                rfl
+          have hasLowerBound : PolyTerm.firstTypeCellId ≤ cellId :=
+            of_decide_eq_true hasLowerBoundDecide
+          rw [nat_add_sub_cancel_of_le_structural hasLowerBound]
 
 end LeanFX2.Foundation.PolyCell.FXProfile
