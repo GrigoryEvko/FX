@@ -1919,6 +1919,54 @@ theorem cellId_classifyDimZeroCellId (cellId : CellId) :
     · rw [dif_neg hasCurrentRange]
       rfl
 
+theorem classifyDimZeroCellId_ofTermConstructorName
+    (constructorName : FXTermConstructorName) :
+    classifyDimZeroCellId constructorName.cellId =
+      FXDimZeroCellIdClass.termConstructor constructorName.constructorIndex := by
+  cases constructorName <;> rfl
+
+theorem classifyDimZeroCellId_ofTypeConstructorName
+    (constructorName : FXTypeConstructorName) :
+    classifyDimZeroCellId constructorName.cellId =
+      FXDimZeroCellIdClass.typeConstructor constructorName.constructorIndex := by
+  cases constructorName <;> rfl
+
+theorem FXDimZeroCellIdClass.isTermConstructor_classifyTermConstructorName
+    (constructorName : FXTermConstructorName) :
+    (classifyDimZeroCellId constructorName.cellId).isTermConstructor =
+      true := by
+  cases constructorName <;> rfl
+
+theorem FXDimZeroCellIdClass.isTypeConstructor_classifyTermConstructorName
+    (constructorName : FXTermConstructorName) :
+    (classifyDimZeroCellId constructorName.cellId).isTypeConstructor =
+      false := by
+  cases constructorName <;> rfl
+
+theorem FXDimZeroCellIdClass.isOutsideCurrentGeneratorRange_classifyTermConstructorName
+    (constructorName : FXTermConstructorName) :
+    (classifyDimZeroCellId constructorName.cellId).isOutsideCurrentGeneratorRange =
+      false := by
+  cases constructorName <;> rfl
+
+theorem FXDimZeroCellIdClass.isTermConstructor_classifyTypeConstructorName
+    (constructorName : FXTypeConstructorName) :
+    (classifyDimZeroCellId constructorName.cellId).isTermConstructor =
+      false := by
+  cases constructorName <;> rfl
+
+theorem FXDimZeroCellIdClass.isTypeConstructor_classifyTypeConstructorName
+    (constructorName : FXTypeConstructorName) :
+    (classifyDimZeroCellId constructorName.cellId).isTypeConstructor =
+      true := by
+  cases constructorName <;> rfl
+
+theorem FXDimZeroCellIdClass.isOutsideCurrentGeneratorRange_classifyTypeConstructorName
+    (constructorName : FXTypeConstructorName) :
+    (classifyDimZeroCellId constructorName.cellId).isOutsideCurrentGeneratorRange =
+      false := by
+  cases constructorName <;> rfl
+
 /-- The checked local constructor index of an FX term atom. -/
 def FXTerm.constructorIndex (term : FXTerm) : Fin termGeneratorCount :=
   match term with
