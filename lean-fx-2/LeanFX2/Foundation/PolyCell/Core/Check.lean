@@ -16,6 +16,26 @@ namespace LeanFX2.Foundation.PolyCell.Core
 
 namespace Check
 
+/-- Boolean equality test for Nat, local to the PolyCell checker TCB. -/
+def hasSameNat : Nat → Nat → Bool
+  | 0, secondNumber =>
+      match secondNumber with
+      | 0 => true
+      | _ + 1 => false
+  | firstNumber + 1, secondNumber =>
+      match secondNumber with
+      | 0 => false
+      | secondNumber + 1 => hasSameNat firstNumber secondNumber
+
+/-- Local Nat equality recognizes identical inputs by structural recursion. -/
+theorem hasSameNat_self (number : Nat) :
+    hasSameNat number number = true := by
+  induction number with
+  | zero => rfl
+  | succ _ numberInduction =>
+      dsimp [hasSameNat]
+      exact numberInduction
+
 /-- Boolean equality test for Nat lists, written without a typeclass instance. -/
 def hasSameNatList : List Nat → List Nat → Bool
   | [], secondList =>
@@ -26,7 +46,17 @@ def hasSameNatList : List Nat → List Nat → Bool
       match secondList with
       | [] => false
       | secondHead :: secondTail =>
-          Nat.beq firstHead secondHead && hasSameNatList firstTail secondTail
+          hasSameNat firstHead secondHead && hasSameNatList firstTail secondTail
+
+/-- Raw-code equality recognizes syntactically identical Nat lists. -/
+theorem hasSameNatList_self (codes : List Nat) :
+    hasSameNatList codes codes = true := by
+  induction codes with
+  | nil => rfl
+  | cons codeHead remainingCodes remainingInduction =>
+      dsimp [hasSameNatList]
+      rw [hasSameNat_self, remainingInduction]
+      rfl
 
 /-- Prefix-coded raw syntax code computed by the existing fold.
 
@@ -88,6 +118,104 @@ structure CertifiedRawCell (profile : PolyProfile) (scope : Nat)
   /-- Certified cell over the original raw input. -/
   certifiedCell :
     PolyCell profile cellSort dimension scope cellBoundary rawCell
+
+/-- Unindexed certified result returned by the executable ingress.
+
+The result carries an actual `PolyCell` plus a computable raw-code preservation
+certificate.  This avoids using dependent eliminators over arbitrary raw input
+in the checker itself; concrete seed packages still use `CertifiedRawCell`
+when the raw input is known definitionally. -/
+structure CertifiedRawCellResult (profile : PolyProfile) (scope : Nat) where
+  /-- Dimension of the certified raw cell. -/
+  cellDimension : CellDim
+  /-- Prefix code of the raw input that produced this result. -/
+  inputCode : List Nat
+  /-- Certified raw cell returned by the ingress. -/
+  rawCell : PolyTerm profile cellDimension
+  /-- Sort inferred for the certified cell. -/
+  cellSort : CellSort
+  /-- Boundary inferred for the certified cell. -/
+  cellBoundary : CellBoundary profile cellSort cellDimension scope
+  /-- Certified cell over `rawCell`. -/
+  certifiedCell :
+    PolyCell profile cellSort cellDimension scope cellBoundary rawCell
+  /-- The returned raw cell has the same prefix code as the input. -/
+  hasInputCode :
+    hasSameNatList inputCode (rawCellCode rawCell) = true
+
+/-- Package a raw-indexed certificate into the executable result type. -/
+def certifiedRawCellResultOfPackage {profile : PolyProfile} {scope : Nat}
+    {dimension : CellDim} {rawCell : PolyTerm profile dimension}
+    (inputCode : List Nat)
+    (certifiedRawCell : CertifiedRawCell profile scope rawCell)
+    (hasInputCode :
+      hasSameNatList inputCode (rawCellCode rawCell) = true) :
+    CertifiedRawCellResult profile scope where
+  cellDimension := dimension
+  inputCode := inputCode
+  rawCell := rawCell
+  cellSort := certifiedRawCell.cellSort
+  cellBoundary := certifiedRawCell.cellBoundary
+  certifiedCell := certifiedRawCell.certifiedCell
+  hasInputCode := hasInputCode
+
+/-- Construct variable payload evidence by recursion, avoiding propositional
+decidable `if` over `<`.
+
+This is the kernel-clean route for variables: successful recursion carries an
+actual `<` proof used by `AtomPayloadEvidence.variable`; failure carries no
+proof and cannot enter the certified layer. -/
+def variablePayloadEvidence? :
+    (scope payload : Nat) →
+      Option (AtomPayloadEvidence variableGeneratorSpec scope payload)
+  | 0, _ => none
+  | scope + 1, 0 =>
+      some (AtomPayloadEvidence.variable (Nat.zero_lt_succ scope))
+  | scope + 1, payload + 1 =>
+      match variablePayloadEvidence? scope payload with
+      | some (AtomPayloadEvidence.variable hasIndexWithinScope) =>
+          some (AtomPayloadEvidence.variable
+            (Nat.succ_lt_succ hasIndexWithinScope))
+      | none => none
+
+/-- Certified package for any variable payload whose de Bruijn index is
+inside the current scope. -/
+def certifiedVariablePackage {profile : PolyProfile} {scope index : Nat}
+    (hasIndexWithinScope : index < scope) :
+    CertifiedRawCell profile scope
+      (PolyTerm.atom variableGeneratorSpec.cellId index) where
+  cellSort := .term
+  cellBoundary := ()
+  certifiedCell :=
+    PolyCell.variableCell (profile := profile)
+      (scope := scope) (index := index) hasIndexWithinScope
+
+/-- Certified package for the nullary unit-type atom at any scope. -/
+def certifiedUnitTypePackage {profile : PolyProfile} {scope : Nat} :
+    CertifiedRawCell profile scope
+      (PolyTerm.atom unitTypeGeneratorSpec.cellId 0) where
+  cellSort := .type
+  cellBoundary := ()
+  certifiedCell :=
+    PolyCell.unitType (profile := profile) (scope := scope)
+
+/-- Certified package for the nullary empty-context atom at any scope. -/
+def certifiedContextEmptyPackage {profile : PolyProfile} {scope : Nat} :
+    CertifiedRawCell profile scope
+      (PolyTerm.atom contextEmptyGeneratorSpec.cellId 0) where
+  cellSort := .context
+  cellBoundary := ()
+  certifiedCell :=
+    PolyCell.contextEmpty (profile := profile) (scope := scope)
+
+/-- Certified package for the nullary linear-mode atom at any scope. -/
+def certifiedLinearModePackage {profile : PolyProfile} {scope : Nat} :
+    CertifiedRawCell profile scope
+      (PolyTerm.atom linearModeGeneratorSpec.cellId 0) where
+  cellSort := .mode
+  cellBoundary := ()
+  certifiedCell :=
+    PolyCell.linearMode (profile := profile) (scope := scope)
 
 /-- Lookup the current supported dim-0 generator metadata by raw id. -/
 def lookupGeneratorSpec? (cellId : CellId) : Option KnownGeneratorSpec :=
@@ -439,6 +567,100 @@ def screenRawCell0As? {profile : PolyProfile}
     Except CellCheckRejection Unit :=
   screenRawCellAs? expectedSort scope rawCell
 
+/-- Convert a screen result into a certification-stage rejection.
+
+If the screen already found malformed input, preserve that reason.  If the
+screen accepts but the certified ingress has no constructor for this raw shape,
+reject explicitly as `unsupportedCertification`. -/
+def certificationRejectionAfterScreen? {profile : PolyProfile}
+    (scope : Nat) {dimension : CellDim}
+    (rawCell : PolyTerm profile dimension) : CellCheckRejection :=
+  match screenRawCell? scope rawCell with
+  | Except.ok _ => .unsupportedCertification
+  | Except.error rejection => rejection
+
+/-- Atom-level executable ingress for payload-evidenced generators.
+
+This accepts only atoms whose payload evidence is already implemented in the
+certified layer: in-scope variables, unit type, empty context, and linear
+mode.  All other raw cells remain representable but fail certification. -/
+def inferRawAtom? {profile : PolyProfile} (scope cellId payload : Nat) :
+    Except CellCheckRejection (CertifiedRawCellResult profile scope) :=
+  match cellId, payload with
+  | 0, payload =>
+      match variablePayloadEvidence? scope payload with
+      | some (AtomPayloadEvidence.variable hasIndexWithinScope) =>
+          Except.ok
+            (certifiedRawCellResultOfPackage
+              (profile := profile) (scope := scope)
+              (rawCellCode
+                (PolyTerm.atom (profile := profile)
+                  variableGeneratorSpec.cellId payload))
+              (certifiedVariablePackage (profile := profile)
+                hasIndexWithinScope)
+              (hasSameNatList_self _))
+      | none => Except.error .badPayload
+  | 78, 0 =>
+      Except.ok
+        (certifiedRawCellResultOfPackage
+          (profile := profile) (scope := scope)
+          (rawCellCode
+            (PolyTerm.atom (profile := profile) unitTypeGeneratorSpec.cellId 0))
+          (certifiedUnitTypePackage (profile := profile))
+          (hasSameNatList_self _))
+  | 103, 0 =>
+      Except.ok
+        (certifiedRawCellResultOfPackage
+          (profile := profile) (scope := scope)
+          (rawCellCode
+            (PolyTerm.atom (profile := profile)
+              contextEmptyGeneratorSpec.cellId 0))
+          (certifiedContextEmptyPackage (profile := profile))
+          (hasSameNatList_self _))
+  | 105, 0 =>
+      Except.ok
+        (certifiedRawCellResultOfPackage
+          (profile := profile) (scope := scope)
+          (rawCellCode
+            (PolyTerm.atom (profile := profile)
+              linearModeGeneratorSpec.cellId 0))
+          (certifiedLinearModePackage (profile := profile))
+          (hasSameNatList_self _))
+  | _, _ =>
+      Except.error
+        (certificationRejectionAfterScreen? scope
+          (PolyTerm.atom (profile := profile) cellId payload))
+
+/-- First raw-to-certified executable ingress.
+
+The accepted result contains a certified cell and a computable raw-code
+preservation certificate.  This slice certifies only dim-0 payload-evidenced
+atoms; positive-dimensional cells remain screen-only. -/
+def inferRawCell? {profile : PolyProfile} (scope : Nat)
+    (rawCell : PolyTerm profile 0) :
+    Except CellCheckRejection (CertifiedRawCellResult profile scope) :=
+  match rawCell with
+  | .atom cellId payload => inferRawAtom? (profile := profile) scope cellId payload
+
+/-- Expected-shape wrapper for the dim-0 certified ingress. -/
+def checkRawCellAs? {profile : PolyProfile} (expectedSort : CellSort)
+    (scope : Nat) (rawCell : PolyTerm profile 0) :
+    Except CellCheckRejection (CertifiedRawCellResult profile scope) :=
+  match screenRawCell? scope rawCell with
+  | Except.ok actualSort =>
+      if actualSort = expectedSort then
+        inferRawCell? scope rawCell
+      else
+        Except.error .wrongSort
+  | Except.error rejection => Except.error rejection
+
+/-- Extract the sort from an accepted certified-result computation. -/
+def certifiedResultSort? {profile : PolyProfile} {scope : Nat} :
+    Except CellCheckRejection (CertifiedRawCellResult profile scope) →
+      Option CellSort
+  | Except.ok certifiedResult => some certifiedResult.cellSort
+  | Except.error _ => none
+
 /-- Certified package for the first seed variable fixture. -/
 def certifiedSeedTermPackage {profile : PolyProfile} :
     CertifiedRawCell profile NegativeProbes.defaultInferScope
@@ -502,6 +724,39 @@ theorem lookupGeneratorSpec?_unsupportedBeforeLambda :
 theorem lookupRuleSpec?_termStep :
     lookupRuleSpec? termStepRuleSpec.ruleId =
       some ⟨termStepRuleSpec, SupportedRuleSpec.termStep⟩ := rfl
+
+theorem variablePayloadEvidence?_zero_scope_four :
+    variablePayloadEvidence? 4 0 =
+      some (AtomPayloadEvidence.variable (Nat.zero_lt_succ 3)) := rfl
+
+theorem variablePayloadEvidence?_four_scope_four :
+    variablePayloadEvidence? 4 4 = none := rfl
+
+theorem certifiedVariablePackage_raw {profile : PolyProfile}
+    {scope index : Nat} (hasIndexWithinScope : index < scope) :
+    (certifiedVariablePackage (profile := profile)
+      hasIndexWithinScope).certifiedCell.raw =
+      PolyTerm.atom (profile := profile) variableGeneratorSpec.cellId index :=
+  rfl
+
+theorem certifiedUnitTypePackage_raw {profile : PolyProfile} {scope : Nat} :
+    (certifiedUnitTypePackage (profile := profile)
+      (scope := scope)).certifiedCell.raw =
+      PolyTerm.atom (profile := profile) unitTypeGeneratorSpec.cellId 0 := rfl
+
+theorem certifiedContextEmptyPackage_raw {profile : PolyProfile}
+    {scope : Nat} :
+    (certifiedContextEmptyPackage (profile := profile)
+      (scope := scope)).certifiedCell.raw =
+      PolyTerm.atom (profile := profile) contextEmptyGeneratorSpec.cellId 0 :=
+  rfl
+
+theorem certifiedLinearModePackage_raw {profile : PolyProfile}
+    {scope : Nat} :
+    (certifiedLinearModePackage (profile := profile)
+      (scope := scope)).certifiedCell.raw =
+      PolyTerm.atom (profile := profile) linearModeGeneratorSpec.cellId 0 :=
+  rfl
 
 theorem screenRawCell0?_variable_zero_scope_four {profile : PolyProfile} :
     screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
@@ -689,6 +944,166 @@ theorem certifiedSeedContextPackage_raw {profile : PolyProfile} :
 theorem certifiedSeedModePackage_raw {profile : PolyProfile} :
     (certifiedSeedModePackage (profile := profile)).certifiedCell.raw =
       NegativeProbes.seedModeAtom profile := rfl
+
+theorem inferRawCell?_seedTerm_sort {profile : PolyProfile} :
+    certifiedResultSort?
+      (inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
+        (NegativeProbes.seedTermAtom profile)) =
+      some .term := by
+  change
+    certifiedResultSort?
+      (inferRawAtom? (profile := profile) 4 0 0) = some .term
+  rfl
+
+theorem inferRawCell?_seedType_sort {profile : PolyProfile} :
+    certifiedResultSort?
+      (inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
+        (NegativeProbes.seedTypeAtom profile)) =
+      some .type := by
+  change
+    certifiedResultSort?
+      (inferRawAtom? (profile := profile) 4 78 0) = some .type
+  rfl
+
+theorem inferRawCell?_seedContext_sort {profile : PolyProfile} :
+    certifiedResultSort?
+      (inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
+        (NegativeProbes.seedContextAtom profile)) =
+      some .context := by
+  change
+    certifiedResultSort?
+      (inferRawAtom? (profile := profile) 4 103 0) = some .context
+  rfl
+
+theorem inferRawCell?_seedMode_sort {profile : PolyProfile} :
+    certifiedResultSort?
+      (inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
+        (NegativeProbes.seedModeAtom profile)) =
+      some .mode := by
+  change
+    certifiedResultSort?
+      (inferRawAtom? (profile := profile) 4 105 0) = some .mode
+  rfl
+
+theorem checkRawCellAs?_seedTerm_sort {profile : PolyProfile} :
+    certifiedResultSort?
+      (checkRawCellAs? (profile := profile) .term
+        NegativeProbes.defaultInferScope
+        (NegativeProbes.seedTermAtom profile)) =
+      some .term := by
+  change
+    certifiedResultSort?
+      (inferRawAtom? (profile := profile) 4 0 0) = some .term
+  rfl
+
+theorem checkRawCellAs?_seedTerm_as_type_rejects
+    {profile : PolyProfile} :
+    checkRawCellAs? (profile := profile) .type
+      NegativeProbes.defaultInferScope
+      (NegativeProbes.seedTermAtom profile) =
+      Except.error .wrongSort := rfl
+
+theorem checkRawCellAs?_seedType_as_term_rejects
+    {profile : PolyProfile} :
+    checkRawCellAs? (profile := profile) .term
+      NegativeProbes.defaultInferScope
+      (NegativeProbes.seedTypeAtom profile) =
+      Except.error .wrongSort := rfl
+
+theorem checkRawCellAs?_seedContext_as_term_rejects
+    {profile : PolyProfile} :
+    checkRawCellAs? (profile := profile) .term
+      NegativeProbes.defaultInferScope
+      (NegativeProbes.seedContextAtom profile) =
+      Except.error .wrongSort := rfl
+
+theorem checkRawCellAs?_seedMode_as_term_rejects
+    {profile : PolyProfile} :
+    checkRawCellAs? (profile := profile) .term
+      NegativeProbes.defaultInferScope
+      (NegativeProbes.seedModeAtom profile) =
+      Except.error .wrongSort := rfl
+
+theorem inferRawCell?_unknownGenerator_rejects
+    {profile : PolyProfile} :
+    inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.unknownGeneratorRawCell profile) =
+      Except.error .unknownGenerator := by
+  change inferRawAtom? (profile := profile) 4 1 0 =
+    Except.error .unknownGenerator
+  rfl
+
+theorem inferRawCell?_outOfScopeVariable_rejects
+    {profile : PolyProfile} :
+    inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.outOfScopeVariableRawCell profile) =
+      Except.error .badPayload := by
+  change inferRawAtom? (profile := profile) 4 0 4 = Except.error .badPayload
+  rfl
+
+theorem inferRawCell?_badUnitTypePayload_rejects
+    {profile : PolyProfile} :
+    inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.badUnitTypePayloadRawCell profile) =
+      Except.error .badPayload := by
+  change inferRawAtom? (profile := profile) 4 78
+    NegativeProbes.badPayloadSentinel =
+    Except.error .badPayload
+  rfl
+
+theorem inferRawCell?_badLinearModePayload_rejects
+    {profile : PolyProfile} :
+    inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.badLinearModePayloadRawCell profile) =
+      Except.error .badPayload := by
+  change inferRawAtom? (profile := profile) 4 105
+    NegativeProbes.badPayloadSentinel =
+    Except.error .badPayload
+  rfl
+
+theorem inferRawCell?_applicationVarZeroVarOne_rejects
+    {profile : PolyProfile} :
+    inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.applicationVarZeroVarOneRawCell profile) =
+      Except.error .unsupportedCertification := by
+  change
+    inferRawAtom? (profile := profile) 4 3
+      NegativeProbes.applicationVarZeroVarOnePayload =
+      Except.error .unsupportedCertification
+  rfl
+
+theorem inferRawCell?_applicationTypeAsFunction_rejects
+    {profile : PolyProfile} :
+    inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.applicationTypeAsFunctionRawCell profile) =
+      Except.error .wrongChildShape := by
+  change
+    inferRawAtom? (profile := profile) 4 3
+      NegativeProbes.applicationTypeAsFunctionPayload =
+      Except.error .wrongChildShape
+  rfl
+
+theorem inferRawCell?_applicationTypeAsArgument_rejects
+    {profile : PolyProfile} :
+    inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.applicationTypeAsArgumentRawCell profile) =
+      Except.error .wrongChildShape := by
+  change
+    inferRawAtom? (profile := profile) 4 3
+      NegativeProbes.applicationTypeAsArgumentPayload =
+      Except.error .wrongChildShape
+  rfl
+
+theorem inferRawCell?_applicationOutOfScopeArgument_rejects
+    {profile : PolyProfile} :
+    inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.applicationOutOfScopeArgumentRawCell profile) =
+      Except.error .wrongChildShape := by
+  change
+    inferRawAtom? (profile := profile) 4 3
+      NegativeProbes.applicationOutOfScopeArgumentPayload =
+      Except.error .wrongChildShape
+  rfl
 
 theorem screenExpectedSort?_badUnitTypePayload_as_type_rejects
     {profile : PolyProfile} :
