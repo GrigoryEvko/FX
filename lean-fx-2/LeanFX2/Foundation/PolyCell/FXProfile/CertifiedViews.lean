@@ -154,6 +154,12 @@ def certifiedSeedTermStepIdentity :
   CertifiedFXCell.ofCertifiedRawCell
     (Check.certifiedSeedTermStepIdentityPackage (profile := fxProfile))
 
+/-- Certified vertical composite of the seed term identity with itself. -/
+def certifiedSeedTermIdentityTwice :
+    CertifiedFXDimOneTermCell NegativeProbes.defaultInferScope :=
+  CertifiedFXCell.ofCertifiedRawCell
+    (Check.certifiedSeedTermIdentityTwicePackage (profile := fxProfile))
+
 theorem certifiedSeedTerm_raw :
     certifiedSeedTerm.toRaw = NegativeProbes.seedTermAtom fxProfile := rfl
 
@@ -194,5 +200,11 @@ theorem certifiedSeedTermStepIdentity_raw :
     certifiedSeedTermStepIdentity.toRaw =
       PolyTerm.identity
         (NegativeProbes.termStepVarZeroVarOneRawCell fxProfile) := rfl
+
+theorem certifiedSeedTermIdentityTwice_raw :
+    certifiedSeedTermIdentityTwice.toRaw =
+      PolyTerm.compV
+        (PolyTerm.identity (NegativeProbes.seedTermAtom fxProfile))
+        (PolyTerm.identity (NegativeProbes.seedTermAtom fxProfile)) := rfl
 
 end LeanFX2.Foundation.PolyCell.FXProfile

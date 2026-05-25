@@ -656,6 +656,25 @@ def certifiedIdentityPackage {profile : PolyProfile} {scope : Nat}
   cellBoundary := (baseRaw, baseRaw)
   certifiedCell := PolyCell.identityCell certifiedBase.certifiedCell
 
+/-- Derived certified vertical composite over already certified cells.
+
+The shared middle endpoint is part of the argument types.  This operation does
+not inspect raw cells and does not certify arbitrary raw `compV` inputs. -/
+def certifiedVerticalCompositePackage {profile : PolyProfile}
+    {scope cellDimension : Nat} {cellSort : CellSort}
+    {sourceRaw middleRaw targetRaw : PolyTerm profile cellDimension}
+    {firstRaw secondRaw : PolyTerm profile (cellDimension + 1)}
+    (firstCell :
+      PolyCell profile cellSort (cellDimension + 1) scope
+        (sourceRaw, middleRaw) firstRaw)
+    (secondCell :
+      PolyCell profile cellSort (cellDimension + 1) scope
+        (middleRaw, targetRaw) secondRaw) :
+    CertifiedRawCell profile scope (PolyTerm.compV firstRaw secondRaw) where
+  cellSort := cellSort
+  cellBoundary := (sourceRaw, targetRaw)
+  certifiedCell := PolyCell.verticalCompositeCell firstCell secondCell
+
 /-- Infer the raw sort from current metadata without certifying the payload. -/
 def inferRawCellSort? {profile : PolyProfile} {dimension : CellDim} :
     PolyTerm profile dimension → Except CellCheckRejection CellSort
@@ -998,6 +1017,16 @@ def certifiedSeedTermStepIdentityPackage {profile : PolyProfile} :
   certifiedIdentityPackage
     (certifiedSeedTermStepPackage (profile := profile))
 
+/-- Certified vertical composite of the seed term identity with itself. -/
+def certifiedSeedTermIdentityTwicePackage {profile : PolyProfile} :
+    CertifiedRawCell profile NegativeProbes.defaultInferScope
+      (PolyTerm.compV
+        (PolyTerm.identity (NegativeProbes.seedTermAtom profile))
+        (PolyTerm.identity (NegativeProbes.seedTermAtom profile))) :=
+  certifiedVerticalCompositePackage
+    (certifiedSeedTermIdentityPackage (profile := profile)).certifiedCell
+    (certifiedSeedTermIdentityPackage (profile := profile)).certifiedCell
+
 theorem lookupGeneratorSpec?_variable :
     lookupGeneratorSpec? variableGeneratorSpec.cellId =
       some ⟨variableGeneratorSpec, SupportedGeneratorSpec.variable⟩ := rfl
@@ -1077,6 +1106,28 @@ theorem certifiedIdentityPackage_raw
     (certifiedBase : CertifiedRawCell profile scope baseRaw) :
     (certifiedIdentityPackage certifiedBase).certifiedCell.raw =
       PolyTerm.identity (profile := profile) baseRaw := rfl
+
+theorem certifiedVerticalCompositePackage_raw
+    {profile : PolyProfile} {scope cellDimension : Nat}
+    {cellSort : CellSort}
+    {sourceRaw middleRaw targetRaw : PolyTerm profile cellDimension}
+    {firstRaw secondRaw : PolyTerm profile (cellDimension + 1)}
+    (firstCell :
+      PolyCell profile cellSort (cellDimension + 1) scope
+        (sourceRaw, middleRaw) firstRaw)
+    (secondCell :
+      PolyCell profile cellSort (cellDimension + 1) scope
+        (middleRaw, targetRaw) secondRaw) :
+    (certifiedVerticalCompositePackage firstCell secondCell).certifiedCell.raw =
+      PolyTerm.compV (profile := profile) firstRaw secondRaw := rfl
+
+theorem certifiedSeedTermIdentityTwicePackage_raw
+    {profile : PolyProfile} :
+    (certifiedSeedTermIdentityTwicePackage
+      (profile := profile)).certifiedCell.raw =
+      PolyTerm.compV
+        (PolyTerm.identity (NegativeProbes.seedTermAtom profile))
+        (PolyTerm.identity (NegativeProbes.seedTermAtom profile)) := rfl
 
 theorem certifyApplicationVarZeroVarOneChildren?_scope_zero_rejects
     {profile : PolyProfile} :

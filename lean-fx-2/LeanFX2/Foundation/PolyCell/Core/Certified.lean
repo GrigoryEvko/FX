@@ -225,6 +225,25 @@ def identityCell {profile : PolyProfile} {cellSort : CellSort}
       (baseRaw, baseRaw) (.identity baseRaw) :=
   .identity baseCell
 
+/-- Compose certified cells vertically when the middle endpoint is
+definitionally the same raw cell.
+
+There is no equality proof or cast here: mismatched middles fail before this
+helper can be applied. -/
+def verticalCompositeCell {profile : PolyProfile} {cellSort : CellSort}
+    {cellDimension scope : Nat}
+    {sourceRaw middleRaw targetRaw : PolyTerm profile cellDimension}
+    {firstRaw secondRaw : PolyTerm profile (cellDimension + 1)}
+    (firstCell :
+      PolyCell profile cellSort (cellDimension + 1) scope
+        (sourceRaw, middleRaw) firstRaw)
+    (secondCell :
+      PolyCell profile cellSort (cellDimension + 1) scope
+        (middleRaw, targetRaw) secondRaw) :
+    PolyCell profile cellSort (cellDimension + 1) scope
+      (sourceRaw, targetRaw) (.compV firstRaw secondRaw) :=
+  .compV firstCell secondCell
+
 /-- Certified child descriptor used by non-nullary generator certificates. -/
 structure CertifiedChild
     (profile : PolyProfile) (cellSort : CellSort)
@@ -311,6 +330,20 @@ theorem raw_identityCell {profile : PolyProfile} {cellSort : CellSort}
       PolyCell profile cellSort cellDimension scope cellBoundary baseRaw) :
     (identityCell baseCell).raw =
       PolyTerm.identity (profile := profile) baseRaw := rfl
+
+/-- Raw erasure of a certified vertical composite is definitional. -/
+theorem raw_verticalCompositeCell {profile : PolyProfile}
+    {cellSort : CellSort} {cellDimension scope : Nat}
+    {sourceRaw middleRaw targetRaw : PolyTerm profile cellDimension}
+    {firstRaw secondRaw : PolyTerm profile (cellDimension + 1)}
+    (firstCell :
+      PolyCell profile cellSort (cellDimension + 1) scope
+        (sourceRaw, middleRaw) firstRaw)
+    (secondCell :
+      PolyCell profile cellSort (cellDimension + 1) scope
+        (middleRaw, targetRaw) secondRaw) :
+    (verticalCompositeCell firstCell secondCell).raw =
+      PolyTerm.compV (profile := profile) firstRaw secondRaw := rfl
 
 /-- The certified child spine for the first application payload has the
 application generator arity. -/
