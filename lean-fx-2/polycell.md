@@ -4603,6 +4603,7 @@ representable and computably rejected.
 | TCB.7h expanded hostile rejection probes | `d647fada` | The negative catalog now covers application decoder sentinels, pi/context-cons sentinels, malformed identity bases, unsupported term-step variants, and well-screened `compH`.  Probe counts are ratcheted and every new rejection is audited. |
 | TCB.7i headline negative-probe theorems | `178b3cfa` | The negative catalog is partitioned by rejection family, with audited headline theorems for each inference, expected-shape, and certification-policy family.  Global probe counts are still ratcheted through the family lists. |
 | TCB.7j derived certified vertical composites | `3875a56b` | Certified vertical composition is now exposed only over already certified cells whose middle endpoint is definitionally shared.  A seed term-identity composite is available as a certified FX dim-1 term view; arbitrary raw `compV` ingress remains unsupported. |
+| TCB.7k certified endpoint projections | `0a98af8d` | Certified positive-dimensional FX cells now expose source and target raw endpoints through their intrinsic boundary index.  Seed step, identity, and vertical-composite endpoint theorems are audited and definitional. |
 
 **Deliverables (NEW only):**
 
@@ -4629,9 +4630,10 @@ representable and computably rejected.
 | TCB.7h expanded hostile rejection probes | `Foundation/PolyCell/Core/NegativeProbes.lean`, `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds hostile application decoder sentinel probes, pi/context-cons payload sentinel probes, raw identity over malformed base, extra unsupported term-step variants, and `compH` over well-screened operands. | Inference probes ratchet to 32 and certification probes to 6; every new fixture has a definitional rejection theorem and an audit entry; malformed application sentinels preserve `badPayload`, `wrongArity`, or `wrongChildShape` precisely. |
 | TCB.7i headline negative-probe theorems | `Foundation/PolyCell/Core/NegativeProbes.lean`, `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Groups inference, expected-shape, and certification probes by rejection family and adds audited headline theorems for each family. | Family counts plus global counts are ratcheted; the headline theorems are computable consequences of the existing checker runners and keep all hostile fixtures as regression data. |
 | TCB.7j derived certified vertical composites | `Foundation/PolyCell/Core/Certified.lean`, `Foundation/PolyCell/Core/Check.lean`, `Foundation/PolyCell/FXProfile/CertifiedViews.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds a certified vertical-composite helper and package over already certified cells whose shared middle endpoint is part of the type. | Raw erasure is definitional; the seed term identity composed with itself is exposed as a certified dim-1 term view; no equality casts or raw `compV` dispatcher are introduced. |
-| TCB.7k certified FX operational views | `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | Future `FXStep`, `FXConv`, `FXCdLemma` as projections of certified positive-dimensional cells and thinness certificates. | Existing raw subtype views remain compatibility-only; new operational code uses certified views only after the corresponding positive-dimensional certification exists. |
+| TCB.7k certified endpoint projections | `Foundation/PolyCell/FXProfile/CertifiedViews.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds `sourceRaw` and `targetRaw` projections for certified positive-dimensional FX cells. | Endpoint access reads only the existing `CellBoundary`; seed term-step, seed identities, dim-2 step identity, and seed vertical composite have audited definitional source/target theorems. |
+| TCB.7l certified FX operational views | `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | Future `FXStep`, `FXConv`, `FXCdLemma` as projections of certified positive-dimensional cells and thinness certificates. | Existing raw subtype views remain compatibility-only; new operational code uses certified views only after the corresponding positive-dimensional certification and thinness data exist. |
 
-**Implementation order after TCB.7j:**
+**Implementation order after TCB.7k:**
 
 1.  Do not broaden application by adding more one-off parent
     constructors.  The next application slice is a propext-free certified
@@ -4662,10 +4664,11 @@ representable and computably rejected.
     audited headline theorem, while keeping the individual probes as
     regression fixtures.
 6.  Extend `CertifiedViews.lean` only as the checker gains real
-    certified inhabitants: context/type/term/mode seed views are live;
-    step/conversion/coherence views must wait for positive-dimensional
-    certification and thinness data.  Keep old raw subtype views as
-    compatibility shims.
+    certified inhabitants: context/type/term/mode seed views and
+    positive-dimensional endpoint projections are live; step,
+    conversion, and coherence views must wait for positive-dimensional
+    certification plus thinness/operational data.  Keep old raw subtype
+    views as compatibility shims.
 7.  Legacy bridge: connect the existing intrinsic kernel judgments to
     certified views only after the checker has nonempty accepted
     witnesses and the audit proves every new declaration axiom-free.
