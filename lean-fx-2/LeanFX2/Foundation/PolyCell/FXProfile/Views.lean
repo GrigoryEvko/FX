@@ -1696,6 +1696,71 @@ theorem FXType.toCell?_ofCellId?_ofConstructorIndex
           payload)
   rw [nat_add_sub_cancel_left_structural]
 
+theorem FXTerm.ofCellId?_ofTypeConstructorIndex
+    (constructorIndex : Fin typeGeneratorCount) (payload : Nat) :
+    FXTerm.ofCellId?
+        (PolyTerm.firstTypeCellId + constructorIndex.val) payload =
+      none := by
+  unfold FXTerm.ofCellId?
+  unfold classifyDimZeroCellId
+  have hasNoTermRange :
+      ¬PolyTerm.firstTypeCellId + constructorIndex.val <
+        termGeneratorCount := by
+    change
+      ¬PolyTerm.firstTypeCellId + constructorIndex.val <
+        PolyTerm.firstTypeCellId
+    exact Nat.not_lt_of_ge (Nat.le_add_right _ _)
+  have hasCurrentRange :
+      PolyTerm.firstTypeCellId + constructorIndex.val <
+        totalGeneratorCount := by
+    change
+      PolyTerm.firstTypeCellId + constructorIndex.val <
+        PolyTerm.typeCellIdLimit
+    exact Nat.add_lt_add_left constructorIndex.isLt
+      PolyTerm.firstTypeCellId
+  rw [dif_neg hasNoTermRange, dif_pos hasCurrentRange]
+
+theorem FXType.ofCellId?_ofTermConstructorIndex
+    (constructorIndex : Fin termGeneratorCount) (payload : Nat) :
+    FXType.ofCellId? constructorIndex.val payload = none := by
+  unfold FXType.ofCellId?
+  unfold classifyDimZeroCellId
+  rw [dif_pos constructorIndex.isLt]
+
+theorem FXTerm.ofCellId?_ofOutsideCurrentGeneratorRange
+    (cellId : CellId) (payload : Nat)
+    (hasOutsideRange : totalGeneratorCount ≤ cellId) :
+    FXTerm.ofCellId? cellId payload = none := by
+  unfold FXTerm.ofCellId?
+  unfold classifyDimZeroCellId
+  have hasTermBelowTotal : termGeneratorCount ≤ totalGeneratorCount := by
+    change termGeneratorCount ≤ termGeneratorCount + typeGeneratorCount
+    exact Nat.le_add_right _ _
+  have hasNoTermRange : ¬cellId < termGeneratorCount := by
+    intro hasTermRange
+    exact Nat.not_lt_of_ge hasOutsideRange
+      (Nat.lt_of_lt_of_le hasTermRange hasTermBelowTotal)
+  have hasNoCurrentRange : ¬cellId < totalGeneratorCount :=
+    Nat.not_lt_of_ge hasOutsideRange
+  rw [dif_neg hasNoTermRange, dif_neg hasNoCurrentRange]
+
+theorem FXType.ofCellId?_ofOutsideCurrentGeneratorRange
+    (cellId : CellId) (payload : Nat)
+    (hasOutsideRange : totalGeneratorCount ≤ cellId) :
+    FXType.ofCellId? cellId payload = none := by
+  unfold FXType.ofCellId?
+  unfold classifyDimZeroCellId
+  have hasTermBelowTotal : termGeneratorCount ≤ totalGeneratorCount := by
+    change termGeneratorCount ≤ termGeneratorCount + typeGeneratorCount
+    exact Nat.le_add_right _ _
+  have hasNoTermRange : ¬cellId < termGeneratorCount := by
+    intro hasTermRange
+    exact Nat.not_lt_of_ge hasOutsideRange
+      (Nat.lt_of_lt_of_le hasTermRange hasTermBelowTotal)
+  have hasNoCurrentRange : ¬cellId < totalGeneratorCount :=
+    Nat.not_lt_of_ge hasOutsideRange
+  rw [dif_neg hasNoTermRange, dif_neg hasNoCurrentRange]
+
 /-- Decode a dim-0 FX cell into the term view when its id is in the current
 term-constructor block. -/
 def FXTerm.ofCell? (cell : FXCellAt 0) : Option FXTerm :=
