@@ -3358,6 +3358,60 @@ def FXType.ofCell? (cell : FXCellAt 0) : Option FXType :=
   match cell with
   | .atom cellId payload => FXType.ofCellId? cellId payload
 
+theorem FXTerm.ofCell?_isSome_eq_classifyCellId_isTermConstructor
+    (cell : FXCellAt 0) :
+    (FXTerm.ofCell? cell).isSome =
+      (classifyDimZeroCellId
+        (FXCellAtZero.cellId cell)).isTermConstructor := by
+  cases cell with
+  | atom cellId payload =>
+      change (FXTerm.ofCellId? cellId payload).isSome =
+        (classifyDimZeroCellId cellId).isTermConstructor
+      unfold FXTerm.ofCellId?
+      generalize hasClass : classifyDimZeroCellId cellId = cellIdClass
+      cases cellIdClass <;> rfl
+
+theorem FXType.ofCell?_isSome_eq_classifyCellId_isTypeConstructor
+    (cell : FXCellAt 0) :
+    (FXType.ofCell? cell).isSome =
+      (classifyDimZeroCellId
+        (FXCellAtZero.cellId cell)).isTypeConstructor := by
+  cases cell with
+  | atom cellId payload =>
+      change (FXType.ofCellId? cellId payload).isSome =
+        (classifyDimZeroCellId cellId).isTypeConstructor
+      unfold FXType.ofCellId?
+      generalize hasClass : classifyDimZeroCellId cellId = cellIdClass
+      cases cellIdClass <;> rfl
+
+theorem FXTerm.ofCell?_isSome_of_isTermCell
+    (cell : FXCellAt 0) (hasTermCell : cell.isTermCell = true) :
+    (FXTerm.ofCell? cell).isSome = true := by
+  rw [FXTerm.ofCell?_isSome_eq_classifyCellId_isTermConstructor]
+  exact FXDimZeroCellIdClass.isTermConstructor_classifyCellId_of_isTermCell
+    cell hasTermCell
+
+theorem FXTerm.ofCell?_isSome_of_isTypeCell
+    (cell : FXCellAt 0) (hasTypeCell : cell.isTypeCell = true) :
+    (FXTerm.ofCell? cell).isSome = false := by
+  rw [FXTerm.ofCell?_isSome_eq_classifyCellId_isTermConstructor]
+  exact FXDimZeroCellIdClass.isTermConstructor_classifyCellId_of_isTypeCell
+    cell hasTypeCell
+
+theorem FXType.ofCell?_isSome_of_isTermCell
+    (cell : FXCellAt 0) (hasTermCell : cell.isTermCell = true) :
+    (FXType.ofCell? cell).isSome = false := by
+  rw [FXType.ofCell?_isSome_eq_classifyCellId_isTypeConstructor]
+  exact FXDimZeroCellIdClass.isTypeConstructor_classifyCellId_of_isTermCell
+    cell hasTermCell
+
+theorem FXType.ofCell?_isSome_of_isTypeCell
+    (cell : FXCellAt 0) (hasTypeCell : cell.isTypeCell = true) :
+    (FXType.ofCell? cell).isSome = true := by
+  rw [FXType.ofCell?_isSome_eq_classifyCellId_isTypeConstructor]
+  exact FXDimZeroCellIdClass.isTypeConstructor_classifyCellId_of_isTypeCell
+    cell hasTypeCell
+
 theorem FXTerm.toCell?_ofCell?_of_isTermCell (cell : FXCellAt 0)
     (hasTermCell : cell.isTermCell = true) :
     Option.map FXTerm.toCell (FXTerm.ofCell? cell) =
