@@ -901,6 +901,26 @@ def areExpectedShapeNegativeProbesRejectedWith {profile : PolyProfile}
         areExpectedShapeNegativeProbesRejectedWith
           targetRejection remainingProbes
 
+/-- A named inference-probe family has exact coverage only when it is nonempty
+and every probe rejects with the named reason. -/
+def hasInferNegativeProbeFamilyExactCoverage {profile : PolyProfile}
+    (targetRejection : CellCheckRejection) :
+    List (RawInferNegativeProbe profile) → Bool
+  | [] => false
+  | probe :: remainingProbes =>
+      areInferNegativeProbesRejectedWith targetRejection
+        (probe :: remainingProbes)
+
+/-- A named expected-shape probe family has exact coverage only when it is
+nonempty and every probe rejects with the named reason. -/
+def hasExpectedShapeNegativeProbeFamilyExactCoverage {profile : PolyProfile}
+    (targetRejection : CellCheckRejection) :
+    List (RawExpectedShapeNegativeProbe profile) → Bool
+  | [] => false
+  | probe :: remainingProbes =>
+      areExpectedShapeNegativeProbesRejectedWith targetRejection
+        (probe :: remainingProbes)
+
 /-- Expected-shape screen for dim-0 callers that know the sort they require. -/
 def screenRawCell0As? {profile : PolyProfile}
     (expectedSort : CellSort) (scope : Nat)
@@ -1060,6 +1080,61 @@ def areCertificationNegativeProbesRejectedWith {profile : PolyProfile}
       isCertificationNegativeProbeRejectedWith targetRejection probe &&
         areCertificationNegativeProbesRejectedWith
           targetRejection remainingProbes
+
+/-- A named certification-policy probe family has exact coverage only when it
+is nonempty and every probe rejects with the named reason. -/
+def hasCertificationNegativeProbeFamilyExactCoverage {profile : PolyProfile}
+    (targetRejection : CellCheckRejection) :
+    List (RawCertificationNegativeProbe profile) → Bool
+  | [] => false
+  | probe :: remainingProbes =>
+      areCertificationNegativeProbesRejectedWith targetRejection
+        (probe :: remainingProbes)
+
+/-- Every inference-level negative-probe family is nonempty and rejects with
+its named reason. -/
+def haveInferNegativeProbeFamiliesExactCoverage
+    (profile : PolyProfile) : Bool :=
+  hasInferNegativeProbeFamilyExactCoverage .unknownGenerator
+    (NegativeProbes.unknownGeneratorInferNegativeProbes profile) &&
+  hasInferNegativeProbeFamilyExactCoverage .badPayload
+    (NegativeProbes.badPayloadInferNegativeProbes profile) &&
+  hasInferNegativeProbeFamilyExactCoverage .wrongArity
+    (NegativeProbes.wrongArityInferNegativeProbes profile) &&
+  hasInferNegativeProbeFamilyExactCoverage .wrongChildShape
+    (NegativeProbes.wrongChildShapeInferNegativeProbes profile) &&
+  hasInferNegativeProbeFamilyExactCoverage .badBoundaryEndpoint
+    (NegativeProbes.badBoundaryEndpointInferNegativeProbes profile) &&
+  hasInferNegativeProbeFamilyExactCoverage .badVerticalBoundary
+    (NegativeProbes.badVerticalBoundaryInferNegativeProbes profile) &&
+  hasInferNegativeProbeFamilyExactCoverage .unsupportedCompH
+    (NegativeProbes.unsupportedCompHInferNegativeProbes profile)
+
+/-- Every expected-shape negative-probe family is nonempty and rejects with
+its named reason. -/
+def haveExpectedShapeNegativeProbeFamiliesExactCoverage
+    (profile : PolyProfile) : Bool :=
+  hasExpectedShapeNegativeProbeFamilyExactCoverage .wrongSort
+    (NegativeProbes.wrongSortExpectedShapeNegativeProbes profile)
+
+/-- Every certification-policy negative-probe family is nonempty and rejects
+with its named reason. -/
+def haveCertificationNegativeProbeFamiliesExactCoverage
+    (profile : PolyProfile) : Bool :=
+  hasCertificationNegativeProbeFamilyExactCoverage .badBoundaryEndpoint
+    (NegativeProbes.badBoundaryEndpointCertificationNegativeProbes profile) &&
+  hasCertificationNegativeProbeFamilyExactCoverage .unsupportedCompH
+    (NegativeProbes.unsupportedCompHCertificationNegativeProbes profile) &&
+  hasCertificationNegativeProbeFamilyExactCoverage .unsupportedCertification
+    (NegativeProbes.unsupportedCertificationNegativeProbes profile)
+
+/-- All current negative-probe families are nonempty and reject with their
+named reasons. -/
+def haveAllNegativeProbeFamiliesExactCoverage
+    (profile : PolyProfile) : Bool :=
+  haveInferNegativeProbeFamiliesExactCoverage profile &&
+  haveExpectedShapeNegativeProbeFamiliesExactCoverage profile &&
+  haveCertificationNegativeProbeFamiliesExactCoverage profile
 
 /-- Expected-shape wrapper for the dim-0 certified ingress. -/
 def checkRawCellAs? {profile : PolyProfile} (expectedSort : CellSort)
@@ -2500,6 +2575,30 @@ theorem
     areCertificationNegativeProbesRejectedWith .unsupportedCertification
       (NegativeProbes.unsupportedCertificationNegativeProbes profile) =
       true := rfl
+
+/-- Coverage headline: every inference-level negative-probe family is
+nonempty and rejects with its named reason. -/
+theorem inferNegativeProbeFamilies_haveExactCoverage
+    (profile : PolyProfile) :
+    haveInferNegativeProbeFamiliesExactCoverage profile = true := rfl
+
+/-- Coverage headline: every expected-shape negative-probe family is nonempty
+and rejects with its named reason. -/
+theorem expectedShapeNegativeProbeFamilies_haveExactCoverage
+    (profile : PolyProfile) :
+    haveExpectedShapeNegativeProbeFamiliesExactCoverage profile = true := rfl
+
+/-- Coverage headline: every certification-policy negative-probe family is
+nonempty and rejects with its named reason. -/
+theorem certificationNegativeProbeFamilies_haveExactCoverage
+    (profile : PolyProfile) :
+    haveCertificationNegativeProbeFamiliesExactCoverage profile = true := rfl
+
+/-- Coverage headline: every current negative-probe family is nonempty and
+rejects with its named reason. -/
+theorem allNegativeProbeFamilies_haveExactCoverage
+    (profile : PolyProfile) :
+    haveAllNegativeProbeFamiliesExactCoverage profile = true := rfl
 
 end Check
 

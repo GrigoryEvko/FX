@@ -431,6 +431,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.areInferNegativeProbesRejectedWith
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.areExpectedShapeNegativeProbesRejected
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.areExpectedShapeNegativeProbesRejectedWith
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.hasInferNegativeProbeFamilyExactCoverage
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.hasExpectedShapeNegativeProbeFamilyExactCoverage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell0As?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certificationRejectionAfterScreen?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawAtom?
@@ -440,6 +442,11 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.isCertificationNegativeProbeRejectedWith
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.areCertificationNegativeProbesRejected
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.areCertificationNegativeProbesRejectedWith
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.hasCertificationNegativeProbeFamilyExactCoverage
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.haveInferNegativeProbeFamiliesExactCoverage
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.haveExpectedShapeNegativeProbeFamiliesExactCoverage
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.haveCertificationNegativeProbeFamiliesExactCoverage
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.haveAllNegativeProbeFamiliesExactCoverage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.checkRawCellAs?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedResultSort?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedSeedTermPackage
@@ -816,6 +823,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.badBoundaryEndpointCertificationNegativeProbes_rejected_with_badBoundaryEndpoint
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.unsupportedCompHCertificationNegativeProbes_rejected_with_unsupportedCompH
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.unsupportedCertificationNegativeProbes_rejected_with_unsupportedCertification
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferNegativeProbeFamilies_haveExactCoverage
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.expectedShapeNegativeProbeFamilies_haveExactCoverage
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certificationNegativeProbeFamilies_haveExactCoverage
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.allNegativeProbeFamilies_haveExactCoverage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.dim
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.isAtom
