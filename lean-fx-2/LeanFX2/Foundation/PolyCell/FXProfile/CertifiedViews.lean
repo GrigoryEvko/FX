@@ -353,6 +353,72 @@ theorem compV_target {cellSort : CellSort} {cellDimension scope : Nat}
 
 end CertifiedFXThinArrow
 
+/-- Certified generating term step.
+
+This is the first operationally named step view over the certified substrate.
+It is still deliberately narrower than the legacy raw `FXStep`: the view carries
+an endpoint-indexed certified term arrow and a proof that the raw erasure is a
+single generating dim-1 cell, not an identity or composite. -/
+structure CertifiedFXGeneratingStep (scope : Nat)
+    (sourceRaw targetRaw : PolyTerm fxProfile 0) where
+  /-- Underlying endpoint-indexed certified term arrow. -/
+  certifiedArrow :
+    CertifiedFXArrow .term 0 scope sourceRaw targetRaw
+  /-- The raw erasure is one generating dim-1 cell. -/
+  hasGeneratingStepCell :
+    certifiedArrow.rawCell.isGeneratingStepCell = true
+
+namespace CertifiedFXGeneratingStep
+
+/-- Forget generating-step evidence and keep the certified arrow. -/
+def toCertifiedFXArrow {scope : Nat}
+    {sourceRaw targetRaw : PolyTerm fxProfile 0}
+    (step : CertifiedFXGeneratingStep scope sourceRaw targetRaw) :
+    CertifiedFXArrow .term 0 scope sourceRaw targetRaw :=
+  step.certifiedArrow
+
+/-- Forget endpoint indexing and keep the underlying certified FX cell. -/
+def toCertifiedFXCell {scope : Nat}
+    {sourceRaw targetRaw : PolyTerm fxProfile 0}
+    (step : CertifiedFXGeneratingStep scope sourceRaw targetRaw) :
+    CertifiedFXCell .term 1 scope :=
+  step.certifiedArrow.toCertifiedFXCell
+
+/-- Raw erasure of a certified generating step. -/
+def toRaw {scope : Nat} {sourceRaw targetRaw : PolyTerm fxProfile 0}
+    (step : CertifiedFXGeneratingStep scope sourceRaw targetRaw) :
+    PolyTerm fxProfile 1 :=
+  step.certifiedArrow.toRaw
+
+/-- Source endpoint of a certified generating step. -/
+def source {scope : Nat} {sourceRaw targetRaw : PolyTerm fxProfile 0}
+    (step : CertifiedFXGeneratingStep scope sourceRaw targetRaw) :
+    PolyTerm fxProfile 0 :=
+  step.certifiedArrow.source
+
+/-- Target endpoint of a certified generating step. -/
+def target {scope : Nat} {sourceRaw targetRaw : PolyTerm fxProfile 0}
+    (step : CertifiedFXGeneratingStep scope sourceRaw targetRaw) :
+    PolyTerm fxProfile 0 :=
+  step.certifiedArrow.target
+
+/-- Certified generating steps erase to raw generating step cells. -/
+theorem toRaw_isGeneratingStepCell {scope : Nat}
+    {sourceRaw targetRaw : PolyTerm fxProfile 0}
+    (step : CertifiedFXGeneratingStep scope sourceRaw targetRaw) :
+    step.toRaw.isGeneratingStepCell = true :=
+  step.hasGeneratingStepCell
+
+/-- Certified generating steps are accepted by the older raw step recognizer. -/
+theorem toRaw_isStepCell {scope : Nat}
+    {sourceRaw targetRaw : PolyTerm fxProfile 0}
+    (step : CertifiedFXGeneratingStep scope sourceRaw targetRaw) :
+    step.toRaw.isStepCell = true :=
+  PolyTerm.isStepCell_of_isGeneratingStepCell
+    step.toRaw step.hasGeneratingStepCell
+
+end CertifiedFXGeneratingStep
+
 /-- Certified FX context cell at dimension 0. -/
 abbrev CertifiedFXContext (scope : Nat) := CertifiedFXCell .context 0 scope
 
@@ -430,6 +496,15 @@ abbrev CertifiedFXModeArrow (scope : Nat)
 abbrev CertifiedFXTermThinArrow (scope : Nat)
     (sourceRaw targetRaw : PolyTerm fxProfile 0) :=
   CertifiedFXThinArrow .term 0 scope sourceRaw targetRaw
+
+/-- Certified structural term conversion at dimension 1.
+
+This names the current certified-thin term-arrow layer.  It is not the final
+legacy `Conv` bridge: only structural thin arrows built from certified
+identities and vertical composition of thin arrows inhabit it. -/
+abbrev CertifiedFXStructuralConv (scope : Nat)
+    (sourceRaw targetRaw : PolyTerm fxProfile 0) :=
+  CertifiedFXTermThinArrow scope sourceRaw targetRaw
 
 /-- Endpoint-indexed certified thin type arrow at dimension 1. -/
 abbrev CertifiedFXTypeThinArrow (scope : Nat)
@@ -580,6 +655,14 @@ def certifiedSeedTermStepArrow :
     (Check.certifiedSeedTermStepPackage
       (profile := fxProfile)).certifiedCell
 
+/-- Certified generating-step view for the first dim-1 term-step fixture. -/
+def certifiedSeedTermGeneratingStep :
+    CertifiedFXGeneratingStep NegativeProbes.defaultInferScope
+      (NegativeProbes.seedTermAtom fxProfile)
+      (NegativeProbes.alternateTermAtom fxProfile) where
+  certifiedArrow := certifiedSeedTermStepArrow
+  hasGeneratingStepCell := rfl
+
 /-- Endpoint-indexed thin arrow for the seed term identity. -/
 def certifiedSeedTermIdentityThinArrow :
     CertifiedFXTermThinArrow NegativeProbes.defaultInferScope
@@ -617,6 +700,20 @@ def certifiedSeedTermIdentityTwiceThinArrow :
   CertifiedFXThinArrow.compV
     certifiedSeedTermIdentityThinArrow
     certifiedSeedTermIdentityThinArrow
+
+/-- Certified structural conversion for the seed term reflexivity arrow. -/
+def certifiedSeedTermStructuralReflConv :
+    CertifiedFXStructuralConv NegativeProbes.defaultInferScope
+      (NegativeProbes.seedTermAtom fxProfile)
+      (NegativeProbes.seedTermAtom fxProfile) :=
+  certifiedSeedTermIdentityThinArrow
+
+/-- Certified structural conversion for reflexivity composed with itself. -/
+def certifiedSeedTermStructuralReflConvTwice :
+    CertifiedFXStructuralConv NegativeProbes.defaultInferScope
+      (NegativeProbes.seedTermAtom fxProfile)
+      (NegativeProbes.seedTermAtom fxProfile) :=
+  certifiedSeedTermIdentityTwiceThinArrow
 
 /-- Endpoint-indexed thin arrow for the seed type identity composed with
 itself. -/
@@ -789,6 +886,24 @@ theorem certifiedSeedTermStepArrow_target :
     certifiedSeedTermStepArrow.target =
       NegativeProbes.alternateTermAtom fxProfile := rfl
 
+theorem certifiedSeedTermGeneratingStep_raw :
+    certifiedSeedTermGeneratingStep.toRaw =
+      NegativeProbes.termStepVarZeroVarOneRawCell fxProfile := rfl
+
+theorem certifiedSeedTermGeneratingStep_source :
+    certifiedSeedTermGeneratingStep.source =
+      NegativeProbes.seedTermAtom fxProfile := rfl
+
+theorem certifiedSeedTermGeneratingStep_target :
+    certifiedSeedTermGeneratingStep.target =
+      NegativeProbes.alternateTermAtom fxProfile := rfl
+
+theorem certifiedSeedTermGeneratingStep_isGeneratingStepCell :
+    certifiedSeedTermGeneratingStep.toRaw.isGeneratingStepCell = true := rfl
+
+theorem certifiedSeedTermGeneratingStep_isStepCell :
+    certifiedSeedTermGeneratingStep.toRaw.isStepCell = true := rfl
+
 theorem certifiedSeedTermIdentityThinArrow_raw :
     certifiedSeedTermIdentityThinArrow.toRaw =
       PolyTerm.identity (NegativeProbes.seedTermAtom fxProfile) := rfl
@@ -849,6 +964,32 @@ theorem certifiedSeedTermIdentityTwiceThinArrow_source :
 
 theorem certifiedSeedTermIdentityTwiceThinArrow_target :
     certifiedSeedTermIdentityTwiceThinArrow.target =
+      NegativeProbes.seedTermAtom fxProfile := rfl
+
+theorem certifiedSeedTermStructuralReflConv_raw :
+    certifiedSeedTermStructuralReflConv.toRaw =
+      PolyTerm.identity (NegativeProbes.seedTermAtom fxProfile) := rfl
+
+theorem certifiedSeedTermStructuralReflConv_source :
+    certifiedSeedTermStructuralReflConv.source =
+      NegativeProbes.seedTermAtom fxProfile := rfl
+
+theorem certifiedSeedTermStructuralReflConv_target :
+    certifiedSeedTermStructuralReflConv.target =
+      NegativeProbes.seedTermAtom fxProfile := rfl
+
+theorem certifiedSeedTermStructuralReflConvTwice_raw :
+    certifiedSeedTermStructuralReflConvTwice.toRaw =
+      PolyTerm.compV
+        (PolyTerm.identity (NegativeProbes.seedTermAtom fxProfile))
+        (PolyTerm.identity (NegativeProbes.seedTermAtom fxProfile)) := rfl
+
+theorem certifiedSeedTermStructuralReflConvTwice_source :
+    certifiedSeedTermStructuralReflConvTwice.source =
+      NegativeProbes.seedTermAtom fxProfile := rfl
+
+theorem certifiedSeedTermStructuralReflConvTwice_target :
+    certifiedSeedTermStructuralReflConvTwice.target =
       NegativeProbes.seedTermAtom fxProfile := rfl
 
 theorem certifiedSeedTypeIdentityTwiceThinArrow_raw :
