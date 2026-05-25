@@ -3535,6 +3535,66 @@ theorem FXType.constructorName?_ofCellId?_of_isTypeConstructor
     · rw [dif_neg hasCurrentRange] at hasTypeConstructor
       cases hasTypeConstructor
 
+theorem FXTerm.constructorIndex_val_eq_cellId (term : FXTerm) :
+    term.constructorIndex.val = term.cellId := by
+  cases term with
+  | mk cell hasTermCell =>
+      cases cell with
+      | atom cellId payload =>
+          rfl
+
+theorem FXType.constructorIndex_val_eq_cellId_sub (typeCell : FXType) :
+    typeCell.constructorIndex.val =
+      typeCell.cellId - PolyTerm.firstTypeCellId := by
+  cases typeCell with
+  | mk cell hasTypeCell =>
+      cases cell with
+      | atom cellId payload =>
+          rfl
+
+theorem FXTerm.constructorIndex_val_ofCellId?_of_isTermConstructor
+    (cellId : CellId) (payload : Nat)
+    (hasTermConstructor :
+      (classifyDimZeroCellId cellId).isTermConstructor = true) :
+    Option.map (fun decodedTerm => decodedTerm.constructorIndex.val)
+        (FXTerm.ofCellId? cellId payload) =
+      some cellId := by
+  have hasDecodedCellId :=
+    FXTerm.cellId_ofCellId?_of_isTermConstructor
+      cellId payload hasTermConstructor
+  cases hasDecoded : FXTerm.ofCellId? cellId payload with
+  | none =>
+      rw [hasDecoded] at hasDecodedCellId
+      cases hasDecodedCellId
+  | some decodedTerm =>
+      rw [hasDecoded] at hasDecodedCellId
+      change some decodedTerm.constructorIndex.val = some cellId
+      rw [FXTerm.constructorIndex_val_eq_cellId decodedTerm]
+      exact hasDecodedCellId
+
+theorem FXType.constructorIndex_val_ofCellId?_of_isTypeConstructor
+    (cellId : CellId) (payload : Nat)
+    (hasTypeConstructor :
+      (classifyDimZeroCellId cellId).isTypeConstructor = true) :
+    Option.map (fun decodedType => decodedType.constructorIndex.val)
+        (FXType.ofCellId? cellId payload) =
+      some (cellId - PolyTerm.firstTypeCellId) := by
+  have hasDecodedCellId :=
+    FXType.cellId_ofCellId?_of_isTypeConstructor
+      cellId payload hasTypeConstructor
+  cases hasDecoded : FXType.ofCellId? cellId payload with
+  | none =>
+      rw [hasDecoded] at hasDecodedCellId
+      cases hasDecodedCellId
+  | some decodedType =>
+      rw [hasDecoded] at hasDecodedCellId
+      change
+        some decodedType.constructorIndex.val =
+          some (cellId - PolyTerm.firstTypeCellId)
+      rw [FXType.constructorIndex_val_eq_cellId_sub decodedType]
+      cases hasDecodedCellId
+      rfl
+
 /-- Decode a dim-0 FX cell into the term view when its id is in the current
 term-constructor block. -/
 def FXTerm.ofCell? (cell : FXCellAt 0) : Option FXTerm :=
