@@ -1289,6 +1289,276 @@ theorem firstTypeCellId_eq_termGeneratorCount :
 theorem typeCellIdLimit_eq_totalGeneratorCount :
     PolyTerm.typeCellIdLimit = totalGeneratorCount := rfl
 
+/-- Names for the current typed `Term` constructor-id block.
+
+This is a checked inventory of the provisional dim-0 term ids only.  It does
+not decode payloads and does not assert any equivalence with typed kernel
+terms. -/
+inductive FXTermConstructorName where
+  | var
+  | unit
+  | lam
+  | app
+  | lamPi
+  | appPi
+  | pair
+  | fst
+  | snd
+  | boolTrue
+  | boolFalse
+  | boolElim
+  | natZero
+  | natSucc
+  | natElim
+  | natRec
+  | listNil
+  | listCons
+  | listElim
+  | optionNone
+  | optionSome
+  | optionMatch
+  | eitherInl
+  | eitherInr
+  | eitherMatch
+  | refl
+  | idJ
+  | oeqRefl
+  | oeqJ
+  | oeqFunext
+  | idStrictRefl
+  | idStrictRec
+  | modIntro
+  | modElim
+  | subsume
+  | interval0
+  | interval1
+  | intervalOpp
+  | intervalMeet
+  | intervalJoin
+  | pathLam
+  | pathApp
+  | glueIntro
+  | glueElim
+  | transp
+  | hcomp
+  | hcompPath
+  | recordIntro
+  | recordProj
+  | refineIntro
+  | refineElim
+  | codataUnfold
+  | codataDest
+  | sessionSend
+  | sessionRecv
+  | effectPerform
+  | universeCode
+  | cumulUp
+  | equivReflId
+  | funextRefl
+  | equivReflIdAtId
+  | funextReflAtId
+  | equivIntroHet
+  | equivApp
+  | uaIntroHet
+  | funextIntroHet
+  | arrowCode
+  | piTyCode
+  | sigmaTyCode
+  | productCode
+  | sumCode
+  | listCode
+  | optionCode
+  | eitherCode
+  | idCode
+  | equivCode
+  | uaToEquiv
+  | equivApply
+  deriving DecidableEq, Repr
+
+/-- Global dim-0 cell id assigned to a named typed-term constructor. -/
+def FXTermConstructorName.cellId : FXTermConstructorName → CellId
+  | .var => 0
+  | .unit => 1
+  | .lam => 2
+  | .app => 3
+  | .lamPi => 4
+  | .appPi => 5
+  | .pair => 6
+  | .fst => 7
+  | .snd => 8
+  | .boolTrue => 9
+  | .boolFalse => 10
+  | .boolElim => 11
+  | .natZero => 12
+  | .natSucc => 13
+  | .natElim => 14
+  | .natRec => 15
+  | .listNil => 16
+  | .listCons => 17
+  | .listElim => 18
+  | .optionNone => 19
+  | .optionSome => 20
+  | .optionMatch => 21
+  | .eitherInl => 22
+  | .eitherInr => 23
+  | .eitherMatch => 24
+  | .refl => 25
+  | .idJ => 26
+  | .oeqRefl => 27
+  | .oeqJ => 28
+  | .oeqFunext => 29
+  | .idStrictRefl => 30
+  | .idStrictRec => 31
+  | .modIntro => 32
+  | .modElim => 33
+  | .subsume => 34
+  | .interval0 => 35
+  | .interval1 => 36
+  | .intervalOpp => 37
+  | .intervalMeet => 38
+  | .intervalJoin => 39
+  | .pathLam => 40
+  | .pathApp => 41
+  | .glueIntro => 42
+  | .glueElim => 43
+  | .transp => 44
+  | .hcomp => 45
+  | .hcompPath => 46
+  | .recordIntro => 47
+  | .recordProj => 48
+  | .refineIntro => 49
+  | .refineElim => 50
+  | .codataUnfold => 51
+  | .codataDest => 52
+  | .sessionSend => 53
+  | .sessionRecv => 54
+  | .effectPerform => 55
+  | .universeCode => 56
+  | .cumulUp => 57
+  | .equivReflId => 58
+  | .funextRefl => 59
+  | .equivReflIdAtId => 60
+  | .funextReflAtId => 61
+  | .equivIntroHet => 62
+  | .equivApp => 63
+  | .uaIntroHet => 64
+  | .funextIntroHet => 65
+  | .arrowCode => 66
+  | .piTyCode => 67
+  | .sigmaTyCode => 68
+  | .productCode => 69
+  | .sumCode => 70
+  | .listCode => 71
+  | .optionCode => 72
+  | .eitherCode => 73
+  | .idCode => 74
+  | .equivCode => 75
+  | .uaToEquiv => 76
+  | .equivApply => 77
+
+theorem FXTermConstructorName.cellId_lt_termGeneratorCount
+    (constructorName : FXTermConstructorName) :
+    constructorName.cellId < termGeneratorCount := by
+  cases constructorName <;> decide
+
+/-- Checked constructor index for a named typed-term constructor. -/
+def FXTermConstructorName.constructorIndex
+    (constructorName : FXTermConstructorName) : Fin termGeneratorCount :=
+  ⟨constructorName.cellId,
+    FXTermConstructorName.cellId_lt_termGeneratorCount constructorName⟩
+
+/-- Decode a global dim-0 term cell id into a named typed-term constructor. -/
+def FXTermConstructorName.ofCellId? : CellId → Option FXTermConstructorName
+  | 0 => some .var
+  | 1 => some .unit
+  | 2 => some .lam
+  | 3 => some .app
+  | 4 => some .lamPi
+  | 5 => some .appPi
+  | 6 => some .pair
+  | 7 => some .fst
+  | 8 => some .snd
+  | 9 => some .boolTrue
+  | 10 => some .boolFalse
+  | 11 => some .boolElim
+  | 12 => some .natZero
+  | 13 => some .natSucc
+  | 14 => some .natElim
+  | 15 => some .natRec
+  | 16 => some .listNil
+  | 17 => some .listCons
+  | 18 => some .listElim
+  | 19 => some .optionNone
+  | 20 => some .optionSome
+  | 21 => some .optionMatch
+  | 22 => some .eitherInl
+  | 23 => some .eitherInr
+  | 24 => some .eitherMatch
+  | 25 => some .refl
+  | 26 => some .idJ
+  | 27 => some .oeqRefl
+  | 28 => some .oeqJ
+  | 29 => some .oeqFunext
+  | 30 => some .idStrictRefl
+  | 31 => some .idStrictRec
+  | 32 => some .modIntro
+  | 33 => some .modElim
+  | 34 => some .subsume
+  | 35 => some .interval0
+  | 36 => some .interval1
+  | 37 => some .intervalOpp
+  | 38 => some .intervalMeet
+  | 39 => some .intervalJoin
+  | 40 => some .pathLam
+  | 41 => some .pathApp
+  | 42 => some .glueIntro
+  | 43 => some .glueElim
+  | 44 => some .transp
+  | 45 => some .hcomp
+  | 46 => some .hcompPath
+  | 47 => some .recordIntro
+  | 48 => some .recordProj
+  | 49 => some .refineIntro
+  | 50 => some .refineElim
+  | 51 => some .codataUnfold
+  | 52 => some .codataDest
+  | 53 => some .sessionSend
+  | 54 => some .sessionRecv
+  | 55 => some .effectPerform
+  | 56 => some .universeCode
+  | 57 => some .cumulUp
+  | 58 => some .equivReflId
+  | 59 => some .funextRefl
+  | 60 => some .equivReflIdAtId
+  | 61 => some .funextReflAtId
+  | 62 => some .equivIntroHet
+  | 63 => some .equivApp
+  | 64 => some .uaIntroHet
+  | 65 => some .funextIntroHet
+  | 66 => some .arrowCode
+  | 67 => some .piTyCode
+  | 68 => some .sigmaTyCode
+  | 69 => some .productCode
+  | 70 => some .sumCode
+  | 71 => some .listCode
+  | 72 => some .optionCode
+  | 73 => some .eitherCode
+  | 74 => some .idCode
+  | 75 => some .equivCode
+  | 76 => some .uaToEquiv
+  | 77 => some .equivApply
+  | _ => none
+
+theorem FXTermConstructorName.ofCellId?_cellId
+    (constructorName : FXTermConstructorName) :
+    FXTermConstructorName.ofCellId? constructorName.cellId =
+      some constructorName := by
+  cases constructorName <;> rfl
+
+theorem FXTermConstructorName.constructorIndex_val
+    (constructorName : FXTermConstructorName) :
+    constructorName.constructorIndex.val = constructorName.cellId := rfl
+
 private theorem nat_sub_lt_left_of_lt_add_structural {offset value count : Nat}
     (hasLowerBound : offset ≤ value)
     (hasUpperBound : value < offset + count) :
@@ -1488,6 +1758,11 @@ def FXTerm.ofConstructorIndex (constructorIndex : Fin termGeneratorCount)
     change decide (constructorIndex.val < PolyTerm.termCellIdLimit) = true
     exact decide_eq_true constructorIndex.isLt⟩
 
+/-- Construct an FX term from a named current typed-term constructor id. -/
+def FXTerm.ofConstructorName
+    (constructorName : FXTermConstructorName) (payload : Nat) : FXTerm :=
+  FXTerm.ofConstructorIndex constructorName.constructorIndex payload
+
 /-- Construct an FX type from a checked index into the current type-id block. -/
 def FXType.ofConstructorIndex (constructorIndex : Fin typeGeneratorCount)
     (payload : Nat) : FXType :=
@@ -1523,10 +1798,25 @@ theorem FXTerm.payload_ofConstructorIndex
     (FXTerm.ofConstructorIndex constructorIndex payload).payload =
       payload := rfl
 
+theorem FXTerm.cellId_ofConstructorName
+    (constructorName : FXTermConstructorName) (payload : Nat) :
+    (FXTerm.ofConstructorName constructorName payload).cellId =
+      constructorName.cellId := rfl
+
+theorem FXTerm.payload_ofConstructorName
+    (constructorName : FXTermConstructorName) (payload : Nat) :
+    (FXTerm.ofConstructorName constructorName payload).payload =
+      payload := rfl
+
 theorem FXTerm.constructorIndex_val_ofConstructorIndex
     (constructorIndex : Fin termGeneratorCount) (payload : Nat) :
     (FXTerm.ofConstructorIndex constructorIndex payload).constructorIndex.val =
       constructorIndex.val := rfl
+
+theorem FXTerm.constructorIndex_val_ofConstructorName
+    (constructorName : FXTermConstructorName) (payload : Nat) :
+    (FXTerm.ofConstructorName constructorName payload).constructorIndex.val =
+      constructorName.cellId := rfl
 
 theorem FXTerm.cellId_eq_constructorIndex_val (term : FXTerm) :
     term.cellId = term.constructorIndex.val := by
@@ -1657,6 +1947,13 @@ theorem FXTerm.toCell?_ofCellId?_ofConstructorIndex
       some (FXTerm.ofConstructorIndex constructorIndex payload).toCell := by
   rw [FXTerm.ofCellId?_ofConstructorIndex]
   rfl
+
+theorem FXTerm.ofCellId?_ofConstructorName
+    (constructorName : FXTermConstructorName) (payload : Nat) :
+    FXTerm.ofCellId? constructorName.cellId payload =
+      some (FXTerm.ofConstructorName constructorName payload) := by
+  exact FXTerm.ofCellId?_ofConstructorIndex
+    constructorName.constructorIndex payload
 
 theorem FXType.toCell?_ofCellId?_ofConstructorIndex
     (constructorIndex : Fin typeGeneratorCount) (payload : Nat) :
