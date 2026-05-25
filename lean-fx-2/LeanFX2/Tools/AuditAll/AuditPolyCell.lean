@@ -5,6 +5,7 @@ import LeanFX2.Foundation.PolyCell.Tier0.InternalSconing
 import LeanFX2.Foundation.PolyCell.Core.CellSort
 import LeanFX2.Foundation.PolyCell.Core.GeneratorSpec
 import LeanFX2.Foundation.PolyCell.Core.CellChildren
+import LeanFX2.Foundation.PolyCell.Core.CheckResult
 import LeanFX2.Foundation.PolyCell.Core.CompositionLaws
 import LeanFX2.Foundation.PolyCell.Core.DecEqWF
 import LeanFX2.Foundation.PolyCell.Extension.ProfileExtension
@@ -88,6 +89,13 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CellChildren.lambdaChildren_arity_eq_generator
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CellChildren.piTypeChildren_arity_eq_generator
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CellChildren.contextConsChildren_arity_eq_generator
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CellCheckRejection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.instDecidableEqCellCheckRejection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CellCheckRejection.all
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CellCheckRejection.toCode
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CellCheckRejection.ofCode?
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CellCheckRejection.ofCode?_toCode
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CellCheckRejection.all_length
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.dim
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.isAtom
