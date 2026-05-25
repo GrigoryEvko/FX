@@ -4617,6 +4617,7 @@ representable and computably rejected.
 | TCB.7v exact rejection family heads | `ca2b66bc` | Negative-probe headline theorems now bind each finite family to one exact rejection reason, instead of only checking each probe's stored expected reason.  This is a computable Bool-level theorem layer over the existing screens and certification policy; it adds no raw ingress, no new probes, no logical non-inhabitation claim, and no accepted payload. |
 | TCB.7w certified result erasure | `456191da` | Certified raw-cell/result packages now expose audited theorem heads showing the carried `PolyCell` erases to the raw cell it certifies, and result input-code evidence is projected without trusting it for construction.  No raw ingress, no new probes, no new logical non-inhabitation claim, and no accepted payload is added. |
 | TCB.7x exact probe-family coverage | `0b30c9fb` | Exact-reason negative-probe families now pass only when the family is nonempty and every probe rejects with the named reason.  This prevents empty-family theorem heads from passing vacuously while staying at the executable Bool-checker layer: no `False` theorem, no raw ingress, no new probes, and no accepted payload is added. |
+| TCB.7y dim-two seed term arrow | `493ecacf` | The identity over the seed dim-1 term step is now exposed as endpoint-indexed dim-2 term arrow and thin-arrow views, with audited definitional raw/source/target theorems.  No checker change, raw ingress, new probe, certified constructor, or accepted payload is added. |
 
 **Deliverables (NEW only):**
 
@@ -4657,8 +4658,9 @@ representable and computably rejected.
 | TCB.7v exact rejection family heads | `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds exact-reason family runners and audited theorem heads for inference, expected-shape, and certification-policy negative families. | Each finite family is checked against one named `CellCheckRejection`; this remains executable screen/policy evidence, not a theorem that no `PolyCell` inhabitant exists.  No new raw cells are admitted. |
 | TCB.7w certified result erasure | `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds generic erasure and input-code projection theorems for `CertifiedRawCell` and `CertifiedRawCellResult`. | Definitional and audit-gated; does not prove raw-code injectivity, does not broaden checker acceptance, and does not promote negative probes to non-inhabitation claims. |
 | TCB.7x exact probe-family coverage | `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds exact-coverage predicates and headlines for inference, expected-shape, certification-policy, and all current negative-probe families. | A family must be nonempty and must reject with its named reason to pass.  This is still executable checker evidence, not a constructor-index impossibility theorem. |
+| TCB.7y dim-two seed term arrow | `Foundation/PolyCell/FXProfile/CertifiedViews.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds dim-2 endpoint-indexed term arrow/thin-arrow aliases and seed identity-over-step views. | All raw/source/target theorems are definitional and audit-gated; no new certified constructors, checker acceptance, raw ingress, or negative-probe theorem shape is added. |
 
-**Implementation order after TCB.7x:**
+**Implementation order after TCB.7y:**
 
 1.  Do not broaden application by adding more one-off parent
     constructors.  Descriptor-indexed child spines over
@@ -4675,9 +4677,11 @@ representable and computably rejected.
     ingress.  A propext-free raw dispatcher for the already certified
     `.cell` fixture remains desirable but blocked by audit evidence until
     a new pattern is found.  Derived identity and derived vertical
-    composition are complete for already certified inputs; raw identity
-    and raw `compV` ingress remain untrusted.  Certified `compH` remains
-    blocked on real Gray-boundary semantics.
+    composition are complete for already certified inputs, and the
+    identity over the seed dim-1 term step is exposed as a dim-2
+    endpoint-indexed arrow/thin-arrow view.  Raw identity and raw `compV`
+    ingress remain untrusted.  Certified `compH` remains blocked on real
+    Gray-boundary semantics.
 4.  Thinness is structural and intentionally narrow: identities are thin,
     and vertical composites of thin cells are thin.  Do not classify
     generating term steps as thin until an operational conversion
