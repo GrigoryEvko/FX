@@ -16,6 +16,7 @@ Verify the current OmegacECell generator scaffold:
 - OmegacEWord packages finite scaffold-generator lists and preserves length
   and slot readback under suspension
 - OmegacEWordCode serializes scaffold words as normalized Nat slot lists;
+  append, normalization, encode, and decode are compositional;
   this is still not Makkai word equality
 - totalUpTo 0 = 2, totalUpTo 1 = 4, totalUpTo 2 = 6
 
@@ -143,13 +144,34 @@ example :
     (OmegacEWord.singleton (OmegacECell.firstAtDim 3)).slotValues =
       [0] := rfl
 example :
+    (OmegacEWord.append
+        (OmegacEWord.singleton (OmegacECell.firstAtDim 3))
+        (OmegacEWord.singleton (OmegacECell.secondAtDim 3))).slotValues =
+      (OmegacEWord.singleton (OmegacECell.firstAtDim 3)).slotValues ++
+        (OmegacEWord.singleton (OmegacECell.secondAtDim 3)).slotValues := by
+  exact OmegacEWord.slotValues_append
+    (OmegacEWord.singleton (OmegacECell.firstAtDim 3))
+    (OmegacEWord.singleton (OmegacECell.secondAtDim 3))
+example :
+    OmegacEWord.declaredIndexValues
+      (OmegacEWord.append
+        (OmegacEWord.singleton (OmegacECell.firstAtDim 3))
+        (OmegacEWord.singleton (OmegacECell.secondAtDim 3))) =
+      OmegacEWord.declaredIndexValues
+        (OmegacEWord.singleton (OmegacECell.firstAtDim 3)) ++
+        OmegacEWord.declaredIndexValues
+          (OmegacEWord.singleton (OmegacECell.secondAtDim 3)) := by
+  exact OmegacEWord.declaredIndexValues_append
+    (OmegacEWord.singleton (OmegacECell.firstAtDim 3))
+    (OmegacEWord.singleton (OmegacECell.secondAtDim 3))
+example :
     (OmegacEWord.suspend
         (OmegacEWord.append
           (OmegacEWord.singleton (OmegacECell.firstAtDim 3))
           (OmegacEWord.singleton (OmegacECell.secondAtDim 3)))).slotValues =
-      (OmegacEWord.append
-        (OmegacEWord.singleton (OmegacECell.firstAtDim 3))
-        (OmegacEWord.singleton (OmegacECell.secondAtDim 3))).slotValues := by
+    (OmegacEWord.append
+      (OmegacEWord.singleton (OmegacECell.firstAtDim 3))
+      (OmegacEWord.singleton (OmegacECell.secondAtDim 3))).slotValues := by
   exact OmegacEWord.slotValues_suspend
     (OmegacEWord.append
       (OmegacEWord.singleton (OmegacECell.firstAtDim 3))
@@ -161,6 +183,36 @@ example :
         (OmegacEWordCode.singleton 7)).normalize.slotValues =
       [0, 1] := rfl
 example :
+    (OmegacEWordCode.append
+        (OmegacEWordCode.singleton 0)
+        (OmegacEWordCode.singleton 7)).length =
+      (OmegacEWordCode.singleton 0).length +
+        (OmegacEWordCode.singleton 7).length := by
+  exact OmegacEWordCode.length_append
+    (OmegacEWordCode.singleton 0)
+    (OmegacEWordCode.singleton 7)
+example :
+    (OmegacEWordCode.append
+        (OmegacEWordCode.singleton 0)
+        (OmegacEWordCode.singleton 7)).normalize =
+      OmegacEWordCode.append
+        (OmegacEWordCode.singleton 0).normalize
+        (OmegacEWordCode.singleton 7).normalize := by
+  exact OmegacEWordCode.normalize_append
+    (OmegacEWordCode.singleton 0)
+    (OmegacEWordCode.singleton 7)
+example :
+    (OmegacEWordCode.append
+        (OmegacEWordCode.singleton 0)
+        (OmegacEWordCode.singleton 7)).normalize.normalize =
+      (OmegacEWordCode.append
+        (OmegacEWordCode.singleton 0)
+        (OmegacEWordCode.singleton 7)).normalize := by
+  exact OmegacEWordCode.normalize_idempotent
+    (OmegacEWordCode.append
+      (OmegacEWordCode.singleton 0)
+      (OmegacEWordCode.singleton 7))
+example :
     ((OmegacEWordCode.append
         (OmegacEWordCode.singleton 0)
         (OmegacEWordCode.singleton 1)).toWord 3).slotValues =
@@ -170,6 +222,16 @@ example :
         (OmegacEWordCode.singleton 0)
         (OmegacEWordCode.singleton 7)).toWord 3).slotValues =
       [0, 1] := rfl
+example :
+    (OmegacEWordCode.append
+        (OmegacEWordCode.singleton 0)
+        (OmegacEWordCode.singleton 7)).toWord 3 =
+      OmegacEWord.append
+        ((OmegacEWordCode.singleton 0).toWord 3)
+        ((OmegacEWordCode.singleton 7).toWord 3) := by
+  exact OmegacEWordCode.toWord_append 3
+    (OmegacEWordCode.singleton 0)
+    (OmegacEWordCode.singleton 7)
 example :
     OmegacEWordCode.ofWord
         ((OmegacEWordCode.append
@@ -184,14 +246,27 @@ example :
       (OmegacEWordCode.singleton 7))
 example :
     OmegacEWordCode.ofWord
+        (OmegacEWord.append
+          (OmegacEWord.singleton (OmegacECell.firstAtDim 3))
+          (OmegacEWord.singleton (OmegacECell.secondAtDim 3))) =
+      OmegacEWordCode.append
+        (OmegacEWordCode.ofWord
+          (OmegacEWord.singleton (OmegacECell.firstAtDim 3)))
+        (OmegacEWordCode.ofWord
+          (OmegacEWord.singleton (OmegacECell.secondAtDim 3))) := by
+  exact OmegacEWordCode.ofWord_append
+    (OmegacEWord.singleton (OmegacECell.firstAtDim 3))
+    (OmegacEWord.singleton (OmegacECell.secondAtDim 3))
+example :
+    OmegacEWordCode.ofWord
         (OmegacEWord.suspend
           (OmegacEWord.append
             (OmegacEWord.singleton (OmegacECell.firstAtDim 3))
             (OmegacEWord.singleton (OmegacECell.secondAtDim 3)))) =
-      OmegacEWordCode.ofWord
-        (OmegacEWord.append
-          (OmegacEWord.singleton (OmegacECell.firstAtDim 3))
-          (OmegacEWord.singleton (OmegacECell.secondAtDim 3))) := by
+    OmegacEWordCode.ofWord
+      (OmegacEWord.append
+        (OmegacEWord.singleton (OmegacECell.firstAtDim 3))
+        (OmegacEWord.singleton (OmegacECell.secondAtDim 3))) := by
   exact OmegacEWordCode.ofWord_suspend
     (OmegacEWord.append
       (OmegacEWord.singleton (OmegacECell.firstAtDim 3))
