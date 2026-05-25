@@ -4609,6 +4609,7 @@ representable and computably rejected.
 | TCB.7n arrow endpoint theorem heads | `4673b627` | Certified and certified-thin arrows now have generic audited source/target theorems for identity and vertical composition.  These are theorem heads over already certified data, not new raw ingress or new thinness power. |
 | TCB.7o multi-sort thin identity arrows | `b7b203f6` | Endpoint-indexed thin identity arrows are now exposed for the seed type, context, and mode cells, matching the existing term identity arrow discipline.  This confirms the certified view layer is not term-only; type/context/mode cells use the same endpoint-indexed substrate without any new raw ingress. |
 | TCB.7p multi-sort thin identity composites | `bee8d7f1` | Endpoint-indexed thin composites of seed identity arrows are now exposed for type, context, and mode cells.  This mirrors the term identity composite through the generic thin-arrow `compV`, proving the multi-sort views share the same structural vertical-composition discipline. |
+| TCB.7q derived application child spine | `0f6f3098` | The accepted `app(var 0, var 1)` child package no longer stores an independent certified child spine.  It derives the spine from the certified function and argument children and exposes a raw-descriptor erasure theorem showing the certified spine matches the decoded raw child descriptors.  No accepted raw inputs are broadened. |
 
 **Deliverables (NEW only):**
 
@@ -4641,9 +4642,10 @@ representable and computably rejected.
 | TCB.7n arrow endpoint theorem heads | `Foundation/PolyCell/FXProfile/CertifiedViews.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds generic theorem heads for source and target endpoints of certified-arrow identity and vertical composition, mirrored for certified thin arrows. | Every theorem is definitional and audit-gated; no new certified constructors, raw dispatchers, or operational classifications are added. |
 | TCB.7o multi-sort thin identity arrows | `Foundation/PolyCell/FXProfile/CertifiedViews.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds type/context/mode endpoint-indexed arrow aliases and seed thin identity arrows with definitional raw/source/target theorems. | The new arrows are derived only from already certified seed cells and structural identity thinness; no checker acceptance domain changes. |
 | TCB.7p multi-sort thin identity composites | `Foundation/PolyCell/FXProfile/CertifiedViews.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds type/context/mode endpoint-indexed thin composites by composing the corresponding seed thin identity arrows. | Raw/source/target theorems are definitional and audited; no raw `compV` dispatcher, checker broadening, or operational conversion predicate is added. |
-| TCB.7q certified FX operational views | `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | Future `FXStep`, `FXConv`, `FXCdLemma` as projections of certified positive-dimensional cells and thinness certificates. | Existing raw subtype views remain compatibility-only; new operational code uses certified views only after the corresponding positive-dimensional certification, thinness data, and operational predicates exist. |
+| TCB.7q derived application child spine | `Foundation/PolyCell/Core/Certified.lean`, `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Removes the stored `applicationChildSpine` field from the first certified application child package and derives it from `functionCell` and `argumentCell`.  Adds certified-child-spine erasure to `RawChildDescriptors`. | The package cannot carry certified children together with an unrelated child spine; the erasure theorem is definitional and audited; no new application payloads are accepted. |
+| TCB.7r certified FX operational views | `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | Future `FXStep`, `FXConv`, `FXCdLemma` as projections of certified positive-dimensional cells and thinness certificates. | Existing raw subtype views remain compatibility-only; new operational code uses certified views only after the corresponding positive-dimensional certification, thinness data, and operational predicates exist. |
 
-**Implementation order after TCB.7p:**
+**Implementation order after TCB.7q:**
 
 1.  Do not broaden application by adding more one-off parent
     constructors.  The next application slice is a propext-free certified
@@ -4695,10 +4697,14 @@ representable and computably rejected.
     child dimension, wrong child scope, wrong expected sort, bad
     endpoint, bad vertical boundary,
     unsupported `compH`, or screen-passing but unsupported certification.
-    Stronger non-inhabitation theorems are allowed only when they follow
-    from certified constructors and indices without excluded middle,
-    `propext`, `Classical`, `Inhabited`, `Nonempty`, or empty-domain
-    tricks.
+    Over time, fold those executable families under well-scoped PolyCell
+    theorem heads such as "this finite family has no certified inhabitant"
+    or "this finite family cannot pass this expected-shape checker", but
+    only after the statement is non-vacuous and grounded in an explicit
+    finite probe list or a real constructor-index obstruction.  Stronger
+    non-inhabitation theorems are allowed only when they follow from
+    certified constructors and indices without excluded middle, `propext`,
+    `Classical`, `Inhabited`, `Nonempty`, or empty-domain tricks.
 
 **POLY-TCB anti-vacuity gate:** TCB.4 is intentionally weaker than the
 full checker: it must have concrete accepted witnesses only for the
