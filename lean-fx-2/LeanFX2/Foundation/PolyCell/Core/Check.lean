@@ -217,112 +217,10 @@ def certifiedLinearModePackage {profile : PolyProfile} {scope : Nat} :
   certifiedCell :=
     PolyCell.linearMode (profile := profile) (scope := scope)
 
-/-- Certified decoded children for the first finite application payload.
-
-This is deliberately narrower than a general application decoder.  It records
-the two certified variable children and the heterogeneous child spine dictated
-by `applicationGeneratorSpec`. -/
-structure CertifiedApplicationVarZeroVarOneChildren
-    (profile : PolyProfile) (scope : Nat) where
-  /-- Certified function child, decoded as `var 0`. -/
-  functionCell :
-    PolyCell profile .term 0 scope ()
-      (.atom variableGeneratorSpec.cellId 0)
-  /-- Certified argument child, decoded as `var 1`. -/
-  argumentCell :
-    PolyCell profile .term 0 scope ()
-      (.atom variableGeneratorSpec.cellId 1)
-  /-- Certified child spine matching the application generator metadata. -/
-  applicationChildSpine :
-    CellChildren.ForGenerator (PolyCell.CertifiedChild profile) scope
-      applicationGeneratorSpec
-
-/-- Build the certified child package for `app(var 0, var 1)` from variable
-scope evidence. -/
-def certifiedApplicationVarZeroVarOneChildren {profile : PolyProfile}
-    {scope : Nat}
-    (hasFunctionIndexWithinScope : 0 < scope)
-    (hasArgumentIndexWithinScope : 1 < scope) :
-    CertifiedApplicationVarZeroVarOneChildren profile scope :=
-  let functionCell :=
-    PolyCell.variableCell (profile := profile)
-      (scope := scope) (index := 0) hasFunctionIndexWithinScope
-  let argumentCell :=
-    PolyCell.variableCell (profile := profile)
-      (scope := scope) (index := 1) hasArgumentIndexWithinScope
-  { functionCell := functionCell
-    argumentCell := argumentCell
-    applicationChildSpine :=
-      PolyCell.applicationVarZeroVarOneChildren functionCell argumentCell }
-
-/-- Computably decode certified children for the first finite application
-payload.
-
-Scopes 0 and 1 reject before any parent cell can be built, because `var 1` is
-not certifiable there. -/
-def certifyApplicationVarZeroVarOneChildren? {profile : PolyProfile} :
-    (scope : Nat) →
-      Except CellCheckRejection
-        (CertifiedApplicationVarZeroVarOneChildren profile scope)
-  | 0 => Except.error .wrongChildShape
-  | 1 => Except.error .wrongChildShape
-  | scope + 1 + 1 =>
-      Except.ok
-        (certifiedApplicationVarZeroVarOneChildren (profile := profile)
-          (scope := scope + 1 + 1)
-          (Nat.zero_lt_succ (scope + 1))
-          (Nat.succ_lt_succ (Nat.zero_lt_succ scope)))
-
-/-- Certified package for the first finite application payload.
-
-The package is available only after the decoded variable children have been
-certified in the same scope. -/
-def certifiedApplicationVarZeroVarOnePackage {profile : PolyProfile}
-    {scope : Nat}
-    (certifiedChildren :
-      CertifiedApplicationVarZeroVarOneChildren profile scope) :
-    CertifiedRawCell profile scope
-      (PolyTerm.atom applicationGeneratorSpec.cellId
-        applicationVarZeroVarOnePayload) where
-  cellSort := .term
-  cellBoundary := ()
-  certifiedCell :=
-    PolyCell.applicationVarZeroVarOneCell
-      certifiedChildren.functionCell
-      certifiedChildren.argumentCell
-
-/-- Lookup the current supported dim-0 generator metadata by raw id. -/
-def lookupGeneratorSpec? (cellId : CellId) : Option KnownGeneratorSpec :=
-  if Nat.beq cellId variableGeneratorSpec.cellId then
-    some ⟨variableGeneratorSpec, SupportedGeneratorSpec.variable⟩
-  else if Nat.beq cellId lambdaGeneratorSpec.cellId then
-    some ⟨lambdaGeneratorSpec, SupportedGeneratorSpec.lambda⟩
-  else if Nat.beq cellId applicationGeneratorSpec.cellId then
-    some ⟨applicationGeneratorSpec, SupportedGeneratorSpec.application⟩
-  else if Nat.beq cellId unitTypeGeneratorSpec.cellId then
-    some ⟨unitTypeGeneratorSpec, SupportedGeneratorSpec.unitType⟩
-  else if Nat.beq cellId piTypeGeneratorSpec.cellId then
-    some ⟨piTypeGeneratorSpec, SupportedGeneratorSpec.piType⟩
-  else if Nat.beq cellId contextEmptyGeneratorSpec.cellId then
-    some ⟨contextEmptyGeneratorSpec, SupportedGeneratorSpec.contextEmpty⟩
-  else if Nat.beq cellId contextConsGeneratorSpec.cellId then
-    some ⟨contextConsGeneratorSpec, SupportedGeneratorSpec.contextCons⟩
-  else if Nat.beq cellId linearModeGeneratorSpec.cellId then
-    some ⟨linearModeGeneratorSpec, SupportedGeneratorSpec.linearMode⟩
-  else
-    none
-
-/-- Lookup the current supported positive-dimensional rule metadata by raw id. -/
-def lookupRuleSpec? (ruleId : CellId) : Option KnownRuleSpec :=
-  if Nat.beq ruleId termStepRuleSpec.ruleId then
-    some ⟨termStepRuleSpec, SupportedRuleSpec.termStep⟩
-  else
-    none
-
 /-- Decode the first finite application payloads into raw child descriptors.
 
 This is decoder output only.  The returned children still need recursive
-screening before the application atom can be accepted by `screenRawCell?`. -/
+screening or certification before the application atom can be accepted. -/
 def decodeApplicationPayload? {profile : PolyProfile} (scope payload : Nat) :
     Except CellCheckRejection
       (RawChildDescriptors.forGenerator profile scope
@@ -353,6 +251,34 @@ def decodeApplicationPayload? {profile : PolyProfile} (scope payload : Nat) :
     Except.error .wrongChildShape
   else
     Except.error .badPayload
+
+/-- Lookup the current supported dim-0 generator metadata by raw id. -/
+def lookupGeneratorSpec? (cellId : CellId) : Option KnownGeneratorSpec :=
+  if Nat.beq cellId variableGeneratorSpec.cellId then
+    some ⟨variableGeneratorSpec, SupportedGeneratorSpec.variable⟩
+  else if Nat.beq cellId lambdaGeneratorSpec.cellId then
+    some ⟨lambdaGeneratorSpec, SupportedGeneratorSpec.lambda⟩
+  else if Nat.beq cellId applicationGeneratorSpec.cellId then
+    some ⟨applicationGeneratorSpec, SupportedGeneratorSpec.application⟩
+  else if Nat.beq cellId unitTypeGeneratorSpec.cellId then
+    some ⟨unitTypeGeneratorSpec, SupportedGeneratorSpec.unitType⟩
+  else if Nat.beq cellId piTypeGeneratorSpec.cellId then
+    some ⟨piTypeGeneratorSpec, SupportedGeneratorSpec.piType⟩
+  else if Nat.beq cellId contextEmptyGeneratorSpec.cellId then
+    some ⟨contextEmptyGeneratorSpec, SupportedGeneratorSpec.contextEmpty⟩
+  else if Nat.beq cellId contextConsGeneratorSpec.cellId then
+    some ⟨contextConsGeneratorSpec, SupportedGeneratorSpec.contextCons⟩
+  else if Nat.beq cellId linearModeGeneratorSpec.cellId then
+    some ⟨linearModeGeneratorSpec, SupportedGeneratorSpec.linearMode⟩
+  else
+    none
+
+/-- Lookup the current supported positive-dimensional rule metadata by raw id. -/
+def lookupRuleSpec? (ruleId : CellId) : Option KnownRuleSpec :=
+  if Nat.beq ruleId termStepRuleSpec.ruleId then
+    some ⟨termStepRuleSpec, SupportedRuleSpec.termStep⟩
+  else
+    none
 
 /-- Preliminary payload screen for a known generator.
 
@@ -538,6 +464,94 @@ def screenRawCell? {profile : PolyProfile} (scope : Nat) {dimension : CellDim}
     (rawCell : PolyTerm profile dimension) :
     Except CellCheckRejection CellSort :=
   screenRawCellWithFuel? 64 scope rawCell
+
+/-- Certified decoded children for the first finite application payload.
+
+This is deliberately narrower than a general application decoder.  It records
+the two certified variable children and the heterogeneous child spine dictated
+by `applicationGeneratorSpec`. -/
+structure CertifiedApplicationVarZeroVarOneChildren
+    (profile : PolyProfile) (scope : Nat) where
+  /-- Certified function child, decoded as `var 0`. -/
+  functionCell :
+    PolyCell profile .term 0 scope ()
+      (.atom variableGeneratorSpec.cellId 0)
+  /-- Certified argument child, decoded as `var 1`. -/
+  argumentCell :
+    PolyCell profile .term 0 scope ()
+      (.atom variableGeneratorSpec.cellId 1)
+  /-- Certified child spine matching the application generator metadata. -/
+  applicationChildSpine :
+    CellChildren.ForGenerator (PolyCell.CertifiedChild profile) scope
+      applicationGeneratorSpec
+
+/-- Build the certified child package for `app(var 0, var 1)` from variable
+scope evidence. -/
+def certifiedApplicationVarZeroVarOneChildren {profile : PolyProfile}
+    {scope : Nat}
+    (hasFunctionIndexWithinScope : 0 < scope)
+    (hasArgumentIndexWithinScope : 1 < scope) :
+    CertifiedApplicationVarZeroVarOneChildren profile scope :=
+  let functionCell :=
+    PolyCell.variableCell (profile := profile)
+      (scope := scope) (index := 0) hasFunctionIndexWithinScope
+  let argumentCell :=
+    PolyCell.variableCell (profile := profile)
+      (scope := scope) (index := 1) hasArgumentIndexWithinScope
+  { functionCell := functionCell
+    argumentCell := argumentCell
+    applicationChildSpine :=
+      PolyCell.applicationVarZeroVarOneChildren functionCell argumentCell }
+
+/-- Computably decode certified children for the first finite application
+payload.
+
+Scopes 0 and 1 reject before any parent cell can be built, because `var 1` is
+not certifiable there.  For larger scopes, the application payload decoder and
+generic child screen both run before the certified parent is constructed. -/
+def certifyApplicationVarZeroVarOneChildren? {profile : PolyProfile} :
+    (scope : Nat) →
+      Except CellCheckRejection
+        (CertifiedApplicationVarZeroVarOneChildren profile scope)
+  | 0 => Except.error .wrongChildShape
+  | 1 => Except.error .wrongChildShape
+  | scope + 1 + 1 =>
+      match
+          decodeApplicationPayload? (profile := profile) (scope + 1 + 1)
+            applicationVarZeroVarOnePayload with
+      | Except.error rejection => Except.error rejection
+      | Except.ok rawDescriptors =>
+          match
+              screenRawChildDescriptorsWith? (profile := profile)
+                (fun {childDimension} childScope
+                    (childRaw : PolyTerm profile childDimension) =>
+                  screenRawCellWithFuel? 63 childScope childRaw)
+                (scope + 1 + 1) rawDescriptors with
+          | Except.error rejection => Except.error rejection
+          | Except.ok () =>
+              Except.ok
+                (certifiedApplicationVarZeroVarOneChildren
+                  (profile := profile) (scope := scope + 1 + 1)
+                  (Nat.zero_lt_succ (scope + 1))
+                  (Nat.succ_lt_succ (Nat.zero_lt_succ scope)))
+
+/-- Certified package for the first finite application payload.
+
+The package is available only after the decoded variable children have been
+screened and certified in the same scope. -/
+def certifiedApplicationVarZeroVarOnePackage {profile : PolyProfile}
+    {scope : Nat}
+    (certifiedChildren :
+      CertifiedApplicationVarZeroVarOneChildren profile scope) :
+    CertifiedRawCell profile scope
+      (PolyTerm.atom applicationGeneratorSpec.cellId
+        applicationVarZeroVarOnePayload) where
+  cellSort := .term
+  cellBoundary := ()
+  certifiedCell :=
+    PolyCell.applicationVarZeroVarOneCell
+      certifiedChildren.functionCell
+      certifiedChildren.argumentCell
 
 /-- Infer the raw sort from current metadata without certifying the payload. -/
 def inferRawCellSort? {profile : PolyProfile} {dimension : CellDim} :
@@ -964,6 +978,14 @@ theorem decodeApplicationPayload?_outOfScopeArgument
         (RawChildDescriptors.application
           (NegativeProbes.seedTermAtom profile)
           (NegativeProbes.outOfScopeVariableRawCell profile)) := rfl
+
+theorem certifyApplicationVarZeroVarOneChildren?_scope_four_accepts
+    {profile : PolyProfile} :
+    (match
+      certifyApplicationVarZeroVarOneChildren? (profile := profile)
+        NegativeProbes.defaultInferScope with
+    | Except.ok _ => true
+    | Except.error _ => false) = true := rfl
 
 theorem screenRawChildDescriptorsWith?_applicationVarZeroVarOne
     {profile : PolyProfile} :
