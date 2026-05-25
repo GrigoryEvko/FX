@@ -447,6 +447,9 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.haveExpectedShapeNegativeProbeFamiliesExactCoverage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.haveCertificationNegativeProbeFamiliesExactCoverage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.haveAllNegativeProbeFamiliesExactCoverage
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.hasNegativeProbeCoverageForRejectionReason
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.doRejectionReasonsHaveNegativeProbeCoverage
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.haveAllCellCheckRejectionReasonsNegativeProbeCoverage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.checkRawCellAs?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedResultSort?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedSeedTermPackage
@@ -837,6 +840,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.expectedShapeNegativeProbeFamilies_haveExactCoverage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certificationNegativeProbeFamilies_haveExactCoverage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.allNegativeProbeFamilies_haveExactCoverage
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.allCellCheckRejectionReasons_haveNegativeProbeCoverage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.dim
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.isAtom

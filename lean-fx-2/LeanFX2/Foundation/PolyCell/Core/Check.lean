@@ -1136,6 +1136,61 @@ def haveAllNegativeProbeFamiliesExactCoverage
   haveExpectedShapeNegativeProbeFamiliesExactCoverage profile &&
   haveCertificationNegativeProbeFamiliesExactCoverage profile
 
+/-- Exact probe coverage for one rejection reason.
+
+This is a coverage matrix over the current executable probe layer, not a
+non-inhabitation theorem about certified cells.  Reasons that occur in more
+than one checker phase require every current phase-family for that reason. -/
+def hasNegativeProbeCoverageForRejectionReason
+    (profile : PolyProfile) : CellCheckRejection → Bool
+  | .unknownGenerator =>
+      hasInferNegativeProbeFamilyExactCoverage .unknownGenerator
+        (NegativeProbes.unknownGeneratorInferNegativeProbes profile)
+  | .wrongSort =>
+      hasExpectedShapeNegativeProbeFamilyExactCoverage .wrongSort
+        (NegativeProbes.wrongSortExpectedShapeNegativeProbes profile)
+  | .badPayload =>
+      hasInferNegativeProbeFamilyExactCoverage .badPayload
+        (NegativeProbes.badPayloadInferNegativeProbes profile)
+  | .wrongArity =>
+      hasInferNegativeProbeFamilyExactCoverage .wrongArity
+        (NegativeProbes.wrongArityInferNegativeProbes profile)
+  | .wrongChildShape =>
+      hasInferNegativeProbeFamilyExactCoverage .wrongChildShape
+        (NegativeProbes.wrongChildShapeInferNegativeProbes profile)
+  | .badBoundaryEndpoint =>
+      hasInferNegativeProbeFamilyExactCoverage .badBoundaryEndpoint
+        (NegativeProbes.badBoundaryEndpointInferNegativeProbes profile) &&
+      hasCertificationNegativeProbeFamilyExactCoverage .badBoundaryEndpoint
+        (NegativeProbes.badBoundaryEndpointCertificationNegativeProbes
+          profile)
+  | .badVerticalBoundary =>
+      hasInferNegativeProbeFamilyExactCoverage .badVerticalBoundary
+        (NegativeProbes.badVerticalBoundaryInferNegativeProbes profile)
+  | .unsupportedCompH =>
+      hasInferNegativeProbeFamilyExactCoverage .unsupportedCompH
+        (NegativeProbes.unsupportedCompHInferNegativeProbes profile) &&
+      hasCertificationNegativeProbeFamilyExactCoverage .unsupportedCompH
+        (NegativeProbes.unsupportedCompHCertificationNegativeProbes profile)
+  | .unsupportedCertification =>
+      hasCertificationNegativeProbeFamilyExactCoverage
+        .unsupportedCertification
+        (NegativeProbes.unsupportedCertificationNegativeProbes profile)
+
+/-- Check exact probe coverage for each rejection reason in a finite list. -/
+def doRejectionReasonsHaveNegativeProbeCoverage
+    (profile : PolyProfile) : List CellCheckRejection → Bool
+  | [] => true
+  | rejectionReason :: remainingReasons =>
+      hasNegativeProbeCoverageForRejectionReason profile rejectionReason &&
+      doRejectionReasonsHaveNegativeProbeCoverage profile remainingReasons
+
+/-- Every current rejection reason has a nonempty exact probe family at the
+checker phase where that reason is supposed to arise. -/
+def haveAllCellCheckRejectionReasonsNegativeProbeCoverage
+    (profile : PolyProfile) : Bool :=
+  doRejectionReasonsHaveNegativeProbeCoverage profile CellCheckRejection.all
+
 /-- Expected-shape wrapper for the dim-0 certified ingress. -/
 def checkRawCellAs? {profile : PolyProfile} (expectedSort : CellSort)
     (scope : Nat) (rawCell : PolyTerm profile 0) :
@@ -2599,6 +2654,12 @@ rejects with its named reason. -/
 theorem allNegativeProbeFamilies_haveExactCoverage
     (profile : PolyProfile) :
     haveAllNegativeProbeFamiliesExactCoverage profile = true := rfl
+
+/-- Coverage headline: every current `CellCheckRejection` constructor has
+nonempty exact negative-probe coverage at its checker phase. -/
+theorem allCellCheckRejectionReasons_haveNegativeProbeCoverage
+    (profile : PolyProfile) :
+    haveAllCellCheckRejectionReasonsNegativeProbeCoverage profile = true := rfl
 
 end Check
 
