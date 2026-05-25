@@ -1626,4 +1626,74 @@ theorem FXType.toCell_ofConstructorIndex_constructorIndex_payload
             of_decide_eq_true hasLowerBoundDecide
           rw [nat_add_sub_cancel_of_le_structural hasLowerBound]
 
+/-- Decode a current term constructor id and payload into an FX term view. -/
+def FXTerm.ofCellId? (cellId : CellId) (payload : Nat) : Option FXTerm :=
+  match classifyDimZeroCellId cellId with
+  | .termConstructor constructorIndex =>
+      some (FXTerm.ofConstructorIndex constructorIndex payload)
+  | .typeConstructor _ => none
+  | .outsideCurrentGeneratorRange _ _ => none
+
+/-- Decode a current type constructor id and payload into an FX type view. -/
+def FXType.ofCellId? (cellId : CellId) (payload : Nat) : Option FXType :=
+  match classifyDimZeroCellId cellId with
+  | .termConstructor _ => none
+  | .typeConstructor constructorIndex =>
+      some (FXType.ofConstructorIndex constructorIndex payload)
+  | .outsideCurrentGeneratorRange _ _ => none
+
+theorem FXTerm.ofCellId?_ofConstructorIndex
+    (constructorIndex : Fin termGeneratorCount) (payload : Nat) :
+    FXTerm.ofCellId? constructorIndex.val payload =
+      some (FXTerm.ofConstructorIndex constructorIndex payload) := by
+  unfold FXTerm.ofCellId?
+  unfold classifyDimZeroCellId
+  rw [dif_pos constructorIndex.isLt]
+
+theorem FXTerm.toCell?_ofCellId?_ofConstructorIndex
+    (constructorIndex : Fin termGeneratorCount) (payload : Nat) :
+    Option.map FXTerm.toCell
+        (FXTerm.ofCellId? constructorIndex.val payload) =
+      some (FXTerm.ofConstructorIndex constructorIndex payload).toCell := by
+  rw [FXTerm.ofCellId?_ofConstructorIndex]
+  rfl
+
+theorem FXType.toCell?_ofCellId?_ofConstructorIndex
+    (constructorIndex : Fin typeGeneratorCount) (payload : Nat) :
+    Option.map FXType.toCell
+        (FXType.ofCellId?
+          (PolyTerm.firstTypeCellId + constructorIndex.val) payload) =
+      some (FXType.ofConstructorIndex constructorIndex payload).toCell := by
+  unfold FXType.ofCellId?
+  unfold classifyDimZeroCellId
+  have hasNoTermRange :
+      ¬PolyTerm.firstTypeCellId + constructorIndex.val <
+        termGeneratorCount := by
+    change
+      ¬PolyTerm.firstTypeCellId + constructorIndex.val <
+        PolyTerm.firstTypeCellId
+    exact Nat.not_lt_of_ge (Nat.le_add_right _ _)
+  have hasCurrentRange :
+      PolyTerm.firstTypeCellId + constructorIndex.val <
+        totalGeneratorCount := by
+    change
+      PolyTerm.firstTypeCellId + constructorIndex.val <
+        PolyTerm.typeCellIdLimit
+    exact Nat.add_lt_add_left constructorIndex.isLt
+      PolyTerm.firstTypeCellId
+  rw [dif_neg hasNoTermRange, dif_pos hasCurrentRange]
+  change
+    some
+      ((PolyTerm.atom
+          (PolyTerm.firstTypeCellId +
+            ((PolyTerm.firstTypeCellId + constructorIndex.val) -
+              PolyTerm.firstTypeCellId))
+          payload :
+        FXCellAt 0)) =
+      some
+        (PolyTerm.atom
+          (PolyTerm.firstTypeCellId + constructorIndex.val)
+          payload)
+  rw [nat_add_sub_cancel_left_structural]
+
 end LeanFX2.Foundation.PolyCell.FXProfile
