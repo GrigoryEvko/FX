@@ -1,8 +1,8 @@
-import LeanFX2.Foundation.Polygraph.VerticalComp
+import LeanFX2.Foundation._deprecated_polygraph.VerticalComp
 
 namespace LeanFX2.Smoke
 
-open LeanFX2.Foundation.Polygraph
+open LeanFX2.Foundation._deprecated_polygraph
 
 /-- Anchor cell: a 1-cell from atom 0 to atom 1. -/
 def anchorArrow : PolyCell 1 0 1 :=
@@ -55,17 +55,17 @@ theorem appendedChain_length_smoke :
 
 end LeanFX2.Smoke
 
-#print axioms LeanFX2.Foundation.Polygraph.VerticalChain
-#print axioms LeanFX2.Foundation.Polygraph.VerticalChain.length
-#print axioms LeanFX2.Foundation.Polygraph.VerticalChain.length_identity_eq_zero
-#print axioms LeanFX2.Foundation.Polygraph.VerticalChain.length_cons_eq_succ_length_tail
-#print axioms LeanFX2.Foundation.Polygraph.VerticalChain.append
-#print axioms LeanFX2.Foundation.Polygraph.VerticalChain.append_identity_left
-#print axioms LeanFX2.Foundation.Polygraph.VerticalChain.append_cons_unfold
-#print axioms LeanFX2.Foundation.Polygraph.VerticalChain.append_identity_right
-#print axioms LeanFX2.Foundation.Polygraph.VerticalChain.length_append_eq_sum_of_lengths
-#print axioms LeanFX2.Foundation.Polygraph.VerticalChain.composeTwoCells
-#print axioms LeanFX2.Foundation.Polygraph.VerticalChain.composeTwoCells_length_eq_two
+#print axioms LeanFX2.Foundation._deprecated_polygraph.VerticalChain
+#print axioms LeanFX2.Foundation._deprecated_polygraph.VerticalChain.length
+#print axioms LeanFX2.Foundation._deprecated_polygraph.VerticalChain.length_identity_eq_zero
+#print axioms LeanFX2.Foundation._deprecated_polygraph.VerticalChain.length_cons_eq_succ_length_tail
+#print axioms LeanFX2.Foundation._deprecated_polygraph.VerticalChain.append
+#print axioms LeanFX2.Foundation._deprecated_polygraph.VerticalChain.append_identity_left
+#print axioms LeanFX2.Foundation._deprecated_polygraph.VerticalChain.append_cons_unfold
+#print axioms LeanFX2.Foundation._deprecated_polygraph.VerticalChain.append_identity_right
+#print axioms LeanFX2.Foundation._deprecated_polygraph.VerticalChain.length_append_eq_sum_of_lengths
+#print axioms LeanFX2.Foundation._deprecated_polygraph.VerticalChain.composeTwoCells
+#print axioms LeanFX2.Foundation._deprecated_polygraph.VerticalChain.composeTwoCells_length_eq_two
 #print axioms LeanFX2.Smoke.identityChain_smoke
 #print axioms LeanFX2.Smoke.identityChain_length_smoke
 #print axioms LeanFX2.Smoke.singleStepChain_smoke

@@ -1,8 +1,8 @@
-import LeanFX2.Foundation.Polygraph.Dim2Diamond
+import LeanFX2.Foundation._deprecated_polygraph.Dim2Diamond
 
 namespace LeanFX2.Smoke
 
-open LeanFX2.Foundation.Polygraph
+open LeanFX2.Foundation._deprecated_polygraph
 
 /-! K11.17 — `Diamond.toDim2Cell` dim-2 polygraph embedding for the
 cd_lemma diamond coherence.  Each `#print axioms` line below must

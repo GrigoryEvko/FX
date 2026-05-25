@@ -1,8 +1,8 @@
-import LeanFX2.Foundation.Polygraph.Laws
+import LeanFX2.Foundation._deprecated_polygraph.Laws
 
 namespace LeanFX2.Smoke
 
-open LeanFX2.Foundation.Polygraph
+open LeanFX2.Foundation._deprecated_polygraph
 
 /-! Concrete witnesses exercising K11.6 associativity at small chains. -/
 
@@ -64,7 +64,7 @@ theorem horizontal_append_assoc_smoke :
 
 end LeanFX2.Smoke
 
-#print axioms LeanFX2.Foundation.Polygraph.VerticalChain.append_assoc
-#print axioms LeanFX2.Foundation.Polygraph.HorizontalChain.append_assoc
+#print axioms LeanFX2.Foundation._deprecated_polygraph.VerticalChain.append_assoc
+#print axioms LeanFX2.Foundation._deprecated_polygraph.HorizontalChain.append_assoc
 #print axioms LeanFX2.Smoke.vertical_append_assoc_smoke
 #print axioms LeanFX2.Smoke.horizontal_append_assoc_smoke

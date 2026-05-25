@@ -1,4 +1,4 @@
-import LeanFX2.Foundation.Polygraph.PolyCell
+import LeanFX2.Foundation._deprecated_polygraph.PolyCell
 
 /-! # `StepLabel` — Burroni 1-polygraph generator labels for `Step`
 
@@ -69,7 +69,7 @@ K11.14 in the K-series build plan.  Pairs with K11.15
 equivalence, K11.17 `cd_lemma.toDim2Cell` 2-cell embedding.
 -/
 
-namespace LeanFX2.Foundation.Polygraph
+namespace LeanFX2.Foundation._deprecated_polygraph
 
 /-- One `StepLabel` constructor per `LeanFX2.Step.par` constructor.
 Ctor names match `Step` ctor names character-for-character (source
@@ -317,4 +317,4 @@ across labels is the numeric index. -/
 def StepLabel.toDim1Cell (label : StepLabel) : PolyCell 1 0 0 :=
   PolyCell.arrow (.atom 0) (.atom 0) label.index
 
-end LeanFX2.Foundation.Polygraph
+end LeanFX2.Foundation._deprecated_polygraph

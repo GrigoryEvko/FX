@@ -81,7 +81,7 @@ ctor.  The polygraph fold (P3.8) and distributed evaluator
 * Generic `cd` / `cd_lemma` (P3.5) — the cascade obsoleter.
 -/
 
-namespace LeanFX2.Foundation.Polygraph
+namespace LeanFX2.Foundation._deprecated_polygraph
 
 /-- Full 74-summand polygraph generator enum.  Mirrors
 `LeanFX2.RawTerm`'s 74 constructors one-to-one (see
@@ -539,4 +539,4 @@ design call.  The spike's PRELIMINARY VERDICT is therefore:
 
 No `Eq.mpr` was harmed in producing this file. -/
 
-end LeanFX2.Foundation.Polygraph
+end LeanFX2.Foundation._deprecated_polygraph

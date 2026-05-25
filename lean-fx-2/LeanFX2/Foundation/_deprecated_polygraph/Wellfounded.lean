@@ -1,4 +1,4 @@
-import LeanFX2.Foundation.Polygraph.ParallelPair
+import LeanFX2.Foundation._deprecated_polygraph.ParallelPair
 
 /-! # Dimension measure + descent lemmas for `PolyCell`.
 
@@ -14,7 +14,7 @@ derivation leaks `propext` through the partial-match equation lemmas
 for the over-constrained per-ctor index shape.
 -/
 
-namespace LeanFX2.Foundation.Polygraph
+namespace LeanFX2.Foundation._deprecated_polygraph
 
 /-- The dimension of a cell, exposed as a `Nat` measure. -/
 def dimensionMeasure {dim sourceVtx targetVtx : Nat}
@@ -40,4 +40,4 @@ theorem arrowTarget_dimensionMeasure_lt {sourceVtx targetVtx : Nat}
     dimensionMeasure (arrowTarget arrowCell) < dimensionMeasure arrowCell :=
   Nat.lt_succ_self 0
 
-end LeanFX2.Foundation.Polygraph
+end LeanFX2.Foundation._deprecated_polygraph

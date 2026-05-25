@@ -1,8 +1,8 @@
-import LeanFX2.Foundation.Polygraph.ParallelPair
+import LeanFX2.Foundation._deprecated_polygraph.ParallelPair
 
 namespace LeanFX2.Smoke
 
-open LeanFX2.Foundation.Polygraph
+open LeanFX2.Foundation._deprecated_polygraph
 
 -- Witness construction for `ParallelPair` over two atoms at the
 -- same vertex.

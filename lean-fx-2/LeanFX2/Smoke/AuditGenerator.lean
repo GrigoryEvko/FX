@@ -1,4 +1,4 @@
-import LeanFX2.Foundation.Polygraph.Generator
+import LeanFX2.Foundation._deprecated_polygraph.Generator
 import LeanFX2.Tools.DependencyAudit
 import LeanFX2.Tools.StrictHarness.TrustEscape
 
@@ -45,19 +45,19 @@ namespace LeanFX2.SmokeGenerator
 
 -- Ctor-count ratchet: locks Generator at 74 ctors, matching RawTerm.
 #assert_inductive_ctor_count_ratchet
-  LeanFX2.Foundation.Polygraph.Generator 74
+  LeanFX2.Foundation._deprecated_polygraph.Generator 74
 
-#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.arity
-#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.binderShifts
-#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.binderShifts_length_eq_arity
-#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeAppPi
-#assert_no_axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeAppPi_matches_Term_appPi
+#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.Generator.arity
+#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.Generator.binderShifts
+#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.Generator.binderShifts_length_eq_arity
+#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.Generator.outputTypeAppPi
+#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.Generator.outputTypeAppPi_matches_Term_appPi
 
-#print axioms LeanFX2.Foundation.Polygraph.Generator
-#print axioms LeanFX2.Foundation.Polygraph.Generator.arity
-#print axioms LeanFX2.Foundation.Polygraph.Generator.binderShifts
-#print axioms LeanFX2.Foundation.Polygraph.Generator.binderShifts_length_eq_arity
-#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeAppPi
-#print axioms LeanFX2.Foundation.Polygraph.Generator.outputTypeAppPi_matches_Term_appPi
+#print axioms LeanFX2.Foundation._deprecated_polygraph.Generator
+#print axioms LeanFX2.Foundation._deprecated_polygraph.Generator.arity
+#print axioms LeanFX2.Foundation._deprecated_polygraph.Generator.binderShifts
+#print axioms LeanFX2.Foundation._deprecated_polygraph.Generator.binderShifts_length_eq_arity
+#print axioms LeanFX2.Foundation._deprecated_polygraph.Generator.outputTypeAppPi
+#print axioms LeanFX2.Foundation._deprecated_polygraph.Generator.outputTypeAppPi_matches_Term_appPi
 
 end LeanFX2.SmokeGenerator

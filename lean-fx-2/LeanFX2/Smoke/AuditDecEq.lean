@@ -1,8 +1,8 @@
-import LeanFX2.Foundation.Polygraph.DecEq
+import LeanFX2.Foundation._deprecated_polygraph.DecEq
 
 namespace LeanFX2.Smoke
 
-open LeanFX2.Foundation.Polygraph
+open LeanFX2.Foundation._deprecated_polygraph
 
 /-! Two-atom equality at dim 0: forced isTrue by atom uniqueness. -/
 def atomEq_smoke : Decidable (PolyCell.atom 5 = PolyCell.atom 5) :=
@@ -44,14 +44,14 @@ def cellEq_differingSubSource_smoke :
 
 end LeanFX2.Smoke
 
-#print axioms LeanFX2.Foundation.Polygraph.PolyCell.atom_unique_at_dim0
-#print axioms LeanFX2.Foundation.Polygraph.PolyCell.arrow_unique_at_dim1
-#print axioms LeanFX2.Foundation.Polygraph.PolyCell.cell_decompose_at_dimSucc
-#print axioms LeanFX2.Foundation.Polygraph.decEqAtDim0
-#print axioms LeanFX2.Foundation.Polygraph.decEqAtDim1
-#print axioms LeanFX2.Foundation.Polygraph.decEqAtDimSucc
-#print axioms LeanFX2.Foundation.Polygraph.polyCellDecEqAt
-#print axioms LeanFX2.Foundation.Polygraph.decEqPolyCell
+#print axioms LeanFX2.Foundation._deprecated_polygraph.PolyCell.atom_unique_at_dim0
+#print axioms LeanFX2.Foundation._deprecated_polygraph.PolyCell.arrow_unique_at_dim1
+#print axioms LeanFX2.Foundation._deprecated_polygraph.PolyCell.cell_decompose_at_dimSucc
+#print axioms LeanFX2.Foundation._deprecated_polygraph.decEqAtDim0
+#print axioms LeanFX2.Foundation._deprecated_polygraph.decEqAtDim1
+#print axioms LeanFX2.Foundation._deprecated_polygraph.decEqAtDimSucc
+#print axioms LeanFX2.Foundation._deprecated_polygraph.polyCellDecEqAt
+#print axioms LeanFX2.Foundation._deprecated_polygraph.decEqPolyCell
 #print axioms LeanFX2.Smoke.atomEq_smoke
 #print axioms LeanFX2.Smoke.arrowEq_same_smoke
 #print axioms LeanFX2.Smoke.arrowEq_differingIdx_smoke

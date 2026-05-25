@@ -1,8 +1,8 @@
-import LeanFX2.Foundation.Polygraph.FreeCategory
+import LeanFX2.Foundation._deprecated_polygraph.FreeCategory
 
 namespace LeanFX2.Smoke
 
-open LeanFX2.Foundation.Polygraph
+open LeanFX2.Foundation._deprecated_polygraph
 
 /-! Concrete witnesses exercising the K11.7 Burroni free-category API. -/
 
@@ -65,16 +65,16 @@ theorem freeTwoChain_length_eq_one_smoke :
 
 end LeanFX2.Smoke
 
-#print axioms LeanFX2.Foundation.Polygraph.FreeOneCategory.compose_assoc
-#print axioms LeanFX2.Foundation.Polygraph.FreeOneCategory.identity_left
-#print axioms LeanFX2.Foundation.Polygraph.FreeOneCategory.identity_right
-#print axioms LeanFX2.Foundation.Polygraph.FreeOneCategory.fromGenerator
-#print axioms LeanFX2.Foundation.Polygraph.FreeOneCategory.fromGenerator_length_eq_one
-#print axioms LeanFX2.Foundation.Polygraph.FreeTwoCategoryAt.compose_assoc
-#print axioms LeanFX2.Foundation.Polygraph.FreeTwoCategoryAt.identity_left
-#print axioms LeanFX2.Foundation.Polygraph.FreeTwoCategoryAt.identity_right
-#print axioms LeanFX2.Foundation.Polygraph.FreeTwoCategoryAt.fromGenerator
-#print axioms LeanFX2.Foundation.Polygraph.FreeTwoCategoryAt.fromGenerator_length_eq_one
+#print axioms LeanFX2.Foundation._deprecated_polygraph.FreeOneCategory.compose_assoc
+#print axioms LeanFX2.Foundation._deprecated_polygraph.FreeOneCategory.identity_left
+#print axioms LeanFX2.Foundation._deprecated_polygraph.FreeOneCategory.identity_right
+#print axioms LeanFX2.Foundation._deprecated_polygraph.FreeOneCategory.fromGenerator
+#print axioms LeanFX2.Foundation._deprecated_polygraph.FreeOneCategory.fromGenerator_length_eq_one
+#print axioms LeanFX2.Foundation._deprecated_polygraph.FreeTwoCategoryAt.compose_assoc
+#print axioms LeanFX2.Foundation._deprecated_polygraph.FreeTwoCategoryAt.identity_left
+#print axioms LeanFX2.Foundation._deprecated_polygraph.FreeTwoCategoryAt.identity_right
+#print axioms LeanFX2.Foundation._deprecated_polygraph.FreeTwoCategoryAt.fromGenerator
+#print axioms LeanFX2.Foundation._deprecated_polygraph.FreeTwoCategoryAt.fromGenerator_length_eq_one
 #print axioms LeanFX2.Smoke.freeOnePath01_length_eq_one_smoke
 #print axioms LeanFX2.Smoke.freeOneCompose_identity_left_smoke
 #print axioms LeanFX2.Smoke.freeOneCompose_assoc_smoke

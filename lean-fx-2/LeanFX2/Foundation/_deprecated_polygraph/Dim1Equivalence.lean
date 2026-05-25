@@ -1,4 +1,4 @@
-import LeanFX2.Foundation.Polygraph.Dim1Extraction
+import LeanFX2.Foundation._deprecated_polygraph.Dim1Extraction
 
 /-! # `StepLabel ⇌ Dim1Cell` equivalence (K11.16)
 
@@ -49,7 +49,7 @@ equivalence to thread typed rewrite-rule names through the
 polygraph layer.
 -/
 
-namespace LeanFX2.Foundation.Polygraph
+namespace LeanFX2.Foundation._deprecated_polygraph
 
 /-- The numeric index of every `StepLabel` is decoded back to that
 exact label by `fromIndex?`.  Single-shot `cases label <;> rfl` —
@@ -67,4 +67,4 @@ theorem Dim1Cell.toStepLabel?_toDim1Cell (label : StepLabel) :
     Dim1Cell.toStepLabel? label.toDim1Cell = some label := by
   cases label <;> rfl
 
-end LeanFX2.Foundation.Polygraph
+end LeanFX2.Foundation._deprecated_polygraph

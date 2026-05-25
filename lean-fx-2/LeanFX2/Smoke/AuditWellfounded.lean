@@ -1,8 +1,8 @@
-import LeanFX2.Foundation.Polygraph.Wellfounded
+import LeanFX2.Foundation._deprecated_polygraph.Wellfounded
 
 namespace LeanFX2.Smoke
 
-open LeanFX2.Foundation.Polygraph
+open LeanFX2.Foundation._deprecated_polygraph
 
 def dimensionMeasure_atom_smoke : Nat :=
   dimensionMeasure (PolyCell.atom 7)

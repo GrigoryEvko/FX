@@ -1,4 +1,4 @@
-import LeanFX2.Foundation.Polygraph.ParallelPair
+import LeanFX2.Foundation._deprecated_polygraph.ParallelPair
 
 /-! # `HorizontalChain` — whiskering / parallel composition of dim-1 cells.
 
@@ -57,7 +57,7 @@ target at every cell.
 
 Verified zero-axiom via `#print axioms` per declaration. -/
 
-namespace LeanFX2.Foundation.Polygraph
+namespace LeanFX2.Foundation._deprecated_polygraph
 
 /-- A free horizontal chain of dim-1 arrows composing end-to-end from
 `sourceVtx` to `targetVtx`. -/
@@ -153,4 +153,4 @@ theorem composeTwoArrows_length_eq_two {sourceVtx midVtx targetVtx : Nat}
 
 end HorizontalChain
 
-end LeanFX2.Foundation.Polygraph
+end LeanFX2.Foundation._deprecated_polygraph

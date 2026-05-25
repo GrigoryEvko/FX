@@ -1,4 +1,4 @@
-import LeanFX2.Foundation.Polygraph.ParallelPair
+import LeanFX2.Foundation._deprecated_polygraph.ParallelPair
 
 /-! # `DecidableEq (PolyCell dim sv tv)` — propext-free instance.
 
@@ -32,7 +32,7 @@ for the dim-`(n+2)` stratum so the motive never has to compose with
 
 Verified zero-axiom via `#print axioms polyCellDecEqAt`. -/
 
-namespace LeanFX2.Foundation.Polygraph
+namespace LeanFX2.Foundation._deprecated_polygraph
 
 /-- Atom uniqueness at dim 0: every `PolyCell 0 sv sv` equals
 `atom sv`.  Uses pure `PolyCell.casesOn` with index-equality witness
@@ -214,4 +214,4 @@ def polyCellDecEqAt : ∀ {dim sv tv : Nat}
 instance decEqPolyCell {dim sv tv : Nat} :
     DecidableEq (PolyCell dim sv tv) := polyCellDecEqAt
 
-end LeanFX2.Foundation.Polygraph
+end LeanFX2.Foundation._deprecated_polygraph

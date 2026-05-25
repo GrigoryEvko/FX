@@ -1,4 +1,4 @@
-import LeanFX2.Foundation.Polygraph.ParallelPair
+import LeanFX2.Foundation._deprecated_polygraph.ParallelPair
 
 /-! # `VerticalChain` — sequential composition of `PolyCell` generators.
 
@@ -37,7 +37,7 @@ linking to the next via cellSource / cellTarget identification.
 
 Verified zero-axiom via `#print axioms` per declaration. -/
 
-namespace LeanFX2.Foundation.Polygraph
+namespace LeanFX2.Foundation._deprecated_polygraph
 
 /-- A free vertical chain of `(dim+2)`-cells composing sequentially
 from `startCell` to `endCell`. -/
@@ -166,4 +166,4 @@ theorem composeTwoCells_length_eq_two {dim sv tv : Nat}
 
 end VerticalChain
 
-end LeanFX2.Foundation.Polygraph
+end LeanFX2.Foundation._deprecated_polygraph

@@ -1,4 +1,4 @@
-import LeanFX2.Foundation.Polygraph.Generator
+import LeanFX2.Foundation._deprecated_polygraph.Generator
 
 /-! # `RawPolyTermFlat` — honest nested polygraph substrate (P2.3).
 
@@ -40,7 +40,7 @@ cascade) ride on.
 
 ## Coexistence with legacy `RawPolyTerm`
 
-This file does NOT delete or modify `LeanFX2.Foundation.Polygraph.RawPolyTerm`.
+This file does NOT delete or modify `LeanFX2.Foundation._deprecated_polygraph.RawPolyTerm`.
 The legacy 74-ctor mirror keeps shipping; consumers continue to import
 it as `Polygraph.RawPolyTerm`.  A follow-up slice will ship the
 bidirectional bijection
@@ -71,7 +71,7 @@ strict-positivity checker accepts the mutual block.
 * The mutual inductive itself, declared in a `mutual` block with
   no Prop-valued indices, leaks no propext from its own definition. -/
 
-namespace LeanFX2.Foundation.Polygraph
+namespace LeanFX2.Foundation._deprecated_polygraph
 
 /-! ## Per-generator non-recursive payload table.
 
@@ -313,4 +313,4 @@ and by `idCode`. -/
     RawPolyTermFlatChildren [0, 0, 0] scope :=
   .cons firstChild (.cons secondChild (.cons thirdChild .nil))
 
-end LeanFX2.Foundation.Polygraph
+end LeanFX2.Foundation._deprecated_polygraph

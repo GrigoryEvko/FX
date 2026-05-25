@@ -1,8 +1,8 @@
-import LeanFX2.Foundation.Polygraph.StepLabel
+import LeanFX2.Foundation._deprecated_polygraph.StepLabel
 
 namespace LeanFX2.Smoke
 
-open LeanFX2.Foundation.Polygraph
+open LeanFX2.Foundation._deprecated_polygraph
 
 /-! K11.14 Phase A — `StepLabel` inductive + index + dim-1 cell
 embedding.  Each `#print axioms` below must report "does not depend on

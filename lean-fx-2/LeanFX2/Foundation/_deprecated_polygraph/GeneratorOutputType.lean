@@ -1,4 +1,4 @@
-import LeanFX2.Foundation.Polygraph.Generator
+import LeanFX2.Foundation._deprecated_polygraph.Generator
 
 /-! # Foundation/Polygraph/GeneratorOutputType — accelerate-P2.2 (#2123).
 
@@ -78,7 +78,7 @@ output type *definitionally* (rfl-bodied).
 All 12 declarations (6 extractors + 6 matching `rfl` theorems) are
 `#assert_no_axioms` clean; see `Smoke/AuditGenerator.lean`. -/
 
-namespace LeanFX2.Foundation.Polygraph
+namespace LeanFX2.Foundation._deprecated_polygraph
 
 open LeanFX2
 
@@ -1992,4 +1992,4 @@ theorem Generator.outputTypeEquivIntroHet_matches_Term_equivIntroHet
     Generator.outputTypeEquivIntroHet forward backward leftInv rightInv =
       Ty.equiv carrierA carrierB := rfl
 
-end LeanFX2.Foundation.Polygraph
+end LeanFX2.Foundation._deprecated_polygraph

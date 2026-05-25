@@ -1,4 +1,4 @@
-import LeanFX2.Foundation.Polygraph.StepLabel
+import LeanFX2.Foundation._deprecated_polygraph.StepLabel
 
 /-! # Dim2Diamond — TODO POLYCELL: BODY DISABLED
 
@@ -77,7 +77,7 @@ with non-trivial overlap), K11.19 (strategy 3-cells over the dim-2
 layer composing diamonds).
 -/
 
-namespace LeanFX2.Foundation.Polygraph
+namespace LeanFX2.Foundation._deprecated_polygraph
 
 /-- The dim-2 diamond cell parameterized by its two dim-1 sides.
 Universal coherence: every parallel pair `(lhs, rhs)` gets exactly
@@ -91,6 +91,6 @@ overlaps with non-zero indices. -/
 def Diamond.toDim2Cell (leftSide rightSide : StepLabel) : PolyCell 2 0 0 :=
   PolyCell.cell leftSide.toDim1Cell rightSide.toDim1Cell 0
 
-end LeanFX2.Foundation.Polygraph
+end LeanFX2.Foundation._deprecated_polygraph
 
 -/

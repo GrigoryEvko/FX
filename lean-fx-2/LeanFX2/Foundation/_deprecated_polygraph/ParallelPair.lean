@@ -1,4 +1,4 @@
-import LeanFX2.Foundation.Polygraph.PolyCell
+import LeanFX2.Foundation._deprecated_polygraph.PolyCell
 
 /-! # `ParallelPair` predicate + per-stratum projections for `PolyCell`.
 
@@ -18,7 +18,7 @@ the impossible cases with `Nat.noConfusion`, recovering the matched
 case's payload via `Nat.succ.inj` + `▸`.
 -/
 
-namespace LeanFX2.Foundation.Polygraph
+namespace LeanFX2.Foundation._deprecated_polygraph
 
 /-- Two polygraph cells are parallel when they inhabit the same
 indexed family — same dimension, same dim-0 globular boundary.  The
@@ -160,4 +160,4 @@ def cellIdx {dim sourceVtx targetVtx : Nat}
     (fun _arrowSource _arrowTarget (idx : Nat) => idx)
     (fun _subSource _subTarget (idx : Nat) => idx)
 
-end LeanFX2.Foundation.Polygraph
+end LeanFX2.Foundation._deprecated_polygraph

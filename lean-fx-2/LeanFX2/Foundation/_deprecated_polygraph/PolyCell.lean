@@ -85,7 +85,7 @@ well-foundedness + DecidableEq, K11.4-K11.5 composition, K11.6
 interchange laws, K11.7 free n-category construction.
 -/
 
-namespace LeanFX2.Foundation.Polygraph
+namespace LeanFX2.Foundation._deprecated_polygraph
 
 /-- Globular polygraph cell at dimension `dim`, with globular dim-0
 boundary `(sourceVtx, targetVtx)`.
@@ -121,4 +121,4 @@ inductive PolyCell : (dim sourceVtx targetVtx : Nat) → Type
       PolyCell (dim + 2) sourceVtx targetVtx
   deriving Repr
 
-end LeanFX2.Foundation.Polygraph
+end LeanFX2.Foundation._deprecated_polygraph

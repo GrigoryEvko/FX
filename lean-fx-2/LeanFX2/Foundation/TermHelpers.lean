@@ -14,7 +14,7 @@ equivalence), `oeqFunext` (observational equality funext), and
 These helpers only depend on `Ty`, `Ty.weaken`, `Ty.id`, `Ty.oeq`,
 `Ty.arrow`, `Ty.piTy`, `RawTerm`, `RawTerm.app`, `RawTerm.weaken`,
 `RawTerm.var` — all Foundation primitives.  Living at Layer 0 lets BOTH
-`LeanFX2.Term` (Layer 1) AND `LeanFX2.Foundation.Polygraph.PolyTerm`
+`LeanFX2.Term` (Layer 1) AND `LeanFX2.Foundation._deprecated_polygraph.PolyTerm`
 (Layer 0) reference them in their `equivIntroHet` / `oeqFunext` ctor
 signatures.  Without this migration, PolyTerm could only ship those
 ctors with OPAQUE motive types — losing the strict-bijection guarantee

@@ -1,8 +1,8 @@
-import LeanFX2.Foundation.Polygraph.PolyCell
+import LeanFX2.Foundation._deprecated_polygraph.PolyCell
 
 /-! # Smoke/AuditPolyCell — K11.1 zero-axiom audit gate.
 
-K11.1 ships `LeanFX2.Foundation.Polygraph.PolyCell` — the globular
+K11.1 ships `LeanFX2.Foundation._deprecated_polygraph.PolyCell` — the globular
 polygraph cell type per Burroni 1993 §1.1, with intrinsic
 parallelism enforced by the dim-0 boundary indices `(sourceVtx,
 targetVtx)`.  This smoke gate exercises the inductive's three
@@ -37,7 +37,7 @@ clean.
 
 namespace LeanFX2.Smoke
 
-open LeanFX2.Foundation.Polygraph
+open LeanFX2.Foundation._deprecated_polygraph
 
 -- Dim-0 atom witness — a generator at vertex 0.
 def polyCell11_atom_smoke : PolyCell 0 0 0 :=

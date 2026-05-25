@@ -1,4 +1,4 @@
-import LeanFX2.Foundation.Polygraph.Laws
+import LeanFX2.Foundation._deprecated_polygraph.Laws
 
 /-! # `FreeOneCategory` + `FreeTwoCategoryAt` — Burroni free-category API.
 
@@ -50,7 +50,7 @@ in the standard categorical sense (Object / Morphism / id / ∘ / laws).
 Every shipped declaration is zero-axiom (the bundle just renames
 already-shipped theorems via `abbrev` / direct reference). -/
 
-namespace LeanFX2.Foundation.Polygraph
+namespace LeanFX2.Foundation._deprecated_polygraph
 
 namespace FreeOneCategory
 
@@ -175,4 +175,4 @@ theorem fromGenerator_length_eq_one {dim sourceVtx targetVtx : Nat}
 
 end FreeTwoCategoryAt
 
-end LeanFX2.Foundation.Polygraph
+end LeanFX2.Foundation._deprecated_polygraph

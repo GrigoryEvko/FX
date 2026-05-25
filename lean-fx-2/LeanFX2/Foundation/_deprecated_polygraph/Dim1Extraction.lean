@@ -1,5 +1,5 @@
-import LeanFX2.Foundation.Polygraph.StepLabel
-import LeanFX2.Foundation.Polygraph.ParallelPair
+import LeanFX2.Foundation._deprecated_polygraph.StepLabel
+import LeanFX2.Foundation._deprecated_polygraph.ParallelPair
 
 /-! # `Dim1Cell.toStepLabel?` — inverse extraction (K11.15)
 
@@ -39,7 +39,7 @@ K11.16 equivalence theorem, K11.19 strategy 3-cells reading
 existing dim-1 cells back to typed rewrite-rule names.
 -/
 
-namespace LeanFX2.Foundation.Polygraph
+namespace LeanFX2.Foundation._deprecated_polygraph
 
 /-- Decode a numeric index to a `StepLabel` if it falls in the
 range 0..109.  Out-of-range indices yield `none`.  Total function
@@ -166,4 +166,4 @@ field falls outside the FX `Step` ctor range. -/
 def Dim1Cell.toStepLabel? (cell : PolyCell 1 0 0) : Option StepLabel :=
   StepLabel.fromIndex? (cellIdx cell)
 
-end LeanFX2.Foundation.Polygraph
+end LeanFX2.Foundation._deprecated_polygraph

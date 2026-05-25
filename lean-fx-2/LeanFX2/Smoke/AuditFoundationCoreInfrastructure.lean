@@ -1,7 +1,7 @@
 import LeanFX2.Foundation.RawPartialRename
 import LeanFX2.Foundation.RawPartialRename.UnweakenSubstCommute
 import LeanFX2.Foundation.RawPartialRename.UnweakenSubstDispatch
-import LeanFX2.Foundation.Polygraph.Wellfounded
+import LeanFX2.Foundation._deprecated_polygraph.Wellfounded
 
 /-! # Smoke/AuditFoundationCoreInfrastructure
 
@@ -67,18 +67,18 @@ namespace LeanFX2.Smoke.AuditFoundationCoreInfrastructure
 #print axioms LeanFX2.RawTerm.constantPathBody?_pathLam_nested_interval_escape_none
 
 -- Polygraph cell-extraction + accessibility helpers.
-#print axioms LeanFX2.Foundation.Polygraph.PolyCell
-#print axioms LeanFX2.Foundation.Polygraph.ParallelPair
-#print axioms LeanFX2.Foundation.Polygraph.atomVertex
-#print axioms LeanFX2.Foundation.Polygraph.arrowSource
-#print axioms LeanFX2.Foundation.Polygraph.arrowTarget
-#print axioms LeanFX2.Foundation.Polygraph.cellSource
-#print axioms LeanFX2.Foundation.Polygraph.cellTarget
-#print axioms LeanFX2.Foundation.Polygraph.cellIdx
-#print axioms LeanFX2.Foundation.Polygraph.dimensionMeasure
-#print axioms LeanFX2.Foundation.Polygraph.cellSource_dimensionMeasure_lt
-#print axioms LeanFX2.Foundation.Polygraph.cellTarget_dimensionMeasure_lt
-#print axioms LeanFX2.Foundation.Polygraph.arrowSource_dimensionMeasure_lt
-#print axioms LeanFX2.Foundation.Polygraph.arrowTarget_dimensionMeasure_lt
+#print axioms LeanFX2.Foundation._deprecated_polygraph.PolyCell
+#print axioms LeanFX2.Foundation._deprecated_polygraph.ParallelPair
+#print axioms LeanFX2.Foundation._deprecated_polygraph.atomVertex
+#print axioms LeanFX2.Foundation._deprecated_polygraph.arrowSource
+#print axioms LeanFX2.Foundation._deprecated_polygraph.arrowTarget
+#print axioms LeanFX2.Foundation._deprecated_polygraph.cellSource
+#print axioms LeanFX2.Foundation._deprecated_polygraph.cellTarget
+#print axioms LeanFX2.Foundation._deprecated_polygraph.cellIdx
+#print axioms LeanFX2.Foundation._deprecated_polygraph.dimensionMeasure
+#print axioms LeanFX2.Foundation._deprecated_polygraph.cellSource_dimensionMeasure_lt
+#print axioms LeanFX2.Foundation._deprecated_polygraph.cellTarget_dimensionMeasure_lt
+#print axioms LeanFX2.Foundation._deprecated_polygraph.arrowSource_dimensionMeasure_lt
+#print axioms LeanFX2.Foundation._deprecated_polygraph.arrowTarget_dimensionMeasure_lt
 
 end LeanFX2.Smoke.AuditFoundationCoreInfrastructure

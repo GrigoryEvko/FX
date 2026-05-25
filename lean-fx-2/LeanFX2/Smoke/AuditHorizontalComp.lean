@@ -1,8 +1,8 @@
-import LeanFX2.Foundation.Polygraph.HorizontalComp
+import LeanFX2.Foundation._deprecated_polygraph.HorizontalComp
 
 namespace LeanFX2.Smoke
 
-open LeanFX2.Foundation.Polygraph
+open LeanFX2.Foundation._deprecated_polygraph
 
 /-- Three dim-1 arrows over the path 0 → 1 → 2 → 3. -/
 def firstStepArrow : PolyCell 1 0 1 :=
@@ -45,17 +45,17 @@ theorem appendedHorizontalChain_length_smoke :
 
 end LeanFX2.Smoke
 
-#print axioms LeanFX2.Foundation.Polygraph.HorizontalChain
-#print axioms LeanFX2.Foundation.Polygraph.HorizontalChain.length
-#print axioms LeanFX2.Foundation.Polygraph.HorizontalChain.length_identity_eq_zero
-#print axioms LeanFX2.Foundation.Polygraph.HorizontalChain.length_cons_eq_succ_length_tail
-#print axioms LeanFX2.Foundation.Polygraph.HorizontalChain.append
-#print axioms LeanFX2.Foundation.Polygraph.HorizontalChain.append_identity_left
-#print axioms LeanFX2.Foundation.Polygraph.HorizontalChain.append_cons_unfold
-#print axioms LeanFX2.Foundation.Polygraph.HorizontalChain.append_identity_right
-#print axioms LeanFX2.Foundation.Polygraph.HorizontalChain.length_append_eq_sum_of_lengths
-#print axioms LeanFX2.Foundation.Polygraph.HorizontalChain.composeTwoArrows
-#print axioms LeanFX2.Foundation.Polygraph.HorizontalChain.composeTwoArrows_length_eq_two
+#print axioms LeanFX2.Foundation._deprecated_polygraph.HorizontalChain
+#print axioms LeanFX2.Foundation._deprecated_polygraph.HorizontalChain.length
+#print axioms LeanFX2.Foundation._deprecated_polygraph.HorizontalChain.length_identity_eq_zero
+#print axioms LeanFX2.Foundation._deprecated_polygraph.HorizontalChain.length_cons_eq_succ_length_tail
+#print axioms LeanFX2.Foundation._deprecated_polygraph.HorizontalChain.append
+#print axioms LeanFX2.Foundation._deprecated_polygraph.HorizontalChain.append_identity_left
+#print axioms LeanFX2.Foundation._deprecated_polygraph.HorizontalChain.append_cons_unfold
+#print axioms LeanFX2.Foundation._deprecated_polygraph.HorizontalChain.append_identity_right
+#print axioms LeanFX2.Foundation._deprecated_polygraph.HorizontalChain.length_append_eq_sum_of_lengths
+#print axioms LeanFX2.Foundation._deprecated_polygraph.HorizontalChain.composeTwoArrows
+#print axioms LeanFX2.Foundation._deprecated_polygraph.HorizontalChain.composeTwoArrows_length_eq_two
 #print axioms LeanFX2.Smoke.identityHorizontalChain_smoke
 #print axioms LeanFX2.Smoke.identityHorizontalChain_length_smoke
 #print axioms LeanFX2.Smoke.singleStepHorizontalChain_smoke

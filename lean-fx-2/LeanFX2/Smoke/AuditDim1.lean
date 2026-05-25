@@ -1,8 +1,8 @@
-import LeanFX2.Foundation.Polygraph.Dim1Equivalence
+import LeanFX2.Foundation._deprecated_polygraph.Dim1Equivalence
 
 namespace LeanFX2.Smoke
 
-open LeanFX2.Foundation.Polygraph
+open LeanFX2.Foundation._deprecated_polygraph
 
 /-! K11.15 + K11.16 — `Dim1Cell.toStepLabel?` extraction + the
 `StepLabel ⇌ Dim1Cell` roundtrip equivalence.  Each `#print axioms`

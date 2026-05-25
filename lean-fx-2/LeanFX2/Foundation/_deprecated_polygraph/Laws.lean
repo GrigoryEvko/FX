@@ -1,5 +1,5 @@
-import LeanFX2.Foundation.Polygraph.VerticalComp
-import LeanFX2.Foundation.Polygraph.HorizontalComp
+import LeanFX2.Foundation._deprecated_polygraph.VerticalComp
+import LeanFX2.Foundation._deprecated_polygraph.HorizontalComp
 
 /-! # Strict ω-category laws on `VerticalChain` and `HorizontalChain`.
 
@@ -36,7 +36,7 @@ horizontal associativity, which IS shipped here.  Interchange in its
 non-degenerate form arrives with K11.6b's higher-dim horizontal
 composition. -/
 
-namespace LeanFX2.Foundation.Polygraph
+namespace LeanFX2.Foundation._deprecated_polygraph
 
 namespace VerticalChain
 
@@ -75,4 +75,4 @@ theorem append_assoc {sourceVtx midOneVtx midTwoVtx targetVtx : Nat}
 
 end HorizontalChain
 
-end LeanFX2.Foundation.Polygraph
+end LeanFX2.Foundation._deprecated_polygraph
