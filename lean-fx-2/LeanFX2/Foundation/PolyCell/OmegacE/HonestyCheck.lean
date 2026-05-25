@@ -15,6 +15,8 @@ Verify the current OmegacECell generator scaffold:
 - slotKindOf/isFirstSlot/isSecondSlot classify the two declared slots
 - OmegacEWord packages finite scaffold-generator lists and preserves length
   and slot readback under suspension
+- OmegacEWordCode serializes scaffold words as normalized Nat slot lists;
+  this is still not Makkai word equality
 - totalUpTo 0 = 2, totalUpTo 1 = 4, totalUpTo 2 = 6
 
 This is a scaffold check, not a proof of the full HLOR construction.
@@ -149,6 +151,48 @@ example :
         (OmegacEWord.singleton (OmegacECell.firstAtDim 3))
         (OmegacEWord.singleton (OmegacECell.secondAtDim 3))).slotValues := by
   exact OmegacEWord.slotValues_suspend
+    (OmegacEWord.append
+      (OmegacEWord.singleton (OmegacECell.firstAtDim 3))
+      (OmegacEWord.singleton (OmegacECell.secondAtDim 3)))
+example : (OmegacEWordCode.singleton 7).normalize.slotValues = [1] := rfl
+example :
+    (OmegacEWordCode.append
+        (OmegacEWordCode.singleton 0)
+        (OmegacEWordCode.singleton 7)).normalize.slotValues =
+      [0, 1] := rfl
+example :
+    ((OmegacEWordCode.append
+        (OmegacEWordCode.singleton 0)
+        (OmegacEWordCode.singleton 1)).toWord 3).slotValues =
+      [0, 1] := rfl
+example :
+    ((OmegacEWordCode.append
+        (OmegacEWordCode.singleton 0)
+        (OmegacEWordCode.singleton 7)).toWord 3).slotValues =
+      [0, 1] := rfl
+example :
+    OmegacEWordCode.ofWord
+        ((OmegacEWordCode.append
+          (OmegacEWordCode.singleton 0)
+          (OmegacEWordCode.singleton 7)).toWord 3) =
+      (OmegacEWordCode.append
+        (OmegacEWordCode.singleton 0)
+        (OmegacEWordCode.singleton 7)).normalize := by
+  exact OmegacEWordCode.ofWord_toWord 3
+    (OmegacEWordCode.append
+      (OmegacEWordCode.singleton 0)
+      (OmegacEWordCode.singleton 7))
+example :
+    OmegacEWordCode.ofWord
+        (OmegacEWord.suspend
+          (OmegacEWord.append
+            (OmegacEWord.singleton (OmegacECell.firstAtDim 3))
+            (OmegacEWord.singleton (OmegacECell.secondAtDim 3)))) =
+      OmegacEWordCode.ofWord
+        (OmegacEWord.append
+          (OmegacEWord.singleton (OmegacECell.firstAtDim 3))
+          (OmegacEWord.singleton (OmegacECell.secondAtDim 3))) := by
+  exact OmegacEWordCode.ofWord_suspend
     (OmegacEWord.append
       (OmegacEWord.singleton (OmegacECell.firstAtDim 3))
       (OmegacEWord.singleton (OmegacECell.secondAtDim 3)))
