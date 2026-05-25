@@ -4618,6 +4618,7 @@ representable and computably rejected.
 | TCB.7w certified result erasure | `456191da` | Certified raw-cell/result packages now expose audited theorem heads showing the carried `PolyCell` erases to the raw cell it certifies, and result input-code evidence is projected without trusting it for construction.  No raw ingress, no new probes, no new logical non-inhabitation claim, and no accepted payload is added. |
 | TCB.7x exact probe-family coverage | `0b30c9fb` | Exact-reason negative-probe families now pass only when the family is nonempty and every probe rejects with the named reason.  This prevents empty-family theorem heads from passing vacuously while staying at the executable Bool-checker layer: no `False` theorem, no raw ingress, no new probes, and no accepted payload is added. |
 | TCB.7y dim-two seed term arrow | `493ecacf` | The identity over the seed dim-1 term step is now exposed as endpoint-indexed dim-2 term arrow and thin-arrow views, with audited definitional raw/source/target theorems.  No checker change, raw ingress, new probe, certified constructor, or accepted payload is added. |
+| TCB.7z rejection-reason coverage matrix | `aa34f94f` | Every `CellCheckRejection` constructor is now mapped to the exact nonempty negative-probe family or families that cover it, with an audited headline theorem over `CellCheckRejection.all`.  This is still executable checker coverage, not a `False` theorem or certified-cell non-inhabitation claim. |
 
 **Deliverables (NEW only):**
 
@@ -4659,8 +4660,9 @@ representable and computably rejected.
 | TCB.7w certified result erasure | `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds generic erasure and input-code projection theorems for `CertifiedRawCell` and `CertifiedRawCellResult`. | Definitional and audit-gated; does not prove raw-code injectivity, does not broaden checker acceptance, and does not promote negative probes to non-inhabitation claims. |
 | TCB.7x exact probe-family coverage | `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds exact-coverage predicates and headlines for inference, expected-shape, certification-policy, and all current negative-probe families. | A family must be nonempty and must reject with its named reason to pass.  This is still executable checker evidence, not a constructor-index impossibility theorem. |
 | TCB.7y dim-two seed term arrow | `Foundation/PolyCell/FXProfile/CertifiedViews.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds dim-2 endpoint-indexed term arrow/thin-arrow aliases and seed identity-over-step views. | All raw/source/target theorems are definitional and audit-gated; no new certified constructors, checker acceptance, raw ingress, or negative-probe theorem shape is added. |
+| TCB.7z rejection-reason coverage matrix | `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds per-`CellCheckRejection` coverage dispatch plus a headline over `CellCheckRejection.all`. | Adding a rejection constructor forces a new coverage branch; reasons with both inference and certification probes require both exact families.  No probe, checker acceptance, raw ingress, or non-inhabitation theorem is added. |
 
-**Implementation order after TCB.7y:**
+**Implementation order after TCB.7z:**
 
 1.  Do not broaden application by adding more one-off parent
     constructors.  Descriptor-indexed child spines over
@@ -4698,7 +4700,10 @@ representable and computably rejected.
     layer must reject it by computation.  Any new probe family must be
     added to the rejection-family partitions and covered by the matching
     audited headline theorem, while keeping the individual probes as
-    regression fixtures.
+    regression fixtures.  The rejection-reason coverage matrix must also
+    name which exact family covers any new `CellCheckRejection`
+    constructor, and multi-phase reasons must list every phase-family that
+    currently exercises that reason.
 7.  Extend `CertifiedViews.lean` only as the checker gains real
     certified inhabitants: context/type/term/mode seed views,
     positive-dimensional endpoint projections, endpoint-indexed arrows,
@@ -4716,7 +4721,11 @@ representable and computably rejected.
     (b) the TCB.7v exact-reason headline saying the whole finite family
     rejects as one named `CellCheckRejection`.  TCB.7x adds the executable
     coverage layer: each named family must be nonempty and must reject with
-    its named reason.  Over time, fold those executable families under
+    its named reason.  TCB.7z adds the constructor-level rejection-reason
+    coverage matrix over `CellCheckRejection.all`; this matrix is only an
+    anti-omission gate for executable probes and must not be read as
+    certified-cell non-inhabitation.  Over time, fold those executable
+    families under
     well-scoped PolyCell theorem heads only when the scope is exact.
     Acceptable future headline shapes include:
     `inferProbeFamily_rejected_with_<reason>`,
