@@ -715,6 +715,64 @@ def typeIdentityAsTermStepProbe (profile : PolyProfile) :
   rawCell := typeIdentityAsTermStepRawCell profile
   expectedRejection := .wrongSort
 
+/-- Probe for rejecting the accepted application when a type cell is expected. -/
+def applicationVarZeroVarOneAsTypeProbe (profile : PolyProfile) :
+    RawExpectedShapeNegativeProbe profile where
+  dimension := 0
+  expectedSort := .type
+  expectedScope := defaultInferScope
+  rawCell := applicationVarZeroVarOneRawCell profile
+  expectedRejection := .wrongSort
+
+/-- Probe for rejecting the accepted application when a context cell is
+expected. -/
+def applicationVarZeroVarOneAsContextProbe (profile : PolyProfile) :
+    RawExpectedShapeNegativeProbe profile where
+  dimension := 0
+  expectedSort := .context
+  expectedScope := defaultInferScope
+  rawCell := applicationVarZeroVarOneRawCell profile
+  expectedRejection := .wrongSort
+
+/-- Probe for rejecting the accepted application when a mode cell is expected. -/
+def applicationVarZeroVarOneAsModeProbe (profile : PolyProfile) :
+    RawExpectedShapeNegativeProbe profile where
+  dimension := 0
+  expectedSort := .mode
+  expectedScope := defaultInferScope
+  rawCell := applicationVarZeroVarOneRawCell profile
+  expectedRejection := .wrongSort
+
+/-- Probe that expected-shape checking preserves malformed application payload
+rejection. -/
+def applicationBadPayloadExpectedShapeProbe (profile : PolyProfile) :
+    RawExpectedShapeNegativeProbe profile where
+  dimension := 0
+  expectedSort := .term
+  expectedScope := defaultInferScope
+  rawCell := applicationBadPayloadRawCell profile
+  expectedRejection := .badPayload
+
+/-- Probe that expected-shape checking preserves malformed application arity
+rejection. -/
+def applicationWrongArityExpectedShapeProbe (profile : PolyProfile) :
+    RawExpectedShapeNegativeProbe profile where
+  dimension := 0
+  expectedSort := .term
+  expectedScope := defaultInferScope
+  rawCell := applicationWrongArityRawCell profile
+  expectedRejection := .wrongArity
+
+/-- Probe that expected-shape checking preserves malformed application child
+shape rejection. -/
+def applicationWrongChildShapeExpectedShapeProbe (profile : PolyProfile) :
+    RawExpectedShapeNegativeProbe profile where
+  dimension := 0
+  expectedSort := .term
+  expectedScope := defaultInferScope
+  rawCell := applicationWrongChildShapeRawCell profile
+  expectedRejection := .wrongChildShape
+
 /-- Probe for preserving bad-boundary rejection through certified ingress. -/
 def certificationBadBoundaryEndpointProbe (profile : PolyProfile) :
     RawCertificationNegativeProbe profile where
@@ -836,7 +894,26 @@ def wrongSortExpectedShapeNegativeProbes (profile : PolyProfile) :
     termAsContextProbe profile,
     linearModeAsTermProbe profile,
     linearModeAsTypeProbe profile,
-    typeIdentityAsTermStepProbe profile]
+    typeIdentityAsTermStepProbe profile,
+    applicationVarZeroVarOneAsTypeProbe profile,
+    applicationVarZeroVarOneAsContextProbe profile,
+    applicationVarZeroVarOneAsModeProbe profile]
+
+/-- Expected-shape probes whose expected rejection is `badPayload`. -/
+def badPayloadExpectedShapeNegativeProbes (profile : PolyProfile) :
+    List (RawExpectedShapeNegativeProbe profile) :=
+  [applicationBadPayloadExpectedShapeProbe profile]
+
+/-- Expected-shape probes whose expected rejection is `wrongArity`. -/
+def wrongArityExpectedShapeNegativeProbes (profile : PolyProfile) :
+    List (RawExpectedShapeNegativeProbe profile) :=
+  [applicationWrongArityExpectedShapeProbe profile]
+
+/-- Expected-shape probes whose expected rejection is `wrongChildShape`. -/
+def wrongChildShapeExpectedShapeNegativeProbes
+    (profile : PolyProfile) :
+    List (RawExpectedShapeNegativeProbe profile) :=
+  [applicationWrongChildShapeExpectedShapeProbe profile]
 
 /-- Certification probes preserving non-certification boundary failure. -/
 def badBoundaryEndpointCertificationNegativeProbes
@@ -870,10 +947,13 @@ def inferNegativeProbes (profile : PolyProfile) :
     badVerticalBoundaryInferNegativeProbes profile ++
     unsupportedCompHInferNegativeProbes profile
 
-/-- Expected-shape probes for dim-0 and positive-dimensional sort mismatches. -/
+/-- Expected-shape probes for sort mismatches and screen-error pass-through. -/
 def expectedShapeNegativeProbes (profile : PolyProfile) :
     List (RawExpectedShapeNegativeProbe profile) :=
-  wrongSortExpectedShapeNegativeProbes profile
+  wrongSortExpectedShapeNegativeProbes profile ++
+    badPayloadExpectedShapeNegativeProbes profile ++
+    wrongArityExpectedShapeNegativeProbes profile ++
+    wrongChildShapeExpectedShapeNegativeProbes profile
 
 /-- Certified-ingress probes for screen-passing but unsupported raw cells. -/
 def certificationNegativeProbes (profile : PolyProfile) :
@@ -888,7 +968,7 @@ theorem inferNegativeProbes_length (profile : PolyProfile) :
 
 /-- Expected-shape probe count. -/
 theorem expectedShapeNegativeProbes_length (profile : PolyProfile) :
-    (expectedShapeNegativeProbes profile).length = 9 := rfl
+    (expectedShapeNegativeProbes profile).length = 15 := rfl
 
 /-- Certified-ingress probe count. -/
 theorem certificationNegativeProbes_length (profile : PolyProfile) :
@@ -930,7 +1010,22 @@ theorem unsupportedCompHInferNegativeProbes_length
 /-- Wrong-sort expected-shape headline probe count. -/
 theorem wrongSortExpectedShapeNegativeProbes_length
     (profile : PolyProfile) :
-    (wrongSortExpectedShapeNegativeProbes profile).length = 9 := rfl
+    (wrongSortExpectedShapeNegativeProbes profile).length = 12 := rfl
+
+/-- Bad-payload expected-shape headline probe count. -/
+theorem badPayloadExpectedShapeNegativeProbes_length
+    (profile : PolyProfile) :
+    (badPayloadExpectedShapeNegativeProbes profile).length = 1 := rfl
+
+/-- Wrong-arity expected-shape headline probe count. -/
+theorem wrongArityExpectedShapeNegativeProbes_length
+    (profile : PolyProfile) :
+    (wrongArityExpectedShapeNegativeProbes profile).length = 1 := rfl
+
+/-- Wrong-child-shape expected-shape headline probe count. -/
+theorem wrongChildShapeExpectedShapeNegativeProbes_length
+    (profile : PolyProfile) :
+    (wrongChildShapeExpectedShapeNegativeProbes profile).length = 1 := rfl
 
 /-- Certification bad-boundary-endpoint headline probe count. -/
 theorem badBoundaryEndpointCertificationNegativeProbes_length

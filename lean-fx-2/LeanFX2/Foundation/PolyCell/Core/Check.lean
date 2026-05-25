@@ -1115,7 +1115,13 @@ its named reason. -/
 def haveExpectedShapeNegativeProbeFamiliesExactCoverage
     (profile : PolyProfile) : Bool :=
   hasExpectedShapeNegativeProbeFamilyExactCoverage .wrongSort
-    (NegativeProbes.wrongSortExpectedShapeNegativeProbes profile)
+    (NegativeProbes.wrongSortExpectedShapeNegativeProbes profile) &&
+  hasExpectedShapeNegativeProbeFamilyExactCoverage .badPayload
+    (NegativeProbes.badPayloadExpectedShapeNegativeProbes profile) &&
+  hasExpectedShapeNegativeProbeFamilyExactCoverage .wrongArity
+    (NegativeProbes.wrongArityExpectedShapeNegativeProbes profile) &&
+  hasExpectedShapeNegativeProbeFamilyExactCoverage .wrongChildShape
+    (NegativeProbes.wrongChildShapeExpectedShapeNegativeProbes profile)
 
 /-- Every certification-policy negative-probe family is nonempty and rejects
 with its named reason. -/
@@ -1151,13 +1157,19 @@ def hasNegativeProbeCoverageForRejectionReason
         (NegativeProbes.wrongSortExpectedShapeNegativeProbes profile)
   | .badPayload =>
       hasInferNegativeProbeFamilyExactCoverage .badPayload
-        (NegativeProbes.badPayloadInferNegativeProbes profile)
+        (NegativeProbes.badPayloadInferNegativeProbes profile) &&
+      hasExpectedShapeNegativeProbeFamilyExactCoverage .badPayload
+        (NegativeProbes.badPayloadExpectedShapeNegativeProbes profile)
   | .wrongArity =>
       hasInferNegativeProbeFamilyExactCoverage .wrongArity
-        (NegativeProbes.wrongArityInferNegativeProbes profile)
+        (NegativeProbes.wrongArityInferNegativeProbes profile) &&
+      hasExpectedShapeNegativeProbeFamilyExactCoverage .wrongArity
+        (NegativeProbes.wrongArityExpectedShapeNegativeProbes profile)
   | .wrongChildShape =>
       hasInferNegativeProbeFamilyExactCoverage .wrongChildShape
-        (NegativeProbes.wrongChildShapeInferNegativeProbes profile)
+        (NegativeProbes.wrongChildShapeInferNegativeProbes profile) &&
+      hasExpectedShapeNegativeProbeFamilyExactCoverage .wrongChildShape
+        (NegativeProbes.wrongChildShapeExpectedShapeNegativeProbes profile)
   | .badBoundaryEndpoint =>
       hasInferNegativeProbeFamilyExactCoverage .badBoundaryEndpoint
         (NegativeProbes.badBoundaryEndpointInferNegativeProbes profile) &&
@@ -2010,6 +2022,48 @@ theorem checkRawCellAs?_applicationVarZeroVarOne_scope_one_rejects
       (NegativeProbes.applicationVarZeroVarOneRawCell profile) =
       Except.error .wrongChildShape := rfl
 
+theorem checkRawCellAs?_applicationVarZeroVarOne_as_type_rejects
+    {profile : PolyProfile} :
+    checkRawCellAs? (profile := profile) .type
+      NegativeProbes.defaultInferScope
+      (NegativeProbes.applicationVarZeroVarOneRawCell profile) =
+      Except.error .wrongSort := rfl
+
+theorem checkRawCellAs?_applicationVarZeroVarOne_as_context_rejects
+    {profile : PolyProfile} :
+    checkRawCellAs? (profile := profile) .context
+      NegativeProbes.defaultInferScope
+      (NegativeProbes.applicationVarZeroVarOneRawCell profile) =
+      Except.error .wrongSort := rfl
+
+theorem checkRawCellAs?_applicationVarZeroVarOne_as_mode_rejects
+    {profile : PolyProfile} :
+    checkRawCellAs? (profile := profile) .mode
+      NegativeProbes.defaultInferScope
+      (NegativeProbes.applicationVarZeroVarOneRawCell profile) =
+      Except.error .wrongSort := rfl
+
+theorem checkRawCellAs?_applicationBadPayload_rejects
+    {profile : PolyProfile} :
+    checkRawCellAs? (profile := profile) .term
+      NegativeProbes.defaultInferScope
+      (NegativeProbes.applicationBadPayloadRawCell profile) =
+      Except.error .badPayload := rfl
+
+theorem checkRawCellAs?_applicationWrongArity_rejects
+    {profile : PolyProfile} :
+    checkRawCellAs? (profile := profile) .term
+      NegativeProbes.defaultInferScope
+      (NegativeProbes.applicationWrongArityRawCell profile) =
+      Except.error .wrongArity := rfl
+
+theorem checkRawCellAs?_applicationWrongChildShape_rejects
+    {profile : PolyProfile} :
+    checkRawCellAs? (profile := profile) .term
+      NegativeProbes.defaultInferScope
+      (NegativeProbes.applicationWrongChildShapeRawCell profile) =
+      Except.error .wrongChildShape := rfl
+
 theorem inferRawAtom?_applicationVarZeroVarOne_scope_one_rejects
     {profile : PolyProfile} :
     inferRawAtom? (profile := profile) 1 3
@@ -2577,6 +2631,77 @@ theorem typeIdentityAsTermStepProbe_rejects {profile : PolyProfile} :
         (NegativeProbes.typeIdentityAsTermStepProbe profile).expectedRejection :=
   rfl
 
+theorem applicationVarZeroVarOneAsTypeProbe_rejects
+    {profile : PolyProfile} :
+    screenRawCell0As? (profile := profile)
+      (NegativeProbes.applicationVarZeroVarOneAsTypeProbe profile).expectedSort
+      (NegativeProbes.applicationVarZeroVarOneAsTypeProbe
+        profile).expectedScope
+      (NegativeProbes.applicationVarZeroVarOneRawCell profile) =
+      Except.error
+        (NegativeProbes.applicationVarZeroVarOneAsTypeProbe
+          profile).expectedRejection := rfl
+
+theorem applicationVarZeroVarOneAsContextProbe_rejects
+    {profile : PolyProfile} :
+    screenRawCell0As? (profile := profile)
+      (NegativeProbes.applicationVarZeroVarOneAsContextProbe
+        profile).expectedSort
+      (NegativeProbes.applicationVarZeroVarOneAsContextProbe
+        profile).expectedScope
+      (NegativeProbes.applicationVarZeroVarOneRawCell profile) =
+      Except.error
+        (NegativeProbes.applicationVarZeroVarOneAsContextProbe
+          profile).expectedRejection := rfl
+
+theorem applicationVarZeroVarOneAsModeProbe_rejects
+    {profile : PolyProfile} :
+    screenRawCell0As? (profile := profile)
+      (NegativeProbes.applicationVarZeroVarOneAsModeProbe
+        profile).expectedSort
+      (NegativeProbes.applicationVarZeroVarOneAsModeProbe
+        profile).expectedScope
+      (NegativeProbes.applicationVarZeroVarOneRawCell profile) =
+      Except.error
+        (NegativeProbes.applicationVarZeroVarOneAsModeProbe
+          profile).expectedRejection := rfl
+
+theorem applicationBadPayloadExpectedShapeProbe_rejects
+    {profile : PolyProfile} :
+    screenRawCell0As? (profile := profile)
+      (NegativeProbes.applicationBadPayloadExpectedShapeProbe
+        profile).expectedSort
+      (NegativeProbes.applicationBadPayloadExpectedShapeProbe
+        profile).expectedScope
+      (NegativeProbes.applicationBadPayloadRawCell profile) =
+      Except.error
+        (NegativeProbes.applicationBadPayloadExpectedShapeProbe
+          profile).expectedRejection := rfl
+
+theorem applicationWrongArityExpectedShapeProbe_rejects
+    {profile : PolyProfile} :
+    screenRawCell0As? (profile := profile)
+      (NegativeProbes.applicationWrongArityExpectedShapeProbe
+        profile).expectedSort
+      (NegativeProbes.applicationWrongArityExpectedShapeProbe
+        profile).expectedScope
+      (NegativeProbes.applicationWrongArityRawCell profile) =
+      Except.error
+        (NegativeProbes.applicationWrongArityExpectedShapeProbe
+          profile).expectedRejection := rfl
+
+theorem applicationWrongChildShapeExpectedShapeProbe_rejects
+    {profile : PolyProfile} :
+    screenRawCell0As? (profile := profile)
+      (NegativeProbes.applicationWrongChildShapeExpectedShapeProbe
+        profile).expectedSort
+      (NegativeProbes.applicationWrongChildShapeExpectedShapeProbe
+        profile).expectedScope
+      (NegativeProbes.applicationWrongChildShapeRawCell profile) =
+      Except.error
+        (NegativeProbes.applicationWrongChildShapeExpectedShapeProbe
+          profile).expectedRejection := rfl
+
 theorem inferNegativeProbes_rejected_by_screen (profile : PolyProfile) :
     areInferNegativeProbesRejected
       (NegativeProbes.inferNegativeProbes profile) = true := rfl
@@ -2644,6 +2769,27 @@ theorem wrongSortExpectedShapeNegativeProbes_rejected_by_screen
     areExpectedShapeNegativeProbesRejected
       (NegativeProbes.wrongSortExpectedShapeNegativeProbes profile) = true :=
   rfl
+
+/-- Headline theorem: all bad-payload expected-shape probes reject. -/
+theorem badPayloadExpectedShapeNegativeProbes_rejected_by_screen
+    (profile : PolyProfile) :
+    areExpectedShapeNegativeProbesRejected
+      (NegativeProbes.badPayloadExpectedShapeNegativeProbes profile) =
+      true := rfl
+
+/-- Headline theorem: all wrong-arity expected-shape probes reject. -/
+theorem wrongArityExpectedShapeNegativeProbes_rejected_by_screen
+    (profile : PolyProfile) :
+    areExpectedShapeNegativeProbesRejected
+      (NegativeProbes.wrongArityExpectedShapeNegativeProbes profile) =
+      true := rfl
+
+/-- Headline theorem: all wrong-child-shape expected-shape probes reject. -/
+theorem wrongChildShapeExpectedShapeNegativeProbes_rejected_by_screen
+    (profile : PolyProfile) :
+    areExpectedShapeNegativeProbesRejected
+      (NegativeProbes.wrongChildShapeExpectedShapeNegativeProbes profile) =
+      true := rfl
 
 /-- Headline theorem: certification preserves bad-endpoint failures. -/
 theorem badBoundaryEndpointCertificationNegativeProbes_rejected_by_policy
@@ -2729,6 +2875,31 @@ theorem wrongSortExpectedShapeNegativeProbes_rejected_with_wrongSort
     areExpectedShapeNegativeProbesRejectedWith .wrongSort
       (NegativeProbes.wrongSortExpectedShapeNegativeProbes profile) = true :=
   rfl
+
+/-- Exact-reason headline: all bad-payload expected-shape probes reject as
+`badPayload`. -/
+theorem badPayloadExpectedShapeNegativeProbes_rejected_with_badPayload
+    (profile : PolyProfile) :
+    areExpectedShapeNegativeProbesRejectedWith .badPayload
+      (NegativeProbes.badPayloadExpectedShapeNegativeProbes profile) =
+      true := rfl
+
+/-- Exact-reason headline: all wrong-arity expected-shape probes reject as
+`wrongArity`. -/
+theorem wrongArityExpectedShapeNegativeProbes_rejected_with_wrongArity
+    (profile : PolyProfile) :
+    areExpectedShapeNegativeProbesRejectedWith .wrongArity
+      (NegativeProbes.wrongArityExpectedShapeNegativeProbes profile) =
+      true := rfl
+
+/-- Exact-reason headline: all wrong-child-shape expected-shape probes reject
+as `wrongChildShape`. -/
+theorem
+    wrongChildShapeExpectedShapeNegativeProbes_rejected_with_wrongChildShape
+    (profile : PolyProfile) :
+    areExpectedShapeNegativeProbesRejectedWith .wrongChildShape
+      (NegativeProbes.wrongChildShapeExpectedShapeNegativeProbes profile) =
+      true := rfl
 
 /-- Exact-reason headline: certification preserves bad-endpoint failures as
 `badBoundaryEndpoint`. -/
