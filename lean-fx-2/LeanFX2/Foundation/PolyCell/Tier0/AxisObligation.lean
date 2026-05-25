@@ -47,6 +47,11 @@ theorem CapabilityStatus.meet_idempotent
     status.meet status = status := by
   cases status <;> rfl
 
+theorem CapabilityStatus.meet_unavailable_right
+    (status : CapabilityStatus) :
+    status.meet .unavailable = .unavailable := by
+  cases status <;> rfl
+
 structure MetatheoreticCapabilities where
   canonicityStatus : CapabilityStatus
   normalizationStatus : CapabilityStatus
@@ -100,6 +105,14 @@ theorem MetatheoreticCapabilities.meet_comm (capA capB : MetatheoreticCapabiliti
 theorem MetatheoreticCapabilities.meet_idempotent (cap : MetatheoreticCapabilities) :
     cap.meet cap = cap := by
   cases cap; unfold meet; congr 1 <;> apply CapabilityStatus.meet_idempotent
+
+theorem MetatheoreticCapabilities.meet_bot_right
+    (cap : MetatheoreticCapabilities) :
+    cap.meet MetatheoreticCapabilities.bot =
+      MetatheoreticCapabilities.bot := by
+  cases cap
+  unfold meet MetatheoreticCapabilities.bot
+  congr 1 <;> apply CapabilityStatus.meet_unavailable_right
 
 inductive ConsistencyStrength : Type where
   | leanCore

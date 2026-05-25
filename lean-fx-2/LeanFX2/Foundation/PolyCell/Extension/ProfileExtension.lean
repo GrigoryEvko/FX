@@ -580,6 +580,15 @@ bookkeeping, not transfer theorems. -/
 theorem etaReductionExtension_capabilities_eq_bot :
     etaReductionExtension.capabilities = MetatheoreticCapabilities.bot := rfl
 
+/-- Any current eta extension capability ledger collapses to bottom after the
+meet with the base ledger.  This prevents the demonstration extension from
+inheriting base metatheory until real transfer theorems exist. -/
+theorem extendedCapabilities_etaReductionExtension_eq_bot
+    (baseCapabilities : MetatheoreticCapabilities) :
+    extendedCapabilities fxProfile etaReductionExtension baseCapabilities =
+      MetatheoreticCapabilities.bot := by
+  exact MetatheoreticCapabilities.meet_bot_right baseCapabilities
+
 /-- Eta extension local admission record. -/
 theorem etaReductionExtension_localAdmissionRecord :
     etaReductionExtension.Admitted :=

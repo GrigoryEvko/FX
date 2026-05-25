@@ -1145,12 +1145,14 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.CapabilityStatus.meet
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.CapabilityStatus.meet_comm
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.CapabilityStatus.meet_idempotent
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.CapabilityStatus.meet_unavailable_right
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.MetatheoreticCapabilities
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.MetatheoreticCapabilities.meet
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.MetatheoreticCapabilities.top
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.MetatheoreticCapabilities.bot
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.MetatheoreticCapabilities.meet_comm
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.MetatheoreticCapabilities.meet_idempotent
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.MetatheoreticCapabilities.meet_bot_right
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.SliceObject
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.SliceMorphism
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.SliceFamily
@@ -1289,6 +1291,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaReductionInterfaceEvidence
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaReductionExtension
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaReductionExtension_capabilities_eq_bot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.extendedCapabilities_etaReductionExtension_eq_bot
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaReductionExtension_localAdmissionRecord
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaReductionExtension_admitted
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaReductionExtension_structuralLens
