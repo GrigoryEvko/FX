@@ -4612,6 +4612,7 @@ representable and computably rejected.
 | TCB.7q derived application child spine | `0f6f3098` | The accepted `app(var 0, var 1)` child package no longer stores an independent certified child spine.  It derives the spine from the certified function and argument children and exposes a raw-descriptor erasure theorem showing the certified spine matches the decoded raw child descriptors.  No accepted raw inputs are broadened. |
 | TCB.7r application child erasure theorems | `ef939560` | Certified child-spine erasure now preserves declared arity, and the certified `app(var 0, var 1)` child package is theorem-linked to the payload decoder output.  Certification followed by child-spine erasure returns the same raw descriptor spine as decoding for every scope where both variables are in scope. |
 | TCB.7s descriptor-indexed certified child spines | `e97831e1` | `CertifiedChildForRawDescriptor` and `CertifiedChildSpineForRawDescriptors` index certified child evidence by the raw descriptor spine it certifies.  The first application child package now exposes a descriptor-indexed spine over the decoder output and forgets back to the ordinary certified child spine.  No equality-field trust, new constructor family, raw dispatcher, or new accepted payload is added. |
+| TCB.7t descriptor spine erasure | `9c935bef` | Descriptor-indexed certified child evidence now erases back to exactly the raw descriptor it certifies, and descriptor-indexed certified spines erase back to exactly the raw descriptor spine they certify.  This is generic theorem-level glue only: no new raw dispatcher, constructor family, or accepted payload is added. |
 
 **Deliverables (NEW only):**
 
@@ -4647,18 +4648,19 @@ representable and computably rejected.
 | TCB.7q derived application child spine | `Foundation/PolyCell/Core/Certified.lean`, `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Removes the stored `applicationChildSpine` field from the first certified application child package and derives it from `functionCell` and `argumentCell`.  Adds certified-child-spine erasure to `RawChildDescriptors`. | The package cannot carry certified children together with an unrelated child spine; the erasure theorem is definitional and audited; no new application payloads are accepted. |
 | TCB.7r application child erasure theorems | `Foundation/PolyCell/Core/Certified.lean`, `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds generic arity preservation for certified-child-spine erasure and theorem-level glue showing the accepted application child certificate erases back to the payload decoder's raw descriptors. | All theorems are audit-gated and definitional; this is not a new decoder, raw dispatcher, certified constructor, or accepted payload. |
 | TCB.7s descriptor-indexed certified child spines | `Foundation/PolyCell/Core/Certified.lean`, `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds descriptor-indexed certified children/spines where the certified cell raw index is the descriptor's raw cell.  The first application child package exposes this descriptor-indexed spine over the current decoder output. | The indexed spine forgets to ordinary certified children and preserves arity; it does not store a raw-equality proof field and does not broaden application ingress. |
-| TCB.7t certified FX operational views | `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | Future `FXStep`, `FXConv`, `FXCdLemma` as projections of certified positive-dimensional cells and thinness certificates. | Existing raw subtype views remain compatibility-only; new operational code uses certified views only after the corresponding positive-dimensional certification, thinness data, and operational predicates exist. |
+| TCB.7t descriptor spine erasure | `Foundation/PolyCell/Core/Certified.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds generic erasure theorems for `CertifiedChildForRawDescriptor` and `CertifiedChildSpineForRawDescriptors`: forgetting descriptor-indexed evidence to ordinary certified children and then to raw descriptors returns the descriptor spine in the index. | Both theorems are audit-gated and structural; no equality-field trust, raw dispatcher, certified constructor, or accepted payload is added. |
+| TCB.7u certified FX operational views | `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | Future `FXStep`, `FXConv`, `FXCdLemma` as projections of certified positive-dimensional cells and thinness certificates. | Existing raw subtype views remain compatibility-only; new operational code uses certified views only after the corresponding positive-dimensional certification, thinness data, and operational predicates exist. |
 
-**Implementation order after TCB.7s:**
+**Implementation order after TCB.7t:**
 
 1.  Do not broaden application by adding more one-off parent
     constructors.  Descriptor-indexed child spines over
-    `RawChildDescriptors` are live for the first application payload; the
-    next application slice must either generalize that indexed shape without
-    weakening `AuditPolyCell`, or stop at the current finite payload.  No
-    new payload is accepted merely because its raw descriptor screen passes.
-    The failed dimension-polymorphic dependent pattern route is not
-    acceptable.
+    `RawChildDescriptors` are live for the first application payload and now
+    erase exactly to their descriptor index.  The next application slice must
+    either generalize that indexed shape without weakening `AuditPolyCell`,
+    or stop at the current finite payload.  No new payload is accepted merely
+    because its raw descriptor screen passes.  The failed
+    dimension-polymorphic dependent pattern route is not acceptable.
 2.  If the reusable certified-child spine cannot be made audit-clean,
     keep using the decoder plus generic screen gate and move to
     positive-dimensional certification instead of weakening the TCB.
@@ -4711,7 +4713,11 @@ representable and computably rejected.
     finite probe list or a real constructor-index obstruction.  Stronger
     non-inhabitation theorems are allowed only when they follow from
     certified constructors and indices without excluded middle, `propext`,
-    `Classical`, `Inhabited`, `Nonempty`, or empty-domain tricks.
+    `Classical`, `Inhabited`, `Nonempty`, or empty-domain tricks.  Keep the
+    theorem name scoped to the actual obstruction: infer-screen rejection,
+    expected-shape rejection, certification-policy rejection,
+    child-descriptor mismatch, boundary mismatch, or constructor-index
+    non-inhabitation.
 
 **POLY-TCB anti-vacuity gate:** TCB.4 is intentionally weaker than the
 full checker: it must have concrete accepted witnesses only for the
