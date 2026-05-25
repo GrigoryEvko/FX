@@ -265,10 +265,13 @@ structure LocalConfluenceFiller {cubicalCat : CubicalOmegaCat.{u}}
     cubicalCat.face ⟨1, Nat.succ_lt_succ (Nat.zero_lt_succ 0)⟩ true filler =
       rightJoin
 
-/-- An ARS is locally confluent when every local branching has a filler. -/
-def IsLocallyConfluent {cubicalCat : CubicalOmegaCat.{u}}
-    (ars : AbstractRewritingSystem cubicalCat) : Prop :=
-  ∀ (branching : LocalBranching ars), Nonempty (LocalConfluenceFiller branching)
+/-- An ARS is locally confluent when every local branching has a concrete
+filler.  The filler function is stored directly because later Church-Rosser
+construction must consume the actual square, not merely know that one exists. -/
+structure IsLocallyConfluent {cubicalCat : CubicalOmegaCat.{u}}
+    (ars : AbstractRewritingSystem cubicalCat) where
+  fillerFor : ∀ (branching : LocalBranching ars),
+    LocalConfluenceFiller branching
 
 /-- An ARS is convergent: Noetherian + locally confluent. -/
 structure IsConvergent {cubicalCat : CubicalOmegaCat.{u}}

@@ -771,7 +771,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Saturation.LocalBranching
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Saturation.LocalConfluenceFiller
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Saturation.IsLocallyConfluent
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Saturation.IsLocallyConfluent.fillerFor
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Saturation.IsConvergent
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Saturation.IsConvergent.noetherian
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Saturation.IsConvergent.locallyConfluent
 
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Enrichment.Rung
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Enrichment.Rung.strength
@@ -1332,6 +1335,7 @@ namespace LeanFX2.Tools
 #assert_false_in_result_type_budget LeanFX2.Foundation.PolyCell.Extension 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Core 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
+#assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Extension 0
 
 end LeanFX2.Tools
