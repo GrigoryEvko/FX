@@ -196,6 +196,23 @@ def OmegacECell.declaredIndexOf : {dimension : Nat} →
     OmegacECell dimension → Fin (OmegacECell.countAtDim dimension)
   | _, cell => OmegacECell.slotOf cell
 
+/-- Suspend a scaffold generator into the next dimension while preserving its
+declared slot.
+
+This is only the generator-level suspension map used by the current finite
+scaffold.  It is not the suspension of the full HLOR pushout presentation and
+does not imply the universal classifier theorem. -/
+def OmegacECell.suspend : {dimension : Nat} →
+    OmegacECell dimension → OmegacECell (dimension + 1)
+  | dimension, cell =>
+    OmegacECell.atSlot (dimension + 1) (OmegacECell.slotOf cell)
+
+/-- Select a scaffold generator at a dimension, then suspend it once. -/
+def OmegacECell.suspendAtDeclaredIndex (dimension : Nat)
+    (declaredIndex : Fin (OmegacECell.countAtDim dimension)) :
+    OmegacECell (dimension + 1) :=
+  (OmegacECell.atDeclaredIndex dimension declaredIndex).suspend
+
 /-- Recover the numeric table slot for a scaffold generator. -/
 def OmegacECell.slotValueOf : {dimension : Nat} →
     OmegacECell dimension → Nat
@@ -294,6 +311,54 @@ theorem OmegacECell.atDeclaredIndex_slotZero (dimension : Nat) :
 theorem OmegacECell.atDeclaredIndex_slotOne (dimension : Nat) :
     OmegacECell.atDeclaredIndex dimension OmegacECell.slotOne =
       OmegacECell.secondAtDim dimension := rfl
+
+/-- Suspending the first scaffold generator gives the first generator one
+dimension higher. -/
+theorem OmegacECell.suspend_firstAtDim (dimension : Nat) :
+    (OmegacECell.firstAtDim dimension).suspend =
+      OmegacECell.firstAtDim (dimension + 1) := by
+  cases dimension with
+  | zero => rfl
+  | succ dimensionTail =>
+    cases dimensionTail with
+    | zero => rfl
+    | succ dimensionTail =>
+      cases dimensionTail with
+      | zero => rfl
+      | succ _ => rfl
+
+/-- Suspending the second scaffold generator gives the second generator one
+dimension higher. -/
+theorem OmegacECell.suspend_secondAtDim (dimension : Nat) :
+    (OmegacECell.secondAtDim dimension).suspend =
+      OmegacECell.secondAtDim (dimension + 1) := by
+  cases dimension with
+  | zero => rfl
+  | succ dimensionTail =>
+    cases dimensionTail with
+    | zero => rfl
+    | succ dimensionTail =>
+      cases dimensionTail with
+      | zero => rfl
+      | succ _ => rfl
+
+/-- Suspending the declared zero slot gives the next-dimensional zero slot. -/
+theorem OmegacECell.suspendAtDeclaredIndex_slotZero
+    (dimension : Nat) :
+    OmegacECell.suspendAtDeclaredIndex dimension OmegacECell.slotZero =
+      OmegacECell.firstAtDim (dimension + 1) := by
+  rw [OmegacECell.suspendAtDeclaredIndex,
+    OmegacECell.atDeclaredIndex_slotZero,
+    OmegacECell.suspend_firstAtDim]
+
+/-- Suspending the declared one slot gives the next-dimensional one slot. -/
+theorem OmegacECell.suspendAtDeclaredIndex_slotOne
+    (dimension : Nat) :
+    OmegacECell.suspendAtDeclaredIndex dimension OmegacECell.slotOne =
+      OmegacECell.secondAtDim (dimension + 1) := by
+  rw [OmegacECell.suspendAtDeclaredIndex,
+    OmegacECell.atDeclaredIndex_slotOne,
+    OmegacECell.suspend_secondAtDim]
 
 /-- The first scaffold generator reads back to slot zero. -/
 theorem OmegacECell.slotOf_firstAtDim (dimension : Nat) :
@@ -403,6 +468,43 @@ theorem OmegacECell.slotValueOf_secondAtDim (dimension : Nat) :
       cases dimensionTail with
       | zero => rfl
       | succ _ => rfl
+
+/-- Reading back an explicitly selected slot recovers its numeric value. -/
+theorem OmegacECell.slotValueOf_atSlot (dimension : Nat)
+    (slot : Fin 2) :
+    OmegacECell.slotValueOf (OmegacECell.atSlot dimension slot) =
+      slot.val := by
+  cases slot with
+  | mk slotValue slotBound =>
+    cases slotValue with
+    | zero =>
+      exact OmegacECell.slotValueOf_firstAtDim dimension
+    | succ slotTail =>
+      cases slotTail with
+      | zero =>
+        exact OmegacECell.slotValueOf_secondAtDim dimension
+      | succ impossibleTail =>
+        have impossibleLt : impossibleTail < 0 :=
+          Nat.lt_of_succ_lt_succ
+            (Nat.lt_of_succ_lt_succ slotBound)
+        exact False.elim (Nat.not_lt_zero impossibleTail impossibleLt)
+
+/-- Scaffold suspension preserves the numeric slot. -/
+theorem OmegacECell.slotValueOf_suspend {dimension : Nat}
+    (cell : OmegacECell dimension) :
+    OmegacECell.slotValueOf cell.suspend =
+      OmegacECell.slotValueOf cell := by
+  dsimp only [OmegacECell.suspend, OmegacECell.slotValueOf]
+  exact OmegacECell.slotValueOf_atSlot (dimension + 1)
+    (OmegacECell.slotOf cell)
+
+/-- Scaffold suspension preserves the numeric declared-count index. -/
+theorem OmegacECell.declaredIndexValueOf_suspend {dimension : Nat}
+    (cell : OmegacECell dimension) :
+    OmegacECell.declaredIndexValueOf cell.suspend =
+      OmegacECell.declaredIndexValueOf cell := by
+  dsimp only [OmegacECell.declaredIndexValueOf, OmegacECell.declaredIndexOf]
+  exact OmegacECell.slotValueOf_suspend cell
 
 /-- Selecting declared index zero reads back to numeric slot zero. -/
 theorem OmegacECell.declaredIndexValueOf_atDeclaredIndex_slotZero

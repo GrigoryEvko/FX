@@ -631,6 +631,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.secondAtDim
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.atSlot
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.atDeclaredIndex
+#assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.suspend
+#assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.suspendAtDeclaredIndex
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.slotOf
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.declaredIndexOf
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.slotValueOf
@@ -654,6 +656,12 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.atSlot_slotOne
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.atDeclaredIndex_slotZero
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.atDeclaredIndex_slotOne
+#assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.suspend_firstAtDim
+#assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.suspend_secondAtDim
+#assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.suspendAtDeclaredIndex_slotZero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.suspendAtDeclaredIndex_slotOne
+#assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.slotValueOf_suspend
+#assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.declaredIndexValueOf_suspend
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.slotOf_firstAtDim
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.slotOf_secondAtDim
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.slotOf_atSlot_slotZero
@@ -666,6 +674,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.declaredIndexValueOf_lt_countAtDim
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.slotValueOf_firstAtDim
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.slotValueOf_secondAtDim
+#assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.slotValueOf_atSlot
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.declaredIndexValueOf_atDeclaredIndex_slotZero
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.declaredIndexValueOf_atDeclaredIndex_slotOne
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.slotKindOf_firstAtDim

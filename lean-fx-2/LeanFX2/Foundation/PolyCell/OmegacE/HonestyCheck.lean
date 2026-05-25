@@ -9,6 +9,7 @@ Verify the current OmegacECell generator scaffold:
 - dim k+3: 2 cells (higherCoherence _ 0, higherCoherence _ 1)
 - countAtDim = 2 for all dimensions
 - atDeclaredIndex selects through the declared per-dimension count
+- suspend maps a scaffold generator to the same declared slot one dimension up
 - declaredIndexOf reads generators back into the declared index type
 - slotValueOf and declaredIndexValueOf expose proof-free Nat indices
 - slotKindOf/isFirstSlot/isSecondSlot classify the two declared slots
@@ -46,6 +47,34 @@ example : OmegacECell.atDeclaredIndex 3 OmegacECell.slotZero =
     OmegacECell.firstAtDim 3 := rfl
 example : OmegacECell.atDeclaredIndex 3 OmegacECell.slotOne =
     OmegacECell.secondAtDim 3 := rfl
+example : OmegacECell.suspend OmegacECell.sourceVertex =
+    OmegacECell.quasiIso := rfl
+example : OmegacECell.suspend OmegacECell.targetVertex =
+    OmegacECell.quasiInverse := rfl
+example : OmegacECell.suspend OmegacECell.quasiIso =
+    OmegacECell.alphaUnit := rfl
+example : OmegacECell.suspend OmegacECell.quasiInverse =
+    OmegacECell.betaCounit := rfl
+example : OmegacECell.suspend OmegacECell.alphaUnit =
+    OmegacECell.higherCoherence 0 OmegacECell.slotZero := rfl
+example : OmegacECell.suspend OmegacECell.betaCounit =
+    OmegacECell.higherCoherence 0 OmegacECell.slotOne := rfl
+example : OmegacECell.suspend
+      (OmegacECell.higherCoherence 0 OmegacECell.slotZero) =
+    OmegacECell.higherCoherence 1 OmegacECell.slotZero := rfl
+example : OmegacECell.suspendAtDeclaredIndex 3 OmegacECell.slotZero =
+    OmegacECell.firstAtDim 4 := rfl
+example : OmegacECell.suspendAtDeclaredIndex 3 OmegacECell.slotOne =
+    OmegacECell.secondAtDim 4 := rfl
+example : OmegacECell.slotValueOf
+      (OmegacECell.suspend (OmegacECell.firstAtDim 3)) =
+    OmegacECell.slotValueOf (OmegacECell.firstAtDim 3) := by
+  exact OmegacECell.slotValueOf_suspend (OmegacECell.firstAtDim 3)
+example : OmegacECell.declaredIndexValueOf
+      (OmegacECell.suspend (OmegacECell.secondAtDim 3)) =
+    OmegacECell.declaredIndexValueOf (OmegacECell.secondAtDim 3) := by
+  exact OmegacECell.declaredIndexValueOf_suspend
+    (OmegacECell.secondAtDim 3)
 example : OmegacECell.declaredIndexOf (OmegacECell.firstAtDim 3) =
     OmegacECell.slotZero := rfl
 example : OmegacECell.declaredIndexOf (OmegacECell.secondAtDim 3) =
