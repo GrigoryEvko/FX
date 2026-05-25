@@ -3411,6 +3411,86 @@ theorem FXType.toCell?_ofCellId?_of_isTypeConstructor
     · rw [dif_neg hasCurrentRange] at hasTypeConstructor
       cases hasTypeConstructor
 
+theorem FXTerm.cellId_ofCellId?_of_isTermConstructor
+    (cellId : CellId) (payload : Nat)
+    (hasTermConstructor :
+      (classifyDimZeroCellId cellId).isTermConstructor = true) :
+    Option.map FXTerm.cellId (FXTerm.ofCellId? cellId payload) =
+      some cellId := by
+  unfold FXTerm.ofCellId?
+  unfold classifyDimZeroCellId at hasTermConstructor ⊢
+  by_cases hasTermRange : cellId < termGeneratorCount
+  · rw [dif_pos hasTermRange]
+    rfl
+  · rw [dif_neg hasTermRange] at hasTermConstructor ⊢
+    by_cases hasCurrentRange : cellId < totalGeneratorCount
+    · rw [dif_pos hasCurrentRange] at hasTermConstructor
+      cases hasTermConstructor
+    · rw [dif_neg hasCurrentRange] at hasTermConstructor
+      cases hasTermConstructor
+
+theorem FXTerm.payload_ofCellId?_of_isTermConstructor
+    (cellId : CellId) (payload : Nat)
+    (hasTermConstructor :
+      (classifyDimZeroCellId cellId).isTermConstructor = true) :
+    Option.map FXTerm.payload (FXTerm.ofCellId? cellId payload) =
+      some payload := by
+  unfold FXTerm.ofCellId?
+  unfold classifyDimZeroCellId at hasTermConstructor ⊢
+  by_cases hasTermRange : cellId < termGeneratorCount
+  · rw [dif_pos hasTermRange]
+    rfl
+  · rw [dif_neg hasTermRange] at hasTermConstructor ⊢
+    by_cases hasCurrentRange : cellId < totalGeneratorCount
+    · rw [dif_pos hasCurrentRange] at hasTermConstructor
+      cases hasTermConstructor
+    · rw [dif_neg hasCurrentRange] at hasTermConstructor
+      cases hasTermConstructor
+
+theorem FXType.cellId_ofCellId?_of_isTypeConstructor
+    (cellId : CellId) (payload : Nat)
+    (hasTypeConstructor :
+      (classifyDimZeroCellId cellId).isTypeConstructor = true) :
+    Option.map FXType.cellId (FXType.ofCellId? cellId payload) =
+      some cellId := by
+  unfold FXType.ofCellId?
+  unfold classifyDimZeroCellId at hasTypeConstructor ⊢
+  by_cases hasTermRange : cellId < termGeneratorCount
+  · rw [dif_pos hasTermRange] at hasTypeConstructor
+    cases hasTypeConstructor
+  · rw [dif_neg hasTermRange] at hasTypeConstructor ⊢
+    by_cases hasCurrentRange : cellId < totalGeneratorCount
+    · rw [dif_pos hasCurrentRange]
+      have hasLowerBound : PolyTerm.firstTypeCellId ≤ cellId := by
+        change termGeneratorCount ≤ cellId
+        exact Nat.le_of_not_gt hasTermRange
+      change
+        some
+          (PolyTerm.firstTypeCellId +
+            (cellId - PolyTerm.firstTypeCellId)) =
+          some cellId
+      rw [nat_add_sub_cancel_of_le_structural hasLowerBound]
+    · rw [dif_neg hasCurrentRange] at hasTypeConstructor
+      cases hasTypeConstructor
+
+theorem FXType.payload_ofCellId?_of_isTypeConstructor
+    (cellId : CellId) (payload : Nat)
+    (hasTypeConstructor :
+      (classifyDimZeroCellId cellId).isTypeConstructor = true) :
+    Option.map FXType.payload (FXType.ofCellId? cellId payload) =
+      some payload := by
+  unfold FXType.ofCellId?
+  unfold classifyDimZeroCellId at hasTypeConstructor ⊢
+  by_cases hasTermRange : cellId < termGeneratorCount
+  · rw [dif_pos hasTermRange] at hasTypeConstructor
+    cases hasTypeConstructor
+  · rw [dif_neg hasTermRange] at hasTypeConstructor ⊢
+    by_cases hasCurrentRange : cellId < totalGeneratorCount
+    · rw [dif_pos hasCurrentRange]
+      rfl
+    · rw [dif_neg hasCurrentRange] at hasTypeConstructor
+      cases hasTypeConstructor
+
 /-- Decode a dim-0 FX cell into the term view when its id is in the current
 term-constructor block. -/
 def FXTerm.ofCell? (cell : FXCellAt 0) : Option FXTerm :=
