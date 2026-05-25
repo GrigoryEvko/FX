@@ -58,6 +58,7 @@ import LeanFX2.Tools.AuditAll.AuditHIT_Suspension
 import LeanFX2.Tools.AuditAll.AuditHIT_Trunc
 import LeanFX2.Tools.AuditAll.AuditMisc_Option
 import LeanFX2.Tools.AuditAll.AuditModalTwoCell
+import LeanFX2.Tools.AuditAll.AuditPolyCell
 import LeanFX2.Tools.AuditAll.AuditReducibility
 import LeanFX2.Tools.AuditAll.AuditReduction
 import LeanFX2.Tools.AuditAll.AuditSessions

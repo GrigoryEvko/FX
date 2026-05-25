@@ -85,8 +85,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.RawTerm.constantPathBody?_pathLam_nested_binder_var
 #assert_no_axioms LeanFX2.RawTerm.constantPathBody?_pathLam_nested_interval_escape_none
 #assert_no_axioms LeanFX2.RawTerm.constantPathBody?_unit_none
-#assert_no_axioms LeanFX2.RawTerm.cdModElimCase
-#assert_no_axioms LeanFX2.RawTerm.cdCodataDestCase
+
+-- The old per-constructor cd cascade is TODO POLYCELL-disabled. Its
+-- replacement must be audited through the PolyCell confluence view once that
+-- view exists, not by stale `RawTerm.cd*Case` declaration names.
 
 #assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.PolyCell
 #assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.ParallelPair
