@@ -546,7 +546,11 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXArrow.identity
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXArrow.compV
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXArrow.identity_raw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXArrow.identity_source
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXArrow.identity_target
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXArrow.compV_raw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXArrow.compV_source
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXArrow.compV_target
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXThinCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXThinCell.certifiedFXCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXThinCell.thinEvidence
@@ -565,7 +569,11 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXThinArrow.identity
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXThinArrow.compV
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXThinArrow.identity_raw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXThinArrow.identity_source
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXThinArrow.identity_target
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXThinArrow.compV_raw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXThinArrow.compV_source
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXThinArrow.compV_target
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXContext
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXType
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXTerm

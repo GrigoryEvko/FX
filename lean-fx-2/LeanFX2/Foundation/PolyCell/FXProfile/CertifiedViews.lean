@@ -150,6 +150,16 @@ theorem identity_raw {cellSort : CellSort} {cellDimension scope : Nat}
     (identity baseCell).toRaw =
       PolyTerm.identity (profile := fxProfile) baseCell.rawCell := rfl
 
+/-- Source endpoint of an identity arrow is definitional. -/
+theorem identity_source {cellSort : CellSort} {cellDimension scope : Nat}
+    (baseCell : CertifiedFXCell cellSort cellDimension scope) :
+    (identity baseCell).source = baseCell.rawCell := rfl
+
+/-- Target endpoint of an identity arrow is definitional. -/
+theorem identity_target {cellSort : CellSort} {cellDimension scope : Nat}
+    (baseCell : CertifiedFXCell cellSort cellDimension scope) :
+    (identity baseCell).target = baseCell.rawCell := rfl
+
 /-- Raw erasure of vertical composition is definitional. -/
 theorem compV_raw {cellSort : CellSort} {cellDimension scope : Nat}
     {sourceRaw middleRaw targetRaw : PolyTerm fxProfile cellDimension}
@@ -160,6 +170,24 @@ theorem compV_raw {cellSort : CellSort} {cellDimension scope : Nat}
     (compV firstArrow secondArrow).toRaw =
       PolyTerm.compV (profile := fxProfile)
         firstArrow.rawCell secondArrow.rawCell := rfl
+
+/-- Source endpoint of arrow vertical composition is definitional. -/
+theorem compV_source {cellSort : CellSort} {cellDimension scope : Nat}
+    {sourceRaw middleRaw targetRaw : PolyTerm fxProfile cellDimension}
+    (firstArrow :
+      CertifiedFXArrow cellSort cellDimension scope sourceRaw middleRaw)
+    (secondArrow :
+      CertifiedFXArrow cellSort cellDimension scope middleRaw targetRaw) :
+    (compV firstArrow secondArrow).source = sourceRaw := rfl
+
+/-- Target endpoint of arrow vertical composition is definitional. -/
+theorem compV_target {cellSort : CellSort} {cellDimension scope : Nat}
+    {sourceRaw middleRaw targetRaw : PolyTerm fxProfile cellDimension}
+    (firstArrow :
+      CertifiedFXArrow cellSort cellDimension scope sourceRaw middleRaw)
+    (secondArrow :
+      CertifiedFXArrow cellSort cellDimension scope middleRaw targetRaw) :
+    (compV firstArrow secondArrow).target = targetRaw := rfl
 
 end CertifiedFXArrow
 
@@ -283,6 +311,16 @@ theorem identity_raw {cellSort : CellSort} {cellDimension scope : Nat}
     (identity baseCell).toRaw =
       PolyTerm.identity (profile := fxProfile) baseCell.rawCell := rfl
 
+/-- Source endpoint of a thin identity arrow is definitional. -/
+theorem identity_source {cellSort : CellSort} {cellDimension scope : Nat}
+    (baseCell : CertifiedFXCell cellSort cellDimension scope) :
+    (identity baseCell).source = baseCell.rawCell := rfl
+
+/-- Target endpoint of a thin identity arrow is definitional. -/
+theorem identity_target {cellSort : CellSort} {cellDimension scope : Nat}
+    (baseCell : CertifiedFXCell cellSort cellDimension scope) :
+    (identity baseCell).target = baseCell.rawCell := rfl
+
 /-- Raw erasure of thin vertical composition is definitional. -/
 theorem compV_raw {cellSort : CellSort} {cellDimension scope : Nat}
     {sourceRaw middleRaw targetRaw : PolyTerm fxProfile cellDimension}
@@ -294,6 +332,24 @@ theorem compV_raw {cellSort : CellSort} {cellDimension scope : Nat}
       PolyTerm.compV (profile := fxProfile)
         firstArrow.certifiedArrow.rawCell
         secondArrow.certifiedArrow.rawCell := rfl
+
+/-- Source endpoint of thin-arrow vertical composition is definitional. -/
+theorem compV_source {cellSort : CellSort} {cellDimension scope : Nat}
+    {sourceRaw middleRaw targetRaw : PolyTerm fxProfile cellDimension}
+    (firstArrow :
+      CertifiedFXThinArrow cellSort cellDimension scope sourceRaw middleRaw)
+    (secondArrow :
+      CertifiedFXThinArrow cellSort cellDimension scope middleRaw targetRaw) :
+    (compV firstArrow secondArrow).source = sourceRaw := rfl
+
+/-- Target endpoint of thin-arrow vertical composition is definitional. -/
+theorem compV_target {cellSort : CellSort} {cellDimension scope : Nat}
+    {sourceRaw middleRaw targetRaw : PolyTerm fxProfile cellDimension}
+    (firstArrow :
+      CertifiedFXThinArrow cellSort cellDimension scope sourceRaw middleRaw)
+    (secondArrow :
+      CertifiedFXThinArrow cellSort cellDimension scope middleRaw targetRaw) :
+    (compV firstArrow secondArrow).target = targetRaw := rfl
 
 end CertifiedFXThinArrow
 
