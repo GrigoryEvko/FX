@@ -162,6 +162,17 @@ def contextConsGeneratorSpec : GeneratorSpec where
     ChildSpec.modeSameScope
   ]
 
+/-- First mode generator id, immediately after current context ids. -/
+def firstModeGeneratorCellId : CellId :=
+  firstContextGeneratorCellId + 2
+
+/-- Target metadata for the nullary linear mode. -/
+def linearModeGeneratorSpec : GeneratorSpec where
+  cellId := firstModeGeneratorCellId
+  cellSort := .mode
+  cellDimension := 0
+  childSpecs := []
+
 /-- Current seed rule shell for dim-1 term rewrites. -/
 def termStepRuleSpec : RuleSpec where
   ruleId := 0
@@ -197,6 +208,9 @@ theorem contextConsGeneratorSpec_childSpecs :
       [ChildSpec.contextSameScope, ChildSpec.typeSameScope,
         ChildSpec.modeSameScope] := rfl
 
+theorem linearModeGeneratorSpec_childSpecs :
+    linearModeGeneratorSpec.childSpecs = [] := rfl
+
 theorem lambdaGeneratorSpec_arity :
     lambdaGeneratorSpec.arity = 2 := rfl
 
@@ -211,6 +225,9 @@ theorem piTypeGeneratorSpec_arity :
 
 theorem contextConsGeneratorSpec_arity :
     contextConsGeneratorSpec.arity = 3 := rfl
+
+theorem linearModeGeneratorSpec_arity :
+    linearModeGeneratorSpec.arity = 0 := rfl
 
 theorem piTypeGeneratorSpec_cellId :
     piTypeGeneratorSpec.cellId = 82 := rfl
@@ -227,6 +244,12 @@ theorem unitTypeGeneratorSpec_cellId_eq_declared :
 theorem contextConsGeneratorSpec_cellId :
     contextConsGeneratorSpec.cellId = 104 := rfl
 
+theorem firstModeGeneratorCellId_eq_declared :
+    firstModeGeneratorCellId = PolyTerm.typeCellIdLimit + 2 := rfl
+
+theorem linearModeGeneratorSpec_cellId :
+    linearModeGeneratorSpec.cellId = 105 := rfl
+
 theorem piTypeGeneratorSpec_cellId_eq_declared :
     piTypeGeneratorSpec.cellId = PolyTerm.firstTypeCellId + 4 := rfl
 
@@ -235,6 +258,9 @@ theorem contextEmptyGeneratorSpec_cellId_eq_declared :
 
 theorem contextConsGeneratorSpec_cellId_eq_declared :
     contextConsGeneratorSpec.cellId = PolyTerm.typeCellIdLimit + 1 := rfl
+
+theorem linearModeGeneratorSpec_cellId_eq_declared :
+    linearModeGeneratorSpec.cellId = firstModeGeneratorCellId := rfl
 
 theorem termStepRuleSpec_endpointDimension :
     termStepRuleSpec.endpointDimension = 0 := rfl

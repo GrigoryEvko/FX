@@ -49,6 +49,9 @@ inductive SupportedGeneratorSpec : GeneratorSpec → Type where
   /-- Context-extension generator. Payload decoding is not implemented yet. -/
   | contextCons :
       SupportedGeneratorSpec contextConsGeneratorSpec
+  /-- Nullary linear mode generator. -/
+  | linearMode :
+      SupportedGeneratorSpec linearModeGeneratorSpec
 
 /-- Seed rule specs currently admitted by the certified structural layer.
 
@@ -78,6 +81,9 @@ inductive AtomPayloadEvidence :
   /-- Unit type has the unique accepted payload 0. -/
   | unitType {scope : Nat} :
       AtomPayloadEvidence unitTypeGeneratorSpec scope 0
+  /-- Linear mode has the unique accepted payload 0. -/
+  | linearMode {scope : Nat} :
+      AtomPayloadEvidence linearModeGeneratorSpec scope 0
 
 /-- Certified cell indexed by sort, dimension, scope, boundary, and raw erasure.
 
@@ -173,6 +179,13 @@ def unitType {profile : PolyProfile} {scope : Nat} :
   .atom SupportedGeneratorSpec.unitType
     AtomPayloadEvidence.unitType
 
+/-- The linear-mode helper certifies exactly the raw linear-mode atom. -/
+def linearMode {profile : PolyProfile} {scope : Nat} :
+    PolyCell profile .mode 0 scope ()
+      (.atom linearModeGeneratorSpec.cellId 0) :=
+  .atom SupportedGeneratorSpec.linearMode
+    AtomPayloadEvidence.linearMode
+
 /-- Raw erasure of the variable-cell helper is definitional. -/
 theorem raw_variableCell {profile : PolyProfile} {scope index : Nat}
     (hasIndexWithinScope : index < scope) :
@@ -188,6 +201,11 @@ theorem raw_contextEmpty {profile : PolyProfile} {scope : Nat} :
 theorem raw_unitType {profile : PolyProfile} {scope : Nat} :
     (unitType (profile := profile) (scope := scope)).raw =
       PolyTerm.atom (profile := profile) unitTypeGeneratorSpec.cellId 0 := rfl
+
+/-- Raw erasure of the linear-mode helper is definitional. -/
+theorem raw_linearMode {profile : PolyProfile} {scope : Nat} :
+    (linearMode (profile := profile) (scope := scope)).raw =
+      PolyTerm.atom (profile := profile) linearModeGeneratorSpec.cellId 0 := rfl
 
 end PolyCell
 
