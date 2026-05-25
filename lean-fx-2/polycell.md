@@ -3905,14 +3905,17 @@ inductive CellCheckRejection where
 
 /-- Infer a certified package from raw input.
 
-This is the current TCB.7b ingress, not the final recursive checker.  It
+This is the current TCB.7d ingress, not the final recursive checker.  It
 certifies only the dim-0 subset whose constructors are implemented in the
 certified layer: in-scope variables, unit type, empty context, linear mode,
 and the single finite application payload `app(var 0, var 1)` at scopes where
-both decoded variables are in scope.  Other raw dim-0 atoms remain
-representable and reject either with the screen's structural reason or with
-`unsupportedCertification` when they screen successfully but lack a certified
-constructor. -/
+both decoded variables are in scope.  The application ingress now invokes the
+payload decoder and generic child-shape screen before constructing the
+certified parent; it still does not expose a dimension-polymorphic certified
+child decoder because the direct dependent version pulled `propext` into the
+audit.  Other raw dim-0 atoms remain representable and reject either with the
+screen's structural reason or with `unsupportedCertification` when they screen
+successfully but lack a certified constructor. -/
 structure CertifiedRawCellResult (profile : PolyProfile) (scope : Nat) where
   cellDimension : CellDim
   inputCode : List Nat
@@ -3998,7 +4001,8 @@ catalog of malformed raw inputs, not only against positive examples:
   cell, or whose decoded argument is outside scope, must reject as
   `wrongChildShape`;
 - current certified ingress accepts the structurally screened
-  `app(var 0, var 1)` fixture only when `var 0` and `var 1` are both
+  `app(var 0, var 1)` fixture only after the payload decoder and generic
+  child-shape screen succeed and only when `var 0` and `var 1` are both
   certifiable in the same scope; scope 0 and scope 1 reject as
   `wrongChildShape`, and malformed application payloads preserve their
   `wrongChildShape` rejection;
@@ -4562,6 +4566,7 @@ representable and computably rejected.
 | TCB.7a certified seed views | `9ba62a55` | `CertifiedFXCell` and seed `CertifiedFXContext` / `CertifiedFXType` / `CertifiedFXTerm` / `CertifiedFXMode` views wrap actual `PolyCell` witnesses over `fxProfile`.  There is still no certified conversion/thinness view and no new non-nullary certification power. |
 | TCB.7b first certified application payload | `2765ef03` | `app(var 0, var 1)` is the first non-nullary dim-0 term payload admitted to the certified layer.  It is accepted only at scopes where both decoded variables are certified; scope 0/1 and malformed application payloads still reject by computation.  This is not general application certification. |
 | TCB.7c certified application child decoder | `f480ef2a` | The accepted `app(var 0, var 1)` path now factors through `CertifiedApplicationVarZeroVarOneChildren`, a computable certified-child decoder carrying the actual `CellChildren` spine of `PolyCell` child witnesses.  Scope 0/1 rejections are audited at both decoder and checker level. |
+| TCB.7d screen-gated certified application ingress | `f36b083b` | `certifyApplicationVarZeroVarOneChildren?` now invokes `decodeApplicationPayload?` and the audited generic child-shape screen before constructing the certified application package.  A stronger dimension-polymorphic certified-child decoder was attempted and rejected by `AuditPolyCell` because it pulled in `propext`; the committed path keeps the TCB axiom-free and accepted payloads unchanged. |
 
 **Deliverables (NEW only):**
 
@@ -4581,19 +4586,19 @@ representable and computably rejected.
 | TCB.7a certified seed views | `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | `CertifiedFXCell` plus certified seed projections for context/type/term/mode over the current dim-0 ingress subset. | Every view carries an actual `PolyCell`; raw-erasure theorems are definitional; conversion/thinness and full step/coherence views remain unimplemented. |
 | TCB.7b first certified application payload | `Foundation/PolyCell/Core/GeneratorSpec.lean`, `Foundation/PolyCell/Core/Certified.lean`, `Foundation/PolyCell/Core/Check.lean`, `Foundation/PolyCell/Core/NegativeProbes.lean`, `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | The finite payload `9100` is admitted as `app(var 0, var 1)` only through certified `var 0` and `var 1` child witnesses. | Scope 0/1 reject as `wrongChildShape`; type-as-function, type-as-argument, and out-of-scope application fixtures still reject; the accepted result and FX view erase definitionally to the raw fixture; all declarations are in `AuditPolyCell`. |
 | TCB.7c certified application child decoder | `Foundation/PolyCell/Core/Check.lean`, `Foundation/PolyCell/FXProfile/CertifiedViews.lean`, `Tools/AuditAll/AuditPolyCell.lean` | `CertifiedApplicationVarZeroVarOneChildren` records the certified function child, certified argument child, and application child spine; `certifyApplicationVarZeroVarOneChildren?` is the computable ingress used by `inferRawAtom?`. | The app parent is built only from the certified child package; scope 0/1 reject before parent construction; expected-shape scope-1 rejection and child-spine arity are audited axiom-free. |
-| TCB.7d certified FX operational views | `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | Future `FXStep`, `FXConv`, `FXCdLemma` as projections of certified positive-dimensional cells and thinness certificates. | Existing raw subtype views remain compatibility-only; new operational code uses certified views only after the corresponding positive-dimensional certification exists. |
+| TCB.7d screen-gated certified application ingress | `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | The certified application ingress runs the payload decoder and generic `screenRawChildDescriptorsWith?` child-shape screen before building the parent certificate. | `LeanFX2.Tools.AuditAll` is green; no accepted payload is broadened; the direct dependent certified-child-spine route remains blocked until it can be implemented without `propext`. |
+| TCB.7e certified FX operational views | `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | Future `FXStep`, `FXConv`, `FXCdLemma` as projections of certified positive-dimensional cells and thinness certificates. | Existing raw subtype views remain compatibility-only; new operational code uses certified views only after the corresponding positive-dimensional certification exists. |
 
-**Implementation order after TCB.7c:**
+**Implementation order after TCB.7d:**
 
 1.  Do not broaden application by adding more one-off parent
-    constructors.  The next application slice must replace the finite
-    child decoder with a small reusable certified-child decoder over the
-    existing `RawChildDescriptors` output.  Newly accepted payloads must
-    carry a `CellChildren` spine of actual `PolyCell` witnesses, and
-    every failed child must report `wrongChildShape`.
-2.  Generalize certification beyond dim 0 only after a propext-free
-    boundary representation is proven by audit.  Do not reintroduce the
-    failed dimension-polymorphic dependent pattern route.
+    constructors.  The next application slice is a propext-free certified
+    child-spine design over `RawChildDescriptors`; it must be tried behind
+    `AuditPolyCell` before any new payload is accepted.  The failed
+    dimension-polymorphic dependent pattern route is not acceptable.
+2.  If the reusable certified-child spine cannot be made audit-clean,
+    keep using the decoder plus generic screen gate and move to
+    positive-dimensional certification instead of weakening the TCB.
 3.  Add positive-dimensional certification in this order: generated
     `.cell` over already certified endpoints, then `identity`, then
     vertical composition with definitional middle matching.  Certified
