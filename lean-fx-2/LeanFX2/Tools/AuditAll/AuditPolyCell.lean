@@ -523,6 +523,12 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.payload?_ofCell?_ofConstructorName_toCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.toCell?_ofCell?_toCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.toCell?_ofCell?_toCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.cellId_ofCell?_toCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.payload_ofCell?_toCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.constructorIndex_val_ofCell?_toCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.cellId_ofCell?_toCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.payload_ofCell?_toCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.constructorIndex_val_ofCell?_toCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.ofCell?_ofType_toCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.ofCell?_ofTerm_toCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.ofCell?_ofOutsideCurrentGeneratorRange
