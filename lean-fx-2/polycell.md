@@ -4610,6 +4610,7 @@ representable and computably rejected.
 | TCB.7o multi-sort thin identity arrows | `b7b203f6` | Endpoint-indexed thin identity arrows are now exposed for the seed type, context, and mode cells, matching the existing term identity arrow discipline.  This confirms the certified view layer is not term-only; type/context/mode cells use the same endpoint-indexed substrate without any new raw ingress. |
 | TCB.7p multi-sort thin identity composites | `bee8d7f1` | Endpoint-indexed thin composites of seed identity arrows are now exposed for type, context, and mode cells.  This mirrors the term identity composite through the generic thin-arrow `compV`, proving the multi-sort views share the same structural vertical-composition discipline. |
 | TCB.7q derived application child spine | `0f6f3098` | The accepted `app(var 0, var 1)` child package no longer stores an independent certified child spine.  It derives the spine from the certified function and argument children and exposes a raw-descriptor erasure theorem showing the certified spine matches the decoded raw child descriptors.  No accepted raw inputs are broadened. |
+| TCB.7r application child erasure theorems | `ef939560` | Certified child-spine erasure now preserves declared arity, and the certified `app(var 0, var 1)` child package is theorem-linked to the payload decoder output.  Certification followed by child-spine erasure returns the same raw descriptor spine as decoding for every scope where both variables are in scope. |
 
 **Deliverables (NEW only):**
 
@@ -4643,14 +4644,17 @@ representable and computably rejected.
 | TCB.7o multi-sort thin identity arrows | `Foundation/PolyCell/FXProfile/CertifiedViews.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds type/context/mode endpoint-indexed arrow aliases and seed thin identity arrows with definitional raw/source/target theorems. | The new arrows are derived only from already certified seed cells and structural identity thinness; no checker acceptance domain changes. |
 | TCB.7p multi-sort thin identity composites | `Foundation/PolyCell/FXProfile/CertifiedViews.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds type/context/mode endpoint-indexed thin composites by composing the corresponding seed thin identity arrows. | Raw/source/target theorems are definitional and audited; no raw `compV` dispatcher, checker broadening, or operational conversion predicate is added. |
 | TCB.7q derived application child spine | `Foundation/PolyCell/Core/Certified.lean`, `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Removes the stored `applicationChildSpine` field from the first certified application child package and derives it from `functionCell` and `argumentCell`.  Adds certified-child-spine erasure to `RawChildDescriptors`. | The package cannot carry certified children together with an unrelated child spine; the erasure theorem is definitional and audited; no new application payloads are accepted. |
-| TCB.7r certified FX operational views | `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | Future `FXStep`, `FXConv`, `FXCdLemma` as projections of certified positive-dimensional cells and thinness certificates. | Existing raw subtype views remain compatibility-only; new operational code uses certified views only after the corresponding positive-dimensional certification, thinness data, and operational predicates exist. |
+| TCB.7r application child erasure theorems | `Foundation/PolyCell/Core/Certified.lean`, `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds generic arity preservation for certified-child-spine erasure and theorem-level glue showing the accepted application child certificate erases back to the payload decoder's raw descriptors. | All theorems are audit-gated and definitional; this is not a new decoder, raw dispatcher, certified constructor, or accepted payload. |
+| TCB.7s certified FX operational views | `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | Future `FXStep`, `FXConv`, `FXCdLemma` as projections of certified positive-dimensional cells and thinness certificates. | Existing raw subtype views remain compatibility-only; new operational code uses certified views only after the corresponding positive-dimensional certification, thinness data, and operational predicates exist. |
 
-**Implementation order after TCB.7q:**
+**Implementation order after TCB.7r:**
 
 1.  Do not broaden application by adding more one-off parent
-    constructors.  The next application slice is a propext-free certified
-    child-spine design over `RawChildDescriptors`; it must be tried behind
-    `AuditPolyCell` before any new payload is accepted.  The failed
+    constructors.  The first propext-free child-spine erasure theorem
+    heads over `RawChildDescriptors` are live; the next application slice
+    must either generalize that shape without weakening `AuditPolyCell`, or
+    stop at the current finite payload.  No new payload is accepted merely
+    because its raw descriptor screen passes.  The failed
     dimension-polymorphic dependent pattern route is not acceptable.
 2.  If the reusable certified-child spine cannot be made audit-clean,
     keep using the decoder plus generic screen gate and move to
