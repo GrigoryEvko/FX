@@ -16,6 +16,8 @@ namespace LeanFX2.Foundation.PolyCell.Core
 The `dimension` field keeps the raw input's dimension explicit while still
 allowing one list to contain dim-0 atoms and dim-1 composites. -/
 structure RawInferNegativeProbe (profile : PolyProfile) where
+  /-- Scope used when screening the malformed raw input. -/
+  scope : Nat
   /-- Dimension of the malformed raw input. -/
   dimension : CellDim
   /-- Malformed raw input. -/
@@ -40,6 +42,13 @@ structure RawExpectedShapeNegativeProbe (profile : PolyProfile) where
   expectedRejection : CellCheckRejection
 
 namespace NegativeProbes
+
+/-- Shared scope for inference-level probes.
+
+The scope admits the seed variables with payloads 0, 1, 2, and 3, so the
+vertical-boundary probe reaches the boundary check instead of failing early
+on out-of-scope variables. -/
+def defaultInferScope : Nat := 4
 
 /-- Payload sentinel for a known generator whose payload should not decode. -/
 def badPayloadSentinel : Nat := 9001
@@ -66,9 +75,9 @@ def thirdTermAtom (profile : PolyProfile) : PolyTerm profile 0 :=
 def fourthTermAtom (profile : PolyProfile) : PolyTerm profile 0 :=
   .atom variableGeneratorSpec.cellId 3
 
-/-- Unknown dim-0 generator id. -/
+/-- Dim-0 generator id not present in the current supported seed table. -/
 def unknownGeneratorRawCell (profile : PolyProfile) : PolyTerm profile 0 :=
-  .atom (contextConsGeneratorSpec.cellId + 1000) 0
+  .atom (lambdaGeneratorSpec.cellId - 1) 0
 
 /-- Known lambda generator with a payload reserved for bad-payload testing. -/
 def badPayloadRawCell (profile : PolyProfile) : PolyTerm profile 0 :=
@@ -117,6 +126,7 @@ def wrongSortRawCell (profile : PolyProfile) : PolyTerm profile 0 :=
 /-- Probe for `unknownGenerator`. -/
 def unknownGeneratorProbe (profile : PolyProfile) :
     RawInferNegativeProbe profile where
+  scope := defaultInferScope
   dimension := 0
   rawCell := unknownGeneratorRawCell profile
   expectedRejection := .unknownGenerator
@@ -124,6 +134,7 @@ def unknownGeneratorProbe (profile : PolyProfile) :
 /-- Probe for `badPayload`. -/
 def badPayloadProbe (profile : PolyProfile) :
     RawInferNegativeProbe profile where
+  scope := defaultInferScope
   dimension := 0
   rawCell := badPayloadRawCell profile
   expectedRejection := .badPayload
@@ -131,6 +142,7 @@ def badPayloadProbe (profile : PolyProfile) :
 /-- Probe for `wrongArity`. -/
 def wrongArityProbe (profile : PolyProfile) :
     RawInferNegativeProbe profile where
+  scope := defaultInferScope
   dimension := 0
   rawCell := wrongArityRawCell profile
   expectedRejection := .wrongArity
@@ -138,6 +150,7 @@ def wrongArityProbe (profile : PolyProfile) :
 /-- Probe for `wrongChildShape`. -/
 def wrongChildShapeProbe (profile : PolyProfile) :
     RawInferNegativeProbe profile where
+  scope := defaultInferScope
   dimension := 0
   rawCell := wrongChildShapeRawCell profile
   expectedRejection := .wrongChildShape
@@ -145,6 +158,7 @@ def wrongChildShapeProbe (profile : PolyProfile) :
 /-- Probe for `badBoundaryEndpoint`. -/
 def badBoundaryEndpointProbe (profile : PolyProfile) :
     RawInferNegativeProbe profile where
+  scope := defaultInferScope
   dimension := 1
   rawCell := badBoundaryEndpointRawCell profile
   expectedRejection := .badBoundaryEndpoint
@@ -152,6 +166,7 @@ def badBoundaryEndpointProbe (profile : PolyProfile) :
 /-- Probe for `badVerticalBoundary`. -/
 def badVerticalBoundaryProbe (profile : PolyProfile) :
     RawInferNegativeProbe profile where
+  scope := defaultInferScope
   dimension := 1
   rawCell := badVerticalBoundaryRawCell profile
   expectedRejection := .badVerticalBoundary
@@ -159,6 +174,7 @@ def badVerticalBoundaryProbe (profile : PolyProfile) :
 /-- Probe for `unsupportedCompH`. -/
 def unsupportedCompHProbe (profile : PolyProfile) :
     RawInferNegativeProbe profile where
+  scope := defaultInferScope
   dimension := 1
   rawCell := unsupportedCompHRawCell profile
   expectedRejection := .unsupportedCompH
