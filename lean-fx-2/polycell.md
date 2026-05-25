@@ -3791,6 +3791,7 @@ inductive SupportedGeneratorSpec : GeneratorSpec -> Type where
   | piType : SupportedGeneratorSpec piTypeGeneratorSpec
   | contextEmpty : SupportedGeneratorSpec contextEmptyGeneratorSpec
   | contextCons : SupportedGeneratorSpec contextConsGeneratorSpec
+  | linearMode : SupportedGeneratorSpec linearModeGeneratorSpec
 
 /-- Current supported-rule table for the certified structural layer.
 
@@ -3812,6 +3813,8 @@ inductive AtomPayloadEvidence :
       AtomPayloadEvidence unitTypeGeneratorSpec scope 0
   | contextEmpty {scope : Nat} :
       AtomPayloadEvidence contextEmptyGeneratorSpec scope 0
+  | linearMode {scope : Nat} :
+      AtomPayloadEvidence linearModeGeneratorSpec scope 0
 
 /-- Certified cell syntax.  This is the trusted layer.  It is indexed by
 the raw syntax it certifies, so erasure back to raw is definitional.
@@ -3957,19 +3960,22 @@ catalog of malformed raw inputs, not only against positive examples:
   as `badPayload`;
 - known generators with reserved malformed payloads must reject as
   `badPayload`, `wrongArity`, or `wrongChildShape`;
-- nullary type/context atoms with nonzero payloads must reject as
+- nullary type/context/mode atoms with nonzero payloads must reject as
   `badPayload`;
 - generated dim-1 cells over uncertified endpoints must reject as
   `badBoundaryEndpoint`;
 - generated term-step cells over context or type endpoints must reject
   as `badBoundaryEndpoint`, not as accepted cross-sort steps;
+- generated term-step cells over mode endpoints must also reject as
+  `badBoundaryEndpoint`;
 - raw vertical composites with mismatched middle endpoints must reject
   as `badVerticalBoundary`;
 - raw horizontal composites must reject as `unsupportedCompH` until
   Axis 6 supplies certified Gray-boundary semantics;
 - expected-shape checks must include a real sort mismatch probe that
   rejects as `wrongSort`, including term-as-type, type-as-term, and
-  positive-dimensional type-identity-as-term-step probes.
+  mode-as-term probes, plus positive-dimensional
+  type-identity-as-term-step probes.
 
 Probes begin life as audited raw fixtures plus expected rejection
 labels.  Once the executable screen can cover a class of probes, every
@@ -4501,23 +4507,24 @@ representable and computably rejected.
 | TCB.6b positive-dimensional screen | `c5c7fcf0` | The same screen rejects bad endpoints, cross-sort endpoints, bad vertical boundaries, and unsupported raw `compH` without dependent equality shortcuts. |
 | TCB.6c unit-type seed | `6b47503b` | `unitTypeGeneratorSpec` becomes a nullary certified `.type` atom with payload evidence only for payload `0`. |
 | TCB.6d malformed type probes | `24647e27` | The negative catalog covers out-of-scope variables, bad unit-type payloads, type endpoints in term steps, term/type expected-sort confusion, and positive-dimensional type-identity confusion; expected-sort checking uses the recursive screen, not sort-only inference. |
+| TCB.6e linear-mode seed | `2939addf` | `linearModeGeneratorSpec` becomes a nullary certified `.mode` atom; the checker rejects bad mode payloads, mode endpoints in term steps, and mode-as-term expected-shape confusion. |
 
 **Deliverables (NEW only):**
 
 | Task | File(s) | Content | Acceptance |
 |---|---|---|---|
 | TCB.1 sort vocabulary | `Foundation/PolyCell/Core/CellSort.lean` | `CellSort` enum for `context`, `type`, `term`, `mode`, `effect`, `grade`, `protocol`; decidable equality; no semantics. | `#assert_no_axioms CellSort`; no `Inhabited`/`Classical`; audit gate added. |
-| TCB.2 generator child specs | `Foundation/PolyCell/Core/GeneratorSpec.lean` | `ChildSpec`, `GeneratorSpec`, `RuleSpec`; scope shift separated from arity; first concrete specs for `var`, `lam`, `app`, `unitType`, `piTy`, `ctxEmpty`, `ctxCons`, and the current dim-1 step-generator shell. | `lam` child table has type child at scope+0 and term body at scope+1; `piTy` codomain is type at scope+1; all facts are definitional or simple cases. |
+| TCB.2 generator child specs | `Foundation/PolyCell/Core/GeneratorSpec.lean` | `ChildSpec`, `GeneratorSpec`, `RuleSpec`; scope shift separated from arity; first concrete specs for `var`, `lam`, `app`, `unitType`, `piTy`, `ctxEmpty`, `ctxCons`, `linearMode`, and the current dim-1 step-generator shell. | `lam` child table has type child at scope+0 and term body at scope+1; `piTy` codomain is type at scope+1; all facts are definitional or simple cases. |
 | TCB.3 heterogeneous children | `Foundation/PolyCell/Core/CellChildren.lean` | `CellChildren (ChildCarrier : CellSort -> CellDim -> Nat -> Type) (parentScope : Nat) : List ChildSpec -> Type`; constructors force child sort/dim/scope from the spec list without depending on full `PolyCell` yet. | It is impossible to build a lambda body child at `.type` or at the wrong scope without a Lean type error; audit gate added. |
 | TCB.3b raw child descriptors | `Foundation/PolyCell/Core/RawChildren.lean` | `RawChildDescriptor` and `RawChildDescriptors`; payload decoders can return shape-indexed raw children without certifying them. | Decoder output can record lambda/pi/context child shapes, but the carrier stores only permissive raw cells; no `PolyCell` is produced. |
 | TCB.3c negative probes | `Foundation/PolyCell/Core/NegativeProbes.lean` | Concrete malformed raw cells plus expected rejection labels for all eight `CellCheckRejection` cases. | Probe catalog is audited and nonempty; executable rejection claims live in `Check.lean`, not in the fixture file. |
-| TCB.4 certified boundary layer | `Foundation/PolyCell/Core/Certified.lean` | `CellBoundary` and `PolyCell profile sort dim scope boundary raw` with constructors `atom`, `cell`, `compV`, `identity`; **no certified `compH`**; atom payload evidence currently certifies only in-scope variables, unit type, and empty context. | Bad `compV` with mismatched middle endpoint has no constructor; raw `compH` has no certified introduction rule; out-of-scope variable payloads and nonzero unit/context payloads have no `AtomPayloadEvidence` constructor. |
+| TCB.4 certified boundary layer | `Foundation/PolyCell/Core/Certified.lean` | `CellBoundary` and `PolyCell profile sort dim scope boundary raw` with constructors `atom`, `cell`, `compV`, `identity`; **no certified `compH`**; atom payload evidence currently certifies only in-scope variables, unit type, empty context, and linear mode. | Bad `compV` with mismatched middle endpoint has no constructor; raw `compH` has no certified introduction rule; out-of-scope variable payloads and nonzero unit/context/mode payloads have no `AtomPayloadEvidence` constructor. |
 | TCB.5 raw rejection result | `Foundation/PolyCell/Core/CheckResult.lean` | Structured rejection enum, not just `Option`, so the checker can say which invariant failed. | Rejections distinguish unknown generator, wrong sort, bad payload, wrong arity, wrong child shape, bad boundary endpoint, bad vertical boundary, and unsupported `compH`. |
 | TCB.6a executable rejection screen | `Foundation/PolyCell/Core/Check.lean` | Computable recursive screen over the supported generator/rule tables; rejects unknown ids, malformed payloads, wrong arity/child-shape sentinels, wrong expected sort, bad endpoints, bad vertical boundaries, and unsupported raw `compH`. | Every executable theorem is audited axiom-free; the catalog runner proves all current inference and expected-shape negative probes are rejected. |
 | TCB.6b raw-to-certified checker | `Foundation/PolyCell/Core/Check.lean` | Computable `inferRawCell?` and expected-shape `checkRawCellAs?` returning a certified dependent package or rejection reason. | Soundness theorem: every `accepted` result contains a `PolyCell`; accepted witnesses exist for the named supported generators; no theorem claims completeness beyond the listed generator subset. |
 | TCB.7 certified FX views | `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | `FXContext`, `FXType`, `FXTerm`, `FXStep`, `FXConv`, `FXCdLemma` as projections of certified cells. | Existing raw subtype views remain compatibility-only; new code uses certified views; audit harness covers both. |
 
-**Implementation order after TCB.6d:**
+**Implementation order after TCB.6e:**
 
 1.  `Check.lean` phase B1: decode the first finite non-nullary payload
     family into
@@ -4540,7 +4547,8 @@ representable and computably rejected.
 **POLY-TCB anti-vacuity gate:** TCB.4 is intentionally weaker than the
 full checker: it must have concrete accepted witnesses only for the
 payload-evidenced seed atoms (`var` with an in-scope index, `unitType`
-with payload 0, and `ctxEmpty` with payload 0), and must not provide
+with payload 0, `ctxEmpty` with payload 0, and `linearMode` with
+payload 0), and must not provide
 constructors for non-nullary atoms or `compH`.  The screen phase must
 add concrete positive screen witnesses for every currently
 payload-evidenced generator and concrete rejected witnesses for every
