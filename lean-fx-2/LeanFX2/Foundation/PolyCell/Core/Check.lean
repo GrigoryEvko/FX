@@ -517,6 +517,29 @@ def applicationChildSpine {profile : PolyProfile} {scope : Nat}
     certifiedChildren.functionCell
     certifiedChildren.argumentCell
 
+/-- Descriptor-indexed certified child spine for the accepted application
+children. -/
+def applicationDescriptorChildSpine {profile : PolyProfile} {scope : Nat}
+    (certifiedChildren :
+      CertifiedApplicationVarZeroVarOneChildren profile scope) :
+    PolyCell.CertifiedChildSpineForRawDescriptors profile scope
+      (RawChildDescriptors.application (profile := profile)
+        (parentScope := scope)
+        (PolyTerm.atom variableGeneratorSpec.cellId 0)
+        (PolyTerm.atom variableGeneratorSpec.cellId 1)) :=
+  PolyCell.applicationVarZeroVarOneChildrenForRawDescriptors
+    certifiedChildren.functionCell
+    certifiedChildren.argumentCell
+
+/-- Descriptor-indexed application children forget to the ordinary certified
+child spine. -/
+theorem applicationDescriptorChildSpine_toCertifiedChildren
+    {profile : PolyProfile} {scope : Nat}
+    (certifiedChildren :
+      CertifiedApplicationVarZeroVarOneChildren profile scope) :
+    certifiedChildren.applicationDescriptorChildSpine.toCertifiedChildren =
+      certifiedChildren.applicationChildSpine := rfl
+
 end CertifiedApplicationVarZeroVarOneChildren
 
 /-- Build the certified child package for `app(var 0, var 1)` from variable

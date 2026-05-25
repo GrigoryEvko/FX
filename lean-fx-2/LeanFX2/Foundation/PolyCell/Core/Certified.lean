@@ -346,6 +346,100 @@ theorem toRawDescriptor_rawCell {profile : PolyProfile} {cellSort : CellSort}
 
 end CertifiedChild
 
+/-- Certified inhabitant for one raw child descriptor.
+
+The raw cell is not stored independently: it is the descriptor's raw cell in
+the type index of `certifiedCell`. -/
+structure CertifiedChildForRawDescriptor {profile : PolyProfile}
+    {cellSort : CellSort} {cellDimension scope : Nat}
+    (rawDescriptor :
+      RawChildDescriptor profile cellSort cellDimension scope) where
+  /-- Boundary carried by the certified child cell. -/
+  cellBoundary : CellBoundary profile cellSort cellDimension scope
+  /-- Certified child whose raw erasure is fixed by the descriptor index. -/
+  certifiedCell :
+    PolyCell profile cellSort cellDimension scope cellBoundary
+      rawDescriptor.rawCell
+
+namespace CertifiedChildForRawDescriptor
+
+/-- Forget descriptor-indexed certified child evidence to an ordinary
+certified child. -/
+def toCertifiedChild {profile : PolyProfile} {cellSort : CellSort}
+    {cellDimension scope : Nat}
+    {rawDescriptor :
+      RawChildDescriptor profile cellSort cellDimension scope}
+    (certifiedDescriptorChild :
+      CertifiedChildForRawDescriptor rawDescriptor) :
+    CertifiedChild profile cellSort cellDimension scope where
+  rawCell := rawDescriptor.rawCell
+  cellBoundary := certifiedDescriptorChild.cellBoundary
+  certifiedCell := certifiedDescriptorChild.certifiedCell
+
+/-- Descriptor-indexed child erasure is fixed by the descriptor. -/
+theorem toCertifiedChild_rawCell {profile : PolyProfile}
+    {cellSort : CellSort} {cellDimension scope : Nat}
+    {rawDescriptor :
+      RawChildDescriptor profile cellSort cellDimension scope}
+    (certifiedDescriptorChild :
+      CertifiedChildForRawDescriptor rawDescriptor) :
+    certifiedDescriptorChild.toCertifiedChild.rawCell =
+      rawDescriptor.rawCell := rfl
+
+end CertifiedChildForRawDescriptor
+
+/-- Certified child spine indexed by the raw descriptor spine it certifies. -/
+inductive CertifiedChildSpineForRawDescriptors (profile : PolyProfile)
+    (parentScope : Nat) :
+    {childSpecs : List ChildSpec} →
+      RawChildDescriptors profile parentScope childSpecs → Type where
+  /-- Empty certified spine for an empty raw descriptor spine. -/
+  | nil :
+      CertifiedChildSpineForRawDescriptors profile parentScope
+        CellChildren.nil
+  /-- Add one certified child whose raw erasure is fixed by the raw descriptor
+  at the same child position. -/
+  | cons {childSpec : ChildSpec} {remainingSpecs : List ChildSpec}
+      {rawDescriptor :
+        RawChildDescriptor profile childSpec.cellSort
+          childSpec.cellDimension (childSpec.expectedScope parentScope)}
+      {remainingRawDescriptors :
+        RawChildDescriptors profile parentScope remainingSpecs} :
+      CertifiedChildForRawDescriptor rawDescriptor →
+      CertifiedChildSpineForRawDescriptors profile parentScope
+        remainingRawDescriptors →
+      CertifiedChildSpineForRawDescriptors profile parentScope
+        (CellChildren.cons rawDescriptor remainingRawDescriptors)
+
+namespace CertifiedChildSpineForRawDescriptors
+
+/-- Forget a descriptor-indexed certified child spine to ordinary certified
+children. -/
+def toCertifiedChildren {profile : PolyProfile} {parentScope : Nat} :
+    {childSpecs : List ChildSpec} →
+      {rawDescriptors : RawChildDescriptors profile parentScope childSpecs} →
+        CertifiedChildSpineForRawDescriptors profile parentScope
+          rawDescriptors →
+        CellChildren (CertifiedChild profile) parentScope childSpecs
+  | [], _, nil => CellChildren.nil
+  | _childSpec :: _remainingSpecs, _,
+      cons certifiedDescriptorChild remainingCertifiedDescriptors =>
+        CellChildren.cons
+          certifiedDescriptorChild.toCertifiedChild
+          (toCertifiedChildren remainingCertifiedDescriptors)
+
+/-- Forgetting a descriptor-indexed certified spine preserves arity. -/
+theorem toCertifiedChildren_arity_eq {profile : PolyProfile}
+    {parentScope : Nat} {childSpecs : List ChildSpec}
+    {rawDescriptors : RawChildDescriptors profile parentScope childSpecs}
+    (certifiedDescriptors :
+      CertifiedChildSpineForRawDescriptors profile parentScope
+        rawDescriptors) :
+    certifiedDescriptors.toCertifiedChildren.arity =
+      rawDescriptors.arity := rfl
+
+end CertifiedChildSpineForRawDescriptors
+
 /-- Forget a certified child spine to the matching raw descriptor spine. -/
 def certifiedChildSpineRawDescriptors {profile : PolyProfile}
     {parentScope : Nat} :
@@ -383,6 +477,43 @@ def applicationVarZeroVarOneChildren {profile : PolyProfile} {scope : Nat}
     (CellChildren.cons
       (CertifiedChild.ofCell argumentCell)
       CellChildren.nil)
+
+/-- Descriptor-indexed certified child spine for the first finite application
+payload. -/
+def applicationVarZeroVarOneChildrenForRawDescriptors
+    {profile : PolyProfile} {scope : Nat}
+    (functionCell :
+      PolyCell profile .term 0 scope ()
+        (.atom variableGeneratorSpec.cellId 0))
+    (argumentCell :
+      PolyCell profile .term 0 scope ()
+        (.atom variableGeneratorSpec.cellId 1)) :
+    CertifiedChildSpineForRawDescriptors profile scope
+      (RawChildDescriptors.application (profile := profile)
+        (parentScope := scope)
+        (PolyTerm.atom variableGeneratorSpec.cellId 0)
+        (PolyTerm.atom variableGeneratorSpec.cellId 1)) :=
+  CertifiedChildSpineForRawDescriptors.cons
+    { cellBoundary := ()
+      certifiedCell := functionCell }
+    (CertifiedChildSpineForRawDescriptors.cons
+      { cellBoundary := ()
+        certifiedCell := argumentCell }
+      CertifiedChildSpineForRawDescriptors.nil)
+
+/-- Forgetting the descriptor-indexed first application child spine gives the
+ordinary certified child spine. -/
+theorem applicationVarZeroVarOneChildrenForRawDescriptors_toCertifiedChildren
+    {profile : PolyProfile} {scope : Nat}
+    (functionCell :
+      PolyCell profile .term 0 scope ()
+        (.atom variableGeneratorSpec.cellId 0))
+    (argumentCell :
+      PolyCell profile .term 0 scope ()
+        (.atom variableGeneratorSpec.cellId 1)) :
+    (applicationVarZeroVarOneChildrenForRawDescriptors
+      functionCell argumentCell).toCertifiedChildren =
+      applicationVarZeroVarOneChildren functionCell argumentCell := rfl
 
 /-- Raw erasure of the variable-cell helper is definitional. -/
 theorem raw_variableCell {profile : PolyProfile} {scope index : Nat}
