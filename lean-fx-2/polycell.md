@@ -4054,14 +4054,16 @@ bad payload just because the raw id has the requested sort.
 Certified-ingress probes are separate from screen probes: every accepted
 result must contain an actual `PolyCell`, while every malformed or
 not-yet-certified raw cell must have an executable rejection theorem.
-Future audit cleanup should add headline theorems by rejection family:
-all bad-payload probes reject as `badPayload`, all wrong-arity probes as
-`wrongArity`, all wrong-child-shape probes as `wrongChildShape`, all
-bad-endpoint probes as `badBoundaryEndpoint`, all unsupported-Gray
-probes as `unsupportedCompH`, and all screen-passing but uncertified
+The hostile probe catalog is now maintained through rejection-family
+partitions with audited headline theorems: all bad-payload probes reject
+as `badPayload`, all wrong-arity probes as `wrongArity`, all
+wrong-child-shape probes as `wrongChildShape`, all bad-endpoint probes as
+`badBoundaryEndpoint`, all unsupported-Gray probes as
+`unsupportedCompH`, and all screen-passing but uncertified
 positive-dimensional probes as `unsupportedCertification`.  These
-headline theorems must be derived from the existing per-probe executable
-facts and must not replace the hostile fixtures.
+headline theorems are derived from the existing executable screen and
+certification-policy checks; they do not replace the hostile fixtures or
+weaken per-probe diagnostics.
 
 This is the operational answer to "show what is nonsense": raw cells
 can be displayed and diagnosed, but only accepted cells can inhabit
@@ -4599,6 +4601,7 @@ representable and computably rejected.
 | TCB.7f first certified dim-1 term cell | `d4829833` | The first positive-dimensional certified inhabitant is the structural term cell `termStep(var 0, var 1)`, built only from certified `var 0` and `var 1` endpoints after endpoint screening.  A dimension-polymorphic dispatcher over arbitrary raw dim-1 cells was tried and rejected because it pulled in `propext`; the committed path keeps only the direct fixture ingress plus certification-stage negative probes. |
 | TCB.7g derived certified identity cells | `1b346406` | Certified identity cells are now derived from already certified base packages and exposed through certified FX views for seed term/type/context/mode cells plus the seed dim-1 term-step.  No raw identity dispatcher is added. |
 | TCB.7h expanded hostile rejection probes | `d647fada` | The negative catalog now covers application decoder sentinels, pi/context-cons sentinels, malformed identity bases, unsupported term-step variants, and well-screened `compH`.  Probe counts are ratcheted and every new rejection is audited. |
+| TCB.7i headline negative-probe theorems | `178b3cfa` | The negative catalog is partitioned by rejection family, with audited headline theorems for each inference, expected-shape, and certification-policy family.  Global probe counts are still ratcheted through the family lists. |
 
 **Deliverables (NEW only):**
 
@@ -4623,10 +4626,10 @@ representable and computably rejected.
 | TCB.7f first certified dim-1 term cell | `Foundation/PolyCell/Core/NegativeProbes.lean`, `Foundation/PolyCell/Core/Check.lean`, `Foundation/PolyCell/FXProfile/CertifiedViews.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds a direct certified package and FX view for the structural `termStep(var 0, var 1)` fixture; adds certification-stage negative probes for bad endpoints, unsupported raw `compH`, a screened but unsupported term step, and a screened but unsupported vertical composite. | The accepted dim-1 result carries an actual `PolyCell`; scope 1 rejects before endpoint construction; unsupported screen-passing dim-1 shapes reject as `unsupportedCertification`; no arbitrary dim-1 dispatcher is committed; `LeanFX2.Tools.AuditAll` is green. |
 | TCB.7g derived certified identity cells | `Foundation/PolyCell/Core/Certified.lean`, `Foundation/PolyCell/Core/Check.lean`, `Foundation/PolyCell/FXProfile/CertifiedViews.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds `identityCell` and `certifiedIdentityPackage`, deriving identity certificates only from already certified base cells. | Seed identity views erase definitionally to raw identity cells; malformed raw identity bases still reject through the screen; no raw identity ingress dispatcher is committed; `AuditPolyCell` keeps zero axiom and anti-vacuity budgets. |
 | TCB.7h expanded hostile rejection probes | `Foundation/PolyCell/Core/NegativeProbes.lean`, `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds hostile application decoder sentinel probes, pi/context-cons payload sentinel probes, raw identity over malformed base, extra unsupported term-step variants, and `compH` over well-screened operands. | Inference probes ratchet to 32 and certification probes to 6; every new fixture has a definitional rejection theorem and an audit entry; malformed application sentinels preserve `badPayload`, `wrongArity`, or `wrongChildShape` precisely. |
-| TCB.7i headline negative-probe theorems | `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Future grouping theorems by rejection family, such as all bad-payload probes, all wrong-arity probes, all child-shape probes, all bad-endpoint probes, all unsupported-Gray probes, and all unsupported-certification probes. | The headline theorems are derived from the per-probe executable facts; they do not delete the hostile fixtures or weaken per-probe diagnostics. |
+| TCB.7i headline negative-probe theorems | `Foundation/PolyCell/Core/NegativeProbes.lean`, `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Groups inference, expected-shape, and certification probes by rejection family and adds audited headline theorems for each family. | Family counts plus global counts are ratcheted; the headline theorems are computable consequences of the existing checker runners and keep all hostile fixtures as regression data. |
 | TCB.7j certified FX operational views | `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | Future `FXStep`, `FXConv`, `FXCdLemma` as projections of certified positive-dimensional cells and thinness certificates. | Existing raw subtype views remain compatibility-only; new operational code uses certified views only after the corresponding positive-dimensional certification exists. |
 
-**Implementation order after TCB.7h:**
+**Implementation order after TCB.7i:**
 
 1.  Do not broaden application by adding more one-off parent
     constructors.  The next application slice is a propext-free certified
@@ -4637,13 +4640,12 @@ representable and computably rejected.
     keep using the decoder plus generic screen gate and move to
     positive-dimensional certification instead of weakening the TCB.
 3.  Continue positive-dimensional certification in this order:
-    headline negative-probe theorems, then vertical composition with
-    definitional middle matching.  A propext-free raw dispatcher for the
-    already certified `.cell` fixture remains desirable but blocked by
-    audit evidence until a new pattern is found.  Derived identity is
-    complete for already certified bases; raw identity ingress remains
-    untrusted.  Certified `compH` remains blocked on real Gray-boundary
-    semantics.
+    vertical composition with definitional middle matching.  A
+    propext-free raw dispatcher for the already certified `.cell` fixture
+    remains desirable but blocked by audit evidence until a new pattern
+    is found.  Derived identity is complete for already certified bases;
+    raw identity ingress remains untrusted.  Certified `compH` remains
+    blocked on real Gray-boundary semantics.
 4.  Keep the propext-free boundary-screen discipline: no `propext`,
     `Quot.sound`, `Classical`, `Inhabited`, `Nonempty`, hidden `False`
     equation dependents, or weakened audit budgets.  The failed
@@ -4653,10 +4655,10 @@ representable and computably rejected.
     expected-shape sort confusion, bad endpoint, and bad vertical
     boundary where the family can participate in positive-dimensional
     cells.  Raw nonsense must remain representable and the certified
-    layer must reject it by computation.  Periodically compress the
-    accumulated per-probe facts into audited headline theorems by
-    rejection family, while keeping the individual probes as regression
-    fixtures.
+    layer must reject it by computation.  Any new probe family must be
+    added to the rejection-family partitions and covered by the matching
+    audited headline theorem, while keeping the individual probes as
+    regression fixtures.
 6.  Extend `CertifiedViews.lean` only as the checker gains real
     certified inhabitants: context/type/term/mode seed views are live;
     step/conversion/coherence views must wait for positive-dimensional
