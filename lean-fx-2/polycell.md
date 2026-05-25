@@ -3628,7 +3628,7 @@ small modules so each invariant can be audited before downstream views
 depend on it.
 
 ```lean
-namespace LeanFX2.Foundation.Polygraph
+namespace LeanFX2.Foundation.PolyCell.Core
 
 /-- The PolyProfile bundles all thirteen axes.  Each axis is a structure
 field; consistency constraints link them. -/
@@ -3683,31 +3683,31 @@ structure PolyProfile where
     stcClassifier, mttGateway⟩
 
 /-- Raw syntax.  This layer is input data, not the trusted invariant. -/
-inductive PolyTerm (π : PolyProfile) : Nat → Type where
+inductive PolyTerm (profile : PolyProfile) : Nat → Type where
   | atom :
       (cellId : Nat) →
       (payload : Nat) →
-      PolyTerm π 0
+      PolyTerm profile 0
   | cell :
       {dim : Nat} →
       (ruleId : Nat) →
-      PolyTerm π dim →
-      PolyTerm π dim →
-      PolyTerm π (dim + 1)
+      PolyTerm profile dim →
+      PolyTerm profile dim →
+      PolyTerm profile (dim + 1)
   | compV :
       {dim : Nat} →
-      PolyTerm π (dim + 1) →
-      PolyTerm π (dim + 1) →
-      PolyTerm π (dim + 1)
+      PolyTerm profile (dim + 1) →
+      PolyTerm profile (dim + 1) →
+      PolyTerm profile (dim + 1)
   | compH :
       {dim : Nat} →
-      PolyTerm π (dim + 1) →
-      PolyTerm π (dim + 1) →
-      PolyTerm π (dim + 1)
+      PolyTerm profile (dim + 1) →
+      PolyTerm profile (dim + 1) →
+      PolyTerm profile (dim + 1)
   | identity :
       {dim : Nat} →
-      PolyTerm π dim →
-      PolyTerm π (dim + 1)
+      PolyTerm profile dim →
+      PolyTerm profile (dim + 1)
 
 /-- Sorts are the visible strata of the one FX cell substrate.
 These are not separate syntaxes glued later: terms, types, contexts,
@@ -3729,8 +3729,8 @@ under `scope + 1`; a context extension has several children at the same
 scope.  This table is the concrete polynomial fiber / list of directions
 for the generator. -/
 structure ChildSpec where
-  sort : CellSort
-  dim : Nat
+  cellSort : CellSort
+  cellDimension : CellDim
   scopeShift : Nat
   deriving DecidableEq
 
@@ -3738,11 +3738,11 @@ structure ChildSpec where
 Higher boundaries are raw source/target endpoint indices; constructors and
 the checker separately require endpoint certificates before producing a
 `PolyCell` over those raw endpoints. -/
-def CellBoundary (π : PolyProfile) :
+def CellBoundary (profile : PolyProfile) :
     CellSort → Nat → Nat → Type
   | _, 0, _ => Unit
   | sort, dim + 1, scope =>
-      PolyTerm π dim × PolyTerm π dim
+      PolyTerm profile dim × PolyTerm profile dim
 
 /-- Heterogeneous child list dictated by generator metadata.
 
@@ -3751,17 +3751,33 @@ TCB.3 ships this first in the non-recursive, parameterized form below.
 enforce sort, dimension, and scope shifts before the full `PolyCell`
 boundary layer exists.
 
-TCB.4 then instantiates `ChildCarrier` with `PolyCell π` in the actual
+TCB.4 then instantiates `ChildCarrier` with `PolyCell profile` in the actual
 certified syntax. -/
 inductive CellChildren
-    (ChildCarrier : CellSort -> Nat -> Nat -> Type)
+    (ChildCarrier : CellSort -> CellDim -> Nat -> Type)
     (parentScope : Nat) : List ChildSpec → Type where
   | nil :
       CellChildren ChildCarrier parentScope []
-  | cons :
-      ChildCarrier spec.sort spec.dim (parentScope + spec.scopeShift) →
-      CellChildren ChildCarrier parentScope rest →
-      CellChildren ChildCarrier parentScope (spec :: rest)
+  | cons {childSpec : ChildSpec} {remainingSpecs : List ChildSpec} :
+      ChildCarrier childSpec.cellSort childSpec.cellDimension
+        (parentScope + childSpec.scopeShift) →
+      CellChildren ChildCarrier parentScope remainingSpecs →
+      CellChildren ChildCarrier parentScope (childSpec :: remainingSpecs)
+
+/-- Raw child descriptor returned by payload decoders.
+
+This records the shape claimed by decoding.  It does not certify the child:
+the stored raw cell is only a permissive `PolyTerm` at the declared
+dimension. -/
+structure RawChildDescriptor (profile : PolyProfile)
+    (cellSort : CellSort) (cellDimension : CellDim) (scope : Nat) where
+  rawCell : PolyTerm profile cellDimension
+
+/-- Decoder output for a generator is a child spine whose carrier is raw
+descriptors, not certified cells. -/
+def RawChildDescriptors (profile : PolyProfile) (parentScope : Nat)
+    (childSpecs : List ChildSpec) : Type :=
+  CellChildren (RawChildDescriptor profile) parentScope childSpecs
 
 /-- Certified cell syntax.  This is the trusted layer.  It is indexed by
 the raw syntax it certifies, so erasure back to raw is definitional.
@@ -3770,59 +3786,61 @@ There is deliberately no certified `compH` constructor here until the
 Gray tensor boundary formula and disjoint-footprint/matching condition
 are mechanized.  Raw `PolyTerm.compH` remains available as input data;
 the checker must reject it at this stage. -/
-inductive PolyCell (π : PolyProfile) :
+inductive PolyCell (profile : PolyProfile) :
     (sort : CellSort) →
     (dim : Nat) →
     (scope : Nat) →
-    CellBoundary π sort dim scope →
-    PolyTerm π dim →
+    CellBoundary profile sort dim scope →
+    PolyTerm profile dim →
     Type where
 
   | atom :
-      (generator : π.algebra.sortedGenerators sort) →
+      {cellSort : CellSort} →
+      {scope : Nat} →
+      (generator : profile.algebra.sortedGenerators cellSort) →
       {payload : Nat} →
-      (rawChildren : List RawChildDescriptor) →
+      (rawChildren : RawChildDescriptors profile scope generator.childSpecs) →
       (hasPayloadDecoded :
-        π.algebra.decodeRawChildren generator payload = some rawChildren) →
+        profile.algebra.decodeRawChildren generator payload = some rawChildren) →
       (children : CellChildren
         (fun childSort childDim childScope =>
           Σ childBoundary, Σ childRaw,
-            PolyCell π childSort childDim childScope childBoundary childRaw)
-        scope generator.children) →
-      π.algebra.certifiedChildrenEraseTo rawChildren children →
-      PolyCell π sort 0 scope () (.atom generator.cellId payload)
+            PolyCell profile childSort childDim childScope childBoundary childRaw)
+        scope generator.childSpecs) →
+      profile.algebra.certifiedChildrenEraseTo rawChildren children →
+      PolyCell profile cellSort 0 scope () (.atom generator.cellId payload)
 
   | cell :
       {sort : CellSort} →
       {dim scope : Nat} →
-      (rule : π.algebra.sortedRules sort dim) →
-      {source target : PolyTerm π dim} →
-      {sourceBoundary targetBoundary : CellBoundary π sort dim scope} →
-      PolyCell π sort dim scope sourceBoundary source →
-      PolyCell π sort dim scope targetBoundary target →
-      π.algebra.ruleAcceptsBoundary rule source target →
-      PolyCell π sort (dim + 1) scope
+      (rule : profile.algebra.sortedRules sort dim) →
+      {source target : PolyTerm profile dim} →
+      {sourceBoundary targetBoundary : CellBoundary profile sort dim scope} →
+      PolyCell profile sort dim scope sourceBoundary source →
+      PolyCell profile sort dim scope targetBoundary target →
+      profile.algebra.ruleAcceptsBoundary rule source target →
+      PolyCell profile sort (dim + 1) scope
         (source, target)
         (.cell rule.cellId source target)
 
   | compV :
       {sort : CellSort} →
       {dim scope : Nat} →
-      {source middle target : PolyTerm π dim} →
-      {firstRaw secondRaw : PolyTerm π (dim + 1)} →
-      PolyCell π sort (dim + 1) scope (source, middle) firstRaw →
-      PolyCell π sort (dim + 1) scope (middle, target) secondRaw →
-      PolyCell π sort (dim + 1) scope
+      {source middle target : PolyTerm profile dim} →
+      {firstRaw secondRaw : PolyTerm profile (dim + 1)} →
+      PolyCell profile sort (dim + 1) scope (source, middle) firstRaw →
+      PolyCell profile sort (dim + 1) scope (middle, target) secondRaw →
+      PolyCell profile sort (dim + 1) scope
         (source, target)
         (.compV firstRaw secondRaw)
 
   | identity :
       {sort : CellSort} →
       {dim scope : Nat} →
-      {boundary : CellBoundary π sort dim scope} →
-      {baseRaw : PolyTerm π dim} →
-      PolyCell π sort dim scope boundary baseRaw →
-      PolyCell π sort (dim + 1) scope
+      {boundary : CellBoundary profile sort dim scope} →
+      {baseRaw : PolyTerm profile dim} →
+      PolyCell profile sort dim scope boundary baseRaw →
+      PolyCell profile sort (dim + 1) scope
         (baseRaw, baseRaw)
         (.identity baseRaw)
 end
@@ -3841,9 +3859,10 @@ inductive CellCheckRejection where
 /-- Infer a certified package from raw input.
 
 This is the only trusted ingress from raw syntax.  Payload decoding is raw
-parsing only: decoders return raw child descriptors and local payload facts,
-never `CellChildren` or `PolyCell`.  `CellChildren` is built only here after
-recursively certifying each raw child against the generator's `ChildSpec`. -/
+parsing only: decoders return `RawChildDescriptors` and local payload facts,
+never `PolyCell` and never a child spine whose carrier is certified cells.
+Certified `CellChildren` is built only here after recursively certifying each
+raw child against the generator's `ChildSpec`. -/
 def inferRawCell? (raw : PolyTerm fxProfile dim) :
     Except CellCheckRejection
       (Σ sort, Σ scope, Σ boundary,
@@ -3860,7 +3879,7 @@ def checkRawCellAs? (expectedSort : CellSort) (expectedScope : Nat)
     Except CellCheckRejection
       (PolyCell fxProfile expectedSort dim expectedScope expectedBoundary raw) := ...
 
-end LeanFX2.Foundation.Polygraph
+end LeanFX2.Foundation.PolyCell.Core
 ```
 
 Feature operations are **not** raw `PolyTerm` constructors.  Universe
@@ -3900,6 +3919,26 @@ failed invariant it can identify:
 | source/target endpoint is not itself certified | reject `badBoundaryEndpoint` |
 | vertical composite middle endpoint does not match definitionally | reject `badVerticalBoundary` |
 | raw `compH` before Axis 6 certification | reject `unsupportedCompH` |
+
+**Negative probes.**  The checker must be developed against a concrete
+catalog of malformed raw inputs, not only against positive examples:
+
+- unknown atom ids must reject as `unknownGenerator`;
+- known generators with reserved malformed payloads must reject as
+  `badPayload`, `wrongArity`, or `wrongChildShape`;
+- generated dim-1 cells over uncertified endpoints must reject as
+  `badBoundaryEndpoint`;
+- raw vertical composites with mismatched middle endpoints must reject
+  as `badVerticalBoundary`;
+- raw horizontal composites must reject as `unsupportedCompH` until
+  Axis 6 supplies certified Gray-boundary semantics;
+- expected-shape checks must include a real sort mismatch probe that
+  rejects as `wrongSort`.
+
+Until `Check.lean` exists, these probes are audited raw fixtures plus
+expected rejection labels.  Once the checker exists, every probe must
+become an executable rejection theorem; probe data alone is not a
+soundness result.
 
 This is the operational answer to "show what is nonsense": raw cells
 can be displayed and diagnosed, but only accepted cells can inhabit
@@ -4412,6 +4451,10 @@ representable and computably rejected.
 | Task | Commit | Provides |
 |---|---|---|
 | TCB.0 generator-step view | `196a4d9d` | `FXGeneratingStep` rejects `compV`, `compH`, and `identity`; audit gates assert zero axioms for the new recognizer and view. |
+| TCB.1 sort vocabulary | `7b3aa5dd` | `CellSort` separates certified context/type/term/mode/effect/grade/protocol strata without sorting the raw layer. |
+| TCB.2 generator child specs | `9e2fb6f8` | `ChildSpec`, `GeneratorSpec`, and `RuleSpec` give computable generator metadata; scope shift is separated from arity. |
+| TCB.3 heterogeneous children | `046a189c` | `CellChildren` enforces declared child sort/dimension/scope through an abstract carrier before `PolyCell` exists. |
+| TCB.5 raw rejection result | `1e485b9d` | `CellCheckRejection` gives named failure modes for the future raw-to-certified checker. |
 
 **Deliverables (NEW only):**
 
@@ -4420,10 +4463,32 @@ representable and computably rejected.
 | TCB.1 sort vocabulary | `Foundation/PolyCell/Core/CellSort.lean` | `CellSort` enum for `context`, `type`, `term`, `mode`, `effect`, `grade`, `protocol`; decidable equality; no semantics. | `#assert_no_axioms CellSort`; no `Inhabited`/`Classical`; audit gate added. |
 | TCB.2 generator child specs | `Foundation/PolyCell/Core/GeneratorSpec.lean` | `ChildSpec`, `GeneratorSpec`, `RuleSpec`; scope shift separated from arity; first concrete specs for `var`, `lam`, `app`, `piTy`, `ctxEmpty`, `ctxCons`, and the current dim-1 step-generator shell. | `lam` child table has type child at scope+0 and term body at scope+1; `piTy` codomain is type at scope+1; all facts are definitional or simple cases. |
 | TCB.3 heterogeneous children | `Foundation/PolyCell/Core/CellChildren.lean` | `CellChildren (ChildCarrier : CellSort -> CellDim -> Nat -> Type) (parentScope : Nat) : List ChildSpec -> Type`; constructors force child sort/dim/scope from the spec list without depending on full `PolyCell` yet. | It is impossible to build a lambda body child at `.type` or at the wrong scope without a Lean type error; audit gate added. |
+| TCB.3b raw child descriptors | `Foundation/PolyCell/Core/RawChildren.lean` | `RawChildDescriptor` and `RawChildDescriptors`; payload decoders can return shape-indexed raw children without certifying them. | Decoder output can record lambda/pi/context child shapes, but the carrier stores only permissive raw cells; no `PolyCell` is produced. |
+| TCB.3c negative probes | `Foundation/PolyCell/Core/NegativeProbes.lean` | Concrete malformed raw cells plus expected rejection labels for all eight `CellCheckRejection` cases. | Probe catalog is audited and nonempty; no theorem claims rejection before `Check.lean` wires the checker to these probes. |
 | TCB.4 certified boundary layer | `Foundation/PolyCell/Core/Certified.lean` | `CellBoundary` and `PolyCell profile sort dim scope boundary raw` with constructors `atom`, `cell`, `compV`, `identity`; **no certified `compH`**. | Bad `compV` with mismatched middle endpoint has no constructor; raw `compH` has no certified introduction rule. |
 | TCB.5 raw rejection result | `Foundation/PolyCell/Core/CheckResult.lean` | Structured rejection enum, not just `Option`, so the checker can say which invariant failed. | Rejections distinguish unknown generator, wrong sort, bad payload, wrong arity, wrong child shape, bad boundary endpoint, bad vertical boundary, and unsupported `compH`. |
 | TCB.6 raw-to-certified checker | `Foundation/PolyCell/Core/Check.lean` | Computable `inferRawCell?` and expected-shape `checkRawCellAs?` returning a certified dependent package or rejection reason. | Soundness theorem: every `accepted` result contains a `PolyCell`; accepted witnesses exist for the named supported generators; no theorem claims completeness beyond the listed generator subset. |
 | TCB.7 certified FX views | `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | `FXContext`, `FXType`, `FXTerm`, `FXStep`, `FXConv`, `FXCdLemma` as projections of certified cells. | Existing raw subtype views remain compatibility-only; new code uses certified views; audit harness covers both. |
+
+**Implementation order after TCB.3b:**
+
+1.  `Certified.lean`: introduce `CellBoundary` and intrinsic `PolyCell`
+    with only `atom`, `cell`, `compV`, and `identity`.
+2.  `Check.lean` phase A: decode the named seed generators into
+    `RawChildDescriptors`; reject unknown generators, bad payloads, bad
+    arities, bad child shapes, and raw `compH`; each rejection is first
+    tested against `NegativeProbes`.
+3.  `Check.lean` phase B: recursively build certified `CellChildren`
+    and expose `inferRawCell?` / `checkRawCellAs?` with concrete
+    accepted and rejected witnesses.  Every `NegativeProbes` entry must
+    have a theorem stating that the checker returns its expected
+    rejection.
+4.  `CertifiedViews.lean`: define the certified FX context/type/term/
+    step/conversion projections; keep old raw subtype views as
+    compatibility shims.
+5.  Legacy bridge: connect the existing intrinsic kernel judgments to
+    certified views only after the checker has nonempty accepted
+    witnesses and the audit proves every new declaration axiom-free.
 
 **POLY-TCB anti-vacuity gate:** the supported generator table must be
 nonempty and named.  The audit must include concrete accepted witnesses
