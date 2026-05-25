@@ -75,6 +75,10 @@ def thirdTermAtom (profile : PolyProfile) : PolyTerm profile 0 :=
 def fourthTermAtom (profile : PolyProfile) : PolyTerm profile 0 :=
   .atom variableGeneratorSpec.cellId 3
 
+/-- A small accepted-looking context atom used to test cross-sort rejection. -/
+def seedContextAtom (profile : PolyProfile) : PolyTerm profile 0 :=
+  .atom contextEmptyGeneratorSpec.cellId 0
+
 /-- Dim-0 generator id not present in the current supported seed table. -/
 def unknownGeneratorRawCell (profile : PolyProfile) : PolyTerm profile 0 :=
   .atom (lambdaGeneratorSpec.cellId - 1) 0
@@ -96,6 +100,12 @@ def badBoundaryEndpointRawCell (profile : PolyProfile) : PolyTerm profile 1 :=
   .cell termStepRuleSpec.ruleId
     (unknownGeneratorRawCell profile)
     (seedTermAtom profile)
+
+/-- Known term-step rule applied to context endpoints instead of term endpoints. -/
+def badBoundarySortRawCell (profile : PolyProfile) : PolyTerm profile 1 :=
+  .cell termStepRuleSpec.ruleId
+    (seedContextAtom profile)
+    (seedContextAtom profile)
 
 /-- First step used in the bad-vertical-boundary probe. -/
 def firstMismatchedStepRawCell (profile : PolyProfile) : PolyTerm profile 1 :=
@@ -121,7 +131,7 @@ def unsupportedCompHRawCell (profile : PolyProfile) : PolyTerm profile 1 :=
 
 /-- A context atom checked as a term should fail with `wrongSort`. -/
 def wrongSortRawCell (profile : PolyProfile) : PolyTerm profile 0 :=
-  .atom contextEmptyGeneratorSpec.cellId 0
+  seedContextAtom profile
 
 /-- Probe for `unknownGenerator`. -/
 def unknownGeneratorProbe (profile : PolyProfile) :
@@ -163,6 +173,14 @@ def badBoundaryEndpointProbe (profile : PolyProfile) :
   rawCell := badBoundaryEndpointRawCell profile
   expectedRejection := .badBoundaryEndpoint
 
+/-- Probe for an endpoint whose sort does not match the known rule. -/
+def badBoundarySortProbe (profile : PolyProfile) :
+    RawInferNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 1
+  rawCell := badBoundarySortRawCell profile
+  expectedRejection := .badBoundaryEndpoint
+
 /-- Probe for `badVerticalBoundary`. -/
 def badVerticalBoundaryProbe (profile : PolyProfile) :
     RawInferNegativeProbe profile where
@@ -196,6 +214,7 @@ def inferNegativeProbes (profile : PolyProfile) :
     wrongArityProbe profile,
     wrongChildShapeProbe profile,
     badBoundaryEndpointProbe profile,
+    badBoundarySortProbe profile,
     badVerticalBoundaryProbe profile,
     unsupportedCompHProbe profile]
 
@@ -206,7 +225,7 @@ def expectedShapeNegativeProbes (profile : PolyProfile) :
 
 /-- Inference probe count. -/
 theorem inferNegativeProbes_length (profile : PolyProfile) :
-    (inferNegativeProbes profile).length = 7 := rfl
+    (inferNegativeProbes profile).length = 8 := rfl
 
 /-- Expected-shape probe count. -/
 theorem expectedShapeNegativeProbes_length (profile : PolyProfile) :
