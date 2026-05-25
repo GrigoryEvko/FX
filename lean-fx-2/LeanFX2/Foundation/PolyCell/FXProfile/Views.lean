@@ -1559,6 +1559,164 @@ theorem FXTermConstructorName.constructorIndex_val
     (constructorName : FXTermConstructorName) :
     constructorName.constructorIndex.val = constructorName.cellId := rfl
 
+/-- Names for the current `Ty` constructor-id block.
+
+This names the provisional dim-0 type ids only.  It does not decode payloads
+and does not claim a bridge to the indexed `Ty` family. -/
+inductive FXTypeConstructorName where
+  | unit
+  | bool
+  | nat
+  | arrow
+  | piTy
+  | sigmaTy
+  | typeVar
+  | identity
+  | listType
+  | optionType
+  | eitherType
+  | universe
+  | empty
+  | interval
+  | path
+  | glue
+  | observationalEquality
+  | strictIdentity
+  | equivalence
+  | refinement
+  | record
+  | codata
+  | session
+  | effect
+  | modal
+  deriving DecidableEq, Repr
+
+/-- Local offset within the current type-constructor block. -/
+def FXTypeConstructorName.localCellId : FXTypeConstructorName → CellId
+  | .unit => 0
+  | .bool => 1
+  | .nat => 2
+  | .arrow => 3
+  | .piTy => 4
+  | .sigmaTy => 5
+  | .typeVar => 6
+  | .identity => 7
+  | .listType => 8
+  | .optionType => 9
+  | .eitherType => 10
+  | .universe => 11
+  | .empty => 12
+  | .interval => 13
+  | .path => 14
+  | .glue => 15
+  | .observationalEquality => 16
+  | .strictIdentity => 17
+  | .equivalence => 18
+  | .refinement => 19
+  | .record => 20
+  | .codata => 21
+  | .session => 22
+  | .effect => 23
+  | .modal => 24
+
+/-- Global dim-0 cell id assigned to a named type constructor. -/
+def FXTypeConstructorName.cellId
+    (constructorName : FXTypeConstructorName) : CellId :=
+  PolyTerm.firstTypeCellId + constructorName.localCellId
+
+theorem FXTypeConstructorName.localCellId_lt_typeGeneratorCount
+    (constructorName : FXTypeConstructorName) :
+    constructorName.localCellId < typeGeneratorCount := by
+  cases constructorName <;> decide
+
+/-- Checked constructor index for a named type constructor. -/
+def FXTypeConstructorName.constructorIndex
+    (constructorName : FXTypeConstructorName) : Fin typeGeneratorCount :=
+  ⟨constructorName.localCellId,
+    FXTypeConstructorName.localCellId_lt_typeGeneratorCount constructorName⟩
+
+/-- Decode a local type-constructor offset into its name. -/
+def FXTypeConstructorName.ofLocalCellId? :
+    CellId → Option FXTypeConstructorName
+  | 0 => some .unit
+  | 1 => some .bool
+  | 2 => some .nat
+  | 3 => some .arrow
+  | 4 => some .piTy
+  | 5 => some .sigmaTy
+  | 6 => some .typeVar
+  | 7 => some .identity
+  | 8 => some .listType
+  | 9 => some .optionType
+  | 10 => some .eitherType
+  | 11 => some .universe
+  | 12 => some .empty
+  | 13 => some .interval
+  | 14 => some .path
+  | 15 => some .glue
+  | 16 => some .observationalEquality
+  | 17 => some .strictIdentity
+  | 18 => some .equivalence
+  | 19 => some .refinement
+  | 20 => some .record
+  | 21 => some .codata
+  | 22 => some .session
+  | 23 => some .effect
+  | 24 => some .modal
+  | _ => none
+
+/-- Decode a global dim-0 type cell id into a named type constructor. -/
+def FXTypeConstructorName.ofCellId? :
+    CellId → Option FXTypeConstructorName
+  | 78 => some .unit
+  | 79 => some .bool
+  | 80 => some .nat
+  | 81 => some .arrow
+  | 82 => some .piTy
+  | 83 => some .sigmaTy
+  | 84 => some .typeVar
+  | 85 => some .identity
+  | 86 => some .listType
+  | 87 => some .optionType
+  | 88 => some .eitherType
+  | 89 => some .universe
+  | 90 => some .empty
+  | 91 => some .interval
+  | 92 => some .path
+  | 93 => some .glue
+  | 94 => some .observationalEquality
+  | 95 => some .strictIdentity
+  | 96 => some .equivalence
+  | 97 => some .refinement
+  | 98 => some .record
+  | 99 => some .codata
+  | 100 => some .session
+  | 101 => some .effect
+  | 102 => some .modal
+  | _ => none
+
+theorem FXTypeConstructorName.ofLocalCellId?_localCellId
+    (constructorName : FXTypeConstructorName) :
+    FXTypeConstructorName.ofLocalCellId? constructorName.localCellId =
+      some constructorName := by
+  cases constructorName <;> rfl
+
+theorem FXTypeConstructorName.ofCellId?_cellId
+    (constructorName : FXTypeConstructorName) :
+    FXTypeConstructorName.ofCellId? constructorName.cellId =
+      some constructorName := by
+  cases constructorName <;> rfl
+
+theorem FXTypeConstructorName.constructorIndex_val
+    (constructorName : FXTypeConstructorName) :
+    constructorName.constructorIndex.val =
+      constructorName.localCellId := rfl
+
+theorem FXTypeConstructorName.cellId_eq_firstTypeCellId_add_localCellId
+    (constructorName : FXTypeConstructorName) :
+    constructorName.cellId =
+      PolyTerm.firstTypeCellId + constructorName.localCellId := rfl
+
 private theorem nat_sub_lt_left_of_lt_add_structural {offset value count : Nat}
     (hasLowerBound : offset ≤ value)
     (hasUpperBound : value < offset + count) :
@@ -1788,6 +1946,11 @@ def FXType.ofConstructorIndex (constructorIndex : Fin typeGeneratorCount)
     rw [hasLowerBound, hasUpperBound]
     rfl⟩
 
+/-- Construct an FX type from a named current `Ty` constructor id. -/
+def FXType.ofConstructorName
+    (constructorName : FXTypeConstructorName) (payload : Nat) : FXType :=
+  FXType.ofConstructorIndex constructorName.constructorIndex payload
+
 theorem FXTerm.cellId_ofConstructorIndex
     (constructorIndex : Fin termGeneratorCount) (payload : Nat) :
     (FXTerm.ofConstructorIndex constructorIndex payload).cellId =
@@ -1846,6 +2009,16 @@ theorem FXType.payload_ofConstructorIndex
     (FXType.ofConstructorIndex constructorIndex payload).payload =
       payload := rfl
 
+theorem FXType.cellId_ofConstructorName
+    (constructorName : FXTypeConstructorName) (payload : Nat) :
+    (FXType.ofConstructorName constructorName payload).cellId =
+      constructorName.cellId := rfl
+
+theorem FXType.payload_ofConstructorName
+    (constructorName : FXTypeConstructorName) (payload : Nat) :
+    (FXType.ofConstructorName constructorName payload).payload =
+      payload := rfl
+
 theorem FXType.constructorIndex_val_ofConstructorIndex
     (constructorIndex : Fin typeGeneratorCount) (payload : Nat) :
     (FXType.ofConstructorIndex constructorIndex payload).constructorIndex.val =
@@ -1855,6 +2028,13 @@ theorem FXType.constructorIndex_val_ofConstructorIndex
       PolyTerm.firstTypeCellId = constructorIndex.val
   exact nat_add_sub_cancel_left_structural
     PolyTerm.firstTypeCellId constructorIndex.val
+
+theorem FXType.constructorIndex_val_ofConstructorName
+    (constructorName : FXTypeConstructorName) (payload : Nat) :
+    (FXType.ofConstructorName constructorName payload).constructorIndex.val =
+      constructorName.localCellId := by
+  exact FXType.constructorIndex_val_ofConstructorIndex
+    constructorName.constructorIndex payload
 
 theorem FXType.cellId_eq_firstTypeCellId_add_constructorIndex_val
     (typeCell : FXType) :
@@ -1992,6 +2172,12 @@ theorem FXType.toCell?_ofCellId?_ofConstructorIndex
           (PolyTerm.firstTypeCellId + constructorIndex.val)
           payload)
   rw [nat_add_sub_cancel_left_structural]
+
+theorem FXType.ofCellId?_ofConstructorName
+    (constructorName : FXTypeConstructorName) (payload : Nat) :
+    FXType.ofCellId? constructorName.cellId payload =
+      some (FXType.ofConstructorName constructorName payload) := by
+  cases constructorName <;> rfl
 
 theorem FXTerm.ofCellId?_ofTypeConstructorIndex
     (constructorIndex : Fin typeGeneratorCount) (payload : Nat) :
