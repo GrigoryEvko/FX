@@ -135,6 +135,16 @@ def decodeApplicationPayload? {profile : PolyProfile} (scope payload : Nat) :
       (RawChildDescriptors.application
         (NegativeProbes.seedTypeAtom profile)
         (NegativeProbes.seedTermAtom profile))
+  else if payload = NegativeProbes.applicationTypeAsArgumentPayload then
+    Except.ok
+      (RawChildDescriptors.application
+        (NegativeProbes.seedTermAtom profile)
+        (NegativeProbes.seedTypeAtom profile))
+  else if payload = NegativeProbes.applicationOutOfScopeArgumentPayload then
+    Except.ok
+      (RawChildDescriptors.application
+        (NegativeProbes.seedTermAtom profile)
+        (NegativeProbes.outOfScopeVariableRawCell profile))
   else if payload = NegativeProbes.wrongAritySentinel then
     Except.error .wrongArity
   else if payload = NegativeProbes.wrongChildShapeSentinel then
@@ -567,6 +577,24 @@ theorem decodeApplicationPayload?_typeAsFunction
           (NegativeProbes.seedTypeAtom profile)
           (NegativeProbes.seedTermAtom profile)) := rfl
 
+theorem decodeApplicationPayload?_typeAsArgument
+    {profile : PolyProfile} {scope : Nat} :
+    decodeApplicationPayload? (profile := profile) scope
+      NegativeProbes.applicationTypeAsArgumentPayload =
+      Except.ok
+        (RawChildDescriptors.application
+          (NegativeProbes.seedTermAtom profile)
+          (NegativeProbes.seedTypeAtom profile)) := rfl
+
+theorem decodeApplicationPayload?_outOfScopeArgument
+    {profile : PolyProfile} {scope : Nat} :
+    decodeApplicationPayload? (profile := profile) scope
+      NegativeProbes.applicationOutOfScopeArgumentPayload =
+      Except.ok
+        (RawChildDescriptors.application
+          (NegativeProbes.seedTermAtom profile)
+          (NegativeProbes.outOfScopeVariableRawCell profile)) := rfl
+
 theorem screenRawChildDescriptorsWith?_applicationVarZeroVarOne
     {profile : PolyProfile} :
     screenRawChildDescriptorsWith? (profile := profile)
@@ -591,6 +619,30 @@ theorem screenRawChildDescriptorsWith?_applicationTypeAsFunction_rejects
         (NegativeProbes.seedTermAtom profile)) =
       Except.error .wrongChildShape := rfl
 
+theorem screenRawChildDescriptorsWith?_applicationTypeAsArgument_rejects
+    {profile : PolyProfile} :
+    screenRawChildDescriptorsWith? (profile := profile)
+      (fun {childDimension} childScope
+          (childRaw : PolyTerm profile childDimension) =>
+        screenRawCellWithFuel? 63 childScope childRaw)
+      NegativeProbes.defaultInferScope
+      (RawChildDescriptors.application
+        (NegativeProbes.seedTermAtom profile)
+        (NegativeProbes.seedTypeAtom profile)) =
+      Except.error .wrongChildShape := rfl
+
+theorem screenRawChildDescriptorsWith?_applicationOutOfScopeArgument_rejects
+    {profile : PolyProfile} :
+    screenRawChildDescriptorsWith? (profile := profile)
+      (fun {childDimension} childScope
+          (childRaw : PolyTerm profile childDimension) =>
+        screenRawCellWithFuel? 63 childScope childRaw)
+      NegativeProbes.defaultInferScope
+      (RawChildDescriptors.application
+        (NegativeProbes.seedTermAtom profile)
+        (NegativeProbes.outOfScopeVariableRawCell profile)) =
+      Except.error .wrongChildShape := rfl
+
 theorem screenRawCell0?_applicationVarZeroVarOne
     {profile : PolyProfile} :
     screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
@@ -608,6 +660,18 @@ theorem screenRawCell0?_applicationTypeAsFunction_rejects
     {profile : PolyProfile} :
     screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
       (NegativeProbes.applicationTypeAsFunctionRawCell profile) =
+      Except.error .wrongChildShape := rfl
+
+theorem screenRawCell0?_applicationTypeAsArgument_rejects
+    {profile : PolyProfile} :
+    screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.applicationTypeAsArgumentRawCell profile) =
+      Except.error .wrongChildShape := rfl
+
+theorem screenRawCell0?_applicationOutOfScopeArgument_rejects
+    {profile : PolyProfile} :
+    screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.applicationOutOfScopeArgumentRawCell profile) =
       Except.error .wrongChildShape := rfl
 
 theorem certifiedSeedTermPackage_raw {profile : PolyProfile} :
@@ -707,6 +771,23 @@ theorem applicationTypeAsFunctionProbe_rejects {profile : PolyProfile} :
         (NegativeProbes.applicationTypeAsFunctionProbe profile).expectedRejection :=
   rfl
 
+theorem applicationTypeAsArgumentProbe_rejects {profile : PolyProfile} :
+    screenRawCell0? (profile := profile)
+      (NegativeProbes.applicationTypeAsArgumentProbe profile).scope
+      (NegativeProbes.applicationTypeAsArgumentRawCell profile) =
+      Except.error
+        (NegativeProbes.applicationTypeAsArgumentProbe profile).expectedRejection :=
+  rfl
+
+theorem applicationOutOfScopeArgumentProbe_rejects {profile : PolyProfile} :
+    screenRawCell0? (profile := profile)
+      (NegativeProbes.applicationOutOfScopeArgumentProbe profile).scope
+      (NegativeProbes.applicationOutOfScopeArgumentRawCell profile) =
+      Except.error
+        (RawInferNegativeProbe.expectedRejection
+          (NegativeProbes.applicationOutOfScopeArgumentProbe profile)) :=
+  rfl
+
 theorem badBoundaryEndpointProbe_rejects {profile : PolyProfile} :
     screenRawCell? (profile := profile)
       (NegativeProbes.badBoundaryEndpointProbe profile).scope
@@ -739,6 +820,15 @@ theorem badBoundaryModeSortProbe_rejects {profile : PolyProfile} :
         (NegativeProbes.badBoundaryModeSortProbe profile).expectedRejection :=
   rfl
 
+theorem wrongRuleEndpointDimensionProbe_rejects {profile : PolyProfile} :
+    screenRawCell? (profile := profile)
+      (NegativeProbes.wrongRuleEndpointDimensionProbe profile).scope
+      (NegativeProbes.wrongRuleEndpointDimensionRawCell profile) =
+      Except.error
+        (RawInferNegativeProbe.expectedRejection
+          (NegativeProbes.wrongRuleEndpointDimensionProbe profile)) :=
+  rfl
+
 theorem badVerticalBoundaryProbe_rejects {profile : PolyProfile} :
     screenRawCell? (profile := profile)
       (NegativeProbes.badVerticalBoundaryProbe profile).scope
@@ -762,6 +852,14 @@ theorem wrongSortProbe_rejects {profile : PolyProfile} :
       (NegativeProbes.wrongSortRawCell profile) =
       Except.error (NegativeProbes.wrongSortProbe profile).expectedRejection := rfl
 
+theorem contextAsTypeProbe_rejects {profile : PolyProfile} :
+    screenRawCell0As? (profile := profile)
+      (NegativeProbes.contextAsTypeProbe profile).expectedSort
+      (NegativeProbes.contextAsTypeProbe profile).expectedScope
+      (NegativeProbes.contextAsTypeRawCell profile) =
+      Except.error
+        (NegativeProbes.contextAsTypeProbe profile).expectedRejection := rfl
+
 theorem unitTypeAsTermProbe_rejects {profile : PolyProfile} :
     screenRawCell0As? (profile := profile)
       (NegativeProbes.unitTypeAsTermProbe profile).expectedSort
@@ -769,6 +867,14 @@ theorem unitTypeAsTermProbe_rejects {profile : PolyProfile} :
       (NegativeProbes.unitTypeAsTermRawCell profile) =
       Except.error
         (NegativeProbes.unitTypeAsTermProbe profile).expectedRejection := rfl
+
+theorem unitTypeAsContextProbe_rejects {profile : PolyProfile} :
+    screenRawCell0As? (profile := profile)
+      (NegativeProbes.unitTypeAsContextProbe profile).expectedSort
+      (NegativeProbes.unitTypeAsContextProbe profile).expectedScope
+      (NegativeProbes.unitTypeAsContextRawCell profile) =
+      Except.error
+        (NegativeProbes.unitTypeAsContextProbe profile).expectedRejection := rfl
 
 theorem termAsTypeProbe_rejects {profile : PolyProfile} :
     screenRawCell0As? (profile := profile)
@@ -778,6 +884,14 @@ theorem termAsTypeProbe_rejects {profile : PolyProfile} :
       Except.error
         (NegativeProbes.termAsTypeProbe profile).expectedRejection := rfl
 
+theorem termAsContextProbe_rejects {profile : PolyProfile} :
+    screenRawCell0As? (profile := profile)
+      (NegativeProbes.termAsContextProbe profile).expectedSort
+      (NegativeProbes.termAsContextProbe profile).expectedScope
+      (NegativeProbes.termAsContextRawCell profile) =
+      Except.error
+        (NegativeProbes.termAsContextProbe profile).expectedRejection := rfl
+
 theorem linearModeAsTermProbe_rejects {profile : PolyProfile} :
     screenRawCell0As? (profile := profile)
       (NegativeProbes.linearModeAsTermProbe profile).expectedSort
@@ -785,6 +899,14 @@ theorem linearModeAsTermProbe_rejects {profile : PolyProfile} :
       (NegativeProbes.linearModeAsTermRawCell profile) =
       Except.error
         (NegativeProbes.linearModeAsTermProbe profile).expectedRejection := rfl
+
+theorem linearModeAsTypeProbe_rejects {profile : PolyProfile} :
+    screenRawCell0As? (profile := profile)
+      (NegativeProbes.linearModeAsTypeProbe profile).expectedSort
+      (NegativeProbes.linearModeAsTypeProbe profile).expectedScope
+      (NegativeProbes.linearModeAsTypeRawCell profile) =
+      Except.error
+        (NegativeProbes.linearModeAsTypeProbe profile).expectedRejection := rfl
 
 theorem typeIdentityAsTermStepProbe_rejects {profile : PolyProfile} :
     screenRawCellAs? (profile := profile)
