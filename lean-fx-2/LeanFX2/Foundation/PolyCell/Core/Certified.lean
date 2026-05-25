@@ -244,6 +244,65 @@ def verticalCompositeCell {profile : PolyProfile} {cellSort : CellSort}
       (sourceRaw, targetRaw) (.compV firstRaw secondRaw) :=
   .compV firstCell secondCell
 
+/-- Certified thinness evidence for positive-dimensional cells.
+
+This predicate is intentionally tiny: only identity cells are primitive thin
+cells, and vertical composites of thin cells remain thin.  There is no rule
+making arbitrary generating steps thin. -/
+inductive ThinCell {profile : PolyProfile} :
+    {cellSort : CellSort} →
+    {cellDimension scope : Nat} →
+    {cellBoundary : CellBoundary profile cellSort (cellDimension + 1) scope} →
+    {rawCell : PolyTerm profile (cellDimension + 1)} →
+    PolyCell profile cellSort (cellDimension + 1) scope cellBoundary rawCell →
+    Type where
+  /-- An identity over any certified base cell is thin. -/
+  | identity {cellSort : CellSort} {cellDimension scope : Nat}
+      {cellBoundary : CellBoundary profile cellSort cellDimension scope}
+      {baseRaw : PolyTerm profile cellDimension}
+      (baseCell :
+        PolyCell profile cellSort cellDimension scope cellBoundary baseRaw) :
+      ThinCell (PolyCell.identityCell baseCell)
+  /-- Vertical composition preserves certified thinness. -/
+  | compV {cellSort : CellSort} {cellDimension scope : Nat}
+      {sourceRaw middleRaw targetRaw : PolyTerm profile cellDimension}
+      {firstRaw secondRaw : PolyTerm profile (cellDimension + 1)}
+      {firstCell :
+        PolyCell profile cellSort (cellDimension + 1) scope
+          (sourceRaw, middleRaw) firstRaw}
+      {secondCell :
+        PolyCell profile cellSort (cellDimension + 1) scope
+          (middleRaw, targetRaw) secondRaw} :
+      ThinCell firstCell →
+      ThinCell secondCell →
+      ThinCell (PolyCell.verticalCompositeCell firstCell secondCell)
+
+/-- Identity cells are thin by construction. -/
+def identityThinCell {profile : PolyProfile} {cellSort : CellSort}
+    {cellDimension scope : Nat}
+    {cellBoundary : CellBoundary profile cellSort cellDimension scope}
+    {baseRaw : PolyTerm profile cellDimension}
+    (baseCell :
+      PolyCell profile cellSort cellDimension scope cellBoundary baseRaw) :
+    ThinCell (identityCell baseCell) :=
+  ThinCell.identity baseCell
+
+/-- Vertical composites of thin cells are thin by construction. -/
+def verticalCompositeThinCell {profile : PolyProfile} {cellSort : CellSort}
+    {cellDimension scope : Nat}
+    {sourceRaw middleRaw targetRaw : PolyTerm profile cellDimension}
+    {firstRaw secondRaw : PolyTerm profile (cellDimension + 1)}
+    {firstCell :
+      PolyCell profile cellSort (cellDimension + 1) scope
+        (sourceRaw, middleRaw) firstRaw}
+    {secondCell :
+      PolyCell profile cellSort (cellDimension + 1) scope
+        (middleRaw, targetRaw) secondRaw} :
+    ThinCell firstCell →
+    ThinCell secondCell →
+    ThinCell (verticalCompositeCell firstCell secondCell) :=
+  ThinCell.compV
+
 /-- Certified child descriptor used by non-nullary generator certificates. -/
 structure CertifiedChild
     (profile : PolyProfile) (cellSort : CellSort)

@@ -4,8 +4,9 @@ import LeanFX2.Foundation.PolyCell.Core.Check
 
 This file gives the FX profile honest view names over the certified cell
 layer.  These are not raw subtype wrappers: every inhabitant carries an actual
-`PolyCell` witness.  Conversion/thinness views are intentionally absent until
-thinness has a certified predicate over dim-1 cells.
+`PolyCell` witness.  Thin views are structural only: identities and vertical
+composites of thin cells.  Full conversion/reduction/coherence views remain
+absent until their operational predicates are certified.
 -/
 
 namespace LeanFX2.Foundation.PolyCell.FXProfile
@@ -61,6 +62,42 @@ def targetRaw {cellSort : CellSort} {cellDimension scope : Nat}
 
 end CertifiedFXCell
 
+/-- A certified positive-dimensional FX cell with certified thinness evidence. -/
+structure CertifiedFXThinCell
+    (cellSort : CellSort) (cellDimension : CellDim) (scope : Nat) where
+  /-- Underlying certified positive-dimensional cell. -/
+  certifiedFXCell : CertifiedFXCell cellSort (cellDimension + 1) scope
+  /-- Certified structural thinness evidence for the underlying cell. -/
+  thinEvidence : PolyCell.ThinCell certifiedFXCell.certifiedCell
+
+namespace CertifiedFXThinCell
+
+/-- Forget thinness and keep the underlying certified FX cell. -/
+def toCertifiedFXCell {cellSort : CellSort} {cellDimension scope : Nat}
+    (cell : CertifiedFXThinCell cellSort cellDimension scope) :
+    CertifiedFXCell cellSort (cellDimension + 1) scope :=
+  cell.certifiedFXCell
+
+/-- Raw erasure of a certified thin FX cell. -/
+def toRaw {cellSort : CellSort} {cellDimension scope : Nat}
+    (cell : CertifiedFXThinCell cellSort cellDimension scope) :
+    PolyTerm fxProfile (cellDimension + 1) :=
+  cell.certifiedFXCell.toRaw
+
+/-- Source endpoint of a certified thin FX cell. -/
+def sourceRaw {cellSort : CellSort} {cellDimension scope : Nat}
+    (cell : CertifiedFXThinCell cellSort cellDimension scope) :
+    PolyTerm fxProfile cellDimension :=
+  cell.certifiedFXCell.sourceRaw
+
+/-- Target endpoint of a certified thin FX cell. -/
+def targetRaw {cellSort : CellSort} {cellDimension scope : Nat}
+    (cell : CertifiedFXThinCell cellSort cellDimension scope) :
+    PolyTerm fxProfile cellDimension :=
+  cell.certifiedFXCell.targetRaw
+
+end CertifiedFXThinCell
+
 /-- Certified FX context cell at dimension 0. -/
 abbrev CertifiedFXContext (scope : Nat) := CertifiedFXCell .context 0 scope
 
@@ -95,6 +132,12 @@ abbrev CertifiedFXDimOneModeCell (scope : Nat) :=
 /-- Certified structural term cell at dimension 2. -/
 abbrev CertifiedFXDimTwoTermCell (scope : Nat) :=
   CertifiedFXCell .term 2 scope
+
+/-- Certified thin term cell at dimension 1.
+
+This is a structural thin cell, not yet the final legacy `Conv` bridge. -/
+abbrev CertifiedFXTermThinCell (scope : Nat) :=
+  CertifiedFXThinCell .term 0 scope
 
 /-- Seed certified term view from the current dim-0 ingress subset. -/
 def certifiedSeedTerm :
@@ -171,6 +214,55 @@ def certifiedSeedTermIdentityTwice :
     CertifiedFXDimOneTermCell NegativeProbes.defaultInferScope :=
   CertifiedFXCell.ofCertifiedRawCell
     (Check.certifiedSeedTermIdentityTwicePackage (profile := fxProfile))
+
+/-- Certified thinness view for the seed term identity. -/
+def certifiedSeedTermIdentityThin :
+    CertifiedFXTermThinCell NegativeProbes.defaultInferScope where
+  certifiedFXCell := certifiedSeedTermIdentity
+  thinEvidence :=
+    PolyCell.identityThinCell
+      (Check.certifiedSeedTermPackage (profile := fxProfile)).certifiedCell
+
+/-- Certified thinness view for the seed type identity. -/
+def certifiedSeedTypeIdentityThin :
+    CertifiedFXThinCell .type 0 NegativeProbes.defaultInferScope where
+  certifiedFXCell := certifiedSeedTypeIdentity
+  thinEvidence :=
+    PolyCell.identityThinCell
+      (Check.certifiedSeedTypePackage (profile := fxProfile)).certifiedCell
+
+/-- Certified thinness view for the seed context identity. -/
+def certifiedSeedContextIdentityThin :
+    CertifiedFXThinCell .context 0 NegativeProbes.defaultInferScope where
+  certifiedFXCell := certifiedSeedContextIdentity
+  thinEvidence :=
+    PolyCell.identityThinCell
+      (Check.certifiedSeedContextPackage (profile := fxProfile)).certifiedCell
+
+/-- Certified thinness view for the seed mode identity. -/
+def certifiedSeedModeIdentityThin :
+    CertifiedFXThinCell .mode 0 NegativeProbes.defaultInferScope where
+  certifiedFXCell := certifiedSeedModeIdentity
+  thinEvidence :=
+    PolyCell.identityThinCell
+      (Check.certifiedSeedModePackage (profile := fxProfile)).certifiedCell
+
+/-- Certified thinness view for the identity over the seed dim-1 term cell. -/
+def certifiedSeedTermStepIdentityThin :
+    CertifiedFXThinCell .term 1 NegativeProbes.defaultInferScope where
+  certifiedFXCell := certifiedSeedTermStepIdentity
+  thinEvidence :=
+    PolyCell.identityThinCell
+      (Check.certifiedSeedTermStepPackage (profile := fxProfile)).certifiedCell
+
+/-- Certified thinness view for the seed term identity composed with itself. -/
+def certifiedSeedTermIdentityTwiceThin :
+    CertifiedFXTermThinCell NegativeProbes.defaultInferScope where
+  certifiedFXCell := certifiedSeedTermIdentityTwice
+  thinEvidence :=
+    PolyCell.verticalCompositeThinCell
+      certifiedSeedTermIdentityThin.thinEvidence
+      certifiedSeedTermIdentityThin.thinEvidence
 
 theorem certifiedSeedTerm_raw :
     certifiedSeedTerm.toRaw = NegativeProbes.seedTermAtom fxProfile := rfl
@@ -273,6 +365,32 @@ theorem certifiedSeedTermIdentityTwice_sourceRaw :
 
 theorem certifiedSeedTermIdentityTwice_targetRaw :
     certifiedSeedTermIdentityTwice.targetRaw =
+      NegativeProbes.seedTermAtom fxProfile := rfl
+
+theorem certifiedSeedTermIdentityThin_raw :
+    certifiedSeedTermIdentityThin.toRaw =
+      PolyTerm.identity (NegativeProbes.seedTermAtom fxProfile) := rfl
+
+theorem certifiedSeedTermIdentityThin_sourceRaw :
+    certifiedSeedTermIdentityThin.sourceRaw =
+      NegativeProbes.seedTermAtom fxProfile := rfl
+
+theorem certifiedSeedTermIdentityThin_targetRaw :
+    certifiedSeedTermIdentityThin.targetRaw =
+      NegativeProbes.seedTermAtom fxProfile := rfl
+
+theorem certifiedSeedTermIdentityTwiceThin_raw :
+    certifiedSeedTermIdentityTwiceThin.toRaw =
+      PolyTerm.compV
+        (PolyTerm.identity (NegativeProbes.seedTermAtom fxProfile))
+        (PolyTerm.identity (NegativeProbes.seedTermAtom fxProfile)) := rfl
+
+theorem certifiedSeedTermIdentityTwiceThin_sourceRaw :
+    certifiedSeedTermIdentityTwiceThin.sourceRaw =
+      NegativeProbes.seedTermAtom fxProfile := rfl
+
+theorem certifiedSeedTermIdentityTwiceThin_targetRaw :
+    certifiedSeedTermIdentityTwiceThin.targetRaw =
       NegativeProbes.seedTermAtom fxProfile := rfl
 
 end LeanFX2.Foundation.PolyCell.FXProfile
