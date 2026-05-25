@@ -34,6 +34,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.target?_identity
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.size
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.size_pos
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.retargetProfile
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.retargetProfile_self
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.retargetProfile_comp
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.retargetProfile_roundtrip
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.isTypeCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.isTermCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.isStepCell
@@ -874,7 +878,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.fxExtension_hasInterfaceLedger
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.fxExtension_hasLocalAdmissionRecord
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.fxExtension_hasProfileTowerBookkeeping
-#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.fxExtension_hasNoProfileLensInstance
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.fxExtension_hasProfileLensInstance
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.fxExtension_hasNoAlgebraExtension
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.fxExtension_hasNoInteractionLawProofs
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.fxExtension_hasNoMetatheoryTransfer
@@ -919,6 +923,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.extendProfile_preserves_mttNormConstructionLevel
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.extendProfile_preserves_admission_evidence
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.extendProfile
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.ProfileLens.structural
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.ProfileLens.structural_roundtrip
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.extendedCapabilities
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaReductionInterface
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaReductionInterfaceLamIndex
@@ -933,6 +939,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaReductionExtension
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaReductionExtension_localAdmissionRecord
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaReductionExtension_admitted
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaReductionExtension_structuralLens
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaReductionExtension_structuralLens_roundtrip
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.fxWithEta
 
 #assert_true_in_result_type_budget LeanFX2.Foundation.PolyCell.Core 0
