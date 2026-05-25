@@ -3713,6 +3713,78 @@ theorem FXType.constructorIndex_val_ofCellId?_of_isTypeConstructor
       cases hasDecodedCellId
       rfl
 
+theorem FXTerm.cellId_ofCellId?_ofConstructorIndex
+    (constructorIndex : Fin termGeneratorCount) (payload : Nat) :
+    Option.map FXTerm.cellId
+        (FXTerm.ofCellId? constructorIndex.val payload) =
+      some constructorIndex.val := by
+  exact FXTerm.cellId_ofCellId?_of_isTermConstructor
+    constructorIndex.val payload
+    (FXDimZeroCellIdClass.isTermConstructor_classifyTermConstructorIndex
+      constructorIndex)
+
+theorem FXTerm.payload_ofCellId?_ofConstructorIndex
+    (constructorIndex : Fin termGeneratorCount) (payload : Nat) :
+    Option.map FXTerm.payload
+        (FXTerm.ofCellId? constructorIndex.val payload) =
+      some payload := by
+  exact FXTerm.payload_ofCellId?_of_isTermConstructor
+    constructorIndex.val payload
+    (FXDimZeroCellIdClass.isTermConstructor_classifyTermConstructorIndex
+      constructorIndex)
+
+theorem FXTerm.constructorIndex_val_ofCellId?_ofConstructorIndex
+    (constructorIndex : Fin termGeneratorCount) (payload : Nat) :
+    Option.map (fun decodedTerm => decodedTerm.constructorIndex.val)
+        (FXTerm.ofCellId? constructorIndex.val payload) =
+      some constructorIndex.val := by
+  exact FXTerm.constructorIndex_val_ofCellId?_of_isTermConstructor
+    constructorIndex.val payload
+    (FXDimZeroCellIdClass.isTermConstructor_classifyTermConstructorIndex
+      constructorIndex)
+
+theorem FXType.cellId_ofCellId?_ofConstructorIndex
+    (constructorIndex : Fin typeGeneratorCount) (payload : Nat) :
+    Option.map FXType.cellId
+        (FXType.ofCellId?
+          (PolyTerm.firstTypeCellId + constructorIndex.val) payload) =
+      some (PolyTerm.firstTypeCellId + constructorIndex.val) := by
+  exact FXType.cellId_ofCellId?_of_isTypeConstructor
+    (PolyTerm.firstTypeCellId + constructorIndex.val) payload
+    (FXDimZeroCellIdClass.isTypeConstructor_classifyTypeConstructorIndex
+      constructorIndex)
+
+theorem FXType.payload_ofCellId?_ofConstructorIndex
+    (constructorIndex : Fin typeGeneratorCount) (payload : Nat) :
+    Option.map FXType.payload
+        (FXType.ofCellId?
+          (PolyTerm.firstTypeCellId + constructorIndex.val) payload) =
+      some payload := by
+  exact FXType.payload_ofCellId?_of_isTypeConstructor
+    (PolyTerm.firstTypeCellId + constructorIndex.val) payload
+    (FXDimZeroCellIdClass.isTypeConstructor_classifyTypeConstructorIndex
+      constructorIndex)
+
+theorem FXType.constructorIndex_val_ofCellId?_ofConstructorIndex
+    (constructorIndex : Fin typeGeneratorCount) (payload : Nat) :
+    Option.map (fun decodedType => decodedType.constructorIndex.val)
+        (FXType.ofCellId?
+          (PolyTerm.firstTypeCellId + constructorIndex.val) payload) =
+      some constructorIndex.val := by
+  have hasDecodedIndex :=
+    FXType.constructorIndex_val_ofCellId?_of_isTypeConstructor
+      (PolyTerm.firstTypeCellId + constructorIndex.val) payload
+      (FXDimZeroCellIdClass.isTypeConstructor_classifyTypeConstructorIndex
+        constructorIndex)
+  change
+    Option.map (fun decodedType => decodedType.constructorIndex.val)
+        (FXType.ofCellId?
+          (PolyTerm.firstTypeCellId + constructorIndex.val) payload) =
+      some ((PolyTerm.firstTypeCellId + constructorIndex.val) -
+        PolyTerm.firstTypeCellId) at hasDecodedIndex
+  rw [nat_add_sub_cancel_left_structural] at hasDecodedIndex
+  exact hasDecodedIndex
+
 /-- Decode a dim-0 FX cell into the term view when its id is in the current
 term-constructor block. -/
 def FXTerm.ofCell? (cell : FXCellAt 0) : Option FXTerm :=
