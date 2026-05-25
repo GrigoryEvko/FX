@@ -3144,6 +3144,135 @@ def FXType.ofCell? (cell : FXCellAt 0) : Option FXType :=
   match cell with
   | .atom cellId payload => FXType.ofCellId? cellId payload
 
+theorem FXTerm.toCell?_ofCell?_of_isTermCell (cell : FXCellAt 0)
+    (hasTermCell : cell.isTermCell = true) :
+    Option.map FXTerm.toCell (FXTerm.ofCell? cell) =
+      some cell := by
+  cases cell with
+  | atom cellId payload =>
+      change
+        Option.map FXTerm.toCell
+          (FXTerm.ofCellId? cellId payload) =
+            some (PolyTerm.atom cellId payload)
+      unfold FXTerm.ofCellId?
+      unfold classifyDimZeroCellId
+      have hasTermRange : cellId < termGeneratorCount := by
+        change cellId < PolyTerm.termCellIdLimit
+        exact of_decide_eq_true hasTermCell
+      rw [dif_pos hasTermRange]
+      rfl
+
+theorem FXTerm.ofCell?_of_not_isTermCell (cell : FXCellAt 0)
+    (hasNotTermCell : cell.isTermCell ≠ true) :
+    FXTerm.ofCell? cell = none := by
+  cases cell with
+  | atom cellId payload =>
+      change FXTerm.ofCellId? cellId payload = none
+      unfold FXTerm.ofCellId?
+      unfold classifyDimZeroCellId
+      by_cases hasTermRange : cellId < termGeneratorCount
+      · have hasTermCell :
+            (PolyTerm.atom (profile := fxProfile) cellId payload).isTermCell =
+              true := by
+          change decide (cellId < PolyTerm.termCellIdLimit) = true
+          exact decide_eq_true hasTermRange
+        exact False.elim (hasNotTermCell hasTermCell)
+      · rw [dif_neg hasTermRange]
+        by_cases hasCurrentRange : cellId < totalGeneratorCount
+        · rw [dif_pos hasCurrentRange]
+        · rw [dif_neg hasCurrentRange]
+
+theorem FXType.toCell?_ofCell?_of_isTypeCell (cell : FXCellAt 0)
+    (hasTypeCell : cell.isTypeCell = true) :
+    Option.map FXType.toCell (FXType.ofCell? cell) =
+      some cell := by
+  cases cell with
+  | atom cellId payload =>
+      change
+        Option.map FXType.toCell
+          (FXType.ofCellId? cellId payload) =
+            some (PolyTerm.atom cellId payload)
+      unfold FXType.ofCellId?
+      unfold classifyDimZeroCellId
+      change
+        (decide (PolyTerm.firstTypeCellId ≤ cellId) &&
+          decide (cellId < PolyTerm.typeCellIdLimit)) = true at hasTypeCell
+      have hasLowerBoundDecide :
+          decide (PolyTerm.firstTypeCellId ≤ cellId) = true := by
+        cases hasLowerBool :
+            decide (PolyTerm.firstTypeCellId ≤ cellId) with
+        | false =>
+            rw [hasLowerBool] at hasTypeCell
+            cases hasTypeCell
+        | true =>
+            rfl
+      have hasUpperBoundDecide :
+          decide (cellId < PolyTerm.typeCellIdLimit) = true := by
+        cases hasLowerBool :
+            decide (PolyTerm.firstTypeCellId ≤ cellId) with
+        | false =>
+            rw [hasLowerBool] at hasTypeCell
+            cases hasTypeCell
+        | true =>
+            cases hasUpperBool :
+                decide (cellId < PolyTerm.typeCellIdLimit) with
+            | false =>
+                rw [hasLowerBool, hasUpperBool] at hasTypeCell
+                cases hasTypeCell
+            | true =>
+                rfl
+      have hasLowerBound : PolyTerm.firstTypeCellId ≤ cellId :=
+        of_decide_eq_true hasLowerBoundDecide
+      have hasCurrentRange : cellId < totalGeneratorCount := by
+        change cellId < PolyTerm.typeCellIdLimit
+        exact of_decide_eq_true hasUpperBoundDecide
+      have hasNoTermRange : ¬cellId < termGeneratorCount := by
+        change ¬cellId < PolyTerm.firstTypeCellId
+        exact Nat.not_lt_of_ge hasLowerBound
+      rw [dif_neg hasNoTermRange, dif_pos hasCurrentRange]
+      change
+        some
+          ((PolyTerm.atom
+              (PolyTerm.firstTypeCellId +
+                (cellId - PolyTerm.firstTypeCellId))
+              payload :
+            FXCellAt 0)) =
+          some (PolyTerm.atom cellId payload)
+      rw [nat_add_sub_cancel_of_le_structural hasLowerBound]
+
+theorem FXType.ofCell?_of_not_isTypeCell (cell : FXCellAt 0)
+    (hasNotTypeCell : cell.isTypeCell ≠ true) :
+    FXType.ofCell? cell = none := by
+  cases cell with
+  | atom cellId payload =>
+      change FXType.ofCellId? cellId payload = none
+      unfold FXType.ofCellId?
+      unfold classifyDimZeroCellId
+      by_cases hasTermRange : cellId < termGeneratorCount
+      · rw [dif_pos hasTermRange]
+      · rw [dif_neg hasTermRange]
+        by_cases hasCurrentRange : cellId < totalGeneratorCount
+        · have hasLowerBound : PolyTerm.firstTypeCellId ≤ cellId := by
+            change termGeneratorCount ≤ cellId
+            exact Nat.le_of_not_gt hasTermRange
+          have hasTypeCell :
+              (PolyTerm.atom (profile := fxProfile) cellId payload).isTypeCell =
+                true := by
+            change
+              (decide (PolyTerm.firstTypeCellId ≤ cellId) &&
+                decide (cellId < PolyTerm.typeCellIdLimit)) = true
+            have hasLowerBoundDecide :
+                decide (PolyTerm.firstTypeCellId ≤ cellId) = true :=
+              decide_eq_true hasLowerBound
+            have hasUpperBoundDecide :
+                decide (cellId < PolyTerm.typeCellIdLimit) = true := by
+              change decide (cellId < totalGeneratorCount) = true
+              exact decide_eq_true hasCurrentRange
+            rw [hasLowerBoundDecide, hasUpperBoundDecide]
+            rfl
+          exact False.elim (hasNotTypeCell hasTypeCell)
+        · rw [dif_neg hasCurrentRange]
+
 theorem FXTerm.ofCell?_ofConstructorIndex_toCell
     (constructorIndex : Fin termGeneratorCount) (payload : Nat) :
     FXTerm.ofCell?
@@ -3394,80 +3523,14 @@ theorem FXType.payload?_ofCell?_ofConstructorName_toCell
 theorem FXTerm.toCell?_ofCell?_toCell (term : FXTerm) :
     Option.map FXTerm.toCell (FXTerm.ofCell? term.toCell) =
       some term.toCell := by
-  cases term with
-  | mk cell hRange =>
-      cases cell with
-      | atom cellId payload =>
-          change
-            Option.map FXTerm.toCell
-              (FXTerm.ofCellId? cellId payload) =
-                some (PolyTerm.atom cellId payload)
-          unfold FXTerm.ofCellId?
-          unfold classifyDimZeroCellId
-          have hasTermRange : cellId < termGeneratorCount := by
-            change cellId < PolyTerm.termCellIdLimit
-            exact of_decide_eq_true hRange
-          rw [dif_pos hasTermRange]
-          rfl
+  exact FXTerm.toCell?_ofCell?_of_isTermCell
+    term.toCell term.toCell_isTermCell
 
 theorem FXType.toCell?_ofCell?_toCell (typeCell : FXType) :
     Option.map FXType.toCell (FXType.ofCell? typeCell.toCell) =
       some typeCell.toCell := by
-  cases typeCell with
-  | mk cell hRange =>
-      cases cell with
-      | atom cellId payload =>
-          change
-            Option.map FXType.toCell
-              (FXType.ofCellId? cellId payload) =
-                some (PolyTerm.atom cellId payload)
-          unfold FXType.ofCellId?
-          unfold classifyDimZeroCellId
-          change
-            (decide (PolyTerm.firstTypeCellId ≤ cellId) &&
-              decide (cellId < PolyTerm.typeCellIdLimit)) = true at hRange
-          have hasLowerBoundDecide :
-              decide (PolyTerm.firstTypeCellId ≤ cellId) = true := by
-            cases hasLowerBool :
-                decide (PolyTerm.firstTypeCellId ≤ cellId) with
-            | false =>
-                rw [hasLowerBool] at hRange
-                cases hRange
-            | true =>
-                rfl
-          have hasUpperBoundDecide :
-              decide (cellId < PolyTerm.typeCellIdLimit) = true := by
-            cases hasLowerBool :
-                decide (PolyTerm.firstTypeCellId ≤ cellId) with
-            | false =>
-                rw [hasLowerBool] at hRange
-                cases hRange
-            | true =>
-                cases hasUpperBool :
-                    decide (cellId < PolyTerm.typeCellIdLimit) with
-                | false =>
-                    rw [hasLowerBool, hasUpperBool] at hRange
-                    cases hRange
-                | true =>
-                    rfl
-          have hasLowerBound : PolyTerm.firstTypeCellId ≤ cellId :=
-            of_decide_eq_true hasLowerBoundDecide
-          have hasCurrentRange : cellId < totalGeneratorCount := by
-            change cellId < PolyTerm.typeCellIdLimit
-            exact of_decide_eq_true hasUpperBoundDecide
-          have hasNoTermRange : ¬cellId < termGeneratorCount := by
-            change ¬cellId < PolyTerm.firstTypeCellId
-            exact Nat.not_lt_of_ge hasLowerBound
-          rw [dif_neg hasNoTermRange, dif_pos hasCurrentRange]
-          change
-            some
-              ((PolyTerm.atom
-                  (PolyTerm.firstTypeCellId +
-                    (cellId - PolyTerm.firstTypeCellId))
-                  payload :
-                FXCellAt 0)) =
-              some (PolyTerm.atom cellId payload)
-          rw [nat_add_sub_cancel_of_le_structural hasLowerBound]
+  exact FXType.toCell?_ofCell?_of_isTypeCell
+    typeCell.toCell typeCell.toCell_isTypeCell
 
 theorem FXTerm.cellId_ofCell?_toCell (term : FXTerm) :
     Option.map FXTerm.cellId (FXTerm.ofCell? term.toCell) =
