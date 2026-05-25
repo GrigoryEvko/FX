@@ -13,6 +13,7 @@ import LeanFX2.Foundation.PolyCell.Core.Check
 import LeanFX2.Foundation.PolyCell.Core.CompositionLaws
 import LeanFX2.Foundation.PolyCell.Core.DecEqWF
 import LeanFX2.Foundation.PolyCell.Extension.ProfileExtension
+import LeanFX2.Foundation.PolyCell.FXProfile.CertifiedViews
 import LeanFX2.Foundation.PolyCell.FXProfile.Views
 import LeanFX2.Foundation.PolyCell.OmegacE.HonestyCheck
 
@@ -360,6 +361,26 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawCell?_applicationTypeAsFunction_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawCell?_applicationTypeAsArgument_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawCell?_applicationOutOfScopeArgument_rejects
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXCell.rawCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXCell.cellBoundary
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXCell.certifiedCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXCell.ofCertifiedRawCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXCell.toRaw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXCell.toCertifiedCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXContext
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXType
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXTerm
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXMode
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.CertifiedFXDimOneTermCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifiedSeedTerm
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifiedSeedType
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifiedSeedContext
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifiedSeedMode
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifiedSeedTerm_raw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifiedSeedType_raw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifiedSeedContext_raw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifiedSeedMode_raw
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenExpectedSort?_badUnitTypePayload_as_type_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenExpectedSort?_badLinearModePayload_as_mode_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell?_matchedVerticalBoundary_scope_four
