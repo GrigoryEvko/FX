@@ -137,6 +137,76 @@ theorem PolyTerm.size_pos {profile : PolyProfile} {dimension : CellDim}
       dsimp [PolyTerm.size]
       exact Nat.add_pos_left Nat.zero_lt_one base.size
 
+/-- Retarget a structural cell from one profile parameter to another.
+
+The current `PolyTerm` syntax stores generator ids and payloads as structural
+data, so this operation only changes the profile parameter and preserves the
+tree exactly.  It is not a semantic interpretation between two profiles. -/
+def PolyTerm.retargetProfile {sourceProfile targetProfile : PolyProfile}
+    {dimension : CellDim} :
+    PolyTerm sourceProfile dimension → PolyTerm targetProfile dimension
+  | .atom cellId payload => .atom cellId payload
+  | .cell ruleId source target =>
+      .cell ruleId source.retargetProfile target.retargetProfile
+  | .compV first second =>
+      .compV first.retargetProfile second.retargetProfile
+  | .compH left right =>
+      .compH left.retargetProfile right.retargetProfile
+  | .identity base =>
+      .identity base.retargetProfile
+
+/-- Retargeting within the same profile is the identity on structural cells. -/
+theorem PolyTerm.retargetProfile_self {profile : PolyProfile}
+    {dimension : CellDim}
+    (term : PolyTerm profile dimension) :
+    term.retargetProfile (targetProfile := profile) = term := by
+  induction term with
+  | atom _ _ => rfl
+  | cell _ _ _ sourceInduction targetInduction =>
+      dsimp [PolyTerm.retargetProfile]
+      rw [sourceInduction, targetInduction]
+  | compV _ _ firstInduction secondInduction =>
+      dsimp [PolyTerm.retargetProfile]
+      rw [firstInduction, secondInduction]
+  | compH _ _ leftInduction rightInduction =>
+      dsimp [PolyTerm.retargetProfile]
+      rw [leftInduction, rightInduction]
+  | identity _ baseInduction =>
+      dsimp [PolyTerm.retargetProfile]
+      rw [baseInduction]
+
+/-- Structural profile retargeting composes exactly. -/
+theorem PolyTerm.retargetProfile_comp
+    {sourceProfile middleProfile targetProfile : PolyProfile}
+    {dimension : CellDim}
+    (term : PolyTerm sourceProfile dimension) :
+    (term.retargetProfile (targetProfile := middleProfile)).retargetProfile
+      (targetProfile := targetProfile) =
+    term.retargetProfile (targetProfile := targetProfile) := by
+  induction term with
+  | atom _ _ => rfl
+  | cell _ _ _ sourceInduction targetInduction =>
+      dsimp [PolyTerm.retargetProfile]
+      rw [sourceInduction, targetInduction]
+  | compV _ _ firstInduction secondInduction =>
+      dsimp [PolyTerm.retargetProfile]
+      rw [firstInduction, secondInduction]
+  | compH _ _ leftInduction rightInduction =>
+      dsimp [PolyTerm.retargetProfile]
+      rw [leftInduction, rightInduction]
+  | identity _ baseInduction =>
+      dsimp [PolyTerm.retargetProfile]
+      rw [baseInduction]
+
+/-- Retargeting to a profile and then back to the source profile is identity. -/
+theorem PolyTerm.retargetProfile_roundtrip
+    {sourceProfile targetProfile : PolyProfile}
+    {dimension : CellDim}
+    (term : PolyTerm sourceProfile dimension) :
+    (term.retargetProfile (targetProfile := targetProfile)).retargetProfile
+      (targetProfile := sourceProfile) = term := by
+  rw [PolyTerm.retargetProfile_comp, PolyTerm.retargetProfile_self]
+
 /-- Every FX term is a PolyTerm at dim 0. -/
 abbrev FXCell (profile : PolyProfile) := PolyTerm profile
 
