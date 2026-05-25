@@ -245,6 +245,26 @@ def decodeApplicationPayload? {profile : PolyProfile} (scope payload : Nat) :
       (RawChildDescriptors.application
         (NegativeProbes.seedTermAtom profile)
         (NegativeProbes.outOfScopeVariableRawCell profile))
+  else if payload = NegativeProbes.applicationModeAsFunctionPayload then
+    Except.ok
+      (RawChildDescriptors.application
+        (NegativeProbes.seedModeAtom profile)
+        (NegativeProbes.seedTermAtom profile))
+  else if payload = NegativeProbes.applicationContextAsFunctionPayload then
+    Except.ok
+      (RawChildDescriptors.application
+        (NegativeProbes.seedContextAtom profile)
+        (NegativeProbes.seedTermAtom profile))
+  else if payload = NegativeProbes.applicationModeAsArgumentPayload then
+    Except.ok
+      (RawChildDescriptors.application
+        (NegativeProbes.seedTermAtom profile)
+        (NegativeProbes.seedModeAtom profile))
+  else if payload = NegativeProbes.applicationContextAsArgumentPayload then
+    Except.ok
+      (RawChildDescriptors.application
+        (NegativeProbes.seedTermAtom profile)
+        (NegativeProbes.seedContextAtom profile))
   else if payload = NegativeProbes.wrongAritySentinel then
     Except.error .wrongArity
   else if payload = NegativeProbes.wrongChildShapeSentinel then
@@ -979,6 +999,42 @@ theorem decodeApplicationPayload?_outOfScopeArgument
           (NegativeProbes.seedTermAtom profile)
           (NegativeProbes.outOfScopeVariableRawCell profile)) := rfl
 
+theorem decodeApplicationPayload?_modeAsFunction
+    {profile : PolyProfile} {scope : Nat} :
+    decodeApplicationPayload? (profile := profile) scope
+      NegativeProbes.applicationModeAsFunctionPayload =
+      Except.ok
+        (RawChildDescriptors.application
+          (NegativeProbes.seedModeAtom profile)
+          (NegativeProbes.seedTermAtom profile)) := rfl
+
+theorem decodeApplicationPayload?_contextAsFunction
+    {profile : PolyProfile} {scope : Nat} :
+    decodeApplicationPayload? (profile := profile) scope
+      NegativeProbes.applicationContextAsFunctionPayload =
+      Except.ok
+        (RawChildDescriptors.application
+          (NegativeProbes.seedContextAtom profile)
+          (NegativeProbes.seedTermAtom profile)) := rfl
+
+theorem decodeApplicationPayload?_modeAsArgument
+    {profile : PolyProfile} {scope : Nat} :
+    decodeApplicationPayload? (profile := profile) scope
+      NegativeProbes.applicationModeAsArgumentPayload =
+      Except.ok
+        (RawChildDescriptors.application
+          (NegativeProbes.seedTermAtom profile)
+          (NegativeProbes.seedModeAtom profile)) := rfl
+
+theorem decodeApplicationPayload?_contextAsArgument
+    {profile : PolyProfile} {scope : Nat} :
+    decodeApplicationPayload? (profile := profile) scope
+      NegativeProbes.applicationContextAsArgumentPayload =
+      Except.ok
+        (RawChildDescriptors.application
+          (NegativeProbes.seedTermAtom profile)
+          (NegativeProbes.seedContextAtom profile)) := rfl
+
 theorem certifyApplicationVarZeroVarOneChildren?_scope_four_accepts
     {profile : PolyProfile} :
     (match
@@ -1370,6 +1426,38 @@ theorem applicationOutOfScopeArgumentProbe_rejects {profile : PolyProfile} :
       Except.error
         (RawInferNegativeProbe.expectedRejection
           (NegativeProbes.applicationOutOfScopeArgumentProbe profile)) :=
+  rfl
+
+theorem applicationModeAsFunctionProbe_rejects {profile : PolyProfile} :
+    screenRawCell0? (profile := profile)
+      (NegativeProbes.applicationModeAsFunctionProbe profile).scope
+      (NegativeProbes.applicationModeAsFunctionRawCell profile) =
+      Except.error
+        (NegativeProbes.applicationModeAsFunctionProbe profile).expectedRejection :=
+  rfl
+
+theorem applicationContextAsFunctionProbe_rejects {profile : PolyProfile} :
+    screenRawCell0? (profile := profile)
+      (NegativeProbes.applicationContextAsFunctionProbe profile).scope
+      (NegativeProbes.applicationContextAsFunctionRawCell profile) =
+      Except.error
+        (NegativeProbes.applicationContextAsFunctionProbe profile).expectedRejection :=
+  rfl
+
+theorem applicationModeAsArgumentProbe_rejects {profile : PolyProfile} :
+    screenRawCell0? (profile := profile)
+      (NegativeProbes.applicationModeAsArgumentProbe profile).scope
+      (NegativeProbes.applicationModeAsArgumentRawCell profile) =
+      Except.error
+        (NegativeProbes.applicationModeAsArgumentProbe profile).expectedRejection :=
+  rfl
+
+theorem applicationContextAsArgumentProbe_rejects {profile : PolyProfile} :
+    screenRawCell0? (profile := profile)
+      (NegativeProbes.applicationContextAsArgumentProbe profile).scope
+      (NegativeProbes.applicationContextAsArgumentRawCell profile) =
+      Except.error
+        (NegativeProbes.applicationContextAsArgumentProbe profile).expectedRejection :=
   rfl
 
 theorem badBoundaryEndpointProbe_rejects {profile : PolyProfile} :

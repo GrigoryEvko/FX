@@ -150,6 +150,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationTypeAsFunctionPayload
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationTypeAsArgumentPayload
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationOutOfScopeArgumentPayload
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationModeAsFunctionPayload
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationContextAsFunctionPayload
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationModeAsArgumentPayload
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationContextAsArgumentPayload
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.seedTermAtom
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.alternateTermAtom
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.thirdTermAtom
@@ -168,6 +172,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationTypeAsFunctionRawCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationTypeAsArgumentRawCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationOutOfScopeArgumentRawCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationModeAsFunctionRawCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationContextAsFunctionRawCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationModeAsArgumentRawCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationContextAsArgumentRawCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.badBoundaryEndpointRawCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.badBoundarySortRawCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.badBoundaryTypeSortRawCell
@@ -196,6 +204,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationTypeAsFunctionProbe
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationTypeAsArgumentProbe
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationOutOfScopeArgumentProbe
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationModeAsFunctionProbe
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationContextAsFunctionProbe
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationModeAsArgumentProbe
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationContextAsArgumentProbe
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.badBoundaryEndpointProbe
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.badBoundarySortProbe
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.badBoundaryTypeSortProbe
@@ -353,6 +365,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.decodeApplicationPayload?_typeAsFunction
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.decodeApplicationPayload?_typeAsArgument
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.decodeApplicationPayload?_outOfScopeArgument
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.decodeApplicationPayload?_modeAsFunction
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.decodeApplicationPayload?_contextAsFunction
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.decodeApplicationPayload?_modeAsArgument
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.decodeApplicationPayload?_contextAsArgument
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifyApplicationVarZeroVarOneChildren?_scope_four_accepts
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawChildDescriptorsWith?_applicationVarZeroVarOne
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawChildDescriptorsWith?_applicationTypeAsFunction_rejects
@@ -423,6 +439,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.applicationTypeAsFunctionProbe_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.applicationTypeAsArgumentProbe_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.applicationOutOfScopeArgumentProbe_rejects
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.applicationModeAsFunctionProbe_rejects
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.applicationContextAsFunctionProbe_rejects
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.applicationModeAsArgumentProbe_rejects
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.applicationContextAsArgumentProbe_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.badBoundaryEndpointProbe_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.badBoundarySortProbe_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.badBoundaryTypeSortProbe_rejects

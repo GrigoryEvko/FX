@@ -75,6 +75,18 @@ def applicationTypeAsArgumentPayload : Nat := 9102
 /-- Application payload whose decoded argument is outside the parent scope. -/
 def applicationOutOfScopeArgumentPayload : Nat := 9103
 
+/-- Application payload whose decoded function child is a mode cell. -/
+def applicationModeAsFunctionPayload : Nat := 9104
+
+/-- Application payload whose decoded function child is a context cell. -/
+def applicationContextAsFunctionPayload : Nat := 9105
+
+/-- Application payload whose decoded argument child is a mode cell. -/
+def applicationModeAsArgumentPayload : Nat := 9106
+
+/-- Application payload whose decoded argument child is a context cell. -/
+def applicationContextAsArgumentPayload : Nat := 9107
+
 /-- A small accepted-looking term atom used only to build malformed cells. -/
 def seedTermAtom (profile : PolyProfile) : PolyTerm profile 0 :=
   .atom variableGeneratorSpec.cellId 0
@@ -150,6 +162,26 @@ def applicationTypeAsArgumentRawCell (profile : PolyProfile) :
 def applicationOutOfScopeArgumentRawCell (profile : PolyProfile) :
     PolyTerm profile 0 :=
   .atom applicationGeneratorSpec.cellId applicationOutOfScopeArgumentPayload
+
+/-- Application payload whose decoded function child has mode sort. -/
+def applicationModeAsFunctionRawCell (profile : PolyProfile) :
+    PolyTerm profile 0 :=
+  .atom applicationGeneratorSpec.cellId applicationModeAsFunctionPayload
+
+/-- Application payload whose decoded function child has context sort. -/
+def applicationContextAsFunctionRawCell (profile : PolyProfile) :
+    PolyTerm profile 0 :=
+  .atom applicationGeneratorSpec.cellId applicationContextAsFunctionPayload
+
+/-- Application payload whose decoded argument child has mode sort. -/
+def applicationModeAsArgumentRawCell (profile : PolyProfile) :
+    PolyTerm profile 0 :=
+  .atom applicationGeneratorSpec.cellId applicationModeAsArgumentPayload
+
+/-- Application payload whose decoded argument child has context sort. -/
+def applicationContextAsArgumentRawCell (profile : PolyProfile) :
+    PolyTerm profile 0 :=
+  .atom applicationGeneratorSpec.cellId applicationContextAsArgumentPayload
 
 /-- Known rule over an endpoint whose generator id is not supported. -/
 def badBoundaryEndpointRawCell (profile : PolyProfile) : PolyTerm profile 1 :=
@@ -321,6 +353,38 @@ def applicationOutOfScopeArgumentProbe (profile : PolyProfile) :
   rawCell := applicationOutOfScopeArgumentRawCell profile
   expectedRejection := .wrongChildShape
 
+/-- Probe for an application payload with a mode function child. -/
+def applicationModeAsFunctionProbe (profile : PolyProfile) :
+    RawInferNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 0
+  rawCell := applicationModeAsFunctionRawCell profile
+  expectedRejection := .wrongChildShape
+
+/-- Probe for an application payload with a context function child. -/
+def applicationContextAsFunctionProbe (profile : PolyProfile) :
+    RawInferNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 0
+  rawCell := applicationContextAsFunctionRawCell profile
+  expectedRejection := .wrongChildShape
+
+/-- Probe for an application payload with a mode argument child. -/
+def applicationModeAsArgumentProbe (profile : PolyProfile) :
+    RawInferNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 0
+  rawCell := applicationModeAsArgumentRawCell profile
+  expectedRejection := .wrongChildShape
+
+/-- Probe for an application payload with a context argument child. -/
+def applicationContextAsArgumentProbe (profile : PolyProfile) :
+    RawInferNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 0
+  rawCell := applicationContextAsArgumentRawCell profile
+  expectedRejection := .wrongChildShape
+
 /-- Probe for `badBoundaryEndpoint`. -/
 def badBoundaryEndpointProbe (profile : PolyProfile) :
     RawInferNegativeProbe profile where
@@ -471,6 +535,10 @@ def inferNegativeProbes (profile : PolyProfile) :
     applicationTypeAsFunctionProbe profile,
     applicationTypeAsArgumentProbe profile,
     applicationOutOfScopeArgumentProbe profile,
+    applicationModeAsFunctionProbe profile,
+    applicationContextAsFunctionProbe profile,
+    applicationModeAsArgumentProbe profile,
+    applicationContextAsArgumentProbe profile,
     badBoundaryEndpointProbe profile,
     badBoundarySortProbe profile,
     badBoundaryTypeSortProbe profile,
@@ -494,7 +562,7 @@ def expectedShapeNegativeProbes (profile : PolyProfile) :
 
 /-- Inference probe count. -/
 theorem inferNegativeProbes_length (profile : PolyProfile) :
-    (inferNegativeProbes profile).length = 17 := rfl
+    (inferNegativeProbes profile).length = 21 := rfl
 
 /-- Expected-shape probe count. -/
 theorem expectedShapeNegativeProbes_length (profile : PolyProfile) :
