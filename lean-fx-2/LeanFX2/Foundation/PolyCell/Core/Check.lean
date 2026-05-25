@@ -1210,6 +1210,55 @@ def certifiedResultSort? {profile : PolyProfile} {scope : Nat} :
   | Except.ok certifiedResult => some certifiedResult.cellSort
   | Except.error _ => none
 
+/-- Does an ingress computation accept at this dimension and sort?
+
+This is the lightweight accepted-ingress coverage predicate.  Raw-code
+preservation and certified-cell erasure are tracked by separate audited
+generic theorem heads to avoid duplicating that normalization here. -/
+def hasCertifiedResultShape {profile : PolyProfile} {scope : Nat}
+    {dimension : CellDim} (expectedSort : CellSort) :
+    Except CellCheckRejection (CertifiedRawCellResult profile scope) → Bool
+  | Except.ok certifiedResult =>
+      hasSameNat certifiedResult.cellDimension dimension &&
+      hasSameNat (CellSort.toCode certifiedResult.cellSort)
+        (CellSort.toCode expectedSort)
+  | Except.error _ => false
+
+/-- Accepted dim-0 ingress coverage for one raw fixture. -/
+def hasAcceptedDimZeroIngressCoverage {profile : PolyProfile}
+    (expectedSort : CellSort) (expectedRawCell : PolyTerm profile 0) : Bool :=
+  hasCertifiedResultShape (dimension := 0) expectedSort
+    (inferRawCell? NegativeProbes.defaultInferScope expectedRawCell)
+
+/-- Current dim-0 accepted ingress fixtures: seed term/type/context/mode atoms
+and the first certified application payload. -/
+def haveAcceptedDimZeroIngressCoverage (profile : PolyProfile) : Bool :=
+  hasAcceptedDimZeroIngressCoverage .term
+    (NegativeProbes.seedTermAtom profile) &&
+  hasAcceptedDimZeroIngressCoverage .type
+    (NegativeProbes.seedTypeAtom profile) &&
+  hasAcceptedDimZeroIngressCoverage .context
+    (NegativeProbes.seedContextAtom profile) &&
+  hasAcceptedDimZeroIngressCoverage .mode
+    (NegativeProbes.seedModeAtom profile) &&
+  hasAcceptedDimZeroIngressCoverage .term
+    (NegativeProbes.applicationVarZeroVarOneRawCell profile)
+
+/-- Current positive-dimensional accepted ingress fixture: the direct
+`termStep(var 0, var 1)` certification path. -/
+def hasAcceptedTermStepIngressCoverage (profile : PolyProfile) : Bool :=
+  hasCertifiedResultShape (dimension := 1) .term
+    (inferTermStepVarZeroVarOne? (profile := profile)
+      NegativeProbes.defaultInferScope)
+
+/-- Every current accepted ingress computation has shape coverage.
+
+This is only a coverage matrix for the current finite accepted domain; it is
+not a raw dispatcher and does not certify any additional raw shape. -/
+def haveCurrentAcceptedIngressCoverage (profile : PolyProfile) : Bool :=
+  haveAcceptedDimZeroIngressCoverage profile &&
+  hasAcceptedTermStepIngressCoverage profile
+
 /-- Certified package for the first seed variable fixture. -/
 def certifiedSeedTermPackage {profile : PolyProfile} :
     CertifiedRawCell profile NegativeProbes.defaultInferScope
@@ -2015,6 +2064,83 @@ theorem inferTermStepVarZeroVarOne?_sort
   change
     certifiedResultSort?
       (inferTermStepVarZeroVarOne? (profile := profile) 4) = some .term
+  rfl
+
+/-- Accepted-ingress coverage for the seed term atom. -/
+theorem acceptedSeedTermIngress_hasCoverage {profile : PolyProfile} :
+    hasAcceptedDimZeroIngressCoverage .term
+      (NegativeProbes.seedTermAtom profile) = true := by
+  change
+    hasCertifiedResultShape (dimension := 0) .term
+      (inferRawAtom? (profile := profile) 4 0 0) = true
+  rfl
+
+/-- Accepted-ingress coverage for the seed type atom. -/
+theorem acceptedSeedTypeIngress_hasCoverage {profile : PolyProfile} :
+    hasAcceptedDimZeroIngressCoverage .type
+      (NegativeProbes.seedTypeAtom profile) = true := by
+  change
+    hasCertifiedResultShape (dimension := 0) .type
+      (inferRawAtom? (profile := profile) 4 78 0) = true
+  rfl
+
+/-- Accepted-ingress coverage for the seed context atom. -/
+theorem acceptedSeedContextIngress_hasCoverage {profile : PolyProfile} :
+    hasAcceptedDimZeroIngressCoverage .context
+      (NegativeProbes.seedContextAtom profile) = true := by
+  change
+    hasCertifiedResultShape (dimension := 0) .context
+      (inferRawAtom? (profile := profile) 4 103 0) = true
+  rfl
+
+/-- Accepted-ingress coverage for the seed mode atom. -/
+theorem acceptedSeedModeIngress_hasCoverage {profile : PolyProfile} :
+    hasAcceptedDimZeroIngressCoverage .mode
+      (NegativeProbes.seedModeAtom profile) = true := by
+  change
+    hasCertifiedResultShape (dimension := 0) .mode
+      (inferRawAtom? (profile := profile) 4 105 0) = true
+  rfl
+
+/-- Accepted-ingress coverage for the first certified application payload. -/
+theorem acceptedApplicationVarZeroVarOneIngress_hasCoverage
+    {profile : PolyProfile} :
+    hasAcceptedDimZeroIngressCoverage .term
+      (NegativeProbes.applicationVarZeroVarOneRawCell profile) = true := by
+  change
+    hasCertifiedResultShape (dimension := 0) .term
+      (inferRawAtom? (profile := profile) 4 3
+        applicationVarZeroVarOnePayload) = true
+  rfl
+
+/-- Accepted-ingress coverage headline for the current dim-0 certified
+domain. -/
+theorem acceptedDimZeroIngresses_haveCoverage (profile : PolyProfile) :
+    haveAcceptedDimZeroIngressCoverage profile = true := by
+  dsimp [haveAcceptedDimZeroIngressCoverage]
+  rw [acceptedSeedTermIngress_hasCoverage,
+    acceptedSeedTypeIngress_hasCoverage,
+    acceptedSeedContextIngress_hasCoverage,
+    acceptedSeedModeIngress_hasCoverage,
+    acceptedApplicationVarZeroVarOneIngress_hasCoverage]
+  rfl
+
+/-- Accepted-ingress coverage headline for the current direct dim-1
+term-step path. -/
+theorem acceptedTermStepIngress_hasCoverage (profile : PolyProfile) :
+    hasAcceptedTermStepIngressCoverage profile = true := by
+  change
+    hasCertifiedResultShape (dimension := 1) .term
+      (inferTermStepVarZeroVarOne? (profile := profile) 4) = true
+  rfl
+
+/-- Accepted-ingress coverage headline for every currently certified raw
+ingress computation. -/
+theorem currentAcceptedIngresses_haveCoverage (profile : PolyProfile) :
+    haveCurrentAcceptedIngressCoverage profile = true := by
+  dsimp [haveCurrentAcceptedIngressCoverage]
+  rw [acceptedDimZeroIngresses_haveCoverage,
+    acceptedTermStepIngress_hasCoverage]
   rfl
 
 theorem inferTermStepVarZeroVarOne?_scope_one_rejects

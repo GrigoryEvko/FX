@@ -452,6 +452,11 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.haveAllCellCheckRejectionReasonsNegativeProbeCoverage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.checkRawCellAs?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedResultSort?
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.hasCertifiedResultShape
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.hasAcceptedDimZeroIngressCoverage
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.haveAcceptedDimZeroIngressCoverage
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.hasAcceptedTermStepIngressCoverage
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.haveCurrentAcceptedIngressCoverage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedSeedTermPackage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedSeedTypePackage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedSeedContextPackage
@@ -564,6 +569,14 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawCell?_applicationTypeAsArgument_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawCell?_applicationOutOfScopeArgument_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferTermStepVarZeroVarOne?_sort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.acceptedSeedTermIngress_hasCoverage
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.acceptedSeedTypeIngress_hasCoverage
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.acceptedSeedContextIngress_hasCoverage
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.acceptedSeedModeIngress_hasCoverage
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.acceptedApplicationVarZeroVarOneIngress_hasCoverage
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.acceptedDimZeroIngresses_haveCoverage
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.acceptedTermStepIngress_hasCoverage
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.currentAcceptedIngresses_haveCoverage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferTermStepVarZeroVarOne?_scope_one_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certificationRejectionAfterScreen?_unsupportedTermStep_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certificationRejectionAfterScreen?_unsupportedReversedTermStep_rejects
