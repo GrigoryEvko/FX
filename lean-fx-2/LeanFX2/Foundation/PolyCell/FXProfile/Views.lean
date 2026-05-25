@@ -1333,6 +1333,101 @@ private theorem nat_add_sub_cancel_of_le_structural {offset value : Nat}
           rw [Nat.succ_add]
           rw [offsetInduction (Nat.le_of_succ_le_succ hasLowerBound)]
 
+/-- Proof-carrying classification of current dim-0 generator ids.
+
+This is only the provisional Nat-coded profile partition.  It does not decode
+payloads and does not claim a legacy syntax bridge. -/
+inductive FXDimZeroCellIdClass where
+  /-- The id names one of the current term constructors. -/
+  | termConstructor (constructorIndex : Fin termGeneratorCount)
+  /-- The id names one of the current type constructors. -/
+  | typeConstructor (constructorIndex : Fin typeGeneratorCount)
+  /-- The id is outside the current term/type generator block. -/
+  | outsideCurrentGeneratorRange
+      (cellId : CellId) (hasOutsideRange : totalGeneratorCount ≤ cellId)
+
+/-- Recover the global cell id represented by a dim-0 id classification. -/
+def FXDimZeroCellIdClass.cellId :
+    FXDimZeroCellIdClass → CellId
+  | .termConstructor constructorIndex => constructorIndex.val
+  | .typeConstructor constructorIndex =>
+      PolyTerm.firstTypeCellId + constructorIndex.val
+  | .outsideCurrentGeneratorRange cellId _ => cellId
+
+/-- Does the classification identify a current term constructor? -/
+def FXDimZeroCellIdClass.isTermConstructor :
+    FXDimZeroCellIdClass → Bool
+  | .termConstructor _ => true
+  | .typeConstructor _ => false
+  | .outsideCurrentGeneratorRange _ _ => false
+
+/-- Does the classification identify a current type constructor? -/
+def FXDimZeroCellIdClass.isTypeConstructor :
+    FXDimZeroCellIdClass → Bool
+  | .termConstructor _ => false
+  | .typeConstructor _ => true
+  | .outsideCurrentGeneratorRange _ _ => false
+
+/-- Is the id outside the current term/type generator block? -/
+def FXDimZeroCellIdClass.isOutsideCurrentGeneratorRange :
+    FXDimZeroCellIdClass → Bool
+  | .termConstructor _ => false
+  | .typeConstructor _ => false
+  | .outsideCurrentGeneratorRange _ _ => true
+
+/-- Classify a raw dim-0 cell id against the current term/type generator block. -/
+def classifyDimZeroCellId (cellId : CellId) : FXDimZeroCellIdClass :=
+  if hasTermRange : cellId < termGeneratorCount then
+    .termConstructor ⟨cellId, hasTermRange⟩
+  else if hasCurrentRange : cellId < totalGeneratorCount then
+    .typeConstructor ⟨cellId - PolyTerm.firstTypeCellId, by
+      have hasLowerBound : PolyTerm.firstTypeCellId ≤ cellId := by
+        change termGeneratorCount ≤ cellId
+        exact Nat.le_of_not_gt hasTermRange
+      have hasUpperBound :
+          cellId < PolyTerm.firstTypeCellId + PolyTerm.typeCellIdCount := by
+        change cellId < totalGeneratorCount at hasCurrentRange
+        exact hasCurrentRange
+      exact nat_sub_lt_left_of_lt_add_structural
+        hasLowerBound hasUpperBound⟩
+  else
+    .outsideCurrentGeneratorRange cellId
+      (Nat.le_of_not_gt hasCurrentRange)
+
+theorem FXDimZeroCellIdClass.cellId_termConstructor
+    (constructorIndex : Fin termGeneratorCount) :
+    (FXDimZeroCellIdClass.termConstructor constructorIndex).cellId =
+      constructorIndex.val := rfl
+
+theorem FXDimZeroCellIdClass.cellId_typeConstructor
+    (constructorIndex : Fin typeGeneratorCount) :
+    (FXDimZeroCellIdClass.typeConstructor constructorIndex).cellId =
+      PolyTerm.firstTypeCellId + constructorIndex.val := rfl
+
+theorem FXDimZeroCellIdClass.cellId_outsideCurrentGeneratorRange
+    (cellId : CellId) (hasOutsideRange : totalGeneratorCount ≤ cellId) :
+    (FXDimZeroCellIdClass.outsideCurrentGeneratorRange
+      cellId hasOutsideRange).cellId = cellId := rfl
+
+theorem cellId_classifyDimZeroCellId (cellId : CellId) :
+    (classifyDimZeroCellId cellId).cellId = cellId := by
+  unfold classifyDimZeroCellId
+  by_cases hasTermRange : cellId < termGeneratorCount
+  · rw [dif_pos hasTermRange]
+    rfl
+  · rw [dif_neg hasTermRange]
+    by_cases hasCurrentRange : cellId < totalGeneratorCount
+    · rw [dif_pos hasCurrentRange]
+      have hasLowerBound : PolyTerm.firstTypeCellId ≤ cellId := by
+        change termGeneratorCount ≤ cellId
+        exact Nat.le_of_not_gt hasTermRange
+      change
+        PolyTerm.firstTypeCellId +
+          (cellId - PolyTerm.firstTypeCellId) = cellId
+      rw [nat_add_sub_cancel_of_le_structural hasLowerBound]
+    · rw [dif_neg hasCurrentRange]
+      rfl
+
 /-- The checked local constructor index of an FX term atom. -/
 def FXTerm.constructorIndex (term : FXTerm) : Fin termGeneratorCount :=
   match term with
