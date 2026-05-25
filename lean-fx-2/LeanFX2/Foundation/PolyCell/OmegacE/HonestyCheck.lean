@@ -2,15 +2,19 @@ import LeanFX2.Foundation.PolyCell.OmegacE.OmegacEAt
 /-!
 # Honesty Check HC.5: ωcE cell count verification
 
-Verify our OmegacECell inductive matches HLOR Construction 1.22:
+Verify the current OmegacECell generator scaffold:
 - dim 0: 2 cells (sourceVertex, targetVertex)
 - dim 1: 2 cells (quasiIso, quasiInverse)
 - dim 2: 2 cells (alphaUnit, betaCounit)
 - dim k+3: 2 cells (higherCoherence _ 0, higherCoherence _ 1)
 - countAtDim = 2 for all dimensions
+- atDeclaredIndex selects through the declared per-dimension count
+- declaredIndexOf reads generators back into the declared index type
+- slotValueOf and declaredIndexValueOf expose proof-free Nat indices
+- slotKindOf/isFirstSlot/isSecondSlot classify the two declared slots
 - totalUpTo 0 = 2, totalUpTo 1 = 4, totalUpTo 2 = 6
 
-If any of these fail, our encoding doesn't match the paper.
+This is a scaffold check, not a proof of the full HLOR construction.
 -/
 
 namespace LeanFX2.Foundation.PolyCell.OmegacE
@@ -22,6 +26,65 @@ example : OmegacECell.countAtDim 2 = 2 := rfl
 example : OmegacECell.countAtDim 3 = 2 := rfl
 example : OmegacECell.countAtDim 4 = 2 := rfl
 example : OmegacECell.countAtDim 100 = 2 := rfl
+
+-- Verify the explicit two-generator enumeration
+example : OmegacECell.firstAtDim 0 = OmegacECell.sourceVertex := rfl
+example : OmegacECell.secondAtDim 0 = OmegacECell.targetVertex := rfl
+example : OmegacECell.firstAtDim 1 = OmegacECell.quasiIso := rfl
+example : OmegacECell.secondAtDim 1 = OmegacECell.quasiInverse := rfl
+example : OmegacECell.firstAtDim 2 = OmegacECell.alphaUnit := rfl
+example : OmegacECell.secondAtDim 2 = OmegacECell.betaCounit := rfl
+example : OmegacECell.firstAtDim 3 =
+    OmegacECell.higherCoherence 0 ⟨0, by decide⟩ := rfl
+example : OmegacECell.secondAtDim 3 =
+    OmegacECell.higherCoherence 0 ⟨1, by decide⟩ := rfl
+example : OmegacECell.atSlot 3 ⟨0, by decide⟩ =
+    OmegacECell.firstAtDim 3 := rfl
+example : OmegacECell.atSlot 3 ⟨1, by decide⟩ =
+    OmegacECell.secondAtDim 3 := rfl
+example : OmegacECell.atDeclaredIndex 3 OmegacECell.slotZero =
+    OmegacECell.firstAtDim 3 := rfl
+example : OmegacECell.atDeclaredIndex 3 OmegacECell.slotOne =
+    OmegacECell.secondAtDim 3 := rfl
+example : OmegacECell.declaredIndexOf (OmegacECell.firstAtDim 3) =
+    OmegacECell.slotZero := rfl
+example : OmegacECell.declaredIndexOf (OmegacECell.secondAtDim 3) =
+    OmegacECell.slotOne := rfl
+example : OmegacECell.declaredIndexOf
+      (OmegacECell.atDeclaredIndex 3 OmegacECell.slotZero) =
+    OmegacECell.slotZero := rfl
+example : OmegacECell.declaredIndexOf
+      (OmegacECell.atDeclaredIndex 3 OmegacECell.slotOne) =
+    OmegacECell.slotOne := rfl
+example : OmegacECell.slotValueOf (OmegacECell.firstAtDim 3) = 0 := rfl
+example : OmegacECell.slotValueOf (OmegacECell.secondAtDim 3) = 1 := rfl
+example : OmegacECell.declaredIndexValueOf
+      (OmegacECell.atDeclaredIndex 3 OmegacECell.slotZero) = 0 := rfl
+example : OmegacECell.declaredIndexValueOf
+      (OmegacECell.atDeclaredIndex 3 OmegacECell.slotOne) = 1 := rfl
+example : OmegacECell.slotKindOf (OmegacECell.firstAtDim 3) =
+    OmegacECell.SlotKind.first := rfl
+example : OmegacECell.slotKindOf (OmegacECell.secondAtDim 3) =
+    OmegacECell.SlotKind.second := rfl
+example : OmegacECell.slotKindOf
+      (OmegacECell.atDeclaredIndex 3 OmegacECell.slotZero) =
+    OmegacECell.SlotKind.first := rfl
+example : OmegacECell.slotKindOf
+      (OmegacECell.atDeclaredIndex 3 OmegacECell.slotOne) =
+    OmegacECell.SlotKind.second := rfl
+example : OmegacECell.isFirstSlot (OmegacECell.firstAtDim 3) = true := rfl
+example : OmegacECell.isFirstSlot (OmegacECell.secondAtDim 3) = false := rfl
+example : OmegacECell.isSecondSlot (OmegacECell.firstAtDim 3) = false := rfl
+example : OmegacECell.isSecondSlot (OmegacECell.secondAtDim 3) = true := rfl
+example : OmegacECell.slotValueOf (OmegacECell.firstAtDim 3) <
+    OmegacECell.countAtDim 3 := by
+  exact OmegacECell.slotValueOf_lt_countAtDim (OmegacECell.firstAtDim 3)
+example : OmegacECell.declaredIndexValueOf (OmegacECell.secondAtDim 3) <
+    OmegacECell.countAtDim 3 := by
+  exact OmegacECell.declaredIndexValueOf_lt_countAtDim
+    (OmegacECell.secondAtDim 3)
+example : (OmegacECell.cellsAtDim 3).length =
+    OmegacECell.countAtDim 3 := rfl
 
 -- Verify totalUpTo cumulative counts
 example : OmegacECell.totalUpTo 0 = 2 := rfl
