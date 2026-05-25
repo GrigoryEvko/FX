@@ -144,6 +144,65 @@ def FXTerm.toCell (term : FXTerm) : FXCellAt 0 := term.val
 def FXType.toCell (typeCell : FXType) : FXCellAt 0 := typeCell.val
 def FXStep.toCell (step : FXStep) : FXCellAt 1 := step.val
 
+theorem FXTerm.toCell_isTermCell (term : FXTerm) :
+    term.toCell.isTermCell = true := by
+  exact term.property
+
+theorem FXType.toCell_isTypeCell (typeCell : FXType) :
+    typeCell.toCell.isTypeCell = true := by
+  exact typeCell.property
+
+theorem FXTerm.toCell_isTypeCell_false (term : FXTerm) :
+    term.toCell.isTypeCell = false := by
+  cases term with
+  | mk cell hRange =>
+      cases cell with
+      | atom cellId payload =>
+          change
+            (decide (PolyTerm.firstTypeCellId ≤ cellId) &&
+              decide (cellId < PolyTerm.typeCellIdLimit)) = false
+          have hasTermRange : cellId < PolyTerm.firstTypeCellId := by
+            change cellId < PolyTerm.termCellIdLimit
+            exact of_decide_eq_true hRange
+          cases hasLowerBool :
+              decide (PolyTerm.firstTypeCellId ≤ cellId) with
+          | false =>
+              rfl
+          | true =>
+              have hasLowerBound : PolyTerm.firstTypeCellId ≤ cellId :=
+                of_decide_eq_true hasLowerBool
+              exact False.elim
+                (Nat.not_lt_of_ge hasLowerBound hasTermRange)
+
+theorem FXType.toCell_isTermCell_false (typeCell : FXType) :
+    typeCell.toCell.isTermCell = false := by
+  cases typeCell with
+  | mk cell hRange =>
+      cases cell with
+      | atom cellId payload =>
+          change decide (cellId < PolyTerm.termCellIdLimit) = false
+          change
+            (decide (PolyTerm.firstTypeCellId ≤ cellId) &&
+              decide (cellId < PolyTerm.typeCellIdLimit)) = true at hRange
+          cases hasTermBool : decide (cellId < PolyTerm.termCellIdLimit) with
+          | false =>
+              rfl
+          | true =>
+              have hasTermRange : cellId < PolyTerm.firstTypeCellId := by
+                change cellId < PolyTerm.termCellIdLimit
+                exact of_decide_eq_true hasTermBool
+              cases hasLowerBool :
+                  decide (PolyTerm.firstTypeCellId ≤ cellId) with
+              | false =>
+                  rw [hasLowerBool] at hRange
+                  cases hRange
+              | true =>
+                  have hasLowerBound :
+                      PolyTerm.firstTypeCellId ≤ cellId :=
+                    of_decide_eq_true hasLowerBool
+                  exact False.elim
+                    (Nat.not_lt_of_ge hasLowerBound hasTermRange)
+
 /-- Known source endpoint of a provisional FX step, when the structural
 boundary projection can compute it. -/
 def FXStep.source? (step : FXStep) : Option (FXCellAt 0) :=
