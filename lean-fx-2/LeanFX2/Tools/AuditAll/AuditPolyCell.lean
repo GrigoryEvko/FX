@@ -316,8 +316,12 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.toCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.toCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXStep.toCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXStep.ofCell?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.toCell_isTermCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.toCell_isTypeCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXStep.toCell_isStepCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXStep.toCell?_ofCell?_toCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXStep.ofCell?_identity
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.toCell_isTypeCell_false
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.toCell_isTermCell_false
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXStep.source?

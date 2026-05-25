@@ -144,6 +144,15 @@ def FXTerm.toCell (term : FXTerm) : FXCellAt 0 := term.val
 def FXType.toCell (typeCell : FXType) : FXCellAt 0 := typeCell.val
 def FXStep.toCell (step : FXStep) : FXCellAt 1 := step.val
 
+/-- Try to recover the provisional FX-step view from a dim-1 cell.
+This only checks the current non-identity step recognizer.  It does not verify
+operational rule validity or thinness. -/
+def FXStep.ofCell? (cell : FXCellAt 1) : Option FXStep :=
+  if hasStepCell : cell.isStepCell = true then
+    some ⟨cell, hasStepCell⟩
+  else
+    none
+
 theorem FXTerm.toCell_isTermCell (term : FXTerm) :
     term.toCell.isTermCell = true := by
   exact term.property
@@ -151,6 +160,30 @@ theorem FXTerm.toCell_isTermCell (term : FXTerm) :
 theorem FXType.toCell_isTypeCell (typeCell : FXType) :
     typeCell.toCell.isTypeCell = true := by
   exact typeCell.property
+
+theorem FXStep.toCell_isStepCell (step : FXStep) :
+    step.toCell.isStepCell = true := by
+  exact step.property
+
+theorem FXStep.toCell?_ofCell?_toCell (step : FXStep) :
+    Option.map FXStep.toCell (FXStep.ofCell? step.toCell) =
+      some step.toCell := by
+  cases step with
+  | mk cell hasStepCell =>
+      change
+        Option.map FXStep.toCell
+            (FXStep.ofCell? cell) =
+          some cell
+      unfold FXStep.ofCell?
+      rw [dif_pos hasStepCell]
+      rfl
+
+theorem FXStep.ofCell?_identity (base : FXCellAt 0) :
+    FXStep.ofCell? (.identity base) = none := by
+  unfold FXStep.ofCell?
+  rw [dif_neg]
+  intro hasStepCell
+  cases hasStepCell
 
 theorem FXTerm.toCell_isTypeCell_false (term : FXTerm) :
     term.toCell.isTypeCell = false := by
