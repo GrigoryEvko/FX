@@ -2659,6 +2659,84 @@ theorem FXType.ofCell?_ofConstructorName_toCell
     some (FXType.ofConstructorName constructorName payload)
   exact FXType.ofCellId?_ofConstructorName constructorName payload
 
+theorem FXTerm.constructorIndex_val_ofCell?_ofConstructorIndex_toCell
+    (constructorIndex : Fin termGeneratorCount) (payload : Nat) :
+    Option.map (fun decodedTerm => decodedTerm.constructorIndex.val)
+        (FXTerm.ofCell?
+          (FXTerm.ofConstructorIndex constructorIndex payload).toCell) =
+      some constructorIndex.val := by
+  rw [FXTerm.ofCell?_ofConstructorIndex_toCell]
+  change
+    some
+      (FXTerm.ofConstructorIndex constructorIndex payload).constructorIndex.val =
+        some constructorIndex.val
+  rw [FXTerm.constructorIndex_val_ofConstructorIndex]
+
+theorem FXTerm.constructorIndex_val_ofCell?_ofConstructorName_toCell
+    (constructorName : FXTermConstructorName) (payload : Nat) :
+    Option.map (fun decodedTerm => decodedTerm.constructorIndex.val)
+        (FXTerm.ofCell?
+          (FXTerm.ofConstructorName constructorName payload).toCell) =
+      some constructorName.cellId := by
+  rw [FXTerm.ofCell?_ofConstructorName_toCell]
+  change
+    some
+      (FXTerm.ofConstructorName constructorName payload).constructorIndex.val =
+        some constructorName.cellId
+  rw [FXTerm.constructorIndex_val_ofConstructorName]
+
+theorem FXType.constructorIndex_val_ofCell?_ofConstructorIndex_toCell
+    (constructorIndex : Fin typeGeneratorCount) (payload : Nat) :
+    Option.map (fun decodedType => decodedType.constructorIndex.val)
+        (FXType.ofCell?
+          (FXType.ofConstructorIndex constructorIndex payload).toCell) =
+      some constructorIndex.val := by
+  change
+    Option.map (fun decodedType => decodedType.constructorIndex.val)
+      (FXType.ofCellId?
+        (PolyTerm.firstTypeCellId + constructorIndex.val) payload) =
+      some constructorIndex.val
+  unfold FXType.ofCellId?
+  unfold classifyDimZeroCellId
+  have hasNoTermRange :
+      ¬PolyTerm.firstTypeCellId + constructorIndex.val <
+        termGeneratorCount := by
+    change
+      ¬PolyTerm.firstTypeCellId + constructorIndex.val <
+        PolyTerm.firstTypeCellId
+    exact Nat.not_lt_of_ge (Nat.le_add_right _ _)
+  have hasCurrentRange :
+      PolyTerm.firstTypeCellId + constructorIndex.val <
+        totalGeneratorCount := by
+    change
+      PolyTerm.firstTypeCellId + constructorIndex.val <
+        PolyTerm.typeCellIdLimit
+    exact Nat.add_lt_add_left constructorIndex.isLt
+      PolyTerm.firstTypeCellId
+  rw [dif_neg hasNoTermRange, dif_pos hasCurrentRange]
+  change
+    some
+      ((PolyTerm.firstTypeCellId +
+          ((PolyTerm.firstTypeCellId + constructorIndex.val) -
+            PolyTerm.firstTypeCellId)) -
+        PolyTerm.firstTypeCellId) =
+      some constructorIndex.val
+  rw [nat_add_sub_cancel_left_structural]
+  rw [nat_add_sub_cancel_left_structural]
+
+theorem FXType.constructorIndex_val_ofCell?_ofConstructorName_toCell
+    (constructorName : FXTypeConstructorName) (payload : Nat) :
+    Option.map (fun decodedType => decodedType.constructorIndex.val)
+        (FXType.ofCell?
+          (FXType.ofConstructorName constructorName payload).toCell) =
+      some constructorName.localCellId := by
+  rw [FXType.ofCell?_ofConstructorName_toCell]
+  change
+    some
+      (FXType.ofConstructorName constructorName payload).constructorIndex.val =
+        some constructorName.localCellId
+  rw [FXType.constructorIndex_val_ofConstructorName]
+
 theorem FXTerm.constructorName?_ofCell?_ofConstructorName_toCell
     (constructorName : FXTermConstructorName) (payload : Nat) :
     (FXTerm.ofCell?
