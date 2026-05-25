@@ -1461,6 +1461,14 @@ theorem lookupGeneratorSpec?_variable :
     lookupGeneratorSpec? variableGeneratorSpec.cellId =
       some ⟨variableGeneratorSpec, SupportedGeneratorSpec.variable⟩ := rfl
 
+theorem lookupGeneratorSpec?_lambda :
+    lookupGeneratorSpec? lambdaGeneratorSpec.cellId =
+      some ⟨lambdaGeneratorSpec, SupportedGeneratorSpec.lambda⟩ := rfl
+
+theorem lookupGeneratorSpec?_application :
+    lookupGeneratorSpec? applicationGeneratorSpec.cellId =
+      some ⟨applicationGeneratorSpec, SupportedGeneratorSpec.application⟩ := rfl
+
 theorem lookupGeneratorSpec?_contextEmpty :
     lookupGeneratorSpec? contextEmptyGeneratorSpec.cellId =
       some ⟨contextEmptyGeneratorSpec, SupportedGeneratorSpec.contextEmpty⟩ := rfl
@@ -1468,6 +1476,14 @@ theorem lookupGeneratorSpec?_contextEmpty :
 theorem lookupGeneratorSpec?_unitType :
     lookupGeneratorSpec? unitTypeGeneratorSpec.cellId =
       some ⟨unitTypeGeneratorSpec, SupportedGeneratorSpec.unitType⟩ := rfl
+
+theorem lookupGeneratorSpec?_piType :
+    lookupGeneratorSpec? piTypeGeneratorSpec.cellId =
+      some ⟨piTypeGeneratorSpec, SupportedGeneratorSpec.piType⟩ := rfl
+
+theorem lookupGeneratorSpec?_contextCons :
+    lookupGeneratorSpec? contextConsGeneratorSpec.cellId =
+      some ⟨contextConsGeneratorSpec, SupportedGeneratorSpec.contextCons⟩ := rfl
 
 theorem lookupGeneratorSpec?_linearMode :
     lookupGeneratorSpec? linearModeGeneratorSpec.cellId =

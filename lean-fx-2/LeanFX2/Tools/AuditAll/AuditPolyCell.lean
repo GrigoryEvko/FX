@@ -506,8 +506,12 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedSeedTermStepIdentityPackage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedSeedTermIdentityTwicePackage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.lookupGeneratorSpec?_variable
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.lookupGeneratorSpec?_lambda
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.lookupGeneratorSpec?_application
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.lookupGeneratorSpec?_contextEmpty
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.lookupGeneratorSpec?_unitType
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.lookupGeneratorSpec?_piType
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.lookupGeneratorSpec?_contextCons
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.lookupGeneratorSpec?_linearMode
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.lookupGeneratorSpec?_unsupportedBeforeLambda
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.lookupRuleSpec?_termStep
