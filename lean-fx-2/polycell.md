@@ -3991,6 +3991,9 @@ catalog of malformed raw inputs, not only against positive examples:
   as `badPayload`;
 - known generators with reserved malformed payloads must reject as
   `badPayload`, `wrongArity`, or `wrongChildShape`;
+- supported-but-uncertified pi-type and context-extension generator
+  sentinels must reject as `badPayload`, `wrongArity`, or
+  `wrongChildShape` until their decoders have certified child spines;
 - nullary type/context/mode atoms with nonzero payloads must reject as
   `badPayload`;
 - finite non-nullary payload decoders must first return
@@ -4000,12 +4003,16 @@ catalog of malformed raw inputs, not only against positive examples:
   while applications whose function or argument child decodes to a
   type/context/mode cell, or whose decoded argument is outside scope,
   must reject as `wrongChildShape`;
+- application payload sentinels must exercise the application decoder
+  branch itself: undecodable payloads reject as `badPayload`,
+  wrong-arity sentinels as `wrongArity`, and wrong-child-shape
+  sentinels as `wrongChildShape`;
 - current certified ingress accepts the structurally screened
   `app(var 0, var 1)` fixture only after the payload decoder and generic
   child-shape screen succeed and only when `var 0` and `var 1` are both
   certifiable in the same scope; scope 0 and scope 1 reject as
-  `wrongChildShape`, and malformed application payloads preserve their
-  `wrongChildShape` rejection;
+  `wrongChildShape`, and malformed application payloads preserve the
+  specific decoder rejection they trigger;
 - the first certified dim-1 fixture is the structural term cell
   `termStep(var 0, var 1)` only, built directly from certified endpoints
   after endpoint screening; the arbitrary positive-dimensional raw
@@ -4024,8 +4031,13 @@ catalog of malformed raw inputs, not only against positive examples:
 - screened positive-dimensional raw cells outside the current certified
   constructor domain must remain uncertified and reject through the
   certification-stage policy as `unsupportedCertification`;
+- derived certified identity cells are allowed only from an already
+  certified base package; raw identity over a malformed base must reject
+  through the base screen and raw identity ingress remains unsupported
+  unless a later exact constructor path is added;
 - raw horizontal composites must reject as `unsupportedCompH` until
-  Axis 6 supplies certified Gray-boundary semantics;
+  Axis 6 supplies certified Gray-boundary semantics, including
+  `compH` over otherwise well-screened operands;
 - expected-shape checks must include a real sort mismatch probe that
   rejects as `wrongSort`, including term-as-type, term-as-context,
   type-as-term, type-as-context, context-as-term, context-as-type, and
@@ -4042,6 +4054,14 @@ bad payload just because the raw id has the requested sort.
 Certified-ingress probes are separate from screen probes: every accepted
 result must contain an actual `PolyCell`, while every malformed or
 not-yet-certified raw cell must have an executable rejection theorem.
+Future audit cleanup should add headline theorems by rejection family:
+all bad-payload probes reject as `badPayload`, all wrong-arity probes as
+`wrongArity`, all wrong-child-shape probes as `wrongChildShape`, all
+bad-endpoint probes as `badBoundaryEndpoint`, all unsupported-Gray
+probes as `unsupportedCompH`, and all screen-passing but uncertified
+positive-dimensional probes as `unsupportedCertification`.  These
+headline theorems must be derived from the existing per-probe executable
+facts and must not replace the hostile fixtures.
 
 This is the operational answer to "show what is nonsense": raw cells
 can be displayed and diagnosed, but only accepted cells can inhabit
@@ -4577,6 +4597,8 @@ representable and computably rejected.
 | TCB.7d screen-gated certified application ingress | `f36b083b` | `certifyApplicationVarZeroVarOneChildren?` now invokes `decodeApplicationPayload?` and the audited generic child-shape screen before constructing the certified application package.  A stronger dimension-polymorphic certified-child decoder was attempted and rejected by `AuditPolyCell` because it pulled in `propext`; the committed path keeps the TCB axiom-free and accepted payloads unchanged. |
 | TCB.7e hostile application child probes | `d189603a` | The negative catalog now includes application payloads whose decoded function or argument child is a context or mode cell, in addition to the previous type and out-of-scope failures.  All four new payloads reject as `wrongChildShape` through the executable screen and full audit. |
 | TCB.7f first certified dim-1 term cell | `d4829833` | The first positive-dimensional certified inhabitant is the structural term cell `termStep(var 0, var 1)`, built only from certified `var 0` and `var 1` endpoints after endpoint screening.  A dimension-polymorphic dispatcher over arbitrary raw dim-1 cells was tried and rejected because it pulled in `propext`; the committed path keeps only the direct fixture ingress plus certification-stage negative probes. |
+| TCB.7g derived certified identity cells | `1b346406` | Certified identity cells are now derived from already certified base packages and exposed through certified FX views for seed term/type/context/mode cells plus the seed dim-1 term-step.  No raw identity dispatcher is added. |
+| TCB.7h expanded hostile rejection probes | `d647fada` | The negative catalog now covers application decoder sentinels, pi/context-cons sentinels, malformed identity bases, unsupported term-step variants, and well-screened `compH`.  Probe counts are ratcheted and every new rejection is audited. |
 
 **Deliverables (NEW only):**
 
@@ -4599,9 +4621,12 @@ representable and computably rejected.
 | TCB.7d screen-gated certified application ingress | `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | The certified application ingress runs the payload decoder and generic `screenRawChildDescriptorsWith?` child-shape screen before building the parent certificate. | `LeanFX2.Tools.AuditAll` is green; no accepted payload is broadened; the direct dependent certified-child-spine route remains blocked until it can be implemented without `propext`. |
 | TCB.7e hostile application child probes | `Foundation/PolyCell/Core/NegativeProbes.lean`, `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds mode/context-as-function and mode/context-as-argument malformed application payloads. | Probe count ratchets to 21 inference probes; each new malformed payload has decoder and rejection theorems under `AuditPolyCell`; `LeanFX2.Tools.AuditAll` is green. |
 | TCB.7f first certified dim-1 term cell | `Foundation/PolyCell/Core/NegativeProbes.lean`, `Foundation/PolyCell/Core/Check.lean`, `Foundation/PolyCell/FXProfile/CertifiedViews.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds a direct certified package and FX view for the structural `termStep(var 0, var 1)` fixture; adds certification-stage negative probes for bad endpoints, unsupported raw `compH`, a screened but unsupported term step, and a screened but unsupported vertical composite. | The accepted dim-1 result carries an actual `PolyCell`; scope 1 rejects before endpoint construction; unsupported screen-passing dim-1 shapes reject as `unsupportedCertification`; no arbitrary dim-1 dispatcher is committed; `LeanFX2.Tools.AuditAll` is green. |
-| TCB.7g certified FX operational views | `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | Future `FXStep`, `FXConv`, `FXCdLemma` as projections of certified positive-dimensional cells and thinness certificates. | Existing raw subtype views remain compatibility-only; new operational code uses certified views only after the corresponding positive-dimensional certification exists. |
+| TCB.7g derived certified identity cells | `Foundation/PolyCell/Core/Certified.lean`, `Foundation/PolyCell/Core/Check.lean`, `Foundation/PolyCell/FXProfile/CertifiedViews.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds `identityCell` and `certifiedIdentityPackage`, deriving identity certificates only from already certified base cells. | Seed identity views erase definitionally to raw identity cells; malformed raw identity bases still reject through the screen; no raw identity ingress dispatcher is committed; `AuditPolyCell` keeps zero axiom and anti-vacuity budgets. |
+| TCB.7h expanded hostile rejection probes | `Foundation/PolyCell/Core/NegativeProbes.lean`, `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds hostile application decoder sentinel probes, pi/context-cons payload sentinel probes, raw identity over malformed base, extra unsupported term-step variants, and `compH` over well-screened operands. | Inference probes ratchet to 32 and certification probes to 6; every new fixture has a definitional rejection theorem and an audit entry; malformed application sentinels preserve `badPayload`, `wrongArity`, or `wrongChildShape` precisely. |
+| TCB.7i headline negative-probe theorems | `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Future grouping theorems by rejection family, such as all bad-payload probes, all wrong-arity probes, all child-shape probes, all bad-endpoint probes, all unsupported-Gray probes, and all unsupported-certification probes. | The headline theorems are derived from the per-probe executable facts; they do not delete the hostile fixtures or weaken per-probe diagnostics. |
+| TCB.7j certified FX operational views | `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | Future `FXStep`, `FXConv`, `FXCdLemma` as projections of certified positive-dimensional cells and thinness certificates. | Existing raw subtype views remain compatibility-only; new operational code uses certified views only after the corresponding positive-dimensional certification exists. |
 
-**Implementation order after TCB.7f:**
+**Implementation order after TCB.7h:**
 
 1.  Do not broaden application by adding more one-off parent
     constructors.  The next application slice is a propext-free certified
@@ -4612,10 +4637,13 @@ representable and computably rejected.
     keep using the decoder plus generic screen gate and move to
     positive-dimensional certification instead of weakening the TCB.
 3.  Continue positive-dimensional certification in this order:
-    propext-free raw dispatch for the already certified generated
-    `.cell` fixture, then `identity`, then vertical composition with
-    definitional middle matching.  Certified `compH` remains blocked on
-    real Gray-boundary semantics.
+    headline negative-probe theorems, then vertical composition with
+    definitional middle matching.  A propext-free raw dispatcher for the
+    already certified `.cell` fixture remains desirable but blocked by
+    audit evidence until a new pattern is found.  Derived identity is
+    complete for already certified bases; raw identity ingress remains
+    untrusted.  Certified `compH` remains blocked on real Gray-boundary
+    semantics.
 4.  Keep the propext-free boundary-screen discipline: no `propext`,
     `Quot.sound`, `Classical`, `Inhabited`, `Nonempty`, hidden `False`
     equation dependents, or weakened audit budgets.  The failed
@@ -4625,7 +4653,10 @@ representable and computably rejected.
     expected-shape sort confusion, bad endpoint, and bad vertical
     boundary where the family can participate in positive-dimensional
     cells.  Raw nonsense must remain representable and the certified
-    layer must reject it by computation.
+    layer must reject it by computation.  Periodically compress the
+    accumulated per-probe facts into audited headline theorems by
+    rejection family, while keeping the individual probes as regression
+    fixtures.
 6.  Extend `CertifiedViews.lean` only as the checker gains real
     certified inhabitants: context/type/term/mode seed views are live;
     step/conversion/coherence views must wait for positive-dimensional
