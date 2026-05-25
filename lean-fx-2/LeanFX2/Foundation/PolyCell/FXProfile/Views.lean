@@ -216,9 +216,17 @@ theorem FXStep.target?_eq_source?_of_boundaryEvidence
 def FXTerm.cellId : FXTerm → CellId
   | ⟨.atom cellId _, _⟩ => cellId
 
+/-- FX term payload extraction from the provisional Nat-coded atom. -/
+def FXTerm.payload : FXTerm → Nat
+  | ⟨.atom _ payload, _⟩ => payload
+
 /-- FX type cell id extraction. -/
 def FXType.cellId : FXType → CellId
   | ⟨.atom cellId _, _⟩ => cellId
+
+/-- FX type payload extraction from the provisional Nat-coded atom. -/
+def FXType.payload : FXType → Nat
+  | ⟨.atom _ payload, _⟩ => payload
 
 /-- Raw vertical composition of steps.  Intermediate boundaries are not checked. -/
 def FXStep.seq (step1 step2 : FXStep) : FXCellAt 1 :=
@@ -1281,6 +1289,88 @@ theorem firstTypeCellId_eq_termGeneratorCount :
 theorem typeCellIdLimit_eq_totalGeneratorCount :
     PolyTerm.typeCellIdLimit = totalGeneratorCount := rfl
 
+private theorem nat_sub_lt_left_of_lt_add_structural {offset value count : Nat}
+    (hasLowerBound : offset ≤ value)
+    (hasUpperBound : value < offset + count) :
+    value - offset < count := by
+  induction offset generalizing value with
+  | zero =>
+      rw [Nat.sub_zero]
+      rw [Nat.zero_add] at hasUpperBound
+      exact hasUpperBound
+  | succ previousOffset offsetInduction =>
+      cases value with
+      | zero =>
+          cases hasLowerBound
+      | succ previousValue =>
+          rw [Nat.succ_sub_succ_eq_sub]
+          apply offsetInduction
+          · exact Nat.le_of_succ_le_succ hasLowerBound
+          · rw [Nat.succ_add] at hasUpperBound
+            exact Nat.lt_of_succ_lt_succ hasUpperBound
+
+private theorem nat_add_sub_cancel_left_structural (offset value : Nat) :
+    offset + value - offset = value := by
+  induction offset with
+  | zero =>
+      rw [Nat.zero_add, Nat.sub_zero]
+  | succ previousOffset offsetInduction =>
+      rw [Nat.succ_add, Nat.succ_sub_succ_eq_sub]
+      exact offsetInduction
+
+/-- The checked local constructor index of an FX term atom. -/
+def FXTerm.constructorIndex (term : FXTerm) : Fin termGeneratorCount :=
+  match term with
+  | ⟨.atom cellId _, hRange⟩ =>
+      ⟨cellId, by
+        change cellId < PolyTerm.termCellIdLimit
+        exact of_decide_eq_true hRange⟩
+
+/-- The checked local constructor index of an FX type atom.
+
+Type ids occupy the provisional global block `[78, 103)`, so the local index
+subtracts the first type id after extracting the range proof from the view. -/
+def FXType.constructorIndex (typeCell : FXType) : Fin typeGeneratorCount :=
+  match typeCell with
+  | ⟨.atom cellId _, hRange⟩ =>
+      ⟨cellId - PolyTerm.firstTypeCellId, by
+        change cellId - PolyTerm.firstTypeCellId < PolyTerm.typeCellIdCount
+        change
+          (decide (PolyTerm.firstTypeCellId ≤ cellId) &&
+            decide (cellId < PolyTerm.typeCellIdLimit)) = true at hRange
+        have hasLowerBoundDecide :
+            decide (PolyTerm.firstTypeCellId ≤ cellId) = true := by
+          cases hasLowerBool :
+              decide (PolyTerm.firstTypeCellId ≤ cellId) with
+          | false =>
+              rw [hasLowerBool] at hRange
+              cases hRange
+          | true =>
+              rfl
+        have hasUpperBoundDecide :
+            decide (cellId < PolyTerm.typeCellIdLimit) = true := by
+          cases hasLowerBool :
+              decide (PolyTerm.firstTypeCellId ≤ cellId) with
+          | false =>
+              rw [hasLowerBool] at hRange
+              cases hRange
+          | true =>
+              cases hasUpperBool :
+                  decide (cellId < PolyTerm.typeCellIdLimit) with
+              | false =>
+                  rw [hasLowerBool, hasUpperBool] at hRange
+                  cases hRange
+              | true =>
+                  rfl
+        have hasLowerBound : PolyTerm.firstTypeCellId ≤ cellId :=
+          of_decide_eq_true hasLowerBoundDecide
+        have hasUpperBound :
+            cellId < PolyTerm.firstTypeCellId + PolyTerm.typeCellIdCount := by
+          change cellId < PolyTerm.firstTypeCellId + PolyTerm.typeCellIdCount
+          exact of_decide_eq_true hasUpperBoundDecide
+        exact nat_sub_lt_left_of_lt_add_structural
+          hasLowerBound hasUpperBound⟩
+
 /-- Construct an FX term from a checked index into the current term-id block. -/
 def FXTerm.ofConstructorIndex (constructorIndex : Fin termGeneratorCount)
     (payload : Nat) : FXTerm :=
@@ -1318,9 +1408,34 @@ theorem FXTerm.cellId_ofConstructorIndex
     (FXTerm.ofConstructorIndex constructorIndex payload).cellId =
       constructorIndex.val := rfl
 
+theorem FXTerm.payload_ofConstructorIndex
+    (constructorIndex : Fin termGeneratorCount) (payload : Nat) :
+    (FXTerm.ofConstructorIndex constructorIndex payload).payload =
+      payload := rfl
+
+theorem FXTerm.constructorIndex_val_ofConstructorIndex
+    (constructorIndex : Fin termGeneratorCount) (payload : Nat) :
+    (FXTerm.ofConstructorIndex constructorIndex payload).constructorIndex.val =
+      constructorIndex.val := rfl
+
 theorem FXType.cellId_ofConstructorIndex
     (constructorIndex : Fin typeGeneratorCount) (payload : Nat) :
     (FXType.ofConstructorIndex constructorIndex payload).cellId =
       PolyTerm.firstTypeCellId + constructorIndex.val := rfl
+
+theorem FXType.payload_ofConstructorIndex
+    (constructorIndex : Fin typeGeneratorCount) (payload : Nat) :
+    (FXType.ofConstructorIndex constructorIndex payload).payload =
+      payload := rfl
+
+theorem FXType.constructorIndex_val_ofConstructorIndex
+    (constructorIndex : Fin typeGeneratorCount) (payload : Nat) :
+    (FXType.ofConstructorIndex constructorIndex payload).constructorIndex.val =
+      constructorIndex.val := by
+  change
+    (PolyTerm.firstTypeCellId + constructorIndex.val) -
+      PolyTerm.firstTypeCellId = constructorIndex.val
+  exact nat_add_sub_cancel_left_structural
+    PolyTerm.firstTypeCellId constructorIndex.val
 
 end LeanFX2.Foundation.PolyCell.FXProfile

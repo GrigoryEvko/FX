@@ -389,6 +389,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXConv.endpointEvidence_transCheckedLeftAssociated
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXConv.endpointEvidence_transCheckedRightAssociated
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXCell.applyFold
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.payload
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.payload
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.termGeneratorCount
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.typeGeneratorCount
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.totalGeneratorCount
@@ -398,10 +400,16 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.totalGeneratorCount_eq_currentTermAndTypeConstructors
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.firstTypeCellId_eq_termGeneratorCount
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.typeCellIdLimit_eq_totalGeneratorCount
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.constructorIndex
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.constructorIndex
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.ofConstructorIndex
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.ofConstructorIndex
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.cellId_ofConstructorIndex
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.payload_ofConstructorIndex
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.constructorIndex_val_ofConstructorIndex
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.cellId_ofConstructorIndex
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.payload_ofConstructorIndex
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.constructorIndex_val_ofConstructorIndex
 
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Stratification.isPositiveDimension
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Stratification.isPositiveDimension_zero
