@@ -102,6 +102,12 @@ def certifiedApplicationVarZeroVarOne :
         (Nat.zero_lt_succ 3)
         (Nat.succ_lt_succ (Nat.zero_lt_succ 2))))
 
+/-- Certified structural dim-1 term-cell view for the first term-step fixture. -/
+def certifiedSeedTermStep :
+    CertifiedFXDimOneTermCell NegativeProbes.defaultInferScope :=
+  CertifiedFXCell.ofCertifiedRawCell
+    (Check.certifiedSeedTermStepPackage (profile := fxProfile))
+
 theorem certifiedSeedTerm_raw :
     certifiedSeedTerm.toRaw = NegativeProbes.seedTermAtom fxProfile := rfl
 
@@ -117,5 +123,9 @@ theorem certifiedSeedMode_raw :
 theorem certifiedApplicationVarZeroVarOne_raw :
     certifiedApplicationVarZeroVarOne.toRaw =
       NegativeProbes.applicationVarZeroVarOneRawCell fxProfile := rfl
+
+theorem certifiedSeedTermStep_raw :
+    certifiedSeedTermStep.toRaw =
+      NegativeProbes.termStepVarZeroVarOneRawCell fxProfile := rfl
 
 end LeanFX2.Foundation.PolyCell.FXProfile

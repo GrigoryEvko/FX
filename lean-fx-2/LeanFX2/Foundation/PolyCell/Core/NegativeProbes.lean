@@ -41,6 +41,20 @@ structure RawExpectedShapeNegativeProbe (profile : PolyProfile) where
   /-- Rejection that the future expected-shape checker must return. -/
   expectedRejection : CellCheckRejection
 
+/-- A negative probe for certified ingress.
+
+Some raw cells screen structurally but still must not enter the certified
+layer until a trusted constructor path exists for that exact shape. -/
+structure RawCertificationNegativeProbe (profile : PolyProfile) where
+  /-- Scope used when certifying the malformed raw input. -/
+  scope : Nat
+  /-- Dimension of the malformed raw input. -/
+  dimension : CellDim
+  /-- Malformed or unsupported raw input. -/
+  rawCell : PolyTerm profile dimension
+  /-- Rejection that certified ingress must return. -/
+  expectedRejection : CellCheckRejection
+
 namespace NegativeProbes
 
 /-- Shared scope for inference-level probes.
@@ -207,6 +221,20 @@ def badBoundaryModeSortRawCell (profile : PolyProfile) : PolyTerm profile 1 :=
     (seedModeAtom profile)
     (seedModeAtom profile)
 
+/-- The first dim-1 term-step fixture admitted by certified ingress. -/
+def termStepVarZeroVarOneRawCell (profile : PolyProfile) :
+    PolyTerm profile 1 :=
+  .cell termStepRuleSpec.ruleId
+    (seedTermAtom profile)
+    (alternateTermAtom profile)
+
+/-- A screened term-step shape not admitted by certified ingress. -/
+def unsupportedTermStepVarZeroVarTwoRawCell (profile : PolyProfile) :
+    PolyTerm profile 1 :=
+  .cell termStepRuleSpec.ruleId
+    (seedTermAtom profile)
+    (thirdTermAtom profile)
+
 /-- Known term-step rule used at an unsupported endpoint dimension. -/
 def wrongRuleEndpointDimensionRawCell (profile : PolyProfile) :
     PolyTerm profile 2 :=
@@ -230,6 +258,16 @@ def secondMismatchedStepRawCell (profile : PolyProfile) : PolyTerm profile 1 :=
 def badVerticalBoundaryRawCell (profile : PolyProfile) : PolyTerm profile 1 :=
   .compV (firstMismatchedStepRawCell profile)
     (secondMismatchedStepRawCell profile)
+
+/-- Vertical composition with matching middle boundary but unsupported
+certified ingress. -/
+def matchedVerticalBoundaryRawCell (profile : PolyProfile) :
+    PolyTerm profile 1 :=
+  .compV
+    (termStepVarZeroVarOneRawCell profile)
+    (.cell termStepRuleSpec.ruleId
+      (alternateTermAtom profile)
+      (thirdTermAtom profile))
 
 /-- Raw horizontal composition must remain unsupported until Gray data exists. -/
 def unsupportedCompHRawCell (profile : PolyProfile) : PolyTerm profile 1 :=
@@ -522,6 +560,40 @@ def typeIdentityAsTermStepProbe (profile : PolyProfile) :
   rawCell := typeIdentityAsTermStepRawCell profile
   expectedRejection := .wrongSort
 
+/-- Probe for preserving bad-boundary rejection through certified ingress. -/
+def certificationBadBoundaryEndpointProbe (profile : PolyProfile) :
+    RawCertificationNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 1
+  rawCell := badBoundaryEndpointRawCell profile
+  expectedRejection := .badBoundaryEndpoint
+
+/-- Probe for preserving unsupported horizontal composition rejection. -/
+def certificationUnsupportedCompHProbe (profile : PolyProfile) :
+    RawCertificationNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 1
+  rawCell := unsupportedCompHRawCell profile
+  expectedRejection := .unsupportedCompH
+
+/-- Probe for a screened term step not admitted by the current certified
+dim-1 ingress. -/
+def certificationUnsupportedTermStepProbe (profile : PolyProfile) :
+    RawCertificationNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 1
+  rawCell := unsupportedTermStepVarZeroVarTwoRawCell profile
+  expectedRejection := .unsupportedCertification
+
+/-- Probe for a screened vertical composite whose certified construction is
+not yet implemented. -/
+def certificationMatchedVerticalBoundaryProbe (profile : PolyProfile) :
+    RawCertificationNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 1
+  rawCell := matchedVerticalBoundaryRawCell profile
+  expectedRejection := .unsupportedCertification
+
 /-- Inference probes, one for each inference-level rejection reason. -/
 def inferNegativeProbes (profile : PolyProfile) :
     List (RawInferNegativeProbe profile) :=
@@ -560,6 +632,14 @@ def expectedShapeNegativeProbes (profile : PolyProfile) :
     linearModeAsTypeProbe profile,
     typeIdentityAsTermStepProbe profile]
 
+/-- Certified-ingress probes for screen-passing but unsupported raw cells. -/
+def certificationNegativeProbes (profile : PolyProfile) :
+    List (RawCertificationNegativeProbe profile) :=
+  [certificationBadBoundaryEndpointProbe profile,
+    certificationUnsupportedCompHProbe profile,
+    certificationUnsupportedTermStepProbe profile,
+    certificationMatchedVerticalBoundaryProbe profile]
+
 /-- Inference probe count. -/
 theorem inferNegativeProbes_length (profile : PolyProfile) :
     (inferNegativeProbes profile).length = 21 := rfl
@@ -567,6 +647,10 @@ theorem inferNegativeProbes_length (profile : PolyProfile) :
 /-- Expected-shape probe count. -/
 theorem expectedShapeNegativeProbes_length (profile : PolyProfile) :
     (expectedShapeNegativeProbes profile).length = 9 := rfl
+
+/-- Certified-ingress probe count. -/
+theorem certificationNegativeProbes_length (profile : PolyProfile) :
+    (certificationNegativeProbes profile).length = 4 := rfl
 
 end NegativeProbes
 

@@ -573,6 +573,77 @@ def certifiedApplicationVarZeroVarOnePackage {profile : PolyProfile}
       certifiedChildren.functionCell
       certifiedChildren.argumentCell
 
+/-- Certified endpoints for the first finite dim-1 term-step fixture. -/
+structure CertifiedTermStepVarZeroVarOneEndpoints
+    (profile : PolyProfile) (scope : Nat) where
+  /-- Certified source endpoint, decoded as `var 0`. -/
+  sourceCell :
+    PolyCell profile .term 0 scope ()
+      (.atom variableGeneratorSpec.cellId 0)
+  /-- Certified target endpoint, decoded as `var 1`. -/
+  targetCell :
+    PolyCell profile .term 0 scope ()
+      (.atom variableGeneratorSpec.cellId 1)
+
+/-- Build certified endpoints for the first finite dim-1 term-step fixture. -/
+def certifiedTermStepVarZeroVarOneEndpoints {profile : PolyProfile}
+    {scope : Nat}
+    (hasSourceIndexWithinScope : 0 < scope)
+    (hasTargetIndexWithinScope : 1 < scope) :
+    CertifiedTermStepVarZeroVarOneEndpoints profile scope :=
+  { sourceCell :=
+      PolyCell.variableCell (profile := profile)
+        (scope := scope) (index := 0) hasSourceIndexWithinScope
+    targetCell :=
+      PolyCell.variableCell (profile := profile)
+        (scope := scope) (index := 1) hasTargetIndexWithinScope }
+
+/-- Computably certify endpoints for the first finite dim-1 term-step
+fixture.
+
+The endpoint screen runs before endpoint witnesses are constructed.  Scopes 0
+and 1 reject because `var 1` is not a certifiable endpoint there. -/
+def certifyTermStepVarZeroVarOneEndpoints? {profile : PolyProfile} :
+    (scope : Nat) →
+      Except CellCheckRejection
+        (CertifiedTermStepVarZeroVarOneEndpoints profile scope)
+  | 0 => Except.error .badBoundaryEndpoint
+  | 1 => Except.error .badBoundaryEndpoint
+  | scope + 1 + 1 =>
+      match
+          screenEndpointResultAs? .term
+            (screenRawCellWithFuel? (profile := profile) 63
+              (scope + 1 + 1) (NegativeProbes.seedTermAtom profile)),
+          screenEndpointResultAs? .term
+            (screenRawCellWithFuel? (profile := profile) 63
+              (scope + 1 + 1) (NegativeProbes.alternateTermAtom profile)) with
+      | Except.ok (), Except.ok () =>
+          Except.ok
+            (certifiedTermStepVarZeroVarOneEndpoints
+              (profile := profile) (scope := scope + 1 + 1)
+              (Nat.zero_lt_succ (scope + 1))
+              (Nat.succ_lt_succ (Nat.zero_lt_succ scope)))
+      | Except.error rejection, _ => Except.error rejection
+      | _, Except.error rejection => Except.error rejection
+
+/-- Certified package for the first finite dim-1 term-step fixture. -/
+def certifiedTermStepVarZeroVarOnePackage {profile : PolyProfile}
+    {scope : Nat}
+    (certifiedEndpoints :
+      CertifiedTermStepVarZeroVarOneEndpoints profile scope) :
+    CertifiedRawCell profile scope
+      (PolyTerm.cell termStepRuleSpec.ruleId
+        (NegativeProbes.seedTermAtom profile)
+        (NegativeProbes.alternateTermAtom profile)) where
+  cellSort := .term
+  cellBoundary :=
+    (NegativeProbes.seedTermAtom profile,
+      NegativeProbes.alternateTermAtom profile)
+  certifiedCell :=
+    PolyCell.cell SupportedRuleSpec.termStep
+      certifiedEndpoints.sourceCell
+      certifiedEndpoints.targetCell
+
 /-- Infer the raw sort from current metadata without certifying the payload. -/
 def inferRawCellSort? {profile : PolyProfile} {dimension : CellDim} :
     PolyTerm profile dimension → Except CellCheckRejection CellSort
@@ -765,6 +836,49 @@ def inferRawCell? {profile : PolyProfile} (scope : Nat)
   match rawCell with
   | .atom cellId payload => inferRawAtom? (profile := profile) scope cellId payload
 
+/-- Direct executable certified ingress for the first dim-1 term-step fixture.
+
+This avoids a dependent dispatcher over arbitrary positive-dimensional raw
+cells.  The arbitrary dispatcher route is left out until it can be implemented
+without adding a trust escape. -/
+def inferTermStepVarZeroVarOne? {profile : PolyProfile} (scope : Nat) :
+    Except CellCheckRejection (CertifiedRawCellResult profile scope) :=
+  match certifyTermStepVarZeroVarOneEndpoints?
+      (profile := profile) scope with
+  | Except.ok certifiedEndpoints =>
+      Except.ok
+        (certifiedRawCellResultOfPackage
+          (profile := profile) (scope := scope)
+          (rawCellCode
+            (PolyTerm.cell (profile := profile)
+              termStepRuleSpec.ruleId
+              (NegativeProbes.seedTermAtom profile)
+              (NegativeProbes.alternateTermAtom profile)))
+          (certifiedTermStepVarZeroVarOnePackage
+            (profile := profile) certifiedEndpoints)
+          (hasSameNatList_self _))
+  | Except.error rejection => Except.error rejection
+
+/-- Does the certification-stage rejection policy reject this probe as
+expected?
+
+This is not a positive certified-ingress dispatcher.  It records that raw
+inputs outside the current certified constructor domain still receive the
+screen-preserving certification rejection reason. -/
+def isCertificationNegativeProbeRejected {profile : PolyProfile}
+    (probe : RawCertificationNegativeProbe profile) : Bool :=
+  hasSameRejectionCode
+    (certificationRejectionAfterScreen? probe.scope probe.rawCell)
+    probe.expectedRejection
+
+/-- Check every certified-ingress negative probe in a list. -/
+def areCertificationNegativeProbesRejected {profile : PolyProfile} :
+    List (RawCertificationNegativeProbe profile) → Bool
+  | [] => true
+  | probe :: remainingProbes =>
+      isCertificationNegativeProbeRejected probe &&
+        areCertificationNegativeProbesRejected remainingProbes
+
 /-- Expected-shape wrapper for the dim-0 certified ingress. -/
 def checkRawCellAs? {profile : PolyProfile} (expectedSort : CellSort)
     (scope : Nat) (rawCell : PolyTerm profile 0) :
@@ -824,6 +938,17 @@ def certifiedSeedModePackage {profile : PolyProfile} :
   certifiedCell :=
     PolyCell.linearMode (profile := profile)
       (scope := NegativeProbes.defaultInferScope)
+
+/-- Certified package for the first dim-1 term-step fixture at the probe
+scope. -/
+def certifiedSeedTermStepPackage {profile : PolyProfile} :
+    CertifiedRawCell profile NegativeProbes.defaultInferScope
+      (NegativeProbes.termStepVarZeroVarOneRawCell profile) :=
+  certifiedTermStepVarZeroVarOnePackage (profile := profile)
+    (certifiedTermStepVarZeroVarOneEndpoints (profile := profile)
+      (scope := NegativeProbes.defaultInferScope)
+      (Nat.zero_lt_succ 3)
+      (Nat.succ_lt_succ (Nat.zero_lt_succ 2)))
 
 theorem lookupGeneratorSpec?_variable :
     lookupGeneratorSpec? variableGeneratorSpec.cellId =
@@ -890,6 +1015,14 @@ theorem certifiedApplicationVarZeroVarOnePackage_raw
       PolyTerm.atom (profile := profile) applicationGeneratorSpec.cellId
         applicationVarZeroVarOnePayload := rfl
 
+theorem certifiedTermStepVarZeroVarOnePackage_raw
+    {profile : PolyProfile} {scope : Nat}
+    (certifiedEndpoints :
+      CertifiedTermStepVarZeroVarOneEndpoints profile scope) :
+    (certifiedTermStepVarZeroVarOnePackage (profile := profile)
+      certifiedEndpoints).certifiedCell.raw =
+      NegativeProbes.termStepVarZeroVarOneRawCell profile := rfl
+
 theorem certifyApplicationVarZeroVarOneChildren?_scope_zero_rejects
     {profile : PolyProfile} :
     certifyApplicationVarZeroVarOneChildren? (profile := profile) 0 =
@@ -906,6 +1039,24 @@ theorem certifiedApplicationVarZeroVarOneChildren_arity_eq_generator
       CertifiedApplicationVarZeroVarOneChildren profile scope) :
     certifiedChildren.applicationChildSpine.arity =
       applicationGeneratorSpec.arity := rfl
+
+theorem certifyTermStepVarZeroVarOneEndpoints?_scope_zero_rejects
+    {profile : PolyProfile} :
+    certifyTermStepVarZeroVarOneEndpoints? (profile := profile) 0 =
+      Except.error .badBoundaryEndpoint := rfl
+
+theorem certifyTermStepVarZeroVarOneEndpoints?_scope_one_rejects
+    {profile : PolyProfile} :
+    certifyTermStepVarZeroVarOneEndpoints? (profile := profile) 1 =
+      Except.error .badBoundaryEndpoint := rfl
+
+theorem certifyTermStepVarZeroVarOneEndpoints?_scope_four_accepts
+    {profile : PolyProfile} :
+    (match
+      certifyTermStepVarZeroVarOneEndpoints? (profile := profile)
+        NegativeProbes.defaultInferScope with
+    | Except.ok _ => true
+    | Except.error _ => false) = true := rfl
 
 theorem screenRawCell0?_variable_zero_scope_four {profile : PolyProfile} :
     screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
@@ -1138,6 +1289,10 @@ theorem certifiedSeedModePackage_raw {profile : PolyProfile} :
     (certifiedSeedModePackage (profile := profile)).certifiedCell.raw =
       NegativeProbes.seedModeAtom profile := rfl
 
+theorem certifiedSeedTermStepPackage_raw {profile : PolyProfile} :
+    (certifiedSeedTermStepPackage (profile := profile)).certifiedCell.raw =
+      NegativeProbes.termStepVarZeroVarOneRawCell profile := rfl
+
 theorem inferRawCell?_seedTerm_sort {profile : PolyProfile} :
     certifiedResultSort?
       (inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
@@ -1330,6 +1485,36 @@ theorem inferRawCell?_applicationOutOfScopeArgument_rejects
       Except.error .wrongChildShape
   rfl
 
+theorem inferTermStepVarZeroVarOne?_sort
+    {profile : PolyProfile} :
+    certifiedResultSort?
+      (inferTermStepVarZeroVarOne? (profile := profile)
+        NegativeProbes.defaultInferScope) =
+      some .term := by
+  change
+    certifiedResultSort?
+      (inferTermStepVarZeroVarOne? (profile := profile) 4) = some .term
+  rfl
+
+theorem inferTermStepVarZeroVarOne?_scope_one_rejects
+    {profile : PolyProfile} :
+    inferTermStepVarZeroVarOne? (profile := profile) 1 =
+      Except.error .badBoundaryEndpoint := rfl
+
+theorem certificationRejectionAfterScreen?_unsupportedTermStep_rejects
+    {profile : PolyProfile} :
+    certificationRejectionAfterScreen? (profile := profile)
+      NegativeProbes.defaultInferScope
+      (NegativeProbes.unsupportedTermStepVarZeroVarTwoRawCell profile) =
+      CellCheckRejection.unsupportedCertification := rfl
+
+theorem certificationRejectionAfterScreen?_matchedVertical_rejects
+    {profile : PolyProfile} :
+    certificationRejectionAfterScreen? (profile := profile)
+      NegativeProbes.defaultInferScope
+      (NegativeProbes.matchedVerticalBoundaryRawCell profile) =
+      CellCheckRejection.unsupportedCertification := rfl
+
 theorem screenExpectedSort?_badUnitTypePayload_as_type_rejects
     {profile : PolyProfile} :
     screenExpectedSort? (profile := profile) .type
@@ -1347,13 +1532,7 @@ theorem screenExpectedSort?_badLinearModePayload_as_mode_rejects
 theorem screenRawCell?_matchedVerticalBoundary_scope_four
     {profile : PolyProfile} :
     screenRawCell? (profile := profile) NegativeProbes.defaultInferScope
-      (PolyTerm.compV
-        (PolyTerm.cell termStepRuleSpec.ruleId
-          (NegativeProbes.seedTermAtom profile)
-          (NegativeProbes.alternateTermAtom profile))
-        (PolyTerm.cell termStepRuleSpec.ruleId
-          (NegativeProbes.alternateTermAtom profile)
-          (NegativeProbes.thirdTermAtom profile))) =
+      (NegativeProbes.matchedVerticalBoundaryRawCell profile) =
       Except.ok .term := rfl
 
 theorem unknownGeneratorProbe_rejects {profile : PolyProfile} :
@@ -1517,6 +1696,38 @@ theorem unsupportedCompHProbe_rejects {profile : PolyProfile} :
         (NegativeProbes.unsupportedCompHProbe profile).expectedRejection :=
   rfl
 
+theorem certificationBadBoundaryEndpointProbe_rejects
+    {profile : PolyProfile} :
+    certificationRejectionAfterScreen? (profile := profile)
+      (NegativeProbes.certificationBadBoundaryEndpointProbe profile).scope
+      (NegativeProbes.badBoundaryEndpointRawCell profile) =
+      (NegativeProbes.certificationBadBoundaryEndpointProbe profile).expectedRejection :=
+  rfl
+
+theorem certificationUnsupportedCompHProbe_rejects
+    {profile : PolyProfile} :
+    certificationRejectionAfterScreen? (profile := profile)
+      (NegativeProbes.certificationUnsupportedCompHProbe profile).scope
+      (NegativeProbes.unsupportedCompHRawCell profile) =
+      (NegativeProbes.certificationUnsupportedCompHProbe profile).expectedRejection :=
+  rfl
+
+theorem certificationUnsupportedTermStepProbe_rejects
+    {profile : PolyProfile} :
+    certificationRejectionAfterScreen? (profile := profile)
+      (NegativeProbes.certificationUnsupportedTermStepProbe profile).scope
+      (NegativeProbes.unsupportedTermStepVarZeroVarTwoRawCell profile) =
+      (NegativeProbes.certificationUnsupportedTermStepProbe profile).expectedRejection :=
+  rfl
+
+theorem certificationMatchedVerticalBoundaryProbe_rejects
+    {profile : PolyProfile} :
+    certificationRejectionAfterScreen? (profile := profile)
+      (NegativeProbes.certificationMatchedVerticalBoundaryProbe profile).scope
+      (NegativeProbes.matchedVerticalBoundaryRawCell profile) =
+      (NegativeProbes.certificationMatchedVerticalBoundaryProbe profile).expectedRejection :=
+  rfl
+
 theorem wrongSortProbe_rejects {profile : PolyProfile} :
     screenRawCell0As? (profile := profile)
       (NegativeProbes.wrongSortProbe profile).expectedSort
@@ -1597,6 +1808,11 @@ theorem expectedShapeNegativeProbes_rejected_by_screen
     (profile : PolyProfile) :
     areExpectedShapeNegativeProbesRejected
       (NegativeProbes.expectedShapeNegativeProbes profile) = true := rfl
+
+theorem certificationNegativeProbes_rejected_by_policy
+    (profile : PolyProfile) :
+    areCertificationNegativeProbesRejected
+      (NegativeProbes.certificationNegativeProbes profile) = true := rfl
 
 end Check
 
