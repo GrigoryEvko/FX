@@ -359,6 +359,15 @@ def certifiedChildSpineRawDescriptors {profile : PolyProfile}
           certifiedChild.toRawDescriptor
           (certifiedChildSpineRawDescriptors remainingChildren)
 
+/-- Forgetting a certified child spine preserves the declared arity. -/
+theorem certifiedChildSpineRawDescriptors_arity_eq
+    {profile : PolyProfile} {parentScope : Nat}
+    {childSpecs : List ChildSpec}
+    (certifiedChildren :
+      CellChildren (CertifiedChild profile) parentScope childSpecs) :
+    (certifiedChildSpineRawDescriptors certifiedChildren).arity =
+      certifiedChildren.arity := rfl
+
 /-- Certified child spine for the first finite application payload. -/
 def applicationVarZeroVarOneChildren {profile : PolyProfile} {scope : Nat}
     (functionCell :

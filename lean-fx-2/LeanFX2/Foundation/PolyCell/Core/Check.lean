@@ -1169,6 +1169,34 @@ theorem certifiedApplicationVarZeroVarOneChildren_rawDescriptors
         (PolyTerm.atom variableGeneratorSpec.cellId 0)
         (PolyTerm.atom variableGeneratorSpec.cellId 1) := rfl
 
+/-- The first certified application child package erases exactly to the
+decoder output for the application payload. -/
+theorem certifiedApplicationVarZeroVarOneChildren_rawDescriptors_eq_decoder
+    {profile : PolyProfile} {scope : Nat}
+    (certifiedChildren :
+      CertifiedApplicationVarZeroVarOneChildren profile scope) :
+    Except.ok
+      (PolyCell.certifiedChildSpineRawDescriptors
+        certifiedChildren.applicationChildSpine) =
+      decodeApplicationPayload? (profile := profile) scope
+        applicationVarZeroVarOnePayload := rfl
+
+/-- For every scope where both decoded variables are in scope, certification
+followed by child-spine erasure returns the same raw descriptor spine as the
+payload decoder. -/
+theorem certifyApplicationVarZeroVarOneChildren?_scope_two_plus_rawDescriptors_eq_decoder
+    {profile : PolyProfile} {scope : Nat} :
+    (match
+      certifyApplicationVarZeroVarOneChildren? (profile := profile)
+        (scope + 1 + 1) with
+    | Except.ok certifiedChildren =>
+        Except.ok
+          (PolyCell.certifiedChildSpineRawDescriptors
+            certifiedChildren.applicationChildSpine)
+    | Except.error rejection => Except.error rejection) =
+      decodeApplicationPayload? (profile := profile) (scope + 1 + 1)
+        applicationVarZeroVarOnePayload := rfl
+
 theorem certifyTermStepVarZeroVarOneEndpoints?_scope_zero_rejects
     {profile : PolyProfile} :
     certifyTermStepVarZeroVarOneEndpoints? (profile := profile) 0 =
