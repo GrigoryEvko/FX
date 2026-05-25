@@ -3966,21 +3966,25 @@ catalog of malformed raw inputs, not only against positive examples:
   `RawChildDescriptors`, then recursively screen each decoded child
   against the generator's declared child shape; for the first
   application fixture, `app(var 0, var 1)` may screen as a term shape,
-  while an application whose function child decodes to a type cell must
-  reject as `wrongChildShape`;
+  while applications whose function or argument child decodes to a type
+  cell, or whose decoded argument is outside scope, must reject as
+  `wrongChildShape`;
 - generated dim-1 cells over uncertified endpoints must reject as
   `badBoundaryEndpoint`;
 - generated term-step cells over context or type endpoints must reject
   as `badBoundaryEndpoint`, not as accepted cross-sort steps;
 - generated term-step cells over mode endpoints must also reject as
   `badBoundaryEndpoint`;
+- a known rule id used at an unsupported endpoint dimension must reject
+  rather than silently reusing the rule at that dimension;
 - raw vertical composites with mismatched middle endpoints must reject
   as `badVerticalBoundary`;
 - raw horizontal composites must reject as `unsupportedCompH` until
   Axis 6 supplies certified Gray-boundary semantics;
 - expected-shape checks must include a real sort mismatch probe that
-  rejects as `wrongSort`, including term-as-type, type-as-term, and
-  mode-as-term probes, plus positive-dimensional
+  rejects as `wrongSort`, including term-as-type, term-as-context,
+  type-as-term, type-as-context, context-as-term, context-as-type, and
+  mode-as-term/type probes, plus positive-dimensional
   type-identity-as-term-step probes.
 
 Probes begin life as audited raw fixtures plus expected rejection
@@ -4517,6 +4521,7 @@ representable and computably rejected.
 | TCB.6f finite application screen | `4f667fc7` | The first application payload decoder returns `RawChildDescriptors`; the executable screen accepts only the concrete `app(var 0, var 1)` shape fixture and rejects the type-as-function fixture as `wrongChildShape`.  This is still screening, not a certified application inhabitant. |
 | TCB.6g decoded-child fold | `d3329d83` | Application screening now consumes decoded `RawChildDescriptors` through a generic child-spec fold, with audited positive and negative fold theorems.  The fold still returns only screen results, not certified child cells. |
 | TCB.6h certified seed packages | `90e6192e` | `CertifiedRawCell` packages carry an actual `PolyCell` over the original raw input for the four payload-evidenced seed atoms: variable 0 in scope 4, unit type, empty context, and linear mode.  This is not a general raw-to-certified checker and does not certify application payloads. |
+| TCB.6i expanded malformed probes | `d97e1dbd` | The negative catalog now covers application argument sort failure, application out-of-scope child failure, known rule ids used at unsupported endpoint dimensions, and extra context/type/term/mode expected-shape confusion cases.  All new probes have executable rejection theorems and audit entries. |
 
 **Deliverables (NEW only):**
 
@@ -4531,10 +4536,11 @@ representable and computably rejected.
 | TCB.5 raw rejection result | `Foundation/PolyCell/Core/CheckResult.lean` | Structured rejection enum, not just `Option`, so the checker can say which invariant failed. | Rejections distinguish unknown generator, wrong sort, bad payload, wrong arity, wrong child shape, bad boundary endpoint, bad vertical boundary, and unsupported `compH`. |
 | TCB.6a executable rejection screen | `Foundation/PolyCell/Core/Check.lean` | Computable recursive screen over the supported generator/rule tables; rejects unknown ids, malformed payloads, wrong arity/child-shape sentinels, wrong expected sort, bad endpoints, bad vertical boundaries, and unsupported raw `compH`. | Every executable theorem is audited axiom-free; the catalog runner proves all current inference and expected-shape negative probes are rejected. |
 | TCB.6h certified seed packages | `Foundation/PolyCell/Core/Check.lean` | `CertifiedRawCell` dependent package plus concrete packages for the payload-evidenced seed atoms only. | Each package erases definitionally to its named raw fixture; no application, lambda, pi, context-cons, generated cell, vertical composite, or raw `compH` is certified by this task. |
-| TCB.6i raw-to-certified checker | `Foundation/PolyCell/Core/Check.lean` | Computable `inferRawCell?` and expected-shape `checkRawCellAs?` returning a certified dependent package or rejection reason, implemented without `propext`, `Classical`, `Inhabited`, or `Nonempty`. | Soundness theorem: every `accepted` result contains a `PolyCell`; accepted witnesses exist only for the named supported generator subset; every negative probe keeps an executable rejection theorem. |
+| TCB.6i expanded malformed probes | `Foundation/PolyCell/Core/NegativeProbes.lean`, `Foundation/PolyCell/Core/Check.lean` | More hostile fixtures for application argument position, child scope failure, rule dimension misuse, and cross-sort expected-shape checks. | Probe counts are ratcheted; each new malformed input has a definitional rejection theorem and an audit harness assertion. |
+| TCB.6j raw-to-certified checker | `Foundation/PolyCell/Core/Check.lean` | Computable `inferRawCell?` and expected-shape `checkRawCellAs?` returning a certified dependent package or rejection reason, implemented without `propext`, `Classical`, `Inhabited`, or `Nonempty`. | Soundness theorem: every `accepted` result contains a `PolyCell`; accepted witnesses exist only for the named supported generator subset; every negative probe keeps an executable rejection theorem. |
 | TCB.7 certified FX views | `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | `FXContext`, `FXType`, `FXTerm`, `FXStep`, `FXConv`, `FXCdLemma` as projections of certified cells. | Existing raw subtype views remain compatibility-only; new code uses certified views; audit harness covers both. |
 
-**Implementation order after TCB.6h:**
+**Implementation order after TCB.6i:**
 
 1.  `Check.lean` phase C: expose a propext-free `inferRawCell?` /
     `checkRawCellAs?` returning either a rejection reason or a
