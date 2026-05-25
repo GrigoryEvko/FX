@@ -285,6 +285,12 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedUnitTypePackage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedContextEmptyPackage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedLinearModePackage
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.CertifiedApplicationVarZeroVarOneChildren
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.CertifiedApplicationVarZeroVarOneChildren.functionCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.CertifiedApplicationVarZeroVarOneChildren.argumentCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.CertifiedApplicationVarZeroVarOneChildren.applicationChildSpine
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedApplicationVarZeroVarOneChildren
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifyApplicationVarZeroVarOneChildren?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedApplicationVarZeroVarOnePackage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.lookupGeneratorSpec?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.lookupRuleSpec?
@@ -327,6 +333,9 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedContextEmptyPackage_raw
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedLinearModePackage_raw
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedApplicationVarZeroVarOnePackage_raw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifyApplicationVarZeroVarOneChildren?_scope_zero_rejects
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifyApplicationVarZeroVarOneChildren?_scope_one_rejects
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedApplicationVarZeroVarOneChildren_arity_eq_generator
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell0?_variable_zero_scope_four
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell0?_variable_one_scope_four
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell0?_variable_two_scope_four
@@ -372,7 +381,9 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawCell?_badLinearModePayload_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawCell?_applicationVarZeroVarOne_sort
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.checkRawCellAs?_applicationVarZeroVarOne_sort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.checkRawCellAs?_applicationVarZeroVarOne_scope_one_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawAtom?_applicationVarZeroVarOne_scope_one_rejects
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawAtom?_applicationVarZeroVarOne_scope_zero_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawCell?_applicationTypeAsFunction_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawCell?_applicationTypeAsArgument_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawCell?_applicationOutOfScopeArgument_rejects

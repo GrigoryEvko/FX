@@ -97,8 +97,10 @@ def certifiedApplicationVarZeroVarOne :
     CertifiedFXTerm NegativeProbes.defaultInferScope :=
   CertifiedFXCell.ofCertifiedRawCell
     (Check.certifiedApplicationVarZeroVarOnePackage (profile := fxProfile)
-      (Nat.zero_lt_succ 3)
-      (Nat.succ_lt_succ (Nat.zero_lt_succ 2)))
+      (Check.certifiedApplicationVarZeroVarOneChildren (profile := fxProfile)
+        (scope := NegativeProbes.defaultInferScope)
+        (Nat.zero_lt_succ 3)
+        (Nat.succ_lt_succ (Nat.zero_lt_succ 2))))
 
 theorem certifiedSeedTerm_raw :
     certifiedSeedTerm.toRaw = NegativeProbes.seedTermAtom fxProfile := rfl

@@ -217,14 +217,70 @@ def certifiedLinearModePackage {profile : PolyProfile} {scope : Nat} :
   certifiedCell :=
     PolyCell.linearMode (profile := profile) (scope := scope)
 
-/-- Certified package for the first finite application payload.
+/-- Certified decoded children for the first finite application payload.
 
-The package is available only when both decoded variable children are
-certified in the same scope. -/
-def certifiedApplicationVarZeroVarOnePackage {profile : PolyProfile}
+This is deliberately narrower than a general application decoder.  It records
+the two certified variable children and the heterogeneous child spine dictated
+by `applicationGeneratorSpec`. -/
+structure CertifiedApplicationVarZeroVarOneChildren
+    (profile : PolyProfile) (scope : Nat) where
+  /-- Certified function child, decoded as `var 0`. -/
+  functionCell :
+    PolyCell profile .term 0 scope ()
+      (.atom variableGeneratorSpec.cellId 0)
+  /-- Certified argument child, decoded as `var 1`. -/
+  argumentCell :
+    PolyCell profile .term 0 scope ()
+      (.atom variableGeneratorSpec.cellId 1)
+  /-- Certified child spine matching the application generator metadata. -/
+  applicationChildSpine :
+    CellChildren.ForGenerator (PolyCell.CertifiedChild profile) scope
+      applicationGeneratorSpec
+
+/-- Build the certified child package for `app(var 0, var 1)` from variable
+scope evidence. -/
+def certifiedApplicationVarZeroVarOneChildren {profile : PolyProfile}
     {scope : Nat}
     (hasFunctionIndexWithinScope : 0 < scope)
     (hasArgumentIndexWithinScope : 1 < scope) :
+    CertifiedApplicationVarZeroVarOneChildren profile scope :=
+  let functionCell :=
+    PolyCell.variableCell (profile := profile)
+      (scope := scope) (index := 0) hasFunctionIndexWithinScope
+  let argumentCell :=
+    PolyCell.variableCell (profile := profile)
+      (scope := scope) (index := 1) hasArgumentIndexWithinScope
+  { functionCell := functionCell
+    argumentCell := argumentCell
+    applicationChildSpine :=
+      PolyCell.applicationVarZeroVarOneChildren functionCell argumentCell }
+
+/-- Computably decode certified children for the first finite application
+payload.
+
+Scopes 0 and 1 reject before any parent cell can be built, because `var 1` is
+not certifiable there. -/
+def certifyApplicationVarZeroVarOneChildren? {profile : PolyProfile} :
+    (scope : Nat) →
+      Except CellCheckRejection
+        (CertifiedApplicationVarZeroVarOneChildren profile scope)
+  | 0 => Except.error .wrongChildShape
+  | 1 => Except.error .wrongChildShape
+  | scope + 1 + 1 =>
+      Except.ok
+        (certifiedApplicationVarZeroVarOneChildren (profile := profile)
+          (scope := scope + 1 + 1)
+          (Nat.zero_lt_succ (scope + 1))
+          (Nat.succ_lt_succ (Nat.zero_lt_succ scope)))
+
+/-- Certified package for the first finite application payload.
+
+The package is available only after the decoded variable children have been
+certified in the same scope. -/
+def certifiedApplicationVarZeroVarOnePackage {profile : PolyProfile}
+    {scope : Nat}
+    (certifiedChildren :
+      CertifiedApplicationVarZeroVarOneChildren profile scope) :
     CertifiedRawCell profile scope
       (PolyTerm.atom applicationGeneratorSpec.cellId
         applicationVarZeroVarOnePayload) where
@@ -232,10 +288,8 @@ def certifiedApplicationVarZeroVarOnePackage {profile : PolyProfile}
   cellBoundary := ()
   certifiedCell :=
     PolyCell.applicationVarZeroVarOneCell
-      (PolyCell.variableCell (profile := profile)
-        (scope := scope) (index := 0) hasFunctionIndexWithinScope)
-      (PolyCell.variableCell (profile := profile)
-        (scope := scope) (index := 1) hasArgumentIndexWithinScope)
+      certifiedChildren.functionCell
+      certifiedChildren.argumentCell
 
 /-- Lookup the current supported dim-0 generator metadata by raw id. -/
 def lookupGeneratorSpec? (cellId : CellId) : Option KnownGeneratorSpec :=
@@ -647,22 +701,20 @@ def inferRawAtom? {profile : PolyProfile} (scope cellId payload : Nat) :
           (certifiedLinearModePackage (profile := profile))
           (hasSameNatList_self _))
   | 3, 9100 =>
-      match scope with
-      | 0 => Except.error .wrongChildShape
-      | 1 => Except.error .wrongChildShape
-      | scope + 1 + 1 =>
+      match certifyApplicationVarZeroVarOneChildren?
+          (profile := profile) scope with
+      | Except.ok certifiedChildren =>
           Except.ok
             (certifiedRawCellResultOfPackage
-              (profile := profile) (scope := scope + 1 + 1)
+              (profile := profile) (scope := scope)
               (rawCellCode
                 (PolyTerm.atom (profile := profile)
                   applicationGeneratorSpec.cellId
                   applicationVarZeroVarOnePayload))
               (certifiedApplicationVarZeroVarOnePackage (profile := profile)
-                (scope := scope + 1 + 1)
-                (Nat.zero_lt_succ (scope + 1))
-                (Nat.succ_lt_succ (Nat.zero_lt_succ scope)))
+                certifiedChildren)
               (hasSameNatList_self _))
+      | Except.error rejection => Except.error rejection
   | _, _ =>
       Except.error
         (certificationRejectionAfterScreen? scope
@@ -797,12 +849,29 @@ theorem certifiedLinearModePackage_raw {profile : PolyProfile}
 
 theorem certifiedApplicationVarZeroVarOnePackage_raw
     {profile : PolyProfile} {scope : Nat}
-    (hasFunctionIndexWithinScope : 0 < scope)
-    (hasArgumentIndexWithinScope : 1 < scope) :
+    (certifiedChildren :
+      CertifiedApplicationVarZeroVarOneChildren profile scope) :
     (certifiedApplicationVarZeroVarOnePackage (profile := profile)
-      hasFunctionIndexWithinScope hasArgumentIndexWithinScope).certifiedCell.raw =
+      certifiedChildren).certifiedCell.raw =
       PolyTerm.atom (profile := profile) applicationGeneratorSpec.cellId
         applicationVarZeroVarOnePayload := rfl
+
+theorem certifyApplicationVarZeroVarOneChildren?_scope_zero_rejects
+    {profile : PolyProfile} :
+    certifyApplicationVarZeroVarOneChildren? (profile := profile) 0 =
+      Except.error .wrongChildShape := rfl
+
+theorem certifyApplicationVarZeroVarOneChildren?_scope_one_rejects
+    {profile : PolyProfile} :
+    certifyApplicationVarZeroVarOneChildren? (profile := profile) 1 =
+      Except.error .wrongChildShape := rfl
+
+theorem certifiedApplicationVarZeroVarOneChildren_arity_eq_generator
+    {profile : PolyProfile} {scope : Nat}
+    (certifiedChildren :
+      CertifiedApplicationVarZeroVarOneChildren profile scope) :
+    certifiedChildren.applicationChildSpine.arity =
+      applicationGeneratorSpec.arity := rfl
 
 theorem screenRawCell0?_variable_zero_scope_four {profile : PolyProfile} :
     screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
@@ -1132,9 +1201,21 @@ theorem checkRawCellAs?_applicationVarZeroVarOne_sort
         applicationVarZeroVarOnePayload) = some .term
   rfl
 
+theorem checkRawCellAs?_applicationVarZeroVarOne_scope_one_rejects
+    {profile : PolyProfile} :
+    checkRawCellAs? (profile := profile) .term 1
+      (NegativeProbes.applicationVarZeroVarOneRawCell profile) =
+      Except.error .wrongChildShape := rfl
+
 theorem inferRawAtom?_applicationVarZeroVarOne_scope_one_rejects
     {profile : PolyProfile} :
     inferRawAtom? (profile := profile) 1 3
+      applicationVarZeroVarOnePayload =
+      Except.error .wrongChildShape := rfl
+
+theorem inferRawAtom?_applicationVarZeroVarOne_scope_zero_rejects
+    {profile : PolyProfile} :
+    inferRawAtom? (profile := profile) 0 3
       applicationVarZeroVarOnePayload =
       Except.error .wrongChildShape := rfl
 
