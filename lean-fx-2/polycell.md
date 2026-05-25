@@ -4605,6 +4605,7 @@ representable and computably rejected.
 | TCB.7j derived certified vertical composites | `3875a56b` | Certified vertical composition is now exposed only over already certified cells whose middle endpoint is definitionally shared.  A seed term-identity composite is available as a certified FX dim-1 term view; arbitrary raw `compV` ingress remains unsupported. |
 | TCB.7k certified endpoint projections | `0a98af8d` | Certified positive-dimensional FX cells now expose source and target raw endpoints through their intrinsic boundary index.  Seed step, identity, and vertical-composite endpoint theorems are audited and definitional. |
 | TCB.7l structural thinness seed | `b3e745f3` | Certified thinness is now an intrinsic predicate generated only by identity cells and vertical composition of already thin cells.  Thin FX views exist for seed identities and the seed identity composite; arbitrary generating steps are not thin. |
+| TCB.7m endpoint-indexed certified arrows | `6d666e98` | Certified positive-dimensional FX arrows now carry source and target endpoints in the view type itself.  Vertical composition requires a definitionally shared middle endpoint, and thin arrows preserve the same endpoint discipline.  This is still structural: no legacy `Step`/`Conv` bridge, no raw dispatcher, and no generating-step thinness. |
 
 **Deliverables (NEW only):**
 
@@ -4633,9 +4634,10 @@ representable and computably rejected.
 | TCB.7j derived certified vertical composites | `Foundation/PolyCell/Core/Certified.lean`, `Foundation/PolyCell/Core/Check.lean`, `Foundation/PolyCell/FXProfile/CertifiedViews.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds a certified vertical-composite helper and package over already certified cells whose shared middle endpoint is part of the type. | Raw erasure is definitional; the seed term identity composed with itself is exposed as a certified dim-1 term view; no equality casts or raw `compV` dispatcher are introduced. |
 | TCB.7k certified endpoint projections | `Foundation/PolyCell/FXProfile/CertifiedViews.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds `sourceRaw` and `targetRaw` projections for certified positive-dimensional FX cells. | Endpoint access reads only the existing `CellBoundary`; seed term-step, seed identities, dim-2 step identity, and seed vertical composite have audited definitional source/target theorems. |
 | TCB.7l structural thinness seed | `Foundation/PolyCell/Core/Certified.lean`, `Foundation/PolyCell/FXProfile/CertifiedViews.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds `PolyCell.ThinCell` with exactly two constructors: identity and vertical composition of thin cells.  Adds certified thin FX views for seed identities and the seed term identity composite. | No arbitrary generating step is classified thin; thin views still carry the underlying certified cell and audited definitional raw/source/target theorems. |
-| TCB.7m certified FX operational views | `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | Future `FXStep`, `FXConv`, `FXCdLemma` as projections of certified positive-dimensional cells and thinness certificates. | Existing raw subtype views remain compatibility-only; new operational code uses certified views only after the corresponding positive-dimensional certification, thinness data, and operational predicates exist. |
+| TCB.7m endpoint-indexed certified arrows | `Foundation/PolyCell/FXProfile/CertifiedViews.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds `CertifiedFXArrow` and `CertifiedFXThinArrow`, where the source and target endpoints are parameters of the view type. | Arrow identity and vertical composition erase definitionally to raw identity and raw `compV`; vertical composition type-checks only when the middle endpoint is shared; thin arrows compose only from thin arrows. |
+| TCB.7n certified FX operational views | `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | Future `FXStep`, `FXConv`, `FXCdLemma` as projections of certified positive-dimensional cells and thinness certificates. | Existing raw subtype views remain compatibility-only; new operational code uses certified views only after the corresponding positive-dimensional certification, thinness data, and operational predicates exist. |
 
-**Implementation order after TCB.7l:**
+**Implementation order after TCB.7m:**
 
 1.  Do not broaden application by adding more one-off parent
     constructors.  The next application slice is a propext-free certified
@@ -4670,14 +4672,26 @@ representable and computably rejected.
     audited headline theorem, while keeping the individual probes as
     regression fixtures.
 7.  Extend `CertifiedViews.lean` only as the checker gains real
-    certified inhabitants: context/type/term/mode seed views and
-    positive-dimensional endpoint projections plus structural thin views
-    are live; step, conversion, and coherence views must wait for
-    positive-dimensional certification plus operational data.  Keep old
-    raw subtype views as compatibility shims.
+    certified inhabitants: context/type/term/mode seed views,
+    positive-dimensional endpoint projections, endpoint-indexed arrows,
+    and structural thin views are live; step, conversion, and coherence
+    views must wait for positive-dimensional certification plus
+    operational data.  Keep old raw subtype views as compatibility
+    shims.
 8.  Legacy bridge: connect the existing intrinsic kernel judgments to
     certified views only after the checker has nonempty accepted
     witnesses and the audit proves every new declaration axiom-free.
+9.  For each new negative-probe family, prefer a small headline theorem
+    over a broad informal claim.  The headline should state exactly which
+    checker or certification policy rejects the finite probe family, for
+    example malformed payloads, wrong arity, wrong child sort, wrong
+    child dimension, wrong child scope, wrong expected sort, bad
+    endpoint, bad vertical boundary,
+    unsupported `compH`, or screen-passing but unsupported certification.
+    Stronger non-inhabitation theorems are allowed only when they follow
+    from certified constructors and indices without excluded middle,
+    `propext`, `Classical`, `Inhabited`, `Nonempty`, or empty-domain
+    tricks.
 
 **POLY-TCB anti-vacuity gate:** TCB.4 is intentionally weaker than the
 full checker: it must have concrete accepted witnesses only for the
