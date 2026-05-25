@@ -4031,6 +4031,11 @@ catalog of malformed raw inputs, not only against positive examples:
 - screened positive-dimensional raw cells outside the current certified
   constructor domain must remain uncertified and reject through the
   certification-stage policy as `unsupportedCertification`;
+- raw vertical composites of identity cells over seed term/type/context/mode
+  cells must screen successfully with their respective sort, but still
+  reject through certification-stage policy as `unsupportedCertification`;
+  the derived certified vertical-composition helper is the only certified
+  path for those shapes until a real raw `compV` ingress dispatcher exists;
 - derived certified identity cells are allowed only from an already
   certified base package; raw identity over a malformed base must reject
   through the base screen and raw identity ingress remains unsupported
@@ -4621,6 +4626,7 @@ representable and computably rejected.
 | TCB.7z rejection-reason coverage matrix | `aa34f94f` | Every `CellCheckRejection` constructor is now mapped to the exact nonempty negative-probe family or families that cover it, with an audited headline theorem over `CellCheckRejection.all`.  This is still executable checker coverage, not a `False` theorem or certified-cell non-inhabitation claim. |
 | TCB.7aa accepted-ingress coverage matrix | `c4858ea1` | The current finite accepted ingress fixtures now have audited shape-coverage headlines: seed term/type/context/mode atoms, `app(var 0, var 1)`, and the direct `termStep(var 0, var 1)` path.  This adds no raw ingress, no accepted payload, no probe, no dispatcher, and no non-inhabitation claim. |
 | TCB.7ab application expected-shape probes | `75d6d741` | Expected-shape hostile probes now cover the accepted application checked as type/context/mode, and preserve malformed application `badPayload`, `wrongArity`, and `wrongChildShape` rejections through `checkRawCellAs?`.  The rejection-reason coverage matrix now requires these expected-shape families where they exist. |
+| TCB.7ac raw vertical identity probes | `a6d177b8` | Raw `compV` over two identity cells for seed term/type/context/mode now screens successfully by sort but rejects through certification policy as `unsupportedCertification`.  This pins the raw-ingress boundary: derived certified vertical composition over already certified identities remains valid, but no raw `compV` dispatcher, new certified constructor, accepted payload, or non-inhabitation claim is added. |
 
 **Deliverables (NEW only):**
 
@@ -4665,8 +4671,9 @@ representable and computably rejected.
 | TCB.7z rejection-reason coverage matrix | `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds per-`CellCheckRejection` coverage dispatch plus a headline over `CellCheckRejection.all`. | Adding a rejection constructor forces a new coverage branch; reasons with both inference and certification probes require both exact families.  No probe, checker acceptance, raw ingress, or non-inhabitation theorem is added. |
 | TCB.7aa accepted-ingress coverage matrix | `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds accepted-ingress shape coverage for the current finite positive domain: four seed dim-0 atoms, the accepted application fixture, and the direct dim-1 term-step fixture. | Coverage checks acceptance, dimension, and sort; generic raw-erasure theorem heads remain separate.  No raw dispatcher, accepted payload, negative probe, or non-inhabitation theorem is added. |
 | TCB.7ab application expected-shape probes | `Foundation/PolyCell/Core/NegativeProbes.lean`, `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds three application wrong-sort expected-shape probes plus three malformed-application expected-shape pass-through probes. | Expected-shape probe count ratchets to 15; wrong-sort expected-shape probes ratchet to 12; bad-payload, wrong-arity, and wrong-child-shape expected-shape families are nonempty and exact-reason audited.  No accepted raw input or certified constructor is added. |
+| TCB.7ac raw vertical identity probes | `Foundation/PolyCell/Core/NegativeProbes.lean`, `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds raw `compV(identity seed, identity seed)` certification probes for term/type/context/mode seeds, plus executable screen-success and certification-policy rejection theorems. | Certification probes ratchet to 10 and unsupported-certification probes ratchet to 8; each raw vertical identity composite screens as its own sort but rejects as `unsupportedCertification` at raw certification policy.  No raw `compV` ingress dispatcher or non-inhabitation theorem is added. |
 
-**Implementation order after TCB.7ab:**
+**Implementation order after TCB.7ac:**
 
 1.  Do not broaden application by adding more one-off parent
     constructors.  Descriptor-indexed child spines over
@@ -4686,8 +4693,10 @@ representable and computably rejected.
     composition are complete for already certified inputs, and the
     identity over the seed dim-1 term step is exposed as a dim-2
     endpoint-indexed arrow/thin-arrow view.  Raw identity and raw `compV`
-    ingress remain untrusted.  Certified `compH` remains blocked on real
-    Gray-boundary semantics.
+    ingress remain untrusted; TCB.7ac explicitly probes raw identity
+    composites for term/type/context/mode as screen-successful but
+    certification-policy rejected.  Certified `compH` remains blocked on
+    real Gray-boundary semantics.
 4.  Thinness is structural and intentionally narrow: identities are thin,
     and vertical composites of thin cells are thin.  Do not classify
     generating term steps as thin until an operational conversion
