@@ -500,10 +500,24 @@ structure CertifiedApplicationVarZeroVarOneChildren
   argumentCell :
     PolyCell profile .term 0 scope ()
       (.atom variableGeneratorSpec.cellId 1)
-  /-- Certified child spine matching the application generator metadata. -/
-  applicationChildSpine :
+
+namespace CertifiedApplicationVarZeroVarOneChildren
+
+/-- Certified child spine matching the application generator metadata.
+
+The spine is derived from the two certified children instead of being stored
+as an independent field.  This prevents an inconsistent package from carrying
+`functionCell`/`argumentCell` together with an unrelated child spine. -/
+def applicationChildSpine {profile : PolyProfile} {scope : Nat}
+    (certifiedChildren :
+      CertifiedApplicationVarZeroVarOneChildren profile scope) :
     CellChildren.ForGenerator (PolyCell.CertifiedChild profile) scope
-      applicationGeneratorSpec
+      applicationGeneratorSpec :=
+  PolyCell.applicationVarZeroVarOneChildren
+    certifiedChildren.functionCell
+    certifiedChildren.argumentCell
+
+end CertifiedApplicationVarZeroVarOneChildren
 
 /-- Build the certified child package for `app(var 0, var 1)` from variable
 scope evidence. -/
@@ -519,9 +533,7 @@ def certifiedApplicationVarZeroVarOneChildren {profile : PolyProfile}
     PolyCell.variableCell (profile := profile)
       (scope := scope) (index := 1) hasArgumentIndexWithinScope
   { functionCell := functionCell
-    argumentCell := argumentCell
-    applicationChildSpine :=
-      PolyCell.applicationVarZeroVarOneChildren functionCell argumentCell }
+    argumentCell := argumentCell }
 
 /-- Computably decode certified children for the first finite application
 payload.
@@ -1145,6 +1157,17 @@ theorem certifiedApplicationVarZeroVarOneChildren_arity_eq_generator
       CertifiedApplicationVarZeroVarOneChildren profile scope) :
     certifiedChildren.applicationChildSpine.arity =
       applicationGeneratorSpec.arity := rfl
+
+theorem certifiedApplicationVarZeroVarOneChildren_rawDescriptors
+    {profile : PolyProfile} {scope : Nat}
+    (certifiedChildren :
+      CertifiedApplicationVarZeroVarOneChildren profile scope) :
+    PolyCell.certifiedChildSpineRawDescriptors
+      certifiedChildren.applicationChildSpine =
+      RawChildDescriptors.application (profile := profile)
+        (parentScope := scope)
+        (PolyTerm.atom variableGeneratorSpec.cellId 0)
+        (PolyTerm.atom variableGeneratorSpec.cellId 1) := rfl
 
 theorem certifyTermStepVarZeroVarOneEndpoints?_scope_zero_rejects
     {profile : PolyProfile} :

@@ -1,4 +1,4 @@
-import LeanFX2.Foundation.PolyCell.Core.CellChildren
+import LeanFX2.Foundation.PolyCell.Core.RawChildren
 /-!
 # Certified — Intrinsic Boundary Layer for Raw PolyTerms
 
@@ -329,7 +329,35 @@ def ofCell {profile : PolyProfile} {cellSort : CellSort}
   cellBoundary := cellBoundary
   certifiedCell := certifiedCell
 
+/-- Forget a certified child to the raw descriptor with the same shape. -/
+def toRawDescriptor {profile : PolyProfile} {cellSort : CellSort}
+    {cellDimension scope : Nat}
+    (certifiedChild :
+      CertifiedChild profile cellSort cellDimension scope) :
+    RawChildDescriptor profile cellSort cellDimension scope :=
+  RawChildDescriptor.ofRawCell certifiedChild.rawCell
+
+/-- Raw descriptor projection keeps the certified child's raw erasure. -/
+theorem toRawDescriptor_rawCell {profile : PolyProfile} {cellSort : CellSort}
+    {cellDimension scope : Nat}
+    (certifiedChild :
+      CertifiedChild profile cellSort cellDimension scope) :
+    certifiedChild.toRawDescriptor.rawCell = certifiedChild.rawCell := rfl
+
 end CertifiedChild
+
+/-- Forget a certified child spine to the matching raw descriptor spine. -/
+def certifiedChildSpineRawDescriptors {profile : PolyProfile}
+    {parentScope : Nat} :
+    {childSpecs : List ChildSpec} →
+      CellChildren (CertifiedChild profile) parentScope childSpecs →
+        RawChildDescriptors profile parentScope childSpecs
+  | [], CellChildren.nil => CellChildren.nil
+  | _childSpec :: _remainingSpecs,
+      CellChildren.cons certifiedChild remainingChildren =>
+        CellChildren.cons
+          certifiedChild.toRawDescriptor
+          (certifiedChildSpineRawDescriptors remainingChildren)
 
 /-- Certified child spine for the first finite application payload. -/
 def applicationVarZeroVarOneChildren {profile : PolyProfile} {scope : Nat}
@@ -416,6 +444,23 @@ theorem applicationVarZeroVarOneChildren_arity_eq_generator
         (.atom variableGeneratorSpec.cellId 1)) :
     (applicationVarZeroVarOneChildren functionCell argumentCell).arity =
       applicationGeneratorSpec.arity := rfl
+
+/-- Forgetting the first certified application child spine gives the matching
+raw descriptors. -/
+theorem applicationVarZeroVarOneChildren_rawDescriptors
+    {profile : PolyProfile} {scope : Nat}
+    (functionCell :
+      PolyCell profile .term 0 scope ()
+        (.atom variableGeneratorSpec.cellId 0))
+    (argumentCell :
+      PolyCell profile .term 0 scope ()
+        (.atom variableGeneratorSpec.cellId 1)) :
+    certifiedChildSpineRawDescriptors
+      (applicationVarZeroVarOneChildren functionCell argumentCell) =
+      RawChildDescriptors.application (profile := profile)
+        (parentScope := scope)
+        (PolyTerm.atom variableGeneratorSpec.cellId 0)
+        (PolyTerm.atom variableGeneratorSpec.cellId 1) := rfl
 
 end PolyCell
 
