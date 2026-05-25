@@ -1,4 +1,4 @@
-import LeanFX2.Foundation.PolyCell.OmegacE.OmegacEAt
+import LeanFX2.Foundation.PolyCell.OmegacE.Word
 /-!
 # Honesty Check HC.5: ωcE cell count verification
 
@@ -13,6 +13,8 @@ Verify the current OmegacECell generator scaffold:
 - declaredIndexOf reads generators back into the declared index type
 - slotValueOf and declaredIndexValueOf expose proof-free Nat indices
 - slotKindOf/isFirstSlot/isSecondSlot classify the two declared slots
+- OmegacEWord packages finite scaffold-generator lists and preserves length
+  and slot readback under suspension
 - totalUpTo 0 = 2, totalUpTo 1 = 4, totalUpTo 2 = 6
 
 This is a scaffold check, not a proof of the full HLOR construction.
@@ -114,6 +116,42 @@ example : OmegacECell.declaredIndexValueOf (OmegacECell.secondAtDim 3) <
     (OmegacECell.secondAtDim 3)
 example : (OmegacECell.cellsAtDim 3).length =
     OmegacECell.countAtDim 3 := rfl
+example : (OmegacEWord.empty 3).length = 0 := rfl
+example : (OmegacEWord.singleton (OmegacECell.firstAtDim 3)).length =
+    1 := rfl
+example :
+    (OmegacEWord.append
+        (OmegacEWord.singleton (OmegacECell.firstAtDim 3))
+        (OmegacEWord.singleton (OmegacECell.secondAtDim 3))).length =
+      2 := by
+  exact OmegacEWord.length_append
+    (OmegacEWord.singleton (OmegacECell.firstAtDim 3))
+    (OmegacEWord.singleton (OmegacECell.secondAtDim 3))
+example :
+    (OmegacEWord.suspend
+        (OmegacEWord.append
+          (OmegacEWord.singleton (OmegacECell.firstAtDim 3))
+          (OmegacEWord.singleton (OmegacECell.secondAtDim 3)))).length =
+      2 := by
+  exact OmegacEWord.length_suspend
+    (OmegacEWord.append
+      (OmegacEWord.singleton (OmegacECell.firstAtDim 3))
+      (OmegacEWord.singleton (OmegacECell.secondAtDim 3)))
+example :
+    (OmegacEWord.singleton (OmegacECell.firstAtDim 3)).slotValues =
+      [0] := rfl
+example :
+    (OmegacEWord.suspend
+        (OmegacEWord.append
+          (OmegacEWord.singleton (OmegacECell.firstAtDim 3))
+          (OmegacEWord.singleton (OmegacECell.secondAtDim 3)))).slotValues =
+      (OmegacEWord.append
+        (OmegacEWord.singleton (OmegacECell.firstAtDim 3))
+        (OmegacEWord.singleton (OmegacECell.secondAtDim 3))).slotValues := by
+  exact OmegacEWord.slotValues_suspend
+    (OmegacEWord.append
+      (OmegacEWord.singleton (OmegacECell.firstAtDim 3))
+      (OmegacEWord.singleton (OmegacECell.secondAtDim 3)))
 
 -- Verify totalUpTo cumulative counts
 example : OmegacECell.totalUpTo 0 = 2 := rfl
