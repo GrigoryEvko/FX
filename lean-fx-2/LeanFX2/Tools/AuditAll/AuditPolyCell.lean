@@ -2,6 +2,7 @@ import LeanFX2.Tools.DependencyAudit
 import LeanFX2.Tools.StrictHarness.TrustEscape
 import LeanFX2.Foundation.PolyCell.Tier0.FireTriangle
 import LeanFX2.Foundation.PolyCell.Tier0.InternalSconing
+import LeanFX2.Foundation.PolyCell.Core.CellSort
 import LeanFX2.Foundation.PolyCell.Core.CompositionLaws
 import LeanFX2.Foundation.PolyCell.Core.DecEqWF
 import LeanFX2.Foundation.PolyCell.Extension.ProfileExtension
@@ -12,6 +13,12 @@ namespace LeanFX2.Tools
 
 /-! ## AuditPolyCell — PolyCell core and admission-ledger gates. -/
 
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CellSort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CellSort.all
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CellSort.toCode
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CellSort.ofCode?
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CellSort.ofCode?_toCode
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CellSort.all_length
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.dim
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.isAtom
