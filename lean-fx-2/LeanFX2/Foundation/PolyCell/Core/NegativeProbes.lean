@@ -79,13 +79,25 @@ def fourthTermAtom (profile : PolyProfile) : PolyTerm profile 0 :=
 def seedContextAtom (profile : PolyProfile) : PolyTerm profile 0 :=
   .atom contextEmptyGeneratorSpec.cellId 0
 
+/-- A small accepted-looking type atom used to test cross-sort rejection. -/
+def seedTypeAtom (profile : PolyProfile) : PolyTerm profile 0 :=
+  .atom unitTypeGeneratorSpec.cellId 0
+
 /-- Dim-0 generator id not present in the current supported seed table. -/
 def unknownGeneratorRawCell (profile : PolyProfile) : PolyTerm profile 0 :=
   .atom (lambdaGeneratorSpec.cellId - 1) 0
 
+/-- Known variable generator with a de Bruijn index outside the probe scope. -/
+def outOfScopeVariableRawCell (profile : PolyProfile) : PolyTerm profile 0 :=
+  .atom variableGeneratorSpec.cellId defaultInferScope
+
 /-- Known lambda generator with a payload reserved for bad-payload testing. -/
 def badPayloadRawCell (profile : PolyProfile) : PolyTerm profile 0 :=
   .atom lambdaGeneratorSpec.cellId badPayloadSentinel
+
+/-- Known unit-type generator with a non-nullary payload. -/
+def badUnitTypePayloadRawCell (profile : PolyProfile) : PolyTerm profile 0 :=
+  .atom unitTypeGeneratorSpec.cellId badPayloadSentinel
 
 /-- Known lambda generator with a payload reserved for wrong-arity testing. -/
 def wrongArityRawCell (profile : PolyProfile) : PolyTerm profile 0 :=
@@ -106,6 +118,12 @@ def badBoundarySortRawCell (profile : PolyProfile) : PolyTerm profile 1 :=
   .cell termStepRuleSpec.ruleId
     (seedContextAtom profile)
     (seedContextAtom profile)
+
+/-- Known term-step rule applied to type endpoints instead of term endpoints. -/
+def badBoundaryTypeSortRawCell (profile : PolyProfile) : PolyTerm profile 1 :=
+  .cell termStepRuleSpec.ruleId
+    (seedTypeAtom profile)
+    (seedTypeAtom profile)
 
 /-- First step used in the bad-vertical-boundary probe. -/
 def firstMismatchedStepRawCell (profile : PolyProfile) : PolyTerm profile 1 :=
@@ -133,6 +151,19 @@ def unsupportedCompHRawCell (profile : PolyProfile) : PolyTerm profile 1 :=
 def wrongSortRawCell (profile : PolyProfile) : PolyTerm profile 0 :=
   seedContextAtom profile
 
+/-- A unit type atom checked as a term should fail with `wrongSort`. -/
+def unitTypeAsTermRawCell (profile : PolyProfile) : PolyTerm profile 0 :=
+  seedTypeAtom profile
+
+/-- A term atom checked as a type should fail with `wrongSort`. -/
+def termAsTypeRawCell (profile : PolyProfile) : PolyTerm profile 0 :=
+  seedTermAtom profile
+
+/-- A type identity cell checked as a term step should fail with `wrongSort`. -/
+def typeIdentityAsTermStepRawCell (profile : PolyProfile) :
+    PolyTerm profile 1 :=
+  .identity (seedTypeAtom profile)
+
 /-- Probe for `unknownGenerator`. -/
 def unknownGeneratorProbe (profile : PolyProfile) :
     RawInferNegativeProbe profile where
@@ -141,12 +172,28 @@ def unknownGeneratorProbe (profile : PolyProfile) :
   rawCell := unknownGeneratorRawCell profile
   expectedRejection := .unknownGenerator
 
+/-- Probe for out-of-scope variable payload rejection. -/
+def outOfScopeVariableProbe (profile : PolyProfile) :
+    RawInferNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 0
+  rawCell := outOfScopeVariableRawCell profile
+  expectedRejection := .badPayload
+
 /-- Probe for `badPayload`. -/
 def badPayloadProbe (profile : PolyProfile) :
     RawInferNegativeProbe profile where
   scope := defaultInferScope
   dimension := 0
   rawCell := badPayloadRawCell profile
+  expectedRejection := .badPayload
+
+/-- Probe for rejecting non-nullary payloads on the unit-type generator. -/
+def badUnitTypePayloadProbe (profile : PolyProfile) :
+    RawInferNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 0
+  rawCell := badUnitTypePayloadRawCell profile
   expectedRejection := .badPayload
 
 /-- Probe for `wrongArity`. -/
@@ -181,6 +228,14 @@ def badBoundarySortProbe (profile : PolyProfile) :
   rawCell := badBoundarySortRawCell profile
   expectedRejection := .badBoundaryEndpoint
 
+/-- Probe for a type endpoint whose sort does not match the known term rule. -/
+def badBoundaryTypeSortProbe (profile : PolyProfile) :
+    RawInferNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 1
+  rawCell := badBoundaryTypeSortRawCell profile
+  expectedRejection := .badBoundaryEndpoint
+
 /-- Probe for `badVerticalBoundary`. -/
 def badVerticalBoundaryProbe (profile : PolyProfile) :
     RawInferNegativeProbe profile where
@@ -206,30 +261,63 @@ def wrongSortProbe (profile : PolyProfile) :
   rawCell := wrongSortRawCell profile
   expectedRejection := .wrongSort
 
+/-- Probe for rejecting a type atom when a term cell is expected. -/
+def unitTypeAsTermProbe (profile : PolyProfile) :
+    RawExpectedShapeNegativeProbe profile where
+  dimension := 0
+  expectedSort := .term
+  expectedScope := defaultInferScope
+  rawCell := unitTypeAsTermRawCell profile
+  expectedRejection := .wrongSort
+
+/-- Probe for rejecting a term atom when a type cell is expected. -/
+def termAsTypeProbe (profile : PolyProfile) :
+    RawExpectedShapeNegativeProbe profile where
+  dimension := 0
+  expectedSort := .type
+  expectedScope := defaultInferScope
+  rawCell := termAsTypeRawCell profile
+  expectedRejection := .wrongSort
+
+/-- Probe for rejecting a type identity when a term step is expected. -/
+def typeIdentityAsTermStepProbe (profile : PolyProfile) :
+    RawExpectedShapeNegativeProbe profile where
+  dimension := 1
+  expectedSort := .term
+  expectedScope := defaultInferScope
+  rawCell := typeIdentityAsTermStepRawCell profile
+  expectedRejection := .wrongSort
+
 /-- Inference probes, one for each inference-level rejection reason. -/
 def inferNegativeProbes (profile : PolyProfile) :
     List (RawInferNegativeProbe profile) :=
   [unknownGeneratorProbe profile,
+    outOfScopeVariableProbe profile,
     badPayloadProbe profile,
+    badUnitTypePayloadProbe profile,
     wrongArityProbe profile,
     wrongChildShapeProbe profile,
     badBoundaryEndpointProbe profile,
     badBoundarySortProbe profile,
+    badBoundaryTypeSortProbe profile,
     badVerticalBoundaryProbe profile,
     unsupportedCompHProbe profile]
 
-/-- Expected-shape probes, currently only `wrongSort`. -/
+/-- Expected-shape probes for dim-0 and positive-dimensional sort mismatches. -/
 def expectedShapeNegativeProbes (profile : PolyProfile) :
     List (RawExpectedShapeNegativeProbe profile) :=
-  [wrongSortProbe profile]
+  [wrongSortProbe profile,
+    unitTypeAsTermProbe profile,
+    termAsTypeProbe profile,
+    typeIdentityAsTermStepProbe profile]
 
 /-- Inference probe count. -/
 theorem inferNegativeProbes_length (profile : PolyProfile) :
-    (inferNegativeProbes profile).length = 8 := rfl
+    (inferNegativeProbes profile).length = 11 := rfl
 
 /-- Expected-shape probe count. -/
 theorem expectedShapeNegativeProbes_length (profile : PolyProfile) :
-    (expectedShapeNegativeProbes profile).length = 1 := rfl
+    (expectedShapeNegativeProbes profile).length = 4 := rfl
 
 end NegativeProbes
 

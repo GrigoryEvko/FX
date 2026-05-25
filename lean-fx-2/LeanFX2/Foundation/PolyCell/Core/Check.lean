@@ -235,11 +235,12 @@ def inferRawCellSort? {profile : PolyProfile} {dimension : CellDim} :
   | .compH _ _ => Except.error .unsupportedCompH
   | .identity base => inferRawCellSort? base
 
-/-- Expected-sort check after the recursive structural screen has succeeded. -/
+/-- Expected-sort check through the recursive structural screen. -/
 def screenExpectedSort? {profile : PolyProfile} {dimension : CellDim}
-    (expectedSort : CellSort) (rawCell : PolyTerm profile dimension) :
+    (expectedSort : CellSort) (scope : Nat)
+    (rawCell : PolyTerm profile dimension) :
     Except CellCheckRejection Unit :=
-  match inferRawCellSort? rawCell with
+  match screenRawCell? scope rawCell with
   | Except.ok actualSort =>
       if actualSort = expectedSort then
         Except.ok ()
@@ -262,13 +263,7 @@ def screenRawCellAs? {profile : PolyProfile} {dimension : CellDim}
     (expectedSort : CellSort) (scope : Nat)
     (rawCell : PolyTerm profile dimension) :
     Except CellCheckRejection Unit :=
-  match screenRawCell? scope rawCell with
-  | Except.ok actualSort =>
-      if actualSort = expectedSort then
-        Except.ok ()
-      else
-        Except.error .wrongSort
-  | Except.error rejection => Except.error rejection
+  screenExpectedSort? expectedSort scope rawCell
 
 /-- Compare rejection reasons by their stable diagnostic code. -/
 def hasSameRejectionCode
@@ -383,6 +378,13 @@ theorem screenRawCell0As?_unitType {profile : PolyProfile} {scope : Nat} :
     screenRawCell0As? (profile := profile) .type scope
       (PolyTerm.atom unitTypeGeneratorSpec.cellId 0) = Except.ok () := rfl
 
+theorem screenExpectedSort?_badUnitTypePayload_as_type_rejects
+    {profile : PolyProfile} :
+    screenExpectedSort? (profile := profile) .type
+      NegativeProbes.defaultInferScope
+      (NegativeProbes.badUnitTypePayloadRawCell profile) =
+      Except.error .badPayload := rfl
+
 theorem screenRawCell?_matchedVerticalBoundary_scope_four
     {profile : PolyProfile} :
     screenRawCell? (profile := profile) NegativeProbes.defaultInferScope
@@ -401,11 +403,25 @@ theorem unknownGeneratorProbe_rejects {profile : PolyProfile} :
       (NegativeProbes.unknownGeneratorRawCell profile) =
       Except.error (NegativeProbes.unknownGeneratorProbe profile).expectedRejection := rfl
 
+theorem outOfScopeVariableProbe_rejects {profile : PolyProfile} :
+    screenRawCell0? (profile := profile)
+      (NegativeProbes.outOfScopeVariableProbe profile).scope
+      (NegativeProbes.outOfScopeVariableRawCell profile) =
+      Except.error
+        (NegativeProbes.outOfScopeVariableProbe profile).expectedRejection := rfl
+
 theorem badPayloadProbe_rejects {profile : PolyProfile} :
     screenRawCell0? (profile := profile)
       (NegativeProbes.badPayloadProbe profile).scope
       (NegativeProbes.badPayloadRawCell profile) =
       Except.error (NegativeProbes.badPayloadProbe profile).expectedRejection := rfl
+
+theorem badUnitTypePayloadProbe_rejects {profile : PolyProfile} :
+    screenRawCell0? (profile := profile)
+      (NegativeProbes.badUnitTypePayloadProbe profile).scope
+      (NegativeProbes.badUnitTypePayloadRawCell profile) =
+      Except.error
+        (NegativeProbes.badUnitTypePayloadProbe profile).expectedRejection := rfl
 
 theorem wrongArityProbe_rejects {profile : PolyProfile} :
     screenRawCell0? (profile := profile)
@@ -436,6 +452,14 @@ theorem badBoundarySortProbe_rejects {profile : PolyProfile} :
         (NegativeProbes.badBoundarySortProbe profile).expectedRejection :=
   rfl
 
+theorem badBoundaryTypeSortProbe_rejects {profile : PolyProfile} :
+    screenRawCell? (profile := profile)
+      (NegativeProbes.badBoundaryTypeSortProbe profile).scope
+      (NegativeProbes.badBoundaryTypeSortRawCell profile) =
+      Except.error
+        (NegativeProbes.badBoundaryTypeSortProbe profile).expectedRejection :=
+  rfl
+
 theorem badVerticalBoundaryProbe_rejects {profile : PolyProfile} :
     screenRawCell? (profile := profile)
       (NegativeProbes.badVerticalBoundaryProbe profile).scope
@@ -458,6 +482,31 @@ theorem wrongSortProbe_rejects {profile : PolyProfile} :
       (NegativeProbes.wrongSortProbe profile).expectedScope
       (NegativeProbes.wrongSortRawCell profile) =
       Except.error (NegativeProbes.wrongSortProbe profile).expectedRejection := rfl
+
+theorem unitTypeAsTermProbe_rejects {profile : PolyProfile} :
+    screenRawCell0As? (profile := profile)
+      (NegativeProbes.unitTypeAsTermProbe profile).expectedSort
+      (NegativeProbes.unitTypeAsTermProbe profile).expectedScope
+      (NegativeProbes.unitTypeAsTermRawCell profile) =
+      Except.error
+        (NegativeProbes.unitTypeAsTermProbe profile).expectedRejection := rfl
+
+theorem termAsTypeProbe_rejects {profile : PolyProfile} :
+    screenRawCell0As? (profile := profile)
+      (NegativeProbes.termAsTypeProbe profile).expectedSort
+      (NegativeProbes.termAsTypeProbe profile).expectedScope
+      (NegativeProbes.termAsTypeRawCell profile) =
+      Except.error
+        (NegativeProbes.termAsTypeProbe profile).expectedRejection := rfl
+
+theorem typeIdentityAsTermStepProbe_rejects {profile : PolyProfile} :
+    screenRawCellAs? (profile := profile)
+      (NegativeProbes.typeIdentityAsTermStepProbe profile).expectedSort
+      (NegativeProbes.typeIdentityAsTermStepProbe profile).expectedScope
+      (NegativeProbes.typeIdentityAsTermStepRawCell profile) =
+      Except.error
+        (NegativeProbes.typeIdentityAsTermStepProbe profile).expectedRejection :=
+  rfl
 
 theorem inferNegativeProbes_rejected_by_screen (profile : PolyProfile) :
     areInferNegativeProbesRejected
