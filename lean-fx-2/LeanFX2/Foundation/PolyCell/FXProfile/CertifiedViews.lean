@@ -394,6 +394,18 @@ This is a structural thin cell, not yet the final legacy `Conv` bridge. -/
 abbrev CertifiedFXTermThinCell (scope : Nat) :=
   CertifiedFXThinCell .term 0 scope
 
+/-- Certified thin type cell at dimension 1. -/
+abbrev CertifiedFXTypeThinCell (scope : Nat) :=
+  CertifiedFXThinCell .type 0 scope
+
+/-- Certified thin context cell at dimension 1. -/
+abbrev CertifiedFXContextThinCell (scope : Nat) :=
+  CertifiedFXThinCell .context 0 scope
+
+/-- Certified thin mode cell at dimension 1. -/
+abbrev CertifiedFXModeThinCell (scope : Nat) :=
+  CertifiedFXThinCell .mode 0 scope
+
 /-- Endpoint-indexed certified term arrow at dimension 1. -/
 abbrev CertifiedFXTermArrow (scope : Nat)
     (sourceRaw targetRaw : PolyTerm fxProfile 0) :=
@@ -520,7 +532,7 @@ def certifiedSeedTermIdentityThin :
 
 /-- Certified thinness view for the seed type identity. -/
 def certifiedSeedTypeIdentityThin :
-    CertifiedFXThinCell .type 0 NegativeProbes.defaultInferScope where
+    CertifiedFXTypeThinCell NegativeProbes.defaultInferScope where
   certifiedFXCell := certifiedSeedTypeIdentity
   thinEvidence :=
     PolyCell.identityThinCell
@@ -528,7 +540,7 @@ def certifiedSeedTypeIdentityThin :
 
 /-- Certified thinness view for the seed context identity. -/
 def certifiedSeedContextIdentityThin :
-    CertifiedFXThinCell .context 0 NegativeProbes.defaultInferScope where
+    CertifiedFXContextThinCell NegativeProbes.defaultInferScope where
   certifiedFXCell := certifiedSeedContextIdentity
   thinEvidence :=
     PolyCell.identityThinCell
@@ -536,7 +548,7 @@ def certifiedSeedContextIdentityThin :
 
 /-- Certified thinness view for the seed mode identity. -/
 def certifiedSeedModeIdentityThin :
-    CertifiedFXThinCell .mode 0 NegativeProbes.defaultInferScope where
+    CertifiedFXModeThinCell NegativeProbes.defaultInferScope where
   certifiedFXCell := certifiedSeedModeIdentity
   thinEvidence :=
     PolyCell.identityThinCell
@@ -605,6 +617,36 @@ def certifiedSeedTermIdentityTwiceThinArrow :
   CertifiedFXThinArrow.compV
     certifiedSeedTermIdentityThinArrow
     certifiedSeedTermIdentityThinArrow
+
+/-- Endpoint-indexed thin arrow for the seed type identity composed with
+itself. -/
+def certifiedSeedTypeIdentityTwiceThinArrow :
+    CertifiedFXTypeThinArrow NegativeProbes.defaultInferScope
+      (NegativeProbes.seedTypeAtom fxProfile)
+      (NegativeProbes.seedTypeAtom fxProfile) :=
+  CertifiedFXThinArrow.compV
+    certifiedSeedTypeIdentityThinArrow
+    certifiedSeedTypeIdentityThinArrow
+
+/-- Endpoint-indexed thin arrow for the seed context identity composed with
+itself. -/
+def certifiedSeedContextIdentityTwiceThinArrow :
+    CertifiedFXContextThinArrow NegativeProbes.defaultInferScope
+      (NegativeProbes.seedContextAtom fxProfile)
+      (NegativeProbes.seedContextAtom fxProfile) :=
+  CertifiedFXThinArrow.compV
+    certifiedSeedContextIdentityThinArrow
+    certifiedSeedContextIdentityThinArrow
+
+/-- Endpoint-indexed thin arrow for the seed mode identity composed with
+itself. -/
+def certifiedSeedModeIdentityTwiceThinArrow :
+    CertifiedFXModeThinArrow NegativeProbes.defaultInferScope
+      (NegativeProbes.seedModeAtom fxProfile)
+      (NegativeProbes.seedModeAtom fxProfile) :=
+  CertifiedFXThinArrow.compV
+    certifiedSeedModeIdentityThinArrow
+    certifiedSeedModeIdentityThinArrow
 
 theorem certifiedSeedTerm_raw :
     certifiedSeedTerm.toRaw = NegativeProbes.seedTermAtom fxProfile := rfl
@@ -808,5 +850,47 @@ theorem certifiedSeedTermIdentityTwiceThinArrow_source :
 theorem certifiedSeedTermIdentityTwiceThinArrow_target :
     certifiedSeedTermIdentityTwiceThinArrow.target =
       NegativeProbes.seedTermAtom fxProfile := rfl
+
+theorem certifiedSeedTypeIdentityTwiceThinArrow_raw :
+    certifiedSeedTypeIdentityTwiceThinArrow.toRaw =
+      PolyTerm.compV
+        (PolyTerm.identity (NegativeProbes.seedTypeAtom fxProfile))
+        (PolyTerm.identity (NegativeProbes.seedTypeAtom fxProfile)) := rfl
+
+theorem certifiedSeedTypeIdentityTwiceThinArrow_source :
+    certifiedSeedTypeIdentityTwiceThinArrow.source =
+      NegativeProbes.seedTypeAtom fxProfile := rfl
+
+theorem certifiedSeedTypeIdentityTwiceThinArrow_target :
+    certifiedSeedTypeIdentityTwiceThinArrow.target =
+      NegativeProbes.seedTypeAtom fxProfile := rfl
+
+theorem certifiedSeedContextIdentityTwiceThinArrow_raw :
+    certifiedSeedContextIdentityTwiceThinArrow.toRaw =
+      PolyTerm.compV
+        (PolyTerm.identity (NegativeProbes.seedContextAtom fxProfile))
+        (PolyTerm.identity (NegativeProbes.seedContextAtom fxProfile)) := rfl
+
+theorem certifiedSeedContextIdentityTwiceThinArrow_source :
+    certifiedSeedContextIdentityTwiceThinArrow.source =
+      NegativeProbes.seedContextAtom fxProfile := rfl
+
+theorem certifiedSeedContextIdentityTwiceThinArrow_target :
+    certifiedSeedContextIdentityTwiceThinArrow.target =
+      NegativeProbes.seedContextAtom fxProfile := rfl
+
+theorem certifiedSeedModeIdentityTwiceThinArrow_raw :
+    certifiedSeedModeIdentityTwiceThinArrow.toRaw =
+      PolyTerm.compV
+        (PolyTerm.identity (NegativeProbes.seedModeAtom fxProfile))
+        (PolyTerm.identity (NegativeProbes.seedModeAtom fxProfile)) := rfl
+
+theorem certifiedSeedModeIdentityTwiceThinArrow_source :
+    certifiedSeedModeIdentityTwiceThinArrow.source =
+      NegativeProbes.seedModeAtom fxProfile := rfl
+
+theorem certifiedSeedModeIdentityTwiceThinArrow_target :
+    certifiedSeedModeIdentityTwiceThinArrow.target =
+      NegativeProbes.seedModeAtom fxProfile := rfl
 
 end LeanFX2.Foundation.PolyCell.FXProfile
