@@ -373,6 +373,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.CertifiedRawCell.cellSort
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.CertifiedRawCell.cellBoundary
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.CertifiedRawCell.certifiedCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.CertifiedRawCell.certifiedCell_raw
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.CertifiedRawCellResult
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.CertifiedRawCellResult.cellDimension
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.CertifiedRawCellResult.inputCode
@@ -381,7 +382,11 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.CertifiedRawCellResult.cellBoundary
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.CertifiedRawCellResult.certifiedCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.CertifiedRawCellResult.hasInputCode
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.CertifiedRawCellResult.certifiedCell_raw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.CertifiedRawCellResult.inputCode_matches_rawCellCode
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedRawCellResultOfPackage
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedRawCellResultOfPackage_rawCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedRawCellResultOfPackage_certifiedCell_raw
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.variablePayloadEvidence?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedVariablePackage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedUnitTypePackage

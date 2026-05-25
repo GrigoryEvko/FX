@@ -119,6 +119,17 @@ structure CertifiedRawCell (profile : PolyProfile) (scope : Nat)
   certifiedCell :
     PolyCell profile cellSort dimension scope cellBoundary rawCell
 
+namespace CertifiedRawCell
+
+/-- A certified raw-cell package erases through its certified cell to the
+raw cell in its type index. -/
+theorem certifiedCell_raw {profile : PolyProfile} {scope : Nat}
+    {dimension : CellDim} {rawCell : PolyTerm profile dimension}
+    (certifiedRawCell : CertifiedRawCell profile scope rawCell) :
+    certifiedRawCell.certifiedCell.raw = rawCell := rfl
+
+end CertifiedRawCell
+
 /-- Unindexed certified result returned by the executable ingress.
 
 The result carries an actual `PolyCell` plus a computable raw-code preservation
@@ -143,6 +154,24 @@ structure CertifiedRawCellResult (profile : PolyProfile) (scope : Nat) where
   hasInputCode :
     hasSameNatList inputCode (rawCellCode rawCell) = true
 
+namespace CertifiedRawCellResult
+
+/-- A successful certified-result package erases through its certified cell to
+the raw cell stored in the result. -/
+theorem certifiedCell_raw {profile : PolyProfile} {scope : Nat}
+    (certifiedResult : CertifiedRawCellResult profile scope) :
+    certifiedResult.certifiedCell.raw = certifiedResult.rawCell := rfl
+
+/-- The result's stored input code matches the raw code of its stored raw
+cell. -/
+theorem inputCode_matches_rawCellCode {profile : PolyProfile} {scope : Nat}
+    (certifiedResult : CertifiedRawCellResult profile scope) :
+    hasSameNatList certifiedResult.inputCode
+      (rawCellCode certifiedResult.rawCell) = true :=
+  certifiedResult.hasInputCode
+
+end CertifiedRawCellResult
+
 /-- Package a raw-indexed certificate into the executable result type. -/
 def certifiedRawCellResultOfPackage {profile : PolyProfile} {scope : Nat}
     {dimension : CellDim} {rawCell : PolyTerm profile dimension}
@@ -158,6 +187,30 @@ def certifiedRawCellResultOfPackage {profile : PolyProfile} {scope : Nat}
   cellBoundary := certifiedRawCell.cellBoundary
   certifiedCell := certifiedRawCell.certifiedCell
   hasInputCode := hasInputCode
+
+/-- Packaging a raw-indexed certificate preserves its raw erasure. -/
+theorem certifiedRawCellResultOfPackage_rawCell {profile : PolyProfile}
+    {scope : Nat} {dimension : CellDim}
+    {rawCell : PolyTerm profile dimension}
+    (inputCode : List Nat)
+    (certifiedRawCell : CertifiedRawCell profile scope rawCell)
+    (hasInputCode :
+      hasSameNatList inputCode (rawCellCode rawCell) = true) :
+    (certifiedRawCellResultOfPackage
+      inputCode certifiedRawCell hasInputCode).rawCell = rawCell := rfl
+
+/-- Packaging a raw-indexed certificate preserves the certified cell's raw
+erasure. -/
+theorem certifiedRawCellResultOfPackage_certifiedCell_raw
+    {profile : PolyProfile} {scope : Nat} {dimension : CellDim}
+    {rawCell : PolyTerm profile dimension}
+    (inputCode : List Nat)
+    (certifiedRawCell : CertifiedRawCell profile scope rawCell)
+    (hasInputCode :
+      hasSameNatList inputCode (rawCellCode rawCell) = true) :
+    (certifiedRawCellResultOfPackage
+      inputCode certifiedRawCell hasInputCode).certifiedCell.raw =
+      rawCell := rfl
 
 /-- Construct variable payload evidence by recursion, avoiding propositional
 decidable `if` over `<`.
