@@ -429,6 +429,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.ofCellId?_ofConstructorIndex
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.toCell?_ofCellId?_ofConstructorIndex
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.toCell?_ofCellId?_ofConstructorIndex
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.ofCell?
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.ofCell?
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.toCell?_ofCell?_toCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.toCell?_ofCell?_toCell
 
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Stratification.isPositiveDimension
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Stratification.isPositiveDimension_zero
