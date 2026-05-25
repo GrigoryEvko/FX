@@ -62,6 +62,107 @@ def targetRaw {cellSort : CellSort} {cellDimension scope : Nat}
 
 end CertifiedFXCell
 
+/-- Endpoint-indexed certified positive-dimensional FX cell.
+
+Unlike `CertifiedFXCell`, this view makes the source and target part of the
+type.  Vertical composition can therefore demand a shared middle endpoint
+without equality casts. -/
+structure CertifiedFXArrow
+    (cellSort : CellSort) (cellDimension : CellDim) (scope : Nat)
+    (sourceRaw targetRaw : PolyTerm fxProfile cellDimension) where
+  /-- Raw erasure of the certified arrow. -/
+  rawCell : PolyTerm fxProfile (cellDimension + 1)
+  /-- Certified witness with the exact indexed boundary. -/
+  certifiedCell :
+    PolyCell fxProfile cellSort (cellDimension + 1) scope
+      (sourceRaw, targetRaw) rawCell
+
+namespace CertifiedFXArrow
+
+/-- Build an endpoint-indexed arrow from an exact certified witness. -/
+def ofCell {cellSort : CellSort} {cellDimension scope : Nat}
+    {sourceRaw targetRaw : PolyTerm fxProfile cellDimension}
+    {rawCell : PolyTerm fxProfile (cellDimension + 1)}
+    (certifiedCell :
+      PolyCell fxProfile cellSort (cellDimension + 1) scope
+        (sourceRaw, targetRaw) rawCell) :
+    CertifiedFXArrow cellSort cellDimension scope sourceRaw targetRaw where
+  rawCell := rawCell
+  certifiedCell := certifiedCell
+
+/-- Forget endpoint-indexing to the coarser certified FX cell view. -/
+def toCertifiedFXCell {cellSort : CellSort} {cellDimension scope : Nat}
+    {sourceRaw targetRaw : PolyTerm fxProfile cellDimension}
+    (arrow :
+      CertifiedFXArrow cellSort cellDimension scope sourceRaw targetRaw) :
+    CertifiedFXCell cellSort (cellDimension + 1) scope where
+  rawCell := arrow.rawCell
+  cellBoundary := (sourceRaw, targetRaw)
+  certifiedCell := arrow.certifiedCell
+
+/-- Raw erasure of an endpoint-indexed certified arrow. -/
+def toRaw {cellSort : CellSort} {cellDimension scope : Nat}
+    {sourceRaw targetRaw : PolyTerm fxProfile cellDimension}
+    (arrow :
+      CertifiedFXArrow cellSort cellDimension scope sourceRaw targetRaw) :
+    PolyTerm fxProfile (cellDimension + 1) :=
+  arrow.rawCell
+
+/-- Source endpoint of an endpoint-indexed certified arrow. -/
+def source {cellSort : CellSort} {cellDimension scope : Nat}
+    {sourceRaw targetRaw : PolyTerm fxProfile cellDimension}
+    (_arrow :
+      CertifiedFXArrow cellSort cellDimension scope sourceRaw targetRaw) :
+    PolyTerm fxProfile cellDimension :=
+  sourceRaw
+
+/-- Target endpoint of an endpoint-indexed certified arrow. -/
+def target {cellSort : CellSort} {cellDimension scope : Nat}
+    {sourceRaw targetRaw : PolyTerm fxProfile cellDimension}
+    (_arrow :
+      CertifiedFXArrow cellSort cellDimension scope sourceRaw targetRaw) :
+    PolyTerm fxProfile cellDimension :=
+  targetRaw
+
+/-- Identity arrow over any certified FX cell. -/
+def identity {cellSort : CellSort} {cellDimension scope : Nat}
+    (baseCell : CertifiedFXCell cellSort cellDimension scope) :
+    CertifiedFXArrow cellSort cellDimension scope
+      baseCell.rawCell baseCell.rawCell :=
+  ofCell (PolyCell.identityCell baseCell.certifiedCell)
+
+/-- Vertical composition of endpoint-indexed certified arrows. -/
+def compV {cellSort : CellSort} {cellDimension scope : Nat}
+    {sourceRaw middleRaw targetRaw : PolyTerm fxProfile cellDimension}
+    (firstArrow :
+      CertifiedFXArrow cellSort cellDimension scope sourceRaw middleRaw)
+    (secondArrow :
+      CertifiedFXArrow cellSort cellDimension scope middleRaw targetRaw) :
+    CertifiedFXArrow cellSort cellDimension scope sourceRaw targetRaw :=
+  ofCell
+    (PolyCell.verticalCompositeCell
+      firstArrow.certifiedCell
+      secondArrow.certifiedCell)
+
+/-- Raw erasure of an identity arrow is definitional. -/
+theorem identity_raw {cellSort : CellSort} {cellDimension scope : Nat}
+    (baseCell : CertifiedFXCell cellSort cellDimension scope) :
+    (identity baseCell).toRaw =
+      PolyTerm.identity (profile := fxProfile) baseCell.rawCell := rfl
+
+/-- Raw erasure of vertical composition is definitional. -/
+theorem compV_raw {cellSort : CellSort} {cellDimension scope : Nat}
+    {sourceRaw middleRaw targetRaw : PolyTerm fxProfile cellDimension}
+    (firstArrow :
+      CertifiedFXArrow cellSort cellDimension scope sourceRaw middleRaw)
+    (secondArrow :
+      CertifiedFXArrow cellSort cellDimension scope middleRaw targetRaw) :
+    (compV firstArrow secondArrow).toRaw =
+      PolyTerm.compV (profile := fxProfile)
+        firstArrow.rawCell secondArrow.rawCell := rfl
+
+end CertifiedFXArrow
+
 /-- A certified positive-dimensional FX cell with certified thinness evidence. -/
 structure CertifiedFXThinCell
     (cellSort : CellSort) (cellDimension : CellDim) (scope : Nat) where
@@ -97,6 +198,104 @@ def targetRaw {cellSort : CellSort} {cellDimension scope : Nat}
   cell.certifiedFXCell.targetRaw
 
 end CertifiedFXThinCell
+
+/-- Endpoint-indexed certified thin positive-dimensional FX cell. -/
+structure CertifiedFXThinArrow
+    (cellSort : CellSort) (cellDimension : CellDim) (scope : Nat)
+    (sourceRaw targetRaw : PolyTerm fxProfile cellDimension) where
+  /-- Underlying endpoint-indexed certified arrow. -/
+  certifiedArrow :
+    CertifiedFXArrow cellSort cellDimension scope sourceRaw targetRaw
+  /-- Certified structural thinness evidence for the underlying arrow. -/
+  thinEvidence : PolyCell.ThinCell certifiedArrow.certifiedCell
+
+namespace CertifiedFXThinArrow
+
+/-- Forget thinness and keep the endpoint-indexed certified arrow. -/
+def toCertifiedFXArrow {cellSort : CellSort} {cellDimension scope : Nat}
+    {sourceRaw targetRaw : PolyTerm fxProfile cellDimension}
+    (arrow :
+      CertifiedFXThinArrow cellSort cellDimension scope sourceRaw targetRaw) :
+    CertifiedFXArrow cellSort cellDimension scope sourceRaw targetRaw :=
+  arrow.certifiedArrow
+
+/-- Forget endpoint indexing and keep the coarser certified thin-cell view. -/
+def toCertifiedFXThinCell {cellSort : CellSort} {cellDimension scope : Nat}
+    {sourceRaw targetRaw : PolyTerm fxProfile cellDimension}
+    (arrow :
+      CertifiedFXThinArrow cellSort cellDimension scope sourceRaw targetRaw) :
+    CertifiedFXThinCell cellSort cellDimension scope where
+  certifiedFXCell := arrow.certifiedArrow.toCertifiedFXCell
+  thinEvidence := arrow.thinEvidence
+
+/-- Raw erasure of an endpoint-indexed certified thin arrow. -/
+def toRaw {cellSort : CellSort} {cellDimension scope : Nat}
+    {sourceRaw targetRaw : PolyTerm fxProfile cellDimension}
+    (arrow :
+      CertifiedFXThinArrow cellSort cellDimension scope sourceRaw targetRaw) :
+    PolyTerm fxProfile (cellDimension + 1) :=
+  arrow.certifiedArrow.toRaw
+
+/-- Source endpoint of an endpoint-indexed certified thin arrow. -/
+def source {cellSort : CellSort} {cellDimension scope : Nat}
+    {sourceRaw targetRaw : PolyTerm fxProfile cellDimension}
+    (arrow :
+      CertifiedFXThinArrow cellSort cellDimension scope sourceRaw targetRaw) :
+    PolyTerm fxProfile cellDimension :=
+  arrow.certifiedArrow.source
+
+/-- Target endpoint of an endpoint-indexed certified thin arrow. -/
+def target {cellSort : CellSort} {cellDimension scope : Nat}
+    {sourceRaw targetRaw : PolyTerm fxProfile cellDimension}
+    (arrow :
+      CertifiedFXThinArrow cellSort cellDimension scope sourceRaw targetRaw) :
+    PolyTerm fxProfile cellDimension :=
+  arrow.certifiedArrow.target
+
+/-- Identity thin arrow over any certified FX cell. -/
+def identity {cellSort : CellSort} {cellDimension scope : Nat}
+    (baseCell : CertifiedFXCell cellSort cellDimension scope) :
+    CertifiedFXThinArrow cellSort cellDimension scope
+      baseCell.rawCell baseCell.rawCell where
+  certifiedArrow := CertifiedFXArrow.identity baseCell
+  thinEvidence := PolyCell.identityThinCell baseCell.certifiedCell
+
+/-- Vertical composition of endpoint-indexed certified thin arrows. -/
+def compV {cellSort : CellSort} {cellDimension scope : Nat}
+    {sourceRaw middleRaw targetRaw : PolyTerm fxProfile cellDimension}
+    (firstArrow :
+      CertifiedFXThinArrow cellSort cellDimension scope sourceRaw middleRaw)
+    (secondArrow :
+      CertifiedFXThinArrow cellSort cellDimension scope middleRaw targetRaw) :
+    CertifiedFXThinArrow cellSort cellDimension scope sourceRaw targetRaw where
+  certifiedArrow :=
+    CertifiedFXArrow.compV
+      firstArrow.certifiedArrow
+      secondArrow.certifiedArrow
+  thinEvidence :=
+    PolyCell.verticalCompositeThinCell
+      firstArrow.thinEvidence
+      secondArrow.thinEvidence
+
+/-- Raw erasure of an identity thin arrow is definitional. -/
+theorem identity_raw {cellSort : CellSort} {cellDimension scope : Nat}
+    (baseCell : CertifiedFXCell cellSort cellDimension scope) :
+    (identity baseCell).toRaw =
+      PolyTerm.identity (profile := fxProfile) baseCell.rawCell := rfl
+
+/-- Raw erasure of thin vertical composition is definitional. -/
+theorem compV_raw {cellSort : CellSort} {cellDimension scope : Nat}
+    {sourceRaw middleRaw targetRaw : PolyTerm fxProfile cellDimension}
+    (firstArrow :
+      CertifiedFXThinArrow cellSort cellDimension scope sourceRaw middleRaw)
+    (secondArrow :
+      CertifiedFXThinArrow cellSort cellDimension scope middleRaw targetRaw) :
+    (compV firstArrow secondArrow).toRaw =
+      PolyTerm.compV (profile := fxProfile)
+        firstArrow.certifiedArrow.rawCell
+        secondArrow.certifiedArrow.rawCell := rfl
+
+end CertifiedFXThinArrow
 
 /-- Certified FX context cell at dimension 0. -/
 abbrev CertifiedFXContext (scope : Nat) := CertifiedFXCell .context 0 scope
@@ -138,6 +337,16 @@ abbrev CertifiedFXDimTwoTermCell (scope : Nat) :=
 This is a structural thin cell, not yet the final legacy `Conv` bridge. -/
 abbrev CertifiedFXTermThinCell (scope : Nat) :=
   CertifiedFXThinCell .term 0 scope
+
+/-- Endpoint-indexed certified term arrow at dimension 1. -/
+abbrev CertifiedFXTermArrow (scope : Nat)
+    (sourceRaw targetRaw : PolyTerm fxProfile 0) :=
+  CertifiedFXArrow .term 0 scope sourceRaw targetRaw
+
+/-- Endpoint-indexed certified thin term arrow at dimension 1. -/
+abbrev CertifiedFXTermThinArrow (scope : Nat)
+    (sourceRaw targetRaw : PolyTerm fxProfile 0) :=
+  CertifiedFXThinArrow .term 0 scope sourceRaw targetRaw
 
 /-- Seed certified term view from the current dim-0 ingress subset. -/
 def certifiedSeedTerm :
@@ -263,6 +472,32 @@ def certifiedSeedTermIdentityTwiceThin :
     PolyCell.verticalCompositeThinCell
       certifiedSeedTermIdentityThin.thinEvidence
       certifiedSeedTermIdentityThin.thinEvidence
+
+/-- Endpoint-indexed arrow for the seed dim-1 term-step fixture. -/
+def certifiedSeedTermStepArrow :
+    CertifiedFXTermArrow NegativeProbes.defaultInferScope
+      (NegativeProbes.seedTermAtom fxProfile)
+      (NegativeProbes.alternateTermAtom fxProfile) :=
+  CertifiedFXArrow.ofCell
+    (Check.certifiedSeedTermStepPackage
+      (profile := fxProfile)).certifiedCell
+
+/-- Endpoint-indexed thin arrow for the seed term identity. -/
+def certifiedSeedTermIdentityThinArrow :
+    CertifiedFXTermThinArrow NegativeProbes.defaultInferScope
+      (NegativeProbes.seedTermAtom fxProfile)
+      (NegativeProbes.seedTermAtom fxProfile) :=
+  CertifiedFXThinArrow.identity certifiedSeedTerm
+
+/-- Endpoint-indexed thin arrow for the seed term identity composed with
+itself. -/
+def certifiedSeedTermIdentityTwiceThinArrow :
+    CertifiedFXTermThinArrow NegativeProbes.defaultInferScope
+      (NegativeProbes.seedTermAtom fxProfile)
+      (NegativeProbes.seedTermAtom fxProfile) :=
+  CertifiedFXThinArrow.compV
+    certifiedSeedTermIdentityThinArrow
+    certifiedSeedTermIdentityThinArrow
 
 theorem certifiedSeedTerm_raw :
     certifiedSeedTerm.toRaw = NegativeProbes.seedTermAtom fxProfile := rfl
@@ -391,6 +626,44 @@ theorem certifiedSeedTermIdentityTwiceThin_sourceRaw :
 
 theorem certifiedSeedTermIdentityTwiceThin_targetRaw :
     certifiedSeedTermIdentityTwiceThin.targetRaw =
+      NegativeProbes.seedTermAtom fxProfile := rfl
+
+theorem certifiedSeedTermStepArrow_raw :
+    certifiedSeedTermStepArrow.toRaw =
+      NegativeProbes.termStepVarZeroVarOneRawCell fxProfile := rfl
+
+theorem certifiedSeedTermStepArrow_source :
+    certifiedSeedTermStepArrow.source =
+      NegativeProbes.seedTermAtom fxProfile := rfl
+
+theorem certifiedSeedTermStepArrow_target :
+    certifiedSeedTermStepArrow.target =
+      NegativeProbes.alternateTermAtom fxProfile := rfl
+
+theorem certifiedSeedTermIdentityThinArrow_raw :
+    certifiedSeedTermIdentityThinArrow.toRaw =
+      PolyTerm.identity (NegativeProbes.seedTermAtom fxProfile) := rfl
+
+theorem certifiedSeedTermIdentityThinArrow_source :
+    certifiedSeedTermIdentityThinArrow.source =
+      NegativeProbes.seedTermAtom fxProfile := rfl
+
+theorem certifiedSeedTermIdentityThinArrow_target :
+    certifiedSeedTermIdentityThinArrow.target =
+      NegativeProbes.seedTermAtom fxProfile := rfl
+
+theorem certifiedSeedTermIdentityTwiceThinArrow_raw :
+    certifiedSeedTermIdentityTwiceThinArrow.toRaw =
+      PolyTerm.compV
+        (PolyTerm.identity (NegativeProbes.seedTermAtom fxProfile))
+        (PolyTerm.identity (NegativeProbes.seedTermAtom fxProfile)) := rfl
+
+theorem certifiedSeedTermIdentityTwiceThinArrow_source :
+    certifiedSeedTermIdentityTwiceThinArrow.source =
+      NegativeProbes.seedTermAtom fxProfile := rfl
+
+theorem certifiedSeedTermIdentityTwiceThinArrow_target :
+    certifiedSeedTermIdentityTwiceThinArrow.target =
       NegativeProbes.seedTermAtom fxProfile := rfl
 
 end LeanFX2.Foundation.PolyCell.FXProfile
