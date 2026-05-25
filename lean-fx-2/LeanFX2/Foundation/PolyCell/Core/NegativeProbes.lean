@@ -765,24 +765,38 @@ def certificationMatchedVerticalBoundaryProbe (profile : PolyProfile) :
   rawCell := matchedVerticalBoundaryRawCell profile
   expectedRejection := .unsupportedCertification
 
-/-- Inference probes, one for each inference-level rejection reason. -/
-def inferNegativeProbes (profile : PolyProfile) :
+/-- Inference probes whose expected rejection is `unknownGenerator`. -/
+def unknownGeneratorInferNegativeProbes (profile : PolyProfile) :
     List (RawInferNegativeProbe profile) :=
   [unknownGeneratorProbe profile,
-    outOfScopeVariableProbe profile,
+    wrongRuleEndpointDimensionProbe profile]
+
+/-- Inference probes whose expected rejection is `badPayload`. -/
+def badPayloadInferNegativeProbes (profile : PolyProfile) :
+    List (RawInferNegativeProbe profile) :=
+  [outOfScopeVariableProbe profile,
     badPayloadProbe profile,
     badUnitTypePayloadProbe profile,
     badLinearModePayloadProbe profile,
     badPiTypePayloadProbe profile,
     badContextConsPayloadProbe profile,
-    wrongArityProbe profile,
-    wrongChildShapeProbe profile,
-    wrongPiTypeArityProbe profile,
-    wrongPiTypeChildShapeProbe profile,
-    wrongContextConsArityProbe profile,
-    wrongContextConsChildShapeProbe profile,
     applicationBadPayloadProbe profile,
-    applicationWrongArityProbe profile,
+    badIdentityBaseProbe profile]
+
+/-- Inference probes whose expected rejection is `wrongArity`. -/
+def wrongArityInferNegativeProbes (profile : PolyProfile) :
+    List (RawInferNegativeProbe profile) :=
+  [wrongArityProbe profile,
+    wrongPiTypeArityProbe profile,
+    wrongContextConsArityProbe profile,
+    applicationWrongArityProbe profile]
+
+/-- Inference probes whose expected rejection is `wrongChildShape`. -/
+def wrongChildShapeInferNegativeProbes (profile : PolyProfile) :
+    List (RawInferNegativeProbe profile) :=
+  [wrongChildShapeProbe profile,
+    wrongPiTypeChildShapeProbe profile,
+    wrongContextConsChildShapeProbe profile,
     applicationWrongChildShapeProbe profile,
     applicationTypeAsFunctionProbe profile,
     applicationTypeAsArgumentProbe profile,
@@ -790,19 +804,29 @@ def inferNegativeProbes (profile : PolyProfile) :
     applicationModeAsFunctionProbe profile,
     applicationContextAsFunctionProbe profile,
     applicationModeAsArgumentProbe profile,
-    applicationContextAsArgumentProbe profile,
-    badBoundaryEndpointProbe profile,
+    applicationContextAsArgumentProbe profile]
+
+/-- Inference probes whose expected rejection is `badBoundaryEndpoint`. -/
+def badBoundaryEndpointInferNegativeProbes (profile : PolyProfile) :
+    List (RawInferNegativeProbe profile) :=
+  [badBoundaryEndpointProbe profile,
     badBoundarySortProbe profile,
     badBoundaryTypeSortProbe profile,
-    badBoundaryModeSortProbe profile,
-    wrongRuleEndpointDimensionProbe profile,
-    badVerticalBoundaryProbe profile,
-    unsupportedCompHProbe profile,
-    unsupportedCompHWellScreenedProbe profile,
-    badIdentityBaseProbe profile]
+    badBoundaryModeSortProbe profile]
 
-/-- Expected-shape probes for dim-0 and positive-dimensional sort mismatches. -/
-def expectedShapeNegativeProbes (profile : PolyProfile) :
+/-- Inference probes whose expected rejection is `badVerticalBoundary`. -/
+def badVerticalBoundaryInferNegativeProbes (profile : PolyProfile) :
+    List (RawInferNegativeProbe profile) :=
+  [badVerticalBoundaryProbe profile]
+
+/-- Inference probes whose expected rejection is `unsupportedCompH`. -/
+def unsupportedCompHInferNegativeProbes (profile : PolyProfile) :
+    List (RawInferNegativeProbe profile) :=
+  [unsupportedCompHProbe profile,
+    unsupportedCompHWellScreenedProbe profile]
+
+/-- Expected-shape probes whose expected rejection is `wrongSort`. -/
+def wrongSortExpectedShapeNegativeProbes (profile : PolyProfile) :
     List (RawExpectedShapeNegativeProbe profile) :=
   [wrongSortProbe profile,
     contextAsTypeProbe profile,
@@ -814,15 +838,49 @@ def expectedShapeNegativeProbes (profile : PolyProfile) :
     linearModeAsTypeProbe profile,
     typeIdentityAsTermStepProbe profile]
 
-/-- Certified-ingress probes for screen-passing but unsupported raw cells. -/
-def certificationNegativeProbes (profile : PolyProfile) :
+/-- Certification probes preserving non-certification boundary failure. -/
+def badBoundaryEndpointCertificationNegativeProbes
+    (profile : PolyProfile) :
     List (RawCertificationNegativeProbe profile) :=
-  [certificationBadBoundaryEndpointProbe profile,
-    certificationUnsupportedCompHProbe profile,
-    certificationUnsupportedTermStepProbe profile,
+  [certificationBadBoundaryEndpointProbe profile]
+
+/-- Certification probes preserving the absence of Gray semantics. -/
+def unsupportedCompHCertificationNegativeProbes
+    (profile : PolyProfile) :
+    List (RawCertificationNegativeProbe profile) :=
+  [certificationUnsupportedCompHProbe profile]
+
+/-- Certification probes whose expected rejection is
+`unsupportedCertification`. -/
+def unsupportedCertificationNegativeProbes (profile : PolyProfile) :
+    List (RawCertificationNegativeProbe profile) :=
+  [certificationUnsupportedTermStepProbe profile,
     certificationUnsupportedReversedTermStepProbe profile,
     certificationUnsupportedReflexiveTermStepProbe profile,
     certificationMatchedVerticalBoundaryProbe profile]
+
+/-- Inference probes, one for each inference-level rejection reason. -/
+def inferNegativeProbes (profile : PolyProfile) :
+    List (RawInferNegativeProbe profile) :=
+  unknownGeneratorInferNegativeProbes profile ++
+    badPayloadInferNegativeProbes profile ++
+    wrongArityInferNegativeProbes profile ++
+    wrongChildShapeInferNegativeProbes profile ++
+    badBoundaryEndpointInferNegativeProbes profile ++
+    badVerticalBoundaryInferNegativeProbes profile ++
+    unsupportedCompHInferNegativeProbes profile
+
+/-- Expected-shape probes for dim-0 and positive-dimensional sort mismatches. -/
+def expectedShapeNegativeProbes (profile : PolyProfile) :
+    List (RawExpectedShapeNegativeProbe profile) :=
+  wrongSortExpectedShapeNegativeProbes profile
+
+/-- Certified-ingress probes for screen-passing but unsupported raw cells. -/
+def certificationNegativeProbes (profile : PolyProfile) :
+    List (RawCertificationNegativeProbe profile) :=
+  badBoundaryEndpointCertificationNegativeProbes profile ++
+    unsupportedCompHCertificationNegativeProbes profile ++
+    unsupportedCertificationNegativeProbes profile
 
 /-- Inference probe count. -/
 theorem inferNegativeProbes_length (profile : PolyProfile) :
@@ -835,6 +893,59 @@ theorem expectedShapeNegativeProbes_length (profile : PolyProfile) :
 /-- Certified-ingress probe count. -/
 theorem certificationNegativeProbes_length (profile : PolyProfile) :
     (certificationNegativeProbes profile).length = 6 := rfl
+
+/-- Unknown-generator headline probe count. -/
+theorem unknownGeneratorInferNegativeProbes_length
+    (profile : PolyProfile) :
+    (unknownGeneratorInferNegativeProbes profile).length = 2 := rfl
+
+/-- Bad-payload headline probe count. -/
+theorem badPayloadInferNegativeProbes_length (profile : PolyProfile) :
+    (badPayloadInferNegativeProbes profile).length = 8 := rfl
+
+/-- Wrong-arity headline probe count. -/
+theorem wrongArityInferNegativeProbes_length (profile : PolyProfile) :
+    (wrongArityInferNegativeProbes profile).length = 4 := rfl
+
+/-- Wrong-child-shape headline probe count. -/
+theorem wrongChildShapeInferNegativeProbes_length
+    (profile : PolyProfile) :
+    (wrongChildShapeInferNegativeProbes profile).length = 11 := rfl
+
+/-- Bad-boundary-endpoint headline probe count. -/
+theorem badBoundaryEndpointInferNegativeProbes_length
+    (profile : PolyProfile) :
+    (badBoundaryEndpointInferNegativeProbes profile).length = 4 := rfl
+
+/-- Bad-vertical-boundary headline probe count. -/
+theorem badVerticalBoundaryInferNegativeProbes_length
+    (profile : PolyProfile) :
+    (badVerticalBoundaryInferNegativeProbes profile).length = 1 := rfl
+
+/-- Unsupported-horizontal-composition headline probe count. -/
+theorem unsupportedCompHInferNegativeProbes_length
+    (profile : PolyProfile) :
+    (unsupportedCompHInferNegativeProbes profile).length = 2 := rfl
+
+/-- Wrong-sort expected-shape headline probe count. -/
+theorem wrongSortExpectedShapeNegativeProbes_length
+    (profile : PolyProfile) :
+    (wrongSortExpectedShapeNegativeProbes profile).length = 9 := rfl
+
+/-- Certification bad-boundary-endpoint headline probe count. -/
+theorem badBoundaryEndpointCertificationNegativeProbes_length
+    (profile : PolyProfile) :
+    (badBoundaryEndpointCertificationNegativeProbes profile).length = 1 := rfl
+
+/-- Certification unsupported-horizontal-composition headline probe count. -/
+theorem unsupportedCompHCertificationNegativeProbes_length
+    (profile : PolyProfile) :
+    (unsupportedCompHCertificationNegativeProbes profile).length = 1 := rfl
+
+/-- Unsupported-certification headline probe count. -/
+theorem unsupportedCertificationNegativeProbes_length
+    (profile : PolyProfile) :
+    (unsupportedCertificationNegativeProbes profile).length = 4 := rfl
 
 end NegativeProbes
 

@@ -2094,6 +2094,81 @@ theorem certificationNegativeProbes_rejected_by_policy
     areCertificationNegativeProbesRejected
       (NegativeProbes.certificationNegativeProbes profile) = true := rfl
 
+/-- Headline theorem: all unknown-generator inference probes reject. -/
+theorem unknownGeneratorInferNegativeProbes_rejected_by_screen
+    (profile : PolyProfile) :
+    areInferNegativeProbesRejected
+      (NegativeProbes.unknownGeneratorInferNegativeProbes profile) = true :=
+  rfl
+
+/-- Headline theorem: all bad-payload inference probes reject. -/
+theorem badPayloadInferNegativeProbes_rejected_by_screen
+    (profile : PolyProfile) :
+    areInferNegativeProbesRejected
+      (NegativeProbes.badPayloadInferNegativeProbes profile) = true := rfl
+
+/-- Headline theorem: all wrong-arity inference probes reject. -/
+theorem wrongArityInferNegativeProbes_rejected_by_screen
+    (profile : PolyProfile) :
+    areInferNegativeProbesRejected
+      (NegativeProbes.wrongArityInferNegativeProbes profile) = true := rfl
+
+/-- Headline theorem: all wrong-child-shape inference probes reject. -/
+theorem wrongChildShapeInferNegativeProbes_rejected_by_screen
+    (profile : PolyProfile) :
+    areInferNegativeProbesRejected
+      (NegativeProbes.wrongChildShapeInferNegativeProbes profile) = true :=
+  rfl
+
+/-- Headline theorem: all bad-endpoint inference probes reject. -/
+theorem badBoundaryEndpointInferNegativeProbes_rejected_by_screen
+    (profile : PolyProfile) :
+    areInferNegativeProbesRejected
+      (NegativeProbes.badBoundaryEndpointInferNegativeProbes profile) =
+      true := rfl
+
+/-- Headline theorem: all bad-vertical-boundary probes reject. -/
+theorem badVerticalBoundaryInferNegativeProbes_rejected_by_screen
+    (profile : PolyProfile) :
+    areInferNegativeProbesRejected
+      (NegativeProbes.badVerticalBoundaryInferNegativeProbes profile) =
+      true := rfl
+
+/-- Headline theorem: all unsupported-`compH` inference probes reject. -/
+theorem unsupportedCompHInferNegativeProbes_rejected_by_screen
+    (profile : PolyProfile) :
+    areInferNegativeProbesRejected
+      (NegativeProbes.unsupportedCompHInferNegativeProbes profile) = true :=
+  rfl
+
+/-- Headline theorem: all wrong-sort expected-shape probes reject. -/
+theorem wrongSortExpectedShapeNegativeProbes_rejected_by_screen
+    (profile : PolyProfile) :
+    areExpectedShapeNegativeProbesRejected
+      (NegativeProbes.wrongSortExpectedShapeNegativeProbes profile) = true :=
+  rfl
+
+/-- Headline theorem: certification preserves bad-endpoint failures. -/
+theorem badBoundaryEndpointCertificationNegativeProbes_rejected_by_policy
+    (profile : PolyProfile) :
+    areCertificationNegativeProbesRejected
+      (NegativeProbes.badBoundaryEndpointCertificationNegativeProbes
+        profile) = true := rfl
+
+/-- Headline theorem: certification preserves unsupported `compH`. -/
+theorem unsupportedCompHCertificationNegativeProbes_rejected_by_policy
+    (profile : PolyProfile) :
+    areCertificationNegativeProbesRejected
+      (NegativeProbes.unsupportedCompHCertificationNegativeProbes
+        profile) = true := rfl
+
+/-- Headline theorem: all screen-passing but uncertified probes reject. -/
+theorem unsupportedCertificationNegativeProbes_rejected_by_policy
+    (profile : PolyProfile) :
+    areCertificationNegativeProbesRejected
+      (NegativeProbes.unsupportedCertificationNegativeProbes profile) =
+      true := rfl
+
 end Check
 
 end LeanFX2.Foundation.PolyCell.Core
