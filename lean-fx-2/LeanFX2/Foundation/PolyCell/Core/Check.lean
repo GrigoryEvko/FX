@@ -1,6 +1,7 @@
 import LeanFX2.Foundation.PolyCell.Core.Certified
 import LeanFX2.Foundation.PolyCell.Core.Fold
 import LeanFX2.Foundation.PolyCell.Core.NegativeProbes
+import LeanFX2.Foundation.PolyCell.Core.RawChildren
 /-!
 # Check — Executable Raw Rejection Screen
 
@@ -101,12 +102,37 @@ def lookupRuleSpec? (ruleId : CellId) : Option KnownRuleSpec :=
   else
     none
 
+/-- Decode the first finite application payloads into raw child descriptors.
+
+This is decoder output only.  The returned children still need recursive
+screening before the application atom can be accepted by `screenRawCell?`. -/
+def decodeApplicationPayload? {profile : PolyProfile} (scope payload : Nat) :
+    Except CellCheckRejection
+      (RawChildDescriptors.forGenerator profile scope
+        applicationGeneratorSpec) :=
+  if payload = NegativeProbes.applicationVarZeroVarOnePayload then
+    Except.ok
+      (RawChildDescriptors.application
+        (NegativeProbes.seedTermAtom profile)
+        (NegativeProbes.alternateTermAtom profile))
+  else if payload = NegativeProbes.applicationTypeAsFunctionPayload then
+    Except.ok
+      (RawChildDescriptors.application
+        (NegativeProbes.seedTypeAtom profile)
+        (NegativeProbes.seedTermAtom profile))
+  else if payload = NegativeProbes.wrongAritySentinel then
+    Except.error .wrongArity
+  else if payload = NegativeProbes.wrongChildShapeSentinel then
+    Except.error .wrongChildShape
+  else
+    Except.error .badPayload
+
 /-- Preliminary payload screen for a known generator.
 
-Only variable and empty-context payloads are accepted.  Non-nullary generators
-remain rejected until real payload decoding is implemented.  The sentinel
-payloads route the negative probes to the precise rejection labels that the
-future decoder must preserve. -/
+Only nullary payloads and variables are accepted here.  Application is handled
+by `screenRawCellWithFuel?`, because accepting it requires decoded-child
+screening rather than payload inspection alone.  Other non-nullary generators
+remain rejected until their decoders are implemented. -/
 def screenAtomPayload? {generatorSpec : GeneratorSpec}
     (supportedGenerator : SupportedGeneratorSpec generatorSpec)
     (scope payload : Nat) : Except CellCheckRejection Unit :=
@@ -173,48 +199,116 @@ def screenEndpointResultAs?
         Except.error .badBoundaryEndpoint
   | Except.error _ => Except.error .badBoundaryEndpoint
 
+/-- Collapse child-screening failures to the payload child-shape rejection. -/
+def screenChildResultAs?
+    (expectedSort : CellSort)
+    (screenResult : Except CellCheckRejection CellSort) :
+    Except CellCheckRejection Unit :=
+  match screenResult with
+  | Except.ok actualSort =>
+      if actualSort = expectedSort then
+        Except.ok ()
+      else
+        Except.error .wrongChildShape
+  | Except.error _ => Except.error .wrongChildShape
+
+/-- Fuelled recursive executable screen for raw cells at any dimension.
+
+The result is only the inferred sort.  It deliberately does not construct a
+certified `PolyCell`; success here is still a pre-certification screen.
+Fuel is consumed when descending into raw structure and when screening
+children decoded from a compact payload. -/
+def screenRawCellWithFuel? {profile : PolyProfile}
+    (fuel scope : Nat) {dimension : CellDim}
+    (rawCell : PolyTerm profile dimension) :
+    Except CellCheckRejection CellSort :=
+  match fuel with
+  | 0 => Except.error .badPayload
+  | fuel + 1 =>
+      match rawCell with
+      | .atom cellId payload =>
+          if Nat.beq cellId applicationGeneratorSpec.cellId then
+            match decodeApplicationPayload? (profile := profile) scope payload with
+            | Except.ok _children =>
+                if payload = NegativeProbes.applicationVarZeroVarOnePayload then
+                  match
+                      screenChildResultAs? .term
+                        (screenRawCellWithFuel? fuel scope
+                          (NegativeProbes.seedTermAtom profile)),
+                      screenChildResultAs? .term
+                        (screenRawCellWithFuel? fuel scope
+                          (NegativeProbes.alternateTermAtom profile)) with
+                  | Except.ok (), Except.ok () =>
+                      Except.ok applicationGeneratorSpec.cellSort
+                  | Except.error rejection, _ =>
+                      Except.error rejection
+                  | _, Except.error rejection =>
+                      Except.error rejection
+                else if payload =
+                    NegativeProbes.applicationTypeAsFunctionPayload then
+                  match
+                      screenChildResultAs? .term
+                        (screenRawCellWithFuel? fuel scope
+                          (NegativeProbes.seedTypeAtom profile)),
+                      screenChildResultAs? .term
+                        (screenRawCellWithFuel? fuel scope
+                          (NegativeProbes.seedTermAtom profile)) with
+                  | Except.ok (), Except.ok () =>
+                      Except.ok applicationGeneratorSpec.cellSort
+                  | Except.error rejection, _ =>
+                      Except.error rejection
+                  | _, Except.error rejection =>
+                      Except.error rejection
+                else
+                  Except.error .badPayload
+            | Except.error rejection => Except.error rejection
+          else
+            match lookupGeneratorSpec? cellId with
+            | some knownGenerator =>
+                match screenAtomPayload? knownGenerator.2 scope payload with
+                | Except.ok () => Except.ok knownGenerator.1.cellSort
+                | Except.error rejection => Except.error rejection
+            | none => Except.error .unknownGenerator
+      | .cell (dimension := endpointDimension) ruleId source targetCell =>
+          match lookupRuleSpec? ruleId with
+          | some knownRule =>
+              if endpointDimension = knownRule.1.endpointDimension then
+                match
+                    screenEndpointResultAs? knownRule.1.cellSort
+                      (screenRawCellWithFuel? fuel scope source),
+                    screenEndpointResultAs? knownRule.1.cellSort
+                      (screenRawCellWithFuel? fuel scope targetCell) with
+                | Except.ok (), Except.ok () => Except.ok knownRule.1.cellSort
+                | Except.error rejection, _ => Except.error rejection
+                | _, Except.error rejection => Except.error rejection
+              else
+                Except.error .unknownGenerator
+          | none => Except.error .unknownGenerator
+      | .compV first second =>
+          match
+              screenRawCellWithFuel? fuel scope first,
+              screenRawCellWithFuel? fuel scope second with
+          | Except.ok firstSort, Except.ok secondSort =>
+              if firstSort = secondSort then
+                if hasSameOptionalRawCell first.target? second.source? then
+                  Except.ok firstSort
+                else
+                  Except.error .badVerticalBoundary
+              else
+                Except.error .badVerticalBoundary
+          | Except.error rejection, _ => Except.error rejection
+          | _, Except.error rejection => Except.error rejection
+      | .compH _ _ => Except.error .unsupportedCompH
+      | .identity base => screenRawCellWithFuel? fuel scope base
+
 /-- Recursive executable screen for raw cells at any dimension.
 
 The result is only the inferred sort.  It deliberately does not construct a
 certified `PolyCell`; success here is still a pre-certification screen. -/
-def screenRawCell? {profile : PolyProfile} (scope : Nat) {dimension : CellDim} :
-    PolyTerm profile dimension → Except CellCheckRejection CellSort
-  | .atom cellId payload =>
-      match lookupGeneratorSpec? cellId with
-      | some knownGenerator =>
-          match screenAtomPayload? knownGenerator.2 scope payload with
-          | Except.ok () => Except.ok knownGenerator.1.cellSort
-          | Except.error rejection => Except.error rejection
-      | none => Except.error .unknownGenerator
-  | .cell (dimension := endpointDimension) ruleId source targetCell =>
-      match lookupRuleSpec? ruleId with
-      | some knownRule =>
-          if endpointDimension = knownRule.1.endpointDimension then
-            match
-                screenEndpointResultAs? knownRule.1.cellSort
-                  (screenRawCell? scope source),
-                screenEndpointResultAs? knownRule.1.cellSort
-                  (screenRawCell? scope targetCell) with
-            | Except.ok (), Except.ok () => Except.ok knownRule.1.cellSort
-            | Except.error rejection, _ => Except.error rejection
-            | _, Except.error rejection => Except.error rejection
-          else
-            Except.error .unknownGenerator
-      | none => Except.error .unknownGenerator
-  | .compV first second =>
-      match screenRawCell? scope first, screenRawCell? scope second with
-      | Except.ok firstSort, Except.ok secondSort =>
-          if firstSort = secondSort then
-            if hasSameOptionalRawCell first.target? second.source? then
-              Except.ok firstSort
-            else
-              Except.error .badVerticalBoundary
-          else
-            Except.error .badVerticalBoundary
-      | Except.error rejection, _ => Except.error rejection
-      | _, Except.error rejection => Except.error rejection
-  | .compH _ _ => Except.error .unsupportedCompH
-  | .identity base => screenRawCell? scope base
+def screenRawCell? {profile : PolyProfile} (scope : Nat) {dimension : CellDim}
+    (rawCell : PolyTerm profile dimension) :
+    Except CellCheckRejection CellSort :=
+  screenRawCellWithFuel? 64 scope rawCell
 
 /-- Infer the raw sort from current metadata without certifying the payload. -/
 def inferRawCellSort? {profile : PolyProfile} {dimension : CellDim} :
@@ -397,6 +491,43 @@ theorem screenRawCell0As?_linearMode {profile : PolyProfile} {scope : Nat} :
     screenRawCell0As? (profile := profile) .mode scope
       (PolyTerm.atom linearModeGeneratorSpec.cellId 0) = Except.ok () := rfl
 
+theorem decodeApplicationPayload?_varZeroVarOne
+    {profile : PolyProfile} {scope : Nat} :
+    decodeApplicationPayload? (profile := profile) scope
+      NegativeProbes.applicationVarZeroVarOnePayload =
+      Except.ok
+        (RawChildDescriptors.application
+          (NegativeProbes.seedTermAtom profile)
+          (NegativeProbes.alternateTermAtom profile)) := rfl
+
+theorem decodeApplicationPayload?_typeAsFunction
+    {profile : PolyProfile} {scope : Nat} :
+    decodeApplicationPayload? (profile := profile) scope
+      NegativeProbes.applicationTypeAsFunctionPayload =
+      Except.ok
+        (RawChildDescriptors.application
+          (NegativeProbes.seedTypeAtom profile)
+          (NegativeProbes.seedTermAtom profile)) := rfl
+
+theorem screenRawCell0?_applicationVarZeroVarOne
+    {profile : PolyProfile} :
+    screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.applicationVarZeroVarOneRawCell profile) =
+      Except.ok () := rfl
+
+theorem screenRawCell0As?_applicationVarZeroVarOne
+    {profile : PolyProfile} :
+    screenRawCell0As? (profile := profile) .term
+      NegativeProbes.defaultInferScope
+      (NegativeProbes.applicationVarZeroVarOneRawCell profile) =
+      Except.ok () := rfl
+
+theorem screenRawCell0?_applicationTypeAsFunction_rejects
+    {profile : PolyProfile} :
+    screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.applicationTypeAsFunctionRawCell profile) =
+      Except.error .wrongChildShape := rfl
+
 theorem screenExpectedSort?_badUnitTypePayload_as_type_rejects
     {profile : PolyProfile} :
     screenExpectedSort? (profile := profile) .type
@@ -469,6 +600,14 @@ theorem wrongChildShapeProbe_rejects {profile : PolyProfile} :
       (NegativeProbes.wrongChildShapeRawCell profile) =
       Except.error
         (NegativeProbes.wrongChildShapeProbe profile).expectedRejection := rfl
+
+theorem applicationTypeAsFunctionProbe_rejects {profile : PolyProfile} :
+    screenRawCell0? (profile := profile)
+      (NegativeProbes.applicationTypeAsFunctionProbe profile).scope
+      (NegativeProbes.applicationTypeAsFunctionRawCell profile) =
+      Except.error
+        (NegativeProbes.applicationTypeAsFunctionProbe profile).expectedRejection :=
+  rfl
 
 theorem badBoundaryEndpointProbe_rejects {profile : PolyProfile} :
     screenRawCell? (profile := profile)

@@ -59,6 +59,15 @@ def wrongAritySentinel : Nat := 9002
 /-- Payload sentinel for a known generator with a child of the wrong shape. -/
 def wrongChildShapeSentinel : Nat := 9003
 
+/-- First finite application payload accepted by the executable screen.
+
+It decodes to `var 0` applied to `var 1`.  This is a checker fixture, not a
+claim that the application is fully typed by the legacy kernel. -/
+def applicationVarZeroVarOnePayload : Nat := 9100
+
+/-- Application payload whose decoded function child is a type cell. -/
+def applicationTypeAsFunctionPayload : Nat := 9101
+
 /-- A small accepted-looking term atom used only to build malformed cells. -/
 def seedTermAtom (profile : PolyProfile) : PolyTerm profile 0 :=
   .atom variableGeneratorSpec.cellId 0
@@ -114,6 +123,16 @@ def wrongArityRawCell (profile : PolyProfile) : PolyTerm profile 0 :=
 /-- Known lambda generator with a payload reserved for child-shape testing. -/
 def wrongChildShapeRawCell (profile : PolyProfile) : PolyTerm profile 0 :=
   .atom lambdaGeneratorSpec.cellId wrongChildShapeSentinel
+
+/-- Accepted application payload fixture over two variable atoms. -/
+def applicationVarZeroVarOneRawCell (profile : PolyProfile) :
+    PolyTerm profile 0 :=
+  .atom applicationGeneratorSpec.cellId applicationVarZeroVarOnePayload
+
+/-- Application payload whose decoded function child has type sort. -/
+def applicationTypeAsFunctionRawCell (profile : PolyProfile) :
+    PolyTerm profile 0 :=
+  .atom applicationGeneratorSpec.cellId applicationTypeAsFunctionPayload
 
 /-- Known rule over an endpoint whose generator id is not supported. -/
 def badBoundaryEndpointRawCell (profile : PolyProfile) : PolyTerm profile 1 :=
@@ -238,6 +257,14 @@ def wrongChildShapeProbe (profile : PolyProfile) :
   rawCell := wrongChildShapeRawCell profile
   expectedRejection := .wrongChildShape
 
+/-- Probe for an application payload with a non-term function child. -/
+def applicationTypeAsFunctionProbe (profile : PolyProfile) :
+    RawInferNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 0
+  rawCell := applicationTypeAsFunctionRawCell profile
+  expectedRejection := .wrongChildShape
+
 /-- Probe for `badBoundaryEndpoint`. -/
 def badBoundaryEndpointProbe (profile : PolyProfile) :
     RawInferNegativeProbe profile where
@@ -341,6 +368,7 @@ def inferNegativeProbes (profile : PolyProfile) :
     badLinearModePayloadProbe profile,
     wrongArityProbe profile,
     wrongChildShapeProbe profile,
+    applicationTypeAsFunctionProbe profile,
     badBoundaryEndpointProbe profile,
     badBoundarySortProbe profile,
     badBoundaryTypeSortProbe profile,
@@ -359,7 +387,7 @@ def expectedShapeNegativeProbes (profile : PolyProfile) :
 
 /-- Inference probe count. -/
 theorem inferNegativeProbes_length (profile : PolyProfile) :
-    (inferNegativeProbes profile).length = 13 := rfl
+    (inferNegativeProbes profile).length = 14 := rfl
 
 /-- Expected-shape probe count. -/
 theorem expectedShapeNegativeProbes_length (profile : PolyProfile) :

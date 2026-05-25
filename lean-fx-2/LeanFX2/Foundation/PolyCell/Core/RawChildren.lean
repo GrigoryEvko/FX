@@ -62,6 +62,18 @@ def RawChildDescriptors.forGenerator
 
 namespace RawChildDescriptors
 
+/-- Build raw descriptors matching the application generator metadata. -/
+def application {profile : PolyProfile} {parentScope : Nat}
+    (functionRaw : PolyTerm profile 0)
+    (argumentRaw : PolyTerm profile 0) :
+    RawChildDescriptors.forGenerator profile parentScope
+      applicationGeneratorSpec :=
+  CellChildren.cons
+    (RawChildDescriptor.ofRawCell functionRaw)
+    (CellChildren.cons
+      (RawChildDescriptor.ofRawCell argumentRaw)
+      CellChildren.nil)
+
 /-- Build raw descriptors matching the lambda generator metadata. -/
 def lambda {profile : PolyProfile} {parentScope : Nat}
     (domainRaw : PolyTerm profile 0)
@@ -90,6 +102,14 @@ def contextCons {profile : PolyProfile} {parentScope : Nat}
     (RawChildDescriptor.ofRawCell contextRaw)
     (RawChildDescriptor.ofRawCell typeRaw)
     (RawChildDescriptor.ofRawCell modeRaw)
+
+/-- Application raw descriptors carry exactly the generator arity. -/
+theorem application_arity_eq_generator {profile : PolyProfile}
+    {parentScope : Nat}
+    (functionRaw : PolyTerm profile 0)
+    (argumentRaw : PolyTerm profile 0) :
+    (application (parentScope := parentScope) functionRaw argumentRaw).arity =
+      applicationGeneratorSpec.arity := rfl
 
 /-- Lambda raw descriptors carry exactly the lambda generator arity. -/
 theorem lambda_arity_eq_generator {profile : PolyProfile} {parentScope : Nat}
