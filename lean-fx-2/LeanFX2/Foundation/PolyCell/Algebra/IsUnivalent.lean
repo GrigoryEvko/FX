@@ -34,7 +34,7 @@ def IsUnivalent (target : Poly.{u, v}) : Prop :=
 The current FX algebra level is `pointwiseSubterminality`: the profile
 carries a monomial polynomial with a real pointwise `IsUnivalent` proof.
 It does not yet carry closure witnesses, a monad distributive law, or the
-faithful 78-generator coproduct model. -/
+faithful generator coproduct model. -/
 inductive AlgebraConstructionLevel where
   /-- Basic polynomial, lens, and Cartesian-lens operations are defined. -/
   | polynomialOperations
@@ -90,7 +90,7 @@ def AlgebraConstructionLevel.hasMonadDistributiveLaw :
   | .monadDistributiveLaw => true
   | .generatorCoproductModel => true
 
-/-- Whether this Axis 2 level uses the planned 78-generator coproduct model. -/
+/-- Whether this Axis 2 level uses the planned generator coproduct model. -/
 def AlgebraConstructionLevel.hasGeneratorCoproductModel :
     AlgebraConstructionLevel → Bool
   | .polynomialOperations => false
@@ -116,10 +116,10 @@ theorem identity_isUnivalent : IsUnivalent Poly.identity := by
 
 /-- The current FX generator polynomial.
 
-This is a monomial scaffold: one position with 78 directions.  It is not
-the planned coproduct of 78 generator polynomials. -/
+This is a monomial scaffold: one position with one direction for each current
+dim-0 term/type id.  It is not the planned coproduct of generator polynomials. -/
 def fxGeneratorPolynomial : Poly.{0, 0} :=
-  Poly.monomial (Fin 78)
+  Poly.monomial (Fin 103)
 
 /-- The current FX generator polynomial is pointwise subterminal because
 its position type is `Unit`. -/
@@ -155,7 +155,7 @@ theorem fxAlgebra_hasNoClosedPolynomialUniverse :
 theorem fxAlgebra_hasNoMonadDistributiveLaw :
     fxAlgebraConstructionLevel.hasMonadDistributiveLaw = false := rfl
 
-/-- FX Axis 2 currently has no 78-generator coproduct model. -/
+/-- FX Axis 2 currently has no generator coproduct model. -/
 theorem fxAlgebra_hasNoGeneratorCoproductModel :
     fxAlgebraConstructionLevel.hasGeneratorCoproductModel = false := rfl
 

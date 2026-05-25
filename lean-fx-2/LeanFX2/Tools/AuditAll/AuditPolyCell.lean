@@ -38,8 +38,17 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.retargetProfile_self
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.retargetProfile_comp
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.retargetProfile_roundtrip
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.termCellIdLimit
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.typeCellIdCount
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.firstTypeCellId
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.typeCellIdLimit
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.isTypeCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.isTermCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.isTermCell_lastTermId
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.isTermCell_firstTypeId
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.isTypeCell_lastTermId
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.isTypeCell_firstTypeId
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.isTypeCell_typeLimit
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.isStepCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.fold
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.fold_identity
@@ -384,6 +393,11 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.typeGeneratorCount
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.totalGeneratorCount
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.generatorPartition
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.termGeneratorCount_eq_currentTermConstructorCount
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.typeGeneratorCount_eq_currentTypeConstructorCount
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.totalGeneratorCount_eq_currentTermAndTypeConstructors
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.firstTypeCellId_eq_termGeneratorCount
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.typeCellIdLimit_eq_totalGeneratorCount
 
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Stratification.isPositiveDimension
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Stratification.isPositiveDimension_zero

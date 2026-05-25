@@ -58,9 +58,9 @@ example (source : Poly)
 
 -- HONESTY ASSESSMENT: The identity polynomial case is trivially true
 -- (Unit has only one element, so all forward maps must agree at ()).
--- The current FX algebra polynomial is also Unit-position, with Fin 78
+-- The current FX algebra polynomial is also Unit-position, with Fin 103
 -- directions.  That gives a real pointwise subterminality proof, but it
--- is not the planned 78-generator coproduct model and must not be used as
+-- is not the planned generator coproduct model and must not be used as
 -- evidence for the later closure or monad-distributive-law packages.
 
 end LeanFX2.Foundation.PolyCell.Algebra

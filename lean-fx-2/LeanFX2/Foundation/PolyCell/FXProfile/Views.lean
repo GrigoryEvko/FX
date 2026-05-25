@@ -103,10 +103,12 @@ abbrev FXCell := PolyTerm fxProfile
 /-- FX cells at a specific dimension. -/
 abbrev FXCellAt (dimension : CellDim) := PolyTerm fxProfile dimension
 
-/-- FX type cells: dim-0 atoms with cellId in the type-code range [64..77]. -/
+/-- FX type cells: dim-0 atoms with cellId in the provisional type range
+`[78, 103)`. -/
 def FXType := { cell : FXCellAt 0 // cell.isTypeCell = true }
 
-/-- FX term cells: dim-0 atoms with cellId in the term range [0..63]. -/
+/-- FX term cells: dim-0 atoms with cellId in the provisional term range
+`[0, 78)`. -/
 def FXTerm := { cell : FXCellAt 0 // cell.isTermCell = true }
 
 /-- Provisional FX step view: non-identity dim-1 cells.
@@ -122,12 +124,12 @@ def FXCdLemma := FXCellAt 2
 /-- Provisional Squier-coherence view. -/
 def FXSquier := FXCellAt 3
 
-/-- Construct an FX term cell (cellId < 64). -/
+/-- Construct an FX term cell. -/
 def FXTerm.ofAtom (cellId : CellId) (payload : Nat)
     (hRange : (PolyTerm.atom (profile := fxProfile) cellId payload).isTermCell = true) :
     FXTerm := ⟨.atom cellId payload, hRange⟩
 
-/-- Construct an FX type cell (cellId ≥ 64). -/
+/-- Construct an FX type cell. -/
 def FXType.ofAtom (cellId : CellId) (payload : Nat)
     (hRange : (PolyTerm.atom (profile := fxProfile) cellId payload).isTypeCell = true) :
     FXType := ⟨.atom cellId payload, hRange⟩
@@ -1252,13 +1254,31 @@ def FXCell.applyFold {target : CellDim → Type}
     (cell : FXCellAt dimension) : target dimension :=
   PolyTerm.fold algebra cell
 
-/-- The number of Generator ids reserved for terms vs types.
-Terms: 0..63 (64 ids), Types: 64..77 (14 ids). Total: 78. -/
-def termGeneratorCount : Nat := 64
-def typeGeneratorCount : Nat := 14
-def totalGeneratorCount : Nat := 78
+/-- Number of dim-0 ids currently reserved for typed terms. -/
+def termGeneratorCount : Nat := PolyTerm.termCellIdLimit
+
+/-- Number of dim-0 ids currently reserved for types. -/
+def typeGeneratorCount : Nat := PolyTerm.typeCellIdCount
+
+/-- Total number of current dim-0 term-or-type ids. -/
+def totalGeneratorCount : Nat := PolyTerm.typeCellIdLimit
 
 theorem generatorPartition :
     termGeneratorCount + typeGeneratorCount = totalGeneratorCount := rfl
+
+theorem termGeneratorCount_eq_currentTermConstructorCount :
+    termGeneratorCount = 78 := rfl
+
+theorem typeGeneratorCount_eq_currentTypeConstructorCount :
+    typeGeneratorCount = 25 := rfl
+
+theorem totalGeneratorCount_eq_currentTermAndTypeConstructors :
+    totalGeneratorCount = 103 := rfl
+
+theorem firstTypeCellId_eq_termGeneratorCount :
+    PolyTerm.firstTypeCellId = termGeneratorCount := rfl
+
+theorem typeCellIdLimit_eq_totalGeneratorCount :
+    PolyTerm.typeCellIdLimit = totalGeneratorCount := rfl
 
 end LeanFX2.Foundation.PolyCell.FXProfile

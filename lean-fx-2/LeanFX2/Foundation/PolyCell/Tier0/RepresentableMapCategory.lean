@@ -11,7 +11,8 @@ Type formers (Π, Σ, Id, etc.) are representable natural transformations
 in the slice C/U over the universe object.
 
 This is the categorical substrate that ALL PolyCell axes plug into.
-FX's 78 Generator values are representable maps in the FX CwR.
+The eventual FX generator table should interpret its term and type former
+entries as representable maps in the FX CwR.
 
 Reference: Uemura, "A general framework for the semantics of type theory",
 MSCS 33(3), 2023, arXiv:1904.04097 §2-3.

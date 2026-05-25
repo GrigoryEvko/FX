@@ -210,15 +210,57 @@ theorem PolyTerm.retargetProfile_roundtrip
 /-- Every FX term is a PolyTerm at dim 0. -/
 abbrev FXCell (profile : PolyProfile) := PolyTerm profile
 
-/-- Provisional type-cell recognizer using the current raw id range convention. -/
+/-- Number of typed `Term` constructors currently represented by dim-0 term ids.
+
+This is a structural boundary for the provisional Nat-coded profile.  It mirrors
+the `Term` constructor-count ratchet in the audit harness; it is not yet a
+typed generator table. -/
+def PolyTerm.termCellIdLimit : CellId := 78
+
+/-- Number of `Ty` constructors currently represented by dim-0 type ids.
+
+Type-cell ids start immediately after the term-cell block. -/
+def PolyTerm.typeCellIdCount : CellId := 25
+
+/-- First provisional dim-0 type-cell id. -/
+def PolyTerm.firstTypeCellId : CellId :=
+  PolyTerm.termCellIdLimit
+
+/-- One past the last provisional dim-0 type-cell id. -/
+def PolyTerm.typeCellIdLimit : CellId :=
+  PolyTerm.firstTypeCellId + PolyTerm.typeCellIdCount
+
+/-- Provisional type-cell recognizer using the current FX id range convention. -/
 def PolyTerm.isTypeCell {profile : PolyProfile} :
     PolyTerm profile 0 → Bool
-  | .atom cellId _ => cellId ≥ 64  -- type-code generators are ids 64-77
+  | .atom cellId _ =>
+      cellId ≥ PolyTerm.firstTypeCellId &&
+        cellId < PolyTerm.typeCellIdLimit
 
-/-- Provisional term-cell recognizer using the current raw id range convention. -/
+/-- Provisional term-cell recognizer using the current FX id range convention. -/
 def PolyTerm.isTermCell {profile : PolyProfile} :
     PolyTerm profile 0 → Bool
-  | .atom cellId _ => cellId < 64  -- term generators are ids 0-63
+  | .atom cellId _ => cellId < PolyTerm.termCellIdLimit
+
+theorem PolyTerm.isTermCell_lastTermId {profile : PolyProfile} :
+    (PolyTerm.atom (profile := profile)
+      (PolyTerm.termCellIdLimit - 1) 0).isTermCell = true := rfl
+
+theorem PolyTerm.isTermCell_firstTypeId {profile : PolyProfile} :
+    (PolyTerm.atom (profile := profile)
+      PolyTerm.firstTypeCellId 0).isTermCell = false := rfl
+
+theorem PolyTerm.isTypeCell_lastTermId {profile : PolyProfile} :
+    (PolyTerm.atom (profile := profile)
+      (PolyTerm.termCellIdLimit - 1) 0).isTypeCell = false := rfl
+
+theorem PolyTerm.isTypeCell_firstTypeId {profile : PolyProfile} :
+    (PolyTerm.atom (profile := profile)
+      PolyTerm.firstTypeCellId 0).isTypeCell = true := rfl
+
+theorem PolyTerm.isTypeCell_typeLimit {profile : PolyProfile} :
+    (PolyTerm.atom (profile := profile)
+      PolyTerm.typeCellIdLimit 0).isTypeCell = false := rfl
 
 /-- Provisional dim-1 step recognizer.  It has no thinness or boundary check. -/
 def PolyTerm.isStepCell {profile : PolyProfile} :
