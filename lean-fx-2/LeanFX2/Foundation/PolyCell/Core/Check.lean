@@ -263,6 +263,45 @@ def screenRawCellAs? {profile : PolyProfile} {dimension : CellDim}
         Except.error .wrongSort
   | Except.error rejection => Except.error rejection
 
+/-- Compare rejection reasons by their stable diagnostic code. -/
+def hasSameRejectionCode
+    (firstRejection secondRejection : CellCheckRejection) : Bool :=
+  Nat.beq firstRejection.toCode secondRejection.toCode
+
+/-- Does the executable screen reject this inference-level probe as expected? -/
+def isInferNegativeProbeRejected {profile : PolyProfile}
+    (probe : RawInferNegativeProbe profile) : Bool :=
+  match screenRawCell? (profile := profile) probe.scope probe.rawCell with
+  | Except.error rejection =>
+      hasSameRejectionCode rejection probe.expectedRejection
+  | Except.ok _ => false
+
+/-- Does the executable expected-shape screen reject this probe as expected? -/
+def isExpectedShapeNegativeProbeRejected {profile : PolyProfile}
+    (probe : RawExpectedShapeNegativeProbe profile) : Bool :=
+  match
+      screenRawCellAs? (profile := profile)
+        probe.expectedSort probe.expectedScope probe.rawCell with
+  | Except.error rejection =>
+      hasSameRejectionCode rejection probe.expectedRejection
+  | Except.ok _ => false
+
+/-- Check every inference-level negative probe in a list. -/
+def areInferNegativeProbesRejected {profile : PolyProfile} :
+    List (RawInferNegativeProbe profile) → Bool
+  | [] => true
+  | probe :: remainingProbes =>
+      isInferNegativeProbeRejected probe &&
+        areInferNegativeProbesRejected remainingProbes
+
+/-- Check every expected-shape negative probe in a list. -/
+def areExpectedShapeNegativeProbesRejected {profile : PolyProfile} :
+    List (RawExpectedShapeNegativeProbe profile) → Bool
+  | [] => true
+  | probe :: remainingProbes =>
+      isExpectedShapeNegativeProbeRejected probe &&
+        areExpectedShapeNegativeProbesRejected remainingProbes
+
 /-- Expected-shape screen for dim-0 callers that know the sort they require. -/
 def screenRawCell0As? {profile : PolyProfile}
     (expectedSort : CellSort) (scope : Nat)
@@ -400,6 +439,15 @@ theorem wrongSortProbe_rejects {profile : PolyProfile} :
       (NegativeProbes.wrongSortProbe profile).expectedScope
       (NegativeProbes.wrongSortRawCell profile) =
       Except.error (NegativeProbes.wrongSortProbe profile).expectedRejection := rfl
+
+theorem inferNegativeProbes_rejected_by_screen (profile : PolyProfile) :
+    areInferNegativeProbesRejected
+      (NegativeProbes.inferNegativeProbes profile) = true := rfl
+
+theorem expectedShapeNegativeProbes_rejected_by_screen
+    (profile : PolyProfile) :
+    areExpectedShapeNegativeProbesRejected
+      (NegativeProbes.expectedShapeNegativeProbes profile) = true := rfl
 
 end Check
 

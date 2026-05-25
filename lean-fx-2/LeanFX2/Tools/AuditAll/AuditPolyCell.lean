@@ -196,6 +196,11 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenExpectedSort?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell0?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCellAs?
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.hasSameRejectionCode
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.isInferNegativeProbeRejected
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.isExpectedShapeNegativeProbeRejected
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.areInferNegativeProbesRejected
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.areExpectedShapeNegativeProbesRejected
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell0As?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.lookupGeneratorSpec?_variable
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.lookupGeneratorSpec?_contextEmpty
@@ -220,6 +225,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.badVerticalBoundaryProbe_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.unsupportedCompHProbe_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.wrongSortProbe_rejects
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferNegativeProbes_rejected_by_screen
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.expectedShapeNegativeProbes_rejected_by_screen
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.dim
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.isAtom
