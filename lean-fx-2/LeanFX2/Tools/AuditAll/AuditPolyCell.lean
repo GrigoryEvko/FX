@@ -1256,10 +1256,11 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.MetatheoryPreservationEvidence
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.ErasurePreservationEvidence
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.ProfileExtension
-#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.ProfileExtension.isAdmitted
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.ProfileExtension.Admitted
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.ProfileExtension.admitted_from_fields
-#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.ProfileExtension.isAdmitted_from_fields
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.ProfileExtension.ExtendedAdmissionEvidence
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.ProfileExtension.ExtendedAdmissionEvidence.extendedFibrationTower_eq
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.ProfileExtension.ExtendedAdmissionEvidence.admitted
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.ProfileLens
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.extendProfile_preserves_shapeConstructionLevel
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.extendProfile_preserves_algebraConstructionLevel
@@ -1287,6 +1288,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaReductionInterfaceRuleArity_eq_declared
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaReductionInterfaceEvidence
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaReductionExtension
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaReductionExtension_capabilities_eq_bot
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaReductionExtension_localAdmissionRecord
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaReductionExtension_admitted
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaReductionExtension_structuralLens
@@ -1325,5 +1327,8 @@ namespace LeanFX2.Tools
 #assert_false_in_result_type_budget LeanFX2.Foundation.PolyCell.MTTNorm 0
 #assert_true_in_result_type_budget LeanFX2.Foundation.PolyCell.Extension 0
 #assert_false_in_result_type_budget LeanFX2.Foundation.PolyCell.Extension 0
+#assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Core 0
+#assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
+#assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Extension 0
 
 end LeanFX2.Tools

@@ -457,12 +457,6 @@ structure ProfileExtension.Admitted {baseProfile : PolyProfile}
   metatheoryPreservationEvidence : MetatheoryPreservationEvidence extension.interface
   erasurePreservationEvidence : ErasurePreservationEvidence extension.interface
 
-/-- A profile extension has a local admission record when its five local
-proof-relevant fields can be constructed. -/
-def ProfileExtension.isAdmitted {baseProfile : PolyProfile}
-    (extension : ProfileExtension baseProfile) : Prop :=
-  Nonempty extension.Admitted
-
 /-- Convert the extension fields into proof-relevant admission evidence. -/
 theorem ProfileExtension.admitted_from_fields
     {baseProfile : PolyProfile}
@@ -476,27 +470,30 @@ theorem ProfileExtension.admitted_from_fields
     erasurePreservationEvidence := extension.erasurePreservationEvidence
   }
 
-/-- The extension fields also give the Prop-level local-admission predicate. -/
-theorem ProfileExtension.isAdmitted_from_fields
+/-- Proof-relevant result for the current extension-preservation slice. -/
+structure ProfileExtension.ExtendedAdmissionEvidence
     {baseProfile : PolyProfile}
-    (extension : ProfileExtension baseProfile) :
-    extension.isAdmitted := by
-  exact ⟨extension.admitted_from_fields⟩
+    (extension : ProfileExtension baseProfile) where
+  extendedFibrationTower_eq :
+    (extendProfile baseProfile extension).fibrationTower =
+      .extend baseProfile.fibrationTower
+  admitted : extension.Admitted
 
 /-- Present mechanized slice of extension preservation.
 
 The later theorem must eventually target an `AdmissibleProfile` structure.
 For now this theorem only checks the facts the implementation currently
-computes: the profile tower is extended and the admission flags have
-proof-relevant evidence. -/
+computes: the profile tower is extended and the local admission record is
+carried explicitly. -/
 theorem extendProfile_preserves_admission_evidence
     (baseProfile : PolyProfile)
     (extension : ProfileExtension baseProfile)
     (admitted : extension.Admitted) :
-    (extendProfile baseProfile extension).fibrationTower =
-      .extend baseProfile.fibrationTower ∧
-    extension.isAdmitted := by
-  exact ⟨rfl, ⟨admitted⟩⟩
+    extension.ExtendedAdmissionEvidence := by
+  exact {
+    extendedFibrationTower_eq := rfl
+    admitted := admitted
+  }
 
 /-- Capabilities of the extended profile = meet of base and extension. -/
 def extendedCapabilities (baseProfile : PolyProfile)
@@ -575,7 +572,13 @@ def etaReductionExtension : ProfileExtension fxProfile where
     hasNoRuntimeConstructors := etaReductionInterfaceEvidence.generatorCount_eq_zero
   }
   fireTriangleRestriction := none
-  capabilities := MetatheoreticCapabilities.top
+  capabilities := MetatheoreticCapabilities.bot
+
+/-- The eta demonstration extension currently preserves no metatheoretic
+capabilities by ledger.  It records only interface shape and structural
+bookkeeping, not transfer theorems. -/
+theorem etaReductionExtension_capabilities_eq_bot :
+    etaReductionExtension.capabilities = MetatheoreticCapabilities.bot := rfl
 
 /-- Eta extension local admission record. -/
 theorem etaReductionExtension_localAdmissionRecord :
