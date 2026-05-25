@@ -2534,6 +2534,54 @@ theorem FXDimZeroCellIdClass.isOutsideCurrentGeneratorRange_classifyTypeConstruc
       false := by
   cases constructorName <;> rfl
 
+theorem FXDimZeroCellIdClass.isTermConstructor_classifyOutsideCurrentGeneratorRange
+    (cellId : CellId) (hasOutsideRange : totalGeneratorCount ≤ cellId) :
+    (classifyDimZeroCellId cellId).isTermConstructor = false := by
+  unfold classifyDimZeroCellId
+  have hasTermBelowTotal : termGeneratorCount ≤ totalGeneratorCount := by
+    change termGeneratorCount ≤ termGeneratorCount + typeGeneratorCount
+    exact Nat.le_add_right _ _
+  have hasNoTermRange : ¬cellId < termGeneratorCount := by
+    intro hasTermRange
+    exact Nat.not_lt_of_ge hasOutsideRange
+      (Nat.lt_of_lt_of_le hasTermRange hasTermBelowTotal)
+  have hasNoCurrentRange : ¬cellId < totalGeneratorCount :=
+    Nat.not_lt_of_ge hasOutsideRange
+  rw [dif_neg hasNoTermRange, dif_neg hasNoCurrentRange]
+  rfl
+
+theorem FXDimZeroCellIdClass.isTypeConstructor_classifyOutsideCurrentGeneratorRange
+    (cellId : CellId) (hasOutsideRange : totalGeneratorCount ≤ cellId) :
+    (classifyDimZeroCellId cellId).isTypeConstructor = false := by
+  unfold classifyDimZeroCellId
+  have hasTermBelowTotal : termGeneratorCount ≤ totalGeneratorCount := by
+    change termGeneratorCount ≤ termGeneratorCount + typeGeneratorCount
+    exact Nat.le_add_right _ _
+  have hasNoTermRange : ¬cellId < termGeneratorCount := by
+    intro hasTermRange
+    exact Nat.not_lt_of_ge hasOutsideRange
+      (Nat.lt_of_lt_of_le hasTermRange hasTermBelowTotal)
+  have hasNoCurrentRange : ¬cellId < totalGeneratorCount :=
+    Nat.not_lt_of_ge hasOutsideRange
+  rw [dif_neg hasNoTermRange, dif_neg hasNoCurrentRange]
+  rfl
+
+theorem FXDimZeroCellIdClass.isOutsideCurrentGeneratorRange_classifyOutsideCurrentGeneratorRange
+    (cellId : CellId) (hasOutsideRange : totalGeneratorCount ≤ cellId) :
+    (classifyDimZeroCellId cellId).isOutsideCurrentGeneratorRange = true := by
+  unfold classifyDimZeroCellId
+  have hasTermBelowTotal : termGeneratorCount ≤ totalGeneratorCount := by
+    change termGeneratorCount ≤ termGeneratorCount + typeGeneratorCount
+    exact Nat.le_add_right _ _
+  have hasNoTermRange : ¬cellId < termGeneratorCount := by
+    intro hasTermRange
+    exact Nat.not_lt_of_ge hasOutsideRange
+      (Nat.lt_of_lt_of_le hasTermRange hasTermBelowTotal)
+  have hasNoCurrentRange : ¬cellId < totalGeneratorCount :=
+    Nat.not_lt_of_ge hasOutsideRange
+  rw [dif_neg hasNoTermRange, dif_neg hasNoCurrentRange]
+  rfl
+
 /-- The checked local constructor index of an FX term atom. -/
 def FXTerm.constructorIndex (term : FXTerm) : Fin termGeneratorCount :=
   match term with
