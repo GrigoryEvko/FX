@@ -2651,6 +2651,68 @@ def FXType.constructorIndex (typeCell : FXType) : Fin typeGeneratorCount :=
         exact nat_sub_lt_left_of_lt_add_structural
           hasLowerBound hasUpperBound⟩
 
+theorem classifyDimZeroCellId_ofTerm (term : FXTerm) :
+    classifyDimZeroCellId term.cellId =
+      FXDimZeroCellIdClass.termConstructor term.constructorIndex := by
+  cases term with
+  | mk cell hasTermCell =>
+      cases cell with
+      | atom cellId payload =>
+          unfold FXTerm.cellId
+          unfold FXTerm.constructorIndex
+          unfold classifyDimZeroCellId
+          have hasTermRange : cellId < termGeneratorCount := by
+            change cellId < PolyTerm.termCellIdLimit
+            exact of_decide_eq_true hasTermCell
+          rw [dif_pos hasTermRange]
+
+theorem classifyDimZeroCellId_ofType (typeCell : FXType) :
+    classifyDimZeroCellId typeCell.cellId =
+      FXDimZeroCellIdClass.typeConstructor typeCell.constructorIndex := by
+  cases typeCell with
+  | mk cell hasTypeCell =>
+      cases cell with
+      | atom cellId payload =>
+          unfold FXType.cellId
+          unfold FXType.constructorIndex
+          unfold classifyDimZeroCellId
+          change
+            (decide (PolyTerm.firstTypeCellId ≤ cellId) &&
+              decide (cellId < PolyTerm.typeCellIdLimit)) = true at hasTypeCell
+          have hasLowerBoundDecide :
+              decide (PolyTerm.firstTypeCellId ≤ cellId) = true := by
+            cases hasLowerBool :
+                decide (PolyTerm.firstTypeCellId ≤ cellId) with
+            | false =>
+                rw [hasLowerBool] at hasTypeCell
+                cases hasTypeCell
+            | true =>
+                rfl
+          have hasUpperBoundDecide :
+              decide (cellId < PolyTerm.typeCellIdLimit) = true := by
+            cases hasLowerBool :
+                decide (PolyTerm.firstTypeCellId ≤ cellId) with
+            | false =>
+                rw [hasLowerBool] at hasTypeCell
+                cases hasTypeCell
+            | true =>
+                cases hasUpperBool :
+                    decide (cellId < PolyTerm.typeCellIdLimit) with
+                | false =>
+                    rw [hasLowerBool, hasUpperBool] at hasTypeCell
+                    cases hasTypeCell
+                | true =>
+                    rfl
+          have hasLowerBound : PolyTerm.firstTypeCellId ≤ cellId :=
+            of_decide_eq_true hasLowerBoundDecide
+          have hasCurrentRange : cellId < totalGeneratorCount := by
+            change cellId < PolyTerm.typeCellIdLimit
+            exact of_decide_eq_true hasUpperBoundDecide
+          have hasNoTermRange : ¬cellId < termGeneratorCount := by
+            change ¬cellId < PolyTerm.firstTypeCellId
+            exact Nat.not_lt_of_ge hasLowerBound
+          rw [dif_neg hasNoTermRange, dif_pos hasCurrentRange]
+
 /-- Construct an FX term from a checked index into the current term-id block. -/
 def FXTerm.ofConstructorIndex (constructorIndex : Fin termGeneratorCount)
     (payload : Nat) : FXTerm :=

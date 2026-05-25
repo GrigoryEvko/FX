@@ -517,6 +517,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXDimZeroCellIdClass.isOutsideCurrentGeneratorRange_classifyOutsideCurrentGeneratorRange
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.constructorIndex
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.constructorIndex
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.classifyDimZeroCellId_ofTerm
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.classifyDimZeroCellId_ofType
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.ofConstructorIndex
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.ofConstructorName
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.ofConstructorIndex
