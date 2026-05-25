@@ -74,6 +74,21 @@ abbrev KnownGeneratorSpec : Type :=
 abbrev KnownRuleSpec : Type :=
   Σ ruleSpec, SupportedRuleSpec ruleSpec
 
+/-- Certified package produced by the raw-to-certified ingress.
+
+The package is indexed by the raw cell being certified.  Returning this type
+is stronger than returning `Unit`: the successful branch carries an actual
+`PolyCell` over that raw input. -/
+structure CertifiedRawCell (profile : PolyProfile) (scope : Nat)
+    {dimension : CellDim} (rawCell : PolyTerm profile dimension) where
+  /-- Sort inferred for the certified cell. -/
+  cellSort : CellSort
+  /-- Boundary inferred for the certified cell. -/
+  cellBoundary : CellBoundary profile cellSort dimension scope
+  /-- Certified cell over the original raw input. -/
+  certifiedCell :
+    PolyCell profile cellSort dimension scope cellBoundary rawCell
+
 /-- Lookup the current supported dim-0 generator metadata by raw id. -/
 def lookupGeneratorSpec? (cellId : CellId) : Option KnownGeneratorSpec :=
   if Nat.beq cellId variableGeneratorSpec.cellId then
@@ -414,6 +429,47 @@ def screenRawCell0As? {profile : PolyProfile}
     Except CellCheckRejection Unit :=
   screenRawCellAs? expectedSort scope rawCell
 
+/-- Certified package for the first seed variable fixture. -/
+def certifiedSeedTermPackage {profile : PolyProfile} :
+    CertifiedRawCell profile NegativeProbes.defaultInferScope
+      (NegativeProbes.seedTermAtom profile) where
+  cellSort := .term
+  cellBoundary := ()
+  certifiedCell :=
+    PolyCell.variableCell (profile := profile)
+      (scope := NegativeProbes.defaultInferScope) (index := 0)
+      (Nat.zero_lt_succ 3)
+
+/-- Certified package for the seed unit-type fixture. -/
+def certifiedSeedTypePackage {profile : PolyProfile} :
+    CertifiedRawCell profile NegativeProbes.defaultInferScope
+      (NegativeProbes.seedTypeAtom profile) where
+  cellSort := .type
+  cellBoundary := ()
+  certifiedCell :=
+    PolyCell.unitType (profile := profile)
+      (scope := NegativeProbes.defaultInferScope)
+
+/-- Certified package for the seed empty-context fixture. -/
+def certifiedSeedContextPackage {profile : PolyProfile} :
+    CertifiedRawCell profile NegativeProbes.defaultInferScope
+      (NegativeProbes.seedContextAtom profile) where
+  cellSort := .context
+  cellBoundary := ()
+  certifiedCell :=
+    PolyCell.contextEmpty (profile := profile)
+      (scope := NegativeProbes.defaultInferScope)
+
+/-- Certified package for the seed linear-mode fixture. -/
+def certifiedSeedModePackage {profile : PolyProfile} :
+    CertifiedRawCell profile NegativeProbes.defaultInferScope
+      (NegativeProbes.seedModeAtom profile) where
+  cellSort := .mode
+  cellBoundary := ()
+  certifiedCell :=
+    PolyCell.linearMode (profile := profile)
+      (scope := NegativeProbes.defaultInferScope)
+
 theorem lookupGeneratorSpec?_variable :
     lookupGeneratorSpec? variableGeneratorSpec.cellId =
       some ⟨variableGeneratorSpec, SupportedGeneratorSpec.variable⟩ := rfl
@@ -553,6 +609,22 @@ theorem screenRawCell0?_applicationTypeAsFunction_rejects
     screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
       (NegativeProbes.applicationTypeAsFunctionRawCell profile) =
       Except.error .wrongChildShape := rfl
+
+theorem certifiedSeedTermPackage_raw {profile : PolyProfile} :
+    (certifiedSeedTermPackage (profile := profile)).certifiedCell.raw =
+      NegativeProbes.seedTermAtom profile := rfl
+
+theorem certifiedSeedTypePackage_raw {profile : PolyProfile} :
+    (certifiedSeedTypePackage (profile := profile)).certifiedCell.raw =
+      NegativeProbes.seedTypeAtom profile := rfl
+
+theorem certifiedSeedContextPackage_raw {profile : PolyProfile} :
+    (certifiedSeedContextPackage (profile := profile)).certifiedCell.raw =
+      NegativeProbes.seedContextAtom profile := rfl
+
+theorem certifiedSeedModePackage_raw {profile : PolyProfile} :
+    (certifiedSeedModePackage (profile := profile)).certifiedCell.raw =
+      NegativeProbes.seedModeAtom profile := rfl
 
 theorem screenExpectedSort?_badUnitTypePayload_as_type_rejects
     {profile : PolyProfile} :
