@@ -2751,6 +2751,104 @@ theorem FXDimZeroCellIdClass.isOutsideCurrentGeneratorRange_classifyType
   rw [classifyDimZeroCellId_ofType typeCell]
   rfl
 
+theorem FXDimZeroCellIdClass.isTermConstructor_classifyCellId_of_isTermCell
+    (cell : FXCellAt 0) (hasTermCell : cell.isTermCell = true) :
+    (classifyDimZeroCellId (FXCellAtZero.cellId cell)).isTermConstructor =
+      true := by
+  cases cell with
+  | atom cellId payload =>
+      change
+        (classifyDimZeroCellId
+          (FXTerm.cellId
+            ({ val := PolyTerm.atom cellId payload,
+               property := hasTermCell } : FXTerm))).isTermConstructor =
+          true
+      exact FXDimZeroCellIdClass.isTermConstructor_classifyTerm
+        ({ val := PolyTerm.atom cellId payload,
+           property := hasTermCell } : FXTerm)
+
+theorem FXDimZeroCellIdClass.isTypeConstructor_classifyCellId_of_isTermCell
+    (cell : FXCellAt 0) (hasTermCell : cell.isTermCell = true) :
+    (classifyDimZeroCellId (FXCellAtZero.cellId cell)).isTypeConstructor =
+      false := by
+  cases cell with
+  | atom cellId payload =>
+      change
+        (classifyDimZeroCellId
+          (FXTerm.cellId
+            ({ val := PolyTerm.atom cellId payload,
+               property := hasTermCell } : FXTerm))).isTypeConstructor =
+          false
+      exact FXDimZeroCellIdClass.isTypeConstructor_classifyTerm
+        ({ val := PolyTerm.atom cellId payload,
+           property := hasTermCell } : FXTerm)
+
+theorem FXDimZeroCellIdClass.isOutsideCurrentGeneratorRange_classifyCellId_of_isTermCell
+    (cell : FXCellAt 0) (hasTermCell : cell.isTermCell = true) :
+    (classifyDimZeroCellId
+      (FXCellAtZero.cellId cell)).isOutsideCurrentGeneratorRange =
+      false := by
+  cases cell with
+  | atom cellId payload =>
+      change
+        (classifyDimZeroCellId
+          (FXTerm.cellId
+            ({ val := PolyTerm.atom cellId payload,
+               property := hasTermCell } : FXTerm))).isOutsideCurrentGeneratorRange =
+          false
+      exact FXDimZeroCellIdClass.isOutsideCurrentGeneratorRange_classifyTerm
+        ({ val := PolyTerm.atom cellId payload,
+           property := hasTermCell } : FXTerm)
+
+theorem FXDimZeroCellIdClass.isTermConstructor_classifyCellId_of_isTypeCell
+    (cell : FXCellAt 0) (hasTypeCell : cell.isTypeCell = true) :
+    (classifyDimZeroCellId (FXCellAtZero.cellId cell)).isTermConstructor =
+      false := by
+  cases cell with
+  | atom cellId payload =>
+      change
+        (classifyDimZeroCellId
+          (FXType.cellId
+            ({ val := PolyTerm.atom cellId payload,
+               property := hasTypeCell } : FXType))).isTermConstructor =
+          false
+      exact FXDimZeroCellIdClass.isTermConstructor_classifyType
+        ({ val := PolyTerm.atom cellId payload,
+           property := hasTypeCell } : FXType)
+
+theorem FXDimZeroCellIdClass.isTypeConstructor_classifyCellId_of_isTypeCell
+    (cell : FXCellAt 0) (hasTypeCell : cell.isTypeCell = true) :
+    (classifyDimZeroCellId (FXCellAtZero.cellId cell)).isTypeConstructor =
+      true := by
+  cases cell with
+  | atom cellId payload =>
+      change
+        (classifyDimZeroCellId
+          (FXType.cellId
+            ({ val := PolyTerm.atom cellId payload,
+               property := hasTypeCell } : FXType))).isTypeConstructor =
+          true
+      exact FXDimZeroCellIdClass.isTypeConstructor_classifyType
+        ({ val := PolyTerm.atom cellId payload,
+           property := hasTypeCell } : FXType)
+
+theorem FXDimZeroCellIdClass.isOutsideCurrentGeneratorRange_classifyCellId_of_isTypeCell
+    (cell : FXCellAt 0) (hasTypeCell : cell.isTypeCell = true) :
+    (classifyDimZeroCellId
+      (FXCellAtZero.cellId cell)).isOutsideCurrentGeneratorRange =
+      false := by
+  cases cell with
+  | atom cellId payload =>
+      change
+        (classifyDimZeroCellId
+          (FXType.cellId
+            ({ val := PolyTerm.atom cellId payload,
+               property := hasTypeCell } : FXType))).isOutsideCurrentGeneratorRange =
+          false
+      exact FXDimZeroCellIdClass.isOutsideCurrentGeneratorRange_classifyType
+        ({ val := PolyTerm.atom cellId payload,
+           property := hasTypeCell } : FXType)
+
 /-- Construct an FX term from a checked index into the current term-id block. -/
 def FXTerm.ofConstructorIndex (constructorIndex : Fin termGeneratorCount)
     (payload : Nat) : FXTerm :=
