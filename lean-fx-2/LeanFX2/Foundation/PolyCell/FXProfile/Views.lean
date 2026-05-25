@@ -2713,6 +2713,44 @@ theorem classifyDimZeroCellId_ofType (typeCell : FXType) :
             exact Nat.not_lt_of_ge hasLowerBound
           rw [dif_neg hasNoTermRange, dif_pos hasCurrentRange]
 
+theorem FXDimZeroCellIdClass.isTermConstructor_classifyTerm
+    (term : FXTerm) :
+    (classifyDimZeroCellId term.cellId).isTermConstructor = true := by
+  rw [classifyDimZeroCellId_ofTerm term]
+  rfl
+
+theorem FXDimZeroCellIdClass.isTypeConstructor_classifyTerm
+    (term : FXTerm) :
+    (classifyDimZeroCellId term.cellId).isTypeConstructor = false := by
+  rw [classifyDimZeroCellId_ofTerm term]
+  rfl
+
+theorem FXDimZeroCellIdClass.isOutsideCurrentGeneratorRange_classifyTerm
+    (term : FXTerm) :
+    (classifyDimZeroCellId term.cellId).isOutsideCurrentGeneratorRange =
+      false := by
+  rw [classifyDimZeroCellId_ofTerm term]
+  rfl
+
+theorem FXDimZeroCellIdClass.isTermConstructor_classifyType
+    (typeCell : FXType) :
+    (classifyDimZeroCellId typeCell.cellId).isTermConstructor = false := by
+  rw [classifyDimZeroCellId_ofType typeCell]
+  rfl
+
+theorem FXDimZeroCellIdClass.isTypeConstructor_classifyType
+    (typeCell : FXType) :
+    (classifyDimZeroCellId typeCell.cellId).isTypeConstructor = true := by
+  rw [classifyDimZeroCellId_ofType typeCell]
+  rfl
+
+theorem FXDimZeroCellIdClass.isOutsideCurrentGeneratorRange_classifyType
+    (typeCell : FXType) :
+    (classifyDimZeroCellId typeCell.cellId).isOutsideCurrentGeneratorRange =
+      false := by
+  rw [classifyDimZeroCellId_ofType typeCell]
+  rfl
+
 /-- Construct an FX term from a checked index into the current term-id block. -/
 def FXTerm.ofConstructorIndex (constructorIndex : Fin termGeneratorCount)
     (payload : Nat) : FXTerm :=
