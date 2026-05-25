@@ -4516,6 +4516,7 @@ representable and computably rejected.
 | TCB.6e linear-mode seed | `2939addf` | `linearModeGeneratorSpec` becomes a nullary certified `.mode` atom; the checker rejects bad mode payloads, mode endpoints in term steps, and mode-as-term expected-shape confusion. |
 | TCB.6f finite application screen | `4f667fc7` | The first application payload decoder returns `RawChildDescriptors`; the executable screen accepts only the concrete `app(var 0, var 1)` shape fixture and rejects the type-as-function fixture as `wrongChildShape`.  This is still screening, not a certified application inhabitant. |
 | TCB.6g decoded-child fold | `d3329d83` | Application screening now consumes decoded `RawChildDescriptors` through a generic child-spec fold, with audited positive and negative fold theorems.  The fold still returns only screen results, not certified child cells. |
+| TCB.6h certified seed packages | `90e6192e` | `CertifiedRawCell` packages carry an actual `PolyCell` over the original raw input for the four payload-evidenced seed atoms: variable 0 in scope 4, unit type, empty context, and linear mode.  This is not a general raw-to-certified checker and does not certify application payloads. |
 
 **Deliverables (NEW only):**
 
@@ -4529,24 +4530,34 @@ representable and computably rejected.
 | TCB.4 certified boundary layer | `Foundation/PolyCell/Core/Certified.lean` | `CellBoundary` and `PolyCell profile sort dim scope boundary raw` with constructors `atom`, `cell`, `compV`, `identity`; **no certified `compH`**; atom payload evidence currently certifies only in-scope variables, unit type, empty context, and linear mode. | Bad `compV` with mismatched middle endpoint has no constructor; raw `compH` has no certified introduction rule; out-of-scope variable payloads and nonzero unit/context/mode payloads have no `AtomPayloadEvidence` constructor. |
 | TCB.5 raw rejection result | `Foundation/PolyCell/Core/CheckResult.lean` | Structured rejection enum, not just `Option`, so the checker can say which invariant failed. | Rejections distinguish unknown generator, wrong sort, bad payload, wrong arity, wrong child shape, bad boundary endpoint, bad vertical boundary, and unsupported `compH`. |
 | TCB.6a executable rejection screen | `Foundation/PolyCell/Core/Check.lean` | Computable recursive screen over the supported generator/rule tables; rejects unknown ids, malformed payloads, wrong arity/child-shape sentinels, wrong expected sort, bad endpoints, bad vertical boundaries, and unsupported raw `compH`. | Every executable theorem is audited axiom-free; the catalog runner proves all current inference and expected-shape negative probes are rejected. |
-| TCB.6b raw-to-certified checker | `Foundation/PolyCell/Core/Check.lean` | Computable `inferRawCell?` and expected-shape `checkRawCellAs?` returning a certified dependent package or rejection reason. | Soundness theorem: every `accepted` result contains a `PolyCell`; accepted witnesses exist for the named supported generators; no theorem claims completeness beyond the listed generator subset. |
+| TCB.6h certified seed packages | `Foundation/PolyCell/Core/Check.lean` | `CertifiedRawCell` dependent package plus concrete packages for the payload-evidenced seed atoms only. | Each package erases definitionally to its named raw fixture; no application, lambda, pi, context-cons, generated cell, vertical composite, or raw `compH` is certified by this task. |
+| TCB.6i raw-to-certified checker | `Foundation/PolyCell/Core/Check.lean` | Computable `inferRawCell?` and expected-shape `checkRawCellAs?` returning a certified dependent package or rejection reason, implemented without `propext`, `Classical`, `Inhabited`, or `Nonempty`. | Soundness theorem: every `accepted` result contains a `PolyCell`; accepted witnesses exist only for the named supported generator subset; every negative probe keeps an executable rejection theorem. |
 | TCB.7 certified FX views | `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | `FXContext`, `FXType`, `FXTerm`, `FXStep`, `FXConv`, `FXCdLemma` as projections of certified cells. | Existing raw subtype views remain compatibility-only; new code uses certified views; audit harness covers both. |
 
-**Implementation order after TCB.6g:**
+**Implementation order after TCB.6h:**
 
-1.  `Check.lean` phase C: expose `inferRawCell?` / `checkRawCellAs?`
-    returning a certified dependent package or rejection reason.  Every
-    accepted result must contain a real `PolyCell`; every
-    `NegativeProbes` entry must keep a theorem stating that the checker
-    returns its expected rejection.
+1.  `Check.lean` phase C: expose a propext-free `inferRawCell?` /
+    `checkRawCellAs?` returning either a rejection reason or a
+    `CertifiedRawCell`-style dependent package.  The first accepted
+    domain must be exactly the payload-evidenced seed atoms unless a new
+    generator family also ships real payload evidence and child
+    certification in the same slice.  Every `NegativeProbes` entry must
+    keep a theorem stating that the checker returns its expected
+    rejection.
 2.  Keep the propext-free boundary-screen discipline: no `propext`,
     `Quot.sound`, `Classical`, `Inhabited`, `Nonempty`, hidden `False`
     equation dependents, or weakened audit budgets.  The failed
     direct-dependent-pattern route is not acceptable.
-3.  `CertifiedViews.lean`: define the certified FX context/type/term/
+3.  Add negative probes before each new accepted family: malformed
+    payload sentinel, wrong arity, wrong child sort/dimension/scope,
+    expected-shape sort confusion, bad endpoint, and bad vertical
+    boundary where the family can participate in positive-dimensional
+    cells.  Raw nonsense must remain representable and the certified
+    layer must reject it by computation.
+4.  `CertifiedViews.lean`: define the certified FX context/type/term/
     step/conversion projections; keep old raw subtype views as
     compatibility shims.
-4.  Legacy bridge: connect the existing intrinsic kernel judgments to
+5.  Legacy bridge: connect the existing intrinsic kernel judgments to
     certified views only after the checker has nonempty accepted
     witnesses and the audit proves every new declaration axiom-free.
 
