@@ -109,6 +109,110 @@ theorem OmegacECell.declaredIndexValuesOfList_suspendList
       rw [OmegacECell.declaredIndexValueOf_suspend cell,
         inductionHypothesis]
 
+/-- Select a scaffold generator from a raw numeric slot value.
+
+The current scaffold has exactly two generator slots.  Raw code values are
+normalized by interpreting zero as the first slot and every nonzero value as
+the second slot. -/
+def OmegacECell.atSlotValue (dimension : Nat) (slotValue : Nat) :
+    OmegacECell dimension :=
+  if slotValue == 0 then
+    OmegacECell.firstAtDim dimension
+  else
+    OmegacECell.secondAtDim dimension
+
+/-- Normalize a raw numeric slot value to the two-slot scaffold code. -/
+def OmegacECell.normalizeSlotValue (slotValue : Nat) : Nat :=
+  if slotValue == 0 then
+    0
+  else
+    1
+
+/-- Decode a list of raw slot values into scaffold generators. -/
+def OmegacECell.cellsOfSlotValues (dimension : Nat) :
+    List Nat → List (OmegacECell dimension)
+  | [] => []
+  | slotValue :: remainingSlotValues =>
+      OmegacECell.atSlotValue dimension slotValue ::
+        OmegacECell.cellsOfSlotValues dimension remainingSlotValues
+
+/-- Normalize a list of raw slot values to canonical two-slot codes. -/
+def OmegacECell.normalizeSlotValues : List Nat → List Nat
+  | [] => []
+  | slotValue :: remainingSlotValues =>
+      OmegacECell.normalizeSlotValue slotValue ::
+        OmegacECell.normalizeSlotValues remainingSlotValues
+
+/-- Decoding a raw zero slot gives the first scaffold generator. -/
+theorem OmegacECell.atSlotValue_zero (dimension : Nat) :
+    OmegacECell.atSlotValue dimension 0 =
+      OmegacECell.firstAtDim dimension := rfl
+
+/-- Decoding raw slot one gives the second scaffold generator. -/
+theorem OmegacECell.atSlotValue_one (dimension : Nat) :
+    OmegacECell.atSlotValue dimension 1 =
+      OmegacECell.secondAtDim dimension := rfl
+
+/-- Raw zero normalizes to the canonical zero slot code. -/
+theorem OmegacECell.normalizeSlotValue_zero :
+    OmegacECell.normalizeSlotValue 0 = 0 := rfl
+
+/-- Raw one normalizes to the canonical one slot code. -/
+theorem OmegacECell.normalizeSlotValue_one :
+    OmegacECell.normalizeSlotValue 1 = 1 := rfl
+
+/-- Reading back a generator decoded from a raw slot returns the normalized
+numeric code. -/
+theorem OmegacECell.slotValueOf_atSlotValue (dimension : Nat)
+    (slotValue : Nat) :
+    OmegacECell.slotValueOf
+        (OmegacECell.atSlotValue dimension slotValue) =
+      OmegacECell.normalizeSlotValue slotValue := by
+  cases slotValue with
+  | zero =>
+      exact OmegacECell.slotValueOf_firstAtDim dimension
+  | succ slotTail =>
+      change
+        OmegacECell.slotValueOf
+            (OmegacECell.secondAtDim dimension) = 1
+      exact OmegacECell.slotValueOf_secondAtDim dimension
+
+/-- Decoding preserves list length. -/
+theorem OmegacECell.length_cellsOfSlotValues (dimension : Nat)
+    (slotValues : List Nat) :
+    (OmegacECell.cellsOfSlotValues dimension slotValues).length =
+      slotValues.length := by
+  induction slotValues with
+  | nil => rfl
+  | cons slotValue remainingSlotValues inductionHypothesis =>
+      dsimp only [OmegacECell.cellsOfSlotValues, List.length]
+      rw [inductionHypothesis]
+
+/-- Normalization preserves list length. -/
+theorem OmegacECell.length_normalizeSlotValues
+    (slotValues : List Nat) :
+    (OmegacECell.normalizeSlotValues slotValues).length =
+      slotValues.length := by
+  induction slotValues with
+  | nil => rfl
+  | cons slotValue remainingSlotValues inductionHypothesis =>
+      dsimp only [OmegacECell.normalizeSlotValues, List.length]
+      rw [inductionHypothesis]
+
+/-- Reading back decoded raw slots returns the normalized raw slot list. -/
+theorem OmegacECell.slotValuesOfList_cellsOfSlotValues
+    (dimension : Nat) (slotValues : List Nat) :
+    OmegacECell.slotValuesOfList dimension
+        (OmegacECell.cellsOfSlotValues dimension slotValues) =
+      OmegacECell.normalizeSlotValues slotValues := by
+  induction slotValues with
+  | nil => rfl
+  | cons slotValue remainingSlotValues inductionHypothesis =>
+      dsimp only [OmegacECell.cellsOfSlotValues,
+        OmegacECell.slotValuesOfList, OmegacECell.normalizeSlotValues]
+      rw [OmegacECell.slotValueOf_atSlotValue dimension slotValue,
+        inductionHypothesis]
+
 /-- A finite word over scaffold generators at one dimension. -/
 structure OmegacEWord (dimension : Nat) where
   /-- The word as a finite list of current scaffold generators. -/
@@ -198,5 +302,88 @@ theorem declaredIndexValues_suspend {dimension : Nat}
   OmegacECell.declaredIndexValuesOfList_suspendList word.cells
 
 end OmegacEWord
+
+/-- Dimension-independent numeric code for scaffold words.
+
+This is a serialization scaffold, not Makkai word equality.  It remembers only
+the two declared generator slots of the current omega-cE scaffold. -/
+structure OmegacEWordCode where
+  /-- Raw numeric slot values.  Values are normalized by `normalize`. -/
+  slotValues : List Nat
+  deriving DecidableEq, Repr
+
+namespace OmegacEWordCode
+
+/-- Empty word code. -/
+def empty : OmegacEWordCode where
+  slotValues := []
+
+/-- One raw-slot word code. -/
+def singleton (slotValue : Nat) : OmegacEWordCode where
+  slotValues := [slotValue]
+
+/-- Append two word codes. -/
+def append (firstCode secondCode : OmegacEWordCode) :
+    OmegacEWordCode where
+  slotValues := firstCode.slotValues ++ secondCode.slotValues
+
+/-- Word-code length. -/
+def length (code : OmegacEWordCode) : Nat :=
+  code.slotValues.length
+
+/-- Normalize raw numeric slots into canonical two-slot codes. -/
+def normalize (code : OmegacEWordCode) : OmegacEWordCode where
+  slotValues := OmegacECell.normalizeSlotValues code.slotValues
+
+/-- Decode a word code at a chosen dimension. -/
+def toWord (dimension : Nat) (code : OmegacEWordCode) :
+    OmegacEWord dimension where
+  cells := OmegacECell.cellsOfSlotValues dimension code.slotValues
+
+/-- Encode a scaffold word by recording its numeric slot values. -/
+def ofWord {dimension : Nat} (word : OmegacEWord dimension) :
+    OmegacEWordCode where
+  slotValues := word.slotValues
+
+/-- The empty word code has length zero. -/
+theorem length_empty : empty.length = 0 := rfl
+
+/-- A singleton word code has length one. -/
+theorem length_singleton (slotValue : Nat) :
+    (singleton slotValue).length = 1 := rfl
+
+/-- Normalization preserves word-code length. -/
+theorem length_normalize (code : OmegacEWordCode) :
+    code.normalize.length = code.length := by
+  cases code with
+  | mk slotValues =>
+      exact OmegacECell.length_normalizeSlotValues slotValues
+
+/-- Decoding preserves word-code length. -/
+theorem length_toWord (dimension : Nat) (code : OmegacEWordCode) :
+    (code.toWord dimension).length = code.length := by
+  cases code with
+  | mk slotValues =>
+      exact OmegacECell.length_cellsOfSlotValues dimension slotValues
+
+/-- Encoding a decoded word yields the normalized word code. -/
+theorem ofWord_toWord (dimension : Nat) (code : OmegacEWordCode) :
+    ofWord (code.toWord dimension) = code.normalize := by
+  cases code with
+  | mk slotValues =>
+      dsimp only [ofWord, toWord, OmegacEWord.slotValues, normalize]
+      exact congrArg OmegacEWordCode.mk
+        (OmegacECell.slotValuesOfList_cellsOfSlotValues dimension slotValues)
+
+/-- Encoding a suspended scaffold word preserves its code. -/
+theorem ofWord_suspend {dimension : Nat}
+    (word : OmegacEWord dimension) :
+    ofWord word.suspend = ofWord word := by
+  cases word with
+  | mk cells =>
+      exact congrArg OmegacEWordCode.mk
+        (OmegacEWord.slotValues_suspend { cells := cells })
+
+end OmegacEWordCode
 
 end LeanFX2.Foundation.PolyCell.OmegacE
