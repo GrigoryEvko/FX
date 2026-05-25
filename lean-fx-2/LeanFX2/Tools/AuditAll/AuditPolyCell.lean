@@ -695,6 +695,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.length_suspendList
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.suspendList_append
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.length_append
+#assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.slotValuesOfList_append
+#assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.declaredIndexValuesOfList_append
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.slotValuesOfList_suspendList
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.declaredIndexValuesOfList_suspendList
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.atSlotValue
@@ -705,9 +707,13 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.atSlotValue_one
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.normalizeSlotValue_zero
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.normalizeSlotValue_one
+#assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.normalizeSlotValue_idempotent
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.slotValueOf_atSlotValue
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.length_cellsOfSlotValues
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.length_normalizeSlotValues
+#assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.cellsOfSlotValues_append
+#assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.normalizeSlotValues_append
+#assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.normalizeSlotValues_idempotent
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacECell.slotValuesOfList_cellsOfSlotValues
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacEWord
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacEWord.cells
@@ -723,6 +729,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacEWord.length_append
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacEWord.length_suspend
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacEWord.suspend_append_cells
+#assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacEWord.slotValues_append
+#assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacEWord.declaredIndexValues_append
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacEWord.slotValues_suspend
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacEWord.declaredIndexValues_suspend
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacEWordCode
@@ -736,9 +744,14 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacEWordCode.ofWord
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacEWordCode.length_empty
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacEWordCode.length_singleton
+#assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacEWordCode.length_append
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacEWordCode.length_normalize
+#assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacEWordCode.normalize_append
+#assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacEWordCode.normalize_idempotent
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacEWordCode.length_toWord
+#assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacEWordCode.toWord_append
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacEWordCode.ofWord_toWord
+#assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacEWordCode.ofWord_append
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.OmegacEWordCode.ofWord_suspend
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.fxOmegacEConstructionLevel_eq
 #assert_no_axioms LeanFX2.Foundation.PolyCell.OmegacE.fxOmegacE_hasNoBoundaryPresentation
