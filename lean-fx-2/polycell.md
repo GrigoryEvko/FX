@@ -4613,6 +4613,7 @@ representable and computably rejected.
 | TCB.7r application child erasure theorems | `ef939560` | Certified child-spine erasure now preserves declared arity, and the certified `app(var 0, var 1)` child package is theorem-linked to the payload decoder output.  Certification followed by child-spine erasure returns the same raw descriptor spine as decoding for every scope where both variables are in scope. |
 | TCB.7s descriptor-indexed certified child spines | `e97831e1` | `CertifiedChildForRawDescriptor` and `CertifiedChildSpineForRawDescriptors` index certified child evidence by the raw descriptor spine it certifies.  The first application child package now exposes a descriptor-indexed spine over the decoder output and forgets back to the ordinary certified child spine.  No equality-field trust, new constructor family, raw dispatcher, or new accepted payload is added. |
 | TCB.7t descriptor spine erasure | `9c935bef` | Descriptor-indexed certified child evidence now erases back to exactly the raw descriptor it certifies, and descriptor-indexed certified spines erase back to exactly the raw descriptor spine they certify.  This is generic theorem-level glue only: no new raw dispatcher, constructor family, or accepted payload is added. |
+| TCB.7u certified operational names | `1b87a346` | Certified generating term steps now have an endpoint-indexed view requiring raw erasure to be a single generating dim-1 cell, and structural conversions are named as the current certified-thin term arrows.  This adds operational names over existing certified arrows/thin arrows only: no raw dispatcher, no legacy `Step`/`Conv` bridge, no cd/coherence view, and no new accepted payload is added. |
 
 **Deliverables (NEW only):**
 
@@ -4649,9 +4650,9 @@ representable and computably rejected.
 | TCB.7r application child erasure theorems | `Foundation/PolyCell/Core/Certified.lean`, `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds generic arity preservation for certified-child-spine erasure and theorem-level glue showing the accepted application child certificate erases back to the payload decoder's raw descriptors. | All theorems are audit-gated and definitional; this is not a new decoder, raw dispatcher, certified constructor, or accepted payload. |
 | TCB.7s descriptor-indexed certified child spines | `Foundation/PolyCell/Core/Certified.lean`, `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds descriptor-indexed certified children/spines where the certified cell raw index is the descriptor's raw cell.  The first application child package exposes this descriptor-indexed spine over the current decoder output. | The indexed spine forgets to ordinary certified children and preserves arity; it does not store a raw-equality proof field and does not broaden application ingress. |
 | TCB.7t descriptor spine erasure | `Foundation/PolyCell/Core/Certified.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds generic erasure theorems for `CertifiedChildForRawDescriptor` and `CertifiedChildSpineForRawDescriptors`: forgetting descriptor-indexed evidence to ordinary certified children and then to raw descriptors returns the descriptor spine in the index. | Both theorems are audit-gated and structural; no equality-field trust, raw dispatcher, certified constructor, or accepted payload is added. |
-| TCB.7u certified FX operational views | `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | Future `FXStep`, `FXConv`, `FXCdLemma` as projections of certified positive-dimensional cells and thinness certificates. | Existing raw subtype views remain compatibility-only; new operational code uses certified views only after the corresponding positive-dimensional certification, thinness data, and operational predicates exist. |
+| TCB.7u certified operational names | `Foundation/PolyCell/FXProfile/CertifiedViews.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds `CertifiedFXGeneratingStep` over endpoint-indexed certified term arrows plus `CertifiedFXStructuralConv` as the current structural-thin term-arrow name.  Seed generating-step and structural-reflexivity fixtures expose audited raw/source/target theorems. | The generating-step view requires `isGeneratingStepCell = true`; structural conversion is only identity/thin-vertical-composite thinness.  This is not the legacy `Step`/`Conv` bridge and adds no new raw ingress, certified constructors, cd fillers, or accepted payloads. |
 
-**Implementation order after TCB.7t:**
+**Implementation order after TCB.7u:**
 
 1.  Do not broaden application by adding more one-off parent
     constructors.  Descriptor-indexed child spines over
@@ -4692,10 +4693,11 @@ representable and computably rejected.
     certified inhabitants: context/type/term/mode seed views,
     positive-dimensional endpoint projections, endpoint-indexed arrows,
     multi-sort identity thin arrows, multi-sort identity thin composites,
-    and structural thin views are live; step, conversion, and coherence
-    views must wait for
-    positive-dimensional certification plus operational data.  Keep old
-    raw subtype views as compatibility shims.
+    structural thin views, the certified generating-step name, and the
+    structural-conversion alias are live.  Final legacy `Step`/`Conv`
+    bridges, cd fillers, and coherence views must wait for broader
+    positive-dimensional certification plus operational data.  Keep old raw
+    subtype views as compatibility shims.
 8.  Legacy bridge: connect the existing intrinsic kernel judgments to
     certified views only after the checker has nonempty accepted
     witnesses and the audit proves every new declaration axiom-free.
