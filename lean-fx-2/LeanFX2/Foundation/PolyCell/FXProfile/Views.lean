@@ -1289,6 +1289,19 @@ theorem firstTypeCellId_eq_termGeneratorCount :
 theorem typeCellIdLimit_eq_totalGeneratorCount :
     PolyTerm.typeCellIdLimit = totalGeneratorCount := rfl
 
+theorem firstTypeCellId_le_typeCellIdLimit :
+    PolyTerm.firstTypeCellId ≤ PolyTerm.typeCellIdLimit := by
+  change
+    PolyTerm.firstTypeCellId ≤
+      PolyTerm.firstTypeCellId + PolyTerm.typeCellIdCount
+  exact Nat.le_add_right _ _
+
+theorem termGeneratorCount_le_totalGeneratorCount :
+    termGeneratorCount ≤ totalGeneratorCount := by
+  rw [← firstTypeCellId_eq_termGeneratorCount]
+  rw [← typeCellIdLimit_eq_totalGeneratorCount]
+  exact firstTypeCellId_le_typeCellIdLimit
+
 /-- Names for the current typed `Term` constructor-id block.
 
 This is a checked inventory of the provisional dim-0 term ids only.  It does
@@ -1460,6 +1473,19 @@ theorem FXTermConstructorName.cellId_lt_termGeneratorCount
     (constructorName : FXTermConstructorName) :
     constructorName.cellId < termGeneratorCount := by
   cases constructorName <;> decide
+
+theorem FXTermConstructorName.cellId_lt_firstTypeCellId
+    (constructorName : FXTermConstructorName) :
+    constructorName.cellId < PolyTerm.firstTypeCellId := by
+  change constructorName.cellId < termGeneratorCount
+  exact FXTermConstructorName.cellId_lt_termGeneratorCount constructorName
+
+theorem FXTermConstructorName.cellId_lt_totalGeneratorCount
+    (constructorName : FXTermConstructorName) :
+    constructorName.cellId < totalGeneratorCount := by
+  exact Nat.lt_of_lt_of_le
+    (FXTermConstructorName.cellId_lt_termGeneratorCount constructorName)
+    termGeneratorCount_le_totalGeneratorCount
 
 /-- Checked constructor index for a named typed-term constructor. -/
 def FXTermConstructorName.constructorIndex
@@ -1649,6 +1675,36 @@ theorem FXTypeConstructorName.localCellId_lt_typeGeneratorCount
     (constructorName : FXTypeConstructorName) :
     constructorName.localCellId < typeGeneratorCount := by
   cases constructorName <;> decide
+
+theorem FXTypeConstructorName.firstTypeCellId_le_cellId
+    (constructorName : FXTypeConstructorName) :
+    PolyTerm.firstTypeCellId ≤ constructorName.cellId := by
+  change
+    PolyTerm.firstTypeCellId ≤
+      PolyTerm.firstTypeCellId + constructorName.localCellId
+  exact Nat.le_add_right _ _
+
+theorem FXTypeConstructorName.termGeneratorCount_le_cellId
+    (constructorName : FXTypeConstructorName) :
+    termGeneratorCount ≤ constructorName.cellId := by
+  rw [← firstTypeCellId_eq_termGeneratorCount]
+  exact FXTypeConstructorName.firstTypeCellId_le_cellId constructorName
+
+theorem FXTypeConstructorName.cellId_lt_typeCellIdLimit
+    (constructorName : FXTypeConstructorName) :
+    constructorName.cellId < PolyTerm.typeCellIdLimit := by
+  change
+    PolyTerm.firstTypeCellId + constructorName.localCellId <
+      PolyTerm.firstTypeCellId + PolyTerm.typeCellIdCount
+  exact Nat.add_lt_add_left
+    (FXTypeConstructorName.localCellId_lt_typeGeneratorCount constructorName)
+    PolyTerm.firstTypeCellId
+
+theorem FXTypeConstructorName.cellId_lt_totalGeneratorCount
+    (constructorName : FXTypeConstructorName) :
+    constructorName.cellId < totalGeneratorCount := by
+  rw [← typeCellIdLimit_eq_totalGeneratorCount]
+  exact FXTypeConstructorName.cellId_lt_typeCellIdLimit constructorName
 
 /-- Checked constructor index for a named type constructor. -/
 def FXTypeConstructorName.constructorIndex

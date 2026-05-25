@@ -400,9 +400,13 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.totalGeneratorCount_eq_currentTermAndTypeConstructors
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.firstTypeCellId_eq_termGeneratorCount
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.typeCellIdLimit_eq_totalGeneratorCount
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.firstTypeCellId_le_typeCellIdLimit
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.termGeneratorCount_le_totalGeneratorCount
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTermConstructorName
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTermConstructorName.cellId
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTermConstructorName.cellId_lt_termGeneratorCount
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTermConstructorName.cellId_lt_firstTypeCellId
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTermConstructorName.cellId_lt_totalGeneratorCount
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTermConstructorName.constructorIndex
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTermConstructorName.ofCellId?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTermConstructorName.ofCellId?_cellId
@@ -413,6 +417,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTypeConstructorName.localCellId
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTypeConstructorName.cellId
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTypeConstructorName.localCellId_lt_typeGeneratorCount
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTypeConstructorName.firstTypeCellId_le_cellId
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTypeConstructorName.termGeneratorCount_le_cellId
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTypeConstructorName.cellId_lt_typeCellIdLimit
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTypeConstructorName.cellId_lt_totalGeneratorCount
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTypeConstructorName.constructorIndex
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTypeConstructorName.ofLocalCellId?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTypeConstructorName.ofCellId?
