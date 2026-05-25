@@ -3346,6 +3346,22 @@ theorem FXType.ofCellId?_ofOutsideCurrentGeneratorRange
     Nat.not_lt_of_ge hasOutsideRange
   rw [dif_neg hasNoTermRange, dif_neg hasNoCurrentRange]
 
+theorem FXTerm.ofCellId?_isSome_eq_classifyCellId_isTermConstructor
+    (cellId : CellId) (payload : Nat) :
+    (FXTerm.ofCellId? cellId payload).isSome =
+      (classifyDimZeroCellId cellId).isTermConstructor := by
+  unfold FXTerm.ofCellId?
+  generalize hasClass : classifyDimZeroCellId cellId = cellIdClass
+  cases cellIdClass <;> rfl
+
+theorem FXType.ofCellId?_isSome_eq_classifyCellId_isTypeConstructor
+    (cellId : CellId) (payload : Nat) :
+    (FXType.ofCellId? cellId payload).isSome =
+      (classifyDimZeroCellId cellId).isTypeConstructor := by
+  unfold FXType.ofCellId?
+  generalize hasClass : classifyDimZeroCellId cellId = cellIdClass
+  cases cellIdClass <;> rfl
+
 /-- Decode a dim-0 FX cell into the term view when its id is in the current
 term-constructor block. -/
 def FXTerm.ofCell? (cell : FXCellAt 0) : Option FXTerm :=
