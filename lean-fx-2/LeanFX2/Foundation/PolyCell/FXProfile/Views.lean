@@ -2659,6 +2659,46 @@ theorem FXType.ofCell?_ofConstructorName_toCell
     some (FXType.ofConstructorName constructorName payload)
   exact FXType.ofCellId?_ofConstructorName constructorName payload
 
+theorem FXTerm.constructorName?_ofCell?_ofConstructorName_toCell
+    (constructorName : FXTermConstructorName) (payload : Nat) :
+    (FXTerm.ofCell?
+        (FXTerm.ofConstructorName constructorName payload).toCell).bind
+        FXTerm.constructorName? =
+      some constructorName := by
+  rw [FXTerm.ofCell?_ofConstructorName_toCell]
+  exact FXTerm.constructorName?_ofConstructorName constructorName payload
+
+theorem FXTerm.payload?_ofCell?_ofConstructorName_toCell
+    (constructorName : FXTermConstructorName) (payload : Nat) :
+    Option.map FXTerm.payload
+        (FXTerm.ofCell?
+          (FXTerm.ofConstructorName constructorName payload).toCell) =
+      some payload := by
+  rw [FXTerm.ofCell?_ofConstructorName_toCell]
+  change some (FXTerm.ofConstructorName constructorName payload).payload =
+    some payload
+  rw [FXTerm.payload_ofConstructorName]
+
+theorem FXType.constructorName?_ofCell?_ofConstructorName_toCell
+    (constructorName : FXTypeConstructorName) (payload : Nat) :
+    (FXType.ofCell?
+        (FXType.ofConstructorName constructorName payload).toCell).bind
+        FXType.constructorName? =
+      some constructorName := by
+  rw [FXType.ofCell?_ofConstructorName_toCell]
+  exact FXType.constructorName?_ofConstructorName constructorName payload
+
+theorem FXType.payload?_ofCell?_ofConstructorName_toCell
+    (constructorName : FXTypeConstructorName) (payload : Nat) :
+    Option.map FXType.payload
+        (FXType.ofCell?
+          (FXType.ofConstructorName constructorName payload).toCell) =
+      some payload := by
+  rw [FXType.ofCell?_ofConstructorName_toCell]
+  change some (FXType.ofConstructorName constructorName payload).payload =
+    some payload
+  rw [FXType.payload_ofConstructorName]
+
 theorem FXTerm.toCell?_ofCell?_toCell (term : FXTerm) :
     Option.map FXTerm.toCell (FXTerm.ofCell? term.toCell) =
       some term.toCell := by
