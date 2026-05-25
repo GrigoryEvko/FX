@@ -2634,6 +2634,31 @@ def FXType.ofCell? (cell : FXCellAt 0) : Option FXType :=
   match cell with
   | .atom cellId payload => FXType.ofCellId? cellId payload
 
+theorem FXTerm.ofCell?_ofConstructorIndex_toCell
+    (constructorIndex : Fin termGeneratorCount) (payload : Nat) :
+    FXTerm.ofCell?
+        (FXTerm.ofConstructorIndex constructorIndex payload).toCell =
+      some (FXTerm.ofConstructorIndex constructorIndex payload) := by
+  change FXTerm.ofCellId? constructorIndex.val payload =
+    some (FXTerm.ofConstructorIndex constructorIndex payload)
+  exact FXTerm.ofCellId?_ofConstructorIndex constructorIndex payload
+
+theorem FXTerm.ofCell?_ofConstructorName_toCell
+    (constructorName : FXTermConstructorName) (payload : Nat) :
+    FXTerm.ofCell? (FXTerm.ofConstructorName constructorName payload).toCell =
+      some (FXTerm.ofConstructorName constructorName payload) := by
+  change FXTerm.ofCellId? constructorName.cellId payload =
+    some (FXTerm.ofConstructorName constructorName payload)
+  exact FXTerm.ofCellId?_ofConstructorName constructorName payload
+
+theorem FXType.ofCell?_ofConstructorName_toCell
+    (constructorName : FXTypeConstructorName) (payload : Nat) :
+    FXType.ofCell? (FXType.ofConstructorName constructorName payload).toCell =
+      some (FXType.ofConstructorName constructorName payload) := by
+  change FXType.ofCellId? constructorName.cellId payload =
+    some (FXType.ofConstructorName constructorName payload)
+  exact FXType.ofCellId?_ofConstructorName constructorName payload
+
 theorem FXTerm.toCell?_ofCell?_toCell (term : FXTerm) :
     Option.map FXTerm.toCell (FXTerm.ofCell? term.toCell) =
       some term.toCell := by
