@@ -475,7 +475,7 @@ def screenRawCellWithFuel? {profile : PolyProfile}
     (rawCell : PolyTerm profile dimension) :
     Except CellCheckRejection CellSort :=
   match fuel with
-  | 0 => Except.error .badPayload
+  | 0 => Except.error .fuelExhausted
   | fuel + 1 =>
       match rawCell with
       | .atom cellId payload =>
@@ -537,6 +537,14 @@ def screenRawCell? {profile : PolyProfile} (scope : Nat) {dimension : CellDim}
     (rawCell : PolyTerm profile dimension) :
     Except CellCheckRejection CellSort :=
   screenRawCellWithFuel? 64 scope rawCell
+
+/-- Fuel zero is reported as checker-budget exhaustion, not as malformed
+payload data. -/
+theorem screenRawCellWithFuel?_zero_rejects_fuelExhausted
+    {profile : PolyProfile} {scope : Nat} {dimension : CellDim}
+    (rawCell : PolyTerm profile dimension) :
+    screenRawCellWithFuel? 0 scope rawCell =
+      Except.error .fuelExhausted := rfl
 
 /-- Certified decoded children for the first finite application payload.
 
@@ -864,6 +872,28 @@ def isExpectedShapeNegativeProbeRejectedWith {profile : PolyProfile}
       hasSameRejectionCode rejection targetRejection
   | Except.ok _ => false
 
+/-- Does the fuelled screen reject this fuel-budget probe as expected? -/
+def isFuelNegativeProbeRejected {profile : PolyProfile}
+    (probe : RawFuelNegativeProbe profile) : Bool :=
+  match
+      screenRawCellWithFuel? (profile := profile)
+        probe.fuel probe.scope probe.rawCell with
+  | Except.error rejection =>
+      hasSameRejectionCode rejection probe.expectedRejection
+  | Except.ok _ => false
+
+/-- Does the fuelled screen reject this probe with this specific rejection
+reason? -/
+def isFuelNegativeProbeRejectedWith {profile : PolyProfile}
+    (targetRejection : CellCheckRejection)
+    (probe : RawFuelNegativeProbe profile) : Bool :=
+  match
+      screenRawCellWithFuel? (profile := profile)
+        probe.fuel probe.scope probe.rawCell with
+  | Except.error rejection =>
+      hasSameRejectionCode rejection targetRejection
+  | Except.ok _ => false
+
 /-- Check every inference-level negative probe in a list. -/
 def areInferNegativeProbesRejected {profile : PolyProfile} :
     List (RawInferNegativeProbe profile) → Bool
@@ -901,6 +931,24 @@ def areExpectedShapeNegativeProbesRejectedWith {profile : PolyProfile}
         areExpectedShapeNegativeProbesRejectedWith
           targetRejection remainingProbes
 
+/-- Check every fuel-budget negative probe in a list. -/
+def areFuelNegativeProbesRejected {profile : PolyProfile} :
+    List (RawFuelNegativeProbe profile) → Bool
+  | [] => true
+  | probe :: remainingProbes =>
+      isFuelNegativeProbeRejected probe &&
+        areFuelNegativeProbesRejected remainingProbes
+
+/-- Check that every fuel-budget negative probe in a list rejects with one
+specific rejection reason. -/
+def areFuelNegativeProbesRejectedWith {profile : PolyProfile}
+    (targetRejection : CellCheckRejection) :
+    List (RawFuelNegativeProbe profile) → Bool
+  | [] => true
+  | probe :: remainingProbes =>
+      isFuelNegativeProbeRejectedWith targetRejection probe &&
+        areFuelNegativeProbesRejectedWith targetRejection remainingProbes
+
 /-- A named inference-probe family has exact coverage only when it is nonempty
 and every probe rejects with the named reason. -/
 def hasInferNegativeProbeFamilyExactCoverage {profile : PolyProfile}
@@ -919,6 +967,16 @@ def hasExpectedShapeNegativeProbeFamilyExactCoverage {profile : PolyProfile}
   | [] => false
   | probe :: remainingProbes =>
       areExpectedShapeNegativeProbesRejectedWith targetRejection
+        (probe :: remainingProbes)
+
+/-- A named fuel-budget probe family has exact coverage only when it is
+nonempty and every probe rejects with the named reason. -/
+def hasFuelNegativeProbeFamilyExactCoverage {profile : PolyProfile}
+    (targetRejection : CellCheckRejection) :
+    List (RawFuelNegativeProbe profile) → Bool
+  | [] => false
+  | probe :: remainingProbes =>
+      areFuelNegativeProbesRejectedWith targetRejection
         (probe :: remainingProbes)
 
 /-- Expected-shape screen for dim-0 callers that know the sort they require. -/
@@ -1153,13 +1211,21 @@ def haveCertificationNegativeProbeFamiliesExactCoverage
   hasCertificationNegativeProbeFamilyExactCoverage .unsupportedCertification
     (NegativeProbes.unsupportedCertificationNegativeProbes profile)
 
+/-- Every fuel-budget negative-probe family is nonempty and rejects with its
+named reason. -/
+def haveFuelNegativeProbeFamiliesExactCoverage
+    (profile : PolyProfile) : Bool :=
+  hasFuelNegativeProbeFamilyExactCoverage .fuelExhausted
+    (NegativeProbes.fuelExhaustedNegativeProbes profile)
+
 /-- All current negative-probe families are nonempty and reject with their
 named reasons. -/
 def haveAllNegativeProbeFamiliesExactCoverage
     (profile : PolyProfile) : Bool :=
   haveInferNegativeProbeFamiliesExactCoverage profile &&
   haveExpectedShapeNegativeProbeFamiliesExactCoverage profile &&
-  haveCertificationNegativeProbeFamiliesExactCoverage profile
+  haveCertificationNegativeProbeFamiliesExactCoverage profile &&
+  haveFuelNegativeProbeFamiliesExactCoverage profile
 
 /-- Exact probe coverage for one rejection reason.
 
@@ -1207,6 +1273,9 @@ def hasNegativeProbeCoverageForRejectionReason
       hasCertificationNegativeProbeFamilyExactCoverage
         .unsupportedCertification
         (NegativeProbes.unsupportedCertificationNegativeProbes profile)
+  | .fuelExhausted =>
+      hasFuelNegativeProbeFamilyExactCoverage .fuelExhausted
+        (NegativeProbes.fuelExhaustedNegativeProbes profile)
 
 /-- Check exact probe coverage for each rejection reason in a finite list. -/
 def doRejectionReasonsHaveNegativeProbeCoverage
@@ -2838,6 +2907,14 @@ theorem certificationNegativeProbes_rejected_by_policy
     areCertificationNegativeProbesRejected
       (NegativeProbes.certificationNegativeProbes profile) = true := rfl
 
+theorem fuelExhaustedProbe_rejects {profile : PolyProfile} :
+    screenRawCellWithFuel? (profile := profile)
+      (NegativeProbes.fuelExhaustedProbe profile).fuel
+      (NegativeProbes.fuelExhaustedProbe profile).scope
+      (NegativeProbes.fuelExhaustedProbe profile).rawCell =
+      Except.error
+        (NegativeProbes.fuelExhaustedProbe profile).expectedRejection := rfl
+
 /-- Headline theorem: all unknown-generator inference probes reject. -/
 theorem unknownGeneratorInferNegativeProbes_rejected_by_screen
     (profile : PolyProfile) :
@@ -2933,6 +3010,12 @@ theorem unsupportedCertificationNegativeProbes_rejected_by_policy
     areCertificationNegativeProbesRejected
       (NegativeProbes.unsupportedCertificationNegativeProbes profile) =
       true := rfl
+
+/-- Headline theorem: all fuel-budget probes reject. -/
+theorem fuelExhaustedNegativeProbes_rejected_by_screen
+    (profile : PolyProfile) :
+    areFuelNegativeProbesRejected
+      (NegativeProbes.fuelExhaustedNegativeProbes profile) = true := rfl
 
 /-- Exact-reason headline: all unknown-generator inference probes reject as
 `unknownGenerator`. -/
@@ -3050,6 +3133,13 @@ theorem
       (NegativeProbes.unsupportedCertificationNegativeProbes profile) =
       true := rfl
 
+/-- Exact-reason headline: all fuel-budget probes reject as
+`fuelExhausted`. -/
+theorem fuelExhaustedNegativeProbes_rejected_with_fuelExhausted
+    (profile : PolyProfile) :
+    areFuelNegativeProbesRejectedWith .fuelExhausted
+      (NegativeProbes.fuelExhaustedNegativeProbes profile) = true := rfl
+
 /-- Coverage headline: every inference-level negative-probe family is
 nonempty and rejects with its named reason. -/
 theorem inferNegativeProbeFamilies_haveExactCoverage
@@ -3067,6 +3157,12 @@ nonempty and rejects with its named reason. -/
 theorem certificationNegativeProbeFamilies_haveExactCoverage
     (profile : PolyProfile) :
     haveCertificationNegativeProbeFamiliesExactCoverage profile = true := rfl
+
+/-- Coverage headline: every fuel-budget negative-probe family is nonempty
+and rejects with its named reason. -/
+theorem fuelNegativeProbeFamilies_haveExactCoverage
+    (profile : PolyProfile) :
+    haveFuelNegativeProbeFamiliesExactCoverage profile = true := rfl
 
 /-- Coverage headline: every current negative-probe family is nonempty and
 rejects with its named reason. -/

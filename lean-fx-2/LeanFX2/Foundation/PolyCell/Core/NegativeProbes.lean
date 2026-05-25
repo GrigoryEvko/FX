@@ -55,6 +55,23 @@ structure RawCertificationNegativeProbe (profile : PolyProfile) where
   /-- Rejection that certified ingress must return. -/
   expectedRejection : CellCheckRejection
 
+/-- A negative probe for the fuelled structural screen.
+
+Fuel exhaustion is a checker-budget result, not a malformed payload, so these
+probes are kept separate from ordinary inference probes that use the default
+fuel budget. -/
+structure RawFuelNegativeProbe (profile : PolyProfile) where
+  /-- Fuel budget supplied to the fuelled screen. -/
+  fuel : Nat
+  /-- Scope used when screening the raw input. -/
+  scope : Nat
+  /-- Dimension of the raw input. -/
+  dimension : CellDim
+  /-- Raw input whose budgeted screen should exhaust fuel. -/
+  rawCell : PolyTerm profile dimension
+  /-- Rejection that the fuelled screen must return. -/
+  expectedRejection : CellCheckRejection
+
 namespace NegativeProbes
 
 /-- Shared scope for inference-level probes.
@@ -104,6 +121,17 @@ def applicationContextAsArgumentPayload : Nat := 9107
 /-- A small accepted-looking term atom used only to build malformed cells. -/
 def seedTermAtom (profile : PolyProfile) : PolyTerm profile 0 :=
   .atom variableGeneratorSpec.cellId 0
+
+/-- Fuel-zero probe over an otherwise small term atom.
+
+This pins the checker-budget diagnostic independently from payload decoding. -/
+def fuelExhaustedProbe (profile : PolyProfile) :
+    RawFuelNegativeProbe profile where
+  fuel := 0
+  scope := defaultInferScope
+  dimension := 0
+  rawCell := seedTermAtom profile
+  expectedRejection := .fuelExhausted
 
 /-- A second term atom with different raw payload. -/
 def alternateTermAtom (profile : PolyProfile) : PolyTerm profile 0 :=
@@ -1004,6 +1032,11 @@ def unsupportedCertificationNegativeProbes (profile : PolyProfile) :
     certificationContextIdentityVerticalProbe profile,
     certificationModeIdentityVerticalProbe profile]
 
+/-- Fuel-budget probes whose expected rejection is `fuelExhausted`. -/
+def fuelExhaustedNegativeProbes (profile : PolyProfile) :
+    List (RawFuelNegativeProbe profile) :=
+  [fuelExhaustedProbe profile]
+
 /-- Inference probes, one for each inference-level rejection reason. -/
 def inferNegativeProbes (profile : PolyProfile) :
     List (RawInferNegativeProbe profile) :=
@@ -1109,6 +1142,11 @@ theorem unsupportedCompHCertificationNegativeProbes_length
 theorem unsupportedCertificationNegativeProbes_length
     (profile : PolyProfile) :
     (unsupportedCertificationNegativeProbes profile).length = 8 := rfl
+
+/-- Fuel-exhaustion headline probe count. -/
+theorem fuelExhaustedNegativeProbes_length
+    (profile : PolyProfile) :
+    (fuelExhaustedNegativeProbes profile).length = 1 := rfl
 
 end NegativeProbes
 

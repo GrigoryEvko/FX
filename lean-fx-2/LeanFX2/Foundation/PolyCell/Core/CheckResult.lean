@@ -30,6 +30,8 @@ inductive CellCheckRejection where
   /-- The raw cell screens structurally but has no certified introduction rule
   in the current ingress domain. -/
   | unsupportedCertification
+  /-- The fuelled checker exhausted its structural recursion budget. -/
+  | fuelExhausted
   deriving DecidableEq
 
 namespace CellCheckRejection
@@ -38,7 +40,7 @@ namespace CellCheckRejection
 def all : List CellCheckRejection :=
   [.unknownGenerator, .wrongSort, .badPayload, .wrongArity,
     .wrongChildShape, .badBoundaryEndpoint, .badVerticalBoundary,
-    .unsupportedCompH, .unsupportedCertification]
+    .unsupportedCompH, .unsupportedCertification, .fuelExhausted]
 
 /-- Stable numeric code for compact diagnostics. -/
 def toCode : CellCheckRejection → Nat
@@ -51,6 +53,7 @@ def toCode : CellCheckRejection → Nat
   | .badVerticalBoundary => 6
   | .unsupportedCompH => 7
   | .unsupportedCertification => 8
+  | .fuelExhausted => 9
 
 /-- Decode a stable rejection code. -/
 def ofCode? : Nat → Option CellCheckRejection
@@ -63,6 +66,7 @@ def ofCode? : Nat → Option CellCheckRejection
   | 6 => some .badVerticalBoundary
   | 7 => some .unsupportedCompH
   | 8 => some .unsupportedCertification
+  | 9 => some .fuelExhausted
   | _ => none
 
 /-- Encoding then decoding a rejection reason recovers the original reason. -/
@@ -70,8 +74,8 @@ theorem ofCode?_toCode (rejection : CellCheckRejection) :
     ofCode? rejection.toCode = some rejection := by
   cases rejection <;> rfl
 
-/-- The rejection enumeration has exactly nine entries. -/
-theorem all_length : all.length = 9 := rfl
+/-- The rejection enumeration has exactly ten entries. -/
+theorem all_length : all.length = 10 := rfl
 
 end CellCheckRejection
 
