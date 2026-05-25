@@ -262,6 +262,16 @@ def FXStep.endpointEvidence_mk (ruleId : CellId)
   FXStep.EndpointEvidence.ofCore
     (PolyTerm.EndpointEvidence.cell ruleId source target)
 
+theorem FXStep.endpointEvidence_mk_sourceCell (ruleId : CellId)
+    (source target : FXCellAt 0) :
+    (FXStep.endpointEvidence_mk ruleId source target).sourceCell =
+      source := rfl
+
+theorem FXStep.endpointEvidence_mk_targetCell (ruleId : CellId)
+    (source target : FXCellAt 0) :
+    (FXStep.endpointEvidence_mk ruleId source target).targetCell =
+      target := rfl
+
 /-- Any checked pair of FX steps has matching target/source endpoints. -/
 theorem FXStep.target?_eq_source?_of_boundaryEvidence
     (step1 step2 : FXStep)
@@ -311,6 +321,26 @@ def FXStep.endpointEvidence_seqChecked (first second : FXStep)
       firstEndpointEvidence.toCore
       secondEndpointEvidence.toCore)
 
+theorem FXStep.endpointEvidence_seqChecked_sourceCell
+    (first second : FXStep)
+    (boundaryEvidence : PolyTerm.VerticalBoundaryEvidence first.val second.val)
+    (firstEndpointEvidence : FXStep.EndpointEvidence first)
+    (secondEndpointEvidence : FXStep.EndpointEvidence second) :
+    (FXStep.endpointEvidence_seqChecked
+      first second boundaryEvidence
+      firstEndpointEvidence secondEndpointEvidence).sourceCell =
+      firstEndpointEvidence.sourceCell := rfl
+
+theorem FXStep.endpointEvidence_seqChecked_targetCell
+    (first second : FXStep)
+    (boundaryEvidence : PolyTerm.VerticalBoundaryEvidence first.val second.val)
+    (firstEndpointEvidence : FXStep.EndpointEvidence first)
+    (secondEndpointEvidence : FXStep.EndpointEvidence second) :
+    (FXStep.endpointEvidence_seqChecked
+      first second boundaryEvidence
+      firstEndpointEvidence secondEndpointEvidence).targetCell =
+      secondEndpointEvidence.targetCell := rfl
+
 /-- Boundary evidence for composing two freshly constructed FX steps through
 the stated middle endpoint. -/
 def FXStep.boundaryEvidence_mk_mk (firstRuleId secondRuleId : CellId)
@@ -344,6 +374,20 @@ def FXStep.endpointEvidence_seqMkChecked
       source middle target)
     (FXStep.endpointEvidence_mk firstRuleId source middle)
     (FXStep.endpointEvidence_mk secondRuleId middle target)
+
+theorem FXStep.endpointEvidence_seqMkChecked_sourceCell
+    (firstRuleId secondRuleId : CellId)
+    (source middle target : FXCellAt 0) :
+    (FXStep.endpointEvidence_seqMkChecked
+      firstRuleId secondRuleId source middle target).sourceCell =
+      source := rfl
+
+theorem FXStep.endpointEvidence_seqMkChecked_targetCell
+    (firstRuleId secondRuleId : CellId)
+    (source middle target : FXCellAt 0) :
+    (FXStep.endpointEvidence_seqMkChecked
+      firstRuleId secondRuleId source middle target).targetCell =
+      target := rfl
 
 /-- Boundary evidence for composing `(first ; second)` with `third`, transported
 from the two adjacent checked boundaries. -/
@@ -485,6 +529,28 @@ def FXStep.endpointEvidence_seqCheckedLeftAssociated
     rw [FXStep.target?_seqCheckedLeftAssociated]
     exact thirdEndpointEvidence.target_eq
 
+theorem FXStep.endpointEvidence_seqCheckedLeftAssociated_sourceCell
+    (first second third : FXStep)
+    (firstSecondEvidence : PolyTerm.VerticalBoundaryEvidence first.val second.val)
+    (secondThirdEvidence : PolyTerm.VerticalBoundaryEvidence second.val third.val)
+    (firstEndpointEvidence : FXStep.EndpointEvidence first)
+    (thirdEndpointEvidence : FXStep.EndpointEvidence third) :
+    (FXStep.endpointEvidence_seqCheckedLeftAssociated
+      first second third firstSecondEvidence secondThirdEvidence
+      firstEndpointEvidence thirdEndpointEvidence).sourceCell =
+      firstEndpointEvidence.sourceCell := rfl
+
+theorem FXStep.endpointEvidence_seqCheckedLeftAssociated_targetCell
+    (first second third : FXStep)
+    (firstSecondEvidence : PolyTerm.VerticalBoundaryEvidence first.val second.val)
+    (secondThirdEvidence : PolyTerm.VerticalBoundaryEvidence second.val third.val)
+    (firstEndpointEvidence : FXStep.EndpointEvidence first)
+    (thirdEndpointEvidence : FXStep.EndpointEvidence third) :
+    (FXStep.endpointEvidence_seqCheckedLeftAssociated
+      first second third firstSecondEvidence secondThirdEvidence
+      firstEndpointEvidence thirdEndpointEvidence).targetCell =
+      thirdEndpointEvidence.targetCell := rfl
+
 /-- Endpoint evidence for checked right-associated composition of three FX
 steps.  This records the outer endpoints only; it is not associativity. -/
 def FXStep.endpointEvidence_seqCheckedRightAssociated
@@ -504,6 +570,28 @@ def FXStep.endpointEvidence_seqCheckedRightAssociated
   target_eq := by
     rw [FXStep.target?_seqCheckedRightAssociated]
     exact thirdEndpointEvidence.target_eq
+
+theorem FXStep.endpointEvidence_seqCheckedRightAssociated_sourceCell
+    (first second third : FXStep)
+    (firstSecondEvidence : PolyTerm.VerticalBoundaryEvidence first.val second.val)
+    (secondThirdEvidence : PolyTerm.VerticalBoundaryEvidence second.val third.val)
+    (firstEndpointEvidence : FXStep.EndpointEvidence first)
+    (thirdEndpointEvidence : FXStep.EndpointEvidence third) :
+    (FXStep.endpointEvidence_seqCheckedRightAssociated
+      first second third firstSecondEvidence secondThirdEvidence
+      firstEndpointEvidence thirdEndpointEvidence).sourceCell =
+      firstEndpointEvidence.sourceCell := rfl
+
+theorem FXStep.endpointEvidence_seqCheckedRightAssociated_targetCell
+    (first second third : FXStep)
+    (firstSecondEvidence : PolyTerm.VerticalBoundaryEvidence first.val second.val)
+    (secondThirdEvidence : PolyTerm.VerticalBoundaryEvidence second.val third.val)
+    (firstEndpointEvidence : FXStep.EndpointEvidence first)
+    (thirdEndpointEvidence : FXStep.EndpointEvidence third) :
+    (FXStep.endpointEvidence_seqCheckedRightAssociated
+      first second third firstSecondEvidence secondThirdEvidence
+      firstEndpointEvidence thirdEndpointEvidence).targetCell =
+      thirdEndpointEvidence.targetCell := rfl
 
 /-- Checked left-associated composition specialized to three constructor-level
 step cells with two explicit shared endpoints.  This packages the common
@@ -585,6 +673,22 @@ def FXStep.endpointEvidence_seqThreeMkCheckedLeftAssociated
       firstRuleId secondRuleId thirdRuleId
       source firstMiddle secondMiddle target
 
+theorem FXStep.endpointEvidence_seqThreeMkCheckedLeftAssociated_sourceCell
+    (firstRuleId secondRuleId thirdRuleId : CellId)
+    (source firstMiddle secondMiddle target : FXCellAt 0) :
+    (FXStep.endpointEvidence_seqThreeMkCheckedLeftAssociated
+      firstRuleId secondRuleId thirdRuleId
+      source firstMiddle secondMiddle target).sourceCell =
+      source := rfl
+
+theorem FXStep.endpointEvidence_seqThreeMkCheckedLeftAssociated_targetCell
+    (firstRuleId secondRuleId thirdRuleId : CellId)
+    (source firstMiddle secondMiddle target : FXCellAt 0) :
+    (FXStep.endpointEvidence_seqThreeMkCheckedLeftAssociated
+      firstRuleId secondRuleId thirdRuleId
+      source firstMiddle secondMiddle target).targetCell =
+      target := rfl
+
 /-- Endpoint evidence for the constructor-level checked right-associated chain. -/
 def FXStep.endpointEvidence_seqThreeMkCheckedRightAssociated
     (firstRuleId secondRuleId thirdRuleId : CellId)
@@ -603,6 +707,22 @@ def FXStep.endpointEvidence_seqThreeMkCheckedRightAssociated
     FXStep.target?_seqThreeMkCheckedRightAssociated
       firstRuleId secondRuleId thirdRuleId
       source firstMiddle secondMiddle target
+
+theorem FXStep.endpointEvidence_seqThreeMkCheckedRightAssociated_sourceCell
+    (firstRuleId secondRuleId thirdRuleId : CellId)
+    (source firstMiddle secondMiddle target : FXCellAt 0) :
+    (FXStep.endpointEvidence_seqThreeMkCheckedRightAssociated
+      firstRuleId secondRuleId thirdRuleId
+      source firstMiddle secondMiddle target).sourceCell =
+      source := rfl
+
+theorem FXStep.endpointEvidence_seqThreeMkCheckedRightAssociated_targetCell
+    (firstRuleId secondRuleId thirdRuleId : CellId)
+    (source firstMiddle secondMiddle target : FXCellAt 0) :
+    (FXStep.endpointEvidence_seqThreeMkCheckedRightAssociated
+      firstRuleId secondRuleId thirdRuleId
+      source firstMiddle secondMiddle target).targetCell =
+      target := rfl
 
 theorem FXStep.source?_par (step1 step2 : FXStep) :
     PolyTerm.source? (profile := fxProfile) (dimension := 0) (FXStep.par step1 step2) =
@@ -660,6 +780,16 @@ def FXCdLemma.EndpointEvidence.cell (ruleId : CellId)
   FXCdLemma.EndpointEvidence.ofCore
     (PolyTerm.EndpointEvidence.cell ruleId source target)
 
+theorem FXCdLemma.endpointEvidence_cell_sourceCell (ruleId : CellId)
+    (source target : FXCellAt 1) :
+    (FXCdLemma.EndpointEvidence.cell ruleId source target).sourceCell =
+      source := rfl
+
+theorem FXCdLemma.endpointEvidence_cell_targetCell (ruleId : CellId)
+    (source target : FXCellAt 1) :
+    (FXCdLemma.EndpointEvidence.cell ruleId source target).targetCell =
+      target := rfl
+
 /-- Checked associator coherence cell for three composable dim-1 FX cells.
 This packages the dim-2 scaffold; it is not an associativity equation. -/
 def FXCdLemma.associatorVChecked
@@ -703,6 +833,24 @@ def FXCdLemma.endpointEvidence_associatorVChecked
   FXCdLemma.EndpointEvidence.ofCore
     (PolyTerm.EndpointEvidence.associatorVChecked
       first second third firstSecondEvidence secondThirdEvidence)
+
+theorem FXCdLemma.endpointEvidence_associatorVChecked_sourceCell
+    (first second third : FXCellAt 1)
+    (firstSecondEvidence : PolyTerm.VerticalBoundaryEvidence first second)
+    (secondThirdEvidence : PolyTerm.VerticalBoundaryEvidence second third) :
+    (FXCdLemma.endpointEvidence_associatorVChecked
+      first second third firstSecondEvidence secondThirdEvidence).sourceCell =
+      PolyTerm.compVCheckedLeftAssociated
+        first second third firstSecondEvidence secondThirdEvidence := rfl
+
+theorem FXCdLemma.endpointEvidence_associatorVChecked_targetCell
+    (first second third : FXCellAt 1)
+    (firstSecondEvidence : PolyTerm.VerticalBoundaryEvidence first second)
+    (secondThirdEvidence : PolyTerm.VerticalBoundaryEvidence second third) :
+    (FXCdLemma.endpointEvidence_associatorVChecked
+      first second third firstSecondEvidence secondThirdEvidence).targetCell =
+      PolyTerm.compVCheckedRightAssociated
+        first second third firstSecondEvidence secondThirdEvidence := rfl
 
 /-- Checked associator coherence cell specialized to three FX steps.  This is
 still only a dim-2 scaffold cell; it does not assert associativity. -/
@@ -752,6 +900,24 @@ def FXCdLemma.endpointEvidence_associatorVCheckedOfSteps
       first second third firstSecondEvidence secondThirdEvidence).toCell
     (FXStep.seqCheckedRightAssociated
       first second third firstSecondEvidence secondThirdEvidence).toCell
+
+theorem FXCdLemma.endpointEvidence_associatorVCheckedOfSteps_sourceCell
+    (first second third : FXStep)
+    (firstSecondEvidence : PolyTerm.VerticalBoundaryEvidence first.val second.val)
+    (secondThirdEvidence : PolyTerm.VerticalBoundaryEvidence second.val third.val) :
+    (FXCdLemma.endpointEvidence_associatorVCheckedOfSteps
+      first second third firstSecondEvidence secondThirdEvidence).sourceCell =
+      (FXStep.seqCheckedLeftAssociated
+        first second third firstSecondEvidence secondThirdEvidence).toCell := rfl
+
+theorem FXCdLemma.endpointEvidence_associatorVCheckedOfSteps_targetCell
+    (first second third : FXStep)
+    (firstSecondEvidence : PolyTerm.VerticalBoundaryEvidence first.val second.val)
+    (secondThirdEvidence : PolyTerm.VerticalBoundaryEvidence second.val third.val) :
+    (FXCdLemma.endpointEvidence_associatorVCheckedOfSteps
+      first second third firstSecondEvidence secondThirdEvidence).targetCell =
+      (FXStep.seqCheckedRightAssociated
+        first second third firstSecondEvidence secondThirdEvidence).toCell := rfl
 
 /-- Checked associator coherence cell specialized to three freshly constructed
 FX steps sharing two explicit middle endpoints. -/
@@ -807,6 +973,26 @@ def FXCdLemma.endpointEvidence_associatorVCheckedOfStepMks
       firstRuleId secondRuleId thirdRuleId
       source firstMiddle secondMiddle target).toCell
 
+theorem FXCdLemma.endpointEvidence_associatorVCheckedOfStepMks_sourceCell
+    (firstRuleId secondRuleId thirdRuleId : CellId)
+    (source firstMiddle secondMiddle target : FXCellAt 0) :
+    (FXCdLemma.endpointEvidence_associatorVCheckedOfStepMks
+      firstRuleId secondRuleId thirdRuleId
+      source firstMiddle secondMiddle target).sourceCell =
+      (FXStep.seqThreeMkCheckedLeftAssociated
+        firstRuleId secondRuleId thirdRuleId
+        source firstMiddle secondMiddle target).toCell := rfl
+
+theorem FXCdLemma.endpointEvidence_associatorVCheckedOfStepMks_targetCell
+    (firstRuleId secondRuleId thirdRuleId : CellId)
+    (source firstMiddle secondMiddle target : FXCellAt 0) :
+    (FXCdLemma.endpointEvidence_associatorVCheckedOfStepMks
+      firstRuleId secondRuleId thirdRuleId
+      source firstMiddle secondMiddle target).targetCell =
+      (FXStep.seqThreeMkCheckedRightAssociated
+        firstRuleId secondRuleId thirdRuleId
+        source firstMiddle secondMiddle target).toCell := rfl
+
 /-- Checked left-unitor coherence cell for a dim-1 FX cell with a known source.
 This records the dim-2 scaffold only, not a unit law. -/
 def FXCdLemma.leftUnitorVChecked
@@ -846,6 +1032,24 @@ def FXCdLemma.endpointEvidence_leftUnitorVChecked
   FXCdLemma.EndpointEvidence.ofCore
     (PolyTerm.EndpointEvidence.leftUnitorVChecked
       sourceCell cell cellSource_eq)
+
+theorem FXCdLemma.endpointEvidence_leftUnitorVChecked_sourceCell
+    (sourceCell : FXCellAt 0)
+    (cell : FXCellAt 1)
+    (cellSource_eq : cell.source? = some sourceCell) :
+    (FXCdLemma.endpointEvidence_leftUnitorVChecked
+      sourceCell cell cellSource_eq).sourceCell =
+      PolyTerm.compVChecked (.identity sourceCell) cell
+        (PolyTerm.VerticalBoundaryEvidence.identityLeft
+          sourceCell cell cellSource_eq) := rfl
+
+theorem FXCdLemma.endpointEvidence_leftUnitorVChecked_targetCell
+    (sourceCell : FXCellAt 0)
+    (cell : FXCellAt 1)
+    (cellSource_eq : cell.source? = some sourceCell) :
+    (FXCdLemma.endpointEvidence_leftUnitorVChecked
+      sourceCell cell cellSource_eq).targetCell =
+      cell := rfl
 
 /-- Checked left-unitor coherence cell specialized to an FX step.  The identity
 cell is not itself an `FXStep`; only the non-identity endpoint is packaged as a
@@ -889,6 +1093,24 @@ def FXCdLemma.endpointEvidence_leftUnitorVCheckedOfStep
   FXCdLemma.endpointEvidence_leftUnitorVChecked
     sourceCell step.toCell stepSource_eq
 
+theorem FXCdLemma.endpointEvidence_leftUnitorVCheckedOfStep_sourceCell
+    (sourceCell : FXCellAt 0)
+    (step : FXStep)
+    (stepSource_eq : step.source? = some sourceCell) :
+    (FXCdLemma.endpointEvidence_leftUnitorVCheckedOfStep
+      sourceCell step stepSource_eq).sourceCell =
+      PolyTerm.compVChecked (.identity sourceCell) step.toCell
+        (PolyTerm.VerticalBoundaryEvidence.identityLeft
+          sourceCell step.toCell stepSource_eq) := rfl
+
+theorem FXCdLemma.endpointEvidence_leftUnitorVCheckedOfStep_targetCell
+    (sourceCell : FXCellAt 0)
+    (step : FXStep)
+    (stepSource_eq : step.source? = some sourceCell) :
+    (FXCdLemma.endpointEvidence_leftUnitorVCheckedOfStep
+      sourceCell step stepSource_eq).targetCell =
+      step.toCell := rfl
+
 /-- Checked right-unitor coherence cell for a dim-1 FX cell with a known target.
 This records the dim-2 scaffold only, not a unit law. -/
 def FXCdLemma.rightUnitorVChecked
@@ -928,6 +1150,24 @@ def FXCdLemma.endpointEvidence_rightUnitorVChecked
   FXCdLemma.EndpointEvidence.ofCore
     (PolyTerm.EndpointEvidence.rightUnitorVChecked
       targetCell cell cellTarget_eq)
+
+theorem FXCdLemma.endpointEvidence_rightUnitorVChecked_sourceCell
+    (targetCell : FXCellAt 0)
+    (cell : FXCellAt 1)
+    (cellTarget_eq : cell.target? = some targetCell) :
+    (FXCdLemma.endpointEvidence_rightUnitorVChecked
+      targetCell cell cellTarget_eq).sourceCell =
+      PolyTerm.compVChecked cell (.identity targetCell)
+        (PolyTerm.VerticalBoundaryEvidence.identityRight
+          cell targetCell cellTarget_eq) := rfl
+
+theorem FXCdLemma.endpointEvidence_rightUnitorVChecked_targetCell
+    (targetCell : FXCellAt 0)
+    (cell : FXCellAt 1)
+    (cellTarget_eq : cell.target? = some targetCell) :
+    (FXCdLemma.endpointEvidence_rightUnitorVChecked
+      targetCell cell cellTarget_eq).targetCell =
+      cell := rfl
 
 /-- Checked right-unitor coherence cell specialized to an FX step.  The identity
 cell remains raw because the current `FXStep` view excludes identities. -/
@@ -969,6 +1209,24 @@ def FXCdLemma.endpointEvidence_rightUnitorVCheckedOfStep
       (FXCdLemma.rightUnitorVCheckedOfStep targetCell step stepTarget_eq) :=
   FXCdLemma.endpointEvidence_rightUnitorVChecked
     targetCell step.toCell stepTarget_eq
+
+theorem FXCdLemma.endpointEvidence_rightUnitorVCheckedOfStep_sourceCell
+    (targetCell : FXCellAt 0)
+    (step : FXStep)
+    (stepTarget_eq : step.target? = some targetCell) :
+    (FXCdLemma.endpointEvidence_rightUnitorVCheckedOfStep
+      targetCell step stepTarget_eq).sourceCell =
+      PolyTerm.compVChecked step.toCell (.identity targetCell)
+        (PolyTerm.VerticalBoundaryEvidence.identityRight
+          step.toCell targetCell stepTarget_eq) := rfl
+
+theorem FXCdLemma.endpointEvidence_rightUnitorVCheckedOfStep_targetCell
+    (targetCell : FXCellAt 0)
+    (step : FXStep)
+    (stepTarget_eq : step.target? = some targetCell) :
+    (FXCdLemma.endpointEvidence_rightUnitorVCheckedOfStep
+      targetCell step stepTarget_eq).targetCell =
+      step.toCell := rfl
 
 /-- Identity dim-1 cell on a term. -/
 def FXConv.refl (term : FXCellAt 0) : FXConv :=
@@ -1094,6 +1352,12 @@ def FXConv.endpointEvidence_refl (term : FXCellAt 0) :
   FXConv.EndpointEvidence.ofCore
     (PolyTerm.EndpointEvidence.identity term)
 
+theorem FXConv.endpointEvidence_refl_sourceCell (term : FXCellAt 0) :
+    (FXConv.endpointEvidence_refl term).sourceCell = term := rfl
+
+theorem FXConv.endpointEvidence_refl_targetCell (term : FXCellAt 0) :
+    (FXConv.endpointEvidence_refl term).targetCell = term := rfl
+
 /-- Endpoint evidence for raw conversion composition.
 This records only the outer endpoints; it does not assert boundary matching or
 thinness preservation. -/
@@ -1107,6 +1371,24 @@ def FXConv.endpointEvidence_trans
     (PolyTerm.EndpointEvidence.compV
       firstEndpointEvidence.toCore
       secondEndpointEvidence.toCore)
+
+theorem FXConv.endpointEvidence_trans_sourceCell
+    (firstConversion secondConversion : FXConv)
+    (firstEndpointEvidence : FXConv.EndpointEvidence firstConversion)
+    (secondEndpointEvidence : FXConv.EndpointEvidence secondConversion) :
+    (FXConv.endpointEvidence_trans
+      firstConversion secondConversion
+      firstEndpointEvidence secondEndpointEvidence).sourceCell =
+      firstEndpointEvidence.sourceCell := rfl
+
+theorem FXConv.endpointEvidence_trans_targetCell
+    (firstConversion secondConversion : FXConv)
+    (firstEndpointEvidence : FXConv.EndpointEvidence firstConversion)
+    (secondEndpointEvidence : FXConv.EndpointEvidence secondConversion) :
+    (FXConv.endpointEvidence_trans
+      firstConversion secondConversion
+      firstEndpointEvidence secondEndpointEvidence).targetCell =
+      secondEndpointEvidence.targetCell := rfl
 
 /-- Endpoint evidence for checked conversion composition.  The boundary
 evidence validates the middle endpoint; thinness is still not asserted. -/
@@ -1125,6 +1407,28 @@ def FXConv.endpointEvidence_transChecked
       firstEndpointEvidence.toCore
       secondEndpointEvidence.toCore)
 
+theorem FXConv.endpointEvidence_transChecked_sourceCell
+    (firstConversion secondConversion : FXConv)
+    (boundaryEvidence :
+      PolyTerm.VerticalBoundaryEvidence firstConversion secondConversion)
+    (firstEndpointEvidence : FXConv.EndpointEvidence firstConversion)
+    (secondEndpointEvidence : FXConv.EndpointEvidence secondConversion) :
+    (FXConv.endpointEvidence_transChecked
+      firstConversion secondConversion boundaryEvidence
+      firstEndpointEvidence secondEndpointEvidence).sourceCell =
+      firstEndpointEvidence.sourceCell := rfl
+
+theorem FXConv.endpointEvidence_transChecked_targetCell
+    (firstConversion secondConversion : FXConv)
+    (boundaryEvidence :
+      PolyTerm.VerticalBoundaryEvidence firstConversion secondConversion)
+    (firstEndpointEvidence : FXConv.EndpointEvidence firstConversion)
+    (secondEndpointEvidence : FXConv.EndpointEvidence secondConversion) :
+    (FXConv.endpointEvidence_transChecked
+      firstConversion secondConversion boundaryEvidence
+      firstEndpointEvidence secondEndpointEvidence).targetCell =
+      secondEndpointEvidence.targetCell := rfl
+
 /-- Endpoint evidence for checked composition with a reflexive conversion on the
 left. -/
 def FXConv.endpointEvidence_transReflLeftChecked (base : FXCellAt 0)
@@ -1141,6 +1445,26 @@ def FXConv.endpointEvidence_transReflLeftChecked (base : FXCellAt 0)
     (FXConv.endpointEvidence_refl base)
     conversionEndpointEvidence
 
+theorem FXConv.endpointEvidence_transReflLeftChecked_sourceCell
+    (base : FXCellAt 0)
+    (conversion : FXConv)
+    (conversionSource_eq : conversion.source? = some base)
+    (conversionEndpointEvidence : FXConv.EndpointEvidence conversion) :
+    (FXConv.endpointEvidence_transReflLeftChecked
+      base conversion conversionSource_eq
+      conversionEndpointEvidence).sourceCell =
+      base := rfl
+
+theorem FXConv.endpointEvidence_transReflLeftChecked_targetCell
+    (base : FXCellAt 0)
+    (conversion : FXConv)
+    (conversionSource_eq : conversion.source? = some base)
+    (conversionEndpointEvidence : FXConv.EndpointEvidence conversion) :
+    (FXConv.endpointEvidence_transReflLeftChecked
+      base conversion conversionSource_eq
+      conversionEndpointEvidence).targetCell =
+      conversionEndpointEvidence.targetCell := rfl
+
 /-- Endpoint evidence for checked composition with a reflexive conversion on the
 right. -/
 def FXConv.endpointEvidence_transReflRightChecked (conversion : FXConv)
@@ -1156,6 +1480,26 @@ def FXConv.endpointEvidence_transReflRightChecked (conversion : FXConv)
       conversion base conversionTarget_eq)
     conversionEndpointEvidence
     (FXConv.endpointEvidence_refl base)
+
+theorem FXConv.endpointEvidence_transReflRightChecked_sourceCell
+    (conversion : FXConv)
+    (base : FXCellAt 0)
+    (conversionTarget_eq : conversion.target? = some base)
+    (conversionEndpointEvidence : FXConv.EndpointEvidence conversion) :
+    (FXConv.endpointEvidence_transReflRightChecked
+      conversion base conversionTarget_eq
+      conversionEndpointEvidence).sourceCell =
+      conversionEndpointEvidence.sourceCell := rfl
+
+theorem FXConv.endpointEvidence_transReflRightChecked_targetCell
+    (conversion : FXConv)
+    (base : FXCellAt 0)
+    (conversionTarget_eq : conversion.target? = some base)
+    (conversionEndpointEvidence : FXConv.EndpointEvidence conversion) :
+    (FXConv.endpointEvidence_transReflRightChecked
+      conversion base conversionTarget_eq
+      conversionEndpointEvidence).targetCell =
+      base := rfl
 
 /-- Any checked pair of provisional conversion cells has matching
 target/source endpoints.  This does not assert thinness. -/
@@ -1294,6 +1638,28 @@ def FXConv.endpointEvidence_transCheckedLeftAssociated
     rw [FXConv.target?_transCheckedLeftAssociated]
     exact thirdEndpointEvidence.target_eq
 
+theorem FXConv.endpointEvidence_transCheckedLeftAssociated_sourceCell
+    (first second third : FXConv)
+    (firstSecondEvidence : PolyTerm.VerticalBoundaryEvidence first second)
+    (secondThirdEvidence : PolyTerm.VerticalBoundaryEvidence second third)
+    (firstEndpointEvidence : FXConv.EndpointEvidence first)
+    (thirdEndpointEvidence : FXConv.EndpointEvidence third) :
+    (FXConv.endpointEvidence_transCheckedLeftAssociated
+      first second third firstSecondEvidence secondThirdEvidence
+      firstEndpointEvidence thirdEndpointEvidence).sourceCell =
+      firstEndpointEvidence.sourceCell := rfl
+
+theorem FXConv.endpointEvidence_transCheckedLeftAssociated_targetCell
+    (first second third : FXConv)
+    (firstSecondEvidence : PolyTerm.VerticalBoundaryEvidence first second)
+    (secondThirdEvidence : PolyTerm.VerticalBoundaryEvidence second third)
+    (firstEndpointEvidence : FXConv.EndpointEvidence first)
+    (thirdEndpointEvidence : FXConv.EndpointEvidence third) :
+    (FXConv.endpointEvidence_transCheckedLeftAssociated
+      first second third firstSecondEvidence secondThirdEvidence
+      firstEndpointEvidence thirdEndpointEvidence).targetCell =
+      thirdEndpointEvidence.targetCell := rfl
+
 /-- Endpoint evidence for checked right-associated composition of three
 provisional conversion cells.  This records the outer endpoints only. -/
 def FXConv.endpointEvidence_transCheckedRightAssociated
@@ -1313,6 +1679,28 @@ def FXConv.endpointEvidence_transCheckedRightAssociated
   target_eq := by
     rw [FXConv.target?_transCheckedRightAssociated]
     exact thirdEndpointEvidence.target_eq
+
+theorem FXConv.endpointEvidence_transCheckedRightAssociated_sourceCell
+    (first second third : FXConv)
+    (firstSecondEvidence : PolyTerm.VerticalBoundaryEvidence first second)
+    (secondThirdEvidence : PolyTerm.VerticalBoundaryEvidence second third)
+    (firstEndpointEvidence : FXConv.EndpointEvidence first)
+    (thirdEndpointEvidence : FXConv.EndpointEvidence third) :
+    (FXConv.endpointEvidence_transCheckedRightAssociated
+      first second third firstSecondEvidence secondThirdEvidence
+      firstEndpointEvidence thirdEndpointEvidence).sourceCell =
+      firstEndpointEvidence.sourceCell := rfl
+
+theorem FXConv.endpointEvidence_transCheckedRightAssociated_targetCell
+    (first second third : FXConv)
+    (firstSecondEvidence : PolyTerm.VerticalBoundaryEvidence first second)
+    (secondThirdEvidence : PolyTerm.VerticalBoundaryEvidence second third)
+    (firstEndpointEvidence : FXConv.EndpointEvidence first)
+    (thirdEndpointEvidence : FXConv.EndpointEvidence third) :
+    (FXConv.endpointEvidence_transCheckedRightAssociated
+      first second third firstSecondEvidence secondThirdEvidence
+      firstEndpointEvidence thirdEndpointEvidence).targetCell =
+      thirdEndpointEvidence.targetCell := rfl
 
 /-- Apply fold to an FX cell using a specific algebra. -/
 def FXCell.applyFold {target : CellDim → Type}
