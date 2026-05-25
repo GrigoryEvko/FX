@@ -165,25 +165,56 @@ theorem FXStep.toCell_isStepCell (step : FXStep) :
     step.toCell.isStepCell = true := by
   exact step.property
 
+theorem FXStep.toCell?_ofCell?_of_isStepCell (cell : FXCellAt 1)
+    (hasStepCell : cell.isStepCell = true) :
+    Option.map FXStep.toCell (FXStep.ofCell? cell) =
+      some cell := by
+  unfold FXStep.ofCell?
+  rw [dif_pos hasStepCell]
+  rfl
+
+theorem FXStep.ofCell?_of_not_isStepCell (cell : FXCellAt 1)
+    (hasNotStepCell : cell.isStepCell ≠ true) :
+    FXStep.ofCell? cell = none := by
+  unfold FXStep.ofCell?
+  rw [dif_neg hasNotStepCell]
+
 theorem FXStep.toCell?_ofCell?_toCell (step : FXStep) :
     Option.map FXStep.toCell (FXStep.ofCell? step.toCell) =
       some step.toCell := by
-  cases step with
-  | mk cell hasStepCell =>
-      change
-        Option.map FXStep.toCell
-            (FXStep.ofCell? cell) =
-          some cell
-      unfold FXStep.ofCell?
-      rw [dif_pos hasStepCell]
-      rfl
+  exact FXStep.toCell?_ofCell?_of_isStepCell
+    step.toCell step.toCell_isStepCell
+
+theorem FXStep.toCell?_ofCell?_cell (ruleId : CellId)
+    (source target : FXCellAt 0) :
+    Option.map FXStep.toCell
+        (FXStep.ofCell? (.cell ruleId source target)) =
+      some (.cell ruleId source target) := by
+  exact FXStep.toCell?_ofCell?_of_isStepCell
+    (.cell ruleId source target) rfl
+
+theorem FXStep.toCell?_ofCell?_compV
+    (first second : FXCellAt 1) :
+    Option.map FXStep.toCell
+        (FXStep.ofCell? (.compV first second)) =
+      some (.compV first second) := by
+  exact FXStep.toCell?_ofCell?_of_isStepCell
+    (.compV first second) rfl
+
+theorem FXStep.toCell?_ofCell?_compH
+    (left right : FXCellAt 1) :
+    Option.map FXStep.toCell
+        (FXStep.ofCell? (.compH left right)) =
+      some (.compH left right) := by
+  exact FXStep.toCell?_ofCell?_of_isStepCell
+    (.compH left right) rfl
 
 theorem FXStep.ofCell?_identity (base : FXCellAt 0) :
     FXStep.ofCell? (.identity base) = none := by
-  unfold FXStep.ofCell?
-  rw [dif_neg]
-  intro hasStepCell
-  cases hasStepCell
+  exact FXStep.ofCell?_of_not_isStepCell (.identity base)
+    (by
+      intro hasStepCell
+      cases hasStepCell)
 
 theorem FXTerm.toCell_isTypeCell_false (term : FXTerm) :
     term.toCell.isTypeCell = false := by
