@@ -1951,6 +1951,16 @@ def FXType.ofConstructorName
     (constructorName : FXTypeConstructorName) (payload : Nat) : FXType :=
   FXType.ofConstructorIndex constructorName.constructorIndex payload
 
+/-- Try to recover the named current typed-term constructor id from an FX term. -/
+def FXTerm.constructorName? (term : FXTerm) :
+    Option FXTermConstructorName :=
+  FXTermConstructorName.ofCellId? term.cellId
+
+/-- Try to recover the named current `Ty` constructor id from an FX type. -/
+def FXType.constructorName? (typeCell : FXType) :
+    Option FXTypeConstructorName :=
+  FXTypeConstructorName.ofCellId? typeCell.cellId
+
 theorem FXTerm.cellId_ofConstructorIndex
     (constructorIndex : Fin termGeneratorCount) (payload : Nat) :
     (FXTerm.ofConstructorIndex constructorIndex payload).cellId =
@@ -1980,6 +1990,12 @@ theorem FXTerm.constructorIndex_val_ofConstructorName
     (constructorName : FXTermConstructorName) (payload : Nat) :
     (FXTerm.ofConstructorName constructorName payload).constructorIndex.val =
       constructorName.cellId := rfl
+
+theorem FXTerm.constructorName?_ofConstructorName
+    (constructorName : FXTermConstructorName) (payload : Nat) :
+    (FXTerm.ofConstructorName constructorName payload).constructorName? =
+      some constructorName := by
+  cases constructorName <;> rfl
 
 theorem FXTerm.cellId_eq_constructorIndex_val (term : FXTerm) :
     term.cellId = term.constructorIndex.val := by
@@ -2035,6 +2051,12 @@ theorem FXType.constructorIndex_val_ofConstructorName
       constructorName.localCellId := by
   exact FXType.constructorIndex_val_ofConstructorIndex
     constructorName.constructorIndex payload
+
+theorem FXType.constructorName?_ofConstructorName
+    (constructorName : FXTypeConstructorName) (payload : Nat) :
+    (FXType.ofConstructorName constructorName payload).constructorName? =
+      some constructorName := by
+  cases constructorName <;> rfl
 
 theorem FXType.cellId_eq_firstTypeCellId_add_constructorIndex_val
     (typeCell : FXType) :

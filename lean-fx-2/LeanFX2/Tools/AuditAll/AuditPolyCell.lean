@@ -434,12 +434,15 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.ofConstructorName
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.ofConstructorIndex
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.ofConstructorName
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.constructorName?
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.constructorName?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.cellId_ofConstructorIndex
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.payload_ofConstructorIndex
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.cellId_ofConstructorName
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.payload_ofConstructorName
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.constructorIndex_val_ofConstructorIndex
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.constructorIndex_val_ofConstructorName
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.constructorName?_ofConstructorName
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.cellId_eq_constructorIndex_val
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.toCell_ofConstructorIndex_constructorIndex_payload
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.cellId_ofConstructorIndex
@@ -448,6 +451,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.payload_ofConstructorName
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.constructorIndex_val_ofConstructorIndex
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.constructorIndex_val_ofConstructorName
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.constructorName?_ofConstructorName
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.cellId_eq_firstTypeCellId_add_constructorIndex_val
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXType.toCell_ofConstructorIndex_constructorIndex_payload
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.FXTerm.ofCellId?
