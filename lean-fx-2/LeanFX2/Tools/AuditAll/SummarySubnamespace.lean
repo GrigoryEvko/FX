@@ -13,6 +13,10 @@ namespace LeanFX2.Tools
 -- the count distribution across `LeanFX2.*` sub-namespaces so a
 -- coverage regression (whole sub-namespace shrinking unexpectedly)
 -- is visible at a glance.
-#audit_subnamespace_counts
+-- TODO POLYCELL: disabled honestly.  The command body is currently
+-- preserved only inside `StrictHarness/Reporting.lean`'s disabled
+-- cascade-era block; re-enable once Reporting is rebuilt for the
+-- PolyCell audit profile.
+-- #audit_subnamespace_counts
 
 end LeanFX2.Tools

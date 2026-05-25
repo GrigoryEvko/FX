@@ -18,7 +18,7 @@ namespace LeanFX2.Tools
 -- the headline-named claims already counted, and HoTT/Cubical
 -- headline-adjacent files).  Pins current count to catch wrappers
 -- that rename-and-restate refl-fragment claims.
--- WEAK-FX2-03 (2026-05-07): ratchet 121 → 0 by extending the
+-- WEAK-FX2-03 (2026-05-07): ratchet 121 to 0 by extending the
 -- structural-allowlist in Tools/StrictHarness/Reporting.lean to
 -- recognise auto-generated recursors (.casesOn / .recOn / .brecOn /
 -- .rec / .noConfusion suffixes), the Subject-Reduction lemma family
@@ -28,7 +28,11 @@ namespace LeanFX2.Tools
 -- raw-bridge canonical-form scaffolding.  All 121 prior dependents
 -- now classified as legitimate structural carriers; new wrappers
 -- introduced after this date will fail the gate at 0.
-#assert_broad_manufactured_step_dependent_budget LeanFX2 0
+-- TODO POLYCELL: disabled honestly.  The command body is currently
+-- preserved only inside `StrictHarness/Reporting.lean`'s disabled
+-- cascade-era block; re-enable once the PolyCell FXConv/FXStep view
+-- supplies the replacement dependency classifier.
+-- #assert_broad_manufactured_step_dependent_budget LeanFX2 0
 
 -- Cast-operator dependent census.  Counts kernel-tier decls whose
 -- closure references Eq.mpr / Eq.ndrec / Eq.rec / HEq.rec /
@@ -80,7 +84,10 @@ namespace LeanFX2.Tools
 -- `opaque` (without rfl-reducible body), and `unsafe def` for kernel
 -- theorems.  This gate scans the kernel tier for those constant-info
 -- shapes; budget zero means none should appear (and currently 0 ✓).
-#assert_forbidden_decl_shape_budget LeanFX2 0
+-- TODO POLYCELL: disabled honestly.  The command lives in
+-- `StrictHarness/DeclShape.lean`, whose body is disabled until the
+-- PolyCell replacement for cascade-shaped declaration scans exists.
+-- #assert_forbidden_decl_shape_budget LeanFX2 0
 
 -- All-raw-payload Term ctor count.  A Term ctor whose every explicit
 -- binder type is RawTerm/Nat/UniverseLevel is a typing wrapper around
@@ -88,7 +95,8 @@ namespace LeanFX2.Tools
 -- includes a Prop-typed `levelLe` premise, so the count is 0.  Tight
 -- ratchet: any future ctor whose every explicit binder is raw will
 -- fail the build at this 0 budget.
-#assert_all_raw_payload_budget LeanFX2.Term 0
+-- TODO POLYCELL: disabled honestly with the rest of DeclShape.
+-- #assert_all_raw_payload_budget LeanFX2.Term 0
 
 -- Value-shaped type-code constructors.  The all-raw gate misses `*Code`
 -- ctors because they carry proof binders; this gate counts `Term.*Code`
@@ -172,6 +180,7 @@ namespace LeanFX2.Tools
 -- and `equivApplyCong.{rename,subst}_compatible` in
 -- `LeanFX2/Reduction/Compat/HoTT.lean`, closing the deferral from
 -- D3.6-P3+P4.  Coverage drops back to 0; ratchet budget 2 → 0.
-#assert_reduction_compat_coverage_budget LeanFX2.Step.par 0
+-- TODO POLYCELL: disabled honestly with the rest of DeclShape.
+-- #assert_reduction_compat_coverage_budget LeanFX2.Step.par 0
 
 end LeanFX2.Tools

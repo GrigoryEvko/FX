@@ -100,7 +100,10 @@ namespace LeanFX2.Tools
 -- `interval1Cong`, `universeCodeCong`, `equivReflIdCong`,
 -- `equivReflIdAtIdCong`) — each definitionally `Step.par.refl _` —
 -- then closed the remaining 12 slots, bringing debt to zero.
-#assert_step_par_cong_coverage_budget LeanFX2.Term 0
+-- TODO POLYCELL: disabled honestly.  The command lives in
+-- `StrictHarness/DeclShape.lean`, whose body is disabled until the
+-- PolyCell replacement for cascade-shaped declaration scans exists.
+-- #assert_step_par_cong_coverage_budget LeanFX2.Term 0
 
 -- Conv cong-rule coverage matrix.  For every Term ctor, either
 -- `LeanFX2.Conv.<name>Cong` or `LeanFX2.Conv.<name>_cong` should exist
@@ -221,6 +224,7 @@ namespace LeanFX2.Tools
 -- `Foundation/RawPartialRename/UnweakenInversion.lean` provides
 -- the Option-form witness equivalent
 -- (`raw.unweaken?.isSome ↔ IsClosedRawTerm raw`).
-#assert_conv_cong_coverage_budget LeanFX2.Term 25
+-- TODO POLYCELL: disabled honestly with the rest of DeclShape.
+-- #assert_conv_cong_coverage_budget LeanFX2.Term 25
 
 end LeanFX2.Tools

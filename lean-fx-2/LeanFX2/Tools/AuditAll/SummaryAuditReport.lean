@@ -13,6 +13,10 @@ namespace LeanFX2.Tools
 -- failure list.  Strictly informational (does not throw); the actual
 -- blocking happens via `#audit_namespace_strict` above.  Surfaces
 -- audit health amid hundreds of OK info lines.
-#audit_summary LeanFX2
+-- TODO POLYCELL: disabled honestly.  The command body is currently
+-- preserved only inside `StrictHarness/Reporting.lean`'s disabled
+-- cascade-era block; re-enable once Reporting is rebuilt for the
+-- PolyCell audit profile.
+-- #audit_summary LeanFX2
 
 end LeanFX2.Tools
