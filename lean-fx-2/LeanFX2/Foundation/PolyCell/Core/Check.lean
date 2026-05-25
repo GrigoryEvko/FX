@@ -1178,6 +1178,24 @@ theorem decodeApplicationPayload?_varZeroVarOne
           (NegativeProbes.seedTermAtom profile)
           (NegativeProbes.alternateTermAtom profile)) := rfl
 
+theorem decodeApplicationPayload?_badPayload_rejects
+    {profile : PolyProfile} {scope : Nat} :
+    decodeApplicationPayload? (profile := profile) scope
+      NegativeProbes.badPayloadSentinel =
+      Except.error .badPayload := rfl
+
+theorem decodeApplicationPayload?_wrongArity_rejects
+    {profile : PolyProfile} {scope : Nat} :
+    decodeApplicationPayload? (profile := profile) scope
+      NegativeProbes.wrongAritySentinel =
+      Except.error .wrongArity := rfl
+
+theorem decodeApplicationPayload?_wrongChildShape_rejects
+    {profile : PolyProfile} {scope : Nat} :
+    decodeApplicationPayload? (profile := profile) scope
+      NegativeProbes.wrongChildShapeSentinel =
+      Except.error .wrongChildShape := rfl
+
 theorem decodeApplicationPayload?_typeAsFunction
     {profile : PolyProfile} {scope : Nat} :
     decodeApplicationPayload? (profile := profile) scope
@@ -1303,6 +1321,24 @@ theorem screenRawCell0?_applicationVarZeroVarOne
       (NegativeProbes.applicationVarZeroVarOneRawCell profile) =
       Except.ok () := rfl
 
+theorem screenRawCell0?_applicationBadPayload_rejects
+    {profile : PolyProfile} :
+    screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.applicationBadPayloadRawCell profile) =
+      Except.error .badPayload := rfl
+
+theorem screenRawCell0?_applicationWrongArity_rejects
+    {profile : PolyProfile} :
+    screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.applicationWrongArityRawCell profile) =
+      Except.error .wrongArity := rfl
+
+theorem screenRawCell0?_applicationWrongChildShape_rejects
+    {profile : PolyProfile} :
+    screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.applicationWrongChildShapeRawCell profile) =
+      Except.error .wrongChildShape := rfl
+
 theorem screenRawCell0As?_applicationVarZeroVarOne
     {profile : PolyProfile} :
     screenRawCell0As? (profile := profile) .term
@@ -1326,6 +1362,42 @@ theorem screenRawCell0?_applicationOutOfScopeArgument_rejects
     {profile : PolyProfile} :
     screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
       (NegativeProbes.applicationOutOfScopeArgumentRawCell profile) =
+      Except.error .wrongChildShape := rfl
+
+theorem screenRawCell0?_badPiTypePayload_rejects
+    {profile : PolyProfile} :
+    screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.badPiTypePayloadRawCell profile) =
+      Except.error .badPayload := rfl
+
+theorem screenRawCell0?_badContextConsPayload_rejects
+    {profile : PolyProfile} :
+    screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.badContextConsPayloadRawCell profile) =
+      Except.error .badPayload := rfl
+
+theorem screenRawCell0?_wrongPiTypeArity_rejects
+    {profile : PolyProfile} :
+    screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.wrongPiTypeArityRawCell profile) =
+      Except.error .wrongArity := rfl
+
+theorem screenRawCell0?_wrongPiTypeChildShape_rejects
+    {profile : PolyProfile} :
+    screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.wrongPiTypeChildShapeRawCell profile) =
+      Except.error .wrongChildShape := rfl
+
+theorem screenRawCell0?_wrongContextConsArity_rejects
+    {profile : PolyProfile} :
+    screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.wrongContextConsArityRawCell profile) =
+      Except.error .wrongArity := rfl
+
+theorem screenRawCell0?_wrongContextConsChildShape_rejects
+    {profile : PolyProfile} :
+    screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.wrongContextConsChildShapeRawCell profile) =
       Except.error .wrongChildShape := rfl
 
 theorem certifiedSeedTermPackage_raw {profile : PolyProfile} :
@@ -1586,12 +1658,38 @@ theorem certificationRejectionAfterScreen?_unsupportedTermStep_rejects
       (NegativeProbes.unsupportedTermStepVarZeroVarTwoRawCell profile) =
       CellCheckRejection.unsupportedCertification := rfl
 
+theorem certificationRejectionAfterScreen?_unsupportedReversedTermStep_rejects
+    {profile : PolyProfile} :
+    certificationRejectionAfterScreen? (profile := profile)
+      NegativeProbes.defaultInferScope
+      (NegativeProbes.unsupportedTermStepVarOneVarZeroRawCell profile) =
+      CellCheckRejection.unsupportedCertification := rfl
+
+theorem certificationRejectionAfterScreen?_unsupportedReflexiveTermStep_rejects
+    {profile : PolyProfile} :
+    certificationRejectionAfterScreen? (profile := profile)
+      NegativeProbes.defaultInferScope
+      (NegativeProbes.unsupportedTermStepVarZeroVarZeroRawCell profile) =
+      CellCheckRejection.unsupportedCertification := rfl
+
 theorem certificationRejectionAfterScreen?_matchedVertical_rejects
     {profile : PolyProfile} :
     certificationRejectionAfterScreen? (profile := profile)
       NegativeProbes.defaultInferScope
       (NegativeProbes.matchedVerticalBoundaryRawCell profile) =
       CellCheckRejection.unsupportedCertification := rfl
+
+theorem screenRawCell?_unsupportedCompHWellScreened_rejects
+    {profile : PolyProfile} :
+    screenRawCell? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.unsupportedCompHWellScreenedRawCell profile) =
+      Except.error .unsupportedCompH := rfl
+
+theorem screenRawCell?_badIdentityBase_rejects
+    {profile : PolyProfile} :
+    screenRawCell? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.badIdentityBaseRawCell profile) =
+      Except.error .badPayload := rfl
 
 theorem screenExpectedSort?_badUnitTypePayload_as_type_rejects
     {profile : PolyProfile} :
@@ -1647,6 +1745,21 @@ theorem badLinearModePayloadProbe_rejects {profile : PolyProfile} :
         (NegativeProbes.badLinearModePayloadProbe profile).expectedRejection :=
   rfl
 
+theorem badPiTypePayloadProbe_rejects {profile : PolyProfile} :
+    screenRawCell0? (profile := profile)
+      (NegativeProbes.badPiTypePayloadProbe profile).scope
+      (NegativeProbes.badPiTypePayloadRawCell profile) =
+      Except.error
+        (NegativeProbes.badPiTypePayloadProbe profile).expectedRejection := rfl
+
+theorem badContextConsPayloadProbe_rejects {profile : PolyProfile} :
+    screenRawCell0? (profile := profile)
+      (NegativeProbes.badContextConsPayloadProbe profile).scope
+      (NegativeProbes.badContextConsPayloadRawCell profile) =
+      Except.error
+        (NegativeProbes.badContextConsPayloadProbe
+          profile).expectedRejection := rfl
+
 theorem wrongArityProbe_rejects {profile : PolyProfile} :
     screenRawCell0? (profile := profile)
       (NegativeProbes.wrongArityProbe profile).scope
@@ -1659,6 +1772,61 @@ theorem wrongChildShapeProbe_rejects {profile : PolyProfile} :
       (NegativeProbes.wrongChildShapeRawCell profile) =
       Except.error
         (NegativeProbes.wrongChildShapeProbe profile).expectedRejection := rfl
+
+theorem wrongPiTypeArityProbe_rejects {profile : PolyProfile} :
+    screenRawCell0? (profile := profile)
+      (NegativeProbes.wrongPiTypeArityProbe profile).scope
+      (NegativeProbes.wrongPiTypeArityRawCell profile) =
+      Except.error
+        (NegativeProbes.wrongPiTypeArityProbe profile).expectedRejection := rfl
+
+theorem wrongPiTypeChildShapeProbe_rejects {profile : PolyProfile} :
+    screenRawCell0? (profile := profile)
+      (NegativeProbes.wrongPiTypeChildShapeProbe profile).scope
+      (NegativeProbes.wrongPiTypeChildShapeRawCell profile) =
+      Except.error
+        (NegativeProbes.wrongPiTypeChildShapeProbe
+          profile).expectedRejection := rfl
+
+theorem wrongContextConsArityProbe_rejects {profile : PolyProfile} :
+    screenRawCell0? (profile := profile)
+      (NegativeProbes.wrongContextConsArityProbe profile).scope
+      (NegativeProbes.wrongContextConsArityRawCell profile) =
+      Except.error
+        (NegativeProbes.wrongContextConsArityProbe
+          profile).expectedRejection := rfl
+
+theorem wrongContextConsChildShapeProbe_rejects {profile : PolyProfile} :
+    screenRawCell0? (profile := profile)
+      (NegativeProbes.wrongContextConsChildShapeProbe profile).scope
+      (NegativeProbes.wrongContextConsChildShapeRawCell profile) =
+      Except.error
+        (NegativeProbes.wrongContextConsChildShapeProbe
+          profile).expectedRejection := rfl
+
+theorem applicationBadPayloadProbe_rejects {profile : PolyProfile} :
+    screenRawCell0? (profile := profile)
+      (NegativeProbes.applicationBadPayloadProbe profile).scope
+      (NegativeProbes.applicationBadPayloadRawCell profile) =
+      Except.error
+        (NegativeProbes.applicationBadPayloadProbe profile).expectedRejection :=
+  rfl
+
+theorem applicationWrongArityProbe_rejects {profile : PolyProfile} :
+    screenRawCell0? (profile := profile)
+      (NegativeProbes.applicationWrongArityProbe profile).scope
+      (NegativeProbes.applicationWrongArityRawCell profile) =
+      Except.error
+        (NegativeProbes.applicationWrongArityProbe profile).expectedRejection :=
+  rfl
+
+theorem applicationWrongChildShapeProbe_rejects {profile : PolyProfile} :
+    screenRawCell0? (profile := profile)
+      (NegativeProbes.applicationWrongChildShapeProbe profile).scope
+      (NegativeProbes.applicationWrongChildShapeRawCell profile) =
+      Except.error
+        (NegativeProbes.applicationWrongChildShapeProbe
+          profile).expectedRejection := rfl
 
 theorem applicationTypeAsFunctionProbe_rejects {profile : PolyProfile} :
     screenRawCell0? (profile := profile)
@@ -1774,6 +1942,22 @@ theorem unsupportedCompHProbe_rejects {profile : PolyProfile} :
         (NegativeProbes.unsupportedCompHProbe profile).expectedRejection :=
   rfl
 
+theorem unsupportedCompHWellScreenedProbe_rejects
+    {profile : PolyProfile} :
+    screenRawCell? (profile := profile)
+      (NegativeProbes.unsupportedCompHWellScreenedProbe profile).scope
+      (NegativeProbes.unsupportedCompHWellScreenedRawCell profile) =
+      Except.error
+        (NegativeProbes.unsupportedCompHWellScreenedProbe
+          profile).expectedRejection := rfl
+
+theorem badIdentityBaseProbe_rejects {profile : PolyProfile} :
+    screenRawCell? (profile := profile)
+      (NegativeProbes.badIdentityBaseProbe profile).scope
+      (NegativeProbes.badIdentityBaseRawCell profile) =
+      Except.error
+        (NegativeProbes.badIdentityBaseProbe profile).expectedRejection := rfl
+
 theorem certificationBadBoundaryEndpointProbe_rejects
     {profile : PolyProfile} :
     certificationRejectionAfterScreen? (profile := profile)
@@ -1797,6 +1981,24 @@ theorem certificationUnsupportedTermStepProbe_rejects
       (NegativeProbes.unsupportedTermStepVarZeroVarTwoRawCell profile) =
       (NegativeProbes.certificationUnsupportedTermStepProbe profile).expectedRejection :=
   rfl
+
+theorem certificationUnsupportedReversedTermStepProbe_rejects
+    {profile : PolyProfile} :
+    certificationRejectionAfterScreen? (profile := profile)
+      (NegativeProbes.certificationUnsupportedReversedTermStepProbe
+        profile).scope
+      (NegativeProbes.unsupportedTermStepVarOneVarZeroRawCell profile) =
+      (NegativeProbes.certificationUnsupportedReversedTermStepProbe
+        profile).expectedRejection := rfl
+
+theorem certificationUnsupportedReflexiveTermStepProbe_rejects
+    {profile : PolyProfile} :
+    certificationRejectionAfterScreen? (profile := profile)
+      (NegativeProbes.certificationUnsupportedReflexiveTermStepProbe
+        profile).scope
+      (NegativeProbes.unsupportedTermStepVarZeroVarZeroRawCell profile) =
+      (NegativeProbes.certificationUnsupportedReflexiveTermStepProbe
+        profile).expectedRejection := rfl
 
 theorem certificationMatchedVerticalBoundaryProbe_rejects
     {profile : PolyProfile} :

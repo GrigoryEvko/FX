@@ -149,6 +149,15 @@ def badUnitTypePayloadRawCell (profile : PolyProfile) : PolyTerm profile 0 :=
 def badLinearModePayloadRawCell (profile : PolyProfile) : PolyTerm profile 0 :=
   .atom linearModeGeneratorSpec.cellId badPayloadSentinel
 
+/-- Known pi-type generator with a payload reserved for bad-payload testing. -/
+def badPiTypePayloadRawCell (profile : PolyProfile) : PolyTerm profile 0 :=
+  .atom piTypeGeneratorSpec.cellId badPayloadSentinel
+
+/-- Known context-extension generator with a bad payload. -/
+def badContextConsPayloadRawCell (profile : PolyProfile) :
+    PolyTerm profile 0 :=
+  .atom contextConsGeneratorSpec.cellId badPayloadSentinel
+
 /-- Known lambda generator with a payload reserved for wrong-arity testing. -/
 def wrongArityRawCell (profile : PolyProfile) : PolyTerm profile 0 :=
   .atom lambdaGeneratorSpec.cellId wrongAritySentinel
@@ -157,10 +166,44 @@ def wrongArityRawCell (profile : PolyProfile) : PolyTerm profile 0 :=
 def wrongChildShapeRawCell (profile : PolyProfile) : PolyTerm profile 0 :=
   .atom lambdaGeneratorSpec.cellId wrongChildShapeSentinel
 
+/-- Known pi-type generator with a wrong-arity payload. -/
+def wrongPiTypeArityRawCell (profile : PolyProfile) : PolyTerm profile 0 :=
+  .atom piTypeGeneratorSpec.cellId wrongAritySentinel
+
+/-- Known pi-type generator with a wrong-child-shape payload. -/
+def wrongPiTypeChildShapeRawCell (profile : PolyProfile) :
+    PolyTerm profile 0 :=
+  .atom piTypeGeneratorSpec.cellId wrongChildShapeSentinel
+
+/-- Known context-extension generator with a wrong-arity payload. -/
+def wrongContextConsArityRawCell (profile : PolyProfile) :
+    PolyTerm profile 0 :=
+  .atom contextConsGeneratorSpec.cellId wrongAritySentinel
+
+/-- Known context-extension generator with a wrong-child-shape payload. -/
+def wrongContextConsChildShapeRawCell (profile : PolyProfile) :
+    PolyTerm profile 0 :=
+  .atom contextConsGeneratorSpec.cellId wrongChildShapeSentinel
+
 /-- Accepted application payload fixture over two variable atoms. -/
 def applicationVarZeroVarOneRawCell (profile : PolyProfile) :
     PolyTerm profile 0 :=
   .atom applicationGeneratorSpec.cellId applicationVarZeroVarOnePayload
+
+/-- Application generator with a payload that must not decode. -/
+def applicationBadPayloadRawCell (profile : PolyProfile) :
+    PolyTerm profile 0 :=
+  .atom applicationGeneratorSpec.cellId badPayloadSentinel
+
+/-- Application generator with a wrong-arity payload sentinel. -/
+def applicationWrongArityRawCell (profile : PolyProfile) :
+    PolyTerm profile 0 :=
+  .atom applicationGeneratorSpec.cellId wrongAritySentinel
+
+/-- Application generator with a wrong-child-shape payload sentinel. -/
+def applicationWrongChildShapeRawCell (profile : PolyProfile) :
+    PolyTerm profile 0 :=
+  .atom applicationGeneratorSpec.cellId wrongChildShapeSentinel
 
 /-- Application payload whose decoded function child has type sort. -/
 def applicationTypeAsFunctionRawCell (profile : PolyProfile) :
@@ -235,6 +278,20 @@ def unsupportedTermStepVarZeroVarTwoRawCell (profile : PolyProfile) :
     (seedTermAtom profile)
     (thirdTermAtom profile)
 
+/-- A screened term-step variant not admitted by certified ingress. -/
+def unsupportedTermStepVarOneVarZeroRawCell (profile : PolyProfile) :
+    PolyTerm profile 1 :=
+  .cell termStepRuleSpec.ruleId
+    (alternateTermAtom profile)
+    (seedTermAtom profile)
+
+/-- A screened reflexive term-step variant not admitted by certified ingress. -/
+def unsupportedTermStepVarZeroVarZeroRawCell (profile : PolyProfile) :
+    PolyTerm profile 1 :=
+  .cell termStepRuleSpec.ruleId
+    (seedTermAtom profile)
+    (seedTermAtom profile)
+
 /-- Known term-step rule used at an unsupported endpoint dimension. -/
 def wrongRuleEndpointDimensionRawCell (profile : PolyProfile) :
     PolyTerm profile 2 :=
@@ -273,6 +330,16 @@ def matchedVerticalBoundaryRawCell (profile : PolyProfile) :
 def unsupportedCompHRawCell (profile : PolyProfile) : PolyTerm profile 1 :=
   .compH (firstMismatchedStepRawCell profile)
     (secondMismatchedStepRawCell profile)
+
+/-- Horizontal composition of screened steps still lacks Gray semantics. -/
+def unsupportedCompHWellScreenedRawCell (profile : PolyProfile) :
+    PolyTerm profile 1 :=
+  .compH (termStepVarZeroVarOneRawCell profile)
+    (termStepVarZeroVarOneRawCell profile)
+
+/-- Identity over a malformed base must reject through the base. -/
+def badIdentityBaseRawCell (profile : PolyProfile) : PolyTerm profile 1 :=
+  .identity (badPayloadRawCell profile)
 
 /-- A context atom checked as a term should fail with `wrongSort`. -/
 def wrongSortRawCell (profile : PolyProfile) : PolyTerm profile 0 :=
@@ -351,6 +418,22 @@ def badLinearModePayloadProbe (profile : PolyProfile) :
   rawCell := badLinearModePayloadRawCell profile
   expectedRejection := .badPayload
 
+/-- Probe for rejecting bad payloads on the pi-type generator. -/
+def badPiTypePayloadProbe (profile : PolyProfile) :
+    RawInferNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 0
+  rawCell := badPiTypePayloadRawCell profile
+  expectedRejection := .badPayload
+
+/-- Probe for rejecting bad payloads on the context-extension generator. -/
+def badContextConsPayloadProbe (profile : PolyProfile) :
+    RawInferNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 0
+  rawCell := badContextConsPayloadRawCell profile
+  expectedRejection := .badPayload
+
 /-- Probe for `wrongArity`. -/
 def wrongArityProbe (profile : PolyProfile) :
     RawInferNegativeProbe profile where
@@ -365,6 +448,62 @@ def wrongChildShapeProbe (profile : PolyProfile) :
   scope := defaultInferScope
   dimension := 0
   rawCell := wrongChildShapeRawCell profile
+  expectedRejection := .wrongChildShape
+
+/-- Probe for `wrongArity` on the pi-type generator. -/
+def wrongPiTypeArityProbe (profile : PolyProfile) :
+    RawInferNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 0
+  rawCell := wrongPiTypeArityRawCell profile
+  expectedRejection := .wrongArity
+
+/-- Probe for `wrongChildShape` on the pi-type generator. -/
+def wrongPiTypeChildShapeProbe (profile : PolyProfile) :
+    RawInferNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 0
+  rawCell := wrongPiTypeChildShapeRawCell profile
+  expectedRejection := .wrongChildShape
+
+/-- Probe for `wrongArity` on the context-extension generator. -/
+def wrongContextConsArityProbe (profile : PolyProfile) :
+    RawInferNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 0
+  rawCell := wrongContextConsArityRawCell profile
+  expectedRejection := .wrongArity
+
+/-- Probe for `wrongChildShape` on the context-extension generator. -/
+def wrongContextConsChildShapeProbe (profile : PolyProfile) :
+    RawInferNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 0
+  rawCell := wrongContextConsChildShapeRawCell profile
+  expectedRejection := .wrongChildShape
+
+/-- Probe for an application payload that must not decode. -/
+def applicationBadPayloadProbe (profile : PolyProfile) :
+    RawInferNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 0
+  rawCell := applicationBadPayloadRawCell profile
+  expectedRejection := .badPayload
+
+/-- Probe for the application branch's wrong-arity sentinel. -/
+def applicationWrongArityProbe (profile : PolyProfile) :
+    RawInferNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 0
+  rawCell := applicationWrongArityRawCell profile
+  expectedRejection := .wrongArity
+
+/-- Probe for the application branch's wrong-child-shape sentinel. -/
+def applicationWrongChildShapeProbe (profile : PolyProfile) :
+    RawInferNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 0
+  rawCell := applicationWrongChildShapeRawCell profile
   expectedRejection := .wrongChildShape
 
 /-- Probe for an application payload with a non-term function child. -/
@@ -479,6 +618,22 @@ def unsupportedCompHProbe (profile : PolyProfile) :
   rawCell := unsupportedCompHRawCell profile
   expectedRejection := .unsupportedCompH
 
+/-- Probe for unsupported horizontal composition over screened steps. -/
+def unsupportedCompHWellScreenedProbe (profile : PolyProfile) :
+    RawInferNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 1
+  rawCell := unsupportedCompHWellScreenedRawCell profile
+  expectedRejection := .unsupportedCompH
+
+/-- Probe for identity over a malformed raw base. -/
+def badIdentityBaseProbe (profile : PolyProfile) :
+    RawInferNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 1
+  rawCell := badIdentityBaseRawCell profile
+  expectedRejection := .badPayload
+
 /-- Probe for expected-shape `wrongSort`. -/
 def wrongSortProbe (profile : PolyProfile) :
     RawExpectedShapeNegativeProbe profile where
@@ -585,6 +740,22 @@ def certificationUnsupportedTermStepProbe (profile : PolyProfile) :
   rawCell := unsupportedTermStepVarZeroVarTwoRawCell profile
   expectedRejection := .unsupportedCertification
 
+/-- Probe for an unsupported reversed term-step variant. -/
+def certificationUnsupportedReversedTermStepProbe (profile : PolyProfile) :
+    RawCertificationNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 1
+  rawCell := unsupportedTermStepVarOneVarZeroRawCell profile
+  expectedRejection := .unsupportedCertification
+
+/-- Probe for an unsupported reflexive term-step variant. -/
+def certificationUnsupportedReflexiveTermStepProbe (profile : PolyProfile) :
+    RawCertificationNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 1
+  rawCell := unsupportedTermStepVarZeroVarZeroRawCell profile
+  expectedRejection := .unsupportedCertification
+
 /-- Probe for a screened vertical composite whose certified construction is
 not yet implemented. -/
 def certificationMatchedVerticalBoundaryProbe (profile : PolyProfile) :
@@ -602,8 +773,17 @@ def inferNegativeProbes (profile : PolyProfile) :
     badPayloadProbe profile,
     badUnitTypePayloadProbe profile,
     badLinearModePayloadProbe profile,
+    badPiTypePayloadProbe profile,
+    badContextConsPayloadProbe profile,
     wrongArityProbe profile,
     wrongChildShapeProbe profile,
+    wrongPiTypeArityProbe profile,
+    wrongPiTypeChildShapeProbe profile,
+    wrongContextConsArityProbe profile,
+    wrongContextConsChildShapeProbe profile,
+    applicationBadPayloadProbe profile,
+    applicationWrongArityProbe profile,
+    applicationWrongChildShapeProbe profile,
     applicationTypeAsFunctionProbe profile,
     applicationTypeAsArgumentProbe profile,
     applicationOutOfScopeArgumentProbe profile,
@@ -617,7 +797,9 @@ def inferNegativeProbes (profile : PolyProfile) :
     badBoundaryModeSortProbe profile,
     wrongRuleEndpointDimensionProbe profile,
     badVerticalBoundaryProbe profile,
-    unsupportedCompHProbe profile]
+    unsupportedCompHProbe profile,
+    unsupportedCompHWellScreenedProbe profile,
+    badIdentityBaseProbe profile]
 
 /-- Expected-shape probes for dim-0 and positive-dimensional sort mismatches. -/
 def expectedShapeNegativeProbes (profile : PolyProfile) :
@@ -638,11 +820,13 @@ def certificationNegativeProbes (profile : PolyProfile) :
   [certificationBadBoundaryEndpointProbe profile,
     certificationUnsupportedCompHProbe profile,
     certificationUnsupportedTermStepProbe profile,
+    certificationUnsupportedReversedTermStepProbe profile,
+    certificationUnsupportedReflexiveTermStepProbe profile,
     certificationMatchedVerticalBoundaryProbe profile]
 
 /-- Inference probe count. -/
 theorem inferNegativeProbes_length (profile : PolyProfile) :
-    (inferNegativeProbes profile).length = 21 := rfl
+    (inferNegativeProbes profile).length = 32 := rfl
 
 /-- Expected-shape probe count. -/
 theorem expectedShapeNegativeProbes_length (profile : PolyProfile) :
@@ -650,7 +834,7 @@ theorem expectedShapeNegativeProbes_length (profile : PolyProfile) :
 
 /-- Certified-ingress probe count. -/
 theorem certificationNegativeProbes_length (profile : PolyProfile) :
-    (certificationNegativeProbes profile).length = 4 := rfl
+    (certificationNegativeProbes profile).length = 6 := rfl
 
 end NegativeProbes
 
