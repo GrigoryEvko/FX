@@ -326,6 +326,38 @@ def matchedVerticalBoundaryRawCell (profile : PolyProfile) :
       (alternateTermAtom profile)
       (thirdTermAtom profile))
 
+/-- Raw vertical composition of two term identities remains unsupported by
+certified ingress; use the derived certified operation instead. -/
+def termIdentityVerticalRawCell (profile : PolyProfile) :
+    PolyTerm profile 1 :=
+  .compV
+    (PolyTerm.identity (seedTermAtom profile))
+    (PolyTerm.identity (seedTermAtom profile))
+
+/-- Raw vertical composition of two type identities remains unsupported by
+certified ingress; use the derived certified operation instead. -/
+def typeIdentityVerticalRawCell (profile : PolyProfile) :
+    PolyTerm profile 1 :=
+  .compV
+    (PolyTerm.identity (seedTypeAtom profile))
+    (PolyTerm.identity (seedTypeAtom profile))
+
+/-- Raw vertical composition of two context identities remains unsupported by
+certified ingress; use the derived certified operation instead. -/
+def contextIdentityVerticalRawCell (profile : PolyProfile) :
+    PolyTerm profile 1 :=
+  .compV
+    (PolyTerm.identity (seedContextAtom profile))
+    (PolyTerm.identity (seedContextAtom profile))
+
+/-- Raw vertical composition of two mode identities remains unsupported by
+certified ingress; use the derived certified operation instead. -/
+def modeIdentityVerticalRawCell (profile : PolyProfile) :
+    PolyTerm profile 1 :=
+  .compV
+    (PolyTerm.identity (seedModeAtom profile))
+    (PolyTerm.identity (seedModeAtom profile))
+
 /-- Raw horizontal composition must remain unsupported until Gray data exists. -/
 def unsupportedCompHRawCell (profile : PolyProfile) : PolyTerm profile 1 :=
   .compH (firstMismatchedStepRawCell profile)
@@ -823,6 +855,38 @@ def certificationMatchedVerticalBoundaryProbe (profile : PolyProfile) :
   rawCell := matchedVerticalBoundaryRawCell profile
   expectedRejection := .unsupportedCertification
 
+/-- Probe for a screened raw term-identity vertical composite. -/
+def certificationTermIdentityVerticalProbe (profile : PolyProfile) :
+    RawCertificationNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 1
+  rawCell := termIdentityVerticalRawCell profile
+  expectedRejection := .unsupportedCertification
+
+/-- Probe for a screened raw type-identity vertical composite. -/
+def certificationTypeIdentityVerticalProbe (profile : PolyProfile) :
+    RawCertificationNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 1
+  rawCell := typeIdentityVerticalRawCell profile
+  expectedRejection := .unsupportedCertification
+
+/-- Probe for a screened raw context-identity vertical composite. -/
+def certificationContextIdentityVerticalProbe (profile : PolyProfile) :
+    RawCertificationNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 1
+  rawCell := contextIdentityVerticalRawCell profile
+  expectedRejection := .unsupportedCertification
+
+/-- Probe for a screened raw mode-identity vertical composite. -/
+def certificationModeIdentityVerticalProbe (profile : PolyProfile) :
+    RawCertificationNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 1
+  rawCell := modeIdentityVerticalRawCell profile
+  expectedRejection := .unsupportedCertification
+
 /-- Inference probes whose expected rejection is `unknownGenerator`. -/
 def unknownGeneratorInferNegativeProbes (profile : PolyProfile) :
     List (RawInferNegativeProbe profile) :=
@@ -934,7 +998,11 @@ def unsupportedCertificationNegativeProbes (profile : PolyProfile) :
   [certificationUnsupportedTermStepProbe profile,
     certificationUnsupportedReversedTermStepProbe profile,
     certificationUnsupportedReflexiveTermStepProbe profile,
-    certificationMatchedVerticalBoundaryProbe profile]
+    certificationMatchedVerticalBoundaryProbe profile,
+    certificationTermIdentityVerticalProbe profile,
+    certificationTypeIdentityVerticalProbe profile,
+    certificationContextIdentityVerticalProbe profile,
+    certificationModeIdentityVerticalProbe profile]
 
 /-- Inference probes, one for each inference-level rejection reason. -/
 def inferNegativeProbes (profile : PolyProfile) :
@@ -972,7 +1040,7 @@ theorem expectedShapeNegativeProbes_length (profile : PolyProfile) :
 
 /-- Certified-ingress probe count. -/
 theorem certificationNegativeProbes_length (profile : PolyProfile) :
-    (certificationNegativeProbes profile).length = 6 := rfl
+    (certificationNegativeProbes profile).length = 10 := rfl
 
 /-- Unknown-generator headline probe count. -/
 theorem unknownGeneratorInferNegativeProbes_length
@@ -1040,7 +1108,7 @@ theorem unsupportedCompHCertificationNegativeProbes_length
 /-- Unsupported-certification headline probe count. -/
 theorem unsupportedCertificationNegativeProbes_length
     (profile : PolyProfile) :
-    (unsupportedCertificationNegativeProbes profile).length = 4 := rfl
+    (unsupportedCertificationNegativeProbes profile).length = 8 := rfl
 
 end NegativeProbes
 
