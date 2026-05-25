@@ -3962,6 +3962,12 @@ catalog of malformed raw inputs, not only against positive examples:
   `badPayload`, `wrongArity`, or `wrongChildShape`;
 - nullary type/context/mode atoms with nonzero payloads must reject as
   `badPayload`;
+- finite non-nullary payload decoders must first return
+  `RawChildDescriptors`, then recursively screen each decoded child
+  against the generator's declared child shape; for the first
+  application fixture, `app(var 0, var 1)` may screen as a term shape,
+  while an application whose function child decodes to a type cell must
+  reject as `wrongChildShape`;
 - generated dim-1 cells over uncertified endpoints must reject as
   `badBoundaryEndpoint`;
 - generated term-step cells over context or type endpoints must reject
@@ -4508,6 +4514,7 @@ representable and computably rejected.
 | TCB.6c unit-type seed | `6b47503b` | `unitTypeGeneratorSpec` becomes a nullary certified `.type` atom with payload evidence only for payload `0`. |
 | TCB.6d malformed type probes | `24647e27` | The negative catalog covers out-of-scope variables, bad unit-type payloads, type endpoints in term steps, term/type expected-sort confusion, and positive-dimensional type-identity confusion; expected-sort checking uses the recursive screen, not sort-only inference. |
 | TCB.6e linear-mode seed | `2939addf` | `linearModeGeneratorSpec` becomes a nullary certified `.mode` atom; the checker rejects bad mode payloads, mode endpoints in term steps, and mode-as-term expected-shape confusion. |
+| TCB.6f finite application screen | `4f667fc7` | The first application payload decoder returns `RawChildDescriptors`; the executable screen accepts only the concrete `app(var 0, var 1)` shape fixture and rejects the type-as-function fixture as `wrongChildShape`.  This is still screening, not a certified application inhabitant. |
 
 **Deliverables (NEW only):**
 
@@ -4524,23 +4531,26 @@ representable and computably rejected.
 | TCB.6b raw-to-certified checker | `Foundation/PolyCell/Core/Check.lean` | Computable `inferRawCell?` and expected-shape `checkRawCellAs?` returning a certified dependent package or rejection reason. | Soundness theorem: every `accepted` result contains a `PolyCell`; accepted witnesses exist for the named supported generators; no theorem claims completeness beyond the listed generator subset. |
 | TCB.7 certified FX views | `Foundation/PolyCell/FXProfile/CertifiedViews.lean` | `FXContext`, `FXType`, `FXTerm`, `FXStep`, `FXConv`, `FXCdLemma` as projections of certified cells. | Existing raw subtype views remain compatibility-only; new code uses certified views; audit harness covers both. |
 
-**Implementation order after TCB.6e:**
+**Implementation order after TCB.6f:**
 
-1.  `Check.lean` phase B1: decode the first finite non-nullary payload
-    family into
-    `RawChildDescriptors`, recursively build certified `CellChildren`,
-    and expose `inferRawCell?` / `checkRawCellAs?` with concrete
-    accepted and rejected witnesses.  Every `NegativeProbes` entry must
-    have a theorem stating that the checker returns its expected
-    rejection.
-2.  Keep the propext-free boundary-screen discipline: no `propext`,
+1.  `Check.lean` phase B2: remove the remaining application-specific
+    hardcoding by consuming decoded `RawChildDescriptors` through one
+    small, generator-indexed child-screening fold.  The fold must still
+    return only screen results, not certified cells, until the certified
+    package builder is implemented.
+2.  `Check.lean` phase C: expose `inferRawCell?` / `checkRawCellAs?`
+    returning a certified dependent package or rejection reason.  Every
+    accepted result must contain a real `PolyCell`; every
+    `NegativeProbes` entry must keep a theorem stating that the checker
+    returns its expected rejection.
+3.  Keep the propext-free boundary-screen discipline: no `propext`,
     `Quot.sound`, `Classical`, `Inhabited`, `Nonempty`, hidden `False`
     equation dependents, or weakened audit budgets.  The failed
     direct-dependent-pattern route is not acceptable.
-3.  `CertifiedViews.lean`: define the certified FX context/type/term/
+4.  `CertifiedViews.lean`: define the certified FX context/type/term/
     step/conversion projections; keep old raw subtype views as
     compatibility shims.
-4.  Legacy bridge: connect the existing intrinsic kernel judgments to
+5.  Legacy bridge: connect the existing intrinsic kernel judgments to
     certified views only after the checker has nonempty accepted
     witnesses and the audit proves every new declaration axiom-free.
 
