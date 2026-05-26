@@ -894,6 +894,36 @@ def applicationWrongChildShapeExpectedShapeProbe (profile : PolyProfile) :
   rawCell := applicationWrongChildShapeRawCell profile
   expectedRejection := .wrongChildShape
 
+/-- Probe that expected-shape checking preserves malformed lambda payload
+rejection. -/
+def lambdaBadPayloadExpectedShapeProbe (profile : PolyProfile) :
+    RawExpectedShapeNegativeProbe profile where
+  dimension := 0
+  expectedSort := .term
+  expectedScope := defaultInferScope
+  rawCell := badPayloadRawCell profile
+  expectedRejection := .badPayload
+
+/-- Probe that expected-shape checking preserves malformed lambda arity
+rejection. -/
+def lambdaWrongArityExpectedShapeProbe (profile : PolyProfile) :
+    RawExpectedShapeNegativeProbe profile where
+  dimension := 0
+  expectedSort := .term
+  expectedScope := defaultInferScope
+  rawCell := wrongArityRawCell profile
+  expectedRejection := .wrongArity
+
+/-- Probe that expected-shape checking preserves malformed lambda child-shape
+rejection. -/
+def lambdaWrongChildShapeExpectedShapeProbe (profile : PolyProfile) :
+    RawExpectedShapeNegativeProbe profile where
+  dimension := 0
+  expectedSort := .term
+  expectedScope := defaultInferScope
+  rawCell := wrongChildShapeRawCell profile
+  expectedRejection := .wrongChildShape
+
 /-- Probe that expected-shape checking preserves malformed pi-type payload
 rejection. -/
 def piTypeBadPayloadExpectedShapeProbe (profile : PolyProfile) :
@@ -1167,6 +1197,7 @@ def wrongSortExpectedShapeNegativeProbes (profile : PolyProfile) :
 def badPayloadExpectedShapeNegativeProbes (profile : PolyProfile) :
     List (RawExpectedShapeNegativeProbe profile) :=
   [applicationBadPayloadExpectedShapeProbe profile,
+    lambdaBadPayloadExpectedShapeProbe profile,
     piTypeBadPayloadExpectedShapeProbe profile,
     contextConsBadPayloadExpectedShapeProbe profile]
 
@@ -1174,6 +1205,7 @@ def badPayloadExpectedShapeNegativeProbes (profile : PolyProfile) :
 def wrongArityExpectedShapeNegativeProbes (profile : PolyProfile) :
     List (RawExpectedShapeNegativeProbe profile) :=
   [applicationWrongArityExpectedShapeProbe profile,
+    lambdaWrongArityExpectedShapeProbe profile,
     piTypeWrongArityExpectedShapeProbe profile,
     contextConsWrongArityExpectedShapeProbe profile]
 
@@ -1182,6 +1214,7 @@ def wrongChildShapeExpectedShapeNegativeProbes
     (profile : PolyProfile) :
     List (RawExpectedShapeNegativeProbe profile) :=
   [applicationWrongChildShapeExpectedShapeProbe profile,
+    lambdaWrongChildShapeExpectedShapeProbe profile,
     piTypeWrongChildShapeExpectedShapeProbe profile,
     contextConsWrongChildShapeExpectedShapeProbe profile]
 
@@ -1254,7 +1287,7 @@ theorem inferNegativeProbes_length (profile : PolyProfile) :
 
 /-- Expected-shape probe count. -/
 theorem expectedShapeNegativeProbes_length (profile : PolyProfile) :
-    (expectedShapeNegativeProbes profile).length = 21 := rfl
+    (expectedShapeNegativeProbes profile).length = 24 := rfl
 
 /-- Certified-ingress probe count. -/
 theorem certificationNegativeProbes_length (profile : PolyProfile) :
@@ -1301,17 +1334,17 @@ theorem wrongSortExpectedShapeNegativeProbes_length
 /-- Bad-payload expected-shape headline probe count. -/
 theorem badPayloadExpectedShapeNegativeProbes_length
     (profile : PolyProfile) :
-    (badPayloadExpectedShapeNegativeProbes profile).length = 3 := rfl
+    (badPayloadExpectedShapeNegativeProbes profile).length = 4 := rfl
 
 /-- Wrong-arity expected-shape headline probe count. -/
 theorem wrongArityExpectedShapeNegativeProbes_length
     (profile : PolyProfile) :
-    (wrongArityExpectedShapeNegativeProbes profile).length = 3 := rfl
+    (wrongArityExpectedShapeNegativeProbes profile).length = 4 := rfl
 
 /-- Wrong-child-shape expected-shape headline probe count. -/
 theorem wrongChildShapeExpectedShapeNegativeProbes_length
     (profile : PolyProfile) :
-    (wrongChildShapeExpectedShapeNegativeProbes profile).length = 3 := rfl
+    (wrongChildShapeExpectedShapeNegativeProbes profile).length = 4 := rfl
 
 /-- Certification bad-boundary-endpoint headline probe count. -/
 theorem badBoundaryEndpointCertificationNegativeProbes_length
