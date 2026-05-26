@@ -4200,93 +4200,53 @@ theorem inferRawCell?_seedTerm_sort {profile : PolyProfile} :
     certifiedResultSort?
       (inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
         (NegativeProbes.seedTermAtom profile)) =
-      some .term := by
-  change
-    certifiedResultSort?
-      (inferRawAtom? (profile := profile) 4
-        variableGeneratorSpec.cellId 0) = some .term
-  rfl
+      some .term := rfl
 
 theorem inferRawCell?_seedType_sort {profile : PolyProfile} :
     certifiedResultSort?
       (inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
         (NegativeProbes.seedTypeAtom profile)) =
-      some .type := by
-  change
-    certifiedResultSort?
-      (inferRawAtom? (profile := profile) 4
-        unitTypeGeneratorSpec.cellId 0) = some .type
-  rfl
+      some .type := rfl
 
 theorem inferRawCell?_seedContext_sort {profile : PolyProfile} :
     certifiedResultSort?
       (inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
         (NegativeProbes.seedContextAtom profile)) =
-      some .context := by
-  change
-    certifiedResultSort?
-      (inferRawAtom? (profile := profile) 4
-        contextEmptyGeneratorSpec.cellId 0) = some .context
-  rfl
+      some .context := rfl
 
 theorem inferRawCell?_seedMode_sort {profile : PolyProfile} :
     certifiedResultSort?
       (inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
         (NegativeProbes.seedModeAtom profile)) =
-      some .mode := by
-  change
-    certifiedResultSort?
-      (inferRawAtom? (profile := profile) 4
-        linearModeGeneratorSpec.cellId 0) = some .mode
-  rfl
+      some .mode := rfl
 
 theorem checkRawCellAs?_seedTerm_sort {profile : PolyProfile} :
     certifiedResultSort?
       (checkRawCellAs? (profile := profile) .term
         NegativeProbes.defaultInferScope
         (NegativeProbes.seedTermAtom profile)) =
-      some .term := by
-  change
-    certifiedResultSort?
-      (inferRawAtom? (profile := profile) 4
-        variableGeneratorSpec.cellId 0) = some .term
-  rfl
+      some .term := rfl
 
 theorem checkRawCellAs?_seedType_sort {profile : PolyProfile} :
     certifiedResultSort?
       (checkRawCellAs? (profile := profile) .type
         NegativeProbes.defaultInferScope
         (NegativeProbes.seedTypeAtom profile)) =
-      some .type := by
-  change
-    certifiedResultSort?
-      (inferRawAtom? (profile := profile) 4
-        unitTypeGeneratorSpec.cellId 0) = some .type
-  rfl
+      some .type := rfl
 
 theorem checkRawCellAs?_seedContext_sort {profile : PolyProfile} :
     certifiedResultSort?
       (checkRawCellAs? (profile := profile) .context
         NegativeProbes.defaultInferScope
         (NegativeProbes.seedContextAtom profile)) =
-      some .context := by
-  change
-    certifiedResultSort?
-      (inferRawAtom? (profile := profile) 4
-        contextEmptyGeneratorSpec.cellId 0) = some .context
-  rfl
+      some .context := rfl
 
 theorem checkRawCellAs?_seedMode_sort {profile : PolyProfile} :
     certifiedResultSort?
       (checkRawCellAs? (profile := profile) .mode
         NegativeProbes.defaultInferScope
         (NegativeProbes.seedModeAtom profile)) =
-      some .mode := by
-  change
-    certifiedResultSort?
-      (inferRawAtom? (profile := profile) 4
-        linearModeGeneratorSpec.cellId 0) = some .mode
-  rfl
+      some .mode := rfl
 
 theorem checkRawCellAs?_seedTerm_as_type_rejects
     {profile : PolyProfile} :
@@ -4320,55 +4280,32 @@ theorem inferRawCell?_unknownGenerator_rejects
     {profile : PolyProfile} :
     inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
       (NegativeProbes.unknownGeneratorRawCell profile) =
-      Except.error .unknownGenerator := by
-  change inferRawAtom? (profile := profile) 4
-    (lambdaGeneratorSpec.cellId - 1) 0 =
-    Except.error .unknownGenerator
-  rfl
+      Except.error .unknownGenerator := rfl
 
 theorem inferRawCell?_outOfScopeVariable_rejects
     {profile : PolyProfile} :
     inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
       (NegativeProbes.outOfScopeVariableRawCell profile) =
-      Except.error .badPayload := by
-  change inferRawAtom? (profile := profile) 4
-    variableGeneratorSpec.cellId 4 = Except.error .badPayload
-  rfl
+      Except.error .badPayload := rfl
 
 theorem inferRawCell?_badUnitTypePayload_rejects
     {profile : PolyProfile} :
     inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
       (NegativeProbes.badUnitTypePayloadRawCell profile) =
-      Except.error .badPayload := by
-  change inferRawAtom? (profile := profile) 4
-    unitTypeGeneratorSpec.cellId
-    NegativeProbes.badPayloadSentinel =
-    Except.error .badPayload
-  rfl
+      Except.error .badPayload := rfl
 
 theorem inferRawCell?_badLinearModePayload_rejects
     {profile : PolyProfile} :
     inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
       (NegativeProbes.badLinearModePayloadRawCell profile) =
-      Except.error .badPayload := by
-  change inferRawAtom? (profile := profile) 4
-    linearModeGeneratorSpec.cellId
-    NegativeProbes.badPayloadSentinel =
-      Except.error .badPayload
-  rfl
+      Except.error .badPayload := rfl
 
 theorem inferRawCell?_applicationVarZeroVarOne_sort
     {profile : PolyProfile} :
     certifiedResultSort?
       (inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
         (NegativeProbes.applicationVarZeroVarOneRawCell profile)) =
-      some .term := by
-  change
-    certifiedResultSort?
-      (inferRawAtom? (profile := profile) 4
-        applicationGeneratorSpec.cellId
-        applicationVarZeroVarOnePayload) = some .term
-  rfl
+      some .term := rfl
 
 theorem checkRawCellAs?_applicationVarZeroVarOne_sort
     {profile : PolyProfile} :
@@ -4376,13 +4313,7 @@ theorem checkRawCellAs?_applicationVarZeroVarOne_sort
       (checkRawCellAs? (profile := profile) .term
         NegativeProbes.defaultInferScope
         (NegativeProbes.applicationVarZeroVarOneRawCell profile)) =
-      some .term := by
-  change
-    certifiedResultSort?
-      (inferRawAtom? (profile := profile) 4
-        applicationGeneratorSpec.cellId
-        applicationVarZeroVarOnePayload) = some .term
-  rfl
+      some .term := rfl
 
 theorem checkRawCellAs?_applicationVarZeroVarOne_scope_one_rejects
     {profile : PolyProfile} :
@@ -4437,13 +4368,7 @@ theorem inferRawCell?_lambdaUnitTypeBodyVarZero_sort
     certifiedResultSort?
       (inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
         (NegativeProbes.lambdaUnitTypeBodyVarZeroRawCell profile)) =
-      some .term := by
-  change
-    certifiedResultSort?
-      (inferRawAtom? (profile := profile) 4
-        lambdaGeneratorSpec.cellId
-        lambdaUnitTypeBodyVarZeroPayload) = some .term
-  rfl
+      some .term := rfl
 
 theorem checkRawCellAs?_lambdaUnitTypeBodyVarZero_sort
     {profile : PolyProfile} :
@@ -4451,13 +4376,7 @@ theorem checkRawCellAs?_lambdaUnitTypeBodyVarZero_sort
       (checkRawCellAs? (profile := profile) .term
         NegativeProbes.defaultInferScope
         (NegativeProbes.lambdaUnitTypeBodyVarZeroRawCell profile)) =
-      some .term := by
-  change
-    certifiedResultSort?
-      (inferRawAtom? (profile := profile) 4
-        lambdaGeneratorSpec.cellId
-        lambdaUnitTypeBodyVarZeroPayload) = some .term
-  rfl
+      some .term := rfl
 
 theorem checkRawCellAs?_lambdaUnitTypeBodyVarZero_as_type_rejects
     {profile : PolyProfile} :
@@ -4484,50 +4403,26 @@ theorem inferRawCell?_lambdaContextAsDomain_rejects
     {profile : PolyProfile} :
     inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
       (NegativeProbes.lambdaContextAsDomainRawCell profile) =
-      Except.error .wrongChildShape := by
-  change
-    inferRawAtom? (profile := profile) 4
-      lambdaGeneratorSpec.cellId
-      NegativeProbes.lambdaContextAsDomainPayload =
-      Except.error .wrongChildShape
-  rfl
+      Except.error .wrongChildShape := rfl
 
 theorem inferRawCell?_lambdaTypeAsBody_rejects
     {profile : PolyProfile} :
     inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
       (NegativeProbes.lambdaTypeAsBodyRawCell profile) =
-      Except.error .wrongChildShape := by
-  change
-    inferRawAtom? (profile := profile) 4
-      lambdaGeneratorSpec.cellId
-      NegativeProbes.lambdaTypeAsBodyPayload =
-      Except.error .wrongChildShape
-  rfl
+      Except.error .wrongChildShape := rfl
 
 theorem inferRawCell?_lambdaOutOfScopeBody_rejects
     {profile : PolyProfile} :
     inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
       (NegativeProbes.lambdaOutOfScopeBodyRawCell profile) =
-      Except.error .wrongChildShape := by
-  change
-    inferRawAtom? (profile := profile) 4
-      lambdaGeneratorSpec.cellId
-      NegativeProbes.lambdaOutOfScopeBodyPayload =
-      Except.error .wrongChildShape
-  rfl
+      Except.error .wrongChildShape := rfl
 
 theorem inferRawCell?_piTypeUnitCodomainUnit_sort
     {profile : PolyProfile} :
     certifiedResultSort?
       (inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
         (NegativeProbes.piTypeUnitCodomainUnitRawCell profile)) =
-      some .type := by
-  change
-    certifiedResultSort?
-      (inferRawAtom? (profile := profile) 4
-        piTypeGeneratorSpec.cellId
-        piTypeUnitCodomainUnitPayload) = some .type
-  rfl
+      some .type := rfl
 
 theorem checkRawCellAs?_piTypeUnitCodomainUnit_sort
     {profile : PolyProfile} :
@@ -4535,13 +4430,7 @@ theorem checkRawCellAs?_piTypeUnitCodomainUnit_sort
       (checkRawCellAs? (profile := profile) .type
         NegativeProbes.defaultInferScope
         (NegativeProbes.piTypeUnitCodomainUnitRawCell profile)) =
-      some .type := by
-  change
-    certifiedResultSort?
-      (inferRawAtom? (profile := profile) 4
-        piTypeGeneratorSpec.cellId
-        piTypeUnitCodomainUnitPayload) = some .type
-  rfl
+      some .type := rfl
 
 theorem checkRawCellAs?_piTypeUnitCodomainUnit_as_term_rejects
     {profile : PolyProfile} :
@@ -4568,38 +4457,20 @@ theorem inferRawCell?_piTypeContextAsDomain_rejects
     {profile : PolyProfile} :
     inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
       (NegativeProbes.piTypeContextAsDomainRawCell profile) =
-      Except.error .wrongChildShape := by
-  change
-    inferRawAtom? (profile := profile) 4
-      piTypeGeneratorSpec.cellId
-      NegativeProbes.piTypeContextAsDomainPayload =
-      Except.error .wrongChildShape
-  rfl
+      Except.error .wrongChildShape := rfl
 
 theorem inferRawCell?_piTypeTermAsCodomain_rejects
     {profile : PolyProfile} :
     inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
       (NegativeProbes.piTypeTermAsCodomainRawCell profile) =
-      Except.error .wrongChildShape := by
-  change
-    inferRawAtom? (profile := profile) 4
-      piTypeGeneratorSpec.cellId
-      NegativeProbes.piTypeTermAsCodomainPayload =
-      Except.error .wrongChildShape
-  rfl
+      Except.error .wrongChildShape := rfl
 
 theorem inferRawCell?_contextConsEmptyUnitLinear_sort
     {profile : PolyProfile} :
     certifiedResultSort?
       (inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
         (NegativeProbes.contextConsEmptyUnitLinearRawCell profile)) =
-      some .context := by
-  change
-    certifiedResultSort?
-      (inferRawAtom? (profile := profile) 4
-        contextConsGeneratorSpec.cellId
-        contextConsEmptyUnitLinearPayload) = some .context
-  rfl
+      some .context := rfl
 
 theorem checkRawCellAs?_contextConsEmptyUnitLinear_sort
     {profile : PolyProfile} :
@@ -4607,13 +4478,7 @@ theorem checkRawCellAs?_contextConsEmptyUnitLinear_sort
       (checkRawCellAs? (profile := profile) .context
         NegativeProbes.defaultInferScope
         (NegativeProbes.contextConsEmptyUnitLinearRawCell profile)) =
-      some .context := by
-  change
-    certifiedResultSort?
-      (inferRawAtom? (profile := profile) 4
-        contextConsGeneratorSpec.cellId
-        contextConsEmptyUnitLinearPayload) = some .context
-  rfl
+      some .context := rfl
 
 theorem checkRawCellAs?_contextConsEmptyUnitLinear_as_term_rejects
     {profile : PolyProfile} :
@@ -4640,37 +4505,19 @@ theorem inferRawCell?_contextConsTypeAsContext_rejects
     {profile : PolyProfile} :
     inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
       (NegativeProbes.contextConsTypeAsContextRawCell profile) =
-      Except.error .wrongChildShape := by
-  change
-    inferRawAtom? (profile := profile) 4
-      contextConsGeneratorSpec.cellId
-      NegativeProbes.contextConsTypeAsContextPayload =
-      Except.error .wrongChildShape
-  rfl
+      Except.error .wrongChildShape := rfl
 
 theorem inferRawCell?_contextConsTermAsType_rejects
     {profile : PolyProfile} :
     inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
       (NegativeProbes.contextConsTermAsTypeRawCell profile) =
-      Except.error .wrongChildShape := by
-  change
-    inferRawAtom? (profile := profile) 4
-      contextConsGeneratorSpec.cellId
-      NegativeProbes.contextConsTermAsTypePayload =
-      Except.error .wrongChildShape
-  rfl
+      Except.error .wrongChildShape := rfl
 
 theorem inferRawCell?_contextConsContextAsMode_rejects
     {profile : PolyProfile} :
     inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
       (NegativeProbes.contextConsContextAsModeRawCell profile) =
-      Except.error .wrongChildShape := by
-  change
-    inferRawAtom? (profile := profile) 4
-      contextConsGeneratorSpec.cellId
-      NegativeProbes.contextConsContextAsModePayload =
-      Except.error .wrongChildShape
-  rfl
+      Except.error .wrongChildShape := rfl
 
 theorem inferRawAtom?_applicationVarZeroVarOne_scope_one_rejects
     {profile : PolyProfile} :
@@ -4688,149 +4535,77 @@ theorem inferRawCell?_applicationTypeAsFunction_rejects
     {profile : PolyProfile} :
     inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
       (NegativeProbes.applicationTypeAsFunctionRawCell profile) =
-      Except.error .wrongChildShape := by
-  change
-    inferRawAtom? (profile := profile) 4
-      applicationGeneratorSpec.cellId
-      NegativeProbes.applicationTypeAsFunctionPayload =
-      Except.error .wrongChildShape
-  rfl
+      Except.error .wrongChildShape := rfl
 
 theorem inferRawCell?_applicationTypeAsArgument_rejects
     {profile : PolyProfile} :
     inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
       (NegativeProbes.applicationTypeAsArgumentRawCell profile) =
-      Except.error .wrongChildShape := by
-  change
-    inferRawAtom? (profile := profile) 4
-      applicationGeneratorSpec.cellId
-      NegativeProbes.applicationTypeAsArgumentPayload =
-      Except.error .wrongChildShape
-  rfl
+      Except.error .wrongChildShape := rfl
 
 theorem inferRawCell?_applicationOutOfScopeArgument_rejects
     {profile : PolyProfile} :
     inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
       (NegativeProbes.applicationOutOfScopeArgumentRawCell profile) =
-      Except.error .wrongChildShape := by
-  change
-    inferRawAtom? (profile := profile) 4
-      applicationGeneratorSpec.cellId
-      NegativeProbes.applicationOutOfScopeArgumentPayload =
-      Except.error .wrongChildShape
-  rfl
+      Except.error .wrongChildShape := rfl
 
 theorem inferRawCell?_applicationOutOfScopeFunction_rejects
     {profile : PolyProfile} :
     inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
       (NegativeProbes.applicationOutOfScopeFunctionRawCell profile) =
-      Except.error .wrongChildShape := by
-  change
-    inferRawAtom? (profile := profile) 4
-      applicationGeneratorSpec.cellId
-      NegativeProbes.applicationOutOfScopeFunctionPayload =
-      Except.error .wrongChildShape
-  rfl
+      Except.error .wrongChildShape := rfl
 
 theorem inferTermStepVarZeroVarOne?_sort
     {profile : PolyProfile} :
     certifiedResultSort?
       (inferTermStepVarZeroVarOne? (profile := profile)
         NegativeProbes.defaultInferScope) =
-      some .term := by
-  change
-    certifiedResultSort?
-      (inferTermStepVarZeroVarOne? (profile := profile) 4) = some .term
-  rfl
+      some .term := rfl
 
 /-- Accepted-ingress coverage for the seed term atom. -/
 theorem acceptedSeedTermIngress_hasCoverage {profile : PolyProfile} :
     hasAcceptedDimZeroIngressCoverage .term
-      (NegativeProbes.seedTermAtom profile) = true := by
-  change
-    hasCertifiedResultShape (dimension := 0) .term
-      (inferRawAtom? (profile := profile) 4
-        variableGeneratorSpec.cellId 0) = true
-  rfl
+      (NegativeProbes.seedTermAtom profile) = true := rfl
 
 /-- Accepted-ingress coverage for the seed type atom. -/
 theorem acceptedSeedTypeIngress_hasCoverage {profile : PolyProfile} :
     hasAcceptedDimZeroIngressCoverage .type
-      (NegativeProbes.seedTypeAtom profile) = true := by
-  change
-    hasCertifiedResultShape (dimension := 0) .type
-      (inferRawAtom? (profile := profile) 4
-        unitTypeGeneratorSpec.cellId 0) = true
-  rfl
+      (NegativeProbes.seedTypeAtom profile) = true := rfl
 
 /-- Accepted-ingress coverage for the seed context atom. -/
 theorem acceptedSeedContextIngress_hasCoverage {profile : PolyProfile} :
     hasAcceptedDimZeroIngressCoverage .context
-      (NegativeProbes.seedContextAtom profile) = true := by
-  change
-    hasCertifiedResultShape (dimension := 0) .context
-      (inferRawAtom? (profile := profile) 4
-        contextEmptyGeneratorSpec.cellId 0) = true
-  rfl
+      (NegativeProbes.seedContextAtom profile) = true := rfl
 
 /-- Accepted-ingress coverage for the seed mode atom. -/
 theorem acceptedSeedModeIngress_hasCoverage {profile : PolyProfile} :
     hasAcceptedDimZeroIngressCoverage .mode
-      (NegativeProbes.seedModeAtom profile) = true := by
-  change
-    hasCertifiedResultShape (dimension := 0) .mode
-      (inferRawAtom? (profile := profile) 4
-        linearModeGeneratorSpec.cellId 0) = true
-  rfl
+      (NegativeProbes.seedModeAtom profile) = true := rfl
 
 /-- Accepted-ingress coverage for the first certified application payload. -/
 theorem acceptedApplicationVarZeroVarOneIngress_hasCoverage
     {profile : PolyProfile} :
     hasAcceptedDimZeroIngressCoverage .term
-      (NegativeProbes.applicationVarZeroVarOneRawCell profile) = true := by
-  change
-    hasCertifiedResultShape (dimension := 0) .term
-      (inferRawAtom? (profile := profile) 4
-        applicationGeneratorSpec.cellId
-        applicationVarZeroVarOnePayload) = true
-  rfl
+      (NegativeProbes.applicationVarZeroVarOneRawCell profile) = true := rfl
 
 /-- Accepted-ingress coverage for the first certified lambda payload. -/
 theorem acceptedLambdaUnitTypeBodyVarZeroIngress_hasCoverage
     {profile : PolyProfile} :
     hasAcceptedDimZeroIngressCoverage .term
-      (NegativeProbes.lambdaUnitTypeBodyVarZeroRawCell profile) = true := by
-  change
-    hasCertifiedResultShape (dimension := 0) .term
-      (inferRawAtom? (profile := profile) 4
-        lambdaGeneratorSpec.cellId
-        lambdaUnitTypeBodyVarZeroPayload) = true
-  rfl
+      (NegativeProbes.lambdaUnitTypeBodyVarZeroRawCell profile) = true := rfl
 
 /-- Accepted-ingress coverage for the first certified pi-type payload. -/
 theorem acceptedPiTypeUnitCodomainUnitIngress_hasCoverage
     {profile : PolyProfile} :
     hasAcceptedDimZeroIngressCoverage .type
-      (NegativeProbes.piTypeUnitCodomainUnitRawCell profile) = true := by
-  change
-    hasCertifiedResultShape (dimension := 0) .type
-      (inferRawAtom? (profile := profile) 4
-        piTypeGeneratorSpec.cellId
-        piTypeUnitCodomainUnitPayload) = true
-  rfl
+      (NegativeProbes.piTypeUnitCodomainUnitRawCell profile) = true := rfl
 
 /-- Accepted-ingress coverage for the first certified context-extension
 payload. -/
 theorem acceptedContextConsEmptyUnitLinearIngress_hasCoverage
     {profile : PolyProfile} :
     hasAcceptedDimZeroIngressCoverage .context
-      (NegativeProbes.contextConsEmptyUnitLinearRawCell profile) = true := by
-  change
-    hasCertifiedResultShape (dimension := 0) .context
-      (inferRawAtom? (profile := profile) 4
-        contextConsGeneratorSpec.cellId
-        contextConsEmptyUnitLinearPayload) = true
-  rfl
+      (NegativeProbes.contextConsEmptyUnitLinearRawCell profile) = true := rfl
 
 /-- The seed term fixture is accepted by dim-0 ingress. -/
 theorem acceptedSeedTermFixtureIngress_hasCoverage {profile : PolyProfile} :
@@ -4929,11 +4704,7 @@ theorem acceptedDimZeroIngresses_haveCoverage (profile : PolyProfile) :
 /-- Accepted-ingress coverage headline for the current direct dim-1
 term-step path. -/
 theorem acceptedTermStepIngress_hasCoverage (profile : PolyProfile) :
-    hasAcceptedTermStepIngressCoverage profile = true := by
-  change
-    hasCertifiedResultShape (dimension := 1) .term
-      (inferTermStepVarZeroVarOne? (profile := profile) 4) = true
-  rfl
+    hasAcceptedTermStepIngressCoverage profile = true := rfl
 
 /-- Accepted-ingress coverage headline for every currently certified raw
 ingress computation. -/
@@ -4947,47 +4718,23 @@ theorem currentAcceptedIngresses_haveCoverage (profile : PolyProfile) :
 /-- Accepted ingress for the seed term atom agrees with the structural screen. -/
 theorem acceptedSeedTermScreen_hasCoverage {profile : PolyProfile} :
     hasAcceptedDimZeroScreenCoverage .term
-      (NegativeProbes.seedTermAtom profile) = true := by
-  change
-    hasCertifiedResultScreenCoverage .term
-      (NegativeProbes.seedTermAtom profile)
-      (inferRawAtom? (profile := profile) 4
-        variableGeneratorSpec.cellId 0) = true
-  rfl
+      (NegativeProbes.seedTermAtom profile) = true := rfl
 
 /-- Accepted ingress for the seed type atom agrees with the structural screen. -/
 theorem acceptedSeedTypeScreen_hasCoverage {profile : PolyProfile} :
     hasAcceptedDimZeroScreenCoverage .type
-      (NegativeProbes.seedTypeAtom profile) = true := by
-  change
-    hasCertifiedResultScreenCoverage .type
-      (NegativeProbes.seedTypeAtom profile)
-      (inferRawAtom? (profile := profile) 4
-        unitTypeGeneratorSpec.cellId 0) = true
-  rfl
+      (NegativeProbes.seedTypeAtom profile) = true := rfl
 
 /-- Accepted ingress for the seed context atom agrees with the structural
 screen. -/
 theorem acceptedSeedContextScreen_hasCoverage {profile : PolyProfile} :
     hasAcceptedDimZeroScreenCoverage .context
-      (NegativeProbes.seedContextAtom profile) = true := by
-  change
-    hasCertifiedResultScreenCoverage .context
-      (NegativeProbes.seedContextAtom profile)
-      (inferRawAtom? (profile := profile) 4
-        contextEmptyGeneratorSpec.cellId 0) = true
-  rfl
+      (NegativeProbes.seedContextAtom profile) = true := rfl
 
 /-- Accepted ingress for the seed mode atom agrees with the structural screen. -/
 theorem acceptedSeedModeScreen_hasCoverage {profile : PolyProfile} :
     hasAcceptedDimZeroScreenCoverage .mode
-      (NegativeProbes.seedModeAtom profile) = true := by
-  change
-    hasCertifiedResultScreenCoverage .mode
-      (NegativeProbes.seedModeAtom profile)
-      (inferRawAtom? (profile := profile) 4
-        linearModeGeneratorSpec.cellId 0) = true
-  rfl
+      (NegativeProbes.seedModeAtom profile) = true := rfl
 
 /-- Accepted ingress for the first application payload agrees with the
 structural screen. -/
@@ -5186,46 +4933,22 @@ theorem acceptedDimZeroScreens_haveCoverage (profile : PolyProfile) :
 /-- Accepted ingress for the seed term atom preserves the raw input code. -/
 theorem acceptedSeedTermInputCode_hasCoverage {profile : PolyProfile} :
     hasAcceptedDimZeroInputCodeCoverage
-      (NegativeProbes.seedTermAtom profile) = true := by
-  change
-    hasCertifiedResultInputCodeCoverage
-      (NegativeProbes.seedTermAtom profile)
-      (inferRawAtom? (profile := profile) 4
-        variableGeneratorSpec.cellId 0) = true
-  rfl
+      (NegativeProbes.seedTermAtom profile) = true := rfl
 
 /-- Accepted ingress for the seed type atom preserves the raw input code. -/
 theorem acceptedSeedTypeInputCode_hasCoverage {profile : PolyProfile} :
     hasAcceptedDimZeroInputCodeCoverage
-      (NegativeProbes.seedTypeAtom profile) = true := by
-  change
-    hasCertifiedResultInputCodeCoverage
-      (NegativeProbes.seedTypeAtom profile)
-      (inferRawAtom? (profile := profile) 4
-        unitTypeGeneratorSpec.cellId 0) = true
-  rfl
+      (NegativeProbes.seedTypeAtom profile) = true := rfl
 
 /-- Accepted ingress for the seed context atom preserves the raw input code. -/
 theorem acceptedSeedContextInputCode_hasCoverage {profile : PolyProfile} :
     hasAcceptedDimZeroInputCodeCoverage
-      (NegativeProbes.seedContextAtom profile) = true := by
-  change
-    hasCertifiedResultInputCodeCoverage
-      (NegativeProbes.seedContextAtom profile)
-      (inferRawAtom? (profile := profile) 4
-        contextEmptyGeneratorSpec.cellId 0) = true
-  rfl
+      (NegativeProbes.seedContextAtom profile) = true := rfl
 
 /-- Accepted ingress for the seed mode atom preserves the raw input code. -/
 theorem acceptedSeedModeInputCode_hasCoverage {profile : PolyProfile} :
     hasAcceptedDimZeroInputCodeCoverage
-      (NegativeProbes.seedModeAtom profile) = true := by
-  change
-    hasCertifiedResultInputCodeCoverage
-      (NegativeProbes.seedModeAtom profile)
-      (inferRawAtom? (profile := profile) 4
-        linearModeGeneratorSpec.cellId 0) = true
-  rfl
+      (NegativeProbes.seedModeAtom profile) = true := rfl
 
 /-- The accepted certified package for the first application payload preserves
 the raw input code. -/
@@ -5380,22 +5103,12 @@ theorem acceptedDimZeroInputCodes_haveCoverage (profile : PolyProfile) :
 /-- Accepted ingress for the direct dim-1 term-step path agrees with the
 structural screen. -/
 theorem acceptedTermStepScreen_hasCoverage (profile : PolyProfile) :
-    hasAcceptedTermStepScreenCoverage profile = true := by
-  change
-    hasCertifiedResultScreenCoverage .term
-      (NegativeProbes.termStepVarZeroVarOneRawCell profile)
-      (inferTermStepVarZeroVarOne? (profile := profile) 4) = true
-  rfl
+    hasAcceptedTermStepScreenCoverage profile = true := rfl
 
 /-- Accepted ingress for the direct dim-1 term-step path preserves the raw
 input code. -/
 theorem acceptedTermStepInputCode_hasCoverage (profile : PolyProfile) :
-    hasAcceptedTermStepInputCodeCoverage profile = true := by
-  change
-    hasCertifiedResultInputCodeCoverage
-      (NegativeProbes.termStepVarZeroVarOneRawCell profile)
-      (inferTermStepVarZeroVarOne? (profile := profile) 4) = true
-  rfl
+    hasAcceptedTermStepInputCodeCoverage profile = true := rfl
 
 /-- Every current accepted ingress computation agrees with its structural
 screen. -/
