@@ -169,6 +169,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationTypeAsFunctionPayload
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationTypeAsArgumentPayload
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationOutOfScopeArgumentPayload
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationOutOfScopeFunctionPayload
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationModeAsFunctionPayload
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationContextAsFunctionPayload
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationModeAsArgumentPayload
@@ -201,6 +202,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationTypeAsFunctionRawCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationTypeAsArgumentRawCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationOutOfScopeArgumentRawCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationOutOfScopeFunctionRawCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationModeAsFunctionRawCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationContextAsFunctionRawCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationModeAsArgumentRawCell
@@ -260,6 +262,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationTypeAsFunctionProbe
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationTypeAsArgumentProbe
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationOutOfScopeArgumentProbe
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationOutOfScopeFunctionProbe
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationModeAsFunctionProbe
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationContextAsFunctionProbe
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationModeAsArgumentProbe
@@ -646,6 +649,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.decodeApplicationPayload?_typeAsFunction
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.decodeApplicationPayload?_typeAsArgument
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.decodeApplicationPayload?_outOfScopeArgument
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.decodeApplicationPayload?_outOfScopeFunction
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.decodeApplicationPayload?_modeAsFunction
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.decodeApplicationPayload?_contextAsFunction
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.decodeApplicationPayload?_modeAsArgument
@@ -655,6 +659,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawChildDescriptorsWith?_applicationTypeAsFunction_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawChildDescriptorsWith?_applicationTypeAsArgument_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawChildDescriptorsWith?_applicationOutOfScopeArgument_rejects
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawChildDescriptorsWith?_applicationOutOfScopeFunction_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawChildDescriptorsWith?_applicationModeAsFunction_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawChildDescriptorsWith?_applicationContextAsFunction_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawChildDescriptorsWith?_applicationModeAsArgument_rejects
@@ -667,6 +672,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell0?_applicationTypeAsFunction_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell0?_applicationTypeAsArgument_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell0?_applicationOutOfScopeArgument_rejects
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell0?_applicationOutOfScopeFunction_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell0?_applicationModeAsFunction_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell0?_applicationContextAsFunction_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell0?_applicationModeAsArgument_rejects
@@ -714,6 +720,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawCell?_applicationTypeAsFunction_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawCell?_applicationTypeAsArgument_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawCell?_applicationOutOfScopeArgument_rejects
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawCell?_applicationOutOfScopeFunction_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferTermStepVarZeroVarOne?_sort
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.acceptedSeedTermIngress_hasCoverage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.acceptedSeedTypeIngress_hasCoverage
@@ -983,6 +990,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.applicationTypeAsFunctionProbe_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.applicationTypeAsArgumentProbe_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.applicationOutOfScopeArgumentProbe_rejects
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.applicationOutOfScopeFunctionProbe_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.applicationModeAsFunctionProbe_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.applicationContextAsFunctionProbe_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.applicationModeAsArgumentProbe_rejects

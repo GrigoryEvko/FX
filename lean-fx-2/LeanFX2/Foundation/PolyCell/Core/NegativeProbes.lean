@@ -106,6 +106,9 @@ def applicationTypeAsArgumentPayload : Nat := 9102
 /-- Application payload whose decoded argument is outside the parent scope. -/
 def applicationOutOfScopeArgumentPayload : Nat := 9103
 
+/-- Application payload whose decoded function is outside the parent scope. -/
+def applicationOutOfScopeFunctionPayload : Nat := 9108
+
 /-- Application payload whose decoded function child is a mode cell. -/
 def applicationModeAsFunctionPayload : Nat := 9104
 
@@ -247,6 +250,11 @@ def applicationTypeAsArgumentRawCell (profile : PolyProfile) :
 def applicationOutOfScopeArgumentRawCell (profile : PolyProfile) :
     PolyTerm profile 0 :=
   .atom applicationGeneratorSpec.cellId applicationOutOfScopeArgumentPayload
+
+/-- Application payload whose decoded function is outside the screening scope. -/
+def applicationOutOfScopeFunctionRawCell (profile : PolyProfile) :
+    PolyTerm profile 0 :=
+  .atom applicationGeneratorSpec.cellId applicationOutOfScopeFunctionPayload
 
 /-- Application payload whose decoded function child has mode sort. -/
 def applicationModeAsFunctionRawCell (profile : PolyProfile) :
@@ -633,6 +641,14 @@ def applicationOutOfScopeArgumentProbe (profile : PolyProfile) :
   scope := defaultInferScope
   dimension := 0
   rawCell := applicationOutOfScopeArgumentRawCell profile
+  expectedRejection := .wrongChildShape
+
+/-- Probe for an application payload with an out-of-scope function child. -/
+def applicationOutOfScopeFunctionProbe (profile : PolyProfile) :
+    RawInferNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 0
+  rawCell := applicationOutOfScopeFunctionRawCell profile
   expectedRejection := .wrongChildShape
 
 /-- Probe for an application payload with a mode function child. -/
@@ -1151,6 +1167,7 @@ def wrongChildShapeInferNegativeProbes (profile : PolyProfile) :
     applicationTypeAsFunctionProbe profile,
     applicationTypeAsArgumentProbe profile,
     applicationOutOfScopeArgumentProbe profile,
+    applicationOutOfScopeFunctionProbe profile,
     applicationModeAsFunctionProbe profile,
     applicationContextAsFunctionProbe profile,
     applicationModeAsArgumentProbe profile,
@@ -1283,7 +1300,7 @@ def certificationNegativeProbes (profile : PolyProfile) :
 
 /-- Inference probe count. -/
 theorem inferNegativeProbes_length (profile : PolyProfile) :
-    (inferNegativeProbes profile).length = 34 := rfl
+    (inferNegativeProbes profile).length = 35 := rfl
 
 /-- Expected-shape probe count. -/
 theorem expectedShapeNegativeProbes_length (profile : PolyProfile) :
@@ -1309,7 +1326,7 @@ theorem wrongArityInferNegativeProbes_length (profile : PolyProfile) :
 /-- Wrong-child-shape headline probe count. -/
 theorem wrongChildShapeInferNegativeProbes_length
     (profile : PolyProfile) :
-    (wrongChildShapeInferNegativeProbes profile).length = 11 := rfl
+    (wrongChildShapeInferNegativeProbes profile).length = 12 := rfl
 
 /-- Bad-boundary-endpoint headline probe count. -/
 theorem badBoundaryEndpointInferNegativeProbes_length
