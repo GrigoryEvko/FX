@@ -1,4 +1,5 @@
 import LeanFX2.Foundation.PolyCell.Core.Check
+import LeanFX2.Foundation.PolyCell.Core.PolyTermDecEq
 /-!
 # CertifyExact — General Raw-Indexed Recursive Certifier
 
@@ -15,11 +16,12 @@ transport for atoms uses `cast`/`Eq.rec`, never the equation compiler.
 
 Current coverage: every payload-evidenced atom (variable, unit type, empty
 context, linear mode) and the first finite application / lambda / pi-type /
-context-extension payloads, iterated identities at every dimension, and
-generating cells reconciled against the term-step rule (recursing on both
-endpoints).  Vertical composites still reject as `unsupportedCertification`
-pending middle-boundary reconciliation; horizontal composition rejects as
-`unsupportedCompH`.
+context-extension payloads, iterated identities at every dimension, generating
+cells reconciled against the term-step rule, and vertical composites reconciled
+by sort plus the shared middle boundary (decided via the propext-free `PolyTerm`
+`DecidableEq`).  Only horizontal composition rejects, as `unsupportedCompH`,
+pending Gray-tensor semantics — so the certifier is total on the entire
+non-`compH` raw fragment.
 -/
 
 namespace LeanFX2.Foundation.PolyCell.Core
@@ -165,12 +167,37 @@ def buildTermStepCellExact? {profile : PolyProfile} {scope : Nat} {dim : CellDim
     · exact Except.error .unknownGenerator
   · exact Except.error .unknownGenerator
 
+/-- Reconcile two already-certified positive-dimensional cells into a certified
+vertical composite: same sort, and the first cell's target boundary equal to the
+second cell's source boundary (decided via the propext-free `PolyTerm`
+`DecidableEq`).  The boundary-pair transport uses `▸` (`Eq.rec`) plus structure
+eta and is propext-free. -/
+def buildVerticalCompositeExact? {profile : PolyProfile} {scope : Nat}
+    {cdim : CellDim} (first second : PolyTerm profile (cdim + 1))
+    (certFirst : CertifiedRawCell profile scope first)
+    (certSecond : CertifiedRawCell profile scope second) :
+    Except CellCheckRejection
+      (CertifiedRawCell profile scope (PolyTerm.compV first second)) :=
+  if hSort : certSecond.cellSort = certFirst.cellSort then
+    if hMiddle : (certSecond.cellBoundary.1 : PolyTerm profile cdim) =
+        (certFirst.cellBoundary.2 : PolyTerm profile cdim) then
+      Except.ok
+        { cellSort := certFirst.cellSort
+          cellBoundary := (certFirst.cellBoundary.1, certSecond.cellBoundary.2)
+          certifiedCell :=
+            PolyCell.compV certFirst.certifiedCell
+              (hMiddle ▸ hSort ▸ certSecond.certifiedCell) }
+    else Except.error .badVerticalBoundary
+  else Except.error .badVerticalBoundary
+
 /-- General raw-indexed recursive certifier.
 
 Matches on `rawCell` only (dim inferred), so the matcher never excludes an
 impossible index/constructor pair.  Identity recurses on its base and wraps via
 the derived certified identity package without index transport.  Generating
-cells recurse on both endpoints and reconcile against the term-step rule. -/
+cells recurse on both endpoints and reconcile against the term-step rule.
+Vertical composites recurse on both operands and reconcile sort plus the shared
+middle boundary.  Horizontal composition stays rejected pending Gray semantics. -/
 def certifyRawCellExact? {profile : PolyProfile} (scope : Nat) {dim : CellDim}
     (rawCell : PolyTerm profile dim) :
     Except CellCheckRejection (CertifiedRawCell profile scope rawCell) :=
@@ -183,7 +210,13 @@ def certifyRawCellExact? {profile : PolyProfile} (scope : Nat) {dim : CellDim}
           buildTermStepCellExact? ruleId source target certSource certTarget
       | Except.error rejection, _ => Except.error rejection
       | _, Except.error rejection => Except.error rejection
-  | .compV _ _ => Except.error .unsupportedCertification
+  | .compV first second =>
+      match certifyRawCellExact? scope first,
+          certifyRawCellExact? scope second with
+      | Except.ok certFirst, Except.ok certSecond =>
+          buildVerticalCompositeExact? first second certFirst certSecond
+      | Except.error rejection, _ => Except.error rejection
+      | _, Except.error rejection => Except.error rejection
   | .compH _ _ => Except.error .unsupportedCompH
   | .identity base =>
       match certifyRawCellExact? scope base with

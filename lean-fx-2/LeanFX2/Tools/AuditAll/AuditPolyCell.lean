@@ -703,6 +703,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.CertifiedRawCellResult.toPackage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifyRawAtomExact?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.buildTermStepCellExact?
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.buildVerticalCompositeExact?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifyRawCellExact?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawCellGeneral?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawCellGeneral?_seedTerm_sort
