@@ -18,6 +18,7 @@ import LeanFX2.Foundation.PolyCell.Extension.ProfileExtension
 import LeanFX2.Foundation.PolyCell.FXProfile.CertifiedViews
 import LeanFX2.Foundation.PolyCell.FXProfile.Views
 import LeanFX2.Foundation.PolyCell.OmegacE.HonestyCheck
+import LeanFX2.Foundation.PolyCell.Core.RawCellCodeV2
 
 namespace LeanFX2.Tools
 
@@ -2816,6 +2817,52 @@ namespace LeanFX2.Tools
 #assert_true_in_result_type_budget LeanFX2.Foundation.PolyCell.Extension 0
 #assert_false_in_result_type_budget LeanFX2.Foundation.PolyCell.Extension 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Core 0
+-- ═══════════════════════════════════════════════════════════════
+-- V2 RAW SUBSTRATE GATES (Stage 0)
+-- ═══════════════════════════════════════════════════════════════
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.instDecidableEqGenerator
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.arity
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.binderShifts
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.binderShifts_length_eq_arity
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.payload
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2.empty
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2.single
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2.singleUnderBinder
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2.pairFlat
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2.binderShape
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2.tripleFlat
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.dim
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.size
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2.size
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.size
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.size_lt_termBase
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.size_lt_generatingCell_source
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.size_lt_generatingCell_target
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.size_lt_verticalComposite_first
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.size_lt_verticalComposite_second
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.size_lt_horizontalComposite_left
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.size_lt_horizontalComposite_right
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.size_lt_identityCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2.size_lt_childCons_head
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2.size_lt_childCons_tail
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.decEqPayload
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.decEq
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2.decEq
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.instDecidableEqRawTermV2
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.instDecidableEqRawTermChildrenV2
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.decEq
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.instDecidableEqRawCellV2
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.toNat
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.payloadToNat
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.toCode
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2.toCode
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.toCode
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.hasSameNatList
+
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Extension 0
