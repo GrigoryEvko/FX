@@ -22,12 +22,15 @@
 > See [§9](#9-loc-budget) for the canonical accounting.
 >
 > **Slogan:** *permissive raw cells, intrinsic certified cells.*  Raw
-> `PolyTerm π dim` is the input / serialization layer and may represent
-> nonsense so the checker can reject it.  Certified `PolyCell π sort dim
-> scope boundary raw` is the kernel layer and has constructors only for
-> sorted, scoped, boundary-compatible cells.  FX kernel objects become
-> projections of certified cells over one `PolyProfile π`; raw nonsense
-> must map to `none` / `rejected reason`, never to a certificate.
+> input is the **scope-indexed, dimension-computed** `RawTermV2` /
+> `RawCellV2` layer (v2 re-foundation) and may represent nonsense —
+> including dim-mismatched composites — so the checker can reject it.
+> Certified `PolyCell π sort dim scope boundary raw` is the kernel layer
+> and has constructors only for sorted, scoped, boundary-compatible
+> cells, collapsed to one generic `gen` constructor over the generator
+> table.  FX kernel objects become projections of certified cells over
+> one `PolyProfile π`; raw nonsense must map to `none` / `rejected
+> reason`, never to a certificate.
 >
 > **Reference axis sources:** see [§13 References](#13-references).  The
 > three load-bearing references are Loubaton's 2023 PhD thesis
@@ -62,10 +65,12 @@ strongest available theory per layer):
   Lean port of this framework in any proof assistant.
 
 * **Tier 1 — POLYCELL CORE** (~15K LoC, §4)
-  A two-layer core: permissive raw `PolyTerm` for input data, plus
-  intrinsic certified `PolyCell` indexed by sort, dimension, scope,
-  boundary, and raw syntax.  Each axis is one Tier-0 obligation
-  witness attached to the profile, not a new raw constructor family.
+  A two-layer core: permissive raw `RawTermV2` + `RawCellV2` (scope-
+  indexed, dimension computed) for input data, plus intrinsic certified
+  `PolyCell` indexed by sort, dimension, scope, boundary, and raw
+  syntax, with one generic `gen` constructor over the generator table.
+  Each axis is one Tier-0 obligation witness attached to the profile,
+  not a new raw constructor family.
 
 * **Tier 2 — PROFILE AXES + EXTENSION CALCULUS** (13 profile axes,
   §3.1-§3.13, plus the extension calculus in §3.14)
@@ -280,10 +285,11 @@ rejection — no universal-property-as-corollary shortcut.
 The slogan is **permissive raw cells, intrinsic certified cells**.
 The K11.1 `PolyCell` (dim-indexed, source/target intrinsic, real
 Burroni cells) is the skeleton.  The other twelve axes are the flesh.
-At the end you have raw `PolyTerm π dim` as the input format and
-certified `PolyCell π sort dim scope boundary raw` as the kernel
-inhabitant type, both parameterized by a thirteen-field `PolyProfile
-π`.  FX is one specific profile, reached and grown by the extension
+At the end you have the raw input layer (`RawTermV2 scope` +
+`RawCellV2 scope`, dimension computed not type-indexed) as the input
+format and certified `PolyCell π sort dim scope boundary raw` as the
+kernel inhabitant type, with the certified layer parameterized by a
+thirteen-field `PolyProfile π`.  FX is one specific profile, reached and grown by the extension
 calculus, not assembled by hand.
 
 Eating all the cakes:
@@ -3597,17 +3603,51 @@ brief asks for.
 ## 4. The raw/certified PolyCell signature
 
 After the thirteen profile axes are defined, the trusted kernel surface
-has two layers.
+has two layers.  The **v2 structural re-foundation** (decided 2026-05-26)
+fixes their shape; the dim-indexed v1 sketch earlier revisions carried
+is retained as the shipped *proving ground* (TCB.4–TCB.8, §10), not as
+the target.
 
-1.  `PolyTerm π dim` is raw syntax.  It is deliberately permissive:
-    imported data, serialized cells, broken generator ids, wrong arity,
-    bad sort choices, bad vertical composites, and future `compH`
-    experiments must all be representable so the checker can say
+1.  Raw syntax is **un-indexed by dimension** and split in two:
+    `RawTermV2 scope` (the term layer — one `mkGen generator payload
+    children` constructor, scope-indexed, with structural children) and
+    `RawCellV2 scope` (the categorical cell layer — `termBase`,
+    `generatingCell`, `verticalComposite`, `horizontalComposite`,
+    `identityCell`).  Dimension is a **computed** function
+    `RawCellV2.dim`, never a type index.  The layer is deliberately
+    permissive: imported data, broken generator ids, wrong arity, bad
+    sort choices, dim-mismatched composites, and future `compH`
+    experiments are all representable so the checker can say
     `false` / `none` / `rejected reason`.
 2.  `PolyCell π sort dim scope boundary raw` is certified syntax.  It
     is indexed by the raw cell it certifies, and its constructors are
     the only trusted introduction rules.  Ill-sorted, ill-scoped, or
-    boundary-incompatible cells are unconstructable at this layer.
+    boundary-incompatible cells are unconstructable at this layer.  The
+    per-feature term constructors collapse to **one** generic `gen`
+    constructor parameterized by the generator table.
+
+**Why un-indexed raw is the keystone (the highest-ROI decision).**  A
+*permissive* raw layer must not enforce dimension at the type level —
+its whole job is to represent nonsense the checker rejects.  Every
+propext-leak fought through TCB.7/TCB.8 (the dual `(dim, rawCell)`
+match, the partial constructor enum at `dim + 1`, the dim-1 dispatcher)
+traces to dim being a type index.  Computing dim instead of indexing it
+dissolves the entire leak class, and lets the raw layer represent (and
+the checker reject) a dim-mismatched `verticalComposite` that the v1
+type made unconstructable.  Indexing stays where it belongs: the
+certified `PolyCell`.
+
+**Why one generic `gen` constructor is the cascade-death mechanism.**
+`Generator` + `binderShifts` is an Allais "universe of syntaxes with
+binding" descriptor (U20, `arXiv:2001.11001`).  ONE structural fold
+`RawTermV2.foldV2` over that descriptor yields `rename` and `subst` as
+single generic instances — collapsing the 5–8K-LoC per-constructor
+rename/subst commute cascade (§3.11) to instances of three monad laws.
+The certifier, `cd_lemma`, and decidable `Conv` recurse once over the
+same structure, so adding a feature is one `Generator` value plus one
+`SupportedGeneratorV2` arm — never a new raw constructor and never a
+per-ctor proof cascade.  This is the concrete mechanism behind §2.1's
+"feature constructors move into generator metadata."
 
 This mirrors the existing kernel pattern:
 
@@ -3615,17 +3655,20 @@ This mirrors the existing kernel pattern:
 RawTerm scope                         -- permissive-ish syntax
 Term ctx type raw                     -- intrinsic typed certificate
 
-PolyTerm profile dim                  -- permissive raw cell syntax
+RawTermV2 scope                       -- permissive term layer (scope-indexed)
+RawCellV2 scope                       -- permissive cell layer (dim COMPUTED)
 PolyCell profile sort dim scope b raw -- intrinsic certified cell
 ```
 
 The profile-extension calculus (§3.14) lives over admissible profiles;
-it is not another constructor family inside raw `PolyTerm`.
+it is not another constructor family inside the raw layer.
 
 The Lean block below is a target shape, not a claim that the current
 files already expose these fields.  The rollout in §10 splits it into
 small modules so each invariant can be audited before downstream views
-depend on it.
+depend on it; the dim-indexed v1 proving ground (atoms with sentinel
+payloads, five per-fixture certified constructors) shipped as TCB.4–TCB.8
+and is deleted when the §10 v2 deletion criterion holds.
 
 ```lean
 namespace LeanFX2.Foundation.PolyCell.Core
@@ -3682,32 +3725,69 @@ structure PolyProfile where
     parentProfile, omegacE, universeConfig, substitutionBackbone,
     stcClassifier, mttGateway⟩
 
-/-- Raw syntax.  This layer is input data, not the trusted invariant. -/
-inductive PolyTerm (profile : PolyProfile) : Nat → Type where
-  | atom :
-      (cellId : Nat) →
-      (payload : Nat) →
-      PolyTerm profile 0
-  | cell :
-      {dim : Nat} →
-      (ruleId : Nat) →
-      PolyTerm profile dim →
-      PolyTerm profile dim →
-      PolyTerm profile (dim + 1)
-  | compV :
-      {dim : Nat} →
-      PolyTerm profile (dim + 1) →
-      PolyTerm profile (dim + 1) →
-      PolyTerm profile (dim + 1)
-  | compH :
-      {dim : Nat} →
-      PolyTerm profile (dim + 1) →
-      PolyTerm profile (dim + 1) →
-      PolyTerm profile (dim + 1)
-  | identity :
-      {dim : Nat} →
-      PolyTerm profile dim →
-      PolyTerm profile (dim + 1)
+/-- Raw term layer (v2).  Scope-indexed, NOT dim-indexed.  One generic
+`mkGen` constructor over the `Generator` enum — an Allais
+universe-of-syntaxes descriptor (`arXiv:2001.11001`): `payload` carries
+only local scalar data (a `Fin scope` de Bruijn index for `var`, a level
+`Nat` for the universe code, `Unit` otherwise), and `children` are
+STRUCTURAL sub-terms whose binders are tracked by
+`generator.binderShifts` (a binder child's head lives at
+`scope + shift`).  Nested terms are representable directly; there are no
+sentinel payloads and no hand-written child decoders. -/
+mutual
+  inductive RawTermV2 : Nat → Type where
+    | mkGen :
+        {scope : Nat} →
+        (generator : Generator) →
+        (payload : generator.payload scope) →
+        (children : RawTermChildrenV2 generator.binderShifts scope) →
+        RawTermV2 scope
+  inductive RawTermChildrenV2 : List Nat → Nat → Type where
+    | childNil :
+        {scope : Nat} → RawTermChildrenV2 [] scope
+    | childCons :
+        {scope shift : Nat} → {restShifts : List Nat} →
+        RawTermV2 (scope + shift) →
+        RawTermChildrenV2 restShifts scope →
+        RawTermChildrenV2 (shift :: restShifts) scope
+end
+
+/-- Raw cell layer (v2).  Scope-indexed only; dimension is COMPUTED by
+`RawCellV2.dim`, never a type index.  This is the keystone: a permissive
+raw layer must not enforce dim at the type level, and removing the index
+dissolves the propext-leak class fought through TCB.7/TCB.8 (the dual
+`(dim, rawCell)` match, the partial ctor enum at `dim + 1`, the dim-1
+dispatcher).  The term layer embeds at dimension 0 via `termBase`; a
+dim-mismatched `verticalComposite` is now representable (and rejected by
+the certifier) rather than unconstructable. -/
+inductive RawCellV2 : Nat → Type where
+  | termBase :
+      {scope : Nat} → RawTermV2 scope → RawCellV2 scope
+  | generatingCell :
+      {scope : Nat} → (ruleId : Nat) →
+      RawCellV2 scope → RawCellV2 scope → RawCellV2 scope
+  | verticalComposite :
+      {scope : Nat} → RawCellV2 scope → RawCellV2 scope → RawCellV2 scope
+  | horizontalComposite :
+      {scope : Nat} → RawCellV2 scope → RawCellV2 scope → RawCellV2 scope
+  | identityCell :
+      {scope : Nat} → RawCellV2 scope → RawCellV2 scope
+
+/-- Dimension recovered structurally (matches the cell ALONE, the
+propext-clean shape; total; no `termination_by`). -/
+def RawCellV2.dim {scope : Nat} : RawCellV2 scope → CellDim
+  | .termBase _                 => 0
+  | .generatingCell _ source _  => source.dim + 1
+  | .verticalComposite first _  => first.dim
+  | .horizontalComposite left _ => left.dim
+  | .identityCell base          => base.dim + 1
+
+-- v1 PROVING GROUND (shipped TCB.4-TCB.8, deleted at the §10 v2 deletion
+-- criterion): the dim-indexed `PolyTerm profile : Nat -> Type`
+-- (atom/cell/compV/compH/identity) whose `atom`s carried sentinel `Nat`
+-- payloads decoded by hand-written child decoders.  It validated the
+-- propext-free certifier and `DecidableEq` patterns v2 reuses but cannot
+-- express nested terms.  See the §10 POLY-TCB table for its tracking log.
 
 /-- Sorts are the visible strata of the one FX cell substrate.
 These are not separate syntaxes glued later: terms, types, contexts,
@@ -3735,14 +3815,14 @@ structure ChildSpec where
   deriving DecidableEq
 
 /-- Boundary index of a certified cell.  Dim-0 cells are vertices.
-Higher boundaries are raw source/target endpoint indices; constructors and
+Higher boundaries are raw source/target endpoint cells; constructors and
 the checker separately require endpoint certificates before producing a
 `PolyCell` over those raw endpoints. -/
 def CellBoundary (profile : PolyProfile) :
-    CellSort → Nat → Nat → Type
+    CellSort → CellDim → Nat → Type
   | _, 0, _ => Unit
-  | sort, dim + 1, scope =>
-      PolyTerm profile dim × PolyTerm profile dim
+  | _, _ + 1, scope =>
+      RawCellV2 scope × RawCellV2 scope
 
 /-- Heterogeneous child list dictated by generator metadata.
 
@@ -3764,14 +3844,15 @@ inductive CellChildren
       CellChildren ChildCarrier parentScope remainingSpecs →
       CellChildren ChildCarrier parentScope (childSpec :: remainingSpecs)
 
-/-- Raw child descriptor returned by payload decoders.
+/-- Raw child descriptor used by the certifier's child-spine
+reconciliation.
 
-This records the shape claimed by decoding.  It does not certify the child:
-the stored raw cell is only a permissive `PolyTerm` at the declared
-dimension. -/
+This records the shape claimed for a child.  It does not certify the
+child: the stored raw cell is only a permissive `RawCellV2` at the
+declared scope. -/
 structure RawChildDescriptor (profile : PolyProfile)
     (cellSort : CellSort) (cellDimension : CellDim) (scope : Nat) where
-  rawCell : PolyTerm profile cellDimension
+  rawCell : RawCellV2 scope
 
 /-- Decoder output for a generator is a child spine whose carrier is raw
 descriptors, not certified cells. -/
@@ -3779,10 +3860,25 @@ def RawChildDescriptors (profile : PolyProfile) (parentScope : Nat)
     (childSpecs : List ChildSpec) : Type :=
   CellChildren (RawChildDescriptor profile) parentScope childSpecs
 
-/-- Current supported-generator table for the certified structural layer.
+/-- v2 generic generator metadata (the target, abbreviated).  These
+replace the v1 per-feature tables below.  `SupportedGeneratorV2
+(generator : Generator)` admits a generator to the certified layer — ONE
+arm per supported feature, never a new `PolyCell` constructor;
+`generatorCellSort : Generator → CellSort` and `generatorChildSpecs :
+Generator → List ChildSpec` derive the cell sort and child-spine spec
+(scope shifts = `generator.binderShifts`); `GenPayloadEvidence generator
+scope payload` discharges the local payload (`var`'s `index < scope` is
+now structural via the `Fin scope` payload); `CertifiedTermSpineV2
+profile specs scope children` is the certified child spine (the
+carrier-parametric `CellChildren` / `CertifiedChildSpineForRawDescriptors`
+instantiated to certified cells); `HasEqualDim source target` is the
+value-level endpoint-dimension reconciliation, decided by `Nat.decEq` on
+the computed `RawCellV2.dim`. -/
 
-Membership in this table is not enough to certify an atom: atom construction
-also needs payload evidence. -/
+/-- v1 PROVING GROUND tables (shipped TCB.4–TCB.8, superseded by the v2
+metadata above; deleted at the §10 v2 deletion criterion).  Membership
+here is not enough to certify an atom: atom construction also needs
+payload evidence. -/
 inductive SupportedGeneratorSpec : GeneratorSpec -> Type where
   | variable : SupportedGeneratorSpec variableGeneratorSpec
   | lambda : SupportedGeneratorSpec lambdaGeneratorSpec
@@ -3829,92 +3925,77 @@ inductive AtomPayloadEvidence :
   | linearMode {scope : Nat} :
       AtomPayloadEvidence linearModeGeneratorSpec scope 0
 
-/-- Certified cell syntax.  This is the trusted layer.  It is indexed by
-the raw syntax it certifies, so erasure back to raw is definitional.
+/-- Certified cell syntax (v2).  This is the trusted layer, indexed by
+the raw `RawCellV2` it certifies, so erasure back to raw is definitional.
+The per-feature term constructors of the v1 proving ground
+(`applicationVarZeroVarOne`, `lambdaUnitTypeBodyVarZero`,
+`piTypeUnitCodomainUnit`, `contextConsEmptyUnitLinear`, …) collapse to
+ONE generic `gen` constructor over the generator table.
 
-There is deliberately no certified `compH` constructor here until the
-Gray tensor boundary formula and disjoint-footprint/matching condition
-are mechanized.  Raw `PolyTerm.compH` remains available as input data;
-the checker must reject it at this stage. -/
+There is deliberately no certified `horizontalComposite` constructor
+until the Gray tensor boundary formula and disjoint-footprint/matching
+condition are mechanized.  Raw `RawCellV2.horizontalComposite` remains
+available as input data; the checker rejects it as `unsupportedCompH`. -/
 inductive PolyCell (profile : PolyProfile) :
     (sort : CellSort) →
-    (dim : Nat) →
+    (dim : CellDim) →
     (scope : Nat) →
     CellBoundary profile sort dim scope →
-    PolyTerm profile dim →
+    RawCellV2 scope →
     Type where
 
-  | atom :
-      {scope : Nat} →
-      (generator : GeneratorSpec) →
-      {payload : Nat} →
-      SupportedGeneratorSpec generator →
-      AtomPayloadEvidence generator scope payload →
-      PolyCell profile generator.cellSort 0 scope ()
-        (.atom generator.cellId payload)
+  -- ONE generic certified term-generator constructor.  `supported`
+  -- admits the generator (a `SupportedGeneratorV2` arm — adding a
+  -- feature is one new arm); `payloadEvidence` discharges the local
+  -- payload; `childSpine` certifies the structural children against the
+  -- generator's `childSpecs` (scope shifts = `binderShifts`).  Subsumes
+  -- every v1 per-fixture term constructor.
+  | gen :
+      {scope : Nat} → {generator : Generator} →
+      {payload : generator.payload scope} →
+      {children : RawTermChildrenV2 generator.binderShifts scope} →
+      SupportedGeneratorV2 generator →
+      GenPayloadEvidence generator scope payload →
+      CertifiedTermSpineV2 profile (generatorChildSpecs generator) scope children →
+      PolyCell profile (generatorCellSort generator) 0 scope ()
+        (.termBase (.mkGen generator payload children))
 
-  | lambdaUnitTypeBodyVarZero :
-      {scope : Nat} →
-      PolyCell profile .type 0 scope ()
-        (.atom unitTypeGeneratorSpec.cellId 0) →
-      PolyCell profile .term 0 (scope + 1) ()
-        (.atom variableGeneratorSpec.cellId 0) →
-      PolyCell profile .term 0 scope ()
-        (.atom lambdaGeneratorSpec.cellId lambdaUnitTypeBodyVarZeroPayload)
-
-  | applicationVarZeroVarOne :
-      {scope : Nat} →
-      PolyCell profile .term 0 scope ()
-        (.atom variableGeneratorSpec.cellId 0) →
-      PolyCell profile .term 0 scope ()
-        (.atom variableGeneratorSpec.cellId 1) →
-      PolyCell profile .term 0 scope ()
-        (.atom applicationGeneratorSpec.cellId applicationVarZeroVarOnePayload)
-
-  | piTypeUnitCodomainUnit :
-      {scope : Nat} →
-      PolyCell profile .type 0 scope ()
-        (.atom unitTypeGeneratorSpec.cellId 0) →
-      PolyCell profile .type 0 (scope + 1) ()
-        (.atom unitTypeGeneratorSpec.cellId 0) →
-      PolyCell profile .type 0 scope ()
-        (.atom piTypeGeneratorSpec.cellId piTypeUnitCodomainUnitPayload)
-
-  | cell :
-      {scope : Nat} →
-      (rule : RuleSpec) →
+  -- Certified generating cell (dim n+1) over two certified endpoints of
+  -- EQUAL computed dimension, reconciled against a supported rule.
+  | generatingCell :
+      {scope : Nat} → (rule : RuleSpec) →
       SupportedRuleSpec rule →
-      {source target : PolyTerm profile rule.endpointDimension} →
+      {source target : RawCellV2 scope} →
       {sourceBoundary targetBoundary :
-        CellBoundary profile rule.cellSort rule.endpointDimension scope} →
-      PolyCell profile rule.cellSort rule.endpointDimension scope
-        sourceBoundary source →
-      PolyCell profile rule.cellSort rule.endpointDimension scope
-        targetBoundary target →
-      PolyCell profile rule.cellSort (rule.endpointDimension + 1) scope
+        CellBoundary profile rule.cellSort source.dim scope} →
+      HasEqualDim source target →
+      PolyCell profile rule.cellSort source.dim scope sourceBoundary source →
+      PolyCell profile rule.cellSort source.dim scope targetBoundary target →
+      PolyCell profile rule.cellSort (source.dim + 1) scope
         (source, target)
-        (.cell rule.ruleId source target)
+        (.generatingCell rule.ruleId source target)
 
-  | compV :
-      {sort : CellSort} →
-      {dim scope : Nat} →
-      {source middle target : PolyTerm profile dim} →
-      {firstRaw secondRaw : PolyTerm profile (dim + 1)} →
+  -- Certified vertical composite: same sort, shared middle endpoint
+  -- decided by the propext-free `DecidableEq (RawCellV2)`.
+  | verticalComposite :
+      {sort : CellSort} → {dim scope : Nat} →
+      {source middle target : RawCellV2 scope} →
+      {firstRaw secondRaw : RawCellV2 scope} →
       PolyCell profile sort (dim + 1) scope (source, middle) firstRaw →
       PolyCell profile sort (dim + 1) scope (middle, target) secondRaw →
       PolyCell profile sort (dim + 1) scope
         (source, target)
-        (.compV firstRaw secondRaw)
+        (.verticalComposite firstRaw secondRaw)
 
-  | identity :
-      {sort : CellSort} →
-      {dim scope : Nat} →
+  -- Certified identity (degenerate) over any certified base.
+  | identityCell :
+      {sort : CellSort} → {dim scope : Nat} →
       {boundary : CellBoundary profile sort dim scope} →
-      {baseRaw : PolyTerm profile dim} →
+      {baseRaw : RawCellV2 scope} →
       PolyCell profile sort dim scope boundary baseRaw →
       PolyCell profile sort (dim + 1) scope
         (baseRaw, baseRaw)
-        (.identity baseRaw)
+        (.identityCell baseRaw)
 end
 
 /-- Why a raw cell failed certification. -/
@@ -3932,29 +4013,25 @@ inductive CellCheckRejection where
 
 /-- Infer a certified package from raw input.
 
-NOTE (TCB.8): the final recursive checker now EXISTS as
-`Check.certifyRawCellExact?` (raw-indexed) / `Check.inferRawCellGeneral?`
-(existential), total on the entire non-`compH` raw fragment at every
-dimension.  The `inferRawCell?` described below is the historical TCB.7
-dim-0 ingress, retained until call sites are routed through the general
-certifier.
+The v2 certifier is `certifyRawCellExactV2?` (raw-indexed, returning a
+certificate over the EXACT input `RawCellV2`) with `inferRawCellGeneralV2?`
+its existential wrapper.  ONE structural recursion over `RawCellV2`
+certifies the entire non-`horizontalComposite` fragment at every
+dimension; `horizontalComposite` rejects as `unsupportedCompH` pending
+Gray semantics.  The propext-leak that blocked the dim-indexed v1
+dispatcher (TCB.7d/7f) is gone by construction: there is no dim type
+index to force a `(dim, rawCell)` match, and endpoint-dimension
+reconciliation is value-level (`Nat.decEq` on `RawCellV2.dim`).
 
-It certifies only the dim-0 subset whose constructors are implemented in the
-certified layer: in-scope variables, unit type, empty context, linear mode,
-and the finite application/lambda/pi/context-extension payloads at scopes
-where decoded children are in scope.  The application ingress invokes the
-payload decoder and generic child-shape screen before constructing the
-certified parent.  The dimension-polymorphic certified decoder that TCB.7d
-could not build without `propext` is now `certifyRawCellExact?` (TCB.8a):
-the leak was the dual `(dim, rawCell)` match, fixed by matching `rawCell`
-alone and transporting ids via `cast`.  Other raw dim-0 atoms remain
-representable and reject either with the screen's structural reason or with
-`unsupportedCertification` when they screen successfully but lack a certified
-constructor. -/
+The v1 proving ground (`inferRawCell?` / `checkRawCellAs?` over the
+dim-indexed `PolyTerm`, TCB.6j–TCB.8) is retained until call sites route
+through the v2 certifier; the TCB.8 convergence theorems proved the v1
+ingress equals the general certifier on the shared fragment, so no
+coverage is lost at deletion. -/
 structure CertifiedRawCellResult (profile : PolyProfile) (scope : Nat) where
   cellDimension : CellDim
   inputCode : List Nat
-  rawCell : PolyTerm profile cellDimension
+  rawCell : RawCellV2 scope
   cellSort : CellSort
   cellBoundary : CellBoundary profile cellSort cellDimension scope
   certifiedCell :
@@ -3962,19 +4039,26 @@ structure CertifiedRawCellResult (profile : PolyProfile) (scope : Nat) where
   hasInputCode :
     hasSameNatList inputCode (rawCellCode rawCell) = true
 
-def inferRawCell? (scope : Nat) (raw : PolyTerm fxProfile 0) :
+def certifyRawCellExactV2? {profile : PolyProfile} (scope : Nat)
+    (raw : RawCellV2 scope) :
     Except CellCheckRejection
-      (CertifiedRawCellResult fxProfile scope) := ...
+      (CertifiedRawCell profile scope raw) := ...
+
+def inferRawCellGeneralV2? {profile : PolyProfile} (scope : Nat)
+    (raw : RawCellV2 scope) :
+    Except CellCheckRejection
+      (CertifiedRawCellResult profile scope) := ...
 
 /-- Check raw input against an expected certified shape.
 
 `wrongSort` is a rejection of this expected-shape checker.  Bare inference
 has no external sort expectation, so it fails with generator, payload, child,
 boundary, or unsupported-certification reasons instead. -/
-def checkRawCellAs? (expectedSort : CellSort) (expectedScope : Nat)
-    (raw : PolyTerm fxProfile 0) :
+def checkRawCellAsV2? {profile : PolyProfile}
+    (expectedSort : CellSort) (expectedScope : Nat)
+    (raw : RawCellV2 expectedScope) :
     Except CellCheckRejection
-      (CertifiedRawCellResult fxProfile expectedScope) := ...
+      (CertifiedRawCellResult profile expectedScope) := ...
 
 end LeanFX2.Foundation.PolyCell.Core
 ```
@@ -3988,14 +4072,18 @@ certified dim-1 cell plus a decidable/Prop thinness certificate on that
 certified cell's raw erasure; raw thinness facts are usable only under
 an existing certified step/cell.
 
-The raw `PolyTerm` inductive has five structural constructors:
-`atom`, `cell`, `compH`, `compV`, and `identity`.  The certified
-`PolyCell` layer initially exposes only `atom`, `cell`, `compV`, and
-`identity`; certified `compH` is blocked until Axis 6 has real Gray
-boundary semantics.  Compared to the current 75-ctor `Term` +
-100+-ctor `Step` + 100+-ctor `cd_lemma`, this is a ~50× reduction in
-inductive surface area and, more importantly, new features no longer
-enlarge the raw inductive at all.
+The raw layer is two inductives: `RawTermV2` (one generic `mkGen`
+constructor over the `Generator` table, structural children) and
+`RawCellV2` (five structural constructors `termBase`, `generatingCell`,
+`verticalComposite`, `horizontalComposite`, `identityCell`, dimension
+computed not indexed).  The certified `PolyCell` layer exposes ONE
+generic `gen` term constructor plus `generatingCell`,
+`verticalComposite`, and `identityCell`; certified `horizontalComposite`
+is blocked until Axis 6 has real Gray boundary semantics.  Compared to
+the current 75-ctor `Term` + 100+-ctor `Step` + 100+-ctor `cd_lemma`,
+this is a ~50× reduction in inductive surface area and, more
+importantly, new features add one `Generator` value, never a raw or
+certified constructor.
 
 **Nonsense policy.**  Nonsense is allowed only in raw input.  Certified
 cells must make nonsense unconstructable.  The bridge from raw to
@@ -4257,8 +4345,10 @@ def fxProfile : PolyProfile where
 
   consistency := fxConsistencyProof
 
-/-- Raw FX cell input.  This is not a kernel certificate. -/
-def FXRawCell := PolyTerm fxProfile
+/-- Raw FX cell input (v2): the scope-indexed `RawCellV2` layer.  This is
+not a kernel certificate.  `RawCellV2` is profile-agnostic — the
+generator table lives in the certified `PolyCell` over `fxProfile`. -/
+def FXRawCell := RawCellV2
 
 /-- Certified FX cell package. -/
 def FXCell :=
@@ -4275,34 +4365,36 @@ post-hoc predicates on raw Nat payloads:
 namespace LeanFX2
 
 /-- Certified context cell. -/
-def FXContext (scope : Nat) (raw : FXRawCell 0) :=
+def FXContext (scope : Nat) (raw : FXRawCell scope) :=
   PolyCell fxProfile .context 0 scope () raw
 
 /-- Certified type cell. -/
-def FXType (scope : Nat) (raw : FXRawCell 0) :=
+def FXType (scope : Nat) (raw : FXRawCell scope) :=
   PolyCell fxProfile .type 0 scope () raw
 
 /-- Certified term cell.  The eventual typed bridge refines this with a
 context cell and a type cell, exactly like `Term ctx type raw`. -/
-def FXTerm (scope : Nat) (raw : FXRawCell 0) :=
+def FXTerm (scope : Nat) (raw : FXRawCell scope) :=
   PolyCell fxProfile .term 0 scope () raw
 
 /-- Certified generating step or vertical composite over one sort.
-Raw horizontal composition is rejected until Axis 6 certifies it. -/
+Raw horizontal composition is rejected until Axis 6 certifies it.  Raw
+endpoints and the dim-1 raw cell are all `RawCellV2 scope`; dimension is
+the certified index, not a raw type index. -/
 def FXStep (sort : CellSort) (scope : Nat)
-    (source target : FXRawCell 0) (raw : FXRawCell 1) :=
+    (source target : FXRawCell scope) (raw : FXRawCell scope) :=
   PolyCell fxProfile sort 1 scope (source, target) raw
 
 /-- Certified conversion is a certified dim-1 cell plus a thinness
 certificate on that certified cell's raw erasure. -/
 def FXConv (sort : CellSort) (scope : Nat)
-    (source target : FXRawCell 0) (raw : FXRawCell 1) :=
+    (source target : FXRawCell scope) (raw : FXRawCell scope) :=
   { cell : FXStep sort scope source target raw //
       fxProfile.stratification.thin 1 raw = true }
 
 /-- Certified confluence filler. -/
 def FXCdLemma (sort : CellSort) (scope : Nat)
-    (source target : FXRawCell 1) (raw : FXRawCell 2) :=
+    (source target : FXRawCell scope) (raw : FXRawCell scope) :=
   PolyCell fxProfile sort 2 scope (source, target) raw
 
 end LeanFX2
@@ -4510,7 +4602,7 @@ Existing files → certified PolyCell target.
 | `Foundation/Polygraph/Generator.lean` | 600 | **Becomes** axis 2's generator enumeration |
 | `Foundation/Polygraph/RawPolyTerm.lean` | 256 | **DELETED** (the fake mirror) |
 | `Foundation/Polygraph/PolyTerm.lean` | ~700 | **DELETED** (the fake typed mirror) |
-| `Foundation/Polygraph/RawPolyTermFlat.lean` | 195 | Promoted to be `PolyTerm fxProfile dim` for `dim = 0` only |
+| `Foundation/Polygraph/RawPolyTermFlat.lean` | 316 | Revived as `RawTermV2` — the canonical scope-indexed structural raw term layer (v2); `RawCellV2` wraps it for the categorical cell structure at all dims |
 
 ### Reduction layer
 
@@ -4871,6 +4963,60 @@ representable and computably rejected.
     child-descriptor mismatch, boundary mismatch, or constructor-index
     non-inhabitation.
 
+**TCB.9 — v2 structural re-foundation (decided 2026-05-26, in progress):**
+
+TCB.8 closed the v1 frontier (one dimension-polymorphic certifier over
+the dim-indexed `PolyTerm`, total off `compH`, soundness + propext-free
+`DecidableEq` + legacy/general convergence, all zero-axiom).  The v1
+ceiling: dim-0 term-formers are nullary atoms with sentinel `Nat`
+payloads decoded by hand-written child decoders, so the layer cannot
+express nested terms and grows fixture-by-fixture.  v2 removes the
+ceiling by **un-indexing the raw layer** (the §4 rewrite): scope-indexed
+`RawTermV2` (one generic `mkGen` over `Generator`, structural children
+via `binderShifts`) + non-dim-indexed `RawCellV2` (dimension computed),
+and ONE generic certified `gen` constructor.  This is the highest-ROI
+move on the roadmap — it dissolves the propext-leak class at its source
+and makes the certifier, rename/subst (one Allais `foldV2`), `cd_lemma`,
+and decidable `Conv` recurse ONCE over the generic structure (the §2.1 /
+§7 cascade-death mechanism, made concrete).
+
+Staged beside v1, then v1 deleted:
+
+- **Stage 0** revive `RawPolyTermFlat` → `Core/RawTermV2.lean` (drop the
+  `LeanFX2.Term` dep) + `RawCellV2` + computed `RawCellV2.dim`.
+- **Stage 1** generator metadata (`generatorCellSort`,
+  `generatorChildSpecs`, `SupportedGeneratorV2`); prove
+  `generatorChildSpecs g` shifts ≡ `g.binderShifts`.
+- **Stage 2** certified `PolyCellV2` + `CertifiedTermSpineV2` + the
+  generic `gen` / `generatingCell` / `verticalComposite` /
+  `identityCell` constructors (gated by SPIKE-1).
+- **Stage 3** `certifyRawCellExactV2?` (mutual with
+  `certifyTermSpineV2?`), reusing the proven `certifyRawAtomExact?` /
+  `buildTermStepCellExact?` / `buildVerticalCompositeExact?` /
+  `certifyChildSpine?` patterns; port the coverage + soundness suite.
+- **Stage 4** Allais ops: `RawTermV2.foldV2` over `Foundation/Action.lean`
+  ⇒ `rename` / `subst` as ONE instance each — the 5–8K-LoC commute
+  cascade delete (§3.11 payoff).
+- **Stage 5** v1↔v2 bridge + per-fixture agreement (gated by SPIKE-2).
+- **Stage 6** re-point `inferRawCell?` / `checkRawCellAs?` / FX views,
+  then DELETE v1.
+
+Two spike-first linchpins (must return `#assert_no_axioms` clean before
+the dependent stage): **SPIKE-1** value-level dim transport in the
+certified `generatingCell` (`Nat.decEq` on `RawCellV2.dim` + `▸`);
+**SPIKE-2** v1↔v2 agreement on one fixture over the dim-erased
+existential.  The generic children-spine recursion is already settled —
+`certifyChildSpine?` spiked axiom-free.
+
+**v2 deletion criterion (Stage 6).**  Delete v1 (`PolyTerm`, the
+per-fixture certified ctors, the sentinel decoders) only when ALL hold:
+(a) every v1 coverage theorem has a green v2 counterpart; (b) v2
+soundness theorems green + axiom-clean; (c) bridge agreement lemmas
+green (v2 accepts exactly what v1 did on the shared fragment); (d) all
+FX-view consumers compile against v2; (e) both build targets green.
+No fourth permanent representation: `RawTermV2` is the single raw layer
+once v1 is gone.
+
 **POLY-TCB anti-vacuity gate:** TCB.4 is intentionally weaker than the
 full checker: it must have concrete accepted witnesses only for the
 payload-evidenced seed atoms (`var` with an in-scope index, `unitType`
@@ -5197,9 +5343,19 @@ in §6.1.4; ~3K LoC of careful translation.
 
 ### PolyCell core
 
-The certified indexed layer must avoid the propext traps documented
-in `feedback_lean_zero_axiom_match` + `feedback_lean_indexed_partial_match`:
-- No wildcard matches on the dim parameter
+**v2 un-indexes the raw layer, which removes the dim-parameter trap at
+its source.**  `RawTermV2` is scope-indexed and `RawCellV2` carries no
+dim index (dimension is the computed `RawCellV2.dim`), so the certifier
+never matches a `(dim, ctor)` pair — the structural cause of the propext
+leaks fought through TCB.7/TCB.8.  The remaining certified indexed layer
+still observes the traps documented in `feedback_lean_zero_axiom_match`
++ `feedback_lean_indexed_partial_match`:
+- Match the raw cell ALONE (index inferred); never the `(dim, cell)`
+  pair or a partial ctor enum at a restricted index
+- Endpoint-dimension reconciliation is value-level (`Nat.decEq` on
+  `RawCellV2.dim` + `▸`), never the equation compiler on a Nat index
+- `Nat` facts use core lemmas, never `omega` (which pulls `propext` +
+  `Quot.sound`)
 - Boundary destructuring uses explicit pattern + `nomatch` for
   impossible-by-index cases
 - Thinness is a stratification predicate / marking, not a certified
@@ -5207,7 +5363,9 @@ in `feedback_lean_zero_axiom_match` + `feedback_lean_indexed_partial_match`:
   derived theorem over marked cells, not an `Eq.rec` shortcut.
 
 This is the riskiest design point — the recipe in `feedback_lean_match_propext_recipe`
-(8 concrete patterns for propext-clean match) applies throughout.
+(8 concrete patterns for propext-clean match) applies throughout, and the
+v2 generic certifier `certifyRawCellExactV2?` plus `DecidableEq
+(RawCellV2)` are the load-bearing zero-axiom declarations.
 
 ---
 
