@@ -215,6 +215,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.badBoundarySortRawCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.badBoundaryTypeSortRawCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.badBoundaryModeSortRawCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.unknownRuleRawCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.termStepVarZeroVarOneRawCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.unsupportedTermStepVarZeroVarTwoRawCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.unsupportedTermStepVarOneVarZeroRawCell
@@ -278,6 +279,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.badBoundaryModeSortProbe
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.termStepVarZeroVarOneScopeZeroProbe
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.termStepVarZeroVarOneScopeOneProbe
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.unknownRuleProbe
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.wrongRuleEndpointDimensionProbe
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.wrongRuleEndpointDimensionTwoProbe
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.badVerticalBoundaryProbe
@@ -1045,6 +1047,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.badBoundaryModeSortProbe_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.termStepVarZeroVarOneScopeZeroProbe_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.termStepVarZeroVarOneScopeOneProbe_rejects
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.unknownRuleProbe_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.wrongRuleEndpointDimensionProbe_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.wrongRuleEndpointDimensionTwoProbe_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.badVerticalBoundaryProbe_rejects

@@ -326,6 +326,12 @@ def badBoundaryModeSortRawCell (profile : PolyProfile) : PolyTerm profile 1 :=
     (seedModeAtom profile)
     (seedModeAtom profile)
 
+/-- Unsupported rule id over otherwise screenable term endpoints. -/
+def unknownRuleRawCell (profile : PolyProfile) : PolyTerm profile 1 :=
+  .cell (termStepRuleSpec.ruleId + 1)
+    (seedTermAtom profile)
+    (alternateTermAtom profile)
+
 /-- The first dim-1 term-step fixture admitted by certified ingress. -/
 def termStepVarZeroVarOneRawCell (profile : PolyProfile) :
     PolyTerm profile 1 :=
@@ -764,6 +770,14 @@ def termStepVarZeroVarOneScopeOneProbe (profile : PolyProfile) :
   rawCell := termStepVarZeroVarOneRawCell profile
   expectedRejection := .badBoundaryEndpoint
 
+/-- Probe for an unsupported rule id over screenable term endpoints. -/
+def unknownRuleProbe (profile : PolyProfile) :
+    RawInferNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 1
+  rawCell := unknownRuleRawCell profile
+  expectedRejection := .unknownGenerator
+
 /-- Probe for a known rule id used at endpoint dimension one. -/
 def wrongRuleEndpointDimensionProbe (profile : PolyProfile) :
     RawInferNegativeProbe profile where
@@ -1176,6 +1190,7 @@ def certificationModeIdentityVerticalProbe (profile : PolyProfile) :
 def unknownGeneratorInferNegativeProbes (profile : PolyProfile) :
     List (RawInferNegativeProbe profile) :=
   [unknownGeneratorProbe profile,
+    unknownRuleProbe profile,
     wrongRuleEndpointDimensionProbe profile,
     wrongRuleEndpointDimensionTwoProbe profile]
 
@@ -1342,7 +1357,7 @@ def certificationNegativeProbes (profile : PolyProfile) :
 
 /-- Inference probe count. -/
 theorem inferNegativeProbes_length (profile : PolyProfile) :
-    (inferNegativeProbes profile).length = 36 := rfl
+    (inferNegativeProbes profile).length = 37 := rfl
 
 /-- Expected-shape probe count. -/
 theorem expectedShapeNegativeProbes_length (profile : PolyProfile) :
@@ -1355,7 +1370,7 @@ theorem certificationNegativeProbes_length (profile : PolyProfile) :
 /-- Unknown-generator headline probe count. -/
 theorem unknownGeneratorInferNegativeProbes_length
     (profile : PolyProfile) :
-    (unknownGeneratorInferNegativeProbes profile).length = 3 := rfl
+    (unknownGeneratorInferNegativeProbes profile).length = 4 := rfl
 
 /-- Bad-payload headline probe count. -/
 theorem badPayloadInferNegativeProbes_length (profile : PolyProfile) :

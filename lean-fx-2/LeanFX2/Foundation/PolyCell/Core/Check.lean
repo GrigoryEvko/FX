@@ -3859,6 +3859,15 @@ theorem termStepVarZeroVarOneScopeOneProbe_rejects
         (NegativeProbes.termStepVarZeroVarOneScopeOneProbe
           profile).expectedRejection := rfl
 
+theorem unknownRuleProbe_rejects {profile : PolyProfile} :
+    screenRawCell? (profile := profile)
+      (NegativeProbes.unknownRuleProbe profile).scope
+      (NegativeProbes.unknownRuleRawCell profile) =
+      Except.error
+        (RawInferNegativeProbe.expectedRejection
+          (NegativeProbes.unknownRuleProbe profile)) :=
+  rfl
+
 theorem wrongRuleEndpointDimensionProbe_rejects {profile : PolyProfile} :
     screenRawCell? (profile := profile)
       (NegativeProbes.wrongRuleEndpointDimensionProbe profile).scope
