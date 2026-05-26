@@ -1703,153 +1703,6 @@ def certificationRejectionAfterScreen? {profile : PolyProfile}
   | Except.ok _ => .unsupportedCertification
   | Except.error rejection => rejection
 
-/-- Atom-level executable ingress for payload-evidenced generators.
-
-This accepts only atoms whose payload evidence is already implemented in the
-certified layer: in-scope variables, unit type, empty context, linear mode,
-and the current finite application/lambda/pi-type fixtures.  All other raw
-cells remain representable but fail certification. -/
-def inferRawAtom? {profile : PolyProfile} (scope cellId payload : Nat) :
-    Except CellCheckRejection (CertifiedRawCellResult profile scope) :=
-  if Nat.beq cellId variableGeneratorSpec.cellId then
-    match variablePayloadEvidence? scope payload with
-    | some (AtomPayloadEvidence.variable hasIndexWithinScope) =>
-        Except.ok
-          (certifiedRawCellResultOfPackage
-            (profile := profile) (scope := scope)
-            (rawCellCode
-              (PolyTerm.atom (profile := profile)
-                variableGeneratorSpec.cellId payload))
-            (certifiedVariablePackage (profile := profile)
-              hasIndexWithinScope)
-            (hasSameNatList_self _))
-    | none => Except.error .badPayload
-  else if Nat.beq cellId unitTypeGeneratorSpec.cellId then
-    if payload = 0 then
-      Except.ok
-        (certifiedRawCellResultOfPackage
-          (profile := profile) (scope := scope)
-          (rawCellCode
-            (PolyTerm.atom (profile := profile) unitTypeGeneratorSpec.cellId 0))
-          (certifiedUnitTypePackage (profile := profile))
-          (hasSameNatList_self _))
-    else
-      Except.error
-        (certificationRejectionAfterScreen? scope
-          (PolyTerm.atom (profile := profile) cellId payload))
-  else if Nat.beq cellId contextEmptyGeneratorSpec.cellId then
-    if payload = 0 then
-      Except.ok
-        (certifiedRawCellResultOfPackage
-          (profile := profile) (scope := scope)
-          (rawCellCode
-            (PolyTerm.atom (profile := profile)
-              contextEmptyGeneratorSpec.cellId 0))
-          (certifiedContextEmptyPackage (profile := profile))
-          (hasSameNatList_self _))
-    else
-      Except.error
-        (certificationRejectionAfterScreen? scope
-          (PolyTerm.atom (profile := profile) cellId payload))
-  else if Nat.beq cellId linearModeGeneratorSpec.cellId then
-    if payload = 0 then
-      Except.ok
-        (certifiedRawCellResultOfPackage
-          (profile := profile) (scope := scope)
-          (rawCellCode
-            (PolyTerm.atom (profile := profile)
-              linearModeGeneratorSpec.cellId 0))
-          (certifiedLinearModePackage (profile := profile))
-          (hasSameNatList_self _))
-    else
-      Except.error
-        (certificationRejectionAfterScreen? scope
-          (PolyTerm.atom (profile := profile) cellId payload))
-  else if Nat.beq cellId lambdaGeneratorSpec.cellId then
-    if payload = lambdaUnitTypeBodyVarZeroPayload then
-      match certifyLambdaUnitTypeBodyVarZeroChildren?
-          (profile := profile) scope with
-      | Except.ok certifiedChildren =>
-          Except.ok
-            (certifiedRawCellResultOfPackage
-              (profile := profile) (scope := scope)
-              (rawCellCode
-                (PolyTerm.atom (profile := profile)
-                  lambdaGeneratorSpec.cellId
-                  lambdaUnitTypeBodyVarZeroPayload))
-              (certifiedLambdaUnitTypeBodyVarZeroPackage (profile := profile)
-                certifiedChildren)
-              (hasSameNatList_self _))
-      | Except.error rejection => Except.error rejection
-    else
-      Except.error
-        (certificationRejectionAfterScreen? scope
-          (PolyTerm.atom (profile := profile) cellId payload))
-  else if Nat.beq cellId applicationGeneratorSpec.cellId then
-    if payload = applicationVarZeroVarOnePayload then
-      match certifyApplicationVarZeroVarOneChildren?
-          (profile := profile) scope with
-      | Except.ok certifiedChildren =>
-          Except.ok
-            (certifiedRawCellResultOfPackage
-              (profile := profile) (scope := scope)
-              (rawCellCode
-                (PolyTerm.atom (profile := profile)
-                  applicationGeneratorSpec.cellId
-                  applicationVarZeroVarOnePayload))
-              (certifiedApplicationVarZeroVarOnePackage (profile := profile)
-                certifiedChildren)
-              (hasSameNatList_self _))
-      | Except.error rejection => Except.error rejection
-    else
-      Except.error
-        (certificationRejectionAfterScreen? scope
-          (PolyTerm.atom (profile := profile) cellId payload))
-  else if Nat.beq cellId piTypeGeneratorSpec.cellId then
-    if payload = piTypeUnitCodomainUnitPayload then
-      match certifyPiTypeUnitCodomainUnitChildren?
-          (profile := profile) scope with
-      | Except.ok certifiedChildren =>
-          Except.ok
-            (certifiedRawCellResultOfPackage
-              (profile := profile) (scope := scope)
-              (rawCellCode
-                (PolyTerm.atom (profile := profile)
-                  piTypeGeneratorSpec.cellId
-                  piTypeUnitCodomainUnitPayload))
-              (certifiedPiTypeUnitCodomainUnitPackage (profile := profile)
-                certifiedChildren)
-              (hasSameNatList_self _))
-      | Except.error rejection => Except.error rejection
-    else
-      Except.error
-        (certificationRejectionAfterScreen? scope
-          (PolyTerm.atom (profile := profile) cellId payload))
-  else if Nat.beq cellId contextConsGeneratorSpec.cellId then
-    if payload = contextConsEmptyUnitLinearPayload then
-      match certifyContextConsEmptyUnitLinearChildren?
-          (profile := profile) scope with
-      | Except.ok certifiedChildren =>
-          Except.ok
-            (certifiedRawCellResultOfPackage
-              (profile := profile) (scope := scope)
-              (rawCellCode
-                (PolyTerm.atom (profile := profile)
-                  contextConsGeneratorSpec.cellId
-                  contextConsEmptyUnitLinearPayload))
-              (certifiedContextConsEmptyUnitLinearPackage
-                (profile := profile) certifiedChildren)
-              (hasSameNatList_self _))
-      | Except.error rejection => Except.error rejection
-    else
-      Except.error
-        (certificationRejectionAfterScreen? scope
-          (PolyTerm.atom (profile := profile) cellId payload))
-  else
-    Except.error
-      (certificationRejectionAfterScreen? scope
-        (PolyTerm.atom (profile := profile) cellId payload))
-
 /-- Reconstruct a raw-indexed certified package from an existential result. -/
 def CertifiedRawCellResult.toPackage {profile : PolyProfile} {scope : Nat}
     (result : CertifiedRawCellResult profile scope) :
@@ -1862,8 +1715,10 @@ def CertifiedRawCellResult.toPackage {profile : PolyProfile} {scope : Nat}
 
 Returns a certified package indexed by the EXACT input atom.  Index transport
 along the decided generator-id / payload equalities uses `cast` (`Eq.rec`),
-which is propext-free.  Rejection reasons mirror `inferRawAtom?` through the
-shared `certificationRejectionAfterScreen?` policy. -/
+which is propext-free.  Rejection reasons share the
+`certificationRejectionAfterScreen?` policy.  This is the single atom-dispatch
+source of truth: both the recursive `certifyRawCellExact?` and the existential
+`inferRawAtom?` wrapper route through it. -/
 def certifyRawAtomExact? {profile : PolyProfile} (scope cellId payload : Nat) :
     Except CellCheckRejection
       (CertifiedRawCell profile scope (PolyTerm.atom cellId payload)) :=
@@ -2058,6 +1913,21 @@ def inferRawCellGeneral? {profile : PolyProfile} (scope : Nat) {dim : CellDim}
         (certifiedRawCellResultOfPackage
           (rawCellCode rawCell) certifiedCell (hasSameNatList_self _))
   | Except.error rejection => Except.error rejection
+
+/-- Atom-level executable ingress for payload-evidenced generators.
+
+This is a thin existential wrapper over the raw-indexed atom certifier
+`certifyRawAtomExact?` (via `inferRawCellGeneral?` on the atom), so the
+eight-way generator dispatch lives in exactly one place.  Accepts only atoms
+whose payload evidence is implemented in the certified layer: in-scope
+variables, unit type, empty context, linear mode, and the current finite
+application/lambda/pi-type/context-cons fixtures.  All other raw cells remain
+representable but fail certification.  The result value is `rfl`-equal to the
+prior bespoke dispatcher. -/
+def inferRawAtom? {profile : PolyProfile} (scope cellId payload : Nat) :
+    Except CellCheckRejection (CertifiedRawCellResult profile scope) :=
+  inferRawCellGeneral? (profile := profile) scope
+    (PolyTerm.atom (profile := profile) cellId payload)
 
 /-- First raw-to-certified executable ingress.
 
