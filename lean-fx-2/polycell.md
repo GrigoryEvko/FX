@@ -374,7 +374,7 @@ The PolyCell proposal here resolves the wall by **making the
 substrate carry both the cells AND the markings**:
 
 - Cells are Type-side (certified `PolyCell` constructors over raw
-  `PolyTerm` input).
+  `RawCellV2` input).
 - Markings are Prop-side (Loubaton's `tD ⊆ D` per-cell thinness).
 - Conv = "cell is in the saturated marking" (Prop, via Riehl-Verity
   saturation criterion).
@@ -487,13 +487,15 @@ logic frame rule at the polygraph level.  The conjecture is *correct
 in structure but loses typing* in the current K11 design because the
 typed Term is separate from the polygraph.
 
-The raw layer does **not** fix this.  Raw `PolyTerm.compH` is input
-syntax only: it can represent a proposed horizontal composition, but
+The raw layer does **not** fix this.  Raw
+`RawCellV2.horizontalComposite` is input syntax only: it can represent a
+proposed horizontal composition, but
 it does not certify disjoint footprints, Gray-boundary matching, or a
 typed frame rule.
 
 The certified layer fixes this only after Axis 6 is real.  A future
-certified `PolyCell.compH` must take two certified cells, a
+certified `PolyCell` horizontal-composite constructor must take two
+certified cells, a
 computable Gray boundary, and a disjoint-footprint / matching witness,
 then produce a certified cell over the combined footprint.
 Interchange (K11.6, already shipped zero-axiom for the current raw
@@ -546,7 +548,8 @@ where `ω` is the (∞,ω)-category of (∞,ω)-categories.  This is the
 (∞,ω) statement of univalence + Grothendieck construction simultaneously.
 
 For FX, this means: the universe `Ty.universe` in the current kernel
-becomes a `PolyTerm fxProfile 0 (universeBoundary)` cell, and its
+becomes a certified universe `PolyCell` over a dim-0 `RawCellV2`
+(`termBase`) input, and its
 universal property (functors-to-it ≃ type-families) holds STRUCTURALLY,
 not by postulation.  Univalence is a theorem; `Step.eqType` becomes
 a reduction inside the universe cell.
@@ -565,7 +568,7 @@ pair joinability.
 This is implementable in the certified PolyCell target: Mathlib's ~1.5M LoC of mathematics
 maps to a sequence of `Generator` value extensions, with each
 Mathlib theorem becoming one dim-1 certified cell over
-`PolyTerm fxProfile` raw syntax.
+`RawCellV2` raw syntax.
 The conversion is mostly mechanical; the win is that FX-extensions
 inherit Mathlib's full mathematical content.
 
@@ -2459,7 +2462,7 @@ fibration applied to the categorification of profile data.
 
 - Cisinski 2019 shows how to handle self-reference in this fibration
   via ω-localization without paradox.  This is what lets a certified
-  universe cell over raw `PolyTerm fxProfile 0` classify `fxProfile`
+  universe cell over raw `RawCellV2` classify `fxProfile`
   itself — the universe-of-universes problem at the polygraph level.
 
 **Lean signature:**
@@ -4063,7 +4066,7 @@ def checkRawCellAsV2? {profile : PolyProfile}
 end LeanFX2.Foundation.PolyCell.Core
 ```
 
-Feature operations are **not** raw `PolyTerm` constructors.  Universe
+Feature operations are **not** raw constructors.  Universe
 cells, cumulativity, Π/Σ, modalities, cubical paths, `transp`, `hcomp`,
 HIT eliminators, probability, quantum, SDG, and every future feature
 are entries in `π.algebra.bases` with payload/output/compatibility
@@ -4499,7 +4502,7 @@ certified bridge exists.  This is not a current raw-PolyTerm claim.
 | P2.1 Generator enum + arity | **Already shipped** ✅ (today commit bb2e7e2d). Subsumed into algebra. |
 | P2.2 outputType shape-function | **Already shipped** ✅ (commits up to 36d592e9). Subsumed into algebra. |
 | P2.3 RawPolyTerm honest nested | **Already shipped** ✅ (today commit 7d6758a9 RawPolyTermFlat). Becomes one shape instance in axis 1. |
-| P2.4 PolyTerm intrinsic mirror | **Reframed**: raw `PolyTerm` stays permissive; certified `PolyCell` is the intrinsic mirror. |
+| P2.4 PolyTerm intrinsic mirror | **Reframed**: the raw layer (`RawTermV2`/`RawCellV2`) stays permissive; certified `PolyCell` is the intrinsic mirror. |
 | P2.5 PolyTerm.toRawPoly_rfl | **Subsumed**: erasure is a polygraph morphism to the dim-0 truncation. |
 | P2.6/P2.7 Term ⇌ PolyTerm bijection | **Reframed**: `FXTerm` is a certified-cell projection after the raw-to-certified checker and legacy bridge are real. |
 | P2.8 generic rename/subst | **Subsumed**: polynomial-monad multiplication. |
@@ -4515,9 +4518,9 @@ only a precursor.
 | P3.1 PolyTerm.subject_reduction | **Subsumed**: SR is a profile-level theorem, one per profile. |
 | P3.2 PolyTerm.strong_normalization | **Subsumed**: SN ditto. |
 | P3.3 Step.parStar.confluent | **Subsumed**: confluence is the saturation Property of axis 4. |
-| P3.4 PolyStep dim-1 generators | **Subsumed**: dim-1 certified cells over raw `PolyTerm` endpoints. |
+| P3.4 PolyStep dim-1 generators | **Subsumed**: dim-1 certified cells over raw `RawCellV2` endpoints. |
 | P3.5 PolyStep.cd / cd_lemma generic | **Subsumed after proof**: cd_lemma is the per-profile theorem at dim 2 once saturation supplies the certified fillers. |
-| P3.6/P3.7 RawValueTerm / ValueTerm | **Subsumed**: values are normal-form predicates on PolyTerm. |
+| P3.6/P3.7 RawValueTerm / ValueTerm | **Subsumed**: values are normal-form predicates on `RawTermV2`. |
 | P3.8 PolyTerm.eval | **Subsumed**: NbE = polygraph fold. |
 | P3.9 ValueTerm.quote | **Subsumed**: quote = inverse of fold. |
 | P3.10 nbe roundtrip | **Subsumed**: polygraph fold + unfold composition. |
@@ -4551,7 +4554,7 @@ generator extensions one math area at a time).  Each is ~2-3K LoC.
 | Task | Status |
 |---|---|
 | P5.1 evalDistributed_sound | **Deferred through Axis 6**: cell-partition fold needs certified `compH` with Gray boundary/disjointness plus BSP-sync laws. |
-| P5.2 EGraph extraction | **Subsumed after certification**: quotient certified cells by generated congruence; raw `PolyTerm` alone is not enough. |
+| P5.2 EGraph extraction | **Subsumed after certification**: quotient certified cells by generated congruence; raw `RawCellV2` alone is not enough. |
 
 **Phase 5 collapses only after Axis 6 and Axis 8 are real.** Until
 then, raw `compH` remains input syntax and is rejected by the
@@ -4704,7 +4707,7 @@ Realistic ship plan in dependency order.
 ### Phase POLY-TCB — raw/certified trust boundary (immediate, ~4K NEW LoC)
 
 **Goal:** stop treating Nat-coded raw cells as trusted kernel
-inhabitants.  Keep raw `PolyTerm` permissive, then introduce a
+inhabitants.  Keep the raw layer permissive, then introduce a
 certified layer that makes ill-sorted, ill-scoped, and
 boundary-incompatible cells unconstructable.  Raw nonsense must be
 representable and computably rejected.
@@ -5034,10 +5037,12 @@ supported-generator domain is empty.
 
 **Non-goals in POLY-TCB:**
 
-- Do not delete raw `PolyTerm`; it is the input format and rejection
-  target.
-- Do not certify `compH` until Axis 6 supplies a real Gray tensor
-  boundary formula and disjoint-footprint/matching condition.
+- Do not delete the raw input layer; it is the input format and
+  rejection target.  (v1 `PolyTerm` is deleted only at the TCB.9 v2
+  criterion, replaced by `RawTermV2` / `RawCellV2`, never simply
+  dropped.)
+- Do not certify `horizontalComposite` until Axis 6 supplies a real Gray
+  tensor boundary formula and disjoint-footprint/matching condition.
 - Do not claim typed legacy equivalence, subject reduction, confluence,
   or decidable conversion.  This phase certifies shape/sort/scope and
   vertical boundary structure only.
@@ -5184,13 +5189,14 @@ fxProfile + ship FXCell type.
 
 **Deliverables:**
 - `Foundation/Polygraph/PolyProfile.lean` — bundled thirteen axes
-- `Foundation/Polygraph/PolyTerm.lean` — permissive raw cell syntax
+- `Foundation/PolyCell/Core/RawTermV2.lean` + `RawCellV2.lean` —
+  permissive raw layer (scope-indexed, dimension computed)
 - `Foundation/Polygraph/PolyCell.lean` — certified cell type
 - `LeanFX2/FxProfile.lean` — FX as a profile instance
 - `LeanFX2/FxCellViews.lean` — FXType, FXTerm, FXStep, FXConv as views
 
-**Acceptance:** raw `PolyTerm` and certified `PolyCell` typecheck
-zero-axiom; fxProfile satisfies consistency conditions; view
+**Acceptance:** raw `RawTermV2` / `RawCellV2` and certified `PolyCell`
+typecheck zero-axiom; fxProfile satisfies consistency conditions; view
 definitions agree with current types through the checked bridge.
 
 ### Phase POLY-η — Migration (months 30-36, ~25K LoC delete + ~10K LoC translate)
@@ -5473,20 +5479,22 @@ speed.
 
 ### Risk: Strict positivity
 
-The rejected design was a `thin` constructor:
-`(cell : PolyTerm π dim bnd) →
- (hasThin : π.stratification.thin dim cell) →
- PolyTerm π dim bnd.flipped`.
+The rejected design was a `thin` constructor on the raw layer:
+`(cell : RawCellV2 scope) →
+ (hasThin : π.stratification.thin cell.dim cell) →
+ RawCellV2 scope`  (with the boundary flipped).
 
-The `bnd.flipped` part would create a new raw cell of the same dim
+The flipped-boundary result would create a new raw cell of the same dim
 with the boundary flipped.  This is HIT-like (an equivalence-style
-constructor), and Lean's strict-positivity checker may reject it.
+constructor), and Lean's strict-positivity checker may reject it.  v2
+makes this doubly moot: `RawCellV2` carries no boundary index at all, so
+the flip cannot even be stated on the raw layer.
 
 **Mitigation:** encode `thin` not as a ctor but as a `Prop`-valued
 predicate, with the flipped variant derivable.  Loubaton 2301.11424's
 left semi-model structure suggests this: thin cells are not new
 generators, they are markings on existing cells.  Final rule:
-`PolyTerm` has no thin constructor, `PolyCell` has no thin
+`RawCellV2` has no thin constructor, `PolyCell` has no thin
 constructor, and `FXConv` is a certified dim-1 cell plus a thinness
 certificate from the stratification layer.  Any inverse/flipped
 variant is derived from the marking.
