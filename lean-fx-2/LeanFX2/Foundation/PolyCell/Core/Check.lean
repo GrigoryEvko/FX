@@ -1324,10 +1324,33 @@ def hasCertifiedResultShape {profile : PolyProfile} {scope : Nat}
         (CellSort.toCode expectedSort)
   | Except.error _ => false
 
+/-- Does an accepted ingress result agree with the structural screen for the
+same raw input?
+
+This is executable coverage over the finite accepted frontier.  It checks the
+accepted result shape and expected-shape screen without claiming that every
+screen-successful raw cell is certifiable.  Raw-code preservation remains
+covered by the generic certified-result erasure theorem heads. -/
+def hasCertifiedResultScreenCoverage {profile : PolyProfile} {scope : Nat}
+    {dimension : CellDim} (expectedSort : CellSort)
+    (rawCell : PolyTerm profile dimension) :
+    Except CellCheckRejection (CertifiedRawCellResult profile scope) → Bool
+  | result =>
+      hasCertifiedResultShape (dimension := dimension) expectedSort result &&
+      match screenRawCellAs? expectedSort scope rawCell with
+      | Except.ok () => true
+      | Except.error _ => false
+
 /-- Accepted dim-0 ingress coverage for one raw fixture. -/
 def hasAcceptedDimZeroIngressCoverage {profile : PolyProfile}
     (expectedSort : CellSort) (expectedRawCell : PolyTerm profile 0) : Bool :=
   hasCertifiedResultShape (dimension := 0) expectedSort
+    (inferRawCell? NegativeProbes.defaultInferScope expectedRawCell)
+
+/-- Accepted dim-0 ingress/screen agreement for one raw fixture. -/
+def hasAcceptedDimZeroScreenCoverage {profile : PolyProfile}
+    (expectedSort : CellSort) (expectedRawCell : PolyTerm profile 0) : Bool :=
+  hasCertifiedResultScreenCoverage expectedSort expectedRawCell
     (inferRawCell? NegativeProbes.defaultInferScope expectedRawCell)
 
 /-- Current dim-0 accepted ingress fixtures: seed term/type/context/mode atoms
@@ -1344,10 +1367,32 @@ def haveAcceptedDimZeroIngressCoverage (profile : PolyProfile) : Bool :=
   hasAcceptedDimZeroIngressCoverage .term
     (NegativeProbes.applicationVarZeroVarOneRawCell profile)
 
+/-- Current dim-0 accepted ingress fixtures also agree with the structural
+screen. -/
+def haveAcceptedDimZeroScreenCoverage (profile : PolyProfile) : Bool :=
+  hasAcceptedDimZeroScreenCoverage .term
+    (NegativeProbes.seedTermAtom profile) &&
+  hasAcceptedDimZeroScreenCoverage .type
+    (NegativeProbes.seedTypeAtom profile) &&
+  hasAcceptedDimZeroScreenCoverage .context
+    (NegativeProbes.seedContextAtom profile) &&
+  hasAcceptedDimZeroScreenCoverage .mode
+    (NegativeProbes.seedModeAtom profile) &&
+  hasAcceptedDimZeroScreenCoverage .term
+    (NegativeProbes.applicationVarZeroVarOneRawCell profile)
+
 /-- Current positive-dimensional accepted ingress fixture: the direct
 `termStep(var 0, var 1)` certification path. -/
 def hasAcceptedTermStepIngressCoverage (profile : PolyProfile) : Bool :=
   hasCertifiedResultShape (dimension := 1) .term
+    (inferTermStepVarZeroVarOne? (profile := profile)
+      NegativeProbes.defaultInferScope)
+
+/-- The current positive-dimensional accepted ingress fixture agrees with the
+structural screen. -/
+def hasAcceptedTermStepScreenCoverage (profile : PolyProfile) : Bool :=
+  hasCertifiedResultScreenCoverage .term
+    (NegativeProbes.termStepVarZeroVarOneRawCell profile)
     (inferTermStepVarZeroVarOne? (profile := profile)
       NegativeProbes.defaultInferScope)
 
@@ -1358,6 +1403,12 @@ not a raw dispatcher and does not certify any additional raw shape. -/
 def haveCurrentAcceptedIngressCoverage (profile : PolyProfile) : Bool :=
   haveAcceptedDimZeroIngressCoverage profile &&
   hasAcceptedTermStepIngressCoverage profile
+
+/-- Every current accepted ingress computation agrees with its structural
+screen. -/
+def haveCurrentAcceptedScreenCoverage (profile : PolyProfile) : Bool :=
+  haveAcceptedDimZeroScreenCoverage profile &&
+  hasAcceptedTermStepScreenCoverage profile
 
 /-- Certified package for the first seed variable fixture. -/
 def certifiedSeedTermPackage {profile : PolyProfile} :
@@ -2318,6 +2369,107 @@ theorem currentAcceptedIngresses_haveCoverage (profile : PolyProfile) :
   dsimp [haveCurrentAcceptedIngressCoverage]
   rw [acceptedDimZeroIngresses_haveCoverage,
     acceptedTermStepIngress_hasCoverage]
+  rfl
+
+/-- Accepted ingress for the seed term atom agrees with the structural screen. -/
+theorem acceptedSeedTermScreen_hasCoverage {profile : PolyProfile} :
+    hasAcceptedDimZeroScreenCoverage .term
+      (NegativeProbes.seedTermAtom profile) = true := by
+  change
+    hasCertifiedResultScreenCoverage .term
+      (NegativeProbes.seedTermAtom profile)
+      (inferRawAtom? (profile := profile) 4
+        variableGeneratorSpec.cellId 0) = true
+  rfl
+
+/-- Accepted ingress for the seed type atom agrees with the structural screen. -/
+theorem acceptedSeedTypeScreen_hasCoverage {profile : PolyProfile} :
+    hasAcceptedDimZeroScreenCoverage .type
+      (NegativeProbes.seedTypeAtom profile) = true := by
+  change
+    hasCertifiedResultScreenCoverage .type
+      (NegativeProbes.seedTypeAtom profile)
+      (inferRawAtom? (profile := profile) 4
+        unitTypeGeneratorSpec.cellId 0) = true
+  rfl
+
+/-- Accepted ingress for the seed context atom agrees with the structural
+screen. -/
+theorem acceptedSeedContextScreen_hasCoverage {profile : PolyProfile} :
+    hasAcceptedDimZeroScreenCoverage .context
+      (NegativeProbes.seedContextAtom profile) = true := by
+  change
+    hasCertifiedResultScreenCoverage .context
+      (NegativeProbes.seedContextAtom profile)
+      (inferRawAtom? (profile := profile) 4
+        contextEmptyGeneratorSpec.cellId 0) = true
+  rfl
+
+/-- Accepted ingress for the seed mode atom agrees with the structural screen. -/
+theorem acceptedSeedModeScreen_hasCoverage {profile : PolyProfile} :
+    hasAcceptedDimZeroScreenCoverage .mode
+      (NegativeProbes.seedModeAtom profile) = true := by
+  change
+    hasCertifiedResultScreenCoverage .mode
+      (NegativeProbes.seedModeAtom profile)
+      (inferRawAtom? (profile := profile) 4
+        linearModeGeneratorSpec.cellId 0) = true
+  rfl
+
+/-- Accepted ingress for the first application payload agrees with the
+structural screen. -/
+theorem acceptedApplicationVarZeroVarOneScreen_hasCoverage
+    {profile : PolyProfile} :
+    hasAcceptedDimZeroScreenCoverage .term
+      (NegativeProbes.applicationVarZeroVarOneRawCell profile) = true := by
+  change
+    (hasAcceptedDimZeroIngressCoverage .term
+      (NegativeProbes.applicationVarZeroVarOneRawCell profile) &&
+      (match
+        screenRawCellAs? (profile := profile) .term
+          NegativeProbes.defaultInferScope
+          (NegativeProbes.applicationVarZeroVarOneRawCell profile) with
+      | Except.ok () => true
+      | Except.error _ => false)) = true
+  have hasApplicationScreen :
+      screenRawCellAs? (profile := profile) .term
+        NegativeProbes.defaultInferScope
+        (NegativeProbes.applicationVarZeroVarOneRawCell profile) =
+        Except.ok () :=
+    screenRawCell0As?_applicationVarZeroVarOne (profile := profile)
+  rw [acceptedApplicationVarZeroVarOneIngress_hasCoverage,
+    hasApplicationScreen]
+  rfl
+
+/-- Accepted dim-0 ingress agrees with the structural screen for every current
+accepted dim-0 fixture. -/
+theorem acceptedDimZeroScreens_haveCoverage (profile : PolyProfile) :
+    haveAcceptedDimZeroScreenCoverage profile = true := by
+  dsimp [haveAcceptedDimZeroScreenCoverage]
+  rw [acceptedSeedTermScreen_hasCoverage,
+    acceptedSeedTypeScreen_hasCoverage,
+    acceptedSeedContextScreen_hasCoverage,
+    acceptedSeedModeScreen_hasCoverage,
+    acceptedApplicationVarZeroVarOneScreen_hasCoverage]
+  rfl
+
+/-- Accepted ingress for the direct dim-1 term-step path agrees with the
+structural screen. -/
+theorem acceptedTermStepScreen_hasCoverage (profile : PolyProfile) :
+    hasAcceptedTermStepScreenCoverage profile = true := by
+  change
+    hasCertifiedResultScreenCoverage .term
+      (NegativeProbes.termStepVarZeroVarOneRawCell profile)
+      (inferTermStepVarZeroVarOne? (profile := profile) 4) = true
+  rfl
+
+/-- Every current accepted ingress computation agrees with its structural
+screen. -/
+theorem currentAcceptedScreens_haveCoverage (profile : PolyProfile) :
+    haveCurrentAcceptedScreenCoverage profile = true := by
+  dsimp [haveCurrentAcceptedScreenCoverage]
+  rw [acceptedDimZeroScreens_haveCoverage,
+    acceptedTermStepScreen_hasCoverage]
   rfl
 
 theorem inferTermStepVarZeroVarOne?_scope_one_rejects
