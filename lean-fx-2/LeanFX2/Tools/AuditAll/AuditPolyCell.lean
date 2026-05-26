@@ -719,6 +719,9 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawCellGeneral?_termStep_sort
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawCellGeneral?_identity_termStep_sort
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifyRawCellExact?_sound
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawCellGeneral?_accepted_cellDimension_eq
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawCellGeneral?_accepted_rawCell_heq
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawCellGeneral?_sound
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifyRawCellExact?_compH_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawCell?_eq_general
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawAtom?_eq_general
@@ -727,6 +730,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifyFXCell?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifyFXCellExact?_compH_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifyFXCellExact?_sound
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifyFXCell?_accepted_cellDimension_eq
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifyFXCell?_sound
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedResultSort?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.hasCertifiedResultShape
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.hasCertifiedResultScreenCoverage

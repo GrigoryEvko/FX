@@ -136,6 +136,66 @@ theorem certifyRawCellExact?_sound {profile : PolyProfile} {scope : Nat}
     certifiedCell.certifiedCell.raw = rawCell :=
   certifiedCell.certifiedCell_raw
 
+/-! ### Existential-wrapper soundness — no laundering through the dimension-erased result
+
+The existential `inferRawCellGeneral?` returns a `CertifiedRawCellResult` that
+erases the dimension index and stores the certified cell over its own
+`rawCell` field rather than over the syntactic input.  These three theorems
+establish that the wrapper cannot launder a different raw past the input:
+when the wrapper accepts a raw input, the result's recovered dimension is the
+input dimension, and the result's stored raw cell (hence the certified cell's
+raw erasure) is heterogeneously equal to the input.  Together with
+`certifyRawCellExact?_sound` this closes the no-false-positive guarantee on
+BOTH the raw-indexed and the existential ingress. -/
+
+/-- An accepted existential certification recovers the input dimension: the
+result's erased `cellDimension` index equals the input cell's dimension.  This
+is the first half of showing the existential wrapper preserves the input — the
+dimension index it forgot is the one it was given. -/
+theorem inferRawCellGeneral?_accepted_cellDimension_eq {profile : PolyProfile}
+    {scope : Nat} {dim : CellDim} {rawCell : PolyTerm profile dim}
+    {result : CertifiedRawCellResult profile scope}
+    (accepted : inferRawCellGeneral? scope rawCell = Except.ok result) :
+    result.cellDimension = dim := by
+  rw [inferRawCellGeneral?] at accepted
+  cases hCertify : certifyRawCellExact? scope rawCell with
+  | error rejection => rw [hCertify] at accepted; cases accepted
+  | ok certifiedCell =>
+      rw [hCertify] at accepted
+      injection accepted with resultEq
+      subst resultEq
+      rfl
+
+/-- An accepted existential certification preserves the input raw cell: the
+result's stored `rawCell` is heterogeneously equal to the syntactic input
+(heterogeneous because the wrapper erases the dimension index).  The existential
+packaging cannot return a certificate over a DIFFERENT raw than the input. -/
+theorem inferRawCellGeneral?_accepted_rawCell_heq {profile : PolyProfile}
+    {scope : Nat} {dim : CellDim} {rawCell : PolyTerm profile dim}
+    {result : CertifiedRawCellResult profile scope}
+    (accepted : inferRawCellGeneral? scope rawCell = Except.ok result) :
+    HEq result.rawCell rawCell := by
+  rw [inferRawCellGeneral?] at accepted
+  cases hCertify : certifyRawCellExact? scope rawCell with
+  | error rejection => rw [hCertify] at accepted; cases accepted
+  | ok certifiedCell =>
+      rw [hCertify] at accepted
+      injection accepted with resultEq
+      subst resultEq
+      rfl
+
+/-- Existential no-false-positives: every cell accepted by the existential
+wrapper erases through its certified cell to EXACTLY the syntactic input
+(heterogeneously over the erased dimension index).  This is the existential
+analogue of `certifyRawCellExact?_sound`. -/
+theorem inferRawCellGeneral?_sound {profile : PolyProfile}
+    {scope : Nat} {dim : CellDim} {rawCell : PolyTerm profile dim}
+    {result : CertifiedRawCellResult profile scope}
+    (accepted : inferRawCellGeneral? scope rawCell = Except.ok result) :
+    HEq result.certifiedCell.raw rawCell :=
+  HEq.trans (heq_of_eq result.certifiedCell_raw)
+    (inferRawCellGeneral?_accepted_rawCell_heq accepted)
+
 /-- The general certifier rejects horizontal composition at every dimension,
 pending Gray-tensor semantics. -/
 theorem certifyRawCellExact?_compH_rejects {profile : PolyProfile} {scope : Nat}

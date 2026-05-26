@@ -1144,4 +1144,23 @@ theorem certifyFXCellExact?_sound {scope : Nat} {dim : CellDim}
     certifiedCell.certifiedCell.raw = rawCell :=
   Check.certifyRawCellExact?_sound certifiedCell accepted
 
+/-- The existential FX ingress recovers the input dimension on accept: the
+dimension-erased result's `cellDimension` equals the input cell's dimension. -/
+theorem certifyFXCell?_accepted_cellDimension_eq {scope : Nat} {dim : CellDim}
+    {rawCell : PolyTerm fxProfile dim}
+    {result : Check.CertifiedRawCellResult fxProfile scope}
+    (accepted : certifyFXCell? scope rawCell = Except.ok result) :
+    result.cellDimension = dim :=
+  Check.inferRawCellGeneral?_accepted_cellDimension_eq accepted
+
+/-- Every cell accepted by the existential FX ingress erases exactly to its raw
+input (heterogeneously over the erased dimension) — the FX-level statement of
+no-false-positives for the existential `certifyFXCell?` entry point. -/
+theorem certifyFXCell?_sound {scope : Nat} {dim : CellDim}
+    {rawCell : PolyTerm fxProfile dim}
+    {result : Check.CertifiedRawCellResult fxProfile scope}
+    (accepted : certifyFXCell? scope rawCell = Except.ok result) :
+    HEq result.certifiedCell.raw rawCell :=
+  Check.inferRawCellGeneral?_sound accepted
+
 end LeanFX2.Foundation.PolyCell.FXProfile
