@@ -5905,6 +5905,441 @@ profile projection that ships now.
 
 ---
 
+### 12.6 FX0-PolyCell — first-order external certificate verifier
+
+**Lineage.**  `kernel-metaplan.md` §"FX0 Escape Hatch" defines FX0 as
+an MM0-like root certificate checker: sorts, term constructors, theorem
+declarations, explicit substitution, explicit definition unfolding,
+stack-machine proof checking — no dependent conversion engine, no
+elaborator, no tactics, no hidden inference.  The target path is:
+
+```text
+FX1 theorem/check trace
+  -> FX1 certificate emitter
+  -> FX0 certificate
+  -> FX0 verifier accepts
+```
+
+This subsection adapts FX0 to the PolyCell substrate.  The adaptation
+is SIMPLER than the FX1-mediated path because the PolyCell certifier
+(`certifyRawCellExact?` / v2 `certifyRawCellExactV2?`) IS already
+MM0-shaped: it takes a serialized raw cell tree, applies the Generator
+table as axioms, and returns accept-with-certificate or reject-with-
+reason.  No lambda-Pi intermediary (FX1) is needed between the rich
+layer and the root verifier — the cell tree IS the certificate.
+
+**Why PolyCell needs its own FX0 (the trust argument).**
+
+FX's zero-axiom discipline proves every PolyCell theorem inside Lean 4.
+But Lean 4's C++ kernel (~3000 lines of `type_checker.cpp`) IS the
+trusted computing base for those proofs — if the C++ has a soundness
+bug, every `#assert_no_axioms`-clean theorem is worthless.  FX0-PolyCell
+is the escape hatch: a SEPARATE, ~600-line first-order verifier that
+checks the same certificates WITHOUT trusting Lean's kernel.  Two
+independent implementations agreeing on the same inputs constitutes a
+soundness argument that depends on neither implementation's host
+language.
+
+The trust stack with FX0-PolyCell:
+
+```text
+Layer 3: LEAN 4 C++ KERNEL (~3000 lines C++, current TCB)
+    ↑ checks the Lean proofs of
+Layer 2: LEAN 4 PROOFS (zero-axiom theorems — sound IFF Layer 3 correct)
+    ↑ proves properties of
+Layer 1: COMPUTABLE POLYCELL SUBSTRATE (~800 lines core logic)
+    ↑ cross-checked by
+Layer 0: FX0-POLYCELL VERIFIER (~600 lines C/Rust/Lean-prelude-only)
+         independent implementation of Layer 1's decision procedures
+```
+
+When Layers 1 and 0 agree on all inputs, the trust reduces to:
+"at least one of the two implementations is correct" — a claim about
+~600–800 lines of straight-line code that any auditor can read,
+independent of Lean, Coq, Agda, or any proof-assistant kernel.
+
+#### 12.6.1 What FX0-PolyCell checks (the core judgment)
+
+One judgment, uniform across all dimensions:
+
+```
+  verify : GeneratorTable × RuleTable × RawCellV2 scope
+           → ACCEPT(sort, dim, boundary) | REJECT(reason)
+```
+
+**Inputs:**
+- `GeneratorTable` — a flat array of `{generatorId, arity, binderShifts,
+  payloadSpec, childSpecs, cellSort}` records, one per admitted generator
+  (currently 74 for fxProfile; grows by extension, never by code change).
+- `RuleTable` — a flat array of `{ruleId, cellSort}` records, one per
+  admitted generating-cell rule (currently 1: termStep).
+- `RawCellV2 scope` — the certificate to verify, serialized as a tree.
+
+**Outputs:**
+- `ACCEPT(sort, dim, boundary)` — the cell is well-formed; the verifier
+  returns its sort, computed dimension, and boundary (Unit at dim 0;
+  source/target raw cell pair at dim ≥ 1).
+- `REJECT(reason)` — the cell is malformed, with a named reason from
+  `CellCheckRejection` (unknownGenerator / badPayload / wrongChildShape /
+  badBoundaryEndpoint / badVerticalBoundary / unsupportedCompH / ...).
+
+**Properties:**
+- **ZERO false positives (unconditional).**  If verify returns ACCEPT,
+  the cell IS well-formed — its sort/dim/boundary match the Generator +
+  Rule tables and all children recursively verify.  Proof: structural
+  induction on the verification — the algorithm exactly mirrors the
+  PolyCellV2 constructor preconditions, so an accepted cell COULD
+  inhabit PolyCellV2 (the Lean proof `certifyRawCellExactV2?_sound`
+  establishes this for the Lean implementation; the external verifier
+  is a re-implementation of the same algorithm).
+- **ZERO false negatives on normalized certificates.**  If the rich
+  layer emits a certificate whose sorts are normalized, whose
+  definitional equalities are witnessed by explicit dim-1 conversion
+  cells, and whose boundary endpoints are syntactically equal (not
+  merely definitionally equal), then verify returns ACCEPT.
+  The ONLY source of false negatives is a certificate where the producer
+  forgot to normalize or forgot to carry a witness — the verifier
+  itself never rejects a valid fully-explicit certificate.
+
+#### 12.6.2 The verification algorithm
+
+```text
+verify(cell, scope, genTable, ruleTable) :=
+  match cell with
+
+  | termBase(mkGen generator payload children) =>
+      -- Step 1: generator lookup
+      entry := genTable[generator]
+      if entry = none: REJECT(unknownGenerator)
+
+      -- Step 2: payload check
+      if not payloadValid(entry.payloadSpec, scope, payload):
+        REJECT(badPayload)
+
+      -- Step 3: child spine recursion
+      if children.length ≠ entry.arity: REJECT(wrongArity)
+      for (child_i, spec_i) in zip(children, entry.childSpecs):
+        childScope := scope + spec_i.scopeShift
+        result_i := verify(termBase(child_i), childScope, genTable, ruleTable)
+        if result_i = REJECT(r): REJECT(r)          -- propagate
+        if result_i.sort ≠ spec_i.cellSort: REJECT(wrongChildShape)
+        if result_i.dim ≠ spec_i.cellDimension: REJECT(wrongChildShape)
+
+      return ACCEPT(entry.cellSort, 0, ())
+
+  | generatingCell(ruleId, source, target) =>
+      -- Step 1: rule lookup
+      ruleEntry := ruleTable[ruleId]
+      if ruleEntry = none: REJECT(unknownGenerator)
+
+      -- Step 2: verify endpoints
+      sourceResult := verify(source, scope, genTable, ruleTable)
+      if sourceResult = REJECT(r): REJECT(badBoundaryEndpoint)
+      targetResult := verify(target, scope, genTable, ruleTable)
+      if targetResult = REJECT(r): REJECT(badBoundaryEndpoint)
+
+      -- Step 3: endpoint reconciliation (value-level dim equality)
+      if sourceResult.dim ≠ targetResult.dim: REJECT(badBoundaryEndpoint)
+      if sourceResult.sort ≠ ruleEntry.cellSort: REJECT(badBoundaryEndpoint)
+      if targetResult.sort ≠ ruleEntry.cellSort: REJECT(badBoundaryEndpoint)
+
+      return ACCEPT(ruleEntry.cellSort, sourceResult.dim + 1, (source, target))
+
+  | verticalComposite(first, second) =>
+      firstResult := verify(first, scope, genTable, ruleTable)
+      if firstResult = REJECT(r): REJECT(r)
+      secondResult := verify(second, scope, genTable, ruleTable)
+      if secondResult = REJECT(r): REJECT(r)
+
+      -- same sort, same dim
+      if firstResult.sort ≠ secondResult.sort: REJECT(badVerticalBoundary)
+      if firstResult.dim ≠ secondResult.dim: REJECT(badVerticalBoundary)
+      if firstResult.dim = 0: REJECT(badVerticalBoundary)  -- composites need dim ≥ 1
+
+      -- shared middle: first's target = second's source (STRUCTURAL equality)
+      if not structuralEqual(firstResult.boundary.target,
+                             secondResult.boundary.source):
+        REJECT(badVerticalBoundary)
+
+      return ACCEPT(firstResult.sort, firstResult.dim,
+                    (firstResult.boundary.source, secondResult.boundary.target))
+
+  | horizontalComposite(left, right) =>
+      REJECT(unsupportedCompH)   -- until Gray boundary semantics land
+
+  | identityCell(base) =>
+      baseResult := verify(base, scope, genTable, ruleTable)
+      if baseResult = REJECT(r): REJECT(r)
+      return ACCEPT(baseResult.sort, baseResult.dim + 1, (base, base))
+```
+
+**Structural equality** (`structuralEqual`) is a recursive comparison
+of two `RawCellV2` trees: same constructor tag at each node, same
+payload values, same children recursively.  No reduction, no
+unification, no delta-unfolding.  ~50 lines of code.
+
+**Payload validation** (`payloadValid`) dispatches on the
+`payloadSpec`:
+- `finScope` (variable): payload is a natural number < scope.
+- `nat` (universe level): payload is any natural number (or bounded
+  by a profile limit).
+- `unit`: payload = 0.
+
+~15 lines of code.
+
+**Total verification algorithm: ~120 lines of pseudocode.**  The rest
+of the ~600-line implementation is serialization parsing + Generator/
+Rule table loading + structural equality + error formatting.
+
+#### 12.6.3 Why this handles dim-3 and dim-4 cells correctly
+
+A dim-3 cd_lemma filler is a `generatingCell` whose source and target
+are dim-2 cells (themselves `generatingCell`s or `verticalComposite`s
+of dim-1 steps).  A dim-4 Squier coherence cell is a
+`generatingCell` / `verticalComposite` / `identityCell` over dim-3
+cells.  The verification algorithm handles ALL of these uniformly
+because:
+
+1. **The algorithm is dimension-uniform.**  The `match cell` dispatch
+   does NOT case-split on dimension.  A dim-4 cell hits the same
+   `generatingCell` / `verticalComposite` / `identityCell` branches
+   as a dim-1 cell — the only difference is the recursion depth.
+
+2. **Boundary matching recurses.**  At dim 3, checking
+   `firstResult.boundary.target = secondResult.boundary.source`
+   compares two dim-2 cells by structural equality.  At dim 4 it
+   compares dim-3 cells.  `structuralEqual` handles all dimensions
+   because `RawCellV2` is un-indexed by dimension — it's the same
+   type at every dimension, and structural comparison is just
+   recursive tree equality.
+
+3. **∞-topos / Gray / cubical cells are just deeper trees.**  A
+   cubical transport cell at dim 2 is a `generatingCell` with a
+   transport ruleId and dim-1 endpoint cells.  An ∞-topos descent
+   filler at dim 3 is a `verticalComposite` of transport cells.
+   The verifier doesn't know what "transport" or "descent" MEAN —
+   it only checks that the Generator table admits the ruleId and
+   the endpoint sorts/dims/scopes match.  The SEMANTICS are in the
+   Generator + Rule tables (the "axioms"); the verifier is
+   domain-agnostic.
+
+**Complexity per cell node:** O(1) table lookups + O(1) field
+comparisons + O(children) recursive calls.  Total for a certificate
+with N nodes: O(N × M) where M is the maximum structural-equality
+comparison size (bounded by the largest boundary endpoint tree).
+For FX kernel terms at dim ≤ 4 with bounded fan-out per the Generator
+arity table, this is effectively linear in certificate size.
+
+#### 12.6.4 The certificate format (serialization)
+
+The binary certificate format mirrors MM0's `.mmb`:
+
+```text
+HEADER:
+  magic : u32 = 0x46583043  -- "FX0C"
+  version : u32 = 1
+  numSorts : u32             -- CellSort enum size (currently 7)
+  numGenerators : u32        -- Generator table size (currently 74)
+  numRules : u32             -- Rule table size (currently 1)
+
+GENERATOR TABLE:
+  for each generator:
+    generatorId : u32
+    arity : u32
+    cellSort : u8
+    payloadSpec : u8          -- 0=finScope, 1=nat, 2=unit
+    binderShifts : u32[]      -- length = arity
+    childSorts : u8[]         -- length = arity
+    childDims : u32[]         -- length = arity
+
+RULE TABLE:
+  for each rule:
+    ruleId : u32
+    cellSort : u8
+
+CELL TREE (prefix-encoded):
+  tag : u8
+    0 = termBase(mkGen)
+      generatorId : u32
+      payload : u64           -- Nat value (Fin for var, level for universe, 0 for unit)
+      children follow inline (arity known from generator table)
+    1 = generatingCell
+      ruleId : u32
+      source subtree follows
+      target subtree follows
+    2 = verticalComposite
+      first subtree follows
+      second subtree follows
+    3 = horizontalComposite
+      left subtree follows
+      right subtree follows
+    4 = identityCell
+      base subtree follows
+  scope : u32 (at each termBase node)
+```
+
+The format is self-contained: the Generator + Rule tables are IN the
+certificate file so the verifier needs no external state.  Different
+profiles emit different tables; the verifier is profile-agnostic.
+
+#### 12.6.5 Lean implementation under host-minimal policy
+
+The FX0-PolyCell verifier is implemented TWICE:
+
+1. **In Lean 4 under the FX1 host-minimal policy**
+   (`kernel-metaplan.md` §"Lean Host Policy"):
+   `prelude` + `import Init.Prelude` only.  No `import Lean`, no
+   `import Std`, no `Classical`, no `Quot`, no `propext`, no
+   `noncomputable`, no `unsafe`, no `partial`, no `opaque`, no
+   `@[extern]`, no `@[implemented_by]`, no tactics, no `omega`,
+   no `grind`.  Only structurally recursive `def`, explicit pattern
+   matching, `Nat`, `Bool`, `Option`, `List`, `Prod`, `Sum`, `Unit`,
+   `Empty`, `Eq`, `rfl`, and term-mode proofs.
+
+   This Lean implementation IS `certifyRawCellExact?` (the v2 certifier
+   from the PolyCell substrate), constrained to the host-minimal import
+   set.  Its soundness theorem `certifyRawCellExact?_sound` is proved
+   in Lean 4 under the same constraints.  The Lean proofs give
+   confidence; they are NOT the trust base.
+
+2. **In C, Rust, or eventually FX itself** — an independent
+   re-implementation of the same ~120-line algorithm, sharing no code
+   with the Lean version.  The two implementations are cross-checked:
+   run both on the same certificate files and compare outputs.
+   Agreement on a large corpus (the full PolyCell fixture set +
+   the rich layer's emitted certificates) constitutes the soundness
+   argument that does not depend on either host language's kernel.
+
+The Lean implementation is FIRST (it already exists as the v2
+certifier).  The external implementation is SECOND (the "sound
+metatheory implementation later" that the user's constraint requires).
+Until the external implementation ships, the trust base is Lean 4's
+kernel + the `#assert_no_axioms` discipline.  After it ships, the
+trust base shrinks to "at least one of two ~600-line programs is
+correct."
+
+#### 12.6.6 Certificate emission from the rich layer
+
+The bridge from the existing rich LeanFX2 layer
+(`Term context type raw` / `Step` / `Conv` / `cd_lemma`) into
+FX0-PolyCell certificates:
+
+```text
+Rich LeanFX2 judgment
+  -> encodeCell : Term/Step/Conv -> RawCellV2  (translation)
+  -> certifyRawCellExact? on the encoded cell   (verification)
+  -> serialize the accepted certificate          (emission)
+  -> FX0-PolyCell verifier accepts              (cross-check)
+```
+
+The load-bearing theorem (mirroring `kernel-metaplan.md`'s
+`encode_term_sound`):
+
+```lean
+theorem encodeCellSound :
+    LeanFX2.Term context typeExpression rawExpression →
+    certifyRawCellExact? scope (encodeCell rawExpression) = Except.ok certificate
+```
+
+This is added incrementally per `kernel-metaplan.md`'s staged policy:
+
+1. Variables — `Term.var` → `termBase (mkGen gen_var ...)`.
+2. Unit / Pi / Lambda / Application — core term formers.
+3. Universe codes — the type-code family.
+4. Identity / cubical fragment — dim-1 cells.
+5. Steps — dim-1 generating cells via the Rule table.
+6. cd_lemma fillers — dim-2 cells.
+7. Squier coherence — dim-3+ cells.
+8. Rich features (modal, graded, session, effect, codata) as declared
+   Generator entries with explicit typing/computation certificates.
+
+Each step is gated by `#assert_no_axioms` on the soundness theorem.
+No rich feature is counted as FX0-root until its `encodeCellSound`
+theorem is shipped AND the external FX0-PolyCell verifier accepts the
+emitted certificate.
+
+#### 12.6.7 First milestone
+
+Mirroring `kernel-metaplan.md`'s FX0 milestone:
+
+```text
+Rich-layer certified variable (Term.var) at scope 4
+  -> encodeCell emits RawCellV2 (termBase (mkGen gen_var (Fin.mk 0 _) childNil))
+  -> Lean certifyRawCellExact? accepts
+  -> serialized to .fx0c binary
+  -> external FX0-PolyCell verifier accepts
+```
+
+FX0-PolyCell is not required before the v2 substrate work starts.
+It IS required before claiming minimal final TCB for PolyCell — the
+same discipline `kernel-metaplan.md` applies to FX0 vs FX1.
+
+#### 12.6.8 Root status labels for PolyCell modules
+
+Every PolyCell module gets one of these labels (extending
+`kernel-metaplan.md`'s labels):
+
+```text
+FX0-PolyCell-root
+  Part of the minimal cell verifier, covered by structural soundness
+  AND cross-checked by the external verifier.
+
+PolyCell-substrate
+  The computable certifier/fold/DecEq layer in Lean.
+  Covered by Lean proofs; eventually cross-checked by FX0-PolyCell.
+
+FX-rich
+  Existing expressive LeanFX2 layer (Term/Step/Conv/HoTT/cubical/...).
+
+Bridge
+  Translation + soundness connection between the rich layer and
+  PolyCell substrate (encodeCell / encodeCellSound).
+
+Scaffold
+  Syntax, docs, or interfaces without load-bearing theorem.
+
+Deferred
+  Explicitly not claimed.
+```
+
+No PolyCell feature is counted as root-trusted unless it is
+`FX0-PolyCell-root`.
+
+#### 12.6.9 What FX0-PolyCell does NOT do
+
+- **No conversion engine.**  Definitional equality is checked by
+  structural comparison of raw cell trees.  If two cells are
+  definitionally equal but syntactically different, the certificate
+  must carry an explicit dim-1 conversion cell witnessing the equality.
+  The verifier checks the witness; it never searches for one.
+
+- **No elaboration.**  The verifier checks fully explicit certificates.
+  Implicit arguments, type inference, tactic-generated proof terms —
+  all of that is the rich layer's job.  The verifier sees only the
+  output.
+
+- **No reduction.**  No WHNF, no delta-unfolding, no NbE.  Reduction
+  happens in the certificate producer.  The verifier checks that the
+  produced witnesses are well-formed, not that they are the RIGHT
+  witnesses (that's what the Lean soundness proofs establish).
+
+- **No Generator-table generation.**  The verifier CONSUMES tables
+  emitted by the rich layer; it does not generate or validate them.
+  Table correctness (that the Generator entries faithfully represent
+  the intended type theory) is established by the Lean proofs, not
+  by the verifier.
+
+- **No profile-extension logic.**  The verifier is profile-agnostic —
+  it checks cells against whatever tables it receives.  The admission
+  contract (§3.14 `extendProfile_preserves_admissible`) is a Layer 2
+  Lean theorem, not a Layer 0 verifier feature.
+
+These are deliberate: every omission SHRINKS the TCB.  The verifier's
+only job is to answer "does this tree match these tables?" — a
+purely structural, dimension-uniform, first-order check.
+
+---
+
 ## 13. References
 
 ### Universal substrate references (Tier-0 meta-framework, 2018–2026)
