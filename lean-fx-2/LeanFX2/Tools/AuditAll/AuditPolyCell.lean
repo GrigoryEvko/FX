@@ -632,7 +632,6 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.CertifiedTermStepVarZeroVarOneEndpoints.sourceCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.CertifiedTermStepVarZeroVarOneEndpoints.targetCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedTermStepVarZeroVarOneEndpoints
-#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifyTermStepVarZeroVarOneEndpoints?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedTermStepVarZeroVarOnePackage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedIdentityPackage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedVerticalCompositePackage
@@ -874,9 +873,6 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedContextConsEmptyUnitLinearChildren_rawDescriptors_eq_decoder
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedContextConsEmptyUnitLinearDescriptorChildren_rawDescriptors_eq_decoder
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifyContextConsEmptyUnitLinearChildren?_rawDescriptors_eq_decoder
-#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifyTermStepVarZeroVarOneEndpoints?_scope_zero_rejects
-#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifyTermStepVarZeroVarOneEndpoints?_scope_one_rejects
-#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifyTermStepVarZeroVarOneEndpoints?_scope_four_accepts
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell0?_variable_zero_scope_four
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell0?_variable_one_scope_four
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell0?_variable_two_scope_four

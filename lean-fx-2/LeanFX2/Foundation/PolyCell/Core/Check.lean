@@ -1399,34 +1399,6 @@ def certifiedTermStepVarZeroVarOneEndpoints {profile : PolyProfile}
       PolyCell.variableCell (profile := profile)
         (scope := scope) (index := 1) hasTargetIndexWithinScope }
 
-/-- Computably certify endpoints for the first finite dim-1 term-step
-fixture.
-
-The endpoint screen runs before endpoint witnesses are constructed.  Scopes 0
-and 1 reject because `var 1` is not a certifiable endpoint there. -/
-def certifyTermStepVarZeroVarOneEndpoints? {profile : PolyProfile} :
-    (scope : Nat) →
-      Except CellCheckRejection
-        (CertifiedTermStepVarZeroVarOneEndpoints profile scope)
-  | 0 => Except.error .badBoundaryEndpoint
-  | 1 => Except.error .badBoundaryEndpoint
-  | scope + 1 + 1 =>
-      match
-          screenEndpointResultAs? .term
-            (screenRawCellWithFuel? (profile := profile) 63
-              (scope + 1 + 1) (NegativeProbes.seedTermAtom profile)),
-          screenEndpointResultAs? .term
-            (screenRawCellWithFuel? (profile := profile) 63
-              (scope + 1 + 1) (NegativeProbes.alternateTermAtom profile)) with
-      | Except.ok (), Except.ok () =>
-          Except.ok
-            (certifiedTermStepVarZeroVarOneEndpoints
-              (profile := profile) (scope := scope + 1 + 1)
-              (Nat.zero_lt_succ (scope + 1))
-              (Nat.succ_lt_succ (Nat.zero_lt_succ scope)))
-      | Except.error rejection, _ => Except.error rejection
-      | _, Except.error rejection => Except.error rejection
-
 /-- Certified package for the first finite dim-1 term-step fixture. -/
 def certifiedTermStepVarZeroVarOnePackage {profile : PolyProfile}
     {scope : Nat}
@@ -3405,24 +3377,6 @@ theorem certifyContextConsEmptyUnitLinearChildren?_rawDescriptors_eq_decoder
     | Except.error rejection => Except.error rejection) =
       decodeContextConsPayload? (profile := profile) scope
         contextConsEmptyUnitLinearPayload := rfl
-
-theorem certifyTermStepVarZeroVarOneEndpoints?_scope_zero_rejects
-    {profile : PolyProfile} :
-    certifyTermStepVarZeroVarOneEndpoints? (profile := profile) 0 =
-      Except.error .badBoundaryEndpoint := rfl
-
-theorem certifyTermStepVarZeroVarOneEndpoints?_scope_one_rejects
-    {profile : PolyProfile} :
-    certifyTermStepVarZeroVarOneEndpoints? (profile := profile) 1 =
-      Except.error .badBoundaryEndpoint := rfl
-
-theorem certifyTermStepVarZeroVarOneEndpoints?_scope_four_accepts
-    {profile : PolyProfile} :
-    (match
-      certifyTermStepVarZeroVarOneEndpoints? (profile := profile)
-        NegativeProbes.defaultInferScope with
-    | Except.ok _ => true
-    | Except.error _ => false) = true := rfl
 
 theorem screenRawCell0?_variable_zero_scope_four {profile : PolyProfile} :
     screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
