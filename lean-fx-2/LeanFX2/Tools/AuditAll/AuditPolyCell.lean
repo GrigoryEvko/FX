@@ -174,6 +174,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationContextAsFunctionPayload
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationModeAsArgumentPayload
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.applicationContextAsArgumentPayload
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.hostileDecodedApplicationPayloads
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.hostileDecodedApplicationPayloads_length
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.decodedApplicationPayloads
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.decodedApplicationPayloads_length
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.seedTermAtom
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.fuelExhaustedProbe
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.alternateTermAtom
@@ -456,6 +460,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedUnitTypePackage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedContextEmptyPackage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedLinearModePackage
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.acceptedApplicationPayloads
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.acceptedApplicationPayloads_length
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.CertifiedApplicationVarZeroVarOneChildren
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.CertifiedApplicationVarZeroVarOneChildren.functionCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.CertifiedApplicationVarZeroVarOneChildren.argumentCell

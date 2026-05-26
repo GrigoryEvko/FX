@@ -270,6 +270,18 @@ def certifiedLinearModePackage {profile : PolyProfile} {scope : Nat} :
   certifiedCell :=
     PolyCell.linearMode (profile := profile) (scope := scope)
 
+/-- Application payloads currently admitted to certified raw ingress.
+
+The finite application decoder knows hostile payloads for negative probes, but
+this accepted frontier is intentionally a singleton until a reusable
+descriptor-indexed child-spine checker is in place. -/
+def acceptedApplicationPayloads : List Nat :=
+  [NegativeProbes.applicationVarZeroVarOnePayload]
+
+/-- The certified application ingress currently admits exactly one payload. -/
+theorem acceptedApplicationPayloads_length :
+    acceptedApplicationPayloads.length = 1 := rfl
+
 /-- Decode the first finite application payloads into raw child descriptors.
 
 This is decoder output only.  The returned children still need recursive

@@ -121,6 +121,32 @@ def applicationModeAsArgumentPayload : Nat := 9106
 /-- Application payload whose decoded argument child is a context cell. -/
 def applicationContextAsArgumentPayload : Nat := 9107
 
+/-- Hostile application payloads that decode far enough to test child
+screening, but must not certify as application terms. -/
+def hostileDecodedApplicationPayloads : List Nat :=
+  [applicationTypeAsFunctionPayload,
+    applicationTypeAsArgumentPayload,
+    applicationOutOfScopeArgumentPayload,
+    applicationOutOfScopeFunctionPayload,
+    applicationModeAsFunctionPayload,
+    applicationContextAsFunctionPayload,
+    applicationModeAsArgumentPayload,
+    applicationContextAsArgumentPayload]
+
+/-- The hostile decoded application frontier currently has eight fixtures. -/
+theorem hostileDecodedApplicationPayloads_length :
+    hostileDecodedApplicationPayloads.length = 8 := rfl
+
+/-- All application payload fixtures known to the finite application decoder:
+one accepted payload plus hostile decoded children. -/
+def decodedApplicationPayloads : List Nat :=
+  applicationVarZeroVarOnePayload :: hostileDecodedApplicationPayloads
+
+/-- The finite application decoder currently recognizes nine payload fixtures
+before falling back to sentinel or bad-payload rejection. -/
+theorem decodedApplicationPayloads_length :
+    decodedApplicationPayloads.length = 9 := rfl
+
 /-- A small accepted-looking term atom used only to build malformed cells. -/
 def seedTermAtom (profile : PolyProfile) : PolyTerm profile 0 :=
   .atom variableGeneratorSpec.cellId 0
