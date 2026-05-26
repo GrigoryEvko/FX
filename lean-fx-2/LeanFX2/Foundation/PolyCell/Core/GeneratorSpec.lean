@@ -113,6 +113,10 @@ def lambdaGeneratorSpec : GeneratorSpec where
     ChildSpec.termUnderBinder
   ]
 
+/-- First finite lambda payload whose decoded children are unit type at the
+parent scope and `var 0` under the binder. -/
+def lambdaUnitTypeBodyVarZeroPayload : Nat := 9200
+
 /-- Target metadata for application: function and argument at the same scope. -/
 def applicationGeneratorSpec : GeneratorSpec where
   cellId := 3

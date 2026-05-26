@@ -407,6 +407,18 @@ theorem lambdaPayloadSentinels_distinct :
 theorem lambdaPayloadFixtureCodes_distinct :
     hasPairwiseDistinctNatCodes lambdaPayloadFixtureCodes = true := rfl
 
+/-- Lambda payloads currently admitted to certified raw ingress. -/
+def acceptedLambdaPayloads : List Nat :=
+  [lambdaUnitTypeBodyVarZeroPayload]
+
+/-- The certified lambda ingress currently admits exactly one payload. -/
+theorem acceptedLambdaPayloads_length :
+    acceptedLambdaPayloads.length = 1 := rfl
+
+/-- The accepted lambda payload frontier has no duplicate codes. -/
+theorem acceptedLambdaPayloads_distinct :
+    hasPairwiseDistinctNatCodes acceptedLambdaPayloads = true := rfl
+
 /-- Pi-type payload sentinels that are reserved for malformed decoder tests. -/
 def piTypePayloadSentinels : List Nat :=
   [NegativeProbes.badPayloadSentinel,
@@ -513,9 +525,9 @@ def decodeApplicationPayload? {profile : PolyProfile} (scope payload : Nat) :
 
 /-- Decode staged lambda payloads into raw child descriptors.
 
-This is decoder output only.  The executable screen and certified ingress do
-not call this decoder yet, so adding a decoded lambda payload here does not
-make any lambda raw cell accepted. -/
+This is decoder output only.  The executable screen and certified ingress
+accept exactly `lambdaUnitTypeBodyVarZeroPayload`; hostile decoded payloads
+still exercise child-screen rejection. -/
 def decodeLambdaPayload? {profile : PolyProfile} (scope payload : Nat) :
     Except CellCheckRejection
       (RawChildDescriptors.forGenerator profile scope lambdaGeneratorSpec) :=
@@ -548,9 +560,9 @@ def decodeLambdaPayload? {profile : PolyProfile} (scope payload : Nat) :
 
 /-- Decode staged pi-type payloads into raw child descriptors.
 
-This is decoder output only.  The executable screen and certified ingress do
-not call this decoder yet, so adding a decoded pi-type payload here does not
-make any pi-type raw cell accepted. -/
+This is decoder output only.  The executable screen and certified ingress
+accept exactly `piTypeUnitCodomainUnitPayload`; hostile decoded payloads still
+exercise child-screen rejection. -/
 def decodePiTypePayload? {profile : PolyProfile} (scope payload : Nat) :
     Except CellCheckRejection
       (RawChildDescriptors.forGenerator profile scope piTypeGeneratorSpec) :=
@@ -606,10 +618,11 @@ def lookupRuleSpec? (ruleId : CellId) : Option KnownRuleSpec :=
 
 /-- Preliminary payload screen for a known generator.
 
-Only nullary payloads and variables are accepted here.  Application is handled
-by `screenRawCellWithFuel?`, because accepting it requires decoded-child
-screening rather than payload inspection alone.  Other non-nullary generators
-remain rejected until their decoders are implemented. -/
+Only nullary payloads and variables are accepted here.  Lambda, application,
+and pi-type payloads are handled by `screenRawCellWithFuel?`, because
+accepting them requires decoded-child screening rather than payload inspection
+alone.  Other non-nullary generators remain rejected until their decoders are
+implemented. -/
 def screenAtomPayload? {generatorSpec : GeneratorSpec}
     (supportedGenerator : SupportedGeneratorSpec generatorSpec)
     (scope payload : Nat) : Except CellCheckRejection Unit :=
@@ -730,7 +743,18 @@ def screenRawCellWithFuel? {profile : PolyProfile}
   | fuel + 1 =>
       match rawCell with
       | .atom cellId payload =>
-          if Nat.beq cellId applicationGeneratorSpec.cellId then
+          if Nat.beq cellId lambdaGeneratorSpec.cellId then
+            match decodeLambdaPayload? (profile := profile) scope payload with
+            | Except.ok children =>
+                match
+                    screenRawChildDescriptorsWith? (profile := profile)
+                      (fun childScope childRaw =>
+                        screenRawCellWithFuel? fuel childScope childRaw)
+                      scope children with
+                | Except.ok () => Except.ok lambdaGeneratorSpec.cellSort
+                | Except.error rejection => Except.error rejection
+            | Except.error rejection => Except.error rejection
+          else if Nat.beq cellId applicationGeneratorSpec.cellId then
             match decodeApplicationPayload? (profile := profile) scope payload with
             | Except.ok children =>
                 match
@@ -930,6 +954,110 @@ def certifiedApplicationVarZeroVarOnePackage {profile : PolyProfile}
     PolyCell.applicationVarZeroVarOneCell
       certifiedChildren.functionCell
       certifiedChildren.argumentCell
+
+/-- Certified decoded children for the first finite lambda payload.
+
+The body child lives under the binder-extended scope dictated by
+`lambdaGeneratorSpec`; this package cannot be assembled with a same-scope
+body child. -/
+structure CertifiedLambdaUnitTypeBodyVarZeroChildren
+    (profile : PolyProfile) (scope : Nat) where
+  /-- Certified domain child, decoded as unit type at the parent scope. -/
+  domainCell :
+    PolyCell profile .type 0 scope ()
+      (.atom unitTypeGeneratorSpec.cellId 0)
+  /-- Certified body child, decoded as `var 0` under the binder. -/
+  bodyCell :
+    PolyCell profile .term 0 (scope + 1) ()
+      (.atom variableGeneratorSpec.cellId 0)
+
+namespace CertifiedLambdaUnitTypeBodyVarZeroChildren
+
+/-- Certified child spine matching the lambda generator metadata. -/
+def lambdaChildSpine {profile : PolyProfile} {scope : Nat}
+    (certifiedChildren :
+      CertifiedLambdaUnitTypeBodyVarZeroChildren profile scope) :
+    CellChildren.ForGenerator (PolyCell.CertifiedChild profile) scope
+      lambdaGeneratorSpec :=
+  PolyCell.lambdaUnitTypeBodyVarZeroChildren
+    certifiedChildren.domainCell
+    certifiedChildren.bodyCell
+
+/-- Descriptor-indexed certified child spine for the accepted lambda
+children. -/
+def lambdaDescriptorChildSpine {profile : PolyProfile} {scope : Nat}
+    (certifiedChildren :
+      CertifiedLambdaUnitTypeBodyVarZeroChildren profile scope) :
+    PolyCell.CertifiedChildSpineForRawDescriptors profile scope
+      (RawChildDescriptors.lambda (profile := profile)
+        (parentScope := scope)
+        (PolyTerm.atom unitTypeGeneratorSpec.cellId 0)
+        (PolyTerm.atom variableGeneratorSpec.cellId 0)) :=
+  PolyCell.lambdaUnitTypeBodyVarZeroChildrenForRawDescriptors
+    certifiedChildren.domainCell
+    certifiedChildren.bodyCell
+
+/-- Descriptor-indexed lambda children forget to the ordinary certified child
+spine. -/
+theorem lambdaDescriptorChildSpine_toCertifiedChildren
+    {profile : PolyProfile} {scope : Nat}
+    (certifiedChildren :
+      CertifiedLambdaUnitTypeBodyVarZeroChildren profile scope) :
+    certifiedChildren.lambdaDescriptorChildSpine.toCertifiedChildren =
+      certifiedChildren.lambdaChildSpine := rfl
+
+end CertifiedLambdaUnitTypeBodyVarZeroChildren
+
+/-- Build the certified child package for `lam (_ : Unit). var 0`. -/
+def certifiedLambdaUnitTypeBodyVarZeroChildren {profile : PolyProfile}
+    {scope : Nat} :
+    CertifiedLambdaUnitTypeBodyVarZeroChildren profile scope :=
+  { domainCell :=
+      PolyCell.unitType (profile := profile) (scope := scope)
+    bodyCell :=
+      PolyCell.variableCell (profile := profile)
+        (scope := scope + 1) (index := 0) (Nat.zero_lt_succ scope) }
+
+/-- Computably decode certified children for the first finite lambda payload.
+
+The decoder and generic child screen both run before the certified parent is
+constructed.  This fixture is available at every parent scope because the body
+`var 0` is checked under the binder-extended scope. -/
+def certifyLambdaUnitTypeBodyVarZeroChildren? {profile : PolyProfile}
+    (scope : Nat) :
+    Except CellCheckRejection
+      (CertifiedLambdaUnitTypeBodyVarZeroChildren profile scope) :=
+  match
+      decodeLambdaPayload? (profile := profile) scope
+        lambdaUnitTypeBodyVarZeroPayload with
+  | Except.error rejection => Except.error rejection
+  | Except.ok rawDescriptors =>
+      match
+          screenRawChildDescriptorsWith? (profile := profile)
+            (fun {childDimension} childScope
+                (childRaw : PolyTerm profile childDimension) =>
+              screenRawCellWithFuel? 63 childScope childRaw)
+            scope rawDescriptors with
+      | Except.error rejection => Except.error rejection
+      | Except.ok () =>
+          Except.ok
+            (certifiedLambdaUnitTypeBodyVarZeroChildren
+              (profile := profile) (scope := scope))
+
+/-- Certified package for the first finite lambda payload. -/
+def certifiedLambdaUnitTypeBodyVarZeroPackage {profile : PolyProfile}
+    {scope : Nat}
+    (certifiedChildren :
+      CertifiedLambdaUnitTypeBodyVarZeroChildren profile scope) :
+    CertifiedRawCell profile scope
+      (PolyTerm.atom lambdaGeneratorSpec.cellId
+        lambdaUnitTypeBodyVarZeroPayload) where
+  cellSort := .term
+  cellBoundary := ()
+  certifiedCell :=
+    PolyCell.lambdaUnitTypeBodyVarZeroCell
+      certifiedChildren.domainCell
+      certifiedChildren.bodyCell
 
 /-- Certified decoded children for the first finite pi-type payload.
 
@@ -1424,6 +1552,26 @@ def inferRawAtom? {profile : PolyProfile} (scope cellId payload : Nat) :
       Except.error
         (certificationRejectionAfterScreen? scope
           (PolyTerm.atom (profile := profile) cellId payload))
+  else if Nat.beq cellId lambdaGeneratorSpec.cellId then
+    if payload = lambdaUnitTypeBodyVarZeroPayload then
+      match certifyLambdaUnitTypeBodyVarZeroChildren?
+          (profile := profile) scope with
+      | Except.ok certifiedChildren =>
+          Except.ok
+            (certifiedRawCellResultOfPackage
+              (profile := profile) (scope := scope)
+              (rawCellCode
+                (PolyTerm.atom (profile := profile)
+                  lambdaGeneratorSpec.cellId
+                  lambdaUnitTypeBodyVarZeroPayload))
+              (certifiedLambdaUnitTypeBodyVarZeroPackage (profile := profile)
+                certifiedChildren)
+              (hasSameNatList_self _))
+      | Except.error rejection => Except.error rejection
+    else
+      Except.error
+        (certificationRejectionAfterScreen? scope
+          (PolyTerm.atom (profile := profile) cellId payload))
   else if Nat.beq cellId applicationGeneratorSpec.cellId then
     if payload = applicationVarZeroVarOnePayload then
       match certifyApplicationVarZeroVarOneChildren?
@@ -1868,6 +2016,23 @@ def acceptedApplicationVarZeroVarOneInputCodeResult
           (Nat.succ_lt_succ (Nat.zero_lt_succ 2))))
       (hasSameNatList_self _))
 
+/-- Package-level input-code result for the accepted lambda fixture. -/
+def acceptedLambdaUnitTypeBodyVarZeroInputCodeResult
+    (profile : PolyProfile) :
+    Except CellCheckRejection
+      (CertifiedRawCellResult profile NegativeProbes.defaultInferScope) :=
+  Except.ok
+    (certifiedRawCellResultOfPackage
+      (profile := profile) (scope := NegativeProbes.defaultInferScope)
+      (rawCellCode
+        (NegativeProbes.lambdaUnitTypeBodyVarZeroRawCell profile))
+      (certifiedLambdaUnitTypeBodyVarZeroPackage
+        (profile := profile)
+        (certifiedLambdaUnitTypeBodyVarZeroChildren
+          (profile := profile)
+          (scope := NegativeProbes.defaultInferScope)))
+      (hasSameNatList_self _))
+
 /-- Package-level input-code result for the accepted pi-type fixture. -/
 def acceptedPiTypeUnitCodomainUnitInputCodeResult
     (profile : PolyProfile) :
@@ -1944,6 +2109,17 @@ def acceptedApplicationVarZeroVarOneDimZeroFixture
   inputCodeResult :=
     acceptedApplicationVarZeroVarOneInputCodeResult profile
 
+/-- Accepted first lambda fixture. -/
+def acceptedLambdaUnitTypeBodyVarZeroDimZeroFixture
+    (profile : PolyProfile) : AcceptedDimZeroFixture profile where
+  expectedSort := .term
+  rawCell := NegativeProbes.lambdaUnitTypeBodyVarZeroRawCell profile
+  ingressResult :=
+    inferRawCell? NegativeProbes.defaultInferScope
+      (NegativeProbes.lambdaUnitTypeBodyVarZeroRawCell profile)
+  inputCodeResult :=
+    acceptedLambdaUnitTypeBodyVarZeroInputCodeResult profile
+
 /-- Accepted first pi-type fixture. -/
 def acceptedPiTypeUnitCodomainUnitDimZeroFixture
     (profile : PolyProfile) : AcceptedDimZeroFixture profile where
@@ -1963,14 +2139,15 @@ def acceptedDimZeroFixtures (profile : PolyProfile) :
     acceptedSeedContextDimZeroFixture profile,
     acceptedSeedModeDimZeroFixture profile,
     acceptedApplicationVarZeroVarOneDimZeroFixture profile,
+    acceptedLambdaUnitTypeBodyVarZeroDimZeroFixture profile,
     acceptedPiTypeUnitCodomainUnitDimZeroFixture profile]
 
-/-- The current accepted dim-0 frontier has exactly six fixtures. -/
+/-- The current accepted dim-0 frontier has exactly seven fixtures. -/
 theorem acceptedDimZeroFixtures_length (profile : PolyProfile) :
-    (acceptedDimZeroFixtures profile).length = 6 := rfl
+    (acceptedDimZeroFixtures profile).length = 7 := rfl
 
 /-- Current dim-0 accepted ingress fixtures: seed term/type/context/mode atoms
-and the first certified application and pi-type payloads. -/
+and the first certified application, lambda, and pi-type payloads. -/
 def haveAcceptedDimZeroIngressCoverage (profile : PolyProfile) : Bool :=
   haveAcceptedDimZeroFixturesIngressCoverage
     (acceptedDimZeroFixtures profile)
@@ -1990,6 +2167,16 @@ def hasAcceptedApplicationVarZeroVarOneInputCodeCoverage
   hasCertifiedResultInputCodeCoverage
     (NegativeProbes.applicationVarZeroVarOneRawCell profile)
     (acceptedApplicationVarZeroVarOneInputCodeResult profile)
+
+/-- The accepted lambda package preserves the finite raw input code.
+
+This checks the certified package directly instead of forcing Lean to
+normalize the whole atom dispatcher through the lambda child screen. -/
+def hasAcceptedLambdaUnitTypeBodyVarZeroInputCodeCoverage
+    (profile : PolyProfile) : Bool :=
+  hasCertifiedResultInputCodeCoverage
+    (NegativeProbes.lambdaUnitTypeBodyVarZeroRawCell profile)
+    (acceptedLambdaUnitTypeBodyVarZeroInputCodeResult profile)
 
 /-- Current dim-0 accepted ingress fixtures preserve their raw input codes. -/
 def haveAcceptedDimZeroInputCodeCoverage (profile : PolyProfile) : Bool :=
@@ -2959,6 +3146,14 @@ theorem certifyApplicationVarZeroVarOneChildren?_scope_four_accepts
     | Except.ok _ => true
     | Except.error _ => false) = true := rfl
 
+theorem certifyLambdaUnitTypeBodyVarZeroChildren?_scope_four_accepts
+    {profile : PolyProfile} :
+    (match
+      certifyLambdaUnitTypeBodyVarZeroChildren? (profile := profile)
+        NegativeProbes.defaultInferScope with
+    | Except.ok _ => true
+    | Except.error _ => false) = true := rfl
+
 theorem screenRawChildDescriptorsWith?_applicationVarZeroVarOne
     {profile : PolyProfile} :
     screenRawChildDescriptorsWith? (profile := profile)
@@ -3266,11 +3461,36 @@ theorem screenRawCell0?_wrongContextConsChildShape_rejects
       (NegativeProbes.wrongContextConsChildShapeRawCell profile) =
       Except.error .wrongChildShape := rfl
 
-theorem screenRawCell0?_lambdaUnitTypeBodyVarZero_rejects
+theorem screenRawCell0?_lambdaUnitTypeBodyVarZero
     {profile : PolyProfile} :
     screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
       (NegativeProbes.lambdaUnitTypeBodyVarZeroRawCell profile) =
-      Except.error .badPayload := rfl
+      Except.ok () := rfl
+
+theorem screenRawCell0As?_lambdaUnitTypeBodyVarZero
+    {profile : PolyProfile} :
+    screenRawCell0As? (profile := profile) .term
+      NegativeProbes.defaultInferScope
+      (NegativeProbes.lambdaUnitTypeBodyVarZeroRawCell profile) =
+      Except.ok () := rfl
+
+theorem screenRawCell0?_lambdaContextAsDomain_rejects
+    {profile : PolyProfile} :
+    screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.lambdaContextAsDomainRawCell profile) =
+      Except.error .wrongChildShape := rfl
+
+theorem screenRawCell0?_lambdaTypeAsBody_rejects
+    {profile : PolyProfile} :
+    screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.lambdaTypeAsBodyRawCell profile) =
+      Except.error .wrongChildShape := rfl
+
+theorem screenRawCell0?_lambdaOutOfScopeBody_rejects
+    {profile : PolyProfile} :
+    screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.lambdaOutOfScopeBodyRawCell profile) =
+      Except.error .wrongChildShape := rfl
 
 theorem screenRawCell0?_piTypeUnitCodomainUnit
     {profile : PolyProfile} :
@@ -3576,12 +3796,89 @@ theorem checkRawCellAs?_applicationWrongChildShape_rejects
       (NegativeProbes.applicationWrongChildShapeRawCell profile) =
       Except.error .wrongChildShape := rfl
 
-theorem checkRawCellAs?_lambdaUnitTypeBodyVarZero_rejects
+theorem inferRawCell?_lambdaUnitTypeBodyVarZero_sort
     {profile : PolyProfile} :
-    checkRawCellAs? (profile := profile) .term
+    certifiedResultSort?
+      (inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
+        (NegativeProbes.lambdaUnitTypeBodyVarZeroRawCell profile)) =
+      some .term := by
+  change
+    certifiedResultSort?
+      (inferRawAtom? (profile := profile) 4
+        lambdaGeneratorSpec.cellId
+        lambdaUnitTypeBodyVarZeroPayload) = some .term
+  rfl
+
+theorem checkRawCellAs?_lambdaUnitTypeBodyVarZero_sort
+    {profile : PolyProfile} :
+    certifiedResultSort?
+      (checkRawCellAs? (profile := profile) .term
+        NegativeProbes.defaultInferScope
+        (NegativeProbes.lambdaUnitTypeBodyVarZeroRawCell profile)) =
+      some .term := by
+  change
+    certifiedResultSort?
+      (inferRawAtom? (profile := profile) 4
+        lambdaGeneratorSpec.cellId
+        lambdaUnitTypeBodyVarZeroPayload) = some .term
+  rfl
+
+theorem checkRawCellAs?_lambdaUnitTypeBodyVarZero_as_type_rejects
+    {profile : PolyProfile} :
+    checkRawCellAs? (profile := profile) .type
       NegativeProbes.defaultInferScope
       (NegativeProbes.lambdaUnitTypeBodyVarZeroRawCell profile) =
-      Except.error .badPayload := rfl
+      Except.error .wrongSort := rfl
+
+theorem checkRawCellAs?_lambdaUnitTypeBodyVarZero_as_context_rejects
+    {profile : PolyProfile} :
+    checkRawCellAs? (profile := profile) .context
+      NegativeProbes.defaultInferScope
+      (NegativeProbes.lambdaUnitTypeBodyVarZeroRawCell profile) =
+      Except.error .wrongSort := rfl
+
+theorem checkRawCellAs?_lambdaUnitTypeBodyVarZero_as_mode_rejects
+    {profile : PolyProfile} :
+    checkRawCellAs? (profile := profile) .mode
+      NegativeProbes.defaultInferScope
+      (NegativeProbes.lambdaUnitTypeBodyVarZeroRawCell profile) =
+      Except.error .wrongSort := rfl
+
+theorem inferRawCell?_lambdaContextAsDomain_rejects
+    {profile : PolyProfile} :
+    inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.lambdaContextAsDomainRawCell profile) =
+      Except.error .wrongChildShape := by
+  change
+    inferRawAtom? (profile := profile) 4
+      lambdaGeneratorSpec.cellId
+      NegativeProbes.lambdaContextAsDomainPayload =
+      Except.error .wrongChildShape
+  rfl
+
+theorem inferRawCell?_lambdaTypeAsBody_rejects
+    {profile : PolyProfile} :
+    inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.lambdaTypeAsBodyRawCell profile) =
+      Except.error .wrongChildShape := by
+  change
+    inferRawAtom? (profile := profile) 4
+      lambdaGeneratorSpec.cellId
+      NegativeProbes.lambdaTypeAsBodyPayload =
+      Except.error .wrongChildShape
+  rfl
+
+theorem inferRawCell?_lambdaOutOfScopeBody_rejects
+    {profile : PolyProfile} :
+    inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.lambdaOutOfScopeBodyRawCell profile) =
+      Except.error .wrongChildShape := by
+  change
+    inferRawAtom? (profile := profile) 4
+      lambdaGeneratorSpec.cellId
+      NegativeProbes.lambdaOutOfScopeBodyPayload =
+      Except.error .wrongChildShape
+  rfl
 
 theorem inferRawCell?_piTypeUnitCodomainUnit_sort
     {profile : PolyProfile} :
@@ -3778,6 +4075,18 @@ theorem acceptedApplicationVarZeroVarOneIngress_hasCoverage
         applicationVarZeroVarOnePayload) = true
   rfl
 
+/-- Accepted-ingress coverage for the first certified lambda payload. -/
+theorem acceptedLambdaUnitTypeBodyVarZeroIngress_hasCoverage
+    {profile : PolyProfile} :
+    hasAcceptedDimZeroIngressCoverage .term
+      (NegativeProbes.lambdaUnitTypeBodyVarZeroRawCell profile) = true := by
+  change
+    hasCertifiedResultShape (dimension := 0) .term
+      (inferRawAtom? (profile := profile) 4
+        lambdaGeneratorSpec.cellId
+        lambdaUnitTypeBodyVarZeroPayload) = true
+  rfl
+
 /-- Accepted-ingress coverage for the first certified pi-type payload. -/
 theorem acceptedPiTypeUnitCodomainUnitIngress_hasCoverage
     {profile : PolyProfile} :
@@ -3803,6 +4112,7 @@ theorem acceptedDimZeroIngresses_haveCoverage (profile : PolyProfile) :
     acceptedSeedContextDimZeroFixture,
     acceptedSeedModeDimZeroFixture,
     acceptedApplicationVarZeroVarOneDimZeroFixture,
+    acceptedLambdaUnitTypeBodyVarZeroDimZeroFixture,
     acceptedPiTypeUnitCodomainUnitDimZeroFixture,
     hasAcceptedDimZeroFixtureIngressCoverage]
   rfl
@@ -3895,6 +4205,31 @@ theorem acceptedApplicationVarZeroVarOneScreen_hasCoverage
     hasApplicationScreen]
   rfl
 
+/-- Accepted ingress for the first lambda payload agrees with the structural
+screen. -/
+theorem acceptedLambdaUnitTypeBodyVarZeroScreen_hasCoverage
+    {profile : PolyProfile} :
+    hasAcceptedDimZeroScreenCoverage .term
+      (NegativeProbes.lambdaUnitTypeBodyVarZeroRawCell profile) = true := by
+  change
+    (hasAcceptedDimZeroIngressCoverage .term
+      (NegativeProbes.lambdaUnitTypeBodyVarZeroRawCell profile) &&
+      (match
+        screenRawCellAs? (profile := profile) .term
+          NegativeProbes.defaultInferScope
+          (NegativeProbes.lambdaUnitTypeBodyVarZeroRawCell profile) with
+      | Except.ok () => true
+      | Except.error _ => false)) = true
+  have hasLambdaScreen :
+      screenRawCellAs? (profile := profile) .term
+        NegativeProbes.defaultInferScope
+        (NegativeProbes.lambdaUnitTypeBodyVarZeroRawCell profile) =
+        Except.ok () :=
+    screenRawCell0As?_lambdaUnitTypeBodyVarZero (profile := profile)
+  rw [acceptedLambdaUnitTypeBodyVarZeroIngress_hasCoverage,
+    hasLambdaScreen]
+  rfl
+
 /-- Accepted ingress for the first pi-type payload agrees with the structural
 screen. -/
 theorem acceptedPiTypeUnitCodomainUnitScreen_hasCoverage
@@ -3933,6 +4268,7 @@ theorem acceptedDimZeroScreens_haveCoverage (profile : PolyProfile) :
     acceptedSeedContextDimZeroFixture,
     acceptedSeedModeDimZeroFixture,
     acceptedApplicationVarZeroVarOneDimZeroFixture,
+    acceptedLambdaUnitTypeBodyVarZeroDimZeroFixture,
     acceptedPiTypeUnitCodomainUnitDimZeroFixture,
     hasAcceptedDimZeroFixtureScreenCoverage,
     hasCertifiedResultScreenCoverage,
@@ -3992,6 +4328,18 @@ theorem acceptedApplicationVarZeroVarOneInputCode_hasCoverage
     hasSameNatList
       (rawCellCode (NegativeProbes.applicationVarZeroVarOneRawCell profile))
       (rawCellCode (NegativeProbes.applicationVarZeroVarOneRawCell profile)) =
+      true
+  exact hasSameNatList_self _
+
+/-- The accepted certified package for the first lambda payload preserves the
+raw input code. -/
+theorem acceptedLambdaUnitTypeBodyVarZeroInputCode_hasCoverage
+    {profile : PolyProfile} :
+    hasAcceptedLambdaUnitTypeBodyVarZeroInputCodeCoverage profile = true := by
+  change
+    hasSameNatList
+      (rawCellCode (NegativeProbes.lambdaUnitTypeBodyVarZeroRawCell profile))
+      (rawCellCode (NegativeProbes.lambdaUnitTypeBodyVarZeroRawCell profile)) =
       true
   exact hasSameNatList_self _
 
@@ -4063,6 +4411,16 @@ theorem acceptedApplicationVarZeroVarOneFixtureInputCode_hasCoverage
     hasAcceptedApplicationVarZeroVarOneInputCodeCoverage profile = true
   exact acceptedApplicationVarZeroVarOneInputCode_hasCoverage
 
+/-- The accepted lambda fixture preserves its package-level raw input code
+through the shared fixture frontier. -/
+theorem acceptedLambdaUnitTypeBodyVarZeroFixtureInputCode_hasCoverage
+    {profile : PolyProfile} :
+    hasAcceptedDimZeroFixtureInputCodeCoverage
+      (acceptedLambdaUnitTypeBodyVarZeroDimZeroFixture profile) = true := by
+  change
+    hasAcceptedLambdaUnitTypeBodyVarZeroInputCodeCoverage profile = true
+  exact acceptedLambdaUnitTypeBodyVarZeroInputCode_hasCoverage
+
 /-- The accepted pi-type fixture preserves its package-level raw input code
 through the shared fixture frontier. -/
 theorem acceptedPiTypeUnitCodomainUnitFixtureInputCode_hasCoverage
@@ -4088,6 +4446,7 @@ theorem acceptedDimZeroInputCodes_haveCoverage (profile : PolyProfile) :
     acceptedSeedContextFixtureInputCode_hasCoverage,
     acceptedSeedModeFixtureInputCode_hasCoverage,
     acceptedApplicationVarZeroVarOneFixtureInputCode_hasCoverage,
+    acceptedLambdaUnitTypeBodyVarZeroFixtureInputCode_hasCoverage,
     acceptedPiTypeUnitCodomainUnitFixtureInputCode_hasCoverage]
   rfl
 

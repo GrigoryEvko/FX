@@ -31,7 +31,8 @@ inductive SupportedGeneratorSpec : GeneratorSpec → Type where
   /-- Variable term generator. -/
   | variable :
       SupportedGeneratorSpec variableGeneratorSpec
-  /-- Lambda term generator. Payload decoding is not implemented yet. -/
+  /-- Lambda term generator. Only the first finite decoded payload is
+  certified today. -/
   | lambda :
       SupportedGeneratorSpec lambdaGeneratorSpec
   /-- Application term generator. Only the first finite decoded payload is
@@ -67,10 +68,10 @@ inductive SupportedRuleSpec : RuleSpec → Type where
 
 /-- Payload evidence for atom generators that are already safe to certify.
 
-The absence of constructors for lambda/context-extension is intentional:
-until payload decoding is real, those atoms cannot be certified by this file.
-Application and pi-type get only their first finite decoded payloads through
-separate `PolyCell` constructors that demand certified children. -/
+The absence of constructors for context-extension is intentional: until
+payload decoding is real, those atoms cannot be certified by this file.
+Lambda, application, and pi-type get only their first finite decoded payloads
+through separate `PolyCell` constructors that demand certified children. -/
 inductive AtomPayloadEvidence :
     (generatorSpec : GeneratorSpec) → (scope : Nat) → (payload : Nat) → Type where
   /-- A variable payload is certified only when the de Bruijn index is inside
@@ -102,14 +103,26 @@ inductive PolyCell (profile : PolyProfile) :
   /-- Certified dim-0 atom.
 
   Payload evidence blocks arbitrary raw atoms from entering the certified
-  layer.  Since payload decoding for non-nullary generators is not implemented
-  yet, the only atoms constructible today are the payload-evidenced nullary
-  seed atoms. -/
+  layer.  Non-nullary generators are constructible only through separate
+  constructors that demand certified children for one finite decoded payload. -/
   | atom {generatorSpec : GeneratorSpec} {scope payload : Nat} :
       SupportedGeneratorSpec generatorSpec →
       AtomPayloadEvidence generatorSpec scope payload →
       PolyCell profile generatorSpec.cellSort 0 scope ()
         (.atom generatorSpec.cellId payload)
+
+  /-- Certified lambda for the first finite decoded payload.
+
+  The constructor is deliberately narrow: it certifies only the payload whose
+  decoded children are unit type at the parent scope and `var 0` under the
+  binder, and it requires both children to already be certified. -/
+  | lambdaUnitTypeBodyVarZero {scope : Nat} :
+      PolyCell profile .type 0 scope ()
+        (.atom unitTypeGeneratorSpec.cellId 0) →
+      PolyCell profile .term 0 (scope + 1) ()
+        (.atom variableGeneratorSpec.cellId 0) →
+      PolyCell profile .term 0 scope ()
+        (.atom lambdaGeneratorSpec.cellId lambdaUnitTypeBodyVarZeroPayload)
 
   /-- Certified application for the first finite decoded payload.
 
@@ -227,6 +240,19 @@ def applicationVarZeroVarOneCell {profile : PolyProfile} {scope : Nat}
     PolyCell profile .term 0 scope ()
       (.atom applicationGeneratorSpec.cellId applicationVarZeroVarOnePayload) :=
   .applicationVarZeroVarOne functionCell argumentCell
+
+/-- The first certified lambda payload requires a certified unit domain and
+certified body variable under the binder. -/
+def lambdaUnitTypeBodyVarZeroCell {profile : PolyProfile} {scope : Nat}
+    (domainCell :
+      PolyCell profile .type 0 scope ()
+        (.atom unitTypeGeneratorSpec.cellId 0))
+    (bodyCell :
+      PolyCell profile .term 0 (scope + 1) ()
+        (.atom variableGeneratorSpec.cellId 0)) :
+    PolyCell profile .term 0 scope ()
+      (.atom lambdaGeneratorSpec.cellId lambdaUnitTypeBodyVarZeroPayload) :=
+  .lambdaUnitTypeBodyVarZero domainCell bodyCell
 
 /-- The first certified pi-type payload requires certified unit-type children
 at the parent and binder-extended scopes. -/
@@ -548,6 +574,57 @@ def applicationVarZeroVarOneChildren {profile : PolyProfile} {scope : Nat}
       (CertifiedChild.ofCell argumentCell)
       CellChildren.nil)
 
+/-- Certified child spine for the first finite lambda payload. -/
+def lambdaUnitTypeBodyVarZeroChildren {profile : PolyProfile} {scope : Nat}
+    (domainCell :
+      PolyCell profile .type 0 scope ()
+        (.atom unitTypeGeneratorSpec.cellId 0))
+    (bodyCell :
+      PolyCell profile .term 0 (scope + 1) ()
+        (.atom variableGeneratorSpec.cellId 0)) :
+    CellChildren.ForGenerator (CertifiedChild profile) scope
+      lambdaGeneratorSpec :=
+  CellChildren.lambdaChildren
+    (CertifiedChild.ofCell domainCell)
+    (CertifiedChild.ofCell bodyCell)
+
+/-- Descriptor-indexed certified child spine for the first finite lambda
+payload. -/
+def lambdaUnitTypeBodyVarZeroChildrenForRawDescriptors
+    {profile : PolyProfile} {scope : Nat}
+    (domainCell :
+      PolyCell profile .type 0 scope ()
+        (.atom unitTypeGeneratorSpec.cellId 0))
+    (bodyCell :
+      PolyCell profile .term 0 (scope + 1) ()
+        (.atom variableGeneratorSpec.cellId 0)) :
+    CertifiedChildSpineForRawDescriptors profile scope
+      (RawChildDescriptors.lambda (profile := profile)
+        (parentScope := scope)
+        (PolyTerm.atom unitTypeGeneratorSpec.cellId 0)
+        (PolyTerm.atom variableGeneratorSpec.cellId 0)) :=
+  CertifiedChildSpineForRawDescriptors.cons
+    { cellBoundary := ()
+      certifiedCell := domainCell }
+    (CertifiedChildSpineForRawDescriptors.cons
+      { cellBoundary := ()
+        certifiedCell := bodyCell }
+      CertifiedChildSpineForRawDescriptors.nil)
+
+/-- Forgetting the descriptor-indexed first lambda child spine gives the
+ordinary certified child spine. -/
+theorem lambdaUnitTypeBodyVarZeroChildrenForRawDescriptors_toCertifiedChildren
+    {profile : PolyProfile} {scope : Nat}
+    (domainCell :
+      PolyCell profile .type 0 scope ()
+        (.atom unitTypeGeneratorSpec.cellId 0))
+    (bodyCell :
+      PolyCell profile .term 0 (scope + 1) ()
+        (.atom variableGeneratorSpec.cellId 0)) :
+    (lambdaUnitTypeBodyVarZeroChildrenForRawDescriptors
+      domainCell bodyCell).toCertifiedChildren =
+      lambdaUnitTypeBodyVarZeroChildren domainCell bodyCell := rfl
+
 /-- Descriptor-indexed certified child spine for the first finite application
 payload. -/
 def applicationVarZeroVarOneChildrenForRawDescriptors
@@ -669,6 +746,18 @@ theorem raw_applicationVarZeroVarOne {profile : PolyProfile} {scope : Nat}
       PolyTerm.atom (profile := profile) applicationGeneratorSpec.cellId
         applicationVarZeroVarOnePayload := rfl
 
+/-- Raw erasure of the first certified lambda helper is definitional. -/
+theorem raw_lambdaUnitTypeBodyVarZero {profile : PolyProfile} {scope : Nat}
+    (domainCell :
+      PolyCell profile .type 0 scope ()
+        (.atom unitTypeGeneratorSpec.cellId 0))
+    (bodyCell :
+      PolyCell profile .term 0 (scope + 1) ()
+        (.atom variableGeneratorSpec.cellId 0)) :
+    (lambdaUnitTypeBodyVarZeroCell domainCell bodyCell).raw =
+      PolyTerm.atom (profile := profile) lambdaGeneratorSpec.cellId
+        lambdaUnitTypeBodyVarZeroPayload := rfl
+
 /-- Raw erasure of the first certified pi-type helper is definitional. -/
 theorem raw_piTypeUnitCodomainUnit {profile : PolyProfile} {scope : Nat}
     (domainCell :
@@ -734,6 +823,36 @@ theorem applicationVarZeroVarOneChildren_rawDescriptors
         (parentScope := scope)
         (PolyTerm.atom variableGeneratorSpec.cellId 0)
         (PolyTerm.atom variableGeneratorSpec.cellId 1) := rfl
+
+/-- The certified child spine for the first lambda payload has the lambda
+generator arity. -/
+theorem lambdaUnitTypeBodyVarZeroChildren_arity_eq_generator
+    {profile : PolyProfile} {scope : Nat}
+    (domainCell :
+      PolyCell profile .type 0 scope ()
+        (.atom unitTypeGeneratorSpec.cellId 0))
+    (bodyCell :
+      PolyCell profile .term 0 (scope + 1) ()
+        (.atom variableGeneratorSpec.cellId 0)) :
+    (lambdaUnitTypeBodyVarZeroChildren domainCell bodyCell).arity =
+      lambdaGeneratorSpec.arity := rfl
+
+/-- Forgetting the first certified lambda child spine gives the matching raw
+descriptors. -/
+theorem lambdaUnitTypeBodyVarZeroChildren_rawDescriptors
+    {profile : PolyProfile} {scope : Nat}
+    (domainCell :
+      PolyCell profile .type 0 scope ()
+        (.atom unitTypeGeneratorSpec.cellId 0))
+    (bodyCell :
+      PolyCell profile .term 0 (scope + 1) ()
+        (.atom variableGeneratorSpec.cellId 0)) :
+    certifiedChildSpineRawDescriptors
+      (lambdaUnitTypeBodyVarZeroChildren domainCell bodyCell) =
+      RawChildDescriptors.lambda (profile := profile)
+        (parentScope := scope)
+        (PolyTerm.atom unitTypeGeneratorSpec.cellId 0)
+        (PolyTerm.atom variableGeneratorSpec.cellId 0) := rfl
 
 /-- The certified child spine for the first pi-type payload has the pi-type
 generator arity. -/

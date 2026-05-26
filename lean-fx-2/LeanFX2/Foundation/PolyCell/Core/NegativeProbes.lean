@@ -149,9 +149,10 @@ theorem decodedApplicationPayloads_length :
 
 /-- Lambda payload whose decoded children are unit type and body `var 0`.
 
-This is decoder-staging data only.  It is not accepted by raw ingress or by
-the certified layer. -/
-def lambdaUnitTypeBodyVarZeroPayload : Nat := 9200
+This aliases the certified finite lambda payload while keeping the probe
+catalog's naming local. -/
+def lambdaUnitTypeBodyVarZeroPayload : Nat :=
+  LeanFX2.Foundation.PolyCell.Core.lambdaUnitTypeBodyVarZeroPayload
 
 /-- Lambda payload whose decoded domain child has context sort. -/
 def lambdaContextAsDomainPayload : Nat := 9201
@@ -302,8 +303,8 @@ def wrongArityRawCell (profile : PolyProfile) : PolyTerm profile 0 :=
 def wrongChildShapeRawCell (profile : PolyProfile) : PolyTerm profile 0 :=
   .atom lambdaGeneratorSpec.cellId wrongChildShapeSentinel
 
-/-- Lambda generator whose decoder staging table returns a well-shaped child
-spine, but which raw ingress still rejects today. -/
+/-- Lambda generator whose decoder staging table returns the first accepted
+certified child spine. -/
 def lambdaUnitTypeBodyVarZeroRawCell
     (profile : PolyProfile) : PolyTerm profile 0 :=
   .atom lambdaGeneratorSpec.cellId lambdaUnitTypeBodyVarZeroPayload
@@ -324,8 +325,8 @@ def lambdaOutOfScopeBodyRawCell
     (profile : PolyProfile) : PolyTerm profile 0 :=
   .atom lambdaGeneratorSpec.cellId lambdaOutOfScopeBodyPayload
 
-/-- Pi-type generator whose decoder staging table returns a well-shaped child
-spine, but which raw ingress still rejects today. -/
+/-- Pi-type generator whose decoder table returns the first accepted certified
+child spine. -/
 def piTypeUnitCodomainUnitRawCell
     (profile : PolyProfile) : PolyTerm profile 0 :=
   .atom piTypeGeneratorSpec.cellId piTypeUnitCodomainUnitPayload
@@ -1068,6 +1069,33 @@ def applicationVarZeroVarOneAsModeProbe (profile : PolyProfile) :
   rawCell := applicationVarZeroVarOneRawCell profile
   expectedRejection := .wrongSort
 
+/-- Probe for rejecting the accepted lambda when a type cell is expected. -/
+def lambdaUnitTypeBodyVarZeroAsTypeProbe (profile : PolyProfile) :
+    RawExpectedShapeNegativeProbe profile where
+  dimension := 0
+  expectedSort := .type
+  expectedScope := defaultInferScope
+  rawCell := lambdaUnitTypeBodyVarZeroRawCell profile
+  expectedRejection := .wrongSort
+
+/-- Probe for rejecting the accepted lambda when a context cell is expected. -/
+def lambdaUnitTypeBodyVarZeroAsContextProbe (profile : PolyProfile) :
+    RawExpectedShapeNegativeProbe profile where
+  dimension := 0
+  expectedSort := .context
+  expectedScope := defaultInferScope
+  rawCell := lambdaUnitTypeBodyVarZeroRawCell profile
+  expectedRejection := .wrongSort
+
+/-- Probe for rejecting the accepted lambda when a mode cell is expected. -/
+def lambdaUnitTypeBodyVarZeroAsModeProbe (profile : PolyProfile) :
+    RawExpectedShapeNegativeProbe profile where
+  dimension := 0
+  expectedSort := .mode
+  expectedScope := defaultInferScope
+  rawCell := lambdaUnitTypeBodyVarZeroRawCell profile
+  expectedRejection := .wrongSort
+
 /-- Probe for rejecting the accepted pi-type when a term cell is expected. -/
 def piTypeUnitCodomainUnitAsTermProbe (profile : PolyProfile) :
     RawExpectedShapeNegativeProbe profile where
@@ -1428,6 +1456,9 @@ def wrongSortExpectedShapeNegativeProbes (profile : PolyProfile) :
     applicationVarZeroVarOneAsTypeProbe profile,
     applicationVarZeroVarOneAsContextProbe profile,
     applicationVarZeroVarOneAsModeProbe profile,
+    lambdaUnitTypeBodyVarZeroAsTypeProbe profile,
+    lambdaUnitTypeBodyVarZeroAsContextProbe profile,
+    lambdaUnitTypeBodyVarZeroAsModeProbe profile,
     piTypeUnitCodomainUnitAsTermProbe profile,
     piTypeUnitCodomainUnitAsContextProbe profile,
     piTypeUnitCodomainUnitAsModeProbe profile]
@@ -1526,7 +1557,7 @@ theorem inferNegativeProbes_length (profile : PolyProfile) :
 
 /-- Expected-shape probe count. -/
 theorem expectedShapeNegativeProbes_length (profile : PolyProfile) :
-    (expectedShapeNegativeProbes profile).length = 27 := rfl
+    (expectedShapeNegativeProbes profile).length = 30 := rfl
 
 /-- Certified-ingress probe count. -/
 theorem certificationNegativeProbes_length (profile : PolyProfile) :
@@ -1568,7 +1599,7 @@ theorem unsupportedCompHInferNegativeProbes_length
 /-- Wrong-sort expected-shape headline probe count. -/
 theorem wrongSortExpectedShapeNegativeProbes_length
     (profile : PolyProfile) :
-    (wrongSortExpectedShapeNegativeProbes profile).length = 15 := rfl
+    (wrongSortExpectedShapeNegativeProbes profile).length = 18 := rfl
 
 /-- Bad-payload expected-shape headline probe count. -/
 theorem badPayloadExpectedShapeNegativeProbes_length
