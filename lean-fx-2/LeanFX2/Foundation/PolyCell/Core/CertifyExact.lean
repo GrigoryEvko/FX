@@ -143,5 +143,36 @@ theorem certifyRawCellExact?_compH_rejects {profile : PolyProfile} {scope : Nat}
     certifyRawCellExact? scope (PolyTerm.compH left right) =
       Except.error .unsupportedCompH := rfl
 
+/-! ## Convergence certificates
+
+The legacy public dim-0 / atom / term-step ingress now delegates to the general
+certifier, so each agrees with it on every input — proved once for all inputs,
+not per fixture. -/
+
+/-- The dim-0 public ingress agrees with the general certifier on every dim-0
+raw cell. -/
+theorem inferRawCell?_eq_general {profile : PolyProfile} (scope : Nat)
+    (rawCell : PolyTerm profile 0) :
+    inferRawCell? (profile := profile) scope rawCell =
+      inferRawCellGeneral? (profile := profile) scope rawCell := rfl
+
+/-- The atom ingress agrees with the general certifier on every atom. -/
+theorem inferRawAtom?_eq_general {profile : PolyProfile}
+    (scope cellId payload : Nat) :
+    inferRawAtom? (profile := profile) scope cellId payload =
+      inferRawCellGeneral? (profile := profile) scope
+        (PolyTerm.atom (profile := profile) cellId payload) := rfl
+
+/-- The term-step ingress agrees with the general certifier on the term-step
+raw cell. -/
+theorem inferTermStepVarZeroVarOne?_eq_general {profile : PolyProfile}
+    (scope : Nat) :
+    inferTermStepVarZeroVarOne? (profile := profile) scope =
+      inferRawCellGeneral? (profile := profile) scope
+        (PolyTerm.cell (profile := profile)
+          termStepRuleSpec.ruleId
+          (NegativeProbes.seedTermAtom profile)
+          (NegativeProbes.alternateTermAtom profile)) := rfl
+
 end Check
 end LeanFX2.Foundation.PolyCell.Core
