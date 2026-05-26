@@ -23,6 +23,7 @@ import LeanFX2.Foundation.PolyCell.Core.GeneratorMetadataV2
 import LeanFX2.Foundation.PolyCell.Core.GeneratorAdmissionV2
 import LeanFX2.Foundation.PolyCell.Core.GenPayloadEvidenceV2
 import LeanFX2.Foundation.PolyCell.Core.HasEqualDimV2
+import LeanFX2.Foundation.PolyCell.Core.RuleSpecV2
 
 namespace LeanFX2.Tools
 
@@ -2905,6 +2906,17 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasEqualDim.symm
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasEqualDim.trans
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasEqualDim.iff_dim_eq
+
+-- ─── V2-L1.9: rule admission ledger (#144) ──────────────────────
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RuleSpecV2
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.instDecidableEqRuleSpecV2
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.termStepRuleSpecV2
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.SupportedRuleSpecV2
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.SupportedRuleSpecV2.termStep
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.lookupRuleSpecV2?
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.supportedRuleSpecV2?
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.lookupRuleSpecV2?_zero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.supportedRuleSpecV2?_termStep
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
