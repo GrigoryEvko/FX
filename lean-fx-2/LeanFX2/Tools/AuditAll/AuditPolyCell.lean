@@ -431,6 +431,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.hasSameNat_self
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.hasSameNatList
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.hasSameNatList_self
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.isNatCodeAbsentFromList
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.hasPairwiseDistinctNatCodes
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.rawCellCodeAlgebra
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.rawCellCode
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.hasSameRawCell
@@ -462,6 +464,15 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedLinearModePackage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.acceptedApplicationPayloads
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.acceptedApplicationPayloads_length
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.applicationPayloadSentinels
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.applicationPayloadSentinels_length
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.applicationPayloadFixtureCodes
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.acceptedApplicationPayloads_distinct
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.hostileDecodedApplicationPayloads_distinct
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.decodedApplicationPayloads_distinct
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.applicationPayloadSentinels_distinct
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.applicationPayloadFixtureCodes_length
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.applicationPayloadFixtureCodes_distinct
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.CertifiedApplicationVarZeroVarOneChildren
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.CertifiedApplicationVarZeroVarOneChildren.functionCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.CertifiedApplicationVarZeroVarOneChildren.argumentCell

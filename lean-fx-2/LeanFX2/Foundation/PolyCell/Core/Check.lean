@@ -58,6 +58,24 @@ theorem hasSameNatList_self (codes : List Nat) :
       rw [hasSameNat_self, remainingInduction]
       rfl
 
+/-- Does a Nat code not occur in a finite list?
+
+This uses Lean's computable `Nat.beq` rather than the local unary equality
+checker because these metadata ratchets compare high-valued fixture codes. -/
+def isNatCodeAbsentFromList (candidateCode : Nat) : List Nat → Bool
+  | [] => true
+  | listHead :: remainingCodes =>
+      match Nat.beq candidateCode listHead with
+      | true => false
+      | false => isNatCodeAbsentFromList candidateCode remainingCodes
+
+/-- Pairwise distinctness check for finite Nat-code frontiers. -/
+def hasPairwiseDistinctNatCodes : List Nat → Bool
+  | [] => true
+  | codeHead :: remainingCodes =>
+      isNatCodeAbsentFromList codeHead remainingCodes &&
+        hasPairwiseDistinctNatCodes remainingCodes
+
 /-- Prefix-coded raw syntax code computed by the existing fold.
 
 The code is screening machinery only.  We do not use it to construct certified
@@ -281,6 +299,48 @@ def acceptedApplicationPayloads : List Nat :=
 /-- The certified application ingress currently admits exactly one payload. -/
 theorem acceptedApplicationPayloads_length :
     acceptedApplicationPayloads.length = 1 := rfl
+
+/-- Sentinel payloads that must remain distinct from decoded application
+payload fixtures. -/
+def applicationPayloadSentinels : List Nat :=
+  [NegativeProbes.badPayloadSentinel,
+    NegativeProbes.wrongAritySentinel,
+    NegativeProbes.wrongChildShapeSentinel]
+
+/-- The application payload sentinel frontier currently has three fixtures. -/
+theorem applicationPayloadSentinels_length :
+    applicationPayloadSentinels.length = 3 := rfl
+
+/-- Decoded application payloads plus sentinels used by application probes. -/
+def applicationPayloadFixtureCodes : List Nat :=
+  NegativeProbes.decodedApplicationPayloads ++ applicationPayloadSentinels
+
+/-- The accepted application payload frontier has no duplicate codes. -/
+theorem acceptedApplicationPayloads_distinct :
+    hasPairwiseDistinctNatCodes acceptedApplicationPayloads = true := rfl
+
+/-- Hostile decoded application payloads have no duplicate codes. -/
+theorem hostileDecodedApplicationPayloads_distinct :
+    hasPairwiseDistinctNatCodes
+      NegativeProbes.hostileDecodedApplicationPayloads = true := rfl
+
+/-- The finite decoded application payload frontier has no duplicate codes. -/
+theorem decodedApplicationPayloads_distinct :
+    hasPairwiseDistinctNatCodes
+      NegativeProbes.decodedApplicationPayloads = true := rfl
+
+/-- Application payload sentinels have no duplicate codes. -/
+theorem applicationPayloadSentinels_distinct :
+    hasPairwiseDistinctNatCodes applicationPayloadSentinels = true := rfl
+
+/-- The sentinel-inclusive application fixture frontier currently has twelve
+distinct payload codes. -/
+theorem applicationPayloadFixtureCodes_length :
+    applicationPayloadFixtureCodes.length = 12 := rfl
+
+/-- Decoded application fixtures and application sentinels do not collide. -/
+theorem applicationPayloadFixtureCodes_distinct :
+    hasPairwiseDistinctNatCodes applicationPayloadFixtureCodes = true := rfl
 
 /-- Decode the first finite application payloads into raw child descriptors.
 
