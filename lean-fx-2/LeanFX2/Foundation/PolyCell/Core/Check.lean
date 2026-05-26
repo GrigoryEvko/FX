@@ -2120,6 +2120,54 @@ theorem screenRawChildDescriptorsWith?_applicationOutOfScopeArgument_rejects
         (NegativeProbes.outOfScopeVariableRawCell profile)) =
       Except.error .wrongChildShape := rfl
 
+theorem screenRawChildDescriptorsWith?_applicationModeAsFunction_rejects
+    {profile : PolyProfile} :
+    screenRawChildDescriptorsWith? (profile := profile)
+      (fun {childDimension} childScope
+          (childRaw : PolyTerm profile childDimension) =>
+        screenRawCellWithFuel? 63 childScope childRaw)
+      NegativeProbes.defaultInferScope
+      (RawChildDescriptors.application
+        (NegativeProbes.seedModeAtom profile)
+        (NegativeProbes.seedTermAtom profile)) =
+      Except.error .wrongChildShape := rfl
+
+theorem screenRawChildDescriptorsWith?_applicationContextAsFunction_rejects
+    {profile : PolyProfile} :
+    screenRawChildDescriptorsWith? (profile := profile)
+      (fun {childDimension} childScope
+          (childRaw : PolyTerm profile childDimension) =>
+        screenRawCellWithFuel? 63 childScope childRaw)
+      NegativeProbes.defaultInferScope
+      (RawChildDescriptors.application
+        (NegativeProbes.seedContextAtom profile)
+        (NegativeProbes.seedTermAtom profile)) =
+      Except.error .wrongChildShape := rfl
+
+theorem screenRawChildDescriptorsWith?_applicationModeAsArgument_rejects
+    {profile : PolyProfile} :
+    screenRawChildDescriptorsWith? (profile := profile)
+      (fun {childDimension} childScope
+          (childRaw : PolyTerm profile childDimension) =>
+        screenRawCellWithFuel? 63 childScope childRaw)
+      NegativeProbes.defaultInferScope
+      (RawChildDescriptors.application
+        (NegativeProbes.seedTermAtom profile)
+        (NegativeProbes.seedModeAtom profile)) =
+      Except.error .wrongChildShape := rfl
+
+theorem screenRawChildDescriptorsWith?_applicationContextAsArgument_rejects
+    {profile : PolyProfile} :
+    screenRawChildDescriptorsWith? (profile := profile)
+      (fun {childDimension} childScope
+          (childRaw : PolyTerm profile childDimension) =>
+        screenRawCellWithFuel? 63 childScope childRaw)
+      NegativeProbes.defaultInferScope
+      (RawChildDescriptors.application
+        (NegativeProbes.seedTermAtom profile)
+        (NegativeProbes.seedContextAtom profile)) =
+      Except.error .wrongChildShape := rfl
+
 theorem screenRawCell0?_applicationVarZeroVarOne
     {profile : PolyProfile} :
     screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
@@ -2167,6 +2215,30 @@ theorem screenRawCell0?_applicationOutOfScopeArgument_rejects
     {profile : PolyProfile} :
     screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
       (NegativeProbes.applicationOutOfScopeArgumentRawCell profile) =
+      Except.error .wrongChildShape := rfl
+
+theorem screenRawCell0?_applicationModeAsFunction_rejects
+    {profile : PolyProfile} :
+    screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.applicationModeAsFunctionRawCell profile) =
+      Except.error .wrongChildShape := rfl
+
+theorem screenRawCell0?_applicationContextAsFunction_rejects
+    {profile : PolyProfile} :
+    screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.applicationContextAsFunctionRawCell profile) =
+      Except.error .wrongChildShape := rfl
+
+theorem screenRawCell0?_applicationModeAsArgument_rejects
+    {profile : PolyProfile} :
+    screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.applicationModeAsArgumentRawCell profile) =
+      Except.error .wrongChildShape := rfl
+
+theorem screenRawCell0?_applicationContextAsArgument_rejects
+    {profile : PolyProfile} :
+    screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.applicationContextAsArgumentRawCell profile) =
       Except.error .wrongChildShape := rfl
 
 theorem screenRawCell0?_badPiTypePayload_rejects
