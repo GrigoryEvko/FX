@@ -19,6 +19,7 @@ import LeanFX2.Foundation.PolyCell.FXProfile.CertifiedViews
 import LeanFX2.Foundation.PolyCell.FXProfile.Views
 import LeanFX2.Foundation.PolyCell.OmegacE.HonestyCheck
 import LeanFX2.Foundation.PolyCell.Core.RawCellCodeV2
+import LeanFX2.Foundation.PolyCell.Core.GeneratorMetadataV2
 
 namespace LeanFX2.Tools
 
@@ -2862,6 +2863,25 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2.toCode
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.toCode
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.hasSameNatList
+
+-- ═══════════════════════════════════════════════════════════════
+-- V2 GENERATOR METADATA GATES (Stage 1)
+-- ═══════════════════════════════════════════════════════════════
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.ChildSpecV2
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.ChildSpecV2.cellSort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.ChildSpecV2.cellDimension
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.ChildSpecV2.scopeShift
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.instDecidableEqChildSpecV2
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.ChildSpecV2.sameScopeDimZero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.ChildSpecV2.underOneBinderDimZero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.ChildSpecV2.termSameScope
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.ChildSpecV2.termUnderBinder
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.ChildSpecV2.typeSameScope
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.ChildSpecV2.typeUnderBinder
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.cellSort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.childSpecs
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.childSpecs_length_eq_arity
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.childSpecs_scopeShifts_eq_binderShifts
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
