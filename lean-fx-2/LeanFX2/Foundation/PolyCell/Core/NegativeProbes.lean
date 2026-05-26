@@ -184,12 +184,12 @@ fixtures before falling back to sentinel or bad-payload rejection. -/
 theorem decodedLambdaPayloads_length :
     decodedLambdaPayloads.length = 4 := rfl
 
-/-- Pi-type payload whose decoded children are unit domain and unit
-codomain.
+/-- Pi-type payload whose decoded children are unit domain and unit codomain.
 
-This is decoder-staging data only.  It is not accepted by raw ingress or by
-the certified layer. -/
-def piTypeUnitCodomainUnitPayload : Nat := 9300
+This aliases the certified finite pi-type payload while keeping the probe
+catalog's naming local. -/
+def piTypeUnitCodomainUnitPayload : Nat :=
+  LeanFX2.Foundation.PolyCell.Core.piTypeUnitCodomainUnitPayload
 
 /-- Pi-type payload whose decoded domain child has context sort. -/
 def piTypeContextAsDomainPayload : Nat := 9301
@@ -735,6 +735,22 @@ def wrongPiTypeChildShapeProbe (profile : PolyProfile) :
   rawCell := wrongPiTypeChildShapeRawCell profile
   expectedRejection := .wrongChildShape
 
+/-- Probe for a pi-type payload with a non-type domain child. -/
+def piTypeContextAsDomainProbe (profile : PolyProfile) :
+    RawInferNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 0
+  rawCell := piTypeContextAsDomainRawCell profile
+  expectedRejection := .wrongChildShape
+
+/-- Probe for a pi-type payload with a non-type codomain child. -/
+def piTypeTermAsCodomainProbe (profile : PolyProfile) :
+    RawInferNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 0
+  rawCell := piTypeTermAsCodomainRawCell profile
+  expectedRejection := .wrongChildShape
+
 /-- Probe for `wrongArity` on the context-extension generator. -/
 def wrongContextConsArityProbe (profile : PolyProfile) :
     RawInferNegativeProbe profile where
@@ -1052,6 +1068,33 @@ def applicationVarZeroVarOneAsModeProbe (profile : PolyProfile) :
   rawCell := applicationVarZeroVarOneRawCell profile
   expectedRejection := .wrongSort
 
+/-- Probe for rejecting the accepted pi-type when a term cell is expected. -/
+def piTypeUnitCodomainUnitAsTermProbe (profile : PolyProfile) :
+    RawExpectedShapeNegativeProbe profile where
+  dimension := 0
+  expectedSort := .term
+  expectedScope := defaultInferScope
+  rawCell := piTypeUnitCodomainUnitRawCell profile
+  expectedRejection := .wrongSort
+
+/-- Probe for rejecting the accepted pi-type when a context cell is expected. -/
+def piTypeUnitCodomainUnitAsContextProbe (profile : PolyProfile) :
+    RawExpectedShapeNegativeProbe profile where
+  dimension := 0
+  expectedSort := .context
+  expectedScope := defaultInferScope
+  rawCell := piTypeUnitCodomainUnitRawCell profile
+  expectedRejection := .wrongSort
+
+/-- Probe for rejecting the accepted pi-type when a mode cell is expected. -/
+def piTypeUnitCodomainUnitAsModeProbe (profile : PolyProfile) :
+    RawExpectedShapeNegativeProbe profile where
+  dimension := 0
+  expectedSort := .mode
+  expectedScope := defaultInferScope
+  rawCell := piTypeUnitCodomainUnitRawCell profile
+  expectedRejection := .wrongSort
+
 /-- Probe that expected-shape checking preserves malformed application payload
 rejection. -/
 def applicationBadPayloadExpectedShapeProbe (profile : PolyProfile) :
@@ -1336,6 +1379,8 @@ def wrongChildShapeInferNegativeProbes (profile : PolyProfile) :
     List (RawInferNegativeProbe profile) :=
   [wrongChildShapeProbe profile,
     wrongPiTypeChildShapeProbe profile,
+    piTypeContextAsDomainProbe profile,
+    piTypeTermAsCodomainProbe profile,
     wrongContextConsChildShapeProbe profile,
     applicationWrongChildShapeProbe profile,
     applicationTypeAsFunctionProbe profile,
@@ -1382,7 +1427,10 @@ def wrongSortExpectedShapeNegativeProbes (profile : PolyProfile) :
     typeIdentityAsTermStepProbe profile,
     applicationVarZeroVarOneAsTypeProbe profile,
     applicationVarZeroVarOneAsContextProbe profile,
-    applicationVarZeroVarOneAsModeProbe profile]
+    applicationVarZeroVarOneAsModeProbe profile,
+    piTypeUnitCodomainUnitAsTermProbe profile,
+    piTypeUnitCodomainUnitAsContextProbe profile,
+    piTypeUnitCodomainUnitAsModeProbe profile]
 
 /-- Expected-shape probes whose expected rejection is `badPayload`. -/
 def badPayloadExpectedShapeNegativeProbes (profile : PolyProfile) :
@@ -1474,11 +1522,11 @@ def certificationNegativeProbes (profile : PolyProfile) :
 
 /-- Inference probe count. -/
 theorem inferNegativeProbes_length (profile : PolyProfile) :
-    (inferNegativeProbes profile).length = 37 := rfl
+    (inferNegativeProbes profile).length = 39 := rfl
 
 /-- Expected-shape probe count. -/
 theorem expectedShapeNegativeProbes_length (profile : PolyProfile) :
-    (expectedShapeNegativeProbes profile).length = 24 := rfl
+    (expectedShapeNegativeProbes profile).length = 27 := rfl
 
 /-- Certified-ingress probe count. -/
 theorem certificationNegativeProbes_length (profile : PolyProfile) :
@@ -1500,7 +1548,7 @@ theorem wrongArityInferNegativeProbes_length (profile : PolyProfile) :
 /-- Wrong-child-shape headline probe count. -/
 theorem wrongChildShapeInferNegativeProbes_length
     (profile : PolyProfile) :
-    (wrongChildShapeInferNegativeProbes profile).length = 12 := rfl
+    (wrongChildShapeInferNegativeProbes profile).length = 14 := rfl
 
 /-- Bad-boundary-endpoint headline probe count. -/
 theorem badBoundaryEndpointInferNegativeProbes_length
@@ -1520,7 +1568,7 @@ theorem unsupportedCompHInferNegativeProbes_length
 /-- Wrong-sort expected-shape headline probe count. -/
 theorem wrongSortExpectedShapeNegativeProbes_length
     (profile : PolyProfile) :
-    (wrongSortExpectedShapeNegativeProbes profile).length = 12 := rfl
+    (wrongSortExpectedShapeNegativeProbes profile).length = 15 := rfl
 
 /-- Bad-payload expected-shape headline probe count. -/
 theorem badPayloadExpectedShapeNegativeProbes_length

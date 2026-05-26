@@ -439,6 +439,18 @@ theorem piTypePayloadSentinels_distinct :
 theorem piTypePayloadFixtureCodes_distinct :
     hasPairwiseDistinctNatCodes piTypePayloadFixtureCodes = true := rfl
 
+/-- Pi-type payloads currently admitted to certified raw ingress. -/
+def acceptedPiTypePayloads : List Nat :=
+  [piTypeUnitCodomainUnitPayload]
+
+/-- The certified pi-type ingress currently admits exactly one payload. -/
+theorem acceptedPiTypePayloads_length :
+    acceptedPiTypePayloads.length = 1 := rfl
+
+/-- The accepted pi-type payload frontier has no duplicate codes. -/
+theorem acceptedPiTypePayloads_distinct :
+    hasPairwiseDistinctNatCodes acceptedPiTypePayloads = true := rfl
+
 /-- Decode the first finite application payloads into raw child descriptors.
 
 This is decoder output only.  The returned children still need recursive
@@ -729,6 +741,17 @@ def screenRawCellWithFuel? {profile : PolyProfile}
                 | Except.ok () => Except.ok applicationGeneratorSpec.cellSort
                 | Except.error rejection => Except.error rejection
             | Except.error rejection => Except.error rejection
+          else if Nat.beq cellId piTypeGeneratorSpec.cellId then
+            match decodePiTypePayload? (profile := profile) scope payload with
+            | Except.ok children =>
+                match
+                    screenRawChildDescriptorsWith? (profile := profile)
+                      (fun childScope childRaw =>
+                        screenRawCellWithFuel? fuel childScope childRaw)
+                      scope children with
+                | Except.ok () => Except.ok piTypeGeneratorSpec.cellSort
+                | Except.error rejection => Except.error rejection
+            | Except.error rejection => Except.error rejection
           else
             match lookupGeneratorSpec? cellId with
             | some knownGenerator =>
@@ -907,6 +930,109 @@ def certifiedApplicationVarZeroVarOnePackage {profile : PolyProfile}
     PolyCell.applicationVarZeroVarOneCell
       certifiedChildren.functionCell
       certifiedChildren.argumentCell
+
+/-- Certified decoded children for the first finite pi-type payload.
+
+The codomain child lives under the binder-extended scope dictated by
+`piTypeGeneratorSpec`; this package cannot be assembled with a same-scope
+codomain child. -/
+structure CertifiedPiTypeUnitCodomainUnitChildren
+    (profile : PolyProfile) (scope : Nat) where
+  /-- Certified domain child, decoded as unit type at the parent scope. -/
+  domainCell :
+    PolyCell profile .type 0 scope ()
+      (.atom unitTypeGeneratorSpec.cellId 0)
+  /-- Certified codomain child, decoded as unit type under the binder. -/
+  codomainCell :
+    PolyCell profile .type 0 (scope + 1) ()
+      (.atom unitTypeGeneratorSpec.cellId 0)
+
+namespace CertifiedPiTypeUnitCodomainUnitChildren
+
+/-- Certified child spine matching the pi-type generator metadata. -/
+def piTypeChildSpine {profile : PolyProfile} {scope : Nat}
+    (certifiedChildren :
+      CertifiedPiTypeUnitCodomainUnitChildren profile scope) :
+    CellChildren.ForGenerator (PolyCell.CertifiedChild profile) scope
+      piTypeGeneratorSpec :=
+  PolyCell.piTypeUnitCodomainUnitChildren
+    certifiedChildren.domainCell
+    certifiedChildren.codomainCell
+
+/-- Descriptor-indexed certified child spine for the accepted pi-type
+children. -/
+def piTypeDescriptorChildSpine {profile : PolyProfile} {scope : Nat}
+    (certifiedChildren :
+      CertifiedPiTypeUnitCodomainUnitChildren profile scope) :
+    PolyCell.CertifiedChildSpineForRawDescriptors profile scope
+      (RawChildDescriptors.piType (profile := profile)
+        (parentScope := scope)
+        (PolyTerm.atom unitTypeGeneratorSpec.cellId 0)
+        (PolyTerm.atom unitTypeGeneratorSpec.cellId 0)) :=
+  PolyCell.piTypeUnitCodomainUnitChildrenForRawDescriptors
+    certifiedChildren.domainCell
+    certifiedChildren.codomainCell
+
+/-- Descriptor-indexed pi-type children forget to the ordinary certified child
+spine. -/
+theorem piTypeDescriptorChildSpine_toCertifiedChildren
+    {profile : PolyProfile} {scope : Nat}
+    (certifiedChildren :
+      CertifiedPiTypeUnitCodomainUnitChildren profile scope) :
+    certifiedChildren.piTypeDescriptorChildSpine.toCertifiedChildren =
+      certifiedChildren.piTypeChildSpine := rfl
+
+end CertifiedPiTypeUnitCodomainUnitChildren
+
+/-- Build the certified child package for `Pi (_ : Unit). Unit`. -/
+def certifiedPiTypeUnitCodomainUnitChildren {profile : PolyProfile}
+    {scope : Nat} :
+    CertifiedPiTypeUnitCodomainUnitChildren profile scope :=
+  { domainCell :=
+      PolyCell.unitType (profile := profile) (scope := scope)
+    codomainCell :=
+      PolyCell.unitType (profile := profile) (scope := scope + 1) }
+
+/-- Computably decode certified children for the first finite pi-type payload.
+
+The decoder and generic child screen both run before the certified parent is
+constructed.  Unlike the first application payload, this fixture is available at
+every scope because both decoded children are nullary unit types. -/
+def certifyPiTypeUnitCodomainUnitChildren? {profile : PolyProfile}
+    (scope : Nat) :
+    Except CellCheckRejection
+      (CertifiedPiTypeUnitCodomainUnitChildren profile scope) :=
+  match
+      decodePiTypePayload? (profile := profile) scope
+        piTypeUnitCodomainUnitPayload with
+  | Except.error rejection => Except.error rejection
+  | Except.ok rawDescriptors =>
+      match
+          screenRawChildDescriptorsWith? (profile := profile)
+            (fun {childDimension} childScope
+                (childRaw : PolyTerm profile childDimension) =>
+              screenRawCellWithFuel? 63 childScope childRaw)
+            scope rawDescriptors with
+      | Except.error rejection => Except.error rejection
+      | Except.ok () =>
+          Except.ok
+            (certifiedPiTypeUnitCodomainUnitChildren
+              (profile := profile) (scope := scope))
+
+/-- Certified package for the first finite pi-type payload. -/
+def certifiedPiTypeUnitCodomainUnitPackage {profile : PolyProfile}
+    {scope : Nat}
+    (certifiedChildren :
+      CertifiedPiTypeUnitCodomainUnitChildren profile scope) :
+    CertifiedRawCell profile scope
+      (PolyTerm.atom piTypeGeneratorSpec.cellId
+        piTypeUnitCodomainUnitPayload) where
+  cellSort := .type
+  cellBoundary := ()
+  certifiedCell :=
+    PolyCell.piTypeUnitCodomainUnitCell
+      certifiedChildren.domainCell
+      certifiedChildren.codomainCell
 
 /-- Certified endpoints for the first finite dim-1 term-step fixture. -/
 structure CertifiedTermStepVarZeroVarOneEndpoints
@@ -1318,6 +1444,26 @@ def inferRawAtom? {profile : PolyProfile} (scope cellId payload : Nat) :
       Except.error
         (certificationRejectionAfterScreen? scope
           (PolyTerm.atom (profile := profile) cellId payload))
+  else if Nat.beq cellId piTypeGeneratorSpec.cellId then
+    if payload = piTypeUnitCodomainUnitPayload then
+      match certifyPiTypeUnitCodomainUnitChildren?
+          (profile := profile) scope with
+      | Except.ok certifiedChildren =>
+          Except.ok
+            (certifiedRawCellResultOfPackage
+              (profile := profile) (scope := scope)
+              (rawCellCode
+                (PolyTerm.atom (profile := profile)
+                  piTypeGeneratorSpec.cellId
+                  piTypeUnitCodomainUnitPayload))
+              (certifiedPiTypeUnitCodomainUnitPackage (profile := profile)
+                certifiedChildren)
+              (hasSameNatList_self _))
+      | Except.error rejection => Except.error rejection
+    else
+      Except.error
+        (certificationRejectionAfterScreen? scope
+          (PolyTerm.atom (profile := profile) cellId payload))
   else
     Except.error
       (certificationRejectionAfterScreen? scope
@@ -1722,6 +1868,23 @@ def acceptedApplicationVarZeroVarOneInputCodeResult
           (Nat.succ_lt_succ (Nat.zero_lt_succ 2))))
       (hasSameNatList_self _))
 
+/-- Package-level input-code result for the accepted pi-type fixture. -/
+def acceptedPiTypeUnitCodomainUnitInputCodeResult
+    (profile : PolyProfile) :
+    Except CellCheckRejection
+      (CertifiedRawCellResult profile NegativeProbes.defaultInferScope) :=
+  Except.ok
+    (certifiedRawCellResultOfPackage
+      (profile := profile) (scope := NegativeProbes.defaultInferScope)
+      (rawCellCode
+        (NegativeProbes.piTypeUnitCodomainUnitRawCell profile))
+      (certifiedPiTypeUnitCodomainUnitPackage
+        (profile := profile)
+        (certifiedPiTypeUnitCodomainUnitChildren
+          (profile := profile)
+          (scope := NegativeProbes.defaultInferScope)))
+      (hasSameNatList_self _))
+
 /-- Accepted seed term fixture. -/
 def acceptedSeedTermDimZeroFixture (profile : PolyProfile) :
     AcceptedDimZeroFixture profile where
@@ -1781,6 +1944,17 @@ def acceptedApplicationVarZeroVarOneDimZeroFixture
   inputCodeResult :=
     acceptedApplicationVarZeroVarOneInputCodeResult profile
 
+/-- Accepted first pi-type fixture. -/
+def acceptedPiTypeUnitCodomainUnitDimZeroFixture
+    (profile : PolyProfile) : AcceptedDimZeroFixture profile where
+  expectedSort := .type
+  rawCell := NegativeProbes.piTypeUnitCodomainUnitRawCell profile
+  ingressResult :=
+    inferRawCell? NegativeProbes.defaultInferScope
+      (NegativeProbes.piTypeUnitCodomainUnitRawCell profile)
+  inputCodeResult :=
+    acceptedPiTypeUnitCodomainUnitInputCodeResult profile
+
 /-- Current finite accepted dim-0 frontier. -/
 def acceptedDimZeroFixtures (profile : PolyProfile) :
     List (AcceptedDimZeroFixture profile) :=
@@ -1788,14 +1962,15 @@ def acceptedDimZeroFixtures (profile : PolyProfile) :
     acceptedSeedTypeDimZeroFixture profile,
     acceptedSeedContextDimZeroFixture profile,
     acceptedSeedModeDimZeroFixture profile,
-    acceptedApplicationVarZeroVarOneDimZeroFixture profile]
+    acceptedApplicationVarZeroVarOneDimZeroFixture profile,
+    acceptedPiTypeUnitCodomainUnitDimZeroFixture profile]
 
-/-- The current accepted dim-0 frontier has exactly five fixtures. -/
+/-- The current accepted dim-0 frontier has exactly six fixtures. -/
 theorem acceptedDimZeroFixtures_length (profile : PolyProfile) :
-    (acceptedDimZeroFixtures profile).length = 5 := rfl
+    (acceptedDimZeroFixtures profile).length = 6 := rfl
 
 /-- Current dim-0 accepted ingress fixtures: seed term/type/context/mode atoms
-and the first certified application payload. -/
+and the first certified application and pi-type payloads. -/
 def haveAcceptedDimZeroIngressCoverage (profile : PolyProfile) : Bool :=
   haveAcceptedDimZeroFixturesIngressCoverage
     (acceptedDimZeroFixtures profile)
@@ -2324,6 +2499,15 @@ theorem certifiedApplicationVarZeroVarOnePackage_raw
       PolyTerm.atom (profile := profile) applicationGeneratorSpec.cellId
         applicationVarZeroVarOnePayload := rfl
 
+theorem certifiedPiTypeUnitCodomainUnitPackage_raw
+    {profile : PolyProfile} {scope : Nat}
+    (certifiedChildren :
+      CertifiedPiTypeUnitCodomainUnitChildren profile scope) :
+    (certifiedPiTypeUnitCodomainUnitPackage (profile := profile)
+      certifiedChildren).certifiedCell.raw =
+      PolyTerm.atom (profile := profile) piTypeGeneratorSpec.cellId
+        piTypeUnitCodomainUnitPayload := rfl
+
 theorem certifiedTermStepVarZeroVarOnePackage_raw
     {profile : PolyProfile} {scope : Nat}
     (certifiedEndpoints :
@@ -2440,6 +2624,59 @@ theorem certifyApplicationVarZeroVarOneChildren?_scope_two_plus_rawDescriptors_e
     | Except.error rejection => Except.error rejection) =
       decodeApplicationPayload? (profile := profile) (scope + 1 + 1)
         applicationVarZeroVarOnePayload := rfl
+
+theorem certifyPiTypeUnitCodomainUnitChildren?_scope_four_accepts
+    {profile : PolyProfile} :
+    (match
+      certifyPiTypeUnitCodomainUnitChildren? (profile := profile)
+        NegativeProbes.defaultInferScope with
+    | Except.ok _ => true
+    | Except.error _ => false) = true := rfl
+
+theorem certifiedPiTypeUnitCodomainUnitChildren_arity_eq_generator
+    {profile : PolyProfile} {scope : Nat}
+    (certifiedChildren :
+      CertifiedPiTypeUnitCodomainUnitChildren profile scope) :
+    certifiedChildren.piTypeChildSpine.arity =
+      piTypeGeneratorSpec.arity := rfl
+
+theorem certifiedPiTypeUnitCodomainUnitChildren_rawDescriptors
+    {profile : PolyProfile} {scope : Nat}
+    (certifiedChildren :
+      CertifiedPiTypeUnitCodomainUnitChildren profile scope) :
+    PolyCell.certifiedChildSpineRawDescriptors
+      certifiedChildren.piTypeChildSpine =
+      RawChildDescriptors.piType (profile := profile)
+        (parentScope := scope)
+        (PolyTerm.atom unitTypeGeneratorSpec.cellId 0)
+        (PolyTerm.atom unitTypeGeneratorSpec.cellId 0) := rfl
+
+/-- The first certified pi-type child package erases exactly to the decoder
+output for the pi-type payload. -/
+theorem certifiedPiTypeUnitCodomainUnitChildren_rawDescriptors_eq_decoder
+    {profile : PolyProfile} {scope : Nat}
+    (certifiedChildren :
+      CertifiedPiTypeUnitCodomainUnitChildren profile scope) :
+    Except.ok
+      (PolyCell.certifiedChildSpineRawDescriptors
+        certifiedChildren.piTypeChildSpine) =
+      decodePiTypePayload? (profile := profile) scope
+        piTypeUnitCodomainUnitPayload := rfl
+
+/-- For every scope, pi-type certification followed by child-spine erasure
+returns the same raw descriptor spine as the payload decoder. -/
+theorem certifyPiTypeUnitCodomainUnitChildren?_rawDescriptors_eq_decoder
+    {profile : PolyProfile} {scope : Nat} :
+    (match
+      certifyPiTypeUnitCodomainUnitChildren? (profile := profile)
+        scope with
+    | Except.ok certifiedChildren =>
+        Except.ok
+          (PolyCell.certifiedChildSpineRawDescriptors
+            certifiedChildren.piTypeChildSpine)
+    | Except.error rejection => Except.error rejection) =
+      decodePiTypePayload? (profile := profile) scope
+        piTypeUnitCodomainUnitPayload := rfl
 
 theorem certifyTermStepVarZeroVarOneEndpoints?_scope_zero_rejects
     {profile : PolyProfile} :
@@ -3035,11 +3272,30 @@ theorem screenRawCell0?_lambdaUnitTypeBodyVarZero_rejects
       (NegativeProbes.lambdaUnitTypeBodyVarZeroRawCell profile) =
       Except.error .badPayload := rfl
 
-theorem screenRawCell0?_piTypeUnitCodomainUnit_rejects
+theorem screenRawCell0?_piTypeUnitCodomainUnit
     {profile : PolyProfile} :
     screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
       (NegativeProbes.piTypeUnitCodomainUnitRawCell profile) =
-      Except.error .badPayload := rfl
+      Except.ok () := rfl
+
+theorem screenRawCell0As?_piTypeUnitCodomainUnit
+    {profile : PolyProfile} :
+    screenRawCell0As? (profile := profile) .type
+      NegativeProbes.defaultInferScope
+      (NegativeProbes.piTypeUnitCodomainUnitRawCell profile) =
+      Except.ok () := rfl
+
+theorem screenRawCell0?_piTypeContextAsDomain_rejects
+    {profile : PolyProfile} :
+    screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.piTypeContextAsDomainRawCell profile) =
+      Except.error .wrongChildShape := rfl
+
+theorem screenRawCell0?_piTypeTermAsCodomain_rejects
+    {profile : PolyProfile} :
+    screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.piTypeTermAsCodomainRawCell profile) =
+      Except.error .wrongChildShape := rfl
 
 theorem certifiedSeedTermPackage_raw {profile : PolyProfile} :
     (certifiedSeedTermPackage (profile := profile)).certifiedCell.raw =
@@ -3327,12 +3583,77 @@ theorem checkRawCellAs?_lambdaUnitTypeBodyVarZero_rejects
       (NegativeProbes.lambdaUnitTypeBodyVarZeroRawCell profile) =
       Except.error .badPayload := rfl
 
-theorem checkRawCellAs?_piTypeUnitCodomainUnit_rejects
+theorem inferRawCell?_piTypeUnitCodomainUnit_sort
     {profile : PolyProfile} :
-    checkRawCellAs? (profile := profile) .type
+    certifiedResultSort?
+      (inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
+        (NegativeProbes.piTypeUnitCodomainUnitRawCell profile)) =
+      some .type := by
+  change
+    certifiedResultSort?
+      (inferRawAtom? (profile := profile) 4
+        piTypeGeneratorSpec.cellId
+        piTypeUnitCodomainUnitPayload) = some .type
+  rfl
+
+theorem checkRawCellAs?_piTypeUnitCodomainUnit_sort
+    {profile : PolyProfile} :
+    certifiedResultSort?
+      (checkRawCellAs? (profile := profile) .type
+        NegativeProbes.defaultInferScope
+        (NegativeProbes.piTypeUnitCodomainUnitRawCell profile)) =
+      some .type := by
+  change
+    certifiedResultSort?
+      (inferRawAtom? (profile := profile) 4
+        piTypeGeneratorSpec.cellId
+        piTypeUnitCodomainUnitPayload) = some .type
+  rfl
+
+theorem checkRawCellAs?_piTypeUnitCodomainUnit_as_term_rejects
+    {profile : PolyProfile} :
+    checkRawCellAs? (profile := profile) .term
       NegativeProbes.defaultInferScope
       (NegativeProbes.piTypeUnitCodomainUnitRawCell profile) =
-      Except.error .badPayload := rfl
+      Except.error .wrongSort := rfl
+
+theorem checkRawCellAs?_piTypeUnitCodomainUnit_as_context_rejects
+    {profile : PolyProfile} :
+    checkRawCellAs? (profile := profile) .context
+      NegativeProbes.defaultInferScope
+      (NegativeProbes.piTypeUnitCodomainUnitRawCell profile) =
+      Except.error .wrongSort := rfl
+
+theorem checkRawCellAs?_piTypeUnitCodomainUnit_as_mode_rejects
+    {profile : PolyProfile} :
+    checkRawCellAs? (profile := profile) .mode
+      NegativeProbes.defaultInferScope
+      (NegativeProbes.piTypeUnitCodomainUnitRawCell profile) =
+      Except.error .wrongSort := rfl
+
+theorem inferRawCell?_piTypeContextAsDomain_rejects
+    {profile : PolyProfile} :
+    inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.piTypeContextAsDomainRawCell profile) =
+      Except.error .wrongChildShape := by
+  change
+    inferRawAtom? (profile := profile) 4
+      piTypeGeneratorSpec.cellId
+      NegativeProbes.piTypeContextAsDomainPayload =
+      Except.error .wrongChildShape
+  rfl
+
+theorem inferRawCell?_piTypeTermAsCodomain_rejects
+    {profile : PolyProfile} :
+    inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.piTypeTermAsCodomainRawCell profile) =
+      Except.error .wrongChildShape := by
+  change
+    inferRawAtom? (profile := profile) 4
+      piTypeGeneratorSpec.cellId
+      NegativeProbes.piTypeTermAsCodomainPayload =
+      Except.error .wrongChildShape
+  rfl
 
 theorem inferRawAtom?_applicationVarZeroVarOne_scope_one_rejects
     {profile : PolyProfile} :
@@ -3457,6 +3778,18 @@ theorem acceptedApplicationVarZeroVarOneIngress_hasCoverage
         applicationVarZeroVarOnePayload) = true
   rfl
 
+/-- Accepted-ingress coverage for the first certified pi-type payload. -/
+theorem acceptedPiTypeUnitCodomainUnitIngress_hasCoverage
+    {profile : PolyProfile} :
+    hasAcceptedDimZeroIngressCoverage .type
+      (NegativeProbes.piTypeUnitCodomainUnitRawCell profile) = true := by
+  change
+    hasCertifiedResultShape (dimension := 0) .type
+      (inferRawAtom? (profile := profile) 4
+        piTypeGeneratorSpec.cellId
+        piTypeUnitCodomainUnitPayload) = true
+  rfl
+
 /-- Accepted-ingress coverage headline for the current dim-0 certified
 domain. -/
 theorem acceptedDimZeroIngresses_haveCoverage (profile : PolyProfile) :
@@ -3470,6 +3803,7 @@ theorem acceptedDimZeroIngresses_haveCoverage (profile : PolyProfile) :
     acceptedSeedContextDimZeroFixture,
     acceptedSeedModeDimZeroFixture,
     acceptedApplicationVarZeroVarOneDimZeroFixture,
+    acceptedPiTypeUnitCodomainUnitDimZeroFixture,
     hasAcceptedDimZeroFixtureIngressCoverage]
   rfl
 
@@ -3561,6 +3895,31 @@ theorem acceptedApplicationVarZeroVarOneScreen_hasCoverage
     hasApplicationScreen]
   rfl
 
+/-- Accepted ingress for the first pi-type payload agrees with the structural
+screen. -/
+theorem acceptedPiTypeUnitCodomainUnitScreen_hasCoverage
+    {profile : PolyProfile} :
+    hasAcceptedDimZeroScreenCoverage .type
+      (NegativeProbes.piTypeUnitCodomainUnitRawCell profile) = true := by
+  change
+    (hasAcceptedDimZeroIngressCoverage .type
+      (NegativeProbes.piTypeUnitCodomainUnitRawCell profile) &&
+      (match
+        screenRawCellAs? (profile := profile) .type
+          NegativeProbes.defaultInferScope
+          (NegativeProbes.piTypeUnitCodomainUnitRawCell profile) with
+      | Except.ok () => true
+      | Except.error _ => false)) = true
+  have hasPiTypeScreen :
+      screenRawCellAs? (profile := profile) .type
+        NegativeProbes.defaultInferScope
+        (NegativeProbes.piTypeUnitCodomainUnitRawCell profile) =
+        Except.ok () :=
+    screenRawCell0As?_piTypeUnitCodomainUnit (profile := profile)
+  rw [acceptedPiTypeUnitCodomainUnitIngress_hasCoverage,
+    hasPiTypeScreen]
+  rfl
+
 /-- Accepted dim-0 ingress agrees with the structural screen for every current
 accepted dim-0 fixture. -/
 theorem acceptedDimZeroScreens_haveCoverage (profile : PolyProfile) :
@@ -3574,6 +3933,7 @@ theorem acceptedDimZeroScreens_haveCoverage (profile : PolyProfile) :
     acceptedSeedContextDimZeroFixture,
     acceptedSeedModeDimZeroFixture,
     acceptedApplicationVarZeroVarOneDimZeroFixture,
+    acceptedPiTypeUnitCodomainUnitDimZeroFixture,
     hasAcceptedDimZeroFixtureScreenCoverage,
     hasCertifiedResultScreenCoverage,
     hasAcceptedDimZeroIngressCoverage]
@@ -3635,6 +3995,20 @@ theorem acceptedApplicationVarZeroVarOneInputCode_hasCoverage
       true
   exact hasSameNatList_self _
 
+/-- The accepted certified package for the first pi-type payload preserves the
+raw input code. -/
+theorem acceptedPiTypeUnitCodomainUnitInputCode_hasCoverage
+    {profile : PolyProfile} :
+    hasCertifiedResultInputCodeCoverage
+      (NegativeProbes.piTypeUnitCodomainUnitRawCell profile)
+      (acceptedPiTypeUnitCodomainUnitInputCodeResult profile) = true := by
+  change
+    hasSameNatList
+      (rawCellCode (NegativeProbes.piTypeUnitCodomainUnitRawCell profile))
+      (rawCellCode (NegativeProbes.piTypeUnitCodomainUnitRawCell profile)) =
+      true
+  exact hasSameNatList_self _
+
 /-- The seed term fixture preserves its raw input code through the shared
 fixture frontier. -/
 theorem acceptedSeedTermFixtureInputCode_hasCoverage
@@ -3689,6 +4063,18 @@ theorem acceptedApplicationVarZeroVarOneFixtureInputCode_hasCoverage
     hasAcceptedApplicationVarZeroVarOneInputCodeCoverage profile = true
   exact acceptedApplicationVarZeroVarOneInputCode_hasCoverage
 
+/-- The accepted pi-type fixture preserves its package-level raw input code
+through the shared fixture frontier. -/
+theorem acceptedPiTypeUnitCodomainUnitFixtureInputCode_hasCoverage
+    {profile : PolyProfile} :
+    hasAcceptedDimZeroFixtureInputCodeCoverage
+      (acceptedPiTypeUnitCodomainUnitDimZeroFixture profile) = true := by
+  change
+    hasCertifiedResultInputCodeCoverage
+      (NegativeProbes.piTypeUnitCodomainUnitRawCell profile)
+      (acceptedPiTypeUnitCodomainUnitInputCodeResult profile) = true
+  exact acceptedPiTypeUnitCodomainUnitInputCode_hasCoverage
+
 /-- Accepted dim-0 ingress preserves raw input codes for every current accepted
 dim-0 fixture. -/
 theorem acceptedDimZeroInputCodes_haveCoverage (profile : PolyProfile) :
@@ -3701,7 +4087,8 @@ theorem acceptedDimZeroInputCodes_haveCoverage (profile : PolyProfile) :
     acceptedSeedTypeFixtureInputCode_hasCoverage,
     acceptedSeedContextFixtureInputCode_hasCoverage,
     acceptedSeedModeFixtureInputCode_hasCoverage,
-    acceptedApplicationVarZeroVarOneFixtureInputCode_hasCoverage]
+    acceptedApplicationVarZeroVarOneFixtureInputCode_hasCoverage,
+    acceptedPiTypeUnitCodomainUnitFixtureInputCode_hasCoverage]
   rfl
 
 /-- Accepted ingress for the direct dim-1 term-step path agrees with the

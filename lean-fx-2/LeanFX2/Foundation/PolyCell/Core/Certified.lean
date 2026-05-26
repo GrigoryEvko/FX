@@ -41,7 +41,8 @@ inductive SupportedGeneratorSpec : GeneratorSpec → Type where
   /-- Nullary unit type generator. -/
   | unitType :
       SupportedGeneratorSpec unitTypeGeneratorSpec
-  /-- Dependent-function type generator. Payload decoding is not implemented yet. -/
+  /-- Dependent-function type generator. Only the first finite decoded payload
+  is certified today. -/
   | piType :
       SupportedGeneratorSpec piTypeGeneratorSpec
   /-- Empty-context generator. -/
@@ -66,10 +67,10 @@ inductive SupportedRuleSpec : RuleSpec → Type where
 
 /-- Payload evidence for atom generators that are already safe to certify.
 
-The absence of constructors for lambda/pi/context-extension is intentional:
+The absence of constructors for lambda/context-extension is intentional:
 until payload decoding is real, those atoms cannot be certified by this file.
-Application gets only the first finite decoded payload through a separate
-`PolyCell` constructor that demands certified child terms. -/
+Application and pi-type get only their first finite decoded payloads through
+separate `PolyCell` constructors that demand certified children. -/
 inductive AtomPayloadEvidence :
     (generatorSpec : GeneratorSpec) → (scope : Nat) → (payload : Nat) → Type where
   /-- A variable payload is certified only when the de Bruijn index is inside
@@ -122,6 +123,19 @@ inductive PolyCell (profile : PolyProfile) :
         (.atom variableGeneratorSpec.cellId 1) →
       PolyCell profile .term 0 scope ()
         (.atom applicationGeneratorSpec.cellId applicationVarZeroVarOnePayload)
+
+  /-- Certified pi-type for the first finite decoded payload.
+
+  The constructor is deliberately narrow: it certifies only the payload whose
+  decoded children are unit type at the parent scope and unit type under the
+  binder. -/
+  | piTypeUnitCodomainUnit {scope : Nat} :
+      PolyCell profile .type 0 scope ()
+        (.atom unitTypeGeneratorSpec.cellId 0) →
+      PolyCell profile .type 0 (scope + 1) ()
+        (.atom unitTypeGeneratorSpec.cellId 0) →
+      PolyCell profile .type 0 scope ()
+        (.atom piTypeGeneratorSpec.cellId piTypeUnitCodomainUnitPayload)
 
   /-- Certified generating cell between certified endpoints.
 
@@ -213,6 +227,19 @@ def applicationVarZeroVarOneCell {profile : PolyProfile} {scope : Nat}
     PolyCell profile .term 0 scope ()
       (.atom applicationGeneratorSpec.cellId applicationVarZeroVarOnePayload) :=
   .applicationVarZeroVarOne functionCell argumentCell
+
+/-- The first certified pi-type payload requires certified unit-type children
+at the parent and binder-extended scopes. -/
+def piTypeUnitCodomainUnitCell {profile : PolyProfile} {scope : Nat}
+    (domainCell :
+      PolyCell profile .type 0 scope ()
+        (.atom unitTypeGeneratorSpec.cellId 0))
+    (codomainCell :
+      PolyCell profile .type 0 (scope + 1) ()
+        (.atom unitTypeGeneratorSpec.cellId 0)) :
+    PolyCell profile .type 0 scope ()
+      (.atom piTypeGeneratorSpec.cellId piTypeUnitCodomainUnitPayload) :=
+  .piTypeUnitCodomainUnit domainCell codomainCell
 
 /-- Derive a certified identity cell from an already certified base cell. -/
 def identityCell {profile : PolyProfile} {cellSort : CellSort}
@@ -558,6 +585,57 @@ theorem applicationVarZeroVarOneChildrenForRawDescriptors_toCertifiedChildren
       functionCell argumentCell).toCertifiedChildren =
       applicationVarZeroVarOneChildren functionCell argumentCell := rfl
 
+/-- Certified child spine for the first finite pi-type payload. -/
+def piTypeUnitCodomainUnitChildren {profile : PolyProfile} {scope : Nat}
+    (domainCell :
+      PolyCell profile .type 0 scope ()
+        (.atom unitTypeGeneratorSpec.cellId 0))
+    (codomainCell :
+      PolyCell profile .type 0 (scope + 1) ()
+        (.atom unitTypeGeneratorSpec.cellId 0)) :
+    CellChildren.ForGenerator (CertifiedChild profile) scope
+      piTypeGeneratorSpec :=
+  CellChildren.piTypeChildren
+    (CertifiedChild.ofCell domainCell)
+    (CertifiedChild.ofCell codomainCell)
+
+/-- Descriptor-indexed certified child spine for the first finite pi-type
+payload. -/
+def piTypeUnitCodomainUnitChildrenForRawDescriptors
+    {profile : PolyProfile} {scope : Nat}
+    (domainCell :
+      PolyCell profile .type 0 scope ()
+        (.atom unitTypeGeneratorSpec.cellId 0))
+    (codomainCell :
+      PolyCell profile .type 0 (scope + 1) ()
+        (.atom unitTypeGeneratorSpec.cellId 0)) :
+    CertifiedChildSpineForRawDescriptors profile scope
+      (RawChildDescriptors.piType (profile := profile)
+        (parentScope := scope)
+        (PolyTerm.atom unitTypeGeneratorSpec.cellId 0)
+        (PolyTerm.atom unitTypeGeneratorSpec.cellId 0)) :=
+  CertifiedChildSpineForRawDescriptors.cons
+    { cellBoundary := ()
+      certifiedCell := domainCell }
+    (CertifiedChildSpineForRawDescriptors.cons
+      { cellBoundary := ()
+        certifiedCell := codomainCell }
+      CertifiedChildSpineForRawDescriptors.nil)
+
+/-- Forgetting the descriptor-indexed first pi-type child spine gives the
+ordinary certified child spine. -/
+theorem piTypeUnitCodomainUnitChildrenForRawDescriptors_toCertifiedChildren
+    {profile : PolyProfile} {scope : Nat}
+    (domainCell :
+      PolyCell profile .type 0 scope ()
+        (.atom unitTypeGeneratorSpec.cellId 0))
+    (codomainCell :
+      PolyCell profile .type 0 (scope + 1) ()
+        (.atom unitTypeGeneratorSpec.cellId 0)) :
+    (piTypeUnitCodomainUnitChildrenForRawDescriptors
+      domainCell codomainCell).toCertifiedChildren =
+      piTypeUnitCodomainUnitChildren domainCell codomainCell := rfl
+
 /-- Raw erasure of the variable-cell helper is definitional. -/
 theorem raw_variableCell {profile : PolyProfile} {scope index : Nat}
     (hasIndexWithinScope : index < scope) :
@@ -590,6 +668,18 @@ theorem raw_applicationVarZeroVarOne {profile : PolyProfile} {scope : Nat}
     (applicationVarZeroVarOneCell functionCell argumentCell).raw =
       PolyTerm.atom (profile := profile) applicationGeneratorSpec.cellId
         applicationVarZeroVarOnePayload := rfl
+
+/-- Raw erasure of the first certified pi-type helper is definitional. -/
+theorem raw_piTypeUnitCodomainUnit {profile : PolyProfile} {scope : Nat}
+    (domainCell :
+      PolyCell profile .type 0 scope ()
+        (.atom unitTypeGeneratorSpec.cellId 0))
+    (codomainCell :
+      PolyCell profile .type 0 (scope + 1) ()
+        (.atom unitTypeGeneratorSpec.cellId 0)) :
+    (piTypeUnitCodomainUnitCell domainCell codomainCell).raw =
+      PolyTerm.atom (profile := profile) piTypeGeneratorSpec.cellId
+        piTypeUnitCodomainUnitPayload := rfl
 
 /-- Raw erasure of a derived identity cell is definitional. -/
 theorem raw_identityCell {profile : PolyProfile} {cellSort : CellSort}
@@ -644,6 +734,36 @@ theorem applicationVarZeroVarOneChildren_rawDescriptors
         (parentScope := scope)
         (PolyTerm.atom variableGeneratorSpec.cellId 0)
         (PolyTerm.atom variableGeneratorSpec.cellId 1) := rfl
+
+/-- The certified child spine for the first pi-type payload has the pi-type
+generator arity. -/
+theorem piTypeUnitCodomainUnitChildren_arity_eq_generator
+    {profile : PolyProfile} {scope : Nat}
+    (domainCell :
+      PolyCell profile .type 0 scope ()
+        (.atom unitTypeGeneratorSpec.cellId 0))
+    (codomainCell :
+      PolyCell profile .type 0 (scope + 1) ()
+        (.atom unitTypeGeneratorSpec.cellId 0)) :
+    (piTypeUnitCodomainUnitChildren domainCell codomainCell).arity =
+      piTypeGeneratorSpec.arity := rfl
+
+/-- Forgetting the first certified pi-type child spine gives the matching raw
+descriptors. -/
+theorem piTypeUnitCodomainUnitChildren_rawDescriptors
+    {profile : PolyProfile} {scope : Nat}
+    (domainCell :
+      PolyCell profile .type 0 scope ()
+        (.atom unitTypeGeneratorSpec.cellId 0))
+    (codomainCell :
+      PolyCell profile .type 0 (scope + 1) ()
+        (.atom unitTypeGeneratorSpec.cellId 0)) :
+    certifiedChildSpineRawDescriptors
+      (piTypeUnitCodomainUnitChildren domainCell codomainCell) =
+      RawChildDescriptors.piType (profile := profile)
+        (parentScope := scope)
+        (PolyTerm.atom unitTypeGeneratorSpec.cellId 0)
+        (PolyTerm.atom unitTypeGeneratorSpec.cellId 0) := rfl
 
 end PolyCell
 

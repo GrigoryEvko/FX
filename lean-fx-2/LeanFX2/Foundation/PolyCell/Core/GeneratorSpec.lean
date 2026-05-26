@@ -144,6 +144,10 @@ def piTypeGeneratorSpec : GeneratorSpec where
     ChildSpec.typeUnderBinder
   ]
 
+/-- First finite pi-type payload whose decoded children are unit type at the
+parent scope and unit type under the binder. -/
+def piTypeUnitCodomainUnitPayload : Nat := 9300
+
 /-- First context generator id, immediately after current term/type ids. -/
 def firstContextGeneratorCellId : CellId :=
   PolyTerm.typeCellIdLimit
