@@ -565,6 +565,22 @@ def certifiedApplicationVarZeroVarOne :
         (Nat.zero_lt_succ 3)
         (Nat.succ_lt_succ (Nat.zero_lt_succ 2))))
 
+/-- Certified term view for the first finite lambda payload. -/
+def certifiedLambdaUnitTypeBodyVarZero :
+    CertifiedFXTerm NegativeProbes.defaultInferScope :=
+  CertifiedFXCell.ofCertifiedRawCell
+    (Check.certifiedLambdaUnitTypeBodyVarZeroPackage (profile := fxProfile)
+      (Check.certifiedLambdaUnitTypeBodyVarZeroChildren (profile := fxProfile)
+        (scope := NegativeProbes.defaultInferScope)))
+
+/-- Certified type view for the first finite pi-type payload. -/
+def certifiedPiTypeUnitCodomainUnit :
+    CertifiedFXType NegativeProbes.defaultInferScope :=
+  CertifiedFXCell.ofCertifiedRawCell
+    (Check.certifiedPiTypeUnitCodomainUnitPackage (profile := fxProfile)
+      (Check.certifiedPiTypeUnitCodomainUnitChildren (profile := fxProfile)
+        (scope := NegativeProbes.defaultInferScope)))
+
 /-- Certified structural dim-1 term-cell view for the first term-step fixture. -/
 def certifiedSeedTermStep :
     CertifiedFXDimOneTermCell NegativeProbes.defaultInferScope :=
@@ -785,6 +801,14 @@ theorem certifiedSeedMode_raw :
 theorem certifiedApplicationVarZeroVarOne_raw :
     certifiedApplicationVarZeroVarOne.toRaw =
       NegativeProbes.applicationVarZeroVarOneRawCell fxProfile := rfl
+
+theorem certifiedLambdaUnitTypeBodyVarZero_raw :
+    certifiedLambdaUnitTypeBodyVarZero.toRaw =
+      NegativeProbes.lambdaUnitTypeBodyVarZeroRawCell fxProfile := rfl
+
+theorem certifiedPiTypeUnitCodomainUnit_raw :
+    certifiedPiTypeUnitCodomainUnit.toRaw =
+      NegativeProbes.piTypeUnitCodomainUnitRawCell fxProfile := rfl
 
 theorem certifiedSeedTermStep_raw :
     certifiedSeedTermStep.toRaw =
