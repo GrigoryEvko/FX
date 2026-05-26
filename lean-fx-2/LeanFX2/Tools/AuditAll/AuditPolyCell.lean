@@ -973,6 +973,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell?_matchedVerticalBoundary_scope_four
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell?_termStepLeftIdentity_scope_four
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell?_termStepRightIdentity_scope_four
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell?_termIdentity_scope_four
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell?_typeIdentity_scope_four
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell?_contextIdentity_scope_four
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell?_modeIdentity_scope_four
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell?_termIdentityVertical_scope_four
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell?_typeIdentityVertical_scope_four
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell?_contextIdentityVertical_scope_four

@@ -3366,6 +3366,30 @@ theorem screenRawCell?_termStepRightIdentity_scope_four
       (NegativeProbes.termStepRightIdentityRawCell profile) =
       Except.ok .term := rfl
 
+theorem screenRawCell?_termIdentity_scope_four
+    {profile : PolyProfile} :
+    screenRawCell? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.termIdentityRawCell profile) =
+      Except.ok .term := rfl
+
+theorem screenRawCell?_typeIdentity_scope_four
+    {profile : PolyProfile} :
+    screenRawCell? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.typeIdentityRawCell profile) =
+      Except.ok .type := rfl
+
+theorem screenRawCell?_contextIdentity_scope_four
+    {profile : PolyProfile} :
+    screenRawCell? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.contextIdentityRawCell profile) =
+      Except.ok .context := rfl
+
+theorem screenRawCell?_modeIdentity_scope_four
+    {profile : PolyProfile} :
+    screenRawCell? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.modeIdentityRawCell profile) =
+      Except.ok .mode := rfl
+
 theorem screenRawCell?_termIdentityVertical_scope_four
     {profile : PolyProfile} :
     screenRawCell? (profile := profile) NegativeProbes.defaultInferScope
