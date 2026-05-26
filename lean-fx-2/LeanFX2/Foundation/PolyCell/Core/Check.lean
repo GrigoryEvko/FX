@@ -2,6 +2,7 @@ import LeanFX2.Foundation.PolyCell.Core.Certified
 import LeanFX2.Foundation.PolyCell.Core.Fold
 import LeanFX2.Foundation.PolyCell.Core.NegativeProbes
 import LeanFX2.Foundation.PolyCell.Core.RawChildren
+import LeanFX2.Foundation.PolyCell.Core.PolyTermDecEq
 /-!
 # Check — Executable Raw Rejection Screen
 
@@ -1849,39 +1850,239 @@ def inferRawAtom? {profile : PolyProfile} (scope cellId payload : Nat) :
       (certificationRejectionAfterScreen? scope
         (PolyTerm.atom (profile := profile) cellId payload))
 
+/-- Reconstruct a raw-indexed certified package from an existential result. -/
+def CertifiedRawCellResult.toPackage {profile : PolyProfile} {scope : Nat}
+    (result : CertifiedRawCellResult profile scope) :
+    CertifiedRawCell profile scope result.rawCell where
+  cellSort := result.cellSort
+  cellBoundary := result.cellBoundary
+  certifiedCell := result.certifiedCell
+
+/-- Raw-indexed atom certifier.
+
+Returns a certified package indexed by the EXACT input atom.  Index transport
+along the decided generator-id / payload equalities uses `cast` (`Eq.rec`),
+which is propext-free.  Rejection reasons mirror `inferRawAtom?` through the
+shared `certificationRejectionAfterScreen?` policy. -/
+def certifyRawAtomExact? {profile : PolyProfile} (scope cellId payload : Nat) :
+    Except CellCheckRejection
+      (CertifiedRawCell profile scope (PolyTerm.atom cellId payload)) :=
+  if hVariable : cellId = variableGeneratorSpec.cellId then
+    match variablePayloadEvidence? scope payload with
+    | some (AtomPayloadEvidence.variable hasIndexWithinScope) =>
+        Except.ok
+          (cast (by rw [hVariable])
+            (certifiedVariablePackage (profile := profile) hasIndexWithinScope))
+    | none => Except.error .badPayload
+  else if hUnitType : cellId = unitTypeGeneratorSpec.cellId then
+    if hPayload : payload = 0 then
+      Except.ok
+        (cast (by rw [hUnitType, hPayload])
+          (certifiedUnitTypePackage (profile := profile) (scope := scope)))
+    else
+      Except.error
+        (certificationRejectionAfterScreen? scope
+          (PolyTerm.atom (profile := profile) cellId payload))
+  else if hContextEmpty : cellId = contextEmptyGeneratorSpec.cellId then
+    if hPayload : payload = 0 then
+      Except.ok
+        (cast (by rw [hContextEmpty, hPayload])
+          (certifiedContextEmptyPackage (profile := profile) (scope := scope)))
+    else
+      Except.error
+        (certificationRejectionAfterScreen? scope
+          (PolyTerm.atom (profile := profile) cellId payload))
+  else if hLinearMode : cellId = linearModeGeneratorSpec.cellId then
+    if hPayload : payload = 0 then
+      Except.ok
+        (cast (by rw [hLinearMode, hPayload])
+          (certifiedLinearModePackage (profile := profile) (scope := scope)))
+    else
+      Except.error
+        (certificationRejectionAfterScreen? scope
+          (PolyTerm.atom (profile := profile) cellId payload))
+  else if hLambda : cellId = lambdaGeneratorSpec.cellId then
+    if hPayload : payload = lambdaUnitTypeBodyVarZeroPayload then
+      match certifyLambdaUnitTypeBodyVarZeroChildren? (profile := profile) scope with
+      | Except.ok certifiedChildren =>
+          Except.ok
+            (cast (by rw [hLambda, hPayload])
+              (certifiedLambdaUnitTypeBodyVarZeroPackage (profile := profile)
+                certifiedChildren))
+      | Except.error rejection => Except.error rejection
+    else
+      Except.error
+        (certificationRejectionAfterScreen? scope
+          (PolyTerm.atom (profile := profile) cellId payload))
+  else if hApplication : cellId = applicationGeneratorSpec.cellId then
+    if hPayload : payload = applicationVarZeroVarOnePayload then
+      match certifyApplicationVarZeroVarOneChildren? (profile := profile) scope with
+      | Except.ok certifiedChildren =>
+          Except.ok
+            (cast (by rw [hApplication, hPayload])
+              (certifiedApplicationVarZeroVarOnePackage (profile := profile)
+                certifiedChildren))
+      | Except.error rejection => Except.error rejection
+    else
+      Except.error
+        (certificationRejectionAfterScreen? scope
+          (PolyTerm.atom (profile := profile) cellId payload))
+  else if hPiType : cellId = piTypeGeneratorSpec.cellId then
+    if hPayload : payload = piTypeUnitCodomainUnitPayload then
+      match certifyPiTypeUnitCodomainUnitChildren? (profile := profile) scope with
+      | Except.ok certifiedChildren =>
+          Except.ok
+            (cast (by rw [hPiType, hPayload])
+              (certifiedPiTypeUnitCodomainUnitPackage (profile := profile)
+                certifiedChildren))
+      | Except.error rejection => Except.error rejection
+    else
+      Except.error
+        (certificationRejectionAfterScreen? scope
+          (PolyTerm.atom (profile := profile) cellId payload))
+  else if hContextCons : cellId = contextConsGeneratorSpec.cellId then
+    if hPayload : payload = contextConsEmptyUnitLinearPayload then
+      match certifyContextConsEmptyUnitLinearChildren? (profile := profile) scope with
+      | Except.ok certifiedChildren =>
+          Except.ok
+            (cast (by rw [hContextCons, hPayload])
+              (certifiedContextConsEmptyUnitLinearPackage (profile := profile)
+                certifiedChildren))
+      | Except.error rejection => Except.error rejection
+    else
+      Except.error
+        (certificationRejectionAfterScreen? scope
+          (PolyTerm.atom (profile := profile) cellId payload))
+  else
+    Except.error
+      (certificationRejectionAfterScreen? scope
+        (PolyTerm.atom (profile := profile) cellId payload))
+
+/-- Reconcile two already-certified children into a certified generating cell
+for the term-step rule.
+
+Reconciliation uses `by_cases` (Decidable) + `subst`/`▸` (Eq.rec) only — never
+a match on the Nat dimension index.  After `subst` of the dimension equality the
+children land at dim 0, where `CellBoundary` is `Unit` regardless of sort, so the
+sort transport carries no boundary obligation.  Only the term-step rule at
+endpoint dimension 0 is supported today; everything else rejects. -/
+def buildTermStepCellExact? {profile : PolyProfile} {scope : Nat} {dim : CellDim}
+    (ruleId : Nat) (source target : PolyTerm profile dim)
+    (certSource : CertifiedRawCell profile scope source)
+    (certTarget : CertifiedRawCell profile scope target) :
+    Except CellCheckRejection
+      (CertifiedRawCell profile scope (PolyTerm.cell ruleId source target)) := by
+  by_cases hRule : ruleId = termStepRuleSpec.ruleId
+  · subst hRule
+    by_cases hDim : dim = 0
+    · subst hDim
+      by_cases hSortSource : certSource.cellSort = termStepRuleSpec.cellSort
+      · by_cases hSortTarget : certTarget.cellSort = termStepRuleSpec.cellSort
+        · exact Except.ok
+            { cellSort := termStepRuleSpec.cellSort
+              cellBoundary := (source, target)
+              certifiedCell :=
+                PolyCell.cell SupportedRuleSpec.termStep
+                  (hSortSource ▸ certSource.certifiedCell)
+                  (hSortTarget ▸ certTarget.certifiedCell) }
+        · exact Except.error .badBoundaryEndpoint
+      · exact Except.error .badBoundaryEndpoint
+    · exact Except.error .unknownGenerator
+  · exact Except.error .unknownGenerator
+
+/-- Reconcile two already-certified positive-dimensional cells into a certified
+vertical composite: same sort, and the first cell's target boundary equal to the
+second cell's source boundary (decided via the propext-free `PolyTerm`
+`DecidableEq`).  The boundary-pair transport uses `▸` (`Eq.rec`) plus structure
+eta and is propext-free. -/
+def buildVerticalCompositeExact? {profile : PolyProfile} {scope : Nat}
+    {cdim : CellDim} (first second : PolyTerm profile (cdim + 1))
+    (certFirst : CertifiedRawCell profile scope first)
+    (certSecond : CertifiedRawCell profile scope second) :
+    Except CellCheckRejection
+      (CertifiedRawCell profile scope (PolyTerm.compV first second)) :=
+  if hSort : certSecond.cellSort = certFirst.cellSort then
+    if hMiddle : (certSecond.cellBoundary.1 : PolyTerm profile cdim) =
+        (certFirst.cellBoundary.2 : PolyTerm profile cdim) then
+      Except.ok
+        { cellSort := certFirst.cellSort
+          cellBoundary := (certFirst.cellBoundary.1, certSecond.cellBoundary.2)
+          certifiedCell :=
+            PolyCell.compV certFirst.certifiedCell
+              (hMiddle ▸ hSort ▸ certSecond.certifiedCell) }
+    else Except.error .badVerticalBoundary
+  else Except.error .badVerticalBoundary
+
+/-- General raw-indexed recursive certifier.
+
+Matches on `rawCell` only (dim inferred), so the matcher never excludes an
+impossible index/constructor pair.  Identity recurses on its base and wraps via
+the derived certified identity package without index transport.  Generating
+cells recurse on both endpoints and reconcile against the term-step rule.
+Vertical composites recurse on both operands and reconcile sort plus the shared
+middle boundary.  Horizontal composition stays rejected pending Gray semantics. -/
+def certifyRawCellExact? {profile : PolyProfile} (scope : Nat) {dim : CellDim}
+    (rawCell : PolyTerm profile dim) :
+    Except CellCheckRejection (CertifiedRawCell profile scope rawCell) :=
+  match rawCell with
+  | .atom cellId payload => certifyRawAtomExact? scope cellId payload
+  | .cell ruleId source target =>
+      match certifyRawCellExact? scope source,
+          certifyRawCellExact? scope target with
+      | Except.ok certSource, Except.ok certTarget =>
+          buildTermStepCellExact? ruleId source target certSource certTarget
+      | Except.error rejection, _ => Except.error rejection
+      | _, Except.error rejection => Except.error rejection
+  | .compV first second =>
+      match certifyRawCellExact? scope first,
+          certifyRawCellExact? scope second with
+      | Except.ok certFirst, Except.ok certSecond =>
+          buildVerticalCompositeExact? first second certFirst certSecond
+      | Except.error rejection, _ => Except.error rejection
+      | _, Except.error rejection => Except.error rejection
+  | .compH _ _ => Except.error .unsupportedCompH
+  | .identity base =>
+      match certifyRawCellExact? scope base with
+      | Except.ok baseCertified =>
+          Except.ok (certifiedIdentityPackage baseCertified)
+      | Except.error rejection => Except.error rejection
+
+/-- Existential-output wrapper over the general certifier, matching the public
+`CertifiedRawCellResult` API used by the rest of the checker. -/
+def inferRawCellGeneral? {profile : PolyProfile} (scope : Nat) {dim : CellDim}
+    (rawCell : PolyTerm profile dim) :
+    Except CellCheckRejection (CertifiedRawCellResult profile scope) :=
+  match certifyRawCellExact? scope rawCell with
+  | Except.ok certifiedCell =>
+      Except.ok
+        (certifiedRawCellResultOfPackage
+          (rawCellCode rawCell) certifiedCell (hasSameNatList_self _))
+  | Except.error rejection => Except.error rejection
+
 /-- First raw-to-certified executable ingress.
 
 The accepted result contains a certified cell and a computable raw-code
-preservation certificate.  This slice certifies only dim-0 payload-evidenced
-atoms; positive-dimensional cells remain screen-only. -/
+preservation certificate.  This dim-0 public entry point now delegates to the
+general raw-indexed certifier `certifyRawCellExact?` (via `inferRawCellGeneral?`)
+so there is a single certification source of truth; the result value is
+`rfl`-equal to the prior canonical-package construction. -/
 def inferRawCell? {profile : PolyProfile} (scope : Nat)
     (rawCell : PolyTerm profile 0) :
     Except CellCheckRejection (CertifiedRawCellResult profile scope) :=
-  match rawCell with
-  | .atom cellId payload => inferRawAtom? (profile := profile) scope cellId payload
+  inferRawCellGeneral? (profile := profile) scope rawCell
 
 /-- Direct executable certified ingress for the first dim-1 term-step fixture.
 
-This avoids a dependent dispatcher over arbitrary positive-dimensional raw
-cells.  The arbitrary dispatcher route is left out until it can be implemented
-without adding a trust escape. -/
+Now routes through the general certifier `certifyRawCellExact?` (via
+`inferRawCellGeneral?`) on the term-step raw cell, rather than a bespoke
+endpoint dispatcher; the result value is `rfl`-equal to the prior construction. -/
 def inferTermStepVarZeroVarOne? {profile : PolyProfile} (scope : Nat) :
     Except CellCheckRejection (CertifiedRawCellResult profile scope) :=
-  match certifyTermStepVarZeroVarOneEndpoints?
-      (profile := profile) scope with
-  | Except.ok certifiedEndpoints =>
-      Except.ok
-        (certifiedRawCellResultOfPackage
-          (profile := profile) (scope := scope)
-          (rawCellCode
-            (PolyTerm.cell (profile := profile)
-              termStepRuleSpec.ruleId
-              (NegativeProbes.seedTermAtom profile)
-              (NegativeProbes.alternateTermAtom profile)))
-          (certifiedTermStepVarZeroVarOnePackage
-            (profile := profile) certifiedEndpoints)
-          (hasSameNatList_self _))
-  | Except.error rejection => Except.error rejection
+  inferRawCellGeneral? (profile := profile) scope
+    (PolyTerm.cell (profile := profile)
+      termStepRuleSpec.ruleId
+      (NegativeProbes.seedTermAtom profile)
+      (NegativeProbes.alternateTermAtom profile))
 
 /-- Does the certification-stage rejection policy reject this probe as
 expected?
@@ -5449,15 +5650,22 @@ theorem currentDerivedCertifiedInputCodes_haveCoverage
     hasDerivedCertifiedFixtureInputCodeCoverage]
   rfl
 
+/-- At scope 1 the term-step endpoints are `var 0` (in scope) and `var 1` (out
+of scope), so the converged ingress surfaces the precise endpoint rejection
+`badPayload` instead of the coarser `badBoundaryEndpoint`.  The cell is still
+rejected; only the diagnostic refined when `inferTermStepVarZeroVarOne?` began
+routing through the general endpoint-first certifier. -/
 theorem inferTermStepVarZeroVarOne?_scope_one_rejects
     {profile : PolyProfile} :
     inferTermStepVarZeroVarOne? (profile := profile) 1 =
-      Except.error .badBoundaryEndpoint := rfl
+      Except.error .badPayload := rfl
 
+/-- At scope 0 both term-step endpoints are out of scope, so the converged
+ingress surfaces the precise endpoint rejection `badPayload`. -/
 theorem inferTermStepVarZeroVarOne?_scope_zero_rejects
     {profile : PolyProfile} :
     inferTermStepVarZeroVarOne? (profile := profile) 0 =
-      Except.error .badBoundaryEndpoint := rfl
+      Except.error .badPayload := rfl
 
 theorem certificationRejectionAfterScreen?_unsupportedTermStep_rejects
     {profile : PolyProfile} :
