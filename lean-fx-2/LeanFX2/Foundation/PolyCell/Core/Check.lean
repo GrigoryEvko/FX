@@ -1341,6 +1341,19 @@ def hasCertifiedResultScreenCoverage {profile : PolyProfile} {scope : Nat}
       | Except.ok () => true
       | Except.error _ => false
 
+/-- Does an accepted ingress result preserve the raw input code?
+
+This is an executable regression predicate.  It does not identify raw cells
+extensionally; it only checks the finite prefix-code certificate carried by a
+successful ingress result. -/
+def hasCertifiedResultInputCodeCoverage {profile : PolyProfile} {scope : Nat}
+    {dimension : CellDim} (rawCell : PolyTerm profile dimension) :
+    Except CellCheckRejection (CertifiedRawCellResult profile scope) → Bool
+  | Except.ok result =>
+      hasSameNatList result.inputCode (rawCellCode rawCell) &&
+      hasSameNatList (rawCellCode result.rawCell) (rawCellCode rawCell)
+  | Except.error _ => false
+
 /-- Accepted dim-0 ingress coverage for one raw fixture. -/
 def hasAcceptedDimZeroIngressCoverage {profile : PolyProfile}
     (expectedSort : CellSort) (expectedRawCell : PolyTerm profile 0) : Bool :=
@@ -1392,6 +1405,14 @@ def hasAcceptedTermStepIngressCoverage (profile : PolyProfile) : Bool :=
 structural screen. -/
 def hasAcceptedTermStepScreenCoverage (profile : PolyProfile) : Bool :=
   hasCertifiedResultScreenCoverage .term
+    (NegativeProbes.termStepVarZeroVarOneRawCell profile)
+    (inferTermStepVarZeroVarOne? (profile := profile)
+      NegativeProbes.defaultInferScope)
+
+/-- The current positive-dimensional accepted ingress fixture preserves the
+raw input code. -/
+def hasAcceptedTermStepInputCodeCoverage (profile : PolyProfile) : Bool :=
+  hasCertifiedResultInputCodeCoverage
     (NegativeProbes.termStepVarZeroVarOneRawCell profile)
     (inferTermStepVarZeroVarOne? (profile := profile)
       NegativeProbes.defaultInferScope)
@@ -2459,6 +2480,16 @@ theorem acceptedTermStepScreen_hasCoverage (profile : PolyProfile) :
     hasAcceptedTermStepScreenCoverage profile = true := by
   change
     hasCertifiedResultScreenCoverage .term
+      (NegativeProbes.termStepVarZeroVarOneRawCell profile)
+      (inferTermStepVarZeroVarOne? (profile := profile) 4) = true
+  rfl
+
+/-- Accepted ingress for the direct dim-1 term-step path preserves the raw
+input code. -/
+theorem acceptedTermStepInputCode_hasCoverage (profile : PolyProfile) :
+    hasAcceptedTermStepInputCodeCoverage profile = true := by
+  change
+    hasCertifiedResultInputCodeCoverage
       (NegativeProbes.termStepVarZeroVarOneRawCell profile)
       (inferTermStepVarZeroVarOne? (profile := profile) 4) = true
   rfl
