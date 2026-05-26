@@ -1726,6 +1726,198 @@ def certifiedSeedTermIdentityTwicePackage {profile : PolyProfile} :
     (certifiedSeedTermIdentityPackage (profile := profile)).certifiedCell
     (certifiedSeedTermIdentityPackage (profile := profile)).certifiedCell
 
+/-- Package an already certified raw cell as an executable result with its
+own raw-code certificate.
+
+This is for derived certified constructors such as identity and vertical
+composition.  It is not raw ingress: the caller must already have a
+`CertifiedRawCell` package. -/
+def certifiedPackageInputCodeResult {profile : PolyProfile} {scope : Nat}
+    {dimension : CellDim} {rawCell : PolyTerm profile dimension}
+    (certifiedPackage : CertifiedRawCell profile scope rawCell) :
+    Except CellCheckRejection (CertifiedRawCellResult profile scope) :=
+  Except.ok
+    (certifiedRawCellResultOfPackage
+      (profile := profile) (scope := scope)
+      (rawCellCode rawCell) certifiedPackage (hasSameNatList_self _))
+
+/-- One current derived certified fixture.
+
+Derived fixtures are certified-layer constructions from existing packages, not
+raw checker ingress paths. -/
+structure DerivedCertifiedFixture (profile : PolyProfile) where
+  /-- Dimension of the derived raw cell. -/
+  cellDimension : CellDim
+  /-- Sort expected from the derived certified cell. -/
+  expectedSort : CellSort
+  /-- Raw cell carried by the derived certified package. -/
+  rawCell : PolyTerm profile cellDimension
+  /-- Certified package indexed by the derived raw cell. -/
+  certifiedPackage :
+    CertifiedRawCell profile NegativeProbes.defaultInferScope rawCell
+
+/-- The executable result derived from one already certified package. -/
+def DerivedCertifiedFixture.packageResult {profile : PolyProfile}
+    (derivedFixture : DerivedCertifiedFixture profile) :
+    Except CellCheckRejection
+      (CertifiedRawCellResult profile NegativeProbes.defaultInferScope) :=
+  certifiedPackageInputCodeResult derivedFixture.certifiedPackage
+
+/-- Does one derived certified fixture have shape coverage? -/
+def hasDerivedCertifiedFixtureShapeCoverage {profile : PolyProfile}
+    (derivedFixture : DerivedCertifiedFixture profile) : Bool :=
+  hasCertifiedResultShape (dimension := derivedFixture.cellDimension)
+    derivedFixture.expectedSort derivedFixture.packageResult
+
+/-- Does one derived certified fixture agree with the structural screen? -/
+def hasDerivedCertifiedFixtureScreenCoverage {profile : PolyProfile}
+    (derivedFixture : DerivedCertifiedFixture profile) : Bool :=
+  hasCertifiedResultScreenCoverage derivedFixture.expectedSort
+    derivedFixture.rawCell derivedFixture.packageResult
+
+/-- Does one derived certified fixture preserve its finite raw input code? -/
+def hasDerivedCertifiedFixtureInputCodeCoverage {profile : PolyProfile}
+    (derivedFixture : DerivedCertifiedFixture profile) : Bool :=
+  hasCertifiedResultInputCodeCoverage derivedFixture.rawCell
+    derivedFixture.packageResult
+
+/-- Check shape coverage across an already-known nonempty derived fixture
+tail. -/
+def doDerivedCertifiedFixturesHaveShapeCoverage {profile : PolyProfile} :
+    List (DerivedCertifiedFixture profile) → Bool
+  | [] => true
+  | derivedFixture :: remainingFixtures =>
+      hasDerivedCertifiedFixtureShapeCoverage derivedFixture &&
+      doDerivedCertifiedFixturesHaveShapeCoverage remainingFixtures
+
+/-- Check screen coverage across an already-known nonempty derived fixture
+tail. -/
+def doDerivedCertifiedFixturesHaveScreenCoverage {profile : PolyProfile} :
+    List (DerivedCertifiedFixture profile) → Bool
+  | [] => true
+  | derivedFixture :: remainingFixtures =>
+      hasDerivedCertifiedFixtureScreenCoverage derivedFixture &&
+      doDerivedCertifiedFixturesHaveScreenCoverage remainingFixtures
+
+/-- Check input-code coverage across an already-known nonempty derived
+fixture tail. -/
+def doDerivedCertifiedFixturesHaveInputCodeCoverage
+    {profile : PolyProfile} :
+    List (DerivedCertifiedFixture profile) → Bool
+  | [] => true
+  | derivedFixture :: remainingFixtures =>
+      hasDerivedCertifiedFixtureInputCodeCoverage derivedFixture &&
+      doDerivedCertifiedFixturesHaveInputCodeCoverage remainingFixtures
+
+/-- Non-vacuous shape coverage for a derived certified fixture list. -/
+def haveDerivedCertifiedFixturesShapeCoverage {profile : PolyProfile} :
+    List (DerivedCertifiedFixture profile) → Bool
+  | [] => false
+  | derivedFixture :: remainingFixtures =>
+      doDerivedCertifiedFixturesHaveShapeCoverage
+        (derivedFixture :: remainingFixtures)
+
+/-- Non-vacuous screen coverage for a derived certified fixture list. -/
+def haveDerivedCertifiedFixturesScreenCoverage {profile : PolyProfile} :
+    List (DerivedCertifiedFixture profile) → Bool
+  | [] => false
+  | derivedFixture :: remainingFixtures =>
+      doDerivedCertifiedFixturesHaveScreenCoverage
+        (derivedFixture :: remainingFixtures)
+
+/-- Non-vacuous input-code coverage for a derived certified fixture list. -/
+def haveDerivedCertifiedFixturesInputCodeCoverage
+    {profile : PolyProfile} :
+    List (DerivedCertifiedFixture profile) → Bool
+  | [] => false
+  | derivedFixture :: remainingFixtures =>
+      doDerivedCertifiedFixturesHaveInputCodeCoverage
+        (derivedFixture :: remainingFixtures)
+
+/-- Derived certified identity fixture over the seed term. -/
+def derivedSeedTermIdentityFixture (profile : PolyProfile) :
+    DerivedCertifiedFixture profile where
+  cellDimension := 1
+  expectedSort := .term
+  rawCell := PolyTerm.identity (NegativeProbes.seedTermAtom profile)
+  certifiedPackage := certifiedSeedTermIdentityPackage (profile := profile)
+
+/-- Derived certified identity fixture over the seed type. -/
+def derivedSeedTypeIdentityFixture (profile : PolyProfile) :
+    DerivedCertifiedFixture profile where
+  cellDimension := 1
+  expectedSort := .type
+  rawCell := PolyTerm.identity (NegativeProbes.seedTypeAtom profile)
+  certifiedPackage := certifiedSeedTypeIdentityPackage (profile := profile)
+
+/-- Derived certified identity fixture over the seed context. -/
+def derivedSeedContextIdentityFixture (profile : PolyProfile) :
+    DerivedCertifiedFixture profile where
+  cellDimension := 1
+  expectedSort := .context
+  rawCell := PolyTerm.identity (NegativeProbes.seedContextAtom profile)
+  certifiedPackage := certifiedSeedContextIdentityPackage (profile := profile)
+
+/-- Derived certified identity fixture over the seed mode. -/
+def derivedSeedModeIdentityFixture (profile : PolyProfile) :
+    DerivedCertifiedFixture profile where
+  cellDimension := 1
+  expectedSort := .mode
+  rawCell := PolyTerm.identity (NegativeProbes.seedModeAtom profile)
+  certifiedPackage := certifiedSeedModeIdentityPackage (profile := profile)
+
+/-- Derived certified identity fixture over the seed dim-1 term step. -/
+def derivedSeedTermStepIdentityFixture (profile : PolyProfile) :
+    DerivedCertifiedFixture profile where
+  cellDimension := 2
+  expectedSort := .term
+  rawCell :=
+    PolyTerm.identity (NegativeProbes.termStepVarZeroVarOneRawCell profile)
+  certifiedPackage := certifiedSeedTermStepIdentityPackage (profile := profile)
+
+/-- Derived certified vertical-composite fixture over the seed term identity. -/
+def derivedSeedTermIdentityTwiceFixture (profile : PolyProfile) :
+    DerivedCertifiedFixture profile where
+  cellDimension := 1
+  expectedSort := .term
+  rawCell :=
+    PolyTerm.compV
+      (PolyTerm.identity (NegativeProbes.seedTermAtom profile))
+      (PolyTerm.identity (NegativeProbes.seedTermAtom profile))
+  certifiedPackage := certifiedSeedTermIdentityTwicePackage (profile := profile)
+
+/-- Current finite frontier of derived certified packages. -/
+def derivedCertifiedFixtures (profile : PolyProfile) :
+    List (DerivedCertifiedFixture profile) :=
+  [derivedSeedTermIdentityFixture profile,
+    derivedSeedTypeIdentityFixture profile,
+    derivedSeedContextIdentityFixture profile,
+    derivedSeedModeIdentityFixture profile,
+    derivedSeedTermStepIdentityFixture profile,
+    derivedSeedTermIdentityTwiceFixture profile]
+
+/-- The current derived certified frontier has exactly six fixtures. -/
+theorem derivedCertifiedFixtures_length (profile : PolyProfile) :
+    (derivedCertifiedFixtures profile).length = 6 := rfl
+
+/-- Current derived certified packages have shape coverage. -/
+def haveCurrentDerivedCertifiedShapeCoverage
+    (profile : PolyProfile) : Bool :=
+  haveDerivedCertifiedFixturesShapeCoverage
+    (derivedCertifiedFixtures profile)
+
+/-- Current derived certified packages agree with the structural screen. -/
+def haveCurrentDerivedCertifiedScreenCoverage
+    (profile : PolyProfile) : Bool :=
+  haveDerivedCertifiedFixturesScreenCoverage
+    (derivedCertifiedFixtures profile)
+
+/-- Current derived certified packages preserve their raw input codes. -/
+def haveCurrentDerivedCertifiedInputCodeCoverage
+    (profile : PolyProfile) : Bool :=
+  haveDerivedCertifiedFixturesInputCodeCoverage
+    (derivedCertifiedFixtures profile)
+
 theorem lookupGeneratorSpec?_variable :
     lookupGeneratorSpec? variableGeneratorSpec.cellId =
       some ⟨variableGeneratorSpec, SupportedGeneratorSpec.variable⟩ := rfl
@@ -2913,6 +3105,57 @@ theorem currentAcceptedInputCodes_haveCoverage (profile : PolyProfile) :
   dsimp [haveCurrentAcceptedInputCodeCoverage]
   rw [acceptedDimZeroInputCodes_haveCoverage,
     acceptedTermStepInputCode_hasCoverage]
+  rfl
+
+/-- Current derived certified packages have shape coverage. -/
+theorem currentDerivedCertifiedShapes_haveCoverage
+    (profile : PolyProfile) :
+    haveCurrentDerivedCertifiedShapeCoverage profile = true := by
+  dsimp [haveCurrentDerivedCertifiedShapeCoverage,
+    haveDerivedCertifiedFixturesShapeCoverage,
+    doDerivedCertifiedFixturesHaveShapeCoverage,
+    derivedCertifiedFixtures,
+    derivedSeedTermIdentityFixture,
+    derivedSeedTypeIdentityFixture,
+    derivedSeedContextIdentityFixture,
+    derivedSeedModeIdentityFixture,
+    derivedSeedTermStepIdentityFixture,
+    derivedSeedTermIdentityTwiceFixture,
+    hasDerivedCertifiedFixtureShapeCoverage]
+  rfl
+
+/-- Current derived certified packages agree with the structural screen. -/
+theorem currentDerivedCertifiedScreens_haveCoverage
+    (profile : PolyProfile) :
+    haveCurrentDerivedCertifiedScreenCoverage profile = true := by
+  dsimp [haveCurrentDerivedCertifiedScreenCoverage,
+    haveDerivedCertifiedFixturesScreenCoverage,
+    doDerivedCertifiedFixturesHaveScreenCoverage,
+    derivedCertifiedFixtures,
+    derivedSeedTermIdentityFixture,
+    derivedSeedTypeIdentityFixture,
+    derivedSeedContextIdentityFixture,
+    derivedSeedModeIdentityFixture,
+    derivedSeedTermStepIdentityFixture,
+    derivedSeedTermIdentityTwiceFixture,
+    hasDerivedCertifiedFixtureScreenCoverage]
+  rfl
+
+/-- Current derived certified packages preserve their raw input codes. -/
+theorem currentDerivedCertifiedInputCodes_haveCoverage
+    (profile : PolyProfile) :
+    haveCurrentDerivedCertifiedInputCodeCoverage profile = true := by
+  dsimp [haveCurrentDerivedCertifiedInputCodeCoverage,
+    haveDerivedCertifiedFixturesInputCodeCoverage,
+    doDerivedCertifiedFixturesHaveInputCodeCoverage,
+    derivedCertifiedFixtures,
+    derivedSeedTermIdentityFixture,
+    derivedSeedTypeIdentityFixture,
+    derivedSeedContextIdentityFixture,
+    derivedSeedModeIdentityFixture,
+    derivedSeedTermStepIdentityFixture,
+    derivedSeedTermIdentityTwiceFixture,
+    hasDerivedCertifiedFixtureInputCodeCoverage]
   rfl
 
 theorem inferTermStepVarZeroVarOne?_scope_one_rejects
