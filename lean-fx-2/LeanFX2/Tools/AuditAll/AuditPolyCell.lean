@@ -20,6 +20,7 @@ import LeanFX2.Foundation.PolyCell.FXProfile.Views
 import LeanFX2.Foundation.PolyCell.OmegacE.HonestyCheck
 import LeanFX2.Foundation.PolyCell.Core.RawCellCodeV2
 import LeanFX2.Foundation.PolyCell.Core.GeneratorMetadataV2
+import LeanFX2.Foundation.PolyCell.Core.GeneratorAdmissionV2
 
 namespace LeanFX2.Tools
 
@@ -2882,6 +2883,12 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.childSpecs
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.childSpecs_length_eq_arity
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.childSpecs_scopeShifts_eq_binderShifts
+
+-- ─── V2-L1.4 / V2-L1.5: admission ledger (#139 / #140) ──────────
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.SupportedGeneratorV2
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.supportedGeneratorV2
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.supportedGeneratorV2?
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.supportedGeneratorV2?_isSome
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
