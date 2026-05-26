@@ -122,6 +122,39 @@ abbrev KnownGeneratorSpec : Type :=
 abbrev KnownRuleSpec : Type :=
   Σ ruleSpec, SupportedRuleSpec ruleSpec
 
+/-- Raw ids of every dim-0 generator currently present in the supported
+generator metadata table. -/
+def supportedGeneratorCellIds : List Nat :=
+  [variableGeneratorSpec.cellId,
+    lambdaGeneratorSpec.cellId,
+    applicationGeneratorSpec.cellId,
+    unitTypeGeneratorSpec.cellId,
+    piTypeGeneratorSpec.cellId,
+    contextEmptyGeneratorSpec.cellId,
+    contextConsGeneratorSpec.cellId,
+    linearModeGeneratorSpec.cellId]
+
+/-- The current supported generator metadata frontier has eight ids. -/
+theorem supportedGeneratorCellIds_length :
+    supportedGeneratorCellIds.length = 8 := rfl
+
+/-- Supported generator metadata ids do not collide. -/
+theorem supportedGeneratorCellIds_distinct :
+    hasPairwiseDistinctNatCodes supportedGeneratorCellIds = true := rfl
+
+/-- Raw ids of every positive-dimensional rule currently present in the
+supported rule metadata table. -/
+def supportedRuleIds : List Nat :=
+  [termStepRuleSpec.ruleId]
+
+/-- The current supported rule metadata frontier has one id. -/
+theorem supportedRuleIds_length :
+    supportedRuleIds.length = 1 := rfl
+
+/-- Supported rule metadata ids do not collide. -/
+theorem supportedRuleIds_distinct :
+    hasPairwiseDistinctNatCodes supportedRuleIds = true := rfl
+
 /-- Certified package produced by the raw-to-certified ingress.
 
 The package is indexed by the raw cell being certified.  Returning this type

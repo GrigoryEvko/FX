@@ -439,6 +439,12 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.hasSameOptionalRawCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.KnownGeneratorSpec
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.KnownRuleSpec
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.supportedGeneratorCellIds
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.supportedGeneratorCellIds_length
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.supportedGeneratorCellIds_distinct
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.supportedRuleIds
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.supportedRuleIds_length
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.supportedRuleIds_distinct
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.CertifiedRawCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.CertifiedRawCell.cellSort
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.CertifiedRawCell.cellBoundary
