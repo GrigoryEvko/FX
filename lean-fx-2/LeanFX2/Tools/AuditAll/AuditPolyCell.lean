@@ -719,6 +719,12 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawCellGeneral?_compH_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawCellGeneral?_termStep_sort
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawCellGeneral?_identity_termStep_sort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifyRawCellExact?_sound
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifyRawCellExact?_compH_rejects
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifyFXCellExact?
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifyFXCell?
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifyFXCellExact?_compH_rejects
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifyFXCellExact?_sound
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedResultSort?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.hasCertifiedResultShape
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.hasCertifiedResultScreenCoverage

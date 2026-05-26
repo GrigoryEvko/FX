@@ -1,4 +1,5 @@
 import LeanFX2.Foundation.PolyCell.Core.Check
+import LeanFX2.Foundation.PolyCell.Core.CertifyExact
 /-!
 # CertifiedViews — FX Names for Certified PolyCells
 
@@ -1108,5 +1109,39 @@ theorem certifiedSeedModeIdentityTwiceThinArrow_source :
 theorem certifiedSeedModeIdentityTwiceThinArrow_target :
     certifiedSeedModeIdentityTwiceThinArrow.target =
       NegativeProbes.seedModeAtom fxProfile := rfl
+
+/-- General FX raw-indexed certifier: one entry point certifying any non-`compH`
+FX raw cell at any dimension, with the certified result indexed by the EXACT
+input so erasure back to the input is definitional.  This is the canonical
+general ingress for the FX profile — atoms, identities, generating cells, and
+vertical composites all route through it. -/
+def certifyFXCellExact? (scope : Nat) {dim : CellDim}
+    (rawCell : PolyTerm fxProfile dim) :
+    Except CellCheckRejection (Check.CertifiedRawCell fxProfile scope rawCell) :=
+  Check.certifyRawCellExact? scope rawCell
+
+/-- General FX ingress returning the existential certified-result package
+(carrying inferred sort, dimension, the certified cell, and a raw-code
+preservation certificate). -/
+def certifyFXCell? (scope : Nat) {dim : CellDim}
+    (rawCell : PolyTerm fxProfile dim) :
+    Except CellCheckRejection (Check.CertifiedRawCellResult fxProfile scope) :=
+  Check.inferRawCellGeneral? scope rawCell
+
+/-- The general FX certifier rejects horizontal composition pending Gray
+semantics. -/
+theorem certifyFXCellExact?_compH_rejects {scope : Nat} {dim : CellDim}
+    (left right : PolyTerm fxProfile (dim + 1)) :
+    certifyFXCellExact? scope (PolyTerm.compH left right) =
+      Except.error .unsupportedCompH := rfl
+
+/-- Every cell accepted by the general FX certifier erases exactly to its raw
+input — the FX-level statement of no-false-positives. -/
+theorem certifyFXCellExact?_sound {scope : Nat} {dim : CellDim}
+    {rawCell : PolyTerm fxProfile dim}
+    (certifiedCell : Check.CertifiedRawCell fxProfile scope rawCell)
+    (accepted : certifyFXCellExact? scope rawCell = Except.ok certifiedCell) :
+    certifiedCell.certifiedCell.raw = rawCell :=
+  Check.certifyRawCellExact?_sound certifiedCell accepted
 
 end LeanFX2.Foundation.PolyCell.FXProfile

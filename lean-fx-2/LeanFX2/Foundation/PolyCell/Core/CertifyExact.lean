@@ -329,5 +329,23 @@ theorem inferRawCellGeneral?_identity_termStep_sort {profile : PolyProfile} :
           (NegativeProbes.termStepVarZeroVarOneRawCell profile))) =
       some .term := rfl
 
+/-- Soundness — no false positives are expressible: an accepted general
+certification yields a certified cell whose raw erasure is EXACTLY the input.
+This is guaranteed by the raw-indexed result type, so it holds for any accepted
+witness regardless of which fixture or recursion path produced it. -/
+theorem certifyRawCellExact?_sound {profile : PolyProfile} {scope : Nat}
+    {dim : CellDim} {rawCell : PolyTerm profile dim}
+    (certifiedCell : CertifiedRawCell profile scope rawCell)
+    (_accepted : certifyRawCellExact? scope rawCell = Except.ok certifiedCell) :
+    certifiedCell.certifiedCell.raw = rawCell :=
+  certifiedCell.certifiedCell_raw
+
+/-- The general certifier rejects horizontal composition at every dimension,
+pending Gray-tensor semantics. -/
+theorem certifyRawCellExact?_compH_rejects {profile : PolyProfile} {scope : Nat}
+    {dim : CellDim} (left right : PolyTerm profile (dim + 1)) :
+    certifyRawCellExact? scope (PolyTerm.compH left right) =
+      Except.error .unsupportedCompH := rfl
+
 end Check
 end LeanFX2.Foundation.PolyCell.Core
