@@ -740,6 +740,9 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawCell?_seedContext_sort
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawCell?_seedMode_sort
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.checkRawCellAs?_seedTerm_sort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.checkRawCellAs?_seedType_sort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.checkRawCellAs?_seedContext_sort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.checkRawCellAs?_seedMode_sort
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.checkRawCellAs?_seedTerm_as_type_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.checkRawCellAs?_seedType_as_term_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.checkRawCellAs?_seedContext_as_term_rejects

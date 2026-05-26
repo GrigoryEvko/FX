@@ -2815,6 +2815,42 @@ theorem checkRawCellAs?_seedTerm_sort {profile : PolyProfile} :
         variableGeneratorSpec.cellId 0) = some .term
   rfl
 
+theorem checkRawCellAs?_seedType_sort {profile : PolyProfile} :
+    certifiedResultSort?
+      (checkRawCellAs? (profile := profile) .type
+        NegativeProbes.defaultInferScope
+        (NegativeProbes.seedTypeAtom profile)) =
+      some .type := by
+  change
+    certifiedResultSort?
+      (inferRawAtom? (profile := profile) 4
+        unitTypeGeneratorSpec.cellId 0) = some .type
+  rfl
+
+theorem checkRawCellAs?_seedContext_sort {profile : PolyProfile} :
+    certifiedResultSort?
+      (checkRawCellAs? (profile := profile) .context
+        NegativeProbes.defaultInferScope
+        (NegativeProbes.seedContextAtom profile)) =
+      some .context := by
+  change
+    certifiedResultSort?
+      (inferRawAtom? (profile := profile) 4
+        contextEmptyGeneratorSpec.cellId 0) = some .context
+  rfl
+
+theorem checkRawCellAs?_seedMode_sort {profile : PolyProfile} :
+    certifiedResultSort?
+      (checkRawCellAs? (profile := profile) .mode
+        NegativeProbes.defaultInferScope
+        (NegativeProbes.seedModeAtom profile)) =
+      some .mode := by
+  change
+    certifiedResultSort?
+      (inferRawAtom? (profile := profile) 4
+        linearModeGeneratorSpec.cellId 0) = some .mode
+  rfl
+
 theorem checkRawCellAs?_seedTerm_as_type_rejects
     {profile : PolyProfile} :
     checkRawCellAs? (profile := profile) .type
