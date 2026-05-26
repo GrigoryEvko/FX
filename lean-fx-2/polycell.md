@@ -3799,16 +3799,24 @@ This is metadata support, not a proof of operational reduction semantics. -/
 inductive SupportedRuleSpec : RuleSpec -> Type where
   | termStep : SupportedRuleSpec termStepRuleSpec
 
+/-- First finite lambda payload whose decoded children are unit type at the
+parent scope and `var 0` under the binder. -/
+def lambdaUnitTypeBodyVarZeroPayload : Nat := 9200
+
 /-- First finite application payload whose decoded children are `var 0`
 and `var 1` at the parent scope. -/
 def applicationVarZeroVarOnePayload : Nat := 9100
 
+/-- First finite pi-type payload whose decoded children are unit type at the
+parent scope and unit type under the binder. -/
+def piTypeUnitCodomainUnitPayload : Nat := 9300
+
 /-- Payload evidence for nullary atoms currently safe to certify.
 
-There are deliberately no constructors here for lambda/pi/context extension.
-Application is certified only through the separate finite-payload constructor
-below, because it must demand certified child cells rather than bare payload
-evidence. -/
+There are deliberately no constructors here for lambda/application/pi/context
+extension.  Lambda, application, and pi-type are certified only through
+separate finite-payload constructors below, because they must demand certified
+child cells rather than bare payload evidence. -/
 inductive AtomPayloadEvidence :
     (generatorSpec : GeneratorSpec) -> (scope : Nat) -> (payload : Nat) -> Type where
   | variable {scope index : Nat} :
@@ -3845,6 +3853,15 @@ inductive PolyCell (profile : PolyProfile) :
       PolyCell profile generator.cellSort 0 scope ()
         (.atom generator.cellId payload)
 
+  | lambdaUnitTypeBodyVarZero :
+      {scope : Nat} →
+      PolyCell profile .type 0 scope ()
+        (.atom unitTypeGeneratorSpec.cellId 0) →
+      PolyCell profile .term 0 (scope + 1) ()
+        (.atom variableGeneratorSpec.cellId 0) →
+      PolyCell profile .term 0 scope ()
+        (.atom lambdaGeneratorSpec.cellId lambdaUnitTypeBodyVarZeroPayload)
+
   | applicationVarZeroVarOne :
       {scope : Nat} →
       PolyCell profile .term 0 scope ()
@@ -3853,6 +3870,15 @@ inductive PolyCell (profile : PolyProfile) :
         (.atom variableGeneratorSpec.cellId 1) →
       PolyCell profile .term 0 scope ()
         (.atom applicationGeneratorSpec.cellId applicationVarZeroVarOnePayload)
+
+  | piTypeUnitCodomainUnit :
+      {scope : Nat} →
+      PolyCell profile .type 0 scope ()
+        (.atom unitTypeGeneratorSpec.cellId 0) →
+      PolyCell profile .type 0 (scope + 1) ()
+        (.atom unitTypeGeneratorSpec.cellId 0) →
+      PolyCell profile .type 0 scope ()
+        (.atom piTypeGeneratorSpec.cellId piTypeUnitCodomainUnitPayload)
 
   | cell :
       {scope : Nat} →
@@ -4643,6 +4669,7 @@ representable and computably rejected.
 | TCB.7bd lambda decoder staging | `d8ee29f8` | Lambda now has a decoder-only payload staging table with one well-shaped unit/body child spine and hostile context-domain, type-body, and binder-shifted out-of-scope body fixtures.  The child descriptor screen is audited, while raw ingress still rejects the staged lambda payload as `badPayload`; no certified lambda constructor or new accepted input is added. |
 | TCB.7be pi-type decoder staging | `12ce9a88` | Pi-type now has a decoder-only payload staging table with one well-shaped unit-domain/unit-codomain child spine and hostile context-domain and term-codomain fixtures.  The child descriptor screen is audited, while raw ingress still rejects the staged pi-type payload as `badPayload`; no certified pi-type constructor or new accepted input is added. |
 | TCB.7bf first certified pi-type payload | `99d659c7` | `Pi (_ : Unit). Unit` is the first non-nullary dim-0 type payload admitted to the certified layer.  It is built only from certified unit-type children at the parent scope and binder-extended scope.  Hostile pi-type payloads with context-domain or term-codomain children still reject by computation, and checking the accepted pi-type as term/context/mode rejects as `wrongSort`.  This is not general pi-type certification. |
+| TCB.7bg first certified lambda payload | `6778dece` | `lam (_ : Unit). var 0` is the first non-nullary lambda term payload admitted to the certified layer.  It is built only from a certified unit-type domain at the parent scope and a certified `var 0` body under the binder-extended scope.  Hostile lambda payloads with context-domain, type-body, or out-of-scope body children still reject by computation, and checking the accepted lambda as type/context/mode rejects as `wrongSort`.  This is not general lambda typing, beta, substitution, or context extension. |
 
 **Deliverables (NEW only):**
 
@@ -4717,16 +4744,18 @@ representable and computably rejected.
 | TCB.7bd lambda decoder staging | `Foundation/PolyCell/Core/NegativeProbes.lean`, `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds a decoder-only lambda payload frontier: one well-shaped unit/body child spine and hostile context-domain, type-body, and binder-shifted out-of-scope body fixtures. | The child-descriptor screen distinguishes the well-shaped lambda spine from each hostile child shape, and `checkRawCellAs?` still rejects the staged lambda payload as `badPayload`.  This adds no lambda raw ingress, certified lambda constructor, accepted payload, raw dispatcher, or non-inhabitation theorem. |
 | TCB.7be pi-type decoder staging | `Foundation/PolyCell/Core/NegativeProbes.lean`, `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds a decoder-only pi-type payload frontier: one well-shaped unit-domain/unit-codomain child spine and hostile context-domain and term-codomain fixtures. | The child-descriptor screen distinguishes the well-shaped pi-type spine from each hostile child shape, and `checkRawCellAs?` still rejects the staged pi-type payload as `badPayload`.  This adds no pi-type raw ingress, certified pi-type constructor, accepted payload, raw dispatcher, or non-inhabitation theorem. |
 | TCB.7bf first certified pi-type payload | `Foundation/PolyCell/Core/GeneratorSpec.lean`, `Foundation/PolyCell/Core/NegativeProbes.lean`, `Foundation/PolyCell/Core/Certified.lean`, `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds the core payload code and certified child package for `Pi (_ : Unit). Unit`, plus raw ingress, accepted-fixture coverage, raw-code coverage, and hostile expected-shape probes. | `inferRawCell?` now accepts this one pi-type payload as `.type`; `checkRawCellAs?` rejects it as term/context/mode; context-domain and term-codomain pi payloads still reject as `wrongChildShape`; no general pi binder typing, raw dispatcher, conversion rule, or non-inhabitation theorem is added. |
+| TCB.7bg first certified lambda payload | `Foundation/PolyCell/Core/GeneratorSpec.lean`, `Foundation/PolyCell/Core/NegativeProbes.lean`, `Foundation/PolyCell/Core/Certified.lean`, `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds the core payload code and certified child package for `lam (_ : Unit). var 0`, plus raw ingress, accepted-fixture coverage, raw-code coverage, and hostile expected-shape probes. | `inferRawCell?` now accepts this one lambda payload as `.term`; `checkRawCellAs?` rejects it as type/context/mode; context-domain, type-body, and out-of-scope-body lambda payloads still reject as `wrongChildShape`; no general lambda typing, beta, substitution, context extension, raw dispatcher, or non-inhabitation theorem is added. |
 
-**Implementation order after TCB.7bf:**
+**Implementation order after TCB.7bg:**
 
-1.  Do not broaden application by adding more one-off parent
-    constructors.  Descriptor-indexed child spines over
-    `RawChildDescriptors` are live for the first application payload and now
-    erase exactly to their descriptor index.  The next application slice must
+1.  Do not broaden lambda/application/pi by adding more one-off parent
+    constructors unless the slice is intentionally finite and explicitly
+    probed.  Descriptor-indexed child spines over `RawChildDescriptors` are
+    live for the first application, lambda, and pi-type payloads and erase
+    exactly to their descriptor indexes.  The next non-nullary slice must
     either generalize that indexed shape without weakening `AuditPolyCell`,
-    or stop at the current finite payload.  No new payload is accepted merely
-    because its raw descriptor screen passes.  The failed
+    or stop at the current finite payload frontier.  No new payload is
+    accepted merely because its raw descriptor screen passes.  The failed
     dimension-polymorphic dependent pattern route is not acceptable.
 2.  If the reusable certified-child spine cannot be made audit-clean,
     keep using the decoder plus generic screen gate and move to
@@ -4736,8 +4765,7 @@ representable and computably rejected.
     `.cell` fixture remains desirable but blocked by audit evidence until
     a new pattern is found.  Derived identity and derived vertical
     composition are complete for already certified inputs, the current
-    six-entry derived-package frontier has audited shape/screen/input-code
-    coverage, and the
+    derived-package frontier has audited shape/screen/input-code coverage, and the
     identity over the seed dim-1 term step is exposed as a dim-2
     endpoint-indexed arrow/thin-arrow view.  Raw identity and raw `compV`
     ingress remain untrusted; TCB.7aj explicitly probes raw identities
