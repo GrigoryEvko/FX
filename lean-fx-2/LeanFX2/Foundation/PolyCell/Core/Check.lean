@@ -1373,33 +1373,199 @@ def hasAcceptedDimZeroInputCodeCoverage {profile : PolyProfile}
   hasCertifiedResultInputCodeCoverage expectedRawCell
     (inferRawCell? NegativeProbes.defaultInferScope expectedRawCell)
 
+/-- One current accepted dim-0 fixture and the exact result used for each
+coverage lane.
+
+The application fixture intentionally uses raw ingress for shape/screen
+coverage but a package-level certified result for input-code coverage.  This
+keeps the finite frontier named in one place without forcing the full
+application dispatcher to normalize in the input-code matrix. -/
+structure AcceptedDimZeroFixture (profile : PolyProfile) where
+  /-- Sort expected from the accepted fixture. -/
+  expectedSort : CellSort
+  /-- Raw dim-0 fixture. -/
+  rawCell : PolyTerm profile 0
+  /-- Accepted ingress result used for shape and screen coverage. -/
+  ingressResult :
+    Except CellCheckRejection
+      (CertifiedRawCellResult profile NegativeProbes.defaultInferScope)
+  /-- Accepted result used for input-code coverage. -/
+  inputCodeResult :
+    Except CellCheckRejection
+      (CertifiedRawCellResult profile NegativeProbes.defaultInferScope)
+
+/-- Does one accepted fixture have dim-0 ingress shape coverage? -/
+def hasAcceptedDimZeroFixtureIngressCoverage
+    {profile : PolyProfile} (acceptedFixture :
+      AcceptedDimZeroFixture profile) : Bool :=
+  hasCertifiedResultShape (dimension := 0) acceptedFixture.expectedSort
+    acceptedFixture.ingressResult
+
+/-- Does one accepted fixture agree with the expected structural screen? -/
+def hasAcceptedDimZeroFixtureScreenCoverage
+    {profile : PolyProfile} (acceptedFixture :
+      AcceptedDimZeroFixture profile) : Bool :=
+  hasCertifiedResultScreenCoverage acceptedFixture.expectedSort
+    acceptedFixture.rawCell acceptedFixture.ingressResult
+
+/-- Does one accepted fixture preserve its finite raw input code? -/
+def hasAcceptedDimZeroFixtureInputCodeCoverage
+    {profile : PolyProfile} (acceptedFixture :
+      AcceptedDimZeroFixture profile) : Bool :=
+  hasCertifiedResultInputCodeCoverage acceptedFixture.rawCell
+    acceptedFixture.inputCodeResult
+
+/-- Check ingress coverage across an already-known nonempty fixture tail. -/
+def doAcceptedDimZeroFixturesHaveIngressCoverage {profile : PolyProfile} :
+    List (AcceptedDimZeroFixture profile) → Bool
+  | [] => true
+  | acceptedFixture :: remainingFixtures =>
+      hasAcceptedDimZeroFixtureIngressCoverage acceptedFixture &&
+      doAcceptedDimZeroFixturesHaveIngressCoverage remainingFixtures
+
+/-- Check screen coverage across an already-known nonempty fixture tail. -/
+def doAcceptedDimZeroFixturesHaveScreenCoverage {profile : PolyProfile} :
+    List (AcceptedDimZeroFixture profile) → Bool
+  | [] => true
+  | acceptedFixture :: remainingFixtures =>
+      hasAcceptedDimZeroFixtureScreenCoverage acceptedFixture &&
+      doAcceptedDimZeroFixturesHaveScreenCoverage remainingFixtures
+
+/-- Check input-code coverage across an already-known nonempty fixture tail. -/
+def doAcceptedDimZeroFixturesHaveInputCodeCoverage {profile : PolyProfile} :
+    List (AcceptedDimZeroFixture profile) → Bool
+  | [] => true
+  | acceptedFixture :: remainingFixtures =>
+      hasAcceptedDimZeroFixtureInputCodeCoverage acceptedFixture &&
+      doAcceptedDimZeroFixturesHaveInputCodeCoverage remainingFixtures
+
+/-- Non-vacuous ingress coverage for a dim-0 accepted-fixture list. -/
+def haveAcceptedDimZeroFixturesIngressCoverage {profile : PolyProfile} :
+    List (AcceptedDimZeroFixture profile) → Bool
+  | [] => false
+  | acceptedFixture :: remainingFixtures =>
+      doAcceptedDimZeroFixturesHaveIngressCoverage
+        (acceptedFixture :: remainingFixtures)
+
+/-- Non-vacuous screen coverage for a dim-0 accepted-fixture list. -/
+def haveAcceptedDimZeroFixturesScreenCoverage {profile : PolyProfile} :
+    List (AcceptedDimZeroFixture profile) → Bool
+  | [] => false
+  | acceptedFixture :: remainingFixtures =>
+      doAcceptedDimZeroFixturesHaveScreenCoverage
+        (acceptedFixture :: remainingFixtures)
+
+/-- Non-vacuous input-code coverage for a dim-0 accepted-fixture list. -/
+def haveAcceptedDimZeroFixturesInputCodeCoverage
+    {profile : PolyProfile} :
+    List (AcceptedDimZeroFixture profile) → Bool
+  | [] => false
+  | acceptedFixture :: remainingFixtures =>
+      doAcceptedDimZeroFixturesHaveInputCodeCoverage
+        (acceptedFixture :: remainingFixtures)
+
+/-- Package-level input-code result for the accepted application fixture. -/
+def acceptedApplicationVarZeroVarOneInputCodeResult
+    (profile : PolyProfile) :
+    Except CellCheckRejection
+      (CertifiedRawCellResult profile NegativeProbes.defaultInferScope) :=
+  Except.ok
+    (certifiedRawCellResultOfPackage
+      (profile := profile) (scope := NegativeProbes.defaultInferScope)
+      (rawCellCode
+        (NegativeProbes.applicationVarZeroVarOneRawCell profile))
+      (certifiedApplicationVarZeroVarOnePackage
+        (profile := profile)
+        (certifiedApplicationVarZeroVarOneChildren
+          (profile := profile)
+          (scope := NegativeProbes.defaultInferScope)
+          (Nat.zero_lt_succ 3)
+          (Nat.succ_lt_succ (Nat.zero_lt_succ 2))))
+      (hasSameNatList_self _))
+
+/-- Accepted seed term fixture. -/
+def acceptedSeedTermDimZeroFixture (profile : PolyProfile) :
+    AcceptedDimZeroFixture profile where
+  expectedSort := .term
+  rawCell := NegativeProbes.seedTermAtom profile
+  ingressResult :=
+    inferRawCell? NegativeProbes.defaultInferScope
+      (NegativeProbes.seedTermAtom profile)
+  inputCodeResult :=
+    inferRawCell? NegativeProbes.defaultInferScope
+      (NegativeProbes.seedTermAtom profile)
+
+/-- Accepted seed type fixture. -/
+def acceptedSeedTypeDimZeroFixture (profile : PolyProfile) :
+    AcceptedDimZeroFixture profile where
+  expectedSort := .type
+  rawCell := NegativeProbes.seedTypeAtom profile
+  ingressResult :=
+    inferRawCell? NegativeProbes.defaultInferScope
+      (NegativeProbes.seedTypeAtom profile)
+  inputCodeResult :=
+    inferRawCell? NegativeProbes.defaultInferScope
+      (NegativeProbes.seedTypeAtom profile)
+
+/-- Accepted seed context fixture. -/
+def acceptedSeedContextDimZeroFixture (profile : PolyProfile) :
+    AcceptedDimZeroFixture profile where
+  expectedSort := .context
+  rawCell := NegativeProbes.seedContextAtom profile
+  ingressResult :=
+    inferRawCell? NegativeProbes.defaultInferScope
+      (NegativeProbes.seedContextAtom profile)
+  inputCodeResult :=
+    inferRawCell? NegativeProbes.defaultInferScope
+      (NegativeProbes.seedContextAtom profile)
+
+/-- Accepted seed mode fixture. -/
+def acceptedSeedModeDimZeroFixture (profile : PolyProfile) :
+    AcceptedDimZeroFixture profile where
+  expectedSort := .mode
+  rawCell := NegativeProbes.seedModeAtom profile
+  ingressResult :=
+    inferRawCell? NegativeProbes.defaultInferScope
+      (NegativeProbes.seedModeAtom profile)
+  inputCodeResult :=
+    inferRawCell? NegativeProbes.defaultInferScope
+      (NegativeProbes.seedModeAtom profile)
+
+/-- Accepted first application fixture. -/
+def acceptedApplicationVarZeroVarOneDimZeroFixture
+    (profile : PolyProfile) : AcceptedDimZeroFixture profile where
+  expectedSort := .term
+  rawCell := NegativeProbes.applicationVarZeroVarOneRawCell profile
+  ingressResult :=
+    inferRawCell? NegativeProbes.defaultInferScope
+      (NegativeProbes.applicationVarZeroVarOneRawCell profile)
+  inputCodeResult :=
+    acceptedApplicationVarZeroVarOneInputCodeResult profile
+
+/-- Current finite accepted dim-0 frontier. -/
+def acceptedDimZeroFixtures (profile : PolyProfile) :
+    List (AcceptedDimZeroFixture profile) :=
+  [acceptedSeedTermDimZeroFixture profile,
+    acceptedSeedTypeDimZeroFixture profile,
+    acceptedSeedContextDimZeroFixture profile,
+    acceptedSeedModeDimZeroFixture profile,
+    acceptedApplicationVarZeroVarOneDimZeroFixture profile]
+
+/-- The current accepted dim-0 frontier has exactly five fixtures. -/
+theorem acceptedDimZeroFixtures_length (profile : PolyProfile) :
+    (acceptedDimZeroFixtures profile).length = 5 := rfl
+
 /-- Current dim-0 accepted ingress fixtures: seed term/type/context/mode atoms
 and the first certified application payload. -/
 def haveAcceptedDimZeroIngressCoverage (profile : PolyProfile) : Bool :=
-  hasAcceptedDimZeroIngressCoverage .term
-    (NegativeProbes.seedTermAtom profile) &&
-  hasAcceptedDimZeroIngressCoverage .type
-    (NegativeProbes.seedTypeAtom profile) &&
-  hasAcceptedDimZeroIngressCoverage .context
-    (NegativeProbes.seedContextAtom profile) &&
-  hasAcceptedDimZeroIngressCoverage .mode
-    (NegativeProbes.seedModeAtom profile) &&
-  hasAcceptedDimZeroIngressCoverage .term
-    (NegativeProbes.applicationVarZeroVarOneRawCell profile)
+  haveAcceptedDimZeroFixturesIngressCoverage
+    (acceptedDimZeroFixtures profile)
 
 /-- Current dim-0 accepted ingress fixtures also agree with the structural
 screen. -/
 def haveAcceptedDimZeroScreenCoverage (profile : PolyProfile) : Bool :=
-  hasAcceptedDimZeroScreenCoverage .term
-    (NegativeProbes.seedTermAtom profile) &&
-  hasAcceptedDimZeroScreenCoverage .type
-    (NegativeProbes.seedTypeAtom profile) &&
-  hasAcceptedDimZeroScreenCoverage .context
-    (NegativeProbes.seedContextAtom profile) &&
-  hasAcceptedDimZeroScreenCoverage .mode
-    (NegativeProbes.seedModeAtom profile) &&
-  hasAcceptedDimZeroScreenCoverage .term
-    (NegativeProbes.applicationVarZeroVarOneRawCell profile)
+  haveAcceptedDimZeroFixturesScreenCoverage
+    (acceptedDimZeroFixtures profile)
 
 /-- The accepted application package preserves the finite raw input code.
 
@@ -1409,31 +1575,12 @@ def hasAcceptedApplicationVarZeroVarOneInputCodeCoverage
     (profile : PolyProfile) : Bool :=
   hasCertifiedResultInputCodeCoverage
     (NegativeProbes.applicationVarZeroVarOneRawCell profile)
-    (Except.ok
-      (certifiedRawCellResultOfPackage
-        (profile := profile) (scope := NegativeProbes.defaultInferScope)
-        (rawCellCode
-          (NegativeProbes.applicationVarZeroVarOneRawCell profile))
-        (certifiedApplicationVarZeroVarOnePackage
-          (profile := profile)
-          (certifiedApplicationVarZeroVarOneChildren
-            (profile := profile)
-            (scope := NegativeProbes.defaultInferScope)
-            (Nat.zero_lt_succ 3)
-            (Nat.succ_lt_succ (Nat.zero_lt_succ 2))))
-        (hasSameNatList_self _)))
+    (acceptedApplicationVarZeroVarOneInputCodeResult profile)
 
 /-- Current dim-0 accepted ingress fixtures preserve their raw input codes. -/
 def haveAcceptedDimZeroInputCodeCoverage (profile : PolyProfile) : Bool :=
-  hasAcceptedDimZeroInputCodeCoverage
-    (NegativeProbes.seedTermAtom profile) &&
-  hasAcceptedDimZeroInputCodeCoverage
-    (NegativeProbes.seedTypeAtom profile) &&
-  hasAcceptedDimZeroInputCodeCoverage
-    (NegativeProbes.seedContextAtom profile) &&
-  hasAcceptedDimZeroInputCodeCoverage
-    (NegativeProbes.seedModeAtom profile) &&
-  hasAcceptedApplicationVarZeroVarOneInputCodeCoverage profile
+  haveAcceptedDimZeroFixturesInputCodeCoverage
+    (acceptedDimZeroFixtures profile)
 
 /-- Current positive-dimensional accepted ingress fixture: the direct
 `termStep(var 0, var 1)` certification path. -/
@@ -2416,12 +2563,16 @@ theorem acceptedApplicationVarZeroVarOneIngress_hasCoverage
 domain. -/
 theorem acceptedDimZeroIngresses_haveCoverage (profile : PolyProfile) :
     haveAcceptedDimZeroIngressCoverage profile = true := by
-  dsimp [haveAcceptedDimZeroIngressCoverage]
-  rw [acceptedSeedTermIngress_hasCoverage,
-    acceptedSeedTypeIngress_hasCoverage,
-    acceptedSeedContextIngress_hasCoverage,
-    acceptedSeedModeIngress_hasCoverage,
-    acceptedApplicationVarZeroVarOneIngress_hasCoverage]
+  dsimp [haveAcceptedDimZeroIngressCoverage,
+    haveAcceptedDimZeroFixturesIngressCoverage,
+    doAcceptedDimZeroFixturesHaveIngressCoverage,
+    acceptedDimZeroFixtures,
+    acceptedSeedTermDimZeroFixture,
+    acceptedSeedTypeDimZeroFixture,
+    acceptedSeedContextDimZeroFixture,
+    acceptedSeedModeDimZeroFixture,
+    acceptedApplicationVarZeroVarOneDimZeroFixture,
+    hasAcceptedDimZeroFixtureIngressCoverage]
   rfl
 
 /-- Accepted-ingress coverage headline for the current direct dim-1
@@ -2516,12 +2667,18 @@ theorem acceptedApplicationVarZeroVarOneScreen_hasCoverage
 accepted dim-0 fixture. -/
 theorem acceptedDimZeroScreens_haveCoverage (profile : PolyProfile) :
     haveAcceptedDimZeroScreenCoverage profile = true := by
-  dsimp [haveAcceptedDimZeroScreenCoverage]
-  rw [acceptedSeedTermScreen_hasCoverage,
-    acceptedSeedTypeScreen_hasCoverage,
-    acceptedSeedContextScreen_hasCoverage,
-    acceptedSeedModeScreen_hasCoverage,
-    acceptedApplicationVarZeroVarOneScreen_hasCoverage]
+  dsimp [haveAcceptedDimZeroScreenCoverage,
+    haveAcceptedDimZeroFixturesScreenCoverage,
+    doAcceptedDimZeroFixturesHaveScreenCoverage,
+    acceptedDimZeroFixtures,
+    acceptedSeedTermDimZeroFixture,
+    acceptedSeedTypeDimZeroFixture,
+    acceptedSeedContextDimZeroFixture,
+    acceptedSeedModeDimZeroFixture,
+    acceptedApplicationVarZeroVarOneDimZeroFixture,
+    hasAcceptedDimZeroFixtureScreenCoverage,
+    hasCertifiedResultScreenCoverage,
+    hasAcceptedDimZeroIngressCoverage]
   rfl
 
 /-- Accepted ingress for the seed term atom preserves the raw input code. -/
@@ -2580,16 +2737,73 @@ theorem acceptedApplicationVarZeroVarOneInputCode_hasCoverage
       true
   exact hasSameNatList_self _
 
+/-- The seed term fixture preserves its raw input code through the shared
+fixture frontier. -/
+theorem acceptedSeedTermFixtureInputCode_hasCoverage
+    {profile : PolyProfile} :
+    hasAcceptedDimZeroFixtureInputCodeCoverage
+      (acceptedSeedTermDimZeroFixture profile) = true := by
+  change
+    hasAcceptedDimZeroInputCodeCoverage
+      (NegativeProbes.seedTermAtom profile) = true
+  exact acceptedSeedTermInputCode_hasCoverage
+
+/-- The seed type fixture preserves its raw input code through the shared
+fixture frontier. -/
+theorem acceptedSeedTypeFixtureInputCode_hasCoverage
+    {profile : PolyProfile} :
+    hasAcceptedDimZeroFixtureInputCodeCoverage
+      (acceptedSeedTypeDimZeroFixture profile) = true := by
+  change
+    hasAcceptedDimZeroInputCodeCoverage
+      (NegativeProbes.seedTypeAtom profile) = true
+  exact acceptedSeedTypeInputCode_hasCoverage
+
+/-- The seed context fixture preserves its raw input code through the shared
+fixture frontier. -/
+theorem acceptedSeedContextFixtureInputCode_hasCoverage
+    {profile : PolyProfile} :
+    hasAcceptedDimZeroFixtureInputCodeCoverage
+      (acceptedSeedContextDimZeroFixture profile) = true := by
+  change
+    hasAcceptedDimZeroInputCodeCoverage
+      (NegativeProbes.seedContextAtom profile) = true
+  exact acceptedSeedContextInputCode_hasCoverage
+
+/-- The seed mode fixture preserves its raw input code through the shared
+fixture frontier. -/
+theorem acceptedSeedModeFixtureInputCode_hasCoverage
+    {profile : PolyProfile} :
+    hasAcceptedDimZeroFixtureInputCodeCoverage
+      (acceptedSeedModeDimZeroFixture profile) = true := by
+  change
+    hasAcceptedDimZeroInputCodeCoverage
+      (NegativeProbes.seedModeAtom profile) = true
+  exact acceptedSeedModeInputCode_hasCoverage
+
+/-- The accepted application fixture preserves its package-level raw input
+code through the shared fixture frontier. -/
+theorem acceptedApplicationVarZeroVarOneFixtureInputCode_hasCoverage
+    {profile : PolyProfile} :
+    hasAcceptedDimZeroFixtureInputCodeCoverage
+      (acceptedApplicationVarZeroVarOneDimZeroFixture profile) = true := by
+  change
+    hasAcceptedApplicationVarZeroVarOneInputCodeCoverage profile = true
+  exact acceptedApplicationVarZeroVarOneInputCode_hasCoverage
+
 /-- Accepted dim-0 ingress preserves raw input codes for every current accepted
 dim-0 fixture. -/
 theorem acceptedDimZeroInputCodes_haveCoverage (profile : PolyProfile) :
     haveAcceptedDimZeroInputCodeCoverage profile = true := by
-  dsimp [haveAcceptedDimZeroInputCodeCoverage]
-  rw [acceptedSeedTermInputCode_hasCoverage,
-    acceptedSeedTypeInputCode_hasCoverage,
-    acceptedSeedContextInputCode_hasCoverage,
-    acceptedSeedModeInputCode_hasCoverage,
-    acceptedApplicationVarZeroVarOneInputCode_hasCoverage]
+  dsimp [haveAcceptedDimZeroInputCodeCoverage,
+    haveAcceptedDimZeroFixturesInputCodeCoverage,
+    doAcceptedDimZeroFixturesHaveInputCodeCoverage,
+    acceptedDimZeroFixtures]
+  rw [acceptedSeedTermFixtureInputCode_hasCoverage,
+    acceptedSeedTypeFixtureInputCode_hasCoverage,
+    acceptedSeedContextFixtureInputCode_hasCoverage,
+    acceptedSeedModeFixtureInputCode_hasCoverage,
+    acceptedApplicationVarZeroVarOneFixtureInputCode_hasCoverage]
   rfl
 
 /-- Accepted ingress for the direct dim-1 term-step path agrees with the
