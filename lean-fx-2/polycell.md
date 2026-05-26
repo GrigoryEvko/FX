@@ -4698,8 +4698,9 @@ representable and computably rejected.
 | TCB.7an positive-fuel identity exhaustion probe | `Foundation/PolyCell/Core/NegativeProbes.lean`, `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds a fuel-budget probe for `screenRawCellWithFuel? 1` over raw `identity(var 0)`, plus an audited executable rejection theorem. | Fuel-budget probes ratchet to 2; the nested identity probe rejects as `fuelExhausted` after one descent rather than collapsing into payload or certification policy.  No accepted raw input, raw identity ingress, certified constructor, or non-inhabitation theorem is added. |
 | TCB.7ao hostile application child-screen ratchet | `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds direct audited theorem heads that the mode/context-as-function and mode/context-as-argument application payload sentinels reject at the decoded-child screen and at the direct dim-0 screen. | The existing malformed payloads remain rejection fixtures only; no probe count changes, accepted payloads, raw ingress paths, certified constructors, or non-inhabitation theorems are added. |
 | TCB.7ap pi/context expected-shape probes | `Foundation/PolyCell/Core/NegativeProbes.lean`, `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds expected-shape pass-through probes for malformed pi-type and context-extension bad-payload, wrong-arity, and wrong-child-shape sentinels. | Expected-shape probes ratchet to 21, with bad-payload / wrong-arity / wrong-child-shape expected-shape families each ratcheting to 3.  These are executable rejection checks for supported-but-uncertified generator metadata; no lambda/pi/context certified payload family, accepted input, raw dispatcher, or non-inhabitation theorem is added. |
+| TCB.7aq derived certified package coverage | `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds a six-entry `DerivedCertifiedFixture` frontier for the current certified-layer derived packages: term/type/context/mode identities, identity over the seed term-step, and the seed term-identity vertical composite. | The new matrix gives audited shape, structural-screen, and input-code coverage for derived packages only.  Raw identity and raw `compV` ingress remain unsupported certification paths; no accepted raw input, certified constructor, dispatcher, injectivity theorem, or non-inhabitation theorem is added. |
 
-**Implementation order after TCB.7ap:**
+**Implementation order after TCB.7aq:**
 
 1.  Do not broaden application by adding more one-off parent
     constructors.  Descriptor-indexed child spines over
@@ -4716,7 +4717,9 @@ representable and computably rejected.
     ingress.  A propext-free raw dispatcher for the already certified
     `.cell` fixture remains desirable but blocked by audit evidence until
     a new pattern is found.  Derived identity and derived vertical
-    composition are complete for already certified inputs, and the
+    composition are complete for already certified inputs, the current
+    six-entry derived-package frontier has audited shape/screen/input-code
+    coverage, and the
     identity over the seed dim-1 term step is exposed as a dim-2
     endpoint-indexed arrow/thin-arrow view.  Raw identity and raw `compV`
     ingress remain untrusted; TCB.7aj explicitly probes raw identities
