@@ -174,6 +174,10 @@ def contextConsGeneratorSpec : GeneratorSpec where
     ChildSpec.modeSameScope
   ]
 
+/-- First finite context-extension payload whose decoded children are empty
+context, unit type, and linear mode at the parent scope. -/
+def contextConsEmptyUnitLinearPayload : Nat := 9400
+
 /-- First mode generator id, immediately after current context ids. -/
 def firstModeGeneratorCellId : CellId :=
   firstContextGeneratorCellId + 2

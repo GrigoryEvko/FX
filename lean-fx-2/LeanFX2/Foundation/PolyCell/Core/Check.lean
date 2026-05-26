@@ -463,6 +463,53 @@ theorem acceptedPiTypePayloads_length :
 theorem acceptedPiTypePayloads_distinct :
     hasPairwiseDistinctNatCodes acceptedPiTypePayloads = true := rfl
 
+/-- Context-extension payload sentinels reserved for malformed decoder tests. -/
+def contextConsPayloadSentinels : List Nat :=
+  [NegativeProbes.badPayloadSentinel,
+    NegativeProbes.wrongAritySentinel,
+    NegativeProbes.wrongChildShapeSentinel]
+
+/-- The current context-extension payload sentinel frontier has three entries. -/
+theorem contextConsPayloadSentinels_length :
+    contextConsPayloadSentinels.length = 3 := rfl
+
+/-- All context-extension decoder-staging fixture codes, including malformed
+sentinels. -/
+def contextConsPayloadFixtureCodes : List Nat :=
+  NegativeProbes.decodedContextConsPayloads ++ contextConsPayloadSentinels
+
+/-- The decoder-staged context-extension fixture frontier currently has seven
+distinct payload codes. -/
+theorem contextConsPayloadFixtureCodes_length :
+    contextConsPayloadFixtureCodes.length = 7 := rfl
+
+/-- Context-extension payload fixtures have no duplicate codes. -/
+theorem decodedContextConsPayloads_distinct :
+    hasPairwiseDistinctNatCodes
+      NegativeProbes.decodedContextConsPayloads = true := rfl
+
+/-- Context-extension payload sentinels have no duplicate codes. -/
+theorem contextConsPayloadSentinels_distinct :
+    hasPairwiseDistinctNatCodes contextConsPayloadSentinels = true := rfl
+
+/-- Decoded context-extension fixtures and context-extension sentinels do not
+collide. -/
+theorem contextConsPayloadFixtureCodes_distinct :
+    hasPairwiseDistinctNatCodes contextConsPayloadFixtureCodes = true := rfl
+
+/-- Context-extension payloads currently admitted to certified raw ingress. -/
+def acceptedContextConsPayloads : List Nat :=
+  [contextConsEmptyUnitLinearPayload]
+
+/-- The certified context-extension ingress currently admits exactly one
+payload. -/
+theorem acceptedContextConsPayloads_length :
+    acceptedContextConsPayloads.length = 1 := rfl
+
+/-- The accepted context-extension payload frontier has no duplicate codes. -/
+theorem acceptedContextConsPayloads_distinct :
+    hasPairwiseDistinctNatCodes acceptedContextConsPayloads = true := rfl
+
 /-- Decode the first finite application payloads into raw child descriptors.
 
 This is decoder output only.  The returned children still need recursive
@@ -581,6 +628,45 @@ def decodePiTypePayload? {profile : PolyProfile} (scope payload : Nat) :
       (RawChildDescriptors.piType
         (NegativeProbes.seedTypeAtom profile)
         (NegativeProbes.seedTermAtom profile))
+  else if payload = NegativeProbes.wrongAritySentinel then
+    Except.error .wrongArity
+  else if payload = NegativeProbes.wrongChildShapeSentinel then
+    Except.error .wrongChildShape
+  else
+    Except.error .badPayload
+
+/-- Decode staged context-extension payloads into raw child descriptors.
+
+This is decoder output only.  The executable screen and certified ingress
+accept exactly `contextConsEmptyUnitLinearPayload`; hostile decoded payloads
+still exercise child-screen rejection. -/
+def decodeContextConsPayload? {profile : PolyProfile} (scope payload : Nat) :
+    Except CellCheckRejection
+      (RawChildDescriptors.forGenerator profile scope contextConsGeneratorSpec) :=
+  if payload = NegativeProbes.contextConsEmptyUnitLinearPayload then
+    Except.ok
+      (RawChildDescriptors.contextCons
+        (NegativeProbes.seedContextAtom profile)
+        (NegativeProbes.seedTypeAtom profile)
+        (NegativeProbes.seedModeAtom profile))
+  else if payload = NegativeProbes.contextConsTypeAsContextPayload then
+    Except.ok
+      (RawChildDescriptors.contextCons
+        (NegativeProbes.seedTypeAtom profile)
+        (NegativeProbes.seedTypeAtom profile)
+        (NegativeProbes.seedModeAtom profile))
+  else if payload = NegativeProbes.contextConsTermAsTypePayload then
+    Except.ok
+      (RawChildDescriptors.contextCons
+        (NegativeProbes.seedContextAtom profile)
+        (NegativeProbes.seedTermAtom profile)
+        (NegativeProbes.seedModeAtom profile))
+  else if payload = NegativeProbes.contextConsContextAsModePayload then
+    Except.ok
+      (RawChildDescriptors.contextCons
+        (NegativeProbes.seedContextAtom profile)
+        (NegativeProbes.seedTypeAtom profile)
+        (NegativeProbes.seedContextAtom profile))
   else if payload = NegativeProbes.wrongAritySentinel then
     Except.error .wrongArity
   else if payload = NegativeProbes.wrongChildShapeSentinel then
@@ -774,6 +860,17 @@ def screenRawCellWithFuel? {profile : PolyProfile}
                         screenRawCellWithFuel? fuel childScope childRaw)
                       scope children with
                 | Except.ok () => Except.ok piTypeGeneratorSpec.cellSort
+                | Except.error rejection => Except.error rejection
+            | Except.error rejection => Except.error rejection
+          else if Nat.beq cellId contextConsGeneratorSpec.cellId then
+            match decodeContextConsPayload? (profile := profile) scope payload with
+            | Except.ok children =>
+                match
+                    screenRawChildDescriptorsWith? (profile := profile)
+                      (fun childScope childRaw =>
+                        screenRawCellWithFuel? fuel childScope childRaw)
+                      scope children with
+                | Except.ok () => Except.ok contextConsGeneratorSpec.cellSort
                 | Except.error rejection => Except.error rejection
             | Except.error rejection => Except.error rejection
           else
@@ -1161,6 +1258,120 @@ def certifiedPiTypeUnitCodomainUnitPackage {profile : PolyProfile}
     PolyCell.piTypeUnitCodomainUnitCell
       certifiedChildren.domainCell
       certifiedChildren.codomainCell
+
+/-- Certified decoded children for the first finite context-extension payload.
+
+All three children live at the parent scope dictated by
+`contextConsGeneratorSpec`. -/
+structure CertifiedContextConsEmptyUnitLinearChildren
+    (profile : PolyProfile) (scope : Nat) where
+  /-- Certified context child, decoded as empty context. -/
+  contextCell :
+    PolyCell profile .context 0 scope ()
+      (.atom contextEmptyGeneratorSpec.cellId 0)
+  /-- Certified type child, decoded as unit type. -/
+  typeCell :
+    PolyCell profile .type 0 scope ()
+      (.atom unitTypeGeneratorSpec.cellId 0)
+  /-- Certified mode child, decoded as linear mode. -/
+  modeCell :
+    PolyCell profile .mode 0 scope ()
+      (.atom linearModeGeneratorSpec.cellId 0)
+
+namespace CertifiedContextConsEmptyUnitLinearChildren
+
+/-- Certified child spine matching the context-extension generator metadata. -/
+def contextConsChildSpine {profile : PolyProfile} {scope : Nat}
+    (certifiedChildren :
+      CertifiedContextConsEmptyUnitLinearChildren profile scope) :
+    CellChildren.ForGenerator (PolyCell.CertifiedChild profile) scope
+      contextConsGeneratorSpec :=
+  PolyCell.contextConsEmptyUnitLinearChildren
+    certifiedChildren.contextCell
+    certifiedChildren.typeCell
+    certifiedChildren.modeCell
+
+/-- Descriptor-indexed certified child spine for the accepted
+context-extension children. -/
+def contextConsDescriptorChildSpine {profile : PolyProfile} {scope : Nat}
+    (certifiedChildren :
+      CertifiedContextConsEmptyUnitLinearChildren profile scope) :
+    PolyCell.CertifiedChildSpineForRawDescriptors profile scope
+      (RawChildDescriptors.contextCons (profile := profile)
+        (parentScope := scope)
+        (PolyTerm.atom contextEmptyGeneratorSpec.cellId 0)
+        (PolyTerm.atom unitTypeGeneratorSpec.cellId 0)
+        (PolyTerm.atom linearModeGeneratorSpec.cellId 0)) :=
+  PolyCell.contextConsEmptyUnitLinearChildrenForRawDescriptors
+    certifiedChildren.contextCell
+    certifiedChildren.typeCell
+    certifiedChildren.modeCell
+
+/-- Descriptor-indexed context-extension children forget to the ordinary
+certified child spine. -/
+theorem contextConsDescriptorChildSpine_toCertifiedChildren
+    {profile : PolyProfile} {scope : Nat}
+    (certifiedChildren :
+      CertifiedContextConsEmptyUnitLinearChildren profile scope) :
+    certifiedChildren.contextConsDescriptorChildSpine.toCertifiedChildren =
+      certifiedChildren.contextConsChildSpine := rfl
+
+end CertifiedContextConsEmptyUnitLinearChildren
+
+/-- Build the certified child package for
+`ctxCons(empty, Unit, linear)`. -/
+def certifiedContextConsEmptyUnitLinearChildren {profile : PolyProfile}
+    {scope : Nat} :
+    CertifiedContextConsEmptyUnitLinearChildren profile scope :=
+  { contextCell :=
+      PolyCell.contextEmpty (profile := profile) (scope := scope)
+    typeCell :=
+      PolyCell.unitType (profile := profile) (scope := scope)
+    modeCell :=
+      PolyCell.linearMode (profile := profile) (scope := scope) }
+
+/-- Computably decode certified children for the first finite
+context-extension payload.
+
+The decoder and generic child screen both run before the certified parent is
+constructed.  This fixture is available at every scope because all decoded
+children are nullary same-scope seed cells. -/
+def certifyContextConsEmptyUnitLinearChildren? {profile : PolyProfile}
+    (scope : Nat) :
+    Except CellCheckRejection
+      (CertifiedContextConsEmptyUnitLinearChildren profile scope) :=
+  match
+      decodeContextConsPayload? (profile := profile) scope
+        contextConsEmptyUnitLinearPayload with
+  | Except.error rejection => Except.error rejection
+  | Except.ok rawDescriptors =>
+      match
+          screenRawChildDescriptorsWith? (profile := profile)
+            (fun {childDimension} childScope
+                (childRaw : PolyTerm profile childDimension) =>
+              screenRawCellWithFuel? 63 childScope childRaw)
+            scope rawDescriptors with
+      | Except.error rejection => Except.error rejection
+      | Except.ok () =>
+          Except.ok
+            (certifiedContextConsEmptyUnitLinearChildren
+              (profile := profile) (scope := scope))
+
+/-- Certified package for the first finite context-extension payload. -/
+def certifiedContextConsEmptyUnitLinearPackage {profile : PolyProfile}
+    {scope : Nat}
+    (certifiedChildren :
+      CertifiedContextConsEmptyUnitLinearChildren profile scope) :
+    CertifiedRawCell profile scope
+      (PolyTerm.atom contextConsGeneratorSpec.cellId
+        contextConsEmptyUnitLinearPayload) where
+  cellSort := .context
+  cellBoundary := ()
+  certifiedCell :=
+    PolyCell.contextConsEmptyUnitLinearCell
+      certifiedChildren.contextCell
+      certifiedChildren.typeCell
+      certifiedChildren.modeCell
 
 /-- Certified endpoints for the first finite dim-1 term-step fixture. -/
 structure CertifiedTermStepVarZeroVarOneEndpoints
@@ -1613,6 +1824,26 @@ def inferRawAtom? {profile : PolyProfile} (scope cellId payload : Nat) :
       Except.error
         (certificationRejectionAfterScreen? scope
           (PolyTerm.atom (profile := profile) cellId payload))
+  else if Nat.beq cellId contextConsGeneratorSpec.cellId then
+    if payload = contextConsEmptyUnitLinearPayload then
+      match certifyContextConsEmptyUnitLinearChildren?
+          (profile := profile) scope with
+      | Except.ok certifiedChildren =>
+          Except.ok
+            (certifiedRawCellResultOfPackage
+              (profile := profile) (scope := scope)
+              (rawCellCode
+                (PolyTerm.atom (profile := profile)
+                  contextConsGeneratorSpec.cellId
+                  contextConsEmptyUnitLinearPayload))
+              (certifiedContextConsEmptyUnitLinearPackage
+                (profile := profile) certifiedChildren)
+              (hasSameNatList_self _))
+      | Except.error rejection => Except.error rejection
+    else
+      Except.error
+        (certificationRejectionAfterScreen? scope
+          (PolyTerm.atom (profile := profile) cellId payload))
   else
     Except.error
       (certificationRejectionAfterScreen? scope
@@ -2051,6 +2282,24 @@ def acceptedPiTypeUnitCodomainUnitInputCodeResult
           (scope := NegativeProbes.defaultInferScope)))
       (hasSameNatList_self _))
 
+/-- Package-level input-code result for the accepted context-extension
+fixture. -/
+def acceptedContextConsEmptyUnitLinearInputCodeResult
+    (profile : PolyProfile) :
+    Except CellCheckRejection
+      (CertifiedRawCellResult profile NegativeProbes.defaultInferScope) :=
+  Except.ok
+    (certifiedRawCellResultOfPackage
+      (profile := profile) (scope := NegativeProbes.defaultInferScope)
+      (rawCellCode
+        (NegativeProbes.contextConsEmptyUnitLinearRawCell profile))
+      (certifiedContextConsEmptyUnitLinearPackage
+        (profile := profile)
+        (certifiedContextConsEmptyUnitLinearChildren
+          (profile := profile)
+          (scope := NegativeProbes.defaultInferScope)))
+      (hasSameNatList_self _))
+
 /-- Accepted seed term fixture. -/
 def acceptedSeedTermDimZeroFixture (profile : PolyProfile) :
     AcceptedDimZeroFixture profile where
@@ -2132,6 +2381,17 @@ def acceptedPiTypeUnitCodomainUnitDimZeroFixture
   inputCodeResult :=
     acceptedPiTypeUnitCodomainUnitInputCodeResult profile
 
+/-- Accepted first context-extension fixture. -/
+def acceptedContextConsEmptyUnitLinearDimZeroFixture
+    (profile : PolyProfile) : AcceptedDimZeroFixture profile where
+  expectedSort := .context
+  rawCell := NegativeProbes.contextConsEmptyUnitLinearRawCell profile
+  ingressResult :=
+    inferRawCell? NegativeProbes.defaultInferScope
+      (NegativeProbes.contextConsEmptyUnitLinearRawCell profile)
+  inputCodeResult :=
+    acceptedContextConsEmptyUnitLinearInputCodeResult profile
+
 /-- Current finite accepted dim-0 frontier. -/
 def acceptedDimZeroFixtures (profile : PolyProfile) :
     List (AcceptedDimZeroFixture profile) :=
@@ -2141,11 +2401,12 @@ def acceptedDimZeroFixtures (profile : PolyProfile) :
     acceptedSeedModeDimZeroFixture profile,
     acceptedApplicationVarZeroVarOneDimZeroFixture profile,
     acceptedLambdaUnitTypeBodyVarZeroDimZeroFixture profile,
-    acceptedPiTypeUnitCodomainUnitDimZeroFixture profile]
+    acceptedPiTypeUnitCodomainUnitDimZeroFixture profile,
+    acceptedContextConsEmptyUnitLinearDimZeroFixture profile]
 
-/-- The current accepted dim-0 frontier has exactly seven fixtures. -/
+/-- The current accepted dim-0 frontier has exactly eight fixtures. -/
 theorem acceptedDimZeroFixtures_length (profile : PolyProfile) :
-    (acceptedDimZeroFixtures profile).length = 7 := rfl
+    (acceptedDimZeroFixtures profile).length = 8 := rfl
 
 /-- Current dim-0 accepted ingress fixtures: seed term/type/context/mode atoms
 and the first certified application, lambda, and pi-type payloads. -/
@@ -2188,6 +2449,18 @@ def hasAcceptedPiTypeUnitCodomainUnitInputCodeCoverage
   hasCertifiedResultInputCodeCoverage
     (NegativeProbes.piTypeUnitCodomainUnitRawCell profile)
     (acceptedPiTypeUnitCodomainUnitInputCodeResult profile)
+
+/-- The accepted context-extension package preserves the finite raw input
+code.
+
+This checks the certified package directly instead of forcing Lean to
+normalize the whole atom dispatcher through the context-extension child
+screen. -/
+def hasAcceptedContextConsEmptyUnitLinearInputCodeCoverage
+    (profile : PolyProfile) : Bool :=
+  hasCertifiedResultInputCodeCoverage
+    (NegativeProbes.contextConsEmptyUnitLinearRawCell profile)
+    (acceptedContextConsEmptyUnitLinearInputCodeResult profile)
 
 /-- Current dim-0 accepted ingress fixtures preserve their raw input codes. -/
 def haveAcceptedDimZeroInputCodeCoverage (profile : PolyProfile) : Bool :=
@@ -2715,6 +2988,15 @@ theorem certifiedPiTypeUnitCodomainUnitPackage_raw
       PolyTerm.atom (profile := profile) piTypeGeneratorSpec.cellId
         piTypeUnitCodomainUnitPayload := rfl
 
+theorem certifiedContextConsEmptyUnitLinearPackage_raw
+    {profile : PolyProfile} {scope : Nat}
+    (certifiedChildren :
+      CertifiedContextConsEmptyUnitLinearChildren profile scope) :
+    (certifiedContextConsEmptyUnitLinearPackage (profile := profile)
+      certifiedChildren).certifiedCell.raw =
+      PolyTerm.atom (profile := profile) contextConsGeneratorSpec.cellId
+        contextConsEmptyUnitLinearPayload := rfl
+
 theorem certifiedTermStepVarZeroVarOnePackage_raw
     {profile : PolyProfile} {scope : Nat}
     (certifiedEndpoints :
@@ -2980,6 +3262,78 @@ theorem certifyPiTypeUnitCodomainUnitChildren?_rawDescriptors_eq_decoder
     | Except.error rejection => Except.error rejection) =
       decodePiTypePayload? (profile := profile) scope
         piTypeUnitCodomainUnitPayload := rfl
+
+theorem certifyContextConsEmptyUnitLinearChildren?_scope_four_accepts
+    {profile : PolyProfile} :
+    (match
+      certifyContextConsEmptyUnitLinearChildren? (profile := profile)
+        NegativeProbes.defaultInferScope with
+    | Except.ok _ => true
+    | Except.error _ => false) = true := rfl
+
+theorem certifiedContextConsEmptyUnitLinearChildren_arity_eq_generator
+    {profile : PolyProfile} {scope : Nat}
+    (certifiedChildren :
+      CertifiedContextConsEmptyUnitLinearChildren profile scope) :
+    certifiedChildren.contextConsChildSpine.arity =
+      contextConsGeneratorSpec.arity := rfl
+
+theorem certifiedContextConsEmptyUnitLinearChildren_rawDescriptors
+    {profile : PolyProfile} {scope : Nat}
+    (certifiedChildren :
+      CertifiedContextConsEmptyUnitLinearChildren profile scope) :
+    PolyCell.certifiedChildSpineRawDescriptors
+      certifiedChildren.contextConsChildSpine =
+      RawChildDescriptors.contextCons (profile := profile)
+        (parentScope := scope)
+        (PolyTerm.atom contextEmptyGeneratorSpec.cellId 0)
+        (PolyTerm.atom unitTypeGeneratorSpec.cellId 0)
+        (PolyTerm.atom linearModeGeneratorSpec.cellId 0) := rfl
+
+/-- The first certified context-extension child package erases exactly to the
+decoder output for the context-extension payload. -/
+theorem certifiedContextConsEmptyUnitLinearChildren_rawDescriptors_eq_decoder
+    {profile : PolyProfile} {scope : Nat}
+    (certifiedChildren :
+      CertifiedContextConsEmptyUnitLinearChildren profile scope) :
+    Except.ok
+      (PolyCell.certifiedChildSpineRawDescriptors
+        certifiedChildren.contextConsChildSpine) =
+      decodeContextConsPayload? (profile := profile) scope
+        contextConsEmptyUnitLinearPayload := rfl
+
+/-- The descriptor-indexed context-extension child package also erases exactly
+to the decoder output. -/
+theorem certifiedContextConsEmptyUnitLinearDescriptorChildren_rawDescriptors_eq_decoder
+    {profile : PolyProfile} {scope : Nat}
+    (certifiedChildren :
+      CertifiedContextConsEmptyUnitLinearChildren profile scope) :
+    Except.ok
+      (PolyCell.certifiedChildSpineRawDescriptors
+        certifiedChildren.contextConsDescriptorChildSpine.toCertifiedChildren) =
+      decodeContextConsPayload? (profile := profile) scope
+        contextConsEmptyUnitLinearPayload := by
+  rw [
+    CertifiedContextConsEmptyUnitLinearChildren.contextConsDescriptorChildSpine_toCertifiedChildren
+  ]
+  exact
+    certifiedContextConsEmptyUnitLinearChildren_rawDescriptors_eq_decoder
+      certifiedChildren
+
+/-- For every scope, context-extension certification followed by child-spine
+erasure returns the same raw descriptor spine as the payload decoder. -/
+theorem certifyContextConsEmptyUnitLinearChildren?_rawDescriptors_eq_decoder
+    {profile : PolyProfile} {scope : Nat} :
+    (match
+      certifyContextConsEmptyUnitLinearChildren? (profile := profile)
+        scope with
+    | Except.ok certifiedChildren =>
+        Except.ok
+          (PolyCell.certifiedChildSpineRawDescriptors
+            certifiedChildren.contextConsChildSpine)
+    | Except.error rejection => Except.error rejection) =
+      decodeContextConsPayload? (profile := profile) scope
+        contextConsEmptyUnitLinearPayload := rfl
 
 theorem certifyTermStepVarZeroVarOneEndpoints?_scope_zero_rejects
     {profile : PolyProfile} :
@@ -3254,6 +3608,64 @@ theorem decodePiTypePayload?_wrongChildShape_rejects
       NegativeProbes.wrongChildShapeSentinel =
       Except.error .wrongChildShape := rfl
 
+theorem decodeContextConsPayload?_emptyUnitLinear
+    {profile : PolyProfile} {scope : Nat} :
+    decodeContextConsPayload? (profile := profile) scope
+      contextConsEmptyUnitLinearPayload =
+      Except.ok
+        (RawChildDescriptors.contextCons
+          (NegativeProbes.seedContextAtom profile)
+          (NegativeProbes.seedTypeAtom profile)
+          (NegativeProbes.seedModeAtom profile)) := rfl
+
+theorem decodeContextConsPayload?_typeAsContext
+    {profile : PolyProfile} {scope : Nat} :
+    decodeContextConsPayload? (profile := profile) scope
+      NegativeProbes.contextConsTypeAsContextPayload =
+      Except.ok
+        (RawChildDescriptors.contextCons
+          (NegativeProbes.seedTypeAtom profile)
+          (NegativeProbes.seedTypeAtom profile)
+          (NegativeProbes.seedModeAtom profile)) := rfl
+
+theorem decodeContextConsPayload?_termAsType
+    {profile : PolyProfile} {scope : Nat} :
+    decodeContextConsPayload? (profile := profile) scope
+      NegativeProbes.contextConsTermAsTypePayload =
+      Except.ok
+        (RawChildDescriptors.contextCons
+          (NegativeProbes.seedContextAtom profile)
+          (NegativeProbes.seedTermAtom profile)
+          (NegativeProbes.seedModeAtom profile)) := rfl
+
+theorem decodeContextConsPayload?_contextAsMode
+    {profile : PolyProfile} {scope : Nat} :
+    decodeContextConsPayload? (profile := profile) scope
+      NegativeProbes.contextConsContextAsModePayload =
+      Except.ok
+        (RawChildDescriptors.contextCons
+          (NegativeProbes.seedContextAtom profile)
+          (NegativeProbes.seedTypeAtom profile)
+          (NegativeProbes.seedContextAtom profile)) := rfl
+
+theorem decodeContextConsPayload?_badPayload_rejects
+    {profile : PolyProfile} {scope : Nat} :
+    decodeContextConsPayload? (profile := profile) scope
+      NegativeProbes.badPayloadSentinel =
+      Except.error .badPayload := rfl
+
+theorem decodeContextConsPayload?_wrongArity_rejects
+    {profile : PolyProfile} {scope : Nat} :
+    decodeContextConsPayload? (profile := profile) scope
+      NegativeProbes.wrongAritySentinel =
+      Except.error .wrongArity := rfl
+
+theorem decodeContextConsPayload?_wrongChildShape_rejects
+    {profile : PolyProfile} {scope : Nat} :
+    decodeContextConsPayload? (profile := profile) scope
+      NegativeProbes.wrongChildShapeSentinel =
+      Except.error .wrongChildShape := rfl
+
 theorem certifyApplicationVarZeroVarOneChildren?_scope_four_accepts
     {profile : PolyProfile} :
     (match
@@ -3462,6 +3874,58 @@ theorem screenRawChildDescriptorsWith?_piTypeTermAsCodomain_rejects
         (NegativeProbes.seedTermAtom profile)) =
       Except.error .wrongChildShape := rfl
 
+theorem screenRawChildDescriptorsWith?_contextConsEmptyUnitLinear
+    {profile : PolyProfile} :
+    screenRawChildDescriptorsWith? (profile := profile)
+      (fun {childDimension} childScope
+          (childRaw : PolyTerm profile childDimension) =>
+        screenRawCellWithFuel? 63 childScope childRaw)
+      NegativeProbes.defaultInferScope
+      (RawChildDescriptors.contextCons
+        (NegativeProbes.seedContextAtom profile)
+        (NegativeProbes.seedTypeAtom profile)
+        (NegativeProbes.seedModeAtom profile)) =
+      Except.ok () := rfl
+
+theorem screenRawChildDescriptorsWith?_contextConsTypeAsContext_rejects
+    {profile : PolyProfile} :
+    screenRawChildDescriptorsWith? (profile := profile)
+      (fun {childDimension} childScope
+          (childRaw : PolyTerm profile childDimension) =>
+        screenRawCellWithFuel? 63 childScope childRaw)
+      NegativeProbes.defaultInferScope
+      (RawChildDescriptors.contextCons
+        (NegativeProbes.seedTypeAtom profile)
+        (NegativeProbes.seedTypeAtom profile)
+        (NegativeProbes.seedModeAtom profile)) =
+      Except.error .wrongChildShape := rfl
+
+theorem screenRawChildDescriptorsWith?_contextConsTermAsType_rejects
+    {profile : PolyProfile} :
+    screenRawChildDescriptorsWith? (profile := profile)
+      (fun {childDimension} childScope
+          (childRaw : PolyTerm profile childDimension) =>
+        screenRawCellWithFuel? 63 childScope childRaw)
+      NegativeProbes.defaultInferScope
+      (RawChildDescriptors.contextCons
+        (NegativeProbes.seedContextAtom profile)
+        (NegativeProbes.seedTermAtom profile)
+        (NegativeProbes.seedModeAtom profile)) =
+      Except.error .wrongChildShape := rfl
+
+theorem screenRawChildDescriptorsWith?_contextConsContextAsMode_rejects
+    {profile : PolyProfile} :
+    screenRawChildDescriptorsWith? (profile := profile)
+      (fun {childDimension} childScope
+          (childRaw : PolyTerm profile childDimension) =>
+        screenRawCellWithFuel? 63 childScope childRaw)
+      NegativeProbes.defaultInferScope
+      (RawChildDescriptors.contextCons
+        (NegativeProbes.seedContextAtom profile)
+        (NegativeProbes.seedTypeAtom profile)
+        (NegativeProbes.seedContextAtom profile)) =
+      Except.error .wrongChildShape := rfl
+
 theorem screenRawCell0?_applicationVarZeroVarOne
     {profile : PolyProfile} :
     screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
@@ -3631,6 +4095,37 @@ theorem screenRawCell0?_piTypeTermAsCodomain_rejects
     {profile : PolyProfile} :
     screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
       (NegativeProbes.piTypeTermAsCodomainRawCell profile) =
+      Except.error .wrongChildShape := rfl
+
+theorem screenRawCell0?_contextConsEmptyUnitLinear
+    {profile : PolyProfile} :
+    screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.contextConsEmptyUnitLinearRawCell profile) =
+      Except.ok () := rfl
+
+theorem screenRawCell0As?_contextConsEmptyUnitLinear
+    {profile : PolyProfile} :
+    screenRawCell0As? (profile := profile) .context
+      NegativeProbes.defaultInferScope
+      (NegativeProbes.contextConsEmptyUnitLinearRawCell profile) =
+      Except.ok () := rfl
+
+theorem screenRawCell0?_contextConsTypeAsContext_rejects
+    {profile : PolyProfile} :
+    screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.contextConsTypeAsContextRawCell profile) =
+      Except.error .wrongChildShape := rfl
+
+theorem screenRawCell0?_contextConsTermAsType_rejects
+    {profile : PolyProfile} :
+    screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.contextConsTermAsTypeRawCell profile) =
+      Except.error .wrongChildShape := rfl
+
+theorem screenRawCell0?_contextConsContextAsMode_rejects
+    {profile : PolyProfile} :
+    screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.contextConsContextAsModeRawCell profile) =
       Except.error .wrongChildShape := rfl
 
 theorem certifiedSeedTermPackage_raw {profile : PolyProfile} :
@@ -4068,6 +4563,90 @@ theorem inferRawCell?_piTypeTermAsCodomain_rejects
       Except.error .wrongChildShape
   rfl
 
+theorem inferRawCell?_contextConsEmptyUnitLinear_sort
+    {profile : PolyProfile} :
+    certifiedResultSort?
+      (inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
+        (NegativeProbes.contextConsEmptyUnitLinearRawCell profile)) =
+      some .context := by
+  change
+    certifiedResultSort?
+      (inferRawAtom? (profile := profile) 4
+        contextConsGeneratorSpec.cellId
+        contextConsEmptyUnitLinearPayload) = some .context
+  rfl
+
+theorem checkRawCellAs?_contextConsEmptyUnitLinear_sort
+    {profile : PolyProfile} :
+    certifiedResultSort?
+      (checkRawCellAs? (profile := profile) .context
+        NegativeProbes.defaultInferScope
+        (NegativeProbes.contextConsEmptyUnitLinearRawCell profile)) =
+      some .context := by
+  change
+    certifiedResultSort?
+      (inferRawAtom? (profile := profile) 4
+        contextConsGeneratorSpec.cellId
+        contextConsEmptyUnitLinearPayload) = some .context
+  rfl
+
+theorem checkRawCellAs?_contextConsEmptyUnitLinear_as_term_rejects
+    {profile : PolyProfile} :
+    checkRawCellAs? (profile := profile) .term
+      NegativeProbes.defaultInferScope
+      (NegativeProbes.contextConsEmptyUnitLinearRawCell profile) =
+      Except.error .wrongSort := rfl
+
+theorem checkRawCellAs?_contextConsEmptyUnitLinear_as_type_rejects
+    {profile : PolyProfile} :
+    checkRawCellAs? (profile := profile) .type
+      NegativeProbes.defaultInferScope
+      (NegativeProbes.contextConsEmptyUnitLinearRawCell profile) =
+      Except.error .wrongSort := rfl
+
+theorem checkRawCellAs?_contextConsEmptyUnitLinear_as_mode_rejects
+    {profile : PolyProfile} :
+    checkRawCellAs? (profile := profile) .mode
+      NegativeProbes.defaultInferScope
+      (NegativeProbes.contextConsEmptyUnitLinearRawCell profile) =
+      Except.error .wrongSort := rfl
+
+theorem inferRawCell?_contextConsTypeAsContext_rejects
+    {profile : PolyProfile} :
+    inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.contextConsTypeAsContextRawCell profile) =
+      Except.error .wrongChildShape := by
+  change
+    inferRawAtom? (profile := profile) 4
+      contextConsGeneratorSpec.cellId
+      NegativeProbes.contextConsTypeAsContextPayload =
+      Except.error .wrongChildShape
+  rfl
+
+theorem inferRawCell?_contextConsTermAsType_rejects
+    {profile : PolyProfile} :
+    inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.contextConsTermAsTypeRawCell profile) =
+      Except.error .wrongChildShape := by
+  change
+    inferRawAtom? (profile := profile) 4
+      contextConsGeneratorSpec.cellId
+      NegativeProbes.contextConsTermAsTypePayload =
+      Except.error .wrongChildShape
+  rfl
+
+theorem inferRawCell?_contextConsContextAsMode_rejects
+    {profile : PolyProfile} :
+    inferRawCell? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.contextConsContextAsModeRawCell profile) =
+      Except.error .wrongChildShape := by
+  change
+    inferRawAtom? (profile := profile) 4
+      contextConsGeneratorSpec.cellId
+      NegativeProbes.contextConsContextAsModePayload =
+      Except.error .wrongChildShape
+  rfl
+
 theorem inferRawAtom?_applicationVarZeroVarOne_scope_one_rejects
     {profile : PolyProfile} :
     inferRawAtom? (profile := profile) 1 applicationGeneratorSpec.cellId
@@ -4215,6 +4794,95 @@ theorem acceptedPiTypeUnitCodomainUnitIngress_hasCoverage
         piTypeUnitCodomainUnitPayload) = true
   rfl
 
+/-- Accepted-ingress coverage for the first certified context-extension
+payload. -/
+theorem acceptedContextConsEmptyUnitLinearIngress_hasCoverage
+    {profile : PolyProfile} :
+    hasAcceptedDimZeroIngressCoverage .context
+      (NegativeProbes.contextConsEmptyUnitLinearRawCell profile) = true := by
+  change
+    hasCertifiedResultShape (dimension := 0) .context
+      (inferRawAtom? (profile := profile) 4
+        contextConsGeneratorSpec.cellId
+        contextConsEmptyUnitLinearPayload) = true
+  rfl
+
+/-- The seed term fixture is accepted by dim-0 ingress. -/
+theorem acceptedSeedTermFixtureIngress_hasCoverage {profile : PolyProfile} :
+    hasAcceptedDimZeroFixtureIngressCoverage
+      (acceptedSeedTermDimZeroFixture profile) = true := by
+  change
+    hasAcceptedDimZeroIngressCoverage .term
+      (NegativeProbes.seedTermAtom profile) = true
+  exact acceptedSeedTermIngress_hasCoverage
+
+/-- The seed type fixture is accepted by dim-0 ingress. -/
+theorem acceptedSeedTypeFixtureIngress_hasCoverage {profile : PolyProfile} :
+    hasAcceptedDimZeroFixtureIngressCoverage
+      (acceptedSeedTypeDimZeroFixture profile) = true := by
+  change
+    hasAcceptedDimZeroIngressCoverage .type
+      (NegativeProbes.seedTypeAtom profile) = true
+  exact acceptedSeedTypeIngress_hasCoverage
+
+/-- The seed context fixture is accepted by dim-0 ingress. -/
+theorem acceptedSeedContextFixtureIngress_hasCoverage {profile : PolyProfile} :
+    hasAcceptedDimZeroFixtureIngressCoverage
+      (acceptedSeedContextDimZeroFixture profile) = true := by
+  change
+    hasAcceptedDimZeroIngressCoverage .context
+      (NegativeProbes.seedContextAtom profile) = true
+  exact acceptedSeedContextIngress_hasCoverage
+
+/-- The seed mode fixture is accepted by dim-0 ingress. -/
+theorem acceptedSeedModeFixtureIngress_hasCoverage {profile : PolyProfile} :
+    hasAcceptedDimZeroFixtureIngressCoverage
+      (acceptedSeedModeDimZeroFixture profile) = true := by
+  change
+    hasAcceptedDimZeroIngressCoverage .mode
+      (NegativeProbes.seedModeAtom profile) = true
+  exact acceptedSeedModeIngress_hasCoverage
+
+/-- The first application fixture is accepted by dim-0 ingress. -/
+theorem acceptedApplicationVarZeroVarOneFixtureIngress_hasCoverage
+    {profile : PolyProfile} :
+    hasAcceptedDimZeroFixtureIngressCoverage
+      (acceptedApplicationVarZeroVarOneDimZeroFixture profile) = true := by
+  change
+    hasAcceptedDimZeroIngressCoverage .term
+      (NegativeProbes.applicationVarZeroVarOneRawCell profile) = true
+  exact acceptedApplicationVarZeroVarOneIngress_hasCoverage
+
+/-- The first lambda fixture is accepted by dim-0 ingress. -/
+theorem acceptedLambdaUnitTypeBodyVarZeroFixtureIngress_hasCoverage
+    {profile : PolyProfile} :
+    hasAcceptedDimZeroFixtureIngressCoverage
+      (acceptedLambdaUnitTypeBodyVarZeroDimZeroFixture profile) = true := by
+  change
+    hasAcceptedDimZeroIngressCoverage .term
+      (NegativeProbes.lambdaUnitTypeBodyVarZeroRawCell profile) = true
+  exact acceptedLambdaUnitTypeBodyVarZeroIngress_hasCoverage
+
+/-- The first pi-type fixture is accepted by dim-0 ingress. -/
+theorem acceptedPiTypeUnitCodomainUnitFixtureIngress_hasCoverage
+    {profile : PolyProfile} :
+    hasAcceptedDimZeroFixtureIngressCoverage
+      (acceptedPiTypeUnitCodomainUnitDimZeroFixture profile) = true := by
+  change
+    hasAcceptedDimZeroIngressCoverage .type
+      (NegativeProbes.piTypeUnitCodomainUnitRawCell profile) = true
+  exact acceptedPiTypeUnitCodomainUnitIngress_hasCoverage
+
+/-- The first context-extension fixture is accepted by dim-0 ingress. -/
+theorem acceptedContextConsEmptyUnitLinearFixtureIngress_hasCoverage
+    {profile : PolyProfile} :
+    hasAcceptedDimZeroFixtureIngressCoverage
+      (acceptedContextConsEmptyUnitLinearDimZeroFixture profile) = true := by
+  change
+    hasAcceptedDimZeroIngressCoverage .context
+      (NegativeProbes.contextConsEmptyUnitLinearRawCell profile) = true
+  exact acceptedContextConsEmptyUnitLinearIngress_hasCoverage
+
 /-- Accepted-ingress coverage headline for the current dim-0 certified
 domain. -/
 theorem acceptedDimZeroIngresses_haveCoverage (profile : PolyProfile) :
@@ -4222,15 +4890,15 @@ theorem acceptedDimZeroIngresses_haveCoverage (profile : PolyProfile) :
   dsimp [haveAcceptedDimZeroIngressCoverage,
     haveAcceptedDimZeroFixturesIngressCoverage,
     doAcceptedDimZeroFixturesHaveIngressCoverage,
-    acceptedDimZeroFixtures,
-    acceptedSeedTermDimZeroFixture,
-    acceptedSeedTypeDimZeroFixture,
-    acceptedSeedContextDimZeroFixture,
-    acceptedSeedModeDimZeroFixture,
-    acceptedApplicationVarZeroVarOneDimZeroFixture,
-    acceptedLambdaUnitTypeBodyVarZeroDimZeroFixture,
-    acceptedPiTypeUnitCodomainUnitDimZeroFixture,
-    hasAcceptedDimZeroFixtureIngressCoverage]
+    acceptedDimZeroFixtures]
+  rw [acceptedSeedTermFixtureIngress_hasCoverage,
+    acceptedSeedTypeFixtureIngress_hasCoverage,
+    acceptedSeedContextFixtureIngress_hasCoverage,
+    acceptedSeedModeFixtureIngress_hasCoverage,
+    acceptedApplicationVarZeroVarOneFixtureIngress_hasCoverage,
+    acceptedLambdaUnitTypeBodyVarZeroFixtureIngress_hasCoverage,
+    acceptedPiTypeUnitCodomainUnitFixtureIngress_hasCoverage,
+    acceptedContextConsEmptyUnitLinearFixtureIngress_hasCoverage]
   rfl
 
 /-- Accepted-ingress coverage headline for the current direct dim-1
@@ -4371,6 +5039,107 @@ theorem acceptedPiTypeUnitCodomainUnitScreen_hasCoverage
     hasPiTypeScreen]
   rfl
 
+/-- Accepted ingress for the first context-extension payload agrees with the
+structural screen. -/
+theorem acceptedContextConsEmptyUnitLinearScreen_hasCoverage
+    {profile : PolyProfile} :
+    hasAcceptedDimZeroScreenCoverage .context
+      (NegativeProbes.contextConsEmptyUnitLinearRawCell profile) = true := by
+  change
+    (hasAcceptedDimZeroIngressCoverage .context
+      (NegativeProbes.contextConsEmptyUnitLinearRawCell profile) &&
+      (match
+        screenRawCellAs? (profile := profile) .context
+          NegativeProbes.defaultInferScope
+          (NegativeProbes.contextConsEmptyUnitLinearRawCell profile) with
+      | Except.ok () => true
+      | Except.error _ => false)) = true
+  have hasContextConsScreen :
+      screenRawCellAs? (profile := profile) .context
+        NegativeProbes.defaultInferScope
+        (NegativeProbes.contextConsEmptyUnitLinearRawCell profile) =
+        Except.ok () :=
+    screenRawCell0As?_contextConsEmptyUnitLinear (profile := profile)
+  rw [acceptedContextConsEmptyUnitLinearIngress_hasCoverage,
+    hasContextConsScreen]
+  rfl
+
+/-- The seed term fixture agrees with its screen. -/
+theorem acceptedSeedTermFixtureScreen_hasCoverage {profile : PolyProfile} :
+    hasAcceptedDimZeroFixtureScreenCoverage
+      (acceptedSeedTermDimZeroFixture profile) = true := by
+  change
+    hasAcceptedDimZeroScreenCoverage .term
+      (NegativeProbes.seedTermAtom profile) = true
+  exact acceptedSeedTermScreen_hasCoverage
+
+/-- The seed type fixture agrees with its screen. -/
+theorem acceptedSeedTypeFixtureScreen_hasCoverage {profile : PolyProfile} :
+    hasAcceptedDimZeroFixtureScreenCoverage
+      (acceptedSeedTypeDimZeroFixture profile) = true := by
+  change
+    hasAcceptedDimZeroScreenCoverage .type
+      (NegativeProbes.seedTypeAtom profile) = true
+  exact acceptedSeedTypeScreen_hasCoverage
+
+/-- The seed context fixture agrees with its screen. -/
+theorem acceptedSeedContextFixtureScreen_hasCoverage {profile : PolyProfile} :
+    hasAcceptedDimZeroFixtureScreenCoverage
+      (acceptedSeedContextDimZeroFixture profile) = true := by
+  change
+    hasAcceptedDimZeroScreenCoverage .context
+      (NegativeProbes.seedContextAtom profile) = true
+  exact acceptedSeedContextScreen_hasCoverage
+
+/-- The seed mode fixture agrees with its screen. -/
+theorem acceptedSeedModeFixtureScreen_hasCoverage {profile : PolyProfile} :
+    hasAcceptedDimZeroFixtureScreenCoverage
+      (acceptedSeedModeDimZeroFixture profile) = true := by
+  change
+    hasAcceptedDimZeroScreenCoverage .mode
+      (NegativeProbes.seedModeAtom profile) = true
+  exact acceptedSeedModeScreen_hasCoverage
+
+/-- The first application fixture agrees with its screen. -/
+theorem acceptedApplicationVarZeroVarOneFixtureScreen_hasCoverage
+    {profile : PolyProfile} :
+    hasAcceptedDimZeroFixtureScreenCoverage
+      (acceptedApplicationVarZeroVarOneDimZeroFixture profile) = true := by
+  change
+    hasAcceptedDimZeroScreenCoverage .term
+      (NegativeProbes.applicationVarZeroVarOneRawCell profile) = true
+  exact acceptedApplicationVarZeroVarOneScreen_hasCoverage
+
+/-- The first lambda fixture agrees with its screen. -/
+theorem acceptedLambdaUnitTypeBodyVarZeroFixtureScreen_hasCoverage
+    {profile : PolyProfile} :
+    hasAcceptedDimZeroFixtureScreenCoverage
+      (acceptedLambdaUnitTypeBodyVarZeroDimZeroFixture profile) = true := by
+  change
+    hasAcceptedDimZeroScreenCoverage .term
+      (NegativeProbes.lambdaUnitTypeBodyVarZeroRawCell profile) = true
+  exact acceptedLambdaUnitTypeBodyVarZeroScreen_hasCoverage
+
+/-- The first pi-type fixture agrees with its screen. -/
+theorem acceptedPiTypeUnitCodomainUnitFixtureScreen_hasCoverage
+    {profile : PolyProfile} :
+    hasAcceptedDimZeroFixtureScreenCoverage
+      (acceptedPiTypeUnitCodomainUnitDimZeroFixture profile) = true := by
+  change
+    hasAcceptedDimZeroScreenCoverage .type
+      (NegativeProbes.piTypeUnitCodomainUnitRawCell profile) = true
+  exact acceptedPiTypeUnitCodomainUnitScreen_hasCoverage
+
+/-- The first context-extension fixture agrees with its screen. -/
+theorem acceptedContextConsEmptyUnitLinearFixtureScreen_hasCoverage
+    {profile : PolyProfile} :
+    hasAcceptedDimZeroFixtureScreenCoverage
+      (acceptedContextConsEmptyUnitLinearDimZeroFixture profile) = true := by
+  change
+    hasAcceptedDimZeroScreenCoverage .context
+      (NegativeProbes.contextConsEmptyUnitLinearRawCell profile) = true
+  exact acceptedContextConsEmptyUnitLinearScreen_hasCoverage
+
 /-- Accepted dim-0 ingress agrees with the structural screen for every current
 accepted dim-0 fixture. -/
 theorem acceptedDimZeroScreens_haveCoverage (profile : PolyProfile) :
@@ -4378,17 +5147,15 @@ theorem acceptedDimZeroScreens_haveCoverage (profile : PolyProfile) :
   dsimp [haveAcceptedDimZeroScreenCoverage,
     haveAcceptedDimZeroFixturesScreenCoverage,
     doAcceptedDimZeroFixturesHaveScreenCoverage,
-    acceptedDimZeroFixtures,
-    acceptedSeedTermDimZeroFixture,
-    acceptedSeedTypeDimZeroFixture,
-    acceptedSeedContextDimZeroFixture,
-    acceptedSeedModeDimZeroFixture,
-    acceptedApplicationVarZeroVarOneDimZeroFixture,
-    acceptedLambdaUnitTypeBodyVarZeroDimZeroFixture,
-    acceptedPiTypeUnitCodomainUnitDimZeroFixture,
-    hasAcceptedDimZeroFixtureScreenCoverage,
-    hasCertifiedResultScreenCoverage,
-    hasAcceptedDimZeroIngressCoverage]
+    acceptedDimZeroFixtures]
+  rw [acceptedSeedTermFixtureScreen_hasCoverage,
+    acceptedSeedTypeFixtureScreen_hasCoverage,
+    acceptedSeedContextFixtureScreen_hasCoverage,
+    acceptedSeedModeFixtureScreen_hasCoverage,
+    acceptedApplicationVarZeroVarOneFixtureScreen_hasCoverage,
+    acceptedLambdaUnitTypeBodyVarZeroFixtureScreen_hasCoverage,
+    acceptedPiTypeUnitCodomainUnitFixtureScreen_hasCoverage,
+    acceptedContextConsEmptyUnitLinearFixtureScreen_hasCoverage]
   rfl
 
 /-- Accepted ingress for the seed term atom preserves the raw input code. -/
@@ -4471,6 +5238,18 @@ theorem acceptedPiTypeUnitCodomainUnitInputCode_hasCoverage
       true
   exact hasSameNatList_self _
 
+/-- The accepted certified package for the first context-extension payload
+preserves the raw input code. -/
+theorem acceptedContextConsEmptyUnitLinearInputCode_hasCoverage
+    {profile : PolyProfile} :
+    hasAcceptedContextConsEmptyUnitLinearInputCodeCoverage profile = true := by
+  change
+    hasSameNatList
+      (rawCellCode (NegativeProbes.contextConsEmptyUnitLinearRawCell profile))
+      (rawCellCode (NegativeProbes.contextConsEmptyUnitLinearRawCell profile)) =
+      true
+  exact hasSameNatList_self _
+
 /-- The seed term fixture preserves its raw input code through the shared
 fixture frontier. -/
 theorem acceptedSeedTermFixtureInputCode_hasCoverage
@@ -4545,6 +5324,16 @@ theorem acceptedPiTypeUnitCodomainUnitFixtureInputCode_hasCoverage
     hasAcceptedPiTypeUnitCodomainUnitInputCodeCoverage profile = true
   exact acceptedPiTypeUnitCodomainUnitInputCode_hasCoverage
 
+/-- The accepted context-extension fixture preserves its package-level raw
+input code through the shared fixture frontier. -/
+theorem acceptedContextConsEmptyUnitLinearFixtureInputCode_hasCoverage
+    {profile : PolyProfile} :
+    hasAcceptedDimZeroFixtureInputCodeCoverage
+      (acceptedContextConsEmptyUnitLinearDimZeroFixture profile) = true := by
+  change
+    hasAcceptedContextConsEmptyUnitLinearInputCodeCoverage profile = true
+  exact acceptedContextConsEmptyUnitLinearInputCode_hasCoverage
+
 /-- Accepted dim-0 ingress preserves raw input codes for every current accepted
 dim-0 fixture. -/
 theorem acceptedDimZeroInputCodes_haveCoverage (profile : PolyProfile) :
@@ -4559,7 +5348,8 @@ theorem acceptedDimZeroInputCodes_haveCoverage (profile : PolyProfile) :
     acceptedSeedModeFixtureInputCode_hasCoverage,
     acceptedApplicationVarZeroVarOneFixtureInputCode_hasCoverage,
     acceptedLambdaUnitTypeBodyVarZeroFixtureInputCode_hasCoverage,
-    acceptedPiTypeUnitCodomainUnitFixtureInputCode_hasCoverage]
+    acceptedPiTypeUnitCodomainUnitFixtureInputCode_hasCoverage,
+    acceptedContextConsEmptyUnitLinearFixtureInputCode_hasCoverage]
   rfl
 
 /-- Accepted ingress for the direct dim-1 term-step path agrees with the
@@ -4952,6 +5742,30 @@ theorem wrongContextConsChildShapeProbe_rejects {profile : PolyProfile} :
         (NegativeProbes.wrongContextConsChildShapeProbe
           profile).expectedRejection := rfl
 
+theorem contextConsTypeAsContextProbe_rejects {profile : PolyProfile} :
+    screenRawCell0? (profile := profile)
+      (NegativeProbes.contextConsTypeAsContextProbe profile).scope
+      (NegativeProbes.contextConsTypeAsContextRawCell profile) =
+      Except.error
+        (NegativeProbes.contextConsTypeAsContextProbe
+          profile).expectedRejection := rfl
+
+theorem contextConsTermAsTypeProbe_rejects {profile : PolyProfile} :
+    screenRawCell0? (profile := profile)
+      (NegativeProbes.contextConsTermAsTypeProbe profile).scope
+      (NegativeProbes.contextConsTermAsTypeRawCell profile) =
+      Except.error
+        (NegativeProbes.contextConsTermAsTypeProbe
+          profile).expectedRejection := rfl
+
+theorem contextConsContextAsModeProbe_rejects {profile : PolyProfile} :
+    screenRawCell0? (profile := profile)
+      (NegativeProbes.contextConsContextAsModeProbe profile).scope
+      (NegativeProbes.contextConsContextAsModeRawCell profile) =
+      Except.error
+        (NegativeProbes.contextConsContextAsModeProbe
+          profile).expectedRejection := rfl
+
 theorem applicationBadPayloadProbe_rejects {profile : PolyProfile} :
     screenRawCell0? (profile := profile)
       (NegativeProbes.applicationBadPayloadProbe profile).scope
@@ -5339,6 +6153,39 @@ theorem applicationVarZeroVarOneAsModeProbe_rejects
       (NegativeProbes.applicationVarZeroVarOneRawCell profile) =
       Except.error
         (NegativeProbes.applicationVarZeroVarOneAsModeProbe
+          profile).expectedRejection := rfl
+
+theorem contextConsEmptyUnitLinearAsTermProbe_rejects
+    {profile : PolyProfile} :
+    screenRawCell0As? (profile := profile)
+      (NegativeProbes.contextConsEmptyUnitLinearAsTermProbe profile).expectedSort
+      (NegativeProbes.contextConsEmptyUnitLinearAsTermProbe
+        profile).expectedScope
+      (NegativeProbes.contextConsEmptyUnitLinearRawCell profile) =
+      Except.error
+        (NegativeProbes.contextConsEmptyUnitLinearAsTermProbe
+          profile).expectedRejection := rfl
+
+theorem contextConsEmptyUnitLinearAsTypeProbe_rejects
+    {profile : PolyProfile} :
+    screenRawCell0As? (profile := profile)
+      (NegativeProbes.contextConsEmptyUnitLinearAsTypeProbe profile).expectedSort
+      (NegativeProbes.contextConsEmptyUnitLinearAsTypeProbe
+        profile).expectedScope
+      (NegativeProbes.contextConsEmptyUnitLinearRawCell profile) =
+      Except.error
+        (NegativeProbes.contextConsEmptyUnitLinearAsTypeProbe
+          profile).expectedRejection := rfl
+
+theorem contextConsEmptyUnitLinearAsModeProbe_rejects
+    {profile : PolyProfile} :
+    screenRawCell0As? (profile := profile)
+      (NegativeProbes.contextConsEmptyUnitLinearAsModeProbe profile).expectedSort
+      (NegativeProbes.contextConsEmptyUnitLinearAsModeProbe
+        profile).expectedScope
+      (NegativeProbes.contextConsEmptyUnitLinearRawCell profile) =
+      Except.error
+        (NegativeProbes.contextConsEmptyUnitLinearAsModeProbe
           profile).expectedRejection := rfl
 
 theorem applicationBadPayloadExpectedShapeProbe_rejects

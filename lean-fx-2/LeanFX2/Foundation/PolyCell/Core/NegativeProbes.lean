@@ -218,6 +218,46 @@ payload fixtures before falling back to sentinel or bad-payload rejection. -/
 theorem decodedPiTypePayloads_length :
     decodedPiTypePayloads.length = 3 := rfl
 
+/-- Context-extension payload whose decoded children are empty context, unit
+type, and linear mode.
+
+This aliases the certified finite context-extension payload while keeping the
+probe catalog's naming local. -/
+def contextConsEmptyUnitLinearPayload : Nat :=
+  LeanFX2.Foundation.PolyCell.Core.contextConsEmptyUnitLinearPayload
+
+/-- Context-extension payload whose decoded context child has type sort. -/
+def contextConsTypeAsContextPayload : Nat := 9401
+
+/-- Context-extension payload whose decoded type child has term sort. -/
+def contextConsTermAsTypePayload : Nat := 9402
+
+/-- Context-extension payload whose decoded mode child has context sort. -/
+def contextConsContextAsModePayload : Nat := 9403
+
+/-- Hostile context-extension payloads that decode far enough to test
+heterogeneous child screening, but must not certify as context cells. -/
+def hostileDecodedContextConsPayloads : List Nat :=
+  [contextConsTypeAsContextPayload,
+    contextConsTermAsTypePayload,
+    contextConsContextAsModePayload]
+
+/-- The hostile decoded context-extension frontier currently has three
+fixtures. -/
+theorem hostileDecodedContextConsPayloads_length :
+    hostileDecodedContextConsPayloads.length = 3 := rfl
+
+/-- All context-extension payload fixtures known to the finite decoder staging
+table: one well-shaped child spine plus hostile decoded children. -/
+def decodedContextConsPayloads : List Nat :=
+  contextConsEmptyUnitLinearPayload :: hostileDecodedContextConsPayloads
+
+/-- The finite context-extension decoder staging table currently recognizes
+four payload fixtures before falling back to sentinel or bad-payload
+rejection. -/
+theorem decodedContextConsPayloads_length :
+    decodedContextConsPayloads.length = 4 := rfl
+
 /-- A small accepted-looking term atom used only to build malformed cells. -/
 def seedTermAtom (profile : PolyProfile) : PolyTerm profile 0 :=
   .atom variableGeneratorSpec.cellId 0
@@ -359,6 +399,27 @@ def wrongContextConsArityRawCell (profile : PolyProfile) :
 def wrongContextConsChildShapeRawCell (profile : PolyProfile) :
     PolyTerm profile 0 :=
   .atom contextConsGeneratorSpec.cellId wrongChildShapeSentinel
+
+/-- Context-extension generator whose decoder table returns the first accepted
+certified child spine. -/
+def contextConsEmptyUnitLinearRawCell
+    (profile : PolyProfile) : PolyTerm profile 0 :=
+  .atom contextConsGeneratorSpec.cellId contextConsEmptyUnitLinearPayload
+
+/-- Context-extension payload whose decoded context child has type sort. -/
+def contextConsTypeAsContextRawCell
+    (profile : PolyProfile) : PolyTerm profile 0 :=
+  .atom contextConsGeneratorSpec.cellId contextConsTypeAsContextPayload
+
+/-- Context-extension payload whose decoded type child has term sort. -/
+def contextConsTermAsTypeRawCell
+    (profile : PolyProfile) : PolyTerm profile 0 :=
+  .atom contextConsGeneratorSpec.cellId contextConsTermAsTypePayload
+
+/-- Context-extension payload whose decoded mode child has context sort. -/
+def contextConsContextAsModeRawCell
+    (profile : PolyProfile) : PolyTerm profile 0 :=
+  .atom contextConsGeneratorSpec.cellId contextConsContextAsModePayload
 
 /-- Accepted application payload fixture over two variable atoms. -/
 def applicationVarZeroVarOneRawCell (profile : PolyProfile) :
@@ -768,6 +829,30 @@ def wrongContextConsChildShapeProbe (profile : PolyProfile) :
   rawCell := wrongContextConsChildShapeRawCell profile
   expectedRejection := .wrongChildShape
 
+/-- Probe for a context-extension payload with a non-context context child. -/
+def contextConsTypeAsContextProbe (profile : PolyProfile) :
+    RawInferNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 0
+  rawCell := contextConsTypeAsContextRawCell profile
+  expectedRejection := .wrongChildShape
+
+/-- Probe for a context-extension payload with a non-type type child. -/
+def contextConsTermAsTypeProbe (profile : PolyProfile) :
+    RawInferNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 0
+  rawCell := contextConsTermAsTypeRawCell profile
+  expectedRejection := .wrongChildShape
+
+/-- Probe for a context-extension payload with a non-mode mode child. -/
+def contextConsContextAsModeProbe (profile : PolyProfile) :
+    RawInferNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 0
+  rawCell := contextConsContextAsModeRawCell profile
+  expectedRejection := .wrongChildShape
+
 /-- Probe for an application payload that must not decode. -/
 def applicationBadPayloadProbe (profile : PolyProfile) :
     RawInferNegativeProbe profile where
@@ -1123,6 +1208,33 @@ def piTypeUnitCodomainUnitAsModeProbe (profile : PolyProfile) :
   rawCell := piTypeUnitCodomainUnitRawCell profile
   expectedRejection := .wrongSort
 
+/-- Accepted context-extension checked as a term must reject by expected sort. -/
+def contextConsEmptyUnitLinearAsTermProbe (profile : PolyProfile) :
+    RawExpectedShapeNegativeProbe profile where
+  dimension := 0
+  expectedSort := .term
+  expectedScope := defaultInferScope
+  rawCell := contextConsEmptyUnitLinearRawCell profile
+  expectedRejection := .wrongSort
+
+/-- Accepted context-extension checked as a type must reject by expected sort. -/
+def contextConsEmptyUnitLinearAsTypeProbe (profile : PolyProfile) :
+    RawExpectedShapeNegativeProbe profile where
+  dimension := 0
+  expectedSort := .type
+  expectedScope := defaultInferScope
+  rawCell := contextConsEmptyUnitLinearRawCell profile
+  expectedRejection := .wrongSort
+
+/-- Accepted context-extension checked as a mode must reject by expected sort. -/
+def contextConsEmptyUnitLinearAsModeProbe (profile : PolyProfile) :
+    RawExpectedShapeNegativeProbe profile where
+  dimension := 0
+  expectedSort := .mode
+  expectedScope := defaultInferScope
+  rawCell := contextConsEmptyUnitLinearRawCell profile
+  expectedRejection := .wrongSort
+
 /-- Probe that expected-shape checking preserves malformed application payload
 rejection. -/
 def applicationBadPayloadExpectedShapeProbe (profile : PolyProfile) :
@@ -1410,6 +1522,9 @@ def wrongChildShapeInferNegativeProbes (profile : PolyProfile) :
     piTypeContextAsDomainProbe profile,
     piTypeTermAsCodomainProbe profile,
     wrongContextConsChildShapeProbe profile,
+    contextConsTypeAsContextProbe profile,
+    contextConsTermAsTypeProbe profile,
+    contextConsContextAsModeProbe profile,
     applicationWrongChildShapeProbe profile,
     applicationTypeAsFunctionProbe profile,
     applicationTypeAsArgumentProbe profile,
@@ -1461,7 +1576,10 @@ def wrongSortExpectedShapeNegativeProbes (profile : PolyProfile) :
     lambdaUnitTypeBodyVarZeroAsModeProbe profile,
     piTypeUnitCodomainUnitAsTermProbe profile,
     piTypeUnitCodomainUnitAsContextProbe profile,
-    piTypeUnitCodomainUnitAsModeProbe profile]
+    piTypeUnitCodomainUnitAsModeProbe profile,
+    contextConsEmptyUnitLinearAsTermProbe profile,
+    contextConsEmptyUnitLinearAsTypeProbe profile,
+    contextConsEmptyUnitLinearAsModeProbe profile]
 
 /-- Expected-shape probes whose expected rejection is `badPayload`. -/
 def badPayloadExpectedShapeNegativeProbes (profile : PolyProfile) :
@@ -1553,11 +1671,11 @@ def certificationNegativeProbes (profile : PolyProfile) :
 
 /-- Inference probe count. -/
 theorem inferNegativeProbes_length (profile : PolyProfile) :
-    (inferNegativeProbes profile).length = 39 := rfl
+    (inferNegativeProbes profile).length = 42 := rfl
 
 /-- Expected-shape probe count. -/
 theorem expectedShapeNegativeProbes_length (profile : PolyProfile) :
-    (expectedShapeNegativeProbes profile).length = 30 := rfl
+    (expectedShapeNegativeProbes profile).length = 33 := rfl
 
 /-- Certified-ingress probe count. -/
 theorem certificationNegativeProbes_length (profile : PolyProfile) :
@@ -1579,7 +1697,7 @@ theorem wrongArityInferNegativeProbes_length (profile : PolyProfile) :
 /-- Wrong-child-shape headline probe count. -/
 theorem wrongChildShapeInferNegativeProbes_length
     (profile : PolyProfile) :
-    (wrongChildShapeInferNegativeProbes profile).length = 14 := rfl
+    (wrongChildShapeInferNegativeProbes profile).length = 17 := rfl
 
 /-- Bad-boundary-endpoint headline probe count. -/
 theorem badBoundaryEndpointInferNegativeProbes_length
@@ -1599,7 +1717,7 @@ theorem unsupportedCompHInferNegativeProbes_length
 /-- Wrong-sort expected-shape headline probe count. -/
 theorem wrongSortExpectedShapeNegativeProbes_length
     (profile : PolyProfile) :
-    (wrongSortExpectedShapeNegativeProbes profile).length = 18 := rfl
+    (wrongSortExpectedShapeNegativeProbes profile).length = 21 := rfl
 
 /-- Bad-payload expected-shape headline probe count. -/
 theorem badPayloadExpectedShapeNegativeProbes_length

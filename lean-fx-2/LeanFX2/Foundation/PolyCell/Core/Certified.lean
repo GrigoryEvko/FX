@@ -49,7 +49,8 @@ inductive SupportedGeneratorSpec : GeneratorSpec → Type where
   /-- Empty-context generator. -/
   | contextEmpty :
       SupportedGeneratorSpec contextEmptyGeneratorSpec
-  /-- Context-extension generator. Payload decoding is not implemented yet. -/
+  /-- Context-extension generator. Only the first finite decoded payload is
+  certified today. -/
   | contextCons :
       SupportedGeneratorSpec contextConsGeneratorSpec
   /-- Nullary linear mode generator. -/
@@ -149,6 +150,22 @@ inductive PolyCell (profile : PolyProfile) :
         (.atom unitTypeGeneratorSpec.cellId 0) →
       PolyCell profile .type 0 scope ()
         (.atom piTypeGeneratorSpec.cellId piTypeUnitCodomainUnitPayload)
+
+  /-- Certified context extension for the first finite decoded payload.
+
+  The constructor is deliberately narrow: it certifies only the payload whose
+  decoded children are empty context, unit type, and linear mode at the parent
+  scope. -/
+  | contextConsEmptyUnitLinear {scope : Nat} :
+      PolyCell profile .context 0 scope ()
+        (.atom contextEmptyGeneratorSpec.cellId 0) →
+      PolyCell profile .type 0 scope ()
+        (.atom unitTypeGeneratorSpec.cellId 0) →
+      PolyCell profile .mode 0 scope ()
+        (.atom linearModeGeneratorSpec.cellId 0) →
+      PolyCell profile .context 0 scope ()
+        (.atom contextConsGeneratorSpec.cellId
+          contextConsEmptyUnitLinearPayload)
 
   /-- Certified generating cell between certified endpoints.
 
@@ -266,6 +283,23 @@ def piTypeUnitCodomainUnitCell {profile : PolyProfile} {scope : Nat}
     PolyCell profile .type 0 scope ()
       (.atom piTypeGeneratorSpec.cellId piTypeUnitCodomainUnitPayload) :=
   .piTypeUnitCodomainUnit domainCell codomainCell
+
+/-- The first certified context-extension payload requires certified empty
+context, unit type, and linear mode children. -/
+def contextConsEmptyUnitLinearCell {profile : PolyProfile} {scope : Nat}
+    (contextCell :
+      PolyCell profile .context 0 scope ()
+        (.atom contextEmptyGeneratorSpec.cellId 0))
+    (typeCell :
+      PolyCell profile .type 0 scope ()
+        (.atom unitTypeGeneratorSpec.cellId 0))
+    (modeCell :
+      PolyCell profile .mode 0 scope ()
+        (.atom linearModeGeneratorSpec.cellId 0)) :
+    PolyCell profile .context 0 scope ()
+      (.atom contextConsGeneratorSpec.cellId
+        contextConsEmptyUnitLinearPayload) :=
+  .contextConsEmptyUnitLinear contextCell typeCell modeCell
 
 /-- Derive a certified identity cell from an already certified base cell. -/
 def identityCell {profile : PolyProfile} {cellSort : CellSort}
@@ -713,6 +747,72 @@ theorem piTypeUnitCodomainUnitChildrenForRawDescriptors_toCertifiedChildren
       domainCell codomainCell).toCertifiedChildren =
       piTypeUnitCodomainUnitChildren domainCell codomainCell := rfl
 
+/-- Certified child spine for the first finite context-extension payload. -/
+def contextConsEmptyUnitLinearChildren {profile : PolyProfile}
+    {scope : Nat}
+    (contextCell :
+      PolyCell profile .context 0 scope ()
+        (.atom contextEmptyGeneratorSpec.cellId 0))
+    (typeCell :
+      PolyCell profile .type 0 scope ()
+        (.atom unitTypeGeneratorSpec.cellId 0))
+    (modeCell :
+      PolyCell profile .mode 0 scope ()
+        (.atom linearModeGeneratorSpec.cellId 0)) :
+    CellChildren.ForGenerator (CertifiedChild profile) scope
+      contextConsGeneratorSpec :=
+  CellChildren.contextConsChildren
+    (CertifiedChild.ofCell contextCell)
+    (CertifiedChild.ofCell typeCell)
+    (CertifiedChild.ofCell modeCell)
+
+/-- Descriptor-indexed certified child spine for the first finite
+context-extension payload. -/
+def contextConsEmptyUnitLinearChildrenForRawDescriptors
+    {profile : PolyProfile} {scope : Nat}
+    (contextCell :
+      PolyCell profile .context 0 scope ()
+        (.atom contextEmptyGeneratorSpec.cellId 0))
+    (typeCell :
+      PolyCell profile .type 0 scope ()
+        (.atom unitTypeGeneratorSpec.cellId 0))
+    (modeCell :
+      PolyCell profile .mode 0 scope ()
+        (.atom linearModeGeneratorSpec.cellId 0)) :
+    CertifiedChildSpineForRawDescriptors profile scope
+      (RawChildDescriptors.contextCons (profile := profile)
+        (parentScope := scope)
+        (PolyTerm.atom contextEmptyGeneratorSpec.cellId 0)
+        (PolyTerm.atom unitTypeGeneratorSpec.cellId 0)
+        (PolyTerm.atom linearModeGeneratorSpec.cellId 0)) :=
+  CertifiedChildSpineForRawDescriptors.cons
+    { cellBoundary := ()
+      certifiedCell := contextCell }
+    (CertifiedChildSpineForRawDescriptors.cons
+      { cellBoundary := ()
+        certifiedCell := typeCell }
+      (CertifiedChildSpineForRawDescriptors.cons
+        { cellBoundary := ()
+          certifiedCell := modeCell }
+        CertifiedChildSpineForRawDescriptors.nil))
+
+/-- Forgetting the descriptor-indexed first context-extension child spine gives
+the ordinary certified child spine. -/
+theorem contextConsEmptyUnitLinearChildrenForRawDescriptors_toCertifiedChildren
+    {profile : PolyProfile} {scope : Nat}
+    (contextCell :
+      PolyCell profile .context 0 scope ()
+        (.atom contextEmptyGeneratorSpec.cellId 0))
+    (typeCell :
+      PolyCell profile .type 0 scope ()
+        (.atom unitTypeGeneratorSpec.cellId 0))
+    (modeCell :
+      PolyCell profile .mode 0 scope ()
+        (.atom linearModeGeneratorSpec.cellId 0)) :
+    (contextConsEmptyUnitLinearChildrenForRawDescriptors
+      contextCell typeCell modeCell).toCertifiedChildren =
+      contextConsEmptyUnitLinearChildren contextCell typeCell modeCell := rfl
+
 /-- Raw erasure of the variable-cell helper is definitional. -/
 theorem raw_variableCell {profile : PolyProfile} {scope index : Nat}
     (hasIndexWithinScope : index < scope) :
@@ -769,6 +869,22 @@ theorem raw_piTypeUnitCodomainUnit {profile : PolyProfile} {scope : Nat}
     (piTypeUnitCodomainUnitCell domainCell codomainCell).raw =
       PolyTerm.atom (profile := profile) piTypeGeneratorSpec.cellId
         piTypeUnitCodomainUnitPayload := rfl
+
+/-- Raw erasure of the first certified context-extension helper is
+definitional. -/
+theorem raw_contextConsEmptyUnitLinear {profile : PolyProfile} {scope : Nat}
+    (contextCell :
+      PolyCell profile .context 0 scope ()
+        (.atom contextEmptyGeneratorSpec.cellId 0))
+    (typeCell :
+      PolyCell profile .type 0 scope ()
+        (.atom unitTypeGeneratorSpec.cellId 0))
+    (modeCell :
+      PolyCell profile .mode 0 scope ()
+        (.atom linearModeGeneratorSpec.cellId 0)) :
+    (contextConsEmptyUnitLinearCell contextCell typeCell modeCell).raw =
+      PolyTerm.atom (profile := profile) contextConsGeneratorSpec.cellId
+        contextConsEmptyUnitLinearPayload := rfl
 
 /-- Raw erasure of a derived identity cell is definitional. -/
 theorem raw_identityCell {profile : PolyProfile} {cellSort : CellSort}
@@ -883,6 +999,45 @@ theorem piTypeUnitCodomainUnitChildren_rawDescriptors
         (parentScope := scope)
         (PolyTerm.atom unitTypeGeneratorSpec.cellId 0)
         (PolyTerm.atom unitTypeGeneratorSpec.cellId 0) := rfl
+
+/-- The certified child spine for the first context-extension payload has the
+context-extension generator arity. -/
+theorem contextConsEmptyUnitLinearChildren_arity_eq_generator
+    {profile : PolyProfile} {scope : Nat}
+    (contextCell :
+      PolyCell profile .context 0 scope ()
+        (.atom contextEmptyGeneratorSpec.cellId 0))
+    (typeCell :
+      PolyCell profile .type 0 scope ()
+        (.atom unitTypeGeneratorSpec.cellId 0))
+    (modeCell :
+      PolyCell profile .mode 0 scope ()
+        (.atom linearModeGeneratorSpec.cellId 0)) :
+    (contextConsEmptyUnitLinearChildren
+      contextCell typeCell modeCell).arity =
+      contextConsGeneratorSpec.arity := rfl
+
+/-- Forgetting the first certified context-extension child spine gives the
+matching raw descriptors. -/
+theorem contextConsEmptyUnitLinearChildren_rawDescriptors
+    {profile : PolyProfile} {scope : Nat}
+    (contextCell :
+      PolyCell profile .context 0 scope ()
+        (.atom contextEmptyGeneratorSpec.cellId 0))
+    (typeCell :
+      PolyCell profile .type 0 scope ()
+        (.atom unitTypeGeneratorSpec.cellId 0))
+    (modeCell :
+      PolyCell profile .mode 0 scope ()
+        (.atom linearModeGeneratorSpec.cellId 0)) :
+    certifiedChildSpineRawDescriptors
+      (contextConsEmptyUnitLinearChildren
+        contextCell typeCell modeCell) =
+      RawChildDescriptors.contextCons (profile := profile)
+        (parentScope := scope)
+        (PolyTerm.atom contextEmptyGeneratorSpec.cellId 0)
+        (PolyTerm.atom unitTypeGeneratorSpec.cellId 0)
+        (PolyTerm.atom linearModeGeneratorSpec.cellId 0) := rfl
 
 end PolyCell
 
