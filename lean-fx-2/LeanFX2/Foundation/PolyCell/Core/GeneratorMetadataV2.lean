@@ -211,6 +211,172 @@ def Generator.cellSort : Generator → CellSort
   | .gen_equivCompose => .term
   -- Cubical fill — term-level
   | .gen_transpFill   => .term
+  -- ═══════════════════════════════════════════════════════════════
+  -- Tier ★★★★★ extensions
+  -- ═══════════════════════════════════════════════════════════════
+  -- 2.1 Quotients (all term-level: quotient elements + equality witnesses + eliminators)
+  | .gen_quotMk        => .term
+  | .gen_quotEqAxiom   => .term
+  | .gen_quotRec       => .term
+  | .gen_quotElim      => .term
+  -- 2.2 Pushout HIT (term-level intro/glue/eliminator)
+  | .gen_pushInl       => .term
+  | .gen_pushInr       => .term
+  | .gen_pushGlue      => .term
+  | .gen_pushRec       => .term
+  -- 2.3 Truncations (term-level — the truncated value is itself a term)
+  | .gen_truncIntro    => .term
+  | .gen_truncCoh      => .term
+  | .gen_truncRec      => .term
+  -- 2.4 Polynomial Functors (type-level: polynomials AND their μ/ν fixpoints are types)
+  | .gen_polyFunctor   => .type
+  | .gen_polyApply     => .type
+  | .gen_polyMu        => .type
+  | .gen_polyNu        => .type
+  -- polyMap is term-level (functorial action on values)
+  | .gen_polyMap       => .term
+  -- 2.5 Measure (structures stored as terms with internal proofs)
+  | .gen_sigmaAlgebra  => .term
+  | .gen_measureSpace  => .term
+  | .gen_lebesgueInt   => .term
+  -- 2.6 Temporal Logic (LTL operators produce TYPES = temporal predicates)
+  | .gen_nextT         => .type
+  | .gen_alwaysT       => .type
+  | .gen_eventuallyT   => .type
+  | .gen_untilT        => .type
+  | .gen_sinceT        => .type
+  -- 2.7 Synthetic Differentials (mostly types; microcanc + diffOp are terms)
+  | .gen_infinitesimal => .type
+  | .gen_microcanc     => .term
+  | .gen_tangentSpace  => .type
+  | .gen_diffOp        => .term
+  -- ═══════════════════════════════════════════════════════════════
+  -- Tier ★★★★ extensions
+  -- ═══════════════════════════════════════════════════════════════
+  -- 3.1 Sessions (term-level channel/session-state operations)
+  | .gen_sessionSelect => .term
+  | .gen_sessionOffer  => .term
+  | .gen_sessionClose  => .term
+  | .gen_channelSplit  => .term
+  | .gen_channelJoin   => .term
+  -- 3.2 Hardware (all term-level register/clock/wire/stage operations)
+  | .gen_regRead       => .term
+  | .gen_regWrite      => .term
+  | .gen_clockTick     => .term
+  | .gen_stageLatch    => .term
+  | .gen_wireCombinational => .term
+  | .gen_clockDomainCross  => .term
+  -- 3.3 Computational Reals (term-level — a real is a value)
+  | .gen_realCauchy    => .term
+  | .gen_realLimit     => .term
+  | .gen_realCompare   => .term
+  -- 3.4 Probability (term-level: spaces, samples, expectations are all values)
+  | .gen_probSpace     => .term
+  | .gen_sampleP       => .term
+  | .gen_expectE       => .term
+  -- 3.5 p-adic (term-level numeric values)
+  | .gen_padicNum      => .term
+  | .gen_padicValuation => .term
+  | .gen_localGlobalBridge => .term
+  -- 3.6 UC (term-level functionalities, protocols, simulators)
+  | .gen_idealFunctionality => .term
+  | .gen_realProtocol  => .term
+  | .gen_ucSimulator   => .term
+  | .gen_ucCompose     => .term
+  -- 3.7 Info Theory (term-level — entropy/MI/KL/capacity are real values)
+  | .gen_shannonEntropy => .term
+  | .gen_mutualInfo    => .term
+  | .gen_klDivergence  => .term
+  | .gen_channelCapacity => .term
+  -- 3.8 Spectral (term-level Hilbert spaces with internal proofs)
+  | .gen_hilbertSpace  => .term
+  | .gen_boundedOperator => .term
+  | .gen_spectralDecomp => .term
+  | .gen_unitaryOp     => .term
+  -- 3.9 Causal (term-level networks and interventions)
+  | .gen_causalNet     => .term
+  | .gen_doOperator    => .term
+  | .gen_counterfactual => .term
+  -- ═══════════════════════════════════════════════════════════════
+  -- Tier ★★★ extensions
+  -- ═══════════════════════════════════════════════════════════════
+  -- 4.1 Circle + Paths (term-level: circle points, loop witnesses, eliminators, path ops)
+  | .gen_circleBase    => .term
+  | .gen_circleLoop    => .term
+  | .gen_circleRec     => .term
+  | .gen_pathInverse   => .term
+  | .gen_pathWhiskerLeft  => .term
+  | .gen_pathWhiskerRight => .term
+  -- 4.2 Cohesive Modalities (type-level: ʃA/♭A/♯A are TYPES; unit is a term)
+  | .gen_shapeModality => .type
+  | .gen_flatModality  => .type
+  | .gen_sharpModality => .type
+  | .gen_cohesiveAdjunctionUnit => .term
+  -- 4.3 QIITs (term-level intro/elim over QIIT values)
+  | .gen_qiitIntro     => .term
+  | .gen_qiitElim      => .term
+  -- 4.4 2LTT (term-level layer transitions)
+  | .gen_liftInnerToOuter => .term
+  | .gen_lowerOuterToInner => .term
+  | .gen_modalityLayerMarker => .term
+  -- 4.5 Quantum (all term-level: qubits, gates, measurements, entanglement, decoherence)
+  | .gen_qubit         => .term
+  | .gen_quantumGate   => .term
+  | .gen_quantumMeasure => .term
+  | .gen_quantumEntangle => .term
+  | .gen_quantumDecohere => .term
+  -- 4.6 Game Semantics (term-level games, strategies, plays)
+  | .gen_game          => .term
+  | .gen_strategy      => .term
+  | .gen_playOut       => .term
+  -- 4.7 Process Calculi (term-level processes, parallel composition, commits, bisimulations)
+  | .gen_processCalc   => .term
+  | .gen_parallelComp  => .term
+  | .gen_processCommit => .term
+  | .gen_bisimulationWitness => .term
+  -- ═══════════════════════════════════════════════════════════════
+  -- Tier ★★ extensions
+  -- ═══════════════════════════════════════════════════════════════
+  -- 5.1 Cubical Kan Completion (term-level full Kan ops)
+  | .gen_compCubical   => .term
+  | .gen_transpHigherDim => .term
+  -- 5.2 Algebraic Structures (term-level — algebraic carriers stored with internal proofs)
+  | .gen_groupAlg      => .term
+  | .gen_ringAlg       => .term
+  | .gen_moduleAlg     => .term
+  -- 5.3 Container Calculus (type-level derivatives + zipper types; plug is term-level)
+  | .gen_containerDeriv => .type
+  | .gen_zipperType    => .type
+  | .gen_plugOp        => .term
+  -- 5.4 Differential Lambda (term-level smooth λ-calculus operations)
+  | .gen_diffLambda    => .term
+  | .gen_diffApply     => .term
+  | .gen_differentialCategory => .term
+  -- 5.5 Linear Logic (type-level modalities and linear connectives)
+  | .gen_bangModality  => .type
+  | .gen_whyNotModality => .type
+  | .gen_linearArrow   => .type
+  | .gen_tensorProduct => .type
+  -- 5.6 Provability / Dynamic Logic (type-level — both are propositional)
+  | .gen_provabilityModality => .type
+  | .gen_dynamicLogic  => .type
+  -- 5.7 Domain Theory CPO (term-level structures and witnesses)
+  | .gen_cpoStructure  => .term
+  | .gen_bottomElem    => .term
+  | .gen_scottContinuous => .term
+  | .gen_fixedPoint    => .term
+  -- 5.8 Hyperreals (type for the carrier; term-level for star + standard part)
+  | .gen_hyperreal     => .type
+  | .gen_starOp        => .term
+  | .gen_standardPart  => .term
+  -- 5.9 Cellular Automata / Reversible (term-level — automata and rules are values)
+  | .gen_cellularAutomaton => .term
+  | .gen_interactionNet => .term
+  | .gen_reversibleOp  => .term
+  -- 5.10 Synthetic Complexity (term-level — bounds are values with witnesses)
+  | .gen_bigOh         => .term
+  | .gen_polyTimeWitness => .term
+  | .gen_npComplete    => .term
 
 /-- Expected child positions for each v2 generator.  74 arms, one per
 `Generator` ctor.
@@ -386,6 +552,264 @@ def Generator.childSpecs : Generator → List ChildSpecV2
   | .gen_transpFill   =>
     [ChildSpecV2.typeSameScope, ChildSpecV2.termSameScope,
      ChildSpecV2.termSameScope]
+  -- ═══════════════════════════════════════════════════════════════
+  -- Tier ★★★★★ extensions
+  -- ═══════════════════════════════════════════════════════════════
+  -- 2.1 Quotients
+  | .gen_quotMk        => [ChildSpecV2.termSameScope]
+  | .gen_quotEqAxiom   => [ChildSpecV2.termSameScope]
+  | .gen_quotRec       =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope,
+     ChildSpecV2.termSameScope]
+  | .gen_quotElim      =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope,
+     ChildSpecV2.termSameScope]
+  -- 2.2 Pushout HIT
+  | .gen_pushInl       => [ChildSpecV2.termSameScope]
+  | .gen_pushInr       => [ChildSpecV2.termSameScope]
+  | .gen_pushGlue      => [ChildSpecV2.termSameScope]
+  | .gen_pushRec       =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope,
+     ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  -- 2.3 Truncations (level lives in Nat payload, not as child)
+  | .gen_truncIntro    => [ChildSpecV2.termSameScope]
+  | .gen_truncCoh      =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  | .gen_truncRec      =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  -- 2.4 Polynomial Functors (positionFamily at scope+1)
+  | .gen_polyFunctor   =>
+    [ChildSpecV2.typeSameScope, ChildSpecV2.typeUnderBinder]
+  | .gen_polyApply     =>
+    [ChildSpecV2.typeSameScope, ChildSpecV2.typeSameScope]
+  | .gen_polyMu        => [ChildSpecV2.typeSameScope]
+  | .gen_polyNu        => [ChildSpecV2.typeSameScope]
+  | .gen_polyMap       =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  -- 2.5 Measure
+  | .gen_sigmaAlgebra  => [ChildSpecV2.termSameScope]
+  | .gen_measureSpace  =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope,
+     ChildSpecV2.termSameScope]
+  | .gen_lebesgueInt   =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  -- 2.6 Temporal Logic (propositions are types)
+  | .gen_nextT         => [ChildSpecV2.typeSameScope]
+  | .gen_alwaysT       => [ChildSpecV2.typeSameScope]
+  | .gen_eventuallyT   => [ChildSpecV2.typeSameScope]
+  | .gen_untilT        =>
+    [ChildSpecV2.typeSameScope, ChildSpecV2.typeSameScope]
+  | .gen_sinceT        =>
+    [ChildSpecV2.typeSameScope, ChildSpecV2.typeSameScope]
+  -- 2.7 Synthetic Differentials
+  | .gen_infinitesimal => [ChildSpecV2.typeSameScope]
+  | .gen_microcanc     => [ChildSpecV2.termSameScope]
+  | .gen_tangentSpace  =>
+    [ChildSpecV2.typeSameScope, ChildSpecV2.termSameScope]
+  | .gen_diffOp        =>
+    [ChildSpecV2.typeSameScope, ChildSpecV2.termSameScope]
+  -- ═══════════════════════════════════════════════════════════════
+  -- Tier ★★★★ extensions
+  -- ═══════════════════════════════════════════════════════════════
+  -- 3.1 Sessions
+  | .gen_sessionSelect =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  | .gen_sessionOffer  =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  | .gen_sessionClose  => [ChildSpecV2.termSameScope]
+  | .gen_channelSplit  => [ChildSpecV2.termSameScope]
+  | .gen_channelJoin   =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  -- 3.2 Hardware
+  | .gen_regRead       =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  | .gen_regWrite      =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope,
+     ChildSpecV2.termSameScope]
+  | .gen_clockTick     => [ChildSpecV2.typeSameScope]  -- clockDomain is a type
+  | .gen_stageLatch    =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  | .gen_wireCombinational => [ChildSpecV2.termSameScope]
+  | .gen_clockDomainCross  =>
+    [ChildSpecV2.typeSameScope, ChildSpecV2.typeSameScope,
+     ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  -- 3.3 Computational Reals
+  | .gen_realCauchy    =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  | .gen_realLimit     =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  | .gen_realCompare   =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope,
+     ChildSpecV2.termSameScope]
+  -- 3.4 Probability
+  | .gen_probSpace     =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  | .gen_sampleP       => [ChildSpecV2.termSameScope]
+  | .gen_expectE       =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  -- 3.5 p-adic
+  | .gen_padicNum      =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope,
+     ChildSpecV2.termSameScope]
+  | .gen_padicValuation =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  | .gen_localGlobalBridge =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  -- 3.6 UC (interface is a type; protocols/simulators are terms)
+  | .gen_idealFunctionality => [ChildSpecV2.typeSameScope]
+  | .gen_realProtocol  => [ChildSpecV2.termSameScope]
+  | .gen_ucSimulator   =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope,
+     ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  | .gen_ucCompose     =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  -- 3.7 Info Theory
+  | .gen_shannonEntropy => [ChildSpecV2.termSameScope]
+  | .gen_mutualInfo    => [ChildSpecV2.termSameScope]
+  | .gen_klDivergence  =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  | .gen_channelCapacity => [ChildSpecV2.termSameScope]
+  -- 3.8 Spectral
+  | .gen_hilbertSpace  =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  | .gen_boundedOperator =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope,
+     ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  | .gen_spectralDecomp =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  | .gen_unitaryOp     =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  -- 3.9 Causal
+  | .gen_causalNet     =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope,
+     ChildSpecV2.termSameScope]
+  | .gen_doOperator    =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  | .gen_counterfactual =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope,
+     ChildSpecV2.termSameScope]
+  -- ═══════════════════════════════════════════════════════════════
+  -- Tier ★★★ extensions
+  -- ═══════════════════════════════════════════════════════════════
+  -- 4.1 Circle + Higher Paths
+  | .gen_circleBase    => []
+  | .gen_circleLoop    => []
+  | .gen_circleRec     =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope,
+     ChildSpecV2.termSameScope]
+  | .gen_pathInverse   => [ChildSpecV2.termSameScope]
+  | .gen_pathWhiskerLeft  =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  | .gen_pathWhiskerRight =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  -- 4.2 Cohesive Modalities (carriers are types; adjunction unit operates on terms)
+  | .gen_shapeModality => [ChildSpecV2.typeSameScope]
+  | .gen_flatModality  => [ChildSpecV2.typeSameScope]
+  | .gen_sharpModality => [ChildSpecV2.typeSameScope]
+  | .gen_cohesiveAdjunctionUnit => [ChildSpecV2.termSameScope]
+  -- 4.3 QIITs
+  | .gen_qiitIntro     => [ChildSpecV2.termSameScope]
+  | .gen_qiitElim      =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope,
+     ChildSpecV2.termSameScope]
+  -- 4.4 2LTT
+  | .gen_liftInnerToOuter => [ChildSpecV2.termSameScope]
+  | .gen_lowerOuterToInner =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  | .gen_modalityLayerMarker => [ChildSpecV2.termSameScope]
+  -- 4.5 Quantum
+  | .gen_qubit         => []
+  | .gen_quantumGate   =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  | .gen_quantumMeasure =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  | .gen_quantumEntangle =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  | .gen_quantumDecohere =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope,
+     ChildSpecV2.termSameScope]
+  -- 4.6 Game Semantics
+  | .gen_game          => [ChildSpecV2.termSameScope]
+  | .gen_strategy      =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  | .gen_playOut       =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  -- 4.7 Process Calculi
+  | .gen_processCalc   => [ChildSpecV2.termSameScope]
+  | .gen_parallelComp  =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  | .gen_processCommit => [ChildSpecV2.termSameScope]
+  | .gen_bisimulationWitness =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope,
+     ChildSpecV2.termSameScope]
+  -- ═══════════════════════════════════════════════════════════════
+  -- Tier ★★ extensions
+  -- ═══════════════════════════════════════════════════════════════
+  -- 5.1 Cubical Kan
+  | .gen_compCubical   =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  | .gen_transpHigherDim =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  -- 5.2 Algebraic Structures (carriers are types; operations + laws are terms)
+  | .gen_groupAlg      =>
+    [ChildSpecV2.typeSameScope, ChildSpecV2.termSameScope,
+     ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  | .gen_ringAlg       =>
+    [ChildSpecV2.typeSameScope, ChildSpecV2.termSameScope,
+     ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  | .gen_moduleAlg     =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope,
+     ChildSpecV2.termSameScope]
+  -- 5.3 Container Calculus (derivative + zipper operate on type polynomials)
+  | .gen_containerDeriv => [ChildSpecV2.typeSameScope]
+  | .gen_zipperType    => [ChildSpecV2.typeSameScope]
+  | .gen_plugOp        =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  -- 5.4 Differential Lambda (body under one binder; mirrors gen_lam)
+  | .gen_diffLambda    => [ChildSpecV2.termUnderBinder]
+  | .gen_diffApply     =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  | .gen_differentialCategory => [ChildSpecV2.termSameScope]
+  -- 5.5 Linear Logic (modalities on types; linear arrow / tensor are type-level)
+  | .gen_bangModality  => [ChildSpecV2.typeSameScope]
+  | .gen_whyNotModality => [ChildSpecV2.typeSameScope]
+  | .gen_linearArrow   =>
+    [ChildSpecV2.typeSameScope, ChildSpecV2.typeSameScope]
+  | .gen_tensorProduct =>
+    [ChildSpecV2.typeSameScope, ChildSpecV2.typeSameScope]
+  -- 5.6 Provability / Dynamic Logic (statement is type; dynamic logic is [program] postcondition)
+  | .gen_provabilityModality => [ChildSpecV2.typeSameScope]
+  | .gen_dynamicLogic  =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.typeSameScope]
+  -- 5.7 Domain Theory (carrier is type; structure/operations are terms)
+  | .gen_cpoStructure  =>
+    [ChildSpecV2.typeSameScope, ChildSpecV2.termSameScope,
+     ChildSpecV2.termSameScope]
+  | .gen_bottomElem    => [ChildSpecV2.termSameScope]
+  | .gen_scottContinuous =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope,
+     ChildSpecV2.termSameScope]
+  | .gen_fixedPoint    =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  -- 5.8 Hyperreals
+  | .gen_hyperreal     => []
+  | .gen_starOp        => [ChildSpecV2.termSameScope]
+  | .gen_standardPart  => [ChildSpecV2.termSameScope]
+  -- 5.9 CA / Reversible
+  | .gen_cellularAutomaton =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  | .gen_interactionNet =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  | .gen_reversibleOp  =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  -- 5.10 Synthetic Complexity
+  | .gen_bigOh         =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope,
+     ChildSpecV2.termSameScope]
+  | .gen_polyTimeWitness =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
+  | .gen_npComplete    =>
+    [ChildSpecV2.termSameScope, ChildSpecV2.termSameScope]
 
 /-- The `childSpecs` table has length exactly `arity g`.  Proof by
 case-analysis: each of the 74 arms closes via `rfl` on
