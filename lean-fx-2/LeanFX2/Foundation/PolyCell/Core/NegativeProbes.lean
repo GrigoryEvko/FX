@@ -184,6 +184,39 @@ fixtures before falling back to sentinel or bad-payload rejection. -/
 theorem decodedLambdaPayloads_length :
     decodedLambdaPayloads.length = 4 := rfl
 
+/-- Pi-type payload whose decoded children are unit domain and unit
+codomain.
+
+This is decoder-staging data only.  It is not accepted by raw ingress or by
+the certified layer. -/
+def piTypeUnitCodomainUnitPayload : Nat := 9300
+
+/-- Pi-type payload whose decoded domain child has context sort. -/
+def piTypeContextAsDomainPayload : Nat := 9301
+
+/-- Pi-type payload whose decoded codomain child has term sort. -/
+def piTypeTermAsCodomainPayload : Nat := 9302
+
+/-- Hostile pi-type payloads that decode far enough to test heterogeneous
+type-child screening, but must not enter raw ingress or certification. -/
+def hostileDecodedPiTypePayloads : List Nat :=
+  [piTypeContextAsDomainPayload,
+    piTypeTermAsCodomainPayload]
+
+/-- The hostile decoded pi-type frontier currently has two fixtures. -/
+theorem hostileDecodedPiTypePayloads_length :
+    hostileDecodedPiTypePayloads.length = 2 := rfl
+
+/-- All pi-type payload fixtures known to the finite decoder staging table:
+one well-shaped child spine plus hostile decoded children. -/
+def decodedPiTypePayloads : List Nat :=
+  piTypeUnitCodomainUnitPayload :: hostileDecodedPiTypePayloads
+
+/-- The finite pi-type decoder staging table currently recognizes three
+payload fixtures before falling back to sentinel or bad-payload rejection. -/
+theorem decodedPiTypePayloads_length :
+    decodedPiTypePayloads.length = 3 := rfl
+
 /-- A small accepted-looking term atom used only to build malformed cells. -/
 def seedTermAtom (profile : PolyProfile) : PolyTerm profile 0 :=
   .atom variableGeneratorSpec.cellId 0
@@ -290,6 +323,22 @@ scope. -/
 def lambdaOutOfScopeBodyRawCell
     (profile : PolyProfile) : PolyTerm profile 0 :=
   .atom lambdaGeneratorSpec.cellId lambdaOutOfScopeBodyPayload
+
+/-- Pi-type generator whose decoder staging table returns a well-shaped child
+spine, but which raw ingress still rejects today. -/
+def piTypeUnitCodomainUnitRawCell
+    (profile : PolyProfile) : PolyTerm profile 0 :=
+  .atom piTypeGeneratorSpec.cellId piTypeUnitCodomainUnitPayload
+
+/-- Pi-type payload whose decoded domain child has context sort. -/
+def piTypeContextAsDomainRawCell
+    (profile : PolyProfile) : PolyTerm profile 0 :=
+  .atom piTypeGeneratorSpec.cellId piTypeContextAsDomainPayload
+
+/-- Pi-type payload whose decoded codomain child has term sort. -/
+def piTypeTermAsCodomainRawCell
+    (profile : PolyProfile) : PolyTerm profile 0 :=
+  .atom piTypeGeneratorSpec.cellId piTypeTermAsCodomainPayload
 
 /-- Known pi-type generator with a wrong-arity payload. -/
 def wrongPiTypeArityRawCell (profile : PolyProfile) : PolyTerm profile 0 :=

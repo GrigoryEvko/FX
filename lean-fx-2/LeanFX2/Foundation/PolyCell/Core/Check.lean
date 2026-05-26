@@ -407,6 +407,38 @@ theorem lambdaPayloadSentinels_distinct :
 theorem lambdaPayloadFixtureCodes_distinct :
     hasPairwiseDistinctNatCodes lambdaPayloadFixtureCodes = true := rfl
 
+/-- Pi-type payload sentinels that are reserved for malformed decoder tests. -/
+def piTypePayloadSentinels : List Nat :=
+  [NegativeProbes.badPayloadSentinel,
+    NegativeProbes.wrongAritySentinel,
+    NegativeProbes.wrongChildShapeSentinel]
+
+/-- The current pi-type payload sentinel frontier has three entries. -/
+theorem piTypePayloadSentinels_length :
+    piTypePayloadSentinels.length = 3 := rfl
+
+/-- All pi-type decoder-staging fixture codes, including malformed sentinels. -/
+def piTypePayloadFixtureCodes : List Nat :=
+  NegativeProbes.decodedPiTypePayloads ++ piTypePayloadSentinels
+
+/-- The decoder-staged pi-type fixture frontier currently has six distinct
+payload codes. -/
+theorem piTypePayloadFixtureCodes_length :
+    piTypePayloadFixtureCodes.length = 6 := rfl
+
+/-- Pi-type payload fixtures have no duplicate codes. -/
+theorem decodedPiTypePayloads_distinct :
+    hasPairwiseDistinctNatCodes
+      NegativeProbes.decodedPiTypePayloads = true := rfl
+
+/-- Pi-type payload sentinels have no duplicate codes. -/
+theorem piTypePayloadSentinels_distinct :
+    hasPairwiseDistinctNatCodes piTypePayloadSentinels = true := rfl
+
+/-- Decoded pi-type fixtures and pi-type sentinels do not collide. -/
+theorem piTypePayloadFixtureCodes_distinct :
+    hasPairwiseDistinctNatCodes piTypePayloadFixtureCodes = true := rfl
+
 /-- Decode the first finite application payloads into raw child descriptors.
 
 This is decoder output only.  The returned children still need recursive
@@ -495,6 +527,36 @@ def decodeLambdaPayload? {profile : PolyProfile} (scope payload : Nat) :
       (RawChildDescriptors.lambda
         (NegativeProbes.seedTypeAtom profile)
         (NegativeProbes.outOfScopeVariableUnderBinderRawCell profile))
+  else if payload = NegativeProbes.wrongAritySentinel then
+    Except.error .wrongArity
+  else if payload = NegativeProbes.wrongChildShapeSentinel then
+    Except.error .wrongChildShape
+  else
+    Except.error .badPayload
+
+/-- Decode staged pi-type payloads into raw child descriptors.
+
+This is decoder output only.  The executable screen and certified ingress do
+not call this decoder yet, so adding a decoded pi-type payload here does not
+make any pi-type raw cell accepted. -/
+def decodePiTypePayload? {profile : PolyProfile} (scope payload : Nat) :
+    Except CellCheckRejection
+      (RawChildDescriptors.forGenerator profile scope piTypeGeneratorSpec) :=
+  if payload = NegativeProbes.piTypeUnitCodomainUnitPayload then
+    Except.ok
+      (RawChildDescriptors.piType
+        (NegativeProbes.seedTypeAtom profile)
+        (NegativeProbes.seedTypeAtom profile))
+  else if payload = NegativeProbes.piTypeContextAsDomainPayload then
+    Except.ok
+      (RawChildDescriptors.piType
+        (NegativeProbes.seedContextAtom profile)
+        (NegativeProbes.seedTypeAtom profile))
+  else if payload = NegativeProbes.piTypeTermAsCodomainPayload then
+    Except.ok
+      (RawChildDescriptors.piType
+        (NegativeProbes.seedTypeAtom profile)
+        (NegativeProbes.seedTermAtom profile))
   else if payload = NegativeProbes.wrongAritySentinel then
     Except.error .wrongArity
   else if payload = NegativeProbes.wrongChildShapeSentinel then
@@ -2607,6 +2669,51 @@ theorem decodeLambdaPayload?_wrongChildShape_rejects
       NegativeProbes.wrongChildShapeSentinel =
       Except.error .wrongChildShape := rfl
 
+theorem decodePiTypePayload?_unitCodomainUnit
+    {profile : PolyProfile} {scope : Nat} :
+    decodePiTypePayload? (profile := profile) scope
+      NegativeProbes.piTypeUnitCodomainUnitPayload =
+      Except.ok
+        (RawChildDescriptors.piType
+          (NegativeProbes.seedTypeAtom profile)
+          (NegativeProbes.seedTypeAtom profile)) := rfl
+
+theorem decodePiTypePayload?_contextAsDomain
+    {profile : PolyProfile} {scope : Nat} :
+    decodePiTypePayload? (profile := profile) scope
+      NegativeProbes.piTypeContextAsDomainPayload =
+      Except.ok
+        (RawChildDescriptors.piType
+          (NegativeProbes.seedContextAtom profile)
+          (NegativeProbes.seedTypeAtom profile)) := rfl
+
+theorem decodePiTypePayload?_termAsCodomain
+    {profile : PolyProfile} {scope : Nat} :
+    decodePiTypePayload? (profile := profile) scope
+      NegativeProbes.piTypeTermAsCodomainPayload =
+      Except.ok
+        (RawChildDescriptors.piType
+          (NegativeProbes.seedTypeAtom profile)
+          (NegativeProbes.seedTermAtom profile)) := rfl
+
+theorem decodePiTypePayload?_badPayload_rejects
+    {profile : PolyProfile} {scope : Nat} :
+    decodePiTypePayload? (profile := profile) scope
+      NegativeProbes.badPayloadSentinel =
+      Except.error .badPayload := rfl
+
+theorem decodePiTypePayload?_wrongArity_rejects
+    {profile : PolyProfile} {scope : Nat} :
+    decodePiTypePayload? (profile := profile) scope
+      NegativeProbes.wrongAritySentinel =
+      Except.error .wrongArity := rfl
+
+theorem decodePiTypePayload?_wrongChildShape_rejects
+    {profile : PolyProfile} {scope : Nat} :
+    decodePiTypePayload? (profile := profile) scope
+      NegativeProbes.wrongChildShapeSentinel =
+      Except.error .wrongChildShape := rfl
+
 theorem certifyApplicationVarZeroVarOneChildren?_scope_four_accepts
     {profile : PolyProfile} :
     (match
@@ -2771,6 +2878,42 @@ theorem screenRawChildDescriptorsWith?_lambdaOutOfScopeBody_rejects
         (NegativeProbes.outOfScopeVariableUnderBinderRawCell profile)) =
       Except.error .wrongChildShape := rfl
 
+theorem screenRawChildDescriptorsWith?_piTypeUnitCodomainUnit
+    {profile : PolyProfile} :
+    screenRawChildDescriptorsWith? (profile := profile)
+      (fun {childDimension} childScope
+          (childRaw : PolyTerm profile childDimension) =>
+        screenRawCellWithFuel? 63 childScope childRaw)
+      NegativeProbes.defaultInferScope
+      (RawChildDescriptors.piType
+        (NegativeProbes.seedTypeAtom profile)
+        (NegativeProbes.seedTypeAtom profile)) =
+      Except.ok () := rfl
+
+theorem screenRawChildDescriptorsWith?_piTypeContextAsDomain_rejects
+    {profile : PolyProfile} :
+    screenRawChildDescriptorsWith? (profile := profile)
+      (fun {childDimension} childScope
+          (childRaw : PolyTerm profile childDimension) =>
+        screenRawCellWithFuel? 63 childScope childRaw)
+      NegativeProbes.defaultInferScope
+      (RawChildDescriptors.piType
+        (NegativeProbes.seedContextAtom profile)
+        (NegativeProbes.seedTypeAtom profile)) =
+      Except.error .wrongChildShape := rfl
+
+theorem screenRawChildDescriptorsWith?_piTypeTermAsCodomain_rejects
+    {profile : PolyProfile} :
+    screenRawChildDescriptorsWith? (profile := profile)
+      (fun {childDimension} childScope
+          (childRaw : PolyTerm profile childDimension) =>
+        screenRawCellWithFuel? 63 childScope childRaw)
+      NegativeProbes.defaultInferScope
+      (RawChildDescriptors.piType
+        (NegativeProbes.seedTypeAtom profile)
+        (NegativeProbes.seedTermAtom profile)) =
+      Except.error .wrongChildShape := rfl
+
 theorem screenRawCell0?_applicationVarZeroVarOne
     {profile : PolyProfile} :
     screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
@@ -2890,6 +3033,12 @@ theorem screenRawCell0?_lambdaUnitTypeBodyVarZero_rejects
     {profile : PolyProfile} :
     screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
       (NegativeProbes.lambdaUnitTypeBodyVarZeroRawCell profile) =
+      Except.error .badPayload := rfl
+
+theorem screenRawCell0?_piTypeUnitCodomainUnit_rejects
+    {profile : PolyProfile} :
+    screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.piTypeUnitCodomainUnitRawCell profile) =
       Except.error .badPayload := rfl
 
 theorem certifiedSeedTermPackage_raw {profile : PolyProfile} :
@@ -3176,6 +3325,13 @@ theorem checkRawCellAs?_lambdaUnitTypeBodyVarZero_rejects
     checkRawCellAs? (profile := profile) .term
       NegativeProbes.defaultInferScope
       (NegativeProbes.lambdaUnitTypeBodyVarZeroRawCell profile) =
+      Except.error .badPayload := rfl
+
+theorem checkRawCellAs?_piTypeUnitCodomainUnit_rejects
+    {profile : PolyProfile} :
+    checkRawCellAs? (profile := profile) .type
+      NegativeProbes.defaultInferScope
+      (NegativeProbes.piTypeUnitCodomainUnitRawCell profile) =
       Except.error .badPayload := rfl
 
 theorem inferRawAtom?_applicationVarZeroVarOne_scope_one_rejects
