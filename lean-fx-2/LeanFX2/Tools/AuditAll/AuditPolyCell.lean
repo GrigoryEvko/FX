@@ -260,6 +260,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.badBoundarySortProbe
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.badBoundaryTypeSortProbe
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.badBoundaryModeSortProbe
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.termStepVarZeroVarOneScopeZeroProbe
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.termStepVarZeroVarOneScopeOneProbe
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.wrongRuleEndpointDimensionProbe
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.badVerticalBoundaryProbe
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.unsupportedCompHProbe
@@ -690,6 +692,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.acceptedTermStepInputCode_hasCoverage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.currentAcceptedScreens_haveCoverage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.currentAcceptedInputCodes_haveCoverage
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferTermStepVarZeroVarOne?_scope_zero_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferTermStepVarZeroVarOne?_scope_one_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certificationRejectionAfterScreen?_unsupportedTermStep_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certificationRejectionAfterScreen?_unsupportedReversedTermStep_rejects
@@ -933,6 +936,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.badBoundarySortProbe_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.badBoundaryTypeSortProbe_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.badBoundaryModeSortProbe_rejects
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.termStepVarZeroVarOneScopeZeroProbe_rejects
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.termStepVarZeroVarOneScopeOneProbe_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.wrongRuleEndpointDimensionProbe_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.badVerticalBoundaryProbe_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.unsupportedCompHProbe_rejects

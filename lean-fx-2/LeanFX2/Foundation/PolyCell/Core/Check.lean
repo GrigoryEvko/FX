@@ -2848,6 +2848,11 @@ theorem inferTermStepVarZeroVarOne?_scope_one_rejects
     inferTermStepVarZeroVarOne? (profile := profile) 1 =
       Except.error .badBoundaryEndpoint := rfl
 
+theorem inferTermStepVarZeroVarOne?_scope_zero_rejects
+    {profile : PolyProfile} :
+    inferTermStepVarZeroVarOne? (profile := profile) 0 =
+      Except.error .badBoundaryEndpoint := rfl
+
 theorem certificationRejectionAfterScreen?_unsupportedTermStep_rejects
     {profile : PolyProfile} :
     certificationRejectionAfterScreen? (profile := profile)
@@ -3219,6 +3224,24 @@ theorem badBoundaryModeSortProbe_rejects {profile : PolyProfile} :
       Except.error
         (NegativeProbes.badBoundaryModeSortProbe profile).expectedRejection :=
   rfl
+
+theorem termStepVarZeroVarOneScopeZeroProbe_rejects
+    {profile : PolyProfile} :
+    screenRawCell? (profile := profile)
+      (NegativeProbes.termStepVarZeroVarOneScopeZeroProbe profile).scope
+      (NegativeProbes.termStepVarZeroVarOneRawCell profile) =
+      Except.error
+        (NegativeProbes.termStepVarZeroVarOneScopeZeroProbe
+          profile).expectedRejection := rfl
+
+theorem termStepVarZeroVarOneScopeOneProbe_rejects
+    {profile : PolyProfile} :
+    screenRawCell? (profile := profile)
+      (NegativeProbes.termStepVarZeroVarOneScopeOneProbe profile).scope
+      (NegativeProbes.termStepVarZeroVarOneRawCell profile) =
+      Except.error
+        (NegativeProbes.termStepVarZeroVarOneScopeOneProbe
+          profile).expectedRejection := rfl
 
 theorem wrongRuleEndpointDimensionProbe_rejects {profile : PolyProfile} :
     screenRawCell? (profile := profile)

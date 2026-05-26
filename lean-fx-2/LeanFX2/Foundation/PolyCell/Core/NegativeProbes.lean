@@ -690,6 +690,22 @@ def badBoundaryModeSortProbe (profile : PolyProfile) :
   rawCell := badBoundaryModeSortRawCell profile
   expectedRejection := .badBoundaryEndpoint
 
+/-- Probe that the seed term-step raw shape rejects at empty scope. -/
+def termStepVarZeroVarOneScopeZeroProbe (profile : PolyProfile) :
+    RawInferNegativeProbe profile where
+  scope := 0
+  dimension := 1
+  rawCell := termStepVarZeroVarOneRawCell profile
+  expectedRejection := .badBoundaryEndpoint
+
+/-- Probe that the seed term-step raw shape rejects before `var 1` is in scope. -/
+def termStepVarZeroVarOneScopeOneProbe (profile : PolyProfile) :
+    RawInferNegativeProbe profile where
+  scope := 1
+  dimension := 1
+  rawCell := termStepVarZeroVarOneRawCell profile
+  expectedRejection := .badBoundaryEndpoint
+
 /-- Probe for a known rule id used at the wrong endpoint dimension. -/
 def wrongRuleEndpointDimensionProbe (profile : PolyProfile) :
     RawInferNegativeProbe profile where
@@ -1046,7 +1062,9 @@ def badBoundaryEndpointInferNegativeProbes (profile : PolyProfile) :
   [badBoundaryEndpointProbe profile,
     badBoundarySortProbe profile,
     badBoundaryTypeSortProbe profile,
-    badBoundaryModeSortProbe profile]
+    badBoundaryModeSortProbe profile,
+    termStepVarZeroVarOneScopeZeroProbe profile,
+    termStepVarZeroVarOneScopeOneProbe profile]
 
 /-- Inference probes whose expected rejection is `badVerticalBoundary`. -/
 def badVerticalBoundaryInferNegativeProbes (profile : PolyProfile) :
@@ -1155,7 +1173,7 @@ def certificationNegativeProbes (profile : PolyProfile) :
 
 /-- Inference probe count. -/
 theorem inferNegativeProbes_length (profile : PolyProfile) :
-    (inferNegativeProbes profile).length = 32 := rfl
+    (inferNegativeProbes profile).length = 34 := rfl
 
 /-- Expected-shape probe count. -/
 theorem expectedShapeNegativeProbes_length (profile : PolyProfile) :
@@ -1186,7 +1204,7 @@ theorem wrongChildShapeInferNegativeProbes_length
 /-- Bad-boundary-endpoint headline probe count. -/
 theorem badBoundaryEndpointInferNegativeProbes_length
     (profile : PolyProfile) :
-    (badBoundaryEndpointInferNegativeProbes profile).length = 4 := rfl
+    (badBoundaryEndpointInferNegativeProbes profile).length = 6 := rfl
 
 /-- Bad-vertical-boundary headline probe count. -/
 theorem badVerticalBoundaryInferNegativeProbes_length
