@@ -1494,8 +1494,9 @@ def certificationRejectionAfterScreen? {profile : PolyProfile}
 /-- Atom-level executable ingress for payload-evidenced generators.
 
 This accepts only atoms whose payload evidence is already implemented in the
-certified layer: in-scope variables, unit type, empty context, and linear
-mode.  All other raw cells remain representable but fail certification. -/
+certified layer: in-scope variables, unit type, empty context, linear mode,
+and the current finite application/lambda/pi-type fixtures.  All other raw
+cells remain representable but fail certification. -/
 def inferRawAtom? {profile : PolyProfile} (scope cellId payload : Nat) :
     Except CellCheckRejection (CertifiedRawCellResult profile scope) :=
   if Nat.beq cellId variableGeneratorSpec.cellId then
@@ -2177,6 +2178,16 @@ def hasAcceptedLambdaUnitTypeBodyVarZeroInputCodeCoverage
   hasCertifiedResultInputCodeCoverage
     (NegativeProbes.lambdaUnitTypeBodyVarZeroRawCell profile)
     (acceptedLambdaUnitTypeBodyVarZeroInputCodeResult profile)
+
+/-- The accepted pi-type package preserves the finite raw input code.
+
+This checks the certified package directly instead of forcing Lean to
+normalize the whole atom dispatcher through the pi-type child screen. -/
+def hasAcceptedPiTypeUnitCodomainUnitInputCodeCoverage
+    (profile : PolyProfile) : Bool :=
+  hasCertifiedResultInputCodeCoverage
+    (NegativeProbes.piTypeUnitCodomainUnitRawCell profile)
+    (acceptedPiTypeUnitCodomainUnitInputCodeResult profile)
 
 /-- Current dim-0 accepted ingress fixtures preserve their raw input codes. -/
 def haveAcceptedDimZeroInputCodeCoverage (profile : PolyProfile) : Bool :=
@@ -4452,9 +4463,7 @@ theorem acceptedLambdaUnitTypeBodyVarZeroInputCode_hasCoverage
 raw input code. -/
 theorem acceptedPiTypeUnitCodomainUnitInputCode_hasCoverage
     {profile : PolyProfile} :
-    hasCertifiedResultInputCodeCoverage
-      (NegativeProbes.piTypeUnitCodomainUnitRawCell profile)
-      (acceptedPiTypeUnitCodomainUnitInputCodeResult profile) = true := by
+    hasAcceptedPiTypeUnitCodomainUnitInputCodeCoverage profile = true := by
   change
     hasSameNatList
       (rawCellCode (NegativeProbes.piTypeUnitCodomainUnitRawCell profile))
@@ -4533,9 +4542,7 @@ theorem acceptedPiTypeUnitCodomainUnitFixtureInputCode_hasCoverage
     hasAcceptedDimZeroFixtureInputCodeCoverage
       (acceptedPiTypeUnitCodomainUnitDimZeroFixture profile) = true := by
   change
-    hasCertifiedResultInputCodeCoverage
-      (NegativeProbes.piTypeUnitCodomainUnitRawCell profile)
-      (acceptedPiTypeUnitCodomainUnitInputCodeResult profile) = true
+    hasAcceptedPiTypeUnitCodomainUnitInputCodeCoverage profile = true
   exact acceptedPiTypeUnitCodomainUnitInputCode_hasCoverage
 
 /-- Accepted dim-0 ingress preserves raw input codes for every current accepted

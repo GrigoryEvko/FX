@@ -675,6 +675,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.haveAcceptedDimZeroScreenCoverage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.hasAcceptedApplicationVarZeroVarOneInputCodeCoverage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.hasAcceptedLambdaUnitTypeBodyVarZeroInputCodeCoverage
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.hasAcceptedPiTypeUnitCodomainUnitInputCodeCoverage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.haveAcceptedDimZeroInputCodeCoverage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.hasAcceptedTermStepIngressCoverage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.hasAcceptedTermStepScreenCoverage
