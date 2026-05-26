@@ -578,6 +578,9 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedSeedModeIdentityPackage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedSeedTermStepIdentityPackage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedSeedTermIdentityTwicePackage
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedSeedTypeIdentityTwicePackage
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedSeedContextIdentityTwicePackage
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedSeedModeIdentityTwicePackage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedPackageInputCodeResult
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.DerivedCertifiedFixture
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.DerivedCertifiedFixture.cellDimension
@@ -600,6 +603,9 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.derivedSeedModeIdentityFixture
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.derivedSeedTermStepIdentityFixture
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.derivedSeedTermIdentityTwiceFixture
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.derivedSeedTypeIdentityTwiceFixture
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.derivedSeedContextIdentityTwiceFixture
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.derivedSeedModeIdentityTwiceFixture
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.derivedCertifiedFixtures
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.derivedCertifiedFixtures_length
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.haveCurrentDerivedCertifiedShapeCoverage
@@ -626,6 +632,9 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedIdentityPackage_raw
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedVerticalCompositePackage_raw
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedSeedTermIdentityTwicePackage_raw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedSeedTypeIdentityTwicePackage_raw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedSeedContextIdentityTwicePackage_raw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedSeedModeIdentityTwicePackage_raw
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifyApplicationVarZeroVarOneChildren?_scope_zero_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifyApplicationVarZeroVarOneChildren?_scope_one_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedApplicationVarZeroVarOneChildren_arity_eq_generator

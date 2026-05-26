@@ -1743,6 +1743,36 @@ def certifiedSeedTermIdentityTwicePackage {profile : PolyProfile} :
     (certifiedSeedTermIdentityPackage (profile := profile)).certifiedCell
     (certifiedSeedTermIdentityPackage (profile := profile)).certifiedCell
 
+/-- Certified vertical composite of the seed type identity with itself. -/
+def certifiedSeedTypeIdentityTwicePackage {profile : PolyProfile} :
+    CertifiedRawCell profile NegativeProbes.defaultInferScope
+      (PolyTerm.compV
+        (PolyTerm.identity (NegativeProbes.seedTypeAtom profile))
+        (PolyTerm.identity (NegativeProbes.seedTypeAtom profile))) :=
+  certifiedVerticalCompositePackage
+    (certifiedSeedTypeIdentityPackage (profile := profile)).certifiedCell
+    (certifiedSeedTypeIdentityPackage (profile := profile)).certifiedCell
+
+/-- Certified vertical composite of the seed context identity with itself. -/
+def certifiedSeedContextIdentityTwicePackage {profile : PolyProfile} :
+    CertifiedRawCell profile NegativeProbes.defaultInferScope
+      (PolyTerm.compV
+        (PolyTerm.identity (NegativeProbes.seedContextAtom profile))
+        (PolyTerm.identity (NegativeProbes.seedContextAtom profile))) :=
+  certifiedVerticalCompositePackage
+    (certifiedSeedContextIdentityPackage (profile := profile)).certifiedCell
+    (certifiedSeedContextIdentityPackage (profile := profile)).certifiedCell
+
+/-- Certified vertical composite of the seed mode identity with itself. -/
+def certifiedSeedModeIdentityTwicePackage {profile : PolyProfile} :
+    CertifiedRawCell profile NegativeProbes.defaultInferScope
+      (PolyTerm.compV
+        (PolyTerm.identity (NegativeProbes.seedModeAtom profile))
+        (PolyTerm.identity (NegativeProbes.seedModeAtom profile))) :=
+  certifiedVerticalCompositePackage
+    (certifiedSeedModeIdentityPackage (profile := profile)).certifiedCell
+    (certifiedSeedModeIdentityPackage (profile := profile)).certifiedCell
+
 /-- Package an already certified raw cell as an executable result with its
 own raw-code certificate.
 
@@ -1903,6 +1933,41 @@ def derivedSeedTermIdentityTwiceFixture (profile : PolyProfile) :
       (PolyTerm.identity (NegativeProbes.seedTermAtom profile))
   certifiedPackage := certifiedSeedTermIdentityTwicePackage (profile := profile)
 
+/-- Derived certified vertical-composite fixture over the seed type identity. -/
+def derivedSeedTypeIdentityTwiceFixture (profile : PolyProfile) :
+    DerivedCertifiedFixture profile where
+  cellDimension := 1
+  expectedSort := .type
+  rawCell :=
+    PolyTerm.compV
+      (PolyTerm.identity (NegativeProbes.seedTypeAtom profile))
+      (PolyTerm.identity (NegativeProbes.seedTypeAtom profile))
+  certifiedPackage := certifiedSeedTypeIdentityTwicePackage (profile := profile)
+
+/-- Derived certified vertical-composite fixture over the seed context
+identity. -/
+def derivedSeedContextIdentityTwiceFixture (profile : PolyProfile) :
+    DerivedCertifiedFixture profile where
+  cellDimension := 1
+  expectedSort := .context
+  rawCell :=
+    PolyTerm.compV
+      (PolyTerm.identity (NegativeProbes.seedContextAtom profile))
+      (PolyTerm.identity (NegativeProbes.seedContextAtom profile))
+  certifiedPackage :=
+    certifiedSeedContextIdentityTwicePackage (profile := profile)
+
+/-- Derived certified vertical-composite fixture over the seed mode identity. -/
+def derivedSeedModeIdentityTwiceFixture (profile : PolyProfile) :
+    DerivedCertifiedFixture profile where
+  cellDimension := 1
+  expectedSort := .mode
+  rawCell :=
+    PolyTerm.compV
+      (PolyTerm.identity (NegativeProbes.seedModeAtom profile))
+      (PolyTerm.identity (NegativeProbes.seedModeAtom profile))
+  certifiedPackage := certifiedSeedModeIdentityTwicePackage (profile := profile)
+
 /-- Current finite frontier of derived certified packages. -/
 def derivedCertifiedFixtures (profile : PolyProfile) :
     List (DerivedCertifiedFixture profile) :=
@@ -1911,11 +1976,14 @@ def derivedCertifiedFixtures (profile : PolyProfile) :
     derivedSeedContextIdentityFixture profile,
     derivedSeedModeIdentityFixture profile,
     derivedSeedTermStepIdentityFixture profile,
-    derivedSeedTermIdentityTwiceFixture profile]
+    derivedSeedTermIdentityTwiceFixture profile,
+    derivedSeedTypeIdentityTwiceFixture profile,
+    derivedSeedContextIdentityTwiceFixture profile,
+    derivedSeedModeIdentityTwiceFixture profile]
 
-/-- The current derived certified frontier has exactly six fixtures. -/
+/-- The current derived certified frontier has exactly nine fixtures. -/
 theorem derivedCertifiedFixtures_length (profile : PolyProfile) :
-    (derivedCertifiedFixtures profile).length = 6 := rfl
+    (derivedCertifiedFixtures profile).length = 9 := rfl
 
 /-- Current derived certified packages have shape coverage. -/
 def haveCurrentDerivedCertifiedShapeCoverage
@@ -2052,6 +2120,30 @@ theorem certifiedSeedTermIdentityTwicePackage_raw
       PolyTerm.compV
         (PolyTerm.identity (NegativeProbes.seedTermAtom profile))
         (PolyTerm.identity (NegativeProbes.seedTermAtom profile)) := rfl
+
+theorem certifiedSeedTypeIdentityTwicePackage_raw
+    {profile : PolyProfile} :
+    (certifiedSeedTypeIdentityTwicePackage
+      (profile := profile)).certifiedCell.raw =
+      PolyTerm.compV
+        (PolyTerm.identity (NegativeProbes.seedTypeAtom profile))
+        (PolyTerm.identity (NegativeProbes.seedTypeAtom profile)) := rfl
+
+theorem certifiedSeedContextIdentityTwicePackage_raw
+    {profile : PolyProfile} :
+    (certifiedSeedContextIdentityTwicePackage
+      (profile := profile)).certifiedCell.raw =
+      PolyTerm.compV
+        (PolyTerm.identity (NegativeProbes.seedContextAtom profile))
+        (PolyTerm.identity (NegativeProbes.seedContextAtom profile)) := rfl
+
+theorem certifiedSeedModeIdentityTwicePackage_raw
+    {profile : PolyProfile} :
+    (certifiedSeedModeIdentityTwicePackage
+      (profile := profile)).certifiedCell.raw =
+      PolyTerm.compV
+        (PolyTerm.identity (NegativeProbes.seedModeAtom profile))
+        (PolyTerm.identity (NegativeProbes.seedModeAtom profile)) := rfl
 
 theorem certifyApplicationVarZeroVarOneChildren?_scope_zero_rejects
     {profile : PolyProfile} :
@@ -3177,6 +3269,9 @@ theorem currentDerivedCertifiedShapes_haveCoverage
     derivedSeedModeIdentityFixture,
     derivedSeedTermStepIdentityFixture,
     derivedSeedTermIdentityTwiceFixture,
+    derivedSeedTypeIdentityTwiceFixture,
+    derivedSeedContextIdentityTwiceFixture,
+    derivedSeedModeIdentityTwiceFixture,
     hasDerivedCertifiedFixtureShapeCoverage]
   rfl
 
@@ -3194,6 +3289,9 @@ theorem currentDerivedCertifiedScreens_haveCoverage
     derivedSeedModeIdentityFixture,
     derivedSeedTermStepIdentityFixture,
     derivedSeedTermIdentityTwiceFixture,
+    derivedSeedTypeIdentityTwiceFixture,
+    derivedSeedContextIdentityTwiceFixture,
+    derivedSeedModeIdentityTwiceFixture,
     hasDerivedCertifiedFixtureScreenCoverage]
   rfl
 
@@ -3211,6 +3309,9 @@ theorem currentDerivedCertifiedInputCodes_haveCoverage
     derivedSeedModeIdentityFixture,
     derivedSeedTermStepIdentityFixture,
     derivedSeedTermIdentityTwiceFixture,
+    derivedSeedTypeIdentityTwiceFixture,
+    derivedSeedContextIdentityTwiceFixture,
+    derivedSeedModeIdentityTwiceFixture,
     hasDerivedCertifiedFixtureInputCodeCoverage]
   rfl
 
