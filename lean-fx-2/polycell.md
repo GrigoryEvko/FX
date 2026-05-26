@@ -5624,6 +5624,272 @@ so future work knows where Div enters the v2 architecture.
 
 ---
 
+## 11.7 Foundational boundaries — Gödel, Turing, and controlled openness as PolyCell design constraints
+
+The PolyCell substrate sits inside three absolute ceilings (Gödel
+incompleteness, Turing undecidability, Rice's theorem). This section
+captures how each ceiling translates into a CONCRETE design constraint
+on the v2 substrate and the profile-extension calculus — not as
+abstract philosophy but as actionable mechanisms with specific Lean
+signatures, verification gates, and FX0-PolyCell implications.
+
+### 11.7.1 Gödel's ceiling → ConsistencyStrength as computable data
+
+**The constraint:** any consistent profile `π` cannot prove `Con(π)`
+(Gödel II).  Every profile-extension `π → π'` that adds a new axiom
+(a new Generator entry with no reduction rule — a bare declaration)
+potentially increases consistency strength.  If the extension is
+inconsistent with existing axioms, the system must REJECT, not
+silently accept.
+
+**Actionable mechanism — the `ConsistencyStrength` ledger:**
+
+```lean
+/-- Ordinal approximation of the profile's consistency strength.
+    Not a formal ordinal — a computable tag tracking relative strength
+    for the admission contract's use.  The tag is a LOWER BOUND on
+    what the profile can prove about weaker systems. -/
+inductive ConsistencyStrength where
+  | finitistic          -- PRA / bounded arithmetic
+  | predicative         -- PA / predicative analysis
+  | impredicative       -- Zermelo / power set
+  | inaccessible        -- ZFC + inaccessible cardinal
+  | mahlo               -- ZFC + Mahlo cardinal
+  | custom (tag : Name) -- user-declared with explicit witness
+  deriving DecidableEq
+```
+
+**Integration into ProfileExtension (§3.14):**
+
+Every `ProfileExtension` carries:
+- `strengthBefore : ConsistencyStrength` — the base profile's tag.
+- `strengthAfter : ConsistencyStrength` — the extended profile's tag.
+- `strengthWitness` — a checked justification that `strengthAfter`
+  is an honest upper bound: the extension's new axioms do not exceed
+  the claimed strength.  For Generator entries that are DEFINITIONS
+  (conservative extensions), `strengthAfter = strengthBefore`
+  automatically.  For bare declarations (non-conservative),
+  `strengthAfter ≥ strengthBefore` and the gap must be named.
+
+**FX0-PolyCell implication:** the `.fx0c` certificate header carries
+the `ConsistencyStrength` tag.  The external verifier checks that the
+tag is MONOTONE through the certificate chain (extensions never
+decrease strength) but does NOT verify the tag is correct (that's a
+Layer 2 Lean proof).  A certificate claiming `finitistic` strength
+while using a Generator entry that requires `inaccessible` is caught
+by the Lean proof, not by the verifier — the verifier's job is
+structural cell checking, not ordinal analysis.
+
+**The Gödel-climbing mechanism (D.10 of extended-roadmap.md):**
+adding `Con(S_n)` as a new Generator entry is a ProfileExtension
+with `strengthBefore = strength(S_n)` and `strengthAfter =
+strength(S_n) + 1` (informally — the ordinal arithmetic is tracked
+by the tag, not formalized as real ordinals).  STRICT-35 checks the
+extension's critical pairs; the ConsistencyStrength tag tracks the
+resulting position.  Each climb is one verified commit.
+
+### 11.7.2 Turing's ceiling → Tot/Div/Productive as Generator-level effect grades
+
+**The constraint:** a Turing-complete language has undecidable
+properties (halting, equivalence, Rice's theorem).  FX resolves this
+by partitioning programs into three computability classes, each
+tracked by the graded effect system (dimension 4) and enforced at
+the Generator table level.
+
+**Actionable mechanism — per-Generator totality classification:**
+
+```lean
+/-- Every Generator carries a totality class that the certifier
+    enforces through child-sort constraints. -/
+inductive TotalityClass where
+  | total       -- always terminates; SN + CR + SR + decidable Conv hold
+  | productive  -- non-terminating but every observation terminates
+                -- (codata streams, servers, reactive systems)
+  | partial     -- may diverge; per-step SR holds, chain may be infinite
+  deriving DecidableEq
+```
+
+Each Generator's metadata includes `totalityClass : TotalityClass`.
+The certifier enforces the following child constraint:
+- A `total` Generator's children must ALL be `total` (no Div child
+  in a Tot parent).
+- A `productive` Generator may have `total` or `productive` children
+  (but not `partial`).
+- A `partial` Generator may have children of any class.
+
+This is checked COMPUTABLY by the certifier (a comparison on the
+TotalityClass enum per child — ~3 lines of logic in the
+per-child reconciliation V2-L1cert.2).  The FX0-PolyCell verifier
+checks the same constraint from the serialized Generator table.
+
+**What this buys:**
+- The Tot fragment is a DECIDABLE sub-language: SN holds (every
+  total Generator's children are total → structural induction gives
+  termination), so NbE terminates, so Conv is decidable.
+- The Productive fragment supports verified reactive systems: every
+  observation on a codata cell reaches a value (productivity =
+  every `productive` Generator's observations are guarded by a
+  decreasing measure on the observation index).
+- The Partial fragment is Turing-complete: any computable function
+  expressible, but the metatheory quartet does NOT hold for it.
+  Verification is per-step (each dim-1 cell certifies), not
+  per-chain (the chain may diverge).
+
+**Rice's theorem implication:** no computable property of the
+Partial fragment's input-output behavior is decidable in general.
+BUT: properties of INDIVIDUAL STEPS are decidable (the certifier
+checks each step).  Properties of FINITE PREFIXES are decidable
+(fuel-bounded verification).  Properties of the TOTAL subfragment
+are decidable.  The boundary between "decidable" and "undecidable"
+is the Tot/Partial effect grade — a TYPED, CHECKED boundary, not
+an invisible runtime hazard.
+
+### 11.7.3 The open/closed spectrum → SiteOpenness as a profile parameter
+
+**The constraint:** closed formal systems (fixed axioms) have strong
+internal reasoning but cannot grow; open systems (arbitrary axiom
+addition) can grow but lose internal guarantees.  Traditional proof
+assistants are fully closed (the type theory is fixed at compile
+time).
+
+**Actionable mechanism — `SiteOpenness` as a profile field:**
+
+```lean
+/-- How open the profile is to external content.  Each level is
+    strictly weaker in internal guarantees and strictly stronger in
+    expressivity. -/
+inductive SiteOpenness where
+  | sealed          -- no extensions admitted; strongest internal reasoning
+                    -- (fixed Generator table; full quartet provable)
+  | extensible      -- extensions via ProfileExtension with admission contract
+                    -- (new Generators admitted if STRICT-35/36/37 pass;
+                    --  quartet holds for the Tot fragment of each extension)
+  | reflective      -- extensions + self-reference via Era R ReflTerm
+                    -- (the kernel can manipulate its own terms as data;
+                    --  Tarski hierarchy prevents paradox via partiality
+                    --  of ReflTerm.elaborate)
+  | oracle          -- external oracle calls (SMT, ML model, hardware RNG)
+                    -- with explicit trust boundaries
+                    -- (oracle results are NOT certified; they enter as
+                    --  `partial` Generator entries with explicit fallibility)
+  deriving DecidableEq
+```
+
+The `fxProfile` default is `extensible` — new features enter via
+`ProfileExtension` with verified admission.  Moving to `reflective`
+requires Era R (Day 88.5+).  Moving to `oracle` requires explicit
+trust boundaries (the oracle's output is wrapped in a `partial`
+Generator with `ConsistencyStrength` capped at `finitistic` unless
+the oracle provides its own soundness certificate).
+
+**ProfileExtension integration:**
+
+```lean
+structure ProfileExtension (base : AdmissibleProfile) where
+  -- ... existing fields from §3.14 ...
+
+  /-- The extension's openness must not exceed the base's. -/
+  opennessCompatible :
+    extension.openness ≤ base.openness
+
+  /-- The extension's consistency strength is tracked. -/
+  strengthAfter : ConsistencyStrength
+  strengthMonotone : base.consistencyStrength ≤ strengthAfter
+```
+
+A `sealed` profile cannot admit ANY extension (the strongest
+guarantee — useful for deployed production kernels where the type
+theory must not change).  An `extensible` profile admits extensions
+that pass STRICT-35/36/37.  A `reflective` profile additionally
+permits self-referential programs.  An `oracle` profile additionally
+permits external calls with explicit trust boundaries.
+
+**FX0-PolyCell implication:** the `.fx0c` certificate header carries
+the `SiteOpenness` tag.  The external verifier checks that the tag
+is consistent with the Generator table (a `sealed` certificate
+cannot reference Generators not in the original table; an `oracle`
+certificate must mark oracle-derived cells with a trust boundary
+tag).
+
+### 11.7.4 The decidability frontier as a computable function
+
+The three ceilings (Gödel, Turing, Rice) define a FRONTIER between
+decidable and undecidable properties.  Under the PolyCell design,
+this frontier is itself COMPUTABLE — the certifier can TELL YOU where
+the frontier is for your current profile.
+
+**Actionable mechanism — `isDecidableInProfile?`:**
+
+```lean
+/-- Given a property (expressed as a predicate on certified cells),
+    determine whether it is decidable in the current profile.
+    Returns:
+    - `decidable decider` if the profile's Tot fragment + Generator
+      table + completed metatheory gives a terminating decision
+      procedure
+    - `undecidable witness` if the property reduces to a known
+      undecidable problem (halting, Rice, Post correspondence, ...)
+      with an explicit reduction witness
+    - `unknown` if neither decidability nor undecidability is
+      established (the honest "I don't know")
+-/
+inductive DecidabilityStatus where
+  | decidable (decider : RawCellV2 scope → Bool)
+  | undecidable (reductionWitness : ReductionToHalting)
+  | unknown
+```
+
+This is NOT a universal decidability oracle (that's impossible by
+Rice's theorem).  It is a FINITE, CONSERVATIVE classifier that
+knows about the specific decidability witnesses in the profile's
+metatheory (the 24-dimensional decidability matrix from §11.5, the
+TotalityClass per Generator, the SiteOpenness level).  It says
+"decidable" only when it has a concrete decider; "undecidable" only
+when it has a concrete reduction; "unknown" otherwise.
+
+**Integration with the compiler agent protocol (fx_design.md §24):**
+
+```text
+GET /decidability?property=Conv(a,b)
+  → { status: "decidable", decider: "NbE-NF-equality",
+      complexity: "O(size(a) + size(b))" }
+
+GET /decidability?property=Halts(program)
+  → { status: "undecidable",
+      reduction: "reduction to halting problem via Rice" }
+
+GET /decidability?property=HasType(ctx,term,ty)
+  → { status: "decidable", decider: "certifyRawCellExact?",
+      complexity: "O(size(term) * max_child_arity)" }
+```
+
+An agentic LLM working inside FX can QUERY the decidability frontier
+before attempting a proof: if the property is undecidable, the agent
+knows to either (a) restrict to a decidable subfragment, (b) propose
+a site extension that makes it decidable, or (c) report "this
+requires a stronger axiom" with the minimum ConsistencyStrength
+increase.  This is the "Gödel becomes boring" mechanism from §12.5
+made computationally concrete.
+
+### 11.7.5 Cross-cutting verification gates
+
+The mechanisms above integrate into the existing strict harness:
+
+| Gate | What it checks | Where |
+|---|---|---|
+| **STRICT-CS** | ConsistencyStrength monotone through ProfileExtension chain | Profile admission |
+| **STRICT-TC** | TotalityClass constraints on Generator children | certifyRawCellExact? per-child check |
+| **STRICT-SO** | SiteOpenness compatibility on extension admission | ProfileExtension.opennessCompatible |
+| **STRICT-DF** | DecidabilityStatus conservative (never claims decidable without a concrete decider) | isDecidableInProfile? |
+
+These are COMPUTABLE checks — each is a finite comparison on an enum
+or a table lookup.  The FX0-PolyCell verifier checks STRICT-TC
+(the child totality constraint, ~3 lines of code in the per-child
+reconciliation); the others are Layer 2 Lean proofs that the
+verifier trusts via the certificate header tags.
+
+---
+
 ## 12. Risks and open questions
 
 This section is revised (2026-05-24) per a literature scan that
