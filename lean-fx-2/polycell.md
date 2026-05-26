@@ -5451,6 +5451,179 @@ de-scoped — the discipline is not negotiable to preserve the
 
 ---
 
+## 11.6 Metatheory obligations on the v2 substrate
+
+The v2 structural re-foundation (§4, TCB.9) gives the SUBSTRATE for
+the four-property computability quartet (`computability-rules.md` §1).
+This section pins what must be proved ON the v2 substrate for the
+quartet to hold, identifies the subtle interactions the v2 design must
+get right, and reserves the Div-fragment integration point for later.
+
+### 11.6.1 The quartet restated for PolyCellV2
+
+| Property | v2 statement | What must be shipped |
+|---|---|---|
+| **Subject Reduction (SR)** | If `PolyCellV2 profile sort 0 scope () raw` (a certified dim-0 cell = typed term) and a dim-1 generating cell certifies a step from `raw` to `raw'`, then `PolyCellV2 profile sort 0 scope () raw'` (the target is also certified at the same sort). | The **substitution lemma at every dimension**: applying subst σ to a dim-1 cell preserves its source/target boundary. For `generatingCell ruleId source target`, `(generatingCell ruleId source target).subst σ` must be `generatingCell ruleId (source.subst σ) (target.subst σ)` with the HasEqualDim and SupportedRuleSpec witnesses preserved through the substitution. This is the cell-level analog of the v1 `Step.par.Compat` cascade (~3K LoC) — the Allais fold (V2-L2.8) replaces the cascade, but the boundary-preservation property must still be PROVED as a theorem over `foldV2`, not merely assumed. |
+| **Confluence (CR)** | If `raw →* raw₁` and `raw →* raw₂` (via chains of dim-1 cells), then ∃ `raw₃` with `raw₁ →* raw₃` and `raw₂ →* raw₃`. | Generic cd_lemma as ONE theorem per profile (the §2.2 collapse): for every pair of dim-1 generating cells with the same source (a critical pair), a dim-2 cell (confluence filler) exists. The MMS cubical coherent confluence substrate (arXiv:2511.16852 §4 Newman + Church-Rosser) supplies the machinery; the Generator table supplies the critical-pair enumeration. The proof is ONE structural induction over the Generator table, not a per-constructor cascade. |
+| **Strong Normalization (SN)** | Every certified dim-0 cell reduces to a normal form in finitely many dim-1 steps under any reduction strategy. | Tait reducibility over `RawTermV2` (a Prop-valued `RC : CellSort → RawCellV2 scope → Prop` with one arm per Generator, per Era S Day 41–43 of the extended-roadmap). The v2 substrate simplifies the argument: the Allais fold gives eval (NbE), the generic `Gen` constructor means the fundamental theorem is ONE induction over Generators rather than a per-Term-constructor 75-arm proof. BUT: the RC predicate must be defined over `RawTermV2`, not legacy `Term` — either re-prove on v2 or lift through the bridge (V2-bridge.4). |
+| **Decidable Type-Checking** | `Decidable (certifyRawCellExact? scope raw = Except.ok _)` for all raw cells; and for the Tot fragment, `Decidable (Conv a b)` via NF equality. | The certifier `certifyRawCellExact?` is ALREADY a computable decision procedure returning `Except.ok` or `Except.error` — so decidability of certification is STRUCTURAL (it's a computable function; it always terminates by structural recursion). Decidable Conv requires SN (terms normalize) + CR (NFs unique) + the comparison `DecidableEq` on NFs. The comparison is shipped (V2-L0.11/12); SN + CR are the metatheory obligations above. Path A (NbE via `foldV2` + quote + DecidableEq on NFs) or Path B (Makkai word equality on the finite Generator-presented polygraph) gives the procedure. |
+
+### 11.6.2 The substitution lemma at the cell level (the subtle obligation)
+
+The Allais fold (V2-L2.3 `foldV2`) gives rename/subst on `RawTermV2`
+and the Action laws (V2-L2.7) prove compose/identity/extensionality
+on terms.  V2-L2.8 lifts rename/subst to `RawCellV2`.  But the
+load-bearing property is:
+
+```
+RawCellV2.subst σ (generatingCell ruleId source target)
+  = generatingCell ruleId (source.subst σ) (target.subst σ)
+
+RawCellV2.subst σ (verticalComposite first second)
+  = verticalComposite (first.subst σ) (second.subst σ)
+
+(and analogously for identityCell)
+```
+
+— i.e., substitution COMMUTES with the cell-layer constructors and
+PRESERVES boundaries.  For `verticalComposite`, the shared middle
+`target(first) = source(second)` must survive substitution:
+`target(first.subst σ) = source(second.subst σ)`.  This follows from
+the term-layer Action laws applied pointwise to the endpoints, but it
+must be STATED and PROVED explicitly as a cell-layer theorem.
+
+Without this, the certified layer's `PolyCellV2.verticalComposite`
+cannot have a substitution operation (you can't substitute into a
+certificate if substitution breaks the shared-middle invariant).
+Subject reduction at dim ≥ 1 depends on this.
+
+### 11.6.3 Scope-shift coherence under the fold (the de Bruijn trap)
+
+When `foldV2` recurses into a child under a binder (a `childCons`
+with `shift > 0`), it LIFTS the environment by `shift`.  The
+certifier (`certifyTermSpineV2?`) expects each child at
+`scope + shift`.  These must agree: the fold's lift must produce a
+term at the same scope the certifier expects.
+
+The coherence lemma V2-L1.3 (generatorChildSpecs shifts =
+binderShifts) ties the two metadata views.  But the operational
+agreement — "applying rename ρ via `foldV2` to a term that certifies
+at scope `s` produces a term that certifies at scope `ρ(s)`" — is a
+separate property: **rename-equivariance of the certifier**.
+
+```
+certifyRawCellExact? scope (RawTermV2.rename ρ term) = Except.ok _
+  ↔
+certifyRawCellExact? (ρ scope) term = Except.ok _
+```
+
+(informally: renaming a well-formed term by a scope-compatible
+renaming yields a well-formed term).  This is the operational
+glue between "the fold is correct" and "the certifier agrees."
+Off-by-one in the lift-by-shift vs the certifier's scope+shift
+creates a silent scope mismatch that passes on closed terms and
+fails on open terms under binders — the classic de Bruijn bug.
+
+### 11.6.4 Generator table validation (TCB boundary)
+
+The Generator table (`Generator.arity`, `binderShifts`, `payload`,
+`generatorCellSort`, `generatorChildSpecs`) is TRUSTED DATA in the
+FX0-PolyCell design (§12.6.9): the verifier consumes it, does not
+validate it.  Table correctness — "each Generator entry faithfully
+represents the intended type former" — is established by:
+
+1. **Per-Generator round-trip witnesses** (in the bridge, V2-bridge.1
+   / FX0-PC.7 `encodeCellSound`): encoding a legacy `Term.var` /
+   `Term.lam` / `Term.app` / ... via the Generator table and
+   decoding back recovers the original.  Each round-trip theorem
+   ties one Generator entry to the legacy constructor it represents.
+2. **Cross-implementation agreement** (FX0-PC.8): the Lean and
+   external verifiers consume the SAME table and produce the SAME
+   verdicts.  If either table is wrong, the two disagree on some
+   fixture.
+3. **Coverage + negative probes** (V2-L1cert.15/16): the test
+   corpus exercises every admitted Generator with accepted fixtures
+   AND hostile fixtures, pinning the table's accept/reject boundary
+   per-entry.
+
+These three together form the table-validation argument.  NO SINGLE
+mechanism suffices: round-trips catch semantic bugs (wrong arity),
+cross-implementation catches implementation bugs (wrong code), and
+probes catch boundary bugs (accepting what should reject or vice
+versa).  The table is still trusted data (not self-validating), but
+the trust surface is ~300 lines of lookup tables audited by three
+independent mechanisms.
+
+### 11.6.5 horizontalComposite admission staging (inductive extension discipline)
+
+Every other feature addition is a GENERATOR TABLE extension (one
+`SupportedGeneratorV2` arm — the inductive `PolyCellV2` doesn't
+change).  `horizontalComposite` is the exception: admitting it
+requires adding a NEW CONSTRUCTOR to `PolyCellV2` (a certified
+`horizontalComposite` constructor with a Gray-boundary witness),
+which is an INDUCTIVE EXTENSION.
+
+Inductive extension means every theorem that matches on `PolyCellV2`
+(soundness proofs, erasure lemmas, the fold, the FX0 verifier) must
+be EXTENDED with a new case.  This is a mini-cascade — much smaller
+than the v1 78-arm cascade but still non-trivial (~10–15 theorems
+need a new arm).
+
+**Staging discipline:**
+- The `horizontalComposite` tag is RESERVED in the FX0-PolyCell
+  certificate format (§12.6.4, tag byte = 3) with a "must reject"
+  rule that the specification can later upgrade to "check Gray
+  boundary condition" without breaking the binary format.
+- The `PolyCellV2` inductive is designed with a PLACEHOLDER comment
+  at the position where the certified `horizontalComposite`
+  constructor will go, listing the fields it will need (Gray-boundary
+  formula + disjoint-footprint witness + marking compatibility per
+  Axis 6 Stage 2).
+- When Axis 6 lands, the admission is ONE commit that: adds the
+  constructor, extends the ~10–15 theorems with the new case,
+  upgrades the FX0 verifier from "reject tag 3" to "check Gray
+  boundary on tag 3", and re-runs the full cross-check corpus
+  (FX0-PC.8) with horizontalComposite fixtures added.
+
+This is the ONE place the inductive grows after the v2 re-foundation
+stabilizes.  All other feature growth is table-only.
+
+### 11.6.6 Div-fragment integration point (reserved, not designed)
+
+FX's `with Div` effect (fx_design.md §9.4) permits possibly-divergent
+computation.  Under the v2 substrate, a Div program is an infinite
+chain of individually-certified dim-1 cells (each step well-formed,
+the chain potentially non-terminating).  Productivity checking
+(fx_design.md §3.5 `with Productive`) ensures every observation on a
+codata stream eventually produces a value.
+
+The four-property quartet does NOT hold for the Div fragment (SN
+fails by definition; decidable typechecking requires fuel-bounding or
+coinductive techniques).  The v2 substrate must accommodate Div
+programs without compromising the Tot fragment's guarantees:
+
+- **Effect isolation:** the Tot/Div boundary is enforced by the
+  graded effect system (dimension 4).  A `Tot` cell cannot reference
+  a `Div` cell without an explicit `with Div` annotation.  The
+  certifier checks this via the `generatorCellSort` + effect-grade
+  metadata — a `Tot`-sorted Generator cannot have a `Div`-sorted
+  child.
+- **Per-step soundness:** each individual dim-1 cell in a Div chain
+  IS certified (SR holds per-step).  The chain's non-termination is
+  an EFFECT, not a soundness violation.
+- **Fuel-bounded verification:** for the FX0-PolyCell verifier, Div
+  programs are verified up to a fuel bound (the certificate carries a
+  finite prefix of the chain; the verifier checks each step in the
+  prefix).  The `fuelExhausted` rejection (TCB.7ae) is the
+  mechanism.
+
+Detailed design for Div-fragment coinduction / productivity checking /
+Delay-monad integration is DEFERRED — the Tot fragment's metatheory
+is the critical path.  This subsection reserves the integration point
+so future work knows where Div enters the v2 architecture.
+
+---
+
 ## 12. Risks and open questions
 
 This section is revised (2026-05-24) per a literature scan that
