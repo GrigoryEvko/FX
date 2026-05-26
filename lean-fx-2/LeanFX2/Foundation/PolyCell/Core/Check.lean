@@ -2662,6 +2662,34 @@ theorem certificationRejectionAfterScreen?_matchedVertical_rejects
       (NegativeProbes.matchedVerticalBoundaryRawCell profile) =
       CellCheckRejection.unsupportedCertification := rfl
 
+theorem certificationRejectionAfterScreen?_termIdentity_rejects
+    {profile : PolyProfile} :
+    certificationRejectionAfterScreen? (profile := profile)
+      NegativeProbes.defaultInferScope
+      (NegativeProbes.termIdentityRawCell profile) =
+      CellCheckRejection.unsupportedCertification := rfl
+
+theorem certificationRejectionAfterScreen?_typeIdentity_rejects
+    {profile : PolyProfile} :
+    certificationRejectionAfterScreen? (profile := profile)
+      NegativeProbes.defaultInferScope
+      (NegativeProbes.typeIdentityRawCell profile) =
+      CellCheckRejection.unsupportedCertification := rfl
+
+theorem certificationRejectionAfterScreen?_contextIdentity_rejects
+    {profile : PolyProfile} :
+    certificationRejectionAfterScreen? (profile := profile)
+      NegativeProbes.defaultInferScope
+      (NegativeProbes.contextIdentityRawCell profile) =
+      CellCheckRejection.unsupportedCertification := rfl
+
+theorem certificationRejectionAfterScreen?_modeIdentity_rejects
+    {profile : PolyProfile} :
+    certificationRejectionAfterScreen? (profile := profile)
+      NegativeProbes.defaultInferScope
+      (NegativeProbes.modeIdentityRawCell profile) =
+      CellCheckRejection.unsupportedCertification := rfl
+
 theorem certificationRejectionAfterScreen?_termIdentityVertical_rejects
     {profile : PolyProfile} :
     certificationRejectionAfterScreen? (profile := profile)

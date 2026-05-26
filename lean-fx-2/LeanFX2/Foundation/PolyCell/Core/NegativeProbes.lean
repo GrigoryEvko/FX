@@ -354,6 +354,26 @@ def matchedVerticalBoundaryRawCell (profile : PolyProfile) :
       (alternateTermAtom profile)
       (thirdTermAtom profile))
 
+/-- Raw identity over the seed term remains unsupported by certified ingress;
+use the derived certified operation instead. -/
+def termIdentityRawCell (profile : PolyProfile) : PolyTerm profile 1 :=
+  .identity (seedTermAtom profile)
+
+/-- Raw identity over the seed type remains unsupported by certified ingress;
+use the derived certified operation instead. -/
+def typeIdentityRawCell (profile : PolyProfile) : PolyTerm profile 1 :=
+  .identity (seedTypeAtom profile)
+
+/-- Raw identity over the seed context remains unsupported by certified
+ingress; use the derived certified operation instead. -/
+def contextIdentityRawCell (profile : PolyProfile) : PolyTerm profile 1 :=
+  .identity (seedContextAtom profile)
+
+/-- Raw identity over the seed mode remains unsupported by certified ingress;
+use the derived certified operation instead. -/
+def modeIdentityRawCell (profile : PolyProfile) : PolyTerm profile 1 :=
+  .identity (seedModeAtom profile)
+
 /-- Raw vertical composition of two term identities remains unsupported by
 certified ingress; use the derived certified operation instead. -/
 def termIdentityVerticalRawCell (profile : PolyProfile) :
@@ -883,6 +903,38 @@ def certificationMatchedVerticalBoundaryProbe (profile : PolyProfile) :
   rawCell := matchedVerticalBoundaryRawCell profile
   expectedRejection := .unsupportedCertification
 
+/-- Probe for a screened raw term identity. -/
+def certificationTermIdentityProbe (profile : PolyProfile) :
+    RawCertificationNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 1
+  rawCell := termIdentityRawCell profile
+  expectedRejection := .unsupportedCertification
+
+/-- Probe for a screened raw type identity. -/
+def certificationTypeIdentityProbe (profile : PolyProfile) :
+    RawCertificationNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 1
+  rawCell := typeIdentityRawCell profile
+  expectedRejection := .unsupportedCertification
+
+/-- Probe for a screened raw context identity. -/
+def certificationContextIdentityProbe (profile : PolyProfile) :
+    RawCertificationNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 1
+  rawCell := contextIdentityRawCell profile
+  expectedRejection := .unsupportedCertification
+
+/-- Probe for a screened raw mode identity. -/
+def certificationModeIdentityProbe (profile : PolyProfile) :
+    RawCertificationNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 1
+  rawCell := modeIdentityRawCell profile
+  expectedRejection := .unsupportedCertification
+
 /-- Probe for a screened raw term-identity vertical composite. -/
 def certificationTermIdentityVerticalProbe (profile : PolyProfile) :
     RawCertificationNegativeProbe profile where
@@ -1027,6 +1079,10 @@ def unsupportedCertificationNegativeProbes (profile : PolyProfile) :
     certificationUnsupportedReversedTermStepProbe profile,
     certificationUnsupportedReflexiveTermStepProbe profile,
     certificationMatchedVerticalBoundaryProbe profile,
+    certificationTermIdentityProbe profile,
+    certificationTypeIdentityProbe profile,
+    certificationContextIdentityProbe profile,
+    certificationModeIdentityProbe profile,
     certificationTermIdentityVerticalProbe profile,
     certificationTypeIdentityVerticalProbe profile,
     certificationContextIdentityVerticalProbe profile,
@@ -1073,7 +1129,7 @@ theorem expectedShapeNegativeProbes_length (profile : PolyProfile) :
 
 /-- Certified-ingress probe count. -/
 theorem certificationNegativeProbes_length (profile : PolyProfile) :
-    (certificationNegativeProbes profile).length = 10 := rfl
+    (certificationNegativeProbes profile).length = 14 := rfl
 
 /-- Unknown-generator headline probe count. -/
 theorem unknownGeneratorInferNegativeProbes_length
@@ -1141,7 +1197,7 @@ theorem unsupportedCompHCertificationNegativeProbes_length
 /-- Unsupported-certification headline probe count. -/
 theorem unsupportedCertificationNegativeProbes_length
     (profile : PolyProfile) :
-    (unsupportedCertificationNegativeProbes profile).length = 8 := rfl
+    (unsupportedCertificationNegativeProbes profile).length = 12 := rfl
 
 /-- Fuel-exhaustion headline probe count. -/
 theorem fuelExhaustedNegativeProbes_length
