@@ -3581,6 +3581,74 @@ theorem applicationWrongChildShapeExpectedShapeProbe_rejects
         (NegativeProbes.applicationWrongChildShapeExpectedShapeProbe
           profile).expectedRejection := rfl
 
+theorem piTypeBadPayloadExpectedShapeProbe_rejects
+    {profile : PolyProfile} :
+    screenRawCell0As? (profile := profile)
+      (NegativeProbes.piTypeBadPayloadExpectedShapeProbe profile).expectedSort
+      (NegativeProbes.piTypeBadPayloadExpectedShapeProbe profile).expectedScope
+      (NegativeProbes.badPiTypePayloadRawCell profile) =
+      Except.error
+        (NegativeProbes.piTypeBadPayloadExpectedShapeProbe
+          profile).expectedRejection := rfl
+
+theorem contextConsBadPayloadExpectedShapeProbe_rejects
+    {profile : PolyProfile} :
+    screenRawCell0As? (profile := profile)
+      (NegativeProbes.contextConsBadPayloadExpectedShapeProbe
+        profile).expectedSort
+      (NegativeProbes.contextConsBadPayloadExpectedShapeProbe
+        profile).expectedScope
+      (NegativeProbes.badContextConsPayloadRawCell profile) =
+      Except.error
+        (NegativeProbes.contextConsBadPayloadExpectedShapeProbe
+          profile).expectedRejection := rfl
+
+theorem piTypeWrongArityExpectedShapeProbe_rejects
+    {profile : PolyProfile} :
+    screenRawCell0As? (profile := profile)
+      (NegativeProbes.piTypeWrongArityExpectedShapeProbe profile).expectedSort
+      (NegativeProbes.piTypeWrongArityExpectedShapeProbe profile).expectedScope
+      (NegativeProbes.wrongPiTypeArityRawCell profile) =
+      Except.error
+        (NegativeProbes.piTypeWrongArityExpectedShapeProbe
+          profile).expectedRejection := rfl
+
+theorem contextConsWrongArityExpectedShapeProbe_rejects
+    {profile : PolyProfile} :
+    screenRawCell0As? (profile := profile)
+      (NegativeProbes.contextConsWrongArityExpectedShapeProbe
+        profile).expectedSort
+      (NegativeProbes.contextConsWrongArityExpectedShapeProbe
+        profile).expectedScope
+      (NegativeProbes.wrongContextConsArityRawCell profile) =
+      Except.error
+        (NegativeProbes.contextConsWrongArityExpectedShapeProbe
+          profile).expectedRejection := rfl
+
+theorem piTypeWrongChildShapeExpectedShapeProbe_rejects
+    {profile : PolyProfile} :
+    screenRawCell0As? (profile := profile)
+      (NegativeProbes.piTypeWrongChildShapeExpectedShapeProbe
+        profile).expectedSort
+      (NegativeProbes.piTypeWrongChildShapeExpectedShapeProbe
+        profile).expectedScope
+      (NegativeProbes.wrongPiTypeChildShapeRawCell profile) =
+      Except.error
+        (NegativeProbes.piTypeWrongChildShapeExpectedShapeProbe
+          profile).expectedRejection := rfl
+
+theorem contextConsWrongChildShapeExpectedShapeProbe_rejects
+    {profile : PolyProfile} :
+    screenRawCell0As? (profile := profile)
+      (NegativeProbes.contextConsWrongChildShapeExpectedShapeProbe
+        profile).expectedSort
+      (NegativeProbes.contextConsWrongChildShapeExpectedShapeProbe
+        profile).expectedScope
+      (NegativeProbes.wrongContextConsChildShapeRawCell profile) =
+      Except.error
+        (NegativeProbes.contextConsWrongChildShapeExpectedShapeProbe
+          profile).expectedRejection := rfl
+
 theorem inferNegativeProbes_rejected_by_screen (profile : PolyProfile) :
     areInferNegativeProbesRejected
       (NegativeProbes.inferNegativeProbes profile) = true := rfl
