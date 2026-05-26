@@ -4691,8 +4691,9 @@ representable and computably rejected.
 | TCB.7ag accepted ingress screen coverage | `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds executable screen-coverage predicates and audited theorem heads for the accepted seed term/type/context/mode atoms, accepted application fixture, and direct term-step fixture. | Coverage says accepted shape and expected structural screen agree for the current finite accepted domain only.  Raw-code preservation remains the separate generic erasure/input-code theorem layer; no raw ingress, accepted payload, certified constructor, or non-inhabitation theorem is added. |
 | TCB.7ah term-step input-code coverage | `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds `hasCertifiedResultInputCodeCoverage` and applies it to the already accepted direct dim-1 term-step fixture. | The theorem checks the successful result's stored input code against `termStep(var 0, var 1)`; generic `CertifiedRawCellResult.inputCode_matches_rawCellCode` remains the returned-raw-cell link.  It is prefix-code regression evidence only; no raw-code injectivity, raw dispatcher, new accepted input, or non-inhabitation claim is added. |
 | TCB.7ai accepted input-code coverage matrix | `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds accepted dim-0 input-code coverage for the four seed atom ingress paths, package-level application input-code coverage, and a current accepted input-code matrix spanning those plus the direct term-step ingress. | Application input-code coverage is package-level to avoid normalizing the whole application dispatcher through payload `9100`; the separate accepted-ingress coverage matrix still proves checker acceptance.  `AuditPolyCell` and full `AuditAll` are green; no accepted-domain or constructor change. |
+| TCB.7aj raw identity certification probes | `Foundation/PolyCell/Core/NegativeProbes.lean`, `Foundation/PolyCell/Core/Check.lean`, `Tools/AuditAll/AuditPolyCell.lean` | Adds raw `identity(seed)` certification probes for term/type/context/mode seeds, plus executable certification-policy rejection theorems. | Certification probes ratchet to 14 and unsupported-certification probes ratchet to 12; each raw identity screens through its base sort but rejects as `unsupportedCertification` at raw certification policy.  This is distinct from the TCB.7ac raw `compV(identity, identity)` probes and adds no raw identity ingress dispatcher, accepted input, or non-inhabitation theorem. |
 
-**Implementation order after TCB.7ai:**
+**Implementation order after TCB.7aj:**
 
 1.  Do not broaden application by adding more one-off parent
     constructors.  Descriptor-indexed child spines over
@@ -4712,10 +4713,11 @@ representable and computably rejected.
     composition are complete for already certified inputs, and the
     identity over the seed dim-1 term step is exposed as a dim-2
     endpoint-indexed arrow/thin-arrow view.  Raw identity and raw `compV`
-    ingress remain untrusted; TCB.7ac explicitly probes raw identity
-    composites for term/type/context/mode as screen-successful but
-    certification-policy rejected.  Certified `compH` remains blocked on
-    real Gray-boundary semantics.
+    ingress remain untrusted; TCB.7aj explicitly probes raw identities
+    for term/type/context/mode, and TCB.7ac explicitly probes raw
+    identity composites for term/type/context/mode, as screen-successful
+    but certification-policy rejected.  Certified `compH` remains
+    blocked on real Gray-boundary semantics.
 4.  Thinness is structural and intentionally narrow: identities are thin,
     and vertical composites of thin cells are thin.  Do not classify
     generating term steps as thin until an operational conversion
