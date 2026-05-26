@@ -3932,17 +3932,25 @@ inductive CellCheckRejection where
 
 /-- Infer a certified package from raw input.
 
-This is the current TCB.7d ingress, not the final recursive checker.  It
-certifies only the dim-0 subset whose constructors are implemented in the
+NOTE (TCB.8): the final recursive checker now EXISTS as
+`Check.certifyRawCellExact?` (raw-indexed) / `Check.inferRawCellGeneral?`
+(existential), total on the entire non-`compH` raw fragment at every
+dimension.  The `inferRawCell?` described below is the historical TCB.7
+dim-0 ingress, retained until call sites are routed through the general
+certifier.
+
+It certifies only the dim-0 subset whose constructors are implemented in the
 certified layer: in-scope variables, unit type, empty context, linear mode,
-and the single finite application payload `app(var 0, var 1)` at scopes where
-both decoded variables are in scope.  The application ingress now invokes the
+and the finite application/lambda/pi/context-extension payloads at scopes
+where decoded children are in scope.  The application ingress invokes the
 payload decoder and generic child-shape screen before constructing the
-certified parent; it still does not expose a dimension-polymorphic certified
-child decoder because the direct dependent version pulled `propext` into the
-audit.  Other raw dim-0 atoms remain representable and reject either with the
-screen's structural reason or with `unsupportedCertification` when they screen
-successfully but lack a certified constructor. -/
+certified parent.  The dimension-polymorphic certified decoder that TCB.7d
+could not build without `propext` is now `certifyRawCellExact?` (TCB.8a):
+the leak was the dual `(dim, rawCell)` match, fixed by matching `rawCell`
+alone and transporting ids via `cast`.  Other raw dim-0 atoms remain
+representable and reject either with the screen's structural reason or with
+`unsupportedCertification` when they screen successfully but lack a certified
+constructor. -/
 structure CertifiedRawCellResult (profile : PolyProfile) (scope : Nat) where
   cellDimension : CellDim
   inputCode : List Nat
@@ -4675,6 +4683,11 @@ representable and computably rejected.
 | TCB.7bj descriptor-indexed decoder erasure links | `dec2a809` | The descriptor-indexed application, lambda, and pi-type child spines now have audited theorem heads linking their erased raw descriptors to the corresponding payload decoder outputs.  This is theorem-level glue over existing certified packages only: no new payload, checker branch, raw dispatcher, operational typing theorem, or non-inhabitation theorem is added. |
 | TCB.7bk pi input-code coverage name | `ffa5d018` | Pi-type input-code coverage now has the same named audited helper shape as application and lambda, and the stale atom-ingress comment now lists the current finite accepted fixtures.  This is proof/readability parity only: no new payload, checker branch, raw dispatcher, operational typing theorem, or non-inhabitation theorem is added. |
 | TCB.7bl first certified context-extension payload | `c73494ac` | `ctxCons(empty, Unit, linear)` is the first non-nullary dim-0 context payload admitted to the certified layer.  It is built only from certified empty-context, unit-type, and linear-mode children at the parent scope.  Hostile context-extension payloads whose context/type/mode child has the wrong sort reject as `wrongChildShape`, and checking the accepted context extension as term/type/mode rejects as `wrongSort`.  This is not general context typing, weakening, substitution, raw context dispatch, or a non-inhabitation theorem. |
+| TCB.8a general polymorphic raw-indexed certifier | `9ce59dfa` | `Foundation/PolyCell/Core/CertifyExact.lean`: `certifyRawCellExact?` is the first dimension-polymorphic recursive certifier — one function recursing over every `PolyTerm profile dim` and returning a certificate indexed by the EXACT input.  Covers all payload-evidenced atoms (via `certifyRawAtomExact?` with `cast`/`Eq.rec` id transport) plus iterated identities at every dimension; `inferRawCellGeneral?` wraps it into the existential result API.  **Resolves the long-standing propext blocker** of TCB.7d/7f: the leak was the dual `(dim, rawCell)` / partial-index match, not polymorphic recursion — matching on `rawCell` only (dim inferred) is the clean `retargetProfile` shape.  All `#assert_no_axioms` clean. |
+| TCB.8b certify generating cells | `1aef8b31` | `certifyRawCellExact?` recurses on both endpoints of a raw `.cell` and reconciles against the term-step rule via `buildTermStepCellExact?` (`by_cases` Decidable + `subst`/`Eq.rec`, never a Nat-index match; the dim-0 `Unit` boundary makes the sort transport obligation-free). |
+| TCB.8c propext-free `DecidableEq (PolyTerm)` | `9632db28` | `Foundation/PolyCell/Core/PolyTermDecEq.lean`: adapts the deprecated Burroni-`PolyCell` recipe (#1747) — `SuccShape` decomposition via pure `casesOn` + index-equality-witness motive, `.atom` discharged by `Nat.noConfusion`, transport casts in standalone `cast_*` lemmas.  Two `PolyTerm`-specific wrinkles: `compV`/`compH` compose same-dimension children so `decEq` recurses on `PolyTerm.size` (well-founded, not dim); and the size bounds use core `Nat` lemmas because `omega` itself pulled `propext`+`Quot.sound` into the decreasing proof.  `succShape`, `decEq`, `instDecidableEqPolyTerm` all `#assert_no_axioms` clean. |
+| TCB.8d certify vertical composites | `6446a0aa` | `buildVerticalCompositeExact?` reconciles two certified positive-dim cells into a certified `compV`: same sort, and first-target = second-source decided via the propext-free `PolyTerm` `DecidableEq`; the boundary-pair transport is `▸` + structure eta.  `certifyRawCellExact?` now recurses on both `compV` operands.  The certifier is therefore **total on the entire non-`compH` raw fragment**; only `compH` rejects (`unsupportedCompH`), pending Gray semantics.  (compV result theorems are `#eval`-verified, not `rfl`, since `decEq` is well-founded; the defs are `#assert_no_axioms` clean.) |
+| TCB.8e soundness + general FX ingress | `08e8edb5` | `certifyRawCellExact?_sound`: every accepted certification erases EXACTLY to its raw input (guaranteed by the raw-indexed type — no false positive is expressible).  `certifyRawCellExact?_compH_rejects` pins the only rejection class.  `FXProfile/CertifiedViews.lean` exposes the canonical general FX ingress `certifyFXCellExact?` (raw-indexed) / `certifyFXCell?` (existential), plus FX-level soundness and `compH`-rejection theorems. |
 
 **Deliverables (NEW only):**
 
@@ -4758,6 +4771,15 @@ representable and computably rejected.
 
 **Implementation order after TCB.7bg:**
 
+> **Largely superseded by TCB.8 (general certifier landed).**  The
+> dimension-polymorphic recursive certifier `certifyRawCellExact?` now
+> exists and is total on the entire non-`compH` raw fragment (TCB.8a–8e).
+> The propext obstruction this section repeatedly cited was diagnosed and
+> removed: it was the dual `(dim, rawCell)` / partial-index match, NOT
+> polymorphic recursion.  Items below are retained as the historical
+> pre-TCB.8 guidance; where they say "blocked by propext," read "resolved
+> by TCB.8."
+
 1.  Do not broaden lambda/application/pi by adding more one-off parent
     constructors unless the slice is intentionally finite and explicitly
     probed.  Descriptor-indexed child spines over `RawChildDescriptors` are
@@ -4765,15 +4787,18 @@ representable and computably rejected.
     exactly to their descriptor indexes.  The next non-nullary slice must
     either generalize that indexed shape without weakening `AuditPolyCell`,
     or stop at the current finite payload frontier.  No new payload is
-    accepted merely because its raw descriptor screen passes.  The failed
-    dimension-polymorphic dependent pattern route is not acceptable.
+    accepted merely because its raw descriptor screen passes.  (The
+    "dimension-polymorphic dependent pattern route is not acceptable" note
+    here is OBSOLETE — TCB.8a found the clean route: match on `rawCell`
+    only, transport ids via `cast`/`Eq.rec`, never the equation compiler.)
 2.  If the reusable certified-child spine cannot be made audit-clean,
     keep using the decoder plus generic screen gate and move to
     positive-dimensional certification instead of weakening the TCB.
 3.  Continue positive-dimensional certification without broadening raw
     ingress.  A propext-free raw dispatcher for the already certified
-    `.cell` fixture remains desirable but blocked by audit evidence until
-    a new pattern is found.  Derived identity and derived vertical
+    `.cell` fixture is now LANDED (TCB.8): `certifyRawCellExact?` certifies
+    arbitrary `.cell`/`.compV`/identity/atom inputs (term-step rule), so
+    this is no longer blocked.  Derived identity and derived vertical
     composition are complete for already certified inputs, the current
     derived-package frontier has audited shape/screen/input-code coverage, and the
     identity over the seed dim-1 term step is exposed as a dim-2
