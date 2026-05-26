@@ -375,6 +375,38 @@ theorem applicationPayloadFixtureCodes_length :
 theorem applicationPayloadFixtureCodes_distinct :
     hasPairwiseDistinctNatCodes applicationPayloadFixtureCodes = true := rfl
 
+/-- Lambda payload sentinels that are reserved for malformed decoder tests. -/
+def lambdaPayloadSentinels : List Nat :=
+  [NegativeProbes.badPayloadSentinel,
+    NegativeProbes.wrongAritySentinel,
+    NegativeProbes.wrongChildShapeSentinel]
+
+/-- The current lambda payload sentinel frontier has three entries. -/
+theorem lambdaPayloadSentinels_length :
+    lambdaPayloadSentinels.length = 3 := rfl
+
+/-- All lambda decoder-staging fixture codes, including malformed sentinels. -/
+def lambdaPayloadFixtureCodes : List Nat :=
+  NegativeProbes.decodedLambdaPayloads ++ lambdaPayloadSentinels
+
+/-- The decoder-staged lambda fixture frontier currently has seven distinct
+payload codes. -/
+theorem lambdaPayloadFixtureCodes_length :
+    lambdaPayloadFixtureCodes.length = 7 := rfl
+
+/-- Lambda payload fixtures have no duplicate codes. -/
+theorem decodedLambdaPayloads_distinct :
+    hasPairwiseDistinctNatCodes
+      NegativeProbes.decodedLambdaPayloads = true := rfl
+
+/-- Lambda payload sentinels have no duplicate codes. -/
+theorem lambdaPayloadSentinels_distinct :
+    hasPairwiseDistinctNatCodes lambdaPayloadSentinels = true := rfl
+
+/-- Decoded lambda fixtures and lambda sentinels do not collide. -/
+theorem lambdaPayloadFixtureCodes_distinct :
+    hasPairwiseDistinctNatCodes lambdaPayloadFixtureCodes = true := rfl
+
 /-- Decode the first finite application payloads into raw child descriptors.
 
 This is decoder output only.  The returned children still need recursive
@@ -428,6 +460,41 @@ def decodeApplicationPayload? {profile : PolyProfile} (scope payload : Nat) :
       (RawChildDescriptors.application
         (NegativeProbes.seedTermAtom profile)
         (NegativeProbes.seedContextAtom profile))
+  else if payload = NegativeProbes.wrongAritySentinel then
+    Except.error .wrongArity
+  else if payload = NegativeProbes.wrongChildShapeSentinel then
+    Except.error .wrongChildShape
+  else
+    Except.error .badPayload
+
+/-- Decode staged lambda payloads into raw child descriptors.
+
+This is decoder output only.  The executable screen and certified ingress do
+not call this decoder yet, so adding a decoded lambda payload here does not
+make any lambda raw cell accepted. -/
+def decodeLambdaPayload? {profile : PolyProfile} (scope payload : Nat) :
+    Except CellCheckRejection
+      (RawChildDescriptors.forGenerator profile scope lambdaGeneratorSpec) :=
+  if payload = NegativeProbes.lambdaUnitTypeBodyVarZeroPayload then
+    Except.ok
+      (RawChildDescriptors.lambda
+        (NegativeProbes.seedTypeAtom profile)
+        (NegativeProbes.seedTermAtom profile))
+  else if payload = NegativeProbes.lambdaContextAsDomainPayload then
+    Except.ok
+      (RawChildDescriptors.lambda
+        (NegativeProbes.seedContextAtom profile)
+        (NegativeProbes.seedTermAtom profile))
+  else if payload = NegativeProbes.lambdaTypeAsBodyPayload then
+    Except.ok
+      (RawChildDescriptors.lambda
+        (NegativeProbes.seedTypeAtom profile)
+        (NegativeProbes.seedTypeAtom profile))
+  else if payload = NegativeProbes.lambdaOutOfScopeBodyPayload then
+    Except.ok
+      (RawChildDescriptors.lambda
+        (NegativeProbes.seedTypeAtom profile)
+        (NegativeProbes.outOfScopeVariableUnderBinderRawCell profile))
   else if payload = NegativeProbes.wrongAritySentinel then
     Except.error .wrongArity
   else if payload = NegativeProbes.wrongChildShapeSentinel then
@@ -2485,6 +2552,61 @@ theorem decodeApplicationPayload?_contextAsArgument
           (NegativeProbes.seedTermAtom profile)
           (NegativeProbes.seedContextAtom profile)) := rfl
 
+theorem decodeLambdaPayload?_unitTypeBodyVarZero
+    {profile : PolyProfile} {scope : Nat} :
+    decodeLambdaPayload? (profile := profile) scope
+      NegativeProbes.lambdaUnitTypeBodyVarZeroPayload =
+      Except.ok
+        (RawChildDescriptors.lambda
+          (NegativeProbes.seedTypeAtom profile)
+          (NegativeProbes.seedTermAtom profile)) := rfl
+
+theorem decodeLambdaPayload?_contextAsDomain
+    {profile : PolyProfile} {scope : Nat} :
+    decodeLambdaPayload? (profile := profile) scope
+      NegativeProbes.lambdaContextAsDomainPayload =
+      Except.ok
+        (RawChildDescriptors.lambda
+          (NegativeProbes.seedContextAtom profile)
+          (NegativeProbes.seedTermAtom profile)) := rfl
+
+theorem decodeLambdaPayload?_typeAsBody
+    {profile : PolyProfile} {scope : Nat} :
+    decodeLambdaPayload? (profile := profile) scope
+      NegativeProbes.lambdaTypeAsBodyPayload =
+      Except.ok
+        (RawChildDescriptors.lambda
+          (NegativeProbes.seedTypeAtom profile)
+          (NegativeProbes.seedTypeAtom profile)) := rfl
+
+theorem decodeLambdaPayload?_outOfScopeBody
+    {profile : PolyProfile} {scope : Nat} :
+    decodeLambdaPayload? (profile := profile) scope
+      NegativeProbes.lambdaOutOfScopeBodyPayload =
+      Except.ok
+        (RawChildDescriptors.lambda
+          (NegativeProbes.seedTypeAtom profile)
+          (NegativeProbes.outOfScopeVariableUnderBinderRawCell
+            profile)) := rfl
+
+theorem decodeLambdaPayload?_badPayload_rejects
+    {profile : PolyProfile} {scope : Nat} :
+    decodeLambdaPayload? (profile := profile) scope
+      NegativeProbes.badPayloadSentinel =
+      Except.error .badPayload := rfl
+
+theorem decodeLambdaPayload?_wrongArity_rejects
+    {profile : PolyProfile} {scope : Nat} :
+    decodeLambdaPayload? (profile := profile) scope
+      NegativeProbes.wrongAritySentinel =
+      Except.error .wrongArity := rfl
+
+theorem decodeLambdaPayload?_wrongChildShape_rejects
+    {profile : PolyProfile} {scope : Nat} :
+    decodeLambdaPayload? (profile := profile) scope
+      NegativeProbes.wrongChildShapeSentinel =
+      Except.error .wrongChildShape := rfl
+
 theorem certifyApplicationVarZeroVarOneChildren?_scope_four_accepts
     {profile : PolyProfile} :
     (match
@@ -2601,6 +2723,54 @@ theorem screenRawChildDescriptorsWith?_applicationContextAsArgument_rejects
         (NegativeProbes.seedContextAtom profile)) =
       Except.error .wrongChildShape := rfl
 
+theorem screenRawChildDescriptorsWith?_lambdaUnitTypeBodyVarZero
+    {profile : PolyProfile} :
+    screenRawChildDescriptorsWith? (profile := profile)
+      (fun {childDimension} childScope
+          (childRaw : PolyTerm profile childDimension) =>
+        screenRawCellWithFuel? 63 childScope childRaw)
+      NegativeProbes.defaultInferScope
+      (RawChildDescriptors.lambda
+        (NegativeProbes.seedTypeAtom profile)
+        (NegativeProbes.seedTermAtom profile)) =
+      Except.ok () := rfl
+
+theorem screenRawChildDescriptorsWith?_lambdaContextAsDomain_rejects
+    {profile : PolyProfile} :
+    screenRawChildDescriptorsWith? (profile := profile)
+      (fun {childDimension} childScope
+          (childRaw : PolyTerm profile childDimension) =>
+        screenRawCellWithFuel? 63 childScope childRaw)
+      NegativeProbes.defaultInferScope
+      (RawChildDescriptors.lambda
+        (NegativeProbes.seedContextAtom profile)
+        (NegativeProbes.seedTermAtom profile)) =
+      Except.error .wrongChildShape := rfl
+
+theorem screenRawChildDescriptorsWith?_lambdaTypeAsBody_rejects
+    {profile : PolyProfile} :
+    screenRawChildDescriptorsWith? (profile := profile)
+      (fun {childDimension} childScope
+          (childRaw : PolyTerm profile childDimension) =>
+        screenRawCellWithFuel? 63 childScope childRaw)
+      NegativeProbes.defaultInferScope
+      (RawChildDescriptors.lambda
+        (NegativeProbes.seedTypeAtom profile)
+        (NegativeProbes.seedTypeAtom profile)) =
+      Except.error .wrongChildShape := rfl
+
+theorem screenRawChildDescriptorsWith?_lambdaOutOfScopeBody_rejects
+    {profile : PolyProfile} :
+    screenRawChildDescriptorsWith? (profile := profile)
+      (fun {childDimension} childScope
+          (childRaw : PolyTerm profile childDimension) =>
+        screenRawCellWithFuel? 63 childScope childRaw)
+      NegativeProbes.defaultInferScope
+      (RawChildDescriptors.lambda
+        (NegativeProbes.seedTypeAtom profile)
+        (NegativeProbes.outOfScopeVariableUnderBinderRawCell profile)) =
+      Except.error .wrongChildShape := rfl
+
 theorem screenRawCell0?_applicationVarZeroVarOne
     {profile : PolyProfile} :
     screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
@@ -2715,6 +2885,12 @@ theorem screenRawCell0?_wrongContextConsChildShape_rejects
     screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
       (NegativeProbes.wrongContextConsChildShapeRawCell profile) =
       Except.error .wrongChildShape := rfl
+
+theorem screenRawCell0?_lambdaUnitTypeBodyVarZero_rejects
+    {profile : PolyProfile} :
+    screenRawCell0? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.lambdaUnitTypeBodyVarZeroRawCell profile) =
+      Except.error .badPayload := rfl
 
 theorem certifiedSeedTermPackage_raw {profile : PolyProfile} :
     (certifiedSeedTermPackage (profile := profile)).certifiedCell.raw =
@@ -2994,6 +3170,13 @@ theorem checkRawCellAs?_applicationWrongChildShape_rejects
       NegativeProbes.defaultInferScope
       (NegativeProbes.applicationWrongChildShapeRawCell profile) =
       Except.error .wrongChildShape := rfl
+
+theorem checkRawCellAs?_lambdaUnitTypeBodyVarZero_rejects
+    {profile : PolyProfile} :
+    checkRawCellAs? (profile := profile) .term
+      NegativeProbes.defaultInferScope
+      (NegativeProbes.lambdaUnitTypeBodyVarZeroRawCell profile) =
+      Except.error .badPayload := rfl
 
 theorem inferRawAtom?_applicationVarZeroVarOne_scope_one_rejects
     {profile : PolyProfile} :

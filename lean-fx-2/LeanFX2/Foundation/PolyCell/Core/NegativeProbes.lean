@@ -147,6 +147,43 @@ before falling back to sentinel or bad-payload rejection. -/
 theorem decodedApplicationPayloads_length :
     decodedApplicationPayloads.length = 9 := rfl
 
+/-- Lambda payload whose decoded children are unit type and body `var 0`.
+
+This is decoder-staging data only.  It is not accepted by raw ingress or by
+the certified layer. -/
+def lambdaUnitTypeBodyVarZeroPayload : Nat := 9200
+
+/-- Lambda payload whose decoded domain child has context sort. -/
+def lambdaContextAsDomainPayload : Nat := 9201
+
+/-- Lambda payload whose decoded body child has type sort. -/
+def lambdaTypeAsBodyPayload : Nat := 9202
+
+/-- Lambda payload whose decoded body child is outside the binder-shifted
+scope. -/
+def lambdaOutOfScopeBodyPayload : Nat := 9203
+
+/-- Hostile lambda payloads that decode far enough to test heterogeneous child
+screening, but must not enter raw ingress or certification. -/
+def hostileDecodedLambdaPayloads : List Nat :=
+  [lambdaContextAsDomainPayload,
+    lambdaTypeAsBodyPayload,
+    lambdaOutOfScopeBodyPayload]
+
+/-- The hostile decoded lambda frontier currently has three fixtures. -/
+theorem hostileDecodedLambdaPayloads_length :
+    hostileDecodedLambdaPayloads.length = 3 := rfl
+
+/-- All lambda payload fixtures known to the finite decoder staging table:
+one well-shaped child spine plus hostile decoded children. -/
+def decodedLambdaPayloads : List Nat :=
+  lambdaUnitTypeBodyVarZeroPayload :: hostileDecodedLambdaPayloads
+
+/-- The finite lambda decoder staging table currently recognizes four payload
+fixtures before falling back to sentinel or bad-payload rejection. -/
+theorem decodedLambdaPayloads_length :
+    decodedLambdaPayloads.length = 4 := rfl
+
 /-- A small accepted-looking term atom used only to build malformed cells. -/
 def seedTermAtom (profile : PolyProfile) : PolyTerm profile 0 :=
   .atom variableGeneratorSpec.cellId 0
@@ -194,6 +231,15 @@ def unknownGeneratorRawCell (profile : PolyProfile) : PolyTerm profile 0 :=
 def outOfScopeVariableRawCell (profile : PolyProfile) : PolyTerm profile 0 :=
   .atom variableGeneratorSpec.cellId defaultInferScope
 
+/-- Variable atom outside the binder-shifted scope used by lambda body
+decoder probes.
+
+At parent scope 4, the lambda body is checked at scope 5; payload 5 is still
+out of range. -/
+def outOfScopeVariableUnderBinderRawCell
+    (profile : PolyProfile) : PolyTerm profile 0 :=
+  .atom variableGeneratorSpec.cellId (defaultInferScope + 1)
+
 /-- Known lambda generator with a payload reserved for bad-payload testing. -/
 def badPayloadRawCell (profile : PolyProfile) : PolyTerm profile 0 :=
   .atom lambdaGeneratorSpec.cellId badPayloadSentinel
@@ -222,6 +268,28 @@ def wrongArityRawCell (profile : PolyProfile) : PolyTerm profile 0 :=
 /-- Known lambda generator with a payload reserved for child-shape testing. -/
 def wrongChildShapeRawCell (profile : PolyProfile) : PolyTerm profile 0 :=
   .atom lambdaGeneratorSpec.cellId wrongChildShapeSentinel
+
+/-- Lambda generator whose decoder staging table returns a well-shaped child
+spine, but which raw ingress still rejects today. -/
+def lambdaUnitTypeBodyVarZeroRawCell
+    (profile : PolyProfile) : PolyTerm profile 0 :=
+  .atom lambdaGeneratorSpec.cellId lambdaUnitTypeBodyVarZeroPayload
+
+/-- Lambda payload whose decoded domain child has context sort. -/
+def lambdaContextAsDomainRawCell
+    (profile : PolyProfile) : PolyTerm profile 0 :=
+  .atom lambdaGeneratorSpec.cellId lambdaContextAsDomainPayload
+
+/-- Lambda payload whose decoded body child has type sort. -/
+def lambdaTypeAsBodyRawCell
+    (profile : PolyProfile) : PolyTerm profile 0 :=
+  .atom lambdaGeneratorSpec.cellId lambdaTypeAsBodyPayload
+
+/-- Lambda payload whose decoded body child is outside the binder-shifted
+scope. -/
+def lambdaOutOfScopeBodyRawCell
+    (profile : PolyProfile) : PolyTerm profile 0 :=
+  .atom lambdaGeneratorSpec.cellId lambdaOutOfScopeBodyPayload
 
 /-- Known pi-type generator with a wrong-arity payload. -/
 def wrongPiTypeArityRawCell (profile : PolyProfile) : PolyTerm profile 0 :=
