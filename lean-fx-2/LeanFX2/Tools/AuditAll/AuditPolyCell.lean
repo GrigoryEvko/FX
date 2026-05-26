@@ -73,12 +73,17 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.contextEmptyGeneratorSpec_childSpecs
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.contextConsGeneratorSpec_childSpecs
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.linearModeGeneratorSpec_childSpecs
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.variableGeneratorSpec_arity
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.lambdaGeneratorSpec_arity
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.applicationGeneratorSpec_arity
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.unitTypeGeneratorSpec_arity
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.piTypeGeneratorSpec_arity
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.contextEmptyGeneratorSpec_arity
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.contextConsGeneratorSpec_arity
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.linearModeGeneratorSpec_arity
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.variableGeneratorSpec_cellId
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.lambdaGeneratorSpec_cellId
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.applicationGeneratorSpec_cellId
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.piTypeGeneratorSpec_cellId
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.unitTypeGeneratorSpec_cellId
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.contextEmptyGeneratorSpec_cellId
@@ -90,6 +95,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.contextEmptyGeneratorSpec_cellId_eq_declared
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.contextConsGeneratorSpec_cellId_eq_declared
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.linearModeGeneratorSpec_cellId_eq_declared
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.termStepRuleSpec_ruleId
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.termStepRuleSpec_cellSort
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.termStepRuleSpec_endpointDimension
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.ChildSpec.expectedScope
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.ChildSpec.expectedScope_sameScopeDimZero

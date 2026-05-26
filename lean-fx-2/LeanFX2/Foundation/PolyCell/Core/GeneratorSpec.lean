@@ -215,6 +215,9 @@ theorem contextConsGeneratorSpec_childSpecs :
 theorem linearModeGeneratorSpec_childSpecs :
     linearModeGeneratorSpec.childSpecs = [] := rfl
 
+theorem variableGeneratorSpec_arity :
+    variableGeneratorSpec.arity = 0 := rfl
+
 theorem lambdaGeneratorSpec_arity :
     lambdaGeneratorSpec.arity = 2 := rfl
 
@@ -227,11 +230,23 @@ theorem unitTypeGeneratorSpec_arity :
 theorem piTypeGeneratorSpec_arity :
     piTypeGeneratorSpec.arity = 2 := rfl
 
+theorem contextEmptyGeneratorSpec_arity :
+    contextEmptyGeneratorSpec.arity = 0 := rfl
+
 theorem contextConsGeneratorSpec_arity :
     contextConsGeneratorSpec.arity = 3 := rfl
 
 theorem linearModeGeneratorSpec_arity :
     linearModeGeneratorSpec.arity = 0 := rfl
+
+theorem variableGeneratorSpec_cellId :
+    variableGeneratorSpec.cellId = 0 := rfl
+
+theorem lambdaGeneratorSpec_cellId :
+    lambdaGeneratorSpec.cellId = 2 := rfl
+
+theorem applicationGeneratorSpec_cellId :
+    applicationGeneratorSpec.cellId = 3 := rfl
 
 theorem piTypeGeneratorSpec_cellId :
     piTypeGeneratorSpec.cellId = 82 := rfl
@@ -265,6 +280,12 @@ theorem contextConsGeneratorSpec_cellId_eq_declared :
 
 theorem linearModeGeneratorSpec_cellId_eq_declared :
     linearModeGeneratorSpec.cellId = firstModeGeneratorCellId := rfl
+
+theorem termStepRuleSpec_ruleId :
+    termStepRuleSpec.ruleId = 0 := rfl
+
+theorem termStepRuleSpec_cellSort :
+    termStepRuleSpec.cellSort = .term := rfl
 
 theorem termStepRuleSpec_endpointDimension :
     termStepRuleSpec.endpointDimension = 0 := rfl
