@@ -3531,6 +3531,16 @@ theorem fuelExhaustedProbe_rejects {profile : PolyProfile} :
       Except.error
         (NegativeProbes.fuelExhaustedProbe profile).expectedRejection := rfl
 
+theorem termIdentityFuelExhaustedProbe_rejects
+    {profile : PolyProfile} :
+    screenRawCellWithFuel? (profile := profile)
+      (NegativeProbes.termIdentityFuelExhaustedProbe profile).fuel
+      (NegativeProbes.termIdentityFuelExhaustedProbe profile).scope
+      (NegativeProbes.termIdentityFuelExhaustedProbe profile).rawCell =
+      Except.error
+        (NegativeProbes.termIdentityFuelExhaustedProbe
+          profile).expectedRejection := rfl
+
 /-- Headline theorem: all unknown-generator inference probes reject. -/
 theorem unknownGeneratorInferNegativeProbes_rejected_by_screen
     (profile : PolyProfile) :

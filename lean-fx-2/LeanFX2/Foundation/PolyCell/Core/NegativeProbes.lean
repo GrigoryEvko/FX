@@ -375,6 +375,15 @@ use the derived certified operation instead. -/
 def termIdentityRawCell (profile : PolyProfile) : PolyTerm profile 1 :=
   .identity (seedTermAtom profile)
 
+/-- Positive-fuel probe that exhausts budget while descending through identity. -/
+def termIdentityFuelExhaustedProbe (profile : PolyProfile) :
+    RawFuelNegativeProbe profile where
+  fuel := 1
+  scope := defaultInferScope
+  dimension := 1
+  rawCell := termIdentityRawCell profile
+  expectedRejection := .fuelExhausted
+
 /-- Raw identity over the seed type remains unsupported by certified ingress;
 use the derived certified operation instead. -/
 def typeIdentityRawCell (profile : PolyProfile) : PolyTerm profile 1 :=
@@ -1143,7 +1152,8 @@ def unsupportedCertificationNegativeProbes (profile : PolyProfile) :
 /-- Fuel-budget probes whose expected rejection is `fuelExhausted`. -/
 def fuelExhaustedNegativeProbes (profile : PolyProfile) :
     List (RawFuelNegativeProbe profile) :=
-  [fuelExhaustedProbe profile]
+  [fuelExhaustedProbe profile,
+    termIdentityFuelExhaustedProbe profile]
 
 /-- Inference probes, one for each inference-level rejection reason. -/
 def inferNegativeProbes (profile : PolyProfile) :
@@ -1254,7 +1264,7 @@ theorem unsupportedCertificationNegativeProbes_length
 /-- Fuel-exhaustion headline probe count. -/
 theorem fuelExhaustedNegativeProbes_length
     (profile : PolyProfile) :
-    (fuelExhaustedNegativeProbes profile).length = 1 := rfl
+    (fuelExhaustedNegativeProbes profile).length = 2 := rfl
 
 end NegativeProbes
 
