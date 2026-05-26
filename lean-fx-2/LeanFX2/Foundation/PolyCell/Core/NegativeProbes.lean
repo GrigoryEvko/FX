@@ -354,12 +354,19 @@ def unsupportedTermStepVarZeroVarZeroRawCell (profile : PolyProfile) :
     (seedTermAtom profile)
     (seedTermAtom profile)
 
-/-- Known term-step rule used at an unsupported endpoint dimension. -/
+/-- Known term-step rule used at unsupported endpoint dimension one. -/
 def wrongRuleEndpointDimensionRawCell (profile : PolyProfile) :
     PolyTerm profile 2 :=
   .cell termStepRuleSpec.ruleId
     (PolyTerm.identity (seedTermAtom profile))
     (PolyTerm.identity (alternateTermAtom profile))
+
+/-- Known term-step rule used at unsupported endpoint dimension two. -/
+def wrongRuleEndpointDimensionTwoRawCell (profile : PolyProfile) :
+    PolyTerm profile 3 :=
+  .cell termStepRuleSpec.ruleId
+    (PolyTerm.identity (PolyTerm.identity (seedTermAtom profile)))
+    (PolyTerm.identity (PolyTerm.identity (alternateTermAtom profile)))
 
 /-- First step used in the bad-vertical-boundary probe. -/
 def firstMismatchedStepRawCell (profile : PolyProfile) : PolyTerm profile 1 :=
@@ -757,12 +764,20 @@ def termStepVarZeroVarOneScopeOneProbe (profile : PolyProfile) :
   rawCell := termStepVarZeroVarOneRawCell profile
   expectedRejection := .badBoundaryEndpoint
 
-/-- Probe for a known rule id used at the wrong endpoint dimension. -/
+/-- Probe for a known rule id used at endpoint dimension one. -/
 def wrongRuleEndpointDimensionProbe (profile : PolyProfile) :
     RawInferNegativeProbe profile where
   scope := defaultInferScope
   dimension := 2
   rawCell := wrongRuleEndpointDimensionRawCell profile
+  expectedRejection := .unknownGenerator
+
+/-- Probe for a known rule id used at endpoint dimension two. -/
+def wrongRuleEndpointDimensionTwoProbe (profile : PolyProfile) :
+    RawInferNegativeProbe profile where
+  scope := defaultInferScope
+  dimension := 3
+  rawCell := wrongRuleEndpointDimensionTwoRawCell profile
   expectedRejection := .unknownGenerator
 
 /-- Probe for `badVerticalBoundary`. -/
@@ -1161,7 +1176,8 @@ def certificationModeIdentityVerticalProbe (profile : PolyProfile) :
 def unknownGeneratorInferNegativeProbes (profile : PolyProfile) :
     List (RawInferNegativeProbe profile) :=
   [unknownGeneratorProbe profile,
-    wrongRuleEndpointDimensionProbe profile]
+    wrongRuleEndpointDimensionProbe profile,
+    wrongRuleEndpointDimensionTwoProbe profile]
 
 /-- Inference probes whose expected rejection is `badPayload`. -/
 def badPayloadInferNegativeProbes (profile : PolyProfile) :
@@ -1326,7 +1342,7 @@ def certificationNegativeProbes (profile : PolyProfile) :
 
 /-- Inference probe count. -/
 theorem inferNegativeProbes_length (profile : PolyProfile) :
-    (inferNegativeProbes profile).length = 35 := rfl
+    (inferNegativeProbes profile).length = 36 := rfl
 
 /-- Expected-shape probe count. -/
 theorem expectedShapeNegativeProbes_length (profile : PolyProfile) :
@@ -1339,7 +1355,7 @@ theorem certificationNegativeProbes_length (profile : PolyProfile) :
 /-- Unknown-generator headline probe count. -/
 theorem unknownGeneratorInferNegativeProbes_length
     (profile : PolyProfile) :
-    (unknownGeneratorInferNegativeProbes profile).length = 2 := rfl
+    (unknownGeneratorInferNegativeProbes profile).length = 3 := rfl
 
 /-- Bad-payload headline probe count. -/
 theorem badPayloadInferNegativeProbes_length (profile : PolyProfile) :

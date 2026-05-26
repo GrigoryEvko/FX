@@ -3868,6 +3868,16 @@ theorem wrongRuleEndpointDimensionProbe_rejects {profile : PolyProfile} :
           (NegativeProbes.wrongRuleEndpointDimensionProbe profile)) :=
   rfl
 
+theorem wrongRuleEndpointDimensionTwoProbe_rejects
+    {profile : PolyProfile} :
+    screenRawCell? (profile := profile)
+      (NegativeProbes.wrongRuleEndpointDimensionTwoProbe profile).scope
+      (NegativeProbes.wrongRuleEndpointDimensionTwoRawCell profile) =
+      Except.error
+        (RawInferNegativeProbe.expectedRejection
+          (NegativeProbes.wrongRuleEndpointDimensionTwoProbe profile)) :=
+  rfl
+
 theorem badVerticalBoundaryProbe_rejects {profile : PolyProfile} :
     screenRawCell? (profile := profile)
       (NegativeProbes.badVerticalBoundaryProbe profile).scope
