@@ -689,6 +689,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.checkRawCellAs?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.CertifiedRawCellResult.toPackage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifyRawAtomExact?
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.buildTermStepCellExact?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifyRawCellExact?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawCellGeneral?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawCellGeneral?_seedTerm_sort
@@ -702,6 +703,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawCellGeneral?_outOfScopeVariable_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawCellGeneral?_unknownGenerator_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawCellGeneral?_compH_rejects
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawCellGeneral?_termStep_sort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.inferRawCellGeneral?_identity_termStep_sort
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedResultSort?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.hasCertifiedResultShape
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.hasCertifiedResultScreenCoverage

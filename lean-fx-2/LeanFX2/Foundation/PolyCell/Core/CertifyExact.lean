@@ -15,10 +15,11 @@ transport for atoms uses `cast`/`Eq.rec`, never the equation compiler.
 
 Current coverage: every payload-evidenced atom (variable, unit type, empty
 context, linear mode) and the first finite application / lambda / pi-type /
-context-extension payloads, plus iterated identities at every dimension.
-Generating cells and vertical composites reject as `unsupportedCertification`,
-and horizontal composition rejects as `unsupportedCompH`, until child
-reconciliation lands.
+context-extension payloads, iterated identities at every dimension, and
+generating cells reconciled against the term-step rule (recursing on both
+endpoints).  Vertical composites still reject as `unsupportedCertification`
+pending middle-boundary reconciliation; horizontal composition rejects as
+`unsupportedCompH`.
 -/
 
 namespace LeanFX2.Foundation.PolyCell.Core
@@ -132,17 +133,56 @@ def certifyRawAtomExact? {profile : PolyProfile} (scope cellId payload : Nat) :
       (certificationRejectionAfterScreen? scope
         (PolyTerm.atom (profile := profile) cellId payload))
 
+/-- Reconcile two already-certified children into a certified generating cell
+for the term-step rule.
+
+Reconciliation uses `by_cases` (Decidable) + `subst`/`▸` (Eq.rec) only — never
+a match on the Nat dimension index.  After `subst` of the dimension equality the
+children land at dim 0, where `CellBoundary` is `Unit` regardless of sort, so the
+sort transport carries no boundary obligation.  Only the term-step rule at
+endpoint dimension 0 is supported today; everything else rejects. -/
+def buildTermStepCellExact? {profile : PolyProfile} {scope : Nat} {dim : CellDim}
+    (ruleId : Nat) (source target : PolyTerm profile dim)
+    (certSource : CertifiedRawCell profile scope source)
+    (certTarget : CertifiedRawCell profile scope target) :
+    Except CellCheckRejection
+      (CertifiedRawCell profile scope (PolyTerm.cell ruleId source target)) := by
+  by_cases hRule : ruleId = termStepRuleSpec.ruleId
+  · subst hRule
+    by_cases hDim : dim = 0
+    · subst hDim
+      by_cases hSortSource : certSource.cellSort = termStepRuleSpec.cellSort
+      · by_cases hSortTarget : certTarget.cellSort = termStepRuleSpec.cellSort
+        · exact Except.ok
+            { cellSort := termStepRuleSpec.cellSort
+              cellBoundary := (source, target)
+              certifiedCell :=
+                PolyCell.cell SupportedRuleSpec.termStep
+                  (hSortSource ▸ certSource.certifiedCell)
+                  (hSortTarget ▸ certTarget.certifiedCell) }
+        · exact Except.error .badBoundaryEndpoint
+      · exact Except.error .badBoundaryEndpoint
+    · exact Except.error .unknownGenerator
+  · exact Except.error .unknownGenerator
+
 /-- General raw-indexed recursive certifier.
 
 Matches on `rawCell` only (dim inferred), so the matcher never excludes an
 impossible index/constructor pair.  Identity recurses on its base and wraps via
-the derived certified identity package without index transport. -/
+the derived certified identity package without index transport.  Generating
+cells recurse on both endpoints and reconcile against the term-step rule. -/
 def certifyRawCellExact? {profile : PolyProfile} (scope : Nat) {dim : CellDim}
     (rawCell : PolyTerm profile dim) :
     Except CellCheckRejection (CertifiedRawCell profile scope rawCell) :=
   match rawCell with
   | .atom cellId payload => certifyRawAtomExact? scope cellId payload
-  | .cell _ _ _ => Except.error .unsupportedCertification
+  | .cell ruleId source target =>
+      match certifyRawCellExact? scope source,
+          certifyRawCellExact? scope target with
+      | Except.ok certSource, Except.ok certTarget =>
+          buildTermStepCellExact? ruleId source target certSource certTarget
+      | Except.error rejection, _ => Except.error rejection
+      | _, Except.error rejection => Except.error rejection
   | .compV _ _ => Except.error .unsupportedCertification
   | .compH _ _ => Except.error .unsupportedCompH
   | .identity base =>
@@ -238,6 +278,23 @@ theorem inferRawCellGeneral?_compH_rejects {profile : PolyProfile} {scope : Nat}
     (left right : PolyTerm profile 1) :
     inferRawCellGeneral? (profile := profile) scope
       (PolyTerm.compH left right) = Except.error .unsupportedCompH := rfl
+
+/-- The first dim-1 term-step cell certifies through the general ingress —
+exercises endpoint recursion plus term-step reconciliation. -/
+theorem inferRawCellGeneral?_termStep_sort {profile : PolyProfile} :
+    certifiedResultSort?
+      (inferRawCellGeneral? (profile := profile) NegativeProbes.defaultInferScope
+        (NegativeProbes.termStepVarZeroVarOneRawCell profile)) =
+      some .term := rfl
+
+/-- An identity over the first dim-1 term-step cell certifies at dim 2 —
+the recursion now certifies generating cells, not just atoms. -/
+theorem inferRawCellGeneral?_identity_termStep_sort {profile : PolyProfile} :
+    certifiedResultSort?
+      (inferRawCellGeneral? (profile := profile) NegativeProbes.defaultInferScope
+        (PolyTerm.identity
+          (NegativeProbes.termStepVarZeroVarOneRawCell profile))) =
+      some .term := rfl
 
 end Check
 end LeanFX2.Foundation.PolyCell.Core
