@@ -2686,6 +2686,15 @@ theorem certifiedApplicationVarZeroVarOnePackage_raw
       PolyTerm.atom (profile := profile) applicationGeneratorSpec.cellId
         applicationVarZeroVarOnePayload := rfl
 
+theorem certifiedLambdaUnitTypeBodyVarZeroPackage_raw
+    {profile : PolyProfile} {scope : Nat}
+    (certifiedChildren :
+      CertifiedLambdaUnitTypeBodyVarZeroChildren profile scope) :
+    (certifiedLambdaUnitTypeBodyVarZeroPackage (profile := profile)
+      certifiedChildren).certifiedCell.raw =
+      PolyTerm.atom (profile := profile) lambdaGeneratorSpec.cellId
+        lambdaUnitTypeBodyVarZeroPayload := rfl
+
 theorem certifiedPiTypeUnitCodomainUnitPackage_raw
     {profile : PolyProfile} {scope : Nat}
     (certifiedChildren :
@@ -2811,6 +2820,51 @@ theorem certifyApplicationVarZeroVarOneChildren?_scope_two_plus_rawDescriptors_e
     | Except.error rejection => Except.error rejection) =
       decodeApplicationPayload? (profile := profile) (scope + 1 + 1)
         applicationVarZeroVarOnePayload := rfl
+
+theorem certifiedLambdaUnitTypeBodyVarZeroChildren_arity_eq_generator
+    {profile : PolyProfile} {scope : Nat}
+    (certifiedChildren :
+      CertifiedLambdaUnitTypeBodyVarZeroChildren profile scope) :
+    certifiedChildren.lambdaChildSpine.arity =
+      lambdaGeneratorSpec.arity := rfl
+
+theorem certifiedLambdaUnitTypeBodyVarZeroChildren_rawDescriptors
+    {profile : PolyProfile} {scope : Nat}
+    (certifiedChildren :
+      CertifiedLambdaUnitTypeBodyVarZeroChildren profile scope) :
+    PolyCell.certifiedChildSpineRawDescriptors
+      certifiedChildren.lambdaChildSpine =
+      RawChildDescriptors.lambda (profile := profile)
+        (parentScope := scope)
+        (PolyTerm.atom unitTypeGeneratorSpec.cellId 0)
+        (PolyTerm.atom variableGeneratorSpec.cellId 0) := rfl
+
+/-- The first certified lambda child package erases exactly to the decoder
+output for the lambda payload. -/
+theorem certifiedLambdaUnitTypeBodyVarZeroChildren_rawDescriptors_eq_decoder
+    {profile : PolyProfile} {scope : Nat}
+    (certifiedChildren :
+      CertifiedLambdaUnitTypeBodyVarZeroChildren profile scope) :
+    Except.ok
+      (PolyCell.certifiedChildSpineRawDescriptors
+        certifiedChildren.lambdaChildSpine) =
+      decodeLambdaPayload? (profile := profile) scope
+        lambdaUnitTypeBodyVarZeroPayload := rfl
+
+/-- For every scope, lambda certification followed by child-spine erasure
+returns the same raw descriptor spine as the payload decoder. -/
+theorem certifyLambdaUnitTypeBodyVarZeroChildren?_rawDescriptors_eq_decoder
+    {profile : PolyProfile} {scope : Nat} :
+    (match
+      certifyLambdaUnitTypeBodyVarZeroChildren? (profile := profile)
+        scope with
+    | Except.ok certifiedChildren =>
+        Except.ok
+          (PolyCell.certifiedChildSpineRawDescriptors
+            certifiedChildren.lambdaChildSpine)
+    | Except.error rejection => Except.error rejection) =
+      decodeLambdaPayload? (profile := profile) scope
+        lambdaUnitTypeBodyVarZeroPayload := rfl
 
 theorem certifyPiTypeUnitCodomainUnitChildren?_scope_four_accepts
     {profile : PolyProfile} :
