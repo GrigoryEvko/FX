@@ -21,6 +21,7 @@ import LeanFX2.Foundation.PolyCell.OmegacE.HonestyCheck
 import LeanFX2.Foundation.PolyCell.Core.RawCellCodeV2
 import LeanFX2.Foundation.PolyCell.Core.GeneratorMetadataV2
 import LeanFX2.Foundation.PolyCell.Core.GeneratorAdmissionV2
+import LeanFX2.Foundation.PolyCell.Core.GenPayloadEvidenceV2
 
 namespace LeanFX2.Tools
 
@@ -2889,6 +2890,12 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.supportedGeneratorV2
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.supportedGeneratorV2?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.supportedGeneratorV2?_isSome
+
+-- ─── V2-L1.6 / V2-L1.7: payload evidence (#141 / #142) ──────────
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.GenPayloadEvidence
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.genPayloadEvidence
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.genPayloadEvidence?
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.genPayloadEvidence?_isSome
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
