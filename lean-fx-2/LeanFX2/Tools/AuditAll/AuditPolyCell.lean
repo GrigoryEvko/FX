@@ -637,7 +637,13 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.lookupGeneratorSpec?_contextCons
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.lookupGeneratorSpec?_linearMode
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.lookupGeneratorSpec?_unsupportedBeforeLambda
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.lookupGeneratorSpec?_unsupportedAfterApplication
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.lookupGeneratorSpec?_unsupportedBeforeUnitType
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.lookupGeneratorSpec?_unsupportedAfterUnitType
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.lookupGeneratorSpec?_unsupportedAfterPiType
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.lookupGeneratorSpec?_unsupportedAfterLinearMode
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.lookupRuleSpec?_termStep
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.lookupRuleSpec?_unsupportedAfterTermStep
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.variablePayloadEvidence?_zero_scope_four
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.variablePayloadEvidence?_four_scope_four
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifiedVariablePackage_raw

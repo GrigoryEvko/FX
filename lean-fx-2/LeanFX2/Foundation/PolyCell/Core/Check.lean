@@ -2131,9 +2131,27 @@ theorem lookupGeneratorSpec?_linearMode :
 theorem lookupGeneratorSpec?_unsupportedBeforeLambda :
     lookupGeneratorSpec? (lambdaGeneratorSpec.cellId - 1) = none := rfl
 
+theorem lookupGeneratorSpec?_unsupportedAfterApplication :
+    lookupGeneratorSpec? (applicationGeneratorSpec.cellId + 1) = none := rfl
+
+theorem lookupGeneratorSpec?_unsupportedBeforeUnitType :
+    lookupGeneratorSpec? (unitTypeGeneratorSpec.cellId - 1) = none := rfl
+
+theorem lookupGeneratorSpec?_unsupportedAfterUnitType :
+    lookupGeneratorSpec? (unitTypeGeneratorSpec.cellId + 1) = none := rfl
+
+theorem lookupGeneratorSpec?_unsupportedAfterPiType :
+    lookupGeneratorSpec? (piTypeGeneratorSpec.cellId + 1) = none := rfl
+
+theorem lookupGeneratorSpec?_unsupportedAfterLinearMode :
+    lookupGeneratorSpec? (linearModeGeneratorSpec.cellId + 1) = none := rfl
+
 theorem lookupRuleSpec?_termStep :
     lookupRuleSpec? termStepRuleSpec.ruleId =
       some ⟨termStepRuleSpec, SupportedRuleSpec.termStep⟩ := rfl
+
+theorem lookupRuleSpec?_unsupportedAfterTermStep :
+    lookupRuleSpec? (termStepRuleSpec.ruleId + 1) = none := rfl
 
 theorem variablePayloadEvidence?_zero_scope_four :
     variablePayloadEvidence? 4 0 =
