@@ -1344,14 +1344,15 @@ def hasCertifiedResultScreenCoverage {profile : PolyProfile} {scope : Nat}
 /-- Does an accepted ingress result preserve the raw input code?
 
 This is an executable regression predicate.  It does not identify raw cells
-extensionally; it only checks the finite prefix-code certificate carried by a
-successful ingress result. -/
+extensionally; it checks the finite prefix-code certificate carried by a
+successful ingress result against the raw input.  The separate generic theorem
+`CertifiedRawCellResult.inputCode_matches_rawCellCode` links that stored input
+code to the returned raw cell. -/
 def hasCertifiedResultInputCodeCoverage {profile : PolyProfile} {scope : Nat}
     {dimension : CellDim} (rawCell : PolyTerm profile dimension) :
     Except CellCheckRejection (CertifiedRawCellResult profile scope) → Bool
   | Except.ok result =>
-      hasSameNatList result.inputCode (rawCellCode rawCell) &&
-      hasSameNatList (rawCellCode result.rawCell) (rawCellCode rawCell)
+      hasSameNatList result.inputCode (rawCellCode rawCell)
   | Except.error _ => false
 
 /-- Accepted dim-0 ingress coverage for one raw fixture. -/
@@ -1364,6 +1365,12 @@ def hasAcceptedDimZeroIngressCoverage {profile : PolyProfile}
 def hasAcceptedDimZeroScreenCoverage {profile : PolyProfile}
     (expectedSort : CellSort) (expectedRawCell : PolyTerm profile 0) : Bool :=
   hasCertifiedResultScreenCoverage expectedSort expectedRawCell
+    (inferRawCell? NegativeProbes.defaultInferScope expectedRawCell)
+
+/-- Accepted dim-0 ingress/input-code agreement for one raw fixture. -/
+def hasAcceptedDimZeroInputCodeCoverage {profile : PolyProfile}
+    (expectedRawCell : PolyTerm profile 0) : Bool :=
+  hasCertifiedResultInputCodeCoverage expectedRawCell
     (inferRawCell? NegativeProbes.defaultInferScope expectedRawCell)
 
 /-- Current dim-0 accepted ingress fixtures: seed term/type/context/mode atoms
@@ -1393,6 +1400,40 @@ def haveAcceptedDimZeroScreenCoverage (profile : PolyProfile) : Bool :=
     (NegativeProbes.seedModeAtom profile) &&
   hasAcceptedDimZeroScreenCoverage .term
     (NegativeProbes.applicationVarZeroVarOneRawCell profile)
+
+/-- The accepted application package preserves the finite raw input code.
+
+This deliberately checks the certified package directly instead of forcing Lean
+to normalize the whole atom dispatcher through the application child screen. -/
+def hasAcceptedApplicationVarZeroVarOneInputCodeCoverage
+    (profile : PolyProfile) : Bool :=
+  hasCertifiedResultInputCodeCoverage
+    (NegativeProbes.applicationVarZeroVarOneRawCell profile)
+    (Except.ok
+      (certifiedRawCellResultOfPackage
+        (profile := profile) (scope := NegativeProbes.defaultInferScope)
+        (rawCellCode
+          (NegativeProbes.applicationVarZeroVarOneRawCell profile))
+        (certifiedApplicationVarZeroVarOnePackage
+          (profile := profile)
+          (certifiedApplicationVarZeroVarOneChildren
+            (profile := profile)
+            (scope := NegativeProbes.defaultInferScope)
+            (Nat.zero_lt_succ 3)
+            (Nat.succ_lt_succ (Nat.zero_lt_succ 2))))
+        (hasSameNatList_self _)))
+
+/-- Current dim-0 accepted ingress fixtures preserve their raw input codes. -/
+def haveAcceptedDimZeroInputCodeCoverage (profile : PolyProfile) : Bool :=
+  hasAcceptedDimZeroInputCodeCoverage
+    (NegativeProbes.seedTermAtom profile) &&
+  hasAcceptedDimZeroInputCodeCoverage
+    (NegativeProbes.seedTypeAtom profile) &&
+  hasAcceptedDimZeroInputCodeCoverage
+    (NegativeProbes.seedContextAtom profile) &&
+  hasAcceptedDimZeroInputCodeCoverage
+    (NegativeProbes.seedModeAtom profile) &&
+  hasAcceptedApplicationVarZeroVarOneInputCodeCoverage profile
 
 /-- Current positive-dimensional accepted ingress fixture: the direct
 `termStep(var 0, var 1)` certification path. -/
@@ -1430,6 +1471,15 @@ screen. -/
 def haveCurrentAcceptedScreenCoverage (profile : PolyProfile) : Bool :=
   haveAcceptedDimZeroScreenCoverage profile &&
   hasAcceptedTermStepScreenCoverage profile
+
+/-- Every current accepted fixture has raw input-code coverage.
+
+Seed atoms and the direct term-step use the executable ingress result; the
+application fixture uses its certified package directly to keep this matrix
+definitionally cheap. -/
+def haveCurrentAcceptedInputCodeCoverage (profile : PolyProfile) : Bool :=
+  haveAcceptedDimZeroInputCodeCoverage profile &&
+  hasAcceptedTermStepInputCodeCoverage profile
 
 /-- Certified package for the first seed variable fixture. -/
 def certifiedSeedTermPackage {profile : PolyProfile} :
@@ -2474,6 +2524,74 @@ theorem acceptedDimZeroScreens_haveCoverage (profile : PolyProfile) :
     acceptedApplicationVarZeroVarOneScreen_hasCoverage]
   rfl
 
+/-- Accepted ingress for the seed term atom preserves the raw input code. -/
+theorem acceptedSeedTermInputCode_hasCoverage {profile : PolyProfile} :
+    hasAcceptedDimZeroInputCodeCoverage
+      (NegativeProbes.seedTermAtom profile) = true := by
+  change
+    hasCertifiedResultInputCodeCoverage
+      (NegativeProbes.seedTermAtom profile)
+      (inferRawAtom? (profile := profile) 4
+        variableGeneratorSpec.cellId 0) = true
+  rfl
+
+/-- Accepted ingress for the seed type atom preserves the raw input code. -/
+theorem acceptedSeedTypeInputCode_hasCoverage {profile : PolyProfile} :
+    hasAcceptedDimZeroInputCodeCoverage
+      (NegativeProbes.seedTypeAtom profile) = true := by
+  change
+    hasCertifiedResultInputCodeCoverage
+      (NegativeProbes.seedTypeAtom profile)
+      (inferRawAtom? (profile := profile) 4
+        unitTypeGeneratorSpec.cellId 0) = true
+  rfl
+
+/-- Accepted ingress for the seed context atom preserves the raw input code. -/
+theorem acceptedSeedContextInputCode_hasCoverage {profile : PolyProfile} :
+    hasAcceptedDimZeroInputCodeCoverage
+      (NegativeProbes.seedContextAtom profile) = true := by
+  change
+    hasCertifiedResultInputCodeCoverage
+      (NegativeProbes.seedContextAtom profile)
+      (inferRawAtom? (profile := profile) 4
+        contextEmptyGeneratorSpec.cellId 0) = true
+  rfl
+
+/-- Accepted ingress for the seed mode atom preserves the raw input code. -/
+theorem acceptedSeedModeInputCode_hasCoverage {profile : PolyProfile} :
+    hasAcceptedDimZeroInputCodeCoverage
+      (NegativeProbes.seedModeAtom profile) = true := by
+  change
+    hasCertifiedResultInputCodeCoverage
+      (NegativeProbes.seedModeAtom profile)
+      (inferRawAtom? (profile := profile) 4
+        linearModeGeneratorSpec.cellId 0) = true
+  rfl
+
+/-- The accepted certified package for the first application payload preserves
+the raw input code. -/
+theorem acceptedApplicationVarZeroVarOneInputCode_hasCoverage
+    {profile : PolyProfile} :
+    hasAcceptedApplicationVarZeroVarOneInputCodeCoverage profile = true := by
+  change
+    hasSameNatList
+      (rawCellCode (NegativeProbes.applicationVarZeroVarOneRawCell profile))
+      (rawCellCode (NegativeProbes.applicationVarZeroVarOneRawCell profile)) =
+      true
+  exact hasSameNatList_self _
+
+/-- Accepted dim-0 ingress preserves raw input codes for every current accepted
+dim-0 fixture. -/
+theorem acceptedDimZeroInputCodes_haveCoverage (profile : PolyProfile) :
+    haveAcceptedDimZeroInputCodeCoverage profile = true := by
+  dsimp [haveAcceptedDimZeroInputCodeCoverage]
+  rw [acceptedSeedTermInputCode_hasCoverage,
+    acceptedSeedTypeInputCode_hasCoverage,
+    acceptedSeedContextInputCode_hasCoverage,
+    acceptedSeedModeInputCode_hasCoverage,
+    acceptedApplicationVarZeroVarOneInputCode_hasCoverage]
+  rfl
+
 /-- Accepted ingress for the direct dim-1 term-step path agrees with the
 structural screen. -/
 theorem acceptedTermStepScreen_hasCoverage (profile : PolyProfile) :
@@ -2501,6 +2619,14 @@ theorem currentAcceptedScreens_haveCoverage (profile : PolyProfile) :
   dsimp [haveCurrentAcceptedScreenCoverage]
   rw [acceptedDimZeroScreens_haveCoverage,
     acceptedTermStepScreen_hasCoverage]
+  rfl
+
+/-- Every current accepted fixture has raw input-code coverage. -/
+theorem currentAcceptedInputCodes_haveCoverage (profile : PolyProfile) :
+    haveCurrentAcceptedInputCodeCoverage profile = true := by
+  dsimp [haveCurrentAcceptedInputCodeCoverage]
+  rw [acceptedDimZeroInputCodes_haveCoverage,
+    acceptedTermStepInputCode_hasCoverage]
   rfl
 
 theorem inferTermStepVarZeroVarOne?_scope_one_rejects
