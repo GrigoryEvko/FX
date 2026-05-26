@@ -10,6 +10,7 @@ import LeanFX2.Foundation.PolyCell.Core.CheckResult
 import LeanFX2.Foundation.PolyCell.Core.NegativeProbes
 import LeanFX2.Foundation.PolyCell.Core.Certified
 import LeanFX2.Foundation.PolyCell.Core.Check
+import LeanFX2.Foundation.PolyCell.Core.PolyTermDecEq
 import LeanFX2.Foundation.PolyCell.Core.CertifyExact
 import LeanFX2.Foundation.PolyCell.Core.CompositionLaws
 import LeanFX2.Foundation.PolyCell.Core.DecEqWF
@@ -687,6 +688,18 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.doRejectionReasonsHaveNegativeProbeCoverage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.haveAllCellCheckRejectionReasonsNegativeProbeCoverage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.checkRawCellAs?
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.cast_cell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.cast_compV
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.cast_compH
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.cast_identity
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.succShape
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.size_lt_of_isCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.size_lt_of_isCompV
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.size_lt_of_isCompH
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.size_lt_of_isIdentity
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.decEqDimZero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyTerm.decEq
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.instDecidableEqPolyTerm
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.CertifiedRawCellResult.toPackage
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certifyRawAtomExact?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.buildTermStepCellExact?
