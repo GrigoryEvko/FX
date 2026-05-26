@@ -2876,6 +2876,20 @@ theorem certificationRejectionAfterScreen?_matchedVertical_rejects
       (NegativeProbes.matchedVerticalBoundaryRawCell profile) =
       CellCheckRejection.unsupportedCertification := rfl
 
+theorem certificationRejectionAfterScreen?_termStepLeftIdentity_rejects
+    {profile : PolyProfile} :
+    certificationRejectionAfterScreen? (profile := profile)
+      NegativeProbes.defaultInferScope
+      (NegativeProbes.termStepLeftIdentityRawCell profile) =
+      CellCheckRejection.unsupportedCertification := rfl
+
+theorem certificationRejectionAfterScreen?_termStepRightIdentity_rejects
+    {profile : PolyProfile} :
+    certificationRejectionAfterScreen? (profile := profile)
+      NegativeProbes.defaultInferScope
+      (NegativeProbes.termStepRightIdentityRawCell profile) =
+      CellCheckRejection.unsupportedCertification := rfl
+
 theorem certificationRejectionAfterScreen?_termIdentity_rejects
     {profile : PolyProfile} :
     certificationRejectionAfterScreen? (profile := profile)
@@ -2962,6 +2976,18 @@ theorem screenRawCell?_matchedVerticalBoundary_scope_four
     {profile : PolyProfile} :
     screenRawCell? (profile := profile) NegativeProbes.defaultInferScope
       (NegativeProbes.matchedVerticalBoundaryRawCell profile) =
+      Except.ok .term := rfl
+
+theorem screenRawCell?_termStepLeftIdentity_scope_four
+    {profile : PolyProfile} :
+    screenRawCell? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.termStepLeftIdentityRawCell profile) =
+      Except.ok .term := rfl
+
+theorem screenRawCell?_termStepRightIdentity_scope_four
+    {profile : PolyProfile} :
+    screenRawCell? (profile := profile) NegativeProbes.defaultInferScope
+      (NegativeProbes.termStepRightIdentityRawCell profile) =
       Except.ok .term := rfl
 
 theorem screenRawCell?_termIdentityVertical_scope_four

@@ -211,6 +211,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.secondMismatchedStepRawCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.badVerticalBoundaryRawCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.matchedVerticalBoundaryRawCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.termStepLeftIdentityRawCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.termStepRightIdentityRawCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.termIdentityRawCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.typeIdentityRawCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.contextIdentityRawCell
@@ -284,6 +286,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.certificationUnsupportedReversedTermStepProbe
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.certificationUnsupportedReflexiveTermStepProbe
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.certificationMatchedVerticalBoundaryProbe
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.certificationTermStepLeftIdentityProbe
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.certificationTermStepRightIdentityProbe
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.certificationTermIdentityProbe
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.certificationTypeIdentityProbe
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbes.certificationContextIdentityProbe
@@ -691,6 +695,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certificationRejectionAfterScreen?_unsupportedReversedTermStep_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certificationRejectionAfterScreen?_unsupportedReflexiveTermStep_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certificationRejectionAfterScreen?_matchedVertical_rejects
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certificationRejectionAfterScreen?_termStepLeftIdentity_rejects
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certificationRejectionAfterScreen?_termStepRightIdentity_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certificationRejectionAfterScreen?_termIdentity_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certificationRejectionAfterScreen?_typeIdentity_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.certificationRejectionAfterScreen?_contextIdentity_rejects
@@ -894,6 +900,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenExpectedSort?_badUnitTypePayload_as_type_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenExpectedSort?_badLinearModePayload_as_mode_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell?_matchedVerticalBoundary_scope_four
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell?_termStepLeftIdentity_scope_four
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell?_termStepRightIdentity_scope_four
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell?_termIdentityVertical_scope_four
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell?_typeIdentityVertical_scope_four
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Check.screenRawCell?_contextIdentityVertical_scope_four
