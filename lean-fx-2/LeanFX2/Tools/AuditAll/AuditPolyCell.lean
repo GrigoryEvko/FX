@@ -2909,6 +2909,9 @@ namespace LeanFX2.Tools
 
 -- ─── V2-L1.9: rule admission ledger (#144) ──────────────────────
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RuleSpecV2
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RuleSpecV2.ruleId
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RuleSpecV2.cellSort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RuleSpecV2.endpointDimension
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.instDecidableEqRuleSpecV2
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.termStepRuleSpecV2
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.SupportedRuleSpecV2
