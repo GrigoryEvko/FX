@@ -2805,6 +2805,23 @@ theorem certifiedApplicationVarZeroVarOneChildren_rawDescriptors_eq_decoder
       decodeApplicationPayload? (profile := profile) scope
         applicationVarZeroVarOnePayload := rfl
 
+/-- The descriptor-indexed application child package also erases exactly to
+the decoder output. -/
+theorem certifiedApplicationVarZeroVarOneDescriptorChildren_rawDescriptors_eq_decoder
+    {profile : PolyProfile} {scope : Nat}
+    (certifiedChildren :
+      CertifiedApplicationVarZeroVarOneChildren profile scope) :
+    Except.ok
+      (PolyCell.certifiedChildSpineRawDescriptors
+        certifiedChildren.applicationDescriptorChildSpine.toCertifiedChildren) =
+      decodeApplicationPayload? (profile := profile) scope
+        applicationVarZeroVarOnePayload := by
+  rw [
+    CertifiedApplicationVarZeroVarOneChildren.applicationDescriptorChildSpine_toCertifiedChildren
+  ]
+  exact certifiedApplicationVarZeroVarOneChildren_rawDescriptors_eq_decoder
+    certifiedChildren
+
 /-- For every scope where both decoded variables are in scope, certification
 followed by child-spine erasure returns the same raw descriptor spine as the
 payload decoder. -/
@@ -2850,6 +2867,23 @@ theorem certifiedLambdaUnitTypeBodyVarZeroChildren_rawDescriptors_eq_decoder
         certifiedChildren.lambdaChildSpine) =
       decodeLambdaPayload? (profile := profile) scope
         lambdaUnitTypeBodyVarZeroPayload := rfl
+
+/-- The descriptor-indexed lambda child package also erases exactly to the
+decoder output. -/
+theorem certifiedLambdaUnitTypeBodyVarZeroDescriptorChildren_rawDescriptors_eq_decoder
+    {profile : PolyProfile} {scope : Nat}
+    (certifiedChildren :
+      CertifiedLambdaUnitTypeBodyVarZeroChildren profile scope) :
+    Except.ok
+      (PolyCell.certifiedChildSpineRawDescriptors
+        certifiedChildren.lambdaDescriptorChildSpine.toCertifiedChildren) =
+      decodeLambdaPayload? (profile := profile) scope
+        lambdaUnitTypeBodyVarZeroPayload := by
+  rw [
+    CertifiedLambdaUnitTypeBodyVarZeroChildren.lambdaDescriptorChildSpine_toCertifiedChildren
+  ]
+  exact certifiedLambdaUnitTypeBodyVarZeroChildren_rawDescriptors_eq_decoder
+    certifiedChildren
 
 /-- For every scope, lambda certification followed by child-spine erasure
 returns the same raw descriptor spine as the payload decoder. -/
@@ -2903,6 +2937,23 @@ theorem certifiedPiTypeUnitCodomainUnitChildren_rawDescriptors_eq_decoder
         certifiedChildren.piTypeChildSpine) =
       decodePiTypePayload? (profile := profile) scope
         piTypeUnitCodomainUnitPayload := rfl
+
+/-- The descriptor-indexed pi-type child package also erases exactly to the
+decoder output. -/
+theorem certifiedPiTypeUnitCodomainUnitDescriptorChildren_rawDescriptors_eq_decoder
+    {profile : PolyProfile} {scope : Nat}
+    (certifiedChildren :
+      CertifiedPiTypeUnitCodomainUnitChildren profile scope) :
+    Except.ok
+      (PolyCell.certifiedChildSpineRawDescriptors
+        certifiedChildren.piTypeDescriptorChildSpine.toCertifiedChildren) =
+      decodePiTypePayload? (profile := profile) scope
+        piTypeUnitCodomainUnitPayload := by
+  rw [
+    CertifiedPiTypeUnitCodomainUnitChildren.piTypeDescriptorChildSpine_toCertifiedChildren
+  ]
+  exact certifiedPiTypeUnitCodomainUnitChildren_rawDescriptors_eq_decoder
+    certifiedChildren
 
 /-- For every scope, pi-type certification followed by child-spine erasure
 returns the same raw descriptor spine as the payload decoder. -/
