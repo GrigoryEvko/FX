@@ -3788,14 +3788,25 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.no_step_from_listNil
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.no_step_from_optionNone
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.no_step_from_var
--- Value-constructor inversion (archetypal): Step.from_lam.
--- If Step (lam body) target then target = lam body' for some body'
--- such that Step body body'.  Pattern: value ctors with non-leaf
+-- Value-constructor inversions: characterize Step (V c) target as
+-- target = V c' with Step c c'.  Pattern: value ctors with non-leaf
 -- children spines have ONLY cong as their reduction path; the cong
 -- arm's StepChildren must be .here (since .there over empty tail is
--- uninhabited).  Result type is existential (NOT False), so this
--- lemma sits in PolyCell.Core without tripping the False-budget.
+-- uninhabited).  Result type is existential (NOT False), so these
+-- lemmas sit in PolyCell.Core without tripping the False-budget.
+--
+-- 1-child value ctors covered: lam (body at scope+1), natSucc,
+-- optionSome, eitherInl/Inr, refl.  All share the same proof
+-- structure (cases reduction → cases childStep → here-arm extract).
+-- 2-child cases (pair, listCons) deferred to next iteration --
+-- they need both here and there arms since the second child can
+-- also Step.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_lam
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_natSucc
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_optionSome
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_eitherInl
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_eitherInr
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_refl
 
 -- ─── V2-L3.2 phase A: StepStar (reflexive-transitive closure) ───────
 -- Reflexive-transitive closure of Step in LEFT-EXTENSION form:

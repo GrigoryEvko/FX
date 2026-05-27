@@ -235,4 +235,111 @@ theorem Step.from_lam
       | there _ restStep =>
           exact absurd restStep StepChildren.no_step_at_empty_spine
 
+/-- **Inversion for `natSucc`-rooted Step.**
+
+If `Step (natSucc predecessor) target` then `target = natSucc
+predecessor'` for some `predecessor'` such that `Step predecessor
+predecessor'`.  Same proof as `from_lam` modulo the ctor's name
+and binderShifts shape: `gen_natSucc` has `[0]` (child at same
+scope, not bound) where `gen_lam` had `[1]`.  Operationally
+identical at the inversion-proof level. -/
+theorem Step.from_natSucc
+    {scope : Nat} {predecessor : RawTermV2 scope}
+    {target : RawTermV2 scope}
+    (reduction :
+      Step (.mkGen .gen_natSucc () (.childCons predecessor .childNil)) target) :
+    ∃ (predecessorAfter : RawTermV2 scope),
+      target = .mkGen .gen_natSucc () (.childCons predecessorAfter .childNil) ∧
+      Step predecessor predecessorAfter := by
+  cases reduction with
+  | cong _ _ childStep =>
+      cases childStep with
+      | here _ predecessorStep =>
+          rename_i predecessorAfter
+          exact ⟨predecessorAfter, rfl, predecessorStep⟩
+      | there _ restStep =>
+          exact absurd restStep StepChildren.no_step_at_empty_spine
+
+/-- **Inversion for `optionSome`-rooted Step.**
+
+If `Step (optionSome value) target` then `target = optionSome
+value'` where `Step value value'`. -/
+theorem Step.from_optionSome
+    {scope : Nat} {value : RawTermV2 scope}
+    {target : RawTermV2 scope}
+    (reduction :
+      Step (.mkGen .gen_optionSome () (.childCons value .childNil)) target) :
+    ∃ (valueAfter : RawTermV2 scope),
+      target = .mkGen .gen_optionSome () (.childCons valueAfter .childNil) ∧
+      Step value valueAfter := by
+  cases reduction with
+  | cong _ _ childStep =>
+      cases childStep with
+      | here _ valueStep =>
+          rename_i valueAfter
+          exact ⟨valueAfter, rfl, valueStep⟩
+      | there _ restStep =>
+          exact absurd restStep StepChildren.no_step_at_empty_spine
+
+/-- **Inversion for `eitherInl`-rooted Step.** -/
+theorem Step.from_eitherInl
+    {scope : Nat} {value : RawTermV2 scope}
+    {target : RawTermV2 scope}
+    (reduction :
+      Step (.mkGen .gen_eitherInl () (.childCons value .childNil)) target) :
+    ∃ (valueAfter : RawTermV2 scope),
+      target = .mkGen .gen_eitherInl () (.childCons valueAfter .childNil) ∧
+      Step value valueAfter := by
+  cases reduction with
+  | cong _ _ childStep =>
+      cases childStep with
+      | here _ valueStep =>
+          rename_i valueAfter
+          exact ⟨valueAfter, rfl, valueStep⟩
+      | there _ restStep =>
+          exact absurd restStep StepChildren.no_step_at_empty_spine
+
+/-- **Inversion for `eitherInr`-rooted Step.** -/
+theorem Step.from_eitherInr
+    {scope : Nat} {value : RawTermV2 scope}
+    {target : RawTermV2 scope}
+    (reduction :
+      Step (.mkGen .gen_eitherInr () (.childCons value .childNil)) target) :
+    ∃ (valueAfter : RawTermV2 scope),
+      target = .mkGen .gen_eitherInr () (.childCons valueAfter .childNil) ∧
+      Step value valueAfter := by
+  cases reduction with
+  | cong _ _ childStep =>
+      cases childStep with
+      | here _ valueStep =>
+          rename_i valueAfter
+          exact ⟨valueAfter, rfl, valueStep⟩
+      | there _ restStep =>
+          exact absurd restStep StepChildren.no_step_at_empty_spine
+
+/-- **Inversion for `refl`-rooted Step.**
+
+If `Step (refl rawWitness) target` then `target = refl
+rawWitness'` for some stepped witness.  Note that `refl` itself
+is a value (constructor of the identity type), so the
+`idJ`/`idStrictRec` iotas fire on the eliminators having `refl`
+as scrutinee -- but those iotas don't have `gen_refl` as the
+OUTER source generator.  Only cong applies here. -/
+theorem Step.from_refl
+    {scope : Nat} {rawWitness : RawTermV2 scope}
+    {target : RawTermV2 scope}
+    (reduction :
+      Step (.mkGen .gen_refl () (.childCons rawWitness .childNil)) target) :
+    ∃ (rawWitnessAfter : RawTermV2 scope),
+      target = .mkGen .gen_refl () (.childCons rawWitnessAfter .childNil) ∧
+      Step rawWitness rawWitnessAfter := by
+  cases reduction with
+  | cong _ _ childStep =>
+      cases childStep with
+      | here _ witnessStep =>
+          rename_i rawWitnessAfter
+          exact ⟨rawWitnessAfter, rfl, witnessStep⟩
+      | there _ restStep =>
+          exact absurd restStep StepChildren.no_step_at_empty_spine
+
 end LeanFX2.Foundation.PolyCell.Core
