@@ -3839,6 +3839,14 @@ namespace LeanFX2.Tools
 -- Lean infer the predecessor from the unified target.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_natElim
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_natRec
+-- Final 5-way eliminator inversions: listElim, optionMatch,
+-- eitherMatch.  All apply established templates -- the cong-arm
+-- proof shape is identical to from_boolElim; the iota arms vary
+-- in existential count (Cons needs 2, Some/Inl/Inr need 1 each,
+-- Nil/None are 0).
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_listElim
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_optionMatch
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_eitherMatch
 
 -- ─── V2-L3.2 phase A: StepStar (reflexive-transitive closure) ───────
 -- Reflexive-transitive closure of Step in LEFT-EXTENSION form:

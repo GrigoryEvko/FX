@@ -745,4 +745,203 @@ theorem Step.from_natRec
               | there _ restRestStep =>
                   exact absurd restRestStep StepChildren.no_step_at_empty_spine
 
+/-- **Inversion for `listElim`-rooted Step.**
+
+Five-way disjunction with the most complex iota arm in the suite:
+the Cons iota's target is a TRIPLE-nested app referencing both
+the head and tail components of the scrutinee.  Two existentials
+needed for the Cons-iota disjunct. -/
+theorem Step.from_listElim
+    {scope : Nat}
+    {scrutinee nilBranch consBranch : RawTermV2 scope}
+    {target : RawTermV2 scope}
+    (reduction :
+      Step (.mkGen .gen_listElim ()
+              (.childCons scrutinee
+                (.childCons nilBranch (.childCons consBranch .childNil))))
+           target) :
+    (scrutinee = .mkGen .gen_listNil () .childNil ∧ target = nilBranch)
+    ∨
+    (∃ (headVal tailVal : RawTermV2 scope),
+        scrutinee = .mkGen .gen_listCons ()
+                      (.childCons headVal (.childCons tailVal .childNil)) ∧
+        target = .mkGen .gen_app ()
+          (.childCons
+            (.mkGen .gen_app ()
+              (.childCons
+                (.mkGen .gen_app ()
+                  (.childCons consBranch (.childCons headVal .childNil)))
+                (.childCons tailVal .childNil)))
+            (.childCons
+              (.mkGen .gen_listElim ()
+                (.childCons tailVal
+                  (.childCons nilBranch (.childCons consBranch .childNil))))
+              .childNil)))
+    ∨
+    (∃ (scrutineeAfter : RawTermV2 scope),
+        target = .mkGen .gen_listElim ()
+          (.childCons scrutineeAfter
+            (.childCons nilBranch (.childCons consBranch .childNil))) ∧
+        Step scrutinee scrutineeAfter)
+    ∨
+    (∃ (nilAfter : RawTermV2 scope),
+        target = .mkGen .gen_listElim ()
+          (.childCons scrutinee
+            (.childCons nilAfter (.childCons consBranch .childNil))) ∧
+        Step nilBranch nilAfter)
+    ∨
+    (∃ (consAfter : RawTermV2 scope),
+        target = .mkGen .gen_listElim ()
+          (.childCons scrutinee
+            (.childCons nilBranch (.childCons consAfter .childNil))) ∧
+        Step consBranch consAfter) := by
+  cases reduction with
+  | iotaListElimNil =>
+      exact Or.inl ⟨rfl, rfl⟩
+  | iotaListElimCons =>
+      exact Or.inr (Or.inl ⟨_, _, rfl, rfl⟩)
+  | cong _ _ childStep =>
+      cases childStep with
+      | here _ scrutineeStep =>
+          rename_i scrutineeAfter
+          exact Or.inr (Or.inr (Or.inl ⟨scrutineeAfter, rfl, scrutineeStep⟩))
+      | there _ tailStep =>
+          cases tailStep with
+          | here _ nilStep =>
+              rename_i nilAfter
+              exact Or.inr (Or.inr (Or.inr (Or.inl ⟨nilAfter, rfl, nilStep⟩)))
+          | there _ restStep =>
+              cases restStep with
+              | here _ consStep =>
+                  rename_i consAfter
+                  exact Or.inr (Or.inr (Or.inr (Or.inr ⟨consAfter, rfl, consStep⟩)))
+              | there _ restRestStep =>
+                  exact absurd restRestStep StepChildren.no_step_at_empty_spine
+
+/-- **Inversion for `optionMatch`-rooted Step.**
+
+Five-way disjunction.  Some-iota arm has a 1-arg app-chain target
+`app someBranch value` requiring one existential for the wrapped
+value. -/
+theorem Step.from_optionMatch
+    {scope : Nat}
+    {scrutinee noneBranch someBranch : RawTermV2 scope}
+    {target : RawTermV2 scope}
+    (reduction :
+      Step (.mkGen .gen_optionMatch ()
+              (.childCons scrutinee
+                (.childCons noneBranch (.childCons someBranch .childNil))))
+           target) :
+    (scrutinee = .mkGen .gen_optionNone () .childNil ∧ target = noneBranch)
+    ∨
+    (∃ (value : RawTermV2 scope),
+        scrutinee = .mkGen .gen_optionSome () (.childCons value .childNil) ∧
+        target = .mkGen .gen_app ()
+                  (.childCons someBranch (.childCons value .childNil)))
+    ∨
+    (∃ (scrutineeAfter : RawTermV2 scope),
+        target = .mkGen .gen_optionMatch ()
+          (.childCons scrutineeAfter
+            (.childCons noneBranch (.childCons someBranch .childNil))) ∧
+        Step scrutinee scrutineeAfter)
+    ∨
+    (∃ (noneAfter : RawTermV2 scope),
+        target = .mkGen .gen_optionMatch ()
+          (.childCons scrutinee
+            (.childCons noneAfter (.childCons someBranch .childNil))) ∧
+        Step noneBranch noneAfter)
+    ∨
+    (∃ (someAfter : RawTermV2 scope),
+        target = .mkGen .gen_optionMatch ()
+          (.childCons scrutinee
+            (.childCons noneBranch (.childCons someAfter .childNil))) ∧
+        Step someBranch someAfter) := by
+  cases reduction with
+  | iotaOptionMatchNone =>
+      exact Or.inl ⟨rfl, rfl⟩
+  | iotaOptionMatchSome =>
+      exact Or.inr (Or.inl ⟨_, rfl, rfl⟩)
+  | cong _ _ childStep =>
+      cases childStep with
+      | here _ scrutineeStep =>
+          rename_i scrutineeAfter
+          exact Or.inr (Or.inr (Or.inl ⟨scrutineeAfter, rfl, scrutineeStep⟩))
+      | there _ tailStep =>
+          cases tailStep with
+          | here _ noneStep =>
+              rename_i noneAfter
+              exact Or.inr (Or.inr (Or.inr (Or.inl ⟨noneAfter, rfl, noneStep⟩)))
+          | there _ restStep =>
+              cases restStep with
+              | here _ someStep =>
+                  rename_i someAfter
+                  exact Or.inr (Or.inr (Or.inr (Or.inr ⟨someAfter, rfl, someStep⟩)))
+              | there _ restRestStep =>
+                  exact absurd restRestStep StepChildren.no_step_at_empty_spine
+
+/-- **Inversion for `eitherMatch`-rooted Step.**
+
+Five-way disjunction.  BOTH iota arms have 1-arg app-chain
+targets (no nullary base case for either) -- so the first two
+disjuncts are existential, characterizing the wrapped value in
+each case. -/
+theorem Step.from_eitherMatch
+    {scope : Nat}
+    {scrutinee leftBranch rightBranch : RawTermV2 scope}
+    {target : RawTermV2 scope}
+    (reduction :
+      Step (.mkGen .gen_eitherMatch ()
+              (.childCons scrutinee
+                (.childCons leftBranch (.childCons rightBranch .childNil))))
+           target) :
+    (∃ (value : RawTermV2 scope),
+        scrutinee = .mkGen .gen_eitherInl () (.childCons value .childNil) ∧
+        target = .mkGen .gen_app ()
+                  (.childCons leftBranch (.childCons value .childNil)))
+    ∨
+    (∃ (value : RawTermV2 scope),
+        scrutinee = .mkGen .gen_eitherInr () (.childCons value .childNil) ∧
+        target = .mkGen .gen_app ()
+                  (.childCons rightBranch (.childCons value .childNil)))
+    ∨
+    (∃ (scrutineeAfter : RawTermV2 scope),
+        target = .mkGen .gen_eitherMatch ()
+          (.childCons scrutineeAfter
+            (.childCons leftBranch (.childCons rightBranch .childNil))) ∧
+        Step scrutinee scrutineeAfter)
+    ∨
+    (∃ (leftAfter : RawTermV2 scope),
+        target = .mkGen .gen_eitherMatch ()
+          (.childCons scrutinee
+            (.childCons leftAfter (.childCons rightBranch .childNil))) ∧
+        Step leftBranch leftAfter)
+    ∨
+    (∃ (rightAfter : RawTermV2 scope),
+        target = .mkGen .gen_eitherMatch ()
+          (.childCons scrutinee
+            (.childCons leftBranch (.childCons rightAfter .childNil))) ∧
+        Step rightBranch rightAfter) := by
+  cases reduction with
+  | iotaEitherMatchInl =>
+      exact Or.inl ⟨_, rfl, rfl⟩
+  | iotaEitherMatchInr =>
+      exact Or.inr (Or.inl ⟨_, rfl, rfl⟩)
+  | cong _ _ childStep =>
+      cases childStep with
+      | here _ scrutineeStep =>
+          rename_i scrutineeAfter
+          exact Or.inr (Or.inr (Or.inl ⟨scrutineeAfter, rfl, scrutineeStep⟩))
+      | there _ tailStep =>
+          cases tailStep with
+          | here _ leftStep =>
+              rename_i leftAfter
+              exact Or.inr (Or.inr (Or.inr (Or.inl ⟨leftAfter, rfl, leftStep⟩)))
+          | there _ restStep =>
+              cases restStep with
+              | here _ rightStep =>
+                  rename_i rightAfter
+                  exact Or.inr (Or.inr (Or.inr (Or.inr ⟨rightAfter, rfl, rightStep⟩)))
+              | there _ restRestStep =>
+                  exact absurd restRestStep StepChildren.no_step_at_empty_spine
+
 end LeanFX2.Foundation.PolyCell.Core
