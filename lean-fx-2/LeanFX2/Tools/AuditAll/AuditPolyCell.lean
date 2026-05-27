@@ -90,6 +90,7 @@ import LeanFX2.Foundation.PolyCell.Core.SpineSubstStep
 import LeanFX2.Foundation.PolyCell.Core.SubstPreservationMutual
 import LeanFX2.Foundation.PolyCell.Core.CongPreservationMutual
 import LeanFX2.Foundation.PolyCell.Core.StepPreservesShape
+import LeanFX2.Foundation.PolyCell.Core.CriticalPairs
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactWrongChildShape
@@ -989,6 +990,38 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpine.exists_preservedByChildStep
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.preservesShape
+
+-- ─── V2-L3.2 / M6: critical-pair root-rule catalog scaffold ───────
+-- RootStepKind enumerates the 17 non-congruence Step rules (beta +
+-- the 16 iotas), deliberately separating them from Step.cong because
+-- congruence branchings require a parent generator and child position.
+-- This is the first M6 slice: root/root critical-pair data is
+-- computable and audited; full M6 continues with congruence
+-- child-position branchings and diamond fillers.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RootStepKind
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RootStepKind.all
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RootStepKind.sourceGenerator
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RootStepKind.hasSourceGenerator
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RootStepKind.forSourceGenerator
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RootStepKind.RootOverlapShape
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RootStepKind.classifyRootOverlap
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RootStepKind.RootCriticalPair
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RootStepKind.mkRootCriticalPair
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RootStepKind.pairLeftWithRightKinds
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RootStepKind.pairsForKindLists
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RootStepKind.criticalPairsForSourceGenerators
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RootStepKind.all_length
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RootStepKind.forSourceGenerator_app
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RootStepKind.forSourceGenerator_boolElim
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RootStepKind.forSourceGenerator_unit
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RootStepKind.classifyRootOverlap_beta_beta
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RootStepKind.classifyRootOverlap_bool_iotas
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RootStepKind.classifyRootOverlap_beta_boolTrue
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.rootCriticalPairs
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.rootCriticalPairsEmptyDecision
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.rootCriticalPairs_app_app
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.rootCriticalPairs_boolElim_boolElim_length
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.rootCriticalPairs_unit_app
 
 -- ─── V2-L3.1 phase D step 35: HCC-level wrappers around the cell-step
 -- helpers (phase D 32/33).  Same recipe, .intro-wrapped to land in
