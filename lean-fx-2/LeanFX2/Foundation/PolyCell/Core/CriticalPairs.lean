@@ -1349,6 +1349,104 @@ def iotaOptionMatchSomeBranchCong {scope : Nat}
             (.childNil : RawTermChildren [] scope)
             someStep)))
 
+/-- Root `optionMatch (optionSome value)` iota branching against
+congruence inside the `optionSome` payload. -/
+def iotaOptionMatchSomeValueCong {scope : Nat}
+    {value steppedValue noneBranch someBranch : RawTerm scope}
+    (valueStep : Step value steppedValue) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_optionMatch ()
+      (.childCons
+        (.mkGen .gen_optionSome () (.childCons value .childNil))
+        (.childCons noneBranch (.childCons someBranch .childNil)))
+  leftReduct :=
+    .mkGen .gen_app ()
+      (.childCons someBranch (.childCons value .childNil))
+  rightReduct :=
+    .mkGen .gen_optionMatch ()
+      (.childCons
+        (.mkGen .gen_optionSome () (.childCons steppedValue .childNil))
+        (.childCons noneBranch (.childCons someBranch .childNil)))
+  leftStep := Step.iotaOptionMatchSome
+  rightStep :=
+    Step.cong .gen_optionMatch ()
+      (StepChildren.here
+        (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
+        ((.childCons noneBranch (.childCons someBranch .childNil)) :
+          RawTermChildren [0, 0] scope)
+        (Step.cong .gen_optionSome ()
+          (StepChildren.here
+            (parentScope := scope) (headShift := 0) (restShifts := [])
+            (.childNil : RawTermChildren [] scope)
+            valueStep)))
+
+/-- Root `optionMatch (optionSome value)` iota branching against
+congruence in the discarded none-branch. -/
+def iotaOptionMatchSomeNoneBranchCong {scope : Nat}
+    {value noneBranch steppedNoneBranch someBranch : RawTerm scope}
+    (noneStep : Step noneBranch steppedNoneBranch) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_optionMatch ()
+      (.childCons
+        (.mkGen .gen_optionSome () (.childCons value .childNil))
+        (.childCons noneBranch (.childCons someBranch .childNil)))
+  leftReduct :=
+    .mkGen .gen_app ()
+      (.childCons someBranch (.childCons value .childNil))
+  rightReduct :=
+    .mkGen .gen_optionMatch ()
+      (.childCons
+        (.mkGen .gen_optionSome () (.childCons value .childNil))
+        (.childCons steppedNoneBranch (.childCons someBranch .childNil)))
+  leftStep := Step.iotaOptionMatchSome
+  rightStep :=
+    Step.cong .gen_optionMatch ()
+      (StepChildren.there
+        (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
+        ((.mkGen .gen_optionSome () (.childCons value .childNil)) :
+          RawTerm scope)
+        (StepChildren.here
+          (parentScope := scope) (headShift := 0) (restShifts := [0])
+          ((.childCons someBranch .childNil) :
+            RawTermChildren [0] scope)
+          noneStep))
+
+/-- Root `optionMatch (optionSome value)` iota branching against
+congruence in the selected some-branch. -/
+def iotaOptionMatchSomeSomeBranchCong {scope : Nat}
+    {value noneBranch someBranch steppedSomeBranch : RawTerm scope}
+    (someStep : Step someBranch steppedSomeBranch) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_optionMatch ()
+      (.childCons
+        (.mkGen .gen_optionSome () (.childCons value .childNil))
+        (.childCons noneBranch (.childCons someBranch .childNil)))
+  leftReduct :=
+    .mkGen .gen_app ()
+      (.childCons someBranch (.childCons value .childNil))
+  rightReduct :=
+    .mkGen .gen_optionMatch ()
+      (.childCons
+        (.mkGen .gen_optionSome () (.childCons value .childNil))
+        (.childCons noneBranch (.childCons steppedSomeBranch .childNil)))
+  leftStep := Step.iotaOptionMatchSome
+  rightStep :=
+    Step.cong .gen_optionMatch ()
+      (StepChildren.there
+        (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
+        ((.mkGen .gen_optionSome () (.childCons value .childNil)) :
+          RawTerm scope)
+        (StepChildren.there
+          (parentScope := scope) (headShift := 0) (restShifts := [0])
+          noneBranch
+          (StepChildren.here
+            (parentScope := scope) (headShift := 0) (restShifts := [])
+            (.childNil : RawTermChildren [] scope)
+            someStep)))
+
 /-- Root `idJ refl` iota branching against congruence in the selected
 base-case child. -/
 def iotaIdJBaseCaseCong {scope : Nat}
@@ -1922,6 +2020,84 @@ def iotaOptionMatchSomeBranchCong {scope : Nat}
     { commonReduct := noneBranch
       leftChain := StepStar.refl noneBranch
       rightChain := StepStar.single Step.iotaOptionMatchNone }
+
+/-- Root `optionMatch (optionSome value)` iota against congruence inside
+the `optionSome` payload. -/
+def iotaOptionMatchSomeValueCong {scope : Nat}
+    {value steppedValue noneBranch someBranch : RawTerm scope}
+    (valueStep : Step value steppedValue) :
+    LocalDiamond
+      (LocalStepBranching.iotaOptionMatchSomeValueCong
+        (value := value)
+        (steppedValue := steppedValue)
+        (noneBranch := noneBranch)
+        (someBranch := someBranch)
+        valueStep) := by
+  dsimp [LocalStepBranching.iotaOptionMatchSomeValueCong]
+  exact
+    { commonReduct :=
+        .mkGen .gen_app ()
+          (.childCons someBranch (.childCons steppedValue .childNil))
+      leftChain :=
+        StepStar.single
+          (Step.cong .gen_app ()
+            (StepChildren.there
+              (parentScope := scope) (headShift := 0) (restShifts := [0])
+              someBranch
+              (StepChildren.here
+                (parentScope := scope) (headShift := 0) (restShifts := [])
+                (.childNil : RawTermChildren [] scope)
+                valueStep)))
+      rightChain := StepStar.single Step.iotaOptionMatchSome }
+
+/-- Root `optionMatch (optionSome value)` iota against congruence in the
+discarded none-branch. -/
+def iotaOptionMatchSomeNoneBranchCong {scope : Nat}
+    {value noneBranch steppedNoneBranch someBranch : RawTerm scope}
+    (noneStep : Step noneBranch steppedNoneBranch) :
+    LocalDiamond
+      (LocalStepBranching.iotaOptionMatchSomeNoneBranchCong
+        (value := value)
+        (noneBranch := noneBranch)
+        (steppedNoneBranch := steppedNoneBranch)
+        (someBranch := someBranch)
+        noneStep) := by
+  dsimp [LocalStepBranching.iotaOptionMatchSomeNoneBranchCong]
+  exact
+    { commonReduct :=
+        .mkGen .gen_app ()
+          (.childCons someBranch (.childCons value .childNil))
+      leftChain :=
+        StepStar.refl
+          (.mkGen .gen_app ()
+            (.childCons someBranch (.childCons value .childNil)))
+      rightChain := StepStar.single Step.iotaOptionMatchSome }
+
+/-- Root `optionMatch (optionSome value)` iota against congruence in the
+selected some-branch. -/
+def iotaOptionMatchSomeSomeBranchCong {scope : Nat}
+    {value noneBranch someBranch steppedSomeBranch : RawTerm scope}
+    (someStep : Step someBranch steppedSomeBranch) :
+    LocalDiamond
+      (LocalStepBranching.iotaOptionMatchSomeSomeBranchCong
+        (value := value)
+        (noneBranch := noneBranch)
+        (someBranch := someBranch)
+        (steppedSomeBranch := steppedSomeBranch)
+        someStep) := by
+  dsimp [LocalStepBranching.iotaOptionMatchSomeSomeBranchCong]
+  exact
+    { commonReduct :=
+        .mkGen .gen_app ()
+          (.childCons steppedSomeBranch (.childCons value .childNil))
+      leftChain :=
+        StepStar.single
+          (Step.cong .gen_app ()
+            (StepChildren.here
+              (parentScope := scope) (headShift := 0) (restShifts := [0])
+              ((.childCons value .childNil) : RawTermChildren [0] scope)
+              someStep))
+      rightChain := StepStar.single Step.iotaOptionMatchSome }
 
 /-- Root `idJ refl` iota against congruence in the selected base case. -/
 def iotaIdJBaseCaseCong {scope : Nat}
