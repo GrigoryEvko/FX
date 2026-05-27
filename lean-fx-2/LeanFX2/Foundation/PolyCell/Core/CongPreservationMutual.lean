@@ -56,6 +56,54 @@ def StepCellPreserverWitness (profile : PolyProfile) : Prop :=
         (.termBase target),
       True
 
+/-- Exact beta preservation at the Prop-packaged `PolyCell` layer.
+
+This is the concrete beta arm needed by the final
+`StepCellPreserverWitness` mutual dispatcher.  The source app cell
+exposes the lambda and argument cells through its certified spine; the
+lambda cell exposes the body cell; #251's structural substitution
+driver then certifies `subst0 body rawArg` at the exact `.term` sort. -/
+theorem PolyCell.exists_preservedByBeta_dim0
+    {profile : PolyProfile} {scope : Nat}
+    {body : RawTerm (scope + 1)} {rawArg : RawTerm scope}
+    (sourceCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase
+          ((.mkGen .gen_app ()
+            (.childCons
+              (.mkGen .gen_lam () (.childCons body .childNil))
+              (.childCons rawArg .childNil))) : RawTerm scope))) :
+    ∃ _targetCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase (RawTerm.subst0 body rawArg)),
+      True := by
+  generalize hSourceSort : CellSort.term = sourceSort at sourceCell
+  cases sourceCell with
+  | gen _ _ sourceSpine =>
+      have lamCell :
+          PolyCell profile .term 0 scope CellBoundary.trivial
+            (.termBase
+              ((.mkGen .gen_lam () (.childCons body .childNil)) :
+                RawTerm scope)) :=
+        sourceSpine.headAtDim0 rfl
+      have argCell :
+          PolyCell profile .term 0 scope CellBoundary.trivial
+            (.termBase rawArg) :=
+        sourceSpine.tail.headAtDim0 rfl
+      generalize hLamSort : CellSort.term = lamSort at lamCell
+      cases lamCell with
+      | gen _ _ lamSpine =>
+          let bodyCell :
+              PolyCell profile .term 0 (scope + 1) CellBoundary.trivial
+                (.termBase body) :=
+            lamSpine.headAtDim0 rfl
+          exact ⟨
+            PolyCell.subst_dim0
+              (RawTermSubst.singleton rawArg)
+              (PolyCell.singletonSubstDim0Cells rawArg argCell)
+              bodyCell,
+            True.intro⟩
+
 /-- Prop-packaged preservation of a certified child spine across a
 `StepChildren` witness, assuming a sort-preserving preserver for the
 single child step in the `here` case.
