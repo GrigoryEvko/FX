@@ -85,6 +85,7 @@ import LeanFX2.Foundation.PolyCell.Core.RemainingDim0Eliminators
 import LeanFX2.Foundation.PolyCell.Core.IdEliminatorLayer
 import LeanFX2.Foundation.PolyCell.Core.StructuralInductionPrimitives
 import LeanFX2.Foundation.PolyCell.Core.StructuralInductionWrapper
+import LeanFX2.Foundation.PolyCell.Core.SpineSubstStep
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactWrongChildShape
@@ -919,6 +920,14 @@ namespace LeanFX2.Tools
 -- the mutual block's body becomes a thin recursive driver.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpine.consStep_dim0Trivial
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpine.nilStep
+
+-- Subst-shaped spine-step wrappers: package the future spine-recursion
+-- nil/cons cases against `foldChildren GenAlgebra.canonical sigma`.
+-- The cons helper records the important de Bruijn discipline: the head
+-- is substituted under `headSpec.scopeShift` binders via
+-- `iterateLiftRaw`, while the tail uses the parent substitution.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpine.substNilStep
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpine.substConsStep_dim0Trivial
 
 -- ─── V2-L3.1 phase D step 35: HCC-level wrappers around the cell-step
 -- helpers (phase D 32/33).  Same recipe, .intro-wrapped to land in
