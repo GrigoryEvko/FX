@@ -121,4 +121,43 @@ theorem Certified.ofExistentialOk
     Certified (profile := profile) raw :=
   Certified.intro result h
 
+/-! ## Inhabitation smokes
+
+Concrete fixtures demonstrating that `Certified` is non-vacuous.
+The certifier reduces transparently on basic fixtures (per V2-L1cert.15's
+coverage suite), so `Certified.intro _ rfl` works -- Lean's elaborator
+infers the existential witness from the rfl proof.
+
+These smokes are profile-parametric: every profile admits the basic
+fixtures (unit at scope 0, var at scope 1) because they don't depend
+on the profile's excluded-generator list. -/
+
+/-- **Smoke: the unit term at scope 0 is Certified.**
+
+The simplest concrete inhabitant of `Certified`.  Reduces by
+`rfl` because the certifier evaluates transparently on `unit` --
+admission + payload-evidence + nil-spine + packaging all reduce
+definitionally.
+
+Witnesses that `Certified` is non-vacuous and the API helpers
+(intro/exists_result/ofExistentialOk) work correctly. -/
+theorem Certified.unit_at_scope_zero {profile : PolyProfile} :
+    Certified (profile := profile)
+      (.mkGen .gen_unit () .childNil : RawTermV2 0) :=
+  ⟨_, rfl⟩
+
+/-- **Smoke: variable zero at scope 1 is Certified.**
+
+Exercises a different payload path than `unit`: `gen_var` has
+`Fin scope` payload (not Unit), so this smoke confirms the
+certifier handles non-trivial payloads transparently too.
+
+Same `⟨_, rfl⟩` closing pattern -- the certifier reduces on
+var-shaped fixtures as well. -/
+theorem Certified.varZero_at_scope_one {profile : PolyProfile} :
+    Certified (profile := profile)
+      (.mkGen .gen_var (⟨0, Nat.zero_lt_succ 0⟩ : Fin 1) .childNil
+        : RawTermV2 1) :=
+  ⟨_, rfl⟩
+
 end LeanFX2.Foundation.PolyCell.Core

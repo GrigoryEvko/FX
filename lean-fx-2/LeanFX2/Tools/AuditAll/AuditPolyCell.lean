@@ -3872,6 +3872,12 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Certified.intro
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Certified.exists_result
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Certified.ofExistentialOk
+-- Inhabitation smokes: concrete fixtures demonstrating Certified
+-- is non-vacuous.  Both close by ⟨_, rfl⟩ -- the certifier reduces
+-- transparently on basic fixtures (unit, var), and Lean's
+-- elaborator infers the existential witness from the rfl proof.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Certified.unit_at_scope_zero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Certified.varZero_at_scope_one
 
 -- ─── V2-L3.2 phase A: StepStar (reflexive-transitive closure) ───────
 -- Reflexive-transitive closure of Step in LEFT-EXTENSION form:
