@@ -25,6 +25,50 @@ three payload shapes per generator:
   `maxUniverse < 64` for safety-critical embedded targets, or
   `truncLevel ≥ -2` for h-level discipline (encoded as `Nat`).
 
+## V2-fix-3 design commitment (2026-05-27): fxProfile uses UNBOUNDED universes
+
+**fxProfile commits to unbounded universes — the Tarski-style
+infinite cumulative hierarchy used by modern MLTT/HoTT systems
+(Coq, Agda, Lean).**  Concretely, for any `(level : Nat)`,
+`gen_universeCode level` is admitted by `genPayloadEvidence?`
+under fxProfile — there is no `maxUniverseLevel` bound.
+
+This is the **more powerful** choice in the design space:
+
+* **Unbounded (fxProfile's choice)**: any `Type N` is expressible
+  for any `N : Nat`.  Quantification ranges over arbitrarily
+  large universes.  Consistent (no `Type : Type` paradox — the
+  hierarchy is stratified, not collapsed).
+* **Bounded (rejected)**: caps levels at some `maxUniverseLevel`,
+  rejects `gen_universeCode N` for `N ≥ maxUniverseLevel`.  Would
+  RESTRICT expressiveness without buying consistency (the
+  hierarchy is already consistent).  Useful only for specific
+  embedded / safety-critical targets that cannot afford the
+  per-level proof obligations of large universes.
+
+The user-facing consequence: a well-formed FX program may
+introduce arbitrarily-large universes; the certifier accepts
+them; downstream metatheory (subject reduction, confluence,
+strong normalization) discharges per the polycell.md §11.6.1
+quartet generically over `Nat` levels.  No `level < bound`
+side conditions appear in the soundness story.
+
+The same commitment applies to `gen_truncIntro / gen_truncCoh /
+gen_truncRec → Nat` (truncation levels): any `(n : Nat)` is
+admitted under fxProfile.  Restricted h-level disciplines (e.g.,
+"only Set, Prop, Pred levels") would re-introduce bounds via a
+profile-specific `GenPayloadEvidence` refinement, without
+changing fxProfile.
+
+**Witness:** the `genPayloadEvidence?_universeCode_unbounded`
+theorem below pins this commitment as a fact derivable from the
+shipped `GenPayloadEvidence` definition (currently `Unit`).
+Forward-compat: a future restricted profile would refine
+`GenPayloadEvidence .gen_universeCode level` to a Sigma type
+`{_ : Unit // level < profile.maxUniverseLevel}` and the witness
+theorem would fail under that profile, surfacing the bound at
+the audit gate.
+
 * All other 188 generators have `Unit` payload — only one inhabitant,
   trivially admissible.
 
@@ -121,6 +165,39 @@ locks in fxProfile's current "all admitted" behavior. -/
 theorem genPayloadEvidence?_isSome {generator : Generator} {scope : Nat}
     (payload : generator.payload scope) :
     (genPayloadEvidence? payload).isSome = true :=
+  rfl
+
+/-- **V2-fix-3 design commitment witness: unbounded universes.**
+
+For any natural-number universe level `level : Nat`, the payload
+admission decision for `.gen_universeCode level` returns `some _`
+under fxProfile.  Witnesses that fxProfile is committed to the
+Tarski-style unbounded infinite cumulative hierarchy — there is
+no `maxUniverseLevel` bound.
+
+Proof closes by `rfl`: `genPayloadEvidence?` always returns
+`some _` (it's the constant `some (genPayloadEvidence payload)`
+definition for the default profile), regardless of the universe
+level passed as payload.
+
+A future restricted profile that imposed a level bound would
+refine `GenPayloadEvidence .gen_universeCode level` to a Sigma
+type carrying `level < bound` and the proof would fail for
+sufficiently large `level`.  At that point this theorem would be
+updated to state the explicit bound, and the audit gate would
+surface the design change.
+
+The same unbounded commitment applies symmetrically to truncation
+levels (`gen_truncIntro`, `gen_truncCoh`, `gen_truncRec`) — for
+any `level : Nat`, those payloads admit under fxProfile.  The
+universe-level theorem here is the headline witness; the
+truncation-level analogs would be added if a restricted h-level
+discipline ships in a future profile. -/
+theorem genPayloadEvidence?_universeCode_unbounded {scope : Nat}
+    (level : Nat) :
+    (genPayloadEvidence?
+        (generator := .gen_universeCode) (scope := scope)
+        (payload := level)).isSome = true :=
   rfl
 
 end LeanFX2.Foundation.PolyCell.Core

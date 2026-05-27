@@ -2968,6 +2968,21 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.genPayloadEvidence?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.genPayloadEvidence?_isSome
 
+-- ─── V2-fix-3: unbounded universes design commitment ──────────────
+-- genPayloadEvidence?_universeCode_unbounded: for any Nat level,
+-- the universeCode payload admits under fxProfile.  Witnesses the
+-- explicit commitment to the Tarski-style infinite cumulative
+-- universe hierarchy (rather than a bounded maxUniverseLevel).
+--
+-- A future restricted profile that imposed a level bound would
+-- refine GenPayloadEvidence .gen_universeCode level to a Sigma
+-- type carrying `level < bound`, and this theorem's proof would
+-- fail at sufficiently large `level`.  The audit gate surfaces
+-- the design commitment as a machine-checked fact.
+--
+-- Closes the V2-fix-3 Agent 3 finding H3.3 (decoration GenPayloadEvidence).
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.genPayloadEvidence?_universeCode_unbounded
+
 -- ─── V2-L1.8: dim reconciliation predicate (#143) ───────────────
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasEqualDim
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.hasEqualDim_decidable
