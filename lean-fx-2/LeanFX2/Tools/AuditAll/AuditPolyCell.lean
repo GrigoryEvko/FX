@@ -49,6 +49,7 @@ import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2NegativeProbes
 import LeanFX2.Foundation.PolyCell.FXProfile.CertifiedViewsV2
 import LeanFX2.Foundation.PolyCell.FXProfile.CertifiedViewsV2Sound
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubstV2
+import LeanFX2.Foundation.PolyCell.Core.GenAlgebraV2
 
 namespace LeanFX2.Tools
 
@@ -3474,6 +3475,28 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubstV2.identity_lookup_eq_genVar
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.ActsOnRawTermV2Var.rawRenaming_varToRawTermV2_eq
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.ActsOnRawTermV2Var.rawTermSubstV2_varToRawTermV2_eq
+
+-- ─── V2-L2.2: GenAlgebraV2 fold algebra record (#176) ────────────────
+-- The Allais-style "Semantics" algebra for the v2 fold engine.  ONE
+-- record + ONE field + ONE canonical algebra value.  Captures the
+-- per-generator children-combination function that foldV2 (#177)
+-- consumes when traversing a RawTermV2.
+--
+-- Architectural property: algebra signature uses ONE scope (no
+-- source/target distinction), making the canonical "rebuild .mkGen"
+-- algebra a literal ONE-LINE body that handles all 194 generators
+-- uniformly.  No per-generator pattern match.  This is the L2
+-- cascade-tax killer made concrete: in v1's dim-indexed era the
+-- analog work for a single traversal required a 74-arm match.
+--
+-- Container threading (variable lookup, binder lifting) is foldV2's
+-- responsibility, not the algebra's.  The algebra is purely a
+-- children-combinator.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.GenAlgebraV2
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.GenAlgebraV2.algebra
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.GenAlgebraV2.canonical
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.GenAlgebraV2.canonical_algebra_eq_mkGen
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.GenAlgebraV2.canonical_algebra_gen_unit_smoke
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
