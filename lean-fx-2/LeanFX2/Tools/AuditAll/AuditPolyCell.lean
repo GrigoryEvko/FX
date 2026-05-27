@@ -38,6 +38,7 @@ import LeanFX2.Foundation.PolyCell.Core.BuildGeneratingCellExactV2
 import LeanFX2.Foundation.PolyCell.Core.BuildVerticalCompositeExactV2
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2
 import LeanFX2.Foundation.PolyCell.Core.InferRawCellGeneralV2
+import LeanFX2.Foundation.PolyCell.Core.CheckRawCellAsV2
 
 namespace LeanFX2.Tools
 
@@ -3161,6 +3162,23 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedRawCellResultV2.certifiedCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedRawCellResultV2.hasInputCode
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.inferRawCellGeneralV2?
+
+-- ─── V2-L1cert.9: expected-shape checker (#164) ─────────────────────
+-- checkRawCellAsV2? is the expected-sort variant of
+-- inferRawCellGeneralV2?.  Takes an expectedSort + raw input,
+-- delegates to inferRawCellGeneralV2?, then checks result.cellSort
+-- against the expectation:
+--   match → return result
+--   mismatch → reject with .wrongSort
+--
+-- The .wrongSort rejection class is SPECIFIC to expected-shape
+-- checking per polycell.md §4.  Bare inference never produces it.
+--
+-- One-phase design (vs v1's two-phase screen+infer).  Trade-off:
+-- mismatched-sort cells get fully certified before the sort check;
+-- under fxProfile the cost is negligible since callers usually know
+-- the sort they're passing.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.checkRawCellAsV2?
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
