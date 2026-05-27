@@ -44,6 +44,7 @@ import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2CompHRejects
 import LeanFX2.Foundation.PolyCell.Core.InferRawCellGeneralV2AcceptedCellDimensionEq
 import LeanFX2.Foundation.PolyCell.Core.InferRawCellGeneralV2AcceptedRawCellHEq
 import LeanFX2.Foundation.PolyCell.Core.InferRawCellGeneralV2Sound
+import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2Coverage
 
 namespace LeanFX2.Tools
 
@@ -3269,6 +3270,30 @@ namespace LeanFX2.Tools
 -- this CLOSES the FULL no-false-positives guarantee on the entire
 -- L1cert.4 ingress (raw-indexed + existential).
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.inferRawCellGeneralV2?_sound
+
+-- ─── V2-L1cert.15: positive coverage suite (#170) ───────────────────
+-- Per-fixture acceptance theorems demonstrating the certifier DOES
+-- accept well-formed fxProfile fixtures with the expected sort.  The
+-- DUAL of the soundness tier: where #165-#169 prove the certifier
+-- never accepts badly, this layer proves it does accept rightly.
+--
+-- Initial catalog (2 fixtures):
+--   * unitTermRaw — gen_unit (Unit payload, arity 0, sort .term)
+--   * varZeroRaw  — gen_var at scope 1 (Fin payload, arity 0, sort .term)
+--
+-- Plus the certifiedResultSortV2? helper (sort extractor from Except).
+--
+-- All theorems close by `rfl`: each fixture's certification chain
+-- (fuel → admission → payload evidence → nil-spine → packaging →
+-- sort projection) reduces definitionally to the expected sort.
+--
+-- This layer is intentionally minimal — establishes the pattern; per-
+-- generator exhaustive coverage lives in later tasks.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.certifiedResultSortV2?
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CoverageV2.unitTermRaw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CoverageV2.varZeroRaw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_unitTermRaw_sort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_varZeroRaw_sort
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0

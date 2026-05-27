@@ -1,0 +1,134 @@
+import LeanFX2.Foundation.PolyCell.Core.InferRawCellGeneralV2
+
+/-! # CertifyRawCellExactV2Coverage — positive-path acceptance suite
+
+This file ships the positive-coverage suite for the v2 ingress: a
+selection of fxProfile fixture raw cells along with `rfl`-proved
+acceptance theorems demonstrating that the certifier ACCEPTS them
+with the expected sort.
+
+Direct v2 counterpart to v1's coverage suite at
+`Core/CertifyExact.lean:113-126`.
+
+## Why coverage matters alongside soundness
+
+The L1cert.4 soundness tier (#165-#169) proves that the certifier
+NEVER ACCEPTS BADLY — every accepted certification is faithful to
+the input.  But soundness alone could be vacuously satisfied by a
+certifier that ALWAYS REJECTS.
+
+The coverage suite is the dual: every theorem here proves the
+certifier ACCEPTS a specific well-formed fixture with the expected
+sort.  Together, soundness + coverage establish that the certifier
+is both correct (#165-#169) and useful (this file): it accepts the
+things it should, and what it does on acceptance is correct.
+
+## The fixture catalog
+
+This file ships representative fixtures from the fxProfile generator
+table.  Each fixture is the simplest well-formed instance of its
+generator family:
+
+* `unitTermRaw` — arity-0 `gen_unit` (Unit payload, sort `.term`)
+* `varZeroRaw` — arity-0 `gen_var` at scope 1 (Fin payload, sort `.term`)
+
+The catalog is intentionally minimal at this layer.  Per-generator
+exhaustive coverage lives in downstream tasks; this layer
+demonstrates the PATTERN and gates the certifier's `rfl`-evaluation
+on concrete inputs.
+
+## Why `rfl` works
+
+Each acceptance theorem closes by `rfl` because the certifier is a
+pure computation: given a closed RawCellV2 input, it reduces via the
+fuel wrapper + structural dispatch + admission lookup + payload
+evidence + spine certification to a definite `Except.ok {...}` value.
+
+Lean's `rfl` check unfolds:
+1. `inferRawCellGeneralV2? scope raw` → matches on `certifyRawCellExactV2?`
+2. The exact certifier dispatches on `raw`'s ctor (here always `.termBase`)
+3. For `.termBase (.mkGen gen payload children)`:
+   * `supportedGeneratorV2? gen` reduces to `some <admission>`
+   * `genPayloadEvidence? payload` reduces to `some <evidence>`
+   * `certifyChildrenInlineV2Fueled?` on `.childNil` reduces to `.ok .nil`
+   * Returns `.ok { sort := generator.cellSort, ... }`
+4. The wrapper packages this as `.ok { cellSort := generator.cellSort, ... }`
+5. `certifiedResultSortV2?` projects `.cellSort = generator.cellSort`
+
+All reductions are definitional under v2's structural definitions.
+
+## Zero-axiom verification
+
+All declarations propext-free:
+* Fixture raw cells are pure data (struct construction)
+* Acceptance theorems close by `rfl`
+* The `certifiedResultSortV2?` helper is a one-line `def` matching
+  on Except
+
+Audit-gated in `Tools/AuditAll/AuditPolyCell.lean`.
+-/
+
+namespace LeanFX2.Foundation.PolyCell.Core
+
+/-- Extract the sort from an accepted certified-result computation.
+
+Mirrors v1's `certifiedResultSort?` (`Core/Check.lean:2115`).  Used
+by coverage theorems to inspect the certifier's output sort without
+unpacking the full result struct. -/
+def certifiedResultSortV2? {profile : PolyProfile} {scope : Nat} :
+    Except CellCheckRejection (CertifiedRawCellResultV2 profile scope) →
+      Option CellSort
+  | Except.ok result => some result.cellSort
+  | Except.error _ => none
+
+namespace CoverageV2
+
+/-- The simplest dim-0 fxProfile fixture: a `unit` term with empty
+children spine at scope 0.
+
+  `unitTermRaw = .termBase (.mkGen .gen_unit () .childNil)`
+
+`gen_unit` is arity-0 (no children), payload `Unit` (the single
+inhabitant `()`), sort `.term`, cellDimension 0.  This is the
+minimal acceptance test for the dim-0 term ingress. -/
+def unitTermRaw : RawCellV2 0 :=
+  .termBase (.mkGen .gen_unit () .childNil)
+
+/-- A second dim-0 fixture exercising a non-trivial payload: the
+variable `0` at scope 1.
+
+  `varZeroRaw = .termBase (.mkGen .gen_var ⟨0, _⟩ .childNil)`
+
+`gen_var` is arity-0 (no children), payload `Fin scope` (here
+`Fin 1` = single inhabitant), sort `.term`, cellDimension 0.  This
+exercises the `Fin scope` payload-evidence path. -/
+def varZeroRaw : RawCellV2 1 :=
+  .termBase (.mkGen .gen_var ⟨0, Nat.zero_lt_succ 0⟩ .childNil)
+
+end CoverageV2
+
+/-- The `unitTerm` fixture certifies at sort `.term` through the
+general existential ingress.
+
+Closes by `rfl`: the entire `inferRawCellGeneralV2? 0 unitTermRaw`
+chain reduces to `.ok {..cellSort := .term..}` via the certifier's
+admission + payload-evidence + nil-spine + packaging steps. -/
+theorem coverage_unitTermRaw_sort {profile : PolyProfile} :
+    certifiedResultSortV2?
+      (inferRawCellGeneralV2? (profile := profile) 0
+        CoverageV2.unitTermRaw) =
+      some .term := rfl
+
+/-- The `varZero` fixture certifies at sort `.term` through the
+general existential ingress.
+
+Closes by `rfl`: exercises the `gen_var`'s `Fin scope` payload
+path, distinct from `gen_unit`'s `Unit` path.  Both certify cleanly
+at sort `.term`. -/
+theorem coverage_varZeroRaw_sort {profile : PolyProfile} :
+    certifiedResultSortV2?
+      (inferRawCellGeneralV2? (profile := profile) 1
+        CoverageV2.varZeroRaw) =
+      some .term := rfl
+
+end LeanFX2.Foundation.PolyCell.Core
