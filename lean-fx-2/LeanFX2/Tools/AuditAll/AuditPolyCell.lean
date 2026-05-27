@@ -3526,6 +3526,66 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_unitTermRaw_sort
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_varZeroRaw_sort
 
+-- ─── V2-fix-5: certifier coverage backfill (2 -> 15 fixtures) ───────
+-- Agent 3 of the V2 falsification audit observed that the original
+-- coverage suite (2 fixtures: unitTermRaw + varZeroRaw) gated rfl-
+-- evaluation of the certifier on only TWO out of 194 generators -
+-- insufficient to demonstrate the certifier exercises distinct
+-- payload paths across the generator table.
+--
+-- This commit expands the catalog to 15 fixtures (one cell-layer +
+-- 14 termBase fixtures spanning 14 distinct generator ctors), with
+-- each fixture audited individually as both data + acceptance theorem
+-- (26 new gates = 13 fixtures + 13 acceptance theorems).
+--
+-- Coverage distribution by arity:
+--   * Arity 0 (9 generators):  gen_unit, gen_var, gen_boolTrue,
+--     gen_boolFalse, gen_natZero, gen_listNil, gen_optionNone,
+--     gen_interval0, gen_interval1
+--   * Arity 1 (3 generators):  gen_natSucc, gen_optionSome,
+--     gen_eitherInl - exercises 1-element spine recursion
+--   * Arity 2 (2 generators):  gen_pair, gen_listCons - exercises
+--     2-element spine recursion
+--   * Cell layer (1 fixture):  identityCell wrapping termBase -
+--     exercises the cell-layer .identityCell dispatch arm
+--
+-- All fixtures close acceptance by rfl: the certifier is a pure
+-- computation, and concrete inputs reduce via admission + payload-
+-- evidence + spine recursion + structural packaging to a definite
+-- Except.ok value with cellSort = .term.
+--
+-- 14 of the 194 generators is still small coverage in absolute terms,
+-- but each new fixture exercises a DISTINCT payload + child-spine
+-- shape, gating the structural reduction chain in a way the original
+-- 2-fixture suite did not.  Per-generator exhaustive coverage is
+-- deferred to a follow-up (V2-fix-5 phase B if needed).
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CoverageV2.boolTrueRaw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CoverageV2.boolFalseRaw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CoverageV2.natZeroRaw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CoverageV2.listNilRaw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CoverageV2.optionNoneRaw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CoverageV2.interval0Raw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CoverageV2.interval1Raw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CoverageV2.natSuccZeroRaw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CoverageV2.optionSomeUnitRaw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CoverageV2.eitherInlUnitRaw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CoverageV2.pairUnitsRaw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CoverageV2.listConsUnitRaw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CoverageV2.identityUnitCellRaw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_boolTrueRaw_sort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_boolFalseRaw_sort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_natZeroRaw_sort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_listNilRaw_sort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_optionNoneRaw_sort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_interval0Raw_sort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_interval1Raw_sort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_natSuccZeroRaw_sort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_optionSomeUnitRaw_sort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_eitherInlUnitRaw_sort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_pairUnitsRaw_sort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_listConsUnitRaw_sort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_identityUnitCellRaw_sort
+
 -- ─── V2-L1cert.16: negative-probe suite (#171) ──────────────────────
 -- Rejection-side coverage: per-fixture rejection theorems demonstrating
 -- the certifier DOES reject malformed fixtures with the EXPECTED
