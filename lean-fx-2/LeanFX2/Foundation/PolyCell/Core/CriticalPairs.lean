@@ -1229,6 +1229,168 @@ def iotaNatRecSuccBranchCong {scope : Nat}
             (.childNil : RawTermChildren [] scope)
             succStep)))
 
+/-- Root `natElim (natSucc predecessor)` iota branching against congruence
+in the zero-branch.  The iota reduct contains the zero branch only inside the
+recursive call, so the local diamond joins by stepping that recursive call. -/
+def iotaNatElimSuccZeroBranchCong {scope : Nat}
+    {predecessor zeroBranch steppedZeroBranch succBranch : RawTerm scope}
+    (zeroStep : Step zeroBranch steppedZeroBranch) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_natElim ()
+      (.childCons
+        (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
+        (.childCons zeroBranch (.childCons succBranch .childNil)))
+  leftReduct :=
+    .mkGen .gen_app ()
+      (.childCons
+        (.mkGen .gen_app ()
+          (.childCons succBranch (.childCons predecessor .childNil)))
+        (.childCons
+          (.mkGen .gen_natElim ()
+            (.childCons predecessor
+              (.childCons zeroBranch (.childCons succBranch .childNil))))
+          .childNil))
+  rightReduct :=
+    .mkGen .gen_natElim ()
+      (.childCons
+        (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
+        (.childCons steppedZeroBranch (.childCons succBranch .childNil)))
+  leftStep := Step.iotaNatElimSucc
+  rightStep :=
+    Step.cong .gen_natElim ()
+      (StepChildren.there
+        (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
+        ((.mkGen .gen_natSucc () (.childCons predecessor .childNil)) :
+          RawTerm scope)
+        (StepChildren.here
+          (parentScope := scope) (headShift := 0) (restShifts := [0])
+          ((.childCons succBranch .childNil) :
+            RawTermChildren [0] scope)
+          zeroStep))
+
+/-- Root `natElim (natSucc predecessor)` iota branching against congruence
+in the successor branch.  The successor branch appears both as the app-chain
+function and inside the recursive call. -/
+def iotaNatElimSuccSuccBranchCong {scope : Nat}
+    {predecessor zeroBranch succBranch steppedSuccBranch : RawTerm scope}
+    (succStep : Step succBranch steppedSuccBranch) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_natElim ()
+      (.childCons
+        (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
+        (.childCons zeroBranch (.childCons succBranch .childNil)))
+  leftReduct :=
+    .mkGen .gen_app ()
+      (.childCons
+        (.mkGen .gen_app ()
+          (.childCons succBranch (.childCons predecessor .childNil)))
+        (.childCons
+          (.mkGen .gen_natElim ()
+            (.childCons predecessor
+              (.childCons zeroBranch (.childCons succBranch .childNil))))
+          .childNil))
+  rightReduct :=
+    .mkGen .gen_natElim ()
+      (.childCons
+        (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
+        (.childCons zeroBranch (.childCons steppedSuccBranch .childNil)))
+  leftStep := Step.iotaNatElimSucc
+  rightStep :=
+    Step.cong .gen_natElim ()
+      (StepChildren.there
+        (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
+        ((.mkGen .gen_natSucc () (.childCons predecessor .childNil)) :
+          RawTerm scope)
+        (StepChildren.there
+          (parentScope := scope) (headShift := 0) (restShifts := [0])
+          zeroBranch
+          (StepChildren.here
+            (parentScope := scope) (headShift := 0) (restShifts := [])
+            (.childNil : RawTermChildren [] scope)
+            succStep)))
+
+/-- Root `natRec (natSucc predecessor)` iota branching against congruence in
+the zero-branch. -/
+def iotaNatRecSuccZeroBranchCong {scope : Nat}
+    {predecessor zeroBranch steppedZeroBranch succBranch : RawTerm scope}
+    (zeroStep : Step zeroBranch steppedZeroBranch) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_natRec ()
+      (.childCons
+        (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
+        (.childCons zeroBranch (.childCons succBranch .childNil)))
+  leftReduct :=
+    .mkGen .gen_app ()
+      (.childCons
+        (.mkGen .gen_app ()
+          (.childCons succBranch (.childCons predecessor .childNil)))
+        (.childCons
+          (.mkGen .gen_natRec ()
+            (.childCons predecessor
+              (.childCons zeroBranch (.childCons succBranch .childNil))))
+          .childNil))
+  rightReduct :=
+    .mkGen .gen_natRec ()
+      (.childCons
+        (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
+        (.childCons steppedZeroBranch (.childCons succBranch .childNil)))
+  leftStep := Step.iotaNatRecSucc
+  rightStep :=
+    Step.cong .gen_natRec ()
+      (StepChildren.there
+        (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
+        ((.mkGen .gen_natSucc () (.childCons predecessor .childNil)) :
+          RawTerm scope)
+        (StepChildren.here
+          (parentScope := scope) (headShift := 0) (restShifts := [0])
+          ((.childCons succBranch .childNil) :
+            RawTermChildren [0] scope)
+          zeroStep))
+
+/-- Root `natRec (natSucc predecessor)` iota branching against congruence in
+the successor branch. -/
+def iotaNatRecSuccSuccBranchCong {scope : Nat}
+    {predecessor zeroBranch succBranch steppedSuccBranch : RawTerm scope}
+    (succStep : Step succBranch steppedSuccBranch) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_natRec ()
+      (.childCons
+        (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
+        (.childCons zeroBranch (.childCons succBranch .childNil)))
+  leftReduct :=
+    .mkGen .gen_app ()
+      (.childCons
+        (.mkGen .gen_app ()
+          (.childCons succBranch (.childCons predecessor .childNil)))
+        (.childCons
+          (.mkGen .gen_natRec ()
+            (.childCons predecessor
+              (.childCons zeroBranch (.childCons succBranch .childNil))))
+          .childNil))
+  rightReduct :=
+    .mkGen .gen_natRec ()
+      (.childCons
+        (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
+        (.childCons zeroBranch (.childCons steppedSuccBranch .childNil)))
+  leftStep := Step.iotaNatRecSucc
+  rightStep :=
+    Step.cong .gen_natRec ()
+      (StepChildren.there
+        (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
+        ((.mkGen .gen_natSucc () (.childCons predecessor .childNil)) :
+          RawTerm scope)
+        (StepChildren.there
+          (parentScope := scope) (headShift := 0) (restShifts := [0])
+          zeroBranch
+          (StepChildren.here
+            (parentScope := scope) (headShift := 0) (restShifts := [])
+            (.childNil : RawTermChildren [] scope)
+            succStep)))
+
 /-- Root `listElim listNil` iota branching against congruence in the
 selected nil-branch. -/
 def iotaListElimNilBranchCong {scope : Nat}
@@ -2148,6 +2310,250 @@ def iotaNatRecSuccBranchCong {scope : Nat}
     { commonReduct := zeroBranch
       leftChain := StepStar.refl zeroBranch
       rightChain := StepStar.single Step.iotaNatRecZero }
+
+/-- Root `natElim (natSucc predecessor)` iota against congruence in the
+zero-branch.  The join reduces the recursive call's zero-branch after the
+root iota fires. -/
+def iotaNatElimSuccZeroBranchCong {scope : Nat}
+    {predecessor zeroBranch steppedZeroBranch succBranch : RawTerm scope}
+    (zeroStep : Step zeroBranch steppedZeroBranch) :
+    LocalDiamond
+      (LocalStepBranching.iotaNatElimSuccZeroBranchCong
+        (predecessor := predecessor)
+        (zeroBranch := zeroBranch)
+        (steppedZeroBranch := steppedZeroBranch)
+        (succBranch := succBranch)
+        zeroStep) := by
+  dsimp [LocalStepBranching.iotaNatElimSuccZeroBranchCong]
+  exact
+    { commonReduct :=
+        .mkGen .gen_app ()
+          (.childCons
+            (.mkGen .gen_app ()
+              (.childCons succBranch (.childCons predecessor .childNil)))
+            (.childCons
+              (.mkGen .gen_natElim ()
+                (.childCons predecessor
+                  (.childCons steppedZeroBranch
+                    (.childCons succBranch .childNil))))
+              .childNil))
+      leftChain :=
+        StepStar.single
+          (Step.cong .gen_app ()
+            (StepChildren.there
+              (parentScope := scope) (headShift := 0) (restShifts := [0])
+              ((.mkGen .gen_app ()
+                (.childCons succBranch (.childCons predecessor .childNil))) :
+                RawTerm scope)
+              (StepChildren.here
+                (parentScope := scope) (headShift := 0) (restShifts := [])
+                (.childNil : RawTermChildren [] scope)
+                (Step.cong .gen_natElim ()
+                  (StepChildren.there
+                    (parentScope := scope) (headShift := 0)
+                    (restShifts := [0, 0])
+                    predecessor
+                    (StepChildren.here
+                      (parentScope := scope) (headShift := 0)
+                      (restShifts := [0])
+                      ((.childCons succBranch .childNil) :
+                        RawTermChildren [0] scope)
+                      zeroStep))))))
+      rightChain := StepStar.single Step.iotaNatElimSucc }
+
+/-- Root `natElim (natSucc predecessor)` iota against congruence in the
+successor branch.  The successor-branch step must be replayed in the
+app-chain head and in the recursive call. -/
+def iotaNatElimSuccSuccBranchCong {scope : Nat}
+    {predecessor zeroBranch succBranch steppedSuccBranch : RawTerm scope}
+    (succStep : Step succBranch steppedSuccBranch) :
+    LocalDiamond
+      (LocalStepBranching.iotaNatElimSuccSuccBranchCong
+        (predecessor := predecessor)
+        (zeroBranch := zeroBranch)
+        (succBranch := succBranch)
+        (steppedSuccBranch := steppedSuccBranch)
+        succStep) := by
+  dsimp [LocalStepBranching.iotaNatElimSuccSuccBranchCong]
+  exact
+    { commonReduct :=
+        .mkGen .gen_app ()
+          (.childCons
+            (.mkGen .gen_app ()
+              (.childCons steppedSuccBranch
+                (.childCons predecessor .childNil)))
+            (.childCons
+              (.mkGen .gen_natElim ()
+                (.childCons predecessor
+                  (.childCons zeroBranch
+                    (.childCons steppedSuccBranch .childNil))))
+              .childNil))
+      leftChain :=
+        StepStar.trans
+          (Step.cong .gen_app ()
+            (StepChildren.here
+              (parentScope := scope) (headShift := 0) (restShifts := [0])
+              ((.childCons
+                (.mkGen .gen_natElim ()
+                  (.childCons predecessor
+                    (.childCons zeroBranch
+                      (.childCons succBranch .childNil))))
+                .childNil) :
+                RawTermChildren [0] scope)
+              (Step.cong .gen_app ()
+                (StepChildren.here
+                  (parentScope := scope) (headShift := 0)
+                  (restShifts := [0])
+                  ((.childCons predecessor .childNil) :
+                    RawTermChildren [0] scope)
+                  succStep))))
+          (StepStar.single
+            (Step.cong .gen_app ()
+              (StepChildren.there
+                (parentScope := scope) (headShift := 0) (restShifts := [0])
+                ((.mkGen .gen_app ()
+                  (.childCons steppedSuccBranch
+                    (.childCons predecessor .childNil))) :
+                  RawTerm scope)
+                (StepChildren.here
+                  (parentScope := scope) (headShift := 0) (restShifts := [])
+                  (.childNil : RawTermChildren [] scope)
+                  (Step.cong .gen_natElim ()
+                    (StepChildren.there
+                      (parentScope := scope) (headShift := 0)
+                      (restShifts := [0, 0])
+                      predecessor
+                      (StepChildren.there
+                        (parentScope := scope) (headShift := 0)
+                        (restShifts := [0])
+                        zeroBranch
+                        (StepChildren.here
+                          (parentScope := scope) (headShift := 0)
+                          (restShifts := [])
+                          (.childNil : RawTermChildren [] scope)
+                          succStep))))))))
+      rightChain := StepStar.single Step.iotaNatElimSucc }
+
+/-- Root `natRec (natSucc predecessor)` iota against congruence in the
+zero-branch. -/
+def iotaNatRecSuccZeroBranchCong {scope : Nat}
+    {predecessor zeroBranch steppedZeroBranch succBranch : RawTerm scope}
+    (zeroStep : Step zeroBranch steppedZeroBranch) :
+    LocalDiamond
+      (LocalStepBranching.iotaNatRecSuccZeroBranchCong
+        (predecessor := predecessor)
+        (zeroBranch := zeroBranch)
+        (steppedZeroBranch := steppedZeroBranch)
+        (succBranch := succBranch)
+        zeroStep) := by
+  dsimp [LocalStepBranching.iotaNatRecSuccZeroBranchCong]
+  exact
+    { commonReduct :=
+        .mkGen .gen_app ()
+          (.childCons
+            (.mkGen .gen_app ()
+              (.childCons succBranch (.childCons predecessor .childNil)))
+            (.childCons
+              (.mkGen .gen_natRec ()
+                (.childCons predecessor
+                  (.childCons steppedZeroBranch
+                    (.childCons succBranch .childNil))))
+              .childNil))
+      leftChain :=
+        StepStar.single
+          (Step.cong .gen_app ()
+            (StepChildren.there
+              (parentScope := scope) (headShift := 0) (restShifts := [0])
+              ((.mkGen .gen_app ()
+                (.childCons succBranch (.childCons predecessor .childNil))) :
+                RawTerm scope)
+              (StepChildren.here
+                (parentScope := scope) (headShift := 0) (restShifts := [])
+                (.childNil : RawTermChildren [] scope)
+                (Step.cong .gen_natRec ()
+                  (StepChildren.there
+                    (parentScope := scope) (headShift := 0)
+                    (restShifts := [0, 0])
+                    predecessor
+                    (StepChildren.here
+                      (parentScope := scope) (headShift := 0)
+                      (restShifts := [0])
+                      ((.childCons succBranch .childNil) :
+                        RawTermChildren [0] scope)
+                      zeroStep))))))
+      rightChain := StepStar.single Step.iotaNatRecSucc }
+
+/-- Root `natRec (natSucc predecessor)` iota against congruence in the
+successor branch. -/
+def iotaNatRecSuccSuccBranchCong {scope : Nat}
+    {predecessor zeroBranch succBranch steppedSuccBranch : RawTerm scope}
+    (succStep : Step succBranch steppedSuccBranch) :
+    LocalDiamond
+      (LocalStepBranching.iotaNatRecSuccSuccBranchCong
+        (predecessor := predecessor)
+        (zeroBranch := zeroBranch)
+        (succBranch := succBranch)
+        (steppedSuccBranch := steppedSuccBranch)
+        succStep) := by
+  dsimp [LocalStepBranching.iotaNatRecSuccSuccBranchCong]
+  exact
+    { commonReduct :=
+        .mkGen .gen_app ()
+          (.childCons
+            (.mkGen .gen_app ()
+              (.childCons steppedSuccBranch
+                (.childCons predecessor .childNil)))
+            (.childCons
+              (.mkGen .gen_natRec ()
+                (.childCons predecessor
+                  (.childCons zeroBranch
+                    (.childCons steppedSuccBranch .childNil))))
+              .childNil))
+      leftChain :=
+        StepStar.trans
+          (Step.cong .gen_app ()
+            (StepChildren.here
+              (parentScope := scope) (headShift := 0) (restShifts := [0])
+              ((.childCons
+                (.mkGen .gen_natRec ()
+                  (.childCons predecessor
+                    (.childCons zeroBranch
+                      (.childCons succBranch .childNil))))
+                .childNil) :
+                RawTermChildren [0] scope)
+              (Step.cong .gen_app ()
+                (StepChildren.here
+                  (parentScope := scope) (headShift := 0)
+                  (restShifts := [0])
+                  ((.childCons predecessor .childNil) :
+                    RawTermChildren [0] scope)
+                  succStep))))
+          (StepStar.single
+            (Step.cong .gen_app ()
+              (StepChildren.there
+                (parentScope := scope) (headShift := 0) (restShifts := [0])
+                ((.mkGen .gen_app ()
+                  (.childCons steppedSuccBranch
+                    (.childCons predecessor .childNil))) :
+                  RawTerm scope)
+                (StepChildren.here
+                  (parentScope := scope) (headShift := 0) (restShifts := [])
+                  (.childNil : RawTermChildren [] scope)
+                  (Step.cong .gen_natRec ()
+                    (StepChildren.there
+                      (parentScope := scope) (headShift := 0)
+                      (restShifts := [0, 0])
+                      predecessor
+                      (StepChildren.there
+                        (parentScope := scope) (headShift := 0)
+                        (restShifts := [0])
+                        zeroBranch
+                        (StepChildren.here
+                          (parentScope := scope) (headShift := 0)
+                          (restShifts := [])
+                          (.childNil : RawTermChildren [] scope)
+                          succStep))))))))
+      rightChain := StepStar.single Step.iotaNatRecSucc }
 
 /-- Root `listElim listNil` iota against congruence in the selected
 nil-branch. -/
