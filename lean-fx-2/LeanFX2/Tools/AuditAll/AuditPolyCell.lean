@@ -76,6 +76,7 @@ import LeanFX2.Foundation.PolyCell.Core.CompoundSubstPreservation
 import LeanFX2.Foundation.PolyCell.Core.BetaRedexLeafPreservation
 import LeanFX2.Foundation.PolyCell.Core.BetaRedexCompoundPreservation
 import LeanFX2.Foundation.PolyCell.Core.HasCertifiedProjections
+import LeanFX2.Foundation.PolyCell.Core.BetaRedexEndToEnd
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactWrongChildShape
@@ -1038,6 +1039,36 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.eitherInr_wrapped_projection
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.refl_witness_projection
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.lam_body_projection
+
+-- ─── V2-L3.1 phase D step 21: end-to-end SR-beta (var-zero) ────────
+-- FIRST concrete end-to-end SR-beta theorem.  Composes the
+-- EXTRACTION (step 20 projections) with the REBUILD (step 18 leaf
+-- preservations) into a complete chain: source cert → post-beta cert.
+--
+-- Two theorems:
+--   * beta_redex_projection — chained extraction helper.  Given
+--     a cert for 'app (lam body) arg', extracts both bodyCert (at
+--     scope+1) and argCert (at scope) in one call.  Wraps the
+--     three-step projection chain (app → lam → body) plus
+--     (app → arg).
+--
+--   * beta_var_zero_e2e — the simplest meaningful SR-beta:
+--     '(λ x. x) arg → arg'.  The ONLY leaf-body case where the
+--     source cert contributes — argCert flows through to the
+--     result via subst0_varZero_preservation.
+--
+-- Closed-nullary bodies (unit/boolTrue/etc.) don't get end-to-end
+-- variants here because their post-beta term is closed and
+-- certified independently of the source cert hypothesis (vacuous);
+-- step 18's subst0_X_preservation covers those.
+--
+-- Forward-compat: when the structural induction lands, this
+-- theorem becomes a corollary of
+-- HasCertifiedCellDim0.preservedBySubst0 specialized to body =
+-- var 0.  Concrete shipping now verifies chain composition at
+-- zero axioms.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.beta_redex_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.beta_var_zero_e2e
 
 -- ─── V2-fix-4: restricted-profile admission predicate ──────────────
 -- Discharges Agent 3 H3.2 (admission machinery decoration).  Before
