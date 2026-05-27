@@ -233,4 +233,78 @@ theorem StepStar.transLast {scope : Nat}
     StepStar first third :=
   StepStar.trans_compose chain (StepStar.single lastStep)
 
+/-- Replay a `StepStar` chain in the function child of an application. -/
+theorem StepStar.appFunction {scope : Nat}
+    {functionTerm updatedFunctionTerm argumentTerm : RawTerm scope}
+    (functionChain : StepStar functionTerm updatedFunctionTerm) :
+    StepStar
+      (.mkGen .gen_app ()
+        (.childCons functionTerm (.childCons argumentTerm .childNil)))
+      (.mkGen .gen_app ()
+        (.childCons updatedFunctionTerm
+          (.childCons argumentTerm .childNil))) := by
+  induction functionChain with
+  | refl _ =>
+      exact StepStar.refl _
+  | trans headStep _ tailIH =>
+      exact
+        StepStar.trans
+          (Step.cong .gen_app ()
+            (StepChildren.here
+              (parentScope := scope) (headShift := 0) (restShifts := [0])
+              ((.childCons argumentTerm .childNil) :
+                RawTermChildren [0] scope)
+              headStep))
+          tailIH
+
+/-- Replay a `StepStar` chain in the argument child of an application. -/
+theorem StepStar.appArgument {scope : Nat}
+    (functionTerm : RawTerm scope)
+    {argumentTerm updatedArgumentTerm : RawTerm scope}
+    (argumentChain : StepStar argumentTerm updatedArgumentTerm) :
+    StepStar
+      (.mkGen .gen_app ()
+        (.childCons functionTerm (.childCons argumentTerm .childNil)))
+      (.mkGen .gen_app ()
+        (.childCons functionTerm
+          (.childCons updatedArgumentTerm .childNil))) := by
+  induction argumentChain with
+  | refl _ =>
+      exact StepStar.refl _
+  | trans headStep _ tailIH =>
+      exact
+        StepStar.trans
+          (Step.cong .gen_app ()
+            (StepChildren.there
+              (parentScope := scope) (headShift := 0) (restShifts := [0])
+              functionTerm
+              (StepChildren.here
+                (parentScope := scope) (headShift := 0)
+                (restShifts := [])
+                (.childNil : RawTermChildren [] scope)
+                headStep)))
+          tailIH
+
+/-- Replay a `StepStar` chain in the body child of a lambda. -/
+theorem StepStar.lamBody {scope : Nat}
+    {bodyTerm updatedBodyTerm : RawTerm (scope + 1)}
+    (bodyChain : StepStar bodyTerm updatedBodyTerm) :
+    StepStar
+      (.mkGen .gen_lam () (.childCons bodyTerm .childNil) :
+        RawTerm scope)
+      (.mkGen .gen_lam () (.childCons updatedBodyTerm .childNil) :
+        RawTerm scope) := by
+  induction bodyChain with
+  | refl _ =>
+      exact StepStar.refl _
+  | trans headStep _ tailIH =>
+      exact
+        StepStar.trans
+          (Step.cong .gen_lam ()
+            (StepChildren.here
+              (parentScope := scope) (headShift := 1) (restShifts := [])
+              (.childNil : RawTermChildren [] scope)
+              headStep))
+          tailIH
+
 end LeanFX2.Foundation.PolyCell.Core

@@ -2269,6 +2269,9 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.single
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.trans_compose
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.transLast
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.appFunction
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.appArgument
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.lamBody
 
 -- ─── V2-L1cert.12: existential preserves dim (#167) ─────────────────
 -- inferRawCellGeneral?_accepted_cellDimension_eq: when the
