@@ -147,4 +147,47 @@ theorem HasCertifiedCellDim0.beta_var_zero_e2e
       cert
   exact HasCertifiedCellDim0.subst0_varZero_preservation arg argCert
 
+/-- **The SR-beta assembly bridge: full chain parametrized by
+abstract subst0 preservation.**
+
+Given:
+  1. `sourceCert : HCC (app (lam body) arg)` — the beta redex source
+  2. `substPreservation : HCC body → HCC arg → HCC (subst0 body arg)`
+     — the body's subst preservation, ABSTRACTED as a hypothesis
+
+Conclude: `HCC (subst0 body arg)` — the post-beta certification.
+
+This factors SR-beta into two halves:
+  * EXTRACTION — `beta_redex_projection` yields `(bodyCert, argCert)`.
+  * REBUILD — `substPreservation bodyCert argCert` produces the target.
+
+The `substPreservation` hypothesis is precisely what the future
+structural induction `HasCertifiedCellDim0.preservedBySubst0`
+will provide.  Plugging that theorem in HERE closes SR-beta
+END-TO-END for arbitrary body shapes.
+
+Until the structural induction lands, this theorem is the
+**conceptual bridge**: callers that handle specific body shapes
+(e.g., the 8 leaf preservations + 9 compound preservations
+shipped in steps 18-19) can instantiate `substPreservation`
+case-by-case. -/
+theorem HasCertifiedCellDim0.beta_redex_assembly
+    {profile : PolyProfile} {scope : Nat}
+    (body : RawTerm (scope + 1))
+    (arg : RawTerm scope)
+    (sourceCert : HasCertifiedCellDim0 (profile := profile)
+              ((.mkGen .gen_app ()
+                (.childCons
+                  (.mkGen .gen_lam ()
+                    (.childCons body .childNil))
+                  (.childCons arg .childNil))) : RawTerm scope))
+    (substPreservation :
+      HasCertifiedCellDim0 (profile := profile) body →
+      HasCertifiedCellDim0 (profile := profile) arg →
+      HasCertifiedCellDim0 (profile := profile) (RawTerm.subst0 body arg)) :
+    HasCertifiedCellDim0 (profile := profile) (RawTerm.subst0 body arg) := by
+  obtain ⟨bodyCert, argCert⟩ :=
+    HasCertifiedCellDim0.beta_redex_projection body arg sourceCert
+  exact substPreservation bodyCert argCert
+
 end LeanFX2.Foundation.PolyCell.Core
