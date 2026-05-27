@@ -75,6 +75,7 @@ import LeanFX2.Foundation.PolyCell.Core.V1V2SeedVariableSpike
 import LeanFX2.Foundation.PolyCell.Core.GeneratorTotalityClassV2
 import LeanFX2.Foundation.PolyCell.Core.ConsistencyStrengthV2
 import LeanFX2.Foundation.PolyCell.Core.SiteOpennessV2
+import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2RenameEquiv
 
 namespace LeanFX2.Tools
 
@@ -3633,6 +3634,45 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.reflective_le_oracle
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.not_extensible_le_sealed
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.not_oracle_le_reflective
+
+-- ─── V2-L2.13 phase A: rename-equivariance (de Bruijn trap) ─────────
+-- Per polycell.md §11.6.3: the certifier must be rename-equivariant
+-- (renaming a well-formed term yields a well-formed term).
+-- Off-by-one in the lift-by-shift vs scope+shift creates a silent
+-- de Bruijn bug -- passes on closed terms, fails on open terms.
+--
+-- Phase A ships FIXTURE-LEVEL witnesses on 4 representative fixtures
+-- from the V2-fix-5 coverage suite:
+--   * unitTermRaw (closed term, scope 0 -> scope 1)
+--   * varZeroRaw (free variable, scope 1 -> scope 2; CRITICAL --
+--                 tests the Fin payload index shift)
+--   * pairUnitsRaw (spine-recursion, scope 0 -> scope 1)
+--   * identityUnitCellRaw (cell-layer .identityCell arm)
+--
+-- For each: the renamed fixture certifies at the SAME sort
+-- (.term) as the original.  Plus one cross-comparison agreement
+-- theorem witnessing the equation form of rename-equivariance.
+--
+-- Each closes by rfl.  The varZero case in particular is the
+-- LOAD-BEARING regression sentinel: if foldV2's lift-by-shift
+-- went off-by-one in Fin.succ propagation, the Fin payload
+-- mismatch would fail the certification's payload-evidence step,
+-- breaking this fixture.
+--
+-- Phase B (deferred): the universally-quantified structural
+-- theorem requires induction over RawTermV2 + foldV2 + threading
+-- through admission + payload-evidence + spine-recursion.
+-- Substantive metatheory cascade, real proof work.  Phase A
+-- establishes the EMPIRICAL baseline + naming convention.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CoverageV2.unitRenamedToScope1
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CoverageV2.varZeroRenamedToScope2
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CoverageV2.pairUnitsRenamedToScope1
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CoverageV2.identityUnitCellRenamedToScope1
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_unitRaw_renamed_sort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_varZeroRaw_renamed_sort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_pairUnitsRaw_renamed_sort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_identityUnitCellRaw_renamed_sort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.rename_equiv_unitTerm_sort_agree
 
 -- ─── V2-L1cert.12: existential preserves dim (#167) ─────────────────
 -- inferRawCellGeneralV2?_accepted_cellDimension_eq: when the
