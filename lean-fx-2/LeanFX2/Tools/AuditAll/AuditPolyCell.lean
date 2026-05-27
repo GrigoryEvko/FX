@@ -31,6 +31,7 @@ import LeanFX2.Foundation.PolyCell.Core.PolyCellV2Erasure
 import LeanFX2.Foundation.PolyCell.Core.PolyCellV2Helpers
 import LeanFX2.Foundation.PolyCell.Core.CertifyChildSpineV2
 import LeanFX2.Foundation.PolyCell.Core.ReconcileChildV2
+import LeanFX2.Foundation.PolyCell.Core.CertifyTermSpineV2
 
 namespace LeanFX2.Tools
 
@@ -3040,6 +3041,13 @@ namespace LeanFX2.Tools
 -- subst (Eq.ndrec) ×3 for sort/dim/raw.  Propext-free per the v1
 -- buildTermStepCellExact? recipe.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.reconcileChildV2
+
+-- ─── V2-L1cert.3: wired term-spine certifier (#158) ────────────────
+-- Top-level child-spine certifier produced by wiring
+-- certifyChildSpineV2? (#156) with reconcileChildV2 (#157) as the
+-- per-child callback.  One-line function composition; inherits
+-- axiom-cleanliness from its two components.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.certifyTermSpineV2?
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
