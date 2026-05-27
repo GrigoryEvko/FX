@@ -73,6 +73,7 @@ import LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpineV2Projections
 import LeanFX2.Foundation.PolyCell.Core.CertifiedToPolyCellV2
 import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaBoolTrue
 import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaBoolFalse
+import LeanFX2.Foundation.PolyCell.Core.SubjectReductionBaseIotas
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2Subst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2WrongChildShape
@@ -3438,6 +3439,21 @@ namespace LeanFX2.Tools
 -- Validates that the pure-projection iota template transfers
 -- verbatim across spine positions.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByIotaBoolFalse
+
+-- ─── V2-L3.1 phase D step 7: BASE-CASE branch-selection iota family ─
+-- Four structurally identical SR arms: natElim/natRec on natZero,
+-- listElim on listNil, optionMatch on optionNone.  Each: 3-child
+-- same-scope spine, target = 2nd child (the base branch).  Proof
+-- pattern verbatim from preservedByIotaBoolTrue.
+--
+-- Total pure-projection iota family after this commit:
+--   * 2nd-child target: 5/5 (iotaBoolTrue + 4 here)
+--   * 3rd-child target: 1/1 (iotaBoolFalse)
+-- Pure projection iotas: COMPLETE.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByIotaNatElimZero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByIotaNatRecZero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByIotaListElimNil
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByIotaOptionMatchNone
 
 -- ─── V2-fix-4: restricted-profile admission predicate ──────────────
 -- Discharges Agent 3 H3.2 (admission machinery decoration).  Before
