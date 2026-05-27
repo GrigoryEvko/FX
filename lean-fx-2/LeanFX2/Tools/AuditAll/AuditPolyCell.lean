@@ -69,6 +69,7 @@ import LeanFX2.Foundation.PolyCell.Core.RawCellV2CascadeLaws
 import LeanFX2.Foundation.PolyCell.Modal.ResourceGraded
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2Shape
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2TermBase
+import LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpineV2Projections
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2Subst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2WrongChildShape
@@ -3369,6 +3370,20 @@ namespace LeanFX2.Tools
 -- (lam body)` (or any composite generator), extract the spine
 -- success witness via this lemma, then projeect into each child.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.certifyRawCellExactV2?_termBase_accepted_implies_inner_succeeds
+
+-- ─── V2-L3.1 phase D step 2: spine head/tail/nil projections ───────
+-- Structural destructors on CertifiedTermSpineV2 — given a spine
+-- whose RawTermChildrenV2 index is (childCons headRaw restRaws),
+-- extract the head certified cell (with its existentially-bound
+-- boundary, as a sigma pair) and the tail spine.  Plus the
+-- nil-uniqueness lemma deriving spine = .nil from childNil index.
+--
+-- Building block for SR's Certified projection: combined with the
+-- termBase shape pin (phase D step 1), this lets the SR proof
+-- descend from a parent's spine success witness to per-child cells.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpineV2.headWithBoundary
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpineV2.tail
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpineV2.eq_nil_of_childNil
 
 -- ─── V2-fix-4: restricted-profile admission predicate ──────────────
 -- Discharges Agent 3 H3.2 (admission machinery decoration).  Before
