@@ -3776,6 +3776,26 @@ import LeanFX2.Foundation.PolyCell.Core.RawCellV2RenameSubst
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.rename_identityCell_unfolds
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.rename_preserves_dim_generatingCell_smoke
 
+-- V2-L2.9: cascade-deletion demonstration (the L2 payoff, quantified).
+-- Five cell-layer cascade lemmas as 5-arm structural recursions, each
+-- citing the corresponding term-layer Allais law at the termBase arm.
+-- Per cascade: v1 needed (5 cell arms + 78 term arms) = 83
+-- constructor-arm proofs; v2 needs (5 cell arms + 4 term arms) = 9
+-- arms — a ~9.2x reduction.  Across the five cascades shipped here,
+-- 45 arms in v2 replace 415 arms in v1.  Three smokes witness that
+-- the cell-layer cascade genuinely delegates to the term-layer
+-- Action laws at the `termBase` arm (no hidden cell-layer
+-- computation).  Closes #183.
+import LeanFX2.Foundation.PolyCell.Core.RawCellV2CascadeLaws
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.rename_compose
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.subst_compose
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.subst_identity_apply
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.rename_subst_commute
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.subst_rename_commute
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.rename_compose_termBase_smoke
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.subst_compose_termBase_smoke
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.subst_identity_apply_termBase_smoke
+
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Extension 0
