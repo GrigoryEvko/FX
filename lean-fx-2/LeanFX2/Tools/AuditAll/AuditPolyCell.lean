@@ -70,6 +70,7 @@ import LeanFX2.Foundation.PolyCell.Modal.ResourceGraded
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2Shape
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2Subst0
+import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2WrongChildShape
 
 namespace LeanFX2.Tools
 
@@ -3415,6 +3416,40 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.subst0_var_zero
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.subst0_var_succ_one_smoke
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.subst0_unit_smoke
+
+-- ─── V2-fix-6: .wrongChildShape reachability witnesses ──────────────
+-- Under fxProfile, every `Generator.childSpecs` entry uses `.term`
+-- sort and `cellDimension 0`, so the dispatcher's hSort/hDim checks
+-- always succeed under public ingress.  The `.wrongChildShape`
+-- rejection branch is structurally unreachable through the
+-- generator-driven path.
+--
+-- Agent 3 of the V2 falsification audit observed that this leaves
+-- the BEHAVIORAL CONTENT of `.wrongChildShape` rejection unwitnessed:
+-- the soundness-completeness triangulation cannot demonstrate the
+-- rejection branch fires at all without an activating fixture.
+--
+-- This commit ships two reachability witnesses that invoke
+-- `certifyChildrenInlineV2Fueled?` directly with handcrafted
+-- (childSpec, child) tuples that mismatch:
+--
+--   * _typeSort_rejects_termChild — typeSameScope spec + unit child
+--     triggers the outer hSort failure (sort .type vs .term).
+--
+--   * _nonZeroDim_rejects_termChild — cellDimension := 1 spec + unit
+--     child triggers the inner hDim failure (dim 1 vs dim 0, after
+--     the sort check succeeds).
+--
+-- Together they cover BOTH legs of the dispatch.  Each closes by
+-- rfl: the certifier is a pure computation, and concrete inputs
+-- reduce via Fin/Nat decidable equality to a definite
+-- Except.error .wrongChildShape.
+--
+-- Forward-compat: a future ProfileExtension adding cross-sort
+-- generators (V2-L1.13) would activate the public-ingress
+-- reachability of these probes' shapes automatically.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.certifyChildrenInlineV2Fueled?_typeSort_rejects_termChild
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.certifyChildrenInlineV2Fueled?_nonZeroDim_rejects_termChild
 
 -- ─── V2-L1cert.12: existential preserves dim (#167) ─────────────────
 -- inferRawCellGeneralV2?_accepted_cellDimension_eq: when the
