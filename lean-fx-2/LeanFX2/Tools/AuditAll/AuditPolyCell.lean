@@ -33,6 +33,8 @@ import LeanFX2.Foundation.PolyCell.Core.CertifyChildSpineV2
 import LeanFX2.Foundation.PolyCell.Core.ReconcileChildV2
 import LeanFX2.Foundation.PolyCell.Core.CertifyTermSpineV2
 import LeanFX2.Foundation.PolyCell.Core.CertifyTermExactV2
+import LeanFX2.Foundation.PolyCell.Core.CertifiedRawCellV2
+import LeanFX2.Foundation.PolyCell.Core.BuildGeneratingCellExactV2
 
 namespace LeanFX2.Tools
 
@@ -3058,6 +3060,21 @@ namespace LeanFX2.Tools
 -- certifyTermSpineV2? as a coherence proof, which absorbs the
 -- equation via internal `subst`.  No ▸ chains at this layer.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.certifyTermExactV2?
+
+-- ─── V2-L1cert.5: raw-indexed package + generating cell builder (#160) ──
+-- CertifiedRawCellV2 is the raw-INDEXED package (rawCell as parameter,
+-- not field) used by the exact certifier (#162).  Three fields: sort,
+-- boundary, certifiedCell (dim is computed via rawCell.dim).
+--
+-- buildGeneratingCellExactV2? uses the v1-proven transport recipe:
+-- by_cases on ruleId/sourceSort/targetSort/dimEq + subst's + a final
+-- generalize+subst dance on target.dim to align with source.dim.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedRawCellV2
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedRawCellV2.mk
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedRawCellV2.sort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedRawCellV2.boundary
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedRawCellV2.certifiedCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.buildGeneratingCellExactV2?
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
