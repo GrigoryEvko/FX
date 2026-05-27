@@ -92,6 +92,7 @@ import LeanFX2.Foundation.PolyCell.Core.SubstPreservationMutual
 import LeanFX2.Foundation.PolyCell.Core.CongPreservationMutual
 import LeanFX2.Foundation.PolyCell.Core.StepPreservesShape
 import LeanFX2.Foundation.PolyCell.Core.CriticalPairs
+import LeanFX2.Foundation.PolyCell.Core.CdLemma
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactWrongChildShape
@@ -1242,6 +1243,11 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaIdJWitnessCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaIdStrictRecBaseCaseCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaIdStrictRecWitnessCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepPairJoin
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CdLemmaStatement
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.HasJoin
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.hasJoin
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.toStepPairJoin
 
 -- ─── V2-L3.1 phase D step 35: HCC-level wrappers around the cell-step
 -- helpers (phase D 32/33).  Same recipe, .intro-wrapped to land in
