@@ -74,6 +74,7 @@ import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2WrongChildShape
 import LeanFX2.Foundation.PolyCell.Core.V1V2SeedVariableSpike
 import LeanFX2.Foundation.PolyCell.Core.GeneratorTotalityClassV2
 import LeanFX2.Foundation.PolyCell.Core.ConsistencyStrengthV2
+import LeanFX2.Foundation.PolyCell.Core.SiteOpennessV2
 
 namespace LeanFX2.Tools
 
@@ -3588,6 +3589,50 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.mahlo_le_custom_zero
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.custom_zero_le_custom_one
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.not_predicative_le_finitistic
+
+-- ─── V2-L1.13: SiteOpenness + compatibility (open/closed spectrum) ──
+-- Per polycell.md §11.7.3: every profile carries a SiteOpenness tag
+-- indicating how open it is to external content.  ProfileExtensions
+-- must satisfy opennessCompatible: extension.openness <= base.openness
+-- (extensions cannot make a base profile MORE open).
+--
+-- Four-tier inductive over the openness tower:
+--   * sealed     -- no extensions admitted; strongest internal
+--                   reasoning (full quartet provable).
+--   * extensible -- extensions via ProfileExtension admission contract
+--                   (fxProfile default).
+--   * reflective -- extensions + Era R ReflTerm self-reference.
+--   * oracle     -- external oracle calls with explicit trust
+--                   boundaries.
+--
+-- Decidable LE via toRank: SiteOpenness -> Nat + Nat.decLe.
+-- Five witness theorems pin the chain (sealed < extensible <
+-- reflective < oracle), plus two antisymmetry cases.
+--
+-- Note opposite-direction monotonicity from ConsistencyStrength:
+--   * Consistency: extensions can only INCREASE strength.
+--   * Openness:    extensions can only PRESERVE or NARROW openness.
+-- Both disciplines reflect different concerns (strength
+-- = lower bound on provability; openness = upper bound on
+-- extensibility).
+--
+-- Pattern: same Nat-rank + Decidable LE shape as V2-L1.12, completing
+-- the per-profile-metadata triplet (TotalityClass for generators,
+-- ConsistencyStrength + SiteOpenness for profiles).
+--
+-- Forward-compat: V2-L1.13 phase B integrates openness +
+-- opennessCompatible fields into ProfileExtension, plus a separate
+-- well-formedness check enforcing "sealed admits no extensions"
+-- (the inequality alone allows sealed <= sealed; the semantic rule
+-- forbids any extension on a sealed base).
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.SiteOpenness
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.SiteOpenness.toRank
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.SiteOpenness.le
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.sealed_le_extensible
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.extensible_le_reflective
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.reflective_le_oracle
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.not_extensible_le_sealed
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.not_oracle_le_reflective
 
 -- ─── V2-L1cert.12: existential preserves dim (#167) ─────────────────
 -- inferRawCellGeneralV2?_accepted_cellDimension_eq: when the
