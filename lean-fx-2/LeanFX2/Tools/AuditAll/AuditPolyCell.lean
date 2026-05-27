@@ -100,6 +100,7 @@ import LeanFX2.Foundation.PolyCell.Core.CellNonVarStepRenamer
 import LeanFX2.Foundation.PolyCell.Core.CellNonVarStepSubstituter
 import LeanFX2.Foundation.PolyCell.Core.SpineConsStep
 import LeanFX2.Foundation.PolyCell.Core.StepHCCWrappers
+import LeanFX2.Foundation.PolyCell.Core.FoldShiftGreaterThanOne
 
 namespace LeanFX2.Tools
 
@@ -2626,6 +2627,23 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCell.rename_compose_termBase_smoke
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCell.subst_compose_termBase_smoke
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCell.subst_identity_apply_termBase_smoke
+
+-- V2-fix-8: foldV2 shift greater-than-one property smoke.  Pins the
+-- fold engine's binder-shift behavior ahead of Phase Z₀'s commitment
+-- to add eliminator motive children at shift > 1 (per polycell.md
+-- §11.8.3 + §3.16.6).  Two sections: (1) `iterateLiftRaw` equational
+-- smokes at depths 0/1/2/3 + the recursive `succ` equation; (2)
+-- `foldChildren` over synthetic shift-list spines `[2]` and `[0,2,1]`
+-- with identity renaming.  Each theorem closes by `rfl` because the
+-- engine is shift-polymorphic by construction.  Closes #249.
+-- (Import lives at the file head per Lean import-position discipline.)
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.iterateLiftRaw_depth_zero_eq_self
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.iterateLiftRaw_depth_one_eq_liftForRaw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.iterateLiftRaw_depth_two_eq_double_liftForRaw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.iterateLiftRaw_depth_three_eq_triple_liftForRaw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.iterateLiftRaw_succ_unfolds
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.rename_identity_synthetic_shift_two_spine_eq_self
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.rename_identity_synthetic_shifts_zero_two_one_spine_eq_self
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
