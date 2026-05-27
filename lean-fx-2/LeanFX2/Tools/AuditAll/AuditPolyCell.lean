@@ -1080,6 +1080,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.swap
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.betaBeta
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.betaFunctionCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.betaArgumentCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaBoolTrueSameRoot
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaBoolFalseSameRoot
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaFstPairSameRoot
@@ -1152,6 +1154,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.sameReduct
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.sameReductOfEq
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.betaBeta
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.betaFunctionCongOfSubst0Replay
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.betaFunctionCongReverseOfSubst0Replay
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.betaArgumentCongOfSubst0Replay
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.betaArgumentCongReverseOfSubst0Replay
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaBoolTrueSameRoot
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaBoolFalseSameRoot
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaFstPairSameRoot

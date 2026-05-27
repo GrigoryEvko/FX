@@ -683,6 +683,74 @@ def betaBeta {scope : Nat} (body : RawTerm (scope + 1))
   leftStep := Step.beta
   rightStep := Step.beta
 
+/-- Beta competing with congruence in the application function child,
+where the function child is itself a lambda whose body takes one step.
+
+This is the proof-relevant root/congruence hotspot for beta on app
+child position 0.  The corresponding diamond needs a substitution
+replay from `subst0 body argument` to `subst0 updatedBody argument`;
+that replay is supplied by the `LocalDiamond` template below. -/
+def betaFunctionCong {scope : Nat}
+    {body updatedBody : RawTerm (scope + 1)}
+    (argument : RawTerm scope) (bodyStep : Step body updatedBody) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_app ()
+      (.childCons
+        (.mkGen .gen_lam () (.childCons body .childNil))
+        (.childCons argument .childNil))
+  leftReduct := RawTerm.subst0 body argument
+  rightReduct :=
+    .mkGen .gen_app ()
+      (.childCons
+        (.mkGen .gen_lam () (.childCons updatedBody .childNil))
+        (.childCons argument .childNil))
+  leftStep := Step.beta
+  rightStep :=
+    Step.cong .gen_app ()
+      (StepChildren.here
+        (parentScope := scope) (headShift := 0) (restShifts := [0])
+        ((.childCons argument .childNil) : RawTermChildren [0] scope)
+        (Step.cong .gen_lam ()
+          (StepChildren.here
+            (parentScope := scope) (headShift := 1) (restShifts := [])
+            (.childNil : RawTermChildren [] scope)
+            bodyStep)))
+
+/-- Beta competing with congruence in the application argument child.
+
+This is the proof-relevant root/congruence hotspot for beta on app
+child position 1.  The corresponding diamond needs a substitution
+replay from `subst0 body argument` to `subst0 body updatedArgument`;
+that replay is supplied by the `LocalDiamond` template below. -/
+def betaArgumentCong {scope : Nat}
+    (body : RawTerm (scope + 1))
+    {argument updatedArgument : RawTerm scope}
+    (argumentStep : Step argument updatedArgument) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_app ()
+      (.childCons
+        (.mkGen .gen_lam () (.childCons body .childNil))
+        (.childCons argument .childNil))
+  leftReduct := RawTerm.subst0 body argument
+  rightReduct :=
+    .mkGen .gen_app ()
+      (.childCons
+        (.mkGen .gen_lam () (.childCons body .childNil))
+        (.childCons updatedArgument .childNil))
+  leftStep := Step.beta
+  rightStep :=
+    Step.cong .gen_app ()
+      (StepChildren.there
+        (parentScope := scope) (headShift := 0) (restShifts := [0])
+        ((.mkGen .gen_lam () (.childCons body .childNil)) :
+          RawTerm scope)
+        (StepChildren.here
+          (parentScope := scope) (headShift := 0) (restShifts := [])
+          (.childNil : RawTermChildren [] scope)
+          argumentStep))
+
 /-- The concrete same-root bool-true iota branching.
 
 Both one-step paths eliminate the same `boolElim boolTrue` redex and
@@ -2584,6 +2652,78 @@ def betaBeta {scope : Nat} (body : RawTerm (scope + 1))
     (arg : RawTerm scope) :
     LocalDiamond (LocalStepBranching.betaBeta body arg) :=
   sameReduct Step.beta Step.beta
+
+/-- Conditional beta/function-congruence local diamond.
+
+The template is intentionally conditional: it closes the local diamond
+once supplied with the real substitution replay theorem
+`subst0 body argument ->* subst0 updatedBody argument`.  Until that
+replay is proved generically, the app root/congruence schema remains
+marked unresolved by `RootCongruenceBranching.hasCurrentResolution`. -/
+def betaFunctionCongOfSubst0Replay {scope : Nat}
+    {body updatedBody : RawTerm (scope + 1)}
+    (argument : RawTerm scope) (bodyStep : Step body updatedBody)
+    (subst0Replay :
+      StepStar (RawTerm.subst0 body argument)
+        (RawTerm.subst0 updatedBody argument)) :
+    LocalDiamond
+      (LocalStepBranching.betaFunctionCong argument bodyStep) where
+  commonReduct := RawTerm.subst0 updatedBody argument
+  leftChain := by
+    dsimp [LocalStepBranching.betaFunctionCong]
+    exact subst0Replay
+  rightChain := by
+    dsimp [LocalStepBranching.betaFunctionCong]
+    exact StepStar.single (Step.beta (body := updatedBody) (arg := argument))
+
+/-- Reverse orientation for the conditional beta/function-congruence
+diamond. -/
+def betaFunctionCongReverseOfSubst0Replay {scope : Nat}
+    {body updatedBody : RawTerm (scope + 1)}
+    (argument : RawTerm scope) (bodyStep : Step body updatedBody)
+    (subst0Replay :
+      StepStar (RawTerm.subst0 body argument)
+        (RawTerm.subst0 updatedBody argument)) :
+    LocalDiamond
+      (LocalStepBranching.betaFunctionCong argument bodyStep).swap :=
+  (betaFunctionCongOfSubst0Replay argument bodyStep subst0Replay).swap
+
+/-- Conditional beta/argument-congruence local diamond.
+
+The template is intentionally conditional: it closes the local diamond
+once supplied with the real substitution replay theorem
+`subst0 body argument ->* subst0 body updatedArgument`.  This is the
+duplicating case for beta, so the replay target is a `StepStar` chain
+rather than a promised single step. -/
+def betaArgumentCongOfSubst0Replay {scope : Nat}
+    (body : RawTerm (scope + 1))
+    {argument updatedArgument : RawTerm scope}
+    (argumentStep : Step argument updatedArgument)
+    (subst0Replay :
+      StepStar (RawTerm.subst0 body argument)
+        (RawTerm.subst0 body updatedArgument)) :
+    LocalDiamond
+      (LocalStepBranching.betaArgumentCong body argumentStep) where
+  commonReduct := RawTerm.subst0 body updatedArgument
+  leftChain := by
+    dsimp [LocalStepBranching.betaArgumentCong]
+    exact subst0Replay
+  rightChain := by
+    dsimp [LocalStepBranching.betaArgumentCong]
+    exact StepStar.single (Step.beta (body := body) (arg := updatedArgument))
+
+/-- Reverse orientation for the conditional beta/argument-congruence
+diamond. -/
+def betaArgumentCongReverseOfSubst0Replay {scope : Nat}
+    (body : RawTerm (scope + 1))
+    {argument updatedArgument : RawTerm scope}
+    (argumentStep : Step argument updatedArgument)
+    (subst0Replay :
+      StepStar (RawTerm.subst0 body argument)
+        (RawTerm.subst0 body updatedArgument)) :
+    LocalDiamond
+      (LocalStepBranching.betaArgumentCong body argumentStep).swap :=
+  (betaArgumentCongOfSubst0Replay body argumentStep subst0Replay).swap
 
 /-- Concrete bool-true iota same-root local diamond. -/
 def iotaBoolTrueSameRoot {scope : Nat}
