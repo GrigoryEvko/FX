@@ -24,18 +24,6 @@ import LeanFX2.Foundation.Context
 import LeanFX2.Foundation.Universe
 import LeanFX2.Foundation.Cofib
 import LeanFX2.Foundation.RenameIdentity
-import LeanFX2.Foundation._deprecated_polygraph.PolyCell
-import LeanFX2.Foundation._deprecated_polygraph.ParallelPair
-import LeanFX2.Foundation._deprecated_polygraph.Wellfounded
-import LeanFX2.Foundation._deprecated_polygraph.DecEq
-import LeanFX2.Foundation._deprecated_polygraph.VerticalComp
-import LeanFX2.Foundation._deprecated_polygraph.HorizontalComp
-import LeanFX2.Foundation._deprecated_polygraph.Laws
-import LeanFX2.Foundation._deprecated_polygraph.FreeCategory
-import LeanFX2.Foundation._deprecated_polygraph.StepLabel
-import LeanFX2.Foundation._deprecated_polygraph.Dim1Extraction
-import LeanFX2.Foundation._deprecated_polygraph.Dim1Equivalence
-import LeanFX2.Foundation._deprecated_polygraph.Dim2Diamond
 
 -- Layer 1 - Term
 import LeanFX2.Term

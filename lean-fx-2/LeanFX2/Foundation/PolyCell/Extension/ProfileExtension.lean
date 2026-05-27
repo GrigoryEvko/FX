@@ -1,5 +1,5 @@
-import LeanFX2.Foundation.PolyCell.Core.PolyTerm
 import LeanFX2.Foundation.PolyCell.Tier0.AxisObligation
+import LeanFX2.Foundation.PolyCell.Core.PolyProfile
 /-!
 # ProfileExtension — The Current Admission Ledger (§3.14)
 
@@ -408,42 +408,10 @@ theorem extendProfile_preserves_mttNormConstructionLevel
     (extendProfile baseProfile extension).mttNormConstructionLevel =
       baseProfile.mttNormConstructionLevel := rfl
 
-/-- A ProfileLens is the future conservative-extension roundtrip object.
-The current instance below is only the structural profile-retargeting lens
-for `PolyTerm`; it is not an algebra-extension or typed-kernel equivalence. -/
-structure ProfileLens (baseProfile : PolyProfile)
-    (extension : ProfileExtension baseProfile) where
-  /-- Lift: embed base cells into extended profile. -/
-  liftDim0 : PolyTerm baseProfile 0 → PolyTerm (extendProfile baseProfile extension) 0
-  /-- Forget: project extended cells back to base. -/
-  forgetDim0 : PolyTerm (extendProfile baseProfile extension) 0 → PolyTerm baseProfile 0
-  /-- Roundtrip: forget ∘ lift = id. -/
-  roundtrip : ∀ (cell : PolyTerm baseProfile 0),
-    forgetDim0 (liftDim0 cell) = cell
-
-/-- Structural lift/forget lens induced by the current profile-phantom
-`PolyTerm` syntax.  This gives a real computable roundtrip on dim-0 cells, but
-it does not interpret new generators or reduction rules. -/
-def ProfileLens.structural (baseProfile : PolyProfile)
-    (extension : ProfileExtension baseProfile) :
-    ProfileLens baseProfile extension where
-  liftDim0 := fun cell =>
-    cell.retargetProfile (targetProfile := extendProfile baseProfile extension)
-  forgetDim0 := fun cell =>
-    cell.retargetProfile (targetProfile := baseProfile)
-  roundtrip := by
-    intro cell
-    exact PolyTerm.retargetProfile_roundtrip cell
-
-/-- The structural lens roundtrip is exactly the `ProfileLens` law. -/
-theorem ProfileLens.structural_roundtrip
-    (baseProfile : PolyProfile)
-    (extension : ProfileExtension baseProfile)
-    (cell : PolyTerm baseProfile 0) :
-    (ProfileLens.structural baseProfile extension).forgetDim0
-      ((ProfileLens.structural baseProfile extension).liftDim0 cell) =
-        cell :=
-  (ProfileLens.structural baseProfile extension).roundtrip cell
+-- `ProfileLens` (formerly here, defined over v1 `PolyTerm`) was retired
+-- alongside the v1 dim-indexed cell substrate (TCB.9 v1 retirement).  A v2
+-- counterpart living over `RawTermV2` is V2-L5.1 in the roadmap, not yet
+-- shipped — pending the PolyCellV2-aware ProfileLens redesign.
 
 /-- Proof-relevant view of the five local admission evidence fields.
 
@@ -599,19 +567,9 @@ theorem etaReductionExtension_admitted :
     etaReductionExtension.Admitted :=
   etaReductionExtension_localAdmissionRecord
 
-/-- Structural lift/forget lens for the eta demonstration extension.
-This remains a syntax-level lens only; eta reduction is not operationally
-interpreted by this declaration. -/
-def etaReductionExtension_structuralLens :
-    ProfileLens fxProfile etaReductionExtension :=
-  ProfileLens.structural fxProfile etaReductionExtension
-
-/-- The eta structural lens roundtrips dim-0 cells. -/
-theorem etaReductionExtension_structuralLens_roundtrip
-    (cell : PolyTerm fxProfile 0) :
-    etaReductionExtension_structuralLens.forgetDim0
-      (etaReductionExtension_structuralLens.liftDim0 cell) = cell :=
-  etaReductionExtension_structuralLens.roundtrip cell
+-- `etaReductionExtension_structuralLens` (formerly here) was retired with
+-- the v1 PolyTerm-bound `ProfileLens` it consumed.  A v2-aware structural
+-- lens lives in V2-L5.1's roadmap entry.
 
 /-- Extended FX with eta bookkeeping as a `PolyProfile` value.  The extension
 does not add an algebra-extension theorem. -/

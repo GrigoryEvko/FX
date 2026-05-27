@@ -10,9 +10,6 @@ import LeanFX2.Foundation.RawPartialRename.IsSomeInversion
 import LeanFX2.Foundation.TyStrengthen
 import LeanFX2.Foundation.TyStrengthenInversion
 import LeanFX2.Foundation.TyRenameInjective
-import LeanFX2.Foundation._deprecated_polygraph.Wellfounded
-import LeanFX2.Foundation._deprecated_polygraph.DecEq
-import LeanFX2.Foundation._deprecated_polygraph.FreeCategory
 import LeanFX2.Reduction.RawParWeakenInv.Foundation
 
 namespace LeanFX2.Tools
@@ -86,70 +83,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.RawTerm.constantPathBody?_pathLam_nested_interval_escape_none
 #assert_no_axioms LeanFX2.RawTerm.constantPathBody?_unit_none
 
--- The old per-constructor cd cascade is TODO POLYCELL-disabled. Its
--- replacement must be audited through the PolyCell confluence view once that
--- view exists, not by stale `RawTerm.cd*Case` declaration names.
-
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.PolyCell
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.ParallelPair
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.atomVertex
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.arrowSource
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.arrowTarget
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.cellSource
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.cellTarget
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.cellIdx
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.dimensionMeasure
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.cellSource_dimensionMeasure_lt
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.cellTarget_dimensionMeasure_lt
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.arrowSource_dimensionMeasure_lt
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.arrowTarget_dimensionMeasure_lt
-
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.PolyCell.atom_unique_at_dim0
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.PolyCell.arrow_unique_at_dim1
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.PolyCell.cell_decompose_at_dimSucc
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.decEqAtDim0
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.decEqAtDim1
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.decEqAtDimSucc
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.polyCellDecEqAt
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.decEqPolyCell
-
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.VerticalChain
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.VerticalChain.length
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.VerticalChain.length_identity_eq_zero
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.VerticalChain.length_cons_eq_succ_length_tail
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.VerticalChain.append
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.VerticalChain.append_identity_left
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.VerticalChain.append_cons_unfold
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.VerticalChain.append_identity_right
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.VerticalChain.length_append_eq_sum_of_lengths
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.VerticalChain.composeTwoCells
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.VerticalChain.composeTwoCells_length_eq_two
-
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.HorizontalChain
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.HorizontalChain.length
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.HorizontalChain.length_identity_eq_zero
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.HorizontalChain.length_cons_eq_succ_length_tail
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.HorizontalChain.append
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.HorizontalChain.append_identity_left
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.HorizontalChain.append_cons_unfold
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.HorizontalChain.append_identity_right
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.HorizontalChain.length_append_eq_sum_of_lengths
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.HorizontalChain.composeTwoArrows
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.HorizontalChain.composeTwoArrows_length_eq_two
-
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.VerticalChain.append_assoc
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.HorizontalChain.append_assoc
-
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.FreeOneCategory.compose_assoc
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.FreeOneCategory.identity_left
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.FreeOneCategory.identity_right
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.FreeOneCategory.fromGenerator
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.FreeOneCategory.fromGenerator_length_eq_one
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.FreeTwoCategoryAt.compose_assoc
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.FreeTwoCategoryAt.identity_left
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.FreeTwoCategoryAt.identity_right
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.FreeTwoCategoryAt.fromGenerator
-#assert_no_axioms LeanFX2.Foundation._deprecated_polygraph.FreeTwoCategoryAt.fromGenerator_length_eq_one
+-- The _deprecated_polygraph audit gates have been removed; the directory was
+-- deleted entirely (TCB.9 v1 retirement).  The PolyCell confluence view will
+-- be audited through the V2 substrate's gates in
+-- `LeanFX2/Tools/AuditAll/AuditPolyCell.lean`.
 
 /-! ### RawRenaming weaken/lift injectivity (RawStep.par.weaken_inv prereq)
 
