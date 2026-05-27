@@ -73,6 +73,7 @@ import LeanFX2.Foundation.PolyCell.Core.RawTermV2Subst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2WrongChildShape
 import LeanFX2.Foundation.PolyCell.Core.V1V2SeedVariableSpike
 import LeanFX2.Foundation.PolyCell.Core.GeneratorTotalityClassV2
+import LeanFX2.Foundation.PolyCell.Core.ConsistencyStrengthV2
 
 namespace LeanFX2.Tools
 
@@ -3541,6 +3542,52 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.gen_fixedPoint_partial
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.gen_codataUnfold_productive
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.gen_polyNu_productive
+
+-- ─── V2-L1.12: ConsistencyStrength + monotonicity (Gödel's ceiling)
+-- Per polycell.md §11.7.1: every profile's certificate carries a
+-- ConsistencyStrength TAG that is a LOWER BOUND on what the profile
+-- can prove.  ProfileExtensions must be MONOTONE in strength
+-- (extending can never DECREASE consistency strength).
+--
+-- Six-tier inductive following the strength tower:
+--   * finitistic     — PRA / bounded arithmetic
+--   * predicative    — PA / predicative analysis
+--   * impredicative  — Zermelo / power set
+--   * inaccessible   — ZFC + inaccessible cardinal
+--   * mahlo          — ZFC + Mahlo cardinal
+--   * custom n       — user-declared (Nat tag), ordinally above mahlo
+--
+-- Decidable LE via toRank : ConsistencyStrength -> Nat + Nat.decLe.
+-- Seven witness theorems pin the monotonic chain (finitistic <
+-- predicative < impredicative < inaccessible < mahlo < custom 0 <
+-- custom 1), plus one antisymmetry (¬ predicative ≤ finitistic).
+--
+-- Why Nat tag instead of Lean.Name: keeps v2 substrate
+-- elaborator-independent (no Lean.Name import dragging the
+-- elaborator into the audit tree).  Operationally sufficient for
+-- monotonicity comparison — a Lean-level proof obligation can map
+-- any Name to a fresh Nat at admission time.
+--
+-- @[reducible] on toRank / le makes every concrete comparison
+-- close by `decide`.  The Nat encoding is the cross-verifier ABI:
+-- the FX0-PolyCell external verifier (FX0-PC.2+) reads the same
+-- Nat tag and applies the same numeric comparison.
+--
+-- Forward-compat: V2-L1.12 phase B integrates strengthBefore /
+-- strengthAfter / strengthMonotone fields into ProfileExtension
+-- (Foundation/PolyCell/Extension/ProfileExtension.lean).  Phase A
+-- (this commit) ships the OBSERVATIONAL layer; phase B threads it
+-- through the existing ProfileExtension calculus.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.ConsistencyStrength
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.ConsistencyStrength.toRank
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.ConsistencyStrength.le
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.finitistic_le_predicative
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.predicative_le_impredicative
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.impredicative_le_inaccessible
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.inaccessible_le_mahlo
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.mahlo_le_custom_zero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.custom_zero_le_custom_one
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.not_predicative_le_finitistic
 
 -- ─── V2-L1cert.12: existential preserves dim (#167) ─────────────────
 -- inferRawCellGeneralV2?_accepted_cellDimension_eq: when the
