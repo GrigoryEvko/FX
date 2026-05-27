@@ -1,4 +1,5 @@
 import LeanFX2.Foundation.PolyCell.Core.GenAlgebraV2
+import LeanFX2.Foundation.PolyCell.Core.LiftsRaw
 
 /-! # Foundation/PolyCell/Core/FoldV2 — the generic fold engine (L2 workhorse)
 
@@ -103,24 +104,30 @@ namespace LeanFX2.Foundation.PolyCell.Core
 
 open LeanFX2
 
-/-- Iterate `Action.liftForRaw` N times.  Threads a Container under
-N successive binder crossings — used by foldV2 to lift the Container
-at each child of a binder-introducing generator.
+/-- Iterate `LiftsRaw.liftForRaw` N times.  Threads a Container
+under N successive binder crossings — used by foldV2 to lift the
+Container at each child of a binder-introducing generator.
 
 For example, when foldV2 recurses into the body of a `gen_lam`
 (binderShift `[1]` for the body child), the body lives at scope
 `parentScope + 1`, so the Container must be lifted once via
-`Action.liftForRaw`.
+`LiftsRaw.liftForRaw`.
 
 This generalizes to arbitrary binder depths (any non-negative
-shift). -/
-def iterateLiftRaw {Container : Nat → Nat → Type} [Action Container]
+shift).
+
+The `[LiftsRaw Container]` constraint replaces an earlier `[Action
+Container]` (per V2-L2.6 / #180 refactor).  `LiftsRaw` is the
+minimal typeclass providing `liftForRaw` alone — sufficient for
+foldV2 and avoids the chicken-and-egg with `Action.compose` which
+would require `RawTermV2.subst` for the `RawTermSubstV2` instance. -/
+def iterateLiftRaw {Container : Nat → Nat → Type} [LiftsRaw Container]
     {sourceScope targetScope : Nat}
     (someAction : Container sourceScope targetScope) (binderDepth : Nat) :
     Container (sourceScope + binderDepth) (targetScope + binderDepth) :=
   match binderDepth with
   | 0 => someAction
-  | priorDepth + 1 => Action.liftForRaw (iterateLiftRaw someAction priorDepth)
+  | priorDepth + 1 => LiftsRaw.liftForRaw (iterateLiftRaw someAction priorDepth)
 
 /-- The 194-arm enumeration in ONE place: for any non-variable
 generator, its `payload` type does not depend on scope.
@@ -156,9 +163,14 @@ mutual
 
 /-- Fold a `RawTermV2`: traverse the term, dispatching variables to
 the Container (via ActsOnRawTermV2Var) and non-variable generators
-to the algebra (after recursively folding children). -/
+to the algebra (after recursively folding children).
+
+The `[LiftsRaw Container]` constraint (formerly `[Action Container]`,
+per #180 refactor) suffices: foldV2 only invokes the binder lift,
+not `Action.compose` / `Action.identity` / the law fields.  See
+`LiftsRaw.lean` for the architectural rationale. -/
 def foldV2
-    {Container : Nat → Nat → Type} [Action Container]
+    {Container : Nat → Nat → Type} [LiftsRaw Container]
     [ActsOnRawTermV2Var Container]
     (algebra : GenAlgebraV2)
     {sourceScope targetScope : Nat}
@@ -191,9 +203,12 @@ def foldV2
       algebra.algebra generator payloadAtTarget foldedChildren
 
 /-- Fold a `RawTermChildrenV2` spine: walk each child, lifting the
-Container under binders as needed (per the child's binder shift). -/
+Container under binders as needed (per the child's binder shift).
+
+Same `[LiftsRaw Container]` constraint as `foldV2` (per #180
+refactor). -/
 def foldChildrenV2
-    {Container : Nat → Nat → Type} [Action Container]
+    {Container : Nat → Nat → Type} [LiftsRaw Container]
     [ActsOnRawTermV2Var Container]
     (algebra : GenAlgebraV2)
     {parentSourceScope parentTargetScope : Nat}

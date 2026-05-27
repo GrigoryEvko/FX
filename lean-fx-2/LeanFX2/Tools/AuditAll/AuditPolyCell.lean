@@ -53,6 +53,8 @@ import LeanFX2.Foundation.PolyCell.Core.GenAlgebraV2
 import LeanFX2.Foundation.PolyCell.Core.FoldV2
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2Rename
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2Weaken
+import LeanFX2.Foundation.PolyCell.Core.LiftsRaw
+import LeanFX2.Foundation.PolyCell.Core.RawTermV2Subst
 
 namespace LeanFX2.Tools
 
@@ -3567,6 +3569,37 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2.weaken_eq_rename
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.weaken_unit_smoke
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.weaken_var_zero_smoke
+
+-- ─── V2-L2.6: subst via foldV2 + LiftsRaw refactor (#180) ───────────
+-- THE THIRD L2 PAYOFF + an architectural refactor.
+--
+-- Refactor: extract LiftsRaw as the minimal binder-lift typeclass
+-- (just liftForRaw).  foldV2 (#177) now requires [LiftsRaw Container]
+-- instead of [Action Container].  Auto-derive bridge means existing
+-- Action-instanced types (RawRenaming) automatically satisfy LiftsRaw.
+--
+-- Resolution: subst-via-foldV2's chicken-and-egg dissolves because
+-- RawTermSubstV2 ships LiftsRaw (just lift, no compose) here, while
+-- the full Action instance (with subst-based compose) ships at #181.
+--
+-- Subst ships as ONE LINE:
+--   def RawTermV2.subst sigma term := foldV2 GenAlgebraV2.canonical sigma term
+--
+-- Both smoke tests close by `rfl` — full dispatch chain reduces on
+-- closed inputs, just like rename (#178) and weaken (#179).  The
+-- rename/weaken/subst trio is now complete; ONE engine, three
+-- one-line operations.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LiftsRaw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LiftsRaw.liftForRaw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.instLiftsRawOfAction
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubstV2.lift
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.instLiftsRawRawTermSubstV2
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.subst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2.subst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.subst_eq_foldV2
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2.subst_eq_foldChildrenV2
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.subst_identity_unit_smoke
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.subst_identity_var_zero_smoke
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
