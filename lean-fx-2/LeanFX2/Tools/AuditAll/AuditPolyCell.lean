@@ -1056,6 +1056,12 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaOptionMatchNoneSameRoot
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaIdJReflSameRoot
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaIdStrictRecReflSameRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaOptionMatchSomeSameRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaEitherMatchInlSameRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaEitherMatchInrSameRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaNatElimSuccSameRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaNatRecSuccSameRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaListElimConsSameRoot
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.sameReduct
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.sameReductOfEq
@@ -1070,6 +1076,12 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaOptionMatchNoneSameRoot
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaIdJReflSameRoot
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaIdStrictRecReflSameRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaOptionMatchSomeSameRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaEitherMatchInlSameRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaEitherMatchInrSameRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaNatElimSuccSameRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaNatRecSuccSameRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaListElimConsSameRoot
 
 -- ─── V2-L3.1 phase D step 35: HCC-level wrappers around the cell-step
 -- helpers (phase D 32/33).  Same recipe, .intro-wrapped to land in

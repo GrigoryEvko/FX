@@ -570,6 +570,163 @@ def iotaIdStrictRecReflSameRoot {scope : Nat}
   leftStep := Step.iotaIdStrictRecRefl
   rightStep := Step.iotaIdStrictRecRefl
 
+/-- The concrete same-root `optionMatch` some-case iota branching. -/
+def iotaOptionMatchSomeSameRoot {scope : Nat}
+    (value noneBranch someBranch : RawTerm scope) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_optionMatch ()
+      (.childCons
+        (.mkGen .gen_optionSome () (.childCons value .childNil))
+        (.childCons noneBranch (.childCons someBranch .childNil)))
+  leftReduct :=
+    .mkGen .gen_app ()
+      (.childCons someBranch (.childCons value .childNil))
+  rightReduct :=
+    .mkGen .gen_app ()
+      (.childCons someBranch (.childCons value .childNil))
+  leftStep := Step.iotaOptionMatchSome
+  rightStep := Step.iotaOptionMatchSome
+
+/-- The concrete same-root `eitherMatch` inl-case iota branching. -/
+def iotaEitherMatchInlSameRoot {scope : Nat}
+    (value leftBranch rightBranch : RawTerm scope) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_eitherMatch ()
+      (.childCons
+        (.mkGen .gen_eitherInl () (.childCons value .childNil))
+        (.childCons leftBranch (.childCons rightBranch .childNil)))
+  leftReduct :=
+    .mkGen .gen_app ()
+      (.childCons leftBranch (.childCons value .childNil))
+  rightReduct :=
+    .mkGen .gen_app ()
+      (.childCons leftBranch (.childCons value .childNil))
+  leftStep := Step.iotaEitherMatchInl
+  rightStep := Step.iotaEitherMatchInl
+
+/-- The concrete same-root `eitherMatch` inr-case iota branching. -/
+def iotaEitherMatchInrSameRoot {scope : Nat}
+    (value leftBranch rightBranch : RawTerm scope) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_eitherMatch ()
+      (.childCons
+        (.mkGen .gen_eitherInr () (.childCons value .childNil))
+        (.childCons leftBranch (.childCons rightBranch .childNil)))
+  leftReduct :=
+    .mkGen .gen_app ()
+      (.childCons rightBranch (.childCons value .childNil))
+  rightReduct :=
+    .mkGen .gen_app ()
+      (.childCons rightBranch (.childCons value .childNil))
+  leftStep := Step.iotaEitherMatchInr
+  rightStep := Step.iotaEitherMatchInr
+
+/-- The concrete same-root `natElim` succ-case iota branching. -/
+def iotaNatElimSuccSameRoot {scope : Nat}
+    (predecessor zeroBranch succBranch : RawTerm scope) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_natElim ()
+      (.childCons
+        (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
+        (.childCons zeroBranch (.childCons succBranch .childNil)))
+  leftReduct :=
+    .mkGen .gen_app ()
+      (.childCons
+        (.mkGen .gen_app ()
+          (.childCons succBranch (.childCons predecessor .childNil)))
+        (.childCons
+          (.mkGen .gen_natElim ()
+            (.childCons predecessor
+              (.childCons zeroBranch (.childCons succBranch .childNil))))
+          .childNil))
+  rightReduct :=
+    .mkGen .gen_app ()
+      (.childCons
+        (.mkGen .gen_app ()
+          (.childCons succBranch (.childCons predecessor .childNil)))
+        (.childCons
+          (.mkGen .gen_natElim ()
+            (.childCons predecessor
+              (.childCons zeroBranch (.childCons succBranch .childNil))))
+          .childNil))
+  leftStep := Step.iotaNatElimSucc
+  rightStep := Step.iotaNatElimSucc
+
+/-- The concrete same-root `natRec` succ-case iota branching. -/
+def iotaNatRecSuccSameRoot {scope : Nat}
+    (predecessor zeroBranch succBranch : RawTerm scope) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_natRec ()
+      (.childCons
+        (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
+        (.childCons zeroBranch (.childCons succBranch .childNil)))
+  leftReduct :=
+    .mkGen .gen_app ()
+      (.childCons
+        (.mkGen .gen_app ()
+          (.childCons succBranch (.childCons predecessor .childNil)))
+        (.childCons
+          (.mkGen .gen_natRec ()
+            (.childCons predecessor
+              (.childCons zeroBranch (.childCons succBranch .childNil))))
+          .childNil))
+  rightReduct :=
+    .mkGen .gen_app ()
+      (.childCons
+        (.mkGen .gen_app ()
+          (.childCons succBranch (.childCons predecessor .childNil)))
+        (.childCons
+          (.mkGen .gen_natRec ()
+            (.childCons predecessor
+              (.childCons zeroBranch (.childCons succBranch .childNil))))
+          .childNil))
+  leftStep := Step.iotaNatRecSucc
+  rightStep := Step.iotaNatRecSucc
+
+/-- The concrete same-root `listElim` cons-case iota branching. -/
+def iotaListElimConsSameRoot {scope : Nat}
+    (headValue tailValue nilBranch consBranch : RawTerm scope) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_listElim ()
+      (.childCons
+        (.mkGen .gen_listCons ()
+          (.childCons headValue (.childCons tailValue .childNil)))
+        (.childCons nilBranch (.childCons consBranch .childNil)))
+  leftReduct :=
+    .mkGen .gen_app ()
+      (.childCons
+        (.mkGen .gen_app ()
+          (.childCons
+            (.mkGen .gen_app ()
+              (.childCons consBranch (.childCons headValue .childNil)))
+            (.childCons tailValue .childNil)))
+        (.childCons
+          (.mkGen .gen_listElim ()
+            (.childCons tailValue
+              (.childCons nilBranch (.childCons consBranch .childNil))))
+          .childNil))
+  rightReduct :=
+    .mkGen .gen_app ()
+      (.childCons
+        (.mkGen .gen_app ()
+          (.childCons
+            (.mkGen .gen_app ()
+              (.childCons consBranch (.childCons headValue .childNil)))
+            (.childCons tailValue .childNil)))
+        (.childCons
+          (.mkGen .gen_listElim ()
+            (.childCons tailValue
+              (.childCons nilBranch (.childCons consBranch .childNil))))
+          .childNil))
+  leftStep := Step.iotaListElimCons
+  rightStep := Step.iotaListElimCons
+
 end LocalStepBranching
 
 /-- A concrete local diamond filler for one local one-step branching.
@@ -697,6 +854,54 @@ def iotaIdStrictRecReflSameRoot {scope : Nat}
     LocalDiamond
       (LocalStepBranching.iotaIdStrictRecReflSameRoot baseCase rawWitness) :=
   sameReduct Step.iotaIdStrictRecRefl Step.iotaIdStrictRecRefl
+
+/-- Concrete `optionMatch` some-case iota same-root local diamond. -/
+def iotaOptionMatchSomeSameRoot {scope : Nat}
+    (value noneBranch someBranch : RawTerm scope) :
+    LocalDiamond
+      (LocalStepBranching.iotaOptionMatchSomeSameRoot
+        value noneBranch someBranch) :=
+  sameReduct Step.iotaOptionMatchSome Step.iotaOptionMatchSome
+
+/-- Concrete `eitherMatch` inl-case iota same-root local diamond. -/
+def iotaEitherMatchInlSameRoot {scope : Nat}
+    (value leftBranch rightBranch : RawTerm scope) :
+    LocalDiamond
+      (LocalStepBranching.iotaEitherMatchInlSameRoot
+        value leftBranch rightBranch) :=
+  sameReduct Step.iotaEitherMatchInl Step.iotaEitherMatchInl
+
+/-- Concrete `eitherMatch` inr-case iota same-root local diamond. -/
+def iotaEitherMatchInrSameRoot {scope : Nat}
+    (value leftBranch rightBranch : RawTerm scope) :
+    LocalDiamond
+      (LocalStepBranching.iotaEitherMatchInrSameRoot
+        value leftBranch rightBranch) :=
+  sameReduct Step.iotaEitherMatchInr Step.iotaEitherMatchInr
+
+/-- Concrete `natElim` succ-case iota same-root local diamond. -/
+def iotaNatElimSuccSameRoot {scope : Nat}
+    (predecessor zeroBranch succBranch : RawTerm scope) :
+    LocalDiamond
+      (LocalStepBranching.iotaNatElimSuccSameRoot
+        predecessor zeroBranch succBranch) :=
+  sameReduct Step.iotaNatElimSucc Step.iotaNatElimSucc
+
+/-- Concrete `natRec` succ-case iota same-root local diamond. -/
+def iotaNatRecSuccSameRoot {scope : Nat}
+    (predecessor zeroBranch succBranch : RawTerm scope) :
+    LocalDiamond
+      (LocalStepBranching.iotaNatRecSuccSameRoot
+        predecessor zeroBranch succBranch) :=
+  sameReduct Step.iotaNatRecSucc Step.iotaNatRecSucc
+
+/-- Concrete `listElim` cons-case iota same-root local diamond. -/
+def iotaListElimConsSameRoot {scope : Nat}
+    (headValue tailValue nilBranch consBranch : RawTerm scope) :
+    LocalDiamond
+      (LocalStepBranching.iotaListElimConsSameRoot
+        headValue tailValue nilBranch consBranch) :=
+  sameReduct Step.iotaListElimCons Step.iotaListElimCons
 
 end LocalDiamond
 
