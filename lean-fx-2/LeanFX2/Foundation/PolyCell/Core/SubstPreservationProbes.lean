@@ -283,4 +283,111 @@ theorem HasCertifiedCellDim0.optionNone_preservedByRename
   rw [RawTerm.rename_optionNone_reduces rawRenaming]
   exact HasCertifiedCellDim0.optionNone
 
+/-! ## Section 6 — subst reduces on the remaining closed nullary leaves
+
+Mirrors Section 4 for the general substitution direction.  Each closed
+leaf's payload is `()` (Unit), scope-invariant under `subst`'s
+non-variable fold arm, so the fold rebuilds the same closed term at
+the target scope.  All five close by `rfl`. -/
+
+/-- **Probe: subst reduces on `gen_boolTrue`.**
+
+Closed term; subst returns the same generator at the target scope. -/
+theorem RawTerm.subst_boolTrue_reduces
+    {sourceScope targetScope : Nat}
+    (substitution : RawTermSubst sourceScope targetScope) :
+    RawTerm.subst substitution
+        (.mkGen .gen_boolTrue () .childNil : RawTerm sourceScope) =
+      (.mkGen .gen_boolTrue () .childNil : RawTerm targetScope) := rfl
+
+/-- **Probe: subst reduces on `gen_boolFalse`.** -/
+theorem RawTerm.subst_boolFalse_reduces
+    {sourceScope targetScope : Nat}
+    (substitution : RawTermSubst sourceScope targetScope) :
+    RawTerm.subst substitution
+        (.mkGen .gen_boolFalse () .childNil : RawTerm sourceScope) =
+      (.mkGen .gen_boolFalse () .childNil : RawTerm targetScope) := rfl
+
+/-- **Probe: subst reduces on `gen_natZero`.** -/
+theorem RawTerm.subst_natZero_reduces
+    {sourceScope targetScope : Nat}
+    (substitution : RawTermSubst sourceScope targetScope) :
+    RawTerm.subst substitution
+        (.mkGen .gen_natZero () .childNil : RawTerm sourceScope) =
+      (.mkGen .gen_natZero () .childNil : RawTerm targetScope) := rfl
+
+/-- **Probe: subst reduces on `gen_listNil`.** -/
+theorem RawTerm.subst_listNil_reduces
+    {sourceScope targetScope : Nat}
+    (substitution : RawTermSubst sourceScope targetScope) :
+    RawTerm.subst substitution
+        (.mkGen .gen_listNil () .childNil : RawTerm sourceScope) =
+      (.mkGen .gen_listNil () .childNil : RawTerm targetScope) := rfl
+
+/-- **Probe: subst reduces on `gen_optionNone`.** -/
+theorem RawTerm.subst_optionNone_reduces
+    {sourceScope targetScope : Nat}
+    (substitution : RawTermSubst sourceScope targetScope) :
+    RawTerm.subst substitution
+        (.mkGen .gen_optionNone () .childNil : RawTerm sourceScope) =
+      (.mkGen .gen_optionNone () .childNil : RawTerm targetScope) := rfl
+
+/-! ## Section 7 — cell-level subst preservation: remaining closed leaves
+
+Combines Section 6 with the corresponding intros from
+`HasCertifiedIntros.lean`.  Closes the leaf coverage so every nullary
+generator has a `_preservedBySubst` lemma, mirroring the rename direction
+shipped in Sections 3 and 5.  Each is a 2-tactic proof:
+`rw [reduces]; exact intro`. -/
+
+/-- **Cell-level: boolTrue preserved by ANY subst.** -/
+theorem HasCertifiedCellDim0.boolTrue_preservedBySubst
+    {profile : PolyProfile} {sourceScope targetScope : Nat}
+    (substitution : RawTermSubst sourceScope targetScope) :
+    HasCertifiedCellDim0 (profile := profile)
+      (RawTerm.subst substitution
+        (.mkGen .gen_boolTrue () .childNil : RawTerm sourceScope)) := by
+  rw [RawTerm.subst_boolTrue_reduces substitution]
+  exact HasCertifiedCellDim0.boolTrue
+
+/-- **Cell-level: boolFalse preserved by ANY subst.** -/
+theorem HasCertifiedCellDim0.boolFalse_preservedBySubst
+    {profile : PolyProfile} {sourceScope targetScope : Nat}
+    (substitution : RawTermSubst sourceScope targetScope) :
+    HasCertifiedCellDim0 (profile := profile)
+      (RawTerm.subst substitution
+        (.mkGen .gen_boolFalse () .childNil : RawTerm sourceScope)) := by
+  rw [RawTerm.subst_boolFalse_reduces substitution]
+  exact HasCertifiedCellDim0.boolFalse
+
+/-- **Cell-level: natZero preserved by ANY subst.** -/
+theorem HasCertifiedCellDim0.natZero_preservedBySubst
+    {profile : PolyProfile} {sourceScope targetScope : Nat}
+    (substitution : RawTermSubst sourceScope targetScope) :
+    HasCertifiedCellDim0 (profile := profile)
+      (RawTerm.subst substitution
+        (.mkGen .gen_natZero () .childNil : RawTerm sourceScope)) := by
+  rw [RawTerm.subst_natZero_reduces substitution]
+  exact HasCertifiedCellDim0.natZero
+
+/-- **Cell-level: listNil preserved by ANY subst.** -/
+theorem HasCertifiedCellDim0.listNil_preservedBySubst
+    {profile : PolyProfile} {sourceScope targetScope : Nat}
+    (substitution : RawTermSubst sourceScope targetScope) :
+    HasCertifiedCellDim0 (profile := profile)
+      (RawTerm.subst substitution
+        (.mkGen .gen_listNil () .childNil : RawTerm sourceScope)) := by
+  rw [RawTerm.subst_listNil_reduces substitution]
+  exact HasCertifiedCellDim0.listNil
+
+/-- **Cell-level: optionNone preserved by ANY subst.** -/
+theorem HasCertifiedCellDim0.optionNone_preservedBySubst
+    {profile : PolyProfile} {sourceScope targetScope : Nat}
+    (substitution : RawTermSubst sourceScope targetScope) :
+    HasCertifiedCellDim0 (profile := profile)
+      (RawTerm.subst substitution
+        (.mkGen .gen_optionNone () .childNil : RawTerm sourceScope)) := by
+  rw [RawTerm.subst_optionNone_reduces substitution]
+  exact HasCertifiedCellDim0.optionNone
+
 end LeanFX2.Foundation.PolyCell.Core

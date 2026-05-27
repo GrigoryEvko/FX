@@ -857,6 +857,25 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.listNil_preservedByRename
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.optionNone_preservedByRename
 
+-- ─── V2-L3.1 phase D step 30: closed-leaf general-subst preservations
+-- The mirror of the rename-direction leaf coverage above, for general
+-- `RawTerm.subst`.  Each closed nullary leaf (boolTrue / boolFalse /
+-- natZero / listNil / optionNone) carries a `subst σ` reduction probe
+-- closing by `rfl`, plus a corresponding `_preservedBySubst` lemma.
+-- Combined with `unit_preservedBySubst` (phase D step 15) and
+-- `var`'s subst case via the substituent hypothesis, every nullary
+-- leaf now has both rename + subst preservation shipped.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst_boolTrue_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst_boolFalse_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst_natZero_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst_listNil_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst_optionNone_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.boolTrue_preservedBySubst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.boolFalse_preservedBySubst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.natZero_preservedBySubst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.listNil_preservedBySubst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.optionNone_preservedBySubst
+
 -- ─── V2-L3.1 phase D step 16: compound smart constructors ─────────
 -- 9 compound intros for term-shape generators with .term-sorted
 -- children.  These take underlying cells (sort .term explicit)
