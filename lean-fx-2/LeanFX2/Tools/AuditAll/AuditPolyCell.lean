@@ -76,6 +76,7 @@ import LeanFX2.Foundation.PolyCell.Core.GeneratorTotalityClassV2
 import LeanFX2.Foundation.PolyCell.Core.ConsistencyStrengthV2
 import LeanFX2.Foundation.PolyCell.Core.SiteOpennessV2
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2RenameEquiv
+import LeanFX2.Foundation.PolyCell.Core.StepV2
 
 namespace LeanFX2.Tools
 
@@ -3673,6 +3674,25 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_pairUnitsRaw_renamed_sort
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_identityUnitCellRaw_renamed_sort
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.rename_equiv_unitTerm_sort_agree
+
+-- ─── V2-L3.1 phase A: Step relation (beta-reduction kickoff) ────────
+-- Per polycell.md §11.6.1: subject reduction on the v2 substrate
+-- requires a Step relation + a theorem that Step preserves
+-- certifier acceptance.  Phase A ships the Step relation with
+-- ONLY the beta-reduction constructor + one smoke witness.
+--
+-- This is the L3 KICKOFF: the FIRST shipped piece of v2's reduction
+-- calculus.  Phase B (congruence + iota rules) and phase C (the SR
+-- theorem itself) are deferred to follow-ups.
+--
+-- The smoke (identity_lam_applied_to_unit) is the FIRST DOWNSTREAM
+-- CONSUMER of V2-L2.10's subst0 infrastructure: it proves
+-- Step (app (λx.x) unit) unit by Step.beta, where Lean's unifier
+-- discharges subst0 (var 0) unit = unit definitionally via
+-- V2-L2.10's @[reducible] subst0_var_zero.  Empirical evidence
+-- that the L2->L3 cascade was wired correctly.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.identity_lam_applied_to_unit
 
 -- ─── V2-L1cert.12: existential preserves dim (#167) ─────────────────
 -- inferRawCellGeneralV2?_accepted_cellDimension_eq: when the
