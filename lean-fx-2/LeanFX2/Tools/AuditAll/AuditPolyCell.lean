@@ -36,6 +36,7 @@ import LeanFX2.Foundation.PolyCell.Core.CertifyTermExactV2
 import LeanFX2.Foundation.PolyCell.Core.CertifiedRawCellV2
 import LeanFX2.Foundation.PolyCell.Core.BuildGeneratingCellExactV2
 import LeanFX2.Foundation.PolyCell.Core.BuildVerticalCompositeExactV2
+import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2
 
 namespace LeanFX2.Tools
 
@@ -3100,6 +3101,37 @@ namespace LeanFX2.Tools
 --   ▸; cert via explicit Eq.rec with multi-arg motive that captures
 --   the dependent boundary in lockstep with the dim.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.buildVerticalCompositeExactV2?
+
+-- ─── V2-L1cert.7: THE recursive certifier (#162) ────────────────────
+-- certifyRawCellExactV2? is the architectural HEADLINE of the v2
+-- certifier: ONE recursion over RawCellV2 that certifies the entire
+-- non-horizontalComposite fragment at every dimension.
+--
+-- ARCHITECTURE: fuel-based mutual recursion.
+-- * certifyRawCellExactV2Fueled?: fueled fueled-Nat recursive dispatch
+--   on RawCellV2's five constructors.  Cross-calls into
+--   certifyChildrenInlineV2Fueled? for the .termBase case.
+-- * certifyChildrenInlineV2Fueled?: walks the children spine + spec
+--   list in parallel, cross-calling certifyRawCellExactV2Fueled? on
+--   each child wrapped as (.termBase headRaw).  Per-child sort/dim
+--   reconciliation via if-Decidable + subst + explicit Eq.rec with
+--   multi-arg motive.
+-- * certifyRawCellExactV2?: top-level entry that supplies sufficient
+--   fuel (raw.size + 1) so .fuelExhausted is unreachable for
+--   well-formed inputs.
+--
+-- WHY FUEL (not termination_by + decreasing_by):
+-- Mutual recursion across RawCellV2 ↔ RawTermChildrenV2 (separate
+-- inductives) fails Lean 4 v4.29.1's `decreasing_by` substitution:
+-- the goal references the function's `children` parameter abstractly
+-- even after pattern-matching to .childCons.  Without omega (which
+-- leaks propext + Quot.sound per a probe in this session), the
+-- `(.childCons head rest).size = children.size` step is not
+-- discharable.  Structural recursion on Nat fuel is propext-free and
+-- ~50 lines simpler.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.certifyRawCellExactV2Fueled?
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.certifyChildrenInlineV2Fueled?
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.certifyRawCellExactV2?
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
