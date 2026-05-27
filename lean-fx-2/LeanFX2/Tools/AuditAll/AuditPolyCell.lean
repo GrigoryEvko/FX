@@ -95,6 +95,7 @@ import LeanFX2.Foundation.PolyCell.Core.Step
 import LeanFX2.Foundation.PolyCell.Core.StepStar
 import LeanFX2.Foundation.PolyCell.Core.StepInversion
 import LeanFX2.Foundation.PolyCell.Core.CertifiedTerm
+import LeanFX2.Foundation.PolyCell.Core.GeneratorChildSpecsDim0
 
 namespace LeanFX2.Tools
 
@@ -875,6 +876,18 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.natZero_preservedBySubst
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.listNil_preservedBySubst
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.optionNone_preservedBySubst
+
+-- ─── V2-L3.1 phase D step 31: Generator childSpecs all-dim-0 invariant
+-- Bool predicate + universal-true theorem + Prop-valued propagation
+-- lemma — provides the `allDim0` witness the mutual structural induction
+-- mutual block needs to invoke `CertifiedTermSpine.headAtDim0` inside
+-- the non-var arm of the cell renamer / substituter.  Closes by
+-- `cases gen <;> rfl` (194-ctor enum) for the Bool side; pure list
+-- induction with direct Bool case analysis for the Prop side.  Both
+-- propext-free.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.allChildSpecsDim0
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.allChildSpecsDim0_eq_true
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.childSpecs_cellDimension_zero
 
 -- ─── V2-L3.1 phase D step 16: compound smart constructors ─────────
 -- 9 compound intros for term-shape generators with .term-sorted
