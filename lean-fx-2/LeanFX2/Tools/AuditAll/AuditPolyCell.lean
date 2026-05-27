@@ -3831,6 +3831,14 @@ namespace LeanFX2.Tools
 -- reach each child position; the inner-most there reaches childNil
 -- which is uninhabited.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_boolElim
+-- Multi-iota eliminator inversions with COMPLEX-IOTA disjuncts:
+-- from_natElim, from_natRec.  Same 5-way disjunction structure
+-- as from_boolElim, but the Succ-iota arm's target is a nested
+-- app (the recursive call) requiring an existential witness for
+-- the predecessor.  Pattern: `Or.inr (Or.inl ⟨_, rfl, rfl⟩)` lets
+-- Lean infer the predecessor from the unified target.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_natElim
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_natRec
 
 -- ─── V2-L3.2 phase A: StepStar (reflexive-transitive closure) ───────
 -- Reflexive-transitive closure of Step in LEFT-EXTENSION form:
