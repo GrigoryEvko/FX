@@ -41,6 +41,7 @@ import LeanFX2.Foundation.PolyCell.Core.InferRawCellGeneralV2
 import LeanFX2.Foundation.PolyCell.Core.CheckRawCellAsV2
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2Sound
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2CompHRejects
+import LeanFX2.Foundation.PolyCell.Core.InferRawCellGeneralV2AcceptedCellDimensionEq
 
 namespace LeanFX2.Tools
 
@@ -3215,6 +3216,21 @@ namespace LeanFX2.Tools
 -- classes (one of which is .unsupportedCompH, proven here to fire
 -- on every compH input).
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.certifyRawCellExactV2?_compH_rejects
+
+-- ─── V2-L1cert.12: existential preserves dim (#167) ─────────────────
+-- inferRawCellGeneralV2?_accepted_cellDimension_eq: when the
+-- existential wrapper accepts a raw input, the result's stored
+-- cellDimension field equals raw.dim.  First of three existential-
+-- variant soundness theorems.
+--
+-- Proof shape: unfold inferRawCellGeneralV2? + cases on underlying
+-- certifyRawCellExactV2? + injection + subst + rfl.  No omega, no
+-- propext, no Classical.
+--
+-- Rules out the existential wrapper laundering a different dim past
+-- the input — the dim it forgot (when going from raw-indexed to
+-- existential) is provably the dim it was given.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.inferRawCellGeneralV2?_accepted_cellDimension_eq
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
