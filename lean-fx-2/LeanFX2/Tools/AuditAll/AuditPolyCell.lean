@@ -51,6 +51,7 @@ import LeanFX2.Foundation.PolyCell.Core.RawTermRenameComposeFusion
 import LeanFX2.Foundation.PolyCell.Core.RawTermRenameSubstCommute
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubstRenameCommute
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubstCompose
+import LeanFX2.Foundation.PolyCell.Core.RawTermSubst0Commute
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubstAction
 import LeanFX2.Foundation.PolyCell.Core.RawCellRenameSubst
 import LeanFX2.Foundation.PolyCell.Core.RawCellCascadeLaws
@@ -2848,6 +2849,13 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.subst_compose
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst_compose_unit_smoke
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst_compose_var_smoke
+
+-- M6 beta-replay support: singleton/weakening cancellation plus the
+-- beta-contractum reshape `(subst0 body arg).subst sigma =
+-- subst0 (body.subst sigma.lift) (arg.subst sigma)`.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubst.weaken_then_singleton_pointwise
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.weaken_subst_singleton
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst0_subst_commute
 
 -- V2-L2.7d: THE `Action RawTermSubst` TYPECLASS INSTANCE.
 -- Closes V2-L2.7 entirely.  Cites the three Action laws shipped
