@@ -68,6 +68,7 @@ import LeanFX2.Foundation.PolyCell.Core.RawCellV2RenameSubst
 import LeanFX2.Foundation.PolyCell.Core.RawCellV2CascadeLaws
 import LeanFX2.Foundation.PolyCell.Modal.ResourceGraded
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2Shape
+import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 
 namespace LeanFX2.Tools
 
@@ -3305,6 +3306,45 @@ namespace LeanFX2.Tools
 -- Quot.sound), then `cases hRec` on the recursive call result +
 -- `injection` on the Except.ok equality.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.certifyRawCellExactV2?_identityCell_boundary
+
+-- ─── V2-fix-4: restricted-profile admission predicate ──────────────
+-- Discharges Agent 3 H3.2 (admission machinery decoration).  Before
+-- this commit, `supportedGeneratorV2?` returned `some _` for every
+-- one of the 194 Generators under fxProfile — the `.none` rejection
+-- branch was structurally unreachable.  The architectural claim
+-- "per-profile admission can restrict the supported Generator set"
+-- had no machine-witnessed example.
+--
+-- This commit ships `coreFxProfile`'s admission predicate as a
+-- concrete restricted profile.  `Generator.isInCoreFx` returns
+-- `false` for the 3 modal generators (`gen_modIntro`, `gen_modElim`,
+-- `gen_subsume`) and `true` for everything else — exhibiting the
+-- FIRST non-trivial admission decision.
+--
+-- Six witness theorems pin behavior:
+--   * 3 admission witnesses (gen_var / gen_lam / gen_app accepted)
+--   * 3 rejection witnesses (3 modal generators rejected)
+-- Plus 3 symmetry theorems showing fxProfile-vs-coreFx disagreement
+-- on the same Generator (`fxProfile_admits_X_but_coreFx_rejects`).
+--
+-- Each closes by `rfl` because list-membership on a decidable-
+-- equality list reduces definitionally and `@[reducible]` on
+-- `Generator.isInCoreFx` unfolds the negation at typecheck time.
+--
+-- Forward-compat: a future restricted profile (embedded /
+-- safety-critical / certified-crypto subtargets) writes its own
+-- exclusion list and inherits the same `rfl`-cleanliness.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coreFxExcluded
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.isInCoreFx
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.gen_var_isInCoreFx
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.gen_lam_isInCoreFx
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.gen_app_isInCoreFx
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.gen_modIntro_notInCoreFx
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.gen_modElim_notInCoreFx
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.gen_subsume_notInCoreFx
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.fxProfile_admits_modIntro_but_coreFx_rejects
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.fxProfile_admits_modElim_but_coreFx_rejects
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.fxProfile_admits_subsume_but_coreFx_rejects
 
 -- ─── V2-L1cert.12: existential preserves dim (#167) ─────────────────
 -- inferRawCellGeneralV2?_accepted_cellDimension_eq: when the
