@@ -68,6 +68,7 @@ import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaOption
 import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaIdRefl
 import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaNatRec
 import LeanFX2.Foundation.PolyCell.Core.HasCertifiedIntros
+import LeanFX2.Foundation.PolyCell.Core.HasCertifiedHonestyProbes
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactWrongChildShape
@@ -636,6 +637,43 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Certified.toHasCertifiedCellDim0
 
+-- ════════════════════════════════════════════════════════════════════
+-- HONESTY NOTICE (2026-05-27, codex audit response)
+-- ────────────────────────────────────────────────────────────────────
+-- The 16 theorems below named `HasCertifiedCellDim0.preservedByIotaX`
+-- prove STRUCTURAL SHAPE PRESERVATION, not type-theoretic Subject
+-- Reduction.  Specifically:
+--
+--   PolyCell.gen admission   = sort/dim/scope/arity/binder-shift OK
+--   ChildSpec.termSameScope  = "child has sort .term", NOT
+--                              "child has function-type compatible
+--                               with the argument"
+--   SupportedGenerator       = all 194 generators globally admitted
+--   GenPayloadEvidence       = Unit by default for every generator
+--
+-- So `HasCertifiedCellDim0 (.mkGen .gen_app () [unit, unit])` IS
+-- shape-admissible despite being ill-typed (unit is not a function).
+-- This is INTENTIONAL: PolyCell is the structural substrate; the
+-- semantic typing layer (TypingContext + GeneratorTypingRule +
+-- HasType) is future work.
+--
+-- The 16 arms below prove what they prove honestly: given the
+-- structural admission of a source cell, the structural admission
+-- holds for the target after Step.  This is foundational for the
+-- eventual semantic SR theorem, NOT a substitute for it.
+--
+-- Codex's full audit recommendations (M-2026-05-27):
+--   1. Split certification levels: structural vs semantic.
+--   2. Add typed contexts (per-variable types).
+--   3. Generator typing rules separate from child-shape specs.
+--   4. Restricted SemanticallySupportedGenerator < global.
+--   5. Type-preserving Step (real SR over HasType).
+--   6. Prove checker ↔ structural-admission equivalence.
+--   7. Honesty probes for over-admission (e.g., app(unit,unit) IS
+--      shape-admitted, demonstrating the gap).
+--
+-- ════════════════════════════════════════════════════════════════════
+
 -- ─── V2-L3.1 phase D step 5: FIRST SR arm — iotaBoolTrue ───────────
 -- Subject Reduction for the simplest iota: boolElim boolTrue then
 -- else → then.  Pure projection (no subst, no rename, no HEq cast
@@ -749,6 +787,28 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.natZero
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.listNil
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.optionNone
+
+-- ─── V2-L3.1 phase D step 14: HONESTY PROBES (codex audit response) ──
+-- Theorems demonstrating that PolyCell's `HasCertifiedCellDim0` is
+-- STRUCTURAL admission, NOT type-theoretic well-typedness.  Each
+-- probe is a green theorem proving that an ILL-TYPED term IS
+-- structurally admitted.  Makes the structural-vs-semantic gap
+-- audit-visible.
+--
+--   * probe_app_unit_unit          — `app unit unit` admitted
+--                                     despite unit not being a function
+--   * probe_app_boolTrue_unit      — same point with boolTrue
+--   * probe_boolElim_natZero_branches — boolElim with Nat scrutinee
+--                                       admitted despite ill-typing
+--
+-- These probes establish that the 16 "SR arms" above prove STRUCTURAL
+-- shape preservation, NOT type preservation.  Real Subject Reduction
+-- (type-preserving Step over a typed term judgment) is future work
+-- requiring a separate semantic layer (TypingContext + HasType +
+-- GeneratorTypingRule).
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.probe_app_unit_unit
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.probe_app_boolTrue_unit
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.probe_boolElim_natZero_branches
 
 -- ─── V2-fix-4: restricted-profile admission predicate ──────────────
 -- Discharges Agent 3 H3.2 (admission machinery decoration).  Before
