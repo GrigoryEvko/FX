@@ -77,6 +77,7 @@ import LeanFX2.Foundation.PolyCell.Core.BetaRedexLeafPreservation
 import LeanFX2.Foundation.PolyCell.Core.BetaRedexCompoundPreservation
 import LeanFX2.Foundation.PolyCell.Core.HasCertifiedProjections
 import LeanFX2.Foundation.PolyCell.Core.BetaRedexEndToEnd
+import LeanFX2.Foundation.PolyCell.Core.PairEliminatorLayer
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactWrongChildShape
@@ -1069,6 +1070,42 @@ namespace LeanFX2.Tools
 -- zero axioms.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.beta_redex_projection
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.beta_var_zero_e2e
+
+-- ─── V2-L3.1 phase D step 22: pair eliminators (fst / snd) ─────────
+-- Extends the 16-generator compositional surface to include pair
+-- eliminators.  FIRST eliminator generators to get full intros +
+-- projections + preservations coverage.  Each generator: 8 decls
+-- (intro, projection, rename probe + preservation, subst probe +
+-- preservation, subst0 probe + preservation).
+--
+-- Enables SR-cong for steps inside fst/snd subterms:
+--   1. PROJECTION: HCC (fst x) → HCC x
+--   2. STEP: x → x' preserves HCC
+--   3. REBUILD: HCC x' → HCC (fst x') via intro
+--
+-- Template scales to other eliminators (boolElim, natElim, natRec,
+-- listElim, optionMatch, eitherMatch, idJ, idStrictRec) in future
+-- iterations.
+--
+-- 16 new zero-axiom declarations (8 per generator × 2 generators).
+-- fst:
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.fst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.fst_pair_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_fst_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.fst_preservedByRename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst_fst_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.fst_preservedBySubst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst0_fst_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_fst_preservation
+-- snd:
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.snd
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.snd_pair_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_snd_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.snd_preservedByRename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst_snd_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.snd_preservedBySubst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst0_snd_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_snd_preservation
 
 -- ─── V2-fix-4: restricted-profile admission predicate ──────────────
 -- Discharges Agent 3 H3.2 (admission machinery decoration).  Before
