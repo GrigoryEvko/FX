@@ -99,6 +99,7 @@ import LeanFX2.Foundation.PolyCell.Core.GeneratorChildSpecsDim0
 import LeanFX2.Foundation.PolyCell.Core.CellNonVarStepRenamer
 import LeanFX2.Foundation.PolyCell.Core.CellNonVarStepSubstituter
 import LeanFX2.Foundation.PolyCell.Core.SpineConsStep
+import LeanFX2.Foundation.PolyCell.Core.StepHCCWrappers
 
 namespace LeanFX2.Tools
 
@@ -916,6 +917,16 @@ namespace LeanFX2.Tools
 -- the mutual block's body becomes a thin recursive driver.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpine.consStep_dim0Trivial
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpine.nilStep
+
+-- ─── V2-L3.1 phase D step 35: HCC-level wrappers around the cell-step
+-- helpers (phase D 32/33).  Same recipe, .intro-wrapped to land in
+-- Prop.  Closes the symmetric HCC + Cell API surface so the SR-cong /
+-- SR-beta umbrellas (when the mutual block lands) read uniformly at
+-- the HCC level.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.rename_nonVarStep
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.rename_varStep
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst_nonVarStep
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst_varStep
 
 -- ─── V2-L3.1 phase D step 16: compound smart constructors ─────────
 -- 9 compound intros for term-shape generators with .term-sorted
