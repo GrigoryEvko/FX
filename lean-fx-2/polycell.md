@@ -147,6 +147,27 @@ strongest available theory per layer):
     decidable), (c) genuinely 2-categorical fragments (cohesive
     triangle identities) use Makkai/Forest word-problem algorithm.
 
+**Above all three tiers — the apex commitment.**  Tiers 0/1/2 give
+the STRUCTURAL substrate (RMC + sconing + Fire Triangle / raw +
+certified cell layer / 13 profile axes + extension calculus).  On
+TOP of that substrate sits the **maximal-power computable kernel
+target** (§11.8): the strongest currently-known sound type theory
+that admits decidable typechecking — 2LTT 4-mode universes + full
+Setzer-Rathjen large-cardinal hierarchy + K-free dependent
+elimination with motive children + definitional eta + HIIRT + HITs +
+QIITs + multi-clock guarded type theory + internal parametricity +
+rewriting rules as first-class kernel feature + cubical pattern
+matching + Equations + `dProp` internal computational reflection +
+full CCHM cubical primitives + typed `HasType` + 21-dim integration
++ MTT + cohesion + differential cohesion + linear-nonlinear +
+algebraic effects + synthetic-math layer.  Closed-system mandate:
+**no user-level tactics** (only `calc` + type-directed elaboration),
+**no external SMT** (verified internal deciders only, with Phase Z₉
+holding a fully-verified internal SMT engine in reserve), **no LLM
+in the kernel** (LLM-driven work lives outside via the agent
+protocol).  See §11.8 for the full apex commitment and §11.8.7 for
+the decidability + mechanized-complexity matrix.
+
 The hard rules this design holds:
 
 * No "rzk-prototyped" claims where rzk does not implement the system.
@@ -157,6 +178,10 @@ The hard rules this design holds:
   incompatible with univalent theories — substitute Cockx-Devriese-
   Piessens "Pattern matching without K", ICFP 2014, DOI
   10.1145/2628136.2628139).
+* No `--type-in-type` even as a flag.  No external SMT even with a
+  "trust" annotation.  No LLM-driven proof generation INSIDE the
+  kernel even with "verification gates" (per §11.8.11 closed-system
+  mandate).
 
 ---
 
@@ -175,7 +200,7 @@ The hard rules this design holds:
     * 3.7 [Multi-modal stack — 4-tier MTT outer container](#37-multi-modal-stack)
     * 3.8 [Profile fibration — self-referential profiles via Uemura ∞-type theories](#38-profile-fibration)
     * 3.9 [Coherent equivalence classifier — the ωcE polygraph + Forest word problem](#39-coherent-equivalence-classifier)
-    * 3.10 [Univalent universe — polynomial universes + Step.eqType](#310-univalent-universe)
+    * 3.10 [Univalent universe — 2LTT 4-mode universes + Setzer-Rathjen flag hierarchy](#310-univalent-universe)
     * 3.11 [Single-Substitution Calculus backbone (Kaposi-Xie + Allais Lean port)](#311-single-substitution-calculus)
     * 3.12 [Synthetic Tait Computability classifier (Istari STC + 2LTT-on-Lean)](#312-synthetic-tait-computability)
     * 3.13 [MTT normalization gateway (Gratzer + rigid mode theory)](#313-mtt-normalization-gateway)
@@ -189,8 +214,19 @@ The hard rules this design holds:
 9.  [LoC budget — honest accounting](#9-loc-budget)
 10. [Phased rollout — concrete ship stages](#10-phased-rollout)
 11. [Zero-axiom discipline — how each axis stays clean](#11-zero-axiom-discipline)
+    * 11.5 [Computability + decidability discipline summary](#115-computability--decidability-discipline-summary)
+    * 11.6 [Metatheory obligations on the v2 substrate](#116-metatheory-obligations-on-the-v2-substrate)
+    * 11.7 [Foundational boundaries — Gödel, Turing, openness as design constraints](#117-foundational-boundaries--godel-turing-and-controlled-openness-as-polycell-design-constraints)
+    * 11.8 [**The Maximal-Power Computable Kernel** — the apex commitment](#118-the-maximal-power-computable-kernel)
 12. [Risks + open research questions](#12-risks-and-open-questions)
 13. [References](#13-references)
+
+**Reader's path to the apex.**  For the strongest summary of what FX
+is targeting, read §1 (manifesto) then jump to §11.8 (maximal-power
+kernel), then §11.8.7 (decidability + complexity matrix) and §11.8.9
+(nine-phase rollout).  §3 is the structural substrate; §11.8 is the
+operational apex; §4 + §10 + §11 + §13 are the implementation
+contract + phasing + discipline + provenance.
 
 ---
 
@@ -292,30 +328,123 @@ kernel inhabitant type, with the certified layer parameterized by a
 thirteen-field `PolyProfile π`.  FX is one specific profile, reached and grown by the extension
 calculus, not assembled by hand.
 
-Eating all the cakes:
-- A graded (Atkey-McBride 2018 + Wood-Atkey 2022 corrected Lam rule),
-  parametric over a quantale Q,
-- polarized (Levy CBPV + Pédrot-Tabareau ∂CBPV),
-- multimodal (Gratzer-Kavvos-Nuyts-Birkedal MTT, parametric over a mode
-  2-category hosting `▷`, cohesive `♭ ⊣ ♯`, U/F polarization),
-- guarded (Nakano `▷` + Atkey-McBride clocked + Capretta Delay),
-- cubical (Cohen-Coquand-Huber-Mörtberg + Cartesian / De Morgan flavors),
-- HoTT-natively univalent (via Loubaton thesis §6.1.4.2 functorial
-  Grothendieck construction; univalence as a theorem, not an axiom),
-- with Allais universe-of-syntaxes generic traversals,
-- decidable conversion via the explicit Path A / Path B engines
-  (NbE normal-form equality, or Makkai/Forest word equality on the
-  finite FX polygraph; HLOR ωcE is the semantic coherent-equivalence
-  classifier, not the decision engine),
-- synthetic-Tait metatheory at (∞,ω) via complicial nerve,
-- mechanized in Lean 4 at strict zero axioms,
-- presented as a complicial-stratified globular-cubical-opetopic
-  polygraph with Gray tensor compatible composition and tropical
+Eating all the cakes — universe layer:
+- **Two-Level Type Theory (2LTT) skeleton** (Annenkov-Capriotti-Kraus-
+  Sattler MSCS 2023): inner univalent universes (`gen_universeU`) for
+  objects, outer strict universes (`gen_universeS`) for metatheory +
+  computational reflection, with explicit lift / lower bridges.
+- **Four universe modes total**: inner univalent, outer strict
+  (K + UIP definitional), directed (Riehl-Shulman synthetic
+  (∞,1)-categories), (∞,ω)-directed (Loubaton 2307.11931).
+- **Predicative cumulative hierarchy + impredicative bottom**
+  (`SProp` definitional proof irrelevance + `Type₀` System-F-style
+  polymorphism); strictly predicative `Type 1+`.
+- **Full universe polymorphism** over `LevelExpr` (`lzero` / `lsucc` /
+  `lmax` / `limax` / `lvar`); polynomial-time level-equality
+  normalization (Mörtberg-Sterling 2024).
+- **Full Setzer + Rathjen large-cardinal hierarchy as universe flags**:
+  `standard` / `inaccessible` / `mahlo` / `superMahlo` / `nMahlo` /
+  `hyperMahlo` / `weaklyCompact` / `indescribable n` / `reflecting` /
+  `vopenka`.  Each flag is a strictly stronger admission predicate.
+- **First-class universe codes**: `LevelExpr` and `UniverseFlag` live
+  in the outer universe; declarations quantify over and pattern-match
+  on them.
+
+Eating all the cakes — elimination + computation layer:
+- **K-free / univalence-compatible** identity types (cubical paths,
+  Cockx-Devriese-Piessens "Pattern matching without K" ICFP 2014).
+- **Dependent large elimination with motive children**: eliminator
+  spines carry the motive as a typed child (per §11.8.3 fix to the 16
+  current SR-iota arms).
+- **Definitional eta** for functions, pairs, dependent pairs, unit,
+  records.
+- **Higher induction-recursion (HIIRT)**: standard IR (Dybjer-Setzer
+  2003) + indexed IR + higher IR (Setzer 2008) + quotient IR + the
+  combined HIIRT beast (Forsberg-Setzer 2012).
+- **Higher Inductive Types (HITs)** + **Quotient Inductive-Inductive
+  Types (QIITs)** with cubical Kan eliminator computation
+  (Cavallo-Mörtberg, Altenkirch-Capriotti-Dijkstra-Forsberg).
+- **Multi-clock guarded type theory** (Bizjak-Møgelberg-Vezzosi LICS
+  2017): clock types, clock variables, clock-dependent later modalities,
+  guarded fixed points — strictly more expressive than single-clock
+  Nakano or sized types.
+- **Internal parametricity** (Bernardy-Coquand-Moulin ICFP 2015 +
+  Cavallo-Harper LICS 2020): the kernel proves its own free theorems
+  without external metatheory.
+- **Rewriting rules as a first-class kernel feature** (Cockx-Tabareau
+  ICFP 2021): user-declared rewrite rules admitted on confluence +
+  termination + linearity witnesses, joining the kernel's definitional
+  equality per profile.
+- **Cubical pattern matching** + **Equations-style dependent pattern
+  matching** (Sozeau-Mangin ICFP 2019) — deep dependent matching with
+  automatic recursion equations.
+- **Internal computational reflection via `dProp`** (Pédrot-Tabareau
+  LICS 2018): decidable-propositions universe carrying its own
+  decision procedure; Markov's principle internally, no global
+  classical commitment.
+
+Eating all the cakes — cubical, modal, synthetic-math layer:
+- **Full CCHM cubical computational univalence**: `gen_path` /
+  `gen_pathLam` / `gen_pathApp` / `gen_transp` / `gen_hcomp` /
+  `gen_glue` / `gen_unglue` / `gen_face` / `gen_dimI`.  Univalence is
+  COMPUTATIONAL, not just an operational shortcut on universe-Id.
+- **Multi-Modal Type Theory (MTT) outer container**
+  (Gratzer-Sterling-Sterling LICS 2020) with dependent right adjoints
+  between modes.
+- **Cohesive modalities** ♭ ⊣ ◇ ⊣ □ ⊣ ♯ per cohesive focus
+  (Myers-Riley `arXiv:2301.13780`).
+- **Differential cohesion** Π ⊣ ♭_inf ⊣ ♯_inf ⊣ ʃ_inf (Schreiber
+  `arXiv:1310.7930`) for synthetic differential / algebraic geometry.
+- **n-truncations as profile features** (Capriotti-Kraus 2018).
+- **Linear / non-linear adjoint modality** (Benton's LNL).
+- **Algebraic effects + handlers** as first-class kernel feature
+  (Plotkin-Pretnar ESOP 2009).
+- **Synthetic mathematics layer** as profile capabilities: ∞-topos
+  internal language, synthetic spectra, synthetic smooth manifolds /
+  Lie groups, synthetic algebraic geometry, synthetic quantum types,
+  synthetic measure + probability + Markov, synthetic differential
+  cohomology, synthetic computability, synthetic stable ∞-categories.
+
+Eating all the cakes — structural substrate + discipline:
+- **Graded** (Atkey 2018 + Wood-Atkey 2022 corrected Lam rule),
+  parametric over a quantale Q.
+- **Polarized** (Levy CBPV + Pédrot-Tabareau ∂CBPV) with explicit
+  Fire-Triangle navigation per §3.0.3.
+- **Synthetic-Tait metatheory at (∞,ω)** via complicial nerve.
+- **Allais universe-of-syntaxes** generic traversals (one structural
+  `fold` ⇒ `rename` + `subst` as single instances).
+- Presented as a **complicial-stratified globular-cubical-opetopic
+  polygraph** with Gray-tensor compatible composition and tropical
   optimal reduction.
+- **Mechanized in Lean 4 at strict zero axioms** — no `axiom`, no
+  `sorry`, no `noncomputable`, no `propext`, no `Quot.sound`, no
+  `Classical.choice`, no `@[implemented_by]`, no `@[extern]`, no
+  `omega`, no hypothesis-as-postulate (per lean-fx-2/CLAUDE.md +
+  AXIOMS.md).
+- **Decidable typechecking at every admissible dimension** with
+  MECHANIZED complexity bounds.  Polynomial-time first-order core
+  (Lensing 2025); cubical-NbE dependent core (Mörtberg 2023).
+- **Closed-system mandate** (§11.8.11): NO user-level tactics (only
+  `calc` chains + type-directed elaboration), NO external SMT (every
+  decider INTERNAL and verified — Phase Z₉ ships a fully-verified
+  internal SMT engine if one ever becomes necessary), NO LLM in the
+  kernel (LLM-driven workflows live OUTSIDE via the agent protocol,
+  proposing terms the kernel verifies under its ordinary rules).
+
+This is the **maximal-power computable kernel** — the strongest
+currently-known sound type theory that admits decidable typechecking,
+constrained only by (1) per-feature soundness in published theory,
+(2) decidable typechecking under cubical NbE, and (3) zero-axiom
+closed-system discipline.  See **§11.8** for the full apex
+commitment, **§11.8.7** for the decidability + complexity matrix,
+**§11.8.9** for the nine-phase Z₀–Z₈ rollout, and **§11.8.10** for
+the soundness composition (every component sound by published
+theory; the combination is novel only in scale).
 
 This is the "quantale-enriched (∞,∞)-category of types" Object the
 `20_05_2026.md` dossier §14 hand-waves toward; this document makes it
-mechanizable.
+mechanizable AND — through §11.8 — pushes it to the apex of what
+mathematics currently knows how to mechanize soundly.
 
 The cost is honest: ~190K gross zero-axiom Lean 4 LoC, ~165K still
 to write after the shipped foundation, 2–3 years of focused work, and
@@ -479,6 +608,30 @@ paths converge on the same `Decidable (Conv a b)` instance.
 CONVTRANS-D, K12.28, K13.20 collapse via Path A's standard
 recipe.
 
+**Apex extension (§11.8 commitment).**  Under the maximal-power
+kernel commitment, raw-reduction Conv decidability (the original
+MILESTONE A target) is **a sub-result of typed Conv decidability**,
+not the endpoint.  The revised milestone scale (§11.8.12):
+
+* **MILESTONE A (revised)** = decidable typed conversion + decidable
+  typed checking for the ~30-generator semantic core, via cubical
+  NbE + bidirectional typechecking (Phase Z₁ + Z₂ + Z₃ of §11.8.9).
+* **MILESTONE A+** adds the full CCHM cubical primitives
+  (Phase Z₄).
+* **MILESTONE A++** adds HITs + QIITs (Phase Z₅).
+* **MILESTONES B / C / D** add HIIRT + Mahlo, guarded recursion, and
+  full 21-dim integration respectively.
+
+Every decision procedure invoked at any milestone is INTERNAL and
+fully verified — no external SMT, no LLM oracle, no `Classical.dec`
+escape hatch.  §11.8.7 catalogs each decider with its complexity
+bound; the strict harness's `STRICT-COMPLEXITY` gate verifies the
+bound on every decidable kernel theorem (closing the "decidable
+but EXP-tower" loophole).  Path A's NbE engine generalizes to the
+typed cubical setting (Mörtberg 2023); Path B's Makkai/Forest word
+equality remains available as semantic cross-check on the typed
+polygraph projection.
+
 ### 2.4 Concurrency / distribution wait on certified `compH`
 
 The `20_05_2026.md` dossier §2.7 conjectures that K11.5 (horizontal
@@ -535,8 +688,35 @@ generators), guardedness (Nakano `▷` as one of the modalities),
 cohesive `♭⊣♯` (already in topos profile), classical/intuitionistic
 discipline (axis 3 stratification on the truth values).
 
+**Apex modal stack (§11.8.6 commitment).**  Under the maximal-power
+kernel, "one kernel hosts every type theory we'd ever want" is not
+slogan but mechanism: the modal layer is the FULL **MTT outer
+container** (Gratzer-Sterling-Sterling LICS 2020) with dependent right
+adjoints, hosting:
+
+* The **cohesive adjoint triple** ♭ ⊣ ◇ ⊣ □ ⊣ ♯ per Myers-Riley
+  cohesive focus (`gen_shape` / `gen_flat` / `gen_sharp`).
+* **Differential cohesion** Π ⊣ ♭_inf ⊣ ♯_inf ⊣ ʃ_inf for synthetic
+  differential / algebraic geometry (`gen_reduced` /
+  `gen_infinitesimal` / `gen_etale`, Schreiber 2013).
+* **Multi-clock guarded type theory** (BMV LICS 2017): `gen_clock` /
+  `gen_laterCl` / `gen_forceCl` / `gen_clockAbs` / `gen_clockApp` /
+  `gen_fixedPoint` — strictly more expressive than single-clock
+  Nakano (clock quantification + clock-dependent constructions).
+* **Internal parametricity** (Bernardy-Coquand-Moulin 2015):
+  `gen_param` / `gen_paramAbs` — free theorems internalized.
+* **Linear / non-linear adjoint modality** (Benton's LNL): `gen_F` /
+  `gen_G` — linear types as a modal sub-theory.
+* **n-truncations** `gen_truncN n` (Capriotti-Kraus 2018).
+* **Algebraic effects + handlers** (Plotkin-Pretnar ESOP 2009) as
+  first-class kernel feature: `gen_effectOp` / `gen_effectHandler` /
+  `gen_effectScope`.
+
 **One kernel hosts every type theory we'd ever want.**  Different FX
-deployments pick different profiles; all coexist.
+deployments pick different profiles; all coexist.  Adding a new
+modality is one Generator-table entry plus an MTT mode-theory
+extension witness — never a `Term` constructor, never a per-modality
+adjunction-by-hand proof.
 
 ### 2.6 The categorical universe internal to FX
 
@@ -610,6 +790,21 @@ the thirteen-axis admissibility contract.  This distinction matters:
 the axes describe one profile's shape; the extension calculus describes
 how the profile space grows without reintroducing the constructor
 cascade.
+
+**How §3 relates to §11.8.**  The thirteen axes here describe the
+PROFILE SHAPE — what data a profile bundles and what categorical
+laws it must satisfy.  §11.8 then commits the *kernel itself* to the
+**maximal-power computable target**: 2LTT 4-mode universes (§11.8.2),
+HIIRT + multi-clock guarded + internal parametricity + rewriting rules
++ pure type-directed elaboration (§11.8.3), full CCHM cubical
+(§11.8.4), typed `HasType` judgment with typed SR (§11.8.5), full
+21-dim integration + MTT + cohesive + differential cohesion + linear-
+nonlinear + algebraic effects + synthetic mathematics layer (§11.8.6),
+and a decidability matrix with mechanized complexity bounds (§11.8.7).
+The closed-system mandate (§11.8.11) — no user tactics, no external
+SMT, no LLM — applies UNIFORMLY across every axis below.  Read §3 as
+the categorical SHAPE, §11.8 as the operational APEX both must
+realize together.
 
 ### 3.0 Tier 0: The Universal Meta-Framework Substrate
 
@@ -2656,13 +2851,46 @@ def Conv.decideViaMakkai (a b : FXCell) : Decidable (Conv a b) := by
 
 ### 3.10 Univalent universe
 
+**Apex commitment (§11.8.2).**  Under the maximal-power kernel, this
+axis ships not as a single univalent universe but as a **2LTT
+4-mode universe stack** with the **full Setzer + Rathjen large-
+cardinal hierarchy** as a `UniverseFlag` payload.  The four modes:
+
+* `gen_universeU n` — inner univalent (cubical Kan, no K-axiom);
+  objects live here.
+* `gen_universeS n` — outer strict (K-axiom + UIP definitional);
+  metatheory + computational reflection live here.
+* `gen_universeD n` — directed universe (Riehl-Shulman synthetic
+  (∞,1)-categories `arXiv:1705.07442`).
+* `gen_universeOmega n` — (∞,ω)-directed (Loubaton 2307.11931).
+
+Plus `gen_sprop` for definitional proof irrelevance,
+`gen_univLift` / `gen_univLower` for mode bridges (Hofmann-Streicher
+natural transformations), and `LevelExpr` for full universe
+polymorphism (decidable in polynomial time per Mörtberg-Sterling
+2024 normalization).
+
+The `UniverseFlag` enum runs the full Setzer + Rathjen ladder:
+`standard` → `inaccessible` → `mahlo` → `superMahlo` → `nMahlo n`
+→ `hyperMahlo` → `weaklyCompact` → `indescribable n` → `reflecting`
+→ `vopenka`.  Each flag is a strictly stronger admission predicate
+(decidable in O(flag enum position)).  Implementation phases
+`standard` first (Phase Z₆ kickoff); `inaccessible` + `mahlo` ship
+Phase Z₆ proper; `superMahlo` → `vopenka` ship Phase Z₆+ as the
+research-frontier ladder.
+
 **Operational reference:** `Step.eqType` reduction rule in FX
 kernel (per lean-fx-2/CLAUDE.md mandate).  Univalence ships as a
 **definitional reduction**, not an axiom: `Step.eqType : Step
 (Ty.id (Ty.universe l) A B) (Ty.equiv A B)`.  The theorem
 `Univalence : Conv (Ty.id Univ A B) (Ty.equiv A B) := Conv.fromStep
 Step.eqType` is a real body, zero-axiom under
-`#assert_no_axioms`.
+`#assert_no_axioms`.  Under the apex commitment this generalizes
+to full CCHM cubical operations (Phase Z₄): `gen_path` / `gen_transp`
+/ `gen_hcomp` / `gen_glue` / `gen_unglue` / `gen_face` / `gen_dimI`
+make univalence COMPUTATIONAL, not just an operational shortcut on
+universe-Id terms.  See §11.8.4 for the full cubical generator
+inventory.
 
 **Structural reference (load-bearing semantic justification):** the
 two-paper chain
@@ -5295,7 +5523,59 @@ old roadmap.
 
 ## 11. Zero-axiom discipline
 
-Each axis stays zero-axiom under specific discipline:
+**The umbrella rule.**  Every shipped declaration MUST be `theorem`,
+`lemma`, `def`, `inductive`, `structure`, or `instance` with a real
+body.  No `axiom`.  No `sorry`.  No `noncomputable` for kernel
+theorems.  No `propext` / `Quot.sound` / `Classical.choice` in any
+kernel transitively.  No `@[implemented_by]` / `@[extern]` for kernel
+theorems.  No hypothesis-as-postulate (`theorem foo (univ :
+Univalence) : ...` is BANNED — it ships the conclusion conditionally
+on an unprovable input, semantically equivalent to an axiom).  No
+`IsX : Prop` placeholder predicates.  No `Inhabited X` for
+unconstructible X.  See lean-fx-2/CLAUDE.md for the full discipline
+and the strict-harness gates that enforce it.
+
+**Closed-system mandate (§11.8.11 lifted here as headline).**  The
+kernel is a CLOSED SELF-CONTAINED SYSTEM.  Three NON-NEGOTIABLE bans
+apply to every axis below, every Phase Zₙ, and every profile
+extension:
+
+* **No user-level tactics.**  Proofs are TERMS, not scripts.  `calc`
+  chains are the only proof-script construct at user level.  All
+  other proof construction happens via type-directed elaboration
+  (§11.8.3).  There is no `by` block, no `apply`, no `intro`, no
+  `rewrite`, no `simp`, no `tauto`, no `decide` exposed as a
+  user-facing tactic language.  If a goal needs more than `calc`
+  chains + refinement synthesis to inhabit, the user refines the
+  SPECIFICATION (more refinements, more equations, more
+  definitional structure) — not the proof script.
+* **No external SMT.**  The kernel never calls Z3, CVC5, or any
+  external solver.  Every decision procedure invoked during
+  elaboration is INTERNAL and fully verified in Lean (and eventually
+  in FX itself, per the self-hosting target §3.15).  Internal
+  deciders ship per §11.8.7's matrix with their published-algorithm
+  basis.  If higher SMT-level power becomes necessary, the response
+  is to build a **fully-verified internal SMT engine** natively
+  inside FX as Phase Z₉ — never to delegate to an external untrusted
+  oracle.
+* **No LLM in the kernel.**  LLM-driven workflows live OUTSIDE the
+  kernel via the agent protocol (fx_design.md §24).  LLMs propose
+  TERMS that the kernel verifies under its ordinary rules; inside
+  the kernel there is no LLM-aware operation, no synthesis-by-
+  language-model primitive, no oracle fallback.
+
+These three bans preserve: (a) soundness independence from external
+software, (b) single-grammar proof representation, (c) deterministic
+reproducible builds, (d) zero-trust composition.  Anything that
+cannot be implemented cleanly within the zero-axiom + closed-system
+discipline is **de-scoped** — `--type-in-type` is absolutely banned
+even as a flag; external SMT is absolutely banned even with a
+"trust" annotation; LLM-driven proof generation INSIDE the kernel is
+absolutely banned even with "verification gates."
+
+Per-axis discipline rules follow.  Each axis stays zero-axiom under
+the specific patterns named below, with the umbrella + closed-system
+rules applying uniformly throughout:
 
 ### Axis 1 (Shape)
 
@@ -6700,24 +6980,35 @@ canonicity for closed cubical terms.
 
 ### 11.8.9 Implementation phasing — nine phases, multi-year
 
-Per §10's existing rollout, the maximal-power kernel extends the
-phased plan with Phase Z (typed/decidable layers):
+**The canonical phasing table for the maximal-power kernel lives in
+§10 under "Phase POLY-Z — Typed Layer + Decidable Typechecking
+(months 24-60, ~53K LoC)"** with sub-phases Z₀ through Z₈ plus an
+optional Z₉ (fully-verified internal SMT engine, ~10K LoC, deferred
+until a concrete profile-level need emerges).  Read §10 for the full
+roadmap context: POLY-TCB → POLY-0 → POLY-α → POLY-β → POLY-γ →
+POLY-δ → POLY-ε → POLY-ζ → POLY-Z → POLY-η.  Phase Z runs in parallel
+with POLY-ζ + POLY-η from month 24 onward.
 
-| Phase | Content | LoC est | Months |
-|---|---|---|---|
-| Z₀ | Foundational refactors: `gen_universe` payload → `LevelExpr × UniverseFlag`; motive children in eliminator spines; `SupportedGenerator` split into `Syntactically~` + `Semantically~`; refresh 33+ structural decls under new names | ~2K | 1 |
-| Z₁ | Typed core: `TypingContext` + `HasType` for ~30-generator semantic core (var, unit, universe, Π, λ, app, Σ, pair, fst, snd, bool, nat, list, option, either, identity, refl, J) | ~5K | 2-3 |
-| Z₂ | Canonicity + consistency for the semantic core; honesty probes refreshed | ~3K | 1-2 |
-| Z₃ | Decidable typechecking via cubical NbE for the semantic core; bidirectional algorithm | ~6K | 2-3 |
-| Z₄ | Cubical primitives: gen_path/transp/hcomp/glue/unglue/face/dimI; Kan structure proofs for each generator | ~8K | 3-4 |
-| Z₅ | HITs as profile-level generators with path-constructor support; HIT eliminators with cubical Kan computation | ~5K | 2-3 |
-| Z₆ | Induction-recursion: Tarski universes internally; Mahlo + inaccessible + reflecting universes (Setzer encoding) | ~3K (IR) + ~2K (Mahlo) + foundational | 3-4 |
-| Z₇ | Guarded recursion (Nakano modality) + coinduction with productivity; codata generators | ~4K | 2-3 |
-| Z₈ | 21-dim integration: usage, effect, security, refinement, lifetime, provenance, trust, repr, observability, clock, complexity, precision, space, overflow, FP order, mutation, reentrancy, size, version | ~15K | 6-12 |
+The milestone scale §11.8.12 names (MILESTONE A through MILESTONE D)
+maps to:
 
-Total: **~53K LoC, ~24-36 months focused work**.  Combined with
-the existing PolyCell substrate (~170K LoC), the full kernel is
-~220K LoC over ~3-5 years.
+* **MILESTONE A** = Z₁ + Z₂ + Z₃ (~month 30) — decidable typed
+  conversion + typechecking for the ~30-generator semantic core.
+* **MILESTONE A+** = + Z₄ (~month 34) — full CCHM cubical primitives.
+* **MILESTONE A++** = + Z₅ (~month 37) — HITs + QIITs.
+* **MILESTONE B** = + Z₆ (~month 41) — HIIRT + Setzer-Rathjen flag
+  hierarchy (`standard` + `inaccessible` + `mahlo` first; `superMahlo`
+  → `vopenka` ship Phase Z₆+ as research-frontier additions).
+* **MILESTONE C** = + Z₇ (~month 44) — multi-clock guarded recursion +
+  productivity-checked codata.
+* **MILESTONE D** = + Z₈ (~month 56) — full 21-dim integration + the
+  MTT + cohesion + differential cohesion + linear-nonlinear +
+  algebraic effects + synthetic mathematics layer of §11.8.6.
+
+**Combined LoC**: ~53K Phase Z core + ~10K optional Z₉ verified
+internal SMT + ~170K substrate (POLY-α through POLY-ζ) = ~220K-230K
+LoC over ~24-36 months focused work, arriving at MILESTONE D
+~month 56-60.
 
 ### 11.8.10 Soundness composition
 
