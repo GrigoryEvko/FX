@@ -71,6 +71,7 @@ import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2Shape
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2Subst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2WrongChildShape
+import LeanFX2.Foundation.PolyCell.Core.V1V2SeedVariableSpike
 
 namespace LeanFX2.Tools
 
@@ -3450,6 +3451,41 @@ namespace LeanFX2.Tools
 -- reachability of these probes' shapes automatically.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.certifyChildrenInlineV2Fueled?_typeSort_rejects_termChild
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.certifyChildrenInlineV2Fueled?_nonZeroDim_rejects_termChild
+
+-- ─── V2-SPIKE-2: v1<->v2 agreement spike (seed variable) ────────────
+-- Discharges Plan SPIKE-2: prove the v1 and v2 dim-erased existential
+-- ingresses agree on the seed-variable fixture (var 0 at scope 1)
+-- end-to-end.  Per the plan: "If it needs more than injection/subst/▸,
+-- switch the bridge to compare post-erasure rawCellCodes rather than
+-- dependent cells."
+--
+-- The shipped spike avoids the rawCellCode escape hatch entirely:
+-- both ingresses agree on .cellSort and .cellDimension by direct
+-- rfl-evaluation.  No injection/subst/Eq.rec needed; the certified-
+-- result existential's data fields are observable without unpacking
+-- the dependent cell inside.
+--
+-- The spike validates that the bridge architecture (V2-bridge.*) is
+-- feasible: v1 and v2 don't disagree on what the certifier observes
+-- for the seed variable; the bridge work becomes mechanical
+-- translation rather than semantic reconciliation.
+--
+-- Three agreement theorems:
+--   * sort_agree     -- v1 sort projection = v2 sort projection
+--   * sort_term      -- both produce specifically some .term
+--   * dim_zero       -- both produce cellDimension 0
+--
+-- Each closes by rfl (the certifiers are pure computations; concrete
+-- inputs reduce to definite Except.ok values).  The dim_zero theorem
+-- uses full Except enumeration (Ok + Error) rather than wildcard to
+-- avoid propext leakage through match equation lemmas.
+--
+-- Forward-compat: per-fixture agreement extended to all 15 V2
+-- coverage fixtures ships at V2-bridge.4 once a translation function
+-- (V2-bridge.1/.2) exists.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.v1_v2_seedVariable_sort_agree
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.v1_v2_seedVariable_sort_term
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.v1_v2_seedVariable_dim_zero
 
 -- ─── V2-L1cert.12: existential preserves dim (#167) ─────────────────
 -- inferRawCellGeneralV2?_accepted_cellDimension_eq: when the
