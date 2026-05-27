@@ -64,6 +64,8 @@ import LeanFX2.Foundation.PolyCell.Core.RawTermV2RenameSubstCommute
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2SubstRenameCommute
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2SubstCompose
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubstV2Action
+import LeanFX2.Foundation.PolyCell.Core.RawCellV2RenameSubst
+import LeanFX2.Foundation.PolyCell.Core.RawCellV2CascadeLaws
 
 namespace LeanFX2.Tools
 
@@ -3763,7 +3765,7 @@ namespace LeanFX2.Tools
 -- smokes round out the gate.  The cell layer has no binder shifts
 -- (composition doesn't bind variables), so no foldV2 abstraction
 -- is needed — direct match-form structural recursion suffices.
-import LeanFX2.Foundation.PolyCell.Core.RawCellV2RenameSubst
+-- (Import lives at the file head per Lean import-position discipline.)
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.rename
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.subst
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.rename_preserves_dim
@@ -3786,7 +3788,7 @@ import LeanFX2.Foundation.PolyCell.Core.RawCellV2RenameSubst
 -- the cell-layer cascade genuinely delegates to the term-layer
 -- Action laws at the `termBase` arm (no hidden cell-layer
 -- computation).  Closes #183.
-import LeanFX2.Foundation.PolyCell.Core.RawCellV2CascadeLaws
+-- (Import lives at the file head per Lean import-position discipline.)
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.rename_compose
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.subst_compose
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.subst_identity_apply

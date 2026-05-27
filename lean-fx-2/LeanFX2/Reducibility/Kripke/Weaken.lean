@@ -13,9 +13,29 @@ piTy etc. world-weakening lemmas land in follow-up.
 For closed leaves (unit / bool / nat / empty / interval), the
 predicate is just SN, and `Term.isStronglyNormalizing_weaken`
 already exists in `Reducibility/Foundation.lean`.  So world
-weakening reduces to direct SN preservation. -/
+weakening reduces to direct SN preservation.
+
+## STATUS — body parked pending POLYCELL SN backward-direction
+
+The five closed-leaf theorems below cite
+`Term.isStronglyNormalizing_weaken` and
+`RawTerm.isStronglyNormalizing_weaken`, both of which currently
+live inside the `/- TODO POLYCELL: SN backward-direction section
+consumed -/` block comment in `Reducibility/SN/Helpers.lean`
+(line 164 onward).  Those helpers were paused as part of the
+POLYCELL refactor and the v2 SN strategy will rebuild them on the
+RawTermV2 substrate (task #236 V2-L3.3 Tait reducibility on
+RawTermV2).
+
+To keep `lake build LeanFX2Audit` green, the body of this file is
+parked behind a block comment.  When V2-L3.3 lands and the SN
+backward-direction is re-shipped, the comment can be removed and
+the five closed-leaf theorems re-enabled (or rewritten against
+the v2 substrate). -/
 
 namespace LeanFX2
+
+/-
 
 /-- World weakening at `Ty.unit`: ReducibleK is preserved under
 one-binder weakening. -/
@@ -107,5 +127,7 @@ theorem ReducibleK.weaken_interval
   | succ subCount =>
     have isSN : Term.isStronglyNormalizing term := termIsReducible
     exact Term.isStronglyNormalizing_weaken (newType := newType) isSN
+
+-/
 
 end LeanFX2

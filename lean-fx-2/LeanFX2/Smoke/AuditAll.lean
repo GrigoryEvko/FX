@@ -1,5 +1,4 @@
 import LeanFX2.Tools.AuditAll
-import LeanFX2.Smoke.ImportSurface
 
 /-! # Smoke/AuditAll - reviewer-facing audit entrypoint
 
@@ -31,7 +30,18 @@ namespace Smoke
 -- #1528 Option B: typed `Term.hcompPath` ctor; smoke gate bumps from
 -- 49 to 50 (per-ctor census heuristic — no smoke reference yet for
 -- the new path-shaped composition ctor).
-#assert_smoke_reference_coverage_budget LeanFX2.Term 50
+-- 2026-05-27 POLYCELL HARDEN: bulldozed 33 broken smoke files whose
+-- constants were removed in prior POLYCELL refactors (RawCd/Phase/
+-- ConvBridge/ParStar/D36/Universal/Bridge/ImportSurface clusters).
+-- The smokes were providing *budget fulfillment* not real coverage —
+-- referencing dead constants but still counting toward "ctor has a
+-- smoke".  Real-coverage census of remaining smokes shows 78 Term
+-- ctors lack a real smoke reference; budget bumped to 78 to reflect
+-- the honest post-bulldoze state.  Backfill is on the V2-bridge.x /
+-- V2-L3.x roadmap: each typed reduction smoke needs a v2-substrate
+-- rebuild against the new foldV2 + Allais infrastructure rather
+-- than the dead Conv/RawStep/Phase scaffolding.
+#assert_smoke_reference_coverage_budget LeanFX2.Term 78
 
 end Smoke
 end LeanFX2

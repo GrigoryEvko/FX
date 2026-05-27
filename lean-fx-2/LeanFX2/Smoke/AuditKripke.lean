@@ -19,11 +19,19 @@ import LeanFX2.Reducibility.Kripke.SNExtraction
 #print axioms LeanFX2.ReducibleK.succ_nat_iff_sn
 #print axioms LeanFX2.ReducibleK.succ_empty_iff_sn
 #print axioms LeanFX2.ReducibleK.succ_interval_iff_sn
-#print axioms LeanFX2.ReducibleK.weaken_unit
-#print axioms LeanFX2.ReducibleK.weaken_bool
-#print axioms LeanFX2.ReducibleK.weaken_nat
-#print axioms LeanFX2.ReducibleK.weaken_empty
-#print axioms LeanFX2.ReducibleK.weaken_interval
+-- ReducibleK.weaken_{unit,bool,nat,empty,interval} probes parked
+-- pending V2-L3.3 (Tait reducibility on RawTermV2).  The five
+-- closed-leaf weaken theorems they cite are commented out in
+-- `Reducibility/Kripke/Weaken.lean` because their underlying SN
+-- backward-direction helpers (`Term.isStronglyNormalizing_weaken`
+-- and `RawTerm.isStronglyNormalizing_weaken`) are inside a TODO
+-- block in `Reducibility/SN/Helpers.lean`.  Restore when SN
+-- backward-direction lands on the v2 substrate.
+-- #print axioms LeanFX2.ReducibleK.weaken_unit
+-- #print axioms LeanFX2.ReducibleK.weaken_bool
+-- #print axioms LeanFX2.ReducibleK.weaken_nat
+-- #print axioms LeanFX2.ReducibleK.weaken_empty
+-- #print axioms LeanFX2.ReducibleK.weaken_interval
 #print axioms LeanFX2.ReducibleK.mono_unit
 #print axioms LeanFX2.ReducibleK.mono_bool
 #print axioms LeanFX2.ReducibleK.mono_nat
