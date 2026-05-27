@@ -3676,7 +3676,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_identityUnitCellRaw_renamed_sort
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.rename_equiv_unitTerm_sort_agree
 
--- ─── V2-L3.1 phase A+B+C-1/2/3: Step (beta + cong + 8 iota) ──────────
+-- ─── V2-L3.1 phase A+B+C-1/2/3/4a: Step (beta + cong + 11 iota) ──────
 -- Per polycell.md §11.6.1: subject reduction on the v2 substrate
 -- requires a Step relation + a theorem that Step preserves
 -- certifier acceptance.
@@ -3686,18 +3686,23 @@ namespace LeanFX2.Tools
 -- Step + StepChildren.  ONE cong rule covers all 194 generators.
 -- Phase C step 1 added branch-selection iota for boolElim.
 -- Phase C step 2 added content-projection iota for fst/snd on pair.
--- Phase C step 3 (THIS batch) extends branch-selection iota to
--- the remaining standard 3-branch eliminators on their base
--- (0-arity) ctors: natElim/natRec on natZero, listElim on listNil,
--- optionMatch on optionNone.  Two iota SHAPES now exercised across
--- the standard inductive types:
+-- Phase C step 3 added base-case projection iota for nat/list/
+-- option base ctors (natZero, listNil, optionNone).
+-- Phase C step 4a (THIS batch) introduces the THIRD iota SHAPE:
+-- 1-arg app-chain build for optionSome/eitherInl/eitherInr step
+-- ctors.  Reduct is `app branch wrappedValue` (not just `branch`).
+-- The Church-encoding payoff: iota recognizes the constructor tag;
+-- beta does the variable binding in a SUBSEQUENT reduction step.
+--
+-- Three iota SHAPES now demonstrated across the standard
+-- inductive types:
 --   * branch-selection (bool / nat / list / option base cases)
 --   * content-projection (pair components)
+--   * 1-arg app-chain build (optionSome / eitherInl / eitherInr)
 --
--- Ten smokes pin operational behavior:
+-- Thirteen smokes pin operational behavior:
 --   identity_lam_applied_to_unit     -- Step.beta on β-redex
 --   cong_lam_body_beta               -- Step.cong + StepChildren.here
---                                       for reducing inside λ
 --   iotaBoolTrue_selects_then        -- bool true selects then
 --   iotaBoolFalse_selects_else       -- bool false selects else
 --   iotaFstPair_projects_first       -- fst pair projects first
@@ -3706,6 +3711,9 @@ namespace LeanFX2.Tools
 --   iotaNatRecZero_selects_zero      -- natRec zero selects zero
 --   iotaListElimNil_selects_nil      -- listElim nil selects nil
 --   iotaOptionMatchNone_selects_none -- optionMatch none selects none
+--   iotaOptionMatchSome_builds_app   -- optionMatch some → app
+--   iotaEitherMatchInl_builds_app    -- eitherMatch inl → app
+--   iotaEitherMatchInr_builds_app    -- eitherMatch inr → app
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepChildren
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.identity_lam_applied_to_unit
@@ -3718,6 +3726,9 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaNatRecZero_selects_zero
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaListElimNil_selects_nil
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaOptionMatchNone_selects_none
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaOptionMatchSome_builds_app
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaEitherMatchInl_builds_app
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaEitherMatchInr_builds_app
 
 -- ─── V2-L3.2 phase A: StepStar (reflexive-transitive closure) ───────
 -- Reflexive-transitive closure of Step in LEFT-EXTENSION form:

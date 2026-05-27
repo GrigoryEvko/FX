@@ -2,14 +2,24 @@ import LeanFX2.Foundation.PolyCell.Core.RawTermV2Subst0
 
 /-! # Foundation/PolyCell/Core/StepV2 — single-step reduction on V2
 
-V2-L3.1 phase A + B + C-steps 1/2/3 (2026-05-27).  Discharges the
-first L3 metatheory task per polycell.md §11.6.1.  Ships the `Step`
-inductive relation with: beta-reduction (phase A), uniform
-congruence (phase B), branch-selection iota for boolElim (phase
-C-step1), content-projection iota for fst/snd on pair (phase
-C-step2), and base-case projection iota for natElim/natRec on
-natZero + listElim on listNil + optionMatch on optionNone (phase
-C-step3).  Ten smokes total.
+V2-L3.1 phase A + B + C-steps 1/2/3/4a (2026-05-27).  Discharges
+the first L3 metatheory task per polycell.md §11.6.1.  Ships the
+`Step` inductive relation with: beta-reduction (phase A), uniform
+congruence (phase B), branch-selection iota for boolElim
+(C-step1), content-projection iota for fst/snd on pair (C-step2),
+base-case projection iota for nat/list/option base ctors
+(C-step3), and 1-arg app-chain iota for optionSome/eitherInl/
+eitherInr step ctors (C-step4a).  Thirteen smokes total.
+
+Three iota SHAPES now fully demonstrated across the standard
+inductive types:
+  * branch-selection (base ctors -- bool/nat/list/option)
+  * content-projection (pair fst/snd)
+  * 1-arg app-chain build (optionSome/eitherInl/eitherInr)
+
+C-step4b will add 2-arg app-chain (natSucc); C-step4c will add
+3-arg app-chain (listCons).  C-step5 handles idJ + opt-in eta.
+C-step6 ships the SR theorem.
 
 ## Phase A vs Phase B vs Phase C
 
@@ -29,22 +39,22 @@ C-step3).  Ten smokes total.
   discipline as bool iotas, but a DIFFERENT iota shape -- the
   eliminator unwraps a constructor and returns one of its
   components rather than selecting one of several branches.
-* **Phase C step 3** (THIS update) extends branch-selection iota
-  to the remaining standard 3-branch eliminators on their BASE
-  (0-arity) constructors: `Step.iotaNatElimZero`,
-  `Step.iotaNatRecZero`, `Step.iotaListElimNil`,
-  `Step.iotaOptionMatchNone`.  Same shape as `iotaBoolTrue` -- the
-  base-case constructor's iota is always pure projection.  These
-  four cover the standard inductive types (nat / list / option)
-  in their base cases.
-* **Future phase C** (deferred): iotas requiring app-chain build
-  (natRec/natElim on natSucc, listElim on listCons, optionMatch
-  on optionSome, eitherMatch on inl/inr), iotas with binders
-  (idJ on refl which has a motive argument), opt-in eta rules,
-  and the SR theorem.  The Church-encoded design (all eliminator
-  branches scope-uniform per `binderShifts [0, 0, 0]`) means the
-  app-chain iotas never do direct substitution -- beta does the
-  work in a separate reduction step.
+* **Phase C step 3** extends branch-selection iota to the
+  remaining standard 3-branch eliminators on their BASE (0-arity)
+  constructors: `Step.iotaNatElimZero`, `Step.iotaNatRecZero`,
+  `Step.iotaListElimNil`, `Step.iotaOptionMatchNone`.  Same shape
+  as `iotaBoolTrue` -- base-case ctor's iota is pure projection.
+* **Phase C step 4a** (THIS update) introduces the THIRD iota
+  SHAPE: 1-arg app-chain build.  `Step.iotaOptionMatchSome`,
+  `Step.iotaEitherMatchInl`, `Step.iotaEitherMatchInr`.  Same
+  scope discipline, but the reduct is `app branch wrappedValue`
+  rather than just `branch`.  No direct substitution at iota --
+  beta handles the binding work in a SUBSEQUENT reduction.  This
+  decomposition is the Church-encoding payoff: iota recognizes
+  the constructor tag, beta does the variable binding.
+* **Future phase C** (deferred): 2-arg and 3-arg app-chain iotas
+  (natSucc / listCons), iotas with binders (idJ on refl), opt-in
+  eta rules, and the SR theorem.
 
 This is the L3 KICKOFF: the FIRST shipped piece of v2's reduction
 calculus.  Together with V2-L2.10's `RawTermV2.subst0`, it establishes
@@ -308,6 +318,56 @@ inductive Step : {scope : Nat} → RawTermV2 scope → RawTermV2 scope → Prop 
             (.mkGen .gen_optionNone () .childNil)
             (.childCons noneBranch (.childCons someBranch .childNil))))
         noneBranch
+  /-- **Iota for optionMatch on optionSome (step case, 1-arg app-chain).**
+
+      Matching on `optionSome value` applies the some-branch to the
+      wrapped value: `optionMatch (optionSome v) n s ↝ app s v`.
+      The THIRD iota shape: build an `app` term rather than
+      projecting.  No direct substitution -- beta handles the
+      binding work in a subsequent reduction step, separating
+      iota's "tag-recognition" duty from beta's "argument-binding"
+      duty. -/
+  | iotaOptionMatchSome {scope : Nat}
+                        {value : RawTermV2 scope}
+                        {noneBranch someBranch : RawTermV2 scope} :
+      Step
+        (.mkGen .gen_optionMatch ()
+          (.childCons
+            (.mkGen .gen_optionSome () (.childCons value .childNil))
+            (.childCons noneBranch (.childCons someBranch .childNil))))
+        (.mkGen .gen_app ()
+          (.childCons someBranch (.childCons value .childNil)))
+  /-- **Iota for eitherMatch on eitherInl (step case, 1-arg
+      app-chain).**
+
+      Matching on `eitherInl value` applies the left-branch to the
+      wrapped value: `eitherMatch (inl v) l r ↝ app l v`.  Same
+      1-arg app-chain shape as `iotaOptionMatchSome`. -/
+  | iotaEitherMatchInl {scope : Nat}
+                       {value : RawTermV2 scope}
+                       {leftBranch rightBranch : RawTermV2 scope} :
+      Step
+        (.mkGen .gen_eitherMatch ()
+          (.childCons
+            (.mkGen .gen_eitherInl () (.childCons value .childNil))
+            (.childCons leftBranch (.childCons rightBranch .childNil))))
+        (.mkGen .gen_app ()
+          (.childCons leftBranch (.childCons value .childNil)))
+  /-- **Iota for eitherMatch on eitherInr (step case, 1-arg
+      app-chain).**
+
+      Symmetric to `iotaEitherMatchInl`: matching on `eitherInr
+      value` applies the right-branch to the wrapped value. -/
+  | iotaEitherMatchInr {scope : Nat}
+                       {value : RawTermV2 scope}
+                       {leftBranch rightBranch : RawTermV2 scope} :
+      Step
+        (.mkGen .gen_eitherMatch ()
+          (.childCons
+            (.mkGen .gen_eitherInr () (.childCons value .childNil))
+            (.childCons leftBranch (.childCons rightBranch .childNil))))
+        (.mkGen .gen_app ()
+          (.childCons rightBranch (.childCons value .childNil)))
 
 /-- **Step at some position in a children spine.**
 
@@ -601,5 +661,85 @@ theorem Step.iotaOptionMatchNone_selects_none :
           (.childCons noneBranch (.childCons someBranch .childNil)))
     Step matchTerm noneBranch := by
   apply Step.iotaOptionMatchNone
+
+/-- **Phase C smoke: iotaOptionMatchSome builds app chain.**
+
+  `optionMatch (optionSome unit) boolTrue boolFalse
+     ↝  app boolFalse unit`
+
+The result is the `app` term (not just `boolFalse`); the wrapped
+value is preserved as the application's argument. -/
+theorem Step.iotaOptionMatchSome_builds_app :
+    let unitVal : RawTermV2 0 :=
+      .mkGen .gen_unit () .childNil
+    let someScrutinee : RawTermV2 0 :=
+      .mkGen .gen_optionSome () (.childCons unitVal .childNil)
+    let noneBranch : RawTermV2 0 :=
+      .mkGen .gen_boolTrue () .childNil
+    let someBranch : RawTermV2 0 :=
+      .mkGen .gen_boolFalse () .childNil
+    let matchTerm : RawTermV2 0 :=
+      .mkGen .gen_optionMatch ()
+        (.childCons
+          someScrutinee
+          (.childCons noneBranch (.childCons someBranch .childNil)))
+    let appResult : RawTermV2 0 :=
+      .mkGen .gen_app ()
+        (.childCons someBranch (.childCons unitVal .childNil))
+    Step matchTerm appResult := by
+  apply Step.iotaOptionMatchSome
+
+/-- **Phase C smoke: iotaEitherMatchInl builds app chain.**
+
+  `eitherMatch (eitherInl unit) boolTrue boolFalse
+     ↝  app boolTrue unit`
+
+Distinct left/right branches verify the RIGHT branch is applied.
+The wrapped value is preserved as the application's argument. -/
+theorem Step.iotaEitherMatchInl_builds_app :
+    let unitVal : RawTermV2 0 :=
+      .mkGen .gen_unit () .childNil
+    let inlScrutinee : RawTermV2 0 :=
+      .mkGen .gen_eitherInl () (.childCons unitVal .childNil)
+    let leftBranch : RawTermV2 0 :=
+      .mkGen .gen_boolTrue () .childNil
+    let rightBranch : RawTermV2 0 :=
+      .mkGen .gen_boolFalse () .childNil
+    let matchTerm : RawTermV2 0 :=
+      .mkGen .gen_eitherMatch ()
+        (.childCons
+          inlScrutinee
+          (.childCons leftBranch (.childCons rightBranch .childNil)))
+    let appResult : RawTermV2 0 :=
+      .mkGen .gen_app ()
+        (.childCons leftBranch (.childCons unitVal .childNil))
+    Step matchTerm appResult := by
+  apply Step.iotaEitherMatchInl
+
+/-- **Phase C smoke: iotaEitherMatchInr builds app chain.**
+
+  `eitherMatch (eitherInr unit) boolTrue boolFalse
+     ↝  app boolFalse unit`
+
+Symmetric to `iotaEitherMatchInl_builds_app`. -/
+theorem Step.iotaEitherMatchInr_builds_app :
+    let unitVal : RawTermV2 0 :=
+      .mkGen .gen_unit () .childNil
+    let inrScrutinee : RawTermV2 0 :=
+      .mkGen .gen_eitherInr () (.childCons unitVal .childNil)
+    let leftBranch : RawTermV2 0 :=
+      .mkGen .gen_boolTrue () .childNil
+    let rightBranch : RawTermV2 0 :=
+      .mkGen .gen_boolFalse () .childNil
+    let matchTerm : RawTermV2 0 :=
+      .mkGen .gen_eitherMatch ()
+        (.childCons
+          inrScrutinee
+          (.childCons leftBranch (.childCons rightBranch .childNil)))
+    let appResult : RawTermV2 0 :=
+      .mkGen .gen_app ()
+        (.childCons rightBranch (.childCons unitVal .childNil))
+    Step matchTerm appResult := by
+  apply Step.iotaEitherMatchInr
 
 end LeanFX2.Foundation.PolyCell.Core
