@@ -79,6 +79,7 @@ import LeanFX2.Foundation.PolyCell.Core.HasCertifiedProjections
 import LeanFX2.Foundation.PolyCell.Core.BetaRedexEndToEnd
 import LeanFX2.Foundation.PolyCell.Core.PairEliminatorLayer
 import LeanFX2.Foundation.PolyCell.Core.BoolEliminatorLayer
+import LeanFX2.Foundation.PolyCell.Core.NatEliminatorLayer
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactWrongChildShape
@@ -1130,6 +1131,41 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.boolElim_preservedBySubst
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst0_boolElim_reduces
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_boolElim_preservation
+
+-- ─── V2-L3.1 phase D step 24: nat eliminators (natElim / natRec) ───
+-- Sibling of steps 22-23; extends eliminator coverage to the two
+-- natural-number eliminators (large-elim natElim and recursor natRec),
+-- both 3-child same-scope with layout (scrutinee, zeroBranch, succBranch).
+--
+-- 20 declarations total (10 per generator).  Same template as
+-- boolElim (step 23): intro + 3 projections + rename probe/pres +
+-- subst probe/pres + subst0 probe/pres.
+--
+-- Enables SR-cong for steps inside natElim/natRec subterms (any of
+-- the three children).  Template proven to scale across all 3-child
+-- eliminators.
+-- natElim:
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.natElim
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.natElim_scrutinee_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.natElim_zeroBranch_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.natElim_succBranch_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_natElim_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.natElim_preservedByRename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst_natElim_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.natElim_preservedBySubst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst0_natElim_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_natElim_preservation
+-- natRec:
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.natRec
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.natRec_scrutinee_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.natRec_zeroBranch_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.natRec_succBranch_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_natRec_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.natRec_preservedByRename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst_natRec_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.natRec_preservedBySubst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst0_natRec_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_natRec_preservation
 
 -- ─── V2-fix-4: restricted-profile admission predicate ──────────────
 -- Discharges Agent 3 H3.2 (admission machinery decoration).  Before
