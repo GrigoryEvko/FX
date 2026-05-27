@@ -45,6 +45,7 @@ import LeanFX2.Foundation.PolyCell.Core.InferRawCellGeneralV2AcceptedCellDimensi
 import LeanFX2.Foundation.PolyCell.Core.InferRawCellGeneralV2AcceptedRawCellHEq
 import LeanFX2.Foundation.PolyCell.Core.InferRawCellGeneralV2Sound
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2Coverage
+import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2NegativeProbes
 
 namespace LeanFX2.Tools
 
@@ -3294,6 +3295,32 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CoverageV2.varZeroRaw
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_unitTermRaw_sort
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_varZeroRaw_sort
+
+-- ─── V2-L1cert.16: negative-probe suite (#171) ──────────────────────
+-- Rejection-side coverage: per-fixture rejection theorems demonstrating
+-- the certifier DOES reject malformed fixtures with the EXPECTED
+-- rejection reason.  The DUAL of #170's positive coverage and the
+-- counterpart to #165-#169's no-laundering soundness.
+--
+-- Under fxProfile (194 generators admitted), three rejection branches
+-- are runtime-reachable from the public ingress:
+--   * .unsupportedCompH — every .horizontalComposite _ _ rejects
+--   * .badVerticalBoundary — .verticalComposite with first.dim = 0
+--   * .wrongSort — checkRawCellAsV2? with expected != inferred sort
+--
+-- The remaining 7 rejection variants (.unknownGenerator, .badPayload,
+-- .wrongChildShape, .fuelExhausted, .badBoundaryEndpoint,
+-- .unsupportedCertification) are forward-compat dead code under
+-- fxProfile — exercisable only under restricted-profile test suites.
+--
+-- All theorems close by `rfl`: each malformed fixture's rejection
+-- chain reduces definitionally to the expected `.error <reason>`.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.certifiedResultRejectionV2?
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbesV2.horizontalCompositeUnitRaw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.NegativeProbesV2.verticalCompositeUnitRaw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.negative_horizontalCompositeUnit_rejects_unsupportedCompH
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.negative_verticalCompositeUnit_rejects_badVerticalBoundary
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.negative_unitTerm_as_type_rejects_wrongSort
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
