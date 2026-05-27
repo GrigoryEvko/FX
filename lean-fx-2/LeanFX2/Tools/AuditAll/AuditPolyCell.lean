@@ -80,6 +80,7 @@ import LeanFX2.Foundation.PolyCell.Core.BetaRedexEndToEnd
 import LeanFX2.Foundation.PolyCell.Core.PairEliminatorLayer
 import LeanFX2.Foundation.PolyCell.Core.BoolEliminatorLayer
 import LeanFX2.Foundation.PolyCell.Core.NatEliminatorLayer
+import LeanFX2.Foundation.PolyCell.Core.RemainingDim0Eliminators
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactWrongChildShape
@@ -1166,6 +1167,55 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.natRec_preservedBySubst
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst0_natRec_reduces
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_natRec_preservation
+
+-- ─── V2-L3.1 phase D step 25: remaining 3-child eliminators ────────
+-- Completes the 3-child same-scope eliminator family.
+-- Ships listElim, optionMatch, eitherMatch (10 declarations each
+-- = 30 total).  Same template as boolElim / natElim / natRec.
+--
+-- Child layouts:
+--   * listElim:    (scrutinee, nilBranch, consBranch)
+--   * optionMatch: (scrutinee, noneBranch, someBranch)
+--   * eitherMatch: (scrutinee, leftBranch, rightBranch)
+--
+-- After this iteration, 6 of 7 dim-0 eliminators have full
+-- compositional coverage (only idJ / idStrictRec remain — higher
+-- arity, may need new template variation for 4-5 children).
+--
+-- Generator surface: 21 -> 24 (3 new eliminators).
+-- listElim:
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.listElim
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.listElim_scrutinee_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.listElim_nilBranch_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.listElim_consBranch_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_listElim_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.listElim_preservedByRename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst_listElim_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.listElim_preservedBySubst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst0_listElim_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_listElim_preservation
+-- optionMatch:
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.optionMatch
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.optionMatch_scrutinee_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.optionMatch_noneBranch_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.optionMatch_someBranch_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_optionMatch_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.optionMatch_preservedByRename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst_optionMatch_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.optionMatch_preservedBySubst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst0_optionMatch_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_optionMatch_preservation
+-- eitherMatch:
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.eitherMatch
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.eitherMatch_scrutinee_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.eitherMatch_leftBranch_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.eitherMatch_rightBranch_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_eitherMatch_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.eitherMatch_preservedByRename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst_eitherMatch_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.eitherMatch_preservedBySubst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst0_eitherMatch_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_eitherMatch_preservation
 
 -- ─── V2-fix-4: restricted-profile admission predicate ──────────────
 -- Discharges Agent 3 H3.2 (admission machinery decoration).  Before
