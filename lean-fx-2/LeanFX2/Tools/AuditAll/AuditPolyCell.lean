@@ -69,6 +69,7 @@ import LeanFX2.Foundation.PolyCell.Core.RawCellV2CascadeLaws
 import LeanFX2.Foundation.PolyCell.Modal.ResourceGraded
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2Shape
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
+import LeanFX2.Foundation.PolyCell.Core.RawTermV2Subst0
 
 namespace LeanFX2.Tools
 
@@ -3382,6 +3383,38 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.fxProfile_admits_modIntro_but_coreFx_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.fxProfile_admits_modElim_but_coreFx_rejects
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.fxProfile_admits_subsume_but_coreFx_rejects
+
+-- ─── V2-L2.10: subst0 single substitution + beta-shape ──────────────
+-- Ships the convenience wrapper RawTermSubstV2.singleton +
+-- RawTermV2.subst0 that the future Step relation's beta-reduction
+-- rule will reference.  v2 analog of v1's RawTermSubst.singleton +
+-- RawTerm.subst0 (Foundation/RawSubst/SubstDefs.lean:35,200).
+--
+-- Two definitions:
+--   * singleton rawArg : RawTermSubstV2 (scope+1) scope — position 0
+--     maps to rawArg, k+1 maps to var k.
+--   * subst0 body rawArg := subst (singleton rawArg) body — single-
+--     variable substitution at position 0.
+-- Both @[reducible] so smoke lemmas close by rfl.
+--
+-- Five smoke lemmas pin behavior:
+--   * singleton_var_zero — position 0 returns rawArg.
+--   * singleton_var_succ — position k+1 returns var k (shift-down).
+--   * subst0_var_zero — substituting var 0 returns rawArg.
+--   * subst0_var_succ_one_smoke — substituting var 1 at scope 1
+--     returns var 0 (the de Bruijn shift-down).
+--   * subst0_unit_smoke — substituting a closed term ignores rawArg.
+--
+-- Forward use: V2-L3.1 (subject reduction) will fire beta as
+--   Step app(lam(body), arg) ↝ subst0 body arg
+-- using subst0 from this file.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubstV2.singleton
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.subst0
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubstV2.singleton_var_zero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubstV2.singleton_var_succ
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.subst0_var_zero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.subst0_var_succ_one_smoke
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.subst0_unit_smoke
 
 -- ─── V2-L1cert.12: existential preserves dim (#167) ─────────────────
 -- inferRawCellGeneralV2?_accepted_cellDimension_eq: when the
