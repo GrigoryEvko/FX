@@ -24,6 +24,7 @@ import LeanFX2.Foundation.PolyCell.Core.GeneratorAdmissionV2
 import LeanFX2.Foundation.PolyCell.Core.GenPayloadEvidenceV2
 import LeanFX2.Foundation.PolyCell.Core.HasEqualDimV2
 import LeanFX2.Foundation.PolyCell.Core.RuleSpecV2
+import LeanFX2.Foundation.PolyCell.Core.CellBoundaryV2
 
 namespace LeanFX2.Tools
 
@@ -2920,6 +2921,13 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.supportedRuleSpecV2?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.lookupRuleSpecV2?_zero
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.supportedRuleSpecV2?_termStep
+
+-- ─── V2-L1c.1: cell boundary data (#146) ─────────────────────────
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CellBoundaryV2
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CellBoundaryV2_zero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CellBoundaryV2_succ
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CellBoundaryV2.trivial
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CellBoundaryV2.endpoints
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
