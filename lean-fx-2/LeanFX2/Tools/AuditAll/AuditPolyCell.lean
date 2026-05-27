@@ -48,6 +48,7 @@ import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2Coverage
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2NegativeProbes
 import LeanFX2.Foundation.PolyCell.FXProfile.CertifiedViewsV2
 import LeanFX2.Foundation.PolyCell.FXProfile.CertifiedViewsV2Sound
+import LeanFX2.Foundation.PolyCell.Core.RawTermSubstV2
 
 namespace LeanFX2.Tools
 
@@ -3445,6 +3446,34 @@ namespace LeanFX2.Tools
 -- advance to L2 (Allais ops layer, #175-#185) — the generic
 -- fold/rename/subst infrastructure that turns v2's substrate into a
 -- productive base for `cd_lemma`/`Conv`/derived rewrite work.
+
+-- ─── V2-L2.1: Action / Semantics infrastructure for RawTermV2 (#175) ──
+-- L2 kickoff: ship the variable-bridge typeclass + Container type that
+-- foldV2 (#177) will consume.  Splits the Allais two-typeclass
+-- architecture cleanly:
+--   * Foundation/Action.lean (already shipped) — Container-side: lift,
+--     compose, identity, generic structure.
+--   * ActsOnRawTermV2Var (this commit) — Target-bridge: how a Container
+--     produces a RawTermV2 from a Fin position.
+--
+-- Two Container instances:
+--   * RawRenaming (reused from v1's RawSubst/RenameDefs) — purely
+--     positional, profile-agnostic.  Variable bridge: wrap renamed
+--     Fin in .mkGen .gen_var pos .childNil.
+--   * RawTermSubstV2 (new) — Fin source → RawTermV2 target.  Variable
+--     bridge: direct lookup.
+--
+-- Deferred to later L2 sub-tasks (require foldV2):
+--   * Full Action instance for RawTermSubstV2 (compose/laws) → #181
+--   * RawTermSubstV2.lift through binders → #179/#180
+--   * RawTermV2.act / foldV2 recursion engine → #177
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubstV2
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubstV2.identity
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.ActsOnRawTermV2Var
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.ActsOnRawTermV2Var.varToRawTermV2
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubstV2.identity_lookup_eq_genVar
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.ActsOnRawTermV2Var.rawRenaming_varToRawTermV2_eq
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.ActsOnRawTermV2Var.rawTermSubstV2_varToRawTermV2_eq
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
