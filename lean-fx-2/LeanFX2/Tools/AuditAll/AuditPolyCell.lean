@@ -3746,6 +3746,15 @@ namespace LeanFX2.Tools
 --   branch-selection, content-projection, 1-arg app-chain,
 --   2-arg app-chain with recursion, 3-arg app-chain with recursion.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaListElimCons_builds_triple_app
+-- Phase C step 5: iota for identity-type elimination.
+-- gen_idJ and gen_idStrictRec both have arity 2 (baseCase,
+-- witness) -- the motive and dependent-elimination semantics live
+-- in the PROFILE layer, not the substrate.  So idJ on refl is
+-- SHAPE-1 (pure projection): discard the refl witness, return
+-- the base case.  Same iota shape as iotaBoolTrue, applied to
+-- the identity-type eliminators.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaIdJRefl_selects_base
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaIdStrictRecRefl_selects_base
 
 -- ─── V2-L3.2 phase A: StepStar (reflexive-transitive closure) ───────
 -- Reflexive-transitive closure of Step in LEFT-EXTENSION form:

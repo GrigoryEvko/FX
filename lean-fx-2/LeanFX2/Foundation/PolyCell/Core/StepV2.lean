@@ -2,26 +2,27 @@ import LeanFX2.Foundation.PolyCell.Core.RawTermV2Subst0
 
 /-! # Foundation/PolyCell/Core/StepV2 — single-step reduction on V2
 
-V2-L3.1 phase A + B + C-steps 1/2/3/4a/4b/4c (2026-05-27).
+V2-L3.1 phase A + B + C-steps 1/2/3/4a/4b/4c/5 (2026-05-27).
 Discharges the first L3 metatheory task per polycell.md §11.6.1.
-Ships the `Step` inductive relation with: beta-reduction (phase
-A), uniform congruence (phase B), branch-selection iota for
-boolElim (C-step1), content-projection iota for fst/snd on pair
-(C-step2), base-case projection iota for nat/list/option base
-ctors (C-step3), 1-arg app-chain iota for optionSome/eitherInl/
-eitherInr step ctors (C-step4a), 2-arg app-chain iota WITH
-RECURSIVE CALL for natElim/natRec on natSucc (C-step4b), and
-3-arg app-chain iota WITH RECURSIVE CALL for listElim on listCons
-(C-step4c).  Sixteen smokes total.
+Ships the `Step` inductive relation with beta + uniform cong +
+iota covering ALL standard inductive types (bool / nat / list /
+option / either / pair / identity).  Eighteen smokes total.
 
-ALL FIVE IOTA SHAPES NOW SATURATED:
-  * branch-selection (base ctors -- bool/nat/list/option)
-  * content-projection (pair fst/snd)
-  * 1-arg app-chain build (optionSome/eitherInl/eitherInr)
-  * 2-arg app-chain with recursive call (natSucc -- inductive)
-  * 3-arg app-chain with recursive call (listCons -- inductive)
+Five iota SHAPES saturated; eighteen iota constructors total:
 
-C-step5 handles idJ + opt-in eta.  C-step6 ships the SR theorem.
+  * SHAPE 1 (branch-selection): bool×2, nat zero×2, list nil,
+    option none, idJ refl, idStrictRec refl -- 8 ctors
+  * SHAPE 2 (content-projection): pair fst, pair snd -- 2 ctors
+  * SHAPE 3 (1-arg app-chain build): option some, either inl/inr -- 3
+  * SHAPE 4 (2-arg app-chain w/ recursive call): natElim/natRec
+    on natSucc -- 2 ctors
+  * SHAPE 5 (3-arg app-chain w/ recursive call): listElim on
+    listCons -- 1 ctor
+
+After step 5 the standard MLTT iotas are FULLY COVERED.  Step 6
+ships the SR theorem (one structural induction over Step / mutual
+StepChildren, with arms organized by shape -- ~5 arms covering an
+unbounded population of iotas).
 
 ## Phase A vs Phase B vs Phase C
 
@@ -60,16 +61,24 @@ C-step5 handles idJ + opt-in eta.  C-step6 ships the SR theorem.
   predecessor.  This SHAPE gives induction principles their
   inductive power: the recursive call appears in the reduct as a
   syntactic sub-term that subsequent reductions fold down.
-* **Phase C step 4c** (THIS update) introduces the FIFTH iota
-  SHAPE: 3-arg app-chain WITH RECURSIVE CALL.
-  `Step.iotaListElimCons`.  The reduct is a TRIPLE-nested app
-  `app (app (app consBranch head) tail) (listElim tail nil cons)`
-  -- one curried argument per piece of the cons constructor's
-  payload (head + tail) plus the recursive call.  Same inductive
-  shape as natSucc, with one more curried layer.
-* **Future phase C** (deferred): iotas with binders (idJ on
-  refl), opt-in eta rules, and the SR theorem.  After step 4c
-  ALL FIVE iota shapes are saturated.
+* **Phase C step 4c** introduces the FIFTH iota SHAPE: 3-arg
+  app-chain WITH RECURSIVE CALL.  `Step.iotaListElimCons`.  The
+  reduct is a TRIPLE-nested app `app (app (app consBranch head)
+  tail) (listElim tail nil cons)` -- one curried argument per
+  piece of the cons constructor's payload (head + tail) plus the
+  recursive call.  Same inductive shape as natSucc, with one more
+  curried layer.
+* **Phase C step 5** (THIS update) ships iota for identity-type
+  elimination: `Step.iotaIdJRefl` and `Step.iotaIdStrictRecRefl`.
+  Both are SHAPE-1 (pure projection) -- the v2 substrate's
+  metadata gives idJ arity 2 (baseCase, witness) with no explicit
+  motive child, so the iota simply returns the base case when the
+  witness is `refl`.  The motive and dependent-elimination
+  semantics live in the PROFILE layer that interprets identity
+  types, not in the substrate.
+* **Future phase C** (deferred): opt-in eta rules per generator,
+  and the SR theorem.  After step 5, the standard MLTT iotas
+  (everything except eta) are FULLY COVERED.
 
 This is the L3 KICKOFF: the FIRST shipped piece of v2's reduction
 calculus.  Together with V2-L2.10's `RawTermV2.subst0`, it establishes
@@ -488,6 +497,49 @@ inductive Step : {scope : Nat} → RawTermV2 scope → RawTermV2 scope → Prop 
                 (.childCons tailVal
                   (.childCons nilBranch (.childCons consBranch .childNil))))
               .childNil)))
+  /-- **Iota for idJ on refl (identity-type elimination).**
+
+      Eliminating the identity type at `refl rawWitness` returns
+      the base case:
+
+        idJ baseCase (refl rawWitness)  ↝  baseCase
+
+      Same SHAPE-1 (branch-selection / pure projection) as
+      `iotaBoolTrue` and the other base-case iotas.  Identity-type
+      elimination is simpler than textbook MLTT in v2's design
+      because the motive and endpoint information lives in the
+      PROFILE layer (which interprets identity types), not in the
+      substrate's metadata.  The iota just discards the refl
+      witness and returns the base case; the profile checks that
+      the base case has the right type relative to the motive. -/
+  | iotaIdJRefl {scope : Nat}
+                {baseCase rawWitness : RawTermV2 scope} :
+      Step
+        (.mkGen .gen_idJ ()
+          (.childCons
+            baseCase
+            (.childCons
+              (.mkGen .gen_refl () (.childCons rawWitness .childNil))
+              .childNil)))
+        baseCase
+  /-- **Iota for idStrictRec on refl (strict identity-type
+      elimination).**
+
+      Symmetric to `iotaIdJRefl` for the strict variant
+      `gen_idStrictRec`.  The substrate treats both identity
+      eliminators identically (same arity, same binderShifts) --
+      the strict-vs-relaxed distinction is a profile-layer
+      concern, not a reduction-rule concern. -/
+  | iotaIdStrictRecRefl {scope : Nat}
+                        {baseCase rawWitness : RawTermV2 scope} :
+      Step
+        (.mkGen .gen_idStrictRec ()
+          (.childCons
+            baseCase
+            (.childCons
+              (.mkGen .gen_refl () (.childCons rawWitness .childNil))
+              .childNil)))
+        baseCase
 
 /-- **Step at some position in a children spine.**
 
@@ -986,5 +1038,40 @@ theorem Step.iotaListElimCons_builds_triple_app :
         (.childCons appHeadTail (.childCons recursiveCall .childNil))
     Step elimTerm tripleApp := by
   apply Step.iotaListElimCons
+
+/-- **Phase C smoke: iotaIdJRefl selects the base case.**
+
+  `idJ boolTrue (refl unit)  ↝  boolTrue`
+
+The witness `refl unit` is discarded; the base case `boolTrue` is
+returned.  Closes by `apply Step.iotaIdJRefl`. -/
+theorem Step.iotaIdJRefl_selects_base :
+    let baseCase : RawTermV2 0 :=
+      .mkGen .gen_boolTrue () .childNil
+    let rawWitness : RawTermV2 0 :=
+      .mkGen .gen_unit () .childNil
+    let reflTerm : RawTermV2 0 :=
+      .mkGen .gen_refl () (.childCons rawWitness .childNil)
+    let idJTerm : RawTermV2 0 :=
+      .mkGen .gen_idJ ()
+        (.childCons baseCase (.childCons reflTerm .childNil))
+    Step idJTerm baseCase := by
+  apply Step.iotaIdJRefl
+
+/-- **Phase C smoke: iotaIdStrictRecRefl selects the base case.**
+
+Symmetric to `iotaIdJRefl_selects_base` for `gen_idStrictRec`. -/
+theorem Step.iotaIdStrictRecRefl_selects_base :
+    let baseCase : RawTermV2 0 :=
+      .mkGen .gen_boolTrue () .childNil
+    let rawWitness : RawTermV2 0 :=
+      .mkGen .gen_unit () .childNil
+    let reflTerm : RawTermV2 0 :=
+      .mkGen .gen_refl () (.childCons rawWitness .childNil)
+    let idStrictRecTerm : RawTermV2 0 :=
+      .mkGen .gen_idStrictRec ()
+        (.childCons baseCase (.childCons reflTerm .childNil))
+    Step idStrictRecTerm baseCase := by
+  apply Step.iotaIdStrictRecRefl
 
 end LeanFX2.Foundation.PolyCell.Core
