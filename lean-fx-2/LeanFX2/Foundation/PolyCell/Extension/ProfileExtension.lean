@@ -410,8 +410,8 @@ theorem extendProfile_preserves_mttNormConstructionLevel
 
 -- `ProfileLens` (formerly here, defined over v1 `PolyTerm`) was retired
 -- alongside the v1 dim-indexed cell substrate (TCB.9 v1 retirement).  A v2
--- counterpart living over `RawTermV2` is V2-L5.1 in the roadmap, not yet
--- shipped — pending the PolyCellV2-aware ProfileLens redesign.
+-- counterpart living over `RawTerm` is V2-L5.1 in the roadmap, not yet
+-- shipped — pending the PolyCell-aware ProfileLens redesign.
 
 /-- Proof-relevant view of the five local admission evidence fields.
 

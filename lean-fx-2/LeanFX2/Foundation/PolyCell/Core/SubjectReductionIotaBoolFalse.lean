@@ -1,5 +1,5 @@
-import LeanFX2.Foundation.PolyCell.Core.CertifiedToPolyCellV2
-import LeanFX2.Foundation.PolyCell.Core.StepV2
+import LeanFX2.Foundation.PolyCell.Core.CertifiedToPolyCell
+import LeanFX2.Foundation.PolyCell.Core.Step
 
 /-! # Foundation/PolyCell/Core/SubjectReductionIotaBoolFalse — SR's second arm
 
@@ -43,7 +43,7 @@ with possibly different tail-counts and head sorts.
 ## Zero-axiom verification
 
 Identical proof structure to `preservedByIotaBoolTrue`.  Pure
-`cases` on the inductive PolyCellV2 (single-arm match since only
+`cases` on the inductive PolyCell (single-arm match since only
 `.gen` produces a `.termBase`-shaped raw cell) followed by spine
 projections.  No `simp`, no `omega`, no propext-touching tactics.
 
@@ -62,21 +62,21 @@ which spine position (third instead of second) carries the
 target. -/
 theorem HasCertifiedCellDim0.preservedByIotaBoolFalse
     {profile : PolyProfile} {scope : Nat}
-    {thenBranch elseBranch : RawTermV2 scope}
+    {thenBranch elseBranch : RawTerm scope}
     (sourceCert :
       HasCertifiedCellDim0 (profile := profile)
         (.mkGen .gen_boolElim ()
           (.childCons (.mkGen .gen_boolFalse () .childNil)
             (.childCons thenBranch
               (.childCons elseBranch .childNil)))
-          : RawTermV2 scope)) :
+          : RawTerm scope)) :
     HasCertifiedCellDim0 (profile := profile) elseBranch := by
   cases sourceCert with
   | intro sort sourceCell =>
     cases sourceCell with
     | gen _ _ spine =>
       -- spine has type:
-      --   CertifiedTermSpineV2 profile [termSameScope, termSameScope,
+      --   CertifiedTermSpine profile [termSameScope, termSameScope,
       --                                  termSameScope]
       --     scope [0, 0, 0]
       --     (childCons boolFalse (childCons thenBranch

@@ -1,5 +1,5 @@
-import LeanFX2.Foundation.PolyCell.Core.CertifiedToPolyCellV2
-import LeanFX2.Foundation.PolyCell.Core.StepV2
+import LeanFX2.Foundation.PolyCell.Core.CertifiedToPolyCell
+import LeanFX2.Foundation.PolyCell.Core.Step
 
 /-! # Foundation/PolyCell/Core/SubjectReductionBaseIotas — base-case iotas
 
@@ -43,7 +43,7 @@ After this commit: 6/18 SR arms shipped.
   * Compound iotas (natElim/natRec/listElim/optionMatch on
     successor/cons/some):
                        0/4 — pending (need to build a `gen_app`
-                       term after extraction via PolyCellV2.gen
+                       term after extraction via PolyCell.gen
                        constructor).
   * Identity iotas (idJ/idStrictRec on refl):
                        0/2 — pending (similar to compound iotas,
@@ -71,14 +71,14 @@ Same 3-child same-scope spine as `iotaBoolTrue`; second child is
 the target. -/
 theorem HasCertifiedCellDim0.preservedByIotaNatElimZero
     {profile : PolyProfile} {scope : Nat}
-    {zeroBranch succBranch : RawTermV2 scope}
+    {zeroBranch succBranch : RawTerm scope}
     (sourceCert :
       HasCertifiedCellDim0 (profile := profile)
         (.mkGen .gen_natElim ()
           (.childCons (.mkGen .gen_natZero () .childNil)
             (.childCons zeroBranch
               (.childCons succBranch .childNil)))
-          : RawTermV2 scope)) :
+          : RawTerm scope)) :
     HasCertifiedCellDim0 (profile := profile) zeroBranch := by
   cases sourceCert with
   | intro sort sourceCell =>
@@ -93,14 +93,14 @@ Identical structure to `iotaNatElimZero` — different generator,
 same arity / binderShifts / target position. -/
 theorem HasCertifiedCellDim0.preservedByIotaNatRecZero
     {profile : PolyProfile} {scope : Nat}
-    {zeroBranch succBranch : RawTermV2 scope}
+    {zeroBranch succBranch : RawTerm scope}
     (sourceCert :
       HasCertifiedCellDim0 (profile := profile)
         (.mkGen .gen_natRec ()
           (.childCons (.mkGen .gen_natZero () .childNil)
             (.childCons zeroBranch
               (.childCons succBranch .childNil)))
-          : RawTermV2 scope)) :
+          : RawTerm scope)) :
     HasCertifiedCellDim0 (profile := profile) zeroBranch := by
   cases sourceCert with
   | intro sort sourceCell =>
@@ -114,14 +114,14 @@ theorem HasCertifiedCellDim0.preservedByIotaNatRecZero
 Identical structure to `iotaNatElimZero`. -/
 theorem HasCertifiedCellDim0.preservedByIotaListElimNil
     {profile : PolyProfile} {scope : Nat}
-    {nilBranch consBranch : RawTermV2 scope}
+    {nilBranch consBranch : RawTerm scope}
     (sourceCert :
       HasCertifiedCellDim0 (profile := profile)
         (.mkGen .gen_listElim ()
           (.childCons (.mkGen .gen_listNil () .childNil)
             (.childCons nilBranch
               (.childCons consBranch .childNil)))
-          : RawTermV2 scope)) :
+          : RawTerm scope)) :
     HasCertifiedCellDim0 (profile := profile) nilBranch := by
   cases sourceCert with
   | intro sort sourceCell =>
@@ -135,14 +135,14 @@ theorem HasCertifiedCellDim0.preservedByIotaListElimNil
 `noneBranch`.  Identical structure to `iotaNatElimZero`. -/
 theorem HasCertifiedCellDim0.preservedByIotaOptionMatchNone
     {profile : PolyProfile} {scope : Nat}
-    {noneBranch someBranch : RawTermV2 scope}
+    {noneBranch someBranch : RawTerm scope}
     (sourceCert :
       HasCertifiedCellDim0 (profile := profile)
         (.mkGen .gen_optionMatch ()
           (.childCons (.mkGen .gen_optionNone () .childNil)
             (.childCons noneBranch
               (.childCons someBranch .childNil)))
-          : RawTermV2 scope)) :
+          : RawTerm scope)) :
     HasCertifiedCellDim0 (profile := profile) noneBranch := by
   cases sourceCert with
   | intro sort sourceCell =>

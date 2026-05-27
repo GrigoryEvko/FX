@@ -1,5 +1,5 @@
-import LeanFX2.Foundation.PolyCell.Core.CertifiedToPolyCellV2
-import LeanFX2.Foundation.PolyCell.Core.StepV2
+import LeanFX2.Foundation.PolyCell.Core.CertifiedToPolyCell
+import LeanFX2.Foundation.PolyCell.Core.Step
 
 /-! # Foundation/PolyCell/Core/SubjectReductionIotaBoolTrue — SR's first arm
 
@@ -21,7 +21,7 @@ where source = `mkGen .gen_boolElim () (childCons boolTrue
 The proof is the textbook minimal iota case:
 
   1. Destructure `HasCertifiedCellDim0 source` to expose `sort` and
-     `sourceCell : PolyCellV2 ... .termBase (mkGen .gen_boolElim ...)`.
+     `sourceCell : PolyCell ... .termBase (mkGen .gen_boolElim ...)`.
   2. `cases sourceCell` — only the `.gen` constructor matches a
      `.termBase`-shaped raw cell.  Get `admission`, `payloadEvidence`,
      `spine`.
@@ -71,7 +71,7 @@ follow:
   * **Compound iotas** (`iotaNatElimSucc`, `iotaListElimCons`,
     `iotaNatRecSucc`, `iotaOptionMatchSome`): assemble a new
     applied form from extracted spine components — uses the
-    PolyCellV2.gen constructor to rebuild after extraction.
+    PolyCell.gen constructor to rebuild after extraction.
 
   * **Beta**: requires substitution-preservation (V2-L2.12); the
     extracted body + arg cells are passed through the subst
@@ -82,7 +82,7 @@ follow:
 
 ## Zero-axiom verification
 
-The proof uses pure `cases` on the inductive PolyCellV2 (single-arm
+The proof uses pure `cases` on the inductive PolyCell (single-arm
 match since only `.gen` produces a `.termBase`-shaped raw cell)
 followed by the spine projections (V2-L3.1 phase D step 2).  No
 `simp`, no `omega`, no propext-touching tactics.
@@ -101,25 +101,25 @@ Proof template that sibling pure-projection iotas
 (`iotaBoolFalse`, `iotaFstPair`, etc.) inherit. -/
 theorem HasCertifiedCellDim0.preservedByIotaBoolTrue
     {profile : PolyProfile} {scope : Nat}
-    {thenBranch elseBranch : RawTermV2 scope}
+    {thenBranch elseBranch : RawTerm scope}
     (sourceCert :
       HasCertifiedCellDim0 (profile := profile)
         (.mkGen .gen_boolElim ()
           (.childCons (.mkGen .gen_boolTrue () .childNil)
             (.childCons thenBranch
               (.childCons elseBranch .childNil)))
-          : RawTermV2 scope)) :
+          : RawTerm scope)) :
     HasCertifiedCellDim0 (profile := profile) thenBranch := by
   cases sourceCert with
   | intro sort sourceCell =>
-    -- sourceCell : PolyCellV2 profile sort 0 scope trivial
+    -- sourceCell : PolyCell profile sort 0 scope trivial
     --                (.termBase (.mkGen .gen_boolElim ...))
     -- Only the `.gen` constructor produces a `.termBase`-shaped
     -- raw cell, so `cases` derives a single-arm match.
     cases sourceCell with
     | gen _ _ spine =>
       -- spine has type:
-      --   CertifiedTermSpineV2 profile [termSameScope, termSameScope,
+      --   CertifiedTermSpine profile [termSameScope, termSameScope,
       --                                  termSameScope]
       --     scope [0, 0, 0]
       --     (childCons boolTrue (childCons thenBranch

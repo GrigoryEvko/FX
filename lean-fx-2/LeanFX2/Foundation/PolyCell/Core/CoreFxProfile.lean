@@ -1,4 +1,4 @@
-import LeanFX2.Foundation.PolyCell.Core.GeneratorAdmissionV2
+import LeanFX2.Foundation.PolyCell.Core.GeneratorAdmission
 
 /-! # Foundation/PolyCell/Core/CoreFxProfile — restricted-profile admission demonstration
 
@@ -9,15 +9,15 @@ machinery and discharges Agent 3's H3.2 finding.
 ## Context: why this file exists
 
 Agent 3 of the V2 falsification audit (2026-05-27) found that
-`supportedGeneratorV2?` is the constant `some _` for every
+`supportedGenerator?` is the constant `some _` for every
 `Generator` under the default `fxProfile` — the `.none` branch
-of `match supportedGeneratorV2? generator with | none => ...
+of `match supportedGenerator? generator with | none => ...
 | some => ...` in the certifier is **unreachable**.  The
 "per-profile admission" architecture is decoration today.
 
 That finding is **architecturally accurate**: the admission
-inductive `SupportedGeneratorV2` (V2-L1.4) has a constructor for
-every Generator, so the decision procedure `supportedGeneratorV2?`
+inductive `SupportedGenerator` (V2-L1.4) has a constructor for
+every Generator, so the decision procedure `supportedGenerator?`
 can never fail.  Restricted profiles requiring fewer Generators
 would need a DIFFERENT admission predicate with FEWER admitting
 arms.
@@ -82,10 +82,10 @@ The list-based approach trades:
 ## Integration trajectory (FUTURE work, not this commit)
 
 This commit ships the PREDICATE and its witness theorems.  Full
-integration with the certifier — i.e., a `certifyRawCellExactV2?`
+integration with the certifier — i.e., a `certifyRawCellExact?`
 variant parameterized by a restricted-profile admission filter —
 is a separate architectural concern (would require either
-modifying `supportedGeneratorV2?` to accept a profile parameter,
+modifying `supportedGenerator?` to accept a profile parameter,
 or wrapping the certifier in a generator-allowlist filter).
 
 The predicate stands alone as the FIRST concrete restricted-
@@ -131,7 +131,7 @@ True iff the generator is NOT in `coreFxExcluded`.  The
 `@[reducible]` attribute lets `rfl`-style witness theorems close
 their per-generator equations definitionally.
 
-For comparison: `supportedGeneratorV2?` returns `some _` for ALL
+For comparison: `supportedGenerator?` returns `some _` for ALL
 194 Generators (constant-true under fxProfile).  `isInCoreFx`
 returns `false` for the 3 excluded Generators.  This is the FIRST
 shipped Bool predicate that genuinely rejects some Generator. -/
@@ -182,7 +182,7 @@ theorem Generator.gen_subsume_notInCoreFx :
 /-! ## Section 3 — Symmetry: under fxProfile every Generator admits
 
 Contrast: under the default `fxProfile`, the three modal
-Generators DO admit (since `supportedGeneratorV2?` is constant
+Generators DO admit (since `supportedGenerator?` is constant
 `some _`).  These three theorems exhibit the difference between
 the two profiles' admission decisions on the same Generators. -/
 
@@ -190,19 +190,19 @@ the two profiles' admission decisions on the same Generators. -/
 `gen_modIntro_notInCoreFx`.  The two profiles disagree on this
 Generator: fxProfile says admit, core-FX says reject. -/
 theorem fxProfile_admits_modIntro_but_coreFx_rejects :
-    (supportedGeneratorV2? Generator.gen_modIntro).isSome = true ∧
+    (supportedGenerator? Generator.gen_modIntro).isSome = true ∧
     Generator.gen_modIntro.isInCoreFx = false :=
   ⟨rfl, rfl⟩
 
 /-- Symmetric pair theorem for `gen_modElim`. -/
 theorem fxProfile_admits_modElim_but_coreFx_rejects :
-    (supportedGeneratorV2? Generator.gen_modElim).isSome = true ∧
+    (supportedGenerator? Generator.gen_modElim).isSome = true ∧
     Generator.gen_modElim.isInCoreFx = false :=
   ⟨rfl, rfl⟩
 
 /-- Symmetric pair theorem for `gen_subsume`. -/
 theorem fxProfile_admits_subsume_but_coreFx_rejects :
-    (supportedGeneratorV2? Generator.gen_subsume).isSome = true ∧
+    (supportedGenerator? Generator.gen_subsume).isSome = true ∧
     Generator.gen_subsume.isInCoreFx = false :=
   ⟨rfl, rfl⟩
 
