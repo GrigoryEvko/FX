@@ -68,6 +68,7 @@ import LeanFX2.Foundation.PolyCell.Core.RawCellV2RenameSubst
 import LeanFX2.Foundation.PolyCell.Core.RawCellV2CascadeLaws
 import LeanFX2.Foundation.PolyCell.Modal.ResourceGraded
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2Shape
+import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2TermBase
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2Subst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2WrongChildShape
@@ -3354,6 +3355,20 @@ namespace LeanFX2.Tools
 --   * `..._termBase_sort` — pins cert.sort = generator.cellSort.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.certifyRawCellExactV2?_verticalComposite_accepted_implies_inner_certs
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.certifyRawCellExactV2?_generatingCell_accepted_implies_inner_certs
+
+-- ─── V2-L3.1 phase D step 1: termBase shape pin ────────────────────
+-- Discharges the missing arm in the dispatcher-shape-pin family.
+-- The certifier's `.termBase` arm is the gate every SR-relevant
+-- input passes through (Step source/target are RawTermV2, wrapped
+-- as `.termBase`).  Pattern variant: reducibility-aware dispatcher
+-- pin — `supportedGeneratorV2?` and `genPayloadEvidence?` are both
+-- `@[reducible]` so they pre-reduce, leaving the spine call as the
+-- one non-definitional stage to case-analyze.
+--
+-- Building block for SR's Certified projection: from `Certified
+-- (lam body)` (or any composite generator), extract the spine
+-- success witness via this lemma, then projeect into each child.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.certifyRawCellExactV2?_termBase_accepted_implies_inner_succeeds
 
 -- ─── V2-fix-4: restricted-profile admission predicate ──────────────
 -- Discharges Agent 3 H3.2 (admission machinery decoration).  Before
