@@ -75,6 +75,7 @@ import LeanFX2.Foundation.PolyCell.Core.CompoundRenamePreservation
 import LeanFX2.Foundation.PolyCell.Core.CompoundSubstPreservation
 import LeanFX2.Foundation.PolyCell.Core.BetaRedexLeafPreservation
 import LeanFX2.Foundation.PolyCell.Core.BetaRedexCompoundPreservation
+import LeanFX2.Foundation.PolyCell.Core.HasCertifiedProjections
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactWrongChildShape
@@ -998,6 +999,45 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_eitherInr_preservation
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_refl_preservation
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_lam_preservation
+
+-- ─── V2-L3.1 phase D step 20: HasCertifiedCellDim0 child projections ─
+-- EXTRACTION half complementing the REBUILD half (steps 18-19).
+-- Given a HasCertifiedCellDim0 of a compound shape, project to the
+-- certifications of its children.
+--
+-- Pattern (zero-axiom):
+--   obtain ⟨_, cell⟩ := cert
+--   cases cell with
+--   | gen _ _ spine =>
+--     exact ⟨.term, spine.headAtDim0 rfl⟩  -- or spine.tail.headAtDim0
+--
+-- Free sort from the existential destructure lets `cases` invert
+-- the .gen ctor cleanly.  Index unification on the raw
+-- .termBase (.mkGen .gen_X () ...) constrains generator = .gen_X
+-- and exposes the spine over the specific child shape.
+--
+-- 12 projections total (one per child position):
+--   * Binary: app/pair/listCons → 2 each = 6
+--   * Unary, no binder: natSucc/optionSome/eitherInl/eitherInr/refl
+--     → 1 each = 5
+--   * Unary, 1 binder: lam → body at scope+1 = 1
+--
+-- Together with the rebuild (steps 18-19), these complete the
+-- end-to-end chain for SR-beta of fixture-shaped bodies:
+--   source cert → projections to children → recursive certs →
+--   composeitional rebuild → target cert
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.app_function_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.app_argument_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.pair_first_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.pair_second_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.listCons_head_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.listCons_tail_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.natSucc_predecessor_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.optionSome_wrapped_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.eitherInl_wrapped_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.eitherInr_wrapped_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.refl_witness_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.lam_body_projection
 
 -- ─── V2-fix-4: restricted-profile admission predicate ──────────────
 -- Discharges Agent 3 H3.2 (admission machinery decoration).  Before
