@@ -1245,7 +1245,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaIdStrictRecWitnessCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepPairJoin
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CdLemmaStatement
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepPairJoin.ofReductsEqual
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepPairJoin.sameStep
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.HasJoin
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.hasJoin_ofReductsEqual
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.hasJoin
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.toStepPairJoin
 

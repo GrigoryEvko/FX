@@ -39,12 +39,44 @@ def CdLemmaStatement : Prop :=
     (rightStep : Step sourceTerm rightReduct) →
     StepPairJoin leftStep rightStep
 
+namespace StepPairJoin
+
+/-- Same-reduct closure for the M7 join target.
+
+When the two one-step reducts are equal, the local join is the shared reduct
+itself and both joining chains are reflexive.  This is the direct
+`StepPairJoin` version of `LocalDiamond.sameReductOfEq`, used by the eventual
+`cd_lemma` dispatcher for same-redex cases. -/
+theorem ofReductsEqual {scope : Nat}
+    {sourceTerm leftReduct rightReduct : RawTerm scope}
+    {leftStep : Step sourceTerm leftReduct}
+    {rightStep : Step sourceTerm rightReduct}
+    (reductsEqual : leftReduct = rightReduct) :
+    StepPairJoin leftStep rightStep := by
+  cases reductsEqual
+  exact ⟨leftReduct, StepStar.refl _, StepStar.refl _⟩
+
+/-- A step trivially joins with itself. -/
+theorem sameStep {scope : Nat} {sourceTerm targetTerm : RawTerm scope}
+    (sameStepWitness : Step sourceTerm targetTerm) :
+    StepPairJoin sameStepWitness sameStepWitness :=
+  ofReductsEqual rfl
+
+end StepPairJoin
+
 namespace LocalStepBranching
 
 /-- The `StepPairJoin` proposition packaged over an M6 local branching. -/
 def HasJoin {scope : Nat}
     (branching : LocalStepBranching (scope := scope)) : Prop :=
   StepPairJoin branching.leftStep branching.rightStep
+
+/-- Same-reduct closure packaged over a concrete local branching. -/
+theorem hasJoin_ofReductsEqual {scope : Nat}
+    (branching : LocalStepBranching (scope := scope))
+    (reductsEqual : branching.leftReduct = branching.rightReduct) :
+    branching.HasJoin :=
+  StepPairJoin.ofReductsEqual reductsEqual
 
 end LocalStepBranching
 
