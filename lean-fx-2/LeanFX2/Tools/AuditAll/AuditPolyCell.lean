@@ -66,6 +66,7 @@ import LeanFX2.Foundation.PolyCell.Core.RawTermV2SubstCompose
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubstV2Action
 import LeanFX2.Foundation.PolyCell.Core.RawCellV2RenameSubst
 import LeanFX2.Foundation.PolyCell.Core.RawCellV2CascadeLaws
+import LeanFX2.Foundation.PolyCell.Modal.ResourceGraded
 
 namespace LeanFX2.Tools
 
@@ -2336,6 +2337,31 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Enrichment.fxEnrichment_dim1
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Enrichment.fxEnrichment_dim2
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Enrichment.fxEnrichment_dim3
+
+-- V2-fix-2 (2026-05-27): ResourceGraded propext-free rewrite.
+-- Original file shipped 6 declarations depending on propext via
+-- overlapping curried match patterns.  Rewrite to full enumeration
+-- (3×3 / 2×2 over the product space) eliminated the leak.  Gates
+-- added here so re-occurrence triggers audit failure even if the
+-- file remains orphan (not imported by any production closure).
+-- The file is intentionally orphan today — these gates capture its
+-- zero-axiom invariant from the audit closure side.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Modal.UsageGrade.add
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Modal.UsageGrade.mul
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Modal.UsageGrade.le
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Modal.SecurityGrade.add
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Modal.SecurityGrade.mul
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Modal.SecurityGrade.le
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Modal.fxUsageSemiring
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Modal.fxSecuritySemiring
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Modal.UsageGrade.add_comm
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Modal.UsageGrade.add_zero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Modal.UsageGrade.zero_add
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Modal.UsageGrade.mul_one
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Modal.UsageGrade.one_mul
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Modal.UsageGrade.mul_zero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Modal.UsageGrade.zero_mul
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Modal.UsageGrade.linear_div_omega_eq_zero
 
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Modal.CohesiveFocus
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Modal.fxCohesiveFocuses
