@@ -88,6 +88,7 @@ import LeanFX2.Foundation.PolyCell.Core.StructuralInductionWrapper
 import LeanFX2.Foundation.PolyCell.Core.SpineRenameStep
 import LeanFX2.Foundation.PolyCell.Core.SpineSubstStep
 import LeanFX2.Foundation.PolyCell.Core.SubstPreservationMutual
+import LeanFX2.Foundation.PolyCell.Core.CongPreservationMutual
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactWrongChildShape
@@ -955,6 +956,14 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyCell.singletonSubstDim0Cells
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedBySubst0
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByBeta
+
+-- ─── M3 / V2-L3.1 phase D: first congruence-preservation layer.
+-- This is the non-circular core of SR-cong: given an exact
+-- sort-preserving preserver for the stepped child, recurse over the
+-- `StepChildren` witness and rebuild the certified spine / parent.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepCellPreserver
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpine.exists_preservedByChildStep_via_stepPreserver
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByCong_via_stepPreserver
 
 -- ─── V2-L3.1 phase D step 35: HCC-level wrappers around the cell-step
 -- helpers (phase D 32/33).  Same recipe, .intro-wrapped to land in
