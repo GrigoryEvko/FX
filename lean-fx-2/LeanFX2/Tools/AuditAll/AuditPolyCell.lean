@@ -77,6 +77,7 @@ import LeanFX2.Foundation.PolyCell.Core.ConsistencyStrengthV2
 import LeanFX2.Foundation.PolyCell.Core.SiteOpennessV2
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2RenameEquiv
 import LeanFX2.Foundation.PolyCell.Core.StepV2
+import LeanFX2.Foundation.PolyCell.Core.StepStarV2
 
 namespace LeanFX2.Tools
 
@@ -3693,6 +3694,32 @@ namespace LeanFX2.Tools
 -- that the L2->L3 cascade was wired correctly.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.identity_lam_applied_to_unit
+
+-- ─── V2-L3.2 phase A: StepStar (reflexive-transitive closure) ───────
+-- Reflexive-transitive closure of Step in LEFT-EXTENSION form:
+-- a StepStar chain is either .refl (length 0) or a Step followed
+-- by a shorter StepStar chain (.trans).
+--
+-- This is the foundational L3 building block.  Every L3 theorem
+-- that talks about "eventually reaches" or "normal-form reduct"
+-- routes through StepStar:
+--   * SR (V2-L3.1.C): "Step preserves typing, so StepStar does"
+--   * Confluence (V2-L3.2): the Church-Rosser theorem.
+--   * SN (V2-L3.3): "every term has a StepStar normal form"
+--   * Conv (V2-L3.4): defined as the symmetric closure of StepStar
+--
+-- Two smokes pin operational behavior:
+--   refl_unit_smoke      -- reflexivity instance, .refl inhabited
+--   identity_lam_beta_unit -- Step.beta + StepStar.refl reaches
+--                            unit from the identity-lambda redex
+--                            via the standard single-Step pattern
+--
+-- Phase B (deferred): trans_compose / single / transLast closure
+-- properties.  Phase C (V2-L3.2 proper): the diamond / Church-Rosser
+-- theorem requiring Tait-Martin-Löf parallel reduction.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.refl_unit_smoke
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.identity_lam_beta_unit
 
 -- ─── V2-L1cert.12: existential preserves dim (#167) ─────────────────
 -- inferRawCellGeneralV2?_accepted_cellDimension_eq: when the
