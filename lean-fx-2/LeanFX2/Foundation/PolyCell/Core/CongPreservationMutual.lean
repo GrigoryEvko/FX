@@ -1088,4 +1088,265 @@ theorem HasCertifiedCellDim0.preservedByCong_via_stepPreserverWitness
               payloadEvidence
               targetSpine)
 
+/-- Final Prop-valued exact-sort preserver for every `Step`.
+
+This is the M3 mutual core: the `Step` motive proves exact cell
+preservation, while the `StepChildren` motive proves certified-spine
+preservation.  The `cong` arm consumes the `StepChildren` motive
+directly, avoiding the invalid Prop-to-Type elimination route. -/
+theorem StepCellPreserverWitness.polyCell (profile : PolyProfile) :
+    StepCellPreserverWitness profile := by
+  intro scope sort source target sourceCell stepRel
+  exact
+    (Step.rec
+      (motive_1 := fun {scope} source target _stepRel =>
+        ∀ {sort : CellSort},
+          PolyCell profile sort 0 scope CellBoundary.trivial
+            (.termBase source) →
+          ∃ _targetCell :
+            PolyCell profile sort 0 scope CellBoundary.trivial
+              (.termBase target),
+            True)
+      (motive_2 := fun {parentScope} {binderShifts}
+          children children' _childStep =>
+        ∀ {childSpecs : List ChildSpec},
+          (specShiftsMatch :
+            childSpecs.map ChildSpec.scopeShift = binderShifts) →
+          (allChildrenDim0 :
+            ∀ childSpec ∈ childSpecs, childSpec.cellDimension = 0) →
+          (sourceSpine :
+            CertifiedTermSpine profile childSpecs parentScope binderShifts
+              children) →
+          ∃ _targetSpine :
+            CertifiedTermSpine profile childSpecs parentScope binderShifts
+              children',
+            True)
+      (beta := by
+        intro _scope _body _arg _sort sourceCell
+        cases sourceCell with
+        | gen admission payloadEvidence sourceSpine =>
+            exact PolyCell.exists_preservedByBeta_dim0
+              (PolyCell.gen admission payloadEvidence sourceSpine))
+      (cong := by
+        intro _scope generator _payload _children _children'
+          _childStep preservedChildren
+        intro _sort sourceCell
+        cases sourceCell with
+        | gen admission payloadEvidence childSpine =>
+            obtain ⟨targetSpine, _⟩ :=
+              preservedChildren
+                (childSpecs := generator.childSpecs)
+                (Generator.childSpecs_scopeShifts_eq_binderShifts
+                  generator)
+                (Generator.childSpecs_cellDimension_zero generator)
+                childSpine
+            exact ⟨
+              PolyCell.gen admission payloadEvidence targetSpine,
+              True.intro⟩)
+      (iotaBoolTrue := by
+        intro _scope _thenBranch _elseBranch _sort sourceCell
+        cases sourceCell with
+        | gen admission payloadEvidence sourceSpine =>
+            exact PolyCell.exists_preservedByIotaBoolTrue_dim0
+              (PolyCell.gen admission payloadEvidence sourceSpine))
+      (iotaBoolFalse := by
+        intro _scope _thenBranch _elseBranch _sort sourceCell
+        cases sourceCell with
+        | gen admission payloadEvidence sourceSpine =>
+            exact PolyCell.exists_preservedByIotaBoolFalse_dim0
+              (PolyCell.gen admission payloadEvidence sourceSpine))
+      (iotaFstPair := by
+        intro _scope _firstValue _secondValue _sort sourceCell
+        cases sourceCell with
+        | gen admission payloadEvidence sourceSpine =>
+            exact PolyCell.exists_preservedByIotaFstPair_dim0
+              (PolyCell.gen admission payloadEvidence sourceSpine))
+      (iotaSndPair := by
+        intro _scope _firstValue _secondValue _sort sourceCell
+        cases sourceCell with
+        | gen admission payloadEvidence sourceSpine =>
+            exact PolyCell.exists_preservedByIotaSndPair_dim0
+              (PolyCell.gen admission payloadEvidence sourceSpine))
+      (iotaNatElimZero := by
+        intro _scope _zeroBranch _succBranch _sort sourceCell
+        cases sourceCell with
+        | gen admission payloadEvidence sourceSpine =>
+            exact PolyCell.exists_preservedByIotaNatElimZero_dim0
+              (PolyCell.gen admission payloadEvidence sourceSpine))
+      (iotaNatRecZero := by
+        intro _scope _zeroBranch _succBranch _sort sourceCell
+        cases sourceCell with
+        | gen admission payloadEvidence sourceSpine =>
+            exact PolyCell.exists_preservedByIotaNatRecZero_dim0
+              (PolyCell.gen admission payloadEvidence sourceSpine))
+      (iotaListElimNil := by
+        intro _scope _nilBranch _consBranch _sort sourceCell
+        cases sourceCell with
+        | gen admission payloadEvidence sourceSpine =>
+            exact PolyCell.exists_preservedByIotaListElimNil_dim0
+              (PolyCell.gen admission payloadEvidence sourceSpine))
+      (iotaOptionMatchNone := by
+        intro _scope _noneBranch _someBranch _sort sourceCell
+        cases sourceCell with
+        | gen admission payloadEvidence sourceSpine =>
+            exact PolyCell.exists_preservedByIotaOptionMatchNone_dim0
+              (PolyCell.gen admission payloadEvidence sourceSpine))
+      (iotaOptionMatchSome := by
+        intro _scope _value _noneBranch _someBranch _sort sourceCell
+        cases sourceCell with
+        | gen admission payloadEvidence sourceSpine =>
+            exact PolyCell.exists_preservedByIotaOptionMatchSome_dim0
+              (PolyCell.gen admission payloadEvidence sourceSpine))
+      (iotaEitherMatchInl := by
+        intro _scope _value _leftBranch _rightBranch _sort sourceCell
+        cases sourceCell with
+        | gen admission payloadEvidence sourceSpine =>
+            exact PolyCell.exists_preservedByIotaEitherMatchInl_dim0
+              (PolyCell.gen admission payloadEvidence sourceSpine))
+      (iotaEitherMatchInr := by
+        intro _scope _value _leftBranch _rightBranch _sort sourceCell
+        cases sourceCell with
+        | gen admission payloadEvidence sourceSpine =>
+            exact PolyCell.exists_preservedByIotaEitherMatchInr_dim0
+              (PolyCell.gen admission payloadEvidence sourceSpine))
+      (iotaNatElimSucc := by
+        intro _scope _predecessor _zeroBranch _succBranch _sort sourceCell
+        cases sourceCell with
+        | gen admission payloadEvidence sourceSpine =>
+            exact PolyCell.exists_preservedByIotaNatElimSucc_dim0
+              (PolyCell.gen admission payloadEvidence sourceSpine))
+      (iotaNatRecSucc := by
+        intro _scope _predecessor _zeroBranch _succBranch _sort sourceCell
+        cases sourceCell with
+        | gen admission payloadEvidence sourceSpine =>
+            exact PolyCell.exists_preservedByIotaNatRecSucc_dim0
+              (PolyCell.gen admission payloadEvidence sourceSpine))
+      (iotaListElimCons := by
+        intro _scope _headVal _tailVal _nilBranch _consBranch _sort
+          sourceCell
+        cases sourceCell with
+        | gen admission payloadEvidence sourceSpine =>
+            exact PolyCell.exists_preservedByIotaListElimCons_dim0
+              (PolyCell.gen admission payloadEvidence sourceSpine))
+      (iotaIdJRefl := by
+        intro _scope _baseCase _rawWitness _sort sourceCell
+        cases sourceCell with
+        | gen admission payloadEvidence sourceSpine =>
+            exact PolyCell.exists_preservedByIotaIdJRefl_dim0
+              (PolyCell.gen admission payloadEvidence sourceSpine))
+      (iotaIdStrictRecRefl := by
+        intro _scope _baseCase _rawWitness _sort sourceCell
+        cases sourceCell with
+        | gen admission payloadEvidence sourceSpine =>
+            exact PolyCell.exists_preservedByIotaIdStrictRecRefl_dim0
+              (PolyCell.gen admission payloadEvidence sourceSpine))
+      (here := by
+        intro parentScope _headShift _restShifts _head _head'
+          _rest _childStep preservedHead
+        intro childSpecs specShiftsMatch allChildrenDim0 sourceSpine
+        cases childSpecs with
+        | nil => cases specShiftsMatch
+        | cons headSpec restSpecs =>
+            injection specShiftsMatch with headShiftEq restShiftsEq
+            cases headShiftEq
+            cases sourceSpine with
+            | cons headCell restSpine =>
+                let headDim0 : headSpec.cellDimension = 0 :=
+                  allChildrenDim0 headSpec List.mem_cons_self
+                let headCellDim0 :=
+                  CertifiedTermSpine.headAtDim0 headDim0
+                    (CertifiedTermSpine.cons headCell restSpine)
+                obtain ⟨preservedHeadCell, _⟩ :=
+                  preservedHead headCellDim0
+                exact ⟨
+                  CertifiedTermSpine.consStep_dim0Trivial
+                    (profile := profile)
+                    (parentScope := parentScope)
+                    (headSpec := headSpec)
+                    (restSpecs := restSpecs)
+                    headDim0
+                    preservedHeadCell
+                    restSpine,
+                  True.intro⟩)
+      (there := by
+        intro parentScope _headShift _restShifts _head _rest _rest'
+          _restStep preservedRest
+        intro childSpecs specShiftsMatch allChildrenDim0 sourceSpine
+        cases childSpecs with
+        | nil => cases specShiftsMatch
+        | cons headSpec restSpecs =>
+            injection specShiftsMatch with headShiftEq restShiftsEq
+            cases headShiftEq
+            cases sourceSpine with
+            | cons headCell restSpine =>
+                let headDim0 : headSpec.cellDimension = 0 :=
+                  allChildrenDim0 headSpec List.mem_cons_self
+                let restChildrenDim0 :
+                    ∀ childSpec ∈ restSpecs,
+                      childSpec.cellDimension = 0 :=
+                  fun childSpec childSpecMem =>
+                    allChildrenDim0 childSpec
+                      (List.mem_cons_of_mem headSpec childSpecMem)
+                let headCellDim0 :=
+                  CertifiedTermSpine.headAtDim0 headDim0
+                    (CertifiedTermSpine.cons headCell restSpine)
+                obtain ⟨preservedRestSpine, _⟩ :=
+                  preservedRest
+                    (childSpecs := restSpecs)
+                    restShiftsEq
+                    restChildrenDim0
+                    restSpine
+                exact ⟨
+                  CertifiedTermSpine.consStep_dim0Trivial
+                    (profile := profile)
+                    (parentScope := parentScope)
+                    (headSpec := headSpec)
+                    (restSpecs := restSpecs)
+                    headDim0
+                    headCellDim0
+                    preservedRestSpine,
+                  True.intro⟩)
+      stepRel)
+      sourceCell
+
+/-- Public Prop-level spine preservation using the final mutual
+`StepCellPreserverWitness`. -/
+theorem CertifiedTermSpine.exists_preservedByChildStep
+    {profile : PolyProfile} {parentScope : Nat} {binderShifts : List Nat}
+    {children children' : RawTermChildren binderShifts parentScope}
+    (childStep : StepChildren children children') :
+    ∀ {childSpecs : List ChildSpec},
+    (specShiftsMatch :
+      childSpecs.map ChildSpec.scopeShift = binderShifts) →
+    (allChildrenDim0 :
+      ∀ childSpec ∈ childSpecs, childSpec.cellDimension = 0) →
+    (sourceSpine :
+      CertifiedTermSpine profile childSpecs parentScope binderShifts
+        children) →
+    ∃ _targetSpine :
+        CertifiedTermSpine profile childSpecs parentScope binderShifts
+          children',
+        True :=
+  CertifiedTermSpine.exists_preservedByChildStep_via_stepPreserverWitness
+    (profile := profile)
+    (stepPreserver := StepCellPreserverWitness.polyCell profile)
+    (childStep := childStep)
+
+/-- Final M3 SR arm: uniform congruence preservation for any generator
+whose child spine takes one `StepChildren` step. -/
+theorem HasCertifiedCellDim0.preservedByCong
+    {profile : PolyProfile} {scope : Nat}
+    {generator : Generator} {payload : generator.payload scope}
+    {children children' : RawTermChildren generator.binderShifts scope}
+    (childStep : StepChildren children children')
+    (sourceCert : HasCertifiedCellDim0 (profile := profile)
+      (.mkGen generator payload children)) :
+    HasCertifiedCellDim0 (profile := profile)
+      (.mkGen generator payload children') :=
+  HasCertifiedCellDim0.preservedByCong_via_stepPreserverWitness
+    (profile := profile)
+    (stepPreserver := StepCellPreserverWitness.polyCell profile)
+    childStep
+    sourceCert
+
 end LeanFX2.Foundation.PolyCell.Core
