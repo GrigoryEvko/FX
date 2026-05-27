@@ -422,6 +422,47 @@ where
         rootCongruenceBranchingsForRoot rootKind ++
           pairRootsWithPositions remainingRootKinds
 
+/-- Does this child position come from the generator table for the
+branching's root source generator? -/
+def RootCongruenceBranching.hasValidChildPosition
+    (branching : RootCongruenceBranching) : Bool :=
+  (childPositions branching.rootKind.sourceGenerator).any
+    (fun tablePosition =>
+      if tablePosition = branching.childPosition then true else false)
+
+/-- Does this root/congruence schema entry have current M6 coverage?
+
+The predicate is deliberately conservative for arbitrary values of
+`RootCongruenceBranching`: it first checks that the child position is one
+of the table positions for the root rule's source generator.  Among valid
+table entries, the beta/congruence cases stay open; every current iota
+root/congruence family has either a concrete `LocalDiamond` or a no-step
+source exclusion below.  Reverse orientations are covered by the generic
+`LocalStepBranching.swap` / `LocalDiamond.swap` bridge. -/
+def RootCongruenceBranching.hasCurrentResolution
+    (branching : RootCongruenceBranching) : Bool :=
+  match branching.hasValidChildPosition with
+  | false => false
+  | true =>
+      match branching.rootKind with
+      | .beta => false
+      | .iotaBoolTrue => true
+      | .iotaBoolFalse => true
+      | .iotaFstPair => true
+      | .iotaSndPair => true
+      | .iotaNatElimZero => true
+      | .iotaNatRecZero => true
+      | .iotaListElimNil => true
+      | .iotaOptionMatchNone => true
+      | .iotaOptionMatchSome => true
+      | .iotaEitherMatchInl => true
+      | .iotaEitherMatchInr => true
+      | .iotaNatElimSucc => true
+      | .iotaNatRecSucc => true
+      | .iotaListElimCons => true
+      | .iotaIdJRefl => true
+      | .iotaIdStrictRecRefl => true
+
 theorem childPositions_app :
     childPositions .gen_app =
       [ { parentGenerator := .gen_app, childIndex := 0, scopeShift := 0 }
@@ -444,6 +485,51 @@ theorem rootCongruenceBranchings_boolElim_length :
 
 theorem rootCongruenceBranchings_unit :
     rootCongruenceBranchings .gen_unit = [] := rfl
+
+theorem rootCongruenceBranchings_app_currentResolutionMap :
+    (rootCongruenceBranchings .gen_app).map
+      (fun branching => branching.hasCurrentResolution) =
+        [false, false, false, false] := rfl
+
+theorem rootCongruenceBranchings_boolElim_haveCurrentResolution :
+    (rootCongruenceBranchings .gen_boolElim).all
+      (fun branching => branching.hasCurrentResolution) = true := rfl
+
+theorem rootCongruenceBranchings_fst_haveCurrentResolution :
+    (rootCongruenceBranchings .gen_fst).all
+      (fun branching => branching.hasCurrentResolution) = true := rfl
+
+theorem rootCongruenceBranchings_snd_haveCurrentResolution :
+    (rootCongruenceBranchings .gen_snd).all
+      (fun branching => branching.hasCurrentResolution) = true := rfl
+
+theorem rootCongruenceBranchings_natElim_haveCurrentResolution :
+    (rootCongruenceBranchings .gen_natElim).all
+      (fun branching => branching.hasCurrentResolution) = true := rfl
+
+theorem rootCongruenceBranchings_natRec_haveCurrentResolution :
+    (rootCongruenceBranchings .gen_natRec).all
+      (fun branching => branching.hasCurrentResolution) = true := rfl
+
+theorem rootCongruenceBranchings_listElim_haveCurrentResolution :
+    (rootCongruenceBranchings .gen_listElim).all
+      (fun branching => branching.hasCurrentResolution) = true := rfl
+
+theorem rootCongruenceBranchings_optionMatch_haveCurrentResolution :
+    (rootCongruenceBranchings .gen_optionMatch).all
+      (fun branching => branching.hasCurrentResolution) = true := rfl
+
+theorem rootCongruenceBranchings_eitherMatch_haveCurrentResolution :
+    (rootCongruenceBranchings .gen_eitherMatch).all
+      (fun branching => branching.hasCurrentResolution) = true := rfl
+
+theorem rootCongruenceBranchings_idJ_haveCurrentResolution :
+    (rootCongruenceBranchings .gen_idJ).all
+      (fun branching => branching.hasCurrentResolution) = true := rfl
+
+theorem rootCongruenceBranchings_idStrictRec_haveCurrentResolution :
+    (rootCongruenceBranchings .gen_idStrictRec).all
+      (fun branching => branching.hasCurrentResolution) = true := rfl
 
 /-- Top-level M6 critical-pair schema.
 
@@ -566,6 +652,18 @@ structure LocalStepBranching {scope : Nat} where
   rightStep : Step source rightReduct
 
 namespace LocalStepBranching
+
+/-- Swap the two one-step sides of a local branching.
+
+This supplies the proof-relevant bridge from root-left/congruence-right
+branchings to the reverse orientation recorded by the M6 schema. -/
+def swap {scope : Nat} (branching : LocalStepBranching (scope := scope)) :
+    LocalStepBranching (scope := scope) where
+  source := branching.source
+  leftReduct := branching.rightReduct
+  rightReduct := branching.leftReduct
+  leftStep := branching.rightStep
+  rightStep := branching.leftStep
 
 /-- The concrete same-root beta/beta branching.
 
@@ -2433,6 +2531,16 @@ structure LocalDiamond {scope : Nat}
   rightChain : StepStar branching.rightReduct commonReduct
 
 namespace LocalDiamond
+
+/-- Swap a local diamond along `LocalStepBranching.swap`.
+
+The common reduct is unchanged; the two joining chains trade sides. -/
+def swap {scope : Nat} {branching : LocalStepBranching (scope := scope)}
+    (diamond : LocalDiamond branching) :
+    LocalDiamond branching.swap where
+  commonReduct := diamond.commonReduct
+  leftChain := diamond.rightChain
+  rightChain := diamond.leftChain
 
 /-- Same-reduct filler template.
 
