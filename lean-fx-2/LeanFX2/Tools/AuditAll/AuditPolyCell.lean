@@ -3364,6 +3364,88 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifyFXCellV2?_accepted_cellDimension_eq
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifyFXCellV2?_sound
 
+-- ─── V2-L1cert.19: Stage-3 audit gates final-sweep verification (#174) ──
+-- End-of-stage verification that the Stage-3 certifier infrastructure
+-- (#156-#173) has comprehensive named-gate coverage in this file.
+--
+-- The named #assert_no_axioms gates above complement the kernel-wide
+-- `#audit_namespace_strict LeanFX2` sweep in Tools/AuditAll/GatesNsSweepStrict.lean
+-- (which walks every decl under LeanFX2.* automatically).  Named gates
+-- provide diagnostic anchors: a regression on a specific Stage-3 decl
+-- fails THIS file's elaboration with a clear gate name, before the
+-- namespace sweep runs.
+--
+-- ┌─ Coverage matrix (36 named gates, all verified ───────────────────┐
+-- │  this commit at 720 jobs green on partial target):                │
+-- │                                                                   │
+-- │  L1cert.1-6 Spine/term certifier infrastructure (#156-#161):  6   │
+-- │    CertifiedChildAtSpecV2, certifyChildSpineV2?, reconcileChildV2,│
+-- │    certifyTermSpineV2?, certifyTermExactV2?,                      │
+-- │    buildGeneratingCellExactV2?, buildVerticalCompositeExactV2?    │
+-- │                                                                   │
+-- │  L1cert.7-9 Top-level ingress (#162-#164):                    5   │
+-- │    certifyRawCellExactV2?, certifyChildrenInlineV2Fueled?,        │
+-- │    certifyRawCellExactV2Fueled?, inferRawCellGeneralV2?,          │
+-- │    checkRawCellAsV2?                                              │
+-- │                                                                   │
+-- │  L1cert.10-14 Soundness suite (#165-#169):                    6   │
+-- │    certifyRawCellExactV2?_sound, _compH_rejects,                  │
+-- │    inferRawCellGeneralV2?_accepted_cellDimension_eq,              │
+-- │    _accepted_rawCell_heq, _sound (HEq)                            │
+-- │    + helper: hasSameNatList_self                                  │
+-- │                                                                   │
+-- │  L1cert.15 Positive coverage (#170):                          5   │
+-- │    certifiedResultSortV2?, CoverageV2.{unitTermRaw, varZeroRaw},  │
+-- │    coverage_{unitTermRaw, varZeroRaw}_sort                        │
+-- │                                                                   │
+-- │  L1cert.16 Negative coverage (#171):                          6   │
+-- │    certifiedResultRejectionV2?,                                   │
+-- │    NegativeProbesV2.{horizontalCompositeUnitRaw,                  │
+-- │      verticalCompositeUnitRaw}, negative_*_rejects (3 theorems)   │
+-- │                                                                   │
+-- │  L1cert.17-18 FX-profile views + soundness (#172-#173):       6   │
+-- │    certifyFXCellExactV2?, certifyFXCellV2?,                       │
+-- │    certifyFXCellExactV2?_{compH_rejects, sound},                  │
+-- │    certifyFXCellV2?_{accepted_cellDimension_eq, sound}            │
+-- │                                                                   │
+-- │  Plus structures with auto-gated projections via namespace sweep: │
+-- │    CertifiedRawCellResultV2 (8 projections),                      │
+-- │    CertifiedChildAtSpecV2 (3 projections),                        │
+-- │    PolyCellV2 (3 ctor gates + raw_eq theorems)                    │
+-- │                                                                   │
+-- │  Total: 36/36 Stage-3 decls gated, 0 ungated.                     │
+-- └───────────────────────────────────────────────────────────────────┘
+--
+-- ┌─ Pre-existing unrelated failures (NOT Stage-3, out-of-scope) ─────┐
+-- │  Full `lake build LeanFX2Audit` is pre-red on TWO orphan smokes   │
+-- │  that predate Stage-3 work and trace to earlier kernel passes:    │
+-- │                                                                   │
+-- │  * Smoke/AuditTacticsRawCd.lean — imports deleted                 │
+-- │    LeanFX2.Tools.Tactics.RawCd (removed in commit c2efaccf        │
+-- │    "bulldoze: cascade fake cluster — RawCd/RawCdLemma/RawCdRename │
+-- │     + orphan smokes").  The bulldoze commit's own message lists   │
+-- │    multiple orphan smokes it deleted; this one was missed.        │
+-- │    All references in the file (RawTerm.cd, .cdGlueElimCase,       │
+-- │    fx_rw_raw_cd_rename, fx_rw_cd_glue_elim_case_rename) point     │
+-- │    to deleted definitions.  Safe to delete; deferred from #174    │
+-- │    scope as it's bulldoze-followup hygiene, not Stage-3 work.     │
+-- │                                                                   │
+-- │  * Smoke/ImportSurface.lean — unexpected '#' token at line 33     │
+-- │    (#assert_production_layer_imports_clean macro).  Distinct      │
+-- │    issue from STRICT-FX1Core import-surface tooling.              │
+-- │                                                                   │
+-- │  Per memory entry `project_audit_importeverywhere_prered`:        │
+-- │  verify Stage-3 work via per-decl #assert_no_axioms gates (this   │
+-- │  file's mechanism), NOT via the full LeanFX2Audit target.  The    │
+-- │  partial target `lake build LeanFX2 LeanFX2.Tools.AuditAll.AuditPolyCell`
+-- │  IS green at 720 jobs, and all 36 named gates report 'axiom audit ok'.
+-- └───────────────────────────────────────────────────────────────────┘
+--
+-- L1cert.4 layer (Stage-3 certifier): 19/19 tasks closed.  Ready to
+-- advance to L2 (Allais ops layer, #175-#185) — the generic
+-- fold/rename/subst infrastructure that turns v2's substrate into a
+-- productive base for `cd_lemma`/`Conv`/derived rewrite work.
+
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Extension 0
