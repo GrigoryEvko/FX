@@ -2,26 +2,26 @@ import LeanFX2.Foundation.PolyCell.Core.RawTermV2Subst0
 
 /-! # Foundation/PolyCell/Core/StepV2 — single-step reduction on V2
 
-V2-L3.1 phase A + B + C-steps 1/2/3/4a/4b (2026-05-27).
+V2-L3.1 phase A + B + C-steps 1/2/3/4a/4b/4c (2026-05-27).
 Discharges the first L3 metatheory task per polycell.md §11.6.1.
 Ships the `Step` inductive relation with: beta-reduction (phase
 A), uniform congruence (phase B), branch-selection iota for
 boolElim (C-step1), content-projection iota for fst/snd on pair
 (C-step2), base-case projection iota for nat/list/option base
 ctors (C-step3), 1-arg app-chain iota for optionSome/eitherInl/
-eitherInr step ctors (C-step4a), and 2-arg app-chain iota WITH
-RECURSIVE CALL for natElim/natRec on natSucc (C-step4b).  Fifteen
-smokes total.
+eitherInr step ctors (C-step4a), 2-arg app-chain iota WITH
+RECURSIVE CALL for natElim/natRec on natSucc (C-step4b), and
+3-arg app-chain iota WITH RECURSIVE CALL for listElim on listCons
+(C-step4c).  Sixteen smokes total.
 
-Four iota SHAPES now fully demonstrated:
+ALL FIVE IOTA SHAPES NOW SATURATED:
   * branch-selection (base ctors -- bool/nat/list/option)
   * content-projection (pair fst/snd)
   * 1-arg app-chain build (optionSome/eitherInl/eitherInr)
-  * 2-arg app-chain with recursive call (natSucc -- the SHAPE
-    that gives induction principles their power)
+  * 2-arg app-chain with recursive call (natSucc -- inductive)
+  * 3-arg app-chain with recursive call (listCons -- inductive)
 
-C-step4c will add 3-arg app-chain (listCons).  C-step5 handles
-idJ + opt-in eta.  C-step6 ships the SR theorem.
+C-step5 handles idJ + opt-in eta.  C-step6 ships the SR theorem.
 
 ## Phase A vs Phase B vs Phase C
 
@@ -52,21 +52,24 @@ idJ + opt-in eta.  C-step6 ships the SR theorem.
   scope discipline, but the reduct is `app branch wrappedValue`
   rather than just `branch`.  No direct substitution at iota --
   beta handles the binding work in a SUBSEQUENT reduction.
-* **Phase C step 4b** (THIS update) introduces the FOURTH iota
-  SHAPE: 2-arg app-chain WITH RECURSIVE CALL.
-  `Step.iotaNatElimSucc`, `Step.iotaNatRecSucc`.  The reduct is a
-  NESTED app `app (app succBranch predecessor) recursiveCall`
-  where `recursiveCall` is the ORIGINAL eliminator applied to the
-  predecessor.  This is the SHAPE that gives induction principles
-  their inductive power: the recursive call appears in the reduct
-  as a syntactic sub-term, and subsequent reductions (via the
-  uniform cong rule + base-case iotas) fold it down to a normal
-  form.  Still substitution-free at iota; beta handles the two
-  variable bindings as the curried succ-branch unwraps in two
-  subsequent reduction steps.
-* **Future phase C** (deferred): 3-arg app-chain iota (listCons),
-  iotas with binders (idJ on refl), opt-in eta rules, and the SR
-  theorem.
+* **Phase C step 4b** introduces the FOURTH iota SHAPE: 2-arg
+  app-chain WITH RECURSIVE CALL.  `Step.iotaNatElimSucc`,
+  `Step.iotaNatRecSucc`.  The reduct is a NESTED app
+  `app (app succBranch predecessor) recursiveCall` where
+  `recursiveCall` is the ORIGINAL eliminator applied to the
+  predecessor.  This SHAPE gives induction principles their
+  inductive power: the recursive call appears in the reduct as a
+  syntactic sub-term that subsequent reductions fold down.
+* **Phase C step 4c** (THIS update) introduces the FIFTH iota
+  SHAPE: 3-arg app-chain WITH RECURSIVE CALL.
+  `Step.iotaListElimCons`.  The reduct is a TRIPLE-nested app
+  `app (app (app consBranch head) tail) (listElim tail nil cons)`
+  -- one curried argument per piece of the cons constructor's
+  payload (head + tail) plus the recursive call.  Same inductive
+  shape as natSucc, with one more curried layer.
+* **Future phase C** (deferred): iotas with binders (idJ on
+  refl), opt-in eta rules, and the SR theorem.  After step 4c
+  ALL FIVE iota shapes are saturated.
 
 This is the L3 KICKOFF: the FIRST shipped piece of v2's reduction
 calculus.  Together with V2-L2.10's `RawTermV2.subst0`, it establishes
@@ -444,6 +447,46 @@ inductive Step : {scope : Nat} → RawTermV2 scope → RawTermV2 scope → Prop 
               (.mkGen .gen_natRec ()
                 (.childCons predecessor
                   (.childCons zeroBranch (.childCons succBranch .childNil))))
+              .childNil)))
+  /-- **Iota for listElim on listCons (step case, 3-arg app-chain
+      with recursive call).**
+
+      The deepest app-chain nesting in the design.  Eliminating on
+      `listCons head tail` builds:
+
+        listElim (listCons h t) n c
+          ↝  app (app (app c h) t) (listElim t n c)
+
+      Three arguments curried through the cons-branch (head,
+      tail, recursive result) -- the cons-branch is expected to
+      be a triple-curried lambda `λh.λt.λrec. body`.  beta
+      reduces the three apps in three subsequent steps, unwrapping
+      the curried function and substituting each argument in turn.
+
+      The recursive call `listElim t n c` (applied to the tail)
+      appears in the reduct as a syntactic sub-term -- same
+      inductive shape as `iotaNatElimSucc` but with one more
+      curried argument. -/
+  | iotaListElimCons {scope : Nat}
+                     {headVal tailVal : RawTermV2 scope}
+                     {nilBranch consBranch : RawTermV2 scope} :
+      Step
+        (.mkGen .gen_listElim ()
+          (.childCons
+            (.mkGen .gen_listCons ()
+              (.childCons headVal (.childCons tailVal .childNil)))
+            (.childCons nilBranch (.childCons consBranch .childNil))))
+        (.mkGen .gen_app ()
+          (.childCons
+            (.mkGen .gen_app ()
+              (.childCons
+                (.mkGen .gen_app ()
+                  (.childCons consBranch (.childCons headVal .childNil)))
+                (.childCons tailVal .childNil)))
+            (.childCons
+              (.mkGen .gen_listElim ()
+                (.childCons tailVal
+                  (.childCons nilBranch (.childCons consBranch .childNil))))
               .childNil)))
 
 /-- **Step at some position in a children spine.**
@@ -893,5 +936,55 @@ theorem Step.iotaNatRecSucc_builds_nested_app :
         (.childCons appPredecessor (.childCons recursiveCall .childNil))
     Step recTerm nestedApp := by
   apply Step.iotaNatRecSucc
+
+/-- **Phase C smoke: iotaListElimCons builds triple-nested app
+with recursion.**
+
+  `listElim (listCons unit listNil) boolTrue boolFalse
+     ↝  app (app (app boolFalse unit) listNil)
+            (listElim listNil boolTrue boolFalse)`
+
+Concrete fixture uses `unit` as the head and `listNil` as the
+tail (smallest non-empty list possible).  The recursive call in
+the reduct is `listElim listNil ...` -- which subsequent
+reductions (via cong + iotaListElimNil) would fold to `boolTrue`
+(the nil-branch).
+
+This is the DEEPEST nesting in the v2 iota suite: three layers of
+`app` wrapping, with the recursive call as the second argument of
+the outermost app.  Closes by `apply Step.iotaListElimCons`. -/
+theorem Step.iotaListElimCons_builds_triple_app :
+    let headVal : RawTermV2 0 :=
+      .mkGen .gen_unit () .childNil
+    let tailVal : RawTermV2 0 :=
+      .mkGen .gen_listNil () .childNil
+    let consScrutinee : RawTermV2 0 :=
+      .mkGen .gen_listCons ()
+        (.childCons headVal (.childCons tailVal .childNil))
+    let nilBranch : RawTermV2 0 :=
+      .mkGen .gen_boolTrue () .childNil
+    let consBranch : RawTermV2 0 :=
+      .mkGen .gen_boolFalse () .childNil
+    let elimTerm : RawTermV2 0 :=
+      .mkGen .gen_listElim ()
+        (.childCons
+          consScrutinee
+          (.childCons nilBranch (.childCons consBranch .childNil)))
+    let recursiveCall : RawTermV2 0 :=
+      .mkGen .gen_listElim ()
+        (.childCons
+          tailVal
+          (.childCons nilBranch (.childCons consBranch .childNil)))
+    let appHead : RawTermV2 0 :=
+      .mkGen .gen_app ()
+        (.childCons consBranch (.childCons headVal .childNil))
+    let appHeadTail : RawTermV2 0 :=
+      .mkGen .gen_app ()
+        (.childCons appHead (.childCons tailVal .childNil))
+    let tripleApp : RawTermV2 0 :=
+      .mkGen .gen_app ()
+        (.childCons appHeadTail (.childCons recursiveCall .childNil))
+    Step elimTerm tripleApp := by
+  apply Step.iotaListElimCons
 
 end LeanFX2.Foundation.PolyCell.Core

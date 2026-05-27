@@ -3737,6 +3737,15 @@ namespace LeanFX2.Tools
 -- induction principles their power.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaNatElimSucc_builds_nested_app
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaNatRecSucc_builds_nested_app
+-- Phase C step 4c: 3-arg app-chain WITH RECURSIVE CALL for
+-- listElim on listCons.  Reduct is the triple-nested
+--   app (app (app consBranch head) tail) (listElim tail nil cons)
+-- -- one curried argument per cons payload piece (head + tail)
+-- plus the recursive call.  Deepest app-chain nesting in the v2
+-- iota suite.  All FIVE iota shapes now saturated:
+--   branch-selection, content-projection, 1-arg app-chain,
+--   2-arg app-chain with recursion, 3-arg app-chain with recursion.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaListElimCons_builds_triple_app
 
 -- ─── V2-L3.2 phase A: StepStar (reflexive-transitive closure) ───────
 -- Reflexive-transitive closure of Step in LEFT-EXTENSION form:
