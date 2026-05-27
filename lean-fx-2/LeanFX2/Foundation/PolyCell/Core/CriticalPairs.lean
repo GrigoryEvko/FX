@@ -430,6 +430,21 @@ def sameReduct {scope : Nat} {source commonReduct : RawTerm scope}
   leftChain := StepStar.refl commonReduct
   rightChain := StepStar.refl commonReduct
 
+/-- Same-reduct filler from a propositional equality between the two
+one-step reducts.
+
+This is the form the critical-pair dispatcher will usually produce:
+after case analysis it proves that the two reduct expressions are equal,
+then this template transports the right chain and closes the diamond by
+reflexivity. -/
+def sameReductOfEq {scope : Nat}
+    (branching : LocalStepBranching (scope := scope))
+    (reductsEqual : branching.leftReduct = branching.rightReduct) :
+    LocalDiamond branching := by
+  cases branching
+  cases reductsEqual
+  exact sameReduct _ _
+
 end LocalDiamond
 
 end LeanFX2.Foundation.PolyCell.Core
