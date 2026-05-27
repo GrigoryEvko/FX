@@ -72,6 +72,7 @@ import LeanFX2.Foundation.PolyCell.Core.HasCertifiedHonestyProbes
 import LeanFX2.Foundation.PolyCell.Core.SubstPreservationProbes
 import LeanFX2.Foundation.PolyCell.Core.HasCertifiedComposition
 import LeanFX2.Foundation.PolyCell.Core.CompoundRenamePreservation
+import LeanFX2.Foundation.PolyCell.Core.CompoundSubstPreservation
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactWrongChildShape
@@ -893,6 +894,33 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.eitherInr_preservedByRename
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.refl_preservedByRename
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.lam_preservedByRename
+
+-- ─── V2-L3.1 phase D step 18: compound subst preservation ──────────
+-- Symmetric to step 17 (rename) but for substitution.  The fold
+-- engine's distributivity is definitional for subst as well,
+-- INCLUDING the binder case `gen_lam` (where body uses
+-- `RawTermSubst.lift sigma`).  This unblocks the SR-beta path:
+-- beta reduces to `subst0 body arg = subst (singleton arg) body`,
+-- which structurally needs subst preservation composed with the
+-- singleton's pointwise certification.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst_app_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst_pair_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst_listCons_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst_natSucc_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst_optionSome_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst_eitherInl_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst_eitherInr_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst_refl_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst_lam_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.app_preservedBySubst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.pair_preservedBySubst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.listCons_preservedBySubst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.natSucc_preservedBySubst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.optionSome_preservedBySubst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.eitherInl_preservedBySubst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.eitherInr_preservedBySubst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.refl_preservedBySubst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.lam_preservedBySubst
 
 -- ─── V2-fix-4: restricted-profile admission predicate ──────────────
 -- Discharges Agent 3 H3.2 (admission machinery decoration).  Before
