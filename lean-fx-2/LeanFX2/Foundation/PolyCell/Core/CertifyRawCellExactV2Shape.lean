@@ -190,4 +190,186 @@ example :
   intro baseCell cert accepted
   exact certifyRawCellExactV2?_identityCell_boundary baseCell accepted
 
+/-! ## V2-fix-1 phase B: "implies inner certs" shape pins
+
+The first phase shipped one shape pin (`_identityCell_boundary`) that
+pinned a concrete boundary value of the certified output.  Phase B
+extends coverage to the dispatcher's two **two-recursion** arms —
+`.verticalComposite` and `.generatingCell` — with a different but
+equally substantive class of behavioral pin: **"if accepted, both
+recursive sub-certifications must have succeeded"**.
+
+### Why not the boundary?
+
+The natural follow-on pin would be `..._verticalComposite_boundary` —
+pinning what the outer endpoints of an accepted vertical composite
+are.  But the dispatcher's `.verticalComposite` arm delegates to
+`buildVerticalCompositeExactV2?`, whose output's boundary depends on
+the helper's internal sort reconciliation and `Eq.rec` transport.
+Extracting a concrete boundary value would require either:
+
+  * A sibling boundary shape pin for `buildVerticalCompositeExactV2?`
+    itself (lifts the helper's output into a pinnable shape).
+  * A direct unfold of the helper's body inside the proof (defeats
+    the modularity of the helper as an externally-defined operation).
+
+The same applies to `.generatingCell` via `buildGeneratingCellExactV2?`.
+
+Phase B sidesteps that machinery by pinning a SHALLOWER but still
+substantive behavioral property: **the outer dispatcher's two-stage
+recursion is not short-circuited**.
+
+### What "implies inner certs" pins
+
+Given acceptance of the outer call, the proof inspects the dispatcher's
+explicit `match certifyRawCellExactV2Fueled? ... scope first/source` /
+`match certifyRawCellExactV2Fueled? ... scope second/target` cases.
+Each `.error` branch causes the outer call to immediately return
+`.error` (contradicting acceptance), so an accepting outer call
+forces both inner calls to land on `.ok`.
+
+The lemma extracts the inner cert witnesses as existentials and pins
+their stored values.  Concretely it ships:
+
+  * `∃ certFirst, certifyRawCellExactV2Fueled? ... scope first
+                  = Except.ok certFirst`
+  * `∃ certSecond, certifyRawCellExactV2Fueled? ... scope second
+                   = Except.ok certSecond`
+
+A regression that "short-circuited" the dispatcher — for instance, by
+emitting `.ok` without performing the recursion — would falsify this
+lemma because the witnesses would be unobtainable.
+
+### Why the proofs close by `rfl`
+
+Each `cases hRec : foo with | ok certCorrespondent => ...` arm
+substitutes `foo` with `Except.ok certCorrespondent` in the goal.
+The existential body `foo = Except.ok certCorrespondent` thus reduces
+to `Except.ok certCorrespondent = Except.ok certCorrespondent`, closed
+by `rfl`.  The `.error` arms close by `cases accepted` after
+rewriting (the dispatcher's match arm returns `.error`, contradicting
+`accepted`).
+
+### Pattern reusability
+
+This pattern applies to every dispatcher arm that performs N recursive
+sub-certifications then delegates to a helper.  The dispatcher's
+N+1 levels of match (one per recursion, plus the helper call) collapse
+to N `cases hRec` + 1 `exact ⟨rfl, ..., rfl⟩` line after the recursion
+phase.  Useful for the bridge audit between v2 (where this discipline
+runs) and v1 (where the per-fixture certified constructors made the
+recursion structure implicit). -/
+
+/-- **Behavioral shape pin: verticalComposite implies inner certs.**
+
+If the certifier accepts `.verticalComposite first second`, then the
+dispatcher's recursive certifications of both `first` and `second`
+must have succeeded.
+
+A regression that short-circuited the recursion (returning `.ok` without
+actually recursing) would invalidate this lemma. -/
+theorem certifyRawCellExactV2?_verticalComposite_accepted_implies_inner_certs
+    {profile : PolyProfile} {scope : Nat}
+    (first second : RawCellV2 scope)
+    {cert : CertifiedRawCellV2 profile scope (.verticalComposite first second)}
+    (accepted :
+      certifyRawCellExactV2? (profile := profile) scope
+        (.verticalComposite first second) = Except.ok cert) :
+    (∃ certFirst : CertifiedRawCellV2 profile scope first,
+      certifyRawCellExactV2Fueled?
+        (first.size + second.size + 1) scope first = Except.ok certFirst) ∧
+    (∃ certSecond : CertifiedRawCellV2 profile scope second,
+      certifyRawCellExactV2Fueled?
+        (first.size + second.size + 1) scope second = Except.ok certSecond) := by
+  have dispatcherEq :
+      certifyRawCellExactV2? (profile := profile) scope
+        (.verticalComposite first second)
+      = (match certifyRawCellExactV2Fueled?
+              (first.size + second.size + 1) scope first with
+         | .error rejection => .error rejection
+         | .ok certFirst =>
+           match certifyRawCellExactV2Fueled?
+                  (first.size + second.size + 1) scope second with
+           | .error rejection => .error rejection
+           | .ok certSecond =>
+               match hFirstDim : first.dim with
+               | 0 => .error .badVerticalBoundary
+               | parentDim + 1 =>
+                   if hDimEq : first.dim = second.dim then
+                     let hSecondDim : second.dim = parentDim + 1 :=
+                       hDimEq.symm.trans hFirstDim
+                     buildVerticalCompositeExactV2? parentDim first second
+                       hFirstDim hSecondDim certFirst certSecond
+                   else
+                     .error .badVerticalBoundary) := rfl
+  rw [dispatcherEq] at accepted
+  cases hRec1 : certifyRawCellExactV2Fueled?
+                  (first.size + second.size + 1) scope first with
+  | error rejection =>
+    rw [hRec1] at accepted
+    cases accepted
+  | ok certFirst =>
+    rw [hRec1] at accepted
+    dsimp only at accepted
+    cases hRec2 : certifyRawCellExactV2Fueled?
+                    (first.size + second.size + 1) scope second with
+    | error rejection =>
+      rw [hRec2] at accepted
+      cases accepted
+    | ok certSecond =>
+      exact ⟨⟨certFirst, rfl⟩, ⟨certSecond, rfl⟩⟩
+
+/-- **Behavioral shape pin: generatingCell implies inner certs.**
+
+If the certifier accepts `.generatingCell ruleId source target`, then
+the dispatcher's recursive certifications of both `source` and
+`target` must have succeeded.
+
+Symmetric to `_verticalComposite_accepted_implies_inner_certs`.  The
+two-stage recursion structure is identical (source then target,
+delegating to `buildGeneratingCellExactV2?` for boundary
+reconciliation), so the proof shape transfers verbatim. -/
+theorem certifyRawCellExactV2?_generatingCell_accepted_implies_inner_certs
+    {profile : PolyProfile} {scope : Nat}
+    (ruleId : Nat) (source target : RawCellV2 scope)
+    {cert : CertifiedRawCellV2 profile scope (.generatingCell ruleId source target)}
+    (accepted :
+      certifyRawCellExactV2? (profile := profile) scope
+        (.generatingCell ruleId source target) = Except.ok cert) :
+    (∃ certSource : CertifiedRawCellV2 profile scope source,
+      certifyRawCellExactV2Fueled?
+        (source.size + target.size + 1) scope source = Except.ok certSource) ∧
+    (∃ certTarget : CertifiedRawCellV2 profile scope target,
+      certifyRawCellExactV2Fueled?
+        (source.size + target.size + 1) scope target = Except.ok certTarget) := by
+  have dispatcherEq :
+      certifyRawCellExactV2? (profile := profile) scope
+        (.generatingCell ruleId source target)
+      = (match certifyRawCellExactV2Fueled?
+              (source.size + target.size + 1) scope source with
+         | .error rejection => .error rejection
+         | .ok certSource =>
+           match certifyRawCellExactV2Fueled?
+                  (source.size + target.size + 1) scope target with
+           | .error rejection => .error rejection
+           | .ok certTarget =>
+               buildGeneratingCellExactV2? ruleId source target
+                 certSource certTarget) := rfl
+  rw [dispatcherEq] at accepted
+  cases hRec1 : certifyRawCellExactV2Fueled?
+                  (source.size + target.size + 1) scope source with
+  | error rejection =>
+    rw [hRec1] at accepted
+    cases accepted
+  | ok certSource =>
+    rw [hRec1] at accepted
+    dsimp only at accepted
+    cases hRec2 : certifyRawCellExactV2Fueled?
+                    (source.size + target.size + 1) scope target with
+    | error rejection =>
+      rw [hRec2] at accepted
+      cases accepted
+    | ok certTarget =>
+      exact ⟨⟨certSource, rfl⟩, ⟨certTarget, rfl⟩⟩
+
 end LeanFX2.Foundation.PolyCell.Core

@@ -3307,6 +3307,43 @@ namespace LeanFX2.Tools
 -- `injection` on the Except.ok equality.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.certifyRawCellExactV2?_identityCell_boundary
 
+-- ─── V2-fix-1 phase B: "implies inner certs" shape pins ─────────────
+-- For dispatcher arms that perform N recursive sub-certifications
+-- before delegating to a build* helper, "if accepted, all recursive
+-- sub-certifications succeeded" is a substantive shallow shape pin —
+-- it verifies the dispatcher's recursion is not short-circuited.
+--
+-- Two arms covered in this phase:
+--
+--   .verticalComposite — recurses on first then second, then delegates
+--   to buildVerticalCompositeExactV2? for boundary reconciliation.
+--   The pin extracts existential witnesses for both inner certs.
+--
+--   .generatingCell — symmetric structure: recurses on source then
+--   target, delegates to buildGeneratingCellExactV2?.  Same proof
+--   shape, transfers verbatim from the verticalComposite proof.
+--
+-- Each closes by:
+--   1. dispatcherEq `rfl`-bridge (rewrites the wrapper to its match
+--      form, avoiding `unfold` on the mutual recursive
+--      `certifyRawCellExactV2Fueled?` which would leak Quot.sound).
+--   2. `cases hRec1 : ...` on first recursion, `.error` arm closed
+--      by `cases accepted`, `.ok` arm pinned.
+--   3. `dsimp only at accepted` to iota-reduce the outer match.
+--   4. Same pattern for second recursion.
+--   5. `exact ⟨⟨witness, rfl⟩, ⟨witness, rfl⟩⟩` — `rfl` closes the
+--      existential body because `cases hRec : foo with | ok x =>` has
+--      substituted `foo` with `Except.ok x` in the goal context.
+--
+-- Future phase C (deferred to V2-fix-1 continuation):
+--   * `..._verticalComposite_boundary` — actual outer-endpoint shape
+--     pin (requires sibling shape pin for buildVerticalCompositeExactV2?).
+--   * `..._generatingCell_boundary` — actual (source, target) pin
+--     (same for buildGeneratingCellExactV2?).
+--   * `..._termBase_sort` — pins cert.sort = generator.cellSort.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.certifyRawCellExactV2?_verticalComposite_accepted_implies_inner_certs
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.certifyRawCellExactV2?_generatingCell_accepted_implies_inner_certs
+
 -- ─── V2-fix-4: restricted-profile admission predicate ──────────────
 -- Discharges Agent 3 H3.2 (admission machinery decoration).  Before
 -- this commit, `supportedGeneratorV2?` returned `some _` for every
