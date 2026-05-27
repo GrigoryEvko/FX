@@ -61,6 +61,7 @@ import LeanFX2.Foundation.PolyCell.Core.RawTermV2RenamePointwise
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2RenameCompose
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2RenameComposeFusion
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2RenameSubstCommute
+import LeanFX2.Foundation.PolyCell.Core.RawTermV2SubstRenameCommute
 
 namespace LeanFX2.Tools
 
@@ -3694,6 +3695,27 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2.rename_subst_commute
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.rename_subst_commute_unit_smoke
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.rename_subst_commute_var_smoke
+
+-- V2-L2.7c5: subst-then-rename commute (second cross-direction).
+-- `RawTermSubstV2.postRename sigma rho pos = rename rho (sigma pos)`
+-- is the post-composed bridge substitution.
+-- `weaken_lift_commute` is the trivial Fin commute (`fun _ => rfl`).
+-- `lift_then_rename_lift_pull` is the binder pull — the FIRST place
+-- in the ladder where the binder helper does substantive work
+-- (uses rename_compose from #181c3 twice + rename_pointwise from
+-- #181c1 + weaken_lift_commute).  The mutual term commute uses the
+-- now-standard 4-arm template.
+-- This closes the cross-direction pair; next is subst's
+-- lift_compose_pointwise + subst_compose (the headline third
+-- Action law).
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawRenaming.weaken_lift_commute
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubstV2.postRename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubstV2.lift_then_rename_lift_pull
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.iterateLiftRaw_RawTermSubstV2_postRename_pointwise
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.subst_rename_commute
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2.subst_rename_commute
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.subst_rename_commute_unit_smoke
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.subst_rename_commute_var_smoke
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
