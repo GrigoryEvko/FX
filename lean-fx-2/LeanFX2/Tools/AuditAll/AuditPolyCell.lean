@@ -37,6 +37,7 @@ import LeanFX2.Foundation.PolyCell.Core.CertifiedRawCellV2
 import LeanFX2.Foundation.PolyCell.Core.BuildGeneratingCellExactV2
 import LeanFX2.Foundation.PolyCell.Core.BuildVerticalCompositeExactV2
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2
+import LeanFX2.Foundation.PolyCell.Core.InferRawCellGeneralV2
 
 namespace LeanFX2.Tools
 
@@ -3132,6 +3133,34 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.certifyRawCellExactV2Fueled?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.certifyChildrenInlineV2Fueled?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.certifyRawCellExactV2?
+
+-- ─── V2-L1cert.8: existential wrapper (#163) ────────────────────────
+-- inferRawCellGeneralV2? wraps certifyRawCellExactV2? into an
+-- EXISTENTIAL package (rawCell as field, not type parameter) suitable
+-- for higher-level ingress points that don't want to thread the input
+-- rawCell through the return type.
+--
+-- The wrapper adds two `polycell.md` §4 spec fields versus
+-- CertifiedRawCellV2:
+-- * inputCode : List Nat (prefix code of input)
+-- * hasInputCode : hasSameNatList inputCode rawCell.toCode = true
+--   (code-level no-laundering certificate)
+--
+-- hasSameNatList_self is shipped as a self-contained list+Nat
+-- induction proof; CertifiedRawCellResultV2 is a pure structural
+-- record; inferRawCellGeneralV2? is a propext-free Except match +
+-- direct struct construction.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.hasSameNatList_self
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedRawCellResultV2
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedRawCellResultV2.mk
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedRawCellResultV2.cellDimension
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedRawCellResultV2.inputCode
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedRawCellResultV2.rawCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedRawCellResultV2.cellSort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedRawCellResultV2.cellBoundary
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedRawCellResultV2.certifiedCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedRawCellResultV2.hasInputCode
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.inferRawCellGeneralV2?
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
