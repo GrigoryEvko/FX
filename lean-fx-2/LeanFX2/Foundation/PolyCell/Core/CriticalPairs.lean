@@ -436,9 +436,9 @@ def RootCongruenceBranching.hasValidChildPosition
 The predicate is deliberately conservative for arbitrary values of
 `RootCongruenceBranching`: it first checks that the child position is one
 of the table positions for the root rule's source generator.  Among valid
-table entries, the beta/congruence cases stay open; every current iota
-root/congruence family has either a concrete `LocalDiamond` or a no-step
-source exclusion below.  Reverse orientations are covered by the generic
+table entries, beta/congruence and every current iota root/congruence
+family have either a concrete `LocalDiamond` or a no-step source exclusion
+below.  Reverse orientations are covered by the generic
 `LocalStepBranching.swap` / `LocalDiamond.swap` bridge. -/
 def RootCongruenceBranching.hasCurrentResolution
     (branching : RootCongruenceBranching) : Bool :=
@@ -446,7 +446,7 @@ def RootCongruenceBranching.hasCurrentResolution
   | false => false
   | true =>
       match branching.rootKind with
-      | .beta => false
+      | .beta => true
       | .iotaBoolTrue => true
       | .iotaBoolFalse => true
       | .iotaFstPair => true
@@ -490,7 +490,11 @@ theorem rootCongruenceBranchings_unit :
 theorem rootCongruenceBranchings_app_currentResolutionMap :
     (rootCongruenceBranchings .gen_app).map
       (fun branching => branching.hasCurrentResolution) =
-        [false, false, false, false] := rfl
+        [true, true, true, true] := rfl
+
+theorem rootCongruenceBranchings_app_haveCurrentResolution :
+    (rootCongruenceBranchings .gen_app).all
+      (fun branching => branching.hasCurrentResolution) = true := rfl
 
 theorem rootCongruenceBranchings_boolElim_haveCurrentResolution :
     (rootCongruenceBranchings .gen_boolElim).all
@@ -2746,6 +2750,30 @@ def betaArgumentCongReverseOfSubst0Replay {scope : Nat}
     LocalDiamond
       (LocalStepBranching.betaArgumentCong body argumentStep).swap :=
   (betaArgumentCongOfSubst0Replay body argumentStep subst0Replay).swap
+
+/-- Concrete beta/argument-congruence local diamond.
+
+Uses `Step.subst0Argument`, the pointwise-substitution replay theorem.
+The replay is a `StepStar` chain because the lambda body may duplicate
+the argument variable. -/
+def betaArgumentCong {scope : Nat}
+    (body : RawTerm (scope + 1))
+    {argument updatedArgument : RawTerm scope}
+    (argumentStep : Step argument updatedArgument) :
+    LocalDiamond
+      (LocalStepBranching.betaArgumentCong body argumentStep) :=
+  betaArgumentCongOfSubst0Replay body argumentStep
+    (Step.subst0Argument body argumentStep)
+
+/-- Reverse orientation for the concrete beta/argument-congruence
+local diamond. -/
+def betaArgumentCongReverse {scope : Nat}
+    (body : RawTerm (scope + 1))
+    {argument updatedArgument : RawTerm scope}
+    (argumentStep : Step argument updatedArgument) :
+    LocalDiamond
+      (LocalStepBranching.betaArgumentCong body argumentStep).swap :=
+  (betaArgumentCong body argumentStep).swap
 
 /-- Concrete bool-true iota same-root local diamond. -/
 def iotaBoolTrueSameRoot {scope : Nat}

@@ -1056,6 +1056,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.rootCongruenceBranchings_boolElim_length
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.rootCongruenceBranchings_unit
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.rootCongruenceBranchings_app_currentResolutionMap
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.rootCongruenceBranchings_app_haveCurrentResolution
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.rootCongruenceBranchings_boolElim_haveCurrentResolution
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.rootCongruenceBranchings_fst_haveCurrentResolution
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.rootCongruenceBranchings_snd_haveCurrentResolution
@@ -1162,6 +1163,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.betaFunctionCongReverse
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.betaArgumentCongOfSubst0Replay
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.betaArgumentCongReverseOfSubst0Replay
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.betaArgumentCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.betaArgumentCongReverse
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaBoolTrueSameRoot
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaBoolFalseSameRoot
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaFstPairSameRoot
@@ -2281,7 +2284,21 @@ namespace LeanFX2.Tools
 -- substitution, using `subst0_subst_commute` in the beta arm.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.subst
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepChildren.subst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.subst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.weaken_eq_subst_weaken
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.weaken
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubst.PointwiseStepStar
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubst.lift_pointwiseStepStar
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.iterateLiftRaw_RawTermSubst_pointwiseStepStar
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepChildrenStar
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepChildrenStar.trans_compose
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepChildrenStar.here
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepChildrenStar.there
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.ofChildrenStar
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst_pointwise_stepStar
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.subst_pointwise_stepStar
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.subst0Body
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.subst0Argument
 
 -- ─── V2-L1cert.12: existential preserves dim (#167) ─────────────────
 -- inferRawCellGeneral?_accepted_cellDimension_eq: when the
