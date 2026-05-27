@@ -104,6 +104,242 @@ theorem PolyCell.exists_preservedByBeta_dim0
               bodyCell,
             True.intro⟩
 
+/-! ## Exact projection iota witnesses
+
+These are the iota arms whose target is already a certified child of
+the source spine.  They avoid the sort-existential
+`HasCertifiedCellDim0` wrapper and return exact `.term` cells under
+`Exists`, making them directly usable by the final Prop-valued
+`StepCellPreserverWitness` dispatcher. -/
+
+/-- Exact witness for `boolElim boolTrue thenBranch elseBranch ↝ thenBranch`. -/
+theorem PolyCell.exists_preservedByIotaBoolTrue_dim0
+    {profile : PolyProfile} {scope : Nat}
+    {thenBranch elseBranch : RawTerm scope}
+    (sourceCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase
+          ((.mkGen .gen_boolElim ()
+            (.childCons (.mkGen .gen_boolTrue () .childNil)
+              (.childCons thenBranch
+                (.childCons elseBranch .childNil)))) : RawTerm scope))) :
+    ∃ _targetCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase thenBranch),
+      True := by
+  generalize hSourceSort : CellSort.term = sourceSort at sourceCell
+  cases sourceCell with
+  | gen _ _ sourceSpine =>
+      exact ⟨sourceSpine.tail.headAtDim0 rfl, True.intro⟩
+
+/-- Exact witness for `boolElim boolFalse thenBranch elseBranch ↝ elseBranch`. -/
+theorem PolyCell.exists_preservedByIotaBoolFalse_dim0
+    {profile : PolyProfile} {scope : Nat}
+    {thenBranch elseBranch : RawTerm scope}
+    (sourceCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase
+          ((.mkGen .gen_boolElim ()
+            (.childCons (.mkGen .gen_boolFalse () .childNil)
+              (.childCons thenBranch
+                (.childCons elseBranch .childNil)))) : RawTerm scope))) :
+    ∃ _targetCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase elseBranch),
+      True := by
+  generalize hSourceSort : CellSort.term = sourceSort at sourceCell
+  cases sourceCell with
+  | gen _ _ sourceSpine =>
+      exact ⟨sourceSpine.tail.tail.headAtDim0 rfl, True.intro⟩
+
+/-- Exact witness for `fst (pair firstValue secondValue) ↝ firstValue`. -/
+theorem PolyCell.exists_preservedByIotaFstPair_dim0
+    {profile : PolyProfile} {scope : Nat}
+    {firstValue secondValue : RawTerm scope}
+    (sourceCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase
+          ((.mkGen .gen_fst ()
+            (.childCons
+              (.mkGen .gen_pair ()
+                (.childCons firstValue
+                  (.childCons secondValue .childNil)))
+              .childNil)) : RawTerm scope))) :
+    ∃ _targetCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase firstValue),
+      True := by
+  generalize hSourceSort : CellSort.term = sourceSort at sourceCell
+  cases sourceCell with
+  | gen _ _ sourceSpine =>
+      have pairCell :
+          PolyCell profile .term 0 scope CellBoundary.trivial
+            (.termBase
+              ((.mkGen .gen_pair ()
+                (.childCons firstValue
+                  (.childCons secondValue .childNil))) : RawTerm scope)) :=
+        sourceSpine.headAtDim0 rfl
+      generalize hPairSort : CellSort.term = pairSort at pairCell
+      cases pairCell with
+      | gen _ _ pairSpine =>
+          exact ⟨pairSpine.headAtDim0 rfl, True.intro⟩
+
+/-- Exact witness for `snd (pair firstValue secondValue) ↝ secondValue`. -/
+theorem PolyCell.exists_preservedByIotaSndPair_dim0
+    {profile : PolyProfile} {scope : Nat}
+    {firstValue secondValue : RawTerm scope}
+    (sourceCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase
+          ((.mkGen .gen_snd ()
+            (.childCons
+              (.mkGen .gen_pair ()
+                (.childCons firstValue
+                  (.childCons secondValue .childNil)))
+              .childNil)) : RawTerm scope))) :
+    ∃ _targetCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase secondValue),
+      True := by
+  generalize hSourceSort : CellSort.term = sourceSort at sourceCell
+  cases sourceCell with
+  | gen _ _ sourceSpine =>
+      have pairCell :
+          PolyCell profile .term 0 scope CellBoundary.trivial
+            (.termBase
+              ((.mkGen .gen_pair ()
+                (.childCons firstValue
+                  (.childCons secondValue .childNil))) : RawTerm scope)) :=
+        sourceSpine.headAtDim0 rfl
+      generalize hPairSort : CellSort.term = pairSort at pairCell
+      cases pairCell with
+      | gen _ _ pairSpine =>
+          exact ⟨pairSpine.tail.headAtDim0 rfl, True.intro⟩
+
+/-- Exact witness for `natElim natZero zeroBranch succBranch ↝ zeroBranch`. -/
+theorem PolyCell.exists_preservedByIotaNatElimZero_dim0
+    {profile : PolyProfile} {scope : Nat}
+    {zeroBranch succBranch : RawTerm scope}
+    (sourceCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase
+          ((.mkGen .gen_natElim ()
+            (.childCons (.mkGen .gen_natZero () .childNil)
+              (.childCons zeroBranch
+                (.childCons succBranch .childNil)))) : RawTerm scope))) :
+    ∃ _targetCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase zeroBranch),
+      True := by
+  generalize hSourceSort : CellSort.term = sourceSort at sourceCell
+  cases sourceCell with
+  | gen _ _ sourceSpine =>
+      exact ⟨sourceSpine.tail.headAtDim0 rfl, True.intro⟩
+
+/-- Exact witness for `natRec natZero zeroBranch succBranch ↝ zeroBranch`. -/
+theorem PolyCell.exists_preservedByIotaNatRecZero_dim0
+    {profile : PolyProfile} {scope : Nat}
+    {zeroBranch succBranch : RawTerm scope}
+    (sourceCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase
+          ((.mkGen .gen_natRec ()
+            (.childCons (.mkGen .gen_natZero () .childNil)
+              (.childCons zeroBranch
+                (.childCons succBranch .childNil)))) : RawTerm scope))) :
+    ∃ _targetCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase zeroBranch),
+      True := by
+  generalize hSourceSort : CellSort.term = sourceSort at sourceCell
+  cases sourceCell with
+  | gen _ _ sourceSpine =>
+      exact ⟨sourceSpine.tail.headAtDim0 rfl, True.intro⟩
+
+/-- Exact witness for `listElim listNil nilBranch consBranch ↝ nilBranch`. -/
+theorem PolyCell.exists_preservedByIotaListElimNil_dim0
+    {profile : PolyProfile} {scope : Nat}
+    {nilBranch consBranch : RawTerm scope}
+    (sourceCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase
+          ((.mkGen .gen_listElim ()
+            (.childCons (.mkGen .gen_listNil () .childNil)
+              (.childCons nilBranch
+                (.childCons consBranch .childNil)))) : RawTerm scope))) :
+    ∃ _targetCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase nilBranch),
+      True := by
+  generalize hSourceSort : CellSort.term = sourceSort at sourceCell
+  cases sourceCell with
+  | gen _ _ sourceSpine =>
+      exact ⟨sourceSpine.tail.headAtDim0 rfl, True.intro⟩
+
+/-- Exact witness for `optionMatch optionNone noneBranch someBranch ↝ noneBranch`. -/
+theorem PolyCell.exists_preservedByIotaOptionMatchNone_dim0
+    {profile : PolyProfile} {scope : Nat}
+    {noneBranch someBranch : RawTerm scope}
+    (sourceCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase
+          ((.mkGen .gen_optionMatch ()
+            (.childCons (.mkGen .gen_optionNone () .childNil)
+              (.childCons noneBranch
+                (.childCons someBranch .childNil)))) : RawTerm scope))) :
+    ∃ _targetCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase noneBranch),
+      True := by
+  generalize hSourceSort : CellSort.term = sourceSort at sourceCell
+  cases sourceCell with
+  | gen _ _ sourceSpine =>
+      exact ⟨sourceSpine.tail.headAtDim0 rfl, True.intro⟩
+
+/-- Exact witness for `idJ baseCase (refl rawWitness) ↝ baseCase`. -/
+theorem PolyCell.exists_preservedByIotaIdJRefl_dim0
+    {profile : PolyProfile} {scope : Nat}
+    {baseCase rawWitness : RawTerm scope}
+    (sourceCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase
+          ((.mkGen .gen_idJ ()
+            (.childCons baseCase
+              (.childCons
+                (.mkGen .gen_refl ()
+                  (.childCons rawWitness .childNil))
+                .childNil))) : RawTerm scope))) :
+    ∃ _targetCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase baseCase),
+      True := by
+  generalize hSourceSort : CellSort.term = sourceSort at sourceCell
+  cases sourceCell with
+  | gen _ _ sourceSpine =>
+      exact ⟨sourceSpine.headAtDim0 rfl, True.intro⟩
+
+/-- Exact witness for `idStrictRec baseCase (refl rawWitness) ↝ baseCase`. -/
+theorem PolyCell.exists_preservedByIotaIdStrictRecRefl_dim0
+    {profile : PolyProfile} {scope : Nat}
+    {baseCase rawWitness : RawTerm scope}
+    (sourceCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase
+          ((.mkGen .gen_idStrictRec ()
+            (.childCons baseCase
+              (.childCons
+                (.mkGen .gen_refl ()
+                  (.childCons rawWitness .childNil))
+                .childNil))) : RawTerm scope))) :
+    ∃ _targetCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase baseCase),
+      True := by
+  generalize hSourceSort : CellSort.term = sourceSort at sourceCell
+  cases sourceCell with
+  | gen _ _ sourceSpine =>
+      exact ⟨sourceSpine.headAtDim0 rfl, True.intro⟩
+
 /-- Prop-packaged preservation of a certified child spine across a
 `StepChildren` witness, assuming a sort-preserving preserver for the
 single child step in the `here` case.
