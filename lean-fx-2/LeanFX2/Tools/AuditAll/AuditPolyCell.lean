@@ -78,6 +78,7 @@ import LeanFX2.Foundation.PolyCell.Core.SiteOpennessV2
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2RenameEquiv
 import LeanFX2.Foundation.PolyCell.Core.StepV2
 import LeanFX2.Foundation.PolyCell.Core.StepStarV2
+import LeanFX2.Foundation.PolyCell.Core.StepV2Inversion
 
 namespace LeanFX2.Tools
 
@@ -3755,6 +3756,26 @@ namespace LeanFX2.Tools
 -- the identity-type eliminators.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaIdJRefl_selects_base
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaIdStrictRecRefl_selects_base
+
+-- ─── V2-L3.1 phase C step 6 prep: Step inversion lemmas ──────────────
+-- Foundational inversion building blocks the SR theorem's cong arm
+-- will consume.  Built bottom-up: empty-spine → leaf-ctors →
+-- specific-redex inversions (deferred to later atomic iterations).
+--
+-- StepChildren.no_step_at_empty_spine: foundational uninhabitedness
+--   -- StepChildren over .childNil has no inhabitants since both
+--   `here` and `there` constructors pattern-match on `.childCons`.
+--
+-- Step.no_step_from_unit: leaf-term inversion
+--   -- the unit term (gen_unit + empty spine) admits no Step.  17
+--   ctors auto-discharge via generator mismatch; cong reduces to
+--   no_step_at_empty_spine via the empty children spine.
+--
+-- Future inversions: non-leaf terms (boolElim, lam, app) -- each
+-- characterizes which Step ctor could have fired given the source
+-- shape.  Built incrementally as the SR cascade requires them.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepChildren.no_step_at_empty_spine
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.no_step_from_unit
 
 -- ─── V2-L3.2 phase A: StepStar (reflexive-transitive closure) ───────
 -- Reflexive-transitive closure of Step in LEFT-EXTENSION form:
