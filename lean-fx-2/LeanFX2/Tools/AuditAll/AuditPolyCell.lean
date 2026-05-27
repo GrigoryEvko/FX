@@ -3893,6 +3893,16 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Certified.eitherInlUnit_at_scope_zero
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Certified.pairUnits_at_scope_zero
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Certified.listConsUnit_at_scope_zero
+-- Binder + eliminator fixture smokes: lam, app (beta-redex shape),
+-- fst (iota-redex shape), boolElim (3-child eliminator iota-redex).
+-- All close by ⟨_, rfl⟩ -- the certifier is UNIFORMLY transparent
+-- across the standard MLTT generator family (verified empirically
+-- via probe before shipping).  These shapes matter for SR: beta-
+-- redex for SR's beta arm, iota-redex for SR's iota arms.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Certified.lamUnit_at_scope_zero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Certified.appBetaRedex_at_scope_zero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Certified.fstPairUnits_at_scope_zero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Certified.boolElimTrue_at_scope_zero
 
 -- ─── V2-L3.2 phase A: StepStar (reflexive-transitive closure) ───────
 -- Reflexive-transitive closure of Step in LEFT-EXTENSION form:

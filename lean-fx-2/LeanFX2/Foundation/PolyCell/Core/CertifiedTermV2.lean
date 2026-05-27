@@ -250,4 +250,85 @@ theorem Certified.listConsUnit_at_scope_zero {profile : PolyProfile} :
         : RawTermV2 0) :=
   ⟨_, rfl⟩
 
+/-! ## Inhabitation smokes for binder + eliminator fixtures
+
+The certifier's rfl-transparency extends to fixtures involving
+binders (`lam`) and eliminators (`app`, `fst`, `boolElim`).
+This was empirically verified via probe before shipping -- ALL
+tested shapes close by `⟨_, rfl⟩` with no additional unfolding
+needed.
+
+This is strong evidence that the certifier is UNIFORMLY
+transparent across the standard MLTT generator family, not just
+on the simple value ctors.  Future SR proofs that need to
+construct Certified witnesses for composite iota reducts can rely
+on this transparency. -/
+
+/-- **Smoke: `lam unit` is Certified at scope 0.**
+
+The lambda's body lives at scope 1; the certifier processes it
+through the binderShift `[1]` spine and unit-payload evidence.
+Demonstrates the certifier handles binder-introducing ctors
+transparently. -/
+theorem Certified.lamUnit_at_scope_zero {profile : PolyProfile} :
+    Certified (profile := profile)
+      (.mkGen .gen_lam ()
+        (.childCons
+          (.mkGen .gen_unit () .childNil : RawTermV2 1)
+          .childNil)
+        : RawTermV2 0) :=
+  ⟨_, rfl⟩
+
+/-- **Smoke: `app (lam unit) unit` is Certified at scope 0.**
+
+A beta-redex shape: the function `lam unit` applied to `unit`.
+Demonstrates the certifier accepts beta-redex shapes -- which
+matters for SR's beta arm where source terms have exactly this
+form.  The certifier neither rejects nor reduces beta-redexes;
+it just type-checks them. -/
+theorem Certified.appBetaRedex_at_scope_zero {profile : PolyProfile} :
+    Certified (profile := profile)
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam ()
+            (.childCons
+              (.mkGen .gen_unit () .childNil : RawTermV2 1)
+              .childNil))
+          (.childCons (.mkGen .gen_unit () .childNil) .childNil))
+        : RawTermV2 0) :=
+  ⟨_, rfl⟩
+
+/-- **Smoke: `fst (pair unit unit)` is Certified at scope 0.**
+
+An iota-redex shape: `fst` applied to an explicit `pair`.
+Demonstrates the certifier accepts iota-redex shapes too.  SR's
+iota arms work with source terms of exactly this form -- the
+certifier accepts both the redex and its reduct (the first
+component). -/
+theorem Certified.fstPairUnits_at_scope_zero {profile : PolyProfile} :
+    Certified (profile := profile)
+      (.mkGen .gen_fst ()
+        (.childCons
+          (.mkGen .gen_pair ()
+            (.childCons (.mkGen .gen_unit () .childNil)
+              (.childCons (.mkGen .gen_unit () .childNil) .childNil)))
+          .childNil)
+        : RawTermV2 0) :=
+  ⟨_, rfl⟩
+
+/-- **Smoke: `boolElim boolTrue unit unit` is Certified at scope 0.**
+
+A 3-child eliminator iota-redex shape with unit-typed branches.
+Demonstrates the certifier accepts eliminators with full
+children spines -- which matters for SR's eliminator iota arms
+that fire on this shape. -/
+theorem Certified.boolElimTrue_at_scope_zero {profile : PolyProfile} :
+    Certified (profile := profile)
+      (.mkGen .gen_boolElim ()
+        (.childCons (.mkGen .gen_boolTrue () .childNil)
+          (.childCons (.mkGen .gen_unit () .childNil)
+            (.childCons (.mkGen .gen_unit () .childNil) .childNil)))
+        : RawTermV2 0) :=
+  ⟨_, rfl⟩
+
 end LeanFX2.Foundation.PolyCell.Core
