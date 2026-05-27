@@ -51,6 +51,7 @@ import LeanFX2.Foundation.PolyCell.FXProfile.CertifiedViewsV2Sound
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubstV2
 import LeanFX2.Foundation.PolyCell.Core.GenAlgebraV2
 import LeanFX2.Foundation.PolyCell.Core.FoldV2
+import LeanFX2.Foundation.PolyCell.Core.RawTermV2Rename
 
 namespace LeanFX2.Tools
 
@@ -3522,6 +3523,30 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.payload_scope_invariant_of_not_var
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.foldV2
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.foldChildrenV2
+
+-- ─── V2-L2.4: rename via foldV2 (#178) ──────────────────────────────
+-- THE FIRST L2 PAYOFF IN ACTION.  RawTermV2.rename is a ONE-LINE
+-- foldV2 instantiation; in v1's era this would be a 74-arm pattern
+-- match cascade.  The cascade-tax killer made concrete.
+--
+-- Composition of four prior commits:
+--   * RawRenaming Action instance (v1's RawSubst/ActionInstances)
+--   * ActsOnRawTermV2Var RawRenaming instance (#175)
+--   * GenAlgebraV2.canonical (#176)
+--   * foldV2 engine (#177)
+-- → RawTermV2.rename, ONE LINE.
+--
+-- Both smoke tests (gen_unit and gen_var paths) close by `rfl` —
+-- empirical confirmation that foldV2's full dispatch chain reduces
+-- on closed inputs, including the Eq.rec motive trick (memory
+-- feedback_lean_eq_rec_motive) and the DecidableEq Generator
+-- dispatch.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.rename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2.rename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.rename_eq_foldV2
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2.rename_eq_foldChildrenV2
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.rename_identity_unit_smoke
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.rename_identity_var_smoke
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
