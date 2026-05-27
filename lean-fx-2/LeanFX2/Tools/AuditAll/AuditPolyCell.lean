@@ -3824,6 +3824,13 @@ namespace LeanFX2.Tools
 -- listElim) will accumulate more iota arms.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_fst
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_snd
+-- Multi-iota eliminator inversion: from_boolElim.  5-way
+-- disjunction: 2 iota arms (boolTrue/boolFalse scrutinee) + 3 cong
+-- positions (scrutinee/then/else child stepped).  The cong arm
+-- descends through nested here/there cases on StepChildren to
+-- reach each child position; the inner-most there reaches childNil
+-- which is uninhabited.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_boolElim
 
 -- ─── V2-L3.2 phase A: StepStar (reflexive-transitive closure) ───────
 -- Reflexive-transitive closure of Step in LEFT-EXTENSION form:

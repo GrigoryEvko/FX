@@ -523,4 +523,80 @@ theorem Step.from_snd
       | there _ restStep =>
           exact absurd restStep StepChildren.no_step_at_empty_spine
 
+/-- **Inversion for `boolElim`-rooted Step.**
+
+Five-way disjunction characterizing which Step ctor fired on a
+boolElim term:
+
+* **iotaBoolTrue arm**: scrutinee was `boolTrue`, target =
+  thenBranch.
+* **iotaBoolFalse arm**: scrutinee was `boolFalse`, target =
+  elseBranch.
+* **cong-at-scrutinee arm**: scrutinee stepped, target preserves
+  the outer boolElim with the stepped scrutinee.
+* **cong-at-then arm**: thenBranch stepped.
+* **cong-at-else arm**: elseBranch stepped.
+
+The proof descends through:
+1. `cases reduction` — dispatches the 18 Step ctors; iotaBoolTrue,
+   iotaBoolFalse, and cong are the only matches; rest auto-discharge.
+2. For cong, `cases childStep` — dispatches `here` (scrutinee
+   position) and `there` (descend into tail).
+3. For `there`, `cases tailStep` — dispatches the then position
+   and recurses into the else position via another `there`.
+4. For the inner-most `there`, `cases restStep` — dispatches the
+   else position and the impossible-empty-spine case. -/
+theorem Step.from_boolElim
+    {scope : Nat}
+    {scrutinee thenBranch elseBranch : RawTermV2 scope}
+    {target : RawTermV2 scope}
+    (reduction :
+      Step (.mkGen .gen_boolElim ()
+              (.childCons scrutinee
+                (.childCons thenBranch (.childCons elseBranch .childNil))))
+           target) :
+    (scrutinee = .mkGen .gen_boolTrue () .childNil ∧ target = thenBranch)
+    ∨
+    (scrutinee = .mkGen .gen_boolFalse () .childNil ∧ target = elseBranch)
+    ∨
+    (∃ (scrutineeAfter : RawTermV2 scope),
+        target = .mkGen .gen_boolElim ()
+          (.childCons scrutineeAfter
+            (.childCons thenBranch (.childCons elseBranch .childNil))) ∧
+        Step scrutinee scrutineeAfter)
+    ∨
+    (∃ (thenAfter : RawTermV2 scope),
+        target = .mkGen .gen_boolElim ()
+          (.childCons scrutinee
+            (.childCons thenAfter (.childCons elseBranch .childNil))) ∧
+        Step thenBranch thenAfter)
+    ∨
+    (∃ (elseAfter : RawTermV2 scope),
+        target = .mkGen .gen_boolElim ()
+          (.childCons scrutinee
+            (.childCons thenBranch (.childCons elseAfter .childNil))) ∧
+        Step elseBranch elseAfter) := by
+  cases reduction with
+  | iotaBoolTrue =>
+      exact Or.inl ⟨rfl, rfl⟩
+  | iotaBoolFalse =>
+      exact Or.inr (Or.inl ⟨rfl, rfl⟩)
+  | cong _ _ childStep =>
+      cases childStep with
+      | here _ scrutineeStep =>
+          rename_i scrutineeAfter
+          exact Or.inr (Or.inr (Or.inl ⟨scrutineeAfter, rfl, scrutineeStep⟩))
+      | there _ tailStep =>
+          cases tailStep with
+          | here _ thenStep =>
+              rename_i thenAfter
+              exact Or.inr (Or.inr (Or.inr (Or.inl ⟨thenAfter, rfl, thenStep⟩)))
+          | there _ restStep =>
+              cases restStep with
+              | here _ elseStep =>
+                  rename_i elseAfter
+                  exact Or.inr (Or.inr (Or.inr (Or.inr ⟨elseAfter, rfl, elseStep⟩)))
+              | there _ restRestStep =>
+                  exact absurd restRestStep StepChildren.no_step_at_empty_spine
+
 end LeanFX2.Foundation.PolyCell.Core
