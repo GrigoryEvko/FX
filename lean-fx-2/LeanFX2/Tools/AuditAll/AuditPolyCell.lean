@@ -1089,6 +1089,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaNatElimSuccSuccBranchCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaNatRecSuccZeroBranchCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaNatRecSuccSuccBranchCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaNatElimSuccPredecessorCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaNatRecSuccPredecessorCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaListElimNilBranchCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaListElimConsBranchCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaOptionMatchNoneBranchCong
@@ -1142,6 +1144,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaNatElimSuccSuccBranchCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaNatRecSuccZeroBranchCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaNatRecSuccSuccBranchCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaNatElimSuccPredecessorCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaNatRecSuccPredecessorCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaListElimNilBranchCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaListElimConsBranchCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaOptionMatchNoneBranchCong
