@@ -160,6 +160,61 @@ def criticalPairsForSourceGenerators
     (forSourceGenerator leftGenerator)
     (forSourceGenerator rightGenerator)
 
+/-- Same-generator, different-root pairs whose source disjointness is now
+covered by an audited theorem in `LocalStepBranching`.
+
+This is schema-level coverage: it records that the corresponding concrete
+family has a proof-relevant impossibility witness below.
+
+The partner table is one-argument on purpose: Lean's equation compiler can
+pull `propext` into the two-argument pattern matrix for this ratchet, while
+the one-argument table plus decidable equality stays audit-clean. -/
+def differentRootDisjointPartner? (leftKind : RootStepKind) :
+    Option RootStepKind :=
+  match leftKind with
+  | .iotaBoolTrue => some .iotaBoolFalse
+  | .iotaBoolFalse => some .iotaBoolTrue
+  | .iotaNatElimZero => some .iotaNatElimSucc
+  | .iotaNatElimSucc => some .iotaNatElimZero
+  | .iotaNatRecZero => some .iotaNatRecSucc
+  | .iotaNatRecSucc => some .iotaNatRecZero
+  | .iotaListElimNil => some .iotaListElimCons
+  | .iotaListElimCons => some .iotaListElimNil
+  | .iotaOptionMatchNone => some .iotaOptionMatchSome
+  | .iotaOptionMatchSome => some .iotaOptionMatchNone
+  | .iotaEitherMatchInl => some .iotaEitherMatchInr
+  | .iotaEitherMatchInr => some .iotaEitherMatchInl
+  | .beta => none
+  | .iotaFstPair => none
+  | .iotaSndPair => none
+  | .iotaIdJRefl => none
+  | .iotaIdStrictRecRefl => none
+
+/-- Does this same-generator, different-root pair have a current
+proof-relevant disjoint-source witness? -/
+def sameGeneratorDifferentRootPairHasDisjointWitness
+    (leftKind rightKind : RootStepKind) : Bool :=
+  match differentRootDisjointPartner? leftKind with
+  | some expectedRightKind =>
+      if expectedRightKind = rightKind then true else false
+  | none => false
+
+/-- Does this finite root/root schema entry have current M6 coverage?
+
+* same-root entries are covered by concrete `LocalDiamond` witnesses;
+* same-generator different-root entries are covered only when their disjoint
+  source family is explicitly listed above;
+* different-generator entries are vacuous at the root/root level because the
+  source-head generators differ. -/
+def RootCriticalPair.hasCurrentRootResolution
+    (rootPair : RootCriticalPair) : Bool :=
+  match rootPair.overlapShape with
+  | .sameRootRedex => true
+  | .sameGeneratorDifferentRootRedexes =>
+      sameGeneratorDifferentRootPairHasDisjointWitness
+        rootPair.leftKind rootPair.rightKind
+  | .differentRootGenerators => true
+
 theorem all_length :
     all.length = 17 := rfl
 
@@ -183,6 +238,72 @@ theorem classifyRootOverlap_bool_iotas :
 theorem classifyRootOverlap_beta_boolTrue :
     classifyRootOverlap .beta .iotaBoolTrue =
       .differentRootGenerators := rfl
+
+theorem sameGeneratorDifferentRootPairHasDisjointWitness_bool_reverse :
+    sameGeneratorDifferentRootPairHasDisjointWitness
+      .iotaBoolFalse .iotaBoolTrue = true := rfl
+
+theorem sameGeneratorDifferentRootPairHasDisjointWitness_natElim_reverse :
+    sameGeneratorDifferentRootPairHasDisjointWitness
+      .iotaNatElimSucc .iotaNatElimZero = true := rfl
+
+theorem sameGeneratorDifferentRootPairHasDisjointWitness_natRec_reverse :
+    sameGeneratorDifferentRootPairHasDisjointWitness
+      .iotaNatRecSucc .iotaNatRecZero = true := rfl
+
+theorem sameGeneratorDifferentRootPairHasDisjointWitness_list_reverse :
+    sameGeneratorDifferentRootPairHasDisjointWitness
+      .iotaListElimCons .iotaListElimNil = true := rfl
+
+theorem sameGeneratorDifferentRootPairHasDisjointWitness_option_reverse :
+    sameGeneratorDifferentRootPairHasDisjointWitness
+      .iotaOptionMatchSome .iotaOptionMatchNone = true := rfl
+
+theorem sameGeneratorDifferentRootPairHasDisjointWitness_either_reverse :
+    sameGeneratorDifferentRootPairHasDisjointWitness
+      .iotaEitherMatchInr .iotaEitherMatchInl = true := rfl
+
+/-- Root/root coverage ratchet for the `boolElim` root family. -/
+theorem boolElimRootPairs_haveCurrentRootResolution :
+    (pairsForKindLists
+      [.iotaBoolTrue, .iotaBoolFalse]
+      [.iotaBoolTrue, .iotaBoolFalse]).all
+        (fun rootPair => rootPair.hasCurrentRootResolution) = true := rfl
+
+/-- Root/root coverage ratchet for the `natElim` root family. -/
+theorem natElimRootPairs_haveCurrentRootResolution :
+    (pairsForKindLists
+      [.iotaNatElimZero, .iotaNatElimSucc]
+      [.iotaNatElimZero, .iotaNatElimSucc]).all
+        (fun rootPair => rootPair.hasCurrentRootResolution) = true := rfl
+
+/-- Root/root coverage ratchet for the `natRec` root family. -/
+theorem natRecRootPairs_haveCurrentRootResolution :
+    (pairsForKindLists
+      [.iotaNatRecZero, .iotaNatRecSucc]
+      [.iotaNatRecZero, .iotaNatRecSucc]).all
+        (fun rootPair => rootPair.hasCurrentRootResolution) = true := rfl
+
+/-- Root/root coverage ratchet for the `listElim` root family. -/
+theorem listElimRootPairs_haveCurrentRootResolution :
+    (pairsForKindLists
+      [.iotaListElimNil, .iotaListElimCons]
+      [.iotaListElimNil, .iotaListElimCons]).all
+        (fun rootPair => rootPair.hasCurrentRootResolution) = true := rfl
+
+/-- Root/root coverage ratchet for the `optionMatch` root family. -/
+theorem optionMatchRootPairs_haveCurrentRootResolution :
+    (pairsForKindLists
+      [.iotaOptionMatchNone, .iotaOptionMatchSome]
+      [.iotaOptionMatchNone, .iotaOptionMatchSome]).all
+        (fun rootPair => rootPair.hasCurrentRootResolution) = true := rfl
+
+/-- Root/root coverage ratchet for the `eitherMatch` root family. -/
+theorem eitherMatchRootPairs_haveCurrentRootResolution :
+    (pairsForKindLists
+      [.iotaEitherMatchInl, .iotaEitherMatchInr]
+      [.iotaEitherMatchInl, .iotaEitherMatchInr]).all
+        (fun rootPair => rootPair.hasCurrentRootResolution) = true := rfl
 
 end RootStepKind
 
