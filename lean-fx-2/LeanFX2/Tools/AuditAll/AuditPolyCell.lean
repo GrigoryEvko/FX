@@ -62,6 +62,7 @@ import LeanFX2.Foundation.PolyCell.Core.RawTermV2RenameCompose
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2RenameComposeFusion
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2RenameSubstCommute
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2SubstRenameCommute
+import LeanFX2.Foundation.PolyCell.Core.RawTermV2SubstCompose
 
 namespace LeanFX2.Tools
 
@@ -3716,6 +3717,24 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2.subst_rename_commute
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.subst_rename_commute_unit_smoke
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.subst_rename_commute_var_smoke
+
+-- V2-L2.7c6: THE HEADLINE THIRD ACTION LAW (compose_assoc / subst_compose).
+-- The polynomial monad's multiplication law at the term layer.
+-- `RawTermSubstV2.compose sigma1 sigma2 pos = subst sigma2 (sigma1 pos)`
+-- is the homogeneous substitution composition.
+-- `lift_compose_pointwise` is the binder pull — the FIRST place in
+-- the ladder that uses BOTH cross-direction commutes (#181c4 +
+-- #181c5) plus subst_pointwise (#181a) in a single proof.
+-- The mutual `subst_compose` reuses the now-standard 4-arm template.
+-- This closes the three Action laws V2-L2.7 needs (apply_ext +
+-- identity_apply + compose_assoc).  Next is the typeclass instance.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubstV2.compose
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubstV2.lift_compose_pointwise
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.iterateLiftRaw_RawTermSubstV2_compose_pointwise
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.subst_compose
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2.subst_compose
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.subst_compose_unit_smoke
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.subst_compose_var_smoke
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
