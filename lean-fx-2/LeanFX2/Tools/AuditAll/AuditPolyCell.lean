@@ -29,6 +29,7 @@ import LeanFX2.Foundation.PolyCell.Core.AbstractTermSpineV2
 import LeanFX2.Foundation.PolyCell.Core.PolyCellV2
 import LeanFX2.Foundation.PolyCell.Core.PolyCellV2Erasure
 import LeanFX2.Foundation.PolyCell.Core.PolyCellV2Helpers
+import LeanFX2.Foundation.PolyCell.Core.CertifyChildSpineV2
 
 namespace LeanFX2.Tools
 
@@ -3019,6 +3020,17 @@ namespace LeanFX2.Tools
 -- friends, returning Except CellCheckRejection (CertifiedCellV2 ...)
 -- via the package helpers above.
 -- ═══════════════════════════════════════════════════════════════════
+
+-- ─── V2-L1cert.1: parametric child-spine certifier (#156) ─────────
+-- Generic parallel-walk recursion over (childSpecs, children) with
+-- per-child reconciliation delegated to a callback.  The v1
+-- screenRawChildDescriptorsWith? equivalent, but constructive
+-- (builds a CertifiedTermSpineV2 rather than just yes/no).
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedChildAtSpecV2
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedChildAtSpecV2.mk
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedChildAtSpecV2.headBoundary
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedChildAtSpecV2.headCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.certifyChildSpineV2?
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
