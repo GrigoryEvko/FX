@@ -103,4 +103,88 @@ theorem Step.no_step_from_unit
   | cong _ _ childStep =>
       exact StepChildren.no_step_at_empty_spine childStep
 
+/-! ## Leaf inversion suite
+
+The unit-term inversion above generalizes to ALL 0-arity leaf
+constructors with empty children spines: bool's `true`/`false`,
+nat's `zero`, list's `nil`, option's `none`, plus variable
+references.  Each one admits no Step at the top level because:
+
+* None of `Step.beta`'s, `Step.iotaXxx`'s redex source patterns
+  match the leaf ctor at the OUTER position.  Some leaves (like
+  `boolTrue`, `natZero`) appear as SCRUTINEES inside specific
+  iotas' source patterns, but never as the outer ctor of those
+  iotas -- the iota fires on `boolElim`/`natElim`, not on the
+  scrutinee in isolation.
+* `Step.cong` requires a `StepChildren` over the leaf's children
+  spine, which is `.childNil` for 0-arity ctors.  By the
+  `no_step_at_empty_spine` lemma, no such `StepChildren` exists.
+
+Each lemma in the suite proves by the same one-line tactic --
+`intro reduction; cases reduction with | cong _ _ childStep =>
+exact StepChildren.no_step_at_empty_spine childStep` -- because
+Lean's `cases` discharges all non-cong Step ctors automatically
+via generator-mismatch unification failure, and only the cong
+case needs explicit handling. -/
+
+/-- **The `boolTrue` constructor admits no Step reduction.** -/
+theorem Step.no_step_from_boolTrue
+    {scope : Nat} {target : RawTermV2 scope} :
+    ¬ Step (.mkGen .gen_boolTrue () .childNil) target := by
+  intro reduction
+  cases reduction with
+  | cong _ _ childStep =>
+      exact StepChildren.no_step_at_empty_spine childStep
+
+/-- **The `boolFalse` constructor admits no Step reduction.** -/
+theorem Step.no_step_from_boolFalse
+    {scope : Nat} {target : RawTermV2 scope} :
+    ¬ Step (.mkGen .gen_boolFalse () .childNil) target := by
+  intro reduction
+  cases reduction with
+  | cong _ _ childStep =>
+      exact StepChildren.no_step_at_empty_spine childStep
+
+/-- **The `natZero` constructor admits no Step reduction.** -/
+theorem Step.no_step_from_natZero
+    {scope : Nat} {target : RawTermV2 scope} :
+    ¬ Step (.mkGen .gen_natZero () .childNil) target := by
+  intro reduction
+  cases reduction with
+  | cong _ _ childStep =>
+      exact StepChildren.no_step_at_empty_spine childStep
+
+/-- **The `listNil` constructor admits no Step reduction.** -/
+theorem Step.no_step_from_listNil
+    {scope : Nat} {target : RawTermV2 scope} :
+    ¬ Step (.mkGen .gen_listNil () .childNil) target := by
+  intro reduction
+  cases reduction with
+  | cong _ _ childStep =>
+      exact StepChildren.no_step_at_empty_spine childStep
+
+/-- **The `optionNone` constructor admits no Step reduction.** -/
+theorem Step.no_step_from_optionNone
+    {scope : Nat} {target : RawTermV2 scope} :
+    ¬ Step (.mkGen .gen_optionNone () .childNil) target := by
+  intro reduction
+  cases reduction with
+  | cong _ _ childStep =>
+      exact StepChildren.no_step_at_empty_spine childStep
+
+/-- **No variable reference admits a Step reduction.**
+
+The variable `var idx` is a 0-arity ctor whose payload is the
+de-Bruijn index `idx : Fin scope`.  Universal in `idx`: NO
+variable reference at ANY index admits a Step.  Proof shape is
+identical to the other leaf inversions because `gen_var`'s
+binderShifts is `[]` (empty spine, same cong-arm reasoning). -/
+theorem Step.no_step_from_var
+    {scope : Nat} {idx : Fin scope} {target : RawTermV2 scope} :
+    ¬ Step (.mkGen .gen_var idx .childNil) target := by
+  intro reduction
+  cases reduction with
+  | cong _ _ childStep =>
+      exact StepChildren.no_step_at_empty_spine childStep
+
 end LeanFX2.Foundation.PolyCell.Core

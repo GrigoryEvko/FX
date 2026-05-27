@@ -3771,11 +3771,23 @@ namespace LeanFX2.Tools
 --   ctors auto-discharge via generator mismatch; cong reduces to
 --   no_step_at_empty_spine via the empty children spine.
 --
+-- Leaf inversion suite: every 0-arity ctor with empty spine
+-- admits no Step.  Same one-line proof shape as no_step_from_unit
+-- because the cong arm reduces uniformly to no_step_at_empty_spine.
+-- Boolean leaves (true/false), nat zero, list nil, option none,
+-- plus variable references (universal in the de-Bruijn index).
+--
 -- Future inversions: non-leaf terms (boolElim, lam, app) -- each
 -- characterizes which Step ctor could have fired given the source
 -- shape.  Built incrementally as the SR cascade requires them.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepChildren.no_step_at_empty_spine
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.no_step_from_unit
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.no_step_from_boolTrue
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.no_step_from_boolFalse
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.no_step_from_natZero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.no_step_from_listNil
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.no_step_from_optionNone
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.no_step_from_var
 
 -- ─── V2-L3.2 phase A: StepStar (reflexive-transitive closure) ───────
 -- Reflexive-transitive closure of Step in LEFT-EXTENSION form:
