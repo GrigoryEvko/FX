@@ -59,6 +59,7 @@ import LeanFX2.Foundation.PolyCell.Core.RawTermV2SubstPointwise
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2SubstIdentity
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2RenamePointwise
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2RenameCompose
+import LeanFX2.Foundation.PolyCell.Core.RawTermV2RenameComposeFusion
 
 namespace LeanFX2.Tools
 
@@ -3661,6 +3662,21 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.iterateLiftRaw_RawRenaming_compose_pointwise
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawRenaming.lift_compose_pointwise_zero_smoke
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.iterateLiftRaw_RawRenaming_compose_pointwise_zero_smoke
+
+-- V2-L2.7c3: term-level renaming fusion (rename_compose).
+-- The KEYSTONE helper `Generator.payload_cast_compose` proves that
+-- chained payload-scope-invariance casts equal single casts (193-arm
+-- `all_goals rfl` after the `gen_var` arm is discharged via absurd).
+-- This unblocks ALL term-level cross-direction fusion.
+-- The mutual `rename_compose` uses it for the cast subgoal and the
+-- mutual children IH for the spine subgoal, with the iterLiftBridge
+-- (from #181c2) converting `compose (lift r1) (lift r2)` to
+-- `lift (compose r1 r2)` at each binder descent.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.payload_cast_compose
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.rename_compose
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2.rename_compose
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.rename_compose_unit_smoke
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.rename_compose_var_smoke
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
