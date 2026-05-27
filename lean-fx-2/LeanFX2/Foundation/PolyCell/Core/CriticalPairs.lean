@@ -784,6 +784,17 @@ theorem iotaBoolTrue_iotaBoolFalse_sourcesDisjoint {scope : Nat}
   dsimp [iotaBoolTrueSameRoot, iotaBoolFalseSameRoot] at sourceEquality
   cases sourceEquality
 
+/-- Reverse orientation of `iotaBoolTrue_iotaBoolFalse_sourcesDisjoint`. -/
+theorem iotaBoolFalse_iotaBoolTrue_sourcesDisjoint {scope : Nat}
+    (thenFalse elseFalse thenTrue elseTrue : RawTerm scope) :
+    Not
+      ((iotaBoolFalseSameRoot thenFalse elseFalse).source =
+        (iotaBoolTrueSameRoot thenTrue elseTrue).source) := by
+  intro sourceEquality
+  exact
+    (iotaBoolTrue_iotaBoolFalse_sourcesDisjoint
+      thenTrue elseTrue thenFalse elseFalse) sourceEquality.symm
+
 /-- `natElim natZero` and `natElim (natSucc _)` are disjoint root
 redex sources, so a zero/succ root-root branching is impossible. -/
 theorem iotaNatElimZero_iotaNatElimSucc_sourcesDisjoint {scope : Nat}
@@ -796,6 +807,20 @@ theorem iotaNatElimZero_iotaNatElimSucc_sourcesDisjoint {scope : Nat}
   intro sourceEquality
   dsimp [iotaNatElimZeroSameRoot, iotaNatElimSuccSameRoot] at sourceEquality
   cases sourceEquality
+
+/-- Reverse orientation of `iotaNatElimZero_iotaNatElimSucc_sourcesDisjoint`. -/
+theorem iotaNatElimSucc_iotaNatElimZero_sourcesDisjoint {scope : Nat}
+    (predecessor zeroBranchSucc succBranchSucc
+      zeroBranch succBranch : RawTerm scope) :
+    Not
+      ((iotaNatElimSuccSameRoot
+          predecessor zeroBranchSucc succBranchSucc).source =
+        (iotaNatElimZeroSameRoot zeroBranch succBranch).source) := by
+  intro sourceEquality
+  exact
+    (iotaNatElimZero_iotaNatElimSucc_sourcesDisjoint
+      zeroBranch succBranch predecessor zeroBranchSucc succBranchSucc)
+      sourceEquality.symm
 
 /-- `natRec natZero` and `natRec (natSucc _)` are disjoint root
 redex sources, so a zero/succ root-root branching is impossible. -/
@@ -810,6 +835,20 @@ theorem iotaNatRecZero_iotaNatRecSucc_sourcesDisjoint {scope : Nat}
   dsimp [iotaNatRecZeroSameRoot, iotaNatRecSuccSameRoot] at sourceEquality
   cases sourceEquality
 
+/-- Reverse orientation of `iotaNatRecZero_iotaNatRecSucc_sourcesDisjoint`. -/
+theorem iotaNatRecSucc_iotaNatRecZero_sourcesDisjoint {scope : Nat}
+    (predecessor zeroBranchSucc succBranchSucc
+      zeroBranch succBranch : RawTerm scope) :
+    Not
+      ((iotaNatRecSuccSameRoot
+          predecessor zeroBranchSucc succBranchSucc).source =
+        (iotaNatRecZeroSameRoot zeroBranch succBranch).source) := by
+  intro sourceEquality
+  exact
+    (iotaNatRecZero_iotaNatRecSucc_sourcesDisjoint
+      zeroBranch succBranch predecessor zeroBranchSucc succBranchSucc)
+      sourceEquality.symm
+
 /-- `listElim listNil` and `listElim (listCons _ _)` are disjoint root
 redex sources, so a nil/cons root-root branching is impossible. -/
 theorem iotaListElimNil_iotaListElimCons_sourcesDisjoint {scope : Nat}
@@ -822,6 +861,20 @@ theorem iotaListElimNil_iotaListElimCons_sourcesDisjoint {scope : Nat}
   intro sourceEquality
   dsimp [iotaListElimNilSameRoot, iotaListElimConsSameRoot] at sourceEquality
   cases sourceEquality
+
+/-- Reverse orientation of `iotaListElimNil_iotaListElimCons_sourcesDisjoint`. -/
+theorem iotaListElimCons_iotaListElimNil_sourcesDisjoint {scope : Nat}
+    (headValue tailValue nilBranchCons consBranchCons
+      nilBranch consBranch : RawTerm scope) :
+    Not
+      ((iotaListElimConsSameRoot
+          headValue tailValue nilBranchCons consBranchCons).source =
+        (iotaListElimNilSameRoot nilBranch consBranch).source) := by
+  intro sourceEquality
+  exact
+    (iotaListElimNil_iotaListElimCons_sourcesDisjoint
+      nilBranch consBranch headValue tailValue nilBranchCons consBranchCons)
+      sourceEquality.symm
 
 /-- `optionMatch optionNone` and `optionMatch (optionSome _)` are disjoint
 root redex sources, so a none/some root-root branching is impossible. -/
@@ -837,6 +890,22 @@ theorem iotaOptionMatchNone_iotaOptionMatchSome_sourcesDisjoint
   dsimp [iotaOptionMatchNoneSameRoot, iotaOptionMatchSomeSameRoot]
     at sourceEquality
   cases sourceEquality
+
+/-- Reverse orientation of
+`iotaOptionMatchNone_iotaOptionMatchSome_sourcesDisjoint`. -/
+theorem iotaOptionMatchSome_iotaOptionMatchNone_sourcesDisjoint
+    {scope : Nat}
+    (value noneBranchSome someBranchSome
+      noneBranch someBranch : RawTerm scope) :
+    Not
+      ((iotaOptionMatchSomeSameRoot
+          value noneBranchSome someBranchSome).source =
+        (iotaOptionMatchNoneSameRoot noneBranch someBranch).source) := by
+  intro sourceEquality
+  exact
+    (iotaOptionMatchNone_iotaOptionMatchSome_sourcesDisjoint
+      noneBranch someBranch value noneBranchSome someBranchSome)
+      sourceEquality.symm
 
 /-- `eitherMatch (eitherInl _)` and `eitherMatch (eitherInr _)` are
 disjoint root redex sources, so an inl/inr root-root branching is
@@ -854,6 +923,23 @@ theorem iotaEitherMatchInl_iotaEitherMatchInr_sourcesDisjoint
   dsimp [iotaEitherMatchInlSameRoot, iotaEitherMatchInrSameRoot]
     at sourceEquality
   cases sourceEquality
+
+/-- Reverse orientation of
+`iotaEitherMatchInl_iotaEitherMatchInr_sourcesDisjoint`. -/
+theorem iotaEitherMatchInr_iotaEitherMatchInl_sourcesDisjoint
+    {scope : Nat}
+    (rightValue leftBranchRight rightBranchRight leftValue
+      leftBranch rightBranch : RawTerm scope) :
+    Not
+      ((iotaEitherMatchInrSameRoot
+          rightValue leftBranchRight rightBranchRight).source =
+        (iotaEitherMatchInlSameRoot
+          leftValue leftBranch rightBranch).source) := by
+  intro sourceEquality
+  exact
+    (iotaEitherMatchInl_iotaEitherMatchInr_sourcesDisjoint
+      leftValue leftBranch rightBranch rightValue
+      leftBranchRight rightBranchRight) sourceEquality.symm
 
 /-- Root `boolTrue` iota branching against congruence in the selected
 then-branch.  The local diamond joins at the stepped then-branch. -/
