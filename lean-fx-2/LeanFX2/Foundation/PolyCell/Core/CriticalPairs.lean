@@ -418,6 +418,40 @@ def betaBeta {scope : Nat} (body : RawTerm (scope + 1))
   leftStep := Step.beta
   rightStep := Step.beta
 
+/-- The concrete same-root bool-true iota branching.
+
+Both one-step paths eliminate the same `boolElim boolTrue` redex and
+select the then-branch. -/
+def iotaBoolTrueSameRoot {scope : Nat}
+    (thenBranch elseBranch : RawTerm scope) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_boolElim ()
+      (.childCons
+        (.mkGen .gen_boolTrue () .childNil)
+        (.childCons thenBranch (.childCons elseBranch .childNil)))
+  leftReduct := thenBranch
+  rightReduct := thenBranch
+  leftStep := Step.iotaBoolTrue
+  rightStep := Step.iotaBoolTrue
+
+/-- The concrete same-root bool-false iota branching.
+
+Both one-step paths eliminate the same `boolElim boolFalse` redex and
+select the else-branch. -/
+def iotaBoolFalseSameRoot {scope : Nat}
+    (thenBranch elseBranch : RawTerm scope) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_boolElim ()
+      (.childCons
+        (.mkGen .gen_boolFalse () .childNil)
+        (.childCons thenBranch (.childCons elseBranch .childNil)))
+  leftReduct := elseBranch
+  rightReduct := elseBranch
+  leftStep := Step.iotaBoolFalse
+  rightStep := Step.iotaBoolFalse
+
 end LocalStepBranching
 
 /-- A concrete local diamond filler for one local one-step branching.
@@ -475,6 +509,20 @@ def betaBeta {scope : Nat} (body : RawTerm (scope + 1))
     (arg : RawTerm scope) :
     LocalDiamond (LocalStepBranching.betaBeta body arg) :=
   sameReduct Step.beta Step.beta
+
+/-- Concrete bool-true iota same-root local diamond. -/
+def iotaBoolTrueSameRoot {scope : Nat}
+    (thenBranch elseBranch : RawTerm scope) :
+    LocalDiamond
+      (LocalStepBranching.iotaBoolTrueSameRoot thenBranch elseBranch) :=
+  sameReduct Step.iotaBoolTrue Step.iotaBoolTrue
+
+/-- Concrete bool-false iota same-root local diamond. -/
+def iotaBoolFalseSameRoot {scope : Nat}
+    (thenBranch elseBranch : RawTerm scope) :
+    LocalDiamond
+      (LocalStepBranching.iotaBoolFalseSameRoot thenBranch elseBranch) :=
+  sameReduct Step.iotaBoolFalse Step.iotaBoolFalse
 
 end LocalDiamond
 
