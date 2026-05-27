@@ -66,6 +66,7 @@ import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaProjections
 import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaEither
 import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaOption
 import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaIdRefl
+import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaNatRec
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactWrongChildShape
@@ -724,6 +725,16 @@ namespace LeanFX2.Tools
 -- simpler than iotaBoolTrue (no tail step required).
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByIotaIdJRefl
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByIotaIdStrictRecRefl
+
+-- ─── V2-L3.1 phase D step 12: nested-app compound iotas (SR arms 14-16)
+-- natElimSucc / natRecSucc build a 2-arg app + recursive eliminator
+-- in the target.  listElimCons builds a 3-arg app + recursive
+-- eliminator.  Demonstrates the compound-iota template scales to
+-- arbitrarily-nested gen_app construction with the recursive call
+-- as a syntactic sub-term.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByIotaNatElimSucc
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByIotaNatRecSucc
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByIotaListElimCons
 
 -- ─── V2-fix-4: restricted-profile admission predicate ──────────────
 -- Discharges Agent 3 H3.2 (admission machinery decoration).  Before
