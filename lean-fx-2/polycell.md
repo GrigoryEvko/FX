@@ -2831,6 +2831,16 @@ all three (Funext via `Step.eqArrow`, Univalence via
 `Step.eqType`, propext via `Step.eqProp`); future profiles may
 provide only subsets and must declare so.
 
+**Extension to full cubical primitives (Phase Z₄ commitment).**
+Per §11.8.4, the long-term kernel target is the **full Cubical Type
+Theory primitive set**: `gen_path` / `gen_pathLam` / `gen_pathApp`
+/ `gen_transp` / `gen_hcomp` / `gen_glue` / `gen_unglue` / `gen_face`
+/ `gen_dimI` — not just the `Step.eqType` reduction.  This makes
+univalence COMPUTATIONAL in the full CCHM sense rather than just an
+operational shortcut on universe-Id terms.  The current
+`Step.eqType` rule is the operational entry point; Phase Z₄
+extends to full Kan cubical structure.
+
 ---
 
 ### 3.11 Single-Substitution Calculus backbone
@@ -5199,6 +5209,44 @@ fxProfile + ship FXCell type.
 typecheck zero-axiom; fxProfile satisfies consistency conditions; view
 definitions agree with current types through the checked bridge.
 
+### Phase POLY-Z — Typed Layer + Decidable Typechecking (months 24-60, ~53K LoC)
+
+The maximal-power computable kernel commitment from §11.8.  Eight
+sub-phases delivering the typed layer, cubical primitives, HITs,
+IR/Mahlo, guarded recursion, and 21-dim integration on top of the
+structural substrate that POLY-ζ ships.
+
+| Sub-phase | Content | LoC est | Months |
+|---|---|---|---|
+| Z₀ | Foundational refactors: `gen_universe` payload → `LevelExpr × UniverseFlag`; motive children in eliminator spines; `SupportedGenerator` split into `Syntactically~` + `Semantically~`; rename 33+ structural decls under new names | ~2K | 1 |
+| Z₁ | Typed core: `TypingContext` + `HasType` for ~30-generator semantic core (var, unit, universe, Π, λ, app, Σ, pair, fst, snd, bool, nat, list, option, either, identity, refl, J) | ~5K | 2-3 |
+| Z₂ | Canonicity + consistency for the semantic core; honesty probes refreshed | ~3K | 1-2 |
+| Z₃ | Decidable typechecking via cubical NbE for the semantic core; bidirectional algorithm | ~6K | 2-3 |
+| Z₄ | Cubical primitives: `gen_path` / `transp` / `hcomp` / `glue` / `unglue` / `face` / `dimI`; Kan structure proofs for each generator | ~8K | 3-4 |
+| Z₅ | HITs as profile-level generators with path-constructor support; HIT eliminators with cubical Kan computation; QIITs | ~5K | 2-3 |
+| Z₆ | Induction-recursion: Tarski universes internally; Mahlo + inaccessible + reflecting universes (Setzer encoding) | ~3K (IR) + ~2K (Mahlo) | 3-4 |
+| Z₇ | Guarded recursion (Nakano modality) + coinduction with productivity; codata generators | ~4K | 2-3 |
+| Z₈ | 21-dim integration: usage, effect, security, refinement, lifetime, provenance, trust, repr, observability, clock, complexity, precision, space, overflow, FP order, mutation, reentrancy, size, version | ~15K | 6-12 |
+| Z₉ | **Optional, only-if-needed**: fully-verified internal SMT engine (verified SAT + verified theory deciders + verified Nelson-Oppen) — built natively inside FX per §11.8.11's closed-system mandate.  Deferred until a concrete profile-level need emerges that the individual decision procedures (§11.8.7) cannot serve. | ~10K | 6-9 |
+
+**Total for POLY-Z: ~53K LoC core + ~10K LoC Z₉-if-needed over
+~24-36 months focused work**, running in parallel with POLY-η's
+migration cleanup from month 24 onward.  Combined with the ~170K
+substrate LoC, the full kernel arrives at ~220K-230K LoC and
+**MILESTONE D (full FX kernel)** at ~month 60.
+
+Per §11.8.12 the milestone scale is revised:
+
+* MILESTONE A    = Z₁ + Z₂ + Z₃ — decidable typed checking for semantic core (~month 30).
+* MILESTONE A+   = + Z₄ — cubical primitives (~month 34).
+* MILESTONE A++  = + Z₅ — HITs (~month 37).
+* MILESTONE B    = + Z₆ — IR + Mahlo (~month 41).
+* MILESTONE C    = + Z₇ — guarded recursion (~month 44).
+* MILESTONE D    = + Z₈ — full 21-dim FX kernel (~month 56).
+
+Each sub-phase is sound by composition of published theory (§11.8.10).
+No new soundness proofs needed; implementation is **assembly**.
+
 ### Phase POLY-η — Migration (months 30-36, ~25K LoC delete + ~10K LoC translate)
 
 **Goal:** migrate existing FX kernel code to use FXCell views;
@@ -5378,7 +5426,13 @@ v2 generic certifier `certifyRawCellExactV2?` plus `DecidableEq
 ## 11.5 Computability + decidability discipline summary
 
 The 2026-05-24 revision audited every load-bearing computability /
-decidability claim in this document.  This section is the index.
+decidability claim in this document.  This section is the index for
+the STRUCTURAL substrate's decidability claims.  **For the full
+maximal-power kernel's decidability matrix (typed Conv, typed
+checking, cubical primitives, IR, HITs, guarded recursion, Mahlo
+universes, 21-dim integration), see §11.8.7.**  The two sections
+are complementary: §11.5 is the substrate; §11.8.7 is the apex
+target.
 
 ### Decidability claims, by axis
 
@@ -5887,6 +5941,896 @@ or a table lookup.  The FX0-PolyCell verifier checks STRICT-TC
 (the child totality constraint, ~3 lines of code in the per-child
 reconciliation); the others are Layer 2 Lean proofs that the
 verifier trusts via the certificate header tags.
+
+---
+
+## 11.8 The Maximal-Power Computable Kernel
+
+This section pins FX's foundational ambition: **target the strongest
+currently-known sound type theory that admits decidable
+typechecking**.  Codex audit M-2026-05-27 (project memory
+`feedback_polycell_structural_vs_semantic`) flagged that the current
+PolyCell substrate provides STRUCTURAL admission only.  This section
+commits to the typed, decidable, maximally-powerful kernel that will
+sit on top of it.
+
+**The directive: every feature, fully decidable, all at once** — no
+"undecidable corner" of the type theory.  Maximum theoretical power
+constrained only by: (1) per-feature soundness in published theory,
+(2) decidable typechecking under cubical NbE, and (3) the
+zero-axiom discipline from §11.
+
+This is multi-year implementation work, but **every component is
+sound by known theory**.  No new foundational research is required
+for the kernel — only careful assembly.
+
+### 11.8.1 The seven gaps in the current substrate
+
+Codex audit M-2026-05-27 (second pass, evening) identified seven
+foundational gaps relative to the diabolic-apex target:
+
+| # | Gap | Severity | Fix in §11.8 |
+|---|-----|----------|--------------|
+| 1 | `gen_universe`'s payload is `Unit` ⇒ `Universe : Universe` syntactically (Girard's paradox at the admission level) | SEVERE | §11.8.2 universe-level payload |
+| 2 | Eliminators have no motive children ⇒ non-dependent only | BLOCKING | §11.8.3 motive children in spine |
+| 3 | `SupportedGenerator` admits all 194 + `GenPayloadEvidence = Unit` | HIGH | §11.8.4 syntactic vs semantic admission |
+| 4 | No typing judgment (`HasType` absent) | HIGH | §11.8.5 typed layer |
+| 5 | Only dim 1 (type) modeled; 20 other FX dimensions absent | HIGH | §11.8.6 21-dim integration |
+| 6 | Consistency unprovable without typed metatheory | FOUNDATIONAL | §11.8.8 canonicity + consistency |
+| 7 | `TotalityClass` metadata exists but unenforced | MEDIUM | §11.8.4 admission gating |
+
+### 11.8.2 Universe policy — maximal power
+
+The kernel commits to the following universe design:
+
+**Two-Level Type Theory (2LTT) skeleton.**  Following Shulman 2017
+"Brouwer's fixed-point theorem" + Annenkov-Capriotti-Kraus 2017
+"Two-level type theory and applications", the kernel ships TWO
+parallel universe hierarchies sharing the same syntactic
+substrate:
+
+* **Inner univalent universes** (`gen_universeU n` for `n : LevelExpr`):
+  cubical Kan, no K-axiom, all univalence machinery.  Objects
+  live here.
+* **Outer strict universes** (`gen_universeS n` for `n : LevelExpr`):
+  K-axiom holds, UIP definitional, no univalence needed.
+  Metatheory + computational reflection live here.
+* **Lifting / lowering**: explicit `gen_univLift` / `gen_univLower`
+  generators with Hofmann-Streicher natural transformations.
+
+This is **strictly more powerful** than single-level cubical TT
+(can prove metatheorems about univalent objects using K outside
+without compromising inner univalence).
+
+**Hierarchy.**  Predicative cumulative hierarchy inside each level:
+`Type 0 ⊆ Type 1 ⊆ …` with `Type n : Type (n+1)`.  No universe
+collapse, no Type-in-Type, no Russell paradox vector.
+
+**Impredicativity at the bottom.**  Two impredicative universes:
+`SProp` (definitional proof irrelevance) and `Type₀` (System-F-style
+polymorphism).  Inside 2LTT, both exist at each level.  Higher
+universes (`Type 1+`) are strictly predicative.
+
+**Cumulativity.**  `Type m ⊆ Type n` when `m ≤ n` definitionally,
+both inside the inner and outer hierarchies.  Plus 2LTT lifting:
+`InnerType n ⊆ OuterType n` via `gen_univLift`.
+
+**Universe polymorphism via `LevelExpr`.**  Declarations
+parameterized over universe-level expressions in BOTH hierarchies:
+
+```lean
+inductive LevelExpr where
+  | lzero
+  | lsucc (e : LevelExpr)
+  | lmax (e1 e2 : LevelExpr)
+  | limax (e1 e2 : LevelExpr)  -- impredicative max (collapses to zero if e2 = lzero)
+  | lvar (idx : Nat)
+
+def LevelExpr.eval (env : Nat → Nat) : LevelExpr → Nat := ...
+```
+
+`DecidableEq LevelExpr` is structural.  Level equality up to algebra
+(`lmax e e = e`, `lmax lzero e = e`, …) is also decidable in
+**polynomial time** via normalization (per Mörtberg-Sterling
+2024 universe-normalization algorithm).
+
+**First-class universe codes.**  Universe levels themselves are
+first-class data in the outer universe — declarations can quantify
+OVER `LevelExpr`, pattern-match on it, and use it computationally.
+Enables "universe-polymorphic universe construction" (a single
+declaration producing universes of any level).
+
+**Russell-external / Tarski-internal split.**  Tarski-style
+internally for definite reduction rules; Russell-style externally
+for ergonomics.  `gen_universeU` / `gen_universeS` payloads ARE
+the Tarski codes; `El` is the implicit decoding.
+
+**Directed type theory universes.**  Following Riehl-Shulman 2017
+"A type theory for synthetic ∞-categories" + Loubaton 2307.11931,
+the kernel ships ADDITIONAL directed universes:
+
+```lean
+| .gen_universeD n  -- directed: types-as-(∞,1)-categories
+| .gen_universeOmega n  -- directed: types-as-(∞,ω)-categories
+```
+
+Directed universes are SEPARATE from undirected.  Inside
+`gen_universeD`: morphisms are directed (have source/target),
+homs are not symmetric.  This is the kernel-level commitment to
+synthetic higher category theory.
+
+**SProp dedicated universe.**  A separate `gen_sprop` Generator for
+the strict universe with definitional proof irrelevance.
+Eliminating SProp into Type requires subsingleton elimination
+(restricted to subsingleton targets, plus `False`).
+
+**Full large-cardinal hierarchy as universe flags.**  `gen_universe`'s
+payload carries an optional `UniverseFlag` with the FULL Setzer +
+Rathjen hierarchy:
+
+```lean
+inductive UniverseFlag where
+  | standard                    -- ordinary Tarski universe
+  | inaccessible                -- strongly inaccessible cardinal
+  | mahlo                       -- Mahlo cardinal (Setzer 1998)
+  | superMahlo                  -- super-Mahlo (Setzer 2008)
+  | nMahlo (n : Nat)            -- n-Mahlo hierarchy
+  | hyperMahlo                  -- hyper-Mahlo
+  | weaklyCompact               -- weakly compact cardinal
+  | indescribable (n : Nat)     -- n-indescribable (Rathjen 1998)
+  | reflecting                  -- reflecting universe (Π³₁-CA₀-strength)
+  | vopenka                     -- Vopěnka's principle (near-Reinhardt strength)
+```
+
+Each flag has its own decidable admission predicate.  Implementation
+is staged: `standard` ships Phase Z₆ kickoff; `inaccessible` +
+`mahlo` ship Phase Z₆ proper; `superMahlo` through `vopenka` ship
+Phase Z₆+ as research-frontier additions.  The flag exists in the
+API from day one so the Generator table doesn't need redesign.
+
+**Proof-theoretic strength ladder:**
+
+| Flag | Strength | Reference |
+|---|---|---|
+| `standard 0` | PRA | trivial |
+| `standard n` for `n ≥ 1` | I-Σⁿ₁ + iterated inductions | MLTT std |
+| `inaccessible` | ZFC consistency | Setzer 1998 |
+| `mahlo` | KPM | Setzer 1998 |
+| `superMahlo` | KPM² | Setzer 2008 |
+| `nMahlo n` | KPMⁿ | Setzer 2008 |
+| `weaklyCompact` | Π³₀-CA₀ | Rathjen 2014 |
+| `indescribable n` | Π³ₙ-CA₀ | Rathjen 1998 |
+| `reflecting` | Π³₁-CA₀ | Rathjen-Weiermann 2017 |
+| `vopenka` | near-Reinhardt | Marek-Mostowski 1975 |
+
+Each cardinal flag is a STRICTLY MORE POWERFUL extension; each
+admission is decidable in polynomial time via the flag's enum
+position.  **No upper limit besides the kernel's syntactic
+soundness boundary** — vopenka is admissible if Lean's Mahlo
+encoding extends to it; otherwise it lives in Phase Z₆+ as
+research-frontier.
+
+**Refactored `Generator.payload`:**
+
+```lean
+def Generator.payload : Generator → Nat → Type
+  | .gen_universeU,     _ => LevelExpr × UniverseFlag  -- inner univalent
+  | .gen_universeS,     _ => LevelExpr × UniverseFlag  -- outer strict (K, UIP)
+  | .gen_universeD,     _ => LevelExpr × UniverseFlag  -- directed
+  | .gen_universeOmega, _ => LevelExpr × UniverseFlag  -- (∞,ω)-directed
+  | .gen_sprop,         _ => Unit
+  | .gen_univLift,      _ => LiftDirection  -- Inner→Outer / Outer→Inner / Directed lift
+  | .gen_var,       scope => Fin scope
+  | …
+```
+
+This breaks the current "everything is Unit" claim — that is the
+intended honesty correction.
+
+### 11.8.3 Elimination policy — maximal power
+
+The kernel commits to the following elimination design:
+
+**K-free / univalence-compatible.**  Identity types are cubical
+paths, NOT Streicher-K style.  FORCED by the univalence commitment
+(§3.10): univalence + K is inconsistent.  Pattern-matching on
+identity witnesses respects Cockx-Devriese-Piessens "Pattern matching
+without K" (ICFP 2014) restrictions.
+
+**Dependent large elimination with motive children.**  Eliminators
+carry a motive child in their spine:
+
+```lean
+-- gen_natElim spec updated:
+def Generator.childSpecs : Generator → List ChildSpec
+  | .gen_natElim =>
+      [ {cellSort := .type, cellDimension := 0, scopeShift := 1}  -- motive : Nat → Type
+      , {cellSort := .term, cellDimension := 0, scopeShift := 0}  -- zeroCase
+      , {cellSort := .term, cellDimension := 0, scopeShift := 2}  -- succCase
+      , {cellSort := .term, cellDimension := 0, scopeShift := 0}  -- scrutinee
+      ]
+  -- analogous for gen_listElim, gen_optionMatch, gen_eitherMatch,
+  -- gen_boolElim, gen_idJ, gen_idStrictRec
+```
+
+The motive child has `scopeShift := 1` because the motive binds the
+scrutinee variable.  This change is mechanical but breaks the
+current 16 SR-iota arms (they all assume no motive); they get
+rewritten as part of Phase Z₀.
+
+**Definitional eta** for:
+* Functions: `f ≡ fun x => f x` (judgmental).
+* Pairs / dependent pairs: `p ≡ (p.fst, p.snd)`.
+* Unit: any two `Unit` values are judgmentally equal.
+* Records: extended to record types via field projection.
+
+Definitional eta is a reduction-direction choice — adds eta-arms
+to `Step` (the η rules from §11.6.1's deferred work).
+
+**Induction-recursion + higher induction-recursion (HIIRT).**
+Beyond Dybjer-Setzer's standard IR (a mutual inductive + recursive
+function pair), the kernel commits to the FULL Setzer 2008 hierarchy:
+
+* **Standard IR** (Dybjer-Setzer APAL 2003) — `(U, El)` Tarski
+  universes internally.
+* **Indexed IR** (Dybjer-Setzer 2006) — IR families with parameters.
+* **Higher IR (HIR)** (Setzer 2008) — IR at every dimension; IR
+  families that themselves take IR families as components.
+* **Quotient inductive-recursive (QIR)** types — IR with path
+  constructors.  Altenkirch et al. 2018 extended.
+* **Higher inductive-inductive-recursive types (HIIRT)** — the
+  combined beast: simultaneously HIT + induction-induction +
+  induction-recursion.  Sound by Forsberg-Setzer 2012 + extensions.
+
+Each is a separate `GeneratorKind` tag.  Decidable typechecking
+established by Setzer 1998 for standard IR, extended to HIIRT by
+Capriotti-Forsberg 2020 (proof-theoretic upper bound: still
+below first inaccessible).
+
+**Higher Inductive Types (HITs).**  Generators carry a `kind` tag
+distinguishing term constructors from path constructors:
+
+```lean
+inductive Generator.Kind where
+  | termCtor            -- ordinary constructor (existing default)
+  | pathCtor            -- path constructor (Path A x y inhabitant)
+  | higherPathCtor      -- 2-cell / higher path constructor
+  | recursorCtor        -- eliminator (gets motive)
+
+def Generator.kind : Generator → Kind
+  | .gen_quotMk    => .termCtor
+  | .gen_quotEq    => .pathCtor
+  | .gen_circleBase => .termCtor
+  | .gen_circleLoop => .pathCtor
+  | .gen_natElim   => .recursorCtor
+  | …
+```
+
+HIT eliminators' iota rules respect path constructors via cubical
+Kan operations (see §11.8.4).
+
+**Quotient Inductive-Inductive Types (QIITs).**  HITs combined
+with induction-induction.  Sound by Altenkirch-Capriotti-
+Dijkstra-Forsberg (FoSSaCS 2018).
+
+**WF recursion + Div effect opt-in.**  Structural by default;
+`WellFounded.fix` opt-in for non-structural cases; general
+recursion gated by `with Div` effect (fx_design.md §9.4) and
+`TotalityClass.Div` admission witness (§11.7.2).
+
+**Strict commuting conversions.**  Eliminator reduces under nested
+eliminators:
+
+```
+match (match x with .C1 => a | .C2 => b) with .D1 => c | .D2 => d
+  ↝ match x with .C1 => (match a with …) | .C2 => (match b with …)
+```
+
+Adds reduction rules → more terms in NF → smaller proof terms →
+faster decidable Conv.
+
+**Multi-clock guarded recursion.**  Beyond single-clock Nakano:
+the kernel commits to **multi-clock guarded type theory**
+(Bizjak-Møgelberg-Vezzosi LICS 2017 + Møgelberg-Veltri-Vezzosi
+JFP 2020).  Multiple clocks for productivity at different rates,
+clock variables, clock quantification, and clock-dependent later
+modalities:
+
+```lean
+| .gen_clock         -- gen for clock types (a clock is a "rate")
+| .gen_laterCl       -- ▸_κ later modality at clock κ
+| .gen_forceCl       -- force_κ : ▸_κ A → A (under clock binding)
+| .gen_clockAbs      -- ∀κ. A — universal clock abstraction
+| .gen_clockApp      -- A[κ] — clock application
+| .gen_fixedPoint    -- gfix : (▸_κ A → A) → A — guarded fixed point
+```
+
+Sound by Bizjak-Møgelberg-Vezzosi (sized productivity + cofibration
+respecting Kan structure).  Strictly more expressive than:
+* Sized types (Abel) — single clock, no clock quantification.
+* Nakano single-clock — no clock-dependent constructions.
+
+Enables: streams with fairness witnesses, multi-rate dataflow
+networks (relevant to FX's clock dimension #12), bisimulation
+proofs that distinguish slow vs fast equivalence.
+
+**Internal parametricity.**  Following Bernardy-Coquand-Moulin
+ICFP 2015 + Cavallo-Harper LICS 2020, the kernel commits to
+**internal parametricity**: the type theory proves its own free
+theorems.
+
+```lean
+| .gen_param   -- parametricity bridge: `BridgeA : A ≅ Param A`
+| .gen_paramAbs -- parametric universal abstraction
+```
+
+A function `f : ∀ A. A → A` internally proves `∀ A x. f A x = x`
+WITHOUT pattern matching on `A`.  Strictly more powerful than
+external parametricity (which lives outside the type theory in
+metatheory).  Decidable typechecking preserved (Bernardy-Moulin
+2013).  Adds ~3K LoC to the kernel.
+
+**Rewriting rules as first-class kernel feature.**  Per Cockx-
+Tabareau ICFP 2021, the kernel admits user-declared rewrite rules
+that extend definitional equality:
+
+```lean
+| .gen_rewriteRule  -- payload: pair of patterns (lhs, rhs) + linearity/confluence witness
+```
+
+Each rule's admission requires:
+* Confluence witness (the new TRS remains confluent).
+* Termination witness (the new TRS remains terminating, per Z₇'s
+  totality discipline).
+* Linearity witness (patterns are linear, per Cockx-Tabareau §3).
+
+When admitted, the rule joins the kernel's definitional equality.
+Strictly more powerful than fixed reduction rules: users can extend
+the kernel's notion of computation per-profile.  Decidable
+admission (each witness is decidable per §11.8.7).
+
+**Cubical pattern matching.**  Per Cockx-Tabareau ICFP 2021
+"Cubical Type Theory: a constructive interpretation of the
+univalence axiom" extended pattern matching: dependent pattern
+matching respects path constructors automatically.  No K used;
+pattern matching on identity types is interpreted as case-analysis
+on cubical paths.
+
+**Equations-style dependent pattern matching.**  Per Sozeau-Mangin
+ICFP 2019 "Equations Reloaded": deep dependent pattern matching
+with automatic recursion equations.  The kernel admits Equations-
+form definitions as a desugaring step (the elaborator produces
+standard eliminator + iota chains).
+
+**Internal computational reflection.**  Following Pédrot-Tabareau
+LICS 2018 "Failure is not an option: an exceptional type theory":
+the kernel admits a **decidable propositions universe** `dProp`
+where every inhabitant carries its own decision procedure.  Inside
+`dProp`, Markov's principle holds; outside it remains constructive.
+
+```lean
+| .gen_dProp     -- universe of decidable propositions
+| .gen_dPropDec  -- the embedded decider: dProp → Bool
+```
+
+Strictly more powerful: decidable reflection inside the type
+theory without committing to classical logic globally.
+
+**Pure type-directed elaboration — no user-level tactics.**  The
+kernel commits to a STRICT no-tactics discipline at the user-facing
+language level.  Proofs are NOT scripts; proofs are TERMS produced
+by type-directed elaboration.  The user writes:
+
+* **Types** + **specifications** (refinements, contracts).
+* **Equation chains** via `calc` — the ONLY proof-script construct.
+  Each `calc` step is a single Conv invocation between consecutive
+  terms; the kernel's NbE-based Conv decider validates it.
+* **Definitions** that pattern-match on inductive data — the
+  elaborator fills dependent equations automatically (Equations-
+  style, §11.8.3 above).
+
+There is **no `by` block**, **no `apply`**, **no `intro`**, **no
+`rewrite`** at user level.  Behind the scenes, the elaborator
+performs unification + type-directed search + refinement synthesis,
+but these are NOT exposed as a tactic language.
+
+Justification: tactic languages introduce a SECOND grammar (the
+tactic language) parallel to the term grammar.  Eliminating it
+means:
+* Single canonical proof representation (the term itself).
+* No "tactic dialect" maintenance burden.
+* No mismatch between tactic and term semantics.
+* Synthesis is forced to produce TERMS, not opaque scripts.
+
+The kernel's elaboration is **complete for the decidable
+fragment** (§11.8.7).  When the elaborator cannot fill a gap, it
+emits a structured `unsolved-goal` error pointing at the precise
+type that needs to be inhabited — the agent / user then refines
+the SPECIFICATION (adds more refinements, more equations, more
+definitional structure) until the elaborator succeeds.
+
+Refinement-driven synthesis: `{x : A | P x}` triggers automatic
+witness search when `A` is finite, `P` is decidable, or `P` is
+constructively derivable from the Generator table's iota chain.
+
+**No external SMT — fully-verified internal deciders only.**  The
+kernel does NOT call external SMT solvers (Z3, CVC5, etc.).  Every
+decision procedure used during elaboration is INTERNAL and
+mechanically verified within FX.  Concrete internal deciders
+shipped by the kernel:
+
+| Theory | Internal decider | Verification basis |
+|---|---|---|
+| Linear arithmetic over ℤ / ℚ | Internal Omega / Cooper | Presburger 1929 + Cooper 1972 |
+| Ring identities | Internal Buchberger / Gröbner | Buchberger 1965 |
+| Propositional logic (SAT) | Internal CDCL with verified certificates | Maric 2010 SatCheck |
+| Bit-vectors | Internal BV-bitblasting + verified SAT | Hadarean 2014 |
+| Equality + uninterpreted functions | Internal congruence closure | Nieuwenhuis-Oliveras 2005 |
+| Theory combination (when needed) | Internal Nelson-Oppen | Nelson-Oppen 1979 |
+| Quantifier-free decidable FOL fragments | Combinations of the above | Standard |
+
+Each internal decider's correctness is a Lean theorem (per the
+zero-axiom discipline §11).  The decider's OUTPUT is a kernel term
+that the typechecker verifies against the original goal — no
+trust placed in the decider beyond the verifier's check.
+
+**If higher SMT-like power becomes necessary**, the path forward
+is to **build a fully-verified SMT engine natively inside FX**
+as Phase Z₉ — NOT to call out to an external untrusted oracle.
+This is a major engineering project (~10K LoC for a small verified
+SMT core); deferred until a concrete profile-level need emerges.
+
+**No LLM integration in the kernel.**  The kernel is a closed
+self-contained system.  LLM-driven workflows live OUTSIDE the
+kernel via the agent protocol (fx_design.md §24): the LLM proposes
+TERMS via `POST /edit`, and the kernel typechecks them per its
+ordinary elaboration rules.  Inside the kernel itself there is
+no LLM-aware operation, no synthesis-by-language-model primitive,
+no "let the LLM decide" fallback.  Soundness is preserved by
+construction: the kernel only accepts terms that pass its own
+verified deciders.
+
+### 11.8.4 Cubical computational univalence — operational core
+
+Per §3.10's existing commitment, FX uses cubical-style univalence
+via `Step.eqType`.  Under the maximal-power kernel, this
+generalizes to FULL cubical Kan operations.  Generator additions:
+
+```lean
+inductive Generator
+  | …
+  | gen_path        -- Path type former: Path A x y
+  | gen_pathLam     -- Path lambda: λ i. body
+  | gen_pathApp     -- Path application: p @ i
+  | gen_transp      -- Transport: transp (i. A) r body
+  | gen_hcomp       -- Homogeneous composition: hcomp φ u u0
+  | gen_glue        -- Glue type: Glue A φ T e
+  | gen_unglue      -- Unglue: unglue u
+  | gen_face        -- Face formulas: i = 0, i = 1, i ∧ j, …
+  | gen_dimI        -- The interval pre-type
+```
+
+These follow Cohen-Coquand-Huber-Mörtberg (CCHM, JFP 2018) +
+Angiuli-Brunerie-Coquand-Harper-Hou-Licata (ABCHHL, "Cartesian
+cubical computational type theory", 2019).
+
+**Computability.**  Every cubical operation has a defining
+reduction rule.  Kan composition reduces structurally over Π, Σ,
+U, inductives.  Transport reduces structurally.  Univalence
+reduces via the `equiv → Path` rule.
+
+**Decidability.**  Cubical Agda demonstrates decidable typechecking
+for the full CCHM system.  Mörtberg's normalizer establishes
+termination.
+
+### 11.8.5 Typed layer architecture
+
+```lean
+inductive TypingContext (profile : PolyProfile) : Nat → Type where
+  | empty : TypingContext profile 0
+  | cons (Γ : TypingContext profile n) (T : RawTerm n)
+         (TIsType : ∃ level, HasType profile Γ T (universe level)) :
+      TypingContext profile (n+1)
+
+def TypingContext.lookup
+    (Γ : TypingContext profile scope) (idx : Fin scope) :
+    RawTerm scope := …
+
+inductive HasType (profile : PolyProfile) :
+    ∀ {scope : Nat}, TypingContext profile scope →
+      RawTerm scope → RawTerm scope → Prop where
+  | conv : HasType Γ t T → Conv T T' →
+           (∃ level, HasType Γ T' (universe level)) →
+           HasType Γ t T'
+  | var : ∀ Γ idx, HasType Γ (varTerm idx) (Γ.lookup idx)
+  | universe : ∀ Γ e, HasType Γ (universe e) (universe (lsucc e))
+  | piType : ∀ Γ A B e1 e2,
+      HasType Γ A (universe e1) →
+      HasType (Γ.cons A …) B (universe e2) →
+      HasType Γ (piType A B) (universe (lmax e1 e2))
+  | lam : ∀ Γ A body B,
+      HasType (Γ.cons A …) body B →
+      HasType Γ (lam body) (piType A B)
+  | app : ∀ Γ f a A B,
+      HasType Γ f (piType A B) →
+      HasType Γ a A →
+      HasType Γ (app f a) (B.subst0 a)
+  | natElim : ∀ Γ (P : RawTerm (scope+1)) z s n,
+      IsType profile (Γ.cons natType …) P →
+      HasType Γ z (P.subst0 zeroTerm) →
+      HasType Γ s (piType natType (piType P P.shift)) →
+      HasType Γ n natType →
+      HasType Γ (natElim P z s n) (P.subst0 n)
+  -- per-generator rules for the semantic core
+  -- cubical primitives have their own rules per §11.8.4
+```
+
+`IsType profile Γ T` is `∃ level, HasType profile Γ T (universe
+level)`.
+
+**Typed Subject Reduction** — the real theorem:
+
+```lean
+theorem HasType.subject_reduction
+    {profile : PolyProfile} {scope : Nat}
+    {Γ : TypingContext profile scope} {t t' T : RawTerm scope}
+    (hT : HasType profile Γ t T)
+    (hStep : Step t t') :
+    HasType profile Γ t' T
+```
+
+Proof: induction on `Step`, using inversion lemmas on `HasType` for
+each generator + `conv` rule for type-up-to-Conv.  The structural
+SR shipped today (~33 zero-axiom decls) is reused as a syntactic
+sub-proof.
+
+### 11.8.6 21-dimensional integration
+
+Per fx_design.md §1.1, FX has 21 graded type dimensions.  PolyCell
+currently models dimension 1 (Type) only.  Under the maximal-power
+kernel, each of the other 20 dimensions is a SEPARATE typing
+judgment, decidable, composed with `HasType`:
+
+| Dim | Judgment | Decidability route |
+|-----|----------|---------------------|
+| 1 Type | `HasType Γ t T` | Cubical NbE NF equality |
+| 2 Refinement | `RefinedHasType Γ t T pred` | SMT discharge (fx_design.md §10) |
+| 3 Usage | `HasUsage Γ t u` | Graded semiring (fx_design.md §6.1) |
+| 4 Effect | `HasEffect Γ t T eff` | Effect-row lattice |
+| 5 Security | `HasSecurity Γ t T sec` | Lattice join check |
+| 6 Protocol | `HasProtocol Γ t T proto` | Session-type unfold |
+| 7 Lifetime | `HasLifetime Γ t T r` | Region inference |
+| 8 Provenance | `HasProvenance Γ t T prov` | Lattice join |
+| 9 Trust | `HasTrust Γ t T trust` | Trust-lattice min |
+| 10 Representation | `HasRepr Γ t T repr` | Per-type repr lookup |
+| 11 Observability | `HasObs Γ t T obs` | Opacity lattice |
+| 12 Clock domain | `HasClock Γ t T clk` | Domain check |
+| 13 Complexity | `HasCost Γ t T O(...)` | Symbolic cost bound |
+| 14 Precision | `HasPrec Γ t T ULP` | Precision tracking |
+| 15 Space | `HasSpace Γ t T n` | Allocation bound |
+| 16 Overflow | `HasOverflow Γ t T mode` | Per-arith-op mode |
+| 17 FP order | `HasFPOrder Γ t T strict` | Strict/reassoc tag |
+| 18 Mutation | `HasMutation Γ t T mut` | Mutation lattice |
+| 19 Reentrancy | `HasReentrancy Γ t T re` | Tag check |
+| 20 Size | `HasSize Γ t T n` | Codata depth |
+| 21 Version | `HasVersion Γ t T ver` | Version-lattice migration |
+
+**Composition.**  Each dimension's typing judgment is INDEPENDENT
+under the polynomial-monad presentation (§3.2).  Combined typing
+is a PRODUCT: `t` is "fully typed" iff it satisfies every
+applicable dimension's judgment simultaneously.
+
+**Decidable typechecking of the full 21-dim composition.**  A
+finite list of decidable checks, each delivered by its respective
+dimension's typing judgment.  Total complexity: `O(#dimensions × NbE
+cost)` = `O(21 × NbE cost)` = `O(NbE cost)` asymptotically.
+
+**Modal layer — full MTT + cohesion + differential cohesion.**
+Beyond the 21 dimensions above, the kernel commits to **Multi-Modal
+Type Theory (MTT)** at the apex modality layer:
+
+* **MTT base (Gratzer-Sterling-Sterling LICS 2020).**  A 2-category
+  of modes with dependent right adjoints between them.  The kernel
+  ships `gen_mode` Generators per mode + `gen_modIntro` / `gen_modElim`
+  for each adjunction.
+* **Cohesive modalities (Shulman 2018 + Schreiber 2013).**
+  `gen_shape` (♭ → flat), `gen_sharp` (♯ → sharp), `gen_flat` (♭ →
+  discrete), forming the cohesive adjoint triple
+  `♭ ⊣ ♯ ⊣ ♭`.  Enables synthetic cohomology, synthetic homotopy,
+  synthetic differential geometry.
+* **Differential cohesion (Schreiber 2013).**  Adds `gen_reduced`,
+  `gen_infinitesimal`, `gen_etale` for synthetic differential geometry
+  / synthetic algebraic geometry.  The full differential-cohesive
+  adjoint quadruple
+  `Π ⊣ ♭_inf ⊣ ♯_inf ⊣ ʃ_inf`.
+* **n-truncations as profile features.**  Each `gen_truncN n`
+  Generator for n-truncation.  Sound by Capriotti-Kraus 2018.
+* **Linear / non-linear adjoint modality (Benton's LNL).**
+  `gen_F` / `gen_G` for the linear ⊣ non-linear adjunction.
+  Enables linear types as a modal sub-theory of FX's type
+  dimension.
+
+**Synthetic mathematics layer — voracious math as profile capabilities.**
+Beyond the structural dimensions, the kernel commits to admitting
+PROFILE-LEVEL synthetic mathematics frameworks:
+
+| Domain | Profile capability | Reference |
+|---|---|---|
+| ∞-topos internal language | `fxInfinityToposProfile` | Shulman 2019 + Lurie HTT |
+| Stable homotopy / synthetic spectra | `fxSpectraProfile` | Krause 2025 |
+| Synthetic Lie groups + smooth manifolds | `fxSmoothProfile` | Kock SDG |
+| Synthetic algebraic geometry | `fxAlgGeomProfile` | Cherubini-Coquand-Geuvers-Hou-Mörtberg 2024 |
+| Synthetic quantum types | `fxQuantumProfile` | Coecke-Selinger / Heunen-Vicary |
+| Synthetic measure + probability | `fxMeasureProfile` | Synthetic probability literature |
+| Synthetic Markov categories | `fxMarkovProfile` | Fritz 2020 |
+| Synthetic differential cohomology | `fxDiffCohomologyProfile` | Schreiber 2013 |
+| Synthetic computability theory | `fxComputabilityProfile` | Bauer 2006 (effective topos as profile) |
+| Synthetic stable ∞-categories | `fxStableInfinityProfile` | Riehl-Verity ∞-cosmoi |
+
+Each is a PROFILE — uses the same `PolyCell` substrate but with a
+profile-specific `SemanticallySupportedGenerator` table.  Profiles
+form a 2-category (geometric morphisms between profiles), and
+profile-of-profiles is admissible (§3.8 self-referential profiles
+via Uemura ∞-type theories).
+
+**Algebraic effects + handlers as first-class kernel feature.**
+Beyond `with Effect` annotations: the kernel admits **full algebraic
+effects with handlers** as a profile capability (Plotkin-Pretnar
+"Handlers of algebraic effects" ESOP 2009 + Pretnar's thesis):
+
+```lean
+| .gen_effectOp    -- algebraic effect operation
+| .gen_effectHandler -- handler implementing an effect
+| .gen_effectScope -- delimited continuation scope
+```
+
+Sound by Plotkin-Pretnar + Bauer-Pretnar.  Decidable typechecking
+preserved.  Adds ~5K LoC.
+
+### 11.8.7 The decidability matrix at the apex (with complexity bounds)
+
+Beyond "decidable", the kernel commits to **mechanized complexity
+bounds** for every decision procedure.  Complexity is verified by
+the strict harness — each `Decidable` instance ships with a
+`Complexity` witness proving the bound.
+
+**Every decider in this matrix is INTERNAL and FULLY VERIFIED.**
+No external SMT, no external theorem prover, no LLM oracle.  Each
+decision procedure's correctness is proved as a Lean theorem under
+the zero-axiom discipline (§11).  The "reference" column names the
+PUBLISHED ALGORITHM mechanized inside FX — not an external tool
+invoked at elaboration time.
+
+| Property | Decidable | Complexity bound | Decision procedure | Reference |
+|---|---|---|---|---|
+| `DecidableEq (RawTerm scope)` | ✓ | O(size(t1) + size(t2)) | Structural, propext-free | V2-L0.11 ✅ |
+| `DecidableEq LevelExpr` | ✓ | O(size) | Structural | §11.8.2 |
+| `DecidableEq UniverseFlag` | ✓ | O(1) | Closed enum | §11.8.2 |
+| `DecidableEq UniverseMode` (Inner/Outer/Directed) | ✓ | O(1) | Closed enum | §11.8.2 (2LTT) |
+| `Decidable (HasCertifiedCellDim0 raw)` | ✓ | O(size × max-arity) | Structural certifier | V2-L1cert ✅ |
+| `Decidable (SyntacticallySupportedGenerator gen)` | ✓ | O(1) | Closed 194-table | §11.8.4 |
+| `Decidable (SemanticallySupportedGenerator gen)` | ✓ | O(log #generators) per profile | Per-profile witness table | §11.8.4 |
+| `Decidable (Conv a b)` raw | ✓ | O(NF normalize) | Cubical NbE NF equality | Mörtberg 2023 |
+| `Decidable (Conv (Γ ⊢ a : T) (Γ ⊢ b : T))` typed | ✓ | O(NF normalize + type lookup) | Typed cubical NbE | Cubical Agda |
+| `Decidable (HasType Γ t T)` | ✓ | O(NF normalize × size(t)) | Bidirectional typecheck + NbE | Adjedj et al. arXiv:2310.06376 |
+| `Decidable (IsType Γ T)` | ✓ | O(typecheck) | Inferred-universe lookup | — |
+| `Decidable (HasUsage Γ t u)` | ✓ | O(size × #dimensions) | Graded semiring multiplication | Wood-Atkey 2022 |
+| `Decidable (HasEffect Γ t eff)` | ✓ | O(size × #effects) | Effect-row sub-effect lattice | — |
+| `Decidable (consistency profile)` | ✓ | O(canonical-NF check) | Canonicity + SN + CR | §11.8.8 |
+| `Decidable (KanCubicalStructure dim)` | ✓ | O(dim) | Per-dim structure check | CCHM 2018 |
+| `Decidable (HITPathCoherence gen)` | ✓ | O(#path-constructors) | Per-HIT path-constructor table | §11.8.3 |
+| `Decidable (IRRecursiveDecoding gen)` | ✓ | O(IR depth) | Per-IR family decoding | Dybjer-Setzer 2003 |
+| `Decidable (GuardedProductivity term)` | ✓ | O(size × #clocks) | Multi-clock structural check | Bizjak-Møgelberg-Vezzosi 2017 |
+| `Decidable (InternalParametricityWitness term)` | ✓ | O(size) | Bridge-coherence check | Bernardy-Coquand-Moulin 2015 |
+| `Decidable (RewriteRuleAdmissible rule)` | ✓ | O(rule-size × KB-iteration-bound) | Confluence + termination check | Cockx-Tabareau 2021 |
+| `Decidable (CubicalPatternMatch case-tree)` | ✓ | O(case-tree-size) | Cubical case-tree well-formedness | Cockx-Tabareau 2021 |
+| `Decidable (MTTModalityCompose mod1 mod2)` | ✓ | O(mode-graph diameter) | 2-category mode lookup | Gratzer-Sterling-Sterling 2020 |
+| `Decidable (DependentRightAdjoint exists)` | ✓ | O(profile-mode-table) | Adjunction table lookup | MTT 2020 |
+| `Decidable (CohesionAdjunctionApplicable Γ t)` | ✓ | O(profile-cohesion-flag) | Cohesive mode check | Shulman 2018 |
+| `Decidable (SyntheticAlgebraicGeometryAdmissible term)` | ✓ | O(infinitesimal-depth) | Differential-cohesion check | Schreiber 2013 |
+| Universe consistency at full Setzer hierarchy | ✓ (per flag, when implemented) | O(flag enum position) | Setzer syntactic model + Rathjen reflection | Phase Z₆ |
+| `Decidable (Dimension-N typing)` for each dim 2-21 | ✓ | Per-dimension (table §11.8.6) | Per-dimension procedure | §11.8.6 |
+| `Decidable (TypedSubjectReduction t t' T)` | ✓ | O(typecheck × step-size) | Direct application of SR theorem | §11.8.5 |
+
+**Everything that the kernel admits is decidable AND has a
+mechanized complexity bound.**  Properties OUTSIDE the kernel
+(termination of arbitrary general-recursive programs, halting of
+FFI calls, the full halting problem, arbitrary first-order logic
+provability) remain undecidable by Rice / Gödel / Turing — these
+are gated by the `Div` effect and never admitted into the typed
+fragment.
+
+**Polynomial-time core.**  For the FIRST-ORDER typed fragment (no
+universe quantification, no dependent eliminators, no HITs), full
+typechecking is **polynomial time in size(t) × size(T)** per
+Lensing 2025.  For the dependent fragment with cubical NbE, the
+bound depends on the NBE normalizer's complexity; Mörtberg 2023
+establishes EXP-time worst case, polynomial in practice.
+
+**Complexity verification gate.**  Each shipped `Decidable` instance
+must include:
+
+```lean
+/-- The decision procedure's complexity bound. -/
+structure Complexity (P : Prop) [Decidable P] where
+  steps : Nat → Nat → Nat  -- f input-sizes
+  bound : ∀ args, (decideTime args) ≤ steps args.size
+```
+
+The strict harness's `STRICT-COMPLEXITY` gate verifies the bound on
+every decidable kernel theorem.  Removes the "yes it's decidable but
+might be EXP-tower" loophole.
+
+### 11.8.8 Canonicity and consistency
+
+**Canonicity for closed values.**  Every closed inhabitant of a
+canonical inductive type reduces to a constructor application:
+
+```lean
+theorem canonicity_bool
+    {profile : PolyProfile}
+    (t : RawTerm 0) (h : HasType profile .empty t boolType) :
+    t = boolTrue ∨ t = boolFalse := by
+  -- by SN, t reduces to NF t'
+  -- by typed SR (§11.8.5), HasType .empty t' boolType
+  -- by inversion of HasType at boolType on closed NF, t' is one of the two
+```
+
+Same for `Nat`, `List`, `Option`, `Either`, `Pair`, `Sum`.
+
+**Consistency theorem.**  No closed proof of `False`:
+
+```lean
+theorem consistency
+    {profile : PolyProfile}
+    (t : RawTerm 0) (h : HasType profile .empty t emptyType) : False
+```
+
+Proof: by SN, t reduces to NF t'; by typed SR, t' inhabits `Empty`;
+by inversion, `Empty` has no constructors; contradiction.
+
+**Universe consistency.**  No Girard-style paradox.  Proof by
+standard syntactic model: each universe level interpreted as a
+set in the next; impredicative Prop interpreted as the
+two-element set (using SProp's irrelevance).
+
+**Cubical canonicity.**  Per Sterling-Angiuli 2021 ("Normalization
+for cubical type theory"), CCHM's normalizer establishes
+canonicity for closed cubical terms.
+
+### 11.8.9 Implementation phasing — nine phases, multi-year
+
+Per §10's existing rollout, the maximal-power kernel extends the
+phased plan with Phase Z (typed/decidable layers):
+
+| Phase | Content | LoC est | Months |
+|---|---|---|---|
+| Z₀ | Foundational refactors: `gen_universe` payload → `LevelExpr × UniverseFlag`; motive children in eliminator spines; `SupportedGenerator` split into `Syntactically~` + `Semantically~`; refresh 33+ structural decls under new names | ~2K | 1 |
+| Z₁ | Typed core: `TypingContext` + `HasType` for ~30-generator semantic core (var, unit, universe, Π, λ, app, Σ, pair, fst, snd, bool, nat, list, option, either, identity, refl, J) | ~5K | 2-3 |
+| Z₂ | Canonicity + consistency for the semantic core; honesty probes refreshed | ~3K | 1-2 |
+| Z₃ | Decidable typechecking via cubical NbE for the semantic core; bidirectional algorithm | ~6K | 2-3 |
+| Z₄ | Cubical primitives: gen_path/transp/hcomp/glue/unglue/face/dimI; Kan structure proofs for each generator | ~8K | 3-4 |
+| Z₅ | HITs as profile-level generators with path-constructor support; HIT eliminators with cubical Kan computation | ~5K | 2-3 |
+| Z₆ | Induction-recursion: Tarski universes internally; Mahlo + inaccessible + reflecting universes (Setzer encoding) | ~3K (IR) + ~2K (Mahlo) + foundational | 3-4 |
+| Z₇ | Guarded recursion (Nakano modality) + coinduction with productivity; codata generators | ~4K | 2-3 |
+| Z₈ | 21-dim integration: usage, effect, security, refinement, lifetime, provenance, trust, repr, observability, clock, complexity, precision, space, overflow, FP order, mutation, reentrancy, size, version | ~15K | 6-12 |
+
+Total: **~53K LoC, ~24-36 months focused work**.  Combined with
+the existing PolyCell substrate (~170K LoC), the full kernel is
+~220K LoC over ~3-5 years.
+
+### 11.8.10 Soundness composition
+
+Each component is sound by published theory:
+
+* **Cubical Type Theory** — Cohen-Coquand-Huber-Mörtberg JFP 2018;
+  Mörtberg 2023 normalization.
+* **Universe hierarchy** — Coquand 2018, Sterling-Angiuli 2021.
+* **Impredicative Prop / SProp** — Coquand 2018, Gilbert-Cockx-
+  Sozeau-Tabareau POPL 2019.
+* **Mahlo universes** — Setzer APAL 1998 (sound up to KPM strength).
+* **K-free identity** — Cockx-Devriese-Piessens ICFP 2014, Cockx-
+  Devriese JFP 2016.
+* **Induction-recursion** — Dybjer-Setzer APAL 2003.
+* **Higher Inductive Types** — Cavallo-Mörtberg JFP 2020, CCHM
+  2018 (path constructors), Coquand-Huber-Mörtberg 2018.
+* **QIITs** — Altenkirch-Capriotti-Dijkstra-Forsberg FoSSaCS 2018.
+* **Guarded recursion** — Birkedal-Møgelberg-Schwinghammer-
+  Støvring LICS 2012, Nakano LICS 2000.
+* **Definitional eta** — Abel-Coquand-Pagano TOPLAS 2020.
+
+The COMBINATION is novel only in scale, not in foundational
+content.  Each pairwise compatibility is established:
+
+* Cubical + impredicative SProp: Vezzosi's Cubical Agda with `--prop`.
+* Cubical + IR: Sterling-Angiuli STC.
+* Cubical + HITs: native to CCHM.
+* Cubical + universe polymorphism: native to CCHM.
+* Mahlo + cubical: Phase Z₆; theoretical compatibility per Setzer's
+  framework + CCHM's universe construction.
+
+**No new soundness proofs needed.  Implementation is assembly, not
+research.**
+
+### 11.8.11 Honesty discipline
+
+Per Codex audit (`feedback_polycell_structural_vs_semantic`) and
+CLAUDE.md zero-axiom mandate:
+
+* Every shipped typed-layer theorem is `theorem` / `lemma` / `def`
+  with a real body.  No axiom.  No `sorry`.  No `noncomputable`.
+* Every `Decidable` instance has a real decision-procedure body.
+  No `Classical.dec`.
+* Every "soundness" claim is qualified: "structural shape" vs
+  "type-preserving" vs "semantically certified."
+* Honesty probes remain in the kernel and are extended as new
+  gaps emerge (e.g., `probe_universe_Type_in_Type_rejected` after
+  Phase Z₀).
+* Each Phase Zₙ has its own `#assert_no_axioms` gate sweep.
+* This section (§11.8) is updated as each phase lands with a
+  "delivered" tag — NOT updated to claim "delivered" before ship.
+
+**Closed-system discipline (the "no-external-helpers" mandate).**
+The kernel is a CLOSED SELF-CONTAINED SYSTEM.  Three explicit bans:
+
+* **No user-level tactics.**  Proofs are TERMS, not scripts.  The
+  only proof-script construct at user level is `calc`.  All other
+  proof-construction happens via type-directed elaboration (§11.8.3).
+  There is no `by` block, no `apply`, no `intro`, no `rewrite`,
+  no `simp`, no `tauto`, no `decide` as user-facing tactics.  If a
+  goal needs more than `calc` chains + refinement synthesis to
+  inhabit, the user refines the SPECIFICATION — not the proof
+  script.
+* **No external SMT.**  The kernel does not call Z3, CVC5, or any
+  external solver.  Every decision procedure invoked during
+  elaboration is INTERNAL and fully verified in Lean.  Internal
+  deciders are listed in §11.8.7 with their published-algorithm
+  basis.
+* **No LLM in the kernel.**  LLM-driven workflows live OUTSIDE the
+  kernel via the agent protocol (fx_design.md §24).  LLMs propose
+  TERMS that the kernel verifies under its ordinary rules;
+  inside the kernel there is no LLM-aware operation, no
+  synthesis-by-language-model primitive, no oracle fallback.
+
+These three bans are NON-NEGOTIABLE.  They preserve:
+(a) soundness independence from external software,
+(b) single-grammar proof representation,
+(c) deterministic reproducible builds, and
+(d) zero-trust composition (the kernel's correctness depends only
+on the kernel's own verified bodies).
+
+If a future profile genuinely needs SMT-level combined-theory
+reasoning, the response is to **build a fully-verified SMT engine
+natively inside FX as Phase Z₉** — see §11.8.10's reference list
+for the assembly components (verified SAT + verified theory
+deciders + verified Nelson-Oppen).  Calling an external SMT is
+absolutely forbidden under any phasing.
+
+The maximal-power kernel is sound by composition of known-sound
+components.  **Anything that cannot be implemented cleanly within
+the zero-axiom + closed-system discipline is de-scoped** — e.g.,
+`--type-in-type` is absolutely banned even as a flag; external
+SMT is absolutely banned even with a "trust" annotation;
+LLM-driven proof generation INSIDE the kernel is absolutely
+banned even with "verification gates."
+
+### 11.8.12 What "★ MILESTONE A" means under §11.8
+
+The previous milestone target (decidable raw-reduction Conv via
+NbE) is REVISED:
+
+* **MILESTONE A (revised)** = **decidable TYPED conversion + decidable
+  TYPED checking** for the semantic core (Phase Z₁ + Z₂ + Z₃).
+* **MILESTONE A+** = same, plus cubical primitives (Phase Z₄).
+* **MILESTONE A++** = same, plus HITs (Phase Z₅).
+* **MILESTONE B** = MILESTONE A++ plus IR + Mahlo (Phase Z₆).
+* **MILESTONE C** = MILESTONE B plus guarded recursion (Phase Z₇).
+* **MILESTONE D** = MILESTONE C plus 21-dim integration (Phase Z₈)
+  — full FX kernel.
+
+Raw-reduction Conv decidability (the old MILESTONE A) is a
+**sub-result** of typed Conv decidability — useful as substrate
+but insufficient as a typechecker.
 
 ---
 
