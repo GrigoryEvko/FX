@@ -2926,6 +2926,24 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.lookupRuleSpecV2?_zero
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.supportedRuleSpecV2?_termStep
 
+-- ═══════════════════════════════════════════════════════════════════
+-- L1c: CERTIFIED LAYER (#146-#155) — the cascade-killing architecture
+-- ═══════════════════════════════════════════════════════════════════
+--
+-- 45 declarations across 5 files, all gated below.  This is the
+-- v2 certified layer where the architectural payoff materializes:
+-- ONE generic `gen` ctor admits every term-former (vs v1's 5+
+-- per-fixture ctors).  Adding a feature = 9 lines of metadata, ZERO
+-- new PolyCellV2 ctors.
+--
+-- File map (in declaration-dependency order):
+--   * CellBoundaryV2.lean (#146)        — 5 decls   [dim-dispatch type]
+--   * AbstractTermSpineV2.lean (#147)   — 15 decls  [parametric blueprint]
+--   * PolyCellV2.lean (#148-#152)       — 8 decls   [mutual block: PolyCellV2+spine]
+--   * PolyCellV2Erasure.lean (#153)     — 5 decls   [raw-erasure rfl lemmas]
+--   * PolyCellV2Helpers.lean (#154)     — 12 decls  [CertifiedCellV2 + packageX]
+-- ═══════════════════════════════════════════════════════════════════
+
 -- ─── V2-L1c.1: cell boundary data (#146) ─────────────────────────
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CellBoundaryV2
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CellBoundaryV2_zero
@@ -2994,6 +3012,13 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.packageGeneratingCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.packageVerticalComposite
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.packageIdentityCell
+
+-- ═══════════════════════════════════════════════════════════════════
+-- L1c sweep complete (#155).  45 decls audited, all axiom-clean.
+-- Next stage: L1c.4 certifier (#156+) — certifyRawCellExactV2? and
+-- friends, returning Except CellCheckRejection (CertifiedCellV2 ...)
+-- via the package helpers above.
+-- ═══════════════════════════════════════════════════════════════════
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
