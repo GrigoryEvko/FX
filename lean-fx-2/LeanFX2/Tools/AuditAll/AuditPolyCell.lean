@@ -60,6 +60,7 @@ import LeanFX2.Foundation.PolyCell.Core.RawTermV2SubstIdentity
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2RenamePointwise
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2RenameCompose
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2RenameComposeFusion
+import LeanFX2.Foundation.PolyCell.Core.RawTermV2RenameSubstCommute
 
 namespace LeanFX2.Tools
 
@@ -3677,6 +3678,22 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2.rename_compose
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.rename_compose_unit_smoke
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.rename_compose_var_smoke
+
+-- V2-L2.7c4: rename-then-subst commute (first cross-direction lemma).
+-- `RawRenaming.thenSubst rho sigma pos = sigma (rho pos)` is the
+-- pre-composed bridge substitution.  `lift_thenSubst_pull` is the
+-- binder-level pull (both Fin cases close by `rfl` because all the
+-- defs are @[reducible]).  The iterated form chains lift_pointwise
+-- (#181a) with lift_thenSubst_pull.  The mutual term theorem reuses
+-- the now-established 4-arm template + payload_cast_compose keystone
+-- (#181c3) + children IH + iter-bridge.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawRenaming.thenSubst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawRenaming.lift_thenSubst_pull
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.iterateLiftRaw_RawRenaming_thenSubst_pointwise
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.rename_subst_commute
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2.rename_subst_commute
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.rename_subst_commute_unit_smoke
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.rename_subst_commute_var_smoke
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0

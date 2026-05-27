@@ -1,0 +1,361 @@
+import LeanFX2.Foundation.PolyCell.Core.RawTermV2RenameComposeFusion
+import LeanFX2.Foundation.PolyCell.Core.RawTermV2SubstPointwise
+
+/-! # Foundation/PolyCell/Core/RawTermV2RenameSubstCommute — rename-then-subst commute
+
+This file ships the **first cross-direction commute lemma**:
+
+  RawTermV2.subst sigma (RawTermV2.rename rho term)
+    = RawTermV2.subst (rho.thenSubst sigma) term
+
+— "renaming-then-substituting equals substituting via the
+pre-composed (renaming-then-lookup) substitution".
+
+Position in the cross-direction fusion ladder:
+
+  rename_pointwise            (#181c1, shipped)
+  rename's lift_compose etc.  (#181c2, shipped)
+  payload_cast_compose keystone + rename_compose  (#181c3, shipped)
+  rename_subst_commute        (THIS COMMIT)
+  subst_rename_commute        (next)
+  subst's lift_compose etc.   (after)
+  subst_compose               (the headline)
+  Action RawTermSubstV2 instance  (closes V2-L2.7)
+
+## Why this is the SIMPLER cross-direction lemma
+
+v1's `RawTerm.rename_subst_commute` uses an auxiliary
+`RawTermSubst.lift_renaming_pull` whose proof at both Fin cases is
+`rfl` — purely definitional.
+
+The OTHER direction `subst_rename_commute` needs an auxiliary
+`RawTermSubst.lift_then_rename_lift` that uses `rename_compose`
+PLUS another helper `RawRenaming.weaken_lift_commute`.  More
+infrastructure.
+
+So shipping `rename_subst_commute` FIRST is the natural pacing:
+* The binder-level pull (`lift_thenSubst_pull`) closes by `rfl`.
+* The iterated pull (`iterateLiftRaw_thenSubst_pointwise`) is a
+  Nat induction with the standard 2-rewrite succ-case.
+* The mutual term theorem uses the now-established 4-arm template
+  (var arm `rfl`, non-var arm double-unfold + cast keystone +
+  children IH, cons arm head bridge + tail IH).
+
+`subst_rename_commute` ships next, after this commit's
+infrastructure is in hand.
+
+## The bridge substitution
+
+  RawRenaming.thenSubst rho sigma pos = sigma (rho pos)
+
+A `RawTermSubstV2 src tgt` constructed from a renaming
+`rho : RawRenaming src mid` and a substitution
+`sigma : RawTermSubstV2 mid tgt`.  Conceptually:
+"first rename, then substitute".
+
+Named under `LeanFX2.Foundation.PolyCell.Core.RawRenaming.thenSubst`
+(v2 namespace; v1's `LeanFX2.RawRenaming` is not modified).
+
+## Zero-axiom verification
+
+All declarations propext-free, following the recipe established
+across #181a-c3:
+* `RawRenaming.thenSubst` — `@[reducible]` definition.
+* `RawRenaming.lift_thenSubst_pull` — Fin pattern match, both
+  branches `rfl` (lift on both sigma and rho reduces to thenSubst-lift
+  uniformly).
+* `iterateLiftRaw_RawRenaming_thenSubst_pointwise` — Nat induction
+  with `lift_pointwise` (subst-side, from #181a) and
+  `lift_thenSubst_pull` chain.
+* Mutual `RawTermV2.rename_subst_commute` /
+  `RawTermChildrenV2.rename_subst_commute` — `dsimp only [foldV2]`
+  (not `unfold` — Quot.sound trap), `simp only [dif_neg hVar]`,
+  `congr 1` + cast keystone (#181c3) + mutual IH + iterated bridge
+  at children spine.
+
+Audit-gated in `Tools/AuditAll/AuditPolyCell.lean`.
+
+## v1 comparison
+
+v1's `RawTerm.rename_subst_commute` (Foundation/RawSubst/
+SubstLemmas.lean lines 212-310) is a 74-arm structural induction.
+v2's version is a 4-arm mutual induction.  Cascade-tax ratio
+preserved at ~18x.
+-/
+
+namespace LeanFX2.Foundation.PolyCell.Core
+
+open LeanFX2
+
+/-! ## Section 1 — The pre-composition bridge
+
+`thenSubst` is the substitution that arises when factoring a
+rename-then-subst pair through a single substitution. -/
+
+/-- Pre-compose a renaming with a substitution: at position `pos`,
+look up `sigma` at `rho pos` (the renamed position).
+
+Used by `rename_subst_commute` to factor `(term.rename rho).subst
+sigma` through a single substitution.
+
+`@[reducible]` so the `lift_thenSubst_pull` proof can close by `rfl`. -/
+@[reducible] def RawRenaming.thenSubst
+    {sourceScope middleScope targetScope : Nat}
+    (rawRenaming : LeanFX2.RawRenaming sourceScope middleScope)
+    (someSubstitution : RawTermSubstV2 middleScope targetScope) :
+    RawTermSubstV2 sourceScope targetScope :=
+  fun position => someSubstitution (rawRenaming position)
+
+/-! ## Section 2 — Binder-level pull: lift sigma after lift rho = lift thenSubst
+
+The substitution `(rho.lift).thenSubst (sigma.lift)`, which
+substitutes via `sigma.lift` at the rho-lift-renamed position, agrees
+pointwise with the lifted version of `(rho.thenSubst sigma)`.
+
+This is the binder-level fact that makes the cons case of
+`rename_subst_commute` work. -/
+
+/-- Binder-level pull: lifting the bridge commutes with composing
+the lifts.
+
+At position ⟨0, _⟩: both sides reduce to `mkGen .gen_var ⟨0, _⟩
+.childNil` (the fresh var).
+At position ⟨k+1, _⟩: both sides reduce to
+`RawTermV2.weaken (sigma (rho ⟨k, _⟩))`.
+
+Both close by `rfl` — `RawRenaming.lift`, `RawTermSubstV2.lift`,
+and `RawRenaming.thenSubst` are all `@[reducible]` so the Lean
+kernel reduces uniformly under both Fin arms. -/
+theorem RawRenaming.lift_thenSubst_pull
+    {sourceScope middleScope targetScope : Nat}
+    (rawRenaming : LeanFX2.RawRenaming sourceScope middleScope)
+    (someSubstitution : RawTermSubstV2 middleScope targetScope) :
+    RawTermSubstV2.PointwiseEq
+        (fun position => someSubstitution.lift (rawRenaming.lift position))
+        (RawRenaming.thenSubst rawRenaming someSubstitution).lift := by
+  intro position
+  match position with
+  | ⟨0, _⟩ => rfl
+  | ⟨_priorPositionValue + 1, _⟩ => rfl
+
+/-! ## Section 3 — Iterated lift of the bridge
+
+Nat induction lifting `lift_thenSubst_pull` through arbitrary binder
+depths.  Needed at each `childCons` spine descent in
+`rename_subst_commute`. -/
+
+/-- Iterated lift commutes with the renaming-then-substitution
+bridge (pointwise).
+
+  iterateLiftRaw (rho.thenSubst sigma) depth ≅
+    fun pos => (iterateLiftRaw sigma depth) ((iterateLiftRaw rho depth) pos)
+
+Inducts on `binderDepth`:
+* `zero`: both reduce to `rho.thenSubst sigma` definitionally.
+* `succ priorDepth`: chains
+  - `lift_pointwise priorIH` (#181a, lifts the IH through one binder)
+  - `lift_thenSubst_pull` (this file, pulls the lift inside)
+  via two rewrites. -/
+theorem iterateLiftRaw_RawRenaming_thenSubst_pointwise
+    {sourceScope middleScope targetScope : Nat}
+    (rawRenaming : LeanFX2.RawRenaming sourceScope middleScope)
+    (someSubstitution : RawTermSubstV2 middleScope targetScope)
+    (binderDepth : Nat) :
+    RawTermSubstV2.PointwiseEq
+        (iterateLiftRaw
+            (RawRenaming.thenSubst rawRenaming someSubstitution) binderDepth)
+        (fun position =>
+            (iterateLiftRaw someSubstitution binderDepth)
+              ((iterateLiftRaw rawRenaming binderDepth) position)) := by
+  induction binderDepth with
+  | zero =>
+      -- Both sides equal `rho.thenSubst sigma` (since iter _ 0 = _).
+      exact RawTermSubstV2.PointwiseEq.refl _
+  | succ _priorDepth priorIH =>
+      -- iter (k+1) = lift (iter k) on each iterate.
+      intro position
+      show RawTermSubstV2.lift
+              (iterateLiftRaw
+                  (RawRenaming.thenSubst rawRenaming someSubstitution) _priorDepth)
+              position =
+            RawTermSubstV2.lift
+                (iterateLiftRaw someSubstitution _priorDepth)
+              (RawRenaming.lift
+                (iterateLiftRaw rawRenaming _priorDepth) position)
+      -- Chain:
+      --   lift (iter (rho.thenSubst sigma) k)
+      --     ≅ lift ((iter rho k).thenSubst (iter sigma k))   -- by lift_pointwise priorIH
+      --     ≅ (iter sigma k).lift on (iter rho k).lift _     -- by lift_thenSubst_pull (symm)
+      rw [RawTermSubstV2.lift_pointwise priorIH position]
+      exact (RawRenaming.lift_thenSubst_pull
+              (iterateLiftRaw rawRenaming _priorDepth)
+              (iterateLiftRaw someSubstitution _priorDepth) position).symm
+
+/-! ## Section 4 — The term-level commute (mutual)
+
+In v1: 74-arm structural induction.
+In v2: 4-arm mutual induction reusing foldV2's dispatch + the cast
+keystone + the iterated bridge above. -/
+
+mutual
+
+/-- Rename-then-subst commutes through a pre-composed substitution.
+
+This is the v2 replacement for v1's 74-arm
+`RawTerm.rename_subst_commute`. -/
+theorem RawTermV2.rename_subst_commute
+    {sourceScope middleScope targetScope : Nat}
+    (rawRenaming : LeanFX2.RawRenaming sourceScope middleScope)
+    (someSubstitution : RawTermSubstV2 middleScope targetScope)
+    (sourceTerm : RawTermV2 sourceScope) :
+    RawTermV2.subst someSubstitution
+        (RawTermV2.rename rawRenaming sourceTerm) =
+      RawTermV2.subst
+        (RawRenaming.thenSubst rawRenaming someSubstitution) sourceTerm := by
+  match sourceTerm with
+  | .mkGen someGenerator somePayload someChildren =>
+    by_cases hVar : someGenerator = .gen_var
+    case pos =>
+      subst hVar
+      -- Variable arm: LHS = subst sigma (mkGen .gen_var (rho p) .childNil)
+      --                   = sigma (rho p)
+      -- RHS = subst (rho.thenSubst sigma) (mkGen .gen_var p .childNil)
+      --     = (rho.thenSubst sigma) p = sigma (rho p).  Both rfl.
+      match someChildren with
+      | .childNil => rfl
+    case neg =>
+      -- Non-variable arm: double-unfold + congr + cast keystone +
+      -- children IH.
+      show RawTermV2.subst someSubstitution
+              (RawTermV2.rename rawRenaming
+                  (.mkGen someGenerator somePayload someChildren)) =
+            RawTermV2.subst
+              (RawRenaming.thenSubst rawRenaming someSubstitution)
+              (.mkGen someGenerator somePayload someChildren)
+      -- Pass 1: unfold outer subst + inner rename's foldV2 + algebra.
+      dsimp only [RawTermV2.subst, RawTermV2.rename, foldV2,
+                  GenAlgebraV2.canonical]
+      simp only [dif_neg hVar]
+      -- Pass 2: unfold the outer foldV2 over the fresh mkGen from inner.
+      dsimp only [foldV2, GenAlgebraV2.canonical]
+      simp only [dif_neg hVar]
+      -- Both sides flat: mkGen g (cast) (foldChildren ...) form.
+      congr 1
+      · -- Cast composition keystone (chained rename's eq_src_mid then
+        -- subst's eq_mid_tgt = single eq_src_tgt).
+        exact Generator.payload_cast_compose hVar
+                sourceScope middleScope targetScope somePayload
+      · -- Children fusion via mutual IH.
+        exact RawTermChildrenV2.rename_subst_commute
+                rawRenaming someSubstitution someChildren
+
+/-- Rename-then-subst commute on children spines.
+
+In the cons case, the head is under `headShift` binders.  The
+mutual head IH at the lifted scopes gives:
+
+  subst (iter sigma shift) (rename (iter rho shift) head)
+    = subst ((iter rho shift).thenSubst (iter sigma shift)) head
+
+The bridge via `iterateLiftRaw_RawRenaming_thenSubst_pointwise`
+(symmetric direction + subst_pointwise from #181a) converts this to
+`subst (iter (rho.thenSubst sigma) shift) head`. -/
+theorem RawTermChildrenV2.rename_subst_commute
+    {sourceScope middleScope targetScope : Nat}
+    (rawRenaming : LeanFX2.RawRenaming sourceScope middleScope)
+    (someSubstitution : RawTermSubstV2 middleScope targetScope)
+    {binderShifts : List Nat}
+    (someChildren : RawTermChildrenV2 binderShifts sourceScope) :
+    RawTermChildrenV2.subst someSubstitution
+        (RawTermChildrenV2.rename rawRenaming someChildren) =
+      RawTermChildrenV2.subst
+        (RawRenaming.thenSubst rawRenaming someSubstitution) someChildren := by
+  match binderShifts, someChildren with
+  | [], .childNil =>
+      rfl
+  | headShift :: _, .childCons childHead childTail =>
+      show RawTermChildrenV2.childCons
+              (RawTermV2.subst (iterateLiftRaw someSubstitution headShift)
+                  (RawTermV2.rename (iterateLiftRaw rawRenaming headShift)
+                      childHead))
+              (RawTermChildrenV2.subst someSubstitution
+                  (RawTermChildrenV2.rename rawRenaming childTail)) =
+            RawTermChildrenV2.childCons
+              (RawTermV2.subst
+                  (iterateLiftRaw
+                      (RawRenaming.thenSubst rawRenaming someSubstitution) headShift)
+                  childHead)
+              (RawTermChildrenV2.subst
+                  (RawRenaming.thenSubst rawRenaming someSubstitution) childTail)
+      have headCommute := RawTermV2.rename_subst_commute
+                            (iterateLiftRaw rawRenaming headShift)
+                            (iterateLiftRaw someSubstitution headShift)
+                            childHead
+      -- headCommute :
+      --   subst (iter sigma shift) (rename (iter rho shift) head) =
+      --   subst ((iter rho shift).thenSubst (iter sigma shift)) head
+      have iterBridgeForward :=
+        iterateLiftRaw_RawRenaming_thenSubst_pointwise
+          rawRenaming someSubstitution headShift
+      -- iterBridgeForward :
+      --   iter (rho.thenSubst sigma) shift ≅
+      --   (iter sigma shift).comp (iter rho shift)
+      -- We need symmetric: (iter rho shift).thenSubst (iter sigma shift)
+      -- = (iter sigma shift).comp (iter rho shift) is just defn.
+      have headBridge :
+          RawTermV2.subst
+              (RawRenaming.thenSubst
+                  (iterateLiftRaw rawRenaming headShift)
+                  (iterateLiftRaw someSubstitution headShift))
+              childHead =
+            RawTermV2.subst
+              (iterateLiftRaw
+                  (RawRenaming.thenSubst rawRenaming someSubstitution) headShift)
+              childHead :=
+        RawTermV2.subst_pointwise
+          (fun position => (iterBridgeForward position).symm)
+          childHead
+      have tailCommute :=
+        RawTermChildrenV2.rename_subst_commute
+          rawRenaming someSubstitution childTail
+      rw [headCommute, headBridge, tailCommute]
+
+end -- mutual
+
+/-! ## Section 5 — Smoke tests -/
+
+/-- Smoke: rename_subst_commute on `.gen_unit` (no variables — both
+sides reduce to a fresh `gen_unit`). -/
+theorem RawTermV2.rename_subst_commute_unit_smoke
+    {sourceScope middleScope targetScope : Nat}
+    (rawRenaming : LeanFX2.RawRenaming sourceScope middleScope)
+    (someSubstitution : RawTermSubstV2 middleScope targetScope) :
+    RawTermV2.subst someSubstitution
+        (RawTermV2.rename rawRenaming
+            (.mkGen .gen_unit () .childNil : RawTermV2 sourceScope)) =
+      RawTermV2.subst
+        (RawRenaming.thenSubst rawRenaming someSubstitution)
+        (.mkGen .gen_unit () .childNil : RawTermV2 sourceScope) :=
+  RawTermV2.rename_subst_commute rawRenaming someSubstitution _
+
+/-- Smoke: rename_subst_commute on `.gen_var` at position 0 —
+exercises the variable arm. -/
+theorem RawTermV2.rename_subst_commute_var_smoke
+    {sourceScope middleScope targetScope : Nat}
+    (rawRenaming :
+        LeanFX2.RawRenaming (sourceScope + 1) (middleScope + 1))
+    (someSubstitution :
+        RawTermSubstV2 (middleScope + 1) (targetScope + 1)) :
+    RawTermV2.subst someSubstitution
+        (RawTermV2.rename rawRenaming
+            (.mkGen .gen_var
+                    (⟨0, Nat.zero_lt_succ sourceScope⟩ : Fin (sourceScope + 1))
+                    .childNil)) =
+      RawTermV2.subst
+        (RawRenaming.thenSubst rawRenaming someSubstitution)
+        (.mkGen .gen_var
+                (⟨0, Nat.zero_lt_succ sourceScope⟩ : Fin (sourceScope + 1))
+                .childNil) :=
+  RawTermV2.rename_subst_commute rawRenaming someSubstitution _
+
+end LeanFX2.Foundation.PolyCell.Core
