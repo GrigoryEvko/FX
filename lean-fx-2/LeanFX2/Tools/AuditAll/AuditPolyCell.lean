@@ -32,6 +32,7 @@ import LeanFX2.Foundation.PolyCell.Core.PolyCellV2Helpers
 import LeanFX2.Foundation.PolyCell.Core.CertifyChildSpineV2
 import LeanFX2.Foundation.PolyCell.Core.ReconcileChildV2
 import LeanFX2.Foundation.PolyCell.Core.CertifyTermSpineV2
+import LeanFX2.Foundation.PolyCell.Core.CertifyTermExactV2
 
 namespace LeanFX2.Tools
 
@@ -3048,6 +3049,15 @@ namespace LeanFX2.Tools
 -- per-child callback.  One-line function composition; inherits
 -- axiom-cleanliness from its two components.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.certifyTermSpineV2?
+
+-- ─── V2-L1cert.4: generator-dispatch certifier (#159) ──────────────
+-- Builds a CertifiedCellV2 from (generator, payload, children) via:
+-- admission + payload evidence + spine certification + packageGen.
+-- Uses the 'thread coherence as data' pattern: passes
+-- (Generator.childSpecs_scopeShifts_eq_binderShifts).symm to
+-- certifyTermSpineV2? as a coherence proof, which absorbs the
+-- equation via internal `subst`.  No ▸ chains at this layer.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.certifyTermExactV2?
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
