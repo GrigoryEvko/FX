@@ -70,6 +70,8 @@ import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaNatRec
 import LeanFX2.Foundation.PolyCell.Core.HasCertifiedIntros
 import LeanFX2.Foundation.PolyCell.Core.HasCertifiedHonestyProbes
 import LeanFX2.Foundation.PolyCell.Core.SubstPreservationProbes
+import LeanFX2.Foundation.PolyCell.Core.HasCertifiedComposition
+import LeanFX2.Foundation.PolyCell.Core.CompoundRenamePreservation
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactWrongChildShape
@@ -842,6 +844,55 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.natZero_preservedByRename
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.listNil_preservedByRename
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.optionNone_preservedByRename
+
+-- ─── V2-L3.1 phase D step 16: compound smart constructors ─────────
+-- 9 compound intros for term-shape generators with .term-sorted
+-- children.  These take underlying cells (sort .term explicit)
+-- rather than HasCertifiedCellDim0 wrappers, enforcing the sort
+-- constraint statically.  Composition calculus for the future
+-- structural-induction mutual block.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.app
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.pair
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.natSucc
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.optionSome
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.eitherInl
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.eitherInr
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.listCons
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.refl
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.lam
+
+-- ─── V2-L3.1 phase D step 17: compound rename preservation ─────────
+-- For each compound term-shape generator, two theorems:
+--   * `rename_X_reduces`: `RawTerm.rename` distributes over the
+--     compound by `rfl` (definitional; fold engine reduces).
+--   * `HasCertifiedCellDim0.X_preservedByRename`: compositional
+--     form — given renamed-children cells, produce renamed-parent
+--     certification.  These are the INDUCTIVE STEPS that the
+--     future structural-induction full preservation will
+--     compose.
+--
+-- Crucial discovery: the binder case `gen_lam` also reduces by
+-- `rfl` (using `RawRenaming.lift rho` for the body) -- this
+-- makes the binder-case induction step tractable without
+-- transports.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_app_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_pair_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_listCons_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_natSucc_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_optionSome_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_eitherInl_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_eitherInr_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_refl_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_lam_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.app_preservedByRename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.pair_preservedByRename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.listCons_preservedByRename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.natSucc_preservedByRename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.optionSome_preservedByRename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.eitherInl_preservedByRename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.eitherInr_preservedByRename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.refl_preservedByRename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.lam_preservedByRename
 
 -- ─── V2-fix-4: restricted-profile admission predicate ──────────────
 -- Discharges Agent 3 H3.2 (admission machinery decoration).  Before
