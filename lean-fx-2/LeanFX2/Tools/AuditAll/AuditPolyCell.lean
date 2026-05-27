@@ -42,6 +42,7 @@ import LeanFX2.Foundation.PolyCell.Core.CheckRawCellAsV2
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2Sound
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2CompHRejects
 import LeanFX2.Foundation.PolyCell.Core.InferRawCellGeneralV2AcceptedCellDimensionEq
+import LeanFX2.Foundation.PolyCell.Core.InferRawCellGeneralV2AcceptedRawCellHEq
 
 namespace LeanFX2.Tools
 
@@ -3231,6 +3232,23 @@ namespace LeanFX2.Tools
 -- the input — the dim it forgot (when going from raw-indexed to
 -- existential) is provably the dim it was given.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.inferRawCellGeneralV2?_accepted_cellDimension_eq
+
+-- ─── V2-L1cert.13: existential preserves rawCell HEq (#168) ─────────
+-- inferRawCellGeneralV2?_accepted_rawCell_heq: when the existential
+-- wrapper accepts a raw input, the result's stored rawCell field is
+-- heterogeneously equal to the input.  Second of three existential-
+-- variant soundness theorems.
+--
+-- Under v2's un-indexed RawCellV2 scope, both sides of the HEq have
+-- the same type, so this is technically reducible to Eq.  HEq is
+-- shipped for v1 API compatibility and to compose cleanly with #169
+-- (the existential _sound theorem chains this HEq with the cert's
+-- raw-erasure HEq).
+--
+-- Proof shape: same 5-step skeleton as #167 (unfold + cases +
+-- injection + subst + rfl).  Lean's rfl tactic produces HEq.refl _
+-- when the types match definitionally.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.inferRawCellGeneralV2?_accepted_rawCell_heq
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
