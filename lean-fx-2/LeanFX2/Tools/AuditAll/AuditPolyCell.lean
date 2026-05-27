@@ -57,6 +57,7 @@ import LeanFX2.Foundation.PolyCell.Core.LiftsRaw
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2Subst
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2SubstPointwise
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2SubstIdentity
+import LeanFX2.Foundation.PolyCell.Core.RawTermV2RenamePointwise
 
 namespace LeanFX2.Tools
 
@@ -3631,6 +3632,22 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2.subst_identity_apply
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.subst_identity_apply_unit_smoke
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.subst_identity_apply_var_smoke
+
+-- V2-L2.7c1: rename-side Allais extensionality (RawRenaming.PointwiseEq).
+-- First piece of the cross-direction fusion ladder leading to
+-- subst_compose.  In v1 this was a 74-arm structural induction on
+-- RawTerm; in v2 it collapses to a 4-arm mutual induction over
+-- RawTermV2 / RawTermChildrenV2, mirroring #181a's subst_pointwise
+-- with RawRenaming's variable bridge (.mkGen .gen_var (rho pos)
+-- .childNil) instead of substitution's (sigma pos directly).
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawRenaming.PointwiseEq
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawRenaming.PointwiseEq.refl
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawRenaming.lift_pointwise
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.iterateLiftRaw_RawRenaming_pointwise
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.rename_pointwise
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2.rename_pointwise
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.rename_pointwise_unit_smoke
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.rename_pointwise_var_smoke
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
