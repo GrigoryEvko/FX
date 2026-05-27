@@ -3755,6 +3755,27 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubstV2.action_identity_headIndex_smoke
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubstV2.action_compose_identity_left_smoke
 
+-- V2-L2.8: cell-layer rename/subst lift.  RawCellV2.rename and
+-- RawCellV2.subst are 5-arm structural recursions that delegate
+-- to the term-layer foldV2-backed RawTermV2.rename / RawTermV2.subst
+-- at termBase leaves and recurse structurally on composite/identity
+-- ctors.  Dimension preservation theorems plus per-arm reduction
+-- smokes round out the gate.  The cell layer has no binder shifts
+-- (composition doesn't bind variables), so no foldV2 abstraction
+-- is needed — direct match-form structural recursion suffices.
+import LeanFX2.Foundation.PolyCell.Core.RawCellV2RenameSubst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.rename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.subst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.rename_preserves_dim
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.subst_preserves_dim
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.rename_termBase_unfolds
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.subst_termBase_unfolds
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.rename_generatingCell_unfolds
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.rename_verticalComposite_unfolds
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.rename_horizontalComposite_unfolds
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.rename_identityCell_unfolds
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.rename_preserves_dim_generatingCell_smoke
+
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Extension 0
