@@ -385,6 +385,52 @@ theorem criticalPairs_unit_app :
 
 end Generator
 
+namespace Step
+
+/-- `boolTrue` is a nullary constructor, not a redex source.  This
+rules out root/congruence branchings that try to reduce the
+`boolElim` scrutinee in the true-iota case. -/
+theorem boolTrue_hasNoStep {scope : Nat} {target : RawTerm scope} :
+    Not (Step ((.mkGen .gen_boolTrue () .childNil) : RawTerm scope) target) := by
+  intro step
+  cases step
+  case cong childStep =>
+    cases childStep
+
+/-- `boolFalse` is a nullary constructor, not a redex source. -/
+theorem boolFalse_hasNoStep {scope : Nat} {target : RawTerm scope} :
+    Not (Step ((.mkGen .gen_boolFalse () .childNil) : RawTerm scope) target) := by
+  intro step
+  cases step
+  case cong childStep =>
+    cases childStep
+
+/-- `natZero` is a nullary constructor, not a redex source. -/
+theorem natZero_hasNoStep {scope : Nat} {target : RawTerm scope} :
+    Not (Step ((.mkGen .gen_natZero () .childNil) : RawTerm scope) target) := by
+  intro step
+  cases step
+  case cong childStep =>
+    cases childStep
+
+/-- `listNil` is a nullary constructor, not a redex source. -/
+theorem listNil_hasNoStep {scope : Nat} {target : RawTerm scope} :
+    Not (Step ((.mkGen .gen_listNil () .childNil) : RawTerm scope) target) := by
+  intro step
+  cases step
+  case cong childStep =>
+    cases childStep
+
+/-- `optionNone` is a nullary constructor, not a redex source. -/
+theorem optionNone_hasNoStep {scope : Nat} {target : RawTerm scope} :
+    Not (Step ((.mkGen .gen_optionNone () .childNil) : RawTerm scope) target) := by
+  intro step
+  cases step
+  case cong childStep =>
+    cases childStep
+
+end Step
+
 /-- A concrete local one-step branching in the v2 reduction relation.
 
 Unlike `Generator.CriticalPair`, this is proof-relevant: it stores the

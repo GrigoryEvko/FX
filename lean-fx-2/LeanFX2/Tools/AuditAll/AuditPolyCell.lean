@@ -1044,6 +1044,11 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.criticalPairs_app_app_length
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.criticalPairs_boolElim_boolElim_length
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.criticalPairs_unit_app
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.boolTrue_hasNoStep
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.boolFalse_hasNoStep
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.natZero_hasNoStep
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.listNil_hasNoStep
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.optionNone_hasNoStep
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.betaBeta
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaBoolTrueSameRoot
