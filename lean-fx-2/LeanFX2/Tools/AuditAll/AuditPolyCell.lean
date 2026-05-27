@@ -3721,6 +3721,31 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.refl_unit_smoke
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.identity_lam_beta_unit
 
+-- ─── V2-L3.2 phase B: StepStar closure properties ───────────────────
+-- Three closure properties that make StepStar a real reflexive-
+-- transitive closure programmatically:
+--
+--   single        -- Step a b → StepStar a b (length-1 embedding)
+--   trans_compose -- StepStar a b → StepStar b c → StepStar a c
+--                    (full transitivity; load-bearing for Conv)
+--   transLast     -- StepStar a b → Step b c → StepStar a c
+--                    (right-extension; symmetric to .trans's
+--                    left-extension)
+--
+-- single is two-ctor construction (Step + refl).
+-- trans_compose is induction on the first chain (refl case returns
+-- secondChain; trans case re-prepends head step to the recursive
+-- composition).
+-- transLast is derived (trans_compose + single).
+--
+-- All three pass #assert_no_axioms — pure structural recursion,
+-- no propext leakage.  These are the load-bearing infrastructure
+-- for V2-L3.4 (decidable Conv ★ MILESTONE A) and V2-L3.2 phase C
+-- (Church-Rosser).
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.single
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.trans_compose
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.transLast
+
 -- ─── V2-L1cert.12: existential preserves dim (#167) ─────────────────
 -- inferRawCellGeneralV2?_accepted_cellDimension_eq: when the
 -- existential wrapper accepts a raw input, the result's stored

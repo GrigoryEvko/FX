@@ -157,4 +157,80 @@ theorem StepStar.identity_lam_beta_unit :
     StepStar app unitArg :=
   StepStar.trans Step.beta (StepStar.refl _)
 
+/-! ## V2-L3.2 phase B: closure properties of StepStar
+
+Phase A shipped the inductive itself + two smokes.  Phase B
+proves the basic closure properties that make StepStar a real
+reflexive-transitive closure:
+
+* `single`: every Step embeds as a length-1 StepStar.
+* `trans_compose`: full transitivity (compose two chains).
+* `transLast`: right-extension (append a final Step).
+
+The L3 cascade consumes these closure properties:
+
+* Subject reduction (V2-L3.1.C) uses `single` + `trans_compose`
+  when chaining SR-per-step into SR-on-chains.
+* Confluence (V2-L3.2 phase C) uses `trans_compose` when composing
+  the two diverging chains' joining segments.
+* Conv (V2-L3.4) inherits transitivity directly via
+  `trans_compose`. -/
+
+/-- **Single-Step embedding.**  Every `Step a b` lifts to
+`StepStar a b` as a length-1 chain.
+
+This is the canonical way to "promote" a single reduction to a
+reflexive-transitive chain.  Used wherever a theorem about
+StepStar must apply to a one-step reduction.
+
+Construction: `Step.beta` followed by `StepStar.refl` -- the
+shortest possible non-trivial chain. -/
+theorem StepStar.single {scope : Nat} {first second : RawTermV2 scope}
+    (someStep : Step first second) : StepStar first second :=
+  StepStar.trans someStep (StepStar.refl _)
+
+/-- **Full transitivity.**  Compose two StepStar chains
+end-to-end.
+
+The phase-A inductive uses LEFT-EXTENSION (`refl` + `trans` with
+Step at the head), which gives reflexivity and one-step extension
+for free.  Full transitivity requires induction on the FIRST
+chain: peel off the head step, recurse on the tail composed with
+the second chain, re-prepend the head step.
+
+This is the load-bearing closure property: every "chain-then-
+chain" composition routes through here.  Conv inherits its
+transitivity from this theorem.
+
+Proof structure:
+* `.refl` case: the first chain is empty (length 0), so `first =
+  second`; return the second chain unchanged.
+* `.trans` case: peel off the head Step, compose the tail with
+  the second chain by induction, re-prepend the head Step. -/
+theorem StepStar.trans_compose {scope : Nat}
+    {first second third : RawTermV2 scope}
+    (firstChain : StepStar first second)
+    (secondChain : StepStar second third) :
+    StepStar first third := by
+  induction firstChain with
+  | refl _ => exact secondChain
+  | trans headStep _ restCompose =>
+      exact StepStar.trans headStep (restCompose secondChain)
+
+/-- **Right-extension (transLast).**  Append a single Step at the
+end of a StepStar chain.
+
+The phase-A inductive's `.trans` constructor is left-extension
+(Step at the head).  This theorem is the symmetric right-
+extension form: given a chain `a -> ... -> b` and a single step
+`b -> c`, produce the extended chain `a -> ... -> b -> c`.
+
+Derived from `trans_compose` + `single`: lift the final Step to
+a length-1 chain, then compose. -/
+theorem StepStar.transLast {scope : Nat}
+    {first second third : RawTermV2 scope}
+    (chain : StepStar first second) (lastStep : Step second third) :
+    StepStar first third :=
+  StepStar.trans_compose chain (StepStar.single lastStep)
+
 end LeanFX2.Foundation.PolyCell.Core
