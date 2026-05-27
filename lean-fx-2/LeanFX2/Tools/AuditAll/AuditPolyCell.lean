@@ -67,6 +67,7 @@ import LeanFX2.Foundation.PolyCell.Core.RawTermSubstV2Action
 import LeanFX2.Foundation.PolyCell.Core.RawCellV2RenameSubst
 import LeanFX2.Foundation.PolyCell.Core.RawCellV2CascadeLaws
 import LeanFX2.Foundation.PolyCell.Modal.ResourceGraded
+import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2Shape
 
 namespace LeanFX2.Tools
 
@@ -3266,6 +3267,29 @@ namespace LeanFX2.Tools
 -- classes (one of which is .unsupportedCompH, proven here to fire
 -- on every compH input).
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.certifyRawCellExactV2?_compH_rejects
+
+-- ─── V2-fix-1: behavioral shape pin (identityCell boundary) ─────────
+-- certifyRawCellExactV2?_identityCell_boundary: if the certifier
+-- accepts an .identityCell base input, the certified cell's
+-- boundary equals (base, base) — the pair of endpoints produced by
+-- the dispatcher's identityCell arm.
+--
+-- Substantively non-vacuous: the proof inspects the acceptance
+-- hypothesis via case analysis on the recursive call's result.  A
+-- regression that broke the identityCell dispatch arm (e.g., emitting
+-- a different boundary value) would invalidate this lemma.
+--
+-- Complements certifyRawCellExactV2?_sound (#165, type-level
+-- no-laundering) by adding a behavioral dispatch verification.
+-- This is the FIRST shape lemma of V2-fix-1; follow-up commits will
+-- extend to termBase / generatingCell / verticalComposite arms.
+--
+-- Pattern: `rfl`-bridge `dispatcherEq` rewrites the wrapper into
+-- its expanded match form (avoiding `unfold` on the mutual
+-- recursive `certifyRawCellExactV2Fueled?` which would leak
+-- Quot.sound), then `cases hRec` on the recursive call result +
+-- `injection` on the Except.ok equality.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.certifyRawCellExactV2?_identityCell_boundary
 
 -- ─── V2-L1cert.12: existential preserves dim (#167) ─────────────────
 -- inferRawCellGeneralV2?_accepted_cellDimension_eq: when the
