@@ -398,6 +398,28 @@ structure LocalStepBranching {scope : Nat} where
   leftStep : Step source leftReduct
   rightStep : Step source rightReduct
 
+namespace LocalStepBranching
+
+/-- The concrete same-root beta/beta branching.
+
+This is the first proof-relevant instance corresponding to a concrete
+`Generator.CriticalPair.rootRoot` entry (`gen_app` / beta against beta).
+Both one-step paths contract the same beta redex to the same substitution
+result. -/
+def betaBeta {scope : Nat} (body : RawTerm (scope + 1))
+    (arg : RawTerm scope) : LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_app ()
+      (.childCons
+        (.mkGen .gen_lam () (.childCons body .childNil))
+        (.childCons arg .childNil))
+  leftReduct := RawTerm.subst0 body arg
+  rightReduct := RawTerm.subst0 body arg
+  leftStep := Step.beta
+  rightStep := Step.beta
+
+end LocalStepBranching
+
 /-- A concrete local diamond filler for one local one-step branching.
 
 This is the proof-relevant version of the M6 "diamond filler template":
@@ -444,6 +466,15 @@ def sameReductOfEq {scope : Nat}
   cases branching
   cases reductsEqual
   exact sameReduct _ _
+
+/-- Concrete beta/beta local diamond.
+
+This is the first root/root critical-pair filler template: both sides
+are the same beta contraction, so the join is the beta reduct itself. -/
+def betaBeta {scope : Nat} (body : RawTerm (scope + 1))
+    (arg : RawTerm scope) :
+    LocalDiamond (LocalStepBranching.betaBeta body arg) :=
+  sameReduct Step.beta Step.beta
 
 end LocalDiamond
 
