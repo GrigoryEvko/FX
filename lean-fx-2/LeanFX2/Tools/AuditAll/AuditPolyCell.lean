@@ -50,6 +50,7 @@ import LeanFX2.Foundation.PolyCell.FXProfile.CertifiedViewsV2
 import LeanFX2.Foundation.PolyCell.FXProfile.CertifiedViewsV2Sound
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubstV2
 import LeanFX2.Foundation.PolyCell.Core.GenAlgebraV2
+import LeanFX2.Foundation.PolyCell.Core.FoldV2
 
 namespace LeanFX2.Tools
 
@@ -3497,6 +3498,30 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.GenAlgebraV2.canonical
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.GenAlgebraV2.canonical_algebra_eq_mkGen
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.GenAlgebraV2.canonical_algebra_gen_unit_smoke
+
+-- ─── V2-L2.3: foldV2 + foldChildrenV2 generic fold engine (#177) ────
+-- The L2 workhorse: mutual structural recursion over RawTermV2 +
+-- RawTermChildrenV2, consuming the Action typeclass (#175) +
+-- ActsOnRawTermV2Var bridge (#175) + GenAlgebraV2 record (#176).
+--
+-- Three load-bearing pieces:
+--   * iterateLiftRaw — iterate Action.liftForRaw N times
+--   * Generator.payload_scope_invariant_of_not_var — 194-arm
+--     enumeration in ONE place (cases generator + all_goals rfl)
+--   * foldV2 / foldChildrenV2 — mutual structural recursion engine
+--
+-- The dispatch on variable-vs-non-variable uses `if h : generator =
+-- .gen_var then _ else _` with DecidableEq Generator (#122).  No
+-- wildcard match, no 194-arm match in the recursion itself.  The
+-- non-variable arm uses the scope-invariance helper to cast payload
+-- from sourceScope to targetScope.
+--
+-- Together with #178-#180, this engine derives rename/weaken/subst
+-- as one-line foldV2 instantiations — the L2 cascade-tax killer.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.iterateLiftRaw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.payload_scope_invariant_of_not_var
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.foldV2
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.foldChildrenV2
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
