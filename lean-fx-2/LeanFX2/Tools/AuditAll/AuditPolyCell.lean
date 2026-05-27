@@ -58,6 +58,7 @@ import LeanFX2.Foundation.PolyCell.Core.RawTermV2Subst
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2SubstPointwise
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2SubstIdentity
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2RenamePointwise
+import LeanFX2.Foundation.PolyCell.Core.RawTermV2RenameCompose
 
 namespace LeanFX2.Tools
 
@@ -3648,6 +3649,18 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2.rename_pointwise
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.rename_pointwise_unit_smoke
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.rename_pointwise_var_smoke
+
+-- V2-L2.7c2: rename-side lift-compose fusion (binder-level).
+-- Pure Fin / Nat reasoning; no RawTermV2 induction yet.  Both
+-- branches of `lift_compose_pointwise` close by `rfl` (renamings'
+-- `lift` and `compose` are @[reducible] and reduce uniformly under
+-- both Fin pattern arms).  The iterated form does Nat induction
+-- using #181c1's lift_pointwise + this file's single-binder fusion.
+-- Foundation for #181c3 RawTermV2.rename_compose.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawRenaming.lift_compose_pointwise
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.iterateLiftRaw_RawRenaming_compose_pointwise
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawRenaming.lift_compose_pointwise_zero_smoke
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.iterateLiftRaw_RawRenaming_compose_pointwise_zero_smoke
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
