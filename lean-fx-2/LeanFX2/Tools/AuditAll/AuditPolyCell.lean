@@ -83,6 +83,7 @@ import LeanFX2.Foundation.PolyCell.Core.NatEliminatorLayer
 import LeanFX2.Foundation.PolyCell.Core.RemainingDim0Eliminators
 import LeanFX2.Foundation.PolyCell.Core.IdEliminatorLayer
 import LeanFX2.Foundation.PolyCell.Core.StructuralInductionPrimitives
+import LeanFX2.Foundation.PolyCell.Core.StructuralInductionWrapper
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactWrongChildShape
@@ -1291,6 +1292,17 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst_nonVar_reduces
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst_var_certify
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.rename_var_certify
+
+-- ─── V2-L3.1 phase D step 29: structural induction wrappers ────────
+-- Outer Prop wrappers that factor public-facing HCC preservation
+-- through abstract Type-level cell operations.  When the mutual
+-- def block (next iteration) ships, plugging those defs in here
+-- closes HCC preservation end-to-end.
+--
+-- 2 declarations: rename + subst wrappers.  Each is a 2-line
+-- destructure-and-wrap proof.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByRename_via_renamer
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedBySubst_via_substituter
 
 -- ─── V2-fix-4: restricted-profile admission predicate ──────────────
 -- Discharges Agent 3 H3.2 (admission machinery decoration).  Before
