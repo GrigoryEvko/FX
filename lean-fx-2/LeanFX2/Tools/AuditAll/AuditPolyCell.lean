@@ -1092,6 +1092,12 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaOptionMatchSomeValueCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaOptionMatchSomeNoneBranchCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaOptionMatchSomeSomeBranchCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaEitherMatchInlValueCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaEitherMatchInlLeftBranchCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaEitherMatchInlRightBranchCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaEitherMatchInrValueCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaEitherMatchInrLeftBranchCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaEitherMatchInrRightBranchCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaIdJBaseCaseCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaIdJWitnessCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaIdStrictRecBaseCaseCong
@@ -1135,6 +1141,12 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaOptionMatchSomeValueCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaOptionMatchSomeNoneBranchCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaOptionMatchSomeSomeBranchCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaEitherMatchInlValueCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaEitherMatchInlLeftBranchCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaEitherMatchInlRightBranchCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaEitherMatchInrValueCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaEitherMatchInrLeftBranchCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaEitherMatchInrRightBranchCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaIdJBaseCaseCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaIdJWitnessCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaIdStrictRecBaseCaseCong

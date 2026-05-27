@@ -1447,6 +1447,202 @@ def iotaOptionMatchSomeSomeBranchCong {scope : Nat}
             (.childNil : RawTermChildren [] scope)
             someStep)))
 
+/-- Root `eitherMatch (eitherInl value)` iota branching against congruence
+inside the `eitherInl` payload. -/
+def iotaEitherMatchInlValueCong {scope : Nat}
+    {value steppedValue leftBranch rightBranch : RawTerm scope}
+    (valueStep : Step value steppedValue) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_eitherMatch ()
+      (.childCons
+        (.mkGen .gen_eitherInl () (.childCons value .childNil))
+        (.childCons leftBranch (.childCons rightBranch .childNil)))
+  leftReduct :=
+    .mkGen .gen_app ()
+      (.childCons leftBranch (.childCons value .childNil))
+  rightReduct :=
+    .mkGen .gen_eitherMatch ()
+      (.childCons
+        (.mkGen .gen_eitherInl () (.childCons steppedValue .childNil))
+        (.childCons leftBranch (.childCons rightBranch .childNil)))
+  leftStep := Step.iotaEitherMatchInl
+  rightStep :=
+    Step.cong .gen_eitherMatch ()
+      (StepChildren.here
+        (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
+        ((.childCons leftBranch (.childCons rightBranch .childNil)) :
+          RawTermChildren [0, 0] scope)
+        (Step.cong .gen_eitherInl ()
+          (StepChildren.here
+            (parentScope := scope) (headShift := 0) (restShifts := [])
+            (.childNil : RawTermChildren [] scope)
+            valueStep)))
+
+/-- Root `eitherMatch (eitherInl value)` iota branching against congruence
+in the selected left branch. -/
+def iotaEitherMatchInlLeftBranchCong {scope : Nat}
+    {value leftBranch steppedLeftBranch rightBranch : RawTerm scope}
+    (leftStep : Step leftBranch steppedLeftBranch) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_eitherMatch ()
+      (.childCons
+        (.mkGen .gen_eitherInl () (.childCons value .childNil))
+        (.childCons leftBranch (.childCons rightBranch .childNil)))
+  leftReduct :=
+    .mkGen .gen_app ()
+      (.childCons leftBranch (.childCons value .childNil))
+  rightReduct :=
+    .mkGen .gen_eitherMatch ()
+      (.childCons
+        (.mkGen .gen_eitherInl () (.childCons value .childNil))
+        (.childCons steppedLeftBranch (.childCons rightBranch .childNil)))
+  leftStep := Step.iotaEitherMatchInl
+  rightStep :=
+    Step.cong .gen_eitherMatch ()
+      (StepChildren.there
+        (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
+        ((.mkGen .gen_eitherInl () (.childCons value .childNil)) :
+          RawTerm scope)
+        (StepChildren.here
+          (parentScope := scope) (headShift := 0) (restShifts := [0])
+          ((.childCons rightBranch .childNil) :
+            RawTermChildren [0] scope)
+          leftStep))
+
+/-- Root `eitherMatch (eitherInl value)` iota branching against congruence
+in the discarded right branch. -/
+def iotaEitherMatchInlRightBranchCong {scope : Nat}
+    {value leftBranch rightBranch steppedRightBranch : RawTerm scope}
+    (rightStep : Step rightBranch steppedRightBranch) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_eitherMatch ()
+      (.childCons
+        (.mkGen .gen_eitherInl () (.childCons value .childNil))
+        (.childCons leftBranch (.childCons rightBranch .childNil)))
+  leftReduct :=
+    .mkGen .gen_app ()
+      (.childCons leftBranch (.childCons value .childNil))
+  rightReduct :=
+    .mkGen .gen_eitherMatch ()
+      (.childCons
+        (.mkGen .gen_eitherInl () (.childCons value .childNil))
+        (.childCons leftBranch (.childCons steppedRightBranch .childNil)))
+  leftStep := Step.iotaEitherMatchInl
+  rightStep :=
+    Step.cong .gen_eitherMatch ()
+      (StepChildren.there
+        (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
+        ((.mkGen .gen_eitherInl () (.childCons value .childNil)) :
+          RawTerm scope)
+        (StepChildren.there
+          (parentScope := scope) (headShift := 0) (restShifts := [0])
+          leftBranch
+          (StepChildren.here
+            (parentScope := scope) (headShift := 0) (restShifts := [])
+            (.childNil : RawTermChildren [] scope)
+            rightStep)))
+
+/-- Root `eitherMatch (eitherInr value)` iota branching against congruence
+inside the `eitherInr` payload. -/
+def iotaEitherMatchInrValueCong {scope : Nat}
+    {value steppedValue leftBranch rightBranch : RawTerm scope}
+    (valueStep : Step value steppedValue) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_eitherMatch ()
+      (.childCons
+        (.mkGen .gen_eitherInr () (.childCons value .childNil))
+        (.childCons leftBranch (.childCons rightBranch .childNil)))
+  leftReduct :=
+    .mkGen .gen_app ()
+      (.childCons rightBranch (.childCons value .childNil))
+  rightReduct :=
+    .mkGen .gen_eitherMatch ()
+      (.childCons
+        (.mkGen .gen_eitherInr () (.childCons steppedValue .childNil))
+        (.childCons leftBranch (.childCons rightBranch .childNil)))
+  leftStep := Step.iotaEitherMatchInr
+  rightStep :=
+    Step.cong .gen_eitherMatch ()
+      (StepChildren.here
+        (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
+        ((.childCons leftBranch (.childCons rightBranch .childNil)) :
+          RawTermChildren [0, 0] scope)
+        (Step.cong .gen_eitherInr ()
+          (StepChildren.here
+            (parentScope := scope) (headShift := 0) (restShifts := [])
+            (.childNil : RawTermChildren [] scope)
+            valueStep)))
+
+/-- Root `eitherMatch (eitherInr value)` iota branching against congruence
+in the discarded left branch. -/
+def iotaEitherMatchInrLeftBranchCong {scope : Nat}
+    {value leftBranch steppedLeftBranch rightBranch : RawTerm scope}
+    (leftStep : Step leftBranch steppedLeftBranch) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_eitherMatch ()
+      (.childCons
+        (.mkGen .gen_eitherInr () (.childCons value .childNil))
+        (.childCons leftBranch (.childCons rightBranch .childNil)))
+  leftReduct :=
+    .mkGen .gen_app ()
+      (.childCons rightBranch (.childCons value .childNil))
+  rightReduct :=
+    .mkGen .gen_eitherMatch ()
+      (.childCons
+        (.mkGen .gen_eitherInr () (.childCons value .childNil))
+        (.childCons steppedLeftBranch (.childCons rightBranch .childNil)))
+  leftStep := Step.iotaEitherMatchInr
+  rightStep :=
+    Step.cong .gen_eitherMatch ()
+      (StepChildren.there
+        (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
+        ((.mkGen .gen_eitherInr () (.childCons value .childNil)) :
+          RawTerm scope)
+        (StepChildren.here
+          (parentScope := scope) (headShift := 0) (restShifts := [0])
+          ((.childCons rightBranch .childNil) :
+            RawTermChildren [0] scope)
+          leftStep))
+
+/-- Root `eitherMatch (eitherInr value)` iota branching against congruence
+in the selected right branch. -/
+def iotaEitherMatchInrRightBranchCong {scope : Nat}
+    {value leftBranch rightBranch steppedRightBranch : RawTerm scope}
+    (rightStep : Step rightBranch steppedRightBranch) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_eitherMatch ()
+      (.childCons
+        (.mkGen .gen_eitherInr () (.childCons value .childNil))
+        (.childCons leftBranch (.childCons rightBranch .childNil)))
+  leftReduct :=
+    .mkGen .gen_app ()
+      (.childCons rightBranch (.childCons value .childNil))
+  rightReduct :=
+    .mkGen .gen_eitherMatch ()
+      (.childCons
+        (.mkGen .gen_eitherInr () (.childCons value .childNil))
+        (.childCons leftBranch (.childCons steppedRightBranch .childNil)))
+  leftStep := Step.iotaEitherMatchInr
+  rightStep :=
+    Step.cong .gen_eitherMatch ()
+      (StepChildren.there
+        (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
+        ((.mkGen .gen_eitherInr () (.childCons value .childNil)) :
+          RawTerm scope)
+        (StepChildren.there
+          (parentScope := scope) (headShift := 0) (restShifts := [0])
+          leftBranch
+          (StepChildren.here
+            (parentScope := scope) (headShift := 0) (restShifts := [])
+            (.childNil : RawTermChildren [] scope)
+            rightStep)))
+
 /-- Root `idJ refl` iota branching against congruence in the selected
 base-case child. -/
 def iotaIdJBaseCaseCong {scope : Nat}
@@ -2098,6 +2294,162 @@ def iotaOptionMatchSomeSomeBranchCong {scope : Nat}
               ((.childCons value .childNil) : RawTermChildren [0] scope)
               someStep))
       rightChain := StepStar.single Step.iotaOptionMatchSome }
+
+/-- Root `eitherMatch (eitherInl value)` iota against congruence inside
+the `eitherInl` payload. -/
+def iotaEitherMatchInlValueCong {scope : Nat}
+    {value steppedValue leftBranch rightBranch : RawTerm scope}
+    (valueStep : Step value steppedValue) :
+    LocalDiamond
+      (LocalStepBranching.iotaEitherMatchInlValueCong
+        (value := value)
+        (steppedValue := steppedValue)
+        (leftBranch := leftBranch)
+        (rightBranch := rightBranch)
+        valueStep) := by
+  dsimp [LocalStepBranching.iotaEitherMatchInlValueCong]
+  exact
+    { commonReduct :=
+        .mkGen .gen_app ()
+          (.childCons leftBranch (.childCons steppedValue .childNil))
+      leftChain :=
+        StepStar.single
+          (Step.cong .gen_app ()
+            (StepChildren.there
+              (parentScope := scope) (headShift := 0) (restShifts := [0])
+              leftBranch
+              (StepChildren.here
+                (parentScope := scope) (headShift := 0) (restShifts := [])
+                (.childNil : RawTermChildren [] scope)
+                valueStep)))
+      rightChain := StepStar.single Step.iotaEitherMatchInl }
+
+/-- Root `eitherMatch (eitherInl value)` iota against congruence in the
+selected left branch. -/
+def iotaEitherMatchInlLeftBranchCong {scope : Nat}
+    {value leftBranch steppedLeftBranch rightBranch : RawTerm scope}
+    (leftStep : Step leftBranch steppedLeftBranch) :
+    LocalDiamond
+      (LocalStepBranching.iotaEitherMatchInlLeftBranchCong
+        (value := value)
+        (leftBranch := leftBranch)
+        (steppedLeftBranch := steppedLeftBranch)
+        (rightBranch := rightBranch)
+        leftStep) := by
+  dsimp [LocalStepBranching.iotaEitherMatchInlLeftBranchCong]
+  exact
+    { commonReduct :=
+        .mkGen .gen_app ()
+          (.childCons steppedLeftBranch (.childCons value .childNil))
+      leftChain :=
+        StepStar.single
+          (Step.cong .gen_app ()
+            (StepChildren.here
+              (parentScope := scope) (headShift := 0) (restShifts := [0])
+              ((.childCons value .childNil) : RawTermChildren [0] scope)
+              leftStep))
+      rightChain := StepStar.single Step.iotaEitherMatchInl }
+
+/-- Root `eitherMatch (eitherInl value)` iota against congruence in the
+discarded right branch. -/
+def iotaEitherMatchInlRightBranchCong {scope : Nat}
+    {value leftBranch rightBranch steppedRightBranch : RawTerm scope}
+    (rightStep : Step rightBranch steppedRightBranch) :
+    LocalDiamond
+      (LocalStepBranching.iotaEitherMatchInlRightBranchCong
+        (value := value)
+        (leftBranch := leftBranch)
+        (rightBranch := rightBranch)
+        (steppedRightBranch := steppedRightBranch)
+        rightStep) := by
+  dsimp [LocalStepBranching.iotaEitherMatchInlRightBranchCong]
+  exact
+    { commonReduct :=
+        .mkGen .gen_app ()
+          (.childCons leftBranch (.childCons value .childNil))
+      leftChain :=
+        StepStar.refl
+          (.mkGen .gen_app ()
+            (.childCons leftBranch (.childCons value .childNil)))
+      rightChain := StepStar.single Step.iotaEitherMatchInl }
+
+/-- Root `eitherMatch (eitherInr value)` iota against congruence inside
+the `eitherInr` payload. -/
+def iotaEitherMatchInrValueCong {scope : Nat}
+    {value steppedValue leftBranch rightBranch : RawTerm scope}
+    (valueStep : Step value steppedValue) :
+    LocalDiamond
+      (LocalStepBranching.iotaEitherMatchInrValueCong
+        (value := value)
+        (steppedValue := steppedValue)
+        (leftBranch := leftBranch)
+        (rightBranch := rightBranch)
+        valueStep) := by
+  dsimp [LocalStepBranching.iotaEitherMatchInrValueCong]
+  exact
+    { commonReduct :=
+        .mkGen .gen_app ()
+          (.childCons rightBranch (.childCons steppedValue .childNil))
+      leftChain :=
+        StepStar.single
+          (Step.cong .gen_app ()
+            (StepChildren.there
+              (parentScope := scope) (headShift := 0) (restShifts := [0])
+              rightBranch
+              (StepChildren.here
+                (parentScope := scope) (headShift := 0) (restShifts := [])
+                (.childNil : RawTermChildren [] scope)
+                valueStep)))
+      rightChain := StepStar.single Step.iotaEitherMatchInr }
+
+/-- Root `eitherMatch (eitherInr value)` iota against congruence in the
+discarded left branch. -/
+def iotaEitherMatchInrLeftBranchCong {scope : Nat}
+    {value leftBranch steppedLeftBranch rightBranch : RawTerm scope}
+    (leftStep : Step leftBranch steppedLeftBranch) :
+    LocalDiamond
+      (LocalStepBranching.iotaEitherMatchInrLeftBranchCong
+        (value := value)
+        (leftBranch := leftBranch)
+        (steppedLeftBranch := steppedLeftBranch)
+        (rightBranch := rightBranch)
+        leftStep) := by
+  dsimp [LocalStepBranching.iotaEitherMatchInrLeftBranchCong]
+  exact
+    { commonReduct :=
+        .mkGen .gen_app ()
+          (.childCons rightBranch (.childCons value .childNil))
+      leftChain :=
+        StepStar.refl
+          (.mkGen .gen_app ()
+            (.childCons rightBranch (.childCons value .childNil)))
+      rightChain := StepStar.single Step.iotaEitherMatchInr }
+
+/-- Root `eitherMatch (eitherInr value)` iota against congruence in the
+selected right branch. -/
+def iotaEitherMatchInrRightBranchCong {scope : Nat}
+    {value leftBranch rightBranch steppedRightBranch : RawTerm scope}
+    (rightStep : Step rightBranch steppedRightBranch) :
+    LocalDiamond
+      (LocalStepBranching.iotaEitherMatchInrRightBranchCong
+        (value := value)
+        (leftBranch := leftBranch)
+        (rightBranch := rightBranch)
+        (steppedRightBranch := steppedRightBranch)
+        rightStep) := by
+  dsimp [LocalStepBranching.iotaEitherMatchInrRightBranchCong]
+  exact
+    { commonReduct :=
+        .mkGen .gen_app ()
+          (.childCons steppedRightBranch (.childCons value .childNil))
+      leftChain :=
+        StepStar.single
+          (Step.cong .gen_app ()
+            (StepChildren.here
+              (parentScope := scope) (headShift := 0) (restShifts := [0])
+              ((.childCons value .childNil) : RawTermChildren [0] scope)
+              rightStep))
+      rightChain := StepStar.single Step.iotaEitherMatchInr }
 
 /-- Root `idJ refl` iota against congruence in the selected base case. -/
 def iotaIdJBaseCaseCong {scope : Nat}
