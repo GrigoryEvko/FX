@@ -1048,12 +1048,28 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.betaBeta
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaBoolTrueSameRoot
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaBoolFalseSameRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaFstPairSameRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaSndPairSameRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaNatElimZeroSameRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaNatRecZeroSameRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaListElimNilSameRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaOptionMatchNoneSameRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaIdJReflSameRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaIdStrictRecReflSameRoot
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.sameReduct
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.sameReductOfEq
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.betaBeta
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaBoolTrueSameRoot
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaBoolFalseSameRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaFstPairSameRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaSndPairSameRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaNatElimZeroSameRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaNatRecZeroSameRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaListElimNilSameRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaOptionMatchNoneSameRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaIdJReflSameRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaIdStrictRecReflSameRoot
 
 -- ─── V2-L3.1 phase D step 35: HCC-level wrappers around the cell-step
 -- helpers (phase D 32/33).  Same recipe, .intro-wrapped to land in
