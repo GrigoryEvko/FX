@@ -40,6 +40,7 @@ import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2
 import LeanFX2.Foundation.PolyCell.Core.InferRawCellGeneralV2
 import LeanFX2.Foundation.PolyCell.Core.CheckRawCellAsV2
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2Sound
+import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2CompHRejects
 
 namespace LeanFX2.Tools
 
@@ -3196,6 +3197,24 @@ namespace LeanFX2.Tools
 -- The architectural payoff of v2's raw-INDEXED return type made
 -- structural: soundness collapses to a one-line rfl.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.certifyRawCellExactV2?_sound
+
+-- ─── V2-L1cert.11: totality off compH (#166) ────────────────────────
+-- certifyRawCellExactV2?_compH_rejects: for any raw input of the
+-- form `.horizontalComposite left right`, the certifier rejects with
+-- `.unsupportedCompH` at every dimension, scope, and profile.
+--
+-- Proof: `rfl`.  The top-level wrapper unfolds to
+-- certifyRawCellExactV2Fueled? (raw.size + 1) scope raw.  For
+-- horizontalComposite, raw.size = left.size + right.size + 1 so
+-- raw.size + 1 ≥ 2 — definitionally succ-shaped, matches the fuel
+-- function's `fuel' + 1` arm.  The inner match on raw hits the
+-- `.horizontalComposite _ _ => .error .unsupportedCompH` arm.
+--
+-- Closes the totality story: every well-formed input either
+-- certifies cleanly OR rejects with one of the seven rejection
+-- classes (one of which is .unsupportedCompH, proven here to fire
+-- on every compH input).
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.certifyRawCellExactV2?_compH_rejects
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
