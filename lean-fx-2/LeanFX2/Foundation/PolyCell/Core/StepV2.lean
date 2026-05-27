@@ -1,16 +1,26 @@
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2Subst0
 
-/-! # Foundation/PolyCell/Core/StepV2 — single-step reduction on V2 (Phase A)
+/-! # Foundation/PolyCell/Core/StepV2 — single-step reduction on V2
 
-V2-L3.1 phase A (2026-05-27).  Discharges the first L3 metatheory
-task per polycell.md §11.6.1.  Ships the `Step` inductive relation
-+ the beta-reduction constructor + one smoke witnessing beta on
-the identity-lambda fixture.
+V2-L3.1 phase A + B (2026-05-27).  Discharges the first L3 metatheory
+task per polycell.md §11.6.1.  Ships the `Step` inductive relation +
+the beta-reduction constructor + the **uniform** congruence rule +
+two smokes (beta-on-identity and cong-on-lam).
 
-This file is the L3 KICKOFF: the FIRST shipped piece of v2's
-reduction calculus.  Together with V2-L2.10's `RawTermV2.subst0`,
-it establishes the substrate that V2-L3.{1..7} build on (subject
-reduction, confluence, strong normalization, decidable Conv).
+## Phase A vs Phase B
+
+* **Phase A** shipped just `Step.beta` -- the beta-reduction
+  constructor + one smoke witnessing the identity-lambda fixture.
+* **Phase B** (THIS update) ships the UNIFORM congruence rule
+  `Step.cong` via a mutual `Step + StepChildren` block.  ONE rule
+  covers all 194 generators because StepChildren expresses "Step at
+  some child position" generically using `binderShifts` and the
+  generic `RawTermChildrenV2` substrate.
+
+This is the L3 KICKOFF: the FIRST shipped piece of v2's reduction
+calculus.  Together with V2-L2.10's `RawTermV2.subst0`, it establishes
+the substrate that V2-L3.{1..7} build on (subject reduction,
+confluence, strong normalization, decidable Conv).
 
 ## What V2-L3.1 wants
 
@@ -25,25 +35,12 @@ For the full SR theorem we need:
    `inferRawCellGeneralV2?`).
 3. A theorem proving the implication for every Step constructor.
 
-Phase A ships only step 1 (with one constructor) + a smoke.  Phase
-B will extend Step with congruence rules; phase C will prove the
-full SR theorem.
+Phase A + B ship steps 1 (with `beta` + uniform `cong`) + smokes.
+Phase C will add iota / eta rules and prove the full SR theorem.
 
-## What this file ships
+## The beta-reduction rule
 
-* `Step` inductive over `RawTermV2 scope`: single-step reduction
-  relation parameterized by scope.
-
-* `Step.beta` constructor: the canonical beta-reduction rule.
-  Applying a lambda to an argument reduces to `subst0 body arg`.
-
-* `Step.identity_lam_applied_to_unit` smoke: the simplest concrete
-  beta-reduction instance.  Witnesses that `Step.beta` is
-  inhabited on a concrete fixture pair.
-
-## The beta-reduction rule (with full ctor structure)
-
-The shipped constructor:
+The shipped beta constructor:
 
   Step (.mkGen .gen_app ()
           (.childCons
@@ -51,116 +48,174 @@ The shipped constructor:
             (.childCons arg .childNil)))
        (RawTermV2.subst0 body arg)
 
-Reading: the redex is `app (lam body) arg` (in raw form), and
-the contractum is `subst0 body arg` — substituting the argument
-for the bound variable in the lambda's body.
+Textbook lambda calculus beta rule, formulated over V2's un-indexed
+raw substrate.
 
-This is the textbook beta rule of the lambda calculus,
-formulated over the V2 raw substrate's un-indexed `RawTermV2`.
+## The uniform congruence rule
 
-## Why the smoke closes by `Step.beta`
+The phase-B `cong` constructor:
 
-The smoke proves `Step (app (λx.x) unit) unit`.  The LHS reduces
-to `subst0 (var 0) unit` by `Step.beta`.  By V2-L2.10's
-`RawTermV2.subst0_var_zero` (which closes by `rfl` thanks to the
-`@[reducible]` attribute on `singleton` + `subst0`):
+  Step.cong (gen) (payload)
+            (childStep : StepChildren children children')
+    : Step (.mkGen gen payload children)
+           (.mkGen gen payload children')
 
-  subst0 (var 0) unit = unit
+Reading: whenever a `StepChildren` chain witnesses reduction
+somewhere inside a `RawTermChildrenV2` spine, the wrapped term
+reduces under the SAME generator + payload, with the spine
+substituted.  ONE rule, all generators.
 
-So `Step.beta` produces `Step (app (λx.x) unit) (subst0 (var 0) unit)`,
-which equals `Step (app (λx.x) unit) unit` definitionally.  Lean's
-unifier handles the equation; `apply Step.beta` succeeds.
+The `StepChildren` mutual inductive expresses "Step at some position
+in the spine":
 
-This is the FIRST DOWNSTREAM CONSUMER of V2-L2.10's subst0
-infrastructure -- proof that the L2-L3 cascade was wired
-correctly.
+  here  : Step head head' --> StepChildren (childCons head rest)
+                                            (childCons head' rest)
+  there : StepChildren rest rest' --> StepChildren (childCons head rest)
+                                                    (childCons head rest')
 
-## What's NOT shipped in phase A
+Together: walk down the spine via `there` until you find the position
+you want, then fire `here` with a Step at that position.
 
-* Congruence rules (`Step` under each ctor's children): when
-  `Step body body'`, then `Step (lam body) (lam body')`, etc.
-  Phase B; deferred to a follow-up file.
+## Why mutual?
+
+The cong rule recurses on a `StepChildren` argument whose `here`
+constructor in turn recurses on a `Step`.  These two inductives
+reference each other's constructors, so they MUST be in a `mutual`
+block.
+
+The mutual block requires both inductives to share the SAME
+parameter telescope.  Since `StepChildren`'s scope varies across
+constructors (child positions at `parentScope + headShift`), scope
+cannot be a parameter on either inductive -- it must be an INDEX
+on both.  Hence the `: {scope : Nat} → ...` form (implicit index).
+
+The implicit-index syntax preserves the existing API shape: callers
+write `Step first second` and Lean infers scope from `first`'s type
+(verified in StepStarV2.lean -- which compiles unchanged).
+
+## Why scope-indexed rather than scope-quantified
+
+`Step : {scope : Nat} → RawTermV2 scope → RawTermV2 scope → Prop`
+makes scope an implicit index of every Step instance.  Each Step
+fixes one scope and the constructor's terms are at that scope.
+Reduction across scopes is mediated by `Step` + `RawTermV2.rename`.
+
+## What's NOT shipped yet
 
 * iota rules (eliminator-on-constructor reductions): `natElim z s
-  (natZero) ↝ z`, etc.  Phase B; one constructor per eliminator
+  natZero ↝ z`, etc.  Phase C; one constructor per eliminator
   generator.
-
-* eta rules: lambda eta-equality, pair eta-equality, etc.  Phase
-  B; opt-in per generator.
-
-* Reflexive-transitive closure (`Step.star` or `Conv`): the
-  closure of Step under repeated reduction.  Phase C / V2-L3.2.
-
+* eta rules: lambda eta-equality, pair eta-equality, etc.  Phase C;
+  opt-in per generator.
 * The full SR theorem: `Step t t' → certifier-accepts t →
-  certifier-accepts t' (same sort)`.  Phase C / V2-L3.1.B.
-  Substantive metatheory cascade requiring structural induction
-  over Step + the certifier's recursive structure.
+  certifier-accepts t' (same sort)`.  Phase C.  Substantive
+  metatheory cascade requiring structural induction over Step
+  (mutually with StepChildren) + the certifier's recursive
+  structure.
+* `Step` over `RawCellV2` (cell-layer reduction).  Cell-layer is
+  V2-L3.x phase later.
 
-* `Step` over `RawCellV2` (cell-layer reduction): currently
-  `Step` operates at the term layer only.  Cell-layer reduction
-  (rewrite rules on certified cells) is V2-L3.x phase later.
+## Why phase B's uniform cong is the L3 leverage point
 
-## Why scope-parameterized rather than scope-quantified
+The whole PolyCell v2 thesis is "ONE generic operation covers all
+194 generators uniformly".  Phase A's `beta` covers only the
+beta-redex shape.  Phase B's `cong + StepChildren` is the FIRST
+uniform L3 rule -- congruence under any generator's children spine,
+without enumerating generators.
 
-`Step {scope : Nat}` makes scope an implicit parameter of every
-Step constructor.  This means each Step instance fixes one scope
-and the constructor's terms are at that scope.  Reduction
-between terms at different scopes (e.g., post-renaming) is not a
-single Step; it's mediated by `Step` + `RawTermV2.rename`.
-
-Alternative would be `Step : ∀ {scope}, RawTermV2 scope →
-RawTermV2 scope → Prop` (explicit scope quantification), but
-the parameterised form is cleaner for the inductive's
-constructors and matches the discipline of v1's analogous
-`Step` definitions.
-
-## Forward-compat: when phase B / C land
-
-Phase B (congruence + iota rules): adds more constructors to
-`Step`, each closing by structural pattern-match.  No additional
-files needed; this file is extended in place.
-
-Phase C (SR theorem): a separate `StepV2SubjectReduction.lean`
-file that depends on this one + `CertifyRawCellExactV2.lean`.
-Proof by induction on `Step` + the certifier's dispatch.
-
-V2-L3.2 (confluence) will define `Step.parallel` (parallel reduction
-for Tait-Martin-Löf), prove the diamond property, derive
-Church-Rosser.  V2-L3.3 (SN) uses Tait reducibility candidates.
-All build on this file's `Step` as the substrate.
+Every subsequent L3 theorem (SR, confluence, SN) gets to handle
+"congruence under any ctor" as a single mutual-induction case
+rather than 194 enumerated cases.  This is the L3 expression of
+the L2 Allais-fold leverage.
 
 ## Zero-axiom verification
 
-All 2 declarations pass `#assert_no_axioms`.  The inductive is a
-simple binary Prop relation; the smoke closes by `apply Step.beta`
-+ definitional reduction of `subst0_var_zero`.  Audit-gated in
-`Tools/AuditAll/AuditPolyCell.lean`.
+All 3 declarations (Step, StepChildren, Step.identity_lam_applied_to_unit,
+Step.cong_lam_body_beta) pass `#assert_no_axioms`.  The mutual block
++ smokes are axiom-clean per the probe in Tools/_probe_cong.lean.
+Audit-gated in `Tools/AuditAll/AuditPolyCell.lean`.
 -/
 
 namespace LeanFX2.Foundation.PolyCell.Core
 
+mutual
+
 /-- Single-step reduction relation on `RawTermV2`.
 
-Phase A: ships ONLY the beta-reduction constructor.  Phase B will
-extend with congruence rules (Step under each ctor's children) and
-iota / eta rules per V2-L3.x.
+Phase A shipped `beta` only.  Phase B adds the uniform `cong` rule
+that handles reduction under any generator's children spine, mutually
+with `StepChildren`.
 
-The relation is parameterized by `scope : Nat`: each Step instance
-fixes one scope and relates terms at that scope.  Reduction across
-scopes is mediated by `RawTermV2.rename`. -/
-inductive Step {scope : Nat} : RawTermV2 scope → RawTermV2 scope → Prop where
-  /-- **Beta reduction.**  Applying a lambda to an argument
-      contracts to `subst0 body arg`.
+The relation is parameterized by `scope : Nat` (implicit index): each
+Step instance fixes one scope and relates terms at that scope.
+Reduction across scopes is mediated by `RawTermV2.rename`. -/
+inductive Step : {scope : Nat} → RawTermV2 scope → RawTermV2 scope → Prop where
+  /-- **Beta reduction.**  Applying a lambda to an argument contracts
+      to `subst0 body arg`.
 
       Textbook lambda calculus beta rule, formulated over V2's
       un-indexed raw substrate. -/
-  | beta {body : RawTermV2 (scope + 1)} {arg : RawTermV2 scope} :
+  | beta {scope : Nat} {body : RawTermV2 (scope + 1)} {arg : RawTermV2 scope} :
       Step
         (.mkGen .gen_app ()
           (.childCons
             (.mkGen .gen_lam () (.childCons body .childNil))
             (.childCons arg .childNil)))
         (RawTermV2.subst0 body arg)
+  /-- **Uniform congruence under any generator.**  When a
+      `StepChildren` chain witnesses reduction somewhere inside the
+      `RawTermChildrenV2` spine, the wrapped term reduces under the
+      SAME generator + payload, with the spine replaced.
+
+      ONE rule covers all 194 generators -- this is the L3 leverage
+      point that v2's uniform substrate buys. -/
+  | cong {scope : Nat} (gen : Generator) (payload : gen.payload scope)
+         {children children' : RawTermChildrenV2 gen.binderShifts scope}
+         (childStep :
+            StepChildren (binderShifts := gen.binderShifts) children children') :
+      Step (.mkGen gen payload children) (.mkGen gen payload children')
+
+/-- **Step at some position in a children spine.**
+
+The mutual companion to `Step.cong`.  Expresses "the children spine
+has a Step somewhere inside it" generically:
+
+* `here`  -- the Step is at the head child position
+* `there` -- the Step is somewhere in the tail
+
+Walking down a spine via `there` and firing `here` at the right
+position lets `Step.cong` congruence-reduce under ANY child of ANY
+generator, uniformly across all 194 generators.
+
+Indices: `parentScope` is the outer scope; `binderShifts` is the
+list of per-position scope shifts (from `Generator.binderShifts`).
+Both are implicit so call sites infer from the spine arguments. -/
+inductive StepChildren :
+    {parentScope : Nat} → {binderShifts : List Nat} →
+    RawTermChildrenV2 binderShifts parentScope →
+    RawTermChildrenV2 binderShifts parentScope → Prop where
+  /-- **Reduction at the head child position.**  When the head
+      `RawTermV2 (parentScope + headShift)` Step-reduces, the whole
+      spine StepChildren-reduces with the tail unchanged. -/
+  | here {parentScope : Nat} {headShift : Nat} {restShifts : List Nat}
+         {head head' : RawTermV2 (parentScope + headShift)}
+         (rest : RawTermChildrenV2 restShifts parentScope)
+         (childStep : Step head head') :
+      StepChildren
+        (RawTermChildrenV2.childCons head rest)
+        (RawTermChildrenV2.childCons head' rest)
+  /-- **Reduction somewhere in the tail.**  When the tail spine
+      StepChildren-reduces, the whole spine StepChildren-reduces
+      with the head unchanged. -/
+  | there {parentScope : Nat} {headShift : Nat} {restShifts : List Nat}
+          (head : RawTermV2 (parentScope + headShift))
+          {rest rest' : RawTermChildrenV2 restShifts parentScope}
+          (restStep : StepChildren rest rest') :
+      StepChildren
+        (RawTermChildrenV2.childCons head rest)
+        (RawTermChildrenV2.childCons head rest')
+
+end
 
 /-- **Smoke: identity-lambda applied to unit beta-reduces to unit.**
 
@@ -187,6 +242,46 @@ theorem Step.identity_lam_applied_to_unit :
           (.mkGen .gen_lam () (.childCons identityLamBody .childNil))
           (.childCons unitArg .childNil))
     Step app unitArg := by
+  apply Step.beta
+
+/-- **Smoke: cong rule fires under `lam`.**
+
+Witnesses Phase B's uniform `cong` rule on a concrete fixture.  The
+LHS is `lam (app (lam (var 0)) unit)` -- a lambda whose body contains
+a beta-redex.  The RHS is `lam unit` -- the same lambda with the
+body reduced.
+
+Closes by:
+1. `apply Step.cong .gen_lam ()` -- fire the uniform cong rule
+   under the `gen_lam` generator with unit payload.
+2. The remaining goal is `StepChildren ... ...` over a one-element
+   spine where the head is the beta-redex and the tail is empty.
+3. `apply StepChildren.here .childNil` -- the Step happens at the
+   head child position (the lambda's body).
+4. The remaining goal is `Step (app (lam (var 0)) unit) unit` --
+   which is exactly `Step.identity_lam_applied_to_unit`'s claim.
+5. `apply Step.beta` discharges it.
+
+This smoke witnesses BOTH the uniform cong rule and the typical
+"walk into a binder, beta-reduce inside" reduction pattern -- the
+core motion the L3 cascade will compose. -/
+theorem Step.cong_lam_body_beta :
+    let identityLamBody : RawTermV2 2 :=
+      .mkGen .gen_var (⟨0, Nat.zero_lt_succ 1⟩ : Fin 2) .childNil
+    let unitArg : RawTermV2 1 :=
+      .mkGen .gen_unit () .childNil
+    let innerApp : RawTermV2 1 :=
+      .mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam () (.childCons identityLamBody .childNil))
+          (.childCons unitArg .childNil))
+    let outerLamBefore : RawTermV2 0 :=
+      .mkGen .gen_lam () (.childCons innerApp .childNil)
+    let outerLamAfter : RawTermV2 0 :=
+      .mkGen .gen_lam () (.childCons unitArg .childNil)
+    Step outerLamBefore outerLamAfter := by
+  apply Step.cong .gen_lam ()
+  apply StepChildren.here .childNil
   apply Step.beta
 
 end LeanFX2.Foundation.PolyCell.Core
