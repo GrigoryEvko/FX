@@ -89,6 +89,7 @@ import LeanFX2.Foundation.PolyCell.Core.SpineRenameStep
 import LeanFX2.Foundation.PolyCell.Core.SpineSubstStep
 import LeanFX2.Foundation.PolyCell.Core.SubstPreservationMutual
 import LeanFX2.Foundation.PolyCell.Core.CongPreservationMutual
+import LeanFX2.Foundation.PolyCell.Core.StepPreservesShape
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactWrongChildShape
@@ -987,6 +988,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepCellPreserverWitness.polyCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpine.exists_preservedByChildStep
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.preservesShape
 
 -- ─── V2-L3.1 phase D step 35: HCC-level wrappers around the cell-step
 -- helpers (phase D 32/33).  Same recipe, .intro-wrapped to land in
