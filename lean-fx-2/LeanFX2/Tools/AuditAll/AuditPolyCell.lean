@@ -830,6 +830,19 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.unit_preservedByRename
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.unit_preservedBySubst
 
+-- Additional nullary leaf reductions and cell-level preservations.
+-- Same fold-arm pattern as `unit`; closed terms ignore renamings.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_boolTrue_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_boolFalse_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_natZero_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_listNil_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_optionNone_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.boolTrue_preservedByRename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.boolFalse_preservedByRename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.natZero_preservedByRename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.listNil_preservedByRename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.optionNone_preservedByRename
+
 -- ─── V2-fix-4: restricted-profile admission predicate ──────────────
 -- Discharges Agent 3 H3.2 (admission machinery decoration).  Before
 -- this commit, `supportedGenerator?` returned `some _` for every

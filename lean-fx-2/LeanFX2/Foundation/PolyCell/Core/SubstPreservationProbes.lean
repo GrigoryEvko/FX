@@ -182,4 +182,105 @@ theorem HasCertifiedCellDim0.unit_preservedBySubst
   rw [RawTerm.subst_unit_reduces substitution]
   exact HasCertifiedCellDim0.unit
 
+/-! ## Section 4 — additional nullary leaf reductions
+
+Each of these proves `rename` (resp. `subst`) reduces to the same
+closed-form leaf by `rfl`.  Same fold-arm pattern as `unit`. -/
+
+/-- **Probe: rename reduces on `gen_boolTrue`.** -/
+theorem RawTerm.rename_boolTrue_reduces
+    {sourceScope targetScope : Nat}
+    (rawRenaming : RawRenaming sourceScope targetScope) :
+    RawTerm.rename rawRenaming
+        (.mkGen .gen_boolTrue () .childNil : RawTerm sourceScope) =
+      (.mkGen .gen_boolTrue () .childNil : RawTerm targetScope) := rfl
+
+/-- **Probe: rename reduces on `gen_boolFalse`.** -/
+theorem RawTerm.rename_boolFalse_reduces
+    {sourceScope targetScope : Nat}
+    (rawRenaming : RawRenaming sourceScope targetScope) :
+    RawTerm.rename rawRenaming
+        (.mkGen .gen_boolFalse () .childNil : RawTerm sourceScope) =
+      (.mkGen .gen_boolFalse () .childNil : RawTerm targetScope) := rfl
+
+/-- **Probe: rename reduces on `gen_natZero`.** -/
+theorem RawTerm.rename_natZero_reduces
+    {sourceScope targetScope : Nat}
+    (rawRenaming : RawRenaming sourceScope targetScope) :
+    RawTerm.rename rawRenaming
+        (.mkGen .gen_natZero () .childNil : RawTerm sourceScope) =
+      (.mkGen .gen_natZero () .childNil : RawTerm targetScope) := rfl
+
+/-- **Probe: rename reduces on `gen_listNil`.** -/
+theorem RawTerm.rename_listNil_reduces
+    {sourceScope targetScope : Nat}
+    (rawRenaming : RawRenaming sourceScope targetScope) :
+    RawTerm.rename rawRenaming
+        (.mkGen .gen_listNil () .childNil : RawTerm sourceScope) =
+      (.mkGen .gen_listNil () .childNil : RawTerm targetScope) := rfl
+
+/-- **Probe: rename reduces on `gen_optionNone`.** -/
+theorem RawTerm.rename_optionNone_reduces
+    {sourceScope targetScope : Nat}
+    (rawRenaming : RawRenaming sourceScope targetScope) :
+    RawTerm.rename rawRenaming
+        (.mkGen .gen_optionNone () .childNil : RawTerm sourceScope) =
+      (.mkGen .gen_optionNone () .childNil : RawTerm targetScope) := rfl
+
+/-! ## Section 5 — additional cell-level leaf preservations
+
+Combining the new probes with the corresponding intros from
+`HasCertifiedIntros.lean`.  Each is a 2-tactic proof:
+`rw [reduces]; exact intro`. -/
+
+/-- **Cell-level: boolTrue preserved by rename.** -/
+theorem HasCertifiedCellDim0.boolTrue_preservedByRename
+    {profile : PolyProfile} {sourceScope targetScope : Nat}
+    (rawRenaming : RawRenaming sourceScope targetScope) :
+    HasCertifiedCellDim0 (profile := profile)
+      (RawTerm.rename rawRenaming
+        (.mkGen .gen_boolTrue () .childNil : RawTerm sourceScope)) := by
+  rw [RawTerm.rename_boolTrue_reduces rawRenaming]
+  exact HasCertifiedCellDim0.boolTrue
+
+/-- **Cell-level: boolFalse preserved by rename.** -/
+theorem HasCertifiedCellDim0.boolFalse_preservedByRename
+    {profile : PolyProfile} {sourceScope targetScope : Nat}
+    (rawRenaming : RawRenaming sourceScope targetScope) :
+    HasCertifiedCellDim0 (profile := profile)
+      (RawTerm.rename rawRenaming
+        (.mkGen .gen_boolFalse () .childNil : RawTerm sourceScope)) := by
+  rw [RawTerm.rename_boolFalse_reduces rawRenaming]
+  exact HasCertifiedCellDim0.boolFalse
+
+/-- **Cell-level: natZero preserved by rename.** -/
+theorem HasCertifiedCellDim0.natZero_preservedByRename
+    {profile : PolyProfile} {sourceScope targetScope : Nat}
+    (rawRenaming : RawRenaming sourceScope targetScope) :
+    HasCertifiedCellDim0 (profile := profile)
+      (RawTerm.rename rawRenaming
+        (.mkGen .gen_natZero () .childNil : RawTerm sourceScope)) := by
+  rw [RawTerm.rename_natZero_reduces rawRenaming]
+  exact HasCertifiedCellDim0.natZero
+
+/-- **Cell-level: listNil preserved by rename.** -/
+theorem HasCertifiedCellDim0.listNil_preservedByRename
+    {profile : PolyProfile} {sourceScope targetScope : Nat}
+    (rawRenaming : RawRenaming sourceScope targetScope) :
+    HasCertifiedCellDim0 (profile := profile)
+      (RawTerm.rename rawRenaming
+        (.mkGen .gen_listNil () .childNil : RawTerm sourceScope)) := by
+  rw [RawTerm.rename_listNil_reduces rawRenaming]
+  exact HasCertifiedCellDim0.listNil
+
+/-- **Cell-level: optionNone preserved by rename.** -/
+theorem HasCertifiedCellDim0.optionNone_preservedByRename
+    {profile : PolyProfile} {sourceScope targetScope : Nat}
+    (rawRenaming : RawRenaming sourceScope targetScope) :
+    HasCertifiedCellDim0 (profile := profile)
+      (RawTerm.rename rawRenaming
+        (.mkGen .gen_optionNone () .childNil : RawTerm sourceScope)) := by
+  rw [RawTerm.rename_optionNone_reduces rawRenaming]
+  exact HasCertifiedCellDim0.optionNone
+
 end LeanFX2.Foundation.PolyCell.Core
