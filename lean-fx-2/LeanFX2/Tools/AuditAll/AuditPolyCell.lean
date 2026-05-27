@@ -30,6 +30,7 @@ import LeanFX2.Foundation.PolyCell.Core.PolyCellV2
 import LeanFX2.Foundation.PolyCell.Core.PolyCellV2Erasure
 import LeanFX2.Foundation.PolyCell.Core.PolyCellV2Helpers
 import LeanFX2.Foundation.PolyCell.Core.CertifyChildSpineV2
+import LeanFX2.Foundation.PolyCell.Core.ReconcileChildV2
 
 namespace LeanFX2.Tools
 
@@ -3031,6 +3032,14 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedChildAtSpecV2.headBoundary
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedChildAtSpecV2.headCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.certifyChildSpineV2?
+
+-- ─── V2-L1cert.2: per-child reconciler (#157) ──────────────────────
+-- Bridges general certifier (existential sort/dim/rawCell) to the
+-- spec-matched CertifiedChildAtSpecV2 demanded by certifyChildSpineV2?.
+-- Tactic-mode pattern: cases (destructure) + by_cases Decidable +
+-- subst (Eq.ndrec) ×3 for sort/dim/raw.  Propext-free per the v1
+-- buildTermStepCellExact? recipe.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.reconcileChildV2
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
