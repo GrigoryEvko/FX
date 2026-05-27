@@ -77,6 +77,7 @@ import LeanFX2.Foundation.PolyCell.Core.BetaRedexLeafPreservation
 import LeanFX2.Foundation.PolyCell.Core.BetaRedexCompoundPreservation
 import LeanFX2.Foundation.PolyCell.Core.HasCertifiedProjections
 import LeanFX2.Foundation.PolyCell.Core.BetaRedexEndToEnd
+import LeanFX2.Foundation.PolyCell.Core.BetaRedexDoublingSpike
 import LeanFX2.Foundation.PolyCell.Core.PairEliminatorLayer
 import LeanFX2.Foundation.PolyCell.Core.BoolEliminatorLayer
 import LeanFX2.Foundation.PolyCell.Core.NatEliminatorLayer
@@ -1149,6 +1150,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.beta_redex_projection
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.beta_var_zero_e2e
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.beta_redex_assembly
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.beta_app_self_e2e
 
 -- ─── V2-L3.1 phase D step 22: pair eliminators (fst / snd) ─────────
 -- Extends the 16-generator compositional surface to include pair
