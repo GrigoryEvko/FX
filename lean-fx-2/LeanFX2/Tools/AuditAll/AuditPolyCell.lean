@@ -25,7 +25,7 @@ import LeanFX2.Foundation.PolyCell.Core.GenPayloadEvidenceV2
 import LeanFX2.Foundation.PolyCell.Core.HasEqualDimV2
 import LeanFX2.Foundation.PolyCell.Core.RuleSpecV2
 import LeanFX2.Foundation.PolyCell.Core.CellBoundaryV2
-import LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpineV2
+import LeanFX2.Foundation.PolyCell.Core.AbstractTermSpineV2
 
 namespace LeanFX2.Tools
 
@@ -2930,7 +2930,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CellBoundaryV2.trivial
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CellBoundaryV2.endpoints
 
--- ─── V2-L1c.2: certified term spine substrate (#147) ─────────────
+-- ─── V2-L1c.2a: abstract spine blueprint + ChildSpecV2 helpers (#147 partial) ─────────────
+-- The parametric AbstractTermSpineV2 is the architectural blueprint (cf. v1 CellChildren).
+-- The spec-aligned concrete CertifiedTermSpineV2 lives inside the PolyCellV2 mutual block
+-- (#148) — gates for that ship there.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.ChildSpecV2.expectedScope
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.ChildSpecV2.expectedScope_sameScopeDimZero
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.ChildSpecV2.expectedScope_underOneBinderDimZero
@@ -2939,13 +2942,13 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.ChildSpecV2.expectedScope_typeSameScope
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.ChildSpecV2.expectedScope_typeUnderBinder
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.ChildSpecV2.ExpectedCell
-#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpineV2
-#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpineV2.nil
-#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpineV2.cons
-#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpineV2.arity
-#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpineV2.arity_eq_length
-#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpineV2.ForGenerator
-#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpineV2.arity_forGenerator_eq
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.AbstractTermSpineV2
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.AbstractTermSpineV2.nil
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.AbstractTermSpineV2.cons
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.AbstractTermSpineV2.arity
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.AbstractTermSpineV2.arity_eq_length
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.AbstractTermSpineV2.ForGenerator
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.AbstractTermSpineV2.arity_forGenerator_eq
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
