@@ -72,6 +72,7 @@ import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2Subst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2WrongChildShape
 import LeanFX2.Foundation.PolyCell.Core.V1V2SeedVariableSpike
+import LeanFX2.Foundation.PolyCell.Core.GeneratorTotalityClassV2
 
 namespace LeanFX2.Tools
 
@@ -3486,6 +3487,60 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.v1_v2_seedVariable_sort_agree
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.v1_v2_seedVariable_sort_term
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.v1_v2_seedVariable_dim_zero
+
+-- ─── V2-L1.11: TotalityClass per Generator (Turing boundary) ────────
+-- Per polycell.md §11.7.2: every generator carries a Turing-boundary
+-- classification that the certifier will (in a future V2-L1.11.B
+-- extension) enforce through child-sort constraints.
+--
+-- Three TotalityClass ctors (suffixed -Class to avoid Std.Total /
+-- Lean `partial` keyword conflicts):
+--   * totalClass      — always terminates (SN + CR + SR + decidable
+--                       Conv hold)
+--   * productiveClass — non-terminating but every observation
+--                       terminates (codata, reactive systems)
+--   * partialClass    — may diverge (general recursion / fixed
+--                       point)
+--
+-- Classification (current, conservative):
+--   * partial (2):  gen_natRec (general recursion vs natElim's
+--                   primitive), gen_fixedPoint
+--   * productive (2):  gen_codataUnfold (stream constructor),
+--                      gen_polyNu (greatest fixpoint)
+--   * total (190):  all other generators
+--
+-- Architectural pattern: list-based exclusion via partialGenerators
+-- + productiveGenerators (same as V2-fix-4's coreFxExcluded).
+-- Avoids the 194-arm match that would either be repetitive (190
+-- arms returning .totalClass) or leak propext via Lean's
+-- match-equation-lemma path for inductives >100 ctors.
+--
+-- @[reducible] on totalityClass makes the witness theorems close
+-- by rfl: list-membership on a decidable-equality inductive reduces
+-- definitionally.  Forward-compat: adding a new partial /
+-- productive generator is a list-append, not a 194-arm rewrite.
+--
+-- Eight witness theorems pin behavior on representative generators
+-- across all three classes (gen_var/unit/natElim/codataDest = total,
+-- gen_natRec/fixedPoint = partial, gen_codataUnfold/polyNu =
+-- productive).
+--
+-- Forward-compat: V2-L1.11.B (certifier-side enforcement) will
+-- extend reconcileChildV2 to check per-child TotalityClass against
+-- parent.  That's where this classification becomes load-bearing
+-- for the SN/CR/SR/decidable-Conv quartet's structural induction.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.TotalityClass
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.partialGenerators
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.productiveGenerators
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.totalityClass
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.gen_var_total
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.gen_unit_total
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.gen_natElim_total
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.gen_codataDest_total
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.gen_natRec_partial
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.gen_fixedPoint_partial
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.gen_codataUnfold_productive
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.gen_polyNu_productive
 
 -- ─── V2-L1cert.12: existential preserves dim (#167) ─────────────────
 -- inferRawCellGeneralV2?_accepted_cellDimension_eq: when the
