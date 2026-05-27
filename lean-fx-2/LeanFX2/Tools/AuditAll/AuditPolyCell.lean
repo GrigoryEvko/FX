@@ -3878,6 +3878,21 @@ namespace LeanFX2.Tools
 -- elaborator infers the existential witness from the rfl proof.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Certified.unit_at_scope_zero
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Certified.varZero_at_scope_one
+-- Inhabitation smokes for the standard 0-arity value ctors --
+-- bool/nat/list/option base cases.  Each lifts a V2-L1cert.15
+-- coverage fixture to the Certified level via ⟨_, rfl⟩.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Certified.boolTrue_at_scope_zero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Certified.boolFalse_at_scope_zero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Certified.natZero_at_scope_zero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Certified.listNil_at_scope_zero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Certified.optionNone_at_scope_zero
+-- Composite fixture smokes: spine recursion through arity-1 and
+-- arity-2 generators (natSucc, optionSome, eitherInl, pair, listCons).
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Certified.natSuccZero_at_scope_zero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Certified.optionSomeUnit_at_scope_zero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Certified.eitherInlUnit_at_scope_zero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Certified.pairUnits_at_scope_zero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Certified.listConsUnit_at_scope_zero
 
 -- ─── V2-L3.2 phase A: StepStar (reflexive-transitive closure) ───────
 -- Reflexive-transitive closure of Step in LEFT-EXTENSION form:

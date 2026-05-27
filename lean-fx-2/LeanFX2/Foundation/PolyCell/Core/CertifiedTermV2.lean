@@ -160,4 +160,94 @@ theorem Certified.varZero_at_scope_one {profile : PolyProfile} :
         : RawTermV2 1) :=
   ⟨_, rfl⟩
 
+/-! ## Inhabitation smokes for the standard inductive-type ctors
+
+Building on the unit/var fixtures: the standard 0-arity ctors
+across bool/nat/list/option families all certify by rfl.  These
+smokes establish a Certified-fixture catalog SR proofs can
+reference -- particularly useful as building blocks when proving
+iota arms (where the iota's target is a specific composite). -/
+
+/-- **Smoke: boolTrue is Certified at scope 0.** -/
+theorem Certified.boolTrue_at_scope_zero {profile : PolyProfile} :
+    Certified (profile := profile)
+      (.mkGen .gen_boolTrue () .childNil : RawTermV2 0) :=
+  ⟨_, rfl⟩
+
+/-- **Smoke: boolFalse is Certified at scope 0.** -/
+theorem Certified.boolFalse_at_scope_zero {profile : PolyProfile} :
+    Certified (profile := profile)
+      (.mkGen .gen_boolFalse () .childNil : RawTermV2 0) :=
+  ⟨_, rfl⟩
+
+/-- **Smoke: natZero is Certified at scope 0.** -/
+theorem Certified.natZero_at_scope_zero {profile : PolyProfile} :
+    Certified (profile := profile)
+      (.mkGen .gen_natZero () .childNil : RawTermV2 0) :=
+  ⟨_, rfl⟩
+
+/-- **Smoke: listNil is Certified at scope 0.** -/
+theorem Certified.listNil_at_scope_zero {profile : PolyProfile} :
+    Certified (profile := profile)
+      (.mkGen .gen_listNil () .childNil : RawTermV2 0) :=
+  ⟨_, rfl⟩
+
+/-- **Smoke: optionNone is Certified at scope 0.** -/
+theorem Certified.optionNone_at_scope_zero {profile : PolyProfile} :
+    Certified (profile := profile)
+      (.mkGen .gen_optionNone () .childNil : RawTermV2 0) :=
+  ⟨_, rfl⟩
+
+/-! ## Inhabitation smokes for composite (arity 1+) fixtures
+
+Building further: composite fixtures with non-trivial spines.
+Each lifts a V2-L1cert.15 coverage fixture to the Certified
+level.  Spine recursion through arity-1 (natSucc, optionSome,
+eitherInl) and arity-2 (pair, listCons) generators. -/
+
+/-- **Smoke: `natSucc natZero` = 1 is Certified at scope 0.**
+Exercises arity-1 spine through one recursion level. -/
+theorem Certified.natSuccZero_at_scope_zero {profile : PolyProfile} :
+    Certified (profile := profile)
+      (.mkGen .gen_natSucc ()
+        (.childCons (.mkGen .gen_natZero () .childNil) .childNil)
+        : RawTermV2 0) :=
+  ⟨_, rfl⟩
+
+/-- **Smoke: `optionSome unit` is Certified at scope 0.** -/
+theorem Certified.optionSomeUnit_at_scope_zero {profile : PolyProfile} :
+    Certified (profile := profile)
+      (.mkGen .gen_optionSome ()
+        (.childCons (.mkGen .gen_unit () .childNil) .childNil)
+        : RawTermV2 0) :=
+  ⟨_, rfl⟩
+
+/-- **Smoke: `eitherInl unit` is Certified at scope 0.** -/
+theorem Certified.eitherInlUnit_at_scope_zero {profile : PolyProfile} :
+    Certified (profile := profile)
+      (.mkGen .gen_eitherInl ()
+        (.childCons (.mkGen .gen_unit () .childNil) .childNil)
+        : RawTermV2 0) :=
+  ⟨_, rfl⟩
+
+/-- **Smoke: `pair unit unit` is Certified at scope 0.**
+Exercises arity-2 spine through two adjacent same-scope children. -/
+theorem Certified.pairUnits_at_scope_zero {profile : PolyProfile} :
+    Certified (profile := profile)
+      (.mkGen .gen_pair ()
+        (.childCons (.mkGen .gen_unit () .childNil)
+          (.childCons (.mkGen .gen_unit () .childNil) .childNil))
+        : RawTermV2 0) :=
+  ⟨_, rfl⟩
+
+/-- **Smoke: `listCons unit listNil` is Certified at scope 0.**
+Exercises a heterogeneous spine: arbitrary head + list-typed tail. -/
+theorem Certified.listConsUnit_at_scope_zero {profile : PolyProfile} :
+    Certified (profile := profile)
+      (.mkGen .gen_listCons ()
+        (.childCons (.mkGen .gen_unit () .childNil)
+          (.childCons (.mkGen .gen_listNil () .childNil) .childNil))
+        : RawTermV2 0) :=
+  ⟨_, rfl⟩
+
 end LeanFX2.Foundation.PolyCell.Core
