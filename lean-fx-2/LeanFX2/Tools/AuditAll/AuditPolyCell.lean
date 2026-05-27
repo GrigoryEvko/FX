@@ -962,8 +962,11 @@ namespace LeanFX2.Tools
 -- sort-preserving preserver for the stepped child, recurse over the
 -- `StepChildren` witness and rebuild the certified spine / parent.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepCellPreserver
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepCellPreserverWitness
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpine.exists_preservedByChildStep_via_stepPreserver
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByCong_via_stepPreserver
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpine.exists_preservedByChildStep_via_stepPreserverWitness
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByCong_via_stepPreserverWitness
 
 -- ─── V2-L3.1 phase D step 35: HCC-level wrappers around the cell-step
 -- helpers (phase D 32/33).  Same recipe, .intro-wrapped to land in
