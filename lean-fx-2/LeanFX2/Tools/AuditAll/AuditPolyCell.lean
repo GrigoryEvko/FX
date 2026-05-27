@@ -69,6 +69,7 @@ import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaIdRefl
 import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaNatRec
 import LeanFX2.Foundation.PolyCell.Core.HasCertifiedIntros
 import LeanFX2.Foundation.PolyCell.Core.HasCertifiedHonestyProbes
+import LeanFX2.Foundation.PolyCell.Core.SubstPreservationProbes
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactWrongChildShape
@@ -809,6 +810,25 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.probe_app_unit_unit
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.probe_app_boolTrue_unit
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.probe_boolElim_natZero_branches
+
+-- ─── V2-L3.1 phase D step 15: rename/subst preservation probes ─────
+-- Leaf base cases for the future cell-level rename/subst
+-- preservation mutual block.  Each shows that `RawTerm.rename` /
+-- `RawTerm.subst` reduce by `rfl` on the simplest closed shapes
+-- (var, unit), and that the resulting term is still structurally
+-- admitted via the intros from `HasCertifiedIntros.lean`.
+--
+-- These are the foundation for the eventual mutual block that
+-- will discharge structural SR-beta + SR-cong.  Compound cases
+-- (gen_app, gen_lam, etc.) are the substantive structural-
+-- induction work that follows.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_var_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_unit_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst_var_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst_unit_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.var_preservedByRename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.unit_preservedByRename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.unit_preservedBySubst
 
 -- ─── V2-fix-4: restricted-profile admission predicate ──────────────
 -- Discharges Agent 3 H3.2 (admission machinery decoration).  Before
