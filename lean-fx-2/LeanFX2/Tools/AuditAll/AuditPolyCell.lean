@@ -62,6 +62,7 @@ import LeanFX2.Foundation.PolyCell.Core.CertifiedToPolyCell
 import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaBoolTrue
 import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaBoolFalse
 import LeanFX2.Foundation.PolyCell.Core.SubjectReductionBaseIotas
+import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaProjections
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactWrongChildShape
@@ -666,6 +667,25 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByIotaNatRecZero
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByIotaListElimNil
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByIotaOptionMatchNone
+
+-- ─── V2-L3.1 phase D step 8: nested-projection iotas (SR arms 7-8) ─
+-- Pair projection iotas: `fst(pair fst snd) ↝ fst` and
+-- `snd(pair fst snd) ↝ snd`.  Unlike the 6 pure-projection iotas
+-- above (which extract from a 3-child same-scope outer spine), these
+-- require unwrapping TWO layers of certified PolyCell:
+--   1. Outer cell `(.mkGen .gen_fst () ...)` -> outer spine -> pair cell.
+--   2. Inner pair cell `(.mkGen .gen_pair () ...)` -> inner spine
+--      -> firstValue/secondValue cell.
+-- The dep-elim wall encountered: `cases pairCell with | gen _ _ ...`
+-- fails when pairCell's sort index is the concrete `.term` because
+-- the matcher cannot solve `.term = generator.cellSort` for a unique
+-- free `generator` (100+ generators return `.term`).  Resolved by
+-- `generalize hSort : termSameScope.cellSort = innerSort at pairCell`
+-- BEFORE the inner cases, replacing the concrete sort with a free
+-- variable so the matcher derives the generator from the (concrete)
+-- raw cell index via `.mkGen` injectivity alone.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByIotaFstPair
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByIotaSndPair
 
 -- ─── V2-fix-4: restricted-profile admission predicate ──────────────
 -- Discharges Agent 3 H3.2 (admission machinery decoration).  Before
