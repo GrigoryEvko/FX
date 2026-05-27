@@ -1,5 +1,6 @@
 import LeanFX2.Foundation.PolyCell.Core.StepPreservesShape
 import LeanFX2.Foundation.PolyCell.Core.StepStar
+import LeanFX2.Foundation.PolyCell.Core.StepSubst
 
 /-! # Foundation/PolyCell/Core/CriticalPairs
     — M6 confluence scaffold, root-rule catalog
@@ -2687,6 +2688,27 @@ def betaFunctionCongReverseOfSubst0Replay {scope : Nat}
     LocalDiamond
       (LocalStepBranching.betaFunctionCong argument bodyStep).swap :=
   (betaFunctionCongOfSubst0Replay argument bodyStep subst0Replay).swap
+
+/-- Concrete beta/function-congruence local diamond.
+
+Uses `Step.subst0Body`, the substitution-compatibility theorem
+specialized to singleton substitution, as the left replay. -/
+def betaFunctionCong {scope : Nat}
+    {body updatedBody : RawTerm (scope + 1)}
+    (argument : RawTerm scope) (bodyStep : Step body updatedBody) :
+    LocalDiamond
+      (LocalStepBranching.betaFunctionCong argument bodyStep) :=
+  betaFunctionCongOfSubst0Replay argument bodyStep
+    (Step.subst0Body argument bodyStep)
+
+/-- Reverse orientation for the concrete beta/function-congruence
+local diamond. -/
+def betaFunctionCongReverse {scope : Nat}
+    {body updatedBody : RawTerm (scope + 1)}
+    (argument : RawTerm scope) (bodyStep : Step body updatedBody) :
+    LocalDiamond
+      (LocalStepBranching.betaFunctionCong argument bodyStep).swap :=
+  (betaFunctionCong argument bodyStep).swap
 
 /-- Conditional beta/argument-congruence local diamond.
 

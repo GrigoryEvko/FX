@@ -101,6 +101,7 @@ import LeanFX2.Foundation.PolyCell.Core.SiteOpenness
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactRenameEquiv
 import LeanFX2.Foundation.PolyCell.Core.Step
 import LeanFX2.Foundation.PolyCell.Core.StepStar
+import LeanFX2.Foundation.PolyCell.Core.StepSubst
 import LeanFX2.Foundation.PolyCell.Core.StepInversion
 import LeanFX2.Foundation.PolyCell.Core.CertifiedTerm
 import LeanFX2.Foundation.PolyCell.Core.GeneratorChildSpecsDim0
@@ -1157,6 +1158,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.betaBeta
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.betaFunctionCongOfSubst0Replay
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.betaFunctionCongReverseOfSubst0Replay
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.betaFunctionCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.betaFunctionCongReverse
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.betaArgumentCongOfSubst0Replay
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.betaArgumentCongReverseOfSubst0Replay
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaBoolTrueSameRoot
@@ -2273,6 +2276,12 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.appFunction
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.appArgument
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.lamBody
+
+-- M6 beta-replay support: one-step reduction commutes with raw
+-- substitution, using `subst0_subst_commute` in the beta arm.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.subst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepChildren.subst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.subst0Body
 
 -- ─── V2-L1cert.12: existential preserves dim (#167) ─────────────────
 -- inferRawCellGeneral?_accepted_cellDimension_eq: when the
