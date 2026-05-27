@@ -2,20 +2,29 @@ import LeanFX2.Foundation.PolyCell.Core.RawTermV2Subst0
 
 /-! # Foundation/PolyCell/Core/StepV2 — single-step reduction on V2
 
-V2-L3.1 phase A + B (2026-05-27).  Discharges the first L3 metatheory
-task per polycell.md §11.6.1.  Ships the `Step` inductive relation +
-the beta-reduction constructor + the **uniform** congruence rule +
-two smokes (beta-on-identity and cong-on-lam).
+V2-L3.1 phase A + B + C-step1 (2026-05-27).  Discharges the first L3
+metatheory task per polycell.md §11.6.1.  Ships the `Step` inductive
+relation + the beta-reduction constructor + the **uniform**
+congruence rule + the first two iota rules (boolElim on true/false) +
+four smokes.
 
-## Phase A vs Phase B
+## Phase A vs Phase B vs Phase C
 
 * **Phase A** shipped just `Step.beta` -- the beta-reduction
   constructor + one smoke witnessing the identity-lambda fixture.
-* **Phase B** (THIS update) ships the UNIFORM congruence rule
-  `Step.cong` via a mutual `Step + StepChildren` block.  ONE rule
-  covers all 194 generators because StepChildren expresses "Step at
-  some child position" generically using `binderShifts` and the
-  generic `RawTermChildrenV2` substrate.
+* **Phase B** shipped the UNIFORM congruence rule `Step.cong` via a
+  mutual `Step + StepChildren` block.  ONE rule covers all 194
+  generators because StepChildren expresses "Step at some child
+  position" generically using `binderShifts` and the generic
+  `RawTermChildrenV2` substrate.
+* **Phase C step 1** (THIS update) ships the first two iota rules:
+  `Step.iotaBoolTrue` and `Step.iotaBoolFalse`.  These are the
+  SIMPLEST iotas possible -- bool's two-constructor scheme + zero
+  binders means iota is pure tag-selection at the same scope.  More
+  complex iotas (natRec/natElim/listElim) follow the same shape;
+  the Church-encoded design (all branches as scope-uniform lambdas,
+  binderShifts `[0, 0, 0]`) avoids direct substitution in iota
+  itself -- beta does the work.
 
 This is the L3 KICKOFF: the FIRST shipped piece of v2's reduction
 calculus.  Together with V2-L2.10's `RawTermV2.subst0`, it establishes
@@ -174,6 +183,34 @@ inductive Step : {scope : Nat} → RawTermV2 scope → RawTermV2 scope → Prop 
          (childStep :
             StepChildren (binderShifts := gen.binderShifts) children children') :
       Step (.mkGen gen payload children) (.mkGen gen payload children')
+  /-- **Iota for boolElim on boolTrue.**  Eliminating on `boolTrue`
+      selects the then-branch.  No substitution involved -- pure tag-
+      selection at the same scope (`binderShifts [0, 0, 0]`).
+
+      Phase C kickoff: the SIMPLEST iota rule on the v2 substrate.
+      Bool's two-constructor scheme + zero binders makes this the
+      textbook minimal iota.  More complex iota (natRec on natSucc,
+      listElim on listCons) follow the same pattern: pattern-match the
+      scrutinee's constructor in the children spine, then return the
+      branch term (Church-encoded, no direct subst). -/
+  | iotaBoolTrue {scope : Nat}
+                 {thenBranch elseBranch : RawTermV2 scope} :
+      Step
+        (.mkGen .gen_boolElim ()
+          (.childCons
+            (.mkGen .gen_boolTrue () .childNil)
+            (.childCons thenBranch (.childCons elseBranch .childNil))))
+        thenBranch
+  /-- **Iota for boolElim on boolFalse.**  Eliminating on `boolFalse`
+      selects the else-branch.  Symmetric to `iotaBoolTrue`. -/
+  | iotaBoolFalse {scope : Nat}
+                  {thenBranch elseBranch : RawTermV2 scope} :
+      Step
+        (.mkGen .gen_boolElim ()
+          (.childCons
+            (.mkGen .gen_boolFalse () .childNil)
+            (.childCons thenBranch (.childCons elseBranch .childNil))))
+        elseBranch
 
 /-- **Step at some position in a children spine.**
 
@@ -283,5 +320,58 @@ theorem Step.cong_lam_body_beta :
   apply Step.cong .gen_lam ()
   apply StepChildren.here .childNil
   apply Step.beta
+
+/-- **Phase C smoke: iotaBoolTrue selects the then-branch.**
+
+Distinct then/else branches verify that the right one is selected:
+
+  `boolElim boolTrue boolTrue boolFalse  ↝  boolTrue`
+
+(The scrutinee `boolTrue` selects the then-branch, which is itself
+`boolTrue` -- the result is `boolTrue`, distinct from the
+discarded else-branch `boolFalse`.)
+
+Closes by `apply Step.iotaBoolTrue`. -/
+theorem Step.iotaBoolTrue_selects_then :
+    let trueScrutinee : RawTermV2 0 :=
+      .mkGen .gen_boolTrue () .childNil
+    let thenBranch : RawTermV2 0 :=
+      .mkGen .gen_boolTrue () .childNil
+    let elseBranch : RawTermV2 0 :=
+      .mkGen .gen_boolFalse () .childNil
+    let elimTerm : RawTermV2 0 :=
+      .mkGen .gen_boolElim ()
+        (.childCons
+          trueScrutinee
+          (.childCons thenBranch (.childCons elseBranch .childNil)))
+    Step elimTerm thenBranch := by
+  apply Step.iotaBoolTrue
+
+/-- **Phase C smoke: iotaBoolFalse selects the else-branch.**
+
+Symmetric to `iotaBoolTrue_selects_then`.  Distinct branches verify
+the right selection:
+
+  `boolElim boolFalse boolTrue boolFalse  ↝  boolFalse`
+
+(The scrutinee `boolFalse` selects the else-branch, which is itself
+`boolFalse` -- the result is `boolFalse`, distinct from the
+discarded then-branch `boolTrue`.)
+
+Closes by `apply Step.iotaBoolFalse`. -/
+theorem Step.iotaBoolFalse_selects_else :
+    let falseScrutinee : RawTermV2 0 :=
+      .mkGen .gen_boolFalse () .childNil
+    let thenBranch : RawTermV2 0 :=
+      .mkGen .gen_boolTrue () .childNil
+    let elseBranch : RawTermV2 0 :=
+      .mkGen .gen_boolFalse () .childNil
+    let elimTerm : RawTermV2 0 :=
+      .mkGen .gen_boolElim ()
+        (.childCons
+          falseScrutinee
+          (.childCons thenBranch (.childCons elseBranch .childNil)))
+    Step elimTerm elseBranch := by
+  apply Step.iotaBoolFalse
 
 end LeanFX2.Foundation.PolyCell.Core

@@ -3676,30 +3676,32 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_identityUnitCellRaw_renamed_sort
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.rename_equiv_unitTerm_sort_agree
 
--- ─── V2-L3.1 phase A + B: Step relation (beta + uniform cong) ──────
+-- ─── V2-L3.1 phase A + B + C-step1: Step relation (beta + cong + iota) ─
 -- Per polycell.md §11.6.1: subject reduction on the v2 substrate
 -- requires a Step relation + a theorem that Step preserves
 -- certifier acceptance.
 --
--- Phase A shipped just beta + the identity-lambda smoke.
--- Phase B (this batch) adds the UNIFORM congruence rule via a
--- mutual Step + StepChildren block.  ONE cong rule covers all 194
--- generators because StepChildren expresses "Step at some child
--- position" generically over RawTermChildrenV2 + binderShifts.
+-- Phase A shipped beta + the identity-lambda smoke.
+-- Phase B added the UNIFORM congruence rule via mutual
+-- Step + StepChildren.  ONE cong rule covers all 194 generators.
+-- Phase C step 1 (THIS batch) adds the first two iota rules
+-- (boolElim on boolTrue/boolFalse) -- the SIMPLEST iotas: pure
+-- tag-selection at the same scope, no substitution.  More complex
+-- iotas (natRec on natSucc, listElim on listCons) follow the same
+-- shape thanks to the Church-encoded design (binderShifts [0,0,0]).
 --
--- This is the L3 leverage point: every subsequent L3 theorem
--- (SR, confluence, SN) gets to handle "congruence under any ctor"
--- as a single mutual-induction case rather than 194 enumerated
--- cases.  The L3 expression of the L2 Allais-fold leverage.
---
--- Two smokes pin operational behavior:
+-- Four smokes pin operational behavior:
 --   identity_lam_applied_to_unit -- Step.beta on β-redex
 --   cong_lam_body_beta           -- Step.cong + StepChildren.here
 --                                   for reducing inside λ
+--   iotaBoolTrue_selects_then    -- boolElim true selects then-branch
+--   iotaBoolFalse_selects_else   -- boolElim false selects else-branch
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepChildren
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.identity_lam_applied_to_unit
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.cong_lam_body_beta
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaBoolTrue_selects_then
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaBoolFalse_selects_else
 
 -- ─── V2-L3.2 phase A: StepStar (reflexive-transitive closure) ───────
 -- Reflexive-transitive closure of Step in LEFT-EXTENSION form:
