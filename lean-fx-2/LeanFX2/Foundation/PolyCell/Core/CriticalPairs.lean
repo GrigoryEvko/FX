@@ -546,6 +546,57 @@ inductive CriticalPair : Type where
   | rootCongruence (branching : RootCongruenceBranching)
   deriving DecidableEq
 
+/-- Does this top-level M6 critical-pair schema entry have current coverage?
+
+This is the list-level dispatcher predicate M7 consumes before invoking the
+proof-relevant local diamond templates.  It deliberately only lifts the two
+M6 schema families that exist today:
+
+* root/root branchings, via `RootCriticalPair.hasCurrentRootResolution`;
+* root/congruence branchings, via `RootCongruenceBranching.hasCurrentResolution`.
+
+Congruence/congruence branchings are not separate finite critical pairs here;
+the generic `cd_lemma` handles them structurally by recurring into the child
+branching. -/
+def CriticalPair.hasCurrentResolution : CriticalPair → Bool
+  | .rootRoot rootPair => rootPair.hasCurrentRootResolution
+  | .rootCongruence branching => branching.hasCurrentResolution
+
+/-- Proof-relevant token that a top-level critical-pair schema entry is covered.
+
+The token stores only the boolean-dispatch equality on purpose.  The concrete
+`LocalStepBranching` and `LocalDiamond` witnesses remain below, where the
+actual source/reduct terms are available. -/
+inductive CriticalPair.CurrentResolution
+    (criticalPair : CriticalPair) : Type where
+  | intro :
+      criticalPair.hasCurrentResolution = true →
+      CriticalPair.CurrentResolution criticalPair
+
+/-- Option-valued top-level critical-pair coverage dispatcher. -/
+def CriticalPair.currentResolution?
+    (criticalPair : CriticalPair) :
+    Option (CriticalPair.CurrentResolution criticalPair) :=
+  if hResolution : criticalPair.hasCurrentResolution = true then
+    some (.intro hResolution)
+  else
+    none
+
+/-- The dispatcher returns a token exactly when the lifted coverage predicate
+is true. -/
+theorem CriticalPair.currentResolution?_isSome
+    (criticalPair : CriticalPair) :
+    (criticalPair.currentResolution?).isSome =
+      criticalPair.hasCurrentResolution := by
+  unfold CriticalPair.currentResolution?
+  by_cases hResolution : criticalPair.hasCurrentResolution = true
+  · rw [dif_pos hResolution]
+    exact hResolution.symm
+  · rw [dif_neg hResolution]
+    cases hCurrent : criticalPair.hasCurrentResolution
+    · rfl
+    · exact False.elim (hResolution hCurrent)
+
 /-- Lift root/root entries into the top-level M6 critical-pair schema. -/
 def criticalPairsFromRootPairs :
     List RootStepKind.RootCriticalPair → List CriticalPair
@@ -586,6 +637,51 @@ def criticalPairsEmptyDecision
     Decidable (criticalPairs leftGenerator rightGenerator = []) :=
   inferInstance
 
+/-- List-level M6 coverage predicate for the unified critical-pair schema. -/
+def hasCurrentResolutionForCriticalPairs
+    (leftGenerator rightGenerator : Generator) : Bool :=
+  (criticalPairs leftGenerator rightGenerator).all
+    (fun criticalPair => criticalPair.hasCurrentResolution)
+
+/-- Proof-relevant M6 dispatch token for a whole generator-pair schema list.
+
+M7 can require this token before doing the proof-relevant case split over
+`criticalPairs leftGenerator rightGenerator`, avoiding another ad hoc coverage
+predicate. -/
+inductive CriticalPairResolutionDispatch
+    (leftGenerator rightGenerator : Generator) : Type where
+  | intro :
+      hasCurrentResolutionForCriticalPairs leftGenerator rightGenerator =
+        true →
+      CriticalPairResolutionDispatch leftGenerator rightGenerator
+
+/-- Option-valued dispatcher for the finite generator-pair critical-pair list. -/
+def criticalPairResolutionDispatch?
+    (leftGenerator rightGenerator : Generator) :
+    Option (CriticalPairResolutionDispatch leftGenerator rightGenerator) :=
+  if hResolution :
+      hasCurrentResolutionForCriticalPairs leftGenerator rightGenerator = true then
+    some (.intro hResolution)
+  else
+    none
+
+/-- The generator-pair dispatcher succeeds exactly when the unified list-level
+coverage predicate is true. -/
+theorem criticalPairResolutionDispatch?_isSome
+    (leftGenerator rightGenerator : Generator) :
+    (criticalPairResolutionDispatch? leftGenerator rightGenerator).isSome =
+      hasCurrentResolutionForCriticalPairs leftGenerator rightGenerator := by
+  unfold criticalPairResolutionDispatch?
+  by_cases hResolution :
+      hasCurrentResolutionForCriticalPairs leftGenerator rightGenerator = true
+  · rw [dif_pos hResolution]
+    exact hResolution.symm
+  · rw [dif_neg hResolution]
+    cases hCurrent :
+        hasCurrentResolutionForCriticalPairs leftGenerator rightGenerator
+    · rfl
+    · exact False.elim (hResolution hCurrent)
+
 theorem criticalPairs_app_app_length :
     (criticalPairs .gen_app .gen_app).length = 5 := rfl
 
@@ -594,6 +690,57 @@ theorem criticalPairs_boolElim_boolElim_length :
 
 theorem criticalPairs_unit_app :
     criticalPairs .gen_unit .gen_app = [] := rfl
+
+theorem criticalPairs_app_app_currentResolutionMap :
+    (criticalPairs .gen_app .gen_app).map
+      (fun criticalPair => criticalPair.hasCurrentResolution) =
+        [true, true, true, true, true] := rfl
+
+theorem criticalPairs_app_app_haveCurrentResolution :
+    hasCurrentResolutionForCriticalPairs .gen_app .gen_app = true := rfl
+
+theorem criticalPairs_boolElim_boolElim_haveCurrentResolution :
+    hasCurrentResolutionForCriticalPairs .gen_boolElim .gen_boolElim =
+      true := rfl
+
+theorem criticalPairs_fst_fst_haveCurrentResolution :
+    hasCurrentResolutionForCriticalPairs .gen_fst .gen_fst = true := rfl
+
+theorem criticalPairs_snd_snd_haveCurrentResolution :
+    hasCurrentResolutionForCriticalPairs .gen_snd .gen_snd = true := rfl
+
+theorem criticalPairs_natElim_natElim_haveCurrentResolution :
+    hasCurrentResolutionForCriticalPairs .gen_natElim .gen_natElim =
+      true := rfl
+
+theorem criticalPairs_natRec_natRec_haveCurrentResolution :
+    hasCurrentResolutionForCriticalPairs .gen_natRec .gen_natRec =
+      true := rfl
+
+theorem criticalPairs_listElim_listElim_haveCurrentResolution :
+    hasCurrentResolutionForCriticalPairs .gen_listElim .gen_listElim =
+      true := rfl
+
+theorem criticalPairs_optionMatch_optionMatch_haveCurrentResolution :
+    hasCurrentResolutionForCriticalPairs .gen_optionMatch .gen_optionMatch =
+      true := rfl
+
+theorem criticalPairs_eitherMatch_eitherMatch_haveCurrentResolution :
+    hasCurrentResolutionForCriticalPairs .gen_eitherMatch .gen_eitherMatch =
+      true := rfl
+
+theorem criticalPairs_idJ_idJ_haveCurrentResolution :
+    hasCurrentResolutionForCriticalPairs .gen_idJ .gen_idJ = true := rfl
+
+theorem criticalPairs_idStrictRec_idStrictRec_haveCurrentResolution :
+    hasCurrentResolutionForCriticalPairs .gen_idStrictRec .gen_idStrictRec =
+      true := rfl
+
+theorem criticalPairs_unit_app_haveCurrentResolution :
+    hasCurrentResolutionForCriticalPairs .gen_unit .gen_app = true := rfl
+
+theorem criticalPairResolutionDispatch?_app_app_isSome :
+    (criticalPairResolutionDispatch? .gen_app .gen_app).isSome = true := rfl
 
 end Generator
 
