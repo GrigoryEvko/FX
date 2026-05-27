@@ -342,4 +342,99 @@ theorem Step.from_refl
       | there _ restStep =>
           exact absurd restStep StepChildren.no_step_at_empty_spine
 
+/-! ## 2-child value-constructor inversions
+
+For value ctors with TWO children (pair, listCons), the cong arm's
+StepChildren has more shape options:
+
+* `here` at the outer spine -- first child steps, second
+  unchanged.
+* `there` at the outer spine -- first child unchanged, descend
+  into the tail spine.  The tail is `.childCons secondChild
+  .childNil`, so another `cases` on the tail-StepChildren:
+  - `here` at the tail -- second child steps, target's tail is
+    `.childCons secondChild' .childNil`.
+  - `there` at the tail -- recurse into `.childNil` which is
+    uninhabited by `no_step_at_empty_spine`.
+
+So the inversion result is a DISJUNCTION of two existentials --
+"first child stepped" OR "second child stepped".  This is
+structurally different from the 1-child value-ctor inversions
+(which had a single existential because only `here` was viable).
+-/
+
+/-- **Inversion for `pair`-rooted Step.**
+
+If `Step (pair first second) target` then either:
+* `target = pair first' second` and `Step first first'`, OR
+* `target = pair first second'` and `Step second second'`.
+
+Proof descends through cong → here-or-there → (if there) here-or-
+absurd-no-spine. -/
+theorem Step.from_pair
+    {scope : Nat} {first second : RawTermV2 scope}
+    {target : RawTermV2 scope}
+    (reduction :
+      Step (.mkGen .gen_pair ()
+              (.childCons first (.childCons second .childNil)))
+           target) :
+    (∃ (firstAfter : RawTermV2 scope),
+        target = .mkGen .gen_pair ()
+          (.childCons firstAfter (.childCons second .childNil)) ∧
+        Step first firstAfter)
+    ∨
+    (∃ (secondAfter : RawTermV2 scope),
+        target = .mkGen .gen_pair ()
+          (.childCons first (.childCons secondAfter .childNil)) ∧
+        Step second secondAfter) := by
+  cases reduction with
+  | cong _ _ childStep =>
+      cases childStep with
+      | here _ firstStep =>
+          rename_i firstAfter
+          exact Or.inl ⟨firstAfter, rfl, firstStep⟩
+      | there _ tailStep =>
+          cases tailStep with
+          | here _ secondStep =>
+              rename_i secondAfter
+              exact Or.inr ⟨secondAfter, rfl, secondStep⟩
+          | there _ restStep =>
+              exact absurd restStep StepChildren.no_step_at_empty_spine
+
+/-- **Inversion for `listCons`-rooted Step.**
+
+Same disjunctive structure as `from_pair`: either the head steps
+or the tail steps.  `gen_listCons` has the same metadata shape as
+`gen_pair` (arity 2, binderShifts `[0, 0]`), so the proof is
+structurally identical. -/
+theorem Step.from_listCons
+    {scope : Nat} {headVal tailVal : RawTermV2 scope}
+    {target : RawTermV2 scope}
+    (reduction :
+      Step (.mkGen .gen_listCons ()
+              (.childCons headVal (.childCons tailVal .childNil)))
+           target) :
+    (∃ (headAfter : RawTermV2 scope),
+        target = .mkGen .gen_listCons ()
+          (.childCons headAfter (.childCons tailVal .childNil)) ∧
+        Step headVal headAfter)
+    ∨
+    (∃ (tailAfter : RawTermV2 scope),
+        target = .mkGen .gen_listCons ()
+          (.childCons headVal (.childCons tailAfter .childNil)) ∧
+        Step tailVal tailAfter) := by
+  cases reduction with
+  | cong _ _ childStep =>
+      cases childStep with
+      | here _ headStep =>
+          rename_i headAfter
+          exact Or.inl ⟨headAfter, rfl, headStep⟩
+      | there _ tailStep =>
+          cases tailStep with
+          | here _ tailValStep =>
+              rename_i tailAfter
+              exact Or.inr ⟨tailAfter, rfl, tailValStep⟩
+          | there _ restStep =>
+              exact absurd restStep StepChildren.no_step_at_empty_spine
+
 end LeanFX2.Foundation.PolyCell.Core

@@ -3807,6 +3807,14 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_eitherInl
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_eitherInr
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_refl
+-- 2-child value-ctor inversions: pair, listCons.  Disjunctive
+-- conclusion (first child stepped OR second child stepped), because
+-- the cong arm's StepChildren can fire at the head (.here) or
+-- descend into the tail (.there then inner .here).  Three inner
+-- cases total: head-step, tail-step-via-there-then-here, and
+-- absurd-no-spine for there-then-there.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_pair
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_listCons
 
 -- ─── V2-L3.2 phase A: StepStar (reflexive-transitive closure) ───────
 -- Reflexive-transitive closure of Step in LEFT-EXTENSION form:
