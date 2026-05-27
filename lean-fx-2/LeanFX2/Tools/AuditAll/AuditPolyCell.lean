@@ -3676,7 +3676,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_identityUnitCellRaw_renamed_sort
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.rename_equiv_unitTerm_sort_agree
 
--- ─── V2-L3.1 phase A + B + C-step1: Step relation (beta + cong + iota) ─
+-- ─── V2-L3.1 phase A + B + C-step1/2: Step (beta + cong + 4 iota) ───
 -- Per polycell.md §11.6.1: subject reduction on the v2 substrate
 -- requires a Step relation + a theorem that Step preserves
 -- certifier acceptance.
@@ -3684,24 +3684,32 @@ namespace LeanFX2.Tools
 -- Phase A shipped beta + the identity-lambda smoke.
 -- Phase B added the UNIFORM congruence rule via mutual
 -- Step + StepChildren.  ONE cong rule covers all 194 generators.
--- Phase C step 1 (THIS batch) adds the first two iota rules
--- (boolElim on boolTrue/boolFalse) -- the SIMPLEST iotas: pure
--- tag-selection at the same scope, no substitution.  More complex
--- iotas (natRec on natSucc, listElim on listCons) follow the same
--- shape thanks to the Church-encoded design (binderShifts [0,0,0]).
+-- Phase C step 1 added branch-selection iota for boolElim.
+-- Phase C step 2 (THIS batch) adds content-projection iota for
+-- fst/snd on pair.  Two iota SHAPES now covered:
+--   * branch-selection (boolElim picks one of N branches)
+--   * content-projection (fst/snd unwraps a pair component)
+-- Together these cover the "pure" iotas requiring no app-chain
+-- building.  Future C-steps handle app-chain iotas (natRec on
+-- natSucc, listElim on listCons, etc.) which are still
+-- substitution-free thanks to the Church-encoded design.
 --
--- Four smokes pin operational behavior:
---   identity_lam_applied_to_unit -- Step.beta on β-redex
---   cong_lam_body_beta           -- Step.cong + StepChildren.here
---                                   for reducing inside λ
---   iotaBoolTrue_selects_then    -- boolElim true selects then-branch
---   iotaBoolFalse_selects_else   -- boolElim false selects else-branch
+-- Six smokes pin operational behavior:
+--   identity_lam_applied_to_unit  -- Step.beta on β-redex
+--   cong_lam_body_beta            -- Step.cong + StepChildren.here
+--                                    for reducing inside λ
+--   iotaBoolTrue_selects_then     -- boolElim true selects then
+--   iotaBoolFalse_selects_else    -- boolElim false selects else
+--   iotaFstPair_projects_first    -- fst pair projects first
+--   iotaSndPair_projects_second   -- snd pair projects second
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepChildren
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.identity_lam_applied_to_unit
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.cong_lam_body_beta
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaBoolTrue_selects_then
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaBoolFalse_selects_else
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaFstPair_projects_first
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaSndPair_projects_second
 
 -- ─── V2-L3.2 phase A: StepStar (reflexive-transitive closure) ───────
 -- Reflexive-transitive closure of Step in LEFT-EXTENSION form:

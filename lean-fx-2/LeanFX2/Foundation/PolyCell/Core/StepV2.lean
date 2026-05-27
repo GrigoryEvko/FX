@@ -2,11 +2,12 @@ import LeanFX2.Foundation.PolyCell.Core.RawTermV2Subst0
 
 /-! # Foundation/PolyCell/Core/StepV2 — single-step reduction on V2
 
-V2-L3.1 phase A + B + C-step1 (2026-05-27).  Discharges the first L3
-metatheory task per polycell.md §11.6.1.  Ships the `Step` inductive
-relation + the beta-reduction constructor + the **uniform**
-congruence rule + the first two iota rules (boolElim on true/false) +
-four smokes.
+V2-L3.1 phase A + B + C-step1 + C-step2 (2026-05-27).  Discharges
+the first L3 metatheory task per polycell.md §11.6.1.  Ships the
+`Step` inductive relation with: beta-reduction (phase A), uniform
+congruence (phase B), branch-selection iota for boolElim (phase
+C-step1), and content-projection iota for fst/snd on pair (phase
+C-step2).  Six smokes total.
 
 ## Phase A vs Phase B vs Phase C
 
@@ -17,14 +18,25 @@ four smokes.
   generators because StepChildren expresses "Step at some child
   position" generically using `binderShifts` and the generic
   `RawTermChildrenV2` substrate.
-* **Phase C step 1** (THIS update) ships the first two iota rules:
-  `Step.iotaBoolTrue` and `Step.iotaBoolFalse`.  These are the
-  SIMPLEST iotas possible -- bool's two-constructor scheme + zero
-  binders means iota is pure tag-selection at the same scope.  More
-  complex iotas (natRec/natElim/listElim) follow the same shape;
-  the Church-encoded design (all branches as scope-uniform lambdas,
-  binderShifts `[0, 0, 0]`) avoids direct substitution in iota
-  itself -- beta does the work.
+* **Phase C step 1** ships branch-selection iota for boolElim:
+  `Step.iotaBoolTrue` / `Step.iotaBoolFalse`.  Bool's two-ctor
+  scheme + zero binders means iota is pure tag-selection at the
+  same scope.
+* **Phase C step 2** (THIS update) ships content-projection iota
+  for `fst`/`snd` on `pair`: `Step.iotaFstPair` /
+  `Step.iotaSndPair`.  Same scope discipline as bool iotas, but a
+  DIFFERENT iota shape -- the eliminator unwraps a constructor and
+  returns one of its components rather than selecting one of
+  several branches.  Together with phase C-step1, these two shapes
+  cover most of the "pure" iotas (no app-chain building).
+* **Future phase C** (deferred): iotas requiring app-chain build
+  (natRec/natElim on natSucc, listElim on listCons, optionMatch
+  on optionSome, eitherMatch on inl/inr), iotas with binders
+  (idJ on refl which has a motive argument), opt-in eta rules,
+  and the SR theorem.  The Church-encoded design (all eliminator
+  branches scope-uniform per `binderShifts [0, 0, 0]`) means the
+  app-chain iotas never do direct substitution -- beta does the
+  work in a separate reduction step.
 
 This is the L3 KICKOFF: the FIRST shipped piece of v2's reduction
 calculus.  Together with V2-L2.10's `RawTermV2.subst0`, it establishes
@@ -211,6 +223,36 @@ inductive Step : {scope : Nat} → RawTermV2 scope → RawTermV2 scope → Prop 
             (.mkGen .gen_boolFalse () .childNil)
             (.childCons thenBranch (.childCons elseBranch .childNil))))
         elseBranch
+  /-- **Iota for fst on pair.**  Projecting the first component of an
+      explicitly-constructed pair returns the first value.
+
+      The CONTENT-PROJECTION iota shape (vs. boolElim's BRANCH-
+      SELECTION shape).  Same scope discipline: `binderShifts [0]`
+      for `gen_fst` and `[0, 0]` for `gen_pair` means everything
+      lives at the ambient `scope`.  No substitution involved -- the
+      reduction simply unwraps the pair and discards the second
+      component. -/
+  | iotaFstPair {scope : Nat}
+                {firstValue secondValue : RawTermV2 scope} :
+      Step
+        (.mkGen .gen_fst ()
+          (.childCons
+            (.mkGen .gen_pair ()
+              (.childCons firstValue (.childCons secondValue .childNil)))
+            .childNil))
+        firstValue
+  /-- **Iota for snd on pair.**  Projecting the second component of
+      an explicitly-constructed pair returns the second value.
+      Symmetric to `iotaFstPair`. -/
+  | iotaSndPair {scope : Nat}
+                {firstValue secondValue : RawTermV2 scope} :
+      Step
+        (.mkGen .gen_snd ()
+          (.childCons
+            (.mkGen .gen_pair ()
+              (.childCons firstValue (.childCons secondValue .childNil)))
+            .childNil))
+        secondValue
 
 /-- **Step at some position in a children spine.**
 
@@ -373,5 +415,53 @@ theorem Step.iotaBoolFalse_selects_else :
           (.childCons thenBranch (.childCons elseBranch .childNil)))
     Step elimTerm elseBranch := by
   apply Step.iotaBoolFalse
+
+/-- **Phase C smoke: iotaFstPair projects the first component.**
+
+Distinct first/second components verify the RIGHT component is
+projected:
+
+  `fst (pair boolTrue boolFalse)  ↝  boolTrue`
+
+(The first component is `boolTrue`, the second is `boolFalse`; the
+result is `boolTrue`, distinct from the discarded `boolFalse`.)
+
+Closes by `apply Step.iotaFstPair`. -/
+theorem Step.iotaFstPair_projects_first :
+    let firstValue : RawTermV2 0 :=
+      .mkGen .gen_boolTrue () .childNil
+    let secondValue : RawTermV2 0 :=
+      .mkGen .gen_boolFalse () .childNil
+    let pairTerm : RawTermV2 0 :=
+      .mkGen .gen_pair ()
+        (.childCons firstValue (.childCons secondValue .childNil))
+    let fstTerm : RawTermV2 0 :=
+      .mkGen .gen_fst () (.childCons pairTerm .childNil)
+    Step fstTerm firstValue := by
+  apply Step.iotaFstPair
+
+/-- **Phase C smoke: iotaSndPair projects the second component.**
+
+Symmetric to `iotaFstPair_projects_first`.  Distinct components
+verify the right projection:
+
+  `snd (pair boolTrue boolFalse)  ↝  boolFalse`
+
+(The first component is `boolTrue`, the second is `boolFalse`; the
+result is `boolFalse`, distinct from the discarded `boolTrue`.)
+
+Closes by `apply Step.iotaSndPair`. -/
+theorem Step.iotaSndPair_projects_second :
+    let firstValue : RawTermV2 0 :=
+      .mkGen .gen_boolTrue () .childNil
+    let secondValue : RawTermV2 0 :=
+      .mkGen .gen_boolFalse () .childNil
+    let pairTerm : RawTermV2 0 :=
+      .mkGen .gen_pair ()
+        (.childCons firstValue (.childCons secondValue .childNil))
+    let sndTerm : RawTermV2 0 :=
+      .mkGen .gen_snd () (.childCons pairTerm .childNil)
+    Step sndTerm secondValue := by
+  apply Step.iotaSndPair
 
 end LeanFX2.Foundation.PolyCell.Core
