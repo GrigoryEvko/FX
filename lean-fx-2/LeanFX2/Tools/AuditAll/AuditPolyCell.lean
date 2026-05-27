@@ -82,6 +82,7 @@ import LeanFX2.Foundation.PolyCell.Core.BoolEliminatorLayer
 import LeanFX2.Foundation.PolyCell.Core.NatEliminatorLayer
 import LeanFX2.Foundation.PolyCell.Core.RemainingDim0Eliminators
 import LeanFX2.Foundation.PolyCell.Core.IdEliminatorLayer
+import LeanFX2.Foundation.PolyCell.Core.StructuralInductionPrimitives
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactWrongChildShape
@@ -1251,6 +1252,45 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.idStrictRec_preservedBySubst
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst0_idStrictRec_reduces
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_idStrictRec_preservation
+
+-- ─── V2-L3.1 phase D step 28: structural induction primitives ──────
+-- Foundational building blocks for the future structural induction
+-- 'HasCertifiedCellDim0.preservedBySubst' over PolyCell + spine.
+--
+-- 5 declarations:
+--   1. mkGen_shape — every HCC unwraps to .mkGen via PolyCell.gen
+--      being the only dim-0 ctor.  This is the destructuring
+--      primitive for the structural induction's cell half.
+--
+--   2. rename_nonVar_reduces — for generator != .gen_var, the
+--      fold's dispatch falls into the non-var branch.  Closes via
+--      'dsimp only [fold]; rw [dif_neg hNotVar]; rfl' (zero-axiom
+--      after the spike confirmed clean).
+--
+--   3. subst_nonVar_reduces — sibling of (2) for subst.
+--
+--   4. subst_var_certify — when sigma's substituents are all
+--      certified, subst sigma on a var is certified directly.
+--      This is the var case of the structural induction.
+--
+--   5. rename_var_certify — sibling of (4) for rename (var
+--      renames to var, certified via HCC.var).
+--
+-- These compose into the mutual structural induction:
+--   * Cell half: destructure via mkGen_shape, dispatch on
+--     generator = .gen_var via dite, apply var_certify in var
+--     case, apply nonVar_reduces + recursive spine call + intro
+--     in non-var case.
+--   * Spine half: recurse on cons head + tail (mutual call to
+--     cell half).
+--
+-- The mutual block + spine half remain to ship; this commit locks
+-- in the primitive layer at zero axioms.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.mkGen_shape
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_nonVar_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst_nonVar_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst_var_certify
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.rename_var_certify
 
 -- ─── V2-fix-4: restricted-profile admission predicate ──────────────
 -- Discharges Agent 3 H3.2 (admission machinery decoration).  Before
