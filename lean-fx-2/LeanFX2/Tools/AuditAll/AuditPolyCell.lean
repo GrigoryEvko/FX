@@ -87,6 +87,7 @@ import LeanFX2.Foundation.PolyCell.Core.StructuralInductionPrimitives
 import LeanFX2.Foundation.PolyCell.Core.StructuralInductionWrapper
 import LeanFX2.Foundation.PolyCell.Core.SpineRenameStep
 import LeanFX2.Foundation.PolyCell.Core.SpineSubstStep
+import LeanFX2.Foundation.PolyCell.Core.SubstPreservationMutual
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactWrongChildShape
@@ -936,6 +937,24 @@ namespace LeanFX2.Tools
 -- `iterateLiftRaw`, while the tail uses the parent substitution.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpine.substNilStep
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpine.substConsStep_dim0Trivial
+
+-- ─── M2 / V2-L3.1 phase D: structural rename+subst mutual block.
+-- This turns the factored step helpers above into real recursive
+-- drivers over `PolyCell.gen` + `CertifiedTermSpine.cons`.
+-- The substitution half uses the rename half to certify lifted
+-- substitutions under binders; `preservedByBeta` is the SR-beta M2
+-- endpoint requested by task #251.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyCell.rename_dim0
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpine.rename_dim0
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByRename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyCell.liftSubstDim0Cells
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyCell.iterateLiftSubstDim0Cells
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyCell.subst_dim0
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpine.subst_dim0
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedBySubst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyCell.singletonSubstDim0Cells
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedBySubst0
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByBeta
 
 -- ─── V2-L3.1 phase D step 35: HCC-level wrappers around the cell-step
 -- helpers (phase D 32/33).  Same recipe, .intro-wrapped to land in
