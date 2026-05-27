@@ -43,6 +43,7 @@ import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2Sound
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2CompHRejects
 import LeanFX2.Foundation.PolyCell.Core.InferRawCellGeneralV2AcceptedCellDimensionEq
 import LeanFX2.Foundation.PolyCell.Core.InferRawCellGeneralV2AcceptedRawCellHEq
+import LeanFX2.Foundation.PolyCell.Core.InferRawCellGeneralV2Sound
 
 namespace LeanFX2.Tools
 
@@ -3249,6 +3250,25 @@ namespace LeanFX2.Tools
 -- injection + subst + rfl).  Lean's rfl tactic produces HEq.refl _
 -- when the types match definitionally.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.inferRawCellGeneralV2?_accepted_rawCell_heq
+
+-- ─── V2-L1cert.14: existential no-laundering keystone (#169) ────────
+-- inferRawCellGeneralV2?_sound: KEYSTONE of the existential-variant
+-- soundness trio.  Every cell accepted by the existential wrapper
+-- has its certified-cell's raw erasure heterogeneously equal to the
+-- input raw.  Closes the NO-LAUNDERING guarantee on the existential
+-- ingress.
+--
+-- Proof: 2-step HEq composition.
+--   (1) result.certifiedCell.raw = result.rawCell  by rfl
+--       (PolyCellV2.raw projects the implicit rawCell index, which
+--       is result.rawCell by the struct's field type)
+--   (2) HEq result.rawCell raw                     from #168
+--   (composition) HEq result.certifiedCell.raw raw  via HEq.trans
+--
+-- Combined with #165 (raw-indexed _sound) and #166 (_compH_rejects),
+-- this CLOSES the FULL no-false-positives guarantee on the entire
+-- L1cert.4 ingress (raw-indexed + existential).
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.inferRawCellGeneralV2?_sound
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
