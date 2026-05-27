@@ -70,6 +70,7 @@ import LeanFX2.Foundation.PolyCell.Modal.ResourceGraded
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2Shape
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2TermBase
 import LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpineV2Projections
+import LeanFX2.Foundation.PolyCell.Core.CertifiedToPolyCellV2
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2Subst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2WrongChildShape
@@ -3395,6 +3396,24 @@ namespace LeanFX2.Tools
 -- SR projection one-liner: `Certified parent` → spine via shape
 -- pin → headWithBoundary → headAtDim0 → plain PolyCellV2.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpineV2.headAtDim0
+
+-- ─── V2-L3.1 phase D step 4: Certified → PolyCellV2 bridge ─────────
+-- HasCertifiedCellDim0: existential PolyCellV2 at dim 0 over a raw
+-- term — the structural target of SR (avoids procedural/fuel
+-- reasoning).  Certified.toHasCertifiedCellDim0 ships the bridge
+-- from the procedural certifier acceptance to the structural
+-- PolyCellV2 witness, collapsing the boundary via the now-canonical
+-- inferInstanceAs (Subsingleton Unit) trick.
+--
+-- This is the load-bearing soundness-direction lemma for SR: with
+-- it, the SR proof can unpack `Certified source` into a structural
+-- cell and proceed at the PolyCellV2 level (where spine projections
+-- and substitution preservation already live).
+--
+-- The reverse direction (completeness, PolyCellV2 → Certified) is
+-- V2-L3.5 and requires fuel monotonicity — deferred.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Certified.toHasCertifiedCellDim0
 
 -- ─── V2-fix-4: restricted-profile admission predicate ──────────────
 -- Discharges Agent 3 H3.2 (admission machinery decoration).  Before
