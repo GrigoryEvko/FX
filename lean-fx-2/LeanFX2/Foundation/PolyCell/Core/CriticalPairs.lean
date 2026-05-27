@@ -1473,6 +1473,197 @@ def iotaNatRecSuccPredecessorCong {scope : Nat}
             (.childNil : RawTermChildren [] scope)
             predecessorStep)))
 
+/-- Root `listElim (listCons head tail)` iota branching against congruence
+inside the `listCons` head. -/
+def iotaListElimConsHeadCong {scope : Nat}
+    {headValue steppedHeadValue tailValue nilBranch consBranch :
+      RawTerm scope}
+    (headStep : Step headValue steppedHeadValue) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_listElim ()
+      (.childCons
+        (.mkGen .gen_listCons ()
+          (.childCons headValue (.childCons tailValue .childNil)))
+        (.childCons nilBranch (.childCons consBranch .childNil)))
+  leftReduct :=
+    .mkGen .gen_app ()
+      (.childCons
+        (.mkGen .gen_app ()
+          (.childCons
+            (.mkGen .gen_app ()
+              (.childCons consBranch (.childCons headValue .childNil)))
+            (.childCons tailValue .childNil)))
+        (.childCons
+          (.mkGen .gen_listElim ()
+            (.childCons tailValue
+              (.childCons nilBranch (.childCons consBranch .childNil))))
+          .childNil))
+  rightReduct :=
+    .mkGen .gen_listElim ()
+      (.childCons
+        (.mkGen .gen_listCons ()
+          (.childCons steppedHeadValue (.childCons tailValue .childNil)))
+        (.childCons nilBranch (.childCons consBranch .childNil)))
+  leftStep := Step.iotaListElimCons
+  rightStep :=
+    Step.cong .gen_listElim ()
+      (StepChildren.here
+        (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
+        ((.childCons nilBranch (.childCons consBranch .childNil)) :
+          RawTermChildren [0, 0] scope)
+        (Step.cong .gen_listCons ()
+          (StepChildren.here
+            (parentScope := scope) (headShift := 0) (restShifts := [0])
+            ((.childCons tailValue .childNil) :
+              RawTermChildren [0] scope)
+            headStep)))
+
+/-- Root `listElim (listCons head tail)` iota branching against congruence
+inside the `listCons` tail.  The tail appears both as the cons-branch
+argument and as the recursive-call scrutinee. -/
+def iotaListElimConsTailCong {scope : Nat}
+    {headValue tailValue steppedTailValue nilBranch consBranch :
+      RawTerm scope}
+    (tailStep : Step tailValue steppedTailValue) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_listElim ()
+      (.childCons
+        (.mkGen .gen_listCons ()
+          (.childCons headValue (.childCons tailValue .childNil)))
+        (.childCons nilBranch (.childCons consBranch .childNil)))
+  leftReduct :=
+    .mkGen .gen_app ()
+      (.childCons
+        (.mkGen .gen_app ()
+          (.childCons
+            (.mkGen .gen_app ()
+              (.childCons consBranch (.childCons headValue .childNil)))
+            (.childCons tailValue .childNil)))
+        (.childCons
+          (.mkGen .gen_listElim ()
+            (.childCons tailValue
+              (.childCons nilBranch (.childCons consBranch .childNil))))
+          .childNil))
+  rightReduct :=
+    .mkGen .gen_listElim ()
+      (.childCons
+        (.mkGen .gen_listCons ()
+          (.childCons headValue (.childCons steppedTailValue .childNil)))
+        (.childCons nilBranch (.childCons consBranch .childNil)))
+  leftStep := Step.iotaListElimCons
+  rightStep :=
+    Step.cong .gen_listElim ()
+      (StepChildren.here
+        (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
+        ((.childCons nilBranch (.childCons consBranch .childNil)) :
+          RawTermChildren [0, 0] scope)
+        (Step.cong .gen_listCons ()
+          (StepChildren.there
+            (parentScope := scope) (headShift := 0) (restShifts := [0])
+            headValue
+            (StepChildren.here
+              (parentScope := scope) (headShift := 0) (restShifts := [])
+              (.childNil : RawTermChildren [] scope)
+              tailStep))))
+
+/-- Root `listElim (listCons head tail)` iota branching against congruence
+in the nil-branch.  The nil branch appears only inside the recursive call in
+the root iota reduct. -/
+def iotaListElimConsNilBranchCong {scope : Nat}
+    {headValue tailValue nilBranch steppedNilBranch consBranch :
+      RawTerm scope}
+    (nilStep : Step nilBranch steppedNilBranch) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_listElim ()
+      (.childCons
+        (.mkGen .gen_listCons ()
+          (.childCons headValue (.childCons tailValue .childNil)))
+        (.childCons nilBranch (.childCons consBranch .childNil)))
+  leftReduct :=
+    .mkGen .gen_app ()
+      (.childCons
+        (.mkGen .gen_app ()
+          (.childCons
+            (.mkGen .gen_app ()
+              (.childCons consBranch (.childCons headValue .childNil)))
+            (.childCons tailValue .childNil)))
+        (.childCons
+          (.mkGen .gen_listElim ()
+            (.childCons tailValue
+              (.childCons nilBranch (.childCons consBranch .childNil))))
+          .childNil))
+  rightReduct :=
+    .mkGen .gen_listElim ()
+      (.childCons
+        (.mkGen .gen_listCons ()
+          (.childCons headValue (.childCons tailValue .childNil)))
+        (.childCons steppedNilBranch (.childCons consBranch .childNil)))
+  leftStep := Step.iotaListElimCons
+  rightStep :=
+    Step.cong .gen_listElim ()
+      (StepChildren.there
+        (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
+        ((.mkGen .gen_listCons ()
+          (.childCons headValue (.childCons tailValue .childNil)) :
+          RawTerm scope))
+        (StepChildren.here
+          (parentScope := scope) (headShift := 0) (restShifts := [0])
+          ((.childCons consBranch .childNil) :
+            RawTermChildren [0] scope)
+          nilStep))
+
+/-- Root `listElim (listCons head tail)` iota branching against congruence
+in the cons-branch.  The cons branch appears both in the app-chain function
+and inside the recursive call. -/
+def iotaListElimConsConsBranchCong {scope : Nat}
+    {headValue tailValue nilBranch consBranch steppedConsBranch :
+      RawTerm scope}
+    (consStep : Step consBranch steppedConsBranch) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_listElim ()
+      (.childCons
+        (.mkGen .gen_listCons ()
+          (.childCons headValue (.childCons tailValue .childNil)))
+        (.childCons nilBranch (.childCons consBranch .childNil)))
+  leftReduct :=
+    .mkGen .gen_app ()
+      (.childCons
+        (.mkGen .gen_app ()
+          (.childCons
+            (.mkGen .gen_app ()
+              (.childCons consBranch (.childCons headValue .childNil)))
+            (.childCons tailValue .childNil)))
+        (.childCons
+          (.mkGen .gen_listElim ()
+            (.childCons tailValue
+              (.childCons nilBranch (.childCons consBranch .childNil))))
+          .childNil))
+  rightReduct :=
+    .mkGen .gen_listElim ()
+      (.childCons
+        (.mkGen .gen_listCons ()
+          (.childCons headValue (.childCons tailValue .childNil)))
+        (.childCons nilBranch (.childCons steppedConsBranch .childNil)))
+  leftStep := Step.iotaListElimCons
+  rightStep :=
+    Step.cong .gen_listElim ()
+      (StepChildren.there
+        (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
+        ((.mkGen .gen_listCons ()
+          (.childCons headValue (.childCons tailValue .childNil)) :
+          RawTerm scope))
+        (StepChildren.there
+          (parentScope := scope) (headShift := 0) (restShifts := [0])
+          nilBranch
+          (StepChildren.here
+            (parentScope := scope) (headShift := 0) (restShifts := [])
+            (.childNil : RawTermChildren [] scope)
+            consStep)))
+
 /-- Root `listElim listNil` iota branching against congruence in the
 selected nil-branch. -/
 def iotaListElimNilBranchCong {scope : Nat}
@@ -2775,6 +2966,288 @@ def iotaNatRecSuccPredecessorCong {scope : Nat}
                         RawTermChildren [0, 0] scope)
                       predecessorStep))))))
       rightChain := StepStar.single Step.iotaNatRecSucc }
+
+/-- Root `listElim (listCons head tail)` iota against congruence inside the
+`listCons` head. -/
+def iotaListElimConsHeadCong {scope : Nat}
+    {headValue steppedHeadValue tailValue nilBranch consBranch :
+      RawTerm scope}
+    (headStep : Step headValue steppedHeadValue) :
+    LocalDiamond
+      (LocalStepBranching.iotaListElimConsHeadCong
+        (headValue := headValue)
+        (steppedHeadValue := steppedHeadValue)
+        (tailValue := tailValue)
+        (nilBranch := nilBranch)
+        (consBranch := consBranch)
+        headStep) := by
+  dsimp [LocalStepBranching.iotaListElimConsHeadCong]
+  exact
+    { commonReduct :=
+        .mkGen .gen_app ()
+          (.childCons
+            (.mkGen .gen_app ()
+              (.childCons
+                (.mkGen .gen_app ()
+                  (.childCons consBranch
+                    (.childCons steppedHeadValue .childNil)))
+                (.childCons tailValue .childNil)))
+            (.childCons
+              (.mkGen .gen_listElim ()
+                (.childCons tailValue
+                  (.childCons nilBranch (.childCons consBranch .childNil))))
+              .childNil))
+      leftChain :=
+        StepStar.single
+          (Step.cong .gen_app ()
+            (StepChildren.here
+              (parentScope := scope) (headShift := 0) (restShifts := [0])
+              ((.childCons
+                (.mkGen .gen_listElim ()
+                  (.childCons tailValue
+                    (.childCons nilBranch
+                      (.childCons consBranch .childNil))))
+                .childNil) :
+                RawTermChildren [0] scope)
+              (Step.cong .gen_app ()
+                (StepChildren.here
+                  (parentScope := scope) (headShift := 0)
+                  (restShifts := [0])
+                  ((.childCons tailValue .childNil) :
+                    RawTermChildren [0] scope)
+                  (Step.cong .gen_app ()
+                    (StepChildren.there
+                      (parentScope := scope) (headShift := 0)
+                      (restShifts := [0])
+                      consBranch
+                      (StepChildren.here
+                        (parentScope := scope) (headShift := 0)
+                        (restShifts := [])
+                        (.childNil : RawTermChildren [] scope)
+                        headStep)))))))
+      rightChain := StepStar.single Step.iotaListElimCons }
+
+/-- Root `listElim (listCons head tail)` iota against congruence inside the
+`listCons` tail.  The tail step is replayed in the cons-branch argument and
+then in the recursive-call scrutinee. -/
+def iotaListElimConsTailCong {scope : Nat}
+    {headValue tailValue steppedTailValue nilBranch consBranch :
+      RawTerm scope}
+    (tailStep : Step tailValue steppedTailValue) :
+    LocalDiamond
+      (LocalStepBranching.iotaListElimConsTailCong
+        (headValue := headValue)
+        (tailValue := tailValue)
+        (steppedTailValue := steppedTailValue)
+        (nilBranch := nilBranch)
+        (consBranch := consBranch)
+        tailStep) := by
+  dsimp [LocalStepBranching.iotaListElimConsTailCong]
+  exact
+    { commonReduct :=
+        .mkGen .gen_app ()
+          (.childCons
+            (.mkGen .gen_app ()
+              (.childCons
+                (.mkGen .gen_app ()
+                  (.childCons consBranch (.childCons headValue .childNil)))
+                (.childCons steppedTailValue .childNil)))
+            (.childCons
+              (.mkGen .gen_listElim ()
+                (.childCons steppedTailValue
+                  (.childCons nilBranch (.childCons consBranch .childNil))))
+              .childNil))
+      leftChain :=
+        StepStar.trans
+          (Step.cong .gen_app ()
+            (StepChildren.here
+              (parentScope := scope) (headShift := 0) (restShifts := [0])
+              ((.childCons
+                (.mkGen .gen_listElim ()
+                  (.childCons tailValue
+                    (.childCons nilBranch
+                      (.childCons consBranch .childNil))))
+                .childNil) :
+                RawTermChildren [0] scope)
+              (Step.cong .gen_app ()
+                (StepChildren.there
+                  (parentScope := scope) (headShift := 0)
+                  (restShifts := [0])
+                  (.mkGen .gen_app ()
+                    (.childCons consBranch (.childCons headValue .childNil)))
+                  (StepChildren.here
+                    (parentScope := scope) (headShift := 0)
+                    (restShifts := [])
+                    (.childNil : RawTermChildren [] scope)
+                    tailStep)))))
+          (StepStar.single
+            (Step.cong .gen_app ()
+              (StepChildren.there
+                (parentScope := scope) (headShift := 0) (restShifts := [0])
+                ((.mkGen .gen_app ()
+                  (.childCons
+                    (.mkGen .gen_app ()
+                      (.childCons consBranch
+                        (.childCons headValue .childNil)))
+                    (.childCons steppedTailValue .childNil))) :
+                  RawTerm scope)
+                (StepChildren.here
+                  (parentScope := scope) (headShift := 0) (restShifts := [])
+                  (.childNil : RawTermChildren [] scope)
+                  (Step.cong .gen_listElim ()
+                    (StepChildren.here
+                      (parentScope := scope) (headShift := 0)
+                      (restShifts := [0, 0])
+                      ((.childCons nilBranch
+                        (.childCons consBranch .childNil)) :
+                        RawTermChildren [0, 0] scope)
+                      tailStep))))))
+      rightChain := StepStar.single Step.iotaListElimCons }
+
+/-- Root `listElim (listCons head tail)` iota against congruence in the
+nil-branch. -/
+def iotaListElimConsNilBranchCong {scope : Nat}
+    {headValue tailValue nilBranch steppedNilBranch consBranch :
+      RawTerm scope}
+    (nilStep : Step nilBranch steppedNilBranch) :
+    LocalDiamond
+      (LocalStepBranching.iotaListElimConsNilBranchCong
+        (headValue := headValue)
+        (tailValue := tailValue)
+        (nilBranch := nilBranch)
+        (steppedNilBranch := steppedNilBranch)
+        (consBranch := consBranch)
+        nilStep) := by
+  dsimp [LocalStepBranching.iotaListElimConsNilBranchCong]
+  exact
+    { commonReduct :=
+        .mkGen .gen_app ()
+          (.childCons
+            (.mkGen .gen_app ()
+              (.childCons
+                (.mkGen .gen_app ()
+                  (.childCons consBranch (.childCons headValue .childNil)))
+                (.childCons tailValue .childNil)))
+            (.childCons
+              (.mkGen .gen_listElim ()
+                (.childCons tailValue
+                  (.childCons steppedNilBranch
+                    (.childCons consBranch .childNil))))
+              .childNil))
+      leftChain :=
+        StepStar.single
+          (Step.cong .gen_app ()
+            (StepChildren.there
+              (parentScope := scope) (headShift := 0) (restShifts := [0])
+              ((.mkGen .gen_app ()
+                (.childCons
+                  (.mkGen .gen_app ()
+                    (.childCons consBranch
+                      (.childCons headValue .childNil)))
+                  (.childCons tailValue .childNil))) :
+                RawTerm scope)
+              (StepChildren.here
+                (parentScope := scope) (headShift := 0) (restShifts := [])
+                (.childNil : RawTermChildren [] scope)
+                (Step.cong .gen_listElim ()
+                  (StepChildren.there
+                    (parentScope := scope) (headShift := 0)
+                    (restShifts := [0, 0])
+                    tailValue
+                    (StepChildren.here
+                      (parentScope := scope) (headShift := 0)
+                      (restShifts := [0])
+                      ((.childCons consBranch .childNil) :
+                        RawTermChildren [0] scope)
+                      nilStep))))))
+      rightChain := StepStar.single Step.iotaListElimCons }
+
+/-- Root `listElim (listCons head tail)` iota against congruence in the
+cons-branch.  The cons-branch step is replayed in the app-chain function and
+then inside the recursive call. -/
+def iotaListElimConsConsBranchCong {scope : Nat}
+    {headValue tailValue nilBranch consBranch steppedConsBranch :
+      RawTerm scope}
+    (consStep : Step consBranch steppedConsBranch) :
+    LocalDiamond
+      (LocalStepBranching.iotaListElimConsConsBranchCong
+        (headValue := headValue)
+        (tailValue := tailValue)
+        (nilBranch := nilBranch)
+        (consBranch := consBranch)
+        (steppedConsBranch := steppedConsBranch)
+        consStep) := by
+  dsimp [LocalStepBranching.iotaListElimConsConsBranchCong]
+  exact
+    { commonReduct :=
+        .mkGen .gen_app ()
+          (.childCons
+            (.mkGen .gen_app ()
+              (.childCons
+                (.mkGen .gen_app ()
+                  (.childCons steppedConsBranch
+                    (.childCons headValue .childNil)))
+                (.childCons tailValue .childNil)))
+            (.childCons
+              (.mkGen .gen_listElim ()
+                (.childCons tailValue
+                  (.childCons nilBranch
+                    (.childCons steppedConsBranch .childNil))))
+              .childNil))
+      leftChain :=
+        StepStar.trans
+          (Step.cong .gen_app ()
+            (StepChildren.here
+              (parentScope := scope) (headShift := 0) (restShifts := [0])
+              ((.childCons
+                (.mkGen .gen_listElim ()
+                  (.childCons tailValue
+                    (.childCons nilBranch
+                      (.childCons consBranch .childNil))))
+                .childNil) :
+                RawTermChildren [0] scope)
+              (Step.cong .gen_app ()
+                (StepChildren.here
+                  (parentScope := scope) (headShift := 0)
+                  (restShifts := [0])
+                  ((.childCons tailValue .childNil) :
+                    RawTermChildren [0] scope)
+                  (Step.cong .gen_app ()
+                    (StepChildren.here
+                      (parentScope := scope) (headShift := 0)
+                      (restShifts := [0])
+                      ((.childCons headValue .childNil) :
+                        RawTermChildren [0] scope)
+                      consStep))))))
+          (StepStar.single
+            (Step.cong .gen_app ()
+              (StepChildren.there
+                (parentScope := scope) (headShift := 0) (restShifts := [0])
+                ((.mkGen .gen_app ()
+                  (.childCons
+                    (.mkGen .gen_app ()
+                      (.childCons steppedConsBranch
+                        (.childCons headValue .childNil)))
+                    (.childCons tailValue .childNil))) :
+                  RawTerm scope)
+                (StepChildren.here
+                  (parentScope := scope) (headShift := 0) (restShifts := [])
+                  (.childNil : RawTermChildren [] scope)
+                  (Step.cong .gen_listElim ()
+                    (StepChildren.there
+                      (parentScope := scope) (headShift := 0)
+                      (restShifts := [0, 0])
+                      tailValue
+                      (StepChildren.there
+                        (parentScope := scope) (headShift := 0)
+                        (restShifts := [0])
+                        nilBranch
+                        (StepChildren.here
+                          (parentScope := scope) (headShift := 0)
+                          (restShifts := [])
+                          (.childNil : RawTermChildren [] scope)
+                          consStep))))))))
+      rightChain := StepStar.single Step.iotaListElimCons }
 
 /-- Root `listElim listNil` iota against congruence in the selected
 nil-branch. -/
