@@ -253,6 +253,68 @@ theorem RawCellV2.rename_identityCell_unfolds
     RawCellV2.rename rawRenaming (.identityCell baseCell) =
       .identityCell (RawCellV2.rename rawRenaming baseCell) := rfl
 
+/-! ## V2-L2.12: subst push-through lemmas (cell-level boundary preservation)
+
+Per polycell.md §11.6.2, the LOAD-BEARING property of cell-level
+substitution is that `subst` pushes through each cell constructor
+homomorphically.  The `termBase` arm is already shipped above;
+this section completes the family for the four remaining ctors.
+
+Each closes by `rfl` because `RawCellV2.subst` is a direct 5-arm
+structural recursion: the ctor pattern match unfolds definitionally
+when the scrutinee is a concrete ctor.
+
+Together with `subst_termBase_unfolds`, these five theorems witness
+that cell-level substitution preserves the boundary structure of
+every cell ctor -- the "boundary preservation" obligation of
+§11.6.2. -/
+
+/-- Smoke: subst on `generatingCell` reduces to the recursive form
+(homomorphic over the source/target sub-cells). -/
+theorem RawCellV2.subst_generatingCell_unfolds
+    {sourceScope targetScope : Nat}
+    (someSubstitution : RawTermSubstV2 sourceScope targetScope)
+    (ruleId : Nat)
+    (sourceCell targetCell : RawCellV2 sourceScope) :
+    RawCellV2.subst someSubstitution
+        (.generatingCell ruleId sourceCell targetCell) =
+      .generatingCell ruleId
+        (RawCellV2.subst someSubstitution sourceCell)
+        (RawCellV2.subst someSubstitution targetCell) := rfl
+
+/-- Smoke: subst on `verticalComposite` reduces to the recursive form
+(homomorphic over the first/second sub-cells). -/
+theorem RawCellV2.subst_verticalComposite_unfolds
+    {sourceScope targetScope : Nat}
+    (someSubstitution : RawTermSubstV2 sourceScope targetScope)
+    (firstCell secondCell : RawCellV2 sourceScope) :
+    RawCellV2.subst someSubstitution
+        (.verticalComposite firstCell secondCell) =
+      .verticalComposite
+        (RawCellV2.subst someSubstitution firstCell)
+        (RawCellV2.subst someSubstitution secondCell) := rfl
+
+/-- Smoke: subst on `horizontalComposite` reduces to the recursive
+form (homomorphic over the left/right sub-cells). -/
+theorem RawCellV2.subst_horizontalComposite_unfolds
+    {sourceScope targetScope : Nat}
+    (someSubstitution : RawTermSubstV2 sourceScope targetScope)
+    (leftCell rightCell : RawCellV2 sourceScope) :
+    RawCellV2.subst someSubstitution
+        (.horizontalComposite leftCell rightCell) =
+      .horizontalComposite
+        (RawCellV2.subst someSubstitution leftCell)
+        (RawCellV2.subst someSubstitution rightCell) := rfl
+
+/-- Smoke: subst on `identityCell` reduces to the recursive form
+(homomorphic over the base sub-cell). -/
+theorem RawCellV2.subst_identityCell_unfolds
+    {sourceScope targetScope : Nat}
+    (someSubstitution : RawTermSubstV2 sourceScope targetScope)
+    (baseCell : RawCellV2 sourceScope) :
+    RawCellV2.subst someSubstitution (.identityCell baseCell) =
+      .identityCell (RawCellV2.subst someSubstitution baseCell) := rfl
+
 /-- Smoke: rename preserves dim on a sample `generatingCell` (dim=1). -/
 theorem RawCellV2.rename_preserves_dim_generatingCell_smoke
     {sourceScope targetScope : Nat}

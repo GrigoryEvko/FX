@@ -4229,6 +4229,25 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.rename_verticalComposite_unfolds
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.rename_horizontalComposite_unfolds
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.rename_identityCell_unfolds
+
+-- ─── V2-L2.12: subst push-through (cell-level boundary preservation)
+-- Per polycell.md §11.6.2: cell-level subst is HOMOMORPHIC over every
+-- cell constructor (subst pushes through to the sub-cells).  The
+-- termBase arm was already gated above; this section completes the
+-- family for the four remaining ctors.
+--
+-- Each theorem closes by rfl because RawCellV2.subst is a direct
+-- 5-arm structural recursion (RawCellV2RenameSubst.lean:111).  The
+-- ctor pattern match unfolds definitionally on concrete inputs.
+--
+-- Together with subst_termBase_unfolds, these five theorems witness
+-- that cell-level substitution preserves the boundary structure of
+-- every cell ctor — the "boundary preservation" obligation that
+-- §11.6.2 names as load-bearing.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.subst_generatingCell_unfolds
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.subst_verticalComposite_unfolds
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.subst_horizontalComposite_unfolds
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.subst_identityCell_unfolds
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawCellV2.rename_preserves_dim_generatingCell_smoke
 
 -- V2-L2.9: cascade-deletion demonstration (the L2 payoff, quantified).
