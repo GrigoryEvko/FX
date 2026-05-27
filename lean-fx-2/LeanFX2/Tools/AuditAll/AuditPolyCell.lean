@@ -97,6 +97,7 @@ import LeanFX2.Foundation.PolyCell.Core.StepInversion
 import LeanFX2.Foundation.PolyCell.Core.CertifiedTerm
 import LeanFX2.Foundation.PolyCell.Core.GeneratorChildSpecsDim0
 import LeanFX2.Foundation.PolyCell.Core.CellNonVarStepRenamer
+import LeanFX2.Foundation.PolyCell.Core.CellNonVarStepSubstituter
 
 namespace LeanFX2.Tools
 
@@ -897,6 +898,14 @@ namespace LeanFX2.Tools
 -- level rather than HCC.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyCell.rename_dim0_nonVarStep
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyCell.rename_dim0_varStep
+
+-- ─── V2-L3.1 phase D step 33: cell-side step substituters (subst sibling
+-- of step 32 step renamers).  Non-recursive — takes the substituted
+-- spine as hypothesis (non-var) or the substituent's cell directly
+-- (var).  Completes the cell-side step infrastructure for both
+-- rename and subst directions.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyCell.subst_dim0_nonVarStep
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyCell.subst_dim0_varStep
 
 -- ─── V2-L3.1 phase D step 16: compound smart constructors ─────────
 -- 9 compound intros for term-shape generators with .term-sorted
