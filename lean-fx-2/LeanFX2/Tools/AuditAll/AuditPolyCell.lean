@@ -63,6 +63,7 @@ import LeanFX2.Foundation.PolyCell.Core.RawTermV2RenameComposeFusion
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2RenameSubstCommute
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2SubstRenameCommute
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2SubstCompose
+import LeanFX2.Foundation.PolyCell.Core.RawTermSubstV2Action
 
 namespace LeanFX2.Tools
 
@@ -3735,6 +3736,24 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2.subst_compose
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.subst_compose_unit_smoke
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.subst_compose_var_smoke
+
+-- V2-L2.7d: THE `Action RawTermSubstV2` TYPECLASS INSTANCE.
+-- Closes V2-L2.7 entirely.  Cites the three Action laws shipped
+-- across #181a (apply_ext / subst_pointwise), #181b
+-- (identity_apply / subst_identity_apply), and #181c6
+-- (compose_assoc / subst_compose).
+-- Resolves the chicken-and-egg from #180: at that time,
+-- `RawTermSubstV2.compose` needed `RawTermV2.subst`, but `subst`
+-- was being defined.  The LiftsRaw refactor (#180) sidestepped
+-- this for fold; now with compose shipped (#181c6) and the laws
+-- proven, the full Action instance lands.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.instActionRawTermSubstV2
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubstV2.identity_eq_action
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubstV2.lift_eq_actionForTy
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubstV2.lift_eq_actionForRaw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubstV2.compose_eq_action
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubstV2.action_identity_headIndex_smoke
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubstV2.action_compose_identity_left_smoke
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
