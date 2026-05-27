@@ -72,6 +72,7 @@ import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2TermBase
 import LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpineV2Projections
 import LeanFX2.Foundation.PolyCell.Core.CertifiedToPolyCellV2
 import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaBoolTrue
+import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaBoolFalse
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2Subst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2WrongChildShape
@@ -3429,6 +3430,14 @@ namespace LeanFX2.Tools
 -- spine.tail.headAtDim0 rfl projects the then-branch cell → wrap.
 -- Combined uses of the V2-L3.1 phase D steps 2 + 4 infrastructure.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByIotaBoolTrue
+
+-- ─── V2-L3.1 phase D step 6: SECOND SR arm — iotaBoolFalse ─────────
+-- Symmetric to iotaBoolTrue.  bool-eliminator on boolFalse selects
+-- the else-branch (third spine child).  Same proof pattern as
+-- iotaBoolTrue with one more tail: spine.tail.tail.headAtDim0 rfl.
+-- Validates that the pure-projection iota template transfers
+-- verbatim across spine positions.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByIotaBoolFalse
 
 -- ─── V2-fix-4: restricted-profile admission predicate ──────────────
 -- Discharges Agent 3 H3.2 (admission machinery decoration).  Before
