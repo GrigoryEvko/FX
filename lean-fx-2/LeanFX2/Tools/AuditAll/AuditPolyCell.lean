@@ -73,6 +73,7 @@ import LeanFX2.Foundation.PolyCell.Core.SubstPreservationProbes
 import LeanFX2.Foundation.PolyCell.Core.HasCertifiedComposition
 import LeanFX2.Foundation.PolyCell.Core.CompoundRenamePreservation
 import LeanFX2.Foundation.PolyCell.Core.CompoundSubstPreservation
+import LeanFX2.Foundation.PolyCell.Core.BetaRedexLeafPreservation
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactWrongChildShape
@@ -921,6 +922,41 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.eitherInr_preservedBySubst
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.refl_preservedBySubst
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.lam_preservedBySubst
+
+-- ─── V2-L3.1 phase D step 18: beta-redex leaf preservations ────────
+-- Base cases of the future structural subst0-preservation theorem,
+-- specialized to the body shapes that appear in beta redexes
+-- `(lam body) arg → subst0 body arg`.
+--
+-- Six closed-nullary bodies (unit / boolTrue / boolFalse / natZero /
+-- listNil / optionNone) are invariant under subst0 — the closed
+-- term passes through unchanged.  Two variable bodies cover the
+-- de Bruijn substitution behavior:
+--   * var 0 → arg (the identity lambda)
+--   * var (k+1) → var k (higher-indexed variables shift down)
+--
+-- Each closes by rw [subst0_X_reduces]; exact HCC.X.  Same
+-- compositional template as the existing nullary / compound
+-- preservations.  Forward-compat: when SR-beta lands as a
+-- structural induction on body, THESE lemmas discharge the
+-- leaf base cases; the inductive cases recurse on children.
+--
+-- 6 reduction probes (general var-succ + 5 closed nullary forms)
+-- + 8 preservations.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst0_var_succ_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst0_boolTrue_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst0_boolFalse_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst0_natZero_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst0_listNil_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst0_optionNone_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_varZero_preservation
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_varSucc_preservation
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_unit_preservation
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_boolTrue_preservation
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_boolFalse_preservation
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_natZero_preservation
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_listNil_preservation
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_optionNone_preservation
 
 -- ─── V2-fix-4: restricted-profile admission predicate ──────────────
 -- Discharges Agent 3 H3.2 (admission machinery decoration).  Before
