@@ -3706,6 +3706,24 @@ namespace LeanFX2.Tools
 -- when the types match definitionally.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.inferRawCellGeneralV2?_accepted_rawCell_heq
 
+-- ─── V2-fix-7: Eq companion for HEq raw-preservation theorem ────────
+-- Under v2's un-indexed RawCellV2 scope, both sides of the HEq
+-- relation above have the same type (RawCellV2 scope), so the
+-- relation collapses to definitional Eq.  The HEq form is kept for
+-- v1 API compatibility; the Eq companion ships the tightened form
+-- for v2-LOCAL callers (L3 metatheory, NbE, confluence proofs).
+--
+-- Plus a derivation theorem witnessing that the HEq form follows
+-- from the Eq form via heq_of_eq.  In V2-mig phase B (when v1 is
+-- retired), the HEq form can be retired in favor of the Eq form
+-- via this derivation.
+--
+-- All three theorems pass #assert_no_axioms.  Proof shape for each:
+-- same 5-step skeleton as #168 (unfold + cases + injection + subst
+-- + rfl).
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.inferRawCellGeneralV2?_accepted_rawCell_eq
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.inferRawCellGeneralV2?_accepted_rawCell_heq_of_eq
+
 -- ─── V2-L1cert.14: existential no-laundering keystone (#169) ────────
 -- inferRawCellGeneralV2?_sound: KEYSTONE of the existential-variant
 -- soundness trio.  Every cell accepted by the existential wrapper

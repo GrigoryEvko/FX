@@ -74,7 +74,9 @@ input.
 
 Note: under v2's un-indexed `RawCellV2 scope`, both sides have the
 same type, so this HEq is reducible to Eq — but HEq is kept for
-API compatibility with v1 and to compose cleanly with #169. -/
+API compatibility with v1 and to compose cleanly with #169.  The
+`_eq` companion below ships the tightened Eq form for v2-local
+callers that want the structural equality directly. -/
 theorem inferRawCellGeneralV2?_accepted_rawCell_heq
     {profile : PolyProfile} {scope : Nat} {raw : RawCellV2 scope}
     {result : CertifiedRawCellResultV2 profile scope}
@@ -91,5 +93,60 @@ theorem inferRawCellGeneralV2?_accepted_rawCell_heq
       injection accepted with resultEq
       subst resultEq
       rfl
+
+/-- **V2-fix-7: tightened Eq companion.**
+
+The HEq theorem above keeps the heterogeneous form for API
+compatibility with v1.  Under v2's un-indexed `RawCellV2 scope`,
+both sides of the relation have the same type
+(`RawCellV2 scope`), so the relation collapses to definitional
+Eq.
+
+This `_eq` form is the v2-LOCAL companion: callers that already
+operate within v2's un-indexed regime can use Eq directly without
+needing `eq_of_heq` to lift the HEq form.
+
+The HEq version composes cleanly with downstream HEq-shape
+theorems (#169 sound, V2-bridge.* roundtrips that may
+re-introduce a dim index).  This Eq version is the load-bearing
+form for v2-only metatheory (subject reduction, confluence,
+NbE -- all L3 tasks that stay in v2 throughout).
+
+Proof: same structure as the HEq version; rfl closes because
+result.rawCell evaluates to raw definitionally when the
+certifier accepts. -/
+theorem inferRawCellGeneralV2?_accepted_rawCell_eq
+    {profile : PolyProfile} {scope : Nat} {raw : RawCellV2 scope}
+    {result : CertifiedRawCellResultV2 profile scope}
+    (accepted :
+      inferRawCellGeneralV2? scope raw = Except.ok result) :
+    result.rawCell = raw := by
+  rw [inferRawCellGeneralV2?] at accepted
+  cases hCertify : certifyRawCellExactV2? (profile := profile) scope raw with
+  | error rejection =>
+      rw [hCertify] at accepted
+      cases accepted
+  | ok exactResult =>
+      rw [hCertify] at accepted
+      injection accepted with resultEq
+      subst resultEq
+      rfl
+
+/-- **V2-fix-7: HEq follows from Eq under same-type discipline.**
+
+Demonstrates the relationship: the HEq theorem is derivable from
+the Eq theorem via `heq_of_eq`.  This is the formal witness that
+the HEq form is non-essential under v2's un-indexed regime.
+
+In phase B of V2-mig (when v1 PolyTerm is fully retired and no
+HEq composition with v1 is needed), the HEq form can be retired
+in favor of the Eq form via this derivation. -/
+theorem inferRawCellGeneralV2?_accepted_rawCell_heq_of_eq
+    {profile : PolyProfile} {scope : Nat} {raw : RawCellV2 scope}
+    {result : CertifiedRawCellResultV2 profile scope}
+    (accepted :
+      inferRawCellGeneralV2? scope raw = Except.ok result) :
+    HEq result.rawCell raw :=
+  heq_of_eq (inferRawCellGeneralV2?_accepted_rawCell_eq accepted)
 
 end LeanFX2.Foundation.PolyCell.Core
