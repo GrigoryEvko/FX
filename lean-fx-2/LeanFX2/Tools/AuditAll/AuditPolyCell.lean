@@ -28,6 +28,7 @@ import LeanFX2.Foundation.PolyCell.Core.CellBoundaryV2
 import LeanFX2.Foundation.PolyCell.Core.AbstractTermSpineV2
 import LeanFX2.Foundation.PolyCell.Core.PolyCellV2
 import LeanFX2.Foundation.PolyCell.Core.PolyCellV2Erasure
+import LeanFX2.Foundation.PolyCell.Core.PolyCellV2Helpers
 
 namespace LeanFX2.Tools
 
@@ -2976,6 +2977,23 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyCellV2.generatingCell_raw_eq
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyCellV2.verticalComposite_raw_eq
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyCellV2.identityCell_raw_eq
+
+-- ─── V2-L1c.9: package helpers for PolyCellV2 (#154) ─────────────
+-- CertifiedCellV2 bundles indices + cell into one struct for use
+-- as the certifier's return type.  packageX helpers combine ctor
+-- application with packaging in one shot.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedCellV2
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedCellV2.mk
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedCellV2.sort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedCellV2.dim
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedCellV2.rawCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedCellV2.boundary
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedCellV2.certifiedCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedCellV2.ofCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.packageGen
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.packageGeneratingCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.packageVerticalComposite
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.packageIdentityCell
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
