@@ -39,6 +39,7 @@ import LeanFX2.Foundation.PolyCell.Core.BuildVerticalCompositeExactV2
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2
 import LeanFX2.Foundation.PolyCell.Core.InferRawCellGeneralV2
 import LeanFX2.Foundation.PolyCell.Core.CheckRawCellAsV2
+import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2Sound
 
 namespace LeanFX2.Tools
 
@@ -3179,6 +3180,22 @@ namespace LeanFX2.Tools
 -- under fxProfile the cost is negligible since callers usually know
 -- the sort they're passing.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.checkRawCellAsV2?
+
+-- ─── V2-L1cert.10: raw-indexed soundness (#165) ─────────────────────
+-- certifyRawCellExactV2?_sound: every accepted exact certification
+-- yields a certified cell whose raw erasure is EXACTLY the input.
+-- The no-false-positive guarantee for the raw-indexed ingress.
+--
+-- Proof: `rfl`.  The raw-indexed return type pins rawCell to the
+-- input at the type level; PolyCellV2.raw is a definitional
+-- projection of that type index.  The certifier CANNOT launder a
+-- different raw past the input — there is no inhabitant of
+-- CertifiedRawCellV2 profile scope raw whose certifiedCell.raw
+-- differs from raw.
+--
+-- The architectural payoff of v2's raw-INDEXED return type made
+-- structural: soundness collapses to a one-line rfl.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.certifyRawCellExactV2?_sound
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
