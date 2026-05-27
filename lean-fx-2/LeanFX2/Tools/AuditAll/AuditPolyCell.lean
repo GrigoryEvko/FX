@@ -56,6 +56,7 @@ import LeanFX2.Foundation.PolyCell.Core.RawTermV2Weaken
 import LeanFX2.Foundation.PolyCell.Core.LiftsRaw
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2Subst
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2SubstPointwise
+import LeanFX2.Foundation.PolyCell.Core.RawTermV2SubstIdentity
 
 namespace LeanFX2.Tools
 
@@ -3617,6 +3618,19 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2.subst_pointwise
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.subst_pointwise_unit_smoke
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.subst_pointwise_var_smoke
+
+-- V2-L2.7b: identity_apply / subst_identity — the SECOND of three
+-- Action laws.  Substituting by the identity substitution returns
+-- the term unchanged.  Consumes #181a's subst_pointwise to bridge
+-- the `iterateLiftRaw identity n` ≢ `identity` mismatch.  In v1
+-- this was another 74-arm structural induction; in v2 the mutual
+-- induction reuses the foldV2-based collapse.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubstV2.lift_identity_pointwise
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.iterateLiftRaw_identity_pointwise
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.subst_identity_apply
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2.subst_identity_apply
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.subst_identity_apply_unit_smoke
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.subst_identity_apply_var_smoke
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
