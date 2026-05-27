@@ -78,6 +78,7 @@ import LeanFX2.Foundation.PolyCell.Core.BetaRedexCompoundPreservation
 import LeanFX2.Foundation.PolyCell.Core.HasCertifiedProjections
 import LeanFX2.Foundation.PolyCell.Core.BetaRedexEndToEnd
 import LeanFX2.Foundation.PolyCell.Core.PairEliminatorLayer
+import LeanFX2.Foundation.PolyCell.Core.BoolEliminatorLayer
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactWrongChildShape
@@ -1106,6 +1107,29 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.snd_preservedBySubst
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst0_snd_reduces
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_snd_preservation
+
+-- ─── V2-L3.1 phase D step 23: boolean eliminator (boolElim) ────────
+-- Sibling of step 22 (PairEliminatorLayer); extends eliminator
+-- coverage to the 3-child boolean eliminator gen_boolElim.
+--
+-- 10 declarations: 1 intro + 3 projections (scrutinee/then/else) +
+-- 2 rename (probe + preservation) + 2 subst + 2 subst0.
+--
+-- Enables SR-cong for steps inside any of boolElim's three
+-- subterms (scrutinee, thenBranch, elseBranch).
+--
+-- Template scales to all 3-child eliminators (natElim/Rec, listElim,
+-- optionMatch, eitherMatch).
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.boolElim
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.boolElim_scrutinee_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.boolElim_thenBranch_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.boolElim_elseBranch_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_boolElim_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.boolElim_preservedByRename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst_boolElim_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.boolElim_preservedBySubst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst0_boolElim_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_boolElim_preservation
 
 -- ─── V2-fix-4: restricted-profile admission predicate ──────────────
 -- Discharges Agent 3 H3.2 (admission machinery decoration).  Before
