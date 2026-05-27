@@ -727,6 +727,88 @@ def iotaListElimConsSameRoot {scope : Nat}
   leftStep := Step.iotaListElimCons
   rightStep := Step.iotaListElimCons
 
+/-- `boolElim boolTrue` and `boolElim boolFalse` are disjoint root
+redex sources, so a true/false root-root branching is impossible. -/
+theorem iotaBoolTrue_iotaBoolFalse_sourcesDisjoint {scope : Nat}
+    (thenTrue elseTrue thenFalse elseFalse : RawTerm scope) :
+    Not
+      ((iotaBoolTrueSameRoot thenTrue elseTrue).source =
+        (iotaBoolFalseSameRoot thenFalse elseFalse).source) := by
+  intro sourceEquality
+  dsimp [iotaBoolTrueSameRoot, iotaBoolFalseSameRoot] at sourceEquality
+  cases sourceEquality
+
+/-- `natElim natZero` and `natElim (natSucc _)` are disjoint root
+redex sources, so a zero/succ root-root branching is impossible. -/
+theorem iotaNatElimZero_iotaNatElimSucc_sourcesDisjoint {scope : Nat}
+    (zeroBranch succBranch predecessor
+      zeroBranchSucc succBranchSucc : RawTerm scope) :
+    Not
+      ((iotaNatElimZeroSameRoot zeroBranch succBranch).source =
+        (iotaNatElimSuccSameRoot
+          predecessor zeroBranchSucc succBranchSucc).source) := by
+  intro sourceEquality
+  dsimp [iotaNatElimZeroSameRoot, iotaNatElimSuccSameRoot] at sourceEquality
+  cases sourceEquality
+
+/-- `natRec natZero` and `natRec (natSucc _)` are disjoint root
+redex sources, so a zero/succ root-root branching is impossible. -/
+theorem iotaNatRecZero_iotaNatRecSucc_sourcesDisjoint {scope : Nat}
+    (zeroBranch succBranch predecessor
+      zeroBranchSucc succBranchSucc : RawTerm scope) :
+    Not
+      ((iotaNatRecZeroSameRoot zeroBranch succBranch).source =
+        (iotaNatRecSuccSameRoot
+          predecessor zeroBranchSucc succBranchSucc).source) := by
+  intro sourceEquality
+  dsimp [iotaNatRecZeroSameRoot, iotaNatRecSuccSameRoot] at sourceEquality
+  cases sourceEquality
+
+/-- `listElim listNil` and `listElim (listCons _ _)` are disjoint root
+redex sources, so a nil/cons root-root branching is impossible. -/
+theorem iotaListElimNil_iotaListElimCons_sourcesDisjoint {scope : Nat}
+    (nilBranch consBranch headValue tailValue
+      nilBranchCons consBranchCons : RawTerm scope) :
+    Not
+      ((iotaListElimNilSameRoot nilBranch consBranch).source =
+        (iotaListElimConsSameRoot
+          headValue tailValue nilBranchCons consBranchCons).source) := by
+  intro sourceEquality
+  dsimp [iotaListElimNilSameRoot, iotaListElimConsSameRoot] at sourceEquality
+  cases sourceEquality
+
+/-- `optionMatch optionNone` and `optionMatch (optionSome _)` are disjoint
+root redex sources, so a none/some root-root branching is impossible. -/
+theorem iotaOptionMatchNone_iotaOptionMatchSome_sourcesDisjoint
+    {scope : Nat}
+    (noneBranch someBranch value
+      noneBranchSome someBranchSome : RawTerm scope) :
+    Not
+      ((iotaOptionMatchNoneSameRoot noneBranch someBranch).source =
+        (iotaOptionMatchSomeSameRoot
+          value noneBranchSome someBranchSome).source) := by
+  intro sourceEquality
+  dsimp [iotaOptionMatchNoneSameRoot, iotaOptionMatchSomeSameRoot]
+    at sourceEquality
+  cases sourceEquality
+
+/-- `eitherMatch (eitherInl _)` and `eitherMatch (eitherInr _)` are
+disjoint root redex sources, so an inl/inr root-root branching is
+impossible. -/
+theorem iotaEitherMatchInl_iotaEitherMatchInr_sourcesDisjoint
+    {scope : Nat}
+    (leftValue leftBranch rightBranch rightValue
+      leftBranchRight rightBranchRight : RawTerm scope) :
+    Not
+      ((iotaEitherMatchInlSameRoot
+          leftValue leftBranch rightBranch).source =
+        (iotaEitherMatchInrSameRoot
+          rightValue leftBranchRight rightBranchRight).source) := by
+  intro sourceEquality
+  dsimp [iotaEitherMatchInlSameRoot, iotaEitherMatchInrSameRoot]
+    at sourceEquality
+  cases sourceEquality
+
 end LocalStepBranching
 
 /-- A concrete local diamond filler for one local one-step branching.
