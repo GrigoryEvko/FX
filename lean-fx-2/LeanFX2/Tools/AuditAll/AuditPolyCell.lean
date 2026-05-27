@@ -35,6 +35,7 @@ import LeanFX2.Foundation.PolyCell.Core.CertifyTermSpineV2
 import LeanFX2.Foundation.PolyCell.Core.CertifyTermExactV2
 import LeanFX2.Foundation.PolyCell.Core.CertifiedRawCellV2
 import LeanFX2.Foundation.PolyCell.Core.BuildGeneratingCellExactV2
+import LeanFX2.Foundation.PolyCell.Core.BuildVerticalCompositeExactV2
 
 namespace LeanFX2.Tools
 
@@ -3075,6 +3076,30 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedRawCellV2.boundary
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedRawCellV2.certifiedCell
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.buildGeneratingCellExactV2?
+
+-- ─── V2-L1cert.6: vertical composite builder (#161) ─────────────────
+-- buildVerticalCompositeExactV2? extends the v1 transport recipe to
+-- the un-indexed v2 raw layer.  v1 took `cdim : CellDim` as a TYPE
+-- parameter to pin first/second cells at (cdim+1) definitionally;
+-- v2's un-indexed raw cannot do this, so the same constraint travels
+-- as DATA: parentDimension : Nat + hFirstDim/hSecondDim witnesses.
+--
+-- Inside the body:
+-- * destructure both certified packages
+-- * `if hSort` (constructive Decidable on CellSort)
+-- * generalize+subst on firstRaw.dim / secondRaw.dim aligns both
+--   children's boundaries/cells to dim parentDimension+1
+-- * `cases` on each boundary destructures CellBoundaryV2 ... (n+1) ...
+--   into Prod components (whnf reduces the def to RawCellV2 × RawCellV2)
+-- * `if hMiddle` (constructive Decidable on RawCellV2 via the L0 #133
+--   instance — imported from RawCellV2DecEq to keep typeclass search
+--   from falling back to Classical.propDecidable)
+-- * subst hMiddle aligns the middle endpoint
+-- * build the verticalComposite cell at dim parentDimension+1
+-- * final transport back to firstRaw.dim: boundary via single-motive
+--   ▸; cert via explicit Eq.rec with multi-arg motive that captures
+--   the dependent boundary in lockstep with the dim.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.buildVerticalCompositeExactV2?
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
