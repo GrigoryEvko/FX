@@ -340,6 +340,452 @@ theorem PolyCell.exists_preservedByIotaIdStrictRecRefl_dim0
   | gen _ _ sourceSpine =>
       exact ⟨sourceSpine.headAtDim0 rfl, True.intro⟩
 
+/-! ## Exact compound iota witnesses
+
+These iota arms build a fresh target term from certified children of
+the source.  They are the exact-cell counterparts of the existing
+`HasCertifiedCellDim0.preservedByIota*` compound proofs, but return a
+target cell at sort `.term` directly for the Prop-valued final
+`StepCellPreserverWitness` dispatcher. -/
+
+/-- Exact witness for `optionMatch (optionSome value) none some ↝ app some value`. -/
+theorem PolyCell.exists_preservedByIotaOptionMatchSome_dim0
+    {profile : PolyProfile} {scope : Nat}
+    {value noneBranch someBranch : RawTerm scope}
+    (sourceCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase
+          ((.mkGen .gen_optionMatch ()
+            (.childCons
+              (.mkGen .gen_optionSome () (.childCons value .childNil))
+              (.childCons noneBranch
+                (.childCons someBranch .childNil)))) : RawTerm scope))) :
+    ∃ _targetCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase
+          ((.mkGen .gen_app ()
+            (.childCons someBranch
+              (.childCons value .childNil))) : RawTerm scope)),
+      True := by
+  generalize hSourceSort : CellSort.term = sourceSort at sourceCell
+  cases sourceCell with
+  | gen _ _ sourceSpine =>
+      cases sourceSpine with
+      | cons optionSomeCell restAfterOptionSome =>
+          cases restAfterOptionSome with
+          | cons _noneBranchCell restAfterNone =>
+              cases restAfterNone with
+              | cons someBranchCell _ =>
+                  generalize hOptionSort :
+                      (ChildSpec.termSameScope.cellSort) = optionSort
+                    at optionSomeCell
+                  cases optionSomeCell with
+                  | gen _ _ optionSomeSpine =>
+                      cases optionSomeSpine with
+                      | cons valueCell _ =>
+                          exact ⟨
+                            PolyCell.gen
+                              SupportedGenerator.gen_app
+                              (genPayloadEvidence (generator := .gen_app)
+                                (scope := scope) ())
+                              (CertifiedTermSpine.cons someBranchCell
+                                (CertifiedTermSpine.cons valueCell
+                                  CertifiedTermSpine.nil)),
+                            True.intro⟩
+
+/-- Exact witness for `eitherMatch (eitherInl value) left right ↝ app left value`. -/
+theorem PolyCell.exists_preservedByIotaEitherMatchInl_dim0
+    {profile : PolyProfile} {scope : Nat}
+    {value leftBranch rightBranch : RawTerm scope}
+    (sourceCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase
+          ((.mkGen .gen_eitherMatch ()
+            (.childCons
+              (.mkGen .gen_eitherInl () (.childCons value .childNil))
+              (.childCons leftBranch
+                (.childCons rightBranch .childNil)))) : RawTerm scope))) :
+    ∃ _targetCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase
+          ((.mkGen .gen_app ()
+            (.childCons leftBranch
+              (.childCons value .childNil))) : RawTerm scope)),
+      True := by
+  generalize hSourceSort : CellSort.term = sourceSort at sourceCell
+  cases sourceCell with
+  | gen _ _ sourceSpine =>
+      cases sourceSpine with
+      | cons eitherInlCell restAfterEitherInl =>
+          cases restAfterEitherInl with
+          | cons leftBranchCell _restAfterLeft =>
+              generalize hEitherSort :
+                  (ChildSpec.termSameScope.cellSort) = eitherSort
+                at eitherInlCell
+              cases eitherInlCell with
+              | gen _ _ eitherInlSpine =>
+                  cases eitherInlSpine with
+                  | cons valueCell _ =>
+                      exact ⟨
+                        PolyCell.gen
+                          SupportedGenerator.gen_app
+                          (genPayloadEvidence (generator := .gen_app)
+                            (scope := scope) ())
+                          (CertifiedTermSpine.cons leftBranchCell
+                            (CertifiedTermSpine.cons valueCell
+                              CertifiedTermSpine.nil)),
+                        True.intro⟩
+
+/-- Exact witness for `eitherMatch (eitherInr value) left right ↝ app right value`. -/
+theorem PolyCell.exists_preservedByIotaEitherMatchInr_dim0
+    {profile : PolyProfile} {scope : Nat}
+    {value leftBranch rightBranch : RawTerm scope}
+    (sourceCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase
+          ((.mkGen .gen_eitherMatch ()
+            (.childCons
+              (.mkGen .gen_eitherInr () (.childCons value .childNil))
+              (.childCons leftBranch
+                (.childCons rightBranch .childNil)))) : RawTerm scope))) :
+    ∃ _targetCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase
+          ((.mkGen .gen_app ()
+            (.childCons rightBranch
+              (.childCons value .childNil))) : RawTerm scope)),
+      True := by
+  generalize hSourceSort : CellSort.term = sourceSort at sourceCell
+  cases sourceCell with
+  | gen _ _ sourceSpine =>
+      cases sourceSpine with
+      | cons eitherInrCell restAfterEitherInr =>
+          cases restAfterEitherInr with
+          | cons _leftBranchCell restAfterLeft =>
+              cases restAfterLeft with
+              | cons rightBranchCell _ =>
+                  generalize hEitherSort :
+                      (ChildSpec.termSameScope.cellSort) = eitherSort
+                    at eitherInrCell
+                  cases eitherInrCell with
+                  | gen _ _ eitherInrSpine =>
+                      cases eitherInrSpine with
+                      | cons valueCell _ =>
+                          exact ⟨
+                            PolyCell.gen
+                              SupportedGenerator.gen_app
+                              (genPayloadEvidence (generator := .gen_app)
+                                (scope := scope) ())
+                              (CertifiedTermSpine.cons rightBranchCell
+                                (CertifiedTermSpine.cons valueCell
+                                  CertifiedTermSpine.nil)),
+                            True.intro⟩
+
+/-- Exact witness for `natElim (natSucc n) z s ↝ app (app s n) (natElim n z s)`. -/
+theorem PolyCell.exists_preservedByIotaNatElimSucc_dim0
+    {profile : PolyProfile} {scope : Nat}
+    {predecessor zeroBranch succBranch : RawTerm scope}
+    (sourceCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase
+          ((.mkGen .gen_natElim ()
+            (.childCons
+              (.mkGen .gen_natSucc ()
+                (.childCons predecessor .childNil))
+              (.childCons zeroBranch
+                (.childCons succBranch .childNil)))) : RawTerm scope))) :
+    ∃ _targetCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase
+          ((.mkGen .gen_app ()
+            (.childCons
+              (.mkGen .gen_app ()
+                (.childCons succBranch
+                  (.childCons predecessor .childNil)))
+              (.childCons
+                (.mkGen .gen_natElim ()
+                  (.childCons predecessor
+                    (.childCons zeroBranch
+                      (.childCons succBranch .childNil))))
+                .childNil))) : RawTerm scope)),
+      True := by
+  generalize hSourceSort : CellSort.term = sourceSort at sourceCell
+  cases sourceCell with
+  | gen _ _ sourceSpine =>
+      cases sourceSpine with
+      | cons natSuccCell restAfterNatSucc =>
+          cases restAfterNatSucc with
+          | cons zeroBranchCell restAfterZero =>
+              cases restAfterZero with
+              | cons succBranchCell _ =>
+                  generalize hNatSuccSort :
+                      (ChildSpec.termSameScope.cellSort) = natSuccSort
+                    at natSuccCell
+                  cases natSuccCell with
+                  | gen _ _ natSuccSpine =>
+                      cases natSuccSpine with
+                      | cons predecessorCell _ =>
+                          let innerAppCell :
+                              PolyCell profile .term 0 scope
+                                CellBoundary.trivial
+                                (.termBase
+                                  ((.mkGen .gen_app ()
+                                    (.childCons succBranch
+                                      (.childCons predecessor
+                                        .childNil))) : RawTerm scope)) :=
+                            PolyCell.gen
+                              SupportedGenerator.gen_app
+                              (genPayloadEvidence (generator := .gen_app)
+                                (scope := scope) ())
+                              (CertifiedTermSpine.cons succBranchCell
+                                (CertifiedTermSpine.cons predecessorCell
+                                  CertifiedTermSpine.nil))
+                          let recursiveNatElimCell :
+                              PolyCell profile .term 0 scope
+                                CellBoundary.trivial
+                                (.termBase
+                                  ((.mkGen .gen_natElim ()
+                                    (.childCons predecessor
+                                      (.childCons zeroBranch
+                                        (.childCons succBranch
+                                          .childNil)))) :
+                                    RawTerm scope)) :=
+                            PolyCell.gen
+                              SupportedGenerator.gen_natElim
+                              (genPayloadEvidence
+                                (generator := .gen_natElim)
+                                (scope := scope) ())
+                              (CertifiedTermSpine.cons predecessorCell
+                                (CertifiedTermSpine.cons zeroBranchCell
+                                  (CertifiedTermSpine.cons succBranchCell
+                                    CertifiedTermSpine.nil)))
+                          exact ⟨
+                            PolyCell.gen
+                              SupportedGenerator.gen_app
+                              (genPayloadEvidence (generator := .gen_app)
+                                (scope := scope) ())
+                              (CertifiedTermSpine.cons innerAppCell
+                                (CertifiedTermSpine.cons
+                                  recursiveNatElimCell
+                                  CertifiedTermSpine.nil)),
+                            True.intro⟩
+
+/-- Exact witness for `natRec (natSucc n) z s ↝ app (app s n) (natRec n z s)`. -/
+theorem PolyCell.exists_preservedByIotaNatRecSucc_dim0
+    {profile : PolyProfile} {scope : Nat}
+    {predecessor zeroBranch succBranch : RawTerm scope}
+    (sourceCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase
+          ((.mkGen .gen_natRec ()
+            (.childCons
+              (.mkGen .gen_natSucc ()
+                (.childCons predecessor .childNil))
+              (.childCons zeroBranch
+                (.childCons succBranch .childNil)))) : RawTerm scope))) :
+    ∃ _targetCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase
+          ((.mkGen .gen_app ()
+            (.childCons
+              (.mkGen .gen_app ()
+                (.childCons succBranch
+                  (.childCons predecessor .childNil)))
+              (.childCons
+                (.mkGen .gen_natRec ()
+                  (.childCons predecessor
+                    (.childCons zeroBranch
+                      (.childCons succBranch .childNil))))
+                .childNil))) : RawTerm scope)),
+      True := by
+  generalize hSourceSort : CellSort.term = sourceSort at sourceCell
+  cases sourceCell with
+  | gen _ _ sourceSpine =>
+      cases sourceSpine with
+      | cons natSuccCell restAfterNatSucc =>
+          cases restAfterNatSucc with
+          | cons zeroBranchCell restAfterZero =>
+              cases restAfterZero with
+              | cons succBranchCell _ =>
+                  generalize hNatSuccSort :
+                      (ChildSpec.termSameScope.cellSort) = natSuccSort
+                    at natSuccCell
+                  cases natSuccCell with
+                  | gen _ _ natSuccSpine =>
+                      cases natSuccSpine with
+                      | cons predecessorCell _ =>
+                          let innerAppCell :
+                              PolyCell profile .term 0 scope
+                                CellBoundary.trivial
+                                (.termBase
+                                  ((.mkGen .gen_app ()
+                                    (.childCons succBranch
+                                      (.childCons predecessor
+                                        .childNil))) : RawTerm scope)) :=
+                            PolyCell.gen
+                              SupportedGenerator.gen_app
+                              (genPayloadEvidence (generator := .gen_app)
+                                (scope := scope) ())
+                              (CertifiedTermSpine.cons succBranchCell
+                                (CertifiedTermSpine.cons predecessorCell
+                                  CertifiedTermSpine.nil))
+                          let recursiveNatRecCell :
+                              PolyCell profile .term 0 scope
+                                CellBoundary.trivial
+                                (.termBase
+                                  ((.mkGen .gen_natRec ()
+                                    (.childCons predecessor
+                                      (.childCons zeroBranch
+                                        (.childCons succBranch
+                                          .childNil)))) :
+                                    RawTerm scope)) :=
+                            PolyCell.gen
+                              SupportedGenerator.gen_natRec
+                              (genPayloadEvidence
+                                (generator := .gen_natRec)
+                                (scope := scope) ())
+                              (CertifiedTermSpine.cons predecessorCell
+                                (CertifiedTermSpine.cons zeroBranchCell
+                                  (CertifiedTermSpine.cons succBranchCell
+                                    CertifiedTermSpine.nil)))
+                          exact ⟨
+                            PolyCell.gen
+                              SupportedGenerator.gen_app
+                              (genPayloadEvidence (generator := .gen_app)
+                                (scope := scope) ())
+                              (CertifiedTermSpine.cons innerAppCell
+                                (CertifiedTermSpine.cons
+                                  recursiveNatRecCell
+                                  CertifiedTermSpine.nil)),
+                            True.intro⟩
+
+/-- Exact witness for `listElim (listCons h t) n c ↝ app (app (app c h) t) (listElim t n c)`. -/
+theorem PolyCell.exists_preservedByIotaListElimCons_dim0
+    {profile : PolyProfile} {scope : Nat}
+    {headVal tailVal nilBranch consBranch : RawTerm scope}
+    (sourceCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase
+          ((.mkGen .gen_listElim ()
+            (.childCons
+              (.mkGen .gen_listCons ()
+                (.childCons headVal
+                  (.childCons tailVal .childNil)))
+              (.childCons nilBranch
+                (.childCons consBranch .childNil)))) : RawTerm scope))) :
+    ∃ _targetCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase
+          ((.mkGen .gen_app ()
+            (.childCons
+              (.mkGen .gen_app ()
+                (.childCons
+                  (.mkGen .gen_app ()
+                    (.childCons consBranch
+                      (.childCons headVal .childNil)))
+                  (.childCons tailVal .childNil)))
+              (.childCons
+                (.mkGen .gen_listElim ()
+                  (.childCons tailVal
+                    (.childCons nilBranch
+                      (.childCons consBranch .childNil))))
+                .childNil))) : RawTerm scope)),
+      True := by
+  generalize hSourceSort : CellSort.term = sourceSort at sourceCell
+  cases sourceCell with
+  | gen _ _ sourceSpine =>
+      cases sourceSpine with
+      | cons listConsCell restAfterListCons =>
+          cases restAfterListCons with
+          | cons nilBranchCell restAfterNil =>
+              cases restAfterNil with
+              | cons consBranchCell _ =>
+                  generalize hListConsSort :
+                      (ChildSpec.termSameScope.cellSort) = listConsSort
+                    at listConsCell
+                  cases listConsCell with
+                  | gen _ _ listConsSpine =>
+                      cases listConsSpine with
+                      | cons headValCell restAfterHead =>
+                          cases restAfterHead with
+                          | cons tailValCell _ =>
+                              let firstAppCell :
+                                  PolyCell profile .term 0 scope
+                                    CellBoundary.trivial
+                                    (.termBase
+                                      ((.mkGen .gen_app ()
+                                        (.childCons consBranch
+                                          (.childCons headVal
+                                            .childNil))) :
+                                        RawTerm scope)) :=
+                                PolyCell.gen
+                                  SupportedGenerator.gen_app
+                                  (genPayloadEvidence
+                                    (generator := .gen_app)
+                                    (scope := scope) ())
+                                  (CertifiedTermSpine.cons
+                                    consBranchCell
+                                    (CertifiedTermSpine.cons
+                                      headValCell
+                                      CertifiedTermSpine.nil))
+                              let secondAppCell :
+                                  PolyCell profile .term 0 scope
+                                    CellBoundary.trivial
+                                    (.termBase
+                                      ((.mkGen .gen_app ()
+                                        (.childCons
+                                          (.mkGen .gen_app ()
+                                            (.childCons consBranch
+                                              (.childCons headVal
+                                                .childNil)))
+                                          (.childCons tailVal
+                                            .childNil))) :
+                                        RawTerm scope)) :=
+                                PolyCell.gen
+                                  SupportedGenerator.gen_app
+                                  (genPayloadEvidence
+                                    (generator := .gen_app)
+                                    (scope := scope) ())
+                                  (CertifiedTermSpine.cons
+                                    firstAppCell
+                                    (CertifiedTermSpine.cons
+                                      tailValCell
+                                      CertifiedTermSpine.nil))
+                              let recursiveListElimCell :
+                                  PolyCell profile .term 0 scope
+                                    CellBoundary.trivial
+                                    (.termBase
+                                      ((.mkGen .gen_listElim ()
+                                        (.childCons tailVal
+                                          (.childCons nilBranch
+                                            (.childCons consBranch
+                                              .childNil)))) :
+                                        RawTerm scope)) :=
+                                PolyCell.gen
+                                  SupportedGenerator.gen_listElim
+                                  (genPayloadEvidence
+                                    (generator := .gen_listElim)
+                                    (scope := scope) ())
+                                  (CertifiedTermSpine.cons
+                                    tailValCell
+                                    (CertifiedTermSpine.cons
+                                      nilBranchCell
+                                      (CertifiedTermSpine.cons
+                                        consBranchCell
+                                        CertifiedTermSpine.nil)))
+                              exact ⟨
+                                PolyCell.gen
+                                  SupportedGenerator.gen_app
+                                  (genPayloadEvidence
+                                    (generator := .gen_app)
+                                    (scope := scope) ())
+                                  (CertifiedTermSpine.cons
+                                    secondAppCell
+                                    (CertifiedTermSpine.cons
+                                      recursiveListElimCell
+                                      CertifiedTermSpine.nil)),
+                                True.intro⟩
+
 /-- Prop-packaged preservation of a certified child spine across a
 `StepChildren` witness, assuming a sort-preserving preserver for the
 single child step in the `here` case.
