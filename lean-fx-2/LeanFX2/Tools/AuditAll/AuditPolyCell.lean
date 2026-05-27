@@ -1089,6 +1089,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaListElimConsBranchCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaOptionMatchNoneBranchCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaOptionMatchSomeBranchCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaIdJBaseCaseCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaIdJWitnessCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaIdStrictRecBaseCaseCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaIdStrictRecWitnessCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.sameReduct
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.sameReductOfEq
@@ -1125,6 +1129,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaListElimConsBranchCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaOptionMatchNoneBranchCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaOptionMatchSomeBranchCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaIdJBaseCaseCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaIdJWitnessCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaIdStrictRecBaseCaseCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaIdStrictRecWitnessCong
 
 -- ─── V2-L3.1 phase D step 35: HCC-level wrappers around the cell-step
 -- helpers (phase D 32/33).  Same recipe, .intro-wrapped to land in
