@@ -1,4 +1,5 @@
 import LeanFX2.Foundation.PolyCell.Core.StepPreservesShape
+import LeanFX2.Foundation.PolyCell.Core.StepStar
 
 /-! # Foundation/PolyCell/Core/CriticalPairs
     — M6 confluence scaffold, root-rule catalog
@@ -383,5 +384,52 @@ theorem criticalPairs_unit_app :
     criticalPairs .gen_unit .gen_app = [] := rfl
 
 end Generator
+
+/-- A concrete local one-step branching in the v2 reduction relation.
+
+Unlike `Generator.CriticalPair`, this is proof-relevant: it stores the
+actual source term, both one-step reducts, and the two `Step` witnesses.
+M7's `cd_lemma` consumes branchings of this shape after dispatching
+through the finite M6 schema. -/
+structure LocalStepBranching {scope : Nat} where
+  source : RawTerm scope
+  leftReduct : RawTerm scope
+  rightReduct : RawTerm scope
+  leftStep : Step source leftReduct
+  rightStep : Step source rightReduct
+
+/-- A concrete local diamond filler for one local one-step branching.
+
+This is the proof-relevant version of the M6 "diamond filler template":
+the join target is an actual raw term, and both sides are actual
+`StepStar` chains into that join. -/
+structure LocalDiamond {scope : Nat}
+    (branching : LocalStepBranching (scope := scope)) where
+  commonReduct : RawTerm scope
+  leftChain : StepStar branching.leftReduct commonReduct
+  rightChain : StepStar branching.rightReduct commonReduct
+
+namespace LocalDiamond
+
+/-- Same-reduct filler template.
+
+When both one-step reductions produce the same reduct, the local
+diamond closes immediately by reflexivity on both sides.  This covers
+the same-root/same-rule branchings after the critical-pair dispatcher
+has established that the two reducts are definitionally the same. -/
+def sameReduct {scope : Nat} {source commonReduct : RawTerm scope}
+    (leftStep : Step source commonReduct)
+    (rightStep : Step source commonReduct) :
+    LocalDiamond
+      { source := source
+        leftReduct := commonReduct
+        rightReduct := commonReduct
+        leftStep := leftStep
+        rightStep := rightStep } where
+  commonReduct := commonReduct
+  leftChain := StepStar.refl commonReduct
+  rightChain := StepStar.refl commonReduct
+
+end LocalDiamond
 
 end LeanFX2.Foundation.PolyCell.Core

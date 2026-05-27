@@ -1044,6 +1044,9 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.criticalPairs_app_app_length
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.criticalPairs_boolElim_boolElim_length
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.criticalPairs_unit_app
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.sameReduct
 
 -- ─── V2-L3.1 phase D step 35: HCC-level wrappers around the cell-step
 -- helpers (phase D 32/33).  Same recipe, .intro-wrapped to land in
