@@ -2,12 +2,14 @@ import LeanFX2.Foundation.PolyCell.Core.RawTermV2Subst0
 
 /-! # Foundation/PolyCell/Core/StepV2 — single-step reduction on V2
 
-V2-L3.1 phase A + B + C-step1 + C-step2 (2026-05-27).  Discharges
-the first L3 metatheory task per polycell.md §11.6.1.  Ships the
-`Step` inductive relation with: beta-reduction (phase A), uniform
+V2-L3.1 phase A + B + C-steps 1/2/3 (2026-05-27).  Discharges the
+first L3 metatheory task per polycell.md §11.6.1.  Ships the `Step`
+inductive relation with: beta-reduction (phase A), uniform
 congruence (phase B), branch-selection iota for boolElim (phase
-C-step1), and content-projection iota for fst/snd on pair (phase
-C-step2).  Six smokes total.
+C-step1), content-projection iota for fst/snd on pair (phase
+C-step2), and base-case projection iota for natElim/natRec on
+natZero + listElim on listNil + optionMatch on optionNone (phase
+C-step3).  Ten smokes total.
 
 ## Phase A vs Phase B vs Phase C
 
@@ -22,13 +24,19 @@ C-step2).  Six smokes total.
   `Step.iotaBoolTrue` / `Step.iotaBoolFalse`.  Bool's two-ctor
   scheme + zero binders means iota is pure tag-selection at the
   same scope.
-* **Phase C step 2** (THIS update) ships content-projection iota
-  for `fst`/`snd` on `pair`: `Step.iotaFstPair` /
-  `Step.iotaSndPair`.  Same scope discipline as bool iotas, but a
-  DIFFERENT iota shape -- the eliminator unwraps a constructor and
-  returns one of its components rather than selecting one of
-  several branches.  Together with phase C-step1, these two shapes
-  cover most of the "pure" iotas (no app-chain building).
+* **Phase C step 2** ships content-projection iota for `fst`/`snd`
+  on `pair`: `Step.iotaFstPair` / `Step.iotaSndPair`.  Same scope
+  discipline as bool iotas, but a DIFFERENT iota shape -- the
+  eliminator unwraps a constructor and returns one of its
+  components rather than selecting one of several branches.
+* **Phase C step 3** (THIS update) extends branch-selection iota
+  to the remaining standard 3-branch eliminators on their BASE
+  (0-arity) constructors: `Step.iotaNatElimZero`,
+  `Step.iotaNatRecZero`, `Step.iotaListElimNil`,
+  `Step.iotaOptionMatchNone`.  Same shape as `iotaBoolTrue` -- the
+  base-case constructor's iota is always pure projection.  These
+  four cover the standard inductive types (nat / list / option)
+  in their base cases.
 * **Future phase C** (deferred): iotas requiring app-chain build
   (natRec/natElim on natSucc, listElim on listCons, optionMatch
   on optionSome, eitherMatch on inl/inr), iotas with binders
@@ -253,6 +261,53 @@ inductive Step : {scope : Nat} → RawTermV2 scope → RawTermV2 scope → Prop 
               (.childCons firstValue (.childCons secondValue .childNil)))
             .childNil))
         secondValue
+  /-- **Iota for natElim on natZero (base case).**  Eliminating on
+      `natZero` selects the zero-branch.  Same branch-selection
+      shape as `iotaBoolTrue` -- the 0-arity constructor's iota is
+      always pure projection.  binderShifts `[0, 0, 0]` for
+      `gen_natElim`. -/
+  | iotaNatElimZero {scope : Nat}
+                    {zeroBranch succBranch : RawTermV2 scope} :
+      Step
+        (.mkGen .gen_natElim ()
+          (.childCons
+            (.mkGen .gen_natZero () .childNil)
+            (.childCons zeroBranch (.childCons succBranch .childNil))))
+        zeroBranch
+  /-- **Iota for natRec on natZero (base case).**  Symmetric to
+      `iotaNatElimZero`; the v2 substrate treats `gen_natElim` and
+      `gen_natRec` with identical arity and binderShifts, so their
+      base-case iotas are structurally identical. -/
+  | iotaNatRecZero {scope : Nat}
+                   {zeroBranch succBranch : RawTermV2 scope} :
+      Step
+        (.mkGen .gen_natRec ()
+          (.childCons
+            (.mkGen .gen_natZero () .childNil)
+            (.childCons zeroBranch (.childCons succBranch .childNil))))
+        zeroBranch
+  /-- **Iota for listElim on listNil (base case).**  Eliminating on
+      `listNil` selects the nil-branch.  Same branch-selection shape
+      as `iotaBoolTrue` / `iotaNatElimZero`; pure projection. -/
+  | iotaListElimNil {scope : Nat}
+                    {nilBranch consBranch : RawTermV2 scope} :
+      Step
+        (.mkGen .gen_listElim ()
+          (.childCons
+            (.mkGen .gen_listNil () .childNil)
+            (.childCons nilBranch (.childCons consBranch .childNil))))
+        nilBranch
+  /-- **Iota for optionMatch on optionNone (base case).**  Matching
+      on `optionNone` selects the none-branch.  Same branch-selection
+      shape; pure projection. -/
+  | iotaOptionMatchNone {scope : Nat}
+                        {noneBranch someBranch : RawTermV2 scope} :
+      Step
+        (.mkGen .gen_optionMatch ()
+          (.childCons
+            (.mkGen .gen_optionNone () .childNil)
+            (.childCons noneBranch (.childCons someBranch .childNil))))
+        noneBranch
 
 /-- **Step at some position in a children spine.**
 
@@ -463,5 +518,88 @@ theorem Step.iotaSndPair_projects_second :
       .mkGen .gen_snd () (.childCons pairTerm .childNil)
     Step sndTerm secondValue := by
   apply Step.iotaSndPair
+
+/-- **Phase C smoke: iotaNatElimZero selects the zero-branch.**
+
+  `natElim natZero boolTrue boolFalse  ↝  boolTrue`
+
+Distinct zero/succ branches verify the RIGHT one is selected.
+(The zero-branch `boolTrue` is selected; the succ-branch
+`boolFalse` is discarded.)
+
+Closes by `apply Step.iotaNatElimZero`. -/
+theorem Step.iotaNatElimZero_selects_zero :
+    let zeroScrutinee : RawTermV2 0 :=
+      .mkGen .gen_natZero () .childNil
+    let zeroBranch : RawTermV2 0 :=
+      .mkGen .gen_boolTrue () .childNil
+    let succBranch : RawTermV2 0 :=
+      .mkGen .gen_boolFalse () .childNil
+    let elimTerm : RawTermV2 0 :=
+      .mkGen .gen_natElim ()
+        (.childCons
+          zeroScrutinee
+          (.childCons zeroBranch (.childCons succBranch .childNil)))
+    Step elimTerm zeroBranch := by
+  apply Step.iotaNatElimZero
+
+/-- **Phase C smoke: iotaNatRecZero selects the zero-branch.**
+
+Symmetric to `iotaNatElimZero_selects_zero` -- same shape on
+`gen_natRec` instead of `gen_natElim`. -/
+theorem Step.iotaNatRecZero_selects_zero :
+    let zeroScrutinee : RawTermV2 0 :=
+      .mkGen .gen_natZero () .childNil
+    let zeroBranch : RawTermV2 0 :=
+      .mkGen .gen_boolTrue () .childNil
+    let succBranch : RawTermV2 0 :=
+      .mkGen .gen_boolFalse () .childNil
+    let recTerm : RawTermV2 0 :=
+      .mkGen .gen_natRec ()
+        (.childCons
+          zeroScrutinee
+          (.childCons zeroBranch (.childCons succBranch .childNil)))
+    Step recTerm zeroBranch := by
+  apply Step.iotaNatRecZero
+
+/-- **Phase C smoke: iotaListElimNil selects the nil-branch.**
+
+  `listElim listNil boolTrue boolFalse  ↝  boolTrue`
+
+Distinct nil/cons branches verify the RIGHT one is selected. -/
+theorem Step.iotaListElimNil_selects_nil :
+    let nilScrutinee : RawTermV2 0 :=
+      .mkGen .gen_listNil () .childNil
+    let nilBranch : RawTermV2 0 :=
+      .mkGen .gen_boolTrue () .childNil
+    let consBranch : RawTermV2 0 :=
+      .mkGen .gen_boolFalse () .childNil
+    let elimTerm : RawTermV2 0 :=
+      .mkGen .gen_listElim ()
+        (.childCons
+          nilScrutinee
+          (.childCons nilBranch (.childCons consBranch .childNil)))
+    Step elimTerm nilBranch := by
+  apply Step.iotaListElimNil
+
+/-- **Phase C smoke: iotaOptionMatchNone selects the none-branch.**
+
+  `optionMatch optionNone boolTrue boolFalse  ↝  boolTrue`
+
+Distinct none/some branches verify the RIGHT one is selected. -/
+theorem Step.iotaOptionMatchNone_selects_none :
+    let noneScrutinee : RawTermV2 0 :=
+      .mkGen .gen_optionNone () .childNil
+    let noneBranch : RawTermV2 0 :=
+      .mkGen .gen_boolTrue () .childNil
+    let someBranch : RawTermV2 0 :=
+      .mkGen .gen_boolFalse () .childNil
+    let matchTerm : RawTermV2 0 :=
+      .mkGen .gen_optionMatch ()
+        (.childCons
+          noneScrutinee
+          (.childCons noneBranch (.childCons someBranch .childNil)))
+    Step matchTerm noneBranch := by
+  apply Step.iotaOptionMatchNone
 
 end LeanFX2.Foundation.PolyCell.Core
