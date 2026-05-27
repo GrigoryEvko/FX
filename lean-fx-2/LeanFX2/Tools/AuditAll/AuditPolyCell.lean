@@ -64,6 +64,7 @@ import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaBoolFalse
 import LeanFX2.Foundation.PolyCell.Core.SubjectReductionBaseIotas
 import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaProjections
 import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaEither
+import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaOption
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactWrongChildShape
@@ -709,6 +710,11 @@ namespace LeanFX2.Tools
 -- wrapper / branch positions.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByIotaEitherMatchInl
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByIotaEitherMatchInr
+
+-- ─── V2-L3.1 phase D step 10: optionMatch step iota (SR arm 11) ────
+-- Structurally identical to the eitherMatch arms (single-payload
+-- wrapper -> app target).  Confirms the template scales.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByIotaOptionMatchSome
 
 -- ─── V2-fix-4: restricted-profile admission predicate ──────────────
 -- Discharges Agent 3 H3.2 (admission machinery decoration).  Before
