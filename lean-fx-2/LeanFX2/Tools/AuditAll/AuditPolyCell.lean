@@ -52,6 +52,7 @@ import LeanFX2.Foundation.PolyCell.Core.RawTermSubstV2
 import LeanFX2.Foundation.PolyCell.Core.GenAlgebraV2
 import LeanFX2.Foundation.PolyCell.Core.FoldV2
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2Rename
+import LeanFX2.Foundation.PolyCell.Core.RawTermV2Weaken
 
 namespace LeanFX2.Tools
 
@@ -3547,6 +3548,25 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2.rename_eq_foldChildrenV2
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.rename_identity_unit_smoke
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.rename_identity_var_smoke
+
+-- ─── V2-L2.5: weaken via foldV2 (#179) ──────────────────────────────
+-- THE SECOND L2 PAYOFF.  RawTermV2.weaken factors through rename:
+--   weaken term := rename RawRenaming.weaken term
+--
+-- Two delegations deep (weaken → rename → foldV2).  Each step is
+-- ONE LINE; the 74-arm cascade lives in neither — eliminated entirely
+-- by the L2 architecture.
+--
+-- Smoke tests close by `rfl`:
+--   * gen_unit weakening preserves shape at the next scope
+--   * gen_var ⟨0,_⟩ weakening produces var (Fin.succ ⟨0,_⟩) — the
+--     position is correctly shifted by Fin.succ via RawRenaming.weaken
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.weaken
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2.weaken
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.weaken_eq_rename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2.weaken_eq_rename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.weaken_unit_smoke
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.weaken_var_zero_smoke
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
