@@ -71,6 +71,7 @@ import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2Shape
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2TermBase
 import LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpineV2Projections
 import LeanFX2.Foundation.PolyCell.Core.CertifiedToPolyCellV2
+import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaBoolTrue
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2Subst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2WrongChildShape
@@ -3414,6 +3415,20 @@ namespace LeanFX2.Tools
 -- V2-L3.5 and requires fuel monotonicity — deferred.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Certified.toHasCertifiedCellDim0
+
+-- ─── V2-L3.1 phase D step 5: FIRST SR arm — iotaBoolTrue ───────────
+-- Subject Reduction for the simplest iota: boolElim boolTrue then
+-- else → then.  Pure projection (no subst, no rename, no HEq cast
+-- through dim-indexed boundary).  Establishes the proof template
+-- that pure-projection iota siblings (iotaBoolFalse, iotaFstPair,
+-- iotaSndPair, iotaNatElimZero, iotaListElimNil, iotaOptionMatchNone)
+-- inherit.
+--
+-- Proof: destructure HasCertifiedCellDim0 → cases on the
+-- PolyCellV2 (single-arm: .gen ctor matches .termBase rawCell) →
+-- spine.tail.headAtDim0 rfl projects the then-branch cell → wrap.
+-- Combined uses of the V2-L3.1 phase D steps 2 + 4 infrastructure.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByIotaBoolTrue
 
 -- ─── V2-fix-4: restricted-profile admission predicate ──────────────
 -- Discharges Agent 3 H3.2 (admission machinery decoration).  Before
