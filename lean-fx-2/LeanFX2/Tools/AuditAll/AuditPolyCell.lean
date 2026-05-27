@@ -46,6 +46,7 @@ import LeanFX2.Foundation.PolyCell.Core.InferRawCellGeneralV2AcceptedRawCellHEq
 import LeanFX2.Foundation.PolyCell.Core.InferRawCellGeneralV2Sound
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2Coverage
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2NegativeProbes
+import LeanFX2.Foundation.PolyCell.FXProfile.CertifiedViewsV2
 
 namespace LeanFX2.Tools
 
@@ -3321,6 +3322,22 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.negative_horizontalCompositeUnit_rejects_unsupportedCompH
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.negative_verticalCompositeUnit_rejects_badVerticalBoundary
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.negative_unitTerm_as_type_rejects_wrongSort
+
+-- ─── V2-L1cert.17: FX-profile views (#172) ──────────────────────────
+-- FX-profile-fixed entry points over the v2 certifier infrastructure:
+-- both wrappers ARE the canonical ingress for callers working in the
+-- default fxProfile (currently the only profile under v2).
+--
+-- Two wrappers (each a one-liner delegation):
+--   * certifyFXCellExactV2? — raw-indexed certifier, profile := fxProfile
+--   * certifyFXCellV2?      — existential ingress, profile := fxProfile
+--
+-- Semantic equivalence to the general API is by definition; ergonomic
+-- difference (no profile to thread) is significant for FX-kernel
+-- callers.  Soundness theorems are #173, per-fixture FX-profile
+-- packages are migration-deferred to V2-mig.4 (#195).
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifyFXCellExactV2?
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifyFXCellV2?
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
