@@ -47,6 +47,7 @@ import LeanFX2.Foundation.PolyCell.Core.InferRawCellGeneralV2Sound
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2Coverage
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2NegativeProbes
 import LeanFX2.Foundation.PolyCell.FXProfile.CertifiedViewsV2
+import LeanFX2.Foundation.PolyCell.FXProfile.CertifiedViewsV2Sound
 
 namespace LeanFX2.Tools
 
@@ -3338,6 +3339,30 @@ namespace LeanFX2.Tools
 -- packages are migration-deferred to V2-mig.4 (#195).
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifyFXCellExactV2?
 #assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifyFXCellV2?
+
+-- ─── V2-L1cert.18: FX-profile soundness theorems (#173) ─────────────
+-- Four delegating theorems pinning the FX-profile entry points
+-- (#172) to the same no-laundering, dim-preservation, and
+-- compH-rejection guarantees the general v2 API enjoys (#165, #166,
+-- #167, #169).
+--
+-- Each proof is a single function application against an already
+-- audited zero-axiom theorem; no new reasoning is introduced.  The
+-- FX-profile wrappers being DEFINITIONAL equalities to the general
+-- API (with profile fixed at fxProfile) makes the delegations work
+-- without rewriting.
+--
+--   * _compH_rejects → certifyRawCellExactV2?_compH_rejects (#166)
+--   * _sound (raw-indexed) → certifyRawCellExactV2?_sound (#165)
+--   * _accepted_cellDimension_eq → inferRawCellGeneralV2?_accepted_cellDimension_eq (#167)
+--   * _sound (existential, HEq) → inferRawCellGeneralV2?_sound (#169)
+--
+-- Together with #172's entry points, this closes the L1cert.4
+-- soundness story for the FX-profile (profile-fixed) API surface.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifyFXCellExactV2?_compH_rejects
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifyFXCellExactV2?_sound
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifyFXCellV2?_accepted_cellDimension_eq
+#assert_no_axioms LeanFX2.Foundation.PolyCell.FXProfile.certifyFXCellV2?_sound
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
