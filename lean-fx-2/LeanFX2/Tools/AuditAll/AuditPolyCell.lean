@@ -85,6 +85,7 @@ import LeanFX2.Foundation.PolyCell.Core.RemainingDim0Eliminators
 import LeanFX2.Foundation.PolyCell.Core.IdEliminatorLayer
 import LeanFX2.Foundation.PolyCell.Core.StructuralInductionPrimitives
 import LeanFX2.Foundation.PolyCell.Core.StructuralInductionWrapper
+import LeanFX2.Foundation.PolyCell.Core.SpineRenameStep
 import LeanFX2.Foundation.PolyCell.Core.SpineSubstStep
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubst0
@@ -920,6 +921,13 @@ namespace LeanFX2.Tools
 -- the mutual block's body becomes a thin recursive driver.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpine.consStep_dim0Trivial
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpine.nilStep
+
+-- Rename-shaped spine-step wrappers: sibling of the subst-shaped
+-- helpers below.  The cons helper records that the head is renamed
+-- under `headSpec.scopeShift` binders via `iterateLiftRaw`, while the
+-- tail uses the parent renaming.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpine.renameNilStep
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpine.renameConsStep_dim0Trivial
 
 -- Subst-shaped spine-step wrappers: package the future spine-recursion
 -- nil/cons cases against `foldChildren GenAlgebra.canonical sigma`.
