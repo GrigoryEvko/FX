@@ -22,15 +22,17 @@
 > See [§9](#9-loc-budget) for the canonical accounting.
 >
 > **Slogan:** *permissive raw cells, intrinsic certified cells.*  Raw
-> input is the **scope-indexed, dimension-computed** `RawTermV2` /
-> `RawCellV2` layer (v2 re-foundation) and may represent nonsense —
-> including dim-mismatched composites — so the checker can reject it.
-> Certified `PolyCell π sort dim scope boundary raw` is the kernel layer
-> and has constructors only for sorted, scoped, boundary-compatible
-> cells, collapsed to one generic `gen` constructor over the generator
-> table.  FX kernel objects become projections of certified cells over
-> one `PolyProfile π`; raw nonsense must map to `none` / `rejected
-> reason`, never to a certificate.
+> input is the **scope-indexed, dimension-computed** `RawTerm` /
+> `RawCell` layer (shipped, all V2 suffixes dropped per V2-mig.11–14)
+> and may represent nonsense — including dim-mismatched composites —
+> so the checker can reject it.  Certified `PolyCell π sort dim scope
+> boundary raw` is the kernel layer and has constructors only for
+> sorted, scoped, boundary-compatible cells, collapsed to one generic
+> `gen` constructor over the 194-entry generator table (expanding to
+> ~400–500 entries at MILESTONE D per §3.16).  FX kernel objects
+> become projections of certified cells over one `PolyProfile π`; raw
+> nonsense must map to `none` / `rejected reason`, never to a
+> certificate.
 >
 > **Reference axis sources:** see [§13 References](#13-references).  The
 > three load-bearing references are Loubaton's 2023 PhD thesis
@@ -64,13 +66,15 @@ strongest available theory per layer):
   instead of 5-15K LoC bespoke cascade work.  ~12K Lean LoC, first
   Lean port of this framework in any proof assistant.
 
-* **Tier 1 — POLYCELL CORE** (~15K LoC, §4)
-  A two-layer core: permissive raw `RawTermV2` + `RawCellV2` (scope-
+* **Tier 1 — POLYCELL CORE** (~15K LoC, §4) — **SHIPPED**.
+  A two-layer core: permissive raw `RawTerm` + `RawCell` (scope-
   indexed, dimension computed) for input data, plus intrinsic certified
   `PolyCell` indexed by sort, dimension, scope, boundary, and raw
-  syntax, with one generic `gen` constructor over the generator table.
-  Each axis is one Tier-0 obligation witness attached to the profile,
-  not a new raw constructor family.
+  syntax, with one generic `gen` constructor over the 194-entry
+  generator table.  All V2 suffixes dropped per V2-mig.11–14.  Each
+  axis is one Tier-0 obligation witness attached to the profile, not
+  a new raw constructor family.  See §3.16 for the apex generator
+  inventory (~400–500 entries at MILESTONE D).
 
 * **Tier 2 — PROFILE AXES + EXTENSION CALCULUS** (13 profile axes,
   §3.1-§3.13, plus the extension calculus in §3.14)
@@ -255,26 +259,95 @@ arms per new ctor, the rename / subst commute lemmas total 5–8K LoC of
 duplicated structure, and any new feature (η, cubical β, modal cross,
 HITs) takes weeks of cascade work per ctor.
 
-The K11 "polygraph re-foundation" (commits a4d…, 7d6…, etc.) recognized
-the architectural debt and started building toward a generic substrate.
-That work is partially correct: the `Generator` enum + `binderShifts` +
-`outputType` table from P2.0/P2.1/P2.2 are real polygraph generators.
-The `RawPolyTermFlat` inductive shipped today (commit 7d6758a9, 2026-05-23)
-is the first honest `mk g payload children` substrate.
+The v2 structural re-foundation is **SHIPPED** as of 2026-05-27.
+`RawTerm scope` + `RawCell scope` (un-indexed by dimension, dimension
+computed via `RawCell.dim`) are the canonical raw layer.  The
+194-entry `Generator` enum + `binderShifts` + `payload` family +
+`generatorChildSpecs` table is the Allais universe-of-syntaxes
+descriptor over which the certifier, fold (`rename` + `subst` as
+ONE generic instance each per V2-L2.4/L2.6), `cd_lemma`, and
+`Conv` recurse uniformly.  The certified `PolyCell` collapses to
+ONE generic `gen` constructor (V2-L1c.4 headline) plus the four
+cell-layer constructors (`gen` / `generatingCell` /
+`verticalComposite` / `identityCell`), with `horizontalComposite`
+staged per §11.6.5 pending Gray-tensor admission.
 
-But the K11.8 `RawPolyTerm` and K11.9 `PolyTerm` were **fake mirrors** —
-pure renames of `RawTerm` and `Term`, zero polygraph content.  The user
-correctly identified this and asked for them to be replaced with real
-polygraph terms.  The substrate redesign demanded by today's session
-(2026-05-23) is the trigger for this document.
+All earlier K11.x / K12.x / K13.x cascade-tax framing has been
+SUPERSEDED: the cascade is structurally dead at the substrate
+level.  Adding a new feature is one Generator entry + admission
+witness per §3.16, not a 78-arm pattern-match cascade across 13+
+files.
 
-This document specifies the *maximum* polygraph substrate for FX —
-not a half-measure, not (∞,1), but the full (∞,ω)-categorical
-universe parameterized by **thirteen profile axes** (SSC, STC,
-MTT-norm extend an earlier ten-axis core; the Tier-0 universal
-meta-framework binds them all), every axis grounded in published
-literature, every axis Lean-mechanizable at zero axioms, every axis
-giving FX a capability no other proof assistant has.
+This document specifies the **apex categorical-and-computable
+substrate** for FX — the union of TWO co-maximal ambitions, neither
+of which a proof assistant has ever shipped, and whose intersection
+is FX's first-in-class delivery:
+
+**(A) The full (∞,ω)-categorical universe internalized in a proof
+assistant.**  Not (∞,1), not strict ω-cat, not weak ω-groupoid —
+the FULL (∞,ω) categorical universe parameterized by **thirteen
+profile axes** (SSC, STC, MTT-norm extend an earlier ten-axis core;
+the Tier-0 universal meta-framework binds them all) plus a profile-
+extension calculus (§3.14).  Hadzihasanovic regular directed
+complexes (Axis 1) supply the shape catalogue; Awodey-Newstead
+polynomial pseudomonads + Aberlé-Spivak polynomial universes (Axis
+2) supply the algebraic theory; Verity stratification (Axis 3) +
+Malbos-Massacrier-Struth cubical coherent confluence (Axis 4)
+supply the marking + saturation discipline; Loubaton 2207.08504
+§3.1.4 Gray module (Axis 6) supplies the bidirectional composition;
+Loubaton 2307.11931 §6.1.4.2 functorial Grothendieck construction +
+Aberlé-Spivak subterminality (Axis 10) supplies the univalent
+universe at (∞,ω); HLOR ωcE polygraph (Axis 9) supplies the
+universal coherent walking ω-equivalence; Uemura representable map
+categories + BKS internal sconing (Tier 0) bind every axis under
+one universal substrate.  Every axis grounded in published
+literature, every axis Lean-mechanizable at zero axioms, every
+axis giving FX a capability no other proof assistant has.  The
+(∞,ω)-categorical universe is FX's SEMANTIC ambition: this would be
+the first mechanization of (∞,ω)-categories in any proof assistant
+if shipped.
+
+**(B) The apex maximal-power computable kernel — the strongest
+currently-known sound type theory that admits decidable
+typechecking.**  Not just decidable Conv, but DECIDABLE typed
+checking + DECIDABLE typed conversion + MECHANIZED complexity
+bounds for every decision procedure (§11.8.7), under the zero-
+axiom + closed-system discipline (§11.8.11).  The apex commitments
+(§11.8): 2LTT skeleton with FOUR universe modes (inner univalent /
+outer strict / directed / (∞,ω)-directed); full Setzer-Rathjen
+large-cardinal flag hierarchy as universe-strength payload; K-free
+dependent elimination with motive children + definitional eta;
+full HIIRT (standard IR + indexed IR + higher IR + QIR + the
+combined Forsberg-Setzer HIIRT beast); HITs + QIITs with cubical
+Kan eliminator computation; multi-clock guarded type theory (BMV
+2017); internal parametricity (Bernardy-Coquand-Moulin 2015);
+rewriting rules as first-class kernel feature (Cockx-Tabareau
+2021) with confluence + termination + linearity admission;
+cubical pattern matching + Equations-style dependent pattern
+matching; `dProp` internal computational reflection (Pédrot-
+Tabareau 2018); full CCHM cubical computational univalence;
+typed `HasType` judgment with typed subject reduction; 21-
+dimensional integration over MTT + cohesive triple + differential
+cohesion + n-truncations + linear-nonlinear adjoint modality +
+algebraic effects + handlers; 10-profile synthetic mathematics
+layer (∞-topos / synthetic spectra / synthetic smooth manifolds /
+synthetic algebraic geometry / synthetic quantum / synthetic
+measure + probability + Markov / synthetic differential cohomology
+/ synthetic computability / synthetic stable ∞-categories);
+optional Phase Z₉ fully-verified internal SMT engine built natively
+inside FX as the closed-system alternative to delegating to
+external Z3/CVC5.  The apex computable kernel is FX's OPERATIONAL
+ambition: this would be the strongest sound type theory with
+decidable typechecking ever shipped.
+
+**The intersection — (A) ∩ (B) — is what makes FX first-in-class.**
+The (∞,ω)-categorical substrate gives the semantic depth; the apex
+computable kernel gives the operational depth; together they make
+FX simultaneously a programming language kernel AND a
+categorical-foundations research artifact, with every component
+sound by published theory and every decision procedure verified
+internally.  No precedent for either axis alone in any proof
+assistant; FX delivers their union.
 
 The thirteen axes are NOT orthogonal in the strict sense — they
 compose through the Tier-0 META-FRAMEWORK (Uemura representable map
@@ -321,8 +394,8 @@ rejection — no universal-property-as-corollary shortcut.
 The slogan is **permissive raw cells, intrinsic certified cells**.
 The K11.1 `PolyCell` (dim-indexed, source/target intrinsic, real
 Burroni cells) is the skeleton.  The other twelve axes are the flesh.
-At the end you have the raw input layer (`RawTermV2 scope` +
-`RawCellV2 scope`, dimension computed not type-indexed) as the input
+At the end you have the raw input layer (`RawTerm scope` +
+`RawCell scope`, dimension computed not type-indexed) as the input
 format and certified `PolyCell π sort dim scope boundary raw` as the
 kernel inhabitant type, with the certified layer parameterized by a
 thirteen-field `PolyProfile π`.  FX is one specific profile, reached and grown by the extension
@@ -503,7 +576,7 @@ The PolyCell proposal here resolves the wall by **making the
 substrate carry both the cells AND the markings**:
 
 - Cells are Type-side (certified `PolyCell` constructors over raw
-  `RawCellV2` input).
+  `RawCell` input).
 - Markings are Prop-side (Loubaton's `tD ⊆ D` per-cell thinness).
 - Conv = "cell is in the saturated marking" (Prop, via Riehl-Verity
   saturation criterion).
@@ -641,7 +714,7 @@ in structure but loses typing* in the current K11 design because the
 typed Term is separate from the polygraph.
 
 The raw layer does **not** fix this.  Raw
-`RawCellV2.horizontalComposite` is input syntax only: it can represent a
+`RawCell.horizontalComposite` is input syntax only: it can represent a
 proposed horizontal composition, but
 it does not certify disjoint footprints, Gray-boundary matching, or a
 typed frame rule.
@@ -728,7 +801,7 @@ where `ω` is the (∞,ω)-category of (∞,ω)-categories.  This is the
 (∞,ω) statement of univalence + Grothendieck construction simultaneously.
 
 For FX, this means: the universe `Ty.universe` in the current kernel
-becomes a certified universe `PolyCell` over a dim-0 `RawCellV2`
+becomes a certified universe `PolyCell` over a dim-0 `RawCell`
 (`termBase`) input, and its
 universal property (functors-to-it ≃ type-families) holds STRUCTURALLY,
 not by postulation.  Univalence is a theorem; `Step.eqType` becomes
@@ -748,7 +821,7 @@ pair joinability.
 This is implementable in the certified PolyCell target: Mathlib's ~1.5M LoC of mathematics
 maps to a sequence of `Generator` value extensions, with each
 Mathlib theorem becoming one dim-1 certified cell over
-`RawCellV2` raw syntax.
+`RawCell` raw syntax.
 The conversion is mostly mechanical; the win is that FX-extensions
 inherit Mathlib's full mathematical content.
 
@@ -2657,7 +2730,7 @@ fibration applied to the categorification of profile data.
 
 - Cisinski 2019 shows how to handle self-reference in this fibration
   via ω-localization without paradox.  This is what lets a certified
-  universe cell over raw `RawCellV2` classify `fxProfile`
+  universe cell over raw `RawCell` classify `fxProfile`
   itself — the universe-of-universes problem at the polygraph level.
 
 **Lean signature:**
@@ -3841,21 +3914,807 @@ brief asks for.
 
 ---
 
+### 3.16 Apex Generator Inventory — what §11.8 commits the table to ship
+
+The 194-generator surface in `GeneratorCore.lean` (`gen_var` →
+`gen_processCalc`) is the **current** table.  The apex commitment
+in §11.8 expands the table substantially.  This section is the
+concrete inventory of what Phase Z₀ through Z₈ + Z₉ commit the
+Generator table to admit, with explicit `ChildSpec` lists, binder
+shifts, payload types, totality classes, and Phase-Z stage tags.
+
+Where §11.8 lays out the THEORETICAL apex commitments, §3.16
+catalogs them as **table data** — the same shape (`Generator
+enum + arity + binderShifts + payload + childSpecs + cellSort +
+totalityClass + consistencyStrength + siteOpenness`) the current
+194-entry table uses.  No new inductive ctors at the `PolyCell`
+level; only new `Generator` enum values + their metadata + their
+`SemanticallySupportedGenerator` admission witnesses.
+
+This is the **cascade-death principle made concrete at apex
+scale**: even at MILESTONE D (~21-dim integration + full synthetic
+math layer + verified SMT engine + every cubical/HIT/HIIRT/guarded
+/parametricity/rewriting/cohesion/MTT/effect feature), every new
+capability remains a new Generator entry plus its admission
+witness — never a new `RawTerm` ctor, never a new `PolyCell` ctor,
+never a per-feature cascade across rename/subst/cd/Conv.  The
+194-entry table grows to ~400-500 entries at MILESTONE D; the
+inductive surface area at the `PolyCell` level stays fixed.
+
+#### 3.16.1 Why a §3.16 inventory section exists
+
+Three audiences need this section:
+
+1. **Implementation warriors.**  When Phase Z₀ kicks off, the
+   warrior implementing `gen_universeU` / `gen_universeS` /
+   `gen_universeD` / `gen_universeOmega` doesn't want to re-derive
+   the apex commitments by re-reading §11.8.2.  They want a single
+   table with `ChildSpec` lists, binder shifts, and payload types
+   they can paste into `GeneratorCore.lean` extension.  §3.16
+   delivers that table.
+
+2. **Reviewers + ledger auditors.**  When a commit adds (e.g.) the
+   `gen_clockAbs` Generator entry, the reviewer needs to confirm
+   the entry's metadata matches the published theory (BMV 2017
+   multi-clock).  §3.16 provides the reference target so the
+   review is a comparison against table data, not a re-read of
+   §11.8.3.
+
+3. **Future-FX warriors.**  When MILESTONE C is reached and someone
+   wants to add (e.g.) a new HIT to the catalog, §3.16 documents
+   the discipline: emit a new `gen_<feature>Ctor` + `gen_<feature>
+   PathCtor` + `gen_<feature>Rec` triple, with the standard child-
+   spec template per the HIT's signature.  No bespoke design
+   decisions per HIT — the template is fixed.
+
+#### 3.16.2 Generator family taxonomy at the apex
+
+The apex Generator table partitions into TWELVE major families,
+each gated by a Phase Z stage and admitted under specific
+`SemanticallySupportedGenerator` predicates:
+
+| Family | Apex generators | Phase | Reference |
+|---|---|---|---|
+| §3.16.3 Universe modes | 4 mode codes + `gen_sprop` + 2 lifts | Z₀ + Z₆ | §11.8.2 + Setzer 1998 / Rathjen 1998 |
+| §3.16.4 Cubical CCHM primitives | 9 generators (path / pathLam / pathApp / transp / hcomp / glue / unglue / face / dimI) | Z₄ | CCHM JFP 2018 |
+| §3.16.5 HIT + QIIT path constructors | 7 templates (quotMk / quotEq / circle / pushout / trunc / coequalizer / generalHIT) | Z₅ | Cavallo-Mörtberg 2020 |
+| §3.16.6 HIIRT eliminators | 30+ refactored eliminator spines with motive children | Z₆ | Dybjer-Setzer 2003 + Setzer 2008 |
+| §3.16.7 Multi-clock guarded | 6 generators (clock / laterCl / forceCl / clockAbs / clockApp / fixedPoint) | Z₇ | BMV 2017 |
+| §3.16.8 Internal parametricity | 2 generators (param / paramAbs) + bridges | Z₈ | Bernardy-Coquand-Moulin 2015 |
+| §3.16.9 First-class rewriting | 1 generator (rewriteRule) + admission triple | Z₈ | Cockx-Tabareau 2021 |
+| §3.16.10 dProp + reflection | 2 generators (dProp / dPropDec) | Z₈ | Pédrot-Tabareau 2018 |
+| §3.16.11 MTT mode generators | 3 generators per mode (mode / modIntro / modElim) + adjunction witnesses | Z₈ | Gratzer-Sterling-Sterling 2020 |
+| §3.16.12 Cohesion + diff cohesion | 7 generators (shape / flat / sharp / reduced / infinitesimal / etale + reduce) | Z₈ | Shulman 2018 + Schreiber 2013 |
+| §3.16.13 Algebraic effects | 3 generators (effectOp / effectHandler / effectScope) | Z₈ | Plotkin-Pretnar 2009 |
+| §3.16.14 Synthetic math | 10 profile capabilities (no kernel gen — profile-level) | Z₈+ | per §11.8.6 |
+| §3.16.15 Verified SMT engine | 6 generators (smtSatCert / smtTheoryCert / smtNelsonOppen / + 3 supporting) | Z₉ | optional, per §11.8.7 |
+
+Each subsection below specifies the family's generators in detail.
+The cascade-death property holds uniformly: adding a Generator entry
+to the table never adds a `RawTerm` or `PolyCell` constructor.
+
+#### 3.16.3 Universe-mode generators (Z₀ + Z₆)
+
+The current `gen_universeCode` has payload `Unit` — the Codex audit
+(`feedback_polycell_structural_vs_semantic`) flagged this as the
+seven-gap audit's gap #1 (universe-mode under-specification ⇒
+Type-in-Type at the admission level).  §11.8.2 commits to **4
+universe modes** with a `LevelExpr × UniverseFlag` payload + SProp
++ 2 lifting directions.
+
+Apex universe generators:
+
+```
+| .gen_universeU       => LevelExpr × UniverseFlag   -- inner univalent (cubical Kan, no K)
+| .gen_universeS       => LevelExpr × UniverseFlag   -- outer strict (K + UIP)
+| .gen_universeD       => LevelExpr × UniverseFlag   -- directed (∞,1)-cat synthetic
+| .gen_universeOmega   => LevelExpr × UniverseFlag   -- (∞,ω)-directed
+| .gen_sprop           => Unit                        -- SProp (definitional proof irrelevance)
+| .gen_univLift        => LiftDirection              -- Inner→Outer / Outer→Inner / Directed lift
+| .gen_univLower       => LiftDirection              -- inverse lift (where defined)
+```
+
+`LevelExpr` carries the universe-polymorphism payload:
+
+```
+inductive LevelExpr where
+  | lzero : LevelExpr
+  | lsucc : LevelExpr → LevelExpr
+  | lmax  : LevelExpr → LevelExpr → LevelExpr
+  | limax : LevelExpr → LevelExpr → LevelExpr  -- impredicative max
+  | lvar  : Nat → LevelExpr                    -- universe variable
+```
+
+Equality of `LevelExpr` up to algebra (`lmax e e = e`, `lmax lzero
+e = e`, …) is decidable in **polynomial time** via the Mörtberg-
+Sterling 2024 normalization algorithm — one of the deciders
+listed in §11.8.7's matrix.
+
+`UniverseFlag` carries the full Setzer-Rathjen ladder:
+
+```
+inductive UniverseFlag where
+  | standard
+  | inaccessible
+  | mahlo
+  | superMahlo
+  | nMahlo (n : Nat)
+  | hyperMahlo
+  | weaklyCompact
+  | indescribable (n : Nat)
+  | reflecting
+  | vopenka
+```
+
+Each flag is a strictly stronger admission predicate.  Admission is
+decidable in `O(flag enum position)`.  `standard` ships Phase Z₆
+kickoff; `inaccessible` + `mahlo` ship Phase Z₆ proper; `superMahlo`
+→ `vopenka` ship Phase Z₆+ as research-frontier additions.
+
+`ChildSpec` lists for universe-mode generators:
+
+| Generator | Arity | ChildSpecs | binderShifts |
+|---|---|---|---|
+| `gen_universeU` / `gen_universeS` / `gen_universeD` / `gen_universeOmega` | 0 | `[]` | `[]` |
+| `gen_sprop` | 0 | `[]` | `[]` |
+| `gen_univLift` / `gen_univLower` | 1 | `[{ .type, 0, 0 }]` | `[0]` |
+
+Each universe generator is `cellSort := .type`, `cellDimension := 0`,
+`totalityClass := .total`.  ConsistencyStrength varies per flag.
+
+#### 3.16.4 Cubical CCHM primitives (Phase Z₄)
+
+§11.8.4 commits to the full CCHM cubical primitive set, generalizing
+the current `gen_interval0` / `gen_interval1` / `gen_intervalOpp` /
+`gen_intervalMeet` / `gen_intervalJoin` / `gen_pathLam` / `gen_pathApp`
+/ `gen_transp` / `gen_hcomp` / `gen_glueIntro` / `gen_glueElim` to a
+coherent CCHM-compatible cubical core.
+
+Apex cubical generators (extending what's already in the 194 table):
+
+```
+| .gen_path        => Unit  -- Path type former: Path A x y as a Generator
+                            -- (type-level; the term-level pathLam already exists)
+| .gen_face        => FaceFormula  -- Face formulas: i = 0, i = 1, i ∧ j, i ∨ j, ...
+| .gen_dimI        => Unit  -- The interval pre-type (interval semantics)
+| .gen_compFill    => Unit  -- Composition filling (Kan structure)
+| .gen_glueType    => Unit  -- Glue type former (Glue A φ T e at type level)
+```
+
+The current `gen_glueIntro` / `gen_glueElim` are term-level glue
+introduction / elimination; the apex commitment adds `gen_glueType`
+at type level.  Similarly `gen_path` adds the type former alongside
+the existing `gen_pathLam` (term-level path lambda).
+
+`FaceFormula` is a finite presentation of dim-interval face
+constraints:
+
+```
+inductive FaceFormula where
+  | dimIs0 (dimVar : Nat) : FaceFormula                    -- i = 0
+  | dimIs1 (dimVar : Nat) : FaceFormula                    -- i = 1
+  | meet   (left right : FaceFormula) : FaceFormula        -- i ∧ j
+  | join   (left right : FaceFormula) : FaceFormula        -- i ∨ j
+  | empty  : FaceFormula                                    -- 0_F (always false)
+  | full   : FaceFormula                                    -- 1_F (always true)
+```
+
+`DecidableEq FaceFormula` is structural.  Face-formula equality
+modulo distributivity of meet over join is decidable in polynomial
+time (a normal-form approach: disjunctive normal form per
+Mörtberg-Sterling).
+
+`ChildSpec` lists for apex cubical generators:
+
+| Generator | Arity | ChildSpecs | binderShifts |
+|---|---|---|---|
+| `gen_path` | 3 | `[{ .type, 0, 0 }, { .term, 0, 0 }, { .term, 0, 0 }]` | `[0, 0, 0]` |
+| `gen_face` | 0 | `[]` | `[]` |
+| `gen_dimI` | 0 | `[]` | `[]` |
+| `gen_compFill` | 4 | `[{ .type, 0, 1 }, { .term, 0, 0 }, { .term, 0, 0 }, { .term, 0, 0 }]` | `[1, 0, 0, 0]` |
+| `gen_glueType` | 4 | `[{ .type, 0, 0 }, { .term, 0, 0 }, { .type, 0, 0 }, { .term, 0, 0 }]` | `[0, 0, 0, 0]` |
+
+All apex cubical generators are `cellSort := .term` or `.type`,
+`cellDimension := 0`, `totalityClass := .total` (cubical Kan ops
+are Tot-by-construction in CCHM), `consistencyStrength :=
+.predicative` (CCHM lives below ZFC + inaccessibility).
+
+#### 3.16.5 HIT + QIIT path constructors (Phase Z₅)
+
+§11.8.3 commits to Higher Inductive Types via path-constructor
+Generators carrying a `kind : Generator.Kind` tag:
+
+```
+inductive Generator.Kind where
+  | termCtor            -- ordinary constructor
+  | pathCtor            -- path constructor (Path A x y inhabitant)
+  | higherPathCtor      -- 2-cell / higher path constructor
+  | recursorCtor        -- eliminator (gets motive)
+```
+
+Each HIT instance ships THREE Generators: a term constructor, one
+or more path constructors, and an eliminator.  The HIT eliminator's
+iota rule respects path constructors via cubical Kan operations
+(per §11.8.4 generators above).
+
+Apex HIT generator families (one row per HIT):
+
+| HIT | Term ctor | Path ctor(s) | Recursor |
+|---|---|---|---|
+| Quotient | `gen_quotMk` (existing) | `gen_quotEq` (existing) | `gen_quotRec` (existing) |
+| Circle (S¹) | `gen_circleBase` (existing) | `gen_circleLoop` (existing) | `gen_circleRec` (existing) |
+| Pushout | `gen_pushInl` / `gen_pushInr` (existing) | `gen_pushGlue` (existing) | `gen_pushRec` (existing) |
+| n-truncation | `gen_truncIntro` (existing) | `gen_truncCoh` (existing) | `gen_truncRec` (existing) |
+| Suspension (apex add) | `gen_suspNorth` / `gen_suspSouth` | `gen_suspMerid` | `gen_suspRec` |
+| Coequalizer (apex add) | `gen_coeqIn` | `gen_coeqEq` | `gen_coeqRec` |
+| General-HIT framework (apex add) | `gen_hitCtor (signature : HITSignature)` | `gen_hitPath (path : HITPathDecl)` | `gen_hitRec` |
+
+`HITSignature` and `HITPathDecl` are profile-level data: a HIT's
+shape is described by lists of constructor arities + path
+boundaries, admitted via `SemanticallySupportedGenerator` with a
+Cavallo-Mörtberg-2020 well-formedness witness.
+
+QIITs (Quotient Inductive-Inductive Types per Altenkirch-Capriotti-
+Dijkstra-Forsberg FoSSaCS 2018) share the same template but with
+the constraint that the type former and value former are mutually
+inductive at the Generator level (via the `mutual` keyword in the
+Generator table — admissible because Generator is a finite enum, not
+a recursive inductive).
+
+`ChildSpec` lists for the apex HIT additions follow the template:
+term ctors have payload-shape children; path ctors have Path-type
+endpoints as children at scope-shift 0; recursors have a motive
+child at scope-shift 1, base case at 0, recursive case at the
+binder count of the HIT.
+
+#### 3.16.6 HIIRT eliminators (Phase Z₆ refactor)
+
+§11.8.3 commits to **dependent large elimination with motive
+children**.  The current 16 SR-iota arms (per memory
+`project_polycell_v2_progress`) all assume non-dependent
+eliminators (no motive in the child spine).  Phase Z₀ refactors
+this.
+
+**Eliminator spine template (post-Z₀):**
+
+```
+gen_<typename>Elim spec:
+  ChildSpec list := [
+    { .type, 0, 1 },           -- motive : <typename> → Type
+    { .term, 0, 0 },           -- base case (or first variant)
+    { .term, 0, <binder count> }, -- recursive case (with binders for
+                                      predecessor, induction hypothesis,
+                                      result of induction, ...)
+    ...
+    { .term, 0, 0 }            -- scrutinee
+  ]
+  binderShifts := [1, 0, <binder count>, ..., 0]
+```
+
+Concrete refactored eliminators (Phase Z₀):
+
+| Generator | Pre-Z₀ shape | Post-Z₀ shape |
+|---|---|---|
+| `gen_natElim` | `[0, 0, 0]` (zero, succ, scrutinee, NO motive) | `[1, 0, 2, 0]` (motive, zero, succ-with-IH, scrutinee) |
+| `gen_natRec` | `[0, 0, 0]` (iterator form, no motive) | `[1, 0, 2, 0]` |
+| `gen_boolElim` | `[0, 0, 0]` | `[1, 0, 0, 0]` (motive, true, false, scrutinee) |
+| `gen_listElim` | `[0, 0, 0]` | `[1, 0, 3, 0]` (motive, nil, cons-with-IH, scrutinee) |
+| `gen_optionMatch` | `[0, 0, 0]` | `[1, 0, 1, 0]` (motive, none, some, scrutinee) |
+| `gen_eitherMatch` | `[0, 0, 0]` | `[1, 1, 1, 0]` (motive, inlBranch, inrBranch, scrutinee) |
+| `gen_idJ` | `[0, 0]` | `[2, 0, 0]` (motive at shift 2, refl case, witness) |
+| `gen_idStrictRec` | `[0, 0]` | `[2, 0, 0]` |
+
+Phase Z₀ is ~2K LoC of refactor work (the 33+ structural decls
+this affects, per §11.8.9).  The downstream SR-iota arms refactor
+to match the new shapes.  The arms shipped today (16/18 per
+`project_polycell_v2_progress`) are SOUND for the pre-Z₀ shapes;
+the post-Z₀ shapes get fresh SR proofs as part of Z₁ (Typed core).
+
+#### 3.16.7 Multi-clock guarded recursion (Phase Z₇)
+
+§11.8.3 + §2.5 commit to **multi-clock guarded type theory**
+(Bizjak-Møgelberg-Vezzosi LICS 2017 + Møgelberg-Veltri-Vezzosi
+JFP 2020).  Beyond single-clock Nakano `▷`, multi-clock supports
+clock quantification + clock-dependent constructions.
+
+Apex multi-clock generators:
+
+```
+| .gen_clock         => Unit  -- clock-type former (a clock is a "rate")
+| .gen_laterCl       => Unit  -- ▸_κ later modality at clock κ
+| .gen_forceCl       => Unit  -- force_κ : ▸_κ A → A (under clock binding)
+| .gen_clockAbs      => Unit  -- ∀κ. A — universal clock abstraction
+| .gen_clockApp      => Unit  -- A[κ] — clock application
+| .gen_fixedPoint    => Unit  -- gfix : (▸_κ A → A) → A — guarded fixed point
+```
+
+`ChildSpec` lists:
+
+| Generator | Arity | ChildSpecs | binderShifts |
+|---|---|---|---|
+| `gen_clock` | 0 | `[]` | `[]` |
+| `gen_laterCl` | 1 | `[{ .type, 0, 0 }]` | `[0]` |
+| `gen_forceCl` | 1 | `[{ .term, 0, 0 }]` | `[0]` |
+| `gen_clockAbs` | 1 | `[{ .type, 0, 1 }]` (body under a clock binder) | `[1]` |
+| `gen_clockApp` | 2 | `[{ .term, 0, 0 }, { .term, 0, 0 }]` | `[0, 0]` |
+| `gen_fixedPoint` | 1 | `[{ .term, 0, 1 }]` | `[1]` |
+
+All multi-clock generators: `cellSort := .term` or `.type`,
+`cellDimension := 0`, `totalityClass := .productive` (multi-clock
+programs are productive-by-construction per BMV's productivity
+proof), `consistencyStrength := .predicative`.
+
+The shift-1 binders in `gen_clockAbs` and `gen_fixedPoint` exercise
+the fold engine's binder-lift discipline — covered by V2-fix-8's
+shift > 1 smoke (uncommitted on disk, to ship next iteration).
+
+#### 3.16.8 Internal parametricity bridge (Phase Z₈)
+
+§11.8.3 commits to **internal parametricity**: the kernel proves
+its own free theorems without external metatheory (Bernardy-Coquand-
+Moulin ICFP 2015 + Cavallo-Harper LICS 2020).
+
+Apex internal-parametricity generators:
+
+```
+| .gen_param         => Unit  -- parametricity bridge: BridgeA : A ≅ Param A
+| .gen_paramAbs      => Unit  -- parametric universal abstraction
+| .gen_paramApp      => Unit  -- parametric application
+| .gen_paramRel      => Unit  -- relational interpretation extraction
+```
+
+`ChildSpec` lists:
+
+| Generator | Arity | ChildSpecs | binderShifts |
+|---|---|---|---|
+| `gen_param` | 1 | `[{ .type, 0, 0 }]` | `[0]` |
+| `gen_paramAbs` | 1 | `[{ .term, 0, 1 }]` (body under parametric binder) | `[1]` |
+| `gen_paramApp` | 2 | `[{ .term, 0, 0 }, { .term, 0, 0 }]` | `[0, 0]` |
+| `gen_paramRel` | 2 | `[{ .term, 0, 0 }, { .term, 0, 0 }]` | `[0, 0]` |
+
+Adds ~3K LoC to the kernel (per §11.8.3).  Decidable typechecking
+preserved (Bernardy-Moulin 2013).  `cellSort := .term`,
+`cellDimension := 0`, `totalityClass := .total`,
+`consistencyStrength := .predicative`.
+
+#### 3.16.9 First-class rewriting rules (Phase Z₈)
+
+§11.8.3 commits to **rewriting rules as first-class kernel
+feature** (Cockx-Tabareau ICFP 2021).  Users declare rewrite rules
+that extend definitional equality, admitted on confluence +
+termination + linearity witnesses.
+
+Apex rewriting generators:
+
+```
+| .gen_rewriteRule => RewriteRuleData
+                      -- payload: pair of patterns (lhs, rhs) + linearity witness
+```
+
+`RewriteRuleData` carries:
+
+```
+structure RewriteRuleData where
+  lhsPattern : Pattern
+  rhsPattern : Pattern
+  linearityWitness : IsLinear lhsPattern
+  confluenceWitness : ProfileConfluent (extendWith lhs rhs)
+  terminationWitness : ProfileTerminating (extendWith lhs rhs)
+```
+
+Each rule's admission requires:
+
+* **Confluence witness** — the new TRS remains confluent.
+* **Termination witness** — the new TRS remains terminating (per
+  §11.7.2's `TotalityClass` constraint).
+* **Linearity witness** — patterns are linear (Cockx-Tabareau §3).
+
+When admitted, the rule joins the kernel's definitional equality.
+Strictly more powerful than fixed reduction rules: users extend
+the kernel's notion of computation per-profile, with decidable
+admission (each witness is decidable per §11.8.7).
+
+`gen_rewriteRule` is `cellSort := .term`, `cellDimension := 0`,
+`totalityClass := .total` (rules must witness termination),
+`consistencyStrength := inherited from base profile`.
+
+#### 3.16.10 dProp + internal computational reflection (Phase Z₈)
+
+§11.8.3 commits to **decidable propositions universe** `dProp`
+where every inhabitant carries its own decision procedure (Pédrot-
+Tabareau LICS 2018).  Markov's principle holds internally; outside
+`dProp` the system remains constructive.
+
+Apex `dProp` generators:
+
+```
+| .gen_dProp     => Unit                   -- universe of decidable propositions
+| .gen_dPropDec  => Unit                   -- the embedded decider: dProp → Bool
+| .gen_dPropOfDecidable => Unit            -- inject Decidable P into dProp
+```
+
+`ChildSpec` lists:
+
+| Generator | Arity | ChildSpecs | binderShifts |
+|---|---|---|---|
+| `gen_dProp` | 0 | `[]` | `[]` |
+| `gen_dPropDec` | 1 | `[{ .term, 0, 0 }]` | `[0]` |
+| `gen_dPropOfDecidable` | 1 | `[{ .term, 0, 0 }]` | `[0]` |
+
+`cellSort := .type` for `gen_dProp`, `.term` for the others.
+`totalityClass := .total`.  `consistencyStrength := .predicative`.
+
+#### 3.16.11 MTT mode-theory generators (Phase Z₈)
+
+§11.8.6 commits to **Multi-Modal Type Theory (MTT)** at the apex
+modal layer (Gratzer-Sterling-Sterling LICS 2020).  Modes form a
+2-category; modalities are 1-cells; modal types `⟨μ | A⟩` shift
+types between modes.
+
+Apex MTT generators (per mode):
+
+```
+-- One Generator per admitted mode in the mode theory
+| .gen_mode (modeTag : ModeTag) => Unit          -- mode declaration
+-- Modal intro/elim, parameterized by modality
+| .gen_modIntro (mu : Modality) => Unit          -- ⟨μ | A⟩ introduction
+| .gen_modElim  (mu : Modality) => Unit          -- ⟨μ | A⟩ elimination
+| .gen_modCompose => Unit                         -- modality composition: μ ⊕ ν
+| .gen_modAdjUnit (adj : AdjunctionWitness) => Unit -- η of an adjunction
+| .gen_modAdjCounit (adj : AdjunctionWitness) => Unit -- ε of an adjunction
+| .gen_modDRAEval => Unit                         -- dependent right adjoint eval
+```
+
+`ChildSpec` lists vary per modality (different modalities have
+different arities — a left adjoint takes 1 child, a right adjoint
+takes 1, a triple `♭ ⊣ ◇ ⊣ ♯` takes 3 components).  The template:
+
+| Generator | Typical arity | ChildSpec template |
+|---|---|---|
+| `gen_modIntro μ` | 1 | `[{ .term, 0, <mode-shift> }]` |
+| `gen_modElim μ` | 1 | `[{ .term, 0, 0 }]` |
+| `gen_modCompose` | 2 | `[{ .term, 0, 0 }, { .term, 0, 0 }]` |
+
+The mode-theory's 2-category itself is **rigid** (no non-trivial
+2-isomorphisms between 1-cells, per §3.13's three restrictions),
+which makes MTT conversion decidable in polynomial time by
+Gratzer's universal recipe.  Decidability witness lives in §11.8.7
+as `Decidable (MTTModalityCompose mod1 mod2)`.
+
+#### 3.16.12 Cohesion + differential cohesion (Phase Z₈)
+
+§11.8.6 commits to the full **cohesive adjoint triple** ♭ ⊣ ◇ ⊣ □
+⊣ ♯ (Shulman 2018, Myers-Riley) plus **differential cohesion**
+Π ⊣ ♭_inf ⊣ ♯_inf ⊣ ʃ_inf (Schreiber 2013).
+
+Apex cohesion generators:
+
+```
+-- Cohesive modalities
+| .gen_shape         => Unit  -- ʃ (shape): ∫ ⊣ ♭
+| .gen_flat          => Unit  -- ♭ (flat / discrete)
+| .gen_sharp         => Unit  -- ♯ (sharp / codiscrete)
+| .gen_cohesiveUnit  => Unit  -- adjunction unit per cohesive focus
+-- Differential cohesion
+| .gen_reduced       => Unit  -- ℜ (reduced / underlying)
+| .gen_infinitesimal => Unit  -- ℑ (infinitesimal shape)
+| .gen_etale         => Unit  -- &  (étale / formally étale)
+```
+
+`ChildSpec` lists: each cohesive / differential modality is
+unary, accepting one term-child at the parent scope.
+
+| Generator | Arity | ChildSpecs | binderShifts |
+|---|---|---|---|
+| `gen_shape` | 1 | `[{ .type, 0, 0 }]` | `[0]` |
+| `gen_flat` | 1 | `[{ .type, 0, 0 }]` | `[0]` |
+| `gen_sharp` | 1 | `[{ .type, 0, 0 }]` | `[0]` |
+| `gen_cohesiveUnit` | 1 | `[{ .term, 0, 0 }]` | `[0]` |
+| `gen_reduced` | 1 | `[{ .type, 0, 0 }]` | `[0]` |
+| `gen_infinitesimal` | 1 | `[{ .type, 0, 0 }]` | `[0]` |
+| `gen_etale` | 1 | `[{ .type, 0, 0 }]` | `[0]` |
+
+All cohesion / differential-cohesion generators: `cellSort :=
+.type`, `cellDimension := 0`, `totalityClass := .total`,
+`consistencyStrength := .predicative`.
+
+#### 3.16.13 Algebraic effects + handlers (Phase Z₈)
+
+§11.8.6 commits to **algebraic effects with handlers** as first-
+class kernel feature (Plotkin-Pretnar ESOP 2009).
+
+Apex algebraic-effect generators:
+
+```
+| .gen_effectOp      => EffectOpSignature   -- algebraic effect operation
+| .gen_effectHandler => HandlerData          -- handler implementing an effect
+| .gen_effectScope   => Unit                 -- delimited continuation scope
+| .gen_effectResume  => Unit                 -- continuation resumption
+| .gen_effectFinally => Unit                 -- handler finally-clause
+```
+
+`EffectOpSignature`:
+
+```
+structure EffectOpSignature where
+  opName       : Name
+  paramTypes   : List Ty
+  returnType   : Ty
+  effectLabel  : EffectLabel
+```
+
+`ChildSpec` lists:
+
+| Generator | Arity | ChildSpecs | binderShifts |
+|---|---|---|---|
+| `gen_effectOp` | <varies by op signature> | per-op | per-op |
+| `gen_effectHandler` | 2 + #ops | `[{ .term, 0, 0 }, { .term, 0, 1 }, ...]` | `[0, 1, ...]` |
+| `gen_effectScope` | 1 | `[{ .term, 0, 0 }]` | `[0]` |
+| `gen_effectResume` | 1 | `[{ .term, 0, 0 }]` | `[0]` |
+| `gen_effectFinally` | 2 | `[{ .term, 0, 0 }, { .term, 0, 1 }]` | `[0, 1]` |
+
+Sound by Plotkin-Pretnar + Bauer-Pretnar.  Decidable typechecking
+preserved.  Adds ~5K LoC.  `cellSort := .term`, `cellDimension :=
+0`, `totalityClass := varies per effect`, `consistencyStrength
+:= .predicative`.
+
+#### 3.16.14 Synthetic mathematics layer (Phase Z₈+, profile-level)
+
+§11.8.6 commits to **synthetic mathematics frameworks** as PROFILE-
+LEVEL capabilities, NOT kernel-level Generators.  Each synthetic-math
+framework is a `ProfileExtension` (§3.14) admitted with a `Bilax
+Compatible` witness and a `ProfileCapabilities` record:
+
+| Framework | Profile capability | Reference | LoC est |
+|---|---|---|---|
+| ∞-topos internal language | `fxInfinityToposProfile` | Shulman 2019 + Lurie HTT | ~30K |
+| Stable homotopy / synthetic spectra | `fxSpectraProfile` | Krause 2025 | ~15K |
+| Synthetic Lie groups + smooth manifolds | `fxSmoothProfile` | Kock SDG | ~10K |
+| Synthetic algebraic geometry | `fxAlgGeomProfile` | Cherubini-Coquand-Geuvers-Hou-Mörtberg 2024 | ~20K |
+| Synthetic quantum types | `fxQuantumProfile` | Coecke-Selinger / Heunen-Vicary | ~15K |
+| Synthetic measure + probability | `fxMeasureProfile` | synthetic-probability literature | ~12K |
+| Synthetic Markov categories | `fxMarkovProfile` | Fritz 2020 | ~8K |
+| Synthetic differential cohomology | `fxDiffCohomologyProfile` | Schreiber 2013 | ~25K |
+| Synthetic computability theory | `fxComputabilityProfile` | Bauer 2006 (effective topos as profile) | ~10K |
+| Synthetic stable ∞-categories | `fxStableInfinityProfile` | Riehl-Verity ∞-cosmoi | ~20K |
+
+Each profile uses the SAME `PolyCell` substrate but with a profile-
+specific `SemanticallySupportedGenerator` admission table — the
+generators are kernel-level but their admission predicates are
+profile-level.  Profiles form a 2-category (geometric morphisms
+between profiles), and profile-of-profiles is admissible (§3.8
+self-referential profiles via Uemura ∞-type theories).
+
+#### 3.16.15 Z₉ verified internal SMT engine generators (optional, deferred)
+
+§11.8.11 commits to building a **fully-verified internal SMT
+engine** as Phase Z₉ if and when a concrete profile-level need
+emerges.  Z₉ is OPTIONAL — the per-theory internal deciders of
+§11.8.7 cover most needs.  When Z₉ ships, it adds the following
+generators:
+
+```
+| .gen_smtSatCert       => SATCertificate
+                          -- verified DRAT certificate for a SAT instance
+| .gen_smtTheoryCert (theoryTag : TheoryTag) => TheoryCertificate
+                          -- per-theory certificate (linear arithmetic, BV,
+                          --  congruence closure, ...)
+| .gen_smtNelsonOppen   => CombinationCertificate
+                          -- Nelson-Oppen combination certificate
+| .gen_smtUnsatCore     => UnsatCoreData
+                          -- minimal unsatisfiability core
+| .gen_smtModel         => ModelData
+                          -- explicit model when SAT
+| .gen_smtProofTerm     => ProofTerm
+                          -- replayable proof term in the kernel
+```
+
+Each generator carries a CERTIFICATE that the kernel verifies — no
+trust placed in the SMT engine beyond the verifier's check.  ~10K
+LoC.  `cellSort := .term`, `cellDimension := 0`, `totalityClass :=
+.total`, `consistencyStrength := inherited from base profile`.
+
+This is the **closed-system mandate** (§11.8.11) operationalized:
+SMT-level reasoning happens INSIDE FX with verified deciders; no
+external Z3 / CVC5 calls; no trust on external software.
+
+#### 3.16.16 ChildSpec extensions: motive / dependent / interval children
+
+The current `ChildSpec` record is:
+
+```
+structure ChildSpec where
+  cellSort : CellSort
+  cellDimension : CellDim
+  scopeShift : Nat
+  deriving DecidableEq
+```
+
+The apex commitments require three extensions to this template,
+captured as `ChildSpec` field options or as separate ChildSpec
+variants:
+
+* **Motive children.**  Dependent eliminators carry a motive child
+  whose `cellSort := .type`, `cellDimension := 0`, `scopeShift := <
+  binder-count-of-the-eliminated-type >`.  No new field — motive
+  children are just ChildSpec values with `.type` sort and the
+  appropriate binder shift.  Pure refactor.
+
+* **Cubical interval children.**  Cubical Kan ops (transp, hcomp,
+  glue) bind interval variables `i : 𝕀`, not term variables.
+  Modeled as `ChildSpec { .term, 0, intervalShift }` where
+  `intervalShift` is the interval-variable count, with the
+  interpretation handled at admission time (the typechecker treats
+  these binders as living in the interval pre-type per CCHM).
+
+* **Clock children.**  Multi-clock guarded generators bind clock
+  variables.  Modeled as `ChildSpec { .term, 0, clockShift }` with
+  clock-context interpretation at admission time.
+
+No structural change to `ChildSpec` itself — the apex commitments
+reuse the existing record by interpreting `scopeShift` polymorphically
+across term / interval / clock binders.  The `binderShifts` list per
+generator stays a `List Nat` (just `scopeShift` values).
+
+#### 3.16.17 Payload type extensions
+
+Current `Generator.payload : Generator → Nat → Type` maps each
+Generator to its payload type at a given scope.  The apex
+commitments add the following payload types:
+
+* `LevelExpr` (universe-mode generators, §3.16.3).
+* `UniverseFlag` (universe-mode generators, §3.16.3).
+* `LiftDirection` (lift / lower generators, §3.16.3).
+* `FaceFormula` (cubical face generators, §3.16.4).
+* `Generator.Kind` (HIT kind tag, §3.16.5).
+* `HITSignature` / `HITPathDecl` (general-HIT framework, §3.16.5).
+* `RewriteRuleData` (first-class rewriting, §3.16.9).
+* `ModeTag` / `Modality` / `AdjunctionWitness` (MTT, §3.16.11).
+* `EffectOpSignature` / `HandlerData` (algebraic effects, §3.16.13).
+* `SATCertificate` / `TheoryCertificate` / etc. (Z₉ SMT engine,
+  §3.16.15).
+
+Each payload type ships with:
+
+* `DecidableEq` (structural).
+* A `Generator.payloadValid` predicate (decidable) that checks the
+  payload's well-formedness at admission time.
+* Serialization to `List Nat` (for the FX0-PolyCell certificate
+  format, §12.6.4) via a per-payload serializer.
+
+The closed-enum payload types (`UniverseFlag`, `Generator.Kind`,
+`LiftDirection`) auto-derive `DecidableEq`.  The structural ones
+(`LevelExpr`, `FaceFormula`, `RewriteRuleData`, `EffectOpSignature`)
+need hand-rolled propext-free `DecidableEq` per the project
+`feedback_lean_zero_axiom_match` discipline.
+
+#### 3.16.18 Trust stratification per generator
+
+Per §11.7's foundational-boundary mechanisms, each Generator
+carries three additional metadata fields:
+
+* `totalityClass : TotalityClass` (§11.7.2: `total` / `productive`
+  / `partial`).
+* `consistencyStrength : ConsistencyStrength` (§11.7.1:
+  `finitistic` / `predicative` / `impredicative` / `inaccessible`
+  / `mahlo` / `custom`).
+* `siteOpenness : SiteOpenness` (§11.7.3: `sealed` / `extensible`
+  / `reflective` / `oracle`).
+
+For the apex generator additions:
+
+| Family | `totalityClass` | `consistencyStrength` | `siteOpenness` |
+|---|---|---|---|
+| Universe modes (§3.16.3) | `.total` | per-flag (predicative → vopenka) | `.sealed` |
+| Cubical CCHM (§3.16.4) | `.total` | `.predicative` | `.sealed` |
+| HIT + QIIT (§3.16.5) | `.total` (for ctors), `.total` (for recs) | `.predicative` | `.sealed` |
+| HIIRT eliminators (§3.16.6) | `.total` | per-type-former | `.sealed` |
+| Multi-clock guarded (§3.16.7) | `.productive` | `.predicative` | `.sealed` |
+| Internal parametricity (§3.16.8) | `.total` | `.predicative` | `.sealed` |
+| Rewriting rules (§3.16.9) | `.total` (admission requires termination witness) | inherited | `.extensible` |
+| dProp (§3.16.10) | `.total` | `.predicative` | `.sealed` |
+| MTT modal (§3.16.11) | varies per mode | `.predicative` | `.sealed` |
+| Cohesion (§3.16.12) | `.total` | `.predicative` | `.sealed` |
+| Algebraic effects (§3.16.13) | varies per effect | `.predicative` | `.sealed` |
+| Synthetic math (§3.16.14) | varies per framework | varies per framework | `.sealed` |
+| Verified SMT (§3.16.15) | `.total` | inherited | `.sealed` |
+
+These three metadata fields enforce the structural soundness
+contracts at admission time — a `partial` Generator cannot be the
+child of a `total` parent; a `vopenka`-strength Generator cannot
+ship in a profile claiming `predicative` strength; an `oracle`
+Generator cannot ship in a `sealed` profile.
+
+#### 3.16.19 Migration discipline: how the table grows without cascade
+
+The 194-entry table grows to ~400-500 entries by MILESTONE D.  The
+discipline that keeps cascade-tax at zero:
+
+1. **No new `RawTerm` constructors.**  Every apex addition is a
+   new Generator enum value plus its metadata.  `RawTerm` stays
+   the one-`mkGen`-ctor inductive shipped at V2-L0.6.
+2. **No new `PolyCell` constructors** (except `horizontalComposite`
+   under §11.6.5's staged Gray-tensor admission).  The certified
+   inductive stays the four-ctor shape (`gen` / `generatingCell` /
+   `verticalComposite` / `identityCell`) shipped at V2-L1c.4-7.
+3. **No new traversal operations.**  `rename` + `subst` (and
+   future ops like `eval`, `nbe`, `quote`) remain ONE-line `fold`
+   instantiations.  The fold engine's shift-polymorphism (V2-fix-8
+   smoke) handles any binder shape.
+4. **Per-generator admission proofs.**  Each new Generator's
+   `SemanticallySupportedGenerator` arm ships a constructive
+   admission witness — typically a few lines per generator citing
+   the published theory.
+5. **Per-family metatheory inheritance.**  When a family closes
+   (e.g., HITs at Z₅), the family's metatheory (canonicity for
+   HIT-introduced types, eta-equivalence for HIT eliminators,
+   cubical Kan-fillness for HIT path constructors) ships ONCE as
+   a family-level theorem, NOT per-generator.
+
+This discipline is the **cascade-death principle** at apex scale:
+the engine grows linearly in Generator count, not quadratically in
+(Generator × consumer) pairs.
+
+#### 3.16.20 Audit gates for each apex phase
+
+Each phase Zₙ adds audit gates that verify the family's
+zero-axiom + closed-system + complexity-bound discipline.
+
+| Phase | Audit gates added | What they verify |
+|---|---|---|
+| Z₀ | `STRICT-Z0-MOTIVE` | Every eliminator's spine carries a motive child at the correct binder shift; pre-Z₀ shapes flagged. |
+| Z₁ | `STRICT-Z1-TYPED` | Every typed-core generator has a `HasType` rule with proper inversion lemmas. |
+| Z₂ | `STRICT-Z2-CANONICITY` | Every closed inhabitant of a canonical type reduces to a constructor. |
+| Z₃ | `STRICT-Z3-DECIDABLE-CONV` | Typed Conv decision procedure ships with a `Complexity` witness. |
+| Z₄ | `STRICT-Z4-CUBICAL` | Every cubical Kan op has a defining reduction rule. |
+| Z₅ | `STRICT-Z5-HIT` | Every HIT family ships path constructor + recursor + iota rule + cubical Kan witness. |
+| Z₆ | `STRICT-Z6-HIIRT` | Every IR / HIIRT family has a Setzer-form admission witness with proof-theoretic strength tag. |
+| Z₇ | `STRICT-Z7-GUARDED` | Every multi-clock generator has a productivity witness. |
+| Z₈ | `STRICT-Z8-21DIM` | Every dimension d ∈ {2,…,21} ships a typing judgment with decidable typechecking. |
+| Z₉ | `STRICT-Z9-SMT` | Every SMT certificate has an in-kernel verifier that accepts iff the certificate is sound. |
+
+Plus uniform gates that span all phases:
+
+* `STRICT-TC` (per §11.7.5) — TotalityClass constraints on
+  Generator children.
+* `STRICT-CS` (per §11.7.5) — ConsistencyStrength monotone through
+  ProfileExtension chain.
+* `STRICT-SO` (per §11.7.5) — SiteOpenness compatibility on
+  extension admission.
+* `STRICT-COMPLEXITY` (per §11.8.7) — every `Decidable` instance
+  ships with a verified complexity bound.
+
+These gates LIVE under `LeanFX2/Tools/AuditAll/AuditPolyCell.lean`
++ family-specific audit files (per the existing AuditPolyCell
+convention).  Each new Generator addition adds its
+`#assert_no_axioms` entry; each new admission witness adds its
+`STRICT-*` family gate entry; each new complexity bound adds its
+`STRICT-COMPLEXITY` entry.
+
+The audit harness is the **mechanized enforcement** of the apex
+commitments: a Generator addition that violates any of these gates
+is REJECTED by the build — not as a warning, as a hard fail.
+
+---
+
 ## 4. The raw/certified PolyCell signature
 
 After the thirteen profile axes are defined, the trusted kernel surface
-has two layers.  The **v2 structural re-foundation** (decided 2026-05-26)
-fixes their shape; the dim-indexed v1 sketch earlier revisions carried
-is retained as the shipped *proving ground* (TCB.4–TCB.8, §10), not as
-the target.
+has two layers.  The **v2 structural re-foundation** (shipped 2026-05-27
+per V2-mig.18 final audit + ef079829 v1 retirement) fixes their shape;
+v1's dim-indexed `PolyTerm` (sentinel-payload atoms + per-fixture
+certified constructors) is **DELETED** — what remains is the v2
+substrate as the SOLE canonical kernel surface.  Historical v1 work
+(TCB.4–TCB.8) survives only as commit-log entries in §10's POLY-TCB
+ledger.
 
 1.  Raw syntax is **un-indexed by dimension** and split in two:
-    `RawTermV2 scope` (the term layer — one `mkGen generator payload
+    `RawTerm scope` (the term layer — one `mkGen generator payload
     children` constructor, scope-indexed, with structural children) and
-    `RawCellV2 scope` (the categorical cell layer — `termBase`,
+    `RawCell scope` (the categorical cell layer — `termBase`,
     `generatingCell`, `verticalComposite`, `horizontalComposite`,
     `identityCell`).  Dimension is a **computed** function
-    `RawCellV2.dim`, never a type index.  The layer is deliberately
+    `RawCell.dim`, never a type index.  The layer is deliberately
     permissive: imported data, broken generator ids, wrong arity, bad
     sort choices, dim-mismatched composites, and future `compH`
     experiments are all representable so the checker can say
@@ -3881,12 +4740,12 @@ certified `PolyCell`.
 **Why one generic `gen` constructor is the cascade-death mechanism.**
 `Generator` + `binderShifts` is an Allais "universe of syntaxes with
 binding" descriptor (U20, `arXiv:2001.11001`).  ONE structural fold
-`RawTermV2.foldV2` over that descriptor yields `rename` and `subst` as
+`RawTerm.fold` over that descriptor yields `rename` and `subst` as
 single generic instances — collapsing the 5–8K-LoC per-constructor
 rename/subst commute cascade (§3.11) to instances of three monad laws.
 The certifier, `cd_lemma`, and decidable `Conv` recurse once over the
 same structure, so adding a feature is one `Generator` value plus one
-`SupportedGeneratorV2` arm — never a new raw constructor and never a
+`SupportedGenerator` arm — never a new raw constructor and never a
 per-ctor proof cascade.  This is the concrete mechanism behind §2.1's
 "feature constructors move into generator metadata."
 
@@ -3896,20 +4755,22 @@ This mirrors the existing kernel pattern:
 RawTerm scope                         -- permissive-ish syntax
 Term ctx type raw                     -- intrinsic typed certificate
 
-RawTermV2 scope                       -- permissive term layer (scope-indexed)
-RawCellV2 scope                       -- permissive cell layer (dim COMPUTED)
+RawTerm scope                       -- permissive term layer (scope-indexed)
+RawCell scope                       -- permissive cell layer (dim COMPUTED)
 PolyCell profile sort dim scope b raw -- intrinsic certified cell
 ```
 
 The profile-extension calculus (§3.14) lives over admissible profiles;
 it is not another constructor family inside the raw layer.
 
-The Lean block below is a target shape, not a claim that the current
-files already expose these fields.  The rollout in §10 splits it into
-small modules so each invariant can be audited before downstream views
-depend on it; the dim-indexed v1 proving ground (atoms with sentinel
-payloads, five per-fixture certified constructors) shipped as TCB.4–TCB.8
-and is deleted when the §10 v2 deletion criterion holds.
+The Lean block below shows the SHIPPED v2 substrate shape (modulo
+late-binding axis-7 / axis-9 / etc. structures still under construction
+per §10 phasing).  Each invariant is audited; the dim-indexed v1
+`PolyTerm` proving ground (sentinel-payload atoms + five per-fixture
+certified constructors) is **DELETED** per commit ef079829 (V2-mig.18
+final audit), its convergence theorems were ported to v2 before
+deletion, and its commit history lives in §10's POLY-TCB ledger as
+historical record only.
 
 ```lean
 namespace LeanFX2.Foundation.PolyCell.Core
@@ -3976,59 +4837,57 @@ STRUCTURAL sub-terms whose binders are tracked by
 `scope + shift`).  Nested terms are representable directly; there are no
 sentinel payloads and no hand-written child decoders. -/
 mutual
-  inductive RawTermV2 : Nat → Type where
+  inductive RawTerm : Nat → Type where
     | mkGen :
         {scope : Nat} →
         (generator : Generator) →
         (payload : generator.payload scope) →
-        (children : RawTermChildrenV2 generator.binderShifts scope) →
-        RawTermV2 scope
-  inductive RawTermChildrenV2 : List Nat → Nat → Type where
+        (children : RawTermChildren generator.binderShifts scope) →
+        RawTerm scope
+  inductive RawTermChildren : List Nat → Nat → Type where
     | childNil :
-        {scope : Nat} → RawTermChildrenV2 [] scope
+        {scope : Nat} → RawTermChildren [] scope
     | childCons :
         {scope shift : Nat} → {restShifts : List Nat} →
-        RawTermV2 (scope + shift) →
-        RawTermChildrenV2 restShifts scope →
-        RawTermChildrenV2 (shift :: restShifts) scope
+        RawTerm (scope + shift) →
+        RawTermChildren restShifts scope →
+        RawTermChildren (shift :: restShifts) scope
 end
 
 /-- Raw cell layer (v2).  Scope-indexed only; dimension is COMPUTED by
-`RawCellV2.dim`, never a type index.  This is the keystone: a permissive
+`RawCell.dim`, never a type index.  This is the keystone: a permissive
 raw layer must not enforce dim at the type level, and removing the index
 dissolves the propext-leak class fought through TCB.7/TCB.8 (the dual
 `(dim, rawCell)` match, the partial ctor enum at `dim + 1`, the dim-1
 dispatcher).  The term layer embeds at dimension 0 via `termBase`; a
 dim-mismatched `verticalComposite` is now representable (and rejected by
 the certifier) rather than unconstructable. -/
-inductive RawCellV2 : Nat → Type where
+inductive RawCell : Nat → Type where
   | termBase :
-      {scope : Nat} → RawTermV2 scope → RawCellV2 scope
+      {scope : Nat} → RawTerm scope → RawCell scope
   | generatingCell :
       {scope : Nat} → (ruleId : Nat) →
-      RawCellV2 scope → RawCellV2 scope → RawCellV2 scope
+      RawCell scope → RawCell scope → RawCell scope
   | verticalComposite :
-      {scope : Nat} → RawCellV2 scope → RawCellV2 scope → RawCellV2 scope
+      {scope : Nat} → RawCell scope → RawCell scope → RawCell scope
   | horizontalComposite :
-      {scope : Nat} → RawCellV2 scope → RawCellV2 scope → RawCellV2 scope
+      {scope : Nat} → RawCell scope → RawCell scope → RawCell scope
   | identityCell :
-      {scope : Nat} → RawCellV2 scope → RawCellV2 scope
+      {scope : Nat} → RawCell scope → RawCell scope
 
 /-- Dimension recovered structurally (matches the cell ALONE, the
 propext-clean shape; total; no `termination_by`). -/
-def RawCellV2.dim {scope : Nat} : RawCellV2 scope → CellDim
+def RawCell.dim {scope : Nat} : RawCell scope → CellDim
   | .termBase _                 => 0
   | .generatingCell _ source _  => source.dim + 1
   | .verticalComposite first _  => first.dim
   | .horizontalComposite left _ => left.dim
   | .identityCell base          => base.dim + 1
 
--- v1 PROVING GROUND (shipped TCB.4-TCB.8, deleted at the §10 v2 deletion
--- criterion): the dim-indexed `PolyTerm profile : Nat -> Type`
--- (atom/cell/compV/compH/identity) whose `atom`s carried sentinel `Nat`
--- payloads decoded by hand-written child decoders.  It validated the
--- propext-free certifier and `DecidableEq` patterns v2 reuses but cannot
--- express nested terms.  See the §10 POLY-TCB table for its tracking log.
+-- v1 PolyTerm proving ground RETIRED 2026-05-27 (ef079829).  The
+-- dim-indexed `PolyTerm profile : Nat -> Type` with sentinel-payload
+-- atoms is DELETED; its convergence theorems were ported to v2 before
+-- removal.  Historical record in §10's POLY-TCB ledger (TCB.4–TCB.8).
 
 /-- Sorts are the visible strata of the one FX cell substrate.
 These are not separate syntaxes glued later: terms, types, contexts,
@@ -4063,7 +4922,7 @@ def CellBoundary (profile : PolyProfile) :
     CellSort → CellDim → Nat → Type
   | _, 0, _ => Unit
   | _, _ + 1, scope =>
-      RawCellV2 scope × RawCellV2 scope
+      RawCell scope × RawCell scope
 
 /-- Heterogeneous child list dictated by generator metadata.
 
@@ -4089,11 +4948,11 @@ inductive CellChildren
 reconciliation.
 
 This records the shape claimed for a child.  It does not certify the
-child: the stored raw cell is only a permissive `RawCellV2` at the
+child: the stored raw cell is only a permissive `RawCell` at the
 declared scope. -/
 structure RawChildDescriptor (profile : PolyProfile)
     (cellSort : CellSort) (cellDimension : CellDim) (scope : Nat) where
-  rawCell : RawCellV2 scope
+  rawCell : RawCell scope
 
 /-- Decoder output for a generator is a child spine whose carrier is raw
 descriptors, not certified cells. -/
@@ -4101,92 +4960,48 @@ def RawChildDescriptors (profile : PolyProfile) (parentScope : Nat)
     (childSpecs : List ChildSpec) : Type :=
   CellChildren (RawChildDescriptor profile) parentScope childSpecs
 
-/-- v2 generic generator metadata (the target, abbreviated).  These
-replace the v1 per-feature tables below.  `SupportedGeneratorV2
+/-- Generic generator metadata (shipped V2-L1.1–L1.9).  `SupportedGenerator
 (generator : Generator)` admits a generator to the certified layer — ONE
 arm per supported feature, never a new `PolyCell` constructor;
 `generatorCellSort : Generator → CellSort` and `generatorChildSpecs :
 Generator → List ChildSpec` derive the cell sort and child-spine spec
 (scope shifts = `generator.binderShifts`); `GenPayloadEvidence generator
 scope payload` discharges the local payload (`var`'s `index < scope` is
-now structural via the `Fin scope` payload); `CertifiedTermSpineV2
+structural via the `Fin scope` payload); `CertifiedTermSpine
 profile specs scope children` is the certified child spine (the
 carrier-parametric `CellChildren` / `CertifiedChildSpineForRawDescriptors`
 instantiated to certified cells); `HasEqualDim source target` is the
 value-level endpoint-dimension reconciliation, decided by `Nat.decEq` on
-the computed `RawCellV2.dim`. -/
+the computed `RawCell.dim`.
 
-/-- v1 PROVING GROUND tables (shipped TCB.4–TCB.8, superseded by the v2
-metadata above; deleted at the §10 v2 deletion criterion).  Membership
-here is not enough to certify an atom: atom construction also needs
-payload evidence. -/
-inductive SupportedGeneratorSpec : GeneratorSpec -> Type where
-  | variable : SupportedGeneratorSpec variableGeneratorSpec
-  | lambda : SupportedGeneratorSpec lambdaGeneratorSpec
-  | application : SupportedGeneratorSpec applicationGeneratorSpec
-  | unitType : SupportedGeneratorSpec unitTypeGeneratorSpec
-  | piType : SupportedGeneratorSpec piTypeGeneratorSpec
-  | contextEmpty : SupportedGeneratorSpec contextEmptyGeneratorSpec
-  | contextCons : SupportedGeneratorSpec contextConsGeneratorSpec
-  | linearMode : SupportedGeneratorSpec linearModeGeneratorSpec
+The v1 sentinel-payload tables (`SupportedGeneratorSpec`,
+`SupportedRuleSpec`, `AtomPayloadEvidence`, plus the
+`lambdaUnitTypeBodyVarZeroPayload` / `applicationVarZeroVarOnePayload` /
+`piTypeUnitCodomainUnitPayload` Nat constants used as fixture sentinels)
+were DELETED with v1 in commit ef079829.  They are not listed here.
+The 194-Generator table (`Generator.binderShifts`, `Generator.payload`,
+`Generator.arity`) plus `SupportedGenerator` / `GenPayloadEvidence`
+above subsumes the entire v1 per-fixture admission surface. -/
 
-/-- Current supported-rule table for the certified structural layer.
-
-This is metadata support, not a proof of operational reduction semantics. -/
-inductive SupportedRuleSpec : RuleSpec -> Type where
-  | termStep : SupportedRuleSpec termStepRuleSpec
-
-/-- First finite lambda payload whose decoded children are unit type at the
-parent scope and `var 0` under the binder. -/
-def lambdaUnitTypeBodyVarZeroPayload : Nat := 9200
-
-/-- First finite application payload whose decoded children are `var 0`
-and `var 1` at the parent scope. -/
-def applicationVarZeroVarOnePayload : Nat := 9100
-
-/-- First finite pi-type payload whose decoded children are unit type at the
-parent scope and unit type under the binder. -/
-def piTypeUnitCodomainUnitPayload : Nat := 9300
-
-/-- Payload evidence for nullary atoms currently safe to certify.
-
-There are deliberately no constructors here for lambda/application/pi/context
-extension.  Lambda, application, and pi-type are certified only through
-separate finite-payload constructors below, because they must demand certified
-child cells rather than bare payload evidence. -/
-inductive AtomPayloadEvidence :
-    (generatorSpec : GeneratorSpec) -> (scope : Nat) -> (payload : Nat) -> Type where
-  | variable {scope index : Nat} :
-      index < scope ->
-      AtomPayloadEvidence variableGeneratorSpec scope index
-  | unitType {scope : Nat} :
-      AtomPayloadEvidence unitTypeGeneratorSpec scope 0
-  | contextEmpty {scope : Nat} :
-      AtomPayloadEvidence contextEmptyGeneratorSpec scope 0
-  | linearMode {scope : Nat} :
-      AtomPayloadEvidence linearModeGeneratorSpec scope 0
-
-/-- Certified cell syntax (v2).  This is the trusted layer, indexed by
-the raw `RawCellV2` it certifies, so erasure back to raw is definitional.
-The per-feature term constructors of the v1 proving ground
-(`applicationVarZeroVarOne`, `lambdaUnitTypeBodyVarZero`,
-`piTypeUnitCodomainUnit`, `contextConsEmptyUnitLinear`, …) collapse to
-ONE generic `gen` constructor over the generator table.
+/-- Certified cell syntax.  The trusted layer, indexed by the raw
+`RawCell` it certifies, so erasure back to raw is definitional.  Per-
+feature term constructors collapse to ONE generic `gen` constructor
+over the 194-Generator table.
 
 There is deliberately no certified `horizontalComposite` constructor
 until the Gray tensor boundary formula and disjoint-footprint/matching
-condition are mechanized.  Raw `RawCellV2.horizontalComposite` remains
+condition are mechanized.  Raw `RawCell.horizontalComposite` remains
 available as input data; the checker rejects it as `unsupportedCompH`. -/
 inductive PolyCell (profile : PolyProfile) :
     (sort : CellSort) →
     (dim : CellDim) →
     (scope : Nat) →
     CellBoundary profile sort dim scope →
-    RawCellV2 scope →
+    RawCell scope →
     Type where
 
   -- ONE generic certified term-generator constructor.  `supported`
-  -- admits the generator (a `SupportedGeneratorV2` arm — adding a
+  -- admits the generator (a `SupportedGenerator` arm — adding a
   -- feature is one new arm); `payloadEvidence` discharges the local
   -- payload; `childSpine` certifies the structural children against the
   -- generator's `childSpecs` (scope shifts = `binderShifts`).  Subsumes
@@ -4194,10 +5009,10 @@ inductive PolyCell (profile : PolyProfile) :
   | gen :
       {scope : Nat} → {generator : Generator} →
       {payload : generator.payload scope} →
-      {children : RawTermChildrenV2 generator.binderShifts scope} →
-      SupportedGeneratorV2 generator →
+      {children : RawTermChildren generator.binderShifts scope} →
+      SupportedGenerator generator →
       GenPayloadEvidence generator scope payload →
-      CertifiedTermSpineV2 profile (generatorChildSpecs generator) scope children →
+      CertifiedTermSpine profile (generatorChildSpecs generator) scope children →
       PolyCell profile (generatorCellSort generator) 0 scope ()
         (.termBase (.mkGen generator payload children))
 
@@ -4206,7 +5021,7 @@ inductive PolyCell (profile : PolyProfile) :
   | generatingCell :
       {scope : Nat} → (rule : RuleSpec) →
       SupportedRuleSpec rule →
-      {source target : RawCellV2 scope} →
+      {source target : RawCell scope} →
       {sourceBoundary targetBoundary :
         CellBoundary profile rule.cellSort source.dim scope} →
       HasEqualDim source target →
@@ -4217,11 +5032,11 @@ inductive PolyCell (profile : PolyProfile) :
         (.generatingCell rule.ruleId source target)
 
   -- Certified vertical composite: same sort, shared middle endpoint
-  -- decided by the propext-free `DecidableEq (RawCellV2)`.
+  -- decided by the propext-free `DecidableEq (RawCell)`.
   | verticalComposite :
       {sort : CellSort} → {dim scope : Nat} →
-      {source middle target : RawCellV2 scope} →
-      {firstRaw secondRaw : RawCellV2 scope} →
+      {source middle target : RawCell scope} →
+      {firstRaw secondRaw : RawCell scope} →
       PolyCell profile sort (dim + 1) scope (source, middle) firstRaw →
       PolyCell profile sort (dim + 1) scope (middle, target) secondRaw →
       PolyCell profile sort (dim + 1) scope
@@ -4232,7 +5047,7 @@ inductive PolyCell (profile : PolyProfile) :
   | identityCell :
       {sort : CellSort} → {dim scope : Nat} →
       {boundary : CellBoundary profile sort dim scope} →
-      {baseRaw : RawCellV2 scope} →
+      {baseRaw : RawCell scope} →
       PolyCell profile sort dim scope boundary baseRaw →
       PolyCell profile sort (dim + 1) scope
         (baseRaw, baseRaw)
@@ -4254,25 +5069,24 @@ inductive CellCheckRejection where
 
 /-- Infer a certified package from raw input.
 
-The v2 certifier is `certifyRawCellExactV2?` (raw-indexed, returning a
-certificate over the EXACT input `RawCellV2`) with `inferRawCellGeneralV2?`
-its existential wrapper.  ONE structural recursion over `RawCellV2`
+The v2 certifier is `certifyRawCellExact?` (raw-indexed, returning a
+certificate over the EXACT input `RawCell`) with `inferRawCellGeneral?`
+its existential wrapper.  ONE structural recursion over `RawCell`
 certifies the entire non-`horizontalComposite` fragment at every
 dimension; `horizontalComposite` rejects as `unsupportedCompH` pending
 Gray semantics.  The propext-leak that blocked the dim-indexed v1
 dispatcher (TCB.7d/7f) is gone by construction: there is no dim type
 index to force a `(dim, rawCell)` match, and endpoint-dimension
-reconciliation is value-level (`Nat.decEq` on `RawCellV2.dim`).
+reconciliation is value-level (`Nat.decEq` on `RawCell.dim`).
 
-The v1 proving ground (`inferRawCell?` / `checkRawCellAs?` over the
-dim-indexed `PolyTerm`, TCB.6j–TCB.8) is retained until call sites route
-through the v2 certifier; the TCB.8 convergence theorems proved the v1
-ingress equals the general certifier on the shared fragment, so no
-coverage is lost at deletion. -/
+v1 `inferRawCell?` / `checkRawCellAs?` over the dim-indexed `PolyTerm`
+(TCB.6j–TCB.8) were RETIRED with v1 in commit ef079829.  The TCB.8
+convergence theorems established v1↔general-certifier agreement on the
+shared fragment BEFORE deletion; no coverage was lost at the cutover. -/
 structure CertifiedRawCellResult (profile : PolyProfile) (scope : Nat) where
   cellDimension : CellDim
   inputCode : List Nat
-  rawCell : RawCellV2 scope
+  rawCell : RawCell scope
   cellSort : CellSort
   cellBoundary : CellBoundary profile cellSort cellDimension scope
   certifiedCell :
@@ -4280,13 +5094,13 @@ structure CertifiedRawCellResult (profile : PolyProfile) (scope : Nat) where
   hasInputCode :
     hasSameNatList inputCode (rawCellCode rawCell) = true
 
-def certifyRawCellExactV2? {profile : PolyProfile} (scope : Nat)
-    (raw : RawCellV2 scope) :
+def certifyRawCellExact? {profile : PolyProfile} (scope : Nat)
+    (raw : RawCell scope) :
     Except CellCheckRejection
       (CertifiedRawCell profile scope raw) := ...
 
-def inferRawCellGeneralV2? {profile : PolyProfile} (scope : Nat)
-    (raw : RawCellV2 scope) :
+def inferRawCellGeneral? {profile : PolyProfile} (scope : Nat)
+    (raw : RawCell scope) :
     Except CellCheckRejection
       (CertifiedRawCellResult profile scope) := ...
 
@@ -4295,9 +5109,9 @@ def inferRawCellGeneralV2? {profile : PolyProfile} (scope : Nat)
 `wrongSort` is a rejection of this expected-shape checker.  Bare inference
 has no external sort expectation, so it fails with generator, payload, child,
 boundary, or unsupported-certification reasons instead. -/
-def checkRawCellAsV2? {profile : PolyProfile}
+def checkRawCellAs? {profile : PolyProfile}
     (expectedSort : CellSort) (expectedScope : Nat)
-    (raw : RawCellV2 expectedScope) :
+    (raw : RawCell expectedScope) :
     Except CellCheckRejection
       (CertifiedRawCellResult profile expectedScope) := ...
 
@@ -4313,9 +5127,9 @@ certified dim-1 cell plus a decidable/Prop thinness certificate on that
 certified cell's raw erasure; raw thinness facts are usable only under
 an existing certified step/cell.
 
-The raw layer is two inductives: `RawTermV2` (one generic `mkGen`
+The raw layer is two inductives: `RawTerm` (one generic `mkGen`
 constructor over the `Generator` table, structural children) and
-`RawCellV2` (five structural constructors `termBase`, `generatingCell`,
+`RawCell` (five structural constructors `termBase`, `generatingCell`,
 `verticalComposite`, `horizontalComposite`, `identityCell`, dimension
 computed not indexed).  The certified `PolyCell` layer exposes ONE
 generic `gen` term constructor plus `generatingCell`,
@@ -4586,10 +5400,10 @@ def fxProfile : PolyProfile where
 
   consistency := fxConsistencyProof
 
-/-- Raw FX cell input (v2): the scope-indexed `RawCellV2` layer.  This is
-not a kernel certificate.  `RawCellV2` is profile-agnostic — the
+/-- Raw FX cell input (v2): the scope-indexed `RawCell` layer.  This is
+not a kernel certificate.  `RawCell` is profile-agnostic — the
 generator table lives in the certified `PolyCell` over `fxProfile`. -/
-def FXRawCell := RawCellV2
+def FXRawCell := RawCell
 
 /-- Certified FX cell package. -/
 def FXCell :=
@@ -4620,7 +5434,7 @@ def FXTerm (scope : Nat) (raw : FXRawCell scope) :=
 
 /-- Certified generating step or vertical composite over one sort.
 Raw horizontal composition is rejected until Axis 6 certifies it.  Raw
-endpoints and the dim-1 raw cell are all `RawCellV2 scope`; dimension is
+endpoints and the dim-1 raw cell are all `RawCell scope`; dimension is
 the certified index, not a raw type index. -/
 def FXStep (sort : CellSort) (scope : Nat)
     (source target : FXRawCell scope) (raw : FXRawCell scope) :=
@@ -4740,7 +5554,7 @@ certified bridge exists.  This is not a current raw-PolyTerm claim.
 | P2.1 Generator enum + arity | **Already shipped** ✅ (today commit bb2e7e2d). Subsumed into algebra. |
 | P2.2 outputType shape-function | **Already shipped** ✅ (commits up to 36d592e9). Subsumed into algebra. |
 | P2.3 RawPolyTerm honest nested | **Already shipped** ✅ (today commit 7d6758a9 RawPolyTermFlat). Becomes one shape instance in axis 1. |
-| P2.4 PolyTerm intrinsic mirror | **Reframed**: the raw layer (`RawTermV2`/`RawCellV2`) stays permissive; certified `PolyCell` is the intrinsic mirror. |
+| P2.4 PolyTerm intrinsic mirror | **Reframed**: the raw layer (`RawTerm`/`RawCell`) stays permissive; certified `PolyCell` is the intrinsic mirror. |
 | P2.5 PolyTerm.toRawPoly_rfl | **Subsumed**: erasure is a polygraph morphism to the dim-0 truncation. |
 | P2.6/P2.7 Term ⇌ PolyTerm bijection | **Reframed**: `FXTerm` is a certified-cell projection after the raw-to-certified checker and legacy bridge are real. |
 | P2.8 generic rename/subst | **Subsumed**: polynomial-monad multiplication. |
@@ -4756,9 +5570,9 @@ only a precursor.
 | P3.1 PolyTerm.subject_reduction | **Subsumed**: SR is a profile-level theorem, one per profile. |
 | P3.2 PolyTerm.strong_normalization | **Subsumed**: SN ditto. |
 | P3.3 Step.parStar.confluent | **Subsumed**: confluence is the saturation Property of axis 4. |
-| P3.4 PolyStep dim-1 generators | **Subsumed**: dim-1 certified cells over raw `RawCellV2` endpoints. |
+| P3.4 PolyStep dim-1 generators | **Subsumed**: dim-1 certified cells over raw `RawCell` endpoints. |
 | P3.5 PolyStep.cd / cd_lemma generic | **Subsumed after proof**: cd_lemma is the per-profile theorem at dim 2 once saturation supplies the certified fillers. |
-| P3.6/P3.7 RawValueTerm / ValueTerm | **Subsumed**: values are normal-form predicates on `RawTermV2`. |
+| P3.6/P3.7 RawValueTerm / ValueTerm | **Subsumed**: values are normal-form predicates on `RawTerm`. |
 | P3.8 PolyTerm.eval | **Subsumed**: NbE = polygraph fold. |
 | P3.9 ValueTerm.quote | **Subsumed**: quote = inverse of fold. |
 | P3.10 nbe roundtrip | **Subsumed**: polygraph fold + unfold composition. |
@@ -4792,7 +5606,7 @@ generator extensions one math area at a time).  Each is ~2-3K LoC.
 | Task | Status |
 |---|---|
 | P5.1 evalDistributed_sound | **Deferred through Axis 6**: cell-partition fold needs certified `compH` with Gray boundary/disjointness plus BSP-sync laws. |
-| P5.2 EGraph extraction | **Subsumed after certification**: quotient certified cells by generated congruence; raw `RawCellV2` alone is not enough. |
+| P5.2 EGraph extraction | **Subsumed after certification**: quotient certified cells by generated congruence; raw `RawCell` alone is not enough. |
 
 **Phase 5 collapses only after Axis 6 and Axis 8 are real.** Until
 then, raw `compH` remains input syntax and is rejected by the
@@ -4843,7 +5657,7 @@ Existing files → certified PolyCell target.
 | `Foundation/Polygraph/Generator.lean` | 600 | **Becomes** axis 2's generator enumeration |
 | `Foundation/Polygraph/RawPolyTerm.lean` | 256 | **DELETED** (the fake mirror) |
 | `Foundation/Polygraph/PolyTerm.lean` | ~700 | **DELETED** (the fake typed mirror) |
-| `Foundation/Polygraph/RawPolyTermFlat.lean` | 316 | Revived as `RawTermV2` — the canonical scope-indexed structural raw term layer (v2); `RawCellV2` wraps it for the categorical cell structure at all dims |
+| `Foundation/Polygraph/RawPolyTermFlat.lean` | 316 | Revived as `RawTerm` — the canonical scope-indexed structural raw term layer (v2); `RawCell` wraps it for the categorical cell structure at all dims |
 
 ### Reduction layer
 
@@ -5204,92 +6018,75 @@ representable and computably rejected.
     child-descriptor mismatch, boundary mismatch, or constructor-index
     non-inhabitation.
 
-**TCB.9 — v2 structural re-foundation (decided 2026-05-26, in progress):**
+**TCB.9 — v2 structural re-foundation LANDED 2026-05-27:**
 
-TCB.8 closed the v1 frontier (one dimension-polymorphic certifier over
-the dim-indexed `PolyTerm`, total off `compH`, soundness + propext-free
-`DecidableEq` + legacy/general convergence, all zero-axiom).  The v1
-ceiling: dim-0 term-formers are nullary atoms with sentinel `Nat`
-payloads decoded by hand-written child decoders, so the layer cannot
-express nested terms and grows fixture-by-fixture.  v2 removes the
-ceiling by **un-indexing the raw layer** (the §4 rewrite): scope-indexed
-`RawTermV2` (one generic `mkGen` over `Generator`, structural children
-via `binderShifts`) + non-dim-indexed `RawCellV2` (dimension computed),
-and ONE generic certified `gen` constructor.  This is the highest-ROI
-move on the roadmap — it dissolves the propext-leak class at its source
-and makes the certifier, rename/subst (one Allais `foldV2`), `cd_lemma`,
-and decidable `Conv` recurse ONCE over the generic structure (the §2.1 /
-§7 cascade-death mechanism, made concrete).
+The six-stage v2 re-foundation is **SHIPPED + AUDITED**.  v1's
+dim-indexed `PolyTerm` (sentinel-payload atoms + per-fixture certified
+constructors) is **DELETED** (commit ef079829).  `RawTerm scope` +
+`RawCell scope` + `PolyCell profile sort dim scope boundary raw` is the
+SOLE canonical kernel surface.  The 194-Generator table + `binderShifts`
++ `payload` family + `SupportedGenerator` admission + `GenPayloadEvidence`
++ `CertifiedTermSpine` substrate carries the entire former v1 admission
+surface — no v1 sentinel constants, no v1 per-fixture inductives, no
+v1 hand-written child decoders survive.  All V2 suffixes dropped per
+V2-mig.11–14 + final V2-mig.18 audit.
 
-Staged beside v1, then v1 deleted:
+What landed at each stage:
 
-- **Stage 0** revive `RawPolyTermFlat` → `Core/RawTermV2.lean` (drop the
-  `LeanFX2.Term` dep) + `RawCellV2` + computed `RawCellV2.dim`.
-- **Stage 1** generator metadata (`generatorCellSort`,
-  `generatorChildSpecs`, `SupportedGeneratorV2`); prove
-  `generatorChildSpecs g` shifts ≡ `g.binderShifts`.
-- **Stage 2** certified `PolyCellV2` + `CertifiedTermSpineV2` + the
-  generic `gen` / `generatingCell` / `verticalComposite` /
-  `identityCell` constructors (gated by SPIKE-1).
-- **Stage 3** `certifyRawCellExactV2?` (mutual with
-  `certifyTermSpineV2?`), reusing the proven `certifyRawAtomExact?` /
-  `buildTermStepCellExact?` / `buildVerticalCompositeExact?` /
-  `certifyChildSpine?` patterns; port the coverage + soundness suite.
-- **Stage 4** Allais ops: `RawTermV2.foldV2` over `Foundation/Action.lean`
-  ⇒ `rename` / `subst` as ONE instance each — the 5–8K-LoC commute
-  cascade delete (§3.11 payoff).
-- **Stage 5** v1↔v2 bridge + per-fixture agreement (gated by SPIKE-2).
-- **Stage 6** re-point `inferRawCell?` / `checkRawCellAs?` / FX views,
-  then DELETE v1.
+| Stage | Content | Commits |
+|---|---|---|
+| **Stage 0** | `RawTerm` + `RawCell` un-indexed inductives + `RawCell.dim` computed function | V2-L0.6/0.8/0.9 |
+| **Stage 1** | Generator metadata (`generatorCellSort`, `generatorChildSpecs`, `SupportedGenerator`, `GenPayloadEvidence`, `HasEqualDim`) + binderShifts coherence | V2-L1.1–L1.9 |
+| **Stage 2** | Certified `PolyCell` + `CertifiedTermSpine` + 4 certified constructors (`gen` / `generatingCell` / `verticalComposite` / `identityCell`) gated by SPIKE-1 zero-axiom dim transport | V2-L1c.1–L1c.10 |
+| **Stage 3** | `certifyRawCellExact?` (mutual with `certifyTermSpine?`) + existential wrapper + soundness theorems (no false positives) + coverage suite | V2-L1cert.1–L1cert.19 |
+| **Stage 4** | Allais ops: `RawTerm.fold` over `Foundation/Action.lean` ⇒ `rename` / `subst` as ONE instance each + Action laws (apply_ext / compose_assoc / identity_apply) | V2-L2.1–L2.11 |
+| **Stage 5** | v1↔v2 bridge + per-fixture agreement | gated by SPIKE-2, completed before v1 retirement |
+| **Stage 6** | Re-point `inferRawCell?` / `checkRawCellAs?` / FX views to v2 + DELETE v1 | commit ef079829 |
 
-Two spike-first linchpins (must return `#assert_no_axioms` clean before
-the dependent stage): **SPIKE-1** value-level dim transport in the
-certified `generatingCell` (`Nat.decEq` on `RawCellV2.dim` + `▸`);
-**SPIKE-2** v1↔v2 agreement on one fixture over the dim-erased
-existential.  The generic children-spine recursion is already settled —
-`certifyChildSpine?` spiked axiom-free.
+Both linchpin spikes returned zero-axiom: **SPIKE-1** value-level dim
+transport in the certified `generatingCell` (`Nat.decEq` on `RawCell.dim`
++ `▸`) shipped at V2-L1c.5; **SPIKE-2** v1↔v2 agreement on the dim-
+erased existential shipped at V2-SPIKE-2.  The generic children-spine
+recursion (`certifyChildSpine?`) was always axiom-free.
 
-**v2 deletion criterion (Stage 6).**  Delete v1 (`PolyTerm`, the
-per-fixture certified ctors, the sentinel decoders) only when ALL hold:
-(a) every v1 coverage theorem has a green v2 counterpart; (b) v2
-soundness theorems green + axiom-clean; (c) bridge agreement lemmas
-green (v2 accepts exactly what v1 did on the shared fragment); (d) all
-FX-view consumers compile against v2; (e) both build targets green.
-No fourth permanent representation: `RawTermV2` is the single raw layer
-once v1 is gone.
+The v2 substrate is now the cascade-death lever in operation: the
+194-Generator table grows by one entry per new feature (per §3.16
+inventory); the `RawTerm` / `RawCell` / `PolyCell` inductive surface
+stays fixed at four certified constructors.  Adding `gen_universeU` /
+`gen_path` / `gen_clock` / `gen_param` / `gen_rewriteRule` / `gen_dProp`
+/ `gen_mode` / `gen_shape` / `gen_effectOp` / `gen_smtSatCert` per
+Phase Z₀–Z₉ commitments is one-Generator-entry-per-feature work, not
+a cascade.
 
-**POLY-TCB anti-vacuity gate:** TCB.4 is intentionally weaker than the
-full checker: it must have concrete accepted witnesses only for the
-payload-evidenced seed atoms (`var` with an in-scope index, `unitType`
-with payload 0, `ctxEmpty` with payload 0, and `linearMode` with
-payload 0), and must not provide
-constructors for non-nullary atoms or `compH`.  The screen phase must
-add concrete positive screen witnesses for every currently
-payload-evidenced generator and concrete rejected witnesses for every
-`CellCheckRejection` constructor, including `unsupportedCompH` and
-`unsupportedCertification`; fuel-budget witnesses must cover
-`fuelExhausted` separately from malformed-payload witnesses.  Later
-payload-decoder work extends the accepted-generator domain one generator
-family at a time.  No soundness theorem may be accepted if its
-supported-generator domain is empty.
+**POLY-TCB anti-vacuity gate (HISTORICAL — TCB.4 LANDED + RETIRED with
+v1 in commit ef079829).**  The anti-vacuity gate prevented the v1 TCB
+from shipping a soundness theorem whose supported-generator domain was
+empty.  Under v2, the gate is structurally absorbed: the 194-Generator
+table is non-empty by construction, `SupportedGenerator` is a fully
+populated inductive (one arm per admitted generator, expanding to
+~400–500 arms by MILESTONE D per §3.16), and every `CellCheckRejection`
+constructor has its named exact-family probe ratchet (V2-L1cert.16).
 
-**Non-goals in POLY-TCB:**
+**Non-goals in POLY-TCB (HISTORICAL — v1-era constraints):**
 
-- Do not delete the raw input layer; it is the input format and
-  rejection target.  (v1 `PolyTerm` is deleted only at the TCB.9 v2
-  criterion, replaced by `RawTermV2` / `RawCellV2`, never simply
-  dropped.)
-- Do not certify `horizontalComposite` until Axis 6 supplies a real Gray
-  tensor boundary formula and disjoint-footprint/matching condition.
-- Do not claim typed legacy equivalence, subject reduction, confluence,
-  or decidable conversion.  This phase certifies shape/sort/scope and
-  vertical boundary structure only.
+- Raw input layer retained — `RawTerm` / `RawCell` (v2) ARE the input
+  format AND rejection target.  v1's `PolyTerm` is **DELETED**.
+- Certified `horizontalComposite` remains BLOCKED until Axis 6 supplies
+  a real Gray tensor boundary formula and disjoint-footprint/matching
+  condition.  Raw `RawCell.horizontalComposite` is admissible as input
+  syntax; the certifier rejects it with `unsupportedCompH`.
+- Typed legacy equivalence + subject reduction + confluence + decidable
+  conversion live in Phase POLY-Z (§10's POLY-Z table + §11.8 apex
+  commitments).  TCB itself certifies shape/sort/scope and vertical
+  boundary structure only — that floor is reached.
 
-**Verification gate:** every new declaration added to
-`AuditPolyCell.lean`; `lake build LeanFX2.Foundation.PolyCell...`;
-`lake build LeanFX2.Tools.AuditAll.AuditPolyCell`; `lake build
-LeanFX2.Tools.AuditAll`; forbidden-token scan over touched PolyCell
-files.
+**Verification gate (in force on every PolyCell commit):** every new
+declaration added to `LeanFX2/Tools/AuditAll/AuditPolyCell.lean`;
+`lake build LeanFX2.Foundation.PolyCell.*` kernel green; `lake build
+LeanFX2 LeanFX2Audit` full-strict zero-axiom sweep green;
+forbidden-token scan (no `axiom` / `sorry` / `noncomputable` /
+`propext` / `Quot.sound` / `Classical.choice` / `@[extern]` /
+`@[implemented_by]`) over touched PolyCell files.
 
 ### Phase POLY-0 — already shipped foundation (~7K LoC done)
 
@@ -5427,13 +6224,13 @@ fxProfile + ship FXCell type.
 
 **Deliverables:**
 - `Foundation/Polygraph/PolyProfile.lean` — bundled thirteen axes
-- `Foundation/PolyCell/Core/RawTermV2.lean` + `RawCellV2.lean` —
+- `Foundation/PolyCell/Core/RawTerm.lean` + `RawCell.lean` —
   permissive raw layer (scope-indexed, dimension computed)
 - `Foundation/Polygraph/PolyCell.lean` — certified cell type
 - `LeanFX2/FxProfile.lean` — FX as a profile instance
 - `LeanFX2/FxCellViews.lean` — FXType, FXTerm, FXStep, FXConv as views
 
-**Acceptance:** raw `RawTermV2` / `RawCellV2` and certified `PolyCell`
+**Acceptance:** raw `RawTerm` / `RawCell` and certified `PolyCell`
 typecheck zero-axiom; fxProfile satisfies consistency conditions; view
 definitions agree with current types through the checked bridge.
 
@@ -5678,8 +6475,8 @@ in §6.1.4; ~3K LoC of careful translation.
 ### PolyCell core
 
 **v2 un-indexes the raw layer, which removes the dim-parameter trap at
-its source.**  `RawTermV2` is scope-indexed and `RawCellV2` carries no
-dim index (dimension is the computed `RawCellV2.dim`), so the certifier
+its source.**  `RawTerm` is scope-indexed and `RawCell` carries no
+dim index (dimension is the computed `RawCell.dim`), so the certifier
 never matches a `(dim, ctor)` pair — the structural cause of the propext
 leaks fought through TCB.7/TCB.8.  The remaining certified indexed layer
 still observes the traps documented in `feedback_lean_zero_axiom_match`
@@ -5687,7 +6484,7 @@ still observes the traps documented in `feedback_lean_zero_axiom_match`
 - Match the raw cell ALONE (index inferred); never the `(dim, cell)`
   pair or a partial ctor enum at a restricted index
 - Endpoint-dimension reconciliation is value-level (`Nat.decEq` on
-  `RawCellV2.dim` + `▸`), never the equation compiler on a Nat index
+  `RawCell.dim` + `▸`), never the equation compiler on a Nat index
 - `Nat` facts use core lemmas, never `omega` (which pulls `propext` +
   `Quot.sound`)
 - Boundary destructuring uses explicit pattern + `nomatch` for
@@ -5698,8 +6495,8 @@ still observes the traps documented in `feedback_lean_zero_axiom_match`
 
 This is the riskiest design point — the recipe in `feedback_lean_match_propext_recipe`
 (8 concrete patterns for propext-clean match) applies throughout, and the
-v2 generic certifier `certifyRawCellExactV2?` plus `DecidableEq
-(RawCellV2)` are the load-bearing zero-axiom declarations.
+v2 generic certifier `certifyRawCellExact?` plus `DecidableEq
+(RawCell)` are the load-bearing zero-axiom declarations.
 
 ---
 
@@ -5793,27 +6590,27 @@ This section pins what must be proved ON the v2 substrate for the
 quartet to hold, identifies the subtle interactions the v2 design must
 get right, and reserves the Div-fragment integration point for later.
 
-### 11.6.1 The quartet restated for PolyCellV2
+### 11.6.1 The quartet restated for PolyCell
 
 | Property | v2 statement | What must be shipped |
 |---|---|---|
-| **Subject Reduction (SR)** | If `PolyCellV2 profile sort 0 scope () raw` (a certified dim-0 cell = typed term) and a dim-1 generating cell certifies a step from `raw` to `raw'`, then `PolyCellV2 profile sort 0 scope () raw'` (the target is also certified at the same sort). | The **substitution lemma at every dimension**: applying subst σ to a dim-1 cell preserves its source/target boundary. For `generatingCell ruleId source target`, `(generatingCell ruleId source target).subst σ` must be `generatingCell ruleId (source.subst σ) (target.subst σ)` with the HasEqualDim and SupportedRuleSpec witnesses preserved through the substitution. This is the cell-level analog of the v1 `Step.par.Compat` cascade (~3K LoC) — the Allais fold (V2-L2.8) replaces the cascade, but the boundary-preservation property must still be PROVED as a theorem over `foldV2`, not merely assumed. |
+| **Subject Reduction (SR)** | If `PolyCell profile sort 0 scope () raw` (a certified dim-0 cell = typed term) and a dim-1 generating cell certifies a step from `raw` to `raw'`, then `PolyCell profile sort 0 scope () raw'` (the target is also certified at the same sort). | The **substitution lemma at every dimension**: applying subst σ to a dim-1 cell preserves its source/target boundary. For `generatingCell ruleId source target`, `(generatingCell ruleId source target).subst σ` must be `generatingCell ruleId (source.subst σ) (target.subst σ)` with the HasEqualDim and SupportedRuleSpec witnesses preserved through the substitution. This is the cell-level analog of the v1 `Step.par.Compat` cascade (~3K LoC) — the Allais fold (V2-L2.8) replaces the cascade, but the boundary-preservation property must still be PROVED as a theorem over `fold`, not merely assumed. |
 | **Confluence (CR)** | If `raw →* raw₁` and `raw →* raw₂` (via chains of dim-1 cells), then ∃ `raw₃` with `raw₁ →* raw₃` and `raw₂ →* raw₃`. | Generic cd_lemma as ONE theorem per profile (the §2.2 collapse): for every pair of dim-1 generating cells with the same source (a critical pair), a dim-2 cell (confluence filler) exists. The MMS cubical coherent confluence substrate (arXiv:2511.16852 §4 Newman + Church-Rosser) supplies the machinery; the Generator table supplies the critical-pair enumeration. The proof is ONE structural induction over the Generator table, not a per-constructor cascade. |
-| **Strong Normalization (SN)** | Every certified dim-0 cell reduces to a normal form in finitely many dim-1 steps under any reduction strategy. | Tait reducibility over `RawTermV2` (a Prop-valued `RC : CellSort → RawCellV2 scope → Prop` with one arm per Generator, per Era S Day 41–43 of the extended-roadmap). The v2 substrate simplifies the argument: the Allais fold gives eval (NbE), the generic `Gen` constructor means the fundamental theorem is ONE induction over Generators rather than a per-Term-constructor 75-arm proof. BUT: the RC predicate must be defined over `RawTermV2`, not legacy `Term` — either re-prove on v2 or lift through the bridge (V2-bridge.4). |
-| **Decidable Type-Checking** | `Decidable (certifyRawCellExact? scope raw = Except.ok _)` for all raw cells; and for the Tot fragment, `Decidable (Conv a b)` via NF equality. | The certifier `certifyRawCellExact?` is ALREADY a computable decision procedure returning `Except.ok` or `Except.error` — so decidability of certification is STRUCTURAL (it's a computable function; it always terminates by structural recursion). Decidable Conv requires SN (terms normalize) + CR (NFs unique) + the comparison `DecidableEq` on NFs. The comparison is shipped (V2-L0.11/12); SN + CR are the metatheory obligations above. Path A (NbE via `foldV2` + quote + DecidableEq on NFs) or Path B (Makkai word equality on the finite Generator-presented polygraph) gives the procedure. |
+| **Strong Normalization (SN)** | Every certified dim-0 cell reduces to a normal form in finitely many dim-1 steps under any reduction strategy. | Tait reducibility over `RawTerm` (a Prop-valued `RC : CellSort → RawCell scope → Prop` with one arm per Generator, per Era S Day 41–43 of the extended-roadmap). The v2 substrate simplifies the argument: the Allais fold gives eval (NbE), the generic `Gen` constructor means the fundamental theorem is ONE induction over Generators rather than a per-Term-constructor 75-arm proof. BUT: the RC predicate must be defined over `RawTerm`, not legacy `Term` — either re-prove on v2 or lift through the bridge (V2-bridge.4). |
+| **Decidable Type-Checking** | `Decidable (certifyRawCellExact? scope raw = Except.ok _)` for all raw cells; and for the Tot fragment, `Decidable (Conv a b)` via NF equality. | The certifier `certifyRawCellExact?` is ALREADY a computable decision procedure returning `Except.ok` or `Except.error` — so decidability of certification is STRUCTURAL (it's a computable function; it always terminates by structural recursion). Decidable Conv requires SN (terms normalize) + CR (NFs unique) + the comparison `DecidableEq` on NFs. The comparison is shipped (V2-L0.11/12); SN + CR are the metatheory obligations above. Path A (NbE via `fold` + quote + DecidableEq on NFs) or Path B (Makkai word equality on the finite Generator-presented polygraph) gives the procedure. |
 
 ### 11.6.2 The substitution lemma at the cell level (the subtle obligation)
 
-The Allais fold (V2-L2.3 `foldV2`) gives rename/subst on `RawTermV2`
+The Allais fold (V2-L2.3 `fold`) gives rename/subst on `RawTerm`
 and the Action laws (V2-L2.7) prove compose/identity/extensionality
-on terms.  V2-L2.8 lifts rename/subst to `RawCellV2`.  But the
+on terms.  V2-L2.8 lifts rename/subst to `RawCell`.  But the
 load-bearing property is:
 
 ```
-RawCellV2.subst σ (generatingCell ruleId source target)
+RawCell.subst σ (generatingCell ruleId source target)
   = generatingCell ruleId (source.subst σ) (target.subst σ)
 
-RawCellV2.subst σ (verticalComposite first second)
+RawCell.subst σ (verticalComposite first second)
   = verticalComposite (first.subst σ) (second.subst σ)
 
 (and analogously for identityCell)
@@ -5826,27 +6623,27 @@ PRESERVES boundaries.  For `verticalComposite`, the shared middle
 the term-layer Action laws applied pointwise to the endpoints, but it
 must be STATED and PROVED explicitly as a cell-layer theorem.
 
-Without this, the certified layer's `PolyCellV2.verticalComposite`
+Without this, the certified layer's `PolyCell.verticalComposite`
 cannot have a substitution operation (you can't substitute into a
 certificate if substitution breaks the shared-middle invariant).
 Subject reduction at dim ≥ 1 depends on this.
 
 ### 11.6.3 Scope-shift coherence under the fold (the de Bruijn trap)
 
-When `foldV2` recurses into a child under a binder (a `childCons`
+When `fold` recurses into a child under a binder (a `childCons`
 with `shift > 0`), it LIFTS the environment by `shift`.  The
-certifier (`certifyTermSpineV2?`) expects each child at
+certifier (`certifyTermSpine?`) expects each child at
 `scope + shift`.  These must agree: the fold's lift must produce a
 term at the same scope the certifier expects.
 
 The coherence lemma V2-L1.3 (generatorChildSpecs shifts =
 binderShifts) ties the two metadata views.  But the operational
-agreement — "applying rename ρ via `foldV2` to a term that certifies
+agreement — "applying rename ρ via `fold` to a term that certifies
 at scope `s` produces a term that certifies at scope `ρ(s)`" — is a
 separate property: **rename-equivariance of the certifier**.
 
 ```
-certifyRawCellExact? scope (RawTermV2.rename ρ term) = Except.ok _
+certifyRawCellExact? scope (RawTerm.rename ρ term) = Except.ok _
   ↔
 certifyRawCellExact? (ρ scope) term = Except.ok _
 ```
@@ -5891,13 +6688,13 @@ independent mechanisms.
 ### 11.6.5 horizontalComposite admission staging (inductive extension discipline)
 
 Every other feature addition is a GENERATOR TABLE extension (one
-`SupportedGeneratorV2` arm — the inductive `PolyCellV2` doesn't
+`SupportedGenerator` arm — the inductive `PolyCell` doesn't
 change).  `horizontalComposite` is the exception: admitting it
-requires adding a NEW CONSTRUCTOR to `PolyCellV2` (a certified
+requires adding a NEW CONSTRUCTOR to `PolyCell` (a certified
 `horizontalComposite` constructor with a Gray-boundary witness),
 which is an INDUCTIVE EXTENSION.
 
-Inductive extension means every theorem that matches on `PolyCellV2`
+Inductive extension means every theorem that matches on `PolyCell`
 (soundness proofs, erasure lemmas, the fold, the FX0 verifier) must
 be EXTENDED with a new case.  This is a mini-cascade — much smaller
 than the v1 78-arm cascade but still non-trivial (~10–15 theorems
@@ -5908,7 +6705,7 @@ need a new arm).
   certificate format (§12.6.4, tag byte = 3) with a "must reject"
   rule that the specification can later upgrade to "check Gray
   boundary condition" without breaking the binary format.
-- The `PolyCellV2` inductive is designed with a PLACEHOLDER comment
+- The `PolyCell` inductive is designed with a PLACEHOLDER comment
   at the position where the certified `horizontalComposite`
   constructor will go, listing the fields it will need (Gray-boundary
   formula + disjoint-footprint witness + marking compatibility per
@@ -6168,7 +6965,7 @@ the frontier is for your current profile.
       established (the honest "I don't know")
 -/
 inductive DecidabilityStatus where
-  | decidable (decider : RawCellV2 scope → Bool)
+  | decidable (decider : RawCell scope → Bool)
   | undecidable (reductionWitness : ReductionToHalting)
   | unknown
 ```
@@ -7154,21 +7951,21 @@ speed.
 ### Risk: Strict positivity
 
 The rejected design was a `thin` constructor on the raw layer:
-`(cell : RawCellV2 scope) →
+`(cell : RawCell scope) →
  (hasThin : π.stratification.thin cell.dim cell) →
- RawCellV2 scope`  (with the boundary flipped).
+ RawCell scope`  (with the boundary flipped).
 
 The flipped-boundary result would create a new raw cell of the same dim
 with the boundary flipped.  This is HIT-like (an equivalence-style
 constructor), and Lean's strict-positivity checker may reject it.  v2
-makes this doubly moot: `RawCellV2` carries no boundary index at all, so
+makes this doubly moot: `RawCell` carries no boundary index at all, so
 the flip cannot even be stated on the raw layer.
 
 **Mitigation:** encode `thin` not as a ctor but as a `Prop`-valued
 predicate, with the flipped variant derivable.  Loubaton 2301.11424's
 left semi-model structure suggests this: thin cells are not new
 generators, they are markings on existing cells.  Final rule:
-`RawCellV2` has no thin constructor, `PolyCell` has no thin
+`RawCell` has no thin constructor, `PolyCell` has no thin
 constructor, and `FXConv` is a certified dim-1 cell plus a thinness
 certificate from the stratification layer.  Any inverse/flipped
 variant is derived from the marking.
@@ -7596,7 +8393,7 @@ FX1 theorem/check trace
 
 This subsection adapts FX0 to the PolyCell substrate.  The adaptation
 is SIMPLER than the FX1-mediated path because the PolyCell certifier
-(`certifyRawCellExact?` / v2 `certifyRawCellExactV2?`) IS already
+(`certifyRawCellExact?` / v2 `certifyRawCellExact?`) IS already
 MM0-shaped: it takes a serialized raw cell tree, applies the Generator
 table as axioms, and returns accept-with-certificate or reject-with-
 reason.  No lambda-Pi intermediary (FX1) is needed between the rich
@@ -7637,7 +8434,7 @@ independent of Lean, Coq, Agda, or any proof-assistant kernel.
 One judgment, uniform across all dimensions:
 
 ```
-  verify : GeneratorTable × RuleTable × RawCellV2 scope
+  verify : GeneratorTable × RuleTable × RawCell scope
            → ACCEPT(sort, dim, boundary) | REJECT(reason)
 ```
 
@@ -7647,7 +8444,7 @@ One judgment, uniform across all dimensions:
   (currently 74 for fxProfile; grows by extension, never by code change).
 - `RuleTable` — a flat array of `{ruleId, cellSort}` records, one per
   admitted generating-cell rule (currently 1: termStep).
-- `RawCellV2 scope` — the certificate to verify, serialized as a tree.
+- `RawCell scope` — the certificate to verify, serialized as a tree.
 
 **Outputs:**
 - `ACCEPT(sort, dim, boundary)` — the cell is well-formed; the verifier
@@ -7662,8 +8459,8 @@ One judgment, uniform across all dimensions:
   the cell IS well-formed — its sort/dim/boundary match the Generator +
   Rule tables and all children recursively verify.  Proof: structural
   induction on the verification — the algorithm exactly mirrors the
-  PolyCellV2 constructor preconditions, so an accepted cell COULD
-  inhabit PolyCellV2 (the Lean proof `certifyRawCellExactV2?_sound`
+  PolyCell constructor preconditions, so an accepted cell COULD
+  inhabit PolyCell (the Lean proof `certifyRawCellExact?_sound`
   establishes this for the Lean implementation; the external verifier
   is a re-implementation of the same algorithm).
 - **ZERO false negatives on normalized certificates.**  If the rich
@@ -7748,7 +8545,7 @@ verify(cell, scope, genTable, ruleTable) :=
 ```
 
 **Structural equality** (`structuralEqual`) is a recursive comparison
-of two `RawCellV2` trees: same constructor tag at each node, same
+of two `RawCell` trees: same constructor tag at each node, same
 payload values, same children recursively.  No reduction, no
 unification, no delta-unfolding.  ~50 lines of code.
 
@@ -7783,7 +8580,7 @@ because:
    `firstResult.boundary.target = secondResult.boundary.source`
    compares two dim-2 cells by structural equality.  At dim 4 it
    compares dim-3 cells.  `structuralEqual` handles all dimensions
-   because `RawCellV2` is un-indexed by dimension — it's the same
+   because `RawCell` is un-indexed by dimension — it's the same
    type at every dimension, and structural comparison is just
    recursive tree equality.
 
@@ -7900,7 +8697,7 @@ FX0-PolyCell certificates:
 
 ```text
 Rich LeanFX2 judgment
-  -> encodeCell : Term/Step/Conv -> RawCellV2  (translation)
+  -> encodeCell : Term/Step/Conv -> RawCell  (translation)
   -> certifyRawCellExact? on the encoded cell   (verification)
   -> serialize the accepted certificate          (emission)
   -> FX0-PolyCell verifier accepts              (cross-check)
@@ -7938,7 +8735,7 @@ Mirroring `kernel-metaplan.md`'s FX0 milestone:
 
 ```text
 Rich-layer certified variable (Term.var) at scope 4
-  -> encodeCell emits RawCellV2 (termBase (mkGen gen_var (Fin.mk 0 _) childNil))
+  -> encodeCell emits RawCell (termBase (mkGen gen_var (Fin.mk 0 _) childNil))
   -> Lean certifyRawCellExact? accepts
   -> serialized to .fx0c binary
   -> external FX0-PolyCell verifier accepts
