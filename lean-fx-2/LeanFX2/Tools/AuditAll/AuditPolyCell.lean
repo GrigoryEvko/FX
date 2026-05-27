@@ -55,6 +55,7 @@ import LeanFX2.Foundation.PolyCell.Core.RawTermV2Rename
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2Weaken
 import LeanFX2.Foundation.PolyCell.Core.LiftsRaw
 import LeanFX2.Foundation.PolyCell.Core.RawTermV2Subst
+import LeanFX2.Foundation.PolyCell.Core.RawTermV2SubstPointwise
 
 namespace LeanFX2.Tools
 
@@ -3600,6 +3601,22 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2.subst_eq_foldChildrenV2
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.subst_identity_unit_smoke
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.subst_identity_var_zero_smoke
+
+-- V2-L2.7a: Allais extensionality (apply_ext / pointwise) — the FIRST
+-- of three Action laws.  Pointwise-equal substitutions act equally on
+-- terms.  In v1 this was a 74-arm per-ctor structural induction; in v2
+-- it collapses to a 4-arm mutual induction over RawTermV2 /
+-- RawTermChildrenV2 because the 194-generator dispatch is amortized
+-- into foldV2.  Adding a new Generator requires NO new arm — the
+-- empirical L2 cascade-tax demonstration.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubstV2.PointwiseEq
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubstV2.PointwiseEq.refl
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubstV2.lift_pointwise
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.iterateLiftRaw_RawTermSubstV2_pointwise
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.subst_pointwise
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildrenV2.subst_pointwise
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.subst_pointwise_unit_smoke
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermV2.subst_pointwise_var_smoke
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
