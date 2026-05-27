@@ -98,6 +98,7 @@ import LeanFX2.Foundation.PolyCell.Core.CertifiedTerm
 import LeanFX2.Foundation.PolyCell.Core.GeneratorChildSpecsDim0
 import LeanFX2.Foundation.PolyCell.Core.CellNonVarStepRenamer
 import LeanFX2.Foundation.PolyCell.Core.CellNonVarStepSubstituter
+import LeanFX2.Foundation.PolyCell.Core.SpineConsStep
 
 namespace LeanFX2.Tools
 
@@ -906,6 +907,15 @@ namespace LeanFX2.Tools
 -- rename and subst directions.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyCell.subst_dim0_nonVarStep
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyCell.subst_dim0_varStep
+
+-- ─── V2-L3.1 phase D step 34: spine-side cons + nil step helpers.
+-- Non-recursive cons-step closes the dependent boundary cast on
+-- CertifiedTermSpine.cons via generalize + subst + Subsingleton.elim
+-- (the trick from headAtDim0).  Direction-agnostic (works for both
+-- rename and subst).  With these + cell-step helpers (phase D 32/33),
+-- the mutual block's body becomes a thin recursive driver.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpine.consStep_dim0Trivial
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpine.nilStep
 
 -- ─── V2-L3.1 phase D step 16: compound smart constructors ─────────
 -- 9 compound intros for term-shape generators with .term-sorted
