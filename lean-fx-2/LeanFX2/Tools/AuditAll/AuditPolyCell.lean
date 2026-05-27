@@ -63,6 +63,7 @@ import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaBoolTrue
 import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaBoolFalse
 import LeanFX2.Foundation.PolyCell.Core.SubjectReductionBaseIotas
 import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaProjections
+import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaEither
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactWrongChildShape
@@ -686,6 +687,28 @@ namespace LeanFX2.Tools
 -- raw cell index via `.mkGen` injectivity alone.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByIotaFstPair
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByIotaSndPair
+
+-- ─── V2-L3.1 phase D step 9: compound iotas — eitherMatch (SR arms 9-10)
+-- The FIRST family that BUILDS a fresh target cell (rather than
+-- projecting an existing child).  Target is `.mkGen .gen_app ()` over
+-- [branch, value] -- assembled from the extracted leftBranch (outer
+-- spine position 2) and value (inside the eitherInl/eitherInr wrapper).
+--
+-- Three new techniques over the nested-projection arms:
+--   1. Apply the generalize-sort recipe to unwrap eitherInl/eitherInr
+--      (same recipe as fstPair/sndPair).
+--   2. Construct `SupportedGenerator.gen_app` directly -- it's the
+--      global admission inductive's ctor, profile-agnostic.
+--   3. Use `genPayloadEvidence` default constructor (returns `()` of
+--      Unit) for the payload evidence.
+--
+-- Final assembly uses CertifiedTermSpine.cons / .nil for the new
+-- 2-child spine.  The four remaining compound iotas
+-- (iotaOptionMatchSome, iotaNatElimSucc, iotaListElimCons,
+-- iotaNatRecSucc) follow this exact template with different
+-- wrapper / branch positions.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByIotaEitherMatchInl
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByIotaEitherMatchInr
 
 -- ─── V2-fix-4: restricted-profile admission predicate ──────────────
 -- Discharges Agent 3 H3.2 (admission machinery decoration).  Before
