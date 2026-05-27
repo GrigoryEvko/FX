@@ -187,4 +187,52 @@ theorem Step.no_step_from_var
   | cong _ _ childStep =>
       exact StepChildren.no_step_at_empty_spine childStep
 
+/-! ## Value-constructor inversions
+
+When the source is a VALUE constructor (lam, natSucc, listCons,
+optionSome, eitherInl/Inr, pair, refl), no Step rule with a
+specific outer ctor fires -- only `Step.cong` can reduce inside
+the constructor's children spine.  These inversions characterize
+the target shape and extract the inner Step witness.
+
+Pattern: `Step (mkGen gen () children) target` implies `target =
+mkGen gen () children'` for some `children'` such that there's a
+StepChildren from `children` to `children'`.  Further specialized
+by ctor: for `lam` (1 child at scope+1) it's `Step body body'`
+on the body; for `pair` (2 children) it's a step in either
+component; etc.
+
+These are STRUCTURALLY more complex than leaf inversions because
+the result type is an existential characterizing the target's
+shape -- which the SR theorem's cong arm consumes when peeling
+back layers of structural reduction. -/
+
+/-- **Inversion for `lam`-rooted Step.**
+
+If `Step (lam body) target` then `target = lam body'` for some
+`body'` such that `Step body body'`.  This is THE archetypal
+value-ctor inversion: no Step rule has `gen_lam` as outer source
+generator (no beta/iota fires on lam directly), so only `cong`
+applies.  The cong arm's StepChildren must be the `.here` case
+(since `.there` would require Step over empty spine -- impossible
+by `no_step_at_empty_spine`).
+
+The proof unpacks the StepChildren witness and reads off the
+post-step body. -/
+theorem Step.from_lam
+    {scope : Nat} {body : RawTermV2 (scope + 1)} {target : RawTermV2 scope}
+    (reduction :
+      Step (.mkGen .gen_lam () (.childCons body .childNil)) target) :
+    ∃ (bodyAfter : RawTermV2 (scope + 1)),
+      target = .mkGen .gen_lam () (.childCons bodyAfter .childNil) ∧
+      Step body bodyAfter := by
+  cases reduction with
+  | cong _ _ childStep =>
+      cases childStep with
+      | here _ bodyStep =>
+          rename_i bodyAfter
+          exact ⟨bodyAfter, rfl, bodyStep⟩
+      | there _ restStep =>
+          exact absurd restStep StepChildren.no_step_at_empty_spine
+
 end LeanFX2.Foundation.PolyCell.Core

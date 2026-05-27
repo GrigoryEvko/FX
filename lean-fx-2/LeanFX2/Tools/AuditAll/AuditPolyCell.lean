@@ -3788,6 +3788,14 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.no_step_from_listNil
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.no_step_from_optionNone
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.no_step_from_var
+-- Value-constructor inversion (archetypal): Step.from_lam.
+-- If Step (lam body) target then target = lam body' for some body'
+-- such that Step body body'.  Pattern: value ctors with non-leaf
+-- children spines have ONLY cong as their reduction path; the cong
+-- arm's StepChildren must be .here (since .there over empty tail is
+-- uninhabited).  Result type is existential (NOT False), so this
+-- lemma sits in PolyCell.Core without tripping the False-budget.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_lam
 
 -- ─── V2-L3.2 phase A: StepStar (reflexive-transitive closure) ───────
 -- Reflexive-transitive closure of Step in LEFT-EXTENSION form:
