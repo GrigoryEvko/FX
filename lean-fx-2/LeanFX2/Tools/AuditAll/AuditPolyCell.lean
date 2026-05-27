@@ -27,6 +27,7 @@ import LeanFX2.Foundation.PolyCell.Core.RuleSpecV2
 import LeanFX2.Foundation.PolyCell.Core.CellBoundaryV2
 import LeanFX2.Foundation.PolyCell.Core.AbstractTermSpineV2
 import LeanFX2.Foundation.PolyCell.Core.PolyCellV2
+import LeanFX2.Foundation.PolyCell.Core.PolyCellV2Erasure
 
 namespace LeanFX2.Tools
 
@@ -2964,6 +2965,17 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpineV2
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpineV2.nil
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpineV2.cons
+
+-- ─── V2-L1c.8: raw-erasure rfl lemmas for PolyCellV2 (#153) ──────
+-- Witnesses the "erasure back to raw is definitional" property
+-- documented in polycell.md §4.  The extractor projects the rawCell
+-- type index; the four per-ctor lemmas restate what each ctor's
+-- output type already pins.  All close by rfl.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyCellV2.raw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyCellV2.gen_raw_eq
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyCellV2.generatingCell_raw_eq
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyCellV2.verticalComposite_raw_eq
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyCellV2.identityCell_raw_eq
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
