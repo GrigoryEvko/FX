@@ -79,6 +79,7 @@ import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactV2RenameEquiv
 import LeanFX2.Foundation.PolyCell.Core.StepV2
 import LeanFX2.Foundation.PolyCell.Core.StepStarV2
 import LeanFX2.Foundation.PolyCell.Core.StepV2Inversion
+import LeanFX2.Foundation.PolyCell.Core.CertifiedTermV2
 
 namespace LeanFX2.Tools
 
@@ -3858,6 +3859,19 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_idJ
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_idStrictRec
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_app
+
+-- ─── V2-L3.1 phase C step 6: Certified predicate for SR ─────────────
+-- The term-level wrapper predicate the SR theorem states about.
+-- A raw term is Certified when wrapping it as a dim-0 cell via
+-- termBase yields an accepted existential-certifier result.
+-- Profile-parametric; bridges Step (term-level relation) to the
+-- certifier (cell-level function).  Three trivial helpers
+-- (intro/exists_result/ofExistentialOk) provide a stable API so
+-- consumers don't need to know Certified unfolds to ∃.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Certified
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Certified.intro
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Certified.exists_result
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Certified.ofExistentialOk
 
 -- ─── V2-L3.2 phase A: StepStar (reflexive-transitive closure) ───────
 -- Reflexive-transitive closure of Step in LEFT-EXTENSION form:
