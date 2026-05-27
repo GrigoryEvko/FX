@@ -81,6 +81,7 @@ import LeanFX2.Foundation.PolyCell.Core.PairEliminatorLayer
 import LeanFX2.Foundation.PolyCell.Core.BoolEliminatorLayer
 import LeanFX2.Foundation.PolyCell.Core.NatEliminatorLayer
 import LeanFX2.Foundation.PolyCell.Core.RemainingDim0Eliminators
+import LeanFX2.Foundation.PolyCell.Core.IdEliminatorLayer
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactWrongChildShape
@@ -1216,6 +1217,39 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.eitherMatch_preservedBySubst
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst0_eitherMatch_reduces
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_eitherMatch_preservation
+
+-- ─── V2-L3.1 phase D step 26: identity-type eliminators ────────────
+-- Completes ALL dim-0 eliminator coverage (7 of 7).  gen_idJ and
+-- gen_idStrictRec are 2-child same-scope (baseCase, identityWitness).
+--
+-- This is a 2-child template variation (between fst/snd's 1-child
+-- and the boolElim family's 3-child).
+--
+-- 18 declarations total (9 per generator):
+--   intro + 2 projections + rename probe/pres + subst probe/pres +
+--   subst0 probe/pres.
+--
+-- Generator surface: 24 -> 26.  Dim-0 eliminators fully covered.
+-- idJ:
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.idJ
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.idJ_baseCase_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.idJ_identityWitness_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_idJ_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.idJ_preservedByRename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst_idJ_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.idJ_preservedBySubst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst0_idJ_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_idJ_preservation
+-- idStrictRec:
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.idStrictRec
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.idStrictRec_baseCase_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.idStrictRec_identityWitness_projection
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_idStrictRec_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.idStrictRec_preservedByRename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst_idStrictRec_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.idStrictRec_preservedBySubst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst0_idStrictRec_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_idStrictRec_preservation
 
 -- ─── V2-fix-4: restricted-profile admission predicate ──────────────
 -- Discharges Agent 3 H3.2 (admission machinery decoration).  Before
