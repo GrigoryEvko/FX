@@ -214,6 +214,115 @@ theorem rootCriticalPairs_boolElim_boolElim_length :
 theorem rootCriticalPairs_unit_app :
     rootCriticalPairs .gen_unit .gen_app = [] := rfl
 
+/-- One child position of a generator, represented as computable data.
+
+`childIndex` is zero-based.  `scopeShift` is copied from the matching
+entry of `Generator.binderShifts`.  The pair is produced only by
+`Generator.childPositions`, so consumers should treat this as the
+computable projection of the generator table rather than arbitrary
+user input. -/
+structure ChildPosition where
+  parentGenerator : Generator
+  childIndex : Nat
+  scopeShift : Nat
+  deriving DecidableEq
+
+/-- Enumerate child positions from a binder-shift list, threading the
+zero-based child index explicitly. -/
+def childPositionsFromShifts (parentGenerator : Generator) :
+    Nat → List Nat → List ChildPosition
+  | _, [] => []
+  | childIndex, scopeShift :: remainingShifts =>
+      { parentGenerator := parentGenerator
+        childIndex := childIndex
+        scopeShift := scopeShift } ::
+        childPositionsFromShifts parentGenerator
+          (childIndex + 1) remainingShifts
+
+/-- The child-position table used by `Step.cong` branchings. -/
+def childPositions (parentGenerator : Generator) : List ChildPosition :=
+  childPositionsFromShifts parentGenerator 0 parentGenerator.binderShifts
+
+/-- Orientation of a root/congruence branching in a local confluence
+problem. -/
+inductive RootCongruenceOrientation : Type where
+  | rootLeftCongruenceRight
+  | congruenceLeftRootRight
+  deriving DecidableEq
+
+/-- A root rule overlapping a `Step.cong` reduction under one child
+position of the same parent generator.
+
+This is still only a **schema** for M6.  The diamond filler for each
+schema belongs to the later filler-template slice. -/
+structure RootCongruenceBranching where
+  rootKind : RootStepKind
+  childPosition : ChildPosition
+  orientation : RootCongruenceOrientation
+  deriving DecidableEq
+
+/-- Build both left/right orientations for one root rule and one child
+position. -/
+def rootCongruenceBranchingsForPosition
+    (rootKind : RootStepKind) (childPosition : ChildPosition) :
+    List RootCongruenceBranching :=
+  [ { rootKind := rootKind
+      childPosition := childPosition
+      orientation := .rootLeftCongruenceRight }
+  , { rootKind := rootKind
+      childPosition := childPosition
+      orientation := .congruenceLeftRootRight }
+  ]
+
+/-- Pair one root rule with all child positions of its source generator. -/
+def rootCongruenceBranchingsForRoot
+    (rootKind : RootStepKind) : List RootCongruenceBranching :=
+  pairRootWithPositions rootKind (childPositions rootKind.sourceGenerator)
+where
+  pairRootWithPositions
+      (rootKind : RootStepKind) : List ChildPosition →
+      List RootCongruenceBranching
+    | [] => []
+    | childPosition :: remainingPositions =>
+        rootCongruenceBranchingsForPosition rootKind childPosition ++
+          pairRootWithPositions rootKind remainingPositions
+
+/-- Enumerate all root/congruence branchings for a parent generator. -/
+def rootCongruenceBranchings
+    (parentGenerator : Generator) : List RootCongruenceBranching :=
+  pairRootsWithPositions
+    (RootStepKind.forSourceGenerator parentGenerator)
+where
+  pairRootsWithPositions : List RootStepKind →
+      List RootCongruenceBranching
+    | [] => []
+    | rootKind :: remainingRootKinds =>
+        rootCongruenceBranchingsForRoot rootKind ++
+          pairRootsWithPositions remainingRootKinds
+
+theorem childPositions_app :
+    childPositions .gen_app =
+      [ { parentGenerator := .gen_app, childIndex := 0, scopeShift := 0 }
+      , { parentGenerator := .gen_app, childIndex := 1, scopeShift := 0 }
+      ] := rfl
+
+theorem childPositions_lam :
+    childPositions .gen_lam =
+      [ { parentGenerator := .gen_lam, childIndex := 0, scopeShift := 1 }
+      ] := rfl
+
+theorem childPositions_unit :
+    childPositions .gen_unit = [] := rfl
+
+theorem rootCongruenceBranchings_app_length :
+    (rootCongruenceBranchings .gen_app).length = 4 := rfl
+
+theorem rootCongruenceBranchings_boolElim_length :
+    (rootCongruenceBranchings .gen_boolElim).length = 12 := rfl
+
+theorem rootCongruenceBranchings_unit :
+    rootCongruenceBranchings .gen_unit = [] := rfl
+
 end Generator
 
 end LeanFX2.Foundation.PolyCell.Core

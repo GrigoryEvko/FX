@@ -1022,6 +1022,20 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.rootCriticalPairs_app_app
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.rootCriticalPairs_boolElim_boolElim_length
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.rootCriticalPairs_unit_app
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.ChildPosition
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.childPositionsFromShifts
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.childPositions
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.RootCongruenceOrientation
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.RootCongruenceBranching
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.rootCongruenceBranchingsForPosition
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.rootCongruenceBranchingsForRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.rootCongruenceBranchings
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.childPositions_app
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.childPositions_lam
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.childPositions_unit
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.rootCongruenceBranchings_app_length
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.rootCongruenceBranchings_boolElim_length
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Generator.rootCongruenceBranchings_unit
 
 -- ─── V2-L3.1 phase D step 35: HCC-level wrappers around the cell-step
 -- helpers (phase D 32/33).  Same recipe, .intro-wrapped to land in
