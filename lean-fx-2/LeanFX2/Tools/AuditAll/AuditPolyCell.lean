@@ -3815,6 +3815,15 @@ namespace LeanFX2.Tools
 -- absurd-no-spine for there-then-there.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_pair
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_listCons
+-- Eliminator inversions (simplest case: 1-iota + cong, 1-child
+-- source spine).  `fst` and `snd` admit a 2-way disjunction:
+-- either iota fires (source's child is a literal pair, target is
+-- one of the components) OR cong fires (the child stepped to
+-- something).  These introduce the iota-arm of the eliminator
+-- inversion pattern; more complex eliminators (boolElim, natElim,
+-- listElim) will accumulate more iota arms.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_fst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_snd
 
 -- ─── V2-L3.2 phase A: StepStar (reflexive-transitive closure) ───────
 -- Reflexive-transitive closure of Step in LEFT-EXTENSION form:

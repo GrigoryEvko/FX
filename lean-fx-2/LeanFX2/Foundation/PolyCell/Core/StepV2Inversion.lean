@@ -437,4 +437,90 @@ theorem Step.from_listCons
           | there _ restStep =>
               exact absurd restStep StepChildren.no_step_at_empty_spine
 
+/-! ## Eliminator inversions (introducing iota disjuncts)
+
+Eliminator constructors (fst, snd, boolElim, natElim, ...) have a
+fundamentally different inversion shape from value ctors: they
+admit BOTH iota rules AND cong.  The inversion conclusion
+disjuncts over which reduction fired:
+
+* Iota arm(s): source children match an iota redex pattern,
+  target is the iota reduct.
+* Cong arm: source children spine has a Step at some position,
+  target preserves the outer ctor with the stepped spine.
+
+The simplest eliminators (fst, snd) have ONE iota arm each (only
+on pair) and a 1-child source spine, so the disjunction is 2-way
+(iota OR cong-at-child). More complex eliminators (boolElim has
+iotaBoolTrue+iotaBoolFalse, natElim has zero+succ) accumulate
+more disjuncts.
+
+This file builds eliminator inversions in order of complexity:
+fst/snd first (2-way), then boolElim (3-way iota+iota+cong), then
+the multi-child eliminators (5+ way). -/
+
+/-- **Inversion for `fst`-rooted Step.**
+
+Two-way disjunction characterizing which Step ctor fired:
+* **Iota arm**: `arg` is structurally `pair first second`, and
+  `target = first`.
+* **Cong arm**: `arg` stepped to `argAfter`, and
+  `target = fst argAfter`.
+
+The proof uses `cases reduction` to dispatch the 18 Step ctors;
+all iota constructors EXCEPT `iotaFstPair` are auto-discharged
+by generator mismatch; `iotaFstPair` succeeds (constraining `arg`
+to be a literal pair); `cong` recurses into the 1-child spine
+via the `from_lam`-style pattern. -/
+theorem Step.from_fst
+    {scope : Nat} {arg : RawTermV2 scope} {target : RawTermV2 scope}
+    (reduction :
+      Step (.mkGen .gen_fst () (.childCons arg .childNil)) target) :
+    (∃ (firstValue secondValue : RawTermV2 scope),
+        arg = .mkGen .gen_pair ()
+                (.childCons firstValue (.childCons secondValue .childNil)) ∧
+        target = firstValue)
+    ∨
+    (∃ (argAfter : RawTermV2 scope),
+        target = .mkGen .gen_fst () (.childCons argAfter .childNil) ∧
+        Step arg argAfter) := by
+  cases reduction with
+  | iotaFstPair =>
+      exact Or.inl ⟨_, _, rfl, rfl⟩
+  | cong _ _ childStep =>
+      cases childStep with
+      | here _ argStep =>
+          rename_i argAfter
+          exact Or.inr ⟨argAfter, rfl, argStep⟩
+      | there _ restStep =>
+          exact absurd restStep StepChildren.no_step_at_empty_spine
+
+/-- **Inversion for `snd`-rooted Step.**
+
+Symmetric to `Step.from_fst`: the iota arm picks the SECOND
+component instead of the first.  Same 2-way disjunction
+structure. -/
+theorem Step.from_snd
+    {scope : Nat} {arg : RawTermV2 scope} {target : RawTermV2 scope}
+    (reduction :
+      Step (.mkGen .gen_snd () (.childCons arg .childNil)) target) :
+    (∃ (firstValue secondValue : RawTermV2 scope),
+        arg = .mkGen .gen_pair ()
+                (.childCons firstValue (.childCons secondValue .childNil)) ∧
+        target = secondValue)
+    ∨
+    (∃ (argAfter : RawTermV2 scope),
+        target = .mkGen .gen_snd () (.childCons argAfter .childNil) ∧
+        Step arg argAfter) := by
+  cases reduction with
+  | iotaSndPair =>
+      exact Or.inl ⟨_, _, rfl, rfl⟩
+  | cong _ _ childStep =>
+      cases childStep with
+      | here _ argStep =>
+          rename_i argAfter
+          exact Or.inr ⟨argAfter, rfl, argStep⟩
+      | there _ restStep =>
+          exact absurd restStep StepChildren.no_step_at_empty_spine
+
 end LeanFX2.Foundation.PolyCell.Core
