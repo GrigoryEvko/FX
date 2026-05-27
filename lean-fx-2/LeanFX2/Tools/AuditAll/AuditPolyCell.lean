@@ -74,6 +74,7 @@ import LeanFX2.Foundation.PolyCell.Core.HasCertifiedComposition
 import LeanFX2.Foundation.PolyCell.Core.CompoundRenamePreservation
 import LeanFX2.Foundation.PolyCell.Core.CompoundSubstPreservation
 import LeanFX2.Foundation.PolyCell.Core.BetaRedexLeafPreservation
+import LeanFX2.Foundation.PolyCell.Core.BetaRedexCompoundPreservation
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactWrongChildShape
@@ -957,6 +958,46 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_natZero_preservation
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_listNil_preservation
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_optionNone_preservation
+
+-- ─── V2-L3.1 phase D step 19: beta-redex compound preservations ────
+-- Compositional inductive step of the future structural SR-beta
+-- theorem, covering the 9 compound body shapes.
+--
+-- For each compound generator (app/pair/listCons/natSucc/optionSome/
+-- eitherInl/eitherInr/refl/lam), two theorems:
+--   * subst0_X_reduces — distributivity over children by rfl.
+--   * subst0_X_preservation — given substituted children's certs,
+--     build the parent's cert.
+--
+-- The lam case is the BINDER case: inner body at scope+2 substitutes
+-- with RawTermSubst.lift (RawTermSubst.singleton rawArg) — the
+-- standard binder discipline.
+--
+-- Same compositional template as the rename / subst preservations
+-- shipped earlier.  Each closes by rw + exact.  Forward-compat:
+-- when the full structural induction lands, these dispatch each
+-- compound's inductive step.
+--
+-- 9 distributivity probes + 9 compositional preservations = 18 new
+-- zero-axiom declarations.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst0_app_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst0_pair_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst0_listCons_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst0_natSucc_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst0_optionSome_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst0_eitherInl_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst0_eitherInr_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst0_refl_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst0_lam_reduces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_app_preservation
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_pair_preservation
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_listCons_preservation
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_natSucc_preservation
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_optionSome_preservation
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_eitherInl_preservation
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_eitherInr_preservation
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_refl_preservation
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.subst0_lam_preservation
 
 -- ─── V2-fix-4: restricted-profile admission predicate ──────────────
 -- Discharges Agent 3 H3.2 (admission machinery decoration).  Before
