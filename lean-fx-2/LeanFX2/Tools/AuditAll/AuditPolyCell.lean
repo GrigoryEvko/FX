@@ -65,6 +65,7 @@ import LeanFX2.Foundation.PolyCell.Core.SubjectReductionBaseIotas
 import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaProjections
 import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaEither
 import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaOption
+import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaIdRefl
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactWrongChildShape
@@ -715,6 +716,14 @@ namespace LeanFX2.Tools
 -- Structurally identical to the eitherMatch arms (single-payload
 -- wrapper -> app target).  Confirms the template scales.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByIotaOptionMatchSome
+
+-- ─── V2-L3.1 phase D step 11: identity-type iotas on refl (SR arms 12-13)
+-- Both are PURE PROJECTION iotas at the substrate level (motive
+-- and endpoint information is profile-layer interpretation, not
+-- substrate machinery).  Target = head of outer spine; even
+-- simpler than iotaBoolTrue (no tail step required).
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByIotaIdJRefl
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByIotaIdStrictRecRefl
 
 -- ─── V2-fix-4: restricted-profile admission predicate ──────────────
 -- Discharges Agent 3 H3.2 (admission machinery decoration).  Before
