@@ -26,6 +26,7 @@ import LeanFX2.Foundation.PolyCell.Core.HasEqualDimV2
 import LeanFX2.Foundation.PolyCell.Core.RuleSpecV2
 import LeanFX2.Foundation.PolyCell.Core.CellBoundaryV2
 import LeanFX2.Foundation.PolyCell.Core.AbstractTermSpineV2
+import LeanFX2.Foundation.PolyCell.Core.PolyCellV2
 
 namespace LeanFX2.Tools
 
@@ -2949,6 +2950,20 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.AbstractTermSpineV2.arity_eq_length
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.AbstractTermSpineV2.ForGenerator
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.AbstractTermSpineV2.arity_forGenerator_eq
+
+-- ─── V2-L1c.3 through V2-L1c.7: the certified mutual block (#148-#152) ───
+-- ONE mutual inductive ships PolyCellV2 + CertifiedTermSpineV2 with all
+-- four PolyCellV2 ctors at once (Lean 4 mutual inductives are atomic;
+-- ctors cannot be added incrementally).  The headline is `gen`: ONE
+-- generic ctor subsumes every v1 per-fixture term ctor.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyCellV2
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyCellV2.gen
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyCellV2.generatingCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyCellV2.verticalComposite
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PolyCellV2.identityCell
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpineV2
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpineV2.nil
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpineV2.cons
 
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.FXProfile 0
 #assert_inhabited_dependent_budget LeanFX2.Foundation.PolyCell.Saturation 0
