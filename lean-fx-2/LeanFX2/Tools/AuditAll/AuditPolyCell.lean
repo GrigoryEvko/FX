@@ -67,6 +67,7 @@ import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaEither
 import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaOption
 import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaIdRefl
 import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaNatRec
+import LeanFX2.Foundation.PolyCell.Core.HasCertifiedIntros
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactWrongChildShape
@@ -735,6 +736,19 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByIotaNatElimSucc
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByIotaNatRecSucc
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByIotaListElimCons
+
+-- ─── V2-L3.1 phase D step 13: HasCertifiedCellDim0 nullary intros ──
+-- Smart constructors for the 7 nullary generators (var, unit,
+-- boolTrue, boolFalse, natZero, listNil, optionNone).  Building
+-- blocks for the future cell-level subst-preservation work that
+-- unblocks SR-beta + SR-cong.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.var
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.unit
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.boolTrue
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.boolFalse
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.natZero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.listNil
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.optionNone
 
 -- ─── V2-fix-4: restricted-profile admission predicate ──────────────
 -- Discharges Agent 3 H3.2 (admission machinery decoration).  Before
