@@ -3729,6 +3729,14 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaOptionMatchSome_builds_app
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaEitherMatchInl_builds_app
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaEitherMatchInr_builds_app
+-- Phase C step 4b: 2-arg app-chain WITH RECURSIVE CALL for
+-- natElim/natRec on natSucc.  Reduct is the nested
+--   app (app succBranch predecessor) (eliminator predecessor ...)
+-- where the recursive call to the same eliminator appears in the
+-- reduct as a syntactic sub-term -- this is the SHAPE that gives
+-- induction principles their power.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaNatElimSucc_builds_nested_app
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaNatRecSucc_builds_nested_app
 
 -- ─── V2-L3.2 phase A: StepStar (reflexive-transitive closure) ───────
 -- Reflexive-transitive closure of Step in LEFT-EXTENSION form:
