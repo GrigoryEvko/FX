@@ -929,6 +929,140 @@ def iotaBoolFalseElseCong {scope : Nat}
             (.childNil : RawTermChildren [] scope)
             elseStep)))
 
+/-- Root `fst` iota branching against congruence in the selected first
+pair component.  The local diamond joins at the stepped first component. -/
+def iotaFstPairFirstCong {scope : Nat}
+    {firstValue steppedFirstValue secondValue : RawTerm scope}
+    (firstStep : Step firstValue steppedFirstValue) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_fst ()
+      (.childCons
+        (.mkGen .gen_pair ()
+          (.childCons firstValue (.childCons secondValue .childNil)))
+        .childNil)
+  leftReduct := firstValue
+  rightReduct :=
+    .mkGen .gen_fst ()
+      (.childCons
+        (.mkGen .gen_pair ()
+          (.childCons steppedFirstValue (.childCons secondValue .childNil)))
+        .childNil)
+  leftStep := Step.iotaFstPair
+  rightStep :=
+    Step.cong .gen_fst ()
+      (StepChildren.here
+        (parentScope := scope) (headShift := 0) (restShifts := [])
+        (.childNil : RawTermChildren [] scope)
+        (Step.cong .gen_pair ()
+          (StepChildren.here
+            (parentScope := scope) (headShift := 0) (restShifts := [0])
+            ((.childCons secondValue .childNil) :
+              RawTermChildren [0] scope)
+            firstStep)))
+
+/-- Root `fst` iota branching against congruence in the discarded second
+pair component.  The local diamond joins immediately at the first
+component. -/
+def iotaFstPairSecondCong {scope : Nat}
+    {firstValue secondValue steppedSecondValue : RawTerm scope}
+    (secondStep : Step secondValue steppedSecondValue) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_fst ()
+      (.childCons
+        (.mkGen .gen_pair ()
+          (.childCons firstValue (.childCons secondValue .childNil)))
+        .childNil)
+  leftReduct := firstValue
+  rightReduct :=
+    .mkGen .gen_fst ()
+      (.childCons
+        (.mkGen .gen_pair ()
+          (.childCons firstValue (.childCons steppedSecondValue .childNil)))
+        .childNil)
+  leftStep := Step.iotaFstPair
+  rightStep :=
+    Step.cong .gen_fst ()
+      (StepChildren.here
+        (parentScope := scope) (headShift := 0) (restShifts := [])
+        (.childNil : RawTermChildren [] scope)
+        (Step.cong .gen_pair ()
+          (StepChildren.there
+            (parentScope := scope) (headShift := 0) (restShifts := [0])
+            firstValue
+            (StepChildren.here
+              (parentScope := scope) (headShift := 0) (restShifts := [])
+              (.childNil : RawTermChildren [] scope)
+              secondStep))))
+
+/-- Root `snd` iota branching against congruence in the discarded first
+pair component.  The local diamond joins immediately at the second
+component. -/
+def iotaSndPairFirstCong {scope : Nat}
+    {firstValue steppedFirstValue secondValue : RawTerm scope}
+    (firstStep : Step firstValue steppedFirstValue) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_snd ()
+      (.childCons
+        (.mkGen .gen_pair ()
+          (.childCons firstValue (.childCons secondValue .childNil)))
+        .childNil)
+  leftReduct := secondValue
+  rightReduct :=
+    .mkGen .gen_snd ()
+      (.childCons
+        (.mkGen .gen_pair ()
+          (.childCons steppedFirstValue (.childCons secondValue .childNil)))
+        .childNil)
+  leftStep := Step.iotaSndPair
+  rightStep :=
+    Step.cong .gen_snd ()
+      (StepChildren.here
+        (parentScope := scope) (headShift := 0) (restShifts := [])
+        (.childNil : RawTermChildren [] scope)
+        (Step.cong .gen_pair ()
+          (StepChildren.here
+            (parentScope := scope) (headShift := 0) (restShifts := [0])
+            ((.childCons secondValue .childNil) :
+              RawTermChildren [0] scope)
+            firstStep)))
+
+/-- Root `snd` iota branching against congruence in the selected second
+pair component.  The local diamond joins at the stepped second component. -/
+def iotaSndPairSecondCong {scope : Nat}
+    {firstValue secondValue steppedSecondValue : RawTerm scope}
+    (secondStep : Step secondValue steppedSecondValue) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_snd ()
+      (.childCons
+        (.mkGen .gen_pair ()
+          (.childCons firstValue (.childCons secondValue .childNil)))
+        .childNil)
+  leftReduct := secondValue
+  rightReduct :=
+    .mkGen .gen_snd ()
+      (.childCons
+        (.mkGen .gen_pair ()
+          (.childCons firstValue (.childCons steppedSecondValue .childNil)))
+        .childNil)
+  leftStep := Step.iotaSndPair
+  rightStep :=
+    Step.cong .gen_snd ()
+      (StepChildren.here
+        (parentScope := scope) (headShift := 0) (restShifts := [])
+        (.childNil : RawTermChildren [] scope)
+        (Step.cong .gen_pair ()
+          (StepChildren.there
+            (parentScope := scope) (headShift := 0) (restShifts := [0])
+            firstValue
+            (StepChildren.here
+              (parentScope := scope) (headShift := 0) (restShifts := [])
+              (.childNil : RawTermChildren [] scope)
+              secondStep))))
+
 end LocalStepBranching
 
 /-- A concrete local diamond filler for one local one-step branching.
@@ -1168,6 +1302,70 @@ def iotaBoolFalseElseCong {scope : Nat}
     { commonReduct := steppedElseBranch
       leftChain := StepStar.single elseStep
       rightChain := StepStar.single Step.iotaBoolFalse }
+
+/-- Root `fst` iota against congruence in the selected first component. -/
+def iotaFstPairFirstCong {scope : Nat}
+    {firstValue steppedFirstValue secondValue : RawTerm scope}
+    (firstStep : Step firstValue steppedFirstValue) :
+    LocalDiamond
+      (LocalStepBranching.iotaFstPairFirstCong
+        (firstValue := firstValue)
+        (steppedFirstValue := steppedFirstValue)
+        (secondValue := secondValue)
+        firstStep) := by
+  dsimp [LocalStepBranching.iotaFstPairFirstCong]
+  exact
+    { commonReduct := steppedFirstValue
+      leftChain := StepStar.single firstStep
+      rightChain := StepStar.single Step.iotaFstPair }
+
+/-- Root `fst` iota against congruence in the discarded second component. -/
+def iotaFstPairSecondCong {scope : Nat}
+    {firstValue secondValue steppedSecondValue : RawTerm scope}
+    (secondStep : Step secondValue steppedSecondValue) :
+    LocalDiamond
+      (LocalStepBranching.iotaFstPairSecondCong
+        (firstValue := firstValue)
+        (secondValue := secondValue)
+        (steppedSecondValue := steppedSecondValue)
+        secondStep) := by
+  dsimp [LocalStepBranching.iotaFstPairSecondCong]
+  exact
+    { commonReduct := firstValue
+      leftChain := StepStar.refl firstValue
+      rightChain := StepStar.single Step.iotaFstPair }
+
+/-- Root `snd` iota against congruence in the discarded first component. -/
+def iotaSndPairFirstCong {scope : Nat}
+    {firstValue steppedFirstValue secondValue : RawTerm scope}
+    (firstStep : Step firstValue steppedFirstValue) :
+    LocalDiamond
+      (LocalStepBranching.iotaSndPairFirstCong
+        (firstValue := firstValue)
+        (steppedFirstValue := steppedFirstValue)
+        (secondValue := secondValue)
+        firstStep) := by
+  dsimp [LocalStepBranching.iotaSndPairFirstCong]
+  exact
+    { commonReduct := secondValue
+      leftChain := StepStar.refl secondValue
+      rightChain := StepStar.single Step.iotaSndPair }
+
+/-- Root `snd` iota against congruence in the selected second component. -/
+def iotaSndPairSecondCong {scope : Nat}
+    {firstValue secondValue steppedSecondValue : RawTerm scope}
+    (secondStep : Step secondValue steppedSecondValue) :
+    LocalDiamond
+      (LocalStepBranching.iotaSndPairSecondCong
+        (firstValue := firstValue)
+        (secondValue := secondValue)
+        (steppedSecondValue := steppedSecondValue)
+        secondStep) := by
+  dsimp [LocalStepBranching.iotaSndPairSecondCong]
+  exact
+    { commonReduct := steppedSecondValue
+      leftChain := StepStar.single secondStep
+      rightChain := StepStar.single Step.iotaSndPair }
 
 end LocalDiamond
 
