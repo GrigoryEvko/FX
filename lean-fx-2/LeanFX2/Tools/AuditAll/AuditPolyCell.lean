@@ -3385,6 +3385,17 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpineV2.tail
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpineV2.eq_nil_of_childNil
 
+-- V2-L3.1 phase D step 3: dim-0 specialization of headWithBoundary.
+-- Collapses the sigma-wrapped boundary to a plain PolyCellV2 at dim 0
+-- with CellBoundaryV2.trivial boundary.  Pattern: generalize the
+-- field projection (headSpec.cellDimension) to a fresh variable,
+-- subst through the dim hypothesis, then use Subsingleton.elim with
+-- the explicit `inferInstanceAs (Subsingleton Unit)` bridge to
+-- identify the boundary with CellBoundaryV2.trivial.  Closes the
+-- SR projection one-liner: `Certified parent` → spine via shape
+-- pin → headWithBoundary → headAtDim0 → plain PolyCellV2.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CertifiedTermSpineV2.headAtDim0
+
 -- ─── V2-fix-4: restricted-profile admission predicate ──────────────
 -- Discharges Agent 3 H3.2 (admission machinery decoration).  Before
 -- this commit, `supportedGeneratorV2?` returned `some _` for every
