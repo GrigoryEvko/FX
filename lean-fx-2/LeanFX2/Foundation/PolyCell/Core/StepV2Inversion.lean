@@ -944,4 +944,129 @@ theorem Step.from_eitherMatch
               | there _ restRestStep =>
                   exact absurd restRestStep StepChildren.no_step_at_empty_spine
 
+/-- **Inversion for `idJ`-rooted Step.**
+
+Three-way disjunction: iotaIdJRefl arm + 2 cong positions.  The
+iota arm characterizes "witness was refl" with an existential
+witness for the wrapped value.  Standard eliminator-inversion
+template at 2-child arity. -/
+theorem Step.from_idJ
+    {scope : Nat} {baseCase witness : RawTermV2 scope}
+    {target : RawTermV2 scope}
+    (reduction :
+      Step (.mkGen .gen_idJ ()
+              (.childCons baseCase (.childCons witness .childNil))) target) :
+    (∃ (rawWitness : RawTermV2 scope),
+        witness = .mkGen .gen_refl () (.childCons rawWitness .childNil) ∧
+        target = baseCase)
+    ∨
+    (∃ (baseAfter : RawTermV2 scope),
+        target = .mkGen .gen_idJ ()
+          (.childCons baseAfter (.childCons witness .childNil)) ∧
+        Step baseCase baseAfter)
+    ∨
+    (∃ (witnessAfter : RawTermV2 scope),
+        target = .mkGen .gen_idJ ()
+          (.childCons baseCase (.childCons witnessAfter .childNil)) ∧
+        Step witness witnessAfter) := by
+  cases reduction with
+  | iotaIdJRefl =>
+      exact Or.inl ⟨_, rfl, rfl⟩
+  | cong _ _ childStep =>
+      cases childStep with
+      | here _ baseStep =>
+          rename_i baseAfter
+          exact Or.inr (Or.inl ⟨baseAfter, rfl, baseStep⟩)
+      | there _ tailStep =>
+          cases tailStep with
+          | here _ witnessStep =>
+              rename_i witnessAfter
+              exact Or.inr (Or.inr ⟨witnessAfter, rfl, witnessStep⟩)
+          | there _ restStep =>
+              exact absurd restStep StepChildren.no_step_at_empty_spine
+
+/-- **Inversion for `idStrictRec`-rooted Step.**
+
+Symmetric to `Step.from_idJ` for the strict identity eliminator. -/
+theorem Step.from_idStrictRec
+    {scope : Nat} {baseCase witness : RawTermV2 scope}
+    {target : RawTermV2 scope}
+    (reduction :
+      Step (.mkGen .gen_idStrictRec ()
+              (.childCons baseCase (.childCons witness .childNil))) target) :
+    (∃ (rawWitness : RawTermV2 scope),
+        witness = .mkGen .gen_refl () (.childCons rawWitness .childNil) ∧
+        target = baseCase)
+    ∨
+    (∃ (baseAfter : RawTermV2 scope),
+        target = .mkGen .gen_idStrictRec ()
+          (.childCons baseAfter (.childCons witness .childNil)) ∧
+        Step baseCase baseAfter)
+    ∨
+    (∃ (witnessAfter : RawTermV2 scope),
+        target = .mkGen .gen_idStrictRec ()
+          (.childCons baseCase (.childCons witnessAfter .childNil)) ∧
+        Step witness witnessAfter) := by
+  cases reduction with
+  | iotaIdStrictRecRefl =>
+      exact Or.inl ⟨_, rfl, rfl⟩
+  | cong _ _ childStep =>
+      cases childStep with
+      | here _ baseStep =>
+          rename_i baseAfter
+          exact Or.inr (Or.inl ⟨baseAfter, rfl, baseStep⟩)
+      | there _ tailStep =>
+          cases tailStep with
+          | here _ witnessStep =>
+              rename_i witnessAfter
+              exact Or.inr (Or.inr ⟨witnessAfter, rfl, witnessStep⟩)
+          | there _ restStep =>
+              exact absurd restStep StepChildren.no_step_at_empty_spine
+
+/-- **Inversion for `app`-rooted Step.**
+
+THE LOAD-BEARING INVERSION FOR SR'S BETA ARM.
+
+Three-way disjunction: beta iota + 2 cong positions.  The beta
+arm structurally requires `fn` (the function child) to be a
+lambda -- the inversion characterizes this with an existential
+for the lambda's body.  This existential is exactly the `body`
+that SR's beta arm will subst into via V2-L2.12's cell-level
+substitution boundary lemma.
+
+The function child lives at the same scope as `fn`; the
+lambda's body lives at `scope + 1` (the `gen_lam`'s binderShift
+is `[1]`). -/
+theorem Step.from_app
+    {scope : Nat} {fn arg : RawTermV2 scope} {target : RawTermV2 scope}
+    (reduction :
+      Step (.mkGen .gen_app ()
+              (.childCons fn (.childCons arg .childNil))) target) :
+    (∃ (body : RawTermV2 (scope + 1)),
+        fn = .mkGen .gen_lam () (.childCons body .childNil) ∧
+        target = RawTermV2.subst0 body arg)
+    ∨
+    (∃ (fnAfter : RawTermV2 scope),
+        target = .mkGen .gen_app () (.childCons fnAfter (.childCons arg .childNil)) ∧
+        Step fn fnAfter)
+    ∨
+    (∃ (argAfter : RawTermV2 scope),
+        target = .mkGen .gen_app () (.childCons fn (.childCons argAfter .childNil)) ∧
+        Step arg argAfter) := by
+  cases reduction with
+  | beta =>
+      exact Or.inl ⟨_, rfl, rfl⟩
+  | cong _ _ childStep =>
+      cases childStep with
+      | here _ fnStep =>
+          rename_i fnAfter
+          exact Or.inr (Or.inl ⟨fnAfter, rfl, fnStep⟩)
+      | there _ tailStep =>
+          cases tailStep with
+          | here _ argStep =>
+              rename_i argAfter
+              exact Or.inr (Or.inr ⟨argAfter, rfl, argStep⟩)
+          | there _ restStep =>
+              exact absurd restStep StepChildren.no_step_at_empty_spine
+
 end LeanFX2.Foundation.PolyCell.Core

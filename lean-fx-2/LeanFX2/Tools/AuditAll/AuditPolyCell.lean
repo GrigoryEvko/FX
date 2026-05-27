@@ -3847,6 +3847,17 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_listElim
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_optionMatch
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_eitherMatch
+-- Final inversions completing the suite:
+-- * from_idJ / from_idStrictRec: 3-way disjunction (1 refl iota
+--   + 2 cong positions over 2-child spine).
+-- * from_app: 3-way disjunction (1 beta + 2 cong positions).  THE
+--   LOAD-BEARING INVERSION for SR's beta arm -- characterizes
+--   "function child is a lambda" with an existential for the
+--   lambda body that SR's beta arm threads through V2-L2.12's
+--   subst boundary lemma.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_idJ
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_idStrictRec
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_app
 
 -- ─── V2-L3.2 phase A: StepStar (reflexive-transitive closure) ───────
 -- Reflexive-transitive closure of Step in LEFT-EXTENSION form:
