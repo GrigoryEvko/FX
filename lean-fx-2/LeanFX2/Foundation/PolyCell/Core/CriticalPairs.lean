@@ -323,6 +323,65 @@ theorem rootCongruenceBranchings_boolElim_length :
 theorem rootCongruenceBranchings_unit :
     rootCongruenceBranchings .gen_unit = [] := rfl
 
+/-- Top-level M6 critical-pair schema.
+
+This intentionally remains a **schema** datatype: it records which
+finite branching family a later diamond filler must handle, but it does
+not claim that the filler has been constructed. -/
+inductive CriticalPair : Type where
+  | rootRoot (rootPair : RootStepKind.RootCriticalPair)
+  | rootCongruence (branching : RootCongruenceBranching)
+  deriving DecidableEq
+
+/-- Lift root/root entries into the top-level M6 critical-pair schema. -/
+def criticalPairsFromRootPairs :
+    List RootStepKind.RootCriticalPair → List CriticalPair
+  | [] => []
+  | rootPair :: remainingRootPairs =>
+      CriticalPair.rootRoot rootPair ::
+        criticalPairsFromRootPairs remainingRootPairs
+
+/-- Lift root/congruence entries into the top-level M6 critical-pair
+schema. -/
+def criticalPairsFromRootCongruenceBranchings :
+    List RootCongruenceBranching → List CriticalPair
+  | [] => []
+  | branching :: remainingBranchings =>
+      CriticalPair.rootCongruence branching ::
+        criticalPairsFromRootCongruenceBranchings remainingBranchings
+
+/-- Unified computable critical-pair schema for a pair of source-head
+generators.
+
+The root/root component is always the finite cross-product from
+`rootCriticalPairs`.  Root/congruence branchings are added only on the
+same source-head generator, because `Step.cong` preserves the outer
+generator and fires under one of that generator's child positions. -/
+def criticalPairs (leftGenerator rightGenerator : Generator) :
+    List CriticalPair :=
+  criticalPairsFromRootPairs
+    (rootCriticalPairs leftGenerator rightGenerator) ++
+    if leftGenerator = rightGenerator then
+      criticalPairsFromRootCongruenceBranchings
+        (rootCongruenceBranchings leftGenerator)
+    else
+      []
+
+/-- Decidable emptiness for the unified critical-pair schema. -/
+def criticalPairsEmptyDecision
+    (leftGenerator rightGenerator : Generator) :
+    Decidable (criticalPairs leftGenerator rightGenerator = []) :=
+  inferInstance
+
+theorem criticalPairs_app_app_length :
+    (criticalPairs .gen_app .gen_app).length = 5 := rfl
+
+theorem criticalPairs_boolElim_boolElim_length :
+    (criticalPairs .gen_boolElim .gen_boolElim).length = 16 := rfl
+
+theorem criticalPairs_unit_app :
+    criticalPairs .gen_unit .gen_app = [] := rfl
+
 end Generator
 
 end LeanFX2.Foundation.PolyCell.Core
