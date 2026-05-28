@@ -143,6 +143,7 @@ import LeanFX2.Tools.AuditAll.AuditEtaDiscipline
 import LeanFX2.Tools.AuditAll.AuditIotaEtaMatrix
 import LeanFX2.Foundation.PolyCell.Universe.LevelExpr
 import LeanFX2.Foundation.PolyCell.Universe.UniverseFlag
+import LeanFX2.Foundation.PolyCell.Universe.LevelExprSimplify
 import LeanFX2.Foundation.PolyCell.NbE.NormalizerSignature
 import LeanFX2.Foundation.PolyCell.NbE.Quote
 
@@ -3330,6 +3331,40 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.UniverseFlag.decEq_refl_standard
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.UniverseFlag.ctorCount
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.UniverseFlag.ctorCount_correct
+
+-- ─── M22 Phase A (#271): LevelExpr structural simplifier ────────────
+-- Single-pass structural simplifier applying 5 algebraic rules:
+--   1. lmax e e ↦ e (idempotence)
+--   2. lmax lzero e ↦ e (left identity)
+--   3. lmax e lzero ↦ e (right identity)
+--   4. limax lzero e ↦ e (left identity)
+--   5. limax e lzero ↦ lzero (IMPREDICATIVE COLLAPSE for Prop)
+--
+-- Phase A is the precursor to the full polynomial-time
+-- Mörtberg-Sterling 2024 algorithm.  Phase B (deferred) adds:
+-- iteration to fixed point + canonical lmax ordering + lsucc
+-- distributivity over lmax + level-variable substitution.
+--
+-- For CLOSED LevelExpr (no lvar), Phase A's single-pass output
+-- canonicalizes the 5 algebraic rules; decEq on simplified forms
+-- decides equivalence-up-to-these-rules.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.simplify
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.simplify_lmax_idempotent
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.simplify_lmax_idempotent_nonzero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.simplify_lmax_left_identity
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.simplify_lmax_right_identity
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.simplify_limax_left_identity
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.simplify_limax_right_collapse
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.simplify_limax_both_zero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.simplify_lzero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.simplify_lsucc_lzero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.simplify_lvar_zero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.simplify_lmax_distinct
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.simplify_limax_non_lzero_codomain
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.simplify_lzero_idempotent
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.simplify_lvar_zero_idempotent
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.simplify_is_phase_a_inner_loop
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.simplify_is_phase_a_inner_loop_correct
 
 -- ─── M11 (#260): NbE substrate — canonical normalizer signature ─────
 -- RawTerm.isNF predicate shipped via M-substrate-3 #367.  This commit
