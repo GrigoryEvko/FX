@@ -3428,6 +3428,28 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.simplify_is_phase_a_inner_loop
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.simplify_is_phase_a_inner_loop_correct
 
+-- ─── M22 Phase A correctness: size measure + non-increasing simplify ──
+-- Audit gates for #404 (audit-A20, 2026-05-28).
+--
+-- `LevelExpr.size` is the structural size measure used as Phase B's
+-- termination witness.  `LevelExpr.simplify_size_le` proves Phase A's
+-- single-pass `simplify` never grows the expression — the load-bearing
+-- correctness theorem for Phase B's fixed-point iteration.
+--
+-- Each `#assert_no_axioms` verifies the transitive-closure of the
+-- proof depends on NO axiom (no propext, no Quot.sound, no Classical).
+-- The proof uses pattern-form structural recursion + `by_cases` over
+-- `DecidableEq LevelExpr` (which itself is propext-free since
+-- LevelExpr is a 5-ctor ADT with Nat payloads only).
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.size
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.size_pos
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.simplify_size_le
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.size_lzero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.size_lvar
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.size_lsucc
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.size_lmax
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.size_limax
+
 -- ─── M11 (#260): NbE substrate — canonical normalizer signature ─────
 -- RawTerm.isNF predicate shipped via M-substrate-3 #367.  This commit
 -- ships the SIGNATURE-LEVEL contract for the M12 #261 implementation:

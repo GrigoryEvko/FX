@@ -245,4 +245,161 @@ def LevelExpr.simplify_is_phase_a_inner_loop : Bool := true
 theorem LevelExpr.simplify_is_phase_a_inner_loop_correct :
     LevelExpr.simplify_is_phase_a_inner_loop = true := rfl
 
+/-! ## Structural size measure + Phase A non-increasing correctness
+
+M22 Phase A correctness (audit-A20 / #404, 2026-05-28).
+
+Phase B's full Mörtberg-Sterling iteration needs a termination
+measure: each application of `simplify` must not grow the
+expression, otherwise iterating to a fixed point could diverge.
+This section ships:
+
+* `LevelExpr.size` — structural size (every leaf = 1, every
+  interior node adds 1 to children's sum).
+* `LevelExpr.size_pos` — every expression has size ≥ 1.
+* `LevelExpr.simplify_size_le` — the load-bearing correctness
+  theorem: `simplify e` is no larger than `e`.
+
+The proof is by structural induction on `e`.  For `lmax`/`limax`,
+each of the 4 / 3 if-then-else branches is handled by `by_cases`
+on the underlying `DecidableEq`-decided condition, then closed
+by `Nat.add_le_add` + IH composition.  No bare `simp`/`unfold`
+(per project performance anti-patterns); the only tactic
+machinery is `show` for definitional unfold of `simplify` and
+`Nat.le_*` arithmetic. -/
+
+/-- Structural size of a `LevelExpr`.
+
+* `lzero` / `lvar _`: leaf, size 1.
+* `lsucc inner`: `inner.size + 1`.
+* `lmax e1 e2` / `limax e1 e2`: `e1.size + e2.size + 1`.
+
+Used as the termination measure for Phase B's fixed-point
+iteration over `simplify` and as the correctness witness that
+Phase A's single-pass simplifier is size-non-increasing
+(`simplify_size_le`). -/
+def LevelExpr.size : LevelExpr → Nat
+  | .lzero => 1
+  | .lsucc inner => inner.size + 1
+  | .lmax e1 e2 => e1.size + e2.size + 1
+  | .limax e1 e2 => e1.size + e2.size + 1
+  | .lvar _ => 1
+
+/-- Every `LevelExpr` has positive size.  Used by
+`simplify_size_le` to discharge the `limax e1 e2 ↦ lzero`
+collapse case (the result has size 1, the source has size
+≥ 1 + 1 + 1 = 3). -/
+theorem LevelExpr.size_pos : ∀ (expr : LevelExpr), 1 ≤ expr.size
+  | .lzero => Nat.le_refl 1
+  | .lsucc _ => Nat.succ_le_succ (Nat.zero_le _)
+  | .lmax _ _ => Nat.succ_le_succ (Nat.zero_le _)
+  | .limax _ _ => Nat.succ_le_succ (Nat.zero_le _)
+  | .lvar _ => Nat.le_refl 1
+
+/-- Phase A's `simplify` is size-non-increasing: the result is no
+larger than the input.
+
+Phase B's full Mörtberg-Sterling normalization iterates
+`simplify` until a fixed point.  This theorem is the termination
+witness: each iteration decreases or preserves size, so the
+iteration must terminate when no rule fires (size strictly
+decreases at every productive step).
+
+Proof: structural induction on `expr`.  Each case dispatches
+through `simplify`'s actual computation:
+
+* `lzero` / `lvar _`: identity case, size unchanged.
+* `lsucc inner`: result is `lsucc inner.simplify`, size is
+  `inner.simplify.size + 1`, bounded by IH `inner.simplify.size
+  ≤ inner.size`.
+* `lmax e1 e2`: split on the 4 if-then-else branches via
+  `by_cases`; each branch returns either `s1`, `s2`, or
+  `lmax s1 s2`, whose size is bounded by the original
+  `e1.size + e2.size + 1` via `Nat.add_le_add` composition
+  with IH1/IH2.
+* `limax e1 e2`: split on the 3 branches.  The right-collapse
+  case (`s2 = lzero ↦ lzero`) uses `size_pos` to show
+  `1 ≤ e1.size + e2.size + 1`. -/
+theorem LevelExpr.simplify_size_le :
+    ∀ (expr : LevelExpr), expr.simplify.size ≤ expr.size
+  | .lzero => Nat.le_refl 1
+  | .lvar _ => Nat.le_refl 1
+  | .lsucc inner =>
+      Nat.succ_le_succ (LevelExpr.simplify_size_le inner)
+  | .lmax e1 e2 => by
+      have ih1 : e1.simplify.size ≤ e1.size :=
+        LevelExpr.simplify_size_le e1
+      have ih2 : e2.simplify.size ≤ e2.size :=
+        LevelExpr.simplify_size_le e2
+      show (LevelExpr.lmax e1 e2).simplify.size ≤
+        e1.size + e2.size + 1
+      show (if e1.simplify = e2.simplify then e1.simplify
+            else if e1.simplify = .lzero then e2.simplify
+            else if e2.simplify = .lzero then e1.simplify
+            else LevelExpr.lmax e1.simplify e2.simplify).size ≤
+        e1.size + e2.size + 1
+      by_cases hEq : e1.simplify = e2.simplify
+      · rw [if_pos hEq]
+        exact Nat.le_trans ih1
+          (Nat.le_trans (Nat.le_add_right _ e2.size) (Nat.le_succ _))
+      · rw [if_neg hEq]
+        by_cases hLeftZero : e1.simplify = .lzero
+        · rw [if_pos hLeftZero]
+          exact Nat.le_trans ih2
+            (Nat.le_trans (Nat.le_add_left _ e1.size) (Nat.le_succ _))
+        · rw [if_neg hLeftZero]
+          by_cases hRightZero : e2.simplify = .lzero
+          · rw [if_pos hRightZero]
+            exact Nat.le_trans ih1
+              (Nat.le_trans (Nat.le_add_right _ e2.size) (Nat.le_succ _))
+          · rw [if_neg hRightZero]
+            show e1.simplify.size + e2.simplify.size + 1 ≤
+              e1.size + e2.size + 1
+            exact Nat.add_le_add_right (Nat.add_le_add ih1 ih2) 1
+  | .limax e1 e2 => by
+      have ih1 : e1.simplify.size ≤ e1.size :=
+        LevelExpr.simplify_size_le e1
+      have ih2 : e2.simplify.size ≤ e2.size :=
+        LevelExpr.simplify_size_le e2
+      show (LevelExpr.limax e1 e2).simplify.size ≤
+        e1.size + e2.size + 1
+      show (if e2.simplify = .lzero then LevelExpr.lzero
+            else if e1.simplify = .lzero then e2.simplify
+            else LevelExpr.limax e1.simplify e2.simplify).size ≤
+        e1.size + e2.size + 1
+      by_cases hRightZero : e2.simplify = .lzero
+      · rw [if_pos hRightZero]
+        show 1 ≤ e1.size + e2.size + 1
+        exact Nat.succ_le_succ (Nat.zero_le _)
+      · rw [if_neg hRightZero]
+        by_cases hLeftZero : e1.simplify = .lzero
+        · rw [if_pos hLeftZero]
+          exact Nat.le_trans ih2
+            (Nat.le_trans (Nat.le_add_left _ e1.size) (Nat.le_succ _))
+        · rw [if_neg hLeftZero]
+          show e1.simplify.size + e2.simplify.size + 1 ≤
+            e1.size + e2.size + 1
+          exact Nat.add_le_add_right (Nat.add_le_add ih1 ih2) 1
+
+/-! ## Aggregate size-related smokes -/
+
+/-- `lzero` has size 1. -/
+theorem LevelExpr.size_lzero : LevelExpr.size .lzero = 1 := rfl
+
+/-- `lvar n` has size 1 regardless of index. -/
+theorem LevelExpr.size_lvar (idx : Nat) :
+    LevelExpr.size (.lvar idx) = 1 := rfl
+
+/-- `lsucc inner` size is `inner.size + 1`. -/
+theorem LevelExpr.size_lsucc (inner : LevelExpr) :
+    LevelExpr.size (.lsucc inner) = inner.size + 1 := rfl
+
+/-- `lmax e1 e2` size is `e1.size + e2.size + 1`. -/
+theorem LevelExpr.size_lmax (e1 e2 : LevelExpr) :
+    LevelExpr.size (.lmax e1 e2) = e1.size + e2.size + 1 := rfl
+
+/-- `limax e1 e2` size is `e1.size + e2.size + 1`. -/
+theorem LevelExpr.size_limax (e1 e2 : LevelExpr) :
+    LevelExpr.size (.limax e1 e2) = e1.size + e2.size + 1 := rfl
+
 end LeanFX2.Foundation.PolyCell.Universe
