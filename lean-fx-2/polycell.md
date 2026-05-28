@@ -5549,6 +5549,11 @@ The task ledger records this as `#350`-`#358` for the raw eta cascade
 `#359`-`#364` for typed eta-long NbE and typed beta+eta conversion.
 This placement is intentional: raw eta lands before the final SN/CR
 closure so the master theorem covers beta+iota+eta from the start.
+The raw `Step.eta` module only declares constructors for generators
+that exist in the current `Generator` enum.  Clock and parametricity
+eta remain reserved until Phase Z7/Z8 extends the generator table with
+`gen_clockAbs`/`gen_clockApp` and `gen_paramAbs`/`gen_paramApp`;
+those slots must not be simulated by unrelated generators.
 
 ### Phase 1 — Allais Kit
 

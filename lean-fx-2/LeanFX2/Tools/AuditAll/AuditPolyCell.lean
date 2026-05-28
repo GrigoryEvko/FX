@@ -105,6 +105,7 @@ import LeanFX2.Foundation.PolyCell.Core.SiteOpenness
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactRenameEquiv
 import LeanFX2.Foundation.PolyCell.Core.Step
 import LeanFX2.Foundation.PolyCell.Core.StepStar
+import LeanFX2.Foundation.PolyCell.Core.StepEta
 import LeanFX2.Foundation.PolyCell.Core.StepSubst
 import LeanFX2.Foundation.PolyCell.Core.StepInversion
 import LeanFX2.Foundation.PolyCell.Core.StrongNormalizationConstructors
@@ -2313,6 +2314,34 @@ namespace LeanFX2.Tools
 -- the identity-type eliminators.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaIdJRefl_selects_base
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaIdStrictRecRefl_selects_base
+
+-- Eta-M8b: raw structural eta as a sibling relation to beta+iota Step.
+-- Clock and parametricity eta slots are intentionally absent here until
+-- their Phase Z7/Z8 generators are added to the current Generator enum.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.newestVar
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.etaLamSource
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.etaPairSource
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.etaPathLamSource
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.etaModIntroSource
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.etaGlueIntroSource
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.eta
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.etaStar
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.betaEta
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.betaEtaStar
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.eta.mapStep
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.eta.etaLam_weakened_function_strengthens
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.eta.etaLam_unit_smoke
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.eta.etaPair_pair_smoke
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.eta.etaPathLam_unit_smoke
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.eta.etaModIntro_unit_smoke
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.eta.etaGlueIntro_unit_smoke
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.etaStar.single
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.etaStar.trans_compose
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.etaStar.mapStep
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.betaEtaStar.single
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.betaEtaStar.ofStep
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.betaEtaStar.ofEta
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.betaEtaStar.trans_compose
 
 -- ─── V2-L3.1 phase C step 6 prep: Step inversion lemmas ──────────────
 -- Foundational inversion building blocks the SR theorem's cong arm
