@@ -496,6 +496,81 @@ theorem etaGlueIntroSecondCong {scope : Nat}
     , Step.betaEtaStar.trans (Or.inl gluedStep)
         (Step.betaEtaStar.refl _) ⟩
 
+/-- Resolver-facing eta-modal-intro arm for any beta+iota `Step`
+leaving the eta-modal source.
+
+The current raw relation has no root rule for `modElim`, so the only
+possible beta+iota step from `modIntro (modElim modalTerm)` reduces
+inside `modalTerm` under `modElim`; the primitive join is
+`etaModIntroCong`. -/
+theorem etaModIntroLeftStep {scope : Nat}
+    {modalTerm leftReduct : RawTerm scope}
+    (leftStep : Step (RawTerm.etaModIntroSource modalTerm) leftReduct) :
+    BetaEtaPairJoin
+      (Or.inl leftStep)
+      (Or.inr (Step.eta.etaModIntro modalTerm)) := by
+  cases leftStep with
+  | cong _ _ introChildrenStep =>
+      cases introChildrenStep with
+      | here _ elimStep =>
+          cases elimStep with
+          | cong _ _ elimChildrenStep =>
+              cases elimChildrenStep with
+              | here _ modalStep =>
+                  exact etaModIntroCong modalStep
+              | there _ emptyTailStep =>
+                  cases emptyTailStep
+      | there _ emptyTailStep =>
+          cases emptyTailStep
+
+/-- Reverse orientation of `etaModIntroLeftStep`. -/
+theorem etaModIntroRightStep {scope : Nat}
+    {modalTerm rightReduct : RawTerm scope}
+    (rightStep : Step (RawTerm.etaModIntroSource modalTerm) rightReduct) :
+    BetaEtaPairJoin
+      (Or.inr (Step.eta.etaModIntro modalTerm))
+      (Or.inl rightStep) :=
+  swap (etaModIntroLeftStep rightStep)
+
+/-- Resolver-facing eta-Glue-intro arm for any beta+iota `Step` leaving
+the eta-Glue source.
+
+Current `Step` can reduce either the occurrence under `glueElim` or the
+direct second occurrence of the same Glue term.  Both are delegated to
+the primitive Glue eta/congruence joins above. -/
+theorem etaGlueIntroLeftStep {scope : Nat}
+    {gluedTerm leftReduct : RawTerm scope}
+    (leftStep : Step (RawTerm.etaGlueIntroSource gluedTerm) leftReduct) :
+    BetaEtaPairJoin
+      (Or.inl leftStep)
+      (Or.inr (Step.eta.etaGlueIntro gluedTerm)) := by
+  cases leftStep with
+  | cong _ _ introChildrenStep =>
+      cases introChildrenStep with
+      | here _ elimStep =>
+          cases elimStep with
+          | cong _ _ elimChildrenStep =>
+              cases elimChildrenStep with
+              | here _ gluedStep =>
+                  exact etaGlueIntroFirstCong gluedStep
+              | there _ emptyTailStep =>
+                  cases emptyTailStep
+      | there _ tailStep =>
+          cases tailStep with
+          | here _ gluedStep =>
+              exact etaGlueIntroSecondCong gluedStep
+          | there _ emptyTailStep =>
+              cases emptyTailStep
+
+/-- Reverse orientation of `etaGlueIntroLeftStep`. -/
+theorem etaGlueIntroRightStep {scope : Nat}
+    {gluedTerm rightReduct : RawTerm scope}
+    (rightStep : Step (RawTerm.etaGlueIntroSource gluedTerm) rightReduct) :
+    BetaEtaPairJoin
+      (Or.inr (Step.eta.etaGlueIntro gluedTerm))
+      (Or.inl rightStep) :=
+  swap (etaGlueIntroLeftStep rightStep)
+
 /-- Eta-lambda versus a beta+iota step replayed through the weakened
 function occurrence.
 

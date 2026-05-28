@@ -5619,8 +5619,12 @@ overlaps explicitly: `etaPairFirstProjectionIota` and
 `etaPairSecondProjectionIota` join
 `pair (fst (pair a b)) (snd (pair a b))` against root eta-pair, and
 `etaPairLeftStep` / `etaPairRightStep` package every beta+iota `Step`
-leaving an eta-pair source into one resolver-facing arm.  Remaining
-#355 work: wire the lam/pathLam/modal/Glue resolver-facing joins into
+leaving an eta-pair source into one resolver-facing arm.  The following
+#355 slice does the same packaging for the remaining structural
+non-binder eta roots: `etaModIntroLeftStep` / `etaModIntroRightStep`
+and `etaGlueIntroLeftStep` / `etaGlueIntroRightStep` cover every
+beta+iota `Step` leaving the current modal and Glue eta sources.
+Remaining #355 work: wire the lam/pathLam resolver-facing joins into
 the full `Step.betaEta` local Church-Rosser dispatcher / cd-lemma
 extension.  #356 remains eta/eta branchings.
 Record, clock, and parametricity eta remain generator-frontier work,

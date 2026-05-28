@@ -2379,6 +2379,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaModIntroCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaGlueIntroFirstCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaGlueIntroSecondCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaModIntroLeftStep
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaModIntroRightStep
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaGlueIntroLeftStep
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaGlueIntroRightStep
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaLamFunctionCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaPathLamFunctionCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaLamStrengthenedFunctionCong
