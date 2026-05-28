@@ -3377,6 +3377,84 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.fxSconing_hasNoParametricityTransferTheorem
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.fxSconing_hasNoBKSMetatheoryPackage
 
+-- ─── V2-L5.5 (#219): ProfileExtension scaffolding audit-gate sweep ──
+-- ~38 declarations in ProfileExtension.lean ship the V2-L5 extension-
+-- calculus scaffolding for the demonstration η extension.  All
+-- audit-orphaned per the 5-agent gap audit; this commit connects
+-- them all to the audit harness.
+--
+-- Sibling to V2-L4.5 #214 (SconingConstructionLevel audit-gating
+-- sweep) — same retrospective-gating pattern.
+--
+-- Ledger inductive enumerates 8 monotone-ordered extension-calculus
+-- milestones:
+--   interfaceLedger → localAdmissionRecord → profileTowerBookkeeping
+--   → profileLensInstance (CURRENT honest state)
+--   → algebraExtension → interactionLawProofs → metatheoryTransfer →
+--   admissibleProfileTheorem.
+--
+-- The bilaxCompatibility witness scaffolding for the demonstration
+-- EtaReductionRule extension lives in this file as:
+--   * EtaReductionRule inductive (etaLam + etaPath) + helpers.
+--   * EtaReductionInterfaceEvidence structure.
+--   * 5 evidence structures (Implementation / Bilax / Conservativity /
+--     Metatheory / Erasure preservation).
+--   * ProfileExtension structure (combined 8-projection record).
+--   * extendProfile function + 10 preservation theorems witnessing
+--     that each construction-level axis is INHERITED by the extended
+--     profile (no claim of new evidence manufactured).
+
+-- Construction-level ledger (8-ctor inductive + 7 Bool predicates +
+-- 4 positive + 4 hasNo* honest witness theorems)
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.ExtensionConstructionLevel
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.ExtensionConstructionLevel.hasInterfaceLedger
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.ExtensionConstructionLevel.hasLocalAdmissionRecord
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.ExtensionConstructionLevel.hasProfileTowerBookkeeping
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.ExtensionConstructionLevel.hasProfileLensInstance
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.ExtensionConstructionLevel.hasAlgebraExtension
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.ExtensionConstructionLevel.hasInteractionLawProofs
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.ExtensionConstructionLevel.hasMetatheoryTransfer
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.ExtensionConstructionLevel.hasAdmissibleProfileTheorem
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.fxExtensionConstructionLevel
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.fxExtensionConstructionLevel_eq
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.fxExtension_hasInterfaceLedger
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.fxExtension_hasLocalAdmissionRecord
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.fxExtension_hasProfileTowerBookkeeping
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.fxExtension_hasProfileLensInstance
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.fxExtension_hasNoAlgebraExtension
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.fxExtension_hasNoInteractionLawProofs
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.fxExtension_hasNoMetatheoryTransfer
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.fxExtension_hasNoAdmissibleProfileTheorem
+
+-- PolynomialInterface + EtaReductionRule scaffolding
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.PolynomialInterface
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaLamReductionIndex
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaPathReductionIndex
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.EtaReductionRule
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.EtaReductionRule.toFinTwo
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.EtaReductionRule.indexFor
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.EtaReductionRule.arity
+
+-- Evidence structures (5 evidence types for the demonstration extension)
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.EtaReductionInterfaceEvidence
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.ImplementationSoundEvidence
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.BilaxCompatibilityEvidence
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.ConservativityEvidence
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.MetatheoryPreservationEvidence
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.ErasurePreservationEvidence
+
+-- ProfileExtension structure + extendProfile + 10 preservation theorems
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.ProfileExtension
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.extendProfile
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.extendProfile_preserves_shapeConstructionLevel
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.extendProfile_preserves_algebraConstructionLevel
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.extendProfile_preserves_stratificationConstructionLevel
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.extendProfile_preserves_saturationConstructionLevel
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.extendProfile_preserves_omegacEConstructionLevel
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.extendProfile_preserves_enrichmentConstructionLevel
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.extendProfile_preserves_fibrationConstructionLevel
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.extendProfile_preserves_modalConstructionLevel
+
 -- ─── V2-L1cert.12: existential preserves dim (#167) ─────────────────
 -- inferRawCellGeneral?_accepted_cellDimension_eq: when the
 -- existential wrapper accepts a raw input, the result's stored
