@@ -82,10 +82,54 @@ end StepPairJoin
 
 namespace LocalStepBranching
 
+/-- Package the arbitrary one-step pair received by `cd_lemma` as a concrete
+local branching.
+
+The M7 dispatcher works on `LocalStepBranching`; this constructor is the
+lossless ingress from the theorem's raw `Step` arguments into that packaged
+shape. -/
+def fromSteps {scope : Nat}
+    {sourceTerm leftReduct rightReduct : RawTerm scope}
+    (leftStep : Step sourceTerm leftReduct)
+    (rightStep : Step sourceTerm rightReduct) :
+    LocalStepBranching (scope := scope) where
+  source := sourceTerm
+  leftReduct := leftReduct
+  rightReduct := rightReduct
+  leftStep := leftStep
+  rightStep := rightStep
+
+/-- Packaging commutes with swapping the two one-step sides. -/
+theorem fromSteps_swap {scope : Nat}
+    {sourceTerm leftReduct rightReduct : RawTerm scope}
+    (leftStep : Step sourceTerm leftReduct)
+    (rightStep : Step sourceTerm rightReduct) :
+    (fromSteps leftStep rightStep).swap =
+      fromSteps rightStep leftStep := rfl
+
 /-- The `StepPairJoin` proposition packaged over an M6 local branching. -/
 def HasJoin {scope : Nat}
     (branching : LocalStepBranching (scope := scope)) : Prop :=
   StepPairJoin branching.leftStep branching.rightStep
+
+/-- `fromSteps` preserves the `StepPairJoin` goal definitionally. -/
+theorem fromSteps_hasJoin {scope : Nat}
+    {sourceTerm leftReduct rightReduct : RawTerm scope}
+    {leftStep : Step sourceTerm leftReduct}
+    {rightStep : Step sourceTerm rightReduct} :
+    (fromSteps leftStep rightStep).HasJoin →
+      StepPairJoin leftStep rightStep :=
+  fun join => join
+
+/-- A join for arbitrary theorem inputs can be viewed as a join for their
+packaged local branching. -/
+theorem hasJoin_fromSteps {scope : Nat}
+    {sourceTerm leftReduct rightReduct : RawTerm scope}
+    {leftStep : Step sourceTerm leftReduct}
+    {rightStep : Step sourceTerm rightReduct} :
+    StepPairJoin leftStep rightStep →
+      (fromSteps leftStep rightStep).HasJoin :=
+  fun join => join
 
 /-- Same-reduct closure packaged over a concrete local branching. -/
 theorem hasJoin_ofReductsEqual {scope : Nat}

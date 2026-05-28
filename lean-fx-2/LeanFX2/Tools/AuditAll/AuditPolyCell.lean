@@ -1248,6 +1248,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepPairJoin.ofReductsEqual
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepPairJoin.sameStep
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepPairJoin.swap
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.fromSteps
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.fromSteps_hasJoin
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.hasJoin_fromSteps
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.fromSteps_swap
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.HasJoin
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.hasJoin_ofReductsEqual
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.hasJoin_swap
