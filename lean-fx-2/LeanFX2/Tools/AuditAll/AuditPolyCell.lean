@@ -107,6 +107,7 @@ import LeanFX2.Foundation.PolyCell.Core.StepStar
 import LeanFX2.Foundation.PolyCell.Core.StepSubst
 import LeanFX2.Foundation.PolyCell.Core.StepInversion
 import LeanFX2.Foundation.PolyCell.Core.StrongNormalizationConstructors
+import LeanFX2.Foundation.PolyCell.Core.StrongNormalizationRedexes
 import LeanFX2.Foundation.PolyCell.Core.CertifiedTerm
 import LeanFX2.Foundation.PolyCell.Core.GeneratorChildSpecsDim0
 import LeanFX2.Foundation.PolyCell.Core.CellNonVarStepRenamer
@@ -2556,6 +2557,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.refl_isStronglyNormalizing_of_witness
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.pair_isStronglyNormalizing_of_components
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.listCons_isStronglyNormalizing_of_head_tail
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.fstPair_isStronglyNormalizing_of_components
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.sndPair_isStronglyNormalizing_of_components
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.localJoin_of_cdLemma
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.joinStepWithReflRight
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.joinStepWithSingleRight
