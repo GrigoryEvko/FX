@@ -146,6 +146,7 @@ import LeanFX2.Foundation.PolyCell.Universe.UniverseFlag
 import LeanFX2.Foundation.PolyCell.Universe.LevelExprSimplify
 import LeanFX2.Foundation.PolyCell.NbE.NormalizerSignature
 import LeanFX2.Foundation.PolyCell.NbE.Quote
+import LeanFX2.Foundation.PolyCell.Typed.TypingContext
 
 namespace LeanFX2.Tools
 
@@ -3417,6 +3418,31 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.Quote.fieldCount_correct
 #assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.Quote.consistent_with_hybrid_design
 #assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.Quote.consistent_with_cbn_strategy
+
+-- ─── M31 (#280): Phase Z₁ TypingContext profile inductive ───────────
+-- FIRST shipped piece of the Phase Z₁ typed core.  Ships the
+-- TypingContext inductive parameterized by level + scope, with
+-- two ctors:
+--   * empty — empty context at scope 0
+--   * cons newType ctx — extend with binding at de Bruijn position 0
+--
+-- M32-M44 task slots ship the HasType rules (lookup helpers, conv,
+-- var, universe, Π, Σ, Unit, bool, Nat, List/Option/Either, Id,
+-- cumul, modal).
+--
+-- This M31 ships ONLY the context inductive + 3 fixture contexts
+-- (empty / singleUnit / twoBindings) + canonical-form smokes.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Typed.TypingContext
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Typed.TypingContext.empty_scope_zero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Typed.TypingContext.cons_scope_increment
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Typed.TypingContext.emptyAtLevelZero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Typed.TypingContext.singleUnit
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Typed.TypingContext.twoBindings
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Typed.TypingContext.emptyAtLevelZero_canonical
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Typed.TypingContext.singleUnit_canonical
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Typed.TypingContext.twoBindings_canonical
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Typed.TypingContext.ctorCount
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Typed.TypingContext.ctorCount_correct
 
 -- ─── V2-L4.5 (#214): SconingConstructionLevel honest ledger ─────────
 -- 20 declarations in InternalSconing.lean ship the honest construction-
