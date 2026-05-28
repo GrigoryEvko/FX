@@ -3588,6 +3588,39 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.lsucc_lmax_distrib_denoteEquiv
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.simplify_denoteEquiv
 
+-- ─── M22 denoteEquiv congruences + limax algebra ─────────────────────
+-- Audit gates for #410 (M22-A8, 2026-05-28).
+--
+-- Per polycell.md §11.8.2's maximal-power universe vision, Phase B's
+-- canonical normalizer must work COMPOSITIONALLY — substituting
+-- equivalent sub-expressions yields equivalent parent expressions.
+-- The 3 congruence theorems pin denoteEquiv as a CONGRUENCE under
+-- every LevelExpr ctor:
+--
+-- * `lsucc_denoteEquiv_congr` — unary congruence.
+-- * `lmax_denoteEquiv_congr` — binary congruence (commutes with lmax).
+-- * `limax_denoteEquiv_congr` — binary congruence (commutes with limax
+--   despite its asymmetric conditional collapsing semantics).
+--
+-- Plus 3 limax-specific algebraic laws + 2 denoteEquiv repackages:
+--
+-- * `limax_denote_lzero_right` — `Π (x:A). Prop : Prop` (impredicative
+--   collapse).
+-- * `limax_denote_lzero_left` — `Π (x:Prop). Type e : Type e`
+--   (domain-Prop identity).
+-- * `limax_denote_eq_lmax_when_codomain_nonzero` — limax behaves as
+--   ordinary max for non-Prop codomain.
+-- * `limax_lzero_right_denoteEquiv` / `limax_lzero_left_denoteEquiv` —
+--   denoteEquiv repackages of the collapse + identity laws.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.lsucc_denoteEquiv_congr
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.lmax_denoteEquiv_congr
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.limax_denoteEquiv_congr
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.limax_denote_lzero_right
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.limax_denote_lzero_left
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.limax_denote_eq_lmax_when_codomain_nonzero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.limax_lzero_right_denoteEquiv
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.limax_lzero_left_denoteEquiv
+
 -- ─── M11 (#260): NbE substrate — canonical normalizer signature ─────
 -- RawTerm.isNF predicate shipped via M-substrate-3 #367.  This commit
 -- ships the SIGNATURE-LEVEL contract for the M12 #261 implementation:

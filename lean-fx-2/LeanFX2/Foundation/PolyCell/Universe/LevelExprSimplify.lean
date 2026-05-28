@@ -1405,4 +1405,129 @@ theorem LevelExpr.simplify_denoteEquiv (expr : LevelExpr) :
     LevelExpr.denoteEquiv expr.simplify expr :=
   fun env => LevelExpr.simplify_denote_eq expr env
 
+/-! ## denoteEquiv congruences
+
+M22-A8 (#410, 2026-05-28).  For Phase B's canonical normalizer to
+work compositionally, `denoteEquiv` must be a CONGRUENCE under
+every `LevelExpr` constructor: if `e1 denoteEquiv e1'` and
+`e2 denoteEquiv e2'`, then `ctor e1 e2 denoteEquiv ctor e1' e2'`.
+
+This lets Phase B normalize sub-expressions independently, then
+recombine — the foundation of compositional rewriting.  Every
+ctor has a congruence law:
+
+* `lsucc`: unary congruence (lsucc preserves equivalence).
+* `lmax`: binary congruence (lmax of equivalents is equivalent).
+* `limax`: binary congruence (asymmetric but still congruent —
+  both operands' denotations are inputs to the conditional).
+* `lzero` / `lvar`: nullary base cases, refl. -/
+
+/-- `lsucc` is a denoteEquiv congruence: equivalent inner
+expressions give equivalent successors. -/
+theorem LevelExpr.lsucc_denoteEquiv_congr {inner inner' : LevelExpr}
+    (h : LevelExpr.denoteEquiv inner inner') :
+    LevelExpr.denoteEquiv (LevelExpr.lsucc inner)
+      (LevelExpr.lsucc inner') := by
+  intro env
+  show inner.denote env + 1 = inner'.denote env + 1
+  rw [h env]
+
+/-- `lmax` is a denoteEquiv congruence: equivalent operand pairs
+give equivalent lmax expressions.  Phase B's canonical lmax
+ordering pre-normalizes both operands independently before
+joining. -/
+theorem LevelExpr.lmax_denoteEquiv_congr {e1 e1' e2 e2' : LevelExpr}
+    (h1 : LevelExpr.denoteEquiv e1 e1')
+    (h2 : LevelExpr.denoteEquiv e2 e2') :
+    LevelExpr.denoteEquiv (LevelExpr.lmax e1 e2)
+      (LevelExpr.lmax e1' e2') := by
+  intro env
+  show LevelExpr.levelMax (e1.denote env) (e2.denote env) =
+    LevelExpr.levelMax (e1'.denote env) (e2'.denote env)
+  rw [h1 env, h2 env]
+
+/-- `limax` is a denoteEquiv congruence despite its asymmetric
+collapsing semantics.  Both operands' denotations feed into the
+conditional, so equivalent denotations produce equivalent
+results regardless of which conditional branch fires. -/
+theorem LevelExpr.limax_denoteEquiv_congr {e1 e1' e2 e2' : LevelExpr}
+    (h1 : LevelExpr.denoteEquiv e1 e1')
+    (h2 : LevelExpr.denoteEquiv e2 e2') :
+    LevelExpr.denoteEquiv (LevelExpr.limax e1 e2)
+      (LevelExpr.limax e1' e2') := by
+  intro env
+  show (if e2.denote env = 0 then 0
+        else LevelExpr.levelMax (e1.denote env) (e2.denote env)) =
+    (if e2'.denote env = 0 then 0
+     else LevelExpr.levelMax (e1'.denote env) (e2'.denote env))
+  rw [h1 env, h2 env]
+
+/-! ## limax-specific algebraic laws
+
+Per §11.8.2, `limax e1 e2` represents the impredicative Π-type
+universe `Π (x : Type e1). Type e2` with the rule that Prop's
+quantification collapses to Prop: `Π (x : A). Prop : Prop`.
+Semantically: when codomain (e2) is Prop (= lzero), the entire
+Π type lives in Prop regardless of domain.
+
+These theorems pin the asymmetric semantics formally. -/
+
+/-- `limax e lzero` collapses to lzero semantically.  This is
+the IMPREDICATIVE collapse: `Π (x : Type e). Prop : Prop`
+regardless of `e`.  Phase A's rule 5 ships this collapse
+syntactically; this theorem proves it at the semantic level. -/
+theorem LevelExpr.limax_denote_lzero_right (e1 : LevelExpr)
+    (env : Nat → Nat) :
+    (LevelExpr.limax e1 .lzero).denote env = 0 := by
+  show (if (LevelExpr.lzero).denote env = 0 then 0
+        else LevelExpr.levelMax (e1.denote env)
+          ((LevelExpr.lzero).denote env)) = 0
+  show (if (0 : Nat) = 0 then 0
+        else LevelExpr.levelMax (e1.denote env) 0) = 0
+  rw [if_pos rfl]
+
+/-- `limax lzero e` denotes the same as `e`.  When the domain
+of a Π-type is Prop (= lzero), the codomain dominates.  This
+is Phase A's rule 4 at the semantic level. -/
+theorem LevelExpr.limax_denote_lzero_left (e2 : LevelExpr)
+    (env : Nat → Nat) :
+    (LevelExpr.limax .lzero e2).denote env = e2.denote env := by
+  show (if e2.denote env = 0 then 0
+        else LevelExpr.levelMax ((LevelExpr.lzero).denote env)
+          (e2.denote env)) = e2.denote env
+  by_cases hZero : e2.denote env = 0
+  · rw [if_pos hZero, hZero]
+  · rw [if_neg hZero]
+    show LevelExpr.levelMax 0 (e2.denote env) = e2.denote env
+    exact LevelExpr.levelMax_zero_left _
+
+/-- `limax e1 e2` denotes the same as `lmax e1 e2` when
+`e2.denote env ≠ 0`.  This is the non-collapsing case: limax
+behaves as ordinary max whenever the codomain isn't Prop. -/
+theorem LevelExpr.limax_denote_eq_lmax_when_codomain_nonzero
+    (e1 e2 : LevelExpr) (env : Nat → Nat)
+    (hCod : e2.denote env ≠ 0) :
+    (LevelExpr.limax e1 e2).denote env =
+      (LevelExpr.lmax e1 e2).denote env := by
+  show (if e2.denote env = 0 then 0
+        else LevelExpr.levelMax (e1.denote env) (e2.denote env)) =
+    LevelExpr.levelMax (e1.denote env) (e2.denote env)
+  rw [if_neg hCod]
+
+/-! ## denoteEquiv variants of the per-rule equations
+
+Repackages the algebraic / limax laws as denoteEquiv rules for
+Phase B's normalizer (which speaks denoteEquiv natively, not
+denote env). -/
+
+/-- limax-right-zero collapse as a denoteEquiv rule. -/
+theorem LevelExpr.limax_lzero_right_denoteEquiv (e1 : LevelExpr) :
+    LevelExpr.denoteEquiv (LevelExpr.limax e1 .lzero) .lzero :=
+  fun env => LevelExpr.limax_denote_lzero_right e1 env
+
+/-- limax-left-zero identity as a denoteEquiv rule. -/
+theorem LevelExpr.limax_lzero_left_denoteEquiv (e2 : LevelExpr) :
+    LevelExpr.denoteEquiv (LevelExpr.limax .lzero e2) e2 :=
+  fun env => LevelExpr.limax_denote_lzero_left e2 env
+
 end LeanFX2.Foundation.PolyCell.Universe
