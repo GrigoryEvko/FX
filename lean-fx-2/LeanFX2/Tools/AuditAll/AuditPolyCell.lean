@@ -2561,6 +2561,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.sndPair_isStronglyNormalizing_of_components
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.boolElimTrue_isStronglyNormalizing_of_branches
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.boolElimFalse_isStronglyNormalizing_of_branches
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.idJRefl_isStronglyNormalizing_of_base_witness
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.idStrictRecRefl_isStronglyNormalizing_of_base_witness
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.localJoin_of_cdLemma
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.joinStepWithReflRight
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.joinStepWithSingleRight

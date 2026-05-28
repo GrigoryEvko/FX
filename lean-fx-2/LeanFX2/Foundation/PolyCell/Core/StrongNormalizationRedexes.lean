@@ -314,5 +314,155 @@ theorem boolElimFalse_isStronglyNormalizing_of_branches {scope : Nat}
     thenTerminates)
     elseTerminates
 
+/-- Identity elimination on a reflexivity witness is strongly normalizing when
+the base case and raw witness are strongly normalizing.
+
+The root iota reduct is the base case.  Congruence in the base case is handled
+directly, while congruence in the reflexivity witness is inverted through
+`Step.from_refl` before reusing the witness accessibility induction. -/
+theorem idJRefl_isStronglyNormalizing_of_base_witness {scope : Nat}
+    {baseCase rawWitness : RawTerm scope}
+    (baseTerminates : IsStronglyNormalizing baseCase)
+    (witnessTerminates : IsStronglyNormalizing rawWitness) :
+    IsStronglyNormalizing
+      (.mkGen .gen_idJ ()
+        (.childCons baseCase
+          (.childCons
+            (.mkGen .gen_refl () (.childCons rawWitness .childNil))
+            .childNil)) : RawTerm scope) :=
+  (Acc.ndrec
+    (r := StepSuccessor)
+    (C := fun currentBase =>
+      ∀ {currentWitness : RawTerm scope},
+        IsStronglyNormalizing currentWitness →
+          IsStronglyNormalizing
+            (.mkGen .gen_idJ ()
+              (.childCons currentBase
+                (.childCons
+                  (.mkGen .gen_refl ()
+                    (.childCons currentWitness .childNil))
+                  .childNil)) : RawTerm scope))
+    (m := fun currentBase currentBaseSuccessors baseCaseIH => by
+      intro currentWitness currentWitnessTerminates
+      exact
+        Acc.ndrec
+          (r := StepSuccessor)
+          (C := fun innerWitness =>
+            IsStronglyNormalizing
+              (.mkGen .gen_idJ ()
+                (.childCons currentBase
+                  (.childCons
+                    (.mkGen .gen_refl ()
+                      (.childCons innerWitness .childNil))
+                    .childNil)) : RawTerm scope))
+          (m := fun currentWitness currentWitnessSuccessors witnessIH =>
+            Acc.intro
+              (.mkGen .gen_idJ ()
+                (.childCons currentBase
+                  (.childCons
+                    (.mkGen .gen_refl ()
+                      (.childCons currentWitness .childNil))
+                    .childNil)) : RawTerm scope)
+              (fun targetTerm parentStep => by
+                cases Step.from_idJ parentStep with
+                | inl iotaBranch =>
+                    obtain ⟨iotaWitness, witnessEq, targetEq⟩ := iotaBranch
+                    cases witnessEq
+                    rw [targetEq]
+                    exact Acc.intro currentBase currentBaseSuccessors
+                | inr restAfterIota =>
+                    cases restAfterIota with
+                    | inl baseBranch =>
+                        obtain ⟨baseAfter, targetEq, baseStep⟩ := baseBranch
+                        rw [targetEq]
+                        exact baseCaseIH baseAfter baseStep
+                          (Acc.intro currentWitness currentWitnessSuccessors)
+                    | inr witnessBranch =>
+                        obtain ⟨witnessAfter, targetEq, witnessStep⟩ :=
+                          witnessBranch
+                        obtain
+                          ⟨rawWitnessAfter, witnessAfterEq,
+                            rawWitnessStep⟩ := Step.from_refl witnessStep
+                        rw [targetEq, witnessAfterEq]
+                        exact witnessIH rawWitnessAfter rawWitnessStep))
+          currentWitnessTerminates)
+    baseTerminates)
+    witnessTerminates
+
+/-- Strict identity recursion on a reflexivity witness is strongly normalizing
+when the base case and raw witness are strongly normalizing.
+
+This is the strict-recursion sibling of
+`idJRefl_isStronglyNormalizing_of_base_witness`; the substrate reduction shape
+is identical, but the outer generator is `gen_idStrictRec`. -/
+theorem idStrictRecRefl_isStronglyNormalizing_of_base_witness {scope : Nat}
+    {baseCase rawWitness : RawTerm scope}
+    (baseTerminates : IsStronglyNormalizing baseCase)
+    (witnessTerminates : IsStronglyNormalizing rawWitness) :
+    IsStronglyNormalizing
+      (.mkGen .gen_idStrictRec ()
+        (.childCons baseCase
+          (.childCons
+            (.mkGen .gen_refl () (.childCons rawWitness .childNil))
+            .childNil)) : RawTerm scope) :=
+  (Acc.ndrec
+    (r := StepSuccessor)
+    (C := fun currentBase =>
+      ∀ {currentWitness : RawTerm scope},
+        IsStronglyNormalizing currentWitness →
+          IsStronglyNormalizing
+            (.mkGen .gen_idStrictRec ()
+              (.childCons currentBase
+                (.childCons
+                  (.mkGen .gen_refl ()
+                    (.childCons currentWitness .childNil))
+                  .childNil)) : RawTerm scope))
+    (m := fun currentBase currentBaseSuccessors baseCaseIH => by
+      intro currentWitness currentWitnessTerminates
+      exact
+        Acc.ndrec
+          (r := StepSuccessor)
+          (C := fun innerWitness =>
+            IsStronglyNormalizing
+              (.mkGen .gen_idStrictRec ()
+                (.childCons currentBase
+                  (.childCons
+                    (.mkGen .gen_refl ()
+                      (.childCons innerWitness .childNil))
+                    .childNil)) : RawTerm scope))
+          (m := fun currentWitness currentWitnessSuccessors witnessIH =>
+            Acc.intro
+              (.mkGen .gen_idStrictRec ()
+                (.childCons currentBase
+                  (.childCons
+                    (.mkGen .gen_refl ()
+                      (.childCons currentWitness .childNil))
+                    .childNil)) : RawTerm scope)
+              (fun targetTerm parentStep => by
+                cases Step.from_idStrictRec parentStep with
+                | inl iotaBranch =>
+                    obtain ⟨iotaWitness, witnessEq, targetEq⟩ := iotaBranch
+                    cases witnessEq
+                    rw [targetEq]
+                    exact Acc.intro currentBase currentBaseSuccessors
+                | inr restAfterIota =>
+                    cases restAfterIota with
+                    | inl baseBranch =>
+                        obtain ⟨baseAfter, targetEq, baseStep⟩ := baseBranch
+                        rw [targetEq]
+                        exact baseCaseIH baseAfter baseStep
+                          (Acc.intro currentWitness currentWitnessSuccessors)
+                    | inr witnessBranch =>
+                        obtain ⟨witnessAfter, targetEq, witnessStep⟩ :=
+                          witnessBranch
+                        obtain
+                          ⟨rawWitnessAfter, witnessAfterEq,
+                            rawWitnessStep⟩ := Step.from_refl witnessStep
+                        rw [targetEq, witnessAfterEq]
+                        exact witnessIH rawWitnessAfter rawWitnessStep))
+          currentWitnessTerminates)
+    baseTerminates)
+    witnessTerminates
+
 end StepStar
 end LeanFX2.Foundation.PolyCell.Core
