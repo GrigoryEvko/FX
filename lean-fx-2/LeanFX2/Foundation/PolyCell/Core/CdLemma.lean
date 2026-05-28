@@ -362,6 +362,74 @@ theorem iotaListElimConsSameRoot_hasJoin {scope : Nat}
   (LocalDiamond.iotaListElimConsSameRoot
     headValue tailValue nilBranch consBranch).hasJoin
 
+/-- Resolver arm for `boolTrue` iota competing with selected then-branch congruence. -/
+theorem iotaBoolTrueThenCong_hasJoin {scope : Nat}
+    {thenBranch steppedThenBranch elseBranch : RawTerm scope}
+    (thenStep : Step thenBranch steppedThenBranch) :
+    (iotaBoolTrueThenCong (elseBranch := elseBranch) thenStep).HasJoin :=
+  (LocalDiamond.iotaBoolTrueThenCong
+    (elseBranch := elseBranch) thenStep).hasJoin
+
+/-- Resolver arm for `boolTrue` iota competing with discarded else-branch congruence. -/
+theorem iotaBoolTrueElseCong_hasJoin {scope : Nat}
+    {thenBranch elseBranch steppedElseBranch : RawTerm scope}
+    (elseStep : Step elseBranch steppedElseBranch) :
+    (iotaBoolTrueElseCong (thenBranch := thenBranch) elseStep).HasJoin :=
+  (LocalDiamond.iotaBoolTrueElseCong
+    (thenBranch := thenBranch) elseStep).hasJoin
+
+/-- Resolver arm for `boolFalse` iota competing with discarded then-branch congruence. -/
+theorem iotaBoolFalseThenCong_hasJoin {scope : Nat}
+    {thenBranch steppedThenBranch elseBranch : RawTerm scope}
+    (thenStep : Step thenBranch steppedThenBranch) :
+    (iotaBoolFalseThenCong (elseBranch := elseBranch) thenStep).HasJoin :=
+  (LocalDiamond.iotaBoolFalseThenCong
+    (elseBranch := elseBranch) thenStep).hasJoin
+
+/-- Resolver arm for `boolFalse` iota competing with selected else-branch congruence. -/
+theorem iotaBoolFalseElseCong_hasJoin {scope : Nat}
+    {thenBranch elseBranch steppedElseBranch : RawTerm scope}
+    (elseStep : Step elseBranch steppedElseBranch) :
+    (iotaBoolFalseElseCong (thenBranch := thenBranch) elseStep).HasJoin :=
+  (LocalDiamond.iotaBoolFalseElseCong
+    (thenBranch := thenBranch) elseStep).hasJoin
+
+/-- Resolver arm for first projection competing with selected first-component congruence. -/
+theorem iotaFstPairFirstCong_hasJoin {scope : Nat}
+    {firstValue steppedFirstValue secondValue : RawTerm scope}
+    (firstStep : Step firstValue steppedFirstValue) :
+    (iotaFstPairFirstCong
+      (secondValue := secondValue) firstStep).HasJoin :=
+  (LocalDiamond.iotaFstPairFirstCong
+    (secondValue := secondValue) firstStep).hasJoin
+
+/-- Resolver arm for first projection competing with discarded second-component congruence. -/
+theorem iotaFstPairSecondCong_hasJoin {scope : Nat}
+    {firstValue secondValue steppedSecondValue : RawTerm scope}
+    (secondStep : Step secondValue steppedSecondValue) :
+    (iotaFstPairSecondCong
+      (firstValue := firstValue) secondStep).HasJoin :=
+  (LocalDiamond.iotaFstPairSecondCong
+    (firstValue := firstValue) secondStep).hasJoin
+
+/-- Resolver arm for second projection competing with discarded first-component congruence. -/
+theorem iotaSndPairFirstCong_hasJoin {scope : Nat}
+    {firstValue steppedFirstValue secondValue : RawTerm scope}
+    (firstStep : Step firstValue steppedFirstValue) :
+    (iotaSndPairFirstCong
+      (secondValue := secondValue) firstStep).HasJoin :=
+  (LocalDiamond.iotaSndPairFirstCong
+    (secondValue := secondValue) firstStep).hasJoin
+
+/-- Resolver arm for second projection competing with selected second-component congruence. -/
+theorem iotaSndPairSecondCong_hasJoin {scope : Nat}
+    {firstValue secondValue steppedSecondValue : RawTerm scope}
+    (secondStep : Step secondValue steppedSecondValue) :
+    (iotaSndPairSecondCong
+      (firstValue := firstValue) secondStep).HasJoin :=
+  (LocalDiamond.iotaSndPairSecondCong
+    (firstValue := firstValue) secondStep).hasJoin
+
 /-- M7 contradiction arm for the mutually-exclusive bool true/false root pair. -/
 theorem iotaBoolTrue_iotaBoolFalse_hasSourcesDisjoint {scope : Nat}
     (thenTrue elseTrue thenFalse elseFalse : RawTerm scope) :
