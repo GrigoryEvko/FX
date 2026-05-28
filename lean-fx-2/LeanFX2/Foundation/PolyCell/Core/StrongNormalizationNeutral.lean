@@ -17,6 +17,83 @@ and then fire beta.  The theorem here only covers stuck heads such as variables.
 namespace LeanFX2.Foundation.PolyCell.Core
 namespace StepStar
 
+/-- Application closure for heads that are neutral by an explicit invariant.
+
+The invariant must prove two facts: neutral heads are not lambdas, and one-step
+reduction from a neutral head stays neutral.  Under those hypotheses, beta is
+impossible at every reduct of the head, so application accessibility follows
+from nested accessibility induction over the head and argument. -/
+theorem app_isStronglyNormalizing_of_neutral_head_arg
+    {scope : Nat} (isNeutralHead : RawTerm scope → Prop)
+    {headTerm argumentTerm : RawTerm scope}
+    (headIsNeutral : isNeutralHead headTerm)
+    (neutralHeadIsNotLambda :
+      ∀ {currentHead : RawTerm scope}, isNeutralHead currentHead →
+        ∀ lambdaBody : RawTerm (scope + 1),
+          currentHead ≠ .mkGen .gen_lam () (.childCons lambdaBody .childNil))
+    (neutralHeadStep :
+      ∀ {currentHead targetHead : RawTerm scope},
+        isNeutralHead currentHead →
+          Step currentHead targetHead →
+            isNeutralHead targetHead)
+    (headTerminates : IsStronglyNormalizing headTerm)
+    (argumentTerminates : IsStronglyNormalizing argumentTerm) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons headTerm (.childCons argumentTerm .childNil)) :
+        RawTerm scope) :=
+  (Acc.ndrec
+    (r := StepSuccessor)
+    (C := fun currentHead =>
+      isNeutralHead currentHead →
+        ∀ {currentArgument : RawTerm scope},
+          IsStronglyNormalizing currentArgument →
+            IsStronglyNormalizing
+              (.mkGen .gen_app ()
+                (.childCons currentHead
+                  (.childCons currentArgument .childNil)) : RawTerm scope))
+    (m := fun currentHead _ headIH => by
+      intro currentHeadIsNeutral currentArgument currentArgumentTerminates
+      exact
+        Acc.ndrec
+          (r := StepSuccessor)
+          (C := fun innerArgument =>
+            IsStronglyNormalizing
+              (.mkGen .gen_app ()
+                (.childCons currentHead
+                  (.childCons innerArgument .childNil)) : RawTerm scope))
+          (m := fun currentArgument currentArgumentSuccessors argumentIH =>
+            Acc.intro
+              (.mkGen .gen_app ()
+                (.childCons currentHead
+                  (.childCons currentArgument .childNil)) : RawTerm scope)
+              (fun targetTerm applicationStep => by
+                cases Step.from_app applicationStep with
+                | inl betaBranch =>
+                    obtain ⟨lambdaBody, headEq, _⟩ := betaBranch
+                    exact False.elim
+                      (neutralHeadIsNotLambda currentHeadIsNeutral
+                        lambdaBody headEq)
+                | inr congruenceBranch =>
+                    cases congruenceBranch with
+                    | inl headBranch =>
+                        obtain ⟨targetHead, targetEq, headStep⟩ :=
+                          headBranch
+                        rw [targetEq]
+                        exact headIH targetHead headStep
+                          (neutralHeadStep currentHeadIsNeutral headStep)
+                          (Acc.intro currentArgument
+                            currentArgumentSuccessors)
+                    | inr argumentBranch =>
+                        obtain ⟨argumentAfter, targetEq, argumentStep⟩ :=
+                          argumentBranch
+                        rw [targetEq]
+                        exact argumentIH argumentAfter argumentStep))
+          currentArgumentTerminates)
+    headTerminates)
+    headIsNeutral
+    argumentTerminates
+
 /-- A neutral application with a normal non-lambda head is strongly
 normalizing when its argument is strongly normalizing.
 
@@ -86,6 +163,64 @@ theorem appVar_isStronglyNormalizing_of_argument {scope : Nat}
     (fun lambdaBody headEq => by
       cases headEq)
     argumentTerminates
+
+/-- A two-argument variable-headed application spine is strongly normalizing
+when both arguments are strongly normalizing.
+
+This is the first use of the neutral-head invariant closure: the head
+`app (var i) firstArgument` may reduce through `firstArgument`, but every such
+reduct is still an application with variable head, never a lambda. -/
+theorem appVarSpine2_isStronglyNormalizing_of_arguments {scope : Nat}
+    (headIndex : Fin scope)
+    {firstArgument secondArgument : RawTerm scope}
+    (firstTerminates : IsStronglyNormalizing firstArgument)
+    (secondTerminates : IsStronglyNormalizing secondArgument) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_app ()
+            (.childCons
+              (.mkGen .gen_var headIndex .childNil)
+              (.childCons firstArgument .childNil)))
+          (.childCons secondArgument .childNil)) :
+        RawTerm scope) :=
+  app_isStronglyNormalizing_of_neutral_head_arg
+    (isNeutralHead := fun candidateHead =>
+      ∃ currentFirstArgument : RawTerm scope,
+        candidateHead =
+          (.mkGen .gen_app ()
+            (.childCons
+              (.mkGen .gen_var headIndex .childNil)
+              (.childCons currentFirstArgument .childNil)) :
+            RawTerm scope))
+    (headIsNeutral := ⟨firstArgument, rfl⟩)
+    (neutralHeadIsNotLambda := fun candidateHeadIsNeutral lambdaBody
+        candidateHeadEq => by
+      obtain ⟨currentFirstArgument, candidateHeadShape⟩ :=
+        candidateHeadIsNeutral
+      rw [candidateHeadShape] at candidateHeadEq
+      cases candidateHeadEq)
+    (neutralHeadStep := fun candidateHeadIsNeutral candidateHeadStep => by
+      obtain ⟨currentFirstArgument, candidateHeadShape⟩ :=
+        candidateHeadIsNeutral
+      rw [candidateHeadShape] at candidateHeadStep
+      cases Step.from_app candidateHeadStep with
+      | inl betaBranch =>
+          obtain ⟨lambdaBody, variableEq, _⟩ := betaBranch
+          cases variableEq
+      | inr congruenceBranch =>
+          cases congruenceBranch with
+          | inl variableBranch =>
+              obtain ⟨targetHead, _, variableStep⟩ := variableBranch
+              exact False.elim
+                (noStep_var headIndex (targetTerm := targetHead)
+                  variableStep)
+          | inr argumentBranch =>
+              obtain ⟨argumentAfter, targetEq, _⟩ := argumentBranch
+              exact ⟨argumentAfter, targetEq⟩)
+    (headTerminates :=
+      appVar_isStronglyNormalizing_of_argument headIndex firstTerminates)
+    secondTerminates
 
 end StepStar
 end LeanFX2.Foundation.PolyCell.Core
