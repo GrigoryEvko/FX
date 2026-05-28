@@ -5517,7 +5517,7 @@ not "already implemented in the current raw scaffold."
 
 | Task | Status under certified PolyCell target |
 |---|---|
-| P0.1 Step.eta | **Subsumed**: Step.eta is a Generator value + payload entry, not a Step ctor. The cascade is one extension. |
+| P0.1 Step.eta | **Committed in two layers**: raw structural eta will ship in the current M8 cascade as a sibling relation `Step.eta`, with binder eta guarded by `RawTerm.strengthen`; typed eta remains the type-directed eta-long NbE/readback layer.  Long-term, eta rules are still profile metadata, but the current SN/CR route must see raw eta explicitly before the master theorem closes. |
 | P0.2 Step.par.eta + Compat/cd arms | **Deferred through Axis 6**: raw parallel cells are representable now; certified parallel reduction waits for real Gray boundary/disjointness. |
 | P0.3 Reducible.rename_equivariant (T7) | **Subsumed**: renaming is a polygraph morphism, equivariance is structural. |
 | P0.4 Reducible.cr3 + U2 compound arms | **Subsumed after certification**: Reducible over certified PolyCells inherits CR3 only after the saturation discipline is proved for the profile. |
@@ -5532,6 +5532,23 @@ not "already implemented in the current raw scaffold."
 
 **Phase 0 target collapse:** one substantive profile theorem after the
 certified bridge exists.  This is not a current raw-PolyTerm claim.
+
+**Eta correction (May 2026):** the previous "Step.eta is only a
+Generator value" wording was too aggressive for the current proof
+frontier.  We are now committed to BOTH flavors:
+
+* raw `Step.eta` as a sibling relation beside the existing step
+  relation, for structural eta rules that can be recognized without
+  typing (`lam/app`, `pair/fst/snd`, path/modal/clock/param/glue cases
+  as their generators land);
+* typed eta-long NbE/readback for genuinely type-directed eta,
+  especially Unit eta, which is incoherent as an untyped raw rewrite.
+
+The task ledger records this as `#350`-`#358` for the raw eta cascade
+(`RawTerm.strengthen`, `Step.eta`, SR/CR/SN/audit gates) and
+`#359`-`#364` for typed eta-long NbE and typed beta+eta conversion.
+This placement is intentional: raw eta lands before the final SN/CR
+closure so the master theorem covers beta+iota+eta from the start.
 
 ### Phase 1 — Allais Kit
 
@@ -7242,7 +7259,11 @@ rewritten as part of Phase Z₀.
 * Records: extended to record types via field projection.
 
 Definitional eta is a reduction-direction choice — adds eta-arms
-to `Step` (the η rules from §11.6.1's deferred work).
+to the raw `Step.eta` sibling relation where the redex is structurally
+recognizable, and to typed eta-long NbE/readback where the rule needs
+type information.  Binder eta uses `RawTerm.strengthen` as the
+computational side condition; Unit eta is typed-only and must not be
+added as a raw eta constructor.
 
 **Induction-recursion + higher induction-recursion (HIIRT).**
 Beyond Dybjer-Setzer's standard IR (a mutual inductive + recursive

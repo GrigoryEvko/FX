@@ -52,6 +52,7 @@ import LeanFX2.Foundation.PolyCell.Core.RawTermRenameSubstCommute
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubstRenameCommute
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubstCompose
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubst0Commute
+import LeanFX2.Foundation.PolyCell.Core.RawTermStrengthen
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubstAction
 import LeanFX2.Foundation.PolyCell.Core.RawCellRenameSubst
 import LeanFX2.Foundation.PolyCell.Core.RawCellCascadeLaws
@@ -3230,6 +3231,51 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubst.weaken_then_singleton_pointwise
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.weaken_subst_singleton
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst0_subst_commute
+
+-- Eta-M8a: raw strengthening substrate for structural eta.
+-- `RawTerm.strengthen` is a lifted partial renaming that drops the
+-- newest parent-scope variable when it is unused.  Binder descent goes
+-- through `iterateLiftRaw`, so eta rules can state their side condition
+-- computationally instead of smuggling a freshness proof.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PartialRawRenaming
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PartialRawRenaming.lift
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PartialRawRenaming.dropNewest
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PartialRawRenaming.instLiftsRawPartialRawRenaming
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PartialRawRenaming.dropNewest_weaken
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PartialRawRenaming.lift_rename_some
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PartialRawRenaming.iterateLiftRaw_rename_some
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PartialRawRenaming.dropNewest_renamingInjectsBack
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PartialRawRenaming.lift_renamingInjectsBack
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PartialRawRenaming.iterateLiftRaw_renamingInjectsBack
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.iterateLiftRaw_RawRenaming_identity_pointwise
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PartialRenameTermResult
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PartialRenameTermResult.hasSucceeded
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PartialRenameTermResult.term
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PartialRenameTermResult.toOption
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PartialRenameTermResult.toOption_eq_some
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PartialRenameChildrenResult
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PartialRenameChildrenResult.hasSucceeded
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PartialRenameChildrenResult.children
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PartialRenameChildrenResult.toOption
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.PartialRenameChildrenResult.toOption_eq_some
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.partialRenameResult
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.partialRenameResult
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.partialRename?
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.partialRename?
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.strengthen
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.strengthen
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_identity_apply
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.rename_identity_apply
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.partialRenameResult_rename_some
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.partialRenameResult_rename_some
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.partialRename?_rename_some
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.partialRename?_rename_some
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.partialRename?_imp_rename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.partialRename?_imp_rename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.strengthen_weaken
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.strengthen_sound
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.strengthen_commutes_rename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.strengthen_commutes_subst0
 
 -- V2-L2.7d: THE `Action RawTermSubst` TYPECLASS INSTANCE.
 -- Closes V2-L2.7 entirely.  Cites the three Action laws shipped
