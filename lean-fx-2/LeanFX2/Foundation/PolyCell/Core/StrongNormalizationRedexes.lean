@@ -16,6 +16,98 @@ accessibility into iota/root-reduction accessibility.
 namespace LeanFX2.Foundation.PolyCell.Core
 namespace StepStar
 
+/-- Beta redexes are strongly normalizing when the lambda body and argument are
+strongly normalizing and every reduct pair has a strongly-normalizing beta
+contractum.
+
+This is the lambda-headed application counterpart to the neutral-spine
+theorems.  It deliberately exposes the reducibility obligation as
+`contractumTerminates`: a future Tait predicate must prove that
+`subst0 currentBody currentArgument` terminates for every body/argument reduct.
+The theorem itself handles the operational shell: the root beta step,
+congruence in the lambda body, and congruence in the argument. -/
+theorem appLam_isStronglyNormalizing_of_body_argument_contractum
+    {scope : Nat} {body : RawTerm (scope + 1)}
+    {argumentTerm : RawTerm scope}
+    (bodyTerminates : IsStronglyNormalizing body)
+    (argumentTerminates : IsStronglyNormalizing argumentTerm)
+    (contractumTerminates :
+      ∀ {currentBody : RawTerm (scope + 1)}
+        {currentArgument : RawTerm scope},
+        IsStronglyNormalizing currentBody →
+          IsStronglyNormalizing currentArgument →
+            IsStronglyNormalizing
+              (RawTerm.subst0 currentBody currentArgument)) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam () (.childCons body .childNil))
+          (.childCons argumentTerm .childNil)) :
+        RawTerm scope) :=
+  (Acc.ndrec
+    (r := StepSuccessor)
+    (C := fun currentBody =>
+      ∀ {currentArgument : RawTerm scope},
+        IsStronglyNormalizing currentArgument →
+          IsStronglyNormalizing
+            (.mkGen .gen_app ()
+              (.childCons
+                (.mkGen .gen_lam ()
+                  (.childCons currentBody .childNil))
+                (.childCons currentArgument .childNil)) :
+              RawTerm scope))
+    (m := fun currentBody currentBodySuccessors bodyIH => by
+      intro currentArgument currentArgumentTerminates
+      exact
+        Acc.ndrec
+          (r := StepSuccessor)
+          (C := fun innerArgument =>
+            IsStronglyNormalizing
+              (.mkGen .gen_app ()
+                (.childCons
+                  (.mkGen .gen_lam ()
+                    (.childCons currentBody .childNil))
+                  (.childCons innerArgument .childNil)) :
+                RawTerm scope))
+          (m := fun currentArgument currentArgumentSuccessors argumentIH =>
+            Acc.intro
+              (.mkGen .gen_app ()
+                (.childCons
+                  (.mkGen .gen_lam ()
+                    (.childCons currentBody .childNil))
+                  (.childCons currentArgument .childNil)) :
+                RawTerm scope)
+              (fun targetTerm applicationStep => by
+                cases Step.from_app applicationStep with
+                | inl betaBranch =>
+                    obtain ⟨lambdaBody, lambdaEq, targetEq⟩ := betaBranch
+                    cases lambdaEq
+                    rw [targetEq]
+                    exact
+                      contractumTerminates
+                        (Acc.intro currentBody currentBodySuccessors)
+                        (Acc.intro currentArgument currentArgumentSuccessors)
+                | inr congruenceBranch =>
+                    cases congruenceBranch with
+                    | inl functionBranch =>
+                        obtain ⟨functionAfter, targetEq, functionStep⟩ :=
+                          functionBranch
+                        obtain ⟨bodyAfter, functionAfterEq, bodyStep⟩ :=
+                          Step.from_lam functionStep
+                        rw [targetEq, functionAfterEq]
+                        exact
+                          bodyIH bodyAfter bodyStep
+                            (Acc.intro currentArgument
+                              currentArgumentSuccessors)
+                    | inr argumentBranch =>
+                        obtain ⟨argumentAfter, targetEq, argumentStep⟩ :=
+                          argumentBranch
+                        rw [targetEq]
+                        exact argumentIH argumentAfter argumentStep))
+          currentArgumentTerminates)
+    bodyTerminates)
+    argumentTerminates
+
 /-- First projection of an explicitly-normalizing pair is strongly normalizing.
 
 The root iota reduct is the first component.  Congruence steps inside the pair
