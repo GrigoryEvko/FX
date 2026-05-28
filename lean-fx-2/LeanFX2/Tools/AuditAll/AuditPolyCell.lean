@@ -3524,6 +3524,32 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.IsPhaseANormalForm.toStructurallyNormal
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.isPhaseANormalForm_iff_isStructurallyNormalForm
 
+-- ─── M22 Phase B foundation: semantic denotation + soundness ─────────
+-- Audit gates for #408 (M22-A6, 2026-05-28).
+--
+-- `LevelExpr.denote : LevelExpr → (Nat → Nat) → Nat` is the semantic
+-- universe-level model: each ctor maps to its arithmetic counterpart.
+-- `simplify_denote_eq` proves Phase A's simplify preserves denotation
+-- under every environment — the Phase B FOUNDATION.  Every Phase B
+-- equation (canonical lmax ordering, lsucc distributivity, level-var
+-- substitution) is proved against this denotation.
+--
+-- `levelMax` is a propext-free local max function (structural pattern
+-- match on both arguments) — Lean core's Nat.max_self/zero_max/max_zero
+-- all pull in propext, so we cannot use them under zero-axiom
+-- discipline.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.levelMax
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.levelMax_self
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.levelMax_zero_left
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.levelMax_zero_right
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.denote
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.denote_lzero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.denote_lvar
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.denote_lsucc
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.denote_lmax
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.denote_limax
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.simplify_denote_eq
+
 -- ─── M11 (#260): NbE substrate — canonical normalizer signature ─────
 -- RawTerm.isNF predicate shipped via M-substrate-3 #367.  This commit
 -- ships the SIGNATURE-LEVEL contract for the M12 #261 implementation:

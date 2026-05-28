@@ -985,4 +985,238 @@ theorem LevelExpr.isPhaseANormalForm_iff_isStructurallyNormalForm
   ⟨LevelExpr.IsPhaseANormalForm.toStructurallyNormal,
    LevelExpr.IsStructurallyNormalForm.toFixedPoint⟩
 
+/-! ## Semantic denotation + Phase A soundness
+
+M22-A6 (#408, 2026-05-28).  Phase B foundation: semantic
+denotation function interpreting `LevelExpr` arithmetically, plus
+soundness theorem that Phase A's `simplify` preserves the semantic
+value.
+
+Denotation rules (matching Mörtberg-Sterling 2024):
+* `lzero` ⟦⟧ = 0
+* `lsucc e` ⟦⟧ = ⟦e⟧ + 1
+* `lmax e1 e2` ⟦⟧ = max(⟦e1⟧, ⟦e2⟧)
+* `limax e1 e2` ⟦⟧ = if ⟦e2⟧ = 0 then 0 else max(⟦e1⟧, ⟦e2⟧)
+* `lvar n` ⟦⟧ = env(n)
+
+This is the SEMANTIC universe-level model: each `LevelExpr` denotes
+a natural number under an environment `Nat → Nat` for universe
+variables.  Phase A's 5 simplification rules are all SEMANTICALLY
+VALID (they preserve denotation):
+
+* Rule 1 (lmax e e ↦ e): max(v, v) = v.
+* Rule 2 (lmax lzero e ↦ e): max(0, v) = v.
+* Rule 3 (lmax e lzero ↦ e): max(v, 0) = v.
+* Rule 4 (limax lzero e ↦ e): if v=0 then 0 else max(0,v) = v.
+* Rule 5 (limax e lzero ↦ lzero): if 0=0 then 0 else ... = 0.
+
+The soundness theorem `simplify_denote_eq` proves this formally:
+for every `e` and `env`, `e.simplify.denote env = e.denote env`.
+This is the Phase B FOUNDATION — every future Phase B equation
+(canonical lmax ordering, lsucc distributivity, level-variable
+substitution) is proved against this same denotation.
+
+## Why a local levelMax instead of Nat.max
+
+Lean's core `Nat.max_self`/`Nat.zero_max`/`Nat.max_zero` all pull
+in `propext` (via if-equivalence reasoning).  This file's
+zero-axiom discipline forbids that.  Workaround: define a local
+`levelMax` via structural pattern matching on both arguments,
+proving the lemmas (idempotence, zero-identity) via direct
+recursion without `≤`-conditional reasoning. -/
+
+/-- Propext-free `max` on `Nat` for the universe-level denotation.
+Defined via structural pattern matching on both arguments — no
+`Nat.le` conditionals (which carry propext through Lean's
+core `Nat.max_*` lemmas). -/
+def LevelExpr.levelMax : Nat → Nat → Nat
+  | 0, valueB => valueB
+  | valueA + 1, 0 => valueA + 1
+  | valueA + 1, valueB + 1 => (LevelExpr.levelMax valueA valueB) + 1
+
+/-- `levelMax a a = a` (idempotence). -/
+theorem LevelExpr.levelMax_self : ∀ (valueA : Nat),
+    LevelExpr.levelMax valueA valueA = valueA
+  | 0 => rfl
+  | n + 1 => by
+      show LevelExpr.levelMax n n + 1 = n + 1
+      rw [LevelExpr.levelMax_self n]
+
+/-- `levelMax 0 b = b` (left identity).  Definitional. -/
+theorem LevelExpr.levelMax_zero_left (valueB : Nat) :
+    LevelExpr.levelMax 0 valueB = valueB := rfl
+
+/-- `levelMax a 0 = a` (right identity). -/
+theorem LevelExpr.levelMax_zero_right : ∀ (valueA : Nat),
+    LevelExpr.levelMax valueA 0 = valueA
+  | 0 => rfl
+  | _ + 1 => rfl
+
+/-- Semantic denotation of `LevelExpr` into `Nat` under an
+environment for universe variables.
+
+The interpretation follows Mörtberg-Sterling arXiv:2406.05425's
+universe-level model: each constructor maps to its standard
+arithmetic counterpart, with `limax` having the impredicative
+collapse for Prop-cofinal codomains. -/
+def LevelExpr.denote : LevelExpr → (Nat → Nat) → Nat
+  | .lzero, _ => 0
+  | .lsucc inner, env => (inner.denote env) + 1
+  | .lmax e1 e2, env =>
+      LevelExpr.levelMax (e1.denote env) (e2.denote env)
+  | .limax e1 e2, env =>
+      let valueB := e2.denote env
+      if valueB = 0 then 0
+      else LevelExpr.levelMax (e1.denote env) valueB
+  | .lvar idx, env => env idx
+
+/-! ## Per-ctor denotation smokes -/
+
+/-- `lzero` denotes `0`. -/
+theorem LevelExpr.denote_lzero (env : Nat → Nat) :
+    LevelExpr.denote .lzero env = 0 := rfl
+
+/-- `lvar n` denotes `env n`. -/
+theorem LevelExpr.denote_lvar (idx : Nat) (env : Nat → Nat) :
+    LevelExpr.denote (.lvar idx) env = env idx := rfl
+
+/-- `lsucc e` denotes `⟦e⟧ + 1`. -/
+theorem LevelExpr.denote_lsucc (inner : LevelExpr) (env : Nat → Nat) :
+    LevelExpr.denote (.lsucc inner) env = inner.denote env + 1 := rfl
+
+/-- `lmax e1 e2` denotes `levelMax ⟦e1⟧ ⟦e2⟧`. -/
+theorem LevelExpr.denote_lmax (e1 e2 : LevelExpr) (env : Nat → Nat) :
+    LevelExpr.denote (.lmax e1 e2) env =
+      LevelExpr.levelMax (e1.denote env) (e2.denote env) := rfl
+
+/-- `limax e1 e2` denotes its conditional max. -/
+theorem LevelExpr.denote_limax (e1 e2 : LevelExpr) (env : Nat → Nat) :
+    LevelExpr.denote (.limax e1 e2) env =
+      (if e2.denote env = 0 then 0
+       else LevelExpr.levelMax (e1.denote env) (e2.denote env)) :=
+  rfl
+
+/-! ## Phase A semantic soundness
+
+The load-bearing theorem: `simplify` preserves the semantic
+denotation under every environment.  This validates that
+Phase A's 5 rewrite rules are sound w.r.t. the arithmetic
+interpretation of universe levels. -/
+
+/-- Phase A's `simplify` preserves the semantic denotation:
+for every expression and environment, simplifying produces the
+same level value.
+
+Proof: structural recursion on `expr`.  Each case dispatches
+through `simplify` + `denote` and uses the relevant `levelMax`
+lemmas (idempotence / zero-identity) at the arithmetic level
+to discharge the per-rule equations.
+
+* `lzero` / `lvar`: trivial (rfl).
+* `lsucc inner`: lift IH through `+ 1`.
+* `lmax e1 e2`: case-split on the 4 if-then-else branches.
+  Rule 1 (s1 = s2): substitute s1 = s2 = e1.simplify, use
+  `levelMax_self` after IH.  Rule 2 (s1 = lzero): IH gives
+  `e1.denote env = 0`, so `levelMax 0 _ = _` via
+  `levelMax_zero_left`.  Rule 3 (s2 = lzero): IH gives
+  `e2.denote env = 0`, so `levelMax _ 0 = _` via
+  `levelMax_zero_right`.  Else: both children IHs apply
+  pointwise.
+* `limax e1 e2`: 3-way split.  Rule 5 (s2 = lzero):
+  e2.denote env = 0 (via IH2), conditional yields 0 = 0.
+  Rule 4 (s1 = lzero, ¬rule 5): split on e2.denote env = 0
+  internally (since IH2 maps e2.simplify.denote to e2.denote
+  but doesn't force a value); use levelMax_zero_left when
+  non-zero.  Else: pointwise IHs. -/
+theorem LevelExpr.simplify_denote_eq :
+    ∀ (expr : LevelExpr) (env : Nat → Nat),
+      expr.simplify.denote env = expr.denote env
+  | .lzero, _ => rfl
+  | .lvar _, _ => rfl
+  | .lsucc inner, env => by
+      show LevelExpr.denote (.lsucc inner.simplify) env =
+        LevelExpr.denote (.lsucc inner) env
+      show inner.simplify.denote env + 1 = inner.denote env + 1
+      rw [LevelExpr.simplify_denote_eq inner env]
+  | .lmax e1 e2, env => by
+      have ih1 := LevelExpr.simplify_denote_eq e1 env
+      have ih2 := LevelExpr.simplify_denote_eq e2 env
+      show (if e1.simplify = e2.simplify then e1.simplify
+            else if e1.simplify = .lzero then e2.simplify
+            else if e2.simplify = .lzero then e1.simplify
+            else LevelExpr.lmax e1.simplify e2.simplify).denote env =
+        LevelExpr.levelMax (e1.denote env) (e2.denote env)
+      by_cases hEq : e1.simplify = e2.simplify
+      · rw [if_pos hEq]
+        -- result = e1.simplify; denote = e1.simplify.denote env = e1.denote env (by ih1)
+        -- Need: e1.denote env = levelMax (e1.denote env) (e2.denote env)
+        -- Since e1.simplify = e2.simplify, denote equality gives e1.denote env = e2.denote env
+        have hValEq : e1.denote env = e2.denote env := by
+          rw [← ih1, ← ih2, hEq]
+        rw [ih1, hValEq, LevelExpr.levelMax_self]
+      · rw [if_neg hEq]
+        by_cases hLeftZero : e1.simplify = .lzero
+        · rw [if_pos hLeftZero]
+          -- result = e2.simplify; denote = e2.denote env
+          -- Need: e2.denote env = levelMax (e1.denote env) (e2.denote env)
+          -- e1.denote env = 0 via ih1 since e1.simplify = lzero
+          have hLeftValZero : e1.denote env = 0 := by
+            rw [← ih1, hLeftZero]
+            rfl
+          rw [ih2, hLeftValZero, LevelExpr.levelMax_zero_left]
+        · rw [if_neg hLeftZero]
+          by_cases hRightZero : e2.simplify = .lzero
+          · rw [if_pos hRightZero]
+            -- result = e1.simplify; denote = e1.denote env
+            have hRightValZero : e2.denote env = 0 := by
+              rw [← ih2, hRightZero]
+              rfl
+            rw [ih1, hRightValZero, LevelExpr.levelMax_zero_right]
+          · rw [if_neg hRightZero]
+            -- result = lmax e1.simplify e2.simplify
+            show LevelExpr.levelMax (e1.simplify.denote env)
+                (e2.simplify.denote env) =
+              LevelExpr.levelMax (e1.denote env) (e2.denote env)
+            rw [ih1, ih2]
+  | .limax e1 e2, env => by
+      have ih1 := LevelExpr.simplify_denote_eq e1 env
+      have ih2 := LevelExpr.simplify_denote_eq e2 env
+      show (if e2.simplify = .lzero then LevelExpr.lzero
+            else if e1.simplify = .lzero then e2.simplify
+            else LevelExpr.limax e1.simplify e2.simplify).denote env =
+        (if e2.denote env = 0 then 0
+         else LevelExpr.levelMax (e1.denote env) (e2.denote env))
+      by_cases hRule5 : e2.simplify = .lzero
+      · rw [if_pos hRule5]
+        -- result = lzero; denote = 0
+        have hRightValZero : e2.denote env = 0 := by
+          rw [← ih2, hRule5]
+          rfl
+        show (0 : Nat) =
+          (if e2.denote env = 0 then 0
+           else LevelExpr.levelMax (e1.denote env) (e2.denote env))
+        rw [if_pos hRightValZero]
+      · rw [if_neg hRule5]
+        by_cases hRule4 : e1.simplify = .lzero
+        · rw [if_pos hRule4]
+          -- result = e2.simplify; denote = e2.denote env
+          have hLeftValZero : e1.denote env = 0 := by
+            rw [← ih1, hRule4]
+            rfl
+          show e2.simplify.denote env =
+            (if e2.denote env = 0 then 0
+             else LevelExpr.levelMax (e1.denote env) (e2.denote env))
+          by_cases hRightValZero : e2.denote env = 0
+          · rw [if_pos hRightValZero, ih2, hRightValZero]
+          · rw [if_neg hRightValZero, hLeftValZero,
+                LevelExpr.levelMax_zero_left, ih2]
+        · rw [if_neg hRule4]
+          -- result = limax e1.simplify e2.simplify
+          show (if e2.simplify.denote env = 0 then 0
+                else LevelExpr.levelMax (e1.simplify.denote env)
+                  (e2.simplify.denote env)) =
+            (if e2.denote env = 0 then 0
+             else LevelExpr.levelMax (e1.denote env) (e2.denote env))
+          rw [ih1, ih2]
+
 end LeanFX2.Foundation.PolyCell.Universe
