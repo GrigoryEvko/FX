@@ -131,6 +131,7 @@ import LeanFX2.Foundation.PolyCell.Core.CellNonVarStepSubstituter
 import LeanFX2.Foundation.PolyCell.Core.SpineConsStep
 import LeanFX2.Foundation.PolyCell.Core.StepHCCWrappers
 import LeanFX2.Foundation.PolyCell.Core.FoldShiftGreaterThanOne
+import LeanFX2.Foundation.PolyCell.Core.StepStarLength
 
 namespace LeanFX2.Tools
 
@@ -2951,6 +2952,31 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.etaStar.rename
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.betaEta.rename
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.betaEtaStar.rename
+
+-- ─── M-substrate-4 (#368): StepStarN counted parallel of StepStar ───
+-- Nat-indexed counted variant of StepStar.  Since StepStar is
+-- Prop-valued, a direct StepStar.length : StepStar a b → Nat function
+-- is impossible without large elimination from Prop (banned without
+-- Classical.choice / propext).  The counted variant exposes the chain
+-- length as an explicit Nat index that downstream complexity / NbE-
+-- soundness / strip-property work induct on.
+--
+-- API surface:
+--   * StepStarN inductive (reflN + transN)
+--   * toStepStar : StepStarN n a b → StepStar a b (forget count)
+--   * StepStar.exists_N : StepStar a b → ∃ n, StepStarN n a b
+--     (recover count existentially via Prop-to-Prop induction)
+--   * single, trans_compose (length-1, length addition)
+--   * rename, subst (length-preserving monotonicity)
+--   * identity_lam_beta_unit_smoke (concrete fixture)
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStarN
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStarN.toStepStar
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.exists_N
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStarN.single
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStarN.trans_compose
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStarN.rename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStarN.subst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStarN.identity_lam_beta_unit_smoke
 
 -- ─── V2-L1cert.12: existential preserves dim (#167) ─────────────────
 -- inferRawCellGeneral?_accepted_cellDimension_eq: when the
