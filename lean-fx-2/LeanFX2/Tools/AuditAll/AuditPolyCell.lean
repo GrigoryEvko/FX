@@ -115,6 +115,7 @@ import LeanFX2.Foundation.PolyCell.Core.Step
 import LeanFX2.Foundation.PolyCell.Core.StepStar
 import LeanFX2.Foundation.PolyCell.Core.StepEta
 import LeanFX2.Foundation.PolyCell.Core.StepSubst
+import LeanFX2.Foundation.PolyCell.Core.StepRename
 import LeanFX2.Foundation.PolyCell.Core.StepInversion
 import LeanFX2.Foundation.PolyCell.Core.StrongNormalizationConstructors
 import LeanFX2.Foundation.PolyCell.Core.StrongNormalizationNeutral
@@ -2858,6 +2859,25 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.subst_pointwise_stepStar
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.subst0Body
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.subst0Argument
+
+-- M-substrate-1 (#365): one-step, child-spine, closure, and eta
+-- reductions commute with raw renaming.  The beta+iota proofs factor
+-- through `Step.subst`; eta adds explicit eta-source shape lemmas for
+-- binder and structural eta sources.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_lift_weaken
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_lift_newestVar
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_etaLamSource
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_etaPairSource
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_etaPathLamSource
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_etaModIntroSource
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_etaGlueIntroSource
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.rename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepChildren.rename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.rename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.eta.rename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.etaStar.rename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.betaEta.rename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.betaEtaStar.rename
 
 -- ─── V2-L1cert.12: existential preserves dim (#167) ─────────────────
 -- inferRawCellGeneral?_accepted_cellDimension_eq: when the
