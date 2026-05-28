@@ -8546,6 +8546,121 @@ scope (e.g. cross-dimension univalence at dim 7 Lifetime) lacks a
 written body, it is marked as a pending obligation in the per-dim
 metatheory ledger, NOT claimed as delivered.
 
+### 11.8.14 Research track: definitional univalence in a synthetic condensed setting
+
+**Status: RESEARCH TRACK — a committed *attempt to prove*, NOT a
+milestone and NOT a landed result.**  Per the manifesto's no-handwave
+rule, every claim below is one of: (a) a published result with
+reference, (b) an on-ramp FX already commits to, (c) an explicit OPEN
+obligation tagged as such.  This section commits FX to *attempting* the
+combined target; it does not assert the target holds.  No milestone
+star; not on the Phase-Z critical path.  Mirrors the discipline of
+§3.0.7 (target obligations, not a victory lap).
+
+**The combined target.**  A kernel mode in which BOTH hold:
+
+1. **Identity is definitional (Higher Observational TT).**  Identity
+   types compute by recursion on type structure: `Id (A→B) f g ≡
+   (x:A) → Id B (f x) (g x)` (funext definitional), `Id 𝒰 A B ≡
+   (A ≃ B)` (univalence definitional).  So funext / propext /
+   univalence hold by `rfl`, not merely up to a path — the transport
+   tax collapses to computation.
+2. **Every type is internally condensed.**  A condensed cohesion focus
+   (♭ / ♯ / ∫ over the discrete fragment, profinite/Stone test
+   objects) makes every type carry condensed structure: all definable
+   maps are continuous by construction, and condensed-abelian groups
+   form an internal abelian category (so homological algebra of
+   "topological" structure — `Ext` / `Tor` — is internal).
+
+**The synthesis — why combine them (the genuinely novel object).**
+Under (1)+(2), a continuous equivalence of condensed types is
+definitionally an equality: **homeomorphic spaces are definitionally
+equal** (the topological structure-identity principle), and the
+condensed-abelian homological algebra carries definitional coherence.
+This is the topology×algebra instance of univalence-everywhere
+(§11.8.13) — applied to the one interface where classical foundations
+fail hardest (topological abelian groups are not an abelian category;
+condensed fixes this, and definitional identity makes the fix
+`rfl`-clean).
+
+**On-ramps FX already commits to (this is not from scratch):**
+
+* **Internal parametricity** (§3.16.8 `gen_param`) IS the "baby HOTT"
+  substrate — Altenkirch-Chamoun-Kaposi-Shulman, *Internal
+  Parametricity, Without an Interval* (POPL 2024, arXiv:2307.06448),
+  ships a presheaf model + canonicity proof for exactly this base.
+  FX's parametricity generator is the literal on-ramp.
+* **Cohesion modalities** (§3.16.12 `gen_shape` / `gen_flat` /
+  `gen_sharp`) are the condensed-cohesion substrate (condensed sets =
+  a cohesive topos over Set).
+* **Univalence-everywhere** (§11.8.13) is the discipline this extends
+  from *computational* (cubical) to *definitional*.
+* **Bounded universe levels** (`LevelExpr` + Chan-Weirich §11.8.2)
+  parameterize the condensed size-cutoff cardinal κ (κ-condensed
+  universes).
+* **Reference implementation to track:** Narya (Shulman) — already
+  runs parametric + higher observational type theory.
+
+**Proof obligations (what "trying to prove" decomposes into):**
+
+* (O1) Port baby-HOTT (internal parametricity + presheaf model +
+  canonicity, ref DU2) onto FX's `gen_param` substrate.  *Substrate
+  published; the port is engineering.*
+* (O2) Add bridge types (indexed parametricity) ⇒ identity types.
+  *Roadmap step; in progress externally.*
+* (O3) Add Kan fibrancy ⇒ transport; prove **normalization**.
+  **THE open part** — full-HOTT normalization is unproven anywhere as
+  of 2026 (algorithm sketched, no proof).
+* (O4) Add the condensed cohesion focus + a synthetic Stone/profinite
+  test-object axiom.  *Synthetic condensed TT is unbuilt; synthetic
+  Stone duality is an emerging 2024-2026 line.*
+* (O5) Prove condensed-abelian = internal abelian category; prove
+  homeomorphic = definitionally equal (the synthesis SIP).
+
+Each obligation ships `#assert_no_axioms`-clean per §11; nothing is
+claimed delivered before its body exists.
+
+**Reachable NOW (independent of the open parts O3/O4) — the
+near-term proving ground:**
+
+* **Univalent parametricity** (Tabareau-Tanter-Sozeau, *The Marriage
+  of Univalence and Parametricity*, JACM 2021) combines FX's committed
+  univalence + internal parametricity to give automatic, computational
+  transport across equivalences for a large class of types NOW —
+  ~most of the transport-tax reduction on already-shipped machinery,
+  without waiting on O3.
+* **The `dProp` / Sierpiński split** — synthetic condensed/topology
+  predicts and *founds* FX's `dProp` (§3.16.10, the discrete/decidable
+  fragment) and a sibling Sierpiński universe `Σ` of semi-decidable
+  propositions.  Reachable on synthetic-topology machinery that exists
+  (Escardó).
+* **Searchable compact types** — decidable quantification
+  `∀ (x : 2^ℕ). p x` over profinite/compact types (Escardó), a
+  genuinely new decision procedure, reachable independent of full
+  HOTT.
+
+**Honest risk register (brutal):**
+
+* **Highest-risk track in the document.**  O3 (definitional-univalence
+  normalization) is open everywhere; O4 (synthetic condensed TT) is
+  unbuilt; O5 (the combination) is unprecedented.
+* The **interval route is provably blocked**: an interval's large
+  recursion + definitional iso-types implies *equality reflection*,
+  which contradicts univalence.  Therefore FX's committed *cubical*
+  univalence (§11.8.4) is the COMPUTATIONAL route and CANNOT go
+  definitional — definitional univalence is a SEPARATE, no-interval,
+  observational substrate.  The two coexist (cubical for computational
+  univalence + cubical Kan features; the HOTT track for definitional
+  identity).  This is an architectural fork, stated honestly.
+* Decidability is preserved only on scoped fragments
+  (searchable-compact, regular session types, the structural-identity
+  fragment); the general case stays propositional/computational.
+* **Verdict:** pursue as a parallel research track with the three
+  reachable-now wins as the proving ground; promote toward a milestone
+  only if/when O3 closes (externally or in FX).  See §13's
+  "Definitional univalence + synthetic condensed" reference block
+  (DU1-DU9).
+
 ---
 
 ## 12. Risks and open questions
@@ -9846,6 +9961,56 @@ SR10. Farmer Schlutzenberg (with Gabriel Goldberg), "On the consistency
      J. Math. Logic (2024).  ZF-PROVEN consistency rel I0 of the
      above-Kunen-wall `V_{λ+2}` embedding; the choiceless ceiling tag
      `schlutzenbergVLambdaPlus2` (open-frontier, not asserted).
+
+### Definitional univalence + synthetic condensed mathematics (§11.8.14 research track)
+
+DU1. Thorsten Altenkirch, Ambrus Kaposi, Michael Shulman, Elif
+     Üsküplü, *Higher Observational Type Theory* (in preparation;
+     TYPES 2025 "From parametricity to identity types"; nLab
+     `higher+observational+type+theory`).  Identity types defined by
+     recursion on type structure; `Id 𝒰 A B ≡ A ≃ B` — univalence,
+     funext, propext DEFINITIONAL.  Full HOTT normalization OPEN as
+     of 2026 (DU3).
+DU2. Thorsten Altenkirch, Yorgo Chamoun, Ambrus Kaposi, Michael
+     Shulman, *Internal Parametricity, Without an Interval*, POPL 8
+     (2024) 2340-2369, `arXiv:2307.06448`, DOI 10.1145/3632920.  The
+     "baby HOTT" substrate: presheaf model + canonicity proof.  IS
+     FX's `gen_param` on-ramp (§3.16.8).
+DU3. Michael Shulman, *Towards an Implementation of Higher
+     Observational Type Theory* (running-hott, NYU Abu Dhabi 2024) +
+     the **Narya** proof assistant (parametric + higher observational
+     TT, runnable).  NbE + higher-dimensional normalization algorithm
+     sketched; full proof pending.
+DU4. Nicolas Tabareau, Éric Tanter, Matthieu Sozeau, *The Marriage of
+     Univalence and Parametricity*, JACM 68(1) (2021) + *Equivalences
+     for Free!*, ICFP 2018.  Coq-implemented automatic computational
+     transport across equivalences — combines FX's committed
+     univalence + internal parametricity; the reachable-NOW
+     transport-tax win.
+DU5. Martín Escardó, *Synthetic Topology of Data Types and Classical
+     Spaces*, ENTCS 87 (2004); *Infinite Sets that Admit Fast
+     Exhaustive Search*, LICS 2007.  Sierpiński object, the `dProp` /
+     Σ split, searchable (compact) types ⇒ decidable quantification
+     over `2^ℕ`.  Reachable-NOW.
+DU6. Dustin Clausen, Peter Scholze, *Condensed Mathematics* (lecture
+     notes, Bonn 2019) + *Analytic Geometry* (2020).  Condensed sets =
+     sheaves on profinite sets; condensed-abelian groups form an
+     abelian category; the cohesive-topos substrate for the §11.8.14
+     condensed focus.
+DU7. Clark Barwick, Peter Haine, *Pyknotic Objects, I. Basic Notions*
+     (2019).  The universe-bounded variant of condensed (size
+     bookkeeping); the κ-condensed universe parameter (ties to
+     `LevelExpr`).
+DU8. Johan Commelin et al., *Liquid Tensor Experiment* (Lean/mathlib,
+     2020-2022).  Machine-verified the hardest theorem of the liquid
+     theory — condensed mathematics' existing successful encounter
+     with a proof assistant.
+DU9. Felix Cherubini, Thierry Coquand, Matthias Hutzler, *A Foundation
+     for Synthetic Algebraic Geometry* (2024) — the methodological
+     template for synthetic internal-language axiomatization; the
+     emerging "synthetic Stone duality / synthetic condensed" line
+     (DU4 obligation) follows this pattern.  Synthetic condensed TT is
+     UNBUILT; this is the nearest established anchor.
 
 ### Combinatorial model categories (the constructive ∞-topos route)
 
