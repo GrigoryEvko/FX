@@ -137,6 +137,7 @@ import LeanFX2.Foundation.PolyCell.Core.ConvSubstRename
 import LeanFX2.Foundation.PolyCell.NbE.DesignDecision
 import LeanFX2.Foundation.PolyCell.NbE.ReductionStrategy
 import LeanFX2.Tools.AuditAll.AuditPhaseZ
+import LeanFX2.Tools.AuditAll.AuditStrictAxes
 
 namespace LeanFX2.Tools
 
@@ -3103,6 +3104,30 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Tools.AuditAll.Audit.phaseZ_notStarted_count
 #assert_no_axioms LeanFX2.Tools.AuditAll.Audit.phaseZ_fullyShipped_count
 #assert_no_axioms LeanFX2.Tools.AuditAll.Audit.phaseZ_counts_honest
+
+-- ─── M-strict-axes-CS-TC-SO-DF (#381): cross-cutting STRICT ledger ──
+-- 4 honest ledger entries (CS/TC/SO/DF) tracking cross-cutting
+-- STRICT audit axes per polycell.md §11.7.5.  Today's snapshot:
+--
+--   CS scaffoldShipped — ConsistencyStrength.lean ships scaffold.
+--   TC scaffoldShipped — GeneratorTotalityClass.lean ships scaffold.
+--   SO scaffoldShipped — SiteOpenness.lean ships scaffold.
+--   DF notStarted      — DecidabilityStatus not yet implemented.
+--
+-- Same pattern as M-phaseZ-strict-gates #380: per-axis state values
+-- pinned by a summary theorem via rfl-conjunction.  When any axis
+-- advances, summary stops elaborating until updated.
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.StrictAxisLedgerState
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.STRICT_CS_state
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.STRICT_TC_state
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.STRICT_SO_state
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.STRICT_DF_state
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.strictAxes_current_summary
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.strictAxes_scaffoldShipped_count
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.strictAxes_notStarted_count
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.strictAxes_fullyShipped_count
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.strictAxes_counts_honest
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.strictAxes_total_count
 
 -- ─── V2-L1cert.12: existential preserves dim (#167) ─────────────────
 -- inferRawCellGeneral?_accepted_cellDimension_eq: when the
