@@ -81,6 +81,36 @@ theorem appLam_isStronglyNormalizing_of_normal_body_contractum
                   exact argumentIH argumentAfter argumentStep))
     argumentTerminates
 
+/-- A lambda-headed application is strongly normalizing when its normal body
+substitutes to a fixed strongly-normalizing contractum, independent of the
+argument reduct.
+
+This packages the closed-body beta base case used by the future reducibility
+proof: the lambda body cannot step, and beta always lands on the same
+contractum while argument congruence is handled by accessibility induction. -/
+theorem appLam_isStronglyNormalizing_of_normal_body_constant_contractum
+    {scope : Nat} {body : RawTerm (scope + 1)}
+    {contractum argumentTerm : RawTerm scope}
+    (bodyHasNoStep :
+      ∀ targetBody : RawTerm (scope + 1), Step body targetBody → False)
+    (contractumTerminates : IsStronglyNormalizing contractum)
+    (bodySubst0Constant :
+      ∀ currentArgument : RawTerm scope,
+        RawTerm.subst0 body currentArgument = contractum)
+    (argumentTerminates : IsStronglyNormalizing argumentTerm) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam () (.childCons body .childNil))
+          (.childCons argumentTerm .childNil)) :
+        RawTerm scope) :=
+  appLam_isStronglyNormalizing_of_normal_body_contractum
+    bodyHasNoStep
+    (contractumTerminates := fun {currentArgument} _argumentTerminates => by
+      rw [bodySubst0Constant currentArgument]
+      exact contractumTerminates)
+    argumentTerminates
+
 /-- Identity beta redexes are strongly normalizing when the argument is strongly
 normalizing.
 
@@ -150,6 +180,144 @@ theorem appLamVarSucc_isStronglyNormalizing_of_argument
       exact
         var_isStronglyNormalizing
           (⟨predIndex, Nat.lt_of_succ_lt_succ indexBound⟩ : Fin scope))
+    argumentTerminates
+
+/-- Beta redexes whose lambda body is `unit` are strongly normalizing when the
+argument is strongly normalizing. -/
+theorem appLamUnit_isStronglyNormalizing_of_argument
+    {scope : Nat} {argumentTerm : RawTerm scope}
+    (argumentTerminates : IsStronglyNormalizing argumentTerm) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam ()
+            (.childCons
+              (.mkGen .gen_unit () .childNil : RawTerm (scope + 1))
+              .childNil))
+          (.childCons argumentTerm .childNil)) :
+        RawTerm scope) :=
+  appLam_isStronglyNormalizing_of_normal_body_constant_contractum
+    (body := (.mkGen .gen_unit () .childNil : RawTerm (scope + 1)))
+    (contractum := (.mkGen .gen_unit () .childNil : RawTerm scope))
+    (bodyHasNoStep := fun targetBody bodyStep =>
+      noStep_unit (targetTerm := targetBody) bodyStep)
+    (contractumTerminates := unit_isStronglyNormalizing)
+    (bodySubst0Constant := fun _currentArgument => rfl)
+    argumentTerminates
+
+/-- Beta redexes whose lambda body is `boolTrue` are strongly normalizing when
+the argument is strongly normalizing. -/
+theorem appLamBoolTrue_isStronglyNormalizing_of_argument
+    {scope : Nat} {argumentTerm : RawTerm scope}
+    (argumentTerminates : IsStronglyNormalizing argumentTerm) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam ()
+            (.childCons
+              (.mkGen .gen_boolTrue () .childNil : RawTerm (scope + 1))
+              .childNil))
+          (.childCons argumentTerm .childNil)) :
+        RawTerm scope) :=
+  appLam_isStronglyNormalizing_of_normal_body_constant_contractum
+    (body := (.mkGen .gen_boolTrue () .childNil : RawTerm (scope + 1)))
+    (contractum := (.mkGen .gen_boolTrue () .childNil : RawTerm scope))
+    (bodyHasNoStep := fun targetBody bodyStep =>
+      noStep_boolTrue (targetTerm := targetBody) bodyStep)
+    (contractumTerminates := boolTrue_isStronglyNormalizing)
+    (bodySubst0Constant := fun _currentArgument => rfl)
+    argumentTerminates
+
+/-- Beta redexes whose lambda body is `boolFalse` are strongly normalizing when
+the argument is strongly normalizing. -/
+theorem appLamBoolFalse_isStronglyNormalizing_of_argument
+    {scope : Nat} {argumentTerm : RawTerm scope}
+    (argumentTerminates : IsStronglyNormalizing argumentTerm) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam ()
+            (.childCons
+              (.mkGen .gen_boolFalse () .childNil : RawTerm (scope + 1))
+              .childNil))
+          (.childCons argumentTerm .childNil)) :
+        RawTerm scope) :=
+  appLam_isStronglyNormalizing_of_normal_body_constant_contractum
+    (body := (.mkGen .gen_boolFalse () .childNil : RawTerm (scope + 1)))
+    (contractum := (.mkGen .gen_boolFalse () .childNil : RawTerm scope))
+    (bodyHasNoStep := fun targetBody bodyStep =>
+      noStep_boolFalse (targetTerm := targetBody) bodyStep)
+    (contractumTerminates := boolFalse_isStronglyNormalizing)
+    (bodySubst0Constant := fun _currentArgument => rfl)
+    argumentTerminates
+
+/-- Beta redexes whose lambda body is `natZero` are strongly normalizing when
+the argument is strongly normalizing. -/
+theorem appLamNatZero_isStronglyNormalizing_of_argument
+    {scope : Nat} {argumentTerm : RawTerm scope}
+    (argumentTerminates : IsStronglyNormalizing argumentTerm) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam ()
+            (.childCons
+              (.mkGen .gen_natZero () .childNil : RawTerm (scope + 1))
+              .childNil))
+          (.childCons argumentTerm .childNil)) :
+        RawTerm scope) :=
+  appLam_isStronglyNormalizing_of_normal_body_constant_contractum
+    (body := (.mkGen .gen_natZero () .childNil : RawTerm (scope + 1)))
+    (contractum := (.mkGen .gen_natZero () .childNil : RawTerm scope))
+    (bodyHasNoStep := fun targetBody bodyStep =>
+      noStep_natZero (targetTerm := targetBody) bodyStep)
+    (contractumTerminates := natZero_isStronglyNormalizing)
+    (bodySubst0Constant := fun _currentArgument => rfl)
+    argumentTerminates
+
+/-- Beta redexes whose lambda body is `listNil` are strongly normalizing when
+the argument is strongly normalizing. -/
+theorem appLamListNil_isStronglyNormalizing_of_argument
+    {scope : Nat} {argumentTerm : RawTerm scope}
+    (argumentTerminates : IsStronglyNormalizing argumentTerm) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam ()
+            (.childCons
+              (.mkGen .gen_listNil () .childNil : RawTerm (scope + 1))
+              .childNil))
+          (.childCons argumentTerm .childNil)) :
+        RawTerm scope) :=
+  appLam_isStronglyNormalizing_of_normal_body_constant_contractum
+    (body := (.mkGen .gen_listNil () .childNil : RawTerm (scope + 1)))
+    (contractum := (.mkGen .gen_listNil () .childNil : RawTerm scope))
+    (bodyHasNoStep := fun targetBody bodyStep =>
+      noStep_listNil (targetTerm := targetBody) bodyStep)
+    (contractumTerminates := listNil_isStronglyNormalizing)
+    (bodySubst0Constant := fun _currentArgument => rfl)
+    argumentTerminates
+
+/-- Beta redexes whose lambda body is `optionNone` are strongly normalizing
+when the argument is strongly normalizing. -/
+theorem appLamOptionNone_isStronglyNormalizing_of_argument
+    {scope : Nat} {argumentTerm : RawTerm scope}
+    (argumentTerminates : IsStronglyNormalizing argumentTerm) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam ()
+            (.childCons
+              (.mkGen .gen_optionNone () .childNil : RawTerm (scope + 1))
+              .childNil))
+          (.childCons argumentTerm .childNil)) :
+        RawTerm scope) :=
+  appLam_isStronglyNormalizing_of_normal_body_constant_contractum
+    (body := (.mkGen .gen_optionNone () .childNil : RawTerm (scope + 1)))
+    (contractum := (.mkGen .gen_optionNone () .childNil : RawTerm scope))
+    (bodyHasNoStep := fun targetBody bodyStep =>
+      noStep_optionNone (targetTerm := targetBody) bodyStep)
+    (contractumTerminates := optionNone_isStronglyNormalizing)
+    (bodySubst0Constant := fun _currentArgument => rfl)
     argumentTerminates
 
 /-- Beta redexes are strongly normalizing when the lambda body and argument are
