@@ -1101,6 +1101,59 @@ theorem fromSteps_iotaBoolTrueElseCong_hasJoin {scope : Nat}
         (thenBranch := thenBranch) elseStep).rightStep).HasJoin :=
   iotaBoolTrueElseCong_hasJoin elseStep
 
+/-- Resolve every local branching whose left step is `boolTrue` iota.
+
+The shared source permits only same-root `boolTrue`, congruence in the selected
+then-branch, or congruence in the discarded else-branch.  Congruence in the
+scrutinee would require a step out of the nullary `boolTrue` constructor, so
+the empty child-spine case is impossible by direct `cases`. -/
+theorem fromSteps_iotaBoolTrueLeft_hasJoin {scope : Nat}
+    {thenBranch elseBranch rightReduct : RawTerm scope}
+    (rightStep : Step
+      (.mkGen .gen_boolElim ()
+        (.childCons
+          (.mkGen .gen_boolTrue () .childNil)
+          (.childCons thenBranch (.childCons elseBranch .childNil))))
+      rightReduct) :
+    (fromSteps
+      (Step.iotaBoolTrue
+        (thenBranch := thenBranch) (elseBranch := elseBranch))
+      rightStep).HasJoin := by
+  cases rightStep with
+  | iotaBoolTrue =>
+      exact fromSteps_iotaBoolTrueSameRoot_hasJoin thenBranch elseBranch
+  | cong generator payload childStep =>
+      cases childStep with
+      | here restChildren scrutineeStep =>
+          cases scrutineeStep with
+          | cong scrutineeGenerator scrutineePayload scrutineeChildrenStep =>
+              cases scrutineeChildrenStep
+      | there scrutinee restStep =>
+          cases restStep with
+          | here elseChildren thenStep =>
+              exact fromSteps_iotaBoolTrueThenCong_hasJoin thenStep
+          | there thenChild branchTailStep =>
+              cases branchTailStep with
+              | here emptyChildren elseStep =>
+                  exact fromSteps_iotaBoolTrueElseCong_hasJoin elseStep
+              | there elseChild emptyStep =>
+                  cases emptyStep
+
+/-- Resolve every local branching whose right step is `boolTrue` iota. -/
+theorem fromSteps_iotaBoolTrueRight_hasJoin {scope : Nat}
+    {thenBranch elseBranch leftReduct : RawTerm scope}
+    (leftStep : Step
+      (.mkGen .gen_boolElim ()
+        (.childCons
+          (.mkGen .gen_boolTrue () .childNil)
+          (.childCons thenBranch (.childCons elseBranch .childNil))))
+      leftReduct) :
+    (fromSteps
+      leftStep
+      (Step.iotaBoolTrue
+        (thenBranch := thenBranch) (elseBranch := elseBranch))).HasJoin :=
+  hasJoin_swap (fromSteps_iotaBoolTrueLeft_hasJoin leftStep)
+
 /-- `fromSteps`-facing `boolFalse` iota / discarded then-branch congruence arm. -/
 theorem fromSteps_iotaBoolFalseThenCong_hasJoin {scope : Nat}
     {thenBranch steppedThenBranch elseBranch : RawTerm scope}
