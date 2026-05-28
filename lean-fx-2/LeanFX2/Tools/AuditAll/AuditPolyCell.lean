@@ -1244,10 +1244,15 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaIdStrictRecBaseCaseCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.iotaIdStrictRecWitnessCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepPairJoin
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepChildrenPairJoin
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CdLemmaStatement
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepPairJoin.ofReductsEqual
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepPairJoin.sameStep
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepPairJoin.swap
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepPairJoin.ofCongChildrenJoin
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepChildrenPairJoin.ofReductsEqual
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepChildrenPairJoin.sameStep
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepChildrenPairJoin.swap
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepPairJoin.ofLocalDiamondFromSteps
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepPairJoin.ofLocalDiamondFromSteps_swap
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.fromSteps

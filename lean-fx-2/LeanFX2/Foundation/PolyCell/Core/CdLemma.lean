@@ -29,6 +29,20 @@ def StepPairJoin {scope : Nat}
     StepStar leftReduct commonReduct ∧
       StepStar rightReduct commonReduct
 
+/-- The child-spine version of `StepPairJoin`.
+
+Congruence/congruence branchings reduce to this shape: both parent steps are
+`Step.cong`, so the real join obligation lives between the two child-spine
+reductions. -/
+def StepChildrenPairJoin {scope : Nat} {binderShifts : List Nat}
+    {sourceChildren leftChildren rightChildren :
+      RawTermChildren binderShifts scope}
+    (_leftStep : StepChildren sourceChildren leftChildren)
+    (_rightStep : StepChildren sourceChildren rightChildren) : Prop :=
+  ∃ commonChildren : RawTermChildren binderShifts scope,
+    StepChildrenStar leftChildren commonChildren ∧
+      StepChildrenStar rightChildren commonChildren
+
 /-- The target statement of M7, as a reusable Prop alias.
 
 The theorem named `cd_lemma` will inhabit this statement once the proof
@@ -72,13 +86,71 @@ theorem swap {scope : Nat}
     {leftStep : Step sourceTerm leftReduct}
     {rightStep : Step sourceTerm rightReduct} :
     StepPairJoin leftStep rightStep →
-      StepPairJoin rightStep leftStep :=
+    StepPairJoin rightStep leftStep :=
   fun join =>
     Exists.elim join
       (fun commonReduct chains =>
         ⟨commonReduct, chains.2, chains.1⟩)
 
+/-- Lift a child-spine join through a uniform generator congruence context.
+
+This is the reusable congruence/congruence bridge: once structural recursion
+over `StepChildren` supplies a child join, the parent `Step.cong` pair joins
+by replaying both child-spine chains under the same generator and payload. -/
+theorem ofCongChildrenJoin {scope : Nat}
+    {generator : Generator} {payload : generator.payload scope}
+    {sourceChildren leftChildren rightChildren :
+      RawTermChildren generator.binderShifts scope}
+    {leftChildrenStep : StepChildren sourceChildren leftChildren}
+    {rightChildrenStep : StepChildren sourceChildren rightChildren}
+    (childrenJoin :
+      StepChildrenPairJoin leftChildrenStep rightChildrenStep) :
+    StepPairJoin
+      (Step.cong generator payload leftChildrenStep)
+      (Step.cong generator payload rightChildrenStep) :=
+  Exists.elim childrenJoin
+    (fun commonChildren chains =>
+      ⟨ .mkGen generator payload commonChildren
+      , StepStar.ofChildrenStar chains.1
+      , StepStar.ofChildrenStar chains.2 ⟩)
+
 end StepPairJoin
+
+namespace StepChildrenPairJoin
+
+/-- Same-child-reduct closure for child-spine joins. -/
+theorem ofReductsEqual {scope : Nat} {binderShifts : List Nat}
+    {sourceChildren leftChildren rightChildren :
+      RawTermChildren binderShifts scope}
+    {leftStep : StepChildren sourceChildren leftChildren}
+    {rightStep : StepChildren sourceChildren rightChildren}
+    (reductsEqual : leftChildren = rightChildren) :
+    StepChildrenPairJoin leftStep rightStep := by
+  cases reductsEqual
+  exact ⟨leftChildren, StepChildrenStar.refl _, StepChildrenStar.refl _⟩
+
+/-- A child-spine step trivially joins with itself. -/
+theorem sameStep {scope : Nat} {binderShifts : List Nat}
+    {sourceChildren targetChildren :
+      RawTermChildren binderShifts scope}
+    (sameStepWitness : StepChildren sourceChildren targetChildren) :
+    StepChildrenPairJoin sameStepWitness sameStepWitness :=
+  ofReductsEqual rfl
+
+/-- Reverse the two branches of a child-spine join. -/
+theorem swap {scope : Nat} {binderShifts : List Nat}
+    {sourceChildren leftChildren rightChildren :
+      RawTermChildren binderShifts scope}
+    {leftStep : StepChildren sourceChildren leftChildren}
+    {rightStep : StepChildren sourceChildren rightChildren} :
+    StepChildrenPairJoin leftStep rightStep →
+      StepChildrenPairJoin rightStep leftStep :=
+  fun join =>
+    Exists.elim join
+      (fun commonChildren chains =>
+        ⟨commonChildren, chains.2, chains.1⟩)
+
+end StepChildrenPairJoin
 
 namespace LocalStepBranching
 
