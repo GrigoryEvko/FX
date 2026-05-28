@@ -3329,6 +3329,54 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.UniverseFlag.ctorCount
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.UniverseFlag.ctorCount_correct
 
+-- ─── V2-L4.5 (#214): SconingConstructionLevel honest ledger ─────────
+-- 20 declarations in InternalSconing.lean ship the honest construction-
+-- level ledger for the Tier-0 sconing subsystem.  Current honest state:
+-- `extractionRecordInterfaces` (interfaces shipped, concrete witnesses
+-- pending per V2-L4.1/L4.2/L4.3 #210/#211/#212).
+--
+-- The ledger inductive enumerates 9 milestones in strict order:
+--   globalSectionsInterface → objectMorphismInterface →
+--   preservationWitnessInterface → extractionRecordInterfaces (CURRENT)
+--   → concretePreservationInstance → canonicityTransferTheorem →
+--   normalizationTransferTheorem → parametricityTransferTheorem →
+--   bksMetatheoryPackage.
+--
+-- 8 per-property Bool predicates encode monotone availability ("does
+-- level X have property Y?"), 5 positive + 4 negative `rfl`-pinned
+-- theorems pin the current state's honest answers.  No work
+-- overclaimed — concrete preservation / canonicity transfer /
+-- normalization transfer / parametricity transfer / BKS metatheory
+-- package all honestly marked as NOT YET SHIPPED via the four
+-- `fxSconing_hasNo*` theorems.
+--
+-- Audit-gates ensure the ledger doesn't silently advance during a
+-- refactor.  When V2-L4.2 #211 ships the first concrete sconing
+-- witness, the implementer updates `fxSconingConstructionLevel` to
+-- `.concretePreservationInstance` + updates the 4 `hasNo*` theorems
+-- in lockstep with the new positive state.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.SconingConstructionLevel
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.SconingConstructionLevel.hasGlobalSectionsInterface
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.SconingConstructionLevel.hasObjectMorphismInterface
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.SconingConstructionLevel.hasPreservationWitnessInterface
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.SconingConstructionLevel.hasExtractionRecordInterfaces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.SconingConstructionLevel.hasConcretePreservationInstance
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.SconingConstructionLevel.hasCanonicityTransferTheorem
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.SconingConstructionLevel.hasNormalizationTransferTheorem
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.SconingConstructionLevel.hasParametricityTransferTheorem
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.SconingConstructionLevel.hasBKSMetatheoryPackage
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.fxSconingConstructionLevel
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.fxSconingConstructionLevel_eq
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.fxSconing_hasGlobalSectionsInterface
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.fxSconing_hasObjectMorphismInterface
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.fxSconing_hasPreservationWitnessInterface
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.fxSconing_hasExtractionRecordInterfaces
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.fxSconing_hasNoConcretePreservationInstance
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.fxSconing_hasNoCanonicityTransferTheorem
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.fxSconing_hasNoNormalizationTransferTheorem
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.fxSconing_hasNoParametricityTransferTheorem
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.fxSconing_hasNoBKSMetatheoryPackage
+
 -- ─── V2-L1cert.12: existential preserves dim (#167) ─────────────────
 -- inferRawCellGeneral?_accepted_cellDimension_eq: when the
 -- existential wrapper accepts a raw input, the result's stored
