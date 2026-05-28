@@ -76,6 +76,7 @@ import LeanFX2.Foundation.PolyCell.Core.StepBetaEtaPreservesShape
 import LeanFX2.Foundation.PolyCell.Core.StepEtaCriticalPairs
 import LeanFX2.Foundation.PolyCell.Core.StepEtaEtaCriticalPairs
 import LeanFX2.Foundation.PolyCell.Core.StepBetaEtaConfluence
+import LeanFX2.Foundation.PolyCell.Core.StrongNormalizationEta
 import LeanFX2.Foundation.PolyCell.Core.HasCertifiedIntros
 import LeanFX2.Foundation.PolyCell.Core.HasCertifiedHonestyProbes
 import LeanFX2.Foundation.PolyCell.Core.SubstPreservationProbes
@@ -2434,6 +2435,21 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.betaEtaStar.joinStepWithSingleRight
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.betaEtaStar.confluence_of_localJoin_and_accessible
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.betaEtaStar.confluence_of_strongNormalization
+
+-- Eta-M8h partial: eta-only size decrease and accessibility.
+-- The beta+iota-to-betaEta SN transfer remains blocked by #258.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.size_rename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.size_rename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.size_weaken
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.eta.size_decreases
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.etaSuccessor
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.etaStar.IsStronglyNormalizing
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.etaStar.HasStrongNormalization
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.etaStar.etaSuccessor_wellFounded
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.etaStar.isStronglyNormalizing
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.etaStar.hasStrongNormalization
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.etaStar.etaLam_isStronglyNormalizing_iff
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.etaStar.etaPair_isStronglyNormalizing_iff
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.EtaStepKind
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.EtaStepKind.all
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.EtaStepKind.sourceGenerator

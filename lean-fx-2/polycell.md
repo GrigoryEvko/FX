@@ -5652,8 +5652,15 @@ dispatcher.  This is deliberately not a claim of global beta+eta SN:
 the theorem is conditional on a future
 `Step.betaEtaStar.HasStrongNormalization` witness, and the actual SN
 accessibility lifts remain blocked behind #258's unfinished master SN
-work.  Record, clock, and parametricity eta remain generator-frontier
-work, not placeholders in the current raw relation.
+work.  The second #357 slice adds the eta-only SN substrate in
+`StrongNormalizationEta.lean`: renaming and weakening preserve
+`RawTerm.size`, every current root eta constructor strictly decreases
+that size, and `Step.etaStar.hasStrongNormalization` follows by
+well-foundedness of the size measure.  This closes eta-only
+accessibility; it still does not prove the beta+iota-to-betaEta SN
+transfer needed for unconditional beta+eta confluence.  Record, clock,
+and parametricity eta remain generator-frontier work, not placeholders
+in the current raw relation.
 
 ### Phase 1 — Allais Kit
 
