@@ -1530,4 +1530,323 @@ theorem LevelExpr.limax_lzero_left_denoteEquiv (e2 : LevelExpr) :
     LevelExpr.denoteEquiv (LevelExpr.limax .lzero e2) e2 :=
   fun env => LevelExpr.limax_denote_lzero_left e2 env
 
+/-! ## Total comparison on LevelExpr — Phase B's canonical-form keystone
+
+M22-A9 (#411, 2026-05-28).  Per polycell.md §11.8.2's commitment to
+polynomial-time decidable universe equality via the Mörtberg-Sterling
+2024 algorithm, Phase B's canonical normalizer requires a TOTAL
+ORDER on `LevelExpr` to canonically sort `lmax`/`limax` operands.
+
+This section ships:
+
+* `LevelExpr.compareNat` — propext-free `Nat → Nat → Ordering` via
+  structural pattern match on both arguments.  Lean core's
+  `Nat.compare` ultimately routes through `≤`-decidability which
+  pulls propext; we need a clean alternative for zero-axiom
+  discipline.
+* `LevelExpr.ctorIndex` — ctor priority for cross-ctor comparison.
+* `LevelExpr.compare` — total ordering on `LevelExpr` combining
+  ctor priority (cross-ctor) with structural recursion (same-ctor).
+* `compare_refl` — reflexivity: `compare e e = .eq`.
+* `compare_swap` — antisymmetry as `Ordering.swap` identity:
+  `(compare e1 e2).swap = compare e2 e1`.  This is the FULL
+  antisymmetry property in compact form: lt ↔ gt, gt ↔ lt, eq ↔ eq.
+
+Then the first concrete Phase B canonicalization:
+
+* `canonicalizeLmaxPair` — single-pair lmax operand swap when
+  operands are out of compare order.
+* `canonicalizeLmaxPair_denoteEquiv` — soundness under denoteEquiv
+  via `lmax_comm_denoteEquiv`.
+* `canonicalizeLmaxPair_idempotent` — applying twice = once
+  (after one pass, operands are sorted in compare order).
+
+This is the FOUNDATION of Mörtberg-Sterling's canonical form.
+Full polynomial canonical form (flattening nested lmax, collecting
+monomials by lvar with offset sums) builds compositionally on
+these primitives. -/
+
+/-- Propext-free `Nat → Nat → Ordering` compare via structural
+pattern match on both arguments.  Used internally by
+`LevelExpr.compare` for `.lvar` index comparison and cross-ctor
+priority. -/
+def LevelExpr.compareNat : Nat → Nat → Ordering
+  | 0, 0 => .eq
+  | 0, _ + 1 => .lt
+  | _ + 1, 0 => .gt
+  | valueA + 1, valueB + 1 => LevelExpr.compareNat valueA valueB
+
+/-- `compareNat n n = .eq` (reflexivity). -/
+theorem LevelExpr.compareNat_refl : ∀ (value : Nat),
+    LevelExpr.compareNat value value = .eq
+  | 0 => rfl
+  | n + 1 => LevelExpr.compareNat_refl n
+
+/-- `(compareNat n m).swap = compareNat m n` (antisymmetry as
+swap identity).  This compactly captures: `lt` swaps to `gt`,
+`gt` swaps to `lt`, `eq` is self-dual. -/
+theorem LevelExpr.compareNat_swap : ∀ (valueA valueB : Nat),
+    (LevelExpr.compareNat valueA valueB).swap =
+      LevelExpr.compareNat valueB valueA
+  | 0, 0 => rfl
+  | 0, _ + 1 => rfl
+  | _ + 1, 0 => rfl
+  | a + 1, b + 1 => LevelExpr.compareNat_swap a b
+
+/-- Ctor priority for cross-ctor `LevelExpr` comparison.
+
+  * `lzero` < `lvar` < `lsucc` < `lmax` < `limax`.
+
+The choice is consistent with Mörtberg-Sterling's canonical form
+where constants and variables are the simplest atoms, successors
+build on atoms, and binary ops (max / impredicative-max) come
+later in the canonical sorting. -/
+def LevelExpr.ctorIndex : LevelExpr → Nat
+  | .lzero => 0
+  | .lvar _ => 1
+  | .lsucc _ => 2
+  | .lmax _ _ => 3
+  | .limax _ _ => 4
+
+/-- Total comparison on `LevelExpr`.  Same-ctor cases compare
+recursively (lexicographically on operands); cross-ctor cases
+fall through to `compareNat` on `ctorIndex`.
+
+The function is total (always returns one of `lt`/`eq`/`gt`)
+and is reflexive + antisymmetric (via `compare_swap`).  Phase
+B uses it to canonically order `lmax`/`limax` operands. -/
+def LevelExpr.compare : LevelExpr → LevelExpr → Ordering
+  | .lzero, .lzero => .eq
+  | .lvar n, .lvar m => LevelExpr.compareNat n m
+  | .lsucc e1, .lsucc e2 => LevelExpr.compare e1 e2
+  | .lmax a1 b1, .lmax a2 b2 =>
+      match LevelExpr.compare a1 a2 with
+      | .eq => LevelExpr.compare b1 b2
+      | other => other
+  | .limax a1 b1, .limax a2 b2 =>
+      match LevelExpr.compare a1 a2 with
+      | .eq => LevelExpr.compare b1 b2
+      | other => other
+  | e1, e2 => LevelExpr.compareNat e1.ctorIndex e2.ctorIndex
+
+/-- `compare e e = .eq` (reflexivity).
+
+Proof: structural recursion on `e`.  Each ctor case recursively
+applies `compare_refl` to children; `lvar` reduces to
+`compareNat_refl`. -/
+theorem LevelExpr.compare_refl : ∀ (expr : LevelExpr),
+    LevelExpr.compare expr expr = .eq
+  | .lzero => rfl
+  | .lvar n => LevelExpr.compareNat_refl n
+  | .lsucc inner => LevelExpr.compare_refl inner
+  | .lmax a b => by
+      show (match LevelExpr.compare a a with
+            | .eq => LevelExpr.compare b b
+            | other => other) = .eq
+      rw [LevelExpr.compare_refl a]
+      exact LevelExpr.compare_refl b
+  | .limax a b => by
+      show (match LevelExpr.compare a a with
+            | .eq => LevelExpr.compare b b
+            | other => other) = .eq
+      rw [LevelExpr.compare_refl a]
+      exact LevelExpr.compare_refl b
+
+/-- `(compare e1 e2).swap = compare e2 e1` (antisymmetry as
+swap identity).
+
+Proof: structural recursion on the FIRST argument with case
+analysis on the second.  Same-ctor cases use `compareNat_swap`
+(for `lvar`) or recursive `compare_swap` (for `lsucc`/`lmax`/
+`limax`).  Cross-ctor cases reduce via the catch-all to
+`compareNat` on ctorIndex, then close via `compareNat_swap`. -/
+theorem LevelExpr.compare_swap : ∀ (e1 e2 : LevelExpr),
+    (LevelExpr.compare e1 e2).swap = LevelExpr.compare e2 e1
+  | .lzero, .lzero => rfl
+  | .lvar n, .lvar m => LevelExpr.compareNat_swap n m
+  | .lsucc e1, .lsucc e2 => LevelExpr.compare_swap e1 e2
+  | .lmax a1 b1, .lmax a2 b2 => by
+      show (match LevelExpr.compare a1 a2 with
+            | .eq => LevelExpr.compare b1 b2
+            | other => other).swap =
+        (match LevelExpr.compare a2 a1 with
+         | .eq => LevelExpr.compare b2 b1
+         | other => other)
+      cases hCmp : LevelExpr.compare a1 a2 with
+      | eq =>
+          have hSwap : LevelExpr.compare a2 a1 = .eq := by
+            have := LevelExpr.compare_swap a1 a2
+            rw [hCmp] at this
+            exact this.symm
+          rw [hSwap]
+          exact LevelExpr.compare_swap b1 b2
+      | lt =>
+          have hSwap : LevelExpr.compare a2 a1 = .gt := by
+            have := LevelExpr.compare_swap a1 a2
+            rw [hCmp] at this
+            exact this.symm
+          rw [hSwap]
+          rfl
+      | gt =>
+          have hSwap : LevelExpr.compare a2 a1 = .lt := by
+            have := LevelExpr.compare_swap a1 a2
+            rw [hCmp] at this
+            exact this.symm
+          rw [hSwap]
+          rfl
+  | .limax a1 b1, .limax a2 b2 => by
+      show (match LevelExpr.compare a1 a2 with
+            | .eq => LevelExpr.compare b1 b2
+            | other => other).swap =
+        (match LevelExpr.compare a2 a1 with
+         | .eq => LevelExpr.compare b2 b1
+         | other => other)
+      cases hCmp : LevelExpr.compare a1 a2 with
+      | eq =>
+          have hSwap : LevelExpr.compare a2 a1 = .eq := by
+            have := LevelExpr.compare_swap a1 a2
+            rw [hCmp] at this
+            exact this.symm
+          rw [hSwap]
+          exact LevelExpr.compare_swap b1 b2
+      | lt =>
+          have hSwap : LevelExpr.compare a2 a1 = .gt := by
+            have := LevelExpr.compare_swap a1 a2
+            rw [hCmp] at this
+            exact this.symm
+          rw [hSwap]
+          rfl
+      | gt =>
+          have hSwap : LevelExpr.compare a2 a1 = .lt := by
+            have := LevelExpr.compare_swap a1 a2
+            rw [hCmp] at this
+            exact this.symm
+          rw [hSwap]
+          rfl
+  -- Cross-ctor cases: catch-all uses compareNat on ctorIndex.
+  | .lzero, .lvar _ => rfl
+  | .lzero, .lsucc _ => rfl
+  | .lzero, .lmax _ _ => rfl
+  | .lzero, .limax _ _ => rfl
+  | .lvar _, .lzero => rfl
+  | .lvar _, .lsucc _ => rfl
+  | .lvar _, .lmax _ _ => rfl
+  | .lvar _, .limax _ _ => rfl
+  | .lsucc _, .lzero => rfl
+  | .lsucc _, .lvar _ => rfl
+  | .lsucc _, .lmax _ _ => rfl
+  | .lsucc _, .limax _ _ => rfl
+  | .lmax _ _, .lzero => rfl
+  | .lmax _ _, .lvar _ => rfl
+  | .lmax _ _, .lsucc _ => rfl
+  | .lmax _ _, .limax _ _ => rfl
+  | .limax _ _, .lzero => rfl
+  | .limax _ _, .lvar _ => rfl
+  | .limax _ _, .lsucc _ => rfl
+  | .limax _ _, .lmax _ _ => rfl
+
+/-! ## First Phase B canonicalization step — pairwise lmax sort
+
+`canonicalizeLmaxPair` swaps `lmax` operands when out of compare
+order, ensuring the smaller operand (by `compare`) comes first.
+This is the SIMPLEST canonical-form transformation; the full
+Phase B normalizer composes this with `simplify`, recursive
+descent into operands, and lsucc-into-lmax distributivity. -/
+
+/-- Single-pair `lmax` operand canonicalization.  If `compare e1
+e2 = .gt`, swap to `lmax e2 e1`; otherwise leave as `lmax e1 e2`.
+Non-lmax inputs are returned unchanged.
+
+Soundness via `canonicalizeLmaxPair_denoteEquiv`: regardless of
+swap, the denotation is preserved (by `lmax_comm_denoteEquiv`). -/
+def LevelExpr.canonicalizeLmaxPair : LevelExpr → LevelExpr
+  | .lmax e1 e2 =>
+      match LevelExpr.compare e1 e2 with
+      | .gt => LevelExpr.lmax e2 e1
+      | _ => LevelExpr.lmax e1 e2
+  | other => other
+
+/-- `canonicalizeLmaxPair` preserves the semantic denotation
+(it's a `denoteEquiv` rule).
+
+Proof: case-analyze the input.  Non-lmax inputs return unchanged
+(refl).  For `lmax e1 e2`, case-split on `compare e1 e2`:
+* `.gt`: result is `lmax e2 e1`, which by `lmax_comm_denoteEquiv`
+  is equivalent to `lmax e1 e2`.
+* `.eq` / `.lt`: result is `lmax e1 e2` = input (refl). -/
+theorem LevelExpr.canonicalizeLmaxPair_denoteEquiv :
+    ∀ (expr : LevelExpr),
+      LevelExpr.denoteEquiv (LevelExpr.canonicalizeLmaxPair expr) expr
+  | .lzero => LevelExpr.denoteEquiv.refl _
+  | .lvar _ => LevelExpr.denoteEquiv.refl _
+  | .lsucc _ => LevelExpr.denoteEquiv.refl _
+  | .limax _ _ => LevelExpr.denoteEquiv.refl _
+  | .lmax e1 e2 => by
+      show LevelExpr.denoteEquiv
+        (match LevelExpr.compare e1 e2 with
+         | .gt => LevelExpr.lmax e2 e1
+         | _ => LevelExpr.lmax e1 e2)
+        (LevelExpr.lmax e1 e2)
+      cases hCmp : LevelExpr.compare e1 e2 with
+      | eq => exact LevelExpr.denoteEquiv.refl _
+      | lt => exact LevelExpr.denoteEquiv.refl _
+      | gt =>
+          show LevelExpr.denoteEquiv (LevelExpr.lmax e2 e1)
+            (LevelExpr.lmax e1 e2)
+          exact LevelExpr.lmax_comm_denoteEquiv e2 e1
+
+/-- `canonicalizeLmaxPair` is idempotent: applying twice yields
+the same result as applying once.
+
+Proof: case-analyze the input.  Non-lmax inputs are fixed points
+trivially.  For `lmax e1 e2`, case-split on `compare e1 e2`:
+* `.gt`: first pass swaps to `lmax e2 e1`.  Second pass computes
+  `compare e2 e1` which by `compare_swap` is the swap of `.gt`
+  = `.lt`.  So second pass returns `lmax e2 e1` unchanged. -/
+theorem LevelExpr.canonicalizeLmaxPair_idempotent :
+    ∀ (expr : LevelExpr),
+      LevelExpr.canonicalizeLmaxPair (LevelExpr.canonicalizeLmaxPair expr) =
+        LevelExpr.canonicalizeLmaxPair expr
+  | .lzero => rfl
+  | .lvar _ => rfl
+  | .lsucc _ => rfl
+  | .limax _ _ => rfl
+  | .lmax e1 e2 => by
+      show LevelExpr.canonicalizeLmaxPair
+        (match LevelExpr.compare e1 e2 with
+         | .gt => LevelExpr.lmax e2 e1
+         | _ => LevelExpr.lmax e1 e2) =
+        (match LevelExpr.compare e1 e2 with
+         | .gt => LevelExpr.lmax e2 e1
+         | _ => LevelExpr.lmax e1 e2)
+      cases hCmp : LevelExpr.compare e1 e2 with
+      | eq =>
+          show LevelExpr.canonicalizeLmaxPair (LevelExpr.lmax e1 e2) =
+            LevelExpr.lmax e1 e2
+          show (match LevelExpr.compare e1 e2 with
+                | .gt => LevelExpr.lmax e2 e1
+                | _ => LevelExpr.lmax e1 e2) =
+            LevelExpr.lmax e1 e2
+          rw [hCmp]
+      | lt =>
+          show LevelExpr.canonicalizeLmaxPair (LevelExpr.lmax e1 e2) =
+            LevelExpr.lmax e1 e2
+          show (match LevelExpr.compare e1 e2 with
+                | .gt => LevelExpr.lmax e2 e1
+                | _ => LevelExpr.lmax e1 e2) =
+            LevelExpr.lmax e1 e2
+          rw [hCmp]
+      | gt =>
+          show LevelExpr.canonicalizeLmaxPair (LevelExpr.lmax e2 e1) =
+            LevelExpr.lmax e2 e1
+          show (match LevelExpr.compare e2 e1 with
+                | .gt => LevelExpr.lmax e1 e2
+                | _ => LevelExpr.lmax e2 e1) =
+            LevelExpr.lmax e2 e1
+          have hSwap : LevelExpr.compare e2 e1 = .lt := by
+            have := LevelExpr.compare_swap e1 e2
+            rw [hCmp] at this
+            exact this.symm
+          rw [hSwap]
+
 end LeanFX2.Foundation.PolyCell.Universe

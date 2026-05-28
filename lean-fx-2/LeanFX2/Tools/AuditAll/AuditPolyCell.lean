@@ -3621,6 +3621,53 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.limax_lzero_right_denoteEquiv
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.limax_lzero_left_denoteEquiv
 
+-- Audit gates for #411 (M22-A9, 2026-05-28).
+--
+-- Per polycell.md §11.8.2's commitment to polynomial-time decidable
+-- universe equality (Mörtberg-Sterling 2024), Phase B's canonical
+-- normalizer requires a TOTAL ORDER on `LevelExpr` to canonically
+-- sort `lmax`/`limax` operands.  This atom ships the comparison
+-- substrate plus the first concrete canonicalization step.
+--
+-- Propext-free Nat compare (avoids Lean core's Nat.compare which
+-- routes through ≤-decidability + propext):
+--
+-- * `compareNat` — Nat → Nat → Ordering via structural pattern.
+-- * `compareNat_refl` — reflexivity.
+-- * `compareNat_swap` — antisymmetry as swap identity.
+--
+-- Ctor priority + total ordering on LevelExpr:
+--
+-- * `ctorIndex` — lzero < lvar < lsucc < lmax < limax priority.
+-- * `compare` — total ordering combining ctor priority + structural
+--   recursion (lexicographic on operands of same ctor).
+-- * `compare_refl` — `compare e e = .eq`.
+-- * `compare_swap` — `(compare e1 e2).swap = compare e2 e1` (full
+--   antisymmetry compact form: lt ↔ gt, eq self-dual).
+--
+-- First Phase B canonicalization step:
+--
+-- * `canonicalizeLmaxPair` — single-pair lmax operand swap when
+--   operands are out of compare order.
+-- * `canonicalizeLmaxPair_denoteEquiv` — soundness via
+--   `lmax_comm_denoteEquiv`.
+-- * `canonicalizeLmaxPair_idempotent` — applying twice = once
+--   (after one pass, operands are sorted in compare order).
+--
+-- Foundation for Mörtberg-Sterling canonical form: full poly form
+-- (flattening nested lmax, collecting monomials by lvar with
+-- offset sums) builds compositionally on these primitives.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.compareNat
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.compareNat_refl
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.compareNat_swap
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.ctorIndex
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.compare
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.compare_refl
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.compare_swap
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.canonicalizeLmaxPair
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.canonicalizeLmaxPair_denoteEquiv
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.canonicalizeLmaxPair_idempotent
+
 -- ─── M11 (#260): NbE substrate — canonical normalizer signature ─────
 -- RawTerm.isNF predicate shipped via M-substrate-3 #367.  This commit
 -- ships the SIGNATURE-LEVEL contract for the M12 #261 implementation:
