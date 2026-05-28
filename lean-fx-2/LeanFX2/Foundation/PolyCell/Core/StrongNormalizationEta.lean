@@ -201,6 +201,33 @@ theorem etaPair_isStronglyNormalizing_iff {scope : Nat}
   ⟨fun _ => isStronglyNormalizing pairTerm,
     fun _ => isStronglyNormalizing (RawTerm.etaPairSource pairTerm)⟩
 
+/-- Path eta sources are eta-only strongly normalizing exactly when
+their represented path terms are. -/
+theorem etaPathLam_isStronglyNormalizing_iff {scope : Nat}
+    (innerPath : RawTerm scope) :
+    IsStronglyNormalizing (RawTerm.etaPathLamSource innerPath) ↔
+      IsStronglyNormalizing innerPath :=
+  ⟨fun _ => isStronglyNormalizing innerPath,
+    fun _ => isStronglyNormalizing (RawTerm.etaPathLamSource innerPath)⟩
+
+/-- Modal eta sources are eta-only strongly normalizing exactly when
+their represented modal terms are. -/
+theorem etaModIntro_isStronglyNormalizing_iff {scope : Nat}
+    (modalTerm : RawTerm scope) :
+    IsStronglyNormalizing (RawTerm.etaModIntroSource modalTerm) ↔
+      IsStronglyNormalizing modalTerm :=
+  ⟨fun _ => isStronglyNormalizing modalTerm,
+    fun _ => isStronglyNormalizing (RawTerm.etaModIntroSource modalTerm)⟩
+
+/-- Glue eta sources are eta-only strongly normalizing exactly when
+their represented Glue terms are. -/
+theorem etaGlueIntro_isStronglyNormalizing_iff {scope : Nat}
+    (gluedTerm : RawTerm scope) :
+    IsStronglyNormalizing (RawTerm.etaGlueIntroSource gluedTerm) ↔
+      IsStronglyNormalizing gluedTerm :=
+  ⟨fun _ => isStronglyNormalizing gluedTerm,
+    fun _ => isStronglyNormalizing (RawTerm.etaGlueIntroSource gluedTerm)⟩
+
 end etaStar
 end Step
 

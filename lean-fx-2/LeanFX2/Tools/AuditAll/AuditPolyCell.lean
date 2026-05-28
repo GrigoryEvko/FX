@@ -2450,6 +2450,9 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.etaStar.hasStrongNormalization
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.etaStar.etaLam_isStronglyNormalizing_iff
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.etaStar.etaPair_isStronglyNormalizing_iff
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.etaStar.etaPathLam_isStronglyNormalizing_iff
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.etaStar.etaModIntro_isStronglyNormalizing_iff
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.etaStar.etaGlueIntro_isStronglyNormalizing_iff
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.EtaStepKind
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.EtaStepKind.all
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.EtaStepKind.sourceGenerator
