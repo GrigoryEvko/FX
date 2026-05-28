@@ -5633,9 +5633,15 @@ beta overlap, `etaLamLeftStep` / `etaLamRightStep` and
 `Step` leaving the current binder eta sources, and
 `cd_lemma_step_eta` / `cd_lemma_eta_step` prove the mixed
 beta+iota-vs-root-eta local Church-Rosser quadrants for every current
-eta constructor.  This completes #355's honest boundary.  The full
-`CdLemmaStatementBetaEta` still needs the eta-vs-eta quadrant, which
-is #356.
+eta constructor.  This completes #355's honest boundary.  #356 then
+closes the eta-vs-eta quadrant in
+`StepEtaEtaCriticalPairs.lean`: because the current `Step.eta`
+relation is root-only and has no eta congruence constructor, nested
+eta examples are not one-step branchings yet.  The shipped theorem
+`Step.eta.deterministic` proves two root eta steps from the same source
+have the same reduct, `cd_lemma_eta_eta` closes the eta/eta local join,
+and `cd_lemma_betaEta` now inhabits the full
+`CdLemmaStatementBetaEta` for the current beta+iota+root-eta relation.
 Record, clock, and parametricity eta remain generator-frontier work,
 not placeholders in the current raw relation.
 
