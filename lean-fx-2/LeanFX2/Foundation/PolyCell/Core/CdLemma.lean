@@ -1079,6 +1079,128 @@ theorem iotaNatRecSuccPredecessorCong_hasJoin {scope : Nat}
     (zeroBranch := zeroBranch) (succBranch := succBranch)
     predecessorStep).hasJoin
 
+/-- `fromSteps`-facing `natElim natZero` iota / zero-branch congruence arm. -/
+theorem fromSteps_iotaNatElimZeroBranchCong_hasJoin {scope : Nat}
+    {zeroBranch steppedZeroBranch succBranch : RawTerm scope}
+    (zeroStep : Step zeroBranch steppedZeroBranch) :
+    (fromSteps
+      (Step.iotaNatElimZero
+        (zeroBranch := zeroBranch) (succBranch := succBranch))
+      (iotaNatElimZeroBranchCong
+        (succBranch := succBranch) zeroStep).rightStep).HasJoin :=
+  iotaNatElimZeroBranchCong_hasJoin zeroStep
+
+/-- `fromSteps`-facing `natElim natZero` iota / successor-branch congruence arm. -/
+theorem fromSteps_iotaNatElimSuccBranchCong_hasJoin {scope : Nat}
+    {zeroBranch succBranch steppedSuccBranch : RawTerm scope}
+    (succStep : Step succBranch steppedSuccBranch) :
+    (fromSteps
+      (Step.iotaNatElimZero
+        (zeroBranch := zeroBranch) (succBranch := succBranch))
+      (iotaNatElimSuccBranchCong
+        (zeroBranch := zeroBranch) succStep).rightStep).HasJoin :=
+  iotaNatElimSuccBranchCong_hasJoin succStep
+
+/-- `fromSteps`-facing `natRec natZero` iota / zero-branch congruence arm. -/
+theorem fromSteps_iotaNatRecZeroBranchCong_hasJoin {scope : Nat}
+    {zeroBranch steppedZeroBranch succBranch : RawTerm scope}
+    (zeroStep : Step zeroBranch steppedZeroBranch) :
+    (fromSteps
+      (Step.iotaNatRecZero
+        (zeroBranch := zeroBranch) (succBranch := succBranch))
+      (iotaNatRecZeroBranchCong
+        (succBranch := succBranch) zeroStep).rightStep).HasJoin :=
+  iotaNatRecZeroBranchCong_hasJoin zeroStep
+
+/-- `fromSteps`-facing `natRec natZero` iota / successor-branch congruence arm. -/
+theorem fromSteps_iotaNatRecSuccBranchCong_hasJoin {scope : Nat}
+    {zeroBranch succBranch steppedSuccBranch : RawTerm scope}
+    (succStep : Step succBranch steppedSuccBranch) :
+    (fromSteps
+      (Step.iotaNatRecZero
+        (zeroBranch := zeroBranch) (succBranch := succBranch))
+      (iotaNatRecSuccBranchCong
+        (zeroBranch := zeroBranch) succStep).rightStep).HasJoin :=
+  iotaNatRecSuccBranchCong_hasJoin succStep
+
+/-- `fromSteps`-facing `natElim natSucc` iota / zero-branch congruence arm. -/
+theorem fromSteps_iotaNatElimSuccZeroBranchCong_hasJoin {scope : Nat}
+    {predecessor zeroBranch steppedZeroBranch succBranch : RawTerm scope}
+    (zeroStep : Step zeroBranch steppedZeroBranch) :
+    (fromSteps
+      (Step.iotaNatElimSucc
+        (predecessor := predecessor) (zeroBranch := zeroBranch)
+        (succBranch := succBranch))
+      (iotaNatElimSuccZeroBranchCong
+        (predecessor := predecessor) (succBranch := succBranch)
+        zeroStep).rightStep).HasJoin :=
+  iotaNatElimSuccZeroBranchCong_hasJoin zeroStep
+
+/-- `fromSteps`-facing `natElim natSucc` iota / successor-branch congruence arm. -/
+theorem fromSteps_iotaNatElimSuccSuccBranchCong_hasJoin {scope : Nat}
+    {predecessor zeroBranch succBranch steppedSuccBranch : RawTerm scope}
+    (succStep : Step succBranch steppedSuccBranch) :
+    (fromSteps
+      (Step.iotaNatElimSucc
+        (predecessor := predecessor) (zeroBranch := zeroBranch)
+        (succBranch := succBranch))
+      (iotaNatElimSuccSuccBranchCong
+        (predecessor := predecessor) (zeroBranch := zeroBranch)
+        succStep).rightStep).HasJoin :=
+  iotaNatElimSuccSuccBranchCong_hasJoin succStep
+
+/-- `fromSteps`-facing `natRec natSucc` iota / zero-branch congruence arm. -/
+theorem fromSteps_iotaNatRecSuccZeroBranchCong_hasJoin {scope : Nat}
+    {predecessor zeroBranch steppedZeroBranch succBranch : RawTerm scope}
+    (zeroStep : Step zeroBranch steppedZeroBranch) :
+    (fromSteps
+      (Step.iotaNatRecSucc
+        (predecessor := predecessor) (zeroBranch := zeroBranch)
+        (succBranch := succBranch))
+      (iotaNatRecSuccZeroBranchCong
+        (predecessor := predecessor) (succBranch := succBranch)
+        zeroStep).rightStep).HasJoin :=
+  iotaNatRecSuccZeroBranchCong_hasJoin zeroStep
+
+/-- `fromSteps`-facing `natRec natSucc` iota / successor-branch congruence arm. -/
+theorem fromSteps_iotaNatRecSuccSuccBranchCong_hasJoin {scope : Nat}
+    {predecessor zeroBranch succBranch steppedSuccBranch : RawTerm scope}
+    (succStep : Step succBranch steppedSuccBranch) :
+    (fromSteps
+      (Step.iotaNatRecSucc
+        (predecessor := predecessor) (zeroBranch := zeroBranch)
+        (succBranch := succBranch))
+      (iotaNatRecSuccSuccBranchCong
+        (predecessor := predecessor) (zeroBranch := zeroBranch)
+        succStep).rightStep).HasJoin :=
+  iotaNatRecSuccSuccBranchCong_hasJoin succStep
+
+/-- `fromSteps`-facing `natElim natSucc` iota / predecessor congruence arm. -/
+theorem fromSteps_iotaNatElimSuccPredecessorCong_hasJoin {scope : Nat}
+    {predecessor steppedPredecessor zeroBranch succBranch : RawTerm scope}
+    (predecessorStep : Step predecessor steppedPredecessor) :
+    (fromSteps
+      (Step.iotaNatElimSucc
+        (predecessor := predecessor) (zeroBranch := zeroBranch)
+        (succBranch := succBranch))
+      (iotaNatElimSuccPredecessorCong
+        (zeroBranch := zeroBranch) (succBranch := succBranch)
+        predecessorStep).rightStep).HasJoin :=
+  iotaNatElimSuccPredecessorCong_hasJoin predecessorStep
+
+/-- `fromSteps`-facing `natRec natSucc` iota / predecessor congruence arm. -/
+theorem fromSteps_iotaNatRecSuccPredecessorCong_hasJoin {scope : Nat}
+    {predecessor steppedPredecessor zeroBranch succBranch : RawTerm scope}
+    (predecessorStep : Step predecessor steppedPredecessor) :
+    (fromSteps
+      (Step.iotaNatRecSucc
+        (predecessor := predecessor) (zeroBranch := zeroBranch)
+        (succBranch := succBranch))
+      (iotaNatRecSuccPredecessorCong
+        (zeroBranch := zeroBranch) (succBranch := succBranch)
+        predecessorStep).rightStep).HasJoin :=
+  iotaNatRecSuccPredecessorCong_hasJoin predecessorStep
+
 /-- Resolver arm for `listElim (listCons head tail)` iota competing with
 congruence inside the head child. -/
 theorem iotaListElimConsHeadCong_hasJoin {scope : Nat}
