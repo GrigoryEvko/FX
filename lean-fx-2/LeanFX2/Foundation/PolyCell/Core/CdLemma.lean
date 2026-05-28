@@ -1429,6 +1429,267 @@ theorem iotaIdStrictRecWitnessCong_hasJoin {scope : Nat}
   (LocalDiamond.iotaIdStrictRecWitnessCong
     (baseCase := baseCase) witnessStep).hasJoin
 
+/-- `fromSteps`-facing `listElim listCons` iota / head congruence arm. -/
+theorem fromSteps_iotaListElimConsHeadCong_hasJoin {scope : Nat}
+    {headValue steppedHeadValue tailValue nilBranch consBranch :
+      RawTerm scope}
+    (headStep : Step headValue steppedHeadValue) :
+    (fromSteps
+      (Step.iotaListElimCons
+        (headVal := headValue) (tailVal := tailValue)
+        (nilBranch := nilBranch) (consBranch := consBranch))
+      (iotaListElimConsHeadCong
+        (tailValue := tailValue) (nilBranch := nilBranch)
+        (consBranch := consBranch) headStep).rightStep).HasJoin :=
+  iotaListElimConsHeadCong_hasJoin headStep
+
+/-- `fromSteps`-facing `listElim listCons` iota / tail congruence arm. -/
+theorem fromSteps_iotaListElimConsTailCong_hasJoin {scope : Nat}
+    {headValue tailValue steppedTailValue nilBranch consBranch :
+      RawTerm scope}
+    (tailStep : Step tailValue steppedTailValue) :
+    (fromSteps
+      (Step.iotaListElimCons
+        (headVal := headValue) (tailVal := tailValue)
+        (nilBranch := nilBranch) (consBranch := consBranch))
+      (iotaListElimConsTailCong
+        (headValue := headValue) (nilBranch := nilBranch)
+        (consBranch := consBranch) tailStep).rightStep).HasJoin :=
+  iotaListElimConsTailCong_hasJoin tailStep
+
+/-- `fromSteps`-facing `listElim listCons` iota / nil-branch congruence arm. -/
+theorem fromSteps_iotaListElimConsNilBranchCong_hasJoin {scope : Nat}
+    {headValue tailValue nilBranch steppedNilBranch consBranch :
+      RawTerm scope}
+    (nilStep : Step nilBranch steppedNilBranch) :
+    (fromSteps
+      (Step.iotaListElimCons
+        (headVal := headValue) (tailVal := tailValue)
+        (nilBranch := nilBranch) (consBranch := consBranch))
+      (iotaListElimConsNilBranchCong
+        (headValue := headValue) (tailValue := tailValue)
+        (consBranch := consBranch) nilStep).rightStep).HasJoin :=
+  iotaListElimConsNilBranchCong_hasJoin nilStep
+
+/-- `fromSteps`-facing `listElim listCons` iota / cons-branch congruence arm. -/
+theorem fromSteps_iotaListElimConsConsBranchCong_hasJoin {scope : Nat}
+    {headValue tailValue nilBranch consBranch steppedConsBranch :
+      RawTerm scope}
+    (consStep : Step consBranch steppedConsBranch) :
+    (fromSteps
+      (Step.iotaListElimCons
+        (headVal := headValue) (tailVal := tailValue)
+        (nilBranch := nilBranch) (consBranch := consBranch))
+      (iotaListElimConsConsBranchCong
+        (headValue := headValue) (tailValue := tailValue)
+        (nilBranch := nilBranch) consStep).rightStep).HasJoin :=
+  iotaListElimConsConsBranchCong_hasJoin consStep
+
+/-- `fromSteps`-facing `listElim listNil` iota / nil-branch congruence arm. -/
+theorem fromSteps_iotaListElimNilBranchCong_hasJoin {scope : Nat}
+    {nilBranch steppedNilBranch consBranch : RawTerm scope}
+    (nilStep : Step nilBranch steppedNilBranch) :
+    (fromSteps
+      (Step.iotaListElimNil
+        (nilBranch := nilBranch) (consBranch := consBranch))
+      (iotaListElimNilBranchCong
+        (consBranch := consBranch) nilStep).rightStep).HasJoin :=
+  iotaListElimNilBranchCong_hasJoin nilStep
+
+/-- `fromSteps`-facing `listElim listNil` iota / cons-branch congruence arm. -/
+theorem fromSteps_iotaListElimConsBranchCong_hasJoin {scope : Nat}
+    {nilBranch consBranch steppedConsBranch : RawTerm scope}
+    (consStep : Step consBranch steppedConsBranch) :
+    (fromSteps
+      (Step.iotaListElimNil
+        (nilBranch := nilBranch) (consBranch := consBranch))
+      (iotaListElimConsBranchCong
+        (nilBranch := nilBranch) consStep).rightStep).HasJoin :=
+  iotaListElimConsBranchCong_hasJoin consStep
+
+/-- `fromSteps`-facing `optionMatch optionNone` iota / none-branch congruence arm. -/
+theorem fromSteps_iotaOptionMatchNoneBranchCong_hasJoin {scope : Nat}
+    {noneBranch steppedNoneBranch someBranch : RawTerm scope}
+    (noneStep : Step noneBranch steppedNoneBranch) :
+    (fromSteps
+      (Step.iotaOptionMatchNone
+        (noneBranch := noneBranch) (someBranch := someBranch))
+      (iotaOptionMatchNoneBranchCong
+        (someBranch := someBranch) noneStep).rightStep).HasJoin :=
+  iotaOptionMatchNoneBranchCong_hasJoin noneStep
+
+/-- `fromSteps`-facing `optionMatch optionNone` iota / some-branch congruence arm. -/
+theorem fromSteps_iotaOptionMatchSomeBranchCong_hasJoin {scope : Nat}
+    {noneBranch someBranch steppedSomeBranch : RawTerm scope}
+    (someStep : Step someBranch steppedSomeBranch) :
+    (fromSteps
+      (Step.iotaOptionMatchNone
+        (noneBranch := noneBranch) (someBranch := someBranch))
+      (iotaOptionMatchSomeBranchCong
+        (noneBranch := noneBranch) someStep).rightStep).HasJoin :=
+  iotaOptionMatchSomeBranchCong_hasJoin someStep
+
+/-- `fromSteps`-facing `optionMatch optionSome` iota / value congruence arm. -/
+theorem fromSteps_iotaOptionMatchSomeValueCong_hasJoin {scope : Nat}
+    {value steppedValue noneBranch someBranch : RawTerm scope}
+    (valueStep : Step value steppedValue) :
+    (fromSteps
+      (Step.iotaOptionMatchSome
+        (value := value) (noneBranch := noneBranch)
+        (someBranch := someBranch))
+      (iotaOptionMatchSomeValueCong
+        (noneBranch := noneBranch) (someBranch := someBranch)
+        valueStep).rightStep).HasJoin :=
+  iotaOptionMatchSomeValueCong_hasJoin valueStep
+
+/-- `fromSteps`-facing `optionMatch optionSome` iota / none-branch congruence arm. -/
+theorem fromSteps_iotaOptionMatchSomeNoneBranchCong_hasJoin {scope : Nat}
+    {value noneBranch steppedNoneBranch someBranch : RawTerm scope}
+    (noneStep : Step noneBranch steppedNoneBranch) :
+    (fromSteps
+      (Step.iotaOptionMatchSome
+        (value := value) (noneBranch := noneBranch)
+        (someBranch := someBranch))
+      (iotaOptionMatchSomeNoneBranchCong
+        (value := value) (someBranch := someBranch)
+        noneStep).rightStep).HasJoin :=
+  iotaOptionMatchSomeNoneBranchCong_hasJoin noneStep
+
+/-- `fromSteps`-facing `optionMatch optionSome` iota / some-branch congruence arm. -/
+theorem fromSteps_iotaOptionMatchSomeSomeBranchCong_hasJoin {scope : Nat}
+    {value noneBranch someBranch steppedSomeBranch : RawTerm scope}
+    (someStep : Step someBranch steppedSomeBranch) :
+    (fromSteps
+      (Step.iotaOptionMatchSome
+        (value := value) (noneBranch := noneBranch)
+        (someBranch := someBranch))
+      (iotaOptionMatchSomeSomeBranchCong
+        (value := value) (noneBranch := noneBranch)
+        someStep).rightStep).HasJoin :=
+  iotaOptionMatchSomeSomeBranchCong_hasJoin someStep
+
+/-- `fromSteps`-facing `eitherMatch eitherInl` iota / value congruence arm. -/
+theorem fromSteps_iotaEitherMatchInlValueCong_hasJoin {scope : Nat}
+    {value steppedValue leftBranch rightBranch : RawTerm scope}
+    (valueStep : Step value steppedValue) :
+    (fromSteps
+      (Step.iotaEitherMatchInl
+        (value := value) (leftBranch := leftBranch)
+        (rightBranch := rightBranch))
+      (iotaEitherMatchInlValueCong
+        (leftBranch := leftBranch) (rightBranch := rightBranch)
+        valueStep).rightStep).HasJoin :=
+  iotaEitherMatchInlValueCong_hasJoin valueStep
+
+/-- `fromSteps`-facing `eitherMatch eitherInl` iota / left-branch congruence arm. -/
+theorem fromSteps_iotaEitherMatchInlLeftBranchCong_hasJoin {scope : Nat}
+    {value leftBranch steppedLeftBranch rightBranch : RawTerm scope}
+    (leftStep : Step leftBranch steppedLeftBranch) :
+    (fromSteps
+      (Step.iotaEitherMatchInl
+        (value := value) (leftBranch := leftBranch)
+        (rightBranch := rightBranch))
+      (iotaEitherMatchInlLeftBranchCong
+        (value := value) (rightBranch := rightBranch)
+        leftStep).rightStep).HasJoin :=
+  iotaEitherMatchInlLeftBranchCong_hasJoin leftStep
+
+/-- `fromSteps`-facing `eitherMatch eitherInl` iota / right-branch congruence arm. -/
+theorem fromSteps_iotaEitherMatchInlRightBranchCong_hasJoin {scope : Nat}
+    {value leftBranch rightBranch steppedRightBranch : RawTerm scope}
+    (rightStep : Step rightBranch steppedRightBranch) :
+    (fromSteps
+      (Step.iotaEitherMatchInl
+        (value := value) (leftBranch := leftBranch)
+        (rightBranch := rightBranch))
+      (iotaEitherMatchInlRightBranchCong
+        (value := value) (leftBranch := leftBranch)
+        rightStep).rightStep).HasJoin :=
+  iotaEitherMatchInlRightBranchCong_hasJoin rightStep
+
+/-- `fromSteps`-facing `eitherMatch eitherInr` iota / value congruence arm. -/
+theorem fromSteps_iotaEitherMatchInrValueCong_hasJoin {scope : Nat}
+    {value steppedValue leftBranch rightBranch : RawTerm scope}
+    (valueStep : Step value steppedValue) :
+    (fromSteps
+      (Step.iotaEitherMatchInr
+        (value := value) (leftBranch := leftBranch)
+        (rightBranch := rightBranch))
+      (iotaEitherMatchInrValueCong
+        (leftBranch := leftBranch) (rightBranch := rightBranch)
+        valueStep).rightStep).HasJoin :=
+  iotaEitherMatchInrValueCong_hasJoin valueStep
+
+/-- `fromSteps`-facing `eitherMatch eitherInr` iota / left-branch congruence arm. -/
+theorem fromSteps_iotaEitherMatchInrLeftBranchCong_hasJoin {scope : Nat}
+    {value leftBranch steppedLeftBranch rightBranch : RawTerm scope}
+    (leftStep : Step leftBranch steppedLeftBranch) :
+    (fromSteps
+      (Step.iotaEitherMatchInr
+        (value := value) (leftBranch := leftBranch)
+        (rightBranch := rightBranch))
+      (iotaEitherMatchInrLeftBranchCong
+        (value := value) (rightBranch := rightBranch)
+        leftStep).rightStep).HasJoin :=
+  iotaEitherMatchInrLeftBranchCong_hasJoin leftStep
+
+/-- `fromSteps`-facing `eitherMatch eitherInr` iota / right-branch congruence arm. -/
+theorem fromSteps_iotaEitherMatchInrRightBranchCong_hasJoin {scope : Nat}
+    {value leftBranch rightBranch steppedRightBranch : RawTerm scope}
+    (rightStep : Step rightBranch steppedRightBranch) :
+    (fromSteps
+      (Step.iotaEitherMatchInr
+        (value := value) (leftBranch := leftBranch)
+        (rightBranch := rightBranch))
+      (iotaEitherMatchInrRightBranchCong
+        (value := value) (leftBranch := leftBranch)
+        rightStep).rightStep).HasJoin :=
+  iotaEitherMatchInrRightBranchCong_hasJoin rightStep
+
+/-- `fromSteps`-facing `idJ refl` iota / base-case congruence arm. -/
+theorem fromSteps_iotaIdJBaseCaseCong_hasJoin {scope : Nat}
+    {baseCase steppedBaseCase rawWitness : RawTerm scope}
+    (baseStep : Step baseCase steppedBaseCase) :
+    (fromSteps
+      (Step.iotaIdJRefl
+        (baseCase := baseCase) (rawWitness := rawWitness))
+      (iotaIdJBaseCaseCong
+        (rawWitness := rawWitness) baseStep).rightStep).HasJoin :=
+  iotaIdJBaseCaseCong_hasJoin baseStep
+
+/-- `fromSteps`-facing `idJ refl` iota / witness congruence arm. -/
+theorem fromSteps_iotaIdJWitnessCong_hasJoin {scope : Nat}
+    {baseCase rawWitness steppedRawWitness : RawTerm scope}
+    (witnessStep : Step rawWitness steppedRawWitness) :
+    (fromSteps
+      (Step.iotaIdJRefl
+        (baseCase := baseCase) (rawWitness := rawWitness))
+      (iotaIdJWitnessCong
+        (baseCase := baseCase) witnessStep).rightStep).HasJoin :=
+  iotaIdJWitnessCong_hasJoin witnessStep
+
+/-- `fromSteps`-facing `idStrictRec refl` iota / base-case congruence arm. -/
+theorem fromSteps_iotaIdStrictRecBaseCaseCong_hasJoin {scope : Nat}
+    {baseCase steppedBaseCase rawWitness : RawTerm scope}
+    (baseStep : Step baseCase steppedBaseCase) :
+    (fromSteps
+      (Step.iotaIdStrictRecRefl
+        (baseCase := baseCase) (rawWitness := rawWitness))
+      (iotaIdStrictRecBaseCaseCong
+        (rawWitness := rawWitness) baseStep).rightStep).HasJoin :=
+  iotaIdStrictRecBaseCaseCong_hasJoin baseStep
+
+/-- `fromSteps`-facing `idStrictRec refl` iota / witness congruence arm. -/
+theorem fromSteps_iotaIdStrictRecWitnessCong_hasJoin {scope : Nat}
+    {baseCase rawWitness steppedRawWitness : RawTerm scope}
+    (witnessStep : Step rawWitness steppedRawWitness) :
+    (fromSteps
+      (Step.iotaIdStrictRecRefl
+        (baseCase := baseCase) (rawWitness := rawWitness))
+      (iotaIdStrictRecWitnessCong
+        (baseCase := baseCase) witnessStep).rightStep).HasJoin :=
+  iotaIdStrictRecWitnessCong_hasJoin witnessStep
+
 /-- M7 contradiction arm for the mutually-exclusive bool true/false root pair. -/
 theorem iotaBoolTrue_iotaBoolFalse_hasSourcesDisjoint {scope : Nat}
     (thenTrue elseTrue thenFalse elseFalse : RawTerm scope) :
