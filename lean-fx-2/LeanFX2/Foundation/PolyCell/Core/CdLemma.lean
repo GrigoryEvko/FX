@@ -1,4 +1,5 @@
 import LeanFX2.Foundation.PolyCell.Core.CriticalPairs
+import LeanFX2.Foundation.PolyCell.Core.RawSize
 
 /-! # Foundation/PolyCell/Core/CdLemma
     — M7 confluence join API
@@ -118,6 +119,72 @@ end StepPairJoin
 
 namespace StepChildrenPairJoin
 
+/-- Lift a term-level join through the head child of a spine. -/
+theorem ofHeadJoin {scope shift : Nat} {restShifts : List Nat}
+    {sourceHead leftHead rightHead : RawTerm (scope + shift)}
+    (restChildren : RawTermChildren restShifts scope)
+    {leftHeadStep : Step sourceHead leftHead}
+    {rightHeadStep : Step sourceHead rightHead}
+    (headJoin : StepPairJoin leftHeadStep rightHeadStep) :
+    StepChildrenPairJoin
+      (StepChildren.here restChildren leftHeadStep)
+      (StepChildren.here restChildren rightHeadStep) :=
+  Exists.elim headJoin
+    (fun commonHead chains =>
+      ⟨ RawTermChildren.childCons commonHead restChildren
+      , StepChildrenStar.here restChildren chains.1
+      , StepChildrenStar.here restChildren chains.2 ⟩)
+
+/-- Join independent reductions in the head child and tail spine. -/
+theorem ofIndependentHeadTail {scope shift : Nat} {restShifts : List Nat}
+    {sourceHead targetHead : RawTerm (scope + shift)}
+    {sourceTail targetTail : RawTermChildren restShifts scope}
+    (headStep : Step sourceHead targetHead)
+    (tailStep : StepChildren sourceTail targetTail) :
+    StepChildrenPairJoin
+      (StepChildren.here sourceTail headStep)
+      (StepChildren.there sourceHead tailStep) :=
+  ⟨ RawTermChildren.childCons targetHead targetTail
+  , StepChildrenStar.trans
+      (StepChildren.there targetHead tailStep)
+      (StepChildrenStar.refl _)
+  , StepChildrenStar.trans
+      (StepChildren.here targetTail headStep)
+      (StepChildrenStar.refl _) ⟩
+
+/-- Join independent reductions in the tail spine and head child. -/
+theorem ofIndependentTailHead {scope shift : Nat} {restShifts : List Nat}
+    {sourceHead targetHead : RawTerm (scope + shift)}
+    {sourceTail targetTail : RawTermChildren restShifts scope}
+    (tailStep : StepChildren sourceTail targetTail)
+    (headStep : Step sourceHead targetHead) :
+    StepChildrenPairJoin
+      (StepChildren.there sourceHead tailStep)
+      (StepChildren.here sourceTail headStep) :=
+  ⟨ RawTermChildren.childCons targetHead targetTail
+  , StepChildrenStar.trans
+      (StepChildren.here targetTail headStep)
+      (StepChildrenStar.refl _)
+  , StepChildrenStar.trans
+      (StepChildren.there targetHead tailStep)
+      (StepChildrenStar.refl _) ⟩
+
+/-- Lift a tail-spine join through a shared head child. -/
+theorem ofTailJoin {scope shift : Nat} {restShifts : List Nat}
+    (head : RawTerm (scope + shift))
+    {sourceTail leftTail rightTail : RawTermChildren restShifts scope}
+    {leftTailStep : StepChildren sourceTail leftTail}
+    {rightTailStep : StepChildren sourceTail rightTail}
+    (tailJoin : StepChildrenPairJoin leftTailStep rightTailStep) :
+    StepChildrenPairJoin
+      (StepChildren.there head leftTailStep)
+      (StepChildren.there head rightTailStep) :=
+  Exists.elim tailJoin
+    (fun commonTail chains =>
+      ⟨ RawTermChildren.childCons head commonTail
+      , StepChildrenStar.there head chains.1
+      , StepChildrenStar.there head chains.2 ⟩)
+
 /-- Same-child-reduct closure for child-spine joins. -/
 theorem ofReductsEqual {scope : Nat} {binderShifts : List Nat}
     {sourceChildren leftChildren rightChildren :
@@ -149,6 +216,44 @@ theorem swap {scope : Nat} {binderShifts : List Nat}
     Exists.elim join
       (fun commonChildren chains =>
         ⟨commonChildren, chains.2, chains.1⟩)
+
+/-- Resolve child-spine branchings structurally, assuming a term-level
+one-step resolver for head/head conflicts.
+
+This is the child half of the eventual mutual M7 resolver.  The
+head/head case delegates to the term-level resolver; head/tail and
+tail/head are independent-position diamonds; tail/tail recurses on the
+tail spine. -/
+theorem ofStepPairResolver
+    (resolveStepPair :
+      ∀ {scope : Nat} {sourceTerm leftReduct rightReduct : RawTerm scope},
+        (leftStep : Step sourceTerm leftReduct) →
+        (rightStep : Step sourceTerm rightReduct) →
+        StepPairJoin leftStep rightStep) :
+    ∀ {scope : Nat} {binderShifts : List Nat}
+      {sourceChildren leftChildren rightChildren :
+        RawTermChildren binderShifts scope},
+      (leftStep : StepChildren sourceChildren leftChildren) →
+      (rightStep : StepChildren sourceChildren rightChildren) →
+      StepChildrenPairJoin leftStep rightStep
+  | _, _, _, _, _, .here restChildren leftHeadStep,
+      .here _ rightHeadStep =>
+      ofHeadJoin restChildren
+        (resolveStepPair leftHeadStep rightHeadStep)
+  | _, _, _, _, _, .here _ leftHeadStep,
+      .there _ rightTailStep =>
+      ofIndependentHeadTail leftHeadStep rightTailStep
+  | _, _, _, _, _, .there _ leftTailStep,
+      .here _ rightHeadStep =>
+      ofIndependentTailHead leftTailStep rightHeadStep
+  | _, _, _, _, _, .there sourceHead leftTailStep,
+      .there _ rightTailStep =>
+      ofTailJoin sourceHead
+        (ofStepPairResolver resolveStepPair leftTailStep rightTailStep)
+termination_by _scope _binderShifts sourceChildren _leftChildren
+    _rightChildren _leftStep _rightStep => sourceChildren.size
+decreasing_by
+  exact RawTermChildren.size_lt_childCons_tail _ _
 
 end StepChildrenPairJoin
 
