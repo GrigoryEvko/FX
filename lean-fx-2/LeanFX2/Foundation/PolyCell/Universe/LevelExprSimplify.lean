@@ -1219,4 +1219,190 @@ theorem LevelExpr.simplify_denote_eq :
              else LevelExpr.levelMax (e1.denote env) (e2.denote env))
           rw [ih1, ih2]
 
+/-! ## Algebraic laws — the maximal-power Phase B backbone
+
+M22-A7 (#409, 2026-05-28).  Per polycell.md §11.8.2's commitment
+to a polynomial-time decidable universe equivalence (Mörtberg-
+Sterling 2024), Phase B's canonical normalizer must understand
+that `lmax` is a COMMUTATIVE / ASSOCIATIVE / IDEMPOTENT operation
+and that `lsucc` distributes over `lmax`.  These are the
+JOIN-SEMILATTICE-WITH-SUCCESSOR algebraic laws.
+
+This section ships them as theorems at TWO levels:
+
+1. **Nat-level** (`levelMax_comm`, `levelMax_assoc`): proved
+   directly via structural pattern matching on both arguments.
+   No `Nat.le` conditional reasoning (which carries propext via
+   Lean core's `Nat.max_*` lemmas).
+2. **LevelExpr-level via denote** (`lmax_denote_comm`,
+   `lmax_denote_assoc`, `lsucc_lmax_distrib_denote`): immediate
+   corollaries of the Nat-level laws after unfolding `denote`.
+
+`limax` is INTENTIONALLY NOT commutative (rule 5 collapses
+when the RIGHT arg is lzero, not the left).  This matches the
+impredicative-max semantics: `limax (Πtype's domain) (Πtype's
+codomain) = lzero` when codomain is Prop.  Asymmetric by design.
+
+## Why these are foundational for maximal-power universes
+
+Per §11.8.2, the kernel commits to:
+* 2LTT with both `gen_universeU` (univalent inner) and
+  `gen_universeS` (strict outer) hierarchies parameterized by
+  LevelExpr.
+* Directed universes `gen_universeD` / `gen_universeOmega`
+  (Riehl-Shulman 2017 + Loubaton 2307.11931).
+* SProp + full Setzer-Rathjen large-cardinal hierarchy via
+  UniverseFlag (M23 #272).
+* Universe polymorphism via LevelExpr — declarations parameterized
+  over universe-level expressions.
+
+For universe polymorphism to be SOUND, two declarations that
+quantify over `Type @ lmax e1 e2` and `Type @ lmax e2 e1` must
+be interchangeable — they denote the same universe.  These
+algebraic laws prove the semantic equivalence; Phase B's canonical
+normalizer enforces it syntactically via canonical ordering. -/
+
+/-- `levelMax` is commutative: `levelMax a b = levelMax b a`.
+
+Proof: structural pattern match on both arguments.  Three of
+four cases close by rfl (definitional equality on the clauses);
+the `(a+1, b+1)` case unfolds to `levelMax a b + 1 = levelMax
+b a + 1` and closes via the IH on `(a, b)`. -/
+theorem LevelExpr.levelMax_comm : ∀ (valueA valueB : Nat),
+    LevelExpr.levelMax valueA valueB = LevelExpr.levelMax valueB valueA
+  | 0, 0 => rfl
+  | 0, _ + 1 => rfl
+  | _ + 1, 0 => rfl
+  | a + 1, b + 1 => by
+      show LevelExpr.levelMax a b + 1 = LevelExpr.levelMax b a + 1
+      rw [LevelExpr.levelMax_comm a b]
+
+/-- `levelMax` is associative.
+
+Proof: 3D structural pattern match.  All cases except `(a+1,
+b+1, c+1)` close by rfl (the rule reductions definitionally
+match between LHS and RHS).  The triple-successor case unfolds
+both sides to `levelMax (levelMax a b) c + 1` and `levelMax a
+(levelMax b c) + 1`, closing via the IH on `(a, b, c)`. -/
+theorem LevelExpr.levelMax_assoc : ∀ (valueA valueB valueC : Nat),
+    LevelExpr.levelMax (LevelExpr.levelMax valueA valueB) valueC =
+      LevelExpr.levelMax valueA (LevelExpr.levelMax valueB valueC)
+  | 0, _, _ => rfl
+  | _ + 1, 0, _ => rfl
+  | _ + 1, _ + 1, 0 => rfl
+  | a + 1, b + 1, c + 1 => by
+      show LevelExpr.levelMax (LevelExpr.levelMax a b) c + 1 =
+        LevelExpr.levelMax a (LevelExpr.levelMax b c) + 1
+      rw [LevelExpr.levelMax_assoc a b c]
+
+/-- `levelMax (a+1) (b+1) = levelMax a b + 1`.  Definitional;
+exposes Phase B's lsucc-distributivity equation at the
+arithmetic level. -/
+theorem LevelExpr.levelMax_succ_distrib (valueA valueB : Nat) :
+    LevelExpr.levelMax (valueA + 1) (valueB + 1) =
+      LevelExpr.levelMax valueA valueB + 1 := rfl
+
+/-! ## Denote-level lifts to LevelExpr
+
+These theorems lift the Nat-level algebraic laws to the
+LevelExpr semantic level.  Each is a one-line proof: unfold
+`denote` on lmax, apply the Nat-level law. -/
+
+/-- `lmax` is denotation-commutative: under any environment,
+`(lmax e1 e2).denote env = (lmax e2 e1).denote env`.
+
+This is the SEMANTIC justification for Phase B's canonical
+lmax ordering: regardless of syntactic operand order, the
+universe denoted is the same. -/
+theorem LevelExpr.lmax_denote_comm (e1 e2 : LevelExpr)
+    (env : Nat → Nat) :
+    (LevelExpr.lmax e1 e2).denote env =
+      (LevelExpr.lmax e2 e1).denote env := by
+  show LevelExpr.levelMax (e1.denote env) (e2.denote env) =
+    LevelExpr.levelMax (e2.denote env) (e1.denote env)
+  exact LevelExpr.levelMax_comm _ _
+
+/-- `lmax` is denotation-associative: nested lmax can be
+re-parenthesized without changing the denotation. -/
+theorem LevelExpr.lmax_denote_assoc (e1 e2 e3 : LevelExpr)
+    (env : Nat → Nat) :
+    (LevelExpr.lmax (LevelExpr.lmax e1 e2) e3).denote env =
+      (LevelExpr.lmax e1 (LevelExpr.lmax e2 e3)).denote env := by
+  show LevelExpr.levelMax
+        (LevelExpr.levelMax (e1.denote env) (e2.denote env))
+        (e3.denote env) =
+      LevelExpr.levelMax (e1.denote env)
+        (LevelExpr.levelMax (e2.denote env) (e3.denote env))
+  exact LevelExpr.levelMax_assoc _ _ _
+
+/-- `lsucc` distributes over `lmax` under denote:
+`(lsucc (lmax e1 e2)).denote env = (lmax (lsucc e1) (lsucc e2)).denote env`.
+
+This is Phase B's load-bearing distributivity equation per
+Mörtberg-Sterling 2024.  Canonical-form normalization pushes
+`lsucc` INSIDE `lmax`, flattening nested successors. -/
+theorem LevelExpr.lsucc_lmax_distrib_denote (e1 e2 : LevelExpr)
+    (env : Nat → Nat) :
+    (LevelExpr.lsucc (LevelExpr.lmax e1 e2)).denote env =
+      (LevelExpr.lmax (LevelExpr.lsucc e1) (LevelExpr.lsucc e2)).denote env := by
+  show LevelExpr.levelMax (e1.denote env) (e2.denote env) + 1 =
+    LevelExpr.levelMax (e1.denote env + 1) (e2.denote env + 1)
+  rfl
+
+/-! ## Semantic equivalence relation
+
+Per §11.8.2's "polynomial-time decidable equality up to algebra"
+commitment, the equivalence relation on universe levels is:
+two `LevelExpr`s are equivalent iff they denote the same value
+under every environment.
+
+This section defines the relation + proves the algebraic laws
+are equivalences in it.  Phase B's canonical normalizer (when
+shipped) will provide the decision procedure for this relation
+via syntactic equality on canonical forms. -/
+
+/-- Semantic equivalence on `LevelExpr` per §11.8.2: two
+expressions are equivalent iff they denote the same Nat
+value under every environment. -/
+def LevelExpr.denoteEquiv (e1 e2 : LevelExpr) : Prop :=
+  ∀ (env : Nat → Nat), e1.denote env = e2.denote env
+
+/-- `denoteEquiv` is reflexive. -/
+theorem LevelExpr.denoteEquiv.refl (expr : LevelExpr) :
+    LevelExpr.denoteEquiv expr expr := fun _ => rfl
+
+/-- `denoteEquiv` is symmetric. -/
+theorem LevelExpr.denoteEquiv.symm {e1 e2 : LevelExpr}
+    (h : LevelExpr.denoteEquiv e1 e2) :
+    LevelExpr.denoteEquiv e2 e1 := fun env => (h env).symm
+
+/-- `denoteEquiv` is transitive. -/
+theorem LevelExpr.denoteEquiv.trans {e1 e2 e3 : LevelExpr}
+    (h12 : LevelExpr.denoteEquiv e1 e2)
+    (h23 : LevelExpr.denoteEquiv e2 e3) :
+    LevelExpr.denoteEquiv e1 e3 := fun env => (h12 env).trans (h23 env)
+
+/-- `lmax` is commutative as a `denoteEquiv` rule. -/
+theorem LevelExpr.lmax_comm_denoteEquiv (e1 e2 : LevelExpr) :
+    LevelExpr.denoteEquiv (LevelExpr.lmax e1 e2) (LevelExpr.lmax e2 e1) :=
+  fun env => LevelExpr.lmax_denote_comm e1 e2 env
+
+/-- `lmax` is associative as a `denoteEquiv` rule. -/
+theorem LevelExpr.lmax_assoc_denoteEquiv (e1 e2 e3 : LevelExpr) :
+    LevelExpr.denoteEquiv (LevelExpr.lmax (LevelExpr.lmax e1 e2) e3)
+      (LevelExpr.lmax e1 (LevelExpr.lmax e2 e3)) :=
+  fun env => LevelExpr.lmax_denote_assoc e1 e2 e3 env
+
+/-- `lsucc` distributes over `lmax` as a `denoteEquiv` rule. -/
+theorem LevelExpr.lsucc_lmax_distrib_denoteEquiv (e1 e2 : LevelExpr) :
+    LevelExpr.denoteEquiv (LevelExpr.lsucc (LevelExpr.lmax e1 e2))
+      (LevelExpr.lmax (LevelExpr.lsucc e1) (LevelExpr.lsucc e2)) :=
+  fun env => LevelExpr.lsucc_lmax_distrib_denote e1 e2 env
+
+/-- Phase A's `simplify` is sound under `denoteEquiv`.  Combines
+`simplify_denote_eq` with the denoteEquiv definition. -/
+theorem LevelExpr.simplify_denoteEquiv (expr : LevelExpr) :
+    LevelExpr.denoteEquiv expr.simplify expr :=
+  fun env => LevelExpr.simplify_denote_eq expr env
+
 end LeanFX2.Foundation.PolyCell.Universe

@@ -3550,6 +3550,44 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.denote_limax
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.simplify_denote_eq
 
+-- ─── M22 Phase B algebraic laws — maximal-power universe backbone ────
+-- Audit gates for #409 (M22-A7, 2026-05-28).
+--
+-- Per polycell.md §11.8.2, the kernel commits to a polynomial-time
+-- decidable universe equivalence (Mörtberg-Sterling 2024).  These
+-- algebraic laws are the join-semilattice-with-successor backbone:
+--
+-- * Nat-level: `levelMax_comm` + `levelMax_assoc` + `levelMax_succ_distrib`
+--   (proved via structural pattern match on both args, no `Nat.le`
+--   conditional reasoning).
+-- * LevelExpr-level via denote: `lmax_denote_comm` + `lmax_denote_assoc`
+--   + `lsucc_lmax_distrib_denote` (one-line proofs lifting the Nat
+--   laws after unfolding `denote`).
+-- * `denoteEquiv` equivalence relation: reflexive + symmetric +
+--   transitive.  Each algebraic law repackaged as a `denoteEquiv`
+--   rule.  Phase A's `simplify` is sound under `denoteEquiv` via
+--   `simplify_denoteEquiv` (combines `simplify_denote_eq` + def
+--   unfolding).
+--
+-- `limax` is INTENTIONALLY NOT commutative: rule 5 collapses when
+-- the RIGHT arg is lzero, not the left.  This matches impredicative-
+-- max semantics (Π-type universe with Prop codomain collapses to
+-- Prop).
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.levelMax_comm
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.levelMax_assoc
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.levelMax_succ_distrib
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.lmax_denote_comm
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.lmax_denote_assoc
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.lsucc_lmax_distrib_denote
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.denoteEquiv
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.denoteEquiv.refl
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.denoteEquiv.symm
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.denoteEquiv.trans
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.lmax_comm_denoteEquiv
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.lmax_assoc_denoteEquiv
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.lsucc_lmax_distrib_denoteEquiv
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.simplify_denoteEquiv
+
 -- ─── M11 (#260): NbE substrate — canonical normalizer signature ─────
 -- RawTerm.isNF predicate shipped via M-substrate-3 #367.  This commit
 -- ships the SIGNATURE-LEVEL contract for the M12 #261 implementation:
