@@ -536,6 +536,109 @@ theorem Step.from_glueIntro
           | there _ restStep =>
               exact absurd restStep StepChildren.no_step_at_empty_spine
 
+/-! ## 2-child mixed binder inversions
+
+The type-code binder constructors have a same-scope first child and an
+under-one-binder second child.  Operationally they are still congruence-only,
+but the extracted second-step witness lives at `scope + 1`. -/
+
+/-- **Inversion for `piTyCode`-rooted Step.** -/
+theorem Step.from_piTyCode
+    {scope : Nat} {domain : RawTerm scope} {codomain : RawTerm (scope + 1)}
+    {target : RawTerm scope}
+    (reduction :
+      Step (.mkGen .gen_piTyCode ()
+              (.childCons domain (.childCons codomain .childNil)))
+           target) :
+    (∃ (domainAfter : RawTerm scope),
+        target = .mkGen .gen_piTyCode ()
+          (.childCons domainAfter (.childCons codomain .childNil)) ∧
+        Step domain domainAfter)
+    ∨
+    (∃ (codomainAfter : RawTerm (scope + 1)),
+        target = .mkGen .gen_piTyCode ()
+          (.childCons domain (.childCons codomainAfter .childNil)) ∧
+        Step codomain codomainAfter) := by
+  cases reduction with
+  | cong _ _ childStep =>
+      cases childStep with
+      | here _ domainStep =>
+          rename_i domainAfter
+          exact Or.inl ⟨domainAfter, rfl, domainStep⟩
+      | there _ tailStep =>
+          cases tailStep with
+          | here _ codomainStep =>
+              rename_i codomainAfter
+              exact Or.inr ⟨codomainAfter, rfl, codomainStep⟩
+          | there _ restStep =>
+              exact absurd restStep StepChildren.no_step_at_empty_spine
+
+/-- **Inversion for `sigmaTyCode`-rooted Step.** -/
+theorem Step.from_sigmaTyCode
+    {scope : Nat} {domain : RawTerm scope} {codomain : RawTerm (scope + 1)}
+    {target : RawTerm scope}
+    (reduction :
+      Step (.mkGen .gen_sigmaTyCode ()
+              (.childCons domain (.childCons codomain .childNil)))
+           target) :
+    (∃ (domainAfter : RawTerm scope),
+        target = .mkGen .gen_sigmaTyCode ()
+          (.childCons domainAfter (.childCons codomain .childNil)) ∧
+        Step domain domainAfter)
+    ∨
+    (∃ (codomainAfter : RawTerm (scope + 1)),
+        target = .mkGen .gen_sigmaTyCode ()
+          (.childCons domain (.childCons codomainAfter .childNil)) ∧
+        Step codomain codomainAfter) := by
+  cases reduction with
+  | cong _ _ childStep =>
+      cases childStep with
+      | here _ domainStep =>
+          rename_i domainAfter
+          exact Or.inl ⟨domainAfter, rfl, domainStep⟩
+      | there _ tailStep =>
+          cases tailStep with
+          | here _ codomainStep =>
+              rename_i codomainAfter
+              exact Or.inr ⟨codomainAfter, rfl, codomainStep⟩
+          | there _ restStep =>
+              exact absurd restStep StepChildren.no_step_at_empty_spine
+
+/-- **Inversion for `polyFunctor`-rooted Step.** -/
+theorem Step.from_polyFunctor
+    {scope : Nat} {positionType : RawTerm scope}
+    {positionFamily : RawTerm (scope + 1)}
+    {target : RawTerm scope}
+    (reduction :
+      Step (.mkGen .gen_polyFunctor ()
+              (.childCons positionType
+                (.childCons positionFamily .childNil)))
+           target) :
+    (∃ (positionTypeAfter : RawTerm scope),
+        target = .mkGen .gen_polyFunctor ()
+          (.childCons positionTypeAfter
+            (.childCons positionFamily .childNil)) ∧
+        Step positionType positionTypeAfter)
+    ∨
+    (∃ (positionFamilyAfter : RawTerm (scope + 1)),
+        target = .mkGen .gen_polyFunctor ()
+          (.childCons positionType
+            (.childCons positionFamilyAfter .childNil)) ∧
+        Step positionFamily positionFamilyAfter) := by
+  cases reduction with
+  | cong _ _ childStep =>
+      cases childStep with
+      | here _ positionTypeStep =>
+          rename_i positionTypeAfter
+          exact Or.inl ⟨positionTypeAfter, rfl, positionTypeStep⟩
+      | there _ tailStep =>
+          cases tailStep with
+          | here _ positionFamilyStep =>
+              rename_i positionFamilyAfter
+              exact Or.inr ⟨positionFamilyAfter, rfl, positionFamilyStep⟩
+          | there _ restStep =>
+              exact absurd restStep StepChildren.no_step_at_empty_spine
+
 /-! ## Eliminator inversions (introducing iota disjuncts)
 
 Eliminator constructors (fst, snd, boolElim, natElim, ...) have a

@@ -315,5 +315,72 @@ theorem glueIntro_isStronglyNormalizing_of_components {scope : Nat}
     baseTerminates
     partialTerminates
 
+/-- Pi-type codes are strongly normalizing when their domain and under-binder
+codomain codes are strongly normalizing. -/
+theorem piTyCode_isStronglyNormalizing_of_domain_codomain {scope : Nat}
+    {domain : RawTerm scope} {codomain : RawTerm (scope + 1)}
+    (domainTerminates : IsStronglyNormalizing domain)
+    (codomainTerminates : IsStronglyNormalizing codomain) :
+    IsStronglyNormalizing
+      (.mkGen .gen_piTyCode ()
+        (.childCons domain (.childCons codomain .childNil)) :
+        RawTerm scope) :=
+  isStronglyNormalizing_of_twoChildCong
+    (firstScope := scope)
+    (secondScope := scope + 1)
+    (parentScope := scope)
+    (fun currentDomain currentCodomain =>
+      (.mkGen .gen_piTyCode ()
+        (.childCons currentDomain (.childCons currentCodomain .childNil)) :
+        RawTerm scope))
+    (fun parentStep => Step.from_piTyCode parentStep)
+    domainTerminates
+    codomainTerminates
+
+/-- Sigma-type codes are strongly normalizing when their domain and
+under-binder codomain codes are strongly normalizing. -/
+theorem sigmaTyCode_isStronglyNormalizing_of_domain_codomain {scope : Nat}
+    {domain : RawTerm scope} {codomain : RawTerm (scope + 1)}
+    (domainTerminates : IsStronglyNormalizing domain)
+    (codomainTerminates : IsStronglyNormalizing codomain) :
+    IsStronglyNormalizing
+      (.mkGen .gen_sigmaTyCode ()
+        (.childCons domain (.childCons codomain .childNil)) :
+        RawTerm scope) :=
+  isStronglyNormalizing_of_twoChildCong
+    (firstScope := scope)
+    (secondScope := scope + 1)
+    (parentScope := scope)
+    (fun currentDomain currentCodomain =>
+      (.mkGen .gen_sigmaTyCode ()
+        (.childCons currentDomain (.childCons currentCodomain .childNil)) :
+        RawTerm scope))
+    (fun parentStep => Step.from_sigmaTyCode parentStep)
+    domainTerminates
+    codomainTerminates
+
+/-- Polynomial functor codes are strongly normalizing when their position type
+and under-binder position family are strongly normalizing. -/
+theorem polyFunctor_isStronglyNormalizing_of_position_type_family {scope : Nat}
+    {positionType : RawTerm scope} {positionFamily : RawTerm (scope + 1)}
+    (positionTypeTerminates : IsStronglyNormalizing positionType)
+    (positionFamilyTerminates : IsStronglyNormalizing positionFamily) :
+    IsStronglyNormalizing
+      (.mkGen .gen_polyFunctor ()
+        (.childCons positionType (.childCons positionFamily .childNil)) :
+        RawTerm scope) :=
+  isStronglyNormalizing_of_twoChildCong
+    (firstScope := scope)
+    (secondScope := scope + 1)
+    (parentScope := scope)
+    (fun currentPositionType currentPositionFamily =>
+      (.mkGen .gen_polyFunctor ()
+        (.childCons currentPositionType
+          (.childCons currentPositionFamily .childNil)) :
+        RawTerm scope))
+    (fun parentStep => Step.from_polyFunctor parentStep)
+    positionTypeTerminates
+    positionFamilyTerminates
+
 end StepStar
 end LeanFX2.Foundation.PolyCell.Core
