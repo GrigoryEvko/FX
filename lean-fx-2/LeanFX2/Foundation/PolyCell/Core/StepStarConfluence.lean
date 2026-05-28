@@ -34,6 +34,24 @@ def HasStrip : Prop :=
     StepStar sourceTerm rightReduct →
     Join leftReduct rightReduct
 
+/-- The one-step-successor relation used for accessibility/termination:
+`laterTerm` is below `earlierTerm` when `earlierTerm` takes one `Step`
+to `laterTerm`. -/
+def StepSuccessor {scope : Nat} (laterTerm earlierTerm : RawTerm scope) :
+    Prop :=
+  Step earlierTerm laterTerm
+
+/-- A raw term is strongly normalizing when there is no infinite chain of
+successive one-step reducts below it. -/
+def IsStronglyNormalizing {scope : Nat} (sourceTerm : RawTerm scope) :
+    Prop :=
+  Acc StepSuccessor sourceTerm
+
+/-- Strong normalization for the v2 raw `Step` relation at every scope. -/
+def HasStrongNormalization : Prop :=
+  ∀ {scope : Nat} (sourceTerm : RawTerm scope),
+    IsStronglyNormalizing sourceTerm
+
 /-- M7's `cd_lemma` gives the one-step/one-step local join, not global
 confluence by itself. -/
 theorem localJoin_of_cdLemma {scope : Nat}
@@ -57,6 +75,69 @@ theorem joinStepWithSingleRight {scope : Nat}
     (rightStep : Step sourceTerm rightReduct) :
     Join leftReduct rightReduct :=
   localJoin_of_cdLemma leftStep rightStep
+
+/-- Newman's lift from local one-step confluence plus accessibility to
+global Church-Rosser, specialized to the v2 raw `Step` relation.
+
+This is the honest SN route for M8: M7 supplies local joins, while a future
+SN theorem supplies `IsStronglyNormalizing sourceTerm`. -/
+theorem confluence_of_localJoin_and_accessible {scope : Nat}
+    {sourceTerm leftReduct rightReduct : RawTerm scope}
+    (sourceTerminates : IsStronglyNormalizing sourceTerm)
+    (leftChain : StepStar sourceTerm leftReduct)
+    (rightChain : StepStar sourceTerm rightReduct) :
+    Join leftReduct rightReduct := by
+  exact
+    (Acc.ndrec
+      (r := StepSuccessor)
+      (C := fun currentTerm =>
+        ∀ {leftReduct rightReduct : RawTerm scope},
+          StepStar currentTerm leftReduct →
+          StepStar currentTerm rightReduct →
+          Join leftReduct rightReduct)
+      (m := fun currentTerm _ currentIH => by
+        intro leftReduct rightReduct leftChain rightChain
+        cases leftChain with
+        | refl _ =>
+            exact ⟨rightReduct, rightChain, StepStar.refl _⟩
+        | trans leftHeadStep leftTailChain =>
+            cases rightChain with
+            | refl _ =>
+                exact
+                  ⟨ leftReduct
+                  , StepStar.refl _
+                  , StepStar.trans leftHeadStep leftTailChain ⟩
+            | trans rightHeadStep rightTailChain =>
+                obtain
+                  ⟨localReduct, leftHeadToLocal, rightHeadToLocal⟩ :=
+                    localJoin_of_cdLemma leftHeadStep rightHeadStep
+                obtain
+                  ⟨leftCommon, leftTailToCommon, localToLeftCommon⟩ :=
+                    currentIH _ leftHeadStep leftTailChain leftHeadToLocal
+                obtain
+                  ⟨finalCommon, rightTailToCommon, leftCommonToFinal⟩ :=
+                    currentIH _ rightHeadStep rightTailChain
+                      (StepStar.trans_compose rightHeadToLocal
+                        localToLeftCommon)
+                exact
+                  ⟨ finalCommon
+                  , StepStar.trans_compose leftTailToCommon leftCommonToFinal
+                  , rightTailToCommon ⟩)
+      sourceTerminates)
+      leftChain
+      rightChain
+
+/-- Strong normalization plus M7's local join theorem gives global
+Church-Rosser. -/
+theorem confluence_of_strongNormalization
+    (hasStrongNormalization : HasStrongNormalization) :
+    HasConfluence := by
+  intro scope sourceTerm leftReduct rightReduct leftChain rightChain
+  exact
+    confluence_of_localJoin_and_accessible
+      (hasStrongNormalization sourceTerm)
+      leftChain
+      rightChain
 
 /-- The standard strip-to-Church-Rosser lift.
 
@@ -143,6 +224,18 @@ theorem trans_of_strip
     Conv firstTerm lastTerm :=
   trans_of_confluence
     (StepStar.confluence_of_strip hasStrip)
+    firstMiddle middleLast
+
+/-- Raw conversion transitivity follows from strong normalization plus M7's
+local join theorem. -/
+theorem trans_of_strongNormalization
+    (hasStrongNormalization : StepStar.HasStrongNormalization)
+    {scope : Nat} {firstTerm middleTerm lastTerm : RawTerm scope}
+    (firstMiddle : Conv firstTerm middleTerm)
+    (middleLast : Conv middleTerm lastTerm) :
+    Conv firstTerm lastTerm :=
+  trans_of_confluence
+    (StepStar.confluence_of_strongNormalization hasStrongNormalization)
     firstMiddle middleLast
 
 end Conv

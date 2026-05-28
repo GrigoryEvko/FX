@@ -2511,9 +2511,14 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.Join
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.HasConfluence
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.HasStrip
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.StepSuccessor
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.IsStronglyNormalizing
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.HasStrongNormalization
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.localJoin_of_cdLemma
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.joinStepWithReflRight
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.joinStepWithSingleRight
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.confluence_of_localJoin_and_accessible
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.confluence_of_strongNormalization
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.confluence_of_strip
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.refl
@@ -2522,6 +2527,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.fromStep
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.trans_of_confluence
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.trans_of_strip
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.trans_of_strongNormalization
 
 -- M6 beta-replay support: one-step reduction commutes with raw
 -- substitution, using `subst0_subst_commute` in the beta arm.
