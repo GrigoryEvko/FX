@@ -208,6 +208,93 @@ theorem app_isStronglyNormalizing_of_neutral_application_head_arg
     headTerminates
     argumentTerminates
 
+/-- Neutral predicate for any application spine rooted at a variable. -/
+inductive IsVariableHeadedSpine {scope : Nat} (headIndex : Fin scope) :
+    RawTerm scope → Prop
+  | rootVariable :
+      IsVariableHeadedSpine headIndex
+        (.mkGen .gen_var headIndex .childNil)
+  | applyArgument {headTerm argumentTerm : RawTerm scope} :
+      IsVariableHeadedSpine headIndex headTerm →
+        IsVariableHeadedSpine headIndex
+          (.mkGen .gen_app ()
+            (.childCons headTerm (.childCons argumentTerm .childNil)))
+
+/-- A variable-headed application spine is syntactically never a lambda. -/
+theorem isVariableHeadedSpine_not_lam {scope : Nat}
+    {headIndex : Fin scope} {candidateHead : RawTerm scope}
+    (candidateHeadIsVariableSpine :
+      IsVariableHeadedSpine headIndex candidateHead)
+    (lambdaBody : RawTerm (scope + 1)) :
+    candidateHead ≠
+      (.mkGen .gen_lam () (.childCons lambdaBody .childNil) :
+      RawTerm scope) := by
+  intro candidateEq
+  cases candidateHeadIsVariableSpine with
+  | rootVariable =>
+      cases candidateEq
+  | applyArgument _ =>
+      cases candidateEq
+
+/-- Variable-headed application spines are closed under one source step.
+
+The root variable has no outgoing step.  For an application spine, beta is
+impossible because the inner head is also a variable-headed spine; congruence
+steps either preserve the spine root or step one argument. -/
+theorem isVariableHeadedSpine_step {scope : Nat}
+    {headIndex : Fin scope} {candidateHead targetHead : RawTerm scope}
+    (candidateHeadIsVariableSpine :
+      IsVariableHeadedSpine headIndex candidateHead)
+    (candidateHeadStep : Step candidateHead targetHead) :
+    IsVariableHeadedSpine headIndex targetHead := by
+  induction candidateHeadIsVariableSpine generalizing targetHead with
+  | rootVariable =>
+      exact False.elim
+        (noStep_var headIndex (targetTerm := targetHead)
+          candidateHeadStep)
+  | applyArgument innerHeadIsVariableSpine innerIH =>
+      cases Step.from_app candidateHeadStep with
+      | inl betaBranch =>
+          obtain ⟨lambdaBody, innerHeadEq, _⟩ := betaBranch
+          exact False.elim
+            (isVariableHeadedSpine_not_lam innerHeadIsVariableSpine
+              lambdaBody innerHeadEq)
+      | inr congruenceBranch =>
+          cases congruenceBranch with
+          | inl headBranch =>
+              obtain ⟨innerHeadAfter, targetEq, innerHeadStep⟩ :=
+                headBranch
+              rw [targetEq]
+              exact IsVariableHeadedSpine.applyArgument
+                (innerIH innerHeadStep)
+          | inr argumentBranch =>
+              obtain ⟨argumentAfter, targetEq, _⟩ := argumentBranch
+              rw [targetEq]
+              exact IsVariableHeadedSpine.applyArgument
+                innerHeadIsVariableSpine
+
+/-- Adding a strongly-normalizing argument to any strongly-normalizing
+variable-headed spine preserves strong normalization. -/
+theorem app_isStronglyNormalizing_of_variable_headed_spine_arg
+    {scope : Nat} {headIndex : Fin scope}
+    {headTerm argumentTerm : RawTerm scope}
+    (headIsVariableSpine : IsVariableHeadedSpine headIndex headTerm)
+    (headTerminates : IsStronglyNormalizing headTerm)
+    (argumentTerminates : IsStronglyNormalizing argumentTerm) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons headTerm (.childCons argumentTerm .childNil)) :
+        RawTerm scope) :=
+  app_isStronglyNormalizing_of_neutral_head_arg
+    (isNeutralHead := IsVariableHeadedSpine headIndex)
+    headIsVariableSpine
+    (fun variableSpineHead lambdaBody =>
+      isVariableHeadedSpine_not_lam variableSpineHead lambdaBody)
+    (fun variableSpineHead variableSpineStep =>
+      isVariableHeadedSpine_step variableSpineHead variableSpineStep)
+    headTerminates
+    argumentTerminates
+
 /-- A neutral application with a normal non-lambda head is strongly
 normalizing when its argument is strongly normalizing.
 
