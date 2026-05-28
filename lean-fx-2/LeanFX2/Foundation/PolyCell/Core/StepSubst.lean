@@ -220,6 +220,30 @@ theorem Step.weaken {scope : Nat}
       (RawTermSubst.identity (scope := scope + 1)))
     sourceStep
 
+/-- Replay a step out of a weakened term by substituting any closed
+source-scope unit term for the fresh variable.
+
+This is the source-step half of the future weaken-step inversion lemma:
+it derives a genuine source-scope `Step` from
+`Step (RawTerm.weaken sourceTerm) targetTerm`.  The remaining freshness
+half is proving that `targetTerm` is itself a weakening image, i.e. that
+`RawTerm.strengthen targetTerm` succeeds with this same substituted
+target. -/
+theorem Step.weaken_substTarget {scope : Nat}
+    {sourceTerm : RawTerm scope}
+    {targetTerm : RawTerm (scope + 1)}
+    (underBinderStep : Step (RawTerm.weaken sourceTerm) targetTerm) :
+    Step sourceTerm
+      (RawTerm.subst
+        (RawTermSubst.singleton
+          (.mkGen .gen_unit () .childNil : RawTerm scope))
+        targetTerm) := by
+  let unitTerm : RawTerm scope := .mkGen .gen_unit () .childNil
+  have substitutedStep :=
+    Step.subst (RawTermSubst.singleton unitTerm) underBinderStep
+  rw [RawTerm.weaken_subst_singleton sourceTerm unitTerm] at substitutedStep
+  exact substitutedStep
+
 /-- Weaken every term in a `StepStar` chain. -/
 theorem StepStar.weaken {scope : Nat}
     {sourceTerm targetTerm : RawTerm scope}

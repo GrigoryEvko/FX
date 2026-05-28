@@ -5588,9 +5588,15 @@ from an actual source-level step in the underlying function/path term.
 It also adds resolver-facing strengthened variants: if an arbitrary
 under-binder reduct strengthens back to a source-scope reduct and the
 corresponding source-level step is supplied, the betaEta join follows.
-The remaining #355 binder work is the inversion lemma that derives
-those strengthening/source-step witnesses from an arbitrary step under
-`weaken`, followed by the actual betaEta local resolver; #356 remains
+The latest #355 slice proves the source-step half of that inversion:
+`Step.weaken_substTarget` replays any step out of `weaken source` at
+source scope by substituting canonical `unit` for the fresh variable.
+The `lam` and `pathLam` strengthened resolver wrappers now need only
+the freshness/strengthening witness for the arbitrary under-binder
+reduct; the corresponding source-level step is derived internally.
+The remaining #355 binder work is the freshness half, i.e. proving that
+an arbitrary under-binder reduct strengthens to the same substituted
+target, followed by the actual betaEta local resolver; #356 remains
 eta/eta branchings.
 Record, clock, and parametricity eta remain generator-frontier work,
 not placeholders in the current raw relation.

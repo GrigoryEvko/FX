@@ -492,6 +492,94 @@ theorem etaPathLamStrengthenedFunctionCong {scope : Nat}
     , Step.betaEtaStar.trans (Or.inl pathStep)
         (Step.betaEtaStar.refl _) ⟩
 
+/-- Eta-lambda resolver arm with the source-level step derived from the
+under-binder step.
+
+This consumes only the remaining freshness witness
+`RawTerm.strengthen updatedUnderBinder = some updatedFunction`; the
+source-scope step itself is reconstructed by substituting a canonical unit
+term for the fresh variable in `Step.weaken_substTarget`. -/
+theorem etaLamStrengthenedFunctionCongFromUnderStep {scope : Nat}
+    {innerFunction : RawTerm scope}
+    {updatedUnderBinder : RawTerm (scope + 1)}
+    {updatedFunction : RawTerm scope}
+    (underBinderStep :
+      Step (RawTerm.weaken innerFunction) updatedUnderBinder)
+    (strengthenSuccess :
+      RawTerm.strengthen updatedUnderBinder = some updatedFunction) :
+    BetaEtaPairJoin
+      (Or.inl
+        (Step.cong .gen_lam ()
+          (StepChildren.here
+            (parentScope := scope) (headShift := 1) (restShifts := [])
+            (.childNil : RawTermChildren [] scope)
+            (Step.cong .gen_app ()
+              (StepChildren.here
+                (parentScope := scope + 1) (headShift := 0)
+                (restShifts := [0])
+                ((.childCons RawTerm.newestVar .childNil) :
+                  RawTermChildren [0] (scope + 1))
+                underBinderStep)))))
+      (Or.inr (Step.eta.etaLam innerFunction)) := by
+  let unitTerm : RawTerm scope := .mkGen .gen_unit () .childNil
+  have targetBySubstitution :
+      RawTerm.subst (RawTermSubst.singleton unitTerm) updatedUnderBinder =
+        updatedFunction := by
+    have weakenedTarget :=
+      RawTerm.strengthen_sound updatedUnderBinder updatedFunction
+        strengthenSuccess
+    rw [← weakenedTarget]
+    exact RawTerm.weaken_subst_singleton updatedFunction unitTerm
+  have functionStep :
+      Step innerFunction updatedFunction := by
+    have replayedStep := Step.weaken_substTarget underBinderStep
+    dsimp only [unitTerm] at targetBySubstitution
+    rw [targetBySubstitution] at replayedStep
+    exact replayedStep
+  exact etaLamStrengthenedFunctionCong underBinderStep
+    strengthenSuccess functionStep
+
+/-- Cubical path-lambda sibling of
+`etaLamStrengthenedFunctionCongFromUnderStep`. -/
+theorem etaPathLamStrengthenedFunctionCongFromUnderStep {scope : Nat}
+    {innerPath : RawTerm scope}
+    {updatedUnderBinder : RawTerm (scope + 1)}
+    {updatedPath : RawTerm scope}
+    (underBinderStep :
+      Step (RawTerm.weaken innerPath) updatedUnderBinder)
+    (strengthenSuccess :
+      RawTerm.strengthen updatedUnderBinder = some updatedPath) :
+    BetaEtaPairJoin
+      (Or.inl
+        (Step.cong .gen_pathLam ()
+          (StepChildren.here
+            (parentScope := scope) (headShift := 1) (restShifts := [])
+            (.childNil : RawTermChildren [] scope)
+            (Step.cong .gen_pathApp ()
+              (StepChildren.here
+                (parentScope := scope + 1) (headShift := 0)
+                (restShifts := [0])
+                ((.childCons RawTerm.newestVar .childNil) :
+                  RawTermChildren [0] (scope + 1))
+                underBinderStep)))))
+      (Or.inr (Step.eta.etaPathLam innerPath)) := by
+  let unitTerm : RawTerm scope := .mkGen .gen_unit () .childNil
+  have targetBySubstitution :
+      RawTerm.subst (RawTermSubst.singleton unitTerm) updatedUnderBinder =
+        updatedPath := by
+    have weakenedTarget :=
+      RawTerm.strengthen_sound updatedUnderBinder updatedPath
+        strengthenSuccess
+    rw [← weakenedTarget]
+    exact RawTerm.weaken_subst_singleton updatedPath unitTerm
+  have pathStep : Step innerPath updatedPath := by
+    have replayedStep := Step.weaken_substTarget underBinderStep
+    dsimp only [unitTerm] at targetBySubstitution
+    rw [targetBySubstitution] at replayedStep
+    exact replayedStep
+  exact etaPathLamStrengthenedFunctionCong underBinderStep
+    strengthenSuccess pathStep
+
 end BetaEtaPairJoin
 
 /-- Current root eta kinds represented by `Step.eta`.
