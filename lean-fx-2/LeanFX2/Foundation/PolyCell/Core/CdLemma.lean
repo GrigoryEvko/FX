@@ -430,6 +430,346 @@ theorem iotaSndPairSecondCong_hasJoin {scope : Nat}
   (LocalDiamond.iotaSndPairSecondCong
     (firstValue := firstValue) secondStep).hasJoin
 
+/-- Resolver arm for `natElim natZero` iota competing with selected
+zero-branch congruence. -/
+theorem iotaNatElimZeroBranchCong_hasJoin {scope : Nat}
+    {zeroBranch steppedZeroBranch succBranch : RawTerm scope}
+    (zeroStep : Step zeroBranch steppedZeroBranch) :
+    (iotaNatElimZeroBranchCong
+      (succBranch := succBranch) zeroStep).HasJoin :=
+  (LocalDiamond.iotaNatElimZeroBranchCong
+    (succBranch := succBranch) zeroStep).hasJoin
+
+/-- Resolver arm for `natElim natZero` iota competing with discarded
+successor-branch congruence. -/
+theorem iotaNatElimSuccBranchCong_hasJoin {scope : Nat}
+    {zeroBranch succBranch steppedSuccBranch : RawTerm scope}
+    (succStep : Step succBranch steppedSuccBranch) :
+    (iotaNatElimSuccBranchCong
+      (zeroBranch := zeroBranch) succStep).HasJoin :=
+  (LocalDiamond.iotaNatElimSuccBranchCong
+    (zeroBranch := zeroBranch) succStep).hasJoin
+
+/-- Resolver arm for `natRec natZero` iota competing with selected
+zero-branch congruence. -/
+theorem iotaNatRecZeroBranchCong_hasJoin {scope : Nat}
+    {zeroBranch steppedZeroBranch succBranch : RawTerm scope}
+    (zeroStep : Step zeroBranch steppedZeroBranch) :
+    (iotaNatRecZeroBranchCong
+      (succBranch := succBranch) zeroStep).HasJoin :=
+  (LocalDiamond.iotaNatRecZeroBranchCong
+    (succBranch := succBranch) zeroStep).hasJoin
+
+/-- Resolver arm for `natRec natZero` iota competing with discarded
+successor-branch congruence. -/
+theorem iotaNatRecSuccBranchCong_hasJoin {scope : Nat}
+    {zeroBranch succBranch steppedSuccBranch : RawTerm scope}
+    (succStep : Step succBranch steppedSuccBranch) :
+    (iotaNatRecSuccBranchCong
+      (zeroBranch := zeroBranch) succStep).HasJoin :=
+  (LocalDiamond.iotaNatRecSuccBranchCong
+    (zeroBranch := zeroBranch) succStep).hasJoin
+
+/-- Resolver arm for `natElim (natSucc predecessor)` iota competing with
+zero-branch congruence. -/
+theorem iotaNatElimSuccZeroBranchCong_hasJoin {scope : Nat}
+    {predecessor zeroBranch steppedZeroBranch succBranch : RawTerm scope}
+    (zeroStep : Step zeroBranch steppedZeroBranch) :
+    (iotaNatElimSuccZeroBranchCong
+      (predecessor := predecessor) (succBranch := succBranch)
+      zeroStep).HasJoin :=
+  (LocalDiamond.iotaNatElimSuccZeroBranchCong
+    (predecessor := predecessor) (succBranch := succBranch)
+    zeroStep).hasJoin
+
+/-- Resolver arm for `natElim (natSucc predecessor)` iota competing with
+successor-branch congruence. -/
+theorem iotaNatElimSuccSuccBranchCong_hasJoin {scope : Nat}
+    {predecessor zeroBranch succBranch steppedSuccBranch : RawTerm scope}
+    (succStep : Step succBranch steppedSuccBranch) :
+    (iotaNatElimSuccSuccBranchCong
+      (predecessor := predecessor) (zeroBranch := zeroBranch)
+      succStep).HasJoin :=
+  (LocalDiamond.iotaNatElimSuccSuccBranchCong
+    (predecessor := predecessor) (zeroBranch := zeroBranch)
+    succStep).hasJoin
+
+/-- Resolver arm for `natRec (natSucc predecessor)` iota competing with
+zero-branch congruence. -/
+theorem iotaNatRecSuccZeroBranchCong_hasJoin {scope : Nat}
+    {predecessor zeroBranch steppedZeroBranch succBranch : RawTerm scope}
+    (zeroStep : Step zeroBranch steppedZeroBranch) :
+    (iotaNatRecSuccZeroBranchCong
+      (predecessor := predecessor) (succBranch := succBranch)
+      zeroStep).HasJoin :=
+  (LocalDiamond.iotaNatRecSuccZeroBranchCong
+    (predecessor := predecessor) (succBranch := succBranch)
+    zeroStep).hasJoin
+
+/-- Resolver arm for `natRec (natSucc predecessor)` iota competing with
+successor-branch congruence. -/
+theorem iotaNatRecSuccSuccBranchCong_hasJoin {scope : Nat}
+    {predecessor zeroBranch succBranch steppedSuccBranch : RawTerm scope}
+    (succStep : Step succBranch steppedSuccBranch) :
+    (iotaNatRecSuccSuccBranchCong
+      (predecessor := predecessor) (zeroBranch := zeroBranch)
+      succStep).HasJoin :=
+  (LocalDiamond.iotaNatRecSuccSuccBranchCong
+    (predecessor := predecessor) (zeroBranch := zeroBranch)
+    succStep).hasJoin
+
+/-- Resolver arm for `natElim (natSucc predecessor)` iota competing with
+congruence inside the predecessor child. -/
+theorem iotaNatElimSuccPredecessorCong_hasJoin {scope : Nat}
+    {predecessor steppedPredecessor zeroBranch succBranch : RawTerm scope}
+    (predecessorStep : Step predecessor steppedPredecessor) :
+    (iotaNatElimSuccPredecessorCong
+      (zeroBranch := zeroBranch) (succBranch := succBranch)
+      predecessorStep).HasJoin :=
+  (LocalDiamond.iotaNatElimSuccPredecessorCong
+    (zeroBranch := zeroBranch) (succBranch := succBranch)
+    predecessorStep).hasJoin
+
+/-- Resolver arm for `natRec (natSucc predecessor)` iota competing with
+congruence inside the predecessor child. -/
+theorem iotaNatRecSuccPredecessorCong_hasJoin {scope : Nat}
+    {predecessor steppedPredecessor zeroBranch succBranch : RawTerm scope}
+    (predecessorStep : Step predecessor steppedPredecessor) :
+    (iotaNatRecSuccPredecessorCong
+      (zeroBranch := zeroBranch) (succBranch := succBranch)
+      predecessorStep).HasJoin :=
+  (LocalDiamond.iotaNatRecSuccPredecessorCong
+    (zeroBranch := zeroBranch) (succBranch := succBranch)
+    predecessorStep).hasJoin
+
+/-- Resolver arm for `listElim (listCons head tail)` iota competing with
+congruence inside the head child. -/
+theorem iotaListElimConsHeadCong_hasJoin {scope : Nat}
+    {headValue steppedHeadValue tailValue nilBranch consBranch :
+      RawTerm scope}
+    (headStep : Step headValue steppedHeadValue) :
+    (iotaListElimConsHeadCong
+      (tailValue := tailValue) (nilBranch := nilBranch)
+      (consBranch := consBranch) headStep).HasJoin :=
+  (LocalDiamond.iotaListElimConsHeadCong
+    (tailValue := tailValue) (nilBranch := nilBranch)
+    (consBranch := consBranch) headStep).hasJoin
+
+/-- Resolver arm for `listElim (listCons head tail)` iota competing with
+congruence inside the tail child. -/
+theorem iotaListElimConsTailCong_hasJoin {scope : Nat}
+    {headValue tailValue steppedTailValue nilBranch consBranch :
+      RawTerm scope}
+    (tailStep : Step tailValue steppedTailValue) :
+    (iotaListElimConsTailCong
+      (headValue := headValue) (nilBranch := nilBranch)
+      (consBranch := consBranch) tailStep).HasJoin :=
+  (LocalDiamond.iotaListElimConsTailCong
+    (headValue := headValue) (nilBranch := nilBranch)
+    (consBranch := consBranch) tailStep).hasJoin
+
+/-- Resolver arm for `listElim (listCons head tail)` iota competing with
+nil-branch congruence. -/
+theorem iotaListElimConsNilBranchCong_hasJoin {scope : Nat}
+    {headValue tailValue nilBranch steppedNilBranch consBranch :
+      RawTerm scope}
+    (nilStep : Step nilBranch steppedNilBranch) :
+    (iotaListElimConsNilBranchCong
+      (headValue := headValue) (tailValue := tailValue)
+      (consBranch := consBranch) nilStep).HasJoin :=
+  (LocalDiamond.iotaListElimConsNilBranchCong
+    (headValue := headValue) (tailValue := tailValue)
+    (consBranch := consBranch) nilStep).hasJoin
+
+/-- Resolver arm for `listElim (listCons head tail)` iota competing with
+cons-branch congruence. -/
+theorem iotaListElimConsConsBranchCong_hasJoin {scope : Nat}
+    {headValue tailValue nilBranch consBranch steppedConsBranch :
+      RawTerm scope}
+    (consStep : Step consBranch steppedConsBranch) :
+    (iotaListElimConsConsBranchCong
+      (headValue := headValue) (tailValue := tailValue)
+      (nilBranch := nilBranch) consStep).HasJoin :=
+  (LocalDiamond.iotaListElimConsConsBranchCong
+    (headValue := headValue) (tailValue := tailValue)
+    (nilBranch := nilBranch) consStep).hasJoin
+
+/-- Resolver arm for `listElim listNil` iota competing with selected
+nil-branch congruence. -/
+theorem iotaListElimNilBranchCong_hasJoin {scope : Nat}
+    {nilBranch steppedNilBranch consBranch : RawTerm scope}
+    (nilStep : Step nilBranch steppedNilBranch) :
+    (iotaListElimNilBranchCong
+      (consBranch := consBranch) nilStep).HasJoin :=
+  (LocalDiamond.iotaListElimNilBranchCong
+    (consBranch := consBranch) nilStep).hasJoin
+
+/-- Resolver arm for `listElim listNil` iota competing with discarded
+cons-branch congruence. -/
+theorem iotaListElimConsBranchCong_hasJoin {scope : Nat}
+    {nilBranch consBranch steppedConsBranch : RawTerm scope}
+    (consStep : Step consBranch steppedConsBranch) :
+    (iotaListElimConsBranchCong
+      (nilBranch := nilBranch) consStep).HasJoin :=
+  (LocalDiamond.iotaListElimConsBranchCong
+    (nilBranch := nilBranch) consStep).hasJoin
+
+/-- Resolver arm for `optionMatch optionNone` iota competing with selected
+none-branch congruence. -/
+theorem iotaOptionMatchNoneBranchCong_hasJoin {scope : Nat}
+    {noneBranch steppedNoneBranch someBranch : RawTerm scope}
+    (noneStep : Step noneBranch steppedNoneBranch) :
+    (iotaOptionMatchNoneBranchCong
+      (someBranch := someBranch) noneStep).HasJoin :=
+  (LocalDiamond.iotaOptionMatchNoneBranchCong
+    (someBranch := someBranch) noneStep).hasJoin
+
+/-- Resolver arm for `optionMatch optionNone` iota competing with discarded
+some-branch congruence. -/
+theorem iotaOptionMatchSomeBranchCong_hasJoin {scope : Nat}
+    {noneBranch someBranch steppedSomeBranch : RawTerm scope}
+    (someStep : Step someBranch steppedSomeBranch) :
+    (iotaOptionMatchSomeBranchCong
+      (noneBranch := noneBranch) someStep).HasJoin :=
+  (LocalDiamond.iotaOptionMatchSomeBranchCong
+    (noneBranch := noneBranch) someStep).hasJoin
+
+/-- Resolver arm for `optionMatch (optionSome value)` iota competing with
+congruence inside the payload value. -/
+theorem iotaOptionMatchSomeValueCong_hasJoin {scope : Nat}
+    {value steppedValue noneBranch someBranch : RawTerm scope}
+    (valueStep : Step value steppedValue) :
+    (iotaOptionMatchSomeValueCong
+      (noneBranch := noneBranch) (someBranch := someBranch)
+      valueStep).HasJoin :=
+  (LocalDiamond.iotaOptionMatchSomeValueCong
+    (noneBranch := noneBranch) (someBranch := someBranch)
+    valueStep).hasJoin
+
+/-- Resolver arm for `optionMatch (optionSome value)` iota competing with
+discarded none-branch congruence. -/
+theorem iotaOptionMatchSomeNoneBranchCong_hasJoin {scope : Nat}
+    {value noneBranch steppedNoneBranch someBranch : RawTerm scope}
+    (noneStep : Step noneBranch steppedNoneBranch) :
+    (iotaOptionMatchSomeNoneBranchCong
+      (value := value) (someBranch := someBranch) noneStep).HasJoin :=
+  (LocalDiamond.iotaOptionMatchSomeNoneBranchCong
+    (value := value) (someBranch := someBranch) noneStep).hasJoin
+
+/-- Resolver arm for `optionMatch (optionSome value)` iota competing with
+selected some-branch congruence. -/
+theorem iotaOptionMatchSomeSomeBranchCong_hasJoin {scope : Nat}
+    {value noneBranch someBranch steppedSomeBranch : RawTerm scope}
+    (someStep : Step someBranch steppedSomeBranch) :
+    (iotaOptionMatchSomeSomeBranchCong
+      (value := value) (noneBranch := noneBranch) someStep).HasJoin :=
+  (LocalDiamond.iotaOptionMatchSomeSomeBranchCong
+    (value := value) (noneBranch := noneBranch) someStep).hasJoin
+
+/-- Resolver arm for `eitherMatch (eitherInl value)` iota competing with
+congruence inside the left payload value. -/
+theorem iotaEitherMatchInlValueCong_hasJoin {scope : Nat}
+    {value steppedValue leftBranch rightBranch : RawTerm scope}
+    (valueStep : Step value steppedValue) :
+    (iotaEitherMatchInlValueCong
+      (leftBranch := leftBranch) (rightBranch := rightBranch)
+      valueStep).HasJoin :=
+  (LocalDiamond.iotaEitherMatchInlValueCong
+    (leftBranch := leftBranch) (rightBranch := rightBranch)
+    valueStep).hasJoin
+
+/-- Resolver arm for `eitherMatch (eitherInl value)` iota competing with
+selected left-branch congruence. -/
+theorem iotaEitherMatchInlLeftBranchCong_hasJoin {scope : Nat}
+    {value leftBranch steppedLeftBranch rightBranch : RawTerm scope}
+    (leftStep : Step leftBranch steppedLeftBranch) :
+    (iotaEitherMatchInlLeftBranchCong
+      (value := value) (rightBranch := rightBranch) leftStep).HasJoin :=
+  (LocalDiamond.iotaEitherMatchInlLeftBranchCong
+    (value := value) (rightBranch := rightBranch) leftStep).hasJoin
+
+/-- Resolver arm for `eitherMatch (eitherInl value)` iota competing with
+discarded right-branch congruence. -/
+theorem iotaEitherMatchInlRightBranchCong_hasJoin {scope : Nat}
+    {value leftBranch rightBranch steppedRightBranch : RawTerm scope}
+    (rightStep : Step rightBranch steppedRightBranch) :
+    (iotaEitherMatchInlRightBranchCong
+      (value := value) (leftBranch := leftBranch) rightStep).HasJoin :=
+  (LocalDiamond.iotaEitherMatchInlRightBranchCong
+    (value := value) (leftBranch := leftBranch) rightStep).hasJoin
+
+/-- Resolver arm for `eitherMatch (eitherInr value)` iota competing with
+congruence inside the right payload value. -/
+theorem iotaEitherMatchInrValueCong_hasJoin {scope : Nat}
+    {value steppedValue leftBranch rightBranch : RawTerm scope}
+    (valueStep : Step value steppedValue) :
+    (iotaEitherMatchInrValueCong
+      (leftBranch := leftBranch) (rightBranch := rightBranch)
+      valueStep).HasJoin :=
+  (LocalDiamond.iotaEitherMatchInrValueCong
+    (leftBranch := leftBranch) (rightBranch := rightBranch)
+    valueStep).hasJoin
+
+/-- Resolver arm for `eitherMatch (eitherInr value)` iota competing with
+discarded left-branch congruence. -/
+theorem iotaEitherMatchInrLeftBranchCong_hasJoin {scope : Nat}
+    {value leftBranch steppedLeftBranch rightBranch : RawTerm scope}
+    (leftStep : Step leftBranch steppedLeftBranch) :
+    (iotaEitherMatchInrLeftBranchCong
+      (value := value) (rightBranch := rightBranch) leftStep).HasJoin :=
+  (LocalDiamond.iotaEitherMatchInrLeftBranchCong
+    (value := value) (rightBranch := rightBranch) leftStep).hasJoin
+
+/-- Resolver arm for `eitherMatch (eitherInr value)` iota competing with
+selected right-branch congruence. -/
+theorem iotaEitherMatchInrRightBranchCong_hasJoin {scope : Nat}
+    {value leftBranch rightBranch steppedRightBranch : RawTerm scope}
+    (rightStep : Step rightBranch steppedRightBranch) :
+    (iotaEitherMatchInrRightBranchCong
+      (value := value) (leftBranch := leftBranch) rightStep).HasJoin :=
+  (LocalDiamond.iotaEitherMatchInrRightBranchCong
+    (value := value) (leftBranch := leftBranch) rightStep).hasJoin
+
+/-- Resolver arm for `idJ refl` iota competing with selected base-case
+congruence. -/
+theorem iotaIdJBaseCaseCong_hasJoin {scope : Nat}
+    {baseCase steppedBaseCase rawWitness : RawTerm scope}
+    (baseStep : Step baseCase steppedBaseCase) :
+    (iotaIdJBaseCaseCong
+      (rawWitness := rawWitness) baseStep).HasJoin :=
+  (LocalDiamond.iotaIdJBaseCaseCong
+    (rawWitness := rawWitness) baseStep).hasJoin
+
+/-- Resolver arm for `idJ refl` iota competing with discarded witness
+congruence. -/
+theorem iotaIdJWitnessCong_hasJoin {scope : Nat}
+    {baseCase rawWitness steppedRawWitness : RawTerm scope}
+    (witnessStep : Step rawWitness steppedRawWitness) :
+    (iotaIdJWitnessCong
+      (baseCase := baseCase) witnessStep).HasJoin :=
+  (LocalDiamond.iotaIdJWitnessCong
+    (baseCase := baseCase) witnessStep).hasJoin
+
+/-- Resolver arm for `idStrictRec refl` iota competing with selected
+base-case congruence. -/
+theorem iotaIdStrictRecBaseCaseCong_hasJoin {scope : Nat}
+    {baseCase steppedBaseCase rawWitness : RawTerm scope}
+    (baseStep : Step baseCase steppedBaseCase) :
+    (iotaIdStrictRecBaseCaseCong
+      (rawWitness := rawWitness) baseStep).HasJoin :=
+  (LocalDiamond.iotaIdStrictRecBaseCaseCong
+    (rawWitness := rawWitness) baseStep).hasJoin
+
+/-- Resolver arm for `idStrictRec refl` iota competing with discarded
+witness congruence. -/
+theorem iotaIdStrictRecWitnessCong_hasJoin {scope : Nat}
+    {baseCase rawWitness steppedRawWitness : RawTerm scope}
+    (witnessStep : Step rawWitness steppedRawWitness) :
+    (iotaIdStrictRecWitnessCong
+      (baseCase := baseCase) witnessStep).HasJoin :=
+  (LocalDiamond.iotaIdStrictRecWitnessCong
+    (baseCase := baseCase) witnessStep).hasJoin
+
 /-- M7 contradiction arm for the mutually-exclusive bool true/false root pair. -/
 theorem iotaBoolTrue_iotaBoolFalse_hasSourcesDisjoint {scope : Nat}
     (thenTrue elseTrue thenFalse elseFalse : RawTerm scope) :
