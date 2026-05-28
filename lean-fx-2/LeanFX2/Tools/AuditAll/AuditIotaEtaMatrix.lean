@@ -13,10 +13,10 @@ the 80-cell iota-η critical-pair matrix.  Sibling to η-M8i
 
 Per the gap-audit Class-1/2/3 analysis from the iota-η matrix:
 
-* **Class 1 (disjoint)**: ~85 cells across 16 iotas × 5 eta —
-  iota and eta fire on different generators with no
-  syntactic overlap.  Trivially resolved (no critical pair
-  exists).
+* **Class 1 (disjoint)**: the majority of the 80 total cells
+  in the 16 iotas × 5 eta matrix — iota and eta fire on
+  different generators with no syntactic overlap.  Trivially
+  resolved (no critical pair exists).
 
 * **Class 2 (inside-binder trivial diamond)**: 16 cells where
   iota fires inside an η-lam-shaped body.  Covered by
@@ -50,18 +50,22 @@ Per the iota-η matrix gap audit:
 
 | eta ctor       | shipped Class-1 disjoint cells | Class-2 inside-binder | Class-3 overlap | state |
 |----------------|-------------------------------|----------------------|-----------------|-------|
-| etaLam         | 14 (all iotas not iotaFst/Snd) | iotaLam (#385)       | none in scope   | partialAudit |
-| etaPair        | 14 (all iotas not iotaFst/Snd) | structural diamond   | iotaFst/Snd × etaPair (#386) | fullyAudited |
+| etaLam         | 14 (all iotas not iotaFst/Snd) | 16 inside-lam (#385) | none in scope   | partialAudit |
+| etaPair        | 14 (all iotas not iotaFst/Snd) | structural diamond   | iotaFst/Snd × etaPair (#386) | partialAudit |
 | etaPathLam     | 16 (no iota touches paths yet) | n/a                  | reserved (#386) | partialAudit |
 | etaModIntro    | 16 (no iota touches modal yet) | n/a                  | reserved (#386) | partialAudit |
 | etaGlueIntro   | 16 (no iota touches Glue yet)  | n/a                  | reserved (#386) | partialAudit |
 
-`etaPair` is `fullyAudited` because Class-3 cells (iotaFst/Snd
-× etaPair) shipped at M-iotaEta-reserved-doublestrips #386.
-Other rows are `partialAudit` — Class-3 resolutions waiting
-on Phase Z₀+ generators (pathLam needs cubical paths typed,
-modIntro needs MTT modal layer, glueIntro needs CCHM Glue
-coherence).
+All 5 rows are `partialAudit`.  `etaPair`'s Class-3 cells
+(iotaFstPair × etaPair, iotaSndPair × etaPair) need explicit
+critical-pair joins that have NOT YET been shipped — #386
+ships RESERVED slots for modal/path/clock/param/glue, not the
+iotaFst/Snd × etaPair joins (Agent 2's 2026-05-28 gap audit
+caught the original overclaim; hot-fixed at commit a5717d43).
+The other rows are also `partialAudit` — Class-3 resolutions
+waiting on Phase Z₀+ generators (pathLam needs cubical paths
+typed, modIntro needs MTT modal layer, glueIntro needs CCHM
+Glue coherence).
 
 ## Honest-ledger discipline
 
@@ -169,19 +173,36 @@ theorem iotaEtaMatrix_summary :
 /-! ## Aggregate matrix metrics
 
 80-cell matrix = 16 iotas × 5 eta.  Per the gap-audit
-Class-1/2/3 analysis:
+Class-1/2/3 analysis, MATCHING the earlier classification at
+lines 16-30:
 
-* Class-1 disjoint cells: ~76 cells (all iota × eta pairs
-  where no generator overlap exists at the syntactic level).
-* Class-2 trivial diamond cells: 2 cells (iotaFst × etaPair,
-  iotaSnd × etaPair — the inside-binder cases per #385 are
-  zero at present because none of the 16 iotas contract to
-  η-lam-shaped terms).
-* Class-3 explicit critical-pair cells: 2 shipped
-  (iotaFst/Snd × etaPair via #386) + 0 reserved-in-enum.
+* Class-1 disjoint cells: the largest subset — all
+  (iota_i, eta_j) pairs where iota and eta fire on disjoint
+  generator shapes (no syntactic overlap).  Trivially safe;
+  no critical-pair theorem required.
 
-Counts at honest current values; advance lockstep with the
-matrix coverage state. -/
+* Class-2 inside-binder cells: 16 cells in the etaLam row
+  where an iota fires inside an η-lam-shaped body — covered
+  by M-iotaEta-inside-binder #385 with explicit trivial-
+  diamond witnesses.
+
+* Class-3 active critical-pair cells: 2 cells in the
+  etaPair row (iotaFstPair × etaPair, iotaSndPair × etaPair) —
+  NOT YET shipped as explicit Barendregt joins (Agent 2's
+  2026-05-28 hot-fix at a5717d43 corrected the original
+  overclaim; iotaEta_etaPair_state = partialAudit).
+
+* Class-3 reserved double-strips: 5 reserved slots per #386
+  for future Phase Z₀+ generators (path / modal / glue /
+  clock / param).  Outside the current 80-cell matrix; will
+  activate when the matching eta ctors land at M61 / M93 /
+  M66 / M84-M85 / M86.
+
+Honest current counts: `iotaEtaMatrix_partialAudit_cells = 80`
+(every cell still pending explicit critical-pair documentation);
+`iotaEtaMatrix_fullyAudited_cells = 0`.  Advance lockstep with
+the per-row state values via the summary theorem's `rfl`-
+conjunction. -/
 
 /-- Total cells in the 16 × 5 iota-η matrix. -/
 def iotaEtaMatrix_total_cells : Nat := 80
