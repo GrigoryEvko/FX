@@ -16,6 +16,142 @@ accessibility into iota/root-reduction accessibility.
 namespace LeanFX2.Foundation.PolyCell.Core
 namespace StepStar
 
+/-- A lambda-headed application is strongly normalizing when the lambda body is
+already normal and the fixed beta contractum is strongly normalizing for every
+argument reduct.
+
+This is the first reusable beta-contractum instance builder.  It is narrower
+than `appLam_isStronglyNormalizing_of_body_argument_contractum`: the body is
+not allowed to move, so the beta obligation only ranges over reducts of the
+argument.  That is exactly the shape needed for variable-body beta redexes and
+other normal body leaves. -/
+theorem appLam_isStronglyNormalizing_of_normal_body_contractum
+    {scope : Nat} {body : RawTerm (scope + 1)}
+    {argumentTerm : RawTerm scope}
+    (bodyHasNoStep :
+      ∀ targetBody : RawTerm (scope + 1), Step body targetBody → False)
+    (contractumTerminates :
+      ∀ {currentArgument : RawTerm scope},
+        IsStronglyNormalizing currentArgument →
+          IsStronglyNormalizing (RawTerm.subst0 body currentArgument))
+    (argumentTerminates : IsStronglyNormalizing argumentTerm) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam () (.childCons body .childNil))
+          (.childCons argumentTerm .childNil)) :
+        RawTerm scope) :=
+  Acc.ndrec
+    (r := StepSuccessor)
+    (C := fun currentArgument =>
+      IsStronglyNormalizing
+        (.mkGen .gen_app ()
+          (.childCons
+            (.mkGen .gen_lam () (.childCons body .childNil))
+            (.childCons currentArgument .childNil)) :
+          RawTerm scope))
+    (m := fun currentArgument currentArgumentSuccessors argumentIH =>
+      Acc.intro
+        (.mkGen .gen_app ()
+          (.childCons
+            (.mkGen .gen_lam () (.childCons body .childNil))
+            (.childCons currentArgument .childNil)) :
+          RawTerm scope)
+        (fun targetTerm applicationStep => by
+          cases Step.from_app applicationStep with
+          | inl betaBranch =>
+              obtain ⟨lambdaBody, lambdaEq, targetEq⟩ := betaBranch
+              cases lambdaEq
+              rw [targetEq]
+              exact
+                contractumTerminates
+                  (Acc.intro currentArgument currentArgumentSuccessors)
+          | inr congruenceBranch =>
+              cases congruenceBranch with
+              | inl functionBranch =>
+                  obtain ⟨functionAfter, targetEq, functionStep⟩ :=
+                    functionBranch
+                  obtain ⟨bodyAfter, functionAfterEq, bodyStep⟩ :=
+                    Step.from_lam functionStep
+                  exact False.elim (bodyHasNoStep bodyAfter bodyStep)
+              | inr argumentBranch =>
+                  obtain ⟨argumentAfter, targetEq, argumentStep⟩ :=
+                    argumentBranch
+                  rw [targetEq]
+                  exact argumentIH argumentAfter argumentStep))
+    argumentTerminates
+
+/-- Identity beta redexes are strongly normalizing when the argument is strongly
+normalizing.
+
+The root beta contractum is the argument itself.  Function congruence is
+impossible because the body `var 0` is a normal leaf; argument congruence is
+handled by accessibility induction on the argument. -/
+theorem appLamVarZero_isStronglyNormalizing_of_argument
+    {scope : Nat} {argumentTerm : RawTerm scope}
+    (argumentTerminates : IsStronglyNormalizing argumentTerm) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam ()
+            (.childCons
+              (.mkGen .gen_var
+                (⟨0, Nat.zero_lt_succ scope⟩ : Fin (scope + 1))
+                .childNil)
+              .childNil))
+          (.childCons argumentTerm .childNil)) :
+        RawTerm scope) :=
+  appLam_isStronglyNormalizing_of_normal_body_contractum
+    (body :=
+      (.mkGen .gen_var
+        (⟨0, Nat.zero_lt_succ scope⟩ : Fin (scope + 1))
+        .childNil))
+    (bodyHasNoStep := fun targetBody bodyStep =>
+      noStep_var
+        (⟨0, Nat.zero_lt_succ scope⟩ : Fin (scope + 1))
+        (targetTerm := targetBody)
+        bodyStep)
+    (contractumTerminates := fun currentArgumentTerminates =>
+      currentArgumentTerminates)
+    argumentTerminates
+
+/-- Beta redexes whose lambda body is a higher de-Bruijn variable are strongly
+normalizing when the argument is strongly normalizing.
+
+The bound variable is not used by the body, so the root beta contractum is the
+corresponding variable one scope lower. -/
+theorem appLamVarSucc_isStronglyNormalizing_of_argument
+    {scope : Nat} (predIndex : Nat)
+    (indexBound : predIndex + 1 < scope + 1)
+    {argumentTerm : RawTerm scope}
+    (argumentTerminates : IsStronglyNormalizing argumentTerm) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam ()
+            (.childCons
+              (.mkGen .gen_var
+                (⟨predIndex + 1, indexBound⟩ : Fin (scope + 1))
+                .childNil)
+              .childNil))
+          (.childCons argumentTerm .childNil)) :
+        RawTerm scope) :=
+  appLam_isStronglyNormalizing_of_normal_body_contractum
+    (body :=
+      (.mkGen .gen_var
+        (⟨predIndex + 1, indexBound⟩ : Fin (scope + 1))
+        .childNil))
+    (bodyHasNoStep := fun targetBody bodyStep =>
+      noStep_var
+        (⟨predIndex + 1, indexBound⟩ : Fin (scope + 1))
+        (targetTerm := targetBody)
+        bodyStep)
+    (contractumTerminates := fun {_currentArgument} _argumentTerminates => by
+      exact
+        var_isStronglyNormalizing
+          (⟨predIndex, Nat.lt_of_succ_lt_succ indexBound⟩ : Fin scope))
+    argumentTerminates
+
 /-- Beta redexes are strongly normalizing when the lambda body and argument are
 strongly normalizing and every reduct pair has a strongly-normalizing beta
 contractum.
