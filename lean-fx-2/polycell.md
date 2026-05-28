@@ -8661,6 +8661,95 @@ near-term proving ground:**
   "Definitional univalence + synthetic condensed" reference block
   (DU1-DU9).
 
+#### 11.8.14.1 Stated open problems (attackable now)
+
+The research track above is a *program*; this subsection pins the
+concrete **open problems** within it — each stated as a
+provable/refutable question with its crux, its foothold, and what its
+answer settles.  Per the no-handwave rule these are STATED PROBLEMS,
+not claimed results; none is a milestone.
+
+**OP1 — Univalent parametricity over the grade discipline.**
+*The recommended first attack: genuinely open, FX-uniquely-posed,
+standable on a published result, and it de-risks O1.*
+
+> Does univalent parametricity (Tabareau-Tanter-Sozeau, ref DU4) extend
+> to **graded modal** dependent type theory (§6)?  I.e. is the
+> parametricity logical relation **compatible with the grade
+> discipline**, and does it yield **computational transport across
+> equivalences that preserves grades**?
+
+* **Crux (why it is open, not routine):** parametricity's logical
+  relation relates two sides *and the relation itself* — it wants to
+  **use a variable more than once**; linearity/grades **forbid
+  double-use**.  Whether parametricity is even *compatible* with
+  quantitative typing is unresolved.  Univalent parametricity is
+  mechanized for plain MLTT (DU4); the **graded/modal** case is
+  unexplored and may require a genuinely new relation.
+* **FX-uniquely-posed:** FX is the only setting committing univalence +
+  internal parametricity (§3.16.8 `gen_param`, M86) + 21 graded
+  dimensions (§6) at once — no other system can even state OP1.
+* **Foothold:** stand on DU4 (Coq-mechanized) + graded-TT metatheory
+  (Atkey QTT, ref 33; Wood-Atkey, ref 34; Abel-Danielsson-Eriksson,
+  ref U14).
+* **Milestone 0 (the crux, weeks not years):** the simplest non-trivial
+  grade — linearity `{0,1,w}` (Appendix C) — and *one* former
+  (functions): state + prove the parametricity relation respecting
+  linear usage.  **Settles:** *can a linear variable be related
+  parametrically without violating its grade?*  That single yes/no is
+  the whole problem in microcosm.
+* **Why it matters both ways:** YES ⇒ definitional univalence over FX's
+  graded substrate (O1) is plausible and the §11.8.14 track is viable;
+  NO ⇒ the obstruction is found cheaply and early.  Down-to-earth
+  payoff: free transport across equivalences for resource-tracked code
+  (refactor-without-breaking-proofs for graded/effectful programs).
+
+**OP2 — The directed self-endofunctor (the FX-only trophy).**
+*Genuinely open, statable nowhere else; gated on the directed-universe
+substrate, so NOT the first attack.*
+
+> Is there a non-invertible elementary self-endofunctor of the (∞,ω)
+> directed universe (`gen_universeOmega`) that **fixes the 0-truncation**
+> (every set, every ordinal) but acts non-trivially on the higher
+> directed cells — and is it consistent / constructible?
+
+* **Why open in a new way:** the Gödel block of ambient-Reinhardt runs
+  through a *moved ordinal* (§11.8.2.1); fix every ordinal and the
+  implication to `Con(FX)` may fail, so Gödel does NOT obviously
+  forbid it.  Status: unknown — possibly cheap-and-constructible
+  (directed type theory already has elementary endofunctors like
+  `op : S → S`; the open case is a non-invertible one fixing objects),
+  possibly strong-and-open, possibly refutable.
+* **Unstatable outside directed univalence** — needs the ordinals fixed
+  *and* somewhere non-trivial (the higher cells) for the functor to
+  act; no set-theoretic or (∞,1) foundation can express it.
+* **Gate:** requires the directed-universe substrate (Loubaton-level,
+  `gen_universeD`/`gen_universeOmega`) built first — hence the trophy,
+  not the opening move.
+
+**Guaranteed-deliverable alternatives (application of known machinery,
+NOT open problems — pick these if a sure win is wanted before a
+might-fail gamble):**
+
+* **Directed Version-univalence** — apply Riehl-Shulman directed
+  univalence (committed `gen_universeD`) to the version/migration
+  category (objects = versions, morphisms = migrations); makes
+  migration coherence (§14-15) a free theorem.  Known machinery, clean
+  theorem, immediate systems payoff.
+* **Searchable compact types** — port Escardó (ref DU5): decidable
+  `∀ (x : 2^ℕ). p x` over profinite/compact types, a new decision
+  procedure, zero-axiom.
+
+**Honest framing of "attack with FX."**  FX's *currently shipped*
+substrate (PolyCell, LevelExpr, NbE) does not yet contain the apex
+layers OP1/OP2 need (parametricity, univalence, directed universe are
+pending — M86, §11.8.13, M25).  So "attack now" realistically means
+**theory + a small mechanization probe with FX as the home**, not "run
+it on FX today."  OP1's Milestone 0 is the one that is genuinely
+attackable now — on paper + a small Lean fragment standing on DU4 —
+before the full apex exists, which is exactly why it is the
+recommended opening move.
+
 ---
 
 ## 12. Risks and open questions
