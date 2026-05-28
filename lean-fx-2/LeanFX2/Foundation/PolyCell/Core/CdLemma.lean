@@ -62,6 +62,22 @@ theorem sameStep {scope : Nat} {sourceTerm targetTerm : RawTerm scope}
     StepPairJoin sameStepWitness sameStepWitness :=
   ofReductsEqual rfl
 
+/-- Reverse the two branches of a local join.
+
+This is the `StepPairJoin`-level orientation bridge used when M6 exposes a
+diamond in the opposite root/congruence order from the arbitrary branching that
+`cd_lemma` receives. -/
+theorem swap {scope : Nat}
+    {sourceTerm leftReduct rightReduct : RawTerm scope}
+    {leftStep : Step sourceTerm leftReduct}
+    {rightStep : Step sourceTerm rightReduct} :
+    StepPairJoin leftStep rightStep →
+      StepPairJoin rightStep leftStep :=
+  fun join =>
+    Exists.elim join
+      (fun commonReduct chains =>
+        ⟨commonReduct, chains.2, chains.1⟩)
+
 end StepPairJoin
 
 namespace LocalStepBranching
@@ -77,6 +93,12 @@ theorem hasJoin_ofReductsEqual {scope : Nat}
     (reductsEqual : branching.leftReduct = branching.rightReduct) :
     branching.HasJoin :=
   StepPairJoin.ofReductsEqual reductsEqual
+
+/-- Reverse a packaged branching join along `LocalStepBranching.swap`. -/
+theorem hasJoin_swap {scope : Nat}
+    {branching : LocalStepBranching (scope := scope)} :
+    branching.HasJoin → branching.swap.HasJoin :=
+  StepPairJoin.swap
 
 end LocalStepBranching
 
@@ -95,6 +117,13 @@ theorem toStepPairJoin {scope : Nat}
     (diamond : LocalDiamond branching) :
     StepPairJoin branching.leftStep branching.rightStep :=
   diamond.hasJoin
+
+/-- A local diamond also supplies the join for the swapped branching. -/
+theorem toStepPairJoin_swap {scope : Nat}
+    {branching : LocalStepBranching (scope := scope)}
+    (diamond : LocalDiamond branching) :
+    StepPairJoin branching.swap.leftStep branching.swap.rightStep :=
+  StepPairJoin.swap diamond.toStepPairJoin
 
 end LocalDiamond
 

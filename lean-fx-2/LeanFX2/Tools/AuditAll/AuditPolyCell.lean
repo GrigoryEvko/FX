@@ -1247,10 +1247,13 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CdLemmaStatement
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepPairJoin.ofReductsEqual
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepPairJoin.sameStep
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepPairJoin.swap
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.HasJoin
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.hasJoin_ofReductsEqual
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.hasJoin_swap
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.hasJoin
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.toStepPairJoin
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.toStepPairJoin_swap
 
 -- ─── V2-L3.1 phase D step 35: HCC-level wrappers around the cell-step
 -- helpers (phase D 32/33).  Same recipe, .intro-wrapped to land in
