@@ -221,6 +221,159 @@ theorem etaPairSecondCong {scope : Nat}
     , Step.betaEtaStar.trans (Or.inl pairStep)
         (Step.betaEtaStar.refl _) ⟩
 
+/-- Eta-pair versus direct `fst (pair firstValue secondValue)` iota in
+the first projected occurrence.
+
+Source:
+`pair (fst (pair firstValue secondValue))
+      (snd (pair firstValue secondValue))`.
+
+The iota branch reduces the first projection.  The join reduces the
+remaining second projection, reaching the same explicit pair as root
+eta-pair. -/
+theorem etaPairFirstProjectionIota {scope : Nat}
+    (firstValue secondValue : RawTerm scope) :
+    BetaEtaPairJoin
+      (Or.inl
+        (Step.cong .gen_pair ()
+          (StepChildren.here
+            (parentScope := scope) (headShift := 0) (restShifts := [0])
+            ((.childCons
+              (.mkGen .gen_snd ()
+                (.childCons
+                  (.mkGen .gen_pair ()
+                    (.childCons firstValue
+                      (.childCons secondValue .childNil)))
+                  .childNil))
+              .childNil) : RawTermChildren [0] scope)
+            (Step.iotaFstPair
+              (firstValue := firstValue) (secondValue := secondValue)))))
+      (Or.inr
+        (Step.eta.etaPair
+          (.mkGen .gen_pair ()
+            (.childCons firstValue (.childCons secondValue .childNil))))) := by
+  exact
+    ⟨ (.mkGen .gen_pair ()
+        (.childCons firstValue (.childCons secondValue .childNil)))
+      , Step.betaEtaStar.trans
+          (Or.inl
+            (Step.cong .gen_pair ()
+              (StepChildren.there
+                (parentScope := scope) (headShift := 0) (restShifts := [0])
+                firstValue
+                (StepChildren.here
+                  (parentScope := scope) (headShift := 0)
+                  (restShifts := [])
+                  (.childNil : RawTermChildren [] scope)
+                  (Step.iotaSndPair
+                    (firstValue := firstValue)
+                    (secondValue := secondValue))))))
+          (Step.betaEtaStar.refl _)
+      , Step.betaEtaStar.refl _ ⟩
+
+/-- Eta-pair versus direct `snd (pair firstValue secondValue)` iota in
+the second projected occurrence.
+
+This is the symmetric sibling of `etaPairFirstProjectionIota`: the iota
+branch reduces the second projection, and the join reduces the remaining
+first projection before meeting the eta branch. -/
+theorem etaPairSecondProjectionIota {scope : Nat}
+    (firstValue secondValue : RawTerm scope) :
+    BetaEtaPairJoin
+      (Or.inl
+        (Step.cong .gen_pair ()
+          (StepChildren.there
+            (parentScope := scope) (headShift := 0) (restShifts := [0])
+            ((.mkGen .gen_fst ()
+              (.childCons
+                (.mkGen .gen_pair ()
+                  (.childCons firstValue
+                    (.childCons secondValue .childNil)))
+                .childNil)) : RawTerm scope)
+            (StepChildren.here
+              (parentScope := scope) (headShift := 0)
+              (restShifts := [])
+              (.childNil : RawTermChildren [] scope)
+              (Step.iotaSndPair
+                (firstValue := firstValue) (secondValue := secondValue))))))
+      (Or.inr
+        (Step.eta.etaPair
+          (.mkGen .gen_pair ()
+            (.childCons firstValue (.childCons secondValue .childNil))))) := by
+  exact
+    ⟨ (.mkGen .gen_pair ()
+        (.childCons firstValue (.childCons secondValue .childNil)))
+      , Step.betaEtaStar.trans
+          (Or.inl
+            (Step.cong .gen_pair ()
+              (StepChildren.here
+                (parentScope := scope) (headShift := 0)
+                (restShifts := [0])
+                ((.childCons secondValue .childNil) :
+                  RawTermChildren [0] scope)
+                (Step.iotaFstPair
+                  (firstValue := firstValue)
+                  (secondValue := secondValue)))))
+          (Step.betaEtaStar.refl _)
+      , Step.betaEtaStar.refl _ ⟩
+
+/-- Resolver-facing eta-pair arm for any beta+iota `Step` leaving the
+eta-pair source.
+
+The only possible beta+iota steps from
+`pair (fst pairTerm) (snd pairTerm)` are:
+
+* a reduction inside the `pairTerm` occurrence under `fst`;
+* a reduction inside the `pairTerm` occurrence under `snd`;
+* direct `fst (pair firstValue secondValue)` iota;
+* direct `snd (pair firstValue secondValue)` iota.
+
+Those four shapes delegate to the audited primitive joins above. -/
+theorem etaPairLeftStep {scope : Nat}
+    {pairTerm leftReduct : RawTerm scope}
+    (leftStep : Step (RawTerm.etaPairSource pairTerm) leftReduct) :
+    BetaEtaPairJoin
+      (Or.inl leftStep)
+      (Or.inr (Step.eta.etaPair pairTerm)) := by
+  cases leftStep with
+  | cong _ _ pairChildrenStep =>
+      cases pairChildrenStep with
+      | here _ firstProjectionStep =>
+          cases firstProjectionStep with
+          | iotaFstPair =>
+              exact etaPairFirstProjectionIota _ _
+          | cong _ _ firstProjectionChildrenStep =>
+              cases firstProjectionChildrenStep with
+              | here _ pairStep =>
+                  exact etaPairFirstCong pairStep
+              | there _ emptyTailStep =>
+                  cases emptyTailStep
+      | there _ tailStep =>
+          cases tailStep with
+          | here _ secondProjectionStep =>
+              cases secondProjectionStep with
+              | iotaSndPair =>
+                  exact etaPairSecondProjectionIota _ _
+              | cong _ _ secondProjectionChildrenStep =>
+                  cases secondProjectionChildrenStep with
+                  | here _ pairStep =>
+                      exact etaPairSecondCong pairStep
+                  | there _ emptyTailStep =>
+                      cases emptyTailStep
+          | there _ emptyTailStep =>
+              cases emptyTailStep
+
+/-- Reverse orientation of `etaPairLeftStep`, for dispatcher arms where
+root eta-pair is the left branch and beta+iota `Step` is the right
+branch. -/
+theorem etaPairRightStep {scope : Nat}
+    {pairTerm rightReduct : RawTerm scope}
+    (rightStep : Step (RawTerm.etaPairSource pairTerm) rightReduct) :
+    BetaEtaPairJoin
+      (Or.inr (Step.eta.etaPair pairTerm))
+      (Or.inl rightStep) :=
+  swap (etaPairLeftStep rightStep)
+
 /-- Eta-modal-intro versus a beta+iota step inside the eliminated modal
 occurrence.
 

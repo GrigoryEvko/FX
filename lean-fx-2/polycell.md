@@ -5614,7 +5614,13 @@ arbitrary substitution/renaming retraction, and
 `etaLamArbitraryUnderBinderCong` and
 `etaPathLamArbitraryUnderBinderCong` now consume only the under-binder
 step; strengthening and the source-level replay step are derived
-internally.  Remaining #355 work: wire these resolver-facing joins into
+internally.  The next #355 slice closes the eta-pair projection-iota
+overlaps explicitly: `etaPairFirstProjectionIota` and
+`etaPairSecondProjectionIota` join
+`pair (fst (pair a b)) (snd (pair a b))` against root eta-pair, and
+`etaPairLeftStep` / `etaPairRightStep` package every beta+iota `Step`
+leaving an eta-pair source into one resolver-facing arm.  Remaining
+#355 work: wire the lam/pathLam/modal/Glue resolver-facing joins into
 the full `Step.betaEta` local Church-Rosser dispatcher / cd-lemma
 extension.  #356 remains eta/eta branchings.
 Record, clock, and parametricity eta remain generator-frontier work,
