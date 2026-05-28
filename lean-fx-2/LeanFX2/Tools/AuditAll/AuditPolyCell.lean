@@ -138,6 +138,7 @@ import LeanFX2.Foundation.PolyCell.NbE.DesignDecision
 import LeanFX2.Foundation.PolyCell.NbE.ReductionStrategy
 import LeanFX2.Tools.AuditAll.AuditPhaseZ
 import LeanFX2.Tools.AuditAll.AuditStrictAxes
+import LeanFX2.Foundation.TyWellfoundedness
 
 namespace LeanFX2.Tools
 
@@ -3128,6 +3129,45 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Tools.AuditAll.Audit.strictAxes_fullyShipped_count
 #assert_no_axioms LeanFX2.Tools.AuditAll.Audit.strictAxes_counts_honest
 #assert_no_axioms LeanFX2.Tools.AuditAll.Audit.strictAxes_total_count
+
+-- ─── M-Ty-wf (#383): Ty.size well-foundedness measure ──────────────
+-- 25-ctor structural size measure for typed recursion in M15a-e
+-- (typed η-long quote) and M9-Tait (Tait reducibility predicate).
+--
+-- Counts ONLY Ty-substructure (RawTerm payloads / Nat / Fin
+-- payloads do not contribute) — the recursion-friendly shape for
+-- type-directed traversal.
+--
+-- Ships: Ty.size (25 arms), Ty.size_pos (25-arm positivity),
+-- 23 per-ctor size_lt_X structural-decrease lemmas covering
+-- piTy / sigmaTy / arrow / eitherType / equiv / codata / listType /
+-- optionType / record / modal / glue / refine / effect / id / path /
+-- oeq / idStrict.
+#assert_no_axioms LeanFX2.Ty.size
+#assert_no_axioms LeanFX2.Ty.size_pos
+#assert_no_axioms LeanFX2.Ty.size_lt_piTy_codomain
+#assert_no_axioms LeanFX2.Ty.size_lt_piTy_domain
+#assert_no_axioms LeanFX2.Ty.size_lt_sigmaTy_second
+#assert_no_axioms LeanFX2.Ty.size_lt_sigmaTy_first
+#assert_no_axioms LeanFX2.Ty.size_lt_arrow_domain
+#assert_no_axioms LeanFX2.Ty.size_lt_arrow_codomain
+#assert_no_axioms LeanFX2.Ty.size_lt_eitherType_left
+#assert_no_axioms LeanFX2.Ty.size_lt_eitherType_right
+#assert_no_axioms LeanFX2.Ty.size_lt_equiv_domain
+#assert_no_axioms LeanFX2.Ty.size_lt_equiv_codomain
+#assert_no_axioms LeanFX2.Ty.size_lt_codata_state
+#assert_no_axioms LeanFX2.Ty.size_lt_codata_output
+#assert_no_axioms LeanFX2.Ty.size_lt_listType_element
+#assert_no_axioms LeanFX2.Ty.size_lt_optionType_element
+#assert_no_axioms LeanFX2.Ty.size_lt_record_singleField
+#assert_no_axioms LeanFX2.Ty.size_lt_modal_carrier
+#assert_no_axioms LeanFX2.Ty.size_lt_glue_base
+#assert_no_axioms LeanFX2.Ty.size_lt_refine_base
+#assert_no_axioms LeanFX2.Ty.size_lt_effect_carrier
+#assert_no_axioms LeanFX2.Ty.size_lt_id_carrier
+#assert_no_axioms LeanFX2.Ty.size_lt_path_carrier
+#assert_no_axioms LeanFX2.Ty.size_lt_oeq_carrier
+#assert_no_axioms LeanFX2.Ty.size_lt_idStrict_carrier
 
 -- ─── V2-L1cert.12: existential preserves dim (#167) ─────────────────
 -- inferRawCellGeneral?_accepted_cellDimension_eq: when the
