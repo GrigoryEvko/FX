@@ -386,6 +386,102 @@ theorem applyRawArgumentsFrom_isStronglyNormalizing_of_neutral_head_arguments
                 neutralHeadStep headTerminates argumentTerminates)
               remainingArgumentsTerminate
 
+/-- One-argument specialization of the finite neutral-spine accessibility
+helper.  This packages the common selected-branch iota reduct
+`app neutralHead argument` without repeating the argument-list witness. -/
+theorem applyRawArgumentsFrom_isStronglyNormalizing_of_neutral_head_one_argument
+    {scope : Nat} (isNeutralHead : RawTerm scope → Prop)
+    {headTerm argumentTerm : RawTerm scope}
+    (headIsNeutral : isNeutralHead headTerm)
+    (neutralHeadIsNotLambda :
+      ∀ {currentHead : RawTerm scope}, isNeutralHead currentHead →
+        ∀ lambdaBody : RawTerm (scope + 1),
+          currentHead ≠ .mkGen .gen_lam () (.childCons lambdaBody .childNil))
+    (neutralHeadStep :
+      ∀ {currentHead targetHead : RawTerm scope},
+        isNeutralHead currentHead →
+          Step currentHead targetHead →
+            isNeutralHead targetHead)
+    (headTerminates : IsStronglyNormalizing headTerm)
+    (argumentTerminates : IsStronglyNormalizing argumentTerm) :
+    IsStronglyNormalizing
+      (applyRawArgumentsFrom headTerm [argumentTerm]) :=
+  applyRawArgumentsFrom_isStronglyNormalizing_of_neutral_head_arguments
+    (isNeutralHead := isNeutralHead)
+    headIsNeutral
+    neutralHeadIsNotLambda
+    neutralHeadStep
+    headTerminates
+    (AllStronglyNormalizingArguments.cons argumentTerminates
+      AllStronglyNormalizingArguments.nil)
+
+/-- Two-argument specialization of the finite neutral-spine accessibility
+helper.  This is the selected-branch shape used by successor eliminators:
+`app (app neutralHead firstArgument) secondArgument`. -/
+theorem applyRawArgumentsFrom_isStronglyNormalizing_of_neutral_head_two_arguments
+    {scope : Nat} (isNeutralHead : RawTerm scope → Prop)
+    {headTerm firstArgumentTerm secondArgumentTerm : RawTerm scope}
+    (headIsNeutral : isNeutralHead headTerm)
+    (neutralHeadIsNotLambda :
+      ∀ {currentHead : RawTerm scope}, isNeutralHead currentHead →
+        ∀ lambdaBody : RawTerm (scope + 1),
+          currentHead ≠ .mkGen .gen_lam () (.childCons lambdaBody .childNil))
+    (neutralHeadStep :
+      ∀ {currentHead targetHead : RawTerm scope},
+        isNeutralHead currentHead →
+          Step currentHead targetHead →
+            isNeutralHead targetHead)
+    (headTerminates : IsStronglyNormalizing headTerm)
+    (firstArgumentTerminates : IsStronglyNormalizing firstArgumentTerm)
+    (secondArgumentTerminates : IsStronglyNormalizing secondArgumentTerm) :
+    IsStronglyNormalizing
+      (applyRawArgumentsFrom headTerm
+        [firstArgumentTerm, secondArgumentTerm]) :=
+  applyRawArgumentsFrom_isStronglyNormalizing_of_neutral_head_arguments
+    (isNeutralHead := isNeutralHead)
+    headIsNeutral
+    neutralHeadIsNotLambda
+    neutralHeadStep
+    headTerminates
+    (AllStronglyNormalizingArguments.cons firstArgumentTerminates
+      (AllStronglyNormalizingArguments.cons secondArgumentTerminates
+        AllStronglyNormalizingArguments.nil))
+
+/-- Three-argument specialization of the finite neutral-spine accessibility
+helper.  This is the selected-branch shape used by list-cons eliminators:
+`app (app (app neutralHead firstArgument) secondArgument) thirdArgument`. -/
+theorem applyRawArgumentsFrom_isStronglyNormalizing_of_neutral_head_three_arguments
+    {scope : Nat} (isNeutralHead : RawTerm scope → Prop)
+    {headTerm firstArgumentTerm secondArgumentTerm thirdArgumentTerm :
+      RawTerm scope}
+    (headIsNeutral : isNeutralHead headTerm)
+    (neutralHeadIsNotLambda :
+      ∀ {currentHead : RawTerm scope}, isNeutralHead currentHead →
+        ∀ lambdaBody : RawTerm (scope + 1),
+          currentHead ≠ .mkGen .gen_lam () (.childCons lambdaBody .childNil))
+    (neutralHeadStep :
+      ∀ {currentHead targetHead : RawTerm scope},
+        isNeutralHead currentHead →
+          Step currentHead targetHead →
+            isNeutralHead targetHead)
+    (headTerminates : IsStronglyNormalizing headTerm)
+    (firstArgumentTerminates : IsStronglyNormalizing firstArgumentTerm)
+    (secondArgumentTerminates : IsStronglyNormalizing secondArgumentTerm)
+    (thirdArgumentTerminates : IsStronglyNormalizing thirdArgumentTerm) :
+    IsStronglyNormalizing
+      (applyRawArgumentsFrom headTerm
+        [firstArgumentTerm, secondArgumentTerm, thirdArgumentTerm]) :=
+  applyRawArgumentsFrom_isStronglyNormalizing_of_neutral_head_arguments
+    (isNeutralHead := isNeutralHead)
+    headIsNeutral
+    neutralHeadIsNotLambda
+    neutralHeadStep
+    headTerminates
+    (AllStronglyNormalizingArguments.cons firstArgumentTerminates
+      (AllStronglyNormalizingArguments.cons secondArgumentTerminates
+        (AllStronglyNormalizingArguments.cons thirdArgumentTerminates
+          AllStronglyNormalizingArguments.nil)))
+
 /-- Folding more arguments onto a variable-headed spine preserves the
 variable-headed-spine invariant. -/
 theorem variableHeadedSpineTermFrom_isVariableHeadedSpine {scope : Nat}

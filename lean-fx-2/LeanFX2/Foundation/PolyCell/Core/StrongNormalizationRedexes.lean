@@ -745,26 +745,23 @@ theorem natElimSucc_isStronglyNormalizing_of_neutral_succBranch
                               cases scrutineeEq
                               rw [targetEq]
                               exact
-                                applyRawArgumentsFrom_isStronglyNormalizing_of_neutral_head_arguments
+                                applyRawArgumentsFrom_isStronglyNormalizing_of_neutral_head_two_arguments
                                   (isNeutralHead := isNeutralHead)
                                   currentSuccBranchIsNeutral
                                   neutralHeadIsNotLambda
                                   neutralHeadStep
                                   (Acc.intro currentSuccBranch
                                     currentSuccBranchSuccessors)
-                                  (AllStronglyNormalizingArguments.cons
+                                  (Acc.intro currentPredecessor
+                                    currentPredecessorSuccessors)
+                                  (recursiveCallTerminates
                                     (Acc.intro currentPredecessor
                                       currentPredecessorSuccessors)
-                                    (AllStronglyNormalizingArguments.cons
-                                      (recursiveCallTerminates
-                                        (Acc.intro currentPredecessor
-                                          currentPredecessorSuccessors)
-                                        (Acc.intro currentZeroBranch
-                                          currentZeroSuccessors)
-                                        currentSuccBranchIsNeutral
-                                        (Acc.intro currentSuccBranch
-                                          currentSuccBranchSuccessors))
-                                      AllStronglyNormalizingArguments.nil))
+                                    (Acc.intro currentZeroBranch
+                                      currentZeroSuccessors)
+                                    currentSuccBranchIsNeutral
+                                    (Acc.intro currentSuccBranch
+                                      currentSuccBranchSuccessors))
                           | inr restAfterSucc =>
                               cases restAfterSucc with
                               | inl scrutineeBranch =>
@@ -923,26 +920,23 @@ theorem natRecSucc_isStronglyNormalizing_of_neutral_succBranch
                               cases scrutineeEq
                               rw [targetEq]
                               exact
-                                applyRawArgumentsFrom_isStronglyNormalizing_of_neutral_head_arguments
+                                applyRawArgumentsFrom_isStronglyNormalizing_of_neutral_head_two_arguments
                                   (isNeutralHead := isNeutralHead)
                                   currentSuccBranchIsNeutral
                                   neutralHeadIsNotLambda
                                   neutralHeadStep
                                   (Acc.intro currentSuccBranch
                                     currentSuccBranchSuccessors)
-                                  (AllStronglyNormalizingArguments.cons
+                                  (Acc.intro currentPredecessor
+                                    currentPredecessorSuccessors)
+                                  (recursiveCallTerminates
                                     (Acc.intro currentPredecessor
                                       currentPredecessorSuccessors)
-                                    (AllStronglyNormalizingArguments.cons
-                                      (recursiveCallTerminates
-                                        (Acc.intro currentPredecessor
-                                          currentPredecessorSuccessors)
-                                        (Acc.intro currentZeroBranch
-                                          currentZeroSuccessors)
-                                        currentSuccBranchIsNeutral
-                                        (Acc.intro currentSuccBranch
-                                          currentSuccBranchSuccessors))
-                                      AllStronglyNormalizingArguments.nil))
+                                    (Acc.intro currentZeroBranch
+                                      currentZeroSuccessors)
+                                    currentSuccBranchIsNeutral
+                                    (Acc.intro currentSuccBranch
+                                      currentSuccBranchSuccessors))
                           | inr restAfterSucc =>
                               cases restAfterSucc with
                               | inl scrutineeBranch =>
@@ -1182,29 +1176,25 @@ theorem listElimCons_isStronglyNormalizing_of_neutral_consBranch
                                     cases scrutineeEq
                                     rw [targetEq]
                                     exact
-                                      applyRawArgumentsFrom_isStronglyNormalizing_of_neutral_head_arguments
+                                      applyRawArgumentsFrom_isStronglyNormalizing_of_neutral_head_three_arguments
                                         (isNeutralHead := isNeutralHead)
                                         currentConsBranchIsNeutral
                                         neutralHeadIsNotLambda
                                         neutralHeadStep
                                         (Acc.intro currentConsBranch
                                           currentConsBranchSuccessors)
-                                        (AllStronglyNormalizingArguments.cons
-                                          (Acc.intro currentHeadVal
-                                            currentHeadSuccessors)
-                                          (AllStronglyNormalizingArguments.cons
-                                            (Acc.intro currentTailVal
-                                              currentTailSuccessors)
-                                            (AllStronglyNormalizingArguments.cons
-                                              (recursiveCallTerminates
-                                                (Acc.intro currentTailVal
-                                                  currentTailSuccessors)
-                                                (Acc.intro currentNilBranch
-                                                  currentNilSuccessors)
-                                                currentConsBranchIsNeutral
-                                                (Acc.intro currentConsBranch
-                                                  currentConsBranchSuccessors))
-                                              AllStronglyNormalizingArguments.nil)))
+                                        (Acc.intro currentHeadVal
+                                          currentHeadSuccessors)
+                                        (Acc.intro currentTailVal
+                                          currentTailSuccessors)
+                                        (recursiveCallTerminates
+                                          (Acc.intro currentTailVal
+                                            currentTailSuccessors)
+                                          (Acc.intro currentNilBranch
+                                            currentNilSuccessors)
+                                          currentConsBranchIsNeutral
+                                          (Acc.intro currentConsBranch
+                                            currentConsBranchSuccessors))
                                 | inr restAfterCons =>
                                     cases restAfterCons with
                                     | inl scrutineeBranch =>
@@ -1418,17 +1408,15 @@ theorem optionMatchSome_isStronglyNormalizing_of_neutral_someBranch
                               cases scrutineeEq
                               rw [targetEq]
                               exact
-                                applyRawArgumentsFrom_isStronglyNormalizing_of_neutral_head_arguments
+                                applyRawArgumentsFrom_isStronglyNormalizing_of_neutral_head_one_argument
                                   (isNeutralHead := isNeutralHead)
                                   currentSomeBranchIsNeutral
                                   neutralHeadIsNotLambda
                                   neutralHeadStep
                                   (Acc.intro currentSomeBranch
                                     currentSomeBranchSuccessors)
-                                  (AllStronglyNormalizingArguments.cons
-                                    (Acc.intro currentValue
-                                      currentValueSuccessors)
-                                    AllStronglyNormalizingArguments.nil)
+                                  (Acc.intro currentValue
+                                    currentValueSuccessors)
                           | inr restAfterSome =>
                               cases restAfterSome with
                               | inl scrutineeBranch =>
@@ -1566,17 +1554,15 @@ theorem eitherMatchInl_isStronglyNormalizing_of_neutral_leftBranch
                           cases scrutineeEq
                           rw [targetEq]
                           exact
-                            applyRawArgumentsFrom_isStronglyNormalizing_of_neutral_head_arguments
+                            applyRawArgumentsFrom_isStronglyNormalizing_of_neutral_head_one_argument
                               (isNeutralHead := isNeutralHead)
                               currentLeftBranchIsNeutral
                               neutralHeadIsNotLambda
                               neutralHeadStep
                               (Acc.intro currentLeftBranch
                                 currentLeftBranchSuccessors)
-                              (AllStronglyNormalizingArguments.cons
-                                (Acc.intro currentValue
-                                  currentValueSuccessors)
-                                AllStronglyNormalizingArguments.nil)
+                              (Acc.intro currentValue
+                                currentValueSuccessors)
                       | inr restAfterLeft =>
                           cases restAfterLeft with
                           | inl rightBranchStep =>
@@ -1725,17 +1711,15 @@ theorem eitherMatchInr_isStronglyNormalizing_of_neutral_rightBranch
                               cases scrutineeEq
                               rw [targetEq]
                               exact
-                                applyRawArgumentsFrom_isStronglyNormalizing_of_neutral_head_arguments
+                                applyRawArgumentsFrom_isStronglyNormalizing_of_neutral_head_one_argument
                                   (isNeutralHead := isNeutralHead)
                                   currentRightBranchIsNeutral
                                   neutralHeadIsNotLambda
                                   neutralHeadStep
                                   (Acc.intro currentRightBranch
                                     currentRightBranchSuccessors)
-                                  (AllStronglyNormalizingArguments.cons
-                                    (Acc.intro currentValue
-                                      currentValueSuccessors)
-                                    AllStronglyNormalizingArguments.nil)
+                                  (Acc.intro currentValue
+                                    currentValueSuccessors)
                           | inr restAfterRight =>
                               cases restAfterRight with
                               | inl scrutineeBranch =>
