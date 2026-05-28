@@ -239,6 +239,109 @@ theorem betaArgumentCongReverse_hasJoin {scope : Nat}
     (betaArgumentCong body argumentStep).swap.HasJoin :=
   (LocalDiamond.betaArgumentCongReverse body argumentStep).hasJoin
 
+/-- Resolver arm for same-root `boolTrue` iota branchings. -/
+theorem iotaBoolTrueSameRoot_hasJoin {scope : Nat}
+    (thenBranch elseBranch : RawTerm scope) :
+    (iotaBoolTrueSameRoot thenBranch elseBranch).HasJoin :=
+  (LocalDiamond.iotaBoolTrueSameRoot thenBranch elseBranch).hasJoin
+
+/-- Resolver arm for same-root `boolFalse` iota branchings. -/
+theorem iotaBoolFalseSameRoot_hasJoin {scope : Nat}
+    (thenBranch elseBranch : RawTerm scope) :
+    (iotaBoolFalseSameRoot thenBranch elseBranch).HasJoin :=
+  (LocalDiamond.iotaBoolFalseSameRoot thenBranch elseBranch).hasJoin
+
+/-- Resolver arm for same-root first-projection iota branchings. -/
+theorem iotaFstPairSameRoot_hasJoin {scope : Nat}
+    (firstValue secondValue : RawTerm scope) :
+    (iotaFstPairSameRoot firstValue secondValue).HasJoin :=
+  (LocalDiamond.iotaFstPairSameRoot firstValue secondValue).hasJoin
+
+/-- Resolver arm for same-root second-projection iota branchings. -/
+theorem iotaSndPairSameRoot_hasJoin {scope : Nat}
+    (firstValue secondValue : RawTerm scope) :
+    (iotaSndPairSameRoot firstValue secondValue).HasJoin :=
+  (LocalDiamond.iotaSndPairSameRoot firstValue secondValue).hasJoin
+
+/-- Resolver arm for same-root `natElim` zero-case branchings. -/
+theorem iotaNatElimZeroSameRoot_hasJoin {scope : Nat}
+    (zeroBranch succBranch : RawTerm scope) :
+    (iotaNatElimZeroSameRoot zeroBranch succBranch).HasJoin :=
+  (LocalDiamond.iotaNatElimZeroSameRoot zeroBranch succBranch).hasJoin
+
+/-- Resolver arm for same-root `natRec` zero-case branchings. -/
+theorem iotaNatRecZeroSameRoot_hasJoin {scope : Nat}
+    (zeroBranch succBranch : RawTerm scope) :
+    (iotaNatRecZeroSameRoot zeroBranch succBranch).HasJoin :=
+  (LocalDiamond.iotaNatRecZeroSameRoot zeroBranch succBranch).hasJoin
+
+/-- Resolver arm for same-root `listElim` nil-case branchings. -/
+theorem iotaListElimNilSameRoot_hasJoin {scope : Nat}
+    (nilBranch consBranch : RawTerm scope) :
+    (iotaListElimNilSameRoot nilBranch consBranch).HasJoin :=
+  (LocalDiamond.iotaListElimNilSameRoot nilBranch consBranch).hasJoin
+
+/-- Resolver arm for same-root `optionMatch` none-case branchings. -/
+theorem iotaOptionMatchNoneSameRoot_hasJoin {scope : Nat}
+    (noneBranch someBranch : RawTerm scope) :
+    (iotaOptionMatchNoneSameRoot noneBranch someBranch).HasJoin :=
+  (LocalDiamond.iotaOptionMatchNoneSameRoot noneBranch someBranch).hasJoin
+
+/-- Resolver arm for same-root `idJ` refl-case branchings. -/
+theorem iotaIdJReflSameRoot_hasJoin {scope : Nat}
+    (baseCase rawWitness : RawTerm scope) :
+    (iotaIdJReflSameRoot baseCase rawWitness).HasJoin :=
+  (LocalDiamond.iotaIdJReflSameRoot baseCase rawWitness).hasJoin
+
+/-- Resolver arm for same-root `idStrictRec` refl-case branchings. -/
+theorem iotaIdStrictRecReflSameRoot_hasJoin {scope : Nat}
+    (baseCase rawWitness : RawTerm scope) :
+    (iotaIdStrictRecReflSameRoot baseCase rawWitness).HasJoin :=
+  (LocalDiamond.iotaIdStrictRecReflSameRoot baseCase rawWitness).hasJoin
+
+/-- Resolver arm for same-root `optionMatch` some-case branchings. -/
+theorem iotaOptionMatchSomeSameRoot_hasJoin {scope : Nat}
+    (value noneBranch someBranch : RawTerm scope) :
+    (iotaOptionMatchSomeSameRoot value noneBranch someBranch).HasJoin :=
+  (LocalDiamond.iotaOptionMatchSomeSameRoot
+    value noneBranch someBranch).hasJoin
+
+/-- Resolver arm for same-root `eitherMatch` inl-case branchings. -/
+theorem iotaEitherMatchInlSameRoot_hasJoin {scope : Nat}
+    (value leftBranch rightBranch : RawTerm scope) :
+    (iotaEitherMatchInlSameRoot value leftBranch rightBranch).HasJoin :=
+  (LocalDiamond.iotaEitherMatchInlSameRoot
+    value leftBranch rightBranch).hasJoin
+
+/-- Resolver arm for same-root `eitherMatch` inr-case branchings. -/
+theorem iotaEitherMatchInrSameRoot_hasJoin {scope : Nat}
+    (value leftBranch rightBranch : RawTerm scope) :
+    (iotaEitherMatchInrSameRoot value leftBranch rightBranch).HasJoin :=
+  (LocalDiamond.iotaEitherMatchInrSameRoot
+    value leftBranch rightBranch).hasJoin
+
+/-- Resolver arm for same-root `natElim` succ-case branchings. -/
+theorem iotaNatElimSuccSameRoot_hasJoin {scope : Nat}
+    (predecessor zeroBranch succBranch : RawTerm scope) :
+    (iotaNatElimSuccSameRoot predecessor zeroBranch succBranch).HasJoin :=
+  (LocalDiamond.iotaNatElimSuccSameRoot
+    predecessor zeroBranch succBranch).hasJoin
+
+/-- Resolver arm for same-root `natRec` succ-case branchings. -/
+theorem iotaNatRecSuccSameRoot_hasJoin {scope : Nat}
+    (predecessor zeroBranch succBranch : RawTerm scope) :
+    (iotaNatRecSuccSameRoot predecessor zeroBranch succBranch).HasJoin :=
+  (LocalDiamond.iotaNatRecSuccSameRoot
+    predecessor zeroBranch succBranch).hasJoin
+
+/-- Resolver arm for same-root `listElim` cons-case branchings. -/
+theorem iotaListElimConsSameRoot_hasJoin {scope : Nat}
+    (headValue tailValue nilBranch consBranch : RawTerm scope) :
+    (iotaListElimConsSameRoot
+      headValue tailValue nilBranch consBranch).HasJoin :=
+  (LocalDiamond.iotaListElimConsSameRoot
+    headValue tailValue nilBranch consBranch).hasJoin
+
 end LocalStepBranching
 
 namespace CdLemmaStatement

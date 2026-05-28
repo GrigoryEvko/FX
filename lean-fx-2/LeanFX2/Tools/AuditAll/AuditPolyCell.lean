@@ -1265,6 +1265,22 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.betaFunctionCongReverse_hasJoin
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.betaArgumentCong_hasJoin
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.betaArgumentCongReverse_hasJoin
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaBoolTrueSameRoot_hasJoin
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaBoolFalseSameRoot_hasJoin
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaFstPairSameRoot_hasJoin
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaSndPairSameRoot_hasJoin
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaNatElimZeroSameRoot_hasJoin
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaNatRecZeroSameRoot_hasJoin
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaListElimNilSameRoot_hasJoin
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaOptionMatchNoneSameRoot_hasJoin
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaIdJReflSameRoot_hasJoin
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaIdStrictRecReflSameRoot_hasJoin
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaOptionMatchSomeSameRoot_hasJoin
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaEitherMatchInlSameRoot_hasJoin
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaEitherMatchInrSameRoot_hasJoin
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaNatElimSuccSameRoot_hasJoin
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaNatRecSuccSameRoot_hasJoin
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaListElimConsSameRoot_hasJoin
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CdLemmaStatement.ofLocalBranchingResolver
 
 -- ─── V2-L3.1 phase D step 35: HCC-level wrappers around the cell-step
