@@ -221,6 +221,128 @@ theorem etaPairSecondCong {scope : Nat}
     , Step.betaEtaStar.trans (Or.inl pairStep)
         (Step.betaEtaStar.refl _) ⟩
 
+/-- Eta-modal-intro versus a beta+iota step inside the eliminated modal
+occurrence.
+
+Source:
+`modIntro (modElim modalTerm)`.
+
+The congruence branch reduces under `modElim`; the eta branch contracts
+the source to `modalTerm`.  The join contracts eta for the updated modal
+term on the congruence side and replays the original step on the eta side. -/
+theorem etaModIntroCong {scope : Nat}
+    {modalTerm updatedModalTerm : RawTerm scope}
+    (modalStep : Step modalTerm updatedModalTerm) :
+    BetaEtaPairJoin
+      (Or.inl
+        (Step.cong .gen_modIntro ()
+          (StepChildren.here
+            (parentScope := scope) (headShift := 0) (restShifts := [])
+            (.childNil : RawTermChildren [] scope)
+            (Step.cong .gen_modElim ()
+              (StepChildren.here
+                (parentScope := scope) (headShift := 0)
+                (restShifts := [])
+                (.childNil : RawTermChildren [] scope)
+                modalStep)))))
+      (Or.inr (Step.eta.etaModIntro modalTerm)) := by
+  exact
+    ⟨ updatedModalTerm
+    , Step.betaEtaStar.trans
+        (Or.inr (Step.eta.etaModIntro updatedModalTerm))
+        (Step.betaEtaStar.refl _)
+    , Step.betaEtaStar.trans (Or.inl modalStep)
+        (Step.betaEtaStar.refl _) ⟩
+
+/-- Eta-Glue-intro versus a beta+iota step inside the eliminated Glue
+occurrence.
+
+Source:
+`glueIntro (glueElim gluedTerm) gluedTerm`.
+
+The left branch reduces the first occurrence under `glueElim`; the join
+replays the same step at the second occurrence and then contracts eta for
+the updated Glue term. -/
+theorem etaGlueIntroFirstCong {scope : Nat}
+    {gluedTerm updatedGluedTerm : RawTerm scope}
+    (gluedStep : Step gluedTerm updatedGluedTerm) :
+    BetaEtaPairJoin
+      (Or.inl
+        (Step.cong .gen_glueIntro ()
+          (StepChildren.here
+            (parentScope := scope) (headShift := 0) (restShifts := [0])
+            ((.childCons gluedTerm .childNil) :
+              RawTermChildren [0] scope)
+            (Step.cong .gen_glueElim ()
+              (StepChildren.here
+                (parentScope := scope) (headShift := 0)
+                (restShifts := [])
+                (.childNil : RawTermChildren [] scope)
+                gluedStep)))))
+      (Or.inr (Step.eta.etaGlueIntro gluedTerm)) := by
+  exact
+    ⟨ updatedGluedTerm
+    , Step.betaEtaStar.trans
+        (Or.inl
+          (Step.cong .gen_glueIntro ()
+            (StepChildren.there
+              (parentScope := scope) (headShift := 0) (restShifts := [0])
+              ((.mkGen .gen_glueElim ()
+                (.childCons updatedGluedTerm .childNil)) : RawTerm scope)
+              (StepChildren.here
+                (parentScope := scope) (headShift := 0)
+                (restShifts := [])
+                (.childNil : RawTermChildren [] scope)
+                gluedStep))))
+        (Step.betaEtaStar.trans
+          (Or.inr (Step.eta.etaGlueIntro updatedGluedTerm))
+          (Step.betaEtaStar.refl _))
+    , Step.betaEtaStar.trans (Or.inl gluedStep)
+        (Step.betaEtaStar.refl _) ⟩
+
+/-- Eta-Glue-intro versus a beta+iota step inside the direct Glue
+occurrence.
+
+This is the symmetric sibling of `etaGlueIntroFirstCong`: the left branch
+reduces the second occurrence, while the join replays the same step under
+`glueElim` before contracting eta. -/
+theorem etaGlueIntroSecondCong {scope : Nat}
+    {gluedTerm updatedGluedTerm : RawTerm scope}
+    (gluedStep : Step gluedTerm updatedGluedTerm) :
+    BetaEtaPairJoin
+      (Or.inl
+        (Step.cong .gen_glueIntro ()
+          (StepChildren.there
+            (parentScope := scope) (headShift := 0) (restShifts := [0])
+            ((.mkGen .gen_glueElim ()
+              (.childCons gluedTerm .childNil)) : RawTerm scope)
+            (StepChildren.here
+              (parentScope := scope) (headShift := 0)
+              (restShifts := [])
+              (.childNil : RawTermChildren [] scope)
+              gluedStep))))
+      (Or.inr (Step.eta.etaGlueIntro gluedTerm)) := by
+  exact
+    ⟨ updatedGluedTerm
+    , Step.betaEtaStar.trans
+        (Or.inl
+          (Step.cong .gen_glueIntro ()
+            (StepChildren.here
+              (parentScope := scope) (headShift := 0) (restShifts := [0])
+              ((.childCons updatedGluedTerm .childNil) :
+                RawTermChildren [0] scope)
+              (Step.cong .gen_glueElim ()
+                (StepChildren.here
+                  (parentScope := scope) (headShift := 0)
+                  (restShifts := [])
+                  (.childNil : RawTermChildren [] scope)
+                  gluedStep)))))
+        (Step.betaEtaStar.trans
+          (Or.inr (Step.eta.etaGlueIntro updatedGluedTerm))
+          (Step.betaEtaStar.refl _))
+    , Step.betaEtaStar.trans (Or.inl gluedStep)
+        (Step.betaEtaStar.refl _) ⟩
+
 end BetaEtaPairJoin
 
 /-- Current root eta kinds represented by `Step.eta`.

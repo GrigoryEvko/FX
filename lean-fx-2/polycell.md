@@ -5579,9 +5579,12 @@ current root eta heads are `gen_lam`, `gen_pair`, `gen_pathLam`,
 beta/eta overlap.  The same slice starts the real eta-root versus
 beta+iota-congruence work with audited eta-pair diamonds for reducing
 inside the `fst p` or `snd p` occurrence before contracting
-`pair (fst p) (snd p)`.  The remaining #355 work is the corresponding
-current-generator eta-root/congruence families, followed by #356
-eta/eta branchings.
+`pair (fst p) (snd p)`.  The next #355 slice extends that same
+current-generator family to `modIntro (modElim m)` and both Glue
+occurrences in `glueIntro (glueElim g) g`, again as explicit audited
+betaEta joins.  The remaining #355 work is the binder
+eta-root/congruence family for `lam` and `pathLam`, followed by the
+actual betaEta local resolver; #356 remains eta/eta branchings.
 Record, clock, and parametricity eta remain generator-frontier work,
 not placeholders in the current raw relation.
 

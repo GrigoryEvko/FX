@@ -2371,6 +2371,9 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.ofCdLemmaForStepSteps
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaPairFirstCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaPairSecondCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaModIntroCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaGlueIntroFirstCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaGlueIntroSecondCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.EtaStepKind
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.EtaStepKind.all
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.EtaStepKind.sourceGenerator
