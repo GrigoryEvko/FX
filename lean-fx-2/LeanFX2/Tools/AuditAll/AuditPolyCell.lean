@@ -3737,6 +3737,60 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.extendProfile_preserves_fibrationConstructionLevel
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.extendProfile_preserves_modalConstructionLevel
 
+-- ─── audit-A11 (#394): V2-L5.5 gate expansion ───────────────────────
+-- Closes Agent 1's 2026-05-28 gap-audit finding: the V2-L5.5 #219
+-- ship audit-gated ~20 ProfileExtension decls but left 23 others
+-- silently un-gated.  This block extends coverage to the FULL
+-- ProfileExtension.lean surface.
+--
+-- Categories:
+-- * 3 remaining `extendProfile_preserves_*` theorems (stc + mttNorm
+--   + admission_evidence) — the original V2-L5.5 block listed 8
+--   such theorems but ProfileExtension actually ships 11.
+-- * 3 ProfileExtension.Admitted scaffolding decls (Admitted
+--   structure + admitted_from_fields builder + ExtendedAdmissionEvidence).
+-- * 1 extendedCapabilities def projecting an extension's capabilities.
+-- * 11 etaReductionInterface decls (the demonstration extension's
+--   interface + index helpers + arity equations + rule-index lemmas).
+-- * 5 etaReductionExtension witness decls (the actual ProfileExtension
+--   instance + capability/admission lemmas).
+-- * 1 fxWithEta def (the extended profile alias).
+
+-- 3 remaining `extendProfile_preserves_*` theorems
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.extendProfile_preserves_stcConstructionLevel
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.extendProfile_preserves_mttNormConstructionLevel
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.extendProfile_preserves_admission_evidence
+
+-- ProfileExtension.Admitted scaffolding (3 decls)
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.ProfileExtension.Admitted
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.ProfileExtension.admitted_from_fields
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.ProfileExtension.ExtendedAdmissionEvidence
+
+-- extendedCapabilities def
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.extendedCapabilities
+
+-- etaReductionInterface scaffolding (11 decls)
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaReductionInterface
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaReductionInterfaceLamIndex
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaReductionInterfacePathIndex
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaReductionInterfaceLamArity_eq_one
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaReductionInterfacePathArity_eq_one
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaReductionInterfaceRuleIndex
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaReductionInterfaceRuleIndex_etaLam
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaReductionInterfaceRuleIndex_etaPath
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaReductionInterfaceRuleArity_eq_declared
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaReductionInterfaceEvidence
+
+-- etaReductionExtension witness (5 decls)
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaReductionExtension
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaReductionExtension_capabilities_eq_bot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.extendedCapabilities_etaReductionExtension_eq_bot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaReductionExtension_localAdmissionRecord
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.etaReductionExtension_admitted
+
+-- fxWithEta extended profile alias
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Extension.fxWithEta
+
 -- ─── V2-L1cert.12: existential preserves dim (#167) ─────────────────
 -- inferRawCellGeneral?_accepted_cellDimension_eq: when the
 -- existential wrapper accepts a raw input, the result's stored
