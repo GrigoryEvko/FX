@@ -881,5 +881,312 @@ theorem optionMatchSome_isStronglyNormalizing_of_neutral_someBranch
     valueTerminates
     noneTerminates
 
+/-- Either matching on `inl value` is strongly normalizing when the selected
+left branch is a neutral function head.
+
+The root iota reduct is the one-argument application `app leftBranch value`.
+This is the either-left analogue of
+`optionMatchSome_isStronglyNormalizing_of_neutral_someBranch`; it deliberately
+does not assert general application closure. -/
+theorem eitherMatchInl_isStronglyNormalizing_of_neutral_leftBranch
+    {scope : Nat} (isNeutralHead : RawTerm scope → Prop)
+    {value leftBranch rightBranch : RawTerm scope}
+    (valueTerminates : IsStronglyNormalizing value)
+    (leftBranchIsNeutral : isNeutralHead leftBranch)
+    (neutralHeadIsNotLambda :
+      ∀ {currentHead : RawTerm scope}, isNeutralHead currentHead →
+        ∀ lambdaBody : RawTerm (scope + 1),
+          currentHead ≠ .mkGen .gen_lam () (.childCons lambdaBody .childNil))
+    (neutralHeadStep :
+      ∀ {currentHead targetHead : RawTerm scope},
+        isNeutralHead currentHead →
+          Step currentHead targetHead →
+            isNeutralHead targetHead)
+    (leftTerminates : IsStronglyNormalizing leftBranch)
+    (rightTerminates : IsStronglyNormalizing rightBranch) :
+    IsStronglyNormalizing
+      (.mkGen .gen_eitherMatch ()
+        (.childCons
+          (.mkGen .gen_eitherInl () (.childCons value .childNil))
+          (.childCons leftBranch (.childCons rightBranch .childNil))) :
+        RawTerm scope) :=
+  (Acc.ndrec
+    (r := StepSuccessor)
+    (C := fun currentLeftBranch =>
+      isNeutralHead currentLeftBranch →
+        ∀ {currentValue : RawTerm scope},
+          IsStronglyNormalizing currentValue →
+            ∀ {currentRightBranch : RawTerm scope},
+              IsStronglyNormalizing currentRightBranch →
+                IsStronglyNormalizing
+                  (.mkGen .gen_eitherMatch ()
+                    (.childCons
+                      (.mkGen .gen_eitherInl ()
+                        (.childCons currentValue .childNil))
+                      (.childCons currentLeftBranch
+                        (.childCons currentRightBranch .childNil))) :
+                    RawTerm scope))
+    (m := fun currentLeftBranch currentLeftBranchSuccessors leftBranchIH => by
+      intro currentLeftBranchIsNeutral currentValue currentValueTerminates
+        currentRightBranch currentRightTerminates
+      exact
+        Acc.ndrec
+          (r := StepSuccessor)
+          (C := fun innerValue =>
+            ∀ {innerRightBranch : RawTerm scope},
+              IsStronglyNormalizing innerRightBranch →
+                IsStronglyNormalizing
+                  (.mkGen .gen_eitherMatch ()
+                    (.childCons
+                      (.mkGen .gen_eitherInl ()
+                        (.childCons innerValue .childNil))
+                      (.childCons currentLeftBranch
+                        (.childCons innerRightBranch .childNil))) :
+                    RawTerm scope))
+          (m := fun currentValue currentValueSuccessors valueIH => by
+            intro currentRightBranch currentRightTerminates
+            exact
+              Acc.ndrec
+                (r := StepSuccessor)
+                (C := fun innerRightBranch =>
+                  IsStronglyNormalizing
+                    (.mkGen .gen_eitherMatch ()
+                      (.childCons
+                        (.mkGen .gen_eitherInl ()
+                          (.childCons currentValue .childNil))
+                        (.childCons currentLeftBranch
+                          (.childCons innerRightBranch .childNil))) :
+                      RawTerm scope))
+                (m := fun currentRightBranch currentRightSuccessors rightIH =>
+                  Acc.intro
+                    (.mkGen .gen_eitherMatch ()
+                      (.childCons
+                        (.mkGen .gen_eitherInl ()
+                          (.childCons currentValue .childNil))
+                        (.childCons currentLeftBranch
+                          (.childCons currentRightBranch .childNil))) :
+                      RawTerm scope)
+                    (fun targetTerm parentStep => by
+                      cases Step.from_eitherMatch parentStep with
+                      | inl leftBranchStep =>
+                          obtain ⟨leftValue, scrutineeEq, targetEq⟩ :=
+                            leftBranchStep
+                          cases scrutineeEq
+                          rw [targetEq]
+                          exact
+                            applyRawArgumentsFrom_isStronglyNormalizing_of_neutral_head_arguments
+                              (isNeutralHead := isNeutralHead)
+                              currentLeftBranchIsNeutral
+                              neutralHeadIsNotLambda
+                              neutralHeadStep
+                              (Acc.intro currentLeftBranch
+                                currentLeftBranchSuccessors)
+                              (AllStronglyNormalizingArguments.cons
+                                (Acc.intro currentValue
+                                  currentValueSuccessors)
+                                AllStronglyNormalizingArguments.nil)
+                      | inr restAfterLeft =>
+                          cases restAfterLeft with
+                          | inl rightBranchStep =>
+                              obtain ⟨rightValue, scrutineeEq, _⟩ :=
+                                rightBranchStep
+                              cases scrutineeEq
+                          | inr restAfterRight =>
+                              cases restAfterRight with
+                              | inl scrutineeBranch =>
+                                  obtain
+                                    ⟨scrutineeAfter, targetEq,
+                                      scrutineeStep⟩ := scrutineeBranch
+                                  obtain
+                                    ⟨valueAfter, scrutineeAfterEq,
+                                      valueStep⟩ :=
+                                      Step.from_eitherInl scrutineeStep
+                                  rw [targetEq, scrutineeAfterEq]
+                                  exact valueIH valueAfter valueStep
+                                    (Acc.intro currentRightBranch
+                                      currentRightSuccessors)
+                              | inr restAfterScrutinee =>
+                                  cases restAfterScrutinee with
+                                  | inl leftStep =>
+                                      obtain
+                                        ⟨leftAfter, targetEq,
+                                          leftStepInner⟩ := leftStep
+                                      rw [targetEq]
+                                      exact
+                                        leftBranchIH leftAfter leftStepInner
+                                          (neutralHeadStep
+                                            currentLeftBranchIsNeutral
+                                            leftStepInner)
+                                          (Acc.intro currentValue
+                                            currentValueSuccessors)
+                                          (Acc.intro currentRightBranch
+                                            currentRightSuccessors)
+                                  | inr rightStep =>
+                                      obtain
+                                        ⟨rightAfter, targetEq,
+                                          rightStepInner⟩ := rightStep
+                                      rw [targetEq]
+                                      exact rightIH rightAfter rightStepInner))
+                currentRightTerminates)
+          currentValueTerminates
+          currentRightTerminates)
+    leftTerminates)
+    leftBranchIsNeutral
+    valueTerminates
+    rightTerminates
+
+/-- Either matching on `inr value` is strongly normalizing when the selected
+right branch is a neutral function head.
+
+The root iota reduct is the one-argument application `app rightBranch value`.
+This is symmetric to
+`eitherMatchInl_isStronglyNormalizing_of_neutral_leftBranch`. -/
+theorem eitherMatchInr_isStronglyNormalizing_of_neutral_rightBranch
+    {scope : Nat} (isNeutralHead : RawTerm scope → Prop)
+    {value leftBranch rightBranch : RawTerm scope}
+    (valueTerminates : IsStronglyNormalizing value)
+    (leftTerminates : IsStronglyNormalizing leftBranch)
+    (rightBranchIsNeutral : isNeutralHead rightBranch)
+    (neutralHeadIsNotLambda :
+      ∀ {currentHead : RawTerm scope}, isNeutralHead currentHead →
+        ∀ lambdaBody : RawTerm (scope + 1),
+          currentHead ≠ .mkGen .gen_lam () (.childCons lambdaBody .childNil))
+    (neutralHeadStep :
+      ∀ {currentHead targetHead : RawTerm scope},
+        isNeutralHead currentHead →
+          Step currentHead targetHead →
+            isNeutralHead targetHead)
+    (rightTerminates : IsStronglyNormalizing rightBranch) :
+    IsStronglyNormalizing
+      (.mkGen .gen_eitherMatch ()
+        (.childCons
+          (.mkGen .gen_eitherInr () (.childCons value .childNil))
+          (.childCons leftBranch (.childCons rightBranch .childNil))) :
+        RawTerm scope) :=
+  (Acc.ndrec
+    (r := StepSuccessor)
+    (C := fun currentRightBranch =>
+      isNeutralHead currentRightBranch →
+        ∀ {currentValue : RawTerm scope},
+          IsStronglyNormalizing currentValue →
+            ∀ {currentLeftBranch : RawTerm scope},
+              IsStronglyNormalizing currentLeftBranch →
+                IsStronglyNormalizing
+                  (.mkGen .gen_eitherMatch ()
+                    (.childCons
+                      (.mkGen .gen_eitherInr ()
+                        (.childCons currentValue .childNil))
+                      (.childCons currentLeftBranch
+                        (.childCons currentRightBranch .childNil))) :
+                    RawTerm scope))
+    (m := fun currentRightBranch currentRightBranchSuccessors rightBranchIH => by
+      intro currentRightBranchIsNeutral currentValue currentValueTerminates
+        currentLeftBranch currentLeftTerminates
+      exact
+        Acc.ndrec
+          (r := StepSuccessor)
+          (C := fun innerValue =>
+            ∀ {innerLeftBranch : RawTerm scope},
+              IsStronglyNormalizing innerLeftBranch →
+                IsStronglyNormalizing
+                  (.mkGen .gen_eitherMatch ()
+                    (.childCons
+                      (.mkGen .gen_eitherInr ()
+                        (.childCons innerValue .childNil))
+                      (.childCons innerLeftBranch
+                        (.childCons currentRightBranch .childNil))) :
+                    RawTerm scope))
+          (m := fun currentValue currentValueSuccessors valueIH => by
+            intro currentLeftBranch currentLeftTerminates
+            exact
+              Acc.ndrec
+                (r := StepSuccessor)
+                (C := fun innerLeftBranch =>
+                  IsStronglyNormalizing
+                    (.mkGen .gen_eitherMatch ()
+                      (.childCons
+                        (.mkGen .gen_eitherInr ()
+                          (.childCons currentValue .childNil))
+                        (.childCons innerLeftBranch
+                          (.childCons currentRightBranch .childNil))) :
+                      RawTerm scope))
+                (m := fun currentLeftBranch currentLeftSuccessors leftIH =>
+                  Acc.intro
+                    (.mkGen .gen_eitherMatch ()
+                      (.childCons
+                        (.mkGen .gen_eitherInr ()
+                          (.childCons currentValue .childNil))
+                        (.childCons currentLeftBranch
+                          (.childCons currentRightBranch .childNil))) :
+                      RawTerm scope)
+                    (fun targetTerm parentStep => by
+                      cases Step.from_eitherMatch parentStep with
+                      | inl leftBranchStep =>
+                          obtain ⟨leftValue, scrutineeEq, _⟩ :=
+                            leftBranchStep
+                          cases scrutineeEq
+                      | inr restAfterLeft =>
+                          cases restAfterLeft with
+                          | inl rightBranchStep =>
+                              obtain ⟨rightValue, scrutineeEq, targetEq⟩ :=
+                                rightBranchStep
+                              cases scrutineeEq
+                              rw [targetEq]
+                              exact
+                                applyRawArgumentsFrom_isStronglyNormalizing_of_neutral_head_arguments
+                                  (isNeutralHead := isNeutralHead)
+                                  currentRightBranchIsNeutral
+                                  neutralHeadIsNotLambda
+                                  neutralHeadStep
+                                  (Acc.intro currentRightBranch
+                                    currentRightBranchSuccessors)
+                                  (AllStronglyNormalizingArguments.cons
+                                    (Acc.intro currentValue
+                                      currentValueSuccessors)
+                                    AllStronglyNormalizingArguments.nil)
+                          | inr restAfterRight =>
+                              cases restAfterRight with
+                              | inl scrutineeBranch =>
+                                  obtain
+                                    ⟨scrutineeAfter, targetEq,
+                                      scrutineeStep⟩ := scrutineeBranch
+                                  obtain
+                                    ⟨valueAfter, scrutineeAfterEq,
+                                      valueStep⟩ :=
+                                      Step.from_eitherInr scrutineeStep
+                                  rw [targetEq, scrutineeAfterEq]
+                                  exact valueIH valueAfter valueStep
+                                    (Acc.intro currentLeftBranch
+                                      currentLeftSuccessors)
+                              | inr restAfterScrutinee =>
+                                  cases restAfterScrutinee with
+                                  | inl leftStep =>
+                                      obtain
+                                        ⟨leftAfter, targetEq,
+                                          leftStepInner⟩ := leftStep
+                                      rw [targetEq]
+                                      exact leftIH leftAfter leftStepInner
+                                  | inr rightStep =>
+                                      obtain
+                                        ⟨rightAfter, targetEq,
+                                          rightStepInner⟩ := rightStep
+                                      rw [targetEq]
+                                      exact
+                                        rightBranchIH rightAfter rightStepInner
+                                          (neutralHeadStep
+                                            currentRightBranchIsNeutral
+                                            rightStepInner)
+                                          (Acc.intro currentValue
+                                            currentValueSuccessors)
+                                          (Acc.intro currentLeftBranch
+                                            currentLeftSuccessors)))
+                currentLeftTerminates)
+          currentValueTerminates
+          currentLeftTerminates)
+    rightTerminates)
+    rightBranchIsNeutral
+    valueTerminates
+    leftTerminates
+
 end StepStar
 end LeanFX2.Foundation.PolyCell.Core
