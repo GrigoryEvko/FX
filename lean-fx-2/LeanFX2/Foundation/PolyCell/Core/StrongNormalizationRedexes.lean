@@ -1397,6 +1397,296 @@ theorem appLamGlueIntro_isStronglyNormalizing_of_components_argument_contractum
     baseContractumTerminates
     partialContractumTerminates
 
+/-- Beta redexes whose lambda body is `arrowCode domain codomain` are strongly
+normalizing when both endpoint type codes, the argument, and both endpoint
+contracta are strongly normalizing. -/
+theorem appLamArrowCode_isStronglyNormalizing_of_domain_codomain_argument_contractum
+    {scope : Nat} {domain codomain : RawTerm (scope + 1)}
+    {argumentTerm : RawTerm scope}
+    (domainTerminates : IsStronglyNormalizing domain)
+    (codomainTerminates : IsStronglyNormalizing codomain)
+    (argumentTerminates : IsStronglyNormalizing argumentTerm)
+    (domainContractumTerminates :
+      ∀ {currentDomain : RawTerm (scope + 1)}
+        {currentArgument : RawTerm scope},
+        IsStronglyNormalizing currentDomain →
+          IsStronglyNormalizing currentArgument →
+            IsStronglyNormalizing
+              (RawTerm.subst0 currentDomain currentArgument))
+    (codomainContractumTerminates :
+      ∀ {currentCodomain : RawTerm (scope + 1)}
+        {currentArgument : RawTerm scope},
+        IsStronglyNormalizing currentCodomain →
+          IsStronglyNormalizing currentArgument →
+            IsStronglyNormalizing
+              (RawTerm.subst0 currentCodomain currentArgument)) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam ()
+            (.childCons
+              (.mkGen .gen_arrowCode ()
+                (.childCons domain (.childCons codomain .childNil)))
+              .childNil))
+          (.childCons argumentTerm .childNil)) :
+        RawTerm scope) :=
+  appLamTwoChildBody_isStronglyNormalizing_of_children_argument_contractum
+    (wrapBody := fun currentDomain currentCodomain =>
+      (.mkGen .gen_arrowCode ()
+        (.childCons currentDomain (.childCons currentCodomain .childNil)) :
+        RawTerm (scope + 1)))
+    (wrapContractum := fun domainContractum codomainContractum =>
+      (.mkGen .gen_arrowCode ()
+        (.childCons domainContractum
+          (.childCons codomainContractum .childNil)) :
+        RawTerm scope))
+    (fromWrapStep := fun bodyStep => Step.from_arrowCode bodyStep)
+    (wrapContractumTerminates :=
+      fun domainContractumTerminates codomainContractumTerminates =>
+        arrowCode_isStronglyNormalizing_of_domain_codomain
+          domainContractumTerminates
+          codomainContractumTerminates)
+    (subst0Wrap := fun _currentDomain _currentCodomain _currentArgument =>
+      rfl)
+    domainTerminates
+    codomainTerminates
+    argumentTerminates
+    domainContractumTerminates
+    codomainContractumTerminates
+
+/-- Beta redexes whose lambda body is `productCode leftType rightType` are
+strongly normalizing when both component type codes, the argument, and both
+component contracta are strongly normalizing. -/
+theorem appLamProductCode_isStronglyNormalizing_of_left_right_argument_contractum
+    {scope : Nat} {leftType rightType : RawTerm (scope + 1)}
+    {argumentTerm : RawTerm scope}
+    (leftTypeTerminates : IsStronglyNormalizing leftType)
+    (rightTypeTerminates : IsStronglyNormalizing rightType)
+    (argumentTerminates : IsStronglyNormalizing argumentTerm)
+    (leftTypeContractumTerminates :
+      ∀ {currentLeftType : RawTerm (scope + 1)}
+        {currentArgument : RawTerm scope},
+        IsStronglyNormalizing currentLeftType →
+          IsStronglyNormalizing currentArgument →
+            IsStronglyNormalizing
+              (RawTerm.subst0 currentLeftType currentArgument))
+    (rightTypeContractumTerminates :
+      ∀ {currentRightType : RawTerm (scope + 1)}
+        {currentArgument : RawTerm scope},
+        IsStronglyNormalizing currentRightType →
+          IsStronglyNormalizing currentArgument →
+            IsStronglyNormalizing
+              (RawTerm.subst0 currentRightType currentArgument)) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam ()
+            (.childCons
+              (.mkGen .gen_productCode ()
+                (.childCons leftType (.childCons rightType .childNil)))
+              .childNil))
+          (.childCons argumentTerm .childNil)) :
+        RawTerm scope) :=
+  appLamTwoChildBody_isStronglyNormalizing_of_children_argument_contractum
+    (wrapBody := fun currentLeftType currentRightType =>
+      (.mkGen .gen_productCode ()
+        (.childCons currentLeftType
+          (.childCons currentRightType .childNil)) :
+        RawTerm (scope + 1)))
+    (wrapContractum := fun leftTypeContractum rightTypeContractum =>
+      (.mkGen .gen_productCode ()
+        (.childCons leftTypeContractum
+          (.childCons rightTypeContractum .childNil)) :
+        RawTerm scope))
+    (fromWrapStep := fun bodyStep => Step.from_productCode bodyStep)
+    (wrapContractumTerminates :=
+      fun leftTypeContractumTerminates rightTypeContractumTerminates =>
+        productCode_isStronglyNormalizing_of_left_right
+          leftTypeContractumTerminates
+          rightTypeContractumTerminates)
+    (subst0Wrap := fun _currentLeftType _currentRightType _currentArgument =>
+      rfl)
+    leftTypeTerminates
+    rightTypeTerminates
+    argumentTerminates
+    leftTypeContractumTerminates
+    rightTypeContractumTerminates
+
+/-- Beta redexes whose lambda body is `sumCode leftType rightType` are
+strongly normalizing when both summand type codes, the argument, and both
+summand contracta are strongly normalizing. -/
+theorem appLamSumCode_isStronglyNormalizing_of_left_right_argument_contractum
+    {scope : Nat} {leftType rightType : RawTerm (scope + 1)}
+    {argumentTerm : RawTerm scope}
+    (leftTypeTerminates : IsStronglyNormalizing leftType)
+    (rightTypeTerminates : IsStronglyNormalizing rightType)
+    (argumentTerminates : IsStronglyNormalizing argumentTerm)
+    (leftTypeContractumTerminates :
+      ∀ {currentLeftType : RawTerm (scope + 1)}
+        {currentArgument : RawTerm scope},
+        IsStronglyNormalizing currentLeftType →
+          IsStronglyNormalizing currentArgument →
+            IsStronglyNormalizing
+              (RawTerm.subst0 currentLeftType currentArgument))
+    (rightTypeContractumTerminates :
+      ∀ {currentRightType : RawTerm (scope + 1)}
+        {currentArgument : RawTerm scope},
+        IsStronglyNormalizing currentRightType →
+          IsStronglyNormalizing currentArgument →
+            IsStronglyNormalizing
+              (RawTerm.subst0 currentRightType currentArgument)) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam ()
+            (.childCons
+              (.mkGen .gen_sumCode ()
+                (.childCons leftType (.childCons rightType .childNil)))
+              .childNil))
+          (.childCons argumentTerm .childNil)) :
+        RawTerm scope) :=
+  appLamTwoChildBody_isStronglyNormalizing_of_children_argument_contractum
+    (wrapBody := fun currentLeftType currentRightType =>
+      (.mkGen .gen_sumCode ()
+        (.childCons currentLeftType
+          (.childCons currentRightType .childNil)) :
+        RawTerm (scope + 1)))
+    (wrapContractum := fun leftTypeContractum rightTypeContractum =>
+      (.mkGen .gen_sumCode ()
+        (.childCons leftTypeContractum
+          (.childCons rightTypeContractum .childNil)) :
+        RawTerm scope))
+    (fromWrapStep := fun bodyStep => Step.from_sumCode bodyStep)
+    (wrapContractumTerminates :=
+      fun leftTypeContractumTerminates rightTypeContractumTerminates =>
+        sumCode_isStronglyNormalizing_of_left_right
+          leftTypeContractumTerminates
+          rightTypeContractumTerminates)
+    (subst0Wrap := fun _currentLeftType _currentRightType _currentArgument =>
+      rfl)
+    leftTypeTerminates
+    rightTypeTerminates
+    argumentTerminates
+    leftTypeContractumTerminates
+    rightTypeContractumTerminates
+
+/-- Beta redexes whose lambda body is `eitherCode leftType rightType` are
+strongly normalizing when both side type codes, the argument, and both side
+contracta are strongly normalizing. -/
+theorem appLamEitherCode_isStronglyNormalizing_of_left_right_argument_contractum
+    {scope : Nat} {leftType rightType : RawTerm (scope + 1)}
+    {argumentTerm : RawTerm scope}
+    (leftTypeTerminates : IsStronglyNormalizing leftType)
+    (rightTypeTerminates : IsStronglyNormalizing rightType)
+    (argumentTerminates : IsStronglyNormalizing argumentTerm)
+    (leftTypeContractumTerminates :
+      ∀ {currentLeftType : RawTerm (scope + 1)}
+        {currentArgument : RawTerm scope},
+        IsStronglyNormalizing currentLeftType →
+          IsStronglyNormalizing currentArgument →
+            IsStronglyNormalizing
+              (RawTerm.subst0 currentLeftType currentArgument))
+    (rightTypeContractumTerminates :
+      ∀ {currentRightType : RawTerm (scope + 1)}
+        {currentArgument : RawTerm scope},
+        IsStronglyNormalizing currentRightType →
+          IsStronglyNormalizing currentArgument →
+            IsStronglyNormalizing
+              (RawTerm.subst0 currentRightType currentArgument)) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam ()
+            (.childCons
+              (.mkGen .gen_eitherCode ()
+                (.childCons leftType (.childCons rightType .childNil)))
+              .childNil))
+          (.childCons argumentTerm .childNil)) :
+        RawTerm scope) :=
+  appLamTwoChildBody_isStronglyNormalizing_of_children_argument_contractum
+    (wrapBody := fun currentLeftType currentRightType =>
+      (.mkGen .gen_eitherCode ()
+        (.childCons currentLeftType
+          (.childCons currentRightType .childNil)) :
+        RawTerm (scope + 1)))
+    (wrapContractum := fun leftTypeContractum rightTypeContractum =>
+      (.mkGen .gen_eitherCode ()
+        (.childCons leftTypeContractum
+          (.childCons rightTypeContractum .childNil)) :
+        RawTerm scope))
+    (fromWrapStep := fun bodyStep => Step.from_eitherCode bodyStep)
+    (wrapContractumTerminates :=
+      fun leftTypeContractumTerminates rightTypeContractumTerminates =>
+        eitherCode_isStronglyNormalizing_of_left_right
+          leftTypeContractumTerminates
+          rightTypeContractumTerminates)
+    (subst0Wrap := fun _currentLeftType _currentRightType _currentArgument =>
+      rfl)
+    leftTypeTerminates
+    rightTypeTerminates
+    argumentTerminates
+    leftTypeContractumTerminates
+    rightTypeContractumTerminates
+
+/-- Beta redexes whose lambda body is `equivCode sourceType targetType` are
+strongly normalizing when both carrier type codes, the argument, and both
+carrier contracta are strongly normalizing. -/
+theorem appLamEquivCode_isStronglyNormalizing_of_source_target_argument_contractum
+    {scope : Nat} {sourceType targetType : RawTerm (scope + 1)}
+    {argumentTerm : RawTerm scope}
+    (sourceTypeTerminates : IsStronglyNormalizing sourceType)
+    (targetTypeTerminates : IsStronglyNormalizing targetType)
+    (argumentTerminates : IsStronglyNormalizing argumentTerm)
+    (sourceTypeContractumTerminates :
+      ∀ {currentSourceType : RawTerm (scope + 1)}
+        {currentArgument : RawTerm scope},
+        IsStronglyNormalizing currentSourceType →
+          IsStronglyNormalizing currentArgument →
+            IsStronglyNormalizing
+              (RawTerm.subst0 currentSourceType currentArgument))
+    (targetTypeContractumTerminates :
+      ∀ {currentTargetType : RawTerm (scope + 1)}
+        {currentArgument : RawTerm scope},
+        IsStronglyNormalizing currentTargetType →
+          IsStronglyNormalizing currentArgument →
+            IsStronglyNormalizing
+              (RawTerm.subst0 currentTargetType currentArgument)) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam ()
+            (.childCons
+              (.mkGen .gen_equivCode ()
+                (.childCons sourceType
+                  (.childCons targetType .childNil)))
+              .childNil))
+          (.childCons argumentTerm .childNil)) :
+        RawTerm scope) :=
+  appLamTwoChildBody_isStronglyNormalizing_of_children_argument_contractum
+    (wrapBody := fun currentSourceType currentTargetType =>
+      (.mkGen .gen_equivCode ()
+        (.childCons currentSourceType
+          (.childCons currentTargetType .childNil)) :
+        RawTerm (scope + 1)))
+    (wrapContractum := fun sourceTypeContractum targetTypeContractum =>
+      (.mkGen .gen_equivCode ()
+        (.childCons sourceTypeContractum
+          (.childCons targetTypeContractum .childNil)) :
+        RawTerm scope))
+    (fromWrapStep := fun bodyStep => Step.from_equivCode bodyStep)
+    (wrapContractumTerminates :=
+      fun sourceTypeContractumTerminates targetTypeContractumTerminates =>
+        equivCode_isStronglyNormalizing_of_source_target
+          sourceTypeContractumTerminates
+          targetTypeContractumTerminates)
+    (subst0Wrap :=
+      fun _currentSourceType _currentTargetType _currentArgument => rfl)
+    sourceTypeTerminates
+    targetTypeTerminates
+    argumentTerminates
+    sourceTypeContractumTerminates
+    targetTypeContractumTerminates
+
 /-- Beta redexes whose lambda body is `piTyCode domain codomain` are strongly
 normalizing when both children, the argument, and both child contracta are
 strongly normalizing.  The codomain contractum uses the lifted singleton

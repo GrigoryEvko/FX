@@ -2518,7 +2518,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_eitherInr
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_refl
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_modIntro
--- 2-child value-ctor inversions: pair, listCons.  Disjunctive
+-- 2-child value/type-code inversions.  Disjunctive
 -- conclusion (first child stepped OR second child stepped), because
 -- the cong arm's StepChildren can fire at the head (.here) or
 -- descend into the tail (.there then inner .here).  Three inner
@@ -2527,6 +2527,11 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_pair
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_listCons
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_glueIntro
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_arrowCode
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_productCode
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_sumCode
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_eitherCode
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_equivCode
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_piTyCode
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_sigmaTyCode
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_polyFunctor
@@ -2721,6 +2726,11 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.pair_isStronglyNormalizing_of_components
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.listCons_isStronglyNormalizing_of_head_tail
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.glueIntro_isStronglyNormalizing_of_components
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.arrowCode_isStronglyNormalizing_of_domain_codomain
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.productCode_isStronglyNormalizing_of_left_right
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.sumCode_isStronglyNormalizing_of_left_right
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.eitherCode_isStronglyNormalizing_of_left_right
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.equivCode_isStronglyNormalizing_of_source_target
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.piTyCode_isStronglyNormalizing_of_domain_codomain
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.sigmaTyCode_isStronglyNormalizing_of_domain_codomain
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.polyFunctor_isStronglyNormalizing_of_position_type_family
@@ -2779,6 +2789,11 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.appLamPair_isStronglyNormalizing_of_components_argument_contractum
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.appLamListCons_isStronglyNormalizing_of_head_tail_argument_contractum
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.appLamGlueIntro_isStronglyNormalizing_of_components_argument_contractum
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.appLamArrowCode_isStronglyNormalizing_of_domain_codomain_argument_contractum
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.appLamProductCode_isStronglyNormalizing_of_left_right_argument_contractum
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.appLamSumCode_isStronglyNormalizing_of_left_right_argument_contractum
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.appLamEitherCode_isStronglyNormalizing_of_left_right_argument_contractum
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.appLamEquivCode_isStronglyNormalizing_of_source_target_argument_contractum
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.appLamPiTyCode_isStronglyNormalizing_of_domain_codomain_argument_contractum
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.appLamSigmaTyCode_isStronglyNormalizing_of_domain_codomain_argument_contractum
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.appLamPolyFunctor_isStronglyNormalizing_of_position_type_family_argument_contractum

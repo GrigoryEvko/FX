@@ -315,6 +315,120 @@ theorem glueIntro_isStronglyNormalizing_of_components {scope : Nat}
     baseTerminates
     partialTerminates
 
+/-- Arrow type codes are strongly normalizing when both endpoint type codes are
+strongly normalizing. -/
+theorem arrowCode_isStronglyNormalizing_of_domain_codomain {scope : Nat}
+    {domain codomain : RawTerm scope}
+    (domainTerminates : IsStronglyNormalizing domain)
+    (codomainTerminates : IsStronglyNormalizing codomain) :
+    IsStronglyNormalizing
+      (.mkGen .gen_arrowCode ()
+        (.childCons domain (.childCons codomain .childNil)) :
+        RawTerm scope) :=
+  isStronglyNormalizing_of_twoChildCong
+    (firstScope := scope)
+    (secondScope := scope)
+    (parentScope := scope)
+    (fun currentDomain currentCodomain =>
+      (.mkGen .gen_arrowCode ()
+        (.childCons currentDomain (.childCons currentCodomain .childNil)) :
+        RawTerm scope))
+    (fun parentStep => Step.from_arrowCode parentStep)
+    domainTerminates
+    codomainTerminates
+
+/-- Product type codes are strongly normalizing when both component type codes
+are strongly normalizing. -/
+theorem productCode_isStronglyNormalizing_of_left_right {scope : Nat}
+    {leftType rightType : RawTerm scope}
+    (leftTypeTerminates : IsStronglyNormalizing leftType)
+    (rightTypeTerminates : IsStronglyNormalizing rightType) :
+    IsStronglyNormalizing
+      (.mkGen .gen_productCode ()
+        (.childCons leftType (.childCons rightType .childNil)) :
+        RawTerm scope) :=
+  isStronglyNormalizing_of_twoChildCong
+    (firstScope := scope)
+    (secondScope := scope)
+    (parentScope := scope)
+    (fun currentLeftType currentRightType =>
+      (.mkGen .gen_productCode ()
+        (.childCons currentLeftType
+          (.childCons currentRightType .childNil)) :
+        RawTerm scope))
+    (fun parentStep => Step.from_productCode parentStep)
+    leftTypeTerminates
+    rightTypeTerminates
+
+/-- Sum type codes are strongly normalizing when both summand type codes are
+strongly normalizing. -/
+theorem sumCode_isStronglyNormalizing_of_left_right {scope : Nat}
+    {leftType rightType : RawTerm scope}
+    (leftTypeTerminates : IsStronglyNormalizing leftType)
+    (rightTypeTerminates : IsStronglyNormalizing rightType) :
+    IsStronglyNormalizing
+      (.mkGen .gen_sumCode ()
+        (.childCons leftType (.childCons rightType .childNil)) :
+        RawTerm scope) :=
+  isStronglyNormalizing_of_twoChildCong
+    (firstScope := scope)
+    (secondScope := scope)
+    (parentScope := scope)
+    (fun currentLeftType currentRightType =>
+      (.mkGen .gen_sumCode ()
+        (.childCons currentLeftType
+          (.childCons currentRightType .childNil)) :
+        RawTerm scope))
+    (fun parentStep => Step.from_sumCode parentStep)
+    leftTypeTerminates
+    rightTypeTerminates
+
+/-- Either type codes are strongly normalizing when both side type codes are
+strongly normalizing. -/
+theorem eitherCode_isStronglyNormalizing_of_left_right {scope : Nat}
+    {leftType rightType : RawTerm scope}
+    (leftTypeTerminates : IsStronglyNormalizing leftType)
+    (rightTypeTerminates : IsStronglyNormalizing rightType) :
+    IsStronglyNormalizing
+      (.mkGen .gen_eitherCode ()
+        (.childCons leftType (.childCons rightType .childNil)) :
+        RawTerm scope) :=
+  isStronglyNormalizing_of_twoChildCong
+    (firstScope := scope)
+    (secondScope := scope)
+    (parentScope := scope)
+    (fun currentLeftType currentRightType =>
+      (.mkGen .gen_eitherCode ()
+        (.childCons currentLeftType
+          (.childCons currentRightType .childNil)) :
+        RawTerm scope))
+    (fun parentStep => Step.from_eitherCode parentStep)
+    leftTypeTerminates
+    rightTypeTerminates
+
+/-- Equivalence type codes are strongly normalizing when both carrier type
+codes are strongly normalizing. -/
+theorem equivCode_isStronglyNormalizing_of_source_target {scope : Nat}
+    {sourceType targetType : RawTerm scope}
+    (sourceTypeTerminates : IsStronglyNormalizing sourceType)
+    (targetTypeTerminates : IsStronglyNormalizing targetType) :
+    IsStronglyNormalizing
+      (.mkGen .gen_equivCode ()
+        (.childCons sourceType (.childCons targetType .childNil)) :
+        RawTerm scope) :=
+  isStronglyNormalizing_of_twoChildCong
+    (firstScope := scope)
+    (secondScope := scope)
+    (parentScope := scope)
+    (fun currentSourceType currentTargetType =>
+      (.mkGen .gen_equivCode ()
+        (.childCons currentSourceType
+          (.childCons currentTargetType .childNil)) :
+        RawTerm scope))
+    (fun parentStep => Step.from_equivCode parentStep)
+    sourceTypeTerminates
+    targetTypeTerminates
+
 /-- Pi-type codes are strongly normalizing when their domain and under-binder
 codomain codes are strongly normalizing. -/
 theorem piTyCode_isStronglyNormalizing_of_domain_codomain {scope : Nat}

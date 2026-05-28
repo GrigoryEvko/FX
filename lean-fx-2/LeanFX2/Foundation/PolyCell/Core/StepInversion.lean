@@ -536,6 +536,166 @@ theorem Step.from_glueIntro
           | there _ restStep =>
               exact absurd restStep StepChildren.no_step_at_empty_spine
 
+/-! ## 2-child same-scope type-code inversions
+
+These atom-shape type-code constructors are congruence-only: a `Step` out of
+the parent must reduce exactly one same-scope type child. -/
+
+/-- **Inversion for `arrowCode`-rooted Step.** -/
+theorem Step.from_arrowCode
+    {scope : Nat} {domain codomain : RawTerm scope}
+    {target : RawTerm scope}
+    (reduction :
+      Step (.mkGen .gen_arrowCode ()
+              (.childCons domain (.childCons codomain .childNil)))
+           target) :
+    (∃ (domainAfter : RawTerm scope),
+        target = .mkGen .gen_arrowCode ()
+          (.childCons domainAfter (.childCons codomain .childNil)) ∧
+        Step domain domainAfter)
+    ∨
+    (∃ (codomainAfter : RawTerm scope),
+        target = .mkGen .gen_arrowCode ()
+          (.childCons domain (.childCons codomainAfter .childNil)) ∧
+        Step codomain codomainAfter) := by
+  cases reduction with
+  | cong _ _ childStep =>
+      cases childStep with
+      | here _ domainStep =>
+          rename_i domainAfter
+          exact Or.inl ⟨domainAfter, rfl, domainStep⟩
+      | there _ tailStep =>
+          cases tailStep with
+          | here _ codomainStep =>
+              rename_i codomainAfter
+              exact Or.inr ⟨codomainAfter, rfl, codomainStep⟩
+          | there _ restStep =>
+              exact absurd restStep StepChildren.no_step_at_empty_spine
+
+/-- **Inversion for `productCode`-rooted Step.** -/
+theorem Step.from_productCode
+    {scope : Nat} {leftType rightType : RawTerm scope}
+    {target : RawTerm scope}
+    (reduction :
+      Step (.mkGen .gen_productCode ()
+              (.childCons leftType (.childCons rightType .childNil)))
+           target) :
+    (∃ (leftTypeAfter : RawTerm scope),
+        target = .mkGen .gen_productCode ()
+          (.childCons leftTypeAfter (.childCons rightType .childNil)) ∧
+        Step leftType leftTypeAfter)
+    ∨
+    (∃ (rightTypeAfter : RawTerm scope),
+        target = .mkGen .gen_productCode ()
+          (.childCons leftType (.childCons rightTypeAfter .childNil)) ∧
+        Step rightType rightTypeAfter) := by
+  cases reduction with
+  | cong _ _ childStep =>
+      cases childStep with
+      | here _ leftTypeStep =>
+          rename_i leftTypeAfter
+          exact Or.inl ⟨leftTypeAfter, rfl, leftTypeStep⟩
+      | there _ tailStep =>
+          cases tailStep with
+          | here _ rightTypeStep =>
+              rename_i rightTypeAfter
+              exact Or.inr ⟨rightTypeAfter, rfl, rightTypeStep⟩
+          | there _ restStep =>
+              exact absurd restStep StepChildren.no_step_at_empty_spine
+
+/-- **Inversion for `sumCode`-rooted Step.** -/
+theorem Step.from_sumCode
+    {scope : Nat} {leftType rightType : RawTerm scope}
+    {target : RawTerm scope}
+    (reduction :
+      Step (.mkGen .gen_sumCode ()
+              (.childCons leftType (.childCons rightType .childNil)))
+           target) :
+    (∃ (leftTypeAfter : RawTerm scope),
+        target = .mkGen .gen_sumCode ()
+          (.childCons leftTypeAfter (.childCons rightType .childNil)) ∧
+        Step leftType leftTypeAfter)
+    ∨
+    (∃ (rightTypeAfter : RawTerm scope),
+        target = .mkGen .gen_sumCode ()
+          (.childCons leftType (.childCons rightTypeAfter .childNil)) ∧
+        Step rightType rightTypeAfter) := by
+  cases reduction with
+  | cong _ _ childStep =>
+      cases childStep with
+      | here _ leftTypeStep =>
+          rename_i leftTypeAfter
+          exact Or.inl ⟨leftTypeAfter, rfl, leftTypeStep⟩
+      | there _ tailStep =>
+          cases tailStep with
+          | here _ rightTypeStep =>
+              rename_i rightTypeAfter
+              exact Or.inr ⟨rightTypeAfter, rfl, rightTypeStep⟩
+          | there _ restStep =>
+              exact absurd restStep StepChildren.no_step_at_empty_spine
+
+/-- **Inversion for `eitherCode`-rooted Step.** -/
+theorem Step.from_eitherCode
+    {scope : Nat} {leftType rightType : RawTerm scope}
+    {target : RawTerm scope}
+    (reduction :
+      Step (.mkGen .gen_eitherCode ()
+              (.childCons leftType (.childCons rightType .childNil)))
+           target) :
+    (∃ (leftTypeAfter : RawTerm scope),
+        target = .mkGen .gen_eitherCode ()
+          (.childCons leftTypeAfter (.childCons rightType .childNil)) ∧
+        Step leftType leftTypeAfter)
+    ∨
+    (∃ (rightTypeAfter : RawTerm scope),
+        target = .mkGen .gen_eitherCode ()
+          (.childCons leftType (.childCons rightTypeAfter .childNil)) ∧
+        Step rightType rightTypeAfter) := by
+  cases reduction with
+  | cong _ _ childStep =>
+      cases childStep with
+      | here _ leftTypeStep =>
+          rename_i leftTypeAfter
+          exact Or.inl ⟨leftTypeAfter, rfl, leftTypeStep⟩
+      | there _ tailStep =>
+          cases tailStep with
+          | here _ rightTypeStep =>
+              rename_i rightTypeAfter
+              exact Or.inr ⟨rightTypeAfter, rfl, rightTypeStep⟩
+          | there _ restStep =>
+              exact absurd restStep StepChildren.no_step_at_empty_spine
+
+/-- **Inversion for `equivCode`-rooted Step.** -/
+theorem Step.from_equivCode
+    {scope : Nat} {sourceType targetType : RawTerm scope}
+    {target : RawTerm scope}
+    (reduction :
+      Step (.mkGen .gen_equivCode ()
+              (.childCons sourceType (.childCons targetType .childNil)))
+           target) :
+    (∃ (sourceTypeAfter : RawTerm scope),
+        target = .mkGen .gen_equivCode ()
+          (.childCons sourceTypeAfter (.childCons targetType .childNil)) ∧
+        Step sourceType sourceTypeAfter)
+    ∨
+    (∃ (targetTypeAfter : RawTerm scope),
+        target = .mkGen .gen_equivCode ()
+          (.childCons sourceType (.childCons targetTypeAfter .childNil)) ∧
+        Step targetType targetTypeAfter) := by
+  cases reduction with
+  | cong _ _ childStep =>
+      cases childStep with
+      | here _ sourceTypeStep =>
+          rename_i sourceTypeAfter
+          exact Or.inl ⟨sourceTypeAfter, rfl, sourceTypeStep⟩
+      | there _ tailStep =>
+          cases tailStep with
+          | here _ targetTypeStep =>
+              rename_i targetTypeAfter
+              exact Or.inr ⟨targetTypeAfter, rfl, targetTypeStep⟩
+          | there _ restStep =>
+              exact absurd restStep StepChildren.no_step_at_empty_spine
+
 /-! ## 2-child mixed binder inversions
 
 The type-code binder constructors have a same-scope first child and an
