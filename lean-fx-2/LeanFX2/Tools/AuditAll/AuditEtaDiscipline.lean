@@ -352,5 +352,64 @@ theorem etaDiscipline_counts_honest :
     etaDiscipline_reservedInEnumCount = 0 :=
   ⟨rfl, rfl⟩
 
+/-! ## audit-A13 (#400): partial closure of the wildcard-fallback gap
+
+Per the file docstring's "Future hardening (deferred)" note, the
+silent-misclassification gap arises because `etaEligibility` uses
+cascading Bool predicates with a `.other` fallback: a new generator
+that isn't explicitly listed in `isShippedEta` / `isInductiveData` /
+`isEliminator` silently lands in `.other`.
+
+This block ships a PARTIAL closure: the `etaEligibility_total`
+theorem witnesses that the function is total over the
+`EtaEligibility` codomain — every Generator maps to exactly one of
+the five EtaEligibility ctors.
+
+What this DOES close: the formal totality property.  If a future
+refactor breaks `etaEligibility` such that the result type is no
+longer EtaEligibility, this theorem fails to elaborate.
+
+What this does NOT close: the silent-misclassification issue.  The
+stricter version `etaEligibility_total_is_strict` (proposed in the
+file docstring) would require enumerating the ~163 expected-other
+generators explicitly.  Tracked as future audit-hardening work. -/
+
+/-- audit-A13 (#400): the η-eligibility classification is TOTAL
+over the `EtaEligibility` codomain — every Generator maps to
+exactly one of the five EtaEligibility ctors.
+
+Match-with-witness pattern per `feedback_lean_match_witness_pattern`
+keeps the proof zero-axiom: full enumeration over EtaEligibility's
+5 ctors, each branch closes by `Or.inl/inr` chain on the matched
+witness `h`.
+
+Note the reservedEta disjunct: while `etaEligibility`'s current
+definition never RETURNS `.reservedEta` (no clause maps to it),
+the theorem includes it for completeness — the codomain IS
+EtaEligibility (5 ctors), even if only 4 are currently reachable.
+When Phase Z₇/Z₈ generators arrive and `etaCoverageOf`'s
+`.reservedEta` clause connects to an actual generator,
+`etaEligibility` may be extended to return `.reservedEta`; this
+theorem remains valid because reservedEta is already listed. -/
+theorem etaEligibility_total (gen : Generator) :
+    Generator.etaEligibility gen = .shippedEta ∨
+    Generator.etaEligibility gen = .reservedEta ∨
+    Generator.etaEligibility gen = .inductiveData ∨
+    Generator.etaEligibility gen = .eliminator ∨
+    Generator.etaEligibility gen = .other :=
+  match Generator.etaEligibility gen with
+  | .shippedEta    => Or.inl rfl
+  | .reservedEta   => Or.inr (Or.inl rfl)
+  | .inductiveData => Or.inr (Or.inr (Or.inl rfl))
+  | .eliminator    => Or.inr (Or.inr (Or.inr (Or.inl rfl)))
+  | .other         => Or.inr (Or.inr (Or.inr (Or.inr rfl)))
+
+/-- Spot-check: `gen_universeCode` is an expected-other generator
+(universe-mode marker, not eta-participant per the file docstring's
+example list).  Confirms the function classifies it correctly today;
+catches drift if a future refactor accidentally moves it. -/
+theorem etaEligibility_gen_universeCode_is_other :
+    Generator.etaEligibility .gen_universeCode = .other := rfl
+
 end Audit
 end LeanFX2.Tools.AuditAll

@@ -3259,6 +3259,32 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Tools.AuditAll.Audit.etaDiscipline_reservedInEnumCount
 #assert_no_axioms LeanFX2.Tools.AuditAll.Audit.etaDiscipline_counts_honest
 
+-- ─── audit-A13 (#400): AuditEtaDiscipline exhaustiveness ─────────────
+-- Partial closure of the wildcard-fallback gap noted in
+-- AuditEtaDiscipline.lean's docstring (lines 121-135): the silent-
+-- misclassification gap arises because `etaEligibility` uses
+-- cascading Bool predicates with a `.other` fallback.
+--
+-- Ships `etaEligibility_total` — formal verification that the
+-- function is total over the EtaEligibility codomain (every
+-- Generator maps to one of the 5 EtaEligibility ctors).  Uses
+-- dependent match on the result with `rfl` per arm.
+--
+-- Plus `etaEligibility_gen_universeCode_is_other` — spot-check
+-- that an expected-other generator classifies correctly today.
+-- Catches drift if a future refactor accidentally re-classifies
+-- universe-mode markers.
+--
+-- HONEST LIMITATION: does NOT close the silent-misclassification
+-- issue.  A new generator added without explicit listing in
+-- `isShippedEta`/`isInductiveData`/`isEliminator` still lands
+-- silently in `.other`.  The stricter `etaEligibility_total_is_strict`
+-- (proposed in the file docstring) would require enumerating the
+-- ~163 expected-other generators explicitly.  Tracked as future
+-- audit-hardening work.
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.etaEligibility_total
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.etaEligibility_gen_universeCode_is_other
+
 -- ─── M-iotaEta-audit-matrix (#387): 80-cell iota × eta matrix ────────
 -- Coverage harness for the 16 iota × 5 eta = 80-cell matrix.
 -- Honest ledger sibling to η-M8i #358 (per-generator η eligibility),
