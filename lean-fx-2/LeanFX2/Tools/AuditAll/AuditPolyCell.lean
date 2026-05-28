@@ -2715,6 +2715,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.weaken_eq_subst_weaken
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.weaken
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.weaken_substTarget
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepChildren.weaken_substTarget
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.weaken
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubst.PointwiseStepStar
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubst.lift_pointwiseStepStar
@@ -3310,6 +3311,9 @@ namespace LeanFX2.Tools
 -- subst0 (body.subst sigma.lift) (arg.subst sigma)`.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubst.weaken_then_singleton_pointwise
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.weaken_subst_singleton
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst_iterateLiftRaw_singleton_weaken
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.subst_iterateLiftRaw_singleton_weaken
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.weaken_subst_singleton
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst0_subst_commute
 
 -- Eta-M8a: raw strengthening substrate for structural eta.
@@ -3353,7 +3357,13 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.partialRename?_imp_rename
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.partialRename?_imp_rename
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.strengthen_weaken
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.strengthen_iterateLiftRaw_weaken
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.strengthen_iterateLiftRaw_weaken
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.strengthen_weaken
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.strengthen_sound
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.strengthen_iterateLiftRaw_sound
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.strengthen_sound
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.strengthen_iterateLiftRaw_sound
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.strengthen_commutes_rename
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.strengthen_commutes_subst0
 

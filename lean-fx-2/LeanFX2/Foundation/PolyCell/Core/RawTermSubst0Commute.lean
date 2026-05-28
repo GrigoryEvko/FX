@@ -48,6 +48,120 @@ theorem RawTerm.weaken_subst_singleton {scope : Nat}
     (RawTermSubst.weaken_then_singleton_pointwise rawArg) sourceTerm]
   exact RawTerm.subst_identity_apply sourceTerm
 
+/-- Singleton substitution cancels the matching lifted weakening under
+`binderDepth` child binders. -/
+theorem RawTerm.subst_iterateLiftRaw_singleton_weaken
+    {scope binderDepth : Nat}
+    (sourceTerm : RawTerm (scope + binderDepth))
+    (rawArg : RawTerm scope) :
+    RawTerm.subst
+        (iterateLiftRaw (RawTermSubst.singleton rawArg) binderDepth)
+        (RawTerm.rename
+          (iterateLiftRaw RawRenaming.weaken binderDepth) sourceTerm) =
+      sourceTerm := by
+  rw [RawTerm.rename_subst_commute
+    (iterateLiftRaw RawRenaming.weaken binderDepth)
+    (iterateLiftRaw (RawTermSubst.singleton rawArg) binderDepth)
+    sourceTerm]
+  have pulled :
+      RawTermSubst.PointwiseEq
+        (iterateLiftRaw
+          (RawRenaming.thenSubst RawRenaming.weaken
+            (RawTermSubst.singleton rawArg)) binderDepth)
+        (RawRenaming.thenSubst
+          (iterateLiftRaw RawRenaming.weaken binderDepth)
+          (iterateLiftRaw (RawTermSubst.singleton rawArg) binderDepth)) :=
+    iterateLiftRaw_RawRenaming_thenSubst_pointwise
+      RawRenaming.weaken (RawTermSubst.singleton rawArg) binderDepth
+  have basePointwise :
+      RawTermSubst.PointwiseEq
+        (RawRenaming.thenSubst RawRenaming.weaken
+          (RawTermSubst.singleton rawArg))
+        (RawTermSubst.identity (scope := scope)) :=
+    RawTermSubst.weaken_then_singleton_pointwise rawArg
+  have liftedBase :
+      RawTermSubst.PointwiseEq
+        (iterateLiftRaw
+          (RawRenaming.thenSubst RawRenaming.weaken
+            (RawTermSubst.singleton rawArg)) binderDepth)
+        (iterateLiftRaw (RawTermSubst.identity (scope := scope))
+          binderDepth) :=
+    iterateLiftRaw_RawTermSubst_pointwise basePointwise binderDepth
+  have liftedIdentity :
+      RawTermSubst.PointwiseEq
+        (iterateLiftRaw (RawTermSubst.identity (scope := scope))
+          binderDepth)
+        (RawTermSubst.identity (scope := scope + binderDepth)) :=
+    iterateLiftRaw_identity_pointwise (scope := scope) binderDepth
+  rw [RawTerm.subst_pointwise
+    (fun position => (pulled position).symm) sourceTerm]
+  rw [RawTerm.subst_pointwise liftedBase sourceTerm]
+  rw [RawTerm.subst_pointwise liftedIdentity sourceTerm]
+  exact RawTerm.subst_identity_apply sourceTerm
+
+/-- Children-spine sibling of
+`RawTerm.subst_iterateLiftRaw_singleton_weaken`. -/
+theorem RawTermChildren.subst_iterateLiftRaw_singleton_weaken
+    {scope binderDepth : Nat} {binderShifts : List Nat}
+    (children : RawTermChildren binderShifts (scope + binderDepth))
+    (rawArg : RawTerm scope) :
+    RawTermChildren.subst
+        (iterateLiftRaw (RawTermSubst.singleton rawArg) binderDepth)
+        (RawTermChildren.rename
+          (iterateLiftRaw RawRenaming.weaken binderDepth) children) =
+      children := by
+  rw [RawTermChildren.rename_subst_commute
+    (iterateLiftRaw RawRenaming.weaken binderDepth)
+    (iterateLiftRaw (RawTermSubst.singleton rawArg) binderDepth)
+    children]
+  have pulled :
+      RawTermSubst.PointwiseEq
+        (iterateLiftRaw
+          (RawRenaming.thenSubst RawRenaming.weaken
+            (RawTermSubst.singleton rawArg)) binderDepth)
+        (RawRenaming.thenSubst
+          (iterateLiftRaw RawRenaming.weaken binderDepth)
+          (iterateLiftRaw (RawTermSubst.singleton rawArg) binderDepth)) :=
+    iterateLiftRaw_RawRenaming_thenSubst_pointwise
+      RawRenaming.weaken (RawTermSubst.singleton rawArg) binderDepth
+  have basePointwise :
+      RawTermSubst.PointwiseEq
+        (RawRenaming.thenSubst RawRenaming.weaken
+          (RawTermSubst.singleton rawArg))
+        (RawTermSubst.identity (scope := scope)) :=
+    RawTermSubst.weaken_then_singleton_pointwise rawArg
+  have liftedBase :
+      RawTermSubst.PointwiseEq
+        (iterateLiftRaw
+          (RawRenaming.thenSubst RawRenaming.weaken
+            (RawTermSubst.singleton rawArg)) binderDepth)
+        (iterateLiftRaw (RawTermSubst.identity (scope := scope))
+          binderDepth) :=
+    iterateLiftRaw_RawTermSubst_pointwise basePointwise binderDepth
+  have liftedIdentity :
+      RawTermSubst.PointwiseEq
+        (iterateLiftRaw (RawTermSubst.identity (scope := scope))
+          binderDepth)
+        (RawTermSubst.identity (scope := scope + binderDepth)) :=
+    iterateLiftRaw_identity_pointwise (scope := scope) binderDepth
+  rw [RawTermChildren.subst_pointwise
+    (fun position => (pulled position).symm) children]
+  rw [RawTermChildren.subst_pointwise liftedBase children]
+  rw [RawTermChildren.subst_pointwise liftedIdentity children]
+  exact RawTermChildren.subst_identity_apply children
+
+/-- Substituting a singleton through a weakened raw-term children spine
+cancels the weakening and returns the original spine. -/
+theorem RawTermChildren.weaken_subst_singleton {scope : Nat}
+    {binderShifts : List Nat}
+    (children : RawTermChildren binderShifts scope)
+    (rawArg : RawTerm scope) :
+    RawTermChildren.subst (RawTermSubst.singleton rawArg)
+      (RawTermChildren.weaken children) = children := by
+  unfold RawTermChildren.weaken
+  exact RawTermChildren.subst_iterateLiftRaw_singleton_weaken
+    (binderDepth := 0) children rawArg
+
 /-- `subst0` commutes with a following substitution.
 
 This is the beta-contractum reshape used by substitution replay:

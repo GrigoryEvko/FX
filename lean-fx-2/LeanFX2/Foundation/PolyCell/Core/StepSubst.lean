@@ -244,6 +244,28 @@ theorem Step.weaken_substTarget {scope : Nat}
   rw [RawTerm.weaken_subst_singleton sourceTerm unitTerm] at substitutedStep
   exact substitutedStep
 
+/-- Child-spine sibling of `Step.weaken_substTarget`.
+
+This replays a child-spine step out of a weakened children spine by
+substituting a canonical source-scope unit term for the fresh variable. -/
+theorem StepChildren.weaken_substTarget {scope : Nat}
+    {binderShifts : List Nat}
+    {sourceChildren : RawTermChildren binderShifts scope}
+    {targetChildren : RawTermChildren binderShifts (scope + 1)}
+    (underBinderStep :
+      StepChildren (RawTermChildren.weaken sourceChildren) targetChildren) :
+    StepChildren sourceChildren
+      (RawTermChildren.subst
+        (RawTermSubst.singleton
+          (.mkGen .gen_unit () .childNil : RawTerm scope))
+        targetChildren) := by
+  let unitTerm : RawTerm scope := .mkGen .gen_unit () .childNil
+  have substitutedStep :=
+    StepChildren.subst (RawTermSubst.singleton unitTerm) underBinderStep
+  rw [RawTermChildren.weaken_subst_singleton sourceChildren unitTerm]
+    at substitutedStep
+  exact substitutedStep
+
 /-- Weaken every term in a `StepStar` chain. -/
 theorem StepStar.weaken {scope : Nat}
     {sourceTerm targetTerm : RawTerm scope}

@@ -746,6 +746,76 @@ theorem RawTerm.strengthen_weaken {scope : Nat}
     PartialRawRenaming.dropNewest_weaken]
   rw [RawTerm.rename_identity_apply sourceTerm]
 
+/-- Dropping the newest parent-scope variable succeeds even under
+`binderDepth` child binders when the input was produced by the matching
+lifted weakening. -/
+theorem RawTerm.strengthen_iterateLiftRaw_weaken {scope binderDepth : Nat}
+    (sourceTerm : RawTerm (scope + binderDepth)) :
+    RawTerm.partialRename?
+        (iterateLiftRaw PartialRawRenaming.dropNewest binderDepth)
+        (RawTerm.rename
+          (iterateLiftRaw RawRenaming.weaken binderDepth) sourceTerm) =
+      some sourceTerm := by
+  rw [RawTerm.partialRename?_rename_some sourceTerm
+    (iterateLiftRaw RawRenaming.weaken binderDepth)
+    (iterateLiftRaw RawRenaming.identity binderDepth)
+    (iterateLiftRaw PartialRawRenaming.dropNewest binderDepth)
+    (PartialRawRenaming.iterateLiftRaw_rename_some
+      PartialRawRenaming.dropNewest_weaken binderDepth)]
+  have liftedIdentity :
+      RawRenaming.PointwiseEq
+        (sourceScope := scope + binderDepth)
+        (targetScope := scope + binderDepth)
+        (iterateLiftRaw (RawRenaming.identity (scope := scope))
+          binderDepth)
+        (RawRenaming.identity (scope := scope + binderDepth)) :=
+    iterateLiftRaw_RawRenaming_identity_pointwise
+      (scope := scope) binderDepth
+  rw [RawTerm.rename_pointwise liftedIdentity sourceTerm]
+  rw [RawTerm.rename_identity_apply sourceTerm]
+
+/-- Children-spine sibling of
+`RawTerm.strengthen_iterateLiftRaw_weaken`. -/
+theorem RawTermChildren.strengthen_iterateLiftRaw_weaken
+    {scope binderDepth : Nat} {binderShifts : List Nat}
+    (children : RawTermChildren binderShifts (scope + binderDepth)) :
+    RawTermChildren.partialRename?
+        (iterateLiftRaw PartialRawRenaming.dropNewest binderDepth)
+        (RawTermChildren.rename
+          (iterateLiftRaw RawRenaming.weaken binderDepth) children) =
+      some children := by
+  rw [RawTermChildren.partialRename?_rename_some children
+    (iterateLiftRaw RawRenaming.weaken binderDepth)
+    (iterateLiftRaw RawRenaming.identity binderDepth)
+    (iterateLiftRaw PartialRawRenaming.dropNewest binderDepth)
+    (PartialRawRenaming.iterateLiftRaw_rename_some
+      PartialRawRenaming.dropNewest_weaken binderDepth)]
+  have liftedIdentity :
+      RawRenaming.PointwiseEq
+        (sourceScope := scope + binderDepth)
+        (targetScope := scope + binderDepth)
+        (iterateLiftRaw (RawRenaming.identity (scope := scope))
+          binderDepth)
+        (RawRenaming.identity (scope := scope + binderDepth)) :=
+    iterateLiftRaw_RawRenaming_identity_pointwise
+      (scope := scope) binderDepth
+  rw [RawTermChildren.rename_pointwise liftedIdentity children]
+  rw [RawTermChildren.rename_identity_apply children]
+
+/-- Children-spine weakening followed by strengthening recovers the
+original spine. -/
+theorem RawTermChildren.strengthen_weaken {parentScope : Nat}
+    {binderShifts : List Nat}
+    (children : RawTermChildren binderShifts parentScope) :
+    RawTermChildren.strengthen (RawTermChildren.weaken children) =
+      some children := by
+  unfold RawTermChildren.strengthen RawTermChildren.weaken
+  rw [RawTermChildren.partialRename?_rename_some children
+    RawRenaming.weaken RawRenaming.identity
+    PartialRawRenaming.dropNewest
+    PartialRawRenaming.dropNewest_weaken]
+  rw [RawTermChildren.rename_identity_apply children]
+
 /-- Successful strengthening reconstructs the original term by weakening
 the extracted term. -/
 theorem RawTerm.strengthen_sound {scope : Nat}
@@ -757,6 +827,60 @@ theorem RawTerm.strengthen_sound {scope : Nat}
   exact RawTerm.partialRename?_imp_rename body RawRenaming.weaken
     PartialRawRenaming.dropNewest
     PartialRawRenaming.dropNewest_renamingInjectsBack
+    extracted success
+
+/-- General lifted-strengthening soundness for term positions under a
+fixed number of child binders. -/
+theorem RawTerm.strengthen_iterateLiftRaw_sound
+    {scope binderDepth : Nat}
+    (body : RawTerm ((scope + 1) + binderDepth))
+    (extracted : RawTerm (scope + binderDepth))
+    (success :
+      RawTerm.partialRename?
+        (iterateLiftRaw PartialRawRenaming.dropNewest binderDepth) body =
+        some extracted) :
+    RawTerm.rename (iterateLiftRaw RawRenaming.weaken binderDepth)
+      extracted = body := by
+  exact RawTerm.partialRename?_imp_rename body
+    (iterateLiftRaw RawRenaming.weaken binderDepth)
+    (iterateLiftRaw PartialRawRenaming.dropNewest binderDepth)
+    (PartialRawRenaming.iterateLiftRaw_renamingInjectsBack
+      PartialRawRenaming.dropNewest_renamingInjectsBack binderDepth)
+    extracted success
+
+/-- Children-spine strengthening soundness: if the newest parent-scope
+variable can be dropped from a spine, weakening the extracted spine
+reconstructs the original. -/
+theorem RawTermChildren.strengthen_sound {parentScope : Nat}
+    {binderShifts : List Nat}
+    (children : RawTermChildren binderShifts (parentScope + 1))
+    (extracted : RawTermChildren binderShifts parentScope)
+    (success : RawTermChildren.strengthen children = some extracted) :
+    RawTermChildren.weaken extracted = children := by
+  unfold RawTermChildren.strengthen at success
+  unfold RawTermChildren.weaken
+  exact RawTermChildren.partialRename?_imp_rename children
+    RawRenaming.weaken PartialRawRenaming.dropNewest
+    PartialRawRenaming.dropNewest_renamingInjectsBack extracted success
+
+/-- Children-spine sibling of
+`RawTerm.strengthen_iterateLiftRaw_sound`. -/
+theorem RawTermChildren.strengthen_iterateLiftRaw_sound
+    {scope binderDepth : Nat} {binderShifts : List Nat}
+    (children : RawTermChildren binderShifts ((scope + 1) + binderDepth))
+    (extracted : RawTermChildren binderShifts (scope + binderDepth))
+    (success :
+      RawTermChildren.partialRename?
+        (iterateLiftRaw PartialRawRenaming.dropNewest binderDepth)
+        children =
+        some extracted) :
+    RawTermChildren.rename (iterateLiftRaw RawRenaming.weaken binderDepth)
+      extracted = children := by
+  exact RawTermChildren.partialRename?_imp_rename children
+    (iterateLiftRaw RawRenaming.weaken binderDepth)
+    (iterateLiftRaw PartialRawRenaming.dropNewest binderDepth)
+    (PartialRawRenaming.iterateLiftRaw_renamingInjectsBack
+      PartialRawRenaming.dropNewest_renamingInjectsBack binderDepth)
     extracted success
 
 /-- Strengthening commutes with renaming lifted under the newest slot. -/

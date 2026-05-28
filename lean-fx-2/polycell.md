@@ -5594,10 +5594,17 @@ source scope by substituting canonical `unit` for the fresh variable.
 The `lam` and `pathLam` strengthened resolver wrappers now need only
 the freshness/strengthening witness for the arbitrary under-binder
 reduct; the corresponding source-level step is derived internally.
-The remaining #355 binder work is the freshness half, i.e. proving that
-an arbitrary under-binder reduct strengthens to the same substituted
-target, followed by the actual betaEta local resolver; #356 remains
-eta/eta branchings.
+The next lifted-binder substrate slice adds
+`RawTerm.strengthen_iterateLiftRaw_weaken`,
+`RawTerm.strengthen_iterateLiftRaw_sound`, children-spine
+strengthening siblings, lifted singleton-substitution cancellation
+for terms and children, and `StepChildren.weaken_substTarget`.  This
+is the binder-depth substrate needed for the congruence case of the
+freshness inversion, where the target step may occur inside a child
+spine under additional binders.  The remaining #355 binder work is the
+freshness half, i.e. proving that an arbitrary under-binder reduct
+strengthens to the same substituted target, followed by the actual
+betaEta local resolver; #356 remains eta/eta branchings.
 Record, clock, and parametricity eta remain generator-frontier work,
 not placeholders in the current raw relation.
 
