@@ -17,6 +17,83 @@ and then fire beta.  The theorem here only covers stuck heads such as variables.
 namespace LeanFX2.Foundation.PolyCell.Core
 namespace StepStar
 
+/-- The one-step extension of a neutral-head predicate through application.
+
+`IsNeutralApplicationHead isNeutralHead candidateHead` says that
+`candidateHead` is an application whose function child is neutral.  This
+predicate is the reusable spine step: it lets neutral application spines grow
+without re-proving the beta-exclusion and congruence closure argument for each
+concrete arity. -/
+def IsNeutralApplicationHead {scope : Nat}
+    (isNeutralHead : RawTerm scope → Prop)
+    (candidateHead : RawTerm scope) : Prop :=
+  ∃ innerHead : RawTerm scope,
+    ∃ innerArgument : RawTerm scope,
+      isNeutralHead innerHead ∧
+        candidateHead =
+          (.mkGen .gen_app ()
+            (.childCons innerHead (.childCons innerArgument .childNil)) :
+            RawTerm scope)
+
+/-- Extending a neutral predicate through application still cannot produce a
+lambda head. -/
+theorem isNeutralApplicationHead_not_lam {scope : Nat}
+    {isNeutralHead : RawTerm scope → Prop}
+    {candidateHead : RawTerm scope}
+    (candidateHeadIsNeutralApplication :
+      IsNeutralApplicationHead isNeutralHead candidateHead)
+    (lambdaBody : RawTerm (scope + 1)) :
+    candidateHead ≠
+      (.mkGen .gen_lam () (.childCons lambdaBody .childNil) :
+      RawTerm scope) := by
+  obtain
+    ⟨innerHead, innerArgument, innerHeadIsNeutral, candidateHeadShape⟩ :=
+      candidateHeadIsNeutralApplication
+  rw [candidateHeadShape]
+  intro applicationEq
+  cases applicationEq
+
+/-- Extending a neutral predicate through application is closed under one
+source step when the original neutral predicate is closed under one source
+step.  Beta remains impossible because the inner head is neutral. -/
+theorem isNeutralApplicationHead_step {scope : Nat}
+    {isNeutralHead : RawTerm scope → Prop}
+    (neutralHeadIsNotLambda :
+      ∀ {currentHead : RawTerm scope}, isNeutralHead currentHead →
+        ∀ lambdaBody : RawTerm (scope + 1),
+          currentHead ≠ .mkGen .gen_lam () (.childCons lambdaBody .childNil))
+    (neutralHeadStep :
+      ∀ {currentHead targetHead : RawTerm scope},
+        isNeutralHead currentHead →
+          Step currentHead targetHead →
+            isNeutralHead targetHead)
+    {candidateHead targetHead : RawTerm scope}
+    (candidateHeadIsNeutralApplication :
+      IsNeutralApplicationHead isNeutralHead candidateHead)
+    (candidateHeadStep : Step candidateHead targetHead) :
+    IsNeutralApplicationHead isNeutralHead targetHead := by
+  obtain
+    ⟨innerHead, innerArgument, innerHeadIsNeutral, candidateHeadShape⟩ :=
+      candidateHeadIsNeutralApplication
+  rw [candidateHeadShape] at candidateHeadStep
+  cases Step.from_app candidateHeadStep with
+  | inl betaBranch =>
+      obtain ⟨lambdaBody, innerHeadEq, _⟩ := betaBranch
+      exact False.elim
+        (neutralHeadIsNotLambda innerHeadIsNeutral lambdaBody innerHeadEq)
+  | inr congruenceBranch =>
+      cases congruenceBranch with
+      | inl headBranch =>
+          obtain ⟨innerHeadAfter, targetEq, innerHeadStep⟩ := headBranch
+          exact
+            ⟨ innerHeadAfter
+            , innerArgument
+            , neutralHeadStep innerHeadIsNeutral innerHeadStep
+            , targetEq ⟩
+      | inr argumentBranch =>
+          obtain ⟨innerArgumentAfter, targetEq, _⟩ := argumentBranch
+          exact ⟨innerHead, innerArgumentAfter, innerHeadIsNeutral, targetEq⟩
+
 /-- Application closure for heads that are neutral by an explicit invariant.
 
 The invariant must prove two facts: neutral heads are not lambdas, and one-step
@@ -92,6 +169,43 @@ theorem app_isStronglyNormalizing_of_neutral_head_arg
           currentArgumentTerminates)
     headTerminates)
     headIsNeutral
+    argumentTerminates
+
+/-- Application closure for one more neutral-spine argument.
+
+This packages the reusable spine-extension predicate with the generic neutral
+application theorem: a neutral application head remains stuck under beta, so
+adding a strongly-normalizing argument preserves accessibility. -/
+theorem app_isStronglyNormalizing_of_neutral_application_head_arg
+    {scope : Nat} (isNeutralHead : RawTerm scope → Prop)
+    {headTerm argumentTerm : RawTerm scope}
+    (headIsNeutralApplication :
+      IsNeutralApplicationHead isNeutralHead headTerm)
+    (neutralHeadIsNotLambda :
+      ∀ {currentHead : RawTerm scope}, isNeutralHead currentHead →
+        ∀ lambdaBody : RawTerm (scope + 1),
+          currentHead ≠ .mkGen .gen_lam () (.childCons lambdaBody .childNil))
+    (neutralHeadStep :
+      ∀ {currentHead targetHead : RawTerm scope},
+        isNeutralHead currentHead →
+          Step currentHead targetHead →
+            isNeutralHead targetHead)
+    (headTerminates : IsStronglyNormalizing headTerm)
+    (argumentTerminates : IsStronglyNormalizing argumentTerm) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons headTerm (.childCons argumentTerm .childNil)) :
+        RawTerm scope) :=
+  app_isStronglyNormalizing_of_neutral_head_arg
+    (isNeutralHead := IsNeutralApplicationHead isNeutralHead)
+    headIsNeutralApplication
+    (fun currentHeadIsNeutralApplication lambdaBody =>
+      isNeutralApplicationHead_not_lam currentHeadIsNeutralApplication
+        lambdaBody)
+    (fun currentHeadIsNeutralApplication currentHeadStep =>
+      isNeutralApplicationHead_step neutralHeadIsNotLambda neutralHeadStep
+        currentHeadIsNeutralApplication currentHeadStep)
+    headTerminates
     argumentTerminates
 
 /-- A neutral application with a normal non-lambda head is strongly
@@ -221,6 +335,78 @@ theorem appVarSpine2_isStronglyNormalizing_of_arguments {scope : Nat}
     (headTerminates :=
       appVar_isStronglyNormalizing_of_argument headIndex firstTerminates)
     secondTerminates
+
+/-- A three-argument variable-headed application spine is strongly normalizing
+when all three arguments are strongly normalizing.
+
+This is the first concrete use of the reusable neutral-application-head
+extension lemma.  It remains a stuck-spine result only: beta is ruled out
+because every reduct of the head is still an application spine rooted at a
+variable, never a lambda. -/
+theorem appVarSpine3_isStronglyNormalizing_of_arguments {scope : Nat}
+    (headIndex : Fin scope)
+    {firstArgument secondArgument thirdArgument : RawTerm scope}
+    (firstTerminates : IsStronglyNormalizing firstArgument)
+    (secondTerminates : IsStronglyNormalizing secondArgument)
+    (thirdTerminates : IsStronglyNormalizing thirdArgument) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_app ()
+            (.childCons
+              (.mkGen .gen_app ()
+                (.childCons
+                  (.mkGen .gen_var headIndex .childNil)
+                  (.childCons firstArgument .childNil)))
+              (.childCons secondArgument .childNil)))
+          (.childCons thirdArgument .childNil)) :
+        RawTerm scope) :=
+  app_isStronglyNormalizing_of_neutral_application_head_arg
+    (isNeutralHead := fun candidateHead =>
+      ∃ currentFirstArgument : RawTerm scope,
+        candidateHead =
+          (.mkGen .gen_app ()
+            (.childCons
+              (.mkGen .gen_var headIndex .childNil)
+              (.childCons currentFirstArgument .childNil)) :
+            RawTerm scope))
+    (headIsNeutralApplication :=
+      ⟨ (.mkGen .gen_app ()
+          (.childCons
+            (.mkGen .gen_var headIndex .childNil)
+            (.childCons firstArgument .childNil)) :
+          RawTerm scope)
+      , secondArgument
+      , ⟨firstArgument, rfl⟩
+      , rfl ⟩)
+    (neutralHeadIsNotLambda := fun candidateHeadIsNeutral lambdaBody
+        candidateHeadEq => by
+      obtain ⟨currentFirstArgument, candidateHeadShape⟩ :=
+        candidateHeadIsNeutral
+      rw [candidateHeadShape] at candidateHeadEq
+      cases candidateHeadEq)
+    (neutralHeadStep := fun candidateHeadIsNeutral candidateHeadStep => by
+      obtain ⟨currentFirstArgument, candidateHeadShape⟩ :=
+        candidateHeadIsNeutral
+      rw [candidateHeadShape] at candidateHeadStep
+      cases Step.from_app candidateHeadStep with
+      | inl betaBranch =>
+          obtain ⟨lambdaBody, variableEq, _⟩ := betaBranch
+          cases variableEq
+      | inr congruenceBranch =>
+          cases congruenceBranch with
+          | inl variableBranch =>
+              obtain ⟨targetHead, _, variableStep⟩ := variableBranch
+              exact False.elim
+                (noStep_var headIndex (targetTerm := targetHead)
+                  variableStep)
+          | inr argumentBranch =>
+              obtain ⟨argumentAfter, targetEq, _⟩ := argumentBranch
+              exact ⟨argumentAfter, targetEq⟩)
+    (headTerminates :=
+      appVarSpine2_isStronglyNormalizing_of_arguments headIndex
+        firstTerminates secondTerminates)
+    thirdTerminates
 
 end StepStar
 end LeanFX2.Foundation.PolyCell.Core
