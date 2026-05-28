@@ -3364,6 +3364,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.strengthen_iterateLiftRaw_sound
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.strengthen_sound
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.strengthen_iterateLiftRaw_sound
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.weaken_subst0
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.strengthen_weakened_subst0
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.strengthen_commutes_rename
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.strengthen_commutes_subst0
 

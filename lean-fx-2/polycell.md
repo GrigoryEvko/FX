@@ -5603,8 +5603,14 @@ is the binder-depth substrate needed for the congruence case of the
 freshness inversion, where the target step may occur inside a child
 spine under additional binders.  The remaining #355 binder work is the
 freshness half, i.e. proving that an arbitrary under-binder reduct
-strengthens to the same substituted target, followed by the actual
-betaEta local resolver; #356 remains eta/eta branchings.
+strengthens to the same substituted target.  The first root-case
+subslice of that proof is now isolated as `RawTerm.weaken_subst0` and
+`RawTerm.strengthen_weakened_subst0`: a beta contractum of a weakened
+redex is itself a weakening, and strengthening it recovers the
+source-scope contractum.  Remaining work: fold these root-case and
+child-spine ingredients into the mutual weaken-step inversion, then use
+that inversion in the actual betaEta local resolver; #356 remains
+eta/eta branchings.
 Record, clock, and parametricity eta remain generator-frontier work,
 not placeholders in the current raw relation.
 

@@ -883,6 +883,41 @@ theorem RawTermChildren.strengthen_iterateLiftRaw_sound
       PartialRawRenaming.dropNewest_renamingInjectsBack binderDepth)
     extracted success
 
+/-- Weakening commutes with single-variable beta substitution.
+
+This is the root-beta freshness equation for the future weaken-step
+inversion: the contractum of a weakened beta redex is itself the
+weakening of the source-scope contractum. -/
+theorem RawTerm.weaken_subst0 {scope : Nat}
+    (body : RawTerm (scope + 1)) (rawArg : RawTerm scope) :
+    RawTerm.weaken (RawTerm.subst0 body rawArg) =
+      RawTerm.subst0
+        (RawTerm.rename (RawRenaming.lift RawRenaming.weaken) body)
+        (RawTerm.weaken rawArg) := by
+  unfold RawTerm.subst0
+  rw [RawTerm.weaken_eq_rename]
+  rw [RawTerm.subst_rename_commute]
+  rw [RawTerm.rename_subst_commute]
+  apply RawTerm.subst_pointwise
+  intro position
+  cases position with
+  | mk positionValue positionBound =>
+      cases positionValue with
+      | zero => rfl
+      | succ _priorPositionValue => rfl
+
+/-- Strengthening the beta contractum of a weakened redex recovers the
+source-scope beta contractum. -/
+theorem RawTerm.strengthen_weakened_subst0 {scope : Nat}
+    (body : RawTerm (scope + 1)) (rawArg : RawTerm scope) :
+    RawTerm.strengthen
+        (RawTerm.subst0
+          (RawTerm.rename (RawRenaming.lift RawRenaming.weaken) body)
+          (RawTerm.weaken rawArg)) =
+      some (RawTerm.subst0 body rawArg) := by
+  rw [← RawTerm.weaken_subst0 body rawArg]
+  exact RawTerm.strengthen_weaken (RawTerm.subst0 body rawArg)
+
 /-- Strengthening commutes with renaming lifted under the newest slot. -/
 theorem RawTerm.strengthen_commutes_rename
     {sourceScope targetScope : Nat}
