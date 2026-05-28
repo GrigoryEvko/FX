@@ -485,6 +485,118 @@ theorem appLamHyperreal_isStronglyNormalizing_of_argument
     (bodySubst0Constant := fun _currentArgument => rfl)
     argumentTerminates
 
+/-- One-child constructor bodies preserve lambda-headed application strong
+normalization when the child contractum is strongly normalizing.
+
+This packages the proof shape shared by `natSucc`, `optionSome`,
+`eitherInl`, `eitherInr`, and `refl`: function congruence is inverted back to
+the single child, while root beta reduces by the supplied `subst0` shape law. -/
+theorem appLamOneChildBody_isStronglyNormalizing_of_child_argument_contractum
+    {scope : Nat}
+    (wrapBody : RawTerm (scope + 1) → RawTerm (scope + 1))
+    (wrapContractum : RawTerm scope → RawTerm scope)
+    (fromWrapStep :
+      ∀ {currentChild targetBody : RawTerm (scope + 1)},
+        Step (wrapBody currentChild) targetBody →
+          ∃ targetChild : RawTerm (scope + 1),
+            targetBody = wrapBody targetChild ∧
+              Step currentChild targetChild)
+    (wrapContractumTerminates :
+      ∀ {contractum : RawTerm scope},
+        IsStronglyNormalizing contractum →
+          IsStronglyNormalizing (wrapContractum contractum))
+    (subst0Wrap :
+      ∀ (currentChild : RawTerm (scope + 1))
+        (currentArgument : RawTerm scope),
+        RawTerm.subst0 (wrapBody currentChild) currentArgument =
+          wrapContractum
+            (RawTerm.subst0 currentChild currentArgument))
+    {sourceChild : RawTerm (scope + 1)}
+    {argumentTerm : RawTerm scope}
+    (sourceChildTerminates : IsStronglyNormalizing sourceChild)
+    (argumentTerminates : IsStronglyNormalizing argumentTerm)
+    (childContractumTerminates :
+      ∀ {currentChild : RawTerm (scope + 1)}
+        {currentArgument : RawTerm scope},
+        IsStronglyNormalizing currentChild →
+          IsStronglyNormalizing currentArgument →
+            IsStronglyNormalizing
+              (RawTerm.subst0 currentChild currentArgument)) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam ()
+            (.childCons (wrapBody sourceChild) .childNil))
+          (.childCons argumentTerm .childNil)) :
+        RawTerm scope) :=
+  (Acc.ndrec
+    (r := StepSuccessor)
+    (C := fun currentChild =>
+      ∀ {currentArgument : RawTerm scope},
+        IsStronglyNormalizing currentArgument →
+          IsStronglyNormalizing
+            (.mkGen .gen_app ()
+              (.childCons
+                (.mkGen .gen_lam ()
+                  (.childCons (wrapBody currentChild) .childNil))
+                (.childCons currentArgument .childNil)) :
+              RawTerm scope))
+    (m := fun currentChild currentChildSuccessors childIH => by
+      intro currentArgument currentArgumentTerminates
+      exact
+        Acc.ndrec
+          (r := StepSuccessor)
+          (C := fun innerArgument =>
+            IsStronglyNormalizing
+              (.mkGen .gen_app ()
+                (.childCons
+                  (.mkGen .gen_lam ()
+                    (.childCons (wrapBody currentChild) .childNil))
+                  (.childCons innerArgument .childNil)) :
+                RawTerm scope))
+          (m := fun currentArgument currentArgumentSuccessors argumentIH =>
+            Acc.intro
+              (.mkGen .gen_app ()
+                (.childCons
+                  (.mkGen .gen_lam ()
+                    (.childCons (wrapBody currentChild) .childNil))
+                  (.childCons currentArgument .childNil)) :
+                RawTerm scope)
+              (fun targetTerm applicationStep => by
+                cases Step.from_app applicationStep with
+                | inl betaBranch =>
+                    obtain ⟨lambdaBody, lambdaEq, targetEq⟩ := betaBranch
+                    cases lambdaEq
+                    rw [targetEq, subst0Wrap currentChild currentArgument]
+                    exact
+                      wrapContractumTerminates
+                        (childContractumTerminates
+                          (Acc.intro currentChild currentChildSuccessors)
+                          (Acc.intro currentArgument
+                            currentArgumentSuccessors))
+                | inr congruenceBranch =>
+                    cases congruenceBranch with
+                    | inl functionBranch =>
+                        obtain ⟨functionAfter, targetEq, functionStep⟩ :=
+                          functionBranch
+                        obtain ⟨bodyAfter, functionAfterEq, bodyStep⟩ :=
+                          Step.from_lam functionStep
+                        obtain ⟨childAfter, bodyAfterEq, childStep⟩ :=
+                          fromWrapStep bodyStep
+                        rw [targetEq, functionAfterEq, bodyAfterEq]
+                        exact
+                          childIH childAfter childStep
+                            (Acc.intro currentArgument
+                              currentArgumentSuccessors)
+                    | inr argumentBranch =>
+                        obtain ⟨argumentAfter, targetEq, argumentStep⟩ :=
+                          argumentBranch
+                        rw [targetEq]
+                        exact argumentIH argumentAfter argumentStep))
+          currentArgumentTerminates)
+    sourceChildTerminates)
+    argumentTerminates
+
 /-- Beta redexes whose lambda body is `natSucc predecessor` are strongly
 normalizing when the predecessor, argument, and every predecessor contractum
 are strongly normalizing.
@@ -514,94 +626,181 @@ theorem appLamNatSucc_isStronglyNormalizing_of_predecessor_argument_contractum
               .childNil))
           (.childCons argumentTerm .childNil)) :
         RawTerm scope) :=
-  (Acc.ndrec
-    (r := StepSuccessor)
-    (C := fun currentPredecessor =>
-      ∀ {currentArgument : RawTerm scope},
-        IsStronglyNormalizing currentArgument →
-          IsStronglyNormalizing
-            (.mkGen .gen_app ()
-              (.childCons
-                (.mkGen .gen_lam ()
-                  (.childCons
-                    (.mkGen .gen_natSucc ()
-                      (.childCons currentPredecessor .childNil))
-                    .childNil))
-                (.childCons currentArgument .childNil)) :
-              RawTerm scope))
-    (m := fun currentPredecessor currentPredecessorSuccessors
-        predecessorIH => by
-      intro currentArgument currentArgumentTerminates
-      exact
-        Acc.ndrec
-          (r := StepSuccessor)
-          (C := fun innerArgument =>
-            IsStronglyNormalizing
-              (.mkGen .gen_app ()
-                (.childCons
-                  (.mkGen .gen_lam ()
-                    (.childCons
-                      (.mkGen .gen_natSucc ()
-                        (.childCons currentPredecessor .childNil))
-                      .childNil))
-                  (.childCons innerArgument .childNil)) :
-                RawTerm scope))
-          (m := fun currentArgument currentArgumentSuccessors argumentIH =>
-            Acc.intro
-              (.mkGen .gen_app ()
-                (.childCons
-                  (.mkGen .gen_lam ()
-                    (.childCons
-                      (.mkGen .gen_natSucc ()
-                        (.childCons currentPredecessor .childNil))
-                      .childNil))
-                  (.childCons currentArgument .childNil)) :
-                RawTerm scope)
-              (fun targetTerm applicationStep => by
-                cases Step.from_app applicationStep with
-                | inl betaBranch =>
-                    obtain ⟨lambdaBody, lambdaEq, targetEq⟩ := betaBranch
-                    cases lambdaEq
-                    rw [targetEq]
-                    change
-                      IsStronglyNormalizing
-                        (.mkGen .gen_natSucc ()
-                          (.childCons
-                            (RawTerm.subst0 currentPredecessor
-                              currentArgument)
-                            .childNil) :
-                          RawTerm scope)
-                    exact
-                      natSucc_isStronglyNormalizing_of_predecessor
-                        (predecessorContractumTerminates
-                          (Acc.intro currentPredecessor
-                            currentPredecessorSuccessors)
-                          (Acc.intro currentArgument
-                            currentArgumentSuccessors))
-                | inr congruenceBranch =>
-                    cases congruenceBranch with
-                    | inl functionBranch =>
-                        obtain ⟨functionAfter, targetEq, functionStep⟩ :=
-                          functionBranch
-                        obtain ⟨bodyAfter, functionAfterEq, bodyStep⟩ :=
-                          Step.from_lam functionStep
-                        obtain
-                          ⟨predecessorAfter, bodyAfterEq,
-                            predecessorStep⟩ :=
-                            Step.from_natSucc bodyStep
-                        rw [targetEq, functionAfterEq, bodyAfterEq]
-                        exact
-                          predecessorIH predecessorAfter predecessorStep
-                            (Acc.intro currentArgument
-                              currentArgumentSuccessors)
-                    | inr argumentBranch =>
-                        obtain ⟨argumentAfter, targetEq, argumentStep⟩ :=
-                          argumentBranch
-                        rw [targetEq]
-                        exact argumentIH argumentAfter argumentStep))
-          currentArgumentTerminates)
-    predecessorTerminates)
+  appLamOneChildBody_isStronglyNormalizing_of_child_argument_contractum
+    (wrapBody := fun currentPredecessor =>
+      (.mkGen .gen_natSucc ()
+        (.childCons currentPredecessor .childNil) : RawTerm (scope + 1)))
+    (wrapContractum := fun predecessorContractum =>
+      (.mkGen .gen_natSucc ()
+        (.childCons predecessorContractum .childNil) : RawTerm scope))
+    (fromWrapStep := fun bodyStep => Step.from_natSucc bodyStep)
+    (wrapContractumTerminates := fun predecessorContractumTerminates =>
+      natSucc_isStronglyNormalizing_of_predecessor
+        predecessorContractumTerminates)
+    (subst0Wrap := fun _currentPredecessor _currentArgument => rfl)
+    predecessorTerminates
     argumentTerminates
+    predecessorContractumTerminates
+
+/-- Beta redexes whose lambda body is `optionSome value` are strongly
+normalizing when the wrapped value, argument, and every value contractum are
+strongly normalizing. -/
+theorem appLamOptionSome_isStronglyNormalizing_of_value_argument_contractum
+    {scope : Nat} {value : RawTerm (scope + 1)}
+    {argumentTerm : RawTerm scope}
+    (valueTerminates : IsStronglyNormalizing value)
+    (argumentTerminates : IsStronglyNormalizing argumentTerm)
+    (valueContractumTerminates :
+      ∀ {currentValue : RawTerm (scope + 1)}
+        {currentArgument : RawTerm scope},
+        IsStronglyNormalizing currentValue →
+          IsStronglyNormalizing currentArgument →
+            IsStronglyNormalizing
+              (RawTerm.subst0 currentValue currentArgument)) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam ()
+            (.childCons
+              (.mkGen .gen_optionSome ()
+                (.childCons value .childNil))
+              .childNil))
+          (.childCons argumentTerm .childNil)) :
+        RawTerm scope) :=
+  appLamOneChildBody_isStronglyNormalizing_of_child_argument_contractum
+    (wrapBody := fun currentValue =>
+      (.mkGen .gen_optionSome ()
+        (.childCons currentValue .childNil) : RawTerm (scope + 1)))
+    (wrapContractum := fun valueContractum =>
+      (.mkGen .gen_optionSome ()
+        (.childCons valueContractum .childNil) : RawTerm scope))
+    (fromWrapStep := fun bodyStep => Step.from_optionSome bodyStep)
+    (wrapContractumTerminates := fun valueContractumTerminates =>
+      optionSome_isStronglyNormalizing_of_value valueContractumTerminates)
+    (subst0Wrap := fun _currentValue _currentArgument => rfl)
+    valueTerminates
+    argumentTerminates
+    valueContractumTerminates
+
+/-- Beta redexes whose lambda body is `eitherInl value` are strongly
+normalizing when the wrapped value, argument, and every value contractum are
+strongly normalizing. -/
+theorem appLamEitherInl_isStronglyNormalizing_of_value_argument_contractum
+    {scope : Nat} {value : RawTerm (scope + 1)}
+    {argumentTerm : RawTerm scope}
+    (valueTerminates : IsStronglyNormalizing value)
+    (argumentTerminates : IsStronglyNormalizing argumentTerm)
+    (valueContractumTerminates :
+      ∀ {currentValue : RawTerm (scope + 1)}
+        {currentArgument : RawTerm scope},
+        IsStronglyNormalizing currentValue →
+          IsStronglyNormalizing currentArgument →
+            IsStronglyNormalizing
+              (RawTerm.subst0 currentValue currentArgument)) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam ()
+            (.childCons
+              (.mkGen .gen_eitherInl ()
+                (.childCons value .childNil))
+              .childNil))
+          (.childCons argumentTerm .childNil)) :
+        RawTerm scope) :=
+  appLamOneChildBody_isStronglyNormalizing_of_child_argument_contractum
+    (wrapBody := fun currentValue =>
+      (.mkGen .gen_eitherInl ()
+        (.childCons currentValue .childNil) : RawTerm (scope + 1)))
+    (wrapContractum := fun valueContractum =>
+      (.mkGen .gen_eitherInl ()
+        (.childCons valueContractum .childNil) : RawTerm scope))
+    (fromWrapStep := fun bodyStep => Step.from_eitherInl bodyStep)
+    (wrapContractumTerminates := fun valueContractumTerminates =>
+      eitherInl_isStronglyNormalizing_of_value valueContractumTerminates)
+    (subst0Wrap := fun _currentValue _currentArgument => rfl)
+    valueTerminates
+    argumentTerminates
+    valueContractumTerminates
+
+/-- Beta redexes whose lambda body is `eitherInr value` are strongly
+normalizing when the wrapped value, argument, and every value contractum are
+strongly normalizing. -/
+theorem appLamEitherInr_isStronglyNormalizing_of_value_argument_contractum
+    {scope : Nat} {value : RawTerm (scope + 1)}
+    {argumentTerm : RawTerm scope}
+    (valueTerminates : IsStronglyNormalizing value)
+    (argumentTerminates : IsStronglyNormalizing argumentTerm)
+    (valueContractumTerminates :
+      ∀ {currentValue : RawTerm (scope + 1)}
+        {currentArgument : RawTerm scope},
+        IsStronglyNormalizing currentValue →
+          IsStronglyNormalizing currentArgument →
+            IsStronglyNormalizing
+              (RawTerm.subst0 currentValue currentArgument)) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam ()
+            (.childCons
+              (.mkGen .gen_eitherInr ()
+                (.childCons value .childNil))
+              .childNil))
+          (.childCons argumentTerm .childNil)) :
+        RawTerm scope) :=
+  appLamOneChildBody_isStronglyNormalizing_of_child_argument_contractum
+    (wrapBody := fun currentValue =>
+      (.mkGen .gen_eitherInr ()
+        (.childCons currentValue .childNil) : RawTerm (scope + 1)))
+    (wrapContractum := fun valueContractum =>
+      (.mkGen .gen_eitherInr ()
+        (.childCons valueContractum .childNil) : RawTerm scope))
+    (fromWrapStep := fun bodyStep => Step.from_eitherInr bodyStep)
+    (wrapContractumTerminates := fun valueContractumTerminates =>
+      eitherInr_isStronglyNormalizing_of_value valueContractumTerminates)
+    (subst0Wrap := fun _currentValue _currentArgument => rfl)
+    valueTerminates
+    argumentTerminates
+    valueContractumTerminates
+
+/-- Beta redexes whose lambda body is `refl witness` are strongly normalizing
+when the witness, argument, and every witness contractum are strongly
+normalizing. -/
+theorem appLamRefl_isStronglyNormalizing_of_witness_argument_contractum
+    {scope : Nat} {rawWitness : RawTerm (scope + 1)}
+    {argumentTerm : RawTerm scope}
+    (witnessTerminates : IsStronglyNormalizing rawWitness)
+    (argumentTerminates : IsStronglyNormalizing argumentTerm)
+    (witnessContractumTerminates :
+      ∀ {currentWitness : RawTerm (scope + 1)}
+        {currentArgument : RawTerm scope},
+        IsStronglyNormalizing currentWitness →
+          IsStronglyNormalizing currentArgument →
+            IsStronglyNormalizing
+              (RawTerm.subst0 currentWitness currentArgument)) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam ()
+            (.childCons
+              (.mkGen .gen_refl ()
+                (.childCons rawWitness .childNil))
+              .childNil))
+          (.childCons argumentTerm .childNil)) :
+        RawTerm scope) :=
+  appLamOneChildBody_isStronglyNormalizing_of_child_argument_contractum
+    (wrapBody := fun currentWitness =>
+      (.mkGen .gen_refl ()
+        (.childCons currentWitness .childNil) : RawTerm (scope + 1)))
+    (wrapContractum := fun witnessContractum =>
+      (.mkGen .gen_refl ()
+        (.childCons witnessContractum .childNil) : RawTerm scope))
+    (fromWrapStep := fun bodyStep => Step.from_refl bodyStep)
+    (wrapContractumTerminates := fun witnessContractumTerminates =>
+      refl_isStronglyNormalizing_of_witness witnessContractumTerminates)
+    (subst0Wrap := fun _currentWitness _currentArgument => rfl)
+    witnessTerminates
+    argumentTerminates
+    witnessContractumTerminates
 
 /-- Beta redexes are strongly normalizing when the lambda body and argument are
 strongly normalizing and every reduct pair has a strongly-normalizing beta
