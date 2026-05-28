@@ -141,6 +141,7 @@ import LeanFX2.Tools.AuditAll.AuditStrictAxes
 import LeanFX2.Foundation.TyWellfoundedness
 import LeanFX2.Tools.AuditAll.AuditEtaDiscipline
 import LeanFX2.Tools.AuditAll.AuditIotaEtaMatrix
+import LeanFX2.Foundation.PolyCell.Universe.LevelExpr
 
 namespace LeanFX2.Tools
 
@@ -3276,6 +3277,24 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Tools.AuditAll.Audit.matrix_iota_count
 #assert_no_axioms LeanFX2.Tools.AuditAll.Audit.matrix_eta_count
 #assert_no_axioms LeanFX2.Tools.AuditAll.Audit.matrix_dimensions_consistent
+
+-- ─── M21 (#270): LevelExpr universe-polymorphism payload ────────────
+-- First shipped piece of Phase Z₀.  Ships the LevelExpr inductive
+-- per polycell.md §11.8 (5 ctors: lzero / lsucc / lmax / limax /
+-- lvar) + deriving DecidableEq + BEq + Repr + 5 per-ctor canonical-
+-- form smokes + 1 DecidableEq smoke.
+--
+-- Foundation only: M22 ships polynomial-time normalization, M23
+-- ships UniverseFlag, M24 retrofits gen_universeCode to use
+-- LevelExpr × UniverseFlag payload.  M21 is the inductive
+-- definition; the rest of Phase Z₀ builds on this.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.lzero_canonical
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.lsucc_lzero_canonical
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.lmax_lzero_lzero_canonical
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.limax_lzero_lzero_canonical
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.lvar_zero_canonical
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.decEq_refl_lzero
 
 -- ─── V2-L1cert.12: existential preserves dim (#167) ─────────────────
 -- inferRawCellGeneral?_accepted_cellDimension_eq: when the
