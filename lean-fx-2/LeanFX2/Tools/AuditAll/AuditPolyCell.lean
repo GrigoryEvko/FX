@@ -77,6 +77,7 @@ import LeanFX2.Foundation.PolyCell.Core.SubjectReductionEtaBinder
 import LeanFX2.Foundation.PolyCell.Core.StepBetaEtaPreservesShape
 import LeanFX2.Foundation.PolyCell.Core.StepEtaCriticalPairs
 import LeanFX2.Foundation.PolyCell.Core.StepIotaEtaInsideBinder
+import LeanFX2.Foundation.PolyCell.Core.StepIotaEtaDoubleStrips
 import LeanFX2.Foundation.PolyCell.Core.StepEtaEtaCriticalPairs
 import LeanFX2.Foundation.PolyCell.Core.StepBetaEtaConfluence
 import LeanFX2.Foundation.PolyCell.Core.StrongNormalizationEta
@@ -2507,6 +2508,36 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaEta_etaLam_source_join
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaEta_inside_binder_complete
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaEta_inside_binder_complete_eq_true
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaEtaReservedDoubleStripKind
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaEtaReservedDoubleStripKind.all
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaEtaReservedDoubleStripKind.phaseMilestone
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaEtaReservedDoubleStripKind.etaKindOption
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaEtaReservedDoubleStripKind.introGeneratorOption
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaEtaReservedDoubleStripKind.eliminatorGeneratorOption
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaEtaReservedDoubleStripKind.hasCurrentStepIota
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaEtaReservedDoubleStripKind.all_length
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaEtaReservedDoubleStripKind.phaseMilestones
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaEtaReservedDoubleStripKind.currentStepIotas_absent
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaEtaReservedDoubleStripBlocker
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaEtaDoubleStripStatus
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaEtaDoubleStripStatus.isReserved
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaEtaDoubleStripStatus.reserved_isReserved
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaEtaReservedDoubleStrip
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaEtaReservedDoubleStrip.blockerForKind
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaEtaReservedDoubleStrip.rowForKind
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaEtaReservedDoubleStrip.isCompleteReservedRow
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaEtaReservedDoubleStrip.rowForKind_isCompleteReservedRow
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaEtaReservedDoubleStripKind.reservedRows
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaEtaReservedDoubleStripKind.reservedRowsComplete
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaEtaReservedDoubleStripKind.reservedRows_length
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaEtaReservedDoubleStripKind.reservedRowsComplete_eq_true
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaEtaReservedDoubleStripKind.modal_status
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaEtaReservedDoubleStripKind.path_status
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaEtaReservedDoubleStripKind.clock_status
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaEtaReservedDoubleStripKind.parametricity_status
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaEtaReservedDoubleStripKind.glue_status
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaEta_reserved_doublestrips_complete
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaEta_reserved_doublestrips_complete_eq_true
 
 -- ─── V2-L3.1 phase C step 6 prep: Step inversion lemmas ──────────────
 -- Foundational inversion building blocks the SR theorem's cong arm
