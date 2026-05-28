@@ -785,4 +785,204 @@ theorem LevelExpr.simplify_isStructurallyNormal_and_fixed
   ⟨LevelExpr.simplify_produces_isStructurallyNormalForm expr,
    LevelExpr.simplify_idempotent expr⟩
 
+/-! ## Helper size bounds for the reverse-direction proof
+
+The reverse direction `semantic NF → structural NF` requires
+ruling out all 5 Phase A rules from firing.  Each rule's result
+has strictly smaller size than the original (an `lmax`/`limax`
+node has size ≥ 3 since both children have size ≥ 1; the rule
+results are sub-terms of size ≤ child size).  The contradiction
+is: if `simplify e = e`, then the result's size equals the
+original's size, but rule-firing would make it strictly smaller.
+
+These helper lemmas pin the strict size bounds. -/
+
+/-- `e1.size < (lmax e1 e2).size`.  Used to rule out rule 1 / 3
+of lmax in the reverse-direction proof. -/
+theorem LevelExpr.size_lt_lmax_left (e1 e2 : LevelExpr) :
+    e1.size < (LevelExpr.lmax e1 e2).size := by
+  show e1.size < e1.size + e2.size + 1
+  have hPos : 0 < e2.size + 1 := Nat.succ_pos _
+  have hStep : e1.size < e1.size + (e2.size + 1) :=
+    Nat.lt_add_of_pos_right hPos
+  rw [← Nat.add_assoc] at hStep
+  exact hStep
+
+/-- `e2.size < (lmax e1 e2).size`.  Used to rule out rule 2 of
+lmax in the reverse-direction proof. -/
+theorem LevelExpr.size_lt_lmax_right (e1 e2 : LevelExpr) :
+    e2.size < (LevelExpr.lmax e1 e2).size := by
+  show e2.size < e1.size + e2.size + 1
+  have hPos : 0 < e1.size := LevelExpr.size_pos e1
+  calc e2.size = 0 + e2.size := (Nat.zero_add _).symm
+    _ < e1.size + e2.size := Nat.add_lt_add_right hPos _
+    _ < e1.size + e2.size + 1 := Nat.lt_succ_self _
+
+/-- `e1.size < (limax e1 e2).size`.  Used to rule out the
+left-identity case of limax (rule 4 produces `e2.simplify`,
+not `e1.simplify`; rule 5 produces `lzero`). -/
+theorem LevelExpr.size_lt_limax_left (e1 e2 : LevelExpr) :
+    e1.size < (LevelExpr.limax e1 e2).size := by
+  show e1.size < e1.size + e2.size + 1
+  have hPos : 0 < e2.size + 1 := Nat.succ_pos _
+  have hStep : e1.size < e1.size + (e2.size + 1) :=
+    Nat.lt_add_of_pos_right hPos
+  rw [← Nat.add_assoc] at hStep
+  exact hStep
+
+/-- `e2.size < (limax e1 e2).size`.  Used to rule out rule 4
+of limax (left identity) in the reverse-direction proof. -/
+theorem LevelExpr.size_lt_limax_right (e1 e2 : LevelExpr) :
+    e2.size < (LevelExpr.limax e1 e2).size := by
+  show e2.size < e1.size + e2.size + 1
+  have hPos : 0 < e1.size := LevelExpr.size_pos e1
+  calc e2.size = 0 + e2.size := (Nat.zero_add _).symm
+    _ < e1.size + e2.size := Nat.add_lt_add_right hPos _
+    _ < e1.size + e2.size + 1 := Nat.lt_succ_self _
+
+/-- `(lzero).size < (limax e1 e2).size`.  Used to rule out
+rule 5 (limax right collapse) in the reverse-direction proof:
+if simplify produced `lzero` but the input was `limax`, sizes
+mismatch. -/
+theorem LevelExpr.lzero_size_lt_limax (e1 e2 : LevelExpr) :
+    LevelExpr.size .lzero < (LevelExpr.limax e1 e2).size := by
+  show 1 < e1.size + e2.size + 1
+  have hPos1 : 0 < e1.size := LevelExpr.size_pos e1
+  have hPos2 : 0 < e2.size := LevelExpr.size_pos e2
+  calc 1 = 0 + 0 + 1 := rfl
+    _ < e1.size + 0 + 1 := Nat.add_lt_add_right
+                            (Nat.add_lt_add_right hPos1 _) _
+    _ ≤ e1.size + e2.size + 1 := Nat.add_le_add_right
+                                  (Nat.add_le_add_left (Nat.le_of_lt hPos2) _) _
+
+/-! ## Reverse direction — semantic NF implies structural NF -/
+
+/-- Semantic NF implies structural NF: if `simplify e = e`, then
+`IsStructurallyNormalForm e`.
+
+This is the REVERSE direction of the structural-vs-semantic NF
+equivalence.  Combined with `IsStructurallyNormalForm.toFixedPoint`
+(forward direction shipped in #406), this proves the two
+definitions characterize the same set of expressions.
+
+Proof strategy: structural recursion on `expr`.
+
+* `lzero` / `lvar`: trivially structurally normal.
+* `lsucc inner`: by injection on the equality, `inner.simplify =
+  inner`, so apply IH.
+* `lmax e1 e2`: case-split on each of the 3 if-then-else branches.
+  In each rule-firing case, the result is `e1.simplify` or
+  `e2.simplify`, both of which have size ≤ child.size <
+  lmax.size.  But the hypothesis says result = lmax e1 e2,
+  forcing size equality — contradiction via `Nat.lt_irrefl`.
+  Only the else branch is consistent; then by lmax-injection,
+  `e1.simplify = e1` and `e2.simplify = e2`, and the three
+  `if_neg` hypotheses give the negative conditions.
+* `limax e1 e2`: similar 2-rule case split.  Rule 5 (s2 = lzero
+  produces `lzero`) is ruled out via `lzero_size_lt_limax`.
+  Rule 4 (s1 = lzero produces `e2.simplify`) is ruled out via
+  `size_lt_limax_right`.  Else branch yields limaxNF. -/
+theorem LevelExpr.IsPhaseANormalForm.toStructurallyNormal :
+    ∀ {expr : LevelExpr},
+      LevelExpr.IsPhaseANormalForm expr →
+      LevelExpr.IsStructurallyNormalForm expr
+  | .lzero, _ => .lzeroNF
+  | .lvar idx, _ => .lvarNF idx
+  | .lsucc inner, hInputNF => by
+      have hInner : inner.simplify = inner := by
+        injection hInputNF
+      exact .lsuccNF
+        (LevelExpr.IsPhaseANormalForm.toStructurallyNormal hInner)
+  | .lmax e1 e2, hInputNF => by
+      have hUnfold :
+          (if e1.simplify = e2.simplify then e1.simplify
+           else if e1.simplify = .lzero then e2.simplify
+           else if e2.simplify = .lzero then e1.simplify
+           else LevelExpr.lmax e1.simplify e2.simplify) =
+            LevelExpr.lmax e1 e2 := hInputNF
+      by_cases hRule1 : e1.simplify = e2.simplify
+      · exfalso
+        rw [if_pos hRule1] at hUnfold
+        have hSizeBound : e1.simplify.size < (LevelExpr.lmax e1 e2).size :=
+          Nat.lt_of_le_of_lt (LevelExpr.simplify_size_le e1)
+            (LevelExpr.size_lt_lmax_left e1 e2)
+        rw [hUnfold] at hSizeBound
+        exact Nat.lt_irrefl _ hSizeBound
+      · rw [if_neg hRule1] at hUnfold
+        by_cases hRule2 : e1.simplify = .lzero
+        · exfalso
+          rw [if_pos hRule2] at hUnfold
+          have hSizeBound : e2.simplify.size < (LevelExpr.lmax e1 e2).size :=
+            Nat.lt_of_le_of_lt (LevelExpr.simplify_size_le e2)
+              (LevelExpr.size_lt_lmax_right e1 e2)
+          rw [hUnfold] at hSizeBound
+          exact Nat.lt_irrefl _ hSizeBound
+        · rw [if_neg hRule2] at hUnfold
+          by_cases hRule3 : e2.simplify = .lzero
+          · exfalso
+            rw [if_pos hRule3] at hUnfold
+            have hSizeBound : e1.simplify.size < (LevelExpr.lmax e1 e2).size :=
+              Nat.lt_of_le_of_lt (LevelExpr.simplify_size_le e1)
+                (LevelExpr.size_lt_lmax_left e1 e2)
+            rw [hUnfold] at hSizeBound
+            exact Nat.lt_irrefl _ hSizeBound
+          · rw [if_neg hRule3] at hUnfold
+            -- hUnfold : lmax e1.simplify e2.simplify = lmax e1 e2
+            have hE1 : e1.simplify = e1 := by injection hUnfold
+            have hE2 : e2.simplify = e2 := by injection hUnfold
+            have hStructE1 : LevelExpr.IsStructurallyNormalForm e1 :=
+              LevelExpr.IsPhaseANormalForm.toStructurallyNormal hE1
+            have hStructE2 : LevelExpr.IsStructurallyNormalForm e2 :=
+              LevelExpr.IsPhaseANormalForm.toStructurallyNormal hE2
+            -- Rewrite the negative conditions to use e1, e2 directly.
+            rw [hE1] at hRule1 hRule2
+            rw [hE2] at hRule1 hRule3
+            exact .lmaxNF hStructE1 hStructE2 hRule1 hRule2 hRule3
+  | .limax e1 e2, hInputNF => by
+      have hUnfold :
+          (if e2.simplify = .lzero then LevelExpr.lzero
+           else if e1.simplify = .lzero then e2.simplify
+           else LevelExpr.limax e1.simplify e2.simplify) =
+            LevelExpr.limax e1 e2 := hInputNF
+      by_cases hRule5 : e2.simplify = .lzero
+      · exfalso
+        rw [if_pos hRule5] at hUnfold
+        have hSizeBound : LevelExpr.size .lzero <
+            (LevelExpr.limax e1 e2).size :=
+          LevelExpr.lzero_size_lt_limax e1 e2
+        rw [hUnfold] at hSizeBound
+        exact Nat.lt_irrefl _ hSizeBound
+      · rw [if_neg hRule5] at hUnfold
+        by_cases hRule4 : e1.simplify = .lzero
+        · exfalso
+          rw [if_pos hRule4] at hUnfold
+          have hSizeBound : e2.simplify.size < (LevelExpr.limax e1 e2).size :=
+            Nat.lt_of_le_of_lt (LevelExpr.simplify_size_le e2)
+              (LevelExpr.size_lt_limax_right e1 e2)
+          rw [hUnfold] at hSizeBound
+          exact Nat.lt_irrefl _ hSizeBound
+        · rw [if_neg hRule4] at hUnfold
+          -- hUnfold : limax e1.simplify e2.simplify = limax e1 e2
+          have hE1 : e1.simplify = e1 := by injection hUnfold
+          have hE2 : e2.simplify = e2 := by injection hUnfold
+          have hStructE1 : LevelExpr.IsStructurallyNormalForm e1 :=
+            LevelExpr.IsPhaseANormalForm.toStructurallyNormal hE1
+          have hStructE2 : LevelExpr.IsStructurallyNormalForm e2 :=
+            LevelExpr.IsPhaseANormalForm.toStructurallyNormal hE2
+          rw [hE1] at hRule4
+          rw [hE2] at hRule5
+          exact .limaxNF hStructE1 hStructE2 hRule5 hRule4
+
+/-- The full bidirectional structural↔semantic NF equivalence.
+Forward direction via `toFixedPoint`; reverse direction via
+`toStructurallyNormal`.  Together they prove that Phase A's
+two NF characterizations (semantic = fixed point of simplify;
+structural = no rule applies anywhere) coincide. -/
+theorem LevelExpr.isPhaseANormalForm_iff_isStructurallyNormalForm
+    (expr : LevelExpr) :
+    LevelExpr.IsPhaseANormalForm expr ↔
+      LevelExpr.IsStructurallyNormalForm expr :=
+  ⟨LevelExpr.IsPhaseANormalForm.toStructurallyNormal,
+   LevelExpr.IsStructurallyNormalForm.toFixedPoint⟩
+
 end LeanFX2.Foundation.PolyCell.Universe

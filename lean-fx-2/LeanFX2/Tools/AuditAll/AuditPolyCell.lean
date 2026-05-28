@@ -3497,6 +3497,33 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.IsStructurallyNormalForm.toFixedPoint
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.simplify_isStructurallyNormal_and_fixed
 
+-- ─── M22 Phase A reverse direction: semantic NF ⇒ structural NF ──────
+-- Audit gates for #407 (M22-A5, 2026-05-28).
+--
+-- The bidirectional structural↔semantic NF equivalence is completed
+-- here.  Forward direction (toFixedPoint) was shipped in #406; this
+-- ships the REVERSE direction (toStructurallyNormal).
+--
+-- The reverse proof uses strict-size bounds (size_lt_lmax_*,
+-- size_lt_limax_*, lzero_size_lt_limax) to rule out all 5 Phase A
+-- rules from firing.  If a rule fires, the result strictly decreases
+-- size — contradicting the hypothesis `simplify e = e` which forces
+-- size equality.  Only the else branch is consistent with semantic
+-- NF, and by ctor injection on lmax/limax it gives child-level
+-- equalities (e_i.simplify = e_i) plus the three/two if_neg
+-- negative conditions for lmaxNF / limaxNF construction.
+--
+-- The combined biconditional `isPhaseANormalForm_iff_isStructurally`
+-- is the final correctness theorem: Phase A's two NF definitions
+-- (semantic = fixed point; structural = no rule applies) coincide.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.size_lt_lmax_left
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.size_lt_lmax_right
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.size_lt_limax_left
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.size_lt_limax_right
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.lzero_size_lt_limax
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.IsPhaseANormalForm.toStructurallyNormal
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.isPhaseANormalForm_iff_isStructurallyNormalForm
+
 -- ─── M11 (#260): NbE substrate — canonical normalizer signature ─────
 -- RawTerm.isNF predicate shipped via M-substrate-3 #367.  This commit
 -- ships the SIGNATURE-LEVEL contract for the M12 #261 implementation:
