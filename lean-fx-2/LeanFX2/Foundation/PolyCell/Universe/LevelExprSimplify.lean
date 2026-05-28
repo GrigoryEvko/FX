@@ -402,4 +402,173 @@ theorem LevelExpr.size_lmax (e1 e2 : LevelExpr) :
 theorem LevelExpr.size_limax (e1 e2 : LevelExpr) :
     LevelExpr.size (.limax e1 e2) = e1.size + e2.size + 1 := rfl
 
+/-! ## Phase A normal-form correctness — full idempotence
+
+M22 Phase A normal-form characterization (audit-A21 / #405,
+2026-05-28).  Phase A's single-pass simplifier is POST-ORDER:
+children are simplified first via the `let s1 := e1.simplify;
+let s2 := e2.simplify` bindings, then the local if-then-else
+chain inspects already-normalized children.  Because the local
+rules are exhaustive over normalized-child shapes (idempotence /
+zero-identity / collapse), Phase A REACHES A FIXED POINT IN ONE
+PASS — `simplify (simplify e) = simplify e` for all `e`.
+
+This corrects the original `LevelExprSimplify.lean` docstring
+claim (lines 47-49) that "`lmax (lmax lzero a) lzero` needs two
+passes": that claim implicitly assumed TOP-DOWN flat
+simplification, but the actual implementation is bottom-up
+post-order.  The example resolves in a single pass:
+
+  simplify (lmax (lmax lzero a) lzero)
+  = let s1 := simplify (lmax lzero a)   -- recursive child
+    let s2 := simplify lzero
+    if s1 = s2 then s1 else if s1 = .lzero then s2 ...
+  = let s1 := a   -- by rule 2: lmax lzero a ↦ a
+    let s2 := lzero
+    if a = lzero then ... else if a = lzero then ... else if lzero = lzero then a
+  = a
+
+This idempotence theorem subsumes the original docstring's
+multi-pass concern and provides the formal Phase A fixed-point
+guarantee Phase B's iteration loop would otherwise need.
+
+## What full idempotence enables
+
+* Defining the FIXED-POINT predicate `e.simplify = e` correctly:
+  `simplify_idempotent` pins that this predicate is preserved
+  by simplification (every output is a fixed point).
+* PHASE B IS NOT NEEDED FOR REACHING NORMAL FORM — Phase B's
+  contribution is canonical ordering on `lmax` operands (so
+  `lmax a b` and `lmax b a` collapse) and distributivity over
+  `lsucc` (so `lsucc (lmax e1 e2)` flattens).  Iteration to
+  fixed point is NOT required as a SEPARATE phase.
+* Decidable Phase-A equivalence on closed expressions: two
+  closed `LevelExpr`s are Phase-A equivalent iff their
+  simplifications are syntactically equal — and idempotence
+  ensures the simplify result is canonical (no further rule
+  applies). -/
+
+/-- Phase A's `simplify` is idempotent: simplifying twice yields
+the same result as simplifying once.
+
+Proof: structural recursion on `expr`.  Each case dispatches
+through `simplify`'s actual computation:
+
+* `lzero` / `lvar _`: identity case, `simplify` returns the
+  input unchanged twice over — `rfl`.
+* `lsucc inner`: result is `lsucc inner.simplify`; the inner
+  IH closes the second pass.
+* `lmax e1 e2`: split on the 4 if-then-else branches via
+  `by_cases`.  In the first three branches, the result is
+  either `e1.simplify` or `e2.simplify`, whose self-idempotence
+  follows directly from IH1 or IH2.  The else branch returns
+  `lmax e1.simplify e2.simplify`; the second pass unfolds
+  `simplify` again with `s1 := e1.simplify.simplify =
+  e1.simplify` (by IH1) and similarly for `s2`, then re-checks
+  the same conditional path (which still fails on the same
+  hypotheses since `e1.simplify ≠ e2.simplify` etc.).
+* `limax e1 e2`: 3-branch split with the right-collapse case
+  resolving to `lzero` (immediate `rfl`). -/
+theorem LevelExpr.simplify_idempotent :
+    ∀ (expr : LevelExpr), expr.simplify.simplify = expr.simplify
+  | .lzero => rfl
+  | .lvar _ => rfl
+  | .lsucc inner => by
+      show LevelExpr.lsucc inner.simplify.simplify =
+        LevelExpr.lsucc inner.simplify
+      rw [LevelExpr.simplify_idempotent inner]
+  | .lmax e1 e2 => by
+      have ih1 : e1.simplify.simplify = e1.simplify :=
+        LevelExpr.simplify_idempotent e1
+      have ih2 : e2.simplify.simplify = e2.simplify :=
+        LevelExpr.simplify_idempotent e2
+      show (if e1.simplify = e2.simplify then e1.simplify
+            else if e1.simplify = .lzero then e2.simplify
+            else if e2.simplify = .lzero then e1.simplify
+            else LevelExpr.lmax e1.simplify e2.simplify).simplify =
+        (if e1.simplify = e2.simplify then e1.simplify
+         else if e1.simplify = .lzero then e2.simplify
+         else if e2.simplify = .lzero then e1.simplify
+         else LevelExpr.lmax e1.simplify e2.simplify)
+      by_cases hEq : e1.simplify = e2.simplify
+      · rw [if_pos hEq]
+        exact ih1
+      · rw [if_neg hEq]
+        by_cases hLeftZero : e1.simplify = .lzero
+        · rw [if_pos hLeftZero]
+          exact ih2
+        · rw [if_neg hLeftZero]
+          by_cases hRightZero : e2.simplify = .lzero
+          · rw [if_pos hRightZero]
+            exact ih1
+          · rw [if_neg hRightZero]
+            show (if e1.simplify.simplify = e2.simplify.simplify then
+                    e1.simplify.simplify
+                  else if e1.simplify.simplify = .lzero then
+                    e2.simplify.simplify
+                  else if e2.simplify.simplify = .lzero then
+                    e1.simplify.simplify
+                  else LevelExpr.lmax e1.simplify.simplify
+                    e2.simplify.simplify) =
+              LevelExpr.lmax e1.simplify e2.simplify
+            rw [ih1, ih2, if_neg hEq, if_neg hLeftZero, if_neg hRightZero]
+  | .limax e1 e2 => by
+      have ih1 : e1.simplify.simplify = e1.simplify :=
+        LevelExpr.simplify_idempotent e1
+      have ih2 : e2.simplify.simplify = e2.simplify :=
+        LevelExpr.simplify_idempotent e2
+      show (if e2.simplify = .lzero then LevelExpr.lzero
+            else if e1.simplify = .lzero then e2.simplify
+            else LevelExpr.limax e1.simplify e2.simplify).simplify =
+        (if e2.simplify = .lzero then LevelExpr.lzero
+         else if e1.simplify = .lzero then e2.simplify
+         else LevelExpr.limax e1.simplify e2.simplify)
+      by_cases hRightZero : e2.simplify = .lzero
+      · rw [if_pos hRightZero]
+        rfl
+      · rw [if_neg hRightZero]
+        by_cases hLeftZero : e1.simplify = .lzero
+        · rw [if_pos hLeftZero]
+          exact ih2
+        · rw [if_neg hLeftZero]
+          show (if e2.simplify.simplify = .lzero then LevelExpr.lzero
+                else if e1.simplify.simplify = .lzero then
+                  e2.simplify.simplify
+                else LevelExpr.limax e1.simplify.simplify
+                  e2.simplify.simplify) =
+              LevelExpr.limax e1.simplify e2.simplify
+          rw [ih1, ih2, if_neg hRightZero, if_neg hLeftZero]
+
+/-! ## Phase A normal-form predicate
+
+A `LevelExpr` is in Phase A normal form iff `simplify` is the
+identity on it.  Equivalently: every interior `lmax`/`limax`
+satisfies the negations of all rules that would otherwise fire
+(s1 ≠ s2, s1 ≠ lzero, s2 ≠ lzero for lmax; s2 ≠ lzero, s1 ≠
+lzero for limax) and every child is itself in normal form. -/
+
+/-- A `LevelExpr` is in Phase A normal form iff `simplify` fixes
+it.  This is the SEMANTIC definition; a syntactic structural
+predicate would also work but adds redundant case analysis. -/
+def LevelExpr.IsPhaseANormalForm (expr : LevelExpr) : Prop :=
+  expr.simplify = expr
+
+/-- `simplify` always produces a Phase A normal form.
+
+This is the immediate corollary of `simplify_idempotent`:
+`(simplify expr).simplify = simplify expr` says exactly that
+`simplify expr` is a fixed point of simplify, which is the
+definition of Phase A normal form. -/
+theorem LevelExpr.simplify_produces_normal_form (expr : LevelExpr) :
+    (expr.simplify).IsPhaseANormalForm :=
+  LevelExpr.simplify_idempotent expr
+
+/-- `lzero` is in Phase A normal form. -/
+theorem LevelExpr.lzero_isNormalForm :
+    LevelExpr.IsPhaseANormalForm .lzero := rfl
+
+/-- `lvar n` is in Phase A normal form for any index. -/
+theorem LevelExpr.lvar_isNormalForm (idx : Nat) :
+    LevelExpr.IsPhaseANormalForm (.lvar idx) := rfl
+
 end LeanFX2.Foundation.PolyCell.Universe

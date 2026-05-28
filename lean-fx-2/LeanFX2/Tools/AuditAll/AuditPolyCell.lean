@@ -3450,6 +3450,28 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.size_lmax
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.size_limax
 
+-- ─── M22 Phase A idempotence: simplify reaches fixed point in one pass ──
+-- Audit gates for #405 (audit-A21, 2026-05-28).
+--
+-- Phase A's post-order recursion already reaches a fixed point in
+-- one pass — children are simplified before parents, so the local
+-- rule chain never sees an unnormalized child.  `simplify_idempotent`
+-- proves this formally: `simplify (simplify e) = simplify e`.
+--
+-- This corrects the original LevelExprSimplify.lean docstring claim
+-- about "two-pass" simplification: that claim implicitly assumed a
+-- top-down flat simplifier, but the actual implementation is bottom-up.
+--
+-- `IsPhaseANormalForm` semantic predicate + `simplify_produces_normal_form`
+-- corollary pin the Phase A normal-form invariant.  Phase B's
+-- contribution is now narrowed to canonical lmax ordering +
+-- distributivity over lsucc (NOT iteration to fixed point).
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.simplify_idempotent
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.IsPhaseANormalForm
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.simplify_produces_normal_form
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.lzero_isNormalForm
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.lvar_isNormalForm
+
 -- ─── M11 (#260): NbE substrate — canonical normalizer signature ─────
 -- RawTerm.isNF predicate shipped via M-substrate-3 #367.  This commit
 -- ships the SIGNATURE-LEVEL contract for the M12 #261 implementation:
