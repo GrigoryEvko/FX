@@ -3488,6 +3488,23 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Typed.TypingContextHelpers.operationCount
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Typed.TypingContextHelpers.operationCount_correct
 
+-- ─── audit-A8 (#393): TypingContext.lookup_cons_{zero,succ} ──────────
+-- Per-arm unfolders for TypingContext.lookup.  Closes Agent 1's
+-- gap-audit finding that M34 #283 HasType.var smokes had to use
+-- `ctx.lookup position` directly in result-type positions because
+-- Lean's elaborator does not reduce through the recursive match.
+--
+-- Both unfolders close by `rfl` — they are LITERAL match arms of
+-- `TypingContext.lookup` re-quoted as named theorems so downstream
+-- M33-M44 HasType rules can rewrite at this exact shape without
+-- re-traversing the recursion.
+--
+--   lookup (cons newType _) ⟨0, _⟩ = newType.weaken
+--   lookup (cons _ ctxRest) ⟨k+1, h⟩ =
+--     (ctxRest.lookup ⟨k, Nat.lt_of_succ_lt_succ h⟩).weaken
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Typed.TypingContext.lookup_cons_zero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Typed.TypingContext.lookup_cons_succ
+
 -- ─── M34 (#283): HasType inductive + var rule ───────────────────────
 -- FIRST shipped HasType inductive + first non-vacuous ctor (var).
 -- M33-M44 task slots extend the inductive with conv / universe / Π /

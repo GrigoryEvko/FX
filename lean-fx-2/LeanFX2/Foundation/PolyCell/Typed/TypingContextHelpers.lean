@@ -167,9 +167,65 @@ theorem TypingContext.lookup_twoBindings_one :
     TypingContext.twoBindings.lookup ⟨1, by decide⟩ =
       (LeanFX2.Ty.unit : LeanFX2.Ty 0 0).weaken.weaken := rfl
 
+/-! ## Per-arm unfolders for lookup
+
+Per audit-A8 (#393, Agent 1 2026-05-28 gap-audit finding): the M34
+#283 HasType var smokes had to use `ctx.lookup position` directly
+in their result-type positions because Lean's elaborator does not
+reduce through the recursive `lookup` match in goal position.
+
+These two unfolders give downstream M33-M44 HasType rules clean
+`rfl`-equations for the two match arms.  Both close by `rfl` since
+they are LITERAL match arms of `TypingContext.lookup`.
+
+* `lookup_cons_zero` — innermost-binding case: looking up position 0
+  in `cons newType ctxRest` returns `newType.weaken`.
+* `lookup_cons_succ` — recursion case: looking up position `k+1` in
+  `cons _ ctxRest` recurses on `ctxRest` at position `k`, weakened. -/
+
+/-- Unfolder for the innermost-binding case of lookup.
+
+Looking up position 0 in `cons newType ctxRest` evaluates to
+`newType.weaken`.  Closes by `rfl` — direct match-arm unfold.
+
+Used by downstream M33-M44 HasType rules to rewrite away
+`lookup` applications on a known-shape context without
+re-traversing the recursion. -/
+theorem TypingContext.lookup_cons_zero
+    {level scope : Nat}
+    (newType : LeanFX2.Ty level scope)
+    (ctxRest : TypingContext level scope)
+    (hZeroLt : 0 < scope + 1) :
+    (TypingContext.cons newType ctxRest).lookup ⟨0, hZeroLt⟩
+      = newType.weaken := rfl
+
+/-- Unfolder for the recursion case of lookup.
+
+Looking up position `positionPredecessor + 1` in
+`cons newType ctxRest` recurses on `ctxRest` at position
+`positionPredecessor` and weakens the result.  Closes by `rfl` —
+direct match-arm unfold.
+
+The `Nat.lt_of_succ_lt_succ` invocation in the recursive call's
+position witness matches the literal definition of `lookup` —
+re-quoting it explicitly here so callers can rewrite at this
+exact shape. -/
+theorem TypingContext.lookup_cons_succ
+    {level scope : Nat}
+    (newType : LeanFX2.Ty level scope)
+    (ctxRest : TypingContext level scope)
+    (positionPredecessor : Nat)
+    (hBound : positionPredecessor + 1 < scope + 1) :
+    (TypingContext.cons newType ctxRest).lookup
+        ⟨positionPredecessor + 1, hBound⟩
+      = (ctxRest.lookup
+          ⟨positionPredecessor,
+           Nat.lt_of_succ_lt_succ hBound⟩).weaken := rfl
+
 /-! ## Aggregate metric -/
 
-/-- TypingContextHelpers ships 1 primary operation (lookup).
+/-- TypingContextHelpers ships 1 primary operation (lookup) plus
+2 unfolders (lookup_cons_zero / lookup_cons_succ) per audit-A8.
 The weakening helpers per the M32 task title ship at the
 HasType-rule task slots (M33-M44) where they're consumed. -/
 def TypingContextHelpers.operationCount : Nat := 1
