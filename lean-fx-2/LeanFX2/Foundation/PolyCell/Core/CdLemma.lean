@@ -459,6 +459,14 @@ theorem betaBeta_hasJoin {scope : Nat}
     (betaBeta body arg).HasJoin :=
   (LocalDiamond.betaBeta body arg).hasJoin
 
+/-- `fromSteps`-facing beta/beta resolver arm. -/
+theorem fromSteps_betaBeta_hasJoin {scope : Nat}
+    (body : RawTerm (scope + 1)) (argument : RawTerm scope) :
+    (fromSteps
+      (Step.beta (body := body) (arg := argument))
+      (Step.beta (body := body) (arg := argument))).HasJoin :=
+  betaBeta_hasJoin body argument
+
 /-- Resolver arm for beta competing with congruence in the function child. -/
 theorem betaFunctionCong_hasJoin {scope : Nat}
     {body updatedBody : RawTerm (scope + 1)}
@@ -466,12 +474,30 @@ theorem betaFunctionCong_hasJoin {scope : Nat}
     (betaFunctionCong argument bodyStep).HasJoin :=
   (LocalDiamond.betaFunctionCong argument bodyStep).hasJoin
 
+/-- `fromSteps`-facing beta/function-congruence resolver arm. -/
+theorem fromSteps_betaFunctionCong_hasJoin {scope : Nat}
+    {body updatedBody : RawTerm (scope + 1)}
+    (argument : RawTerm scope) (bodyStep : Step body updatedBody) :
+    (fromSteps
+      (Step.beta (body := body) (arg := argument))
+      (betaFunctionCong argument bodyStep).rightStep).HasJoin :=
+  betaFunctionCong_hasJoin argument bodyStep
+
 /-- Resolver arm for the reverse orientation of beta/function congruence. -/
 theorem betaFunctionCongReverse_hasJoin {scope : Nat}
     {body updatedBody : RawTerm (scope + 1)}
     (argument : RawTerm scope) (bodyStep : Step body updatedBody) :
     (betaFunctionCong argument bodyStep).swap.HasJoin :=
   (LocalDiamond.betaFunctionCongReverse argument bodyStep).hasJoin
+
+/-- `fromSteps`-facing reverse beta/function-congruence resolver arm. -/
+theorem fromSteps_betaFunctionCongReverse_hasJoin {scope : Nat}
+    {body updatedBody : RawTerm (scope + 1)}
+    (argument : RawTerm scope) (bodyStep : Step body updatedBody) :
+    (fromSteps
+      (betaFunctionCong argument bodyStep).rightStep
+      (Step.beta (body := body) (arg := argument))).HasJoin :=
+  betaFunctionCongReverse_hasJoin argument bodyStep
 
 /-- Resolver arm for beta competing with congruence in the argument child. -/
 theorem betaArgumentCong_hasJoin {scope : Nat}
@@ -481,6 +507,16 @@ theorem betaArgumentCong_hasJoin {scope : Nat}
     (betaArgumentCong body argumentStep).HasJoin :=
   (LocalDiamond.betaArgumentCong body argumentStep).hasJoin
 
+/-- `fromSteps`-facing beta/argument-congruence resolver arm. -/
+theorem fromSteps_betaArgumentCong_hasJoin {scope : Nat}
+    (body : RawTerm (scope + 1))
+    {argument updatedArgument : RawTerm scope}
+    (argumentStep : Step argument updatedArgument) :
+    (fromSteps
+      (Step.beta (body := body) (arg := argument))
+      (betaArgumentCong body argumentStep).rightStep).HasJoin :=
+  betaArgumentCong_hasJoin body argumentStep
+
 /-- Resolver arm for the reverse orientation of beta/argument congruence. -/
 theorem betaArgumentCongReverse_hasJoin {scope : Nat}
     (body : RawTerm (scope + 1))
@@ -488,6 +524,16 @@ theorem betaArgumentCongReverse_hasJoin {scope : Nat}
     (argumentStep : Step argument updatedArgument) :
     (betaArgumentCong body argumentStep).swap.HasJoin :=
   (LocalDiamond.betaArgumentCongReverse body argumentStep).hasJoin
+
+/-- `fromSteps`-facing reverse beta/argument-congruence resolver arm. -/
+theorem fromSteps_betaArgumentCongReverse_hasJoin {scope : Nat}
+    (body : RawTerm (scope + 1))
+    {argument updatedArgument : RawTerm scope}
+    (argumentStep : Step argument updatedArgument) :
+    (fromSteps
+      (betaArgumentCong body argumentStep).rightStep
+      (Step.beta (body := body) (arg := argument))).HasJoin :=
+  betaArgumentCongReverse_hasJoin body argumentStep
 
 /-- Resolver arm for same-root `boolTrue` iota branchings. -/
 theorem iotaBoolTrueSameRoot_hasJoin {scope : Nat}
