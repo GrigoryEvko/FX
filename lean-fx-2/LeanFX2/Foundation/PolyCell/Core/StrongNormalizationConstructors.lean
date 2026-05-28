@@ -130,6 +130,24 @@ theorem pathLam_isStronglyNormalizing_of_body {scope : Nat}
     (fun parentStep => Step.from_pathLam parentStep)
     bodyTerminates
 
+/-- Differential lambda abstraction is strongly normalizing when its body is
+strongly normalizing.  Its raw binder shape mirrors ordinary lambda
+abstraction. -/
+theorem diffLambda_isStronglyNormalizing_of_body {scope : Nat}
+    {body : RawTerm (scope + 1)}
+    (bodyTerminates : IsStronglyNormalizing body) :
+    IsStronglyNormalizing
+      (.mkGen .gen_diffLambda () (.childCons body .childNil) :
+        RawTerm scope) :=
+  isStronglyNormalizing_of_oneChildCong
+    (childScope := scope + 1)
+    (parentScope := scope)
+    (fun currentBody =>
+      (.mkGen .gen_diffLambda () (.childCons currentBody .childNil) :
+        RawTerm scope))
+    (fun parentStep => Step.from_diffLambda parentStep)
+    bodyTerminates
+
 /-- Natural successor is strongly normalizing when its predecessor is strongly
 normalizing. -/
 theorem natSucc_isStronglyNormalizing_of_predecessor {scope : Nat}

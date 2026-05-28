@@ -1416,6 +1416,115 @@ theorem appLamLam_isStronglyNormalizing_of_body_argument_contractum
     innerBodyTerminates)
     argumentTerminates
 
+/-- Beta redexes whose lambda body is `diffLambda body` are strongly
+normalizing when the differential-lambda body, argument, and every
+binder-lifted body contractum are strongly normalizing.
+
+`gen_diffLambda` mirrors the ordinary lambda binder at the raw substrate
+level, so beta substitution crosses its binder by lifting the singleton
+substitution. -/
+theorem appLamDiffLambda_isStronglyNormalizing_of_body_argument_contractum
+    {scope : Nat} {diffBody : RawTerm ((scope + 1) + 1)}
+    {argumentTerm : RawTerm scope}
+    (diffBodyTerminates : IsStronglyNormalizing diffBody)
+    (argumentTerminates : IsStronglyNormalizing argumentTerm)
+    (diffBodyContractumTerminates :
+      ∀ {currentDiffBody : RawTerm ((scope + 1) + 1)}
+        {currentArgument : RawTerm scope},
+        IsStronglyNormalizing currentDiffBody →
+          IsStronglyNormalizing currentArgument →
+            IsStronglyNormalizing
+              (RawTerm.subst
+                (RawTermSubst.lift (RawTermSubst.singleton currentArgument))
+                currentDiffBody)) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam ()
+            (.childCons
+              (.mkGen .gen_diffLambda ()
+                (.childCons diffBody .childNil))
+              .childNil))
+          (.childCons argumentTerm .childNil)) :
+        RawTerm scope) :=
+  (Acc.ndrec
+    (r := StepSuccessor)
+    (C := fun currentDiffBody =>
+      ∀ {currentArgument : RawTerm scope},
+        IsStronglyNormalizing currentArgument →
+          IsStronglyNormalizing
+            (.mkGen .gen_app ()
+              (.childCons
+                (.mkGen .gen_lam ()
+                  (.childCons
+                    (.mkGen .gen_diffLambda ()
+                      (.childCons currentDiffBody .childNil))
+                    .childNil))
+                (.childCons currentArgument .childNil)) :
+              RawTerm scope))
+    (m := fun currentDiffBody currentDiffBodySuccessors diffBodyIH => by
+      intro currentArgument currentArgumentTerminates
+      exact
+        Acc.ndrec
+          (r := StepSuccessor)
+          (C := fun innerArgument =>
+            IsStronglyNormalizing
+              (.mkGen .gen_app ()
+                (.childCons
+                  (.mkGen .gen_lam ()
+                    (.childCons
+                      (.mkGen .gen_diffLambda ()
+                        (.childCons currentDiffBody .childNil))
+                      .childNil))
+                  (.childCons innerArgument .childNil)) :
+                RawTerm scope))
+          (m := fun currentArgument currentArgumentSuccessors argumentIH =>
+            Acc.intro
+              (.mkGen .gen_app ()
+                (.childCons
+                  (.mkGen .gen_lam ()
+                    (.childCons
+                      (.mkGen .gen_diffLambda ()
+                        (.childCons currentDiffBody .childNil))
+                      .childNil))
+                  (.childCons currentArgument .childNil)) :
+                RawTerm scope)
+              (fun targetTerm applicationStep => by
+                cases Step.from_app applicationStep with
+                | inl betaBranch =>
+                    obtain ⟨lambdaBody, lambdaEq, targetEq⟩ := betaBranch
+                    cases lambdaEq
+                    rw [targetEq]
+                    exact
+                      diffLambda_isStronglyNormalizing_of_body
+                        (diffBodyContractumTerminates
+                          (Acc.intro currentDiffBody
+                            currentDiffBodySuccessors)
+                          (Acc.intro currentArgument
+                            currentArgumentSuccessors))
+                | inr congruenceBranch =>
+                    cases congruenceBranch with
+                    | inl functionBranch =>
+                        obtain ⟨functionAfter, targetEq, functionStep⟩ :=
+                          functionBranch
+                        obtain ⟨bodyAfter, functionAfterEq, bodyStep⟩ :=
+                          Step.from_lam functionStep
+                        obtain ⟨diffBodyAfter, bodyAfterEq,
+                          diffBodyStep⟩ := Step.from_diffLambda bodyStep
+                        rw [targetEq, functionAfterEq, bodyAfterEq]
+                        exact
+                          diffBodyIH diffBodyAfter diffBodyStep
+                            (Acc.intro currentArgument
+                              currentArgumentSuccessors)
+                    | inr argumentBranch =>
+                        obtain ⟨argumentAfter, targetEq, argumentStep⟩ :=
+                          argumentBranch
+                        rw [targetEq]
+                        exact argumentIH argumentAfter argumentStep))
+          currentArgumentTerminates)
+    diffBodyTerminates)
+    argumentTerminates
+
 /-- Beta redexes are strongly normalizing when the lambda body and argument are
 strongly normalizing and every reduct pair has a strongly-normalizing beta
 contractum.

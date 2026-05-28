@@ -257,6 +257,27 @@ theorem Step.from_pathLam
       | there _ restStep =>
           exact absurd restStep StepChildren.no_step_at_empty_spine
 
+/-- **Inversion for `diffLambda`-rooted Step.**
+
+Differential lambdas have the same raw binder shape as ordinary lambdas:
+their only beta+iota `Step` path is congruence through the single
+under-binder body child. -/
+theorem Step.from_diffLambda
+    {scope : Nat} {body : RawTerm (scope + 1)} {target : RawTerm scope}
+    (reduction :
+      Step (.mkGen .gen_diffLambda () (.childCons body .childNil)) target) :
+    ∃ (bodyAfter : RawTerm (scope + 1)),
+      target = .mkGen .gen_diffLambda () (.childCons bodyAfter .childNil) ∧
+      Step body bodyAfter := by
+  cases reduction with
+  | cong _ _ childStep =>
+      cases childStep with
+      | here _ bodyStep =>
+          rename_i bodyAfter
+          exact ⟨bodyAfter, rfl, bodyStep⟩
+      | there _ restStep =>
+          exact absurd restStep StepChildren.no_step_at_empty_spine
+
 /-- **Inversion for `natSucc`-rooted Step.**
 
 If `Step (natSucc predecessor) target` then `target = natSucc

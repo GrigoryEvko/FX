@@ -2504,13 +2504,14 @@ namespace LeanFX2.Tools
 -- lemmas sit in PolyCell.Core without tripping the False-budget.
 --
 -- 1-child value ctors covered: lam (body at scope+1), natSucc,
--- optionSome, eitherInl/Inr, refl.  All share the same proof
+-- pathLam, diffLambda, optionSome, eitherInl/Inr, refl.  All share the same proof
 -- structure (cases reduction → cases childStep → here-arm extract).
 -- 2-child cases (pair, listCons) deferred to next iteration --
 -- they need both here and there arms since the second child can
 -- also Step.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_lam
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_pathLam
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_diffLambda
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_natSucc
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_optionSome
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_eitherInl
@@ -2707,6 +2708,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.isStronglyNormalizing_of_twoChildCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.lam_isStronglyNormalizing_of_body
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.pathLam_isStronglyNormalizing_of_body
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.diffLambda_isStronglyNormalizing_of_body
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.natSucc_isStronglyNormalizing_of_predecessor
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.optionSome_isStronglyNormalizing_of_value
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.eitherInl_isStronglyNormalizing_of_value
@@ -2772,6 +2774,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.appLamGlueIntro_isStronglyNormalizing_of_components_argument_contractum
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.appLamPathLam_isStronglyNormalizing_of_body_argument_contractum
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.appLamLam_isStronglyNormalizing_of_body_argument_contractum
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.appLamDiffLambda_isStronglyNormalizing_of_body_argument_contractum
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.appLam_isStronglyNormalizing_of_body_argument_contractum
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.fstPair_isStronglyNormalizing_of_components
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.sndPair_isStronglyNormalizing_of_components
