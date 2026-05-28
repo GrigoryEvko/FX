@@ -2408,6 +2408,325 @@ theorem fromSteps_iotaIdStrictRecWitnessCong_hasJoin {scope : Nat}
         (baseCase := baseCase) witnessStep).rightStep).HasJoin :=
   iotaIdStrictRecWitnessCong_hasJoin witnessStep
 
+/-- Resolve every local branching whose left step is `optionMatch optionNone` iota. -/
+theorem fromSteps_iotaOptionMatchNoneLeft_hasJoin {scope : Nat}
+    {noneBranch someBranch rightReduct : RawTerm scope}
+    (rightStep : Step
+      (.mkGen .gen_optionMatch ()
+        (.childCons
+          (.mkGen .gen_optionNone () .childNil)
+          (.childCons noneBranch (.childCons someBranch .childNil))))
+      rightReduct) :
+    (fromSteps
+      (Step.iotaOptionMatchNone
+        (noneBranch := noneBranch) (someBranch := someBranch))
+      rightStep).HasJoin := by
+  cases rightStep with
+  | iotaOptionMatchNone =>
+      exact fromSteps_iotaOptionMatchNoneSameRoot_hasJoin noneBranch someBranch
+  | cong generator payload childStep =>
+      cases childStep with
+      | here restChildren scrutineeStep =>
+          cases scrutineeStep with
+          | cong scrutineeGenerator scrutineePayload scrutineeChildrenStep =>
+              cases scrutineeChildrenStep
+      | there scrutinee restStep =>
+          cases restStep with
+          | here someChildren noneStep =>
+              exact fromSteps_iotaOptionMatchNoneBranchCong_hasJoin noneStep
+          | there noneChild branchTailStep =>
+              cases branchTailStep with
+              | here emptyChildren someStep =>
+                  exact fromSteps_iotaOptionMatchSomeBranchCong_hasJoin someStep
+              | there someChild emptyStep =>
+                  cases emptyStep
+
+/-- Resolve every local branching whose right step is `optionMatch optionNone` iota. -/
+theorem fromSteps_iotaOptionMatchNoneRight_hasJoin {scope : Nat}
+    {noneBranch someBranch leftReduct : RawTerm scope}
+    (leftStep : Step
+      (.mkGen .gen_optionMatch ()
+        (.childCons
+          (.mkGen .gen_optionNone () .childNil)
+          (.childCons noneBranch (.childCons someBranch .childNil))))
+      leftReduct) :
+    (fromSteps
+      leftStep
+      (Step.iotaOptionMatchNone
+        (noneBranch := noneBranch) (someBranch := someBranch))).HasJoin :=
+  hasJoin_swap (fromSteps_iotaOptionMatchNoneLeft_hasJoin leftStep)
+
+/-- Resolve every local branching whose left step is `optionMatch optionSome` iota. -/
+theorem fromSteps_iotaOptionMatchSomeLeft_hasJoin {scope : Nat}
+    {value noneBranch someBranch rightReduct : RawTerm scope}
+    (rightStep : Step
+      (.mkGen .gen_optionMatch ()
+        (.childCons
+          (.mkGen .gen_optionSome () (.childCons value .childNil))
+          (.childCons noneBranch (.childCons someBranch .childNil))))
+      rightReduct) :
+    (fromSteps
+      (Step.iotaOptionMatchSome
+        (value := value) (noneBranch := noneBranch)
+        (someBranch := someBranch))
+      rightStep).HasJoin := by
+  cases rightStep with
+  | iotaOptionMatchSome =>
+      exact fromSteps_iotaOptionMatchSomeSameRoot_hasJoin
+        value noneBranch someBranch
+  | cong generator payload childStep =>
+      cases childStep with
+      | here restChildren scrutineeStep =>
+          cases scrutineeStep with
+          | cong scrutineeGenerator scrutineePayload scrutineeChildrenStep =>
+              cases scrutineeChildrenStep with
+              | here emptyChildren valueStep =>
+                  exact fromSteps_iotaOptionMatchSomeValueCong_hasJoin valueStep
+              | there valueChild emptyStep =>
+                  cases emptyStep
+      | there scrutinee restStep =>
+          cases restStep with
+          | here someChildren noneStep =>
+              exact fromSteps_iotaOptionMatchSomeNoneBranchCong_hasJoin noneStep
+          | there noneChild branchTailStep =>
+              cases branchTailStep with
+              | here emptyChildren someStep =>
+                  exact fromSteps_iotaOptionMatchSomeSomeBranchCong_hasJoin someStep
+              | there someChild emptyStep =>
+                  cases emptyStep
+
+/-- Resolve every local branching whose right step is `optionMatch optionSome` iota. -/
+theorem fromSteps_iotaOptionMatchSomeRight_hasJoin {scope : Nat}
+    {value noneBranch someBranch leftReduct : RawTerm scope}
+    (leftStep : Step
+      (.mkGen .gen_optionMatch ()
+        (.childCons
+          (.mkGen .gen_optionSome () (.childCons value .childNil))
+          (.childCons noneBranch (.childCons someBranch .childNil))))
+      leftReduct) :
+    (fromSteps
+      leftStep
+      (Step.iotaOptionMatchSome
+        (value := value) (noneBranch := noneBranch)
+        (someBranch := someBranch))).HasJoin :=
+  hasJoin_swap (fromSteps_iotaOptionMatchSomeLeft_hasJoin leftStep)
+
+/-- Resolve every local branching whose left step is `eitherMatch eitherInl` iota. -/
+theorem fromSteps_iotaEitherMatchInlLeft_hasJoin {scope : Nat}
+    {value leftBranch rightBranch rightReduct : RawTerm scope}
+    (rightStep : Step
+      (.mkGen .gen_eitherMatch ()
+        (.childCons
+          (.mkGen .gen_eitherInl () (.childCons value .childNil))
+          (.childCons leftBranch (.childCons rightBranch .childNil))))
+      rightReduct) :
+    (fromSteps
+      (Step.iotaEitherMatchInl
+        (value := value) (leftBranch := leftBranch)
+        (rightBranch := rightBranch))
+      rightStep).HasJoin := by
+  cases rightStep with
+  | iotaEitherMatchInl =>
+      exact fromSteps_iotaEitherMatchInlSameRoot_hasJoin
+        value leftBranch rightBranch
+  | cong generator payload childStep =>
+      cases childStep with
+      | here restChildren scrutineeStep =>
+          cases scrutineeStep with
+          | cong scrutineeGenerator scrutineePayload scrutineeChildrenStep =>
+              cases scrutineeChildrenStep with
+              | here emptyChildren valueStep =>
+                  exact fromSteps_iotaEitherMatchInlValueCong_hasJoin valueStep
+              | there valueChild emptyStep =>
+                  cases emptyStep
+      | there scrutinee restStep =>
+          cases restStep with
+          | here rightChildren leftStep =>
+              exact fromSteps_iotaEitherMatchInlLeftBranchCong_hasJoin leftStep
+          | there leftChild branchTailStep =>
+              cases branchTailStep with
+              | here emptyChildren rightStep =>
+                  exact fromSteps_iotaEitherMatchInlRightBranchCong_hasJoin rightStep
+              | there rightChild emptyStep =>
+                  cases emptyStep
+
+/-- Resolve every local branching whose right step is `eitherMatch eitherInl` iota. -/
+theorem fromSteps_iotaEitherMatchInlRight_hasJoin {scope : Nat}
+    {value leftBranch rightBranch leftReduct : RawTerm scope}
+    (leftStep : Step
+      (.mkGen .gen_eitherMatch ()
+        (.childCons
+          (.mkGen .gen_eitherInl () (.childCons value .childNil))
+          (.childCons leftBranch (.childCons rightBranch .childNil))))
+      leftReduct) :
+    (fromSteps
+      leftStep
+      (Step.iotaEitherMatchInl
+        (value := value) (leftBranch := leftBranch)
+        (rightBranch := rightBranch))).HasJoin :=
+  hasJoin_swap (fromSteps_iotaEitherMatchInlLeft_hasJoin leftStep)
+
+/-- Resolve every local branching whose left step is `eitherMatch eitherInr` iota. -/
+theorem fromSteps_iotaEitherMatchInrLeft_hasJoin {scope : Nat}
+    {value leftBranch rightBranch rightReduct : RawTerm scope}
+    (rightStep : Step
+      (.mkGen .gen_eitherMatch ()
+        (.childCons
+          (.mkGen .gen_eitherInr () (.childCons value .childNil))
+          (.childCons leftBranch (.childCons rightBranch .childNil))))
+      rightReduct) :
+    (fromSteps
+      (Step.iotaEitherMatchInr
+        (value := value) (leftBranch := leftBranch)
+        (rightBranch := rightBranch))
+      rightStep).HasJoin := by
+  cases rightStep with
+  | iotaEitherMatchInr =>
+      exact fromSteps_iotaEitherMatchInrSameRoot_hasJoin
+        value leftBranch rightBranch
+  | cong generator payload childStep =>
+      cases childStep with
+      | here restChildren scrutineeStep =>
+          cases scrutineeStep with
+          | cong scrutineeGenerator scrutineePayload scrutineeChildrenStep =>
+              cases scrutineeChildrenStep with
+              | here emptyChildren valueStep =>
+                  exact fromSteps_iotaEitherMatchInrValueCong_hasJoin valueStep
+              | there valueChild emptyStep =>
+                  cases emptyStep
+      | there scrutinee restStep =>
+          cases restStep with
+          | here rightChildren leftStep =>
+              exact fromSteps_iotaEitherMatchInrLeftBranchCong_hasJoin leftStep
+          | there leftChild branchTailStep =>
+              cases branchTailStep with
+              | here emptyChildren rightStep =>
+                  exact fromSteps_iotaEitherMatchInrRightBranchCong_hasJoin rightStep
+              | there rightChild emptyStep =>
+                  cases emptyStep
+
+/-- Resolve every local branching whose right step is `eitherMatch eitherInr` iota. -/
+theorem fromSteps_iotaEitherMatchInrRight_hasJoin {scope : Nat}
+    {value leftBranch rightBranch leftReduct : RawTerm scope}
+    (leftStep : Step
+      (.mkGen .gen_eitherMatch ()
+        (.childCons
+          (.mkGen .gen_eitherInr () (.childCons value .childNil))
+          (.childCons leftBranch (.childCons rightBranch .childNil))))
+      leftReduct) :
+    (fromSteps
+      leftStep
+      (Step.iotaEitherMatchInr
+        (value := value) (leftBranch := leftBranch)
+        (rightBranch := rightBranch))).HasJoin :=
+  hasJoin_swap (fromSteps_iotaEitherMatchInrLeft_hasJoin leftStep)
+
+/-- Resolve every local branching whose left step is `idJ refl` iota. -/
+theorem fromSteps_iotaIdJReflLeft_hasJoin {scope : Nat}
+    {baseCase rawWitness rightReduct : RawTerm scope}
+    (rightStep : Step
+      (.mkGen .gen_idJ ()
+        (.childCons
+          baseCase
+          (.childCons
+            (.mkGen .gen_refl () (.childCons rawWitness .childNil))
+            .childNil)))
+      rightReduct) :
+    (fromSteps
+      (Step.iotaIdJRefl
+        (baseCase := baseCase) (rawWitness := rawWitness))
+      rightStep).HasJoin := by
+  cases rightStep with
+  | iotaIdJRefl =>
+      exact fromSteps_iotaIdJReflSameRoot_hasJoin baseCase rawWitness
+  | cong generator payload childStep =>
+      cases childStep with
+      | here restChildren baseStep =>
+          exact fromSteps_iotaIdJBaseCaseCong_hasJoin baseStep
+      | there baseChild restStep =>
+          cases restStep with
+          | here emptyChildren witnessStep =>
+              cases witnessStep with
+              | cong witnessGenerator witnessPayload witnessChildrenStep =>
+                  cases witnessChildrenStep with
+                  | here emptyChildren rawWitnessStep =>
+                      exact fromSteps_iotaIdJWitnessCong_hasJoin rawWitnessStep
+                  | there witnessChild emptyStep =>
+                      cases emptyStep
+          | there witnessChild emptyStep =>
+              cases emptyStep
+
+/-- Resolve every local branching whose right step is `idJ refl` iota. -/
+theorem fromSteps_iotaIdJReflRight_hasJoin {scope : Nat}
+    {baseCase rawWitness leftReduct : RawTerm scope}
+    (leftStep : Step
+      (.mkGen .gen_idJ ()
+        (.childCons
+          baseCase
+          (.childCons
+            (.mkGen .gen_refl () (.childCons rawWitness .childNil))
+            .childNil)))
+      leftReduct) :
+    (fromSteps
+      leftStep
+      (Step.iotaIdJRefl
+        (baseCase := baseCase) (rawWitness := rawWitness))).HasJoin :=
+  hasJoin_swap (fromSteps_iotaIdJReflLeft_hasJoin leftStep)
+
+/-- Resolve every local branching whose left step is `idStrictRec refl` iota. -/
+theorem fromSteps_iotaIdStrictRecReflLeft_hasJoin {scope : Nat}
+    {baseCase rawWitness rightReduct : RawTerm scope}
+    (rightStep : Step
+      (.mkGen .gen_idStrictRec ()
+        (.childCons
+          baseCase
+          (.childCons
+            (.mkGen .gen_refl () (.childCons rawWitness .childNil))
+            .childNil)))
+      rightReduct) :
+    (fromSteps
+      (Step.iotaIdStrictRecRefl
+        (baseCase := baseCase) (rawWitness := rawWitness))
+      rightStep).HasJoin := by
+  cases rightStep with
+  | iotaIdStrictRecRefl =>
+      exact fromSteps_iotaIdStrictRecReflSameRoot_hasJoin
+        baseCase rawWitness
+  | cong generator payload childStep =>
+      cases childStep with
+      | here restChildren baseStep =>
+          exact fromSteps_iotaIdStrictRecBaseCaseCong_hasJoin baseStep
+      | there baseChild restStep =>
+          cases restStep with
+          | here emptyChildren witnessStep =>
+              cases witnessStep with
+              | cong witnessGenerator witnessPayload witnessChildrenStep =>
+                  cases witnessChildrenStep with
+                  | here emptyChildren rawWitnessStep =>
+                      exact fromSteps_iotaIdStrictRecWitnessCong_hasJoin
+                        rawWitnessStep
+                  | there witnessChild emptyStep =>
+                      cases emptyStep
+          | there witnessChild emptyStep =>
+              cases emptyStep
+
+/-- Resolve every local branching whose right step is `idStrictRec refl` iota. -/
+theorem fromSteps_iotaIdStrictRecReflRight_hasJoin {scope : Nat}
+    {baseCase rawWitness leftReduct : RawTerm scope}
+    (leftStep : Step
+      (.mkGen .gen_idStrictRec ()
+        (.childCons
+          baseCase
+          (.childCons
+            (.mkGen .gen_refl () (.childCons rawWitness .childNil))
+            .childNil)))
+      leftReduct) :
+    (fromSteps
+      leftStep
+      (Step.iotaIdStrictRecRefl
+        (baseCase := baseCase) (rawWitness := rawWitness))).HasJoin :=
+  hasJoin_swap (fromSteps_iotaIdStrictRecReflLeft_hasJoin leftStep)
+
 /-- M7 contradiction arm for the mutually-exclusive bool true/false root pair. -/
 theorem iotaBoolTrue_iotaBoolFalse_hasSourcesDisjoint {scope : Nat}
     (thenTrue elseTrue thenFalse elseFalse : RawTerm scope) :
