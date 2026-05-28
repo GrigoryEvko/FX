@@ -143,6 +143,7 @@ import LeanFX2.Tools.AuditAll.AuditEtaDiscipline
 import LeanFX2.Tools.AuditAll.AuditIotaEtaMatrix
 import LeanFX2.Foundation.PolyCell.Universe.LevelExpr
 import LeanFX2.Foundation.PolyCell.Universe.UniverseFlag
+import LeanFX2.Foundation.PolyCell.NbE.NormalizerSignature
 
 namespace LeanFX2.Tools
 
@@ -3328,6 +3329,33 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.UniverseFlag.decEq_refl_standard
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.UniverseFlag.ctorCount
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.UniverseFlag.ctorCount_correct
+
+-- ─── M11 (#260): NbE substrate — canonical normalizer signature ─────
+-- RawTerm.isNF predicate shipped via M-substrate-3 #367.  This commit
+-- ships the SIGNATURE-LEVEL contract for the M12 #261 implementation:
+-- the `Normalizer` structure with 4 fields capturing the post-conditions
+-- every NbE eval implementation must satisfy.
+--
+-- Plus NormalizerWithStrategy marker pairing a Normalizer instance
+-- with its committed reduction strategy (M12-pre #373 CBN).
+--
+-- Per M11-pre #372 hybrid design: raw layer outputs RawTerm in β-NF,
+-- no separate ValueTerm.  M12 #261 constructs an instance with the
+-- actual implementation; downstream M16/M17/M18 consume any Normalizer
+-- generically.
+--
+-- Quirk: fully-qualified `LeanFX2.Foundation.PolyCell.Core.RawTerm`
+-- needed in field types to avoid shadow from legacy `LeanFX2.RawTerm`
+-- (Foundation/RawTerm.lean) — bare `RawTerm` resolves to the legacy
+-- v1 namespace.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.Normalizer
+#assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.NormalizerWithStrategy
+#assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.Normalizer.fieldCount
+#assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.Normalizer.fieldCount_correct
+#assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.NormalizerWithStrategy.fieldCount
+#assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.NormalizerWithStrategy.fieldCount_correct
+#assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.Normalizer.consistent_with_hybrid_design
+#assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.Normalizer.consistent_with_cbn_strategy
 
 -- ─── V2-L4.5 (#214): SconingConstructionLevel honest ledger ─────────
 -- 20 declarations in InternalSconing.lean ship the honest construction-
