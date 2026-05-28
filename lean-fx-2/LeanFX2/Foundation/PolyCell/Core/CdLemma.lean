@@ -2863,6 +2863,144 @@ theorem iotaEitherMatchInr_iotaEitherMatchInl_hasSourcesDisjoint
     rightValue leftBranchRight rightBranchRight leftValue
     leftBranch rightBranch
 
+/-- Resolve every packaged branching below an explicit parent-size bound.
+
+The proof is well-founded on the bound, not directly on the current source.
+In the `Step.cong`/`Step.cong` case the child-spine helper gives child sources
+strictly below the current parent generator term; the current parent is strictly
+below the outer bound by `source_lt_parent`. -/
+theorem fromSteps_resolveBranchingBelow_hasJoin :
+    ∀ {parentSize scope : Nat}
+      {sourceTerm leftReduct rightReduct : RawTerm scope},
+      sourceTerm.size < parentSize →
+      ∀ (leftStep : Step sourceTerm leftReduct)
+        (rightStep : Step sourceTerm rightReduct),
+      (fromSteps leftStep rightStep).HasJoin
+  | _, _, _, _, _, source_lt_parent, leftStep, rightStep => by
+      cases leftStep with
+      | beta =>
+          exact fromSteps_betaLeft_hasJoin rightStep
+      | cong _ _ leftChildrenStep =>
+          cases rightStep with
+          | beta =>
+              exact fromSteps_betaRight_hasJoin
+                (Step.cong _ _ leftChildrenStep)
+          | cong _ _ rightChildrenStep =>
+              exact congCong_hasJoin_ofSmallerStepPairResolver
+                (fun child_lt_parent leftSmallStep rightSmallStep =>
+                  fromSteps_hasJoin
+                    (fromSteps_resolveBranchingBelow_hasJoin
+                      child_lt_parent leftSmallStep rightSmallStep))
+                leftChildrenStep rightChildrenStep
+          | iotaBoolTrue =>
+              exact fromSteps_iotaBoolTrueRight_hasJoin
+                (Step.cong _ _ leftChildrenStep)
+          | iotaBoolFalse =>
+              exact fromSteps_iotaBoolFalseRight_hasJoin
+                (Step.cong _ _ leftChildrenStep)
+          | iotaFstPair =>
+              exact fromSteps_iotaFstPairRight_hasJoin
+                (Step.cong _ _ leftChildrenStep)
+          | iotaSndPair =>
+              exact fromSteps_iotaSndPairRight_hasJoin
+                (Step.cong _ _ leftChildrenStep)
+          | iotaNatElimZero =>
+              exact fromSteps_iotaNatElimZeroRight_hasJoin
+                (Step.cong _ _ leftChildrenStep)
+          | iotaNatRecZero =>
+              exact fromSteps_iotaNatRecZeroRight_hasJoin
+                (Step.cong _ _ leftChildrenStep)
+          | iotaListElimNil =>
+              exact fromSteps_iotaListElimNilRight_hasJoin
+                (Step.cong _ _ leftChildrenStep)
+          | iotaOptionMatchNone =>
+              exact fromSteps_iotaOptionMatchNoneRight_hasJoin
+                (Step.cong _ _ leftChildrenStep)
+          | iotaOptionMatchSome =>
+              exact fromSteps_iotaOptionMatchSomeRight_hasJoin
+                (Step.cong _ _ leftChildrenStep)
+          | iotaEitherMatchInl =>
+              exact fromSteps_iotaEitherMatchInlRight_hasJoin
+                (Step.cong _ _ leftChildrenStep)
+          | iotaEitherMatchInr =>
+              exact fromSteps_iotaEitherMatchInrRight_hasJoin
+                (Step.cong _ _ leftChildrenStep)
+          | iotaNatElimSucc =>
+              exact fromSteps_iotaNatElimSuccRight_hasJoin
+                (Step.cong _ _ leftChildrenStep)
+          | iotaNatRecSucc =>
+              exact fromSteps_iotaNatRecSuccRight_hasJoin
+                (Step.cong _ _ leftChildrenStep)
+          | iotaListElimCons =>
+              exact fromSteps_iotaListElimConsRight_hasJoin
+                (Step.cong _ _ leftChildrenStep)
+          | iotaIdJRefl =>
+              exact fromSteps_iotaIdJReflRight_hasJoin
+                (Step.cong _ _ leftChildrenStep)
+          | iotaIdStrictRecRefl =>
+              exact fromSteps_iotaIdStrictRecReflRight_hasJoin
+                (Step.cong _ _ leftChildrenStep)
+      | iotaBoolTrue =>
+          exact fromSteps_iotaBoolTrueLeft_hasJoin rightStep
+      | iotaBoolFalse =>
+          exact fromSteps_iotaBoolFalseLeft_hasJoin rightStep
+      | iotaFstPair =>
+          exact fromSteps_iotaFstPairLeft_hasJoin rightStep
+      | iotaSndPair =>
+          exact fromSteps_iotaSndPairLeft_hasJoin rightStep
+      | iotaNatElimZero =>
+          exact fromSteps_iotaNatElimZeroLeft_hasJoin rightStep
+      | iotaNatRecZero =>
+          exact fromSteps_iotaNatRecZeroLeft_hasJoin rightStep
+      | iotaListElimNil =>
+          exact fromSteps_iotaListElimNilLeft_hasJoin rightStep
+      | iotaOptionMatchNone =>
+          exact fromSteps_iotaOptionMatchNoneLeft_hasJoin rightStep
+      | iotaOptionMatchSome =>
+          exact fromSteps_iotaOptionMatchSomeLeft_hasJoin rightStep
+      | iotaEitherMatchInl =>
+          exact fromSteps_iotaEitherMatchInlLeft_hasJoin rightStep
+      | iotaEitherMatchInr =>
+          exact fromSteps_iotaEitherMatchInrLeft_hasJoin rightStep
+      | iotaNatElimSucc =>
+          exact fromSteps_iotaNatElimSuccLeft_hasJoin rightStep
+      | iotaNatRecSucc =>
+          exact fromSteps_iotaNatRecSuccLeft_hasJoin rightStep
+      | iotaListElimCons =>
+          exact fromSteps_iotaListElimConsLeft_hasJoin rightStep
+      | iotaIdJRefl =>
+          exact fromSteps_iotaIdJReflLeft_hasJoin rightStep
+      | iotaIdStrictRecRefl =>
+          exact fromSteps_iotaIdStrictRecReflLeft_hasJoin rightStep
+termination_by parentSize _scope _sourceTerm _leftReduct _rightReduct
+    _source_lt_parent _leftStep _rightStep => parentSize
+decreasing_by
+  exact source_lt_parent
+
+/-- Resolve every packaged branching built from two one-step reductions with
+the same source.
+
+Every root rule delegates to its audited root-sided resolver.  The only
+recursive case is `Step.cong`/`Step.cong`, where the child-spine helper supplies
+recursive obligations only for source terms strictly smaller than the parent
+generator term. -/
+theorem fromSteps_resolveBranching_hasJoin
+    {scope : Nat} {sourceTerm leftReduct rightReduct : RawTerm scope}
+    (leftStep : Step sourceTerm leftReduct)
+    (rightStep : Step sourceTerm rightReduct) :
+    (fromSteps leftStep rightStep).HasJoin :=
+  fromSteps_resolveBranchingBelow_hasJoin
+    (Nat.lt_succ_self sourceTerm.size) leftStep rightStep
+
+/-- Resolve every local branching, including arbitrary branchings not produced by
+the finite M6 helper constructors. -/
+theorem resolveBranching_hasJoin {scope : Nat}
+    (branching : LocalStepBranching (scope := scope)) :
+    branching.HasJoin :=
+  match branching with
+  | ⟨_, _, _, leftStep, rightStep⟩ =>
+      fromSteps_resolveBranching_hasJoin leftStep rightStep
+
 end LocalStepBranching
 
 namespace CdLemmaStatement
@@ -2890,5 +3028,11 @@ theorem ofLocalBranchingResolver
           leftStep rightStep))
 
 end CdLemmaStatement
+
+/-- The M7 local Church-Rosser theorem for one-step reductions on the generic
+PolyCell raw substrate. -/
+theorem cd_lemma : CdLemmaStatement :=
+  CdLemmaStatement.ofLocalBranchingResolver
+    LocalStepBranching.resolveBranching_hasJoin
 
 end LeanFX2.Foundation.PolyCell.Core

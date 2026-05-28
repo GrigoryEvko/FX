@@ -1443,7 +1443,11 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaOptionMatchSome_iotaOptionMatchNone_hasSourcesDisjoint
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaEitherMatchInl_iotaEitherMatchInr_hasSourcesDisjoint
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaEitherMatchInr_iotaEitherMatchInl_hasSourcesDisjoint
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.fromSteps_resolveBranchingBelow_hasJoin
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.fromSteps_resolveBranching_hasJoin
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.resolveBranching_hasJoin
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CdLemmaStatement.ofLocalBranchingResolver
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.cd_lemma
 
 -- ─── V2-L3.1 phase D step 35: HCC-level wrappers around the cell-step
 -- helpers (phase D 32/33).  Same recipe, .intro-wrapped to land in
