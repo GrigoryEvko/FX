@@ -136,6 +136,7 @@ import LeanFX2.Foundation.PolyCell.Core.ConvCongruence
 import LeanFX2.Foundation.PolyCell.Core.ConvSubstRename
 import LeanFX2.Foundation.PolyCell.NbE.DesignDecision
 import LeanFX2.Foundation.PolyCell.NbE.ReductionStrategy
+import LeanFX2.Tools.AuditAll.AuditPhaseZ
 
 namespace LeanFX2.Tools
 
@@ -3075,6 +3076,33 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.ReductionStrategy.committed
 #assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.ReductionStrategy.committed_is_cbn
 #assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.ReductionStrategy.compatible_with_hybrid_design
+
+-- ─── M-phaseZ-strict-gates (#380): honest phase-Z STRICT ledgers ────
+-- 10 honest ledger entries (Z0-Z9) tracking phase-Z STRICT audit
+-- gate state — explicitly at .notStarted today, advances as phase-Z
+-- work ships.  The summary theorem enforces lockstep between per-
+-- gate state values and the aggregate snapshot: when any gate
+-- advances, the audit build breaks until the summary is updated to
+-- match.
+--
+-- Pattern: HONEST LEDGERS, not passing placeholder gates.  Each
+-- state value is declared explicitly at its current honest level;
+-- no `def gate : Bool := true` placeholder that pretends coverage.
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.PhaseZLedgerState
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.STRICT_Z0_MOTIVE_state
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.STRICT_Z1_CTX_state
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.STRICT_Z2_CONV_TYPE_state
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.STRICT_Z3_DECIDABLE_CONV_state
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.STRICT_Z4_CUBICAL_state
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.STRICT_Z5_HIT_state
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.STRICT_Z6_IRT_state
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.STRICT_Z7_GUARDED_state
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.STRICT_Z8_MODAL_state
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.STRICT_Z9_SMT_state
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.phaseZ_current_summary
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.phaseZ_notStarted_count
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.phaseZ_fullyShipped_count
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.phaseZ_counts_honest
 
 -- ─── V2-L1cert.12: existential preserves dim (#167) ─────────────────
 -- inferRawCellGeneral?_accepted_cellDimension_eq: when the
