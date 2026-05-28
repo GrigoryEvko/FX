@@ -4,6 +4,12 @@ import LeanFX2.Foundation.PolyCell.Core.RawTermRename
 /-! # Foundation/PolyCell/Core/SpineRenameStep
    — rename-shaped spine step helpers for structural preservation
 
+Per `M-spineRenamers-retro` (#379): this file is part of the
+~400-LoC spine-renamer substrate task home consumed by M2 #251
+(SR arm 17 beta) + M3 #252 (SR arm 18 cong) mutual block.
+Sibling files in the retro: `SpineSubstStep.lean`,
+`SpineConsStep.lean`, `StepHCCWrappers.lean`.
+
 This is the rename sibling of `SpineSubstStep.lean`.  It packages
 the certified-spine nil/cons cases against
 `foldChildren GenAlgebra.canonical rho`, so the future mutual

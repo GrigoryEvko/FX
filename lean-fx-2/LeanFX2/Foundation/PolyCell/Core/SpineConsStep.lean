@@ -4,6 +4,13 @@ import LeanFX2.Foundation.PolyCell.Core.GeneratorChildSpecsDim0
 /-! # Foundation/PolyCell/Core/SpineConsStep
    — non-recursive cons-step helper for the spine renamer/substituter
 
+Per `M-spineRenamers-retro` (#379): this file is the CRITICAL
+piece of the ~400-LoC spine-renamer substrate task home.  The
+cons-step boundary cast `consStep_dim0Trivial` (commit a240b68f)
+is the documented "blocker SOLVED" landing that unblocked the
+M2 #251 SR arm 17 beta mutual block.  Sibling files:
+`SpineRenameStep.lean`, `SpineSubstStep.lean`, `StepHCCWrappers.lean`.
+
 V2-L3.1 phase D step 34 (2026-05-27).  Ships the **spine-side
 inductive step** of the eventual structural-induction mutual block —
 packaged as a NON-RECURSIVE definition.

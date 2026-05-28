@@ -4,6 +4,11 @@ import LeanFX2.Foundation.PolyCell.Core.RawTermSubst
 /-! # Foundation/PolyCell/Core/SpineSubstStep
    — subst-shaped spine step helpers for the SR-beta mutual block
 
+Per `M-spineRenamers-retro` (#379): this file is part of the
+~400-LoC spine-renamer substrate task home consumed by M2 #251
+(SR arm 17 beta) + M3 #252 (SR arm 18 cong).  Sibling files:
+`SpineRenameStep.lean`, `SpineConsStep.lean`, `StepHCCWrappers.lean`.
+
 This file packages the two spine-side subst cases that the future
 `HasCertifiedCellDim0.preservedBySubst` mutual block needs:
 

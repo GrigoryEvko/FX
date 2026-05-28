@@ -4,6 +4,11 @@ import LeanFX2.Foundation.PolyCell.Core.CellNonVarStepSubstituter
 /-! # Foundation/PolyCell/Core/StepHCCWrappers
    — Prop-output HCC wrappers around the cell-step helpers
 
+Per `M-spineRenamers-retro` (#379): this file is part of the
+~400-LoC spine-renamer substrate task home consumed by M2 #251
+(SR arm 17 beta) + M3 #252 (SR arm 18 cong).  Sibling files:
+`SpineRenameStep.lean`, `SpineSubstStep.lean`, `SpineConsStep.lean`.
+
 V2-L3.1 phase D step 35 (2026-05-27).  Ships HCC (`HasCertifiedCellDim0`,
 Prop-valued) wrappers around the Type-valued cell-step helpers from
 `CellNonVarStepRenamer.lean` (step 32) and
