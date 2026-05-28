@@ -146,6 +146,7 @@ import LeanFX2.Foundation.PolyCell.Universe.UniverseFlag
 import LeanFX2.Foundation.PolyCell.Universe.LevelExprSimplify
 import LeanFX2.Foundation.PolyCell.NbE.NormalizerSignature
 import LeanFX2.Foundation.PolyCell.NbE.Quote
+import LeanFX2.Foundation.PolyCell.NbE.StrictNormalizer
 import LeanFX2.Foundation.PolyCell.Typed.TypingContext
 import LeanFX2.Foundation.PolyCell.Typed.TypingContextHelpers
 import LeanFX2.Foundation.PolyCell.Typed.HasType
@@ -3447,6 +3448,32 @@ namespace LeanFX2.Tools
 -- canonical identity quote satisfies the new round-trip contract on
 -- ANY NF input via the field's `rfl` filler.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.quoteRaw_round_trip_smoke
+
+-- ─── audit-A4 (#391): StrictNormalizer extension structure ───────────
+-- M19 #268 STRICT-COMPLEXITY contract extension over M11 Normalizer.
+-- Adds a polynomial complexity bound to the underlying normalizer:
+-- every NbE eval implementation that claims STRICT-COMPLEXITY
+-- compliance must construct a StrictNormalizer instance providing its
+-- polynomial degree + constant + bound function + polynomial-bound
+-- witness.
+--
+-- Per Mörtberg-Sterling 2024 (cubical Agda + cumulativity), NbE on
+-- the typed cubical core is polynomial-time decidable; this substrate
+-- captures that obligation for M12 #261 / M19 #268.
+--
+-- Pure contract ship — no Normalizer instances exist yet (M12 still
+-- pending), so the structure is empty of instances and exists purely
+-- to lock M19 into providing the polynomial bound up-front.
+--
+-- Five fields:
+--   normalizer (the M11 Normalizer)
+--   complexityDegree (k)
+--   complexityConstant (c)
+--   complexityBound (Nat → Nat)
+--   complexityBound_isPolynomial (witness: B(n) ≤ c·n^k + c)
+#assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.StrictNormalizer
+#assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.StrictNormalizer.fieldCount
+#assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.StrictNormalizer.fieldCount_correct
 
 -- ─── audit-A1 (#388): composeNormalizerWithQuote wrapper ────────────
 -- Closes Agent 1's 2026-05-28 gap-audit critical finding: the Quote
