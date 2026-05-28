@@ -320,6 +320,171 @@ theorem appLamOptionNone_isStronglyNormalizing_of_argument
     (bodySubst0Constant := fun _currentArgument => rfl)
     argumentTerminates
 
+/-- Beta redexes whose lambda body is a universe-code atom are strongly
+normalizing when the argument is strongly normalizing. -/
+theorem appLamUniverseCode_isStronglyNormalizing_of_argument
+    {scope : Nat} (levelCode : Nat) {argumentTerm : RawTerm scope}
+    (argumentTerminates : IsStronglyNormalizing argumentTerm) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam ()
+            (.childCons
+              (.mkGen .gen_universeCode levelCode .childNil :
+                RawTerm (scope + 1))
+              .childNil))
+          (.childCons argumentTerm .childNil)) :
+        RawTerm scope) :=
+  appLam_isStronglyNormalizing_of_normal_body_constant_contractum
+    (body :=
+      (.mkGen .gen_universeCode levelCode .childNil :
+        RawTerm (scope + 1)))
+    (contractum :=
+      (.mkGen .gen_universeCode levelCode .childNil : RawTerm scope))
+    (bodyHasNoStep := fun targetBody bodyStep =>
+      noStep_universeCode levelCode (targetTerm := targetBody) bodyStep)
+    (contractumTerminates := universeCode_isStronglyNormalizing levelCode)
+    (bodySubst0Constant := fun _currentArgument => rfl)
+    argumentTerminates
+
+/-- Beta redexes whose lambda body is cubical interval endpoint `0` are
+strongly normalizing when the argument is strongly normalizing. -/
+theorem appLamInterval0_isStronglyNormalizing_of_argument
+    {scope : Nat} {argumentTerm : RawTerm scope}
+    (argumentTerminates : IsStronglyNormalizing argumentTerm) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam ()
+            (.childCons
+              (.mkGen .gen_interval0 () .childNil : RawTerm (scope + 1))
+              .childNil))
+          (.childCons argumentTerm .childNil)) :
+        RawTerm scope) :=
+  appLam_isStronglyNormalizing_of_normal_body_constant_contractum
+    (body := (.mkGen .gen_interval0 () .childNil : RawTerm (scope + 1)))
+    (contractum := (.mkGen .gen_interval0 () .childNil : RawTerm scope))
+    (bodyHasNoStep := fun targetBody bodyStep =>
+      noStep_interval0 (targetTerm := targetBody) bodyStep)
+    (contractumTerminates := interval0_isStronglyNormalizing)
+    (bodySubst0Constant := fun _currentArgument => rfl)
+    argumentTerminates
+
+/-- Beta redexes whose lambda body is cubical interval endpoint `1` are
+strongly normalizing when the argument is strongly normalizing. -/
+theorem appLamInterval1_isStronglyNormalizing_of_argument
+    {scope : Nat} {argumentTerm : RawTerm scope}
+    (argumentTerminates : IsStronglyNormalizing argumentTerm) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam ()
+            (.childCons
+              (.mkGen .gen_interval1 () .childNil : RawTerm (scope + 1))
+              .childNil))
+          (.childCons argumentTerm .childNil)) :
+        RawTerm scope) :=
+  appLam_isStronglyNormalizing_of_normal_body_constant_contractum
+    (body := (.mkGen .gen_interval1 () .childNil : RawTerm (scope + 1)))
+    (contractum := (.mkGen .gen_interval1 () .childNil : RawTerm scope))
+    (bodyHasNoStep := fun targetBody bodyStep =>
+      noStep_interval1 (targetTerm := targetBody) bodyStep)
+    (contractumTerminates := interval1_isStronglyNormalizing)
+    (bodySubst0Constant := fun _currentArgument => rfl)
+    argumentTerminates
+
+/-- Beta redexes whose lambda body is the HIT circle base point are strongly
+normalizing when the argument is strongly normalizing. -/
+theorem appLamCircleBase_isStronglyNormalizing_of_argument
+    {scope : Nat} {argumentTerm : RawTerm scope}
+    (argumentTerminates : IsStronglyNormalizing argumentTerm) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam ()
+            (.childCons
+              (.mkGen .gen_circleBase () .childNil : RawTerm (scope + 1))
+              .childNil))
+          (.childCons argumentTerm .childNil)) :
+        RawTerm scope) :=
+  appLam_isStronglyNormalizing_of_normal_body_constant_contractum
+    (body := (.mkGen .gen_circleBase () .childNil : RawTerm (scope + 1)))
+    (contractum := (.mkGen .gen_circleBase () .childNil : RawTerm scope))
+    (bodyHasNoStep := fun targetBody bodyStep =>
+      noStep_circleBase (targetTerm := targetBody) bodyStep)
+    (contractumTerminates := circleBase_isStronglyNormalizing)
+    (bodySubst0Constant := fun _currentArgument => rfl)
+    argumentTerminates
+
+/-- Beta redexes whose lambda body is the HIT circle loop generator are
+strongly normalizing when the argument is strongly normalizing. -/
+theorem appLamCircleLoop_isStronglyNormalizing_of_argument
+    {scope : Nat} {argumentTerm : RawTerm scope}
+    (argumentTerminates : IsStronglyNormalizing argumentTerm) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam ()
+            (.childCons
+              (.mkGen .gen_circleLoop () .childNil : RawTerm (scope + 1))
+              .childNil))
+          (.childCons argumentTerm .childNil)) :
+        RawTerm scope) :=
+  appLam_isStronglyNormalizing_of_normal_body_constant_contractum
+    (body := (.mkGen .gen_circleLoop () .childNil : RawTerm (scope + 1)))
+    (contractum := (.mkGen .gen_circleLoop () .childNil : RawTerm scope))
+    (bodyHasNoStep := fun targetBody bodyStep =>
+      noStep_circleLoop (targetTerm := targetBody) bodyStep)
+    (contractumTerminates := circleLoop_isStronglyNormalizing)
+    (bodySubst0Constant := fun _currentArgument => rfl)
+    argumentTerminates
+
+/-- Beta redexes whose lambda body is a quantum-bit atom are strongly
+normalizing when the argument is strongly normalizing. -/
+theorem appLamQubit_isStronglyNormalizing_of_argument
+    {scope : Nat} {argumentTerm : RawTerm scope}
+    (argumentTerminates : IsStronglyNormalizing argumentTerm) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam ()
+            (.childCons
+              (.mkGen .gen_qubit () .childNil : RawTerm (scope + 1))
+              .childNil))
+          (.childCons argumentTerm .childNil)) :
+        RawTerm scope) :=
+  appLam_isStronglyNormalizing_of_normal_body_constant_contractum
+    (body := (.mkGen .gen_qubit () .childNil : RawTerm (scope + 1)))
+    (contractum := (.mkGen .gen_qubit () .childNil : RawTerm scope))
+    (bodyHasNoStep := fun targetBody bodyStep =>
+      noStep_qubit (targetTerm := targetBody) bodyStep)
+    (contractumTerminates := qubit_isStronglyNormalizing)
+    (bodySubst0Constant := fun _currentArgument => rfl)
+    argumentTerminates
+
+/-- Beta redexes whose lambda body is a hyperreal atom are strongly normalizing
+when the argument is strongly normalizing. -/
+theorem appLamHyperreal_isStronglyNormalizing_of_argument
+    {scope : Nat} {argumentTerm : RawTerm scope}
+    (argumentTerminates : IsStronglyNormalizing argumentTerm) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam ()
+            (.childCons
+              (.mkGen .gen_hyperreal () .childNil : RawTerm (scope + 1))
+              .childNil))
+          (.childCons argumentTerm .childNil)) :
+        RawTerm scope) :=
+  appLam_isStronglyNormalizing_of_normal_body_constant_contractum
+    (body := (.mkGen .gen_hyperreal () .childNil : RawTerm (scope + 1)))
+    (contractum := (.mkGen .gen_hyperreal () .childNil : RawTerm scope))
+    (bodyHasNoStep := fun targetBody bodyStep =>
+      noStep_hyperreal (targetTerm := targetBody) bodyStep)
+    (contractumTerminates := hyperreal_isStronglyNormalizing)
+    (bodySubst0Constant := fun _currentArgument => rfl)
+    argumentTerminates
+
 /-- Beta redexes are strongly normalizing when the lambda body and argument are
 strongly normalizing and every reduct pair has a strongly-normalizing beta
 contractum.
