@@ -2116,6 +2116,115 @@ theorem fromSteps_iotaListElimConsBranchCong_hasJoin {scope : Nat}
         (nilBranch := nilBranch) consStep).rightStep).HasJoin :=
   iotaListElimConsBranchCong_hasJoin consStep
 
+/-- Resolve every local branching whose left step is `listElim listNil` iota. -/
+theorem fromSteps_iotaListElimNilLeft_hasJoin {scope : Nat}
+    {nilBranch consBranch rightReduct : RawTerm scope}
+    (rightStep : Step
+      (.mkGen .gen_listElim ()
+        (.childCons
+          (.mkGen .gen_listNil () .childNil)
+          (.childCons nilBranch (.childCons consBranch .childNil))))
+      rightReduct) :
+    (fromSteps
+      (Step.iotaListElimNil
+        (nilBranch := nilBranch) (consBranch := consBranch))
+      rightStep).HasJoin := by
+  cases rightStep with
+  | iotaListElimNil =>
+      exact fromSteps_iotaListElimNilSameRoot_hasJoin nilBranch consBranch
+  | cong generator payload childStep =>
+      cases childStep with
+      | here restChildren scrutineeStep =>
+          cases scrutineeStep with
+          | cong scrutineeGenerator scrutineePayload scrutineeChildrenStep =>
+              cases scrutineeChildrenStep
+      | there scrutinee restStep =>
+          cases restStep with
+          | here consChildren nilStep =>
+              exact fromSteps_iotaListElimNilBranchCong_hasJoin nilStep
+          | there nilChild branchTailStep =>
+              cases branchTailStep with
+              | here emptyChildren consStep =>
+                  exact fromSteps_iotaListElimConsBranchCong_hasJoin consStep
+              | there consChild emptyStep =>
+                  cases emptyStep
+
+/-- Resolve every local branching whose right step is `listElim listNil` iota. -/
+theorem fromSteps_iotaListElimNilRight_hasJoin {scope : Nat}
+    {nilBranch consBranch leftReduct : RawTerm scope}
+    (leftStep : Step
+      (.mkGen .gen_listElim ()
+        (.childCons
+          (.mkGen .gen_listNil () .childNil)
+          (.childCons nilBranch (.childCons consBranch .childNil))))
+      leftReduct) :
+    (fromSteps
+      leftStep
+      (Step.iotaListElimNil
+        (nilBranch := nilBranch) (consBranch := consBranch))).HasJoin :=
+  hasJoin_swap (fromSteps_iotaListElimNilLeft_hasJoin leftStep)
+
+/-- Resolve every local branching whose left step is `listElim listCons` iota. -/
+theorem fromSteps_iotaListElimConsLeft_hasJoin {scope : Nat}
+    {headValue tailValue nilBranch consBranch rightReduct : RawTerm scope}
+    (rightStep : Step
+      (.mkGen .gen_listElim ()
+        (.childCons
+          (.mkGen .gen_listCons ()
+            (.childCons headValue (.childCons tailValue .childNil)))
+          (.childCons nilBranch (.childCons consBranch .childNil))))
+      rightReduct) :
+    (fromSteps
+      (Step.iotaListElimCons
+        (headVal := headValue) (tailVal := tailValue)
+        (nilBranch := nilBranch) (consBranch := consBranch))
+      rightStep).HasJoin := by
+  cases rightStep with
+  | iotaListElimCons =>
+      exact fromSteps_iotaListElimConsSameRoot_hasJoin
+        headValue tailValue nilBranch consBranch
+  | cong generator payload childStep =>
+      cases childStep with
+      | here restChildren scrutineeStep =>
+          cases scrutineeStep with
+          | cong scrutineeGenerator scrutineePayload scrutineeChildrenStep =>
+              cases scrutineeChildrenStep with
+              | here tailChildren headStep =>
+                  exact fromSteps_iotaListElimConsHeadCong_hasJoin headStep
+              | there headChild tailChildrenStep =>
+                  cases tailChildrenStep with
+                  | here emptyChildren tailStep =>
+                      exact fromSteps_iotaListElimConsTailCong_hasJoin tailStep
+                  | there tailChild emptyStep =>
+                      cases emptyStep
+      | there scrutinee restStep =>
+          cases restStep with
+          | here consChildren nilStep =>
+              exact fromSteps_iotaListElimConsNilBranchCong_hasJoin nilStep
+          | there nilChild branchTailStep =>
+              cases branchTailStep with
+              | here emptyChildren consStep =>
+                  exact fromSteps_iotaListElimConsConsBranchCong_hasJoin consStep
+              | there consChild emptyStep =>
+                  cases emptyStep
+
+/-- Resolve every local branching whose right step is `listElim listCons` iota. -/
+theorem fromSteps_iotaListElimConsRight_hasJoin {scope : Nat}
+    {headValue tailValue nilBranch consBranch leftReduct : RawTerm scope}
+    (leftStep : Step
+      (.mkGen .gen_listElim ()
+        (.childCons
+          (.mkGen .gen_listCons ()
+            (.childCons headValue (.childCons tailValue .childNil)))
+          (.childCons nilBranch (.childCons consBranch .childNil))))
+      leftReduct) :
+    (fromSteps
+      leftStep
+      (Step.iotaListElimCons
+        (headVal := headValue) (tailVal := tailValue)
+        (nilBranch := nilBranch) (consBranch := consBranch))).HasJoin :=
+  hasJoin_swap (fromSteps_iotaListElimConsLeft_hasJoin leftStep)
+
 /-- `fromSteps`-facing `optionMatch optionNone` iota / none-branch congruence arm. -/
 theorem fromSteps_iotaOptionMatchNoneBranchCong_hasJoin {scope : Nat}
     {noneBranch steppedNoneBranch someBranch : RawTerm scope}
