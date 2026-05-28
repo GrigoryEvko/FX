@@ -1176,6 +1176,54 @@ theorem fromSteps_iotaBoolFalseElseCong_hasJoin {scope : Nat}
         (thenBranch := thenBranch) elseStep).rightStep).HasJoin :=
   iotaBoolFalseElseCong_hasJoin elseStep
 
+/-- Resolve every local branching whose left step is `boolFalse` iota. -/
+theorem fromSteps_iotaBoolFalseLeft_hasJoin {scope : Nat}
+    {thenBranch elseBranch rightReduct : RawTerm scope}
+    (rightStep : Step
+      (.mkGen .gen_boolElim ()
+        (.childCons
+          (.mkGen .gen_boolFalse () .childNil)
+          (.childCons thenBranch (.childCons elseBranch .childNil))))
+      rightReduct) :
+    (fromSteps
+      (Step.iotaBoolFalse
+        (thenBranch := thenBranch) (elseBranch := elseBranch))
+      rightStep).HasJoin := by
+  cases rightStep with
+  | iotaBoolFalse =>
+      exact fromSteps_iotaBoolFalseSameRoot_hasJoin thenBranch elseBranch
+  | cong generator payload childStep =>
+      cases childStep with
+      | here restChildren scrutineeStep =>
+          cases scrutineeStep with
+          | cong scrutineeGenerator scrutineePayload scrutineeChildrenStep =>
+              cases scrutineeChildrenStep
+      | there scrutinee restStep =>
+          cases restStep with
+          | here elseChildren thenStep =>
+              exact fromSteps_iotaBoolFalseThenCong_hasJoin thenStep
+          | there thenChild branchTailStep =>
+              cases branchTailStep with
+              | here emptyChildren elseStep =>
+                  exact fromSteps_iotaBoolFalseElseCong_hasJoin elseStep
+              | there elseChild emptyStep =>
+                  cases emptyStep
+
+/-- Resolve every local branching whose right step is `boolFalse` iota. -/
+theorem fromSteps_iotaBoolFalseRight_hasJoin {scope : Nat}
+    {thenBranch elseBranch leftReduct : RawTerm scope}
+    (leftStep : Step
+      (.mkGen .gen_boolElim ()
+        (.childCons
+          (.mkGen .gen_boolFalse () .childNil)
+          (.childCons thenBranch (.childCons elseBranch .childNil))))
+      leftReduct) :
+    (fromSteps
+      leftStep
+      (Step.iotaBoolFalse
+        (thenBranch := thenBranch) (elseBranch := elseBranch))).HasJoin :=
+  hasJoin_swap (fromSteps_iotaBoolFalseLeft_hasJoin leftStep)
+
 /-- `fromSteps`-facing first-projection / selected first-component congruence arm. -/
 theorem fromSteps_iotaFstPairFirstCong_hasJoin {scope : Nat}
     {firstValue steppedFirstValue secondValue : RawTerm scope}
@@ -1198,6 +1246,56 @@ theorem fromSteps_iotaFstPairSecondCong_hasJoin {scope : Nat}
         (firstValue := firstValue) secondStep).rightStep).HasJoin :=
   iotaFstPairSecondCong_hasJoin secondStep
 
+/-- Resolve every local branching whose left step is first-projection iota. -/
+theorem fromSteps_iotaFstPairLeft_hasJoin {scope : Nat}
+    {firstValue secondValue rightReduct : RawTerm scope}
+    (rightStep : Step
+      (.mkGen .gen_fst ()
+        (.childCons
+          (.mkGen .gen_pair ()
+            (.childCons firstValue (.childCons secondValue .childNil)))
+          .childNil))
+      rightReduct) :
+    (fromSteps
+      (Step.iotaFstPair
+        (firstValue := firstValue) (secondValue := secondValue))
+      rightStep).HasJoin := by
+  cases rightStep with
+  | iotaFstPair =>
+      exact fromSteps_iotaFstPairSameRoot_hasJoin firstValue secondValue
+  | cong generator payload childStep =>
+      cases childStep with
+      | here restChildren pairStep =>
+          cases pairStep with
+          | cong pairGenerator pairPayload pairChildStep =>
+              cases pairChildStep with
+              | here secondChildren firstStep =>
+                  exact fromSteps_iotaFstPairFirstCong_hasJoin firstStep
+              | there firstChild secondChildrenStep =>
+                  cases secondChildrenStep with
+                  | here emptyChildren secondStep =>
+                      exact fromSteps_iotaFstPairSecondCong_hasJoin secondStep
+                  | there secondChild emptyStep =>
+                      cases emptyStep
+      | there pairChild emptyStep =>
+          cases emptyStep
+
+/-- Resolve every local branching whose right step is first-projection iota. -/
+theorem fromSteps_iotaFstPairRight_hasJoin {scope : Nat}
+    {firstValue secondValue leftReduct : RawTerm scope}
+    (leftStep : Step
+      (.mkGen .gen_fst ()
+        (.childCons
+          (.mkGen .gen_pair ()
+            (.childCons firstValue (.childCons secondValue .childNil)))
+          .childNil))
+      leftReduct) :
+    (fromSteps
+      leftStep
+      (Step.iotaFstPair
+        (firstValue := firstValue) (secondValue := secondValue))).HasJoin :=
+  hasJoin_swap (fromSteps_iotaFstPairLeft_hasJoin leftStep)
+
 /-- `fromSteps`-facing second-projection / discarded first-component congruence arm. -/
 theorem fromSteps_iotaSndPairFirstCong_hasJoin {scope : Nat}
     {firstValue steppedFirstValue secondValue : RawTerm scope}
@@ -1219,6 +1317,56 @@ theorem fromSteps_iotaSndPairSecondCong_hasJoin {scope : Nat}
       (iotaSndPairSecondCong
         (firstValue := firstValue) secondStep).rightStep).HasJoin :=
   iotaSndPairSecondCong_hasJoin secondStep
+
+/-- Resolve every local branching whose left step is second-projection iota. -/
+theorem fromSteps_iotaSndPairLeft_hasJoin {scope : Nat}
+    {firstValue secondValue rightReduct : RawTerm scope}
+    (rightStep : Step
+      (.mkGen .gen_snd ()
+        (.childCons
+          (.mkGen .gen_pair ()
+            (.childCons firstValue (.childCons secondValue .childNil)))
+          .childNil))
+      rightReduct) :
+    (fromSteps
+      (Step.iotaSndPair
+        (firstValue := firstValue) (secondValue := secondValue))
+      rightStep).HasJoin := by
+  cases rightStep with
+  | iotaSndPair =>
+      exact fromSteps_iotaSndPairSameRoot_hasJoin firstValue secondValue
+  | cong generator payload childStep =>
+      cases childStep with
+      | here restChildren pairStep =>
+          cases pairStep with
+          | cong pairGenerator pairPayload pairChildStep =>
+              cases pairChildStep with
+              | here secondChildren firstStep =>
+                  exact fromSteps_iotaSndPairFirstCong_hasJoin firstStep
+              | there firstChild secondChildrenStep =>
+                  cases secondChildrenStep with
+                  | here emptyChildren secondStep =>
+                      exact fromSteps_iotaSndPairSecondCong_hasJoin secondStep
+                  | there secondChild emptyStep =>
+                      cases emptyStep
+      | there pairChild emptyStep =>
+          cases emptyStep
+
+/-- Resolve every local branching whose right step is second-projection iota. -/
+theorem fromSteps_iotaSndPairRight_hasJoin {scope : Nat}
+    {firstValue secondValue leftReduct : RawTerm scope}
+    (leftStep : Step
+      (.mkGen .gen_snd ()
+        (.childCons
+          (.mkGen .gen_pair ()
+            (.childCons firstValue (.childCons secondValue .childNil)))
+          .childNil))
+      leftReduct) :
+    (fromSteps
+      leftStep
+      (Step.iotaSndPair
+        (firstValue := firstValue) (secondValue := secondValue))).HasJoin :=
+  hasJoin_swap (fromSteps_iotaSndPairLeft_hasJoin leftStep)
 
 /-- Resolver arm for `natElim natZero` iota competing with selected
 zero-branch congruence. -/
