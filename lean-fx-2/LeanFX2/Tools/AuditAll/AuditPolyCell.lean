@@ -134,6 +134,7 @@ import LeanFX2.Foundation.PolyCell.Core.FoldShiftGreaterThanOne
 import LeanFX2.Foundation.PolyCell.Core.StepStarLength
 import LeanFX2.Foundation.PolyCell.Core.ConvCongruence
 import LeanFX2.Foundation.PolyCell.Core.ConvSubstRename
+import LeanFX2.Foundation.PolyCell.NbE.DesignDecision
 
 namespace LeanFX2.Tools
 
@@ -3034,6 +3035,29 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.rename
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.weaken
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.subst0
+
+-- ─── M11-pre (#372): NbE design choice committed to HYBRID ──────────
+-- Resolves the spec/task contradiction surfaced by Agent 3 + Agent 4
+-- of the 5-agent gap audit:
+--
+--   M11 #260 task wording: HOAS ValueTerm semantic domain (Design A).
+--   polycell.md §3 P3.6/P3.7: values = NF predicates on RawTerm (B).
+--
+-- HYBRID commitment:
+--   * Raw layer follows polycell vision (Design B): eval = fold,
+--     values = NF predicates on RawTerm, quote = identity.
+--   * Typed layer with η adds a SEPARATE type-directed readback pass
+--     (M15a-e #359-#363), not a new semantic domain.
+--
+-- This collapses M13 (quote = id) and preserves polycell's "one
+-- inductive, one fold" uniformity at the raw layer while still
+-- supporting the typed-η requirement at M55a #364.
+--
+-- M11 #260 / M12 #261 / M13 #262 / M14 #263 task descriptions are
+-- updated via TaskUpdate to match.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.NbEDesignChoice
+#assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.NbEDesign.committed
+#assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.NbEDesign.committed_is_hybrid
 
 -- ─── V2-L1cert.12: existential preserves dim (#167) ─────────────────
 -- inferRawCellGeneral?_accepted_cellDimension_eq: when the
