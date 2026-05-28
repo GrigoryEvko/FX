@@ -408,6 +408,90 @@ theorem etaPathLamFunctionCong {scope : Nat}
     , Step.betaEtaStar.trans (Or.inl pathStep)
         (Step.betaEtaStar.refl _) ⟩
 
+/-- Eta-lambda versus an arbitrary under-binder function congruence step,
+provided that the reduct strengthens back to a source-scope reduct.
+
+This is the resolver-facing version of `etaLamFunctionCong`: it does not
+assume the under-binder step was syntactically built by `Step.weaken`.
+Instead, it consumes the exact strengthening evidence a future inversion
+lemma must produce. -/
+theorem etaLamStrengthenedFunctionCong {scope : Nat}
+    {innerFunction : RawTerm scope}
+    {updatedUnderBinder : RawTerm (scope + 1)}
+    {updatedFunction : RawTerm scope}
+    (underBinderStep :
+      Step (RawTerm.weaken innerFunction) updatedUnderBinder)
+    (strengthenSuccess :
+      RawTerm.strengthen updatedUnderBinder = some updatedFunction)
+    (functionStep : Step innerFunction updatedFunction) :
+    BetaEtaPairJoin
+      (Or.inl
+        (Step.cong .gen_lam ()
+          (StepChildren.here
+            (parentScope := scope) (headShift := 1) (restShifts := [])
+            (.childNil : RawTermChildren [] scope)
+            (Step.cong .gen_app ()
+              (StepChildren.here
+                (parentScope := scope + 1) (headShift := 0)
+                (restShifts := [0])
+                ((.childCons RawTerm.newestVar .childNil) :
+                  RawTermChildren [0] (scope + 1))
+                underBinderStep)))))
+      (Or.inr (Step.eta.etaLam innerFunction)) := by
+  have underBinderEq :
+      updatedUnderBinder = RawTerm.weaken updatedFunction :=
+    (RawTerm.strengthen_sound updatedUnderBinder updatedFunction
+      strengthenSuccess).symm
+  cases underBinderEq
+  exact
+    ⟨ updatedFunction
+    , Step.betaEtaStar.trans
+        (Or.inr (Step.eta.etaLam updatedFunction))
+        (Step.betaEtaStar.refl _)
+    , Step.betaEtaStar.trans (Or.inl functionStep)
+        (Step.betaEtaStar.refl _) ⟩
+
+/-- Eta-path-lambda sibling of `etaLamStrengthenedFunctionCong`.
+
+The premise shape is the same: an arbitrary step under the weakened path
+slot is accepted once strengthening identifies a source-scope reduct and
+the source-level path step is supplied. -/
+theorem etaPathLamStrengthenedFunctionCong {scope : Nat}
+    {innerPath : RawTerm scope}
+    {updatedUnderBinder : RawTerm (scope + 1)}
+    {updatedPath : RawTerm scope}
+    (underBinderStep :
+      Step (RawTerm.weaken innerPath) updatedUnderBinder)
+    (strengthenSuccess :
+      RawTerm.strengthen updatedUnderBinder = some updatedPath)
+    (pathStep : Step innerPath updatedPath) :
+    BetaEtaPairJoin
+      (Or.inl
+        (Step.cong .gen_pathLam ()
+          (StepChildren.here
+            (parentScope := scope) (headShift := 1) (restShifts := [])
+            (.childNil : RawTermChildren [] scope)
+            (Step.cong .gen_pathApp ()
+              (StepChildren.here
+                (parentScope := scope + 1) (headShift := 0)
+                (restShifts := [0])
+                ((.childCons RawTerm.newestVar .childNil) :
+                  RawTermChildren [0] (scope + 1))
+                underBinderStep)))))
+      (Or.inr (Step.eta.etaPathLam innerPath)) := by
+  have underBinderEq :
+      updatedUnderBinder = RawTerm.weaken updatedPath :=
+    (RawTerm.strengthen_sound updatedUnderBinder updatedPath
+      strengthenSuccess).symm
+  cases underBinderEq
+  exact
+    ⟨ updatedPath
+    , Step.betaEtaStar.trans
+        (Or.inr (Step.eta.etaPathLam updatedPath))
+        (Step.betaEtaStar.refl _)
+    , Step.betaEtaStar.trans (Or.inl pathStep)
+        (Step.betaEtaStar.refl _) ⟩
+
 end BetaEtaPairJoin
 
 /-- Current root eta kinds represented by `Step.eta`.

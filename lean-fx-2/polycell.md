@@ -5585,9 +5585,13 @@ occurrences in `glueIntro (glueElim g) g`, again as explicit audited
 betaEta joins.  The next binder slice adds a one-step weakening replay
 lemma and audited `lam`/`pathLam` joins for congruence steps that come
 from an actual source-level step in the underlying function/path term.
-The remaining #355 binder work is the harder arbitrary strengthened
-congruence/inversion case, followed by the actual betaEta local
-resolver; #356 remains eta/eta branchings.
+It also adds resolver-facing strengthened variants: if an arbitrary
+under-binder reduct strengthens back to a source-scope reduct and the
+corresponding source-level step is supplied, the betaEta join follows.
+The remaining #355 binder work is the inversion lemma that derives
+those strengthening/source-step witnesses from an arbitrary step under
+`weaken`, followed by the actual betaEta local resolver; #356 remains
+eta/eta branchings.
 Record, clock, and parametricity eta remain generator-frontier work,
 not placeholders in the current raw relation.
 
