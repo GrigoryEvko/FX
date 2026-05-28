@@ -69,6 +69,7 @@ import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaEither
 import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaOption
 import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaIdRefl
 import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaNatRec
+import LeanFX2.Foundation.PolyCell.Core.SubjectReductionEtaStructural
 import LeanFX2.Foundation.PolyCell.Core.HasCertifiedIntros
 import LeanFX2.Foundation.PolyCell.Core.HasCertifiedHonestyProbes
 import LeanFX2.Foundation.PolyCell.Core.SubstPreservationProbes
@@ -2342,6 +2343,11 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.betaEtaStar.ofStep
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.betaEtaStar.ofEta
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.betaEtaStar.trans_compose
+
+-- Eta-M8c: structural eta subject-reduction arms for current generators.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByEtaPair
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByEtaModIntro
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByEtaGlueIntro
 
 -- ─── V2-L3.1 phase C step 6 prep: Step inversion lemmas ──────────────
 -- Foundational inversion building blocks the SR theorem's cong arm

@@ -5555,6 +5555,16 @@ eta remain reserved until Phase Z7/Z8 extends the generator table with
 `gen_clockAbs`/`gen_clockApp` and `gen_paramAbs`/`gen_paramApp`;
 those slots must not be simulated by unrelated generators.
 
+Current shipped eta slice: `#350` adds the raw strengthening
+substrate, `#351` adds the current-generator raw `Step.eta` sibling
+relation, and `#352` adds audited subject-reduction arms for the
+structural eta sources that need no freshness side condition:
+`pair (fst p) (snd p)`, `modIntro (modElim m)`, and
+`glueIntro (glueElim g) g`.  Binder eta (`lam/app` and
+`pathLam/pathApp`) remains the next strengthening-consuming SR step;
+record, clock, and parametricity eta remain generator-frontier work,
+not placeholders in the current raw relation.
+
 ### Phase 1 — Allais Kit
 
 | Task | Status |
