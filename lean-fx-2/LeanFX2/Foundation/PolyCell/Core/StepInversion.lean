@@ -235,6 +235,28 @@ theorem Step.from_lam
       | there _ restStep =>
           exact absurd restStep StepChildren.no_step_at_empty_spine
 
+/-- **Inversion for `pathLam`-rooted Step.**
+
+Same binder shape as `from_lam`: the body lives at `scope + 1`, and
+the only beta+iota `Step` path from a `pathLam` root is congruence through
+that body.  Raw path eta is a sibling relation (`Step.eta`), not a `Step`
+constructor, so it does not appear in this inversion. -/
+theorem Step.from_pathLam
+    {scope : Nat} {body : RawTerm (scope + 1)} {target : RawTerm scope}
+    (reduction :
+      Step (.mkGen .gen_pathLam () (.childCons body .childNil)) target) :
+    ∃ (bodyAfter : RawTerm (scope + 1)),
+      target = .mkGen .gen_pathLam () (.childCons bodyAfter .childNil) ∧
+      Step body bodyAfter := by
+  cases reduction with
+  | cong _ _ childStep =>
+      cases childStep with
+      | here _ bodyStep =>
+          rename_i bodyAfter
+          exact ⟨bodyAfter, rfl, bodyStep⟩
+      | there _ restStep =>
+          exact absurd restStep StepChildren.no_step_at_empty_spine
+
 /-- **Inversion for `natSucc`-rooted Step.**
 
 If `Step (natSucc predecessor) target` then `target = natSucc
@@ -342,6 +364,28 @@ theorem Step.from_refl
       | there _ restStep =>
           exact absurd restStep StepChildren.no_step_at_empty_spine
 
+/-- **Inversion for `modIntro`-rooted Step.**
+
+The modal eta rule lives in `Step.eta`; beta+iota `Step` only reduces under
+the single modal payload child. -/
+theorem Step.from_modIntro
+    {scope : Nat} {modalTerm : RawTerm scope}
+    {target : RawTerm scope}
+    (reduction :
+      Step (.mkGen .gen_modIntro () (.childCons modalTerm .childNil))
+        target) :
+    ∃ (modalAfter : RawTerm scope),
+      target = .mkGen .gen_modIntro () (.childCons modalAfter .childNil) ∧
+      Step modalTerm modalAfter := by
+  cases reduction with
+  | cong _ _ childStep =>
+      cases childStep with
+      | here _ modalStep =>
+          rename_i modalAfter
+          exact ⟨modalAfter, rfl, modalStep⟩
+      | there _ restStep =>
+          exact absurd restStep StepChildren.no_step_at_empty_spine
+
 /-! ## 2-child value-constructor inversions
 
 For value ctors with TWO children (pair, listCons), the cong arm's
@@ -434,6 +478,40 @@ theorem Step.from_listCons
           | here _ tailValStep =>
               rename_i tailAfter
               exact Or.inr ⟨tailAfter, rfl, tailValStep⟩
+          | there _ restStep =>
+              exact absurd restStep StepChildren.no_step_at_empty_spine
+
+/-- **Inversion for `glueIntro`-rooted Step.**
+
+Glue eta is represented by `Step.eta`; beta+iota `Step` only reaches a
+`glueIntro` source by reducing one of its two same-scope children. -/
+theorem Step.from_glueIntro
+    {scope : Nat} {baseValue partialValue : RawTerm scope}
+    {target : RawTerm scope}
+    (reduction :
+      Step (.mkGen .gen_glueIntro ()
+              (.childCons baseValue (.childCons partialValue .childNil)))
+           target) :
+    (∃ (baseAfter : RawTerm scope),
+        target = .mkGen .gen_glueIntro ()
+          (.childCons baseAfter (.childCons partialValue .childNil)) ∧
+        Step baseValue baseAfter)
+    ∨
+    (∃ (partialAfter : RawTerm scope),
+        target = .mkGen .gen_glueIntro ()
+          (.childCons baseValue (.childCons partialAfter .childNil)) ∧
+        Step partialValue partialAfter) := by
+  cases reduction with
+  | cong _ _ childStep =>
+      cases childStep with
+      | here _ baseStep =>
+          rename_i baseAfter
+          exact Or.inl ⟨baseAfter, rfl, baseStep⟩
+      | there _ tailStep =>
+          cases tailStep with
+          | here _ partialStep =>
+              rename_i partialAfter
+              exact Or.inr ⟨partialAfter, rfl, partialStep⟩
           | there _ restStep =>
               exact absurd restStep StepChildren.no_step_at_empty_spine
 

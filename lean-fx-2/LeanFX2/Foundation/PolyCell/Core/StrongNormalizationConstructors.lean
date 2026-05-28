@@ -113,6 +113,23 @@ theorem lam_isStronglyNormalizing_of_body {scope : Nat}
     (fun parentStep => Step.from_lam parentStep)
     bodyTerminates
 
+/-- Cubical path abstraction is strongly normalizing when its body is strongly
+normalizing.  The body lives under one fresh interval binder, matching the
+lambda proof shape exactly at the raw substrate level. -/
+theorem pathLam_isStronglyNormalizing_of_body {scope : Nat}
+    {body : RawTerm (scope + 1)}
+    (bodyTerminates : IsStronglyNormalizing body) :
+    IsStronglyNormalizing
+      (.mkGen .gen_pathLam () (.childCons body .childNil) : RawTerm scope) :=
+  isStronglyNormalizing_of_oneChildCong
+    (childScope := scope + 1)
+    (parentScope := scope)
+    (fun currentBody =>
+      (.mkGen .gen_pathLam () (.childCons currentBody .childNil) :
+        RawTerm scope))
+    (fun parentStep => Step.from_pathLam parentStep)
+    bodyTerminates
+
 /-- Natural successor is strongly normalizing when its predecessor is strongly
 normalizing. -/
 theorem natSucc_isStronglyNormalizing_of_predecessor {scope : Nat}
@@ -198,6 +215,24 @@ theorem refl_isStronglyNormalizing_of_witness {scope : Nat}
     (fun parentStep => Step.from_refl parentStep)
     witnessTerminates
 
+/-- Modal introduction is strongly normalizing when its payload is strongly
+normalizing.  Raw modal eta remains in `Step.eta`; beta+iota `Step` only has
+congruence through this child. -/
+theorem modIntro_isStronglyNormalizing_of_value {scope : Nat}
+    {modalTerm : RawTerm scope}
+    (modalTerminates : IsStronglyNormalizing modalTerm) :
+    IsStronglyNormalizing
+      (.mkGen .gen_modIntro () (.childCons modalTerm .childNil) :
+        RawTerm scope) :=
+  isStronglyNormalizing_of_oneChildCong
+    (childScope := scope)
+    (parentScope := scope)
+    (fun currentModal =>
+      (.mkGen .gen_modIntro ()
+        (.childCons currentModal .childNil) : RawTerm scope))
+    (fun parentStep => Step.from_modIntro parentStep)
+    modalTerminates
+
 /-- Pairs are strongly normalizing when both components are strongly
 normalizing. -/
 theorem pair_isStronglyNormalizing_of_components {scope : Nat}
@@ -239,6 +274,28 @@ theorem listCons_isStronglyNormalizing_of_head_tail {scope : Nat}
     (fun parentStep => Step.from_listCons parentStep)
     headTerminates
     tailTerminates
+
+/-- Glue introduction is strongly normalizing when both the base and partial
+payloads are strongly normalizing. -/
+theorem glueIntro_isStronglyNormalizing_of_components {scope : Nat}
+    {baseValue partialValue : RawTerm scope}
+    (baseTerminates : IsStronglyNormalizing baseValue)
+    (partialTerminates : IsStronglyNormalizing partialValue) :
+    IsStronglyNormalizing
+      (.mkGen .gen_glueIntro ()
+        (.childCons baseValue (.childCons partialValue .childNil)) :
+        RawTerm scope) :=
+  isStronglyNormalizing_of_twoChildCong
+    (firstScope := scope)
+    (secondScope := scope)
+    (parentScope := scope)
+    (fun currentBase currentPartial =>
+      (.mkGen .gen_glueIntro ()
+        (.childCons currentBase (.childCons currentPartial .childNil)) :
+          RawTerm scope))
+    (fun parentStep => Step.from_glueIntro parentStep)
+    baseTerminates
+    partialTerminates
 
 end StepStar
 end LeanFX2.Foundation.PolyCell.Core

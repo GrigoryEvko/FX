@@ -802,6 +802,46 @@ theorem appLamRefl_isStronglyNormalizing_of_witness_argument_contractum
     argumentTerminates
     witnessContractumTerminates
 
+/-- Beta redexes whose lambda body is `modIntro value` are strongly
+normalizing when the modal payload, argument, and every payload contractum
+are strongly normalizing. -/
+theorem appLamModIntro_isStronglyNormalizing_of_value_argument_contractum
+    {scope : Nat} {modalTerm : RawTerm (scope + 1)}
+    {argumentTerm : RawTerm scope}
+    (modalTerminates : IsStronglyNormalizing modalTerm)
+    (argumentTerminates : IsStronglyNormalizing argumentTerm)
+    (modalContractumTerminates :
+      ∀ {currentModal : RawTerm (scope + 1)}
+        {currentArgument : RawTerm scope},
+        IsStronglyNormalizing currentModal →
+          IsStronglyNormalizing currentArgument →
+            IsStronglyNormalizing
+              (RawTerm.subst0 currentModal currentArgument)) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam ()
+            (.childCons
+              (.mkGen .gen_modIntro ()
+                (.childCons modalTerm .childNil))
+              .childNil))
+          (.childCons argumentTerm .childNil)) :
+        RawTerm scope) :=
+  appLamOneChildBody_isStronglyNormalizing_of_child_argument_contractum
+    (wrapBody := fun currentModal =>
+      (.mkGen .gen_modIntro ()
+        (.childCons currentModal .childNil) : RawTerm (scope + 1)))
+    (wrapContractum := fun modalContractum =>
+      (.mkGen .gen_modIntro ()
+        (.childCons modalContractum .childNil) : RawTerm scope))
+    (fromWrapStep := fun bodyStep => Step.from_modIntro bodyStep)
+    (wrapContractumTerminates := fun modalContractumTerminates =>
+      modIntro_isStronglyNormalizing_of_value modalContractumTerminates)
+    (subst0Wrap := fun _currentModal _currentArgument => rfl)
+    modalTerminates
+    argumentTerminates
+    modalContractumTerminates
+
 /-- Two-child constructor bodies preserve lambda-headed application strong
 normalization when both child contracta are strongly normalizing.
 
@@ -1100,6 +1140,63 @@ theorem appLamListCons_isStronglyNormalizing_of_head_tail_argument_contractum
     argumentTerminates
     headContractumTerminates
     tailContractumTerminates
+
+/-- Beta redexes whose lambda body is `glueIntro base partial` are strongly
+normalizing when both payloads, the argument, and both payload contracta are
+strongly normalizing. -/
+theorem appLamGlueIntro_isStronglyNormalizing_of_components_argument_contractum
+    {scope : Nat} {baseValue partialValue : RawTerm (scope + 1)}
+    {argumentTerm : RawTerm scope}
+    (baseTerminates : IsStronglyNormalizing baseValue)
+    (partialTerminates : IsStronglyNormalizing partialValue)
+    (argumentTerminates : IsStronglyNormalizing argumentTerm)
+    (baseContractumTerminates :
+      ∀ {currentBase : RawTerm (scope + 1)}
+        {currentArgument : RawTerm scope},
+        IsStronglyNormalizing currentBase →
+          IsStronglyNormalizing currentArgument →
+            IsStronglyNormalizing
+              (RawTerm.subst0 currentBase currentArgument))
+    (partialContractumTerminates :
+      ∀ {currentPartial : RawTerm (scope + 1)}
+        {currentArgument : RawTerm scope},
+        IsStronglyNormalizing currentPartial →
+          IsStronglyNormalizing currentArgument →
+            IsStronglyNormalizing
+              (RawTerm.subst0 currentPartial currentArgument)) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam ()
+            (.childCons
+              (.mkGen .gen_glueIntro ()
+                (.childCons baseValue
+                  (.childCons partialValue .childNil)))
+              .childNil))
+          (.childCons argumentTerm .childNil)) :
+        RawTerm scope) :=
+  appLamTwoChildBody_isStronglyNormalizing_of_children_argument_contractum
+    (wrapBody := fun currentBase currentPartial =>
+      (.mkGen .gen_glueIntro ()
+        (.childCons currentBase (.childCons currentPartial .childNil)) :
+        RawTerm (scope + 1)))
+    (wrapContractum := fun baseContractum partialContractum =>
+      (.mkGen .gen_glueIntro ()
+        (.childCons baseContractum
+          (.childCons partialContractum .childNil)) :
+        RawTerm scope))
+    (fromWrapStep := fun bodyStep => Step.from_glueIntro bodyStep)
+    (wrapContractumTerminates :=
+      fun baseContractumTerminates partialContractumTerminates =>
+        glueIntro_isStronglyNormalizing_of_components
+          baseContractumTerminates
+          partialContractumTerminates)
+    (subst0Wrap := fun _currentBase _currentPartial _currentArgument => rfl)
+    baseTerminates
+    partialTerminates
+    argumentTerminates
+    baseContractumTerminates
+    partialContractumTerminates
 
 /-- Beta redexes are strongly normalizing when the lambda body and argument are
 strongly normalizing and every reduct pair has a strongly-normalizing beta

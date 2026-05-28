@@ -2510,11 +2510,13 @@ namespace LeanFX2.Tools
 -- they need both here and there arms since the second child can
 -- also Step.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_lam
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_pathLam
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_natSucc
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_optionSome
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_eitherInl
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_eitherInr
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_refl
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_modIntro
 -- 2-child value-ctor inversions: pair, listCons.  Disjunctive
 -- conclusion (first child stepped OR second child stepped), because
 -- the cong arm's StepChildren can fire at the head (.here) or
@@ -2523,6 +2525,7 @@ namespace LeanFX2.Tools
 -- absurd-no-spine for there-then-there.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_pair
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_listCons
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.from_glueIntro
 -- Eliminator inversions (simplest case: 1-iota + cong, 1-child
 -- source spine).  `fst` and `snd` admit a 2-way disjunction:
 -- either iota fires (source's child is a literal pair, target is
@@ -2703,13 +2706,16 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.isStronglyNormalizing_of_oneChildCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.isStronglyNormalizing_of_twoChildCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.lam_isStronglyNormalizing_of_body
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.pathLam_isStronglyNormalizing_of_body
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.natSucc_isStronglyNormalizing_of_predecessor
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.optionSome_isStronglyNormalizing_of_value
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.eitherInl_isStronglyNormalizing_of_value
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.eitherInr_isStronglyNormalizing_of_value
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.refl_isStronglyNormalizing_of_witness
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.modIntro_isStronglyNormalizing_of_value
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.pair_isStronglyNormalizing_of_components
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.listCons_isStronglyNormalizing_of_head_tail
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.glueIntro_isStronglyNormalizing_of_components
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.IsNeutralApplicationHead
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.isNeutralApplicationHead_not_lam
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.isNeutralApplicationHead_step
@@ -2759,9 +2765,11 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.appLamEitherInl_isStronglyNormalizing_of_value_argument_contractum
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.appLamEitherInr_isStronglyNormalizing_of_value_argument_contractum
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.appLamRefl_isStronglyNormalizing_of_witness_argument_contractum
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.appLamModIntro_isStronglyNormalizing_of_value_argument_contractum
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.appLamTwoChildBody_isStronglyNormalizing_of_children_argument_contractum
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.appLamPair_isStronglyNormalizing_of_components_argument_contractum
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.appLamListCons_isStronglyNormalizing_of_head_tail_argument_contractum
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.appLamGlueIntro_isStronglyNormalizing_of_components_argument_contractum
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.appLam_isStronglyNormalizing_of_body_argument_contractum
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.fstPair_isStronglyNormalizing_of_components
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.sndPair_isStronglyNormalizing_of_components
