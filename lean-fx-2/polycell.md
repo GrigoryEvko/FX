@@ -5560,10 +5560,14 @@ substrate, `#351` adds the current-generator raw `Step.eta` sibling
 relation, and `#352` adds audited subject-reduction arms for the
 structural eta sources that need no freshness side condition:
 `pair (fst p) (snd p)`, `modIntro (modElim m)`, and
-`glueIntro (glueElim g) g`.  Binder eta (`lam/app` and
-`pathLam/pathApp`) remains the next strengthening-consuming SR step;
-record, clock, and parametricity eta remain generator-frontier work,
-not placeholders in the current raw relation.
+`glueIntro (glueElim g) g`.  `#353` adds audited
+subject-reduction arms for the current binder eta sources:
+`lam (app (weaken f) newestVar)` and
+`pathLam (pathApp (weaken p) newestVar)`.  The binder proof projects
+the certified weakened child, then cancels the weakening by singleton
+substitution (`weaken_subst_singleton`), avoiding any inverse-renamer
+assumption.  Record, clock, and parametricity eta remain
+generator-frontier work, not placeholders in the current raw relation.
 
 ### Phase 1 — Allais Kit
 
