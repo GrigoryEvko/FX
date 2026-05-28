@@ -2365,6 +2365,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.betaEtaStar.ofEtaStar
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CdLemmaStatementBetaEta
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CdLemmaStatementStepEta
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CdLemmaStatementEtaStep
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.ofReductsEqual
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.sameStep
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.swap
@@ -2383,6 +2385,11 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaModIntroRightStep
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaGlueIntroLeftStep
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaGlueIntroRightStep
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubst.lift_weaken_then_singleton_newest_pointwise
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.weaken_lam
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.weaken_eq_lam_implies_source_lam
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.subst0_lift_weaken_newestVar
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaLamBodyBeta
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaLamFunctionCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaPathLamFunctionCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaLamStrengthenedFunctionCong
@@ -2391,6 +2398,12 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaPathLamStrengthenedFunctionCongFromUnderStep
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaLamArbitraryUnderBinderCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaPathLamArbitraryUnderBinderCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaLamLeftStep
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaLamRightStep
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaPathLamLeftStep
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaPathLamRightStep
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.cd_lemma_step_eta
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.cd_lemma_eta_step
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.EtaStepKind
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.EtaStepKind.all
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.EtaStepKind.sourceGenerator

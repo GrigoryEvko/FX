@@ -5624,9 +5624,18 @@ leaving an eta-pair source into one resolver-facing arm.  The following
 non-binder eta roots: `etaModIntroLeftStep` / `etaModIntroRightStep`
 and `etaGlueIntroLeftStep` / `etaGlueIntroRightStep` cover every
 beta+iota `Step` leaving the current modal and Glue eta sources.
-Remaining #355 work: wire the lam/pathLam resolver-facing joins into
-the full `Step.betaEta` local Church-Rosser dispatcher / cd-lemma
-extension.  #356 remains eta/eta branchings.
+The final #355 slice wires the binder roots and mixed dispatcher:
+`RawTerm.weaken_lam`,
+`RawTerm.weaken_eq_lam_implies_source_lam`, and
+`RawTerm.subst0_lift_weaken_newestVar` isolate the eta-lambda root
+beta overlap, `etaLamLeftStep` / `etaLamRightStep` and
+`etaPathLamLeftStep` / `etaPathLamRightStep` package every beta+iota
+`Step` leaving the current binder eta sources, and
+`cd_lemma_step_eta` / `cd_lemma_eta_step` prove the mixed
+beta+iota-vs-root-eta local Church-Rosser quadrants for every current
+eta constructor.  This completes #355's honest boundary.  The full
+`CdLemmaStatementBetaEta` still needs the eta-vs-eta quadrant, which
+is #356.
 Record, clock, and parametricity eta remain generator-frontier work,
 not placeholders in the current raw relation.
 

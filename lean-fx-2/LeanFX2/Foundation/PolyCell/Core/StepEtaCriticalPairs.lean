@@ -1,4 +1,5 @@
 import LeanFX2.Foundation.PolyCell.Core.CdLemma
+import LeanFX2.Foundation.PolyCell.Core.StepInversion
 import LeanFX2.Foundation.PolyCell.Core.StepBetaEtaPreservesShape
 
 /-! # Foundation/PolyCell/Core/StepEtaCriticalPairs
@@ -19,6 +20,100 @@ fragment of the future betaEta local Church-Rosser theorem.
 -/
 
 namespace LeanFX2.Foundation.PolyCell.Core
+
+namespace RawTermSubst
+
+/-- Substituting the newest variable after a weakening lifted under one
+binder is pointwise identity.
+
+This is the computational heart of the eta-lambda beta-overlap: the
+inner lambda body is weakened under the eta binder, then beta substitutes
+the eta binder's newest variable back into the body. -/
+theorem lift_weaken_then_singleton_newest_pointwise {scope : Nat} :
+    RawTermSubst.PointwiseEq
+      (RawRenaming.thenSubst
+        (RawRenaming.lift (RawRenaming.weaken (scope := scope)))
+        (RawTermSubst.singleton
+          (RawTerm.newestVar (scope := scope))))
+      (RawTermSubst.identity (scope := scope + 1)) := by
+  intro position
+  cases position with
+  | mk positionValue positionBound =>
+      cases positionValue with
+      | zero => rfl
+      | succ _priorPosition => rfl
+
+end RawTermSubst
+
+namespace RawTerm
+
+/-- Weakening a lambda preserves the lambda head and lifts weakening under
+the lambda binder. -/
+theorem weaken_lam {scope : Nat} (body : RawTerm (scope + 1)) :
+    RawTerm.weaken
+        (RawTerm.mkGen .gen_lam () (.childCons body .childNil)) =
+      RawTerm.mkGen .gen_lam ()
+        (.childCons
+          (RawTerm.rename (RawRenaming.lift RawRenaming.weaken) body)
+          .childNil) := by
+  rw [RawTerm.weaken_eq_rename]
+  rw [RawTerm.rename_nonVar_reduces RawRenaming.weaken
+    (by decide : Generator.gen_lam ≠ .gen_var)]
+  rfl
+
+/-- If weakening a source-scope term has lambda shape, the source term was
+already a lambda and the weakened body is the binder-lifted weakening of its
+source body. -/
+theorem weaken_eq_lam_implies_source_lam {scope : Nat}
+    {innerFunction : RawTerm scope}
+    {weakenedBody : RawTerm (scope + 2)}
+    (weakenedEq :
+      RawTerm.weaken innerFunction =
+        RawTerm.mkGen .gen_lam () (.childCons weakenedBody .childNil)) :
+    ∃ body : RawTerm (scope + 1),
+      innerFunction =
+          RawTerm.mkGen .gen_lam () (.childCons body .childNil) ∧
+        weakenedBody =
+          RawTerm.rename (RawRenaming.lift RawRenaming.weaken) body := by
+  cases innerFunction with
+  | mkGen generator payload children =>
+      by_cases generatorIsVar : generator = .gen_var
+      · subst generator
+        dsimp [RawTerm.weaken, RawTerm.rename, fold] at weakenedEq
+        cases weakenedEq
+      · by_cases generatorIsLam : generator = .gen_lam
+        · subst generator
+          cases payload
+          cases children with
+          | childCons head rest =>
+              cases rest
+              rw [RawTerm.weaken_lam] at weakenedEq
+              injection weakenedEq with _ _ _ childrenEq
+              injection childrenEq with _ _ _ childHeadEq _
+              exact ⟨head, rfl, childHeadEq.symm⟩
+        · rw [RawTerm.weaken_eq_rename] at weakenedEq
+          rw [RawTerm.rename_nonVar_reduces RawRenaming.weaken
+            generatorIsVar] at weakenedEq
+          injection weakenedEq
+          exact False.elim (generatorIsLam (by assumption))
+
+/-- Beta-substitution of the newest variable cancels a one-binder-lifted
+weakening.
+
+Used by the eta-lambda beta-overlap diamond. -/
+theorem subst0_lift_weaken_newestVar {scope : Nat}
+    (body : RawTerm (scope + 1)) :
+    RawTerm.subst0
+        (RawTerm.rename (RawRenaming.lift RawRenaming.weaken) body)
+        (RawTerm.newestVar (scope := scope)) =
+      body := by
+  unfold RawTerm.subst0
+  rw [RawTerm.rename_subst_commute]
+  rw [RawTerm.subst_pointwise
+    RawTermSubst.lift_weaken_then_singleton_newest_pointwise body]
+  exact RawTerm.subst_identity_apply body
+
+end RawTerm
 
 namespace Step
 namespace betaEtaStar
@@ -66,6 +161,23 @@ def CdLemmaStatementBetaEta : Prop :=
     (leftStep : Step.betaEta sourceTerm leftReduct) →
     (rightStep : Step.betaEta sourceTerm rightReduct) →
     BetaEtaPairJoin leftStep rightStep
+
+/-- Mixed local Church-Rosser statement for a beta+iota step against a
+root-eta step.  The eta-vs-eta quadrant is deliberately separate and belongs
+to η-M8g (#356). -/
+def CdLemmaStatementStepEta : Prop :=
+  ∀ {scope : Nat} {sourceTerm leftReduct rightReduct : RawTerm scope},
+    (leftStep : Step sourceTerm leftReduct) →
+    (rightStep : Step.eta sourceTerm rightReduct) →
+    BetaEtaPairJoin (Or.inl leftStep) (Or.inr rightStep)
+
+/-- Reverse mixed local Church-Rosser statement: root eta against a
+beta+iota step. -/
+def CdLemmaStatementEtaStep : Prop :=
+  ∀ {scope : Nat} {sourceTerm leftReduct rightReduct : RawTerm scope},
+    (leftStep : Step.eta sourceTerm leftReduct) →
+    (rightStep : Step sourceTerm rightReduct) →
+    BetaEtaPairJoin (Or.inr leftStep) (Or.inl rightStep)
 
 namespace BetaEtaPairJoin
 
@@ -571,6 +683,39 @@ theorem etaGlueIntroRightStep {scope : Nat}
       (Or.inl rightStep) :=
   swap (etaGlueIntroLeftStep rightStep)
 
+/-- Eta-lambda versus beta at the eta body's application root.
+
+When the eta-expanded function is itself a lambda, the body
+`app (weaken (lam body)) newestVar` beta-reduces under the outer eta
+lambda to `body`, so the whole reduct is definitionally joined with
+the root eta branch after the substitution-cancellation lemma above. -/
+theorem etaLamBodyBeta {scope : Nat}
+    (body : RawTerm (scope + 1)) :
+    BetaEtaPairJoin
+      (Or.inl
+        (Step.cong .gen_lam ()
+          (StepChildren.here
+            (parentScope := scope) (headShift := 1) (restShifts := [])
+            (.childNil : RawTermChildren [] scope)
+            (Step.beta
+              (body :=
+                RawTerm.rename (RawRenaming.lift RawRenaming.weaken)
+                  body)
+              (arg := RawTerm.newestVar (scope := scope))))))
+      (Or.inr
+        (Step.eta.etaLam
+          (RawTerm.mkGen .gen_lam () (.childCons body .childNil)))) := by
+  apply ofReductsEqual
+  change
+    (RawTerm.mkGen .gen_lam ()
+      (.childCons
+        (RawTerm.subst0
+          (RawTerm.rename (RawRenaming.lift RawRenaming.weaken) body)
+          (RawTerm.newestVar (scope := scope)))
+        .childNil)) =
+      (RawTerm.mkGen .gen_lam () (.childCons body .childNil))
+  rw [RawTerm.subst0_lift_weaken_newestVar]
+
 /-- Eta-lambda versus a beta+iota step replayed through the weakened
 function occurrence.
 
@@ -857,6 +1002,122 @@ theorem etaPathLamArbitraryUnderBinderCong {scope : Nat}
       (Or.inr (Step.eta.etaPathLam innerPath)) :=
   etaPathLamStrengthenedFunctionCongFromUnderStep underBinderStep
     (Step.weaken_strengthenTarget underBinderStep)
+
+/-- Resolver-facing eta-lambda arm for every beta+iota step leaving an
+eta-lambda source.
+
+The application body has three possible one-step exits: beta at the
+application root, congruence in the weakened function slot, or congruence in
+the newest-variable argument.  The root-beta case uses the lambda-shape
+inversion for weakened terms plus the lifted-weakening cancellation lemma; the
+argument case is impossible because the newest variable has an empty child
+spine. -/
+theorem etaLamLeftStep {scope : Nat}
+    {innerFunction leftReduct : RawTerm scope}
+    (leftStep : Step (RawTerm.etaLamSource innerFunction) leftReduct) :
+    BetaEtaPairJoin
+      (Or.inl leftStep)
+      (Or.inr (Step.eta.etaLam innerFunction)) := by
+  obtain ⟨bodyAfter, leftReductEq, bodyStep⟩ :=
+    Step.from_lam leftStep
+  cases Step.from_app bodyStep with
+  | inl betaBranch =>
+      obtain ⟨weakenedBody, weakenedFunctionEq, bodyAfterEq⟩ :=
+        betaBranch
+      obtain ⟨body, innerFunctionEq, weakenedBodyEq⟩ :=
+        RawTerm.weaken_eq_lam_implies_source_lam weakenedFunctionEq
+      apply ofReductsEqual
+      rw [leftReductEq, bodyAfterEq, innerFunctionEq, weakenedBodyEq]
+      rw [RawTerm.subst0_lift_weaken_newestVar]
+  | inr congruenceBranch =>
+      cases congruenceBranch with
+      | inl functionBranch =>
+          obtain ⟨updatedUnderBinder, bodyAfterEq, underBinderStep⟩ :=
+            functionBranch
+          cases leftReductEq
+          cases bodyAfterEq
+          exact etaLamArbitraryUnderBinderCong underBinderStep
+      | inr argumentBranch =>
+          obtain ⟨_argumentAfter, _bodyAfterEq, argumentStep⟩ :=
+            argumentBranch
+          cases argumentStep with
+          | cong _ _ childStep =>
+              cases childStep
+
+/-- Reverse orientation of `etaLamLeftStep`. -/
+theorem etaLamRightStep {scope : Nat}
+    {innerFunction rightReduct : RawTerm scope}
+    (rightStep : Step (RawTerm.etaLamSource innerFunction) rightReduct) :
+    BetaEtaPairJoin
+      (Or.inr (Step.eta.etaLam innerFunction))
+      (Or.inl rightStep) :=
+  swap (etaLamLeftStep rightStep)
+
+/-- Resolver-facing eta-path-lambda arm for every beta+iota step leaving a
+path-eta source.
+
+There is no raw `pathApp` beta constructor in the current `Step` relation, so
+the only live branch is congruence in the weakened path slot.  A step in the
+newest-variable argument is impossible because the variable has no children. -/
+theorem etaPathLamLeftStep {scope : Nat}
+    {innerPath leftReduct : RawTerm scope}
+    (leftStep : Step (RawTerm.etaPathLamSource innerPath) leftReduct) :
+    BetaEtaPairJoin
+      (Or.inl leftStep)
+      (Or.inr (Step.eta.etaPathLam innerPath)) := by
+  cases leftStep with
+  | cong _ _ pathLamChildrenStep =>
+      cases pathLamChildrenStep with
+      | here _ bodyStep =>
+          cases bodyStep with
+          | cong _ _ pathAppChildrenStep =>
+              cases pathAppChildrenStep with
+              | here _ underBinderStep =>
+                  exact etaPathLamArbitraryUnderBinderCong underBinderStep
+              | there _ tailStep =>
+                  cases tailStep with
+                  | here _ argumentStep =>
+                      cases argumentStep with
+                      | cong _ _ childStep =>
+                          cases childStep
+                  | there _ emptyStep =>
+                      cases emptyStep
+      | there _ emptyStep =>
+          cases emptyStep
+
+/-- Reverse orientation of `etaPathLamLeftStep`. -/
+theorem etaPathLamRightStep {scope : Nat}
+    {innerPath rightReduct : RawTerm scope}
+    (rightStep : Step (RawTerm.etaPathLamSource innerPath) rightReduct) :
+    BetaEtaPairJoin
+      (Or.inr (Step.eta.etaPathLam innerPath))
+      (Or.inl rightStep) :=
+  swap (etaPathLamLeftStep rightStep)
+
+/-- Mixed beta+iota-vs-eta local Church-Rosser dispatcher for all current
+root eta rules.
+
+This is the honest M8f cd-lemma extension: every beta+iota `Step` leaving an
+eta source is joined with the corresponding root eta contraction.  The
+eta-vs-eta quadrant remains a separate M8g task. -/
+theorem cd_lemma_step_eta : CdLemmaStatementStepEta := by
+  intro scope sourceTerm leftReduct rightReduct leftStep rightStep
+  cases rightStep with
+  | etaLam innerFunction =>
+      exact etaLamLeftStep leftStep
+  | etaPair pairTerm =>
+      exact etaPairLeftStep leftStep
+  | etaPathLam innerPath =>
+      exact etaPathLamLeftStep leftStep
+  | etaModIntro modalTerm =>
+      exact etaModIntroLeftStep leftStep
+  | etaGlueIntro gluedTerm =>
+      exact etaGlueIntroLeftStep leftStep
+
+/-- Reverse mixed eta-vs-beta+iota local Church-Rosser dispatcher. -/
+theorem cd_lemma_eta_step : CdLemmaStatementEtaStep := by
+  intro scope sourceTerm leftReduct rightReduct leftStep rightStep
+  exact swap (cd_lemma_step_eta rightStep leftStep)
 
 end BetaEtaPairJoin
 
