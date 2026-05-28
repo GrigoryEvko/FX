@@ -2592,6 +2592,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.natRecZero_isStronglyNormalizing_of_branches
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.listElimNil_isStronglyNormalizing_of_branches
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.optionMatchNone_isStronglyNormalizing_of_branches
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.optionMatchSome_isStronglyNormalizing_of_neutral_someBranch
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.localJoin_of_cdLemma
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.joinStepWithReflRight
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.joinStepWithSingleRight

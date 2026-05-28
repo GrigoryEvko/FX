@@ -1,4 +1,4 @@
-import LeanFX2.Foundation.PolyCell.Core.StrongNormalizationConstructors
+import LeanFX2.Foundation.PolyCell.Core.StrongNormalizationNeutral
 
 /-! # Foundation/PolyCell/Core/StrongNormalizationRedexes
     - first SN closure proofs for root-reducing redexes
@@ -728,6 +728,158 @@ theorem optionMatchNone_isStronglyNormalizing_of_branches {scope : Nat}
                         (Or.inr ⟨someAfter, targetEq, someStepInner⟩))
     noneTerminates
     someTerminates
+
+/-- Option matching on `some value` is strongly normalizing when the selected
+some-branch is a neutral function head.
+
+The root iota reduct is the one-argument application `app someBranch value`.
+This theorem is deliberately not general application closure: beta is ruled out
+only by the explicit neutral-head invariant supplied for `someBranch`. -/
+theorem optionMatchSome_isStronglyNormalizing_of_neutral_someBranch
+    {scope : Nat} (isNeutralHead : RawTerm scope → Prop)
+    {value noneBranch someBranch : RawTerm scope}
+    (valueTerminates : IsStronglyNormalizing value)
+    (noneTerminates : IsStronglyNormalizing noneBranch)
+    (someBranchIsNeutral : isNeutralHead someBranch)
+    (neutralHeadIsNotLambda :
+      ∀ {currentHead : RawTerm scope}, isNeutralHead currentHead →
+        ∀ lambdaBody : RawTerm (scope + 1),
+          currentHead ≠ .mkGen .gen_lam () (.childCons lambdaBody .childNil))
+    (neutralHeadStep :
+      ∀ {currentHead targetHead : RawTerm scope},
+        isNeutralHead currentHead →
+          Step currentHead targetHead →
+            isNeutralHead targetHead)
+    (someTerminates : IsStronglyNormalizing someBranch) :
+    IsStronglyNormalizing
+      (.mkGen .gen_optionMatch ()
+        (.childCons
+          (.mkGen .gen_optionSome () (.childCons value .childNil))
+          (.childCons noneBranch (.childCons someBranch .childNil))) :
+        RawTerm scope) :=
+  (Acc.ndrec
+    (r := StepSuccessor)
+    (C := fun currentSomeBranch =>
+      isNeutralHead currentSomeBranch →
+        ∀ {currentValue : RawTerm scope},
+          IsStronglyNormalizing currentValue →
+            ∀ {currentNoneBranch : RawTerm scope},
+              IsStronglyNormalizing currentNoneBranch →
+                IsStronglyNormalizing
+                  (.mkGen .gen_optionMatch ()
+                    (.childCons
+                      (.mkGen .gen_optionSome ()
+                        (.childCons currentValue .childNil))
+                      (.childCons currentNoneBranch
+                        (.childCons currentSomeBranch .childNil))) :
+                    RawTerm scope))
+    (m := fun currentSomeBranch currentSomeBranchSuccessors someBranchIH => by
+      intro currentSomeBranchIsNeutral currentValue currentValueTerminates
+        currentNoneBranch currentNoneTerminates
+      exact
+        Acc.ndrec
+          (r := StepSuccessor)
+          (C := fun innerValue =>
+            ∀ {innerNoneBranch : RawTerm scope},
+              IsStronglyNormalizing innerNoneBranch →
+                IsStronglyNormalizing
+                  (.mkGen .gen_optionMatch ()
+                    (.childCons
+                      (.mkGen .gen_optionSome ()
+                        (.childCons innerValue .childNil))
+                      (.childCons innerNoneBranch
+                        (.childCons currentSomeBranch .childNil))) :
+                    RawTerm scope))
+          (m := fun currentValue currentValueSuccessors valueIH => by
+            intro currentNoneBranch currentNoneTerminates
+            exact
+              Acc.ndrec
+                (r := StepSuccessor)
+                (C := fun innerNoneBranch =>
+                  IsStronglyNormalizing
+                    (.mkGen .gen_optionMatch ()
+                      (.childCons
+                        (.mkGen .gen_optionSome ()
+                          (.childCons currentValue .childNil))
+                        (.childCons innerNoneBranch
+                          (.childCons currentSomeBranch .childNil))) :
+                      RawTerm scope))
+                (m := fun currentNoneBranch currentNoneSuccessors noneIH =>
+                  Acc.intro
+                    (.mkGen .gen_optionMatch ()
+                      (.childCons
+                        (.mkGen .gen_optionSome ()
+                          (.childCons currentValue .childNil))
+                        (.childCons currentNoneBranch
+                          (.childCons currentSomeBranch .childNil))) :
+                      RawTerm scope)
+                    (fun targetTerm parentStep => by
+                      cases Step.from_optionMatch parentStep with
+                      | inl noneBranchStep =>
+                          obtain ⟨scrutineeEq, _⟩ := noneBranchStep
+                          cases scrutineeEq
+                      | inr restAfterNone =>
+                          cases restAfterNone with
+                          | inl someBranchStep =>
+                              obtain ⟨someValue, scrutineeEq, targetEq⟩ :=
+                                someBranchStep
+                              cases scrutineeEq
+                              rw [targetEq]
+                              exact
+                                applyRawArgumentsFrom_isStronglyNormalizing_of_neutral_head_arguments
+                                  (isNeutralHead := isNeutralHead)
+                                  currentSomeBranchIsNeutral
+                                  neutralHeadIsNotLambda
+                                  neutralHeadStep
+                                  (Acc.intro currentSomeBranch
+                                    currentSomeBranchSuccessors)
+                                  (AllStronglyNormalizingArguments.cons
+                                    (Acc.intro currentValue
+                                      currentValueSuccessors)
+                                    AllStronglyNormalizingArguments.nil)
+                          | inr restAfterSome =>
+                              cases restAfterSome with
+                              | inl scrutineeBranch =>
+                                  obtain
+                                    ⟨scrutineeAfter, targetEq,
+                                      scrutineeStep⟩ := scrutineeBranch
+                                  obtain
+                                    ⟨valueAfter, scrutineeAfterEq,
+                                      valueStep⟩ :=
+                                      Step.from_optionSome scrutineeStep
+                                  rw [targetEq, scrutineeAfterEq]
+                                  exact valueIH valueAfter valueStep
+                                    (Acc.intro currentNoneBranch
+                                      currentNoneSuccessors)
+                              | inr restAfterScrutinee =>
+                                  cases restAfterScrutinee with
+                                  | inl noneStep =>
+                                      obtain
+                                        ⟨noneAfter, targetEq,
+                                          noneStepInner⟩ := noneStep
+                                      rw [targetEq]
+                                      exact noneIH noneAfter noneStepInner
+                                  | inr someStep =>
+                                      obtain
+                                        ⟨someAfter, targetEq,
+                                          someStepInner⟩ := someStep
+                                      rw [targetEq]
+                                      exact
+                                        someBranchIH someAfter someStepInner
+                                          (neutralHeadStep
+                                            currentSomeBranchIsNeutral
+                                            someStepInner)
+                                          (Acc.intro currentValue
+                                            currentValueSuccessors)
+                                          (Acc.intro currentNoneBranch
+                                            currentNoneSuccessors)))
+                currentNoneTerminates)
+          currentValueTerminates
+          currentNoneTerminates)
+    someTerminates)
+    someBranchIsNeutral
+    valueTerminates
+    noneTerminates
 
 end StepStar
 end LeanFX2.Foundation.PolyCell.Core
