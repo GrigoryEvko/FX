@@ -132,6 +132,7 @@ import LeanFX2.Foundation.PolyCell.Core.SpineConsStep
 import LeanFX2.Foundation.PolyCell.Core.StepHCCWrappers
 import LeanFX2.Foundation.PolyCell.Core.FoldShiftGreaterThanOne
 import LeanFX2.Foundation.PolyCell.Core.StepStarLength
+import LeanFX2.Foundation.PolyCell.Core.ConvCongruence
 
 namespace LeanFX2.Tools
 
@@ -2977,6 +2978,40 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStarN.rename
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStarN.subst
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStarN.identity_lam_beta_unit_smoke
+
+-- ─── M-Conv-cong (#369): generic Conv congruence lifter ─────────────
+-- The 5-agent gap audit found ZERO per-generator Conv-cong rules
+-- exist (only 3 hand-coded StepStar-level cong helpers for 194
+-- generators).  This block ships:
+--
+--   * ConvChildren: pointwise Conv on a child spine (inductive).
+--   * ConvChildren.symm: pointwise symmetry.
+--   * ConvChildren.exists_join: bridge to children-level Join via
+--     StepChildrenStar.here + .there + .trans_compose.
+--   * Conv.ofChildren: ONE generic congruence lifter covering all
+--     194 generators (the PolyCell uniformity payoff).
+--   * 11 per-generator congruence corollaries (app, lam, pair,
+--     fst, snd, natSucc, listCons, optionSome, eitherInl, eitherInr,
+--     gen_refl).
+--
+-- Unblocks M46 #295 ★ Typed SR + M47 #296 typed weakening + M-Conv-
+-- subst-rename #370 + M-Conv-equivalence #371 + M55a #364 typed
+-- β+η Decidable Conv.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.ConvChildren
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.ConvChildren.symm
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.ConvChildren.exists_join
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.ofChildren
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.app_cong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.lam_cong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.pair_cong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.fst_cong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.snd_cong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.natSucc_cong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.listCons_cong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.optionSome_cong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.eitherInl_cong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.eitherInr_cong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.gen_refl_cong
 
 -- ─── V2-L1cert.12: existential preserves dim (#167) ─────────────────
 -- inferRawCellGeneral?_accepted_cellDimension_eq: when the
