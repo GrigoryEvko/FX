@@ -3659,6 +3659,49 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.fxSconing_hasNoParametricityTransferTheorem
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.fxSconing_hasNoBKSMetatheoryPackage
 
+-- ─── audit-A12 (#395): V2-L4.5 SconingObject scaffolding expansion ──
+-- Closes Agent 1's 2026-05-28 gap-audit finding: the V2-L4.5 #214
+-- ship audit-gated the SconingConstructionLevel ledger + fx-witness
+-- ledger entries, but left 13 sconing-substrate scaffolding decls
+-- silently un-gated.  This block extends coverage to the FULL
+-- `InternalSconing.lean` surface.
+--
+-- Sibling to audit-A11 #394 (V2-L5.5 expansion).  Same `comm -23`
+-- pattern verifies the gap: sorted source decls minus sorted gated
+-- decls yields exactly the 13 missing entries.
+--
+-- Categories:
+-- * 3 SconingObject decls (object structure + project + tautological).
+-- * 3 SconingMorphism decls (morphism structure + comp + identity).
+-- * 1 GlobalSections concept.
+-- * 2 lift / pullback decls (SconingLift + SconingPullbackLift).
+-- * 1 preservation witness (SconingPreservation).
+-- * 3 extraction records (CanonicityExtraction + NormalizationExtraction
+--   + ParametricityExtraction).
+
+-- SconingObject (3 decls)
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.SconingObject
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.SconingObject.project
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.SconingObject.tautological
+
+-- SconingMorphism (3 decls)
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.SconingMorphism
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.SconingMorphism.identity
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.SconingMorphism.comp
+
+-- GlobalSections + lift/pullback (3 decls)
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.GlobalSections
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.SconingLift
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.SconingPullbackLift
+
+-- Preservation witness
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.SconingPreservation
+
+-- Extraction records (3 decls — canonicity / normalization / parametricity)
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.CanonicityExtraction
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.NormalizationExtraction
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Tier0.ParametricityExtraction
+
 -- ─── V2-L5.5 (#219): ProfileExtension scaffolding audit-gate sweep ──
 -- ~38 declarations in ProfileExtension.lean ship the V2-L5 extension-
 -- calculus scaffolding for the demonstration η extension.  All
