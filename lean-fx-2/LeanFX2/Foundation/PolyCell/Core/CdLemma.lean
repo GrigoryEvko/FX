@@ -146,6 +146,36 @@ theorem hasJoin_swap {scope : Nat}
 
 end LocalStepBranching
 
+namespace StepPairJoin
+
+/-- Consume an M6 diamond for the local branching induced by arbitrary
+`cd_lemma` inputs.
+
+This is the direct bridge from the eventual theorem's raw `Step` arguments to
+the proof-relevant M6 filler templates. -/
+theorem ofLocalDiamondFromSteps {scope : Nat}
+    {sourceTerm leftReduct rightReduct : RawTerm scope}
+    {leftStep : Step sourceTerm leftReduct}
+    {rightStep : Step sourceTerm rightReduct}
+    (diamond :
+      LocalDiamond (LocalStepBranching.fromSteps leftStep rightStep)) :
+    StepPairJoin leftStep rightStep :=
+  ⟨diamond.commonReduct, diamond.leftChain, diamond.rightChain⟩
+
+/-- Consume an M6 diamond in the opposite orientation from arbitrary
+`cd_lemma` inputs. -/
+theorem ofLocalDiamondFromSteps_swap {scope : Nat}
+    {sourceTerm leftReduct rightReduct : RawTerm scope}
+    {leftStep : Step sourceTerm leftReduct}
+    {rightStep : Step sourceTerm rightReduct}
+    (diamond :
+      LocalDiamond (LocalStepBranching.fromSteps rightStep leftStep)) :
+    StepPairJoin leftStep rightStep :=
+  StepPairJoin.swap
+    ⟨diamond.commonReduct, diamond.leftChain, diamond.rightChain⟩
+
+end StepPairJoin
+
 namespace LocalDiamond
 
 /-- Every M6 local diamond supplies the existential join shape M7 needs. -/
@@ -170,5 +200,31 @@ theorem toStepPairJoin_swap {scope : Nat}
   StepPairJoin.swap diamond.toStepPairJoin
 
 end LocalDiamond
+
+namespace CdLemmaStatement
+
+/-- Reduce the full M7 target to a resolver over packaged local branchings.
+
+The future `cd_lemma` proof should supply `resolveBranching` by case analysis
+over the M6 critical-pair dispatcher plus structural congruence recursion; this
+theorem fixes the final theorem shape without claiming that dispatcher exists
+yet. -/
+theorem ofLocalBranchingResolver
+    (resolveBranching :
+      ∀ {scope : Nat} (branching : LocalStepBranching (scope := scope)),
+        branching.HasJoin) :
+    CdLemmaStatement :=
+  fun {scope} {sourceTerm} {leftReduct} {rightReduct}
+      leftStep rightStep =>
+    LocalStepBranching.fromSteps_hasJoin
+      (resolveBranching
+        (LocalStepBranching.fromSteps
+          (scope := scope)
+          (sourceTerm := sourceTerm)
+          (leftReduct := leftReduct)
+          (rightReduct := rightReduct)
+          leftStep rightStep))
+
+end CdLemmaStatement
 
 end LeanFX2.Foundation.PolyCell.Core
