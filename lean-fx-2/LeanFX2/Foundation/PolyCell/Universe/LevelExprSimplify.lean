@@ -571,4 +571,218 @@ theorem LevelExpr.lzero_isNormalForm :
 theorem LevelExpr.lvar_isNormalForm (idx : Nat) :
     LevelExpr.IsPhaseANormalForm (.lvar idx) := rfl
 
+/-! ## Structural normal-form predicate
+
+M22-A4 (#406, 2026-05-28).  STRUCTURAL characterization of Phase
+A normal form as an inductive `Prop`.  Where `IsPhaseANormalForm`
+defines NF SEMANTICALLY as "fixed point of simplify",
+`IsStructurallyNormalForm` defines NF STRUCTURALLY as "no Phase A
+rule applies anywhere":
+
+* Every leaf (`lzero`, `lvar`) is NF.
+* `lsucc inner` is NF iff `inner` is NF.
+* `lmax e1 e2` is NF iff both children are NF AND none of the
+  three Phase A rules for `lmax` could fire: `e1 ≠ e2`
+  (rule 1: idempotence), `e1 ≠ lzero` (rule 2: left identity),
+  `e2 ≠ lzero` (rule 3: right identity).
+* `limax e1 e2` is NF iff both children are NF AND neither of
+  the two Phase A rules for `limax` could fire: `e2 ≠ lzero`
+  (rule 5: right collapse), `e1 ≠ lzero` (rule 4: left
+  identity).
+
+The load-bearing theorem is that `simplify` always produces a
+structurally normal expression: `simplify_produces_isStructurallyNormalForm`.
+This is the substantive Phase A "what does Phase A actually
+deliver" answer — it shows that the post-order recursion plus
+local rule chain produces output where NO rule could fire
+anywhere, not just at the top level.
+
+## Why structural and semantic NF should coincide
+
+`IsStructurallyNormalForm e → IsPhaseANormalForm e` will be
+provable: if no rule fires anywhere, then `simplify e` must
+equal `e` (no rule = no change).  The converse direction
+`IsPhaseANormalForm e → IsStructurallyNormalForm e` requires
+more case work — we'd need to extract from `simplify e = e`
+the conclusion that none of the negative conditions could be
+violated.  Both directions are real theorems for Phase B's
+canonical-ordering decisions, but THIS commit ships only the
+structural definition + `simplify` produces it.
+
+## What this enables (Phase B bridge)
+
+Phase B's full Mörtberg-Sterling algorithm needs to detect
+"already normalized" sub-expressions to avoid redundant work.
+Running `simplify` on every sub-expression is correct but
+wasteful.  A STRUCTURAL check (Decidable Bool via the
+inductive's negative conditions) is the optimization gate.
+
+Decidability of `IsStructurallyNormalForm` requires
+DecidableEq + 5 disjunctions of decidable conditions; the
+inductive's shape itself makes this clean — no propext leak
+since LevelExpr.decEq is propext-free (5-ctor ADT). -/
+
+/-- Inductive Prop characterization of Phase A normal forms.
+A `LevelExpr` is in structural NF iff no Phase A rule applies
+anywhere in its syntax tree.
+
+Five constructors mirror the 5 LevelExpr ctors:
+* `lzeroNF`: lzero is trivially NF.
+* `lvarNF`: any lvar is trivially NF.
+* `lsuccNF`: lsucc of NF is NF.
+* `lmaxNF`: lmax of two NF children with all three negative
+  conditions (no idempotence, no left identity, no right
+  identity).
+* `limaxNF`: limax of two NF children with both negative
+  conditions (no right collapse, no left identity). -/
+inductive LevelExpr.IsStructurallyNormalForm : LevelExpr → Prop
+  /-- lzero is trivially in NF. -/
+  | lzeroNF : LevelExpr.IsStructurallyNormalForm .lzero
+  /-- lvar at any index is trivially in NF. -/
+  | lvarNF (idx : Nat) : LevelExpr.IsStructurallyNormalForm (.lvar idx)
+  /-- lsucc preserves NF. -/
+  | lsuccNF {inner : LevelExpr}
+      (hInner : LevelExpr.IsStructurallyNormalForm inner) :
+      LevelExpr.IsStructurallyNormalForm (.lsucc inner)
+  /-- lmax of two NF children is NF when all three Phase A
+  rules for lmax cannot fire. -/
+  | lmaxNF {e1 e2 : LevelExpr}
+      (h1 : LevelExpr.IsStructurallyNormalForm e1)
+      (h2 : LevelExpr.IsStructurallyNormalForm e2)
+      (hNotEq : ¬ (e1 = e2))
+      (hNotLeftZero : ¬ (e1 = .lzero))
+      (hNotRightZero : ¬ (e2 = .lzero)) :
+      LevelExpr.IsStructurallyNormalForm (.lmax e1 e2)
+  /-- limax of two NF children is NF when both Phase A rules
+  for limax cannot fire. -/
+  | limaxNF {e1 e2 : LevelExpr}
+      (h1 : LevelExpr.IsStructurallyNormalForm e1)
+      (h2 : LevelExpr.IsStructurallyNormalForm e2)
+      (hNotRightZero : ¬ (e2 = .lzero))
+      (hNotLeftZero : ¬ (e1 = .lzero)) :
+      LevelExpr.IsStructurallyNormalForm (.limax e1 e2)
+
+/-- `simplify e` is always in structural normal form.
+
+Proof: structural recursion on `e`.
+
+* `lzero`: result is `lzero`, `lzeroNF`.
+* `lvar n`: result is `lvar n`, `lvarNF n`.
+* `lsucc inner`: result is `lsucc inner.simplify`; by IH the
+  inner is NF; conclude via `lsuccNF`.
+* `lmax e1 e2`: `by_cases` on the 4 if-then-else branches.
+  Rules 1/2/3 (rule fires): result is `e1.simplify` or
+  `e2.simplify`, both NF by their respective IHs.  Else
+  branch: result is `lmax e1.simplify e2.simplify`; the
+  `if_neg` hypotheses provide the three negative conditions;
+  IHs provide the NF child witnesses; conclude via `lmaxNF`.
+* `limax e1 e2`: 3-way split.  Rule 5 (s2 = lzero): result
+  is `lzero`, `lzeroNF`.  Rule 4 (s1 = lzero, ¬rule 5):
+  result is `e2.simplify`, NF by IH2.  Else: result is
+  `limax e1.simplify e2.simplify`; conclude via `limaxNF`. -/
+theorem LevelExpr.simplify_produces_isStructurallyNormalForm :
+    ∀ (expr : LevelExpr),
+      LevelExpr.IsStructurallyNormalForm expr.simplify
+  | .lzero => .lzeroNF
+  | .lvar idx => .lvarNF idx
+  | .lsucc inner => by
+      show LevelExpr.IsStructurallyNormalForm (LevelExpr.lsucc inner.simplify)
+      exact .lsuccNF (LevelExpr.simplify_produces_isStructurallyNormalForm inner)
+  | .lmax e1 e2 => by
+      have ih1 : LevelExpr.IsStructurallyNormalForm e1.simplify :=
+        LevelExpr.simplify_produces_isStructurallyNormalForm e1
+      have ih2 : LevelExpr.IsStructurallyNormalForm e2.simplify :=
+        LevelExpr.simplify_produces_isStructurallyNormalForm e2
+      show LevelExpr.IsStructurallyNormalForm
+        (if e1.simplify = e2.simplify then e1.simplify
+         else if e1.simplify = .lzero then e2.simplify
+         else if e2.simplify = .lzero then e1.simplify
+         else LevelExpr.lmax e1.simplify e2.simplify)
+      by_cases hEq : e1.simplify = e2.simplify
+      · rw [if_pos hEq]
+        exact ih1
+      · rw [if_neg hEq]
+        by_cases hLeftZero : e1.simplify = .lzero
+        · rw [if_pos hLeftZero]
+          exact ih2
+        · rw [if_neg hLeftZero]
+          by_cases hRightZero : e2.simplify = .lzero
+          · rw [if_pos hRightZero]
+            exact ih1
+          · rw [if_neg hRightZero]
+            exact .lmaxNF ih1 ih2 hEq hLeftZero hRightZero
+  | .limax e1 e2 => by
+      have ih1 : LevelExpr.IsStructurallyNormalForm e1.simplify :=
+        LevelExpr.simplify_produces_isStructurallyNormalForm e1
+      have ih2 : LevelExpr.IsStructurallyNormalForm e2.simplify :=
+        LevelExpr.simplify_produces_isStructurallyNormalForm e2
+      show LevelExpr.IsStructurallyNormalForm
+        (if e2.simplify = .lzero then LevelExpr.lzero
+         else if e1.simplify = .lzero then e2.simplify
+         else LevelExpr.limax e1.simplify e2.simplify)
+      by_cases hRightZero : e2.simplify = .lzero
+      · rw [if_pos hRightZero]
+        exact .lzeroNF
+      · rw [if_neg hRightZero]
+        by_cases hLeftZero : e1.simplify = .lzero
+        · rw [if_pos hLeftZero]
+          exact ih2
+        · rw [if_neg hLeftZero]
+          exact .limaxNF ih1 ih2 hRightZero hLeftZero
+
+/-! ## Structural NF implies semantic NF
+
+If a `LevelExpr` is structurally normal (no rule applies
+anywhere), then it's a fixed point of `simplify` — proving
+`simplify e = e`.
+
+This is the FORWARD direction of structural-vs-semantic NF
+equivalence.  The reverse direction (semantic ⇒ structural)
+requires extracting the inequality witnesses from `simplify
+e = e`, which involves cases on the simplify function shape
+— substantive but mechanical.  Forward is the load-bearing
+direction for Phase B's "is this already normalized?" check. -/
+
+/-- A structurally normal `LevelExpr` is a fixed point of
+`simplify`.  Forward direction of structural-vs-semantic NF
+equivalence.
+
+Proof: induction on the `IsStructurallyNormalForm` derivation.
+Each constructor case unfolds `simplify` and uses the negative
+hypotheses to confirm no rule fires + IHs for children. -/
+theorem LevelExpr.IsStructurallyNormalForm.toFixedPoint
+    {expr : LevelExpr}
+    (h : LevelExpr.IsStructurallyNormalForm expr) :
+    expr.simplify = expr := by
+  induction h with
+  | lzeroNF => rfl
+  | lvarNF _ => rfl
+  | lsuccNF _ ihInner =>
+      show LevelExpr.lsucc _ = LevelExpr.lsucc _
+      rw [ihInner]
+  | @lmaxNF e1 e2 _ _ hNotEq hNotLeftZero hNotRightZero ih1 ih2 =>
+      show (if e1.simplify = e2.simplify then e1.simplify
+            else if e1.simplify = LevelExpr.lzero then e2.simplify
+            else if e2.simplify = LevelExpr.lzero then e1.simplify
+            else LevelExpr.lmax e1.simplify e2.simplify) =
+        LevelExpr.lmax e1 e2
+      rw [ih1, ih2, if_neg hNotEq, if_neg hNotLeftZero,
+          if_neg hNotRightZero]
+  | @limaxNF e1 e2 _ _ hNotRightZero hNotLeftZero ih1 ih2 =>
+      show (if e2.simplify = LevelExpr.lzero then LevelExpr.lzero
+            else if e1.simplify = LevelExpr.lzero then e2.simplify
+            else LevelExpr.limax e1.simplify e2.simplify) =
+        LevelExpr.limax e1 e2
+      rw [ih1, ih2, if_neg hNotRightZero, if_neg hNotLeftZero]
+
+/-- Combined: `simplify e` is both a fixed point AND
+structurally normal.  Pins the full Phase A delivery in a
+single theorem. -/
+theorem LevelExpr.simplify_isStructurallyNormal_and_fixed
+    (expr : LevelExpr) :
+    LevelExpr.IsStructurallyNormalForm expr.simplify ∧
+    expr.simplify.simplify = expr.simplify :=
+  ⟨LevelExpr.simplify_produces_isStructurallyNormalForm expr,
+   LevelExpr.simplify_idempotent expr⟩
+
 end LeanFX2.Foundation.PolyCell.Universe

@@ -3472,6 +3472,31 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.lzero_isNormalForm
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.lvar_isNormalForm
 
+-- ─── M22 Phase A structural NF: inductive Prop characterization ──────
+-- Audit gates for #406 (M22-A4, 2026-05-28).
+--
+-- `IsStructurallyNormalForm` is the inductive Prop characterizing
+-- Phase A normal forms as "no rule applies anywhere".  Where
+-- `IsPhaseANormalForm` defined NF SEMANTICALLY (`simplify e = e`),
+-- this gives the STRUCTURAL definition via explicit negative
+-- conditions (e1≠e2, e1≠lzero, e2≠lzero for lmax; e2≠lzero, e1≠lzero
+-- for limax).
+--
+-- The load-bearing theorem `simplify_produces_isStructurallyNormalForm`
+-- proves Phase A always lands in structural NF.  Forward direction
+-- `toFixedPoint` confirms structural NF ⇒ semantic NF (forward
+-- direction of the equivalence).  Combined theorem
+-- `simplify_isStructurallyNormal_and_fixed` ships both Phase A
+-- guarantees in one.
+--
+-- This is the Phase B bridge: Phase B's canonical-ordering algorithm
+-- can use the inductive's negative conditions as a decidable "is
+-- this already normalized?" check without re-running simplify.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.IsStructurallyNormalForm
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.simplify_produces_isStructurallyNormalForm
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.IsStructurallyNormalForm.toFixedPoint
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.simplify_isStructurallyNormal_and_fixed
+
 -- ─── M11 (#260): NbE substrate — canonical normalizer signature ─────
 -- RawTerm.isNF predicate shipped via M-substrate-3 #367.  This commit
 -- ships the SIGNATURE-LEVEL contract for the M12 #261 implementation:
