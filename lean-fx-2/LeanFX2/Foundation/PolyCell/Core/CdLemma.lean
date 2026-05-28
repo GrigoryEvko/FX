@@ -879,6 +879,94 @@ theorem iotaSndPairSecondCong_hasJoin {scope : Nat}
   (LocalDiamond.iotaSndPairSecondCong
     (firstValue := firstValue) secondStep).hasJoin
 
+/-- `fromSteps`-facing `boolTrue` iota / selected then-branch congruence arm. -/
+theorem fromSteps_iotaBoolTrueThenCong_hasJoin {scope : Nat}
+    {thenBranch steppedThenBranch elseBranch : RawTerm scope}
+    (thenStep : Step thenBranch steppedThenBranch) :
+    (fromSteps
+      (Step.iotaBoolTrue
+        (thenBranch := thenBranch) (elseBranch := elseBranch))
+      (iotaBoolTrueThenCong
+        (elseBranch := elseBranch) thenStep).rightStep).HasJoin :=
+  iotaBoolTrueThenCong_hasJoin thenStep
+
+/-- `fromSteps`-facing `boolTrue` iota / discarded else-branch congruence arm. -/
+theorem fromSteps_iotaBoolTrueElseCong_hasJoin {scope : Nat}
+    {thenBranch elseBranch steppedElseBranch : RawTerm scope}
+    (elseStep : Step elseBranch steppedElseBranch) :
+    (fromSteps
+      (Step.iotaBoolTrue
+        (thenBranch := thenBranch) (elseBranch := elseBranch))
+      (iotaBoolTrueElseCong
+        (thenBranch := thenBranch) elseStep).rightStep).HasJoin :=
+  iotaBoolTrueElseCong_hasJoin elseStep
+
+/-- `fromSteps`-facing `boolFalse` iota / discarded then-branch congruence arm. -/
+theorem fromSteps_iotaBoolFalseThenCong_hasJoin {scope : Nat}
+    {thenBranch steppedThenBranch elseBranch : RawTerm scope}
+    (thenStep : Step thenBranch steppedThenBranch) :
+    (fromSteps
+      (Step.iotaBoolFalse
+        (thenBranch := thenBranch) (elseBranch := elseBranch))
+      (iotaBoolFalseThenCong
+        (elseBranch := elseBranch) thenStep).rightStep).HasJoin :=
+  iotaBoolFalseThenCong_hasJoin thenStep
+
+/-- `fromSteps`-facing `boolFalse` iota / selected else-branch congruence arm. -/
+theorem fromSteps_iotaBoolFalseElseCong_hasJoin {scope : Nat}
+    {thenBranch elseBranch steppedElseBranch : RawTerm scope}
+    (elseStep : Step elseBranch steppedElseBranch) :
+    (fromSteps
+      (Step.iotaBoolFalse
+        (thenBranch := thenBranch) (elseBranch := elseBranch))
+      (iotaBoolFalseElseCong
+        (thenBranch := thenBranch) elseStep).rightStep).HasJoin :=
+  iotaBoolFalseElseCong_hasJoin elseStep
+
+/-- `fromSteps`-facing first-projection / selected first-component congruence arm. -/
+theorem fromSteps_iotaFstPairFirstCong_hasJoin {scope : Nat}
+    {firstValue steppedFirstValue secondValue : RawTerm scope}
+    (firstStep : Step firstValue steppedFirstValue) :
+    (fromSteps
+      (Step.iotaFstPair
+        (firstValue := firstValue) (secondValue := secondValue))
+      (iotaFstPairFirstCong
+        (secondValue := secondValue) firstStep).rightStep).HasJoin :=
+  iotaFstPairFirstCong_hasJoin firstStep
+
+/-- `fromSteps`-facing first-projection / discarded second-component congruence arm. -/
+theorem fromSteps_iotaFstPairSecondCong_hasJoin {scope : Nat}
+    {firstValue secondValue steppedSecondValue : RawTerm scope}
+    (secondStep : Step secondValue steppedSecondValue) :
+    (fromSteps
+      (Step.iotaFstPair
+        (firstValue := firstValue) (secondValue := secondValue))
+      (iotaFstPairSecondCong
+        (firstValue := firstValue) secondStep).rightStep).HasJoin :=
+  iotaFstPairSecondCong_hasJoin secondStep
+
+/-- `fromSteps`-facing second-projection / discarded first-component congruence arm. -/
+theorem fromSteps_iotaSndPairFirstCong_hasJoin {scope : Nat}
+    {firstValue steppedFirstValue secondValue : RawTerm scope}
+    (firstStep : Step firstValue steppedFirstValue) :
+    (fromSteps
+      (Step.iotaSndPair
+        (firstValue := firstValue) (secondValue := secondValue))
+      (iotaSndPairFirstCong
+        (secondValue := secondValue) firstStep).rightStep).HasJoin :=
+  iotaSndPairFirstCong_hasJoin firstStep
+
+/-- `fromSteps`-facing second-projection / selected second-component congruence arm. -/
+theorem fromSteps_iotaSndPairSecondCong_hasJoin {scope : Nat}
+    {firstValue secondValue steppedSecondValue : RawTerm scope}
+    (secondStep : Step secondValue steppedSecondValue) :
+    (fromSteps
+      (Step.iotaSndPair
+        (firstValue := firstValue) (secondValue := secondValue))
+      (iotaSndPairSecondCong
+        (firstValue := firstValue) secondStep).rightStep).HasJoin :=
+  iotaSndPairSecondCong_hasJoin secondStep
+
 /-- Resolver arm for `natElim natZero` iota competing with selected
 zero-branch congruence. -/
 theorem iotaNatElimZeroBranchCong_hasJoin {scope : Nat}
