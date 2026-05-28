@@ -542,9 +542,11 @@ constrained only by (1) per-feature soundness in published theory,
 (2) decidable typechecking under cubical NbE, and (3) zero-axiom
 closed-system discipline.  See **§11.8** for the full apex
 commitment, **§11.8.7** for the decidability + complexity matrix,
-**§11.8.9** for the nine-phase Z₀–Z₈ rollout, and **§11.8.10** for
-the soundness composition (every component sound by published
-theory; the combination is novel only in scale).
+**§11.8.9** for the nine-phase Z₀–Z₈ rollout, **§11.8.10** for the
+soundness composition (every component sound by published theory;
+the JOINT soundness of the combination is open research), and
+**§11.8.0** for the obligations ledger that tracks that joint
+metatheory honestly (O-NORM / O-CONF / O-CANON et al.).
 
 This is the "quantale-enriched (∞,∞)-category of types" Object the
 `20_05_2026.md` dossier §14 hand-waves toward; this document makes it
@@ -6499,8 +6501,11 @@ Per §11.8.12 the milestone scale is revised:
 * MILESTONE C    = + Z₇ — guarded recursion (~month 44).
 * MILESTONE D    = + Z₈ — full 21-dim FX kernel (~month 56).
 
-Each sub-phase is sound by composition of published theory (§11.8.10).
-No new soundness proofs needed; implementation is **assembly**.
+Each sub-phase composes published per-feature theory; the JOINT
+soundness of the accumulating union is the open obligation
+O-NORM / O-CONF / O-CANON (§11.8.0), discharged via BKS sconing on the
+full signature.  Per-feature: assembly.  The joint metatheory:
+research.
 
 ### Phase POLY-η — Migration (months 30-36, ~25K LoC delete + ~10K LoC translate)
 
@@ -7303,9 +7308,79 @@ constrained only by: (1) per-feature soundness in published theory,
 (2) decidable typechecking under cubical NbE, and (3) the
 zero-axiom discipline from §11.
 
-This is multi-year implementation work, but **every component is
-sound by known theory**.  No new foundational research is required
-for the kernel — only careful assembly.
+This is multi-year work.  Every component is **sound in isolation**
+by known theory — but the **soundness of the COMBINATION is a genuine
+proof obligation**, not a corollary of the per-feature citations.
+§11.8.0 is the obligations ledger that tracks this honestly: the
+per-feature work is assembly; the joint metatheory (O-NORM / O-CONF /
+O-CANON) is research.
+
+### 11.8.0 Apex metatheory obligations — the combination is not free
+
+**Honesty discipline, applied to the apex.**  §3–§4 and §11.6 obey
+the manifesto rule: every claim is a constructive definition, a cited
+decision procedure with complexity, or an explicit out-of-scope tag.
+This subsection extends that discipline to all of §11.8.  Every
+feature below (cubical, HIIRT, guarded recursion, internal
+parametricity, MTT + cohesion, the 21-dim graded layer, the
+structural-reflection ladder) is sound **in isolation** by published
+theory.  Their **union is not sound by corollary**: joint
+normalization, joint confluence, and joint canonicity of the combined
+system are proof obligations, several of them open research.  Naming
+the per-feature papers does not discharge the joint obligation;
+pretending it does would be exactly the placeholder pattern §1
+forbids.
+
+**The obligations ledger.**  Status is one of: **open research** (no
+one has done it — naming it precisely is the deliverable) or
+**specifiable now** (pinnable with a schema or clause, no new
+mathematics required).
+
+| ID | Obligation | Status | Gates |
+|---|---|---|---|
+| **O-NORM** | Joint normalization of the feature union (cubical + HIIRT + guarded + parametricity + MTT + 21-graded) | open research | decidable typed Conv, MILESTONE A→D |
+| **O-CONF** | Joint confluence of the full reduction relation (βηι + cubical Kan + user rewrite rules + commuting conversions + η-everywhere) | open research | generic cd_lemma at apex scale (§11.6.1) |
+| **O-CANON** | Canonicity for the union (follows O-NORM) | open research | consistency at apex (§11.8.8) |
+| **O-CUBE-PARAM** | Coherence of the path dimension (cubical) with the bridge dimension (internal parametricity) | open (Cavallo-Harper unifies) | Phase Z₄ + Z₈ |
+| **O-ORD** | Ordinal-notation / well-ordering substrate establishing each reflection-ladder rung's strength | open research | MILESTONE B ladder (§11.8.2) |
+| **O-REFL-MODEL** | Construction / relative-consistency justification of the reflection-degree universes inside FX's own (∞,ω)-topos substrate | open research | MILESTONE B |
+| **O-FIRE** | Algebraic effects + handlers confined to a Fire-Triangle-safe graded / ∂CBPV fragment (§3.0.3) | specifiable now | §11.8.6 effects soundness |
+| **O-IR-SCHEMA** | Codes-for-IR universe + strict-positivity criterion — the actual content of "supporting HIIRT" | specifiable now | Phase Z₆ (§11.8.3) |
+| **O-II** | Induction-induction / QIIT well-formedness at the typed layer, reconciled with the v2 substrate's deliberate un-indexing | specifiable now | Phase Z₅ (§3.16.5) |
+| **O-ELAB** | Elaborator soundness (emits only kernel-recheckable terms) + completeness for the decidable fragment | specifiable now | MILESTONE A (§11.8.3) |
+| **O-ERASE** | Erasure-correctness metatheorem (the §1.5 zero-runtime-cost premise) | specifiable now | MILESTONE D (§3.14) |
+| **O-SUBST-BRIDGE** | Equivalence of the Allais parallel-fold substitution (§4) and the Kaposi-Xie single-substitution calculus (§3.11) | specifiable now | — |
+
+**The committed normalization route (O-NORM / O-CANON).**  FX commits
+to ONE technique to carry the joint metatheory: **BKS internal
+sconing (Tier 0, §3.0.2) extended to the full kernel signature**,
+with Synthetic Tait Computability (Axis 12) and Tait reducibility
+(§11.6.1) as independent cross-checks.  Sconing is the only route
+known to compose across heterogeneous features — it derives
+canonicity / normalization / parametricity from one gluing witness
+per signature extension.  O-NORM is precisely the obligation to
+construct the sconing witness for the COMBINED signature, not per
+isolated feature.  It is the apex's single load-bearing proof
+obligation; the §11.8.14 definitional-univalence normalization (its
+O3) is one special case.
+
+**Relative-consistency stance (a disclaimer, not an obligation).**
+For every reflection-ladder flag, FX@flag is consistent **relative
+to** an ambient metatheory of strength ≥ the flag's classical
+calibration (§11.8.2) — **assumed, not proven**.  By Gödel II, FX
+cannot prove its own consistency at or above its own strength
+(§11.7.1).  The ladder is a tower of *relative* consistency
+strengths, honestly assumed per rung, never an internal absolute
+guarantee.
+
+**How the rest of §11.8 references this ledger.**  Downstream
+subsections cite an obligation by ID rather than re-asserting
+soundness inline: §11.8.7's decidability matrix gates combined-
+fragment entries on O-NORM; §11.8.6's algebraic effects cite O-FIRE;
+§3.16.5/6's IR/HIT admission cites O-IR-SCHEMA / O-II; §11.8.2's
+ladder cites O-ORD / O-REFL-MODEL.  This ledger is the single
+accountable place tracking the apex's open frontier, in the idiom of
+§12's risk register and §11.8.14.1's stated open problems.
 
 ### 11.8.1 The seven gaps in the current substrate
 
@@ -8218,6 +8293,19 @@ the zero-axiom discipline (§11).  The "reference" column names the
 PUBLISHED ALGORITHM mechanized inside FX — not an external tool
 invoked at elaboration time.
 
+**Per-feature truth vs joint decidability (read before the ✓'s).**
+Each ✓ below is established FOR ITS FEATURE IN ISOLATION by the cited
+algorithm.  The structural and lattice deciders (`DecidableEq`,
+grade / effect / repr / clock checks, the certifier) and the
+cubical-core Conv / HasType (Cubical Agda) are **unconditional**.
+Decidability of the COMBINED system — every feature active at once —
+is **gated on O-NORM** (§11.8.0): the joint normalizer must exist for
+typed Conv, HasType, and consistency to be decidable at the apex.
+Rows marked **†** are the ones whose apex decidability rides on
+O-NORM; their ✓ is per-feature, not yet joint.  This matrix does NOT
+claim the union is decidable today — it claims each piece is, and
+names (§11.8.0) the obligation whose discharge makes the union so.
+
 | Property | Decidable | Complexity bound | Decision procedure | Reference |
 |---|---|---|---|---|
 | `DecidableEq (RawTerm scope)` | ✓ | O(size(t1) + size(t2)) | Structural, propext-free | V2-L0.11 ✅ |
@@ -8228,12 +8316,12 @@ invoked at elaboration time.
 | `Decidable (SyntacticallySupportedGenerator gen)` | ✓ | O(1) | Closed 194-table | §11.8.4 |
 | `Decidable (SemanticallySupportedGenerator gen)` | ✓ | O(log #generators) per profile | Per-profile witness table | §11.8.4 |
 | `Decidable (Conv a b)` raw | ✓ | O(NF normalize) | Cubical NbE NF equality | Mörtberg 2023 |
-| `Decidable (Conv (Γ ⊢ a : T) (Γ ⊢ b : T))` typed | ✓ | O(NF normalize + type lookup) | Typed cubical NbE | Cubical Agda |
-| `Decidable (HasType Γ t T)` | ✓ | O(NF normalize × size(t)) | Bidirectional typecheck + NbE | Adjedj et al. arXiv:2310.06376 |
+| `Decidable (Conv (Γ ⊢ a : T) (Γ ⊢ b : T))` typed | ✓† | O(NF normalize + type lookup) | Typed cubical NbE | Cubical Agda; joint O-NORM |
+| `Decidable (HasType Γ t T)` | ✓† | O(NF normalize × size(t)) | Bidirectional typecheck + NbE | Adjedj et al. 2310.06376; joint O-NORM |
 | `Decidable (IsType Γ T)` | ✓ | O(typecheck) | Inferred-universe lookup | — |
 | `Decidable (HasUsage Γ t u)` | ✓ | O(size × #dimensions) | Graded semiring multiplication | Wood-Atkey 2022 |
 | `Decidable (HasEffect Γ t eff)` | ✓ | O(size × #effects) | Effect-row sub-effect lattice | — |
-| `Decidable (consistency profile)` | ✓ | O(canonical-NF check) | Canonicity + SN + CR | §11.8.8 |
+| `Decidable (consistency profile)` | ✓† | O(canonical-NF check) | Canonicity + SN + CR | §11.8.8; joint O-CANON |
 | `Decidable (KanCubicalStructure dim)` | ✓ | O(dim) | Per-dim structure check | CCHM 2018 |
 | `Decidable (HITPathCoherence gen)` | ✓ | O(#path-constructors) | Per-HIT path-constructor table | §11.8.3 |
 | `Decidable (IRRecursiveDecoding gen)` | ✓ | O(IR depth) | Per-IR family decoding | Dybjer-Setzer 2003 |
@@ -8249,8 +8337,10 @@ invoked at elaboration time.
 | `Decidable (Dimension-N typing)` for each dim 2-21 | ✓ | Per-dimension (table §11.8.6) | Per-dimension procedure | §11.8.6 |
 | `Decidable (TypedSubjectReduction t t' T)` | ✓ | O(typecheck × step-size) | Direct application of SR theorem | §11.8.5 |
 
-**Everything that the kernel admits is decidable AND has a
-mechanized complexity bound.**  Properties OUTSIDE the kernel
+**Every feature the kernel admits is decidable in isolation, each
+with a mechanized complexity bound; the joint decidability of the
+union is O-NORM-gated (§11.8.0, rows marked †).**  Properties OUTSIDE
+the kernel
 (termination of arbitrary general-recursive programs, halting of
 FFI calls, the full halting problem, arbitrary first-order logic
 provability) remain undecidable by Rice / Gödel / Turing — these
@@ -8377,8 +8467,8 @@ Each component is sound by published theory:
   Støvring LICS 2012, Nakano LICS 2000.
 * **Definitional eta** — Abel-Coquand-Pagano TOPLAS 2020.
 
-The COMBINATION is novel only in scale, not in foundational
-content.  Each pairwise compatibility is established:
+Several PAIRWISE compatibilities are already established — evidence
+the union is plausible, not proof that it holds:
 
 * Cubical + impredicative SProp: Vezzosi's Cubical Agda with `--prop`.
 * Cubical + IR: Sterling-Angiuli STC.
@@ -8387,8 +8477,15 @@ content.  Each pairwise compatibility is established:
 * Mahlo + cubical: Phase Z₆; theoretical compatibility per Setzer's
   framework + CCHM's universe construction.
 
-**No new soundness proofs needed.  Implementation is assembly, not
-research.**
+But pairwise compatibility is NOT joint soundness.  The full union —
+cubical AND HIIRT AND guarded AND internal parametricity AND MTT AND
+the 21-graded layer, all active at once — has never been normalized by
+anyone; its joint normalization / confluence / canonicity are the
+open obligations **O-NORM / O-CONF / O-CANON** of §11.8.0.  **The
+per-feature work is assembly; the joint metatheory is research.**  The
+committed route is BKS sconing extended to the full signature
+(§11.8.0): this section lists the components, §11.8.0 owns the
+obligation to glue them.
 
 ### 11.8.11 Honesty discipline
 
