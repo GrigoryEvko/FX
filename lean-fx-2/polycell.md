@@ -4230,6 +4230,20 @@ inductive at the Generator level (via the `mutual` keyword in the
 Generator table — admissible because Generator is a finite enum, not
 a recursive inductive).
 
+**The induction-induction tension is real and not closed by the
+finite enum (O-II, §11.8.0).**  A QIIT *is* induction-induction: a
+type mutually defined with a family indexed by it.  The v2 substrate
+deliberately UN-indexed `RawCell` (dimension computed, not a type
+index) precisely to dodge Lean's mutual-index rule, which rejects the
+`Ctx ⇄ Ty ⇄ Term` mutual block.  That the `Generator` enum is finite
+does NOT discharge QIIT well-formedness — the induction-induction
+lives at the TYPED layer (the mutual type/family dependency in
+`HasType`), not in the enum.  Reconciling QIIT typed certification
+with the substrate's un-indexing (the live path: well-scoped `Term` +
+extrinsic `HasType` carrying the II dependency, per Kaposi-Kovács-
+Lafont-Altenkirch QII) is OBLIGATION **O-II** (specifiable now), not
+a property of the enum being finite.
+
 `ChildSpec` lists for the apex HIT additions follow the template:
 term ctors have payload-shape children; path ctors have Path-type
 endpoints as children at scope-shift 0; recursors have a motive
@@ -7879,6 +7893,20 @@ established by Setzer 1998 for standard IR, extended to HIIRT by
 Capriotti-Forsberg 2020 (proof-theoretic upper bound: still
 below first inaccessible).
 
+**The admissibility schema is the actual content (O-IR-SCHEMA,
+§11.8.0).**  "Supporting IR/HIIRT" foundationally MEANS shipping a
+codes-for-IR universe + a strict-positivity criterion that decides
+which inductive-recursive declarations are sound — it is NOT
+discharged by naming the strength bound.  FX commits to the
+Dybjer-Setzer codes universe (APAL 2003) for standard IR, extended
+to the Forsberg-Setzer schema (2012) for the HIIRT beast, as the
+`SemanticallySupportedGenerator` admission criterion for IR-kind
+generators.  Until that codes universe is defined in Lean, the
+IR/HIIRT admission is OBLIGATION **O-IR-SCHEMA** (specifiable now —
+a schema, not new mathematics), not a discharged result; the
+`HITSignature` / well-formedness-witness fields of §3.16.5 are its
+placeholder pending the schema.
+
 **Higher Inductive Types (HITs).**  Generators carry a `kind` tag
 distinguishing term constructors from path constructors:
 
@@ -7961,6 +7989,19 @@ WITHOUT pattern matching on `A`.  Strictly more powerful than
 external parametricity (which lives outside the type theory in
 metatheory).  Decidable typechecking preserved (Bernardy-Moulin
 2013).  Adds ~3K LoC to the kernel.
+
+**Coherence with the cubical layer (O-CUBE-PARAM, §11.8.0).**  The
+kernel then carries TWO interval-like dimensions: the cubical PATH
+dimension (§11.8.4, CCHM) and the parametricity BRIDGE dimension
+(here).  Their interaction is not free — and §11.8.14 flags that the
+interval route is provably blocked from *definitional* univalence, so
+this is a genuine coherence question, not a notation choice.  FX
+commits to **Cavallo-Harper Internal Parametricity for Cubical Type
+Theory** (CSL 2020 / LMCS 2021) as the substrate that unifies path +
+bridge in one cubical setting; their joint coherence in FX's combined
+kernel is
+OBLIGATION **O-CUBE-PARAM**.  This is the kernel-level form of the
+OP1 crux (§11.8.14.1).
 
 **Rewriting rules as first-class kernel feature.**  Per Cockx-
 Tabareau ICFP 2021, the kernel admits user-declared rewrite rules
@@ -8278,6 +8319,19 @@ effects with handlers** as a profile capability (Plotkin-Pretnar
 
 Sound by Plotkin-Pretnar + Bauer-Pretnar.  Decidable typechecking
 preserved.  Adds ~5K LoC.
+
+**Fire-Triangle confinement (O-FIRE, §11.8.0).**  The Fire Triangle
+(Pédrot-Tabareau, Tier 0 §3.0.3) forbids unrestricted *substitution
++ dependent elimination + effects* simultaneously — and FX commits to
+full substitution AND full dependent elimination.  So the
+algebraic-effect layer is NOT unrestricted: it is confined to the
+graded / ∂CBPV fragment of §3.0.3, where effects are bounded by the
+resource grades so dependent elimination + substitution stay
+unrestricted on the pure part; handlers may not eliminate dependently
+into effectful results outside that fragment.  The proof that the
+shipped effect layer stays inside the Fire-Triangle-safe fragment is
+OBLIGATION **O-FIRE** (specifiable now) — listing the generators here
+does not discharge it.
 
 ### 11.8.7 The decidability matrix at the apex (with complexity bounds)
 
@@ -10292,6 +10346,10 @@ DU9. Felix Cherubini, Thierry Coquand, Matthias Hutzler, *A Foundation
     (Institute for Advanced Study 2013).
 32. Jonathan Sterling, Carlo Angiuli, Daniel Gratzer, "Cubical syntax
     for reflection-free extensional equality" (XTT), FSCD 2019.
+32a. Evan Cavallo, Robert Harper, "Internal Parametricity for Cubical
+    Type Theory", CSL 2020 / LMCS 17(4) 2021.  Unifies the cubical
+    PATH dimension with the parametricity BRIDGE dimension in one
+    setting — the substrate for O-CUBE-PARAM (§11.8.0, §11.8.6).
 
 ### Grading / linearity / quantitative
 
