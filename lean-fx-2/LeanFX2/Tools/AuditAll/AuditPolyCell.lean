@@ -2568,6 +2568,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.isVariableHeadedSpine_step
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.app_isStronglyNormalizing_of_variable_headed_spine_arg
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.applyRawArgument
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.applyRawArgumentsFrom
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.applyRawArgumentsFrom_isStronglyNormalizing_of_neutral_head_arguments
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.variableHeadedSpineTermFrom
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.variableHeadedSpineTerm
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.AllStronglyNormalizingArguments

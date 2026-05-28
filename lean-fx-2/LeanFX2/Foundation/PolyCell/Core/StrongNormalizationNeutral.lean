@@ -304,13 +304,20 @@ def applyRawArgument {scope : Nat}
     RawTerm scope)
 
 /-- Fold a list of arguments onto an existing raw head, left-to-right. -/
-def variableHeadedSpineTermFrom {scope : Nat}
+def applyRawArgumentsFrom {scope : Nat}
     (headTerm : RawTerm scope) : List (RawTerm scope) → RawTerm scope
   | [] => headTerm
   | argumentTerm :: remainingArguments =>
-      variableHeadedSpineTermFrom
+      applyRawArgumentsFrom
         (applyRawArgument headTerm argumentTerm)
         remainingArguments
+
+/-- Variable-headed spine fold, kept as the variable-specific public name used
+by existing finite-spine endpoints. -/
+def variableHeadedSpineTermFrom {scope : Nat}
+    (headTerm : RawTerm scope) (argumentTerms : List (RawTerm scope)) :
+    RawTerm scope :=
+  applyRawArgumentsFrom headTerm argumentTerms
 
 /-- Fold a list of arguments onto a variable head, left-to-right. -/
 def variableHeadedSpineTerm {scope : Nat}
@@ -327,9 +334,57 @@ inductive AllStronglyNormalizingArguments {scope : Nat} :
   | cons {argumentTerm : RawTerm scope}
       {remainingArguments : List (RawTerm scope)} :
       IsStronglyNormalizing argumentTerm →
-        AllStronglyNormalizingArguments remainingArguments →
-          AllStronglyNormalizingArguments
-            (argumentTerm :: remainingArguments)
+      AllStronglyNormalizingArguments remainingArguments →
+        AllStronglyNormalizingArguments
+          (argumentTerm :: remainingArguments)
+
+/-- Any finite application spine with a neutral head is strongly normalizing
+when the head is strongly normalizing, every argument is strongly normalizing,
+and the neutral invariant is closed under one source step.
+
+This is the application-SN foothold needed before the Tait reducibility layer:
+beta is ruled out at each spine head by the neutral invariant, while child
+congruence is discharged by nested accessibility over the current head and the
+next argument. -/
+theorem applyRawArgumentsFrom_isStronglyNormalizing_of_neutral_head_arguments
+    {scope : Nat} (isNeutralHead : RawTerm scope → Prop)
+    {headTerm : RawTerm scope} {argumentTerms : List (RawTerm scope)}
+    (headIsNeutral : isNeutralHead headTerm)
+    (neutralHeadIsNotLambda :
+      ∀ {currentHead : RawTerm scope}, isNeutralHead currentHead →
+        ∀ lambdaBody : RawTerm (scope + 1),
+          currentHead ≠ .mkGen .gen_lam () (.childCons lambdaBody .childNil))
+    (neutralHeadStep :
+      ∀ {currentHead targetHead : RawTerm scope},
+        isNeutralHead currentHead →
+          Step currentHead targetHead →
+            isNeutralHead targetHead)
+    (headTerminates : IsStronglyNormalizing headTerm)
+    (argumentTermsTerminate :
+      AllStronglyNormalizingArguments argumentTerms) :
+    IsStronglyNormalizing
+      (applyRawArgumentsFrom headTerm argumentTerms) := by
+  induction argumentTerms generalizing isNeutralHead headTerm with
+  | nil =>
+      exact headTerminates
+  | cons argumentTerm remainingArguments inductionHypothesis =>
+      cases argumentTermsTerminate with
+      | cons argumentTerminates remainingArgumentsTerminate =>
+          exact
+            inductionHypothesis
+              (isNeutralHead := IsNeutralApplicationHead isNeutralHead)
+              (headTerm := applyRawArgument headTerm argumentTerm)
+              ⟨headTerm, argumentTerm, headIsNeutral, rfl⟩
+              (fun neutralApplicationHead lambdaBody =>
+                isNeutralApplicationHead_not_lam neutralApplicationHead
+                  lambdaBody)
+              (fun neutralApplicationHead neutralApplicationStep =>
+                isNeutralApplicationHead_step neutralHeadIsNotLambda
+                  neutralHeadStep neutralApplicationHead neutralApplicationStep)
+              (app_isStronglyNormalizing_of_neutral_head_arg
+                isNeutralHead headIsNeutral neutralHeadIsNotLambda
+                neutralHeadStep headTerminates argumentTerminates)
+              remainingArgumentsTerminate
 
 /-- Folding more arguments onto a variable-headed spine preserves the
 variable-headed-spine invariant. -/
@@ -366,20 +421,16 @@ theorem variableHeadedSpineTermFrom_isStronglyNormalizing_of_arguments
     (argumentTermsTerminate :
       AllStronglyNormalizingArguments argumentTerms) :
     IsStronglyNormalizing
-      (variableHeadedSpineTermFrom headTerm argumentTerms) := by
-  induction argumentTerms generalizing headTerm with
-  | nil =>
-      exact headTerminates
-  | cons argumentTerm remainingArguments inductionHypothesis =>
-      cases argumentTermsTerminate with
-      | cons argumentTerminates remainingArgumentsTerminate =>
-          exact
-            inductionHypothesis
-              (headTerm := applyRawArgument headTerm argumentTerm)
-              (IsVariableHeadedSpine.applyArgument headIsVariableSpine)
-              (app_isStronglyNormalizing_of_variable_headed_spine_arg
-                headIsVariableSpine headTerminates argumentTerminates)
-              remainingArgumentsTerminate
+      (variableHeadedSpineTermFrom headTerm argumentTerms) :=
+  applyRawArgumentsFrom_isStronglyNormalizing_of_neutral_head_arguments
+    (isNeutralHead := IsVariableHeadedSpine headIndex)
+    headIsVariableSpine
+    (fun variableSpineHead lambdaBody =>
+      isVariableHeadedSpine_not_lam variableSpineHead lambdaBody)
+    (fun variableSpineHead variableSpineStep =>
+      isVariableHeadedSpine_step variableSpineHead variableSpineStep)
+    headTerminates
+    argumentTermsTerminate
 
 /-- Any finite application spine rooted at a variable is strongly normalizing
 when every argument is strongly normalizing. -/
