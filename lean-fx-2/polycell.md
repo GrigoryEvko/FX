@@ -5642,8 +5642,18 @@ eta examples are not one-step branchings yet.  The shipped theorem
 have the same reduct, `cd_lemma_eta_eta` closes the eta/eta local join,
 and `cd_lemma_betaEta` now inhabits the full
 `CdLemmaStatementBetaEta` for the current beta+iota+root-eta relation.
-Record, clock, and parametricity eta remain generator-frontier work,
-not placeholders in the current raw relation.
+The first #357 slice adds the honest conditional Newman bridge in
+`StepBetaEtaConfluence.lean`: `Step.betaEtaStar.Join`,
+`Step.betaEtaStar.HasConfluence`,
+`Step.betaEtaStar.IsStronglyNormalizing`, and
+`Step.betaEtaStar.confluence_of_strongNormalization` mirror the
+beta+iota-only bridge but consume the shipped `cd_lemma_betaEta`
+dispatcher.  This is deliberately not a claim of global beta+eta SN:
+the theorem is conditional on a future
+`Step.betaEtaStar.HasStrongNormalization` witness, and the actual SN
+accessibility lifts remain blocked behind #258's unfinished master SN
+work.  Record, clock, and parametricity eta remain generator-frontier
+work, not placeholders in the current raw relation.
 
 ### Phase 1 — Allais Kit
 

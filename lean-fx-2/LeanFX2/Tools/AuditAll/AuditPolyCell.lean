@@ -75,6 +75,7 @@ import LeanFX2.Foundation.PolyCell.Core.SubjectReductionEtaBinder
 import LeanFX2.Foundation.PolyCell.Core.StepBetaEtaPreservesShape
 import LeanFX2.Foundation.PolyCell.Core.StepEtaCriticalPairs
 import LeanFX2.Foundation.PolyCell.Core.StepEtaEtaCriticalPairs
+import LeanFX2.Foundation.PolyCell.Core.StepBetaEtaConfluence
 import LeanFX2.Foundation.PolyCell.Core.HasCertifiedIntros
 import LeanFX2.Foundation.PolyCell.Core.HasCertifiedHonestyProbes
 import LeanFX2.Foundation.PolyCell.Core.SubstPreservationProbes
@@ -2419,6 +2420,20 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CdLemmaStatementEtaEta
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.cd_lemma_eta_eta
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.cd_lemma_betaEta
+
+-- Eta-M8h partial: conditional Newman bridge for beta+iota+eta.
+-- This does not claim global SN; it consumes a future
+-- `Step.betaEtaStar.HasStrongNormalization` witness.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.betaEtaSuccessor
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.betaEtaStar.Join
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.betaEtaStar.HasConfluence
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.betaEtaStar.IsStronglyNormalizing
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.betaEtaStar.HasStrongNormalization
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.betaEtaStar.localJoin_of_cdLemmaBetaEta
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.betaEtaStar.joinStepWithReflRight
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.betaEtaStar.joinStepWithSingleRight
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.betaEtaStar.confluence_of_localJoin_and_accessible
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.betaEtaStar.confluence_of_strongNormalization
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.EtaStepKind
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.EtaStepKind.all
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.EtaStepKind.sourceGenerator
