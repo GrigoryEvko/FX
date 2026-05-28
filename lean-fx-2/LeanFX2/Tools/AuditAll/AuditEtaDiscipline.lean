@@ -1,5 +1,6 @@
 import LeanFX2.Foundation.PolyCell.Core.StepEta
 import LeanFX2.Foundation.PolyCell.Core.GeneratorCore
+import LeanFX2.Tools.AuditAll.LedgerState
 
 /-! # Tools/AuditAll/AuditEtaDiscipline
    — STRICT-ETA-DISCIPLINE coverage harness over the Generator table
@@ -410,6 +411,56 @@ example list).  Confirms the function classifies it correctly today;
 catches drift if a future refactor accidentally moves it. -/
 theorem etaEligibility_gen_universeCode_is_other :
     Generator.etaEligibility .gen_universeCode = .other := rfl
+
+/-! ## audit-A18 (#401): bridge to the shared LedgerState
+
+Closes Agent 2's gap-audit finding that this file's `EtaCoverageState`
+(3 ctors) and `AuditPhaseZ.lean`'s `PhaseZLedgerState` (5 ctors)
+encoded the same audit-progression lattice with mismatched shapes.
+
+Ships an INJECTION into the canonical 5-ctor `LedgerState`
+(`Tools/AuditAll/LedgerState.lean`) plus an injectivity theorem.
+Per CLAUDE.md "don't delete without confirming", `EtaCoverageState`
+itself remains unchanged — both types continue to work; the
+injection provides the unification bridge.
+
+Semantic mapping:
+* `notStarted`   → `LedgerState.notStarted`
+* `audited`      → `LedgerState.partialShipped` (naming difference
+  only: EtaDiscipline used "audited" for the same state PhaseZ
+  calls "partialShipped" — classified but ctor pending).
+* `fullyShipped` → `LedgerState.fullyShipped` -/
+
+/-- Convert an `EtaCoverageState` value into the canonical
+shared `LedgerState` lattice.  Maps the 3 ctors into 3 of the
+5 LedgerState ctors (specOnly + scaffoldShipped are unused by
+EtaCoverageState). -/
+def EtaCoverageState.toLedger :
+    EtaCoverageState → LedgerState
+  | .notStarted   => .notStarted
+  | .audited      => .partialShipped
+  | .fullyShipped => .fullyShipped
+
+/-- The injection is INJECTIVE: distinct EtaCoverageState values
+map to distinct LedgerState values.  Closes the "mismatch is
+unaddressed" finding by witnessing a structure-preserving bridge.
+
+Proof: full enumeration over the 3 × 3 = 9 case pairs; the 3
+diagonal cases close by `rfl`, the 6 off-diagonal cases close
+by `LedgerState.noConfusion` via `nomatch` on the impossible
+equation.  Zero-axiom. -/
+theorem EtaCoverageState.toLedger_injective :
+    ∀ (s1 s2 : EtaCoverageState),
+      s1.toLedger = s2.toLedger → s1 = s2
+  | .notStarted,   .notStarted,   _ => rfl
+  | .notStarted,   .audited,      h => nomatch h
+  | .notStarted,   .fullyShipped, h => nomatch h
+  | .audited,      .notStarted,   h => nomatch h
+  | .audited,      .audited,      _ => rfl
+  | .audited,      .fullyShipped, h => nomatch h
+  | .fullyShipped, .notStarted,   h => nomatch h
+  | .fullyShipped, .audited,      h => nomatch h
+  | .fullyShipped, .fullyShipped, _ => rfl
 
 end Audit
 end LeanFX2.Tools.AuditAll

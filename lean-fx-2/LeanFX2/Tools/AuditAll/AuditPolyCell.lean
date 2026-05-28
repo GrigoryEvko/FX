@@ -3157,6 +3157,38 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Tools.AuditAll.Audit.phaseZ_fullyShipped_count
 #assert_no_axioms LeanFX2.Tools.AuditAll.Audit.phaseZ_counts_honest
 
+-- ─── audit-A18 (#401): shared LedgerState + injection bridges ────────
+-- Closes Agent 2's gap-audit finding that AuditEtaDiscipline.lean's
+-- 3-ctor EtaCoverageState and AuditPhaseZ.lean's 5-ctor
+-- PhaseZLedgerState encoded the same audit-progression lattice with
+-- mismatched shapes.
+--
+-- Additive unification (per CLAUDE.md "don't delete without
+-- confirming"): a NEW shared `LedgerState` inductive (5 ctors) +
+-- injection functions from both old types + injectivity theorems.
+-- Both old inductives keep working; the bridges provide the
+-- formal unification.
+--
+-- Semantic mapping (EtaCoverageState → LedgerState):
+--   notStarted   → notStarted
+--   audited      → partialShipped (naming difference only)
+--   fullyShipped → fullyShipped
+--
+-- Semantic mapping (PhaseZLedgerState → LedgerState):
+--   identity-shape (5 ctors → 5 ctors with matching names).
+--
+-- Both injection functions are proved injective by full enumeration
+-- (3 × 3 = 9 and 5 × 5 = 25 case pairs respectively), with diagonal
+-- cases closing by `rfl` and off-diagonal cases by `nomatch h`
+-- via LedgerState's auto-generated noConfusion.
+#assert_no_axioms LeanFX2.Tools.AuditAll.LedgerState
+#assert_no_axioms LeanFX2.Tools.AuditAll.LedgerState.ctorCount
+#assert_no_axioms LeanFX2.Tools.AuditAll.LedgerState.ctorCount_correct
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.EtaCoverageState.toLedger
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.EtaCoverageState.toLedger_injective
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.PhaseZLedgerState.toLedger
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.PhaseZLedgerState.toLedger_injective
+
 -- ─── M-strict-axes-CS-TC-SO-DF (#381): cross-cutting STRICT ledger ──
 -- 4 honest ledger entries (CS/TC/SO/DF) tracking cross-cutting
 -- STRICT audit axes per polycell.md §11.7.5.  Today's snapshot:

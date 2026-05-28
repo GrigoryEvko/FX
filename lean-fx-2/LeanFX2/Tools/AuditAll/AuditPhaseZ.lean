@@ -1,3 +1,5 @@
+import LeanFX2.Tools.AuditAll.LedgerState
+
 /-! # Tools/AuditAll/AuditPhaseZ
    — honest STRICT-Z ledgers for the 10 phase-Z audit gates
 
@@ -126,6 +128,9 @@ All declarations close by `rfl` (for state values) or `refine` +
 `sorry`, no Classical.  Audit-gated. -/
 
 namespace LeanFX2.Tools.AuditAll
+
+open LeanFX2.Tools.AuditAll (LedgerState)
+
 namespace Audit
 
 /-- Per-gate ledger state.  Advances monotonically as the phase's
@@ -255,6 +260,69 @@ theorem phaseZ_counts_honest :
     phaseZ_notStarted_count = 10 ∧
     phaseZ_fullyShipped_count = 0 :=
   ⟨rfl, rfl⟩
+
+/-! ## audit-A18 (#401): bridge to the shared LedgerState
+
+Closes Agent 2's gap-audit finding that this file's 5-ctor
+`PhaseZLedgerState` and `AuditEtaDiscipline.lean`'s 3-ctor
+`EtaCoverageState` encoded the same audit-progression lattice
+with mismatched shapes.
+
+Ships an INJECTION into the canonical 5-ctor `LedgerState`
+(`Tools/AuditAll/LedgerState.lean`) plus an injectivity theorem.
+Per CLAUDE.md "don't delete without confirming",
+`PhaseZLedgerState` itself remains unchanged — both types
+continue to work; the injection provides the unification bridge.
+
+Semantic mapping: identity-shape (5 ctors → 5 ctors with
+matching names): `notStarted → notStarted`, `specOnly → specOnly`,
+`scaffoldShipped → scaffoldShipped`, `partialShipped →
+partialShipped`, `fullyShipped → fullyShipped`. -/
+
+/-- Convert a `PhaseZLedgerState` value into the canonical
+shared `LedgerState` lattice.  Identity-shape mapping — each
+ctor maps to its same-named counterpart in LedgerState. -/
+def PhaseZLedgerState.toLedger :
+    PhaseZLedgerState → LedgerState
+  | .notStarted      => .notStarted
+  | .specOnly        => .specOnly
+  | .scaffoldShipped => .scaffoldShipped
+  | .partialShipped  => .partialShipped
+  | .fullyShipped    => .fullyShipped
+
+/-- The injection is INJECTIVE: distinct PhaseZLedgerState values
+map to distinct LedgerState values.  Full 5 × 5 = 25 case
+enumeration: 5 diagonal cases close by `rfl`, 20 off-diagonal
+cases close by `LedgerState.noConfusion` via `nomatch` on the
+impossible equation.  Zero-axiom. -/
+theorem PhaseZLedgerState.toLedger_injective :
+    ∀ (s1 s2 : PhaseZLedgerState),
+      s1.toLedger = s2.toLedger → s1 = s2
+  | .notStarted,      .notStarted,      _ => rfl
+  | .notStarted,      .specOnly,        h => nomatch h
+  | .notStarted,      .scaffoldShipped, h => nomatch h
+  | .notStarted,      .partialShipped,  h => nomatch h
+  | .notStarted,      .fullyShipped,    h => nomatch h
+  | .specOnly,        .notStarted,      h => nomatch h
+  | .specOnly,        .specOnly,        _ => rfl
+  | .specOnly,        .scaffoldShipped, h => nomatch h
+  | .specOnly,        .partialShipped,  h => nomatch h
+  | .specOnly,        .fullyShipped,    h => nomatch h
+  | .scaffoldShipped, .notStarted,      h => nomatch h
+  | .scaffoldShipped, .specOnly,        h => nomatch h
+  | .scaffoldShipped, .scaffoldShipped, _ => rfl
+  | .scaffoldShipped, .partialShipped,  h => nomatch h
+  | .scaffoldShipped, .fullyShipped,    h => nomatch h
+  | .partialShipped,  .notStarted,      h => nomatch h
+  | .partialShipped,  .specOnly,        h => nomatch h
+  | .partialShipped,  .scaffoldShipped, h => nomatch h
+  | .partialShipped,  .partialShipped,  _ => rfl
+  | .partialShipped,  .fullyShipped,    h => nomatch h
+  | .fullyShipped,    .notStarted,      h => nomatch h
+  | .fullyShipped,    .specOnly,        h => nomatch h
+  | .fullyShipped,    .scaffoldShipped, h => nomatch h
+  | .fullyShipped,    .partialShipped,  h => nomatch h
+  | .fullyShipped,    .fullyShipped,    _ => rfl
 
 end Audit
 end LeanFX2.Tools.AuditAll
