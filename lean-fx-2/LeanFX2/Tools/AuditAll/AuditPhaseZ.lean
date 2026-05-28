@@ -59,7 +59,7 @@ Per polycell.md §3.16.20:
 ## Per-gate state machine
 
 ```
-notStarted → specOnly → scaffoldShipped → partial → fully_shipped
+notStarted → specOnly → scaffoldShipped → partialShipped → fullyShipped
 ```
 
 * **notStarted**: no Lean code, no spec section.  Default.
@@ -67,7 +67,7 @@ notStarted → specOnly → scaffoldShipped → partial → fully_shipped
 * **scaffoldShipped**: type signatures + design markers shipped
   (e.g., LevelExpr inductive + UniverseFlag enum committed).
 * **partial**: some witnesses shipped, not all.
-* **fully_shipped**: all required theorems shipped + every
+* **fullyShipped**: all required theorems shipped + every
   one of them gated by `#assert_no_axioms`.
 
 ## Forward-compat: advancing a gate
@@ -116,7 +116,7 @@ State transitions (only forward, never backward):
 * `specOnly → scaffoldShipped` when the type signatures /
   marker enums for the phase ship.
 * `scaffoldShipped → partial` when some witnesses ship.
-* `partial → fully_shipped` when every required witness ships
+* `partialShipped → fullyShipped` when every required witness ships
   + each is `#assert_no_axioms` clean. -/
 inductive PhaseZLedgerState
   | notStarted
@@ -214,7 +214,7 @@ counts advance as the per-gate state values progress. -/
 is 10; advances downward as gates progress. -/
 def phaseZ_notStarted_count : Nat := 10
 
-/-- Count of phase-Z gates currently at `fully_shipped`.  Today
+/-- Count of phase-Z gates currently at `fullyShipped`.  Today
 this is 0; advances toward 10 as work lands. -/
 def phaseZ_fullyShipped_count : Nat := 0
 

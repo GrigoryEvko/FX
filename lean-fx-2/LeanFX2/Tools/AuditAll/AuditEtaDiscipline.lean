@@ -108,19 +108,31 @@ Today's snapshot:
 
 ## Forward-compat: adding a new generator
 
-When M84-M86 add `gen_clockAbs` / `gen_paramAbs`:
-1. `Generator.etaEligibility .gen_clockAbs := .reservedEta`
-   advances to `.shippedEta`.
-2. `etaCoverageOf .reservedEta` advances from `.audited` to
-   `.fullyShipped`.
-3. The summary theorem updates the conjunction.
+When Phase Z₇/Z₈ adds clock-quantifier / parametricity
+abstraction generators (M84-M86 will name them per the
+landing-site Generator additions):
+1. Extend the appropriate Bool predicate (`isShippedEta` /
+   `isInductiveData` / `isEliminator`) with an explicit
+   `decide (gen = .gen_NEWNAME)` disjunct.
+2. `etaCoverageOf` may need adjustment if the new class's
+   coverage state advances.
+3. The summary theorem updates the conjunction in lockstep.
 
-When any future generator lands without an eta-eligibility
-classification:
-1. The `etaEligibility` total function fails to elaborate
-   (missing arm).
-2. Build break forces the implementer to classify the new
-   generator explicitly.
+**Honest limitation**: this harness uses cascading Bool
+predicates with a `.other` fallback (per the M11
+namespace-shadow recipe to avoid propext leakage on the
+194-ctor enum's wildcard match).  A new generator that is
+NOT explicitly listed in `isShippedEta` / `isInductiveData` /
+`isEliminator` silently classifies as `.other` — the build
+does NOT break automatically.  Discipline relies on the
+HUMAN reviewer + the per-gate spot-checks below to catch
+omissions.
+
+Future hardening (deferred): an EXHAUSTIVENESS theorem
+`Generator.etaEligibility_total_is_strict : ∀ g, ¬ (etaEligibility g
+= .other) ∨ (g ∈ knownOtherSet)` would close this gap, but
+requires enumerating the ~163 expected-other generators
+explicitly.  Track as future audit-hardening work.
 
 ## Zero-axiom verification
 

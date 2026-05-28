@@ -122,11 +122,16 @@ exist yet for this row (vs etaPair which has explicit Class-3
 resolutions shipped). -/
 def iotaEta_etaLam_state : MatrixRowState := .partialAudit
 
-/-- etaPair row state.  Class-2 trivial diamonds.  Class-3
-shipped: iotaFstPair × etaPair + iotaSndPair × etaPair via
-M-iotaEta-reserved-doublestrips #386 (the 2 active Class-3
-cells in the entire current matrix). -/
-def iotaEta_etaPair_state : MatrixRowState := .fullyAudited
+/-- etaPair row state.  Class-2 trivial diamonds covered by
+the cong+iota+η-pair interplay.  Class-3 critical-pair joins
+between (iotaFstPair / iotaSndPair) and etaPair are
+TEXTBOOK Barendregt-style joins that have NOT YET been
+shipped as explicit theorems — #386 ships RESERVED slots
+for modal/path/clock/param/glue, NOT the iota-fst/snd × etaPair
+joins.  Honest current state: partialAudit.  Per gap audit
+2026-05-28 (Agent 2 surfaced the overclaim from initial
+#387 ship). -/
+def iotaEta_etaPair_state : MatrixRowState := .partialAudit
 
 /-- etaPathLam row state.  No iota touches paths yet (path-app
 iota is reserved for M61 cubical Phase Z₄).  Class-3 reserved
@@ -154,7 +159,7 @@ lands), this summary fails to elaborate until both the per-row
 state AND the conjunction are updated in lockstep. -/
 theorem iotaEtaMatrix_summary :
     iotaEta_etaLam_state = .partialAudit ∧
-    iotaEta_etaPair_state = .fullyAudited ∧
+    iotaEta_etaPair_state = .partialAudit ∧
     iotaEta_etaPathLam_state = .partialAudit ∧
     iotaEta_etaModIntro_state = .partialAudit ∧
     iotaEta_etaGlueIntro_state = .partialAudit := by
@@ -181,21 +186,24 @@ matrix coverage state. -/
 /-- Total cells in the 16 × 5 iota-η matrix. -/
 def iotaEtaMatrix_total_cells : Nat := 80
 
-/-- Cells currently `fullyAudited` (etaPair row has 2 Class-3
-ships + 14 Class-1 disjoint = 16 cells). -/
-def iotaEtaMatrix_fullyAudited_cells : Nat := 16
+/-- Cells currently `fullyAudited`: 0 today.  Advances when
+Class-3 critical-pair joins ship as explicit theorems (e.g.,
+iotaFst/Snd × etaPair Barendregt joins for the etaPair row, or
+the 5 reserved double-strips activating per Phase Z₀+ generator
+landings). -/
+def iotaEtaMatrix_fullyAudited_cells : Nat := 0
 
-/-- Cells currently `partialAudit` (4 rows × 16 cells each =
-64 cells; each is Class-1 disjoint + Class-3 reserved waiting
-on Phase Z₀+ generators). -/
-def iotaEtaMatrix_partialAudit_cells : Nat := 64
+/-- Cells currently `partialAudit` (5 rows × 16 cells each =
+80 cells; each is Class-1 disjoint + Class-3 reserved waiting
+on explicit critical-pair theorems). -/
+def iotaEtaMatrix_partialAudit_cells : Nat := 80
 
-/-- Honest assertion of matrix cell counts.  16 + 64 = 80
+/-- Honest assertion of matrix cell counts.  0 + 80 = 80
 matches the total.  Updates lockstep with row state advances. -/
 theorem iotaEtaMatrix_cell_counts_honest :
     iotaEtaMatrix_total_cells = 80 ∧
-    iotaEtaMatrix_fullyAudited_cells = 16 ∧
-    iotaEtaMatrix_partialAudit_cells = 64 ∧
+    iotaEtaMatrix_fullyAudited_cells = 0 ∧
+    iotaEtaMatrix_partialAudit_cells = 80 ∧
     iotaEtaMatrix_fullyAudited_cells + iotaEtaMatrix_partialAudit_cells =
       iotaEtaMatrix_total_cells :=
   ⟨rfl, rfl, rfl, rfl⟩
