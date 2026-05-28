@@ -255,6 +255,91 @@ termination_by _scope _binderShifts sourceChildren _leftChildren
 decreasing_by
   exact RawTermChildren.size_lt_childCons_tail _ _
 
+/-- Resolve child-spine branchings using only term-level recursive calls whose
+source term is below a supplied parent size.
+
+This is the well-founded variant needed by the final M7 resolver.  The
+head/head case proves the head source is smaller than the whole child spine,
+then composes that fact with the caller-provided child-spine bound.  The
+tail/tail case recurses on the smaller tail spine.
+
+The proof uses the explicit mutual `StepChildren.rec` recursor instead of
+equation-compiler recursion because the extra `< parentSize` proof argument is
+proof-valued; the recursor form keeps the theorem audit-clean. -/
+theorem ofSmallerStepPairResolver
+    {parentSize : Nat}
+    (resolveSmallerStepPair :
+      ∀ {scope : Nat} {sourceTerm leftReduct rightReduct : RawTerm scope},
+        sourceTerm.size < parentSize →
+        (leftStep : Step sourceTerm leftReduct) →
+        (rightStep : Step sourceTerm rightReduct) →
+        StepPairJoin leftStep rightStep) :
+    ∀ {scope : Nat} {binderShifts : List Nat}
+      {sourceChildren leftChildren rightChildren :
+        RawTermChildren binderShifts scope},
+      sourceChildren.size < parentSize →
+      (leftStep : StepChildren sourceChildren leftChildren) →
+      (rightStep : StepChildren sourceChildren rightChildren) →
+      StepChildrenPairJoin leftStep rightStep := by
+  intro scope binderShifts sourceChildren leftChildren rightChildren
+    sourceChildren_lt_parent leftStep rightStep
+  exact
+    StepChildren.rec
+      (motive_1 := fun {_} _ _ _ => True)
+      (motive_2 := fun {_} {_} sourceChildren _leftChildren leftStep =>
+        ∀ {rightChildren}, sourceChildren.size < parentSize →
+          (rightStep : StepChildren sourceChildren rightChildren) →
+          StepChildrenPairJoin leftStep rightStep)
+      (by intros; trivial)
+      (by intros; trivial)
+      (by intros; trivial)
+      (by intros; trivial)
+      (by intros; trivial)
+      (by intros; trivial)
+      (by intros; trivial)
+      (by intros; trivial)
+      (by intros; trivial)
+      (by intros; trivial)
+      (by intros; trivial)
+      (by intros; trivial)
+      (by intros; trivial)
+      (by intros; trivial)
+      (by intros; trivial)
+      (by intros; trivial)
+      (by intros; trivial)
+      (by intros; trivial)
+      (by
+        intro _parentScope _headShift _restShifts sourceHead targetHead
+          restChildren childStep _trivialTermMotive
+        intro _rightChildren childCons_lt_parent rightStep
+        cases rightStep with
+        | here _ rightHeadStep =>
+            exact ofHeadJoin restChildren
+              (resolveSmallerStepPair
+                (Nat.lt_trans
+                  (RawTermChildren.size_lt_childCons_head
+                    sourceHead restChildren)
+                  childCons_lt_parent)
+                childStep rightHeadStep)
+        | there _ rightTailStep =>
+            exact ofIndependentHeadTail childStep rightTailStep)
+      (by
+        intro _parentScope _headShift _restShifts sourceHead sourceTail
+          _leftTail restStep tailResolver
+        intro _rightChildren childCons_lt_parent rightStep
+        cases rightStep with
+        | here _ rightHeadStep =>
+            exact ofIndependentTailHead restStep rightHeadStep
+        | there _ rightTailStep =>
+            exact ofTailJoin sourceHead
+              (tailResolver
+                (Nat.lt_trans
+                  (RawTermChildren.size_lt_childCons_tail
+                    sourceHead sourceTail)
+                  childCons_lt_parent)
+                rightTailStep))
+      leftStep sourceChildren_lt_parent rightStep
+
 end StepChildrenPairJoin
 
 namespace StepPairJoin
@@ -283,6 +368,38 @@ theorem ofCongCongStepPairResolver
   ofCongChildrenJoin
     (StepChildrenPairJoin.ofStepPairResolver
       resolveStepPair leftChildrenStep rightChildrenStep)
+
+/-- Resolve a `Step.cong`/`Step.cong` branching using only recursive calls on
+source terms smaller than the parent congruence source.
+
+This is the term-level bridge that the final well-founded `resolveBranching`
+spine can use directly in the congruence/congruence case. -/
+theorem ofCongCongSmallerStepPairResolver
+    {scope : Nat} {generator : Generator}
+    {payload : generator.payload scope}
+    {sourceChildren leftChildren rightChildren :
+      RawTermChildren generator.binderShifts scope}
+    (resolveSmallerStepPair :
+      ∀ {childScope : Nat}
+        {sourceTerm leftReduct rightReduct : RawTerm childScope},
+        sourceTerm.size <
+          (RawTerm.mkGen generator payload sourceChildren).size →
+        (leftStep : Step sourceTerm leftReduct) →
+        (rightStep : Step sourceTerm rightReduct) →
+        StepPairJoin leftStep rightStep)
+    (leftChildrenStep : StepChildren sourceChildren leftChildren)
+    (rightChildrenStep : StepChildren sourceChildren rightChildren) :
+    StepPairJoin
+      (Step.cong generator payload leftChildrenStep)
+      (Step.cong generator payload rightChildrenStep) :=
+  ofCongChildrenJoin
+    (StepChildrenPairJoin.ofSmallerStepPairResolver
+      (parentSize := (RawTerm.mkGen generator payload sourceChildren).size)
+      resolveSmallerStepPair
+      (by
+        change sourceChildren.size < sourceChildren.size + 1
+        exact Nat.lt_succ_self sourceChildren.size)
+      leftChildrenStep rightChildrenStep)
 
 end StepPairJoin
 
@@ -393,6 +510,33 @@ theorem congCong_hasJoin_ofStepPairResolver
   hasJoin_fromSteps
     (StepPairJoin.ofCongCongStepPairResolver
       resolveStepPair leftChildrenStep rightChildrenStep)
+
+/-- Packaged `Step.cong`/`Step.cong` resolver arm for the final
+well-founded M7 resolver.
+
+Unlike `congCong_hasJoin_ofStepPairResolver`, this variant only asks for a
+resolver on source terms smaller than the parent congruence source. -/
+theorem congCong_hasJoin_ofSmallerStepPairResolver
+    {scope : Nat} {generator : Generator}
+    {payload : generator.payload scope}
+    {sourceChildren leftChildren rightChildren :
+      RawTermChildren generator.binderShifts scope}
+    (resolveSmallerStepPair :
+      ∀ {childScope : Nat}
+        {sourceTerm leftReduct rightReduct : RawTerm childScope},
+        sourceTerm.size <
+          (RawTerm.mkGen generator payload sourceChildren).size →
+        (leftStep : Step sourceTerm leftReduct) →
+        (rightStep : Step sourceTerm rightReduct) →
+        StepPairJoin leftStep rightStep)
+    (leftChildrenStep : StepChildren sourceChildren leftChildren)
+    (rightChildrenStep : StepChildren sourceChildren rightChildren) :
+    (fromSteps
+      (Step.cong generator payload leftChildrenStep)
+      (Step.cong generator payload rightChildrenStep)).HasJoin :=
+  hasJoin_fromSteps
+    (StepPairJoin.ofCongCongSmallerStepPairResolver
+      resolveSmallerStepPair leftChildrenStep rightChildrenStep)
 
 end LocalStepBranching
 

@@ -1258,7 +1258,9 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepChildrenPairJoin.sameStep
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepChildrenPairJoin.swap
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepChildrenPairJoin.ofStepPairResolver
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepChildrenPairJoin.ofSmallerStepPairResolver
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepPairJoin.ofCongCongStepPairResolver
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepPairJoin.ofCongCongSmallerStepPairResolver
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepPairJoin.ofLocalDiamondFromSteps
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepPairJoin.ofLocalDiamondFromSteps_swap
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.fromSteps
@@ -1271,6 +1273,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.hasJoin_ofReductsEqual
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.hasJoin_swap
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.congCong_hasJoin_ofStepPairResolver
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.congCong_hasJoin_ofSmallerStepPairResolver
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.hasJoin
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.toStepPairJoin
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.toStepPairJoin_swap
