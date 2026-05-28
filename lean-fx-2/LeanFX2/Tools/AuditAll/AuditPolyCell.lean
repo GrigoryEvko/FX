@@ -144,6 +144,7 @@ import LeanFX2.Tools.AuditAll.AuditIotaEtaMatrix
 import LeanFX2.Foundation.PolyCell.Universe.LevelExpr
 import LeanFX2.Foundation.PolyCell.Universe.UniverseFlag
 import LeanFX2.Foundation.PolyCell.NbE.NormalizerSignature
+import LeanFX2.Foundation.PolyCell.NbE.Quote
 
 namespace LeanFX2.Tools
 
@@ -3356,6 +3357,31 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.NormalizerWithStrategy.fieldCount_correct
 #assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.Normalizer.consistent_with_hybrid_design
 #assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.Normalizer.consistent_with_cbn_strategy
+
+-- ─── M13 (#262): NbE raw quote — identity at raw layer ──────────────
+-- Per M11-pre #372 hybrid design, the raw-layer quote is the IDENTITY:
+-- eval's output is already in β-NF (post the M11 Normalizer's
+-- normalize_isNF field), so no readback step is needed.
+--
+-- THE CHEAPEST M11-M17 deliverable per DesignDecision.lean:67-71.
+-- M15a-e #359-#363 type-directed quote is a DISTINCT operation that
+-- doesn't instantiate this raw `Quote` structure.
+--
+-- Ships:
+--   Quote (structure, 3 fields)
+--   quoteRaw : Quote — canonical identity instance
+--   quoteRaw_unit + quoteRaw_is_extensional_identity smokes
+--   Quote.fieldCount + correctness theorem
+--   consistent_with_hybrid_design + consistent_with_cbn_strategy
+--     cross-reference theorems pinning the M11/M12/M13 design triple
+#assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.Quote
+#assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.quoteRaw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.quoteRaw_unit
+#assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.quoteRaw_is_extensional_identity
+#assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.Quote.fieldCount
+#assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.Quote.fieldCount_correct
+#assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.Quote.consistent_with_hybrid_design
+#assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.Quote.consistent_with_cbn_strategy
 
 -- ─── V2-L4.5 (#214): SconingConstructionLevel honest ledger ─────────
 -- 20 declarations in InternalSconing.lean ship the honest construction-
