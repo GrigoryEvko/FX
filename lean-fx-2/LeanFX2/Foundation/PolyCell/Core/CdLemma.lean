@@ -201,6 +201,46 @@ theorem toStepPairJoin_swap {scope : Nat}
 
 end LocalDiamond
 
+namespace LocalStepBranching
+
+/-- Resolver arm for the beta/beta root-root branching. -/
+theorem betaBeta_hasJoin {scope : Nat}
+    (body : RawTerm (scope + 1)) (arg : RawTerm scope) :
+    (betaBeta body arg).HasJoin :=
+  (LocalDiamond.betaBeta body arg).hasJoin
+
+/-- Resolver arm for beta competing with congruence in the function child. -/
+theorem betaFunctionCong_hasJoin {scope : Nat}
+    {body updatedBody : RawTerm (scope + 1)}
+    (argument : RawTerm scope) (bodyStep : Step body updatedBody) :
+    (betaFunctionCong argument bodyStep).HasJoin :=
+  (LocalDiamond.betaFunctionCong argument bodyStep).hasJoin
+
+/-- Resolver arm for the reverse orientation of beta/function congruence. -/
+theorem betaFunctionCongReverse_hasJoin {scope : Nat}
+    {body updatedBody : RawTerm (scope + 1)}
+    (argument : RawTerm scope) (bodyStep : Step body updatedBody) :
+    (betaFunctionCong argument bodyStep).swap.HasJoin :=
+  (LocalDiamond.betaFunctionCongReverse argument bodyStep).hasJoin
+
+/-- Resolver arm for beta competing with congruence in the argument child. -/
+theorem betaArgumentCong_hasJoin {scope : Nat}
+    (body : RawTerm (scope + 1))
+    {argument updatedArgument : RawTerm scope}
+    (argumentStep : Step argument updatedArgument) :
+    (betaArgumentCong body argumentStep).HasJoin :=
+  (LocalDiamond.betaArgumentCong body argumentStep).hasJoin
+
+/-- Resolver arm for the reverse orientation of beta/argument congruence. -/
+theorem betaArgumentCongReverse_hasJoin {scope : Nat}
+    (body : RawTerm (scope + 1))
+    {argument updatedArgument : RawTerm scope}
+    (argumentStep : Step argument updatedArgument) :
+    (betaArgumentCong body argumentStep).swap.HasJoin :=
+  (LocalDiamond.betaArgumentCongReverse body argumentStep).hasJoin
+
+end LocalStepBranching
+
 namespace CdLemmaStatement
 
 /-- Reduce the full M7 target to a resolver over packaged local branchings.

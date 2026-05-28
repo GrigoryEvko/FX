@@ -1260,6 +1260,11 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.hasJoin
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.toStepPairJoin
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalDiamond.toStepPairJoin_swap
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.betaBeta_hasJoin
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.betaFunctionCong_hasJoin
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.betaFunctionCongReverse_hasJoin
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.betaArgumentCong_hasJoin
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.betaArgumentCongReverse_hasJoin
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CdLemmaStatement.ofLocalBranchingResolver
 
 -- ─── V2-L3.1 phase D step 35: HCC-level wrappers around the cell-step
