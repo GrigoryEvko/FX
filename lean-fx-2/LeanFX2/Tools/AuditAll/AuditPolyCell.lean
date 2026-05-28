@@ -53,6 +53,7 @@ import LeanFX2.Foundation.PolyCell.Core.RawTermSubstRenameCommute
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubstCompose
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubst0Commute
 import LeanFX2.Foundation.PolyCell.Core.RawTermStrengthen
+import LeanFX2.Foundation.PolyCell.Core.RawTermFresh
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubstAction
 import LeanFX2.Foundation.PolyCell.Core.RawCellRenameSubst
 import LeanFX2.Foundation.PolyCell.Core.RawCellCascadeLaws
@@ -2380,6 +2381,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaPathLamStrengthenedFunctionCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaLamStrengthenedFunctionCongFromUnderStep
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaPathLamStrengthenedFunctionCongFromUnderStep
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaLamArbitraryUnderBinderCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaPathLamArbitraryUnderBinderCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.EtaStepKind
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.EtaStepKind.all
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.EtaStepKind.sourceGenerator
@@ -2716,6 +2719,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.weaken
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.weaken_substTarget
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepChildren.weaken_substTarget
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.preserves_isFreshFor
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.weaken_strengthenTarget
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.weaken
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubst.PointwiseStepStar
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubst.lift_pointwiseStepStar
@@ -3368,6 +3373,19 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.strengthen_weakened_subst0
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.strengthen_commutes_rename
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.strengthen_commutes_subst0
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.isFreshFor
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.isFreshFor
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.childNil_isFreshFor
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.isFreshFor_nonVar_of_children_isFreshFor
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.childCons_isFreshFor
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.single_isFreshFor
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.double_isFreshFor
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.triple_isFreshFor
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_subst0_commute
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.strengthen_eq_subst_of_isFreshFor_singleton
 
 -- V2-L2.7d: THE `Action RawTermSubst` TYPECLASS INSTANCE.
 -- Closes V2-L2.7 entirely.  Cites the three Action laws shipped

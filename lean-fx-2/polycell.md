@@ -5601,16 +5601,22 @@ strengthening siblings, lifted singleton-substitution cancellation
 for terms and children, and `StepChildren.weaken_substTarget`.  This
 is the binder-depth substrate needed for the congruence case of the
 freshness inversion, where the target step may occur inside a child
-spine under additional binders.  The remaining #355 binder work is the
-freshness half, i.e. proving that an arbitrary under-binder reduct
-strengthens to the same substituted target.  The first root-case
-subslice of that proof is now isolated as `RawTerm.weaken_subst0` and
+spine under additional binders.  The following root-case subslice
+isolates `RawTerm.weaken_subst0` and
 `RawTerm.strengthen_weakened_subst0`: a beta contractum of a weakened
 redex is itself a weakening, and strengthening it recovers the
-source-scope contractum.  Remaining work: fold these root-case and
-child-spine ingredients into the mutual weaken-step inversion, then use
-that inversion in the actual betaEta local resolver; #356 remains
-eta/eta branchings.
+source-scope contractum.  The latest #355 slice folds the root-case and
+child-spine ingredients into the freshness inversion:
+`Step.preserves_isFreshFor` proves every beta+iota step preserves an
+arbitrary substitution/renaming retraction, and
+`Step.weaken_strengthenTarget` specializes it to arbitrary reducts of
+`weaken source`.  The binder betaEta resolver wrappers
+`etaLamArbitraryUnderBinderCong` and
+`etaPathLamArbitraryUnderBinderCong` now consume only the under-binder
+step; strengthening and the source-level replay step are derived
+internally.  Remaining #355 work: wire these resolver-facing joins into
+the full `Step.betaEta` local Church-Rosser dispatcher / cd-lemma
+extension.  #356 remains eta/eta branchings.
 Record, clock, and parametricity eta remain generator-frontier work,
 not placeholders in the current raw relation.
 

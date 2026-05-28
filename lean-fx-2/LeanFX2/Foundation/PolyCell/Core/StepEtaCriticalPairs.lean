@@ -580,6 +580,56 @@ theorem etaPathLamStrengthenedFunctionCongFromUnderStep {scope : Nat}
   exact etaPathLamStrengthenedFunctionCong underBinderStep
     strengthenSuccess pathStep
 
+/-- Eta-lambda resolver arm for an arbitrary beta+iota step under the
+weakened function occurrence.
+
+The strengthening evidence is now derived from `Step.weaken_strengthenTarget`,
+so callers only supply the under-binder `Step`. -/
+theorem etaLamArbitraryUnderBinderCong {scope : Nat}
+    {innerFunction : RawTerm scope}
+    {updatedUnderBinder : RawTerm (scope + 1)}
+    (underBinderStep :
+      Step (RawTerm.weaken innerFunction) updatedUnderBinder) :
+    BetaEtaPairJoin
+      (Or.inl
+        (Step.cong .gen_lam ()
+          (StepChildren.here
+            (parentScope := scope) (headShift := 1) (restShifts := [])
+            (.childNil : RawTermChildren [] scope)
+            (Step.cong .gen_app ()
+              (StepChildren.here
+                (parentScope := scope + 1) (headShift := 0)
+                (restShifts := [0])
+                ((.childCons RawTerm.newestVar .childNil) :
+                  RawTermChildren [0] (scope + 1))
+                underBinderStep)))))
+      (Or.inr (Step.eta.etaLam innerFunction)) :=
+  etaLamStrengthenedFunctionCongFromUnderStep underBinderStep
+    (Step.weaken_strengthenTarget underBinderStep)
+
+/-- Cubical path-lambda sibling of `etaLamArbitraryUnderBinderCong`. -/
+theorem etaPathLamArbitraryUnderBinderCong {scope : Nat}
+    {innerPath : RawTerm scope}
+    {updatedUnderBinder : RawTerm (scope + 1)}
+    (underBinderStep :
+      Step (RawTerm.weaken innerPath) updatedUnderBinder) :
+    BetaEtaPairJoin
+      (Or.inl
+        (Step.cong .gen_pathLam ()
+          (StepChildren.here
+            (parentScope := scope) (headShift := 1) (restShifts := [])
+            (.childNil : RawTermChildren [] scope)
+            (Step.cong .gen_pathApp ()
+              (StepChildren.here
+                (parentScope := scope + 1) (headShift := 0)
+                (restShifts := [0])
+                ((.childCons RawTerm.newestVar .childNil) :
+                  RawTermChildren [0] (scope + 1))
+                underBinderStep)))))
+      (Or.inr (Step.eta.etaPathLam innerPath)) :=
+  etaPathLamStrengthenedFunctionCongFromUnderStep underBinderStep
+    (Step.weaken_strengthenTarget underBinderStep)
+
 end BetaEtaPairJoin
 
 /-- Current root eta kinds represented by `Step.eta`.

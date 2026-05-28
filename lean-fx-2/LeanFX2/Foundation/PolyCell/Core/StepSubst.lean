@@ -1,5 +1,6 @@
 import LeanFX2.Foundation.PolyCell.Core.StepStar
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubst0Commute
+import LeanFX2.Foundation.PolyCell.Core.RawTermFresh
 import LeanFX2.Foundation.PolyCell.Core.StructuralInductionPrimitives
 
 /-! # Foundation/PolyCell/Core/StepSubst
@@ -264,7 +265,820 @@ theorem StepChildren.weaken_substTarget {scope : Nat}
     StepChildren.subst (RawTermSubst.singleton unitTerm) underBinderStep
   rw [RawTermChildren.weaken_subst_singleton sourceChildren unitTerm]
     at substitutedStep
+  dsimp only [unitTerm] at substitutedStep
   exact substitutedStep
+
+/-- One-step reduction preserves any substitution/renaming retraction
+freshness proof.
+
+The eta-critical-pair use case specializes this to `weaken` after
+singleton substitution: if a term under a fresh binder reduces, the reduct
+is still fresh for that binder. -/
+theorem Step.preserves_isFreshFor {sourceScope : Nat}
+    {sourceTerm targetTerm : RawTerm sourceScope}
+    (sourceStep : Step sourceTerm targetTerm) :
+    ∀ {targetScope : Nat}
+      (rawRenaming : RawRenaming targetScope sourceScope)
+      (rawSubstitution : RawTermSubst sourceScope targetScope),
+      RawTerm.isFreshFor rawRenaming rawSubstitution sourceTerm →
+      RawTerm.isFreshFor rawRenaming rawSubstitution targetTerm := by
+  intro targetScope rawRenaming rawSubstitution sourceFresh
+  let motiveStep :
+      {scope : Nat} → (firstTerm secondTerm : RawTerm scope) →
+        Step firstTerm secondTerm → Prop :=
+    fun {scope} firstTerm secondTerm _ =>
+      ∀ {targetScope : Nat}
+        (rawRenaming : RawRenaming targetScope scope)
+        (rawSubstitution : RawTermSubst scope targetScope),
+        RawTerm.isFreshFor rawRenaming rawSubstitution firstTerm →
+        RawTerm.isFreshFor rawRenaming rawSubstitution secondTerm
+  let motiveChildren :
+      {parentScope : Nat} → {binderShifts : List Nat} →
+        (firstChildren secondChildren :
+          RawTermChildren binderShifts parentScope) →
+        StepChildren firstChildren secondChildren → Prop :=
+    fun {parentScope} {_} firstChildren secondChildren _ =>
+      ∀ {targetScope : Nat}
+        (rawRenaming : RawRenaming targetScope parentScope)
+        (rawSubstitution : RawTermSubst parentScope targetScope),
+        RawTermChildren.isFreshFor rawRenaming rawSubstitution
+          firstChildren →
+        RawTermChildren.isFreshFor rawRenaming rawSubstitution
+          secondChildren
+  exact
+    (Step.rec (motive_1 := motiveStep) (motive_2 := motiveChildren)
+      (fun {scope} {body} {arg} {targetScope} rawRenaming rawSubstitution
+          sourceFresh => by
+        let appChildren :=
+          ((.childCons
+              (.mkGen .gen_lam () (.childCons body .childNil))
+              (.childCons arg .childNil)) : RawTermChildren [0, 0] scope)
+        have appChildrenFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              appChildren :=
+          RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
+            (generator := .gen_app) rawRenaming rawSubstitution
+            (by decide) () appChildren sourceFresh
+        have lamFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution
+              (.mkGen .gen_lam () (.childCons body .childNil) :
+                RawTerm scope) :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ appChildrenFresh
+        have argumentSpineFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons arg .childNil) : RawTermChildren [0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ appChildrenFresh
+        have argFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution arg :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ argumentSpineFresh
+        have lamChildrenFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons body .childNil) : RawTermChildren [1] scope) :=
+          RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
+            (generator := .gen_lam) rawRenaming rawSubstitution
+            (by decide) () _ lamFresh
+        have bodyFresh :
+            RawTerm.isFreshFor (RawRenaming.lift rawRenaming)
+              (RawTermSubst.lift rawSubstitution) body :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ lamChildrenFresh
+        unfold RawTerm.isFreshFor
+        rw [RawTerm.subst0_subst_commute]
+        rw [RawTerm.rename_subst0_commute]
+        unfold RawTerm.isFreshFor at bodyFresh
+        unfold RawTerm.isFreshFor at argFresh
+        rw [bodyFresh, argFresh])
+      (fun {scope} generator payload {children} {children'} childStep
+          childFreshIH {targetScope} rawRenaming rawSubstitution
+          sourceFresh => by
+        by_cases generatorIsVar : generator = .gen_var
+        · subst generatorIsVar
+          cases childStep
+        · have childrenFresh :
+              RawTermChildren.isFreshFor rawRenaming rawSubstitution
+                children :=
+            RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
+              rawRenaming rawSubstitution generatorIsVar payload children
+              sourceFresh
+          exact RawTerm.isFreshFor_nonVar_of_children_isFreshFor
+            rawRenaming rawSubstitution generatorIsVar payload children'
+            (childFreshIH rawRenaming rawSubstitution childrenFresh))
+      (fun {scope} {thenBranch} {elseBranch} {targetScope} rawRenaming
+          rawSubstitution sourceFresh => by
+        let sourceChildren :=
+          ((.childCons (.mkGen .gen_boolTrue () .childNil)
+            (.childCons thenBranch (.childCons elseBranch .childNil))) :
+              RawTermChildren [0, 0, 0] scope)
+        have childrenFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              sourceChildren :=
+          RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
+            (generator := .gen_boolElim) rawRenaming rawSubstitution
+            (by decide) () sourceChildren sourceFresh
+        have branchSpineFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons thenBranch (.childCons elseBranch .childNil)) :
+                RawTermChildren [0, 0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ childrenFresh
+        exact RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+          rawRenaming rawSubstitution _ _ branchSpineFresh)
+      (fun {scope} {thenBranch} {elseBranch} {targetScope} rawRenaming
+          rawSubstitution sourceFresh => by
+        let sourceChildren :=
+          ((.childCons (.mkGen .gen_boolFalse () .childNil)
+            (.childCons thenBranch (.childCons elseBranch .childNil))) :
+              RawTermChildren [0, 0, 0] scope)
+        have childrenFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              sourceChildren :=
+          RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
+            (generator := .gen_boolElim) rawRenaming rawSubstitution
+            (by decide) () sourceChildren sourceFresh
+        have branchSpineFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons thenBranch (.childCons elseBranch .childNil)) :
+                RawTermChildren [0, 0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ childrenFresh
+        have elseSpineFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons elseBranch .childNil) :
+                RawTermChildren [0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ branchSpineFresh
+        exact RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+          rawRenaming rawSubstitution _ _ elseSpineFresh)
+      (fun {scope} {firstValue} {secondValue} {targetScope} rawRenaming
+          rawSubstitution sourceFresh => by
+        let pairChildren :=
+          ((.childCons firstValue (.childCons secondValue .childNil)) :
+            RawTermChildren [0, 0] scope)
+        let fstChildren :=
+          ((.childCons (.mkGen .gen_pair () pairChildren) .childNil) :
+            RawTermChildren [0] scope)
+        have fstChildrenFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              fstChildren :=
+          RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
+            (generator := .gen_fst) rawRenaming rawSubstitution
+            (by decide) () fstChildren sourceFresh
+        have pairFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution
+              (.mkGen .gen_pair () pairChildren : RawTerm scope) :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ fstChildrenFresh
+        have pairChildrenFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              pairChildren :=
+          RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
+            (generator := .gen_pair) rawRenaming rawSubstitution
+            (by decide) () pairChildren pairFresh
+        exact RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+          rawRenaming rawSubstitution _ _ pairChildrenFresh)
+      (fun {scope} {firstValue} {secondValue} {targetScope} rawRenaming
+          rawSubstitution sourceFresh => by
+        let pairChildren :=
+          ((.childCons firstValue (.childCons secondValue .childNil)) :
+            RawTermChildren [0, 0] scope)
+        let sndChildren :=
+          ((.childCons (.mkGen .gen_pair () pairChildren) .childNil) :
+            RawTermChildren [0] scope)
+        have sndChildrenFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              sndChildren :=
+          RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
+            (generator := .gen_snd) rawRenaming rawSubstitution
+            (by decide) () sndChildren sourceFresh
+        have pairFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution
+              (.mkGen .gen_pair () pairChildren : RawTerm scope) :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ sndChildrenFresh
+        have pairChildrenFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              pairChildren :=
+          RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
+            (generator := .gen_pair) rawRenaming rawSubstitution
+            (by decide) () pairChildren pairFresh
+        have secondSpineFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons secondValue .childNil) :
+                RawTermChildren [0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ pairChildrenFresh
+        exact RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+          rawRenaming rawSubstitution _ _ secondSpineFresh)
+      (fun {scope} {zeroBranch} {succBranch} {targetScope} rawRenaming
+          rawSubstitution sourceFresh => by
+        let sourceChildren :=
+          ((.childCons (.mkGen .gen_natZero () .childNil)
+            (.childCons zeroBranch (.childCons succBranch .childNil))) :
+              RawTermChildren [0, 0, 0] scope)
+        have childrenFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              sourceChildren :=
+          RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
+            (generator := .gen_natElim) rawRenaming rawSubstitution
+            (by decide) () sourceChildren sourceFresh
+        have branchSpineFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons zeroBranch (.childCons succBranch .childNil)) :
+                RawTermChildren [0, 0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ childrenFresh
+        exact RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+          rawRenaming rawSubstitution _ _ branchSpineFresh)
+      (fun {scope} {zeroBranch} {succBranch} {targetScope} rawRenaming
+          rawSubstitution sourceFresh => by
+        let sourceChildren :=
+          ((.childCons (.mkGen .gen_natZero () .childNil)
+            (.childCons zeroBranch (.childCons succBranch .childNil))) :
+              RawTermChildren [0, 0, 0] scope)
+        have childrenFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              sourceChildren :=
+          RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
+            (generator := .gen_natRec) rawRenaming rawSubstitution
+            (by decide) () sourceChildren sourceFresh
+        have branchSpineFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons zeroBranch (.childCons succBranch .childNil)) :
+                RawTermChildren [0, 0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ childrenFresh
+        exact RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+          rawRenaming rawSubstitution _ _ branchSpineFresh)
+      (fun {scope} {nilBranch} {consBranch} {targetScope} rawRenaming
+          rawSubstitution sourceFresh => by
+        let sourceChildren :=
+          ((.childCons (.mkGen .gen_listNil () .childNil)
+            (.childCons nilBranch (.childCons consBranch .childNil))) :
+              RawTermChildren [0, 0, 0] scope)
+        have childrenFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              sourceChildren :=
+          RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
+            (generator := .gen_listElim) rawRenaming rawSubstitution
+            (by decide) () sourceChildren sourceFresh
+        have branchSpineFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons nilBranch (.childCons consBranch .childNil)) :
+                RawTermChildren [0, 0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ childrenFresh
+        exact RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+          rawRenaming rawSubstitution _ _ branchSpineFresh)
+      (fun {scope} {noneBranch} {someBranch} {targetScope} rawRenaming
+          rawSubstitution sourceFresh => by
+        let sourceChildren :=
+          ((.childCons (.mkGen .gen_optionNone () .childNil)
+            (.childCons noneBranch (.childCons someBranch .childNil))) :
+              RawTermChildren [0, 0, 0] scope)
+        have childrenFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              sourceChildren :=
+          RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
+            (generator := .gen_optionMatch) rawRenaming rawSubstitution
+            (by decide) () sourceChildren sourceFresh
+        have branchSpineFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons noneBranch (.childCons someBranch .childNil)) :
+                RawTermChildren [0, 0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ childrenFresh
+        exact RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+          rawRenaming rawSubstitution _ _ branchSpineFresh)
+      (fun {scope} {value} {noneBranch} {someBranch} {targetScope}
+          rawRenaming rawSubstitution sourceFresh => by
+        let optionSomeChildren :=
+          ((.childCons value .childNil) : RawTermChildren [0] scope)
+        let sourceChildren :=
+          ((.childCons (.mkGen .gen_optionSome () optionSomeChildren)
+            (.childCons noneBranch (.childCons someBranch .childNil))) :
+              RawTermChildren [0, 0, 0] scope)
+        have childrenFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              sourceChildren :=
+          RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
+            (generator := .gen_optionMatch) rawRenaming rawSubstitution
+            (by decide) () sourceChildren sourceFresh
+        have optionSomeFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution
+              (.mkGen .gen_optionSome () optionSomeChildren : RawTerm scope) :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ childrenFresh
+        have optionSomeChildrenFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              optionSomeChildren :=
+          RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
+            (generator := .gen_optionSome) rawRenaming rawSubstitution
+            (by decide) () optionSomeChildren optionSomeFresh
+        have valueFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution value :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ optionSomeChildrenFresh
+        have branchSpineFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons noneBranch (.childCons someBranch .childNil)) :
+                RawTermChildren [0, 0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ childrenFresh
+        have someSpineFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons someBranch .childNil) :
+                RawTermChildren [0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ branchSpineFresh
+        have someBranchFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution someBranch :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ someSpineFresh
+        exact RawTerm.isFreshFor_nonVar_of_children_isFreshFor
+          (generator := .gen_app) rawRenaming rawSubstitution (by decide)
+          () _ (RawTermChildren.double_isFreshFor
+            (firstShift := 0) (secondShift := 0) rawRenaming
+            rawSubstitution someBranch value someBranchFresh valueFresh))
+      (fun {scope} {value} {leftBranch} {rightBranch} {targetScope}
+          rawRenaming rawSubstitution sourceFresh => by
+        let eitherInlChildren :=
+          ((.childCons value .childNil) : RawTermChildren [0] scope)
+        let sourceChildren :=
+          ((.childCons (.mkGen .gen_eitherInl () eitherInlChildren)
+            (.childCons leftBranch (.childCons rightBranch .childNil))) :
+              RawTermChildren [0, 0, 0] scope)
+        have childrenFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              sourceChildren :=
+          RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
+            (generator := .gen_eitherMatch) rawRenaming rawSubstitution
+            (by decide) () sourceChildren sourceFresh
+        have eitherInlFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution
+              (.mkGen .gen_eitherInl () eitherInlChildren : RawTerm scope) :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ childrenFresh
+        have eitherInlChildrenFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              eitherInlChildren :=
+          RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
+            (generator := .gen_eitherInl) rawRenaming rawSubstitution
+            (by decide) () eitherInlChildren eitherInlFresh
+        have valueFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution value :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ eitherInlChildrenFresh
+        have branchSpineFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons leftBranch (.childCons rightBranch .childNil)) :
+                RawTermChildren [0, 0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ childrenFresh
+        have leftBranchFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution leftBranch :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ branchSpineFresh
+        exact RawTerm.isFreshFor_nonVar_of_children_isFreshFor
+          (generator := .gen_app) rawRenaming rawSubstitution (by decide)
+          () _ (RawTermChildren.double_isFreshFor
+            (firstShift := 0) (secondShift := 0) rawRenaming
+            rawSubstitution leftBranch value leftBranchFresh valueFresh))
+      (fun {scope} {value} {leftBranch} {rightBranch} {targetScope}
+          rawRenaming rawSubstitution sourceFresh => by
+        let eitherInrChildren :=
+          ((.childCons value .childNil) : RawTermChildren [0] scope)
+        let sourceChildren :=
+          ((.childCons (.mkGen .gen_eitherInr () eitherInrChildren)
+            (.childCons leftBranch (.childCons rightBranch .childNil))) :
+              RawTermChildren [0, 0, 0] scope)
+        have childrenFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              sourceChildren :=
+          RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
+            (generator := .gen_eitherMatch) rawRenaming rawSubstitution
+            (by decide) () sourceChildren sourceFresh
+        have eitherInrFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution
+              (.mkGen .gen_eitherInr () eitherInrChildren : RawTerm scope) :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ childrenFresh
+        have eitherInrChildrenFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              eitherInrChildren :=
+          RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
+            (generator := .gen_eitherInr) rawRenaming rawSubstitution
+            (by decide) () eitherInrChildren eitherInrFresh
+        have valueFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution value :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ eitherInrChildrenFresh
+        have branchSpineFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons leftBranch (.childCons rightBranch .childNil)) :
+                RawTermChildren [0, 0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ childrenFresh
+        have rightBranchSpineFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons rightBranch .childNil) :
+                RawTermChildren [0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ branchSpineFresh
+        have rightBranchFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution rightBranch :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ rightBranchSpineFresh
+        exact RawTerm.isFreshFor_nonVar_of_children_isFreshFor
+          (generator := .gen_app) rawRenaming rawSubstitution (by decide)
+          () _ (RawTermChildren.double_isFreshFor
+            (firstShift := 0) (secondShift := 0) rawRenaming
+            rawSubstitution rightBranch value rightBranchFresh valueFresh))
+      (fun {scope} {predecessor} {zeroBranch} {succBranch} {targetScope}
+          rawRenaming rawSubstitution sourceFresh => by
+        let natSuccChildren :=
+          ((.childCons predecessor .childNil) : RawTermChildren [0] scope)
+        let sourceChildren :=
+          ((.childCons (.mkGen .gen_natSucc () natSuccChildren)
+            (.childCons zeroBranch (.childCons succBranch .childNil))) :
+              RawTermChildren [0, 0, 0] scope)
+        have childrenFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              sourceChildren :=
+          RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
+            (generator := .gen_natElim) rawRenaming rawSubstitution
+            (by decide) () sourceChildren sourceFresh
+        have natSuccFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution
+              (.mkGen .gen_natSucc () natSuccChildren : RawTerm scope) :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ childrenFresh
+        have natSuccChildrenFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              natSuccChildren :=
+          RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
+            (generator := .gen_natSucc) rawRenaming rawSubstitution
+            (by decide) () natSuccChildren natSuccFresh
+        have predecessorFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution predecessor :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ natSuccChildrenFresh
+        have branchSpineFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons zeroBranch (.childCons succBranch .childNil)) :
+                RawTermChildren [0, 0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ childrenFresh
+        have zeroBranchFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution zeroBranch :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ branchSpineFresh
+        have succBranchSpineFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons succBranch .childNil) :
+                RawTermChildren [0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ branchSpineFresh
+        have succBranchFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution succBranch :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ succBranchSpineFresh
+        have recursiveFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution
+              (.mkGen .gen_natElim ()
+                (.childCons predecessor
+                  (.childCons zeroBranch
+                    (.childCons succBranch .childNil))) : RawTerm scope) :=
+          RawTerm.isFreshFor_nonVar_of_children_isFreshFor
+            (generator := .gen_natElim) rawRenaming rawSubstitution
+            (by decide) () _
+            (RawTermChildren.triple_isFreshFor
+              (firstShift := 0) (secondShift := 0) (thirdShift := 0)
+              rawRenaming rawSubstitution
+              predecessor zeroBranch succBranch predecessorFresh
+              zeroBranchFresh succBranchFresh)
+        have innerAppFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution
+              (.mkGen .gen_app ()
+                (.childCons succBranch (.childCons predecessor .childNil)) :
+                  RawTerm scope) :=
+          RawTerm.isFreshFor_nonVar_of_children_isFreshFor
+            (generator := .gen_app) rawRenaming rawSubstitution
+            (by decide) () _
+            (RawTermChildren.double_isFreshFor
+              (firstShift := 0) (secondShift := 0)
+              rawRenaming rawSubstitution
+              succBranch predecessor succBranchFresh predecessorFresh)
+        exact RawTerm.isFreshFor_nonVar_of_children_isFreshFor
+          (generator := .gen_app) rawRenaming rawSubstitution (by decide)
+          () _ (RawTermChildren.double_isFreshFor
+            (firstShift := 0) (secondShift := 0) rawRenaming
+            rawSubstitution
+            ((.mkGen .gen_app ()
+              (.childCons succBranch (.childCons predecessor .childNil))) :
+                RawTerm scope)
+            ((.mkGen .gen_natElim ()
+              (.childCons predecessor
+                (.childCons zeroBranch
+                  (.childCons succBranch .childNil)))) : RawTerm scope)
+            innerAppFresh recursiveFresh))
+      (fun {scope} {predecessor} {zeroBranch} {succBranch} {targetScope}
+          rawRenaming rawSubstitution sourceFresh => by
+        let natSuccChildren :=
+          ((.childCons predecessor .childNil) : RawTermChildren [0] scope)
+        let sourceChildren :=
+          ((.childCons (.mkGen .gen_natSucc () natSuccChildren)
+            (.childCons zeroBranch (.childCons succBranch .childNil))) :
+              RawTermChildren [0, 0, 0] scope)
+        have childrenFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              sourceChildren :=
+          RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
+            (generator := .gen_natRec) rawRenaming rawSubstitution
+            (by decide) () sourceChildren sourceFresh
+        have natSuccFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution
+              (.mkGen .gen_natSucc () natSuccChildren : RawTerm scope) :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ childrenFresh
+        have natSuccChildrenFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              natSuccChildren :=
+          RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
+            (generator := .gen_natSucc) rawRenaming rawSubstitution
+            (by decide) () natSuccChildren natSuccFresh
+        have predecessorFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution predecessor :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ natSuccChildrenFresh
+        have branchSpineFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons zeroBranch (.childCons succBranch .childNil)) :
+                RawTermChildren [0, 0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ childrenFresh
+        have zeroBranchFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution zeroBranch :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ branchSpineFresh
+        have succBranchSpineFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons succBranch .childNil) :
+                RawTermChildren [0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ branchSpineFresh
+        have succBranchFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution succBranch :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ succBranchSpineFresh
+        have recursiveFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution
+              (.mkGen .gen_natRec ()
+                (.childCons predecessor
+                  (.childCons zeroBranch
+                    (.childCons succBranch .childNil))) : RawTerm scope) :=
+          RawTerm.isFreshFor_nonVar_of_children_isFreshFor
+            (generator := .gen_natRec) rawRenaming rawSubstitution
+            (by decide) () _
+            (RawTermChildren.triple_isFreshFor
+              (firstShift := 0) (secondShift := 0) (thirdShift := 0)
+              rawRenaming rawSubstitution
+              predecessor zeroBranch succBranch predecessorFresh
+              zeroBranchFresh succBranchFresh)
+        have innerAppFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution
+              (.mkGen .gen_app ()
+                (.childCons succBranch (.childCons predecessor .childNil)) :
+                  RawTerm scope) :=
+          RawTerm.isFreshFor_nonVar_of_children_isFreshFor
+            (generator := .gen_app) rawRenaming rawSubstitution
+            (by decide) () _
+            (RawTermChildren.double_isFreshFor
+              (firstShift := 0) (secondShift := 0)
+              rawRenaming rawSubstitution
+              succBranch predecessor succBranchFresh predecessorFresh)
+        exact RawTerm.isFreshFor_nonVar_of_children_isFreshFor
+          (generator := .gen_app) rawRenaming rawSubstitution (by decide)
+          () _ (RawTermChildren.double_isFreshFor
+            (firstShift := 0) (secondShift := 0) rawRenaming
+            rawSubstitution
+            ((.mkGen .gen_app ()
+              (.childCons succBranch (.childCons predecessor .childNil))) :
+                RawTerm scope)
+            ((.mkGen .gen_natRec ()
+              (.childCons predecessor
+                (.childCons zeroBranch
+                  (.childCons succBranch .childNil)))) : RawTerm scope)
+            innerAppFresh recursiveFresh))
+      (fun {scope} {headVal} {tailVal} {nilBranch} {consBranch}
+          {targetScope} rawRenaming rawSubstitution sourceFresh => by
+        let listConsChildren :=
+          ((.childCons headVal (.childCons tailVal .childNil)) :
+            RawTermChildren [0, 0] scope)
+        let sourceChildren :=
+          ((.childCons (.mkGen .gen_listCons () listConsChildren)
+            (.childCons nilBranch (.childCons consBranch .childNil))) :
+              RawTermChildren [0, 0, 0] scope)
+        have childrenFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              sourceChildren :=
+          RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
+            (generator := .gen_listElim) rawRenaming rawSubstitution
+            (by decide) () sourceChildren sourceFresh
+        have listConsFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution
+              (.mkGen .gen_listCons () listConsChildren : RawTerm scope) :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ childrenFresh
+        have listConsChildrenFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              listConsChildren :=
+          RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
+            (generator := .gen_listCons) rawRenaming rawSubstitution
+            (by decide) () listConsChildren listConsFresh
+        have headFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution headVal :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ listConsChildrenFresh
+        have tailSpineFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons tailVal .childNil) :
+                RawTermChildren [0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ listConsChildrenFresh
+        have tailFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution tailVal :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ tailSpineFresh
+        have branchSpineFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons nilBranch (.childCons consBranch .childNil)) :
+                RawTermChildren [0, 0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ childrenFresh
+        have nilBranchFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution nilBranch :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ branchSpineFresh
+        have consBranchSpineFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons consBranch .childNil) :
+                RawTermChildren [0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ branchSpineFresh
+        have consBranchFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution consBranch :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ consBranchSpineFresh
+        have firstAppFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution
+              (.mkGen .gen_app ()
+                (.childCons consBranch (.childCons headVal .childNil)) :
+                  RawTerm scope) :=
+          RawTerm.isFreshFor_nonVar_of_children_isFreshFor
+            (generator := .gen_app) rawRenaming rawSubstitution
+            (by decide) () _
+            (RawTermChildren.double_isFreshFor
+              (firstShift := 0) (secondShift := 0)
+              rawRenaming rawSubstitution
+              consBranch headVal consBranchFresh headFresh)
+        have secondAppFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution
+              (.mkGen .gen_app ()
+                (.childCons
+                  (.mkGen .gen_app ()
+                    (.childCons consBranch (.childCons headVal .childNil)))
+                  (.childCons tailVal .childNil)) : RawTerm scope) :=
+          RawTerm.isFreshFor_nonVar_of_children_isFreshFor
+            (generator := .gen_app) rawRenaming rawSubstitution
+            (by decide) () _
+            (RawTermChildren.double_isFreshFor
+              (firstShift := 0) (secondShift := 0)
+              rawRenaming rawSubstitution
+              ((.mkGen .gen_app ()
+                (.childCons consBranch (.childCons headVal .childNil))) :
+                  RawTerm scope)
+              tailVal firstAppFresh tailFresh)
+        have recursiveFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution
+              (.mkGen .gen_listElim ()
+                (.childCons tailVal
+                  (.childCons nilBranch
+                    (.childCons consBranch .childNil))) : RawTerm scope) :=
+          RawTerm.isFreshFor_nonVar_of_children_isFreshFor
+            (generator := .gen_listElim) rawRenaming rawSubstitution
+            (by decide) () _
+            (RawTermChildren.triple_isFreshFor
+              (firstShift := 0) (secondShift := 0) (thirdShift := 0)
+              rawRenaming rawSubstitution
+              tailVal nilBranch consBranch tailFresh nilBranchFresh
+              consBranchFresh)
+        exact RawTerm.isFreshFor_nonVar_of_children_isFreshFor
+          (generator := .gen_app) rawRenaming rawSubstitution (by decide)
+          () _ (RawTermChildren.double_isFreshFor
+            (firstShift := 0) (secondShift := 0) rawRenaming
+            rawSubstitution
+            ((.mkGen .gen_app ()
+              (.childCons
+                (.mkGen .gen_app ()
+                  (.childCons consBranch (.childCons headVal .childNil)))
+                (.childCons tailVal .childNil))) : RawTerm scope)
+            ((.mkGen .gen_listElim ()
+              (.childCons tailVal
+                (.childCons nilBranch
+                  (.childCons consBranch .childNil)))) : RawTerm scope)
+            secondAppFresh recursiveFresh))
+      (fun {scope} {baseCase} {rawWitness} {targetScope} rawRenaming
+          rawSubstitution sourceFresh => by
+        let sourceChildren :=
+          ((.childCons baseCase
+            (.childCons
+              (.mkGen .gen_refl ()
+                (.childCons rawWitness .childNil))
+              .childNil)) : RawTermChildren [0, 0] scope)
+        have childrenFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              sourceChildren :=
+          RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
+            (generator := .gen_idJ) rawRenaming rawSubstitution
+            (by decide) () sourceChildren sourceFresh
+        exact RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+          rawRenaming rawSubstitution _ _ childrenFresh)
+      (fun {scope} {baseCase} {rawWitness} {targetScope} rawRenaming
+          rawSubstitution sourceFresh => by
+        let sourceChildren :=
+          ((.childCons baseCase
+            (.childCons
+              (.mkGen .gen_refl ()
+                (.childCons rawWitness .childNil))
+              .childNil)) : RawTermChildren [0, 0] scope)
+        have childrenFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              sourceChildren :=
+          RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
+            (generator := .gen_idStrictRec) rawRenaming rawSubstitution
+            (by decide) () sourceChildren sourceFresh
+        exact RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+          rawRenaming rawSubstitution _ _ childrenFresh)
+      (fun {parentScope} {headShift} {restShifts} {head} {head'} rest
+          _childStep childFreshIH {targetScope} rawRenaming rawSubstitution
+          sourceFresh => by
+        have headFresh :
+            RawTerm.isFreshFor (iterateLiftRaw rawRenaming headShift)
+              (iterateLiftRaw rawSubstitution headShift) head :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution head rest sourceFresh
+        have tailFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution rest :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution head rest sourceFresh
+        exact RawTermChildren.childCons_isFreshFor rawRenaming
+          rawSubstitution head' rest
+          (childFreshIH (iterateLiftRaw rawRenaming headShift)
+            (iterateLiftRaw rawSubstitution headShift) headFresh)
+          tailFresh)
+      (fun {parentScope} {headShift} {restShifts} head {rest} {rest'}
+          _restStep restFreshIH {targetScope} rawRenaming rawSubstitution
+          sourceFresh => by
+        have headFresh :
+            RawTerm.isFreshFor (iterateLiftRaw rawRenaming headShift)
+              (iterateLiftRaw rawSubstitution headShift) head :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution head rest sourceFresh
+        have tailFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution rest :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution head rest sourceFresh
+        exact RawTermChildren.childCons_isFreshFor rawRenaming
+          rawSubstitution head rest' headFresh
+          (restFreshIH rawRenaming rawSubstitution tailFresh))
+      sourceStep)
+      rawRenaming rawSubstitution sourceFresh
+
+/-- A reduct of a weakened source term strengthens to the same term obtained
+by substituting a canonical source-scope unit for the fresh variable. -/
+theorem Step.weaken_strengthenTarget {scope : Nat}
+    {sourceTerm : RawTerm scope}
+    {targetTerm : RawTerm (scope + 1)}
+    (underBinderStep : Step (RawTerm.weaken sourceTerm) targetTerm) :
+    RawTerm.strengthen targetTerm =
+      some (RawTerm.subst
+        (RawTermSubst.singleton
+          (.mkGen .gen_unit () .childNil : RawTerm scope))
+        targetTerm) := by
+  let unitTerm : RawTerm scope := .mkGen .gen_unit () .childNil
+  have sourceFresh :
+      RawTerm.isFreshFor RawRenaming.weaken
+        (RawTermSubst.singleton unitTerm) (RawTerm.weaken sourceTerm) := by
+    unfold RawTerm.isFreshFor
+    rw [RawTerm.weaken_subst_singleton sourceTerm unitTerm]
+    rw [RawTerm.weaken_eq_rename sourceTerm]
+  exact RawTerm.strengthen_eq_subst_of_isFreshFor_singleton
+    unitTerm targetTerm
+    (Step.preserves_isFreshFor underBinderStep RawRenaming.weaken
+      (RawTermSubst.singleton unitTerm) sourceFresh)
 
 /-- Weaken every term in a `StepStar` chain. -/
 theorem StepStar.weaken {scope : Nat}
