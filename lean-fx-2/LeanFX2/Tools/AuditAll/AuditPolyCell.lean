@@ -133,6 +133,7 @@ import LeanFX2.Foundation.PolyCell.Core.StepHCCWrappers
 import LeanFX2.Foundation.PolyCell.Core.FoldShiftGreaterThanOne
 import LeanFX2.Foundation.PolyCell.Core.StepStarLength
 import LeanFX2.Foundation.PolyCell.Core.ConvCongruence
+import LeanFX2.Foundation.PolyCell.Core.ConvSubstRename
 
 namespace LeanFX2.Tools
 
@@ -3012,6 +3013,27 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.eitherInl_cong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.eitherInr_cong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.gen_refl_cong
+
+-- ─── M-Conv-subst-rename (#370): Conv preservation laws ─────────────
+-- Substitution / renaming / weakening / subst0 preservation for the
+-- raw `Conv` relation.  Required by M46 #295 ★ Typed SR (cites
+-- Conv.subst when traversing typing derivations) and M47 #296 typed
+-- weakening (cites Conv.weaken under context extension).
+--
+-- API:
+--   * Conv.subst σ : Conv a b → Conv (subst σ a) (subst σ b)
+--   * Conv.rename ρ : Conv a b → Conv (rename ρ a) (rename ρ b)
+--   * Conv.weaken : single-binder weakening specialization
+--   * Conv.subst0 : two-arg β-redex congruence
+--
+-- Plus bridging helper:
+--   * RawTermSubst.singleton_pointwise_stepStar — promotes a StepStar
+--     on the arg to a PointwiseStepStar on the singleton substitutions.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubst.singleton_pointwise_stepStar
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.subst
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.rename
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.weaken
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.subst0
 
 -- ─── V2-L1cert.12: existential preserves dim (#167) ─────────────────
 -- inferRawCellGeneral?_accepted_cellDimension_eq: when the
