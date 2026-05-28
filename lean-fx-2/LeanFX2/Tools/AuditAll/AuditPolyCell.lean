@@ -140,6 +140,7 @@ import LeanFX2.Tools.AuditAll.AuditPhaseZ
 import LeanFX2.Tools.AuditAll.AuditStrictAxes
 import LeanFX2.Foundation.TyWellfoundedness
 import LeanFX2.Tools.AuditAll.AuditEtaDiscipline
+import LeanFX2.Tools.AuditAll.AuditIotaEtaMatrix
 
 namespace LeanFX2.Tools
 
@@ -3248,6 +3249,33 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Tools.AuditAll.Audit.etaDiscipline_shippedCount
 #assert_no_axioms LeanFX2.Tools.AuditAll.Audit.etaDiscipline_reservedInEnumCount
 #assert_no_axioms LeanFX2.Tools.AuditAll.Audit.etaDiscipline_counts_honest
+
+-- ─── M-iotaEta-audit-matrix (#387): 80-cell iota × eta matrix ────────
+-- Coverage harness for the 16 iota × 5 eta = 80-cell matrix.
+-- Honest ledger sibling to η-M8i #358 (per-generator η eligibility),
+-- M-iotaEta-inside-binder #385 (Class-2 nested cases) +
+-- M-iotaEta-reserved-doublestrips #386 (Class-3 reserved cases).
+--
+-- Today's snapshot: 1 row fullyAudited (etaPair has 2 Class-3 ships
+-- via iotaFstPair × etaPair + iotaSndPair × etaPair from #386), 4
+-- rows partialAudit (etaLam/etaPathLam/etaModIntro/etaGlueIntro
+-- have Class-1 disjoint + Class-3 reserved on Phase Z₀+ generators).
+--
+-- 16 fullyAudited cells + 64 partialAudit cells = 80 total.
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.MatrixRowState
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.iotaEta_etaLam_state
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.iotaEta_etaPair_state
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.iotaEta_etaPathLam_state
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.iotaEta_etaModIntro_state
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.iotaEta_etaGlueIntro_state
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.iotaEtaMatrix_summary
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.iotaEtaMatrix_total_cells
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.iotaEtaMatrix_fullyAudited_cells
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.iotaEtaMatrix_partialAudit_cells
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.iotaEtaMatrix_cell_counts_honest
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.matrix_iota_count
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.matrix_eta_count
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.matrix_dimensions_consistent
 
 -- ─── V2-L1cert.12: existential preserves dim (#167) ─────────────────
 -- inferRawCellGeneral?_accepted_cellDimension_eq: when the
