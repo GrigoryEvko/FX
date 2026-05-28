@@ -1602,6 +1602,214 @@ theorem fromSteps_iotaNatRecSuccPredecessorCong_hasJoin {scope : Nat}
         predecessorStep).rightStep).HasJoin :=
   iotaNatRecSuccPredecessorCong_hasJoin predecessorStep
 
+/-- Resolve every local branching whose left step is `natElim natZero` iota. -/
+theorem fromSteps_iotaNatElimZeroLeft_hasJoin {scope : Nat}
+    {zeroBranch succBranch rightReduct : RawTerm scope}
+    (rightStep : Step
+      (.mkGen .gen_natElim ()
+        (.childCons
+          (.mkGen .gen_natZero () .childNil)
+          (.childCons zeroBranch (.childCons succBranch .childNil))))
+      rightReduct) :
+    (fromSteps
+      (Step.iotaNatElimZero
+        (zeroBranch := zeroBranch) (succBranch := succBranch))
+      rightStep).HasJoin := by
+  cases rightStep with
+  | iotaNatElimZero =>
+      exact fromSteps_iotaNatElimZeroSameRoot_hasJoin zeroBranch succBranch
+  | cong generator payload childStep =>
+      cases childStep with
+      | here restChildren scrutineeStep =>
+          cases scrutineeStep with
+          | cong scrutineeGenerator scrutineePayload scrutineeChildrenStep =>
+              cases scrutineeChildrenStep
+      | there scrutinee restStep =>
+          cases restStep with
+          | here succChildren zeroStep =>
+              exact fromSteps_iotaNatElimZeroBranchCong_hasJoin zeroStep
+          | there zeroChild branchTailStep =>
+              cases branchTailStep with
+              | here emptyChildren succStep =>
+                  exact fromSteps_iotaNatElimSuccBranchCong_hasJoin succStep
+              | there succChild emptyStep =>
+                  cases emptyStep
+
+/-- Resolve every local branching whose right step is `natElim natZero` iota. -/
+theorem fromSteps_iotaNatElimZeroRight_hasJoin {scope : Nat}
+    {zeroBranch succBranch leftReduct : RawTerm scope}
+    (leftStep : Step
+      (.mkGen .gen_natElim ()
+        (.childCons
+          (.mkGen .gen_natZero () .childNil)
+          (.childCons zeroBranch (.childCons succBranch .childNil))))
+      leftReduct) :
+    (fromSteps
+      leftStep
+      (Step.iotaNatElimZero
+        (zeroBranch := zeroBranch) (succBranch := succBranch))).HasJoin :=
+  hasJoin_swap (fromSteps_iotaNatElimZeroLeft_hasJoin leftStep)
+
+/-- Resolve every local branching whose left step is `natRec natZero` iota. -/
+theorem fromSteps_iotaNatRecZeroLeft_hasJoin {scope : Nat}
+    {zeroBranch succBranch rightReduct : RawTerm scope}
+    (rightStep : Step
+      (.mkGen .gen_natRec ()
+        (.childCons
+          (.mkGen .gen_natZero () .childNil)
+          (.childCons zeroBranch (.childCons succBranch .childNil))))
+      rightReduct) :
+    (fromSteps
+      (Step.iotaNatRecZero
+        (zeroBranch := zeroBranch) (succBranch := succBranch))
+      rightStep).HasJoin := by
+  cases rightStep with
+  | iotaNatRecZero =>
+      exact fromSteps_iotaNatRecZeroSameRoot_hasJoin zeroBranch succBranch
+  | cong generator payload childStep =>
+      cases childStep with
+      | here restChildren scrutineeStep =>
+          cases scrutineeStep with
+          | cong scrutineeGenerator scrutineePayload scrutineeChildrenStep =>
+              cases scrutineeChildrenStep
+      | there scrutinee restStep =>
+          cases restStep with
+          | here succChildren zeroStep =>
+              exact fromSteps_iotaNatRecZeroBranchCong_hasJoin zeroStep
+          | there zeroChild branchTailStep =>
+              cases branchTailStep with
+              | here emptyChildren succStep =>
+                  exact fromSteps_iotaNatRecSuccBranchCong_hasJoin succStep
+              | there succChild emptyStep =>
+                  cases emptyStep
+
+/-- Resolve every local branching whose right step is `natRec natZero` iota. -/
+theorem fromSteps_iotaNatRecZeroRight_hasJoin {scope : Nat}
+    {zeroBranch succBranch leftReduct : RawTerm scope}
+    (leftStep : Step
+      (.mkGen .gen_natRec ()
+        (.childCons
+          (.mkGen .gen_natZero () .childNil)
+          (.childCons zeroBranch (.childCons succBranch .childNil))))
+      leftReduct) :
+    (fromSteps
+      leftStep
+      (Step.iotaNatRecZero
+        (zeroBranch := zeroBranch) (succBranch := succBranch))).HasJoin :=
+  hasJoin_swap (fromSteps_iotaNatRecZeroLeft_hasJoin leftStep)
+
+/-- Resolve every local branching whose left step is `natElim natSucc` iota. -/
+theorem fromSteps_iotaNatElimSuccLeft_hasJoin {scope : Nat}
+    {predecessor zeroBranch succBranch rightReduct : RawTerm scope}
+    (rightStep : Step
+      (.mkGen .gen_natElim ()
+        (.childCons
+          (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
+          (.childCons zeroBranch (.childCons succBranch .childNil))))
+      rightReduct) :
+    (fromSteps
+      (Step.iotaNatElimSucc
+        (predecessor := predecessor) (zeroBranch := zeroBranch)
+        (succBranch := succBranch))
+      rightStep).HasJoin := by
+  cases rightStep with
+  | iotaNatElimSucc =>
+      exact fromSteps_iotaNatElimSuccSameRoot_hasJoin
+        predecessor zeroBranch succBranch
+  | cong generator payload childStep =>
+      cases childStep with
+      | here restChildren scrutineeStep =>
+          cases scrutineeStep with
+          | cong scrutineeGenerator scrutineePayload scrutineeChildrenStep =>
+              cases scrutineeChildrenStep with
+              | here emptyChildren predecessorStep =>
+                  exact fromSteps_iotaNatElimSuccPredecessorCong_hasJoin
+                    predecessorStep
+              | there predecessorChild emptyStep =>
+                  cases emptyStep
+      | there scrutinee restStep =>
+          cases restStep with
+          | here succChildren zeroStep =>
+              exact fromSteps_iotaNatElimSuccZeroBranchCong_hasJoin zeroStep
+          | there zeroChild branchTailStep =>
+              cases branchTailStep with
+              | here emptyChildren succStep =>
+                  exact fromSteps_iotaNatElimSuccSuccBranchCong_hasJoin succStep
+              | there succChild emptyStep =>
+                  cases emptyStep
+
+/-- Resolve every local branching whose right step is `natElim natSucc` iota. -/
+theorem fromSteps_iotaNatElimSuccRight_hasJoin {scope : Nat}
+    {predecessor zeroBranch succBranch leftReduct : RawTerm scope}
+    (leftStep : Step
+      (.mkGen .gen_natElim ()
+        (.childCons
+          (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
+          (.childCons zeroBranch (.childCons succBranch .childNil))))
+      leftReduct) :
+    (fromSteps
+      leftStep
+      (Step.iotaNatElimSucc
+        (predecessor := predecessor) (zeroBranch := zeroBranch)
+        (succBranch := succBranch))).HasJoin :=
+  hasJoin_swap (fromSteps_iotaNatElimSuccLeft_hasJoin leftStep)
+
+/-- Resolve every local branching whose left step is `natRec natSucc` iota. -/
+theorem fromSteps_iotaNatRecSuccLeft_hasJoin {scope : Nat}
+    {predecessor zeroBranch succBranch rightReduct : RawTerm scope}
+    (rightStep : Step
+      (.mkGen .gen_natRec ()
+        (.childCons
+          (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
+          (.childCons zeroBranch (.childCons succBranch .childNil))))
+      rightReduct) :
+    (fromSteps
+      (Step.iotaNatRecSucc
+        (predecessor := predecessor) (zeroBranch := zeroBranch)
+        (succBranch := succBranch))
+      rightStep).HasJoin := by
+  cases rightStep with
+  | iotaNatRecSucc =>
+      exact fromSteps_iotaNatRecSuccSameRoot_hasJoin
+        predecessor zeroBranch succBranch
+  | cong generator payload childStep =>
+      cases childStep with
+      | here restChildren scrutineeStep =>
+          cases scrutineeStep with
+          | cong scrutineeGenerator scrutineePayload scrutineeChildrenStep =>
+              cases scrutineeChildrenStep with
+              | here emptyChildren predecessorStep =>
+                  exact fromSteps_iotaNatRecSuccPredecessorCong_hasJoin
+                    predecessorStep
+              | there predecessorChild emptyStep =>
+                  cases emptyStep
+      | there scrutinee restStep =>
+          cases restStep with
+          | here succChildren zeroStep =>
+              exact fromSteps_iotaNatRecSuccZeroBranchCong_hasJoin zeroStep
+          | there zeroChild branchTailStep =>
+              cases branchTailStep with
+              | here emptyChildren succStep =>
+                  exact fromSteps_iotaNatRecSuccSuccBranchCong_hasJoin succStep
+              | there succChild emptyStep =>
+                  cases emptyStep
+
+/-- Resolve every local branching whose right step is `natRec natSucc` iota. -/
+theorem fromSteps_iotaNatRecSuccRight_hasJoin {scope : Nat}
+    {predecessor zeroBranch succBranch leftReduct : RawTerm scope}
+    (leftStep : Step
+      (.mkGen .gen_natRec ()
+        (.childCons
+          (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
+          (.childCons zeroBranch (.childCons succBranch .childNil))))
+      leftReduct) :
+    (fromSteps
+      leftStep
+      (Step.iotaNatRecSucc
+        (predecessor := predecessor) (zeroBranch := zeroBranch)
+        (succBranch := succBranch))).HasJoin :=
+  hasJoin_swap (fromSteps_iotaNatRecSuccLeft_hasJoin leftStep)
+
 /-- Resolver arm for `listElim (listCons head tail)` iota competing with
 congruence inside the head child. -/
 theorem iotaListElimConsHeadCong_hasJoin {scope : Nat}
