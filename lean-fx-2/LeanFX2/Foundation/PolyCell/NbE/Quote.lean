@@ -187,4 +187,73 @@ theorem Quote.consistent_with_hybrid_design :
 theorem Quote.consistent_with_cbn_strategy :
     ReductionStrategy.committed = .callByName := rfl
 
+/-! ## The eval-then-quote pipeline composition
+
+Per audit-A1 (#388, Agent 1 finding from 2026-05-28 gap audit):
+the previously-docstring-only `composeNormalizerWithQuote`
+reference was an overclaim — the symbol was advertised but
+never defined.  This section ships the canonical wrapper.
+
+The end-to-end pipeline at the raw layer is just `q.quote ∘
+n.normalize` for any `n : Normalizer` and `q : Quote`.  M16/M17/
+M18 consume this composition; pinning it as a NAMED definition
+keeps their statements canonical.
+
+At the canonical identity quote (`quoteRaw`), the composition
+COLLAPSES to just `n.normalize` — this is the key property
+M16 soundness uses to reduce the eval-then-quote pipeline to
+single-arg theorems at the raw layer. -/
+
+/-- The end-to-end NbE pipeline: normalize the input, then
+quote the result.
+
+At the raw layer with `quoteRaw` (the canonical identity
+quote), this collapses to just `n.normalize` per
+`composeNormalizerWithQuote_eq_normalize_at_quoteRaw` below.
+
+At the typed layer with `quote_atTy` (M15a-e #359-#363, η-long
+readback), the composition is NON-TRIVIAL — quote_atTy
+inserts η-expansions per the target type.
+
+This is the load-bearing M16/M17/M18 pipeline operator that
+makes raw + typed NbE statements uniform. -/
+def composeNormalizerWithQuote (n : Normalizer) (q : Quote)
+    {scope : Nat}
+    (term : LeanFX2.Foundation.PolyCell.Core.RawTerm scope) :
+    LeanFX2.Foundation.PolyCell.Core.RawTerm scope :=
+  q.quote (n.normalize term)
+
+/-- At the canonical identity quote `quoteRaw`, the eval-then-
+quote pipeline collapses to just `n.normalize`.
+
+This is the load-bearing simplification M16 soundness uses to
+reduce raw-layer `q.quote (n.normalize a) = q.quote (n.normalize
+b)` to `n.normalize a = n.normalize b`. -/
+theorem composeNormalizerWithQuote_eq_normalize_at_quoteRaw
+    (n : Normalizer) {scope : Nat}
+    (term : LeanFX2.Foundation.PolyCell.Core.RawTerm scope) :
+    composeNormalizerWithQuote n quoteRaw term = n.normalize term :=
+  rfl
+
+/-- The pipeline output is in β-NF — direct consequence of
+`Normalizer.normalize_isNF` + `Quote.quote_preserves_isNF`. -/
+theorem composeNormalizerWithQuote_isNF
+    (n : Normalizer) (q : Quote) {scope : Nat}
+    (term : LeanFX2.Foundation.PolyCell.Core.RawTerm scope) :
+    LeanFX2.Foundation.PolyCell.Core.RawTerm.isStepNormalForm
+      (composeNormalizerWithQuote n q term) :=
+  q.quote_preserves_isNF _ (n.normalize_isNF term)
+
+/-- Smoke witness: pipeline on `quoteRaw` + arbitrary Normalizer
+produces the same output as `n.normalize` directly.
+
+This is the load-bearing identity-collapse rfl-witness M16/M17
+consume.  At the raw layer, the quote layer is observationally
+the identity. -/
+theorem composeNormalizerWithQuote_quoteRaw_extensional_identity
+    (n : Normalizer) {scope : Nat}
+    (term : LeanFX2.Foundation.PolyCell.Core.RawTerm scope) :
+    composeNormalizerWithQuote n quoteRaw term = n.normalize term :=
+  rfl
+
 end LeanFX2.Foundation.PolyCell.NbE

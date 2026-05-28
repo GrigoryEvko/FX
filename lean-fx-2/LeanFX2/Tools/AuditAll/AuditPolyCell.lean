@@ -148,6 +148,7 @@ import LeanFX2.Foundation.PolyCell.NbE.NormalizerSignature
 import LeanFX2.Foundation.PolyCell.NbE.Quote
 import LeanFX2.Foundation.PolyCell.Typed.TypingContext
 import LeanFX2.Foundation.PolyCell.Typed.TypingContextHelpers
+import LeanFX2.Foundation.PolyCell.Typed.HasType
 
 namespace LeanFX2.Tools
 
@@ -3420,6 +3421,28 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.Quote.consistent_with_hybrid_design
 #assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.Quote.consistent_with_cbn_strategy
 
+-- ─── audit-A1 (#388): composeNormalizerWithQuote wrapper ────────────
+-- Closes Agent 1's 2026-05-28 gap-audit critical finding: the Quote
+-- docstring at lines 33-36 advertised this wrapper, but the symbol
+-- was never defined.  This block ships the eval-then-quote pipeline
+-- composition as a NAMED definition so M16/M17/M18 statements can
+-- consume it without re-inventing the composition site-by-site.
+--
+-- At the canonical raw `quoteRaw`, the composition collapses to
+-- `n.normalize` by `rfl` — this is the load-bearing simplification
+-- M16 soundness uses to reduce eval-then-quote pipelines to single-
+-- arg theorems at the raw layer.
+--
+-- Ships 4 declarations:
+--   composeNormalizerWithQuote : Normalizer → Quote → RawTerm → RawTerm
+--   composeNormalizerWithQuote_eq_normalize_at_quoteRaw : rfl-collapse
+--   composeNormalizerWithQuote_isNF : pipeline output is in β-NF
+--   composeNormalizerWithQuote_quoteRaw_extensional_identity : rfl smoke
+#assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.composeNormalizerWithQuote
+#assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.composeNormalizerWithQuote_eq_normalize_at_quoteRaw
+#assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.composeNormalizerWithQuote_isNF
+#assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.composeNormalizerWithQuote_quoteRaw_extensional_identity
+
 -- ─── M31 (#280): Phase Z₁ TypingContext profile inductive ───────────
 -- FIRST shipped piece of the Phase Z₁ typed core.  Ships the
 -- TypingContext inductive parameterized by level + scope, with
@@ -3464,6 +3487,32 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Typed.TypingContext.lookup_twoBindings_one
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Typed.TypingContextHelpers.operationCount
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Typed.TypingContextHelpers.operationCount_correct
+
+-- ─── M34 (#283): HasType inductive + var rule ───────────────────────
+-- FIRST shipped HasType inductive + first non-vacuous ctor (var).
+-- M33-M44 task slots extend the inductive with conv / universe / Π /
+-- Σ / Unit / bool / Nat / List / Option / Either / Id / cumul / modal
+-- rules.
+--
+-- var rule: given typing context + Fin scope position, raw variable
+-- has type ctx.lookup position per M32 #281 lookup discipline.
+--
+-- Quirk: bare `RawTerm` resolved to legacy `LeanFX2.RawTerm` shadow
+-- in TypingContext's transitive imports.  Added explicit
+-- `import LeanFX2.Foundation.PolyCell.Core.RawTerm` to bring the
+-- correct namespace into scope.
+--
+-- Smoke witness signatures use `ctx.lookup position` directly
+-- (not the unfolded weakened-type) because Lean's elaborator can't
+-- reduce lookup through the recursion in goal position; the lookup
+-- expression IS the canonical form.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Typed.HasType
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Typed.HasType.var
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Typed.HasType.var_singleUnit_zero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Typed.HasType.var_twoBindings_zero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Typed.HasType.var_twoBindings_one
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Typed.HasType.ctorCount_M34
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Typed.HasType.ctorCount_M34_correct
 
 -- ─── V2-L4.5 (#214): SconingConstructionLevel honest ledger ─────────
 -- 20 declarations in InternalSconing.lean ship the honest construction-
