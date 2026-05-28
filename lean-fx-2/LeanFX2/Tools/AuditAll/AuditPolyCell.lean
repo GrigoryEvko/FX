@@ -55,6 +55,7 @@ import LeanFX2.Foundation.PolyCell.Core.RawTermSubst0Commute
 import LeanFX2.Foundation.PolyCell.Core.RawTermStrengthen
 import LeanFX2.Foundation.PolyCell.Core.RawTermFresh
 import LeanFX2.Foundation.PolyCell.Core.RawTermFreeVars
+import LeanFX2.Foundation.PolyCell.Core.RawTermNF
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubstAction
 import LeanFX2.Foundation.PolyCell.Core.RawCellRenameSubst
 import LeanFX2.Foundation.PolyCell.Core.RawCellCascadeLaws
@@ -3559,6 +3560,51 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.freeVars_iff_uses
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.freeVars_unit_smoke
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.freeVars_var_self_smoke
+
+-- M-substrate-3: precise raw beta+iota NF + closedness substrate.
+-- The root detector intentionally excludes eta; beta+eta consumers use
+-- `Step.betaEta` instead of overloading raw Step normality.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawVarSet.isEmpty
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawVarSet.isEmpty_empty
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.isLamSource
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.isBoolTrueSource
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.isBoolFalseSource
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.isPairSource
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.isNatZeroSource
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.isNatSuccSource
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.isListNilSource
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.isListConsSource
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.isOptionNoneSource
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.isOptionSomeSource
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.isEitherInlSource
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.isEitherInrSource
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.isReflSource
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.castToGenerator
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.hasAppBetaRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.hasBoolElimIotaRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.hasPairProjectionIotaRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.hasNatElimIotaRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.hasListElimIotaRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.hasOptionMatchIotaRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.hasEitherMatchIotaRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.hasIdElimIotaRoot
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.hasRootStepSource
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.isStepNormalFormBool
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.areStepNormalFormsBool
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.isStepNormalForm
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.isClosed
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.instDecidableIsStepNormalForm
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.instDecidableIsClosed
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.areStepNormalForms
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.instDecidableAreStepNormalForms
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.isStepNormalForm_blocks_step
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.areStepNormalForms_blocks_stepChildren
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.isClosed_unit_smoke
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.isStepNormalForm_unit_smoke
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.hasRootStepSource_beta_smoke
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.not_isStepNormalForm_beta_smoke
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.hasRootStepSource_fst_pair_smoke
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.hasRootStepSource_etaLamSource_smoke
 
 -- V2-L2.7d: THE `Action RawTermSubst` TYPECLASS INSTANCE.
 -- Closes V2-L2.7 entirely.  Cites the three Action laws shipped
