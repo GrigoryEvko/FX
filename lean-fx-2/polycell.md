@@ -156,8 +156,10 @@ the STRUCTURAL substrate (RMC + sconing + Fire Triangle / raw +
 certified cell layer / 13 profile axes + extension calculus).  On
 TOP of that substrate sits the **maximal-power computable kernel
 target** (§11.8): the strongest currently-known sound type theory
-that admits decidable typechecking — 2LTT 4-mode universes + full
-Setzer-Rathjen large-cardinal hierarchy + K-free dependent
+that admits decidable typechecking — 2LTT 4-mode universes + the full
+categorical structural-reflection-degree ladder (Mahlo → Πⁿ →
+accessible-category → sequential ESR up to the `kunenI0` apex; NOT
+set-theoretic embeddings) + K-free dependent
 elimination with motive children + definitional eta + HIIRT + HITs +
 QIITs + multi-clock guarded type theory + internal parametricity +
 rewriting rules as first-class kernel feature + cubical pattern
@@ -314,8 +316,10 @@ checking + DECIDABLE typed conversion + MECHANIZED complexity
 bounds for every decision procedure (§11.8.7), under the zero-
 axiom + closed-system discipline (§11.8.11).  The apex commitments
 (§11.8): 2LTT skeleton with FOUR universe modes (inner univalent /
-outer strict / directed / (∞,ω)-directed); full Setzer-Rathjen
-large-cardinal flag hierarchy as universe-strength payload; K-free
+outer strict / directed / (∞,ω)-directed); the categorical
+structural-reflection-degree flag hierarchy as universe-strength
+payload (apex `kunenI0` = I0-strength via sequential ESR, stated as a
+reflection principle, not an embedding j:V→V); K-free
 dependent elimination with motive children + definitional eta;
 full HIIRT (standard IR + indexed IR + higher IR + QIR + the
 combined Forsberg-Setzer HIIRT beast); HITs + QIITs with cubical
@@ -407,18 +411,38 @@ Eating all the cakes — universe layer:
   objects, outer strict universes (`gen_universeS`) for metatheory +
   computational reflection, with explicit lift / lower bridges.
 - **Four universe modes total**: inner univalent, outer strict
-  (K + UIP definitional), directed (Riehl-Shulman synthetic
-  (∞,1)-categories), (∞,ω)-directed (Loubaton 2307.11931).
+  (strict reduction calculus + strict large-elim; univalence STILL
+  applies per §11.8.13 — diverges from 2LTT orthodoxy), directed
+  (Riehl-Shulman synthetic (∞,1)-categories), (∞,ω)-directed
+  (Loubaton 2307.11931).
+- **Univalence-everywhere discipline** (§11.8.13): univalence holds at
+  every mode, level, lift, dimension, and modality with 3-4 independent
+  proofs (operational `Step.eqType` + polynomial subterminality +
+  polynomial pseudomonad + ∞-topos).  No K-axiom commitment anywhere.
 - **Predicative cumulative hierarchy + impredicative bottom**
   (`SProp` definitional proof irrelevance + `Type₀` System-F-style
   polymorphism); strictly predicative `Type 1+`.
 - **Full universe polymorphism** over `LevelExpr` (`lzero` / `lsucc` /
   `lmax` / `limax` / `lvar`); polynomial-time level-equality
-  normalization (Mörtberg-Sterling 2024).
-- **Full Setzer + Rathjen large-cardinal hierarchy as universe flags**:
-  `standard` / `inaccessible` / `mahlo` / `superMahlo` / `nMahlo` /
-  `hyperMahlo` / `weaklyCompact` / `indescribable n` / `reflecting` /
-  `vopenka`.  Each flag is a strictly stronger admission predicate.
+  normalization (Mörtberg-Sterling 2024) + first-class bounded
+  quantification (Chan-Weirich 2502.20485).
+- **Structural-reflection-degree hierarchy as universe flags**
+  (categorical, NOT set-theoretic — no V, no AC, no embeddings j:V→V;
+  §11.8.2): universe-closure (`inaccessible`) → Mahlo reflection
+  (`mahlo` → `hyperMahlo`) → higher-order Πⁿ-reflection
+  (`weaklyCompact` → `reflecting`) → single-structure accessible-category
+  reflection (`ramsey` → `vopenka` = SR for all classes) → **sequential
+  Exact Structural Reflection** (`huge` → **`kunenI0`**, the
+  rank-into-rank region; Bagaria-Lücke "Huge Reflection") → the 2024 SR
+  frontier (`exacting`, `ultraexacting`; Aguilera-Bagaria-Lücke,
+  ZFC-consistent rel I0).  **FX's committed categorical apex is
+  `kunenI0`** — I0-strength self-similarity stated as a reflection
+  principle, not `j : V → V`.  Each flag names a degree of structural
+  reflection (Bagaria; Adámek-Rosický; Bagaria-Casacuberta-Mathias-
+  Rosický; Bagaria-Lücke), decidable as a stricter admission predicate.
+  Above that sits the open frontier (`schlutzenbergVLambdaPlus2`
+  choiceless ceiling; `reinhardtDirected` FX-native) — honest catalogue
+  entries, not objects FX asserts; see §11.8.2.1.
 - **First-class universe codes**: `LevelExpr` and `UniverseFlag` live
   in the outer universe; declarations quantify over and pattern-match
   on them.
@@ -2929,12 +2953,16 @@ axis ships not as a single univalent universe but as a **2LTT
 4-mode universe stack** with the **full Setzer + Rathjen large-
 cardinal hierarchy** as a `UniverseFlag` payload.  The four modes:
 
-* `gen_universeU n` — inner univalent (cubical Kan, no K-axiom);
+* `gen_universeU n` — inner univalent (cubical Kan reduction);
   objects live here.
-* `gen_universeS n` — outer strict (K-axiom + UIP definitional);
-  metatheory + computational reflection live here.
+* `gen_universeS n` — outer strict (strict normalization + strict
+  large-elimination discipline); **univalence still applies** per
+  §11.8.13 univalence-everywhere discipline (FX diverges from 2LTT
+  orthodoxy here — no K-axiom commitment); metatheory + computational
+  reflection live here.
 * `gen_universeD n` — directed universe (Riehl-Shulman synthetic
-  (∞,1)-categories `arXiv:1705.07442`).
+  (∞,1)-categories `arXiv:1705.07442`); directed univalence as theorem
+  per Gratzer-Weinberger-Buchholtz 2407.09146.
 * `gen_universeOmega n` — (∞,ω)-directed (Loubaton 2307.11931).
 
 Plus `gen_sprop` for definitional proof irrelevance,
@@ -2943,14 +2971,29 @@ natural transformations), and `LevelExpr` for full universe
 polymorphism (decidable in polynomial time per Mörtberg-Sterling
 2024 normalization).
 
-The `UniverseFlag` enum runs the full Setzer + Rathjen ladder:
-`standard` → `inaccessible` → `mahlo` → `superMahlo` → `nMahlo n`
-→ `hyperMahlo` → `weaklyCompact` → `indescribable n` → `reflecting`
-→ `vopenka`.  Each flag is a strictly stronger admission predicate
-(decidable in O(flag enum position)).  Implementation phases
-`standard` first (Phase Z₆ kickoff); `inaccessible` + `mahlo` ship
-Phase Z₆ proper; `superMahlo` → `vopenka` ship Phase Z₆+ as the
-research-frontier ladder.
+The `UniverseFlag` enum runs the structural-reflection-degree ladder
+per §11.8.2 — a CATEGORICAL hierarchy (no V, no AC, no embeddings
+j:V→V): universe-closure (`standard`, `inaccessible`) → Mahlo
+reflection (`mahlo` → `hyperMahlo`) → higher-order Πⁿ-reflection
+(`weaklyCompact` → `reflecting`) → single-structure accessible-category
+reflection (`ramsey` … `extendible`, `vopenka` = SR for all classes) →
+**sequential Exact Structural Reflection** (`huge`, `nHuge`,
+`kunenI3`…**`kunenI0`**, the rank-into-rank region; Bagaria-Lücke "Huge
+Reflection") → the 2024 SR frontier (`exacting`, `ultraexacting`;
+Aguilera-Bagaria-Lücke, ZFC-consistent rel I0).  Each flag names a
+degree of structural reflection (Bagaria; Adámek-Rosický; Bagaria-
+Casacuberta-Mathias-Rosický; Bagaria-Lücke), decidable as a strictly
+stronger admission predicate (O(flag enum position)).  Above the
+frontier sits the open tail (`schlutzenbergVLambdaPlus2` choiceless
+ceiling; `reinhardtDirected` FX-native) — catalogue entries, not
+asserted (§11.8.2.1).  Implementation schedule: `standard` first
+(Phase Z₆ kickoff); Mahlo + higher-order reflection ship Phase Z₆
+proper; single-structure then sequential-ESR degrees up to `kunenI0`
+ship over the following months as Phase Z₆+.  **FX's committed
+categorical apex — I0-strength self-similarity via sequential ESR
+(`kunenI0`) — lands at ★ MILESTONE B (§11.8.12) within 6 months of
+Phase Z₆ kickoff**, with `exacting`/`ultraexacting` as same-phase
+stretch targets.
 
 **Operational reference:** `Step.eqType` reduction rule in FX
 kernel (per lean-fx-2/CLAUDE.md mandate).  Univalence ships as a
@@ -4005,13 +4048,16 @@ universe modes** with a `LevelExpr × UniverseFlag` payload + SProp
 Apex universe generators:
 
 ```
-| .gen_universeU       => LevelExpr × UniverseFlag   -- inner univalent (cubical Kan, no K)
-| .gen_universeS       => LevelExpr × UniverseFlag   -- outer strict (K + UIP)
-| .gen_universeD       => LevelExpr × UniverseFlag   -- directed (∞,1)-cat synthetic
-| .gen_universeOmega   => LevelExpr × UniverseFlag   -- (∞,ω)-directed
-| .gen_sprop           => Unit                        -- SProp (definitional proof irrelevance)
-| .gen_univLift        => LiftDirection              -- Inner→Outer / Outer→Inner / Directed lift
-| .gen_univLower       => LiftDirection              -- inverse lift (where defined)
+| .gen_universeU       => LevelExpr × UniverseFlag   -- inner univalent (cubical Kan reduction)
+| .gen_universeS       => LevelExpr × UniverseFlag   -- outer strict (strict reduction + strict large-elim);
+                                                     -- univalence STILL applies per §11.8.13
+| .gen_universeD       => LevelExpr × UniverseFlag   -- directed (∞,1)-cat synthetic, directed univalence theorem
+| .gen_universeOmega   => LevelExpr × UniverseFlag   -- (∞,ω)-directed (Loubaton)
+| .gen_sprop           => Unit                        -- SProp (definitional proof irrelevance,
+                                                     --        univalence trivial-by-collapse)
+| .gen_univLift        => LiftDirection              -- Inner→Outer / Outer→Inner / Directed lift,
+                                                     --   univalence-preserving per §11.8.13
+| .gen_univLower       => LiftDirection              -- inverse lift (where defined), univalence-preserving
 ```
 
 `LevelExpr` carries the universe-polymorphism payload:
@@ -4030,26 +4076,33 @@ e = e`, …) is decidable in **polynomial time** via the Mörtberg-
 Sterling 2024 normalization algorithm — one of the deciders
 listed in §11.8.7's matrix.
 
-`UniverseFlag` carries the full Setzer-Rathjen ladder:
-
-```
-inductive UniverseFlag where
-  | standard
-  | inaccessible
-  | mahlo
-  | superMahlo
-  | nMahlo (n : Nat)
-  | hyperMahlo
-  | weaklyCompact
-  | indescribable (n : Nat)
-  | reflecting
-  | vopenka
-```
+`UniverseFlag` carries the structural-reflection-degree ladder per
+§11.8.2 — a CATEGORICAL hierarchy, not a set-theoretic one (no V, no
+AC, no embeddings j:V→V): universe-closure (`standard`,
+`inaccessible`) → Mahlo reflection (`mahlo`, `superMahlo`, `nMahlo`,
+`hyperMahlo`) → higher-order Πⁿ-reflection (`weaklyCompact`,
+`indescribable`, `reflecting`) → single-structure accessible-category
+reflection (`ramsey`, `measurable`, `strong`, `woodin`, `supercompact`,
+`extendible`, `vopenka` = SR for all classes) → **sequential Exact
+Structural Reflection** (`huge`, `nHuge`, `kunenI3`…**`kunenI0`**, the
+rank-into-rank region; Bagaria-Lücke) → 2024 SR frontier (`exacting`,
+`ultraexacting`).  **`kunenI0` is FX's committed categorical apex** —
+I0-strength self-similarity as a reflection principle.  The open tail
+(`schlutzenbergVLambdaPlus2`, `reinhardtDirected`) is catalogue-only,
+not asserted.  See §11.8.2 + §11.8.2.1 for the canonical enum body, the
+ESR ladder, the "Why reflection, not embeddings" rationale, and the
+Reinhardt frontier (b)/(c) split.
 
 Each flag is a strictly stronger admission predicate.  Admission is
-decidable in `O(flag enum position)`.  `standard` ships Phase Z₆
-kickoff; `inaccessible` + `mahlo` ship Phase Z₆ proper; `superMahlo`
-→ `vopenka` ship Phase Z₆+ as research-frontier additions.
+decidable in `O(flag enum position)`.  Implementation schedule per
+§11.8.9: `standard` + `inaccessible` ship Phase Z₆ kickoff; Mahlo +
+higher-order reflection ship Phase Z₆ proper; single-structure then
+sequential-ESR reflection degrees up to `kunenI0` (+ the
+`exacting`/`ultraexacting` frontier) ship over the following months as
+Phase Z₆+.  **The committed categorical apex `kunenI0` (I0-strength via
+sequential ESR) lands at MILESTONE B within 6 months of Phase Z₆
+kickoff** per §11.8.12; the open-frontier tail
+(`schlutzenbergVLambdaPlus2`, `reinhardtDirected`) is catalogue-only.
 
 `ChildSpec` lists for universe-mode generators:
 
@@ -4605,7 +4658,7 @@ For the apex generator additions:
 
 | Family | `totalityClass` | `consistencyStrength` | `siteOpenness` |
 |---|---|---|---|
-| Universe modes (§3.16.3) | `.total` | per-flag (predicative → vopenka) | `.sealed` |
+| Universe modes (§3.16.3) | `.total` | per-flag reflection degree (predicative → `kunenI0` ESR apex; `reinhardtOpen` for the open tail) | `.sealed` |
 | Cubical CCHM (§3.16.4) | `.total` | `.predicative` | `.sealed` |
 | HIT + QIIT (§3.16.5) | `.total` (for ctors), `.total` (for recs) | `.predicative` | `.sealed` |
 | HIIRT eliminators (§3.16.6) | `.total` | per-type-former | `.sealed` |
@@ -6378,7 +6431,8 @@ structural substrate that POLY-ζ ships.
 | Z₃ | Decidable typechecking via cubical NbE for the semantic core; bidirectional algorithm | ~6K | 2-3 |
 | Z₄ | Cubical primitives: `gen_path` / `transp` / `hcomp` / `glue` / `unglue` / `face` / `dimI`; Kan structure proofs for each generator | ~8K | 3-4 |
 | Z₅ | HITs as profile-level generators with path-constructor support; HIT eliminators with cubical Kan computation; QIITs | ~5K | 2-3 |
-| Z₆ | Induction-recursion: Tarski universes internally; Mahlo + inaccessible + reflecting universes (Setzer encoding) | ~3K (IR) + ~2K (Mahlo) | 3-4 |
+| Z₆ | Induction-recursion: Tarski universes internally; Mahlo reflection degrees (mahlo → hyperMahlo) + higher-order Πⁿ-reflection (weaklyCompact → reflecting) | ~3K (IR) + ~5K (Mahlo + Πⁿ) | 3-4 |
+| Z₆+ | Single-structure accessible-category reflection (ramsey → vopenka; Adámek-Rosický/Bagaria) + **sequential Exact Structural Reflection** (huge → **kunenI0**, the rank-into-rank region; Bagaria-Lücke) + the 2024 SR frontier (exacting/ultraexacting; Aguilera-Bagaria-Lücke, ZFC-consistent rel I0). Categorical reflection degrees, NOT embeddings j:V→V; leverages polynomial-universe + HIIRT + (∞,ω) substrate. Apex `kunenI0` lands ★ MILESTONE B (§11.8.12); open tail (schlutzenberg/reinhardtDirected) catalogue-only. | ~8K (ESR) + ~3K (frontier) | 2-3 |
 | Z₇ | Guarded recursion (Nakano modality) + coinduction with productivity; codata generators | ~4K | 2-3 |
 | Z₈ | 21-dim integration: usage, effect, security, refinement, lifetime, provenance, trust, repr, observability, clock, complexity, precision, space, overflow, FP order, mutation, reentrancy, size, version | ~15K | 6-12 |
 | Z₉ | **Optional, only-if-needed**: fully-verified internal SMT engine (verified SAT + verified theory deciders + verified Nelson-Oppen) — built natively inside FX per §11.8.11's closed-system mandate.  Deferred until a concrete profile-level need emerges that the individual decision procedures (§11.8.7) cannot serve. | ~10K | 6-9 |
@@ -6908,14 +6962,27 @@ silently accept.
 /-- Ordinal approximation of the profile's consistency strength.
     Not a formal ordinal — a computable tag tracking relative strength
     for the admission contract's use.  The tag is a LOWER BOUND on
-    what the profile can prove about weaker systems. -/
+    what the profile can prove about weaker systems.  Buckets follow
+    the §11.8.2 apex hierarchy (precise flag = `UniverseFlag`; this
+    enum is the coarse summary used by `ProfileExtension.strengthAfter`). -/
 inductive ConsistencyStrength where
-  | finitistic          -- PRA / bounded arithmetic
-  | predicative         -- PA / predicative analysis
-  | impredicative       -- Zermelo / power set
-  | inaccessible        -- ZFC + inaccessible cardinal
-  | mahlo               -- ZFC + Mahlo cardinal
-  | custom (tag : Name) -- user-declared with explicit witness
+  | finitistic            -- PRA / bounded arithmetic
+  | predicative           -- PA / predicative analysis
+  | impredicative         -- power-set-style closure
+  | inaccessible          -- universe-closure reflection (Grothendieck universe)
+  | setzerHierarchy       -- Mahlo reflection degrees (Setzer 1998, 2008)
+  | reflectingHierarchy   -- higher-order Pi^n reflection (Rathjen 1998, 2014, 2017)
+  | embeddingCardinal     -- single-structure accessible-category reflection
+                          --   (ramsey → vopenka; Adamek-Rosicky, Bagaria)
+  | kunenRankIntoRank     -- sequential Exact Structural Reflection degrees
+                          --   (huge → kunenI0; Bagaria-Lucke "Huge Reflection")
+  | exactingFrontier      -- SR-defined 2024 frontier (exacting / ultraexacting;
+                          --   Aguilera-Bagaria-Lucke); ZFC-consistent rel I0
+  | reinhardtOpen         -- OPEN: ambient self-similarity above ESR
+                          --   (schlutzenbergVLambdaPlus2 choiceless ceiling;
+                          --   reinhardtDirected FX-native).  Postulate-only / open;
+                          --   NOT a strength FX derives — see §11.8.2.1
+  | custom (tag : Name)   -- user-declared with explicit witness
   deriving DecidableEq
 ```
 
@@ -6947,6 +7014,29 @@ strength(S_n) + 1` (informally — the ordinal arithmetic is tracked
 by the tag, not formalized as real ordinals).  STRICT-35 checks the
 extension's critical pairs; the ConsistencyStrength tag tracks the
 resulting position.  Each climb is one verified commit.
+
+**Gödel is the engine of the apex ladder, not its ceiling.**  FX
+never proves `Con(FX)` — but for every WEAKER flag it does: FX at
+reflection degree *n+1* proves `Con(FX` at degree *n*`)` (Gentzen-
+style: `Con(PA)` is provable, just not *in* PA — it needs ε₀-induction,
+i.e. a stronger reflection degree).  The structural-reflection ladder
+(`inaccessible → mahlo → … → kunenI0 → exacting → …`, §11.8.2) IS this
+tower of "prove the consistency of your previous self."  So
+incompleteness is generative here: **if FX could prove its own
+consistency, the ladder would collapse to a fixed point and the supply
+of genuinely new problems would run dry; because no degree proves its
+own `Con`, there is ALWAYS a strictly stronger reflection degree to
+climb to.**  The boundary is also un-cheatable from inside: the Gödel-II
+hypotheses (consistency, decidable proof-checking, arithmetic strength)
+are each load-bearing FX commitments, and the only known escapes break
+one of them — true arithmetic drops decidability, Presburger drops
+strength, Willard self-verifying theories drop the *provable totality*
+that FX's SN + decidable-Conv discipline (§11.7.2) requires.  FX is
+therefore squarely Gödel-bound by design, and re-representing `Nat`
+cannot change this (the homotopical dressing is orthogonal to the
+arithmetic content that triggers coding).  The response is never escape
+but *climb* — which is exactly why the apex is unbounded.  See §11.8.2.1
+for how this interacts with the Reinhardt frontier.
 
 ### 11.7.2 Turing's ceiling → Tot/Div/Productive as Generator-level effect grades
 
@@ -7199,14 +7289,26 @@ substrate:
   cubical Kan, no K-axiom, all univalence machinery.  Objects
   live here.
 * **Outer strict universes** (`gen_universeS n` for `n : LevelExpr`):
-  K-axiom holds, UIP definitional, no univalence needed.
-  Metatheory + computational reflection live here.
+  strict normalization + strict large-elimination discipline;
+  **univalence STILL applies** via `Step.eqType` at the outer mode
+  per §11.8.13 univalence-everywhere discipline.  "Strictness" here
+  refers to the REDUCTION CALCULUS and ELIMINATION SHAPE, NOT to
+  propositional identity.  Metatheory + computational reflection
+  live here.  (Diverges from 2LTT orthodoxy which usually puts
+  K-axiom + UIP definitional in the outer mode — FX rejects that
+  trade in favor of univalence-everywhere, since K + univalence
+  ⊢ ⊥ per Hofmann-Streicher 1998 forces a choice, and FX's
+  univalence-as-theorem discipline forces univalence to win.)
 * **Lifting / lowering**: explicit `gen_univLift` / `gen_univLower`
-  generators with Hofmann-Streicher natural transformations.
+  generators with Hofmann-Streicher natural transformations that
+  PRESERVE univalence across modes (per §11.8.13).
 
 This is **strictly more powerful** than single-level cubical TT
-(can prove metatheorems about univalent objects using K outside
-without compromising inner univalence).
+(can prove metatheorems about univalent objects in the outer mode
+without losing univalence anywhere) AND strictly more disciplined
+than standard 2LTT (which sacrifices outer-mode univalence to get
+K).  FX gets univalence-everywhere by keeping the inner/outer
+distinction at the REDUCTION-CALCULUS level instead.
 
 **Hierarchy.**  Predicative cumulative hierarchy inside each level:
 `Type 0 ⊆ Type 1 ⊆ …` with `Type n : Type (n+1)`.  No universe
@@ -7270,58 +7372,242 @@ the strict universe with definitional proof irrelevance.
 Eliminating SProp into Type requires subsingleton elimination
 (restricted to subsingleton targets, plus `False`).
 
-**Full large-cardinal hierarchy as universe flags.**  `gen_universe`'s
-payload carries an optional `UniverseFlag` with the FULL Setzer +
-Rathjen hierarchy:
+**Apex structural-reflection hierarchy as universe flags.**  FX's
+foundation is CATEGORICAL, not set-theoretic: the kernel is an
+(∞,ω)-topos substrate (§3.7), a universe is a classifying object for
+small fibrations (Hofmann-Streicher / Shulman, ref U26), and ZF-style
+sets are only the 0-truncated discrete view (§3.9).  The `UniverseFlag`
+payload therefore does NOT postulate set membership, the cumulative
+hierarchy V, the axiom of choice, or elementary embeddings j : V → V.
+Each flag names a DEGREE OF STRUCTURAL REFLECTION (Bagaria, "Large
+cardinals as principles of structural reflection") — categorically,
+how rich a class of structures the universe reflects into a small
+(universe-internal) subclass.  Two regimes:
+
+* **Single-structure reflection** (`inaccessible` → `vopenka`): "every
+  proper class of structures contains a small one reflecting it."  Has
+  a clean category-theoretic form (Adámek-Rosický accessible-category
+  theory; Bagaria-Casacuberta-Mathias-Rosický small orthogonality
+  classes; Vopěnka = SR for ALL classes = "Ord ↛ Graph fully
+  faithfully").
+* **Sequential Exact Structural Reflection** (`huge` → `kunenI0`):
+  Bagaria-Lücke "Huge Reflection" (arXiv:2106.01462) push structural
+  reflection PAST Vopěnka, through huge, to the **rank-into-rank**
+  region.  ESR(κ,λ,𝒞): every large 𝒞-structure receives a
+  structure-embedding from a small one; sequential (length-ω) ESR over
+  Π₁ classes is the categorical form of I1, climbing to I0.  These
+  embeddings are MORPHISMS between objects of the category of
+  𝒞-structures — not `j : V → V`.  So `kunenI0` is a genuine,
+  categorically-stated reflection degree FX TARGETS, not a calibration
+  tag.
+
+**FX's committed categorical apex is `kunenI0` via sequential ESR** —
+I0-strength self-similarity stated as a reflection principle.  Just
+above it sits the 2024 frontier (`exacting`, `ultraexacting`;
+Aguilera-Bagaria-Lücke arXiv:2411.11568), structural-reflection-defined
+and ZFC-consistent relative to I0.  Above THAT, the ambient
+self-embedding (`reinhardt*`) splits into a Gödel-hard ordinal half and
+an FX-native higher-cell half — see "The Reinhardt frontier" below.
+`schlutzenbergVLambdaPlus2` is the choiceless ZF ceiling (ZF-PROVEN
+consistent rel I0, Schlutzenberg-Goldberg).  See "Why reflection, not
+embeddings" below.
 
 ```lean
 inductive UniverseFlag where
-  | standard                    -- ordinary Tarski universe
-  | inaccessible                -- strongly inaccessible cardinal
-  | mahlo                       -- Mahlo cardinal (Setzer 1998)
-  | superMahlo                  -- super-Mahlo (Setzer 2008)
-  | nMahlo (n : Nat)            -- n-Mahlo hierarchy
-  | hyperMahlo                  -- hyper-Mahlo
-  | weaklyCompact               -- weakly compact cardinal
-  | indescribable (n : Nat)     -- n-indescribable (Rathjen 1998)
-  | reflecting                  -- reflecting universe (Π³₁-CA₀-strength)
-  | vopenka                     -- Vopěnka's principle (near-Reinhardt strength)
+  -- Base: universe-as-classifier
+  | standard                    -- ordinary universe classifying small fibrations
+  | inaccessible                -- universe closed under Pi/Sigma/W containing a
+                                --   smaller universe (Grothendieck universe internal
+                                --   to the topos); calibration: inaccessible
+  -- Mahlo reflection (regular-fixpoint reflection of universe-valued maps)
+  | mahlo                       -- universe whose internal normal universe-valued maps
+                                --   have a regular fixpoint sub-universe
+                                --   (Setzer / Dybjer-Setzer predicative Mahlo);
+                                --   calibration: Mahlo
+  | superMahlo                  -- Mahlo reflection iterated once; calibration: super-Mahlo
+  | nMahlo (n : Nat)            -- Mahlo reflection iterated n times; calibration: n-Mahlo
+  | hyperMahlo                  -- limit of the iterated Mahlo reflection tower
+  -- Higher-order (Pi^n) reflection
+  | weaklyCompact               -- tree-property / Pi^1_1 reflection;
+                                --   calibration: weakly compact
+  | indescribable (n : Nat)     -- the universe reflects Pi^n formulas (Pi^n-reflection);
+                                --   calibration: n-indescribable
+  | reflecting                  -- full higher-order structural reflection;
+                                --   calibration: reflecting
+  -- Accessible-category reflection degrees (Adamek-Rosicky; Bagaria-Casacuberta-
+  --   Mathias-Rosicky: definable orthogonality classes in accessible categories
+  --   are small)
+  | ramsey                      -- partition reflection; calibration: Ramsey
+  | measurable                  -- non-trivial accessible endofunctor without a fixpoint;
+                                --   calibration: measurable
+  | strong (alpha : Nat)        -- alpha-graded accessible reflection;
+                                --   calibration: alpha-strong
+  | woodin                      -- determinacy-grade reflection; calibration: Woodin
+  | supercompact                -- small orthogonality classes for Sigma_2-definable
+                                --   classes; calibration: supercompact
+  | extendible                  -- small orthogonality classes, unrestricted;
+                                --   calibration: extendible
+  | vopenka                     -- TOP CLEAN CATEGORICAL DEGREE: structural reflection
+                                --   for ALL classes = every colimit-closed full
+                                --   subcategory of a locally presentable category is
+                                --   coreflective = Ord does not embed fully into Graph
+                                --   (Adamek-Rosicky; Bagaria SR-for-all-classes);
+                                --   calibration: Vopenka's principle
+  -- Sequential Exact Structural Reflection (Bagaria-Lucke "Huge Reflection",
+  --   arXiv:2106.01462): the CATEGORICAL form of the rank-into-rank region.
+  --   ESR embeddings are morphisms B -> A in the category of C-structures, NOT
+  --   j : V -> V.  These are reflection degrees FX TARGETS, not calibration tags.
+  | huge                        -- sequential ESR degree; calibration: huge
+  | nHuge (n : Nat)             -- sequential ESR degree; calibration: n-huge
+  | kunenI3                     -- sequential ESR degree; calibration: I3
+  | kunenI2                     -- sequential ESR degree; calibration: I2
+  | kunenI1                     -- Pi_1 sequential ESR (<== I1, Bagaria-Lucke);
+                                --   calibration: I1
+  | kunenI0                     -- ESR rank-into-rank apex; FX's COMMITTED categorical
+                                --   apex; calibration: I0
+  -- Structural-reflection frontier (Aguilera-Bagaria-Lucke 2024, arXiv:2411.11568):
+  --   SR-defined, ZFC-consistent relative to I0, breaks the linear large-cardinal
+  --   picture, bears on the HOD / Ultimate-L conjectures.  Never mechanized anywhere.
+  | exacting                    -- exacting: V != HOD; SR-defined frontier degree
+  | ultraexacting               -- ultraexacting: below a measurable => Con(ZFC +
+                                --   proper class of I0); the new problem class
+  -- ===== OPEN FRONTIER (postulate-only / open consistency; NOT admitted reflection
+  --   degrees; honest catalogue entries, NOT objects FX proves or admits) =====
+  | schlutzenbergVLambdaPlus2   -- choiceless ZF ceiling: V_{lambda+2} self-embedding,
+                                --   ZF-PROVEN consistent rel I0 (Schlutzenberg-Goldberg
+                                --   JML 2024); above ESR, calibration ceiling
+  | reinhardtDirected           -- (c) FX-NATIVE OPEN: a non-invertible elementary
+                                --   self-endofunctor of gen_universeOmega that FIXES the
+                                --   0-truncation and acts on higher directed cells.
+                                --   Godel block does NOT obviously apply (no ordinal
+                                --   moved => may not imply Con(FX)); consistency /
+                                --   constructibility UNKNOWN; unstatable outside directed
+                                --   univalence.  THE open frontier FX uniquely poses.
+                                --   (The (b) ordinal-critical-point Reinhardt j : V -> V
+                                --    is AXIOM-ONLY -- unprovable by Godel, Kunen-blocked
+                                --    in ZFC, open in ZF -- and is intentionally NOT a
+                                --    flag; see "The Reinhardt frontier".)
 ```
 
+**Why reflection, not embeddings.**  Set theory phrases universe
+self-resemblance as an elementary embedding j : V → V, because ZF is
+isomorphism-blind: it cannot say "the universe is equivalent to a part
+of itself," so it reaches for an external structure-preserving map.  FX
+is the opposite kind of foundation.  Its universe is univalent (§3.10,
+§11.8.13): equivalent structures are EQUAL, so a structure-preserving
+self-map that genuinely moved things would have to be the identity —
+the embedding idiom degenerates.  The univalence-native idiom for
+self-resemblance is REFLECTION: every structure on the universe is
+already captured by a small sub-universe.  And reflection reaches
+HIGH: Adámek-Rosický + Bagaria-Casacuberta-Mathias-Rosický give the
+single-structure degrees up to Vopěnka a purely category-theoretic
+form (coreflective subcategories, small orthogonality classes,
+accessible-endofunctor fixpoints), and Bagaria-Lücke "Huge Reflection"
+push **sequential Exact Structural Reflection** PAST Vopěnka, through
+huge, to the **rank-into-rank / I0 region** — still as morphisms
+between 𝒞-structures, never `j : V → V`.  So FX reaches I0-strength
+self-similarity by climbing the reflection ladder, not by asserting an
+external automorphism.
+
+Three things make this not just an idiom swap but the RIGHT
+foundation for the question.  (1) **No Kunen obstruction is even
+expressible.**  Kunen's inconsistency uses the axiom of Foundation
+ESSENTIALLY (Daghighi-Golshani-Hamkins-Jeřábek, arXiv:1311.0814 — drop
+Foundation and nontrivial elementary self-embeddings exist) AND the
+axiom of choice (the ω-Jónsson algebra).  FX's substrate has NEITHER:
+it is non-well-founded by construction (coinduction first-class,
+§11.7.2) and AC-free (zero-axiom).  (2) **Univalence is pro-rigidity,
+not anti-embedding.**  Goldberg (arXiv:2103.13961) proves elementary
+embeddings into a fixed target agree on the ordinals and are UNIQUE
+above the least extendible — and a unique self-map is exactly what
+univalence permits (a contractible space of equivalences).  So
+univalence does not forbid high reflection; it forces it to be
+canonical, which Goldberg confirms it is.  (3) **Reflection carries
+WITNESSES** (a reflected structure comes with the small sub-universe
+that captures it), matching FX's constructive zero-axiom discipline,
+whereas an embedding is a bare existence claim.  The ambient
+self-embedding `j : V → V` itself (the thing FX does NOT reach by
+reflection) splits into a Gödel-hard half and an FX-native open half —
+see "The Reinhardt frontier" next.
+
 Each flag has its own decidable admission predicate.  Implementation
-is staged: `standard` ships Phase Z₆ kickoff; `inaccessible` +
-`mahlo` ship Phase Z₆ proper; `superMahlo` through `vopenka` ship
-Phase Z₆+ as research-frontier additions.  The flag exists in the
-API from day one so the Generator table doesn't need redesign.
+schedule per §11.8.9: `standard` + `inaccessible` (universe closure)
+ship Phase Z₆ kickoff; the Mahlo reflection degrees (`mahlo` →
+`hyperMahlo`) + higher-order reflection (`weaklyCompact` →
+`reflecting`) ship Phase Z₆ proper; the single-structure
+accessible-category degrees (`ramsey` → `vopenka`) then the
+**sequential-ESR rank-into-rank degrees (`huge` → `kunenI0`)** ship
+over the following months as Phase Z₆+, leveraging the
+polynomial-universe + HIIRT + (∞,ω) directed substrate already
+committed in §3.10 + §3.16.6.  **FX's committed categorical apex —
+I0-strength self-similarity via sequential ESR (`kunenI0`) — lands at
+★ MILESTONE B (§11.8.12) within 6 months of Phase Z₆ kickoff.**  The
+2024 frontier degrees (`exacting`, `ultraexacting`) are stretch targets
+in the same phase — structural-reflection-defined, ZFC-consistent rel
+I0, and never mechanized anywhere, so shipping them is genuinely
+first-in-class.  The open-frontier entries (`schlutzenbergVLambdaPlus2`,
+`reinhardtDirected`) are NOT implementation targets — they are honest
+catalogue markers (choiceless ceiling; FX-native open problem) per "The
+Reinhardt frontier".
 
-**Proof-theoretic strength ladder:**
+**Reflection-degree ladder.**  Each rung is a degree of structural
+reflection.  The "Categorical characterization" column gives the
+isomorphism-invariant (category-theoretic) form; the "Classical
+calibration" column gives only the consistency-strength marker — a
+yardstick, never a postulate.  Through `vopenka` the categorical
+column is single-structure structural reflection (Adámek-Rosický /
+Bagaria); `huge` → `kunenI0` is **sequential Exact Structural
+Reflection** (Bagaria-Lücke), the categorical form of rank-into-rank;
+`exacting`/`ultraexacting` is the 2024 SR frontier.  Only the
+open-frontier tail (`schlutzenbergVLambdaPlus2`, `reinhardtDirected`)
+lacks a categorical characterization FX commits to.
 
-| Flag | Strength | Reference |
+| Flag | Categorical characterization | Classical calibration |
 |---|---|---|
-| `standard 0` | PRA | trivial |
-| `standard n` for `n ≥ 1` | I-Σⁿ₁ + iterated inductions | MLTT std |
-| `inaccessible` | ZFC consistency | Setzer 1998 |
-| `mahlo` | KPM | Setzer 1998 |
-| `superMahlo` | KPM² | Setzer 2008 |
-| `nMahlo n` | KPMⁿ | Setzer 2008 |
-| `weaklyCompact` | Π³₀-CA₀ | Rathjen 2014 |
-| `indescribable n` | Π³ₙ-CA₀ | Rathjen 1998 |
-| `reflecting` | Π³₁-CA₀ | Rathjen-Weiermann 2017 |
-| `vopenka` | near-Reinhardt | Marek-Mostowski 1975 |
+| `standard 0` | classifier of finite fibrations | PRA |
+| `standard n` (n ≥ 1) | n-fold iterated universe classifier | I-Σⁿ₁ + iterated inductions |
+| `inaccessible` | universe closed under Π/Σ/W with a sub-universe (Grothendieck universe in the topos) | inaccessible |
+| `mahlo` | regular-fixpoint reflection of universe-valued maps (predicative Mahlo) | Setzer 1998, KPM |
+| `superMahlo` | Mahlo reflection iterated once | Setzer 2008, KPM² |
+| `nMahlo n` | Mahlo reflection iterated n times | Setzer 2008, KPMⁿ |
+| `hyperMahlo` | limit of the Mahlo reflection tower | limit of KPMⁿ |
+| `weaklyCompact` | tree-property / Π¹₁-reflection | Rathjen 2014, Π¹₂-CA₀ |
+| `indescribable n` | Πⁿ-formula reflection | Rathjen 1998, Π³ₙ-CA₀ |
+| `reflecting` | full higher-order structural reflection | Rathjen-Weiermann 2017, Π³₁-CA₀ |
+| `ramsey` | partition reflection | between weakly compact and measurable |
+| `measurable` | non-trivial accessible endofunctor (no fixpoint) | Scott 1961 |
+| `strong α` | α-graded accessible reflection | Kanamori 2003 |
+| `woodin` | determinacy-grade reflection | Martin-Steel 1989 (⇒ PD) |
+| `supercompact` | small orthogonality classes for Σ₂-definable classes | Bagaria-Casacuberta-Mathias-Rosický 2015 |
+| `extendible` | small orthogonality classes, unrestricted (C⁽ⁿ⁾-degrees) | Bagaria 2012 |
+| `vopenka` | structural reflection for ALL classes = colimit-closed full subcategories of locally presentable categories are coreflective = Ord ↛ Graph fully faithfully | Adámek-Rosický 1994; Bagaria 2023 |
+| `huge`, `nHuge` | sequential ESR degree (𝒞-structure embeddings) | Bagaria-Lücke 2021 |
+| `kunenI3`, `kunenI2` | sequential ESR degree | Bagaria-Lücke 2021 |
+| `kunenI1` | Π₁ sequential ESR (⟸ I1) | Bagaria-Lücke 2021 |
+| **`kunenI0`** | **ESR rank-into-rank apex — FX's committed categorical apex** | Bagaria-Lücke 2021 ≈ I0 |
+| `exacting` | SR-defined; V ≠ HOD | Aguilera-Bagaria-Lücke 2024 |
+| `ultraexacting` | SR-defined; ⟹ Con(ZFC + proper class of I0) | Aguilera-Bagaria-Lücke 2024, ZFC-consistent rel I0 |
+| `schlutzenbergVLambdaPlus2` | *open frontier — choiceless ZF ceiling, no categorical characterization FX commits to* | Schlutzenberg-Goldberg JML 2024 (ZF-proven rel I0) |
+| `reinhardtDirected` | *open frontier — FX-native directed self-endofunctor fixing the 0-truncation; consistency UNKNOWN* | none (Gödel block does not apply; never studied) |
 
-Each cardinal flag is a STRICTLY MORE POWERFUL extension; each
-admission is decidable in polynomial time via the flag's enum
-position.  **No upper limit besides the kernel's syntactic
-soundness boundary** — vopenka is admissible if Lean's Mahlo
-encoding extends to it; otherwise it lives in Phase Z₆+ as
-research-frontier.
+Each rung is STRICTLY stronger than those below; each admission
+predicate (through the frontier degrees) is decidable in O(flag enum
+position).  **FX's committed categorical apex is `kunenI0`** —
+I0-strength self-similarity via sequential Exact Structural Reflection,
+stated as a reflection principle on the category of structures, never
+as `j : V → V`.  `exacting`/`ultraexacting` are reachable stretch
+targets in the same phase.  The two open-frontier rows are honest
+catalogue entries — not objects FX asserts or builds — per "The
+Reinhardt frontier".
 
 **Refactored `Generator.payload`:**
 
 ```lean
 def Generator.payload : Generator → Nat → Type
   | .gen_universeU,     _ => LevelExpr × UniverseFlag  -- inner univalent
-  | .gen_universeS,     _ => LevelExpr × UniverseFlag  -- outer strict (K, UIP)
+  | .gen_universeS,     _ => LevelExpr × UniverseFlag  -- outer strict (strict reduction
+                                                       --   + strict large-elim; NO K,
+                                                       --   univalence still holds, §11.8.13)
   | .gen_universeD,     _ => LevelExpr × UniverseFlag  -- directed
   | .gen_universeOmega, _ => LevelExpr × UniverseFlag  -- (∞,ω)-directed
   | .gen_sprop,         _ => Unit
@@ -7332,6 +7618,80 @@ def Generator.payload : Generator → Nat → Type
 
 This breaks the current "everything is Unit" claim — that is the
 intended honesty correction.
+
+#### 11.8.2.1 The Reinhardt frontier — what lies above ESR, stated honestly
+
+`kunenI0` (sequential ESR) is the apex FX *builds*.  The genuine
+"universe resembles itself" statement — an elementary self-embedding
+of the *ambient* universe, classically `j : V → V` (Reinhardt) — lies
+above it.  The categorical lens does something set theory cannot: it
+**splits** that one statement into two objects with completely
+different status.  Set theory blurs them because it has only one `V`.
+
+**(b) Ambient self-embedding with an ordinal critical point** (the
+classical Reinhardt).  This is **AXIOM-ONLY, provable nowhere**, and
+the "nowhere" is a theorem, not timidity:
+
+* A (b)-morphism moves an ordinal ⟹ its critical point is measurable,
+  …, above I0 ⟹ proper class of measurables ⟹ `Con(ZFC)` ⟹
+  **`Con(FX)`**.  FX interprets arithmetic, is consistent, and is
+  recursively axiomatized (decidable kernel), so by **Gödel II**
+  FX ⊬ `Con(FX)`, hence **FX ⊬ (b)**.  This is foundation-independent
+  — categories change the idiom, not the strength of *proving* it; a
+  Reinhardt-strength self-morphism is an axiom one may add, never a
+  theorem one derives, in ZFC / ZF / FX alike.
+* Re-representing `Nat` cannot lift this.  The escape routes from
+  Gödel II all break a load-bearing FX commitment: dropping decidable
+  proof-checking (true arithmetic) kills the kernel; dropping
+  arithmetic strength (Presburger) kills foundational power; **dropping
+  provable totality of recursion (Willard self-verifying theories,
+  which CAN prove their own consistency) kills SN + decidable Conv +
+  NbE termination** — the exact thing FX's totality discipline
+  (§11.7.2) requires.  Decidable + total + arithmetically-strong ⟹
+  Gödel-bound; FX wants all three, so FX is squarely inside Gödel's
+  domain and cannot self-certify.  The homotopical/cubical/directed
+  *dressing* of `Nat` is orthogonal to its arithmetic content and
+  changes nothing.
+* Classically (b) is Kunen-blocked in ZFC; in ZF the region just above
+  the wall is graded, not uniformly open: `V_{λ+2}` is ZF-PROVEN
+  consistent rel I0 (Schlutzenberg-Goldberg), while Reinhardt `V → V`
+  and Berkeley remain open and under active 2024 revision.
+
+**(c) Ambient self-endofunctor fixing the 0-truncation** (`reinhardt
+Directed`, FX-native).  A non-invertible elementary endofunctor of
+`gen_universeOmega` that is the IDENTITY on every set and ordinal (the
+0-truncation) but acts on the higher directed cells.  This object is
+**unstatable outside a directed-univalent foundation** — set theory
+and even (∞,1)-theories cannot express "fix the discrete core, move
+only the higher cells."  Its status is genuinely open in a NEW way:
+
+* The Gödel block of (b) runs entirely through the *moved ordinal*.
+  Fix every ordinal and the implication (c) ⟹ `Con(FX)` may FAIL — so
+  **Gödel does not obviously forbid (c)**.  It might be cheap and
+  CONSTRUCTIBLE (directed type theory already has elementary
+  endofunctors like `op : S → S`; the open question is a non-invertible
+  one fixing objects), or strong-and-open, or refutable.  Nobody has
+  asked.  This is the FX-native open problem the apex points at.
+* Goldberg rigidity (arXiv:2103.13961: embeddings into a fixed target
+  are unique above extendible) says that *if* such a self-map exists it
+  is canonical — exactly what univalence wants.  And the Laver-Steel
+  **left-distributive algebra** of elementary self-maps is *computable*
+  (Laver tables), so FX can internalize and even evaluate the algebraic
+  trace of the frontier object while its top-level consistency stays
+  open.
+
+**Gödel is the engine, not the ceiling.**  FX never proves `Con(FX)` —
+but for every WEAKER flag it does: the reflection ladder is the tower
+in which rung *n+1* proves `Con(`rung *n*`)` (Gentzen-style; §11.7.1
+Gödel-climbing).  If FX could prove its own consistency the ladder
+would collapse to a fixed point and the supply of new problems would
+run dry.  **Incompleteness is precisely what guarantees the
+`inaccessible → … → kunenI0 → exacting → reinhardtDirected` ascent is
+unbounded** — there is always a strictly stronger reflection degree
+because no degree proves its own consistency.  FX's move is never
+*escape* (impossible, and self-defeating) but *climb* (built-in,
+infinite), plus the separate, orthogonal, FX-only question of whether
+(c) exists.
 
 ### 11.8.3 Elimination policy — maximal power
 
@@ -7838,7 +8198,7 @@ invoked at elaboration time.
 | `Decidable (DependentRightAdjoint exists)` | ✓ | O(profile-mode-table) | Adjunction table lookup | MTT 2020 |
 | `Decidable (CohesionAdjunctionApplicable Γ t)` | ✓ | O(profile-cohesion-flag) | Cohesive mode check | Shulman 2018 |
 | `Decidable (SyntheticAlgebraicGeometryAdmissible term)` | ✓ | O(infinitesimal-depth) | Differential-cohesion check | Schreiber 2013 |
-| Universe consistency at full Setzer hierarchy | ✓ (per flag, when implemented) | O(flag enum position) | Setzer syntactic model + Rathjen reflection | Phase Z₆ |
+| Universe admission at full structural-reflection ladder | ✓ (per flag, when implemented) | O(flag enum position) | reflection-degree admission predicate (Mahlo → Πⁿ → accessible-category → sequential ESR) | Phase Z₆ |
 | `Decidable (Dimension-N typing)` for each dim 2-21 | ✓ | Per-dimension (table §11.8.6) | Per-dimension procedure | §11.8.6 |
 | `Decidable (TypedSubjectReduction t t' T)` | ✓ | O(typecheck × step-size) | Direct application of SR theorem | §11.8.5 |
 
@@ -7926,9 +8286,19 @@ maps to:
   conversion + typechecking for the ~30-generator semantic core.
 * **MILESTONE A+** = + Z₄ (~month 34) — full CCHM cubical primitives.
 * **MILESTONE A++** = + Z₅ (~month 37) — HITs + QIITs.
-* **MILESTONE B** = + Z₆ (~month 41) — HIIRT + Setzer-Rathjen flag
-  hierarchy (`standard` + `inaccessible` + `mahlo` first; `superMahlo`
-  → `vopenka` ship Phase Z₆+ as research-frontier additions).
+* **MILESTONE B** = + Z₆ + Z₆+ (~month 41-44) — HIIRT + the full
+  structural-reflection-degree ladder (§11.8.2): Mahlo reflection
+  (`mahlo` → `hyperMahlo`) + higher-order Πⁿ-reflection
+  (`weaklyCompact` → `reflecting`) + single-structure
+  accessible-category reflection (`ramsey` → `vopenka`) + **sequential
+  Exact Structural Reflection** (`huge` → **`kunenI0`**, the
+  rank-into-rank region; Bagaria-Lücke) + the 2024 SR frontier
+  (`exacting`, `ultraexacting`).  **Committed categorical apex =
+  `kunenI0`** (I0-strength self-similarity as a reflection principle,
+  never `j : V → V`).  Categorical reflection degrees, NOT embeddings;
+  the open-frontier tail (`schlutzenbergVLambdaPlus2`,
+  `reinhardtDirected`) is catalogue-only (§11.8.2.1).  Six-month
+  delivery target from Phase Z₆ kickoff.
 * **MILESTONE C** = + Z₇ (~month 44) — multi-clock guarded recursion +
   productivity-checked codata.
 * **MILESTONE D** = + Z₈ (~month 56) — full 21-dim integration + the
@@ -8044,7 +8414,15 @@ NbE) is REVISED:
   TYPED checking** for the semantic core (Phase Z₁ + Z₂ + Z₃).
 * **MILESTONE A+** = same, plus cubical primitives (Phase Z₄).
 * **MILESTONE A++** = same, plus HITs (Phase Z₅).
-* **MILESTONE B** = MILESTONE A++ plus IR + Mahlo (Phase Z₆).
+* **MILESTONE B** = MILESTONE A++ plus IR + the full
+  structural-reflection-degree ladder (Phase Z₆ + Z₆+): Mahlo +
+  higher-order Πⁿ-reflection + single-structure accessible-category
+  reflection (→ `vopenka`) + **sequential Exact Structural Reflection**
+  (→ **`kunenI0`**, the committed I0-strength categorical apex) + the
+  2024 SR frontier (`exacting`/`ultraexacting`), per §11.8.2.  These are
+  categorical reflection degrees, not embeddings j:V→V; the open tail
+  (`schlutzenbergVLambdaPlus2`, `reinhardtDirected`) is catalogue-only.
+  Six-month delivery target from Phase Z₆ kickoff.
 * **MILESTONE C** = MILESTONE B plus guarded recursion (Phase Z₇).
 * **MILESTONE D** = MILESTONE C plus 21-dim integration (Phase Z₈)
   — full FX kernel.
@@ -8052,6 +8430,121 @@ NbE) is REVISED:
 Raw-reduction Conv decidability (the old MILESTONE A) is a
 **sub-result** of typed Conv decidability — useful as substrate
 but insufficient as a typechecker.
+
+### 11.8.13 Univalence-everywhere discipline
+
+The kernel commits to a **univalence-everywhere** discipline: univalence
+holds AT EVERY MODE, EVERY LEVEL, EVERY LIFT, EVERY DIMENSION, and EVERY
+MODALITY in FX's substrate that admits identity-like structure.  Univalence
+is ALWAYS computational (`Conv.fromStep Step.eqType` body, never
+`axiom`), ALWAYS a theorem (not a postulate), and ALWAYS justified by
+multiple independent proofs.
+
+**Three (actually four) independent justifications.**  Each is a separate
+body, so no single foundational assumption is load-bearing:
+
+| # | Proof view | Body | Reference |
+|---|---|---|---|
+| 1 | **Operational** | `Univalence := Conv.fromStep Step.eqType` — kernel reduction rule | lean-fx-2 D2.6 + CLAUDE.md mandate |
+| 2 | **Polynomial / structural** | universe is subterminal in `Poly^Cart` ⇒ univalence as subterminality theorem | Aberlé-Spivak 2409.19176 |
+| 3 | **Polynomial pseudomonad** | natural model with unit + Σ + Π ⇔ polynomial pseudomonad/pseudoalgebra; univalence as algebra coherence | Awodey-Newstead 1802.00997 |
+| 4 | **∞-topos / semantic** | every (∞,1)-topos has strict univalent universes; equivariant cartesian cubical gives constructive Quillen presentation | Shulman 1904.07004 + Awodey-Cavallo-Coquand-Riehl-Sattler 2406.18497 |
+
+A fifth view exists when directed mode is in scope: **cubical computational**
+via CCHM Kan ops + Sterling-Angiuli 2021 normalization extending `Step.eqType`
+to `transp/hcomp/Glue` reductions (per §11.8.4).
+
+**Propagation scopes.**  Standard univalence applies inside a single
+homogeneous univalent universe.  The discipline says: extend it
+everywhere FX has identity-like structure.
+
+| Scope | Standard treatment | FX univalence-everywhere commitment |
+|-------|--------------------|--------------------------------------|
+| Inner univalent (`gen_universeU`) | Univalence (cubical) | Univalence (cubical) — baseline |
+| **Outer strict (`gen_universeS`)** | K-axiom / UIP definitional | **Univalence WITH strict large-elim discipline** — "strictness" = elim shape + reduction calculus, NOT propositional identity; per §11.8.2 |
+| SProp (`gen_sprop`) | Definitional proof irrelevance | Univalence trivially (any two inhabitants equal) — compatible by collapse |
+| Directed (`gen_universeD`) | Directed univalence (Riehl-Shulman) | Directed univalence as theorem via triangulated modalities — Gratzer-Weinberger-Buchholtz 2407.09146 |
+| (∞,ω)-directed (`gen_universeOmega`) | (∞,ω)-univalence (Loubaton) | (∞,ω)-univalence as derived rule — Loubaton 2307.11931 §6.1.3 |
+| Cross-mode lifts (`gen_univLift` / `gen_univLower`) | Hofmann-Streicher natural transformation | **Lifts ARE univalence-preserving** — provable Conv between `lift(equiv)` and the equiv-at-target-mode |
+| Cumulativity (`Type i ⊆ Type j`, `i ≤ j`) | Coercion (unstructured) | `cumulUp` is univalence-preserving — equivalences at lower level become equivalences at higher |
+| Level polymorphism (`∀ l. ...`) | Per-level instance | One Univalence theorem polymorphic over all `LevelExpr` (universe-polymorphic univalence) |
+| 21-dim graded layers (FX dims 2-21) | No univalence at non-Type dims | **Each dimension's "type universe" gets its own univalence** — effect-row equivalences, usage-grade equivalences, lifetime equivalences, ... GENUINELY NOVEL FX-original |
+
+**Why this matters.**  The univalence-everywhere commitment is what makes
+FX qualitatively different from prior type theories.  Standard 2LTT
+sacrifices univalence at the outer mode to gain K-style UIP for
+metatheory.  FX rejects this trade: by separating the inner/outer
+distinction at the REDUCTION CALCULUS level (strict vs cubical Kan)
+instead of at the IDENTITY structure (K vs univalence), FX keeps
+univalence at every mode.  The outer mode loses K-axiom but gains
+univalence; FX gets metatheory + computational reflection that respect
+univalence rather than violating it.
+
+**Cross-dimension univalence is the most novel commitment.**  FX's 21
+graded dimensions each carry their own "type universe" of admissible
+grades / labels / effect rows / etc.  Standard treatments give each
+dimension its own (often UIP-flavored) equality.  Under univalence-
+everywhere, EACH DIMENSION gets a univalence theorem: equivalent
+effect-rows are EQUAL effect-rows, equivalent usage grades are EQUAL
+usage grades, equivalent lifetimes are EQUAL lifetimes.  This is what
+makes FX's 21-dim composition behave coherently across the substrate
+— no dimension can "leak" non-univalent equality into another.
+
+**Absorbed frontier (the 12-paper compatible set, 2026-05-28 literature scan).**
+The discipline is realized by absorbing twelve frontier 2020-2026 papers
+into FX's substrate, with the four-justification chain above as the
+load-bearing subset.  The other eight papers contribute foundation,
+substrate, and feature machinery that the discipline depends on:
+
+```
+                          UNIVALENCE-EVERYWHERE DISCIPLINE
+                       (computational, theorem, 3-4 independent proofs)
+                                          │
+            ┌─────────────────────────────┼─────────────────────────────┐
+            ▼                             ▼                             ▼
+       FOUNDATION                     SUBSTRATE                     FEATURES
+       #3 Alloc effects               T3 Istari STC kernel          #6 Directed univ.
+       #5 Bounded levels              T7 Equivariant cubical        #7 Commuting cohesions
+       T1 Mahlo just.                 #1 Poly universes             #8 Tiny object √
+       T2 Mahlo+Acc                                                 T5 Def functoriality
+                                          │
+                                          ▼
+                                     CONVERSION
+                                     #2 Sort poly. (univalence parametric over sort)
+```
+
+Mapping table — each row is the SINGLE canonical citation for the paper
+in this spec (cross-references back to §11.8.2 / §3.10 / §3.16.12 / etc.
+inline avoid repeating the citation):
+
+| # | Paper | arXiv / DOI | FX role |
+|---|---|---|---|
+| #1 | Aberlé-Spivak, Polynomial Universes in HoTT | 2409.19176 | Substrate. Univalence-as-subterminality (also row 2 of justifications above; §3.10 structural). |
+| #2 | Poiret-Gilbert-Maillard-Pédrot-Sozeau-Tabareau-Tanter, All Your Base / Sort Polymorphism | POPL 2025 / 10.1145/3704912 | Conversion. Univalence parametric over sort modes. |
+| #3 | Koronkevich-Bowman, Type Universes as Allocation Effects | 2407.06473 | Foundation. Region semantics; unifies FX dim 1 ↔ dim 7 + dim 15. |
+| #5 | Chan-Weirich, Bounded First-Class Universe Levels | 2502.20485 | Foundation. LevelExpr with bounded `∀ i<j.` quantifiers; basis for decidable `denoteEquiv` together with Mörtberg-Sterling poly-time (§11.8.2). |
+| #6 | Gratzer-Weinberger-Buchholtz, Directed Univalence in Simplicial HoTT | 2407.09146 | Features. `gen_universeD` directed univalence (also §3.10, §11.8.2). |
+| #7 | Myers-Riley, Commuting Cohesions | 2301.13780 | Features. 21D composition primitive (also §3.16.12). |
+| #8 | Riley, A Type Theory with a Tiny Object | 2403.01939 | Features. Universe operator √ for synthetic infinitesimals / SDG. |
+| T1 | Dybjer-Setzer, Extended Predicative Mahlo | J. Log. Comput. 34(6) 2024 | Foundation. Predicative justification for `mahlo` UniverseFlag (§11.8.2). |
+| T2 | Takahashi, Inaccessible Sets in MLTT + Mahlo | 2402.15074 / LMCS 2025 | Foundation. UniverseFlag rung collapse design hint. |
+| T3 | Li-Yao-Harper, Mechanizing STC in Istari | 2509.11418 / CPP 2026 | Substrate. Verified NbE + STC modality kernel (= reference 7c). |
+| T5 | Laurent-Lennon-Bertrand-Maillard, Definitional Functoriality | ESOP 2024 / 2310.14929 | Features. Functor laws as definitional equalities (orthogonal to identity structure). |
+| T7 | Awodey-Cavallo-Coquand-Riehl-Sattler, Equivariant Cartesian Cubical Model | 2406.18497 | Substrate. Constructive cubical model (also row 4 of justifications). |
+
+**Decidable `denoteEquiv` on LevelExpr** comes from Mörtberg-Sterling
+polynomial-time normalization (§11.8.2) + #5 Chan-Weirich bounded
+first-class levels — the canonical-form approach.  This preserves
+univalence at every mode (including outer strict via the strict-reduction
+discipline of §11.8.2) and avoids any UIP-flavored shortcut that would
+break univalence-everywhere by Hofmann-Streicher 1998.
+
+**Honesty discipline.**  Per §11.8.11, each shipped univalence theorem
+must have a real body and pass `#assert_no_axioms`.  No
+`axiom Univalence : ...`.  No `noncomputable def`.  When a propagation
+scope (e.g. cross-dimension univalence at dim 7 Lifetime) lacks a
+written body, it is marked as a pending obligation in the per-dim
+metatheory ledger, NOT claimed as delivered.
 
 ---
 
@@ -9297,6 +9790,62 @@ CT5. Daniel Almeida, *A monoidal category of dependently sorted
 23. Jacob Lurie, "Higher Algebra", available at <https://www.math.ias.edu/~lurie/>.
 24. Mathieu Anel, André Joyal, "Topo-logie", in Joyal-Anel "New Spaces
     in Mathematics and Physics" (Cambridge 2021).
+
+### Structural reflection + the categorical large-cardinal frontier (§11.8.2 apex)
+
+SR1. Joan Bagaria, "Large cardinals as principles of structural
+     reflection", Bulletin of Symbolic Logic 29(1) (2023).  THE
+     program: large cardinals = degrees of structural reflection
+     (isomorphism-invariant, category-theoretic).  Canonical citation
+     for the §11.8.2 reflection-degree ladder.
+SR2. Joan Bagaria, "C^(n)-cardinals", Archive for Mathematical Logic 51
+     (2012).  C^(n)-extendible / C^(n)-degrees; corrects the `vopenka`
+     and `extendible` calibration (Vopěnka = SR for all classes, NOT
+     near-Reinhardt).
+SR3. Jiří Adámek, Jiří Rosický, "Locally Presentable and Accessible
+     Categories", LMS Lecture Note Series 189, CUP 1994.  Vopěnka's
+     principle as category theory: "Ord ↛ Graph fully faithfully" /
+     colimit-closed full subcategories of locally presentable
+     categories are coreflective.
+SR4. Joan Bagaria, Carles Casacuberta, A.R.D. Mathias, Jiří Rosický,
+     "Definable orthogonality classes in accessible categories are
+     small", J. Eur. Math. Soc. 17 (2015), arXiv:1101.2792.  Cardinal
+     degrees ⟺ smallness of definable orthogonality classes
+     (supercompact ≈ Σ₂, extendible ≈ unrestricted).
+SR5. Joan Bagaria, Philipp Lücke, "Huge Reflection", arXiv:2106.01462
+     (2021).  Exact Structural Reflection (ESR) extends structural
+     reflection PAST Vopěnka, through huge, to the rank-into-rank
+     region; sequential ESR over Π₁ classes ⟸ I1.  THE bridge that
+     makes `kunenI0` a categorically-stated reflection degree, FX's
+     committed apex.
+SR6. Juan P. Aguilera, Joan Bagaria, Philipp Lücke, "Large cardinals,
+     structural reflection, and the HOD Conjecture", arXiv:2411.11568
+     (2024).  Exacting + ultraexacting cardinals: SR-defined,
+     ZFC-consistent relative to I0, break the linear large-cardinal
+     picture (`Con(ZFC + proper class of I0)` from below a measurable),
+     bear on HOD / Ultimate-L.  FX's `exacting`/`ultraexacting`
+     frontier; never mechanized anywhere.
+SR7. Ali Sadegh Daghighi, Mohammad Golshani, Joel David Hamkins, Emil
+     Jeřábek, "The foundation axiom and elementary self-embeddings of
+     the universe", arXiv:1311.0814.  Kunen's inconsistency uses
+     Foundation ESSENTIALLY; non-well-founded universes admit nontrivial
+     elementary self-embeddings.  Why FX's non-well-founded substrate
+     evades the Kunen idiom (§11.8.2.1).
+SR8. Gabriel Goldberg, "The uniqueness of elementary embeddings",
+     arXiv:2103.13961 / JSL.  Elementary embeddings into a fixed target
+     agree on the ordinals and are unique above the least extendible —
+     rigidity = univalence-compatibility of high reflection.
+SR9. Richard Laver, "The left distributive law and the freeness of an
+     algebra of elementary embeddings", Advances in Math 91 (1992);
+     + "A free two-generated left distributive algebra of elementary
+     embeddings", arXiv:2508.02244 (2025).  The (computable) Laver-Steel
+     LD-algebra of elementary self-maps — the internalizable algebraic
+     trace of the `reinhardtDirected` frontier.
+SR10. Farmer Schlutzenberg (with Gabriel Goldberg), "On the consistency
+     of ZF with an elementary embedding of V_{λ+2} into V_{λ+2}",
+     J. Math. Logic (2024).  ZF-PROVEN consistency rel I0 of the
+     above-Kunen-wall `V_{λ+2}` embedding; the choiceless ceiling tag
+     `schlutzenbergVLambdaPlus2` (open-frontier, not asserted).
 
 ### Combinatorial model categories (the constructive ∞-topos route)
 
