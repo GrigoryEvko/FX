@@ -72,6 +72,7 @@ import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaNatRec
 import LeanFX2.Foundation.PolyCell.Core.SubjectReductionEtaStructural
 import LeanFX2.Foundation.PolyCell.Core.SubjectReductionEtaBinder
 import LeanFX2.Foundation.PolyCell.Core.StepBetaEtaPreservesShape
+import LeanFX2.Foundation.PolyCell.Core.StepEtaCriticalPairs
 import LeanFX2.Foundation.PolyCell.Core.HasCertifiedIntros
 import LeanFX2.Foundation.PolyCell.Core.HasCertifiedHonestyProbes
 import LeanFX2.Foundation.PolyCell.Core.SubstPreservationProbes
@@ -2359,6 +2360,28 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.etaStar.preservesShape
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.betaEtaStar.mapStep
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.betaEtaStar.preservesShape
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.betaEtaStar.ofStepStar
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.betaEtaStar.ofEtaStar
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.CdLemmaStatementBetaEta
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.ofReductsEqual
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.sameStep
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.swap
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.ofStepPairJoin
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.ofCdLemmaForStepSteps
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaPairFirstCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaPairSecondCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.EtaStepKind
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.EtaStepKind.all
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.EtaStepKind.sourceGenerator
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.EtaStepKind.hasBetaSourceGenerator
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.EtaStepKind.all_length
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.EtaStepKind.sourceGenerator_etaLam
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.EtaStepKind.sourceGenerator_etaPair
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.EtaStepKind.sourceGenerator_etaPathLam
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.EtaStepKind.sourceGenerator_etaModIntro
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.EtaStepKind.sourceGenerator_etaGlueIntro
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.EtaStepKind.currentEtaRoots_doNotShareBetaSource
 
 -- ─── V2-L3.1 phase C step 6 prep: Step inversion lemmas ──────────────
 -- Foundational inversion building blocks the SR theorem's cong arm

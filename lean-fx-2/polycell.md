@@ -5570,9 +5570,20 @@ assumption.  `#354` adds the beta+iota/eta subject-reduction umbrella:
 `Step.eta.preservesShape` dispatches over the five current eta
 constructors, and `Step.betaEta.preservesShape` keeps the legacy
 beta+iota `Step.preservesShape` theorem unchanged while exposing the
-opt-in union needed by the upcoming CR/SN eta tasks.  Record, clock,
-and parametricity eta remain generator-frontier work, not placeholders
-in the current raw relation.
+opt-in union needed by the upcoming CR/SN eta tasks.  The first `#355`
+slice adds the betaEta local-join target and embeds the shipped
+beta+iota `cd_lemma` into it.  It also records a formal frontier fact:
+current root eta heads are `gen_lam`, `gen_pair`, `gen_pathLam`,
+`gen_modIntro`, and `gen_glueIntro`, while beta's root head is
+`gen_app`; therefore the current one-step relation has no same-root
+beta/eta overlap.  The same slice starts the real eta-root versus
+beta+iota-congruence work with audited eta-pair diamonds for reducing
+inside the `fst p` or `snd p` occurrence before contracting
+`pair (fst p) (snd p)`.  The remaining #355 work is the corresponding
+current-generator eta-root/congruence families, followed by #356
+eta/eta branchings.
+Record, clock, and parametricity eta remain generator-frontier work,
+not placeholders in the current raw relation.
 
 ### Phase 1 — Allais Kit
 
