@@ -142,6 +142,7 @@ import LeanFX2.Foundation.TyWellfoundedness
 import LeanFX2.Tools.AuditAll.AuditEtaDiscipline
 import LeanFX2.Tools.AuditAll.AuditIotaEtaMatrix
 import LeanFX2.Foundation.PolyCell.Universe.LevelExpr
+import LeanFX2.Foundation.PolyCell.Universe.UniverseFlag
 
 namespace LeanFX2.Tools
 
@@ -3295,6 +3296,38 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.limax_lzero_lzero_canonical
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.lvar_zero_canonical
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.decEq_refl_lzero
+
+-- ─── M23 (#272): UniverseFlag Setzer-Rathjen ladder ─────────────────
+-- Closed 10-ctor inductive enumerating universe admission predicates
+-- per polycell.md §11.8 (lines 4033-4052).  Each flag is a strictly
+-- stronger admission than the previous, matching the large-cardinal
+-- hierarchy:
+--   standard (Mahlo-free MLTT) → inaccessible → mahlo → superMahlo
+--   → nMahlo n → hyperMahlo → weaklyCompact → indescribable n
+--   → reflecting → vopenka (apex).
+--
+-- M23 ships the enum + DecidableEq + canonical-form smokes.  M79-M82
+-- ship the per-flag admission proofs (research-frontier work, fits
+-- multi-turn focused sessions).  Phase Z₆ closure at M83 ★ MILESTONE
+-- B SHIPPED.
+--
+-- Sibling to M21 #270 LevelExpr — together they form the universe-
+-- payload pair LevelExpr × UniverseFlag for M24's Generator.payload
+-- refactor.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.UniverseFlag
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.UniverseFlag.standard_canonical
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.UniverseFlag.inaccessible_canonical
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.UniverseFlag.mahlo_canonical
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.UniverseFlag.superMahlo_canonical
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.UniverseFlag.nMahlo_zero_canonical
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.UniverseFlag.hyperMahlo_canonical
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.UniverseFlag.weaklyCompact_canonical
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.UniverseFlag.indescribable_zero_canonical
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.UniverseFlag.reflecting_canonical
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.UniverseFlag.vopenka_canonical
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.UniverseFlag.decEq_refl_standard
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.UniverseFlag.ctorCount
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.UniverseFlag.ctorCount_correct
 
 -- ─── V2-L1cert.12: existential preserves dim (#167) ─────────────────
 -- inferRawCellGeneral?_accepted_cellDimension_eq: when the
