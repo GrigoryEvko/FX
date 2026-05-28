@@ -44,6 +44,58 @@ theorem isStronglyNormalizing_of_oneChildCong
           exact currentChildIH targetChild childStep))
     childTerminates
 
+/-- If every parent step is exactly a step in one of two children, accessibility
+of both children lifts to accessibility of the wrapped parent. -/
+theorem isStronglyNormalizing_of_twoChildCong
+    {firstScope secondScope parentScope : Nat}
+    (wrapParent : RawTerm firstScope → RawTerm secondScope → RawTerm parentScope)
+    (invertParentStep :
+      ∀ {firstChild : RawTerm firstScope} {secondChild : RawTerm secondScope}
+        {targetParent : RawTerm parentScope},
+        Step (wrapParent firstChild secondChild) targetParent →
+          (∃ targetFirst : RawTerm firstScope,
+            targetParent = wrapParent targetFirst secondChild ∧
+              Step firstChild targetFirst)
+          ∨
+          (∃ targetSecond : RawTerm secondScope,
+            targetParent = wrapParent firstChild targetSecond ∧
+              Step secondChild targetSecond))
+    {firstChild : RawTerm firstScope}
+    (firstTerminates : IsStronglyNormalizing firstChild)
+    {secondChild : RawTerm secondScope}
+    (secondTerminates : IsStronglyNormalizing secondChild) :
+    IsStronglyNormalizing (wrapParent firstChild secondChild) :=
+  (Acc.ndrec
+    (r := StepSuccessor)
+    (C := fun currentFirst =>
+      ∀ {currentSecond : RawTerm secondScope},
+        IsStronglyNormalizing currentSecond →
+          IsStronglyNormalizing (wrapParent currentFirst currentSecond))
+    (m := fun currentFirst _ firstChildIH => by
+      intro currentSecond currentSecondTerminates
+      exact
+        Acc.ndrec
+          (r := StepSuccessor)
+          (C := fun innerSecond =>
+            IsStronglyNormalizing (wrapParent currentFirst innerSecond))
+          (m := fun currentSecond currentSecondSuccessors secondChildIH =>
+            Acc.intro (wrapParent currentFirst currentSecond)
+              (fun targetParent parentStep => by
+                cases invertParentStep parentStep with
+                | inl firstBranch =>
+                    obtain ⟨targetFirst, targetEq, firstStep⟩ := firstBranch
+                    rw [targetEq]
+                    exact firstChildIH targetFirst firstStep
+                      (Acc.intro currentSecond currentSecondSuccessors)
+                | inr secondBranch =>
+                    obtain ⟨targetSecond, targetEq, secondStep⟩ :=
+                      secondBranch
+                    rw [targetEq]
+                    exact secondChildIH targetSecond secondStep))
+          currentSecondTerminates)
+    firstTerminates)
+    secondTerminates
+
 /-- Lambda abstraction is strongly normalizing when its body is strongly
 normalizing.  The body lives under one fresh binder, but the one-child closure
 lemma is scope-polymorphic, so no special binder transport is needed. -/
@@ -145,6 +197,48 @@ theorem refl_isStronglyNormalizing_of_witness {scope : Nat}
         (.childCons currentWitness .childNil) : RawTerm scope))
     (fun parentStep => Step.from_refl parentStep)
     witnessTerminates
+
+/-- Pairs are strongly normalizing when both components are strongly
+normalizing. -/
+theorem pair_isStronglyNormalizing_of_components {scope : Nat}
+    {first second : RawTerm scope}
+    (firstTerminates : IsStronglyNormalizing first)
+    (secondTerminates : IsStronglyNormalizing second) :
+    IsStronglyNormalizing
+      (.mkGen .gen_pair ()
+        (.childCons first (.childCons second .childNil)) : RawTerm scope) :=
+  isStronglyNormalizing_of_twoChildCong
+    (firstScope := scope)
+    (secondScope := scope)
+    (parentScope := scope)
+    (fun currentFirst currentSecond =>
+      (.mkGen .gen_pair ()
+        (.childCons currentFirst (.childCons currentSecond .childNil)) :
+          RawTerm scope))
+    (fun parentStep => Step.from_pair parentStep)
+    firstTerminates
+    secondTerminates
+
+/-- List cons is strongly normalizing when both its head and tail are strongly
+normalizing. -/
+theorem listCons_isStronglyNormalizing_of_head_tail {scope : Nat}
+    {headVal tailVal : RawTerm scope}
+    (headTerminates : IsStronglyNormalizing headVal)
+    (tailTerminates : IsStronglyNormalizing tailVal) :
+    IsStronglyNormalizing
+      (.mkGen .gen_listCons ()
+        (.childCons headVal (.childCons tailVal .childNil)) : RawTerm scope) :=
+  isStronglyNormalizing_of_twoChildCong
+    (firstScope := scope)
+    (secondScope := scope)
+    (parentScope := scope)
+    (fun currentHead currentTail =>
+      (.mkGen .gen_listCons ()
+        (.childCons currentHead (.childCons currentTail .childNil)) :
+          RawTerm scope))
+    (fun parentStep => Step.from_listCons parentStep)
+    headTerminates
+    tailTerminates
 
 end StepStar
 end LeanFX2.Foundation.PolyCell.Core

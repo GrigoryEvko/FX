@@ -2547,12 +2547,15 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.qubit_isStronglyNormalizing
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.hyperreal_isStronglyNormalizing
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.isStronglyNormalizing_of_oneChildCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.isStronglyNormalizing_of_twoChildCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.lam_isStronglyNormalizing_of_body
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.natSucc_isStronglyNormalizing_of_predecessor
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.optionSome_isStronglyNormalizing_of_value
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.eitherInl_isStronglyNormalizing_of_value
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.eitherInr_isStronglyNormalizing_of_value
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.refl_isStronglyNormalizing_of_witness
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.pair_isStronglyNormalizing_of_components
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.listCons_isStronglyNormalizing_of_head_tail
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.localJoin_of_cdLemma
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.joinStepWithReflRight
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.joinStepWithSingleRight
