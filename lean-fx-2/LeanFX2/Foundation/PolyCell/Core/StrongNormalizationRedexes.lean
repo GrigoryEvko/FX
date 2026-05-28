@@ -464,5 +464,270 @@ theorem idStrictRecRefl_isStronglyNormalizing_of_base_witness {scope : Nat}
     baseTerminates)
     witnessTerminates
 
+/-- Shared accessibility lift for projection-shaped eliminator redexes with
+two reducible branches.
+
+The parent may reduce at the root to the selected branch, or by congruence in
+one of the two branches.  Scrutinee congruence and non-selected root cases are
+filtered out by the caller's inversion function. -/
+theorem isStronglyNormalizing_of_twoBranchProjectionRedex {scope : Nat}
+    (wrapParent : RawTerm scope → RawTerm scope → RawTerm scope)
+    (invertParentStep :
+      ∀ {selectedBranch otherBranch targetParent : RawTerm scope},
+        Step (wrapParent selectedBranch otherBranch) targetParent →
+          (targetParent = selectedBranch)
+          ∨
+          (∃ selectedAfter : RawTerm scope,
+            targetParent = wrapParent selectedAfter otherBranch ∧
+              Step selectedBranch selectedAfter)
+          ∨
+          (∃ otherAfter : RawTerm scope,
+            targetParent = wrapParent selectedBranch otherAfter ∧
+              Step otherBranch otherAfter))
+    {selectedBranch otherBranch : RawTerm scope}
+    (selectedTerminates : IsStronglyNormalizing selectedBranch)
+    (otherTerminates : IsStronglyNormalizing otherBranch) :
+    IsStronglyNormalizing (wrapParent selectedBranch otherBranch) :=
+  (Acc.ndrec
+    (r := StepSuccessor)
+    (C := fun currentSelected =>
+      ∀ {currentOther : RawTerm scope},
+        IsStronglyNormalizing currentOther →
+          IsStronglyNormalizing (wrapParent currentSelected currentOther))
+    (m := fun currentSelected currentSelectedSuccessors selectedBranchIH => by
+      intro currentOther currentOtherTerminates
+      exact
+        Acc.ndrec
+          (r := StepSuccessor)
+          (C := fun innerOther =>
+            IsStronglyNormalizing (wrapParent currentSelected innerOther))
+          (m := fun currentOther currentOtherSuccessors otherBranchIH =>
+            Acc.intro (wrapParent currentSelected currentOther)
+              (fun targetParent parentStep => by
+                cases invertParentStep parentStep with
+                | inl targetEq =>
+                    rw [targetEq]
+                    exact
+                      Acc.intro currentSelected currentSelectedSuccessors
+                | inr restAfterRoot =>
+                    cases restAfterRoot with
+                    | inl selectedBranchStep =>
+                        obtain
+                          ⟨selectedAfter, targetEq, selectedStep⟩ :=
+                            selectedBranchStep
+                        rw [targetEq]
+                        exact selectedBranchIH selectedAfter selectedStep
+                          (Acc.intro currentOther currentOtherSuccessors)
+                    | inr otherBranchStep =>
+                        obtain ⟨otherAfter, targetEq, otherStep⟩ :=
+                          otherBranchStep
+                        rw [targetEq]
+                        exact otherBranchIH otherAfter otherStep))
+          currentOtherTerminates)
+    selectedTerminates)
+    otherTerminates
+
+/-- Natural-number elimination on literal zero is strongly normalizing when
+both branches are strongly normalizing.
+
+The root iota reduct is the zero branch.  The successor iota is impossible on
+the literal zero scrutinee, and scrutinee congruence is impossible because
+`natZero` is a normal leaf. -/
+theorem natElimZero_isStronglyNormalizing_of_branches {scope : Nat}
+    {zeroBranch succBranch : RawTerm scope}
+    (zeroTerminates : IsStronglyNormalizing zeroBranch)
+    (succTerminates : IsStronglyNormalizing succBranch) :
+    IsStronglyNormalizing
+      (.mkGen .gen_natElim ()
+        (.childCons
+          (.mkGen .gen_natZero () .childNil)
+          (.childCons zeroBranch (.childCons succBranch .childNil))) :
+        RawTerm scope) :=
+  isStronglyNormalizing_of_twoBranchProjectionRedex
+    (fun currentZero currentSucc =>
+      (.mkGen .gen_natElim ()
+        (.childCons
+          (.mkGen .gen_natZero () .childNil)
+          (.childCons currentZero (.childCons currentSucc .childNil))) :
+        RawTerm scope))
+    (fun parentStep => by
+      cases Step.from_natElim parentStep with
+      | inl zeroBranchStep =>
+          exact Or.inl zeroBranchStep.2
+      | inr restAfterZero =>
+          cases restAfterZero with
+          | inl succBranchStep =>
+              obtain ⟨predecessor, scrutineeEq, _⟩ := succBranchStep
+              cases scrutineeEq
+          | inr restAfterSucc =>
+              cases restAfterSucc with
+              | inl scrutineeBranch =>
+                  obtain ⟨_, _, scrutineeStep⟩ := scrutineeBranch
+                  exact False.elim (noStep_natZero scrutineeStep)
+              | inr restAfterScrutinee =>
+                  cases restAfterScrutinee with
+                  | inl zeroStep =>
+                      obtain ⟨zeroAfter, targetEq, zeroStepInner⟩ :=
+                        zeroStep
+                      exact Or.inr
+                        (Or.inl ⟨zeroAfter, targetEq, zeroStepInner⟩)
+                  | inr succStep =>
+                      obtain ⟨succAfter, targetEq, succStepInner⟩ :=
+                        succStep
+                      exact Or.inr
+                        (Or.inr ⟨succAfter, targetEq, succStepInner⟩))
+    zeroTerminates
+    succTerminates
+
+/-- Natural-number recursion on literal zero is strongly normalizing when both
+branches are strongly normalizing.  This mirrors the `natElim` zero case for
+the substrate's strict recursor. -/
+theorem natRecZero_isStronglyNormalizing_of_branches {scope : Nat}
+    {zeroBranch succBranch : RawTerm scope}
+    (zeroTerminates : IsStronglyNormalizing zeroBranch)
+    (succTerminates : IsStronglyNormalizing succBranch) :
+    IsStronglyNormalizing
+      (.mkGen .gen_natRec ()
+        (.childCons
+          (.mkGen .gen_natZero () .childNil)
+          (.childCons zeroBranch (.childCons succBranch .childNil))) :
+        RawTerm scope) :=
+  isStronglyNormalizing_of_twoBranchProjectionRedex
+    (fun currentZero currentSucc =>
+      (.mkGen .gen_natRec ()
+        (.childCons
+          (.mkGen .gen_natZero () .childNil)
+          (.childCons currentZero (.childCons currentSucc .childNil))) :
+        RawTerm scope))
+    (fun parentStep => by
+      cases Step.from_natRec parentStep with
+      | inl zeroBranchStep =>
+          exact Or.inl zeroBranchStep.2
+      | inr restAfterZero =>
+          cases restAfterZero with
+          | inl succBranchStep =>
+              obtain ⟨predecessor, scrutineeEq, _⟩ := succBranchStep
+              cases scrutineeEq
+          | inr restAfterSucc =>
+              cases restAfterSucc with
+              | inl scrutineeBranch =>
+                  obtain ⟨_, _, scrutineeStep⟩ := scrutineeBranch
+                  exact False.elim (noStep_natZero scrutineeStep)
+              | inr restAfterScrutinee =>
+                  cases restAfterScrutinee with
+                  | inl zeroStep =>
+                      obtain ⟨zeroAfter, targetEq, zeroStepInner⟩ :=
+                        zeroStep
+                      exact Or.inr
+                        (Or.inl ⟨zeroAfter, targetEq, zeroStepInner⟩)
+                  | inr succStep =>
+                      obtain ⟨succAfter, targetEq, succStepInner⟩ :=
+                        succStep
+                      exact Or.inr
+                        (Or.inr ⟨succAfter, targetEq, succStepInner⟩))
+    zeroTerminates
+    succTerminates
+
+/-- List elimination on literal nil is strongly normalizing when both branches
+are strongly normalizing.
+
+The cons iota is impossible on the literal nil scrutinee, and scrutinee
+congruence is impossible because `listNil` is a normal leaf. -/
+theorem listElimNil_isStronglyNormalizing_of_branches {scope : Nat}
+    {nilBranch consBranch : RawTerm scope}
+    (nilTerminates : IsStronglyNormalizing nilBranch)
+    (consTerminates : IsStronglyNormalizing consBranch) :
+    IsStronglyNormalizing
+      (.mkGen .gen_listElim ()
+        (.childCons
+          (.mkGen .gen_listNil () .childNil)
+          (.childCons nilBranch (.childCons consBranch .childNil))) :
+        RawTerm scope) :=
+  isStronglyNormalizing_of_twoBranchProjectionRedex
+    (fun currentNil currentCons =>
+      (.mkGen .gen_listElim ()
+        (.childCons
+          (.mkGen .gen_listNil () .childNil)
+          (.childCons currentNil (.childCons currentCons .childNil))) :
+        RawTerm scope))
+    (fun parentStep => by
+      cases Step.from_listElim parentStep with
+      | inl nilBranchStep =>
+          exact Or.inl nilBranchStep.2
+      | inr restAfterNil =>
+          cases restAfterNil with
+          | inl consBranchStep =>
+              obtain ⟨headVal, tailVal, scrutineeEq, _⟩ := consBranchStep
+              cases scrutineeEq
+          | inr restAfterCons =>
+              cases restAfterCons with
+              | inl scrutineeBranch =>
+                  obtain ⟨_, _, scrutineeStep⟩ := scrutineeBranch
+                  exact False.elim (noStep_listNil scrutineeStep)
+              | inr restAfterScrutinee =>
+                  cases restAfterScrutinee with
+                  | inl nilStep =>
+                      obtain ⟨nilAfter, targetEq, nilStepInner⟩ := nilStep
+                      exact Or.inr
+                        (Or.inl ⟨nilAfter, targetEq, nilStepInner⟩)
+                  | inr consStep =>
+                      obtain ⟨consAfter, targetEq, consStepInner⟩ :=
+                        consStep
+                      exact Or.inr
+                        (Or.inr ⟨consAfter, targetEq, consStepInner⟩))
+    nilTerminates
+    consTerminates
+
+/-- Option matching on literal none is strongly normalizing when both branches
+are strongly normalizing.
+
+The some iota is impossible on the literal none scrutinee, and scrutinee
+congruence is impossible because `optionNone` is a normal leaf. -/
+theorem optionMatchNone_isStronglyNormalizing_of_branches {scope : Nat}
+    {noneBranch someBranch : RawTerm scope}
+    (noneTerminates : IsStronglyNormalizing noneBranch)
+    (someTerminates : IsStronglyNormalizing someBranch) :
+    IsStronglyNormalizing
+      (.mkGen .gen_optionMatch ()
+        (.childCons
+          (.mkGen .gen_optionNone () .childNil)
+          (.childCons noneBranch (.childCons someBranch .childNil))) :
+        RawTerm scope) :=
+  isStronglyNormalizing_of_twoBranchProjectionRedex
+    (fun currentNone currentSome =>
+      (.mkGen .gen_optionMatch ()
+        (.childCons
+          (.mkGen .gen_optionNone () .childNil)
+          (.childCons currentNone (.childCons currentSome .childNil))) :
+        RawTerm scope))
+    (fun parentStep => by
+      cases Step.from_optionMatch parentStep with
+      | inl noneBranchStep =>
+          exact Or.inl noneBranchStep.2
+      | inr restAfterNone =>
+          cases restAfterNone with
+          | inl someBranchStep =>
+              obtain ⟨value, scrutineeEq, _⟩ := someBranchStep
+              cases scrutineeEq
+          | inr restAfterSome =>
+              cases restAfterSome with
+              | inl scrutineeBranch =>
+                  obtain ⟨_, _, scrutineeStep⟩ := scrutineeBranch
+                  exact False.elim (noStep_optionNone scrutineeStep)
+              | inr restAfterScrutinee =>
+                  cases restAfterScrutinee with
+                  | inl noneStep =>
+                      obtain ⟨noneAfter, targetEq, noneStepInner⟩ :=
+                        noneStep
+                      exact Or.inr
+                        (Or.inl ⟨noneAfter, targetEq, noneStepInner⟩)
+                  | inr someStep =>
+                      obtain ⟨someAfter, targetEq, someStepInner⟩ :=
+                        someStep
+                      exact Or.inr
+                        (Or.inr ⟨someAfter, targetEq, someStepInner⟩))
+    noneTerminates
+    someTerminates
+
 end StepStar
 end LeanFX2.Foundation.PolyCell.Core
