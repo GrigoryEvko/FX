@@ -135,6 +135,7 @@ import LeanFX2.Foundation.PolyCell.Core.StepStarLength
 import LeanFX2.Foundation.PolyCell.Core.ConvCongruence
 import LeanFX2.Foundation.PolyCell.Core.ConvSubstRename
 import LeanFX2.Foundation.PolyCell.NbE.DesignDecision
+import LeanFX2.Foundation.PolyCell.NbE.ReductionStrategy
 
 namespace LeanFX2.Tools
 
@@ -3058,6 +3059,22 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.NbEDesignChoice
 #assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.NbEDesign.committed
 #assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.NbEDesign.committed_is_hybrid
+
+-- ─── M12-pre (#373): NbE reduction strategy committed to CBN ────────
+-- Resolves the strategy ambiguity Agent 3 surfaced — three reducers
+-- in the codebase each use a different strategy (CBN WHNF, CBV iota,
+-- structural fold).  Commits to call-by-name (CBN) for M12 NbE eval.
+--
+-- CBN matches:
+--   * The M11-pre #372 hybrid design (eval returns RawTerm in β-NF).
+--   * Abel-Coquand-Dybjer 2007 NbE-for-MLTT reference.
+--   * FX's effect-tracking discipline (no spurious arg evaluation).
+--
+-- Memoization (lazy CBN) deferred to M19 #268 STRICT-COMPLEXITY work.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.ReductionStrategy
+#assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.ReductionStrategy.committed
+#assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.ReductionStrategy.committed_is_cbn
+#assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.ReductionStrategy.compatible_with_hybrid_design
 
 -- ─── V2-L1cert.12: existential preserves dim (#167) ─────────────────
 -- inferRawCellGeneral?_accepted_cellDimension_eq: when the
