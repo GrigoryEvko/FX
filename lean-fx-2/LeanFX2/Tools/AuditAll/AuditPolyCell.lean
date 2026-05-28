@@ -76,6 +76,7 @@ import LeanFX2.Foundation.PolyCell.Core.SubjectReductionEtaStructural
 import LeanFX2.Foundation.PolyCell.Core.SubjectReductionEtaBinder
 import LeanFX2.Foundation.PolyCell.Core.StepBetaEtaPreservesShape
 import LeanFX2.Foundation.PolyCell.Core.StepEtaCriticalPairs
+import LeanFX2.Foundation.PolyCell.Core.StepIotaEtaInsideBinder
 import LeanFX2.Foundation.PolyCell.Core.StepEtaEtaCriticalPairs
 import LeanFX2.Foundation.PolyCell.Core.StepBetaEtaConfluence
 import LeanFX2.Foundation.PolyCell.Core.StrongNormalizationEta
@@ -2467,6 +2468,45 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.EtaStepKind.sourceGenerator_etaModIntro
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.EtaStepKind.sourceGenerator_etaGlueIntro
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.EtaStepKind.currentEtaRoots_doNotShareBetaSource
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaRootKind
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaRootKind.all
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaRootKind.toRootStepKind
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaRootKind.sourceGenerator
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaRootKind.all_length
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaRootKind.all_maps_to_root_iotas
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaRootKind.all_sourceGenerators
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaEtaInsideBinderStatus
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaEtaInsideBinderStatus.isCovered
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaEtaInsideBinderStatus.insideBinderDiamond_isCovered
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaEtaInsideBinderCoverage
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaEtaInsideBinderCoverage.rowForIotaKind
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaEtaInsideBinderCoverage.isComplete
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaEtaInsideBinderCoverage.rowForIotaKind_isComplete
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaRootKind.etaLamCoverageRows
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaRootKind.etaLamCoverageComplete
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaRootKind.etaLamCoverageRows_length
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaRootKind.etaLamCoverageComplete_eq_true
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaRootKind.boolTrue_etaLam_status
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaRootKind.boolFalse_etaLam_status
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaRootKind.fstPair_etaLam_status
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaRootKind.sndPair_etaLam_status
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaRootKind.natElimZero_etaLam_status
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaRootKind.natRecZero_etaLam_status
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaRootKind.listElimNil_etaLam_status
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaRootKind.optionMatchNone_etaLam_status
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaRootKind.optionMatchSome_etaLam_status
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaRootKind.eitherMatchInl_etaLam_status
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaRootKind.eitherMatchInr_etaLam_status
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaRootKind.natElimSucc_etaLam_status
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaRootKind.natRecSucc_etaLam_status
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaRootKind.listElimCons_etaLam_status
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaRootKind.idJRefl_etaLam_status
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.IotaRootKind.idStrictRecRefl_etaLam_status
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaEta_weakened_step
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaEta_inside_etaLam_join
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaEta_etaLam_source_join
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaEta_inside_binder_complete
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.iotaEta_inside_binder_complete_eq_true
 
 -- ─── V2-L3.1 phase C step 6 prep: Step inversion lemmas ──────────────
 -- Foundational inversion building blocks the SR theorem's cong arm
