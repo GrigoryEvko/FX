@@ -43,8 +43,9 @@ already established (v1's `RawTermSubst.singleton` is also
 
 ## The β-reduct convention
 
-In a future Step relation on V2 (currently L3 deferred), the canonical
-beta-reduction rule will fire as:
+The Step relation on V2 (Step.lean — M2/M3/M4 SR cascade
+#251/#252/#253 SHIPPED) fires the canonical beta-reduction rule
+as:
 
 ```
 Step (.mkGen .gen_app payload₁ (.childCons (.mkGen .gen_lam payload₂

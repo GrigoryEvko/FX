@@ -17,9 +17,9 @@ Per `polycell.md` §4's rejection taxonomy:
 > | raw `compH` before Axis 6 certification | reject `unsupportedCompH` |
 
 Horizontal composition (the Gray-tensor cellular pairing) requires
-Gray boundary semantics which are deferred to Axis 6 of the
-`polycell.md` roadmap (the "infinite scaling" extension calculus
-work).  Until those semantics are mechanized, the certifier has no
+Gray boundary semantics tracked as M-horizComposite-admission
+#384 + Axis 6 of the `polycell.md` roadmap (the "infinite
+scaling" extension calculus work).  Until those semantics are mechanized, the certifier has no
 admissible PolyCell constructor for compH, and any raw input
 containing a `.horizontalComposite` at the OUTER ctor is structurally
 unsupportable.

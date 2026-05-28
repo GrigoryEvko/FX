@@ -34,9 +34,10 @@ substitution preservation lemma (V2-L2.12) live — we need to
 convert `Certified source` to a `PolyCell ... (.termBase source)`.
 
 This file ships that bridge.  The reverse direction (PolyCell →
-Certified, i.e., certifier completeness) is V2-L3.5 and requires
-fuel monotonicity / completeness machinery — deferred to a
-later phase.
+Certified, i.e., certifier completeness) is tracked as V2-L3.5
+#238 + M-substrate-3 #367 (isNF predicate is the certifier-
+completeness substrate).  Fuel monotonicity / completeness
+machinery scheduled with that task.
 
 ## What this does NOT do
 

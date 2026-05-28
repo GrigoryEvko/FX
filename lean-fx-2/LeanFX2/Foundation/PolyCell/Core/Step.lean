@@ -76,9 +76,12 @@ unbounded population of iotas).
   witness is `refl`.  The motive and dependent-elimination
   semantics live in the PROFILE layer that interprets identity
   types, not in the substrate.
-* **Future phase C** (deferred): opt-in eta rules per generator,
-  and the SR theorem.  After step 5, the standard MLTT iotas
-  (everything except eta) are FULLY COVERED.
+* **Phase C (η cascade — SHIPPED)**: opt-in eta rules per generator
+  via the `Step.eta` sibling inductive (#351 etaLam/etaPair/etaPathLam/
+  etaModIntro/etaClockAbs/etaParamAbs/etaGlueIntro at StepEta.lean)
+  + SR-η arms M8c/M8d (#352/#353) + β-η confluence cascade M8e-M8h
+  (#354-#357).  SR theorem itself: M4 Step.preservesShape umbrella
+  (#253).  After M8h, β+ι+η is FULLY COVERED at the raw layer.
 
 This is the L3 KICKOFF: the FIRST shipped piece of v2's reduction
 calculus.  Together with V2-L2.10's `RawTerm.subst0`, it establishes

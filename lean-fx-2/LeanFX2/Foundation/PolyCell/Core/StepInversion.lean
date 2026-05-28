@@ -15,7 +15,13 @@ For non-leaf terms, inversion characterizes the possible source/
 target shapes per Step constructor.
 
 This file builds inversion bottom-up: empty-spine → leaf-ctors →
-specific-redex inversions (deferred to later iterations).
+specific-redex inversions.  Per `M-stepInversion-retro` (#376):
+the 21-commit `from_X` inversion family is the retroactive
+substrate task home for this 1150-LoC file; consumers M4 SR
+umbrella (#253) + M9 SN cascade (#258) cite from here.  The
+"deferred to later iterations" specific-redex line is now
+STALE — the relevant inversions shipped through the SR cascade
+M2-M4 (#251-#253) and the η cascade M8a-M8h (#350-#357).
 
 ## What this file ships (phase C step 6 prep)
 

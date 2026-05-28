@@ -51,7 +51,7 @@ Each closes by `rfl`: the certifier is a pure computation, and
 the renaming + certification chain reduces to a definite
 `Except.ok` result.
 
-## Phase B (deferred): the structural theorem
+## Phase B (tracked as M-certifier-rename-equivariance #378): the structural theorem
 
 A full V2-L2.13 close requires proving the universally-quantified
 rename-equivariance statement:
