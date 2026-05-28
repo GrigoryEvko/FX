@@ -112,6 +112,26 @@ def HasJoin {scope : Nat}
     (branching : LocalStepBranching (scope := scope)) : Prop :=
   StepPairJoin branching.leftStep branching.rightStep
 
+/-- Two local branchings whose source terms cannot be definitionally the same.
+
+This is the M7-facing form of the M6 mutually-exclusive root/root facts:
+same-generator root rules such as `boolTrue` versus `boolFalse` do not produce
+a join obligation, because the shared-source branching itself is impossible. -/
+def SourcesDisjoint {scope : Nat}
+    (leftBranching rightBranching : LocalStepBranching (scope := scope)) :
+    Prop :=
+  Not (leftBranching.source = rightBranching.source)
+
+/-- A source-disjoint pair of local branchings cannot be viewed as sharing the
+same source. -/
+theorem sourcesDisjoint_noSharedSource {scope : Nat}
+    {leftBranching rightBranching : LocalStepBranching (scope := scope)}
+    (branchingsHaveDisjointSources :
+      SourcesDisjoint leftBranching rightBranching)
+    (sourcesEqual : leftBranching.source = rightBranching.source) :
+    False :=
+  branchingsHaveDisjointSources sourcesEqual
+
 /-- `fromSteps` preserves the `StepPairJoin` goal definitionally. -/
 theorem fromSteps_hasJoin {scope : Nat}
     {sourceTerm leftReduct rightReduct : RawTerm scope}
@@ -341,6 +361,142 @@ theorem iotaListElimConsSameRoot_hasJoin {scope : Nat}
       headValue tailValue nilBranch consBranch).HasJoin :=
   (LocalDiamond.iotaListElimConsSameRoot
     headValue tailValue nilBranch consBranch).hasJoin
+
+/-- M7 contradiction arm for the mutually-exclusive bool true/false root pair. -/
+theorem iotaBoolTrue_iotaBoolFalse_hasSourcesDisjoint {scope : Nat}
+    (thenTrue elseTrue thenFalse elseFalse : RawTerm scope) :
+    SourcesDisjoint
+      (iotaBoolTrueSameRoot thenTrue elseTrue)
+      (iotaBoolFalseSameRoot thenFalse elseFalse) :=
+  iotaBoolTrue_iotaBoolFalse_sourcesDisjoint
+    thenTrue elseTrue thenFalse elseFalse
+
+/-- Reverse M7 contradiction arm for the mutually-exclusive bool false/true root pair. -/
+theorem iotaBoolFalse_iotaBoolTrue_hasSourcesDisjoint {scope : Nat}
+    (thenFalse elseFalse thenTrue elseTrue : RawTerm scope) :
+    SourcesDisjoint
+      (iotaBoolFalseSameRoot thenFalse elseFalse)
+      (iotaBoolTrueSameRoot thenTrue elseTrue) :=
+  iotaBoolFalse_iotaBoolTrue_sourcesDisjoint
+    thenFalse elseFalse thenTrue elseTrue
+
+/-- M7 contradiction arm for the mutually-exclusive nat-elim zero/succ root pair. -/
+theorem iotaNatElimZero_iotaNatElimSucc_hasSourcesDisjoint {scope : Nat}
+    (zeroBranch succBranch predecessor
+      zeroBranchSucc succBranchSucc : RawTerm scope) :
+    SourcesDisjoint
+      (iotaNatElimZeroSameRoot zeroBranch succBranch)
+      (iotaNatElimSuccSameRoot
+        predecessor zeroBranchSucc succBranchSucc) :=
+  iotaNatElimZero_iotaNatElimSucc_sourcesDisjoint
+    zeroBranch succBranch predecessor zeroBranchSucc succBranchSucc
+
+/-- Reverse M7 contradiction arm for the mutually-exclusive nat-elim succ/zero root pair. -/
+theorem iotaNatElimSucc_iotaNatElimZero_hasSourcesDisjoint {scope : Nat}
+    (predecessor zeroBranchSucc succBranchSucc
+      zeroBranch succBranch : RawTerm scope) :
+    SourcesDisjoint
+      (iotaNatElimSuccSameRoot
+        predecessor zeroBranchSucc succBranchSucc)
+      (iotaNatElimZeroSameRoot zeroBranch succBranch) :=
+  iotaNatElimSucc_iotaNatElimZero_sourcesDisjoint
+    predecessor zeroBranchSucc succBranchSucc zeroBranch succBranch
+
+/-- M7 contradiction arm for the mutually-exclusive nat-rec zero/succ root pair. -/
+theorem iotaNatRecZero_iotaNatRecSucc_hasSourcesDisjoint {scope : Nat}
+    (zeroBranch succBranch predecessor
+      zeroBranchSucc succBranchSucc : RawTerm scope) :
+    SourcesDisjoint
+      (iotaNatRecZeroSameRoot zeroBranch succBranch)
+      (iotaNatRecSuccSameRoot
+        predecessor zeroBranchSucc succBranchSucc) :=
+  iotaNatRecZero_iotaNatRecSucc_sourcesDisjoint
+    zeroBranch succBranch predecessor zeroBranchSucc succBranchSucc
+
+/-- Reverse M7 contradiction arm for the mutually-exclusive nat-rec succ/zero root pair. -/
+theorem iotaNatRecSucc_iotaNatRecZero_hasSourcesDisjoint {scope : Nat}
+    (predecessor zeroBranchSucc succBranchSucc
+      zeroBranch succBranch : RawTerm scope) :
+    SourcesDisjoint
+      (iotaNatRecSuccSameRoot
+        predecessor zeroBranchSucc succBranchSucc)
+      (iotaNatRecZeroSameRoot zeroBranch succBranch) :=
+  iotaNatRecSucc_iotaNatRecZero_sourcesDisjoint
+    predecessor zeroBranchSucc succBranchSucc zeroBranch succBranch
+
+/-- M7 contradiction arm for the mutually-exclusive list-elim nil/cons root pair. -/
+theorem iotaListElimNil_iotaListElimCons_hasSourcesDisjoint {scope : Nat}
+    (nilBranch consBranch headValue tailValue
+      nilBranchCons consBranchCons : RawTerm scope) :
+    SourcesDisjoint
+      (iotaListElimNilSameRoot nilBranch consBranch)
+      (iotaListElimConsSameRoot
+        headValue tailValue nilBranchCons consBranchCons) :=
+  iotaListElimNil_iotaListElimCons_sourcesDisjoint
+    nilBranch consBranch headValue tailValue nilBranchCons consBranchCons
+
+/-- Reverse M7 contradiction arm for the mutually-exclusive list-elim cons/nil root pair. -/
+theorem iotaListElimCons_iotaListElimNil_hasSourcesDisjoint {scope : Nat}
+    (headValue tailValue nilBranchCons consBranchCons
+      nilBranch consBranch : RawTerm scope) :
+    SourcesDisjoint
+      (iotaListElimConsSameRoot
+        headValue tailValue nilBranchCons consBranchCons)
+      (iotaListElimNilSameRoot nilBranch consBranch) :=
+  iotaListElimCons_iotaListElimNil_sourcesDisjoint
+    headValue tailValue nilBranchCons consBranchCons nilBranch consBranch
+
+/-- M7 contradiction arm for the mutually-exclusive option-match none/some root pair. -/
+theorem iotaOptionMatchNone_iotaOptionMatchSome_hasSourcesDisjoint
+    {scope : Nat}
+    (noneBranch someBranch value
+      noneBranchSome someBranchSome : RawTerm scope) :
+    SourcesDisjoint
+      (iotaOptionMatchNoneSameRoot noneBranch someBranch)
+      (iotaOptionMatchSomeSameRoot
+        value noneBranchSome someBranchSome) :=
+  iotaOptionMatchNone_iotaOptionMatchSome_sourcesDisjoint
+    noneBranch someBranch value noneBranchSome someBranchSome
+
+/-- Reverse M7 contradiction arm for the mutually-exclusive option-match some/none root pair. -/
+theorem iotaOptionMatchSome_iotaOptionMatchNone_hasSourcesDisjoint
+    {scope : Nat}
+    (value noneBranchSome someBranchSome
+      noneBranch someBranch : RawTerm scope) :
+    SourcesDisjoint
+      (iotaOptionMatchSomeSameRoot
+        value noneBranchSome someBranchSome)
+      (iotaOptionMatchNoneSameRoot noneBranch someBranch) :=
+  iotaOptionMatchSome_iotaOptionMatchNone_sourcesDisjoint
+    value noneBranchSome someBranchSome noneBranch someBranch
+
+/-- M7 contradiction arm for the mutually-exclusive either-match inl/inr root pair. -/
+theorem iotaEitherMatchInl_iotaEitherMatchInr_hasSourcesDisjoint
+    {scope : Nat}
+    (leftValue leftBranch rightBranch rightValue
+      leftBranchRight rightBranchRight : RawTerm scope) :
+    SourcesDisjoint
+      (iotaEitherMatchInlSameRoot
+        leftValue leftBranch rightBranch)
+      (iotaEitherMatchInrSameRoot
+        rightValue leftBranchRight rightBranchRight) :=
+  iotaEitherMatchInl_iotaEitherMatchInr_sourcesDisjoint
+    leftValue leftBranch rightBranch rightValue
+    leftBranchRight rightBranchRight
+
+/-- Reverse M7 contradiction arm for the mutually-exclusive either-match inr/inl root pair. -/
+theorem iotaEitherMatchInr_iotaEitherMatchInl_hasSourcesDisjoint
+    {scope : Nat}
+    (rightValue leftBranchRight rightBranchRight leftValue
+      leftBranch rightBranch : RawTerm scope) :
+    SourcesDisjoint
+      (iotaEitherMatchInrSameRoot
+        rightValue leftBranchRight rightBranchRight)
+      (iotaEitherMatchInlSameRoot
+        leftValue leftBranch rightBranch) :=
+  iotaEitherMatchInr_iotaEitherMatchInl_sourcesDisjoint
+    rightValue leftBranchRight rightBranchRight leftValue
+    leftBranch rightBranch
 
 end LocalStepBranching
 
