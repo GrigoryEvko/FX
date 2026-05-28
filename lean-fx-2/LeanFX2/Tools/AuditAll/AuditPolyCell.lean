@@ -139,6 +139,7 @@ import LeanFX2.Foundation.PolyCell.NbE.ReductionStrategy
 import LeanFX2.Tools.AuditAll.AuditPhaseZ
 import LeanFX2.Tools.AuditAll.AuditStrictAxes
 import LeanFX2.Foundation.TyWellfoundedness
+import LeanFX2.Tools.AuditAll.AuditEtaDiscipline
 
 namespace LeanFX2.Tools
 
@@ -3208,6 +3209,45 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Ty.size_lt_path_carrier
 #assert_no_axioms LeanFX2.Ty.size_lt_oeq_carrier
 #assert_no_axioms LeanFX2.Ty.size_lt_idStrict_carrier
+
+-- ─── η-M8i (#358): STRICT-ETA-DISCIPLINE coverage harness ───────────
+-- Audit harness for the raw-layer η discipline.  Catches future
+-- generator additions that forget η coverage by classifying every
+-- generator into one of 5 eligibility classes (shippedEta /
+-- reservedEta / inductiveData / eliminator / other) via a total
+-- `Generator.etaEligibility` function.
+--
+-- When Phase Z₇/Z₈ adds clock/parametricity generators, the
+-- coverage state advances; the summary theorem fails to elaborate
+-- until both the eligibility classification AND the per-class
+-- coverage state are updated in lockstep.
+--
+-- Ships: EtaEligibility (5 ctors) + EtaCoverageState (3 ctors) +
+-- Generator.etaEligibility (total function, ~30 explicit classes
+-- + catch-all `_ => .other`) + etaCoverageOf (5-arm coverage map)
+-- + etaDiscipline_summary (rfl-conjunction lockstep theorem) + 10
+-- per-generator spot-checks + 2 aggregate count defs + counts_honest.
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.EtaEligibility
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.EtaCoverageState
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.isShippedEta
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.isInductiveData
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.isEliminator
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.Generator.etaEligibility
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.etaCoverageOf
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.etaDiscipline_summary
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.etaEligibility_gen_lam
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.etaEligibility_gen_pair
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.etaEligibility_gen_pathLam
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.etaEligibility_gen_modIntro
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.etaEligibility_gen_glueIntro
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.etaEligibility_gen_var
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.etaEligibility_gen_unit
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.etaEligibility_gen_app
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.etaEligibility_gen_fst
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.etaEligibility_gen_modElim
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.etaDiscipline_shippedCount
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.etaDiscipline_reservedInEnumCount
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.etaDiscipline_counts_honest
 
 -- ─── V2-L1cert.12: existential preserves dim (#167) ─────────────────
 -- inferRawCellGeneral?_accepted_cellDimension_eq: when the
