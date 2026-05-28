@@ -54,6 +54,7 @@ import LeanFX2.Foundation.PolyCell.Core.RawTermSubstCompose
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubst0Commute
 import LeanFX2.Foundation.PolyCell.Core.RawTermStrengthen
 import LeanFX2.Foundation.PolyCell.Core.RawTermFresh
+import LeanFX2.Foundation.PolyCell.Core.RawTermFreeVars
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubstAction
 import LeanFX2.Foundation.PolyCell.Core.RawCellRenameSubst
 import LeanFX2.Foundation.PolyCell.Core.RawCellCascadeLaws
@@ -3530,6 +3531,34 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.triple_isFreshFor
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.rename_subst0_commute
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.strengthen_eq_subst_of_isFreshFor_singleton
+
+-- M-substrate-2: first-principles free-variable support.
+-- Avoids host Finset/Std set infrastructure by representing raw
+-- variable sets as boolean characteristic functions over `Fin scope`.
+-- This gives later closure/NF/Conv-substrate tasks a small kernel-local
+-- API with a structural soundness/completeness theorem against
+-- `UsesPosition`.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawVarSet
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawVarSet.empty
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawVarSet.singleton
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawVarSet.union
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawVarSet.contains
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawVarSet.instDecidableContains
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawVarSet.raiseParentPosition
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawVarSet.fromChild
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawVarSet.contains_empty_false
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawVarSet.contains_singleton_iff
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawVarSet.contains_union_iff
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.freeVars
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.freeVars
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.UsesPosition
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.UsesPosition
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.freeVars_nonVar
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.usesPosition_nonVar_iff
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.freeVars_iff_uses
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermChildren.freeVars_iff_uses
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.freeVars_unit_smoke
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.freeVars_var_self_smoke
 
 -- V2-L2.7d: THE `Action RawTermSubst` TYPECLASS INSTANCE.
 -- Closes V2-L2.7 entirely.  Cites the three Action laws shipped
