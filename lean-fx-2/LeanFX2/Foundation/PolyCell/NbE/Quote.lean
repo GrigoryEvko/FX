@@ -126,6 +126,29 @@ structure Quote where
     LeanFX2.Foundation.PolyCell.Core.RawTerm.isStepNormalForm term →
     LeanFX2.Foundation.PolyCell.Core.RawTerm.isStepNormalForm
       (quote term)
+  /-- audit-A5 (#392): NF input is a fixed point of `quote`.
+
+  If a term is already in step-normal form, quoting it leaves
+  it unchanged.  Strictly stronger than `quote_preserves_isNF`
+  on NF inputs (which only guarantees the OUTPUT is NF, not
+  that it equals the input).
+
+  At the canonical identity quote (`quoteRaw`), this trivially
+  holds because quote IS identity — every term, NF or not, maps
+  to itself.  At the typed-η quote (M15a-e), this matters more:
+  η-long readback at function types DOES insert η-expansions,
+  but only when the input is NOT already η-long.  NF inputs at
+  the typed layer are η-long by definition; quote must respect
+  that.
+
+  Load-bearing for M16 #265 NbE soundness: the pipeline output
+  `quote (normalize a)` is NF (by Normalizer.normalize_isNF +
+  Quote.quote_preserves_isNF), and this field witnesses that a
+  second `quote` application is a no-op. -/
+  quote_round_trip : ∀ {scope : Nat}
+      (term : LeanFX2.Foundation.PolyCell.Core.RawTerm scope),
+    LeanFX2.Foundation.PolyCell.Core.RawTerm.isStepNormalForm term →
+      quote term = term
 
 /-- The canonical raw-layer quote instance: literally the
 identity function.
@@ -139,6 +162,7 @@ def quoteRaw : Quote where
   quote := fun term => term
   quote_eq_id := fun _ => rfl
   quote_preserves_isNF := fun _ isNFProof => isNFProof
+  quote_round_trip := fun _ _ => rfl
 
 /-! ## Sanity smokes -/
 
@@ -163,13 +187,27 @@ theorem quoteRaw_is_extensional_identity {scope : Nat}
     (term : LeanFX2.Foundation.PolyCell.Core.RawTerm scope) :
     quoteRaw.quote term = term := rfl
 
+/-- audit-A5 smoke: `quoteRaw.quote_round_trip` collapses to
+`rfl` on any NF input.  At the canonical identity quote, the
+round-trip property is trivially the same `rfl`-collapse as
+`quote_eq_id` — quote IS identity, so NF inputs are fixed
+points definitionally. -/
+theorem quoteRaw_round_trip_smoke {scope : Nat}
+    (term : LeanFX2.Foundation.PolyCell.Core.RawTerm scope)
+    (isNFProof :
+      LeanFX2.Foundation.PolyCell.Core.RawTerm.isStepNormalForm
+        term) :
+    quoteRaw.quote term = term :=
+  quoteRaw.quote_round_trip term isNFProof
+
 /-! ## Aggregate metric -/
 
-/-- The Quote structure has 3 explicit fields. -/
-def Quote.fieldCount : Nat := 3
+/-- The Quote structure has 4 explicit fields (3 original M13 #262
+fields + 1 audit-A5 contract extension: quote_round_trip). -/
+def Quote.fieldCount : Nat := 4
 
 theorem Quote.fieldCount_correct :
-    Quote.fieldCount = 3 := rfl
+    Quote.fieldCount = 4 := rfl
 
 /-! ## Cross-reference theorems
 

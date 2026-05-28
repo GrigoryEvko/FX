@@ -1,6 +1,8 @@
 import LeanFX2.Foundation.PolyCell.Core.RawTermNF
+import LeanFX2.Foundation.PolyCell.Core.RawTermRename
 import LeanFX2.Foundation.PolyCell.NbE.DesignDecision
 import LeanFX2.Foundation.PolyCell.NbE.ReductionStrategy
+import LeanFX2.Foundation.RawSubst.RenameDefs
 
 /-! # Foundation/PolyCell/NbE/NormalizerSignature
    — M11 NbE substrate: canonical normalizer signature contract
@@ -151,10 +153,44 @@ structure Normalizer where
       (term : LeanFX2.Foundation.PolyCell.Core.RawTerm scope),
     LeanFX2.Foundation.PolyCell.Core.RawTerm.isStepNormalForm
       (normalize term)
+  /-- audit-A3 (#390): NF input is a fixed point of `normalize`.
+
+  If a term is already in step-normal form, the normalizer
+  leaves it unchanged.  Strictly stronger than `normalize_isNF`
+  on NF inputs (which would only guarantee the OUTPUT is NF, not
+  that it equals the input).  Required by M14/M16/M17 fixture-
+  level smokes to confirm "already-canonical" leaves survive the
+  normalizer round-trip identically. -/
+  normalize_isNF_fixed_point : ∀ {scope : Nat}
+      (term : LeanFX2.Foundation.PolyCell.Core.RawTerm scope),
+    LeanFX2.Foundation.PolyCell.Core.RawTerm.isStepNormalForm term →
+      normalize term = term
   /-- Idempotence: running the normalizer twice equals once. -/
   normalize_idempotent : ∀ {scope : Nat}
       (term : LeanFX2.Foundation.PolyCell.Core.RawTerm scope),
     normalize (normalize term) = normalize term
+  /-- audit-A2 (#389): normalize commutes with renaming.
+
+  Renaming variables BEFORE normalization is equivalent to
+  normalizing first and then renaming.  This is the substrate
+  property M12 #261 NbE eval must satisfy so the typed-layer
+  substitution lemmas (M47 #296) can lift `eval ∘ rename`
+  through binders.
+
+  Stated over `LeanFX2.RawRenaming` (the canonical
+  `Fin source → Fin target` family) per the existing PolyCell
+  rename infrastructure.  The implementation in M12 will prove
+  this via the fold-based Action laws.  Until M12 lands, the
+  contract is empty — no instance can be constructed without it,
+  which is the point. -/
+  normalize_renaming_commute : ∀ {sourceScope targetScope : Nat}
+      (someRenaming : LeanFX2.RawRenaming sourceScope targetScope)
+      (term : LeanFX2.Foundation.PolyCell.Core.RawTerm sourceScope),
+    normalize
+        (LeanFX2.Foundation.PolyCell.Core.RawTerm.rename
+          someRenaming term) =
+      LeanFX2.Foundation.PolyCell.Core.RawTerm.rename
+        someRenaming (normalize term)
   /-- Sanity smoke: a closed unit term is its own NF. -/
   normalize_unit : ∀ {scope : Nat},
     normalize
@@ -193,11 +229,12 @@ Pin the structure's shape via `rfl`-witnessed canonical
 extractor equations.  If `Normalizer.normalize` ever silently
 changes name or signature, these catch the regression. -/
 
-/-- The Normalizer structure has 4 explicit fields. -/
-def Normalizer.fieldCount : Nat := 4
+/-- The Normalizer structure has 6 explicit fields (4 original
+M11 #260 fields + 2 audit-A* contract extensions: A2 + A3). -/
+def Normalizer.fieldCount : Nat := 6
 
 theorem Normalizer.fieldCount_correct :
-    Normalizer.fieldCount = 4 := rfl
+    Normalizer.fieldCount = 6 := rfl
 
 /-- NormalizerWithStrategy has exactly 2 fields. -/
 def NormalizerWithStrategy.fieldCount : Nat := 2

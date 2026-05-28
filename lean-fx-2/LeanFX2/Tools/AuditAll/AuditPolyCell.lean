@@ -3421,6 +3421,33 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.Quote.consistent_with_hybrid_design
 #assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.Quote.consistent_with_cbn_strategy
 
+-- ─── audit-A2/A3/A5 (#389/#390/#392): contract extensions ────────────
+-- Three coordinated extensions to the M11/M13 NbE substrate contracts:
+--
+-- * audit-A2 (#389): Normalizer.normalize_renaming_commute — substrate
+--   property that NbE eval commutes with renaming.  Required by M12
+--   #261 implementation + M47 #296 typed substitution lemmas.
+--
+-- * audit-A3 (#390): Normalizer.normalize_isNF_fixed_point — strictly
+--   stronger than normalize_isNF on NF inputs (output = input, not
+--   just output-is-NF).  Load-bearing for M14 #263 fixture smokes.
+--
+-- * audit-A5 (#392): Quote.quote_round_trip — NF input is a fixed
+--   point of quote.  At canonical quoteRaw, witness is `fun _ _ => rfl`
+--   since quote IS identity.  Load-bearing for M16 #265 NbE soundness
+--   (the pipeline output is NF and a second quote application is a
+--   no-op).
+--
+-- Field-count advances: Normalizer 4→6, Quote 3→4.  fieldCount /
+-- fieldCount_correct gates remain valid because #assert_no_axioms
+-- doesn't pin specific Nat values and the _correct theorems still
+-- close by rfl at the new values.
+--
+-- One concrete witness ships: quoteRaw_round_trip_smoke confirms the
+-- canonical identity quote satisfies the new round-trip contract on
+-- ANY NF input via the field's `rfl` filler.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.NbE.quoteRaw_round_trip_smoke
+
 -- ─── audit-A1 (#388): composeNormalizerWithQuote wrapper ────────────
 -- Closes Agent 1's 2026-05-28 gap-audit critical finding: the Quote
 -- docstring at lines 33-36 advertised this wrapper, but the symbol
