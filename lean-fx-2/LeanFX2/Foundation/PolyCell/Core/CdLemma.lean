@@ -679,6 +679,62 @@ theorem fromSteps_betaArgumentCongReverse_hasJoin {scope : Nat}
       (Step.beta (body := body) (arg := argument))).HasJoin :=
   betaArgumentCongReverse_hasJoin body argumentStep
 
+/-- Resolve every local branching whose left step is beta.
+
+The dependent case split on the right step leaves only the real beta
+branchings from the shared beta-redex source: beta/beta, congruence in the
+application function child, or congruence in the application argument child.
+Empty-spine tails are impossible by direct `cases`. -/
+theorem fromSteps_betaLeft_hasJoin {scope : Nat}
+    {body : RawTerm (scope + 1)}
+    {argument rightReduct : RawTerm scope}
+    (rightStep : Step
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam () (.childCons body .childNil))
+          (.childCons argument .childNil)))
+      rightReduct) :
+    (fromSteps
+      (Step.beta (body := body) (arg := argument))
+      rightStep).HasJoin := by
+  cases rightStep with
+  | beta =>
+      exact fromSteps_betaBeta_hasJoin body argument
+  | cong generator payload childStep =>
+      cases childStep with
+      | here restChildren functionStep =>
+          cases functionStep with
+          | cong functionGenerator functionPayload functionChildStep =>
+              cases functionChildStep with
+              | here functionRest bodyStep =>
+                  exact fromSteps_betaFunctionCong_hasJoin argument bodyStep
+              | there functionHead functionRestStep =>
+                  cases functionRestStep
+      | there functionChild argumentChildrenStep =>
+          cases argumentChildrenStep with
+          | here argumentRest argumentStep =>
+              exact fromSteps_betaArgumentCong_hasJoin body argumentStep
+          | there argumentHead argumentRestStep =>
+              cases argumentRestStep
+
+/-- Resolve every local branching whose right step is beta.
+
+This is the orientation bridge for the beta-left resolver arm, preserving the
+future resolver spine's ability to consume either arbitrary step order. -/
+theorem fromSteps_betaRight_hasJoin {scope : Nat}
+    {body : RawTerm (scope + 1)}
+    {argument leftReduct : RawTerm scope}
+    (leftStep : Step
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam () (.childCons body .childNil))
+          (.childCons argument .childNil)))
+      leftReduct) :
+    (fromSteps
+      leftStep
+      (Step.beta (body := body) (arg := argument))).HasJoin :=
+  hasJoin_swap (fromSteps_betaLeft_hasJoin leftStep)
+
 /-- Resolver arm for same-root `boolTrue` iota branchings. -/
 theorem iotaBoolTrueSameRoot_hasJoin {scope : Nat}
     (thenBranch elseBranch : RawTerm scope) :

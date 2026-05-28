@@ -1287,6 +1287,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.fromSteps_betaArgumentCong_hasJoin
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.betaArgumentCongReverse_hasJoin
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.fromSteps_betaArgumentCongReverse_hasJoin
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.fromSteps_betaLeft_hasJoin
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.fromSteps_betaRight_hasJoin
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaBoolTrueSameRoot_hasJoin
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaBoolFalseSameRoot_hasJoin
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.LocalStepBranching.iotaFstPairSameRoot_hasJoin
