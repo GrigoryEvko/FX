@@ -5566,8 +5566,13 @@ subject-reduction arms for the current binder eta sources:
 `pathLam (pathApp (weaken p) newestVar)`.  The binder proof projects
 the certified weakened child, then cancels the weakening by singleton
 substitution (`weaken_subst_singleton`), avoiding any inverse-renamer
-assumption.  Record, clock, and parametricity eta remain
-generator-frontier work, not placeholders in the current raw relation.
+assumption.  `#354` adds the beta+iota/eta subject-reduction umbrella:
+`Step.eta.preservesShape` dispatches over the five current eta
+constructors, and `Step.betaEta.preservesShape` keeps the legacy
+beta+iota `Step.preservesShape` theorem unchanged while exposing the
+opt-in union needed by the upcoming CR/SN eta tasks.  Record, clock,
+and parametricity eta remain generator-frontier work, not placeholders
+in the current raw relation.
 
 ### Phase 1 — Allais Kit
 

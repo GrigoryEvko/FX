@@ -71,6 +71,7 @@ import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaIdRefl
 import LeanFX2.Foundation.PolyCell.Core.SubjectReductionIotaNatRec
 import LeanFX2.Foundation.PolyCell.Core.SubjectReductionEtaStructural
 import LeanFX2.Foundation.PolyCell.Core.SubjectReductionEtaBinder
+import LeanFX2.Foundation.PolyCell.Core.StepBetaEtaPreservesShape
 import LeanFX2.Foundation.PolyCell.Core.HasCertifiedIntros
 import LeanFX2.Foundation.PolyCell.Core.HasCertifiedHonestyProbes
 import LeanFX2.Foundation.PolyCell.Core.SubstPreservationProbes
@@ -2352,6 +2353,12 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.certifiesBeforeWeakening
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByEtaLam
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.HasCertifiedCellDim0.preservedByEtaPathLam
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.eta.preservesShape
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.betaEta.mapStep
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.betaEta.preservesShape
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.etaStar.preservesShape
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.betaEtaStar.mapStep
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.betaEtaStar.preservesShape
 
 -- ─── V2-L3.1 phase C step 6 prep: Step inversion lemmas ──────────────
 -- Foundational inversion building blocks the SR theorem's cong arm
