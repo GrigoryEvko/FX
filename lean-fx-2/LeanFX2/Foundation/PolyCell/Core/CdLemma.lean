@@ -257,6 +257,35 @@ decreasing_by
 
 end StepChildrenPairJoin
 
+namespace StepPairJoin
+
+/-- Resolve a `Step.cong`/`Step.cong` branching from the reusable
+child-spine resolver.
+
+This is the term-level congruence/congruence arm of the future M7
+resolver, parameterized by the still-future term-level resolver used by
+the head/head child-spine case. -/
+theorem ofCongCongStepPairResolver
+    (resolveStepPair :
+      ∀ {scope : Nat} {sourceTerm leftReduct rightReduct : RawTerm scope},
+        (leftStep : Step sourceTerm leftReduct) →
+        (rightStep : Step sourceTerm rightReduct) →
+        StepPairJoin leftStep rightStep)
+    {scope : Nat} {generator : Generator}
+    {payload : generator.payload scope}
+    {sourceChildren leftChildren rightChildren :
+      RawTermChildren generator.binderShifts scope}
+    (leftChildrenStep : StepChildren sourceChildren leftChildren)
+    (rightChildrenStep : StepChildren sourceChildren rightChildren) :
+    StepPairJoin
+      (Step.cong generator payload leftChildrenStep)
+      (Step.cong generator payload rightChildrenStep) :=
+  ofCongChildrenJoin
+    (StepChildrenPairJoin.ofStepPairResolver
+      resolveStepPair leftChildrenStep rightChildrenStep)
+
+end StepPairJoin
+
 namespace LocalStepBranching
 
 /-- Package the arbitrary one-step pair received by `cd_lemma` as a concrete
@@ -340,6 +369,30 @@ theorem hasJoin_swap {scope : Nat}
     {branching : LocalStepBranching (scope := scope)} :
     branching.HasJoin → branching.swap.HasJoin :=
   StepPairJoin.swap
+
+/-- Packaged `Step.cong`/`Step.cong` resolver arm over arbitrary theorem
+inputs.
+
+This keeps the future `resolveBranching` proof from duplicating the
+child-spine recursion at the `LocalStepBranching.fromSteps` boundary. -/
+theorem congCong_hasJoin_ofStepPairResolver
+    (resolveStepPair :
+      ∀ {scope : Nat} {sourceTerm leftReduct rightReduct : RawTerm scope},
+        (leftStep : Step sourceTerm leftReduct) →
+        (rightStep : Step sourceTerm rightReduct) →
+        StepPairJoin leftStep rightStep)
+    {scope : Nat} {generator : Generator}
+    {payload : generator.payload scope}
+    {sourceChildren leftChildren rightChildren :
+      RawTermChildren generator.binderShifts scope}
+    (leftChildrenStep : StepChildren sourceChildren leftChildren)
+    (rightChildrenStep : StepChildren sourceChildren rightChildren) :
+    (fromSteps
+      (Step.cong generator payload leftChildrenStep)
+      (Step.cong generator payload rightChildrenStep)).HasJoin :=
+  hasJoin_fromSteps
+    (StepPairJoin.ofCongCongStepPairResolver
+      resolveStepPair leftChildrenStep rightChildrenStep)
 
 end LocalStepBranching
 
