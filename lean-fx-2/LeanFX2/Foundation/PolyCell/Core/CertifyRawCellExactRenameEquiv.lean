@@ -194,4 +194,195 @@ theorem rename_equiv_unitTerm_sort_agree {profile : PolyProfile} :
           (inferRawCellGeneral? (profile := profile) 1
             Coverage.unitRenamedToScope1) := rfl
 
+/-- **Cross-comparison agreement (varZero fixture).**
+
+The varZero fixture at scope 1 and its weakening to scope 2
+both certify at `.term`.  Witnesses that the Fin-payload index
+shift (Fin.succ on var 0 → var 1) preserves observable
+certification outcomes. -/
+theorem rename_equiv_varZero_sort_agree {profile : PolyProfile} :
+    certifiedResultSort?
+        (inferRawCellGeneral? (profile := profile) 1
+          Coverage.varZeroRaw)
+      = certifiedResultSort?
+          (inferRawCellGeneral? (profile := profile) 2
+            Coverage.varZeroRenamedToScope2) := rfl
+
+/-- **Cross-comparison agreement (pairUnits fixture).**
+
+The pair fixture at scope 0 and its weakening to scope 1 both
+certify at `.term`.  Witnesses spine-recursion stability under
+renaming. -/
+theorem rename_equiv_pairUnits_sort_agree {profile : PolyProfile} :
+    certifiedResultSort?
+        (inferRawCellGeneral? (profile := profile) 0
+          Coverage.pairUnitsRaw)
+      = certifiedResultSort?
+          (inferRawCellGeneral? (profile := profile) 1
+            Coverage.pairUnitsRenamedToScope1) := rfl
+
+/-- **Cross-comparison agreement (identityUnitCell fixture).**
+
+The cell-layer identityCell fixture at scope 0 and its weakening
+to scope 1 both certify at `.term`.  Witnesses cell-layer
+.identityCell arm stability under renaming. -/
+theorem rename_equiv_identityUnitCell_sort_agree {profile : PolyProfile} :
+    certifiedResultSort?
+        (inferRawCellGeneral? (profile := profile) 0
+          Coverage.identityUnitCellRaw)
+      = certifiedResultSort?
+          (inferRawCellGeneral? (profile := profile) 1
+            Coverage.identityUnitCellRenamedToScope1) := rfl
+
+/-! ## Closed-leaf rename-equivariance witnesses
+
+Each of the 7 closed-leaf coverage fixtures gets a renamed
+counterpart at scope 1 plus a sort-preservation theorem.
+Closed-leaf fixtures contain no free variables, so weakening
+adds an unused scope position — renaming should be observationally
+identical to the original. -/
+
+namespace Coverage
+
+/-- `boolTrueRaw` weakened to scope 1. -/
+def boolTrueRenamedToScope1 : RawCell 1 :=
+  RawCell.rename LeanFX2.RawRenaming.weaken boolTrueRaw
+
+/-- `boolFalseRaw` weakened to scope 1. -/
+def boolFalseRenamedToScope1 : RawCell 1 :=
+  RawCell.rename LeanFX2.RawRenaming.weaken boolFalseRaw
+
+/-- `natZeroRaw` weakened to scope 1. -/
+def natZeroRenamedToScope1 : RawCell 1 :=
+  RawCell.rename LeanFX2.RawRenaming.weaken natZeroRaw
+
+/-- `listNilRaw` weakened to scope 1. -/
+def listNilRenamedToScope1 : RawCell 1 :=
+  RawCell.rename LeanFX2.RawRenaming.weaken listNilRaw
+
+/-- `optionNoneRaw` weakened to scope 1. -/
+def optionNoneRenamedToScope1 : RawCell 1 :=
+  RawCell.rename LeanFX2.RawRenaming.weaken optionNoneRaw
+
+/-- `interval0Raw` weakened to scope 1. -/
+def interval0RenamedToScope1 : RawCell 1 :=
+  RawCell.rename LeanFX2.RawRenaming.weaken interval0Raw
+
+/-- `interval1Raw` weakened to scope 1. -/
+def interval1RenamedToScope1 : RawCell 1 :=
+  RawCell.rename LeanFX2.RawRenaming.weaken interval1Raw
+
+end Coverage
+
+/-- `boolTrueRaw` renamed to scope 1 still certifies at `.term`. -/
+theorem coverage_boolTrueRaw_renamed_sort {profile : PolyProfile} :
+    certifiedResultSort?
+      (inferRawCellGeneral? (profile := profile) 1
+        Coverage.boolTrueRenamedToScope1) =
+      some .term := rfl
+
+/-- `boolFalseRaw` renamed to scope 1 still certifies at `.term`. -/
+theorem coverage_boolFalseRaw_renamed_sort {profile : PolyProfile} :
+    certifiedResultSort?
+      (inferRawCellGeneral? (profile := profile) 1
+        Coverage.boolFalseRenamedToScope1) =
+      some .term := rfl
+
+/-- `natZeroRaw` renamed to scope 1 still certifies at `.term`. -/
+theorem coverage_natZeroRaw_renamed_sort {profile : PolyProfile} :
+    certifiedResultSort?
+      (inferRawCellGeneral? (profile := profile) 1
+        Coverage.natZeroRenamedToScope1) =
+      some .term := rfl
+
+/-- `listNilRaw` renamed to scope 1 still certifies at `.term`. -/
+theorem coverage_listNilRaw_renamed_sort {profile : PolyProfile} :
+    certifiedResultSort?
+      (inferRawCellGeneral? (profile := profile) 1
+        Coverage.listNilRenamedToScope1) =
+      some .term := rfl
+
+/-- `optionNoneRaw` renamed to scope 1 still certifies at `.term`. -/
+theorem coverage_optionNoneRaw_renamed_sort {profile : PolyProfile} :
+    certifiedResultSort?
+      (inferRawCellGeneral? (profile := profile) 1
+        Coverage.optionNoneRenamedToScope1) =
+      some .term := rfl
+
+/-- `interval0Raw` renamed to scope 1 still certifies at `.term`. -/
+theorem coverage_interval0Raw_renamed_sort {profile : PolyProfile} :
+    certifiedResultSort?
+      (inferRawCellGeneral? (profile := profile) 1
+        Coverage.interval0RenamedToScope1) =
+      some .term := rfl
+
+/-- `interval1Raw` renamed to scope 1 still certifies at `.term`. -/
+theorem coverage_interval1Raw_renamed_sort {profile : PolyProfile} :
+    certifiedResultSort?
+      (inferRawCellGeneral? (profile := profile) 1
+        Coverage.interval1RenamedToScope1) =
+      some .term := rfl
+
+/-! ## Closed-leaf cross-comparison agreement theorems
+
+7 cross-comparison agreements pairing each closed-leaf fixture
+with its weakening — the cleanest form of "renaming preserves
+observable certification outcomes" per closed-leaf. -/
+
+/-- boolTrue cross-agreement. -/
+theorem rename_equiv_boolTrue_sort_agree {profile : PolyProfile} :
+    certifiedResultSort?
+        (inferRawCellGeneral? (profile := profile) 0 Coverage.boolTrueRaw)
+      = certifiedResultSort?
+          (inferRawCellGeneral? (profile := profile) 1
+            Coverage.boolTrueRenamedToScope1) := rfl
+
+/-- boolFalse cross-agreement. -/
+theorem rename_equiv_boolFalse_sort_agree {profile : PolyProfile} :
+    certifiedResultSort?
+        (inferRawCellGeneral? (profile := profile) 0 Coverage.boolFalseRaw)
+      = certifiedResultSort?
+          (inferRawCellGeneral? (profile := profile) 1
+            Coverage.boolFalseRenamedToScope1) := rfl
+
+/-- natZero cross-agreement. -/
+theorem rename_equiv_natZero_sort_agree {profile : PolyProfile} :
+    certifiedResultSort?
+        (inferRawCellGeneral? (profile := profile) 0 Coverage.natZeroRaw)
+      = certifiedResultSort?
+          (inferRawCellGeneral? (profile := profile) 1
+            Coverage.natZeroRenamedToScope1) := rfl
+
+/-- listNil cross-agreement. -/
+theorem rename_equiv_listNil_sort_agree {profile : PolyProfile} :
+    certifiedResultSort?
+        (inferRawCellGeneral? (profile := profile) 0 Coverage.listNilRaw)
+      = certifiedResultSort?
+          (inferRawCellGeneral? (profile := profile) 1
+            Coverage.listNilRenamedToScope1) := rfl
+
+/-- optionNone cross-agreement. -/
+theorem rename_equiv_optionNone_sort_agree {profile : PolyProfile} :
+    certifiedResultSort?
+        (inferRawCellGeneral? (profile := profile) 0 Coverage.optionNoneRaw)
+      = certifiedResultSort?
+          (inferRawCellGeneral? (profile := profile) 1
+            Coverage.optionNoneRenamedToScope1) := rfl
+
+/-- interval0 cross-agreement. -/
+theorem rename_equiv_interval0_sort_agree {profile : PolyProfile} :
+    certifiedResultSort?
+        (inferRawCellGeneral? (profile := profile) 0 Coverage.interval0Raw)
+      = certifiedResultSort?
+          (inferRawCellGeneral? (profile := profile) 1
+            Coverage.interval0RenamedToScope1) := rfl
+
+/-- interval1 cross-agreement. -/
+theorem rename_equiv_interval1_sort_agree {profile : PolyProfile} :
+    certifiedResultSort?
+        (inferRawCellGeneral? (profile := profile) 0 Coverage.interval1Raw)
+      = certifiedResultSort?
+          (inferRawCellGeneral? (profile := profile) 1
+            Coverage.interval1RenamedToScope1) := rfl
+
 end LeanFX2.Foundation.PolyCell.Core

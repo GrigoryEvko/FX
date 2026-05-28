@@ -2256,6 +2256,46 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_identityUnitCellRaw_renamed_sort
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.rename_equiv_unitTerm_sort_agree
 
+-- ─── M-certifier-rename-equivariance Phase A+ (#378) ────────────────
+-- Extends the original Phase A fixture coverage with the 3 missing
+-- cross-comparison agreements (varZero / pairUnits / identityUnitCell)
+-- + 7 closed-leaf renamings (boolTrue/boolFalse/natZero/listNil/
+-- optionNone/interval0/interval1) each with sort-preservation +
+-- cross-agreement theorems.
+--
+-- Phase A+ ships 7 new fixture defs + 14 new theorems (7 sort
+-- preservation + 7 cross-comparison agreement) + 3 retro cross-
+-- agreements.  All by `rfl` — the certifier is a pure computation
+-- and weakening on a closed leaf is observationally identical.
+--
+-- Phase B (the universally-quantified structural rename-equivariance
+-- theorem) remains deferred to a separate atomic task — this extends
+-- empirical coverage without taking on the structural induction.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.rename_equiv_varZero_sort_agree
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.rename_equiv_pairUnits_sort_agree
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.rename_equiv_identityUnitCell_sort_agree
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Coverage.boolTrueRenamedToScope1
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Coverage.boolFalseRenamedToScope1
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Coverage.natZeroRenamedToScope1
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Coverage.listNilRenamedToScope1
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Coverage.optionNoneRenamedToScope1
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Coverage.interval0RenamedToScope1
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Coverage.interval1RenamedToScope1
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_boolTrueRaw_renamed_sort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_boolFalseRaw_renamed_sort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_natZeroRaw_renamed_sort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_listNilRaw_renamed_sort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_optionNoneRaw_renamed_sort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_interval0Raw_renamed_sort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.coverage_interval1Raw_renamed_sort
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.rename_equiv_boolTrue_sort_agree
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.rename_equiv_boolFalse_sort_agree
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.rename_equiv_natZero_sort_agree
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.rename_equiv_listNil_sort_agree
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.rename_equiv_optionNone_sort_agree
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.rename_equiv_interval0_sort_agree
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.rename_equiv_interval1_sort_agree
+
 -- ─── V2-L3.1 phase A+B+C-1/2/3/4a: Step (beta + cong + 11 iota) ──────
 -- Per polycell.md §11.6.1: subject reduction on the v2 substrate
 -- requires a Step relation + a theorem that Step preserves
