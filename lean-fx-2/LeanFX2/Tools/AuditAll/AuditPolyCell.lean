@@ -93,6 +93,7 @@ import LeanFX2.Foundation.PolyCell.Core.CongPreservationMutual
 import LeanFX2.Foundation.PolyCell.Core.StepPreservesShape
 import LeanFX2.Foundation.PolyCell.Core.CriticalPairs
 import LeanFX2.Foundation.PolyCell.Core.CdLemma
+import LeanFX2.Foundation.PolyCell.Core.StepStarConfluence
 import LeanFX2.Foundation.PolyCell.Core.CoreFxProfile
 import LeanFX2.Foundation.PolyCell.Core.RawTermSubst0
 import LeanFX2.Foundation.PolyCell.Core.CertifyRawCellExactWrongChildShape
@@ -2507,6 +2508,20 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.appFunction
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.appArgument
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.lamBody
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.Join
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.HasConfluence
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.HasStrip
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.localJoin_of_cdLemma
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.joinStepWithReflRight
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.joinStepWithSingleRight
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.confluence_of_strip
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.refl
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.sym
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.fromStepStar
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.fromStep
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.trans_of_confluence
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.trans_of_strip
 
 -- M6 beta-replay support: one-step reduction commutes with raw
 -- substitution, using `subst0_subst_commute` in the beta arm.
