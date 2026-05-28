@@ -215,6 +215,31 @@ theorem trans_of_confluence
     , StepStar.trans_compose firstToReduct firstReductToCommon
     , StepStar.trans_compose lastToReduct lastReductToCommon ⟩
 
+/-- Raw conversion transitivity follows from accessibility of the shared
+middle term alone.
+
+This is the source-local Newman bridge: composing
+`Conv firstTerm middleTerm` and `Conv middleTerm lastTerm` only needs
+Church-Rosser for the two chains that start at `middleTerm`, so a global
+`HasStrongNormalization` witness is stronger than necessary. -/
+theorem trans_of_middle_accessible
+    {scope : Nat} {firstTerm middleTerm lastTerm : RawTerm scope}
+    (middleTerminates : StepStar.IsStronglyNormalizing middleTerm)
+    (firstMiddle : Conv firstTerm middleTerm)
+    (middleLast : Conv middleTerm lastTerm) :
+    Conv firstTerm lastTerm := by
+  obtain ⟨firstMiddleReduct, firstToReduct, middleToFirstReduct⟩ :=
+    firstMiddle
+  obtain ⟨middleLastReduct, middleToLastReduct, lastToReduct⟩ :=
+    middleLast
+  obtain ⟨commonReduct, firstReductToCommon, lastReductToCommon⟩ :=
+    StepStar.confluence_of_localJoin_and_accessible middleTerminates
+      middleToFirstReduct middleToLastReduct
+  exact
+    ⟨ commonReduct
+    , StepStar.trans_compose firstToReduct firstReductToCommon
+    , StepStar.trans_compose lastToReduct lastReductToCommon ⟩
+
 /-- Raw conversion transitivity follows from the strip property. -/
 theorem trans_of_strip
     (hasStrip : StepStar.HasStrip)
@@ -234,8 +259,8 @@ theorem trans_of_strongNormalization
     (firstMiddle : Conv firstTerm middleTerm)
     (middleLast : Conv middleTerm lastTerm) :
     Conv firstTerm lastTerm :=
-  trans_of_confluence
-    (StepStar.confluence_of_strongNormalization hasStrongNormalization)
+  trans_of_middle_accessible
+    (hasStrongNormalization middleTerm)
     firstMiddle middleLast
 
 end Conv

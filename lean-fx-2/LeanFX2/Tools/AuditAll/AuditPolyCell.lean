@@ -2541,6 +2541,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.fromStepStar
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.fromStep
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.trans_of_confluence
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.trans_of_middle_accessible
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.trans_of_strip
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Conv.trans_of_strongNormalization
 
