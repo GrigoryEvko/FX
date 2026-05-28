@@ -147,6 +147,7 @@ import LeanFX2.Foundation.PolyCell.Universe.LevelExprSimplify
 import LeanFX2.Foundation.PolyCell.NbE.NormalizerSignature
 import LeanFX2.Foundation.PolyCell.NbE.Quote
 import LeanFX2.Foundation.PolyCell.Typed.TypingContext
+import LeanFX2.Foundation.PolyCell.Typed.TypingContextHelpers
 
 namespace LeanFX2.Tools
 
@@ -3443,6 +3444,26 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Typed.TypingContext.twoBindings_canonical
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Typed.TypingContext.ctorCount
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Typed.TypingContext.ctorCount_correct
+
+-- ─── M32 (#281): TypingContext.lookup + weakening helpers ───────────
+-- Ships the foundational query operation for the M31 #280
+-- TypingContext inductive.  Direct Fin.mk struct match per the
+-- axiom-free recipe (NOT Fin.cases which leaks propext).
+--
+-- Key discipline: lookup returns Ty AT THE LOOKUP SCOPE, not the
+-- binding's original scope.  Innermost binding (position 0) returns
+-- newType.weaken; deeper positions recurse + weaken the result.
+--
+-- TypingContext.weaken : TypingContext _ scope → TypingContext _ (scope+1)
+-- is structurally IMPOSSIBLE — empty has scope 0 fixed by ctor; no
+-- scope-1 empty exists.  Weakening helpers ship at HasType-rule
+-- task slots (M33-M44) where consumed.
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Typed.TypingContext.lookup
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Typed.TypingContext.lookup_singleUnit_zero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Typed.TypingContext.lookup_twoBindings_zero
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Typed.TypingContext.lookup_twoBindings_one
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Typed.TypingContextHelpers.operationCount
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Typed.TypingContextHelpers.operationCount_correct
 
 -- ─── V2-L4.5 (#214): SconingConstructionLevel honest ledger ─────────
 -- 20 declarations in InternalSconing.lean ship the honest construction-
