@@ -33,28 +33,49 @@ This is STRUCTURALLY DIFFERENT from passing-placeholder gates:
 
 ## The 10 phase-Z STRICT gates
 
-Per polycell.md §3.16.20:
+Per polycell.md §3.16.20 (canonical hyphenated names listed
+verbatim from the spec table; Lean def identifiers use the
+underscored variant since hyphens are not valid in identifiers):
 
-* **Z0 STRICT-Z0-MOTIVE** — Phase Z₀ universe-mode invariant
-  (LevelExpr × UniverseFlag normalization).  M21-M30 task slots.
-* **Z1 STRICT-Z1-CTX** — TypingContext profile inductive coherence
-  (Decidable lookup per context shape).  M31-M32 task slots.
-* **Z2 STRICT-Z2-CONV-TYPE** — HasType conv rule (type up-to-Conv
-  preservation).  M33 task slot.
-* **Z3 STRICT-Z3-DECIDABLE-CONV** — Decidable Conv via NbE.
-  Tracked by M57 #306 separately; this file cross-references it.
-* **Z4 STRICT-Z4-CUBICAL** — Cubical Kan structure (each Generator
-  preserves filling).  M61-M68 task slots.
-* **Z5 STRICT-Z5-HIT** — HIT framework (gen_hitCtor + gen_hitPath +
-  gen_hitRec + canonical-form theorems).  M71-M75 task slots.
-* **Z6 STRICT-Z6-IRT** — Induction-recursion + HIIRT closure
-  (Setzer-Rathjen ladder consistency).  M76-M83 task slots.
-* **Z7 STRICT-Z7-GUARDED** — Multi-clock guarded TT (clock + later
-  + force productivity).  M84-M92 task slots.
-* **Z8 STRICT-Z8-MODAL** — MTT modal layer (mode-theoretic
-  coherence per GSS 2020).  M93-M100 task slots.
-* **Z9 STRICT-Z9-SMT** — Internal verified SMT (decidability +
-  completeness).  Future task, no current M-slot.
+* **Z0 STRICT-Z0-MOTIVE** — every eliminator's spine carries a
+  motive child at the correct binder shift; pre-Z₀ shapes
+  flagged.  M21-M30 task slots ship the LevelExpr × UniverseFlag
+  substrate + the 4 universe-mode generators that motivate the
+  motive-shape invariant.
+* **Z1 STRICT-Z1-TYPED** — every typed-core generator has a
+  `HasType` rule with proper inversion lemmas.  M31-M45 task
+  slots ship TypingContext + lookup + per-form HasType ctors +
+  inversion lemmas.
+* **Z2 STRICT-Z2-CANONICITY** — every closed inhabitant of a
+  canonical type reduces to a constructor.  M48-M50 task slots
+  ship per-family canonicity theorems + global consistency.
+* **Z3 STRICT-Z3-DECIDABLE-CONV** — Typed Conv decision procedure
+  ships with a `Complexity` witness.  Tracked by M57 #306
+  separately; this file cross-references it.
+* **Z4 STRICT-Z4-CUBICAL** — every cubical Kan op has a defining
+  reduction rule.  M61-M68 task slots ship gen_path / gen_pathLam
+  / gen_pathApp / gen_transp / gen_hcomp / gen_glueType / Kan
+  structure proofs.
+* **Z5 STRICT-Z5-HIT** — every HIT family ships path constructor
+  + recursor + iota rule + cubical Kan witness.  M71-M75 task
+  slots ship Generator.Kind tag + HIT framework + concrete HITs
+  + canonicity.
+* **Z6 STRICT-Z6-HIIRT** — every IR / HIIRT family has a
+  Setzer-form admission witness with proof-theoretic strength
+  tag.  M76-M83 task slots ship Standard IR + Indexed/Higher
+  IR + HIIRT combined beast + UniverseFlag admissions.
+* **Z7 STRICT-Z7-GUARDED** — every multi-clock generator has a
+  productivity witness.  M84-M92 task slots ship multi-clock
+  guarded TT + internal parametricity + rewriting rules + dProp
+  + dependent pattern matching + commuting conversions.
+* **Z8 STRICT-Z8-21DIM** — every dimension d ∈ {2,…,21} ships a
+  typing judgment with decidable typechecking.  M93-M100 task
+  slots ship MTT modal layer + cohesion + algebraic effects +
+  21-dim typing judgments + cross-dimension interaction matrix
+  + Tier 0 + FX0 verifier.
+* **Z9 STRICT-Z9-SMT** — every SMT certificate has an in-kernel
+  verifier that accepts iff the certificate is sound.  Future
+  task, no current M-slot.
 
 ## Per-gate state machine
 
@@ -138,13 +159,18 @@ conjunction enforces the lockstep. -/
 refactor, 4 universe-mode generators, sprop + univLift/Lower). -/
 def STRICT_Z0_MOTIVE_state : PhaseZLedgerState := .notStarted
 
-/-- Phase Z₁ TypingContext profile inductive coherence.  Tracks
-M31-M32 task slots. -/
-def STRICT_Z1_CTX_state : PhaseZLedgerState := .notStarted
+/-- Phase Z₁ STRICT-Z1-TYPED per polycell.md §3.16.20: every
+typed-core generator has a `HasType` rule with proper inversion
+lemmas.  Tracks M31-M45 task slots (TypingContext substrate
+through full HasType ctor cascade + inversion lemmas). -/
+def STRICT_Z1_TYPED_state : PhaseZLedgerState := .notStarted
 
-/-- Phase Z₂ HasType conv rule (type up-to-Conv preservation).
-Tracks M33 task slot. -/
-def STRICT_Z2_CONV_TYPE_state : PhaseZLedgerState := .notStarted
+/-- Phase Z₂ STRICT-Z2-CANONICITY per polycell.md §3.16.20:
+every closed inhabitant of a canonical type reduces to a
+constructor.  Tracks M48-M50 task slots (per-family canonicity
+theorems for bool / Nat / List / Option / Either + global
+consistency). -/
+def STRICT_Z2_CANONICITY_state : PhaseZLedgerState := .notStarted
 
 /-- Phase Z₃ Decidable Conv via NbE.  Tracked by M57 #306 audit
 task separately; this entry cross-references for completeness.
@@ -160,18 +186,23 @@ gen_hitRec + canonical-form theorems).  Tracks M71-M75 task
 slots. -/
 def STRICT_Z5_HIT_state : PhaseZLedgerState := .notStarted
 
-/-- Phase Z₆ induction-recursion + HIIRT closure (Setzer-Rathjen
-ladder consistency).  Tracks M76-M83 task slots. -/
-def STRICT_Z6_IRT_state : PhaseZLedgerState := .notStarted
+/-- Phase Z₆ STRICT-Z6-HIIRT per polycell.md §3.16.20: every IR /
+HIIRT family has a Setzer-form admission witness with
+proof-theoretic strength tag.  Tracks M76-M83 task slots
+(Standard IR + Indexed/Higher IR + HIIRT combined beast +
+UniverseFlag admissions through Vopěnka apex). -/
+def STRICT_Z6_HIIRT_state : PhaseZLedgerState := .notStarted
 
 /-- Phase Z₇ multi-clock guarded TT (clock + later + force
 productivity).  Tracks M84-M92 task slots. -/
 def STRICT_Z7_GUARDED_state : PhaseZLedgerState := .notStarted
 
-/-- Phase Z₈ MTT modal layer (mode-theoretic coherence per
-Gratzer-Sterling-Sterling LICS 2020).  Tracks M93-M100 task
-slots. -/
-def STRICT_Z8_MODAL_state : PhaseZLedgerState := .notStarted
+/-- Phase Z₈ STRICT-Z8-21DIM per polycell.md §3.16.20: every
+dimension d ∈ {2,…,21} ships a typing judgment with decidable
+typechecking.  Tracks M93-M100 task slots (MTT modal layer +
+cohesion + algebraic effects + 21-dim typing judgments +
+cross-dimension interaction matrix + Tier 0 + FX0 verifier). -/
+def STRICT_Z8_21DIM_state : PhaseZLedgerState := .notStarted
 
 /-- Phase Z₉ internal verified SMT (decidability + completeness).
 Future task, no current M-slot. -/
@@ -193,14 +224,14 @@ state value AND this summary's conjunction to match.  Failing to
 update both fails the audit build. -/
 theorem phaseZ_current_summary :
     STRICT_Z0_MOTIVE_state = .notStarted ∧
-    STRICT_Z1_CTX_state = .notStarted ∧
-    STRICT_Z2_CONV_TYPE_state = .notStarted ∧
+    STRICT_Z1_TYPED_state = .notStarted ∧
+    STRICT_Z2_CANONICITY_state = .notStarted ∧
     STRICT_Z3_DECIDABLE_CONV_state = .notStarted ∧
     STRICT_Z4_CUBICAL_state = .notStarted ∧
     STRICT_Z5_HIT_state = .notStarted ∧
-    STRICT_Z6_IRT_state = .notStarted ∧
+    STRICT_Z6_HIIRT_state = .notStarted ∧
     STRICT_Z7_GUARDED_state = .notStarted ∧
-    STRICT_Z8_MODAL_state = .notStarted ∧
+    STRICT_Z8_21DIM_state = .notStarted ∧
     STRICT_Z9_SMT_state = .notStarted := by
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   all_goals rfl

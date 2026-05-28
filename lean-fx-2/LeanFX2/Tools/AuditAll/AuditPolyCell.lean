@@ -3143,14 +3143,14 @@ namespace LeanFX2.Tools
 -- no `def gate : Bool := true` placeholder that pretends coverage.
 #assert_no_axioms LeanFX2.Tools.AuditAll.Audit.PhaseZLedgerState
 #assert_no_axioms LeanFX2.Tools.AuditAll.Audit.STRICT_Z0_MOTIVE_state
-#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.STRICT_Z1_CTX_state
-#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.STRICT_Z2_CONV_TYPE_state
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.STRICT_Z1_TYPED_state
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.STRICT_Z2_CANONICITY_state
 #assert_no_axioms LeanFX2.Tools.AuditAll.Audit.STRICT_Z3_DECIDABLE_CONV_state
 #assert_no_axioms LeanFX2.Tools.AuditAll.Audit.STRICT_Z4_CUBICAL_state
 #assert_no_axioms LeanFX2.Tools.AuditAll.Audit.STRICT_Z5_HIT_state
-#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.STRICT_Z6_IRT_state
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.STRICT_Z6_HIIRT_state
 #assert_no_axioms LeanFX2.Tools.AuditAll.Audit.STRICT_Z7_GUARDED_state
-#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.STRICT_Z8_MODAL_state
+#assert_no_axioms LeanFX2.Tools.AuditAll.Audit.STRICT_Z8_21DIM_state
 #assert_no_axioms LeanFX2.Tools.AuditAll.Audit.STRICT_Z9_SMT_state
 #assert_no_axioms LeanFX2.Tools.AuditAll.Audit.phaseZ_current_summary
 #assert_no_axioms LeanFX2.Tools.AuditAll.Audit.phaseZ_notStarted_count
