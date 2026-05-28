@@ -2374,6 +2374,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaModIntroCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaGlueIntroFirstCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaGlueIntroSecondCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaLamFunctionCong
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.BetaEtaPairJoin.etaPathLamFunctionCong
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.EtaStepKind
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.EtaStepKind.all
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.EtaStepKind.sourceGenerator
@@ -2707,6 +2709,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepChildren.subst
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.subst
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTerm.weaken_eq_subst_weaken
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Core.Step.weaken
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.StepStar.weaken
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubst.PointwiseStepStar
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Core.RawTermSubst.lift_pointwiseStepStar

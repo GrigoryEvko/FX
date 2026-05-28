@@ -343,6 +343,71 @@ theorem etaGlueIntroSecondCong {scope : Nat}
     , Step.betaEtaStar.trans (Or.inl gluedStep)
         (Step.betaEtaStar.refl _) ⟩
 
+/-- Eta-lambda versus a beta+iota step replayed through the weakened
+function occurrence.
+
+Source:
+`lam (app (weaken innerFunction) newestVar)`.
+
+When the inner function itself steps, the congruence branch replays that
+step under weakening in the function slot of the eta source.  The join
+contracts eta for the updated function on the congruence side and replays
+the original function step on the eta side. -/
+theorem etaLamFunctionCong {scope : Nat}
+    {innerFunction updatedFunction : RawTerm scope}
+    (functionStep : Step innerFunction updatedFunction) :
+    BetaEtaPairJoin
+      (Or.inl
+        (Step.cong .gen_lam ()
+          (StepChildren.here
+            (parentScope := scope) (headShift := 1) (restShifts := [])
+            (.childNil : RawTermChildren [] scope)
+            (Step.cong .gen_app ()
+              (StepChildren.here
+                (parentScope := scope + 1) (headShift := 0)
+                (restShifts := [0])
+                ((.childCons RawTerm.newestVar .childNil) :
+                  RawTermChildren [0] (scope + 1))
+                (Step.weaken functionStep))))))
+      (Or.inr (Step.eta.etaLam innerFunction)) := by
+  exact
+    ⟨ updatedFunction
+    , Step.betaEtaStar.trans
+        (Or.inr (Step.eta.etaLam updatedFunction))
+        (Step.betaEtaStar.refl _)
+    , Step.betaEtaStar.trans (Or.inl functionStep)
+        (Step.betaEtaStar.refl _) ⟩
+
+/-- Eta-path-lambda versus a beta+iota step replayed through the weakened
+path occurrence.
+
+This is the cubical-path sibling of `etaLamFunctionCong`, using the
+current raw `pathLam/pathApp` eta source. -/
+theorem etaPathLamFunctionCong {scope : Nat}
+    {innerPath updatedPath : RawTerm scope}
+    (pathStep : Step innerPath updatedPath) :
+    BetaEtaPairJoin
+      (Or.inl
+        (Step.cong .gen_pathLam ()
+          (StepChildren.here
+            (parentScope := scope) (headShift := 1) (restShifts := [])
+            (.childNil : RawTermChildren [] scope)
+            (Step.cong .gen_pathApp ()
+              (StepChildren.here
+                (parentScope := scope + 1) (headShift := 0)
+                (restShifts := [0])
+                ((.childCons RawTerm.newestVar .childNil) :
+                  RawTermChildren [0] (scope + 1))
+                (Step.weaken pathStep))))))
+      (Or.inr (Step.eta.etaPathLam innerPath)) := by
+  exact
+    ⟨ updatedPath
+    , Step.betaEtaStar.trans
+        (Or.inr (Step.eta.etaPathLam updatedPath))
+        (Step.betaEtaStar.refl _)
+    , Step.betaEtaStar.trans (Or.inl pathStep)
+        (Step.betaEtaStar.refl _) ⟩
+
 end BetaEtaPairJoin
 
 /-- Current root eta kinds represented by `Step.eta`.

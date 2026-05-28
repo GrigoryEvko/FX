@@ -208,6 +208,18 @@ theorem RawTerm.weaken_eq_subst_weaken {scope : Nat}
   rw [RawTerm.subst_identity_apply] at renameThenIdentity
   exact renameThenIdentity
 
+/-- Weaken a single reduction step through one fresh raw binder. -/
+theorem Step.weaken {scope : Nat}
+    {sourceTerm targetTerm : RawTerm scope}
+    (sourceStep : Step sourceTerm targetTerm) :
+    Step (RawTerm.weaken sourceTerm) (RawTerm.weaken targetTerm) := by
+  rw [RawTerm.weaken_eq_subst_weaken sourceTerm,
+    RawTerm.weaken_eq_subst_weaken targetTerm]
+  exact Step.subst
+    (RawRenaming.thenSubst RawRenaming.weaken
+      (RawTermSubst.identity (scope := scope + 1)))
+    sourceStep
+
 /-- Weaken every term in a `StepStar` chain. -/
 theorem StepStar.weaken {scope : Nat}
     {sourceTerm targetTerm : RawTerm scope}
