@@ -1891,100 +1891,110 @@ This is the SIMPLEST canonical-form transformation; the full
 Phase B normalizer composes this with `simplify`, recursive
 descent into operands, and lsucc-into-lmax distributivity. -/
 
+/-- Order one `lmax`'s operands by a precomputed `compare`
+verdict: swap to `lmax e2 e1` exactly when the verdict is `.gt`,
+otherwise keep `lmax e1 e2`.  Full `Ordering` enumeration (no
+`| _ =>` catch-all) keeps this `propext`-free at the definition
+level — see `feedback_lean_match_propext_recipe` Rule 9. -/
+def LevelExpr.swapToCanonicalLmax (verdict : Ordering) (e1 e2 : LevelExpr) : LevelExpr :=
+  match verdict with
+  | .gt => LevelExpr.lmax e2 e1
+  | .lt => LevelExpr.lmax e1 e2
+  | .eq => LevelExpr.lmax e1 e2
+
 /-- Single-pair `lmax` operand canonicalization.  If `compare e1
 e2 = .gt`, swap to `lmax e2 e1`; otherwise leave as `lmax e1 e2`.
 Non-lmax inputs are returned unchanged.
 
-Soundness via `canonicalizeLmaxPair_denoteEquiv`: regardless of
-swap, the denotation is preserved (by `lmax_comm_denoteEquiv`). -/
+Defined by full `LevelExpr` enumeration (no outer catch-all) and
+routing the `lmax` arm through `swapToCanonicalLmax`, so the def
+is `propext`-free.  Soundness via `canonicalizeLmaxPair_denoteEquiv`:
+regardless of swap, the denotation is preserved (by
+`lmax_comm_denoteEquiv`). -/
 def LevelExpr.canonicalizeLmaxPair : LevelExpr → LevelExpr
+  | .lzero => LevelExpr.lzero
+  | .lvar n => LevelExpr.lvar n
+  | .lsucc inner => LevelExpr.lsucc inner
+  | .limax a b => LevelExpr.limax a b
   | .lmax e1 e2 =>
-      match LevelExpr.compare e1 e2 with
-      | .gt => LevelExpr.lmax e2 e1
-      | _ => LevelExpr.lmax e1 e2
-  | other => other
+      LevelExpr.swapToCanonicalLmax (LevelExpr.compare e1 e2) e1 e2
+
+/-- `swapToCanonicalLmax` preserves the denotation of `lmax e1 e2`
+for every verdict.  Proved by `cases` on the (bound) verdict —
+primitive `Ordering.casesOn`, no equation-compiler matcher — with
+the `.gt` swap discharged by `lmax_comm_denoteEquiv` and the
+`.lt` / `.eq` no-swap cases by reflexivity. -/
+theorem LevelExpr.swapToCanonicalLmax_denoteEquiv
+    (verdict : Ordering) (e1 e2 : LevelExpr) :
+    LevelExpr.denoteEquiv
+      (LevelExpr.swapToCanonicalLmax verdict e1 e2) (LevelExpr.lmax e1 e2) := by
+  cases verdict with
+  | gt => exact LevelExpr.lmax_comm_denoteEquiv e2 e1
+  | lt => exact LevelExpr.denoteEquiv.refl _
+  | eq => exact LevelExpr.denoteEquiv.refl _
 
 /-- `canonicalizeLmaxPair` preserves the semantic denotation
 (it's a `denoteEquiv` rule).
 
-Proof: case-analyze the input.  Non-lmax inputs return unchanged
-(refl).  For `lmax e1 e2`, case-split on `compare e1 e2`:
-* `.gt`: result is `lmax e2 e1`, which by `lmax_comm_denoteEquiv`
-  is equivalent to `lmax e1 e2`.
-* `.eq` / `.lt`: result is `lmax e1 e2` = input (refl). -/
-theorem LevelExpr.canonicalizeLmaxPair_denoteEquiv :
-    ∀ (expr : LevelExpr),
-      LevelExpr.denoteEquiv (LevelExpr.canonicalizeLmaxPair expr) expr
-  | .lzero => LevelExpr.denoteEquiv.refl _
-  | .lvar _ => LevelExpr.denoteEquiv.refl _
-  | .lsucc _ => LevelExpr.denoteEquiv.refl _
-  | .limax _ _ => LevelExpr.denoteEquiv.refl _
-  | .lmax e1 e2 => by
-      show LevelExpr.denoteEquiv
-        (match LevelExpr.compare e1 e2 with
-         | .gt => LevelExpr.lmax e2 e1
-         | _ => LevelExpr.lmax e1 e2)
-        (LevelExpr.lmax e1 e2)
-      cases hCmp : LevelExpr.compare e1 e2 with
-      | eq => exact LevelExpr.denoteEquiv.refl _
-      | lt => exact LevelExpr.denoteEquiv.refl _
-      | gt =>
-          show LevelExpr.denoteEquiv (LevelExpr.lmax e2 e1)
-            (LevelExpr.lmax e1 e2)
-          exact LevelExpr.lmax_comm_denoteEquiv e2 e1
+Proof: `cases` on the input (primitive `LevelExpr.casesOn`).
+Non-lmax inputs return unchanged (refl); the `lmax` arm reduces
+to `swapToCanonicalLmax (compare e1 e2) e1 e2` and is discharged
+by `swapToCanonicalLmax_denoteEquiv`. -/
+theorem LevelExpr.canonicalizeLmaxPair_denoteEquiv (expr : LevelExpr) :
+    LevelExpr.denoteEquiv (LevelExpr.canonicalizeLmaxPair expr) expr := by
+  cases expr with
+  | lzero => exact LevelExpr.denoteEquiv.refl _
+  | lvar _ => exact LevelExpr.denoteEquiv.refl _
+  | lsucc _ => exact LevelExpr.denoteEquiv.refl _
+  | limax _ _ => exact LevelExpr.denoteEquiv.refl _
+  | lmax e1 e2 =>
+      exact LevelExpr.swapToCanonicalLmax_denoteEquiv (LevelExpr.compare e1 e2) e1 e2
+
+/-- The output of `swapToCanonicalLmax` on a `compare`-derived
+verdict is a fixed point of `canonicalizeLmaxPair`: a pair already
+placed in `compare` order re-compares so the second pass leaves it
+unchanged.  The `.gt` case is the substantive one — the swapped
+pair `(e2, e1)` re-compares as `.lt` via `compare_swap`. -/
+theorem LevelExpr.canonicalizeLmaxPair_swapToCanonicalLmax
+    (verdict : Ordering) (e1 e2 : LevelExpr)
+    (hVerdict : LevelExpr.compare e1 e2 = verdict) :
+    LevelExpr.canonicalizeLmaxPair (LevelExpr.swapToCanonicalLmax verdict e1 e2)
+      = LevelExpr.swapToCanonicalLmax verdict e1 e2 := by
+  cases verdict with
+  | lt =>
+      show LevelExpr.swapToCanonicalLmax (LevelExpr.compare e1 e2) e1 e2
+         = LevelExpr.swapToCanonicalLmax Ordering.lt e1 e2
+      rw [hVerdict]
+  | eq =>
+      show LevelExpr.swapToCanonicalLmax (LevelExpr.compare e1 e2) e1 e2
+         = LevelExpr.swapToCanonicalLmax Ordering.eq e1 e2
+      rw [hVerdict]
+  | gt =>
+      show LevelExpr.swapToCanonicalLmax (LevelExpr.compare e2 e1) e2 e1
+         = LevelExpr.swapToCanonicalLmax Ordering.lt e2 e1
+      have hSwap : LevelExpr.compare e2 e1 = Ordering.lt := by
+        have hChain := LevelExpr.compare_swap e1 e2
+        rw [hVerdict] at hChain
+        exact hChain.symm
+      rw [hSwap]
 
 /-- `canonicalizeLmaxPair` is idempotent: applying twice yields
 the same result as applying once.
 
-Proof: case-analyze the input.  Non-lmax inputs are fixed points
-trivially.  For `lmax e1 e2`, case-split on `compare e1 e2`:
-* `.gt`: first pass swaps to `lmax e2 e1`.  Second pass computes
-  `compare e2 e1` which by `compare_swap` is the swap of `.gt`
-  = `.lt`.  So second pass returns `lmax e2 e1` unchanged. -/
-theorem LevelExpr.canonicalizeLmaxPair_idempotent :
-    ∀ (expr : LevelExpr),
-      LevelExpr.canonicalizeLmaxPair (LevelExpr.canonicalizeLmaxPair expr) =
-        LevelExpr.canonicalizeLmaxPair expr
-  | .lzero => rfl
-  | .lvar _ => rfl
-  | .lsucc _ => rfl
-  | .limax _ _ => rfl
-  | .lmax e1 e2 => by
-      show LevelExpr.canonicalizeLmaxPair
-        (match LevelExpr.compare e1 e2 with
-         | .gt => LevelExpr.lmax e2 e1
-         | _ => LevelExpr.lmax e1 e2) =
-        (match LevelExpr.compare e1 e2 with
-         | .gt => LevelExpr.lmax e2 e1
-         | _ => LevelExpr.lmax e1 e2)
-      cases hCmp : LevelExpr.compare e1 e2 with
-      | eq =>
-          show LevelExpr.canonicalizeLmaxPair (LevelExpr.lmax e1 e2) =
-            LevelExpr.lmax e1 e2
-          show (match LevelExpr.compare e1 e2 with
-                | .gt => LevelExpr.lmax e2 e1
-                | _ => LevelExpr.lmax e1 e2) =
-            LevelExpr.lmax e1 e2
-          rw [hCmp]
-      | lt =>
-          show LevelExpr.canonicalizeLmaxPair (LevelExpr.lmax e1 e2) =
-            LevelExpr.lmax e1 e2
-          show (match LevelExpr.compare e1 e2 with
-                | .gt => LevelExpr.lmax e2 e1
-                | _ => LevelExpr.lmax e1 e2) =
-            LevelExpr.lmax e1 e2
-          rw [hCmp]
-      | gt =>
-          show LevelExpr.canonicalizeLmaxPair (LevelExpr.lmax e2 e1) =
-            LevelExpr.lmax e2 e1
-          show (match LevelExpr.compare e2 e1 with
-                | .gt => LevelExpr.lmax e1 e2
-                | _ => LevelExpr.lmax e2 e1) =
-            LevelExpr.lmax e2 e1
-          have hSwap : LevelExpr.compare e2 e1 = .lt := by
-            have := LevelExpr.compare_swap e1 e2
-            rw [hCmp] at this
-            exact this.symm
-          rw [hSwap]
+Proof: `cases` on the input.  Non-lmax inputs are fixed points
+trivially; the `lmax` arm reduces to `swapToCanonicalLmax (compare
+e1 e2) e1 e2`, whose canonical order is preserved by
+`canonicalizeLmaxPair_swapToCanonicalLmax`. -/
+theorem LevelExpr.canonicalizeLmaxPair_idempotent (expr : LevelExpr) :
+    LevelExpr.canonicalizeLmaxPair (LevelExpr.canonicalizeLmaxPair expr) =
+      LevelExpr.canonicalizeLmaxPair expr := by
+  cases expr with
+  | lzero => rfl
+  | lvar _ => rfl
+  | lsucc _ => rfl
+  | limax _ _ => rfl
+  | lmax e1 e2 =>
+      exact LevelExpr.canonicalizeLmaxPair_swapToCanonicalLmax
+        (LevelExpr.compare e1 e2) e1 e2 rfl
 
 end LeanFX2.Foundation.PolyCell.Universe
