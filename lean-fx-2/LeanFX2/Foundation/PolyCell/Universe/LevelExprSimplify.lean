@@ -3603,4 +3603,66 @@ theorem LevelExpr.canonicalAtoms_sameLvarMembership_of_denoteEquiv
       (fun hNeSecond => hDenote.symm ▸ hNeSecond)
   exact Iff.trans hIff1 (Iff.trans hFoldsNeZeroIff hIff2.symm)
 
+/-! ### Strict sortedness survives `dropLzeroAtoms`
+
+The non-strict `dropLzeroAtoms_sorted` is already shipped; the strict
+analog is needed to pin `canonicalAtoms` as strictly sorted (the
+hypothesis `strictlySorted_unique` consumes).  The only structural
+difference: in the `lzero`-head case a *strict* lower bound
+`compare bound lzero = .lt` is impossible (`lzero` is the `compare`
+minimum), so that case discharges by contradiction rather than the
+non-strict head-transfer. -/
+
+/-- Nothing is strictly below `lzero` under `compare`: `compare expr
+lzero ≠ .lt`.  Via the `compare_swap` antisymmetry identity, such a
+verdict would make `compare lzero expr = .gt`, contradicting
+`compare_lzero_ne_gt`. -/
+theorem LevelExpr.compare_right_lzero_ne_lt (expr : LevelExpr) :
+    LevelExpr.compare expr LevelExpr.lzero ≠ Ordering.lt := by
+  intro hLt
+  have hSwapEq := LevelExpr.compare_swap expr LevelExpr.lzero
+  rw [hLt] at hSwapEq
+  exact LevelExpr.compare_lzero_ne_gt expr hSwapEq.symm
+
+/-- `dropLzeroAtoms` preserves a *strict* lower bound.  The keep cases
+leave the head, so the bound is unchanged; the `lzero`-head case is
+vacuous since `compare bound lzero = .lt` is impossible. -/
+theorem LevelExpr.IsStrictLowerBound_dropLzeroAtoms (bound : LevelExpr) :
+    ∀ (xs : List LevelExpr),
+      LevelExpr.IsStrictLowerBound bound xs →
+      LevelExpr.IsStrictLowerBound bound (LevelExpr.dropLzeroAtoms xs)
+  | [], _ => trivial
+  | head :: _rest, hBound => by
+      cases head with
+      | lzero => exact absurd hBound (LevelExpr.compare_right_lzero_ne_lt bound)
+      | lvar _ => exact hBound
+      | lsucc _ => exact hBound
+      | lmax _ _ => exact hBound
+      | limax _ _ => exact hBound
+
+/-- `dropLzeroAtoms` preserves strict sortedness.  `lzero` head: drop
+and recurse on the strictly-sorted tail; keep cases: retain the head,
+re-bound the dropped tail via `IsStrictLowerBound_dropLzeroAtoms`, and
+recurse. -/
+theorem LevelExpr.dropLzeroAtoms_strictlySorted :
+    ∀ (xs : List LevelExpr),
+      LevelExpr.IsStrictlySorted xs →
+      LevelExpr.IsStrictlySorted (LevelExpr.dropLzeroAtoms xs)
+  | [], _ => trivial
+  | head :: rest, hStrict => by
+      cases head with
+      | lzero => exact LevelExpr.dropLzeroAtoms_strictlySorted rest hStrict.2
+      | lvar _ =>
+          exact ⟨LevelExpr.IsStrictLowerBound_dropLzeroAtoms _ rest hStrict.1,
+                 LevelExpr.dropLzeroAtoms_strictlySorted rest hStrict.2⟩
+      | lsucc _ =>
+          exact ⟨LevelExpr.IsStrictLowerBound_dropLzeroAtoms _ rest hStrict.1,
+                 LevelExpr.dropLzeroAtoms_strictlySorted rest hStrict.2⟩
+      | lmax _ _ =>
+          exact ⟨LevelExpr.IsStrictLowerBound_dropLzeroAtoms _ rest hStrict.1,
+                 LevelExpr.dropLzeroAtoms_strictlySorted rest hStrict.2⟩
+      | limax _ _ =>
+          exact ⟨LevelExpr.IsStrictLowerBound_dropLzeroAtoms _ rest hStrict.1,
+                 LevelExpr.dropLzeroAtoms_strictlySorted rest hStrict.2⟩
+
 end LeanFX2.Foundation.PolyCell.Universe
