@@ -3969,6 +3969,7 @@ structure LevelExpr.MaxPlusForm where
   baseConstant : Nat
   /-- `(variableIndex, offset)` entries — the max offset per variable. -/
   varOffsets : List (Nat × Nat)
+deriving DecidableEq
 
 /-- Max-fold of the variable/offset entries under an environment:
 `maxᵢ (env varᵢ + offsetᵢ)`, with the empty list folding to `0`. -/
@@ -5959,5 +5960,35 @@ theorem LevelExpr.MaxPlusForm.canonicalForm_unique
     _ = LevelExpr.MaxPlusForm.mk formRight.baseConstant formRight.varOffsets := by
         rw [hBaseEq, hVarOffsetsEq]
     _ = formRight := rfl
+
+/-! ### Step 7(c) — `fullCanonicalize` meets the uniqueness hypotheses
+
+`canonicalForm_unique` is stated on the invariants (strictly sorted +
+base-normalized); these two lemmas certify that `fullCanonicalize`
+outputs satisfy them, so the decision procedure can invoke uniqueness on
+actual canonical forms.  Both are thin: `fullCanonicalize = normalizeBase
+∘ canonicalize`, `normalizeBase` leaves `varOffsets` untouched and
+`canonicalize` sets them to `canonicalizeVarOffsets …`, and the base fact
+is exactly `normalizeBase_baseConstant_eq_denote_zeroEnvironment` at
+`canonicalize form` (the two forms are definitionally equal). -/
+
+/-- A fully-canonicalized form's offsets are strictly sorted by variable. -/
+theorem LevelExpr.MaxPlusForm.fullCanonicalize_isStrictlySortedByVariable
+    (form : LevelExpr.MaxPlusForm) :
+    LevelExpr.MaxPlusForm.isStrictlySortedByVariable
+      (LevelExpr.MaxPlusForm.fullCanonicalize form).varOffsets = true := by
+  show LevelExpr.MaxPlusForm.isStrictlySortedByVariable
+    (LevelExpr.MaxPlusForm.canonicalizeVarOffsets form.varOffsets) = true
+  exact LevelExpr.MaxPlusForm.canonicalizeVarOffsets_produces_strictlySorted form.varOffsets
+
+/-- A fully-canonicalized form's base equals its denotation at the zero
+environment (base-normalized). -/
+theorem LevelExpr.MaxPlusForm.fullCanonicalize_baseConstant_eq_denote_zeroEnvironment
+    (form : LevelExpr.MaxPlusForm) :
+    (LevelExpr.MaxPlusForm.fullCanonicalize form).baseConstant =
+      LevelExpr.MaxPlusForm.denote (LevelExpr.MaxPlusForm.fullCanonicalize form)
+        LevelExpr.MaxPlusForm.zeroEnvironment :=
+  LevelExpr.MaxPlusForm.normalizeBase_baseConstant_eq_denote_zeroEnvironment
+    (LevelExpr.MaxPlusForm.canonicalize form)
 
 end LeanFX2.Foundation.PolyCell.Universe
