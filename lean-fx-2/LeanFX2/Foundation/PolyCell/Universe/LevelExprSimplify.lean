@@ -6050,4 +6050,108 @@ def LevelExpr.decideDenoteEquiv
       hFormsEq
         ((LevelExpr.denoteEquiv_iff_fullCanonicalize_eq e1 e2 hPred1 hPred2).mp hEquiv))
 
+/-! ### Step 7 — behavioral smoke corpus for the predicative decision procedure
+
+Twelve positive equivalences (each exercising one rewrite the canonical
+form must absorb) and two negative non-equivalences, all routed through
+the capstone iff `denoteEquiv_iff_fullCanonicalize_eq`.  Each positive is
+self-certifying: the `(iff …).mpr rfl` form closes only when the two
+expressions share a fully-canonicalized max-plus form, so a mis-chosen
+fixture would fail to compile rather than admit a false theorem.  Each
+negative reflects a genuine form inequality (decided by the derived
+`DecidableEq MaxPlusForm`).  Every predicativity side-condition closes by
+`rfl` because all fixtures are `limax`-free.
+
+This is the persistent acceptance corpus for #419: it pins the observable
+behavior of `fullCanonicalize`/`decideDenoteEquiv` so a future refactor of
+the canonicalizer that breaks an algebraic law is caught at build time. -/
+
+/-- Idempotent dedup: `lmax e e` canonicalizes to `e`. -/
+theorem LevelExpr.smoke_denoteEquiv_idempotentDedup :
+    LevelExpr.denoteEquiv (.lmax (.lvar 0) (.lvar 0)) (.lvar 0) :=
+  (LevelExpr.denoteEquiv_iff_fullCanonicalize_eq _ _ rfl rfl).mpr rfl
+
+/-- Left unit: `lmax lzero e` canonicalizes to `e`. -/
+theorem LevelExpr.smoke_denoteEquiv_leftUnitLzero :
+    LevelExpr.denoteEquiv (.lmax .lzero (.lvar 1)) (.lvar 1) :=
+  (LevelExpr.denoteEquiv_iff_fullCanonicalize_eq _ _ rfl rfl).mpr rfl
+
+/-- Right unit: `lmax e lzero` canonicalizes to `e`. -/
+theorem LevelExpr.smoke_denoteEquiv_rightUnitLzero :
+    LevelExpr.denoteEquiv (.lmax (.lvar 1) .lzero) (.lvar 1) :=
+  (LevelExpr.denoteEquiv_iff_fullCanonicalize_eq _ _ rfl rfl).mpr rfl
+
+/-- Commutativity: `lmax a b` and `lmax b a` share a canonical form. -/
+theorem LevelExpr.smoke_denoteEquiv_commutativeMax :
+    LevelExpr.denoteEquiv (.lmax (.lvar 0) (.lvar 1)) (.lmax (.lvar 1) (.lvar 0)) :=
+  (LevelExpr.denoteEquiv_iff_fullCanonicalize_eq _ _ rfl rfl).mpr rfl
+
+/-- Associativity: left- and right-nested `lmax` over three variables
+share a canonical form. -/
+theorem LevelExpr.smoke_denoteEquiv_associativeMax :
+    LevelExpr.denoteEquiv
+      (.lmax (.lmax (.lvar 0) (.lvar 1)) (.lvar 2))
+      (.lmax (.lvar 0) (.lmax (.lvar 1) (.lvar 2))) :=
+  (LevelExpr.denoteEquiv_iff_fullCanonicalize_eq _ _ rfl rfl).mpr rfl
+
+/-- Successor domination: `lmax (lsucc e) e` canonicalizes to `lsucc e`
+(the larger offset on the same variable absorbs the smaller). -/
+theorem LevelExpr.smoke_denoteEquiv_succDominatesVar :
+    LevelExpr.denoteEquiv (.lmax (.lsucc (.lvar 0)) (.lvar 0)) (.lsucc (.lvar 0)) :=
+  (LevelExpr.denoteEquiv_iff_fullCanonicalize_eq _ _ rfl rfl).mpr rfl
+
+/-- Offset on the right: `lmax e (lsucc e)` canonicalizes to `lsucc e`. -/
+theorem LevelExpr.smoke_denoteEquiv_succAbsorbsBareVar :
+    LevelExpr.denoteEquiv (.lmax (.lvar 0) (.lsucc (.lvar 0))) (.lsucc (.lvar 0)) :=
+  (LevelExpr.denoteEquiv_iff_fullCanonicalize_eq _ _ rfl rfl).mpr rfl
+
+/-- Constant collapse: `lmax lzero lzero` canonicalizes to `lzero`. -/
+theorem LevelExpr.smoke_denoteEquiv_constantCollapse :
+    LevelExpr.denoteEquiv (.lmax .lzero .lzero) .lzero :=
+  (LevelExpr.denoteEquiv_iff_fullCanonicalize_eq _ _ rfl rfl).mpr rfl
+
+/-- Successor of zero dominates the bare unit: `lmax (lsucc lzero) lzero`
+canonicalizes to `lsucc lzero`. -/
+theorem LevelExpr.smoke_denoteEquiv_succZeroDominates :
+    LevelExpr.denoteEquiv (.lmax (.lsucc .lzero) .lzero) (.lsucc .lzero) :=
+  (LevelExpr.denoteEquiv_iff_fullCanonicalize_eq _ _ rfl rfl).mpr rfl
+
+/-- Nested dedup with reorder: a variable appearing both at the head and
+inside a nested `lmax` is deduplicated into the sorted canonical form. -/
+theorem LevelExpr.smoke_denoteEquiv_nestedDedupReorder :
+    LevelExpr.denoteEquiv
+      (.lmax (.lvar 2) (.lmax (.lvar 0) (.lvar 2)))
+      (.lmax (.lvar 0) (.lvar 2)) :=
+  (LevelExpr.denoteEquiv_iff_fullCanonicalize_eq _ _ rfl rfl).mpr rfl
+
+/-- Three-variable sort: an out-of-order nesting and an in-order nesting
+of `{0,1,2}` share the sorted canonical form. -/
+theorem LevelExpr.smoke_denoteEquiv_threeVariableSort :
+    LevelExpr.denoteEquiv
+      (.lmax (.lvar 2) (.lmax (.lvar 0) (.lvar 1)))
+      (.lmax (.lvar 0) (.lmax (.lvar 1) (.lvar 2))) :=
+  (LevelExpr.denoteEquiv_iff_fullCanonicalize_eq _ _ rfl rfl).mpr rfl
+
+/-- Constant-and-variable commutativity: a constant successor and a
+variable commute under `lmax`. -/
+theorem LevelExpr.smoke_denoteEquiv_constVarCommute :
+    LevelExpr.denoteEquiv
+      (.lmax (.lsucc .lzero) (.lvar 0))
+      (.lmax (.lvar 0) (.lsucc .lzero)) :=
+  (LevelExpr.denoteEquiv_iff_fullCanonicalize_eq _ _ rfl rfl).mpr rfl
+
+/-- Negative: distinct variables are not `denoteEquiv` (their canonical
+forms differ in the offset list). -/
+theorem LevelExpr.smoke_notDenoteEquiv_distinctVars :
+    ¬ LevelExpr.denoteEquiv (.lvar 0) (.lvar 1) := fun hEquiv =>
+  absurd ((LevelExpr.denoteEquiv_iff_fullCanonicalize_eq _ _ rfl rfl).mp hEquiv)
+    (by decide)
+
+/-- Negative: a variable and its successor are not `denoteEquiv` (their
+canonical forms differ in the base/offset). -/
+theorem LevelExpr.smoke_notDenoteEquiv_varVsSucc :
+    ¬ LevelExpr.denoteEquiv (.lvar 0) (.lsucc (.lvar 0)) := fun hEquiv =>
+  absurd ((LevelExpr.denoteEquiv_iff_fullCanonicalize_eq _ _ rfl rfl).mp hEquiv)
+    (by decide)
+
 end LeanFX2.Foundation.PolyCell.Universe
