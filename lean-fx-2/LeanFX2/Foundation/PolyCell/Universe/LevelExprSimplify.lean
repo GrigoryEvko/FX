@@ -3571,4 +3571,36 @@ theorem LevelExpr.denote_eq_denoteAtomList_canonicalAtoms
   rw [← hCanonPreserves]
   exact hFoldEqAtoms
 
+/-- Membership transfer: if two expressions are denotationally equal
+and both canonical atom lists are variable-only, they share the same
+`lvar k` membership for every `k`.  Instantiate `denoteEquiv` at the
+point environment for `k`, push both sides through the denotation
+bridge, then chain the two oracle iffs across the resulting
+fold-equality.  The middle step builds `fold₁ ≠ 0 ↔ fold₂ ≠ 0` by
+transporting along the plain `Nat`-equality (`▸`), never rewriting an
+iff (propext discipline). -/
+theorem LevelExpr.canonicalAtoms_sameLvarMembership_of_denoteEquiv
+    (e1 e2 : LevelExpr)
+    (hVars1 : LevelExpr.AllAtomsAreVariables (LevelExpr.canonicalAtoms e1))
+    (hVars2 : LevelExpr.AllAtomsAreVariables (LevelExpr.canonicalAtoms e2))
+    (hEquiv : LevelExpr.denoteEquiv e1 e2) (variableIndex : Nat) :
+    LevelExpr.OccursIn (.lvar variableIndex) (LevelExpr.canonicalAtoms e1) ↔
+      LevelExpr.OccursIn (.lvar variableIndex) (LevelExpr.canonicalAtoms e2) := by
+  have hDenote := hEquiv (LevelExpr.pointEnvironment variableIndex)
+  rw [LevelExpr.denote_eq_denoteAtomList_canonicalAtoms e1,
+      LevelExpr.denote_eq_denoteAtomList_canonicalAtoms e2] at hDenote
+  have hIff1 := LevelExpr.occursLvar_iff_denoteAtomList_pointEnvironment_ne_zero
+    variableIndex (LevelExpr.canonicalAtoms e1) hVars1
+  have hIff2 := LevelExpr.occursLvar_iff_denoteAtomList_pointEnvironment_ne_zero
+    variableIndex (LevelExpr.canonicalAtoms e2) hVars2
+  have hFoldsNeZeroIff :
+      LevelExpr.denoteAtomList (LevelExpr.canonicalAtoms e1)
+          (LevelExpr.pointEnvironment variableIndex) ≠ 0 ↔
+        LevelExpr.denoteAtomList (LevelExpr.canonicalAtoms e2)
+          (LevelExpr.pointEnvironment variableIndex) ≠ 0 :=
+    Iff.intro
+      (fun hNeFirst => hDenote ▸ hNeFirst)
+      (fun hNeSecond => hDenote.symm ▸ hNeSecond)
+  exact Iff.trans hIff1 (Iff.trans hFoldsNeZeroIff hIff2.symm)
+
 end LeanFX2.Foundation.PolyCell.Universe
