@@ -5706,4 +5706,75 @@ theorem LevelExpr.MaxPlusForm.lookupOffset_eq_some_offsetOf_of_occurs (probe : N
           rw [hBeq]
           exact LevelExpr.MaxPlusForm.lookupOffset_eq_some_offsetOf_of_occurs probe rest hOccRest
 
+/-! ### Step 7(c-a) form-level X-ray — lifting the oracles through the base
+
+The denotation bridge probes the FULL form denotation `denote form env =
+levelMax baseConstant (denoteVarOffsets varOffsets env)`.  These two
+lemmas lift the list-level present/absent oracles through the
+`levelMax baseConstant` wrapper: when the probe scale exceeds the base,
+a present probe's `scale + offset` dominates the base (so the form
+denotes `scale + offset`); an absent probe leaves the form at
+`levelMax base (maxOffset)`.  `levelMax_le` (the join is below any
+common upper bound) is the order fact the bridge's mixed-case
+contradiction needs. -/
+
+/-- `levelMax` is below any common upper bound: `valueA ≤ bound →
+valueB ≤ bound → levelMax valueA valueB ≤ bound`.  Direct structural
+recursion on the `levelMax` pattern; the `(succ, succ, 0)` corner is
+impossible (`succ ≤ 0`). -/
+theorem LevelExpr.levelMax_le :
+    ∀ (valueA valueB bound : Nat),
+      valueA ≤ bound → valueB ≤ bound → LevelExpr.levelMax valueA valueB ≤ bound
+  | 0, _valueB, _bound, _, hb => hb
+  | _valueA + 1, 0, _bound, ha, _ => ha
+  | _valueA + 1, _valueB + 1, 0, ha, _ => absurd ha (Nat.not_succ_le_zero _)
+  | valueA + 1, valueB + 1, bound + 1, ha, hb =>
+      Nat.succ_le_succ (LevelExpr.levelMax_le valueA valueB bound
+        (Nat.le_of_succ_le_succ ha) (Nat.le_of_succ_le_succ hb))
+
+/-- Form-level present-probe X-ray: when the scale exceeds the base and
+every offset, probing a present variable makes the form denote exactly
+`scale + offsetOf probe varOffsets`.  Lifts
+`denoteVarOffsets_scaledPointEnvironment_of_occurs` through
+`levelMax baseConstant` (collapsed since `baseConstant ≤ scale ≤ scale
++ offset`). -/
+theorem LevelExpr.MaxPlusForm.denote_scaledPointEnvironment_of_occurs
+    (form : LevelExpr.MaxPlusForm) (probe scale : Nat)
+    (hStrict : LevelExpr.MaxPlusForm.isStrictlySortedByVariable form.varOffsets = true)
+    (hOccurs : LevelExpr.MaxPlusForm.occursAsVariable probe form.varOffsets = true)
+    (hMaxLt : LevelExpr.MaxPlusForm.maxOffset form.varOffsets < scale)
+    (hBaseLe : form.baseConstant ≤ scale) :
+    LevelExpr.MaxPlusForm.denote form
+        (LevelExpr.MaxPlusForm.scaledPointEnvironment probe scale) =
+      scale + LevelExpr.MaxPlusForm.offsetOf probe form.varOffsets := by
+  show LevelExpr.levelMax form.baseConstant
+      (LevelExpr.MaxPlusForm.denoteVarOffsets form.varOffsets
+        (LevelExpr.MaxPlusForm.scaledPointEnvironment probe scale)) =
+    scale + LevelExpr.MaxPlusForm.offsetOf probe form.varOffsets
+  rw [LevelExpr.MaxPlusForm.denoteVarOffsets_scaledPointEnvironment_of_occurs
+    probe scale form.varOffsets hStrict hOccurs hMaxLt]
+  exact LevelExpr.levelMax_eq_right_of_left_le form.baseConstant
+    (scale + LevelExpr.MaxPlusForm.offsetOf probe form.varOffsets)
+    (Nat.le_trans hBaseLe
+      (Nat.le_add_right scale (LevelExpr.MaxPlusForm.offsetOf probe form.varOffsets)))
+
+/-- Form-level absent-probe X-ray: probing a variable absent from the
+form leaves its denotation at `levelMax baseConstant (maxOffset
+varOffsets)` — scale-independent.  Lifts
+`denoteVarOffsets_scaledPointEnvironment_of_not_occurs`. -/
+theorem LevelExpr.MaxPlusForm.denote_scaledPointEnvironment_of_not_occurs
+    (form : LevelExpr.MaxPlusForm) (probe scale : Nat)
+    (hNotOccurs : LevelExpr.MaxPlusForm.occursAsVariable probe form.varOffsets = false) :
+    LevelExpr.MaxPlusForm.denote form
+        (LevelExpr.MaxPlusForm.scaledPointEnvironment probe scale) =
+      LevelExpr.levelMax form.baseConstant
+        (LevelExpr.MaxPlusForm.maxOffset form.varOffsets) := by
+  show LevelExpr.levelMax form.baseConstant
+      (LevelExpr.MaxPlusForm.denoteVarOffsets form.varOffsets
+        (LevelExpr.MaxPlusForm.scaledPointEnvironment probe scale)) =
+    LevelExpr.levelMax form.baseConstant
+      (LevelExpr.MaxPlusForm.maxOffset form.varOffsets)
+  rw [LevelExpr.MaxPlusForm.denoteVarOffsets_scaledPointEnvironment_of_not_occurs
+    probe scale form.varOffsets hNotOccurs]
+
 end LeanFX2.Foundation.PolyCell.Universe
