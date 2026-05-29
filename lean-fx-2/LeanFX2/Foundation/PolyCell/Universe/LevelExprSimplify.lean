@@ -6234,4 +6234,121 @@ theorem LevelExpr.toMaxPlusForm_varOffsets_length_le_size (level : LevelExpr) :
       show (1 : Nat) ≤ 1
       exact Nat.le_refl 1
 
+/-! ### Step 9 — the sort + absorb passes don't grow the working set
+
+`canonicalizeVarOffsets = absorbAdjacent ∘ sortByVariable`.  Insertion
+sort preserves length (each `insertByVariable` adds exactly one entry);
+run-fusion `absorbAdjacent` is non-increasing (fuse drops an entry, skip
+keeps it).  Composing those with Step 8's input bound gives the
+END-TO-END working-set bound:
+`(fullCanonicalize (toMaxPlusForm e)).varOffsets.length ≤ e.size` — the
+complete structural foundation of #419's sort-dominated O(size²) claim.
+All by structural induction matching each function's recursion shape. -/
+
+/-- `insertByVariable` adds exactly one entry: the sorted-insert grows
+the list length by one regardless of where the entry lands. -/
+theorem LevelExpr.MaxPlusForm.insertByVariable_length :
+    ∀ (entry : Nat × Nat) (entries : List (Nat × Nat)),
+      (LevelExpr.MaxPlusForm.insertByVariable entry entries).length =
+        entries.length + 1
+  | _, [] => rfl
+  | (variableNew, offsetNew), (variableHead, offsetHead) :: rest => by
+      show (match Nat.ble variableNew variableHead with
+          | true => (variableNew, offsetNew) :: (variableHead, offsetHead) :: rest
+          | false => (variableHead, offsetHead) ::
+              LevelExpr.MaxPlusForm.insertByVariable (variableNew, offsetNew) rest).length =
+        ((variableHead, offsetHead) :: rest).length + 1
+      cases Nat.ble variableNew variableHead with
+      | true => rfl
+      | false =>
+          show (LevelExpr.MaxPlusForm.insertByVariable
+              (variableNew, offsetNew) rest).length + 1 =
+            rest.length + 1 + 1
+          rw [LevelExpr.MaxPlusForm.insertByVariable_length (variableNew, offsetNew) rest]
+
+/-- Insertion sort preserves list length (folds `insertByVariable_length`
+down the list). -/
+theorem LevelExpr.MaxPlusForm.sortByVariable_length :
+    ∀ (entries : List (Nat × Nat)),
+      (LevelExpr.MaxPlusForm.sortByVariable entries).length = entries.length
+  | [] => rfl
+  | entry :: rest => by
+      show (LevelExpr.MaxPlusForm.insertByVariable entry
+          (LevelExpr.MaxPlusForm.sortByVariable rest)).length =
+        rest.length + 1
+      rw [LevelExpr.MaxPlusForm.insertByVariable_length entry
+            (LevelExpr.MaxPlusForm.sortByVariable rest),
+          LevelExpr.MaxPlusForm.sortByVariable_length rest]
+
+/-- `absorbFrom` emits at most `rest.length + 1` entries: each step
+either fuses the next entry into the carried one (dropping it) or emits
+the carried entry and recurses — never growing past the carried-plus-tail
+count.  Structural induction on `rest`, carrying `current`. -/
+theorem LevelExpr.MaxPlusForm.absorbFrom_length_le :
+    ∀ (current : Nat × Nat) (rest : List (Nat × Nat)),
+      (LevelExpr.MaxPlusForm.absorbFrom current rest).length ≤ rest.length + 1
+  | _, [] => by
+      show (1 : Nat) ≤ 0 + 1
+      exact Nat.le_refl 1
+  | (variableCurrent, offsetCurrent), (variableNext, offsetNext) :: rest => by
+      show (match Nat.beq variableCurrent variableNext with
+          | true => LevelExpr.MaxPlusForm.absorbFrom
+              (variableCurrent, LevelExpr.levelMax offsetCurrent offsetNext) rest
+          | false => (variableCurrent, offsetCurrent) ::
+              LevelExpr.MaxPlusForm.absorbFrom (variableNext, offsetNext) rest).length ≤
+        ((variableNext, offsetNext) :: rest).length + 1
+      cases Nat.beq variableCurrent variableNext with
+      | true =>
+          exact Nat.le_trans
+            (LevelExpr.MaxPlusForm.absorbFrom_length_le
+              (variableCurrent, LevelExpr.levelMax offsetCurrent offsetNext) rest)
+            (Nat.le_succ (rest.length + 1))
+      | false =>
+          exact Nat.succ_le_succ
+            (LevelExpr.MaxPlusForm.absorbFrom_length_le (variableNext, offsetNext) rest)
+
+/-- Run-fusion is non-increasing: absorbing adjacent equal-variable
+entries never grows the list. -/
+theorem LevelExpr.MaxPlusForm.absorbAdjacent_length_le :
+    ∀ (entries : List (Nat × Nat)),
+      (LevelExpr.MaxPlusForm.absorbAdjacent entries).length ≤ entries.length
+  | [] => by
+      show (0 : Nat) ≤ 0
+      exact Nat.le_refl 0
+  | entry :: rest => by
+      show (LevelExpr.MaxPlusForm.absorbFrom entry rest).length ≤ (entry :: rest).length
+      exact LevelExpr.MaxPlusForm.absorbFrom_length_le entry rest
+
+/-- The full offset-canonicalizer (sort then absorb) is non-increasing:
+its output holds at most as many entries as its input.  Sort preserves
+length; absorb only drops. -/
+theorem LevelExpr.MaxPlusForm.canonicalizeVarOffsets_length_le
+    (entries : List (Nat × Nat)) :
+    (LevelExpr.MaxPlusForm.canonicalizeVarOffsets entries).length ≤ entries.length := by
+  show (LevelExpr.MaxPlusForm.absorbAdjacent
+      (LevelExpr.MaxPlusForm.sortByVariable entries)).length ≤ entries.length
+  rw [← LevelExpr.MaxPlusForm.sortByVariable_length entries]
+  exact LevelExpr.MaxPlusForm.absorbAdjacent_length_le
+    (LevelExpr.MaxPlusForm.sortByVariable entries)
+
+/-- END-TO-END working-set bound: the fully-canonicalized form of a
+normalized expression carries at most `size`-many variable/offset
+entries.  `normalizeBase` leaves `varOffsets` untouched and
+`canonicalize` routes them through `canonicalizeVarOffsets` (definitional
+unfolding), so this composes `canonicalizeVarOffsets_length_le` with
+Step 8's `toMaxPlusForm_varOffsets_length_le_size`.  Consequence: the
+decision procedure's insertion sort runs over a list of length ≤ `size`,
+making its O(n²) cost O(size²) — the verifiable structural core of #419's
+complexity bound (sort-dominated, NOT the aspirational O(size log size)). -/
+theorem LevelExpr.MaxPlusForm.fullCanonicalize_toMaxPlusForm_varOffsets_length_le_size
+    (level : LevelExpr) :
+    (LevelExpr.MaxPlusForm.fullCanonicalize
+        (LevelExpr.toMaxPlusForm level)).varOffsets.length ≤ level.size := by
+  show (LevelExpr.MaxPlusForm.canonicalizeVarOffsets
+      (LevelExpr.toMaxPlusForm level).varOffsets).length ≤ level.size
+  exact Nat.le_trans
+    (LevelExpr.MaxPlusForm.canonicalizeVarOffsets_length_le
+      (LevelExpr.toMaxPlusForm level).varOffsets)
+    (LevelExpr.toMaxPlusForm_varOffsets_length_le_size level)
+
 end LeanFX2.Foundation.PolyCell.Universe
