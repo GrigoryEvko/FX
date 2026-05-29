@@ -3862,4 +3862,23 @@ theorem LevelExpr.AllAtomsAreVarsOrLzero_dedupAdjacent :
       | lt => exact ⟨hList.1, hTailDedup⟩
       | gt => exact ⟨hList.1, hTailDedup⟩
 
+/-- `dropLzeroAtoms` narrows the `lvar`/`lzero` shape to pure `lvar`:
+it removes exactly the `lzero` atoms, so what survives is all
+variables.  Cases on the per-head evidence (the two reachable shapes)
+rather than the head constructor — the `lzero` head is dropped and
+recurses; the `lvar` head is kept and supplies its own witness. -/
+theorem LevelExpr.AllAtomsAreVariables_dropLzeroAtoms :
+    ∀ (xs : List LevelExpr),
+      LevelExpr.AllAtomsAreVarsOrLzero xs →
+      LevelExpr.AllAtomsAreVariables (LevelExpr.dropLzeroAtoms xs)
+  | [], _ => trivial
+  | head :: rest, hList => by
+      have hTail :=
+        LevelExpr.AllAtomsAreVariables_dropLzeroAtoms rest hList.2
+      rcases hList.1 with hHeadLzero | ⟨variableIndex, hHeadLvar⟩
+      · rw [hHeadLzero]
+        exact hTail
+      · rw [hHeadLvar]
+        exact ⟨⟨variableIndex, rfl⟩, hTail⟩
+
 end LeanFX2.Foundation.PolyCell.Universe
