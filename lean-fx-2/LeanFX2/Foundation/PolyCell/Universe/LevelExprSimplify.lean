@@ -2298,4 +2298,107 @@ theorem LevelExpr.foldLmax_insertionSortByCompare_denoteEquiv :
         (LevelExpr.denoteEquiv.refl head) ih
       exact LevelExpr.denoteEquiv.trans hInsert hTail
 
+/-! ## The dedup sub-step — collapse adjacent equal atoms
+
+After sorting, equal atoms sit next to each other; `dedupAdjacent`
+collapses each adjacent equal pair via `lmax`'s idempotence.  As
+with insertion, soundness needs only the commutative-idempotent-
+monoid laws — sortedness is what makes adjacency *capture all*
+duplicates (a completeness concern), not what makes the collapse
+*sound*. -/
+
+/-- Folding a duplicated leading atom equals folding it once:
+`foldLmax (a :: a :: rest) ~ foldLmax (a :: rest)`.  This is
+`lmax`-idempotence under the head, assembled from associativity +
+idempotence (the dedup analogue of `foldLmax_swap_denoteEquiv`). -/
+theorem LevelExpr.foldLmax_dup_head_denoteEquiv
+    (atom : LevelExpr) (rest : List LevelExpr) :
+    LevelExpr.denoteEquiv (LevelExpr.foldLmax (atom :: atom :: rest))
+      (LevelExpr.foldLmax (atom :: rest)) := by
+  show LevelExpr.denoteEquiv
+    (LevelExpr.lmax atom (LevelExpr.lmax atom (LevelExpr.foldLmax rest)))
+    (LevelExpr.lmax atom (LevelExpr.foldLmax rest))
+  have hUnAssoc : LevelExpr.denoteEquiv
+      (LevelExpr.lmax atom (LevelExpr.lmax atom (LevelExpr.foldLmax rest)))
+      (LevelExpr.lmax (LevelExpr.lmax atom atom) (LevelExpr.foldLmax rest)) :=
+    LevelExpr.denoteEquiv.symm
+      (LevelExpr.lmax_assoc_denoteEquiv atom atom (LevelExpr.foldLmax rest))
+  have hIdem : LevelExpr.denoteEquiv
+      (LevelExpr.lmax (LevelExpr.lmax atom atom) (LevelExpr.foldLmax rest))
+      (LevelExpr.lmax atom (LevelExpr.foldLmax rest)) :=
+    LevelExpr.lmax_denoteEquiv_congr
+      (LevelExpr.lmax_idempotent_denoteEquiv atom)
+      (LevelExpr.denoteEquiv.refl (LevelExpr.foldLmax rest))
+  exact LevelExpr.denoteEquiv.trans hUnAssoc hIdem
+
+/-- One step of adjacent dedup, dispatched on a precomputed
+`compare` verdict.  `.eq` drops the leading atom (it equals the
+next, already present in `tailDedup`); `.lt` / `.gt` keep it in
+front.  Full `Ordering` enumeration keeps the def `propext`-free
+and lets the soundness proof case on the verdict via this named
+helper rather than an in-place `match`. -/
+def LevelExpr.dedupStep (verdict : Ordering)
+    (first : LevelExpr) (tailDedup : List LevelExpr) : List LevelExpr :=
+  match verdict with
+  | .eq => tailDedup
+  | .lt => first :: tailDedup
+  | .gt => first :: tailDedup
+
+/-- Collapse adjacent equal atoms under `compare`.  Two-element
+lookahead: compare the first two atoms, drop the first when equal
+(routed through `dedupStep`), recurse on the tail otherwise.
+Structural recursion on the explicit tail `second :: rest`. -/
+def LevelExpr.dedupAdjacent : List LevelExpr → List LevelExpr
+  | [] => []
+  | [single] => [single]
+  | first :: second :: rest =>
+      LevelExpr.dedupStep (LevelExpr.compare first second) first
+        (LevelExpr.dedupAdjacent (second :: rest))
+
+/-- Adjacent dedup preserves the folded denotation:
+`foldLmax (dedupAdjacent xs) ~ foldLmax xs`.
+
+Two-element-lookahead recursion.  The `.eq` verdict forces
+`first = second` (`compare_eq_imp_eq`), so dropping `first`
+collapses a duplicated head (`foldLmax_dup_head_denoteEquiv`);
+`.lt` / `.gt` keep `first` and recurse under an `lmax`-congruence
+with the inductive hypothesis. -/
+theorem LevelExpr.foldLmax_dedupAdjacent_denoteEquiv :
+    ∀ (xs : List LevelExpr),
+      LevelExpr.denoteEquiv
+        (LevelExpr.foldLmax (LevelExpr.dedupAdjacent xs))
+        (LevelExpr.foldLmax xs)
+  | [] => LevelExpr.denoteEquiv.refl _
+  | [_single] => LevelExpr.denoteEquiv.refl _
+  | first :: second :: rest => by
+      have ih := LevelExpr.foldLmax_dedupAdjacent_denoteEquiv (second :: rest)
+      show LevelExpr.denoteEquiv
+        (LevelExpr.foldLmax
+          (LevelExpr.dedupStep (LevelExpr.compare first second) first
+            (LevelExpr.dedupAdjacent (second :: rest))))
+        (LevelExpr.foldLmax (first :: second :: rest))
+      cases hVerdict : LevelExpr.compare first second with
+      | eq =>
+          have hEq : first = second :=
+            LevelExpr.compare_eq_imp_eq first second hVerdict
+          show LevelExpr.denoteEquiv
+            (LevelExpr.foldLmax (LevelExpr.dedupAdjacent (second :: rest)))
+            (LevelExpr.foldLmax (first :: second :: rest))
+          refine LevelExpr.denoteEquiv.trans ih ?_
+          rw [hEq]
+          exact LevelExpr.denoteEquiv.symm
+            (LevelExpr.foldLmax_dup_head_denoteEquiv second rest)
+      | lt =>
+          show LevelExpr.denoteEquiv
+            (LevelExpr.foldLmax (first :: LevelExpr.dedupAdjacent (second :: rest)))
+            (LevelExpr.foldLmax (first :: second :: rest))
+          exact LevelExpr.lmax_denoteEquiv_congr
+            (LevelExpr.denoteEquiv.refl first) ih
+      | gt =>
+          show LevelExpr.denoteEquiv
+            (LevelExpr.foldLmax (first :: LevelExpr.dedupAdjacent (second :: rest)))
+            (LevelExpr.foldLmax (first :: second :: rest))
+          exact LevelExpr.lmax_denoteEquiv_congr
+            (LevelExpr.denoteEquiv.refl first) ih
+
 end LeanFX2.Foundation.PolyCell.Universe
