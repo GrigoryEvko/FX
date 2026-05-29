@@ -1619,6 +1619,46 @@ theorem LevelExpr.compareNat_swap : ∀ (valueA valueB : Nat),
   | _ + 1, 0 => rfl
   | a + 1, b + 1 => LevelExpr.compareNat_swap a b
 
+/-- `compareNat` is `.lt`-transitive: a strict chain `a < b < c`
+composes to `a < c`.  Direct simultaneous structural recursion on
+the three naturals; the cross-zero combinations contradict one of
+the hypotheses via `Ordering` no-confusion, and the all-successor
+case is the inductive step (each `compareNat (·+1) (·+1)` peels to
+`compareNat · ·`). -/
+theorem LevelExpr.compareNat_lt_trans :
+    ∀ (valueA valueB valueC : Nat),
+      LevelExpr.compareNat valueA valueB = Ordering.lt →
+      LevelExpr.compareNat valueB valueC = Ordering.lt →
+      LevelExpr.compareNat valueA valueC = Ordering.lt
+  | 0, 0, _, hAB, _ => Ordering.noConfusion hAB
+  | _ + 1, 0, _, hAB, _ => Ordering.noConfusion hAB
+  | 0, _ + 1, 0, _, hBC => Ordering.noConfusion hBC
+  | _ + 1, _ + 1, 0, _, hBC => Ordering.noConfusion hBC
+  | 0, _ + 1, _ + 1, _, _ => rfl
+  | a + 1, b + 1, c + 1, hAB, hBC =>
+      LevelExpr.compareNat_lt_trans a b c hAB hBC
+
+/-- `compareNat` is `.gt`-transitive, derived from `.lt`-transitivity
+by the swap (antisymmetry) identity: `a > b > c` is `c < b < a`
+swapped, whose `.lt`-chain gives `c < a`, swapped back to `a > c`. -/
+theorem LevelExpr.compareNat_gt_trans (valueA valueB valueC : Nat)
+    (hAB : LevelExpr.compareNat valueA valueB = Ordering.gt)
+    (hBC : LevelExpr.compareNat valueB valueC = Ordering.gt) :
+    LevelExpr.compareNat valueA valueC = Ordering.gt := by
+  have hBA : LevelExpr.compareNat valueB valueA = Ordering.lt := by
+    have hSwap := LevelExpr.compareNat_swap valueA valueB
+    rw [hAB] at hSwap
+    exact hSwap.symm
+  have hCB : LevelExpr.compareNat valueC valueB = Ordering.lt := by
+    have hSwap := LevelExpr.compareNat_swap valueB valueC
+    rw [hBC] at hSwap
+    exact hSwap.symm
+  have hCA : LevelExpr.compareNat valueC valueA = Ordering.lt :=
+    LevelExpr.compareNat_lt_trans valueC valueB valueA hCB hBA
+  have hSwap := LevelExpr.compareNat_swap valueC valueA
+  rw [hCA] at hSwap
+  exact hSwap.symm
+
 /-- Ctor priority for cross-ctor `LevelExpr` comparison.
 
   * `lzero` < `lvar` < `lsucc` < `lmax` < `limax`.
