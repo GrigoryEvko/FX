@@ -6520,4 +6520,67 @@ theorem LevelExpr.MaxPlusForm.sortByVariableSteps_le :
           (LevelExpr.MaxPlusForm.sortByVariableSteps_le rest) hInsertIntoSortedTail)
         (LevelExpr.MaxPlusForm.mulSelf_add_self_le_succ_mul_succ rest.length)
 
+/-! ### Step 10 (cont.) — total offset-canonicalizer cost (complexity witness, part 3)
+
+`canonicalizeVarOffsets = absorbAdjacent ∘ sortByVariable`, so its total
+comparison count is the sort cost plus the absorb cost over the sorted
+list.  The absorb runs over `sortByVariable entries` (length
+`entries.length` by `sortByVariable_length`), so it costs ≤
+`entries.length`; with the sort's `≤ length²` this gives the total
+`≤ length² + length`.  Composed with the working-set bound
+(`toMaxPlusForm_varOffsets_length_le_size`) and `Nat.mul_le_mul`
+monotonicity, the cost of canonicalizing a normalized expression's
+offsets is `≤ size² + size` — the headline comparison-cost-in-input-size
+statement for the predicative decision procedure's quadratic engine. -/
+
+/-- Total comparison count of the offset canonicalizer: sort the list,
+then absorb adjacent equal-variable runs in the sorted result.  Mirrors
+`canonicalizeVarOffsets`'s composition exactly. -/
+def LevelExpr.MaxPlusForm.canonicalizeVarOffsetsSteps
+    (entries : List (Nat × Nat)) : Nat :=
+  LevelExpr.MaxPlusForm.sortByVariableSteps entries +
+    LevelExpr.MaxPlusForm.absorbAdjacentSteps
+      (LevelExpr.MaxPlusForm.sortByVariable entries)
+
+/-- The offset canonicalizer performs at most `length² + length`
+comparisons: the sort's `length²` (insertion sort) plus the absorb pass's
+`length` (the absorb runs over the length-preserving sorted list). -/
+theorem LevelExpr.MaxPlusForm.canonicalizeVarOffsetsSteps_le
+    (entries : List (Nat × Nat)) :
+    LevelExpr.MaxPlusForm.canonicalizeVarOffsetsSteps entries ≤
+      entries.length * entries.length + entries.length := by
+  show LevelExpr.MaxPlusForm.sortByVariableSteps entries +
+      LevelExpr.MaxPlusForm.absorbAdjacentSteps
+        (LevelExpr.MaxPlusForm.sortByVariable entries) ≤
+    entries.length * entries.length + entries.length
+  have hAbsorbOverSorted :
+      LevelExpr.MaxPlusForm.absorbAdjacentSteps
+        (LevelExpr.MaxPlusForm.sortByVariable entries) ≤ entries.length := by
+    have hLeSortedLength :=
+      LevelExpr.MaxPlusForm.absorbAdjacentSteps_le_length
+        (LevelExpr.MaxPlusForm.sortByVariable entries)
+    rw [LevelExpr.MaxPlusForm.sortByVariable_length entries] at hLeSortedLength
+    exact hLeSortedLength
+  exact Nat.add_le_add
+    (LevelExpr.MaxPlusForm.sortByVariableSteps_le entries) hAbsorbOverSorted
+
+/-- END-TO-END comparison cost in INPUT SIZE: canonicalizing the offsets
+of a normalized expression performs at most `size² + size` comparisons.
+Composes the total offset-canonicalizer bound with the working-set bound
+`toMaxPlusForm_varOffsets_length_le_size` (the offset list has length ≤
+`size`) via `Nat.mul_le_mul` monotonicity.  This is the quadratic
+engine's contribution to the decision procedure's sort-dominated O(size²)
+cost. -/
+theorem LevelExpr.MaxPlusForm.canonicalizeVarOffsetsSteps_toMaxPlusForm_le_size
+    (level : LevelExpr) :
+    LevelExpr.MaxPlusForm.canonicalizeVarOffsetsSteps
+        (LevelExpr.toMaxPlusForm level).varOffsets ≤
+      level.size * level.size + level.size := by
+  have hWorkingSet : (LevelExpr.toMaxPlusForm level).varOffsets.length ≤ level.size :=
+    LevelExpr.toMaxPlusForm_varOffsets_length_le_size level
+  exact Nat.le_trans
+    (LevelExpr.MaxPlusForm.canonicalizeVarOffsetsSteps_le
+      (LevelExpr.toMaxPlusForm level).varOffsets)
+    (Nat.add_le_add (Nat.mul_le_mul hWorkingSet hWorkingSet) hWorkingSet)
+
 end LeanFX2.Foundation.PolyCell.Universe

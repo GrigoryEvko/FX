@@ -415,3 +415,9 @@ strict-zero-axiom sweep.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.MaxPlusForm.sortByVariableSteps
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.MaxPlusForm.mulSelf_add_self_le_succ_mul_succ
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.MaxPlusForm.sortByVariableSteps_le
+
+/-! ### M22 #271 complexity witness — total offset-canonicalizer cost (Step 10 cont., A10) -/
+
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.MaxPlusForm.canonicalizeVarOffsetsSteps
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.MaxPlusForm.canonicalizeVarOffsetsSteps_le
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.MaxPlusForm.canonicalizeVarOffsetsSteps_toMaxPlusForm_le_size
