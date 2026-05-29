@@ -4928,4 +4928,74 @@ theorem LevelExpr.MaxPlusForm.sortByVariable_produces_sorted :
         entryVariable entryOffset (LevelExpr.MaxPlusForm.sortByVariable rest)
         (LevelExpr.MaxPlusForm.sortByVariable_produces_sorted rest)
 
+/-! ## Canonical-form structural invariant — strict sortedness
+
+`absorbAdjacent` fuses adjacent equal-variable entries, so on a sorted
+list it yields STRICTLY ascending variables (distinct).  Strict
+sortedness reuses `allVariablesAtLeast`: each head's variable `+1`
+lower-bounds its tail.  Toward the strict-sortedness theorem (next
+leaf), this block proves absorption preserves a lower bound — the
+result's variables are a subset of the input's, so any bound on the
+input bounds the output. -/
+
+/-- The entries are STRICTLY ascending by variable index: each head's
+variable `+1` lower-bounds its tail (so no variable repeats), and the
+tail is itself strictly sorted. -/
+def LevelExpr.MaxPlusForm.isStrictlySortedByVariable :
+    List (Nat × Nat) → Bool
+  | [] => true
+  | (variableHead, _) :: rest =>
+      LevelExpr.MaxPlusForm.allVariablesAtLeast (variableHead + 1) rest &&
+        LevelExpr.MaxPlusForm.isStrictlySortedByVariable rest
+
+/-- `absorbFrom` keeps every variable `≥ bound`: it only fuses entries
+(taking max offsets) and re-emits existing variables, never inventing
+new ones.  No `Nat.beq`-equality is used — the comparison is cased only
+to reduce the match. -/
+theorem LevelExpr.MaxPlusForm.absorbFrom_preserves_allVariablesAtLeast
+    (bound : Nat) :
+    ∀ (current : Nat × Nat) (rest : List (Nat × Nat)),
+      LevelExpr.MaxPlusForm.allVariablesAtLeast bound (current :: rest) = true →
+      LevelExpr.MaxPlusForm.allVariablesAtLeast bound
+        (LevelExpr.MaxPlusForm.absorbFrom current rest) = true
+  | _, [], hAll => hAll
+  | (variableCurrent, offsetCurrent), (variableNext, offsetNext) :: rest, hAll => by
+      show LevelExpr.MaxPlusForm.allVariablesAtLeast bound
+          (match Nat.beq variableCurrent variableNext with
+           | true => LevelExpr.MaxPlusForm.absorbFrom
+               (variableCurrent, LevelExpr.levelMax offsetCurrent offsetNext) rest
+           | false => (variableCurrent, offsetCurrent) ::
+               LevelExpr.MaxPlusForm.absorbFrom (variableNext, offsetNext) rest) = true
+      cases Nat.beq variableCurrent variableNext with
+      | true =>
+          exact LevelExpr.MaxPlusForm.absorbFrom_preserves_allVariablesAtLeast bound
+            (variableCurrent, LevelExpr.levelMax offsetCurrent offsetNext) rest
+            (LevelExpr.and_eq_true_of_both
+              (LevelExpr.and_eq_true_imp_left hAll)
+              (LevelExpr.and_eq_true_imp_right (LevelExpr.and_eq_true_imp_right hAll)))
+      | false =>
+          show (Nat.ble bound variableCurrent &&
+            LevelExpr.MaxPlusForm.allVariablesAtLeast bound
+              (LevelExpr.MaxPlusForm.absorbFrom (variableNext, offsetNext) rest)) = true
+          exact LevelExpr.and_eq_true_of_both
+            (LevelExpr.and_eq_true_imp_left hAll)
+            (LevelExpr.MaxPlusForm.absorbFrom_preserves_allVariablesAtLeast bound
+              (variableNext, offsetNext) rest
+              (LevelExpr.and_eq_true_imp_right hAll))
+
+/-- Absorption keeps every variable `≥ bound` (wrapper over
+`absorbFrom_preserves_allVariablesAtLeast`). -/
+theorem LevelExpr.MaxPlusForm.absorbAdjacent_preserves_allVariablesAtLeast
+    (bound : Nat) :
+    ∀ (entries : List (Nat × Nat)),
+      LevelExpr.MaxPlusForm.allVariablesAtLeast bound entries = true →
+      LevelExpr.MaxPlusForm.allVariablesAtLeast bound
+        (LevelExpr.MaxPlusForm.absorbAdjacent entries) = true
+  | [], hAll => hAll
+  | entry :: rest, hAll => by
+      show LevelExpr.MaxPlusForm.allVariablesAtLeast bound
+          (LevelExpr.MaxPlusForm.absorbFrom entry rest) = true
+      exact LevelExpr.MaxPlusForm.absorbFrom_preserves_allVariablesAtLeast
+        bound entry rest hAll
+
 end LeanFX2.Foundation.PolyCell.Universe
