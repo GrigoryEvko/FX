@@ -3931,4 +3931,23 @@ theorem LevelExpr.denoteEquiv_of_canonicalize_eq (e1 e2 : LevelExpr)
   rw [hCanonEq] at hLeft
   exact LevelExpr.denoteEquiv.trans hLeft hRight
 
+/-- Decision procedure for `denoteEquiv` on the variable-join
+fragment: compute both canonical forms and compare with the derived
+`DecidableEq LevelExpr`.  Equal forms give `isTrue` via soundness;
+unequal forms give `isFalse`, since fragment completeness says
+denotational equality would force equal canonical forms.  This
+realizes `#419`'s "Decidable denoteEquiv" goal on the fragment.  A
+`def` (not `instance`) because it carries the `IsVariableJoin`
+evidence explicitly. -/
+def LevelExpr.decidableDenoteEquivOfVariableJoin (e1 e2 : LevelExpr)
+    (hVarJoin1 : LevelExpr.IsVariableJoin e1)
+    (hVarJoin2 : LevelExpr.IsVariableJoin e2) :
+    Decidable (LevelExpr.denoteEquiv e1 e2) :=
+  if hCanonEq : LevelExpr.canonicalize e1 = LevelExpr.canonicalize e2 then
+    isTrue (LevelExpr.denoteEquiv_of_canonicalize_eq e1 e2 hCanonEq)
+  else
+    isFalse (fun hDenoteEquiv =>
+      hCanonEq (LevelExpr.canonicalize_eq_of_denoteEquiv_of_isVariableJoin
+        e1 e2 hVarJoin1 hVarJoin2 hDenoteEquiv))
+
 end LeanFX2.Foundation.PolyCell.Universe
