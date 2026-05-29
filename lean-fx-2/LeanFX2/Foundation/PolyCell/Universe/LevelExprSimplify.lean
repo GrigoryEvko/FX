@@ -3426,4 +3426,66 @@ theorem LevelExpr.denoteAtomList_pointEnvironment_ne_zero_of_occursLvar
   rw [hFoldZero] at hMemberLe
   exact Nat.not_succ_le_zero 0 hMemberLe
 
+/-! ### The variable-only fragment and the converse oracle direction
+
+On the fragment where every atom is a universe variable, the point
+environment becomes an exact membership oracle: a list NOT containing
+`lvar k` folds to `0` under `pointEnvironment k`, because every member
+is some `lvar j` with `j ≠ k` (else `lvar k` would occur), and such a
+member denotes `0`.  This is the "not-occurs ⟹ not-detected" converse
+of `denoteAtomList_pointEnvironment_ne_zero_of_occursLvar`; together
+they make membership decidable on the variable fragment.
+
+NOTE (honest scope): this oracle covers only the distinct-variable
+fragment.  A `lsucc`/`limax` atom can be nonzero under `pointEnvironment k`
+without `lvar k` occurring (absorption boundary), so the converse genuinely
+requires `AllAtomsAreVariables`. -/
+
+/-- Every atom in the list is a universe variable (`lvar _`). -/
+def LevelExpr.AllAtomsAreVariables : List LevelExpr → Prop
+  | [] => True
+  | head :: rest =>
+      (∃ variableIndex, head = .lvar variableIndex) ∧
+        LevelExpr.AllAtomsAreVariables rest
+
+/-- In an all-variables list, anything occurring is a variable.
+List recursion: a head occurrence inherits the head's variable
+witness; a deeper occurrence recurses into the (also all-variables)
+tail. -/
+theorem LevelExpr.isLvar_of_occursIn_allVariables :
+    ∀ (xs : List LevelExpr) (atom : LevelExpr),
+      LevelExpr.AllAtomsAreVariables xs → LevelExpr.OccursIn atom xs →
+        ∃ variableIndex, atom = .lvar variableIndex
+  | [], _atom, _hAllVars, hOccurs => nomatch hOccurs
+  | head :: rest, atom, hAllVars, hOccurs => by
+      obtain ⟨hHeadIsVar, hRestVars⟩ := hAllVars
+      cases hOccurs with
+      | inl hHeadEq =>
+          obtain ⟨variableIndex, hHeadLvar⟩ := hHeadIsVar
+          exact ⟨variableIndex, by rw [← hHeadEq]; exact hHeadLvar⟩
+      | inr hOccursRest =>
+          exact LevelExpr.isLvar_of_occursIn_allVariables rest atom
+            hRestVars hOccursRest
+
+/-- On the variable-only fragment, a list missing `lvar k` folds to
+`0` under `pointEnvironment k`: each member is `lvar j` with `j ≠ k`,
+which denotes `0`.  Built atop `denoteAtomList_eq_zero_of_all_zero`
+(no `Iff`-rewrite, to stay propext-free). -/
+theorem LevelExpr.denoteAtomList_pointEnvironment_eq_zero_of_not_occursLvar
+    (variableIndex : Nat) (xs : List LevelExpr)
+    (hAllVars : LevelExpr.AllAtomsAreVariables xs)
+    (hNotOccurs : ¬ LevelExpr.OccursIn (.lvar variableIndex) xs) :
+    LevelExpr.denoteAtomList xs
+      (LevelExpr.pointEnvironment variableIndex) = 0 := by
+  apply LevelExpr.denoteAtomList_eq_zero_of_all_zero
+  intro atom hOccurs
+  obtain ⟨memberIndex, hAtomLvar⟩ :=
+    LevelExpr.isLvar_of_occursIn_allVariables xs atom hAllVars hOccurs
+  rw [hAtomLvar, LevelExpr.denote_lvar_pointEnvironment]
+  apply if_neg
+  intro hIndexEq
+  apply hNotOccurs
+  rw [hAtomLvar, hIndexEq] at hOccurs
+  exact hOccurs
+
 end LeanFX2.Foundation.PolyCell.Universe
