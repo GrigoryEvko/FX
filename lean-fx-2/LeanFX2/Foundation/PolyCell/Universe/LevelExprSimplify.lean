@@ -3707,4 +3707,46 @@ theorem LevelExpr.sameMembership_of_sameLvarMembership
     rw [hzLvar] at hOccursY ⊢
     exact (hLvarSame variableIndex).mpr hOccursY
 
+/-! ### The variable-fragment completeness bridge
+
+On the fragment where both canonical atom lists are variable-only,
+denotational equality forces equal canonical forms.  This is a real,
+bounded completeness result — `canonicalize` is a *decision oracle*
+for `denoteEquiv` on distinct-variable joins.  Assembles, in order:
+membership transfer (`denoteEquiv` ⟹ same `lvar`-membership), the
+var-only membership upgrade (⟹ full membership), `strictlySorted_unique`
+(⟹ equal atom lists), and `congrArg foldLmax` via
+`canonicalize_eq_foldLmax_canonicalAtoms`.
+
+SCOPE (honest): this does NOT close #419 in general — the canonical
+pipeline lacks max-plus absorption, so `lmax (lsucc x) x` and
+`lsucc x` (denotationally equal) have different canonical forms.  The
+var-only hypotheses confine the claim to the absorption-free fragment.
+Full #419 needs the genuine max-plus normal form (the transfer lemma,
+denotation bridge, and oracle here are reusable for it). -/
+theorem LevelExpr.canonicalize_eq_of_denoteEquiv_onVariableFragment
+    (e1 e2 : LevelExpr)
+    (hVars1 : LevelExpr.AllAtomsAreVariables (LevelExpr.canonicalAtoms e1))
+    (hVars2 : LevelExpr.AllAtomsAreVariables (LevelExpr.canonicalAtoms e2))
+    (hEquiv : LevelExpr.denoteEquiv e1 e2) :
+    LevelExpr.canonicalize e1 = LevelExpr.canonicalize e2 := by
+  have hMemberSame :
+      ∀ (z : LevelExpr),
+        LevelExpr.OccursIn z (LevelExpr.canonicalAtoms e1) ↔
+          LevelExpr.OccursIn z (LevelExpr.canonicalAtoms e2) :=
+    LevelExpr.sameMembership_of_sameLvarMembership
+      (LevelExpr.canonicalAtoms e1) (LevelExpr.canonicalAtoms e2) hVars1 hVars2
+      (fun variableIndex =>
+        LevelExpr.canonicalAtoms_sameLvarMembership_of_denoteEquiv
+          e1 e2 hVars1 hVars2 hEquiv variableIndex)
+  have hAtomsEq :
+      LevelExpr.canonicalAtoms e1 = LevelExpr.canonicalAtoms e2 :=
+    LevelExpr.strictlySorted_unique
+      (LevelExpr.canonicalAtoms e1) (LevelExpr.canonicalAtoms e2)
+      (LevelExpr.canonicalAtoms_strictlySorted e1)
+      (LevelExpr.canonicalAtoms_strictlySorted e2)
+      hMemberSame
+  rw [LevelExpr.canonicalize_eq_foldLmax_canonicalAtoms e1,
+      LevelExpr.canonicalize_eq_foldLmax_canonicalAtoms e2, hAtomsEq]
+
 end LeanFX2.Foundation.PolyCell.Universe
