@@ -6583,4 +6583,46 @@ theorem LevelExpr.MaxPlusForm.canonicalizeVarOffsetsSteps_toMaxPlusForm_le_size
       (LevelExpr.toMaxPlusForm level).varOffsets)
     (Nat.add_le_add (Nat.mul_le_mul hWorkingSet hWorkingSet) hWorkingSet)
 
+/-! ### Step 10 (cont.) — non-vacuity corpus for the cost counters
+
+The `*Steps` bounds prove "≤ polynomial"; these smokes prove the counters
+are NOT the vacuous `fun _ => 0` — they compute concrete, correct,
+non-zero comparison counts on fixtures, closing by `rfl` (full closed
+evaluation).  A fully-reversed input forces the insertion sort into its
+worst case (every insert walks to the end), so the counts realize the
+triangular/quadratic growth the bounds cap: the reversed pair costs 1,
+the reversed triple costs 1+2 = 3. -/
+
+/-- Inserting into the empty list costs zero comparisons. -/
+theorem LevelExpr.MaxPlusForm.insertByVariableSteps_smoke_empty :
+    LevelExpr.MaxPlusForm.insertByVariableSteps (0, 0) [] = 0 := rfl
+
+/-- Inserting before a larger head stops after one comparison. -/
+theorem LevelExpr.MaxPlusForm.insertByVariableSteps_smoke_stopAtHead :
+    LevelExpr.MaxPlusForm.insertByVariableSteps (0, 0) [(1, 0)] = 1 := rfl
+
+/-- Inserting a maximal key walks to the end: one comparison per element. -/
+theorem LevelExpr.MaxPlusForm.insertByVariableSteps_smoke_walkToEnd :
+    LevelExpr.MaxPlusForm.insertByVariableSteps (2, 0) [(0, 0), (1, 0)] = 2 := rfl
+
+/-- Sorting a reversed pair costs one comparison (one insertion into a
+singleton). -/
+theorem LevelExpr.MaxPlusForm.sortByVariableSteps_smoke_reversedPair :
+    LevelExpr.MaxPlusForm.sortByVariableSteps [(1, 0), (0, 0)] = 1 := rfl
+
+/-- Sorting a fully-reversed triple costs `1 + 2 = 3` comparisons — the
+worst-case triangular growth the `≤ length²` bound caps (3 ≤ 9). -/
+theorem LevelExpr.MaxPlusForm.sortByVariableSteps_smoke_reversedTriple :
+    LevelExpr.MaxPlusForm.sortByVariableSteps [(2, 0), (1, 0), (0, 0)] = 3 := rfl
+
+/-- The absorb walk counts one comparison per tail element whether it
+fuses (equal head, first step) or skips (distinct head, second step). -/
+theorem LevelExpr.MaxPlusForm.absorbFromSteps_smoke_fuseThenSkip :
+    LevelExpr.MaxPlusForm.absorbFromSteps (0, 0) [(0, 1), (1, 0)] = 2 := rfl
+
+/-- The total offset-canonicalizer on a reversed pair costs `1 + 1 = 2`
+(one sort comparison + one absorb comparison over the sorted result). -/
+theorem LevelExpr.MaxPlusForm.canonicalizeVarOffsetsSteps_smoke_reversedPair :
+    LevelExpr.MaxPlusForm.canonicalizeVarOffsetsSteps [(1, 0), (0, 0)] = 2 := rfl
+
 end LeanFX2.Foundation.PolyCell.Universe

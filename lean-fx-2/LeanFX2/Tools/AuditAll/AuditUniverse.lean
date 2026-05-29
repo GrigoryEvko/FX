@@ -421,3 +421,13 @@ strict-zero-axiom sweep.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.MaxPlusForm.canonicalizeVarOffsetsSteps
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.MaxPlusForm.canonicalizeVarOffsetsSteps_le
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.MaxPlusForm.canonicalizeVarOffsetsSteps_toMaxPlusForm_le_size
+
+/-! ### M22 #271 complexity witness — cost-counter non-vacuity corpus (Step 10 cont., A10) -/
+
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.MaxPlusForm.insertByVariableSteps_smoke_empty
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.MaxPlusForm.insertByVariableSteps_smoke_stopAtHead
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.MaxPlusForm.insertByVariableSteps_smoke_walkToEnd
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.MaxPlusForm.sortByVariableSteps_smoke_reversedPair
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.MaxPlusForm.sortByVariableSteps_smoke_reversedTriple
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.MaxPlusForm.absorbFromSteps_smoke_fuseThenSkip
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.MaxPlusForm.canonicalizeVarOffsetsSteps_smoke_reversedPair
