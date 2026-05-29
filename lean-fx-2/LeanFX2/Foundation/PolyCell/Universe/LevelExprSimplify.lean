@@ -3881,4 +3881,38 @@ theorem LevelExpr.AllAtomsAreVariables_dropLzeroAtoms :
       · rw [hHeadLvar]
         exact ⟨⟨variableIndex, rfl⟩, hTail⟩
 
+/-- The canonical atom list of an `IsVariableJoin` expression is
+variable-only.  Composes the four shape-preservation steps:
+`lmaxAtoms` yields `lvar`/`lzero`, sort and dedup preserve that, and
+`dropLzeroAtoms` narrows to pure `lvar`.  Shape analog of
+`canonicalAtoms_strictlySorted`. -/
+theorem LevelExpr.canonicalAtoms_allVariables_of_isVariableJoin (expr : LevelExpr)
+    (hVarJoin : LevelExpr.IsVariableJoin expr) :
+    LevelExpr.AllAtomsAreVariables (LevelExpr.canonicalAtoms expr) := by
+  show LevelExpr.AllAtomsAreVariables
+    (LevelExpr.dropLzeroAtoms
+      (LevelExpr.dedupAdjacent
+        (LevelExpr.insertionSortByCompare (LevelExpr.lmaxAtoms expr))))
+  exact LevelExpr.AllAtomsAreVariables_dropLzeroAtoms _
+    (LevelExpr.AllAtomsAreVarsOrLzero_dedupAdjacent _
+      (LevelExpr.AllAtomsAreVarsOrLzero_insertionSortByCompare _
+        (LevelExpr.lmaxAtoms_allVarsOrLzero_of_isVariableJoin expr hVarJoin)))
+
+/-- Variable-join completeness, hypothesis-free on the source side:
+denotationally-equal `IsVariableJoin` expressions have equal canonical
+forms.  Discharges the fragment bridge's `AllAtomsAreVariables`
+hypotheses from the structural source predicate `IsVariableJoin`
+(which a caller can check by inspection).  This is the usable form of
+the variable-fragment completeness result. -/
+theorem LevelExpr.canonicalize_eq_of_denoteEquiv_of_isVariableJoin
+    (e1 e2 : LevelExpr)
+    (hVarJoin1 : LevelExpr.IsVariableJoin e1)
+    (hVarJoin2 : LevelExpr.IsVariableJoin e2)
+    (hEquiv : LevelExpr.denoteEquiv e1 e2) :
+    LevelExpr.canonicalize e1 = LevelExpr.canonicalize e2 :=
+  LevelExpr.canonicalize_eq_of_denoteEquiv_onVariableFragment e1 e2
+    (LevelExpr.canonicalAtoms_allVariables_of_isVariableJoin e1 hVarJoin1)
+    (LevelExpr.canonicalAtoms_allVariables_of_isVariableJoin e2 hVarJoin2)
+    hEquiv
+
 end LeanFX2.Foundation.PolyCell.Universe
