@@ -79,6 +79,12 @@ import FX1Poly.Core.StepIotaEtaInsideBinder
 import FX1Poly.Core.StepBetaEtaPreservesShape
 import FX1Poly.Core.SubjectReductionEtaBinder
 import FX1Poly.Core.IdEliminatorLayer
+-- Strong normalization (leaves/neutral/constructors/redexes/eta) + beta-eta
+-- confluence + iota-eta double strips.
+import FX1Poly.Core.StrongNormalizationRedexes
+import FX1Poly.Core.StrongNormalizationEta
+import FX1Poly.Core.StepBetaEtaConfluence
+import FX1Poly.Core.StepIotaEtaDoubleStrips
 
 /-! # FX1PolyAudit/AuditCoreSubstrate — namespace zero-axiom sweep
 
