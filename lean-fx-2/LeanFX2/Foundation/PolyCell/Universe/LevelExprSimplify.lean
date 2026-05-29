@@ -5377,4 +5377,80 @@ theorem LevelExpr.MaxPlusForm.denoteVarOffsets_scaledPointEnvironment_of_occurs
           exact LevelExpr.levelMax_eq_right_of_left_le offsetHead
             (scale + LevelExpr.MaxPlusForm.offsetOf probe rest) hHeadLe
 
+/-! ### Step 7(c) substrate — the `lookupOffset` assoc-list map
+
+Uniqueness of canonical forms is proved through a lookup-function
+extensionality, not by cancelling shared heads (`levelMax` is not
+cancellative).  `lookupOffset probe entries : Option Nat` is the
+variable↦offset partial map; the denotation determines it (next ticks,
+via the two extraction oracles), and a strictly-sorted list is in turn
+determined by it.  This tick ships the map and its three computational
+laws (head-match, head-miss, below-all-keys ⟹ none). -/
+
+/-- Reflexivity of `Nat.beq` (Boolean), self-contained: `Nat.beq value
+value = true`.  Direct structural recursion. -/
+theorem LevelExpr.beq_self : ∀ (value : Nat), Nat.beq value value = true
+  | 0 => rfl
+  | predValue + 1 => LevelExpr.beq_self predValue
+
+/-- The variable↦offset partial map: the offset paired with the first
+entry whose variable is `probe`, or `none` if `probe` is absent.  On a
+strictly-sorted list the probe occurs at most once, so this is the full
+membership-and-offset information. -/
+def LevelExpr.MaxPlusForm.lookupOffset (probe : Nat) :
+    List (Nat × Nat) → Option Nat
+  | [] => none
+  | (variableHead, offsetHead) :: rest =>
+      match Nat.beq variableHead probe with
+      | true => some offsetHead
+      | false => LevelExpr.MaxPlusForm.lookupOffset probe rest
+
+/-- Head-match law: looking up a head's own variable returns its
+offset. -/
+theorem LevelExpr.MaxPlusForm.lookupOffset_cons_self
+    (variableHead offsetHead : Nat) (rest : List (Nat × Nat)) :
+    LevelExpr.MaxPlusForm.lookupOffset variableHead
+        ((variableHead, offsetHead) :: rest) = some offsetHead := by
+  show (match Nat.beq variableHead variableHead with
+    | true => some offsetHead
+    | false => LevelExpr.MaxPlusForm.lookupOffset variableHead rest) = some offsetHead
+  rw [LevelExpr.beq_self variableHead]
+
+/-- Head-miss law: when the head's variable differs from `probe`, the
+lookup skips the head. -/
+theorem LevelExpr.MaxPlusForm.lookupOffset_cons_of_beq_false
+    (probe variableHead offsetHead : Nat) (rest : List (Nat × Nat))
+    (hBeq : Nat.beq variableHead probe = false) :
+    LevelExpr.MaxPlusForm.lookupOffset probe ((variableHead, offsetHead) :: rest) =
+      LevelExpr.MaxPlusForm.lookupOffset probe rest := by
+  show (match Nat.beq variableHead probe with
+    | true => some offsetHead
+    | false => LevelExpr.MaxPlusForm.lookupOffset probe rest) =
+    LevelExpr.MaxPlusForm.lookupOffset probe rest
+  rw [hBeq]
+
+/-- A probe strictly below every key looks up to `none`.  Mirror of
+`allVariablesAtLeast_imp_not_occurs` for the `Option`-valued map: each
+head key is `≥ probe + 1 > probe`, so the head is skipped (via
+`beq_false_of_ble_succ`), reducing to the tail handled by the IH. -/
+theorem LevelExpr.MaxPlusForm.lookupOffset_eq_none_of_allVariablesAtLeast (probe : Nat) :
+    ∀ (entries : List (Nat × Nat)),
+      LevelExpr.MaxPlusForm.allVariablesAtLeast (probe + 1) entries = true →
+      LevelExpr.MaxPlusForm.lookupOffset probe entries = none
+  | [], _ => rfl
+  | (variableHead, offsetHead) :: rest, hAll => by
+      have hConj : (Nat.ble (probe + 1) variableHead &&
+          LevelExpr.MaxPlusForm.allVariablesAtLeast (probe + 1) rest) = true := hAll
+      have hBleHead : Nat.ble (probe + 1) variableHead = true :=
+        LevelExpr.and_eq_true_imp_left hConj
+      have hAllRest :
+          LevelExpr.MaxPlusForm.allVariablesAtLeast (probe + 1) rest = true :=
+        LevelExpr.and_eq_true_imp_right hConj
+      have hBeqHead : Nat.beq variableHead probe = false :=
+        LevelExpr.beq_false_of_ble_succ probe variableHead hBleHead
+      rw [LevelExpr.MaxPlusForm.lookupOffset_cons_of_beq_false probe variableHead
+        offsetHead rest hBeqHead]
+      exact LevelExpr.MaxPlusForm.lookupOffset_eq_none_of_allVariablesAtLeast
+        probe rest hAllRest
+
 end LeanFX2.Foundation.PolyCell.Universe
