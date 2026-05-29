@@ -5094,4 +5094,103 @@ theorem LevelExpr.MaxPlusForm.canonicalizeVarOffsets_produces_strictlySorted
     (LevelExpr.MaxPlusForm.sortByVariable entries)
     (LevelExpr.MaxPlusForm.sortByVariable_produces_sorted entries)
 
+/-! ### Step 7(b) — offset extraction via scaled point environments
+
+The completeness half of `Decidable denoteEquiv` (step 7) needs to
+recover the structure of a canonical max-plus form from its
+denotation alone.  The probe is a *scaled point environment*
+`scaledPointEnvironment probe scale` that assigns `scale` to the
+single coordinate `probe` and `0` everywhere else.  Two facts
+together pin every entry:
+
+* **(this tick — absent half)** if `probe` does NOT occur as a
+  variable in the offset list, the fold is `scale`-independent: every
+  entry's coordinate stays `0`, so the denotation collapses to
+  `maxOffset`.  Equivalently: the denotation grows with `scale` ONLY
+  when `probe` is present, so unbounded growth detects membership.
+* **(next tick — present half)** if `probe` occurs with offset `o`,
+  then for `scale` larger than all other contributions the fold is
+  exactly `scale + o`, revealing `o`.
+
+The base constant is already recoverable at the zero environment via
+`normalizeBase_baseConstant_eq_denote_zeroEnvironment`. -/
+
+/-- Propext-free left projection of a Boolean disjunction:
+`(flagLeft || flagRight) = false` forces `flagLeft = false`.  Mirrors
+`and_eq_true_imp_left`; the `true` branch discharges via
+`Bool.noConfusion` on `true = false`. -/
+theorem LevelExpr.or_eq_false_imp_left {flagLeft flagRight : Bool}
+    (hDisj : (flagLeft || flagRight) = false) : flagLeft = false := by
+  cases flagLeft with
+  | false => rfl
+  | true => exact Bool.noConfusion hDisj
+
+/-- Propext-free right projection of a Boolean disjunction:
+`(flagLeft || flagRight) = false` forces `flagRight = false`.  The
+`false` branch reduces `false || flagRight` to `flagRight`; the `true`
+branch discharges via `Bool.noConfusion`. -/
+theorem LevelExpr.or_eq_false_imp_right {flagLeft flagRight : Bool}
+    (hDisj : (flagLeft || flagRight) = false) : flagRight = false := by
+  cases flagLeft with
+  | false => exact hDisj
+  | true => exact Bool.noConfusion hDisj
+
+/-- A scaled point environment: assigns `scale` to the single
+universe variable `variableProbe` and `0` to every other position.
+Built with `cond (Nat.beq …)` (Bool-driven) so it reduces
+definitionally and avoids the propext-leaking `Decidable`-`ite`
+path. -/
+def LevelExpr.MaxPlusForm.scaledPointEnvironment
+    (variableProbe scale : Nat) : Nat → Nat :=
+  fun position => cond (Nat.beq position variableProbe) scale 0
+
+/-- Membership test: does `variableProbe` appear as the variable
+component of some entry?  Boolean-valued (full nil/cons enumeration,
+propext-clean) so it is decidable for free. -/
+def LevelExpr.MaxPlusForm.occursAsVariable (variableProbe : Nat) :
+    List (Nat × Nat) → Bool
+  | [] => false
+  | (variableHead, _) :: rest =>
+      Nat.beq variableHead variableProbe ||
+        LevelExpr.MaxPlusForm.occursAsVariable variableProbe rest
+
+/-- Absent-variable extraction: if `variableProbe` does not occur in
+`entries`, the fold under `scaledPointEnvironment variableProbe scale`
+equals `maxOffset entries` — independent of `scale`.  Each entry's
+variable differs from `variableProbe`, so its coordinate is `0` and
+its contribution is just the bare offset; the max of the bare offsets
+is `maxOffset`.  This is the criterion the uniqueness argument uses to
+detect that a variable is absent (the denotation does not grow with
+`scale`). -/
+theorem LevelExpr.MaxPlusForm.denoteVarOffsets_scaledPointEnvironment_of_not_occurs
+    (variableProbe scale : Nat) :
+    ∀ (entries : List (Nat × Nat)),
+      LevelExpr.MaxPlusForm.occursAsVariable variableProbe entries = false →
+      LevelExpr.MaxPlusForm.denoteVarOffsets entries
+          (LevelExpr.MaxPlusForm.scaledPointEnvironment variableProbe scale) =
+        LevelExpr.MaxPlusForm.maxOffset entries
+  | [], _ => rfl
+  | (variableHead, offsetHead) :: rest, hNotOccurs => by
+      have hOrFalse : (Nat.beq variableHead variableProbe ||
+          LevelExpr.MaxPlusForm.occursAsVariable variableProbe rest) = false :=
+        hNotOccurs
+      have hBeqFalse : Nat.beq variableHead variableProbe = false :=
+        LevelExpr.or_eq_false_imp_left hOrFalse
+      have hRestNotOccurs :
+          LevelExpr.MaxPlusForm.occursAsVariable variableProbe rest = false :=
+        LevelExpr.or_eq_false_imp_right hOrFalse
+      show LevelExpr.levelMax
+            (cond (Nat.beq variableHead variableProbe) scale 0 + offsetHead)
+            (LevelExpr.MaxPlusForm.denoteVarOffsets rest
+              (LevelExpr.MaxPlusForm.scaledPointEnvironment variableProbe scale)) =
+          LevelExpr.levelMax offsetHead (LevelExpr.MaxPlusForm.maxOffset rest)
+      rw [hBeqFalse]
+      show LevelExpr.levelMax (0 + offsetHead)
+            (LevelExpr.MaxPlusForm.denoteVarOffsets rest
+              (LevelExpr.MaxPlusForm.scaledPointEnvironment variableProbe scale)) =
+          LevelExpr.levelMax offsetHead (LevelExpr.MaxPlusForm.maxOffset rest)
+      rw [Nat.zero_add,
+        LevelExpr.MaxPlusForm.denoteVarOffsets_scaledPointEnvironment_of_not_occurs
+          variableProbe scale rest hRestNotOccurs]
+
 end LeanFX2.Foundation.PolyCell.Universe
