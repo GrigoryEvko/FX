@@ -5453,4 +5453,84 @@ theorem LevelExpr.MaxPlusForm.lookupOffset_eq_none_of_allVariablesAtLeast (probe
       exact LevelExpr.MaxPlusForm.lookupOffset_eq_none_of_allVariablesAtLeast
         probe rest hAllRest
 
+/-! ### Step 7(c) extensionality prerequisites
+
+The lookup-extensionality induction (next tick) has a head-key
+trichotomy at the cons-cons case.  Three self-contained facts make it
+a short composition: `Nat.ble` antisymmetry (equal-head branch),
+strict-`<`-from-`ble`-false (the two contradiction branches need
+`valueA + 1 ≤ valueB`), and tail-pointwise extraction (transport the
+pointwise lookup equality from the conses to their tails, for the
+recursive call). -/
+
+/-- `Nat.ble` antisymmetry: mutually-`≤` naturals are equal.  Direct
+structural recursion; the off-diagonal `(0, succ)` / `(succ, 0)` cases
+are impossible under one of the hypotheses. -/
+theorem LevelExpr.ble_antisymm :
+    ∀ (valueA valueB : Nat),
+      Nat.ble valueA valueB = true → Nat.ble valueB valueA = true → valueA = valueB
+  | 0, 0, _, _ => rfl
+  | 0, _predB + 1, _, hba => Bool.noConfusion hba
+  | _predA + 1, 0, hab, _ => Bool.noConfusion hab
+  | predA + 1, predB + 1, hab, hba =>
+      congrArg Nat.succ (LevelExpr.ble_antisymm predA predB hab hba)
+
+/-- Strict order from a failed comparison: `Nat.ble valueB valueA =
+false` (i.e. `valueA < valueB`) gives `Nat.ble (valueA + 1) valueB =
+true`.  Structural recursion; `valueB = 0` is impossible (`ble 0 _` is
+always `true`). -/
+theorem LevelExpr.ble_succ_le_of_ble_false :
+    ∀ (valueA valueB : Nat),
+      Nat.ble valueB valueA = false → Nat.ble (valueA + 1) valueB = true
+  | _valueA, 0, hble => Bool.noConfusion hble
+  | 0, _predB + 1, _ => rfl
+  | predA + 1, predB + 1, hble =>
+      LevelExpr.ble_succ_le_of_ble_false predA predB hble
+
+/-- Tail-pointwise extraction: if two conses sharing a variable agree
+on `lookupOffset` at every key, and each tail's variables are strictly
+above the shared variable, then the tails agree on `lookupOffset` at
+every key.  At `probe = variableShared` both tails miss (strict
+sortedness ⟹ `none`); at `probe ≠ variableShared` both conses skip
+their head, so the shared cons-equation transports to the tails. -/
+theorem LevelExpr.MaxPlusForm.lookupOffset_pointwise_tail
+    (variableShared offsetLeft offsetRight : Nat)
+    (restLeft restRight : List (Nat × Nat))
+    (hAllLeft :
+      LevelExpr.MaxPlusForm.allVariablesAtLeast (variableShared + 1) restLeft = true)
+    (hAllRight :
+      LevelExpr.MaxPlusForm.allVariablesAtLeast (variableShared + 1) restRight = true)
+    (hPt : ∀ (probe : Nat),
+      LevelExpr.MaxPlusForm.lookupOffset probe
+          ((variableShared, offsetLeft) :: restLeft) =
+        LevelExpr.MaxPlusForm.lookupOffset probe
+          ((variableShared, offsetRight) :: restRight)) :
+    ∀ (probe : Nat),
+      LevelExpr.MaxPlusForm.lookupOffset probe restLeft =
+        LevelExpr.MaxPlusForm.lookupOffset probe restRight := by
+  intro probe
+  cases hBeq : Nat.beq variableShared probe with
+  | true =>
+      have hEqVar : variableShared = probe := Nat.eq_of_beq_eq_true hBeq
+      rw [hEqVar] at hAllLeft hAllRight
+      rw [LevelExpr.MaxPlusForm.lookupOffset_eq_none_of_allVariablesAtLeast
+            probe restLeft hAllLeft,
+          LevelExpr.MaxPlusForm.lookupOffset_eq_none_of_allVariablesAtLeast
+            probe restRight hAllRight]
+  | false =>
+      have hLeft :
+          LevelExpr.MaxPlusForm.lookupOffset probe
+              ((variableShared, offsetLeft) :: restLeft) =
+            LevelExpr.MaxPlusForm.lookupOffset probe restLeft :=
+        LevelExpr.MaxPlusForm.lookupOffset_cons_of_beq_false probe variableShared
+          offsetLeft restLeft hBeq
+      have hRight :
+          LevelExpr.MaxPlusForm.lookupOffset probe
+              ((variableShared, offsetRight) :: restRight) =
+            LevelExpr.MaxPlusForm.lookupOffset probe restRight :=
+        LevelExpr.MaxPlusForm.lookupOffset_cons_of_beq_false probe variableShared
+          offsetRight restRight hBeq
+      rw [← hLeft, ← hRight]
+      exact hPt probe
+
 end LeanFX2.Foundation.PolyCell.Universe
