@@ -1949,6 +1949,31 @@ theorem LevelExpr.compare_eq_iff_eq (exprA exprB : LevelExpr) :
   ⟨LevelExpr.compare_eq_imp_eq exprA exprB,
    fun hEq => by rw [hEq]; exact LevelExpr.compare_refl exprB⟩
 
+/-- On *distinct* constructors, `compare` ignores payloads and is
+exactly the `ctorIndex` priority comparison via `compareNat`.
+
+This is the bridge that lets cross-constructor `compare`
+transitivity inherit from `compareNat_lt_trans` / `compareNat_gt_trans`:
+when the two operands have different constructor priorities, their
+`compare` verdict is determined solely by `compareNat` on the
+indices.  The `ctorIndex` disequality hypothesis is essential — on
+equal constructors `compare` instead recurses into payloads (e.g.
+`lvar n` vs `lvar m` yields `compareNat n m`, not `compareNat 1 1`).
+
+Proof: case-split both operands.  The twenty cross-constructor
+combinations close by `rfl` (both sides reduce to the same explicit
+verdict); the five diagonal combinations contradict `hNeq`
+(`ctorIndex` is reflexively equal there). -/
+theorem LevelExpr.compare_cross_ctor (exprA exprB : LevelExpr)
+    (hNeq : LevelExpr.ctorIndex exprA ≠ LevelExpr.ctorIndex exprB) :
+    LevelExpr.compare exprA exprB =
+      LevelExpr.compareNat (LevelExpr.ctorIndex exprA)
+        (LevelExpr.ctorIndex exprB) := by
+  cases exprA <;> cases exprB <;>
+    first
+      | rfl
+      | exact absurd rfl hNeq
+
 /-! ## First Phase B canonicalization step — pairwise lmax sort
 
 `canonicalizeLmaxPair` swaps `lmax` operands when out of compare
