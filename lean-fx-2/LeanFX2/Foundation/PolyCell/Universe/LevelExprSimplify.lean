@@ -3680,4 +3680,31 @@ theorem LevelExpr.canonicalAtoms_strictlySorted (expr : LevelExpr) :
     (LevelExpr.dedupAdjacent_strictlySorted _
       (LevelExpr.insertionSortByCompare_sorted _))
 
+/-- On variable-only lists, agreeing on every `lvar k` membership
+forces agreeing on *all* membership.  Anything occurring is a
+variable (`isLvar_of_occursIn_allVariables`), so a general `z`
+reduces to its `lvar k` form and the per-variable hypothesis
+applies.  This is where the var-only restriction is load-bearing: a
+`succ`/`limax` atom could otherwise occur unconstrained. -/
+theorem LevelExpr.sameMembership_of_sameLvarMembership
+    (xs ys : List LevelExpr)
+    (hVarsX : LevelExpr.AllAtomsAreVariables xs)
+    (hVarsY : LevelExpr.AllAtomsAreVariables ys)
+    (hLvarSame : ∀ (variableIndex : Nat),
+      LevelExpr.OccursIn (.lvar variableIndex) xs ↔
+        LevelExpr.OccursIn (.lvar variableIndex) ys)
+    (z : LevelExpr) :
+    LevelExpr.OccursIn z xs ↔ LevelExpr.OccursIn z ys := by
+  constructor
+  · intro hOccursX
+    obtain ⟨variableIndex, hzLvar⟩ :=
+      LevelExpr.isLvar_of_occursIn_allVariables xs z hVarsX hOccursX
+    rw [hzLvar] at hOccursX ⊢
+    exact (hLvarSame variableIndex).mp hOccursX
+  · intro hOccursY
+    obtain ⟨variableIndex, hzLvar⟩ :=
+      LevelExpr.isLvar_of_occursIn_allVariables ys z hVarsY hOccursY
+    rw [hzLvar] at hOccursY ⊢
+    exact (hLvarSame variableIndex).mpr hOccursY
+
 end LeanFX2.Foundation.PolyCell.Universe
