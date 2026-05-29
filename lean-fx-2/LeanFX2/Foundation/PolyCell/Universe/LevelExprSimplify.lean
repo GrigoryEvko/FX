@@ -5777,4 +5777,150 @@ theorem LevelExpr.MaxPlusForm.denote_scaledPointEnvironment_of_not_occurs
   rw [LevelExpr.MaxPlusForm.denoteVarOffsets_scaledPointEnvironment_of_not_occurs
     probe scale form.varOffsets hNotOccurs]
 
+/-- Propext-free left cancellation for `Nat` addition: `amount + valueA
+= amount + valueB → valueA = valueB`.  The core `Nat.add_left_cancel`
+carries `propext`, so this self-contained version (induction on the
+cancelled amount via `Nat.succ_add` + `Nat.succ.inj`, base via
+`Nat.zero_add`) is used instead. -/
+theorem LevelExpr.add_left_cancel :
+    ∀ (amount valueA valueB : Nat),
+      amount + valueA = amount + valueB → valueA = valueB
+  | 0, _valueA, _valueB, hEq => by
+      rw [Nat.zero_add, Nat.zero_add] at hEq
+      exact hEq
+  | amount + 1, valueA, valueB, hEq => by
+      rw [Nat.succ_add, Nat.succ_add] at hEq
+      exact LevelExpr.add_left_cancel amount valueA valueB (Nat.succ.inj hEq)
+
+/-! ### Step 7(c-a) — the denotation→`lookupOffset` bridge
+
+Two strictly-sorted forms with equal denotation everywhere agree on
+`lookupOffset` at every key.  Probe at a scale `bound + 1` chosen to
+strictly exceed both bases and both `maxOffset`s; per key, case-split
+on membership in each form: both present forces equal offsets (the
+present X-ray reads `bound + 1 + offset`, cancel the shared scale);
+both absent gives `none = none`; a mismatch is impossible (the present
+side denotes `≥ bound + 1` while the absent side is `≤ bound`).  This is
+the final input to canonical-form uniqueness via `lookupOffset_ext`. -/
+theorem LevelExpr.MaxPlusForm.lookupOffset_of_denote_eq
+    (formLeft formRight : LevelExpr.MaxPlusForm)
+    (hStrictLeft :
+      LevelExpr.MaxPlusForm.isStrictlySortedByVariable formLeft.varOffsets = true)
+    (hStrictRight :
+      LevelExpr.MaxPlusForm.isStrictlySortedByVariable formRight.varOffsets = true)
+    (hDenote : ∀ (env : Nat → Nat),
+      LevelExpr.MaxPlusForm.denote formLeft env =
+        LevelExpr.MaxPlusForm.denote formRight env) :
+    ∀ (probe : Nat),
+      LevelExpr.MaxPlusForm.lookupOffset probe formLeft.varOffsets =
+        LevelExpr.MaxPlusForm.lookupOffset probe formRight.varOffsets := by
+  intro probe
+  let bound := LevelExpr.levelMax
+      (LevelExpr.levelMax formLeft.baseConstant formRight.baseConstant)
+      (LevelExpr.levelMax (LevelExpr.MaxPlusForm.maxOffset formLeft.varOffsets)
+        (LevelExpr.MaxPlusForm.maxOffset formRight.varOffsets))
+  have hBaseLeftBound : formLeft.baseConstant ≤ bound :=
+    Nat.le_trans (LevelExpr.levelMax_ge_left formLeft.baseConstant formRight.baseConstant)
+      (LevelExpr.levelMax_ge_left
+        (LevelExpr.levelMax formLeft.baseConstant formRight.baseConstant)
+        (LevelExpr.levelMax (LevelExpr.MaxPlusForm.maxOffset formLeft.varOffsets)
+          (LevelExpr.MaxPlusForm.maxOffset formRight.varOffsets)))
+  have hBaseRightBound : formRight.baseConstant ≤ bound :=
+    Nat.le_trans (LevelExpr.levelMax_ge_right formLeft.baseConstant formRight.baseConstant)
+      (LevelExpr.levelMax_ge_left
+        (LevelExpr.levelMax formLeft.baseConstant formRight.baseConstant)
+        (LevelExpr.levelMax (LevelExpr.MaxPlusForm.maxOffset formLeft.varOffsets)
+          (LevelExpr.MaxPlusForm.maxOffset formRight.varOffsets)))
+  have hMaxLeftBound : LevelExpr.MaxPlusForm.maxOffset formLeft.varOffsets ≤ bound :=
+    Nat.le_trans
+      (LevelExpr.levelMax_ge_left (LevelExpr.MaxPlusForm.maxOffset formLeft.varOffsets)
+        (LevelExpr.MaxPlusForm.maxOffset formRight.varOffsets))
+      (LevelExpr.levelMax_ge_right
+        (LevelExpr.levelMax formLeft.baseConstant formRight.baseConstant)
+        (LevelExpr.levelMax (LevelExpr.MaxPlusForm.maxOffset formLeft.varOffsets)
+          (LevelExpr.MaxPlusForm.maxOffset formRight.varOffsets)))
+  have hMaxRightBound : LevelExpr.MaxPlusForm.maxOffset formRight.varOffsets ≤ bound :=
+    Nat.le_trans
+      (LevelExpr.levelMax_ge_right (LevelExpr.MaxPlusForm.maxOffset formLeft.varOffsets)
+        (LevelExpr.MaxPlusForm.maxOffset formRight.varOffsets))
+      (LevelExpr.levelMax_ge_right
+        (LevelExpr.levelMax formLeft.baseConstant formRight.baseConstant)
+        (LevelExpr.levelMax (LevelExpr.MaxPlusForm.maxOffset formLeft.varOffsets)
+          (LevelExpr.MaxPlusForm.maxOffset formRight.varOffsets)))
+  have hBaseLeftScale : formLeft.baseConstant ≤ bound + 1 :=
+    Nat.le_trans hBaseLeftBound (Nat.le_succ bound)
+  have hBaseRightScale : formRight.baseConstant ≤ bound + 1 :=
+    Nat.le_trans hBaseRightBound (Nat.le_succ bound)
+  have hMaxLeftScale : LevelExpr.MaxPlusForm.maxOffset formLeft.varOffsets < bound + 1 :=
+    Nat.succ_le_succ hMaxLeftBound
+  have hMaxRightScale : LevelExpr.MaxPlusForm.maxOffset formRight.varOffsets < bound + 1 :=
+    Nat.succ_le_succ hMaxRightBound
+  cases hOccLeft : LevelExpr.MaxPlusForm.occursAsVariable probe formLeft.varOffsets with
+  | true =>
+      cases hOccRight : LevelExpr.MaxPlusForm.occursAsVariable probe formRight.varOffsets with
+      | true =>
+          have hDenoteAt := hDenote
+            (LevelExpr.MaxPlusForm.scaledPointEnvironment probe (bound + 1))
+          rw [LevelExpr.MaxPlusForm.denote_scaledPointEnvironment_of_occurs formLeft probe
+                (bound + 1) hStrictLeft hOccLeft hMaxLeftScale hBaseLeftScale,
+              LevelExpr.MaxPlusForm.denote_scaledPointEnvironment_of_occurs formRight probe
+                (bound + 1) hStrictRight hOccRight hMaxRightScale hBaseRightScale] at hDenoteAt
+          have hOffEq :
+              LevelExpr.MaxPlusForm.offsetOf probe formLeft.varOffsets =
+                LevelExpr.MaxPlusForm.offsetOf probe formRight.varOffsets :=
+            LevelExpr.add_left_cancel (bound + 1)
+              (LevelExpr.MaxPlusForm.offsetOf probe formLeft.varOffsets)
+              (LevelExpr.MaxPlusForm.offsetOf probe formRight.varOffsets) hDenoteAt
+          rw [LevelExpr.MaxPlusForm.lookupOffset_eq_some_offsetOf_of_occurs probe
+                formLeft.varOffsets hOccLeft,
+              LevelExpr.MaxPlusForm.lookupOffset_eq_some_offsetOf_of_occurs probe
+                formRight.varOffsets hOccRight, hOffEq]
+      | false =>
+          exfalso
+          have hDenoteAt := hDenote
+            (LevelExpr.MaxPlusForm.scaledPointEnvironment probe (bound + 1))
+          rw [LevelExpr.MaxPlusForm.denote_scaledPointEnvironment_of_occurs formLeft probe
+                (bound + 1) hStrictLeft hOccLeft hMaxLeftScale hBaseLeftScale,
+              LevelExpr.MaxPlusForm.denote_scaledPointEnvironment_of_not_occurs formRight probe
+                (bound + 1) hOccRight] at hDenoteAt
+          have hRightLe :
+              LevelExpr.levelMax formRight.baseConstant
+                (LevelExpr.MaxPlusForm.maxOffset formRight.varOffsets) ≤ bound :=
+            LevelExpr.levelMax_le formRight.baseConstant
+              (LevelExpr.MaxPlusForm.maxOffset formRight.varOffsets) bound
+              hBaseRightBound hMaxRightBound
+          rw [← hDenoteAt] at hRightLe
+          exact Nat.not_succ_le_self bound
+            (Nat.le_trans
+              (Nat.le_add_right (bound + 1)
+                (LevelExpr.MaxPlusForm.offsetOf probe formLeft.varOffsets))
+              hRightLe)
+  | false =>
+      cases hOccRight : LevelExpr.MaxPlusForm.occursAsVariable probe formRight.varOffsets with
+      | true =>
+          exfalso
+          have hDenoteAt := hDenote
+            (LevelExpr.MaxPlusForm.scaledPointEnvironment probe (bound + 1))
+          rw [LevelExpr.MaxPlusForm.denote_scaledPointEnvironment_of_not_occurs formLeft probe
+                (bound + 1) hOccLeft,
+              LevelExpr.MaxPlusForm.denote_scaledPointEnvironment_of_occurs formRight probe
+                (bound + 1) hStrictRight hOccRight hMaxRightScale hBaseRightScale] at hDenoteAt
+          have hLeftLe :
+              LevelExpr.levelMax formLeft.baseConstant
+                (LevelExpr.MaxPlusForm.maxOffset formLeft.varOffsets) ≤ bound :=
+            LevelExpr.levelMax_le formLeft.baseConstant
+              (LevelExpr.MaxPlusForm.maxOffset formLeft.varOffsets) bound
+              hBaseLeftBound hMaxLeftBound
+          rw [hDenoteAt] at hLeftLe
+          exact Nat.not_succ_le_self bound
+            (Nat.le_trans
+              (Nat.le_add_right (bound + 1)
+                (LevelExpr.MaxPlusForm.offsetOf probe formRight.varOffsets))
+              hLeftLe)
+      | false =>
+          rw [LevelExpr.MaxPlusForm.lookupOffset_eq_none_of_not_occurs probe
+                formLeft.varOffsets hOccLeft,
+              LevelExpr.MaxPlusForm.lookupOffset_eq_none_of_not_occurs probe
+                formRight.varOffsets hOccRight]
+
 end LeanFX2.Foundation.PolyCell.Universe
