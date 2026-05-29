@@ -2401,4 +2401,68 @@ theorem LevelExpr.foldLmax_dedupAdjacent_denoteEquiv :
           exact LevelExpr.lmax_denoteEquiv_congr
             (LevelExpr.denoteEquiv.refl first) ih
 
+/-! ## The assembled n-ary canonical form
+
+`canonicalize` is the full pipeline: flatten the `lmax` tree to an
+atom list, sort it by `compare`, collapse adjacent duplicates, drop
+`lzero` atoms, then rebuild a right-nested `lmax` via `foldLmax`.
+
+This commit ships the SOUNDNESS direction only:
+`canonicalize e ~ e` under `denoteEquiv`, chained from the four
+per-transform invariance lemmas.  The COMPLETENESS direction
+(`e1 ~ e2 → canonicalize e1 = canonicalize e2`, which would yield
+`Decidable denoteEquiv` by comparing canonical forms) is the hard
+Mörtberg-Sterling max-plus argument and remains deferred — it is
+also complicated by `foldLmax`'s trailing-`lzero` base case and by
+`limax`'s conditional collapse, neither of which affects soundness.
+-/
+
+/-- The full n-ary canonical form of a level expression:
+flatten → sort → dedup → drop-`lzero` → rebuild.  Each stage is a
+`List LevelExpr` transform whose `foldLmax`-invariance was proven
+above; `canonicalize` composes them and re-folds. -/
+def LevelExpr.canonicalize (expr : LevelExpr) : LevelExpr :=
+  LevelExpr.foldLmax
+    (LevelExpr.dropLzeroAtoms
+      (LevelExpr.dedupAdjacent
+        (LevelExpr.insertionSortByCompare
+          (LevelExpr.lmaxAtoms expr))))
+
+/-- `canonicalize` preserves denotation: `canonicalize e ~ e`.
+
+Soundness chains the four stage-invariance lemmas back through the
+pipeline (drop-`lzero`, then dedup, then sort, all under
+`foldLmax`), finishing with `foldLmax (lmaxAtoms e) ~ e`. -/
+theorem LevelExpr.canonicalize_denoteEquiv (expr : LevelExpr) :
+    LevelExpr.denoteEquiv (LevelExpr.canonicalize expr) expr := by
+  show LevelExpr.denoteEquiv
+    (LevelExpr.foldLmax
+      (LevelExpr.dropLzeroAtoms
+        (LevelExpr.dedupAdjacent
+          (LevelExpr.insertionSortByCompare (LevelExpr.lmaxAtoms expr)))))
+    expr
+  exact LevelExpr.denoteEquiv.trans
+    (LevelExpr.foldLmax_dropLzeroAtoms_denoteEquiv
+      (LevelExpr.dedupAdjacent
+        (LevelExpr.insertionSortByCompare (LevelExpr.lmaxAtoms expr))))
+    (LevelExpr.denoteEquiv.trans
+      (LevelExpr.foldLmax_dedupAdjacent_denoteEquiv
+        (LevelExpr.insertionSortByCompare (LevelExpr.lmaxAtoms expr)))
+      (LevelExpr.denoteEquiv.trans
+        (LevelExpr.foldLmax_insertionSortByCompare_denoteEquiv
+          (LevelExpr.lmaxAtoms expr))
+        (LevelExpr.foldLmax_lmaxAtoms_denoteEquiv expr)))
+
+/-- Concrete soundness witness: a duplicated-atom expression and its
+canonical form denote the same value under a sample environment. -/
+example :
+    LevelExpr.denote
+        (LevelExpr.canonicalize
+          (LevelExpr.lmax (LevelExpr.lvar 0) (LevelExpr.lvar 0)))
+        (fun _ => 5)
+      = LevelExpr.denote
+          (LevelExpr.lmax (LevelExpr.lvar 0) (LevelExpr.lvar 0))
+          (fun _ => 5) :=
+  rfl
+
 end LeanFX2.Foundation.PolyCell.Universe
