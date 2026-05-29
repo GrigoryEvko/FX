@@ -2029,6 +2029,67 @@ theorem LevelExpr.orderingThen_eq_gt_iff (firstVerdict secondVerdict : Ordering)
                  fun hOr => hOr.elim (fun hc => Ordering.noConfusion hc) (fun hc => hc.2)⟩
   | gt => exact ⟨fun _ => Or.inl rfl, fun _ => rfl⟩
 
+/-- A strictly-smaller constructor priority forces a `.lt` verdict:
+`compareNat (ctorIndex a) (ctorIndex b) = .lt → compare a b = .lt`.
+Dual companion to `compare_lt_imp_ctorIndex_not_gt`; together they
+let the off-diagonal of `compare` transitivity move freely between
+`compare` and the `ctorIndex`-level `compareNat`. -/
+theorem LevelExpr.compare_lt_of_ctorIndex_lt (exprA exprB : LevelExpr)
+    (hLt : LevelExpr.compareNat (LevelExpr.ctorIndex exprA)
+      (LevelExpr.ctorIndex exprB) = Ordering.lt) :
+    LevelExpr.compare exprA exprB = Ordering.lt := by
+  have hNeq : LevelExpr.ctorIndex exprA ≠ LevelExpr.ctorIndex exprB := by
+    intro hEq
+    rw [hEq, LevelExpr.compareNat_refl] at hLt
+    exact Ordering.noConfusion hLt
+  rw [LevelExpr.compare_cross_ctor exprA exprB hNeq]
+  exact hLt
+
+/-- The off-diagonal trichotomy core of `compare` transitivity:
+from `compare a b = .lt` and `compare b c = .lt`, either the
+priorities already settle `compare a c = .lt`, or all three operands
+share a constructor priority (`ctorIndex` comparisons both `.eq`).
+
+This isolates the *only* recursive case of the eventual
+`compare_lt_trans` — the same-constructor diagonal — into the
+right disjunct; every priority-distinct case is discharged here,
+non-recursively, by `compareNat_lt_trans` plus the two
+`ctorIndex` bridges.  Nested full enumeration over the two
+`compareNat` verdicts keeps it `propext`-free. -/
+theorem LevelExpr.compare_lt_trans_step (exprA exprB exprC : LevelExpr)
+    (hAB : LevelExpr.compare exprA exprB = Ordering.lt)
+    (hBC : LevelExpr.compare exprB exprC = Ordering.lt) :
+    LevelExpr.compare exprA exprC = Ordering.lt ∨
+      (LevelExpr.compareNat (LevelExpr.ctorIndex exprA)
+          (LevelExpr.ctorIndex exprB) = Ordering.eq ∧
+        LevelExpr.compareNat (LevelExpr.ctorIndex exprB)
+          (LevelExpr.ctorIndex exprC) = Ordering.eq) := by
+  have hNotGtAB := LevelExpr.compare_lt_imp_ctorIndex_not_gt exprA exprB hAB
+  have hNotGtBC := LevelExpr.compare_lt_imp_ctorIndex_not_gt exprB exprC hBC
+  match hIab : LevelExpr.compareNat (LevelExpr.ctorIndex exprA)
+      (LevelExpr.ctorIndex exprB) with
+  | .gt => exact absurd hIab hNotGtAB
+  | .lt =>
+      match hIbc : LevelExpr.compareNat (LevelExpr.ctorIndex exprB)
+          (LevelExpr.ctorIndex exprC) with
+      | .gt => exact absurd hIbc hNotGtBC
+      | .lt =>
+          exact Or.inl (LevelExpr.compare_lt_of_ctorIndex_lt exprA exprC
+            (LevelExpr.compareNat_lt_trans _ _ _ hIab hIbc))
+      | .eq =>
+          have hbc := LevelExpr.compareNat_eq_imp_eq _ _ hIbc
+          exact Or.inl (LevelExpr.compare_lt_of_ctorIndex_lt exprA exprC
+            (by rw [← hbc]; exact hIab))
+  | .eq =>
+      match hIbc : LevelExpr.compareNat (LevelExpr.ctorIndex exprB)
+          (LevelExpr.ctorIndex exprC) with
+      | .gt => exact absurd hIbc hNotGtBC
+      | .lt =>
+          have hab := LevelExpr.compareNat_eq_imp_eq _ _ hIab
+          exact Or.inl (LevelExpr.compare_lt_of_ctorIndex_lt exprA exprC
+            (by rw [hab]; exact hIbc))
+      | .eq => exact Or.inr ⟨rfl, rfl⟩
+
 /-! ## First Phase B canonicalization step — pairwise lmax sort
 
 `canonicalizeLmaxPair` swaps `lmax` operands when out of compare
