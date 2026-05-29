@@ -7736,6 +7736,44 @@ targets in the same phase.  The two open-frontier rows are honest
 catalogue entries — not objects FX asserts or builds — per "The
 Reinhardt frontier".
 
+**What the ladder commits to, and what it does NOT (O-ORD /
+O-REFL-MODEL, §11.8.0).**  The enum + decidable admission predicate
+is the *interface*; two foundational components behind it are
+obligations, not results:
+
+* **O-ORD — ordinal analysis.**  The rungs are ORDERED by consistency
+  strength, and the Gödel-climbing engine (§11.7.1: rung *n+1* proves
+  `Con(`rung *n*`)`) is what makes the ladder generative.  For "rung
+  *n* has strength X" and "*n+1* proves `Con(n)`" to be THEOREMS
+  rather than calibration prose, FX needs an ordinal-notation /
+  well-ordering-proof substrate (Rathjen-style proof theory) — the
+  literal content of an admitted Mahlo / Πⁿ / ESR strength.  The doc
+  commits to the ladder as enum + admission predicate; the ordinal
+  analysis establishing each rung's strength is OBLIGATION **O-ORD**
+  (open research), currently ABSENT.
+
+* **O-REFL-MODEL — the universe's construction.**  `kunenI0`-via-ESR
+  is stated as a reflection principle FX targets.  HOW a universe
+  satisfying ESR(κ,λ,𝒞) is CONSTRUCTED — or relatively justified —
+  inside FX's own predicative, AC-free, non-well-founded (∞,ω)-topos
+  substrate is not built; "the categorical form reaches the strength"
+  is the claim, not the construction.  OBLIGATION **O-REFL-MODEL**
+  (open research).
+
+* **First-class flag quantification is strength-stratified.**
+  Declarations may quantify over `UniverseFlag` (§3.10), up to
+  `kunenI0`.  The quantifier's own universe must therefore exceed the
+  strength of every flag it ranges over — you cannot quantify over
+  `kunenI0`-strength universes from within a `kunenI0`-strength
+  universe without a Girard-style strength inflation.  Flag
+  quantification is thus stratified: a declaration ranging over flags
+  ≤ f lives at strength > f.  This is a design constraint to enforce,
+  not yet a mechanized invariant.
+
+Per §11.8.0's relative-consistency stance, FX@flag is consistent
+RELATIVE TO an ambient metatheory of strength ≥ calibration(flag),
+assumed not proven (Gödel II).
+
 **Refactored `Generator.payload`:**
 
 ```lean
@@ -10248,6 +10286,12 @@ SR10. Farmer Schlutzenberg (with Gabriel Goldberg), "On the consistency
      J. Math. Logic (2024).  ZF-PROVEN consistency rel I0 of the
      above-Kunen-wall `V_{λ+2}` embedding; the choiceless ceiling tag
      `schlutzenbergVLambdaPlus2` (open-frontier, not asserted).
+SR11. Michael Rathjen, "The art of ordinal analysis", Proc. ICM 2006;
+     "Proof Theory of Reflection", APAL 68 (1994); "An ordinal
+     analysis of stability", AML 44 (2005).  The ordinal-notation /
+     well-ordering-proof substrate that would establish each ladder
+     rung's strength — the content of OBLIGATION O-ORD (§11.8.0,
+     §11.8.2), currently absent from FX.
 
 ### Definitional univalence + synthetic condensed mathematics (§11.8.14 research track)
 
