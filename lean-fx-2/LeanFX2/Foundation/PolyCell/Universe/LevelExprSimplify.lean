@@ -4568,4 +4568,91 @@ theorem LevelExpr.canonicalize_toMaxPlusForm_denote
   rw [LevelExpr.MaxPlusForm.canonicalize_denote (LevelExpr.toMaxPlusForm level) env,
       LevelExpr.toMaxPlusForm_denote env level hPred]
 
+/-! ## Base normalization — the missing half of canonicality
+
+`canonicalize` (above) canonicalizes only `varOffsets`; it leaves
+`baseConstant` untouched and is therefore NOT a true normal form.
+Counterexample: `{base:2, [(0,5)]}` and `{base:0, [(0,5)]}` both denote
+`env ↦ max(base, env 0 + 5) = env 0 + 5` (since `env 0 + 5 ≥ 5 > base`)
+— denote-equal, structurally distinct, both fixed by `canonicalize`.
+
+The fix: normalize the base to `max(baseConstant, maxᵢ offsetᵢ)`, which
+equals `denote(form, zeroEnv)` and is hence DETERMINED by the
+denotation.  Justification: `maxᵢ offsetᵢ ≤ maxᵢ(env varᵢ + offsetᵢ)`
+for every `env` (each `env varᵢ ≥ 0`), so raising the base by it never
+changes the denotation.  This block ships that base-normalization
+primitive; composing it with `canonicalize` (next leaf) yields the
+genuinely canonical form needed for step-7 completeness. -/
+
+/-- A value is dominated by itself plus any shift:
+`levelMax offset (shift + offset) = shift + offset`.  Induction on
+`offset`; successor case collapses through the definitional
+`levelMax (_ + 1) (_ + 1) = levelMax _ _ + 1`. -/
+theorem LevelExpr.levelMax_offset_dominatedRight (shift : Nat) :
+    ∀ (offset : Nat),
+      LevelExpr.levelMax offset (shift + offset) = shift + offset
+  | 0 => rfl
+  | predecessor + 1 => by
+      show LevelExpr.levelMax predecessor (shift + predecessor) + 1 =
+        (shift + predecessor) + 1
+      rw [LevelExpr.levelMax_offset_dominatedRight shift predecessor]
+
+/-- The maximum offset across a `varOffsets` list (ignoring the
+variables) — i.e. `denoteVarOffsets` evaluated at the zero
+environment. -/
+def LevelExpr.MaxPlusForm.maxOffset : List (Nat × Nat) → Nat
+  | [] => 0
+  | (_, offset) :: rest =>
+      LevelExpr.levelMax offset (LevelExpr.MaxPlusForm.maxOffset rest)
+
+/-- The max offset is dominated by the env-fold under any environment:
+`levelMax (maxOffset vo) (denoteVarOffsets vo env) = denoteVarOffsets
+vo env`.  Each term `offsetᵢ` is dominated by `env varᵢ + offsetᵢ`
+(`levelMax_offset_dominatedRight`); the middle-four interchange splits
+the head-domination from the tail IH. -/
+theorem LevelExpr.MaxPlusForm.maxOffset_dominated (env : Nat → Nat) :
+    ∀ (entries : List (Nat × Nat)),
+      LevelExpr.levelMax (LevelExpr.MaxPlusForm.maxOffset entries)
+          (LevelExpr.MaxPlusForm.denoteVarOffsets entries env) =
+        LevelExpr.MaxPlusForm.denoteVarOffsets entries env
+  | [] => rfl
+  | (variableHead, offsetHead) :: rest => by
+      show LevelExpr.levelMax
+          (LevelExpr.levelMax offsetHead (LevelExpr.MaxPlusForm.maxOffset rest))
+          (LevelExpr.levelMax (env variableHead + offsetHead)
+            (LevelExpr.MaxPlusForm.denoteVarOffsets rest env)) =
+        LevelExpr.levelMax (env variableHead + offsetHead)
+          (LevelExpr.MaxPlusForm.denoteVarOffsets rest env)
+      rw [LevelExpr.levelMax_interchange offsetHead
+            (LevelExpr.MaxPlusForm.maxOffset rest) (env variableHead + offsetHead)
+            (LevelExpr.MaxPlusForm.denoteVarOffsets rest env),
+          LevelExpr.levelMax_offset_dominatedRight (env variableHead) offsetHead,
+          LevelExpr.MaxPlusForm.maxOffset_dominated env rest]
+
+/-- Normalize the base to `max(baseConstant, maxᵢ offsetᵢ)` so the base
+is recoverable as `denote(form, zeroEnv)`; the offsets are untouched. -/
+def LevelExpr.MaxPlusForm.normalizeBase
+    (form : LevelExpr.MaxPlusForm) : LevelExpr.MaxPlusForm :=
+  { baseConstant :=
+      LevelExpr.levelMax form.baseConstant
+        (LevelExpr.MaxPlusForm.maxOffset form.varOffsets),
+    varOffsets := form.varOffsets }
+
+/-- Base normalization preserves the denotation: re-associate and
+absorb the injected `maxOffset` via `maxOffset_dominated`. -/
+theorem LevelExpr.MaxPlusForm.normalizeBase_denote
+    (form : LevelExpr.MaxPlusForm) (env : Nat → Nat) :
+    LevelExpr.MaxPlusForm.denote (LevelExpr.MaxPlusForm.normalizeBase form) env =
+      LevelExpr.MaxPlusForm.denote form env := by
+  show LevelExpr.levelMax
+      (LevelExpr.levelMax form.baseConstant
+        (LevelExpr.MaxPlusForm.maxOffset form.varOffsets))
+      (LevelExpr.MaxPlusForm.denoteVarOffsets form.varOffsets env) =
+    LevelExpr.levelMax form.baseConstant
+      (LevelExpr.MaxPlusForm.denoteVarOffsets form.varOffsets env)
+  rw [LevelExpr.levelMax_assoc form.baseConstant
+        (LevelExpr.MaxPlusForm.maxOffset form.varOffsets)
+        (LevelExpr.MaxPlusForm.denoteVarOffsets form.varOffsets env),
+      LevelExpr.MaxPlusForm.maxOffset_dominated env form.varOffsets]
+
 end LeanFX2.Foundation.PolyCell.Universe
