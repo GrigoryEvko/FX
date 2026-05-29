@@ -2465,4 +2465,80 @@ example :
           (fun _ => 5) :=
   rfl
 
+/-! ## Semantic characterization of the atom-list machinery
+
+The completeness direction (deferred) will need to read off the
+denotation of a canonical form as an explicit `Nat`-level maximum
+over its atoms.  This block ships that bridge: `denoteAtomList`
+interprets an atom list as the right-fold of `levelMax`, and the
+two characterization lemmas show that `foldLmax` rebuilds exactly
+that value and that `lmaxAtoms` flattens to exactly that value.
+Together: `denote (foldLmax (lmaxAtoms e)) e ~ e` refines to the
+*computed* max-plus value, the semantic anchor for max-plus
+normal-form reasoning. -/
+
+/-- Interpret an atom list as the running `levelMax` of its atoms'
+denotations, with the empty list denoting `0` (the `levelMax`
+unit).  This is the `Nat`-level meaning of a flattened `lmax`
+spine. -/
+def LevelExpr.denoteAtomList : List LevelExpr → (Nat → Nat) → Nat
+  | [], _ => 0
+  | atom :: rest, env =>
+      LevelExpr.levelMax (atom.denote env) (LevelExpr.denoteAtomList rest env)
+
+/-- `denoteAtomList` distributes over list append as `levelMax`:
+the max over `xs ++ ys` is the max of the two sub-maxima.  List
+induction on `xs`, using `levelMax`'s left unit + associativity. -/
+theorem LevelExpr.denoteAtomList_append :
+    ∀ (xs ys : List LevelExpr) (env : Nat → Nat),
+      LevelExpr.denoteAtomList (xs ++ ys) env =
+        LevelExpr.levelMax (LevelExpr.denoteAtomList xs env)
+          (LevelExpr.denoteAtomList ys env)
+  | [], ys, env => by
+      show LevelExpr.denoteAtomList ys env =
+        LevelExpr.levelMax 0 (LevelExpr.denoteAtomList ys env)
+      rw [LevelExpr.levelMax_zero_left]
+  | atom :: xs, ys, env => by
+      show LevelExpr.levelMax (atom.denote env)
+            (LevelExpr.denoteAtomList (xs ++ ys) env) =
+        LevelExpr.levelMax
+          (LevelExpr.levelMax (atom.denote env)
+            (LevelExpr.denoteAtomList xs env))
+          (LevelExpr.denoteAtomList ys env)
+      rw [LevelExpr.denoteAtomList_append xs ys env, LevelExpr.levelMax_assoc]
+
+/-- `foldLmax` rebuilds exactly the `denoteAtomList` value: the
+right-nested `lmax` tree denotes the running max of the atoms.
+List induction, lifting each `lmax` to a `levelMax`. -/
+theorem LevelExpr.foldLmax_denote :
+    ∀ (xs : List LevelExpr) (env : Nat → Nat),
+      LevelExpr.denote (LevelExpr.foldLmax xs) env =
+        LevelExpr.denoteAtomList xs env
+  | [], _ => rfl
+  | atom :: rest, env => by
+      show LevelExpr.denote (LevelExpr.lmax atom (LevelExpr.foldLmax rest)) env =
+        LevelExpr.levelMax (atom.denote env) (LevelExpr.denoteAtomList rest env)
+      rw [LevelExpr.denote_lmax, LevelExpr.foldLmax_denote rest env]
+
+/-- `lmaxAtoms` flattens to exactly the `denoteAtomList` value:
+the original expression denotes the running max over its flattened
+atoms.  Structural induction on `expr`; leaf constructors close by
+`levelMax`'s right unit, `lmax` by append-distribution + the two
+child hypotheses. -/
+theorem LevelExpr.lmaxAtoms_denote :
+    ∀ (expr : LevelExpr) (env : Nat → Nat),
+      LevelExpr.denote expr env =
+        LevelExpr.denoteAtomList (LevelExpr.lmaxAtoms expr) env
+  | .lzero, _ => (LevelExpr.levelMax_zero_right _).symm
+  | .lvar _, _ => (LevelExpr.levelMax_zero_right _).symm
+  | .lsucc _, _ => (LevelExpr.levelMax_zero_right _).symm
+  | .limax _ _, _ => (LevelExpr.levelMax_zero_right _).symm
+  | .lmax a b, env => by
+      show LevelExpr.levelMax (a.denote env) (b.denote env) =
+        LevelExpr.denoteAtomList
+          (LevelExpr.lmaxAtoms a ++ LevelExpr.lmaxAtoms b) env
+      rw [LevelExpr.denoteAtomList_append,
+          ← LevelExpr.lmaxAtoms_denote a env,
+          ← LevelExpr.lmaxAtoms_denote b env]
+
 end LeanFX2.Foundation.PolyCell.Universe
