@@ -3174,4 +3174,38 @@ theorem LevelExpr.dedupAdjacent_strictlySorted :
           refine ⟨?_, LevelExpr.dedupAdjacent_strictlySorted (second :: rest) hSorted.2⟩
           exact LevelExpr.IsStrictLowerBound_dedupAdjacent first (second :: rest) hVerdict
 
+/-! ## Toward uniqueness — membership and the head-minimum lemma
+
+For canonical-form *uniqueness* (two strictly-sorted lists with the
+same elements are equal) we need to compare elements anywhere in a
+list, so introduce a structural membership predicate `OccursIn`.
+The first consumer of `compare_lt_trans`: in a strictly-sorted list
+the head is strictly below EVERY tail element (not just the next),
+proved by chaining the immediate strict bound through the tail. -/
+
+/-- `target` occurs somewhere in the list (structural membership). -/
+def LevelExpr.OccursIn (target : LevelExpr) : List LevelExpr → Prop
+  | [] => False
+  | head :: rest => head = target ∨ LevelExpr.OccursIn target rest
+
+/-- In a strictly-sorted `head :: rest`, the head is strictly below
+every element occurring in `rest`.  The immediate strict bound
+(`head < rest.head`) chains through the strictly-sorted tail via
+`compare_lt_trans` to reach an arbitrary deeper element. -/
+theorem LevelExpr.strictlySorted_head_lt :
+    ∀ (head : LevelExpr) (rest : List LevelExpr),
+      LevelExpr.IsStrictlySorted (head :: rest) →
+      ∀ (z : LevelExpr), LevelExpr.OccursIn z rest →
+        LevelExpr.compare head z = Ordering.lt
+  | _head, [], _hStrict, _z, hOccurs => nomatch hOccurs
+  | head, r0 :: rr, hStrict, z, hOccurs => by
+      cases hOccurs with
+      | inl hHeadEq =>
+          rw [← hHeadEq]
+          exact hStrict.1
+      | inr hOccursTail =>
+          have hMidLt : LevelExpr.compare r0 z = Ordering.lt :=
+            LevelExpr.strictlySorted_head_lt r0 rr hStrict.2 z hOccursTail
+          exact LevelExpr.compare_lt_trans head r0 z hStrict.1 hMidLt
+
 end LeanFX2.Foundation.PolyCell.Universe
