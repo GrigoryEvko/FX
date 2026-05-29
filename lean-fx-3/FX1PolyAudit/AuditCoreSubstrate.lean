@@ -29,6 +29,19 @@ import FX1Poly.Core.CertifyRawCellExact
 import FX1Poly.Core.CertifyTermSpine
 import FX1Poly.Core.SpineRenameStep
 import FX1Poly.Core.SpineSubstStep
+-- Certifier coverage / general inference + certified-term to PolyCell.
+import FX1Poly.Core.CertifyRawCellExactCompHRejects
+import FX1Poly.Core.CertifyRawCellExactShape
+import FX1Poly.Core.CertifyRawCellExactSound
+import FX1Poly.Core.CertifyRawCellExactTermBase
+import FX1Poly.Core.CertifyRawCellExactWrongChildShape
+import FX1Poly.Core.CertifyRawCellExactRenameEquiv
+import FX1Poly.Core.CertifyRawCellExactNegativeProbes
+import FX1Poly.Core.CertifyTermExact
+import FX1Poly.Core.CheckRawCellAs
+import FX1Poly.Core.InferRawCellGeneralSound
+import FX1Poly.Core.InferRawCellGeneralAcceptedCellDimensionEq
+import FX1Poly.Core.CertifiedToPolyCell
 
 /-! # FX1PolyAudit/AuditCoreSubstrate — namespace zero-axiom sweep
 
