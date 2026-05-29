@@ -2023,4 +2023,102 @@ theorem LevelExpr.canonicalizeLmaxPair_idempotent (expr : LevelExpr) :
       exact LevelExpr.canonicalizeLmaxPair_swapToCanonicalLmax
         (LevelExpr.compare e1 e2) e1 e2 rfl
 
+/-! ## n-ary `lmax` flattening — toward the full canonical form
+
+A nested `lmax` tree denotes the `levelMax` of its leaf atoms,
+independent of association or grouping (`lmax` is, under
+`denoteEquiv`, a commutative idempotent monoid with unit `lzero`).
+The full n-ary canonical form will flatten a tree to its atom list
+(`lmaxAtoms`), then sort + dedup + drop-`lzero` the atoms, then
+rebuild (`foldLmax`).  This block ships the flatten/rebuild
+round-trip soundness — the substrate the later sort / dedup /
+clean steps build on; their `denoteEquiv` preservation composes
+through `foldLmax`'s monoid laws.
+
+`lmaxAtoms` descends ONLY through `lmax` nodes — `limax` is left as
+an opaque atom, since its conditional collapse (`limax e lzero ~
+lzero`) is not an `lmax`-monoid law and would be unsound to flatten
+through. -/
+
+/-- Collect the `lmax`-atoms of a level expression: descend through
+`lmax` nodes, treat every other head (including `limax`) as a single
+leaf.  Full constructor enumeration keeps the def `propext`-free. -/
+def LevelExpr.lmaxAtoms : LevelExpr → List LevelExpr
+  | .lmax a b => LevelExpr.lmaxAtoms a ++ LevelExpr.lmaxAtoms b
+  | .lzero => [LevelExpr.lzero]
+  | .lvar n => [LevelExpr.lvar n]
+  | .lsucc inner => [LevelExpr.lsucc inner]
+  | .limax a b => [LevelExpr.limax a b]
+
+/-- Rebuild a right-nested `lmax` from an atom list; the empty list
+folds to `lzero` (the `lmax` unit). -/
+def LevelExpr.foldLmax : List LevelExpr → LevelExpr
+  | [] => LevelExpr.lzero
+  | head :: rest => LevelExpr.lmax head (LevelExpr.foldLmax rest)
+
+/-- `foldLmax` distributes over list append up to `denoteEquiv`:
+`foldLmax (xs ++ ys) ~ lmax (foldLmax xs) (foldLmax ys)`.
+
+Induction on `xs`: the `[]` base reduces the left fold to `lzero`
+and uses the left-unit law; the cons step pushes the inductive
+hypothesis under `lmax head _` (left-operand congruence) and then
+re-associates. -/
+theorem LevelExpr.foldLmax_append_denoteEquiv :
+    ∀ (xs ys : List LevelExpr),
+      LevelExpr.denoteEquiv (LevelExpr.foldLmax (xs ++ ys))
+        (LevelExpr.lmax (LevelExpr.foldLmax xs) (LevelExpr.foldLmax ys))
+  | [], ys =>
+      LevelExpr.denoteEquiv.symm (LevelExpr.lmax_lzero_left_denoteEquiv _)
+  | head :: rest, ys => by
+      show LevelExpr.denoteEquiv
+        (LevelExpr.lmax head (LevelExpr.foldLmax (rest ++ ys)))
+        (LevelExpr.lmax (LevelExpr.lmax head (LevelExpr.foldLmax rest))
+          (LevelExpr.foldLmax ys))
+      have hInner :=
+        LevelExpr.foldLmax_append_denoteEquiv rest ys
+      have hCongr : LevelExpr.denoteEquiv
+          (LevelExpr.lmax head (LevelExpr.foldLmax (rest ++ ys)))
+          (LevelExpr.lmax head
+            (LevelExpr.lmax (LevelExpr.foldLmax rest) (LevelExpr.foldLmax ys))) :=
+        LevelExpr.lmax_denoteEquiv_congr (LevelExpr.denoteEquiv.refl head) hInner
+      have hAssoc : LevelExpr.denoteEquiv
+          (LevelExpr.lmax head
+            (LevelExpr.lmax (LevelExpr.foldLmax rest) (LevelExpr.foldLmax ys)))
+          (LevelExpr.lmax (LevelExpr.lmax head (LevelExpr.foldLmax rest))
+            (LevelExpr.foldLmax ys)) :=
+        LevelExpr.denoteEquiv.symm
+          (LevelExpr.lmax_assoc_denoteEquiv head (LevelExpr.foldLmax rest)
+            (LevelExpr.foldLmax ys))
+      exact LevelExpr.denoteEquiv.trans hCongr hAssoc
+
+/-- The flatten/rebuild round-trip preserves denotation:
+`foldLmax (lmaxAtoms e) ~ e`.
+
+Structural recursion on `e`.  The four leaf heads fold to a
+singleton list (`foldLmax [atom] = lmax atom lzero`) and close by
+the `lzero` units; the `lmax` node splits via
+`foldLmax_append_denoteEquiv` and recombines the children's
+inductive hypotheses through the `lmax` congruence. -/
+theorem LevelExpr.foldLmax_lmaxAtoms_denoteEquiv :
+    ∀ (expr : LevelExpr),
+      LevelExpr.denoteEquiv (LevelExpr.foldLmax (LevelExpr.lmaxAtoms expr)) expr
+  | .lzero => LevelExpr.lmax_lzero_left_denoteEquiv _
+  | .lvar _ => LevelExpr.lmax_lzero_right_denoteEquiv _
+  | .lsucc _ => LevelExpr.lmax_lzero_right_denoteEquiv _
+  | .limax _ _ => LevelExpr.lmax_lzero_right_denoteEquiv _
+  | .lmax a b => by
+      show LevelExpr.denoteEquiv
+        (LevelExpr.foldLmax (LevelExpr.lmaxAtoms a ++ LevelExpr.lmaxAtoms b))
+        (LevelExpr.lmax a b)
+      have hAppend := LevelExpr.foldLmax_append_denoteEquiv
+        (LevelExpr.lmaxAtoms a) (LevelExpr.lmaxAtoms b)
+      have hChildren : LevelExpr.denoteEquiv
+          (LevelExpr.lmax (LevelExpr.foldLmax (LevelExpr.lmaxAtoms a))
+            (LevelExpr.foldLmax (LevelExpr.lmaxAtoms b)))
+          (LevelExpr.lmax a b) :=
+        LevelExpr.lmax_denoteEquiv_congr
+          (LevelExpr.foldLmax_lmaxAtoms_denoteEquiv a)
+          (LevelExpr.foldLmax_lmaxAtoms_denoteEquiv b)
+      exact LevelExpr.denoteEquiv.trans hAppend hChildren
+
 end LeanFX2.Foundation.PolyCell.Universe
