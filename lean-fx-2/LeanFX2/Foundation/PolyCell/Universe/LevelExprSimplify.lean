@@ -1974,6 +1974,61 @@ theorem LevelExpr.compare_cross_ctor (exprA exprB : LevelExpr)
       | rfl
       | exact absurd rfl hNeq
 
+/-- A `.lt` verdict from `compare` forces the constructor priorities
+into non-strict order: `compareNat (ctorIndex a) (ctorIndex b)` is
+never `.gt`.  This is the off-diagonal ingredient of `compare`
+transitivity — combined with `compareNat_lt_trans` it discharges
+every case where the three operands do not share a constructor.
+
+Proof: suppose the index comparison is `.gt`.  Then the indices
+differ (else `compareNat_refl` forces `.eq`), so `compare_cross_ctor`
+makes `compare a b` equal to that `.gt`, contradicting the `.lt`
+hypothesis. -/
+theorem LevelExpr.compare_lt_imp_ctorIndex_not_gt (exprA exprB : LevelExpr)
+    (hLt : LevelExpr.compare exprA exprB = Ordering.lt) :
+    LevelExpr.compareNat (LevelExpr.ctorIndex exprA)
+      (LevelExpr.ctorIndex exprB) ≠ Ordering.gt := by
+  intro hGt
+  have hNeq : LevelExpr.ctorIndex exprA ≠ LevelExpr.ctorIndex exprB := by
+    intro hEq
+    rw [hEq, LevelExpr.compareNat_refl] at hGt
+    exact Ordering.noConfusion hGt
+  have hCross := LevelExpr.compare_cross_ctor exprA exprB hNeq
+  rw [hCross, hGt] at hLt
+  exact Ordering.noConfusion hLt
+
+/-- Lexicographic `.lt` characterization of `orderingThen`: the
+combined verdict is `.lt` exactly when the first verdict is `.lt`,
+or the first is `.eq` and the second is `.lt`.  This is the
+`lmax` / `limax` diagonal ingredient of `compare` transitivity.
+Case analysis on the first verdict (`Ordering.casesOn`). -/
+theorem LevelExpr.orderingThen_eq_lt_iff (firstVerdict secondVerdict : Ordering) :
+    LevelExpr.orderingThen firstVerdict secondVerdict = Ordering.lt ↔
+      (firstVerdict = Ordering.lt ∨
+        (firstVerdict = Ordering.eq ∧ secondVerdict = Ordering.lt)) := by
+  cases firstVerdict with
+  | lt => exact ⟨fun _ => Or.inl rfl, fun _ => rfl⟩
+  | eq => exact ⟨fun hLt => Or.inr ⟨rfl, hLt⟩,
+                 fun hOr => hOr.elim (fun hc => Ordering.noConfusion hc) (fun hc => hc.2)⟩
+  | gt => exact ⟨fun hc => Ordering.noConfusion hc,
+                 fun hOr => hOr.elim (fun hc => Ordering.noConfusion hc)
+                   (fun hc => Ordering.noConfusion hc.1)⟩
+
+/-- Lexicographic `.gt` characterization of `orderingThen` (dual of
+`orderingThen_eq_lt_iff`).  Rounds out the combinator's verdict API
+for the symmetric `compare` `.gt`-transitivity / sortedness work. -/
+theorem LevelExpr.orderingThen_eq_gt_iff (firstVerdict secondVerdict : Ordering) :
+    LevelExpr.orderingThen firstVerdict secondVerdict = Ordering.gt ↔
+      (firstVerdict = Ordering.gt ∨
+        (firstVerdict = Ordering.eq ∧ secondVerdict = Ordering.gt)) := by
+  cases firstVerdict with
+  | lt => exact ⟨fun hc => Ordering.noConfusion hc,
+                 fun hOr => hOr.elim (fun hc => Ordering.noConfusion hc)
+                   (fun hc => Ordering.noConfusion hc.1)⟩
+  | eq => exact ⟨fun hGt => Or.inr ⟨rfl, hGt⟩,
+                 fun hOr => hOr.elim (fun hc => Ordering.noConfusion hc) (fun hc => hc.2)⟩
+  | gt => exact ⟨fun _ => Or.inl rfl, fun _ => rfl⟩
+
 /-! ## First Phase B canonicalization step — pairwise lmax sort
 
 `canonicalizeLmaxPair` swaps `lmax` operands when out of compare
