@@ -5991,4 +5991,63 @@ theorem LevelExpr.MaxPlusForm.fullCanonicalize_baseConstant_eq_denote_zeroEnviro
   LevelExpr.MaxPlusForm.normalizeBase_baseConstant_eq_denote_zeroEnvironment
     (LevelExpr.MaxPlusForm.canonicalize form)
 
+/-! ### Step 7 capstone — `Decidable denoteEquiv` on the predicative fragment
+
+Semantic equivalence of two predicative levels reduces to syntactic
+equality of their fully-canonicalized max-plus forms.  The `←` direction
+is soundness (`fullCanonicalize_toMaxPlusForm_denote`); the `→` direction
+is the completeness tower (`canonicalForm_unique` fed equal denotations).
+Decidability then follows from the derived `DecidableEq MaxPlusForm`.
+The `isPredicative` hypotheses are required because `toMaxPlusForm` is
+denotation-sound only on the `limax`-free fragment. -/
+
+/-- The decision criterion: two predicative levels are `denoteEquiv`
+iff their fully-canonicalized forms are structurally equal. -/
+theorem LevelExpr.denoteEquiv_iff_fullCanonicalize_eq
+    (e1 e2 : LevelExpr)
+    (hPred1 : LevelExpr.isPredicative e1 = true)
+    (hPred2 : LevelExpr.isPredicative e2 = true) :
+    LevelExpr.denoteEquiv e1 e2 ↔
+      LevelExpr.MaxPlusForm.fullCanonicalize (LevelExpr.toMaxPlusForm e1) =
+        LevelExpr.MaxPlusForm.fullCanonicalize (LevelExpr.toMaxPlusForm e2) := by
+  constructor
+  · intro hEquiv
+    exact LevelExpr.MaxPlusForm.canonicalForm_unique
+      (LevelExpr.MaxPlusForm.fullCanonicalize (LevelExpr.toMaxPlusForm e1))
+      (LevelExpr.MaxPlusForm.fullCanonicalize (LevelExpr.toMaxPlusForm e2))
+      (LevelExpr.MaxPlusForm.fullCanonicalize_isStrictlySortedByVariable
+        (LevelExpr.toMaxPlusForm e1))
+      (LevelExpr.MaxPlusForm.fullCanonicalize_isStrictlySortedByVariable
+        (LevelExpr.toMaxPlusForm e2))
+      (LevelExpr.MaxPlusForm.fullCanonicalize_baseConstant_eq_denote_zeroEnvironment
+        (LevelExpr.toMaxPlusForm e1))
+      (LevelExpr.MaxPlusForm.fullCanonicalize_baseConstant_eq_denote_zeroEnvironment
+        (LevelExpr.toMaxPlusForm e2))
+      (fun env => by
+        rw [LevelExpr.fullCanonicalize_toMaxPlusForm_denote e1 hPred1 env,
+            LevelExpr.fullCanonicalize_toMaxPlusForm_denote e2 hPred2 env]
+        exact hEquiv env)
+  · intro hFormsEq env
+    rw [← LevelExpr.fullCanonicalize_toMaxPlusForm_denote e1 hPred1 env,
+        ← LevelExpr.fullCanonicalize_toMaxPlusForm_denote e2 hPred2 env, hFormsEq]
+
+/-- Decision procedure for `denoteEquiv` on the predicative fragment:
+compute both fully-canonicalized forms and compare them with the derived
+`DecidableEq`.  Closes the predicative line of M22 (#271): universe-level
+equality up to `denoteEquiv` is decidable for `limax`-free expressions. -/
+def LevelExpr.decideDenoteEquiv
+    (e1 e2 : LevelExpr)
+    (hPred1 : LevelExpr.isPredicative e1 = true)
+    (hPred2 : LevelExpr.isPredicative e2 = true) :
+    Decidable (LevelExpr.denoteEquiv e1 e2) :=
+  if hFormsEq :
+      LevelExpr.MaxPlusForm.fullCanonicalize (LevelExpr.toMaxPlusForm e1) =
+        LevelExpr.MaxPlusForm.fullCanonicalize (LevelExpr.toMaxPlusForm e2) then
+    isTrue
+      ((LevelExpr.denoteEquiv_iff_fullCanonicalize_eq e1 e2 hPred1 hPred2).mpr hFormsEq)
+  else
+    isFalse (fun hEquiv =>
+      hFormsEq
+        ((LevelExpr.denoteEquiv_iff_fullCanonicalize_eq e1 e2 hPred1 hPred2).mp hEquiv))
+
 end LeanFX2.Foundation.PolyCell.Universe
