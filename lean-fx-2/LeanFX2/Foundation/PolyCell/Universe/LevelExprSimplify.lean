@@ -6351,4 +6351,112 @@ theorem LevelExpr.MaxPlusForm.fullCanonicalize_toMaxPlusForm_varOffsets_length_l
       (LevelExpr.toMaxPlusForm level).varOffsets)
     (LevelExpr.toMaxPlusForm_varOffsets_length_le_size level)
 
+/-! ### Step 10 — single-pass comparison-count costs (complexity witness, part 1)
+
+The decision procedure's cost is the number of variable-index comparisons
+(`Nat.ble` in the sort, `Nat.beq` in the absorb pass) it performs.  This
+section counts those comparisons with shadow functions that mirror each
+real function's recursion EXACTLY — same scrutinee (`Nat.ble`/`Nat.beq`
+on the same two indices), same structural recursion on the same tail — so
+each `*Steps` function returns precisely the comparison count of its
+namesake.  Faithfulness is by construction (identical control flow), not
+a postulate: the only difference from the real function is the return
+type (`Nat` count instead of the rebuilt list).  These are NOT vacuous
+(`fun _ => 0`) — they genuinely accumulate one unit per comparison — and
+each is proved bounded by the list length, the linear-pass half of the
+sort-dominated O(size²) bound.  The quadratic sort accumulation
+(`sortByVariableSteps ≤ length²`) and the total-cost assembly are the
+next bricks. -/
+
+/-- Comparison count of `insertByVariable`: one `Nat.ble` per element
+walked until the insertion point is found (or the list ends).  Mirrors
+`insertByVariable`'s recursion exactly; the `true` branch stops at one
+comparison, the `false` branch counts one and recurses on the tail. -/
+def LevelExpr.MaxPlusForm.insertByVariableSteps :
+    Nat × Nat → List (Nat × Nat) → Nat
+  | _, [] => 0
+  | (variableNew, offsetNew), (variableHead, _) :: rest =>
+      match Nat.ble variableNew variableHead with
+      | true => 1
+      | false =>
+          LevelExpr.MaxPlusForm.insertByVariableSteps (variableNew, offsetNew) rest + 1
+
+/-- Each sorted insertion performs at most `length`-many comparisons:
+the walk visits at most every element of the list once. -/
+theorem LevelExpr.MaxPlusForm.insertByVariableSteps_le_length :
+    ∀ (entry : Nat × Nat) (entries : List (Nat × Nat)),
+      LevelExpr.MaxPlusForm.insertByVariableSteps entry entries ≤ entries.length
+  | _, [] => Nat.zero_le 0
+  | (variableNew, offsetNew), (variableHead, offsetHead) :: rest => by
+      show (match Nat.ble variableNew variableHead with
+          | true => 1
+          | false =>
+              LevelExpr.MaxPlusForm.insertByVariableSteps
+                (variableNew, offsetNew) rest + 1) ≤
+        ((variableHead, offsetHead) :: rest).length
+      cases Nat.ble variableNew variableHead with
+      | true => exact Nat.succ_le_succ (Nat.zero_le rest.length)
+      | false =>
+          exact Nat.succ_le_succ
+            (LevelExpr.MaxPlusForm.insertByVariableSteps_le_length
+              (variableNew, offsetNew) rest)
+
+/-- Comparison count of `absorbFrom`: one `Nat.beq` per element of the
+tail, regardless of whether it fuses (true) or skips (false).  Mirrors
+`absorbFrom`'s recursion exactly. -/
+def LevelExpr.MaxPlusForm.absorbFromSteps :
+    Nat × Nat → List (Nat × Nat) → Nat
+  | _, [] => 0
+  | (variableCurrent, offsetCurrent), (variableNext, offsetNext) :: rest =>
+      match Nat.beq variableCurrent variableNext with
+      | true =>
+          LevelExpr.MaxPlusForm.absorbFromSteps
+            (variableCurrent, LevelExpr.levelMax offsetCurrent offsetNext) rest + 1
+      | false =>
+          LevelExpr.MaxPlusForm.absorbFromSteps (variableNext, offsetNext) rest + 1
+
+/-- The absorb walk performs at most `length`-many comparisons over the
+tail: one `Nat.beq` per element, both branches counting one and
+recursing. -/
+theorem LevelExpr.MaxPlusForm.absorbFromSteps_le_length :
+    ∀ (current : Nat × Nat) (rest : List (Nat × Nat)),
+      LevelExpr.MaxPlusForm.absorbFromSteps current rest ≤ rest.length
+  | _, [] => Nat.zero_le 0
+  | (variableCurrent, offsetCurrent), (variableNext, offsetNext) :: rest => by
+      show (match Nat.beq variableCurrent variableNext with
+          | true =>
+              LevelExpr.MaxPlusForm.absorbFromSteps
+                (variableCurrent, LevelExpr.levelMax offsetCurrent offsetNext) rest + 1
+          | false =>
+              LevelExpr.MaxPlusForm.absorbFromSteps (variableNext, offsetNext) rest + 1) ≤
+        ((variableNext, offsetNext) :: rest).length
+      cases Nat.beq variableCurrent variableNext with
+      | true =>
+          exact Nat.succ_le_succ
+            (LevelExpr.MaxPlusForm.absorbFromSteps_le_length
+              (variableCurrent, LevelExpr.levelMax offsetCurrent offsetNext) rest)
+      | false =>
+          exact Nat.succ_le_succ
+            (LevelExpr.MaxPlusForm.absorbFromSteps_le_length
+              (variableNext, offsetNext) rest)
+
+/-- Comparison count of the whole absorb pass: the empty list does no
+work; a non-empty list runs `absorbFrom` from its head over the tail. -/
+def LevelExpr.MaxPlusForm.absorbAdjacentSteps :
+    List (Nat × Nat) → Nat
+  | [] => 0
+  | entry :: rest => LevelExpr.MaxPlusForm.absorbFromSteps entry rest
+
+/-- The absorb pass performs at most `length`-many comparisons: at most
+one per element after the head. -/
+theorem LevelExpr.MaxPlusForm.absorbAdjacentSteps_le_length :
+    ∀ (entries : List (Nat × Nat)),
+      LevelExpr.MaxPlusForm.absorbAdjacentSteps entries ≤ entries.length
+  | [] => Nat.zero_le 0
+  | entry :: rest => by
+      show LevelExpr.MaxPlusForm.absorbFromSteps entry rest ≤ (entry :: rest).length
+      exact Nat.le_trans
+        (LevelExpr.MaxPlusForm.absorbFromSteps_le_length entry rest)
+        (Nat.le_succ rest.length)
+
 end LeanFX2.Foundation.PolyCell.Universe

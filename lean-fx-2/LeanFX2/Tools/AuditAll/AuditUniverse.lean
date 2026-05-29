@@ -401,3 +401,12 @@ strict-zero-axiom sweep.
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.MaxPlusForm.fullCanonicalize_toMaxPlusForm_varOffsets_length_le_size
 #assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.decidableOccursIn
 
+/-! ### M22 #271 complexity witness — single-pass comparison-count costs (Step 10, A10) -/
+
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.MaxPlusForm.insertByVariableSteps
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.MaxPlusForm.insertByVariableSteps_le_length
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.MaxPlusForm.absorbFromSteps
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.MaxPlusForm.absorbFromSteps_le_length
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.MaxPlusForm.absorbAdjacentSteps
+#assert_no_axioms LeanFX2.Foundation.PolyCell.Universe.LevelExpr.MaxPlusForm.absorbAdjacentSteps_le_length
+
