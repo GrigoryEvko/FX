@@ -1608,26 +1608,105 @@ def LevelExpr.ctorIndex : LevelExpr → Nat
   | .lmax _ _ => 3
   | .limax _ _ => 4
 
+/-! ## `orderingThen`: the lexicographic combinator for `compare`
+
+`compare`'s `lmax` / `limax` arms defer to `orderingThen`, which
+keeps the first verdict unless it is `.eq` (then it takes the
+second).  It is defined by *full* constructor enumeration rather
+than a `| .eq => … | other => …` wildcard, and that choice is
+load-bearing for the zero-axiom discipline: a one-constructor-
+plus-catch-all `match` over `Ordering` compiles to a matcher
+whose equation lemmas are discharged with `propext`, whereas full
+enumeration compiles straight to `Ordering.casesOn` and stays
+axiom-free.  Its construction / inversion lemmas inherit that
+cleanliness, letting the `compare` order-laws below reason about
+the `lmax` / `limax` combination without ever applying `rw` or
+`cases` to a `match`. -/
+
+/-- Lexicographic "then": keep the first verdict unless it is
+`.eq`, in which case defer to the second.  This is the
+combinator `compare` uses on `lmax` / `limax` operand pairs. -/
+def LevelExpr.orderingThen : Ordering → Ordering → Ordering
+  | .eq, secondVerdict => secondVerdict
+  | .lt, _ => Ordering.lt
+  | .gt, _ => Ordering.gt
+
+/-- Construct a `.eq` lexicographic verdict from `.eq` verdicts on
+both sides.  Proved by `subst` on both equalities (primitive
+`Eq.rec`, no equation-compiler matcher), then `rfl`. -/
+theorem LevelExpr.orderingThen_eq_eq_of_both (firstVerdict secondVerdict : Ordering)
+    (hFirst : firstVerdict = Ordering.eq) (hSecond : secondVerdict = Ordering.eq) :
+    LevelExpr.orderingThen firstVerdict secondVerdict = Ordering.eq := by
+  subst hFirst
+  subst hSecond
+  rfl
+
+/-- Invert a `.eq` lexicographic verdict: it forces both sides to
+be `.eq`.  Proved by tactic-mode `cases` on each verdict
+(primitive `Ordering.casesOn` — no auxiliary matcher, hence no
+`propext`-backed equation lemmas); the eight non-`.eq` first/second
+combinations contradict `hThen` via `Ordering` no-confusion. -/
+theorem LevelExpr.orderingThen_eq_eq_inv (firstVerdict secondVerdict : Ordering)
+    (hThen : LevelExpr.orderingThen firstVerdict secondVerdict = Ordering.eq) :
+    firstVerdict = Ordering.eq ∧ secondVerdict = Ordering.eq := by
+  cases firstVerdict <;> cases secondVerdict <;>
+    first
+      | exact ⟨rfl, rfl⟩
+      | exact Ordering.noConfusion hThen
+
+/-- `Ordering.swap` distributes over `orderingThen`.  Proved by
+case analysis on the first verdict (primitive `Ordering.casesOn`),
+then `rfl` per branch.  This is the algebraic fact that lets
+`compare_swap` handle the `lmax` / `limax` arms without touching
+a `match` with `cases`. -/
+theorem LevelExpr.orderingThen_swap (firstVerdict secondVerdict : Ordering) :
+    (LevelExpr.orderingThen firstVerdict secondVerdict).swap
+      = LevelExpr.orderingThen firstVerdict.swap secondVerdict.swap := by
+  cases firstVerdict <;> rfl
+
 /-- Total comparison on `LevelExpr`.  Same-ctor cases compare
-recursively (lexicographically on operands); cross-ctor cases
-fall through to `compareNat` on `ctorIndex`.
+recursively (lexicographically on operands, via `orderingThen`);
+cross-ctor cases fall through to `compareNat` on `ctorIndex`.
 
 The function is total (always returns one of `lt`/`eq`/`gt`)
 and is reflexive + antisymmetric (via `compare_swap`).  Phase
-B uses it to canonically order `lmax`/`limax` operands. -/
+B uses it to canonically order `lmax`/`limax` operands.  The
+binary arms route through `orderingThen` (full enumeration)
+rather than an in-place wildcard `match`, keeping `compare`
+itself `propext`-free. -/
 def LevelExpr.compare : LevelExpr → LevelExpr → Ordering
+  -- lzero (ctorIndex 0) vs each second-operand head.
   | .lzero, .lzero => .eq
+  | .lzero, .lvar _ => .lt
+  | .lzero, .lsucc _ => .lt
+  | .lzero, .lmax _ _ => .lt
+  | .lzero, .limax _ _ => .lt
+  -- lvar (1)
+  | .lvar _, .lzero => .gt
   | .lvar n, .lvar m => LevelExpr.compareNat n m
+  | .lvar _, .lsucc _ => .lt
+  | .lvar _, .lmax _ _ => .lt
+  | .lvar _, .limax _ _ => .lt
+  -- lsucc (2)
+  | .lsucc _, .lzero => .gt
+  | .lsucc _, .lvar _ => .gt
   | .lsucc e1, .lsucc e2 => LevelExpr.compare e1 e2
+  | .lsucc _, .lmax _ _ => .lt
+  | .lsucc _, .limax _ _ => .lt
+  -- lmax (3)
+  | .lmax _ _, .lzero => .gt
+  | .lmax _ _, .lvar _ => .gt
+  | .lmax _ _, .lsucc _ => .gt
   | .lmax a1 b1, .lmax a2 b2 =>
-      match LevelExpr.compare a1 a2 with
-      | .eq => LevelExpr.compare b1 b2
-      | other => other
+      LevelExpr.orderingThen (LevelExpr.compare a1 a2) (LevelExpr.compare b1 b2)
+  | .lmax _ _, .limax _ _ => .lt
+  -- limax (4)
+  | .limax _ _, .lzero => .gt
+  | .limax _ _, .lvar _ => .gt
+  | .limax _ _, .lsucc _ => .gt
+  | .limax _ _, .lmax _ _ => .gt
   | .limax a1 b1, .limax a2 b2 =>
-      match LevelExpr.compare a1 a2 with
-      | .eq => LevelExpr.compare b1 b2
-      | other => other
-  | e1, e2 => LevelExpr.compareNat e1.ctorIndex e2.ctorIndex
+      LevelExpr.orderingThen (LevelExpr.compare a1 a2) (LevelExpr.compare b1 b2)
 
 /-- `compare e e = .eq` (reflexivity).
 
@@ -1639,91 +1718,46 @@ theorem LevelExpr.compare_refl : ∀ (expr : LevelExpr),
   | .lzero => rfl
   | .lvar n => LevelExpr.compareNat_refl n
   | .lsucc inner => LevelExpr.compare_refl inner
-  | .lmax a b => by
-      show (match LevelExpr.compare a a with
-            | .eq => LevelExpr.compare b b
-            | other => other) = .eq
-      rw [LevelExpr.compare_refl a]
-      exact LevelExpr.compare_refl b
-  | .limax a b => by
-      show (match LevelExpr.compare a a with
-            | .eq => LevelExpr.compare b b
-            | other => other) = .eq
-      rw [LevelExpr.compare_refl a]
-      exact LevelExpr.compare_refl b
+  | .lmax a b =>
+      LevelExpr.orderingThen_eq_eq_of_both
+        (LevelExpr.compare a a) (LevelExpr.compare b b)
+        (LevelExpr.compare_refl a) (LevelExpr.compare_refl b)
+  | .limax a b =>
+      LevelExpr.orderingThen_eq_eq_of_both
+        (LevelExpr.compare a a) (LevelExpr.compare b b)
+        (LevelExpr.compare_refl a) (LevelExpr.compare_refl b)
 
 /-- `(compare e1 e2).swap = compare e2 e1` (antisymmetry as
 swap identity).
 
-Proof: structural recursion on the FIRST argument with case
-analysis on the second.  Same-ctor cases use `compareNat_swap`
-(for `lvar`) or recursive `compare_swap` (for `lsucc`/`lmax`/
-`limax`).  Cross-ctor cases reduce via the catch-all to
-`compareNat` on ctorIndex, then close via `compareNat_swap`. -/
+Proof: structural recursion on the first argument with case
+analysis on the second.  `lvar` uses `compareNat_swap`; `lsucc`
+recurses; `lmax` / `limax` push `swap` through `orderingThen`
+(`orderingThen_swap`) and realign the operands by recursion.
+Cross-ctor cases close by `rfl` — each direction reduces to the
+dual explicit verdict (`.lt` against `.gt`). -/
 theorem LevelExpr.compare_swap : ∀ (e1 e2 : LevelExpr),
     (LevelExpr.compare e1 e2).swap = LevelExpr.compare e2 e1
   | .lzero, .lzero => rfl
   | .lvar n, .lvar m => LevelExpr.compareNat_swap n m
   | .lsucc e1, .lsucc e2 => LevelExpr.compare_swap e1 e2
   | .lmax a1 b1, .lmax a2 b2 => by
-      show (match LevelExpr.compare a1 a2 with
-            | .eq => LevelExpr.compare b1 b2
-            | other => other).swap =
-        (match LevelExpr.compare a2 a1 with
-         | .eq => LevelExpr.compare b2 b1
-         | other => other)
-      cases hCmp : LevelExpr.compare a1 a2 with
-      | eq =>
-          have hSwap : LevelExpr.compare a2 a1 = .eq := by
-            have := LevelExpr.compare_swap a1 a2
-            rw [hCmp] at this
-            exact this.symm
-          rw [hSwap]
-          exact LevelExpr.compare_swap b1 b2
-      | lt =>
-          have hSwap : LevelExpr.compare a2 a1 = .gt := by
-            have := LevelExpr.compare_swap a1 a2
-            rw [hCmp] at this
-            exact this.symm
-          rw [hSwap]
-          rfl
-      | gt =>
-          have hSwap : LevelExpr.compare a2 a1 = .lt := by
-            have := LevelExpr.compare_swap a1 a2
-            rw [hCmp] at this
-            exact this.symm
-          rw [hSwap]
-          rfl
+      -- Both sides reduce to `orderingThen`; `swap` distributes,
+      -- and the recursive `compare_swap`s realign the operands.
+      show (LevelExpr.orderingThen
+              (LevelExpr.compare a1 a2) (LevelExpr.compare b1 b2)).swap
+         = LevelExpr.orderingThen
+              (LevelExpr.compare a2 a1) (LevelExpr.compare b2 b1)
+      rw [LevelExpr.orderingThen_swap, LevelExpr.compare_swap a1 a2,
+          LevelExpr.compare_swap b1 b2]
   | .limax a1 b1, .limax a2 b2 => by
-      show (match LevelExpr.compare a1 a2 with
-            | .eq => LevelExpr.compare b1 b2
-            | other => other).swap =
-        (match LevelExpr.compare a2 a1 with
-         | .eq => LevelExpr.compare b2 b1
-         | other => other)
-      cases hCmp : LevelExpr.compare a1 a2 with
-      | eq =>
-          have hSwap : LevelExpr.compare a2 a1 = .eq := by
-            have := LevelExpr.compare_swap a1 a2
-            rw [hCmp] at this
-            exact this.symm
-          rw [hSwap]
-          exact LevelExpr.compare_swap b1 b2
-      | lt =>
-          have hSwap : LevelExpr.compare a2 a1 = .gt := by
-            have := LevelExpr.compare_swap a1 a2
-            rw [hCmp] at this
-            exact this.symm
-          rw [hSwap]
-          rfl
-      | gt =>
-          have hSwap : LevelExpr.compare a2 a1 = .lt := by
-            have := LevelExpr.compare_swap a1 a2
-            rw [hCmp] at this
-            exact this.symm
-          rw [hSwap]
-          rfl
-  -- Cross-ctor cases: catch-all uses compareNat on ctorIndex.
+      show (LevelExpr.orderingThen
+              (LevelExpr.compare a1 a2) (LevelExpr.compare b1 b2)).swap
+         = LevelExpr.orderingThen
+              (LevelExpr.compare a2 a1) (LevelExpr.compare b2 b1)
+      rw [LevelExpr.orderingThen_swap, LevelExpr.compare_swap a1 a2,
+          LevelExpr.compare_swap b1 b2]
+  -- Cross-ctor cases: dual explicit verdicts, closed by `rfl`.
   | .lzero, .lvar _ => rfl
   | .lzero, .lsucc _ => rfl
   | .lzero, .lmax _ _ => rfl
@@ -1744,6 +1778,110 @@ theorem LevelExpr.compare_swap : ∀ (e1 e2 : LevelExpr),
   | .limax _ _, .lvar _ => rfl
   | .limax _ _, .lsucc _ => rfl
   | .limax _ _, .lmax _ _ => rfl
+
+/-! ## `compare` antisymmetry as structural equality
+
+The shipped `compare_refl` (reflexivity) and `compare_swap`
+(antisymmetry-as-swap) establish that `compare` is a reflexive,
+antisymmetric comparator.  The full canonical form additionally
+needs the *identity-of-indiscernibles* law: a `.eq` verdict
+coincides with genuine structural equality.  This is the law a
+sort-and-dedup canonicalizer relies on to collapse equal atoms —
+without it, two structurally-distinct operands could compare
+`.eq` and be silently merged, making the canonical form
+non-injective and a downstream `Decidable denoteEquiv` unsound.
+
+`compareNat_eq_imp_eq` is the `Nat`-leaf base case;
+`compare_eq_imp_eq` lifts it across the five `LevelExpr` ctors;
+the `*_iff_eq` wrappers package each as a decision-grade
+biconditional. -/
+
+/-- A `.eq` verdict from `compareNat` forces the two naturals to
+be equal.  Structural recursion on the first argument; the
+impossible cross-shape verdicts (`.lt` / `.gt` from a
+`0`-vs-successor mismatch) are discharged by `Ordering`
+constructor no-confusion via `nomatch`. -/
+theorem LevelExpr.compareNat_eq_imp_eq : ∀ (valueA valueB : Nat),
+    LevelExpr.compareNat valueA valueB = .eq → valueA = valueB
+  | 0, 0, _ => rfl
+  | 0, _ + 1, hEq => nomatch hEq
+  | _ + 1, 0, hEq => nomatch hEq
+  | predA + 1, predB + 1, hEq =>
+      congrArg Nat.succ (LevelExpr.compareNat_eq_imp_eq predA predB hEq)
+
+/-- `compareNat`'s `.eq` verdict is exactly natural-number
+equality (decision-grade biconditional).  Forward by
+`compareNat_eq_imp_eq`; backward by rewriting to the reflexive
+diagonal `compareNat_refl`. -/
+theorem LevelExpr.compareNat_eq_iff_eq (valueA valueB : Nat) :
+    LevelExpr.compareNat valueA valueB = .eq ↔ valueA = valueB :=
+  ⟨LevelExpr.compareNat_eq_imp_eq valueA valueB,
+   fun hEq => by rw [hEq]; exact LevelExpr.compareNat_refl valueB⟩
+
+/-- A `.eq` verdict from `compare` forces structural equality of
+the two level expressions.
+
+Proof: structural recursion on the first expression with case
+analysis on the second (mirroring `compare_swap`'s 25-arm
+shape).  Same-ctor leaf cases lift `compareNat_eq_imp_eq` (for
+`lvar`) or recurse through `congrArg` (for `lsucc`).  The binary
+`lmax` / `limax` cases route the hypothesis through
+`orderingThen_eq_eq_inv` (propext-free), which forces both
+operand comparisons to `.eq`; the two recursive equalities then
+recombine via `rw`.  Every cross-ctor case reduces to an explicit
+`.lt` / `.gt` verdict, refuted against `.eq` by `nomatch`. -/
+theorem LevelExpr.compare_eq_imp_eq : ∀ (exprA exprB : LevelExpr),
+    LevelExpr.compare exprA exprB = .eq → exprA = exprB
+  | .lzero, .lzero, _ => rfl
+  | .lvar n, .lvar m, hEq =>
+      congrArg LevelExpr.lvar (LevelExpr.compareNat_eq_imp_eq n m hEq)
+  | .lsucc innerA, .lsucc innerB, hEq =>
+      congrArg LevelExpr.lsucc
+        (LevelExpr.compare_eq_imp_eq innerA innerB hEq)
+  | .lmax a1 b1, .lmax a2 b2, hEq => by
+      -- `hEq` is defeq to the binary `match`; invert it propext-
+      -- free, then recurse on both forced-`.eq` operand verdicts.
+      have hInv := LevelExpr.orderingThen_eq_eq_inv
+        (LevelExpr.compare a1 a2) (LevelExpr.compare b1 b2) hEq
+      rw [LevelExpr.compare_eq_imp_eq a1 a2 hInv.1,
+          LevelExpr.compare_eq_imp_eq b1 b2 hInv.2]
+  | .limax a1 b1, .limax a2 b2, hEq => by
+      have hInv := LevelExpr.orderingThen_eq_eq_inv
+        (LevelExpr.compare a1 a2) (LevelExpr.compare b1 b2) hEq
+      rw [LevelExpr.compare_eq_imp_eq a1 a2 hInv.1,
+          LevelExpr.compare_eq_imp_eq b1 b2 hInv.2]
+  -- Cross-ctor cases: `compare` falls to the `compareNat`-on-
+  -- `ctorIndex` catch-all, whose verdict on distinct indices is
+  -- never `.eq`.
+  | .lzero, .lvar _, hEq => nomatch hEq
+  | .lzero, .lsucc _, hEq => nomatch hEq
+  | .lzero, .lmax _ _, hEq => nomatch hEq
+  | .lzero, .limax _ _, hEq => nomatch hEq
+  | .lvar _, .lzero, hEq => nomatch hEq
+  | .lvar _, .lsucc _, hEq => nomatch hEq
+  | .lvar _, .lmax _ _, hEq => nomatch hEq
+  | .lvar _, .limax _ _, hEq => nomatch hEq
+  | .lsucc _, .lzero, hEq => nomatch hEq
+  | .lsucc _, .lvar _, hEq => nomatch hEq
+  | .lsucc _, .lmax _ _, hEq => nomatch hEq
+  | .lsucc _, .limax _ _, hEq => nomatch hEq
+  | .lmax _ _, .lzero, hEq => nomatch hEq
+  | .lmax _ _, .lvar _, hEq => nomatch hEq
+  | .lmax _ _, .lsucc _, hEq => nomatch hEq
+  | .lmax _ _, .limax _ _, hEq => nomatch hEq
+  | .limax _ _, .lzero, hEq => nomatch hEq
+  | .limax _ _, .lvar _, hEq => nomatch hEq
+  | .limax _ _, .lsucc _, hEq => nomatch hEq
+  | .limax _ _, .lmax _ _, hEq => nomatch hEq
+
+/-- `compare`'s `.eq` verdict is exactly structural equality on
+`LevelExpr` (decision-grade biconditional).  Forward by
+`compare_eq_imp_eq`; backward by rewriting to the reflexive
+diagonal `compare_refl`. -/
+theorem LevelExpr.compare_eq_iff_eq (exprA exprB : LevelExpr) :
+    LevelExpr.compare exprA exprB = .eq ↔ exprA = exprB :=
+  ⟨LevelExpr.compare_eq_imp_eq exprA exprB,
+   fun hEq => by rw [hEq]; exact LevelExpr.compare_refl exprB⟩
 
 /-! ## First Phase B canonicalization step — pairwise lmax sort
 
