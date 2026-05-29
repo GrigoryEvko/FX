@@ -4419,4 +4419,86 @@ theorem LevelExpr.MaxPlusForm.denoteVarOffsets_sortByVariable (env : Nat → Nat
           (LevelExpr.MaxPlusForm.denoteVarOffsets rest env)
       rw [LevelExpr.MaxPlusForm.denoteVarOffsets_sortByVariable env rest]
 
+/-! ## Canonicalization — absorption of adjacent equal-variable entries
+
+On a list already sorted by variable, equal-variable entries are
+adjacent; `absorbAdjacent` fuses each such run into a single entry
+carrying the max offset, so the canonical form holds one offset per
+variable.  To recurse structurally (rather than on a rebuilt list),
+`absorbFrom` carries the "current" entry as an accumulator and walks
+the structural tail; combining keeps the accumulator at the same
+variable with the joined offset. -/
+
+/-- Walk `rest`, fusing each entry whose variable equals the carried
+`current`'s into `current` (taking the max offset), else emitting
+`current` and carrying the new entry.  Structurally recursive on
+`rest`. -/
+def LevelExpr.MaxPlusForm.absorbFrom :
+    Nat × Nat → List (Nat × Nat) → List (Nat × Nat)
+  | current, [] => [current]
+  | (variableCurrent, offsetCurrent), (variableNext, offsetNext) :: rest =>
+      match Nat.beq variableCurrent variableNext with
+      | true =>
+          LevelExpr.MaxPlusForm.absorbFrom
+            (variableCurrent, LevelExpr.levelMax offsetCurrent offsetNext) rest
+      | false =>
+          (variableCurrent, offsetCurrent) ::
+            LevelExpr.MaxPlusForm.absorbFrom (variableNext, offsetNext) rest
+
+/-- `absorbFrom` denotes the same as prepending the carried entry:
+each fuse step is the local `denoteVarOffsets_absorb_adjacent` rule,
+each skip step folds the head through the recursive tail. -/
+theorem LevelExpr.MaxPlusForm.denoteVarOffsets_absorbFrom (env : Nat → Nat) :
+    ∀ (current : Nat × Nat) (rest : List (Nat × Nat)),
+      LevelExpr.MaxPlusForm.denoteVarOffsets
+          (LevelExpr.MaxPlusForm.absorbFrom current rest) env =
+        LevelExpr.MaxPlusForm.denoteVarOffsets (current :: rest) env
+  | current, [] => rfl
+  | (variableCurrent, offsetCurrent), (variableNext, offsetNext) :: rest => by
+      show LevelExpr.MaxPlusForm.denoteVarOffsets
+          (match Nat.beq variableCurrent variableNext with
+           | true => LevelExpr.MaxPlusForm.absorbFrom
+               (variableCurrent, LevelExpr.levelMax offsetCurrent offsetNext) rest
+           | false => (variableCurrent, offsetCurrent) ::
+               LevelExpr.MaxPlusForm.absorbFrom (variableNext, offsetNext) rest) env =
+        LevelExpr.MaxPlusForm.denoteVarOffsets
+          ((variableCurrent, offsetCurrent) :: (variableNext, offsetNext) :: rest) env
+      cases hbeq : Nat.beq variableCurrent variableNext with
+      | true =>
+          have hEqVar : variableCurrent = variableNext :=
+            Nat.eq_of_beq_eq_true hbeq
+          rw [LevelExpr.MaxPlusForm.denoteVarOffsets_absorbFrom env
+                (variableCurrent, LevelExpr.levelMax offsetCurrent offsetNext) rest,
+              ← hEqVar]
+          exact (LevelExpr.MaxPlusForm.denoteVarOffsets_absorb_adjacent
+            variableCurrent offsetCurrent offsetNext rest env).symm
+      | false =>
+          show LevelExpr.levelMax (env variableCurrent + offsetCurrent)
+              (LevelExpr.MaxPlusForm.denoteVarOffsets
+                (LevelExpr.MaxPlusForm.absorbFrom (variableNext, offsetNext) rest) env) =
+            LevelExpr.levelMax (env variableCurrent + offsetCurrent)
+              (LevelExpr.MaxPlusForm.denoteVarOffsets
+                ((variableNext, offsetNext) :: rest) env)
+          rw [LevelExpr.MaxPlusForm.denoteVarOffsets_absorbFrom env
+                (variableNext, offsetNext) rest]
+
+/-- Absorb adjacent equal-variable entries throughout the list. -/
+def LevelExpr.MaxPlusForm.absorbAdjacent :
+    List (Nat × Nat) → List (Nat × Nat)
+  | [] => []
+  | entry :: rest => LevelExpr.MaxPlusForm.absorbFrom entry rest
+
+/-- Absorption preserves the denotation (via `denoteVarOffsets_absorbFrom`). -/
+theorem LevelExpr.MaxPlusForm.denoteVarOffsets_absorbAdjacent (env : Nat → Nat) :
+    ∀ (entries : List (Nat × Nat)),
+      LevelExpr.MaxPlusForm.denoteVarOffsets
+          (LevelExpr.MaxPlusForm.absorbAdjacent entries) env =
+        LevelExpr.MaxPlusForm.denoteVarOffsets entries env
+  | [] => rfl
+  | entry :: rest => by
+      show LevelExpr.MaxPlusForm.denoteVarOffsets
+          (LevelExpr.MaxPlusForm.absorbFrom entry rest) env =
+        LevelExpr.MaxPlusForm.denoteVarOffsets (entry :: rest) env
+      exact LevelExpr.MaxPlusForm.denoteVarOffsets_absorbFrom env entry rest
+
 end LeanFX2.Foundation.PolyCell.Universe
