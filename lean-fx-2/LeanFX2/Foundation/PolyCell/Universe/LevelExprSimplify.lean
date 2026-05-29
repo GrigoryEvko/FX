@@ -4501,4 +4501,71 @@ theorem LevelExpr.MaxPlusForm.denoteVarOffsets_absorbAdjacent (env : Nat → Nat
         LevelExpr.MaxPlusForm.denoteVarOffsets (entry :: rest) env
       exact LevelExpr.MaxPlusForm.denoteVarOffsets_absorbFrom env entry rest
 
+/-! ## Canonicalization — assembling the form-level canonicalizer
+
+Sort-then-absorb yields the canonical `varOffsets`: sorting makes
+equal-variable entries adjacent, absorption collapses each run to one
+max offset, so the result holds exactly one (max) offset per variable
+in ascending order.  Lifted to `MaxPlusForm.canonicalize`, this is
+denote-preserving; composed with `toMaxPlusForm` it gives the
+end-to-end soundness of the predicative normalizer-to-canonical-form
+pipeline — the (←) direction the decision procedure will rest on. -/
+
+/-- Canonicalize a `varOffsets` list: sort by variable, then absorb
+adjacent equal-variable entries.  One max offset per variable, sorted. -/
+def LevelExpr.MaxPlusForm.canonicalizeVarOffsets
+    (entries : List (Nat × Nat)) : List (Nat × Nat) :=
+  LevelExpr.MaxPlusForm.absorbAdjacent
+    (LevelExpr.MaxPlusForm.sortByVariable entries)
+
+/-- Canonicalizing the offsets preserves the denotation: chain the
+sort half (`denoteVarOffsets_sortByVariable`) and the absorb half
+(`denoteVarOffsets_absorbAdjacent`). -/
+theorem LevelExpr.MaxPlusForm.denoteVarOffsets_canonicalizeVarOffsets
+    (entries : List (Nat × Nat)) (env : Nat → Nat) :
+    LevelExpr.MaxPlusForm.denoteVarOffsets
+        (LevelExpr.MaxPlusForm.canonicalizeVarOffsets entries) env =
+      LevelExpr.MaxPlusForm.denoteVarOffsets entries env := by
+  show LevelExpr.MaxPlusForm.denoteVarOffsets
+      (LevelExpr.MaxPlusForm.absorbAdjacent
+        (LevelExpr.MaxPlusForm.sortByVariable entries)) env =
+    LevelExpr.MaxPlusForm.denoteVarOffsets entries env
+  rw [LevelExpr.MaxPlusForm.denoteVarOffsets_absorbAdjacent env
+        (LevelExpr.MaxPlusForm.sortByVariable entries),
+      LevelExpr.MaxPlusForm.denoteVarOffsets_sortByVariable env entries]
+
+/-- Canonicalize a max-plus form: canonicalize the offsets, keep the
+base constant. -/
+def LevelExpr.MaxPlusForm.canonicalize
+    (form : LevelExpr.MaxPlusForm) : LevelExpr.MaxPlusForm :=
+  { baseConstant := form.baseConstant,
+    varOffsets :=
+      LevelExpr.MaxPlusForm.canonicalizeVarOffsets form.varOffsets }
+
+/-- Canonicalizing a form preserves its denotation. -/
+theorem LevelExpr.MaxPlusForm.canonicalize_denote
+    (form : LevelExpr.MaxPlusForm) (env : Nat → Nat) :
+    LevelExpr.MaxPlusForm.denote (LevelExpr.MaxPlusForm.canonicalize form) env =
+      LevelExpr.MaxPlusForm.denote form env := by
+  show LevelExpr.levelMax form.baseConstant
+      (LevelExpr.MaxPlusForm.denoteVarOffsets
+        (LevelExpr.MaxPlusForm.canonicalizeVarOffsets form.varOffsets) env) =
+    LevelExpr.levelMax form.baseConstant
+      (LevelExpr.MaxPlusForm.denoteVarOffsets form.varOffsets env)
+  rw [LevelExpr.MaxPlusForm.denoteVarOffsets_canonicalizeVarOffsets
+        form.varOffsets env]
+
+/-- End-to-end soundness on the predicative fragment: normalizing to a
+max-plus form and canonicalizing it denotes the same level as the
+original expression.  Chains `canonicalize_denote` with the normalizer
+soundness `toMaxPlusForm_denote`. -/
+theorem LevelExpr.canonicalize_toMaxPlusForm_denote
+    (level : LevelExpr) (hPred : LevelExpr.isPredicative level = true)
+    (env : Nat → Nat) :
+    LevelExpr.MaxPlusForm.denote
+        (LevelExpr.MaxPlusForm.canonicalize (LevelExpr.toMaxPlusForm level)) env =
+      LevelExpr.denote level env := by
+  rw [LevelExpr.MaxPlusForm.canonicalize_denote (LevelExpr.toMaxPlusForm level) env,
+      LevelExpr.toMaxPlusForm_denote env level hPred]
+
 end LeanFX2.Foundation.PolyCell.Universe
