@@ -3279,4 +3279,52 @@ theorem LevelExpr.strictlySorted_unique :
           | inr hzInXr => exact hzInXr
       rw [LevelExpr.strictlySorted_unique xr yr hSx.2 hSy.2 hTailIff]
 
+/-! ## Semantic bridge — membership dominates the max-fold
+
+First step connecting the syntactic membership predicate `OccursIn`
+to the semantic `denoteAtomList` max-fold: an atom occurring in a
+list has denotation bounded above by the list's running maximum.
+This is the "≥" half of the eventual point-environment detection
+(a point environment isolates a single variable's contribution to
+the max).  Pure `Nat`-order reasoning over the custom `levelMax`. -/
+
+/-- The left operand is below `levelMax`. -/
+theorem LevelExpr.levelMax_ge_left :
+    ∀ (valueA valueB : Nat), valueA ≤ LevelExpr.levelMax valueA valueB
+  | 0, valueB => Nat.zero_le valueB
+  | _valueA + 1, 0 => Nat.le_refl _
+  | valueA + 1, valueB + 1 =>
+      Nat.succ_le_succ (LevelExpr.levelMax_ge_left valueA valueB)
+
+/-- The right operand is below `levelMax`. -/
+theorem LevelExpr.levelMax_ge_right :
+    ∀ (valueA valueB : Nat), valueB ≤ LevelExpr.levelMax valueA valueB
+  | 0, valueB => Nat.le_refl valueB
+  | _valueA + 1, 0 => Nat.zero_le _
+  | valueA + 1, valueB + 1 =>
+      Nat.succ_le_succ (LevelExpr.levelMax_ge_right valueA valueB)
+
+/-- An atom occurring in a list has denotation at most the list's
+`denoteAtomList` (running `levelMax`): membership is dominated by
+the maximum.  List recursion: the head case uses `levelMax_ge_left`,
+a deeper occurrence chains the inductive hypothesis through
+`levelMax_ge_right`. -/
+theorem LevelExpr.denote_le_denoteAtomList_of_occurs (env : Nat → Nat) :
+    ∀ (xs : List LevelExpr) (atom : LevelExpr),
+      LevelExpr.OccursIn atom xs →
+      LevelExpr.denote atom env ≤ LevelExpr.denoteAtomList xs env
+  | [], _atom, hOccurs => nomatch hOccurs
+  | head :: rest, atom, hOccurs => by
+      cases hOccurs with
+      | inl hHeadEq =>
+          rw [← hHeadEq]
+          exact LevelExpr.levelMax_ge_left (LevelExpr.denote head env)
+            (LevelExpr.denoteAtomList rest env)
+      | inr hOccursRest =>
+          have hInductive :=
+            LevelExpr.denote_le_denoteAtomList_of_occurs env rest atom hOccursRest
+          exact Nat.le_trans hInductive
+            (LevelExpr.levelMax_ge_right (LevelExpr.denote head env)
+              (LevelExpr.denoteAtomList rest env))
+
 end LeanFX2.Foundation.PolyCell.Universe
