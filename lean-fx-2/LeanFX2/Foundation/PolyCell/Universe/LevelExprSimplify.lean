@@ -5533,4 +5533,116 @@ theorem LevelExpr.MaxPlusForm.lookupOffset_pointwise_tail
       rw [← hLeft, ← hRight]
       exact hPt probe
 
+/-! ### Step 7(c) — the lookup-extensionality theorem
+
+Two strictly-sorted assoc-lists agreeing on `lookupOffset` at every key
+are structurally equal.  Structural recursion on the left list; the
+cons-cons case is the constructive head-key trichotomy via two `Nat.ble`
+splits — equal heads recurse (antisymmetry + tail-pointwise + IH), a
+strict head on either side contradicts (the smaller key is present in
+one list but absent in the other), and the both-`false` corner is
+impossible (`ble_false_swap`).  This is the engine of canonical-form
+uniqueness: `levelMax` is not cancellative, but `lookupOffset` is. -/
+theorem LevelExpr.MaxPlusForm.lookupOffset_ext :
+    ∀ (entriesLeft entriesRight : List (Nat × Nat)),
+      LevelExpr.MaxPlusForm.isStrictlySortedByVariable entriesLeft = true →
+      LevelExpr.MaxPlusForm.isStrictlySortedByVariable entriesRight = true →
+      (∀ (probe : Nat),
+        LevelExpr.MaxPlusForm.lookupOffset probe entriesLeft =
+          LevelExpr.MaxPlusForm.lookupOffset probe entriesRight) →
+      entriesLeft = entriesRight
+  | [], [], _, _, _ => rfl
+  | [], (variableRight, offsetRight) :: restRight, _, _, hPt => by
+      have hEq := hPt variableRight
+      rw [LevelExpr.MaxPlusForm.lookupOffset_cons_self variableRight offsetRight restRight]
+        at hEq
+      nomatch (show (none : Option Nat) = some offsetRight from hEq)
+  | (variableLeft, offsetLeft) :: restLeft, [], _, _, hPt => by
+      have hEq := hPt variableLeft
+      rw [LevelExpr.MaxPlusForm.lookupOffset_cons_self variableLeft offsetLeft restLeft]
+        at hEq
+      nomatch (show (some offsetLeft : Option Nat) = none from hEq)
+  | (variableLeft, offsetLeft) :: restLeft, (variableRight, offsetRight) :: restRight,
+      hStrictLeft, hStrictRight, hPt => by
+      have hStrictLeftConj :
+          (LevelExpr.MaxPlusForm.allVariablesAtLeast (variableLeft + 1) restLeft &&
+            LevelExpr.MaxPlusForm.isStrictlySortedByVariable restLeft) = true := hStrictLeft
+      have hStrictRightConj :
+          (LevelExpr.MaxPlusForm.allVariablesAtLeast (variableRight + 1) restRight &&
+            LevelExpr.MaxPlusForm.isStrictlySortedByVariable restRight) = true := hStrictRight
+      cases hb12 : Nat.ble variableLeft variableRight with
+      | true =>
+          cases hb21 : Nat.ble variableRight variableLeft with
+          | true =>
+              have hEqVar : variableLeft = variableRight :=
+                LevelExpr.ble_antisymm variableLeft variableRight hb12 hb21
+              subst hEqVar
+              have hEqOff := hPt variableLeft
+              rw [LevelExpr.MaxPlusForm.lookupOffset_cons_self variableLeft offsetLeft restLeft,
+                  LevelExpr.MaxPlusForm.lookupOffset_cons_self variableLeft offsetRight restRight]
+                at hEqOff
+              have hOffEq : offsetLeft = offsetRight := Option.some.inj hEqOff
+              have hAllLeft :
+                  LevelExpr.MaxPlusForm.allVariablesAtLeast (variableLeft + 1) restLeft = true :=
+                LevelExpr.and_eq_true_imp_left hStrictLeftConj
+              have hAllRight :
+                  LevelExpr.MaxPlusForm.allVariablesAtLeast (variableLeft + 1) restRight = true :=
+                LevelExpr.and_eq_true_imp_left hStrictRightConj
+              have hPtTail :=
+                LevelExpr.MaxPlusForm.lookupOffset_pointwise_tail variableLeft offsetLeft
+                  offsetRight restLeft restRight hAllLeft hAllRight hPt
+              have hTailEq : restLeft = restRight :=
+                LevelExpr.MaxPlusForm.lookupOffset_ext restLeft restRight
+                  (LevelExpr.and_eq_true_imp_right hStrictLeftConj)
+                  (LevelExpr.and_eq_true_imp_right hStrictRightConj) hPtTail
+              rw [hOffEq, hTailEq]
+          | false =>
+              have hbleSuccHead : Nat.ble (variableLeft + 1) variableRight = true :=
+                LevelExpr.ble_succ_le_of_ble_false variableLeft variableRight hb21
+              have hAllRestRight :
+                  LevelExpr.MaxPlusForm.allVariablesAtLeast (variableLeft + 1) restRight = true :=
+                LevelExpr.MaxPlusForm.allVariablesAtLeast_mono (variableLeft + 1)
+                  (variableRight + 1) hb12 restRight
+                  (LevelExpr.and_eq_true_imp_left hStrictRightConj)
+              have hAllRight :
+                  LevelExpr.MaxPlusForm.allVariablesAtLeast (variableLeft + 1)
+                    ((variableRight, offsetRight) :: restRight) = true :=
+                LevelExpr.and_eq_true_of_both hbleSuccHead hAllRestRight
+              have hNone : LevelExpr.MaxPlusForm.lookupOffset variableLeft
+                  ((variableRight, offsetRight) :: restRight) = none :=
+                LevelExpr.MaxPlusForm.lookupOffset_eq_none_of_allVariablesAtLeast variableLeft
+                  ((variableRight, offsetRight) :: restRight) hAllRight
+              have hEq := hPt variableLeft
+              rw [LevelExpr.MaxPlusForm.lookupOffset_cons_self variableLeft offsetLeft restLeft,
+                  hNone] at hEq
+              nomatch (show (some offsetLeft : Option Nat) = none from hEq)
+      | false =>
+          cases hb21 : Nat.ble variableRight variableLeft with
+          | true =>
+              have hbleSuccHead : Nat.ble (variableRight + 1) variableLeft = true :=
+                LevelExpr.ble_succ_le_of_ble_false variableRight variableLeft hb12
+              have hAllRestLeft :
+                  LevelExpr.MaxPlusForm.allVariablesAtLeast (variableRight + 1) restLeft = true :=
+                LevelExpr.MaxPlusForm.allVariablesAtLeast_mono (variableRight + 1)
+                  (variableLeft + 1) hb21 restLeft
+                  (LevelExpr.and_eq_true_imp_left hStrictLeftConj)
+              have hAllLeft :
+                  LevelExpr.MaxPlusForm.allVariablesAtLeast (variableRight + 1)
+                    ((variableLeft, offsetLeft) :: restLeft) = true :=
+                LevelExpr.and_eq_true_of_both hbleSuccHead hAllRestLeft
+              have hNone : LevelExpr.MaxPlusForm.lookupOffset variableRight
+                  ((variableLeft, offsetLeft) :: restLeft) = none :=
+                LevelExpr.MaxPlusForm.lookupOffset_eq_none_of_allVariablesAtLeast variableRight
+                  ((variableLeft, offsetLeft) :: restLeft) hAllLeft
+              have hEq := hPt variableRight
+              rw [hNone,
+                  LevelExpr.MaxPlusForm.lookupOffset_cons_self variableRight offsetRight restRight]
+                at hEq
+              nomatch (show (none : Option Nat) = some offsetRight from hEq)
+          | false =>
+              have hSwap : Nat.ble variableRight variableLeft = true :=
+                LevelExpr.ble_false_swap variableLeft variableRight hb12
+              rw [hSwap] at hb21
+              exact Bool.noConfusion hb21
+
 end LeanFX2.Foundation.PolyCell.Universe
