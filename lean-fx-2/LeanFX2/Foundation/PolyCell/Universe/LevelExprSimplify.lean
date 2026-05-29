@@ -3409,4 +3409,21 @@ theorem LevelExpr.denote_lvar_pointEnvironment_self (variableIndex : Nat) :
   rw [LevelExpr.denote_lvar_pointEnvironment]
   exact if_pos rfl
 
+/-- If `lvar k` occurs in `xs`, the max-fold under `pointEnvironment k`
+is nonzero — the isolated variable contributes `1`, and the fold
+dominates every member.  Holds for ANY list (no var-only assumption):
+this is the "occurs ⟹ detected" direction of the membership oracle. -/
+theorem LevelExpr.denoteAtomList_pointEnvironment_ne_zero_of_occursLvar
+    (variableIndex : Nat) (xs : List LevelExpr) :
+    LevelExpr.OccursIn (.lvar variableIndex) xs →
+      LevelExpr.denoteAtomList xs
+        (LevelExpr.pointEnvironment variableIndex) ≠ 0 := by
+  intro hOccurs hFoldZero
+  have hMemberLe :=
+    LevelExpr.denote_le_denoteAtomList_of_occurs
+      (LevelExpr.pointEnvironment variableIndex) xs (.lvar variableIndex) hOccurs
+  rw [LevelExpr.denote_lvar_pointEnvironment_self] at hMemberLe
+  rw [hFoldZero] at hMemberLe
+  exact Nat.not_succ_le_zero 0 hMemberLe
+
 end LeanFX2.Foundation.PolyCell.Universe
