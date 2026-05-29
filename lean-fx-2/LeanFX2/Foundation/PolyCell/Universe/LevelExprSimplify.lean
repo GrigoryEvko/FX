@@ -5645,4 +5645,65 @@ theorem LevelExpr.MaxPlusForm.lookupOffset_ext :
               rw [hSwap] at hb21
               exact Bool.noConfusion hb21
 
+/-! ### Step 7(c-a) connectors — `lookupOffset` ↔ `occursAsVariable` / `offsetOf`
+
+The denotation→`lookupOffset` bridge (next tick) reads `lookupOffset`
+off the present/absent denotation oracles, which speak in terms of
+`occursAsVariable` and `offsetOf`.  These two connectors translate:
+absence collapses the lookup to `none`, presence to `some (offsetOf …)`.
+Both share the head-match/head-miss recursion of the three functions. -/
+
+/-- An absent probe looks up to `none`.  Mirror of the recursion of
+`occursAsVariable`: head-miss (`Nat.beq … = false` from the disjunction)
+reduces both to their tails. -/
+theorem LevelExpr.MaxPlusForm.lookupOffset_eq_none_of_not_occurs (probe : Nat) :
+    ∀ (entries : List (Nat × Nat)),
+      LevelExpr.MaxPlusForm.occursAsVariable probe entries = false →
+      LevelExpr.MaxPlusForm.lookupOffset probe entries = none
+  | [], _ => rfl
+  | (variableHead, offsetHead) :: rest, hNotOcc => by
+      have hOrFalse : (Nat.beq variableHead probe ||
+          LevelExpr.MaxPlusForm.occursAsVariable probe rest) = false := hNotOcc
+      have hBeqFalse : Nat.beq variableHead probe = false :=
+        LevelExpr.or_eq_false_imp_left hOrFalse
+      have hRestNotOcc : LevelExpr.MaxPlusForm.occursAsVariable probe rest = false :=
+        LevelExpr.or_eq_false_imp_right hOrFalse
+      rw [LevelExpr.MaxPlusForm.lookupOffset_cons_of_beq_false probe variableHead
+        offsetHead rest hBeqFalse]
+      exact LevelExpr.MaxPlusForm.lookupOffset_eq_none_of_not_occurs probe rest hRestNotOcc
+
+/-- A present probe looks up to `some` of its first-match offset.
+Head-match (`Nat.beq … = true`) reads both `lookupOffset` and `offsetOf`
+to the head; head-miss reduces both to their tails (IH, with the
+disjunction forcing the tail occurrence). -/
+theorem LevelExpr.MaxPlusForm.lookupOffset_eq_some_offsetOf_of_occurs (probe : Nat) :
+    ∀ (entries : List (Nat × Nat)),
+      LevelExpr.MaxPlusForm.occursAsVariable probe entries = true →
+      LevelExpr.MaxPlusForm.lookupOffset probe entries =
+        some (LevelExpr.MaxPlusForm.offsetOf probe entries)
+  | [], hOcc => Bool.noConfusion hOcc
+  | (variableHead, offsetHead) :: rest, hOcc => by
+      cases hBeq : Nat.beq variableHead probe with
+      | true =>
+          show (match Nat.beq variableHead probe with
+              | true => some offsetHead
+              | false => LevelExpr.MaxPlusForm.lookupOffset probe rest) =
+            some (match Nat.beq variableHead probe with
+              | true => offsetHead
+              | false => LevelExpr.MaxPlusForm.offsetOf probe rest)
+          rw [hBeq]
+      | false =>
+          have hOrTrue : (Nat.beq variableHead probe ||
+              LevelExpr.MaxPlusForm.occursAsVariable probe rest) = true := hOcc
+          rw [hBeq] at hOrTrue
+          have hOccRest : LevelExpr.MaxPlusForm.occursAsVariable probe rest = true := hOrTrue
+          show (match Nat.beq variableHead probe with
+              | true => some offsetHead
+              | false => LevelExpr.MaxPlusForm.lookupOffset probe rest) =
+            some (match Nat.beq variableHead probe with
+              | true => offsetHead
+              | false => LevelExpr.MaxPlusForm.offsetOf probe rest)
+          rw [hBeq]
+          exact LevelExpr.MaxPlusForm.lookupOffset_eq_some_offsetOf_of_occurs probe rest hOccRest
+
 end LeanFX2.Foundation.PolyCell.Universe
