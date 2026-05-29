@@ -232,6 +232,7 @@ The hard rules this design holds:
     * 11.6 [Metatheory obligations on the v2 substrate](#116-metatheory-obligations-on-the-v2-substrate)
     * 11.7 [Foundational boundaries — Gödel, Turing, openness as design constraints](#117-foundational-boundaries--godel-turing-and-controlled-openness-as-polycell-design-constraints)
     * 11.8 [**The Maximal-Power Computable Kernel** — the apex commitment](#118-the-maximal-power-computable-kernel)
+    * 11.9 [**The Internalization Program** — frontier & beyond-frontier extensions](#119-the-internalization-program--frontier-and-beyond-frontier-extensions)
 12. [Risks + open research questions](#12-risks-and-open-questions)
 13. [References](#13-references)
 
@@ -9134,6 +9135,281 @@ it on FX today."  OP1's Milestone 0 is the one that is genuinely
 attackable now — on paper + a small Lean fragment standing on DU4 —
 before the full apex exists, which is exactly why it is the
 recommended opening move.
+
+---
+
+## 11.9 The Internalization Program — frontier and beyond-frontier extensions
+
+§11.8 commits the *apex* (the strongest decidable kernel).  §11.9
+states the *method* that generated it and applies that method past the
+apex.  It is a research program, not roadmap: **none of §11.9 is on the
+MILESTONE A–D critical path**, and every entry obeys the §1 manifesto
+discipline (a cited result, a constructive Lean target, or an explicit
+status tag) and the §11.8.0 ledger format.  The firewall is hard — §11.8
+ships first; §11.9 is walled off exactly as §11.8.14 / §11.8.2.1 are.
+
+**Status legend** (reused from §11.8.0): **SHIPPABLE-NOW** (decidable,
+runs on the current substrate or a fragment) · **SPECIFIABLE-NOW**
+(pinnable as an obligation/schema, no new mathematics, apex-gated) ·
+**OPEN-RESEARCH** (genuine open problem, attackable, foothold named) ·
+**MOONSHOT** (high-risk, concrete first step + flagged speculation).
+
+### 11.9.0 The internalization principle (the generator)
+
+One move recurs throughout this document: **take a quantity that is
+normally external / meta / semantic and make it an internal, typed,
+certified, computable cell.**  Already done: dimension is *computed*
+(`RawCell.dim`, §4) not an a-priori index; equality is the *saturation
+marking* (§3.3–§3.4) not a primitive; complexity is a *grade* (§3.7);
+consistency strength is *computable data* (`ConsistencyStrength`,
+§11.7.1); decidability is *computable data* (`isDecidableInProfile?`,
+§11.7.4).  The frontier is the same move applied to quantities not yet
+internalized — **proof simplicity, algorithmic information, entropy/time,
+ordinal strength, theory-space curvature**.  The principle is a
+*generator*: for any external quantity `X`, ask "what is its
+internalization as an FX cell, and what becomes computable once it is?"
+The subsections below are its first instances.  The internalization
+principle itself is OBLIGATION **O-INTERNAL** (meta; discharged
+incrementally as each instance lands).
+
+### 11.9.1 New computable internal structures
+
+#### 11.9.1.1 Obstruction-cohomology of the profile — `O-OBSTRUCT` (SHIPPABLE-NOW on sublattices)
+
+The §6.8 cross-dimension soundness collisions are not a list — they are
+the **unfillable horns** of cross-sort horizontal composition (§3.6
+Gray).  The per-pair `bilaxCompatibility` witnesses (§3.14, scaffolded
+at V2-L5.5) are 1-cochains; the cellular-tensor associator/symmetry
+coherence (§3.0.7 T5/T6) and the Zwart-Marsden no-go register (T7)
+assemble a cochain complex on the 21-dimension lattice.  Its
+cohomology **classifies exactly which subsets of the 21 dimensions are
+jointly sound** — a non-zero `H²` class is a certified no-go, a
+coboundary is a certified distributive law.  Decidable (finite lattice),
+so FX emits a **certified periodic table of admissible type theories**.
+Anchor: Zwart-Marsden `arXiv:1811.06460` + Myers-Riley §6.4 + §3.0.7
+(T7).  Hook: §6.8 + §3.14 `bilaxCompatibility`.  Prototype: `H²` on the
+{Usage, Effect, Security} 3-sublattice (must reproduce the known §6.8
+entries).  ~2K LoC.
+
+#### 11.9.1.2 Squier proof-homology = Hilbert's 24th problem — `O-HOMOLOGY` (SHIPPABLE-NOW: `H₁`, term fragment)
+
+A proof of `Conv a b` is a path of generating cells; `cd_lemma` 2-cells
+join parallel proofs; Squier 3-cells fill critical-pair branchings
+(§3.4).  By Squier (FDT) + Guiraud-Malbos polygraphic resolutions, a
+*convergent* polygraph yields a free resolution, hence a **proof-homology
+`Hₙ(profile)`**: `H₀` = theorems, `H₁` = essentially-distinct proofs,
+`H₂` = essentially-distinct proof-equivalences.  This is a concrete
+candidate answer to **Hilbert's lost 24th problem** (proof simplicity,
+recovered by Thiele 2003): a theorem has a canonically-simplest proof iff
+its proof-cell is contractible (thin all the way up); the obstruction to
+simplicity is the first non-zero `Hₙ`; and high homological dimension is
+a *lower bound* on proof complexity.  Decidable for the FX profile
+(finite generators + convergence + Makkai §3.9).  Anchor: Squier 1987
+(ref 14) + Guiraud-Malbos + Hilbert/Thiele.  Hook: the cd / critical-pair
+enumeration (§3.4, M6/M7).  Prototype: `H₁` of the β/ι/η term-sort
+polygraph — **pre-apex**, reuses the shipped critical-pair table.
+
+#### 11.9.1.3 The Hardness instrument — `O-HARD` (D,B SHIPPABLE-NOW; N SPECIFIABLE; A OPEN)
+
+Over the Conv-deduped dependency DAG of a certified theorem (`FactDAG`,
+nodes = facts up to Conv, §11.8.13 univalence supplying the dedup), define
+`Hardness(T ∣ KB) = N · D · (1 + A) · (1 + B)`:
+**N** = conditional novelty (Σ `K_FX0` over the deduped prime facts of
+`T` not Conv-equal to anything in `KB`); **D** = logical depth
+(critical-path height of the DAG, Bennett); **A** = abstraction gain
+(does adding `T`'s machinery compress the rest of the corpus — DreamCoder
+library-gain, approximable from below, certified); **B** = bridge rank
+(DAG diameter across corpus regions).  Each factor is a known
+statistical-model blind spot, so `Hardness` is the **adversarial
+complement of an LLM's training objective**.  The **δ-discrepancy**
+`δ(T) = perplexity_LLM(T) − N_certified(T)` localizes where a model is
+*falsely confident* (`δ ≪ 0` = thinks routine, is deep) — the certified,
+signed form of "stumbling on already-stated ideas," and the most novel
+mining target.  Anchor: Bennett (logical depth) + Gell-Mann–Lloyd
+(effective complexity) + Koppel (sophistication) + Ellis et al.
+(DreamCoder, library learning by MDL) + Schmidhuber (compression
+progress) + Solomonoff/Levin.  Hook: FX0 as the *fixed* reference machine
+(§12.6, kills classical-K's additive-constant float) + Decidable Conv
+(MILESTONE A) as the dedup oracle.  `D` and `B` are pure graph algorithms
+on the DAG — **pre-apex computable**; `N` is computable modulo *known*
+Conv; `A` is the genuine Chaitin residue (approximable, never optimal —
+correctly, since it measures true conceptual invention).
+
+### 11.9.2 New synthetic disciplines
+
+#### 11.9.2.1 Synthetic algorithmic information theory — `O-AIT` (SPECIFIABLE-NOW)
+
+FX0 (~600 lines, §12.6) is a *fixed* universal-ish verifier, so
+`K_FX0(T) := size of the smallest FX cell whose FX0-certificate produces
+T` is a concrete complexity measure with a pinned reference machine — the
+thing classical `K` lacks.  Three commitments: (i) a **description-length
+grade dimension** making incompressibility a typing obligation; (ii) `K`
+as a **truncation-indexed spectrum `Kₙ`** (the Verity marking §3.3
+selects the level: `K₀` = logical, higher = proof-structural) — statable
+only because the foundation is directed; (iii) the **Chaitin-bound ladder
+= the Gödel-climbing ladder** (§11.7.1): provable incompressibility rises
+strictly with reflection degree, so consistency strength *is* the
+provable-`K`-ceiling.  `K` decomposes as vocabulary-cost + wiring-cost,
+and wiring = Squier-homology rank (§11.9.1.2) — the two structures are
+one invariant.  Anchor: Chaitin + Kolmogorov + Bennett + Solomonoff.
+Hook: §12.6 (FX0) + §3.3 (marking) + §11.7.1 (climbing).
+
+#### 11.9.2.2 Synthetic thermodynamics of the directed polygraph — `O-THERMO` (OPEN-RESEARCH)
+
+Directedness is an asymmetry — a reduction runs one way and is reversible
+only when the marking makes it thin — which is the structure of
+thermodynamics (spontaneous vs reversible).  A non-thin cell that
+*discards information* (a projection, a non-injective rewrite) produces
+logical entropy (Landauer cost); a thin cell is adiabatic.  Define a free
+energy `cost − T·(info discarded)` (cost grade dims 13/15); then **SN
+(`O-NORM`) is the Second Law** (free energy is bounded below and descends
+along directed cells → relaxation to a normal form), **confluence is
+ergodicity** (unique equilibrium), and the **Tot/Div boundary (§11.7.2)
+is a phase transition**.  A *temperature* parameter unifies kernel
+reduction (`T→0`, Lévy-optimal/geodesic) with agent search (high `T`,
+simulated annealing) as one statistical-mechanical system.  Anchor:
+Landauer 1961 + Bennett reversibility (refs 65–66) + Lévy optimality +
+Ollivier-Ricci.  Hook: directedness + §3.3 marking + cost grade +
+§11.7.2.  The SN-as-Second-Law identity is the sharp conjecture; the
+entropy grade is a SHIPPABLE sub-piece.
+
+#### 11.9.2.3 The geometry of theory-space — `O-TSPACE` (OPEN-RESEARCH)
+
+The extension calculus moves through theory-space; the cellular Gray
+tensor (§3.0.7) makes it monoidal.  Then: `ProfileExtension`s at a
+profile = the **tangent cone** (the directions math can grow); the Fire
+Triangle / Zwart-Marsden no-gos = the **boundary singularities**; the
+cellular-tensor lax-3-cell **associator (T5) = curvature** (does the
+*order* of adding concepts matter — flat ⟺ order-independent); `Hardness`
+(§11.9.1.3) = the **metric**; mathematical discovery = a high-`Hardness`
+**geodesic flow**.  Makes "where can mathematics go from here" a
+*computable* question (enumerate the tangent cone, score, follow the
+gradient).  Anchor: Crans 1999 / Steiner 2004 (Gray) + Lawvere doctrines
++ §3.0.7.  Hook: §3.14 extension calculus + T5/T6 coherence.
+
+### 11.9.3 Extended open problems (OP3–OP7, §11.8.14.1 format)
+
+* **OP3 — The sameness-unification theorem.** Are Conv (terms),
+  univalence (types), bisimulation (protocols, §13.19), and contextual
+  equivalence all *one* construction — "a thin cell at that sort"?  FX is
+  the only setting that hosts all four sorts + a single marking, so it is
+  the only place this is statable.  *Foothold:* directed Yoneda /
+  Structure Identity Principle (Riehl-Shulman directed univalence,
+  §3.10) + coalgebraic bisimulation.  *Settles:* observational
+  equivalence in every sort is the same phenomenon.  OPEN-RESEARCH.
+
+* **OP4 — Laver-table periodicity as a forced invariant of
+  `reinhardtDirected`** (refines OP2, §11.8.2.1).  The higher-cell action
+  of the directed self-endofunctor is constrained to a representation of
+  the Laver-Steel left-distributive algebra (SR9), whose Laver tables are
+  *computable* and whose first-row period `p(n)→∞` is equivalent to an I3
+  cardinal (Dougherty-Jech).  So a decidable, zero-axiom FX computation
+  (the period) becomes a *shadow of large-cardinal strength*.  *Status:*
+  the period computation is SHIPPABLE; the representation-forcing step and
+  the I3 bridge are OPEN-RESEARCH.  Hook: `gen_universeOmega` + SR9.
+
+* **OP5 — A geometric proof of `O-NORM` via Ricci/free-energy flow.**
+  Define discrete Ollivier-Ricci curvature from the cost-tropical weights
+  (§6, §3.1 Reedy); conjecture the curvature-descent flow's fixed points
+  are exactly the η-long normal forms, with positive curvature ⟹ local
+  confluence ⟹ SN — a *geometric* normalization technique orthogonal to
+  the syntactic sconing route, shipping its own complexity bound.
+  Anchor: Ollivier + Lévy optimality.  MOONSHOT.
+
+* **OP6 — A certified locus of undecidability via the protocol sort +
+  MIP\*=RE.** Encode quantum nonlocal games as `.protocol` cells in the
+  Quantum-Linear profile (§3.15); the tensor vs commuting-operator models
+  become Gray `horizontalComposite` vs a commuting interchange; MIP\*=RE
+  (Ji-Natarajan-Vidick-Wright-Yuen 2020, refuting Connes embedding) then
+  forces `Conv` on those cells to be **undecidable** — a *certified*
+  `undecidable` verdict from `isDecidableInProfile?` (§11.7.4) with a
+  quantum-information witness, pinning the exact boundary of the
+  decidable-typechecking guarantee per sort.  OPEN-RESEARCH.
+
+* **OP7 — Discharge `O-ORD` via a mechanized GLP reflection algebra.**
+  The reflection ladder (§11.8.2) + Gödel-climbing (§11.7.1) is a
+  candidate constructive model of Beklemishev's polymodal provability
+  logic **GLP**; its closed fragment (the Worm) yields canonical ordinal
+  notations.  Mechanizing the **graded provability (reflection) algebra**
+  inside FX turns "rung *n* has strength X" / "*n+1* ⊢ Con(*n*)" from
+  calibration prose into *theorems*, discharging the currently-absent
+  `O-ORD` (§11.8.0) — and would be the first mechanized GLP-based ordinal
+  analysis.  Anchor: Beklemishev GLP + Japaridze + Rathjen (SR11).
+  SPECIFIABLE-NOW (the highest-odds real result of §11.9).
+
+### 11.9.4 The agent loop — Goodhart-resistant open-ended search + proof firewall (`O-FIREWALL`, SPECIFIABLE-NOW)
+
+The §24 agent protocol + `Hardness` (§11.9.1.3) + FX0 (§12.6) compose
+into a self-improving loop: an **untrusted** proposer (LLM/RL) emits raw
+cells; the **trusted** kernel certifies survivors zero-axiom; selection
+climbs the `Hardness` gradient; the polygraph's confluence prunes the
+search (joinable branches collapse).  Two properties make it sound:
+(i) **Goodhart-resistance** — a naive novelty-maximizer chases
+incompressible noise, but the `(1+A)` abstraction-gain factor rejects it
+(noise compresses nothing, `A=0`); the effective-complexity term is the
+anti-gaming guard.  (ii) **Proof firewall** — the raw/certified split
+(§4) + the security taint dimension (§12.3) make this a *paraconsistent*
+setup: provisional, possibly-adversarial proposals live as taint-tracked
+raw cells with no explosion, because validity is gated at certification;
+the loop is therefore **safe against an adversarial proposer**.
+`dA/dt` (the rate of certified corpus compression) is Schmidhuber's
+compression-progress curiosity signal, here canonical (univalent dedup)
+and certified.  This is the operational endgame of §3.14 + §24 + §12.6.
+
+### 11.9.5 Wild frontier (committed research per the moonshot mandate; all MOONSHOT)
+
+* **Holographic FX.** Trust reduces to the *boundary* (FX0 + the
+  0-truncation, §12.6); the higher cells are the *bulk*.  The
+  `reinhardtDirected` functor (OP2) — non-invertible, fixes the
+  0-truncation, moves higher cells — is *literally* a bulk symmetry
+  fixing the boundary.  The boundary-determines-bulk pattern is a
+  holographic principle for proof.  (AdS/CFT cited as analogy only.)
+
+* **The Galois 2-group of a profile.** A profile has a finite, computable
+  automorphism 2-group (session duality §11.2 = a `ℤ/2`); its
+  representations on the 21 dimensions = the *internal symmetries* of the
+  type theory; a Tannakian reconstruction from sorts-as-fiber-functors.
+  Anchor: Tannakian duality + §11.2.
+
+* **Digital-resource physics.** The grades *are* physical resources
+  (space = bits, cost = Landauer energy, clock domain §18.7 = causal
+  light-cone with `sync(c)` frame-mixing constraints); a physical-grade
+  profile makes FX a synthetic language for resource-bounded physical
+  computation — **Hilbert's 6th via resources** rather than via geometry
+  (complementing Schreiber's synthetic differential cohesion, ref 25).
+
+* **FX0/FX1 as an interactive proof.** The powerful-untrusted-FX1 ⟶
+  weak-trusted-FX0 emission (§12.6) modeled as a one-round IP/PCP;
+  self-hosting (§3.15) makes FX0 a cell verifying its own verifier, whose
+  Gödel-bounded fixed point is exactly the reflection-degree gap.
+  Anchor: Shamir IP=PSPACE + PCP.
+
+### 11.9.6 The frontier ledger
+
+| ID | Entry | Status | Prior-art anchor | FX hook | pre-apex? |
+|---|---|---|---|---|---|
+| O-INTERNAL | internalization principle (meta) | n/a | — | whole doc | — |
+| O-OBSTRUCT | 21-dim obstruction-cohomology | SPECIFIABLE (sublattice SHIPPABLE) | Zwart-Marsden 1811.06460 | §6.8, §3.14 | partial |
+| O-HOMOLOGY | Squier proof-homology / Hilbert 24 | SHIPPABLE (`H₁`) | Squier 1987; Thiele 2003 | §3.4, M6/M7 | ✅ |
+| O-HARD | the Hardness instrument + δ | D,B SHIPPABLE; N SPEC; A OPEN | Bennett; Gell-Mann–Lloyd; DreamCoder; Schmidhuber | §12.6, MILESTONE A | D,B ✅ |
+| O-AIT | synthetic algorithmic info theory | SPECIFIABLE | Chaitin; Solomonoff | §12.6, §11.7.1, §3.3 | — |
+| O-THERMO | synthetic thermodynamics | OPEN | Landauer; Bennett; Lévy | §3.3, §11.7.2, cost grade | entropy-grade ✅ |
+| O-TSPACE | geometry of theory-space | OPEN | Crans/Steiner Gray; Lawvere | §3.0.7, §3.14 | — |
+| OP3 | sameness-unification | OPEN | directed Yoneda/SIP; bisimulation | §3.10, §13.19 | — |
+| OP4 | Laver period ↔ `reinhardtDirected` | computation SHIPPABLE; bridge OPEN | Laver; Dougherty-Jech; SR9 | §11.8.2.1, `gen_universeOmega` | period ✅ |
+| OP5 | Ricci-flow proof of `O-NORM` | MOONSHOT | Ollivier; Lévy | §6, §3.4 | — |
+| OP6 | MIP\*=RE undecidability locus | OPEN | JNVWY 2020 | §11.2, §3.15, §11.7.4 | — |
+| OP7 | GLP discharge of `O-ORD` | SPECIFIABLE | Beklemishev; Japaridze | §11.7.1, §11.8.2 | — |
+| O-FIREWALL | Goodhart-resistant agent loop | SPECIFIABLE | Schmidhuber; Lehman-Stanley | §24, §12.3, §4 | — |
+
+**Sequencing.**  Tier 0 (ship as real cells first, pre-apex): `O-HOMOLOGY`
+`H₁`, `O-HARD` D/B, `O-OBSTRUCT` on the 3-sublattice.  Tier 1
+(specifiable obligations): OP7 GLP/`O-ORD`, full `O-HARD`/`O-AIT`,
+`O-FIREWALL`.  Tier 2 (open research): OP3, `O-THERMO`, `O-TSPACE`, OP4
+bridge, OP6.  Tier 3 (moonshot): OP5, §11.9.5.  **First brick is
+doc-first** (this section); the Lean prototype is deferred and will be
+chosen from Tier 0.  Per the firewall, no `O-`/`OP` here gates
+MILESTONE A–D — they are the program *beyond* the apex.
 
 ---
 
