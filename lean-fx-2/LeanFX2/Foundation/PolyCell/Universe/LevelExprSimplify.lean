@@ -3841,4 +3841,25 @@ theorem LevelExpr.AllAtomsAreVarsOrLzero_insertionSortByCompare :
         (LevelExpr.insertionSortByCompare rest)
         (LevelExpr.AllAtomsAreVarsOrLzero_insertionSortByCompare rest hList.2)
 
+/-- Adjacent dedup preserves the `lvar`/`lzero` atom shape: it only
+drops (`.eq`) or keeps (`.lt`/`.gt`) the head, never introducing a
+new atom.  Mirrors `dedupAdjacent_strictlySorted`'s two-element
+lookahead. -/
+theorem LevelExpr.AllAtomsAreVarsOrLzero_dedupAdjacent :
+    ∀ (xs : List LevelExpr),
+      LevelExpr.AllAtomsAreVarsOrLzero xs →
+      LevelExpr.AllAtomsAreVarsOrLzero (LevelExpr.dedupAdjacent xs)
+  | [], _ => trivial
+  | [_single], hList => hList
+  | first :: second :: rest, hList => by
+      have hTailDedup :=
+        LevelExpr.AllAtomsAreVarsOrLzero_dedupAdjacent (second :: rest) hList.2
+      show LevelExpr.AllAtomsAreVarsOrLzero
+        (LevelExpr.dedupStep (LevelExpr.compare first second) first
+          (LevelExpr.dedupAdjacent (second :: rest)))
+      cases hVerdict : LevelExpr.compare first second with
+      | eq => exact hTailDedup
+      | lt => exact ⟨hList.1, hTailDedup⟩
+      | gt => exact ⟨hList.1, hTailDedup⟩
+
 end LeanFX2.Foundation.PolyCell.Universe
