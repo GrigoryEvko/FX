@@ -42,6 +42,23 @@ import FX1Poly.Core.CheckRawCellAs
 import FX1Poly.Core.InferRawCellGeneralSound
 import FX1Poly.Core.InferRawCellGeneralAcceptedCellDimensionEq
 import FX1Poly.Core.CertifiedToPolyCell
+-- HasCertified intro/composition/projection + subject-reduction iota family
+-- + beta-redex preservation + structural-induction primitives + Pair layer.
+import FX1Poly.Core.HasCertifiedHonestyProbes
+import FX1Poly.Core.SubjectReductionBaseIotas
+import FX1Poly.Core.SubjectReductionEtaStructural
+import FX1Poly.Core.SubjectReductionIotaBoolFalse
+import FX1Poly.Core.SubjectReductionIotaBoolTrue
+import FX1Poly.Core.SubjectReductionIotaEither
+import FX1Poly.Core.SubjectReductionIotaIdRefl
+import FX1Poly.Core.SubjectReductionIotaNatRec
+import FX1Poly.Core.SubjectReductionIotaOption
+import FX1Poly.Core.SubjectReductionIotaProjections
+import FX1Poly.Core.CompoundRenamePreservation
+import FX1Poly.Core.CompoundSubstPreservation
+import FX1Poly.Core.BetaRedexDoublingSpike
+import FX1Poly.Core.StructuralInductionPrimitives
+import FX1Poly.Core.PairEliminatorLayer
 
 /-! # FX1PolyAudit/AuditCoreSubstrate — namespace zero-axiom sweep
 
