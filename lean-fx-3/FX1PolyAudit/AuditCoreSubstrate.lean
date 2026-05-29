@@ -59,6 +59,15 @@ import FX1Poly.Core.CompoundSubstPreservation
 import FX1Poly.Core.BetaRedexDoublingSpike
 import FX1Poly.Core.StructuralInductionPrimitives
 import FX1Poly.Core.PairEliminatorLayer
+-- Reduction machinery: raw NF/free-vars/fresh, Step subst/rename + HCC
+-- wrappers + helper smokes, substitution-preservation mutual, Nat/Bool layers.
+import FX1Poly.Core.RawTermNF
+import FX1Poly.Core.StepRename
+import FX1Poly.Core.StepHelperSmokes
+import FX1Poly.Core.SubstPreservationMutual
+import FX1Poly.Core.NatEliminatorLayer
+import FX1Poly.Core.StructuralInductionWrapper
+import FX1Poly.Core.StepHCCWrappers
 
 /-! # FX1PolyAudit/AuditCoreSubstrate — namespace zero-axiom sweep
 
