@@ -3505,4 +3505,28 @@ instance LevelExpr.decidableOccursIn (target : LevelExpr) :
           | isFalse hNotRest =>
               isFalse (fun hOccurs => Or.elim hOccurs hHeadNe hNotRest)
 
+/-- The membership oracle on the variable-only fragment: `lvar k`
+occurs in `xs` iff `xs` folds to a nonzero value under the point
+environment isolating `k`.  Forward is the general occurrence bound;
+backward uses the decision procedure `decidableOccursIn` to split —
+the `isFalse` branch contradicts `fold ≠ 0` via the var-only zero
+lemma (constructive, no classical contraposition). -/
+theorem LevelExpr.occursLvar_iff_denoteAtomList_pointEnvironment_ne_zero
+    (variableIndex : Nat) (xs : List LevelExpr)
+    (hAllVars : LevelExpr.AllAtomsAreVariables xs) :
+    LevelExpr.OccursIn (.lvar variableIndex) xs ↔
+      LevelExpr.denoteAtomList xs
+        (LevelExpr.pointEnvironment variableIndex) ≠ 0 :=
+  Iff.intro
+    (LevelExpr.denoteAtomList_pointEnvironment_ne_zero_of_occursLvar
+      variableIndex xs)
+    (fun hFoldNeZero =>
+      if hOccurs : LevelExpr.OccursIn (.lvar variableIndex) xs then
+        hOccurs
+      else
+        absurd
+          (LevelExpr.denoteAtomList_pointEnvironment_eq_zero_of_not_occursLvar
+            variableIndex xs hAllVars hOccurs)
+          hFoldNeZero)
+
 end LeanFX2.Foundation.PolyCell.Universe
