@@ -2263,4 +2263,39 @@ theorem LevelExpr.foldLmax_insertByCompare_denoteEquiv (newAtom : LevelExpr) :
             (LevelExpr.lmax_denoteEquiv_congr (LevelExpr.denoteEquiv.refl _) ih)
             (LevelExpr.foldLmax_swap_denoteEquiv head newAtom rest)
 
+/-- Insertion sort over `compare`: fold each atom into the sorted
+prefix via `insertByCompare`.  This is the `sort` sub-step of the
+n-ary canonical form (flatten → sort → dedup → drop-lzero →
+rebuild).  Written as a structural list recursion so it is
+`propext`-free. -/
+def LevelExpr.insertionSortByCompare : List LevelExpr → List LevelExpr
+  | [] => []
+  | head :: rest =>
+      LevelExpr.insertByCompare head (LevelExpr.insertionSortByCompare rest)
+
+/-- Insertion sort preserves the folded denotation:
+`foldLmax (insertionSortByCompare xs) ~ foldLmax xs`.
+
+List recursion.  The sorted tail folds equivalently by the
+inductive hypothesis (`lmax`-congruence under the fixed head); the
+single-insertion soundness then re-seats `head` at the front. -/
+theorem LevelExpr.foldLmax_insertionSortByCompare_denoteEquiv :
+    ∀ (xs : List LevelExpr),
+      LevelExpr.denoteEquiv
+        (LevelExpr.foldLmax (LevelExpr.insertionSortByCompare xs))
+        (LevelExpr.foldLmax xs)
+  | [] => LevelExpr.denoteEquiv.refl _
+  | head :: rest => by
+      have ih := LevelExpr.foldLmax_insertionSortByCompare_denoteEquiv rest
+      show LevelExpr.denoteEquiv
+        (LevelExpr.foldLmax
+          (LevelExpr.insertByCompare head
+            (LevelExpr.insertionSortByCompare rest)))
+        (LevelExpr.foldLmax (head :: rest))
+      have hInsert := LevelExpr.foldLmax_insertByCompare_denoteEquiv head
+        (LevelExpr.insertionSortByCompare rest)
+      have hTail := LevelExpr.lmax_denoteEquiv_congr
+        (LevelExpr.denoteEquiv.refl head) ih
+      exact LevelExpr.denoteEquiv.trans hInsert hTail
+
 end LeanFX2.Foundation.PolyCell.Universe
