@@ -4047,4 +4047,91 @@ theorem LevelExpr.MaxPlusForm.shiftSucc_denote
   exact LevelExpr.MaxPlusForm.denoteVarOffsets_incrementOffsets_shift env
     form.varOffsets form.baseConstant
 
+/-- The middle-four interchange law for `levelMax`:
+`(a ⊔ b) ⊔ (c ⊔ d) = (a ⊔ c) ⊔ (b ⊔ d)`.  Pure commutativity +
+associativity rearrangement — both sides equal `a ⊔ b ⊔ c ⊔ d`.
+This is the algebraic heart of the `lmax` merge soundness: it swaps
+the two base constants past the two variable-folds. -/
+theorem LevelExpr.levelMax_interchange (valueA valueB valueC valueD : Nat) :
+    LevelExpr.levelMax (LevelExpr.levelMax valueA valueB)
+        (LevelExpr.levelMax valueC valueD) =
+      LevelExpr.levelMax (LevelExpr.levelMax valueA valueC)
+        (LevelExpr.levelMax valueB valueD) := by
+  rw [LevelExpr.levelMax_assoc valueA valueB (LevelExpr.levelMax valueC valueD),
+      ← LevelExpr.levelMax_assoc valueB valueC valueD,
+      LevelExpr.levelMax_comm valueB valueC,
+      LevelExpr.levelMax_assoc valueC valueB valueD,
+      LevelExpr.levelMax_assoc valueA valueC (LevelExpr.levelMax valueB valueD)]
+
+/-- Concatenating two variable/offset lists max-folds to the join of
+their individual folds: `denoteVarOffsets (left ++ right) =
+levelMax (denoteVarOffsets left) (denoteVarOffsets right)`.  The
+empty floor of `denoteVarOffsets` is the unit of `levelMax`, so the
+base case is `levelMax_zero_left`; the cons step re-associates the
+head past the recursive join. -/
+theorem LevelExpr.MaxPlusForm.denoteVarOffsets_append (env : Nat → Nat) :
+    ∀ (left right : List (Nat × Nat)),
+      LevelExpr.MaxPlusForm.denoteVarOffsets (left ++ right) env =
+        LevelExpr.levelMax
+          (LevelExpr.MaxPlusForm.denoteVarOffsets left env)
+          (LevelExpr.MaxPlusForm.denoteVarOffsets right env)
+  | [], right => by
+      show LevelExpr.MaxPlusForm.denoteVarOffsets right env =
+        LevelExpr.levelMax 0
+          (LevelExpr.MaxPlusForm.denoteVarOffsets right env)
+      rw [LevelExpr.levelMax_zero_left]
+  | (variableIndex, offset) :: rest, right => by
+      show LevelExpr.levelMax (env variableIndex + offset)
+          (LevelExpr.MaxPlusForm.denoteVarOffsets (rest ++ right) env) =
+        LevelExpr.levelMax
+          (LevelExpr.levelMax (env variableIndex + offset)
+            (LevelExpr.MaxPlusForm.denoteVarOffsets rest env))
+          (LevelExpr.MaxPlusForm.denoteVarOffsets right env)
+      rw [LevelExpr.MaxPlusForm.denoteVarOffsets_append env rest right,
+          LevelExpr.levelMax_assoc (env variableIndex + offset)
+            (LevelExpr.MaxPlusForm.denoteVarOffsets rest env)
+            (LevelExpr.MaxPlusForm.denoteVarOffsets right env)]
+
+/-- The `lmax` operation on max-plus forms: join the base constants
+and concatenate the variable/offset lists.
+
+Soundness only — this does NOT collapse duplicate-variable entries
+(absorption).  Absorption is the same operation regardless of how a
+form arose (merge, shift, or direct atom), so it lives as a separate
+normalization pass (a later leaf), keeping this primitive's proof
+small and its claim exact.  The result therefore denotes correctly
+but may carry the same variable twice until absorbed. -/
+def LevelExpr.MaxPlusForm.merge
+    (formLeft formRight : LevelExpr.MaxPlusForm) : LevelExpr.MaxPlusForm :=
+  { baseConstant :=
+      LevelExpr.levelMax formLeft.baseConstant formRight.baseConstant,
+    varOffsets := formLeft.varOffsets ++ formRight.varOffsets }
+
+/-- Soundness of the `lmax` primitive: `merge` denotes the join of the
+two forms' denotations.  Unfold both `denote`s, distribute the fold
+over the concatenation (`denoteVarOffsets_append`), then swap the two
+base constants past the two variable-folds via the middle-four
+interchange. -/
+theorem LevelExpr.MaxPlusForm.merge_denote
+    (formLeft formRight : LevelExpr.MaxPlusForm) (env : Nat → Nat) :
+    LevelExpr.MaxPlusForm.denote
+        (LevelExpr.MaxPlusForm.merge formLeft formRight) env =
+      LevelExpr.levelMax (LevelExpr.MaxPlusForm.denote formLeft env)
+        (LevelExpr.MaxPlusForm.denote formRight env) := by
+  show LevelExpr.levelMax
+      (LevelExpr.levelMax formLeft.baseConstant formRight.baseConstant)
+      (LevelExpr.MaxPlusForm.denoteVarOffsets
+        (formLeft.varOffsets ++ formRight.varOffsets) env) =
+    LevelExpr.levelMax
+      (LevelExpr.levelMax formLeft.baseConstant
+        (LevelExpr.MaxPlusForm.denoteVarOffsets formLeft.varOffsets env))
+      (LevelExpr.levelMax formRight.baseConstant
+        (LevelExpr.MaxPlusForm.denoteVarOffsets formRight.varOffsets env))
+  rw [LevelExpr.MaxPlusForm.denoteVarOffsets_append env
+        formLeft.varOffsets formRight.varOffsets]
+  exact LevelExpr.levelMax_interchange formLeft.baseConstant
+    formRight.baseConstant
+    (LevelExpr.MaxPlusForm.denoteVarOffsets formLeft.varOffsets env)
+    (LevelExpr.MaxPlusForm.denoteVarOffsets formRight.varOffsets env)
+
 end LeanFX2.Foundation.PolyCell.Universe
