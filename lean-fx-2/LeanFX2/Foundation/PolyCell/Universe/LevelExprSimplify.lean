@@ -5923,4 +5923,41 @@ theorem LevelExpr.MaxPlusForm.lookupOffset_of_denote_eq
               LevelExpr.MaxPlusForm.lookupOffset_eq_none_of_not_occurs probe
                 formRight.varOffsets hOccRight]
 
+/-! ### Step 7(c) — canonical-form uniqueness
+
+The keystone: two forms that are strictly sorted by variable AND
+base-normalized (base = denotation at the zero environment), with equal
+denotation everywhere, are structurally equal.  The variable list is
+pinned by `lookupOffset_ext ∘ lookupOffset_of_denote_eq`; the base is
+pinned by reading the denotation at the all-zeros environment; the two
+field equalities glue into structural equality via definitional
+structure eta. -/
+theorem LevelExpr.MaxPlusForm.canonicalForm_unique
+    (formLeft formRight : LevelExpr.MaxPlusForm)
+    (hStrictLeft :
+      LevelExpr.MaxPlusForm.isStrictlySortedByVariable formLeft.varOffsets = true)
+    (hStrictRight :
+      LevelExpr.MaxPlusForm.isStrictlySortedByVariable formRight.varOffsets = true)
+    (hBaseLeft : formLeft.baseConstant =
+      LevelExpr.MaxPlusForm.denote formLeft LevelExpr.MaxPlusForm.zeroEnvironment)
+    (hBaseRight : formRight.baseConstant =
+      LevelExpr.MaxPlusForm.denote formRight LevelExpr.MaxPlusForm.zeroEnvironment)
+    (hDenote : ∀ (env : Nat → Nat),
+      LevelExpr.MaxPlusForm.denote formLeft env =
+        LevelExpr.MaxPlusForm.denote formRight env) :
+    formLeft = formRight := by
+  have hVarOffsetsEq : formLeft.varOffsets = formRight.varOffsets :=
+    LevelExpr.MaxPlusForm.lookupOffset_ext formLeft.varOffsets formRight.varOffsets
+      hStrictLeft hStrictRight
+      (LevelExpr.MaxPlusForm.lookupOffset_of_denote_eq formLeft formRight
+        hStrictLeft hStrictRight hDenote)
+  have hBaseEq : formLeft.baseConstant = formRight.baseConstant :=
+    hBaseLeft.trans
+      ((hDenote LevelExpr.MaxPlusForm.zeroEnvironment).trans hBaseRight.symm)
+  calc formLeft
+      = LevelExpr.MaxPlusForm.mk formLeft.baseConstant formLeft.varOffsets := rfl
+    _ = LevelExpr.MaxPlusForm.mk formRight.baseConstant formRight.varOffsets := by
+        rw [hBaseEq, hVarOffsetsEq]
+    _ = formRight := rfl
+
 end LeanFX2.Foundation.PolyCell.Universe
