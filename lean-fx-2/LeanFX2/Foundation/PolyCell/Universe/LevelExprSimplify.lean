@@ -3986,4 +3986,65 @@ def LevelExpr.MaxPlusForm.denote
   LevelExpr.levelMax form.baseConstant
     (LevelExpr.MaxPlusForm.denoteVarOffsets form.varOffsets env)
 
+/-- Increment every offset by one (the per-variable part of `lsucc`). -/
+def LevelExpr.MaxPlusForm.incrementOffsets :
+    List (Nat × Nat) → List (Nat × Nat)
+  | [] => []
+  | (variableIndex, offset) :: rest =>
+      (variableIndex, offset + 1) ::
+        LevelExpr.MaxPlusForm.incrementOffsets rest
+
+/-- The `lsucc` operation on a max-plus form: bump the base constant
+and every offset by one.  `max(c, maxᵢ(vᵢ+oᵢ)) + 1 =
+max(c+1, maxᵢ(vᵢ+oᵢ+1))`. -/
+def LevelExpr.MaxPlusForm.shiftSucc (form : LevelExpr.MaxPlusForm) :
+    LevelExpr.MaxPlusForm :=
+  { baseConstant := form.baseConstant + 1,
+    varOffsets := LevelExpr.MaxPlusForm.incrementOffsets form.varOffsets }
+
+/-- The shift identity *with the base floor attached*: incrementing
+all offsets and the floor adds one to the whole max-fold.  Generalize
+`floor` so the induction goes through — the trailing-`0` floor of
+`denoteVarOffsets` is always dominated by `floor + 1`, so `+1`
+distributes.  Cons step: rearrange via `levelMax` assoc, fire the
+`succ-succ` identity, recurse, re-associate. -/
+theorem LevelExpr.MaxPlusForm.denoteVarOffsets_incrementOffsets_shift
+    (env : Nat → Nat) :
+    ∀ (entries : List (Nat × Nat)) (floor : Nat),
+      LevelExpr.levelMax (floor + 1)
+          (LevelExpr.MaxPlusForm.denoteVarOffsets
+            (LevelExpr.MaxPlusForm.incrementOffsets entries) env) =
+        LevelExpr.levelMax floor
+          (LevelExpr.MaxPlusForm.denoteVarOffsets entries env) + 1
+  | [], floor => by
+      show LevelExpr.levelMax (floor + 1) 0 = LevelExpr.levelMax floor 0 + 1
+      rw [LevelExpr.levelMax_zero_right, LevelExpr.levelMax_zero_right]
+  | (variableIndex, offset) :: rest, floor => by
+      show LevelExpr.levelMax (floor + 1)
+          (LevelExpr.levelMax (env variableIndex + offset + 1)
+            (LevelExpr.MaxPlusForm.denoteVarOffsets
+              (LevelExpr.MaxPlusForm.incrementOffsets rest) env)) =
+        LevelExpr.levelMax floor
+          (LevelExpr.levelMax (env variableIndex + offset)
+            (LevelExpr.MaxPlusForm.denoteVarOffsets rest env)) + 1
+      rw [← LevelExpr.levelMax_assoc (floor + 1) (env variableIndex + offset + 1),
+          LevelExpr.levelMax_succ_distrib floor (env variableIndex + offset),
+          LevelExpr.MaxPlusForm.denoteVarOffsets_incrementOffsets_shift env rest
+            (LevelExpr.levelMax floor (env variableIndex + offset)),
+          LevelExpr.levelMax_assoc floor (env variableIndex + offset)]
+
+/-- Soundness of the `lsucc` primitive: `shiftSucc` adds one to the
+denotation. -/
+theorem LevelExpr.MaxPlusForm.shiftSucc_denote
+    (form : LevelExpr.MaxPlusForm) (env : Nat → Nat) :
+    LevelExpr.MaxPlusForm.denote (LevelExpr.MaxPlusForm.shiftSucc form) env =
+      LevelExpr.MaxPlusForm.denote form env + 1 := by
+  show LevelExpr.levelMax (form.baseConstant + 1)
+      (LevelExpr.MaxPlusForm.denoteVarOffsets
+        (LevelExpr.MaxPlusForm.incrementOffsets form.varOffsets) env) =
+    LevelExpr.levelMax form.baseConstant
+      (LevelExpr.MaxPlusForm.denoteVarOffsets form.varOffsets env) + 1
+  exact LevelExpr.MaxPlusForm.denoteVarOffsets_incrementOffsets_shift env
+    form.varOffsets form.baseConstant
+
 end LeanFX2.Foundation.PolyCell.Universe
