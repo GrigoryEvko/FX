@@ -4331,4 +4331,92 @@ theorem LevelExpr.MaxPlusForm.denoteVarOffsets_absorb_adjacent
         (LevelExpr.MaxPlusForm.denoteVarOffsets rest env),
       LevelExpr.levelMax_add_left_distrib (env variableIndex) offsetA offsetB]
 
+/-! ## Canonicalization — insertion sort by variable index
+
+`sortByVariable` arranges the entries in ascending variable order
+(via `insertByVariable` one-at-a-time), making same-variable entries
+adjacent so the absorb rule (next leaf) can fuse them.  Both functions
+preserve the denotation: the fold is order-invariant, so any
+reordering is denote-neutral.  Comparison uses the Boolean `Nat.ble`
+(full `true`/`false` enumeration, propext-clean). -/
+
+/-- Insert one entry into a list, placing it before the first entry
+whose variable index is strictly larger (so equal-variable entries
+end up adjacent, ready for absorption). -/
+def LevelExpr.MaxPlusForm.insertByVariable :
+    Nat × Nat → List (Nat × Nat) → List (Nat × Nat)
+  | entry, [] => [entry]
+  | (variableNew, offsetNew), (variableHead, offsetHead) :: rest =>
+      match Nat.ble variableNew variableHead with
+      | true => (variableNew, offsetNew) :: (variableHead, offsetHead) :: rest
+      | false =>
+          (variableHead, offsetHead) ::
+            LevelExpr.MaxPlusForm.insertByVariable (variableNew, offsetNew) rest
+
+/-- Inserting an entry denotes the same as prepending it: position is
+irrelevant to the max-fold.  The `true` branch puts the entry at the
+front (matching the prepend directly); the `false` branch sends it
+deeper and the `denoteVarOffsets_swap_adjacent` rule bubbles it back
+past the head. -/
+theorem LevelExpr.MaxPlusForm.denoteVarOffsets_insertByVariable
+    (variableNew offsetNew : Nat) (env : Nat → Nat) :
+    ∀ (entries : List (Nat × Nat)),
+      LevelExpr.MaxPlusForm.denoteVarOffsets
+          (LevelExpr.MaxPlusForm.insertByVariable (variableNew, offsetNew) entries) env =
+        LevelExpr.MaxPlusForm.denoteVarOffsets
+          ((variableNew, offsetNew) :: entries) env
+  | [] => rfl
+  | (variableHead, offsetHead) :: rest => by
+      show LevelExpr.MaxPlusForm.denoteVarOffsets
+          (match Nat.ble variableNew variableHead with
+           | true => (variableNew, offsetNew) :: (variableHead, offsetHead) :: rest
+           | false => (variableHead, offsetHead) ::
+               LevelExpr.MaxPlusForm.insertByVariable (variableNew, offsetNew) rest) env =
+        LevelExpr.MaxPlusForm.denoteVarOffsets
+          ((variableNew, offsetNew) :: (variableHead, offsetHead) :: rest) env
+      cases Nat.ble variableNew variableHead with
+      | true => rfl
+      | false =>
+          show LevelExpr.levelMax (env variableHead + offsetHead)
+              (LevelExpr.MaxPlusForm.denoteVarOffsets
+                (LevelExpr.MaxPlusForm.insertByVariable (variableNew, offsetNew) rest) env) =
+            LevelExpr.MaxPlusForm.denoteVarOffsets
+              ((variableNew, offsetNew) :: (variableHead, offsetHead) :: rest) env
+          rw [LevelExpr.MaxPlusForm.denoteVarOffsets_insertByVariable
+                variableNew offsetNew env rest]
+          exact LevelExpr.MaxPlusForm.denoteVarOffsets_swap_adjacent
+            variableHead offsetHead variableNew offsetNew rest env
+
+/-- Insertion sort by variable index. -/
+def LevelExpr.MaxPlusForm.sortByVariable :
+    List (Nat × Nat) → List (Nat × Nat)
+  | [] => []
+  | entry :: rest =>
+      LevelExpr.MaxPlusForm.insertByVariable entry
+        (LevelExpr.MaxPlusForm.sortByVariable rest)
+
+/-- Sorting preserves the denotation: each insertion is denote-neutral
+(`denoteVarOffsets_insertByVariable`), folded down the list. -/
+theorem LevelExpr.MaxPlusForm.denoteVarOffsets_sortByVariable (env : Nat → Nat) :
+    ∀ (entries : List (Nat × Nat)),
+      LevelExpr.MaxPlusForm.denoteVarOffsets
+          (LevelExpr.MaxPlusForm.sortByVariable entries) env =
+        LevelExpr.MaxPlusForm.denoteVarOffsets entries env
+  | [] => rfl
+  | (variableHead, offsetHead) :: rest => by
+      show LevelExpr.MaxPlusForm.denoteVarOffsets
+          (LevelExpr.MaxPlusForm.insertByVariable (variableHead, offsetHead)
+            (LevelExpr.MaxPlusForm.sortByVariable rest)) env =
+        LevelExpr.levelMax (env variableHead + offsetHead)
+          (LevelExpr.MaxPlusForm.denoteVarOffsets rest env)
+      rw [LevelExpr.MaxPlusForm.denoteVarOffsets_insertByVariable
+            variableHead offsetHead env
+            (LevelExpr.MaxPlusForm.sortByVariable rest)]
+      show LevelExpr.levelMax (env variableHead + offsetHead)
+          (LevelExpr.MaxPlusForm.denoteVarOffsets
+            (LevelExpr.MaxPlusForm.sortByVariable rest) env) =
+        LevelExpr.levelMax (env variableHead + offsetHead)
+          (LevelExpr.MaxPlusForm.denoteVarOffsets rest env)
+      rw [LevelExpr.MaxPlusForm.denoteVarOffsets_sortByVariable env rest]
+
 end LeanFX2.Foundation.PolyCell.Universe
