@@ -3208,4 +3208,75 @@ theorem LevelExpr.strictlySorted_head_lt :
             LevelExpr.strictlySorted_head_lt r0 rr hStrict.2 z hOccursTail
           exact LevelExpr.compare_lt_trans head r0 z hStrict.1 hMidLt
 
+/-! ## Uniqueness of strictly-sorted lists by membership
+
+Two strictly-sorted lists with the same elements are equal — the
+canonical-form *uniqueness* theorem.  The heads must coincide (each
+occurs in the other; a strict-inside occurrence would force a
+two-way strict inequality, impossible by antisymmetry), then the
+tails have the same elements and recurse. -/
+
+/-- A strict `compare` verdict rules out equality. -/
+theorem LevelExpr.compare_lt_imp_ne (exprA exprB : LevelExpr)
+    (hLt : LevelExpr.compare exprA exprB = Ordering.lt) : exprA ≠ exprB := by
+  intro hEq
+  rw [hEq, LevelExpr.compare_refl] at hLt
+  exact Ordering.noConfusion hLt
+
+/-- `compare` is asymmetric on `.lt`: if `a < b` then not `b < a`
+(from the `compare_swap` antisymmetry identity). -/
+theorem LevelExpr.compare_lt_asymm (exprA exprB : LevelExpr)
+    (hLt : LevelExpr.compare exprA exprB = Ordering.lt) :
+    LevelExpr.compare exprB exprA ≠ Ordering.lt := by
+  intro hBA
+  have hSwap := LevelExpr.compare_swap exprA exprB
+  rw [hLt, hBA] at hSwap
+  exact Ordering.noConfusion hSwap
+
+/-- Strictly-sorted lists with identical membership are identical.
+Structural recursion on the first list. -/
+theorem LevelExpr.strictlySorted_unique :
+    ∀ (xs ys : List LevelExpr),
+      LevelExpr.IsStrictlySorted xs → LevelExpr.IsStrictlySorted ys →
+      (∀ (z : LevelExpr), LevelExpr.OccursIn z xs ↔ LevelExpr.OccursIn z ys) →
+      xs = ys
+  | [], [], _, _, _ => rfl
+  | [], y0 :: _yr, _, _, hIff => nomatch (hIff y0).mpr (Or.inl rfl)
+  | x0 :: _xr, [], _, _, hIff => nomatch (hIff x0).mp (Or.inl rfl)
+  | x0 :: xr, y0 :: yr, hSx, hSy, hIff => by
+      have hHeadEq : x0 = y0 := by
+        have hOccX0inY : LevelExpr.OccursIn x0 (y0 :: yr) := (hIff x0).mp (Or.inl rfl)
+        have hOccY0inX : LevelExpr.OccursIn y0 (x0 :: xr) := (hIff y0).mpr (Or.inl rfl)
+        cases hOccX0inY with
+        | inl hy0x0 => exact hy0x0.symm
+        | inr hX0inYr =>
+            cases hOccY0inX with
+            | inl hx0y0 => exact hx0y0
+            | inr hY0inXr =>
+                have hY0X0 : LevelExpr.compare y0 x0 = Ordering.lt :=
+                  LevelExpr.strictlySorted_head_lt y0 yr hSy x0 hX0inYr
+                have hX0Y0 : LevelExpr.compare x0 y0 = Ordering.lt :=
+                  LevelExpr.strictlySorted_head_lt x0 xr hSx y0 hY0inXr
+                exact absurd hX0Y0 (LevelExpr.compare_lt_asymm y0 x0 hY0X0)
+      subst hHeadEq
+      have hTailIff : ∀ (z : LevelExpr),
+          LevelExpr.OccursIn z xr ↔ LevelExpr.OccursIn z yr := by
+        intro z
+        constructor
+        · intro hzInXr
+          cases (hIff z).mp (Or.inr hzInXr) with
+          | inl hHeadZ =>
+              exact absurd hHeadZ
+                (LevelExpr.compare_lt_imp_ne x0 z
+                  (LevelExpr.strictlySorted_head_lt x0 xr hSx z hzInXr))
+          | inr hzInYr => exact hzInYr
+        · intro hzInYr
+          cases (hIff z).mpr (Or.inr hzInYr) with
+          | inl hHeadZ =>
+              exact absurd hHeadZ
+                (LevelExpr.compare_lt_imp_ne x0 z
+                  (LevelExpr.strictlySorted_head_lt x0 yr hSy z hzInYr))
+          | inr hzInXr => exact hzInXr
+      rw [LevelExpr.strictlySorted_unique xr yr hSx.2 hSy.2 hTailIff]
+
 end LeanFX2.Foundation.PolyCell.Universe
