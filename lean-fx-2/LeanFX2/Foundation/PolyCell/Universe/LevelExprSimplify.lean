@@ -6459,4 +6459,65 @@ theorem LevelExpr.MaxPlusForm.absorbAdjacentSteps_le_length :
         (LevelExpr.MaxPlusForm.absorbFromSteps_le_length entry rest)
         (Nat.le_succ rest.length)
 
+/-! ### Step 10 (cont.) — quadratic sort accumulation (complexity witness, part 2)
+
+Insertion sort's total comparison count is the sum, over each element, of
+the cost of inserting it into the already-sorted prefix.  Each such
+insert is into `sortByVariable rest` (length `rest.length` by
+`sortByVariable_length`), so it costs ≤ `rest.length`; summing the
+n insertions over prefixes of length 0,1,…,n-1 gives the classic
+O(n²) bound.  `sortByVariableSteps` mirrors `sortByVariable`'s recursion
+(sort the tail, then insert the head into the sorted tail), and the bound
+`≤ length · length` is proved by induction, each step closing on the
+arithmetic fact `n·n + n ≤ (n+1)·(n+1)`. -/
+
+/-- Comparison count of `sortByVariable`: the cost of sorting the tail
+plus the cost of inserting the head into the sorted tail.  Mirrors
+`sortByVariable`'s recursion exactly. -/
+def LevelExpr.MaxPlusForm.sortByVariableSteps :
+    List (Nat × Nat) → Nat
+  | [] => 0
+  | entry :: rest =>
+      LevelExpr.MaxPlusForm.sortByVariableSteps rest +
+        LevelExpr.MaxPlusForm.insertByVariableSteps entry
+          (LevelExpr.MaxPlusForm.sortByVariable rest)
+
+/-- Arithmetic step for the quadratic bound: `n·n + n ≤ (n+1)·(n+1)`.
+Expand `(n+1)·(n+1)` to `n·n + n + (n+1)` via `Nat.mul_succ` +
+`Nat.succ_mul`, then the inequality is `x ≤ x + (n+1)`. -/
+theorem LevelExpr.MaxPlusForm.mulSelf_add_self_le_succ_mul_succ (value : Nat) :
+    value * value + value ≤ (value + 1) * (value + 1) := by
+  rw [Nat.mul_succ, Nat.succ_mul]
+  exact Nat.le_add_right (value * value + value) (value + 1)
+
+/-- The sort performs at most `length²` comparisons (insertion sort's
+quadratic worst case).  Induction on the list: the tail sort is bounded
+by the IH (`rest.length²`); the head insertion is bounded by
+`rest.length` (insert into the length-`rest.length` sorted tail, via
+`insertByVariableSteps_le_length` + `sortByVariable_length`); the sum
+`rest.length² + rest.length` closes under `(rest.length+1)²` by the
+arithmetic step. -/
+theorem LevelExpr.MaxPlusForm.sortByVariableSteps_le :
+    ∀ (entries : List (Nat × Nat)),
+      LevelExpr.MaxPlusForm.sortByVariableSteps entries ≤
+        entries.length * entries.length
+  | [] => Nat.zero_le _
+  | entry :: rest => by
+      show LevelExpr.MaxPlusForm.sortByVariableSteps rest +
+          LevelExpr.MaxPlusForm.insertByVariableSteps entry
+            (LevelExpr.MaxPlusForm.sortByVariable rest) ≤
+        (rest.length + 1) * (rest.length + 1)
+      have hInsertIntoSortedTail :
+          LevelExpr.MaxPlusForm.insertByVariableSteps entry
+            (LevelExpr.MaxPlusForm.sortByVariable rest) ≤ rest.length := by
+        have hLeSortedLength :=
+          LevelExpr.MaxPlusForm.insertByVariableSteps_le_length entry
+            (LevelExpr.MaxPlusForm.sortByVariable rest)
+        rw [LevelExpr.MaxPlusForm.sortByVariable_length rest] at hLeSortedLength
+        exact hLeSortedLength
+      exact Nat.le_trans
+        (Nat.add_le_add
+          (LevelExpr.MaxPlusForm.sortByVariableSteps_le rest) hInsertIntoSortedTail)
+        (LevelExpr.MaxPlusForm.mulSelf_add_self_le_succ_mul_succ rest.length)
+
 end LeanFX2.Foundation.PolyCell.Universe
