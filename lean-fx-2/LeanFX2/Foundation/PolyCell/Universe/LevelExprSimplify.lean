@@ -2090,6 +2090,166 @@ theorem LevelExpr.compare_lt_trans_step (exprA exprB exprC : LevelExpr)
             (by rw [hab]; exact hIbc))
       | .eq => exact Or.inr ⟨rfl, rfl⟩
 
+/-- `compare` is `.lt`-transitive: the constructor-priority +
+payload lexicographic order it induces on `LevelExpr` is a genuine
+strict order.  This is the headline order-theory theorem the
+canonical-form completeness work rests on (sortedness of
+`insertionSortByCompare`).
+
+Structural recursion on the first operand.  Each constructor case
+delegates the priority-distinct sub-cases to `compare_lt_trans_step`
+(`inl` → done) and handles the same-constructor diagonal (`inr`)
+directly: `lzero` is vacuous (its diagonal verdict is `.eq`, never
+`.lt`), `lvar` reduces to `compareNat_lt_trans`, `lsucc` recurses on
+the single operand, and `lmax` / `limax` decompose the `orderingThen`
+verdicts (`orderingThen_eq_lt_iff`), recurse on whichever operand
+pair is strict, and use `compare_eq_imp_eq` to realign the
+`.eq`-tied operands. -/
+theorem LevelExpr.compare_lt_trans : ∀ (exprA exprB exprC : LevelExpr),
+    LevelExpr.compare exprA exprB = Ordering.lt →
+    LevelExpr.compare exprB exprC = Ordering.lt →
+    LevelExpr.compare exprA exprC = Ordering.lt
+  | .lzero, exprB, exprC => by
+      intro hAB hBC
+      cases LevelExpr.compare_lt_trans_step LevelExpr.lzero exprB exprC hAB hBC with
+      | inl hDone => exact hDone
+      | inr hEq =>
+          cases exprB with
+          | lzero => exact Ordering.noConfusion hAB
+          | lvar _ => exact Ordering.noConfusion hEq.1
+          | lsucc _ => exact Ordering.noConfusion hEq.1
+          | lmax _ _ => exact Ordering.noConfusion hEq.1
+          | limax _ _ => exact Ordering.noConfusion hEq.1
+  | .lvar n, exprB, exprC => by
+      intro hAB hBC
+      cases LevelExpr.compare_lt_trans_step (LevelExpr.lvar n) exprB exprC hAB hBC with
+      | inl hDone => exact hDone
+      | inr hEq =>
+          cases exprB with
+          | lzero => exact Ordering.noConfusion hEq.1
+          | lsucc _ => exact Ordering.noConfusion hEq.1
+          | lmax _ _ => exact Ordering.noConfusion hEq.1
+          | limax _ _ => exact Ordering.noConfusion hEq.1
+          | lvar m =>
+              cases exprC with
+              | lzero => exact Ordering.noConfusion hEq.2
+              | lsucc _ => exact Ordering.noConfusion hEq.2
+              | lmax _ _ => exact Ordering.noConfusion hEq.2
+              | limax _ _ => exact Ordering.noConfusion hEq.2
+              | lvar k => exact LevelExpr.compareNat_lt_trans n m k hAB hBC
+  | .lsucc innerA, exprB, exprC => by
+      intro hAB hBC
+      cases LevelExpr.compare_lt_trans_step (LevelExpr.lsucc innerA) exprB exprC hAB hBC with
+      | inl hDone => exact hDone
+      | inr hEq =>
+          cases exprB with
+          | lzero => exact Ordering.noConfusion hEq.1
+          | lvar _ => exact Ordering.noConfusion hEq.1
+          | lmax _ _ => exact Ordering.noConfusion hEq.1
+          | limax _ _ => exact Ordering.noConfusion hEq.1
+          | lsucc innerB =>
+              cases exprC with
+              | lzero => exact Ordering.noConfusion hEq.2
+              | lvar _ => exact Ordering.noConfusion hEq.2
+              | lmax _ _ => exact Ordering.noConfusion hEq.2
+              | limax _ _ => exact Ordering.noConfusion hEq.2
+              | lsucc innerC =>
+                  exact LevelExpr.compare_lt_trans innerA innerB innerC hAB hBC
+  | .lmax a1 b1, exprB, exprC => by
+      intro hAB hBC
+      cases LevelExpr.compare_lt_trans_step (LevelExpr.lmax a1 b1) exprB exprC hAB hBC with
+      | inl hDone => exact hDone
+      | inr hEq =>
+          cases exprB with
+          | lzero => exact Ordering.noConfusion hEq.1
+          | lvar _ => exact Ordering.noConfusion hEq.1
+          | lsucc _ => exact Ordering.noConfusion hEq.1
+          | limax _ _ => exact Ordering.noConfusion hEq.1
+          | lmax a2 b2 =>
+              cases exprC with
+              | lzero => exact Ordering.noConfusion hEq.2
+              | lvar _ => exact Ordering.noConfusion hEq.2
+              | lsucc _ => exact Ordering.noConfusion hEq.2
+              | limax _ _ => exact Ordering.noConfusion hEq.2
+              | lmax a3 b3 =>
+                  have hAB' := (LevelExpr.orderingThen_eq_lt_iff
+                    (LevelExpr.compare a1 a2) (LevelExpr.compare b1 b2)).mp hAB
+                  have hBC' := (LevelExpr.orderingThen_eq_lt_iff
+                    (LevelExpr.compare a2 a3) (LevelExpr.compare b2 b3)).mp hBC
+                  show LevelExpr.orderingThen (LevelExpr.compare a1 a3)
+                    (LevelExpr.compare b1 b3) = Ordering.lt
+                  apply (LevelExpr.orderingThen_eq_lt_iff _ _).mpr
+                  cases hAB' with
+                  | inl ha12lt =>
+                      cases hBC' with
+                      | inl ha23lt =>
+                          exact Or.inl
+                            (LevelExpr.compare_lt_trans a1 a2 a3 ha12lt ha23lt)
+                      | inr hbTied =>
+                          have ha23eq : a2 = a3 :=
+                            LevelExpr.compare_eq_imp_eq a2 a3 hbTied.1
+                          exact Or.inl (by rw [← ha23eq]; exact ha12lt)
+                  | inr haTied =>
+                      have ha12eq : a1 = a2 :=
+                        LevelExpr.compare_eq_imp_eq a1 a2 haTied.1
+                      cases hBC' with
+                      | inl ha23lt =>
+                          exact Or.inl (by rw [ha12eq]; exact ha23lt)
+                      | inr hbTied =>
+                          have ha23eq : a2 = a3 :=
+                            LevelExpr.compare_eq_imp_eq a2 a3 hbTied.1
+                          have ha13eq : a1 = a3 := ha12eq.trans ha23eq
+                          refine Or.inr ⟨?_, ?_⟩
+                          · rw [ha13eq]; exact LevelExpr.compare_refl a3
+                          · exact LevelExpr.compare_lt_trans b1 b2 b3 haTied.2 hbTied.2
+  | .limax a1 b1, exprB, exprC => by
+      intro hAB hBC
+      cases LevelExpr.compare_lt_trans_step (LevelExpr.limax a1 b1) exprB exprC hAB hBC with
+      | inl hDone => exact hDone
+      | inr hEq =>
+          cases exprB with
+          | lzero => exact Ordering.noConfusion hEq.1
+          | lvar _ => exact Ordering.noConfusion hEq.1
+          | lsucc _ => exact Ordering.noConfusion hEq.1
+          | lmax _ _ => exact Ordering.noConfusion hEq.1
+          | limax a2 b2 =>
+              cases exprC with
+              | lzero => exact Ordering.noConfusion hEq.2
+              | lvar _ => exact Ordering.noConfusion hEq.2
+              | lsucc _ => exact Ordering.noConfusion hEq.2
+              | lmax _ _ => exact Ordering.noConfusion hEq.2
+              | limax a3 b3 =>
+                  have hAB' := (LevelExpr.orderingThen_eq_lt_iff
+                    (LevelExpr.compare a1 a2) (LevelExpr.compare b1 b2)).mp hAB
+                  have hBC' := (LevelExpr.orderingThen_eq_lt_iff
+                    (LevelExpr.compare a2 a3) (LevelExpr.compare b2 b3)).mp hBC
+                  show LevelExpr.orderingThen (LevelExpr.compare a1 a3)
+                    (LevelExpr.compare b1 b3) = Ordering.lt
+                  apply (LevelExpr.orderingThen_eq_lt_iff _ _).mpr
+                  cases hAB' with
+                  | inl ha12lt =>
+                      cases hBC' with
+                      | inl ha23lt =>
+                          exact Or.inl
+                            (LevelExpr.compare_lt_trans a1 a2 a3 ha12lt ha23lt)
+                      | inr hbTied =>
+                          have ha23eq : a2 = a3 :=
+                            LevelExpr.compare_eq_imp_eq a2 a3 hbTied.1
+                          exact Or.inl (by rw [← ha23eq]; exact ha12lt)
+                  | inr haTied =>
+                      have ha12eq : a1 = a2 :=
+                        LevelExpr.compare_eq_imp_eq a1 a2 haTied.1
+                      cases hBC' with
+                      | inl ha23lt =>
+                          exact Or.inl (by rw [ha12eq]; exact ha23lt)
+                      | inr hbTied =>
+                          have ha23eq : a2 = a3 :=
+                            LevelExpr.compare_eq_imp_eq a2 a3 hbTied.1
+                          have ha13eq : a1 = a3 := ha12eq.trans ha23eq
+                          refine Or.inr ⟨?_, ?_⟩
+                          · rw [ha13eq]; exact LevelExpr.compare_refl a3
+                          · exact LevelExpr.compare_lt_trans b1 b2 b3 haTied.2 hbTied.2
+
 /-! ## First Phase B canonicalization step — pairwise lmax sort
 
 `canonicalizeLmaxPair` swaps `lmax` operands when out of compare
