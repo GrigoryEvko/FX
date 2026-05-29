@@ -1,5 +1,8 @@
 import FX1PolyAudit.AuditGen
 import FX1Poly.Core.PolyProfile
+import FX1Poly.Tier0.InternalSconing
+import FX1Poly.Tier0.FireTriangle
+import FX1Poly.Extension.ProfileExtension
 
 /-! # FX1PolyAudit/AuditProfile — namespace zero-axiom sweep for the axis substrate
 
@@ -29,3 +32,5 @@ axiom leak.
 #audit_namespace FX1Poly.Saturation
 #audit_namespace FX1Poly.Shape
 #audit_namespace FX1Poly.Stratification
+#audit_namespace FX1Poly.Tier0
+#audit_namespace FX1Poly.Extension
