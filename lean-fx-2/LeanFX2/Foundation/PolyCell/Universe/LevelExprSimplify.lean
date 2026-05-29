@@ -4998,4 +4998,100 @@ theorem LevelExpr.MaxPlusForm.absorbAdjacent_preserves_allVariablesAtLeast
       exact LevelExpr.MaxPlusForm.absorbFrom_preserves_allVariablesAtLeast
         bound entry rest hAll
 
+/-! ## Absorption produces a strictly-sorted list
+
+The capstone of the structural invariant: on a sorted list,
+`absorbAdjacent` yields STRICTLY-sorted (distinct-variable) output,
+hence `canonicalizeVarOffsets` always produces a strictly-sorted list —
+one offset per variable, in strict ascending order. -/
+
+/-- From `a ≤ b` and `a ≠ b`, conclude `a + 1 ≤ b` (Boolean form).
+Structural induction; successor case recurses. -/
+theorem LevelExpr.ble_succ_of_beq_false_of_ble :
+    ∀ (valueA valueB : Nat),
+      Nat.beq valueA valueB = false → Nat.ble valueA valueB = true →
+      Nat.ble (valueA + 1) valueB = true
+  | 0, 0, hbeq, _ => Bool.noConfusion hbeq
+  | 0, _ + 1, _, _ => rfl
+  | _ + 1, 0, _, hble => Bool.noConfusion hble
+  | predA + 1, predB + 1, hbeq, hble =>
+      LevelExpr.ble_succ_of_beq_false_of_ble predA predB hbeq hble
+
+/-- On a sorted list, `absorbFrom` (carrying `current`) yields a
+strictly-sorted list.  Fuse case: substitute the equal variable, apply
+the IH on the fused tail.  Skip case: the emitted head strictly
+precedes the absorbed tail (`ble_succ_of_beq_false_of_ble` +
+`allVariablesAtLeast_mono` + `absorbFrom_preserves_allVariablesAtLeast`),
+and the tail is strictly sorted by the IH. -/
+theorem LevelExpr.MaxPlusForm.absorbFrom_strictlySorted :
+    ∀ (current : Nat × Nat) (rest : List (Nat × Nat)),
+      LevelExpr.MaxPlusForm.isSortedByVariable (current :: rest) = true →
+      LevelExpr.MaxPlusForm.isStrictlySortedByVariable
+        (LevelExpr.MaxPlusForm.absorbFrom current rest) = true
+  | (_, _), [], _ => rfl
+  | (variableCurrent, offsetCurrent), (variableNext, offsetNext) :: rest, hSorted => by
+      show LevelExpr.MaxPlusForm.isStrictlySortedByVariable
+          (match Nat.beq variableCurrent variableNext with
+           | true => LevelExpr.MaxPlusForm.absorbFrom
+               (variableCurrent, LevelExpr.levelMax offsetCurrent offsetNext) rest
+           | false => (variableCurrent, offsetCurrent) ::
+               LevelExpr.MaxPlusForm.absorbFrom (variableNext, offsetNext) rest) = true
+      cases hbeq : Nat.beq variableCurrent variableNext with
+      | true =>
+          have hEqVar : variableCurrent = variableNext := Nat.eq_of_beq_eq_true hbeq
+          have hInput : LevelExpr.MaxPlusForm.isSortedByVariable
+              ((variableCurrent, LevelExpr.levelMax offsetCurrent offsetNext) :: rest) = true := by
+            show (LevelExpr.MaxPlusForm.allVariablesAtLeast variableCurrent rest &&
+              LevelExpr.MaxPlusForm.isSortedByVariable rest) = true
+            rw [hEqVar]
+            exact LevelExpr.and_eq_true_of_both
+              (LevelExpr.and_eq_true_imp_left (LevelExpr.and_eq_true_imp_right hSorted))
+              (LevelExpr.and_eq_true_imp_right (LevelExpr.and_eq_true_imp_right hSorted))
+          exact LevelExpr.MaxPlusForm.absorbFrom_strictlySorted
+            (variableCurrent, LevelExpr.levelMax offsetCurrent offsetNext) rest hInput
+      | false =>
+          have hbleLe : Nat.ble variableCurrent variableNext = true :=
+            LevelExpr.and_eq_true_imp_left (LevelExpr.and_eq_true_imp_left hSorted)
+          have hbleSucc : Nat.ble (variableCurrent + 1) variableNext = true :=
+            LevelExpr.ble_succ_of_beq_false_of_ble variableCurrent variableNext hbeq hbleLe
+          show (LevelExpr.MaxPlusForm.allVariablesAtLeast (variableCurrent + 1)
+              (LevelExpr.MaxPlusForm.absorbFrom (variableNext, offsetNext) rest) &&
+            LevelExpr.MaxPlusForm.isStrictlySortedByVariable
+              (LevelExpr.MaxPlusForm.absorbFrom (variableNext, offsetNext) rest)) = true
+          exact LevelExpr.and_eq_true_of_both
+            (LevelExpr.MaxPlusForm.absorbFrom_preserves_allVariablesAtLeast
+              (variableCurrent + 1) (variableNext, offsetNext) rest
+              (LevelExpr.and_eq_true_of_both hbleSucc
+                (LevelExpr.MaxPlusForm.allVariablesAtLeast_mono (variableCurrent + 1)
+                  variableNext hbleSucc rest
+                  (LevelExpr.and_eq_true_imp_left
+                    (LevelExpr.and_eq_true_imp_right hSorted)))))
+            (LevelExpr.MaxPlusForm.absorbFrom_strictlySorted (variableNext, offsetNext) rest
+              (LevelExpr.and_eq_true_imp_right hSorted))
+
+/-- Absorption turns a sorted list into a strictly-sorted one. -/
+theorem LevelExpr.MaxPlusForm.absorbAdjacent_produces_strictlySorted :
+    ∀ (entries : List (Nat × Nat)),
+      LevelExpr.MaxPlusForm.isSortedByVariable entries = true →
+      LevelExpr.MaxPlusForm.isStrictlySortedByVariable
+        (LevelExpr.MaxPlusForm.absorbAdjacent entries) = true
+  | [], _ => rfl
+  | entry :: rest, hSorted => by
+      show LevelExpr.MaxPlusForm.isStrictlySortedByVariable
+          (LevelExpr.MaxPlusForm.absorbFrom entry rest) = true
+      exact LevelExpr.MaxPlusForm.absorbFrom_strictlySorted entry rest hSorted
+
+/-- The canonical `varOffsets` are strictly sorted by variable: sort
+(produces sorted) then absorb (sorted ⟹ strictly sorted). -/
+theorem LevelExpr.MaxPlusForm.canonicalizeVarOffsets_produces_strictlySorted
+    (entries : List (Nat × Nat)) :
+    LevelExpr.MaxPlusForm.isStrictlySortedByVariable
+      (LevelExpr.MaxPlusForm.canonicalizeVarOffsets entries) = true := by
+  show LevelExpr.MaxPlusForm.isStrictlySortedByVariable
+      (LevelExpr.MaxPlusForm.absorbAdjacent
+        (LevelExpr.MaxPlusForm.sortByVariable entries)) = true
+  exact LevelExpr.MaxPlusForm.absorbAdjacent_produces_strictlySorted
+    (LevelExpr.MaxPlusForm.sortByVariable entries)
+    (LevelExpr.MaxPlusForm.sortByVariable_produces_sorted entries)
+
 end LeanFX2.Foundation.PolyCell.Universe
