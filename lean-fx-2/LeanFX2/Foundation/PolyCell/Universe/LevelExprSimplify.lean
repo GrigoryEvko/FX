@@ -1399,6 +1399,32 @@ theorem LevelExpr.lsucc_lmax_distrib_denoteEquiv (e1 e2 : LevelExpr) :
       (LevelExpr.lmax (LevelExpr.lsucc e1) (LevelExpr.lsucc e2)) :=
   fun env => LevelExpr.lsucc_lmax_distrib_denote e1 e2 env
 
+/-- `lmax` is idempotent as a `denoteEquiv` rule: `lmax e e ~ e`.
+This is the algebraic basis for the dedup phase of the n-ary
+canonical form (collapsing repeated atoms).  Lifts
+`levelMax_self`. -/
+theorem LevelExpr.lmax_idempotent_denoteEquiv (expr : LevelExpr) :
+    LevelExpr.denoteEquiv (LevelExpr.lmax expr expr) expr :=
+  fun env => by
+    rw [LevelExpr.denote_lmax, LevelExpr.levelMax_self]
+
+/-- `lzero` is the left unit of `lmax` as a `denoteEquiv` rule:
+`lmax lzero e ~ e`.  Basis for dropping `lzero` atoms during
+canonicalization.  Lifts `levelMax_zero_left`. -/
+theorem LevelExpr.lmax_lzero_left_denoteEquiv (expr : LevelExpr) :
+    LevelExpr.denoteEquiv (LevelExpr.lmax LevelExpr.lzero expr) expr :=
+  fun env => by
+    rw [LevelExpr.denote_lmax, LevelExpr.denote_lzero,
+        LevelExpr.levelMax_zero_left]
+
+/-- `lzero` is the right unit of `lmax` as a `denoteEquiv` rule:
+`lmax e lzero ~ e`.  Lifts `levelMax_zero_right`. -/
+theorem LevelExpr.lmax_lzero_right_denoteEquiv (expr : LevelExpr) :
+    LevelExpr.denoteEquiv (LevelExpr.lmax expr LevelExpr.lzero) expr :=
+  fun env => by
+    rw [LevelExpr.denote_lmax, LevelExpr.denote_lzero,
+        LevelExpr.levelMax_zero_right]
+
 /-- Phase A's `simplify` is sound under `denoteEquiv`.  Combines
 `simplify_denote_eq` with the denoteEquiv definition. -/
 theorem LevelExpr.simplify_denoteEquiv (expr : LevelExpr) :
