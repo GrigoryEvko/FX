@@ -5549,6 +5549,47 @@ over the certified cell layer, not independent inductives and not raw
 subtypes of Nat-coded cells.  All cascade work disappears only after
 the certified checker and the legacy round-trip bridge are real.
 
+### 5.1 Profile restriction & scope boundaries
+
+FX is ONE profile, grown by the extension calculus (§3.14).  The
+inverse direction — and the deliberate non-goals — are recorded here
+so they are conscious decisions, not silent gaps.
+
+* **Restriction / slicing (the FX0 minimal-trust dial).**  A
+  `ProfileLens.forget` (§3.14) drops generators, yielding *sub*-profiles:
+  an MLTT slice (Π/Σ/Id, no cubical/modal/graded), a cubical-only
+  slice, a constant-time-only slice.  Library authors and the
+  FX0-PolyCell verifier (§12.6) pick the **lowest sufficient**
+  sub-profile — the smallest sound kernel for a workload — rather
+  than carrying the whole apex.  This is the surviving, honest form of
+  the old "(n,p,k,c) parameter dial": restriction by lens-forget, not
+  by a parameter record.
+
+* **Categorification tower — out of scope.**  FX commits to a FIXED
+  `(∞,ω)` directed mode (`gen_universeOmega`, Loubaton).  The earlier
+  "(∞↑↑ω) categorification ladder" (parameterizing over how-categorified,
+  c = 1 → c = ω) is **dropped** — predicativity-blocked tower
+  hand-waving, not a committed axis.
+
+* **Incrementality is a daemon concern, not a kernel dimension.**
+  Incremental re-checking (re-verify only edited regions — load-bearing
+  for the agentic-LLM iteration loop) lives in the compiler daemon
+  (fx_design §24's warm-recheck), NOT as a kernel grade dimension.  The
+  earlier dim-24 ILC change-calculus (`ΔA` / `Df`) is out of the 21-dim
+  kernel; the 21 dims are canonical (§11.8.6).
+
+* **E-graphs are outside-kernel search.**  Equality saturation (egg)
+  is the canonical search strategy for the agent / optimizer layer —
+  it *proposes* rewrites that the kernel *verifies* via `Conv`.  It is
+  the operational dual of the kernel's congruence closure (`Conv` +
+  `Conv.ofChildren` + cd_lemma), not a kernel encoding column.
+
+* **Hardware / physics verticals.**  RTL/Verilog, multi-level
+  Maxwell→μArch, side-channel typing beyond the Security+Observability
+  dims + CT effect, synthetic physics — all live as §3.15
+  `ProfileExtension`s with their own future product docs, never as
+  kernel obligations here.
+
 ---
 
 ## 6. Capabilities matrix
