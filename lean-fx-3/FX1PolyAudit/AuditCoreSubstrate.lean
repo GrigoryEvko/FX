@@ -68,6 +68,17 @@ import FX1Poly.Core.SubstPreservationMutual
 import FX1Poly.Core.NatEliminatorLayer
 import FX1Poly.Core.StructuralInductionWrapper
 import FX1Poly.Core.StepHCCWrappers
+-- Confluence + critical pairs + Conv congruence/subst-rename + StepPreservesShape
+-- + remaining dim-0 eliminators (Id) + StepStarLength.
+import FX1Poly.Core.ConvCongruence
+import FX1Poly.Core.ConvSubstRename
+import FX1Poly.Core.StepStarConfluence
+import FX1Poly.Core.StepStarLength
+import FX1Poly.Core.StepEtaEtaCriticalPairs
+import FX1Poly.Core.StepIotaEtaInsideBinder
+import FX1Poly.Core.StepBetaEtaPreservesShape
+import FX1Poly.Core.SubjectReductionEtaBinder
+import FX1Poly.Core.IdEliminatorLayer
 
 /-! # FX1PolyAudit/AuditCoreSubstrate — namespace zero-axiom sweep
 
