@@ -18,6 +18,12 @@ import FX1Poly.Core.SiteOpenness
 import FX1Poly.Core.SpikeDimTransport
 import FX1Poly.Core.StepEta
 import FX1Poly.Core.StepInversion
+-- Certifier base (CellBoundary / PolyCell + immediate consumers).
+import FX1Poly.Core.CertifiedRawCell
+import FX1Poly.Core.CertifiedTermSpineProjections
+import FX1Poly.Core.CertifyChildSpine
+import FX1Poly.Core.PolyCellErasure
+import FX1Poly.Core.PolyCellHelpers
 
 /-! # FX1PolyAudit/AuditCoreSubstrate — namespace zero-axiom sweep
 
