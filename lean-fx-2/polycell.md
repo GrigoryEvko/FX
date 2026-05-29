@@ -3319,6 +3319,21 @@ translation; the Agda code is the working template.
 manual `termination_by` annotations OR Altenkirch-Burke-Wadler's
 sort-polymorphic `id` trick (per their Figure 1 and Section 3.1).
 
+**Two substitution calculi, one bridge (O-SUBST-BRIDGE, §11.8.0).**
+FX carries two substitution presentations and must name which is
+canonical: the §4 Allais universe-of-syntaxes PARALLEL fold (one
+generic rename / subst traversal over the 194-`Generator` table —
+the operational backbone the kernel computes with) and the Kaposi-Xie
+SINGLE-substitution calculus above (8 equations, isomorphic to CwF
+syntax — the metatheory backbone that collapses the 78-arm commute
+proofs).  FX commits to the Allais parallel fold as the OPERATIONAL
+canonical form and treats SSC as the metatheory VIEW; their
+equivalence — `sscIsomCwF` composed with the Allais fold's
+correctness — is OBLIGATION O-SUBST-BRIDGE (specifiable now: a Lean
+isomorphism, not new mathematics).  Until it is proved, a theorem
+stated in one calculus does not transfer to the other for free, so
+neither presentation may silently borrow the other's lemmas.
+
 ### 3.12 Synthetic Tait Computability classifier
 
 **Reference:** Sterling *First Steps in Synthetic Tait
@@ -3791,7 +3806,15 @@ cascade does NOT reappear because:
    the extension is admitted only as syntax-only or rejected.
 4. **Per-feature erasure proof still required** — `erasureWitness`
    plugs into the realizability tripos when supplied; FX does not
-   discharge erasure soundness automatically.
+   discharge erasure soundness automatically.  The field is a NAMED
+   placeholder, not a theorem: the §1.5 premise — all 21 dimensions
+   erased to zero runtime cost — needs an erasure-correctness
+   metatheorem (the erasure map commutes with reduction on the runtime
+   fragment, and erased programs compute the same observable values as
+   their typed sources).  That theorem is OBLIGATION O-ERASE
+   (§11.8.0, specifiable now), gating MILESTONE D; supplying
+   `erasureWitness` per feature is how the obligation is discharged
+   incrementally, never a substitute for stating it.
 
 **The composition algebra — distributive laws and their failures:**
 
@@ -5565,11 +5588,62 @@ so they are conscious decisions, not silent gaps.
   the old "(n,p,k,c) parameter dial": restriction by lens-forget, not
   by a parameter record.
 
-* **Categorification tower — out of scope.**  FX commits to a FIXED
-  `(∞,ω)` directed mode (`gen_universeOmega`, Loubaton).  The earlier
-  "(∞↑↑ω) categorification ladder" (parameterizing over how-categorified,
-  c = 1 → c = ω) is **dropped** — predicativity-blocked tower
-  hand-waving, not a committed axis.
+* **Categorification depth — two levels committed; only the
+  open-ended tower is out of scope.**  Categorification level (the
+  old `c`) is NOT a user-facing dial like n/p/k — but it is not
+  vacuous either, and "drop it entirely" was wrong.  FX commits to,
+  and already USES, two levels:
+  - **c = 1 — object theory:** types as (∞,ω)-categories
+    (`gen_universeOmega`, directed univalence).  Directedness is
+    itself a categorification commitment — the universe is an
+    (∞,ω)-CATEGORY, not a symmetric ∞-groupoid.
+  - **c = 2 — metatheory:** FX's own metatheory provably lives one
+    level up, in the 2-category of models / profiles.  Load-bearing
+    and already in use, merely unnamed: Tier 0's bi-initial model
+    (§3.0.1), the cellular tensor universal property (§3.0.7), the
+    profile fibration (§3.8), BKS sconing in the presheaf topos
+    (§11.8.0), and profile-of-profiles (§3.16.14) are all c = 2.
+    Today c = 2 is AMBIENT (proven in Lean about FX); INTERNALIZING it
+    (FX reasoning about its own profiles inside FX) is the
+    Self-Hosting Kernel FX meta-profile (§3.15).  So the
+    categorification ladder is the formal measure of **self-hosting /
+    metatheory-internalization depth**, not idle tower-climbing.
+  Out of scope (genuinely): the open-ended `c → ω` tower as a SINGLE
+  Lean object (predicativity blocks a universe of all categorification
+  levels at once), and `c` as a user-facing dial — users do not pick a
+  categorification level, it is an architecture fact.  What survives as
+  the committed core: a fixed object level + a fixed metatheory level
+  (ambient now, self-hosted later).
+
+  **A door left open — c ≥ 3 (meta-metatheory) is not empty, and we
+  decline to close it.**  Tagging it "speculative" would be the same
+  glib error as dismissing c = 2: two pieces of structure FX already
+  commits to live one level higher than c = 2.
+  - The structural-reflection ladder (§11.8.2) is, strictly, a c = 3
+    phenomenon.  Bagaria structural reflection is a property OF the
+    c = 2 category of models — "every proper class of structures has a
+    small reflecting subfamily" quantifies over that whole category, so
+    the statement lives one level up.  The apex's `kunenI0`-via-ESR is
+    thus a c = 3 commitment wearing a c = 2 admission predicate; the
+    door is already ajar.
+  - The Gödel-climbing tower (§11.7.1: rung n+1 proves `Con`(rung n))
+    is an iterated meta-hierarchy — FX-metatheory about FX-metatheory
+    about … — the meta-metatheory tower under another name.
+
+  The examination-worthy question (the funny space): are the
+  categorification-depth tower (`c`) and the consistency-strength
+  ladder (§11.8.2) the SAME tower seen two ways?  Iterating "internalize
+  my own metatheory" cannot reach a fixed point at or below FX's
+  strength ceiling — Gödel II forbids a kernel that fully describes its
+  own metatheory at its own strength — so the c-tower, exactly like the
+  reflection ladder, must climb strictly rather than collapse.  Whether
+  it converges (a stabilization-hypothesis-style question — does
+  categorifying enough times stop producing genuinely-new structure?)
+  or climbs to `kunenI0` and halts, is open.  Left open for
+  examination, not closed: a fixed object level and a fixed metatheory
+  level are what the kernel BUILDS; c ≥ 3 is where the kernel's own
+  reflection apex already secretly reasons, kept on the books as an
+  honest frontier rather than erased.
 
 * **Incrementality is a daemon concern, not a kernel dimension.**
   Incremental re-checking (re-verify only edited regions — load-bearing
@@ -7918,6 +7992,25 @@ paths, NOT Streicher-K style.  FORCED by the univalence commitment
 identity witnesses respects Cockx-Devriese-Piessens "Pattern matching
 without K" (ICFP 2014) restrictions.
 
+**The equality zoo needs a discipline.**  FX carries FOUR
+equality-like notions and they must not be conflated: the **cubical
+path** (`gen_path`, §11.8.4 — the computational univalence route),
+**strict identity** (`idStrict` — definitionally-UIP equality where
+proof-irrelevant), **`SProp`** (definitional proof irrelevance,
+§11.8.2), and the **HOTT observational `Id`** of the §11.8.14
+research track (definitional univalence — a SEPARATE, no-interval
+substrate that §11.8.14 already flags coexists with cubical as an
+architectural fork).  Discipline: cubical path is the default
+identity at object level; `idStrict` / `SProp` are opt-in for the
+proof-irrelevant / strict fragment; HOTT-`Id` is research-track only.
+Notably ABSENT and worth a decision: **observational type theory**
+(Pujet-Tabareau "Observational Equality Now For Good" / TTobs) — the
+established route to definitional funext WITH decidable conversion and
+NO interval.  FX currently jumps from cubical straight to the open
+HOTT track, skipping OTT as the pragmatic decidable-funext middle; an
+OTT outer mode is a candidate (cf. the §11.8.2 outer-strict mode),
+left as a stated design choice, not yet committed.
+
 **Dependent large elimination with motive children.**  Eliminators
 carry a motive child in their spine:
 
@@ -8160,6 +8253,21 @@ emits a structured `unsolved-goal` error pointing at the precise
 type that needs to be inhabited — the agent / user then refines
 the SPECIFICATION (adds more refinements, more equations, more
 definitional structure) until the elaborator succeeds.
+
+**Elaborator soundness is the load-bearing trust reduction
+(O-ELAB, §11.8.0).**  Banning the tactic layer (and the reflection
+self-hosting it would otherwise need, §11.8.11) only reduces trust IF
+the elaborator emits exclusively kernel-recheckable terms: every term
+it synthesizes — including the products of the unification,
+type-directed search, and refinement synthesis above — is re-checked
+by the trusted NbE kernel, so an elaborator bug can FAIL to find a
+proof but cannot forge one.  That re-check property is elaborator
+SOUNDNESS; "complete for the decidable fragment" is elaborator
+COMPLETENESS.  Both are statements ABOUT the elaborator, not
+corollaries of the kernel's own decidability — they are OBLIGATION
+O-ELAB (specifiable now), soundness gating MILESTONE A.  The honest
+stance: the kernel is the trusted base; the elaborator is an
+untrusted oracle whose every output the kernel re-validates.
 
 Refinement-driven synthesis: `{x : A | P x}` triggers automatic
 witness search when `A` is finite, `P` is decidable, or `P` is
@@ -10435,6 +10543,13 @@ DU9. Felix Cherubini, Thierry Coquand, Matthias Hutzler, *A Foundation
     Type Theory", CSL 2020 / LMCS 17(4) 2021.  Unifies the cubical
     PATH dimension with the parametricity BRIDGE dimension in one
     setting — the substrate for O-CUBE-PARAM (§11.8.0, §11.8.6).
+32b. Loïc Pujet, Nicolas Tabareau, "Observational Equality: Now For
+    Good", POPL 2022 (PACMPL 6); "Impredicative Observational
+    Equality", POPL 2023.  Observational type theory (TTobs):
+    definitional function extensionality + decidable conversion with
+    NO interval — the pragmatic decidable-funext route flagged in
+    §11.8.3's equality-zoo discipline as the absent middle between the
+    cubical default and the open HOTT track.
 
 ### Grading / linearity / quantitative
 
