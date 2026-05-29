@@ -2052,6 +2052,17 @@ def fxSaturationViaContractions : Saturation fxStratification where
   cascade work (already shipped K11.17 cd_lemma.toDim2Cell etc.)
   becomes the operational engine; this axis is its categorical
   justification.
+* **The Squier 3-cells are also computable proof-data, not only a
+  coherence guarantee (O-HOMOLOGY, §11.9.1.2).**  A convergent
+  presentation's critical-pair fillers present a free polygraphic
+  resolution (Guiraud-Malbos); its homology `Hₙ` measures proof
+  essential-uniqueness — a theorem's proof-cell is contractible iff it
+  has a canonically-simplest proof, the first non-zero `Hₙ` is the
+  obstruction, and high homological dimension *lower-bounds* proof
+  complexity (Squier FDT).  This is a concrete candidate answer to
+  **Hilbert's lost 24th problem** (proof simplicity, recovered by
+  Thiele 2003); `H₁` on the β/ι/η term polygraph is shippable now from
+  the cd / critical-pair table this axis already builds (§11.9.1.2).
 * The cube law (§4.2.3) replaces the explicit Mac Lane pentagon
   postulation in FX's modal coherence work.  Pentagon falls out
   geometrically.
@@ -3601,6 +3612,21 @@ structure on GAT.  Each new extension specifies its
 `ProfileCapabilities` and its bilax-compatibility witnesses; the
 universal property discharges the implementation-meets-specification
 obligation uniformly.
+
+**The extension calculus is the tangent structure of theory-space
+(O-TSPACE, §11.9.2.3).**  Reading `extendProfile` geometrically: the
+admissible `ProfileExtension`s at a profile form its **tangent cone**
+(the directions mathematics can grow); the Fire-Triangle / Zwart-Marsden
+no-gos are the **boundary singularities**; and the lax-3-cell
+**associator (T5) is the curvature** — flat exactly when concept-order
+is irrelevant, curved where the order of adding features is forced.
+With the `Hardness` metric (§11.9.1.3) this makes "where can mathematics
+go from here" a *computable* question (enumerate the tangent cone, score,
+follow the high-`Hardness` geodesic), and the obstruction-cohomology of
+the cross-pair laws (§11.9.1.1 O-OBSTRUCT) is the curvature's
+de-Rham-style classification.  So §3.14 is not only the feature-admission
+mechanism — it is the differential geometry on which the §11.9 frontier
+program navigates.
 
 **Why this is the missing piece:**
 
@@ -5568,6 +5594,41 @@ def FXCdLemma (sort : CellSort) (scope : Nat)
 end LeanFX2
 ```
 
+**The foundational reading — every structural rule is a morphism, at
+its sort.**  `FXStep`, `FXConv`, and `FXCdLemma` are each parameterized
+by `sort : CellSort`, so a *morphism* (a dim-1 cell) is generic over all
+seven sorts at once.  This is not incidental — it is the statement that
+**the structural rules of all 21 dimensions ARE cells**: a dim-1 cell at
+`.term` is a β/ι/η reduction; at `.type` it is a univalence /
+cumulativity path (DIRECTED — the universe is an (∞,ω)-category, §5.1
+c=1, not a groupoid); at `.context` it is a substitution / weakening
+(the CwF base-category morphism, §3.11); at `.grade` it is a subgrading
+`r ≤ s`; at `.mode` an MTT modality (§3.13); at `.protocol` session
+subtyping / duality (§11.2).  Three structural facts follow, and they are
+the seat of the §11.9 Internalization Program:
+
+* **Equality is the marking, uniformly.**  `FXConv sort` is exactly *a
+  dim-1 cell whose raw erasure is thin* (the saturation, §3.3–§3.4).  So
+  Conv (terms), univalence (types), bisimulation (protocols), and
+  contextual equivalence are the *same construction* — "a thin cell at
+  that sort" — the sameness-unification conjecture (§11.9.3 OP3).
+* **Substitution is a 1-cell; the substitution lemma is whiskering.**  A
+  `.context` morphism horizontally composed (Gray, §3.6) with a `.term`
+  morphism IS "the substitution acts on the reduction"
+  (`t[σ] ↝ t'[σ]`); the cell-level substitution obligation (§11.6.2) is
+  exactly this whiskering.  The frame rule (§2.4) is the same
+  `horizontalComposite` on disjoint footprints.
+* **The cross-sort interaction laws are fillers, and their obstructions
+  are computable.**  Where two sorts' cells fail to admit an interchange
+  filler is a soundness collision; the cohomology of those obstructions
+  classifies which dimension subsets compose (§11.9.1.1 O-OBSTRUCT).
+
+This is the load-bearing conceptual link from the cell substrate to the
+internalization program: the kernel does not *encode* the 21 dimensions
+beside a term calculus — each dimension's structural relation is a
+morphism in one polygraph, and §11.9 internalizes the *meta*-quantities
+(complexity, proof-simplicity, entropy, ordinal strength) the same way.
+
 This means the existing 80+ kernel files become **view definitions**
 over the certified cell layer, not independent inductives and not raw
 subtypes of Nat-coded cells.  All cascade work disappears only after
@@ -6964,6 +7025,21 @@ get right, and reserves the Div-fragment integration point for later.
 | **Strong Normalization (SN)** | Every certified dim-0 cell reduces to a normal form in finitely many dim-1 steps under any reduction strategy. | Tait reducibility over `RawTerm` (a Prop-valued `RC : CellSort → RawCell scope → Prop` with one arm per Generator, per Era S Day 41–43 of the extended-roadmap). The v2 substrate simplifies the argument: the Allais fold gives eval (NbE), the generic `Gen` constructor means the fundamental theorem is ONE induction over Generators rather than a per-Term-constructor 75-arm proof. BUT: the RC predicate must be defined over `RawTerm`, not legacy `Term` — either re-prove on v2 or lift through the bridge (V2-bridge.4). |
 | **Decidable Type-Checking** | `Decidable (certifyRawCellExact? scope raw = Except.ok _)` for all raw cells; and for the Tot fragment, `Decidable (Conv a b)` via NF equality. | The certifier `certifyRawCellExact?` is ALREADY a computable decision procedure returning `Except.ok` or `Except.error` — so decidability of certification is STRUCTURAL (it's a computable function; it always terminates by structural recursion). Decidable Conv requires SN (terms normalize) + CR (NFs unique) + the comparison `DecidableEq` on NFs. The comparison is shipped (V2-L0.11/12); SN + CR are the metatheory obligations above. Path A (NbE via `fold` + quote + DecidableEq on NFs) or Path B (Makkai word equality on the finite Generator-presented polygraph) gives the procedure. |
 
+**The quartet has a thermodynamic reading (O-THERMO, §11.9.2.2).**  SN
+is not merely "terminates": assign each cell a free energy
+`cost − T·(information it discards)` (cost grade, §3.7 — a projection or
+non-injective rewrite discards information, i.e. produces logical
+entropy, Landauer 1961).  Then **SN is a Second Law** (free energy is
+bounded below and strictly descends along directed, non-thin cells, so
+every certified cell relaxes to a normal form), **CR is ergodicity**
+(the equilibrium is unique), and the **Tot/Div boundary (§11.7.2) is a
+phase transition**.  A temperature parameter unifies kernel reduction
+(`T→0`, Lévy-optimal) with the §11.9.4 agent search (high `T`,
+annealing).  This is a *geometric* route to the same O-NORM / O-CONF
+obligations — a frontier alternative to the syntactic sconing route, and
+the foothold for the discrete-Ricci-flow normalization proof of §11.9.3
+OP5.
+
 ### 11.6.2 The substitution lemma at the cell level (the subtle obligation)
 
 The Allais fold (V2-L2.3 `fold`) gives rename/subst on `RawTerm`
@@ -7220,6 +7296,22 @@ arithmetic content that triggers coding).  The response is never escape
 but *climb* — which is exactly why the apex is unbounded.  See §11.8.2.1
 for how this interacts with the Reinhardt frontier.
 
+**The climbing ladder IS the Chaitin incompressibility ladder (O-AIT,
+§11.9.2.1).**  With FX0 as a *fixed* reference machine (§12.6),
+`K_FX0(x) := size of the smallest FX cell producing x` is a concrete
+Kolmogorov measure (no floating additive constant).  Chaitin's
+incompleteness: a theory proves `K_FX0(x) > c` only up to `c ≈ K(theory)`.
+So the **provable-incompressibility ceiling rises strictly with reflection
+degree** — the same tower that proves `Con` of its previous self unlocks
+strictly higher provable-incompressibility bounds, and *consistency
+strength = the provable-`K`-ceiling*.  Two consequences feed the §11.9
+program: the ladder's own ordinal analysis (O-ORD) is dischargeable as a
+mechanized **Beklemishev GLP reflection algebra** (§11.9.3 OP7), turning
+"rung *n+1* ⊢ Con(rung *n*)" from calibration prose into a theorem read
+off the GLP Worm; and "an idea feels already-stated" is the *signed*
+statement that its conditional `K_FX0(· ∣ corpus)` is low (§11.9.1.3
+O-HARD), i.e. it lives below the current reflection degree's `K`-ceiling.
+
 ### 11.7.2 Turing's ceiling → Tot/Div/Productive as Generator-level effect grades
 
 **The constraint:** a Turing-complete language has undecidable
@@ -7348,7 +7440,16 @@ tag).
 The three ceilings (Gödel, Turing, Rice) define a FRONTIER between
 decidable and undecidable properties.  Under the PolyCell design,
 this frontier is itself COMPUTABLE — the certifier can TELL YOU where
-the frontier is for your current profile.
+the frontier is for your current profile.  The §11.9 program targets a
+concrete *certified undecidability locus* here: in the protocol sort
+(§11.2) under the quantum profile (§3.15), **MIP\*=RE** (Ji-Natarajan-
+Vidick-Wright-Yuen 2020, refuting Connes embedding) forces `Conv` on
+certain nonlocal-game `.protocol` cells to be UNDECIDABLE — so
+`isDecidableInProfile?` returns a *certified* `undecidable` with a
+quantum-information reduction witness, pinning the exact boundary of the
+decidable-typechecking guarantee per sort (§11.9.3 OP6).  This is the
+positive use of the frontier: not every sort's `Conv` is decidable, and
+FX names *where* it stops, with a witness.
 
 **Actionable mechanism — `isDecidableInProfile?`:**
 
@@ -7472,7 +7573,7 @@ mathematics required).
 | **O-CONF** | Joint confluence of the full reduction relation (βηι + cubical Kan + user rewrite rules + commuting conversions + η-everywhere) | open research | generic cd_lemma at apex scale (§11.6.1) |
 | **O-CANON** | Canonicity for the union (follows O-NORM) | open research | consistency at apex (§11.8.8) |
 | **O-CUBE-PARAM** | Coherence of the path dimension (cubical) with the bridge dimension (internal parametricity) | open (Cavallo-Harper unifies) | Phase Z₄ + Z₈ |
-| **O-ORD** | Ordinal-notation / well-ordering substrate establishing each reflection-ladder rung's strength | open research | MILESTONE B ladder (§11.8.2) |
+| **O-ORD** | Ordinal-notation / well-ordering substrate establishing each reflection-ladder rung's strength — *discharge route: mechanized Beklemishev GLP reflection algebra, §11.9.3 OP7* | open research | MILESTONE B ladder (§11.8.2) |
 | **O-REFL-MODEL** | Construction / relative-consistency justification of the reflection-degree universes inside FX's own (∞,ω)-topos substrate | open research | MILESTONE B |
 | **O-FIRE** | Algebraic effects + handlers confined to a Fire-Triangle-safe graded / ∂CBPV fragment (§3.0.3) | specifiable now | §11.8.6 effects soundness |
 | **O-IR-SCHEMA** | Codes-for-IR universe + strict-positivity criterion — the actual content of "supporting HIIRT" | specifiable now | Phase Z₆ (§11.8.3) |
@@ -7480,6 +7581,14 @@ mathematics required).
 | **O-ELAB** | Elaborator soundness (emits only kernel-recheckable terms) + completeness for the decidable fragment | specifiable now | MILESTONE A (§11.8.3) |
 | **O-ERASE** | Erasure-correctness metatheorem (the §1.5 zero-runtime-cost premise) | specifiable now | MILESTONE D (§3.14) |
 | **O-SUBST-BRIDGE** | Equivalence of the Allais parallel-fold substitution (§4) and the Kaposi-Xie single-substitution calculus (§3.11) | specifiable now | — |
+| **O-INTERNAL** | The internalization principle as method (external quantity → typed certified computable cell) — the generator of the rows below | meta (§11.9.0) | beyond apex |
+| **O-OBSTRUCT** | Obstruction-cohomology of the 21-dim profile: H² over the dimension lattice classifying jointly-sound subsets (the §3.7/§3.14 no-go register as a cochain complex) | specifiable now; sublattice shippable | §11.9.1.1, beyond apex |
+| **O-HOMOLOGY** | Squier proof-homology = Hilbert's 24th problem (proof simplicity); the cd/critical-pair resolution's Hₙ | shippable now (H₁, term fragment) | §11.9.1.2, beyond apex |
+| **O-HARD** | The Hardness instrument N·D·(1+A)·(1+B) + δ-discrepancy — certified novelty/depth metric over the Conv-deduped FactDAG | D,B shippable now; N specifiable; A open | §11.9.1.3, beyond apex |
+| **O-AIT** | Synthetic algorithmic information theory: FX0 as fixed K-machine; Chaitin-ceiling ladder = Gödel-climbing ladder; Kₙ truncation spectrum | specifiable now | §11.9.2.1, beyond apex |
+| **O-THERMO** | Synthetic thermodynamics: SN (O-NORM) = Second Law (free-energy descent); Tot/Div = phase transition; temperature unifies reduction & search | open research | §11.9.2.2, beyond apex |
+| **O-TSPACE** | Geometry of theory-space: cellular-tensor associator (T5) = curvature; ProfileExtensions = tangent cone; Hardness = metric | open research | §11.9.2.3, beyond apex |
+| **O-FIREWALL** | Goodhart-resistant agent loop (the A-term rejects noise) + paraconsistent raw/certified proof firewall (adversarial-proposer-safe) | specifiable now | §11.9.4, §24 |
 
 **The committed normalization route (O-NORM / O-CANON).**  FX commits
 to ONE technique to carry the joint metatheory: **BKS internal
@@ -7508,9 +7617,14 @@ subsections cite an obligation by ID rather than re-asserting
 soundness inline: §11.8.7's decidability matrix gates combined-
 fragment entries on O-NORM; §11.8.6's algebraic effects cite O-FIRE;
 §3.16.5/6's IR/HIT admission cites O-IR-SCHEMA / O-II; §11.8.2's
-ladder cites O-ORD / O-REFL-MODEL.  This ledger is the single
-accountable place tracking the apex's open frontier, in the idiom of
-§12's risk register and §11.8.14.1's stated open problems.
+ladder cites O-ORD / O-REFL-MODEL.  The **§11.9 Internalization Program**
+registers its eight frontier obligations (O-INTERNAL / O-OBSTRUCT /
+O-HOMOLOGY / O-HARD / O-AIT / O-THERMO / O-TSPACE / O-FIREWALL) here for
+accountability, but they are **beyond-apex** — present in the ledger,
+explicitly NOT on the MILESTONE A–D critical path (the firewall of
+§11.9.0).  This ledger is the single accountable place tracking the
+apex's open frontier AND the post-apex program, in the idiom of §12's
+risk register and §11.8.14.1's stated open problems.
 
 ### 11.8.1 The seven gaps in the current substrate
 
@@ -7968,7 +8082,15 @@ only the higher cells."  Its status is genuinely open in a NEW way:
   **left-distributive algebra** of elementary self-maps is *computable*
   (Laver tables), so FX can internalize and even evaluate the algebraic
   trace of the frontier object while its top-level consistency stays
-  open.
+  open.  Concretely (§11.9.3 OP4): the higher-cell action of a
+  (c)-functor is *forced* to be an LD-algebra representation, so the
+  Laver-table first-row period `p(n)` — computable and zero-axiom — is an
+  FX-internal invariant whose unboundedness is equivalent to an I3
+  cardinal (Dougherty-Jech).  FX thereby turns "does this
+  large-cardinal-strength self-map exist?" into "does an
+  internally-computable sequence obey a forced growth law?" — a
+  *decidable shadow* of the frontier, computable now even though the
+  consistency question stays open.
 
 **Gödel is the engine, not the ceiling.**  FX never proves `Con(FX)` —
 but for every WEAKER flag it does: the reflection ladder is the tower
@@ -8825,6 +8947,26 @@ MODALITY in FX's substrate that admits identity-like structure.  Univalence
 is ALWAYS computational (`Conv.fromStep Step.eqType` body, never
 `axiom`), ALWAYS a theorem (not a postulate), and ALWAYS justified by
 multiple independent proofs.
+
+**Why univalence-everywhere is load-bearing for the §11.9 program — it
+is the canonical dedup oracle.**  Univalence makes equivalent structures
+*equal* and (propositionally, via `Step.eqProp`) logically-equivalent
+statements equal, so deciding "are these two facts the SAME fact?" is
+exactly Decidable Conv (MILESTONE A).  That decidable, canonical identity
+is the ingredient every classical complexity measure lacked: it lets FX
+quotient the space of facts and **count distinct ones**.  Hence
+univalence-everywhere is precisely what turns Kolmogorov complexity from
+"shortest program" (uncomputable, machine-floating) into "the canonical
+prime-factorization size in the deduplicated polygraph" (computable up to
+known Conv) — the foundation of `O-HARD` / `O-AIT` (§11.9.1.3 / §11.9.2.1).
+The discipline's reach across all 21 dimensions (the cross-dimension
+univalence below) is what makes the count *well-defined per sort* rather
+than over-counting equivalent-but-syntactically-different facts; and the
+*directedness* of the marking turns the count into a **truncation-indexed
+spectrum `Kₙ`** (h-prop level = logical complexity; higher = proof-
+structural), an invariant no scalar Kolmogorov measure can express.  So
+"univalence everywhere" is not only a soundness stance — it is the
+measuring instrument's calibration.
 
 **Three (actually four) independent justifications.**  Each is a separate
 body, so no single foundational assumption is load-bearing:
