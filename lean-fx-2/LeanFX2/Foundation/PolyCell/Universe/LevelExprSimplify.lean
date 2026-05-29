@@ -4134,4 +4134,121 @@ theorem LevelExpr.MaxPlusForm.merge_denote
     (LevelExpr.MaxPlusForm.denoteVarOffsets formLeft.varOffsets env)
     (LevelExpr.MaxPlusForm.denoteVarOffsets formRight.varOffsets env)
 
+/-! ## The normalizer — `toMaxPlusForm` on the predicative fragment
+
+`toMaxPlusForm` recurses `LevelExpr → MaxPlusForm`, routing `lzero`/
+`lvar` to base forms and `lsucc`/`lmax` through the `shiftSucc`/`merge`
+primitives.  `limax` is NOT max-plus expressible (its denotation is a
+runtime conditional on whether the right argument vanishes), so it has
+no faithful form — the function maps it to a placeholder and the
+soundness theorem is gated by `isPredicative` (no `limax` in the tree).
+This closes the predicative fragment of #419; full `limax` closure
+needs Mörtberg-Sterling irreducible imax-nodes and is deferred. -/
+
+/-- Propext-free left projection of a Boolean conjunction:
+`(flagLeft && flagRight) = true` forces `flagLeft = true`.  `cases` on
+the plain (non-indexed) `Bool` keeps this clean; the `false` branch
+reads off the absurd `false = true` directly. -/
+theorem LevelExpr.and_eq_true_imp_left {flagLeft flagRight : Bool}
+    (hConj : (flagLeft && flagRight) = true) : flagLeft = true := by
+  cases flagLeft with
+  | false => exact hConj
+  | true => rfl
+
+/-- Propext-free right projection of a Boolean conjunction:
+`(flagLeft && flagRight) = true` forces `flagRight = true`.  The
+`false` branch discharges via `Bool.noConfusion` on `false = true`. -/
+theorem LevelExpr.and_eq_true_imp_right {flagLeft flagRight : Bool}
+    (hConj : (flagLeft && flagRight) = true) : flagRight = true := by
+  cases flagLeft with
+  | false => exact Bool.noConfusion hConj
+  | true => exact hConj
+
+/-- Predicativity gate: an expression is predicative when it is built
+only from `lzero`, `lsucc`, `lmax`, `lvar` — no `limax` anywhere.
+Boolean-valued (full 5-ctor enumeration, propext-clean) so it is
+decidable for free.  This is exactly the fragment on which
+`toMaxPlusForm` is denotation-sound. -/
+def LevelExpr.isPredicative : LevelExpr → Bool
+  | .lzero => true
+  | .lsucc inner => LevelExpr.isPredicative inner
+  | .lmax left right =>
+      LevelExpr.isPredicative left && LevelExpr.isPredicative right
+  | .limax _ _ => false
+  | .lvar _ => true
+
+/-- A nested predicative tree is predicative. -/
+theorem LevelExpr.isPredicative_lmax_smoke :
+    LevelExpr.isPredicative (.lmax (.lvar 0) (.lsucc (.lvar 1))) = true :=
+  rfl
+
+/-- Any tree containing `limax` is not predicative. -/
+theorem LevelExpr.isPredicative_limax_smoke :
+    LevelExpr.isPredicative (.limax (.lvar 0) (.lvar 1)) = false :=
+  rfl
+
+/-- The max-plus normalizer.  Total over all `LevelExpr` (Lean
+requires it), but only denotation-faithful on the predicative fragment
+(`isPredicative` = true).  `lzero` → the empty form (denotes 0);
+`lvar n` → the single zero-offset entry (denotes `env n`); `lsucc` →
+`shiftSucc`; `lmax` → `merge`.  `limax` maps to the empty form as a
+non-semantic placeholder — never asserted correct (the soundness
+theorem excludes it). -/
+def LevelExpr.toMaxPlusForm : LevelExpr → LevelExpr.MaxPlusForm
+  | .lzero => { baseConstant := 0, varOffsets := [] }
+  | .lsucc inner =>
+      LevelExpr.MaxPlusForm.shiftSucc (LevelExpr.toMaxPlusForm inner)
+  | .lmax left right =>
+      LevelExpr.MaxPlusForm.merge
+        (LevelExpr.toMaxPlusForm left) (LevelExpr.toMaxPlusForm right)
+  | .limax _ _ => { baseConstant := 0, varOffsets := [] }
+  | .lvar index => { baseConstant := 0, varOffsets := [(index, 0)] }
+
+/-- Soundness of the normalizer on the predicative fragment: for every
+predicative expression, `toMaxPlusForm` denotes the same level as the
+expression itself, under every environment.
+
+Proof by `induction` on the (simple, non-indexed) `LevelExpr`, which
+compiles to the propext-free `LevelExpr.rec`.  Each arm composes the
+matching primitive's soundness lemma with the inductive hypotheses:
+`lsucc` uses `shiftSucc_denote`; `lmax` uses `merge_denote` plus both
+IHs (the conjunction split via the propext-free projections); `lvar`
+collapses the single entry via the `levelMax` identities; `limax` is
+vacuous because `isPredicative (limax …)` reduces to `false`. -/
+theorem LevelExpr.toMaxPlusForm_denote (env : Nat → Nat) :
+    ∀ (level : LevelExpr), LevelExpr.isPredicative level = true →
+      LevelExpr.MaxPlusForm.denote (LevelExpr.toMaxPlusForm level) env =
+        LevelExpr.denote level env := by
+  intro level
+  induction level with
+  | lzero => intro _; rfl
+  | lsucc inner ih =>
+      intro hPred
+      show LevelExpr.MaxPlusForm.denote
+          (LevelExpr.MaxPlusForm.shiftSucc (LevelExpr.toMaxPlusForm inner)) env =
+        LevelExpr.denote inner env + 1
+      rw [LevelExpr.MaxPlusForm.shiftSucc_denote
+            (LevelExpr.toMaxPlusForm inner) env,
+          ih hPred]
+  | lmax left right ihLeft ihRight =>
+      intro hPred
+      show LevelExpr.MaxPlusForm.denote
+          (LevelExpr.MaxPlusForm.merge
+            (LevelExpr.toMaxPlusForm left) (LevelExpr.toMaxPlusForm right)) env =
+        LevelExpr.levelMax (LevelExpr.denote left env)
+          (LevelExpr.denote right env)
+      rw [LevelExpr.MaxPlusForm.merge_denote
+            (LevelExpr.toMaxPlusForm left) (LevelExpr.toMaxPlusForm right) env,
+          ihLeft (LevelExpr.and_eq_true_imp_left hPred),
+          ihRight (LevelExpr.and_eq_true_imp_right hPred)]
+  | limax leftArg rightArg _ihLeft _ihRight =>
+      intro hPred
+      exact Bool.noConfusion hPred
+  | lvar index =>
+      intro _
+      show LevelExpr.levelMax 0
+          (LevelExpr.levelMax (env index) 0) = env index
+      rw [LevelExpr.levelMax_zero_right (env index),
+          LevelExpr.levelMax_zero_left (env index)]
+
 end LeanFX2.Foundation.PolyCell.Universe
