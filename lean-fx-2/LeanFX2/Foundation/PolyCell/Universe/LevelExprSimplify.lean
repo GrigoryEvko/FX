@@ -6154,4 +6154,84 @@ theorem LevelExpr.smoke_notDenoteEquiv_varVsSucc :
   absurd ((LevelExpr.denoteEquiv_iff_fullCanonicalize_eq _ _ rfl rfl).mp hEquiv)
     (by decide)
 
+/-! ### Step 8 — working-set size bound (complexity-witness foundation)
+
+The decision procedure `decideDenoteEquiv` computes `fullCanonicalize`
+on both inputs, and `fullCanonicalize`'s dominant cost is the insertion
+sort `canonicalizeVarOffsets` over the form's `varOffsets` list.  The
+honest complexity claim for that sort is sort-dominated **O(n²)** in the
+list length `n` (insertion sort is quadratic worst-case) — NOT the
+aspirational O(n log n).  This section pins the first half of that claim
+as a *theorem* rather than a comment: the list the sort runs over has
+length at most the input expression's `size`.  That makes "the working
+set is O(size)" verifiable, which is the substrate any later step-count
+bound stands on.
+
+`List.length_append` in core Lean leaks `propext` (verified by probe),
+so the append-length fact is reimplemented here propext-free by
+structural induction over `List (Nat × Nat)`, using only the clean
+`Nat.zero_add` / `Nat.succ_add` primitives. -/
+
+/-- Propext-free local reimplementation of `List.length_append` for the
+`varOffsets` element type: the length of a concatenation is the sum of
+the lengths.  Core `List.length_append` carries `propext`; this version
+inducts on the left list using only `Nat.zero_add` / `Nat.succ_add`. -/
+theorem LevelExpr.MaxPlusForm.length_append :
+    ∀ (left right : List (Nat × Nat)),
+      (left ++ right).length = left.length + right.length
+  | [], right => by
+      show right.length = 0 + right.length
+      rw [Nat.zero_add]
+  | _ :: rest, right => by
+      show (rest ++ right).length + 1 = (rest.length + 1) + right.length
+      rw [LevelExpr.MaxPlusForm.length_append rest right]
+      exact (Nat.succ_add rest.length right.length).symm
+
+/-- `incrementOffsets` preserves list length — it rewrites each entry's
+offset but neither adds nor drops entries.  Needed for the `lsucc` arm
+of the working-set bound (`shiftSucc` routes `varOffsets` through
+`incrementOffsets`). -/
+theorem LevelExpr.MaxPlusForm.incrementOffsets_length :
+    ∀ (entries : List (Nat × Nat)),
+      (LevelExpr.MaxPlusForm.incrementOffsets entries).length = entries.length
+  | [] => rfl
+  | (_, _) :: rest => by
+      show (LevelExpr.MaxPlusForm.incrementOffsets rest).length + 1 =
+        rest.length + 1
+      rw [LevelExpr.MaxPlusForm.incrementOffsets_length rest]
+
+/-- Working-set size bound: the number of variable/offset entries the
+normalizer produces is bounded by the source expression's `size`.  This
+holds UNCONDITIONALLY (no predicativity needed): `limax` maps to the
+empty form, so its arm is `0 ≤ size`.  `lsucc` routes through
+`incrementOffsets` (length-preserving); `lmax` through `merge` (append,
+so lengths add); the leaves are `0`/`1`.  Consequence: the insertion
+sort inside `fullCanonicalize` runs over a list of length ≤ `size`, so
+its O(n²) cost is O(size²) — the verifiable core of #419's
+complexity bound. -/
+theorem LevelExpr.toMaxPlusForm_varOffsets_length_le_size (level : LevelExpr) :
+    (LevelExpr.toMaxPlusForm level).varOffsets.length ≤ level.size := by
+  induction level with
+  | lzero =>
+      show (0 : Nat) ≤ 1
+      exact Nat.zero_le 1
+  | lsucc inner ih =>
+      show (LevelExpr.MaxPlusForm.incrementOffsets
+          (LevelExpr.toMaxPlusForm inner).varOffsets).length ≤ inner.size + 1
+      rw [LevelExpr.MaxPlusForm.incrementOffsets_length]
+      exact Nat.le_trans ih (Nat.le_succ inner.size)
+  | lmax left right ihLeft ihRight =>
+      show ((LevelExpr.toMaxPlusForm left).varOffsets ++
+          (LevelExpr.toMaxPlusForm right).varOffsets).length ≤
+        left.size + right.size + 1
+      rw [LevelExpr.MaxPlusForm.length_append]
+      exact Nat.le_trans (Nat.add_le_add ihLeft ihRight)
+        (Nat.le_succ (left.size + right.size))
+  | limax leftInner rightInner _ihLeft _ihRight =>
+      show (0 : Nat) ≤ leftInner.size + rightInner.size + 1
+      exact Nat.zero_le _
+  | lvar _ =>
+      show (1 : Nat) ≤ 1
+      exact Nat.le_refl 1
+
 end LeanFX2.Foundation.PolyCell.Universe
