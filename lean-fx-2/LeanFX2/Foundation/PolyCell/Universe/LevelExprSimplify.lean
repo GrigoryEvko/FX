@@ -3665,4 +3665,19 @@ theorem LevelExpr.dropLzeroAtoms_strictlySorted :
           exact ⟨LevelExpr.IsStrictLowerBound_dropLzeroAtoms _ rest hStrict.1,
                  LevelExpr.dropLzeroAtoms_strictlySorted rest hStrict.2⟩
 
+/-- The canonical atom list is strictly sorted (unconditional).
+Composes the three pipeline-transform invariants: insertion sort
+gives `IsSorted`, `dedupAdjacent` upgrades it to `IsStrictlySorted`,
+and `dropLzeroAtoms` preserves that.  This is the structural premise
+`strictlySorted_unique` consumes in the canonical-form assembly. -/
+theorem LevelExpr.canonicalAtoms_strictlySorted (expr : LevelExpr) :
+    LevelExpr.IsStrictlySorted (LevelExpr.canonicalAtoms expr) := by
+  show LevelExpr.IsStrictlySorted
+    (LevelExpr.dropLzeroAtoms
+      (LevelExpr.dedupAdjacent
+        (LevelExpr.insertionSortByCompare (LevelExpr.lmaxAtoms expr))))
+  exact LevelExpr.dropLzeroAtoms_strictlySorted _
+    (LevelExpr.dedupAdjacent_strictlySorted _
+      (LevelExpr.insertionSortByCompare_sorted _))
+
 end LeanFX2.Foundation.PolyCell.Universe
