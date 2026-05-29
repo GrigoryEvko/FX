@@ -4822,4 +4822,110 @@ theorem LevelExpr.MaxPlusForm.insertByVariable_preserves_allVariablesAtLeast
               bound entryVariable entryOffset hBound rest
               (LevelExpr.and_eq_true_imp_right hAll))
 
+/-! ## Insertion sort produces a sorted list
+
+Two `Nat.ble` arithmetic facts (transitivity + totality-swap), proved
+by structural induction, complete the insertion-sort correctness:
+`insertByVariable` preserves `isSortedByVariable`, hence `sortByVariable`
+always produces a sorted list — the first half of the canonical-form
+structural invariant. -/
+
+/-- `Nat.ble` transitivity (Boolean).  Structural 3D induction; the
+all-successor case recurses, the rest close by `Nat.ble 0 _ = true`
+or `Bool.noConfusion` on `Nat.ble (_+1) 0 = false`. -/
+theorem LevelExpr.ble_trans :
+    ∀ (valueA valueB valueC : Nat),
+      Nat.ble valueA valueB = true → Nat.ble valueB valueC = true →
+      Nat.ble valueA valueC = true
+  | 0, _, _, _, _ => rfl
+  | _ + 1, 0, _, hab, _ => Bool.noConfusion hab
+  | _ + 1, _ + 1, 0, _, hbc => Bool.noConfusion hbc
+  | predA + 1, predB + 1, predC + 1, hab, hbc =>
+      LevelExpr.ble_trans predA predB predC hab hbc
+
+/-- `Nat.ble` totality (Boolean): a failed comparison flips to a true
+one in the other direction.  Structural induction. -/
+theorem LevelExpr.ble_false_swap :
+    ∀ (valueA valueB : Nat),
+      Nat.ble valueA valueB = false → Nat.ble valueB valueA = true
+  | 0, _, hab => Bool.noConfusion hab
+  | _ + 1, 0, _ => rfl
+  | predA + 1, predB + 1, hab => LevelExpr.ble_false_swap predA predB hab
+
+/-- Lowering the lower bound: if every variable is `≥ higherBound` and
+`lowerBound ≤ higherBound`, then every variable is `≥ lowerBound`.
+Per-entry weakening via `ble_trans`. -/
+theorem LevelExpr.MaxPlusForm.allVariablesAtLeast_mono
+    (lowerBound higherBound : Nat)
+    (hBounds : Nat.ble lowerBound higherBound = true) :
+    ∀ (entries : List (Nat × Nat)),
+      LevelExpr.MaxPlusForm.allVariablesAtLeast higherBound entries = true →
+      LevelExpr.MaxPlusForm.allVariablesAtLeast lowerBound entries = true
+  | [], _ => rfl
+  | (variableHead, _) :: rest, hAll =>
+      LevelExpr.and_eq_true_of_both
+        (LevelExpr.ble_trans lowerBound higherBound variableHead hBounds
+          (LevelExpr.and_eq_true_imp_left hAll))
+        (LevelExpr.MaxPlusForm.allVariablesAtLeast_mono lowerBound higherBound
+          hBounds rest (LevelExpr.and_eq_true_imp_right hAll))
+
+/-- Inserting preserves sortedness.  Shallow-insert (`true`) case: the
+new head lower-bounds the old tail by `mono` (since `entry ≤ head ≤
+tail`).  Deep-insert (`false`) case: the old head still lower-bounds
+the insert result (`insertByVariable_preserves_allVariablesAtLeast`,
+using `ble_false_swap` to flip the comparison), and the tail stays
+sorted by the IH. -/
+theorem LevelExpr.MaxPlusForm.insertByVariable_preserves_isSortedByVariable
+    (entryVariable entryOffset : Nat) :
+    ∀ (entries : List (Nat × Nat)),
+      LevelExpr.MaxPlusForm.isSortedByVariable entries = true →
+      LevelExpr.MaxPlusForm.isSortedByVariable
+        (LevelExpr.MaxPlusForm.insertByVariable (entryVariable, entryOffset) entries) =
+          true
+  | [], _ => rfl
+  | (variableHead, offsetHead) :: rest, hSorted => by
+      show LevelExpr.MaxPlusForm.isSortedByVariable
+          (match Nat.ble entryVariable variableHead with
+           | true => (entryVariable, entryOffset) :: (variableHead, offsetHead) :: rest
+           | false => (variableHead, offsetHead) ::
+               LevelExpr.MaxPlusForm.insertByVariable (entryVariable, entryOffset) rest) = true
+      cases hble : Nat.ble entryVariable variableHead with
+      | true =>
+          show (LevelExpr.MaxPlusForm.allVariablesAtLeast entryVariable
+              ((variableHead, offsetHead) :: rest) &&
+            LevelExpr.MaxPlusForm.isSortedByVariable
+              ((variableHead, offsetHead) :: rest)) = true
+          exact LevelExpr.and_eq_true_of_both
+            (LevelExpr.and_eq_true_of_both hble
+              (LevelExpr.MaxPlusForm.allVariablesAtLeast_mono entryVariable variableHead
+                hble rest (LevelExpr.and_eq_true_imp_left hSorted)))
+            hSorted
+      | false =>
+          show (LevelExpr.MaxPlusForm.allVariablesAtLeast variableHead
+              (LevelExpr.MaxPlusForm.insertByVariable (entryVariable, entryOffset) rest) &&
+            LevelExpr.MaxPlusForm.isSortedByVariable
+              (LevelExpr.MaxPlusForm.insertByVariable (entryVariable, entryOffset) rest)) = true
+          exact LevelExpr.and_eq_true_of_both
+            (LevelExpr.MaxPlusForm.insertByVariable_preserves_allVariablesAtLeast
+              variableHead entryVariable entryOffset
+              (LevelExpr.ble_false_swap entryVariable variableHead hble)
+              rest (LevelExpr.and_eq_true_imp_left hSorted))
+            (LevelExpr.MaxPlusForm.insertByVariable_preserves_isSortedByVariable
+              entryVariable entryOffset rest (LevelExpr.and_eq_true_imp_right hSorted))
+
+/-- `sortByVariable` always produces a sorted list — fold the
+single-insert preservation down the list. -/
+theorem LevelExpr.MaxPlusForm.sortByVariable_produces_sorted :
+    ∀ (entries : List (Nat × Nat)),
+      LevelExpr.MaxPlusForm.isSortedByVariable
+        (LevelExpr.MaxPlusForm.sortByVariable entries) = true
+  | [] => rfl
+  | (entryVariable, entryOffset) :: rest => by
+      show LevelExpr.MaxPlusForm.isSortedByVariable
+          (LevelExpr.MaxPlusForm.insertByVariable (entryVariable, entryOffset)
+            (LevelExpr.MaxPlusForm.sortByVariable rest)) = true
+      exact LevelExpr.MaxPlusForm.insertByVariable_preserves_isSortedByVariable
+        entryVariable entryOffset (LevelExpr.MaxPlusForm.sortByVariable rest)
+        (LevelExpr.MaxPlusForm.sortByVariable_produces_sorted rest)
+
 end LeanFX2.Foundation.PolyCell.Universe
