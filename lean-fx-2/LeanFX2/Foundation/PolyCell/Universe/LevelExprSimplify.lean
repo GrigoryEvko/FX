@@ -3028,4 +3028,81 @@ theorem LevelExpr.dedupAdjacent_sorted :
           exact ⟨LevelExpr.IsLowerBound_dedupAdjacent first (second :: rest) hSorted.1,
                  LevelExpr.dedupAdjacent_sorted (second :: rest) hSorted.2⟩
 
+/-! ## Drop-lzero preserves sortedness
+
+`lzero` is the `compare` minimum (`ctorIndex` 0).  Dropping `lzero`
+atoms from a sorted list keeps it sorted: when an `lzero` head is
+removed, any bound below it must itself BE `lzero` (the only thing
+`≤ lzero`), and `lzero` bounds everything — so the bound transfers
+to the survivor unconditionally.  Closes "canonical atoms are
+sorted" (sort → dedup → drop-lzero all preserve `IsSorted`). -/
+
+/-- `lzero` is below every level expression: `compare lzero e` is
+never `.gt`. -/
+theorem LevelExpr.compare_lzero_ne_gt (e : LevelExpr) :
+    LevelExpr.compare LevelExpr.lzero e ≠ Ordering.gt := by
+  cases e <;> exact fun hContra => Ordering.noConfusion hContra
+
+/-- Only `lzero` is `≤ lzero`: a non-`.gt` verdict against `lzero`
+forces the operand to be `lzero` (minimality, contrapositive). -/
+theorem LevelExpr.compare_le_lzero_imp_eq (bound : LevelExpr)
+    (hLe : LevelExpr.compare bound LevelExpr.lzero ≠ Ordering.gt) :
+    bound = LevelExpr.lzero := by
+  cases bound with
+  | lzero => rfl
+  | lvar _ => exact absurd rfl hLe
+  | lsucc _ => exact absurd rfl hLe
+  | lmax _ _ => exact absurd rfl hLe
+  | limax _ _ => exact absurd rfl hLe
+
+/-- `lzero` is a lower bound for any list (it bounds every head). -/
+theorem LevelExpr.lzero_isLowerBound :
+    ∀ (ys : List LevelExpr), LevelExpr.IsLowerBound LevelExpr.lzero ys
+  | [] => trivial
+  | first :: _ => LevelExpr.compare_lzero_ne_gt first
+
+/-- `dropLzeroAtoms` preserves a lower bound.  Non-recursive: the
+`lzero`-head case forces the bound to be `lzero` (then `lzero`
+bounds the whole remainder); the keep cases leave the head, so the
+bound is unchanged. -/
+theorem LevelExpr.IsLowerBound_dropLzeroAtoms (bound : LevelExpr) :
+    ∀ (xs : List LevelExpr),
+      LevelExpr.IsLowerBound bound xs →
+      LevelExpr.IsLowerBound bound (LevelExpr.dropLzeroAtoms xs)
+  | [], _ => trivial
+  | head :: rest, hBound => by
+      cases head with
+      | lzero =>
+          have hBoundEq : bound = LevelExpr.lzero :=
+            LevelExpr.compare_le_lzero_imp_eq bound hBound
+          rw [hBoundEq]
+          exact LevelExpr.lzero_isLowerBound _
+      | lvar _ => exact hBound
+      | lsucc _ => exact hBound
+      | lmax _ _ => exact hBound
+      | limax _ _ => exact hBound
+
+/-- `dropLzeroAtoms` preserves sortedness.  `lzero` head: drop and
+recurse on the sorted tail; keep cases: retain the head, re-bound the
+dropped tail via `IsLowerBound_dropLzeroAtoms`, and recurse. -/
+theorem LevelExpr.dropLzeroAtoms_sorted :
+    ∀ (xs : List LevelExpr),
+      LevelExpr.IsSorted xs → LevelExpr.IsSorted (LevelExpr.dropLzeroAtoms xs)
+  | [], _ => trivial
+  | head :: rest, hSorted => by
+      cases head with
+      | lzero => exact LevelExpr.dropLzeroAtoms_sorted rest hSorted.2
+      | lvar _ =>
+          exact ⟨LevelExpr.IsLowerBound_dropLzeroAtoms _ rest hSorted.1,
+                 LevelExpr.dropLzeroAtoms_sorted rest hSorted.2⟩
+      | lsucc _ =>
+          exact ⟨LevelExpr.IsLowerBound_dropLzeroAtoms _ rest hSorted.1,
+                 LevelExpr.dropLzeroAtoms_sorted rest hSorted.2⟩
+      | lmax _ _ =>
+          exact ⟨LevelExpr.IsLowerBound_dropLzeroAtoms _ rest hSorted.1,
+                 LevelExpr.dropLzeroAtoms_sorted rest hSorted.2⟩
+      | limax _ _ =>
+          exact ⟨LevelExpr.IsLowerBound_dropLzeroAtoms _ rest hSorted.1,
+                 LevelExpr.dropLzeroAtoms_sorted rest hSorted.2⟩
+
 end LeanFX2.Foundation.PolyCell.Universe
