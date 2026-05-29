@@ -3950,4 +3950,40 @@ def LevelExpr.decidableDenoteEquivOfVariableJoin (e1 e2 : LevelExpr)
       hCanonEq (LevelExpr.canonicalize_eq_of_denoteEquiv_of_isVariableJoin
         e1 e2 hVarJoin1 hVarJoin2 hDenoteEquiv))
 
+/-! ## The max-plus normal form — toward full #419 completeness
+
+Mörtberg-Sterling: every universe level normalizes to an affine
+max-plus form `max(baseConstant, maxᵢ (env varᵢ + offsetᵢ))`.  Unlike
+the current `canonicalize` (which lacks absorption — see the
+variable-fragment scope note above), this form performs absorption by
+keeping only the *maximum offset* per variable: `lmax (lsucc x) x` and
+`lsucc x` both reduce to the single entry `(x, 1)`.  This block ships
+the structure and its denotation — the semantic target the normalizer
+(`toMaxPlusForm`, later ticks) is proven against. -/
+
+/-- An affine max-plus form: a base constant plus, per universe
+variable, the maximum offset at which it appears.  The representation
+*is* the absorption mechanism — one offset per variable. -/
+structure LevelExpr.MaxPlusForm where
+  /-- The constant floor (max of all constant contributions). -/
+  baseConstant : Nat
+  /-- `(variableIndex, offset)` entries — the max offset per variable. -/
+  varOffsets : List (Nat × Nat)
+
+/-- Max-fold of the variable/offset entries under an environment:
+`maxᵢ (env varᵢ + offsetᵢ)`, with the empty list folding to `0`. -/
+def LevelExpr.MaxPlusForm.denoteVarOffsets :
+    List (Nat × Nat) → (Nat → Nat) → Nat
+  | [], _ => 0
+  | (variableIndex, offset) :: rest, env =>
+      LevelExpr.levelMax (env variableIndex + offset)
+        (LevelExpr.MaxPlusForm.denoteVarOffsets rest env)
+
+/-- Semantic denotation of a max-plus form: the base constant joined
+with the max over all variable/offset entries. -/
+def LevelExpr.MaxPlusForm.denote
+    (form : LevelExpr.MaxPlusForm) (env : Nat → Nat) : Nat :=
+  LevelExpr.levelMax form.baseConstant
+    (LevelExpr.MaxPlusForm.denoteVarOffsets form.varOffsets env)
+
 end LeanFX2.Foundation.PolyCell.Universe
