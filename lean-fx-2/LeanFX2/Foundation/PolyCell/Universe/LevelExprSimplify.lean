@@ -3327,4 +3327,53 @@ theorem LevelExpr.denote_le_denoteAtomList_of_occurs (env : Nat → Nat) :
             (LevelExpr.levelMax_ge_right (LevelExpr.denote head env)
               (LevelExpr.denoteAtomList rest env))
 
+/-! ### Zero-characterization of the max-fold
+
+`denoteAtomList xs env = 0` exactly when every atom occurring in
+`xs` denotes `0` under `env`.  The backward direction is a list
+induction off `levelMax 0 0 = 0`; the forward direction reads the
+per-member bound off `denote_le_denoteAtomList_of_occurs`.  This is
+the "≤" half of point-environment detection: under a point
+environment isolating one variable, a list NOT containing that
+variable folds to `0`. -/
+
+/-- If every occurring atom denotes `0`, the whole max-fold is `0`.
+List recursion: the head is `0` by hypothesis, the tail-fold is `0`
+by the inductive hypothesis, and `levelMax 0 0 = 0`. -/
+theorem LevelExpr.denoteAtomList_eq_zero_of_all_zero (env : Nat → Nat) :
+    ∀ (xs : List LevelExpr),
+      (∀ atom, LevelExpr.OccursIn atom xs →
+        LevelExpr.denote atom env = 0) →
+      LevelExpr.denoteAtomList xs env = 0
+  | [], _hAllZero => rfl
+  | head :: rest, hAllZero => by
+      have hHeadZero : LevelExpr.denote head env = 0 :=
+        hAllZero head (Or.inl rfl)
+      have hRestZero : LevelExpr.denoteAtomList rest env = 0 :=
+        LevelExpr.denoteAtomList_eq_zero_of_all_zero env rest
+          (fun atom hOccurs => hAllZero atom (Or.inr hOccurs))
+      calc LevelExpr.denoteAtomList (head :: rest) env
+          = LevelExpr.levelMax (LevelExpr.denote head env)
+              (LevelExpr.denoteAtomList rest env) := rfl
+        _ = LevelExpr.levelMax 0 0 := by rw [hHeadZero, hRestZero]
+        _ = 0 := rfl
+
+/-- The max-fold is `0` iff every occurring atom denotes `0`.  The
+forward direction extracts the per-member bound (`denote atom env ≤
+0`) from `denote_le_denoteAtomList_of_occurs`; the backward direction
+is `denoteAtomList_eq_zero_of_all_zero`. -/
+theorem LevelExpr.denoteAtomList_eq_zero_iff
+    (env : Nat → Nat) (xs : List LevelExpr) :
+    LevelExpr.denoteAtomList xs env = 0 ↔
+      ∀ atom, LevelExpr.OccursIn atom xs →
+        LevelExpr.denote atom env = 0 := by
+  constructor
+  · intro hFoldZero atom hOccurs
+    have hMemberLe :=
+      LevelExpr.denote_le_denoteAtomList_of_occurs env xs atom hOccurs
+    rw [hFoldZero] at hMemberLe
+    exact Nat.le_zero.mp hMemberLe
+  · intro hAllZero
+    exact LevelExpr.denoteAtomList_eq_zero_of_all_zero env xs hAllZero
+
 end LeanFX2.Foundation.PolyCell.Universe
