@@ -5269,4 +5269,112 @@ theorem LevelExpr.MaxPlusForm.allVariablesAtLeast_imp_not_occurs (probe : Nat) :
       show LevelExpr.MaxPlusForm.occursAsVariable probe rest = false
       exact LevelExpr.MaxPlusForm.allVariablesAtLeast_imp_not_occurs probe rest hAllRest
 
+/-! ### Step 7(b) present-half — the offset-extraction theorem
+
+For a strictly-sorted list in which `probe` occurs, evaluating the
+fold at a scaled point environment with `scale` above every offset
+reveals the probe's offset exactly: the result is `scale + offsetOf
+probe entries`.  This is the value oracle complementing the
+membership oracle (`…_of_not_occurs`); together they let the
+uniqueness argument read off every entry of a canonical form. -/
+
+/-- The offset recorded for the first entry whose variable is `probe`
+(`0` when `probe` is absent).  On a strictly-sorted list the probe
+occurs at most once, so "first" is "the". -/
+def LevelExpr.MaxPlusForm.offsetOf (probe : Nat) :
+    List (Nat × Nat) → Nat
+  | [] => 0
+  | (variableHead, offsetHead) :: rest =>
+      match Nat.beq variableHead probe with
+      | true => offsetHead
+      | false => LevelExpr.MaxPlusForm.offsetOf probe rest
+
+/-- Present-variable extraction: for a strictly-sorted list in which
+`probe` occurs, with `scale` strictly above every offset, the scaled
+point-environment fold equals `scale + offsetOf probe entries`.  Two
+cases: when the head is the probe its `scale + offset` dominates the
+(probe-free, hence `maxOffset`) tail; when the head is not the probe
+its bare offset is dominated by the tail's `scale + offsetOf` (by the
+IH). -/
+theorem LevelExpr.MaxPlusForm.denoteVarOffsets_scaledPointEnvironment_of_occurs
+    (probe scale : Nat) :
+    ∀ (entries : List (Nat × Nat)),
+      LevelExpr.MaxPlusForm.isStrictlySortedByVariable entries = true →
+      LevelExpr.MaxPlusForm.occursAsVariable probe entries = true →
+      LevelExpr.MaxPlusForm.maxOffset entries < scale →
+      LevelExpr.MaxPlusForm.denoteVarOffsets entries
+          (LevelExpr.MaxPlusForm.scaledPointEnvironment probe scale) =
+        scale + LevelExpr.MaxPlusForm.offsetOf probe entries
+  | [], _, hOcc, _ => Bool.noConfusion hOcc
+  | (variableHead, offsetHead) :: rest, hStrict, hOcc, hMaxLt => by
+      have hStrictConj :
+          (LevelExpr.MaxPlusForm.allVariablesAtLeast (variableHead + 1) rest &&
+            LevelExpr.MaxPlusForm.isStrictlySortedByVariable rest) = true := hStrict
+      cases hBeq : Nat.beq variableHead probe with
+      | true =>
+          have hEqVar : variableHead = probe := Nat.eq_of_beq_eq_true hBeq
+          have hAllAtLeast :
+              LevelExpr.MaxPlusForm.allVariablesAtLeast (variableHead + 1) rest = true :=
+            LevelExpr.and_eq_true_imp_left hStrictConj
+          rw [hEqVar] at hAllAtLeast
+          have hRestAbsent : LevelExpr.MaxPlusForm.occursAsVariable probe rest = false :=
+            LevelExpr.MaxPlusForm.allVariablesAtLeast_imp_not_occurs probe rest hAllAtLeast
+          have hRestLe :
+              LevelExpr.MaxPlusForm.maxOffset rest ≤ scale + offsetHead :=
+            Nat.le_trans
+              (Nat.le_of_lt (Nat.lt_of_le_of_lt
+                (LevelExpr.levelMax_ge_right offsetHead
+                  (LevelExpr.MaxPlusForm.maxOffset rest)) hMaxLt))
+              (Nat.le_add_right scale offsetHead)
+          show LevelExpr.levelMax
+                (cond (Nat.beq variableHead probe) scale 0 + offsetHead)
+                (LevelExpr.MaxPlusForm.denoteVarOffsets rest
+                  (LevelExpr.MaxPlusForm.scaledPointEnvironment probe scale)) =
+              scale + (match Nat.beq variableHead probe with
+                | true => offsetHead
+                | false => LevelExpr.MaxPlusForm.offsetOf probe rest)
+          rw [hBeq,
+            LevelExpr.MaxPlusForm.denoteVarOffsets_scaledPointEnvironment_of_not_occurs
+              probe scale rest hRestAbsent]
+          show LevelExpr.levelMax (scale + offsetHead)
+              (LevelExpr.MaxPlusForm.maxOffset rest) = scale + offsetHead
+          exact LevelExpr.levelMax_eq_left_of_right_le (scale + offsetHead)
+            (LevelExpr.MaxPlusForm.maxOffset rest) hRestLe
+      | false =>
+          have hStrictRest :
+              LevelExpr.MaxPlusForm.isStrictlySortedByVariable rest = true :=
+            LevelExpr.and_eq_true_imp_right hStrictConj
+          have hOrTrue : (Nat.beq variableHead probe ||
+              LevelExpr.MaxPlusForm.occursAsVariable probe rest) = true := hOcc
+          rw [hBeq] at hOrTrue
+          have hOccRest : LevelExpr.MaxPlusForm.occursAsVariable probe rest = true :=
+            hOrTrue
+          have hMaxRestLt : LevelExpr.MaxPlusForm.maxOffset rest < scale :=
+            Nat.lt_of_le_of_lt
+              (LevelExpr.levelMax_ge_right offsetHead
+                (LevelExpr.MaxPlusForm.maxOffset rest)) hMaxLt
+          have hHeadLe :
+              offsetHead ≤ scale + LevelExpr.MaxPlusForm.offsetOf probe rest :=
+            Nat.le_trans
+              (Nat.le_of_lt (Nat.lt_of_le_of_lt
+                (LevelExpr.levelMax_ge_left offsetHead
+                  (LevelExpr.MaxPlusForm.maxOffset rest)) hMaxLt))
+              (Nat.le_add_right scale (LevelExpr.MaxPlusForm.offsetOf probe rest))
+          show LevelExpr.levelMax
+                (cond (Nat.beq variableHead probe) scale 0 + offsetHead)
+                (LevelExpr.MaxPlusForm.denoteVarOffsets rest
+                  (LevelExpr.MaxPlusForm.scaledPointEnvironment probe scale)) =
+              scale + (match Nat.beq variableHead probe with
+                | true => offsetHead
+                | false => LevelExpr.MaxPlusForm.offsetOf probe rest)
+          rw [hBeq,
+            LevelExpr.MaxPlusForm.denoteVarOffsets_scaledPointEnvironment_of_occurs
+              probe scale rest hStrictRest hOccRest hMaxRestLt]
+          show LevelExpr.levelMax (0 + offsetHead)
+              (scale + LevelExpr.MaxPlusForm.offsetOf probe rest) =
+            scale + LevelExpr.MaxPlusForm.offsetOf probe rest
+          rw [Nat.zero_add]
+          exact LevelExpr.levelMax_eq_right_of_left_le offsetHead
+            (scale + LevelExpr.MaxPlusForm.offsetOf probe rest) hHeadLe
+
 end LeanFX2.Foundation.PolyCell.Universe
