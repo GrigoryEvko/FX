@@ -2121,4 +2121,58 @@ theorem LevelExpr.foldLmax_lmaxAtoms_denoteEquiv :
           (LevelExpr.foldLmax_lmaxAtoms_denoteEquiv b)
       exact LevelExpr.denoteEquiv.trans hAppend hChildren
 
+/-! ## Drop-`lzero` atom-list cleanup
+
+`lzero` is the `lmax` unit, so a `lzero` atom contributes nothing
+to the `levelMax`.  `dropLzeroAtoms` removes every `lzero` from a
+flattened atom list; `foldLmax_dropLzeroAtoms_denoteEquiv` shows
+this preserves the denotation.  This is the drop-`lzero` sub-step
+of the n-ary canonical form (composed after `lmaxAtoms`, before
+the rebuild).  Note: it does not remove a `lzero` reachable only
+inside a non-`lmax` atom (e.g. `lsucc lzero`) — only top-level
+`lzero` atoms, which is exactly what the canonical max needs. -/
+
+/-- Remove every top-level `lzero` atom from a flattened atom list.
+Full constructor enumeration (outer `List`, inner `LevelExpr`) —
+no wildcard — keeps the def `propext`-free. -/
+def LevelExpr.dropLzeroAtoms : List LevelExpr → List LevelExpr
+  | [] => []
+  | head :: rest =>
+      match head with
+      | LevelExpr.lzero => LevelExpr.dropLzeroAtoms rest
+      | LevelExpr.lvar n => LevelExpr.lvar n :: LevelExpr.dropLzeroAtoms rest
+      | LevelExpr.lsucc inner =>
+          LevelExpr.lsucc inner :: LevelExpr.dropLzeroAtoms rest
+      | LevelExpr.lmax a b =>
+          LevelExpr.lmax a b :: LevelExpr.dropLzeroAtoms rest
+      | LevelExpr.limax a b =>
+          LevelExpr.limax a b :: LevelExpr.dropLzeroAtoms rest
+
+/-- Dropping `lzero` atoms preserves the folded denotation:
+`foldLmax (dropLzeroAtoms xs) ~ foldLmax xs`.
+
+Structural recursion on the list.  In the cons step, a `lzero`
+head is absorbed by the `lzero` left-unit law; every other head is
+kept and the inductive hypothesis lifts through the `lmax`
+left-operand congruence. -/
+theorem LevelExpr.foldLmax_dropLzeroAtoms_denoteEquiv :
+    ∀ (xs : List LevelExpr),
+      LevelExpr.denoteEquiv (LevelExpr.foldLmax (LevelExpr.dropLzeroAtoms xs))
+        (LevelExpr.foldLmax xs)
+  | [] => LevelExpr.denoteEquiv.refl _
+  | head :: rest => by
+      have ih := LevelExpr.foldLmax_dropLzeroAtoms_denoteEquiv rest
+      cases head with
+      | lzero =>
+          exact LevelExpr.denoteEquiv.trans ih
+            (LevelExpr.denoteEquiv.symm (LevelExpr.lmax_lzero_left_denoteEquiv _))
+      | lvar n =>
+          exact LevelExpr.lmax_denoteEquiv_congr (LevelExpr.denoteEquiv.refl _) ih
+      | lsucc inner =>
+          exact LevelExpr.lmax_denoteEquiv_congr (LevelExpr.denoteEquiv.refl _) ih
+      | lmax a b =>
+          exact LevelExpr.lmax_denoteEquiv_congr (LevelExpr.denoteEquiv.refl _) ih
+      | limax a b =>
+          exact LevelExpr.lmax_denoteEquiv_congr (LevelExpr.denoteEquiv.refl _) ih
+
 end LeanFX2.Foundation.PolyCell.Universe
