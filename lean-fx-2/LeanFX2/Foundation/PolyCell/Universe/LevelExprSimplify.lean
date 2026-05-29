@@ -3915,4 +3915,20 @@ theorem LevelExpr.canonicalize_eq_of_denoteEquiv_of_isVariableJoin
     (LevelExpr.canonicalAtoms_allVariables_of_isVariableJoin e2 hVarJoin2)
     hEquiv
 
+/-- Soundness of canonical form (general, no fragment restriction):
+expressions with equal canonical forms are denotationally equal.
+Chains `e1 ~ canonicalize e1 =(hyp) canonicalize e2 ~ e2`, the middle
+hop a plain `Eq`-rewrite of the syntactically-equal canonical forms.
+This is the easy direction — the completeness counterpart is the
+fragment-bound `canonicalize_eq_of_denoteEquiv_of_isVariableJoin`. -/
+theorem LevelExpr.denoteEquiv_of_canonicalize_eq (e1 e2 : LevelExpr)
+    (hCanonEq : LevelExpr.canonicalize e1 = LevelExpr.canonicalize e2) :
+    LevelExpr.denoteEquiv e1 e2 := by
+  have hLeft : LevelExpr.denoteEquiv e1 (LevelExpr.canonicalize e1) :=
+    (LevelExpr.canonicalize_denoteEquiv e1).symm
+  have hRight : LevelExpr.denoteEquiv (LevelExpr.canonicalize e2) e2 :=
+    LevelExpr.canonicalize_denoteEquiv e2
+  rw [hCanonEq] at hLeft
+  exact LevelExpr.denoteEquiv.trans hLeft hRight
+
 end LeanFX2.Foundation.PolyCell.Universe
