@@ -4251,4 +4251,84 @@ theorem LevelExpr.toMaxPlusForm_denote (env : Nat → Nat) :
       rw [LevelExpr.levelMax_zero_right (env index),
           LevelExpr.levelMax_zero_left (env index)]
 
+/-! ## Canonicalization foundation — the local rewrite rules
+
+The max-plus canonical form keeps the entries sorted by variable and
+with one (max) offset per variable.  Two local, denotation-preserving
+rewrite rules justify any such canonicalization:
+
+* `denoteVarOffsets_swap_adjacent` — reordering adjacent entries
+  preserves the fold (max is commutative/associative);
+* `denoteVarOffsets_absorb_adjacent` — two adjacent entries for the
+  same variable collapse to one carrying the max of their offsets.
+
+The absorb rule rests on the arithmetic distributivity
+`levelMax (base + offsetA) (base + offsetB) = base + levelMax offsetA
+offsetB` — adding a fixed base distributes over `levelMax`, which is
+exactly why one offset per variable suffices. -/
+
+/-- Adding a fixed `base` distributes over `levelMax`:
+`max (base + offsetA) (base + offsetB) = base + max offsetA offsetB`.
+Proved by induction on `base` against the custom `levelMax`; the
+successor case collapses through the definitional
+`levelMax (_ + 1) (_ + 1) = levelMax _ _ + 1`. -/
+theorem LevelExpr.levelMax_add_left_distrib (base offsetA offsetB : Nat) :
+    LevelExpr.levelMax (base + offsetA) (base + offsetB) =
+      base + LevelExpr.levelMax offsetA offsetB := by
+  induction base with
+  | zero =>
+      rw [Nat.zero_add, Nat.zero_add, Nat.zero_add]
+  | succ predecessor ih =>
+      rw [Nat.succ_add, Nat.succ_add, Nat.succ_add]
+      show LevelExpr.levelMax (predecessor + offsetA) (predecessor + offsetB) + 1 =
+        (predecessor + LevelExpr.levelMax offsetA offsetB) + 1
+      rw [ih]
+
+/-- Reordering two adjacent entries preserves the max-fold: the
+denotation of a `varOffsets` list only depends on its entries up to
+order.  The single-swap version — `levelMax` left-commutativity
+applied past the recursive tail. -/
+theorem LevelExpr.MaxPlusForm.denoteVarOffsets_swap_adjacent
+    (variableA offsetA variableB offsetB : Nat)
+    (rest : List (Nat × Nat)) (env : Nat → Nat) :
+    LevelExpr.MaxPlusForm.denoteVarOffsets
+        ((variableA, offsetA) :: (variableB, offsetB) :: rest) env =
+      LevelExpr.MaxPlusForm.denoteVarOffsets
+        ((variableB, offsetB) :: (variableA, offsetA) :: rest) env := by
+  show LevelExpr.levelMax (env variableA + offsetA)
+      (LevelExpr.levelMax (env variableB + offsetB)
+        (LevelExpr.MaxPlusForm.denoteVarOffsets rest env)) =
+    LevelExpr.levelMax (env variableB + offsetB)
+      (LevelExpr.levelMax (env variableA + offsetA)
+        (LevelExpr.MaxPlusForm.denoteVarOffsets rest env))
+  rw [← LevelExpr.levelMax_assoc (env variableA + offsetA)
+        (env variableB + offsetB)
+        (LevelExpr.MaxPlusForm.denoteVarOffsets rest env),
+      LevelExpr.levelMax_comm (env variableA + offsetA) (env variableB + offsetB),
+      LevelExpr.levelMax_assoc (env variableB + offsetB)
+        (env variableA + offsetA)
+        (LevelExpr.MaxPlusForm.denoteVarOffsets rest env)]
+
+/-- Two adjacent entries for the *same* variable collapse to one
+carrying the max of their offsets — the absorption that keeps one
+offset per variable.  Re-associate the head past the tail, then fire
+`levelMax_add_left_distrib` to fuse the two `env variableIndex + _`
+contributions. -/
+theorem LevelExpr.MaxPlusForm.denoteVarOffsets_absorb_adjacent
+    (variableIndex offsetA offsetB : Nat)
+    (rest : List (Nat × Nat)) (env : Nat → Nat) :
+    LevelExpr.MaxPlusForm.denoteVarOffsets
+        ((variableIndex, offsetA) :: (variableIndex, offsetB) :: rest) env =
+      LevelExpr.MaxPlusForm.denoteVarOffsets
+        ((variableIndex, LevelExpr.levelMax offsetA offsetB) :: rest) env := by
+  show LevelExpr.levelMax (env variableIndex + offsetA)
+      (LevelExpr.levelMax (env variableIndex + offsetB)
+        (LevelExpr.MaxPlusForm.denoteVarOffsets rest env)) =
+    LevelExpr.levelMax (env variableIndex + LevelExpr.levelMax offsetA offsetB)
+      (LevelExpr.MaxPlusForm.denoteVarOffsets rest env)
+  rw [← LevelExpr.levelMax_assoc (env variableIndex + offsetA)
+        (env variableIndex + offsetB)
+        (LevelExpr.MaxPlusForm.denoteVarOffsets rest env),
+      LevelExpr.levelMax_add_left_distrib (env variableIndex) offsetA offsetB]
+
 end LeanFX2.Foundation.PolyCell.Universe
