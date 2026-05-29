@@ -3105,4 +3105,73 @@ theorem LevelExpr.dropLzeroAtoms_sorted :
           exact ⟨LevelExpr.IsLowerBound_dropLzeroAtoms _ rest hSorted.1,
                  LevelExpr.dropLzeroAtoms_sorted rest hSorted.2⟩
 
+/-! ## Strict sortedness — the dedup invariant
+
+`dedupAdjacent` applied to a sorted list produces a *strictly*
+increasing list (no two adjacent atoms `compare`-equal).  This is
+the deduplication invariant: combined with uniqueness it will pin
+the canonical atom list as THE representative of its element set.
+The strict track mirrors `IsSorted` / `IsLowerBound` with
+`compare = .lt` in place of `≠ .gt`; still only antisymmetry. -/
+
+/-- `bound` is *strictly* below the head of a list under `compare`
+(vacuously for the empty list): `compare bound head = .lt`. -/
+def LevelExpr.IsStrictLowerBound (bound : LevelExpr) : List LevelExpr → Prop
+  | [] => True
+  | first :: _ => LevelExpr.compare bound first = Ordering.lt
+
+/-- A list is strictly sorted when each head is a *strict* lower
+bound for its tail and the tail is itself strictly sorted: a
+duplicate-free, increasing chain. -/
+def LevelExpr.IsStrictlySorted : List LevelExpr → Prop
+  | [] => True
+  | head :: rest =>
+      LevelExpr.IsStrictLowerBound head rest ∧ LevelExpr.IsStrictlySorted rest
+
+/-- `dedupAdjacent` preserves a *strict* lower bound (same value-equal
+head-transfer as the non-strict case: a dropped head is `compare`-equal
+to its survivor, so a strict bound below it is below the survivor). -/
+theorem LevelExpr.IsStrictLowerBound_dedupAdjacent (bound : LevelExpr) :
+    ∀ (xs : List LevelExpr),
+      LevelExpr.IsStrictLowerBound bound xs →
+      LevelExpr.IsStrictLowerBound bound (LevelExpr.dedupAdjacent xs)
+  | [], _ => trivial
+  | [_single], hBound => hBound
+  | first :: second :: rest, hBound => by
+      show LevelExpr.IsStrictLowerBound bound
+        (LevelExpr.dedupStep (LevelExpr.compare first second) first
+          (LevelExpr.dedupAdjacent (second :: rest)))
+      cases hVerdict : LevelExpr.compare first second with
+      | lt => exact hBound
+      | gt => exact hBound
+      | eq =>
+          have hFirstSecond : first = second :=
+            LevelExpr.compare_eq_imp_eq first second hVerdict
+          have hBoundSecond : LevelExpr.compare bound second = Ordering.lt := by
+            rw [← hFirstSecond]; exact hBound
+          exact LevelExpr.IsStrictLowerBound_dedupAdjacent bound (second :: rest) hBoundSecond
+
+/-- `dedupAdjacent` turns a sorted list into a strictly sorted one.
+On sorted input the `.gt` branch is impossible (forbidden by the
+lower bound); `.eq` collapses the duplicate and recurses; `.lt`
+keeps the head as a strict bound (re-bounding the deduped tail via
+`IsStrictLowerBound_dedupAdjacent`) and recurses. -/
+theorem LevelExpr.dedupAdjacent_strictlySorted :
+    ∀ (xs : List LevelExpr),
+      LevelExpr.IsSorted xs →
+      LevelExpr.IsStrictlySorted (LevelExpr.dedupAdjacent xs)
+  | [], _ => trivial
+  | [_single], _ => ⟨trivial, trivial⟩
+  | first :: second :: rest, hSorted => by
+      show LevelExpr.IsStrictlySorted
+        (LevelExpr.dedupStep (LevelExpr.compare first second) first
+          (LevelExpr.dedupAdjacent (second :: rest)))
+      cases hVerdict : LevelExpr.compare first second with
+      | gt => exact absurd hVerdict hSorted.1
+      | eq =>
+          exact LevelExpr.dedupAdjacent_strictlySorted (second :: rest) hSorted.2
+      | lt =>
+          refine ⟨?_, LevelExpr.dedupAdjacent_strictlySorted (second :: rest) hSorted.2⟩
+          exact LevelExpr.IsStrictLowerBound_dedupAdjacent first (second :: rest) hVerdict
+
 end LeanFX2.Foundation.PolyCell.Universe
