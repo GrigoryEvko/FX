@@ -563,6 +563,32 @@ stages land.  FX simultaneously becomes a programming language kernel
 AND a categorical-foundations research artifact.  No precedent for
 either; FX commits to their union.
 
+**The method, and a third identity.**  Behind both ambitions is one
+*method* the rest of this document applies relentlessly — the
+**internalization principle** (§11.9.0): take a quantity normally
+external, meta, or semantic and make it an internal, typed, certified,
+*computable* cell.  Dimension is computed (`RawCell.dim`, §4), not an
+a-priori index; equality is the saturation marking (§3.3–§3.4), not a
+primitive; complexity is a grade (§3.7); consistency strength (§11.7.1)
+and decidability (§11.7.4) are computable data.  Applied past the apex
+(§11.9) the same move internalizes proof-simplicity (Squier homology =
+Hilbert's 24th, §11.9.1.2), algorithmic information (FX0 as a fixed
+`K`-machine, §11.9.2.1), entropy (SN = a Second Law, §11.9.2.2), and
+ordinal strength (a GLP reflection algebra, §11.9.3 OP7).  And it points
+at a **third identity** beyond language-kernel and foundations-artifact:
+FX as an *instrument for generating novel verified mathematics* — the
+discovery engine (§11.9.4) that produces theorems which provably do not
+restate or compress what is already known.  This is not a separate
+project bolted on; it is what the apex is FOR.  Univalence-everywhere
+(§11.8.13) is the canonical dedup oracle; decidable Conv (MILESTONE A)
+makes "is this the same idea?" computable; FX0 (§12.6) pins the
+reference machine; the reflection ladder (§11.8.2) guarantees the supply
+of genuinely-harder problems never runs dry (§11.7.1).  The apex is
+independently justified — but it is *also*, exactly, the precondition
+stack for that engine.  (Per the §11.9.0 firewall, the engine is
+beyond-apex and never on the MILESTONE A–D critical path; the apex ships
+first.)
+
 This is what FX is for.
 
 ---
@@ -7312,6 +7338,19 @@ off the GLP Worm; and "an idea feels already-stated" is the *signed*
 statement that its conditional `K_FX0(· ∣ corpus)` is low (§11.9.1.3
 O-HARD), i.e. it lives below the current reflection degree's `K`-ceiling.
 
+**This is what makes the §11.9.4 discovery engine provably
+open-ended.**  A Kolmogorov-driven search that minimizes the certified
+description length `L` while maximizing `Hardness` would, on a *fixed*
+reflection degree, eventually exhaust the supply of high-`Hardness` facts
+(everything compressible at that strength gets found, and `Hardness → 0`).
+But because the provable-`K`-ceiling rises *strictly* with reflection
+degree and no degree proves its own `Con`, climbing one rung (the
+Gödel-climbing ProfileExtension above) always unlocks a fresh frontier of
+facts that were *certifiably* incompressible below it.  So the discovery
+engine never runs dry — and engine open-endedness is not a separate
+property to be engineered but the SAME theorem as the apex ladder's
+unboundedness.  Incompleteness is the engine's fuel (`O-ENGINE`, §11.9.4).
+
 ### 11.7.2 Turing's ceiling → Tot/Div/Productive as Generator-level effect grades
 
 **The constraint:** a Turing-complete language has undecidable
@@ -7589,6 +7628,7 @@ mathematics required).
 | **O-THERMO** | Synthetic thermodynamics: SN (O-NORM) = Second Law (free-energy descent); Tot/Div = phase transition; temperature unifies reduction & search | open research | §11.9.2.2, beyond apex |
 | **O-TSPACE** | Geometry of theory-space: cellular-tensor associator (T5) = curvature; ProfileExtensions = tangent cone; Hardness = metric | open research | §11.9.2.3, beyond apex |
 | **O-FIREWALL** | Goodhart-resistant agent loop (the A-term rejects noise) + paraconsistent raw/certified proof firewall (adversarial-proposer-safe) | specifiable now | §11.9.4, §24 |
+| **O-ENGINE** | Kolmogorov-driven discovery engine: minimize the certified description-length bound `L(T∣KB)` / maximize `Hardness`; homology-guided abstraction (`H₁`); open-endedness from the reflection ladder | specifiable now | §11.9.4, §24, §11.7.1, beyond apex |
 
 **The committed normalization route (O-NORM / O-CANON).**  FX commits
 to ONE technique to carry the joint metatheory: **BKS internal
@@ -7618,8 +7658,9 @@ soundness inline: §11.8.7's decidability matrix gates combined-
 fragment entries on O-NORM; §11.8.6's algebraic effects cite O-FIRE;
 §3.16.5/6's IR/HIT admission cites O-IR-SCHEMA / O-II; §11.8.2's
 ladder cites O-ORD / O-REFL-MODEL.  The **§11.9 Internalization Program**
-registers its eight frontier obligations (O-INTERNAL / O-OBSTRUCT /
-O-HOMOLOGY / O-HARD / O-AIT / O-THERMO / O-TSPACE / O-FIREWALL) here for
+registers its nine frontier obligations (O-INTERNAL / O-OBSTRUCT /
+O-HOMOLOGY / O-HARD / O-AIT / O-THERMO / O-TSPACE / O-FIREWALL /
+O-ENGINE) here for
 accountability, but they are **beyond-apex** — present in the ledger,
 explicitly NOT on the MILESTONE A–D critical path (the firewall of
 §11.9.0).  This ledger is the single accountable place tracking the
@@ -9479,24 +9520,117 @@ gradient).  Anchor: Crans 1999 / Steiner 2004 (Gray) + Lawvere doctrines
   analysis.  Anchor: Beklemishev GLP + Japaridze + Rathjen (SR11).
   SPECIFIABLE-NOW (the highest-odds real result of §11.9).
 
-### 11.9.4 The agent loop — Goodhart-resistant open-ended search + proof firewall (`O-FIREWALL`, SPECIFIABLE-NOW)
+### 11.9.4 The discovery engine — Kolmogorov-driven open-ended search (`O-ENGINE`) + proof firewall (`O-FIREWALL`, both SPECIFIABLE-NOW)
 
-The §24 agent protocol + `Hardness` (§11.9.1.3) + FX0 (§12.6) compose
-into a self-improving loop: an **untrusted** proposer (LLM/RL) emits raw
-cells; the **trusted** kernel certifies survivors zero-axiom; selection
-climbs the `Hardness` gradient; the polygraph's confluence prunes the
-search (joinable branches collapse).  Two properties make it sound:
-(i) **Goodhart-resistance** — a naive novelty-maximizer chases
-incompressible noise, but the `(1+A)` abstraction-gain factor rejects it
-(noise compresses nothing, `A=0`); the effective-complexity term is the
-anti-gaming guard.  (ii) **Proof firewall** — the raw/certified split
-(§4) + the security taint dimension (§12.3) make this a *paraconsistent*
-setup: provisional, possibly-adversarial proposals live as taint-tracked
-raw cells with no explosion, because validity is gated at certification;
-the loop is therefore **safe against an adversarial proposer**.
-`dA/dt` (the rate of certified corpus compression) is Schmidhuber's
-compression-progress curiosity signal, here canonical (univalent dedup)
-and certified.  This is the operational endgame of §3.14 + §24 + §12.6.
+§11.9.1–§11.9.3 internalize the *measures* (novelty, proof-simplicity,
+ordinal strength); this subsection composes them into the *engine* that
+uses those measures to manufacture genuinely-novel verified mathematics —
+math that neither restates nor compresses what the corpus already holds.
+
+**The honest reframe — drive on a certified upper bound, not on `K`.**
+True Kolmogorov complexity is uncomputable (Chaitin), so no engine can
+optimize it directly.  FX has the two ingredients that make a *runnable
+surrogate* exact, neither of which classical AIT had: FX0 is a FIXED
+reference machine (§12.6 — no additive-constant float, `K_FX0` is a
+concrete number, O-AIT §11.9.2.1), and univalence-everywhere (§11.8.13)
+makes Decidable Conv (MILESTONE A) a canonical dedup oracle (no
+over-counting equivalent-but-syntactically-different facts).  So define
+`L(T ∣ KB)` = the size of the smallest FX0-certificate the engine has *so
+far found* for `T` relative to the deduped corpus `KB`.  `L` is
+computable, monotone-decreasing as better compressions are discovered,
+and `L ≥ K_FX0` always; the residue `L − K_FX0` IS the creative frontier
+— the compression that exists but has not been found.  The engine
+**minimizes `L` of the corpus while maximizing `Hardness` (§11.9.1.3) of
+new facts**: this is Solomonoff/Levin induction made runnable, converging
+toward `K` forever without ever reaching it.  "Make `K` a driver"
+resolves, precisely, to "drive on the certified tightening bound `L`; the
+residue is where novel math lives."
+
+**The seven-component co-evolutionary loop.**
+
+1. **Knowledge base `KB`** — the Conv-deduped `FactDAG` (§11.9.1.3):
+   nodes = facts up to Conv, edges = dependency.  Canonical because of
+   univalence-everywhere (§11.8.13); this is what `L` / `Hardness` are
+   measured against.
+2. **Proposer (untrusted)** — an LLM / RL / FunSearch-style generator
+   living OUTSIDE the kernel (§24 agent protocol; §11.8.11
+   no-LLM-in-kernel).  Emits raw candidate cells (theorem + proof
+   attempts); may be adversarial.
+3. **Verifier (trusted, FX0)** — the ~600-line external checker (§12.6)
+   certifies survivors zero-axiom.  Only certified cells enter `KB`.
+4. **Hardness scorer** — computes `Hardness(T ∣ KB) = N·D·(1+A)·(1+B)`
+   + the `δ`-discrepancy (§11.9.1.3) over the certified `FactDAG`; `δ ≪ 0`
+   (proposer thinks routine, certified-deep) localizes the richest mining
+   targets — the engine's adversarial complement to the proposer's
+   training objective.
+5. **Quality-diversity selector** — NOT a scalar maximizer (which
+   mode-collapses to one trick); a MAP-Elites / novelty-search archive
+   binned by behavioral descriptor (corpus region × sort × depth band),
+   keeping the highest-`Hardness` elite per bin (Lehman-Stanley).  This
+   is what makes "open-ended" more than a slogan.
+6. **Homology-guided compressor** — periodically recomputes Squier
+   proof-homology `H₁` (§11.9.1.2, O-HOMOLOGY) over the accumulated
+   proofs; **the non-trivial `H₁` classes ARE the candidate abstractions**
+   (essentially-distinct proof patterns reused across the corpus).
+   Promoting an `H₁` generator to a named lemma / definition is a
+   DreamCoder library-learning step and is exactly what turns the `A`
+   (abstraction-gain) factor of `Hardness` positive.  Abstraction is
+   therefore *principled* (read off homology), not heuristic.
+7. **Compression-progress objective (the driver)** — `dA/dt`, the rate at
+   which the certified corpus's total description length drops as
+   abstractions are promoted (Schmidhuber's curiosity signal), here
+   **canonical** (univalent dedup) and **certified** (FX0).  The engine
+   is driven to maximize the rate of compression progress of *verified*
+   math.
+
+**Two soundness properties (`O-FIREWALL`).**  (i) **Goodhart-resistance**
+— a naive novelty-maximizer chases incompressible noise, but the `(1+A)`
+factor rejects it (noise compresses nothing, `A = 0`), and the QD archive
+resists collapse to a single high-score region; the effective-complexity
+term is the anti-gaming guard.  (ii) **Proof firewall** — the
+raw/certified split (§4) + the security taint dimension (§12.3) make the
+loop *paraconsistent*: provisional, possibly-adversarial proposals live
+as taint-tracked raw cells with no explosion, because validity is gated
+at certification, so the loop is **safe against an adversarial proposer**.
+
+**Open-endedness is guaranteed by Gödel (the deepest link, → §11.7.1).**
+A discovery engine normally runs dry: once everything compressible at its
+current strength is found, `Hardness → 0` and it stalls.  FX's engine
+*cannot* run dry, for the same reason the apex ladder is unbounded
+(§11.7.1): by the Chaitin-bound = Gödel-climbing identity (O-AIT
+§11.9.2.1), every consistency strength has facts whose provable-`K`
+ceiling exceeds the current degree, and climbing one reflection degree
+(adding `Con(current)` as a ProfileExtension, §11.7.1) strictly raises
+that ceiling, unlocking a fresh supply of high-`Hardness` facts.  Because
+no degree proves its own `Con`, there is *always* a strictly-harder
+frontier — engine open-endedness and apex unboundedness are one theorem.
+
+**Why no prior system does this** (DreamCoder / FunSearch / AlphaProof):
+each has a proposer + a scorer, but none has all four FX ingredients —
+(a) a *canonical* novelty count (univalence-dedup, §11.8.13; DreamCoder's
+library is deduped only up to ad-hoc syntactic equality), (b) a
+zero-axiom verification firewall that is adversarial-proposer-safe
+(O-FIREWALL; FunSearch trusts a sandbox, AlphaProof trusts Lean's full
+kernel), (c) a *principled* abstraction loop (`H₁` = the abstractions,
+not a heuristic compressor), and (d) a *provable* open-endedness
+guarantee (the reflection ladder).  FX is the first setting where all
+four coexist.
+
+**Honest limits (manifesto discipline).**  The `A`-factor is the genuine
+Chaitin residue — approximable from below, never optimal — which is
+*correct*: it measures true conceptual invention, which is uncomputable.
+Dedup is only up to *found* Conv; facts equal by an unfound equivalence
+are over-counted until an equivalence-search subloop (a proposer task)
+closes the hole — asymptotically, not instantly.  And the Verifier is the
+bottleneck exactly where `Hardness` is highest (deepest proofs = highest
+`D` = costliest to certify): a real verification/novelty Pareto tension,
+no free lunch.  The creative singularity stays uncomputable; the engine
+converges toward it forever.  `O-ENGINE` is therefore SPECIFIABLE-NOW as
+an architecture — every component is a named obligation already in this
+ledger (O-HARD scorer, O-HOMOLOGY compressor, O-FIREWALL firewall, FX0
+verifier §12.6, §24 proposer) — **beyond-apex**, and never on the
+MILESTONE A–D path (§11.9.0 firewall).  This is the operational endgame of
+§3.14 + §24 + §12.6 + the whole §11.9 program.
 
 ### 11.9.5 Wild frontier (committed research per the moonshot mandate; all MOONSHOT)
 
@@ -9543,11 +9677,13 @@ and certified.  This is the operational endgame of §3.14 + §24 + §12.6.
 | OP6 | MIP\*=RE undecidability locus | OPEN | JNVWY 2020 | §11.2, §3.15, §11.7.4 | — |
 | OP7 | GLP discharge of `O-ORD` | SPECIFIABLE | Beklemishev; Japaridze | §11.7.1, §11.8.2 | — |
 | O-FIREWALL | Goodhart-resistant agent loop | SPECIFIABLE | Schmidhuber; Lehman-Stanley | §24, §12.3, §4 | — |
+| O-ENGINE | Kolmogorov-driven discovery engine | SPECIFIABLE | Schmidhuber; Lehman-Stanley; DreamCoder; FunSearch | §11.9.4, §11.7.1, §12.6 | — |
 
 **Sequencing.**  Tier 0 (ship as real cells first, pre-apex): `O-HOMOLOGY`
 `H₁`, `O-HARD` D/B, `O-OBSTRUCT` on the 3-sublattice.  Tier 1
 (specifiable obligations): OP7 GLP/`O-ORD`, full `O-HARD`/`O-AIT`,
-`O-FIREWALL`.  Tier 2 (open research): OP3, `O-THERMO`, `O-TSPACE`, OP4
+`O-FIREWALL`, and `O-ENGINE` (the capstone composing them into the
+discovery loop).  Tier 2 (open research): OP3, `O-THERMO`, `O-TSPACE`, OP4
 bridge, OP6.  Tier 3 (moonshot): OP5, §11.9.5.  **First brick is
 doc-first** (this section); the Lean prototype is deferred and will be
 chosen from Tier 0.  Per the firewall, no `O-`/`OP` here gates
@@ -10031,6 +10167,21 @@ MM0-shaped: it takes a serialized raw cell tree, applies the Generator
 table as axioms, and returns accept-with-certificate or reject-with-
 reason.  No lambda-Pi intermediary (FX1) is needed between the rich
 layer and the root verifier — the cell tree IS the certificate.
+
+**Dual role (the §11.9 connection).**  Beyond trust-reduction, FX0 is
+load-bearing for the Internalization Program in two further ways, both
+flowing from its being a *fixed* ~600-line verifier.  (1) It is the
+**reference machine** for algorithmic information: `K_FX0(x)` = the size
+of the smallest cell whose FX0 certificate produces `x` is a concrete
+Kolmogorov measure with a *pinned* machine — the additive-constant float
+that leaves classical `K` defined only "up to a constant" is exactly
+what FX0 nails down (O-AIT, §11.9.2.1).  (2) It is the **trusted
+verifier** in the discovery engine (O-ENGINE, §11.9.4): an untrusted
+proposer emits raw cells, FX0 certifies the survivors, and the trusted
+base never grows past these ~600 lines no matter how much mathematics
+the engine discovers.  So FX0 is simultaneously the trust floor, the
+fixed `K`-reference machine, and the engine's firewall — one artifact,
+three roles.
 
 **Why PolyCell needs its own FX0 (the trust argument).**
 
@@ -11076,6 +11227,43 @@ DU9. Felix Cherubini, Thierry Coquand, Matthias Hutzler, *A Foundation
 67. Stephanie Weirich, Antoine Voizard, "Stratified type theory",
     ESOP 2025.
 68. Thierry Coquand, "A Reynolds-Hurkens variant", manuscript 2023.
+
+### Open-ended discovery + library learning + compression progress (§11.9.4 O-ENGINE)
+
+OE1. Jürgen Schmidhuber, *Formal Theory of Creativity, Fun, and
+     Intrinsic Motivation (1990–2010)*, IEEE Trans. Autonomous Mental
+     Development 2(3) (2010); *PowerPlay: Training an Increasingly
+     General Problem Solver by Continually Searching for the Simplest
+     Still Unsolvable Problem*, Frontiers in Psychology 4 (2013),
+     `arXiv:1112.5309`.  Compression progress (`dA/dt`) as the
+     intrinsic-curiosity / open-ended-search objective — the §11.9.4
+     driver.
+OE2. Joel Lehman, Kenneth O. Stanley, *Abandoning Objectives: Evolution
+     Through the Search for Novelty Alone*, Evolutionary Computation
+     19(2) (2011); *Why Greatness Cannot Be Planned* (Springer 2015);
+     Jean-Baptiste Mouret, Jeff Clune, *Illuminating search spaces by
+     mapping elites* (MAP-Elites), `arXiv:1504.04909` (2015).  Novelty
+     search + quality-diversity — the §11.9.4 selector that resists
+     Goodhart mode-collapse.
+OE3. Kevin Ellis, Catherine Wong, Maxwell Nye, Mathias Sablé-Meyer,
+     Lucas Morales, Luke Hewitt, Luc Cary, Armando Solar-Lezama, Joshua
+     B. Tenenbaum, *DreamCoder: Bootstrapping Inductive Program
+     Synthesis with Wake-Sleep Library Learning*, PLDI 2021,
+     `arXiv:2006.08381`.  MDL library learning = the §11.9.4
+     homology-guided compressor's abstraction step (the `A` factor of
+     `Hardness`, §11.9.1.3).
+OE4. Bernardino Romera-Paredes, Mohammadamin Barekatain, Alexander
+     Novikov, et al., *Mathematical discoveries from program search
+     with large language models* (FunSearch), Nature 625 (2024),
+     DOI 10.1038/s41586-023-06924-6.  Untrusted-LLM-proposer +
+     trusted-evaluator loop — the §11.9.4 architecture WITHOUT FX's
+     canonical dedup / zero-axiom verification firewall / open-endedness
+     guarantee.
+OE5. Google DeepMind, *AlphaProof* + *AlphaGeometry 2* (2024,
+     IMO-silver-medal system; technical announcement).  LLM proposer +
+     formal (Lean) verifier at competition scale — the closest deployed
+     precedent; lacks the certified `Hardness` metric (§11.9.1.3) and
+     the reflection-ladder open-endedness (§11.7.1) of O-ENGINE.
 
 ### Reference codebases (≠ papers)
 
