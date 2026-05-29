@@ -3529,4 +3529,46 @@ theorem LevelExpr.occursLvar_iff_denoteAtomList_pointEnvironment_ne_zero
             variableIndex xs hAllVars hOccurs)
           hFoldNeZero)
 
+/-! ### The canonical atom list and the denotation bridge
+
+`canonicalAtoms` names the list underlying `canonicalize` (flatten →
+sort → dedup → drop-`lzero`), before the final `foldLmax` rebuild.
+The bridge `denote e = denoteAtomList (canonicalAtoms e)` connects the
+whole-expression denotation to the atom-list fold the membership
+oracle consumes — assembled from `canonicalize_denoteEquiv` (the fold
+preserves denotation) and `foldLmax_denote` (rebuild = fold). -/
+
+/-- The canonical atom list underlying `canonicalize`: flatten → sort
+→ dedup → drop-`lzero`, prior to the final `foldLmax`. -/
+def LevelExpr.canonicalAtoms (expr : LevelExpr) : List LevelExpr :=
+  LevelExpr.dropLzeroAtoms
+    (LevelExpr.dedupAdjacent
+      (LevelExpr.insertionSortByCompare
+        (LevelExpr.lmaxAtoms expr)))
+
+/-- `canonicalize` is exactly `foldLmax` of the canonical atom list
+(definitional). -/
+theorem LevelExpr.canonicalize_eq_foldLmax_canonicalAtoms (expr : LevelExpr) :
+    LevelExpr.canonicalize expr =
+      LevelExpr.foldLmax (LevelExpr.canonicalAtoms expr) := rfl
+
+/-- The denotation bridge: a level expression denotes the same value
+as the `denoteAtomList` max-fold of its canonical atom list.  Chains
+`canonicalize_denoteEquiv` (fold preserves denotation) with
+`foldLmax_denote` (rebuild equals fold). -/
+theorem LevelExpr.denote_eq_denoteAtomList_canonicalAtoms
+    (expr : LevelExpr) (env : Nat → Nat) :
+    LevelExpr.denote expr env =
+      LevelExpr.denoteAtomList (LevelExpr.canonicalAtoms expr) env := by
+  have hCanonPreserves :
+      LevelExpr.denote (LevelExpr.canonicalize expr) env =
+        LevelExpr.denote expr env :=
+    LevelExpr.canonicalize_denoteEquiv expr env
+  have hFoldEqAtoms :
+      LevelExpr.denote (LevelExpr.canonicalize expr) env =
+        LevelExpr.denoteAtomList (LevelExpr.canonicalAtoms expr) env :=
+    LevelExpr.foldLmax_denote (LevelExpr.canonicalAtoms expr) env
+  rw [← hCanonPreserves]
+  exact hFoldEqAtoms
+
 end LeanFX2.Foundation.PolyCell.Universe
