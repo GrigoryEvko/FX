@@ -2974,4 +2974,58 @@ theorem LevelExpr.insertionSortByCompare_sorted :
         (LevelExpr.insertionSortByCompare rest)
         (LevelExpr.insertionSortByCompare_sorted rest)
 
+/-! ## Dedup preserves sortedness
+
+`dedupAdjacent` (collapse adjacent `compare`-equal atoms) keeps an
+`IsSorted` list sorted.  The only subtlety is the lower bound: when
+dedup drops a head because it equals the next element, the surviving
+head is *value-equal* to the dropped one (`compare_eq_imp_eq`), so a
+bound below the dropped head is below the survivor too.  Needs only
+antisymmetry, not transitivity. -/
+
+/-- `dedupAdjacent` preserves a lower bound: dropping a run of
+`compare`-equal heads leaves a survivor value-equal to them, so any
+`bound` below the original head still bounds the deduped list. -/
+theorem LevelExpr.IsLowerBound_dedupAdjacent (bound : LevelExpr) :
+    ∀ (xs : List LevelExpr),
+      LevelExpr.IsLowerBound bound xs →
+      LevelExpr.IsLowerBound bound (LevelExpr.dedupAdjacent xs)
+  | [], _ => trivial
+  | [_single], hBound => hBound
+  | first :: second :: rest, hBound => by
+      show LevelExpr.IsLowerBound bound
+        (LevelExpr.dedupStep (LevelExpr.compare first second) first
+          (LevelExpr.dedupAdjacent (second :: rest)))
+      cases hVerdict : LevelExpr.compare first second with
+      | lt => exact hBound
+      | gt => exact hBound
+      | eq =>
+          have hFirstSecond : first = second :=
+            LevelExpr.compare_eq_imp_eq first second hVerdict
+          have hBoundSecond : LevelExpr.compare bound second ≠ Ordering.gt := by
+            rw [← hFirstSecond]; exact hBound
+          exact LevelExpr.IsLowerBound_dedupAdjacent bound (second :: rest) hBoundSecond
+
+/-- `dedupAdjacent` preserves sortedness.  `.eq` drops the head and
+recurses on the sorted tail; `.lt` / `.gt` keep the head, re-bound the
+deduped tail via `IsLowerBound_dedupAdjacent`, and recurse. -/
+theorem LevelExpr.dedupAdjacent_sorted :
+    ∀ (xs : List LevelExpr),
+      LevelExpr.IsSorted xs → LevelExpr.IsSorted (LevelExpr.dedupAdjacent xs)
+  | [], _ => trivial
+  | [_single], _ => ⟨trivial, trivial⟩
+  | first :: second :: rest, hSorted => by
+      show LevelExpr.IsSorted
+        (LevelExpr.dedupStep (LevelExpr.compare first second) first
+          (LevelExpr.dedupAdjacent (second :: rest)))
+      cases hVerdict : LevelExpr.compare first second with
+      | eq =>
+          exact LevelExpr.dedupAdjacent_sorted (second :: rest) hSorted.2
+      | lt =>
+          exact ⟨LevelExpr.IsLowerBound_dedupAdjacent first (second :: rest) hSorted.1,
+                 LevelExpr.dedupAdjacent_sorted (second :: rest) hSorted.2⟩
+      | gt =>
+          exact ⟨LevelExpr.IsLowerBound_dedupAdjacent first (second :: rest) hSorted.1,
+                 LevelExpr.dedupAdjacent_sorted (second :: rest) hSorted.2⟩
+
 end LeanFX2.Foundation.PolyCell.Universe
