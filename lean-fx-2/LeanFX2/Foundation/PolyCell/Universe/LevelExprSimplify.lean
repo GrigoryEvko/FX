@@ -3807,4 +3807,38 @@ theorem LevelExpr.lmaxAtoms_allVarsOrLzero_of_isVariableJoin :
   | .lsucc _, hVarJoin => nomatch hVarJoin
   | .limax _ _, hVarJoin => nomatch hVarJoin
 
+/-- Compare-ordered insertion preserves the `lvar`/`lzero` atom shape:
+inserting a var/lzero atom into a var/lzero list stays var/lzero
+(`insertStep`'s three branches all reorder the same atoms).  Mirrors
+`foldLmax_insertByCompare_denoteEquiv`'s skeleton — `show` the
+`insertStep` form, `cases` the verdict. -/
+theorem LevelExpr.AllAtomsAreVarsOrLzero_insertByCompare (newAtom : LevelExpr)
+    (hNew : newAtom = LevelExpr.lzero ∨ ∃ variableIndex, newAtom = .lvar variableIndex) :
+    ∀ (xs : List LevelExpr),
+      LevelExpr.AllAtomsAreVarsOrLzero xs →
+      LevelExpr.AllAtomsAreVarsOrLzero (LevelExpr.insertByCompare newAtom xs)
+  | [], _ => ⟨hNew, trivial⟩
+  | head :: rest, hList => by
+      have hTailPreserved :=
+        LevelExpr.AllAtomsAreVarsOrLzero_insertByCompare newAtom hNew rest hList.2
+      show LevelExpr.AllAtomsAreVarsOrLzero
+        (LevelExpr.insertStep (LevelExpr.compare newAtom head) newAtom head rest
+          (LevelExpr.insertByCompare newAtom rest))
+      cases hVerdict : LevelExpr.compare newAtom head with
+      | gt => exact ⟨hList.1, hTailPreserved⟩
+      | lt => exact ⟨hNew, hList⟩
+      | eq => exact ⟨hNew, hList⟩
+
+/-- Insertion sort preserves the `lvar`/`lzero` atom shape: each atom
+is folded in via `insertByCompare`, which preserves it. -/
+theorem LevelExpr.AllAtomsAreVarsOrLzero_insertionSortByCompare :
+    ∀ (xs : List LevelExpr),
+      LevelExpr.AllAtomsAreVarsOrLzero xs →
+      LevelExpr.AllAtomsAreVarsOrLzero (LevelExpr.insertionSortByCompare xs)
+  | [], _ => trivial
+  | head :: rest, hList =>
+      LevelExpr.AllAtomsAreVarsOrLzero_insertByCompare head hList.1
+        (LevelExpr.insertionSortByCompare rest)
+        (LevelExpr.AllAtomsAreVarsOrLzero_insertionSortByCompare rest hList.2)
+
 end LeanFX2.Foundation.PolyCell.Universe
