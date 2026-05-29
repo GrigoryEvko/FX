@@ -2175,4 +2175,92 @@ theorem LevelExpr.foldLmax_dropLzeroAtoms_denoteEquiv :
       | limax a b =>
           exact LevelExpr.lmax_denoteEquiv_congr (LevelExpr.denoteEquiv.refl _) ih
 
+/-! ## Compare-ordered insertion — toward the sort sub-step
+
+`foldLmax` is invariant under reordering of its atom list (the
+underlying `levelMax` is commutative).  This block ships the
+reordering primitive (`foldLmax_swap_denoteEquiv`) and a single
+compare-ordered insertion (`insertByCompare`) with its soundness;
+together they are the core of the sort sub-step, since an insertion
+sort is a fold of `insertByCompare` whose `denoteEquiv` invariance
+composes from `foldLmax_insertByCompare_denoteEquiv`. -/
+
+/-- Adjacent-swap invariance of `foldLmax`: swapping the first two
+atoms preserves the denotation.  This is left-commutativity of
+`lmax`, assembled from `lmax` associativity + commutativity. -/
+theorem LevelExpr.foldLmax_swap_denoteEquiv
+    (x y : LevelExpr) (rest : List LevelExpr) :
+    LevelExpr.denoteEquiv (LevelExpr.foldLmax (x :: y :: rest))
+      (LevelExpr.foldLmax (y :: x :: rest)) := by
+  show LevelExpr.denoteEquiv
+    (LevelExpr.lmax x (LevelExpr.lmax y (LevelExpr.foldLmax rest)))
+    (LevelExpr.lmax y (LevelExpr.lmax x (LevelExpr.foldLmax rest)))
+  have hUnAssoc : LevelExpr.denoteEquiv
+      (LevelExpr.lmax x (LevelExpr.lmax y (LevelExpr.foldLmax rest)))
+      (LevelExpr.lmax (LevelExpr.lmax x y) (LevelExpr.foldLmax rest)) :=
+    LevelExpr.denoteEquiv.symm
+      (LevelExpr.lmax_assoc_denoteEquiv x y (LevelExpr.foldLmax rest))
+  have hCommHead : LevelExpr.denoteEquiv
+      (LevelExpr.lmax (LevelExpr.lmax x y) (LevelExpr.foldLmax rest))
+      (LevelExpr.lmax (LevelExpr.lmax y x) (LevelExpr.foldLmax rest)) :=
+    LevelExpr.lmax_denoteEquiv_congr
+      (LevelExpr.lmax_comm_denoteEquiv x y) (LevelExpr.denoteEquiv.refl _)
+  have hReAssoc : LevelExpr.denoteEquiv
+      (LevelExpr.lmax (LevelExpr.lmax y x) (LevelExpr.foldLmax rest))
+      (LevelExpr.lmax y (LevelExpr.lmax x (LevelExpr.foldLmax rest))) :=
+    LevelExpr.lmax_assoc_denoteEquiv y x (LevelExpr.foldLmax rest)
+  exact LevelExpr.denoteEquiv.trans hUnAssoc
+    (LevelExpr.denoteEquiv.trans hCommHead hReAssoc)
+
+/-- One step of compare-ordered insertion, dispatched on a
+precomputed verdict (the recursive tail-insertion is passed in as
+`tailInsertion`).  Full `Ordering` enumeration keeps the def
+`propext`-free and lets `insertByCompare`'s soundness case on the
+verdict without touching an in-place `match`. -/
+def LevelExpr.insertStep (verdict : Ordering)
+    (newAtom head : LevelExpr) (rest tailInsertion : List LevelExpr) :
+    List LevelExpr :=
+  match verdict with
+  | .gt => head :: tailInsertion
+  | .lt => newAtom :: head :: rest
+  | .eq => newAtom :: head :: rest
+
+/-- Insert an atom into a list, keeping it before the first atom it
+does not strictly exceed under `compare` (`.gt` means strictly
+later, so skip past `head`).  Routed through `insertStep` on the
+`compare` verdict; the recursive tail-insertion is computed
+eagerly (acceptable for a normalization spec). -/
+def LevelExpr.insertByCompare (newAtom : LevelExpr) : List LevelExpr → List LevelExpr
+  | [] => [newAtom]
+  | head :: rest =>
+      LevelExpr.insertStep (LevelExpr.compare newAtom head) newAtom head rest
+        (LevelExpr.insertByCompare newAtom rest)
+
+/-- Compare-ordered insertion preserves the folded denotation:
+`foldLmax (insertByCompare x xs) ~ foldLmax (x :: xs)`.
+
+List recursion.  A `.lt` / `.eq` verdict places `x` at the head
+(identical fold, refl); a `.gt` verdict skips past `head`, and the
+inductive hypothesis + the adjacent-swap recombine the result. -/
+theorem LevelExpr.foldLmax_insertByCompare_denoteEquiv (newAtom : LevelExpr) :
+    ∀ (xs : List LevelExpr),
+      LevelExpr.denoteEquiv
+        (LevelExpr.foldLmax (LevelExpr.insertByCompare newAtom xs))
+        (LevelExpr.foldLmax (newAtom :: xs))
+  | [] => LevelExpr.denoteEquiv.refl _
+  | head :: rest => by
+      have ih := LevelExpr.foldLmax_insertByCompare_denoteEquiv newAtom rest
+      show LevelExpr.denoteEquiv
+        (LevelExpr.foldLmax
+          (LevelExpr.insertStep (LevelExpr.compare newAtom head) newAtom head rest
+            (LevelExpr.insertByCompare newAtom rest)))
+        (LevelExpr.foldLmax (newAtom :: head :: rest))
+      cases hVerdict : LevelExpr.compare newAtom head with
+      | lt => exact LevelExpr.denoteEquiv.refl _
+      | eq => exact LevelExpr.denoteEquiv.refl _
+      | gt =>
+          exact LevelExpr.denoteEquiv.trans
+            (LevelExpr.lmax_denoteEquiv_congr (LevelExpr.denoteEquiv.refl _) ih)
+            (LevelExpr.foldLmax_swap_denoteEquiv head newAtom rest)
+
 end LeanFX2.Foundation.PolyCell.Universe
