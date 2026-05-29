@@ -2882,4 +2882,96 @@ theorem LevelExpr.lmaxAtoms_denote :
           ← LevelExpr.lmaxAtoms_denote a env,
           ← LevelExpr.lmaxAtoms_denote b env]
 
+/-! ## Sortedness of `insertionSortByCompare`
+
+The compare-ordered insertion sort produces an `IsSorted` list —
+the structural prerequisite for canonical-form *uniqueness* (a
+sorted, deduplicated atom list is a canonical representative of its
+element set).  `IsSorted` is the adjacent formulation (each head is
+a `compare`-lower-bound of its tail, recursively); insertion-sort
+sortedness needs only antisymmetry (`compare_swap`), not the
+`compare_lt_trans` transitivity — transitivity enters later, for
+uniqueness. -/
+
+/-- `bound` is a lower bound for the head of a list under `compare`
+(vacuously for the empty list): the head is never strictly below
+`bound` (`compare bound head` is never `.gt`). -/
+def LevelExpr.IsLowerBound (bound : LevelExpr) : List LevelExpr → Prop
+  | [] => True
+  | first :: _ => LevelExpr.compare bound first ≠ Ordering.gt
+
+/-- A list is sorted under `compare` when each head is a lower bound
+for its tail and the tail is itself sorted (adjacent formulation). -/
+def LevelExpr.IsSorted : List LevelExpr → Prop
+  | [] => True
+  | head :: rest => LevelExpr.IsLowerBound head rest ∧ LevelExpr.IsSorted rest
+
+/-- Inserting `x` (with `bound ≤ x`) into a list already bounded
+below by `bound` preserves that lower bound.  Non-recursive: in the
+skip (`.gt`) case the result head is the unchanged original head
+(already `≥ bound`); otherwise the result head is `x` (`≥ bound` by
+hypothesis). -/
+theorem LevelExpr.IsLowerBound_insertByCompare (bound x : LevelExpr) :
+    ∀ (ys : List LevelExpr),
+      LevelExpr.IsLowerBound bound ys →
+      LevelExpr.compare bound x ≠ Ordering.gt →
+      LevelExpr.IsLowerBound bound (LevelExpr.insertByCompare x ys)
+  | [], _, hBoundX => hBoundX
+  | y0 :: yr, hBoundYs, hBoundX => by
+      show LevelExpr.IsLowerBound bound
+        (LevelExpr.insertStep (LevelExpr.compare x y0) x y0 yr
+          (LevelExpr.insertByCompare x yr))
+      cases hVerdict : LevelExpr.compare x y0 with
+      | lt => exact hBoundX
+      | eq => exact hBoundX
+      | gt => exact hBoundYs
+
+/-- Compare-ordered insertion preserves sortedness.  List recursion:
+`.lt` / `.eq` seat `x` at the front (its bound over the old list is
+the verdict itself); `.gt` keeps the old head, bounds the recursively
+inserted tail via `IsLowerBound_insertByCompare` (using `head ≤ x`
+from `compare_swap`), and recurses for the tail's sortedness. -/
+theorem LevelExpr.insertByCompare_sorted (x : LevelExpr) :
+    ∀ (xs : List LevelExpr),
+      LevelExpr.IsSorted xs →
+      LevelExpr.IsSorted (LevelExpr.insertByCompare x xs)
+  | [], _ => ⟨trivial, trivial⟩
+  | head :: rest, hSorted => by
+      show LevelExpr.IsSorted
+        (LevelExpr.insertStep (LevelExpr.compare x head) x head rest
+          (LevelExpr.insertByCompare x rest))
+      cases hVerdict : LevelExpr.compare x head with
+      | lt =>
+          refine ⟨?_, hSorted⟩
+          show LevelExpr.compare x head ≠ Ordering.gt
+          rw [hVerdict]
+          exact fun hContra => Ordering.noConfusion hContra
+      | eq =>
+          refine ⟨?_, hSorted⟩
+          show LevelExpr.compare x head ≠ Ordering.gt
+          rw [hVerdict]
+          exact fun hContra => Ordering.noConfusion hContra
+      | gt =>
+          have hHeadLeX : LevelExpr.compare head x ≠ Ordering.gt := by
+            intro hContra
+            have hSwap := LevelExpr.compare_swap x head
+            rw [hVerdict, hContra] at hSwap
+            exact Ordering.noConfusion hSwap
+          exact ⟨LevelExpr.IsLowerBound_insertByCompare head x rest hSorted.1 hHeadLeX,
+                 LevelExpr.insertByCompare_sorted x rest hSorted.2⟩
+
+/-- The compare-ordered insertion sort always produces a sorted
+list.  Folds `insertByCompare` over the input, each step preserving
+sortedness via `insertByCompare_sorted`. -/
+theorem LevelExpr.insertionSortByCompare_sorted :
+    ∀ (xs : List LevelExpr),
+      LevelExpr.IsSorted (LevelExpr.insertionSortByCompare xs)
+  | [] => trivial
+  | head :: rest => by
+      show LevelExpr.IsSorted
+        (LevelExpr.insertByCompare head (LevelExpr.insertionSortByCompare rest))
+      exact LevelExpr.insertByCompare_sorted head
+        (LevelExpr.insertionSortByCompare rest)
+        (LevelExpr.insertionSortByCompare_sorted rest)
+
 end LeanFX2.Foundation.PolyCell.Universe
