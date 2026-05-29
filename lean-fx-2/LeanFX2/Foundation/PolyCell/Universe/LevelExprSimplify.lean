@@ -3488,4 +3488,21 @@ theorem LevelExpr.denoteAtomList_pointEnvironment_eq_zero_of_not_occursLvar
   rw [hAtomLvar, hIndexEq] at hOccurs
   exact hOccurs
 
+/-- Membership in an atom list is decidable — the atoms carry
+`DecidableEq`.  Structural recursion on the list: compare the head
+via `DecidableEq LevelExpr`, recurse into the tail, and assemble the
+`Or` decision.  Needed to close the `fold ≠ 0 ⟹ occurs` direction of
+the oracle constructively (no classical contraposition). -/
+instance LevelExpr.decidableOccursIn (target : LevelExpr) :
+    (xs : List LevelExpr) → Decidable (LevelExpr.OccursIn target xs)
+  | [] => isFalse (fun hOccurs => hOccurs)
+  | head :: rest =>
+      match (inferInstance : Decidable (head = target)) with
+      | isTrue hHeadEq => isTrue (Or.inl hHeadEq)
+      | isFalse hHeadNe =>
+          match LevelExpr.decidableOccursIn target rest with
+          | isTrue hRest => isTrue (Or.inr hRest)
+          | isFalse hNotRest =>
+              isFalse (fun hOccurs => Or.elim hOccurs hHeadNe hNotRest)
+
 end LeanFX2.Foundation.PolyCell.Universe
