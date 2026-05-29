@@ -3749,4 +3749,62 @@ theorem LevelExpr.canonicalize_eq_of_denoteEquiv_onVariableFragment
   rw [LevelExpr.canonicalize_eq_foldLmax_canonicalAtoms e1,
       LevelExpr.canonicalize_eq_foldLmax_canonicalAtoms e2, hAtomsEq]
 
+/-! ### Discharging the var-only hypothesis from a source predicate
+
+The fragment bridge takes `AllAtomsAreVariables (canonicalAtoms e)`
+as a hypothesis.  To make it usable, derive that from a structural
+predicate on the *source* expression: `IsVariableJoin` (built only
+from `lvar`/`lzero`/`lmax`).  The plan: `lmaxAtoms` of such an
+expression yields atoms each `lvar`-or-`lzero`; sort + dedup preserve
+that shape; `dropLzeroAtoms` then removes exactly the `lzero`s,
+leaving all `lvar`.  This tick ships the source predicate, the
+atom-shape predicate, and the `lmaxAtoms` step. -/
+
+/-- A level expression built only from `lvar`, `lzero`, and `lmax`
+(no `lsucc`/`limax`): the absorption-free fragment on which
+`canonicalize` is complete. -/
+def LevelExpr.IsVariableJoin : LevelExpr → Prop
+  | .lzero => True
+  | .lvar _ => True
+  | .lmax a b => LevelExpr.IsVariableJoin a ∧ LevelExpr.IsVariableJoin b
+  | .lsucc _ => False
+  | .limax _ _ => False
+
+/-- Every atom in the list is a `lvar` or `lzero` — the atom shape
+`lmaxAtoms` produces from an `IsVariableJoin` source, preserved
+through sort/dedup until `dropLzeroAtoms` narrows it to pure `lvar`. -/
+def LevelExpr.AllAtomsAreVarsOrLzero : List LevelExpr → Prop
+  | [] => True
+  | head :: rest =>
+      (head = LevelExpr.lzero ∨ ∃ variableIndex, head = .lvar variableIndex) ∧
+        LevelExpr.AllAtomsAreVarsOrLzero rest
+
+/-- `AllAtomsAreVarsOrLzero` distributes over append. -/
+theorem LevelExpr.AllAtomsAreVarsOrLzero_append :
+    ∀ (xs ys : List LevelExpr),
+      LevelExpr.AllAtomsAreVarsOrLzero xs →
+      LevelExpr.AllAtomsAreVarsOrLzero ys →
+      LevelExpr.AllAtomsAreVarsOrLzero (xs ++ ys)
+  | [], _ys, _hX, hY => hY
+  | head :: rest, ys, hX, hY =>
+      ⟨hX.1, LevelExpr.AllAtomsAreVarsOrLzero_append rest ys hX.2 hY⟩
+
+/-- `lmaxAtoms` of an `IsVariableJoin` expression yields only
+`lvar`/`lzero` atoms.  Structural induction: `lmax` recurses via
+append (`AllAtomsAreVarsOrLzero_append`), leaves are single atoms,
+and `lsucc`/`limax` are ruled out by `IsVariableJoin _ ≡ False`. -/
+theorem LevelExpr.lmaxAtoms_allVarsOrLzero_of_isVariableJoin :
+    ∀ (expr : LevelExpr),
+      LevelExpr.IsVariableJoin expr →
+      LevelExpr.AllAtomsAreVarsOrLzero (LevelExpr.lmaxAtoms expr)
+  | .lzero, _ => ⟨Or.inl rfl, trivial⟩
+  | .lvar variableIndex, _ => ⟨Or.inr ⟨variableIndex, rfl⟩, trivial⟩
+  | .lmax a b, hVarJoin =>
+      LevelExpr.AllAtomsAreVarsOrLzero_append
+        (LevelExpr.lmaxAtoms a) (LevelExpr.lmaxAtoms b)
+        (LevelExpr.lmaxAtoms_allVarsOrLzero_of_isVariableJoin a hVarJoin.1)
+        (LevelExpr.lmaxAtoms_allVarsOrLzero_of_isVariableJoin b hVarJoin.2)
+  | .lsucc _, hVarJoin => nomatch hVarJoin
+  | .limax _ _, hVarJoin => nomatch hVarJoin
+
 end LeanFX2.Foundation.PolyCell.Universe
