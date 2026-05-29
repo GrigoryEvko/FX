@@ -5193,4 +5193,80 @@ theorem LevelExpr.MaxPlusForm.denoteVarOffsets_scaledPointEnvironment_of_not_occ
         LevelExpr.MaxPlusForm.denoteVarOffsets_scaledPointEnvironment_of_not_occurs
           variableProbe scale rest hRestNotOccurs]
 
+/-! ### Step 7(b) prerequisites — `levelMax` dominance + absence-from-bound
+
+The present-variable half of offset extraction (next tick) needs four
+self-contained facts.  Two are `levelMax` *dominance* laws — when one
+operand is provably at least the other, the max collapses to it (the
+`scale + offset` of a present probe dominates every other entry's bare
+offset once `scale` is large).  The remaining two bridge the
+strict-sortedness invariant to absence: a variable strictly below the
+list's smallest key cannot occur. -/
+
+/-- `levelMax` collapses to its left operand when the right is below it:
+`valueB ≤ valueA → levelMax valueA valueB = valueA`.  Direct structural
+recursion on the `levelMax` pattern; the `(0, succ)` case is impossible
+under the hypothesis (`succ ≤ 0`). -/
+theorem LevelExpr.levelMax_eq_left_of_right_le :
+    ∀ (valueA valueB : Nat),
+      valueB ≤ valueA → LevelExpr.levelMax valueA valueB = valueA
+  | 0, 0, _ => rfl
+  | _valueA + 1, 0, _ => rfl
+  | 0, _valueB + 1, hLe => absurd hLe (Nat.not_succ_le_zero _)
+  | valueA + 1, valueB + 1, hLe => by
+      show LevelExpr.levelMax valueA valueB + 1 = valueA + 1
+      rw [LevelExpr.levelMax_eq_left_of_right_le valueA valueB
+        (Nat.le_of_succ_le_succ hLe)]
+
+/-- `levelMax` collapses to its right operand when the left is below it:
+`valueA ≤ valueB → levelMax valueA valueB = valueB`.  Mirror of
+`levelMax_eq_left_of_right_le`; the `(succ, 0)` case is impossible. -/
+theorem LevelExpr.levelMax_eq_right_of_left_le :
+    ∀ (valueA valueB : Nat),
+      valueA ≤ valueB → LevelExpr.levelMax valueA valueB = valueB
+  | 0, _valueB, _ => rfl
+  | _valueA + 1, 0, hLe => absurd hLe (Nat.not_succ_le_zero _)
+  | valueA + 1, valueB + 1, hLe => by
+      show LevelExpr.levelMax valueA valueB + 1 = valueB + 1
+      rw [LevelExpr.levelMax_eq_right_of_left_le valueA valueB
+        (Nat.le_of_succ_le_succ hLe)]
+
+/-- A value strictly above `probe` is not equal to it (Bool form):
+`Nat.ble (probe + 1) value = true → Nat.beq value probe = false`.
+Structural recursion on both Nats following the `ble`/`beq` patterns;
+the `value = 0` case is impossible (`probe + 1 ≤ 0` is false). -/
+theorem LevelExpr.beq_false_of_ble_succ :
+    ∀ (probe value : Nat),
+      Nat.ble (probe + 1) value = true → Nat.beq value probe = false
+  | _probe, 0, hBle => Bool.noConfusion hBle
+  | 0, _value + 1, _ => rfl
+  | predProbe + 1, predValue + 1, hBle =>
+      LevelExpr.beq_false_of_ble_succ predProbe predValue hBle
+
+/-- A probe strictly below every key in the list does not occur:
+`allVariablesAtLeast (probe + 1) entries = true → occursAsVariable
+probe entries = false`.  Each head key is `≥ probe + 1 > probe`, so its
+`Nat.beq … probe` is `false` (via `beq_false_of_ble_succ`); the
+disjunction reduces to the tail, handled by the IH. -/
+theorem LevelExpr.MaxPlusForm.allVariablesAtLeast_imp_not_occurs (probe : Nat) :
+    ∀ (entries : List (Nat × Nat)),
+      LevelExpr.MaxPlusForm.allVariablesAtLeast (probe + 1) entries = true →
+      LevelExpr.MaxPlusForm.occursAsVariable probe entries = false
+  | [], _ => rfl
+  | (variableHead, _) :: rest, hAll => by
+      have hConj : (Nat.ble (probe + 1) variableHead &&
+          LevelExpr.MaxPlusForm.allVariablesAtLeast (probe + 1) rest) = true := hAll
+      have hBleHead : Nat.ble (probe + 1) variableHead = true :=
+        LevelExpr.and_eq_true_imp_left hConj
+      have hAllRest :
+          LevelExpr.MaxPlusForm.allVariablesAtLeast (probe + 1) rest = true :=
+        LevelExpr.and_eq_true_imp_right hConj
+      have hBeqHead : Nat.beq variableHead probe = false :=
+        LevelExpr.beq_false_of_ble_succ probe variableHead hBleHead
+      show (Nat.beq variableHead probe ||
+        LevelExpr.MaxPlusForm.occursAsVariable probe rest) = false
+      rw [hBeqHead]
+      show LevelExpr.MaxPlusForm.occursAsVariable probe rest = false
+      exact LevelExpr.MaxPlusForm.allVariablesAtLeast_imp_not_occurs probe rest hAllRest
+
 end LeanFX2.Foundation.PolyCell.Universe
