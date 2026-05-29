@@ -4747,4 +4747,79 @@ theorem LevelExpr.MaxPlusForm.normalizeBase_baseConstant_eq_denote_zeroEnvironme
       LevelExpr.levelMax_reabsorb_right form.baseConstant
         (LevelExpr.MaxPlusForm.maxOffset form.varOffsets)]
 
+/-! ## Canonical-form structural invariant — sortedness by variable
+
+The canonical `varOffsets` are sorted by variable index (and, after
+absorption, strictly so).  Sortedness is phrased via a lower-bound:
+`allVariablesAtLeast bound l` holds when every entry's variable is `≥
+bound`, and `isSortedByVariable l` holds when each head lower-bounds
+its tail and the tail is sorted.  The load-bearing helper for the
+insertion-sort correctness (next leaf) is that inserting an entry whose
+variable is `≥ bound` into an all-`≥ bound` list keeps it all-`≥
+bound`. -/
+
+/-- Every entry's variable index is at least `bound`. -/
+def LevelExpr.MaxPlusForm.allVariablesAtLeast (bound : Nat) :
+    List (Nat × Nat) → Bool
+  | [] => true
+  | (variableHead, _) :: rest =>
+      Nat.ble bound variableHead &&
+        LevelExpr.MaxPlusForm.allVariablesAtLeast bound rest
+
+/-- The entries are sorted (non-strictly) ascending by variable index:
+each head lower-bounds its tail, and the tail is itself sorted. -/
+def LevelExpr.MaxPlusForm.isSortedByVariable : List (Nat × Nat) → Bool
+  | [] => true
+  | (variableHead, _) :: rest =>
+      LevelExpr.MaxPlusForm.allVariablesAtLeast variableHead rest &&
+        LevelExpr.MaxPlusForm.isSortedByVariable rest
+
+/-- Build a true Boolean conjunction from both conjuncts being true —
+the propext-free intro for `(a && b) = true`.  (`cases` on the plain
+`Bool` left conjunct; the `true` branch reads `b` off directly.) -/
+theorem LevelExpr.and_eq_true_of_both {flagLeft flagRight : Bool}
+    (hLeft : flagLeft = true) (hRight : flagRight = true) :
+    (flagLeft && flagRight) = true := by
+  cases flagLeft with
+  | false => exact Bool.noConfusion hLeft
+  | true => exact hRight
+
+/-- Inserting an entry whose variable is `≥ bound` into an all-`≥
+bound` list keeps every variable `≥ bound`.  The deep-insertion
+(`false`) branch recurses; both branches reassemble the conjunction
+from `hBound` and the split hypothesis via `and_eq_true_of_both`. -/
+theorem LevelExpr.MaxPlusForm.insertByVariable_preserves_allVariablesAtLeast
+    (bound entryVariable entryOffset : Nat)
+    (hBound : Nat.ble bound entryVariable = true) :
+    ∀ (entries : List (Nat × Nat)),
+      LevelExpr.MaxPlusForm.allVariablesAtLeast bound entries = true →
+      LevelExpr.MaxPlusForm.allVariablesAtLeast bound
+        (LevelExpr.MaxPlusForm.insertByVariable (entryVariable, entryOffset) entries) =
+          true
+  | [], _ => by
+      show (Nat.ble bound entryVariable &&
+        LevelExpr.MaxPlusForm.allVariablesAtLeast bound []) = true
+      exact LevelExpr.and_eq_true_of_both hBound rfl
+  | (variableHead, offsetHead) :: rest, hAll => by
+      show LevelExpr.MaxPlusForm.allVariablesAtLeast bound
+          (match Nat.ble entryVariable variableHead with
+           | true => (entryVariable, entryOffset) :: (variableHead, offsetHead) :: rest
+           | false => (variableHead, offsetHead) ::
+               LevelExpr.MaxPlusForm.insertByVariable (entryVariable, entryOffset) rest) = true
+      cases Nat.ble entryVariable variableHead with
+      | true =>
+          show (Nat.ble bound entryVariable &&
+            LevelExpr.MaxPlusForm.allVariablesAtLeast bound
+              ((variableHead, offsetHead) :: rest)) = true
+          exact LevelExpr.and_eq_true_of_both hBound hAll
+      | false =>
+          show (Nat.ble bound variableHead &&
+            LevelExpr.MaxPlusForm.allVariablesAtLeast bound
+              (LevelExpr.MaxPlusForm.insertByVariable (entryVariable, entryOffset) rest)) = true
+          exact LevelExpr.and_eq_true_of_both
+            (LevelExpr.and_eq_true_imp_left hAll)
+            (LevelExpr.MaxPlusForm.insertByVariable_preserves_allVariablesAtLeast
+              bound entryVariable entryOffset hBound rest
+              (LevelExpr.and_eq_true_imp_right hAll))
+
 end LeanFX2.Foundation.PolyCell.Universe
