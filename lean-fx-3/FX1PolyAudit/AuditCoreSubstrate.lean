@@ -24,6 +24,11 @@ import FX1Poly.Core.CertifiedTermSpineProjections
 import FX1Poly.Core.CertifyChildSpine
 import FX1Poly.Core.PolyCellErasure
 import FX1Poly.Core.PolyCellHelpers
+-- Certifier spine + exact-cell builders.
+import FX1Poly.Core.CertifyRawCellExact
+import FX1Poly.Core.CertifyTermSpine
+import FX1Poly.Core.SpineRenameStep
+import FX1Poly.Core.SpineSubstStep
 
 /-! # FX1PolyAudit/AuditCoreSubstrate — namespace zero-axiom sweep
 
