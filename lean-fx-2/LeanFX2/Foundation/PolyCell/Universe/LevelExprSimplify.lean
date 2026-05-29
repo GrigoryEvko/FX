@@ -3376,4 +3376,37 @@ theorem LevelExpr.denoteAtomList_eq_zero_iff
   · intro hAllZero
     exact LevelExpr.denoteAtomList_eq_zero_of_all_zero env xs hAllZero
 
+/-! ### Point environments — single-variable isolation
+
+A *point environment* `pointEnvironment k` assigns `1` to universe
+variable `k` and `0` to every other variable.  It is the probe that
+turns `denote` into a membership oracle for the variable fragment:
+under `pointEnvironment k`, a level's denotation detects whether
+`lvar k` contributes to it.  These are the two evaluation facts the
+detection lemma consumes — paired with `denoteAtomList_eq_zero_iff`
+(non-`k` variables fold to `0`) and `denote_le_denoteAtomList_of_occurs`
+(an occurring `lvar k` lifts the fold to `1`). -/
+
+/-- The point environment isolating universe variable
+`variableIndex`: `1` at that variable, `0` everywhere else. -/
+def LevelExpr.pointEnvironment (variableIndex : Nat) : Nat → Nat :=
+  fun queriedIndex => if queriedIndex = variableIndex then 1 else 0
+
+/-- Under `pointEnvironment k`, `lvar j` denotes `1` when `j = k`
+and `0` otherwise.  Definitional: `denote (lvar j) env = env j`, and
+`pointEnvironment k j` unfolds to the guarded literal. -/
+theorem LevelExpr.denote_lvar_pointEnvironment
+    (queriedIndex variableIndex : Nat) :
+    LevelExpr.denote (.lvar queriedIndex)
+        (LevelExpr.pointEnvironment variableIndex) =
+      (if queriedIndex = variableIndex then 1 else 0) := rfl
+
+/-- Under `pointEnvironment k`, the isolated variable `lvar k`
+denotes `1`. -/
+theorem LevelExpr.denote_lvar_pointEnvironment_self (variableIndex : Nat) :
+    LevelExpr.denote (.lvar variableIndex)
+        (LevelExpr.pointEnvironment variableIndex) = 1 := by
+  rw [LevelExpr.denote_lvar_pointEnvironment]
+  exact if_pos rfl
+
 end LeanFX2.Foundation.PolyCell.Universe
