@@ -4655,4 +4655,96 @@ theorem LevelExpr.MaxPlusForm.normalizeBase_denote
         (LevelExpr.MaxPlusForm.denoteVarOffsets form.varOffsets env),
       LevelExpr.MaxPlusForm.maxOffset_dominated env form.varOffsets]
 
+/-! ## The genuinely-canonical form + base recovery
+
+`fullCanonicalize` = `normalizeBase ∘ canonicalize`: canonicalize the
+offsets (sorted, one per variable) and normalize the base.  This is the
+canonical representative; its denotation matches the input, and end to
+end it denotes the original predicative level.  The payoff of base
+normalization is `normalizeBase_baseConstant_eq_denote_zeroEnvironment`:
+the base is literally the denotation at the zero environment — hence
+pinned by the denotation, the "equal denotation ⟹ equal base" half of
+the eventual uniqueness argument. -/
+
+/-- The genuinely-canonical form: canonicalize offsets, then normalize
+the base. -/
+def LevelExpr.MaxPlusForm.fullCanonicalize
+    (form : LevelExpr.MaxPlusForm) : LevelExpr.MaxPlusForm :=
+  LevelExpr.MaxPlusForm.normalizeBase
+    (LevelExpr.MaxPlusForm.canonicalize form)
+
+/-- `fullCanonicalize` preserves the denotation (chains
+`normalizeBase_denote` and `canonicalize_denote`). -/
+theorem LevelExpr.MaxPlusForm.fullCanonicalize_denote
+    (form : LevelExpr.MaxPlusForm) (env : Nat → Nat) :
+    LevelExpr.MaxPlusForm.denote (LevelExpr.MaxPlusForm.fullCanonicalize form) env =
+      LevelExpr.MaxPlusForm.denote form env := by
+  show LevelExpr.MaxPlusForm.denote
+      (LevelExpr.MaxPlusForm.normalizeBase
+        (LevelExpr.MaxPlusForm.canonicalize form)) env =
+    LevelExpr.MaxPlusForm.denote form env
+  rw [LevelExpr.MaxPlusForm.normalizeBase_denote
+        (LevelExpr.MaxPlusForm.canonicalize form) env,
+      LevelExpr.MaxPlusForm.canonicalize_denote form env]
+
+/-- End-to-end: for a predicative expression, normalizing to a max-plus
+form and fully canonicalizing denotes the same level. -/
+theorem LevelExpr.fullCanonicalize_toMaxPlusForm_denote
+    (level : LevelExpr) (hPred : LevelExpr.isPredicative level = true)
+    (env : Nat → Nat) :
+    LevelExpr.MaxPlusForm.denote
+        (LevelExpr.MaxPlusForm.fullCanonicalize (LevelExpr.toMaxPlusForm level)) env =
+      LevelExpr.denote level env := by
+  rw [LevelExpr.MaxPlusForm.fullCanonicalize_denote (LevelExpr.toMaxPlusForm level) env,
+      LevelExpr.toMaxPlusForm_denote env level hPred]
+
+/-- The all-zeros environment — the probe that reads off the base. -/
+def LevelExpr.MaxPlusForm.zeroEnvironment : Nat → Nat := fun _ => 0
+
+/-- The env-fold at the zero environment collapses to the max offset:
+`denoteVarOffsets vo zeroEnvironment = maxOffset vo`.  Each term
+`0 + offsetᵢ` reduces (`Nat.zero_add`) to `offsetᵢ`. -/
+theorem LevelExpr.MaxPlusForm.denoteVarOffsets_zeroEnvironment :
+    ∀ (entries : List (Nat × Nat)),
+      LevelExpr.MaxPlusForm.denoteVarOffsets entries
+          LevelExpr.MaxPlusForm.zeroEnvironment =
+        LevelExpr.MaxPlusForm.maxOffset entries
+  | [] => rfl
+  | (variableHead, offsetHead) :: rest => by
+      show LevelExpr.levelMax (0 + offsetHead)
+          (LevelExpr.MaxPlusForm.denoteVarOffsets rest
+            LevelExpr.MaxPlusForm.zeroEnvironment) =
+        LevelExpr.levelMax offsetHead (LevelExpr.MaxPlusForm.maxOffset rest)
+      rw [Nat.zero_add,
+          LevelExpr.MaxPlusForm.denoteVarOffsets_zeroEnvironment rest]
+
+/-- Re-absorption on the right: `levelMax (levelMax a b) b = levelMax a
+b` (associativity + idempotence). -/
+theorem LevelExpr.levelMax_reabsorb_right (valueA valueB : Nat) :
+    LevelExpr.levelMax (LevelExpr.levelMax valueA valueB) valueB =
+      LevelExpr.levelMax valueA valueB := by
+  rw [LevelExpr.levelMax_assoc valueA valueB valueB,
+      LevelExpr.levelMax_self valueB]
+
+/-- Base recovery: after `normalizeBase`, the base constant equals the
+denotation at the zero environment.  So the base is determined by the
+denotation — the key fact for completeness.  Collapse the fold to
+`maxOffset` (`denoteVarOffsets_zeroEnvironment`), then re-absorb the
+duplicated `maxOffset` (`levelMax_reabsorb_right`). -/
+theorem LevelExpr.MaxPlusForm.normalizeBase_baseConstant_eq_denote_zeroEnvironment
+    (form : LevelExpr.MaxPlusForm) :
+    (LevelExpr.MaxPlusForm.normalizeBase form).baseConstant =
+      LevelExpr.MaxPlusForm.denote (LevelExpr.MaxPlusForm.normalizeBase form)
+        LevelExpr.MaxPlusForm.zeroEnvironment := by
+  show LevelExpr.levelMax form.baseConstant
+      (LevelExpr.MaxPlusForm.maxOffset form.varOffsets) =
+    LevelExpr.levelMax
+      (LevelExpr.levelMax form.baseConstant
+        (LevelExpr.MaxPlusForm.maxOffset form.varOffsets))
+      (LevelExpr.MaxPlusForm.denoteVarOffsets form.varOffsets
+        LevelExpr.MaxPlusForm.zeroEnvironment)
+  rw [LevelExpr.MaxPlusForm.denoteVarOffsets_zeroEnvironment form.varOffsets,
+      LevelExpr.levelMax_reabsorb_right form.baseConstant
+        (LevelExpr.MaxPlusForm.maxOffset form.varOffsets)]
+
 end LeanFX2.Foundation.PolyCell.Universe
