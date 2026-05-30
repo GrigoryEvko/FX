@@ -1,6 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Core.CellSort
 import FX1Poly.Typed.HasType
+import FX1Poly.Core.GeneratorTagRoundTrip
 
 /-! # FX1PolyAudit/AuditCore — zero-axiom gate for the cell-calculus core
 
@@ -37,3 +38,11 @@ sort-discipline marker so the port cannot reintroduce the legacy `Ty`.
 #assert_no_axioms FX1Poly.Typed.hasTypeClassifierSort
 #assert_no_axioms FX1Poly.Typed.hasTypeContextBindingSort
 #assert_no_axioms FX1Poly.Typed.hasType_classifies_term_by_type
+
+-- §11.6.4 Generator-table validation (#230): the FX0 prefix-code tag assignment
+-- `Generator.toNat` is collision-free (injective), proved via the explicit left
+-- inverse `Generator.fromTag` and its per-constructor round-trip.  The head byte
+-- of the cell serialization therefore uniquely identifies the generator.
+#assert_no_axioms FX1Poly.Core.Generator.fromTag
+#assert_no_axioms FX1Poly.Core.Generator.fromTag_toNat
+#assert_no_axioms FX1Poly.Core.Generator.toNat_injective
