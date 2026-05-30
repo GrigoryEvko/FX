@@ -41,5 +41,5 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.unitCell
 #assert_no_axioms FX1Poly.Typed.appUnitUnit
 #assert_no_axioms FX1Poly.Typed.RawTerm.headGenerator
-#assert_no_axioms FX1Poly.Typed.HasType.typedSubjectIsVariableCell
+#assert_no_axioms FX1Poly.Typed.HasType.typedSubjectIsVariableOrUniverseCode
 #assert_no_axioms FX1Poly.Typed.appUnitUnit_hasNoTyping

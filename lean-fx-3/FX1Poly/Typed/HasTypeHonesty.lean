@@ -10,12 +10,13 @@ layer is what rejects it.  This file makes that rejection a CHECKED fact
 (the typed-layer 0-FP gate, #470) — the type-level counterpart of the
 structural-vs-semantic gap probes, now at the .term-over-.type layer.
 
-## Scope of this slice (var + conv core)
+## Scope of this slice (var + conv + universe core)
 
-`HasType` currently has two arms — `var` and `conv`.  `var` types a
-variable cell; `conv` preserves the subject.  So the var+conv core types
-ONLY variable cells (`HasType.typedSubjectIsVariableCell`).  Every
-non-variable cell — in particular the genuinely ill-typed `app(unit, unit)`
+`HasType` currently has three arms — `var`, `conv`, and `universe`
+formation.  `var` types a variable cell; `universeFormation` types a
+universe-code cell; `conv` preserves the subject.  So the core types only variable or
+universe-code cells (`HasType.typedSubjectIsVariableOrUniverseCode`).
+Every other cell — in particular the genuinely ill-typed `app(unit, unit)`
 — therefore has no derivation (`appUnitUnit_hasNoTyping`).
 
 This is the FIRST entry of the 0-FP corpus.  As the `gen` arm lands (driven
@@ -33,7 +34,7 @@ head-generator projection.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core
+open FX1Poly.Core FX1Poly.Universe
 
 /-- The unit cell. -/
 def unitCell {scope : Nat} : RawTerm scope :=
@@ -51,21 +52,27 @@ dependent-`injection` pain on the payload. -/
 def RawTerm.headGenerator {scope : Nat} : RawTerm scope → Generator
   | .mkGen generator _ _ => generator
 
-/-- In the var+conv core, every typed subject is a variable cell.  Proof:
-`var` produces a `variableCell`; `conv` preserves the subject (its IH gives
-the same subject).  FRAGMENT-SPECIFIC — retired (re-proved by real
-inversion) once the `gen` arm lands; kept here as the current proof
-technique for the 0-FP probe. -/
-theorem HasType.typedSubjectIsVariableCell {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope}
+/-- In the var/conv/universe core, every typed subject is either a variable
+cell or a universe-code cell.  Proof: `var` produces a `variableCell`;
+`universeFormation` produces a `universeCodeCell`; `conv` preserves the
+subject (its
+IH gives the same subject).  FRAGMENT-SPECIFIC — it grows by one disjunct
+per non-`conv` arm and is eventually retired for real inversion once the
+`gen` arm lands; the current proof technique for the 0-FP probe.  Note this
+re-proof is `Conv.trans`-free (the `conv` case just forwards its IH). -/
+theorem HasType.typedSubjectIsVariableOrUniverseCode {profile : PolyProfile}
+    {scope : Nat} {context : TypingContext profile scope}
     {subject classifier : RawTerm scope}
     (typed : HasType profile context subject classifier) :
-    ∃ index : Fin scope, subject = variableCell index := by
+    (∃ index : Fin scope, subject = variableCell index) ∨
+      (∃ (levelExpr : LevelExpr) (flag : UniverseFlag),
+        subject = universeCodeCell levelExpr flag) := by
   induction typed with
-  | var index => exact ⟨index, rfl⟩
+  | var index => exact Or.inl ⟨index, rfl⟩
   | conv levelExpr flag typedPremise converts reclassifierTyped
       ihTypedPremise ihReclassifier =>
       exact ihTypedPremise
+  | universeFormation levelExpr flag => exact Or.inr ⟨levelExpr, flag, rfl⟩
 
 /-- 0-FP probe: the ill-typed cell `app(unit, unit)` has NO typing
 derivation in the var+conv core, for any classifier.  The typed layer
@@ -74,10 +81,14 @@ theorem appUnitUnit_hasNoTyping {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {classifier : RawTerm scope} :
     HasType profile context appUnitUnit classifier → False := by
   intro typed
-  obtain ⟨index, subjectEq⟩ := typed.typedSubjectIsVariableCell
-  have headGeneratorsAgree :
-      Generator.gen_app = Generator.gen_var :=
-    congrArg RawTerm.headGenerator subjectEq
-  exact Generator.noConfusion headGeneratorsAgree
+  rcases typed.typedSubjectIsVariableOrUniverseCode with
+    ⟨index, subjectEq⟩ | ⟨levelExpr, flag, subjectEq⟩
+  · have headGeneratorsAgree : Generator.gen_app = Generator.gen_var :=
+      congrArg RawTerm.headGenerator subjectEq
+    exact Generator.noConfusion headGeneratorsAgree
+  · have headGeneratorsAgree :
+        Generator.gen_app = Generator.gen_universeCode :=
+      congrArg RawTerm.headGenerator subjectEq
+    exact Generator.noConfusion headGeneratorsAgree
 
 end FX1Poly.Typed

@@ -126,11 +126,13 @@ theorem hasType_classifies_term_by_type :
 /-! ## The typing core (var + conv) — TY-ENGINE #282, first slice
 
 The native `HasType` lands now that `RawTerm` / `Generator` live in
-`FX1Poly.Core`.  This slice ships the two generator-independent arms:
-`var` (consuming `TypingContext.lookup`, #467) and `conv` (the SOLE door
-through which `Conv` enters).  The `gen` arm — per-generator typing from a
-cascade-free `TypingRule` table — and universe formation follow as their
-own bricks.
+`FX1Poly.Core`.  This slice ships three foundational arms: `var`
+(consuming `TypingContext.lookup`, #467); `conv` (the SOLE door through
+which `Conv` enters); and `universeFormation` — `Type@(e, flag) :
+Type@(lsucc e, flag)`, the predicative successor that GROUNDS `IsType`
+(without it no cell inhabits a universe, so the `conv` well-formedness
+premise is unsatisfiable and `IsType` / `WfContext` are empty).  The
+metadata-driven `gen` arm (#483) follows as its own brick.
 
 * `HasType : Prop` — typing is a property of the already-data `RawTerm`;
   buys decidable "is-it-typed" and §1.5 erasure.  Reconciled with the
@@ -165,7 +167,7 @@ def variableCell {scope : Nat} (index : Fin scope) : RawTerm scope :=
 
 /-- The native typing judgment over the cell substrate: a `.term`-sorted
 SUBJECT cell classified by a `.type`-sorted CLASSIFIER cell in a
-`TypingContext`.  First slice — `var` + `conv`. -/
+`TypingContext`.  First slice — `var`, `conv`, and `universeFormation`. -/
 inductive HasType (profile : PolyProfile) :
     {scope : Nat} → TypingContext profile scope →
       RawTerm scope → RawTerm scope → Prop
@@ -181,6 +183,10 @@ inductive HasType (profile : PolyProfile) :
         HasType profile context reclassifier
           (universeCodeCell levelExpr flag)) :
       HasType profile context subject reclassifier
+  | universeFormation {scope : Nat} (context : TypingContext profile scope)
+      (levelExpr : LevelExpr) (flag : UniverseFlag) :
+      HasType profile context (universeCodeCell levelExpr flag)
+        (universeCodeCell levelExpr.lsucc flag)
 
 /-- `IsType profile context classifier` — the classifier cell inhabits
 some universe.  A `def` (not part of the inductive): the existential here
