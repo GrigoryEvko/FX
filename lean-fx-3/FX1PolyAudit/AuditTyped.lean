@@ -16,6 +16,7 @@ import FX1Poly.Typed.IsTypeDecidable
 import FX1Poly.Typed.HasTypeDecidable
 import FX1Poly.Typed.HasTypeSmokeCorpus
 import FX1Poly.Typed.HasTypeConsistency
+import FX1Poly.Typed.HasTypeInfer
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -281,3 +282,16 @@ gates pin them shut.
 
 #assert_no_axioms FX1Poly.Typed.HasType.subjectIsVariableOrIsType
 #assert_no_axioms FX1Poly.Typed.HasType.closedSubjectIsType
+
+/-! ### TYPE SYNTHESIS / bidirectional `infer` (#478 / #300 M51, current fragment)
+    — synthesise a subject's classifier + derivation (sound by construction);
+    `var` direct, every other head delegates to `IsType.decideWithWitness`.
+    `infer_succeeds` is totality on the typeable domain (via the
+    `subjectIsVariableOrIsType` classification); `infer_complete` converts the
+    synthesised type to any actual one via `uniqueness`.  The `simp only
+    [HasType.infer, dif_pos/dif_neg]` reductions stay propext-clean (head
+    `dite` on `DecidableEq Generator`, no indexed-match leak). -/
+
+#assert_no_axioms FX1Poly.Typed.HasType.infer
+#assert_no_axioms FX1Poly.Typed.HasType.infer_succeeds
+#assert_no_axioms FX1Poly.Typed.HasType.infer_complete
