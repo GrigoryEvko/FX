@@ -13,6 +13,7 @@ import FX1Poly.Core.HasEqualDim
 import FX1Poly.Core.RawCellCascadeLaws
 import FX1Poly.Core.RawCellCode
 import FX1Poly.Core.RawTermSubstAction
+import FX1Poly.Core.RawTermChildrenUnique
 import FX1Poly.Core.RuleSpec
 import FX1Poly.Core.SiteOpenness
 import FX1Poly.Core.SpikeDimTransport
