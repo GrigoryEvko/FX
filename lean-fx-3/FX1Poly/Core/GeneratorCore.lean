@@ -117,7 +117,7 @@ inductive Generator : Type
   | gen_sessionRecv
   -- Algebraic effects
   | gen_effectPerform
-  -- Universe-code term (innerLevel : Nat payload, no RawTerm children)
+  -- Universe-code term (LevelExpr × UniverseFlag payload, no RawTerm children)
   | gen_universeCode
   -- CUMUL-2.1: per-shape type-code constructors (atom-shape)
   | gen_arrowCode
