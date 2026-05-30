@@ -122,4 +122,33 @@ theorem HasType.inversionUniverseCode {profile : PolyProfile} {scope : Nat}
       subst flagAgree
       exact Conv.refl _
 
+/-- **Uniqueness of typing (#469)** for the current fragment: any two
+classifiers of the same subject are convertible.  The subject is a variable or
+a universe-code cell (`typedSubjectIsVariableOrUniverseCode`); each inversion
+sends both classifiers to a shared principal type — the variable's context
+lookup (a type by `WfContext.lookupIsType`) or the next universe (a type by
+`universeFormation`) — and the typed Newman bridge `Conv.trans_of_typedMiddle`
+closes the triangle through that well-formed middle.  `WfContext` is needed for
+both inversions and for the variable's principal type to be a type. -/
+theorem HasType.uniqueness {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    (wellFormed : WfContext context)
+    {subject firstClassifier secondClassifier : RawTerm scope}
+    (firstTyped : HasType profile context subject firstClassifier)
+    (secondTyped : HasType profile context subject secondClassifier) :
+    Conv firstClassifier secondClassifier := by
+  rcases firstTyped.typedSubjectIsVariableOrUniverseCode with
+    ⟨index, subjectIsVariable⟩ | ⟨levelExpr, flag, subjectIsUniverse⟩
+  · subst subjectIsVariable
+    exact Conv.trans_of_typedMiddle
+      (WfContext.lookupIsType context wellFormed index)
+      (HasType.inversionVariable wellFormed firstTyped)
+      (HasType.inversionVariable wellFormed secondTyped).sym
+  · subst subjectIsUniverse
+    exact Conv.trans_of_typedMiddle
+      ⟨levelExpr.lsucc.lsucc, flag,
+        HasType.universeFormation context levelExpr.lsucc flag⟩
+      (HasType.inversionUniverseCode wellFormed firstTyped)
+      (HasType.inversionUniverseCode wellFormed secondTyped).sym
+
 end FX1Poly.Typed

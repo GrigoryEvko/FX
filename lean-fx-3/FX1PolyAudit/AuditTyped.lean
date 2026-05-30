@@ -90,3 +90,7 @@ gates pin them shut.
 
 #assert_no_axioms FX1Poly.Typed.HasType.inversionVariable
 #assert_no_axioms FX1Poly.Typed.HasType.inversionUniverseCode
+
+/-! ### UNIQUENESS OF TYPING (#469, current fragment) -/
+
+#assert_no_axioms FX1Poly.Typed.HasType.uniqueness
