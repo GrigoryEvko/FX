@@ -5796,14 +5796,24 @@ two-number guarantee, and the numbers have categorical names:
   certifies nonsense), not a theorem to chase.
 * **0 false negatives, eventually** = *completeness* = decidable `Conv`,
   which is exactly **CR** (unique normal forms) + **SN** (normal forms
-  exist).  **SR** is the separate fact that typing is stable under reduction
-  (the fibration has cartesian lifts along `Step`).
+  exist) — `conv` being the only rule `Conv` enters (§11.8.5), so 0 FN is
+  localized to that one premise.  **SR** is NOT a 0-FN ingredient: it is the
+  separate fact that typing is stable under reduction (the fibration has
+  cartesian lifts along `Step`).  Honest scope: 0 FN is reached **per
+  fragment** — as each generator's `Conv` decidability lands — never claimed
+  jointly; the whole-kernel joint 0 FN is the open **O-NORM** obligation
+  (§11.8.0), not discharged.  (Today only the leaf fragment is at 0/0; see
+  the typed-layer status in §11.8.5.)
 
 Put together: **the typing display map is a *decidable fibration*** — a
 fibration (SR) with decidable fibers (CR + SN ⇒ decidable `Conv`).  That is
 exactly *decidable typechecking = sound + complete = ★ MILESTONE A*.  The
 slogan "Conv + CR + SR + SN ⇒ 0 FP / 0 FN" is the decidability-of-
-typechecking theorem, factored.
+typechecking theorem **factored into three distinct roles, not a single
+implication**: intro-rules ⇒ 0 FP (free); SR ⇒ the fibration leg (cartesian
+lifts, no error-rate content); CR + SN ⇒ decidable `Conv` ⇒ 0 FN.  Reading
+the slogan as "SR helps decide typechecking" is the error the factoring
+prevents.
 
 The type level is therefore not a bolt-on judgment beside the cell calculus —
 it is the **dim-0 stratum of the same fibrant-membership soundness engine**
