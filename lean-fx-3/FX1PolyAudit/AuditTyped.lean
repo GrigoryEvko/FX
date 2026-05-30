@@ -13,6 +13,7 @@ import FX1Poly.Typed.HasTypeSubjectReduction
 import FX1Poly.Typed.UniverseCodeShape
 import FX1Poly.Typed.IsTypeDecidable
 import FX1Poly.Typed.HasTypeDecidable
+import FX1Poly.Typed.HasTypeSmokeCorpus
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -158,3 +159,14 @@ gates pin them shut.
     `IsType.decidableOfWellFormed`, deciding via `DecidableEq RawTerm`. -/
 
 #assert_no_axioms FX1Poly.Typed.HasType.decidableOfWellFormed
+
+/-! ### TYPED SMOKE CORPUS (#470/#308, current fragment) — non-vacuity /
+    regression witnesses pinning that the deciders DISCRIMINATE: one accepted +
+    one rejected cell per outcome branch (universeCode-isTrue, var-isTrue,
+    outer-reject, universeCode-isFalse). -/
+
+#assert_no_axioms FX1Poly.Typed.headGenerator_unitCell
+#assert_no_axioms FX1Poly.Typed.corpus_universeCode_typedBySucc
+#assert_no_axioms FX1Poly.Typed.corpus_variable_typedByLookup
+#assert_no_axioms FX1Poly.Typed.corpus_unitCell_rejected
+#assert_no_axioms FX1Poly.Typed.corpus_universeCode_notTypedByUnit
