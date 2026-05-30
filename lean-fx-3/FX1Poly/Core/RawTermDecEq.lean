@@ -1,17 +1,32 @@
 import FX1Poly.Core.RawSize
+import FX1Poly.Universe.LevelExpr
+import FX1Poly.Universe.UniverseFlag
 
 /-! # Foundation/PolyCell/Core/RawTermDecEq — propext-free DecidableEq -/
 
 namespace FX1Poly.Core
 
--- Payload equality decided per-generator (Fin/Nat/Unit all have decEq)
+/-- `DecidableEq` for the `gen_universeCode` payload at its concrete pair
+type, so instance synthesis has no `Generator.payload` redex to unfold
+through.  Applying this to payload values forces the defeq the same way
+`Nat.decEq` does for the truncation arms.  Propext-free: the derived
+`DecidableEq LevelExpr` / `DecidableEq UniverseFlag` are both clean, and
+`instDecidableEqProd` is structural. -/
+def decEqUniversePayload
+    (firstPayload secondPayload :
+      FX1Poly.Universe.LevelExpr × FX1Poly.Universe.UniverseFlag) :
+    Decidable (firstPayload = secondPayload) :=
+  inferInstance
+
+-- Payload equality decided per-generator (Fin / Nat / LevelExpr×UniverseFlag / Unit all have decEq)
 def decEqPayload (generator : Generator) (scope : Nat)
     (payloadA payloadB : generator.payload scope) : Decidable (payloadA = payloadB) := by
   cases generator <;> (
     first
-    | exact instDecidableEqFin _ payloadA payloadB  -- gen_var → Fin scope
-    | exact Nat.decEq payloadA payloadB             -- gen_universeCode → Nat
-    | exact match payloadA, payloadB with | (), () => .isTrue rfl)  -- all others → Unit
+    | exact instDecidableEqFin _ payloadA payloadB                 -- gen_var → Fin scope
+    | exact Nat.decEq payloadA payloadB                            -- gen_trunc{Intro,Coh,Rec} → Nat
+    | exact match payloadA, payloadB with | (), () => .isTrue rfl  -- all-Unit ctors (manual, propext-free)
+    | exact decEqUniversePayload payloadA payloadB)  -- gen_universeCode → LevelExpr × UniverseFlag
 
 mutual
   def RawTerm.decEq {scope : Nat}

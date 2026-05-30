@@ -96,7 +96,8 @@ theorem noStep_optionNone {scope : Nat} {targetTerm : RawTerm scope} :
       exact noStepChildren_childNil childStep
 
 /-- A universe-code atom is a normal leaf. -/
-theorem noStep_universeCode {scope : Nat} (levelCode : Nat)
+theorem noStep_universeCode {scope : Nat}
+    (levelCode : FX1Poly.Universe.LevelExpr × FX1Poly.Universe.UniverseFlag)
     {targetTerm : RawTerm scope} :
     Step (.mkGen .gen_universeCode levelCode .childNil : RawTerm scope)
         targetTerm →
@@ -213,7 +214,8 @@ theorem optionNone_isStronglyNormalizing {scope : Nat} :
     (fun targetTerm step => noStep_optionNone (targetTerm := targetTerm) step)
 
 /-- Universe-code atoms are strongly normalizing. -/
-theorem universeCode_isStronglyNormalizing {scope : Nat} (levelCode : Nat) :
+theorem universeCode_isStronglyNormalizing {scope : Nat}
+    (levelCode : FX1Poly.Universe.LevelExpr × FX1Poly.Universe.UniverseFlag) :
     IsStronglyNormalizing
       (.mkGen .gen_universeCode levelCode .childNil : RawTerm scope) :=
   isStronglyNormalizing_of_noStep

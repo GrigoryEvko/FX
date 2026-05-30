@@ -327,7 +327,9 @@ theorem appLamOptionNone_isStronglyNormalizing_of_argument
 /-- Beta redexes whose lambda body is a universe-code atom are strongly
 normalizing when the argument is strongly normalizing. -/
 theorem appLamUniverseCode_isStronglyNormalizing_of_argument
-    {scope : Nat} (levelCode : Nat) {argumentTerm : RawTerm scope}
+    {scope : Nat}
+    (levelCode : FX1Poly.Universe.LevelExpr × FX1Poly.Universe.UniverseFlag)
+    {argumentTerm : RawTerm scope}
     (argumentTerminates : IsStronglyNormalizing argumentTerm) :
     IsStronglyNormalizing
       (.mkGen .gen_app ()

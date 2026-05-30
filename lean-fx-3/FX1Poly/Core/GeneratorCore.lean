@@ -1,9 +1,29 @@
+import FX1Poly.Universe.LevelExpr
+import FX1Poly.Universe.UniverseFlag
+
 /-! # FX1Poly/Core/GeneratorCore — Generator substrate (no typed-term dep)
 
 The 74-summand Generator enum + arity + binderShifts + discipline lemma.
-This carrier is deliberately free of any typed-term import: it is the
+This carrier is deliberately free of any TYPED-TERM import: it is the
 Allais universe-of-syntaxes descriptor (arXiv:2001.11001) that every
-PolyCell layer inducts over ONCE.  No import beyond Init.
+PolyCell layer inducts over ONCE, and `RawTerm` is defined OVER it — so a
+typed-term import would be a cycle.  That cycle, not imports in general, is
+what the invariant guards against.
+
+## Payload-alphabet discipline
+
+`Generator.payload` assigns each generator its local scalar type.  Per the
+Allais pattern the descriptor is PARAMETERIZED by this payload alphabet, so
+the alphabet's types are legitimate imports here — PROVIDED each is a
+foundational LEAF: combinatorial, self-contained, and typed-term-free (it
+cannot reach `RawTerm`, hence cannot close the guarded cycle).  The current
+alphabet is `Fin` / `Nat` / `Unit` (from Init) plus `LevelExpr × UniverseFlag`
+for `gen_universeCode` — the universe-level polynomial + Setzer-Rathjen
+strength flag (§11.8.2), both self-contained inductives in the Universe
+layer.  Future rich payloads (cubical `FaceFormula`, guarded clocks) may
+join the alphabet ONLY if they too are leaves.  The serialized `List Nat`
+wire form for FX0 certificates is produced at the FX1->FX0 boundary
+(`UniversePayloadSerialize`), NOT smeared into this descriptor.
 
 (Clean-cut note: this file was migrated out of lean-fx-2's
 `LeanFX2.Foundation.PolyCell.Core.GeneratorCore`; it was already
@@ -849,11 +869,14 @@ theorem Generator.binderShifts_length_eq_arity (g : Generator) :
 /-- Per-generator local-scalar payload type, indexed by scope.
 `gen_var` maps to `Fin scope` (scope-safe BY CONSTRUCTION — the strict
 improvement over v1's `index < scope` side-condition).  `gen_universeCode`
-maps to `Nat` (the universe level).  All other 72 ctors map to `Unit`.
-Full enumeration, no wildcard. -/
+maps to `LevelExpr × UniverseFlag` — the universe-level polynomial plus the
+Setzer-Rathjen strength flag (§11.8.2); this replaces the former bare `Nat`,
+which made `Universe : Universe` syntactically admissible (Girard's paradox
+at the admission level).  All other 72 ctors map to `Unit`.  Full
+enumeration, no wildcard. -/
 def Generator.payload : Generator → Nat → Type
   | .gen_var, scope => Fin scope
-  | .gen_universeCode, _ => Nat
+  | .gen_universeCode, _ => FX1Poly.Universe.LevelExpr × FX1Poly.Universe.UniverseFlag
   | .gen_unit, _ => Unit
   | .gen_lam, _ => Unit
   | .gen_app, _ => Unit

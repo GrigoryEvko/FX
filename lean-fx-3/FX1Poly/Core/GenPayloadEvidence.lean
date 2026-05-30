@@ -194,10 +194,10 @@ universe-level theorem here is the headline witness; the
 truncation-level analogs would be added if a restricted h-level
 discipline ships in a future profile. -/
 theorem genPayloadEvidence?_universeCode_unbounded {scope : Nat}
-    (level : Nat) :
+    (payload : FX1Poly.Universe.LevelExpr × FX1Poly.Universe.UniverseFlag) :
     (genPayloadEvidence?
         (generator := .gen_universeCode) (scope := scope)
-        (payload := level)).isSome = true :=
+        (payload := payload)).isSome = true :=
   rfl
 
 end FX1Poly.Core
