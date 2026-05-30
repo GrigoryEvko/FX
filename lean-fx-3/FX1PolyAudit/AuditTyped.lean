@@ -2,6 +2,7 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.Typed.TypingContext
 import FX1Poly.Typed.HasType
 import FX1Poly.Typed.HasTypeHonesty
+import FX1Poly.Typed.WfContext
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -43,3 +44,11 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.RawTerm.headGenerator
 #assert_no_axioms FX1Poly.Typed.HasType.typedSubjectIsVariableOrUniverseCode
 #assert_no_axioms FX1Poly.Typed.appUnitUnit_hasNoTyping
+
+/-! ### TY-WF #468 — WfContext predicate + inversions + non-vacuity witness -/
+
+#assert_no_axioms FX1Poly.Typed.WfContext
+#assert_no_axioms FX1Poly.Typed.WfContext.emptyIsWellFormed
+#assert_no_axioms FX1Poly.Typed.WfContext.tailWellFormed
+#assert_no_axioms FX1Poly.Typed.WfContext.headIsType
+#assert_no_axioms FX1Poly.Typed.wfContext_universeBinding
