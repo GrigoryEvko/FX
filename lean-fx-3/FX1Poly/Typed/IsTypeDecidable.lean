@@ -2,6 +2,7 @@ import FX1Poly.Typed.HasTypeInversion
 import FX1Poly.Typed.HasTypeValidity
 import FX1Poly.Typed.HasTypeDecidableConv
 import FX1Poly.Typed.UniverseCodeShape
+import FX1Poly.Typed.SigmaCodeShape
 
 /-! # FX1Poly/Typed/IsTypeDecidable
     — characterization of which cells are types (current var/conv/universe fragment)
@@ -98,18 +99,22 @@ theorem IsType.not_of_headGenerator {profile : PolyProfile} {scope : Nat}
     (notVariable : RawTerm.headGenerator classifier ≠ Generator.gen_var)
     (notUniverseCode :
       RawTerm.headGenerator classifier ≠ Generator.gen_universeCode)
-    (notPi : RawTerm.headGenerator classifier ≠ Generator.gen_piTyCode) :
+    (notPi : RawTerm.headGenerator classifier ≠ Generator.gen_piTyCode)
+    (notSigma : RawTerm.headGenerator classifier ≠ Generator.gen_sigmaTyCode) :
     ¬ IsType profile context classifier := by
   rintro ⟨levelExpr, flag, typed⟩
   rcases typed.typedSubjectIsVariableOrUniverseCode with
     ⟨index, subjectIsVariable⟩ | ⟨codeLevel, codeFlag, subjectIsUniverseCode⟩ |
-      ⟨domainCode, codomainCode, subjectIsPi⟩
+      ⟨domainCode, codomainCode, subjectIsPi⟩ |
+      ⟨domainCode, codomainCode, subjectIsSigma⟩
   · subst subjectIsVariable
     exact notVariable (headGenerator_variableCell index)
   · subst subjectIsUniverseCode
     exact notUniverseCode (headGenerator_universeCodeCell codeLevel codeFlag)
   · subst subjectIsPi
     exact notPi (headGenerator_piTyCodeCell domainCode codomainCode)
+  · subst subjectIsSigma
+    exact notSigma (headGenerator_sigmaTyCodeCell domainCode codomainCode)
 
 /-- The DATA-returning core of `Decidable IsType`: either a universe witness
 (`Σ'`-packaged level + flag + typing — `Type`-valued, so the flag is DATA the Π
@@ -227,18 +232,74 @@ def IsType.decideWithWitness {profile : PolyProfile} {scope : Nat}
                                   ⟨domainLevel, domainFlag, domainTyped⟩)
                                 codomainTyped invCodomainTyped)
                           exact hFlag (domainFlagAgree.trans codomainFlagAgree.symm)
+      else if hSigma : generator = Generator.gen_sigmaTyCode then
+        -- exact mirror of the `gen_piTyCode` branch: value-discriminant match on
+        -- `generator` refines `children` to the `[0,1]` spine, recurse into each
+        -- child, reconcile flags.  Σ produces `Type@(lmax …)` just like Π, so the
+        -- decision is structurally identical (`inversionSigmaCode`,
+        -- `HasType.sigmaFormation`, the same `uniqueness` flag-agreement refutation).
+        match generator, children, hSigma with
+        | .gen_sigmaTyCode, .childCons domainCode (.childCons codomainCode .childNil), rfl =>
+              match IsType.decideWithWitness wellFormed domainCode with
+              | .inr domainNotType =>
+                  .inr fun isTypeSigma => by
+                    obtain ⟨_sigmaLevel, _sigmaFlag, sigmaTyped⟩ := isTypeSigma
+                    obtain ⟨domainLevel, _codomainLevel, sharedFlag,
+                      domainTyped, _, _⟩ := HasType.inversionSigmaCode wellFormed sigmaTyped
+                    exact domainNotType ⟨domainLevel, sharedFlag, domainTyped⟩
+              | .inl ⟨domainLevel, domainFlag, domainTyped⟩ =>
+                  match IsType.decideWithWitness
+                      (WfContext.cons wellFormed
+                        ⟨domainLevel, domainFlag, domainTyped⟩) codomainCode with
+                  | .inr codomainNotType =>
+                      .inr fun isTypeSigma => by
+                        obtain ⟨_sigmaLevel, _sigmaFlag, sigmaTyped⟩ := isTypeSigma
+                        obtain ⟨_domainLevel, codomainLevel, sharedFlag,
+                          _, codomainTyped, _⟩ :=
+                          HasType.inversionSigmaCode wellFormed sigmaTyped
+                        exact codomainNotType ⟨codomainLevel, sharedFlag, codomainTyped⟩
+                  | .inl ⟨codomainLevel, codomainFlag, codomainTyped⟩ =>
+                      if hFlag : domainFlag = codomainFlag then by
+                        subst hFlag
+                        exact .inl
+                          ⟨LevelExpr.lmax domainLevel codomainLevel, domainFlag,
+                            HasType.sigmaFormation context domainCode codomainCode
+                              domainLevel codomainLevel domainFlag
+                              domainTyped codomainTyped⟩
+                      else
+                        .inr fun isTypeSigma => by
+                          obtain ⟨_sigmaLevel, _sigmaFlag, sigmaTyped⟩ := isTypeSigma
+                          obtain ⟨_invDomainLevel, _invCodomainLevel, _invFlag,
+                            invDomainTyped, invCodomainTyped, _⟩ :=
+                            HasType.inversionSigmaCode wellFormed sigmaTyped
+                          obtain ⟨_, domainFlagAgree⟩ :=
+                            levelFlag_eq_of_conv_universeCodeCell
+                              (context := context)
+                              (HasType.uniqueness wellFormed
+                                domainTyped invDomainTyped)
+                          obtain ⟨_, codomainFlagAgree⟩ :=
+                            levelFlag_eq_of_conv_universeCodeCell
+                              (context := context.cons domainCode)
+                              (HasType.uniqueness
+                                (WfContext.cons wellFormed
+                                  ⟨domainLevel, domainFlag, domainTyped⟩)
+                                codomainTyped invCodomainTyped)
+                          exact hFlag (domainFlagAgree.trans codomainFlagAgree.symm)
       else
-        .inr (IsType.not_of_headGenerator hVariable hUniverse hPi)
+        .inr (IsType.not_of_headGenerator hVariable hUniverse hPi hSigma)
   termination_by classifier.size
   decreasing_by
-    -- two recursive calls (domain at `scope`, codomain at `scope + 1`).  The
-    -- value-discriminant matcher refinement keeps each goal's cell as
-    -- `piTyCodeCell domainCode codomainCode` (`payload : Unit` is defeq `()` by
-    -- `PUnit` eta), so the explicit `RawTerm.size` bricks apply directly — a Nat
-    -- measure precisely because structural recursion cannot cross the `RawTerm` /
-    -- `RawTermChildren` mutual boundary.
-    · exact size_lt_piTyCodeCell_domain domainCode codomainCode
-    · exact size_lt_piTyCodeCell_codomain domainCode codomainCode
+    -- four recursive calls now (domain + codomain for each of Π and Σ).  The
+    -- value-discriminant matcher refinement keeps each goal's cell concrete
+    -- (`piTyCodeCell` or `sigmaTyCodeCell`), so the matching `RawTerm.size` brick
+    -- applies — a Nat measure because structural recursion cannot cross the
+    -- `RawTerm` / `RawTermChildren` mutual boundary.  `first` dispatches each goal
+    -- to whichever of the four bricks unifies.
+    all_goals first
+      | exact size_lt_piTyCodeCell_domain _ _
+      | exact size_lt_piTyCodeCell_codomain _ _
+      | exact size_lt_sigmaTyCodeCell_domain _ _
+      | exact size_lt_sigmaTyCodeCell_codomain _ _
 
 /-- Decide whether `classifier` inhabits some universe, for the current fragment
 (var / conv / universe / Π-formation).  A thin wrapper over the data-returning

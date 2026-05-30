@@ -1,5 +1,6 @@
 import FX1Poly.Typed.HasTypeHonesty
 import FX1Poly.Typed.UniverseCodeShape
+import FX1Poly.Typed.SigmaCodeShape
 import FX1Poly.Core.StrongNormalizationLeaves
 
 /-! # FX1Poly/Typed/HasTypeSubjectReduction
@@ -64,6 +65,9 @@ theorem HasType.subjectHasNoStep {profile : PolyProfile} {scope : Nat}
   | piFormation context domainCode codomainCode domainLevel codomainLevel flag
       domainTyped codomainTyped ihDomain ihCodomain =>
       exact piTyCodeCell_noStep_of_childrenNoStep ihDomain ihCodomain
+  | sigmaFormation context domainCode codomainCode domainLevel codomainLevel flag
+      domainTyped codomainTyped ihDomain ihCodomain =>
+      exact sigmaTyCodeCell_noStep_of_childrenNoStep ihDomain ihCodomain
 
 /-- **Typed Subject Reduction (P4)** for the current fragment.  Holds vacuously:
 a well-typed subject does not `Step` (`subjectHasNoStep`), so the reduction

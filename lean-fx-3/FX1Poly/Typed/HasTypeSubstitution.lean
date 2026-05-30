@@ -212,6 +212,38 @@ theorem HasType.substRespectingContext {profile : PolyProfile}
               rw [TypingContext.lookup_cons_succ, subst_lift_weaken_commute]
               exact (substitutionTyped ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩).weakenUnderBinding
                 (RawTerm.subst substitution domainCode)
+  | sigmaFormation sourceContext domainCode codomainCode domainLevel codomainLevel
+      flag domainTyped codomainTyped ihDomain ihCodomain =>
+      -- exact mirror of the `piFormation` case: `subst_sigmaTyCodeCell`
+      -- distributes the substitution, the domain IH fires bare, and the codomain
+      -- IH fires under the LIFTED substitution with the same 0/successor split
+      -- (fresh `var` at 0, weakened substituent at k+1, both via
+      -- `subst_lift_weaken_commute`)
+      intro targetScope targetContext substitution substitutionTyped
+      rw [subst_sigmaTyCodeCell, subst_universeCodeCell]
+      refine HasType.sigmaFormation targetContext _ _ domainLevel codomainLevel flag ?_ ?_
+      · have domainSubst :=
+          ihDomain targetContext substitution substitutionTyped
+        rw [subst_universeCodeCell] at domainSubst
+        exact domainSubst
+      · have codomainSubst :=
+          ihCodomain (targetContext.cons (RawTerm.subst substitution domainCode))
+            (RawTermSubst.lift substitution) ?liftedCondition
+        · rw [subst_universeCodeCell] at codomainSubst
+          exact codomainSubst
+        case liftedCondition =>
+          intro index
+          obtain ⟨indexValue, indexBound⟩ := index
+          cases indexValue with
+          | zero =>
+              rw [TypingContext.lookup_cons_zero, subst_lift_weaken_commute]
+              exact HasType.var
+                (targetContext.cons (RawTerm.subst substitution domainCode))
+                ⟨0, Nat.succ_pos targetScope⟩
+          | succ k =>
+              rw [TypingContext.lookup_cons_succ, subst_lift_weaken_commute]
+              exact (substitutionTyped ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩).weakenUnderBinding
+                (RawTerm.subst substitution domainCode)
 
 /-- Typed single-substitution (the β-engine): substituting a well-typed
 `argument` for de Bruijn 0 preserves typing.  The corollary of

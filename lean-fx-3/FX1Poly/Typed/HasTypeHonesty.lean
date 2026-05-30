@@ -52,17 +52,18 @@ dependent-`injection` pain on the payload. -/
 def RawTerm.headGenerator {scope : Nat} : RawTerm scope → Generator
   | .mkGen generator _ _ => generator
 
-/-- In the var/conv/universe/Π-formation core, every typed subject is a
-variable cell, a universe-code cell, or a Π-type code cell.  Proof: `var`
-produces a `variableCell`; `universeFormation` produces a `universeCodeCell`;
-`piFormation` produces a `piTyCodeCell`; `conv` preserves the subject (its IH
-gives the same subject).  FRAGMENT-SPECIFIC — it grows by one disjunct per
-non-`conv` arm and is eventually retired for real inversion once the metadata
-`gen` arm lands; the current proof technique for the 0-FP probe.  Note this
-re-proof is `Conv.trans`-free (the `conv` case just forwards its IH).
+/-- In the var/conv/universe/Π-formation/Σ-formation core, every typed subject
+is a variable cell, a universe-code cell, a Π-type code cell, or a Σ-type code
+cell.  Proof: `var` produces a `variableCell`; `universeFormation` produces a
+`universeCodeCell`; `piFormation` produces a `piTyCodeCell`; `sigmaFormation`
+produces a `sigmaTyCodeCell`; `conv` preserves the subject (its IH gives the
+same subject).  FRAGMENT-SPECIFIC — it grows by one disjunct per non-`conv` arm
+and is eventually retired for real inversion once the metadata `gen` arm lands;
+the current proof technique for the 0-FP probe.  Note this re-proof is
+`Conv.trans`-free (the `conv` case just forwards its IH).
 
-(The name predates the Π disjunct; it now covers three shapes.  Kept stable
-across the #443 cascade rather than renamed mid-breaking-change.) -/
+(The name predates the Π/Σ disjuncts; it now covers four shapes.  Kept stable
+across the #443/#445 cascades rather than renamed mid-breaking-change.) -/
 theorem HasType.typedSubjectIsVariableOrUniverseCode {profile : PolyProfile}
     {scope : Nat} {context : TypingContext profile scope}
     {subject classifier : RawTerm scope}
@@ -71,7 +72,9 @@ theorem HasType.typedSubjectIsVariableOrUniverseCode {profile : PolyProfile}
       (∃ (levelExpr : LevelExpr) (flag : UniverseFlag),
         subject = universeCodeCell levelExpr flag) ∨
       (∃ (domainCode : RawTerm scope) (codomainCode : RawTerm (scope + 1)),
-        subject = piTyCodeCell domainCode codomainCode) := by
+        subject = piTyCodeCell domainCode codomainCode) ∨
+      (∃ (domainCode : RawTerm scope) (codomainCode : RawTerm (scope + 1)),
+        subject = sigmaTyCodeCell domainCode codomainCode) := by
   induction typed with
   | var context index => exact Or.inl ⟨index, rfl⟩
   | conv levelExpr flag typedPremise converts reclassifierTyped
@@ -81,7 +84,10 @@ theorem HasType.typedSubjectIsVariableOrUniverseCode {profile : PolyProfile}
       exact Or.inr (Or.inl ⟨levelExpr, flag, rfl⟩)
   | piFormation context domainCode codomainCode domainLevel codomainLevel flag
       domainTyped codomainTyped ihDomain ihCodomain =>
-      exact Or.inr (Or.inr ⟨_, _, rfl⟩)
+      exact Or.inr (Or.inr (Or.inl ⟨_, _, rfl⟩))
+  | sigmaFormation context domainCode codomainCode domainLevel codomainLevel flag
+      domainTyped codomainTyped ihDomain ihCodomain =>
+      exact Or.inr (Or.inr (Or.inr ⟨_, _, rfl⟩))
 
 /-- 0-FP probe: the ill-typed cell `app(unit, unit)` has NO typing
 derivation in the var+conv core, for any classifier.  The typed layer
@@ -92,7 +98,7 @@ theorem appUnitUnit_hasNoTyping {profile : PolyProfile} {scope : Nat}
   intro typed
   rcases typed.typedSubjectIsVariableOrUniverseCode with
     ⟨index, subjectEq⟩ | ⟨levelExpr, flag, subjectEq⟩ |
-      ⟨domainCode, codomainCode, subjectEq⟩
+      ⟨domainCode, codomainCode, subjectEq⟩ | ⟨domainCode, codomainCode, subjectEq⟩
   · have headGeneratorsAgree : Generator.gen_app = Generator.gen_var :=
       congrArg RawTerm.headGenerator subjectEq
     exact Generator.noConfusion headGeneratorsAgree
@@ -102,6 +108,10 @@ theorem appUnitUnit_hasNoTyping {profile : PolyProfile} {scope : Nat}
     exact Generator.noConfusion headGeneratorsAgree
   · have headGeneratorsAgree :
         Generator.gen_app = Generator.gen_piTyCode :=
+      congrArg RawTerm.headGenerator subjectEq
+    exact Generator.noConfusion headGeneratorsAgree
+  · have headGeneratorsAgree :
+        Generator.gen_app = Generator.gen_sigmaTyCode :=
       congrArg RawTerm.headGenerator subjectEq
     exact Generator.noConfusion headGeneratorsAgree
 

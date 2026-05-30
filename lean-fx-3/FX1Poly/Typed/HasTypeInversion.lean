@@ -88,6 +88,13 @@ theorem HasType.inversionVariable {profile : PolyProfile} {scope : Nat}
           Generator.gen_piTyCode = Generator.gen_var :=
         congrArg RawTerm.headGenerator subjectEq
       exact Generator.noConfusion headGeneratorsAgree
+  | sigmaFormation armContext domainCode codomainCode domainLevel codomainLevel flag
+      domainTyped codomainTyped ihDomain ihCodomain =>
+      intro wellFormedArm targetIndex subjectEq
+      have headGeneratorsAgree :
+          Generator.gen_sigmaTyCode = Generator.gen_var :=
+        congrArg RawTerm.headGenerator subjectEq
+      exact Generator.noConfusion headGeneratorsAgree
 
 /-- **Inversion for a universe-code cell.**  Any classifier a universe-code
 cell `Type@(e, flag)` receives is convertible to the next universe
@@ -139,6 +146,13 @@ theorem HasType.inversionUniverseCode {profile : PolyProfile} {scope : Nat}
       intro wellFormedArm targetLevel targetFlag subjectEq
       have headGeneratorsAgree :
           Generator.gen_piTyCode = Generator.gen_universeCode :=
+        congrArg RawTerm.headGenerator subjectEq
+      exact Generator.noConfusion headGeneratorsAgree
+  | sigmaFormation armContext domainCode codomainCode domainLevel codomainLevel flag
+      domainTyped codomainTyped ihDomain ihCodomain =>
+      intro wellFormedArm targetLevel targetFlag subjectEq
+      have headGeneratorsAgree :
+          Generator.gen_sigmaTyCode = Generator.gen_universeCode :=
         congrArg RawTerm.headGenerator subjectEq
       exact Generator.noConfusion headGeneratorsAgree
 
@@ -216,6 +230,89 @@ theorem HasType.inversionPiCode {profile : PolyProfile} {scope : Nat}
       subst codomainEq
       exact ⟨armDomainLevel, armCodomainLevel, armFlag,
         domainTyped, codomainTyped, Conv.refl _⟩
+  | sigmaFormation armContext armDomain armCodomain armDomainLevel armCodomainLevel
+      armFlag domainTyped codomainTyped ihDomain ihCodomain =>
+      intro wellFormedArm targetDomain targetCodomain subjectEq
+      have headGeneratorsAgree :
+          Generator.gen_sigmaTyCode = Generator.gen_piTyCode :=
+        congrArg RawTerm.headGenerator subjectEq
+      exact Generator.noConfusion headGeneratorsAgree
+
+/-- **Inversion for a Σ-type code cell.**  The dual of `inversionPiCode`: a
+`sigmaTyCodeCell domainCode codomainCode` is typed only by `sigmaFormation` (up
+to `conv`); its classifier is convertible to
+`Type@(lmax domainLevel codomainLevel, flag)`, the domain a type at
+`domainLevel`, the codomain a type at `codomainLevel` under the extended context,
+both at one shared flag.  Same equation-motive shape as `inversionPiCode`, with
+the roles swapped: the `var` / `universeFormation` / `piFormation` arms are
+impossible (generator mismatch), and the `sigmaFormation` arm hands back its own
+premises after `sigmaTyCodeCell_inj` aligns the children. -/
+theorem HasType.inversionSigmaCode {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    (wellFormed : WfContext context)
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {classifier : RawTerm scope}
+    (typed :
+      HasType profile context (sigmaTyCodeCell domainCode codomainCode) classifier) :
+    ∃ (domainLevel codomainLevel : LevelExpr) (flag : UniverseFlag),
+      HasType profile context domainCode (universeCodeCell domainLevel flag) ∧
+        HasType profile (context.cons domainCode) codomainCode
+          (universeCodeCell codomainLevel flag) ∧
+        Conv classifier
+          (universeCodeCell (LevelExpr.lmax domainLevel codomainLevel) flag) := by
+  suffices general :
+      ∀ {generalScope : Nat} {generalContext : TypingContext profile generalScope}
+        {subject reachedClassifier : RawTerm generalScope},
+        HasType profile generalContext subject reachedClassifier →
+          WfContext generalContext →
+            ∀ {targetDomain : RawTerm generalScope}
+              {targetCodomain : RawTerm (generalScope + 1)},
+              subject = sigmaTyCodeCell targetDomain targetCodomain →
+                ∃ (domainLevel codomainLevel : LevelExpr) (flag : UniverseFlag),
+                  HasType profile generalContext targetDomain
+                    (universeCodeCell domainLevel flag) ∧
+                  HasType profile (generalContext.cons targetDomain) targetCodomain
+                    (universeCodeCell codomainLevel flag) ∧
+                  Conv reachedClassifier
+                    (universeCodeCell
+                      (LevelExpr.lmax domainLevel codomainLevel) flag) from
+    general typed wellFormed rfl
+  intro generalScope generalContext subject reachedClassifier derivation
+  induction derivation with
+  | var armContext armIndex =>
+      intro wellFormedArm targetDomain targetCodomain subjectEq
+      exact Generator.noConfusion
+        (congrArg RawTerm.headGenerator subjectEq :
+          Generator.gen_var = Generator.gen_sigmaTyCode)
+  | conv levelExpr flag typedPremise converts reclassifierTyped
+      ihPremise _ihReclassifier =>
+      intro wellFormedArm targetDomain targetCodomain subjectEq
+      obtain ⟨domainLevel, codomainLevel, sharedFlag,
+        domainTyped, codomainTyped, convToCode⟩ :=
+        ihPremise wellFormedArm subjectEq
+      exact ⟨domainLevel, codomainLevel, sharedFlag, domainTyped, codomainTyped,
+        Conv.trans_of_typedMiddle
+          (HasType.classifierIsType wellFormedArm typedPremise)
+          converts.sym convToCode⟩
+  | universeFormation armContext armLevel armFlag =>
+      intro wellFormedArm targetDomain targetCodomain subjectEq
+      exact Generator.noConfusion
+        (congrArg RawTerm.headGenerator subjectEq :
+          Generator.gen_universeCode = Generator.gen_sigmaTyCode)
+  | piFormation armContext armDomain armCodomain armDomainLevel armCodomainLevel
+      armFlag domainTyped codomainTyped ihDomain ihCodomain =>
+      intro wellFormedArm targetDomain targetCodomain subjectEq
+      exact Generator.noConfusion
+        (congrArg RawTerm.headGenerator subjectEq :
+          Generator.gen_piTyCode = Generator.gen_sigmaTyCode)
+  | sigmaFormation armContext armDomain armCodomain armDomainLevel armCodomainLevel
+      armFlag domainTyped codomainTyped ihDomain ihCodomain =>
+      intro wellFormedArm targetDomain targetCodomain subjectEq
+      obtain ⟨domainEq, codomainEq⟩ := sigmaTyCodeCell_inj subjectEq
+      subst domainEq
+      subst codomainEq
+      exact ⟨armDomainLevel, armCodomainLevel, armFlag,
+        domainTyped, codomainTyped, Conv.refl _⟩
 
 /-- **Uniqueness of typing (#469)** for the current fragment: any two classifiers
 of the same subject are convertible.  Proved by **induction on the first
@@ -267,6 +364,28 @@ theorem HasType.uniqueness {profile : PolyProfile} {scope : Nat}
       obtain ⟨secondDomainLevel, secondCodomainLevel, secondFlag,
         secondDomainTyped, secondCodomainTyped, secondConvToCode⟩ :=
         HasType.inversionPiCode wellFormedArm secondDerivation
+      obtain ⟨domainLevelAgree, domainFlagAgree⟩ :=
+        levelFlag_eq_of_conv_universeCodeCell (context := armContext)
+          (ihDomain wellFormedArm secondDomainTyped)
+      have codomainWellFormed : WfContext (armContext.cons armDomain) :=
+        WfContext.cons wellFormedArm ⟨armDomainLevel, armFlag, domainTyped⟩
+      obtain ⟨codomainLevelAgree, _codomainFlagAgree⟩ :=
+        levelFlag_eq_of_conv_universeCodeCell
+          (context := armContext.cons armDomain)
+          (ihCodomain codomainWellFormed secondCodomainTyped)
+      subst domainLevelAgree
+      subst codomainLevelAgree
+      subst domainFlagAgree
+      exact secondConvToCode.sym
+  | sigmaFormation armContext armDomain armCodomain armDomainLevel armCodomainLevel
+      armFlag domainTyped codomainTyped ihDomain ihCodomain =>
+      -- exact mirror of the `piFormation` case: invert the second derivation with
+      -- `inversionSigmaCode`, force the levels / flag to agree via the
+      -- domain/codomain IHs, then the two principal universe codes coincide
+      intro wellFormedArm secondReached secondDerivation
+      obtain ⟨secondDomainLevel, secondCodomainLevel, secondFlag,
+        secondDomainTyped, secondCodomainTyped, secondConvToCode⟩ :=
+        HasType.inversionSigmaCode wellFormedArm secondDerivation
       obtain ⟨domainLevelAgree, domainFlagAgree⟩ :=
         levelFlag_eq_of_conv_universeCodeCell (context := armContext)
           (ihDomain wellFormedArm secondDomainTyped)

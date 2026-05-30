@@ -118,5 +118,11 @@ theorem HasType.classifierIsType {profile : PolyProfile} {scope : Nat}
       -- universe code, hence a type by `universeFormation` one level up
       exact ⟨_, _, HasType.universeFormation context
         (LevelExpr.lmax domainLevel codomainLevel) flag⟩
+  | sigmaFormation context domainCode codomainCode domainLevel codomainLevel flag
+      domainTyped codomainTyped ihDomain ihCodomain =>
+      -- the Σ classifier is the same `Type@(lmax domainLevel codomainLevel,
+      -- flag)` universe code as the Π case, hence a type one level up
+      exact ⟨_, _, HasType.universeFormation context
+        (LevelExpr.lmax domainLevel codomainLevel) flag⟩
 
 end FX1Poly.Typed

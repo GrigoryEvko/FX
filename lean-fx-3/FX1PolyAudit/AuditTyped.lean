@@ -106,6 +106,13 @@ gates pin them shut.
 -- it.  Same equation-motive shape as the var / universe inversions, with the
 -- `piFormation` arm closed by `piTyCodeCell_inj`.
 #assert_no_axioms FX1Poly.Typed.HasType.inversionPiCode
+-- Σ-formation inversion (#445): the dual of `inversionPiCode`.  A typed
+-- `sigmaTyCodeCell` exposes both children's universe typings (at one shared
+-- flag) + a `Conv` of the classifier to `Type@(lmax …)`.  The Σ arms of the
+-- decider cascade + `uniqueness` feed on it.  Same equation-motive shape, with
+-- the `piFormation` arm now the impossible one (`Generator.noConfusion`) and the
+-- `sigmaFormation` arm closed by `sigmaTyCodeCell_inj`.
+#assert_no_axioms FX1Poly.Typed.HasType.inversionSigmaCode
 
 /-! ### UNIQUENESS OF TYPING (#469, current fragment) -/
 

@@ -84,28 +84,33 @@ theorem HasType.universeCodeCell_iff_classifierEqSucc {profile : PolyProfile}
     subst classifierEqualsSucc
     exact HasType.universeFormation context levelExpr flag
 
-/-- A subject whose head generator is none of `gen_var`, `gen_universeCode`, or
-`gen_piTyCode` has no typing derivation under any classifier: every typed subject
-is a variable, universe-code, or Π-type-code cell
-(`typedSubjectIsVariableOrUniverseCode`, the 3-way classification). -/
+/-- A subject whose head generator is none of `gen_var`, `gen_universeCode`,
+`gen_piTyCode`, or `gen_sigmaTyCode` has no typing derivation under any
+classifier: every typed subject is a variable, universe-code, Π-type-code, or
+Σ-type-code cell (`typedSubjectIsVariableOrUniverseCode`, the 4-way
+classification). -/
 theorem HasType.not_of_headGenerator {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {subject classifier : RawTerm scope}
     (notVariable : RawTerm.headGenerator subject ≠ Generator.gen_var)
     (notUniverseCode :
       RawTerm.headGenerator subject ≠ Generator.gen_universeCode)
-    (notPi : RawTerm.headGenerator subject ≠ Generator.gen_piTyCode) :
+    (notPi : RawTerm.headGenerator subject ≠ Generator.gen_piTyCode)
+    (notSigma : RawTerm.headGenerator subject ≠ Generator.gen_sigmaTyCode) :
     ¬ HasType profile context subject classifier := by
   intro typed
   rcases typed.typedSubjectIsVariableOrUniverseCode with
     ⟨index, subjectIsVariable⟩ | ⟨codeLevel, codeFlag, subjectIsUniverseCode⟩ |
-      ⟨domainCode, codomainCode, subjectIsPi⟩
+      ⟨domainCode, codomainCode, subjectIsPi⟩ |
+      ⟨domainCode, codomainCode, subjectIsSigma⟩
   · subst subjectIsVariable
     exact notVariable (headGenerator_variableCell index)
   · subst subjectIsUniverseCode
     exact notUniverseCode (headGenerator_universeCodeCell codeLevel codeFlag)
   · subst subjectIsPi
     exact notPi (headGenerator_piTyCodeCell domainCode codomainCode)
+  · subst subjectIsSigma
+    exact notSigma (headGenerator_sigmaTyCodeCell domainCode codomainCode)
 
 /-- Decide `HasType context subject classifier` for the current fragment — typed
 checking as a decision procedure.  A direct mirror of
@@ -209,8 +214,44 @@ def HasType.decidableOfWellFormed {profile : PolyProfile} {scope : Nat}
                       HasType.piFormation context domainCode codomainCode
                         domainLevel codomainLevel sharedFlag
                         domainTyped codomainTyped⟩)
+      else if hSigma : generator = Generator.gen_sigmaTyCode then
+        -- Σ subject: dual of the Π arm.  A Σ's classifier is likewise
+        -- `Type@(lmax domainLevel codomainLevel, flag)`, determined by the
+        -- children's typings — so route through `IsType.decideWithWitness`
+        -- (value-discriminant match on `generator` exposes the `[0,1]` spine),
+        -- yielding the principal universe witness `sigmaTyped` or refuting any
+        -- typehood.  Typed checking then collapses to classifier equality against
+        -- that principal universe — `uniqueness` + rigidity, no `Conv` decision.
+        match generator, children, hSigma with
+        | .gen_sigmaTyCode, .childCons domainCode (.childCons codomainCode .childNil), rfl =>
+            match IsType.decideWithWitness wellFormed
+                (sigmaTyCodeCell domainCode codomainCode) with
+            | .inl ⟨principalLevel, principalFlag, sigmaTyped⟩ =>
+                if hClassifierIsPrincipal :
+                    classifier = universeCodeCell principalLevel principalFlag then
+                  isTrue (by subst hClassifierIsPrincipal; exact sigmaTyped)
+                else
+                  isFalse (fun typed => by
+                    -- a second classifier converts to the principal one (uniqueness);
+                    -- both are types, so rigidity forces syntactic equality
+                    exact hClassifierIsPrincipal (Conv.eq_of_isType
+                      (HasType.classifierIsType wellFormed typed)
+                      (IsType.ofUniverseCodeCell principalLevel principalFlag)
+                      (HasType.uniqueness wellFormed typed sigmaTyped)))
+            | .inr sigmaNotType =>
+                isFalse (fun typed => by
+                  -- a typed Σ IS a type (its children inhabit universes), which
+                  -- `sigmaNotType` rules out
+                  obtain ⟨domainLevel, codomainLevel, sharedFlag,
+                    domainTyped, codomainTyped, _⟩ :=
+                    HasType.inversionSigmaCode wellFormed typed
+                  exact sigmaNotType
+                    ⟨LevelExpr.lmax domainLevel codomainLevel, sharedFlag,
+                      HasType.sigmaFormation context domainCode codomainCode
+                        domainLevel codomainLevel sharedFlag
+                        domainTyped codomainTyped⟩)
       else
-        isFalse (HasType.not_of_headGenerator hVariable hUniverse hPi)
+        isFalse (HasType.not_of_headGenerator hVariable hUniverse hPi hSigma)
 
 /-- Decidable typed conversion (★ A-core, #462): the convertibility of the
 CLASSIFIERS of two well-typed terms is decidable.  Both classifiers are `IsType`

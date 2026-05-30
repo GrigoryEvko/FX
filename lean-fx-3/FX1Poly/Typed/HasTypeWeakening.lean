@@ -186,6 +186,44 @@ theorem HasType.renameRespectingContext {profile : PolyProfile}
                       (rawRenaming ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩))
               rw [rename_lift_weaken_commute,
                 contextCondition ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩]
+  | sigmaFormation sourceContext domainCode codomainCode domainLevel codomainLevel
+      flag domainTyped codomainTyped ihDomain ihCodomain =>
+      -- exact mirror of the `piFormation` case: the cell rename distributes the
+      -- same way (`rename_sigmaTyCodeCell`), the domain IH fires with the bare
+      -- renaming, and the codomain IH fires with the LIFTED renaming under the
+      -- extended target context (the same lifted context-condition via
+      -- `rename_lift_weaken_commute`)
+      intro targetScope targetContext rawRenaming contextCondition
+      rw [rename_sigmaTyCodeCell, rename_universeCodeCell]
+      refine HasType.sigmaFormation targetContext _ _ domainLevel codomainLevel flag ?_ ?_
+      · have domainRenamed :=
+          ihDomain targetContext rawRenaming contextCondition
+        rw [rename_universeCodeCell] at domainRenamed
+        exact domainRenamed
+      · have codomainRenamed :=
+          ihCodomain (targetContext.cons (RawTerm.rename rawRenaming domainCode))
+            (RawRenaming.lift rawRenaming) ?liftedCondition
+        · rw [rename_universeCodeCell] at codomainRenamed
+          exact codomainRenamed
+        case liftedCondition =>
+          intro index
+          obtain ⟨indexValue, indexBound⟩ := index
+          cases indexValue with
+          | zero =>
+              show RawTerm.rename (RawRenaming.lift rawRenaming)
+                  (RawTerm.rename RawRenaming.weaken domainCode)
+                = RawTerm.rename RawRenaming.weaken
+                    (RawTerm.rename rawRenaming domainCode)
+              exact rename_lift_weaken_commute rawRenaming domainCode
+          | succ k =>
+              show RawTerm.rename (RawRenaming.lift rawRenaming)
+                  (RawTerm.rename RawRenaming.weaken
+                    (sourceContext.lookup ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩))
+                = RawTerm.rename RawRenaming.weaken
+                    (targetContext.lookup
+                      (rawRenaming ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩))
+              rw [rename_lift_weaken_commute,
+                contextCondition ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩]
 
 /-- Typed weakening: `HasType` survives extending the context by one fresh
 binding, with both subject and classifier shifted by `RawRenaming.weaken`.
