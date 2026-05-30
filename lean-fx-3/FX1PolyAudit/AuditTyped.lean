@@ -9,6 +9,7 @@ import FX1Poly.Typed.HasTypeValidity
 import FX1Poly.Typed.HasTypeStronglyNormalizing
 import FX1Poly.Typed.HasTypeInversion
 import FX1Poly.Typed.HasTypeDecidableConv
+import FX1Poly.Typed.HasTypeSubjectReduction
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -105,3 +106,11 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.Conv.eq_of_isType
 #assert_no_axioms FX1Poly.Typed.Conv.iff_eq_of_isType
 #assert_no_axioms FX1Poly.Typed.Conv.decidableOfIsType
+
+/-! ### TYPED SUBJECT REDUCTION (P4 #458, current fragment) — `subjectHasNoStep`
+    is the real structural invariant (well-typed subjects are normal leaves);
+    SR itself holds vacuously over the leaf-only fragment until app/iota arms
+    land (#444), then routes through the substitution lemma (#457). -/
+
+#assert_no_axioms FX1Poly.Typed.HasType.subjectHasNoStep
+#assert_no_axioms FX1Poly.Typed.HasType.subjectReduction
