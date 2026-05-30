@@ -11,6 +11,7 @@ import FX1Poly.Typed.HasTypeInversion
 import FX1Poly.Typed.HasTypeDecidableConv
 import FX1Poly.Typed.HasTypeSubjectReduction
 import FX1Poly.Typed.UniverseCodeShape
+import FX1Poly.Typed.IsTypeDecidable
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -122,3 +123,16 @@ gates pin them shut.
     needs to apply `HasType.universeFormation`. -/
 
 #assert_no_axioms FX1Poly.Typed.eq_universeCodeCell_of_headGenerator
+#assert_no_axioms FX1Poly.Typed.eq_variableCell_of_headGenerator
+#assert_no_axioms FX1Poly.Typed.headGenerator_universeCodeCell
+#assert_no_axioms FX1Poly.Typed.headGenerator_variableCell
+
+/-! ### IsType CHARACTERIZATION (#303 heart) — the decidable trichotomy on the
+    head generator that `Decidable IsType` assembles: universe codes are always
+    types; a variable is a type iff its looked-up classifier is a universe code
+    (forward by `inversionVariable` + rigidity); any other head is never a type
+    (`typedSubjectIsVariableOrUniverseCode`). -/
+
+#assert_no_axioms FX1Poly.Typed.IsType.ofUniverseCodeCell
+#assert_no_axioms FX1Poly.Typed.IsType.variableCell_iff_lookupIsUniverseCode
+#assert_no_axioms FX1Poly.Typed.IsType.not_of_headGenerator

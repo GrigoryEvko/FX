@@ -46,4 +46,40 @@ theorem eq_universeCodeCell_of_headGenerator {scope : Nat}
       rw [RawTermChildren.eq_childNil children]
       rfl
 
+/-- A cell whose head generator is `gen_var` is a `variableCell`: the same
+nullary child-spine collapse (`RawTermChildren.eq_childNil`, since
+`gen_var.binderShifts = []`) as the universe-code case, with the cell's payload
+serving directly as the de Bruijn index.  This is the second raw destructor
+`Decidable IsType` (#303) needs — to case on a `gen_var` cell and recover its
+index as data (`Exists` admits no large elimination, so the index must come from
+destructuring the cell, not from an existential witness). -/
+theorem eq_variableCell_of_headGenerator {scope : Nat}
+    {cell : RawTerm scope}
+    (headIsVariable :
+      RawTerm.headGenerator cell = Generator.gen_var) :
+    ∃ index : Fin scope, cell = variableCell index := by
+  cases cell with
+  | mkGen generator payload children =>
+      change generator = Generator.gen_var at headIsVariable
+      subst headIsVariable
+      refine ⟨payload, ?_⟩
+      rw [RawTermChildren.eq_childNil children]
+      rfl
+
+/-- The head generator of a universe-code cell is `gen_universeCode` (the cell
+unfolds to `mkGen gen_universeCode _ _`, and the matcher reads the head field).
+Stated with `scope` pinned so the defeq check does not stall on a metavariable.
+The dual destructor `eq_universeCodeCell_of_headGenerator` is the converse. -/
+theorem headGenerator_universeCodeCell {scope : Nat} (levelExpr : LevelExpr)
+    (flag : UniverseFlag) :
+    RawTerm.headGenerator (universeCodeCell levelExpr flag : RawTerm scope)
+      = Generator.gen_universeCode := by
+  rfl
+
+/-- The head generator of a variable cell is `gen_var`.  `scope` is pinned by the
+index's `Fin scope` type. -/
+theorem headGenerator_variableCell {scope : Nat} (index : Fin scope) :
+    RawTerm.headGenerator (variableCell index) = Generator.gen_var := by
+  rfl
+
 end FX1Poly.Typed
