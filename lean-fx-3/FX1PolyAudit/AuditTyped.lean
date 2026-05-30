@@ -18,6 +18,7 @@ import FX1Poly.Typed.HasTypeSmokeCorpus
 import FX1Poly.Typed.HasTypeConsistency
 import FX1Poly.Typed.HasTypeInfer
 import FX1Poly.Typed.HasTypeCheck
+import FX1Poly.Typed.HasTypeClosedForms
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -283,6 +284,19 @@ gates pin them shut.
 
 #assert_no_axioms FX1Poly.Typed.HasType.subjectIsVariableOrIsType
 #assert_no_axioms FX1Poly.Typed.HasType.closedSubjectIsType
+
+/-! ### CLOSED-TYPING CHARACTERIZATION COMPLETED (#460 / P10 precursor, current
+    fragment) — the two complementary halves of "what is a closed typing
+    judgment?".  `closedSubjectIsTypeFormer`: a closed well-typed subject is
+    EXACTLY a universe / Π / Σ type-former code (canonical forms; the `var`
+    disjunct of the 4-way shape classification is killed by `Fin 0`).
+    `closedClassifierConvUniverseCode`: its classifier is Conv to a universe code
+    (via `closedSubjectIsType` + `uniqueness` at the empty `WfContext`) — the
+    consistency content (no closed inhabitant below the universe level), the
+    honest precursor to ★ #460 (which additionally needs an `Empty` former). -/
+
+#assert_no_axioms FX1Poly.Typed.HasType.closedSubjectIsTypeFormer
+#assert_no_axioms FX1Poly.Typed.HasType.closedClassifierConvUniverseCode
 
 /-! ### TYPE SYNTHESIS / bidirectional `infer` (#478 / #300 M51, current fragment)
     — synthesise a subject's classifier + derivation (sound by construction);
