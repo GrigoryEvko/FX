@@ -1,5 +1,6 @@
 import FX1Poly.Core.NeutralTerm
 import FX1Poly.Core.StepStarConfluence
+import FX1Poly.Core.StrongNormalizationLeaves
 
 /-! # Foundation/PolyCell/Core/ReducibilityCandidate — Girard CR abstraction
 
@@ -75,5 +76,18 @@ theorem isStronglyNormalizing_isReducibilityCandidate {scope : Nat} :
   case neutralExpansion =>
     intro term _termIsNeutral reductsStronglyNormalizing
     exact Acc.intro term reductsStronglyNormalizing
+
+/-- Every reducibility candidate contains all variables.  A variable is neutral
+(`IsNeutral.var`) and has no reducts (`noStep_var`), so CR3's "all one-step
+reducts are reducible" premise holds vacuously.  This is the
+candidate-nonemptiness fact the fundamental theorem's variable case and the
+arrow candidate's CR1 both consume (the latter after weakening, to obtain a
+fresh argument variable). -/
+theorem IsReducibilityCandidate.containsVariable {scope : Nat}
+    {predicate : RawTerm scope → Prop}
+    (candidate : IsReducibilityCandidate predicate) (index : Fin scope) :
+    predicate (.mkGen .gen_var index .childNil) :=
+  candidate.neutralExpansion (IsNeutral.var index)
+    (fun _reduct step => (noStep_var index step).elim)
 
 end FX1Poly.Core
