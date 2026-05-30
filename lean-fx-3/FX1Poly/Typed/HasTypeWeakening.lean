@@ -57,6 +57,33 @@ theorem rename_piTyCodeCell {sourceScope targetScope : Nat}
           (RawTerm.rename (iterateLiftRaw rawRenaming 1) codomainCode) :=
   rfl
 
+/-- Lifting a renaming commutes with weakening: renaming under one fresh binder
+(`RawRenaming.lift`) after weakening equals weakening after the un-lifted
+renaming.  The naturality square `lift ρ ∘ weaken = weaken ∘ ρ` at the term
+level.
+
+This is the binder-crossing crux the #443 `piFormation` case of
+`renameRespectingContext` needs: its codomain premise is checked under
+`Γ.cons domain`, so the IH fires with the LIFTED renaming, and discharging the
+lifted context-condition reduces (at both the de Bruijn-0 and successor index)
+to exactly this commutation on the looked-up binding types.  Until `piFormation`
+(the first binder-introducing arm) lands, `renameRespectingContext` never lifts
+its renaming — this lemma is the infrastructure that unblocks that case.
+
+Proof: `RawTerm.rename_compose` (twice) reduces both sides to a single composed
+renaming, and the two composites agree pointwise (`lift ρ ∘ weaken` and
+`weaken ∘ ρ` both send `pos ↦ Fin.succ (ρ pos)`, `rfl` by Fin-eta +
+proof-irrelevance), discharged by `RawTerm.rename_pointwise`. -/
+theorem rename_lift_weaken_commute {sourceScope targetScope : Nat}
+    (rawRenaming : RawRenaming sourceScope targetScope)
+    (sourceTerm : RawTerm sourceScope) :
+    RawTerm.rename (RawRenaming.lift rawRenaming)
+        (RawTerm.rename RawRenaming.weaken sourceTerm)
+      = RawTerm.rename RawRenaming.weaken
+          (RawTerm.rename rawRenaming sourceTerm) := by
+  rw [RawTerm.rename_compose, RawTerm.rename_compose]
+  exact RawTerm.rename_pointwise (fun _position => rfl) sourceTerm
+
 /-! ## The general renaming lemma
 
 `HasType` is preserved along ANY renaming that respects the context — a
