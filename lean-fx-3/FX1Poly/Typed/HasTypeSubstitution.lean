@@ -63,6 +63,26 @@ theorem subst_universeCodeCell {sourceScope targetScope : Nat}
       = universeCodeCell levelExpr flag :=
   rfl
 
+/-- Substituting at a Π-type code cell distributes over the two children: the
+domain (child shift `0`) is substituted by the substitution itself, the codomain
+(child shift `1`, under one fresh binder) by the substitution lifted once
+(`iterateLiftRaw substitution 1`).  Holds by `rfl` for the same reason as
+`subst_universeCodeCell` — `RawTerm.subst` is `fold GenAlgebra.canonical`, which
+iotas over the literal `childCons … childNil` spine and threads the lift at the
+shift-`1` child.
+
+The substitution-side companion to `rename_piTyCodeCell`; #443 stage-2's typed
+Π-substitution case (the dependent-codomain β-engine for Π formers) consumes it,
+chaining with the `RawTermSubst0Commute` `iterateLiftRaw` lemmas. -/
+theorem subst_piTyCodeCell {sourceScope targetScope : Nat}
+    (substitution : RawTermSubst sourceScope targetScope)
+    (domainCode : RawTerm sourceScope)
+    (codomainCode : RawTerm (sourceScope + 1)) :
+    RawTerm.subst substitution (piTyCodeCell domainCode codomainCode)
+      = piTyCodeCell (RawTerm.subst substitution domainCode)
+          (RawTerm.subst (iterateLiftRaw substitution 1) codomainCode) :=
+  rfl
+
 /-- The cancellation the subst0 corollary's side condition needs:
 substituting a singleton through a weakened (rename-by-`weaken`) term cancels
 the weakening and returns the original term.  Bridges the substrate's

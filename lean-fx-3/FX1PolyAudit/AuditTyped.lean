@@ -139,6 +139,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.eq_piTyCodeCell_of_headGenerator
 #assert_no_axioms FX1Poly.Typed.piTyCodeCell_noStep_of_childrenNoStep
 
+/-! ### Π-CELL RENAME/SUBST COMMUTATIONS (#443 stage 2 prereq, non-breaking) —
+    `rename`/`subst` distribute over a `piTyCodeCell` (domain at shift `0`,
+    codomain at shift `1` under `iterateLiftRaw _ 1`), both `rfl` via the
+    canonical fold.  The typed-weakening / typed-substitution Π cases will
+    chain these with the `RawTermSubst0Commute` `iterateLiftRaw` lemmas. -/
+
+#assert_no_axioms FX1Poly.Typed.rename_piTyCodeCell
+#assert_no_axioms FX1Poly.Typed.subst_piTyCodeCell
+
 /-! ### IsType CHARACTERIZATION (#303 heart) — the decidable trichotomy on the
     head generator that `Decidable IsType` assembles: universe codes are always
     types; a variable is a type iff its looked-up classifier is a universe code

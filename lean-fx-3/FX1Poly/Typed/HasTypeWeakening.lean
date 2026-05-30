@@ -35,6 +35,28 @@ theorem rename_universeCodeCell {sourceScope targetScope : Nat}
       = universeCodeCell levelExpr flag :=
   rfl
 
+/-- Renaming a Π-type code cell distributes over the two children: the domain
+(child shift `0`) is renamed by the renaming itself, the codomain (child shift
+`1`, living under one fresh binder) by the renaming lifted once
+(`iterateLiftRaw rawRenaming 1` — exactly the lift `foldChildren` applies to a
+shift-`1` child, line 224 of `Fold.lean`).  Holds by `rfl`: `RawTerm.rename` is
+`fold GenAlgebra.canonical`, which iotas over the literal `childCons … childNil`
+spine, and the `Unit` payload's `payload_scope_invariant_of_not_var` cast reduces
+to `rfl` exactly as in the nullary `rename_universeCodeCell`.
+
+Spelled with `iterateLiftRaw _ 1` (not `LiftsRaw.liftForRaw _`, the defeq single
+lift) to match the substrate's `RawTermSubst0Commute` convention, so the
+stage-2 (#443) typed Π-weakening case chains directly with the existing
+`*_iterateLiftRaw_*` commutation lemmas. -/
+theorem rename_piTyCodeCell {sourceScope targetScope : Nat}
+    (rawRenaming : RawRenaming sourceScope targetScope)
+    (domainCode : RawTerm sourceScope)
+    (codomainCode : RawTerm (sourceScope + 1)) :
+    RawTerm.rename rawRenaming (piTyCodeCell domainCode codomainCode)
+      = piTyCodeCell (RawTerm.rename rawRenaming domainCode)
+          (RawTerm.rename (iterateLiftRaw rawRenaming 1) codomainCode) :=
+  rfl
+
 /-! ## The general renaming lemma
 
 `HasType` is preserved along ANY renaming that respects the context — a
