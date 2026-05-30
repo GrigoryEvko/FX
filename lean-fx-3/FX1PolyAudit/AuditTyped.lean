@@ -136,3 +136,9 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsType.ofUniverseCodeCell
 #assert_no_axioms FX1Poly.Typed.IsType.variableCell_iff_lookupIsUniverseCode
 #assert_no_axioms FX1Poly.Typed.IsType.not_of_headGenerator
+
+/-! ### DECIDABLE IsType (#303, current fragment) — the decision procedure
+    assembled over the trichotomy: case on the cell (payload = index as data),
+    `dite` on the head generator (`DecidableEq Generator`, no `Classical`). -/
+
+#assert_no_axioms FX1Poly.Typed.IsType.decidableOfWellFormed
