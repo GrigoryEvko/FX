@@ -74,6 +74,7 @@ import FX1Poly.Core.ConvCongruence
 import FX1Poly.Core.ConvSubstRename
 import FX1Poly.Core.StepStarConfluence
 import FX1Poly.Core.StepStarLength
+import FX1Poly.Core.ConvNormalForm
 import FX1Poly.Core.StepEtaEtaCriticalPairs
 import FX1Poly.Core.StepIotaEtaInsideBinder
 import FX1Poly.Core.StepBetaEtaPreservesShape

@@ -8,6 +8,7 @@ import FX1Poly.Typed.HasTypeSubstitution
 import FX1Poly.Typed.HasTypeValidity
 import FX1Poly.Typed.HasTypeStronglyNormalizing
 import FX1Poly.Typed.HasTypeInversion
+import FX1Poly.Typed.HasTypeDecidableConv
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -94,3 +95,13 @@ gates pin them shut.
 /-! ### UNIQUENESS OF TYPING (#469, current fragment) -/
 
 #assert_no_axioms FX1Poly.Typed.HasType.uniqueness
+
+/-! ### DECIDABLE TYPE CONVERSION (current fragment) — normal-form rigidity →
+    decidable Conv.  Core rigidity (`StepStar.eq_of_noStep`, `Conv.eq_of_noStep`,
+    `Conv.iff_eq_of_noStep`) is swept by `#audit_namespace FX1Poly.Core` in
+    `AuditCoreSubstrate.lean`; the typed payoff is pinned per-decl here. -/
+
+#assert_no_axioms FX1Poly.Typed.IsType.hasNoStep
+#assert_no_axioms FX1Poly.Typed.Conv.eq_of_isType
+#assert_no_axioms FX1Poly.Typed.Conv.iff_eq_of_isType
+#assert_no_axioms FX1Poly.Typed.Conv.decidableOfIsType
