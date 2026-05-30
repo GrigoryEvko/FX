@@ -4,6 +4,7 @@ import FX1Poly.Typed.HasType
 import FX1Poly.Typed.HasTypeHonesty
 import FX1Poly.Typed.WfContext
 import FX1Poly.Typed.HasTypeWeakening
+import FX1Poly.Typed.HasTypeSubstitution
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -60,3 +61,11 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.rename_universeCodeCell
 #assert_no_axioms FX1Poly.Typed.HasType.renameRespectingContext
 #assert_no_axioms FX1Poly.Typed.HasType.weakenUnderBinding
+
+/-! ### TY-SR-beta engine #457 — typed single-substitution (subst0 preserves typing) -/
+
+#assert_no_axioms FX1Poly.Typed.subst_variableCell
+#assert_no_axioms FX1Poly.Typed.subst_universeCodeCell
+#assert_no_axioms FX1Poly.Typed.subst_singleton_renameWeaken_cancel
+#assert_no_axioms FX1Poly.Typed.HasType.substRespectingContext
+#assert_no_axioms FX1Poly.Typed.HasType.substituteUnderBinding
