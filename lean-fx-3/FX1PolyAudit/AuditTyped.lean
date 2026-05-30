@@ -3,6 +3,7 @@ import FX1Poly.Typed.TypingContext
 import FX1Poly.Typed.HasType
 import FX1Poly.Typed.HasTypeHonesty
 import FX1Poly.Typed.WfContext
+import FX1Poly.Typed.HasTypeWeakening
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -52,3 +53,10 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.WfContext.tailWellFormed
 #assert_no_axioms FX1Poly.Typed.WfContext.headIsType
 #assert_no_axioms FX1Poly.Typed.wfContext_universeBinding
+
+/-! ### TY-SR-cong #456 — typed renaming + weakening (structural cartesian lift) -/
+
+#assert_no_axioms FX1Poly.Typed.rename_variableCell
+#assert_no_axioms FX1Poly.Typed.rename_universeCodeCell
+#assert_no_axioms FX1Poly.Typed.HasType.renameRespectingContext
+#assert_no_axioms FX1Poly.Typed.HasType.weakenUnderBinding
