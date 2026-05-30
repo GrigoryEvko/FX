@@ -136,6 +136,7 @@ gates pin them shut.
 
 #assert_no_axioms FX1Poly.Typed.headGenerator_piTyCodeCell
 #assert_no_axioms FX1Poly.Typed.eq_piTyCodeCell_of_headGenerator
+#assert_no_axioms FX1Poly.Typed.piTyCodeCell_noStep_of_childrenNoStep
 
 /-! ### IsType CHARACTERIZATION (#303 heart) — the decidable trichotomy on the
     head generator that `Decidable IsType` assembles: universe codes are always

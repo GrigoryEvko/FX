@@ -1,5 +1,6 @@
 import FX1Poly.Typed.HasTypeHonesty
 import FX1Poly.Core.RawTermChildrenUnique
+import FX1Poly.Core.StepInversion
 
 /-! # FX1Poly/Typed/UniverseCodeShape
     — raw-cell inversion for universe-code cells
@@ -113,5 +114,27 @@ theorem eq_piTyCodeCell_of_headGenerator {scope : Nat}
               refine ⟨domainCode, codomainCode, ?_⟩
               rw [RawTermChildren.eq_childNil tailChildren]
               rfl
+
+/-- A Π-type code cell with non-stepping children is itself non-stepping: Π-
+formation is a pure type former (no head redex — `Step.from_piTyCode` has only the
+congruence case), so any step of the cell descends into the domain or codomain,
+each ruled out by hypothesis.
+
+This is the inductive crux that #443 stage 2's `subjectHasNoStep` Π-case will call
+directly (`exact piTyCodeCell_noStep_of_childrenNoStep IH_domain IH_codomain`),
+turning the load-bearing invariant from "typed subject is a non-stepping LEAF"
+into "typed subject is NORMAL" — a piTyCodeCell is not a leaf but is still normal
+when its (typed ⇒ normal) children are.  Stated at the raw `Step` layer so it
+lands non-breaking, before the `piFormation` arm cascades. -/
+theorem piTyCodeCell_noStep_of_childrenNoStep {scope : Nat}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    (domainNoStep : ∀ reduct, Step domainCode reduct → False)
+    (codomainNoStep : ∀ reduct, Step codomainCode reduct → False) :
+    ∀ reduct, Step (piTyCodeCell domainCode codomainCode) reduct → False := by
+  intro reduct stepFromPi
+  rcases Step.from_piTyCode stepFromPi with
+    ⟨domainAfter, _, domainStep⟩ | ⟨codomainAfter, _, codomainStep⟩
+  · exact domainNoStep domainAfter domainStep
+  · exact codomainNoStep codomainAfter codomainStep
 
 end FX1Poly.Typed
