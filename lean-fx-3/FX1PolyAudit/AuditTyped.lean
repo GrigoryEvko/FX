@@ -1,6 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Typed.TypingContext
 import FX1Poly.Typed.HasType
+import FX1Poly.Typed.HasTypeHonesty
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -34,3 +35,11 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.variableCell
 #assert_no_axioms FX1Poly.Typed.HasType
 #assert_no_axioms FX1Poly.Typed.IsType
+
+/-! ### TY-honesty #470 first slice — 0-false-positive probe (ill-typed cell has no derivation) -/
+
+#assert_no_axioms FX1Poly.Typed.unitCell
+#assert_no_axioms FX1Poly.Typed.appUnitUnit
+#assert_no_axioms FX1Poly.Typed.RawTerm.headGenerator
+#assert_no_axioms FX1Poly.Typed.HasType.typedSubjectIsVariableCell
+#assert_no_axioms FX1Poly.Typed.appUnitUnit_hasNoTyping
