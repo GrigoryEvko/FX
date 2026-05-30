@@ -10,6 +10,7 @@ import FX1Poly.Typed.HasTypeStronglyNormalizing
 import FX1Poly.Typed.HasTypeInversion
 import FX1Poly.Typed.HasTypeDecidableConv
 import FX1Poly.Typed.HasTypeSubjectReduction
+import FX1Poly.Typed.UniverseCodeShape
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -114,3 +115,10 @@ gates pin them shut.
 
 #assert_no_axioms FX1Poly.Typed.HasType.subjectHasNoStep
 #assert_no_axioms FX1Poly.Typed.HasType.subjectReduction
+
+/-! ### UNIVERSE-CODE CELL DESTRUCTOR (#303 groundwork) — recovers
+    `universeCodeCell e flag` from `headGenerator = gen_universeCode` via the
+    `RawTermChildren.eq_childNil` brick; the raw destructor `Decidable IsType`
+    needs to apply `HasType.universeFormation`. -/
+
+#assert_no_axioms FX1Poly.Typed.eq_universeCodeCell_of_headGenerator
