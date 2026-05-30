@@ -78,5 +78,49 @@ theorem firstComponent_isStronglyNormalizing_of_pair {scope : Nat}
           (.childCons firstAfter (.childCons currentSecond .childNil)))
         congruenceLift rfl
 
+/-- The second component of a strongly-normalizing pair is strongly
+normalizing.  Symmetric to the first via the tail-then-head congruence
+(`StepChildren.there … StepChildren.here`).  The `there` head's binder shift is
+pinned with the explicit `@`-form because `gen_pair.binderShifts = [0, 0]` does
+not auto-reduce for the elaborator. -/
+theorem secondComponent_isStronglyNormalizing_of_pair {scope : Nat}
+    {firstValue secondValue : RawTerm scope}
+    (pairTerminates :
+      IsStronglyNormalizing
+        (.mkGen .gen_pair ()
+          (.childCons firstValue (.childCons secondValue .childNil)) :
+          RawTerm scope)) :
+    IsStronglyNormalizing secondValue := by
+  suffices general :
+      ∀ {pairTerm : RawTerm scope}, Acc StepSuccessor pairTerm →
+        ∀ {currentFirst currentSecond : RawTerm scope},
+          pairTerm = .mkGen .gen_pair ()
+            (.childCons currentFirst (.childCons currentSecond .childNil)) →
+          Acc StepSuccessor currentSecond from
+    general pairTerminates rfl
+  intro pairTerm pairAccessible
+  induction pairAccessible with
+  | intro pairWitness _pairPredecessors pairInductiveHypothesis =>
+      intro currentFirst currentSecond witnessEq
+      subst witnessEq
+      apply Acc.intro
+      intro secondAfter secondStep
+      have congruenceLift :
+          Step
+            (.mkGen .gen_pair ()
+              (.childCons currentFirst (.childCons currentSecond .childNil)) :
+              RawTerm scope)
+            (.mkGen .gen_pair ()
+              (.childCons currentFirst (.childCons secondAfter .childNil)) :
+              RawTerm scope) :=
+        Step.cong .gen_pair ()
+          (@StepChildren.there scope 0 [0] currentFirst _ _
+            (StepChildren.here
+              (.childNil : RawTermChildren [] scope) secondStep))
+      exact pairInductiveHypothesis
+        (.mkGen .gen_pair ()
+          (.childCons currentFirst (.childCons secondAfter .childNil)))
+        congruenceLift rfl
+
 end StepStar
 end FX1Poly.Core
