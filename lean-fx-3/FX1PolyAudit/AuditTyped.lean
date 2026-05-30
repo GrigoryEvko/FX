@@ -15,6 +15,7 @@ import FX1Poly.Typed.SigmaCodeShape
 import FX1Poly.Typed.IsTypeDecidable
 import FX1Poly.Typed.HasTypeDecidable
 import FX1Poly.Typed.HasTypeSmokeCorpus
+import FX1Poly.Typed.HasTypeConsistency
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -269,3 +270,14 @@ gates pin them shut.
     `LevelExpr.ne_lsucc_self` (predicativity at the level algebra). -/
 
 #assert_no_axioms FX1Poly.Typed.probe_universe_Type_in_Type_rejected
+
+/-! ### CLOSED-TYPING CHARACTERIZATION (P10 consistency precursor, #460, current
+    fragment) — every closed well-typed subject is itself a type.  The
+    type-former-only fragment has NO closed proper terms yet (the closed `.term`
+    layer below the universe is empty); `subjectIsVariableOrIsType` is the
+    context-general induction engine (each non-`conv` arm witnesses `IsType` from
+    its own conclusion), `closedSubjectIsType` the empty-context corollary
+    (`Fin 0` kills the variable case). -/
+
+#assert_no_axioms FX1Poly.Typed.HasType.subjectIsVariableOrIsType
+#assert_no_axioms FX1Poly.Typed.HasType.closedSubjectIsType
