@@ -154,6 +154,7 @@ gates pin them shut.
     (first binder-introducing arm) discharges its lifted context-condition with. -/
 
 #assert_no_axioms FX1Poly.Typed.rename_lift_weaken_commute
+#assert_no_axioms FX1Poly.Typed.subst_lift_weaken_commute
 
 /-! ### Π-CELL SIZE MEASURE (#443 stage 2 prereq, non-breaking) — domain and
     codomain are `RawTerm.size`-smaller than the `piTyCodeCell` containing them.

@@ -3,6 +3,8 @@ import FX1Poly.Core.RawTermSubst0
 import FX1Poly.Core.RawTermSubst0Commute
 import FX1Poly.Core.RawTermStrengthen
 import FX1Poly.Core.ConvSubstRename
+import FX1Poly.Core.RawTermRenameSubstCommute
+import FX1Poly.Core.RawTermSubstRenameCommute
 
 /-! # FX1Poly/Typed/HasTypeSubstitution — typed substitution (the β-engine)
 
@@ -82,6 +84,32 @@ theorem subst_piTyCodeCell {sourceScope targetScope : Nat}
       = piTyCodeCell (RawTerm.subst substitution domainCode)
           (RawTerm.subst (iterateLiftRaw substitution 1) codomainCode) :=
   rfl
+
+/-- Lifting a substitution commutes with weakening: substituting under one fresh
+binder (`RawTermSubst.lift`) after weakening equals weakening after the un-lifted
+substitution.  The substitution analog of `rename_lift_weaken_commute` (the
+naturality square at the substitution level).
+
+This is the binder-crossing crux the #443 `piFormation` case of
+`substRespectingContext` needs — its codomain premise is checked under
+`Γ.cons domain`, so the IH fires with the LIFTED substitution, and discharging
+the lifted side condition reduces (at de Bruijn 0 and at successors) to exactly
+this commutation on the looked-up binding types.
+
+Proof: `RawTerm.rename_subst_commute` rewrites the LHS to `subst (thenSubst
+weaken (lift σ)) X`, `RawTerm.subst_rename_commute` rewrites the RHS to `subst
+(postRename σ weaken) X`, and the two bridge substitutions agree pointwise (both
+send `pos ↦ rename weaken (σ pos)` — the subst lift's successor branch is exactly
+`postRename` at a weakened position), discharged by `RawTerm.subst_pointwise`. -/
+theorem subst_lift_weaken_commute {sourceScope targetScope : Nat}
+    (someSubstitution : RawTermSubst sourceScope targetScope)
+    (sourceTerm : RawTerm sourceScope) :
+    RawTerm.subst (RawTermSubst.lift someSubstitution)
+        (RawTerm.rename RawRenaming.weaken sourceTerm)
+      = RawTerm.rename RawRenaming.weaken
+          (RawTerm.subst someSubstitution sourceTerm) := by
+  rw [RawTerm.rename_subst_commute, RawTerm.subst_rename_commute]
+  exact RawTerm.subst_pointwise (fun _position => rfl) sourceTerm
 
 /-- The cancellation the subst0 corollary's side condition needs:
 substituting a singleton through a weakened (rename-by-`weaken`) term cancels
