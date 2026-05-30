@@ -17,6 +17,7 @@ import FX1Poly.Typed.HasTypeDecidable
 import FX1Poly.Typed.HasTypeSmokeCorpus
 import FX1Poly.Typed.HasTypeConsistency
 import FX1Poly.Typed.HasTypeInfer
+import FX1Poly.Typed.HasTypeCheck
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -295,3 +296,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasType.infer
 #assert_no_axioms FX1Poly.Typed.HasType.infer_succeeds
 #assert_no_axioms FX1Poly.Typed.HasType.infer_complete
+
+/-! ### TYPE CHECKING / bidirectional `check` (#479 / #301 M52, current fragment)
+    — decide whether `subject` has the GIVEN `targetType`: synthesise with
+    `infer`, confirm `targetType` is a type (`decideWithWitness`), decide
+    `Conv synthType targetType`, coerce via the conversion rule on success.
+    Returns `Decidable (HasType …)` (the faithful realisation of the spec's
+    "`Option HasType`" — `Option` of a `Prop` is ill-typed), so it is sound AND
+    complete by construction: `isTrue` carries the derivation, `isFalse` the
+    refutation (`infer = none` ⊥ `infer_succeeds`; non-type target ⊥ validity;
+    `Conv = isFalse` ⊥ uniqueness).  The general bidirectional method (rests on
+    `infer` + generic decidable `Conv`, not the #461 collapse); on this fragment
+    it necessarily agrees with the direct decider but survives fragment growth. -/
+
+#assert_no_axioms FX1Poly.Typed.HasType.check
