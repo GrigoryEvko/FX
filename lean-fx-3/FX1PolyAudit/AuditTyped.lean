@@ -12,6 +12,7 @@ import FX1Poly.Typed.HasTypeDecidableConv
 import FX1Poly.Typed.HasTypeSubjectReduction
 import FX1Poly.Typed.UniverseCodeShape
 import FX1Poly.Typed.IsTypeDecidable
+import FX1Poly.Typed.HasTypeDecidable
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -142,3 +143,12 @@ gates pin them shut.
     `dite` on the head generator (`DecidableEq Generator`, no `Classical`). -/
 
 #assert_no_axioms FX1Poly.Typed.IsType.decidableOfWellFormed
+
+/-! ### HasType CHARACTERIZATION (#461 heart) — typed checking collapses to
+    classifier equality: validity makes the classifier normal, so the inversions
+    + rigidity turn `HasType Γ subject T` into `T = (the unique classifier)`.
+    No `Conv` decision / normalizer needed for this fragment. -/
+
+#assert_no_axioms FX1Poly.Typed.HasType.variableCell_iff_classifierEqLookup
+#assert_no_axioms FX1Poly.Typed.HasType.universeCodeCell_iff_classifierEqSucc
+#assert_no_axioms FX1Poly.Typed.HasType.not_of_headGenerator
