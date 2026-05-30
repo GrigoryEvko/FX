@@ -4,6 +4,7 @@ import FX1Poly.Universe.UniverseFlag
 import FX1Poly.Universe.LevelExprSimplify
 import FX1Poly.Universe.LevelExprSerialize
 import FX1Poly.Universe.UniverseFlagSerialize
+import FX1Poly.Universe.UniversePayloadSerialize
 
 /-! # Tools/AuditAll/AuditUniverse
    — persistent per-declaration zero-axiom gate for the Phase Z₀
@@ -466,3 +467,17 @@ serializer of the Generator-payload refactor. -/
 #assert_no_axioms FX1Poly.Universe.UniverseFlag.decode
 #assert_no_axioms FX1Poly.Universe.UniverseFlag.decode_encodeOnto
 #assert_no_axioms FX1Poly.Universe.UniverseFlag.decode_encodePrefix
+
+/-! ### M24-Z1 #432 part 3 — universe-payload (`LevelExpr × UniverseFlag`) serializer
+
+Composes the LevelExpr (part 1) and UniverseFlag (part 2) serializers into
+the universe-payload serializer — the exact function the `gen_universeCode`
+payload-serializer arm will call once the Generator payload type changes
+from `Nat` to `LevelExpr × UniverseFlag`.  Round-trip at LevelExpr fuel. -/
+
+#assert_no_axioms FX1Poly.Universe.UniversePayload.encodeOnto
+#assert_no_axioms FX1Poly.Universe.UniversePayload.encodePrefix
+#assert_no_axioms FX1Poly.Universe.UniversePayload.decodeOnto
+#assert_no_axioms FX1Poly.Universe.UniversePayload.decodeOnto_encodeOnto_reduce
+#assert_no_axioms FX1Poly.Universe.UniversePayload.decodeOnto_encodeOnto
+#assert_no_axioms FX1Poly.Universe.UniversePayload.decodeOnto_nodeCount_encodePrefix
