@@ -115,7 +115,7 @@ theorem HasType.renameRespectingContext {profile : PolyProfile}
         (RawTerm.rename rawRenaming subject)
         (RawTerm.rename rawRenaming classifier) := by
   induction typed with
-  | var index =>
+  | var sourceContext index =>
       intro targetScope targetContext rawRenaming contextCondition
       rw [rename_variableCell, contextCondition index]
       exact HasType.var targetContext (rawRenaming index)
@@ -129,10 +129,47 @@ theorem HasType.renameRespectingContext {profile : PolyProfile}
       rw [rename_universeCodeCell] at reclassifierTypedRenamed
       exact HasType.conv levelExpr flag premiseTyped
         (Conv.rename rawRenaming converts) reclassifierTypedRenamed
-  | universeFormation levelExpr flag =>
+  | universeFormation sourceContext levelExpr flag =>
       intro targetScope targetContext rawRenaming contextCondition
       rw [rename_universeCodeCell, rename_universeCodeCell]
       exact HasType.universeFormation targetContext levelExpr flag
+  | piFormation sourceContext domainCode codomainCode domainLevel codomainLevel flag
+      domainTyped codomainTyped ihDomain ihCodomain =>
+      intro targetScope targetContext rawRenaming contextCondition
+      rw [rename_piTyCodeCell, rename_universeCodeCell]
+      refine HasType.piFormation targetContext _ _ domainLevel codomainLevel flag ?_ ?_
+      · -- domain code is renamed by `rawRenaming` itself; its IH discharges it
+        have domainRenamed :=
+          ihDomain targetContext rawRenaming contextCondition
+        rw [rename_universeCodeCell] at domainRenamed
+        exact domainRenamed
+      · -- codomain code lives under one fresh binder, so its IH fires with the
+        -- LIFTED renaming into the extended target context; the lifted context
+        -- condition reduces to `rename_lift_weaken_commute` on each looked-up type
+        have codomainRenamed :=
+          ihCodomain (targetContext.cons (RawTerm.rename rawRenaming domainCode))
+            (RawRenaming.lift rawRenaming) ?liftedCondition
+        · rw [rename_universeCodeCell] at codomainRenamed
+          exact codomainRenamed
+        case liftedCondition =>
+          intro index
+          obtain ⟨indexValue, indexBound⟩ := index
+          cases indexValue with
+          | zero =>
+              show RawTerm.rename (RawRenaming.lift rawRenaming)
+                  (RawTerm.rename RawRenaming.weaken domainCode)
+                = RawTerm.rename RawRenaming.weaken
+                    (RawTerm.rename rawRenaming domainCode)
+              exact rename_lift_weaken_commute rawRenaming domainCode
+          | succ k =>
+              show RawTerm.rename (RawRenaming.lift rawRenaming)
+                  (RawTerm.rename RawRenaming.weaken
+                    (sourceContext.lookup ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩))
+                = RawTerm.rename RawRenaming.weaken
+                    (targetContext.lookup
+                      (rawRenaming ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩))
+              rw [rename_lift_weaken_commute,
+                contextCondition ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩]
 
 /-- Typed weakening: `HasType` survives extending the context by one fresh
 binding, with both subject and classifier shifted by `RawRenaming.weaken`.

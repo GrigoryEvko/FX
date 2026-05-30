@@ -1,4 +1,5 @@
 import FX1Poly.Typed.HasTypeHonesty
+import FX1Poly.Typed.UniverseCodeShape
 import FX1Poly.Core.StrongNormalizationLeaves
 
 /-! # FX1Poly/Typed/HasTypeSubjectReduction
@@ -54,12 +55,15 @@ theorem HasType.subjectHasNoStep {profile : PolyProfile} {scope : Nat}
     (typed : HasType profile context subject classifier) :
     ∀ reduct : RawTerm scope, Step subject reduct → False := by
   induction typed with
-  | var index => exact fun _reduct step => StepStar.noStep_var index step
+  | var context index => exact fun _reduct step => StepStar.noStep_var index step
   | conv levelExpr flag typedPremise converts reclassifierTyped
       ihTypedPremise _ihReclassifierTyped =>
       exact ihTypedPremise
-  | universeFormation levelExpr flag =>
+  | universeFormation context levelExpr flag =>
       exact fun _reduct step => StepStar.noStep_universeCode (levelExpr, flag) step
+  | piFormation context domainCode codomainCode domainLevel codomainLevel flag
+      domainTyped codomainTyped ihDomain ihCodomain =>
+      exact piTyCodeCell_noStep_of_childrenNoStep ihDomain ihCodomain
 
 /-- **Typed Subject Reduction (P4)** for the current fragment.  Holds vacuously:
 a well-typed subject does not `Step` (`subjectHasNoStep`), so the reduction

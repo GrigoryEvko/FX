@@ -1,4 +1,5 @@
 import FX1Poly.Typed.HasType
+import FX1Poly.Typed.HasTypeWeakening
 import FX1Poly.Core.RawTermSubst0
 import FX1Poly.Core.RawTermSubst0Commute
 import FX1Poly.Core.RawTermStrengthen
@@ -144,7 +145,7 @@ theorem HasType.substRespectingContext {profile : PolyProfile}
         (RawTerm.subst substitution subject)
         (RawTerm.subst substitution classifier) := by
   induction typed with
-  | var index =>
+  | var sourceContext index =>
       intro targetScope targetContext substitution substitutionTyped
       rw [subst_variableCell]
       exact substitutionTyped index
@@ -158,10 +159,44 @@ theorem HasType.substRespectingContext {profile : PolyProfile}
       rw [subst_universeCodeCell] at reclassifierTypedSubst
       exact HasType.conv levelExpr flag premiseTyped
         (Conv.subst substitution converts) reclassifierTypedSubst
-  | universeFormation levelExpr flag =>
+  | universeFormation sourceContext levelExpr flag =>
       intro targetScope targetContext substitution substitutionTyped
       rw [subst_universeCodeCell, subst_universeCodeCell]
       exact HasType.universeFormation targetContext levelExpr flag
+  | piFormation sourceContext domainCode codomainCode domainLevel codomainLevel flag
+      domainTyped codomainTyped ihDomain ihCodomain =>
+      intro targetScope targetContext substitution substitutionTyped
+      rw [subst_piTyCodeCell, subst_universeCodeCell]
+      refine HasType.piFormation targetContext _ _ domainLevel codomainLevel flag ?_ ?_
+      · -- domain code is substituted by the substitution itself
+        have domainSubst :=
+          ihDomain targetContext substitution substitutionTyped
+        rw [subst_universeCodeCell] at domainSubst
+        exact domainSubst
+      · -- codomain lives under one fresh binder: its IH fires with the LIFTED
+        -- substitution into the extended target context; the lifted
+        -- substitution-typing condition splits 0/successor — position 0 is the
+        -- fresh variable (`var`), position k+1 is a weakened substituent
+        -- (`weakenUnderBinding`), both crossing the binder via
+        -- `subst_lift_weaken_commute`
+        have codomainSubst :=
+          ihCodomain (targetContext.cons (RawTerm.subst substitution domainCode))
+            (RawTermSubst.lift substitution) ?liftedCondition
+        · rw [subst_universeCodeCell] at codomainSubst
+          exact codomainSubst
+        case liftedCondition =>
+          intro index
+          obtain ⟨indexValue, indexBound⟩ := index
+          cases indexValue with
+          | zero =>
+              rw [TypingContext.lookup_cons_zero, subst_lift_weaken_commute]
+              exact HasType.var
+                (targetContext.cons (RawTerm.subst substitution domainCode))
+                ⟨0, Nat.succ_pos targetScope⟩
+          | succ k =>
+              rw [TypingContext.lookup_cons_succ, subst_lift_weaken_commute]
+              exact (substitutionTyped ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩).weakenUnderBinding
+                (RawTerm.subst substitution domainCode)
 
 /-- Typed single-substitution (the β-engine): substituting a well-typed
 `argument` for de Bruijn 0 preserves typing.  The corollary of

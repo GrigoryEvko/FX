@@ -98,6 +98,12 @@ gates pin them shut.
 
 #assert_no_axioms FX1Poly.Typed.HasType.inversionVariable
 #assert_no_axioms FX1Poly.Typed.HasType.inversionUniverseCode
+-- Π-formation inversion (#443): a typed `piTyCodeCell` exposes both children's
+-- universe typings (at one shared flag) + a `Conv` of the classifier to
+-- `Type@(lmax …)`.  The decider's refutation arms + `uniqueness`'s Π case feed on
+-- it.  Same equation-motive shape as the var / universe inversions, with the
+-- `piFormation` arm closed by `piTyCodeCell_inj`.
+#assert_no_axioms FX1Poly.Typed.HasType.inversionPiCode
 
 /-! ### UNIQUENESS OF TYPING (#469, current fragment) -/
 
@@ -139,6 +145,11 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.headGenerator_piTyCodeCell
 #assert_no_axioms FX1Poly.Typed.eq_piTyCodeCell_of_headGenerator
 #assert_no_axioms FX1Poly.Typed.piTyCodeCell_noStep_of_childrenNoStep
+-- `piTyCodeCell` is injective (domain/codomain recovered): the component extractor
+-- the `piFormation` arm of `inversionPiCode` aligns the inducted arm's own
+-- domain/codomain with the inversion target.  `cases` on the cell equality (the
+-- propext-free substrate tactic), NOT `injection`.
+#assert_no_axioms FX1Poly.Typed.piTyCodeCell_inj
 
 /-! ### Π-CELL RENAME/SUBST COMMUTATIONS (#443 stage 2 prereq, non-breaking) —
     `rename`/`subst` distribute over a `piTyCodeCell` (domain at shift `0`,
@@ -176,10 +187,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsType.variableCell_iff_lookupIsUniverseCode
 #assert_no_axioms FX1Poly.Typed.IsType.not_of_headGenerator
 
-/-! ### DECIDABLE IsType (#303, current fragment) — the decision procedure
+/-! ### DECIDABLE IsType (#303 + #443, current fragment) — the decision procedure
     assembled over the trichotomy: case on the cell (payload = index as data),
-    `dite` on the head generator (`DecidableEq Generator`, no `Classical`). -/
+    `dite` on the head generator (`DecidableEq Generator`, no `Classical`).  The
+    Π arm makes the procedure RECURSIVE (well-founded on `RawTerm.size`); the
+    data-returning core `decideWithWitness` (a `PSum` of a `Σ'` universe witness
+    or a no-universe proof) carries the children's flag as DATA so the shared-flag
+    side condition is decidable — an `Exists` could not eliminate into the
+    `Type`-valued decision.  `decidableOfWellFormed` is a thin wrapper. -/
 
+#assert_no_axioms FX1Poly.Typed.IsType.decideWithWitness
 #assert_no_axioms FX1Poly.Typed.IsType.decidableOfWellFormed
 
 /-! ### HasType CHARACTERIZATION (#461 heart) — typed checking collapses to

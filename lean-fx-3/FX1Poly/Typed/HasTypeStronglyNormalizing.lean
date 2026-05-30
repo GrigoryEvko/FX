@@ -1,4 +1,5 @@
 import FX1Poly.Typed.HasType
+import FX1Poly.Typed.HasTypeSubjectReduction
 import FX1Poly.Core.StrongNormalizationLeaves
 import FX1Poly.Core.StepStarConfluence
 
@@ -40,22 +41,20 @@ namespace FX1Poly.Typed
 open FX1Poly.Core
 
 /-- The fundamental theorem for the current fragment: every well-typed term is
-strongly normalizing.  `var` and `universeFormation` subjects are leaves (SN by
-the shipped leaf lemmas); `conv` leaves the subject unchanged (SN by the
-premise's induction hypothesis). -/
+strongly normalizing.  Since every well-typed subject is NON-STEPPING
+(`HasType.subjectHasNoStep` — including a `piTyCodeCell` once its typed children
+are normal), strong normalization is immediate: a term with no outgoing `Step`
+is trivially `Acc`-essible (`StepStar.isStronglyNormalizing_of_noStep`).  This
+collapses the former 3-arm induction (and dodges needing a Π SN-closure lemma):
+the no-step invariant already absorbs the Π former.  Only a future redex-bearing
+`app` arm (#444) will make a subject genuinely step, at which point this routes
+through reducibility instead of no-step. -/
 theorem HasType.isStronglyNormalizing {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {subject classifier : RawTerm scope}
     (typed : HasType profile context subject classifier) :
-    StepStar.IsStronglyNormalizing subject := by
-  induction typed with
-  | var index =>
-      exact StepStar.var_isStronglyNormalizing index
-  | conv levelExpr flag typedPremise converts reclassifierTyped
-      ihTypedPremise _ihReclassifier =>
-      exact ihTypedPremise
-  | universeFormation levelExpr flag =>
-      exact StepStar.universeCode_isStronglyNormalizing (levelExpr, flag)
+    StepStar.IsStronglyNormalizing subject :=
+  StepStar.isStronglyNormalizing_of_noStep typed.subjectHasNoStep
 
 /-- A well-formed type is strongly normalizing — the validity-flavoured
 corollary that the typed `Conv.trans` consumes.  `IsType` exposes a typing

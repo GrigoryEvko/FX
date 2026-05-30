@@ -106,11 +106,17 @@ theorem HasType.classifierIsType {profile : PolyProfile} {scope : Nat}
     (typed : HasType profile context subject classifier) :
     IsType profile context classifier := by
   induction typed with
-  | var index => exact WfContext.lookupIsType context wellFormed index
+  | var context index => exact WfContext.lookupIsType context wellFormed index
   | conv levelExpr flag typedPremise converts reclassifierTyped
       ihTypedPremise ihReclassifier =>
       exact ⟨levelExpr, flag, reclassifierTyped⟩
-  | universeFormation levelExpr flag =>
+  | universeFormation context levelExpr flag =>
       exact ⟨_, _, HasType.universeFormation context levelExpr.lsucc flag⟩
+  | piFormation context domainCode codomainCode domainLevel codomainLevel flag
+      domainTyped codomainTyped ihDomain ihCodomain =>
+      -- the Π classifier is `Type@(lmax domainLevel codomainLevel, flag)`, a
+      -- universe code, hence a type by `universeFormation` one level up
+      exact ⟨_, _, HasType.universeFormation context
+        (LevelExpr.lmax domainLevel codomainLevel) flag⟩
 
 end FX1Poly.Typed

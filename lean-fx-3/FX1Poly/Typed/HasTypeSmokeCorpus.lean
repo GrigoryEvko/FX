@@ -72,6 +72,7 @@ theorem corpus_unitCell_rejected {profile : PolyProfile} {scope : Nat}
   HasType.not_of_headGenerator
     (by rw [headGenerator_unitCell]; exact fun headEq => Generator.noConfusion headEq)
     (by rw [headGenerator_unitCell]; exact fun headEq => Generator.noConfusion headEq)
+    (by rw [headGenerator_unitCell]; exact fun headEq => Generator.noConfusion headEq)
 
 /-- NEGATIVE (`gen_universeCode` reject, wrong classifier): a universe code is NOT
 typed by the unit cell — its unique classifier is the successor universe

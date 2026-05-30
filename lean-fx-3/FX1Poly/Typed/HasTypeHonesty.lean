@@ -52,27 +52,36 @@ dependent-`injection` pain on the payload. -/
 def RawTerm.headGenerator {scope : Nat} : RawTerm scope → Generator
   | .mkGen generator _ _ => generator
 
-/-- In the var/conv/universe core, every typed subject is either a variable
-cell or a universe-code cell.  Proof: `var` produces a `variableCell`;
-`universeFormation` produces a `universeCodeCell`; `conv` preserves the
-subject (its
-IH gives the same subject).  FRAGMENT-SPECIFIC — it grows by one disjunct
-per non-`conv` arm and is eventually retired for real inversion once the
+/-- In the var/conv/universe/Π-formation core, every typed subject is a
+variable cell, a universe-code cell, or a Π-type code cell.  Proof: `var`
+produces a `variableCell`; `universeFormation` produces a `universeCodeCell`;
+`piFormation` produces a `piTyCodeCell`; `conv` preserves the subject (its IH
+gives the same subject).  FRAGMENT-SPECIFIC — it grows by one disjunct per
+non-`conv` arm and is eventually retired for real inversion once the metadata
 `gen` arm lands; the current proof technique for the 0-FP probe.  Note this
-re-proof is `Conv.trans`-free (the `conv` case just forwards its IH). -/
+re-proof is `Conv.trans`-free (the `conv` case just forwards its IH).
+
+(The name predates the Π disjunct; it now covers three shapes.  Kept stable
+across the #443 cascade rather than renamed mid-breaking-change.) -/
 theorem HasType.typedSubjectIsVariableOrUniverseCode {profile : PolyProfile}
     {scope : Nat} {context : TypingContext profile scope}
     {subject classifier : RawTerm scope}
     (typed : HasType profile context subject classifier) :
     (∃ index : Fin scope, subject = variableCell index) ∨
       (∃ (levelExpr : LevelExpr) (flag : UniverseFlag),
-        subject = universeCodeCell levelExpr flag) := by
+        subject = universeCodeCell levelExpr flag) ∨
+      (∃ (domainCode : RawTerm scope) (codomainCode : RawTerm (scope + 1)),
+        subject = piTyCodeCell domainCode codomainCode) := by
   induction typed with
-  | var index => exact Or.inl ⟨index, rfl⟩
+  | var context index => exact Or.inl ⟨index, rfl⟩
   | conv levelExpr flag typedPremise converts reclassifierTyped
       ihTypedPremise ihReclassifier =>
       exact ihTypedPremise
-  | universeFormation levelExpr flag => exact Or.inr ⟨levelExpr, flag, rfl⟩
+  | universeFormation context levelExpr flag =>
+      exact Or.inr (Or.inl ⟨levelExpr, flag, rfl⟩)
+  | piFormation context domainCode codomainCode domainLevel codomainLevel flag
+      domainTyped codomainTyped ihDomain ihCodomain =>
+      exact Or.inr (Or.inr ⟨_, _, rfl⟩)
 
 /-- 0-FP probe: the ill-typed cell `app(unit, unit)` has NO typing
 derivation in the var+conv core, for any classifier.  The typed layer
@@ -82,12 +91,17 @@ theorem appUnitUnit_hasNoTyping {profile : PolyProfile} {scope : Nat}
     HasType profile context appUnitUnit classifier → False := by
   intro typed
   rcases typed.typedSubjectIsVariableOrUniverseCode with
-    ⟨index, subjectEq⟩ | ⟨levelExpr, flag, subjectEq⟩
+    ⟨index, subjectEq⟩ | ⟨levelExpr, flag, subjectEq⟩ |
+      ⟨domainCode, codomainCode, subjectEq⟩
   · have headGeneratorsAgree : Generator.gen_app = Generator.gen_var :=
       congrArg RawTerm.headGenerator subjectEq
     exact Generator.noConfusion headGeneratorsAgree
   · have headGeneratorsAgree :
         Generator.gen_app = Generator.gen_universeCode :=
+      congrArg RawTerm.headGenerator subjectEq
+    exact Generator.noConfusion headGeneratorsAgree
+  · have headGeneratorsAgree :
+        Generator.gen_app = Generator.gen_piTyCode :=
       congrArg RawTerm.headGenerator subjectEq
     exact Generator.noConfusion headGeneratorsAgree
 

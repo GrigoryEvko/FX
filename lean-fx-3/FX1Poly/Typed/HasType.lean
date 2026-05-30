@@ -195,6 +195,17 @@ inductive HasType (profile : PolyProfile) :
       (levelExpr : LevelExpr) (flag : UniverseFlag) :
       HasType profile context (universeCodeCell levelExpr flag)
         (universeCodeCell levelExpr.lsucc flag)
+  | piFormation {scope : Nat} (context : TypingContext profile scope)
+      (domainCode : RawTerm scope) (codomainCode : RawTerm (scope + 1))
+      (domainLevel codomainLevel : LevelExpr) (flag : UniverseFlag)
+      (domainTyped :
+        HasType profile context domainCode
+          (universeCodeCell domainLevel flag))
+      (codomainTyped :
+        HasType profile (context.cons domainCode) codomainCode
+          (universeCodeCell codomainLevel flag)) :
+      HasType profile context (piTyCodeCell domainCode codomainCode)
+        (universeCodeCell (LevelExpr.lmax domainLevel codomainLevel) flag)
 
 /-- `IsType profile context classifier` — the classifier cell inhabits
 some universe.  A `def` (not part of the inductive): the existential here

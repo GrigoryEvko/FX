@@ -116,6 +116,26 @@ theorem eq_piTyCodeCell_of_headGenerator {scope : Nat}
               rw [RawTermChildren.eq_childNil tailChildren]
               rfl
 
+/-- `piTyCodeCell` is injective: two equal Π-type code cells have equal domains
+and equal codomains.  Proved by `cases` on the cell equality — the propext-free
+substrate tactic that `RawTermDecEq` uses to compare `mkGen` cells (raw
+`injection` instead surfaces the dependent `scope` index of the `childCons`
+spine).  `cases` unifies the two `childCons … childNil` spines, substituting the
+second domain/codomain by the first, leaving `⟨rfl, rfl⟩`.
+
+The component extractor the `piFormation` arm of `HasType.inversionPiCode` (#443)
+needs: it aligns the inducted arm's own `domainCode` / `codomainCode` with the
+`piTyCodeCell` targeted by the inversion. -/
+theorem piTyCodeCell_inj {scope : Nat}
+    {firstDomain secondDomain : RawTerm scope}
+    {firstCodomain secondCodomain : RawTerm (scope + 1)}
+    (cellsEqual :
+      piTyCodeCell firstDomain firstCodomain
+        = piTyCodeCell secondDomain secondCodomain) :
+    firstDomain = secondDomain ∧ firstCodomain = secondCodomain := by
+  cases cellsEqual
+  exact ⟨rfl, rfl⟩
+
 /-- A Π-type code cell with non-stepping children is itself non-stepping: Π-
 formation is a pure type former (no head redex — `Step.from_piTyCode` has only the
 congruence case), so any step of the cell descends into the domain or codomain,
