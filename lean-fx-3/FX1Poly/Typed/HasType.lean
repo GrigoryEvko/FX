@@ -1,4 +1,6 @@
 import FX1Poly.Core.CellSort
+import FX1Poly.Typed.TypingContext
+import FX1Poly.Core.StepStarConfluence
 
 /-! # FX1Poly/Typed/HasType — native fibrant-cell typing judgment (design scaffold)
 
@@ -99,7 +101,7 @@ Until the blocker clears, this file only PINS the sort discipline below.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core
+open FX1Poly.Core FX1Poly.Universe
 
 /-- The SUBJECT of the native typing judgment is a `.term`-sorted cell. -/
 def hasTypeSubjectSort : CellSort := .term
@@ -120,5 +122,76 @@ cannot reintroduce the MLTT `Ty` classifier without changing this fact. -/
 theorem hasType_classifies_term_by_type :
     hasTypeSubjectSort = .term ∧ hasTypeClassifierSort = .type :=
   ⟨rfl, rfl⟩
+
+/-! ## The typing core (var + conv) — TY-ENGINE #282, first slice
+
+The native `HasType` lands now that `RawTerm` / `Generator` live in
+`FX1Poly.Core`.  This slice ships the two generator-independent arms:
+`var` (consuming `TypingContext.lookup`, #467) and `conv` (the SOLE door
+through which `Conv` enters).  The `gen` arm — per-generator typing from a
+cascade-free `TypingRule` table — and universe formation follow as their
+own bricks.
+
+* `HasType : Prop` — typing is a property of the already-data `RawTerm`;
+  buys decidable "is-it-typed" and §1.5 erasure.  Reconciled with the
+  proof-relevant `(∞,ω)` reading by uniqueness-of-typing (#469).
+* `conv` carries the classifier's well-formedness as a DIRECT premise
+  `HasType … reclassifier (universeCodeCell levelExpr flag)`, with the
+  universe witness `(levelExpr, flag)` exposed as explicit `conv`
+  arguments.  This keeps `HasType` a SINGLE inductive: the tidier
+  `∃ levelExpr flag, HasType …` form nests `HasType` under `Exists` with
+  the constructor's local variables in the nested parameter, which the
+  Lean kernel rejects ("nested inductive datatypes parameters cannot
+  contain local variables").  `IsType` (the existential) is therefore a
+  post-hoc `def` for downstream use, not a `conv` premise.  A single
+  inductive also keeps later induction (SR, inversion) on one recursor —
+  friendlier to the zero-axiom discipline than a `HasType`/`IsType`
+  mutual block.
+
+Sound by construction (0 false positives: with no `gen` arm, ill-formed
+cells like `app(unit, unit)` have no derivation); the false-negative rate
+is high now and falls to 0 as the `gen` rules + decidable `Conv` land. -/
+
+/-- The universe-code classifier cell `Type@(levelExpr, flag)` — the
+`.type`-sorted cell that classifies types at universe level `levelExpr`
+under hierarchy flag `flag` (§11.8.2). -/
+def universeCodeCell {scope : Nat}
+    (levelExpr : LevelExpr) (flag : UniverseFlag) : RawTerm scope :=
+  .mkGen .gen_universeCode (levelExpr, flag) .childNil
+
+/-- The variable cell at de Bruijn position `index`. -/
+def variableCell {scope : Nat} (index : Fin scope) : RawTerm scope :=
+  .mkGen .gen_var index .childNil
+
+/-- The native typing judgment over the cell substrate: a `.term`-sorted
+SUBJECT cell classified by a `.type`-sorted CLASSIFIER cell in a
+`TypingContext`.  First slice — `var` + `conv`. -/
+inductive HasType (profile : PolyProfile) :
+    {scope : Nat} → TypingContext profile scope →
+      RawTerm scope → RawTerm scope → Prop
+  | var {scope : Nat} (context : TypingContext profile scope)
+      (index : Fin scope) :
+      HasType profile context (variableCell index) (context.lookup index)
+  | conv {scope : Nat} {context : TypingContext profile scope}
+      {subject classifier reclassifier : RawTerm scope}
+      (levelExpr : LevelExpr) (flag : UniverseFlag)
+      (typed : HasType profile context subject classifier)
+      (converts : Conv classifier reclassifier)
+      (reclassifierTyped :
+        HasType profile context reclassifier
+          (universeCodeCell levelExpr flag)) :
+      HasType profile context subject reclassifier
+
+/-- `IsType profile context classifier` — the classifier cell inhabits
+some universe.  A `def` (not part of the inductive): the existential here
+nests `HasType` under `Exists` and so cannot appear in a `HasType`
+constructor (kernel-rejected) — `conv` exposes its universe witness
+`(levelExpr, flag)` explicitly instead, and this abbreviation is for
+downstream use (WfContext, IsType-stability) only. -/
+def IsType (profile : PolyProfile) {scope : Nat}
+    (context : TypingContext profile scope) (classifier : RawTerm scope) :
+    Prop :=
+  ∃ (levelExpr : LevelExpr) (flag : UniverseFlag),
+    HasType profile context classifier (universeCodeCell levelExpr flag)
 
 end FX1Poly.Typed

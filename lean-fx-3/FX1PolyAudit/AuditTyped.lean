@@ -1,5 +1,6 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Typed.TypingContext
+import FX1Poly.Typed.HasType
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -26,3 +27,10 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.TypingContext.lookup
 #assert_no_axioms FX1Poly.Typed.TypingContext.lookup_cons_zero
 #assert_no_axioms FX1Poly.Typed.TypingContext.lookup_cons_succ
+
+/-! ### TY-ENGINE #282 first slice — HasType var + conv core + IsType -/
+
+#assert_no_axioms FX1Poly.Typed.universeCodeCell
+#assert_no_axioms FX1Poly.Typed.variableCell
+#assert_no_axioms FX1Poly.Typed.HasType
+#assert_no_axioms FX1Poly.Typed.IsType
