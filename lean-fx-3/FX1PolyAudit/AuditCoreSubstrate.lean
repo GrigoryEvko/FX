@@ -80,7 +80,8 @@ import FX1Poly.Core.StepBetaEtaPreservesShape
 import FX1Poly.Core.SubjectReductionEtaBinder
 import FX1Poly.Core.IdEliminatorLayer
 -- Strong normalization (leaves/neutral/constructors/redexes/eta) + beta-eta
--- confluence + iota-eta double strips.
+-- confluence + iota-eta double strips + concrete neutral predicate.
+import FX1Poly.Core.NeutralTerm
 import FX1Poly.Core.StrongNormalizationRedexes
 import FX1Poly.Core.StrongNormalizationIotaRedexes
 import FX1Poly.Core.StrongNormalizationSubterm
