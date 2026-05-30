@@ -222,6 +222,7 @@ The hard rules this design holds:
     * 3.15 [Demonstration profiles — what the extension calculus enables](#315-demonstration-profiles)
 4.  [The raw/certified PolyCell signature](#4-the-rawcertified-polycell-signature)
 5.  [FX kernel as one profile instance](#5-fx-kernel-as-one-profile-instance)
+    * 5.2 [**The soundness-wrapper tower — the type level**](#52-the-soundness-wrapper-tower--the-type-level)
 6.  [Capabilities matrix](#6-capabilities-matrix)
 7.  [Cascade obsolescence — what existing work collapses](#7-cascade-obsolescence)
 8.  [Migration plan — how every existing file moves](#8-migration-plan)
@@ -232,6 +233,7 @@ The hard rules this design holds:
     * 11.6 [Metatheory obligations on the v2 substrate](#116-metatheory-obligations-on-the-v2-substrate)
     * 11.7 [Foundational boundaries — Gödel, Turing, openness as design constraints](#117-foundational-boundaries--godel-turing-and-controlled-openness-as-polycell-design-constraints)
     * 11.8 [**The Maximal-Power Computable Kernel** — the apex commitment](#118-the-maximal-power-computable-kernel)
+      * 11.8.5 [**The typed layer — the type wrapper** (the dim-0 soundness stratum; a decidable fibration)](#1185-the-typed-layer--the-type-wrapper-the-dim-0-soundness-stratum)
     * 11.9 [**The Internalization Program** — frontier & beyond-frontier extensions](#119-the-internalization-program--frontier-and-beyond-frontier-extensions)
 12. [Risks + open research questions](#12-risks-and-open-questions)
 13. [References](#13-references)
@@ -241,7 +243,12 @@ is targeting, read §1 (manifesto) then jump to §11.8 (maximal-power
 kernel), then §11.8.7 (decidability + complexity matrix) and §11.8.9
 (nine-phase rollout).  §3 is the structural substrate; §11.8 is the
 operational apex; §4 + §10 + §11 + §13 are the implementation
-contract + phasing + discipline + provenance.
+contract + phasing + discipline + provenance.  **For the type level
+specifically** — how ill-typed terms become unconstructable and what
+"0 false positives / 0 false negatives" means precisely — read §5.2
+(the wrapper-tower headline) then §11.8.5 (the type wrapper, fully
+decided: the seven forks, the cascade-free `HasType`, the property
+ledger, the decidable-fibration contract).
 
 ---
 
@@ -5752,6 +5759,59 @@ so they are conscious decisions, not silent gaps.
   `ProfileExtension`s with their own future product docs, never as
   kernel obligations here.
 
+### 5.2 The soundness-wrapper tower — the type level
+
+§5's reading — *every structural rule is a morphism at its sort* — fixes the
+SUBSTRATE: the seven cell species, the dim-1 morphisms, the fold, the
+certifier.  On TOP of that substrate sits the **soundness engine**: a tower
+of wrappers, each taking the previous inhabitant plus more cell inhabitants
+(a `.type` cell, a `.context` cell, a derivation, then grade/effect/… cells)
+and a coherence witness, that together decide *is this cell or path sound?*
+
+```
+Raw ──(structural)──► Certified ──(typing)──► Typed ──(graded)──► … ──► (21 dims)
+ │      p₁ (§4)                   p₂ (§11.8.5)        p₃ (§11.8.6)
+ └ nonsense          ill-typed but           ill-typed
+   constructable     well-formed admitted    unconstructable
+   (on purpose)      (the honesty-probe gap) (the type wrapper's job)
+```
+
+Two strata, **one construction at two dimensions** (Decision 7, §11.8.5):
+
+* **dim-0 (cells) — the TYPE WRAPPER.**  `HasType` displays a `.term` cell
+  over its `.type` cell.  Soundness = the cartesian lift through the display
+  map exists; the fiber over an ill-typed raw cell is *empty*, so ill-typed
+  terms are unconstructable *at the typed layer* even though they are
+  constructable at the raw layer.  Decided in full in **§11.8.5**.
+* **dim-1 (paths) — the MARKING WRAPPER.**  A reduction / `Conv` path is
+  sound iff it is *thin* in the saturation marking (§3.3–§3.4).  Same
+  mechanism, one dimension up; the named bridge
+  `fxConvConfluenceThinnessBridge` is its seam.
+
+**The error-rate contract (the whole point).**  The tower targets a precise
+two-number guarantee, and the numbers have categorical names:
+
+* **0 false positives, always** = *soundness* = intrinsic introduction rules
+  ⇒ empty fiber over the unsound.  Free by construction (no derivation
+  certifies nonsense), not a theorem to chase.
+* **0 false negatives, eventually** = *completeness* = decidable `Conv`,
+  which is exactly **CR** (unique normal forms) + **SN** (normal forms
+  exist).  **SR** is the separate fact that typing is stable under reduction
+  (the fibration has cartesian lifts along `Step`).
+
+Put together: **the typing display map is a *decidable fibration*** — a
+fibration (SR) with decidable fibers (CR + SN ⇒ decidable `Conv`).  That is
+exactly *decidable typechecking = sound + complete = ★ MILESTONE A*.  The
+slogan "Conv + CR + SR + SN ⇒ 0 FP / 0 FN" is the decidability-of-
+typechecking theorem, factored.
+
+The type level is therefore not a bolt-on judgment beside the cell calculus —
+it is the **dim-0 stratum of the same fibrant-membership soundness engine**
+whose dim-1 stratum is the saturation marking.  Its full design — the seven
+decided forks, the cascade-free shape, the property ledger P1–P14 — is
+**§11.8.5**; its foundation stone is the universe-level normalization the
+Phase Z₀ critical path opens with.
+
 ---
 
 ## 6. Capabilities matrix
@@ -8507,52 +8567,234 @@ reduces via the `equiv → Path` rule.
 for the full CCHM system.  Mörtberg's normalizer establishes
 termination.
 
-### 11.8.5 Typed layer architecture
+### 11.8.5 The typed layer — the type wrapper (the dim-0 soundness stratum)
+
+This subsection **decides** the typed layer.  Per §5.2, the type wrapper is
+the dim-0 stratum of the soundness engine: the wrapper that takes a `.term`
+cell plus a `.type` cell plus a context and decides *is this term sound at
+this type*, making ill-typed terms unconstructable **at the typed layer**
+(they stay constructable at the raw layer, on purpose, §4).  Its target is a
+single categorical object — **a decidable fibration** — and the rest of this
+subsection commits the forks, the shape, and the properties that realize it.
+
+**Status (honest, per the §1 snippet discipline).**  The type wrapper is
+**scaffold-only today**.  `FX1Poly/Typed/HasType.lean` pins the native shape
+(a `.term` subject classified by a `.type` classifier over a
+`TypingContext`); `TypingContext` + `lookup` + the `var` rule are shipped
+(M31/M32/M34); the `conv` / `universe` / `gen` rules, the property ledger
+below, and typed SR are **NOT built**.  The honesty probes
+(`probe_app_unit_unit` + siblings, memory
+`feedback_polycell_structural_vs_semantic`) prove the gap this wrapper
+closes: `app(unit, unit)` is *structurally* admitted today (0 FP on
+STRUCTURE via `HasCertifiedCellDim0`), yet has no typing derivation — adding
+0 FP on TYPING is exactly the type wrapper's job.  Nothing below is claimed
+delivered before its body ships.
+
+#### The seven decided forks
+
+* **Decision 1 — extrinsic relation, not an intrinsic-indexed `Term`.**  Keep
+  raw cells constructable (the whole point of §4's permissive layer); make
+  *ill-typedness = the typing derivation is uninhabited*.  This is FORCED,
+  not preference: the v2 substrate un-indexed `RawCell` precisely to dodge
+  Lean's mutual-index rule, which rejects the intrinsic `Ctx ⇄ Ty ⇄ Term`
+  block (memory `feedback_lean_mutual_index_rule`).  "Ill-typed
+  unconstructable" lives at the *derivation*, not the term.
+* **Decision 2 — `HasType : Prop`.**  The term is already the data
+  (`RawTerm`); typing is a *property* of it.  This is not merely convenient —
+  it is the Natural-Model reading (Decision 3): `Tm` is the presheaf (the
+  terms ARE the data) and "`t` is a section over `T`" is a *membership*,
+  hence propositional.  Buys: decidable "is-it-typed" (P11), automatic
+  erasure (`Prop` is grade-0, §1.5, P14), and — via uniqueness-of-typing
+  (P7) — the fiber is subterminal-up-to-`Conv`, so the propositional and the
+  proof-relevant `(∞,ω)` readings AGREE.  The directed/proof-relevant content
+  lives where it belongs — in the `.type` cells (directed univalence) and the
+  dim-1 marking (paths) — NOT in the membership witness.  Elaboration needing
+  the inferred type as data gets it from the `infer` ALGORITHM
+  (`Option (T × HasType …)`, P11), never from making `HasType : Type`.
+* **Decision 3 — cells classify cells.**  Subject = a `.term` `RawTerm`;
+  classifier = a `.type` `RawTerm` (NEVER legacy `Ty`); context bindings =
+  `.type` cells; the universe LEVEL lives inside `gen_universeCode`'s payload
+  (`LevelExpr × UniverseFlag`, §11.8.2).  This makes the **M24 payload
+  refactor a hard prerequisite**: the universe rule cannot be stated soundly
+  (no-Type-in-Type) while `gen_universeCode`'s payload is a bare level
+  (gap #1, §11.8.1).
+* **Decision 4 — cascade-free via a per-shape `TypingRule`.**  Do NOT write
+  one `HasType` arm per generator (that resurrects the cascade at the typed
+  layer).  `HasType` has core arms `var` + `conv`, plus a generic `gen` arm
+  that consumes a per-generator `TypingRule` metadatum — exactly as
+  `Generator.childSpecs` / `binderShifts` are metadata and
+  `GenAlgebra.canonical` is one line for all 194 generators.  The
+  `TypingRule`'s SHAPE comes from a small finite set (≈6: data-introduction,
+  type-formation, dependent-elimination, projection, path/cubical,
+  conversion), so the realization is ~6 shape-arms — **neither 194 nor 1**.
+  A new feature is one `TypingRule` row, never a new arm (P13).  Honest
+  caveat: the dependent-eliminator shape is the one non-uniform rule (its
+  output type and case types depend on the `.type` motive child, §3.16.6) —
+  uniform WITHIN its shape, distinct across shapes.
+* **Decision 5 — one wrapper in a small family.**  `HasType` (`.term ◁
+  .type`) is a sibling of `WfContext` (`.context` well-formed), `IsType`
+  (`.type ◁ universe`), and the graded `HasUsage` / `HasEffect` /
+  `HasSecurity` / `HasProtocol` (`.term ◁` the four annotation sorts,
+  §11.8.6).  A fully typed cell is the **fiber product** of these over the
+  shared raw cell.  "The type wrapper" is specifically the `.term ◁ .type`
+  rung; the rest are the higher rungs of §5.2's tower.
+* **Decision 6 — the wrapper bundles; `HasType` predicates.**  The
+  "stacked wrapper taking more cell inhabitants" is the BUNDLE
+  `(rawTerm, HasType derivation [, grade derivations])`; `HasType` itself is
+  the raw-term predicate, and `HasType Γ t T → HasCertifiedCellDim0 t`
+  (typing implies structure) is the lemma that STACKS it over wrapper 1 (§4).
+  The comprehension telescope `Γ ▷ A ▷ B ▷ …` IS the derivation tree.
+* **Decision 7 — dim-0 (`HasType`) and dim-1 (thinness) are the same
+  PATTERN, distinct inductives.**  Both are membership in the fibrant /
+  saturated sub-complex; both are decidable fibrations.  But their closure
+  laws differ by dimension (typing rules vs. saturation marking), so they are
+  NOT one inductive.  The unification is the design *invariant* (build both
+  as decidable fibrations), not shared code — do not over-engineer a common
+  `Sound dim sort`.  The dim-1 wrapper is §3.3–§3.4 + the named
+  `fxConvConfluenceThinnessBridge`.
+
+#### The shape (Lean sketch — NOT shipped)
 
 ```lean
+-- the .context wrapper (sibling): bindings are .type cells typed in prefix
+inductive WfContext (profile) : ∀ {n}, TypingContext profile n → Prop where
+  | nil  : WfContext .empty
+  | cons : WfContext Γ → IsType profile Γ A → WfContext (Γ.cons A …)
+
 inductive TypingContext (profile : PolyProfile) : Nat → Type where
   | empty : TypingContext profile 0
   | cons (Γ : TypingContext profile n) (T : RawTerm n)
-         (TIsType : ∃ level, HasType profile Γ T (universe level)) :
+         (TIsType : IsType profile Γ T) :
       TypingContext profile (n+1)
 
 def TypingContext.lookup
     (Γ : TypingContext profile scope) (idx : Fin scope) :
     RawTerm scope := …
 
+-- "T is a type" = it inhabits some universe (sibling judgment, NOT a sort)
+def IsType (profile) (Γ : TypingContext profile n) (T : RawTerm n) : Prop :=
+  ∃ code, HasType profile Γ T (universeCell code)
+
+-- THE TYPE WRAPPER.  Core arms var + conv; the generic gen arm consumes a
+-- per-generator TypingRule (Decision 4) — cascade-free.
 inductive HasType (profile : PolyProfile) :
     ∀ {scope : Nat}, TypingContext profile scope →
       RawTerm scope → RawTerm scope → Prop where
-  | conv : HasType Γ t T → Conv T T' →
-           (∃ level, HasType Γ T' (universe level)) →
-           HasType Γ t T'
-  | var : ∀ Γ idx, HasType Γ (varTerm idx) (Γ.lookup idx)
-  | universe : ∀ Γ e, HasType Γ (universe e) (universe (lsucc e))
-  | piType : ∀ Γ A B e1 e2,
-      HasType Γ A (universe e1) →
-      HasType (Γ.cons A …) B (universe e2) →
-      HasType Γ (piType A B) (universe (lmax e1 e2))
-  | lam : ∀ Γ A body B,
-      HasType (Γ.cons A …) body B →
-      HasType Γ (lam body) (piType A B)
-  | app : ∀ Γ f a A B,
-      HasType Γ f (piType A B) →
-      HasType Γ a A →
-      HasType Γ (app f a) (B.subst0 a)
-  | natElim : ∀ Γ (P : RawTerm (scope+1)) z s n,
-      IsType profile (Γ.cons natType …) P →
-      HasType Γ z (P.subst0 zeroTerm) →
-      HasType Γ s (piType natType (piType P P.shift)) →
-      HasType Γ n natType →
-      HasType Γ (natElim P z s n) (P.subst0 n)
-  -- per-generator rules for the semantic core
-  -- cubical primitives have their own rules per §11.8.4
+  | var  : ∀ Γ idx, HasType Γ (varTerm idx) (Γ.lookup idx)
+  | conv : HasType Γ t T → Conv T T' → IsType profile Γ T' →
+           HasType Γ t T'                       -- the ONLY door Conv enters
+  | gen  : (g : Generator) → (rule : TypingRule g) →
+           rule.premisesHold Γ payload children →
+           HasType Γ (.mkGen g payload children)
+                     (rule.outputType payload children)
 ```
 
-`IsType profile Γ T` is `∃ level, HasType profile Γ T (universe
-level)`.
+**The rules, spelled out** (what the `gen` arm expands to per shape — the
+target reduction rules, not separate `HasType` constructors):
 
-**Typed Subject Reduction** — the real theorem:
+```lean
+  -- type-formation shape (gen_universeCode / gen_piTyCode / gen_sigmaTyCode / …)
+  universe : HasType Γ (universeCell code) (universeCell code.lsucc)
+  piType   : HasType Γ A (universeCell e1) →
+             HasType (Γ.cons A …) B (universeCell e2) →
+             HasType Γ (piType A B) (universeCell (lmax e1 e2))
+  -- data-introduction shape (gen_lam / gen_pair / gen_natSucc / …)
+  lam      : HasType (Γ.cons A …) body B → HasType Γ (lam body) (piType A B)
+  -- elimination shape (gen_app / gen_fst / gen_natElim / …): app + the
+  -- dependent-eliminator (motive-carrying) sub-shape
+  app      : HasType Γ f (piType A B) → HasType Γ a A →
+             HasType Γ (app f a) (B.subst0 a)
+  natElim  : IsType profile (Γ.cons natType …) P →           -- .type motive child
+             HasType Γ z (P.subst0 zeroTerm) →
+             HasType Γ s (piType natType (piType P P.shift)) →
+             HasType Γ n natType →
+             HasType Γ (natElim P z s n) (P.subst0 n)
+```
+
+`★ Insight` — **`conv` is the only door `Conv` walks through.**  `var` =
+lookup, `gen` = spec-application; both are purely structural.  So a valid
+cell can be *rejected* (a false negative) only because the `conv` premise
+`Conv T T'` could not be decided.  That localizes the ENTIRE false-negative
+source to one rule — which is why "0 FN ⟺ decidable `Conv`" is exact, not
+approximate, and why CR + SN are load-bearing *only* in that they make that
+one premise decidable.
+
+#### The properties it must hold
+
+Grouped by status — and the split **is** the "0 FP always / 0 FN once
+Conv+CR+SR+SN" contract: group (A) is free, groups (B)/(C) are the theorems
+that buy 0 FN.
+
+**(A) Soundness — 0 FP, FREE by construction.**
+* **P1 Soundness (empty fiber).**  `HasType Γ t T` inhabited ⇒ `t` genuinely
+  well-typed; the fiber over an ill-typed raw cell is the empty type.  No
+  `HasType Γ (app unit unit) T` for any `T`.  *Free* — the intro rules fire
+  only on spec-matching configurations.  (PolyCell gives this for STRUCTURE
+  today; the wrapper extends it to TYPING.)
+* **P2 Sort-coherence.**  Subject always `.term`, classifier always `.type`;
+  the only `.type`-as-subject path is the universe rule (a `.type` typed by a
+  higher universe).  *Free* from `Generator.cellSort`.
+* **P3 Classifier-is-a-type.**  `HasType Γ t T ⇒ IsType Γ T`.  Discharged
+  per `TypingRule` (every `outputType` is provably a type).
+
+**(B) Coherence — THEOREMS that make it a fibration.**
+* **P4 Subject Reduction = the fibration property.**  `HasType Γ t T →
+  Step t t' → HasType Γ t' T` — cartesian lifts along `Step`.  Big induction;
+  reuses the migrated `Step.preservesShape` / structural SR (~33 zero-axiom
+  decls) as the syntactic sub-proof.
+* **P5 Conv-coercion = cartesian lift on the classifier.**  The `conv` arm.
+* **P6 Substitution / weakening = whiskering (the β-engine).**  `HasType Γ t
+  T → (σ : Δ ⟶ Γ) → HasType Δ (t[σ]) (T[σ])`.  The `.context`-morphism acts;
+  reuses the migrated Allais Action / fold.  Load-bearing for `app`'s
+  `B.subst0 a`.
+* **P7 Uniqueness of typing = faithfulness of the fibration.**  `HasType Γ t
+  T₁ → HasType Γ t T₂ → Conv T₁ T₂`.  Makes `infer` well-defined AND
+  reconciles `Prop`-typing with the proof-relevant `(∞,ω)` reading (fiber
+  subterminal-up-to-`Conv`).  Worth proving early — it disciplines the design.
+* **P8 Inversion = descent.**  Per shape: `HasType Γ (mkGen g p ch) T` ⇒
+  children typed at the `TypingRule`'s expected types ∧ `Conv T
+  (rule.outputType …)`.  One lemma per shape; feeds the typechecker and
+  canonicity.  (The sheaf/glue direction; `certifyRawCellExact?` is already
+  the structural descent check, §4.)
+* **P9 Context well-formedness presupposition.**  `HasType Γ … ⇒ WfContext Γ`.
+
+**(C) The payoff.**
+* **P10 Canonicity ⇒ Consistency.**  `HasType .empty t boolType → t ↝* true
+  ∨ t ↝* false`; `HasType .empty t Empty → False`.  Follows from P4 + SN +
+  P8 (§11.8.8).
+* **P11 Decidability — 0 FN.**  `Decidable (HasType Γ t T)` via bidirectional
+  `infer` / `check`, *iff* `Decidable (Conv T T')`, *iff* CR (unique NF) + SN
+  (NF exists).  This IS ★ MILESTONE A.
+
+**(D) Discipline (non-negotiable).**
+* **P12 Zero-axiom** — every arm + theorem `#assert_no_axioms`-clean.
+* **P13 Cascade-freedom** — new generator ⇒ one `TypingRule` row, never a
+  `HasType` arm or a 78-arm cascade.
+* **P14 Erasure** — the derivation is `Prop` / grade-0 ⇒ zero runtime content
+  (§1.5; ties to O-ERASE, §11.8.0).
+
+#### The decidable-fibration mapping (the contract, exact)
+
+| The phrase | Categorical content | What proves it |
+|---|---|---|
+| 0 FP, always | empty fiber over the unsound | **P1**, free (intrinsic intro rules) |
+| typing stable under reduction | **fibration** (cartesian lift / `Step`) | **P4** (typed SR) |
+| FN at first | undecidable `conv` premise | — (pre-CR/SN) |
+| 0 FN once CR+SN | **decidable fibers** (decidable `Conv`) | **P11** (CR+SN ⇒ decide `Conv`) |
+| "cell or path, one engine" | dim-0 vs dim-1 of one fibrant membership | **Decision 7** (§5.2) |
+
+So the type wrapper IS "the representable Natural-Model display map `Tm ↠ Ty`
+(§3.2, §3.10), made a *decidable fibration* by typed SR + decidable `Conv`."
+`0/0 =` "this display map is a decidable fibration" `= ★ MILESTONE A`.
+
+**Joint-apex caveat (O-NORM, §11.8.0).**  0 FN is reached **per fragment**:
+decidable `Conv` for the MLTT core is a shipped technique (Adjedj et al. NbE,
+Path A §2.3).  For the JOINT kernel — cubical + HIIRT + guarded + the
+21-graded layer all active — joint decidable `Conv` is **O-NORM**, open
+research.  So "0 FP / 0 FN" is a theorem reached per fragment; the joint
+kernel is the standing obligation, never a free corollary.
+
+#### Typed Subject Reduction — the real theorem (P4)
 
 ```lean
 theorem HasType.subject_reduction
@@ -8563,10 +8805,36 @@ theorem HasType.subject_reduction
     HasType profile Γ t' T
 ```
 
-Proof: induction on `Step`, using inversion lemmas on `HasType` for
-each generator + `conv` rule for type-up-to-Conv.  The structural
-SR shipped today (~33 zero-axiom decls) is reused as a syntactic
-sub-proof.
+Proof: induction on `Step`, using the P8 inversion lemmas on `HasType` per
+shape + the `conv` rule for type-up-to-`Conv`.  The structural SR shipped
+today (~33 zero-axiom decls) is reused as a syntactic sub-proof.
+
+#### Build order — and the foundation stone
+
+The type wrapper's FIRST sound rule (the universe rule, P2's exception) needs
+`gen_universeCode : LevelExpr × UniverseFlag` (Decision 3) — which needs
+polynomial-time `LevelExpr` normalization.  So:
+
+1. **M22** — `LevelExpr` canonical form + `Decidable denoteEquiv`
+   (*universe-level normalization*; in progress — the current foundation
+   stone).
+2. **M24** — `gen_universeCode` payload `→ LevelExpr × UniverseFlag`
+   (*universe payload*; gap #1).
+3. `WfContext` + `IsType` + `HasType.{var, conv, universe}` (the spine;
+   M31/M32/M34 done, M33/M35 next) — *the typed universe rule*.
+4. `TypingRule` metadata + `HasType.gen` per shape — data-intro →
+   type-formation → dependent-elimination (M36–M44, cascade-free).
+5. P8 inversion (M45) → P4 typed SR (M46) → P6 subst (M47).
+6. P10 canonicity / consistency (M48–M50).
+7. Bidirectional `infer` / `check` + decidable `Conv` ⇒ **P11 = ★ MILESTONE A**
+   (M53/M55).
+
+`★ Insight` — the design closes a loop: the type wrapper's foundation stone
+(M22, `LevelExpr` normalization) is the generator engine's one open seam
+(`gen_universeCode`'s payload, M24).  "Fix the generator payload" and "build
+the type wrapper" are **one task seen at two layers** — exactly the way
+`.type` and `.term` cells are one substrate seen at two sorts.  The Phase Z₀
+→ Z₁ → MILESTONE A critical path *is* the type level being built bottom-up.
 
 ### 11.8.6 21-dimensional integration
 
