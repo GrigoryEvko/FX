@@ -24,7 +24,13 @@ Build targets:
 
 * `lake build FX1Poly`            — fast inner-loop kernel build.
 * `lake build FX1Poly FX1PolyAudit` — full strict zero-axiom sweep
-                                      (pre-merge / CI gate).
+                                      (pre-merge / CI gate).  The
+                                      authoritative umbrella is
+                                      `FX1PolyAudit.AuditAll`: a pure-import
+                                      module naming every required gate, so a
+                                      deleted gate file fails the build rather
+                                      than silently shrinking the `.submodules`
+                                      glob below.
 * `lake build FX0Poly`            — the minimal checker (stub for now).
 -/
 
