@@ -60,6 +60,42 @@ theorem Conv.eq_of_isType {profile : PolyProfile} {scope : Nat}
     firstType = secondType :=
   Conv.eq_of_noStep firstIsType.hasNoStep secondIsType.hasNoStep convertibility
 
+/-- **Universe-code rigidity ⟹ level/flag equality.**  Two convertible
+universe-code cells carry equal levels and equal flags.  Universe codes are
+non-stepping normal forms (`IsType.hasNoStep`), so `Conv.eq_of_isType` collapses
+the `Conv` to a literal cell equality, and `injection` (the same propext-free
+destructuring `inversionUniverseCode` uses) extracts the `LevelExpr × UniverseFlag`
+payload — then splits the `Prod`.
+
+Staged for #443: a Π type's principal classifier is `universeCodeCell (lmax l1
+l2) f` where the `(l1, f)`, `(l2, f)` come from the *derivation's* premises, so
+matching two Π derivations (recursive `uniqueness`) and refuting a flag-mismatch
+(`Decidable IsType`'s Π `isFalse` branch) both need to turn a `Conv` between the
+children's universe-code classifiers into syntactic level/flag equality.  Holds
+on the current fragment and stays valid after Π lands (universe codes never nest,
+so they remain normal leaves). -/
+theorem levelFlag_eq_of_conv_universeCodeCell {profile : PolyProfile}
+    {scope : Nat} {context : TypingContext profile scope}
+    {firstLevel secondLevel : LevelExpr} {firstFlag secondFlag : UniverseFlag}
+    (convertibility :
+      Conv (universeCodeCell firstLevel firstFlag : RawTerm scope)
+        (universeCodeCell secondLevel secondFlag)) :
+    firstLevel = secondLevel ∧ firstFlag = secondFlag := by
+  have cellsEqual :
+      (universeCodeCell firstLevel firstFlag : RawTerm scope)
+        = universeCodeCell secondLevel secondFlag :=
+    Conv.eq_of_isType
+      ⟨firstLevel.lsucc, firstFlag,
+        HasType.universeFormation context firstLevel firstFlag⟩
+      ⟨secondLevel.lsucc, secondFlag,
+        HasType.universeFormation context secondLevel secondFlag⟩
+      convertibility
+  have payloadEqual :
+      (firstLevel, firstFlag) = (secondLevel, secondFlag) := by
+    injection cellsEqual
+  injection payloadEqual with levelAgree flagAgree
+  exact ⟨levelAgree, flagAgree⟩
+
 /-- For the current fragment, type conversion is exactly equality of types. -/
 theorem Conv.iff_eq_of_isType {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}

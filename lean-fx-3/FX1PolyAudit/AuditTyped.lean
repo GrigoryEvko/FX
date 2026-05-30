@@ -110,6 +110,7 @@ gates pin them shut.
 
 #assert_no_axioms FX1Poly.Typed.IsType.hasNoStep
 #assert_no_axioms FX1Poly.Typed.Conv.eq_of_isType
+#assert_no_axioms FX1Poly.Typed.levelFlag_eq_of_conv_universeCodeCell
 #assert_no_axioms FX1Poly.Typed.Conv.iff_eq_of_isType
 #assert_no_axioms FX1Poly.Typed.Conv.decidableOfIsType
 
