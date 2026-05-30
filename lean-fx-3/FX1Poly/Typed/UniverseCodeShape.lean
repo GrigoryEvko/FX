@@ -116,6 +116,22 @@ theorem eq_piTyCodeCell_of_headGenerator {scope : Nat}
               rw [RawTermChildren.eq_childNil tailChildren]
               rfl
 
+/-- `universeCodeCell` is injective: two equal universe-code cells have equal
+levels and equal flags.  Proved by `cases` on the cell equality — the same
+propext-free substrate tactic as `piTyCodeCell_inj`; here the children are
+`childNil` (no dependent spine), so `cases` simply unifies the `gen_universeCode
+(levelExpr, flag)` payloads.  Feeds the no-Type-in-Type honesty probe (#442): a
+universe classified by itself would force `levelExpr = levelExpr.lsucc`, refuted
+by `LevelExpr.ne_lsucc_self`. -/
+theorem universeCodeCell_inj {scope : Nat}
+    {firstLevel secondLevel : LevelExpr} {firstFlag secondFlag : UniverseFlag}
+    (cellsEqual :
+      (universeCodeCell firstLevel firstFlag : RawTerm scope)
+        = universeCodeCell secondLevel secondFlag) :
+    firstLevel = secondLevel ∧ firstFlag = secondFlag := by
+  cases cellsEqual
+  exact ⟨rfl, rfl⟩
+
 /-- `piTyCodeCell` is injective: two equal Π-type code cells have equal domains
 and equal codomains.  Proved by `cases` on the cell equality — the propext-free
 substrate tactic that `RawTermDecEq` uses to compare `mkGen` cells (raw

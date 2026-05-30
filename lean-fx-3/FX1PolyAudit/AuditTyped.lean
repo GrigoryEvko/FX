@@ -146,6 +146,9 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.eq_variableCell_of_headGenerator
 #assert_no_axioms FX1Poly.Typed.headGenerator_universeCodeCell
 #assert_no_axioms FX1Poly.Typed.headGenerator_variableCell
+-- universe-code cell injectivity (#442 no-Type-in-Type probe support): equal
+-- universe codes have equal levels and flags, via `cases` on the cell equality
+#assert_no_axioms FX1Poly.Typed.universeCodeCell_inj
 
 /-! ### Π-FORMATION SHAPE BRICKS (#443 stage 1, non-breaking) — `piTyCodeCell`
     smart ctor + head-generator computation + the two-child destructor that
@@ -257,3 +260,12 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.corpus_variable_typedByLookup
 #assert_no_axioms FX1Poly.Typed.corpus_unitCell_rejected
 #assert_no_axioms FX1Poly.Typed.corpus_universeCode_notTypedByUnit
+
+/-! ### NO-TYPE-IN-TYPE PROBE (#442, M35-T1) — the headline universe-consistency
+    guarantee: a universe code is NOT classified by itself (`Type@(e,f) :
+    Type@(e,f)` rejected), so there is no `Type : Type` / Girard paradox at the
+    universe level.  Routes through `universeCodeCell_iff_classifierEqSucc` (the
+    classifier-equality characterization) + `universeCodeCell_inj` +
+    `LevelExpr.ne_lsucc_self` (predicativity at the level algebra). -/
+
+#assert_no_axioms FX1Poly.Typed.probe_universe_Type_in_Type_rejected

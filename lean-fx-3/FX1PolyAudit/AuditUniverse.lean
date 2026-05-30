@@ -79,6 +79,9 @@ full strict-zero-axiom sweep.
 #assert_no_axioms FX1Poly.Universe.LevelExpr.limax_lzero_lzero_canonical
 #assert_no_axioms FX1Poly.Universe.LevelExpr.lvar_zero_canonical
 #assert_no_axioms FX1Poly.Universe.LevelExpr.decEq_refl_lzero
+-- structural distinctness `e ≠ lsucc e` (#442 no-Type-in-Type probe support):
+-- size-free structural induction, the predicativity guard at the level algebra
+#assert_no_axioms FX1Poly.Universe.LevelExpr.ne_lsucc_self
 
 /-! ### UniverseFlag Setzer-Rathjen closed enum + canonical-form + DecidableEq (M23 #272) -/
 

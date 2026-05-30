@@ -19,8 +19,10 @@ concrete cells where it genuinely fails, one per outcome branch of the deciders:
   typed by nothing) — cf. the pre-existing `appUnitUnit_hasNoTyping` for `gen_app`;
 * `gen_universeCode` reject with wrong classifier —
   `corpus_universeCode_notTypedByUnit` (a universe code is NOT typed by the unit
-  cell — the highest-value witness, distinguishing classifier-discrimination from
-  subject-head discrimination).
+  cell — distinguishing classifier-discrimination from subject-head discrimination);
+* NO-TYPE-IN-TYPE — `probe_universe_Type_in_Type_rejected` (#442, M35-T1): a
+  universe code is NOT classified by itself (`Type@(e,f) : Type@(e,f)` rejected),
+  the headline predicativity / no-Girard guarantee — the highest-value witness.
 
 A λ/app arm (#444) breaks the leaf-only invariant these rest on; this corpus then
 flags any decider whose verdicts silently change.
@@ -93,5 +95,29 @@ theorem corpus_universeCode_notTypedByUnit {profile : PolyProfile} {scope : Nat}
     congrArg RawTerm.headGenerator classifierEqualsSucc
   rw [headGenerator_unitCell, headGenerator_universeCodeCell] at headsAgree
   exact Generator.noConfusion headsAgree
+
+/-- NO-TYPE-IN-TYPE honesty probe (#442, M35-T1): a universe code is NOT classified
+by ITSELF.  `Type@(e, f)` inhabits `Type@(lsucc e, f)` — its strict predicative
+successor — and nothing else (the `universeFormation` rule's classifier is fixed
+one level up); so `Type@(e, f) : Type@(e, f)` is rejected.  This is the headline
+universe-consistency guarantee: no `Type : Type`, hence no Girard paradox at the
+universe level (§11.8.2 gap #1).  Were it to hold, the classifier-equality
+characterization would force `e = lsucc e` (`universeCodeCell_inj`), refuted by
+`LevelExpr.ne_lsucc_self`.  The well-formed context is the iff lemma's premise;
+the empty context (`WfContext.emptyIsWellFormed`) already instantiates it, so the
+probe is non-vacuous. -/
+theorem probe_universe_Type_in_Type_rejected {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} (wellFormed : WfContext context)
+    (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    ¬ HasType profile context (universeCodeCell levelExpr flag)
+        (universeCodeCell levelExpr flag) := by
+  intro typed
+  have classifierEqualsSucc :
+      (universeCodeCell levelExpr flag : RawTerm scope)
+        = universeCodeCell levelExpr.lsucc flag :=
+    (HasType.universeCodeCell_iff_classifierEqSucc wellFormed levelExpr flag
+      (universeCodeCell levelExpr flag)).mp typed
+  exact LevelExpr.ne_lsucc_self levelExpr
+    (universeCodeCell_inj classifierEqualsSucc).1
 
 end FX1Poly.Typed

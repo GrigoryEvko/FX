@@ -147,6 +147,28 @@ theorem LevelExpr.limax_lzero_lzero_canonical :
 theorem LevelExpr.lvar_zero_canonical :
     LevelExpr.lvar 0 = .lvar 0 := rfl
 
+/-! ## Structural distinctness -/
+
+/-- A level expression is never equal to its own successor: `levelExpr ≠ lsucc
+levelExpr`.  The predicativity guard at the level algebra (the `lsucc` chain is a
+strict order, never a fixpoint) — by structural induction: the `lsucc inner` arm
+injects `lsucc inner = lsucc (lsucc inner)` to `inner = lsucc inner` (refuted by
+the IH), and every other head clashes with `lsucc`.  Size-free so it lives with
+the inductive (the `size` measure is downstream in `LevelExprSimplify`).  Feeds
+the no-Type-in-Type honesty probe (#442): a universe classified by itself would
+force `e = lsucc e`, which this refutes. -/
+theorem LevelExpr.ne_lsucc_self (levelExpr : LevelExpr) :
+    levelExpr ≠ LevelExpr.lsucc levelExpr := by
+  induction levelExpr with
+  | lzero => intro selfEq; cases selfEq
+  | lsucc inner ih =>
+      intro selfEq
+      injection selfEq with innerEq
+      exact ih innerEq
+  | lmax left right _ _ => intro selfEq; cases selfEq
+  | limax left right _ _ => intro selfEq; cases selfEq
+  | lvar index => intro selfEq; cases selfEq
+
 /-! ## DecidableEq smoke checks -/
 
 /-- DecidableEq decides equal canonical-form expressions to
