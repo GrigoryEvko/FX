@@ -122,5 +122,108 @@ theorem secondComponent_isStronglyNormalizing_of_pair {scope : Nat}
           (.childCons currentFirst (.childCons secondAfter .childNil)))
         congruenceLift rfl
 
+/-- The function head of a strongly-normalizing application is strongly
+normalizing.  `gen_app` has the same `[0, 0]` two-child shape as `gen_pair`, so
+this is the head-congruence mirror of
+`firstComponent_isStronglyNormalizing_of_pair`: each head step lifts to an
+application step via `StepChildren.here`, so the application's accessibility
+transfers to the head.  This is the inverse the arrow reducibility candidate's
+CR1 turns on — `SN (app f x)` (from the codomain candidate) descends to
+`SN f`. -/
+theorem appHead_isStronglyNormalizing_of_app {scope : Nat}
+    {functionTerm argumentTerm : RawTerm scope}
+    (applicationTerminates :
+      IsStronglyNormalizing
+        (.mkGen .gen_app ()
+          (.childCons functionTerm (.childCons argumentTerm .childNil)) :
+          RawTerm scope)) :
+    IsStronglyNormalizing functionTerm := by
+  suffices general :
+      ∀ {applicationTerm : RawTerm scope},
+        Acc StepSuccessor applicationTerm →
+          ∀ {currentFunction currentArgument : RawTerm scope},
+            applicationTerm = .mkGen .gen_app ()
+              (.childCons currentFunction
+                (.childCons currentArgument .childNil)) →
+            Acc StepSuccessor currentFunction from
+    general applicationTerminates rfl
+  intro applicationTerm applicationAccessible
+  induction applicationAccessible with
+  | intro applicationWitness _applicationPredecessors
+      applicationInductiveHypothesis =>
+      intro currentFunction currentArgument witnessEq
+      subst witnessEq
+      apply Acc.intro
+      intro functionAfter functionStep
+      have congruenceLift :
+          Step
+            (.mkGen .gen_app ()
+              (.childCons currentFunction
+                (.childCons currentArgument .childNil)) :
+              RawTerm scope)
+            (.mkGen .gen_app ()
+              (.childCons functionAfter
+                (.childCons currentArgument .childNil)) :
+              RawTerm scope) :=
+        Step.cong .gen_app ()
+          (StepChildren.here
+            (.childCons currentArgument .childNil :
+              RawTermChildren [0] scope)
+            functionStep)
+      exact applicationInductiveHypothesis
+        (.mkGen .gen_app ()
+          (.childCons functionAfter (.childCons currentArgument .childNil)))
+        congruenceLift rfl
+
+/-- The argument of a strongly-normalizing application is strongly normalizing.
+The argument-congruence sibling of `appHead_isStronglyNormalizing_of_app`,
+mirroring `secondComponent_isStronglyNormalizing_of_pair`: each argument step
+lifts via the tail-then-head congruence (`StepChildren.there … here`), with the
+`there` head's binder shift pinned by the explicit `@`-form because
+`gen_app.binderShifts = [0, 0]` does not auto-reduce. -/
+theorem appArgument_isStronglyNormalizing_of_app {scope : Nat}
+    {functionTerm argumentTerm : RawTerm scope}
+    (applicationTerminates :
+      IsStronglyNormalizing
+        (.mkGen .gen_app ()
+          (.childCons functionTerm (.childCons argumentTerm .childNil)) :
+          RawTerm scope)) :
+    IsStronglyNormalizing argumentTerm := by
+  suffices general :
+      ∀ {applicationTerm : RawTerm scope},
+        Acc StepSuccessor applicationTerm →
+          ∀ {currentFunction currentArgument : RawTerm scope},
+            applicationTerm = .mkGen .gen_app ()
+              (.childCons currentFunction
+                (.childCons currentArgument .childNil)) →
+            Acc StepSuccessor currentArgument from
+    general applicationTerminates rfl
+  intro applicationTerm applicationAccessible
+  induction applicationAccessible with
+  | intro applicationWitness _applicationPredecessors
+      applicationInductiveHypothesis =>
+      intro currentFunction currentArgument witnessEq
+      subst witnessEq
+      apply Acc.intro
+      intro argumentAfter argumentStep
+      have congruenceLift :
+          Step
+            (.mkGen .gen_app ()
+              (.childCons currentFunction
+                (.childCons currentArgument .childNil)) :
+              RawTerm scope)
+            (.mkGen .gen_app ()
+              (.childCons currentFunction
+                (.childCons argumentAfter .childNil)) :
+              RawTerm scope) :=
+        Step.cong .gen_app ()
+          (@StepChildren.there scope 0 [0] currentFunction _ _
+            (StepChildren.here
+              (.childNil : RawTermChildren [] scope) argumentStep))
+      exact applicationInductiveHypothesis
+        (.mkGen .gen_app ()
+          (.childCons currentFunction (.childCons argumentAfter .childNil)))
+        congruenceLift rfl
+
 end StepStar
 end FX1Poly.Core
