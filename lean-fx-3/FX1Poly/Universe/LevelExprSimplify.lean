@@ -6154,6 +6154,62 @@ theorem LevelExpr.smoke_notDenoteEquiv_varVsSucc :
   absurd ((LevelExpr.denoteEquiv_iff_fullCanonicalize_eq _ _ rfl rfl).mp hEquiv)
     (by decide)
 
+/-! ### Step 7b — smoke-count + behavior ratchet (#419 acceptance gate)
+
+The fourteen `smoke_denoteEquiv_*` / `smoke_notDenoteEquiv_*` theorems above
+are each pinned individually by `#assert_no_axioms`, so none can be deleted
+without its audit line failing to resolve its name.  This subsection adds
+the COMPLEMENTARY guard the acceptance criterion calls for: a single
+data-driven corpus the count and behavior ratchets quantify over, so the
+corpus cannot silently shrink and no fixture's verdict can silently flip
+under a canonicalizer refactor.
+
+`predicativeSmokeCorpus` lists each fixture as `(left, right, expectedEquiv)`.
+The count ratchet fixes the size at fourteen; the behavior ratchet re-runs
+the exact `fullCanonicalize`-equality that `decideDenoteEquiv` decides on
+every entry and checks it against the recorded verdict — one `rfl` covering
+all fourteen decisions, so a refactor that breaks any algebraic law (or a
+corrupted fixture verdict) fails the build right here. -/
+
+/-- The predicative smoke corpus as DATA: `(leftExpr, rightExpr,
+expectedEquiv)` per fixture.  The twelve `true` rows mirror the
+`smoke_denoteEquiv_*` theorems; the two `false` rows mirror the
+`smoke_notDenoteEquiv_*` theorems. -/
+def LevelExpr.predicativeSmokeCorpus : List (LevelExpr × LevelExpr × Bool) :=
+  [ (.lmax (.lvar 0) (.lvar 0), .lvar 0, true),
+    (.lmax .lzero (.lvar 1), .lvar 1, true),
+    (.lmax (.lvar 1) .lzero, .lvar 1, true),
+    (.lmax (.lvar 0) (.lvar 1), .lmax (.lvar 1) (.lvar 0), true),
+    (.lmax (.lmax (.lvar 0) (.lvar 1)) (.lvar 2),
+      .lmax (.lvar 0) (.lmax (.lvar 1) (.lvar 2)), true),
+    (.lmax (.lsucc (.lvar 0)) (.lvar 0), .lsucc (.lvar 0), true),
+    (.lmax (.lvar 0) (.lsucc (.lvar 0)), .lsucc (.lvar 0), true),
+    (.lmax .lzero .lzero, .lzero, true),
+    (.lmax (.lsucc .lzero) .lzero, .lsucc .lzero, true),
+    (.lmax (.lvar 2) (.lmax (.lvar 0) (.lvar 2)), .lmax (.lvar 0) (.lvar 2), true),
+    (.lmax (.lvar 2) (.lmax (.lvar 0) (.lvar 1)),
+      .lmax (.lvar 0) (.lmax (.lvar 1) (.lvar 2)), true),
+    (.lmax (.lsucc .lzero) (.lvar 0), .lmax (.lvar 0) (.lsucc .lzero), true),
+    (.lvar 0, .lvar 1, false),
+    (.lvar 0, .lsucc (.lvar 0), false) ]
+
+/-- Count ratchet: the predicative smoke corpus has exactly fourteen
+fixtures (twelve positive + two negative).  Adding or removing a smoke
+without updating `predicativeSmokeCorpus` breaks this `rfl`. -/
+theorem LevelExpr.predicativeSmokeCorpus_count :
+    LevelExpr.predicativeSmokeCorpus.length = 14 := rfl
+
+/-- Behavior ratchet: for every corpus entry, the `fullCanonicalize`
+equality that `decideDenoteEquiv` decides agrees with the recorded verdict.
+One `rfl` re-runs all fourteen decisions, so a canonicalizer refactor that
+breaks an algebraic law — or a flipped fixture verdict — fails the build. -/
+theorem LevelExpr.predicativeSmokeCorpus_behavior :
+    LevelExpr.predicativeSmokeCorpus.all (fun entry =>
+      (decide
+        (LevelExpr.MaxPlusForm.fullCanonicalize (LevelExpr.toMaxPlusForm entry.1) =
+          LevelExpr.MaxPlusForm.fullCanonicalize (LevelExpr.toMaxPlusForm entry.2.1)))
+        == entry.2.2) = true := rfl
+
 /-! ### Step 8 — working-set size bound (complexity-witness foundation)
 
 The decision procedure `decideDenoteEquiv` computes `fullCanonicalize`

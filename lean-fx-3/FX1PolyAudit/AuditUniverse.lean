@@ -44,7 +44,9 @@ universe surface.
   fullCanonicalize, the lookupOffset extensionality tower,
   canonicalForm_unique) + the predicative `denoteEquiv` decision
   procedure (`denoteEquiv_iff_fullCanonicalize_eq`,
-  `decideDenoteEquiv`) + the 14-fixture behavioral smoke corpus + the
+  `decideDenoteEquiv`) + the 14-fixture behavioral smoke corpus + its
+  count/behavior ratchet (`predicativeSmokeCorpus_count`/`_behavior`,
+  the silent-shrink + verdict-flip guard) + the
   complexity working-set bounds (`toMaxPlusForm_varOffsets_length_le_size`,
   `canonicalizeVarOffsets_length_le`,
   `fullCanonicalize_toMaxPlusForm_varOffsets_length_le_size`).
@@ -387,6 +389,9 @@ full strict-zero-axiom sweep.
 #assert_no_axioms FX1Poly.Universe.LevelExpr.smoke_denoteEquiv_constVarCommute
 #assert_no_axioms FX1Poly.Universe.LevelExpr.smoke_notDenoteEquiv_distinctVars
 #assert_no_axioms FX1Poly.Universe.LevelExpr.smoke_notDenoteEquiv_varVsSucc
+#assert_no_axioms FX1Poly.Universe.LevelExpr.predicativeSmokeCorpus
+#assert_no_axioms FX1Poly.Universe.LevelExpr.predicativeSmokeCorpus_count
+#assert_no_axioms FX1Poly.Universe.LevelExpr.predicativeSmokeCorpus_behavior
 #assert_no_axioms FX1Poly.Universe.LevelExpr.MaxPlusForm.length_append
 #assert_no_axioms FX1Poly.Universe.LevelExpr.MaxPlusForm.incrementOffsets_length
 #assert_no_axioms FX1Poly.Universe.LevelExpr.toMaxPlusForm_varOffsets_length_le_size
