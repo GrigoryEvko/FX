@@ -152,3 +152,9 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasType.variableCell_iff_classifierEqLookup
 #assert_no_axioms FX1Poly.Typed.HasType.universeCodeCell_iff_classifierEqSucc
 #assert_no_axioms FX1Poly.Typed.HasType.not_of_headGenerator
+
+/-! ### DECIDABLE HasType (#461/#302, current fragment) — typed checking decision
+    procedure assembled over the classifier-equality characterization; mirror of
+    `IsType.decidableOfWellFormed`, deciding via `DecidableEq RawTerm`. -/
+
+#assert_no_axioms FX1Poly.Typed.HasType.decidableOfWellFormed

@@ -102,4 +102,71 @@ theorem HasType.not_of_headGenerator {profile : PolyProfile} {scope : Nat}
   · subst subjectIsUniverseCode
     exact notUniverseCode (headGenerator_universeCodeCell codeLevel codeFlag)
 
+/-- Decide `HasType context subject classifier` for the current fragment — typed
+checking as a decision procedure.  A direct mirror of
+`IsType.decidableOfWellFormed`: case on the SUBJECT cell `mkGen generator payload
+children` (single ctor → large elimination into `Decidable`; `payload` carries
+the index / `(level, flag)` as data), then `dite` on `generator` via
+`DecidableEq Generator` (`dite`, never `by_cases` — `Classical`):
+
+* `gen_universeCode` → decide `classifier = universeCodeCell payload.1.lsucc
+  payload.2` (`DecidableEq RawTerm`) via `universeCodeCell_iff_classifierEqSucc`;
+* `gen_var` → decide `classifier = context.lookup payload` via
+  `variableCell_iff_classifierEqLookup`;
+* otherwise → `isFalse` via `HasType.not_of_headGenerator`.
+
+No `Conv` decision / normalizer: the iff lemmas already collapsed typed checking
+to classifier equality.  Each cell-shape collapse (`mkGen … = universeCodeCell /
+variableCell` via `eq_childNil`) is `rw`-rewritten on the `HasType` Prop goal
+inside `isTrue` / `isFalse`, never the `Decidable` goal. -/
+def HasType.decidableOfWellFormed {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} (wellFormed : WfContext context)
+    (subject classifier : RawTerm scope) :
+    Decidable (HasType profile context subject classifier) :=
+  match subject with
+  | .mkGen generator payload children =>
+      if hUniverse : generator = Generator.gen_universeCode then by
+        subst hUniverse
+        have subjectIsUniverseCode :
+            (RawTerm.mkGen Generator.gen_universeCode payload children)
+              = universeCodeCell payload.1 payload.2 := by
+          rw [RawTermChildren.eq_childNil children]
+          rfl
+        exact
+          if hClassifierIsSucc :
+              classifier = universeCodeCell payload.1.lsucc payload.2 then
+            isTrue (by
+              rw [subjectIsUniverseCode]
+              exact (HasType.universeCodeCell_iff_classifierEqSucc
+                wellFormed payload.1 payload.2 classifier).mpr hClassifierIsSucc)
+          else
+            isFalse (by
+              rw [subjectIsUniverseCode]
+              exact fun typed =>
+                hClassifierIsSucc
+                  ((HasType.universeCodeCell_iff_classifierEqSucc
+                    wellFormed payload.1 payload.2 classifier).mp typed))
+      else if hVariable : generator = Generator.gen_var then by
+        subst hVariable
+        have subjectIsVariable :
+            (RawTerm.mkGen Generator.gen_var payload children)
+              = variableCell payload := by
+          rw [RawTermChildren.eq_childNil children]
+          rfl
+        exact
+          if hClassifierIsLookup : classifier = context.lookup payload then
+            isTrue (by
+              rw [subjectIsVariable]
+              exact (HasType.variableCell_iff_classifierEqLookup
+                wellFormed payload classifier).mpr hClassifierIsLookup)
+          else
+            isFalse (by
+              rw [subjectIsVariable]
+              exact fun typed =>
+                hClassifierIsLookup
+                  ((HasType.variableCell_iff_classifierEqLookup
+                    wellFormed payload classifier).mp typed))
+      else
+        isFalse (HasType.not_of_headGenerator hVariable hUniverse)
+
 end FX1Poly.Typed
