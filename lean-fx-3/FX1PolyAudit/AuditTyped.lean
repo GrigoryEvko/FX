@@ -5,6 +5,7 @@ import FX1Poly.Typed.HasTypeHonesty
 import FX1Poly.Typed.WfContext
 import FX1Poly.Typed.HasTypeWeakening
 import FX1Poly.Typed.HasTypeSubstitution
+import FX1Poly.Typed.HasTypeValidity
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -69,3 +70,10 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.subst_singleton_renameWeaken_cancel
 #assert_no_axioms FX1Poly.Typed.HasType.substRespectingContext
 #assert_no_axioms FX1Poly.Typed.HasType.substituteUnderBinding
+
+/-! ### TY-VALIDITY (P3) #468 — IsType stability + lookup-is-type + classifier-is-a-type -/
+
+#assert_no_axioms FX1Poly.Typed.IsType.weakenUnderBinding
+#assert_no_axioms FX1Poly.Typed.IsType.substituteUnderBinding
+#assert_no_axioms FX1Poly.Typed.WfContext.lookupIsType
+#assert_no_axioms FX1Poly.Typed.HasType.classifierIsType
