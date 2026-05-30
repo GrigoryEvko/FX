@@ -86,6 +86,21 @@ theorem subst_piTyCodeCell {sourceScope targetScope : Nat}
           (RawTerm.subst (iterateLiftRaw substitution 1) codomainCode) :=
   rfl
 
+/-- Substitution distributes over a `sigmaTyCodeCell` exactly as over a
+`piTyCodeCell`: the domain (child shift `0`) by the substitution itself, the
+codomain (child shift `1`, under one fresh binder) by the substitution lifted
+once.  Holds by `rfl` — the dual of `subst_piTyCodeCell`, the binder-crossing
+brick the Σ-formation case of `substRespectingContext` will consume once the Σ
+arm lands. -/
+theorem subst_sigmaTyCodeCell {sourceScope targetScope : Nat}
+    (substitution : RawTermSubst sourceScope targetScope)
+    (domainCode : RawTerm sourceScope)
+    (codomainCode : RawTerm (sourceScope + 1)) :
+    RawTerm.subst substitution (sigmaTyCodeCell domainCode codomainCode)
+      = sigmaTyCodeCell (RawTerm.subst substitution domainCode)
+          (RawTerm.subst (iterateLiftRaw substitution 1) codomainCode) :=
+  rfl
+
 /-- Lifting a substitution commutes with weakening: substituting under one fresh
 binder (`RawTermSubst.lift`) after weakening equals weakening after the un-lifted
 substitution.  The substitution analog of `rename_lift_weaken_commute` (the

@@ -57,6 +57,22 @@ theorem rename_piTyCodeCell {sourceScope targetScope : Nat}
           (RawTerm.rename (iterateLiftRaw rawRenaming 1) codomainCode) :=
   rfl
 
+/-- Renaming distributes over a `sigmaTyCodeCell` exactly as over a
+`piTyCodeCell` (the two cells differ only in the head generator, which the
+canonical fold treats uniformly): the domain (child shift `0`) by the renaming
+itself, the codomain (child shift `1`, under one fresh binder) by the renaming
+lifted once.  Holds by `rfl` — the dual of `rename_piTyCodeCell`, the
+binder-crossing brick the Σ-formation case of `renameRespectingContext` will
+consume once the Σ arm lands. -/
+theorem rename_sigmaTyCodeCell {sourceScope targetScope : Nat}
+    (rawRenaming : RawRenaming sourceScope targetScope)
+    (domainCode : RawTerm sourceScope)
+    (codomainCode : RawTerm (sourceScope + 1)) :
+    RawTerm.rename rawRenaming (sigmaTyCodeCell domainCode codomainCode)
+      = sigmaTyCodeCell (RawTerm.rename rawRenaming domainCode)
+          (RawTerm.rename (iterateLiftRaw rawRenaming 1) codomainCode) :=
+  rfl
+
 /-- Lifting a renaming commutes with weakening: renaming under one fresh binder
 (`RawRenaming.lift`) after weakening equals weakening after the un-lifted
 renaming.  The naturality square `lift ρ ∘ weaken = weaken ∘ ρ` at the term

@@ -173,6 +173,17 @@ def piTyCodeCell {scope : Nat} (domainCode : RawTerm scope)
     (codomainCode : RawTerm (scope + 1)) : RawTerm scope :=
   .mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))
 
+/-- The dependent pair-type code cell `Σ domainCode. codomainCode` — the
+`.type`-sorted `gen_sigmaTyCode` cell.  Structurally identical to
+`piTyCodeCell` (binder shifts `[0, 1]`: the codomain lives under one fresh
+value binder, hence at `scope + 1`; payload is `Unit`; the two children are the
+domain and codomain codes); only the head generator differs (`gen_sigmaTyCode`
+vs `gen_piTyCode`).  Shape brick for the Σ-formation arm, the dual of #443's
+Π-formation. -/
+def sigmaTyCodeCell {scope : Nat} (domainCode : RawTerm scope)
+    (codomainCode : RawTerm (scope + 1)) : RawTerm scope :=
+  .mkGen .gen_sigmaTyCode () (.childCons domainCode (.childCons codomainCode .childNil))
+
 /-- The native typing judgment over the cell substrate: a `.term`-sorted
 SUBJECT cell classified by a `.type`-sorted CLASSIFIER cell in a
 `TypingContext`.  First slice — `var`, `conv`, and `universeFormation`. -/

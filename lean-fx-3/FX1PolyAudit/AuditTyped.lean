@@ -11,6 +11,7 @@ import FX1Poly.Typed.HasTypeInversion
 import FX1Poly.Typed.HasTypeDecidableConv
 import FX1Poly.Typed.HasTypeSubjectReduction
 import FX1Poly.Typed.UniverseCodeShape
+import FX1Poly.Typed.SigmaCodeShape
 import FX1Poly.Typed.IsTypeDecidable
 import FX1Poly.Typed.HasTypeDecidable
 import FX1Poly.Typed.HasTypeSmokeCorpus
@@ -46,6 +47,7 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.universeCodeCell
 #assert_no_axioms FX1Poly.Typed.variableCell
 #assert_no_axioms FX1Poly.Typed.piTyCodeCell
+#assert_no_axioms FX1Poly.Typed.sigmaTyCodeCell
 #assert_no_axioms FX1Poly.Typed.HasType
 #assert_no_axioms FX1Poly.Typed.IsType
 
@@ -176,6 +178,25 @@ gates pin them shut.
 
 #assert_no_axioms FX1Poly.Typed.size_lt_piTyCodeCell_domain
 #assert_no_axioms FX1Poly.Typed.size_lt_piTyCodeCell_codomain
+
+/-! ### Σ-FORMATION SHAPE SUBSTRATE (#445 stage 1, non-breaking) — the complete
+    raw-cell substrate for the Σ-formation arm, the dual of #443's Π substrate.
+    `gen_sigmaTyCode` is structurally identical to `gen_piTyCode` ([0, 1] binder
+    shifts, `Unit` payload), so each brick is the exact analog of its
+    `piTyCodeCell` counterpart with the head generator swapped: the smart-ctor
+    head computation, the two-child destructor, injectivity, non-stepping (pure
+    type former), the `rename`/`subst` commutations (both `rfl`), and the
+    `RawTerm.size` `decreasing_by` bricks.  The Σ arm + its decider cascade
+    (next iteration) consume these. -/
+
+#assert_no_axioms FX1Poly.Typed.headGenerator_sigmaTyCodeCell
+#assert_no_axioms FX1Poly.Typed.eq_sigmaTyCodeCell_of_headGenerator
+#assert_no_axioms FX1Poly.Typed.sigmaTyCodeCell_inj
+#assert_no_axioms FX1Poly.Typed.sigmaTyCodeCell_noStep_of_childrenNoStep
+#assert_no_axioms FX1Poly.Typed.rename_sigmaTyCodeCell
+#assert_no_axioms FX1Poly.Typed.subst_sigmaTyCodeCell
+#assert_no_axioms FX1Poly.Typed.size_lt_sigmaTyCodeCell_domain
+#assert_no_axioms FX1Poly.Typed.size_lt_sigmaTyCodeCell_codomain
 
 /-! ### IsType CHARACTERIZATION (#303 heart) — the decidable trichotomy on the
     head generator that `Decidable IsType` assembles: universe codes are always
