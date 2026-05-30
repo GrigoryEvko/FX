@@ -1,4 +1,5 @@
 import FX1Poly.Typed.HasTypeHonesty
+import FX1Poly.Typed.HasTypeSubjectReduction
 import FX1Poly.Core.ConvNormalForm
 import FX1Poly.Core.StrongNormalizationLeaves
 import FX1Poly.Core.RawTermDecEq
@@ -21,33 +22,33 @@ suffices and is exact (0 false negatives here).
 
 ## Zero-axiom verification
 
-`IsType.hasNoStep` case-splits the validity witness via
-`typedSubjectIsVariableOrUniverseCode` and applies the leaf no-step lemmas
-(`noStep_var` / `noStep_universeCode`).  The decidable instance is a two-arm
-`match` on `DecidableEq (RawTerm)` with a constant motive (propext-clean).
-Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
+`IsType.hasNoStep` delegates to `HasType.subjectHasNoStep` (the propext-free
+induction-on-derivation invariant) on the type's own typing witness.  The
+decidable instance is a two-arm `match` on `DecidableEq (RawTerm)` with a
+constant motive (propext-clean).  Per-declaration gated in
+`FX1PolyAudit/AuditTyped.lean`.
 -/
 
 namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- Every type in the current fragment is a non-stepping leaf.  An `IsType`
-witness exposes a typing derivation whose subject is the type itself; that
-subject is a variable cell or a universe-code cell, and both are normal leaves
-(`noStep_var` / `noStep_universeCode`). -/
+/-- Every type in the current fragment is a non-stepping normal form.  An
+`IsType` witness exposes a typing derivation whose *subject* is the type itself
+(`typed : HasType … classifier (univ …)`), so type normality is exactly the
+subject-side `HasType.subjectHasNoStep` specialised to that derivation —
+`IsType.hasNoStep` is the classifier-side face of the one structural invariant.
+
+Delegating (rather than re-running the classification split) keeps both faces on
+the single induction-on-derivation proof, so neither breaks when the
+classification lemma widens for a nesting former (#443): `subjectHasNoStep`
+absorbs the new arm via its children IHs and this corollary follows untouched. -/
 theorem IsType.hasNoStep {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {classifier : RawTerm scope}
     (isType : IsType profile context classifier) :
     ∀ reduct : RawTerm scope, Step classifier reduct → False := by
   obtain ⟨levelExpr, flag, typed⟩ := isType
-  rcases typed.typedSubjectIsVariableOrUniverseCode with
-    ⟨index, classifierIsVariable⟩ | ⟨codeLevel, codeFlag, classifierIsUniverse⟩
-  · subst classifierIsVariable
-    exact fun _reduct step => StepStar.noStep_var index step
-  · subst classifierIsUniverse
-    exact fun _reduct step =>
-      StepStar.noStep_universeCode (codeLevel, codeFlag) step
+  exact typed.subjectHasNoStep
 
 /-- **Convertible well-formed types are equal** (current fragment): both types
 are normal, so `Conv` collapses to `Eq` by rigidity. -/

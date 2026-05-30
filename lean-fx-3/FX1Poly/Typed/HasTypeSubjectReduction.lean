@@ -23,8 +23,9 @@ line, already shipped for the normal fragment).
 
 ## Zero-axiom verification
 
-`typedSubjectIsVariableOrUniverseCode` (a propext-free induction) + the leaf
-no-step lemmas (`noStep_var`, `noStep_universeCode`).  No `axiom`, `sorry`,
+A propext-free `induction` on the `HasType` derivation (the recursor with a
+subject-only motive) + the leaf no-step lemmas (`noStep_var`,
+`noStep_universeCode`); the `conv` arm is its premise's IH.  No `axiom`, `sorry`,
 `propext`, `Quot.sound`, `Classical`.  Per-declaration gated in
 `FX1PolyAudit/AuditTyped.lean`.
 -/
@@ -33,22 +34,32 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core
 
-/-- Every well-typed subject in the current fragment is a non-stepping leaf: it
-is a `variableCell` or a `universeCodeCell`
-(`typedSubjectIsVariableOrUniverseCode`), and both are normal leaves
-(`noStep_var` / `noStep_universeCode`). -/
+/-- Every well-typed subject in the current fragment is a non-stepping leaf: a
+`variableCell` or a `universeCodeCell`, both normal leaves (`noStep_var` /
+`noStep_universeCode`).
+
+Proved by **induction on the derivation** (NOT `rcases` on
+`typedSubjectIsVariableOrUniverseCode`): the motive "the subject does not step"
+depends only on the subject, so `var`/`universeFormation` discharge by the leaf
+no-step lemmas and `conv` is exactly its premise's IH (the subject is unchanged
+across a conversion).  This is the #443-ready shape: a nesting type former
+(`piFormation`) joins as one more arm whose children IHs feed
+`piTyCodeCell_noStep_of_childrenNoStep` — whereas the old classification-`rcases`
+proof could not have reached the children's normality.  It also decouples this
+lemma (and `IsType.hasNoStep`, which now delegates here) from the classification
+lemma, shrinking the eventual Π cascade. -/
 theorem HasType.subjectHasNoStep {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {subject classifier : RawTerm scope}
     (typed : HasType profile context subject classifier) :
     ∀ reduct : RawTerm scope, Step subject reduct → False := by
-  rcases typed.typedSubjectIsVariableOrUniverseCode with
-    ⟨index, subjectIsVariable⟩ | ⟨levelExpr, flag, subjectIsUniverse⟩
-  · subst subjectIsVariable
-    exact fun _reduct step => StepStar.noStep_var index step
-  · subst subjectIsUniverse
-    exact fun _reduct step =>
-      StepStar.noStep_universeCode (levelExpr, flag) step
+  induction typed with
+  | var index => exact fun _reduct step => StepStar.noStep_var index step
+  | conv levelExpr flag typedPremise converts reclassifierTyped
+      ihTypedPremise _ihReclassifierTyped =>
+      exact ihTypedPremise
+  | universeFormation levelExpr flag =>
+      exact fun _reduct step => StepStar.noStep_universeCode (levelExpr, flag) step
 
 /-- **Typed Subject Reduction (P4)** for the current fragment.  Holds vacuously:
 a well-typed subject does not `Step` (`subjectHasNoStep`), so the reduction
