@@ -19,6 +19,7 @@ import FX1Poly.Typed.HasTypeConsistency
 import FX1Poly.Typed.HasTypeInfer
 import FX1Poly.Typed.HasTypeCheck
 import FX1Poly.Typed.HasTypeClosedForms
+import FX1Poly.Typed.WfContextDecidable
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -297,6 +298,17 @@ gates pin them shut.
 
 #assert_no_axioms FX1Poly.Typed.HasType.closedSubjectIsTypeFormer
 #assert_no_axioms FX1Poly.Typed.HasType.closedClassifierConvUniverseCode
+
+/-! ### CONTEXT WELL-FORMEDNESS DECISION (completes the decidable-checking story)
+    — `WfContext.decidable` decides whether a raw `TypingContext` telescope is
+    well-formed (every binding is a type in its prefix), by structural recursion
+    on the telescope delegating each binding to `IsType.decidableOfWellFormed`
+    (#303) under the prefix certificate.  The context-level checker complementing
+    the term-level `Decidable IsType`/`HasType`/`Conv`.  Confirms the indexed
+    two-constructor telescope match stays propext-clean into a `Decidable`
+    motive. -/
+
+#assert_no_axioms FX1Poly.Typed.WfContext.decidable
 
 /-! ### TYPE SYNTHESIS / bidirectional `infer` (#478 / #300 M51, current fragment)
     — synthesise a subject's classifier + derivation (sound by construction);
