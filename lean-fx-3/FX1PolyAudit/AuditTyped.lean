@@ -148,6 +148,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.rename_piTyCodeCell
 #assert_no_axioms FX1Poly.Typed.subst_piTyCodeCell
 
+/-! ### Π-CELL SIZE MEASURE (#443 stage 2 prereq, non-breaking) — domain and
+    codomain are `RawTerm.size`-smaller than the `piTyCodeCell` containing them.
+    The `decreasing_by` obligations a well-founded recursive Π-formation decider
+    discharges, sidestepping the `RawTerm`/`RawTermChildren` mutual
+    `termination_by` boundary gap with a plain `Nat` measure. -/
+
+#assert_no_axioms FX1Poly.Typed.size_lt_piTyCodeCell_domain
+#assert_no_axioms FX1Poly.Typed.size_lt_piTyCodeCell_codomain
+
 /-! ### IsType CHARACTERIZATION (#303 heart) — the decidable trichotomy on the
     head generator that `Decidable IsType` assembles: universe codes are always
     types; a variable is a type iff its looked-up classifier is a universe code

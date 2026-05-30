@@ -1,6 +1,7 @@
 import FX1Poly.Typed.HasTypeHonesty
 import FX1Poly.Core.RawTermChildrenUnique
 import FX1Poly.Core.StepInversion
+import FX1Poly.Core.RawSize
 
 /-! # FX1Poly/Typed/UniverseCodeShape
     — raw-cell inversion for universe-code cells
@@ -136,5 +137,44 @@ theorem piTyCodeCell_noStep_of_childrenNoStep {scope : Nat}
     ⟨domainAfter, _, domainStep⟩ | ⟨codomainAfter, _, codomainStep⟩
   · exact domainNoStep domainAfter domainStep
   · exact codomainNoStep codomainAfter codomainStep
+
+/-- The domain code is strictly smaller (by `RawTerm.size`) than the Π-type code
+cell containing it.  The `decreasing_by` obligation a well-founded recursive
+Π-formation decider (#443 stage 2) discharges when it recurses into the domain.
+
+Proved by composing the spine brick `RawTermChildren.size_lt_childCons_head`
+(`domain.size < (childCons domain _).size`) with `Nat.lt_succ_self` (the cell's
+size is the spine's size plus one), after `dsimp` unfolds `piTyCodeCell` and
+`RawTerm.size` to the literal `childCons` spine.  A `RawTerm.size` Nat measure —
+NOT structural recursion — to sidestep the `RawTerm`/`RawTermChildren` mutual
+`termination_by` boundary gap (the same reason the certifier uses fuel). -/
+theorem size_lt_piTyCodeCell_domain {scope : Nat}
+    (domainCode : RawTerm scope) (codomainCode : RawTerm (scope + 1)) :
+    domainCode.size < (piTyCodeCell domainCode codomainCode).size := by
+  dsimp only [piTyCodeCell, RawTerm.size]
+  exact Nat.lt_trans
+    (RawTermChildren.size_lt_childCons_head (shift := 0) domainCode
+      (.childCons codomainCode .childNil))
+    (Nat.lt_succ_self _)
+
+/-- The codomain code is strictly smaller (by `RawTerm.size`) than the Π-type
+code cell containing it.  Companion to `size_lt_piTyCodeCell_domain`: the
+`decreasing_by` obligation when the Π-formation decider recurses into the
+codomain (at `scope + 1`).
+
+The codomain sits one `childCons` deeper than the domain, so the chain is one
+step longer: head-of-tail (`codomain.size < (childCons codomain childNil).size`)
+then tail-of-head (`(childCons codomain _).size < (childCons domain _).size`)
+then `Nat.lt_succ_self`. -/
+theorem size_lt_piTyCodeCell_codomain {scope : Nat}
+    (domainCode : RawTerm scope) (codomainCode : RawTerm (scope + 1)) :
+    codomainCode.size < (piTyCodeCell domainCode codomainCode).size := by
+  dsimp only [piTyCodeCell, RawTerm.size]
+  exact Nat.lt_trans
+    (Nat.lt_trans
+      (RawTermChildren.size_lt_childCons_head (shift := 1) codomainCode .childNil)
+      (RawTermChildren.size_lt_childCons_tail (shift := 0) domainCode
+        (.childCons codomainCode .childNil)))
+    (Nat.lt_succ_self _)
 
 end FX1Poly.Typed
