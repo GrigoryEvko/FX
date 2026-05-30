@@ -6,6 +6,7 @@ import FX1Poly.Typed.WfContext
 import FX1Poly.Typed.HasTypeWeakening
 import FX1Poly.Typed.HasTypeSubstitution
 import FX1Poly.Typed.HasTypeValidity
+import FX1Poly.Typed.HasTypeStronglyNormalizing
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -77,3 +78,9 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsType.substituteUnderBinding
 #assert_no_axioms FX1Poly.Typed.WfContext.lookupIsType
 #assert_no_axioms FX1Poly.Typed.HasType.classifierIsType
+
+/-! ### FUNDAMENTAL THEOREM (M10, current fragment) + typed Conv.trans payoff -/
+
+#assert_no_axioms FX1Poly.Typed.HasType.isStronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.IsType.isStronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.Conv.trans_of_typedMiddle
