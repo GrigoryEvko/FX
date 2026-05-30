@@ -160,6 +160,11 @@ gates pin them shut.
 
 #assert_no_axioms FX1Poly.Typed.HasType.decidableOfWellFormed
 
+/-! ### DECIDABLE TYPED CONV (#462 ★ A-core, current fragment) — convertibility
+    of the classifiers of two well-typed terms, via validity + rigidity. -/
+
+#assert_no_axioms FX1Poly.Typed.Conv.decidableOfTyped
+
 /-! ### TYPED SMOKE CORPUS (#470/#308, current fragment) — non-vacuity /
     regression witnesses pinning that the deciders DISCRIMINATE: one accepted +
     one rejected cell per outcome branch (universeCode-isTrue, var-isTrue,

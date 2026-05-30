@@ -169,4 +169,22 @@ def HasType.decidableOfWellFormed {profile : PolyProfile} {scope : Nat}
       else
         isFalse (HasType.not_of_headGenerator hVariable hUniverse)
 
+/-- Decidable typed conversion (★ A-core, #462): the convertibility of the
+CLASSIFIERS of two well-typed terms is decidable.  Both classifiers are `IsType`
+by validity (`HasType.classifierIsType`), hence normal leaves, so this reduces to
+`Conv.decidableOfIsType` (normal-form rigidity + `DecidableEq RawTerm`, no
+normalizer).  This is the entry point a bidirectional checker uses to compare a
+synthesized classifier against an expected one — the typed-Conv leg of the
+leaf-fragment decidable-typing triad. -/
+def Conv.decidableOfTyped {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {firstSubject firstClassifier secondSubject secondClassifier : RawTerm scope}
+    (wellFormed : WfContext context)
+    (firstTyped : HasType profile context firstSubject firstClassifier)
+    (secondTyped : HasType profile context secondSubject secondClassifier) :
+    Decidable (Conv firstClassifier secondClassifier) :=
+  Conv.decidableOfIsType
+    (HasType.classifierIsType wellFormed firstTyped)
+    (HasType.classifierIsType wellFormed secondTyped)
+
 end FX1Poly.Typed
