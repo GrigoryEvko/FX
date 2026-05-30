@@ -2,6 +2,7 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.Universe.LevelExpr
 import FX1Poly.Universe.UniverseFlag
 import FX1Poly.Universe.LevelExprSimplify
+import FX1Poly.Universe.LevelExprSerialize
 
 /-! # Tools/AuditAll/AuditUniverse
    — persistent per-declaration zero-axiom gate for the Phase Z₀
@@ -433,3 +434,21 @@ full strict-zero-axiom sweep.
 #assert_no_axioms FX1Poly.Universe.LevelExpr.MaxPlusForm.sortByVariableSteps_smoke_reversedTriple
 #assert_no_axioms FX1Poly.Universe.LevelExpr.MaxPlusForm.absorbFromSteps_smoke_fuseThenSkip
 #assert_no_axioms FX1Poly.Universe.LevelExpr.MaxPlusForm.canonicalizeVarOffsetsSteps_smoke_reversedPair
+
+/-! ### M24-Z1 #432 part 1 — LevelExpr prefix serializer + round-trip
+
+The `LevelExpr → List Nat` prefix encoder (accumulator form, no list
+concatenation), its fuel-bounded decoder, and the round-trip left-inverse
+proof at the natural `nodeCount` fuel.  Feeds the FX0 certificate format;
+the propext-clean foundation for the universe-payload serializer arm of
+the Generator-payload refactor. -/
+
+#assert_no_axioms FX1Poly.Universe.LevelExpr.nodeCount
+#assert_no_axioms FX1Poly.Universe.LevelExpr.encodeOnto
+#assert_no_axioms FX1Poly.Universe.LevelExpr.encodePrefix
+#assert_no_axioms FX1Poly.Universe.LevelExpr.decodeOnto
+#assert_no_axioms FX1Poly.Universe.LevelExpr.decodeOnto_encodeOnto_lsucc
+#assert_no_axioms FX1Poly.Universe.LevelExpr.decodeOnto_encodeOnto_lmax
+#assert_no_axioms FX1Poly.Universe.LevelExpr.decodeOnto_encodeOnto_limax
+#assert_no_axioms FX1Poly.Universe.LevelExpr.decodeOnto_encodeOnto
+#assert_no_axioms FX1Poly.Universe.LevelExpr.decodeOnto_nodeCount_encodePrefix
