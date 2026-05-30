@@ -74,6 +74,18 @@ theorem WfContext.headIsType {profile : PolyProfile} {scope : Nat}
     IsType profile restContext bindingType :=
   wellFormed.2
 
+/-- Introduction (inverse of `tailWellFormed` + `headIsType`): extending a
+well-formed context by a binding that is a type in the prefix yields a
+well-formed context.  The primitive a recursive type-former checker needs to
+thread well-formedness into a codomain checked under `Γ.cons dom` — e.g. the
+#443 Π-formation decider, where the codomain premise lives at `scope + 1`. -/
+theorem WfContext.cons {profile : PolyProfile} {scope : Nat}
+    {restContext : TypingContext profile scope} {bindingType : RawTerm scope}
+    (restWellFormed : WfContext restContext)
+    (bindingIsType : IsType profile restContext bindingType) :
+    WfContext (restContext.cons bindingType) :=
+  ⟨restWellFormed, bindingIsType⟩
+
 /-- `WfContext` is non-vacuous: a context binding a single universe code is
 well-formed, because the universe code is a type (`universeFormation`).
 This is the payoff of grounding `IsType` (#442) — the well-formedness

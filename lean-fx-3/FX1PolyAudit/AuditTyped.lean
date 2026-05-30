@@ -63,6 +63,7 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.WfContext.emptyIsWellFormed
 #assert_no_axioms FX1Poly.Typed.WfContext.tailWellFormed
 #assert_no_axioms FX1Poly.Typed.WfContext.headIsType
+#assert_no_axioms FX1Poly.Typed.WfContext.cons
 #assert_no_axioms FX1Poly.Typed.wfContext_universeBinding
 
 /-! ### TY-SR-cong #456 — typed renaming + weakening (structural cartesian lift) -/
