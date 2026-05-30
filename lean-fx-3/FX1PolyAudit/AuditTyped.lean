@@ -7,6 +7,7 @@ import FX1Poly.Typed.HasTypeWeakening
 import FX1Poly.Typed.HasTypeSubstitution
 import FX1Poly.Typed.HasTypeValidity
 import FX1Poly.Typed.HasTypeStronglyNormalizing
+import FX1Poly.Typed.HasTypeInversion
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -84,3 +85,8 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasType.isStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.IsType.isStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.Conv.trans_of_typedMiddle
+
+/-! ### INVERSION (#454, current fragment) — per-shape classifier characterization -/
+
+#assert_no_axioms FX1Poly.Typed.HasType.inversionVariable
+#assert_no_axioms FX1Poly.Typed.HasType.inversionUniverseCode
