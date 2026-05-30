@@ -165,6 +165,14 @@ def universeCodeCell {scope : Nat}
 def variableCell {scope : Nat} (index : Fin scope) : RawTerm scope :=
   .mkGen .gen_var index .childNil
 
+/-- The dependent function-type code cell `Π domainCode. codomainCode` — the
+`.type`-sorted `gen_piTyCode` cell (binder shifts `[0, 1]`: the codomain lives
+under one fresh value binder, hence at `scope + 1`).  Payload is `Unit`; the two
+children are the domain and codomain codes.  Shape brick for #443 Π-formation. -/
+def piTyCodeCell {scope : Nat} (domainCode : RawTerm scope)
+    (codomainCode : RawTerm (scope + 1)) : RawTerm scope :=
+  .mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))
+
 /-- The native typing judgment over the cell substrate: a `.term`-sorted
 SUBJECT cell classified by a `.type`-sorted CLASSIFIER cell in a
 `TypingContext`.  First slice — `var`, `conv`, and `universeFormation`. -/

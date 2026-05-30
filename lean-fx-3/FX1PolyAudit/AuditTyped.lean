@@ -45,6 +45,7 @@ gates pin them shut.
 
 #assert_no_axioms FX1Poly.Typed.universeCodeCell
 #assert_no_axioms FX1Poly.Typed.variableCell
+#assert_no_axioms FX1Poly.Typed.piTyCodeCell
 #assert_no_axioms FX1Poly.Typed.HasType
 #assert_no_axioms FX1Poly.Typed.IsType
 
@@ -128,6 +129,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.eq_variableCell_of_headGenerator
 #assert_no_axioms FX1Poly.Typed.headGenerator_universeCodeCell
 #assert_no_axioms FX1Poly.Typed.headGenerator_variableCell
+
+/-! ### Π-FORMATION SHAPE BRICKS (#443 stage 1, non-breaking) — `piTyCodeCell`
+    smart ctor + head-generator computation + the two-child destructor that
+    stage 2's `piFormation` arm + the decider cascade will consume. -/
+
+#assert_no_axioms FX1Poly.Typed.headGenerator_piTyCodeCell
+#assert_no_axioms FX1Poly.Typed.eq_piTyCodeCell_of_headGenerator
 
 /-! ### IsType CHARACTERIZATION (#303 heart) — the decidable trichotomy on the
     head generator that `Decidable IsType` assembles: universe codes are always

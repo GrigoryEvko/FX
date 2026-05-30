@@ -82,4 +82,36 @@ theorem headGenerator_variableCell {scope : Nat} (index : Fin scope) :
     RawTerm.headGenerator (variableCell index) = Generator.gen_var := by
   rfl
 
+/-- The head generator of a Π-type code cell is `gen_piTyCode`.  `scope` pinned by
+the domain code. -/
+theorem headGenerator_piTyCodeCell {scope : Nat} (domainCode : RawTerm scope)
+    (codomainCode : RawTerm (scope + 1)) :
+    RawTerm.headGenerator (piTyCodeCell domainCode codomainCode)
+      = Generator.gen_piTyCode := by
+  rfl
+
+/-- A cell whose head generator is `gen_piTyCode` is a `piTyCodeCell`: unlike the
+nullary universe/variable cells, its child-spine has TWO entries (domain at
+`scope`, codomain at `scope + 1`), recovered by destructuring the `[0, 1]`-indexed
+`RawTermChildren` and collapsing the `childNil` tail.  The destructor `Decidable`
+typing of Π-formation (#443) needs to turn `headGenerator = gen_piTyCode` into a
+concrete `piTyCodeCell domain codomain`. -/
+theorem eq_piTyCodeCell_of_headGenerator {scope : Nat}
+    {cell : RawTerm scope}
+    (headIsPi : RawTerm.headGenerator cell = Generator.gen_piTyCode) :
+    ∃ (domainCode : RawTerm scope) (codomainCode : RawTerm (scope + 1)),
+      cell = piTyCodeCell domainCode codomainCode := by
+  cases cell with
+  | mkGen generator payload children =>
+      change generator = Generator.gen_piTyCode at headIsPi
+      subst headIsPi
+      change RawTermChildren [0, 1] scope at children
+      cases children with
+      | childCons domainCode restChildren =>
+          cases restChildren with
+          | childCons codomainCode tailChildren =>
+              refine ⟨domainCode, codomainCode, ?_⟩
+              rw [RawTermChildren.eq_childNil tailChildren]
+              rfl
+
 end FX1Poly.Typed
