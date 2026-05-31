@@ -1,0 +1,154 @@
+import FX1Poly.Core.ReducibleTypeAbstraction
+import FX1Poly.Core.ReducibleTypeHeadExpansion
+import FX1Poly.Core.ReducibleTypeConvInvariance
+import FX1Poly.Core.ReducibleTypeReducibilityCandidate
+
+/-! # Foundation/PolyCell/Core/ReducibleMember
+    — semantic membership: the fundamental theorem's conclusion shape + its Π/conv/SN rules
+
+`ReducibleType typeCode candidate` is a RELATION ("the type denotes this candidate").  The fundamental
+theorem concludes in the MEMBERSHIP form — "the term lies in its type's candidate" — which packages the
+candidate existentially:
+
+  `IsReducibleMember typeCode term := ∃ candidate, ReducibleType typeCode candidate ∧ candidate term`.
+
+This is exactly `HasType Γ t T → IsReducibleMember (T.subst γ) (t.subst γ)` under a reducible closing
+substitution `γ` (the #425 environment, built next).  This file ships the term-level reasoning the
+fundamental theorem's structural cases consume DIRECTLY, lifted from the candidate-level lemmas to the
+existentially-packaged membership form:
+
+  * **`ReducibleType.piTypeInversion`** — a `gen_piTyCode`-rooted type is reducible ONLY through the
+    `piType` arm (it is weak-head normal, so `whnfExpand` is impossible; its root IS `gen_piTyCode`, so
+    `neutral` is impossible).  Recovers the domain/codomain candidates with their reducibility witnesses.
+  * **`IsReducibleMember.application`** (`piElim`) — a member of a Π-type applied to a reducible
+    argument is a member of the instantiated codomain.  The candidate alignment between the argument's
+    own candidate and the Π's domain candidate is bridged by `ReducibleType.deterministic`.
+  * **`IsReducibleMember.abstraction`** (`piIntro`) — `lam body` is a member of the Π-type when every
+    reducible argument sends the body's instance into the codomain candidate; the β-redex head-expansion
+    is discharged by `DependentArrowCandidate.abstraction` (codomain closure from
+    `ReducibleType.headExpansionClosed`, domain SN supplied at the call site).
+  * **`IsReducibleMember.castAlongConv`** (`conv`) — membership transfers to any convertible type that
+    is itself reducible, via `ReducibleType.convTransfer`.
+  * **`IsReducibleMember.stronglyNormalizing`** (CR1) — at a non-empty scope (where the arrow CR1 has a
+    domain inhabitant, §`ReducibleType.isReducibilityCandidate`), every member strongly normalizes.  This
+    is the candidate→SN direction the SN-for-closed corollary (#426) consumes.
+
+## Zero-axiom verification
+
+`piTypeInversion` is `cases` on the derivation (the `whnfExpand`/`neutral` arms discharged by the
+weak-head-normal `gen_piTyCode` root, exactly as in `ReducibleType.deterministic`); the four rules
+destructure the existential and apply the shipped candidate-level lemma.  No `axiom`, `sorry`, `propext`,
+`Quot.sound`, `Classical`, `native_decide`, `omega`.  Swept per declaration by `#audit_namespace
+FX1Poly.Core`.
+-/
+
+namespace FX1Poly.Core
+open FX1Poly.Foundation
+open StepStar
+
+/-- **Semantic membership.**  `term` is a reducible member of the type `typeCode` when the type denotes
+some reducibility candidate containing the term.  This is the CONCLUSION shape of the fundamental
+theorem (`HasType Γ t T → IsReducibleMember (T.subst γ) (t.subst γ)` under a reducible environment). -/
+def IsReducibleMember {scope : Nat} (typeCode term : RawTerm scope) : Prop :=
+  ∃ candidate : RawTerm scope → Prop, ReducibleType typeCode candidate ∧ candidate term
+
+/-- **Π-code inversion.**  A `gen_piTyCode`-rooted type is reducible ONLY through the `piType` arm: it
+is weak-head normal (so `whnfExpand` cannot fire — discharged by `cases` on the impossible head step),
+and its root IS `gen_piTyCode` (so `neutral`'s non-Π guard is refuted by `rfl`).  Inverting recovers the
+domain candidate, the codomain candidate family, their reducibility witnesses, and that the candidate is
+pointwise the dependent-arrow candidate. -/
+theorem ReducibleType.piTypeInversion {scope : Nat}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {candidate : RawTerm scope → Prop}
+    (reducible : ReducibleType
+      (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil)))
+      candidate) :
+    ∃ (domainCandidate : RawTerm scope → Prop)
+      (codomainCandidate : RawTerm scope → (RawTerm scope → Prop)),
+      ReducibleType domainCode domainCandidate ∧
+      (∀ argument : RawTerm scope, domainCandidate argument →
+        ReducibleType (RawTerm.subst0 codomainCode argument) (codomainCandidate argument)) ∧
+      PointwiseIff candidate (DependentArrowCandidate domainCandidate codomainCandidate) := by
+  cases reducible with
+  | whnfExpand weakHeadStep _reductReducible =>
+      cases weakHeadStep with | rootIota iotaStep => cases iotaStep
+  | neutral _noWeakHeadStep notPiType => exact absurd rfl notPiType
+  | piType codomainCandidate domainReducible codomainReducible =>
+      exact ⟨_, codomainCandidate, domainReducible, codomainReducible, fun _term => Iff.rfl⟩
+
+/-- **Semantic Π elimination (`piElim` / app).**  Applying a reducible member of a Π-type to a reducible
+argument yields a reducible member of the instantiated codomain.  Inversion supplies the Π's domain and
+codomain candidates; `ReducibleType.deterministic` aligns the argument's own candidate with the Π's
+domain candidate so the dependent-arrow membership fires at the argument. -/
+theorem IsReducibleMember.application {scope : Nat}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {functionTerm argument : RawTerm scope}
+    (functionMember : IsReducibleMember
+      (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil)))
+      functionTerm)
+    (argumentMember : IsReducibleMember domainCode argument) :
+    IsReducibleMember (RawTerm.subst0 codomainCode argument)
+      (.mkGen .gen_app () (.childCons functionTerm (.childCons argument .childNil))) := by
+  obtain ⟨_piCandidate, piReducible, functionInPi⟩ := functionMember
+  obtain ⟨_domainCandidate, codomainCandidate, domainReducible, codomainReducible,
+    candidateEquivalence⟩ := piReducible.piTypeInversion
+  obtain ⟨_argumentCandidate, argumentReducible, argumentInCandidate⟩ := argumentMember
+  have argumentInDomain :=
+    (ReducibleType.deterministic argumentReducible domainReducible argument).mp argumentInCandidate
+  have functionArrow := (candidateEquivalence functionTerm).mp functionInPi
+  exact ⟨codomainCandidate argument,
+    codomainReducible argument argumentInDomain,
+    functionArrow argument argumentInDomain⟩
+
+/-- **Semantic Π introduction (`piIntro` / λ).**  `lam body` is a reducible member of the Π-type when,
+for every reducible argument, the body's substitution instance lies in that argument's codomain
+candidate.  The codomain candidate family and its reducibility are supplied as data (the fundamental
+theorem's body induction hypothesis provides them); the domain arguments' strong normalization comes
+from the domain candidate's CR1 at the call site.  The β-redex `app (lam body) argument` head-expands to
+`subst0 body argument`, discharged by `DependentArrowCandidate.abstraction` threading
+`ReducibleType.headExpansionClosed`. -/
+theorem IsReducibleMember.abstraction {scope : Nat}
+    {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
+    {domainCandidate : RawTerm scope → Prop}
+    {codomainCandidate : RawTerm scope → (RawTerm scope → Prop)}
+    (domainReducible : ReducibleType domainCode domainCandidate)
+    (domainArgumentsSN : ∀ argument : RawTerm scope, domainCandidate argument →
+      IsStronglyNormalizing argument)
+    (codomainReducible : ∀ argument : RawTerm scope, domainCandidate argument →
+      ReducibleType (RawTerm.subst0 codomainCode argument) (codomainCandidate argument))
+    (bodyReducible : ∀ argument : RawTerm scope, domainCandidate argument →
+      codomainCandidate argument (RawTerm.subst0 body argument)) :
+    IsReducibleMember
+      (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil)))
+      (.mkGen .gen_lam () (.childCons body .childNil)) :=
+  ⟨DependentArrowCandidate domainCandidate codomainCandidate,
+   ReducibleType.piType codomainCandidate domainReducible codomainReducible,
+   DependentArrowCandidate.abstraction domainArgumentsSN
+     (fun argument argumentInDomain => (codomainReducible argument argumentInDomain).headExpansionClosed)
+     bodyReducible⟩
+
+/-- **Semantic conversion (`conv`).**  A reducible member transfers to any convertible type that is
+itself reducible — the fundamental theorem's `conv` arm.  `ReducibleType.convTransfer` ports membership
+from the source candidate to the (independently supplied) target candidate. -/
+theorem IsReducibleMember.castAlongConv {scope : Nat}
+    {typeLeft typeRight term : RawTerm scope}
+    {candidateRight : RawTerm scope → Prop}
+    (member : IsReducibleMember typeLeft term)
+    (targetReducible : ReducibleType typeRight candidateRight)
+    (conv : Conv typeLeft typeRight) :
+    IsReducibleMember typeRight term := by
+  obtain ⟨_candidateLeft, reducibleLeft, membership⟩ := member
+  exact ⟨candidateRight, targetReducible,
+    ReducibleType.convTransfer reducibleLeft targetReducible conv membership⟩
+
+/-- **Members are strongly normalizing (CR1).**  At a non-empty scope — where the candidate machinery's
+arrow CR1 has a uniform domain inhabitant (variable 0, via `ReducibleType.isReducibilityCandidate`) —
+every reducible member of a type strongly normalizes.  This is the candidate→SN direction the
+SN-for-closed corollary consumes (the closed apex is reached by weakening to `scope + 1`). -/
+theorem IsReducibleMember.stronglyNormalizing {scope : Nat}
+    {typeCode term : RawTerm (scope + 1)} (member : IsReducibleMember typeCode term) :
+    IsStronglyNormalizing term := by
+  obtain ⟨_candidate, reducible, membership⟩ := member
+  exact reducible.isReducibilityCandidate.stronglyNormalizing membership
+
+end FX1Poly.Core
