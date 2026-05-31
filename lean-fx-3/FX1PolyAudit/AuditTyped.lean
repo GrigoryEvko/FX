@@ -479,3 +479,5 @@ gates pin them shut.
     entry point. -/
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionPiCodeGeneral
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionPiCode
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionSigmaCodeGeneral
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionSigmaCode
