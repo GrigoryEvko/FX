@@ -83,6 +83,7 @@ import FX1Poly.Core.IdEliminatorLayer
 -- confluence + iota-eta double strips + concrete neutral predicate.
 import FX1Poly.Core.NeutralTerm
 import FX1Poly.Core.ReducibilityCandidate
+import FX1Poly.Core.ReducibilityCandidateArrow
 import FX1Poly.Core.StrongNormalizationRedexes
 import FX1Poly.Core.StrongNormalizationIotaRedexes
 import FX1Poly.Core.StrongNormalizationSubterm
