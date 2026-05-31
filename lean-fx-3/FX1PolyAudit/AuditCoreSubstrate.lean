@@ -94,6 +94,7 @@ import FX1Poly.Core.SimplyTypedNormalization
 import FX1Poly.Core.SimpleTypeErasure
 import FX1Poly.Core.CandidateInterpretation
 import FX1Poly.Core.CandidateInterpretationDeterminism
+import FX1Poly.Core.CandidateInterpretationRename
 import FX1Poly.Core.StrongNormalizationRename
 import FX1Poly.Core.StrongNormalizationEta
 import FX1Poly.Core.StepBetaEtaConfluence
