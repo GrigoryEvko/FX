@@ -103,6 +103,7 @@ import FX1Poly.Core.WhnfInterpretationDeterminism
 import FX1Poly.Core.WhnfInterpretationHeadExpansion
 import FX1Poly.Core.WhnfInterpretationHeadReduce
 import FX1Poly.Core.PolygraphConvergentDecision
+import FX1Poly.Core.SconingWitness
 import FX1Poly.Core.StrongNormalizationRename
 import FX1Poly.Core.StrongNormalizationEta
 import FX1Poly.Core.StepBetaEtaConfluence
