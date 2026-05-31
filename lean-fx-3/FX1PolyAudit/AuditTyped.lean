@@ -523,9 +523,13 @@ gates pin them shut.
     receives are convertible.  A recursion on `HasTypeDesc` ITSELF: the `var` /
     `universeFormation` arms invert the second derivation (INTRINSIC leaf inversions);
     the `conv` arm recurses INTRINSICALLY through `Conv.trans_of_typedMiddle`; the
-    `genFormation` arm is the ONE coupled arm, settling the two classifiers through the
-    `⟺` equivalence into the verified bespoke `HasType.uniqueness` (the intrinsic
-    formation arm awaits a mutual `uniqueness`/telescope-agreement recursion — blocked
-    on mutual-recursion index phrasing + forced-children telescope deconstruction, the
-    decouple's next target).  P7 makes `infer` well-defined and feeds canonicity. -/
+    `genFormation` arm is now ALSO intrinsic — it inverts the second derivation with the
+    INTRINSIC `inversion{Pi,Sigma}CodeWithConvGeneral`, then forces the two formation
+    telescopes to agree on `levels`/`flag` via `DescTelescope.uniquenessAgree`, after
+    which both classifiers reduce to the SAME canonical universe code.  The ONE remaining
+    leaf coupling is `uniquenessAgree` settling each HEAD CHILD's level/flag through the
+    verified bespoke `HasType.uniqueness` (a standalone recursion cannot yet call the
+    intrinsic uniqueness it precedes; the fully intrinsic version makes the two MUTUAL —
+    the decouple's next target).  P7 makes `infer` well-defined and feeds canonicity. -/
+#assert_no_axioms FX1Poly.Typed.DescTelescope.uniquenessAgree
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.uniqueness
