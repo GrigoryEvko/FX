@@ -24,6 +24,7 @@ import FX1Poly.Typed.HasTypeGen
 import FX1Poly.Typed.DependentTelescopeSpike
 import FX1Poly.Typed.HasTypeDesc
 import FX1Poly.Typed.HasTypeDescSound
+import FX1Poly.Typed.HasTypeDescDecidable
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -419,3 +420,9 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeTelescope
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.toHasType
 #assert_no_axioms FX1Poly.Typed.DescTelescope.toHasTypeTelescope
+-- DECIDABILITY (P11 0-FN) of the description engine, transported across the
+-- proven ⟺ equivalence from the bespoke `HasType.decidableOfWellFormed`: the
+-- cascade-free description-driven `gen` arm is a genuine DECIDABLE typechecker on
+-- the current fragment.  Hand-built (match on the bespoke decision + the two
+-- equivalence maps), no `decidable_of_iff`/`Iff`, so propext-free.
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.decidableOfWellFormed
