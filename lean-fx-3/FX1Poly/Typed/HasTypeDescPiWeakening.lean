@@ -69,6 +69,43 @@ theorem rename_appCell {sourceScope targetScope : Nat}
           (RawTerm.rename rawRenaming argument) :=
   rfl
 
+/-- The one-binder lift of a renaming context-condition: if `rawRenaming` respects the context,
+its single lift respects the context extended by `domainCode` (renamed).  Factors the
+binder-crossing condition shared by the `piIntro`, `piFormation`, and `sigmaFormation` arms of
+`renameRespectingContext` — `0` resolves by `rename_lift_weaken_commute` on the domain, `k+1` by
+the base condition under weakening (`iterateLiftRaw ρ 1 ≡ RawRenaming.lift ρ` defeq throughout). -/
+theorem renameContextCondition_cons {profile : PolyProfile}
+    {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope}
+    {targetContext : TypingContext profile targetScope}
+    (domainCode : RawTerm sourceScope) (rawRenaming : RawRenaming sourceScope targetScope)
+    (contextCondition : ∀ index : Fin sourceScope,
+      RawTerm.rename rawRenaming (sourceContext.lookup index)
+        = targetContext.lookup (rawRenaming index)) :
+    ∀ index : Fin (sourceScope + 1),
+      RawTerm.rename (iterateLiftRaw rawRenaming 1)
+          ((sourceContext.cons domainCode).lookup index)
+        = (targetContext.cons (RawTerm.rename rawRenaming domainCode)).lookup
+            (iterateLiftRaw rawRenaming 1 index) := by
+  intro index
+  obtain ⟨indexValue, indexBound⟩ := index
+  cases indexValue with
+  | zero =>
+      show RawTerm.rename (iterateLiftRaw rawRenaming 1)
+          (RawTerm.rename RawRenaming.weaken domainCode)
+        = RawTerm.rename RawRenaming.weaken (RawTerm.rename rawRenaming domainCode)
+      exact rename_lift_weaken_commute rawRenaming domainCode
+  | succ k =>
+      show RawTerm.rename (iterateLiftRaw rawRenaming 1)
+          (RawTerm.rename RawRenaming.weaken
+            (sourceContext.lookup ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩))
+        = RawTerm.rename RawRenaming.weaken
+            (targetContext.lookup (rawRenaming ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩))
+      exact (rename_lift_weaken_commute rawRenaming
+          (sourceContext.lookup ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩)).trans
+        (congrArg (RawTerm.rename RawRenaming.weaken)
+          (contextCondition ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩))
+
 /-- INTRINSIC renaming for the grown engine: `HasTypeDescPi` is preserved along any renaming that
 respects the context (sends each source binding's looked-up type to the target's, commuting with
 `rename`), with subject and classifier renamed.  The grown engine's cartesian-lift fibration leg.
@@ -109,26 +146,8 @@ theorem HasTypeDescPi.renameRespectingContext {profile : PolyProfile}
       have bodyRenamed :=
         HasTypeDescPi.renameRespectingContext bodyTyped
           (targetContext.cons (RawTerm.rename rawRenaming domainCode))
-          (iterateLiftRaw rawRenaming 1) (by
-            intro index
-            obtain ⟨indexValue, indexBound⟩ := index
-            cases indexValue with
-            | zero =>
-                show RawTerm.rename (iterateLiftRaw rawRenaming 1)
-                    (RawTerm.rename RawRenaming.weaken domainCode)
-                  = RawTerm.rename RawRenaming.weaken
-                      (RawTerm.rename rawRenaming domainCode)
-                exact rename_lift_weaken_commute rawRenaming domainCode
-            | succ k =>
-                show RawTerm.rename (iterateLiftRaw rawRenaming 1)
-                    (RawTerm.rename RawRenaming.weaken
-                      (sourceContext.lookup ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩))
-                  = RawTerm.rename RawRenaming.weaken
-                      (targetContext.lookup (rawRenaming ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩))
-                exact (rename_lift_weaken_commute rawRenaming
-                    (sourceContext.lookup ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩)).trans
-                  (congrArg (RawTerm.rename RawRenaming.weaken)
-                    (contextCondition ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩)))
+          (iterateLiftRaw rawRenaming 1)
+          (renameContextCondition_cons domainCode rawRenaming contextCondition)
       rw [rename_lamCell, rename_piTyCodeCell]
       exact HasTypeDescPi.piIntro domainLevel domainFlag domainRenamed bodyRenamed
   | @HasTypeDescPi.piElim _ _ _ functionTerm argument domainCode codomainCode
@@ -142,6 +161,35 @@ theorem HasTypeDescPi.renameRespectingContext {profile : PolyProfile}
           contextCondition
       rw [rename_appCell, RawTerm.rename_subst0_commute]
       exact HasTypeDescPi.piElim functionRenamed argumentRenamed
+  | @HasTypeDescPi.piFormation _ _ _ domainCode codomainCode domainLevel codomainLevel flag
+      domainTyped codomainTyped => fun targetContext rawRenaming contextCondition => by
+      have domainRenamed :=
+        HasTypeDescPi.renameRespectingContext domainTyped targetContext rawRenaming
+          contextCondition
+      rw [rename_universeCodeCell] at domainRenamed
+      have codomainRenamed :=
+        HasTypeDescPi.renameRespectingContext codomainTyped
+          (targetContext.cons (RawTerm.rename rawRenaming domainCode))
+          (iterateLiftRaw rawRenaming 1)
+          (renameContextCondition_cons domainCode rawRenaming contextCondition)
+      rw [rename_universeCodeCell] at codomainRenamed
+      rw [rename_piTyCodeCell, rename_universeCodeCell]
+      exact HasTypeDescPi.piFormation domainLevel codomainLevel flag domainRenamed codomainRenamed
+  | @HasTypeDescPi.sigmaFormation _ _ _ domainCode codomainCode domainLevel codomainLevel flag
+      domainTyped codomainTyped => fun targetContext rawRenaming contextCondition => by
+      have domainRenamed :=
+        HasTypeDescPi.renameRespectingContext domainTyped targetContext rawRenaming
+          contextCondition
+      rw [rename_universeCodeCell] at domainRenamed
+      have codomainRenamed :=
+        HasTypeDescPi.renameRespectingContext codomainTyped
+          (targetContext.cons (RawTerm.rename rawRenaming domainCode))
+          (iterateLiftRaw rawRenaming 1)
+          (renameContextCondition_cons domainCode rawRenaming contextCondition)
+      rw [rename_universeCodeCell] at codomainRenamed
+      rw [rename_sigmaTyCodeCell, rename_universeCodeCell]
+      exact HasTypeDescPi.sigmaFormation domainLevel codomainLevel flag domainRenamed
+        codomainRenamed
 
 /-- INTRINSIC weakening for the grown engine: a `HasTypeDescPi` derivation survives extending the
 context by one fresh binding, subject and classifier shifted by `RawRenaming.weaken`.  The

@@ -675,5 +675,17 @@ gates pin them shut.
     leaves HasTypeDesc/toHasType/decidability/uniqueness untouched. -/
 #assert_no_axioms FX1Poly.Typed.rename_lamCell
 #assert_no_axioms FX1Poly.Typed.rename_appCell
+#assert_no_axioms FX1Poly.Typed.renameContextCondition_cons
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.renameRespectingContext
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.weakenUnderBinding
+
+/-! ### NATIVE Π/Σ-FORMATION ARMS for the grown engine (substitution-closure prerequisite).
+    `HasTypeDescPi` gains `piFormation` + `sigmaFormation` (native dependent type-former
+    formation: domain:Type@dl, codomain:Type@cl under the binder ⊢ Π/Σ : Type@(dl⊔cl)).  These
+    make the engine SUBSTITUTION-CLOSED: substituting a grown term into a `piTyCodeCell` component
+    yields a Π type with a non-formation component, which `ofFormation` cannot type but
+    `piFormation` can — the prerequisite for the grown-engine substitution leg.  The
+    `renameRespectingContext` gate above re-verifies with the two new arms (the binder-crossing
+    condition factored into `renameContextCondition_cons`, shared by piIntro/piFormation/
+    sigmaFormation).  NON-breaking: additive constructors; HasTypeDesc/toHasType/decidability/
+    uniqueness untouched. -/

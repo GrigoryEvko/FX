@@ -25,11 +25,18 @@ rules) plus the already-proven dependent-eliminator output-validity.  This leave
 `typingRuleDescOf` row, so the `genFormation` arm cannot produce them) — so `ofFormation` of a
 β-redex is impossible, and `HasTypeDescPi` genuinely EXTENDS coverage rather than relabelling.
 
-## The four arms
+## The arms
 
 * `ofFormation` — embed any formation derivation (var/conv/universeFormation/genFormation).
 * `conv` — conversion at the grown level (mirror of `HasTypeDesc.conv`; the formation `conv`
   only relates formation terms, so the grown engine needs its own).
+* `piFormation` / `sigmaFormation` — NATIVE dependent type-former formation: `domain : Type@dl`
+  and `codomain : Type@cl` (under the domain binder) give `Π/Σ domain. codomain : Type@(dl ⊔
+  cl)`.  These exist (rather than only `ofFormation`) so the engine is SUBSTITUTION-CLOSED:
+  substituting a grown term (e.g. an application) into a `piTyCodeCell` component yields a Π type
+  with a NON-formation component, which `ofFormation` cannot type — but `piFormation` can.  They
+  are the prerequisite for the grown-engine substitution leg (the `ofFormation` case of
+  `substRespectingContext` rebuilds a substituted formation Π/Σ via these native arms).
 * `piIntro` (λ) — `body : codomainCode` under `context.cons domainCode`, with `domainCode` a
   type (witness exposed as `domainLevel`/`domainFlag`/`domainTyped`, per the
   nested-`Exists`-in-a-ctor-premise rejection), gives `lamCell body : Π domainCode. codomainCode`.
@@ -107,6 +114,26 @@ inductive HasTypeDescPi (profile : PolyProfile) :
       (argumentTyped : HasTypeDescPi profile context argument domainCode) :
       HasTypeDescPi profile context (appCell functionTerm argument)
         (RawTerm.subst0 codomainCode argument)
+  | piFormation {scope : Nat} {context : TypingContext profile scope}
+      {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+      (domainLevel codomainLevel : LevelExpr) (flag : UniverseFlag)
+      (domainTyped :
+        HasTypeDescPi profile context domainCode (universeCodeCell domainLevel flag))
+      (codomainTyped :
+        HasTypeDescPi profile (context.cons domainCode) codomainCode
+          (universeCodeCell codomainLevel flag)) :
+      HasTypeDescPi profile context (piTyCodeCell domainCode codomainCode)
+        (universeCodeCell (LevelExpr.lmax domainLevel codomainLevel) flag)
+  | sigmaFormation {scope : Nat} {context : TypingContext profile scope}
+      {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+      (domainLevel codomainLevel : LevelExpr) (flag : UniverseFlag)
+      (domainTyped :
+        HasTypeDescPi profile context domainCode (universeCodeCell domainLevel flag))
+      (codomainTyped :
+        HasTypeDescPi profile (context.cons domainCode) codomainCode
+          (universeCodeCell codomainLevel flag)) :
+      HasTypeDescPi profile context (sigmaTyCodeCell domainCode codomainCode)
+        (universeCodeCell (LevelExpr.lmax domainLevel codomainLevel) flag)
 
 /-- A grown-engine type: the classifier inhabits some universe code in `HasTypeDescPi`. -/
 def IsTypeDescPi (profile : PolyProfile) {scope : Nat}
