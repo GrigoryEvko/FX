@@ -661,3 +661,19 @@ gates pin them shut.
     recursion stays within the `HasTypeDesc`/`DescTelescope` family, so no cross-inductive boundary. -/
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.substIntoGrown
 #assert_no_axioms FX1Poly.Typed.DescTelescope.substIntoGrown
+
+/-! ### GROWN-ENGINE SUBSTITUTION — full leg (the β-engine "whiskering").
+    `HasTypeDescPi.substRespectingContext` (mutual with `DescTelescopePi.substRespectingTelescope`)
+    carries a GROWN derivation along ANY substitution whose substituents are `HasTypeDescPi`-typed at
+    the substituted source bindings — the dual of the renaming `renameRespectingContext` (cartesian
+    lift).  Substitution does NOT preserve formation-ness, so its `ofFormation` arm routes through the
+    completed `HasTypeDesc.substIntoGrown` (returning a grown derivation) rather than a re-wrap; that
+    keeps the recursion within the `HasTypeDescPi`/`DescTelescopePi` family (no cross-inductive
+    boundary).  `subst_{lamCell,appCell}` are the rfl distribution bricks; `substContextCondition_cons`
+    is the one-binder lifted grown substitution-condition the `piIntro` arm needs.  This is the
+    substitution lemma typed β subject reduction consumes. -/
+#assert_no_axioms FX1Poly.Typed.subst_lamCell
+#assert_no_axioms FX1Poly.Typed.subst_appCell
+#assert_no_axioms FX1Poly.Typed.substContextCondition_cons
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.substRespectingContext
+#assert_no_axioms FX1Poly.Typed.DescTelescopePi.substRespectingTelescope
