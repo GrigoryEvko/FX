@@ -1,5 +1,7 @@
 import FX1Poly.Core.ReducibleType
+import FX1Poly.Core.ReducibleTypeForwardClosure
 import FX1Poly.Core.WeakHeadStepCommute
+import FX1Poly.Core.WeakHeadNormalPreservation
 
 /-! # Foundation/PolyCell/Core/ReducibleTypeForwardStepStar
     — forward closure of the dependent reducibility relation under multi-step reduction (whnfExpand arm)
@@ -60,5 +62,61 @@ theorem ReducibleType.whnfExpandClosure {scope : Nat} {candidate : RawTerm scope
       · exact restClosure laterWeakHeadStep (laterClosure _ catchUpChain)
           (fun furtherReduct furtherChain =>
             laterClosure furtherReduct (StepStar.trans_compose catchUpChain furtherChain))
+
+/-- **Neutrality is preserved along `StepStar`.**  A weak-head-NORMAL non-Π type stays weak-head-normal
+non-Π under any multi-step reduction: weak-head-normality descends step-by-step via
+`WeakHeadStep.weakHeadNormalPreservedByStep` (a reduct of a weak-head-normal term is weak-head-normal),
+and the root generator is preserved by `Step.rootGenerator_eq_of_weakHeadNormal` (so `root ≠ piTyCode`
+survives).  This is the engine of the `neutral` arm of `forwardStepStar`. -/
+theorem ReducibleType.neutralPreservedAlongStepStar {scope : Nat} :
+    ∀ {neutralType finalType : RawTerm scope}, StepStar neutralType finalType →
+      (∀ reduct : RawTerm scope, ¬ WeakHeadStep neutralType reduct) →
+      neutralType.rootGenerator ≠ Generator.gen_piTyCode →
+      (∀ reduct : RawTerm scope, ¬ WeakHeadStep finalType reduct) ∧
+        finalType.rootGenerator ≠ Generator.gen_piTyCode := by
+  intro neutralType finalType chain
+  induction chain with
+  | refl _ => intro noWeakHeadStep notPiType; exact ⟨noWeakHeadStep, notPiType⟩
+  | trans firstStep _restChain restPreserved =>
+      intro noWeakHeadStep notPiType
+      have intermediateNoWeakHeadStep :=
+        WeakHeadStep.weakHeadNormalPreservedByStep noWeakHeadStep firstStep
+      have rootEquation := Step.rootGenerator_eq_of_weakHeadNormal noWeakHeadStep firstStep
+      exact restPreserved intermediateNoWeakHeadStep
+        (fun rootIsPiType => notPiType (rootEquation.symm.trans rootIsPiType))
+
+/-- **Forward closure of the dependent reducibility relation under multi-step reduction.**  A reducible
+type stays reducible at the SAME candidate along any `StepStar` — the keystone of conversion-invariance.
+Induction on the reducibility derivation dispatches the chain by arm: `whnfExpand` pushes the chain past
+the weak-head redex (`whnfExpandClosure`), `neutral` keeps the type weak-head-normal non-Π
+(`neutralPreservedAlongStepStar`), and `piType` decomposes the Π-code reduction into domain/codomain
+chains (`StepStar.piTyCode_decompose`), re-interpreting the domain candidate (domain induction hypothesis)
+and the codomain candidate at the reduced code (codomain induction hypothesis composed with
+`StepStar.subst0Body`), then rebuilds `piType`.  Now UNCONDITIONAL: the `neutral` arm rests on the fully
+proved `WeakHeadStep.weakHeadNormalPreservedByStep`, so no fragment restriction. -/
+theorem ReducibleType.forwardStepStar {scope : Nat} {candidate : RawTerm scope → Prop}
+    {typeCode : RawTerm scope} (reducible : ReducibleType typeCode candidate) :
+    ∀ {finalType : RawTerm scope}, StepStar typeCode finalType →
+      ReducibleType finalType candidate := by
+  induction reducible with
+  | whnfExpand weakHeadStep reductReducible reductInductiveHypothesis =>
+      intro finalType chain
+      exact ReducibleType.whnfExpandClosure chain weakHeadStep reductReducible
+        (fun _furtherReduct furtherChain => reductInductiveHypothesis furtherChain)
+  | neutral noWeakHeadStep notPiType =>
+      intro finalType chain
+      obtain ⟨finalNoWeakHeadStep, finalNotPiType⟩ :=
+        ReducibleType.neutralPreservedAlongStepStar chain noWeakHeadStep notPiType
+      exact ReducibleType.neutral finalNoWeakHeadStep finalNotPiType
+  | piType codomainCandidate _domainReducible _codomainReducible
+      domainInductiveHypothesis codomainInductiveHypothesis =>
+      intro finalType chain
+      obtain ⟨_updatedDomain, _updatedCodomain, finalEquation, domainChain, codomainChain⟩ :=
+        StepStar.piTyCode_decompose chain
+      subst finalEquation
+      exact ReducibleType.piType codomainCandidate (domainInductiveHypothesis domainChain)
+        (fun argument domainMember =>
+          codomainInductiveHypothesis argument domainMember
+            (StepStar.subst0Body argument codomainChain))
 
 end FX1Poly.Core
