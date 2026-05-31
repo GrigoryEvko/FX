@@ -25,6 +25,7 @@ import FX1Poly.Typed.DependentTelescopeSpike
 import FX1Poly.Typed.HasTypeDesc
 import FX1Poly.Typed.HasTypeDescSound
 import FX1Poly.Typed.HasTypeDescDecidable
+import FX1Poly.Typed.HasTypeDescElim
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -430,3 +431,18 @@ gates pin them shut.
 -- the current fragment.  Hand-built (match on the bespoke decision + the two
 -- equivalence maps), no `decidable_of_iff`/`Iff`, so propext-free.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.decidableOfWellFormed
+
+/-! ### Eliminator-shape SUBSTRATE for the description engine (`HasTypeDescElim`).
+    `DescTermTelescope` — the maximally-general typed-children spine over the
+    PRIMARY engine `HasTypeDesc`: each child typed at an ARBITRARY classifier (the
+    eliminator shape — scrutinee/motive/branches at motive-dependent types, NOT
+    universes), the §11.8.5 PREMISE-side seam past formation (the output-side seam
+    was opened by `outputType`).  Non-vacuous: `DescTelescope.toTermTelescope` shows
+    the formation spine is an INSTANCE (so the substrate subsumes formation);
+    `descTermTelescope_heterogeneous` witnesses a telescope at arbitrary classifiers
+    the universe-only spine cannot express.  Standalone (HasTypeDesc positive in
+    `cons` only); `toTermTelescope` is the propext-free term-mode `match` (mirrors
+    the shipped `DescTelescope.toHasTypeTelescope`), self-recursive only. -/
+#assert_no_axioms FX1Poly.Typed.DescTermTelescope
+#assert_no_axioms FX1Poly.Typed.DescTelescope.toTermTelescope
+#assert_no_axioms FX1Poly.Typed.descTermTelescope_heterogeneous
