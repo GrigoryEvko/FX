@@ -84,14 +84,15 @@ of `HasTypeDesc.genFormation`, mutual with `DescTelescopePi`), plus its own `con
 over `HasTypeDesc` (which appears only positively, in `ofFormation`; `HasTypeDescPi` itself only
 in premises) — disturbs neither `HasTypeDesc` nor the `toHasType` ⟺ cross-check.
 
-`genFormationPi` SUBSUMES the binary `piFormation`/`sigmaFormation` (kept for now; see
-`DescTelescope.toDescTelescopePi`) and is what makes the grown engine SUBSTITUTION-CLOSED
-GENERICALLY: substituting a grown term into a type-former component yields a former with a grown
-component, typed by `genFormationPi` with no per-former dispatch — whereas the binary arms would
-force a partial-match on the child telescope (the indexed-inductive propext trap).  This is the
-§5-endgame direction: formation typing GENERIC over the cell table, not bespoke per-former — a
-new dependent former is ONE `typingRuleDescOf` row, ZERO new arms (P13 cascade-freedom), now at
-the grown layer too. -/
+`genFormationPi` is the engine's SOLE formation arm, generic over `typingRuleDescOf`:
+`DescTelescope.toDescTelescopePi` + `HasTypeDesc.genFormationToHasTypeDescPi` exhibit that every
+formation Π/Σ is a `genFormationPi`.  It makes the grown engine SUBSTITUTION-CLOSED GENERICALLY:
+substituting a grown term into a type-former component yields a former with a grown component,
+typed by `genFormationPi` with no per-former dispatch — a per-former arm would force a
+partial-match on the child telescope (the indexed-inductive propext trap).  This is the §5-endgame
+direction: formation typing GENERIC over the cell table, not bespoke per-former — a new dependent
+former is ONE `typingRuleDescOf` row, ZERO new arms (P13 cascade-freedom), at the grown layer
+too. -/
 inductive HasTypeDescPi (profile : PolyProfile) :
     {scope : Nat} → TypingContext profile scope →
       RawTerm scope → RawTerm scope → Prop where
@@ -127,26 +128,6 @@ inductive HasTypeDescPi (profile : PolyProfile) :
       (argumentTyped : HasTypeDescPi profile context argument domainCode) :
       HasTypeDescPi profile context (appCell functionTerm argument)
         (RawTerm.subst0 codomainCode argument)
-  | piFormation {scope : Nat} {context : TypingContext profile scope}
-      {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
-      (domainLevel codomainLevel : LevelExpr) (flag : UniverseFlag)
-      (domainTyped :
-        HasTypeDescPi profile context domainCode (universeCodeCell domainLevel flag))
-      (codomainTyped :
-        HasTypeDescPi profile (context.cons domainCode) codomainCode
-          (universeCodeCell codomainLevel flag)) :
-      HasTypeDescPi profile context (piTyCodeCell domainCode codomainCode)
-        (universeCodeCell (LevelExpr.lmax domainLevel codomainLevel) flag)
-  | sigmaFormation {scope : Nat} {context : TypingContext profile scope}
-      {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
-      (domainLevel codomainLevel : LevelExpr) (flag : UniverseFlag)
-      (domainTyped :
-        HasTypeDescPi profile context domainCode (universeCodeCell domainLevel flag))
-      (codomainTyped :
-        HasTypeDescPi profile (context.cons domainCode) codomainCode
-          (universeCodeCell codomainLevel flag)) :
-      HasTypeDescPi profile context (sigmaTyCodeCell domainCode codomainCode)
-        (universeCodeCell (LevelExpr.lmax domainLevel codomainLevel) flag)
   | genFormationPi {scope : Nat} (context : TypingContext profile scope)
       (generator : Generator) (payload : generator.payload scope)
       (children : RawTermChildren generator.binderShifts scope)

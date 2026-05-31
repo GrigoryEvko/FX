@@ -23,12 +23,14 @@ non-formation component, which `ofFormation` cannot type (the grown engine curre
 types only via `ofFormation`).  So the substitution leg awaits a native Π-formation arm; renaming
 does not, and lands fully here.
 
-## Structure (self-recursion, four arms)
+## Structure (mutual recursion: 5 arms + the telescope companion)
 
-A `match`-form self-recursion (NOT mutual): the `ofFormation` cross-call is to the shipped
+A `match`-form MUTUAL recursion, `HasTypeDescPi.renameRespectingContext` ⋈
+`DescTelescopePi.renameRespectingTelescope`: the `ofFormation` cross-call is to the shipped
 `HasTypeDesc.renameRespectingContext` (a different, completed theorem) on the opaque
-`formationTyped`; the only recursions are on the strictly-smaller `HasTypeDescPi`
-sub-derivations, so Lean's structural recursion lands it without `termination_by`.
+`formationTyped`; the other recursions are on strictly-smaller `HasTypeDescPi`/`DescTelescopePi`
+sub-derivations (the `genFormationPi` companion cross-call HOISTED before its `by_cases`, so the
+spine stays pristine), so Lean's structural recursion lands it without `termination_by`.
 
 * `ofFormation` — delegate to `HasTypeDesc.renameRespectingContext`, re-wrap.
 * `conv` — recurse both premises; `rename_universeCodeCell` fixes the reclassifier's universe
@@ -40,6 +42,9 @@ sub-derivations, so Lean's structural recursion lands it without `termination_by
   argument; the output commutes by `rename_subst0_commute` (`rename ρ (B[a]) = (B under lift ρ)[a
   under ρ]`); reassemble via `rename_appCell`.  `iterateLiftRaw ρ 1 ≡ RawRenaming.lift ρ` (defeq)
   bridges the codomain forms.
+* `genFormationPi` — the GENERIC type-former arm: rename the premise spine through the companion
+  `DescTelescopePi.renameRespectingTelescope`, re-fire `genFormationPi` with the renamed children
+  (the rule pinned by `DecidableEq Generator`).
 
 ## Zero-axiom
 
@@ -70,10 +75,11 @@ theorem rename_appCell {sourceScope targetScope : Nat}
   rfl
 
 /-- The one-binder lift of a renaming context-condition: if `rawRenaming` respects the context,
-its single lift respects the context extended by `domainCode` (renamed).  Factors the
-binder-crossing condition shared by the `piIntro`, `piFormation`, and `sigmaFormation` arms of
-`renameRespectingContext` — `0` resolves by `rename_lift_weaken_commute` on the domain, `k+1` by
-the base condition under weakening (`iterateLiftRaw ρ 1 ≡ RawRenaming.lift ρ` defeq throughout). -/
+its single lift respects the context extended by `domainCode` (renamed).  The binder-crossing
+condition the `piIntro` arm of `renameRespectingContext` needs (the lone non-telescope
+binder-crosser; `genFormationPi` crosses binders via its telescope companion) — `0` resolves by
+`rename_lift_weaken_commute` on the domain, `k+1` by the base condition under weakening
+(`iterateLiftRaw ρ 1 ≡ RawRenaming.lift ρ` defeq throughout). -/
 theorem renameContextCondition_cons {profile : PolyProfile}
     {sourceScope targetScope : Nat}
     {sourceContext : TypingContext profile sourceScope}
@@ -163,35 +169,6 @@ theorem HasTypeDescPi.renameRespectingContext {profile : PolyProfile}
           contextCondition
       rw [rename_appCell, RawTerm.rename_subst0_commute]
       exact HasTypeDescPi.piElim functionRenamed argumentRenamed
-  | @HasTypeDescPi.piFormation _ _ _ domainCode codomainCode domainLevel codomainLevel flag
-      domainTyped codomainTyped => fun targetContext rawRenaming contextCondition => by
-      have domainRenamed :=
-        HasTypeDescPi.renameRespectingContext domainTyped targetContext rawRenaming
-          contextCondition
-      rw [rename_universeCodeCell] at domainRenamed
-      have codomainRenamed :=
-        HasTypeDescPi.renameRespectingContext codomainTyped
-          (targetContext.cons (RawTerm.rename rawRenaming domainCode))
-          (iterateLiftRaw rawRenaming 1)
-          (renameContextCondition_cons domainCode rawRenaming contextCondition)
-      rw [rename_universeCodeCell] at codomainRenamed
-      rw [rename_piTyCodeCell, rename_universeCodeCell]
-      exact HasTypeDescPi.piFormation domainLevel codomainLevel flag domainRenamed codomainRenamed
-  | @HasTypeDescPi.sigmaFormation _ _ _ domainCode codomainCode domainLevel codomainLevel flag
-      domainTyped codomainTyped => fun targetContext rawRenaming contextCondition => by
-      have domainRenamed :=
-        HasTypeDescPi.renameRespectingContext domainTyped targetContext rawRenaming
-          contextCondition
-      rw [rename_universeCodeCell] at domainRenamed
-      have codomainRenamed :=
-        HasTypeDescPi.renameRespectingContext codomainTyped
-          (targetContext.cons (RawTerm.rename rawRenaming domainCode))
-          (iterateLiftRaw rawRenaming 1)
-          (renameContextCondition_cons domainCode rawRenaming contextCondition)
-      rw [rename_universeCodeCell] at codomainRenamed
-      rw [rename_sigmaTyCodeCell, rename_universeCodeCell]
-      exact HasTypeDescPi.sigmaFormation domainLevel codomainLevel flag domainRenamed
-        codomainRenamed
   | .genFormationPi _sourceContext generator payload children levels flag rule
       isFormation premises => fun targetContext rawRenaming contextCondition => by
       -- Cross-call the telescope companion on the PRISTINE `premises` FIRST (before any
