@@ -8,12 +8,13 @@ mutual `HasTypeGen` + `DependentBinaryFormationChildren` inductive that
 replaces a per-generator cascade with per-SHAPE arms, each generic over
 the `Generator` via a metadata predicate (NOT a per-generator arm).
 
-It ships THREE arms: `var`, `conv`, and ONE per-shape
-`dependentBinaryFormation` arm — the dependent-binary type-formation
-shape, covering `gen_piTyCode` / `gen_sigmaTyCode` (any future
-generator the `isDependentBinaryFormer` whitelist admits reuses it with
-zero new code).  This is the FIRST of the ~6 shape-arms Decision 4
-calls for; the genuinely-shape-generic `TypingRule`-driven `gen` arm
+It ships FOUR arms: `var`, `conv`, the nullary `universeFormation`
+shape-arm, and ONE per-shape `dependentBinaryFormation` arm — the
+dependent-binary type-formation shape, covering `gen_piTyCode` /
+`gen_sigmaTyCode` (any future generator the `isDependentBinaryFormer`
+whitelist admits reuses it with zero new code).  `universeFormation` +
+`dependentBinaryFormation` are the FIRST TWO of the ~6 shape-arms
+Decision 4 calls for; the genuinely-shape-generic `TypingRule`-driven `gen` arm
 (one arm consuming `rule.outputType` for ALL shapes) is the eventual
 target — this file does NOT yet reach it (one arm per SHAPE, not one
 arm total).
@@ -120,7 +121,11 @@ theorem isDependentBinaryFormer_sigmaTyCode :
 
 mutual
 
-/-- The cascade-free typing judgment.  Core arms `var` + `conv`, plus
+/-- The cascade-free typing judgment.  Core arms `var` + `conv`, the
+nullary `universeFormation` shape-arm (`Type@(e, flag) : Type@(lsucc e,
+flag)` — stated directly via the `universeCodeCell` smart ctor, since the
+universe shape has exactly the one generator `gen_universeCode` so the
+smart ctor IS the shape membership — no whitelist predicate needed), plus
 ONE per-shape `dependentBinaryFormation` arm — the dependent-binary
 type-formation shape — that consumes the `Generator` metadata predicate
 `isDependentBinaryFormer` (the whitelist hypothesis `isBinaryFormer`).
@@ -145,6 +150,10 @@ inductive HasTypeGen (profile : PolyProfile) :
         HasTypeGen profile context reclassifier
           (universeCodeCell levelExpr flag)) :
       HasTypeGen profile context subject reclassifier
+  | universeFormation {scope : Nat} (context : TypingContext profile scope)
+      (levelExpr : LevelExpr) (flag : UniverseFlag) :
+      HasTypeGen profile context (universeCodeCell levelExpr flag)
+        (universeCodeCell levelExpr.lsucc flag)
   | dependentBinaryFormation {scope : Nat}
       (context : TypingContext profile scope)
       (generator : Generator)
