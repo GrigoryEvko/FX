@@ -28,6 +28,7 @@ import FX1Poly.Typed.HasTypeDescDecidable
 import FX1Poly.Typed.HasTypeDescElim
 import FX1Poly.Typed.HasTypeDescValidity
 import FX1Poly.Typed.HasTypeDescInversion
+import FX1Poly.Typed.HasTypeDescUniqueness
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -516,3 +517,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionVariable
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionUniverseCodeGeneral
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionUniverseCode
+
+/-! ### UNIQUENESS of typing (P7) for the description engine
+    (`HasTypeDescUniqueness`).  polycell.md §11.8.5 P7: any two classifiers a cell
+    receives are convertible.  A recursion on `HasTypeDesc` ITSELF: the `var` /
+    `universeFormation` arms invert the second derivation (INTRINSIC leaf inversions);
+    the `conv` arm recurses INTRINSICALLY through `Conv.trans_of_typedMiddle`; the
+    `genFormation` arm is the ONE coupled arm, settling the two classifiers through the
+    `⟺` equivalence into the verified bespoke `HasType.uniqueness` (the intrinsic
+    formation arm awaits a mutual `uniqueness`/telescope-agreement recursion — blocked
+    on mutual-recursion index phrasing + forced-children telescope deconstruction, the
+    decouple's next target).  P7 makes `infer` well-defined and feeds canonicity. -/
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.uniqueness
