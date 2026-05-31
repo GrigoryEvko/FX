@@ -20,7 +20,7 @@ semantic substitution lemma will consume.
 ## Zero-axiom verification
 
 Induction on the first interpretation, inverting the second by `cases` at each concrete generator
-head (var / piTyCode / other) — propext-clean, as for `ErasesTo`.  Equivalences are threaded through
+head (var / piTyCode / other) — propext-clean.  Equivalences are threaded through
 `isArrowReducible_pointwiseIff` and `pointwiseIffEnv_cons`; no predicate equality, hence no `funext`.
 No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Swept per
 declaration by `#audit_namespace FX1Poly.Core`.

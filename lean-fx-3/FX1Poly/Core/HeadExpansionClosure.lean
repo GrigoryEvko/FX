@@ -3,8 +3,8 @@ import FX1Poly.Core.StrongNormalizationSpineExpansion
 /-! # Foundation/PolyCell/Core/HeadExpansionClosure
     — head-expansion closure as a candidate property, closed under SN and the arrow former
 
-The Tait fundamental theorem's λ case needs `Red T` to be **head-expansion-closed** for every
-interpreted type `T` (so that a β-redex inherits membership from its contractum).  This file
+The Tait fundamental theorem's λ case needs each interpreted type's candidate to be
+**head-expansion-closed** (so that a β-redex inherits membership from its contractum).  This file
 makes that a first-class property and proves it closes under the two type-interpretation
 constructors:
 

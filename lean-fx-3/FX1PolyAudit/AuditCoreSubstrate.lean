@@ -89,9 +89,6 @@ import FX1Poly.Core.StrongNormalizationIotaRedexes
 import FX1Poly.Core.StrongNormalizationSubterm
 import FX1Poly.Core.StrongNormalizationSpineExpansion
 import FX1Poly.Core.HeadExpansionClosure
-import FX1Poly.Core.SimpleTypeInterpretation
-import FX1Poly.Core.SimplyTypedNormalization
-import FX1Poly.Core.SimpleTypeErasure
 import FX1Poly.Core.CandidateInterpretation
 import FX1Poly.Core.CandidateInterpretationDeterminism
 import FX1Poly.Core.CandidateInterpretationRename

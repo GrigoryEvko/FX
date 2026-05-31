@@ -4,8 +4,8 @@ import FX1Poly.Core.ReducibilityCandidate
 /-! # Foundation/PolyCell/Core/CandidateInterpretation
     — the candidate-environment reducibility interpretation (Girard-Tait, for polymorphism)
 
-The simply-typed skeleton (`SimplyTypedNormalization`) proves SN for the simply-typed
-λ-calculus, but it CANNOT reach the full dependent kernel: `HasTypeDescPi` is polymorphic
+A simply-typed skeleton can prove SN only for the simply-typed
+λ-calculus, NOT the full dependent kernel: `HasTypeDescPi` is polymorphic
 (`f : (A : Type) → A` is typeable), and a term like `(f (Nat → Nat)) 5` instantiates a type
 variable with a function type and then applies the result.  The skeleton erases `f (Nat → Nat)`
 to the base sort and can no longer apply it — the classical reason System F SN needs Girard's
