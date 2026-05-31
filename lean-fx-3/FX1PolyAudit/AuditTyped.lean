@@ -32,6 +32,7 @@ import FX1Poly.Typed.HasTypeDescUniqueness
 import FX1Poly.Typed.HasTypeDescWeakening
 import FX1Poly.Typed.HasTypeDescSubstitution
 import FX1Poly.Typed.HasTypeDescElimWeakening
+import FX1Poly.Typed.HasTypeDescElimSubstitution
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -601,3 +602,22 @@ gates pin them shut.
     `iterateLiftRaw _ 0 ≡ _` and `lookup_cons_succ`).  NOT routed through the `⟺` maps. -/
 #assert_no_axioms FX1Poly.Typed.DescTermTelescope.renameRespectingTermTelescope
 #assert_no_axioms FX1Poly.Typed.DescTermTelescope.weakenUnderBinding
+
+/-! ### INTRINSIC substitution (P6, the β-engine) for the ELIMINATOR-shape term spine
+    (`HasTypeDescElimSubstitution`).  polycell.md §11.8.5 P6 applied to `DescTermTelescope` —
+    the SUBSTITUTION leg completing the pair with the renaming/weakening leg above.  Together
+    they are the eliminator spine's two fibration legs (cartesian lift + β-substitution).
+
+    SELF-recursive (not mutual): the head child's typing is re-substituted by the SHIPPED
+    `HasTypeDesc.substRespectingContext` on the opaque `headTyped`; only recursion is on
+    `restTyped` ⇒ structural recursion w/o `termination_by`.  The arbitrary classifier
+    substitutes generically (no `subst_universeCodeCell` brick).  The tail's lifted
+    substitution-condition's `0`/successor split is IDENTICAL to the formation spine — `0` →
+    fresh `var`, `k+1` → the substituent weakened across the binder via the intrinsic
+    `HasTypeDesc.weakenUnderBinding` (the decouple COMPOUNDS: eliminator-spine subst stands on
+    intrinsic HasTypeDesc weakening, no `HasType`).  `substituteUnderBinding` is the depth-0
+    `subst0` corollary (singleton-cancel side-condition, symmetric to `weakenUnderBinding`).
+    NON-breaking: `DescTermTelescope` standalone, touches neither `HasTypeDesc` ctors nor the
+    `⟺` maps. -/
+#assert_no_axioms FX1Poly.Typed.DescTermTelescope.substRespectingTermTelescope
+#assert_no_axioms FX1Poly.Typed.DescTermTelescope.substituteUnderBinding
