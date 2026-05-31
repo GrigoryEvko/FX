@@ -1,5 +1,8 @@
 import FX1Poly.Typed.HasTypeDesc
 import FX1Poly.Typed.HasTypeHonesty
+import FX1Poly.Typed.HasTypeDescSound
+import FX1Poly.Typed.HasTypeValidity
+import FX1Poly.Typed.HasTypeStronglyNormalizing
 
 /-! # FX1Poly/Typed/HasTypeDescInversion — INVERSION (P8 descent) for the description engine.
 
@@ -17,6 +20,22 @@ are determined by the SUBJECT (`mkGen g p ch`), which `conv` leaves unchanged �
 `conv` arm forwards the descent IH VERBATIM, needing no `Conv` and no `WfContext`.
 This isolates the genuinely-useful descent content (the children's telescope — what
 the typechecker + canonicity consume) from the `Conv`-blocked part.
+
+## The full half (classifier-`Conv` conjunct) — `…WithConv`
+
+Built on the same recipe, this file now ALSO ships the FULL P8 for the
+dependent-binary formation family: `…WithConv` adds `Conv reachedClassifier
+(universeCodeCell (lmaxAll levels) flag)` — the subject's classifier converts to the
+canonical formation output.  This is the conjunct intrinsic UNIQUENESS (P7) and the
+typechecker's conv-check consume, and the FIRST wiring of typed `Conv.trans` into the
+description engine.  Three deltas over the premise half: (1) a `WfContext` parameter
+(threaded as an OUTER argument — the term-mode `match` keeps the context index fixed,
+so unlike the bespoke `induction`-based inversion it need not revert `WfContext` into
+the motive); (2) the `conv` arm composes `Conv`s via `Conv.trans_of_typedMiddle`, the
+middle's `IsType` coming from `classifierIsType ∘ toHasType` on the `conv` premise;
+(3) the `genFormation` arm additionally pins the `TypingRuleDesc` (`Option.some.inj`)
+so the output reduces to `universeCodeCell (lmaxAll …) …` and `Conv.refl` closes the
+conjunct.  The premise half stays — it is strictly more general (no `WfContext`).
 
 Shipped this fire for the Π-formation shape (`piTyCodeCell`); the Σ shape over
 `gen_sigmaTyCode` is the identical mirror (a future atomic step).  A FULLY generic
@@ -163,5 +182,138 @@ theorem HasTypeDesc.inversionSigmaCode {profile : PolyProfile} {scope : Nat}
       DescTelescope profile (currentDepth := 0) context levels flag
         (RawTermChildren.binderShape domainCode codomainCode) :=
   HasTypeDesc.inversionSigmaCodeGeneral typed rfl
+
+/-- The equation-motive recursive workhorse for the FULL Π-formation inversion (premise
+telescope AND classifier-`Conv`).  Same shape as `inversionPiCodeGeneral`, with three
+deltas: an outer `WfContext` (the term-mode `match` keeps the context index fixed, so
+it need not be reverted into the motive); the `conv` arm composes `Conv`s through the
+premise's classifier (a type by validity) via `Conv.trans_of_typedMiddle`; the
+`genFormation` arm pins the `TypingRuleDesc` so its output reduces to the canonical
+universe code, discharging the `Conv` conjunct with `Conv.refl`. -/
+theorem HasTypeDesc.inversionPiCodeWithConvGeneral {profile : PolyProfile}
+    {generalScope : Nat} {generalContext : TypingContext profile generalScope}
+    {subject reachedClassifier : RawTerm generalScope}
+    (derivation : HasTypeDesc profile generalContext subject reachedClassifier)
+    (wellFormed : WfContext generalContext) :
+    ∀ {payload : Generator.gen_piTyCode.payload generalScope}
+      {children : RawTermChildren Generator.gen_piTyCode.binderShifts generalScope},
+      subject = RawTerm.mkGen Generator.gen_piTyCode payload children →
+        ∃ (levels : List LevelExpr) (flag : UniverseFlag),
+          DescTelescope profile (currentDepth := 0) generalContext levels flag
+            children ∧
+          Conv reachedClassifier (universeCodeCell (lmaxAll levels) flag) :=
+  fun {payloadImplicit} {childrenImplicit} =>
+    match derivation with
+    | .var _armContext _armIndex => fun subjectEq =>
+        Generator.noConfusion
+          (congrArg RawTerm.headGenerator subjectEq :
+            Generator.gen_var = Generator.gen_piTyCode)
+    | .conv _levelExpr _flag typedPremise converts _reclassifierTyped =>
+        fun subjectEq => by
+          obtain ⟨levels, flag, telescope, convToCode⟩ :=
+            HasTypeDesc.inversionPiCodeWithConvGeneral typedPremise wellFormed subjectEq
+          exact ⟨levels, flag, telescope,
+            Conv.trans_of_typedMiddle
+              (HasType.classifierIsType wellFormed
+                (HasTypeDesc.toHasType typedPremise))
+              converts.sym convToCode⟩
+    | .universeFormation _armContext _armLevel _armFlag => fun subjectEq =>
+        Generator.noConfusion
+          (congrArg RawTerm.headGenerator subjectEq :
+            Generator.gen_universeCode = Generator.gen_piTyCode)
+    | .genFormation _armContext armGenerator _armPayload armChildren armLevels armFlag
+        armRule armIsFormation armPremises => fun subjectEq => by
+        have generatorAgree : armGenerator = Generator.gen_piTyCode :=
+          congrArg RawTerm.headGenerator subjectEq
+        subst generatorAgree
+        have ruleAgree : armRule = { outputType := universeFormerOutput } :=
+          Option.some.inj armIsFormation.symm
+        subst ruleAgree
+        injection subjectEq
+        subst_vars
+        exact ⟨armLevels, armFlag, armPremises, Conv.refl _⟩
+
+/-- **Inversion (P8, FULL) for the Π-type FORMATION shape** on the description engine:
+the premise telescope (children form the expected telescope of types) AND the
+classifier-`Conv` conjunct (the cell's classifier converts to the canonical formation
+output `Type@(lmaxAll levels, flag)`).  The description-engine analogue of the bespoke
+`HasType.inversionPiCode`, and the FIRST wiring of typed `Conv.trans` into the engine —
+the conjunct intrinsic uniqueness (P7) and the typechecker's conv-check consume.
+Needs `WfContext` (the `conv` arm's `Conv` composition uses validity). -/
+theorem HasTypeDesc.inversionPiCodeWithConv {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {classifier : RawTerm scope}
+    (typed :
+      HasTypeDesc profile context (piTyCodeCell domainCode codomainCode) classifier)
+    (wellFormed : WfContext context) :
+    ∃ (levels : List LevelExpr) (flag : UniverseFlag),
+      DescTelescope profile (currentDepth := 0) context levels flag
+        (RawTermChildren.binderShape domainCode codomainCode) ∧
+      Conv classifier (universeCodeCell (lmaxAll levels) flag) :=
+  HasTypeDesc.inversionPiCodeWithConvGeneral typed wellFormed rfl
+
+/-- The Σ mirror of `inversionPiCodeWithConvGeneral` — IDENTICAL recipe over
+`gen_sigmaTyCode`.  Completes the FULL P8 (premise telescope + classifier-`Conv`) for
+the dependent-binary formation family. -/
+theorem HasTypeDesc.inversionSigmaCodeWithConvGeneral {profile : PolyProfile}
+    {generalScope : Nat} {generalContext : TypingContext profile generalScope}
+    {subject reachedClassifier : RawTerm generalScope}
+    (derivation : HasTypeDesc profile generalContext subject reachedClassifier)
+    (wellFormed : WfContext generalContext) :
+    ∀ {payload : Generator.gen_sigmaTyCode.payload generalScope}
+      {children : RawTermChildren Generator.gen_sigmaTyCode.binderShifts generalScope},
+      subject = RawTerm.mkGen Generator.gen_sigmaTyCode payload children →
+        ∃ (levels : List LevelExpr) (flag : UniverseFlag),
+          DescTelescope profile (currentDepth := 0) generalContext levels flag
+            children ∧
+          Conv reachedClassifier (universeCodeCell (lmaxAll levels) flag) :=
+  fun {payloadImplicit} {childrenImplicit} =>
+    match derivation with
+    | .var _armContext _armIndex => fun subjectEq =>
+        Generator.noConfusion
+          (congrArg RawTerm.headGenerator subjectEq :
+            Generator.gen_var = Generator.gen_sigmaTyCode)
+    | .conv _levelExpr _flag typedPremise converts _reclassifierTyped =>
+        fun subjectEq => by
+          obtain ⟨levels, flag, telescope, convToCode⟩ :=
+            HasTypeDesc.inversionSigmaCodeWithConvGeneral typedPremise wellFormed
+              subjectEq
+          exact ⟨levels, flag, telescope,
+            Conv.trans_of_typedMiddle
+              (HasType.classifierIsType wellFormed
+                (HasTypeDesc.toHasType typedPremise))
+              converts.sym convToCode⟩
+    | .universeFormation _armContext _armLevel _armFlag => fun subjectEq =>
+        Generator.noConfusion
+          (congrArg RawTerm.headGenerator subjectEq :
+            Generator.gen_universeCode = Generator.gen_sigmaTyCode)
+    | .genFormation _armContext armGenerator _armPayload armChildren armLevels armFlag
+        armRule armIsFormation armPremises => fun subjectEq => by
+        have generatorAgree : armGenerator = Generator.gen_sigmaTyCode :=
+          congrArg RawTerm.headGenerator subjectEq
+        subst generatorAgree
+        have ruleAgree : armRule = { outputType := universeFormerOutput } :=
+          Option.some.inj armIsFormation.symm
+        subst ruleAgree
+        injection subjectEq
+        subst_vars
+        exact ⟨armLevels, armFlag, armPremises, Conv.refl _⟩
+
+/-- **Inversion (P8, FULL) for the Σ-type FORMATION shape** on the description engine —
+the dual of `inversionPiCodeWithConv`: premise telescope AND classifier-`Conv` to the
+canonical output `Type@(lmaxAll levels, flag)`.  Same recipe over `gen_sigmaTyCode`. -/
+theorem HasTypeDesc.inversionSigmaCodeWithConv {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {classifier : RawTerm scope}
+    (typed :
+      HasTypeDesc profile context (sigmaTyCodeCell domainCode codomainCode) classifier)
+    (wellFormed : WfContext context) :
+    ∃ (levels : List LevelExpr) (flag : UniverseFlag),
+      DescTelescope profile (currentDepth := 0) context levels flag
+        (RawTermChildren.binderShape domainCode codomainCode) ∧
+      Conv classifier (universeCodeCell (lmaxAll levels) flag) :=
+  HasTypeDesc.inversionSigmaCodeWithConvGeneral typed wellFormed rfl
 
 end FX1Poly.Typed

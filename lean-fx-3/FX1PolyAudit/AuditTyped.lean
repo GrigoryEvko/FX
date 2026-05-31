@@ -474,10 +474,28 @@ gates pin them shut.
     Term-mode recursive `match` (NOT `induction`, which rejects the mutual
     `HasTypeDesc`) + `injection`/`subst_vars` + `congrArg RawTerm.headGenerator` +
     `Generator.noConfusion` (the propext-free recipe of the bespoke inversions).
-    Shipped Π-shape; Σ is the identical mirror (future).  `…General` is the
-    subject-generalized recursive workhorse; `inversionPiCode` the `piTyCodeCell`
-    entry point. -/
+    Shipped for BOTH the dependent-binary formers (Π over `gen_piTyCode`, Σ over
+    `gen_sigmaTyCode`).  `…General` is the subject-generalized recursive workhorse;
+    `inversion{Pi,Sigma}Code` the concrete `{pi,sigma}TyCodeCell` entry points. -/
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionPiCodeGeneral
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionPiCode
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionSigmaCodeGeneral
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionSigmaCode
+
+/-! ### INVERSION (P8, FULL) for the description engine — premise telescope AND the
+    classifier-`Conv` conjunct (`…WithConv`).  The first wiring of typed `Conv.trans`
+    into the description engine: `…WithConv` additionally concludes `Conv classifier
+    (universeCodeCell (lmaxAll levels) flag)` — the cell's classifier converts to the
+    canonical formation output.  This is the conjunct intrinsic UNIQUENESS (P7) and the
+    typechecker's conv-check consume.  Three deltas over the premise half: a `WfContext`
+    parameter (threaded as an OUTER argument — the term-mode `match` keeps the context
+    index fixed, so it need not be reverted into the motive as the bespoke
+    `induction`-based inversion must); the `conv` arm composes `Conv`s via
+    `Conv.trans_of_typedMiddle`, the middle's `IsType` from `classifierIsType ∘
+    toHasType` on the `conv` premise; the `genFormation` arm pins the `TypingRuleDesc`
+    (`Option.some.inj`) so the output reduces to `universeCodeCell (lmaxAll …) …`, then
+    `Conv.refl` closes the conjunct.  Both formers (Π + Σ). -/
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionPiCodeWithConvGeneral
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionPiCodeWithConv
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionSigmaCodeWithConvGeneral
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionSigmaCodeWithConv
