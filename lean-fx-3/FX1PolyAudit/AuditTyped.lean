@@ -26,6 +26,7 @@ import FX1Poly.Typed.HasTypeDesc
 import FX1Poly.Typed.HasTypeDescSound
 import FX1Poly.Typed.HasTypeDescDecidable
 import FX1Poly.Typed.HasTypeDescElim
+import FX1Poly.Typed.HasTypeDescValidity
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -446,3 +447,18 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.DescTermTelescope
 #assert_no_axioms FX1Poly.Typed.DescTelescope.toTermTelescope
 #assert_no_axioms FX1Poly.Typed.descTermTelescope_heterogeneous
+
+/-! ### Intrinsic VALIDITY of the description engine (`HasTypeDescValidity`) — the
+    FIRST BRICK of the HasTypeDesc-from-HasType DECOUPLE.  The ⟺ equivalence
+    (`HasTypeDesc.toHasType`) is total, so it forbids growing the engine with any
+    `gen` row the bespoke `HasType` lacks (would break soundness ⇒ force a bespoke
+    arm = the cascade we kill).  Decoupling = giving `HasTypeDesc` its OWN metatheory.
+    `IsTypeDesc` = the intrinsic "inhabits a universe" (over `HasTypeDesc`, not
+    `HasType`); `classifierIsTypeDesc` = validity (P3) proved by FULL-enumeration
+    term-mode `match` on the engine (the propext-free form of the shipped
+    `HasTypeDesc.toHasType`) — `var` lifts the context entry via completeness,
+    `conv` reuses `reclassifierTyped` verbatim (no `Conv.trans`), formation arms
+    re-fire `universeFormation` one level up (genFormation pinned by the same
+    `by_cases`+`exfalso` generator-pin). -/
+#assert_no_axioms FX1Poly.Typed.IsTypeDesc
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.classifierIsTypeDesc
