@@ -99,6 +99,7 @@ import FX1Poly.Core.CandidateInterpretationHeadExpansion
 import FX1Poly.Core.CandidateReducibleSubst
 import FX1Poly.Core.SemanticTypeDomain
 import FX1Poly.Core.WhnfInterpretation
+import FX1Poly.Core.WhnfInterpretationDeterminism
 import FX1Poly.Core.StrongNormalizationRename
 import FX1Poly.Core.StrongNormalizationEta
 import FX1Poly.Core.StepBetaEtaConfluence
