@@ -38,7 +38,9 @@ theorem ReducibleType.reductReducibleThroughHeadStep {scope : Nat}
       have reductEquation := HeadStep.deterministic headStepShipped headStep
       subst reductEquation
       exact reductReducible
-  | neutral noHeadStep _notPiType => exact absurd headStep (noHeadStep _)
+  | iotaExpand iotaStepShipped _reductReducible =>
+      exact (HeadStep.not_iotaHeadStep headStep iotaStepShipped).elim
+  | neutral noHeadStep _noIotaHeadStep _notPiType => exact absurd headStep (noHeadStep _)
   | piType _codomainCandidate _domainReducible _codomainReducible =>
       exact Generator.noConfusion (HeadStep.subjectRootIsApp headStep)
 
@@ -48,11 +50,13 @@ theorem ReducibleType.neutralCandidateStronglyNormalizing {scope : Nat}
     {typeCode : RawTerm scope} {candidate : RawTerm scope → Prop}
     (reducible : ReducibleType typeCode candidate)
     (noHeadStep : ∀ reduct : RawTerm scope, ¬ HeadStep typeCode reduct)
+    (noIotaHeadStep : ∀ reduct : RawTerm scope, ¬ IotaHeadStep typeCode reduct)
     (notPiType : typeCode.rootGenerator ≠ Generator.gen_piTyCode) :
     PointwiseIff candidate IsStronglyNormalizing := by
   cases reducible with
   | headExpand headStep _reductReducible => exact absurd headStep (noHeadStep _)
-  | neutral _noHeadStep _notPiType => intro _term; exact Iff.rfl
+  | iotaExpand iotaStep _reductReducible => exact absurd iotaStep (noIotaHeadStep _)
+  | neutral _noHeadStep _noIotaHeadStep _notPiType => intro _term; exact Iff.rfl
   | piType _codomainCandidate _domainReducible _codomainReducible => exact absurd rfl notPiType
 
 end FX1Poly.Core

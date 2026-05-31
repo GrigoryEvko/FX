@@ -1,6 +1,8 @@
 import FX1Poly.Core.ReducibilityCandidateArrow
 import FX1Poly.Core.WhnfInterpretationDeterminism
 import FX1Poly.Core.RawTermSubst0
+import FX1Poly.Core.IotaHeadStep
+import FX1Poly.Core.IotaHeadStepDisjoint
 
 /-! # Foundation/PolyCell/Core/ReducibleType
     — the dependent reducibility relation (Girard-Tait, made dependent)
@@ -54,14 +56,25 @@ open StepStar
 /-- The dependent reducibility relation: a type-code denotes a reducibility candidate, dispatching
 after weak-head reduction, with the Π codomain candidate a function of the argument term. -/
 inductive ReducibleType {scope : Nat} : RawTerm scope → (RawTerm scope → Prop) → Prop where
-  /-- A redex-type inherits its weak-head contractum's candidate (conversion-invariance under
-  weak-head reduction). -/
+  /-- A redex-type inherits its weak-head β contractum's candidate (conversion-invariance under
+  weak-head β reduction). -/
   | headExpand {typeCode reduct : RawTerm scope} {candidate : RawTerm scope → Prop} :
       HeadStep typeCode reduct → ReducibleType reduct candidate → ReducibleType typeCode candidate
-  /-- A weak-head-normal non-Π type denotes the strong-normalization candidate (a variable, a
-  stuck/neutral application, a universe code, any non-Π former). -/
+  /-- A redex-type inherits its root-ι contractum's candidate (conversion-invariance under root-ι
+  reduction) — the large-elimination-ready companion of `headExpand`: an eliminator-headed type-code
+  (`natRec`-at-a-universe, …) is `gen_natRec`-rooted, not `gen_app`-rooted, so it is NOT `HeadStep`-
+  reducible yet root-ι-reduces, possibly to a Π; `iotaExpand` gives it its contractum's candidate
+  rather than the (wrong) strong-normalization candidate the `neutral` arm would assign. -/
+  | iotaExpand {typeCode reduct : RawTerm scope} {candidate : RawTerm scope → Prop} :
+      IotaHeadStep typeCode reduct → ReducibleType reduct candidate → ReducibleType typeCode candidate
+  /-- A weak-head-NORMAL non-Π type denotes the strong-normalization candidate (a variable, a
+  stuck/neutral application, a universe code, any non-Π former).  "Weak-head normal" now means no β
+  head step AND no root ι step — the strengthened guard that keeps the relation a partial function once
+  `iotaExpand` classifies eliminator-on-constructor redexes (otherwise a root-ι redex would satisfy the
+  old `¬ HeadStep` guard yet also fire `iotaExpand`, breaking determinism). -/
   | neutral {typeCode : RawTerm scope} :
       (∀ reduct : RawTerm scope, ¬ HeadStep typeCode reduct) →
+      (∀ reduct : RawTerm scope, ¬ IotaHeadStep typeCode reduct) →
       typeCode.rootGenerator ≠ Generator.gen_piTyCode →
       ReducibleType typeCode IsStronglyNormalizing
   /-- The dependent arrow: a Π-code denotes the dependent function-space candidate, the codomain
@@ -95,14 +108,30 @@ theorem ReducibleType.deterministic {scope : Nat} {typeCode : RawTerm scope}
           have reductEquation := HeadStep.deterministic headStep1 headStep2
           subst reductEquation
           exact reductInductiveHypothesis reductReducible2
-      | neutral noHeadStep2 _notPiType2 => exact absurd headStep1 (noHeadStep2 _)
+      | iotaExpand iotaStep2 _reductReducible2 =>
+          exact (HeadStep.not_iotaHeadStep headStep1 iotaStep2).elim
+      | neutral noHeadStep2 _noIotaHeadStep2 _notPiType2 => exact absurd headStep1 (noHeadStep2 _)
       | piType _codomainCandidate2 _domainReducible2 _codomainReducible2 =>
           exact Generator.noConfusion (HeadStep.subjectRootIsApp headStep1)
-  | neutral noHeadStep1 notPiType1 =>
+  | iotaExpand iotaStep1 _reductReducible1 reductInductiveHypothesis =>
+      intro candidate2 reducible2
+      cases reducible2 with
+      | headExpand headStep2 _reductReducible2 =>
+          exact (HeadStep.not_iotaHeadStep headStep2 iotaStep1).elim
+      | iotaExpand iotaStep2 reductReducible2 =>
+          have reductEquation := IotaHeadStep.deterministic iotaStep1 iotaStep2
+          subst reductEquation
+          exact reductInductiveHypothesis reductReducible2
+      | neutral _noHeadStep2 noIotaHeadStep2 _notPiType2 =>
+          exact absurd iotaStep1 (noIotaHeadStep2 _)
+      | piType _codomainCandidate2 _domainReducible2 _codomainReducible2 =>
+          cases iotaStep1
+  | neutral noHeadStep1 noIotaHeadStep1 notPiType1 =>
       intro candidate2 reducible2
       cases reducible2 with
       | headExpand headStep2 _reductReducible2 => exact absurd headStep2 (noHeadStep1 _)
-      | neutral _noHeadStep2 _notPiType2 => intro _term; exact Iff.rfl
+      | iotaExpand iotaStep2 _reductReducible2 => exact absurd iotaStep2 (noIotaHeadStep1 _)
+      | neutral _noHeadStep2 _noIotaHeadStep2 _notPiType2 => intro _term; exact Iff.rfl
       | piType _codomainCandidate2 _domainReducible2 _codomainReducible2 =>
           exact absurd rfl notPiType1
   | piType _codomainCandidate1 _domainReducible1 _codomainReducible1
@@ -111,7 +140,8 @@ theorem ReducibleType.deterministic {scope : Nat} {typeCode : RawTerm scope}
       cases reducible2 with
       | headExpand headStep2 _reductReducible2 =>
           exact Generator.noConfusion (HeadStep.subjectRootIsApp headStep2)
-      | neutral _noHeadStep2 notPiType2 => exact absurd rfl notPiType2
+      | iotaExpand iotaStep2 _reductReducible2 => cases iotaStep2
+      | neutral _noHeadStep2 _noIotaHeadStep2 notPiType2 => exact absurd rfl notPiType2
       | piType _codomainCandidate2 domainReducible2 codomainReducible2 =>
           have domainEquivalence := domainInductiveHypothesis domainReducible2
           intro functionTerm

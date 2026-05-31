@@ -46,7 +46,9 @@ theorem ReducibleType.candidateClosedUnderStep {scope : Nat} {typeCode : RawTerm
   induction reducible with
   | headExpand _headStep _reductReducible reductInductiveHypothesis =>
       exact reductInductiveHypothesis
-  | neutral _noHeadStep _notPiType =>
+  | iotaExpand _iotaStep _reductReducible reductInductiveHypothesis =>
+      exact reductInductiveHypothesis
+  | neutral _noHeadStep _noIotaHeadStep _notPiType =>
       intro term reduct stronglyNormalizingTerm stepTermReduct
       exact isStronglyNormalizing_isReducibilityCandidate.closedUnderStep
         stronglyNormalizingTerm stepTermReduct
