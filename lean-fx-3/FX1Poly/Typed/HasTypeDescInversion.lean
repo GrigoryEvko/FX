@@ -316,4 +316,116 @@ theorem HasTypeDesc.inversionSigmaCodeWithConv {profile : PolyProfile} {scope : 
       Conv classifier (universeCodeCell (lmaxAll levels) flag) :=
   HasTypeDesc.inversionSigmaCodeWithConvGeneral typed wellFormed rfl
 
+/-! ### Leaf inversions (`var`, `universeCode`) for the description engine
+
+The two NON-compound subjects: a variable cell's classifier is convertible to its
+context lookup; a universe-code cell's classifier is convertible to the next universe.
+Direct analogues of the bespoke `HasType.inversion{Variable,UniverseCode}`, ported to
+the term-mode recursive `match` (the mutual `HasTypeDesc` rejects `induction`).  These
+complete the per-shape inversion suite for the engine (var / universeCode / Π / Σ) and
+are the leaf cases intrinsic UNIQUENESS (P7) consumes when inverting the SECOND
+derivation.  Recipe identical to `…WithConv`: the `conv` arm composes through the
+premise's classifier (a type by validity) via `Conv.trans_of_typedMiddle`; the
+`genFormation` arm — reachable only with a non-formation generator (`gen_var` /
+`gen_universeCode` are NOT in the `typingRuleDescOf` whitelist) — is refuted by
+`subst`-ing the pinned generator and `Option.noConfusion`-ing the impossible
+`typingRuleDescOf … = some rule`; the matching leaf arm closes by `Conv.refl` after
+`injection` extracts the payload. -/
+
+/-- Subject-generalized recursive workhorse for variable-cell inversion. -/
+theorem HasTypeDesc.inversionVariableGeneral {profile : PolyProfile}
+    {generalScope : Nat} {generalContext : TypingContext profile generalScope}
+    {subject reachedClassifier : RawTerm generalScope}
+    (derivation : HasTypeDesc profile generalContext subject reachedClassifier)
+    (wellFormed : WfContext generalContext) :
+    ∀ {targetIndex : Fin generalScope},
+      subject = variableCell targetIndex →
+        Conv reachedClassifier (generalContext.lookup targetIndex) :=
+  fun {targetIndexImplicit} =>
+    match derivation with
+    | .var _armContext armIndex => fun subjectEq => by
+        have indicesAgree : armIndex = targetIndexImplicit := by injection subjectEq
+        subst indicesAgree
+        exact Conv.refl _
+    | .conv _levelExpr _flag typedPremise converts _reclassifierTyped =>
+        fun subjectEq =>
+          Conv.trans_of_typedMiddle
+            (HasType.classifierIsType wellFormed (HasTypeDesc.toHasType typedPremise))
+            converts.sym
+            (HasTypeDesc.inversionVariableGeneral typedPremise wellFormed subjectEq)
+    | .universeFormation _armContext _armLevel _armFlag => fun subjectEq =>
+        Generator.noConfusion
+          (congrArg RawTerm.headGenerator subjectEq :
+            Generator.gen_universeCode = Generator.gen_var)
+    | .genFormation _armContext armGenerator _armPayload _armChildren _armLevels
+        _armFlag _armRule armIsFormation _armPremises => fun subjectEq => by
+        have generatorAgree : armGenerator = Generator.gen_var :=
+          congrArg RawTerm.headGenerator subjectEq
+        subst generatorAgree
+        -- `gen_var` is not a formation former: `typingRuleDescOf gen_var` reduces to
+        -- `none`, clashing with the arm's `… = some armRule` whitelist witness.
+        contradiction
+
+/-- **Inversion for a variable cell** on the description engine.  Any classifier a
+variable cell receives is convertible to the variable's principal type (its context
+lookup).  The `HasTypeDesc` analogue of the bespoke `HasType.inversionVariable`. -/
+theorem HasTypeDesc.inversionVariable {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {index : Fin scope} {classifier : RawTerm scope}
+    (typed : HasTypeDesc profile context (variableCell index) classifier)
+    (wellFormed : WfContext context) :
+    Conv classifier (context.lookup index) :=
+  HasTypeDesc.inversionVariableGeneral typed wellFormed rfl
+
+/-- Subject-generalized recursive workhorse for universe-code-cell inversion. -/
+theorem HasTypeDesc.inversionUniverseCodeGeneral {profile : PolyProfile}
+    {generalScope : Nat} {generalContext : TypingContext profile generalScope}
+    {subject reachedClassifier : RawTerm generalScope}
+    (derivation : HasTypeDesc profile generalContext subject reachedClassifier)
+    (wellFormed : WfContext generalContext) :
+    ∀ {targetLevel : LevelExpr} {targetFlag : UniverseFlag},
+      subject = universeCodeCell targetLevel targetFlag →
+        Conv reachedClassifier (universeCodeCell targetLevel.lsucc targetFlag) :=
+  fun {targetLevelImplicit} {targetFlagImplicit} =>
+    match derivation with
+    | .var _armContext _armIndex => fun subjectEq =>
+        Generator.noConfusion
+          (congrArg RawTerm.headGenerator subjectEq :
+            Generator.gen_var = Generator.gen_universeCode)
+    | .conv _levelExpr _flag typedPremise converts _reclassifierTyped =>
+        fun subjectEq =>
+          Conv.trans_of_typedMiddle
+            (HasType.classifierIsType wellFormed (HasTypeDesc.toHasType typedPremise))
+            converts.sym
+            (HasTypeDesc.inversionUniverseCodeGeneral typedPremise wellFormed subjectEq)
+    | .universeFormation _armContext armLevel armFlag => fun subjectEq => by
+        have payloadEq :
+            (armLevel, armFlag) = (targetLevelImplicit, targetFlagImplicit) := by
+          injection subjectEq
+        injection payloadEq with levelAgree flagAgree
+        subst levelAgree
+        subst flagAgree
+        exact Conv.refl _
+    | .genFormation _armContext armGenerator _armPayload _armChildren _armLevels
+        _armFlag _armRule armIsFormation _armPremises => fun subjectEq => by
+        have generatorAgree : armGenerator = Generator.gen_universeCode :=
+          congrArg RawTerm.headGenerator subjectEq
+        subst generatorAgree
+        -- `gen_universeCode` is not a formation former: `typingRuleDescOf` reduces to
+        -- `none`, clashing with the arm's `… = some armRule` whitelist witness.
+        contradiction
+
+/-- **Inversion for a universe-code cell** on the description engine.  Any classifier a
+universe-code cell `Type@(e, flag)` receives is convertible to the next universe
+`Type@(e+1, flag)`.  The `HasTypeDesc` analogue of the bespoke
+`HasType.inversionUniverseCode`. -/
+theorem HasTypeDesc.inversionUniverseCode {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {levelExpr : LevelExpr} {flag : UniverseFlag} {classifier : RawTerm scope}
+    (typed :
+      HasTypeDesc profile context (universeCodeCell levelExpr flag) classifier)
+    (wellFormed : WfContext context) :
+    Conv classifier (universeCodeCell levelExpr.lsucc flag) :=
+  HasTypeDesc.inversionUniverseCodeGeneral typed wellFormed rfl
+
 end FX1Poly.Typed

@@ -499,3 +499,20 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionPiCodeWithConv
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionSigmaCodeWithConvGeneral
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionSigmaCodeWithConv
+
+/-! ### Leaf inversions (`var`, `universeCode`) for the description engine — the two
+    NON-compound subjects, completing the per-shape inversion suite (var / universeCode
+    / Π / Σ).  A variable cell's classifier is convertible to its context lookup; a
+    universe-code cell's to the next universe.  Analogues of the bespoke
+    `HasType.inversion{Variable,UniverseCode}`, via the term-mode recursive `match` (the
+    mutual `HasTypeDesc` rejects `induction`): the `conv` arm composes through the
+    premise's classifier (a type by validity) with `Conv.trans_of_typedMiddle`; the
+    impossible `genFormation` arm is refuted by `subst`-ing the pinned non-formation
+    generator and a `contradiction` against `typingRuleDescOf … = some rule` (the
+    whitelist reduces to `none` for `gen_var` / `gen_universeCode`); the matching leaf
+    arm closes by `Conv.refl` after `injection`.  These are the leaf cases intrinsic
+    UNIQUENESS (P7) will consume when inverting the second derivation. -/
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionVariableGeneral
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionVariable
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionUniverseCodeGeneral
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionUniverseCode
