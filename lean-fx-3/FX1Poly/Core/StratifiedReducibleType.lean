@@ -1,0 +1,171 @@
+import FX1Poly.Core.ReducibleType
+
+/-! # Foundation/PolyCell/Core/StratifiedReducibleType
+    — the level-indexed (Tarski-universe) reducibility relation
+
+The pure-SN `ReducibleType` treats a universe code as NEUTRAL (its candidate is `IsStronglyNormalizing`).
+That suffices to prove strong normalization, but it WALLS the fundamental theorem's conversion arm: a type
+VARIABLE (a variable whose type is a universe) has, under a reducible substitution, only the SN witness of
+its image — not a reducibility CANDIDATE — so `IsReducibleMember.castAlongConv` (which needs a
+`ReducibleType` witness for the reclassifier) cannot fire.  Backward closure cannot recover the candidate
+(only weak-head head-expansion exists; arbitrary-step backward closure is false).
+
+The fix is the TARSKI UNIVERSE: a universe code denotes the candidate "is a reducible TYPE".  Then
+`IsReducibleMember (universeCode) t = IsReducibleType t`, and a reducible environment AUTOMATICALLY carries
+every type variable's candidate.  Stated naively as a self-referential `ReducibleType` arm
+(`ReducibleType (universeCode) (fun t => ∃ c, ReducibleType t c)`) this is STRICT-POSITIVITY-REJECTED — the
+inductive appears in its own stored constructor data.
+
+This file resolves it by STRATIFICATION: a step-FUNCTOR `ReducibleTypeStep lowerReducible` parameterised by
+the relation ONE LEVEL DOWN (a PARAMETER, so positivity holds — verified), with a `universe` arm denoting
+`fun typeCode => ∃ candidate, lowerReducible typeCode candidate` ("is a reducible type at the lower level").
+The level-indexed relation `ReducibleTypeAt` ties the knot by recursion on a `Nat` fuel level: level `0`
+has an empty lower relation; level `n+1` feeds level `n` as the lower relation.  A term using universe
+nesting depth `k` is reducible at any level `≥ k`.
+
+The three non-universe arms mirror `ReducibleType` verbatim (weak-head expansion / neutral / dependent
+arrow); the `neutral` arm gains a second guard `root ≠ gen_universeCode` so universe codes route through the
+`universe` arm rather than collapsing to SN.
+
+NOTE (deferred refinement): the `universe` arm currently makes EVERY universe code denote reducibility at
+the single lower level, i.e. the stratification is by the `Nat` fuel level, not yet matched to the cell's
+`LevelExpr`.  That is a sound stratified model (the fuel bounds universe-nesting depth); per-`LevelExpr`
+matching is a later refinement.
+
+## Zero-axiom verification
+
+A plain parametrised inductive `Prop` (positivity holds — `lowerReducible` is a parameter) + a structural
+`Nat` recursion for the level family + a `deterministic` proof that mirrors `ReducibleType.deterministic`,
+the new `universe` arm discharged by the root partition (`gen_universeCode` ≠ `gen_piTyCode`, the neutral
+guard) and `Iff.rfl` (two universe arms share the candidate at a fixed lower relation).  No `axiom`,
+`sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Swept per declaration by
+`#audit_namespace FX1Poly.Core`.
+-/
+
+namespace FX1Poly.Core
+open FX1Poly.Foundation
+open StepStar
+
+/-- **The stratified reducibility step-functor.**  `ReducibleTypeStep lowerReducible` assigns a candidate
+to a type-code GIVEN the reducibility relation one level down (`lowerReducible`, a parameter).  Three arms
+mirror `ReducibleType` (weak-head expansion / neutral / dependent arrow); the `universe` arm makes a
+universe code denote "is a reducible type at the lower level". -/
+inductive ReducibleTypeStep {scope : Nat}
+    (lowerReducible : RawTerm scope → (RawTerm scope → Prop) → Prop) :
+    RawTerm scope → (RawTerm scope → Prop) → Prop where
+  /-- A redex-type inherits its weak-head contractum's candidate (conversion-invariance under the complete
+  weak-head reduction). -/
+  | whnfExpand {typeCode reduct : RawTerm scope} {candidate : RawTerm scope → Prop} :
+      WeakHeadStep typeCode reduct → ReducibleTypeStep lowerReducible reduct candidate →
+      ReducibleTypeStep lowerReducible typeCode candidate
+  /-- A weak-head-normal type that is neither Π-rooted NOR universe-rooted denotes the
+  strong-normalization candidate. -/
+  | neutral {typeCode : RawTerm scope} :
+      (∀ reduct : RawTerm scope, ¬ WeakHeadStep typeCode reduct) →
+      typeCode.rootGenerator ≠ Generator.gen_piTyCode →
+      typeCode.rootGenerator ≠ Generator.gen_universeCode →
+      ReducibleTypeStep lowerReducible typeCode IsStronglyNormalizing
+  /-- The dependent arrow: a Π-code denotes the dependent function-space candidate (the codomain candidate
+  varying with the argument term). -/
+  | piType {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+      {domainCandidate : RawTerm scope → Prop}
+      (codomainCandidate : RawTerm scope → (RawTerm scope → Prop)) :
+      ReducibleTypeStep lowerReducible domainCode domainCandidate →
+      (∀ argument : RawTerm scope, domainCandidate argument →
+        ReducibleTypeStep lowerReducible (RawTerm.subst0 codomainCode argument)
+          (codomainCandidate argument)) →
+      ReducibleTypeStep lowerReducible
+        (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil)))
+        (fun functionTerm => ∀ argument : RawTerm scope, domainCandidate argument →
+          codomainCandidate argument
+            (.mkGen .gen_app () (.childCons functionTerm (.childCons argument .childNil))))
+  /-- The Tarski universe: a universe code denotes "is a reducible type at the lower level". -/
+  | universeCode (levelExpr : FX1Poly.Universe.LevelExpr) (flag : FX1Poly.Universe.UniverseFlag) :
+      ReducibleTypeStep lowerReducible
+        (.mkGen .gen_universeCode (levelExpr, flag) .childNil)
+        (fun typeCode => ∃ candidate : RawTerm scope → Prop, lowerReducible typeCode candidate)
+
+/-- **The level-indexed reducibility relation.**  By recursion on a `Nat` fuel level: at level `0` the
+lower relation is empty (`fun _ _ => False`, so a universe denotes "is a reducible type at level −1" = the
+empty candidate); at level `n+1` the lower relation is `ReducibleTypeAt n`.  A type using universe-nesting
+depth `k` is reducible at every level `≥ k`. -/
+def ReducibleTypeAt {scope : Nat} : Nat → RawTerm scope → (RawTerm scope → Prop) → Prop
+  | 0 => ReducibleTypeStep (fun _ _ => False)
+  | Nat.succ predLevel => ReducibleTypeStep (ReducibleTypeAt predLevel)
+
+/-- **The stratified reducibility step-functor is functional** (up to pointwise iff): at a fixed lower
+relation, a type-code denotes at most one candidate.  Induction on the first derivation, inverting the
+second; the weak-head / neutral / Π arms mirror `ReducibleType.deterministic`, and the `universe` arm is
+discharged by the root partition (a universe code is neither Π-rooted nor weak-head-reducible) with the two
+universe candidates coinciding (`Iff.rfl`, they share the fixed lower relation). -/
+theorem ReducibleTypeStep.deterministic {scope : Nat}
+    {lowerReducible : RawTerm scope → (RawTerm scope → Prop) → Prop}
+    {typeCode : RawTerm scope} {candidate1 : RawTerm scope → Prop}
+    (reducible1 : ReducibleTypeStep lowerReducible typeCode candidate1) :
+    ∀ {candidate2 : RawTerm scope → Prop},
+      ReducibleTypeStep lowerReducible typeCode candidate2 → PointwiseIff candidate1 candidate2 := by
+  induction reducible1 with
+  | whnfExpand weakHeadStep1 _reductReducible1 reductInductiveHypothesis =>
+      intro candidate2 reducible2
+      cases reducible2 with
+      | whnfExpand weakHeadStep2 reductReducible2 =>
+          have reductEquation := WeakHeadStep.deterministic weakHeadStep1 weakHeadStep2
+          subst reductEquation
+          exact reductInductiveHypothesis reductReducible2
+      | neutral noWeakHeadStep2 _notPiType2 _notUniverse2 => exact absurd weakHeadStep1 (noWeakHeadStep2 _)
+      | piType _codomainCandidate2 _domainReducible2 _codomainReducible2 =>
+          cases weakHeadStep1 with | rootIota iotaStep => cases iotaStep
+      | universeCode _levelExpr2 _flag2 =>
+          cases weakHeadStep1 with | rootIota iotaStep => cases iotaStep
+  | neutral noWeakHeadStep1 notPiType1 notUniverse1 =>
+      intro candidate2 reducible2
+      cases reducible2 with
+      | whnfExpand weakHeadStep2 _reductReducible2 => exact absurd weakHeadStep2 (noWeakHeadStep1 _)
+      | neutral _noWeakHeadStep2 _notPiType2 _notUniverse2 => intro _term; exact Iff.rfl
+      | piType _codomainCandidate2 _domainReducible2 _codomainReducible2 =>
+          exact absurd rfl notPiType1
+      | universeCode _levelExpr2 _flag2 => exact absurd rfl notUniverse1
+  | piType _codomainCandidate1 _domainReducible1 _codomainReducible1
+      domainInductiveHypothesis codomainInductiveHypothesis =>
+      intro candidate2 reducible2
+      cases reducible2 with
+      | whnfExpand weakHeadStep2 _reductReducible2 =>
+          cases weakHeadStep2 with | rootIota iotaStep => cases iotaStep
+      | neutral _noWeakHeadStep2 notPiType2 _notUniverse2 => exact absurd rfl notPiType2
+      | piType _codomainCandidate2 domainReducible2 codomainReducible2 =>
+          have domainEquivalence := domainInductiveHypothesis domainReducible2
+          intro functionTerm
+          constructor
+          · intro membership1 argument domain2Argument
+            have domain1Argument := (domainEquivalence argument).mpr domain2Argument
+            have codomainEquivalence :=
+              codomainInductiveHypothesis argument domain1Argument
+                (codomainReducible2 argument domain2Argument)
+            exact (codomainEquivalence _).mp (membership1 argument domain1Argument)
+          · intro membership2 argument domain1Argument
+            have domain2Argument := (domainEquivalence argument).mp domain1Argument
+            have codomainEquivalence :=
+              codomainInductiveHypothesis argument domain1Argument
+                (codomainReducible2 argument domain2Argument)
+            exact (codomainEquivalence _).mpr (membership2 argument domain2Argument)
+  | universeCode _levelExpr1 _flag1 =>
+      intro candidate2 reducible2
+      cases reducible2 with
+      | whnfExpand weakHeadStep2 _reductReducible2 =>
+          cases weakHeadStep2 with | rootIota iotaStep => cases iotaStep
+      | neutral _noWeakHeadStep2 _notPiType2 notUniverse2 => exact absurd rfl notUniverse2
+      | universeCode _levelExpr2 _flag2 => intro _term; exact Iff.rfl
+
+/-- **The level-indexed relation is functional** at each level — the step-functor's determinism
+specialized through the `Nat` recursion (level `0` over the empty lower relation, level `n+1` over
+`ReducibleTypeAt n`). -/
+theorem ReducibleTypeAt.deterministic {scope : Nat} {level : Nat}
+    {typeCode : RawTerm scope} {candidate1 candidate2 : RawTerm scope → Prop}
+    (reducible1 : ReducibleTypeAt level typeCode candidate1)
+    (reducible2 : ReducibleTypeAt level typeCode candidate2) :
+    PointwiseIff candidate1 candidate2 := by
+  cases level with
+  | zero => exact ReducibleTypeStep.deterministic reducible1 reducible2
+  | succ predLevel => exact ReducibleTypeStep.deterministic reducible1 reducible2
+
+end FX1Poly.Core
