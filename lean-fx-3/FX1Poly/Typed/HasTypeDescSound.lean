@@ -23,11 +23,12 @@ inductive):
 
 The `genFormation` case pins the generator from `isFormation`
 (`typingRuleDescOf generator = some rule`, a nested `if`: only `gen_piTyCode` /
-`gen_sigmaTyCode` satisfy it), recovers `rule = { combineLevel := lmaxAll }`,
-converts the premises to a `HasTypeTelescope`, inverts it (two `cons` + `nil`)
-to the domain/codomain typings, and applies `HasType.piFormation` /
-`sigmaFormation` — using `lmaxAll [dl, cl] = lmax dl cl` (definitional) to match
-the output level.
+`gen_sigmaTyCode` satisfy it), recovers `rule = { outputType :=
+universeFormerOutput }`, converts the premises to a `HasTypeTelescope`, inverts it
+(two `cons` + `nil`) to the domain/codomain typings, and applies
+`HasType.piFormation` / `sigmaFormation` — the rule's output `outputType scope
+[dl, cl] flag = universeCodeCell (lmaxAll [dl, cl]) flag = universeCodeCell (lmax
+dl cl) flag` (all definitional) matches the formation conclusion.
 
 ## Zero-axiom
 
@@ -89,7 +90,7 @@ theorem HasTypeDesc.toHasType {profile : PolyProfile} {scope : Nat}
       have telescope := DescTelescope.toHasTypeTelescope premises
       by_cases hPi : generator = .gen_piTyCode
       · subst hPi
-        have hRule : rule = { combineLevel := lmaxAll } :=
+        have hRule : rule = { outputType := universeFormerOutput } :=
           Option.some.inj isFormation.symm
         subst hRule
         cases telescope with
@@ -102,7 +103,7 @@ theorem HasTypeDesc.toHasType {profile : PolyProfile} {scope : Nat}
                       codomainLevel flag domainTyped codomainTyped
       · by_cases hSigma : generator = .gen_sigmaTyCode
         · subst hSigma
-          have hRule : rule = { combineLevel := lmaxAll } :=
+          have hRule : rule = { outputType := universeFormerOutput } :=
             Option.some.inj isFormation.symm
           subst hRule
           cases telescope with

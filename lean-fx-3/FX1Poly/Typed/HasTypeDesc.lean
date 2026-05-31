@@ -18,22 +18,26 @@ derives nothing the trusted kernel wouldn't, 0-FP).  Together they give the full
 Arms:
 * `var`, `conv` — the irreducible core (every typed-layer engine has them).
 * `universeFormation` — the nullary universe-code shape.  Genuinely special: its
-  output level comes from the PAYLOAD (`lsucc`), not from children, so it is not
-  a `combineLevel`-of-children rule; it stays a (single-generator) arm.
+  output level comes from the PAYLOAD (`lsucc`), not from children, so its output
+  is not computed from the children's levels; it stays a (single-generator) arm.
 * `genFormation` — THE generic arm.  Over ANY `generator` with a
   `TypingRuleDesc` (the `typingRuleDescOf` table), it types `mkGen generator
   payload children` by checking the children form a dependent telescope of types
   at `levels` (the mutual `DescTelescope` spine), and concludes the cell inhabits
-  `Type@(rule.combineLevel levels, flag)`.  Adding a new dependent type-former
-  (Π, Σ, and future n-ary dependent records …) is ONE `typingRuleDescOf` row —
-  ZERO new arms (the two reconstruction theorems below witness Π and Σ through
-  the SAME arm; P13 cascade-freedom).
+  the rule's OUTPUT classifier `rule.outputType scope levels flag` (for the
+  type-formers, `universeCodeCell (lmaxAll levels) flag`).  Adding a new dependent
+  type-former (Π, Σ, and future n-ary dependent records …) is ONE
+  `typingRuleDescOf` row — ZERO new arms (the two reconstruction theorems below
+  witness Π and Σ through the SAME arm; P13 cascade-freedom).  The `outputType`
+  field (vs the earlier level-only `combineLevel`) opens the §11.8.5 "non-uniform
+  output" seam: output is rule-DATA, not hardwired to a universe code — the
+  structural prerequisite for typing non-formers (eliminators) later.
 
 ## Positivity / zero-axiom
 
-The desc (`TypingRuleDesc.combineLevel : List LevelExpr → LevelExpr`) is PURE
-syntax over levels — it contains NO `HasTypeDesc`, so the `genFormation` arm is
-strictly positive.  `HasTypeDesc` appears only POSITIVELY, in the mutual
+The desc (`TypingRuleDesc.outputType : (scope) → List LevelExpr → UniverseFlag →
+RawTerm scope`) is PURE syntax — it contains NO `HasTypeDesc`, so the
+`genFormation` arm is strictly positive.  `HasTypeDesc` appears only POSITIVELY, in the mutual
 `DescTelescope` spine's `cons` premise.  The spine reuses the spike's
 shift-rebasing discipline (children indexed at a fixed `baseScope`, only the
 context grows via `currentDepth`, so `(baseScope+currentDepth)+1 =
@@ -61,21 +65,37 @@ def lmaxAll : List LevelExpr → LevelExpr
   | [] => LevelExpr.lzero
   | headLevel :: restLevels => lmaxFold headLevel restLevels
 
-/-- A typing-rule description for the dependent-type-former family: the only
-per-generator datum is how to combine the children's universe levels into the
-former's output level.  (Binder structure is read from the generator's
-`binderShifts`; the children-are-types premise is the `DescTelescope` spine.)
-This is the DATA a new dependent type-former ships — one row, no new arm. -/
+/-- A typing-rule description: the per-generator datum is the rule's OUTPUT
+classifier as a function of the children's universe levels (and the flag/scope).
+This generalizes an earlier `combineLevel : List LevelExpr → LevelExpr` (output
+hardwired to `universeCodeCell (combineLevel levels) flag`): `outputType` lets the
+output be arbitrary rule-DATA, opening the §11.8.5 "non-uniform output" seam —
+the structural prerequisite for non-formation rules.  For the dependent
+type-formers (Π, Σ) the output is still a universe code at the iterated-`lmax`
+level, so `outputType _ levels flag = universeCodeCell (lmaxAll levels) flag`
+(definitionally the old behaviour); honestly scoped, this opens output-FROM-LEVELS
+— the children-dependent eliminator output (motive applied to scrutinee) remains
+the open part of the seam.  (Binder structure is read from the generator's
+`binderShifts`; the children-are-types premise is the `DescTelescope` spine.) -/
 structure TypingRuleDesc where
-  /-- Output universe level as a function of the children's levels. -/
-  combineLevel : List LevelExpr → LevelExpr
+  /-- The rule's output classifier, as a function of the scope, the children's
+  universe levels (from the `DescTelescope` premise), and the flag. -/
+  outputType : (scope : Nat) → List LevelExpr → UniverseFlag → RawTerm scope
+
+/-- The output classifier shared by the dependent type-formers: a universe code
+at the iterated-`lmax` of the children's levels.  Factored out so the Π and Σ
+rows are visibly the same rule (and the `rfl` metadata lemmas + reconstruction
+proofs reduce through one definition). -/
+def universeFormerOutput (scope : Nat) (levels : List LevelExpr)
+    (flag : UniverseFlag) : RawTerm scope :=
+  universeCodeCell (lmaxAll levels) flag
 
 /-- The per-generator description table.  `gen_piTyCode` and `gen_sigmaTyCode`
-are the dependent type-formers, both combining via `lmaxAll`.  Adding a future
+are the dependent type-formers, both with `universeFormerOutput`.  Adding a future
 dependent former is one more row here — never a new `HasTypeDesc` arm (P13). -/
 def typingRuleDescOf (generator : Generator) : Option TypingRuleDesc :=
-  if generator = .gen_piTyCode then some { combineLevel := lmaxAll }
-  else if generator = .gen_sigmaTyCode then some { combineLevel := lmaxAll }
+  if generator = .gen_piTyCode then some { outputType := universeFormerOutput }
+  else if generator = .gen_sigmaTyCode then some { outputType := universeFormerOutput }
   else none
 
 mutual
@@ -111,7 +131,7 @@ inductive HasTypeDesc (profile : PolyProfile) :
       (premises :
         DescTelescope profile (currentDepth := 0) context levels flag children) :
       HasTypeDesc profile context (.mkGen generator payload children)
-        (universeCodeCell (rule.combineLevel levels) flag)
+        (rule.outputType scope levels flag)
 
 /-- The description engine's premise spine: the children form a cumulative
 dependent telescope of TYPES at `levels`.  Mutual with `HasTypeDesc` (its index
@@ -144,13 +164,15 @@ inductive DescTelescope (profile : PolyProfile) :
 
 end
 
-/-- `gen_piTyCode`'s description is the `lmaxAll` rule (metadata check). -/
+/-- `gen_piTyCode`'s description is the `universeFormerOutput` rule (metadata
+check). -/
 theorem typingRuleDescOf_piTyCode :
-    typingRuleDescOf .gen_piTyCode = some { combineLevel := lmaxAll } := rfl
+    typingRuleDescOf .gen_piTyCode = some { outputType := universeFormerOutput } := rfl
 
-/-- `gen_sigmaTyCode`'s description is the `lmaxAll` rule (metadata check). -/
+/-- `gen_sigmaTyCode`'s description is the `universeFormerOutput` rule (metadata
+check). -/
 theorem typingRuleDescOf_sigmaTyCode :
-    typingRuleDescOf .gen_sigmaTyCode = some { combineLevel := lmaxAll } := rfl
+    typingRuleDescOf .gen_sigmaTyCode = some { outputType := universeFormerOutput } := rfl
 
 /-- Reconstruction: the generic `genFormation` arm derives Π-formation.  Domain
 typed at `Type@(domainLevel, flag)`, codomain at `Type@(codomainLevel, flag)`
@@ -172,7 +194,7 @@ theorem hasTypeDesc_piFormation_viaGenArm
       (universeCodeCell (LevelExpr.lmax domainLevel codomainLevel) flag) := by
   refine HasTypeDesc.genFormation context .gen_piTyCode ()
     (RawTermChildren.binderShape domain codomain) [domainLevel, codomainLevel]
-    flag { combineLevel := lmaxAll } typingRuleDescOf_piTyCode ?_
+    flag { outputType := universeFormerOutput } typingRuleDescOf_piTyCode ?_
   refine DescTelescope.cons (currentDepth := 0) context domain domainLevel
     [codomainLevel] flag (.childCons codomain .childNil) domainTyped ?_
   exact DescTelescope.cons (currentDepth := 1) (context.cons domain) codomain
@@ -196,7 +218,7 @@ theorem hasTypeDesc_sigmaFormation_viaGenArm
       (universeCodeCell (LevelExpr.lmax domainLevel codomainLevel) flag) := by
   refine HasTypeDesc.genFormation context .gen_sigmaTyCode ()
     (RawTermChildren.binderShape domain codomain) [domainLevel, codomainLevel]
-    flag { combineLevel := lmaxAll } typingRuleDescOf_sigmaTyCode ?_
+    flag { outputType := universeFormerOutput } typingRuleDescOf_sigmaTyCode ?_
   refine DescTelescope.cons (currentDepth := 0) context domain domainLevel
     [codomainLevel] flag (.childCons codomain .childNil) domainTyped ?_
   exact DescTelescope.cons (currentDepth := 1) (context.cons domain) codomain

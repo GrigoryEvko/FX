@@ -390,16 +390,20 @@ gates pin them shut.
     = var + conv + nullary `universeFormation` + ONE generic `genFormation` arm
     consuming a per-generator `TypingRuleDesc` (the `typingRuleDescOf` table),
     typing the whole dependent-type-former family via the mutual `DescTelescope`
-    spine with output = `rule.combineLevel` of the children's levels.  The two
-    reconstruction theorems witness Π AND Σ through the SAME arm (P13
+    spine with output = `rule.outputType scope levels flag` (for the type-formers,
+    `universeFormerOutput = universeCodeCell (lmaxAll levels) flag`).  The
+    `outputType` field generalizes the earlier level-only `combineLevel`, opening
+    the §11.8.5 "non-uniform output" seam (output is rule-DATA, not hardwired).
+    The two reconstruction theorems witness Π AND Σ through the SAME arm (P13
     cascade-freedom: a new dependent former is one `typingRuleDescOf` row, ZERO
     new arms).  Propext-free `lmaxFold`/`lmaxAll` (no overlapping patterns) +
     `typingRuleDescOf` (nested `if` over DecidableEq, no 194-ctor wildcard);
-    `TypingRuleDesc` is pure level-syntax (no HasTypeDesc → genFormation
-    strictly positive); output level an explicit INDEX (Prop, P14). -/
+    `TypingRuleDesc` is pure syntax (no HasTypeDesc → genFormation strictly
+    positive); output classifier an explicit INDEX (Prop, P14). -/
 
 #assert_no_axioms FX1Poly.Typed.lmaxFold
 #assert_no_axioms FX1Poly.Typed.lmaxAll
+#assert_no_axioms FX1Poly.Typed.universeFormerOutput
 #assert_no_axioms FX1Poly.Typed.TypingRuleDesc
 #assert_no_axioms FX1Poly.Typed.typingRuleDescOf
 #assert_no_axioms FX1Poly.Typed.typingRuleDescOf_piTyCode
