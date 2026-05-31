@@ -32,6 +32,7 @@ import FX1Poly.Core.WeakHeadNormalPreservation
 import FX1Poly.Core.ReducibleTypeForwardClosure
 import FX1Poly.Core.ReducibleTypeForwardStepStar
 import FX1Poly.Core.ReducibleTypeConvInvariance
+import FX1Poly.Core.DependentArrowReducibilityCandidate
 -- Certifier base (CellBoundary / PolyCell + immediate consumers).
 import FX1Poly.Core.CertifiedRawCell
 import FX1Poly.Core.CertifiedTermSpineProjections
