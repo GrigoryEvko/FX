@@ -1,7 +1,6 @@
 import FX1PolyAudit.AuditGen
 -- Sink files of the foundational term-substrate slice (importing these
 -- transitively loads every FX1Poly.Core declaration).
-import FX1Poly.Core.AbstractTermSpine
 import FX1Poly.Core.CheckResult
 import FX1Poly.Core.ConsistencyStrength
 import FX1Poly.Core.CoreFxProfile
@@ -16,7 +15,6 @@ import FX1Poly.Core.RawTermSubstAction
 import FX1Poly.Core.RawTermChildrenUnique
 import FX1Poly.Core.RuleSpec
 import FX1Poly.Core.SiteOpenness
-import FX1Poly.Core.SpikeDimTransport
 import FX1Poly.Core.StepEta
 import FX1Poly.Core.StepInversion
 -- Certifier base (CellBoundary / PolyCell + immediate consumers).
@@ -99,9 +97,9 @@ Persistent zero-axiom gate for the foundational term-substrate slice:
 
 * Generator substrate: `GeneratorCore` / `GeneratorMetadata` /
   `GeneratorAdmission` / `GenPayloadEvidence` / `GeneratorTotalityClass` /
-  `GeneratorChildSpecsDim0` / `AbstractTermSpine` / `CoreFxProfile`.
+  `GeneratorChildSpecsDim0` / `CoreFxProfile`.
 * Cell-shape vocabulary: `RuleSpec` / `CheckResult` /
-  `ConsistencyStrength` / `SiteOpenness` / `SpikeDimTransport` /
+  `ConsistencyStrength` / `SiteOpenness` /
   `HasEqualDim`.
 * `RawTerm` + the full rename/subst commute ladder
   (`RawTermSubstDefs` / `GenAlgebra` / `Fold` / `LiftsRaw` /
