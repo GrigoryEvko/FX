@@ -19,6 +19,7 @@ import FX1Poly.Core.StepEta
 import FX1Poly.Core.StepInversion
 import FX1Poly.Core.HeadStep
 import FX1Poly.Core.HeadStepCommute
+import FX1Poly.Core.HeadStepCommute2
 import FX1Poly.Core.HeadStepRenameReflect
 -- Certifier base (CellBoundary / PolyCell + immediate consumers).
 import FX1Poly.Core.CertifiedRawCell
