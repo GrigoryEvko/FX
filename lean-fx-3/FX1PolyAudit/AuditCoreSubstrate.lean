@@ -87,7 +87,6 @@ import FX1Poly.Core.ReducibilityCandidateArrow
 import FX1Poly.Core.StrongNormalizationRedexes
 import FX1Poly.Core.StrongNormalizationIotaRedexes
 import FX1Poly.Core.StrongNormalizationSubterm
-import FX1Poly.Core.StrongNormalizationHeadExpansion
 import FX1Poly.Core.StrongNormalizationSpineExpansion
 import FX1Poly.Core.StrongNormalizationRename
 import FX1Poly.Core.StrongNormalizationEta

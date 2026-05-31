@@ -1,4 +1,7 @@
-import FX1Poly.Core.StrongNormalizationHeadExpansion
+import FX1Poly.Core.ReducibilityCandidate
+import FX1Poly.Core.ReducibilityCandidateArrow
+import FX1Poly.Core.StepInversion
+import FX1Poly.Core.StepSubst
 
 /-! # Foundation/PolyCell/Core/StrongNormalizationSpineExpansion
     — β head-expansion under an ARBITRARY application spine (the general theorem)
@@ -35,6 +38,20 @@ congruence lifts.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
 namespace FX1Poly.Core
 open FX1Poly.Foundation
 namespace StepStar
+
+/-- Strong normalization descends along a multi-step reduction: if `source` is strongly
+normalizing and `source ↝* target`, then `target` is too.  Iterates the SN candidate's
+single-step forward closure (CR2) over the `StepStar` chain. -/
+theorem isStronglyNormalizing_of_stepStar {scope : Nat}
+    {source target : RawTerm scope} (chain : StepStar source target) :
+    IsStronglyNormalizing source → IsStronglyNormalizing target := by
+  induction chain with
+  | refl _ => exact id
+  | trans headStep _tailChain tailInductiveHypothesis =>
+      intro sourceStronglyNormalizing
+      exact tailInductiveHypothesis
+        (isStronglyNormalizing_isReducibilityCandidate.closedUnderStep
+          sourceStronglyNormalizing headStep)
 
 /-- Left-nested application spine: `applySpineApp head [s₁,…,sₙ] = head s₁ s₂ … sₙ`. -/
 def RawTerm.applySpineApp {scope : Nat} (head : RawTerm scope) :
@@ -224,6 +241,21 @@ theorem betaSpineHeadExpansion {scope : Nat}
               ?_ currentBody updatedSpine rfl
             rw [contractumEquation]
             exact Step.applySpineAppSpine spineStep (RawTerm.subst0 currentBody argumentFocus)
+
+/-- **β head-expansion, spine-free** — the common base case: the empty-spine instance of
+`betaSpineHeadExpansion`.  If the argument is SN and the contractum `subst0 body argument` is
+SN, then `app (lam body) argument` is SN.  The generalisation revealed that the body need NOT
+be assumed strongly normalizing — the contractum's accessibility already bounds every body
+reduction — so this corollary takes two hypotheses, not three. -/
+theorem betaRedex_isStronglyNormalizing_of_contractum {scope : Nat}
+    {body : RawTerm (scope + 1)} {argument : RawTerm scope}
+    (argumentSN : IsStronglyNormalizing argument)
+    (contractumSN : IsStronglyNormalizing (RawTerm.subst0 body argument)) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons (.mkGen .gen_lam () (.childCons body .childNil))
+          (.childCons argument .childNil))) :=
+  betaSpineHeadExpansion (spine := []) argumentSN contractumSN
 
 end StepStar
 end FX1Poly.Core
