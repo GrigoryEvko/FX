@@ -58,8 +58,7 @@ out the wrapper laundering a different raw past the input.
 Note: under the un-indexed `RawCell scope`, both sides have the
 same type, so this HEq is reducible to Eq — but HEq is kept for
 API stability and to compose cleanly with the HEq-shape `_sound`
-theorem.  The `_eq` companion below is the tightened Eq form for
-callers that want the structural equality directly. -/
+theorem. -/
 theorem inferRawCellGeneral?_accepted_rawCell_heq
     {profile : PolyProfile} {scope : Nat} {raw : RawCell scope}
     {result : CertifiedRawCellResult profile scope}
@@ -76,51 +75,5 @@ theorem inferRawCellGeneral?_accepted_rawCell_heq
       injection accepted with resultEq
       subst resultEq
       rfl
-
-/-- Tightened Eq companion to the HEq theorem above.
-
-Under the un-indexed `RawCell scope`, both sides of the relation
-have the same type (`RawCell scope`), so the relation collapses to
-definitional Eq.  Callers can use Eq directly without needing
-`eq_of_heq` to lift the HEq form.
-
-This Eq version is the load-bearing form for metatheory (subject
-reduction, confluence, NbE); the HEq version composes with
-HEq-shape theorems (`_sound`, bridge roundtrips that may
-re-introduce a dim index).
-
-Proof: same structure as the HEq version; rfl closes because
-result.rawCell evaluates to raw definitionally when the
-certifier accepts. -/
-theorem inferRawCellGeneral?_accepted_rawCell_eq
-    {profile : PolyProfile} {scope : Nat} {raw : RawCell scope}
-    {result : CertifiedRawCellResult profile scope}
-    (accepted :
-      inferRawCellGeneral? scope raw = Except.ok result) :
-    result.rawCell = raw := by
-  rw [inferRawCellGeneral?] at accepted
-  cases hCertify : certifyRawCellExact? (profile := profile) scope raw with
-  | error rejection =>
-      rw [hCertify] at accepted
-      cases accepted
-  | ok exactResult =>
-      rw [hCertify] at accepted
-      injection accepted with resultEq
-      subst resultEq
-      rfl
-
-/-- HEq follows from Eq under the same-type discipline.
-
-Demonstrates the relationship: the HEq form is derivable from the
-Eq form via `heq_of_eq`.  This is the formal witness that the HEq
-form is non-essential under the un-indexed regime, since both sides
-have type `RawCell scope`. -/
-theorem inferRawCellGeneral?_accepted_rawCell_heq_of_eq
-    {profile : PolyProfile} {scope : Nat} {raw : RawCell scope}
-    {result : CertifiedRawCellResult profile scope}
-    (accepted :
-      inferRawCellGeneral? scope raw = Except.ok result) :
-    HEq result.rawCell raw :=
-  heq_of_eq (inferRawCellGeneral?_accepted_rawCell_eq accepted)
 
 end FX1Poly.Core

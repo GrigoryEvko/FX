@@ -105,8 +105,6 @@ full strict-zero-axiom sweep.
 #assert_no_axioms FX1Poly.Universe.LevelExpr.simplify_limax_non_lzero_codomain
 #assert_no_axioms FX1Poly.Universe.LevelExpr.simplify_lzero_idempotent
 #assert_no_axioms FX1Poly.Universe.LevelExpr.simplify_lvar_zero_idempotent
-#assert_no_axioms FX1Poly.Universe.LevelExpr.simplify_is_phase_a_inner_loop
-#assert_no_axioms FX1Poly.Universe.LevelExpr.simplify_is_phase_a_inner_loop_correct
 #assert_no_axioms FX1Poly.Universe.LevelExpr.size
 #assert_no_axioms FX1Poly.Universe.LevelExpr.size_pos
 #assert_no_axioms FX1Poly.Universe.LevelExpr.simplify_size_le

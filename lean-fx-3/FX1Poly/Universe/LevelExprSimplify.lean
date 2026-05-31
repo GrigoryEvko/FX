@@ -205,20 +205,6 @@ theorem LevelExpr.simplify_lvar_zero_idempotent :
     LevelExpr.simplify (LevelExpr.simplify (.lvar 0)) =
       LevelExpr.simplify (.lvar 0) := rfl
 
-/-! ## Single-pass inner-loop marker
-
-`simplify` is the single-pass structural inner loop of a full
-polynomial-time normalizer, which would iterate `simplify` to a
-fixed point plus apply canonical ordering on lmax operands plus
-distributivity over lsucc. -/
-
-/-- `simplify` is the single-pass inner-loop layer of the full
-polynomial-time normalization algorithm. -/
-def LevelExpr.simplify_is_phase_a_inner_loop : Bool := true
-
-theorem LevelExpr.simplify_is_phase_a_inner_loop_correct :
-    LevelExpr.simplify_is_phase_a_inner_loop = true := rfl
-
 /-! ## Structural size measure + non-increasing correctness
 
 A termination measure for any fixed-point iteration of

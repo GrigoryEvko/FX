@@ -559,11 +559,6 @@ theorem etaReductionExtension_localAdmissionRecord :
     etaReductionExtension.Admitted :=
   etaReductionExtension.admitted_from_fields
 
-/-- Alias for the eta extension local admission record. -/
-theorem etaReductionExtension_admitted :
-    etaReductionExtension.Admitted :=
-  etaReductionExtension_localAdmissionRecord
-
 -- This file defines no structural lens for `etaReductionExtension`; a
 -- `RawTerm`-aware structural lens is not part of the current subsystem.
 
