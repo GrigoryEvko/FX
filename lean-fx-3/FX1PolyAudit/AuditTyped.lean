@@ -27,6 +27,7 @@ import FX1Poly.Typed.HasTypeDescSound
 import FX1Poly.Typed.HasTypeDescDecidable
 import FX1Poly.Typed.HasTypeDescElim
 import FX1Poly.Typed.HasTypeDescValidity
+import FX1Poly.Typed.HasTypeDescInversion
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -462,3 +463,19 @@ gates pin them shut.
     `by_cases`+`exfalso` generator-pin). -/
 #assert_no_axioms FX1Poly.Typed.IsTypeDesc
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.classifierIsTypeDesc
+
+/-! ### INVERSION (P8 descent, premise half) for the description engine
+    (`HasTypeDescInversion`).  polycell.md §11.8.5 P8: from a `piTyCodeCell`'s
+    `HasTypeDesc`-typing recover the domain/codomain child typings (at a shared
+    universe flag).  `Conv`-FREE: the children are fixed by the subject, so the
+    `conv` arm forwards the child-typing IH verbatim (no `Conv.trans`, no
+    `WfContext`) — isolating the descent content (the children's types, what the
+    typechecker + canonicity consume) from the `Conv`-blocked classifier conjunct.
+    Term-mode recursive `match` (NOT `induction`, which rejects the mutual
+    `HasTypeDesc`) + `injection`/`subst_vars` + `congrArg RawTerm.headGenerator` +
+    `Generator.noConfusion` (the propext-free recipe of the bespoke inversions).
+    Shipped Π-shape; Σ is the identical mirror (future).  `…General` is the
+    subject-generalized recursive workhorse; `inversionPiCode` the `piTyCodeCell`
+    entry point. -/
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionPiCodeGeneral
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionPiCode
