@@ -689,3 +689,22 @@ gates pin them shut.
     condition factored into `renameContextCondition_cons`, shared by piIntro/piFormation/
     sigmaFormation).  NON-breaking: additive constructors; HasTypeDesc/toHasType/decidability/
     uniqueness untouched. -/
+
+/-! ### GENERIC GROWN FORMATION ARM — `genFormationPi` + `DescTelescopePi` (cascade-death at the
+    grown layer, the §5-endgame direction).  `HasTypeDescPi` becomes a mutual block with the grown
+    premise spine `DescTelescopePi`, gaining ONE generic `genFormationPi` arm over `typingRuleDescOf`
+    (the grown mirror of `HasTypeDesc.genFormation`) — a new dependent former is ONE table row, ZERO
+    new arms (P13).  Unlike the binary `piFormation`/`sigmaFormation` it subsumes, the generic arm
+    types a former with GROWN components (the `DescTelescopePi` heads are `HasTypeDescPi`, not just
+    formation) with NO per-former dispatch — this is exactly what makes the grown engine
+    SUBSTITUTION-CLOSED generically (the binary arms would force a partial-match on the child
+    telescope, the indexed-inductive propext trap).  `toDescTelescopePi` + `genFormationToHasTypeDescPi`
+    are the subsumption witnesses (formation formation is grown formation, through the generic arm).
+    The renaming leg `HasTypeDescPi.renameRespectingContext` becomes mutual with the spine companion
+    `DescTelescopePi.renameRespectingTelescope` (the `renameRespectingContext` gate above re-verifies
+    with the new generic arm).  NON-breaking: additive constructor + mutual wrap; HasTypeDesc/
+    toHasType/decidability/uniqueness untouched. -/
+#assert_no_axioms FX1Poly.Typed.DescTelescopePi
+#assert_no_axioms FX1Poly.Typed.DescTelescope.toDescTelescopePi
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.genFormationToHasTypeDescPi
+#assert_no_axioms FX1Poly.Typed.DescTelescopePi.renameRespectingTelescope

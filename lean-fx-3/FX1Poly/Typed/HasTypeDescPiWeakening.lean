@@ -106,6 +106,8 @@ theorem renameContextCondition_cons {profile : PolyProfile}
         (congrArg (RawTerm.rename RawRenaming.weaken)
           (contextCondition ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩))
 
+mutual
+
 /-- INTRINSIC renaming for the grown engine: `HasTypeDescPi` is preserved along any renaming that
 respects the context (sends each source binding's looked-up type to the target's, commuting with
 `rename`), with subject and classifier renamed.  The grown engine's cartesian-lift fibration leg.
@@ -190,6 +192,101 @@ theorem HasTypeDescPi.renameRespectingContext {profile : PolyProfile}
       rw [rename_sigmaTyCodeCell, rename_universeCodeCell]
       exact HasTypeDescPi.sigmaFormation domainLevel codomainLevel flag domainRenamed
         codomainRenamed
+  | .genFormationPi _sourceContext generator payload children levels flag rule
+      isFormation premises => fun targetContext rawRenaming contextCondition => by
+      -- Cross-call the telescope companion on the PRISTINE `premises` FIRST (before any
+      -- `by_cases`), so structural recursion recognises it as a sub-derivation — the same hoist
+      -- discipline the formation `genFormation` arm uses.  The generic arm renames generically:
+      -- no per-former dispatch beyond pinning the rule, the §11.8.5 cascade-free shape.
+      have renamedPremises :=
+        DescTelescopePi.renameRespectingTelescope premises targetContext rawRenaming
+          contextCondition
+      by_cases hPi : generator = .gen_piTyCode
+      · subst hPi
+        obtain rfl : rule = { outputType := universeFormerOutput } :=
+          Option.some.inj isFormation.symm
+        show HasTypeDescPi profile targetContext
+          (RawTerm.rename rawRenaming (RawTerm.mkGen .gen_piTyCode payload children))
+          (RawTerm.rename rawRenaming (universeCodeCell (lmaxAll levels) flag))
+        rw [rename_universeCodeCell]
+        exact HasTypeDescPi.genFormationPi targetContext .gen_piTyCode payload
+          (RawTermChildren.rename rawRenaming children) levels flag
+          { outputType := universeFormerOutput } typingRuleDescOf_piTyCode renamedPremises
+      · by_cases hSigma : generator = .gen_sigmaTyCode
+        · subst hSigma
+          obtain rfl : rule = { outputType := universeFormerOutput } :=
+            Option.some.inj isFormation.symm
+          show HasTypeDescPi profile targetContext
+            (RawTerm.rename rawRenaming (RawTerm.mkGen .gen_sigmaTyCode payload children))
+            (RawTerm.rename rawRenaming (universeCodeCell (lmaxAll levels) flag))
+          rw [rename_universeCodeCell]
+          exact HasTypeDescPi.genFormationPi targetContext .gen_sigmaTyCode payload
+            (RawTermChildren.rename rawRenaming children) levels flag
+            { outputType := universeFormerOutput } typingRuleDescOf_sigmaTyCode renamedPremises
+        · exfalso
+          unfold typingRuleDescOf at isFormation
+          rw [if_neg hPi, if_neg hSigma] at isFormation
+          contradiction
+
+theorem DescTelescopePi.renameRespectingTelescope {profile : PolyProfile}
+    {baseScope currentDepth : Nat} {binderShifts : List Nat}
+    {sourceContext : TypingContext profile (baseScope + currentDepth)}
+    {levels : List LevelExpr} {flag : UniverseFlag}
+    {children : RawTermChildren binderShifts baseScope}
+    (telescope : DescTelescopePi profile sourceContext levels flag children) :
+    ∀ {targetBaseScope : Nat}
+      (targetContext : TypingContext profile (targetBaseScope + currentDepth))
+      (rawRenaming : RawRenaming baseScope targetBaseScope),
+      (∀ index : Fin (baseScope + currentDepth),
+        RawTerm.rename (iterateLiftRaw rawRenaming currentDepth)
+            (sourceContext.lookup index)
+          = targetContext.lookup (iterateLiftRaw rawRenaming currentDepth index)) →
+      DescTelescopePi profile targetContext levels flag
+        (RawTermChildren.rename rawRenaming children) :=
+  match telescope with
+  | .nil _sourceContext flag => fun targetContext _rawRenaming _contextCondition =>
+      DescTelescopePi.nil targetContext flag
+  | .cons _sourceContext head headLevel restLevels flag rest headTyped restTyped =>
+      fun targetContext rawRenaming contextCondition => by
+        have renamedHeadTyped :
+            HasTypeDescPi profile targetContext
+              (RawTerm.rename (iterateLiftRaw rawRenaming currentDepth) head)
+              (universeCodeCell headLevel flag) := by
+          have headRenamed :=
+            HasTypeDescPi.renameRespectingContext headTyped targetContext
+              (iterateLiftRaw rawRenaming currentDepth) contextCondition
+          rwa [rename_universeCodeCell] at headRenamed
+        refine DescTelescopePi.cons targetContext
+          (RawTerm.rename (iterateLiftRaw rawRenaming currentDepth) head) headLevel
+          restLevels flag (RawTermChildren.rename rawRenaming rest) renamedHeadTyped ?_
+        refine DescTelescopePi.renameRespectingTelescope restTyped
+          (targetContext.cons
+            (RawTerm.rename (iterateLiftRaw rawRenaming currentDepth) head))
+          rawRenaming ?_
+        intro index
+        obtain ⟨indexValue, indexBound⟩ := index
+        cases indexValue with
+        | zero =>
+            show RawTerm.rename (iterateLiftRaw rawRenaming (currentDepth + 1))
+                (RawTerm.rename RawRenaming.weaken head)
+              = RawTerm.rename RawRenaming.weaken
+                  (RawTerm.rename (iterateLiftRaw rawRenaming currentDepth) head)
+            exact rename_lift_weaken_commute
+              (iterateLiftRaw rawRenaming currentDepth) head
+        | succ k =>
+            show RawTerm.rename (iterateLiftRaw rawRenaming (currentDepth + 1))
+                (RawTerm.rename RawRenaming.weaken
+                  (_sourceContext.lookup ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩))
+              = RawTerm.rename RawRenaming.weaken
+                  (targetContext.lookup
+                    (iterateLiftRaw rawRenaming currentDepth
+                      ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩))
+            exact (rename_lift_weaken_commute (iterateLiftRaw rawRenaming currentDepth)
+                (_sourceContext.lookup ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩)).trans
+              (congrArg (RawTerm.rename RawRenaming.weaken)
+                (contextCondition ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩))
+
+end
 
 /-- INTRINSIC weakening for the grown engine: a `HasTypeDescPi` derivation survives extending the
 context by one fresh binding, subject and classifier shifted by `RawRenaming.weaken`.  The
