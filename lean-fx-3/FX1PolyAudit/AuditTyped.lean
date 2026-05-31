@@ -30,6 +30,7 @@ import FX1Poly.Typed.HasTypeDescValidity
 import FX1Poly.Typed.HasTypeDescInversion
 import FX1Poly.Typed.HasTypeDescUniqueness
 import FX1Poly.Typed.HasTypeDescWeakening
+import FX1Poly.Typed.HasTypeDescSubstitution
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -564,3 +565,19 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.renameRespectingContext
 #assert_no_axioms FX1Poly.Typed.DescTelescope.renameRespectingTelescope
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.weakenUnderBinding
+
+/-! ### INTRINSIC substitution (P6, the β-engine) for the description engine
+    (`HasTypeDescSubstitution`).  polycell.md §11.8.5 P6: the SUBSTITUTION half of whiskering
+    — the engine `app`'s β-reduction `b[a]` needs to preserve typing.
+    `HasTypeDesc.substRespectingContext` (with companion `DescTelescope.substRespectingTelescope`)
+    preserves `HasTypeDesc` along any substitution whose substituents are target-typed at the
+    substituted source-binding types; `HasTypeDesc.substituteUnderBinding` is the `subst0`
+    corollary the β-rule cites.  The SECOND intrinsic-by-induction mutual metatheorem — same
+    clean shape as intrinsic weakening (no second-derivation inversion), and the decouple
+    COMPOUNDS: the companion's successor case reuses the intrinsic
+    `HasTypeDesc.weakenUnderBinding` to weaken the substituent across the binder.  `Conv.subst`
+    (#370) rides the `conv` arm — no `Conv.trans`, so the β-engine is unblocked ahead of raw
+    confluence.  NOT routed through the `⟺` maps. -/
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.substRespectingContext
+#assert_no_axioms FX1Poly.Typed.DescTelescope.substRespectingTelescope
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.substituteUnderBinding
