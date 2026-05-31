@@ -17,6 +17,7 @@ import FX1Poly.Core.RuleSpec
 import FX1Poly.Core.SiteOpenness
 import FX1Poly.Core.StepEta
 import FX1Poly.Core.StepInversion
+import FX1Poly.Core.HeadStep
 -- Certifier base (CellBoundary / PolyCell + immediate consumers).
 import FX1Poly.Core.CertifiedRawCell
 import FX1Poly.Core.CertifiedTermSpineProjections
