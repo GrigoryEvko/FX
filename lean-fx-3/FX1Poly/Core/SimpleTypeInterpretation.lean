@@ -105,4 +105,46 @@ theorem Red_isReducibilityCandidate {scope : Nat} (simpleType : SimpleType) :
     IsReducibilityCandidate (Red (scope := scope) simpleType) :=
   (Red_candidate_and_witness simpleType).1
 
+/-- **Reducible ⟹ strongly normalizing** (CR1 at every type) — the SN-extraction direction that,
+composed with the fundamental theorem, yields strong normalization of well-typed terms. -/
+theorem Red_isStronglyNormalizing {scope : Nat} {simpleType : SimpleType}
+    {term : RawTerm scope} (reducible : Red simpleType term) :
+    IsStronglyNormalizing term :=
+  (Red_isReducibilityCandidate simpleType).stronglyNormalizing reducible
+
+/-- **The variable case** of the fundamental theorem: a variable is reducible at every type, because
+it is contained in every reducibility candidate (`containsVariable`). -/
+theorem reducibleVariable {scope : Nat} (simpleType : SimpleType) (index : Fin scope) :
+    Red simpleType (.mkGen .gen_var index .childNil) :=
+  (Red_isReducibilityCandidate simpleType).containsVariable index
+
+/-- **The application (Π-elimination) case** of the fundamental theorem: a reducible function applied
+to a reducible argument is reducible in the codomain — by unfolding the function-space predicate. -/
+theorem reducibleApplication {scope : Nat} {domainType codomainType : SimpleType}
+    {function argument : RawTerm scope}
+    (functionReducible : Red (.arrow domainType codomainType) function)
+    (argumentReducible : Red domainType argument) :
+    Red codomainType
+      (.mkGen .gen_app () (.childCons function (.childCons argument .childNil))) :=
+  functionReducible argument argumentReducible
+
+/-- **The λ-abstraction (Π-introduction) case** of the fundamental theorem — its heart.  If the body
+is reducible in the codomain for every reducible argument substituted in, then the λ is reducible at
+the arrow type.  The β-redex `app (lam body) argument` inherits codomain membership from its
+contractum `subst0 body argument` by head-expansion closure, with `SN argument` supplied by the
+domain candidate's CR1.  No type-erasure or substitution machinery enters here — this is the purely
+semantic content the eventual syntactic induction discharges. -/
+theorem reducibleAbstraction {scope : Nat} {domainType codomainType : SimpleType}
+    {body : RawTerm (scope + 1)}
+    (bodyReducible : ∀ argument : RawTerm scope, Red domainType argument →
+      Red codomainType (RawTerm.subst0 body argument)) :
+    Red (.arrow domainType codomainType)
+      (.mkGen .gen_lam () (.childCons body .childNil)) := by
+  intro argument argumentReducible
+  have argumentSN : IsStronglyNormalizing argument :=
+    (Red_isReducibilityCandidate domainType).stronglyNormalizing argumentReducible
+  exact Red_headExpansionClosed codomainType
+    (body := body) (argument := argument) (spine := []) argumentSN
+    (bodyReducible argument argumentReducible)
+
 end FX1Poly.Core
