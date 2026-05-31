@@ -87,6 +87,7 @@ import FX1Poly.Core.StrongNormalizationRedexes
 import FX1Poly.Core.StrongNormalizationIotaRedexes
 import FX1Poly.Core.StrongNormalizationSubterm
 import FX1Poly.Core.StrongNormalizationRename
+import FX1Poly.Core.StrongNormalizationApplication
 import FX1Poly.Core.StrongNormalizationEta
 import FX1Poly.Core.StepBetaEtaConfluence
 import FX1Poly.Core.StepIotaEtaDoubleStrips
