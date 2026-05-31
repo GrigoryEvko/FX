@@ -15,18 +15,13 @@ universe classifier `subst0 (universeCodeCell ..) argument` IS the universe code
 ## Why the type-former well-formedness is a HYPOTHESIS, not derived
 
 The FORMATION `piApplicationOutputIsType` derives "the Π-code is a type" from the function term's
-typing via full validity (`classifierIsTypeDesc`).  The GROWN engine does NOT yet have full validity:
-its blocker is the `piIntro` arm — reconstructing `Π domainCode. codomainCode : Type` requires the
-domain (at `domainFlag`, from the `piIntro` premise) and the codomain (at the body-type's own flag,
-from validity of the body) to share a universe FLAG, which `piIntro` as currently formulated does NOT
-enforce (it constrains only the domain's universe, taking the body's type as an arbitrary classifier).
-Closing that needs either a `piIntro` strengthened with a codomain-well-formedness premise (a
-well-formed-Π-by-construction redesign) or universe-flag cumulativity — a deliberate design step.
-
-So these lemmas take the type-former's well-formedness (`IsTypeDescPi (piTyCodeCell ..)`) as a
-HYPOTHESIS — the genuine output-validity obligation, decoupled from full validity.  It is exactly the
-witness the eventual subject-reduction / canonicity proofs carry in hand (they hold the eliminated
-value's type, hence its well-formedness), so the decoupling costs nothing downstream.
+typing via validity (`classifierIsTypeDesc`).  Here the type-former's well-formedness
+(`IsTypeDescPi (piTyCodeCell ..)`) is taken as a HYPOTHESIS instead, for LAYERING: this file is
+UPSTREAM of grown validity (`HasTypeDescPiValidity.classifierIsTypeDesc` consumes
+`piCodeInstantiationIsType` in its `piElim` arm), so it cannot call validity without an import cycle.
+The hypothesis IS the genuine output-validity obligation, and it is exactly the witness validity /
+subject-reduction / canonicity carry in hand (they hold the eliminated value's type, hence its
+well-formedness), so the decoupling costs nothing.
 
 ## Zero-axiom
 

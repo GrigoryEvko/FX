@@ -33,9 +33,13 @@ decidability/uniqueness cascade that a direct `HasTypeDesc` extension would forc
   classifier (`Type@(⊔ levels)` for Π/Σ).  It types formers with GROWN components — so the engine
   is SUBSTITUTION-CLOSED — with no per-former dispatch (a per-former arm would force a partial-match
   on the child telescope, the indexed-inductive propext trap).
-* `piIntro` (λ) — `body : codomainCode` under `context.cons domainCode`, with `domainCode` a
-  type (witness exposed as `domainLevel`/`domainFlag`/`domainTyped`, per the
+* `piIntro` (λ) — `body : codomainCode` under `context.cons domainCode`, with BOTH `domainCode` and
+  `codomainCode` types at a SHARED universe flag (witnesses
+  `domainLevel`/`codomainLevel`/`flag`/`domainTyped`/`codomainTyped`, per the
   nested-`Exists`-in-a-ctor-premise rejection), gives `lamCell body : Π domainCode. codomainCode`.
+  The codomain-well-formedness premise makes the Π type WELL-FORMED BY CONSTRUCTION (the standard
+  λ-rule) — it is what lets validity (`classifierIsTypeDesc`) reconstruct the Π formation via
+  `genFormationPi` without a domain/codomain flag mismatch.
 * `piElim` (app) — `functionTerm : Π domainCode. codomainCode` and `argument : domainCode` give
   `appCell functionTerm argument : codomainCode[argument]` (`subst0`, the motive-dependent
   output realised via the intrinsic β-engine).
@@ -107,10 +111,13 @@ inductive HasTypeDescPi (profile : PolyProfile) :
       HasTypeDescPi profile context subject reclassifier
   | piIntro {scope : Nat} {context : TypingContext profile scope}
       {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
-      (domainLevel : LevelExpr) (domainFlag : UniverseFlag)
+      (domainLevel codomainLevel : LevelExpr) (flag : UniverseFlag)
       (domainTyped :
         HasTypeDescPi profile context domainCode
-          (universeCodeCell domainLevel domainFlag))
+          (universeCodeCell domainLevel flag))
+      (codomainTyped :
+        HasTypeDescPi profile (context.cons domainCode) codomainCode
+          (universeCodeCell codomainLevel flag))
       (bodyTyped :
         HasTypeDescPi profile (context.cons domainCode) body codomainCode) :
       HasTypeDescPi profile context (lamCell body)
@@ -221,7 +228,8 @@ theorem HasTypeDesc.genFormationToHasTypeDescPi {profile : PolyProfile} {scope :
 /-- FIRST NON-VACUOUS SUBJECT REDUCTION IN THE KERNEL: the β-rule preserves typing.
 
 For a β-redex built from FORMATION components — `body : codomainCode` under `context.cons
-domainCode`, `argument : domainCode`, and `domainCode` a type — BOTH the redex
+domainCode`, `argument : domainCode`, and BOTH `domainCode` and `codomainCode` types at a shared
+universe flag (the codomain witness the strengthened `piIntro` requires) — BOTH the redex
 `appCell (lamCell body) argument` and its β-reduct `subst0 body argument` (the contractum of
 `Step.beta`) are typed at `subst0 codomainCode argument` in the grown engine.
 
@@ -239,18 +247,23 @@ theorem HasTypeDescPi.betaCoherence_formationBody {profile : PolyProfile} {scope
     {context : TypingContext profile scope}
     {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
     {argument : RawTerm scope}
+    (domainLevel codomainLevel : LevelExpr) (flag : UniverseFlag)
+    (domainFormationTyped :
+      HasTypeDesc profile context domainCode (universeCodeCell domainLevel flag))
+    (codomainFormationTyped :
+      HasTypeDesc profile (context.cons domainCode) codomainCode
+        (universeCodeCell codomainLevel flag))
     (bodyTyped : HasTypeDesc profile (context.cons domainCode) body codomainCode)
-    (argumentTyped : HasTypeDesc profile context argument domainCode)
-    (domainIsType : IsTypeDesc profile context domainCode) :
+    (argumentTyped : HasTypeDesc profile context argument domainCode) :
     HasTypeDescPi profile context (appCell (lamCell body) argument)
         (RawTerm.subst0 codomainCode argument)
       ∧ HasTypeDescPi profile context (RawTerm.subst0 body argument)
         (RawTerm.subst0 codomainCode argument) := by
-  obtain ⟨domainLevel, domainFlag, domainFormationTyped⟩ := domainIsType
   refine ⟨?_, ?_⟩
   · exact HasTypeDescPi.piElim
-      (HasTypeDescPi.piIntro domainLevel domainFlag
+      (HasTypeDescPi.piIntro domainLevel codomainLevel flag
         (HasTypeDescPi.ofFormation domainFormationTyped)
+        (HasTypeDescPi.ofFormation codomainFormationTyped)
         (HasTypeDescPi.ofFormation bodyTyped))
       (HasTypeDescPi.ofFormation argumentTyped)
   · exact HasTypeDescPi.ofFormation

@@ -37,6 +37,7 @@ import FX1Poly.Typed.HasTypeDescPiWeakening
 import FX1Poly.Typed.HasTypeDescPiSubstitution
 import FX1Poly.Typed.HasTypeDescPiInversion
 import FX1Poly.Typed.HasTypeDescPiApplication
+import FX1Poly.Typed.HasTypeDescPiValidity
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -715,3 +716,13 @@ gates pin them shut.
     flag — see the file docstring); it is exactly the witness SR/canonicity carry. -/
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.piCodeInstantiationIsType
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.sigmaCodeInstantiationIsType
+
+/-! ### GROWN VALIDITY (P3) — every classifier is a well-formed grown type.
+    `HasTypeDescPi.classifierIsTypeDesc` — the grown mirror of the formation `classifierIsTypeDesc`,
+    UNBLOCKED by the strengthened `piIntro` (codomain a type at the domain's flag → the Π-formation is
+    reconstructible via genFormationPi without a flag mismatch).  Structural recursion: ofFormation
+    routes to formation validity; conv carries its witness; piIntro rebuilds the Π-code via
+    genFormationPi from domainTyped/codomainTyped; piElim recurses (function validity) + the elimination
+    output-validity; genFormationPi types the universe code one level up.  Gateway to canonicity (#459)
+    + consistency (#460).  One of the three metatheory pillars. -/
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.classifierIsTypeDesc

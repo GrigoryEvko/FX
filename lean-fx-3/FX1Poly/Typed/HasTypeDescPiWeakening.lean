@@ -142,19 +142,26 @@ theorem HasTypeDescPi.renameRespectingContext {profile : PolyProfile}
         rw [rename_universeCodeCell] at reclassifierRenamed
         exact HasTypeDescPi.conv levelExpr flag typedRenamed
           (Conv.rename rawRenaming converts) reclassifierRenamed
-  | @HasTypeDescPi.piIntro _ _ _ domainCode codomainCode body domainLevel domainFlag
-      domainTyped bodyTyped => fun targetContext rawRenaming contextCondition => by
+  | @HasTypeDescPi.piIntro _ _ _ domainCode codomainCode body domainLevel codomainLevel flag
+      domainTyped codomainTyped bodyTyped => fun targetContext rawRenaming contextCondition => by
       have domainRenamed :=
         HasTypeDescPi.renameRespectingContext domainTyped targetContext rawRenaming
           contextCondition
       rw [rename_universeCodeCell] at domainRenamed
+      have codomainRenamed :=
+        HasTypeDescPi.renameRespectingContext codomainTyped
+          (targetContext.cons (RawTerm.rename rawRenaming domainCode))
+          (iterateLiftRaw rawRenaming 1)
+          (renameContextCondition_cons domainCode rawRenaming contextCondition)
+      rw [rename_universeCodeCell] at codomainRenamed
       have bodyRenamed :=
         HasTypeDescPi.renameRespectingContext bodyTyped
           (targetContext.cons (RawTerm.rename rawRenaming domainCode))
           (iterateLiftRaw rawRenaming 1)
           (renameContextCondition_cons domainCode rawRenaming contextCondition)
       rw [rename_lamCell, rename_piTyCodeCell]
-      exact HasTypeDescPi.piIntro domainLevel domainFlag domainRenamed bodyRenamed
+      exact HasTypeDescPi.piIntro domainLevel codomainLevel flag domainRenamed codomainRenamed
+        bodyRenamed
   | @HasTypeDescPi.piElim _ _ _ functionTerm argument domainCode codomainCode
       functionTyped argumentTyped => fun targetContext rawRenaming contextCondition => by
       have functionRenamed :=

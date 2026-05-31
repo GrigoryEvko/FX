@@ -308,19 +308,25 @@ theorem HasTypeDescPi.substRespectingContext {profile : PolyProfile}
         rw [subst_universeCodeCell] at reclassifierSubst
         exact HasTypeDescPi.conv levelExpr flag typedSubst
           (Conv.subst substitution converts) reclassifierSubst
-  | @HasTypeDescPi.piIntro _ _ _ domainCode codomainCode body domainLevel domainFlag
-      domainTyped bodyTyped => fun targetContext substitution substitutionTyped => by
+  | @HasTypeDescPi.piIntro _ _ _ domainCode codomainCode body domainLevel codomainLevel flag
+      domainTyped codomainTyped bodyTyped => fun targetContext substitution substitutionTyped => by
       have domainSubst :=
         HasTypeDescPi.substRespectingContext domainTyped targetContext substitution
           substitutionTyped
       rw [subst_universeCodeCell] at domainSubst
+      have codomainSubst :=
+        HasTypeDescPi.substRespectingContext codomainTyped
+          (targetContext.cons (RawTerm.subst substitution domainCode))
+          (iterateLiftRaw substitution 1)
+          (substContextCondition_cons domainCode substitution substitutionTyped)
+      rw [subst_universeCodeCell] at codomainSubst
       have bodySubst :=
         HasTypeDescPi.substRespectingContext bodyTyped
           (targetContext.cons (RawTerm.subst substitution domainCode))
           (iterateLiftRaw substitution 1)
           (substContextCondition_cons domainCode substitution substitutionTyped)
       rw [subst_lamCell, subst_piTyCodeCell]
-      exact HasTypeDescPi.piIntro domainLevel domainFlag domainSubst bodySubst
+      exact HasTypeDescPi.piIntro domainLevel codomainLevel flag domainSubst codomainSubst bodySubst
   | @HasTypeDescPi.piElim _ _ _ functionTerm argument domainCode codomainCode
       functionTyped argumentTyped => fun targetContext substitution substitutionTyped => by
       have functionSubst :=
@@ -485,17 +491,20 @@ theorem HasTypeDescPi.betaCoherence {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
     {argument : RawTerm scope}
+    (domainLevel codomainLevel : LevelExpr) (flag : UniverseFlag)
+    (domainTyped : HasTypeDescPi profile context domainCode (universeCodeCell domainLevel flag))
+    (codomainTyped :
+      HasTypeDescPi profile (context.cons domainCode) codomainCode
+        (universeCodeCell codomainLevel flag))
     (bodyTyped : HasTypeDescPi profile (context.cons domainCode) body codomainCode)
-    (argumentTyped : HasTypeDescPi profile context argument domainCode)
-    (domainIsType : IsTypeDescPi profile context domainCode) :
+    (argumentTyped : HasTypeDescPi profile context argument domainCode) :
     HasTypeDescPi profile context (appCell (lamCell body) argument)
         (RawTerm.subst0 codomainCode argument)
       ∧ HasTypeDescPi profile context (RawTerm.subst0 body argument)
         (RawTerm.subst0 codomainCode argument) := by
-  obtain ⟨domainLevel, domainFlag, domainTyped⟩ := domainIsType
   refine ⟨?_, ?_⟩
   · exact HasTypeDescPi.piElim
-      (HasTypeDescPi.piIntro domainLevel domainFlag domainTyped bodyTyped)
+      (HasTypeDescPi.piIntro domainLevel codomainLevel flag domainTyped codomainTyped bodyTyped)
       argumentTyped
   · exact HasTypeDescPi.substituteUnderBinding argument bodyTyped argumentTyped
 

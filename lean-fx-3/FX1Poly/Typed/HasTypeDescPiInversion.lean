@@ -70,7 +70,8 @@ theorem HasTypeDescPi.inversionPiCodeTelescopeGeneral {profile : PolyProfile}
         exact ⟨levels, flag, telescope.toDescTelescopePi⟩
     | .conv _levelExpr _flag typedPremise _converts _reclassifierTyped => fun subjectEq =>
         HasTypeDescPi.inversionPiCodeTelescopeGeneral typedPremise wellFormed subjectEq
-    | .piIntro _domainLevel _domainFlag _domainTyped _bodyTyped => fun subjectEq =>
+    | .piIntro _domainLevel _codomainLevel _flag _domainTyped _codomainTyped _bodyTyped =>
+        fun subjectEq =>
         Generator.noConfusion
           (congrArg RawTerm.headGenerator subjectEq :
             Generator.gen_lam = Generator.gen_piTyCode)
@@ -133,7 +134,8 @@ theorem HasTypeDescPi.inversionSigmaCodeTelescopeGeneral {profile : PolyProfile}
         exact ⟨levels, flag, telescope.toDescTelescopePi⟩
     | .conv _levelExpr _flag typedPremise _converts _reclassifierTyped => fun subjectEq =>
         HasTypeDescPi.inversionSigmaCodeTelescopeGeneral typedPremise wellFormed subjectEq
-    | .piIntro _domainLevel _domainFlag _domainTyped _bodyTyped => fun subjectEq =>
+    | .piIntro _domainLevel _codomainLevel _flag _domainTyped _codomainTyped _bodyTyped =>
+        fun subjectEq =>
         Generator.noConfusion
           (congrArg RawTerm.headGenerator subjectEq :
             Generator.gen_lam = Generator.gen_sigmaTyCode)
