@@ -20,8 +20,6 @@ import FX1Poly.Typed.HasTypeInfer
 import FX1Poly.Typed.HasTypeCheck
 import FX1Poly.Typed.HasTypeClosedForms
 import FX1Poly.Typed.WfContextDecidable
-import FX1Poly.Typed.HasTypeGen
-import FX1Poly.Typed.DependentTelescopeSpike
 import FX1Poly.Typed.HasTypeDesc
 import FX1Poly.Typed.HasTypeDescSound
 import FX1Poly.Typed.HasTypeDescDecidable
@@ -351,46 +349,6 @@ gates pin them shut.
     this fragment it agrees with the direct decider. -/
 
 #assert_no_axioms FX1Poly.Typed.HasType.check
-
-/-! ### Cascade-free typing engine — the dependent-binary
-    type-FORMATION shape-arm.  `HasTypeGen` is a mutual inductive running
-    alongside `HasType`.  Three arms: `var`, `conv`, and ONE per-shape
-    `dependentBinaryFormation` arm generic over the Generator via the
-    `isDependentBinaryFormer` whitelist (gen_piTyCode / gen_sigmaTyCode) — two of
-    Decision 4's ~6 shape-arms (P13: cascade-free; a further [0,1] former is one
-    whitelist disjunct, zero new arms — witnessed by the two smoke lemmas).
-    SOUNDNESS (P1): the whitelist is an explicit Π/Σ enumeration, NOT a
-    `binderShifts == [0,1]` proxy (which would wrongly admit gen_polyFunctor).
-    The spine `DependentBinaryFormationChildren` is mutual with `HasTypeGen`, its
-    index sig free of `HasTypeGen` (mutual-index rule, StepChildren precedent);
-    output level is an explicit INDEX (Prop-valued, P14 erasure). -/
-
-#assert_no_axioms FX1Poly.Typed.isDependentBinaryFormer
-#assert_no_axioms FX1Poly.Typed.isDependentBinaryFormer_piTyCode
-#assert_no_axioms FX1Poly.Typed.isDependentBinaryFormer_sigmaTyCode
-#assert_no_axioms FX1Poly.Typed.HasTypeGen
-#assert_no_axioms FX1Poly.Typed.DependentBinaryFormationChildren
-#assert_no_axioms FX1Poly.Typed.hasTypeGen_piFormation_viaShapeArm
-#assert_no_axioms FX1Poly.Typed.hasTypeGen_sigmaFormation_viaShapeArm
-
-/-! ### Dependent-telescope spike — generic variadic dependent-telescope typed-children
-    spine (the description-universe's `premisesHold`).  `DependentTelescopeChildren`
-    is the cumulative `[0,1,…,n-1]` dependent telescope of children-as-types
-    (reconstructs Π/Σ formation as its [0,1] instance + a [0,1,2] 3-ary witness).
-    `DependentTelescopeTyped` is the MAXIMAL generalization —
-    each child typed at an ARBITRARY per-step classifier (a telescope of typed
-    TERMS, not just types — the shape an eliminator rule's premises take).  Both
-    solve the shift-rebasing crux by indexing children at a fixed `baseScope`
-    while only the context grows (`currentDepth`), making
-    `(baseScope+currentDepth)+1 = baseScope+(currentDepth+1)` definitional.  This
-    is the foundation stone for the description-driven generic `gen` arm. -/
-
-#assert_no_axioms FX1Poly.Typed.DependentTelescopeChildren
-#assert_no_axioms FX1Poly.Typed.dependentTelescope_reconstructs_piFormation
-#assert_no_axioms FX1Poly.Typed.dependentTelescope_threeAry
-#assert_no_axioms FX1Poly.Typed.DependentTelescopeTyped
-#assert_no_axioms FX1Poly.Typed.dependentTelescopeTyped_reconstructs_piFormation
-#assert_no_axioms FX1Poly.Typed.dependentTelescopeTyped_heterogeneous
 
 /-! ### ★ MOONSHOT CORE — the description-driven generic typing engine
     (`HasTypeDesc`, polycell.md §11.8.5 / §5.2: the Natural-Model display map

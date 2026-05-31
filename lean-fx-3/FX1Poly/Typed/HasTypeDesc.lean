@@ -1,4 +1,4 @@
-import FX1Poly.Typed.HasTypeGen
+import FX1Poly.Typed.HasType
 
 /-! # FX1Poly/Typed/HasTypeDesc — the description-driven generic typing engine
     (the moonshot core: the Natural-Model display map as a data-driven `gen` arm)
@@ -8,7 +8,7 @@ cellularly by a CASCADE-FREE generic `gen` arm — a new feature is one
 `TypingRuleDesc` DATA row, never a new `HasType` arm.  This file carries that arm
 for the dependent-type-FORMER family (the most uniform shape).
 
-`HasTypeDesc` runs alongside the bespoke `HasType` / `HasTypeGen`.  Its
+`HasTypeDesc` runs alongside the bespoke `HasType`.  Its
 faithfulness wrt `HasType` on the formation fragment is proved in two halves:
 COMPLETENESS (`HasType.toHasTypeDesc`, below — every `HasType` derivation has a
 description-engine counterpart) and SOUNDNESS (`HasTypeDesc.toHasType`, in the
