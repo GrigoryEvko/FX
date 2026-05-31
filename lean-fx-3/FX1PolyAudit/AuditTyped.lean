@@ -406,3 +406,6 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.DescTelescope
 #assert_no_axioms FX1Poly.Typed.hasTypeDesc_piFormation_viaGenArm
 #assert_no_axioms FX1Poly.Typed.hasTypeDesc_sigmaFormation_viaGenArm
+-- COMPLETENESS: the description engine is at least as strong as the bespoke
+-- HasType (every HasType derivation maps to HasTypeDesc; Π/Σ via the generic arm).
+#assert_no_axioms FX1Poly.Typed.HasType.toHasTypeDesc

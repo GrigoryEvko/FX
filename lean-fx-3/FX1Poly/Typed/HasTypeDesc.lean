@@ -199,4 +199,32 @@ theorem hasTypeDesc_sigmaFormation_viaGenArm
     codomainLevel [] flag .childNil codomainTyped
     (DescTelescope.nil (currentDepth := 2) (context.cons domain |>.cons codomain) flag)
 
+/-- COMPLETENESS of the description engine wrt the shipped bespoke `HasType`:
+every `HasType` derivation on the current fragment has a `HasTypeDesc`
+counterpart.  A single induction on `HasType` (NOT mutual — `HasType`'s premises
+are direct sub-derivations with IHs): `var`/`conv`/`universeFormation` map to the
+matching `HasTypeDesc` arm; `piFormation`/`sigmaFormation` map through the
+generic `genFormation` arm via the reconstruction lemmas.  So the data-driven
+generic engine is at least as strong as the five hand-written arms — the
+cascade-free engine loses nothing. -/
+theorem HasType.toHasTypeDesc {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {subject classifier : RawTerm scope}
+    (typed : HasType profile context subject classifier) :
+    HasTypeDesc profile context subject classifier := by
+  induction typed with
+  | var context index => exact HasTypeDesc.var context index
+  | conv levelExpr flag _typed converts _reclassifierTyped ihTyped ihReclassifier =>
+      exact HasTypeDesc.conv levelExpr flag ihTyped converts ihReclassifier
+  | universeFormation context levelExpr flag =>
+      exact HasTypeDesc.universeFormation context levelExpr flag
+  | piFormation context domainCode codomainCode domainLevel codomainLevel flag
+      _domainTyped _codomainTyped ihDomain ihCodomain =>
+      exact hasTypeDesc_piFormation_viaGenArm context domainCode codomainCode
+        domainLevel codomainLevel flag ihDomain ihCodomain
+  | sigmaFormation context domainCode codomainCode domainLevel codomainLevel flag
+      _domainTyped _codomainTyped ihDomain ihCodomain =>
+      exact hasTypeDesc_sigmaFormation_viaGenArm context domainCode codomainCode
+        domainLevel codomainLevel flag ihDomain ihCodomain
+
 end FX1Poly.Typed
