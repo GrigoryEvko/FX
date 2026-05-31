@@ -35,6 +35,7 @@ import FX1Poly.Typed.HasTypeDescApplication
 import FX1Poly.Typed.HasTypeDescPi
 import FX1Poly.Typed.HasTypeDescPiWeakening
 import FX1Poly.Typed.HasTypeDescPiSubstitution
+import FX1Poly.Typed.HasTypeDescPiInversion
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -688,3 +689,18 @@ gates pin them shut.
     It strictly generalizes `betaCoherence_formationBody` to arbitrary grown body/argument/domain. -/
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.substituteUnderBinding
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.betaCoherence
+
+/-! ### GROWN Π/Σ-CODE COMPONENT DESCENT — the inversion eliminator output-validity + canonicity
+    consume.  `HasTypeDescPi.inversionPiCodeComponents` (resp. `…Sigma…`) recovers, from a
+    `piTyCodeCell`/`sigmaTyCodeCell` SUBJECT's grown typing, that the domain is a grown type and the
+    codomain is a grown type under the domain binder.  The grown analogue of the formation
+    `HasTypeDesc.inversionPiCodeComponents`, with the classifier-`Conv` conjunct DROPPED: the grown
+    engine has no `toHasType`, so the formation inversion's `Conv.trans_of_typedMiddle` route is
+    unavailable — but the consumers `_`-discard that `Conv`, so dropping it lets the `conv` arm simply
+    recurse (no `Conv.trans`).  The `ofFormation` arm routes through the formation workhorse +
+    `toDescTelescopePi`; `genFormationPi` is the base (premise telescope verbatim); `piIntro`/`piElim`
+    are refuted by `headGenerator` clash. -/
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.inversionPiCodeTelescopeGeneral
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.inversionPiCodeComponents
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.inversionSigmaCodeTelescopeGeneral
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.inversionSigmaCodeComponents
