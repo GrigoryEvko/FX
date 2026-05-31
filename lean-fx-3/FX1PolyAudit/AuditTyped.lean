@@ -33,6 +33,7 @@ import FX1Poly.Typed.HasTypeDescWeakening
 import FX1Poly.Typed.HasTypeDescSubstitution
 import FX1Poly.Typed.HasTypeDescElimWeakening
 import FX1Poly.Typed.HasTypeDescElimSubstitution
+import FX1Poly.Typed.HasTypeDescApplication
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -621,3 +622,18 @@ gates pin them shut.
     `⟺` maps. -/
 #assert_no_axioms FX1Poly.Typed.DescTermTelescope.substRespectingTermTelescope
 #assert_no_axioms FX1Poly.Typed.DescTermTelescope.substituteUnderBinding
+
+/-! ### DEPENDENT-ELIMINATOR OUTPUT VALIDITY (`HasTypeDescApplication`).  polycell.md §11.8.5
+    non-uniform seam: an eliminator's output type is motive-dependent (it instantiates the
+    codomain at the eliminated value).  These two lemmas prove the SOUNDNESS HEART of the
+    future `app`/`snd` arms AHEAD of the arms — that the instantiated codomain is a well-formed
+    type — by composing three shipped intrinsic bricks: validity (`classifierIsTypeDesc`),
+    Π/Σ inversion-components, and the β-engine `substituteUnderBinding`.  The FIRST place the
+    intrinsic substitution feeds a dependent-elimination soundness fact.  POSITIVE construction
+    (not a degenerate SR/Conv-stability collapse): `piApplicationOutputIsType` —
+    `f : Π A.B`, `a : A` ⊢ `B[a]` IsType; `sigmaProjectionOutputIsType` — the Σ mirror.
+    `subst0 (universeCodeCell ..) argument ≡ universeCodeCell ..` by defeq (subst0 reducible +
+    subst_universeCodeCell rfl) closes the `IsTypeDesc` witness.  NON-breaking: standalone
+    lemmas, touch neither `HasTypeDesc` ctors nor the `⟺` maps. -/
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.piApplicationOutputIsType
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.sigmaProjectionOutputIsType
