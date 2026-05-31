@@ -34,6 +34,7 @@ import FX1Poly.Typed.HasTypeDescSubstitution
 import FX1Poly.Typed.HasTypeDescElimWeakening
 import FX1Poly.Typed.HasTypeDescElimSubstitution
 import FX1Poly.Typed.HasTypeDescApplication
+import FX1Poly.Typed.HasTypeDescPi
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -637,3 +638,25 @@ gates pin them shut.
     lemmas, touch neither `HasTypeDesc` ctors nor the `⟺` maps. -/
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.piApplicationOutputIsType
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.sigmaProjectionOutputIsType
+
+/-! ### GROWING THE ENGINE PAST FORMATION + FIRST NON-VACUOUS SUBJECT REDUCTION
+    (`HasTypeDescPi`).  polycell.md §11.8.5: 0-FP is FREE BY CONSTRUCTION (intrinsic intro rules
+    ⇒ empty fiber over the unsound), so the `toHasType ⟺ HasType` map was only ever a
+    formation-fragment CROSS-CHECK, not the soundness source.  `HasTypeDescPi` ADDITIVELY embeds
+    the formation fragment (`ofFormation`) and adds Π-introduction (λ) + Π-elimination (app) +
+    its own `conv` — the first engine that expresses β-redexes.  NON-breaking: leaves
+    `HasTypeDesc`, `toHasType`, `decidableOfWellFormed`, and the uniqueness proofs untouched
+    (sidesteps the decidability/uniqueness cascade a direct `HasTypeDesc` extension forces);
+    `HasTypeDesc` cannot type lamCell/appCell (no `typingRuleDescOf` row for gen_lam/gen_app),
+    so `ofFormation` of a redex is impossible and the engine genuinely EXTENDS coverage.
+    `betaCoherence_formationBody` is the FIRST non-vacuous SR in the kernel: a β-redex
+    `app(lam body) arg` and its β-reduct `subst0 body arg` BOTH type at `subst0 codomainCode arg`
+    — redex by piElim∘piIntro, reduct by the shipped intrinsic `substituteUnderBinding`.  Honest:
+    preservation for component-derived redexes; fully-general inverted SR follows once Π-arm
+    inversion + grown-engine substitution land. -/
+#assert_no_axioms FX1Poly.Typed.lamCell
+#assert_no_axioms FX1Poly.Typed.appCell
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi
+#assert_no_axioms FX1Poly.Typed.IsTypeDescPi
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.toHasTypeDescPi
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.betaCoherence_formationBody
