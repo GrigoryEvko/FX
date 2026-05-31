@@ -36,6 +36,7 @@ import FX1Poly.Core.ReducibleTypeConvInvariance
 import FX1Poly.Core.DependentArrowReducibilityCandidate
 import FX1Poly.Core.ReducibleTypeReducibilityCandidate
 import FX1Poly.Core.ReducibleMember
+import FX1Poly.Core.ReducibleMemberNeutral
 import FX1Poly.Core.RawTermSubstConsCommute
 -- Certifier base (CellBoundary / PolyCell + immediate consumers).
 import FX1Poly.Core.CertifiedRawCell

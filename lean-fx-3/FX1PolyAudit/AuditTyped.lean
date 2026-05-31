@@ -40,6 +40,7 @@ import FX1Poly.Typed.HasTypeDescPiApplication
 import FX1Poly.Typed.HasTypeDescPiValidity
 import FX1Poly.Typed.ConvCodeInjectivity
 import FX1Poly.Typed.ReducibleEnv
+import FX1Poly.Typed.ReducibleMemberFormation
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -767,3 +768,11 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.ReducibleEnv.lookupReducible
 #assert_no_axioms FX1Poly.Typed.ReducibleEnv.empty
 #assert_no_axioms FX1Poly.Typed.ReducibleEnv.cons
+
+/-! ### FORMATION-ARM BRIDGE: membership at a universe-code classifier ⟺ strong normalization.
+    A universe code is a normal leaf (`noStep_universeCode`), hence neutral, so the dependent
+    reducibility relation assigns it the SN candidate and `IsReducibleMember (universeCodeCell ..) t ↔
+    IsStronglyNormalizing t` (via the Core `IsReducibleMember.atNeutralClassifier`).  This is the
+    fundamental theorem's formation/universe arm bridge between a well-formed type term and its SN. -/
+#assert_no_axioms FX1Poly.Typed.universeCodeCell_noWeakHeadStep
+#assert_no_axioms FX1Poly.Typed.IsReducibleMember.atUniverseCode
