@@ -110,6 +110,7 @@ import FX1Poly.Core.WhnfInterpretationRename
 import FX1Poly.Core.ReducibleType
 import FX1Poly.Core.ReducibleTypeHeadExpansion
 import FX1Poly.Core.ReducibleTypeArrowCandidate
+import FX1Poly.Core.ReducibleTypeAbstraction
 import FX1Poly.Core.ReducibleTypeInversion
 import FX1Poly.Core.PolygraphConvergentDecision
 import FX1Poly.Core.SconingWitness
