@@ -104,6 +104,7 @@ import FX1Poly.Core.WhnfInterpretationDeterminism
 import FX1Poly.Core.WhnfInterpretationHeadExpansion
 import FX1Poly.Core.WhnfInterpretationHeadReduce
 import FX1Poly.Core.WhnfInterpretationRename
+import FX1Poly.Core.ReducibleType
 import FX1Poly.Core.PolygraphConvergentDecision
 import FX1Poly.Core.SconingWitness
 import FX1Poly.Core.StrongNormalizationRename
