@@ -25,6 +25,7 @@ import FX1Poly.Core.IotaHeadStep
 import FX1Poly.Core.IotaHeadStepDisjoint
 import FX1Poly.Core.WeakHeadStep
 import FX1Poly.Core.WeakHeadStepDeterministic
+import FX1Poly.Core.WeakHeadStepSubsumes
 -- Certifier base (CellBoundary / PolyCell + immediate consumers).
 import FX1Poly.Core.CertifiedRawCell
 import FX1Poly.Core.CertifiedTermSpineProjections
