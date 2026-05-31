@@ -23,6 +23,7 @@ import FX1Poly.Typed.WfContextDecidable
 import FX1Poly.Typed.HasTypeGen
 import FX1Poly.Typed.DependentTelescopeSpike
 import FX1Poly.Typed.HasTypeDesc
+import FX1Poly.Typed.HasTypeDescSound
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -409,3 +410,12 @@ gates pin them shut.
 -- COMPLETENESS: the description engine is at least as strong as the bespoke
 -- HasType (every HasType derivation maps to HasTypeDesc; Π/Σ via the generic arm).
 #assert_no_axioms FX1Poly.Typed.HasType.toHasTypeDesc
+-- SOUNDNESS (0-FP wrt the trusted engine): every HasTypeDesc derivation maps back
+-- to the bespoke HasType — the description engine derives NOTHING the hand-written
+-- kernel wouldn't.  Mutual with the premise-spine map; the genFormation case's
+-- exfalso branch proves a non-whitelisted generator cannot fire the generic arm.
+-- Together with completeness this is the full HasTypeDesc ⟺ HasType equivalence on
+-- the formation fragment — the cascade-free engine is a faithful replacement.
+#assert_no_axioms FX1Poly.Typed.HasTypeTelescope
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.toHasType
+#assert_no_axioms FX1Poly.Typed.DescTelescope.toHasTypeTelescope

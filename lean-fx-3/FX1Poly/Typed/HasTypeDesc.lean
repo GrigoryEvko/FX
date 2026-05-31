@@ -9,8 +9,12 @@ cellularly by a CASCADE-FREE generic `gen` arm — a new feature is one
 for the dependent-type-FORMER family (the first and most uniform shape).
 
 `HasTypeDesc` is a NEW engine built ALONGSIDE the shipped `HasType` / `HasTypeGen`
-(parallel-build; `HasTypeDesc ⟺ HasTypeGen` is proved below for the formation
-fragment, so the description engine is sound + complete wrt the bespoke arms).
+(parallel-build).  Its faithfulness wrt the bespoke `HasType` on the formation
+fragment is proved in two halves: COMPLETENESS (`HasType.toHasTypeDesc`, below —
+every bespoke derivation has a description-engine counterpart) and SOUNDNESS
+(`HasTypeDesc.toHasType`, in the companion `HasTypeDescSound.lean` — the engine
+derives nothing the trusted kernel wouldn't, 0-FP).  Together they give the full
+`HasTypeDesc ⟺ HasType` equivalence on this fragment.
 Arms:
 * `var`, `conv` — the irreducible core (every typed-layer engine has them).
 * `universeFormation` — the nullary universe-code shape.  Genuinely special: its
