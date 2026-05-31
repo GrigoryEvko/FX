@@ -36,6 +36,7 @@ import FX1Poly.Typed.HasTypeDescPi
 import FX1Poly.Typed.HasTypeDescPiWeakening
 import FX1Poly.Typed.HasTypeDescPiSubstitution
 import FX1Poly.Typed.HasTypeDescPiInversion
+import FX1Poly.Typed.HasTypeDescPiApplication
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -704,3 +705,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.inversionPiCodeComponents
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.inversionSigmaCodeTelescopeGeneral
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.inversionSigmaCodeComponents
+
+/-! ### GROWN DEPENDENT-ELIMINATOR OUTPUT-VALIDITY — the inversion composed with the β-engine.
+    `HasTypeDescPi.piCodeInstantiationIsType` (resp. `…sigma…`) proves the motive-instantiated output
+    `subst0 codomainCode argument` is a grown type, given the type-former's well-formedness and an
+    argument of the domain.  Composes `inversionPiCodeComponents` + `substituteUnderBinding`; the
+    universe classifier lands by the `subst0`/`subst_universeCodeCell` defeq.  The type-former
+    well-formedness is a HYPOTHESIS (full grown validity is blocked at the `piIntro` domain/codomain
+    flag — see the file docstring); it is exactly the witness SR/canonicity carry. -/
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.piCodeInstantiationIsType
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.sigmaCodeInstantiationIsType
