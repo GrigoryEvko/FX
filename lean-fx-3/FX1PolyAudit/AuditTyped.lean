@@ -518,6 +518,18 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionUniverseCodeGeneral
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionUniverseCode
 
+/-! ### Component descent (P8) — projecting the typed CHILDREN of a Π/Σ formation cell
+    (`HasTypeDescInversion`).  The `…WithConv` inversions yield the premise telescope; the
+    typechecker / canonicity consume the DOMAIN and CODOMAIN typings directly.  These
+    corollaries case the two-child `binderShape` telescope (the SAME shape the soundness
+    map performs) to project `HasTypeDesc Γ domain Type@(dl,f)` ∧ `HasTypeDesc (Γ.cons
+    domain) codomain Type@(cl,f)` ∧ `Conv classifier Type@(lmax dl cl, f)`.  Two definitional
+    facts keep it transport-free: `scope + 0 ≡ scope` (binderShape's `Nat.add_zero ▸ domain`
+    head is just `domain`) and `lmaxAll [dl, cl] ≡ lmax dl cl`.  The INTRINSIC analogue of
+    the bespoke `HasType.inversionPiCode` in component form. -/
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionPiCodeComponents
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionSigmaCodeComponents
+
 /-! ### UNIQUENESS of typing (P7) for the description engine
     (`HasTypeDescUniqueness`).  polycell.md §11.8.5 P7: any two classifiers a cell
     receives are convertible.  A recursion on `HasTypeDesc` ITSELF: the `var` /

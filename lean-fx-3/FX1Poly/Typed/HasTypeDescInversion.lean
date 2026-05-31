@@ -428,4 +428,75 @@ theorem HasTypeDesc.inversionUniverseCode {profile : PolyProfile} {scope : Nat}
     Conv classifier (universeCodeCell levelExpr.lsucc flag) :=
   HasTypeDesc.inversionUniverseCodeGeneral typed wellFormed rfl
 
+/-! ### Component descent (P8) — projecting the typed children of a formation cell
+
+The `…WithConv` inversions yield the premise TELESCOPE; the typechecker and canonicity
+actually consume the DOMAIN and CODOMAIN typings directly.  These corollaries case the
+two-child formation telescope (over `RawTermChildren.binderShape`) to project them out,
+alongside the classifier-`Conv` to the canonical `Type@(lmax domainLevel codomainLevel,
+flag)` — the INTRINSIC description-engine analogue of the bespoke `HasType.inversionPiCode`
+(P8 in its component form, the shape the elimination/formation typing rules read).
+
+The casing is the SAME shape the soundness map (`HasTypeDesc.toHasType`'s `genFormation`
+arm) already performs.  Two definitional facts make the projection transport-free:
+`scope + 0 ≡ scope` (so `binderShape`'s `Nat.add_zero ▸ domainCode` head is just
+`domainCode`) and `lmaxAll [domainLevel, codomainLevel] = lmaxFold domainLevel
+[codomainLevel] = LevelExpr.lmax domainLevel codomainLevel` (so the inverted `Conv`'s
+universe code is already the goal's). -/
+
+/-- Π-FORMATION component descent: a `piTyCodeCell` cell's domain is a type, its codomain
+is a type under the domain binder, and the classifier converts to the canonical Π output
+universe.  INTRINSIC (built on `inversionPiCodeWithConv`, no route through `HasType`). -/
+theorem HasTypeDesc.inversionPiCodeComponents {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {classifier : RawTerm scope}
+    (typed :
+      HasTypeDesc profile context (piTyCodeCell domainCode codomainCode) classifier)
+    (wellFormed : WfContext context) :
+    ∃ (domainLevel codomainLevel : LevelExpr) (flag : UniverseFlag),
+      HasTypeDesc profile context domainCode (universeCodeCell domainLevel flag) ∧
+        HasTypeDesc profile (context.cons domainCode) codomainCode
+          (universeCodeCell codomainLevel flag) ∧
+        Conv classifier
+          (universeCodeCell (LevelExpr.lmax domainLevel codomainLevel) flag) := by
+  obtain ⟨levels, flag, telescope, convToCode⟩ :=
+    HasTypeDesc.inversionPiCodeWithConv typed wellFormed
+  cases telescope with
+  | cons _ _domain domainLevel _restLevels _flag _rest domainTyped restTelescope =>
+      cases restTelescope with
+      | cons _ _codomain codomainLevel _restLevels2 _flag2 _rest2 codomainTyped
+          nilTelescope =>
+          cases nilTelescope with
+          | nil _ _ =>
+              exact ⟨domainLevel, codomainLevel, flag, domainTyped, codomainTyped,
+                convToCode⟩
+
+/-- Σ-FORMATION component descent — the dual of `inversionPiCodeComponents`, IDENTICAL
+recipe over `sigmaTyCodeCell`. -/
+theorem HasTypeDesc.inversionSigmaCodeComponents {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {classifier : RawTerm scope}
+    (typed :
+      HasTypeDesc profile context (sigmaTyCodeCell domainCode codomainCode) classifier)
+    (wellFormed : WfContext context) :
+    ∃ (domainLevel codomainLevel : LevelExpr) (flag : UniverseFlag),
+      HasTypeDesc profile context domainCode (universeCodeCell domainLevel flag) ∧
+        HasTypeDesc profile (context.cons domainCode) codomainCode
+          (universeCodeCell codomainLevel flag) ∧
+        Conv classifier
+          (universeCodeCell (LevelExpr.lmax domainLevel codomainLevel) flag) := by
+  obtain ⟨levels, flag, telescope, convToCode⟩ :=
+    HasTypeDesc.inversionSigmaCodeWithConv typed wellFormed
+  cases telescope with
+  | cons _ _domain domainLevel _restLevels _flag _rest domainTyped restTelescope =>
+      cases restTelescope with
+      | cons _ _codomain codomainLevel _restLevels2 _flag2 _rest2 codomainTyped
+          nilTelescope =>
+          cases nilTelescope with
+          | nil _ _ =>
+              exact ⟨domainLevel, codomainLevel, flag, domainTyped, codomainTyped,
+                convToCode⟩
+
 end FX1Poly.Typed
