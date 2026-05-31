@@ -1,4 +1,5 @@
 import FX1Poly.Core.ReducibilityCandidate
+import FX1Poly.Core.ReducibilityCandidateArrow
 import FX1Poly.Core.StepInversion
 import FX1Poly.Core.StepSubst
 
@@ -119,6 +120,145 @@ theorem betaRedex_isStronglyNormalizing_of_contractum {scope : Nat}
               (Acc.intro bodyFocus bodyPredecessorsAccessible)
               (isStronglyNormalizing_of_stepStar
                 (Step.subst0Argument bodyFocus argumentStep) currentContractumSN)
+
+/-- Lift a function-position reduction chain to the application: `f ↝* f'` gives
+`app f a ↝* app f' a`.  Iterates the head-congruence (`StepChildren.here`). -/
+theorem stepStar_appFunction {scope : Nat}
+    {function functionReduct : RawTerm scope} (argument : RawTerm scope)
+    (chain : StepStar function functionReduct) :
+    StepStar
+      (.mkGen .gen_app () (.childCons function (.childCons argument .childNil)))
+      (.mkGen .gen_app ()
+        (.childCons functionReduct (.childCons argument .childNil))) := by
+  induction chain with
+  | refl _ => exact StepStar.refl _
+  | trans headStep _tailChain tailInductiveHypothesis =>
+      exact StepStar.trans
+        (Step.cong .gen_app ()
+          (StepChildren.here
+            (.childCons argument .childNil : RawTermChildren [0] scope) headStep))
+        tailInductiveHypothesis
+
+/-- Lift an argument-position reduction chain to the application: `a ↝* a'` gives
+`app f a ↝* app f a'`.  Iterates the tail-then-head congruence
+(`StepChildren.there ∘ here`). -/
+theorem stepStar_appArgument {scope : Nat} (function : RawTerm scope)
+    {argument argumentReduct : RawTerm scope}
+    (chain : StepStar argument argumentReduct) :
+    StepStar
+      (.mkGen .gen_app () (.childCons function (.childCons argument .childNil)))
+      (.mkGen .gen_app ()
+        (.childCons function (.childCons argumentReduct .childNil))) := by
+  induction chain with
+  | refl _ => exact StepStar.refl _
+  | trans headStep _tailChain tailInductiveHypothesis =>
+      exact StepStar.trans
+        (Step.cong .gen_app ()
+          (@StepChildren.there scope 0 [0] function _ _
+            (StepChildren.here (.childNil : RawTermChildren [] scope) headStep)))
+        tailInductiveHypothesis
+
+/-- **β head-expansion under one application spine.**  If `app (β-contractum) s`
+is strongly normalizing — where the β-contractum is `subst0 body argument` — and
+`body`, `argument`, `s` are SN, then `app (app (lam body) argument) s` is SN.
+
+This is the head-expansion the Tait fundamental theorem's λ case needs when the
+codomain is a (first-order) **arrow** type: there the redex `app (lam body) arg`
+sits in the function position of an outer application `· s`, so the spine-free
+`betaRedex_isStronglyNormalizing_of_contractum` does not directly apply.  Same
+technique, one application deeper: the reduct enumeration uses two `Step.from_app`
+inversions (outer, then the head redex), and the contractum's SN is threaded
+through the body/argument replays (`Step.subst0Body`/`Step.subst0Argument`, lifted
+to the outer application by `stepStar_appFunction`) and the spine replay
+(`stepStar_appArgument`).  The arbitrary-spine generalization (for higher-order
+codomains) follows the same shape with the spine bounded by the contractum. -/
+theorem betaRedexUnderApp_isStronglyNormalizing {scope : Nat}
+    {body : RawTerm (scope + 1)} {argument spineArgument : RawTerm scope}
+    (argumentSN : IsStronglyNormalizing argument)
+    (bodySN : IsStronglyNormalizing body)
+    (spineArgumentSN : IsStronglyNormalizing spineArgument)
+    (contractumSN :
+      IsStronglyNormalizing
+        (.mkGen .gen_app ()
+          (.childCons (RawTerm.subst0 body argument)
+            (.childCons spineArgument .childNil)))) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_app ()
+            (.childCons (.mkGen .gen_lam () (.childCons body .childNil))
+              (.childCons argument .childNil)))
+          (.childCons spineArgument .childNil))) := by
+  suffices general :
+      ∀ {currentSpine : RawTerm scope}, Acc StepSuccessor currentSpine →
+        ∀ {currentArgument : RawTerm scope}, Acc StepSuccessor currentArgument →
+          ∀ {currentBody : RawTerm (scope + 1)}, Acc StepSuccessor currentBody →
+            IsStronglyNormalizing
+              (.mkGen .gen_app ()
+                (.childCons (RawTerm.subst0 currentBody currentArgument)
+                  (.childCons currentSpine .childNil))) →
+            IsStronglyNormalizing
+              (.mkGen .gen_app ()
+                (.childCons
+                  (.mkGen .gen_app ()
+                    (.childCons (.mkGen .gen_lam () (.childCons currentBody .childNil))
+                      (.childCons currentArgument .childNil)))
+                  (.childCons currentSpine .childNil))) from
+    general spineArgumentSN argumentSN bodySN contractumSN
+  intro currentSpine spineAccessible
+  induction spineAccessible with
+  | intro spineFocus spinePredecessorsAccessible spineInductiveHypothesis =>
+      intro currentArgument argumentAccessible
+      induction argumentAccessible with
+      | intro argumentFocus argumentPredecessorsAccessible argumentInductiveHypothesis =>
+          intro currentBody bodyAccessible
+          induction bodyAccessible with
+          | intro bodyFocus bodyPredecessorsAccessible bodyInductiveHypothesis =>
+              intro currentContractumSN
+              apply Acc.intro
+              intro reduct outerReductionStep
+              rcases Step.from_app outerReductionStep with
+                ⟨_outerBetaBody, headEqualsLam, _⟩ |
+                ⟨headReduct, reductEquation, headStep⟩ |
+                ⟨spineReduct, reductEquation, spineStep⟩
+              · -- outer β impossible: the function `app (lam …) …` is not a λ.
+                exact Generator.noConfusion
+                  (congrArg RawTerm.rootGenerator headEqualsLam)
+              · -- head reduction: invert the head redex `app (lam bodyFocus) argumentFocus`.
+                rcases Step.from_app headStep with
+                  ⟨innerBetaBody, lambdaEquation, headReductEquation⟩ |
+                  ⟨lambdaReduct, headReductEquation, lambdaStep⟩ |
+                  ⟨argumentReduct, headReductEquation, argumentStep⟩
+                · -- inner β: the reduct is the contractum under the spine.
+                  cases lambdaEquation
+                  rw [reductEquation, headReductEquation]
+                  exact currentContractumSN
+                · -- inner body congruence: `bodyFocus ↝ bodyAfter`.
+                  obtain ⟨bodyAfter, lambdaReductEquation, bodyStep⟩ :=
+                    Step.from_lam lambdaStep
+                  rw [reductEquation, headReductEquation, lambdaReductEquation]
+                  exact bodyInductiveHypothesis bodyAfter bodyStep
+                    (isStronglyNormalizing_of_stepStar
+                      (stepStar_appFunction spineFocus
+                        (Step.subst0Body argumentFocus bodyStep))
+                      currentContractumSN)
+                · -- inner argument congruence: `argumentFocus ↝ argumentReduct`.
+                  rw [reductEquation, headReductEquation]
+                  exact argumentInductiveHypothesis argumentReduct argumentStep
+                    (Acc.intro bodyFocus bodyPredecessorsAccessible)
+                    (isStronglyNormalizing_of_stepStar
+                      (stepStar_appFunction spineFocus
+                        (Step.subst0Argument bodyFocus argumentStep))
+                      currentContractumSN)
+              · -- spine congruence: `spineFocus ↝ spineReduct`.
+                rw [reductEquation]
+                exact spineInductiveHypothesis spineReduct spineStep
+                  (Acc.intro argumentFocus argumentPredecessorsAccessible)
+                  (Acc.intro bodyFocus bodyPredecessorsAccessible)
+                  (isStronglyNormalizing_of_stepStar
+                    (stepStar_appArgument (RawTerm.subst0 bodyFocus argumentFocus)
+                      (StepStar.single spineStep))
+                    currentContractumSN)
 
 end StepStar
 end FX1Poly.Core
