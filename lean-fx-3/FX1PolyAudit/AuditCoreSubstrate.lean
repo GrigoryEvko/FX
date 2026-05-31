@@ -92,6 +92,7 @@ import FX1Poly.Core.HeadExpansionClosure
 import FX1Poly.Core.SimpleTypeInterpretation
 import FX1Poly.Core.SimplyTypedNormalization
 import FX1Poly.Core.SimpleTypeErasure
+import FX1Poly.Core.CandidateInterpretation
 import FX1Poly.Core.StrongNormalizationRename
 import FX1Poly.Core.StrongNormalizationEta
 import FX1Poly.Core.StepBetaEtaConfluence
