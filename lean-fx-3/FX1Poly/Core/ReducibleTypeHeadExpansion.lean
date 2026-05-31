@@ -40,11 +40,9 @@ theorem ReducibleType.headExpansionClosed {scope : Nat} {typeCode : RawTerm scop
     {candidate : RawTerm scope → Prop} (reducible : ReducibleType typeCode candidate) :
     HeadExpansionClosed candidate := by
   induction reducible with
-  | headExpand _headStep _reductReducible reductInductiveHypothesis =>
+  | whnfExpand _weakHeadStep _reductReducible reductInductiveHypothesis =>
       exact reductInductiveHypothesis
-  | iotaExpand _iotaStep _reductReducible reductInductiveHypothesis =>
-      exact reductInductiveHypothesis
-  | neutral _noHeadStep _noIotaHeadStep _notPiType =>
+  | neutral _noWeakHeadStep _notPiType =>
       exact isStronglyNormalizing_headExpansionClosed
   | piType codomainCandidate _domainReducible _codomainReducible
       _domainInductiveHypothesis codomainInductiveHypothesis =>
