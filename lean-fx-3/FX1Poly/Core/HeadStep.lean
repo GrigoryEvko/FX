@@ -1,4 +1,5 @@
 import FX1Poly.Core.RawTermSubst0
+import FX1Poly.Core.Step
 
 /-! # Foundation/PolyCell/Core/HeadStep
     — deterministic weak-head reduction for type-codes
@@ -71,5 +72,15 @@ theorem HeadStep.deterministic {scope : Nat} {term firstReduct secondReduct : Ra
       | beta => exact absurd functionStep HeadStep.not_from_lam
       | appCongruence functionStep2 =>
           rw [functionInductiveHypothesis functionStep2]
+
+/-- **Weak-head reduction embeds into full reduction.**  `beta` is the `Step` β-arm; `appCongruence`
+is `Step` congruence into the function child (`StepChildren.here`).  Through this embedding `HeadStep`
+inherits subject reduction, strong normalization, and every `Step`-closure property. -/
+theorem HeadStep.toStep {scope : Nat} {term reduct : RawTerm scope}
+    (headStep : HeadStep term reduct) : Step term reduct := by
+  induction headStep with
+  | beta => exact Step.beta
+  | appCongruence _functionStep functionToStep =>
+      exact Step.cong .gen_app () (StepChildren.here _ functionToStep)
 
 end FX1Poly.Core
