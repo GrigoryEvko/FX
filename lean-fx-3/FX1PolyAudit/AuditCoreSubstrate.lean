@@ -28,6 +28,7 @@ import FX1Poly.Core.WeakHeadStepDeterministic
 import FX1Poly.Core.WeakHeadStepSubsumes
 import FX1Poly.Core.WeakHeadStepNormalForms
 import FX1Poly.Core.WeakHeadStepCommute
+import FX1Poly.Core.WeakHeadNormalPreservation
 import FX1Poly.Core.ReducibleTypeForwardClosure
 import FX1Poly.Core.ReducibleTypeForwardStepStar
 -- Certifier base (CellBoundary / PolyCell + immediate consumers).
