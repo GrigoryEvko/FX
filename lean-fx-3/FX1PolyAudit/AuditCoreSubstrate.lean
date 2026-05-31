@@ -23,6 +23,7 @@ import FX1Poly.Core.HeadStepCommute2
 import FX1Poly.Core.HeadStepRenameReflect
 import FX1Poly.Core.IotaHeadStep
 import FX1Poly.Core.IotaHeadStepDisjoint
+import FX1Poly.Core.WeakHeadStep
 -- Certifier base (CellBoundary / PolyCell + immediate consumers).
 import FX1Poly.Core.CertifiedRawCell
 import FX1Poly.Core.CertifiedTermSpineProjections
