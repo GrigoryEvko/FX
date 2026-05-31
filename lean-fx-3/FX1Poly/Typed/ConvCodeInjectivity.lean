@@ -1,5 +1,7 @@
 import FX1Poly.Typed.UniverseCodeShape
 import FX1Poly.Core.ConvCongruence
+import FX1Poly.Core.ConvNormalForm
+import FX1Poly.Core.StrongNormalizationLeaves
 
 /-! # FX1Poly/Typed/ConvCodeInjectivity — the Π/Σ-CODE `Conv` structural characterization
     (injectivity + congruence), proved SN-FREE.
@@ -33,6 +35,8 @@ injectivity ingredient that obligation will consume, plus the standalone decidab
 * `Conv.piTyCode_inj` / `…_sigmaTyCode_inj` — `Conv`-injectivity (the → direction), the SR ingredient.
 * `Conv.piTyCode_cong` / `…_sigmaTyCode_cong` — `Conv`-congruence (the ← direction) via `ofChildren`.
 * `Conv.piTyCode_iff` / `…_sigmaTyCode_iff` — the structural characterization.
+* `Conv.piTyCode_not_sigmaTyCode` / `…_not_universeCode` / `sigmaTyCode_not_universeCode` — type-code
+  DISJOINTNESS (rigidity): distinct type formers are never convertible (the canonicity ingredient).
 
 ## Zero-axiom
 
@@ -43,7 +47,7 @@ injectivity ingredient that obligation will consume, plus the standalone decidab
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core
+open FX1Poly.Core FX1Poly.Universe
 
 /-- The `sigmaTyCodeCell` cell is injective — the Σ dual of `piTyCodeCell_inj` (in
 `UniverseCodeShape`).  `cases` on the cell equality unifies the spines (the propext-free route; raw
@@ -192,5 +196,62 @@ theorem Conv.sigmaTyCode_iff {scope : Nat}
       ↔ Conv domain domain' ∧ Conv codomain codomain' :=
   ⟨Conv.sigmaTyCode_inj,
     fun ⟨domainConv, codomainConv⟩ => Conv.sigmaTyCode_cong domainConv codomainConv⟩
+
+/-! ## Type-code DISJOINTNESS (rigidity): distinct type formers are non-convertible.
+
+The companion to injectivity — together they give full type-code RIGIDITY, the canonicity
+ingredient (a Π-type is never a Σ-type, never a universe).  Same head-stability mechanism: two
+convertible cells share a common reduct, whose head is forced to BOTH formers' generators —
+`shapeStable` for the steppable Π/Σ codes, `StepStar.eq_of_noStep` + `noStep_universeCode` for the
+universe-code leaf — contradicting `Generator.noConfusion`.  SN-free, like the injectivity. -/
+
+/-- A Π-code is never convertible to a Σ-code. -/
+theorem Conv.piTyCode_not_sigmaTyCode {scope : Nat}
+    {piDomain : RawTerm scope} {piCodomain : RawTerm (scope + 1)}
+    {sigmaDomain : RawTerm scope} {sigmaCodomain : RawTerm (scope + 1)}
+    (convertibility :
+      Conv (piTyCodeCell piDomain piCodomain) (sigmaTyCodeCell sigmaDomain sigmaCodomain)) :
+    False := by
+  obtain ⟨commonReduct, leftChain, rightChain⟩ := convertibility
+  obtain ⟨_, _, leftCommonEq, _, _⟩ := StepStar.shapeStable_piTyCode leftChain
+  obtain ⟨_, _, rightCommonEq, _, _⟩ := StepStar.shapeStable_sigmaTyCode rightChain
+  rw [leftCommonEq] at rightCommonEq
+  exact Generator.noConfusion
+    (congrArg RawTerm.headGenerator rightCommonEq :
+      Generator.gen_piTyCode = Generator.gen_sigmaTyCode)
+
+/-- A Π-code is never convertible to a universe code. -/
+theorem Conv.piTyCode_not_universeCode {scope : Nat}
+    {piDomain : RawTerm scope} {piCodomain : RawTerm (scope + 1)}
+    {levelExpr : LevelExpr} {flag : UniverseFlag}
+    (convertibility :
+      Conv (piTyCodeCell piDomain piCodomain) (universeCodeCell levelExpr flag)) :
+    False := by
+  obtain ⟨commonReduct, leftChain, rightChain⟩ := convertibility
+  obtain ⟨_, _, leftCommonEq, _, _⟩ := StepStar.shapeStable_piTyCode leftChain
+  have rightCommonEq :=
+    StepStar.eq_of_noStep
+      (fun _reduct step => StepStar.noStep_universeCode (levelExpr, flag) step) rightChain
+  rw [leftCommonEq] at rightCommonEq
+  exact Generator.noConfusion
+    (congrArg RawTerm.headGenerator rightCommonEq :
+      Generator.gen_piTyCode = Generator.gen_universeCode)
+
+/-- A Σ-code is never convertible to a universe code. -/
+theorem Conv.sigmaTyCode_not_universeCode {scope : Nat}
+    {sigmaDomain : RawTerm scope} {sigmaCodomain : RawTerm (scope + 1)}
+    {levelExpr : LevelExpr} {flag : UniverseFlag}
+    (convertibility :
+      Conv (sigmaTyCodeCell sigmaDomain sigmaCodomain) (universeCodeCell levelExpr flag)) :
+    False := by
+  obtain ⟨commonReduct, leftChain, rightChain⟩ := convertibility
+  obtain ⟨_, _, leftCommonEq, _, _⟩ := StepStar.shapeStable_sigmaTyCode leftChain
+  have rightCommonEq :=
+    StepStar.eq_of_noStep
+      (fun _reduct step => StepStar.noStep_universeCode (levelExpr, flag) step) rightChain
+  rw [leftCommonEq] at rightCommonEq
+  exact Generator.noConfusion
+    (congrArg RawTerm.headGenerator rightCommonEq :
+      Generator.gen_sigmaTyCode = Generator.gen_universeCode)
 
 end FX1Poly.Typed

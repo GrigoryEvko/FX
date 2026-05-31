@@ -746,3 +746,12 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.Conv.sigmaTyCode_cong
 #assert_no_axioms FX1Poly.Typed.Conv.piTyCode_iff
 #assert_no_axioms FX1Poly.Typed.Conv.sigmaTyCode_iff
+
+/-! ### TYPE-CODE DISJOINTNESS (rigidity), SN-FREE — distinct type formers are non-convertible.
+    The companion to injectivity: together they give full type-code RIGIDITY (the canonicity
+    ingredient — a Π-type is never a Σ-type, never a universe).  Same head-stability mechanism
+    (`shapeStable` for Π/Σ, `StepStar.eq_of_noStep` + `noStep_universeCode` for the universe leaf): a
+    shared common reduct's head is forced to two distinct generators, refuted by `Generator.noConfusion`. -/
+#assert_no_axioms FX1Poly.Typed.Conv.piTyCode_not_sigmaTyCode
+#assert_no_axioms FX1Poly.Typed.Conv.piTyCode_not_universeCode
+#assert_no_axioms FX1Poly.Typed.Conv.sigmaTyCode_not_universeCode
