@@ -34,6 +34,7 @@ import FX1Poly.Typed.HasTypeDescElimSubstitution
 import FX1Poly.Typed.HasTypeDescApplication
 import FX1Poly.Typed.HasTypeDescPi
 import FX1Poly.Typed.HasTypeDescPiWeakening
+import FX1Poly.Typed.HasTypeDescPiSubstitution
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -650,3 +651,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.DescTelescope.toDescTelescopePi
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.genFormationToHasTypeDescPi
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.renameRespectingTelescope
+
+/-! ### GROWN-ENGINE SUBSTITUTION — `ofFormation` leg.  `HasTypeDesc.substIntoGrown` carries a
+    formation derivation along a substitution whose substituents are `HasTypeDescPi`-typed, into the
+    grown engine (a formation subject substituted by a grown term is no longer a formation term, so
+    the result lands in `HasTypeDescPi`).  Its `genFormation` case rebuilds through the generic
+    `genFormationPi` from a substituted grown spine (`DescTelescope.substIntoGrown` → `DescTelescopePi`)
+    with no per-former child projection.  Mutual structural recursion on the formation derivation; the
+    recursion stays within the `HasTypeDesc`/`DescTelescope` family, so no cross-inductive boundary. -/
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.substIntoGrown
+#assert_no_axioms FX1Poly.Typed.DescTelescope.substIntoGrown
