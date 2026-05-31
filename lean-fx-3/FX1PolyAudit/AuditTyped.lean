@@ -39,6 +39,7 @@ import FX1Poly.Typed.HasTypeDescPiInversion
 import FX1Poly.Typed.HasTypeDescPiApplication
 import FX1Poly.Typed.HasTypeDescPiValidity
 import FX1Poly.Typed.ConvCodeInjectivity
+import FX1Poly.Typed.ReducibleEnv
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -755,3 +756,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.Conv.piTyCode_not_sigmaTyCode
 #assert_no_axioms FX1Poly.Typed.Conv.piTyCode_not_universeCode
 #assert_no_axioms FX1Poly.Typed.Conv.sigmaTyCode_not_universeCode
+
+/-! ### REDUCIBLE CLOSING-SUBSTITUTION ENVIRONMENT (the #425 fundamental-theorem environment).
+    `ReducibleEnv context γ` says `γ` sends every context variable to an `IsReducibleMember` of its
+    looked-up (γ-closed) type — the ∀-form makes the fundamental theorem's `var` case
+    `lookupReducible`, and the dependent membership re-substitutes each variable's type (vs the
+    superseded fixed-candidate `ReducibleSubst`).  `empty` is the closed-term base; `cons` is the
+    Π-introduction binder extension, its weakened lookups cancelled by `RawTerm.weaken_subst_cons`. -/
+#assert_no_axioms FX1Poly.Typed.ReducibleEnv
+#assert_no_axioms FX1Poly.Typed.ReducibleEnv.lookupReducible
+#assert_no_axioms FX1Poly.Typed.ReducibleEnv.empty
+#assert_no_axioms FX1Poly.Typed.ReducibleEnv.cons
