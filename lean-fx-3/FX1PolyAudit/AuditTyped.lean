@@ -21,6 +21,7 @@ import FX1Poly.Typed.HasTypeCheck
 import FX1Poly.Typed.HasTypeClosedForms
 import FX1Poly.Typed.WfContextDecidable
 import FX1Poly.Typed.HasTypeGen
+import FX1Poly.Typed.DependentTelescopeSpike
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -360,3 +361,22 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.DependentBinaryFormationChildren
 #assert_no_axioms FX1Poly.Typed.hasTypeGen_piFormation_viaShapeArm
 #assert_no_axioms FX1Poly.Typed.hasTypeGen_sigmaFormation_viaShapeArm
+
+/-! ### MOONSHOT FOUNDATION — generic variadic dependent-telescope typed-children
+    spine (the description-universe's `premisesHold`).  `DependentTelescopeChildren`
+    is the cumulative `[0,1,…,n-1]` dependent telescope of children-as-types
+    (validated: reconstructs Π/Σ formation as its [0,1] instance + a [0,1,2]
+    3-ary witness).  `DependentTelescopeTyped` is the MAXIMAL generalization —
+    each child typed at an ARBITRARY per-step classifier (a telescope of typed
+    TERMS, not just types — the shape an eliminator rule's premises take).  Both
+    solve the shift-rebasing crux by indexing children at a fixed `baseScope`
+    while only the context grows (`currentDepth`), making
+    `(baseScope+currentDepth)+1 = baseScope+(currentDepth+1)` definitional.  This
+    is the foundation stone for the description-driven generic `gen` arm. -/
+
+#assert_no_axioms FX1Poly.Typed.DependentTelescopeChildren
+#assert_no_axioms FX1Poly.Typed.dependentTelescope_reconstructs_piFormation
+#assert_no_axioms FX1Poly.Typed.dependentTelescope_threeAry
+#assert_no_axioms FX1Poly.Typed.DependentTelescopeTyped
+#assert_no_axioms FX1Poly.Typed.dependentTelescopeTyped_reconstructs_piFormation
+#assert_no_axioms FX1Poly.Typed.dependentTelescopeTyped_heterogeneous
