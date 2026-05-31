@@ -31,6 +31,7 @@ import FX1Poly.Typed.HasTypeDescInversion
 import FX1Poly.Typed.HasTypeDescUniqueness
 import FX1Poly.Typed.HasTypeDescWeakening
 import FX1Poly.Typed.HasTypeDescSubstitution
+import FX1Poly.Typed.HasTypeDescElimWeakening
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -581,3 +582,22 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.substRespectingContext
 #assert_no_axioms FX1Poly.Typed.DescTelescope.substRespectingTelescope
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.substituteUnderBinding
+
+/-! ### INTRINSIC renaming/weakening (P6) for the ELIMINATOR-shape term spine
+    (`HasTypeDescElimWeakening`).  polycell.md §11.8.5 P6 applied to `DescTermTelescope` — the
+    maximally-general typed-children spine (each child at an ARBITRARY classifier) that the
+    future eliminator `gen`-arm (the non-uniform seam PAST formation) consumes.  This is the
+    eliminator spine's cartesian-lift fibration leg, regardless of how the arm lands.
+
+    NON-breaking: `DescTermTelescope` is a STANDALONE inductive (`HasTypeDesc` appears only
+    positively in `cons`'s `headTyped`), so this touches neither `HasTypeDesc`'s constructors
+    nor the `toHasType` ⟺ soundness map.  SELF-recursive (not a mutual block): the head child's
+    typing is re-renamed by the SHIPPED `HasTypeDesc.renameRespectingContext` on the opaque
+    `headTyped`; the only recursion is the strictly-smaller `restTyped`, so Lean's structural
+    recursion lands it without `termination_by` — exactly like `DescTelescope.toTermTelescope`.
+    The arbitrary classifier renames generically (no universe-code brick); the tail's lifted
+    context-condition reuses `rename_lift_weaken_commute` at every depth.  `weakenUnderBinding`
+    is the depth-0 corollary whose context-condition holds definitionally (`fun _ => rfl`, via
+    `iterateLiftRaw _ 0 ≡ _` and `lookup_cons_succ`).  NOT routed through the `⟺` maps. -/
+#assert_no_axioms FX1Poly.Typed.DescTermTelescope.renameRespectingTermTelescope
+#assert_no_axioms FX1Poly.Typed.DescTermTelescope.weakenUnderBinding
