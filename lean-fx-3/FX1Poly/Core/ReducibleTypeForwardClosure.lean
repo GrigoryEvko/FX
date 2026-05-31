@@ -94,4 +94,47 @@ theorem StepStar.subst0Body {scope : Nat} (argument : RawTerm scope)
   | trans headStep _restChain restStepStar =>
       exact StepStar.trans_compose (Step.subst0Body argument headStep) restStepStar
 
+/-- Auxiliary for `StepStar.piTyCode_decompose`: the start carried as an equation so the chain induction's
+hypothesis applies to each reduced Π-code along the way. -/
+theorem StepStar.piTyCode_decompose_through {scope : Nat} :
+    ∀ {startType target : RawTerm scope}, StepStar startType target →
+      ∀ {domain : RawTerm scope} {codomain : RawTerm (scope + 1)},
+        startType = .mkGen .gen_piTyCode () (.childCons domain (.childCons codomain .childNil)) →
+        ∃ (updatedDomain : RawTerm scope) (updatedCodomain : RawTerm (scope + 1)),
+          target = .mkGen .gen_piTyCode ()
+            (.childCons updatedDomain (.childCons updatedCodomain .childNil)) ∧
+          StepStar domain updatedDomain ∧ StepStar codomain updatedCodomain := by
+  intro startType target chain
+  induction chain with
+  | refl _ =>
+      intro domain codomain startEquation
+      exact ⟨domain, codomain, startEquation, StepStar.refl _, StepStar.refl _⟩
+  | trans headStep _restChain restDecompose =>
+      intro domain codomain startEquation
+      subst startEquation
+      rcases Step.from_piTyCode headStep with
+        ⟨_domainAfter, midEquation, domainStep⟩ | ⟨_codomainAfter, midEquation, codomainStep⟩
+      · obtain ⟨updatedDomain, updatedCodomain, targetEquation, domainChain, codomainChain⟩ :=
+          restDecompose midEquation
+        exact ⟨updatedDomain, updatedCodomain, targetEquation,
+          StepStar.trans domainStep domainChain, codomainChain⟩
+      · obtain ⟨updatedDomain, updatedCodomain, targetEquation, domainChain, codomainChain⟩ :=
+          restDecompose midEquation
+        exact ⟨updatedDomain, updatedCodomain, targetEquation, domainChain,
+          StepStar.trans codomainStep codomainChain⟩
+
+/-- **A Π-code's reduction is a Π-code with reduced children.**  Reduction out of a `gen_piTyCode`-rooted
+type stays `gen_piTyCode`-rooted (the former has no root redex), decomposing into a domain `StepStar` and a
+codomain `StepStar`.  The `piType` arm of forward closure consumes this: it re-interprets the domain and
+(via `StepStar.subst0Body`) the codomain candidate at the reduced children, then rebuilds `piType`. -/
+theorem StepStar.piTyCode_decompose {scope : Nat}
+    {domain : RawTerm scope} {codomain : RawTerm (scope + 1)} {target : RawTerm scope}
+    (chain : StepStar
+      (.mkGen .gen_piTyCode () (.childCons domain (.childCons codomain .childNil))) target) :
+    ∃ (updatedDomain : RawTerm scope) (updatedCodomain : RawTerm (scope + 1)),
+      target = .mkGen .gen_piTyCode ()
+        (.childCons updatedDomain (.childCons updatedCodomain .childNil)) ∧
+      StepStar domain updatedDomain ∧ StepStar codomain updatedCodomain :=
+  StepStar.piTyCode_decompose_through chain rfl
+
 end FX1Poly.Core
