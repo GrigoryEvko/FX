@@ -20,6 +20,7 @@ import FX1Poly.Typed.HasTypeInfer
 import FX1Poly.Typed.HasTypeCheck
 import FX1Poly.Typed.HasTypeClosedForms
 import FX1Poly.Typed.WfContextDecidable
+import FX1Poly.Typed.HasTypeGen
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -336,3 +337,26 @@ gates pin them shut.
     it necessarily agrees with the direct decider but survives fragment growth. -/
 
 #assert_no_axioms FX1Poly.Typed.HasType.check
+
+/-! ### CASCADE-FREE TYPING ENGINE s1 (#483, parallel-build) — the dependent-binary
+    type-FORMATION shape-arm.  `HasTypeGen` is a NEW mutual inductive built
+    ALONGSIDE the shipped `HasType` (additive; the eventual migration proves
+    `HasTypeGen ⟺ HasType` then retires the per-former arms).  Three arms: `var`,
+    `conv`, and ONE per-shape `dependentBinaryFormation` arm generic over the
+    Generator via the `isDependentBinaryFormer` whitelist (gen_piTyCode /
+    gen_sigmaTyCode) — the FIRST of Decision 4's ~6 shape-arms (P13:
+    cascade-free; a second [0,1] former is one whitelist disjunct, zero new
+    arms — witnessed by the two smoke lemmas).  SOUNDNESS (P1): the whitelist is
+    an explicit Π/Σ enumeration, NOT a `binderShifts == [0,1]` proxy (which would
+    wrongly admit gen_polyFunctor).  The spine `DependentBinaryFormationChildren`
+    is mutual with `HasTypeGen`, its index sig free of `HasTypeGen` (mutual-index
+    rule, StepChildren precedent); output level is an explicit INDEX (Prop-valued,
+    P14 erasure). -/
+
+#assert_no_axioms FX1Poly.Typed.isDependentBinaryFormer
+#assert_no_axioms FX1Poly.Typed.isDependentBinaryFormer_piTyCode
+#assert_no_axioms FX1Poly.Typed.isDependentBinaryFormer_sigmaTyCode
+#assert_no_axioms FX1Poly.Typed.HasTypeGen
+#assert_no_axioms FX1Poly.Typed.DependentBinaryFormationChildren
+#assert_no_axioms FX1Poly.Typed.hasTypeGen_piFormation_viaShapeArm
+#assert_no_axioms FX1Poly.Typed.hasTypeGen_sigmaFormation_viaShapeArm
