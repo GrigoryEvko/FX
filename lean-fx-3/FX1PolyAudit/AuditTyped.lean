@@ -35,6 +35,7 @@ import FX1Poly.Typed.HasTypeDescElimWeakening
 import FX1Poly.Typed.HasTypeDescElimSubstitution
 import FX1Poly.Typed.HasTypeDescApplication
 import FX1Poly.Typed.HasTypeDescPi
+import FX1Poly.Typed.HasTypeDescPiWeakening
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -660,3 +661,19 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsTypeDescPi
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.toHasTypeDescPi
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.betaCoherence_formationBody
+
+/-! ### GROWN-ENGINE RENAMING/WEAKENING (P6, the first fibration leg) — `HasTypeDescPiWeakening`.
+    polycell.md §11.8.5 P6 applied to the grown engine `HasTypeDescPi`: its cartesian-lift
+    fibration leg.  Renaming PRESERVES formation-ness (introduces no eliminations), so the
+    `ofFormation` arm delegates directly to the shipped `HasTypeDesc.renameRespectingContext` and
+    re-wraps — no substitution-closure gap (that gap only bites term-substitution, which awaits a
+    native Π-formation arm).  Self-recursive (not mutual): cross-call to the shipped formation
+    renamer on the opaque `formationTyped`; recursions on the strictly-smaller `HasTypeDescPi`
+    sub-derivations ⇒ structural recursion w/o `termination_by`.  `piIntro` crosses one binder
+    (one-binder context-condition via `rename_lift_weaken_commute`); `piElim`'s output commutes by
+    `rename_subst0_commute`.  `weakenUnderBinding` is the `fun _ => rfl` corollary.  NON-breaking:
+    leaves HasTypeDesc/toHasType/decidability/uniqueness untouched. -/
+#assert_no_axioms FX1Poly.Typed.rename_lamCell
+#assert_no_axioms FX1Poly.Typed.rename_appCell
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.renameRespectingContext
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.weakenUnderBinding
