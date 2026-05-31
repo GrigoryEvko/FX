@@ -29,6 +29,7 @@ import FX1Poly.Typed.HasTypeDescElim
 import FX1Poly.Typed.HasTypeDescValidity
 import FX1Poly.Typed.HasTypeDescInversion
 import FX1Poly.Typed.HasTypeDescUniqueness
+import FX1Poly.Typed.HasTypeDescWeakening
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -545,3 +546,21 @@ gates pin them shut.
     the decouple's next target).  P7 makes `infer` well-defined and feeds canonicity. -/
 #assert_no_axioms FX1Poly.Typed.DescTelescope.uniquenessAgree
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.uniqueness
+
+/-! ### INTRINSIC renaming/weakening (P6, the β-engine) for the description engine
+    (`HasTypeDescWeakening`).  polycell.md §11.8.5 P6: typing is preserved along a context
+    morphism.  `HasTypeDesc.renameRespectingContext` (with its telescope companion
+    `DescTelescope.renameRespectingTelescope`) preserves `HasTypeDesc` along any renaming
+    respecting the context; `HasTypeDesc.weakenUnderBinding` is the weakening special case.
+    The FIRST intrinsic-BY-INDUCTION `HasTypeDesc` metatheorem of the decouple (validity /
+    inversion / uniqueness were case-analysis; this is genuine MUTUAL recursion) — proved
+    NOT through the `⟺` maps.  Lands as a clean mutual recursion because it has NO
+    second-derivation inversion (cross-calls on pristine `match`-bound subterms, like
+    `toHasType`); the genFormation companion cross-call is HOISTED before the `by_cases` so
+    `premises` stays pristine for the structural-recursion checker.  The telescope
+    companion's lifted context-condition is the N-binder generalization of the bespoke
+    `piFormation` codomain handling, reusing `rename_lift_weaken_commute` at every depth
+    (`iterateLiftRaw ρ (cd+1) ≡ lift (iterateLiftRaw ρ cd)`). -/
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.renameRespectingContext
+#assert_no_axioms FX1Poly.Typed.DescTelescope.renameRespectingTelescope
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.weakenUnderBinding
