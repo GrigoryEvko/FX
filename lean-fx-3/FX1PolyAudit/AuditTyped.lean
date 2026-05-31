@@ -38,6 +38,7 @@ import FX1Poly.Typed.HasTypeDescPiSubstitution
 import FX1Poly.Typed.HasTypeDescPiInversion
 import FX1Poly.Typed.HasTypeDescPiApplication
 import FX1Poly.Typed.HasTypeDescPiValidity
+import FX1Poly.Typed.ConvCodeInjectivity
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -726,3 +727,22 @@ gates pin them shut.
     output-validity; genFormationPi types the universe code one level up.  Gateway to canonicity (#459)
     + consistency (#460).  One of the three metatheory pillars. -/
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.classifierIsTypeDesc
+
+/-! ### Π/Σ-CODE `Conv` STRUCTURAL CHARACTERIZATION (injectivity + congruence), SN-FREE.
+    `Conv (piTyCodeCell A B) (piTyCodeCell A' B') ↔ Conv A A' ∧ Conv B B'` (Σ dual).  Since `Conv` is
+    joinability and `gen_piTyCode` is not a redex root, a Π-code's head is STABLE under reduction
+    (`shapeStable_piTyCode`, via `Step.from_piTyCode`); two joinable Π-codes thus share a `piTyCodeCell`
+    common reduct, and the children join componentwise — NO confluence/SN/`Conv.trans`.  The injectivity
+    direction is the ingredient typed SR consumes to peel a conv-disguised Π-type; the iff is the
+    decidable-`Conv` recursion for the dependent type-code formers. -/
+#assert_no_axioms FX1Poly.Typed.sigmaTyCodeCell_inj
+#assert_no_axioms FX1Poly.Typed.StepStar.shapeStable_piTyCodeGeneral
+#assert_no_axioms FX1Poly.Typed.StepStar.shapeStable_piTyCode
+#assert_no_axioms FX1Poly.Typed.StepStar.shapeStable_sigmaTyCodeGeneral
+#assert_no_axioms FX1Poly.Typed.StepStar.shapeStable_sigmaTyCode
+#assert_no_axioms FX1Poly.Typed.Conv.piTyCode_inj
+#assert_no_axioms FX1Poly.Typed.Conv.sigmaTyCode_inj
+#assert_no_axioms FX1Poly.Typed.Conv.piTyCode_cong
+#assert_no_axioms FX1Poly.Typed.Conv.sigmaTyCode_cong
+#assert_no_axioms FX1Poly.Typed.Conv.piTyCode_iff
+#assert_no_axioms FX1Poly.Typed.Conv.sigmaTyCode_iff
