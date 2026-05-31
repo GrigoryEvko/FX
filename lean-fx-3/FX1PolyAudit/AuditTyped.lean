@@ -22,6 +22,7 @@ import FX1Poly.Typed.HasTypeClosedForms
 import FX1Poly.Typed.WfContextDecidable
 import FX1Poly.Typed.HasTypeGen
 import FX1Poly.Typed.DependentTelescopeSpike
+import FX1Poly.Typed.HasTypeDesc
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -380,3 +381,28 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.DependentTelescopeTyped
 #assert_no_axioms FX1Poly.Typed.dependentTelescopeTyped_reconstructs_piFormation
 #assert_no_axioms FX1Poly.Typed.dependentTelescopeTyped_heterogeneous
+
+/-! ### ★ MOONSHOT CORE — the description-driven generic typing engine
+    (`HasTypeDesc`, polycell.md §11.8.5 / §5.2: the Natural-Model display map
+    `Tm ↠ Ty` realized as a data-driven cascade-free `gen` arm).  `HasTypeDesc`
+    = var + conv + nullary `universeFormation` + ONE generic `genFormation` arm
+    consuming a per-generator `TypingRuleDesc` (the `typingRuleDescOf` table),
+    typing the whole dependent-type-former family via the mutual `DescTelescope`
+    spine with output = `rule.combineLevel` of the children's levels.  The two
+    reconstruction theorems witness Π AND Σ through the SAME arm (P13
+    cascade-freedom: a new dependent former is one `typingRuleDescOf` row, ZERO
+    new arms).  Propext-free `lmaxFold`/`lmaxAll` (no overlapping patterns) +
+    `typingRuleDescOf` (nested `if` over DecidableEq, no 194-ctor wildcard);
+    `TypingRuleDesc` is pure level-syntax (no HasTypeDesc → genFormation
+    strictly positive); output level an explicit INDEX (Prop, P14). -/
+
+#assert_no_axioms FX1Poly.Typed.lmaxFold
+#assert_no_axioms FX1Poly.Typed.lmaxAll
+#assert_no_axioms FX1Poly.Typed.TypingRuleDesc
+#assert_no_axioms FX1Poly.Typed.typingRuleDescOf
+#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_piTyCode
+#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_sigmaTyCode
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc
+#assert_no_axioms FX1Poly.Typed.DescTelescope
+#assert_no_axioms FX1Poly.Typed.hasTypeDesc_piFormation_viaGenArm
+#assert_no_axioms FX1Poly.Typed.hasTypeDesc_sigmaFormation_viaGenArm
