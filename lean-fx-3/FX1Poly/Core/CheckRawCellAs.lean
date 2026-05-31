@@ -3,13 +3,10 @@ import FX1Poly.Core.InferRawCellGeneral
 /-! # Foundation/PolyCell/Core/CheckRawCellAs — expected-shape checker
 
 This file ships `checkRawCellAs?`: the expected-sort variant of
-`inferRawCellGeneral?` (#163).  Where the general inference accepts
-ANY sort the certifier produces, this checker takes an EXPECTED sort
-as input and rejects with `.wrongSort` if the certifier's inferred
-sort differs.
-
-Direct v2 counterpart to v1's `checkRawCellAs?`
-(`Core/Check.lean:2103`).
+`inferRawCellGeneral?`.  Where the general inference accepts ANY sort
+the certifier produces, this checker takes an EXPECTED sort as input
+and rejects with `.wrongSort` if the certifier's inferred sort
+differs.
 
 ## Why a separate function — the .wrongSort rejection class
 
@@ -29,36 +26,25 @@ This separation keeps the two ingress modes' rejection vocabularies
 clean: bare inference fails for STRUCTURAL reasons, expected-shape
 checking fails for STRUCTURAL OR EXPECTATION-MISMATCH reasons.
 
-## One-phase vs two-phase design
+## One-phase design
 
-v1's `checkRawCellAs?` uses a TWO-PHASE design:
-
-1. `screenRawCell?` — cheap sort-only screening
-2. If sort matches, `inferRawCell?` — full certification
-
-The screen is cheaper than full certification, so v1 avoids
-certifying cells that wouldn't match the expected sort anyway.
-
-v2's `checkRawCellAs?` uses a ONE-PHASE design:
+`checkRawCellAs?` uses a ONE-PHASE design:
 
 1. `inferRawCellGeneral?` — full certification
 2. Check the result's sort against expected
 
 The single-phase approach trades a small amount of work (certifying
 the body of a mismatched-sort cell) for simpler architecture (no
-separate `screenRawCell?` function).  Under fxProfile the cost
+separate sort-only screening function).  Under fxProfile the cost
 difference is negligible since most cells the checker sees are
 already expected to match (callers know the sort they're passing).
-
-Future profiles where mismatched-sort cells are common can revisit
-this design and add a `screenRawCell?` companion.
 
 ## Zero-axiom verification
 
 All declarations use propext-free patterns:
 * Match on `Except` (closed inductive)
 * `if-then-else` with explicit `DecidableEq CellSort` (auto-derived,
-  audited zero-axiom at L0 #122)
+  audited zero-axiom)
 * Direct return of unmodified result struct on sort match
 
 Audit-gated in `Tools/AuditAll/AuditPolyCell.lean`.

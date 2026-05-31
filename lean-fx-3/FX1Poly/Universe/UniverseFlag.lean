@@ -1,11 +1,9 @@
 /-! # Foundation/PolyCell/Universe/UniverseFlag
-   — Setzer-Rathjen consistency-strength ladder for Phase Z₆
+   — Setzer-Rathjen consistency-strength ladder
 
-M23 (#272, 2026-05-28).  Ships the `UniverseFlag` inductive
-carrying the FULL Setzer-Rathjen ladder of universe admission
-predicates per polycell.md §11.8 (lines 4033-4052).
-
-Per the spec excerpt:
+The `UniverseFlag` inductive carrying the Setzer-Rathjen ladder
+of universe admission predicates per polycell.md §11.8 (lines
+4033-4052):
 
 ```
 inductive UniverseFlag where
@@ -23,15 +21,15 @@ inductive UniverseFlag where
 
 ## The Setzer-Rathjen ladder
 
-Each flag is a STRICTLY STRONGER admission predicate (per
+Each flag is a strictly stronger admission predicate (per
 polycell.md §11.8 line 4049-4052).  Consistency strength
-increases monotonically as you climb the ladder.  The ladder
+increases monotonically along the ctor declaration order, which
 matches the standard large-cardinal hierarchy from set theory:
 
-1. **standard** — Mahlo-free MLTT; Phase Z₆ kickoff.  Proof-
-   theoretic strength ≈ KP (Kripke-Platek) or Π¹₁-CA.
-2. **inaccessible** — single inaccessible cardinal; Phase Z₆
-   proper.  Strength ≈ ZFC + 1 inaccessible.
+1. **standard** — Mahlo-free MLTT.  Proof-theoretic strength
+   ≈ KP (Kripke-Platek) or Π¹₁-CA.
+2. **inaccessible** — single inaccessible cardinal.  Strength
+   ≈ ZFC + 1 inaccessible.
 3. **mahlo** — single Mahlo cardinal; KPM.
 4. **superMahlo** — KPM².
 5. **nMahlo (n : Nat)** — KPM^n hierarchy.
@@ -46,52 +44,20 @@ matches the standard large-cardinal hierarchy from set theory:
 Admission decidable in `O(flag enum position)` per
 polycell.md §11.8 line 4050.
 
-## Phase Z₆ rollout
+The enum is closed.  It carries the ladder shape; per-flag
+admission proofs (showing each flag's ConsistencyStrength bound)
+are not part of this file — they require set-theoretic
+large-cardinal axioms.  No `LE` instance is defined here; the
+consistency-strength order is the ctor declaration order.
 
-Per polycell.md §11.8 line 4050-4052:
-* `standard` ships Phase Z₆ KICKOFF.
-* `inaccessible` + `mahlo` ship Phase Z₆ PROPER.
-* `superMahlo` → `vopenka` ship Phase Z₆+ as RESEARCH-FRONTIER
-  additions (admission proofs require set-theoretic large-
-  cardinal axioms).
-
-This M23 commit ships the ENUM only — all 10 ctors as a
-closed inductive.  Admission proofs (showing each flag's
-ConsistencyStrength bound) are M79-M82 task slots:
-* M79 #328 inaccessible admission.
-* M80 #329 mahlo + superMahlo.
-* M81 #330 nMahlo / hyperMahlo / weaklyCompact.
-* M82 #331 indescribable / reflecting.
-* M83 #332 ★ MILESTONE B SHIPPED (vopenka + Phase Z₆ closure).
-
-## Why ship all 10 today instead of just `standard`?
-
-The ENUM is closed (no `Generator`-style growth path).  Adding
-ctors later would be a backward-incompatible change.  Shipping
-all 10 ctors today commits to the full ladder shape; M79-M82
-add the ADMISSION PROOFS without changing the enum.
-
-This commit deliberately ships the type but NOT the proofs —
-proofs are research-frontier work (large-cardinal consistency
-strength) that fits multi-turn focused sessions, not 5-min
-cron iterations.
-
-## Consistency-strength order
-
-Per polycell.md §11.8 line 4049 ("each flag is a strictly
-stronger admission predicate"), the ordering is the ctor
-declaration order.  This commit doesn't ship a `LE`
-instance — the order machinery is M24's responsibility
-(retrofitting `gen_universeCode` payload to use
-`LevelExpr × UniverseFlag` includes the LE structure).
-
-## What this ships
+## What this file defines
 
 * `UniverseFlag` inductive (10 ctors per spec).
 * `deriving DecidableEq, BEq, Repr` — Lean derives these
   propext-free for simple ADTs with Nat payloads.
 * 10 per-ctor canonical-form smokes (rfl-pinned).
 * 1 DecidableEq positive smoke + 2 negative smokes.
+* `UniverseFlag.ctorCount` pinned at 10.
 
 ## Cross-references
 
@@ -103,16 +69,9 @@ instance — the order machinery is M24's responsibility
 * Aczel 1999 "On relating type theories and set theories" —
   bridge between MLTT universe flags and set-theoretic
   consistency strength.
-* M21 #270 `LevelExpr` — sibling type defining universe
-  POLYMORPHISM (LevelExpr × UniverseFlag is the full payload
-  per polycell.md §11.8 line 4002-4011).
-
-## Phase Z₀ STRICT gate
-
-When M21 + M23 are both shipped + M22 normalization lands,
-`AuditPhaseZ.lean` #380 `STRICT_Z0_MOTIVE_state` advances
-from `.notStarted` to `.scaffoldShipped`.  This commit
-contributes M23; M22 normalization remains pending.
+* `LevelExpr` — sibling type defining universe POLYMORPHISM
+  (LevelExpr × UniverseFlag is the full payload per polycell.md
+  §11.8 line 4002-4011).
 
 ## Zero-axiom verification
 
@@ -130,9 +89,8 @@ Ten constructors, each a STRICTLY STRONGER admission predicate
 than the previous.  Listed in increasing consistency-strength
 order:
 
-* `standard` — Mahlo-free MLTT (Phase Z₆ kickoff).
-* `inaccessible` — single inaccessible cardinal (Phase Z₆
-  proper).
+* `standard` — Mahlo-free MLTT.
+* `inaccessible` — single inaccessible cardinal.
 * `mahlo` — single Mahlo cardinal (KPM).
 * `superMahlo` — KPM².
 * `nMahlo n` — KPM^n hierarchy.
@@ -142,9 +100,9 @@ order:
 * `reflecting` — Σ²ₙ-reflecting.
 * `vopenka` — Vopěnka's principle (apex). -/
 inductive UniverseFlag where
-  /-- Mahlo-free MLTT.  Phase Z₆ kickoff. -/
+  /-- Mahlo-free MLTT. -/
   | standard : UniverseFlag
-  /-- Single inaccessible cardinal.  Phase Z₆ proper. -/
+  /-- Single inaccessible cardinal. -/
   | inaccessible : UniverseFlag
   /-- Single Mahlo cardinal (KPM). -/
   | mahlo : UniverseFlag
@@ -219,13 +177,10 @@ example : ¬ (UniverseFlag.nMahlo 0 = .nMahlo 1) := by
 
 /-! ## Aggregate count
 
-Pinned count of UniverseFlag ctors.  When the enum extends
-(e.g., adding a new flag between weaklyCompact and
-indescribable for a refined Setzer-Rathjen revision), this
-count + the AuditPhaseZ ledger entries advance lockstep. -/
+Pinned count of UniverseFlag ctors, a `rfl`-witnessed guard
+against silent enum changes. -/
 
-/-- 10 explicit ctors in the Setzer-Rathjen ladder.  Updates
-lockstep with ctor additions. -/
+/-- 10 explicit ctors in the Setzer-Rathjen ladder. -/
 def UniverseFlag.ctorCount : Nat := 10
 
 theorem UniverseFlag.ctorCount_correct :

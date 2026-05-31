@@ -11,19 +11,18 @@ The current `Step.betaEta` relation is the sum of:
 * the existing beta+iota `Step` relation, including its congruence rule;
 * root-only `Step.eta`.
 
-It does not yet add eta congruence under arbitrary generator children.
+It does not add eta congruence under arbitrary generator children.
 Consequently, classical examples such as reducing eta under an outer
-application are not one-step branchings in the current formal relation.
-This file therefore ships the honest foundation for M8f: the betaEta join
-shape, closure embeddings from beta+iota `StepStar`, and the beta-only
-fragment of the future betaEta local Church-Rosser theorem.
+application are not one-step branchings in this formal relation.
+This file provides the foundation: the betaEta join shape, closure
+embeddings from beta+iota `StepStar`, and the beta-only fragment of the
+betaEta local Church-Rosser theorem.
 -/
 
 namespace FX1Poly.Core
 
--- `RawRenaming` lived in lean-fx-2's enclosing `LeanFX2` namespace (visible
--- by nesting); in lean-fx-3 it moved to `FX1Poly.Foundation`, which no longer
--- encloses `FX1Poly.Core`, so open it explicitly.
+-- `RawRenaming` lives in `FX1Poly.Foundation`, which does not enclose
+-- `FX1Poly.Core`, so open it explicitly.
 open FX1Poly.Foundation
 
 namespace RawTermSubst
@@ -158,9 +157,9 @@ def BetaEtaPairJoin {scope : Nat}
     Step.betaEtaStar leftReduct commonReduct ∧
       Step.betaEtaStar rightReduct commonReduct
 
-/-- Future target statement for local Church-Rosser over the betaEta
-one-step relation.  This is intentionally separate from `CdLemmaStatement`,
-which remains the beta+iota-only theorem. -/
+/-- Target statement for local Church-Rosser over the betaEta
+one-step relation.  Intentionally separate from `CdLemmaStatement`,
+which is the beta+iota-only theorem. -/
 def CdLemmaStatementBetaEta : Prop :=
   ∀ {scope : Nat} {sourceTerm leftReduct rightReduct : RawTerm scope},
     (leftStep : Step.betaEta sourceTerm leftReduct) →
@@ -168,8 +167,7 @@ def CdLemmaStatementBetaEta : Prop :=
     BetaEtaPairJoin leftStep rightStep
 
 /-- Mixed local Church-Rosser statement for a beta+iota step against a
-root-eta step.  The eta-vs-eta quadrant is deliberately separate and belongs
-to η-M8g (#356). -/
+root-eta step.  The eta-vs-eta quadrant is deliberately separate. -/
 def CdLemmaStatementStepEta : Prop :=
   ∀ {scope : Nat} {sourceTerm leftReduct rightReduct : RawTerm scope},
     (leftStep : Step sourceTerm leftReduct) →
@@ -228,8 +226,8 @@ theorem ofStepPairJoin {scope : Nat}
       , Step.betaEtaStar.ofStepStar chains.1
       , Step.betaEtaStar.ofStepStar chains.2 ⟩)
 
-/-- The shipped beta+iota `cd_lemma` covers the beta-only fragment of the
-future betaEta local Church-Rosser theorem. -/
+/-- The beta+iota `cd_lemma` covers the beta-only fragment of the
+betaEta local Church-Rosser theorem. -/
 theorem ofCdLemmaForStepSteps {scope : Nat}
     {sourceTerm leftReduct rightReduct : RawTerm scope}
     (leftStep : Step sourceTerm leftReduct)
@@ -1126,11 +1124,11 @@ theorem cd_lemma_eta_step : CdLemmaStatementEtaStep := by
 
 end BetaEtaPairJoin
 
-/-- Current root eta kinds represented by `Step.eta`.
+/-- Root eta kinds represented by `Step.eta`.
 
 This finite catalog is deliberately limited to constructors whose generators
-exist today.  Clock, parametricity, and record eta are future generator-table
-work, not reserved cases here. -/
+exist in the `Generator` enum.  Clock, parametricity, and record eta are not
+reserved cases here. -/
 inductive EtaStepKind : Type where
   | etaLam
   | etaPair

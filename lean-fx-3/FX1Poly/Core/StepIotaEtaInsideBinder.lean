@@ -6,19 +6,18 @@ import FX1Poly.Core.StepRename
 Explicit coverage ratchet for the current iota-vs-eta-lambda
 inside-binder critical-pair surface.
 
-The proof-relevant diamond is already generic:
+The proof-relevant diamond is generic:
 `BetaEtaPairJoin.etaLamArbitraryUnderBinderCong` joins any beta+iota
 `Step` that fires in the weakened function position of an eta-lambda
 source.  This file records the finite iota side of that statement as
-auditable data, so the task ledger has a concrete 16-row guard instead of
-an implicit appeal to the generic theorem.
+auditable data — a concrete 16-row guard instead of an implicit appeal
+to the generic theorem.
 -/
 
 namespace FX1Poly.Core
 
--- `RawRenaming` lived in lean-fx-2's enclosing `LeanFX2` namespace (visible
--- by nesting); in lean-fx-3 it moved to `FX1Poly.Foundation`, which no longer
--- encloses `FX1Poly.Core`, so open it explicitly.
+-- `RawRenaming` lives in `FX1Poly.Foundation`, which does not enclose
+-- `FX1Poly.Core`, so open it explicitly.
 open FX1Poly.Foundation
 
 /-- Current iota root rules, excluding beta from `RootStepKind`.
@@ -177,7 +176,7 @@ namespace IotaRootKind
 def etaLamCoverageRows : List IotaEtaInsideBinderCoverage :=
   all.map IotaEtaInsideBinderCoverage.rowForIotaKind
 
-/-- Build-time coverage bit for task #385. -/
+/-- Build-time coverage bit: every eta-lambda inside-binder row is complete. -/
 def etaLamCoverageComplete : Bool :=
   etaLamCoverageRows.all IotaEtaInsideBinderCoverage.isComplete
 
@@ -255,7 +254,7 @@ end IotaRootKind
 
 namespace Step
 
-/-- Weakening is a special case of the shipped beta+iota rename closure.
+/-- Weakening is a special case of the beta+iota rename closure.
 
 This is the proof-relevant commute lemma consumed by the inside-binder
 eta-lambda diamond; it is intentionally stated for any `Step`, so the 16
@@ -305,7 +304,7 @@ theorem iotaEta_etaLam_source_join {scope : Nat}
       (Or.inr (Step.eta.etaLam innerFunction)) :=
   BetaEtaPairJoin.etaLamLeftStep leftStep
 
-/-- Audit bit exported under `Step` for task #385. -/
+/-- Audit bit exported under `Step` for the inside-binder eta-lambda coverage. -/
 def iotaEta_inside_binder_complete : Bool :=
   IotaRootKind.etaLamCoverageComplete
 

@@ -3,14 +3,13 @@ import FX1Poly.Core.RawTermSubstDefs
 /-! # Foundation/PolyCell/Core/GenAlgebra — fold algebra (Allais Semantics)
 
 This file ships `GenAlgebra`: the per-generator semantic algebra
-that fold (#177) consumes for non-variable generators.  Together
-with `ActsOnRawTermVar` (#175, handling the variable case), this
-completes the typeclass + record input shape for the Allais-style
-fold engine.
+that fold consumes for non-variable generators.  Together with
+`ActsOnRawTermVar` (handling the variable case), this completes the
+typeclass + record input shape for the Allais-style fold engine.
 
 Direct analog of Allais et al. ICFP'18's "Semantics" record's `alg`
 field — the per-constructor children-combination function.  Other
-Semantics fields (`var`, `th^V`) are handled separately in v2 by
+Semantics fields (`var`, `th^V`) are handled separately by
 `ActsOnRawTermVar` (variable bridge) and `Action.liftForRaw` /
 `Action.liftForTy` (Container binder lift).
 
@@ -23,12 +22,11 @@ Container shape.  A bare record decouples the algebra from the
 Container: ONE algebra value (`GenAlgebra.canonical`) reused
 across all fold instantiations.
 
-For future variants (NbE eval producing a value-form type instead of
+For variants (NbE eval producing a value-form type instead of
 `RawTerm`, term-size computation producing `Nat`, etc.), the
 record's `algebra` field shape generalizes uniformly — the result
-type just changes from `RawTerm scope` to whatever.  For now (L2
-shipping), the result is fixed at `RawTerm scope` to keep #176
-focused on the rename/subst use case.
+type just changes from `RawTerm scope` to whatever.  The current
+result type is `RawTerm scope`, serving the rename/subst use case.
 
 ## The clean architectural property — uniform algebra signature
 
@@ -49,8 +47,8 @@ payload foldedChildren` typechecks UNIFORMLY for all 194 generators
 algebra body.
 
 Container threading (variable lookup, binder lifting) lives at the
-fold layer (#177), NOT here.  When fold hits a non-variable
-generator at scope S, it has:
+fold layer, NOT here.  When fold hits a non-variable generator at
+scope S, it has:
 * Already recursively folded the children spine at the (possibly
   bumped) target scope S
 * Already applied the Container's binder-lift at each child crossing
@@ -60,7 +58,7 @@ generator at scope S, it has:
 The variable case (`.gen_var`) is dispatched separately at fold to
 `ActsOnRawTermVar.varToRawTerm container pos`.
 
-## The cascade-tax killer made concrete (L2 architectural payoff)
+## One-line canonical algebra (L2 architectural payoff)
 
 The canonical algebra body is **ONE LINE**:
 
@@ -69,18 +67,11 @@ canonical.algebra generator payload foldedChildren :=
   .mkGen generator payload foldedChildren
 ```
 
-In v1's dim-indexed era, the analog work for a single traversal
-operation (e.g. `RawTerm.rename`) required a 74-arm pattern match
-over the term inductive's 74 constructors — and each NEW operation
-(`subst`, `weaken`, ...) duplicated the same 74-arm cascade.
-
-In v2, the SAME canonical algebra serves rename, subst, weaken, and
-any future "rebuild .mkGen with the same generator + payload + folded
-children" traversal.  Each new traversal becomes ONE fold call with
-its own Container; the algebra is reusable.
-
-This is the architectural promise of L2 made concrete in #176:
-"ONE generic recursion replaces N per-operation cascades."
+The SAME canonical algebra serves rename, subst, weaken, and any
+"rebuild .mkGen with the same generator + payload + folded children"
+traversal.  Each traversal is ONE fold call with its own Container;
+the algebra is reusable.  ONE generic recursion replaces N
+per-operation cascades.
 
 ## Zero-axiom verification
 
@@ -94,10 +85,10 @@ Audit-gated in `Tools/AuditAll/AuditPolyCell.lean`.
 
 namespace FX1Poly.Core
 
-/-- The Allais-style "Semantics" algebra for the v2 fold engine.
+/-- The Allais-style "Semantics" algebra for the fold engine.
 
 Captures the per-generator children-combination function fold
-(#177) consumes when traversing a `RawTerm`.  The `algebra` field
+consumes when traversing a `RawTerm`.  The `algebra` field
 operates at a SINGLE scope (the result scope, where children have
 already been folded via fold's recursive descent) and returns a
 `RawTerm scope`.
@@ -127,11 +118,9 @@ traversals that preserve term shape (rename, subst, weaken).  Applies
 uniformly to all 194 generators in ONE line: rebuild the input
 generator with its payload and the folded children spine.
 
-This is the L2 cascade-tax killer made concrete: ONE line replaces
-what would have been a 74-arm pattern match per traversal in v1's
-dim-indexed era.  Each new traversal (rename, subst, weaken, ...)
-will plug in via fold (#177) with its own Container — the algebra
-itself is reusable across all of them. -/
+ONE line, reused across traversals: each traversal (rename, subst,
+weaken, ...) plugs in via fold with its own Container, and the
+algebra itself is shared across all of them. -/
 def GenAlgebra.canonical : GenAlgebra where
   algebra := fun generator payload foldedChildren =>
     .mkGen generator payload foldedChildren

@@ -4,14 +4,14 @@ import FX1Poly.Core.CertifiedTermSpineProjections
 /-! # Foundation/PolyCell/Core/HasCertifiedProjections
    — child-cell projections from compound certifications
 
-V2-L3.1 phase D step 20 (2026-05-27).  Sibling to the
-compositional intros (`HasCertifiedComposition.lean`) and the
-preservations (`CompoundRenamePreservation` / `CompoundSubstPreservation`
-/ `BetaRedexLeafPreservation` / `BetaRedexCompoundPreservation`):
-the EXTRACTION half — given a `HasCertifiedCellDim0` of a compound
-shape, project to certifications of its children.
+Sibling to the compositional intros (`HasCertifiedComposition.lean`)
+and the preservations (`CompoundRenamePreservation` /
+`CompoundSubstPreservation` / `BetaRedexLeafPreservation` /
+`BetaRedexCompoundPreservation`): the EXTRACTION half — given a
+`HasCertifiedCellDim0` of a compound shape, project to
+certifications of its children.
 
-## What this ships
+## Contents
 
 For each compound generator, projections to its children's certs:
 
@@ -41,8 +41,8 @@ chain from a cert of the source:
      `HasCertifiedCellDim0 (subst0 body arg)` for body shapes
      where the structural induction lands.
 
-This file ships steps 2-4 (the EXTRACTION chain).  Step 5
-remains pending on the structural induction.
+This file provides steps 2-4 (the EXTRACTION chain); step 5 is
+the compositional rebuild in `BetaRedexCompoundPreservation`.
 
 ## Proof pattern
 
@@ -63,17 +63,11 @@ specific child shape.
 
 ## Zero-axiom verification
 
-Spike (`Smoke/SpikeNatSuccProjection.lean`, deleted) confirmed
-`#print axioms natSucc_projection_spike` reports clean.  Each
-projection in this file follows the same recipe and is
-audit-gated.
+Each projection in this file is propext-free under the same recipe
+and is audit-gated.
 -/
 
 namespace FX1Poly.Core
-
--- (lean-fx-2 `open LeanFX2` here was vestigial — this file references no
--- root-namespace infra and its import path does not load
--- `FX1Poly.Foundation`; dropped.)
 
 /-! ## Section 1 — Binary compound projections (app / pair / listCons) -/
 

@@ -1,11 +1,9 @@
 import FX1Poly.Core.CertifiedToPolyCell
 import FX1Poly.Core.Step
 
-/-! # Foundation/PolyCell/Core/SubjectReductionIotaBoolTrue — SR's first arm
+/-! # Foundation/PolyCell/Core/SubjectReductionIotaBoolTrue — SR arm for iotaBoolTrue
 
-V2-L3.1 phase D step 5 (2026-05-27).  Ships the FIRST arm of the
-Subject Reduction theorem on the v2 substrate: preservation across
-`Step.iotaBoolTrue`.
+The Subject Reduction arm for preservation across `Step.iotaBoolTrue`.
 
 ## What this arm proves
 
@@ -33,12 +31,12 @@ The proof is the textbook minimal iota case:
      dim 0 with trivial boundary.
   6. Wrap as `HasCertifiedCellDim0.intro .term thenCell`.
 
-## Why iotaBoolTrue is the right STARTING arm
+## Why iotaBoolTrue is the simplest arm
 
-Among the 18 Step constructors, `iotaBoolTrue` is uniquely simple:
+Among the Step constructors, `iotaBoolTrue` is uniquely simple:
 
   * **No substitution**: target is a CHILD of the source, not a
-    substituted body.  Avoids needing V2-L2.12's subst preservation.
+    substituted body.  Avoids needing subst preservation.
   * **No rename / lift**: the target lives at the same scope as the
     source (`binderShifts [0, 0, 0]`).
   * **No HEq cast through dim-indexed boundary**: thenBranch is a
@@ -53,15 +51,14 @@ Compare to:
     spine.
   * `Step.iotaNatRecSucc` requires assembling a new applied form.
 
-iotaBoolTrue is the cleanest pure-projection iota — perfect for
-establishing the proof-template that the other iotas (iotaBoolFalse,
-iotaFstPair, iotaSndPair, iotaNatElimZero, iotaListElimNil,
-iotaOptionMatchNone) inherit.
+iotaBoolTrue is the cleanest pure-projection iota — the
+proof-template that the other iotas (iotaBoolFalse, iotaFstPair,
+iotaSndPair, iotaNatElimZero, iotaListElimNil, iotaOptionMatchNone)
+inherit.
 
 ## Pattern-template for sibling iotas
 
-This commit establishes the canonical pattern.  Sibling arms
-follow:
+Sibling arms follow this canonical pattern:
 
   * **Pure projection iotas** (`iotaBoolFalse`, `iotaFstPair`,
     `iotaSndPair`, `iotaNatElimZero`, `iotaListElimNil`,
@@ -73,9 +70,9 @@ follow:
     applied form from extracted spine components — uses the
     PolyCell.gen constructor to rebuild after extraction.
 
-  * **Beta**: requires substitution-preservation (V2-L2.12); the
-    extracted body + arg cells are passed through the subst
-    preservation lemma.
+  * **Beta**: requires substitution-preservation; the extracted
+    body + arg cells are passed through the subst preservation
+    lemma.
 
   * **Cong**: structural induction on the child step + spine
     recursion.
@@ -84,8 +81,8 @@ follow:
 
 The proof uses pure `cases` on the inductive PolyCell (single-arm
 match since only `.gen` produces a `.termBase`-shaped raw cell)
-followed by the spine projections (V2-L3.1 phase D step 2).  No
-`simp`, no `omega`, no propext-touching tactics.
+followed by the spine projections.  No `simp`, no `omega`, no
+propext-touching tactics.
 
 Audit-gated in `Tools/AuditAll/AuditPolyCell.lean`.
 -/

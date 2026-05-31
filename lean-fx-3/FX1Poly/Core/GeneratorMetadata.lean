@@ -1,11 +1,10 @@
 import FX1Poly.Core.GeneratorCore
 import FX1Poly.Core.CellSort
 
-/-! # Foundation/PolyCell/Core/GeneratorMetadata — sort + child metadata for v2
+/-! # Foundation/PolyCell/Core/GeneratorMetadata — sort + child metadata
 
-This file ships the v2 generator metadata layer on top of `GeneratorCore`'s
-74-summand `Generator` enum.  Three deliverables (tasks V2-L1.1 / V2-L1.2 /
-V2-L1.3):
+This file ships the generator metadata layer on top of `GeneratorCore`'s
+74-summand `Generator` enum.  Three deliverables:
 
 * `Generator.cellSort : Generator → CellSort` — the 74-arm output-sort table.
   Each generator's result inhabits exactly one sort from the `CellSort` enum;
@@ -22,31 +21,26 @@ V2-L1.3):
   tying the two metadata views.  Mechanically `cases g <;> rfl` since both
   tables are defined by structural enumeration over the same enum.
 
-The structure `ChildSpec` is a v2-pure parallel to v1's
-`GeneratorSpec.ChildSpec`: same fields, but living in this file so the v2
-layer has no transitive dependency on `PolyTerm.lean` (the v1 dim-indexed
-inductive).  At Stage 6 (v1 deletion + V2 suffix drop) the structure will be
-renamed to `ChildSpec`.
+The structure `ChildSpec` carries no dependency on `PolyTerm.lean`.
 
 Imports: `GeneratorCore` (for `Generator` + `arity` + `binderShifts`) and
-`CellSort` (for the sort vocabulary).  No `PolyTerm`, no v1 metadata. -/
+`CellSort` (for the sort vocabulary). -/
 
 namespace FX1Poly.Core
 
-/-- One expected child position of a v2 generator.
+/-- One expected child position of a generator.
 
-Parallel to v1 `ChildSpec` but carrying no dependency on the v1 dim-indexed
-`PolyTerm` inductive.  Three fields:
+Carries no dependency on a dim-indexed `PolyTerm` inductive.  Three fields:
 
 * `cellSort` — which sort the child must inhabit (term / type / context /
   mode / effect / grade / protocol).
-* `cellDimension` — the child's dimension (current v2 generators all produce
+* `cellDimension` — the child's dimension (all current generators produce
   dim-0 children; positive-dim children appear only at the `RuleSpec` /
   `generatingCell` layer).
 * `scopeShift` — the de Bruijn scope offset relative to the parent.  A
   lambda body's child has `scopeShift = 1` (one fresh binder); a pi-type
   codomain's child has `scopeShift = 1` (one fresh type binder); all other
-  current v2 generators have `scopeShift = 0` per the `Generator.binderShifts`
+  current generators have `scopeShift = 0` per the `Generator.binderShifts`
   table.
 
 Carrier-free by construction: this struct doesn't store a cell, it only
@@ -85,7 +79,7 @@ namespace ChildSpec
 
 end ChildSpec
 
-/-- Output sort of each v2 generator.  74 arms, one per `Generator` ctor.
+/-- Output sort of each generator.  74 arms, one per `Generator` ctor.
 
 Classification rationale:
 
@@ -104,9 +98,8 @@ Classification rationale:
   higher universe.
 
 No generator currently produces a `.context`, `.mode`, `.effect`, `.grade`,
-or `.protocol` cell directly — those sorts will populate when the
-corresponding RawTerm fragments are folded into v2 (Stage 1 extensions
-beyond term/type). -/
+or `.protocol` cell directly — those sorts populate when the corresponding
+RawTerm fragments (beyond term/type) are folded in. -/
 def Generator.cellSort : Generator → CellSort
   -- Variable + unit
   | .gen_var          => .term
@@ -378,7 +371,7 @@ def Generator.cellSort : Generator → CellSort
   | .gen_polyTimeWitness => .term
   | .gen_npComplete    => .term
 
-/-- Expected child positions for each v2 generator.  74 arms, one per
+/-- Expected child positions for each generator.  74 arms, one per
 `Generator` ctor.
 
 Two invariants tie this table to `GeneratorCore.lean`:

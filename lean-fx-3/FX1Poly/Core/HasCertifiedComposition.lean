@@ -2,9 +2,8 @@ import FX1Poly.Core.HasCertifiedIntros
 
 /-! # Foundation/PolyCell/Core/HasCertifiedComposition — compound intros
 
-V2-L3.1 phase D step 16 (2026-05-27).  Ships **compound smart
-constructors** for `HasCertifiedCellDim0` over the term-shape
-generators that admit certified children.
+**Compound smart constructors** for `HasCertifiedCellDim0` over the
+term-shape generators that admit certified children.
 
 ## Context
 

@@ -2,20 +2,18 @@ import FX1Poly.Core.CertifyRawCellExact
 
 /-! # Foundation/PolyCell/Core/CertifyRawCellExactWrongChildShape
 
-V2-fix-6 (2026-05-27).  Ships **reachability witnesses for the
-`.wrongChildShape` rejection branch**.
+Ships **reachability witnesses for the `.wrongChildShape`
+rejection branch**.
 
 ## Why this file is needed
 
-The negative-probe suite at
-`CertifyRawCellExactNegativeProbes.lean` documents that
-`.wrongChildShape` is, under fxProfile, "**reachable only under
-future profiles with cross-sort spine semantics**" — i.e., the
-branch is unreachable from public ingress.  Under fxProfile, every
+Under fxProfile, `.wrongChildShape` is reachable only under
+profiles with cross-sort spine semantics — the branch is
+unreachable from public ingress.  Under fxProfile, every
 `Generator.childSpecs` entry uses `.term` sort and `cellDimension 0`,
 and every termBase head certifies to `.term` / `cellDimension 0`, so
-the dispatcher's two checks at
-`certifyChildrenInlineFueled?:192-195` always succeed:
+the dispatcher's two checks in `certifyChildrenInlineFueled?` always
+succeed:
 
 ```
 if hSort : headSort = headSpec.cellSort then
@@ -28,11 +26,11 @@ else
   exact .error .wrongChildShape    -- (sort mismatch)
 ```
 
-Agent 3 of the V2 falsification audit observed that the lack of any
-test fixture activating either of these `.error` branches left the
-behavioral content of `.wrongChildShape` rejection unwitnessed.  The
-soundness-completeness triangulation is incomplete without showing
-the rejection branch fires at all under SOME constructed input.
+Without any test fixture activating either of these `.error`
+branches, the behavioral content of `.wrongChildShape` rejection
+would be unwitnessed.  The soundness-completeness triangulation is
+incomplete without showing the rejection branch fires at all under
+SOME constructed input.
 
 ## What this file ships
 
@@ -60,11 +58,6 @@ produces.  This is intentional: the goal is to witness the rejection
 branch's REACHABILITY, not to demonstrate a regression in the
 fxProfile public ingress.
 
-A future ProfileExtension that introduces cross-sort childSpecs
-(e.g., adding `.gen_lamWithTypeAnnotation` whose first child is
-`.type`) would automatically activate the public-ingress reachability
-of `_typeSort_rejects_termChild` without modifying these probes.
-
 ## Why `rfl` closes
 
 Both probes are CONCRETE computations: given closed inputs, the
@@ -88,19 +81,6 @@ For the dim probe:
 
 No tactic gymnastics, no propext, no axioms.
 
-## Forward-compat: where the public-ingress reachability lands
-
-The V2 generator metadata currently has no cross-sort `Generator`
-(every `Generator.childSpecs` entry uses `.term` sort, dim 0).  When
-the V2-VORACIOUS or a future ProfileExtension introduces cross-sort
-children, these probes' inputs become representable through public
-generators, and the public-ingress reachability of
-`.wrongChildShape` activates automatically.
-
-Specifically: V2-L1.13 (SiteOpenness enum + compatibility on
-ProfileExtension) is the natural follow-up that would extend the
-generator metadata to allow cross-sort children.
-
 ## Zero-axiom verification
 
 Both witness theorems pass `#assert_no_axioms`.  Audit-gated in
@@ -116,10 +96,8 @@ Invokes `certifyChildrenInlineFueled?` directly with a
 child (certifying to `.term` sort).  Triggers the dispatcher's
 outer `hSort` check failure, returning `.error .wrongChildShape`.
 
-This is the FIRST shipped witness that the `.wrongChildShape`
-rejection branch is reachable at all — Agent 3 of the V2 falsification
-audit observed it was unwitnessed under public ingress, and this
-probe discharges that finding via direct-call coverage. -/
+Witnesses that the `.wrongChildShape` rejection branch is reachable
+at all, via direct-call coverage. -/
 theorem certifyChildrenInlineFueled?_typeSort_rejects_termChild :
     let unitChild : RawTerm 0 := .mkGen .gen_unit () .childNil
     let typeMismatchSpec : ChildSpec := ChildSpec.typeSameScope

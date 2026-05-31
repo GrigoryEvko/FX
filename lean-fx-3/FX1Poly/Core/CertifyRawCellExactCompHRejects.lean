@@ -7,9 +7,6 @@ totality-off-`horizontalComposite` theorem.  For any
 `.horizontalComposite left right` input, the certifier rejects with
 `.unsupportedCompH` — at every dimension, scope, and profile.
 
-Direct v2 counterpart to v1's `certifyRawCellExact?_compH_rejects`
-(`Core/CertifyExact.lean:201`).
-
 ## Why `horizontalComposite` rejects unconditionally
 
 Per `polycell.md` §4's rejection taxonomy:
@@ -17,11 +14,11 @@ Per `polycell.md` §4's rejection taxonomy:
 > | raw `compH` before Axis 6 certification | reject `unsupportedCompH` |
 
 Horizontal composition (the Gray-tensor cellular pairing) requires
-Gray boundary semantics tracked as M-horizComposite-admission
-#384 + Axis 6 of the `polycell.md` roadmap (the "infinite
-scaling" extension calculus work).  Until those semantics are mechanized, the certifier has no
-admissible PolyCell constructor for compH, and any raw input
-containing a `.horizontalComposite` at the OUTER ctor is structurally
+Gray boundary semantics (#384 + Axis 6 of the `polycell.md`
+roadmap, the "infinite scaling" extension calculus work).  Until
+those semantics are mechanized, the certifier has no admissible
+PolyCell constructor for compH, and any raw input containing a
+`.horizontalComposite` at the OUTER ctor is structurally
 unsupportable.
 
 The certifier matches this in its dispatch:

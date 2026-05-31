@@ -5,16 +5,16 @@ import FX1Poly.Typed.HasTypeGen
 
 polycell.md §11.8.5 Decision 4 / §5.2: the typing display map `Tm ↠ Ty` realized
 cellularly by a CASCADE-FREE generic `gen` arm — a new feature is one
-`TypingRuleDesc` DATA row, never a new `HasType` arm.  This file ships that arm
-for the dependent-type-FORMER family (the first and most uniform shape).
+`TypingRuleDesc` DATA row, never a new `HasType` arm.  This file carries that arm
+for the dependent-type-FORMER family (the most uniform shape).
 
-`HasTypeDesc` is a NEW engine built ALONGSIDE the shipped `HasType` / `HasTypeGen`
-(parallel-build).  Its faithfulness wrt the bespoke `HasType` on the formation
-fragment is proved in two halves: COMPLETENESS (`HasType.toHasTypeDesc`, below —
-every bespoke derivation has a description-engine counterpart) and SOUNDNESS
-(`HasTypeDesc.toHasType`, in the companion `HasTypeDescSound.lean` — the engine
-derives nothing the trusted kernel wouldn't, 0-FP).  Together they give the full
-`HasTypeDesc ⟺ HasType` equivalence on this fragment.
+`HasTypeDesc` runs alongside the bespoke `HasType` / `HasTypeGen`.  Its
+faithfulness wrt `HasType` on the formation fragment is proved in two halves:
+COMPLETENESS (`HasType.toHasTypeDesc`, below — every `HasType` derivation has a
+description-engine counterpart) and SOUNDNESS (`HasTypeDesc.toHasType`, in the
+companion `HasTypeDescSound.lean` — the engine derives nothing the trusted kernel
+wouldn't, 0-FP).  Together they give the full `HasTypeDesc ⟺ HasType` equivalence
+on this fragment.
 Arms:
 * `var`, `conv` — the irreducible core (every typed-layer engine has them).
 * `universeFormation` — the nullary universe-code shape.  Genuinely special: its
@@ -29,19 +29,19 @@ Arms:
   type-former (Π, Σ, and future n-ary dependent records …) is ONE
   `typingRuleDescOf` row — ZERO new arms (the two reconstruction theorems below
   witness Π and Σ through the SAME arm; P13 cascade-freedom).  The `outputType`
-  field (vs the earlier level-only `combineLevel`) opens the §11.8.5 "non-uniform
-  output" seam: output is rule-DATA, not hardwired to a universe code — the
-  structural prerequisite for typing non-formers (eliminators) later.
+  field opens the §11.8.5 "non-uniform output" seam: output is rule-DATA, not
+  hardwired to a universe code — the structural prerequisite for typing
+  non-formers (eliminators).
 
 ## Positivity / zero-axiom
 
 The desc (`TypingRuleDesc.outputType : (scope) → List LevelExpr → UniverseFlag →
 RawTerm scope`) is PURE syntax — it contains NO `HasTypeDesc`, so the
 `genFormation` arm is strictly positive.  `HasTypeDesc` appears only POSITIVELY, in the mutual
-`DescTelescope` spine's `cons` premise.  The spine reuses the spike's
-shift-rebasing discipline (children indexed at a fixed `baseScope`, only the
-context grows via `currentDepth`, so `(baseScope+currentDepth)+1 =
-baseScope+(currentDepth+1)` definitionally).  The output universe level is an
+`DescTelescope` spine's `cons` premise.  The spine's shift-rebasing discipline:
+children indexed at a fixed `baseScope`, only the context grows via
+`currentDepth`, so `(baseScope+currentDepth)+1 = baseScope+(currentDepth+1)`
+definitionally.  The output universe level is an
 explicit INDEX (`Prop`-valued, P14 erasure).  No `axiom`, `sorry`, `propext`,
 `Quot.sound`, `Classical`, `native_decide`, `omega`.  Audit-gated.
 -/
@@ -54,8 +54,8 @@ open FX1Poly.Core FX1Poly.Universe
 For the dependent type-formers (Π, Σ) this is the iterated `lmax` (the level of
 `Π A. B` / `Σ A. B` is `lmax (level A) (level B)`).  `lmaxAll [e] = e`,
 `lmaxAll [e₀, e₁] = lmax e₀ e₁` (definitionally — the singleton arm precedes the
-cons arm), so it reconstructs the shipped binary `piFormation`/`sigmaFormation`
-output exactly. -/
+cons arm), so it matches the binary `piFormation`/`sigmaFormation` output
+exactly. -/
 def lmaxFold (accumulator : LevelExpr) : List LevelExpr → LevelExpr
   | [] => accumulator
   | headLevel :: restLevels =>
@@ -67,16 +67,14 @@ def lmaxAll : List LevelExpr → LevelExpr
 
 /-- A typing-rule description: the per-generator datum is the rule's OUTPUT
 classifier as a function of the children's universe levels (and the flag/scope).
-This generalizes an earlier `combineLevel : List LevelExpr → LevelExpr` (output
-hardwired to `universeCodeCell (combineLevel levels) flag`): `outputType` lets the
-output be arbitrary rule-DATA, opening the §11.8.5 "non-uniform output" seam —
-the structural prerequisite for non-formation rules.  For the dependent
-type-formers (Π, Σ) the output is still a universe code at the iterated-`lmax`
-level, so `outputType _ levels flag = universeCodeCell (lmaxAll levels) flag`
-(definitionally the old behaviour); honestly scoped, this opens output-FROM-LEVELS
-— the children-dependent eliminator output (motive applied to scrutinee) remains
-the open part of the seam.  (Binder structure is read from the generator's
-`binderShifts`; the children-are-types premise is the `DescTelescope` spine.) -/
+`outputType` lets the output be arbitrary rule-DATA, realizing the §11.8.5
+"non-uniform output" seam — the structural prerequisite for non-formation rules.
+For the dependent type-formers (Π, Σ) the output is a universe code at the
+iterated-`lmax` level, so `outputType _ levels flag = universeCodeCell (lmaxAll
+levels) flag`.  This covers output-FROM-LEVELS; the children-dependent eliminator
+output (motive applied to scrutinee) is the open part of the seam.  (Binder
+structure is read from the generator's `binderShifts`; the children-are-types
+premise is the `DescTelescope` spine.) -/
 structure TypingRuleDesc where
   /-- The rule's output classifier, as a function of the scope, the children's
   universe levels (from the `DescTelescope` premise), and the flag. -/
@@ -137,9 +135,9 @@ inductive HasTypeDesc (profile : PolyProfile) :
 dependent telescope of TYPES at `levels`.  Mutual with `HasTypeDesc` (its index
 signature references only `PolyProfile`/`Nat`/`LevelExpr`/`UniverseFlag`/`List
 Nat`/`TypingContext`/`RawTermChildren`, never `HasTypeDesc` — mutual-index rule;
-`HasTypeDesc` appears only positively in `cons`'s `headTyped`).  Same
-fixed-`baseScope`, growing-`currentDepth` rebasing discipline as the validated
-`DependentTelescopeChildren` spike. -/
+`HasTypeDesc` appears only positively in `cons`'s `headTyped`).  Fixed-`baseScope`,
+growing-`currentDepth` rebasing discipline: children stay indexed at `baseScope`
+while the context extends. -/
 inductive DescTelescope (profile : PolyProfile) :
     {baseScope : Nat} → {currentDepth : Nat} → {binderShifts : List Nat} →
       TypingContext profile (baseScope + currentDepth) →
@@ -177,9 +175,9 @@ theorem typingRuleDescOf_sigmaTyCode :
 /-- Reconstruction: the generic `genFormation` arm derives Π-formation.  Domain
 typed at `Type@(domainLevel, flag)`, codomain at `Type@(codomainLevel, flag)`
 UNDER the domain binder ⟹ `piTyCodeCell` inhabits `Type@(lmax domainLevel
-codomainLevel, flag)` — exactly the shipped `HasType.piFormation` conclusion,
-now through the data-driven generic arm (`lmaxAll [domainLevel, codomainLevel]`
-reduces to `lmax domainLevel codomainLevel`). -/
+codomainLevel, flag)` — the same conclusion as `HasType.piFormation`, through
+the data-driven generic arm (`lmaxAll [domainLevel, codomainLevel]` reduces to
+`lmax domainLevel codomainLevel`). -/
 theorem hasTypeDesc_piFormation_viaGenArm
     {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
@@ -225,7 +223,7 @@ theorem hasTypeDesc_sigmaFormation_viaGenArm
     codomainLevel [] flag .childNil codomainTyped
     (DescTelescope.nil (currentDepth := 2) (context.cons domain |>.cons codomain) flag)
 
-/-- COMPLETENESS of the description engine wrt the shipped bespoke `HasType`:
+/-- COMPLETENESS of the description engine wrt the bespoke `HasType`:
 every `HasType` derivation on the current fragment has a `HasTypeDesc`
 counterpart.  A single induction on `HasType` (NOT mutual — `HasType`'s premises
 are direct sub-derivations with IHs): `var`/`conv`/`universeFormation` map to the

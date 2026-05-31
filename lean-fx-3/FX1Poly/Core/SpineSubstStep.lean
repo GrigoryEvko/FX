@@ -4,12 +4,12 @@ import FX1Poly.Core.RawTermSubst
 /-! # Foundation/PolyCell/Core/SpineSubstStep
    — subst-shaped spine step helpers for the SR-beta mutual block
 
-Per `M-spineRenamers-retro` (#379): this file is part of the
-~400-LoC spine-renamer substrate task home consumed by M2 #251
-(SR arm 17 beta) + M3 #252 (SR arm 18 cong).  Sibling files:
-`SpineRenameStep.lean`, `SpineConsStep.lean`, `StepHCCWrappers.lean`.
+Part of the spine-renamer substrate consumed by the SR-beta and SR-cong
+mutual blocks (`SubstPreservationMutual.lean`, `CongPreservationMutual.lean`).
+Sibling files: `SpineRenameStep.lean`, `SpineConsStep.lean`,
+`StepHCCWrappers.lean`.
 
-This file packages the two spine-side subst cases that the future
+This file packages the two spine-side subst cases the
 `HasCertifiedCellDim0.preservedBySubst` mutual block needs:
 
 * nil: substituting an empty child spine stays empty;
@@ -17,9 +17,9 @@ This file packages the two spine-side subst cases that the future
   via `iterateLiftRaw`, the tail is substituted at the parent scope,
   and `CertifiedTermSpine.consStep_dim0Trivial` rebuilds the spine.
 
-These helpers are deliberately non-recursive.  The mutual block will
-produce the substituted head cell and substituted tail spine
-recursively, then call the cons helper here.
+These helpers are deliberately non-recursive.  The mutual block
+produces the substituted head cell and substituted tail spine
+recursively, then calls the cons helper here.
 -/
 
 namespace FX1Poly.Core
@@ -27,7 +27,7 @@ namespace FX1Poly.Core
 open FX1Poly.Foundation
 
 /-- Empty spines are stable under substitution.  This is the nil arm of
-the future certified-spine substitution recursion. -/
+the certified-spine substitution recursion. -/
 def CertifiedTermSpine.substNilStep
     {profile : PolyProfile} {srcScope tgtScope : Nat}
     (sigma : RawTermSubst srcScope tgtScope) :

@@ -19,14 +19,10 @@ depending on `propext`, `Classical.choice`, `Quot.sound`, or `sorryAx`.
 
 ## Why this file exists
 
-The M22 (#271) cascade was developed with INLINE `#print axioms`
-probes that were stripped after each commit — so the zero-axiom
-property of those declarations was verified once at authoring time but
-NOT pinned in the build.  This file makes the check PERSISTENT: every
-universe declaration is gated by `#assert_no_axioms` (the throwing
-variant from `FX1PolyAudit/DependencyAudit`), so any future edit that
-introduces an axiom dependency fails `lake build FX1PolyAudit`
-immediately.
+This file makes the zero-axiom check PERSISTENT: every universe
+declaration is gated by `#assert_no_axioms` (the throwing variant from
+`FX1PolyAudit/DependencyAudit`), so any future edit that introduces an
+axiom dependency fails `lake build FX1PolyAudit` immediately.
 
 `#assert_no_axioms` takes a fully-qualified name and errors at
 elaboration if the named constant depends on any axiom, so no
@@ -35,12 +31,12 @@ universe surface.
 
 ## Coverage
 
-324 declarations across the three universe modules:
+The universe modules:
 * `Universe/LevelExpr.lean` — the 5-ctor inductive + per-ctor
-  canonical-form smokes + DecidableEq smokes (M21 #270).
+  canonical-form smokes + DecidableEq smokes.
 * `Universe/UniverseFlag.lean` — the Setzer-Rathjen closed enum +
-  per-flag canonical-form + DecidableEq + ctor-count (M23 #272).
-* `Universe/LevelExprSimplify.lean` — the M22 #271 cascade (A2-A10):
+  per-flag canonical-form + DecidableEq + ctor-count.
+* `Universe/LevelExprSimplify.lean` — the normalization cascade:
   Phase-A `simplify` + `size` + `denote` + the levelMax/lmax/lsucc
   algebraic laws + `compare` total order + the `MaxPlusForm` max-plus
   canonical form (toMaxPlusForm soundness, canonicalize/normalizeBase/
@@ -54,14 +50,6 @@ universe surface.
   `canonicalizeVarOffsets_length_le`,
   `fullCanonicalize_toMaxPlusForm_varOffsets_length_le_size`).
 
-## Migration provenance
-
-This gate was carried into `lean-fx-3` (FX1Poly clean cut) from
-lean-fx-2's `Tools/AuditAll/AuditUniverse.lean` with every name
-rewritten `LeanFX2.Foundation.PolyCell.Universe.* -> FX1Poly.Universe.*`.
-It is currently the SOLE audit gate in `FX1PolyAudit`; the Core / NbE /
-Typed slice gates migrate alongside their respective kernel slices.
-
 ## Discovery
 
 Auto-included in the `FX1PolyAudit` lean_lib via its
@@ -70,7 +58,7 @@ registration required.  Run `lake build FX1Poly FX1PolyAudit` for the
 full strict-zero-axiom sweep.
 -/
 
-/-! ### LevelExpr inductive + per-ctor canonical-form + DecidableEq smokes (M21 #270) -/
+/-! ### LevelExpr inductive + per-ctor canonical-form + DecidableEq smokes -/
 
 #assert_no_axioms FX1Poly.Universe.LevelExpr
 #assert_no_axioms FX1Poly.Universe.LevelExpr.lzero_canonical
@@ -79,11 +67,11 @@ full strict-zero-axiom sweep.
 #assert_no_axioms FX1Poly.Universe.LevelExpr.limax_lzero_lzero_canonical
 #assert_no_axioms FX1Poly.Universe.LevelExpr.lvar_zero_canonical
 #assert_no_axioms FX1Poly.Universe.LevelExpr.decEq_refl_lzero
--- structural distinctness `e ≠ lsucc e` (#442 no-Type-in-Type probe support):
+-- structural distinctness `e ≠ lsucc e` (no-Type-in-Type probe support):
 -- size-free structural induction, the predicativity guard at the level algebra
 #assert_no_axioms FX1Poly.Universe.LevelExpr.ne_lsucc_self
 
-/-! ### UniverseFlag Setzer-Rathjen closed enum + canonical-form + DecidableEq (M23 #272) -/
+/-! ### UniverseFlag Setzer-Rathjen closed enum + canonical-form + DecidableEq -/
 
 #assert_no_axioms FX1Poly.Universe.UniverseFlag
 #assert_no_axioms FX1Poly.Universe.UniverseFlag.standard_canonical
@@ -100,7 +88,7 @@ full strict-zero-axiom sweep.
 #assert_no_axioms FX1Poly.Universe.UniverseFlag.ctorCount
 #assert_no_axioms FX1Poly.Universe.UniverseFlag.ctorCount_correct
 
-/-! ### M22 #271 cascade (A2-A10): Phase-A simplify / size / denote / algebraic laws / compare / MaxPlusForm canonical form / predicative decision procedure / smokes / complexity working-set bounds -/
+/-! ### Normalization cascade: Phase-A simplify / size / denote / algebraic laws / compare / MaxPlusForm canonical form / predicative decision procedure / smokes / complexity working-set bounds -/
 
 #assert_no_axioms FX1Poly.Universe.LevelExpr.simplify
 #assert_no_axioms FX1Poly.Universe.LevelExpr.simplify_lmax_idempotent
@@ -409,7 +397,7 @@ full strict-zero-axiom sweep.
 #assert_no_axioms FX1Poly.Universe.LevelExpr.MaxPlusForm.fullCanonicalize_toMaxPlusForm_varOffsets_length_le_size
 #assert_no_axioms FX1Poly.Universe.LevelExpr.decidableOccursIn
 
-/-! ### M22 #271 complexity witness — single-pass comparison-count costs (Step 10, A10) -/
+/-! ### Complexity witness — single-pass comparison-count costs -/
 
 #assert_no_axioms FX1Poly.Universe.LevelExpr.MaxPlusForm.insertByVariableSteps
 #assert_no_axioms FX1Poly.Universe.LevelExpr.MaxPlusForm.insertByVariableSteps_le_length
@@ -418,19 +406,19 @@ full strict-zero-axiom sweep.
 #assert_no_axioms FX1Poly.Universe.LevelExpr.MaxPlusForm.absorbAdjacentSteps
 #assert_no_axioms FX1Poly.Universe.LevelExpr.MaxPlusForm.absorbAdjacentSteps_le_length
 
-/-! ### M22 #271 complexity witness — quadratic sort accumulation (Step 10 cont., A10) -/
+/-! ### Complexity witness — quadratic sort accumulation -/
 
 #assert_no_axioms FX1Poly.Universe.LevelExpr.MaxPlusForm.sortByVariableSteps
 #assert_no_axioms FX1Poly.Universe.LevelExpr.MaxPlusForm.mulSelf_add_self_le_succ_mul_succ
 #assert_no_axioms FX1Poly.Universe.LevelExpr.MaxPlusForm.sortByVariableSteps_le
 
-/-! ### M22 #271 complexity witness — total offset-canonicalizer cost (Step 10 cont., A10) -/
+/-! ### Complexity witness — total offset-canonicalizer cost -/
 
 #assert_no_axioms FX1Poly.Universe.LevelExpr.MaxPlusForm.canonicalizeVarOffsetsSteps
 #assert_no_axioms FX1Poly.Universe.LevelExpr.MaxPlusForm.canonicalizeVarOffsetsSteps_le
 #assert_no_axioms FX1Poly.Universe.LevelExpr.MaxPlusForm.canonicalizeVarOffsetsSteps_toMaxPlusForm_le_size
 
-/-! ### M22 #271 complexity witness — cost-counter non-vacuity corpus (Step 10 cont., A10) -/
+/-! ### Complexity witness — cost-counter non-vacuity corpus -/
 
 #assert_no_axioms FX1Poly.Universe.LevelExpr.MaxPlusForm.insertByVariableSteps_smoke_empty
 #assert_no_axioms FX1Poly.Universe.LevelExpr.MaxPlusForm.insertByVariableSteps_smoke_stopAtHead
@@ -440,13 +428,12 @@ full strict-zero-axiom sweep.
 #assert_no_axioms FX1Poly.Universe.LevelExpr.MaxPlusForm.absorbFromSteps_smoke_fuseThenSkip
 #assert_no_axioms FX1Poly.Universe.LevelExpr.MaxPlusForm.canonicalizeVarOffsetsSteps_smoke_reversedPair
 
-/-! ### M24-Z1 #432 part 1 — LevelExpr prefix serializer + round-trip
+/-! ### LevelExpr prefix serializer + round-trip
 
 The `LevelExpr → List Nat` prefix encoder (accumulator form, no list
 concatenation), its fuel-bounded decoder, and the round-trip left-inverse
-proof at the natural `nodeCount` fuel.  Feeds the FX0 certificate format;
-the propext-clean foundation for the universe-payload serializer arm of
-the Generator-payload refactor. -/
+proof at the natural `nodeCount` fuel.  Feeds the FX0 certificate format
+and the universe-payload serializer. -/
 
 #assert_no_axioms FX1Poly.Universe.LevelExpr.nodeCount
 #assert_no_axioms FX1Poly.Universe.LevelExpr.encodeOnto
@@ -458,12 +445,12 @@ the Generator-payload refactor. -/
 #assert_no_axioms FX1Poly.Universe.LevelExpr.decodeOnto_encodeOnto
 #assert_no_axioms FX1Poly.Universe.LevelExpr.decodeOnto_nodeCount_encodePrefix
 
-/-! ### M24-Z1 #432 part 2 — UniverseFlag prefix serializer + round-trip
+/-! ### UniverseFlag prefix serializer + round-trip
 
 The `UniverseFlag → List Nat` flat tag encoder, its fuel-free decoder, and
 the `cases`-+-`rfl` round-trip.  Companion to the LevelExpr serializer; the
 two together feed the universe-payload (`LevelExpr × UniverseFlag`)
-serializer of the Generator-payload refactor. -/
+serializer. -/
 
 #assert_no_axioms FX1Poly.Universe.UniverseFlag.encodeOnto
 #assert_no_axioms FX1Poly.Universe.UniverseFlag.encodePrefix
@@ -471,12 +458,12 @@ serializer of the Generator-payload refactor. -/
 #assert_no_axioms FX1Poly.Universe.UniverseFlag.decode_encodeOnto
 #assert_no_axioms FX1Poly.Universe.UniverseFlag.decode_encodePrefix
 
-/-! ### M24-Z1 #432 part 3 — universe-payload (`LevelExpr × UniverseFlag`) serializer
+/-! ### Universe-payload (`LevelExpr × UniverseFlag`) serializer
 
-Composes the LevelExpr (part 1) and UniverseFlag (part 2) serializers into
-the universe-payload serializer — the exact function the `gen_universeCode`
-payload-serializer arm will call once the Generator payload type changes
-from `Nat` to `LevelExpr × UniverseFlag`.  Round-trip at LevelExpr fuel. -/
+Composes the LevelExpr and UniverseFlag serializers into the
+universe-payload serializer — the function the `gen_universeCode`
+payload-serializer arm calls for a `LevelExpr × UniverseFlag` payload.
+Round-trip at LevelExpr fuel. -/
 
 #assert_no_axioms FX1Poly.Universe.UniversePayload.encodeOnto
 #assert_no_axioms FX1Poly.Universe.UniversePayload.encodePrefix

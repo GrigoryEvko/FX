@@ -6,13 +6,11 @@ import FX1PolyAudit.DependencyAudit
 under that namespace and applies the same check as `#assert_no_axioms`
 to each auditable constant.  It is a command-time gate, not a text
 generator: it auto-covers every declaration in the namespace, so new
-migration slices get audited without hand-maintaining a per-decl gate
-list.
+declarations get audited without hand-maintaining a per-decl gate list.
 
-Ported from lean-fx-2's `LeanFX2.Tools.AuditGen`, renamed to the
-`FX1PolyAudit` namespace.  Pure command-time meta code — it never ships
-an axiom into a kernel theorem; it INSPECTS the axiom closure of kernel
-theorems and fails the build if any is non-empty.
+Pure command-time meta code — it never introduces an axiom into a kernel
+theorem; it INSPECTS the axiom closure of kernel theorems and fails the
+build if any is non-empty.
 -/
 
 namespace FX1PolyAudit

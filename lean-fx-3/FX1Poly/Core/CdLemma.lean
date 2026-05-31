@@ -2,15 +2,15 @@ import FX1Poly.Core.CriticalPairs
 import FX1Poly.Core.RawSize
 
 /-! # Foundation/PolyCell/Core/CdLemma
-    — M7 confluence join API
+    — confluence join API (`cd_lemma`)
 
-This file starts M7 (`cd_lemma`) by pinning the exact existential join
-shape that the generic proof must produce for two one-step reductions from
-the same source.
+This file pins the exact existential join shape that the generic
+`cd_lemma` proof produces for two one-step reductions from the same
+source.
 
-M6 supplies proof-relevant `LocalDiamond` fillers for the finite substantive
-critical-pair families.  The first M7 bridge is intentionally small: every
-`LocalDiamond` erases to the `StepPairJoin` existential that the eventual
+The critical-pair enumeration supplies proof-relevant `LocalDiamond`
+fillers for the finite substantive critical-pair families.  Every
+`LocalDiamond` erases to the `StepPairJoin` existential that the
 generic `cd_lemma` returns.
 -/
 
@@ -19,7 +19,7 @@ namespace FX1Poly.Core
 /-- The local Church-Rosser join shape for two one-step reductions from the
 same source.
 
-The step witnesses are parameters because the eventual dispatcher case-splits
+The step witnesses are parameters because the dispatcher case-splits
 on them, but the resulting proposition is exactly the shared reduct plus the
 two `StepStar` joining chains. -/
 def StepPairJoin {scope : Nat}
@@ -44,10 +44,10 @@ def StepChildrenPairJoin {scope : Nat} {binderShifts : List Nat}
     StepChildrenStar leftChildren commonChildren ∧
       StepChildrenStar rightChildren commonChildren
 
-/-- The target statement of M7, as a reusable Prop alias.
+/-- The target statement of `cd_lemma`, as a reusable Prop alias.
 
-The theorem named `cd_lemma` will inhabit this statement once the proof
-dispatch over `Step`/`StepChildren` is built. -/
+The theorem named `cd_lemma` inhabits this statement via the proof
+dispatch over `Step`/`StepChildren`. -/
 def CdLemmaStatement : Prop :=
   ∀ {scope : Nat} {sourceTerm leftReduct rightReduct : RawTerm scope},
     (leftStep : Step sourceTerm leftReduct) →
@@ -56,11 +56,11 @@ def CdLemmaStatement : Prop :=
 
 namespace StepPairJoin
 
-/-- Same-reduct closure for the M7 join target.
+/-- Same-reduct closure for the `cd_lemma` join target.
 
 When the two one-step reducts are equal, the local join is the shared reduct
 itself and both joining chains are reflexive.  This is the direct
-`StepPairJoin` version of `LocalDiamond.sameReductOfEq`, used by the eventual
+`StepPairJoin` version of `LocalDiamond.sameReductOfEq`, used by the
 `cd_lemma` dispatcher for same-redex cases. -/
 theorem ofReductsEqual {scope : Nat}
     {sourceTerm leftReduct rightReduct : RawTerm scope}
@@ -79,9 +79,10 @@ theorem sameStep {scope : Nat} {sourceTerm targetTerm : RawTerm scope}
 
 /-- Reverse the two branches of a local join.
 
-This is the `StepPairJoin`-level orientation bridge used when M6 exposes a
-diamond in the opposite root/congruence order from the arbitrary branching that
-`cd_lemma` receives. -/
+This is the `StepPairJoin`-level orientation bridge used when the
+critical-pair enumeration exposes a diamond in the opposite
+root/congruence order from the arbitrary branching that `cd_lemma`
+receives. -/
 theorem swap {scope : Nat}
     {sourceTerm leftReduct rightReduct : RawTerm scope}
     {leftStep : Step sourceTerm leftReduct}
@@ -220,7 +221,7 @@ theorem swap {scope : Nat} {binderShifts : List Nat}
 /-- Resolve child-spine branchings structurally, assuming a term-level
 one-step resolver for head/head conflicts.
 
-This is the child half of the eventual mutual M7 resolver.  The
+This is the child half of the mutual resolver.  The
 head/head case delegates to the term-level resolver; head/tail and
 tail/head are independent-position diamonds; tail/tail recurses on the
 tail spine. -/
@@ -258,7 +259,7 @@ decreasing_by
 /-- Resolve child-spine branchings using only term-level recursive calls whose
 source term is below a supplied parent size.
 
-This is the well-founded variant needed by the final M7 resolver.  The
+This is the well-founded variant needed by the resolver.  The
 head/head case proves the head source is smaller than the whole child spine,
 then composes that fact with the caller-provided child-spine bound.  The
 tail/tail case recurses on the smaller tail spine.
@@ -347,9 +348,9 @@ namespace StepPairJoin
 /-- Resolve a `Step.cong`/`Step.cong` branching from the reusable
 child-spine resolver.
 
-This is the term-level congruence/congruence arm of the future M7
-resolver, parameterized by the still-future term-level resolver used by
-the head/head child-spine case. -/
+This is the term-level congruence/congruence arm of the resolver,
+parameterized by the term-level resolver used by the head/head
+child-spine case. -/
 theorem ofCongCongStepPairResolver
     (resolveStepPair :
       ∀ {scope : Nat} {sourceTerm leftReduct rightReduct : RawTerm scope},
@@ -408,7 +409,7 @@ namespace LocalStepBranching
 /-- Package the arbitrary one-step pair received by `cd_lemma` as a concrete
 local branching.
 
-The M7 dispatcher works on `LocalStepBranching`; this constructor is the
+The `cd_lemma` dispatcher works on `LocalStepBranching`; this constructor is the
 lossless ingress from the theorem's raw `Step` arguments into that packaged
 shape. -/
 def fromSteps {scope : Nat}
@@ -430,14 +431,14 @@ theorem fromSteps_swap {scope : Nat}
     (fromSteps leftStep rightStep).swap =
       fromSteps rightStep leftStep := rfl
 
-/-- The `StepPairJoin` proposition packaged over an M6 local branching. -/
+/-- The `StepPairJoin` proposition packaged over a local branching. -/
 def HasJoin {scope : Nat}
     (branching : LocalStepBranching (scope := scope)) : Prop :=
   StepPairJoin branching.leftStep branching.rightStep
 
 /-- Two local branchings whose source terms cannot be definitionally the same.
 
-This is the M7-facing form of the M6 mutually-exclusive root/root facts:
+This is the join-facing form of the mutually-exclusive root/root facts:
 same-generator root rules such as `boolTrue` versus `boolFalse` do not produce
 a join obligation, because the shared-source branching itself is impossible. -/
 def SourcesDisjoint {scope : Nat}
@@ -490,7 +491,7 @@ theorem hasJoin_swap {scope : Nat}
 /-- Packaged `Step.cong`/`Step.cong` resolver arm over arbitrary theorem
 inputs.
 
-This keeps the future `resolveBranching` proof from duplicating the
+This keeps the `resolveBranching` proof from duplicating the
 child-spine recursion at the `LocalStepBranching.fromSteps` boundary. -/
 theorem congCong_hasJoin_ofStepPairResolver
     (resolveStepPair :
@@ -511,8 +512,8 @@ theorem congCong_hasJoin_ofStepPairResolver
     (StepPairJoin.ofCongCongStepPairResolver
       resolveStepPair leftChildrenStep rightChildrenStep)
 
-/-- Packaged `Step.cong`/`Step.cong` resolver arm for the final
-well-founded M7 resolver.
+/-- Packaged `Step.cong`/`Step.cong` resolver arm for the
+well-founded resolver.
 
 Unlike `congCong_hasJoin_ofStepPairResolver`, this variant only asks for a
 resolver on source terms smaller than the parent congruence source. -/
@@ -542,11 +543,11 @@ end LocalStepBranching
 
 namespace StepPairJoin
 
-/-- Consume an M6 diamond for the local branching induced by arbitrary
+/-- Consume a local diamond for the local branching induced by arbitrary
 `cd_lemma` inputs.
 
-This is the direct bridge from the eventual theorem's raw `Step` arguments to
-the proof-relevant M6 filler templates. -/
+This is the direct bridge from the theorem's raw `Step` arguments to
+the proof-relevant filler templates. -/
 theorem ofLocalDiamondFromSteps {scope : Nat}
     {sourceTerm leftReduct rightReduct : RawTerm scope}
     {leftStep : Step sourceTerm leftReduct}
@@ -556,7 +557,7 @@ theorem ofLocalDiamondFromSteps {scope : Nat}
     StepPairJoin leftStep rightStep :=
   ⟨diamond.commonReduct, diamond.leftChain, diamond.rightChain⟩
 
-/-- Consume an M6 diamond in the opposite orientation from arbitrary
+/-- Consume a local diamond in the opposite orientation from arbitrary
 `cd_lemma` inputs. -/
 theorem ofLocalDiamondFromSteps_swap {scope : Nat}
     {sourceTerm leftReduct rightReduct : RawTerm scope}
@@ -572,7 +573,7 @@ end StepPairJoin
 
 namespace LocalDiamond
 
-/-- Every M6 local diamond supplies the existential join shape M7 needs. -/
+/-- Every local diamond supplies the existential join shape `cd_lemma` needs. -/
 theorem hasJoin {scope : Nat}
     {branching : LocalStepBranching (scope := scope)}
     (diamond : LocalDiamond branching) :
@@ -720,7 +721,7 @@ theorem fromSteps_betaLeft_hasJoin {scope : Nat}
 /-- Resolve every local branching whose right step is beta.
 
 This is the orientation bridge for the beta-left resolver arm, preserving the
-future resolver spine's ability to consume either arbitrary step order. -/
+resolver spine's ability to consume either arbitrary step order. -/
 theorem fromSteps_betaRight_hasJoin {scope : Nat}
     {body : RawTerm (scope + 1)}
     {argument leftReduct : RawTerm scope}
@@ -2727,7 +2728,7 @@ theorem fromSteps_iotaIdStrictRecReflRight_hasJoin {scope : Nat}
         (baseCase := baseCase) (rawWitness := rawWitness))).HasJoin :=
   hasJoin_swap (fromSteps_iotaIdStrictRecReflLeft_hasJoin leftStep)
 
-/-- M7 contradiction arm for the mutually-exclusive bool true/false root pair. -/
+/-- Contradiction arm for the mutually-exclusive bool true/false root pair. -/
 theorem iotaBoolTrue_iotaBoolFalse_hasSourcesDisjoint {scope : Nat}
     (thenTrue elseTrue thenFalse elseFalse : RawTerm scope) :
     SourcesDisjoint
@@ -2736,7 +2737,7 @@ theorem iotaBoolTrue_iotaBoolFalse_hasSourcesDisjoint {scope : Nat}
   iotaBoolTrue_iotaBoolFalse_sourcesDisjoint
     thenTrue elseTrue thenFalse elseFalse
 
-/-- Reverse M7 contradiction arm for the mutually-exclusive bool false/true root pair. -/
+/-- Reverse contradiction arm for the mutually-exclusive bool false/true root pair. -/
 theorem iotaBoolFalse_iotaBoolTrue_hasSourcesDisjoint {scope : Nat}
     (thenFalse elseFalse thenTrue elseTrue : RawTerm scope) :
     SourcesDisjoint
@@ -2745,7 +2746,7 @@ theorem iotaBoolFalse_iotaBoolTrue_hasSourcesDisjoint {scope : Nat}
   iotaBoolFalse_iotaBoolTrue_sourcesDisjoint
     thenFalse elseFalse thenTrue elseTrue
 
-/-- M7 contradiction arm for the mutually-exclusive nat-elim zero/succ root pair. -/
+/-- Contradiction arm for the mutually-exclusive nat-elim zero/succ root pair. -/
 theorem iotaNatElimZero_iotaNatElimSucc_hasSourcesDisjoint {scope : Nat}
     (zeroBranch succBranch predecessor
       zeroBranchSucc succBranchSucc : RawTerm scope) :
@@ -2756,7 +2757,7 @@ theorem iotaNatElimZero_iotaNatElimSucc_hasSourcesDisjoint {scope : Nat}
   iotaNatElimZero_iotaNatElimSucc_sourcesDisjoint
     zeroBranch succBranch predecessor zeroBranchSucc succBranchSucc
 
-/-- Reverse M7 contradiction arm for the mutually-exclusive nat-elim succ/zero root pair. -/
+/-- Reverse contradiction arm for the mutually-exclusive nat-elim succ/zero root pair. -/
 theorem iotaNatElimSucc_iotaNatElimZero_hasSourcesDisjoint {scope : Nat}
     (predecessor zeroBranchSucc succBranchSucc
       zeroBranch succBranch : RawTerm scope) :
@@ -2767,7 +2768,7 @@ theorem iotaNatElimSucc_iotaNatElimZero_hasSourcesDisjoint {scope : Nat}
   iotaNatElimSucc_iotaNatElimZero_sourcesDisjoint
     predecessor zeroBranchSucc succBranchSucc zeroBranch succBranch
 
-/-- M7 contradiction arm for the mutually-exclusive nat-rec zero/succ root pair. -/
+/-- Contradiction arm for the mutually-exclusive nat-rec zero/succ root pair. -/
 theorem iotaNatRecZero_iotaNatRecSucc_hasSourcesDisjoint {scope : Nat}
     (zeroBranch succBranch predecessor
       zeroBranchSucc succBranchSucc : RawTerm scope) :
@@ -2778,7 +2779,7 @@ theorem iotaNatRecZero_iotaNatRecSucc_hasSourcesDisjoint {scope : Nat}
   iotaNatRecZero_iotaNatRecSucc_sourcesDisjoint
     zeroBranch succBranch predecessor zeroBranchSucc succBranchSucc
 
-/-- Reverse M7 contradiction arm for the mutually-exclusive nat-rec succ/zero root pair. -/
+/-- Reverse contradiction arm for the mutually-exclusive nat-rec succ/zero root pair. -/
 theorem iotaNatRecSucc_iotaNatRecZero_hasSourcesDisjoint {scope : Nat}
     (predecessor zeroBranchSucc succBranchSucc
       zeroBranch succBranch : RawTerm scope) :
@@ -2789,7 +2790,7 @@ theorem iotaNatRecSucc_iotaNatRecZero_hasSourcesDisjoint {scope : Nat}
   iotaNatRecSucc_iotaNatRecZero_sourcesDisjoint
     predecessor zeroBranchSucc succBranchSucc zeroBranch succBranch
 
-/-- M7 contradiction arm for the mutually-exclusive list-elim nil/cons root pair. -/
+/-- Contradiction arm for the mutually-exclusive list-elim nil/cons root pair. -/
 theorem iotaListElimNil_iotaListElimCons_hasSourcesDisjoint {scope : Nat}
     (nilBranch consBranch headValue tailValue
       nilBranchCons consBranchCons : RawTerm scope) :
@@ -2800,7 +2801,7 @@ theorem iotaListElimNil_iotaListElimCons_hasSourcesDisjoint {scope : Nat}
   iotaListElimNil_iotaListElimCons_sourcesDisjoint
     nilBranch consBranch headValue tailValue nilBranchCons consBranchCons
 
-/-- Reverse M7 contradiction arm for the mutually-exclusive list-elim cons/nil root pair. -/
+/-- Reverse contradiction arm for the mutually-exclusive list-elim cons/nil root pair. -/
 theorem iotaListElimCons_iotaListElimNil_hasSourcesDisjoint {scope : Nat}
     (headValue tailValue nilBranchCons consBranchCons
       nilBranch consBranch : RawTerm scope) :
@@ -2811,7 +2812,7 @@ theorem iotaListElimCons_iotaListElimNil_hasSourcesDisjoint {scope : Nat}
   iotaListElimCons_iotaListElimNil_sourcesDisjoint
     headValue tailValue nilBranchCons consBranchCons nilBranch consBranch
 
-/-- M7 contradiction arm for the mutually-exclusive option-match none/some root pair. -/
+/-- Contradiction arm for the mutually-exclusive option-match none/some root pair. -/
 theorem iotaOptionMatchNone_iotaOptionMatchSome_hasSourcesDisjoint
     {scope : Nat}
     (noneBranch someBranch value
@@ -2823,7 +2824,7 @@ theorem iotaOptionMatchNone_iotaOptionMatchSome_hasSourcesDisjoint
   iotaOptionMatchNone_iotaOptionMatchSome_sourcesDisjoint
     noneBranch someBranch value noneBranchSome someBranchSome
 
-/-- Reverse M7 contradiction arm for the mutually-exclusive option-match some/none root pair. -/
+/-- Reverse contradiction arm for the mutually-exclusive option-match some/none root pair. -/
 theorem iotaOptionMatchSome_iotaOptionMatchNone_hasSourcesDisjoint
     {scope : Nat}
     (value noneBranchSome someBranchSome
@@ -2835,7 +2836,7 @@ theorem iotaOptionMatchSome_iotaOptionMatchNone_hasSourcesDisjoint
   iotaOptionMatchSome_iotaOptionMatchNone_sourcesDisjoint
     value noneBranchSome someBranchSome noneBranch someBranch
 
-/-- M7 contradiction arm for the mutually-exclusive either-match inl/inr root pair. -/
+/-- Contradiction arm for the mutually-exclusive either-match inl/inr root pair. -/
 theorem iotaEitherMatchInl_iotaEitherMatchInr_hasSourcesDisjoint
     {scope : Nat}
     (leftValue leftBranch rightBranch rightValue
@@ -2849,7 +2850,7 @@ theorem iotaEitherMatchInl_iotaEitherMatchInr_hasSourcesDisjoint
     leftValue leftBranch rightBranch rightValue
     leftBranchRight rightBranchRight
 
-/-- Reverse M7 contradiction arm for the mutually-exclusive either-match inr/inl root pair. -/
+/-- Reverse contradiction arm for the mutually-exclusive either-match inr/inl root pair. -/
 theorem iotaEitherMatchInr_iotaEitherMatchInl_hasSourcesDisjoint
     {scope : Nat}
     (rightValue leftBranchRight rightBranchRight leftValue
@@ -2993,7 +2994,7 @@ theorem fromSteps_resolveBranching_hasJoin
     (Nat.lt_succ_self sourceTerm.size) leftStep rightStep
 
 /-- Resolve every local branching, including arbitrary branchings not produced by
-the finite M6 helper constructors. -/
+the finite critical-pair helper constructors. -/
 theorem resolveBranching_hasJoin {scope : Nat}
     (branching : LocalStepBranching (scope := scope)) :
     branching.HasJoin :=
@@ -3005,12 +3006,11 @@ end LocalStepBranching
 
 namespace CdLemmaStatement
 
-/-- Reduce the full M7 target to a resolver over packaged local branchings.
+/-- Reduce the full `cd_lemma` target to a resolver over packaged local branchings.
 
-The future `cd_lemma` proof should supply `resolveBranching` by case analysis
-over the M6 critical-pair dispatcher plus structural congruence recursion; this
-theorem fixes the final theorem shape without claiming that dispatcher exists
-yet. -/
+`resolveBranching` is supplied by case analysis over the critical-pair
+dispatcher plus structural congruence recursion; this theorem fixes the
+theorem shape and consumes such a resolver. -/
 theorem ofLocalBranchingResolver
     (resolveBranching :
       ∀ {scope : Nat} (branching : LocalStepBranching (scope := scope)),
@@ -3029,8 +3029,8 @@ theorem ofLocalBranchingResolver
 
 end CdLemmaStatement
 
-/-- The M7 local Church-Rosser theorem for one-step reductions on the generic
-PolyCell raw substrate. -/
+/-- The local Church-Rosser theorem (`cd_lemma`) for one-step reductions on the
+generic PolyCell raw substrate. -/
 theorem cd_lemma : CdLemmaStatement :=
   CdLemmaStatement.ofLocalBranchingResolver
     LocalStepBranching.resolveBranching_hasJoin

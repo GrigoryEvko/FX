@@ -5,7 +5,7 @@ import FX1Poly.Core.StepInversion
 /-! # Foundation/PolyCell/Core/RawTermNF
 
 Raw beta/iota normal-form and closedness predicates for the PolyCell
-v2 substrate.
+substrate.
 
 This file intentionally keeps three notions separate:
 

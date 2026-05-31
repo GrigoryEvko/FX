@@ -8,11 +8,11 @@ chain out of it reaches only itself.  Consequently, when both endpoints of a
 `Conv` (= `StepStar.Join`) have no outgoing `Step`, the shared reduct of the
 join must equal each endpoint, so `Conv` collapses to plain equality.
 
-This is the seed of **decidable `Conv` for the normal fragment** (M18 / the
-P11 ★ MILESTONE-A line): for terms that are already normal, `Conv` is exactly
-`Eq`, which the propext-free `DecidableEq (RawTerm scope)` decides — no
-normalizer required.  The general decider (M12 eval + NF comparison) is needed
-only for *non-normal* inputs; this file discharges the normal case directly.
+This is the seed of **decidable `Conv` for the normal fragment**: for
+terms that are already normal, `Conv` is exactly `Eq`, which the
+propext-free `DecidableEq (RawTerm scope)` decides — no normalizer
+required.  The general decider (eval + NF comparison) is needed only
+for *non-normal* inputs; this file discharges the normal case directly.
 
 The lemmas take the "no outgoing step" hypothesis as data
 (`∀ reduct, Step source reduct → False`, the shape `noStep_var` /

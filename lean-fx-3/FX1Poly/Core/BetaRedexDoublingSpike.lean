@@ -5,9 +5,9 @@ import FX1Poly.Core.BetaRedexEndToEnd
 /-! # Foundation/PolyCell/Core/BetaRedexDoublingSpike
    — end-to-end SR-beta for the doubling-combinator body
 
-M2 (2026-05-27).  First non-trivial E2E SR-beta theorem on a
-**compound** body, demonstrating the COMPOSITION TEMPLATE that
-the full structural-induction mutual block will instantiate.
+End-to-end SR-beta theorem on a **compound** body, demonstrating
+the COMPOSITION TEMPLATE that the full structural-induction mutual
+block instantiates.
 
 ## What this ships
 
@@ -21,19 +21,16 @@ One theorem:
   extract `argumentCell` once from the source spine and (b) apply
   it TWICE on the target.
 
-## Why this spike matters
+## Why this matters
 
-The 17 already-shipped SR arms cover the 16 iotas + the
-identity-lambda beta (`beta_var_zero_e2e` in
-`BetaRedexEndToEnd.lean`).  SR arm 17 ("beta with compound
-body") needs the structural-induction mutual block to handle
-arbitrary compound bodies.  That mutual block is a substantial
-cascade (~300-500 LoC, four mutual lemmas).
+Beta with a compound body needs the structural-induction mutual
+block to handle arbitrary compound bodies (a substantial cascade,
+four mutual lemmas).
 
-This spike skips the mutual block by HARDCODING ONE compound
-body shape (the doubling combinator), proving that for THIS
-specific body the composition pattern works end-to-end at zero
-axioms.  Concretely it demonstrates:
+This theorem covers ONE compound body shape (the doubling
+combinator) directly, proving that for THIS specific body the
+composition pattern works end-to-end at zero axioms.  Concretely it
+demonstrates:
 
   1. **Source destructure**: how to extract `argCell` at sort
      `.term` from a cert on an outer `gen_app`.
@@ -44,15 +41,14 @@ axioms.  Concretely it demonstrates:
   3. **Target rebuild**: how to apply `HasCertifiedCellDim0.app`
      with the SAME `argumentCell` for BOTH positions.
 
-The mutual block will generalize step (2) to "any compound
-body in scope+1 substituted by any argument in scope produces a
-cert for the structurally-substituted body" — but step (1) and
-step (3) are identical.  This spike pins them today.
+The mutual block generalizes step (2) to "any compound body in
+scope+1 substituted by any argument in scope produces a cert for
+the structurally-substituted body"; step (1) and step (3) are
+identical.
 
 ## Architectural role: composition template
 
-When the mutual block lands, every compound body shape's
-beta-redex E2E will follow this template:
+Every compound body shape's beta-redex E2E follows this template:
 
 ```
 1. cases sourceCert ⟶ obtain outerCell at some sort
@@ -63,10 +59,9 @@ beta-redex E2E will follow this template:
 5. apply the compound HCC intro at the body's shape to rebuild
 ```
 
-This spike instantiates the template at depth 1 (single
-binder, body uses var 0 twice).  Depth-N templates follow by
-nesting the destructure and using the mutual block's body-side
-recursive call.
+This instantiates the template at depth 1 (single binder, body
+uses var 0 twice).  Depth-N templates follow by nesting the
+destructure and using the mutual block's body-side recursive call.
 
 ## Choice of doubling combinator
 
@@ -120,13 +115,10 @@ beta reductions:
      because both `var 0` occurrences substitute to the SAME
      argument.
 
-Forward-compat: when the structural-induction mutual block
-lands (the substantial cascade, M5 in the 100-move plan),
-this theorem becomes a corollary of
-`HasCertifiedCellDim0.preservedBySubst0` (specialized to
-body = `app (var 0) (var 0)`).  Until then, this concrete
-instance is shipped directly to verify the COMPOSITION
-TEMPLATE at zero axioms. -/
+This concrete instance is a specialization (body =
+`app (var 0) (var 0)`) of the structural-induction
+`HasCertifiedCellDim0.preservedBySubst0`, verifying the
+COMPOSITION TEMPLATE at zero axioms. -/
 theorem HasCertifiedCellDim0.beta_app_self_e2e
     {profile : PolyProfile} {scope : Nat}
     (argumentTerm : RawTerm scope)

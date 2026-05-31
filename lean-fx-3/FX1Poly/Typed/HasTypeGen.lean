@@ -2,22 +2,18 @@ import FX1Poly.Typed.HasType
 
 /-! # FX1Poly/Typed/HasTypeGen — the cascade-free dependent-binary type-formation shape-arm
 
-DESIGN SCAFFOLD for task #483 (`TypingRule` generator-table metadata —
-cascade-death for the `HasType` gen arm).  This file proposes the
-mutual `HasTypeGen` + `DependentBinaryFormationChildren` inductive that
-replaces a per-generator cascade with per-SHAPE arms, each generic over
-the `Generator` via a metadata predicate (NOT a per-generator arm).
+The mutual `HasTypeGen` + `DependentBinaryFormationChildren` inductive: a
+typing judgment whose type-formation rules are per-SHAPE arms, each
+generic over the `Generator` via a metadata predicate (NOT a
+per-generator arm).
 
-It ships FOUR arms: `var`, `conv`, the nullary `universeFormation`
-shape-arm, and ONE per-shape `dependentBinaryFormation` arm — the
-dependent-binary type-formation shape, covering `gen_piTyCode` /
-`gen_sigmaTyCode` (any future generator the `isDependentBinaryFormer`
-whitelist admits reuses it with zero new code).  `universeFormation` +
-`dependentBinaryFormation` are the FIRST TWO of the ~6 shape-arms
-Decision 4 calls for; the genuinely-shape-generic `TypingRule`-driven `gen` arm
-(one arm consuming `rule.outputType` for ALL shapes) is the eventual
-target — this file does NOT yet reach it (one arm per SHAPE, not one
-arm total).
+Four arms: `var`, `conv`, the nullary `universeFormation` shape-arm, and
+ONE per-shape `dependentBinaryFormation` arm — the dependent-binary
+type-formation shape, covering `gen_piTyCode` / `gen_sigmaTyCode` (any
+generator the `isDependentBinaryFormer` whitelist admits reuses it with
+zero new code).  These are two of the ~6 shape-arms Decision 4 calls for
+(one arm per SHAPE, not a per-generator cascade and not one fully-generic
+`TypingRule`-driven arm).
 
 ## Why the FIXED `[0, 1]` dependent-binary spine (not a fully-variadic spine)
 
@@ -98,16 +94,15 @@ open FX1Poly.Core FX1Poly.Universe
 
 /-- Metadata predicate selecting the dependent-binary type formers whose
 typing rule is EXACTLY dependent-binary universe formation: `gen_piTyCode`
-and `gen_sigmaTyCode` (the faithful migration target — `HasType` ships
-exactly `piFormation` + `sigmaFormation`).  An EXPLICIT whitelist via the
-shipped `DecidableEq Generator`, NOT a `binderShifts == [0, 1]` structural
-proxy: `gen_polyFunctor` ALSO carries `binderShifts = [0, 1]`
-(`GeneratorCore.lean:740`) yet is a polynomial functor — NOT a universe
-inhabitant — so the proxy would derive a false typing and violate 0-FP
-soundness (P1).  Adding a genuine future `[0, 1]` former is one `||`
-disjunct here — one metadata row, never a new `HasTypeGen` arm (P13
-cascade-freedom).  `decide`-over-`DecidableEq` is propext-free (no
-match-compiler wildcard over the 194-constructor enum). -/
+and `gen_sigmaTyCode` (matching `HasType`'s `piFormation` + `sigmaFormation`).
+An EXPLICIT whitelist via `DecidableEq Generator`, NOT a `binderShifts ==
+[0, 1]` structural proxy: `gen_polyFunctor` ALSO carries `binderShifts =
+[0, 1]` (`GeneratorCore.lean:740`) yet is a polynomial functor — NOT a
+universe inhabitant — so the proxy would derive a false typing and violate
+0-FP soundness (P1).  Adding a further `[0, 1]` former is one `||` disjunct
+here — one metadata row, never a new `HasTypeGen` arm (P13 cascade-freedom).
+`decide`-over-`DecidableEq` is propext-free (no match-compiler wildcard over
+the 194-constructor enum). -/
 def isDependentBinaryFormer (generator : Generator) : Bool :=
   decide (generator = .gen_piTyCode) || decide (generator = .gen_sigmaTyCode)
 
@@ -207,10 +202,10 @@ end
 Pi-formation.  Given the domain code typed at `Type@(domainLevel, flag)`
 and the codomain code typed at `Type@(codomainLevel, flag)` UNDER THE
 DOMAIN BINDER, the `piTyCodeCell` is classified by `Type@(lmax
-domainLevel codomainLevel, flag)` — exactly the shipped
-`HasType.piFormation` conclusion, now derived through the per-shape
-Generator-metadata arm rather than a bespoke Pi arm.  Demonstrates the
-shape-arm covers `gen_piTyCode` with no per-generator code. -/
+domainLevel codomainLevel, flag)` — the same conclusion as
+`HasType.piFormation`, derived through the per-shape Generator-metadata
+arm.  Demonstrates the shape-arm covers `gen_piTyCode` with no
+per-generator code. -/
 theorem hasTypeGen_piFormation_viaShapeArm
     {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)

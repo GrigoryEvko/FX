@@ -2,9 +2,9 @@ import FX1Poly.Core.PolyCell
 
 /-! # Foundation/PolyCell/Core/PolyCellErasure — raw-erasure rfl lemmas
 
-This file ships the value-level raw-erasure extractor and four
-per-constructor `raw_eq` rfl lemmas for `PolyCell`.  Together they
-witness the architectural property quoted in `polycell.md` §4:
+The value-level raw-erasure extractor and four per-constructor
+`raw_eq` rfl lemmas for `PolyCell`.  Together they witness the
+architectural property quoted in `polycell.md` §4:
 
 > "erasure back to raw is definitional"
 
@@ -42,10 +42,6 @@ type unifier already determined from the cell's type signature.
 The `_cell` parameter is used by the typechecker (to fix the
 implicit) but not in the body — hence the underscore prefix.
 
-This mirrors v1's `PolyCell.raw` (`Core/Certified.lean:212`) with
-the v2 vocabulary (`RawCell scope` instead of
-`PolyTerm profile cellDimension`).
-
 ## The four raw_eq lemmas
 
 One per `PolyCell` constructor:
@@ -74,8 +70,7 @@ namespace PolyCell
 /-- Extract the raw erasure index from a certified cell.
 
 The body is the implicit `rawCell` type index, returned as a
-value-level term.  Mirrors v1's `PolyCell.raw` with `RawCell scope`
-in place of `PolyTerm profile cellDimension`.
+value-level term.
 
 The `_cell` parameter is consumed by Lean's type unifier to fix the
 implicit `rawCell` argument; the body itself doesn't reference it
@@ -112,7 +107,7 @@ theorem gen_raw_eq {profile : PolyProfile} {scope : Nat}
 Closes by `rfl` since the ctor's output type pins
 `rawCell := .generatingCell rule.ruleId source target`.
 
-This is the SPIKE-1 dim-transport ctor — the `HasEqualDim` parameter
+This is the dim-transport ctor — the `HasEqualDim` parameter
 reconciles source and target dims via `Nat.decEq`, which is propext-
 free, so this lemma also stays propext-free. -/
 theorem generatingCell_raw_eq {profile : PolyProfile} {scope : Nat}

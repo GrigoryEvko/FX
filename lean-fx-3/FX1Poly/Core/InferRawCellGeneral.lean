@@ -3,22 +3,19 @@ import FX1Poly.Core.RawCellCode
 
 /-! # Foundation/PolyCell/Core/InferRawCellGeneral — existential wrapper
 
-This file ships `inferRawCellGeneral?`: the executable existential
-wrapper around `certifyRawCellExact?` (#162).  Returns a
-`CertifiedRawCellResult` whose `rawCell` is a FIELD (not a type
-parameter), letting callers consume the certification result without
-threading the input raw through the return type.
-
-Direct v2 counterpart to v1's `inferRawCellGeneral?`
-(`Core/Check.lean:228+`).
+`inferRawCellGeneral?`: the executable existential wrapper around
+`certifyRawCellExact?`.  Returns a `CertifiedRawCellResult` whose
+`rawCell` is a FIELD (not a type parameter), letting callers consume
+the certification result without threading the input raw through the
+return type.
 
 ## Why two packages — raw-INDEXED vs EXISTENTIAL
 
 The certifier ecosystem has two complementary package types:
 
-* `CertifiedRawCell profile scope rawCell` (raw-INDEXED, #160):
+* `CertifiedRawCell profile scope rawCell` (raw-INDEXED):
   rawCell is a TYPE PARAMETER.  The certificate is pinned to the
-  exact input.  Used by `certifyRawCellExact?` (#162) — the
+  exact input.  Used by `certifyRawCellExact?` — the
   certifier never silently changes the rawCell it certifies.
 
 * `CertifiedRawCellResult profile scope` (EXISTENTIAL, this file):
@@ -42,11 +39,11 @@ differing from the input under the existential wrapper.
 ## The hasSameNatList_self prerequisite
 
 Constructing the `hasInputCode` field requires
-`hasSameNatList rawCell.toCode rawCell.toCode = true`.  This file
-ships `hasSameNatList_self` as a self-contained lemma proven by
-list induction + Nat.beq induction.  Zero-axiom verification by
-direct structural pattern matching; no `simp`, no `omega`, no
-classical reasoning.
+`hasSameNatList rawCell.toCode rawCell.toCode = true`.  This is
+`hasSameNatList_self`, a self-contained lemma proven by list
+induction + Nat.beq induction.  Zero-axiom verification by direct
+structural pattern matching; no `simp`, no `omega`, no classical
+reasoning.
 
 ## Zero-axiom verification
 
@@ -90,9 +87,7 @@ theorem hasSameNatList_self (codes : List Nat) :
 
 /-- Existential certified-result package.
 
-The v2 counterpart to v1's `CertifiedRawCellResult`
-(`Core/Check.lean:191`).  Mirrors the spec at `polycell.md` §4 line
-4034.
+Mirrors the spec at `polycell.md` §4 line 4034.
 
 FIELDS (7 total):
 * `cellDimension : Nat` — the inferred dimension (always equals

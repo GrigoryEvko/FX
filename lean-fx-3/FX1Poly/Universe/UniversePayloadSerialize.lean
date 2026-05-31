@@ -4,12 +4,9 @@ import FX1Poly.Universe.UniverseFlagSerialize
 /-! # Foundation/PolyCell/Universe/UniversePayloadSerialize
    — prefix-code serializer for the `LevelExpr × UniverseFlag` payload
 
-#432 (M24-Z1) deliverable (d), part 3: composes the LevelExpr (part 1) and
-UniverseFlag (part 2) serializers into the universe-payload serializer —
-the function `gen_universeCode`'s payload-serializer arm will call once the
-Generator payload type changes from `Nat` to `LevelExpr × UniverseFlag`.
-Built standalone and round-trip-proven here so the breaking-change commit
-only has to wire it in.
+Composes the `LevelExprSerialize` and `UniverseFlagSerialize` serializers
+into the serializer for the `LevelExpr × UniverseFlag` universe payload,
+with a round-trip proof.
 
 ## Format
 

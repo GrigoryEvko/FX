@@ -8,14 +8,14 @@ it is a variable, or an elimination form whose *principal* (scrutinee) child is
 itself neutral — the eliminator cannot ι-fire because its scrutinee never
 reaches a constructor.
 
-This predicate is the missing foundation for the Tait reducibility candidate
-machinery (roadmap M9-S1, polycell.md §11.8.5 P-sequence).  A reducibility
-candidate is a set of strongly-normalizing terms closed under the three CR
-conditions, and CR3 — "a neutral term all of whose one-step reducts are
-reducible is itself reducible" — is stated over *neutrals*.  Until now
-`StrongNormalizationNeutral.lean` could only carry neutrality as an abstract
-`isNeutralHead : RawTerm scope → Prop` parameter; this file ships the concrete
-inductive those generic lemmas can finally be instantiated at.
+This predicate is the foundation for the Tait reducibility candidate
+machinery (polycell.md §11.8.5 P-sequence).  A reducibility candidate is a
+set of strongly-normalizing terms closed under the three CR conditions, and
+CR3 — "a neutral term all of whose one-step reducts are reducible is itself
+reducible" — is stated over *neutrals*.  `StrongNormalizationNeutral.lean`
+carries neutrality as an abstract `isNeutralHead : RawTerm scope → Prop`
+parameter; this file provides the concrete inductive that those generic
+lemmas are instantiated at.
 
 ## Grounding: the arms are the elimination forms
 
@@ -40,10 +40,10 @@ no binder-shift arithmetic.
 
 Only the eliminators that *have* an ι-rule in the current substrate form
 neutrals.  The cubical (`transp`/`hcomp`/`unglue`), modal (`modElim`), clock
-(`force`), and parametric (`paramApp`) eliminators have no ι-rule yet
-(milestones M61+), hence form no neutrals yet; this inductive gains an arm per
-eliminator as each lands.  The definition is therefore complete *for the
-current substrate*, not over-claimed against future generators.
+(`force`), and parametric (`paramApp`) eliminators have no ι-rule yet, hence
+form no neutrals yet; this inductive gains an arm per eliminator as each
+lands.  The definition is therefore complete *for the current substrate*,
+not over-claimed against future generators.
 
 ## Zero-axiom verification
 

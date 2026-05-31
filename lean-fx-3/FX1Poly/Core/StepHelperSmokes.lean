@@ -4,25 +4,23 @@ import FX1Poly.Core.SpineConsStep
 /-! # Foundation/PolyCell/Core/StepHelperSmokes
    — composition smokes for the cell-step + spine cons-step + HCC wrappers
 
-V2-L3.1 phase D step 36 (2026-05-27).  Composition validation for the
-six iterations of step-helper infrastructure shipped today.  Each
-smoke demonstrates the helpers actually compose on concrete inputs,
-acting as regression gates AND providing template proofs for arm-by-
-arm SR-cong work when the mutual block lands.
+Composition validation for the step-helper infrastructure.  Each smoke
+demonstrates the helpers compose on concrete inputs, acting as a
+regression gate and a template for arm-by-arm SR-cong work.
 
-## What this ships
+## What this provides
 
 Seven concrete fixtures exercising the cell-step renamers on the
 seven nullary leaves (one var arm + six closed leaves), built via
-the new infrastructure rather than via the existing
-`_preservedByRename` per-generator theorems.
+the step-helper infrastructure rather than via the per-generator
+`_preservedByRename` theorems.
 
 The smokes serve as:
 
   1. **Regression gates** — if the step helpers' types drift, these
      smokes break.
-  2. **Template proofs** — show callers (and future warriors) how
-     to invoke the step helpers concretely.
+  2. **Template proofs** — show callers how to invoke the step
+     helpers concretely.
   3. **Composition validation** — empirically verify that the
      cell-step + spine cons-step + HCC wrappers' signatures align
      with usage.
@@ -32,11 +30,10 @@ The smokes serve as:
 The seven nullary smokes are CONCRETE (no children → no spine
 recursion needed → no mutual block needed).  Compound generators
 (app, pair, lam, etc.) require either:
-  * the eventual mutual block's spine recursion, OR
+  * the mutual block's spine recursion, OR
   * manual spine construction via consStep + cell-step helpers.
 
-The latter is shippable today but is per-arity; we defer it to
-the next iteration when we batch the SR-cong arm-by-arm work.
+The latter is per-arity and is covered by the SR-cong arm-by-arm work.
 
 ## Zero-axiom verification
 

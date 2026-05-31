@@ -6,33 +6,31 @@ import FX1Poly.Core.StepStarConfluence
 /-! # FX1Poly/Typed/HasTypeStronglyNormalizing
     — the fundamental theorem (typed SN) for the current typing fragment
 
-`HasType.isStronglyNormalizing` is the M10 fundamental theorem — *every
+`HasType.isStronglyNormalizing` is the fundamental theorem — *every
 well-typed term is strongly normalizing* — for the current `HasType` fragment
-(`var` / `conv` / `universeFormation`).  At this fragment it is a direct 3-arm
-induction, because every subject is either a leaf (`var index`,
-`universeCodeCell e flag`) or is left unchanged by `conv`; no redex can appear
-yet.  No reducibility predicate is needed here: the reducibility tower (#422)
-is required only once genuine term-level applications (`app f a`, which can
-β-reduce) become well-typed (#444) — leaf and code/constructor subjects extend
-via the already-shipped constructor-SN closures.
+(`var` / `conv` / `universeFormation` / `piFormation` / `sigmaFormation`).  At
+this fragment every well-typed subject is NON-STEPPING
+(`HasType.subjectHasNoStep`), so SN is immediate: a term with no outgoing `Step`
+is `Acc`-essible.  No reducibility predicate is needed here: the reducibility
+tower (#422) is required only when genuine term-level applications (`app f a`,
+which can β-reduce) become well-typed — leaf and code/constructor subjects
+extend via the constructor-SN closures.
 
-## Why now — the typed-coherence payoff
+## The typed-coherence payoff
 
-The Newman machinery is already closed in lean-fx-3:
 `Conv.trans_of_middle_accessible` (StepStarConfluence.lean) derives
 `Conv`-transitivity through any *strongly-normalizing middle term* alone (the
 source-local Newman bridge — global SN, false by Ω, is not needed).  Feeding it
 `IsType.isStronglyNormalizing` gives `Conv.trans` for any well-formed middle
-type — the lemma that unblocks uniqueness-of-typing (#469) and inversion
-(#454).  So this fragment-level fundamental theorem is not a throwaway: its
-statement is permanent and its leaf/code arms persist; only a future `app` arm
-will route through reducibility instead of direct induction.
+type — the lemma uniqueness-of-typing (#469) and inversion (#454) consume.  The
+statement is permanent; a redex-bearing `app` arm routes through reducibility
+instead of no-step.
 
 ## Zero-axiom verification
 
-Induction on the typing derivation + the shipped leaf-SN lemmas
-(`var_isStronglyNormalizing`, `universeCode_isStronglyNormalizing`) + the
-proven `Conv.trans_of_middle_accessible`.  Per-declaration gated in
+The no-step invariant `HasType.subjectHasNoStep` fed to
+`StepStar.isStronglyNormalizing_of_noStep` + the proven
+`Conv.trans_of_middle_accessible`.  Per-declaration gated in
 `FX1PolyAudit/AuditTyped.lean`.
 -/
 
@@ -44,11 +42,10 @@ open FX1Poly.Core
 strongly normalizing.  Since every well-typed subject is NON-STEPPING
 (`HasType.subjectHasNoStep` — including a `piTyCodeCell` once its typed children
 are normal), strong normalization is immediate: a term with no outgoing `Step`
-is trivially `Acc`-essible (`StepStar.isStronglyNormalizing_of_noStep`).  This
-collapses the former 3-arm induction (and dodges needing a Π SN-closure lemma):
-the no-step invariant already absorbs the Π former.  Only a future redex-bearing
-`app` arm (#444) will make a subject genuinely step, at which point this routes
-through reducibility instead of no-step. -/
+is trivially `Acc`-essible (`StepStar.isStronglyNormalizing_of_noStep`).  The
+no-step invariant absorbs the Π / Σ formers — no per-arm induction and no Π
+SN-closure lemma needed.  A redex-bearing `app` arm, whose subject genuinely
+steps, would route through reducibility instead of no-step. -/
 theorem HasType.isStronglyNormalizing {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {subject classifier : RawTerm scope}

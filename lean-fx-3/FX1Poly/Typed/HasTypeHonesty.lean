@@ -7,23 +7,20 @@ cell has NO `HasType` derivation (the fiber over an unsound cell is empty).
 Raw cells are nonsense-constructable ON PURPOSE — `app(unit, unit)` is a
 perfectly good `RawTerm` (a non-function applied to an argument); the typed
 layer is what rejects it.  This file makes that rejection a CHECKED fact
-(the typed-layer 0-FP gate, #470) — the type-level counterpart of the
-structural-vs-semantic gap probes, now at the .term-over-.type layer.
+— the type-level counterpart of the structural-vs-semantic gap probes, at
+the .term-over-.type layer.
 
-## Scope of this slice (var + conv + universe core)
+## Scope of this fragment
 
-`HasType` currently has three arms — `var`, `conv`, and `universe`
-formation.  `var` types a variable cell; `universeFormation` types a
-universe-code cell; `conv` preserves the subject.  So the core types only variable or
-universe-code cells (`HasType.typedSubjectIsVariableOrUniverseCode`).
+`HasType` types only variable, universe-code, Π-type code, and Σ-type code
+cells on the current fragment (`HasType.typedSubjectIsVariableOrUniverseCode`).
 Every other cell — in particular the genuinely ill-typed `app(unit, unit)`
 — therefore has no derivation (`appUnitUnit_hasNoTyping`).
 
-This is the FIRST entry of the 0-FP corpus.  As the `gen` arm lands (driven
-by the `TypingRule` metadata, #483), the corpus grows and this probe is
-re-established by real inversion — but the ill-typed witnesses (app of a
-non-function, ...) must stay underivable forever: 0 false positives is the
-invariant, the false-negative rate is what shrinks.
+An entry of the 0-FP corpus.  As typing arms grow, the corpus grows and this
+probe is re-established by real inversion — but the ill-typed witnesses (app of
+a non-function, ...) stay underivable: 0 false positives is the invariant, the
+false-negative rate is what shrinks.
 
 ## Zero-axiom verification
 
@@ -57,13 +54,12 @@ is a variable cell, a universe-code cell, a Π-type code cell, or a Σ-type code
 cell.  Proof: `var` produces a `variableCell`; `universeFormation` produces a
 `universeCodeCell`; `piFormation` produces a `piTyCodeCell`; `sigmaFormation`
 produces a `sigmaTyCodeCell`; `conv` preserves the subject (its IH gives the
-same subject).  FRAGMENT-SPECIFIC — it grows by one disjunct per non-`conv` arm
-and is eventually retired for real inversion once the metadata `gen` arm lands;
-the current proof technique for the 0-FP probe.  Note this re-proof is
-`Conv.trans`-free (the `conv` case just forwards its IH).
+same subject).  FRAGMENT-SPECIFIC — it grows by one disjunct per non-`conv` arm;
+the proof technique for the 0-FP probe.  This proof is `Conv.trans`-free (the
+`conv` case just forwards its IH).
 
-(The name predates the Π/Σ disjuncts; it now covers four shapes.  Kept stable
-across the #443/#445 cascades rather than renamed mid-breaking-change.) -/
+The name covers four shapes (variable, universe code, Π-type code, Σ-type
+code). -/
 theorem HasType.typedSubjectIsVariableOrUniverseCode {profile : PolyProfile}
     {scope : Nat} {context : TypingContext profile scope}
     {subject classifier : RawTerm scope}

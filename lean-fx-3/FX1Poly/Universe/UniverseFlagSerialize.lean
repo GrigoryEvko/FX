@@ -3,12 +3,11 @@ import FX1Poly.Universe.UniverseFlag
 /-! # Foundation/PolyCell/Universe/UniverseFlagSerialize
    — prefix-code serializer for `UniverseFlag` + round-trip
 
-#432 (M24-Z1) deliverable (d), part 2: the `UniverseFlag → List Nat`
-serializer feeding the FX0 certificate format (polycell.md §3.16.17 /
-§12.6.4), with a `decode ∘ encode = id` round-trip proof.  Companion to
-`LevelExprSerialize.lean` (part 1); together they are the propext-clean
-foundation for the universe-payload (`LevelExpr × UniverseFlag`) serializer
-arm of the Generator-payload refactor (part 3).
+The `UniverseFlag → List Nat` serializer feeding the FX0 certificate
+format (polycell.md §3.16.17 / §12.6.4), with a `decode ∘ encode = id`
+round-trip proof.  Companion to `LevelExprSerialize.lean`; together they
+are the propext-clean foundation for the universe-payload
+(`LevelExpr × UniverseFlag`) serializer.
 
 ## Design — flat tag code, no fuel
 

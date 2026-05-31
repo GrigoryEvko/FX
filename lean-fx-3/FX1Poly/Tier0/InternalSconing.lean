@@ -19,10 +19,10 @@ namespace FX1Poly.Tier0
 
 universe u v w
 
-/-- Construction-level ledger for the current internal-sconing subsystem.
+/-- Construction-level ledger for the internal-sconing subsystem.
 
-The current file reaches extraction record interfaces.  Concrete preservation
-instances and transfer theorems are later Tier-0 milestones. -/
+This file reaches extraction record interfaces.  It carries no concrete
+preservation instances or transfer theorems. -/
 inductive SconingConstructionLevel where
   | globalSectionsInterface
   | objectMorphismInterface

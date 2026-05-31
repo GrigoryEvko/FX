@@ -3,23 +3,22 @@ import FX1Poly.Core.Step
 
 /-! # Foundation/PolyCell/Core/SubjectReductionIotaIdRefl — identity-type iotas on refl
 
-V2-L3.1 phase D step 11 (2026-05-27).  Ships SR arms 12-13:
-the two identity-eliminator iotas on `refl`.
+The two identity-eliminator iotas on `refl`:
 
-  * iotaIdJRefl       : `idJ baseCase (refl rawWitness) ↝ baseCase`
+  * iotaIdJRefl         : `idJ baseCase (refl rawWitness) ↝ baseCase`
   * iotaIdStrictRecRefl : same shape with `gen_idStrictRec`
 
 ## Why these are PURE PROJECTION (not compound)
 
 Despite the name "identity iotas" suggesting motive substitution
-(textbook MLTT idJ), the v2 substrate factors the motive/endpoint
+(textbook MLTT idJ), the substrate factors the motive/endpoint
 work into the PROFILE layer.  At the substrate level, the iota
 rule simply DISCARDS the refl witness and returns the base case:
 
   source spine = [baseCase, refl-wrapper]
   target       = baseCase  (HEAD of the source spine)
 
-That's pure projection — the SIMPLEST iota shape, simpler than
+That's pure projection — the simplest iota shape, simpler than
 `iotaBoolTrue` (which does `spine.tail.headAtDim0` to skip the
 boolTrue head; here we extract the HEAD directly).
 
@@ -31,12 +30,6 @@ Same template as `iotaBoolTrue`/`iotaBoolFalse`/etc.: single
 Both arms close with the identical 4-line tactic block.  No
 `simp`, no `omega`, no propext-touching tactics.  Audit-gated in
 `Tools/AuditAll/AuditPolyCell.lean`.
-
-After this commit: 13/18 SR arms shipped.  Remaining: 3 compound
-iotas with nested-app + recursive-call construction
-(`iotaNatElimSucc`, `iotaNatRecSucc`, `iotaListElimCons`), `beta`
-(uses V2-L2.12 subst preservation), and `cong` (structural
-induction on the child step + spine recursion).
 -/
 
 namespace FX1Poly.Core

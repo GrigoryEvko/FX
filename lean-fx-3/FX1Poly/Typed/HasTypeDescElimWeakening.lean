@@ -7,29 +7,25 @@ import FX1Poly.Typed.HasTypeDescWeakening
 polycell.md §11.8.5 P6 ("Substitution / weakening = whiskering, the β-engine"): typing is
 preserved along a context morphism.  `DescTermTelescope` (HasTypeDescElim) is the
 maximally-general typed-children spine — each child typed at an ARBITRARY classifier that
-may mention all prior children — and it is the premise spine the future eliminator
-`gen`-arm (the §11.8.5 non-uniform seam PAST formation) consumes.  This file ships its
-renaming half: the spine is preserved along ANY renaming that respects the context, and
-its weakening special case.
+may mention all prior children — and it is the premise spine the eliminator `gen`-arm (the
+§11.8.5 non-uniform seam PAST formation) consumes.  This file carries its renaming half:
+the spine is preserved along ANY renaming that respects the context, and its weakening
+special case — the eliminator arm's cartesian-lift fibration leg.
 
-## Why this is the right next brick (and why it is NON-breaking)
+## NON-breaking
 
-The formation spine `DescTelescope` already has its renaming half
-(`DescTelescope.renameRespectingTelescope`).  The eliminator spine did not — yet the
-eliminator arm's cartesian-lift fibration leg IS exactly this lemma, regardless of how the
-arm eventually lands.  Building it now does NOT touch `HasTypeDesc`'s constructors or the
-`toHasType` ⟺ soundness map (no new gen rows), so it cannot disturb the shipped formation
-fragment: `DescTermTelescope` is a STANDALONE inductive (`HasTypeDesc` appears only
+This does NOT touch `HasTypeDesc`'s constructors or the `toHasType` ⟺ soundness map (no
+new gen rows): `DescTermTelescope` is a STANDALONE inductive (`HasTypeDesc` appears only
 positively in `cons`'s `headTyped`).
 
 ## Self-recursion, not a mutual block
 
 Unlike `DescTelescope.renameRespectingTelescope` (mutual with
 `HasTypeDesc.renameRespectingContext`), this is a SELF-recursive theorem: the head child's
-typing is re-renamed by cross-calling the ALREADY-SHIPPED
-`HasTypeDesc.renameRespectingContext` on the opaque `headTyped`, and the only recursion is
-on the strictly-smaller `restTyped`.  Lean's structural recursion lands it directly (no
-`termination_by`), exactly like the proven self-recursive `DescTelescope.toTermTelescope`.
+typing is re-renamed by cross-calling `HasTypeDesc.renameRespectingContext` on the opaque
+`headTyped`, and the only recursion is on the strictly-smaller `restTyped`.  Lean's
+structural recursion lands it directly (no `termination_by`), exactly like the
+self-recursive `DescTelescope.toTermTelescope`.
 
 ## The arbitrary classifier renames generically
 
@@ -43,7 +39,7 @@ depth, identically to the formation spine
 
 ## Zero-axiom
 
-Self-recursion + the shipped `HasTypeDesc.renameRespectingContext` + the reused
+Self-recursion + `HasTypeDesc.renameRespectingContext` + the
 `rename_lift_weaken_commute` brick.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
 `Classical`, `native_decide`, `omega`.  Audit-gated.
 -/
@@ -56,7 +52,7 @@ open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
 preserved along ANY renaming that respects the context (sends each source binding's
 looked-up type to the target's, commuting with `rename`), with the context-condition
 stated at the spine's `currentDepth` via `iterateLiftRaw`.  Self-recursive — the head
-child's typing is re-renamed by the shipped `HasTypeDesc.renameRespectingContext`; the
+child's typing is re-renamed by `HasTypeDesc.renameRespectingContext`; the
 tail recurses at depth `currentDepth + 1` with the LIFTED condition.  Decoupled from
 `HasType` (the cross-call routes through the intrinsic `HasTypeDesc` renamer, not the
 `⟺` soundness map). -/

@@ -2,15 +2,14 @@ import FX1Poly.Core.CertifyRawCellExact
 
 /-! # Foundation/PolyCell/Core/CertifyRawCellExactTermBase — termBase shape pin
 
-V2-L3.1 phase D step 1 (2026-05-27).  Ships the **termBase dispatcher
-shape pin** — the missing arm in the `CertifyRawCellExactShape.lean`
-family.
+Ships the **termBase dispatcher shape pin** in the
+`CertifyRawCellExactShape.lean` family.
 
 ## Why this arm matters most for SR
 
-The Subject Reduction theorem (V2-L3.1) is stated over `Step source
-target` where `source` and `target` are `RawTerm scope`.  The SR
-proof's cong arm and iota arms all need to **project** from
+The Subject Reduction theorem is stated over `Step source target`
+where `source` and `target` are `RawTerm scope`.  The SR proof's
+cong arm and iota arms all need to **project** from
 `Certified parent` to `Certified child` (where `parent` is a composite
 generator like `lam body`, `app f arg`, `fst (pair a b)`, etc., and
 `child` is one of its spine elements).
@@ -56,13 +55,12 @@ certifier's actual operational behavior.
 
 ## What this unlocks
 
-Future SR-related work uses this shape pin to:
+SR-related work uses this shape pin to:
 
   1. From `Certified (mkGen gen p ch)` extract the spine success witness.
-  2. From spine success on `(childCons head tail)` (a later shape pin)
+  2. From spine success on `(childCons head tail)` (a separate shape pin)
      extract head and tail certificate success.
-  3. Combined with subst-preservation (V2-L2.12, already shipped),
-     discharge SR's iota and cong arms.
+  3. Combined with subst-preservation, discharge SR's iota and cong arms.
 
 ## Zero-axiom verification
 

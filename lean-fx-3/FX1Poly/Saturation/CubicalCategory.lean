@@ -71,7 +71,7 @@ def SaturationConstructionLevel.hasCoherentConfluence :
   | .operationalContraction => false
   | .churchRosserSquier => true
 
-/-- Current finite cubical-cell scaffold used while Axis 4 is being built.
+/-- Finite cubical-cell scaffold for Axis 4.
 
 Cells in dimension `dimension` are identifiers `0, ..., dimension`.  Faces and
 degeneracies choose the distinguished zero identifier; composition keeps the
@@ -204,8 +204,9 @@ def ReductionBoundary.Rel {cubicalCat : CubicalOmegaCat.{u}}
 /-- A Noetherian condition for one concrete reduction boundary: no infinite
 descending chains of the relation induced by that boundary.
 
-For FX this should eventually be instantiated from the K12 strong
-normalization theorem, through concrete source/target data for dim-1 cells. -/
+For FX, an instance would come from a strong-normalization theorem through
+concrete source/target data for dim-1 cells; this file defines only the
+condition, not such an instance. -/
 def ReductionBoundary.IsNoetherian {cubicalCat : CubicalOmegaCat.{u}}
     (boundary : ReductionBoundary cubicalCat) : Prop :=
   WellFounded boundary.Rel

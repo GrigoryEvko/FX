@@ -2,11 +2,10 @@ import FX1Poly.Core.RawTermRename
 
 /-! # Foundation/PolyCell/Core/RawTermRenamePointwise — rename-side Allais extensionality
 
-This file ships the **rename-side analog** of #181a's
-`subst_pointwise`: pointwise-equal renamings produce equal rename
-results on any term.
+The **rename-side analog** of `subst_pointwise`: pointwise-equal
+renamings produce equal rename results on any term.
 
-## Why this is the first piece of the cross-direction fusion ladder
+## Place in the cross-direction fusion ladder
 
 The headline `subst_compose` (the polynomial monad's associativity)
 requires a cross-direction commute lemma between rename and subst:
@@ -19,17 +18,17 @@ pointwise reasoning.
 
 The dependency tower:
 
-  rename_pointwise            (THIS FILE)            <─ Allais ext for ρ
-  rename_compose              (next)                 <─ ρ-ρ fusion
-  subst_rename_commute        (after)                <─ ρ then σ
-  rename_subst_commute        (after)                <─ σ then ρ
+  rename_pointwise            (THIS FILE)            <─ Allais ext for rho
+  rename_compose                                     <─ rho-rho fusion
+  subst_rename_commute                               <─ rho then sigma
+  rename_subst_commute                               <─ sigma then rho
   lift_compose_pointwise      (using all of above)
   subst_compose               (the headline)
-  Action RawTermSubst instance  (closes V2-L2.7)
+  Action RawTermSubst instance
 
-Each layer is a 4-arm mutual induction in v2 (vs v1's 74-arm).
+Each layer is a 4-arm mutual induction.
 
-## Structural parallel to #181a
+## Structural parallel to `subst_pointwise`
 
 The file mirrors `RawTermSubstPointwise.lean` exactly:
 * `RawRenaming.PointwiseEq` predicate (parallel to
@@ -52,7 +51,7 @@ The differences are:
 
 ## Zero-axiom verification
 
-Same recipe as #181a (the propext-clean recipe is now established):
+The propext-clean recipe:
 * `dsimp only [..., fold]` rather than `unfold` — `unfold` on
   mutual recursion pulls Quot.sound (per
   `feedback_lean_unfold_mutual_quot_sound`).
@@ -62,11 +61,8 @@ Same recipe as #181a (the propext-clean recipe is now established):
 
 Audit-gated in `Tools/AuditAll/AuditPolyCell.lean`.
 
-## v1 comparison
-
-v1's `RawTerm.rename_pointwise` (Foundation/RawSubst/RenameLemmas.lean
-or similar — exists in the 74-arm style).  v2's version is a 4-arm
-mutual induction.  Same cascade-tax ratio (~18x reduction) as #181a.
+The mutual `RawTerm.rename_pointwise` /
+`RawTermChildren.rename_pointwise` is a 4-arm mutual induction.
 -/
 
 namespace FX1Poly.Core
@@ -81,10 +77,10 @@ Two renamings agree pointwise when they produce the same target Fin
 for every source position.  Avoids funext: the laws are stated
 relative to this Prop rather than function equality.
 
-Named under `FX1Poly.Core.RawRenaming.PointwiseEq`
-(NOT v1's `FX1Poly.Foundation.RawRenaming` namespace) to keep v1 / v2 namespace
-separation clean.  The full path disambiguates from any potential
-future v1 lemma with the same leaf name. -/
+Named under `FX1Poly.Core.RawRenaming.PointwiseEq` (NOT the
+`FX1Poly.Foundation.RawRenaming` namespace) to keep the namespaces
+separate.  The full path disambiguates from any lemma with the same
+leaf name in the Foundation namespace. -/
 def RawRenaming.PointwiseEq {sourceScope targetScope : Nat}
     (firstRenaming secondRenaming :
         FX1Poly.Foundation.RawRenaming sourceScope targetScope) : Prop :=
@@ -150,13 +146,12 @@ theorem iterateLiftRaw_RawRenaming_pointwise {sourceScope targetScope : Nat}
 
 /-! ## Section 3 — The Allais rename-side extensionality theorem
 
-In v1: 74-arm structural induction (one arm per RawTerm ctor).
-In v2: 4-arm mutual induction.
+A 4-arm mutual induction.
 
-Same proof technique as #181a's `subst_pointwise`, with the
-following differences in the variable arm:
+Same proof technique as `subst_pointwise`, with the following
+differences in the variable arm:
 
-  Substitution side (#181a):
+  Substitution side:
     `varToRawTerm sigma pos = sigma pos` (a RawTerm).
 
   Renaming side (THIS FILE):
@@ -172,7 +167,6 @@ mutual
 /-- Allais extensionality for `RawTerm.rename`: pointwise-equal
 renamings produce equal rename results.
 
-This is the v2 replacement for v1's 74-arm `RawTerm.rename_pointwise`.
 Adding a new Generator does NOT require adding a new arm here — the
 proof closes uniformly through the non-var sub-case via the children
 spine recursion. -/

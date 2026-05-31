@@ -14,9 +14,8 @@ accessibility into iota/root-reduction accessibility.
 -/
 
 namespace FX1Poly.Core
--- `RawRenaming` lived in lean-fx-2's enclosing `LeanFX2` namespace (visible
--- by nesting); in lean-fx-3 it moved to `FX1Poly.Foundation`, which no longer
--- encloses `FX1Poly.Core`, so open it explicitly.
+-- `RawRenaming` lives in `FX1Poly.Foundation`, which does not enclose
+-- `FX1Poly.Core`, so open it explicitly.
 open FX1Poly.Foundation
 namespace StepStar
 
@@ -89,7 +88,7 @@ theorem appLam_isStronglyNormalizing_of_normal_body_contractum
 substitutes to a fixed strongly-normalizing contractum, independent of the
 argument reduct.
 
-This packages the closed-body beta base case used by the future reducibility
+This packages the closed-body beta base case used by the reducibility
 proof: the lambda body cannot step, and beta always lands on the same
 contractum while argument congruence is handled by accessibility induction. -/
 theorem appLam_isStronglyNormalizing_of_normal_body_constant_contractum

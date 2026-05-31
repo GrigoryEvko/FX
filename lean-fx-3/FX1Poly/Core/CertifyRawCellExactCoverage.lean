@@ -2,26 +2,23 @@ import FX1Poly.Core.InferRawCellGeneral
 
 /-! # CertifyRawCellExactCoverage — positive-path acceptance suite
 
-This file ships the positive-coverage suite for the v2 ingress: a
-selection of fxProfile fixture raw cells along with `rfl`-proved
-acceptance theorems demonstrating that the certifier ACCEPTS them
-with the expected sort.
-
-Direct v2 counterpart to v1's coverage suite at
-`Core/CertifyExact.lean:113-126`.
+This file ships the positive-coverage suite for the certifier
+ingress: a selection of fxProfile fixture raw cells along with
+`rfl`-proved acceptance theorems demonstrating that the certifier
+ACCEPTS them with the expected sort.
 
 ## Why coverage matters alongside soundness
 
-The L1cert.4 soundness tier (#165-#169) proves that the certifier
-NEVER ACCEPTS BADLY — every accepted certification is faithful to
-the input.  But soundness alone could be vacuously satisfied by a
-certifier that ALWAYS REJECTS.
+The soundness tier proves that the certifier NEVER ACCEPTS BADLY —
+every accepted certification is faithful to the input.  But
+soundness alone could be vacuously satisfied by a certifier that
+ALWAYS REJECTS.
 
 The coverage suite is the dual: every theorem here proves the
 certifier ACCEPTS a specific well-formed fixture with the expected
 sort.  Together, soundness + coverage establish that the certifier
-is both correct (#165-#169) and useful (this file): it accepts the
-things it should, and what it does on acceptance is correct.
+is both correct and useful: it accepts the things it should, and
+what it does on acceptance is correct.
 
 ## The fixture catalog
 
@@ -55,7 +52,7 @@ Lean's `rfl` check unfolds:
 4. The wrapper packages this as `.ok { cellSort := generator.cellSort, ... }`
 5. `certifiedResultSort?` projects `.cellSort = generator.cellSort`
 
-All reductions are definitional under v2's structural definitions.
+All reductions are definitional under the structural definitions.
 
 ## Zero-axiom verification
 
@@ -72,9 +69,8 @@ namespace FX1Poly.Core
 
 /-- Extract the sort from an accepted certified-result computation.
 
-Mirrors v1's `certifiedResultSort?` (`Core/Check.lean:2115`).  Used
-by coverage theorems to inspect the certifier's output sort without
-unpacking the full result struct. -/
+Used by coverage theorems to inspect the certifier's output sort
+without unpacking the full result struct. -/
 def certifiedResultSort? {profile : PolyProfile} {scope : Nat} :
     Except CellCheckRejection (CertifiedRawCellResult profile scope) →
       Option CellSort
@@ -105,7 +101,7 @@ exercises the `Fin scope` payload-evidence path. -/
 def varZeroRaw : RawCell 1 :=
   .termBase (.mkGen .gen_var ⟨0, Nat.zero_lt_succ 0⟩ .childNil)
 
-/-! ## V2-fix-5: arity-0 generator fixtures (boolean + naturals + lists + options + interval)
+/-! ## Arity-0 generator fixtures (boolean + naturals + lists + options + interval)
 
 Each `gen_X_Raw` is the simplest well-formed instance of an arity-0
 generator family.  All certify at sort `.term`, cellDimension 0
@@ -140,7 +136,7 @@ def interval0Raw : RawCell 0 :=
 def interval1Raw : RawCell 0 :=
   .termBase (.mkGen .gen_interval1 () .childNil)
 
-/-! ## V2-fix-5: arity-1+ generator fixtures (compositional shapes)
+/-! ## Arity-1+ generator fixtures (compositional shapes)
 
 These fixtures exercise the certifier's children-spine recursion
 through arity-1 and arity-2 generators with concrete sub-fixtures. -/
@@ -178,7 +174,7 @@ def listConsUnitRaw : RawCell 0 :=
     (.childCons (.mkGen .gen_unit () .childNil)
       (.childCons (.mkGen .gen_listNil () .childNil) .childNil)))
 
-/-! ## V2-fix-5: cell-layer fixture (dim 1 via identityCell)
+/-! ## Cell-layer fixture (dim 1 via identityCell)
 
 This fixture exercises the certifier's CELL-LAYER dispatch arms,
 distinct from the term-layer arms covered by the termBase fixtures
@@ -216,15 +212,11 @@ theorem coverage_varZeroRaw_sort {profile : PolyProfile} :
         Coverage.varZeroRaw) =
       some .term := rfl
 
-/-! ## V2-fix-5: acceptance theorems for the expanded fixture set
+/-! ## Acceptance theorems for the fixture set
 
-Thirteen new fixture theorems extending the certifier's `rfl`-evaluation
-coverage from 2 fixtures to 15.  Each closes by `rfl` because the
-certifier is a pure computation reducing fixtures through the
-admission + payload-evidence + spine-recursion chain.
-
-Together with `coverage_unitTermRaw_sort` and `coverage_varZeroRaw_sort`,
-the catalog now spans:
+Each closes by `rfl` because the certifier is a pure computation
+reducing fixtures through the admission + payload-evidence +
+spine-recursion chain.  The catalog spans:
 
 * **Arity 0**: gen_unit, gen_var, gen_boolTrue, gen_boolFalse,
   gen_natZero, gen_listNil, gen_optionNone, gen_interval0, gen_interval1

@@ -1,24 +1,19 @@
 import FX1Poly.Universe.LevelExpr
 
 /-! # Foundation/PolyCell/Universe/LevelExprSimplify
-   — M22 Phase A: single-pass structural simplifier for LevelExpr
+   — single-pass structural simplifier for LevelExpr
 
-M22 (#271, 2026-05-28) Phase A.  Ships the SINGLE-PASS structural
-simplifier for `LevelExpr` per polycell.md §11.8 line 4028-4031:
+A single-pass structural simplifier for `LevelExpr` per polycell.md
+§11.8 line 4028-4031:
 
 > Equality of `LevelExpr` up to algebra (`lmax e e = e`, `lmax lzero
 > e = e`, …) is decidable in **polynomial time** via the Mörtberg-
 > Sterling 2024 normalization algorithm.
 
-This Phase A ships the BASIC structural rules — single-pass
-identity / idempotence / zero-elimination via pattern-form match.
-The FULL polynomial-time normalization (Mörtberg-Sterling
-arXiv:2406.05425) is Phase B (deferred to a focused multi-turn
-session) since it requires iterating to fixed point + canonical
-ordering of lmax operands + level-variable substitution
-discipline.
+`simplify` applies the basic structural rules — single-pass identity
+/ idempotence / zero-elimination via pattern-form match.
 
-## Phase A simplification rules
+## Simplification rules
 
 1. `lmax e e ↦ e` — idempotence of max.
 2. `lmax lzero e ↦ e` — lzero is left identity for max.
@@ -38,13 +33,14 @@ For `limax`, right-zero (#5) comes BEFORE left-zero (#4) because
 the impredicative collapse is the load-bearing rule for Prop's
 quantification.
 
-## What's NOT in Phase A (deferred to Phase B / M22 closure)
+## Scope: what this file does NOT do
 
-Per polycell.md and Mörtberg-Sterling 2024, the full polynomial-
-time algorithm requires:
+The full polynomial-time Mörtberg-Sterling algorithm
+(arXiv:2406.05425) additionally requires the following, which are
+NOT in this file:
 
 * **Iteration to fixed point**: applying simplify until no rule
-  applies.  Phase A is single-pass; multiple applications might
+  applies.  `simplify` is single-pass; multiple applications might
   expose new simplifications (e.g., `lmax (lmax lzero e) lzero`
   needs two passes).
 * **Canonical lmax ordering**: when `lmax e1 e2` has both non-
@@ -56,31 +52,15 @@ time algorithm requires:
 * **Level-variable substitution**: handling `lvar n` under
   universe-polymorphic instantiation.
 
-Phase B (M22 closure) ships these via the full Mörtberg-Sterling
-algorithm.  Phase A is the precursor establishing the simplify
-infrastructure + the per-rule theorems Phase B will cite.
-
-## Why Phase A is shippable
-
-Phase A is sufficient to:
-* Simplify CLOSED LEVELEXPR EXPRESSIONS — concrete `lzero`,
-  `lsucc lzero`, `lmax lzero (lsucc lzero)`, etc. — to canonical
-  form (no algebraic redundancy).
-* Provide the per-rule `rfl`-witnessed equations Phase B's
-  iteration loop will consume.
-* Pin the simplification SHAPE so downstream Phase Z₀ work
-  (M24 retrofit + M25 universe-mode generators) can rely on
-  the simplify-canonical-form invariant.
-
 ## Decidable equivalence on closed expressions
 
-For CLOSED level expressions (no `lvar`), Phase A's simplifier
-produces a canonical form modulo the 5 rules above.  Two closed
-expressions are equivalent up to Phase A's rules iff their
-simplifications are syntactically equal via `LevelExpr.decEq`.
+For CLOSED level expressions (no `lvar`), `simplify` produces a
+canonical form modulo the 5 rules above.  Two closed expressions
+are equivalent up to those rules iff their simplifications are
+syntactically equal via `LevelExpr.decEq`.
 
-For OPEN expressions (containing `lvar`), Phase B's full
-algorithm is needed because lmax canonical ordering matters.
+For OPEN expressions (containing `lvar`), the full algorithm is
+needed because lmax canonical ordering matters.
 
 ## Zero-axiom verification
 
@@ -91,8 +71,7 @@ by `rfl`.  No `simp`, no `omega`, no `propext`.  Audit-gated.
 
 namespace FX1Poly.Universe
 
-/-- Single-pass structural simplifier for `LevelExpr` per
-M22 Phase A.
+/-- Single-pass structural simplifier for `LevelExpr`.
 
 Applies 5 simplification rules in priority order:
 1. lmax idempotence: `lmax e e ↦ e`
@@ -102,14 +81,11 @@ Applies 5 simplification rules in priority order:
 5. limax right-collapse: `limax e lzero ↦ lzero`
 
 Children are RECURSIVELY SIMPLIFIED before applying the
-parent rule (deep simplification on each pass).  Full
-polynomial-time iteration to fixed point is Phase B (deferred).
-
-Phase A is single-pass: one application may not reach the
-fixed point (e.g., `lmax (lmax lzero a) lzero` needs two
-passes to reduce `lmax (lmax lzero a) lzero ↦ lmax a lzero ↦
-a`).  Downstream Phase B's iteration loop calls this
-single-pass function until the fixed point. -/
+parent rule (deep simplification on each pass).  This is a
+single pass: one application may not reach the fixed point
+(e.g., `lmax (lmax lzero a) lzero` needs two passes to reduce
+`lmax (lmax lzero a) lzero ↦ lmax a lzero ↦ a`).  Iterating to
+the fixed point is not part of this function. -/
 def LevelExpr.simplify : LevelExpr → LevelExpr
   | .lzero => .lzero
   | .lsucc inner => .lsucc inner.simplify
@@ -205,9 +181,9 @@ theorem LevelExpr.simplify_limax_non_lzero_codomain :
     LevelExpr.simplify (.limax (.lvar 0) (.lvar 1)) =
       .limax (.lvar 0) (.lvar 1) := rfl
 
-/-! ## Phase A correctness witnesses
+/-! ## Correctness witnesses
 
-Pin Phase A's INVARIANTS: simplify is total (terminates on every
+Pin `simplify`'s INVARIANTS: it is total (terminates on every
 input), idempotence-preserving (simplify ∘ simplify = simplify
 for closed expressions), and structural (it commutes with the
 inductive structure). -/
@@ -218,9 +194,10 @@ theorem LevelExpr.simplify_lzero_idempotent :
       LevelExpr.simplify .lzero := rfl
 
 /-- Simplify is idempotent on simplified closed expressions.
-At Phase A, idempotence holds for terms in canonical form per
-the 5 rules.  Full idempotence (every input is its own simplify-
-fixed-point after one pass) is Phase B territory.
+Idempotence holds for terms in canonical form per the 5 rules;
+full idempotence (every input is its own simplify-fixed-point
+after one pass) requires the fixed-point iteration, which is not
+part of `simplify`.
 
 This smoke pins a SPECIFIC fixture: `simplify ∘ simplify` on
 `lvar 0` returns `lvar 0`. -/
@@ -228,31 +205,26 @@ theorem LevelExpr.simplify_lvar_zero_idempotent :
     LevelExpr.simplify (LevelExpr.simplify (.lvar 0)) =
       LevelExpr.simplify (.lvar 0) := rfl
 
-/-! ## Phase B forward-compat marker
+/-! ## Single-pass inner-loop marker
 
-When Phase B (full Mörtberg-Sterling normalization) ships, the
-following theorem will pin that Phase A's single-pass simplifier
-is BELOW the full algorithm — Phase B's `normalize` factors
-through Phase A's `simplify` as the structural inner loop. -/
-
-/-- Phase B forward-compat: `simplify` is the single-pass
-inner-loop layer of the full polynomial-time normalization
-algorithm.  Phase B's `normalize` iterates `simplify` to a
-fixed point + applies canonical ordering on lmax operands +
+`simplify` is the single-pass structural inner loop of a full
+polynomial-time normalizer, which would iterate `simplify` to a
+fixed point plus apply canonical ordering on lmax operands plus
 distributivity over lsucc. -/
+
+/-- `simplify` is the single-pass inner-loop layer of the full
+polynomial-time normalization algorithm. -/
 def LevelExpr.simplify_is_phase_a_inner_loop : Bool := true
 
 theorem LevelExpr.simplify_is_phase_a_inner_loop_correct :
     LevelExpr.simplify_is_phase_a_inner_loop = true := rfl
 
-/-! ## Structural size measure + Phase A non-increasing correctness
+/-! ## Structural size measure + non-increasing correctness
 
-M22 Phase A correctness (audit-A20 / #404, 2026-05-28).
-
-Phase B's full Mörtberg-Sterling iteration needs a termination
-measure: each application of `simplify` must not grow the
-expression, otherwise iterating to a fixed point could diverge.
-This section ships:
+A termination measure for any fixed-point iteration of
+`simplify`: each application must not grow the expression,
+otherwise iterating to a fixed point could diverge.  This
+section provides:
 
 * `LevelExpr.size` — structural size (every leaf = 1, every
   interior node adds 1 to children's sum).
@@ -274,9 +246,9 @@ machinery is `show` for definitional unfold of `simplify` and
 * `lsucc inner`: `inner.size + 1`.
 * `lmax e1 e2` / `limax e1 e2`: `e1.size + e2.size + 1`.
 
-Used as the termination measure for Phase B's fixed-point
-iteration over `simplify` and as the correctness witness that
-Phase A's single-pass simplifier is size-non-increasing
+Used as the termination measure for any fixed-point iteration
+over `simplify` and as the correctness witness that the
+single-pass simplifier is size-non-increasing
 (`simplify_size_le`). -/
 def LevelExpr.size : LevelExpr → Nat
   | .lzero => 1
@@ -296,14 +268,14 @@ theorem LevelExpr.size_pos : ∀ (expr : LevelExpr), 1 ≤ expr.size
   | .limax _ _ => Nat.succ_le_succ (Nat.zero_le _)
   | .lvar _ => Nat.le_refl 1
 
-/-- Phase A's `simplify` is size-non-increasing: the result is no
-larger than the input.
+/-- `simplify` is size-non-increasing: the result is no larger
+than the input.
 
-Phase B's full Mörtberg-Sterling normalization iterates
-`simplify` until a fixed point.  This theorem is the termination
-witness: each iteration decreases or preserves size, so the
-iteration must terminate when no rule fires (size strictly
-decreases at every productive step).
+A full Mörtberg-Sterling normalization iterates `simplify` until
+a fixed point.  This theorem is the termination witness: each
+iteration decreases or preserves size, so the iteration must
+terminate when no rule fires (size strictly decreases at every
+productive step).
 
 Proof: structural induction on `expr`.  Each case dispatches
 through `simplify`'s actual computation:
@@ -402,22 +374,16 @@ theorem LevelExpr.size_lmax (e1 e2 : LevelExpr) :
 theorem LevelExpr.size_limax (e1 e2 : LevelExpr) :
     LevelExpr.size (.limax e1 e2) = e1.size + e2.size + 1 := rfl
 
-/-! ## Phase A normal-form correctness — full idempotence
+/-! ## Normal-form correctness — full idempotence
 
-M22 Phase A normal-form characterization (audit-A21 / #405,
-2026-05-28).  Phase A's single-pass simplifier is POST-ORDER:
-children are simplified first via the `let s1 := e1.simplify;
-let s2 := e2.simplify` bindings, then the local if-then-else
-chain inspects already-normalized children.  Because the local
-rules are exhaustive over normalized-child shapes (idempotence /
-zero-identity / collapse), Phase A REACHES A FIXED POINT IN ONE
-PASS — `simplify (simplify e) = simplify e` for all `e`.
-
-This corrects the original `LevelExprSimplify.lean` docstring
-claim (lines 47-49) that "`lmax (lmax lzero a) lzero` needs two
-passes": that claim implicitly assumed TOP-DOWN flat
-simplification, but the actual implementation is bottom-up
-post-order.  The example resolves in a single pass:
+`simplify` is POST-ORDER: children are simplified first via the
+`let s1 := e1.simplify; let s2 := e2.simplify` bindings, then the
+local if-then-else chain inspects already-normalized children.
+Because the local rules are exhaustive over normalized-child
+shapes (idempotence / zero-identity / collapse), `simplify`
+REACHES A FIXED POINT IN ONE PASS — `simplify (simplify e) =
+simplify e` for all `e`.  The bottom-up order means an example
+like `lmax (lmax lzero a) lzero` resolves in a single pass:
 
   simplify (lmax (lmax lzero a) lzero)
   = let s1 := simplify (lmax lzero a)   -- recursive child
@@ -428,28 +394,23 @@ post-order.  The example resolves in a single pass:
     if a = lzero then ... else if a = lzero then ... else if lzero = lzero then a
   = a
 
-This idempotence theorem subsumes the original docstring's
-multi-pass concern and provides the formal Phase A fixed-point
-guarantee Phase B's iteration loop would otherwise need.
-
 ## What full idempotence enables
 
 * Defining the FIXED-POINT predicate `e.simplify = e` correctly:
   `simplify_idempotent` pins that this predicate is preserved
   by simplification (every output is a fixed point).
-* PHASE B IS NOT NEEDED FOR REACHING NORMAL FORM — Phase B's
-  contribution is canonical ordering on `lmax` operands (so
-  `lmax a b` and `lmax b a` collapse) and distributivity over
-  `lsucc` (so `lsucc (lmax e1 e2)` flattens).  Iteration to
-  fixed point is NOT required as a SEPARATE phase.
-* Decidable Phase-A equivalence on closed expressions: two
-  closed `LevelExpr`s are Phase-A equivalent iff their
+* Reaching normal form needs no separate fixed-point iteration.
+  The remaining work of a full normalizer is canonical ordering
+  on `lmax` operands (so `lmax a b` and `lmax b a` collapse) and
+  distributivity over `lsucc` (so `lsucc (lmax e1 e2)` flattens).
+* Decidable equivalence on closed expressions: two closed
+  `LevelExpr`s are equivalent under the 5 rules iff their
   simplifications are syntactically equal — and idempotence
   ensures the simplify result is canonical (no further rule
   applies). -/
 
-/-- Phase A's `simplify` is idempotent: simplifying twice yields
-the same result as simplifying once.
+/-- `simplify` is idempotent: simplifying twice yields the same
+result as simplifying once.
 
 Proof: structural recursion on `expr`.  Each case dispatches
 through `simplify`'s actual computation:
@@ -573,58 +534,52 @@ theorem LevelExpr.lvar_isNormalForm (idx : Nat) :
 
 /-! ## Structural normal-form predicate
 
-M22-A4 (#406, 2026-05-28).  STRUCTURAL characterization of Phase
-A normal form as an inductive `Prop`.  Where `IsPhaseANormalForm`
-defines NF SEMANTICALLY as "fixed point of simplify",
-`IsStructurallyNormalForm` defines NF STRUCTURALLY as "no Phase A
-rule applies anywhere":
+STRUCTURAL characterization of normal form as an inductive
+`Prop`.  Where `IsPhaseANormalForm` defines NF SEMANTICALLY as
+"fixed point of simplify", `IsStructurallyNormalForm` defines NF
+STRUCTURALLY as "no simplification rule applies anywhere":
 
 * Every leaf (`lzero`, `lvar`) is NF.
 * `lsucc inner` is NF iff `inner` is NF.
 * `lmax e1 e2` is NF iff both children are NF AND none of the
-  three Phase A rules for `lmax` could fire: `e1 ≠ e2`
-  (rule 1: idempotence), `e1 ≠ lzero` (rule 2: left identity),
-  `e2 ≠ lzero` (rule 3: right identity).
+  three `lmax` rules could fire: `e1 ≠ e2` (rule 1: idempotence),
+  `e1 ≠ lzero` (rule 2: left identity), `e2 ≠ lzero` (rule 3:
+  right identity).
 * `limax e1 e2` is NF iff both children are NF AND neither of
-  the two Phase A rules for `limax` could fire: `e2 ≠ lzero`
-  (rule 5: right collapse), `e1 ≠ lzero` (rule 4: left
-  identity).
+  the two `limax` rules could fire: `e2 ≠ lzero` (rule 5: right
+  collapse), `e1 ≠ lzero` (rule 4: left identity).
 
 The load-bearing theorem is that `simplify` always produces a
 structurally normal expression: `simplify_produces_isStructurallyNormalForm`.
-This is the substantive Phase A "what does Phase A actually
-deliver" answer — it shows that the post-order recursion plus
-local rule chain produces output where NO rule could fire
-anywhere, not just at the top level.
+It shows that the post-order recursion plus local rule chain
+produces output where NO rule could fire anywhere, not just at
+the top level.
 
-## Why structural and semantic NF should coincide
+## Structural and semantic NF coincide
 
-`IsStructurallyNormalForm e → IsPhaseANormalForm e` will be
-provable: if no rule fires anywhere, then `simplify e` must
-equal `e` (no rule = no change).  The converse direction
-`IsPhaseANormalForm e → IsStructurallyNormalForm e` requires
-more case work — we'd need to extract from `simplify e = e`
-the conclusion that none of the negative conditions could be
-violated.  Both directions are real theorems for Phase B's
-canonical-ordering decisions, but THIS commit ships only the
-structural definition + `simplify` produces it.
+`IsStructurallyNormalForm e → IsPhaseANormalForm e`
+(`toFixedPoint`): if no rule fires anywhere, then `simplify e`
+equals `e`.  The converse `IsPhaseANormalForm e →
+IsStructurallyNormalForm e` (`toStructurallyNormal`) extracts
+from `simplify e = e` the conclusion that none of the negative
+conditions can be violated.
 
-## What this enables (Phase B bridge)
+## Detecting already-normalized sub-expressions
 
-Phase B's full Mörtberg-Sterling algorithm needs to detect
-"already normalized" sub-expressions to avoid redundant work.
-Running `simplify` on every sub-expression is correct but
-wasteful.  A STRUCTURAL check (Decidable Bool via the
-inductive's negative conditions) is the optimization gate.
+A full Mörtberg-Sterling normalizer detects "already normalized"
+sub-expressions to avoid redundant work.  Running `simplify` on
+every sub-expression is correct but wasteful; a STRUCTURAL check
+(Decidable Bool via the inductive's negative conditions) is the
+optimization gate.
 
 Decidability of `IsStructurallyNormalForm` requires
 DecidableEq + 5 disjunctions of decidable conditions; the
 inductive's shape itself makes this clean — no propext leak
 since LevelExpr.decEq is propext-free (5-ctor ADT). -/
 
-/-- Inductive Prop characterization of Phase A normal forms.
-A `LevelExpr` is in structural NF iff no Phase A rule applies
-anywhere in its syntax tree.
+/-- Inductive Prop characterization of normal forms.  A
+`LevelExpr` is in structural NF iff no simplification rule
+applies anywhere in its syntax tree.
 
 Five constructors mirror the 5 LevelExpr ctors:
 * `lzeroNF`: lzero is trivially NF.
@@ -644,8 +599,8 @@ inductive LevelExpr.IsStructurallyNormalForm : LevelExpr → Prop
   | lsuccNF {inner : LevelExpr}
       (hInner : LevelExpr.IsStructurallyNormalForm inner) :
       LevelExpr.IsStructurallyNormalForm (.lsucc inner)
-  /-- lmax of two NF children is NF when all three Phase A
-  rules for lmax cannot fire. -/
+  /-- lmax of two NF children is NF when all three lmax
+  simplification rules cannot fire. -/
   | lmaxNF {e1 e2 : LevelExpr}
       (h1 : LevelExpr.IsStructurallyNormalForm e1)
       (h2 : LevelExpr.IsStructurallyNormalForm e2)
@@ -653,8 +608,8 @@ inductive LevelExpr.IsStructurallyNormalForm : LevelExpr → Prop
       (hNotLeftZero : ¬ (e1 = .lzero))
       (hNotRightZero : ¬ (e2 = .lzero)) :
       LevelExpr.IsStructurallyNormalForm (.lmax e1 e2)
-  /-- limax of two NF children is NF when both Phase A rules
-  for limax cannot fire. -/
+  /-- limax of two NF children is NF when both limax
+  simplification rules cannot fire. -/
   | limaxNF {e1 e2 : LevelExpr}
       (h1 : LevelExpr.IsStructurallyNormalForm e1)
       (h2 : LevelExpr.IsStructurallyNormalForm e2)
@@ -737,11 +692,11 @@ anywhere), then it's a fixed point of `simplify` — proving
 `simplify e = e`.
 
 This is the FORWARD direction of structural-vs-semantic NF
-equivalence.  The reverse direction (semantic ⇒ structural)
-requires extracting the inequality witnesses from `simplify
-e = e`, which involves cases on the simplify function shape
-— substantive but mechanical.  Forward is the load-bearing
-direction for Phase B's "is this already normalized?" check. -/
+equivalence.  The reverse direction (semantic ⇒ structural,
+`toStructurallyNormal`) extracts the inequality witnesses from
+`simplify e = e`, which involves cases on the simplify function
+shape — substantive but mechanical.  Forward is the load-bearing
+direction for an "is this already normalized?" check. -/
 
 /-- A structurally normal `LevelExpr` is a fixed point of
 `simplify`.  Forward direction of structural-vs-semantic NF
@@ -776,8 +731,7 @@ theorem LevelExpr.IsStructurallyNormalForm.toFixedPoint
       rw [ih1, ih2, if_neg hNotRightZero, if_neg hNotLeftZero]
 
 /-- Combined: `simplify e` is both a fixed point AND
-structurally normal.  Pins the full Phase A delivery in a
-single theorem. -/
+structurally normal, in a single theorem. -/
 theorem LevelExpr.simplify_isStructurallyNormal_and_fixed
     (expr : LevelExpr) :
     LevelExpr.IsStructurallyNormalForm expr.simplify ∧
@@ -788,7 +742,7 @@ theorem LevelExpr.simplify_isStructurallyNormal_and_fixed
 /-! ## Helper size bounds for the reverse-direction proof
 
 The reverse direction `semantic NF → structural NF` requires
-ruling out all 5 Phase A rules from firing.  Each rule's result
+ruling out all 5 simplification rules from firing.  Each rule's result
 has strictly smaller size than the original (an `lmax`/`limax`
 node has size ≥ 3 since both children have size ≥ 1; the rule
 results are sub-terms of size ≤ child size).  The contradiction
@@ -862,8 +816,8 @@ theorem LevelExpr.lzero_size_lt_limax (e1 e2 : LevelExpr) :
 
 This is the REVERSE direction of the structural-vs-semantic NF
 equivalence.  Combined with `IsStructurallyNormalForm.toFixedPoint`
-(forward direction shipped in #406), this proves the two
-definitions characterize the same set of expressions.
+(the forward direction), this proves the two definitions
+characterize the same set of expressions.
 
 Proof strategy: structural recursion on `expr`.
 
@@ -975,8 +929,8 @@ theorem LevelExpr.IsPhaseANormalForm.toStructurallyNormal :
 
 /-- The full bidirectional structural↔semantic NF equivalence.
 Forward direction via `toFixedPoint`; reverse direction via
-`toStructurallyNormal`.  Together they prove that Phase A's
-two NF characterizations (semantic = fixed point of simplify;
+`toStructurallyNormal`.  Together they prove that the two NF
+characterizations (semantic = fixed point of simplify;
 structural = no rule applies anywhere) coincide. -/
 theorem LevelExpr.isPhaseANormalForm_iff_isStructurallyNormalForm
     (expr : LevelExpr) :
@@ -985,12 +939,11 @@ theorem LevelExpr.isPhaseANormalForm_iff_isStructurallyNormalForm
   ⟨LevelExpr.IsPhaseANormalForm.toStructurallyNormal,
    LevelExpr.IsStructurallyNormalForm.toFixedPoint⟩
 
-/-! ## Semantic denotation + Phase A soundness
+/-! ## Semantic denotation + simplify soundness
 
-M22-A6 (#408, 2026-05-28).  Phase B foundation: semantic
-denotation function interpreting `LevelExpr` arithmetically, plus
-soundness theorem that Phase A's `simplify` preserves the semantic
-value.
+A semantic denotation function interpreting `LevelExpr`
+arithmetically, plus a soundness theorem that `simplify`
+preserves the semantic value.
 
 Denotation rules (matching Mörtberg-Sterling 2024):
 * `lzero` ⟦⟧ = 0
@@ -1001,8 +954,8 @@ Denotation rules (matching Mörtberg-Sterling 2024):
 
 This is the SEMANTIC universe-level model: each `LevelExpr` denotes
 a natural number under an environment `Nat → Nat` for universe
-variables.  Phase A's 5 simplification rules are all SEMANTICALLY
-VALID (they preserve denotation):
+variables.  The 5 simplification rules are all SEMANTICALLY VALID
+(they preserve denotation):
 
 * Rule 1 (lmax e e ↦ e): max(v, v) = v.
 * Rule 2 (lmax lzero e ↦ e): max(0, v) = v.
@@ -1012,9 +965,9 @@ VALID (they preserve denotation):
 
 The soundness theorem `simplify_denote_eq` proves this formally:
 for every `e` and `env`, `e.simplify.denote env = e.denote env`.
-This is the Phase B FOUNDATION — every future Phase B equation
-(canonical lmax ordering, lsucc distributivity, level-variable
-substitution) is proved against this same denotation.
+This denotation is the foundation for the further normalizer
+equations (canonical lmax ordering, lsucc distributivity,
+level-variable substitution), which are proved against it.
 
 ## Why a local levelMax instead of Nat.max
 
@@ -1096,16 +1049,16 @@ theorem LevelExpr.denote_limax (e1 e2 : LevelExpr) (env : Nat → Nat) :
        else LevelExpr.levelMax (e1.denote env) (e2.denote env)) :=
   rfl
 
-/-! ## Phase A semantic soundness
+/-! ## Semantic soundness
 
 The load-bearing theorem: `simplify` preserves the semantic
-denotation under every environment.  This validates that
-Phase A's 5 rewrite rules are sound w.r.t. the arithmetic
-interpretation of universe levels. -/
+denotation under every environment.  This validates that the 5
+rewrite rules are sound w.r.t. the arithmetic interpretation of
+universe levels. -/
 
-/-- Phase A's `simplify` preserves the semantic denotation:
-for every expression and environment, simplifying produces the
-same level value.
+/-- `simplify` preserves the semantic denotation: for every
+expression and environment, simplifying produces the same level
+value.
 
 Proof: structural recursion on `expr`.  Each case dispatches
 through `simplify` + `denote` and uses the relevant `levelMax`
@@ -1219,16 +1172,16 @@ theorem LevelExpr.simplify_denote_eq :
              else LevelExpr.levelMax (e1.denote env) (e2.denote env))
           rw [ih1, ih2]
 
-/-! ## Algebraic laws — the maximal-power Phase B backbone
+/-! ## Algebraic laws — the maximal-power backbone
 
-M22-A7 (#409, 2026-05-28).  Per polycell.md §11.8.2's commitment
-to a polynomial-time decidable universe equivalence (Mörtberg-
-Sterling 2024), Phase B's canonical normalizer must understand
-that `lmax` is a COMMUTATIVE / ASSOCIATIVE / IDEMPOTENT operation
-and that `lsucc` distributes over `lmax`.  These are the
+Per polycell.md §11.8.2's commitment to a polynomial-time
+decidable universe equivalence (Mörtberg-Sterling 2024), a
+canonical normalizer must understand that `lmax` is a
+COMMUTATIVE / ASSOCIATIVE / IDEMPOTENT operation and that
+`lsucc` distributes over `lmax`.  These are the
 JOIN-SEMILATTICE-WITH-SUCCESSOR algebraic laws.
 
-This section ships them as theorems at TWO levels:
+This section provides them as theorems at TWO levels:
 
 1. **Nat-level** (`levelMax_comm`, `levelMax_assoc`): proved
    directly via structural pattern matching on both arguments.
@@ -1252,14 +1205,14 @@ Per §11.8.2, the kernel commits to:
 * Directed universes `gen_universeD` / `gen_universeOmega`
   (Riehl-Shulman 2017 + Loubaton 2307.11931).
 * SProp + full Setzer-Rathjen large-cardinal hierarchy via
-  UniverseFlag (M23 #272).
+  `UniverseFlag`.
 * Universe polymorphism via LevelExpr — declarations parameterized
   over universe-level expressions.
 
 For universe polymorphism to be SOUND, two declarations that
 quantify over `Type @ lmax e1 e2` and `Type @ lmax e2 e1` must
 be interchangeable — they denote the same universe.  These
-algebraic laws prove the semantic equivalence; Phase B's canonical
+algebraic laws prove the semantic equivalence; a canonical
 normalizer enforces it syntactically via canonical ordering. -/
 
 /-- `levelMax` is commutative: `levelMax a b = levelMax b a`.
@@ -1296,8 +1249,8 @@ theorem LevelExpr.levelMax_assoc : ∀ (valueA valueB valueC : Nat),
       rw [LevelExpr.levelMax_assoc a b c]
 
 /-- `levelMax (a+1) (b+1) = levelMax a b + 1`.  Definitional;
-exposes Phase B's lsucc-distributivity equation at the
-arithmetic level. -/
+exposes the lsucc-distributivity equation at the arithmetic
+level. -/
 theorem LevelExpr.levelMax_succ_distrib (valueA valueB : Nat) :
     LevelExpr.levelMax (valueA + 1) (valueB + 1) =
       LevelExpr.levelMax valueA valueB + 1 := rfl
@@ -1311,9 +1264,9 @@ LevelExpr semantic level.  Each is a one-line proof: unfold
 /-- `lmax` is denotation-commutative: under any environment,
 `(lmax e1 e2).denote env = (lmax e2 e1).denote env`.
 
-This is the SEMANTIC justification for Phase B's canonical
-lmax ordering: regardless of syntactic operand order, the
-universe denoted is the same. -/
+This is the SEMANTIC justification for canonical lmax ordering:
+regardless of syntactic operand order, the universe denoted is
+the same. -/
 theorem LevelExpr.lmax_denote_comm (e1 e2 : LevelExpr)
     (env : Nat → Nat) :
     (LevelExpr.lmax e1 e2).denote env =
@@ -1338,7 +1291,7 @@ theorem LevelExpr.lmax_denote_assoc (e1 e2 e3 : LevelExpr)
 /-- `lsucc` distributes over `lmax` under denote:
 `(lsucc (lmax e1 e2)).denote env = (lmax (lsucc e1) (lsucc e2)).denote env`.
 
-This is Phase B's load-bearing distributivity equation per
+This is the load-bearing distributivity equation per
 Mörtberg-Sterling 2024.  Canonical-form normalization pushes
 `lsucc` INSIDE `lmax`, flattening nested successors. -/
 theorem LevelExpr.lsucc_lmax_distrib_denote (e1 e2 : LevelExpr)
@@ -1357,9 +1310,8 @@ two `LevelExpr`s are equivalent iff they denote the same value
 under every environment.
 
 This section defines the relation + proves the algebraic laws
-are equivalences in it.  Phase B's canonical normalizer (when
-shipped) will provide the decision procedure for this relation
-via syntactic equality on canonical forms. -/
+are equivalences in it.  A canonical normalizer would decide
+this relation via syntactic equality on canonical forms. -/
 
 /-- Semantic equivalence on `LevelExpr` per §11.8.2: two
 expressions are equivalent iff they denote the same Nat
@@ -1425,7 +1377,7 @@ theorem LevelExpr.lmax_lzero_right_denoteEquiv (expr : LevelExpr) :
     rw [LevelExpr.denote_lmax, LevelExpr.denote_lzero,
         LevelExpr.levelMax_zero_right]
 
-/-- Phase A's `simplify` is sound under `denoteEquiv`.  Combines
+/-- `simplify` is sound under `denoteEquiv`.  Combines
 `simplify_denote_eq` with the denoteEquiv definition. -/
 theorem LevelExpr.simplify_denoteEquiv (expr : LevelExpr) :
     LevelExpr.denoteEquiv expr.simplify expr :=
@@ -1433,14 +1385,14 @@ theorem LevelExpr.simplify_denoteEquiv (expr : LevelExpr) :
 
 /-! ## denoteEquiv congruences
 
-M22-A8 (#410, 2026-05-28).  For Phase B's canonical normalizer to
-work compositionally, `denoteEquiv` must be a CONGRUENCE under
-every `LevelExpr` constructor: if `e1 denoteEquiv e1'` and
-`e2 denoteEquiv e2'`, then `ctor e1 e2 denoteEquiv ctor e1' e2'`.
+For a canonical normalizer to work compositionally, `denoteEquiv`
+must be a CONGRUENCE under every `LevelExpr` constructor: if
+`e1 denoteEquiv e1'` and `e2 denoteEquiv e2'`, then
+`ctor e1 e2 denoteEquiv ctor e1' e2'`.
 
-This lets Phase B normalize sub-expressions independently, then
-recombine — the foundation of compositional rewriting.  Every
-ctor has a congruence law:
+This lets a normalizer rewrite sub-expressions independently,
+then recombine — the foundation of compositional rewriting.
+Every ctor has a congruence law:
 
 * `lsucc`: unary congruence (lsucc preserves equivalence).
 * `lmax`: binary congruence (lmax of equivalents is equivalent).
@@ -1459,9 +1411,8 @@ theorem LevelExpr.lsucc_denoteEquiv_congr {inner inner' : LevelExpr}
   rw [h env]
 
 /-- `lmax` is a denoteEquiv congruence: equivalent operand pairs
-give equivalent lmax expressions.  Phase B's canonical lmax
-ordering pre-normalizes both operands independently before
-joining. -/
+give equivalent lmax expressions.  Canonical lmax ordering
+pre-normalizes both operands independently before joining. -/
 theorem LevelExpr.lmax_denoteEquiv_congr {e1 e1' e2 e2' : LevelExpr}
     (h1 : LevelExpr.denoteEquiv e1 e1')
     (h2 : LevelExpr.denoteEquiv e2 e2') :
@@ -1500,7 +1451,7 @@ These theorems pin the asymmetric semantics formally. -/
 
 /-- `limax e lzero` collapses to lzero semantically.  This is
 the IMPREDICATIVE collapse: `Π (x : Type e). Prop : Prop`
-regardless of `e`.  Phase A's rule 5 ships this collapse
+regardless of `e`.  `simplify`'s rule 5 performs this collapse
 syntactically; this theorem proves it at the semantic level. -/
 theorem LevelExpr.limax_denote_lzero_right (e1 : LevelExpr)
     (env : Nat → Nat) :
@@ -1514,7 +1465,7 @@ theorem LevelExpr.limax_denote_lzero_right (e1 : LevelExpr)
 
 /-- `limax lzero e` denotes the same as `e`.  When the domain
 of a Π-type is Prop (= lzero), the codomain dominates.  This
-is Phase A's rule 4 at the semantic level. -/
+is `simplify`'s rule 4 at the semantic level. -/
 theorem LevelExpr.limax_denote_lzero_left (e2 : LevelExpr)
     (env : Nat → Nat) :
     (LevelExpr.limax .lzero e2).denote env = e2.denote env := by
@@ -1542,9 +1493,8 @@ theorem LevelExpr.limax_denote_eq_lmax_when_codomain_nonzero
 
 /-! ## denoteEquiv variants of the per-rule equations
 
-Repackages the algebraic / limax laws as denoteEquiv rules for
-Phase B's normalizer (which speaks denoteEquiv natively, not
-denote env). -/
+Repackages the algebraic / limax laws as denoteEquiv rules,
+stated over denoteEquiv rather than `denote env`. -/
 
 /-- limax-right-zero collapse as a denoteEquiv rule. -/
 theorem LevelExpr.limax_lzero_right_denoteEquiv (e1 : LevelExpr) :
@@ -1556,20 +1506,19 @@ theorem LevelExpr.limax_lzero_left_denoteEquiv (e2 : LevelExpr) :
     LevelExpr.denoteEquiv (LevelExpr.limax .lzero e2) e2 :=
   fun env => LevelExpr.limax_denote_lzero_left e2 env
 
-/-! ## Total comparison on LevelExpr — Phase B's canonical-form keystone
+/-! ## Total comparison on LevelExpr — the canonical-form keystone
 
-M22-A9 (#411, 2026-05-28).  Per polycell.md §11.8.2's commitment to
-polynomial-time decidable universe equality via the Mörtberg-Sterling
-2024 algorithm, Phase B's canonical normalizer requires a TOTAL
-ORDER on `LevelExpr` to canonically sort `lmax`/`limax` operands.
+Per polycell.md §11.8.2's commitment to polynomial-time decidable
+universe equality via the Mörtberg-Sterling 2024 algorithm, a
+canonical normalizer requires a TOTAL ORDER on `LevelExpr` to
+canonically sort `lmax`/`limax` operands.
 
-This section ships:
+This section defines:
 
 * `LevelExpr.compareNat` — propext-free `Nat → Nat → Ordering` via
   structural pattern match on both arguments.  Lean core's
   `Nat.compare` ultimately routes through `≤`-decidability which
-  pulls propext; we need a clean alternative for zero-axiom
-  discipline.
+  pulls propext; this is the propext-free alternative.
 * `LevelExpr.ctorIndex` — ctor priority for cross-ctor comparison.
 * `LevelExpr.compare` — total ordering on `LevelExpr` combining
   ctor priority (cross-ctor) with structural recursion (same-ctor).
@@ -1578,7 +1527,7 @@ This section ships:
   `(compare e1 e2).swap = compare e2 e1`.  This is the FULL
   antisymmetry property in compact form: lt ↔ gt, gt ↔ lt, eq ↔ eq.
 
-Then the first concrete Phase B canonicalization:
+Then the first concrete canonicalization step:
 
 * `canonicalizeLmaxPair` — single-pair lmax operand swap when
   operands are out of compare order.
@@ -1847,7 +1796,7 @@ theorem LevelExpr.compare_swap : ∀ (e1 e2 : LevelExpr),
 
 /-! ## `compare` antisymmetry as structural equality
 
-The shipped `compare_refl` (reflexivity) and `compare_swap`
+`compare_refl` (reflexivity) and `compare_swap`
 (antisymmetry-as-swap) establish that `compare` is a reflexive,
 antisymmetric comparator.  The full canonical form additionally
 needs the *identity-of-indiscernibles* law: a `.eq` verdict
@@ -2250,13 +2199,13 @@ theorem LevelExpr.compare_lt_trans : ∀ (exprA exprB exprC : LevelExpr),
                           · rw [ha13eq]; exact LevelExpr.compare_refl a3
                           · exact LevelExpr.compare_lt_trans b1 b2 b3 haTied.2 hbTied.2
 
-/-! ## First Phase B canonicalization step — pairwise lmax sort
+/-! ## Canonicalization step — pairwise lmax sort
 
 `canonicalizeLmaxPair` swaps `lmax` operands when out of compare
 order, ensuring the smaller operand (by `compare`) comes first.
-This is the SIMPLEST canonical-form transformation; the full
-Phase B normalizer composes this with `simplify`, recursive
-descent into operands, and lsucc-into-lmax distributivity. -/
+This is the SIMPLEST canonical-form transformation; a full
+normalizer composes this with `simplify`, recursive descent into
+operands, and lsucc-into-lmax distributivity. -/
 
 /-- Order one `lmax`'s operands by a precomputed `compare`
 verdict: swap to `lmax e2 e1` exactly when the verdict is `.gt`,
@@ -2369,12 +2318,12 @@ theorem LevelExpr.canonicalizeLmaxPair_idempotent (expr : LevelExpr) :
 A nested `lmax` tree denotes the `levelMax` of its leaf atoms,
 independent of association or grouping (`lmax` is, under
 `denoteEquiv`, a commutative idempotent monoid with unit `lzero`).
-The full n-ary canonical form will flatten a tree to its atom list
-(`lmaxAtoms`), then sort + dedup + drop-`lzero` the atoms, then
-rebuild (`foldLmax`).  This block ships the flatten/rebuild
-round-trip soundness — the substrate the later sort / dedup /
-clean steps build on; their `denoteEquiv` preservation composes
-through `foldLmax`'s monoid laws.
+The full n-ary canonical form flattens a tree to its atom list
+(`lmaxAtoms`), then sorts + dedups + drops-`lzero` the atoms, then
+rebuilds (`foldLmax`).  This block proves the flatten/rebuild
+round-trip soundness — the substrate the sort / dedup / clean
+steps build on; their `denoteEquiv` preservation composes through
+`foldLmax`'s monoid laws.
 
 `lmaxAtoms` descends ONLY through `lmax` nodes — `limax` is left as
 an opaque atom, since its conditional collapse (`limax e lzero ~
@@ -2516,10 +2465,10 @@ theorem LevelExpr.foldLmax_dropLzeroAtoms_denoteEquiv :
       | limax a b =>
           exact LevelExpr.lmax_denoteEquiv_congr (LevelExpr.denoteEquiv.refl _) ih
 
-/-! ## Compare-ordered insertion — toward the sort sub-step
+/-! ## Compare-ordered insertion — the sort sub-step
 
 `foldLmax` is invariant under reordering of its atom list (the
-underlying `levelMax` is commutative).  This block ships the
+underlying `levelMax` is commutative).  This block defines the
 reordering primitive (`foldLmax_swap_denoteEquiv`) and a single
 compare-ordered insertion (`insertByCompare`) with its soundness;
 together they are the core of the sort sub-step, since an insertion
@@ -2748,12 +2697,12 @@ theorem LevelExpr.foldLmax_dedupAdjacent_denoteEquiv :
 atom list, sort it by `compare`, collapse adjacent duplicates, drop
 `lzero` atoms, then rebuild a right-nested `lmax` via `foldLmax`.
 
-This commit ships the SOUNDNESS direction only:
-`canonicalize e ~ e` under `denoteEquiv`, chained from the four
-per-transform invariance lemmas.  The COMPLETENESS direction
+What is proven here is the SOUNDNESS direction: `canonicalize e
+~ e` under `denoteEquiv`, chained from the four per-transform
+invariance lemmas.  The COMPLETENESS direction
 (`e1 ~ e2 → canonicalize e1 = canonicalize e2`, which would yield
 `Decidable denoteEquiv` by comparing canonical forms) is the hard
-Mörtberg-Sterling max-plus argument and remains deferred — it is
+Mörtberg-Sterling max-plus argument and is NOT proven here — it is
 also complicated by `foldLmax`'s trailing-`lzero` base case and by
 `limax`'s conditional collapse, neither of which affects soundness.
 -/
@@ -2808,11 +2757,11 @@ example :
 
 /-! ## Semantic characterization of the atom-list machinery
 
-The completeness direction (deferred) will need to read off the
-denotation of a canonical form as an explicit `Nat`-level maximum
-over its atoms.  This block ships that bridge: `denoteAtomList`
-interprets an atom list as the right-fold of `levelMax`, and the
-two characterization lemmas show that `foldLmax` rebuilds exactly
+A completeness proof reads off the denotation of a canonical
+form as an explicit `Nat`-level maximum over its atoms.  This
+block provides that bridge: `denoteAtomList` interprets an atom
+list as the right-fold of `levelMax`, and the two
+characterization lemmas show that `foldLmax` rebuilds exactly
 that value and that `lmaxAtoms` flattens to exactly that value.
 Together: `denote (foldLmax (lmaxAtoms e)) e ~ e` refines to the
 *computed* max-plus value, the semantic anchor for max-plus
@@ -3605,9 +3554,9 @@ theorem LevelExpr.canonicalAtoms_sameLvarMembership_of_denoteEquiv
 
 /-! ### Strict sortedness survives `dropLzeroAtoms`
 
-The non-strict `dropLzeroAtoms_sorted` is already shipped; the strict
-analog is needed to pin `canonicalAtoms` as strictly sorted (the
-hypothesis `strictlySorted_unique` consumes).  The only structural
+The non-strict `dropLzeroAtoms_sorted` has a strict analog here,
+needed to pin `canonicalAtoms` as strictly sorted (the hypothesis
+`strictlySorted_unique` consumes).  The only structural
 difference: in the `lzero`-head case a *strict* lower bound
 `compare bound lzero = .lt` is impossible (`lzero` is the `compare`
 minimum), so that case discharges by contradiction rather than the
@@ -3718,12 +3667,13 @@ var-only membership upgrade (⟹ full membership), `strictlySorted_unique`
 (⟹ equal atom lists), and `congrArg foldLmax` via
 `canonicalize_eq_foldLmax_canonicalAtoms`.
 
-SCOPE (honest): this does NOT close #419 in general — the canonical
-pipeline lacks max-plus absorption, so `lmax (lsucc x) x` and
-`lsucc x` (denotationally equal) have different canonical forms.  The
-var-only hypotheses confine the claim to the absorption-free fragment.
-Full #419 needs the genuine max-plus normal form (the transfer lemma,
-denotation bridge, and oracle here are reusable for it). -/
+SCOPE (honest): this is NOT full decidability of `denoteEquiv` —
+the canonical pipeline lacks max-plus absorption, so `lmax (lsucc
+x) x` and `lsucc x` (denotationally equal) have different canonical
+forms.  The var-only hypotheses confine the claim to the
+absorption-free fragment.  Full decidability needs the genuine
+max-plus normal form, for which the transfer lemma, denotation
+bridge, and oracle here are reusable. -/
 theorem LevelExpr.canonicalize_eq_of_denoteEquiv_onVariableFragment
     (e1 e2 : LevelExpr)
     (hVars1 : LevelExpr.AllAtomsAreVariables (LevelExpr.canonicalAtoms e1))
@@ -3754,10 +3704,10 @@ theorem LevelExpr.canonicalize_eq_of_denoteEquiv_onVariableFragment
 The fragment bridge takes `AllAtomsAreVariables (canonicalAtoms e)`
 as a hypothesis.  To make it usable, derive that from a structural
 predicate on the *source* expression: `IsVariableJoin` (built only
-from `lvar`/`lzero`/`lmax`).  The plan: `lmaxAtoms` of such an
-expression yields atoms each `lvar`-or-`lzero`; sort + dedup preserve
-that shape; `dropLzeroAtoms` then removes exactly the `lzero`s,
-leaving all `lvar`.  This tick ships the source predicate, the
+from `lvar`/`lzero`/`lmax`).  `lmaxAtoms` of such an expression
+yields atoms each `lvar`-or-`lzero`; sort + dedup preserve that
+shape; `dropLzeroAtoms` then removes exactly the `lzero`s, leaving
+all `lvar`.  This section defines the source predicate, the
 atom-shape predicate, and the `lmaxAtoms` step. -/
 
 /-- A level expression built only from `lvar`, `lzero`, and `lmax`
@@ -3935,10 +3885,10 @@ theorem LevelExpr.denoteEquiv_of_canonicalize_eq (e1 e2 : LevelExpr)
 fragment: compute both canonical forms and compare with the derived
 `DecidableEq LevelExpr`.  Equal forms give `isTrue` via soundness;
 unequal forms give `isFalse`, since fragment completeness says
-denotational equality would force equal canonical forms.  This
-realizes `#419`'s "Decidable denoteEquiv" goal on the fragment.  A
-`def` (not `instance`) because it carries the `IsVariableJoin`
-evidence explicitly. -/
+denotational equality would force equal canonical forms.  This is
+`Decidable denoteEquiv` on the variable-join fragment.  A `def`
+(not `instance`) because it carries the `IsVariableJoin` evidence
+explicitly. -/
 def LevelExpr.decidableDenoteEquivOfVariableJoin (e1 e2 : LevelExpr)
     (hVarJoin1 : LevelExpr.IsVariableJoin e1)
     (hVarJoin2 : LevelExpr.IsVariableJoin e2) :
@@ -3950,16 +3900,16 @@ def LevelExpr.decidableDenoteEquivOfVariableJoin (e1 e2 : LevelExpr)
       hCanonEq (LevelExpr.canonicalize_eq_of_denoteEquiv_of_isVariableJoin
         e1 e2 hVarJoin1 hVarJoin2 hDenoteEquiv))
 
-/-! ## The max-plus normal form — toward full #419 completeness
+/-! ## The max-plus normal form
 
 Mörtberg-Sterling: every universe level normalizes to an affine
 max-plus form `max(baseConstant, maxᵢ (env varᵢ + offsetᵢ))`.  Unlike
-the current `canonicalize` (which lacks absorption — see the
-variable-fragment scope note above), this form performs absorption by
-keeping only the *maximum offset* per variable: `lmax (lsucc x) x` and
-`lsucc x` both reduce to the single entry `(x, 1)`.  This block ships
-the structure and its denotation — the semantic target the normalizer
-(`toMaxPlusForm`, later ticks) is proven against. -/
+`canonicalize` (which lacks absorption — see the variable-fragment
+scope note above), this form performs absorption by keeping only the
+*maximum offset* per variable: `lmax (lsucc x) x` and `lsucc x` both
+reduce to the single entry `(x, 1)`.  This block defines the
+structure and its denotation — the semantic target the normalizer
+`toMaxPlusForm` is proven against. -/
 
 /-- An affine max-plus form: a base constant plus, per universe
 variable, the maximum offset at which it appears.  The representation
@@ -4143,8 +4093,9 @@ primitives.  `limax` is NOT max-plus expressible (its denotation is a
 runtime conditional on whether the right argument vanishes), so it has
 no faithful form — the function maps it to a placeholder and the
 soundness theorem is gated by `isPredicative` (no `limax` in the tree).
-This closes the predicative fragment of #419; full `limax` closure
-needs Mörtberg-Sterling irreducible imax-nodes and is deferred. -/
+Soundness holds on the predicative fragment; a faithful `limax` form
+would need Mörtberg-Sterling irreducible imax-nodes and is NOT defined
+here. -/
 
 /-- Propext-free left projection of a Boolean conjunction:
 `(flagLeft && flagRight) = true` forces `flagLeft = true`.  `cases` on
@@ -4581,9 +4532,9 @@ The fix: normalize the base to `max(baseConstant, maxᵢ offsetᵢ)`, which
 equals `denote(form, zeroEnv)` and is hence DETERMINED by the
 denotation.  Justification: `maxᵢ offsetᵢ ≤ maxᵢ(env varᵢ + offsetᵢ)`
 for every `env` (each `env varᵢ ≥ 0`), so raising the base by it never
-changes the denotation.  This block ships that base-normalization
-primitive; composing it with `canonicalize` (next leaf) yields the
-genuinely canonical form needed for step-7 completeness. -/
+changes the denotation.  This block defines that base-normalization
+primitive; composing it with `canonicalize` yields the genuinely
+canonical form needed for the completeness direction. -/
 
 /-- A value is dominated by itself plus any shift:
 `levelMax offset (shift + offset) = shift + offset`.  Induction on
@@ -5095,23 +5046,23 @@ theorem LevelExpr.MaxPlusForm.canonicalizeVarOffsets_produces_strictlySorted
     (LevelExpr.MaxPlusForm.sortByVariable entries)
     (LevelExpr.MaxPlusForm.sortByVariable_produces_sorted entries)
 
-/-! ### Step 7(b) — offset extraction via scaled point environments
+/-! ### Offset extraction via scaled point environments
 
-The completeness half of `Decidable denoteEquiv` (step 7) needs to
-recover the structure of a canonical max-plus form from its
-denotation alone.  The probe is a *scaled point environment*
+The completeness half of `Decidable denoteEquiv` recovers the
+structure of a canonical max-plus form from its denotation alone.
+The probe is a *scaled point environment*
 `scaledPointEnvironment probe scale` that assigns `scale` to the
 single coordinate `probe` and `0` everywhere else.  Two facts
 together pin every entry:
 
-* **(this tick — absent half)** if `probe` does NOT occur as a
-  variable in the offset list, the fold is `scale`-independent: every
-  entry's coordinate stays `0`, so the denotation collapses to
-  `maxOffset`.  Equivalently: the denotation grows with `scale` ONLY
-  when `probe` is present, so unbounded growth detects membership.
-* **(next tick — present half)** if `probe` occurs with offset `o`,
-  then for `scale` larger than all other contributions the fold is
-  exactly `scale + o`, revealing `o`.
+* **absent half** if `probe` does NOT occur as a variable in the
+  offset list, the fold is `scale`-independent: every entry's
+  coordinate stays `0`, so the denotation collapses to `maxOffset`.
+  Equivalently: the denotation grows with `scale` ONLY when `probe`
+  is present, so unbounded growth detects membership.
+* **present half** if `probe` occurs with offset `o`, then for
+  `scale` larger than all other contributions the fold is exactly
+  `scale + o`, revealing `o`.
 
 The base constant is already recoverable at the zero environment via
 `normalizeBase_baseConstant_eq_denote_zeroEnvironment`. -/
@@ -5194,9 +5145,9 @@ theorem LevelExpr.MaxPlusForm.denoteVarOffsets_scaledPointEnvironment_of_not_occ
         LevelExpr.MaxPlusForm.denoteVarOffsets_scaledPointEnvironment_of_not_occurs
           variableProbe scale rest hRestNotOccurs]
 
-/-! ### Step 7(b) prerequisites — `levelMax` dominance + absence-from-bound
+/-! ### Offset extraction prerequisites — `levelMax` dominance + absence-from-bound
 
-The present-variable half of offset extraction (next tick) needs four
+The present-variable half of offset extraction needs four
 self-contained facts.  Two are `levelMax` *dominance* laws — when one
 operand is provably at least the other, the max collapses to it (the
 `scale + offset` of a present probe dominates every other entry's bare
@@ -5270,7 +5221,7 @@ theorem LevelExpr.MaxPlusForm.allVariablesAtLeast_imp_not_occurs (probe : Nat) :
       show LevelExpr.MaxPlusForm.occursAsVariable probe rest = false
       exact LevelExpr.MaxPlusForm.allVariablesAtLeast_imp_not_occurs probe rest hAllRest
 
-/-! ### Step 7(b) present-half — the offset-extraction theorem
+/-! ### Offset extraction present-half — the offset-extraction theorem
 
 For a strictly-sorted list in which `probe` occurs, evaluating the
 fold at a scaled point environment with `scale` above every offset
@@ -5378,15 +5329,15 @@ theorem LevelExpr.MaxPlusForm.denoteVarOffsets_scaledPointEnvironment_of_occurs
           exact LevelExpr.levelMax_eq_right_of_left_le offsetHead
             (scale + LevelExpr.MaxPlusForm.offsetOf probe rest) hHeadLe
 
-/-! ### Step 7(c) substrate — the `lookupOffset` assoc-list map
+/-! ### The `lookupOffset` assoc-list map
 
 Uniqueness of canonical forms is proved through a lookup-function
 extensionality, not by cancelling shared heads (`levelMax` is not
 cancellative).  `lookupOffset probe entries : Option Nat` is the
-variable↦offset partial map; the denotation determines it (next ticks,
-via the two extraction oracles), and a strictly-sorted list is in turn
-determined by it.  This tick ships the map and its three computational
-laws (head-match, head-miss, below-all-keys ⟹ none). -/
+variable↦offset partial map; the denotation determines it via the
+two extraction oracles, and a strictly-sorted list is in turn
+determined by it.  This section defines the map and its three
+computational laws (head-match, head-miss, below-all-keys ⟹ none). -/
 
 /-- Reflexivity of `Nat.beq` (Boolean), self-contained: `Nat.beq value
 value = true`.  Direct structural recursion. -/
@@ -5454,10 +5405,10 @@ theorem LevelExpr.MaxPlusForm.lookupOffset_eq_none_of_allVariablesAtLeast (probe
       exact LevelExpr.MaxPlusForm.lookupOffset_eq_none_of_allVariablesAtLeast
         probe rest hAllRest
 
-/-! ### Step 7(c) extensionality prerequisites
+/-! ### Lookup-extensionality prerequisites
 
-The lookup-extensionality induction (next tick) has a head-key
-trichotomy at the cons-cons case.  Three self-contained facts make it
+The lookup-extensionality induction has a head-key trichotomy at
+the cons-cons case.  Three self-contained facts make it
 a short composition: `Nat.ble` antisymmetry (equal-head branch),
 strict-`<`-from-`ble`-false (the two contradiction branches need
 `valueA + 1 ≤ valueB`), and tail-pointwise extraction (transport the
@@ -5534,7 +5485,7 @@ theorem LevelExpr.MaxPlusForm.lookupOffset_pointwise_tail
       rw [← hLeft, ← hRight]
       exact hPt probe
 
-/-! ### Step 7(c) — the lookup-extensionality theorem
+/-! ### The lookup-extensionality theorem
 
 Two strictly-sorted assoc-lists agreeing on `lookupOffset` at every key
 are structurally equal.  Structural recursion on the left list; the
@@ -5646,10 +5597,10 @@ theorem LevelExpr.MaxPlusForm.lookupOffset_ext :
               rw [hSwap] at hb21
               exact Bool.noConfusion hb21
 
-/-! ### Step 7(c-a) connectors — `lookupOffset` ↔ `occursAsVariable` / `offsetOf`
+/-! ### Connectors — `lookupOffset` ↔ `occursAsVariable` / `offsetOf`
 
-The denotation→`lookupOffset` bridge (next tick) reads `lookupOffset`
-off the present/absent denotation oracles, which speak in terms of
+The denotation→`lookupOffset` bridge reads `lookupOffset` off the
+present/absent denotation oracles, which speak in terms of
 `occursAsVariable` and `offsetOf`.  These two connectors translate:
 absence collapses the lookup to `none`, presence to `some (offsetOf …)`.
 Both share the head-match/head-miss recursion of the three functions. -/
@@ -5707,7 +5658,7 @@ theorem LevelExpr.MaxPlusForm.lookupOffset_eq_some_offsetOf_of_occurs (probe : N
           rw [hBeq]
           exact LevelExpr.MaxPlusForm.lookupOffset_eq_some_offsetOf_of_occurs probe rest hOccRest
 
-/-! ### Step 7(c-a) form-level X-ray — lifting the oracles through the base
+/-! ### Form-level X-ray — lifting the oracles through the base
 
 The denotation bridge probes the FULL form denotation `denote form env =
 levelMax baseConstant (denoteVarOffsets varOffsets env)`.  These two
@@ -5793,7 +5744,7 @@ theorem LevelExpr.add_left_cancel :
       rw [Nat.succ_add, Nat.succ_add] at hEq
       exact LevelExpr.add_left_cancel amount valueA valueB (Nat.succ.inj hEq)
 
-/-! ### Step 7(c-a) — the denotation→`lookupOffset` bridge
+/-! ### The denotation→`lookupOffset` bridge
 
 Two strictly-sorted forms with equal denotation everywhere agree on
 `lookupOffset` at every key.  Probe at a scale `bound + 1` chosen to
@@ -5924,7 +5875,7 @@ theorem LevelExpr.MaxPlusForm.lookupOffset_of_denote_eq
               LevelExpr.MaxPlusForm.lookupOffset_eq_none_of_not_occurs probe
                 formRight.varOffsets hOccRight]
 
-/-! ### Step 7(c) — canonical-form uniqueness
+/-! ### Canonical-form uniqueness
 
 The keystone: two forms that are strictly sorted by variable AND
 base-normalized (base = denotation at the zero environment), with equal
@@ -5961,7 +5912,7 @@ theorem LevelExpr.MaxPlusForm.canonicalForm_unique
         rw [hBaseEq, hVarOffsetsEq]
     _ = formRight := rfl
 
-/-! ### Step 7(c) — `fullCanonicalize` meets the uniqueness hypotheses
+/-! ### `fullCanonicalize` meets the uniqueness hypotheses
 
 `canonicalForm_unique` is stated on the invariants (strictly sorted +
 base-normalized); these two lemmas certify that `fullCanonicalize`
@@ -5991,7 +5942,7 @@ theorem LevelExpr.MaxPlusForm.fullCanonicalize_baseConstant_eq_denote_zeroEnviro
   LevelExpr.MaxPlusForm.normalizeBase_baseConstant_eq_denote_zeroEnvironment
     (LevelExpr.MaxPlusForm.canonicalize form)
 
-/-! ### Step 7 capstone — `Decidable denoteEquiv` on the predicative fragment
+/-! ### Capstone — `Decidable denoteEquiv` on the predicative fragment
 
 Semantic equivalence of two predicative levels reduces to syntactic
 equality of their fully-canonicalized max-plus forms.  The `←` direction
@@ -6033,8 +5984,8 @@ theorem LevelExpr.denoteEquiv_iff_fullCanonicalize_eq
 
 /-- Decision procedure for `denoteEquiv` on the predicative fragment:
 compute both fully-canonicalized forms and compare them with the derived
-`DecidableEq`.  Closes the predicative line of M22 (#271): universe-level
-equality up to `denoteEquiv` is decidable for `limax`-free expressions. -/
+`DecidableEq`.  Universe-level equality up to `denoteEquiv` is decidable
+for `limax`-free expressions. -/
 def LevelExpr.decideDenoteEquiv
     (e1 e2 : LevelExpr)
     (hPred1 : LevelExpr.isPredicative e1 = true)
@@ -6050,7 +6001,7 @@ def LevelExpr.decideDenoteEquiv
       hFormsEq
         ((LevelExpr.denoteEquiv_iff_fullCanonicalize_eq e1 e2 hPred1 hPred2).mp hEquiv))
 
-/-! ### Step 7 — behavioral smoke corpus for the predicative decision procedure
+/-! ### Behavioral smoke corpus for the predicative decision procedure
 
 Twelve positive equivalences (each exercising one rewrite the canonical
 form must absorb) and two negative non-equivalences, all routed through
@@ -6062,9 +6013,9 @@ negative reflects a genuine form inequality (decided by the derived
 `DecidableEq MaxPlusForm`).  Every predicativity side-condition closes by
 `rfl` because all fixtures are `limax`-free.
 
-This is the persistent acceptance corpus for #419: it pins the observable
-behavior of `fullCanonicalize`/`decideDenoteEquiv` so a future refactor of
-the canonicalizer that breaks an algebraic law is caught at build time. -/
+A regression corpus pinning the observable behavior of
+`fullCanonicalize`/`decideDenoteEquiv`, so a refactor of the canonicalizer
+that breaks an algebraic law is caught at build time. -/
 
 /-- Idempotent dedup: `lmax e e` canonicalizes to `e`. -/
 theorem LevelExpr.smoke_denoteEquiv_idempotentDedup :
@@ -6154,15 +6105,14 @@ theorem LevelExpr.smoke_notDenoteEquiv_varVsSucc :
   absurd ((LevelExpr.denoteEquiv_iff_fullCanonicalize_eq _ _ rfl rfl).mp hEquiv)
     (by decide)
 
-/-! ### Step 7b — smoke-count + behavior ratchet (#419 acceptance gate)
+/-! ### Smoke-count + behavior ratchet
 
 The fourteen `smoke_denoteEquiv_*` / `smoke_notDenoteEquiv_*` theorems above
 are each pinned individually by `#assert_no_axioms`, so none can be deleted
-without its audit line failing to resolve its name.  This subsection adds
-the COMPLEMENTARY guard the acceptance criterion calls for: a single
-data-driven corpus the count and behavior ratchets quantify over, so the
-corpus cannot silently shrink and no fixture's verdict can silently flip
-under a canonicalizer refactor.
+without its audit line failing to resolve its name.  This subsection adds a
+COMPLEMENTARY guard: a single data-driven corpus the count and behavior
+ratchets quantify over, so the corpus cannot silently shrink and no
+fixture's verdict can silently flip under a canonicalizer refactor.
 
 `predicativeSmokeCorpus` lists each fixture as `(left, right, expectedEquiv)`.
 The count ratchet fixes the size at fourteen; the behavior ratchet re-runs
@@ -6210,18 +6160,17 @@ theorem LevelExpr.predicativeSmokeCorpus_behavior :
           LevelExpr.MaxPlusForm.fullCanonicalize (LevelExpr.toMaxPlusForm entry.2.1)))
         == entry.2.2) = true := rfl
 
-/-! ### Step 8 — working-set size bound (complexity-witness foundation)
+/-! ### Working-set size bound (complexity-witness foundation)
 
 The decision procedure `decideDenoteEquiv` computes `fullCanonicalize`
 on both inputs, and `fullCanonicalize`'s dominant cost is the insertion
 sort `canonicalizeVarOffsets` over the form's `varOffsets` list.  The
 honest complexity claim for that sort is sort-dominated **O(n²)** in the
-list length `n` (insertion sort is quadratic worst-case) — NOT the
-aspirational O(n log n).  This section pins the first half of that claim
-as a *theorem* rather than a comment: the list the sort runs over has
-length at most the input expression's `size`.  That makes "the working
-set is O(size)" verifiable, which is the substrate any later step-count
-bound stands on.
+list length `n` (insertion sort is quadratic worst-case) — NOT O(n log n).
+This section pins the first half of that claim as a *theorem* rather than
+a comment: the list the sort runs over has length at most the input
+expression's `size`.  That makes "the working set is O(size)" verifiable,
+the substrate the step-count bound stands on.
 
 `List.length_append` in core Lean leaks `propext` (verified by probe),
 so the append-length fact is reimplemented here propext-free by
@@ -6263,8 +6212,8 @@ empty form, so its arm is `0 ≤ size`.  `lsucc` routes through
 `incrementOffsets` (length-preserving); `lmax` through `merge` (append,
 so lengths add); the leaves are `0`/`1`.  Consequence: the insertion
 sort inside `fullCanonicalize` runs over a list of length ≤ `size`, so
-its O(n²) cost is O(size²) — the verifiable core of #419's
-complexity bound. -/
+its O(n²) cost is O(size²) — the verifiable core of the complexity
+bound. -/
 theorem LevelExpr.toMaxPlusForm_varOffsets_length_le_size (level : LevelExpr) :
     (LevelExpr.toMaxPlusForm level).varOffsets.length ≤ level.size := by
   induction level with
@@ -6290,15 +6239,16 @@ theorem LevelExpr.toMaxPlusForm_varOffsets_length_le_size (level : LevelExpr) :
       show (1 : Nat) ≤ 1
       exact Nat.le_refl 1
 
-/-! ### Step 9 — the sort + absorb passes don't grow the working set
+/-! ### The sort + absorb passes don't grow the working set
 
 `canonicalizeVarOffsets = absorbAdjacent ∘ sortByVariable`.  Insertion
 sort preserves length (each `insertByVariable` adds exactly one entry);
 run-fusion `absorbAdjacent` is non-increasing (fuse drops an entry, skip
-keeps it).  Composing those with Step 8's input bound gives the
-END-TO-END working-set bound:
+keeps it).  Composing those with the input bound
+`toMaxPlusForm_varOffsets_length_le_size` gives the END-TO-END
+working-set bound:
 `(fullCanonicalize (toMaxPlusForm e)).varOffsets.length ≤ e.size` — the
-complete structural foundation of #419's sort-dominated O(size²) claim.
+complete structural foundation of the sort-dominated O(size²) bound.
 All by structural induction matching each function's recursion shape. -/
 
 /-- `insertByVariable` adds exactly one entry: the sorted-insert grows
@@ -6391,11 +6341,11 @@ theorem LevelExpr.MaxPlusForm.canonicalizeVarOffsets_length_le
 normalized expression carries at most `size`-many variable/offset
 entries.  `normalizeBase` leaves `varOffsets` untouched and
 `canonicalize` routes them through `canonicalizeVarOffsets` (definitional
-unfolding), so this composes `canonicalizeVarOffsets_length_le` with
-Step 8's `toMaxPlusForm_varOffsets_length_le_size`.  Consequence: the
+unfolding), so this composes `canonicalizeVarOffsets_length_le` with the
+input bound `toMaxPlusForm_varOffsets_length_le_size`.  Consequence: the
 decision procedure's insertion sort runs over a list of length ≤ `size`,
-making its O(n²) cost O(size²) — the verifiable structural core of #419's
-complexity bound (sort-dominated, NOT the aspirational O(size log size)). -/
+making its O(n²) cost O(size²) — the verifiable structural core of the
+complexity bound (sort-dominated, NOT O(size log size)). -/
 theorem LevelExpr.MaxPlusForm.fullCanonicalize_toMaxPlusForm_varOffsets_length_le_size
     (level : LevelExpr) :
     (LevelExpr.MaxPlusForm.fullCanonicalize
@@ -6407,7 +6357,7 @@ theorem LevelExpr.MaxPlusForm.fullCanonicalize_toMaxPlusForm_varOffsets_length_l
       (LevelExpr.toMaxPlusForm level).varOffsets)
     (LevelExpr.toMaxPlusForm_varOffsets_length_le_size level)
 
-/-! ### Step 10 — single-pass comparison-count costs (complexity witness, part 1)
+/-! ### Single-pass comparison-count costs (complexity witness, part 1)
 
 The decision procedure's cost is the number of variable-index comparisons
 (`Nat.ble` in the sort, `Nat.beq` in the absorb pass) it performs.  This
@@ -6515,7 +6465,7 @@ theorem LevelExpr.MaxPlusForm.absorbAdjacentSteps_le_length :
         (LevelExpr.MaxPlusForm.absorbFromSteps_le_length entry rest)
         (Nat.le_succ rest.length)
 
-/-! ### Step 10 (cont.) — quadratic sort accumulation (complexity witness, part 2)
+/-! ### Quadratic sort accumulation (complexity witness, part 2)
 
 Insertion sort's total comparison count is the sum, over each element, of
 the cost of inserting it into the already-sorted prefix.  Each such
@@ -6576,7 +6526,7 @@ theorem LevelExpr.MaxPlusForm.sortByVariableSteps_le :
           (LevelExpr.MaxPlusForm.sortByVariableSteps_le rest) hInsertIntoSortedTail)
         (LevelExpr.MaxPlusForm.mulSelf_add_self_le_succ_mul_succ rest.length)
 
-/-! ### Step 10 (cont.) — total offset-canonicalizer cost (complexity witness, part 3)
+/-! ### Total offset-canonicalizer cost (complexity witness, part 3)
 
 `canonicalizeVarOffsets = absorbAdjacent ∘ sortByVariable`, so its total
 comparison count is the sort cost plus the absorb cost over the sorted
@@ -6639,7 +6589,7 @@ theorem LevelExpr.MaxPlusForm.canonicalizeVarOffsetsSteps_toMaxPlusForm_le_size
       (LevelExpr.toMaxPlusForm level).varOffsets)
     (Nat.add_le_add (Nat.mul_le_mul hWorkingSet hWorkingSet) hWorkingSet)
 
-/-! ### Step 10 (cont.) — non-vacuity corpus for the cost counters
+/-! ### Non-vacuity corpus for the cost counters
 
 The `*Steps` bounds prove "≤ polynomial"; these smokes prove the counters
 are NOT the vacuous `fun _ => 0` — they compute concrete, correct,

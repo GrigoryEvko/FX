@@ -4,9 +4,8 @@ import FX1Poly.Core.GeneratorChildSpecsDim0
 /-! # Foundation/PolyCell/Core/CellNonVarStepSubstituter
    — abstract non-recursive cell substituter step (subst-direction sibling)
 
-V2-L3.1 phase D step 33 (2026-05-27).  Subst-direction sibling of
-`CellNonVarStepRenamer.lean` (step 32).  Ships the **cell-side
-inductive step** of the eventual structural-induction mutual block
+Subst-direction sibling of `CellNonVarStepRenamer.lean`.  Ships the
+**cell-side inductive step** of the structural-induction mutual block
 for substitution preservation — packaged as NON-RECURSIVE definitions
 that take the pre-substituted spine (for non-var) or a certified
 substituent (for var) as input.
@@ -18,7 +17,7 @@ mutual block:
 
   * `PolyCell.subst_dim0_nonVarStep` — for a non-var generator,
     given a pre-substituted spine, rebuild the parent cell at the
-    target scope.  Body of the future `subst_dim0`'s non-var arm.
+    target scope.  Body of `subst_dim0`'s non-var arm.
 
   * `PolyCell.subst_dim0_varStep` — for the var case, return the
     substituent cell directly.  Caller supplies it: `sigma`'s output
@@ -26,18 +25,18 @@ mutual block:
 
 ## Why this matters
 
-Mirrors the rename-direction step renamers (step 32) so the eventual
-SR umbrella has matched infrastructure for both directions.  Subject
-Reduction's β-arm closes by combining:
+Mirrors the rename-direction step renamers so the SR umbrella has
+matched infrastructure for both directions.  Subject Reduction's
+β-arm closes by combining:
 
-  1. Project body's HCC + arg's HCC from the source cert (existing).
+  1. Project body's HCC + arg's HCC from the source cert.
   2. Recursively substitute body's children via the spine substituter
-     mutual block (PENDING — termination + boundary cast blockers).
+     mutual block.
   3. Rebuild via `PolyCell.subst_dim0_nonVarStep` (this file's
      non-var helper) OR return arg via the `varStep`.
 
-With both step renamers and step substituters shipped, the mutual
-block's body becomes a thin dispatcher.
+With both step renamers and step substituters in place, the mutual
+block's body is a thin dispatcher.
 
 ## Var case design
 
@@ -70,7 +69,7 @@ Given:
 
 produces the substituted cell at the target scope.
 
-Body of the future `PolyCell.subst_dim0`'s non-var arm. -/
+Body of `PolyCell.subst_dim0`'s non-var arm. -/
 def PolyCell.subst_dim0_nonVarStep
     {profile : PolyProfile} {srcScope tgtScope : Nat}
     (sigma : RawTermSubst srcScope tgtScope)

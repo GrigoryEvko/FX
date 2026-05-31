@@ -15,9 +15,9 @@ def rawCellTagVerticalComposite : Nat := 2
 def rawCellTagHorizontalComposite : Nat := 3
 def rawCellTagIdentityCell : Nat := 4
 
--- Generator id extraction (position in the enum via a total function)
--- For now just use the Generator's index via a match. This is a placeholder
--- that works; a proper toNat can be added later.
+-- Generator id extraction: a total injective tag assignment, one
+-- distinct Nat per generator (injectivity proved in
+-- GeneratorTagRoundTrip.lean).
 def Generator.toNat : Generator → Nat
   | .gen_var => 0 | .gen_unit => 1 | .gen_lam => 2 | .gen_app => 3
   | .gen_pair => 4 | .gen_fst => 5 | .gen_snd => 6

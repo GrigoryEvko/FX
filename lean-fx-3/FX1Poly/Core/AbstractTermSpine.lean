@@ -23,25 +23,19 @@ That spine type CANNOT be parameterized over an abstract child
 carrier — it has to know about both `PolyCell` (for the head
 type) and `RawTermChildren` (for the index).  So the
 spec-aligned `CertifiedTermSpine` ships inside the mutual block
-with `PolyCell` in `PolyCell.lean` (Stage L1c.3).
+with `PolyCell` in `PolyCell.lean`.
 
-This `AbstractTermSpine` (originally drafted as
-`CertifiedTermSpine` in commit `cf1fe6c1`) is the
-carrier-abstraction PATTERN — the same blueprint v1's
-`CellChildren` used (parametric over `ChildCarrier`).  It's
-preserved here for two reasons:
+This `AbstractTermSpine` is the carrier-abstraction PATTERN
+(parametric over `ChildCarrier`).  It serves two roles:
 
 1. **The convenience layer is shared.** `ChildSpec.expectedScope`
    + its six smart-constructor lemmas + `ChildSpec.ExpectedCell`
    are useful regardless of which spine type consumes them.  Those
-   are kept here as the canonical helpers.
+   are the canonical helpers, defined here.
 
-2. **L2 Allais-style folds may want abstract carriers.** When the
-   Allais-style `fold` (task #177) is built over `RawTerm`, an
-   abstract child-spine over a fold-result carrier could simplify
-   the structural recursion.  This is forward-compat scaffolding;
-   if the L2 design doesn't ultimately use it, this file can be
-   stripped to just the `ChildSpec.expectedScope` namespace.
+2. **Allais-style folds may want abstract carriers.** An abstract
+   child-spine over a fold-result carrier could simplify the
+   structural recursion of an Allais-style `fold` over `RawTerm`.
 
 ## What's in this file
 
@@ -49,10 +43,8 @@ preserved here for two reasons:
 * Six `expectedScope_*` lemmas (sameScopeDimZero,
   underOneBinderDimZero, four .term/.type pairings)
 * `ChildSpec.ExpectedCell` — carrier slot type at one spec
-* `AbstractTermSpine` — the parametric inductive (was named
-  `CertifiedTermSpine` in `cf1fe6c1`; renamed `2026-05-27` to
-  free that name for the spec-aligned concrete version in
-  `PolyCell.lean`)
+* `AbstractTermSpine` — the parametric inductive (the spec-aligned
+  concrete spine lives in `PolyCell.lean`)
 * `arity` + `arity_eq_length` + `ForGenerator` + the parallel
   arity-equality lemma
 
@@ -67,10 +59,6 @@ abstract carrier" pattern used in:
 
 * Sikkel/BiSikkel CwF semantic typing (POPL'25): presheaves carry
   abstract elements before being instantiated by specific models.
-
-* v1's own `CellChildren` (this file is its direct v2 successor in
-  spirit; the actual spine `PolyCell.gen` consumes is the
-  spec-aligned concrete version in `PolyCell.lean`).
 
 ## Zero-axiom verification
 
@@ -165,13 +153,13 @@ end ChildSpec
 /-- Heterogeneous abstract-child spine, parametric over a carrier.
 
 PARAMETRIC over `ChildCarrier`: the spine doesn't know what a
-"child" is.  Useful as an architectural blueprint and for forward-
-compat with L2 Allais-style folds.
+"child" is.  Useful as an architectural blueprint and for
+Allais-style folds.
 
 NOT used by the certified `PolyCell.gen` constructor — that
 consumes a CONCRETE spine type-indexed by the children's raws,
 defined inside the mutual block with `PolyCell` in
-`PolyCell.lean` (Stage L1c.3, task #148).
+`PolyCell.lean`.
 
 Indexed by `List ChildSpec`: each position `i` in the spec list
 demands a child of type `(specs[i]).ExpectedCell ChildCarrier

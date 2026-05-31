@@ -4,7 +4,7 @@ import FX1Poly.Core.RawTermSubst
 
 /-! # Foundation/PolyCell/Core/RawCellRenameSubst — cell-layer rename / subst
 
-V2-L2.8.  This file shipss the **cell-layer fold** for `RawCell`:
+The **cell-layer fold** for `RawCell`:
 
   RawCell.rename : RawRenaming src tgt → RawCell src → RawCell tgt
   RawCell.subst  : RawTermSubst src tgt → RawCell src → RawCell tgt
@@ -14,20 +14,9 @@ The cell layer is structurally simpler than the term layer:
 * 5 ctors (vs RawTerm's `.mkGen` with 194 generators).
 * No binder shifts at the cell layer — categorical composition
   doesn't introduce new variable binders.  The term layer's fold
-  (#177) handles all binder plumbing internally.
-* `termBase t` delegates to term-layer `rename` / `subst` (#178 / #180).
+  handles all binder plumbing internally.
+* `termBase t` delegates to term-layer `rename` / `subst`.
 * All other ctors are pure structural recursion.
-
-## Position in the V2 ladder
-
-V2-L2 (the Allais-style fold layer) consists of three sub-layers:
-  * V2-L2.1-L2.7 — the TERM layer (fold + Action laws).  COMPLETE.
-  * V2-L2.8       — the CELL layer (rename/subst lift).  THIS COMMIT.
-  * V2-L2.9-L2.11 — cascade-deletion demo + subst0/β + audit gates.
-
-After this commit, the cell layer has its own rename/subst —
-exactly mirroring v1's `PolyCell.rename` / `PolyCell.subst` but
-over the un-indexed scope-only-indexed v2 representation.
 
 ## Why structural recursion (not fold-like generic engine)
 
@@ -36,16 +25,16 @@ abstraction.  Direct structural recursion is simpler, more
 readable, and equally cascade-tax-resistant (adding a new cell
 ctor costs ONE arm, which is intrinsic to cell-layer extension).
 
-If/when we add a 6th cell ctor (e.g. `pushoutCell` for HoTT-style
+If/when a 6th cell ctor is added (e.g. `pushoutCell` for HoTT-style
 HITs at the cell layer), each rename/subst gets one new arm —
 trivial to extend.
 
-## Future cascade savings
+## Downstream consumers
 
-This file enables the cell-layer metatheory (V2-L2.12 boundary
-preservation, V2-L2.13 rename-equivariance) and the cell-layer
-confluence (V2-L3.x).  Without `RawCell.rename` / `subst`, those
-later steps can't even state their goals.
+`RawCell.rename` / `subst` are the prerequisites for the cell-layer
+metatheory (boundary preservation, rename-equivariance) and
+cell-layer confluence — those later steps cannot state their goals
+without them.
 
 ## Zero-axiom verification
 
@@ -253,12 +242,12 @@ theorem RawCell.rename_identityCell_unfolds
     RawCell.rename rawRenaming (.identityCell baseCell) =
       .identityCell (RawCell.rename rawRenaming baseCell) := rfl
 
-/-! ## V2-L2.12: subst push-through lemmas (cell-level boundary preservation)
+/-! ## Subst push-through lemmas (cell-level boundary preservation)
 
 Per polycell.md §11.6.2, the LOAD-BEARING property of cell-level
 substitution is that `subst` pushes through each cell constructor
-homomorphically.  The `termBase` arm is already shipped above;
-this section completes the family for the four remaining ctors.
+homomorphically.  The `termBase` arm is above; this section
+completes the family for the four remaining ctors.
 
 Each closes by `rfl` because `RawCell.subst` is a direct 5-arm
 structural recursion: the ctor pattern match unfolds definitionally

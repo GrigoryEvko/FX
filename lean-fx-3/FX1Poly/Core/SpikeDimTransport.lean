@@ -2,8 +2,10 @@ import FX1Poly.Core.CellSort
 
 /-! # SPIKE-1: value-level dim transport in certified generatingCell
 
-Tests whether moving dim from a type INDEX to a COMPUTED value keeps
-the boundary transport propext-free.  DELETE after verdict recorded. -/
+A minimal spike confirming that moving dim from a type INDEX to a
+COMPUTED value keeps the boundary transport propext-free.  The
+`#print axioms` commands at the end record the verdict; the spike is
+retained as the empirical evidence cited by `HasEqualDim.lean`. -/
 
 namespace FX1Poly.Core.SpikeDimTransport
 
@@ -51,7 +53,7 @@ def buildConcrete (scope : Nat) (srcPay tgtPay : Nat) :
 
 /-- General: arbitrary cells with decided dim equality.
 Uses Eq.rec to transport certs from source.dim/target.dim to canonicalDim.
-THE test: does this Eq.rec leak propext? -/
+The `#print axioms` verdict below confirms this Eq.rec is propext-free. -/
 def buildGeneral (scope : Nat)
     (source target : SpikeRawCell scope)
     (sourceBoundary : SpikeBoundary scope source.dim)

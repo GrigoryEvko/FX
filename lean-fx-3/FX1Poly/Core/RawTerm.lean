@@ -1,11 +1,10 @@
 import FX1Poly.Core.GeneratorCore
 
-/-! # Foundation/PolyCell/Core/RawTerm — the v2 structural raw term layer
+/-! # Foundation/PolyCell/Core/RawTerm — the structural raw term layer
 
 Scope-indexed, NOT dim-indexed.  One generic `mkGen` constructor over
 the `Generator` enum with structural children via `binderShifts`.
-Nested terms are directly representable (the v1-impossible case).
-No Term dependency. -/
+Nested terms are directly representable. -/
 
 open FX1Poly.Core (Generator)
 

@@ -10,13 +10,10 @@ import FX1Poly.Core.RuleSpec
 
 /-! # Foundation/PolyCell/Core/PolyCell — the certified inductive
 
-This file ships the v2 certified-cell inductive `PolyCell` together
-with its spec-aligned spine `CertifiedTermSpine` in a single mutual
-block.  This is the architectural headline of the v2 re-foundation:
-ONE generic `gen` constructor admits every dim-0 term-former
-(subsuming the 5 per-fixture ctors of v1), with the cascade tax
-collapsed into 9 metadata-table lines per feature instead of
-600-1000 LoC per ctor.
+The certified-cell inductive `PolyCell` together with its
+spec-aligned spine `CertifiedTermSpine` in a single mutual block.
+ONE generic `gen` constructor admits every dim-0 term-former, with
+the cascade tax collapsed into 9 metadata-table lines per feature.
 
 ## The mutual block — tying the knot
 
@@ -42,11 +39,8 @@ So the mutual block compiles cleanly.
 
 ### `gen` — the cascade-killing headline
 
-Subsumes v1's `lambdaUnitTypeBodyVarZero` /
-`applicationVarZeroVarOne` / `piTypeUnitCodomainUnit` /
-`contextConsEmptyUnitLinear` etc. (5+ per-fixture ctors).  ONE generic
-ctor admits any term-former whose `Generator` is admitted and whose
-payload passes evidence:
+ONE generic ctor admits any term-former whose `Generator` is
+admitted and whose payload passes evidence:
 
 ```
 gen : (admissionWitness : SupportedGenerator generator) →
@@ -57,15 +51,14 @@ gen : (admissionWitness : SupportedGenerator generator) →
 ```
 
 Adding a feature = adding ONE `SupportedGenerator` arm — NO new
-PolyCell constructor needed.  This is the load-bearing payoff of
-the v2 architecture: the 9-lines-per-feature discipline at L1
-translates here into ZERO new ctors at L1c.
+PolyCell constructor needed.  The 9-lines-per-feature discipline at
+L1 translates here into ZERO new ctors at L1c.
 
 ### `generatingCell` — dim-(n+1) rules
 
 Certifies a generating cell at `source.dim + 1`, with source and
 target endpoints certified at `source.dim` (reconciled via
-`HasEqualDim source target`).  Gated by SPIKE-1's value-level dim
+`HasEqualDim source target`).  Gated by the value-level dim
 transport pattern.
 
 ### `verticalComposite` — same-dim composition
@@ -104,7 +97,7 @@ in lockstep — `headSpec :: restSpecs` is paired with
 passing `generator.childSpecs` as childSpecs and `generator.binderShifts`
 as binderShifts both type-check directly; the spine is constructible
 iff the coherence holds at the value level (which it does, by the
-shipped coherence lemma).
+coherence lemma).
 
 This is the **Allais-style "track parallel indices"** pattern from
 the Indexed Functors universe-of-syntaxes paper (Allais et al.,
@@ -127,23 +120,22 @@ spine ctor admitting non-termBase heads.
 All declarations use propext-free structural patterns: no
 match-wildcard, no auto-derived DecEq on indexed inductives, no
 type-level reasoning on Nat indices via equation compiler.  The
-SPIKE-1 transport from `HasEqualDim` is the only `▸` used (and it's
-in the `generatingCell` ctor's signature, propext-clean by
+value-level transport from `HasEqualDim` is the only `▸` used (and
+it's in the `generatingCell` ctor's signature, propext-clean by
 construction since `HasEqualDim` is decided by `Nat.decEq`).
 
-Audit-gated in `Tools/AuditAll/AuditPolyCell.lean` per the V2-L1c.3
-section.
+Audit-gated in `Tools/AuditAll/AuditPolyCell.lean`.
 
-This file CLOSES tasks #148-#152 (V2-L1c.3 through V2-L1c.7) in one
-atomic commit, since Lean 4 mutual inductives must be declared
-together and incremental ctor extension isn't possible.
+The four constructors are declared in one block, since Lean 4
+mutual inductives must be declared together and incremental ctor
+extension isn't possible.
 -/
 
 namespace FX1Poly.Core
 
 mutual
 
-/-- The v2 certified-cell inductive.  Indexed by sort, dim, scope,
+/-- The certified-cell inductive.  Indexed by sort, dim, scope,
 boundary, and raw erasure.  Four constructors:
 
 * `gen` admits any term-former with proper admission + payload evidence
@@ -159,9 +151,9 @@ inductive PolyCell (profile : PolyProfile) :
     CellBoundary profile sort dim scope →
     RawCell scope →
     Type where
-  /-- ONE generic certified term-former constructor.  Subsumes v1's
-  5+ per-fixture term ctors.  Adding a feature = adding ONE
-  `SupportedGenerator` arm; ZERO new PolyCell ctors. -/
+  /-- ONE generic certified term-former constructor.  Adding a
+  feature = adding ONE `SupportedGenerator` arm; ZERO new PolyCell
+  ctors. -/
   | gen :
       {scope : Nat} → {generator : Generator} →
       {payload : generator.payload scope} →
@@ -176,7 +168,7 @@ inductive PolyCell (profile : PolyProfile) :
 
   /-- Certified dim-(n+1) generating cell over two certified endpoints
   of EQUAL computed dimension, reconciled by `HasEqualDim` against a
-  supported rule.  Gated by SPIKE-1's value-level dim transport. -/
+  supported rule.  Gated by the value-level dim transport. -/
   | generatingCell :
       {scope : Nat} → (rule : RuleSpec) →
       SupportedRuleSpec rule →

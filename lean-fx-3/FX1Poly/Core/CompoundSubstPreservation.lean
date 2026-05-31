@@ -3,9 +3,9 @@ import FX1Poly.Core.SubstPreservationProbes
 
 /-! # Foundation/PolyCell/Core/CompoundSubstPreservation — compound subst preservation
 
-V2-L3.1 phase D step 18 (2026-05-27).  Symmetric to
-`CompoundRenamePreservation.lean` — ships **compositional
-preservation lemmas** for compound generators under SUBST.
+Symmetric to `CompoundRenamePreservation.lean` — ships
+**compositional preservation lemmas** for compound generators
+under SUBST.
 
 ## Why this matters
 

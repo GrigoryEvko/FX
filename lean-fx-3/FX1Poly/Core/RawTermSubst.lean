@@ -4,22 +4,18 @@ import FX1Poly.Core.RawTermWeaken
 
 /-! # Foundation/PolyCell/Core/RawTermSubst — subst via fold
 
-This file ships `RawTerm.subst` — the THIRD one-line fold
-instantiation, completing the rename/weaken/subst trio that
-demonstrates the L2 architectural payoff.
-
-Direct v2 counterpart to v1's `RawTerm.subst` (a 74-arm pattern match
-in the dim-indexed era).  In v2, subst is one fold call with the
-`RawTermSubst` Container.
+`RawTerm.subst` — a one-line fold instantiation, completing the
+rename/weaken/subst trio of L2 fold operations.  Subst is one fold
+call with the `RawTermSubst` Container.
 
 ## What makes subst different from rename
 
-`RawRenaming`'s variable bridge (per #175) wraps the renamed Fin in
+`RawRenaming`'s variable bridge wraps the renamed Fin in
 `.mkGen .gen_var pos .childNil` — the position is renamed but stays
 a variable.
 
-`RawTermSubst`'s variable bridge (per #175) returns the substituent
-DIRECTLY — the position is REPLACED by an arbitrary term.
+`RawTermSubst`'s variable bridge returns the substituent DIRECTLY —
+the position is REPLACED by an arbitrary term.
 
 Despite this semantic difference, the fold engine is the SAME for
 both.  The Container's `ActsOnRawTermVar` instance picks the
@@ -28,9 +24,9 @@ variable position.  No new engine code needed for subst.
 
 ## The LiftsRaw bootstrap
 
-This file ships `RawTermSubst.lift` (the binder-lift operation for
-substitutions) and `instance : LiftsRaw RawTermSubst`.  These ARE
-the substitution-side equivalents of `RawRenaming.lift`.
+`RawTermSubst.lift` (the binder-lift operation for substitutions)
+and `instance : LiftsRaw RawTermSubst` are the substitution-side
+equivalents of `RawRenaming.lift`.
 
 Standard de Bruijn discipline: when lifting through a binder:
 * Variable 0 in the new scope maps to a fresh variable 0 (the bound
@@ -38,12 +34,12 @@ Standard de Bruijn discipline: when lifting through a binder:
 * Variable k+1 in the new scope maps to the WEAKENED substituent
   that was at position k in the old scope.
 
-The lift uses `RawTerm.weaken` (from #179) for the weakening step.
+The lift uses `RawTerm.weaken` for the weakening step.
 
-The Action instance for `RawTermSubst` (with `compose` using
-`RawTerm.subst`) ships LATER at V2-L2.7 (#181), once `subst`
-exists.  This file only ships the minimal `LiftsRaw` instance
-sufficient for fold to traverse.
+The full Action instance for `RawTermSubst` (with `compose` using
+`RawTerm.subst`) lives in `RawTermSubstAction.lean`; this file
+provides only the minimal `LiftsRaw` instance sufficient for fold
+to traverse.
 
 ## The one-line definitions
 
@@ -52,9 +48,8 @@ def RawTerm.subst sigma term :=
   fold GenAlgebra.canonical sigma term
 ```
 
-Same shape as `RawTerm.rename` (#178) — different Container, same
-engine.  The L2 cascade-tax killer at work: rename and subst share
-ONE recursion.
+Same shape as `RawTerm.rename` — different Container, same engine.
+Rename and subst share ONE recursion.
 
 ## Zero-axiom verification
 
@@ -62,8 +57,8 @@ All declarations propext-free:
 * `RawTermSubst.lift` — small Fin-case pattern match
 * `LiftsRaw RawTermSubst` instance — projection through lift
 * `RawTerm.subst` / `RawTermChildren.subst` — fold delegation
-* Smoke theorems close by `rfl` IF the fold dispatch chain reduces
-  on concrete inputs (which it did for #178 rename and #179 weaken)
+* Smoke theorems close by `rfl` since the fold dispatch chain reduces
+  on concrete inputs
 
 Audit-gated in `Tools/AuditAll/AuditPolyCell.lean`.
 -/
@@ -98,8 +93,8 @@ def RawTermSubst.lift {sourceScope targetScope : Nat}
 
 This is the minimal typeclass instance fold needs to traverse a
 RawTerm using a substitution.  The full `Action` instance (with
-`compose` defined via `RawTerm.subst`) ships at V2-L2.7 (#181)
-once `subst` exists. -/
+`compose` defined via `RawTerm.subst`) lives in
+`RawTermSubstAction.lean`. -/
 instance instLiftsRawRawTermSubst : LiftsRaw RawTermSubst where
   liftForRaw := RawTermSubst.lift
 
@@ -107,9 +102,8 @@ instance instLiftsRawRawTermSubst : LiftsRaw RawTermSubst where
 corresponding substituent, threading through binders by lifting the
 substitution at each crossing.
 
-**ONE LINE via fold**.  Same engine as `rename` (#178), different
-Container.  The L2 cascade-tax killer at work: rename and subst share
-the fold recursion. -/
+**ONE LINE via fold**.  Same engine as `rename`, different
+Container: rename and subst share the fold recursion. -/
 def RawTerm.subst {sourceScope targetScope : Nat}
     (someSubstitution : RawTermSubst sourceScope targetScope)
     (sourceTerm : RawTerm sourceScope) :

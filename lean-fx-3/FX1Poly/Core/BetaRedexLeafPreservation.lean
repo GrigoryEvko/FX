@@ -4,9 +4,9 @@ import FX1Poly.Core.RawTermSubst0
 /-! # Foundation/PolyCell/Core/BetaRedexLeafPreservation
    — beta-redex leaf preservations
 
-V2-L3.1 phase D step 18 (2026-05-27).  Ships the **base cases** of
-the future structural subst0-preservation theorem, focused on the
-shapes that appear as the BODY of a beta redex.
+Ships the **base cases** of the structural subst0-preservation
+theorem, focused on the shapes that appear as the BODY of a beta
+redex.
 
 ## What this ships
 
@@ -15,10 +15,10 @@ For each simple body shape `b`, a preservation lemma:
   given `argCert : HasCertifiedCellDim0 rawArg` (when needed),
   prove `HasCertifiedCellDim0 (RawTerm.subst0 b rawArg)`.
 
-These are the leaf cases of the eventual structural induction
-on `body` for SR-beta.  Each closes by `rw [subst0_X_reduces];
-exact intro` — the same compositional template as the
-nullary-leaf and compound preservations already shipped.
+These are the leaf cases of the structural induction on `body` for
+SR-beta.  Each closes by `rw [subst0_X_reduces]; exact intro` — the
+same compositional template as the nullary-leaf and compound
+preservations.
 
 ## Coverage
 
@@ -43,10 +43,10 @@ substitution.
 
 ## Why these matter for SR-beta
 
-When SR-beta lands as a structural induction on `body`, the leaf
-cases (this file) discharge the base of the induction.  The
-inductive cases (compound generators) reduce to recursive calls
-on the children's preservations.
+In SR-beta as a structural induction on `body`, the leaf cases
+(this file) discharge the base of the induction.  The inductive
+cases (compound generators) reduce to recursive calls on the
+children's preservations.
 
 Each of these lemmas is a single-step proof and demonstrates
 the compositional pattern that scales to the full theorem.

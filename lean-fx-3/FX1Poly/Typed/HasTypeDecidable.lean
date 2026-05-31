@@ -3,10 +3,10 @@ import FX1Poly.Typed.IsTypeDecidable
 /-! # FX1Poly/Typed/HasTypeDecidable
     — typed checking collapses to classifier equality (current fragment)
 
-On the current `HasType` fragment (`var` / `conv` / `universeFormation`), deciding
+On the current `HasType` fragment, deciding
 `HasType context subject classifier` does NOT require a `Conv` decision: validity
 (`HasType.classifierIsType`) makes every classifier an `IsType`, hence a
-non-stepping normal leaf, and the per-shape inversions hand back a `Conv` to
+non-stepping normal cell, and the per-shape inversions hand back a `Conv` to
 another normal cell — so normal-form rigidity (`Conv.eq_of_isType`) collapses the
 whole judgment to *syntactic equality of the classifier*:
 
@@ -15,13 +15,13 @@ whole judgment to *syntactic equality of the classifier*:
 * `HasType context (universeCodeCell e f) classifier
    ↔ classifier = universeCodeCell e.lsucc f`
   (`HasType.universeCodeCell_iff_classifierEqSucc`);
-* a subject whose head is neither `gen_var` nor `gen_universeCode` is never typed
-  (`HasType.not_of_headGenerator`).
+* a subject whose head is none of `gen_var`, `gen_universeCode`, `gen_piTyCode`,
+  `gen_sigmaTyCode` is never typed (`HasType.not_of_headGenerator`).
 
-These are the full content of `Decidable (HasType …)` (#461) for this fragment —
+These are the content of `Decidable (HasType …)` (#461) for this fragment —
 the decision procedure then assembles them over `DecidableEq RawTerm`, with no
-normalizer (the feared general-`Conv` / NbE dependency never arises, because a
-non-type classifier is exactly the no-derivation case).
+normalizer (a general-`Conv` / NbE dependency never arises, because a non-type
+classifier is exactly the no-derivation case).
 
 ## Zero-axiom verification
 
@@ -123,6 +123,9 @@ the index / `(level, flag)` as data), then `dite` on `generator` via
   payload.2` (`DecidableEq RawTerm`) via `universeCodeCell_iff_classifierEqSucc`;
 * `gen_var` → decide `classifier = context.lookup payload` via
   `variableCell_iff_classifierEqLookup`;
+* `gen_piTyCode` / `gen_sigmaTyCode` → recurse on the domain and codomain
+  children (the codomain under the domain binder) and check the classifier is
+  the `lmax` universe code;
 * otherwise → `isFalse` via `HasType.not_of_headGenerator`.
 
 No `Conv` decision / normalizer: the iff lemmas already collapsed typed checking
@@ -253,13 +256,13 @@ def HasType.decidableOfWellFormed {profile : PolyProfile} {scope : Nat}
       else
         isFalse (HasType.not_of_headGenerator hVariable hUniverse hPi hSigma)
 
-/-- Decidable typed conversion (★ A-core, #462): the convertibility of the
+/-- Decidable typed conversion (#462): the convertibility of the
 CLASSIFIERS of two well-typed terms is decidable.  Both classifiers are `IsType`
-by validity (`HasType.classifierIsType`), hence normal leaves, so this reduces to
+by validity (`HasType.classifierIsType`), hence normal, so this reduces to
 `Conv.decidableOfIsType` (normal-form rigidity + `DecidableEq RawTerm`, no
 normalizer).  This is the entry point a bidirectional checker uses to compare a
 synthesized classifier against an expected one — the typed-Conv leg of the
-leaf-fragment decidable-typing triad. -/
+decidable-typing triad on this fragment. -/
 def Conv.decidableOfTyped {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {firstSubject firstClassifier secondSubject secondClassifier : RawTerm scope}

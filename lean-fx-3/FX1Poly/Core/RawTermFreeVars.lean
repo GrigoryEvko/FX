@@ -2,7 +2,7 @@ import FX1Poly.Core.RawTermFresh
 
 /-! # Foundation/PolyCell/Core/RawTermFreeVars
 
-Computable free-variable support for the v2 raw PolyCell substrate.
+Computable free-variable support for the raw PolyCell substrate.
 
 The project kernel deliberately avoids importing a host finite-set
 library here.  A raw variable set is therefore a characteristic

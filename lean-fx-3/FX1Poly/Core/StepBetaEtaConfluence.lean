@@ -6,11 +6,10 @@ import FX1Poly.Core.StepEtaEtaCriticalPairs
 The eta cascade extends the raw one-step relation by opt-in union:
 `Step.betaEta = Step ∪ Step.eta`.  The local one-step join theorem for
 that union is `BetaEtaPairJoin.cd_lemma_betaEta`; this file supplies the
-matching Newman bridge without claiming the missing global SN theorem.
+matching Newman bridge.
 
-Task #357 is therefore split honestly: this module ships the conditional
-confluence machinery for beta+iota+eta, while the actual global
-strong-normalization witness remains blocked by #258.
+The confluence machinery here is conditional on global strong
+normalization for beta+iota+eta, which is supplied separately.
 -/
 
 namespace FX1Poly.Core
@@ -47,12 +46,12 @@ def IsStronglyNormalizing {scope : Nat} (sourceTerm : RawTerm scope) :
   Acc Step.betaEtaSuccessor sourceTerm
 
 /-- Strong normalization for beta+iota+eta at every scope.  This is the
-future M10-style input needed to close beta+eta confluence globally. -/
+input needed to close beta+eta confluence globally. -/
 def HasStrongNormalization : Prop :=
   ∀ {scope : Nat} (sourceTerm : RawTerm scope),
     IsStronglyNormalizing sourceTerm
 
-/-- The shipped beta+eta local critical-pair dispatcher gives the
+/-- The beta+eta local critical-pair dispatcher gives the
 one-step/one-step local join for the beta+iota+eta relation. -/
 theorem localJoin_of_cdLemmaBetaEta {scope : Nat}
     {sourceTerm leftReduct rightReduct : RawTerm scope}

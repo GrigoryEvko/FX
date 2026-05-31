@@ -6,10 +6,9 @@ import FX1Poly.Core.CompoundSubstPreservation
 /-! # Foundation/PolyCell/Core/PairEliminatorLayer
    — full compositional layer for `gen_fst` and `gen_snd`
 
-V2-L3.1 phase D step 22 (2026-05-27).  Extends the 16-generator
-compositional surface to include the pair eliminators (`fst`/`snd`).
-These are the FIRST eliminator generators to get full
-intros + projections + preservations coverage.
+Extends the 16-generator compositional surface to include the pair
+eliminators (`fst`/`snd`) with full intros + projections +
+preservations coverage.
 
 ## Why fst/snd matter for SR-cong
 
@@ -21,9 +20,9 @@ the SR-cong proof chain needs:
   3. **REBUILD**: `HCC x'` → `HCC (fst x')` via the intro
 
 Without intros/projections for fst, SR-cong for fst subterm steps
-cannot close.  Same for snd.  This file ships both.
+cannot close.  Same for snd.  This file provides both.
 
-## What this file ships
+## Contents
 
 For each of `gen_fst` and `gen_snd` (8 declarations each = 16 total):
 
@@ -39,19 +38,17 @@ For each of `gen_fst` and `gen_snd` (8 declarations each = 16 total):
 
 ## Coverage gap context
 
-The existing 16-generator surface (var/unit/boolTrue/boolFalse/
+The 16-generator constructor surface (var/unit/boolTrue/boolFalse/
 natZero/listNil/optionNone + app/pair/listCons/natSucc/optionSome/
-eitherInl/eitherInr/refl/lam) covers TERM CONSTRUCTORS but not
-ELIMINATORS.  This file is the first step in extending coverage
-to eliminators.  Future iterations can add `boolElim`, `natElim`,
-`natRec`, `listElim`, `optionMatch`, `eitherMatch`, `idJ`,
-`idStrictRec` following the same template.
+eitherInl/eitherInr/refl/lam) covers TERM CONSTRUCTORS; the pair
+eliminators extend coverage to eliminators.  Further eliminators
+(`boolElim`, `natElim`, `natRec`, `listElim`, `optionMatch`,
+`eitherMatch`, `idJ`, `idStrictRec`) follow the same template.
 
 ## Zero-axiom verification
 
-Spike (`Smoke/SpikeFstIntro.lean`, deleted) confirmed
-`#print axioms HasCertifiedCellDim0.fstSpike` reports clean.
-Each declaration follows the same recipe and is audit-gated.
+Each declaration is propext-free under the same recipe and is
+audit-gated.
 -/
 
 namespace FX1Poly.Core

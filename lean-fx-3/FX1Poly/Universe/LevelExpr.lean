@@ -1,11 +1,8 @@
 /-! # Foundation/PolyCell/Universe/LevelExpr
-   — Phase Z₀ universe-polymorphism payload + DecidableEq
+   — universe-polymorphism payload + DecidableEq
 
-M21 (#270, 2026-05-28).  FIRST shipped piece of Phase Z₀.  Ships
-the `LevelExpr` inductive carrying universe-polymorphism payload
-per polycell.md §11.8 (lines 4015-4031).
-
-Per the spec excerpt:
+The `LevelExpr` inductive carrying universe-polymorphism payload
+per polycell.md §11.8 (lines 4015-4031):
 
 ```
 inductive LevelExpr where
@@ -16,7 +13,7 @@ inductive LevelExpr where
   | lvar  : Nat → LevelExpr                    -- universe variable
 ```
 
-## What this ships
+## What this file defines
 
 * `LevelExpr` inductive (5 ctors per spec).
 * `DecidableEq LevelExpr` via `deriving DecidableEq` — propext-free
@@ -26,55 +23,19 @@ inductive LevelExpr where
 * 5 explicit equality smokes (one per ctor) — `rfl`-pinned to
   catch regressions if `deriving DecidableEq` ever silently
   changes shape.
+* `LevelExpr.ne_lsucc_self` predicativity guard.
 
-## What this does NOT ship
+Polynomial-time normalization up to `lmax e e = e`,
+`lmax lzero e = e`, etc. lives in `LevelExprSimplify`.
 
-* **Polynomial-time normalization** (M22 #271 task): per
-  Mörtberg-Sterling arXiv:2406.05425, equality up to
-  `lmax e e = e`, `lmax lzero e = e`, etc.  Substantial
-  algorithm (~300-500 LoC); deferred to M22.
+## The five constructors
 
-* **UniverseFlag enum** (M23 #272 task): the Setzer-Rathjen
-  ladder (standard / inaccessible / mahlo / superMahlo /
-  nMahlo / hyperMahlo / weaklyCompact / indescribable /
-  reflecting / vopenka).
-
-* **Generator.payload refactor** (M24 #273 task): retrofitting
-  `gen_universeCode` to use `LevelExpr × UniverseFlag` payload
-  in place of the current `Nat`.
-
-* **4 universe-mode generators** (M25 #274): gen_universeU /
-  gen_universeS / gen_universeD / gen_universeOmega.
-
-This is the FOUNDATION — type definition + DecidableEq only.
-M22-M30 build the rest of Phase Z₀ on top.
-
-## Phase Z₀ STRICT gate advancement
-
-Per `AuditPhaseZ.lean` (#380): when M22 ships polynomial-time
-normalization + M23 ships UniverseFlag, the Phase Z₀
-`STRICT_Z0_MOTIVE_state` advances from `.notStarted` to
-`.scaffoldShipped`.  This commit is the FIRST advance signal:
-the underlying inductive exists, but the full motive
-infrastructure (normalization + flag + Generator refactor) is
-pending.  Lockstep advancement is M22+M23+M24+M25 territory.
-
-## Why LevelExpr (vs `UniverseLevel`)
-
-The existing `Foundation/Ty.lean` uses `UniverseLevel` (a simple
-Nat wrapper at scope 0).  `LevelExpr` is the RICHER replacement
-adding:
 * `lmax e1 e2` — least upper bound (for `Π (x:A_e1). B_e2 :
   Type (lmax e1 e2)`).
 * `limax e1 e2` — impredicative max (for `Π (x:Prop). B_e :
   Type e` collapsing to Prop when codomain is Prop).
 * `lvar n` — universe variable (for first-class universe
   polymorphism).
-
-Migration from `UniverseLevel` to `LevelExpr` happens at M24
-(#273) and is intentionally NOT done here — this commit ships
-the new inductive as a parallel definition, leaving the existing
-`UniverseLevel` in place until M24's migration cascade lands.
 
 ## Zero-axiom verification
 
@@ -86,7 +47,7 @@ the new inductive as a parallel definition, leaving the existing
 ## References
 
 * polycell.md §11.8 (lines 4015-4031) for the canonical spec.
-* Mörtberg-Sterling arXiv:2406.05425 for the M22 normalization
+* Mörtberg-Sterling arXiv:2406.05425 for the normalization
   algorithm.
 * Sterling-Harper LFMTP 2021 "Logical Relations as Types"
   §5.4 for the universe-polymorphism motivation.

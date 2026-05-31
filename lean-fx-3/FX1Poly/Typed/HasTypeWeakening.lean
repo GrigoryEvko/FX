@@ -2,13 +2,12 @@ import FX1Poly.Typed.HasType
 import FX1Poly.Core.RawTermRename
 import FX1Poly.Core.ConvSubstRename
 
-/-! # FX1Poly/Typed/HasTypeWeakening — typed renaming + weakening (TY-SR support)
+/-! # FX1Poly/Typed/HasTypeWeakening — typed renaming + weakening
 
-The first typed metatheory lemma: `HasType` is preserved under renaming
-(and its weakening special case).  This is the structural half of the
-fibration property (SR) and the engine behind the typed substitution lemma
-(#457) and IsType-stability (#468).  No `Conv.trans` needed — weakening is
-structural — so it is UNBLOCKED, unlike the deferred probes.
+`HasType` is preserved under renaming (and its weakening special case).
+This is the structural half of the fibration property (SR) and the engine
+behind the typed substitution lemma and IsType-stability.  No `Conv.trans`
+needed — weakening is structural.
 
 This file starts with the two `rename` computations the typing arms need:
 how a renaming acts on a variable cell and a universe-code cell.
@@ -45,9 +44,9 @@ spine, and the `Unit` payload's `payload_scope_invariant_of_not_var` cast reduce
 to `rfl` exactly as in the nullary `rename_universeCodeCell`.
 
 Spelled with `iterateLiftRaw _ 1` (not `LiftsRaw.liftForRaw _`, the defeq single
-lift) to match the substrate's `RawTermSubst0Commute` convention, so the
-stage-2 (#443) typed Π-weakening case chains directly with the existing
-`*_iterateLiftRaw_*` commutation lemmas. -/
+lift) to match the substrate's `RawTermSubst0Commute` convention, so the typed
+Π-weakening case chains directly with the `*_iterateLiftRaw_*` commutation
+lemmas. -/
 theorem rename_piTyCodeCell {sourceScope targetScope : Nat}
     (rawRenaming : RawRenaming sourceScope targetScope)
     (domainCode : RawTerm sourceScope)
@@ -62,8 +61,8 @@ theorem rename_piTyCodeCell {sourceScope targetScope : Nat}
 canonical fold treats uniformly): the domain (child shift `0`) by the renaming
 itself, the codomain (child shift `1`, under one fresh binder) by the renaming
 lifted once.  Holds by `rfl` — the dual of `rename_piTyCodeCell`, the
-binder-crossing brick the Σ-formation case of `renameRespectingContext` will
-consume once the Σ arm lands. -/
+binder-crossing brick the Σ-formation case of `renameRespectingContext`
+consumes. -/
 theorem rename_sigmaTyCodeCell {sourceScope targetScope : Nat}
     (rawRenaming : RawRenaming sourceScope targetScope)
     (domainCode : RawTerm sourceScope)
@@ -78,13 +77,13 @@ theorem rename_sigmaTyCodeCell {sourceScope targetScope : Nat}
 renaming.  The naturality square `lift ρ ∘ weaken = weaken ∘ ρ` at the term
 level.
 
-This is the binder-crossing crux the #443 `piFormation` case of
+This is the binder-crossing crux the `piFormation` case of
 `renameRespectingContext` needs: its codomain premise is checked under
 `Γ.cons domain`, so the IH fires with the LIFTED renaming, and discharging the
 lifted context-condition reduces (at both the de Bruijn-0 and successor index)
-to exactly this commutation on the looked-up binding types.  Until `piFormation`
-(the first binder-introducing arm) lands, `renameRespectingContext` never lifts
-its renaming — this lemma is the infrastructure that unblocks that case.
+to exactly this commutation on the looked-up binding types.  It is the only
+place `renameRespectingContext` lifts its renaming (the binder-introducing arms
+do; the leaf arms do not).
 
 Proof: `RawTerm.rename_compose` (twice) reduces both sides to a single composed
 renaming, and the two composites agree pointwise (`lift ρ ∘ weaken` and
@@ -111,13 +110,13 @@ where the target context is the source extended by one binding.
 The `targetContext` / `rawRenaming` / context-condition are quantified
 INSIDE the conclusion (after the `:`), so `induction typed` carries them in
 the motive and re-introduces them per case — the source context is an index
-of `typed`, so it generalizes correctly through the induction.  The core has
-no binder-introducing arm yet, so the context-condition never needs lifting;
-that is exactly why renaming is tractable at this stage.
+of `typed`, so it generalizes correctly through the induction.  The
+binder-introducing arms (`piFormation` / `sigmaFormation`) lift the
+context-condition across the fresh binder; the leaf arms pass it verbatim.
 
 Critically `Conv.trans`-free: the `conv` case forwards `Conv.rename` (#370)
-without ever composing conversions.  So typed weakening is UNBLOCKED, unlike
-the uniqueness / no-Type-in-Type probes that wait on raw confluence. -/
+without ever composing conversions — so typed weakening does not depend on raw
+confluence. -/
 theorem HasType.renameRespectingContext {profile : PolyProfile}
     {sourceScope : Nat} {sourceContext : TypingContext profile sourceScope}
     {subject classifier : RawTerm sourceScope}
@@ -228,7 +227,7 @@ theorem HasType.renameRespectingContext {profile : PolyProfile}
 /-- Typed weakening: `HasType` survives extending the context by one fresh
 binding, with both subject and classifier shifted by `RawRenaming.weaken`.
 The corollary of `renameRespectingContext` whose context-condition is the
-`lookup_cons_succ` unfolder (#467) — and that condition holds DEFINITIONALLY
+`lookup_cons_succ` unfolder — and that condition holds DEFINITIONALLY
 (`fun _ => rfl`): `weaken index` unfolds to `Fin.succ index`, the `cons`
 telescope's `lookup` fires its successor arm, and the `Fin` proof collapses
 by proof-irrelevance, leaving exactly `rename weaken (context.lookup index)`.

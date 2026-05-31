@@ -2,7 +2,7 @@ import FX1Poly.Typed.HasTypeDecidable
 import FX1Poly.Typed.HasTypeConsistency
 
 /-! # FX1Poly/Typed/HasTypeInfer
-    — bidirectional type SYNTHESIS (`infer`) for the current fragment (#478 / #300 M51)
+    — bidirectional type SYNTHESIS (`infer`) for the current fragment
 
 The decidable-typing triad (#461/#462/#303) answers "does `subject` have the GIVEN
 type `T`?".  Synthesis is the dual, more primitive query an agentic FX user asks:
@@ -49,7 +49,7 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- Synthesise the type of `subject` (#478 / #300): return its classifier with
+/-- Synthesise the type of `subject`: return its classifier with
 the typing derivation, or `none` if untypeable.  Sound by construction — a `some`
 carries `HasType Γ subject T`.  `var` is handled directly (always typeable by its
 lookup); every other head delegates to `IsType.decideWithWitness`, which

@@ -12,11 +12,11 @@ predicate on raw terms closed under the three CR conditions:
 * **CR3** — a *neutral* term all of whose one-step reducts are reducible is
   itself reducible (backward closure restricted to neutrals).
 
-This is the second brick of the Tait reducibility machinery (roadmap M9-S1,
-polycell.md §11.8.5), built on the concrete `IsNeutral` predicate (the first
-brick).  Per the substrate correction recorded this session, lean-fx-3 has no
-MLTT `Ty` inductive — classifiers are `.type`-sorted `RawTerm` cells — so the
-machinery is Girard candidates over `RawTerm`, not a `Ty`-indexed predicate.
+This is the second brick of the Tait reducibility machinery
+(polycell.md §11.8.5), built on the concrete `IsNeutral` predicate (the first
+brick).  lean-fx-3 has no MLTT `Ty` inductive — classifiers are
+`.type`-sorted `RawTerm` cells — so the machinery is Girard candidates over
+`RawTerm`, not a `Ty`-indexed predicate.
 The candidate abstraction here is substrate-agnostic: it is a property of a
 bare term-predicate, independent of how types eventually map to candidates.
 

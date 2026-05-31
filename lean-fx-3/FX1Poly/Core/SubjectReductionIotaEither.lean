@@ -3,8 +3,7 @@ import FX1Poly.Core.Step
 
 /-! # Foundation/PolyCell/Core/SubjectReductionIotaEither — eitherMatch step iotas
 
-V2-L3.1 phase D step 9 (2026-05-27).  Ships SR arms 9-10: the
-FIRST two **compound iotas**.
+The SR arms for the two `eitherMatch` **compound iotas**.
 
 A compound iota differs from a pure-projection iota in that its
 target is NOT a direct child of the source's spine — instead, the
@@ -14,16 +13,15 @@ wrapper's payload + a branch:
   * iotaEitherMatchInl: `eitherMatch (inl value) leftBranch rightBranch ↝ app leftBranch value`
   * iotaEitherMatchInr: `eitherMatch (inr value) leftBranch rightBranch ↝ app rightBranch value`
 
-(The other 4 compound iotas — `iotaOptionMatchSome`,
-`iotaNatElimSucc`, `iotaListElimCons`, `iotaNatRecSucc` — follow
-the same template with different wrapper / branch positions.)
+The other compound iotas — `iotaOptionMatchSome`, `iotaNatElimSucc`,
+`iotaListElimCons`, `iotaNatRecSucc` — follow the same template with
+different wrapper / branch positions.
 
-## What's new vs. the projection iotas
+## What distinguishes compound from projection iotas
 
-The 8 already-shipped iota arms (pure projection: 6, nested
-projection: 2) all extract their target FROM the source's spine
-structure.  The target is a child or a descendant child — never a
-new construction.
+The projection iotas (pure and nested) all extract their target FROM the
+source's spine structure: the target is a child or a descendant child,
+never a new construction.
 
 Compound iotas BUILD a new term:
 
@@ -36,7 +34,7 @@ The proof must:
      (eitherInl wrapper, leftBranch, rightBranch).
   2. Unwrap the eitherInl wrapper to extract the certified `value`
      cell (one level of nested cases — needs the
-     `generalize_sort` recipe per #45aedf38 / commit memory
+     `generalize_sort` recipe, per commit memory
      `feedback_lean_generalize_sort_dep_elim`).
   3. ASSEMBLE a new `CertifiedTermSpine` carrying the leftBranch
      and value cells in the order gen_app expects.
@@ -61,8 +59,6 @@ Both arms close via the generalize-the-sort recipe + explicit
 cons-spine construction.  No `simp`, no `omega`, no
 propext-touching tactics.  Audit-gated in
 `Tools/AuditAll/AuditPolyCell.lean`.
-
-After this commit: 10/18 SR arms shipped.
 -/
 
 namespace FX1Poly.Core

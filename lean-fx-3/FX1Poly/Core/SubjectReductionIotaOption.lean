@@ -3,26 +3,14 @@ import FX1Poly.Core.Step
 
 /-! # Foundation/PolyCell/Core/SubjectReductionIotaOption — optionMatch step iota
 
-V2-L3.1 phase D step 10 (2026-05-27).  Ships SR arm 11:
-`iotaOptionMatchSome`.
+The SR arm for `iotaOptionMatchSome`:
 
 `optionMatch (optionSome value) noneBranch someBranch ↝ app someBranch value`.
 
-Structurally IDENTICAL to `iotaEitherMatchInl` /
-`iotaEitherMatchInr` (sibling commit a8f3c45a) — a single-payload
-wrapper plus two branches, target `gen_app` of the relevant branch
-+ wrapped value.  Only difference: the wrapper generator is
-`gen_optionSome` (instead of `gen_eitherInl` / `gen_eitherInr`),
-and the chosen branch is `someBranch` (the second of two
-branches).
-
-The template proven in the eitherMatch commit applies verbatim
-modulo these names.
-
-After this commit: 11/18 SR arms shipped.  Remaining: 3 compound
-iotas (natElimSucc / natRecSucc / listElimCons — all build NESTED
-`gen_app` terms with recursive calls or 2-arg payload extraction),
-2 identity iotas, beta, cong.
+Structurally identical to `iotaEitherMatchInl` / `iotaEitherMatchInr` — a
+single-payload wrapper plus two branches, target `gen_app` of the relevant
+branch + wrapped value.  The wrapper generator is `gen_optionSome` and the
+chosen branch is `someBranch` (the second of two branches).
 -/
 
 namespace FX1Poly.Core

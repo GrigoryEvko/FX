@@ -6,14 +6,11 @@ import FX1Poly.Core.RawTermSubst0
 /-! # Foundation/PolyCell/Core/ConvSubstRename
    — Conv preservation under substitution + renaming + β-redex shape
 
-M-Conv-subst-rename (#370, 2026-05-28).  Ships the Conv-level
-preservation theorems that the 5-agent gap audit (Agent 2) surfaced
-as missing.  Currently `Step.subst` / `StepStar.subst` ship at
-`StepSubst.lean:21,184` and `Step.rename` / `StepStar.rename` ship at
-`StepRename.lean:156` (via M-substrate-1 #365), but the Conv-layer
-wrappers do not exist as named theorems — so downstream typed-layer
-SR (M46 #295) + typed weakening (M47 #296) have no clean substrate
-to cite.
+Ships the Conv-level preservation theorems (#370).  `Step.subst` /
+`StepStar.subst` live in `StepSubst.lean` and `Step.rename` /
+`StepStar.rename` live in `StepRename.lean`; this file provides the
+Conv-layer wrappers as named theorems, giving downstream typed-layer
+SR and typed weakening a clean substrate to cite.
 
 ## API surface
 
@@ -70,7 +67,7 @@ direct Fin position-zero / position-succ case analysis.
 
 * `Conv` definition + `Conv.refl` from `StepStarConfluence.lean:18-176`.
 * `StepStar.subst` from `StepSubst.lean:184`.
-* `StepStar.rename` from `StepRename.lean:156` (via M-substrate-1).
+* `StepStar.rename` from `StepRename.lean:156`.
 * `StepStar.trans_compose` from `StepStar.lean:210`.
 * `RawTermSubst.PointwiseStepStar` + `subst_pointwise_stepStar` from
   `StepSubst.lean:1096,1230`.
@@ -85,16 +82,14 @@ existential Conv proofs).  No `simp`, no `omega`, no propext.
 The Fin case-analysis uses direct `⟨0, _⟩` / `⟨_ + 1, _⟩` struct
 matching per `feedback_lean_fin_cases_axiom` recipe — axiom-free.
 
-Audit-gated.  Consumers: M46 #295 ★ Typed SR, M47 #296 typed
-weakening + substitution, M-Conv-equivalence #371 (composes with
-refl/symm/trans for the Equivalence instance), M55a #364 typed
-β+η Decidable Conv. -/
+Audit-gated.  Consumed by typed SR, typed weakening + substitution,
+the Conv `Equivalence` instance, and typed beta+eta Decidable
+Conv. -/
 
 namespace FX1Poly.Core
 
--- `RawRenaming` lived in lean-fx-2's enclosing `LeanFX2` namespace (visible
--- by nesting); in lean-fx-3 it moved to `FX1Poly.Foundation`, which no longer
--- encloses `FX1Poly.Core`, so open it explicitly.
+-- `RawRenaming` lives in `FX1Poly.Foundation`, which does not enclose
+-- `FX1Poly.Core`, so open it explicitly.
 open FX1Poly.Foundation
 
 /-- **Pointwise StepStar lift to singleton substitutions.**
@@ -133,7 +128,7 @@ theorem Conv.subst {sourceScope targetScope : Nat}
          StepStar.subst substitution rightChain⟩
 
 /-- **Conv preserved by renaming.** Sibling to `Conv.subst` via
-`StepStar.rename` (M-substrate-1 #365). -/
+`StepStar.rename`. -/
 theorem Conv.rename {sourceScope targetScope : Nat}
     (rawRenaming : RawRenaming sourceScope targetScope)
     {leftTerm rightTerm : RawTerm sourceScope}
@@ -148,7 +143,7 @@ theorem Conv.rename {sourceScope targetScope : Nat}
 /-- **Conv preserved by single-binder weakening.** Specialization of
 `Conv.rename` to `RawRenaming.weaken` — the common case when
 traversing under a single lambda binder.  Used by typed weakening
-(M47 #296) to lift Conv across context extensions. -/
+to lift Conv across context extensions. -/
 theorem Conv.weaken {scope : Nat}
     {leftTerm rightTerm : RawTerm scope}
     (convProof : Conv leftTerm rightTerm) :

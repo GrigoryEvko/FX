@@ -3,7 +3,7 @@ import FX1Poly.Core.RawTermSubstPointwise
 
 /-! # Foundation/PolyCell/Core/RawTermRenameSubstCommute — rename-then-subst commute
 
-This file ships the **first cross-direction commute lemma**:
+The **first cross-direction commute lemma**:
 
   RawTerm.subst sigma (RawTerm.rename rho term)
     = RawTerm.subst (rho.thenSubst sigma) term
@@ -11,38 +11,23 @@ This file ships the **first cross-direction commute lemma**:
 — "renaming-then-substituting equals substituting via the
 pre-composed (renaming-then-lookup) substitution".
 
-Position in the cross-direction fusion ladder:
-
-  rename_pointwise            (#181c1, shipped)
-  rename's lift_compose etc.  (#181c2, shipped)
-  payload_cast_compose keystone + rename_compose  (#181c3, shipped)
-  rename_subst_commute        (THIS COMMIT)
-  subst_rename_commute        (next)
-  subst's lift_compose etc.   (after)
-  subst_compose               (the headline)
-  Action RawTermSubst instance  (closes V2-L2.7)
-
 ## Why this is the SIMPLER cross-direction lemma
 
-v1's `RawTerm.rename_subst_commute` uses an auxiliary
-`RawTermSubst.lift_renaming_pull` whose proof at both Fin cases is
-`rfl` — purely definitional.
+`rename_subst_commute` uses an auxiliary `lift_thenSubst_pull`
+whose proof at both Fin cases is `rfl` — purely definitional.
 
 The OTHER direction `subst_rename_commute` needs an auxiliary
 `RawTermSubst.lift_then_rename_lift` that uses `rename_compose`
 PLUS another helper `RawRenaming.weaken_lift_commute`.  More
 infrastructure.
 
-So shipping `rename_subst_commute` FIRST is the natural pacing:
+This direction's structure:
 * The binder-level pull (`lift_thenSubst_pull`) closes by `rfl`.
 * The iterated pull (`iterateLiftRaw_thenSubst_pointwise`) is a
   Nat induction with the standard 2-rewrite succ-case.
-* The mutual term theorem uses the now-established 4-arm template
+* The mutual term theorem uses the 4-arm template
   (var arm `rfl`, non-var arm double-unfold + cast keystone +
   children IH, cons arm head bridge + tail IH).
-
-`subst_rename_commute` ships next, after this commit's
-infrastructure is in hand.
 
 ## The bridge substitution
 
@@ -53,34 +38,28 @@ A `RawTermSubst src tgt` constructed from a renaming
 `sigma : RawTermSubst mid tgt`.  Conceptually:
 "first rename, then substitute".
 
-Named under `FX1Poly.Core.RawRenaming.thenSubst`
-(v2 namespace; v1's `FX1Poly.Foundation.RawRenaming` is not modified).
+Named under `FX1Poly.Core.RawRenaming.thenSubst`.
 
 ## Zero-axiom verification
 
-All declarations propext-free, following the recipe established
-across #181a-c3:
+All declarations propext-free:
 * `RawRenaming.thenSubst` — `@[reducible]` definition.
 * `RawRenaming.lift_thenSubst_pull` — Fin pattern match, both
   branches `rfl` (lift on both sigma and rho reduces to thenSubst-lift
   uniformly).
 * `iterateLiftRaw_RawRenaming_thenSubst_pointwise` — Nat induction
-  with `lift_pointwise` (subst-side, from #181a) and
+  with `lift_pointwise` (subst-side) and
   `lift_thenSubst_pull` chain.
 * Mutual `RawTerm.rename_subst_commute` /
   `RawTermChildren.rename_subst_commute` — `dsimp only [fold]`
   (not `unfold` — Quot.sound trap), `simp only [dif_neg hVar]`,
-  `congr 1` + cast keystone (#181c3) + mutual IH + iterated bridge
+  `congr 1` + cast keystone + mutual IH + iterated bridge
   at children spine.
 
 Audit-gated in `Tools/AuditAll/AuditPolyCell.lean`.
 
-## v1 comparison
-
-v1's `RawTerm.rename_subst_commute` (Foundation/RawSubst/
-SubstLemmas.lean lines 212-310) is a 74-arm structural induction.
-v2's version is a 4-arm mutual induction.  Cascade-tax ratio
-preserved at ~18x.
+The mutual `RawTerm.rename_subst_commute` /
+`RawTermChildren.rename_subst_commute` is a 4-arm mutual induction.
 -/
 
 namespace FX1Poly.Core
@@ -153,7 +132,7 @@ bridge (pointwise).
 Inducts on `binderDepth`:
 * `zero`: both reduce to `rho.thenSubst sigma` definitionally.
 * `succ priorDepth`: chains
-  - `lift_pointwise priorIH` (#181a, lifts the IH through one binder)
+  - `lift_pointwise priorIH` (lifts the IH through one binder)
   - `lift_thenSubst_pull` (this file, pulls the lift inside)
   via two rewrites. -/
 theorem iterateLiftRaw_RawRenaming_thenSubst_pointwise
@@ -193,16 +172,12 @@ theorem iterateLiftRaw_RawRenaming_thenSubst_pointwise
 
 /-! ## Section 4 — The term-level commute (mutual)
 
-In v1: 74-arm structural induction.
-In v2: 4-arm mutual induction reusing fold's dispatch + the cast
+A 4-arm mutual induction reusing fold's dispatch + the cast
 keystone + the iterated bridge above. -/
 
 mutual
 
-/-- Rename-then-subst commutes through a pre-composed substitution.
-
-This is the v2 replacement for v1's 74-arm
-`RawTerm.rename_subst_commute`. -/
+/-- Rename-then-subst commutes through a pre-composed substitution. -/
 theorem RawTerm.rename_subst_commute
     {sourceScope middleScope targetScope : Nat}
     (rawRenaming : FX1Poly.Foundation.RawRenaming sourceScope middleScope)
@@ -258,7 +233,7 @@ mutual head IH at the lifted scopes gives:
     = subst ((iter rho shift).thenSubst (iter sigma shift)) head
 
 The bridge via `iterateLiftRaw_RawRenaming_thenSubst_pointwise`
-(symmetric direction + subst_pointwise from #181a) converts this to
+(symmetric direction + subst_pointwise) converts this to
 `subst (iter (rho.thenSubst sigma) shift) head`. -/
 theorem RawTermChildren.rename_subst_commute
     {sourceScope middleScope targetScope : Nat}

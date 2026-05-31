@@ -6,9 +6,8 @@ import FX1Poly.Core.GenAlgebra
 /-! # Foundation/PolyCell/Core/StructuralInductionPrimitives
    — building blocks for the structural induction over PolyCell
 
-V2-L3.1 phase D step 28 (2026-05-27).  Ships the **foundational
-primitives** that the future structural induction
-(`HasCertifiedCellDim0.preservedBySubst`) will compose:
+The **foundational primitives** the structural induction
+(`HasCertifiedCellDim0.preservedBySubst`) composes:
 
   1. **Shape extraction**: any `HCC source` unwraps to a
      `.mkGen generator payload children` shape via the dim-0 cell
@@ -43,17 +42,15 @@ The cell half needs to:
       - non-var: apply `subst_nonVar_reduces` + recursive spine call
         + rebuild via `PolyCell.gen` + `.intro`.
 
-The primitives shipped here are the toolkit (b)/(c) needs.  The
-mutual recursion + spine half are the remaining (substantial)
-work — but each primitive verified at zero axioms locks in a
-foundation that doesn't shift under the cascade.
+The primitives here are the toolkit (b)/(c) needs.  The mutual
+recursion + spine half live in `SubstPreservationMutual.lean`; each
+primitive verified at zero axioms locks in a foundation that doesn't
+shift under the cascade.
 
 ## Zero-axiom verification
 
 All declarations close via `dsimp only` + `rw [dif_neg ...]` + `rfl`
-or direct hypothesis application.  Spike (deleted) confirmed
-`#print axioms RawTerm.subst_nonVar_spike` reports clean.
-Audit-gated.
+or direct hypothesis application.  Audit-gated.
 -/
 
 namespace FX1Poly.Core

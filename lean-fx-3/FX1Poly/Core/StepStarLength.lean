@@ -5,14 +5,13 @@ import FX1Poly.Core.StepSubst
 /-! # Foundation/PolyCell/Core/StepStarLength
    — Nat-indexed counted parallel of StepStar (well-founded measure)
 
-M-substrate-4 (2026-05-28).  Ships the well-founded recursion measure
-for `StepStar` chains.  Since `StepStar` is `Prop`-valued (per
-`StepStar.lean:114`), defining a function
+The well-founded recursion measure for `StepStar` chains.  Since
+`StepStar` is `Prop`-valued, defining a function
 `StepStar.length : StepStar a b → Nat` would require large elimination
 from `Prop` into `Nat` — blocked without `Classical.choice` /
-`propext`.  Banned by the strict zero-axiom discipline.
+`propext`, banned by the strict zero-axiom discipline.
 
-The standard workaround: ship a Nat-indexed counted variant
+The standard workaround: a Nat-indexed counted variant
 `StepStarN n a b : Prop` that PARALLELS `StepStar a b` with an
 explicit Nat index.  Equivalent in power; reasoning about "length"
 becomes reasoning about the index.
@@ -40,18 +39,17 @@ without `Classical.choice` / `propext`.  The Nat-indexed counted
 variant is the standard zero-axiom workaround: induct on the index,
 reason about the explicit count.
 
-Downstream consumers (M19 `#268` STRICT-COMPLEXITY witness, M16 `#265`
-NbE soundness via length-induction, M-strip-property `#377`) all
-reason about the existential `∃ n, StepStarN n a b` without needing
-a function — the existential gives a concrete bound when paired with
-SN (M10 `#259`).
+Downstream consumers (the STRICT-COMPLEXITY witness, NbE soundness via
+length-induction, the strip property) all reason about the existential
+`∃ n, StepStarN n a b` without needing a function — the existential
+gives a concrete bound when paired with SN.
 
 ## Connection to other substrate
 
-* M-substrate-1 `#365` `Step.rename` / `StepStar.rename` already
-  shipped at `StepRename.lean:156` — consumed by `StepStarN.rename`.
-* `Step.subst` / `StepStar.subst` shipped at `StepSubst.lean:184` —
-  consumed by `StepStarN.subst`.
+* `Step.rename` / `StepStar.rename` (`StepRename.lean`) is consumed
+  by `StepStarN.rename`.
+* `Step.subst` / `StepStar.subst` (`StepSubst.lean`) is consumed by
+  `StepStarN.subst`.
 * `Nat.succ_add` (core Nat lemma) drives the `trans_compose`
   arithmetic — no `omega`.
 
@@ -64,9 +62,8 @@ Audit-gated in `Tools/AuditAll/AuditPolyCell.lean`. -/
 
 namespace FX1Poly.Core
 
--- `RawRenaming` lived in lean-fx-2's enclosing `LeanFX2` namespace (visible
--- by nesting); in lean-fx-3 it moved to `FX1Poly.Foundation`, which no longer
--- encloses `FX1Poly.Core`, so open it explicitly.
+-- `RawRenaming` lives in `FX1Poly.Foundation`, which does not enclose
+-- `FX1Poly.Core`, so open it explicitly.
 open FX1Poly.Foundation
 
 /-- Nat-indexed counted parallel of `StepStar`.

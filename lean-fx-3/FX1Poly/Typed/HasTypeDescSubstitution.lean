@@ -9,7 +9,7 @@ import FX1Poly.Core.ConvSubstRename
     for the description engine.
 
 polycell.md §11.8.5 P6 ("Substitution / weakening = whiskering, the β-engine"): typing is
-preserved along a context morphism.  This file ships the SUBSTITUTION half — `HasTypeDesc`
+preserved along a context morphism.  This file carries the SUBSTITUTION half — `HasTypeDesc`
 is preserved along ANY substitution whose substituents are target-typed at the substituted
 source-binding types — and the single-substitution (`subst0`) corollary the β-rule cites.
 
@@ -22,10 +22,10 @@ second-derivation inversion, so cross-calls sit on PRISTINE `match`-bound subter
 Lean's structural recursion lands it without `termination_by` (the genFormation companion
 cross-call HOISTED before `by_cases`).  Proved BY INDUCTION on `HasTypeDesc`, NOT routed
 through the `⟺` maps.  `Conv.subst` (#370) rides the `conv` arm; no `Conv.trans`, so the
-β-engine is UNBLOCKED ahead of raw confluence.
+β-engine does not depend on raw confluence.
 
 The decouple COMPOUNDS: the telescope companion's `cons` successor case reuses the INTRINSIC
-`HasTypeDesc.weakenUnderBinding` (last fire) to weaken the substituent across the binder —
+`HasTypeDesc.weakenUnderBinding` to weaken the substituent across the binder —
 intrinsic substitution standing on intrinsic weakening, no `HasType` in either.
 
 ## The telescope companion's lifted substitution-condition

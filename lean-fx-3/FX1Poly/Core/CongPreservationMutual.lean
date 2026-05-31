@@ -4,16 +4,16 @@ import FX1Poly.Core.Step
 /-! # Foundation/PolyCell/Core/CongPreservationMutual
    — spine-level core for uniform congruence preservation
 
-This file starts task #252 / M3.  The final endpoint is
-`HasCertifiedCellDim0.preservedByCong`, the 18th structural SR arm.
+The endpoint is `HasCertifiedCellDim0.preservedByCong`, a structural
+SR arm.
 
-This first layer avoids the Step/StepChildren circularity by
+This layer avoids the Step/StepChildren circularity by
 parameterizing the spine recursion over a sort-preserving cell-level
 step preserver.  The recursive work over `StepChildren` is real and
 generic: one `here` arm rebuilds the stepped head, and one `there`
 arm rebuilds the unchanged head plus recursively-preserved tail.
 
-The remaining M3 layer instantiates the parameter with the mutual
+The instantiating layer supplies the parameter with the mutual
 `Step` dispatcher (`beta`, `cong`, and the 16 iotas).
 -/
 
@@ -58,10 +58,10 @@ def StepCellPreserverWitness (profile : PolyProfile) : Prop :=
 
 /-- Exact beta preservation at the Prop-packaged `PolyCell` layer.
 
-This is the concrete beta arm needed by the final
+This is the concrete beta arm needed by the
 `StepCellPreserverWitness` mutual dispatcher.  The source app cell
 exposes the lambda and argument cells through its certified spine; the
-lambda cell exposes the body cell; #251's structural substitution
+lambda cell exposes the body cell; the structural substitution
 driver then certifies `subst0 body rawArg` at the exact `.term` sort. -/
 theorem PolyCell.exists_preservedByBeta_dim0
     {profile : PolyProfile} {scope : Nat}
@@ -911,7 +911,7 @@ cell-level step preserver used for the stepped child.
 
 This packages the generic spine recursion back into
 `HasCertifiedCellDim0` for the parent generator.  It is the non-circular
-outer wrapper for the final `Step.cong` arm. -/
+outer wrapper for the `Step.cong` arm. -/
 theorem HasCertifiedCellDim0.preservedByCong_via_stepPreserver
     {profile : PolyProfile} {scope : Nat}
     (stepPreserver : StepCellPreserver profile)
@@ -944,11 +944,10 @@ theorem HasCertifiedCellDim0.preservedByCong_via_stepPreserver
 /-- Prop-packaged preservation of a certified child spine across a
 `StepChildren` witness, using a Prop-valued exact-sort step preserver.
 
-This is the version the final M3 mutual proof can instantiate.  It
-has the same spine recursion as
-`exists_preservedByChildStep_via_stepPreserver`, but the `here` arm
-obtains its stepped head cell from a Prop existential rather than
-from a Type-valued function out of `Step`. -/
+This is the version the mutual proof instantiates.  It has the same
+spine recursion as `exists_preservedByChildStep_via_stepPreserver`,
+but the `here` arm obtains its stepped head cell from a Prop
+existential rather than from a Type-valued function out of `Step`. -/
 theorem CertifiedTermSpine.exists_preservedByChildStep_via_stepPreserverWitness
     {profile : PolyProfile} {parentScope : Nat} {binderShifts : List Nat}
     {children children' : RawTermChildren binderShifts parentScope}
@@ -1088,9 +1087,9 @@ theorem HasCertifiedCellDim0.preservedByCong_via_stepPreserverWitness
               payloadEvidence
               targetSpine)
 
-/-- Final Prop-valued exact-sort preserver for every `Step`.
+/-- Prop-valued exact-sort preserver for every `Step`.
 
-This is the M3 mutual core: the `Step` motive proves exact cell
+This is the mutual core: the `Step` motive proves exact cell
 preservation, while the `StepChildren` motive proves certified-spine
 preservation.  The `cong` arm consumes the `StepChildren` motive
 directly, avoiding the invalid Prop-to-Type elimination route. -/
@@ -1332,7 +1331,7 @@ theorem CertifiedTermSpine.exists_preservedByChildStep
     (stepPreserver := StepCellPreserverWitness.polyCell profile)
     (childStep := childStep)
 
-/-- Final M3 SR arm: uniform congruence preservation for any generator
+/-- SR arm: uniform congruence preservation for any generator
 whose child spine takes one `StepChildren` step. -/
 theorem HasCertifiedCellDim0.preservedByCong
     {profile : PolyProfile} {scope : Nat}

@@ -3,21 +3,16 @@ import FX1Poly.Core.Step
 
 /-! # Foundation/PolyCell/Core/SubjectReductionIotaProjections — nested-projection iotas
 
-V2-L3.1 phase D step 8 (2026-05-27).  Ships SR arms 7-8: the
-NESTED PROJECTION iotas.
-
-After the 6 pure-projection iotas (5 base-case branch-selection +
-`iotaBoolFalse`) shipped, the next family is **content-projection
-iotas**.  These project a value out of an explicitly-constructed
-wrapper, where the value sits TWO levels deep in the certified
-spine rather than one:
+The SR arms for the **content-projection iotas**.  These project a value
+out of an explicitly-constructed wrapper, where the value sits TWO levels
+deep in the certified spine rather than one:
 
   * iotaFstPair : `fst(pair fst snd) ↝ fst`
   * iotaSndPair : `snd(pair fst snd) ↝ snd`
 
 ## The nesting structure
 
-Compare to the pure-projection iotas already shipped:
+Compare to the pure-projection iotas:
 
   * iotaBoolTrue source:
       `boolElim boolTrue thenBranch elseBranch`
@@ -60,42 +55,30 @@ is single-armed and deterministic just like the outer one.
 
 No HEq.  No subst.  No new dim-0 transport.  The existing
 infrastructure (`headAtDim0`, the dim-0 boundary collapse via
-`Subsingleton.elim`) was already designed to compose at arbitrary
-depth.
+`Subsingleton.elim`) composes at arbitrary depth.
 
 ## Sibling iotas
 
-Pure projection iotas (already shipped, 6/6):
+Pure projection iotas:
   * iotaBoolTrue, iotaBoolFalse — branch selection from boolElim
   * iotaNatElimZero, iotaNatRecZero — zero-branch from nat
     elimination
   * iotaListElimNil — nil-branch from list elimination
   * iotaOptionMatchNone — none-branch from option matching
 
-Nested projection iotas (this commit, 2/2):
+Nested projection iotas (this file):
   * iotaFstPair, iotaSndPair — first/second from pair
 
-Compound iotas (next family, 0/4):
+Compound iotas:
   * iotaNatElimSucc, iotaListElimCons, iotaNatRecSucc,
     iotaOptionMatchSome — build a `gen_app` term after
     extracting wrapped components
-
-These three families together cover all 12 pure-iota arms.  The
-remaining SR arms are:
-  * 4 compound iotas (above)
-  * 2 identity iotas (idJ/idStrictRec on refl)
-  * 1 beta (uses V2-L2.12 subst preservation)
-  * 1 cong (structural induction over child step + spine recursion)
 
 ## Zero-axiom verification
 
 Both arms close by the template above.  No `simp`, no `omega`,
 no propext-touching tactics.  Audit-gated in
 `Tools/AuditAll/AuditPolyCell.lean`.
-
-## Total SR arm progress
-
-After this commit: 8/18 SR arms shipped.
 -/
 
 namespace FX1Poly.Core

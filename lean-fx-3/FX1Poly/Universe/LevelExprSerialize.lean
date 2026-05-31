@@ -3,11 +3,10 @@ import FX1Poly.Universe.LevelExpr
 /-! # Foundation/PolyCell/Universe/LevelExprSerialize
    — prefix-code serializer for `LevelExpr` + round-trip
 
-#432 (M24-Z1) deliverable (d), part 1: the `LevelExpr → List Nat`
-serializer feeding the FX0 certificate format (polycell.md §3.16.17 /
-§12.6.4), with a `decode ∘ encode = id` round-trip proof.  The
-`UniverseFlag` serializer (part 2) and the payload-level integration land
-in the subsequent #432 commits.
+The `LevelExpr → List Nat` serializer feeding the FX0 certificate format
+(polycell.md §3.16.17 / §12.6.4), with a `decode ∘ encode = id` round-trip
+proof.  The `UniverseFlag` serializer is in `UniverseFlagSerialize` and the
+combined payload serializer in `UniversePayloadSerialize`.
 
 ## Design — accumulator / difference-list encoding
 
@@ -21,11 +20,9 @@ encodeOnto (lmax left right) acc = 2 :: encodeOnto left (encodeOnto right acc)
 
 This is deliberate.  A naive `2 :: encode left ++ encode right ++ acc`
 form forces `List.append_assoc` into the round-trip proof, and core
-Lean's `append`/`length` lemmas leak `propext` — this codebase already
-had to reimplement `length_append` propext-free in
-`LevelExprSimplify.lean`.  The accumulator form never concatenates, so
-the round-trip closes by structural induction over `LevelExpr` alone:
-zero core-`List` lemmas, zero axioms.
+Lean's `append`/`length` lemmas leak `propext`.  The accumulator form
+never concatenates, so the round-trip closes by structural induction over
+`LevelExpr` alone: zero core-`List` lemmas, zero axioms.
 
 ## Prefix tags
 
@@ -47,11 +44,6 @@ known propext source).  `nodeCount e` is exactly the fuel a single
 expression needs, so the headline round-trip
 `decodeOnto_nodeCount_encodePrefix` decodes at fuel `e.nodeCount` and the
 sufficiency bound is `Nat.le_refl`.
-
-A list-only wrapper (`decodePrefix input := decodeOnto input.length input`,
-taking the input's own length as fuel) is a thin follow-up — its only
-extra obligation is the length bound `nodeCount e ≤ (encodeOnto e []).length`,
-deferred to keep this commit's arithmetic minimal and propext-clean.
 
 ## Propext discipline
 

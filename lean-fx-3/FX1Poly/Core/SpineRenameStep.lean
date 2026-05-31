@@ -4,16 +4,15 @@ import FX1Poly.Core.RawTermRename
 /-! # Foundation/PolyCell/Core/SpineRenameStep
    — rename-shaped spine step helpers for structural preservation
 
-Per `M-spineRenamers-retro` (#379): this file is part of the
-~400-LoC spine-renamer substrate task home consumed by M2 #251
-(SR arm 17 beta) + M3 #252 (SR arm 18 cong) mutual block.
-Sibling files in the retro: `SpineSubstStep.lean`,
-`SpineConsStep.lean`, `StepHCCWrappers.lean`.
+Part of the spine-renamer substrate consumed by the SR-beta and SR-cong
+mutual blocks (`SubstPreservationMutual.lean`, `CongPreservationMutual.lean`).
+Sibling files: `SpineSubstStep.lean`, `SpineConsStep.lean`,
+`StepHCCWrappers.lean`.
 
-This is the rename sibling of `SpineSubstStep.lean`.  It packages
-the certified-spine nil/cons cases against
-`foldChildren GenAlgebra.canonical rho`, so the future mutual
-rename-preservation proof can focus on recursive descent rather than
+The rename sibling of `SpineSubstStep.lean`.  It packages the
+certified-spine nil/cons cases against
+`foldChildren GenAlgebra.canonical rho`, so the mutual
+rename-preservation proof focuses on recursive descent rather than
 repeating the `foldChildren` shape and dim-0 cons rebuild.
 -/
 
@@ -22,7 +21,7 @@ namespace FX1Poly.Core
 open FX1Poly.Foundation
 
 /-- Empty spines are stable under renaming.  This is the nil arm of
-the future certified-spine rename recursion. -/
+the certified-spine rename recursion. -/
 def CertifiedTermSpine.renameNilStep
     {profile : PolyProfile} {srcScope tgtScope : Nat}
     (rho : RawRenaming srcScope tgtScope) :

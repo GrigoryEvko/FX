@@ -12,8 +12,8 @@ form by:
    `certifyTermSpine?`
 4. Packaging the result via `packageGen`
 
-This is the dispatcher used by the recursive certifier (#162) when
-it pattern-matches on a raw `.termBase (.mkGen generator payload
+This is the dispatcher used by the recursive certifier when it
+pattern-matches on a raw `.termBase (.mkGen generator payload
 children)` shape.
 
 ## The coherence-as-data bridge
@@ -41,8 +41,8 @@ as an argument, let the callee absorb it via `subst`.
 
 Under fxProfile, both `supportedGenerator? generator` and
 `genPayloadEvidence? payload` always return `.some` — the
-`.none` rejection paths are dead code.  Future restricted
-profiles will exercise these paths.
+`.none` rejection paths are unreachable.  Restricted profiles
+exercise these paths.
 
 The function ships the rejection paths defensively so that
 restricted-profile variants don't need ANY changes to

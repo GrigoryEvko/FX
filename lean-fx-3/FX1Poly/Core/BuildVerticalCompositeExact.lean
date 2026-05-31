@@ -9,27 +9,22 @@ takes already-certified first and second cells (both at the same
 dim+1) and constructs a certified vertical composite, or rejects with
 a specific reason.
 
-Direct v2 counterpart to v1's `buildVerticalCompositeExact?`
-(`Core/Check.lean:1825`).
-
 ## The signature shape — value-level dim as DATA
 
-v1 took `cdim : CellDim` as a TYPE parameter, forcing
-`first second : PolyTerm profile (cdim + 1)` at the type level.  v2's
-un-indexed raw layer cannot pin dim this way, so the equivalent
+The un-indexed raw layer cannot pin dim at the type level, so the
 "dim positive" constraint travels as DATA:
 
 * `parentDimension : Nat` parameter — the "n" in n+1
 * `hFirstDim : firstRaw.dim = parentDimension + 1` witness
 * `hSecondDim : secondRaw.dim = parentDimension + 1` witness
 
-The recursive certifier (#162) computes `parentDimension` from
-its structural recursion and supplies both witnesses before
-invocation.  This function never case-splits on dim — the caller has
-already discharged that proof obligation.
+The recursive certifier computes `parentDimension` from its
+structural recursion and supplies both witnesses before invocation.
+This function never case-splits on dim — the caller has already
+discharged that proof obligation.
 
-This is the **"thread coherence as data"** pattern that cleared
-#159's `binderShifts` blocker, applied here to dim coherence.
+This is the **"thread coherence as data"** pattern, applied here to
+dim coherence.
 
 ## The reconciliation steps
 
@@ -66,7 +61,7 @@ After destructuring both certified packages and reconciling sort:
    `cases` whnf-reduces `CellBoundary ... (parentDim+1) ...` to
    `Prod` and applies `Prod.mk`-elim.  This step is essential: it
    makes the typeclass search for `DecidableEq RawCell` reach the
-   propext-free `decRawCell` instance from L0 #133.
+   propext-free `decRawCell` instance.
 5. `if hMiddle : ... then ... else ...` — uses `Decidable` typeclass
    directly (whereas `by_cases` would fall back to
    `Classical.propDecidable` here, producing a noncomputable
@@ -105,7 +100,7 @@ matches the output's expected cert type.
 
 All tactics are propext-free:
 * `if-then-else` with explicit Decidable (`CellSort.decEq`,
-  propext-free `decRawCell` from L0 #133)
+  propext-free `decRawCell`)
 * `subst` via Eq.ndrec
 * `cases` on a single-ctor struct / on a Prod (no wildcards)
 * `generalize` via Eq.ndrec
@@ -121,8 +116,8 @@ namespace FX1Poly.Core
 two raw cells, two dim witnesses, and two already-certified packages.
 
 This is the dispatcher for the `.verticalComposite` case of the
-recursive certifier (#162).  The caller threads the parentDimension
-and dim witnesses as data — the function never case-splits on dim
+recursive certifier.  The caller threads the parentDimension and
+dim witnesses as data — the function never case-splits on dim
 internally.
 
 Returns a raw-indexed `CertifiedRawCell` whose rawCell is exactly

@@ -1,32 +1,18 @@
 import FX1Poly.Core.RawTermSubstRenameCommute
 
-/-! # Foundation/PolyCell/Core/RawTermSubstCompose — THE HEADLINE THIRD ACTION LAW
+/-! # Foundation/PolyCell/Core/RawTermSubstCompose — substitution composition law
 
-This file ships the **third and final Action law** V2-L2.7 needs:
+The **third Action law** at the term layer:
 
   (term.subst sigma1).subst sigma2 = term.subst (sigma1.compose sigma2)
 
-— the polynomial monad's **multiplication law** at the term layer.
+— the polynomial monad's **multiplication law**.
 
-Position in the cross-direction fusion ladder:
+## The three Action laws
 
-  rename_pointwise            (#181c1, shipped)
-  rename's lift_compose etc.  (#181c2, shipped)
-  payload_cast_compose keystone + rename_compose  (#181c3, shipped)
-  rename_subst_commute        (#181c4, shipped)
-  subst_rename_commute        (#181c5, shipped)
-  subst_compose               (THIS COMMIT — THE HEADLINE)
-  Action RawTermSubst instance  (next — closes V2-L2.7)
-
-After this commit, the only remaining work for V2-L2.7 is the
-typeclass instance citing the three laws (apply_ext from #181a,
-identity_apply from #181b, compose_assoc from this commit).
-
-## The three Action laws V2-L2.7 needs
-
-  1. apply_ext      / subst_pointwise   (#181a, shipped) ──┐
-  2. identity_apply / subst_identity    (#181b, shipped) ──┤── all three NOW DONE
-  3. compose_assoc  / subst_compose     (THIS COMMIT)    ──┘
+  1. apply_ext      / subst_pointwise
+  2. identity_apply / subst_identity
+  3. compose_assoc  / subst_compose   (this file)
 
 ## Architectural payoff: the polynomial monad fundamental theorem
 
@@ -38,11 +24,11 @@ view of substitution:
                                                           ^^^^^^^
                                               composition INSIDE the monad
 
-The Allais ICFP'18 framework says this should follow from a
-SINGLE structural induction over the term + the binder pull
-identity.  v2 realizes this exactly: the 4-arm mutual induction
-suffices, with the binder pull (lift_compose_pointwise) doing
-the substantive cross-direction work.
+The Allais ICFP'18 framework says this follows from a SINGLE
+structural induction over the term + the binder pull identity:
+the 4-arm mutual induction suffices, with the binder pull
+(lift_compose_pointwise) doing the substantive cross-direction
+work.
 
 ## The binder pull: lift_compose_pointwise
 
@@ -53,11 +39,11 @@ sigma1.lift sigma2.lift`.
 At ⟨0, _⟩: both reduce to the fresh `gen_var 0` — `rfl`.
 
 At ⟨k+1, h⟩: the proof uses BOTH cross-direction commutes:
-* `subst_rename_commute` (#181c5) on the LHS to flatten
+* `subst_rename_commute` on the LHS to flatten
   `rename weaken (subst sigma2 X)` into `subst (postRename sigma2 weaken) X`.
-* `rename_subst_commute` (#181c4) on the RHS to flatten
+* `rename_subst_commute` on the RHS to flatten
   `subst sigma2.lift (rename weaken X)` into `subst (thenSubst weaken sigma2.lift) X`.
-* `subst_pointwise` (#181a) to close from pointwise eq of
+* `subst_pointwise` to close from pointwise eq of
   `postRename sigma2 weaken` vs `thenSubst weaken sigma2.lift`.
 
 The latter pointwise eq is `rfl` per Fin position: both produce
@@ -67,8 +53,7 @@ The latter pointwise eq is `rfl` per Fin position: both produce
 
 ## The mutual `subst_compose` theorem
 
-In v1: 74-arm structural induction.
-In v2: 4-arm mutual induction using the now-stable template:
+A 4-arm mutual induction:
 * var arm = `rfl` (both reduce to `subst sigma2 (sigma1 pos)`).
 * non-var arm = double-unfold + congr + payload_cast_compose +
   children IH.
@@ -79,36 +64,20 @@ In v2: 4-arm mutual induction using the now-stable template:
 
 ## Zero-axiom verification
 
-All declarations propext-free, following the now-stable recipe
-across #181a-c5:
+All declarations propext-free:
 * `RawTermSubst.compose` — `@[reducible]` def.
 * `RawTermSubst.lift_compose_pointwise` — Fin pattern match;
-  `⟨0,_⟩` rfl, `⟨k+1,_⟩` uses BOTH commutes from #181c4/#181c5.
+  `⟨0,_⟩` rfl, `⟨k+1,_⟩` uses BOTH cross-direction commutes.
 * `iterateLiftRaw_RawTermSubst_compose_pointwise` — Nat induction.
 * Mutual `subst_compose` — standard 4-arm template.
 
 Audit-gated in `Tools/AuditAll/AuditPolyCell.lean`.
 
-## v1 comparison
+Adding a new term former costs ZERO new lines here, since the
+Generator dispatch is amortized into fold.
 
-v1's `RawTerm.subst_compose` (Foundation/RawSubst/SubstLemmas.lean
-line 667 onwards) is a 74-arm structural induction.  v2's version
-is a 4-arm mutual induction.  Cascade-tax ratio preserved at ~18x.
-
-For the entire V2-L2.7 ladder (apply_ext + identity_apply +
-compose_assoc + the cross-direction commutes), v1 totals roughly
-1900 lines of per-ctor cascades.  v2's total: roughly 2200 lines
-including substantial docstrings (LoC ratio approximately 1.15x).
-The PROOFS themselves are ~5x shorter; the docstring overhead
-absorbs the difference.  Adding a new term former to v2 is ZERO
-new lines; to v1 is +~25 lines (one per cascade lemma).
-
-## After this commit
-
-`Action RawTermSubst` instance: ~50 lines of citing the three
-laws.  The compose-via-bridges that v1's instance does, v2 does
-the same — but the laws come from THIS file (compose_assoc),
-#181b (identity_apply), and #181a (apply_ext).
+The `Action RawTermSubst` instance cites the three laws:
+compose_assoc from this file, plus identity_apply and apply_ext.
 -/
 
 namespace FX1Poly.Core
@@ -142,9 +111,9 @@ The most subtle step in the polynomial monad multiplication: lifting
 a composed substitution under a binder agrees pointwise with
 composing the lifts.
 
-This is the FIRST place in the ladder where the binder pull uses
-BOTH cross-direction commutes (subst_rename_commute from #181c5
-and rename_subst_commute from #181c4) plus subst_pointwise. -/
+This binder pull uses BOTH cross-direction commutes
+(subst_rename_commute and rename_subst_commute) plus
+subst_pointwise. -/
 
 /-- Lift commutes with substitution composition (pointwise).
 
@@ -212,7 +181,7 @@ binder depths.  Needed at each `childCons` spine descent in
   iter (compose sigma1 sigma2) depth ≅
     compose (iter sigma1 depth) (iter sigma2 depth)
 
-Standard Nat induction; succ case chains lift_pointwise (#181a)
+Standard Nat induction; succ case chains lift_pointwise
 with lift_compose_pointwise (this file). -/
 theorem iterateLiftRaw_RawTermSubst_compose_pointwise
     {sourceScope middleScope targetScope : Nat}
@@ -248,14 +217,13 @@ theorem iterateLiftRaw_RawTermSubst_compose_pointwise
               (iterateLiftRaw secondSubstitution _priorDepth)
               position
 
-/-! ## Section 4 — The headline mutual theorem
+/-! ## Section 4 — The mutual theorem
 
-In v1: 74-arm structural induction.
-In v2: 4-arm mutual induction using the now-stable template +
+A 4-arm mutual induction using the standard template +
 lift_compose_pointwise binder pull.
 
 This is the polynomial monad's multiplication law at the term
-layer.  v2 ships it in 4 arms. -/
+layer. -/
 
 mutual
 
@@ -265,8 +233,7 @@ sequentially equals applying the composed substitution once.
 The polynomial monad multiplication law at the term layer.
 
   (term.subst sigma1).subst sigma2 = term.subst (sigma1.compose sigma2)
-
-This is the v2 replacement for v1's 74-arm `RawTerm.subst_compose`. -/
+-/
 theorem RawTerm.subst_compose
     {sourceScope middleScope targetScope : Nat}
     (firstSubstitution : RawTermSubst sourceScope middleScope)

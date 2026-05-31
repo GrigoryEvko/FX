@@ -2,11 +2,9 @@ import FX1Poly.Core.GeneratorCore
 
 /-! # Foundation/PolyCell/Core/GeneratorAdmission — admission ledger
 
-This file ships the v2 generator admission layer: `SupportedGenerator`,
+This file ships the generator admission layer: `SupportedGenerator`,
 an indexed inductive parameterized by `Generator` with exactly ONE
-constructor per admitted generator (currently all 194 — Tiers ★★★★★,
-★★★★, ★★★, ★★ plus the existing 74 MLTT/HoTT/cubical/modal/refinement
-spine).
+constructor per admitted generator (all 194, grouped by tier).
 
 ## The admission contract
 
@@ -18,23 +16,21 @@ the admission discipline:
 * **Closed enumeration:** every admitted generator gets exactly one
   constructor, named identically to the Generator constructor it admits.
   Adding a feature = adding ONE arm here (and an arm in each of the 7
-  metadata tables already shipped).  No new `PolyCell` constructor.
+  metadata tables).  No new `PolyCell` constructor.
 
 * **Per-profile restrictability:** a restricted FX profile (e.g.,
-  "no-HoTT FX", "constructive-only FX") would re-define this inductive
-  with FEWER arms.  The current default — `fxProfile` — admits all 194.
+  "no-HoTT FX", "constructive-only FX") re-defines this inductive
+  with FEWER arms.  The default — `fxProfile` — admits all 194.
   Type-level evidence makes the admission set part of the soundness
   surface, not an invisible runtime check.
 
-* **Cascade-reduction mechanism (the load-bearing claim):** under the
-  v2 architecture, adding a new feature costs:
-  1. ONE `Generator` enum arm + 7 metadata table arms (already shipped
-     for all 194 features in commit `6b5eb273`).
+* **Cascade-reduction mechanism (the load-bearing claim):** adding a
+  new feature costs:
+  1. ONE `Generator` enum arm + 7 metadata table arms.
   2. ONE `SupportedGenerator` arm (this file).
-  3. ONE `GenPayloadEvidence` arm when payload constraints differ
-     (next-up — task #141).
-  Total: ~9 lines per feature, vs ~600-1000 LoC per ctor in the v1
-  cascade era.  See `docs/potential_ctors.md` §0 for the cost analysis.
+  3. ONE `GenPayloadEvidence` arm when payload constraints differ.
+  Total: ~9 lines per feature.  See `docs/potential_ctors.md` §0 for
+  the cost analysis.
 
 ## Naming convention
 
@@ -70,7 +66,7 @@ position (matches the order in `Generator` and the metadata tables for
 diff-readability). -/
 inductive SupportedGenerator : Generator → Type where
   -- ───────────────────────────────────────────────────────────────
-  -- Existing 74 (MLTT/HoTT/cubical/modal/refinement spine)
+  -- Core 74 (MLTT/HoTT/cubical/modal/refinement spine)
   -- ───────────────────────────────────────────────────────────────
   | gen_var          : SupportedGenerator .gen_var
   | gen_unit         : SupportedGenerator .gen_unit
@@ -279,16 +275,16 @@ inductive SupportedGenerator : Generator → Type where
   | gen_polyTimeWitness  : SupportedGenerator .gen_polyTimeWitness
   | gen_npComplete       : SupportedGenerator .gen_npComplete
 
-/-- Total admission lookup: every Generator in the current fxProfile has
-exactly one admission witness, returned by `cases g <;> exact ...`.
+/-- Total admission lookup: every Generator in fxProfile has exactly
+one admission witness, returned by `cases g <;> exact ...`.
 
-Future restricted profiles would re-define `SupportedGenerator` with
-fewer arms; this function would then become partial and return
-`Option (SupportedGenerator g)`.  For now (fxProfile admits all 194),
-the lookup is total. -/
+Under fxProfile (all 194 generators admitted) the lookup is total.  A
+restricted profile re-defines `SupportedGenerator` with fewer arms,
+making the corresponding lookup partial (`Option (SupportedGenerator
+g)`). -/
 def supportedGenerator : (generator : Generator) →
     SupportedGenerator generator
-  -- Existing 74
+  -- Core 74
   | .gen_var          => .gen_var
   | .gen_unit         => .gen_unit
   | .gen_lam          => .gen_lam
@@ -488,9 +484,9 @@ def supportedGenerator : (generator : Generator) →
   | .gen_polyTimeWitness  => .gen_polyTimeWitness
   | .gen_npComplete       => .gen_npComplete
 
-/-- Option-valued admission decision (#140).  In `fxProfile`, every
+/-- Option-valued admission decision.  In `fxProfile`, every
 generator is admitted, so this is always `some`.  Restricted profiles
-would return `none` for unadmitted generators.
+return `none` for unadmitted generators.
 
 Returning `Option` rather than the bare witness gives downstream code a
 uniform contract: `match supportedGenerator? g with | some w => ... |

@@ -2,15 +2,10 @@ import FX1Poly.Core.InferRawCellGeneral
 
 /-! # InferRawCellGeneralAcceptedCellDimensionEq — existential preserves dim
 
-This file ships `inferRawCellGeneral?_accepted_cellDimension_eq`:
-the first of three existential-variant soundness theorems for the
-ingress.  When the existential wrapper accepts a raw input, the
-result's stored `cellDimension` field equals the input's structural
-dim (`raw.dim`).
-
-Direct v2 counterpart to v1's
-`inferRawCellGeneral?_accepted_cellDimension_eq`
-(`Core/CertifyExact.lean:155`).
+`inferRawCellGeneral?_accepted_cellDimension_eq`: one of the
+existential-variant soundness theorems for the ingress.  When the
+existential wrapper accepts a raw input, the result's stored
+`cellDimension` field equals the input's structural dim (`raw.dim`).
 
 ## Why this theorem matters
 
@@ -24,9 +19,9 @@ structural dim.
 This theorem rules that out: every accepted call's result has
 `cellDimension = raw.dim`.
 
-Together with #168 (`_accepted_rawCell_heq`, the raw equality) and
-#169 (`_sound`, the HEq composition), this closes the
-no-laundering guarantee on the existential ingress.
+Together with `_accepted_rawCell_heq` (the raw equality) and
+`_sound` (the HEq composition), this closes the no-laundering
+guarantee on the existential ingress.
 
 ## The proof shape
 
@@ -62,9 +57,9 @@ namespace FX1Poly.Core
 when `inferRawCellGeneral? scope raw` accepts, the result's
 stored `cellDimension` equals `raw.dim`.
 
-First of three existential-variant soundness theorems.  Combined
-with #168 (raw HEq) and #169 (HEq composition), this rules out
-the wrapper laundering a different dim past the input. -/
+An existential-variant soundness theorem.  Combined with the raw
+HEq and the HEq composition, this rules out the wrapper laundering
+a different dim past the input. -/
 theorem inferRawCellGeneral?_accepted_cellDimension_eq
     {profile : PolyProfile} {scope : Nat} {raw : RawCell scope}
     {result : CertifiedRawCellResult profile scope}

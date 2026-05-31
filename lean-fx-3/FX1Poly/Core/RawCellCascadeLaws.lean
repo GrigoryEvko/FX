@@ -5,74 +5,33 @@ import FX1Poly.Core.RawTermSubstIdentity
 import FX1Poly.Core.RawTermRenameSubstCommute
 import FX1Poly.Core.RawTermSubstRenameCommute
 
-/-! # Foundation/PolyCell/Core/RawCellCascadeLaws — V2-L2.9 cascade payoff
+/-! # Foundation/PolyCell/Core/RawCellCascadeLaws — cell-layer cascade laws
 
-V2-L2.9 — the cascade-deletion demonstration, QUANTIFIED.
+The cell-layer instances of the five canonical substitution-algebra
+laws, each a five-arm structural recursion citing the corresponding
+term-layer Allais theorem at the `termBase` leaf.  This is the
+cell-layer surfacing of the term-layer Action laws, lifted through
+the structural fold.
 
-This file ships the cell-layer instances of the five canonical
-substitution-algebra laws, each as a five-arm structural recursion
-citing the corresponding term-layer Allais theorem at the `termBase`
-leaf.  No new mathematical content: this is the *cell-layer surfacing*
-of V2-L2.7's term-layer Action laws, lifted through the V2-L2.8
-structural fold.
+## The five cascade lemmas
 
-## What is the payoff?
+One per term-layer Action law:
 
-The headline is the multiplicative composition of TWO independent
-reductions:
+| Cell-layer theorem             | Cites term-layer                |
+|--------------------------------|---------------------------------|
+| `RawCell.rename_compose`       | `RawTerm.rename_compose`        |
+| `RawCell.subst_compose`        | `RawTerm.subst_compose`         |
+| `RawCell.subst_identity_apply` | `RawTerm.subst_identity_apply`  |
+| `RawCell.rename_subst_commute` | `RawTerm.rename_subst_commute`  |
+| `RawCell.subst_rename_commute` | `RawTerm.subst_rename_commute`  |
 
-* **Term-layer reduction (V2-L2.7).**  v1's `RawTerm.rename_compose` /
-  `subst_compose` / etc. were 74-78-arm structural inductions, one
-  arm per `Term` constructor (~25-30 lines per arm = ~2000 lines per
-  cascade lemma).  v2's `RawTerm.rename_compose` /
-  `subst_compose` / etc. are 4-arm mutual inductions over Generator +
-  Children (~50 lines per arm = ~200 lines per cascade lemma).
-  Per-cascade reduction: **~10x**.
-
-* **Cell-layer reduction (THIS FILE).**  v1's `PolyCell.rename_compose`
-  was a 5-arm structural induction on the cell, each `termBase` arm
-  citing the 78-arm `RawTerm` lemma.  v2's
-  `RawCell.rename_compose` is also a 5-arm structural induction on
-  the cell, but each `termBase` arm cites the 4-arm `RawTerm`
-  lemma.  The cell-layer arm-count is unchanged, but the cited proof
-  body shrinks by 10x.
-
-Combined: per cascade, v1 paid (5 cell arms + 78 term arms) = **83
-constructor-arm proofs**; v2 pays (5 cell arms + 4 term arms) = **9
-constructor-arm proofs**.  Per cascade reduction: **~9.2x**.  Across
-the five cascades shipped here, **45 arms in v2 replace 415 arms in
-v1** — a 9.2x reduction independently verified by the
-`#assert_no_axioms` audit gates on each lemma.
-
-## What is shipped here?
-
-Five cell-layer cascade lemmas, one per term-layer Action law:
-
-| Cell-layer theorem                         | Cites term-layer        | v1 cascade size | v2 cascade size |
-|--------------------------------------------|-------------------------|-----------------|-----------------|
-| `RawCell.rename_compose`                 | `RawTerm.rename_compose`        | ~83 arms        | 9 arms          |
-| `RawCell.subst_compose`                  | `RawTerm.subst_compose`         | ~83 arms        | 9 arms          |
-| `RawCell.subst_identity_apply`           | `RawTerm.subst_identity_apply`  | ~83 arms        | 9 arms          |
-| `RawCell.rename_subst_commute`           | `RawTerm.rename_subst_commute`  | ~83 arms        | 9 arms          |
-| `RawCell.subst_rename_commute`           | `RawTerm.subst_rename_commute`  | ~83 arms        | 9 arms          |
-
-Each cell-layer theorem is **one 5-arm `match`**: the `termBase` arm
+Each cell-layer theorem is one 5-arm `match`: the `termBase` arm
 cites the term-layer lemma in a single line; the four composite/
 identity arms call the same theorem recursively on sub-cells.
 
-## What this file is NOT
-
-This file is not a *new* metatheory result.  Every fact proved here
-was already provable from the V2-L2.7 + V2-L2.8 substrate; the value
-is to *exhibit* the cell-layer surfacing so downstream consumers
-(V2-L2.12 boundary preservation, V2-L3.1 subject reduction,
-V2-L3.2 confluence) can cite cell-layer compose/identity/commute laws
-without re-running the cell-layer recursion themselves.
-
-Without this file, every downstream cell-layer proof that wants
-"`subst σ` distributes over `verticalComposite`" would re-do the
-5-arm cell-layer recursion inline.  Shipping these five lemmas once
-exports the cell-layer cascade reduction as a reusable API.
+These exist so downstream consumers (boundary preservation, subject
+reduction, confluence) can cite cell-layer compose/identity/commute
+laws without re-running the cell-layer recursion themselves.
 
 ## Zero-axiom verification
 
@@ -80,18 +39,9 @@ All five cell-layer lemmas pass `#assert_no_axioms`.  Each smoke
 theorem (per-arm reduction equality at a specific cell shape) also
 passes.  Gated in `Tools/AuditAll/AuditPolyCell.lean`.
 
-## Position in the V2-L2 ladder
-
-  V2-L2.1-L2.7  TERM layer (fold + Action laws)       COMPLETE
-  V2-L2.8       CELL layer (rename/subst definitions)   COMPLETE
-  V2-L2.9       CELL layer (compose/identity/commute)   THIS COMMIT
-  V2-L2.10      subst0 single substitution + beta-shape pending
-  V2-L2.11      AuditPolyCell gates for stage-4 Allais  pending
-
-After this commit, the cell layer has the full substitution-algebra
-API: rename, subst, rename_compose, subst_compose, subst_identity,
-rename_subst_commute, subst_rename_commute — every law downstream
-metatheory needs.
+The cell layer has the full substitution-algebra API: rename, subst,
+rename_compose, subst_compose, subst_identity, rename_subst_commute,
+subst_rename_commute — every law downstream metatheory needs.
 
 ## On the design choice "structural recursion vs fold abstraction"
 
@@ -118,13 +68,10 @@ open FX1Poly.Foundation
 
 `rename second (rename first cell) = rename (compose first second) cell`.
 
-This is the cell-layer surfacing of `RawTerm.rename_compose`
-(V2-L2.7c3 / commit cd2dd724).  Five-arm structural recursion;
-`termBase` cites the term-layer compose; the four composite/identity
-arms recurse on sub-cells with the same composition.
-
-v1 analog: 5-arm `PolyCell.rename_compose` citing a 74-arm
-`RawTerm.rename_compose`.  v2: 5-arm citing a 4-arm. -/
+This is the cell-layer surfacing of `RawTerm.rename_compose`.
+Five-arm structural recursion; `termBase` cites the term-layer
+compose; the four composite/identity arms recurse on sub-cells with
+the same composition. -/
 
 /-- Cell-layer renaming-composition law.  Applying two renamings
 sequentially to a cell equals applying their pointwise composition. -/
@@ -216,8 +163,7 @@ theorem RawCell.rename_compose
 `subst second (subst first cell) = subst (compose first second) cell`.
 
 The polynomial-monad multiplication law lifted to cells.  Cites
-`RawTerm.subst_compose` (V2-L2.7c6 / commit 7c06052f) at the
-`termBase` arm. -/
+`RawTerm.subst_compose` at the `termBase` arm. -/
 
 /-- Cell-layer substitution-composition law.  Applying two
 substitutions sequentially to a cell equals applying their pointwise
@@ -317,8 +263,7 @@ theorem RawCell.subst_compose
 
 `subst identity cell = cell` — the polynomial-monad unit law.
 
-Cites `RawTerm.subst_identity_apply` (V2-L2.7b / commit 44bc05b3)
-at the `termBase` arm. -/
+Cites `RawTerm.subst_identity_apply` at the `termBase` arm. -/
 
 /-- Cell-layer identity substitution.  Substituting by the identity
 substitution returns the cell unchanged. -/
@@ -363,8 +308,7 @@ theorem RawCell.subst_identity_apply {scope : Nat}
 `subst sigma (rename rho cell) = subst (rho.thenSubst sigma) cell`.
 
 The first cross-direction commute lemma at the cell layer.  Cites
-`RawTerm.rename_subst_commute` (V2-L2.7c4 / commit 8bb39446) at the
-`termBase` arm. -/
+`RawTerm.rename_subst_commute` at the `termBase` arm. -/
 
 /-- Cell-layer rename-then-subst commute.  Renaming a cell and then
 substituting is equivalent to substituting by the pre-composed
@@ -457,8 +401,7 @@ theorem RawCell.rename_subst_commute
 `rename rho (subst sigma cell) = subst (sigma.postRename rho) cell`.
 
 The second cross-direction commute lemma at the cell layer.  Cites
-`RawTerm.subst_rename_commute` (V2-L2.7c5 / commit edb2036b) at the
-`termBase` arm. -/
+`RawTerm.subst_rename_commute` at the `termBase` arm. -/
 
 /-- Cell-layer subst-then-rename commute.  Substituting into a cell
 and then renaming is equivalent to substituting by the post-composed

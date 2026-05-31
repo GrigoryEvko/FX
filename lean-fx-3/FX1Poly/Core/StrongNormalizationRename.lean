@@ -13,16 +13,16 @@ term, so the renamed term's accessibility transfers back down to the source.
 
 The opposite (forward) direction — `SN t → SN (rename ρ t)` — would need Step
 *reflection* (every reduct of `rename ρ t` comes from a reduct of `t`), which
-requires `ρ` injective; it is not needed here and is deferred.
+requires `ρ` injective; that direction is not proved in this file.
 
 ## Why this lemma
 
-It is sub-lemma (d) of the arrow reducibility candidate (roadmap M9-S1, brick
-3): the candidate's CR1 feeds a *fresh* argument variable, which forces a
-weakening of the function (`weaken f = rename` of the weakening renaming) and
-then must reflect the resulting `SN (weaken f)` back to `SN f` — exactly this
-reflection.  It is also the SN half of candidate weakening/monotonicity (the
-Kripke-indexed candidate family the arrow case needs).
+It is sub-lemma (d) of the arrow reducibility candidate: the candidate's CR1
+feeds a *fresh* argument variable, which forces a weakening of the function
+(`weaken f = rename` of the weakening renaming) and then must reflect the
+resulting `SN (weaken f)` back to `SN f` — exactly this reflection.  It is also
+the SN half of candidate weakening/monotonicity (the Kripke-indexed candidate
+family the arrow case needs).
 
 ## Zero-axiom verification
 

@@ -14,7 +14,7 @@ namespace FX1Poly.Core
 
 open FX1Poly.Foundation
 
-/-- Partial renaming for the V2 raw-term substrate.  `none` means that
+/-- Partial renaming for the raw-term substrate.  `none` means that
 the source variable cannot be represented in the target scope. -/
 def PartialRawRenaming (sourceScope targetScope : Nat) : Type :=
   Fin sourceScope -> Option (Fin targetScope)
@@ -261,7 +261,7 @@ end PartialRenameChildrenResult
 
 mutual
 
-/-- Apply a partial renaming to a V2 raw term, retaining a total
+/-- Apply a partial renaming to a raw term, retaining a total
 placeholder term for failed branches so the mutual recursion stays
 axiom-free. -/
 def RawTerm.partialRenameResult {sourceScope targetScope : Nat}
@@ -292,7 +292,7 @@ def RawTerm.partialRenameResult {sourceScope targetScope : Nat}
         { hasSucceeded := renamedChildren.hasSucceeded
           term := .mkGen generator payloadAtTarget renamedChildren.children }
 
-/-- Apply a partial renaming to a V2 raw-term children spine, lifting
+/-- Apply a partial renaming to a raw-term children spine, lifting
 the partial renaming through each child's binder shift.  Failed
 branches retain rebuilt placeholder children so the recursive return
 type is a structure rather than an indexed `Option`. -/
@@ -317,14 +317,14 @@ def RawTermChildren.partialRenameResult
 
 end
 
-/-- Apply a partial renaming to a V2 raw term. -/
+/-- Apply a partial renaming to a raw term. -/
 def RawTerm.partialRename? {sourceScope targetScope : Nat}
     (partialRenaming : PartialRawRenaming sourceScope targetScope)
     (sourceTerm : RawTerm sourceScope) :
     Option (RawTerm targetScope) :=
   (RawTerm.partialRenameResult partialRenaming sourceTerm).toOption
 
-/-- Apply a partial renaming to a V2 raw-term children spine. -/
+/-- Apply a partial renaming to a raw-term children spine. -/
 def RawTermChildren.partialRename?
     {parentSourceScope parentTargetScope : Nat}
     {binderShifts : List Nat}
@@ -347,7 +347,7 @@ def RawTermChildren.partialRename?
 
 mutual
 
-/-- Renaming by identity leaves a V2 raw term unchanged. -/
+/-- Renaming by identity leaves a raw term unchanged. -/
 theorem RawTerm.rename_identity_apply {scope : Nat}
     (sourceTerm : RawTerm scope) :
     RawTerm.rename RawRenaming.identity sourceTerm = sourceTerm := by

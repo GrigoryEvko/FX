@@ -6,15 +6,10 @@ import FX1Poly.Core.InferRawCellGeneralSound
 
 /-! # FXProfile/CertifiedViewsSound — FX-profile soundness suite
 
-This file ships the soundness theorems for the FX-profile entry points
-(#172).  Four theorems pin the FX-profile ingress to the same
-no-laundering, dim-preservation, and compH-rejection guarantees that
-the general v2 API enjoys (#165, #166, #167, #169).
-
-Direct v2 counterpart to v1's soundness suite at
-`Core/CertifyExact.lean:170-191` (`certifyFXCellExact?_sound`,
-`_compH_rejects`, `certifyFXCell?_accepted_cellDimension_eq`,
-`certifyFXCell?_sound`).
+The soundness theorems for the FX-profile entry points.  Four
+theorems pin the FX-profile ingress to the same no-laundering,
+dim-preservation, and compH-rejection guarantees that the general
+API enjoys.
 
 ## The four theorems
 
@@ -61,16 +56,8 @@ Each FX-profile theorem's body is a single base-theorem application.
 
 This is the trust-cost-zero payoff of definitional wrappers: every
 theorem on the underlying op transfers without a re-proof obligation.
-
-## Together with the entry points (#172), this closes L1cert.4 soundness
-
-#165-#169 ship the general no-laundering suite for the parameterized
-infrastructure.  #172 ships the FX-profile entry-point wrappers.
-This commit ships the soundness lift: same theorems re-stated against
-the FX-profile names, with proofs by direct delegation.
-
-The L1cert.4 soundness story is now complete for both API surfaces:
-the general (profile-parameterized) and the FX-profile (profile-fixed).
+The soundness story holds for both API surfaces: the general
+(profile-parameterized) and the FX-profile (profile-fixed).
 
 ## Zero-axiom verification
 

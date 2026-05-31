@@ -7,7 +7,7 @@ minimal/maximal/truncated examples, and a saturation-level label.
 
 It does not construct Verity/Riehl saturation, does not connect dim-1
 thinness to `Conv`, and does not connect dim-2 thinness to certified
-confluence fillers.  Those remain later Axis 3/4 bridge milestones.
+confluence fillers.
 
 Reference: Henry-Loubaton arXiv:2301.11424 §2.2, Verity 2008.
 Zero external dependencies.

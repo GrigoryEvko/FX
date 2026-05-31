@@ -2,43 +2,31 @@ import FX1Poly.Core.Step
 
 /-! # Foundation/PolyCell/Core/StepStar — reflexive-transitive closure of Step
 
-V2-L3.2 phase A (2026-05-27).  Ships the reflexive-transitive
-closure of the single-step reduction relation `Step` (V2-L3.1).
-Foundational building block for:
+The reflexive-transitive closure of the single-step reduction relation
+`Step`.  Foundational building block for:
 
-* V2-L3.2 confluence (Church-Rosser theorem on StepStar)
-* V2-L3.4 decidable Conv (★ MILESTONE A; Conv is the symmetric
-  closure of StepStar)
-* V2-L3.7 NbE quote (normalization terminates at a StepStar-
-  reduct that's a normal form)
+* confluence (Church-Rosser theorem on StepStar)
+* decidable Conv (Conv is the symmetric closure of StepStar)
+* NbE quote (normalization terminates at a StepStar-reduct that's a
+  normal form)
 
-## What V2-L3.2 wants
-
-Generic confluence per polycell.md §11.6.1:
+The generic confluence statement per polycell.md §11.6.1:
 
   StepStar a b AND StepStar a c => exists d, StepStar b d AND StepStar c d
 
 (the "diamond" property at the StepStar level, equivalent to
 Church-Rosser).
 
-Phase A ships the StepStar inductive itself.  Phase B will prove
-basic closure properties (transitivity composition, congruence
-under each Step constructor).  Phase C will prove the diamond /
-Church-Rosser theorem via Tait-Martin-Löf parallel reduction.
-
-## What this file ships
+## What this file provides
 
 * `StepStar` inductive: reflexive-transitive closure of `Step` in
   the LEFT-EXTENSION form (`Step` then `StepStar`).
 
-* `StepStar.refl_unit_smoke`: reflexivity instance on the unit
-  term -- witnesses the `.refl` constructor's inhabitedness.
+* The closure properties `single`, `trans_compose`, `transLast`.
 
-* `StepStar.identity_lam_beta_unit`: composition of `Step.beta`
-  with `StepStar.refl` to reach `unit` from
-  `(lam (var 0)) unit` via the closure -- witnesses the `.trans`
-  constructor's inhabitedness and demonstrates the standard
-  "single step ↝ StepStar reduct" pattern.
+* Smoke fixtures `refl_unit_smoke` and `identity_lam_beta_unit`
+  witnessing the `.refl` / `.trans` constructors' inhabitedness and
+  the standard "single step ↝ StepStar reduct" pattern.
 
 ## The left-extension form
 
@@ -53,50 +41,36 @@ Reading: a StepStar chain is either reflexive (length 0) or a
 Step followed by a shorter StepStar chain.
 
 Alternative would be RIGHT-EXTENSION (StepStar then Step at the
-end).  Both forms are equivalent up to the eventual transitivity-
-composition theorem (phase B).  Left-extension is canonical for
-proofs by induction on the chain's length -- the inductive case
-fires Step first, then recurses on the StepStar tail.
+end).  Both forms are equivalent up to the transitivity-composition
+theorem.  Left-extension is canonical for proofs by induction on the
+chain's length -- the inductive case fires Step first, then recurses
+on the StepStar tail.
 
 ## Why this is the foundational L3 building block
 
 Every L3 theorem that talks about "eventually reaches" or
 "normal-form reduct" routes through StepStar:
 
-* SR (V2-L3.1.C): "if Step preserves typing, so does StepStar"
-  by induction on StepStar.
-* Confluence (V2-L3.2): "any two StepStar reducts can be joined"
-  is the Church-Rosser statement.
-* SN (V2-L3.3): "every term has a StepStar normal form" is the
-  termination claim.
-* Conv (V2-L3.4): defined as the symmetric closure of StepStar.
+* SR: "if Step preserves typing, so does StepStar" by induction on
+  StepStar.
+* Confluence: "any two StepStar reducts can be joined" is the
+  Church-Rosser statement.
+* SN: "every term has a StepStar normal form" is the termination
+  claim.
+* Conv: defined as the symmetric closure of StepStar.
 
 This file is the substrate.  The downstream cascade consumes it
 in many places.
 
-## What's NOT shipped in phase A
+## Scope of this file
 
-* Basic closure properties:
-    - StepStar.trans_compose : StepStar a b -> StepStar b c
-                                -> StepStar a c
-                              (the full transitivity).
-    - StepStar.single : Step a b -> StepStar a b
-                        (single-step embedding).
-    - StepStar.transLast : StepStar a b -> Step b c
-                            -> StepStar a c
-                          (right-extension version).
-  Phase B.  All provable by induction on the input.
-
-* Congruence under Step's constructors: when StepStar a b under
-  a ctor, the wrapped term StepStars accordingly.  Phase B / V2-L3.1
-  phase B (Step congruence) provides this.
-
-* The diamond / Church-Rosser theorem.  Phase C; substantial
-  metatheory cascade.
+The diamond / Church-Rosser theorem itself is proved in the confluence
+files, not here.  This file is the inductive plus its closure
+properties.
 
 ## Zero-axiom verification
 
-All 3 declarations pass `#assert_no_axioms`.  Audit-gated in
+Every declaration passes `#assert_no_axioms`.  Audit-gated in
 `Tools/AuditAll/AuditPolyCell.lean`.
 -/
 
@@ -110,7 +84,7 @@ Left-extension form: a `StepStar` chain is either reflexive
 
 The relation is parameterized by `scope : Nat`: each chain
 relates terms at the same scope.  Cross-scope reduction is
-mediated by `RawTerm.rename` (see V2-L2.13). -/
+mediated by `RawTerm.rename`. -/
 inductive StepStar {scope : Nat} : RawTerm scope → RawTerm scope → Prop where
   /-- **Reflexivity.**  Every term StepStar-reduces to itself
       in zero steps. -/
@@ -132,18 +106,13 @@ theorem StepStar.refl_unit_smoke :
 
 /-- **Smoke: identity-lambda beta-reduces to unit via StepStar.**
 
-Composes `Step.beta` (the L3.1 phase A beta-reduction rule) with
-`StepStar.refl` to produce a length-1 StepStar chain from
-`(lam (var 0)) unit` to `unit`.
+Composes `Step.beta` with `StepStar.refl` to produce a length-1
+StepStar chain from `(lam (var 0)) unit` to `unit`.
 
 Witnesses both:
 * That `.trans` is inhabited.
 * That `Step.beta` lifts cleanly through StepStar via the
-  standard "single-Step-then-refl" pattern.
-
-This is the second downstream consumer of V2-L2.10's subst0
-infrastructure (the first being `Step.identity_lam_applied_to_unit`
-in V2-L3.1 phase A) -- now also witnessed at the closure level. -/
+  standard "single-Step-then-refl" pattern. -/
 theorem StepStar.identity_lam_beta_unit :
     let identityLamBody : RawTerm 1 :=
       .mkGen .gen_var (⟨0, Nat.zero_lt_succ 0⟩ : Fin 1) .childNil
@@ -157,24 +126,22 @@ theorem StepStar.identity_lam_beta_unit :
     StepStar app unitArg :=
   StepStar.trans Step.beta (StepStar.refl _)
 
-/-! ## V2-L3.2 phase B: closure properties of StepStar
+/-! ## Closure properties of StepStar
 
-Phase A shipped the inductive itself + two smokes.  Phase B
-proves the basic closure properties that make StepStar a real
-reflexive-transitive closure:
+The closure properties that make StepStar a real reflexive-transitive
+closure:
 
 * `single`: every Step embeds as a length-1 StepStar.
 * `trans_compose`: full transitivity (compose two chains).
 * `transLast`: right-extension (append a final Step).
 
-The L3 cascade consumes these closure properties:
+The L3 cascade consumes these:
 
-* Subject reduction (V2-L3.1.C) uses `single` + `trans_compose`
-  when chaining SR-per-step into SR-on-chains.
-* Confluence (V2-L3.2 phase C) uses `trans_compose` when composing
-  the two diverging chains' joining segments.
-* Conv (V2-L3.4) inherits transitivity directly via
-  `trans_compose`. -/
+* Subject reduction uses `single` + `trans_compose` when chaining
+  SR-per-step into SR-on-chains.
+* Confluence uses `trans_compose` when composing the two diverging
+  chains' joining segments.
+* Conv inherits transitivity directly via `trans_compose`. -/
 
 /-- **Single-Step embedding.**  Every `Step a b` lifts to
 `StepStar a b` as a length-1 chain.
@@ -192,7 +159,7 @@ theorem StepStar.single {scope : Nat} {first second : RawTerm scope}
 /-- **Full transitivity.**  Compose two StepStar chains
 end-to-end.
 
-The phase-A inductive uses LEFT-EXTENSION (`refl` + `trans` with
+The `StepStar` inductive uses LEFT-EXTENSION (`refl` + `trans` with
 Step at the head), which gives reflexivity and one-step extension
 for free.  Full transitivity requires induction on the FIRST
 chain: peel off the head step, recurse on the tail composed with
@@ -220,7 +187,7 @@ theorem StepStar.trans_compose {scope : Nat}
 /-- **Right-extension (transLast).**  Append a single Step at the
 end of a StepStar chain.
 
-The phase-A inductive's `.trans` constructor is left-extension
+The `StepStar` inductive's `.trans` constructor is left-extension
 (Step at the head).  This theorem is the symmetric right-
 extension form: given a chain `a -> ... -> b` and a single step
 `b -> c`, produce the extended chain `a -> ... -> b -> c`.

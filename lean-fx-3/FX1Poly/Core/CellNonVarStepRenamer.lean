@@ -2,12 +2,11 @@ import FX1Poly.Core.StructuralInductionPrimitives
 import FX1Poly.Core.GeneratorChildSpecsDim0
 
 /-! # Foundation/PolyCell/Core/CellNonVarStepRenamer
-   — abstract non-recursive cell renamer step (one half of the eventual mutual block)
+   — abstract non-recursive cell renamer step (cell side of the mutual block)
 
-V2-L3.1 phase D step 32 (2026-05-27).  Ships the **cell-side
-inductive step** of the eventual structural-induction mutual block
-for rename preservation — packaged as a NON-RECURSIVE theorem that
-takes the recursively-renamed spine as a HYPOTHESIS.
+Ships the **cell-side inductive step** of the structural-induction
+mutual block for rename preservation — packaged as a NON-RECURSIVE
+theorem that takes the recursively-renamed spine as a HYPOTHESIS.
 
 ## What this ships
 
@@ -18,8 +17,8 @@ because `PolyCell ...` returns `Type`, not `Prop`:
 
   * `PolyCell.rename_dim0_nonVarStep` — for a non-var generator
     `generator ≠ .gen_var`, given a pre-renamed spine, rebuild the
-    parent cell at the target scope.  This is the BODY of the
-    eventual `rename_dim0`'s non-var arm.
+    parent cell at the target scope.  This is the BODY of
+    `rename_dim0`'s non-var arm.
 
   * `PolyCell.rename_dim0_varStep` — for the var case, no spine
     needed; renames the var-index via `rho` and rebuilds.  Sibling
@@ -30,21 +29,20 @@ because `PolyCell ...` returns `Type`, not `Prop`:
 The full mutual block requires (1) well-founded termination over an
 indexed inductive (structural recursion fails because indices aren't
 variables) and (2) a dependent cast through the existential
-`headBoundary` on `CertifiedTermSpine.cons`.  Both are deep
-engineering problems requiring focused work.
+`headBoundary` on `CertifiedTermSpine.cons`.
 
-The factored helpers shipped here are NOT blocked by either
-problem — they take the recursively-renamed children as input.
-When the mutual block lands, its non-var arm becomes a one-line
-invocation of `rename_dim0_nonVarStep` with the recursive spine
-call supplied as argument.
+The factored helpers here take the recursively-renamed children as
+input, so they are independent of those two obligations.  The mutual
+block's non-var arm is a one-line invocation of
+`rename_dim0_nonVarStep` with the recursive spine call supplied as
+argument.
 
 ## Pattern alignment
 
-Sibling of the existing `StructuralInductionWrapper.lean` decls,
-which take the FULL cell renamer as hypothesis (HCC-level Prop
-wrappers).  This file is at the cell level (Type-valued) and takes
-the spine renamer as hypothesis — finer-grained.
+Sibling of the `StructuralInductionWrapper.lean` decls, which take
+the FULL cell renamer as hypothesis (HCC-level Prop wrappers).  This
+file is at the cell level (Type-valued) and takes the spine renamer
+as hypothesis — finer-grained.
 
 ## Zero-axiom verification
 
@@ -70,10 +68,9 @@ Given:
 produces the renamed cell at the target scope with dim 0 and
 trivial boundary.
 
-This is the body of the future
-`PolyCell.rename_dim0`'s non-var arm, abstracted from the
-recursion: callers (eventually, the mutual block) supply the
-renamed spine via `renamedSpine`. -/
+This is the body of `PolyCell.rename_dim0`'s non-var arm, abstracted
+from the recursion: callers (the mutual block) supply the renamed
+spine via `renamedSpine`. -/
 def PolyCell.rename_dim0_nonVarStep
     {profile : PolyProfile} {srcScope tgtScope : Nat}
     (rho : RawRenaming srcScope tgtScope)

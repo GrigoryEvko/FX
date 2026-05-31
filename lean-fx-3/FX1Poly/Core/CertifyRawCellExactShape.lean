@@ -2,15 +2,13 @@ import FX1Poly.Core.CertifyRawCellExact
 
 /-! # Foundation/PolyCell/Core/CertifyRawCellExactShape — behavioral shape lemmas
 
-V2-fix-1 (2026-05-27).  Ships **behavioral shape pin lemmas** that
-discharge Agent 3's H3.1 finding from the V2 falsification audit.
+Ships **behavioral shape pin lemmas** for the exact certifier.
 
 ## Context: why `_sound` alone is insufficient
 
-`certifyRawCellExact?_sound` (V2-L1cert.10, #165) at
-`CertifyRawCellExactSound.lean` is a TYPE-LEVEL observation: it
-proves `cert.certifiedCell.raw = rawCell` by `rfl`, because the
-certifier's raw-INDEXED return type
+`certifyRawCellExact?_sound` at `CertifyRawCellExactSound.lean` is a
+TYPE-LEVEL observation: it proves `cert.certifiedCell.raw = rawCell`
+by `rfl`, because the certifier's raw-INDEXED return type
 `Except _ (CertifiedRawCell profile scope rawCell)` pins the
 rawCell at the type level — any inhabitant of that type satisfies
 the equality, whether produced by the certifier or by any other
@@ -18,15 +16,15 @@ means.
 
 That is structurally correct and useful (witnesses no laundering of
 the input raw), but it does NOT exercise the certifier's actual
-*behavioral dispatch*.  The `_accepted` hypothesis is unused (the
+*behavioral dispatch*.  Its `_accepted` hypothesis is unused (the
 proof is `rfl`, not a case analysis on the acceptance result).
 
-A future regression that breaks the certifier's dispatch logic —
+A regression that breaks the certifier's dispatch logic —
 e.g., the `.identityCell` arm erroneously returning the
-`.generatingCell`-shaped output — could ship past `_sound`
-unchanged, because the type system still rejects malformed shapes.
-The shipped soundness theorem observes the type-level guarantee
-without testing the behavioral computation.
+`.generatingCell`-shaped output — could pass `_sound` unchanged,
+because the type system still rejects malformed shapes.  The
+soundness theorem observes the type-level guarantee without testing
+the behavioral computation.
 
 ## This file: shape pin lemmas
 
@@ -57,37 +55,27 @@ underscore prefix; the hypothesis is consumed), and a regression
 that broke the dispatcher's identityCell arm would fail to
 discharge the case split.
 
-## Coverage strategy (this commit + follow-ups)
+## Coverage
 
-This V2-fix-1 commit ships the FIRST behavioral shape lemma:
+This file ships three behavioral shape lemmas:
 
   * `certifyRawCellExact?_identityCell_boundary` — pins
     `cert.boundary = (base, base)` for `.identityCell base` input.
-
-Follow-up V2-fix-1 commits will extend coverage to:
-
-  * `..._verticalComposite_boundary` — pins the outer endpoints
-    from the `buildVerticalCompositeExact?` dispatch (more
-    complex: the helper's internals must be unfolded).
-  * `..._generatingCell_boundary` — pins `(source, target)` from
-    the `buildGeneratingCellExact?` dispatch.
-  * `..._termBase_sort` — pins `cert.sort = generator.cellSort`
-    via the gen-arm `.ok ⟨generator.cellSort, .trivial, ...⟩`
-    construction.
+  * `certifyRawCellExact?_verticalComposite_accepted_implies_inner_certs`
+    — pins that an accepted `.verticalComposite first second` forces
+    both inner recursive certifications to succeed.
+  * `certifyRawCellExact?_generatingCell_accepted_implies_inner_certs`
+    — the same "implies inner certs" pin for `.generatingCell`.
 
 The shape lemma family complements:
-  * `certifyRawCellExact?_sound` (#165) — type-level no-laundering.
-  * `certifyRawCellExact?_compH_rejects` (#166) — horizontalComposite
+  * `certifyRawCellExact?_sound` — type-level no-laundering.
+  * `certifyRawCellExact?_compH_rejects` — horizontalComposite
     always rejects with `.unsupportedCompH` (behavioral shape pin
     for the reject branch).
-  * `_termBase_*`, `_generatingCell_*`, `_verticalComposite_*`
-    (future V2-fix-1 commits) — behavioral shape pins for the ok
-    branches.
 
 Together they convert the soundness story from "type-level
 observation" → "type-level + behavioral dispatch pins per
-constructor" — exactly the labor that V2's cascade-deletion
-deferred and that V2-fix-* incrementally pays down.
+constructor".
 
 ## Zero-axiom verification
 
@@ -190,14 +178,14 @@ example :
   intro baseCell cert accepted
   exact certifyRawCellExact?_identityCell_boundary baseCell accepted
 
-/-! ## V2-fix-1 phase B: "implies inner certs" shape pins
+/-! ## "implies inner certs" shape pins
 
-The first phase shipped one shape pin (`_identityCell_boundary`) that
-pinned a concrete boundary value of the certified output.  Phase B
-extends coverage to the dispatcher's two **two-recursion** arms —
-`.verticalComposite` and `.generatingCell` — with a different but
-equally substantive class of behavioral pin: **"if accepted, both
-recursive sub-certifications must have succeeded"**.
+Beyond `_identityCell_boundary` (which pins a concrete boundary
+value of the certified output), the dispatcher's two
+**two-recursion** arms — `.verticalComposite` and `.generatingCell`
+— get a different but equally substantive class of behavioral pin:
+**"if accepted, both recursive sub-certifications must have
+succeeded"**.
 
 ### Why not the boundary?
 
@@ -256,9 +244,7 @@ This pattern applies to every dispatcher arm that performs N recursive
 sub-certifications then delegates to a helper.  The dispatcher's
 N+1 levels of match (one per recursion, plus the helper call) collapse
 to N `cases hRec` + 1 `exact ⟨rfl, ..., rfl⟩` line after the recursion
-phase.  Useful for the bridge audit between v2 (where this discipline
-runs) and v1 (where the per-fixture certified constructors made the
-recursion structure implicit). -/
+phase. -/
 
 /-- **Behavioral shape pin: verticalComposite implies inner certs.**
 

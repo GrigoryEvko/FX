@@ -316,7 +316,7 @@ theorem HasType.inversionSigmaCode {profile : PolyProfile} {scope : Nat}
 
 /-- **Uniqueness of typing (#469)** for the current fragment: any two classifiers
 of the same subject are convertible.  Proved by **induction on the first
-derivation** (no longer `rcases` on the classification): the `var` and
+derivation**: the `var` and
 `universeFormation` subjects have a derivation-INDEPENDENT principal type, so
 their cases just `.sym` the matching inversion of the second derivation; the
 `conv` case forwards its premise's IH through the converted classifier (a type by

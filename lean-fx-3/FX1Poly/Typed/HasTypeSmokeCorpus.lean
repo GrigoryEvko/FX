@@ -20,12 +20,11 @@ concrete cells where it genuinely fails, one per outcome branch of the deciders:
 * `gen_universeCode` reject with wrong classifier —
   `corpus_universeCode_notTypedByUnit` (a universe code is NOT typed by the unit
   cell — distinguishing classifier-discrimination from subject-head discrimination);
-* NO-TYPE-IN-TYPE — `probe_universe_Type_in_Type_rejected` (#442, M35-T1): a
-  universe code is NOT classified by itself (`Type@(e,f) : Type@(e,f)` rejected),
-  the headline predicativity / no-Girard guarantee — the highest-value witness.
+* NO-TYPE-IN-TYPE — `probe_universe_Type_in_Type_rejected` (#442): a universe
+  code is NOT classified by itself (`Type@(e,f) : Type@(e,f)` rejected), the
+  headline predicativity / no-Girard guarantee — the highest-value witness.
 
-A λ/app arm (#444) breaks the leaf-only invariant these rest on; this corpus then
-flags any decider whose verdicts silently change.
+This corpus flags any decider whose verdicts silently change.
 
 ## Zero-axiom verification
 
@@ -96,7 +95,7 @@ theorem corpus_universeCode_notTypedByUnit {profile : PolyProfile} {scope : Nat}
   rw [headGenerator_unitCell, headGenerator_universeCodeCell] at headsAgree
   exact Generator.noConfusion headsAgree
 
-/-- NO-TYPE-IN-TYPE honesty probe (#442, M35-T1): a universe code is NOT classified
+/-- NO-TYPE-IN-TYPE honesty probe (#442): a universe code is NOT classified
 by ITSELF.  `Type@(e, f)` inhabits `Type@(lsucc e, f)` — its strict predicative
 successor — and nothing else (the `universeFormation` rule's classifier is fixed
 one level up); so `Type@(e, f) : Type@(e, f)` is rejected.  This is the headline

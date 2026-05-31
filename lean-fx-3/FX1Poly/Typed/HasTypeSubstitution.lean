@@ -9,12 +9,11 @@ import FX1Poly.Core.RawTermSubstRenameCommute
 
 /-! # FX1Poly/Typed/HasTypeSubstitution — typed substitution (the β-engine)
 
-The keystone typed metatheory lemma (roadmap P6): `HasType` is preserved
+The keystone typed metatheory lemma (P6): `HasType` is preserved
 under substitution.  This is what `app`'s β-reduction `B.subst0 a` needs to
-preserve typing, so it is the engine of typed subject reduction's β case
-(TY-SR-beta, #474).  Sibling to typed weakening (#456): weakening is the
-RENAMING action on a derivation, substitution is the full SUBSTITUTION
-action.  Both are "whiskering" by a context morphism in the fibration
+preserve typing, so it is the engine of typed subject reduction's β case.
+Sibling to typed weakening: weakening is the RENAMING action on a derivation,
+substitution is the full SUBSTITUTION action.  Both are "whiskering" by a context morphism in the fibration
 reading — renaming whiskers by a `Fin → Fin`, substitution by a
 `Fin → RawTerm`.
 
@@ -35,7 +34,7 @@ cancellation `subst (singleton arg) (weaken X) = X`.
 
 Critically `Conv.trans`-free, like weakening: the substitution machinery
 rides existing `Conv.subst`, never composing conversions.  So the β-engine
-is UNBLOCKED ahead of raw confluence (#421).
+does not depend on raw confluence.
 
 ## Zero-axiom verification
 
@@ -74,7 +73,7 @@ domain (child shift `0`) is substituted by the substitution itself, the codomain
 iotas over the literal `childCons … childNil` spine and threads the lift at the
 shift-`1` child.
 
-The substitution-side companion to `rename_piTyCodeCell`; #443 stage-2's typed
+The substitution-side companion to `rename_piTyCodeCell`; the typed
 Π-substitution case (the dependent-codomain β-engine for Π formers) consumes it,
 chaining with the `RawTermSubst0Commute` `iterateLiftRaw` lemmas. -/
 theorem subst_piTyCodeCell {sourceScope targetScope : Nat}
@@ -90,8 +89,7 @@ theorem subst_piTyCodeCell {sourceScope targetScope : Nat}
 `piTyCodeCell`: the domain (child shift `0`) by the substitution itself, the
 codomain (child shift `1`, under one fresh binder) by the substitution lifted
 once.  Holds by `rfl` — the dual of `subst_piTyCodeCell`, the binder-crossing
-brick the Σ-formation case of `substRespectingContext` will consume once the Σ
-arm lands. -/
+brick the Σ-formation case of `substRespectingContext` consumes. -/
 theorem subst_sigmaTyCodeCell {sourceScope targetScope : Nat}
     (substitution : RawTermSubst sourceScope targetScope)
     (domainCode : RawTerm sourceScope)
@@ -106,7 +104,7 @@ binder (`RawTermSubst.lift`) after weakening equals weakening after the un-lifte
 substitution.  The substitution analog of `rename_lift_weaken_commute` (the
 naturality square at the substitution level).
 
-This is the binder-crossing crux the #443 `piFormation` case of
+This is the binder-crossing crux the `piFormation` case of
 `substRespectingContext` needs — its codomain premise is checked under
 `Γ.cons domain`, so the IH fires with the LIFTED substitution, and discharging
 the lifted side condition reduces (at de Bruijn 0 and at successors) to exactly
@@ -145,8 +143,9 @@ theorem subst_singleton_renameWeaken_cancel {scope : Nat}
 target-typed at the substituted source-binding types.  The
 `targetContext` / substitution / side-condition are quantified inside the
 conclusion so `induction typed` carries them in the motive (the source
-context is an index of `typed`, fixed across the derivation).  No
-binder-introducing arm yet, so the side condition never needs lifting. -/
+context is an index of `typed`, fixed across the derivation).  The
+binder-introducing arms (`piFormation` / `sigmaFormation`) lift the side
+condition across the fresh binder; the leaf arms pass it verbatim. -/
 theorem HasType.substRespectingContext {profile : PolyProfile}
     {sourceScope : Nat} {sourceContext : TypingContext profile sourceScope}
     {subject classifier : RawTerm sourceScope}

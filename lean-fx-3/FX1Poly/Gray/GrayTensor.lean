@@ -1,10 +1,10 @@
 /-!
 # Gray Tensor Product (Axis 6 — Al-Agl-Brown-Steiner + Loubaton)
 
-The asymmetric monoidal product on strict ω-categories. Stage 1
-(vertical/horizontal composition + interchange) lives in
-_deprecated_polygraph/. This file currently records only the Axis 6
-construction ledger and the FX active-dimension count.
+The asymmetric monoidal product on strict ω-categories.  This file
+records only the Axis 6 construction ledger and the FX
+active-dimension count; it does not construct the tensor itself
+(vertical/horizontal composition + interchange).
 
 Reference: ABGMMM book §17, Loubaton arXiv:2207.08504 §2.3.
 -/
@@ -48,8 +48,9 @@ def GrayConstructionLevel.hasSaturationCompatibility : GrayConstructionLevel →
   | .saturationCompatibleComplicial => true
 
 /-- A Gray module: the minimal structure needed for the complicial
-Gray tensor product. Abstractly this should become a truncation-compatible
-tensor; the current field records only the verified construction level. -/
+Gray tensor product.  A full version is a truncation-compatible tensor;
+this structure records only the truncation level and the construction
+ledger. -/
 structure GrayModule where
   /-- Truncation level (how many dimensions are "active"). -/
   activeDimensions : Nat

@@ -1,11 +1,11 @@
 /-! # Foundation/PolyCell/Core/SiteOpenness — open/closed spectrum tag
 
-V2-L1.13 (2026-05-27).  Discharges polycell.md §11.7.3 "The
-open/closed spectrum -> SiteOpenness as a profile parameter".
-Completes the per-profile-metadata triplet alongside V2-L1.11
-(TotalityClass) and V2-L1.12 (ConsistencyStrength).
+Discharges polycell.md §11.7.3 "The open/closed spectrum ->
+SiteOpenness as a profile parameter".  One member of the
+per-profile-metadata triplet alongside `GeneratorTotalityClass` and
+`ConsistencyStrength`.
 
-## What this file ships
+## What this file defines
 
 * `SiteOpenness` -- 4-ctor inductive over the openness tower:
   sealed / extensible / reflective / oracle.
@@ -52,10 +52,10 @@ opennessCompatible :
 
 An extension's openness MUST NOT EXCEED the base profile's
 openness.  Concretely: a sealed base only admits sealed extensions
-(by the inequality plus a separate "no extensions" semantics
-deferred to phase B); an extensible base admits sealed or
-extensible extensions; a reflective base admits up to reflective;
-an oracle base admits any openness level.
+(by the inequality plus a separate "no extensions" semantics); an
+extensible base admits sealed or extensible extensions; a reflective
+base admits up to reflective; an oracle base admits any openness
+level.
 
 This is the OPPOSITE direction of the ConsistencyStrength
 monotonicity rule (`strengthAfter >= strengthBefore`).  The two
@@ -67,24 +67,24 @@ ordering disciplines reflect different concerns:
 * Site openness: extensions can only PRESERVE or NARROW openness
   (you cannot make a sealed base more open via an extension).
 
-## Why list-free this time
+## Why list-free
 
-V2-L1.11 (TotalityClass) and V2-L1.12 (ConsistencyStrength) used
-list-based exclusion when the underlying domain was big (194
-generators).  SiteOpenness is parameterised over PROFILES (not
-generators), with only 4 inhabitants.  The total `toRank` function
+`GeneratorTotalityClass` uses list-based exclusion because its domain is
+big (194 generators).  SiteOpenness is parameterised over PROFILES (not
+generators), with only 4 inhabitants, so the total `toRank` function
 handles all 4 cases directly in a propext-safe match (4 arms, no
 wildcard).
 
-The architectural family is preserved: every per-profile-metadata
-inductive ships with a Nat rank + decidable LE, same as
-ConsistencyStrength.  Lists are an optimization for sparse-domain
+The architectural family is uniform: every per-profile-metadata
+inductive carries a Nat rank + decidable LE, same as
+`ConsistencyStrength`.  Lists are an optimization for sparse-domain
 defaults; small finite enums use full enumeration.
 
-## Forward-compat: phase B (ProfileExtension integration)
+## ProfileExtension integration (not in this file)
 
-This commit ships the OBSERVATIONAL layer.  Phase B threads the
-openness field through ProfileExtension:
+This file provides the OBSERVATIONAL layer: the tag inductive, its rank,
+and decidable ordering.  Threading the openness field through
+ProfileExtension is a separate concern:
 
 ```
 structure ProfileExtension (base : AdmissibleProfile) where
@@ -93,11 +93,11 @@ structure ProfileExtension (base : AdmissibleProfile) where
   -- ... existing fields ...
 ```
 
-Plus a separate well-formedness check enforcing "sealed admits no
-extensions" (the inequality alone allows `sealed ≤ sealed`, but
-the semantic rule forbids any extension on a sealed base).  The
-exact form of this check (special construction-time refusal vs
-hypothesis-level constraint) is a phase B design choice.
+It also needs a separate well-formedness check enforcing "sealed admits
+no extensions" (the inequality alone allows `sealed ≤ sealed`, but the
+semantic rule forbids any extension on a sealed base).  The exact form of
+this check (special construction-time refusal vs hypothesis-level
+constraint) is an open design choice.
 
 ## FX0-PolyCell discipline
 
@@ -113,13 +113,13 @@ This file's Nat encoding via toRank is the cross-verifier ABI:
 the external verifier reads a single Nat from the .fx0c header
 and applies the same numeric comparison.
 
-## What's NOT shipped here
+## Out of scope for this file
 
-* ProfileExtension openness field + opennessCompatible (phase B).
+* ProfileExtension openness field + opennessCompatible.
 * The "sealed cannot admit any extension" semantic refusal
-  (phase B; the inequality alone allows `sealed ≤ sealed`).
+  (the inequality alone allows `sealed ≤ sealed`).
 * Per-Generator openness requirements (whether a Generator
-  REQUIRES a particular openness level to be admissible; phase B).
+  REQUIRES a particular openness level to be admissible).
 
 ## Zero-axiom verification
 
@@ -127,8 +127,6 @@ All 9 declarations pass `#assert_no_axioms`.  Audit-gated in
 `Tools/AuditAll/AuditPolyCell.lean`.
 
 ## Architectural-family summary
-
-After V2-L1.11/12/13:
 
 | File                          | Domain     | Pattern              |
 | ----------------------------- | ---------- | -------------------- |
@@ -178,8 +176,8 @@ stronger internal guarantees and narrower expressivity. -/
 
 /-- Ordering on site openness: `left ≤ right` iff
 `left.toRank ≤ right.toRank` (Nat ordering).  Used by the
-ProfileExtension opennessCompatible check (V2-L1.13 phase B):
-an extension's openness must be ≤ the base's openness. -/
+ProfileExtension opennessCompatible check: an extension's openness
+must be ≤ the base's openness. -/
 @[reducible] def le (left right : SiteOpenness) : Prop :=
   left.toRank ≤ right.toRank
 

@@ -6,37 +6,19 @@ import FX1Poly.Core.CheckResult
 This file ships the parametric child-spine certifier: ONE function
 that walks a generator's child specs in parallel with a raw children
 spine, producing a certified `CertifiedTermSpine` or a rejection.
-
-## The v1 spike
-
-Per `polycell.md` §3 ("Stages overview"):
-
-> The generic children-spine recursion is already settled —
-> `certifyChildSpine?` spiked axiom-free.
-
-This file ports that proven shape to v2 vocabulary.  v1's
-`screenRawChildDescriptorsWith?` (`Core/Check.lean:796`) was the
-parametric screener: it walked `RawChildDescriptors` against
-`List ChildSpec` returning yes/no.  v1's per-fixture certifiers
-(`certifyLambdaUnitTypeBodyVarZeroChildren?` etc.) were the
-constructive versions — one per generator, ~30 LoC each.
-
-v2's `certifyChildSpine?` is the FIRST generic constructive
-spine certifier: ONE recursive function handles every generator's
-child spine.  Per-fixture builders are obsolete.
+ONE recursive function handles every generator's child spine.
 
 ## The architectural trick
 
 The per-child reconciliation (sort/dim/scope checks, `▸` transports)
 is DELEGATED to a callback `perChildCertifier`.  This file ships
-the parallel-walk recursion; task #157 (`reconcileChild`) ships
-the callback that closes the loop with the recursive certifier.
+the parallel-walk recursion; `reconcileChild` supplies the callback
+that closes the loop with the recursive certifier.
 
 This decoupling lets the spine recursion be straightforward (no
 casts, no Decidable dispatch inside the walk) while the
 reconciliation logic lives in its own dedicated function (where
-it can use the proven `▸ + Decidable + cast` pattern from v1's
-`buildTermStepCellExact?` etc.).
+it can use the `▸ + Decidable + cast` pattern).
 
 ## The CertifiedChildAtSpec struct
 
@@ -53,9 +35,6 @@ Both fields share the same `(profile, spec, parentScope, headRaw)`
 parameters.  Only the boundary varies — and even that is fixed for
 dim 0 children (where boundary is `Unit`), so under fxProfile this
 is effectively a one-field wrapper around the cell.
-
-Future profiles with dim-1+ child positions get richer boundary
-variation, but the struct shape doesn't change.
 
 ## The walk
 
@@ -113,8 +92,7 @@ erasure `.termBase headRaw`.
 
 Under fxProfile, all current ChildSpec's have `cellDimension = 0`,
 so `headBoundary` is always `Unit` (i.e., `()`) and the struct
-effectively wraps just the cell.  Forward-compat for future
-non-zero-dim children. -/
+effectively wraps just the cell. -/
 structure CertifiedChildAtSpec (profile : PolyProfile)
     (spec : ChildSpec) (parentScope : Nat)
     (headRaw : RawTerm (parentScope + spec.scopeShift)) where
@@ -145,10 +123,9 @@ Output type indexed by both `childSpecs` and `children.map
 structure (the `cons` constructor of `CertifiedTermSpine`
 maintains the lockstep at each step).
 
-Used by task #158 (`certifyTermSpine?`) and downstream by the
-recursive certifier (#162).  `reconcileChild` (#157) supplies
-the per-child callback that closes the loop with the recursive
-certifier. -/
+`certifyTermSpine?` and the recursive certifier consume this;
+`reconcileChild` supplies the per-child callback that closes the
+loop with the recursive certifier. -/
 def certifyChildSpine? {profile : PolyProfile} {parentScope : Nat}
     (perChildCertifier :
       (spec : ChildSpec) →

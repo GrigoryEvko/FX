@@ -12,22 +12,20 @@ by motive-dependent types (a scrutinee `: Nat`, a motive `: a Π-type`, branches
 express that; the eliminator arm needs a premise spine where each child is typed
 at an ARBITRARY classifier.
 
-This file ships that substrate over the PRIMARY description engine `HasTypeDesc`
-(the one we are growing): `DescTermTelescope`, the maximally-general typed-children
-spine — each child typed at an arbitrary `headClassifier : RawTerm` that may mention
-all prior children (it lives at the cumulatively-extended scope).  The validated
-spike `DependentTelescopeTyped` proved this exact shape zero-axiom over the older
-per-shape `HasTypeGen`; this ports it onto `HasTypeDesc` so the future eliminator
-`gen`-arm consumes ONE spine.
+This file carries that substrate over the description engine `HasTypeDesc`:
+`DescTermTelescope`, the maximally-general typed-children spine — each child typed
+at an arbitrary `headClassifier : RawTerm` that may mention all prior children (it
+lives at the cumulatively-extended scope).  An eliminator `gen`-arm consumes this
+ONE spine.
 
 ## Non-vacuity / faithfulness
 
 * `DescTelescope.toTermTelescope` — the formation spine is an INSTANCE of the
   general term spine: every universe-code-typed telescope IS a term telescope with
   the classifiers chosen to be universe codes.  So the eliminator substrate SUBSUMES
-  formation (when the eliminator arm lands it reuses this one spine, no separate
-  formation path).  Term-mode `match` (the propext-free structural form used by the
-  shipped `DescTelescope.toHasTypeTelescope`), self-recursive only — it treats each
+  formation (the eliminator arm reuses this one spine, no separate formation path).
+  Term-mode `match` (the propext-free structural form used by
+  `DescTelescope.toHasTypeTelescope`), self-recursive only — it treats each
   `headTyped : HasTypeDesc` opaquely, so no mutual block with `HasTypeDesc` is needed.
 * `descTermTelescope_heterogeneous` — a genuinely HETEROGENEOUS `[0,1]` telescope
   `[childZero : classifierZero, childOne : classifierOne]` at ARBITRARY classifiers
@@ -37,7 +35,7 @@ per-shape `HasTypeGen`; this ports it onto `HasTypeDesc` so the future eliminato
 
 ## Rebasing / zero-axiom
 
-Same fixed-`baseScope`, growing-`currentDepth` discipline as the spike and
+Same fixed-`baseScope`, growing-`currentDepth` discipline as
 `DescTelescope` (children indexed at a fixed `baseScope`, only the context grows via
 `currentDepth`, so `(baseScope+currentDepth)+1 = baseScope+(currentDepth+1)`
 definitionally — no cast).  Standalone inductive (`HasTypeDesc` appears only
@@ -56,8 +54,7 @@ provided per `cons` step (which may mention all prior children — it lives at t
 extended scope).  The universe formation telescope `DescTelescope` is the instance
 where every classifier is a `universeCodeCell`.  Standalone — references the
 already-defined `HasTypeDesc` only positively in `cons`'s `headTyped` (no mutual
-block); same shift-rebasing discipline as the validated `DependentTelescopeTyped`
-spike, now over `HasTypeDesc`. -/
+block); same shift-rebasing discipline as `DescTelescope`. -/
 inductive DescTermTelescope (profile : PolyProfile) :
     {baseScope : Nat} → {currentDepth : Nat} → {binderShifts : List Nat} →
       TypingContext profile (baseScope + currentDepth) →
@@ -79,7 +76,7 @@ inductive DescTermTelescope (profile : PolyProfile) :
 /-- The formation spine is an INSTANCE of the general term spine: a `DescTelescope`
 (every child typed at a universe code) reconstructs as a `DescTermTelescope` with the
 classifiers chosen to be those universe codes.  So the eliminator substrate subsumes
-formation.  Term-mode `match` (propext-free structural form, mirroring the shipped
+formation.  Term-mode `match` (propext-free structural form, mirroring
 `DescTelescope.toHasTypeTelescope`); self-recursive only (each `headTyped` is passed
 opaquely), so no mutual block with `HasTypeDesc` is needed. -/
 theorem DescTelescope.toTermTelescope {profile : PolyProfile}

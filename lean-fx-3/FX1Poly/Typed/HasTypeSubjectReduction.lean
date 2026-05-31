@@ -7,21 +7,22 @@ import FX1Poly.Core.StrongNormalizationLeaves
     — typed Subject Reduction (P4) for the current typing fragment
 
 `HasType.subjectHasNoStep` is the structural invariant of the current `HasType`
-fragment (`var` / `conv` / `universeFormation`): every well-typed SUBJECT is a
-non-stepping leaf — a `variableCell` or a `universeCodeCell`, neither of which
-has an outgoing `Step`.  It is the subject-side companion of `IsType.hasNoStep`
-(which is the classifier side).
+fragment (`var` / `conv` / `universeFormation` / `piFormation` /
+`sigmaFormation`): every well-typed SUBJECT is NORMAL — the leaves
+(`variableCell`, `universeCodeCell`) have no outgoing `Step`, and the type
+formers (`piTyCodeCell`, `sigmaTyCodeCell`) are pure (no head redex), so a step
+could only descend into a child, ruled out by the children's IHs.  It is the
+subject-side companion of `IsType.hasNoStep` (the classifier side).
 
 Typed Subject Reduction (P4, the fibration property — polycell.md §11.8.5,
 "P4 Subject Reduction = the fibration property") — `HasType Γ t T → Step t t' →
 HasType Γ t' T` — then holds for this fragment *vacuously*: the `Step` premise
-is unsatisfiable because the subject is a leaf, so there is no redex to
+is unsatisfiable because the subject is normal, so there is no redex to
 preserve.  The THEOREM is permanent; its content grows as redex-bearing arms
-(`app` β-reduction, eliminator ι) join `HasType` (#444), at which point the
-proof routes through the typed substitution lemma (#457) and the structural
-iota arms instead of leaf no-step.  Per the milestone ledger (#484), P4 feeds
-canonicity ⇒ consistency (P10), NOT decidability (that is the decidable-`Conv`
-line, already shipped for the normal fragment).
+(`app` β-reduction, eliminator ι) join `HasType`, at which point the proof
+routes through the typed substitution lemma and the structural iota arms.  P4
+feeds canonicity ⇒ consistency (P10), NOT decidability (that is the
+decidable-`Conv` line).
 
 ## Zero-axiom verification
 
@@ -36,20 +37,18 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core
 
-/-- Every well-typed subject in the current fragment is a non-stepping leaf: a
-`variableCell` or a `universeCodeCell`, both normal leaves (`noStep_var` /
-`noStep_universeCode`).
+/-- Every well-typed subject in the current fragment is NORMAL: the leaves
+(`variableCell`, `universeCodeCell`) step nowhere (`noStep_var` /
+`noStep_universeCode`), and the type formers (`piTyCodeCell`, `sigmaTyCodeCell`)
+are pure, so a step could only descend into a child.
 
-Proved by **induction on the derivation** (NOT `rcases` on
-`typedSubjectIsVariableOrUniverseCode`): the motive "the subject does not step"
+Proved by **induction on the derivation**: the motive "the subject does not step"
 depends only on the subject, so `var`/`universeFormation` discharge by the leaf
-no-step lemmas and `conv` is exactly its premise's IH (the subject is unchanged
-across a conversion).  This is the #443-ready shape: a nesting type former
-(`piFormation`) joins as one more arm whose children IHs feed
-`piTyCodeCell_noStep_of_childrenNoStep` — whereas the old classification-`rcases`
-proof could not have reached the children's normality.  It also decouples this
-lemma (and `IsType.hasNoStep`, which now delegates here) from the classification
-lemma, shrinking the eventual Π cascade. -/
+no-step lemmas; `conv` is exactly its premise's IH (the subject is unchanged
+across a conversion); and `piFormation` / `sigmaFormation` feed the children IHs
+to `piTyCodeCell_noStep_of_childrenNoStep` /
+`sigmaTyCodeCell_noStep_of_childrenNoStep`, reaching the children's normality.
+`IsType.hasNoStep` delegates here. -/
 theorem HasType.subjectHasNoStep {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {subject classifier : RawTerm scope}
@@ -72,7 +71,7 @@ theorem HasType.subjectHasNoStep {profile : PolyProfile} {scope : Nat}
 /-- **Typed Subject Reduction (P4)** for the current fragment.  Holds vacuously:
 a well-typed subject does not `Step` (`subjectHasNoStep`), so the reduction
 premise is absurd and typing is preserved with no redex to check.  The statement
-is permanent; β/ι content arrives with the redex-bearing `HasType` arms (#444). -/
+is permanent; β/ι content arrives with the redex-bearing `HasType` arms. -/
 theorem HasType.subjectReduction {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {subject reduct classifier : RawTerm scope}

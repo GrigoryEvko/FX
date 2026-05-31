@@ -3,19 +3,16 @@ import FX1Poly.Core.PolyCellErasure
 
 /-! # InferRawCellGeneralSound — existential no-laundering keystone
 
-This file ships `inferRawCellGeneral?_sound`: the third and final
-existential-variant soundness theorem.  When the existential wrapper
-accepts a raw input, the certified cell stored in the result has its
-raw erasure heterogeneously equal to the input.
-
-Direct v2 counterpart to v1's `inferRawCellGeneral?_sound`
-(`Core/CertifyExact.lean:191`).
+`inferRawCellGeneral?_sound`: the existential-variant soundness
+theorem.  When the existential wrapper accepts a raw input, the
+certified cell stored in the result has its raw erasure
+heterogeneously equal to the input.
 
 ## The headline guarantee
 
 Combined with:
-* #167 `inferRawCellGeneral?_accepted_cellDimension_eq` — dim preserves
-* #168 `inferRawCellGeneral?_accepted_rawCell_heq` — raw preserves
+* `inferRawCellGeneral?_accepted_cellDimension_eq` — dim preserves
+* `inferRawCellGeneral?_accepted_rawCell_heq` — raw preserves
 
 this theorem closes the **NO-LAUNDERING** guarantee on the
 existential ingress.  Every cell accepted by the existential
@@ -39,8 +36,8 @@ The proof composes two facts via `HEq.trans`:
    index, which for `result.certifiedCell : PolyCell ... result.rawCell`
    is `result.rawCell`).  Closes by `rfl`.
 
-2. `HEq result.rawCell raw` — by #168
-   (`inferRawCellGeneral?_accepted_rawCell_heq`).
+2. `HEq result.rawCell raw` — by
+   `inferRawCellGeneral?_accepted_rawCell_heq`.
 
 The composition:
 ```
@@ -49,10 +46,10 @@ HEq.trans
   (inferRawCellGeneral?_accepted_rawCell_heq accepted)
 ```
 
-In v2 (un-indexed rawCell, all types `RawCell scope`), the HEq
-collapses to Eq and the composition might collapse further.  But
-the HEq form is shipped for v1 API compatibility and forward-compat
-(see #168's docstring for the three reasons).
+With the un-indexed rawCell (all types `RawCell scope`), the HEq
+collapses to Eq.  The HEq form is retained for API compatibility
+(see the `inferRawCellGeneral?_accepted_rawCell_heq` docstring for
+the reasons).
 
 ## Zero-axiom verification
 
@@ -60,7 +57,7 @@ The proof uses:
 * `heq_of_eq` (Eq → HEq, propext-free)
 * `HEq.trans` (HEq transitivity, propext-free)
 * `rfl` for the `result.certifiedCell.raw = result.rawCell` leg
-* `inferRawCellGeneral?_accepted_rawCell_heq` (#168, zero-axiom)
+* `inferRawCellGeneral?_accepted_rawCell_heq` (zero-axiom)
 
 Audit-gated in `Tools/AuditAll/AuditPolyCell.lean`.
 -/
@@ -69,14 +66,13 @@ namespace FX1Poly.Core
 
 /-- Existential no-false-positives: every cell accepted by the
 existential wrapper erases through its certified cell to EXACTLY
-the syntactic input (heterogeneously to allow for v1 API
-compatibility, though under v2's un-indexed rawCell the HEq is
-reducible to Eq).
+the syntactic input (heterogeneously for API compatibility, though
+under the un-indexed rawCell the HEq is reducible to Eq).
 
 Keystone of the existential-variant soundness trio.  Combined with
-#165 (raw-indexed `_sound`) and #166 (`_compH_rejects`), this
-closes the FULL no-false-positives guarantee on the entire
-L1cert.4 ingress (raw-indexed + existential). -/
+the raw-indexed `_sound` and `_compH_rejects`, this closes the FULL
+no-false-positives guarantee on the entire certifier ingress
+(raw-indexed + existential). -/
 theorem inferRawCellGeneral?_sound
     {profile : PolyProfile} {scope : Nat} {raw : RawCell scope}
     {result : CertifiedRawCellResult profile scope}

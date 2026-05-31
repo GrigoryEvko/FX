@@ -11,9 +11,8 @@ import FX1Poly.Core.SubjectReductionIotaNatRec
 /-! # Foundation/PolyCell/Core/StepPreservesShape
     — subject-reduction umbrella dispatcher
 
-Task #253 / M4.  This is the structural subject-reduction umbrella for
-the v2 substrate: any one-step `Step source target` preserves
-`HasCertifiedCellDim0`.
+The structural subject-reduction umbrella for the v2 substrate: any
+one-step `Step source target` preserves `HasCertifiedCellDim0`.
 
 This is deliberately only structural shape preservation (certified
 dim-0 cell at the same profile/scope), not typed `HasType` subject

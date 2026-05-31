@@ -2,7 +2,7 @@ import FX1Poly.Core.RawTermRenamePointwise
 
 /-! # Foundation/PolyCell/Core/RawTermRenameCompose — renaming-side lift-compose fusion
 
-This file ships the **binder-level fusion** between `RawRenaming.lift`
+The **binder-level fusion** between `RawRenaming.lift`
 and `RawRenaming.compose`:
 
   lift (compose rho1 rho2) ≅ compose (lift rho1) (lift rho2)   (pointwise)
@@ -10,30 +10,15 @@ and `RawRenaming.compose`:
 at the lifted scope, plus the Nat-indexed iterated form needed by
 fold binder-depth traversal.
 
-## Where this sits in the cross-direction fusion ladder
-
-  rename_pointwise            (#181c1, shipped)
-  lift_compose_pointwise      (THIS FILE — renaming side)
-  iterateLiftRaw_compose_pointwise (THIS FILE — renaming side)
-  Generator.payload_cast_compose   (next — helper for term-level)
-  rename_compose              (next — term-level fusion)
-  subst_rename_commute        (after)
-  rename_subst_commute        (after)
-  lift_compose_pointwise      (subst side, uses above)
-  iterateLiftRaw_compose_pointwise (subst side)
-  subst_compose               (the headline)
-  Action RawTermSubst instance  (closes V2-L2.7)
-
 ## Why this is BINDER-level, not term-level
 
-This file ships ONLY the lift-side fusion — no recursion over
+This file holds ONLY the lift-side fusion — no recursion over
 `RawTerm` is needed.  The headline `RawRenaming.lift_compose_pointwise`
 is a pure Fin pattern match (0 / k+1) that closes by `rfl` on both
 branches.  The iterated version is a Nat induction.
 
-The TERM-level fusion (`RawTerm.rename_compose`) ships in a
-follow-up commit; it consumes this file's lemmas at every binder
-crossing.
+The TERM-level fusion (`RawTerm.rename_compose`) consumes this
+file's lemmas at every binder crossing.
 
 ## The Fin-cases reasoning (both close by `rfl`)
 
@@ -77,7 +62,7 @@ Inducts on `depth`:
 * `RawRenaming.lift_compose_pointwise` — Fin pattern match, both
   branches close by `rfl`.  Propext-clean.
 * `iterateLiftRaw_RawRenaming_compose_pointwise` — Nat induction
-  using #181c1's `lift_pointwise` + this file's `lift_compose_pointwise`.
+  using `lift_pointwise` + this file's `lift_compose_pointwise`.
   Propext-clean.
 
 Audit-gated in `Tools/AuditAll/AuditPolyCell.lean`.
@@ -136,7 +121,7 @@ Induction on `binderDepth`:
     the lift — `lift (compose X Y) ≅ compose (lift X) (lift Y)`.
   - Chaining the two rewrites yields the goal.
 
-This is the renaming-side analog of v1's `RawTermSubst`-style
+This is the renaming-side analog of the `RawTermSubst`-style
 iterated lift-compose fusion. -/
 theorem iterateLiftRaw_RawRenaming_compose_pointwise
     {sourceScope middleScope targetScope : Nat}

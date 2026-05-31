@@ -2,15 +2,12 @@ import FX1Poly.Core.RawTermRename
 
 /-! # Foundation/PolyCell/Core/RawTermWeaken — weaken via fold
 
-This file ships `RawTerm.weaken` and `RawTermChildren.weaken`,
-the SECOND one-line fold instantiation pair.  Weakening is the
-canonical single-binder shift: every variable bumps up by one (via
-`Fin.succ`), and the term's scope index increases from `scope` to
-`scope + 1`.
-
-Direct v2 counterpart to v1's `RawTerm.weaken` (a 74-arm pattern
-match in the dim-indexed era).  In v2, weakening factors through
-rename: `weaken := rename RawRenaming.weaken`.
+`RawTerm.weaken` and `RawTermChildren.weaken`, a one-line fold
+instantiation pair.  Weakening is the canonical single-binder
+shift: every variable bumps up by one (via `Fin.succ`), and the
+term's scope index increases from `scope` to `scope + 1`.
+Weakening factors through rename: `weaken := rename
+RawRenaming.weaken`.
 
 ## The one-line definitions
 
@@ -21,11 +18,10 @@ def RawTerm.weaken term :=
 
 Two delegations deep:
 1. `weaken := rename RawRenaming.weaken term`
-2. `rename rho t := fold GenAlgebra.canonical rho t` (#178)
+2. `rename rho t := fold GenAlgebra.canonical rho t`
 
 The composition shows that weaken is a SPECIAL CASE of rename, which
-is a special case of fold.  Each derivation costs ONE LINE; the
-74-arm cascade lives in neither — it has been completely eliminated.
+is a special case of fold.  Each derivation costs ONE LINE.
 
 ## Why factor through rename rather than fold directly
 
@@ -35,19 +31,19 @@ Both work:
 
 The via-rename form is more compositional — it explicitly names the
 relationship "weaken is rename specialized to RawRenaming.weaken".
-Downstream proofs of weaken's properties (e.g., commute lemmas at
-#181) can lift directly from rename's corresponding properties via
-this delegation.
+Downstream proofs of weaken's properties (e.g., commute lemmas) can
+lift directly from rename's corresponding properties via this
+delegation.
 
 The direct form would bypass rename and lose this connection.
 
 ## Zero-axiom verification
 
 All declarations propext-free:
-* `weaken` — definitional delegation to `rename` (zero-axiom from #178)
+* `weaken` — definitional delegation to `rename` (zero-axiom)
 * Unfolding theorems close by `rfl`
-* Smoke theorems close by `rfl` IF the rename → fold chain reduces
-  on concrete inputs (which #178's smoke tests confirmed)
+* Smoke theorems close by `rfl` since the rename → fold chain
+  reduces on concrete inputs
 
 Audit-gated in `Tools/AuditAll/AuditPolyCell.lean`.
 -/

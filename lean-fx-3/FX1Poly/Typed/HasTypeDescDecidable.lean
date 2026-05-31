@@ -30,7 +30,7 @@ contradiction).  No `Iff`, no `propext`.
 
 ## Zero-axiom verification
 
-A `match` on the shipped `HasType.decidableOfWellFormed` decision + the two
+A `match` on the `HasType.decidableOfWellFormed` decision + the two
 zero-axiom equivalence maps.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
 `Classical`, `native_decide`, `omega`.  Audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 -/

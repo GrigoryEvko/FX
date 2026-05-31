@@ -13,43 +13,42 @@ direction.  This ships the PREMISE half of P8 for the FORMATION shape on the
 description engine `HasTypeDesc`: from a formation cell's typing, recover the
 `DescTelescope` premise witnessing its children form the expected telescope of types.
 
-Why the premise half is the right cut: **it is `Conv`-FREE.**  Full P8's
-classifier-`Conv` conjunct needs `Conv.trans` on the `conv` arm (the abandoned raw-CR
-route; typed `Conv.trans_of_typedMiddle` only with a `WfContext`).  But the CHILDREN
+Why the premise half is a distinct cut: **it is `Conv`-FREE.**  Full P8's
+classifier-`Conv` conjunct needs `Conv.trans` on the `conv` arm (typed
+`Conv.trans_of_typedMiddle`, available only with a `WfContext`).  But the CHILDREN
 are determined by the SUBJECT (`mkGen g p ch`), which `conv` leaves unchanged — so the
 `conv` arm forwards the descent IH VERBATIM, needing no `Conv` and no `WfContext`.
 This isolates the genuinely-useful descent content (the children's telescope — what
-the typechecker + canonicity consume) from the `Conv`-blocked part.
+the typechecker + canonicity consume) from the `Conv`-dependent part.
 
 ## The full half (classifier-`Conv` conjunct) — `…WithConv`
 
-Built on the same recipe, this file now ALSO ships the FULL P8 for the
-dependent-binary formation family: `…WithConv` adds `Conv reachedClassifier
-(universeCodeCell (lmaxAll levels) flag)` — the subject's classifier converts to the
-canonical formation output.  This is the conjunct intrinsic UNIQUENESS (P7) and the
-typechecker's conv-check consume, and the FIRST wiring of typed `Conv.trans` into the
-description engine.  Three deltas over the premise half: (1) a `WfContext` parameter
-(threaded as an OUTER argument — the term-mode `match` keeps the context index fixed,
-so unlike the bespoke `induction`-based inversion it need not revert `WfContext` into
-the motive); (2) the `conv` arm composes `Conv`s via `Conv.trans_of_typedMiddle`, the
-middle's `IsType` coming from `classifierIsType ∘ toHasType` on the `conv` premise;
-(3) the `genFormation` arm additionally pins the `TypingRuleDesc` (`Option.some.inj`)
-so the output reduces to `universeCodeCell (lmaxAll …) …` and `Conv.refl` closes the
-conjunct.  The premise half stays — it is strictly more general (no `WfContext`).
+Built on the same recipe, the FULL P8 for the dependent-binary formation family:
+`…WithConv` adds `Conv reachedClassifier (universeCodeCell (lmaxAll levels) flag)` —
+the subject's classifier converts to the canonical formation output.  This is the
+conjunct intrinsic UNIQUENESS (P7) and the typechecker's conv-check consume, wiring
+typed `Conv.trans` into the description engine.  Three deltas over the premise half:
+(1) a `WfContext` parameter (threaded as an OUTER argument — the term-mode `match`
+keeps the context index fixed, so unlike the bespoke `induction`-based inversion it
+need not revert `WfContext` into the motive); (2) the `conv` arm composes `Conv`s via
+`Conv.trans_of_typedMiddle`, the middle's `IsType` coming from `classifierIsType ∘
+toHasType` on the `conv` premise; (3) the `genFormation` arm additionally pins the
+`TypingRuleDesc` (`Option.some.inj`) so the output reduces to `universeCodeCell
+(lmaxAll …) …` and `Conv.refl` closes the conjunct.  The premise half stays — it is
+strictly more general (no `WfContext`).
 
-Shipped this fire for the Π-formation shape (`piTyCodeCell`); the Σ shape over
-`gen_sigmaTyCode` is the identical mirror (a future atomic step).  A FULLY generic
-version (one descent lemma over every whitelisted generator, refuting non-formers via
-`typingRuleDescOf … = none`) is attractive but blocked by a dependent-`subst` wall:
-unifying a free generator variable with the arm's generator fails Lean's
-scope/occurs check both directions.  The concrete-former shape sidesteps it
-(`subst armGenerator := gen_piTyCode` against a CONSTANT is clean) — which is exactly
-why the bespoke layer also ships `inversionPiCode`/`inversionSigmaCode` as a pair.
+Both the Π-formation shape (`piTyCodeCell`) and the Σ shape (`gen_sigmaTyCode`, the
+identical mirror) are covered.  A FULLY generic version (one descent lemma over every
+whitelisted generator, refuting non-formers via `typingRuleDescOf … = none`) is
+blocked by a dependent-`subst` wall: unifying a free generator variable with the arm's
+generator fails Lean's scope/occurs check both directions.  The concrete-former shape
+sidesteps it (`subst armGenerator := gen_piTyCode` against a CONSTANT is clean) — which
+is why the bespoke layer also carries `inversionPiCode`/`inversionSigmaCode` as a pair.
 
 ## Recipe (equation-motive, adapted to the MUTUAL engine)
 
 `induction` REJECTS `HasTypeDesc` ("mutually inductive"), so the recursion is a
-term-mode recursive `match` (the propext-free structural form of the shipped
+term-mode recursive `match` (the propext-free structural form of
 `HasTypeDesc.toHasType`) in a helper generalizing the subject + threading `subject =
 mkGen g p ch`.  It recurses ONLY into the `conv` premise — a LONE recursion on
 `HasTypeDesc` (no mutual block), exactly as `DescTelescope.toTermTelescope` recurses
@@ -237,8 +236,8 @@ theorem HasTypeDesc.inversionPiCodeWithConvGeneral {profile : PolyProfile}
 the premise telescope (children form the expected telescope of types) AND the
 classifier-`Conv` conjunct (the cell's classifier converts to the canonical formation
 output `Type@(lmaxAll levels, flag)`).  The description-engine analogue of the bespoke
-`HasType.inversionPiCode`, and the FIRST wiring of typed `Conv.trans` into the engine —
-the conjunct intrinsic uniqueness (P7) and the typechecker's conv-check consume.
+`HasType.inversionPiCode`, wiring typed `Conv.trans` into the engine — the conjunct
+intrinsic uniqueness (P7) and the typechecker's conv-check consume.
 Needs `WfContext` (the `conv` arm's `Conv` composition uses validity). -/
 theorem HasTypeDesc.inversionPiCodeWithConv {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}

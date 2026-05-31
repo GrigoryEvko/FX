@@ -3,18 +3,18 @@ import FX1Poly.Core.GeneratorMetadata
 /-! # Foundation/PolyCell/Core/GeneratorChildSpecsDim0
    — fxProfile invariant: every generator's child specs are at dim 0
 
-V2-L3.1 phase D step 31 (2026-05-27).  Ships the **profile-level
-invariant** required by the structural induction mutual block:
+Ships the **profile-level invariant** required by the structural
+induction mutual block:
 
   > For every `Generator`, every `ChildSpec` in `gen.childSpecs` has
   > `cellDimension = 0`.
 
 ## Why this matters
 
-The eventual `PolyCell.rename_dim0` / `subst_dim0` mutual block must
-recurse into a spine whose `headSpec.cellDimension` is statically
-unknown (the spine type only parametrizes over `List ChildSpec`).  To
-collapse the spine's `headBoundary` to `CellBoundary.trivial` via
+The `PolyCell.rename_dim0` / `subst_dim0` mutual block recurses into a
+spine whose `headSpec.cellDimension` is statically unknown (the spine
+type only parametrizes over `List ChildSpec`).  To collapse the
+spine's `headBoundary` to `CellBoundary.trivial` via
 `CertifiedTermSpine.headAtDim0`, the caller needs a witness that
 `headSpec.cellDimension = 0`.
 
@@ -42,13 +42,9 @@ arm reduces to `rfl` or trivial list membership.
 version routes through the Bool check + `List.all_eq_true` (an iff
 lemma, propext-free in Lean 4 core).
 
-If `cases gen <;> rfl` proves too slow at scale, we fall back to
-per-generator theorems (one per arm, each shipped atomically), which
-mirrors the discipline used for per-shape compositional preservations.
-
 ## Audit-gated
 
-Each shipped declaration carries an `#assert_no_axioms` gate in
+Each declaration carries an `#assert_no_axioms` gate in
 `AuditPolyCell.lean`.
 -/
 

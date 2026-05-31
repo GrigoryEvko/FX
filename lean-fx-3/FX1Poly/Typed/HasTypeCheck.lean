@@ -1,7 +1,7 @@
 import FX1Poly.Typed.HasTypeInfer
 
 /-! # FX1Poly/Typed/HasTypeCheck
-    — bidirectional type CHECKING (`check`) for the current fragment (#479 / #301 M52)
+    — bidirectional type CHECKING (`check`) for the current fragment
 
 The check half of bidirectional typing: "does `subject` have the GIVEN type
 `targetType`?".  The synthesis-based decision procedure: synthesise `subject`'s
@@ -20,11 +20,10 @@ This is the GENERAL bidirectional method — it rests only on `infer`, the gener
 decidable `Conv` (`Conv.decidableOfIsType`), and the conversion rule, NOT on the
 fragment-specific collapse-to-classifier-equality that powers the direct decider
 `HasType.decidableOfWellFormed` (#461).  On the current fragment the two
-necessarily decide the same judgment (any two `Decidable p` agree); `check` is the
-presentation that survives fragment growth (once `Conv` is NbE-based and the
-direct collapse no longer applies, this synthesise-then-convert skeleton still
-decides typing).  Shipped honestly as a parallel, growth-surviving decision
-procedure, not a new capability over #461 on this fragment.
+necessarily decide the same judgment (any two `Decidable p` agree).  `check` is a
+parallel decision procedure independent of the fragment-specific collapse — the
+synthesise-then-convert skeleton decides typing through `infer` and `Conv` alone,
+not a new capability over the direct decider on this fragment.
 
 ## The three refutation arms (the real metatheory)
 
@@ -47,7 +46,7 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- Bidirectional type checking (#479 / #301): decide whether `subject` has the
+/-- Bidirectional type checking (#479): decide whether `subject` has the
 given `targetType`.  Synthesise with `infer`; confirm `targetType` inhabits a
 universe (`decideWithWitness`, which also yields the `targetType : Type@(lvl,
 flag)` derivation the conv rule needs); decide `Conv synthType targetType`; on

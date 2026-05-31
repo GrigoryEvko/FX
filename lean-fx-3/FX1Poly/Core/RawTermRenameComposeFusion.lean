@@ -2,26 +2,12 @@ import FX1Poly.Core.RawTermRenameCompose
 
 /-! # Foundation/PolyCell/Core/RawTermRenameComposeFusion — term-level renaming fusion
 
-This file ships the **third cross-direction fusion piece**:
+The **term-level renaming fusion**:
 
   RawTerm.rename rho2 (RawTerm.rename rho1 term)
     = RawTerm.rename (RawRenaming.compose rho1 rho2) term
 
 — the polynomial monad's associativity at the renaming layer.
-
-Position in the cross-direction fusion ladder:
-
-  rename_pointwise            (#181c1, shipped)
-  lift_compose_pointwise (rename) (#181c2, shipped)
-  iterateLiftRaw_compose_*  (rename) (#181c2, shipped)
-  Generator.payload_cast_compose  (THIS COMMIT — keystone helper)
-  rename_compose              (THIS COMMIT — term-level fusion)
-  subst_rename_commute        (after)
-  rename_subst_commute        (after)
-  lift_compose_pointwise (subst)
-  iterateLiftRaw_compose_* (subst)
-  subst_compose               (the headline)
-  Action RawTermSubst instance  (closes V2-L2.7)
 
 ## The keystone helper: chained casts compose to single casts
 
@@ -39,8 +25,8 @@ sides — but propositionally, we need:
 
   eq_mid_tgt ▸ (eq_src_mid ▸ payload) = eq_src_tgt ▸ payload
 
-This is `Generator.payload_cast_compose` (shipped here).  It's a
-193-arm `all_goals rfl` after the var case is dispatched as
+This is `Generator.payload_cast_compose`.  It's a 193-arm
+`all_goals rfl` after the var case is dispatched as
 `absurd rfl hNotVar` — the same pattern as
 `Generator.payload_scope_invariant_of_not_var`.
 
@@ -63,8 +49,8 @@ standard pattern:
 The children mutual sub-theorem:
 * `.childNil` — `rfl`.
 * `.childCons head tail` — head IH applied with LIFTED renamings,
-  bridge via `iterateLiftRaw_RawRenaming_compose_pointwise` (from
-  #181c2) to convert `compose (lift r1) (lift r2)` → `lift (compose r1 r2)`.
+  bridge via `iterateLiftRaw_RawRenaming_compose_pointwise`
+  to convert `compose (lift r1) (lift r2)` → `lift (compose r1 r2)`.
 
 ## Why double-unfolding is needed
 
@@ -102,20 +88,16 @@ All declarations propext-free:
 
 Audit-gated in `Tools/AuditAll/AuditPolyCell.lean`.
 
-## v1 comparison
+## Structure
 
-v1's `RawTerm.rename_compose` is a 74-arm structural induction
-(Foundation/RawSubst/RenameLemmas.lean or equivalent).  Each arm is
-`dsimp + rw`, similar to v1's other commute lemmas.
-
-v2's version is a 4-arm mutual induction:
+`RawTerm.rename_compose` is a 4-arm mutual induction:
 * `.mkGen` var sub-case
 * `.mkGen` non-var sub-case
 * `.childNil`
 * `.childCons`
 
-Cascade-tax ratio: ~18x reduction.  The Generator dispatch is
-amortized into fold plus the cast composition helper.
+The Generator dispatch is amortized into fold plus the cast
+composition helper.
 -/
 
 namespace FX1Poly.Core
@@ -159,8 +141,7 @@ theorem Generator.payload_cast_compose
 
 /-! ## Section 2 — The term-level renaming fusion
 
-In v1: 74-arm structural induction.
-In v2: 4-arm mutual induction reusing fold's dispatch + the cast
+A 4-arm mutual induction reusing fold's dispatch + the cast
 keystone above. -/
 
 mutual
@@ -169,8 +150,7 @@ mutual
 equals applying their composition.
 
 This is the rename-side analog of `subst_compose` (and a stepping
-stone toward it).  v2 replacement for v1's 74-arm
-`RawTerm.rename_compose`. -/
+stone toward it). -/
 theorem RawTerm.rename_compose
     {sourceScope middleScope targetScope : Nat}
     (firstRenaming : FX1Poly.Foundation.RawRenaming sourceScope middleScope)
@@ -240,12 +220,12 @@ gives:
     = rename (compose (iter rho1 shift) (iter rho2 shift)) head
 
 To match the RHS shape, we bridge via
-`iterateLiftRaw_RawRenaming_compose_pointwise` (from #181c2):
+`iterateLiftRaw_RawRenaming_compose_pointwise`:
 
   iter (compose rho1 rho2) shift ≅ compose (iter rho1 shift) (iter rho2 shift)
 
 The symmetric direction lets us rewrite back into `iter compose` form,
-matching the RHS.  `RawTerm.rename_pointwise` (from #181c1) does the
+matching the RHS.  `RawTerm.rename_pointwise` does the
 conversion at the head's scope. -/
 theorem RawTermChildren.rename_compose
     {sourceScope middleScope targetScope : Nat}

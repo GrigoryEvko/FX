@@ -3,9 +3,8 @@ import FX1Poly.Core.PairEliminatorLayer
 /-! # Foundation/PolyCell/Core/BoolEliminatorLayer
    — full compositional layer for `gen_boolElim`
 
-V2-L3.1 phase D step 23 (2026-05-27).  Sibling to step 22
-(`PairEliminatorLayer`); extends eliminator coverage to the
-3-child boolean eliminator `gen_boolElim`.
+Sibling to `PairEliminatorLayer`; extends eliminator coverage to
+the 3-child boolean eliminator `gen_boolElim`.
 
 ## What this file ships
 
@@ -36,7 +35,7 @@ Same template for steps in the thenBranch or elseBranch position
 |--------------------------|------------|
 | Term constructors        | var, unit, boolTrue/False, natZero, listNil, optionNone, app, pair, listCons, natSucc, optionSome, eitherInl/Inr, refl, lam (16) |
 | Pair eliminators         | fst, snd (2) |
-| Boolean eliminator (NEW) | boolElim (1) |
+| Boolean eliminator       | boolElim (1) |
 | Total                    | **19**     |
 
 ## Zero-axiom verification

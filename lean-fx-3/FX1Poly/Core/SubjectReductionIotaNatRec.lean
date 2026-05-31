@@ -3,17 +3,16 @@ import FX1Poly.Core.Step
 
 /-! # Foundation/PolyCell/Core/SubjectReductionIotaNatRec — nat elimination/recursor step iotas
 
-V2-L3.1 phase D step 12 (2026-05-27).  Ships SR arms 14-15:
+The SR arms for the nat-successor compound iotas:
 
   * iotaNatElimSucc : `natElim (natSucc n) z s ↝ app (app s n) (natElim n z s)`
   * iotaNatRecSucc  : `natRec  (natSucc n) z s ↝ app (app s n) (natRec  n z s)`
 
-## What's new vs. the single-payload compound iotas
+## What distinguishes these from the single-payload compound iotas
 
-The eitherMatch / optionMatchSome arms (sibling commits a8f3c45a /
-81aeae69) built a SINGLE `gen_app ()` target with 2 children
-(branch + extracted value).  These arms build a more complex
-NESTED structure:
+The eitherMatch / optionMatchSome arms build a SINGLE `gen_app ()` target
+with 2 children (branch + extracted value).  These arms build a more
+complex NESTED structure:
 
 ```
 target =
@@ -40,12 +39,8 @@ spine positions in the target.
 
 `#assert_no_axioms` on both theorems.
 
-After this commit: 16/18 SR arms shipped.  Remaining: `beta`
-(uses V2-L2.12 subst preservation) and `cong` (structural
-induction over child Step + spine).
-
-(Plus a sibling `iotaListElimCons` arm at the same proof template
-— 3-arg nested app — in the file's third theorem.)
+The file's third theorem, `iotaListElimCons`, follows the same proof
+template with a 3-arg nested app.
 -/
 
 namespace FX1Poly.Core

@@ -29,8 +29,8 @@ the computed-`def` form).
 
 ## Zero-axiom verification
 
-Structural recursion on the telescope + the shipped
-`IsType.decidableOfWellFormed` + the definitional `WfContext`
+Structural recursion on the telescope + `IsType.decidableOfWellFormed` +
+the definitional `WfContext`
 projection/introducer helpers.  The outer `match` on the telescope handles BOTH
 constructors (no impossible-index case to discharge), so it compiles to a clean
 recursor with no propext-tainted equation lemma.  No `axiom`, `sorry`,

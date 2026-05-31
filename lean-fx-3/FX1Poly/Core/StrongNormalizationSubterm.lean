@@ -1,7 +1,7 @@
 import FX1Poly.Core.StepStarConfluence
 
 /-! # Foundation/PolyCell/Core/StrongNormalizationSubterm
-    — strong normalization of sub-terms (the inverse of the constructor lane)
+    — strong normalization of sub-terms (the inverse of the constructor direction)
 
 The constructor file proves children SN ⟹ parent SN (the forward direction).
 This file proves the INVERSE for the first pair component: the first component
@@ -10,7 +10,7 @@ payload-carrying eliminator's ι-rule extracts a sub-term or payload from the
 scrutinee (`fst (pair a b) ↝ a`, `optionMatch … (Some v) ↝ app branch v`,
 …), so its SN closure needs the extracted sub-term's SN — which this primitive
 supplies from the scrutinee's accessibility.  (The second-component sibling
-follows the same shape with a `there`-then-`here` congruence and lands next.)
+follows the same shape with a `there`-then-`here` congruence.)
 
 ## The argument
 

@@ -7,8 +7,8 @@ import FX1Poly.Core.RawSize
     — raw-cell shape lemmas for Σ-type code cells
 
 The dual of `UniverseCodeShape`'s Π section: every raw-layer shape brick a
-Σ-formation typing arm needs, mirroring the Π-formation substrate shipped with
-#443.  `gen_sigmaTyCode` is structurally identical to `gen_piTyCode` (binder
+Σ-formation typing arm needs, mirroring the Π-formation substrate.
+`gen_sigmaTyCode` is structurally identical to `gen_piTyCode` (binder
 shifts `[0, 1]`, `Unit` payload, two children with the codomain at `scope + 1`),
 so each lemma here is the exact analog of its `piTyCodeCell` counterpart with
 the head generator swapped.
@@ -96,7 +96,7 @@ theorem sigmaTyCodeCell_inj {scope : Nat}
 only the congruence case), so any step of the cell descends into the domain or
 codomain, each ruled out by hypothesis.  Dual of
 `piTyCodeCell_noStep_of_childrenNoStep`; the inductive crux the Σ-case of
-`subjectHasNoStep` will call directly. -/
+`HasType.subjectHasNoStep` calls directly. -/
 theorem sigmaTyCodeCell_noStep_of_childrenNoStep {scope : Nat}
     {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
     (domainNoStep : ∀ reduct, Step domainCode reduct → False)

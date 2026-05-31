@@ -4,9 +4,9 @@ import FX1Poly.Core.StepInversion
 /-! # Foundation/PolyCell/Core/StrongNormalizationConstructors
     - structural SN closure for congruence-only constructors
 
-This continues the M9/M10 strong-normalization lane after the zero-child
-leaf endpoints.  The theorems here cover one-child constructors whose only
-current outgoing `Step` is congruence through that child.  Existing
+The structural SN closure for congruence-only constructors, building on the
+zero-child leaf endpoints.  The theorems here cover one-child constructors
+whose only outgoing `Step` is congruence through that child.  The
 `Step.from_*` inversion lemmas provide the required no-root-reduction evidence.
 
 This is still not global SN, not a reducibility predicate, and not the

@@ -4,18 +4,14 @@ import FX1Poly.Core.GeneratorChildSpecsDim0
 /-! # Foundation/PolyCell/Core/SpineConsStep
    — non-recursive cons-step helper for the spine renamer/substituter
 
-Per `M-spineRenamers-retro` (#379): this file is the CRITICAL
-piece of the ~400-LoC spine-renamer substrate task home.  The
-cons-step boundary cast `consStep_dim0Trivial` (commit a240b68f)
-is the documented "blocker SOLVED" landing that unblocked the
-M2 #251 SR arm 17 beta mutual block.  Sibling files:
-`SpineRenameStep.lean`, `SpineSubstStep.lean`, `StepHCCWrappers.lean`.
+The cons-step boundary cast `consStep_dim0Trivial` is the core piece of
+the spine-renamer substrate.  Sibling files: `SpineRenameStep.lean`,
+`SpineSubstStep.lean`, `StepHCCWrappers.lean`.
 
-V2-L3.1 phase D step 34 (2026-05-27).  Ships the **spine-side
-inductive step** of the eventual structural-induction mutual block —
-packaged as a NON-RECURSIVE definition.
+This is the **spine-side inductive step** of the structural-induction
+mutual block, packaged as a NON-RECURSIVE definition.
 
-## What this ships
+## What this provides
 
 `CertifiedTermSpine.consStep_dim0Trivial` — given:
 
@@ -41,7 +37,7 @@ The mutual block's spine arm has two architectural challenges:
   2. **Dependent cast on cons**: the implicit `headBoundary` on
      `CertifiedTermSpine.cons` requires careful boundary handling.
 
-This file ships (2): the cons step in a non-recursive helper, using
+This file provides (2): the cons step in a non-recursive helper, using
 the `generalize` + `subst` pattern from `CertifiedTermSpineProjections.
 headAtDim0` to collapse the boundary.  Combined with the cell-step
 helpers (`CellNonVarStepRenamer` / `CellNonVarStepSubstituter`), the
@@ -57,15 +53,13 @@ direction by passing the appropriate raw terms.
 ## Zero-axiom verification
 
 Uses the `generalize` + `subst` + `Subsingleton.elim` pattern proven
-clean in `CertifiedTermSpineProjections.headAtDim0` (phase D step 2).
-Audit-gated.
+clean in `CertifiedTermSpineProjections.headAtDim0`.  Audit-gated.
 -/
 
 namespace FX1Poly.Core
 
--- (lean-fx-2 `open LeanFX2` here was vestigial — this file references no
--- root-namespace infra; dropped, as `FX1Poly.Foundation` is not loaded
--- transitively along this import path.)
+-- This file references no root-namespace infra, so no `open` is needed
+-- (`FX1Poly.Foundation` is not loaded transitively along this import path).
 
 /-- **Cons-step constructor for the spine, dim-0 / trivial boundary.**
 
@@ -133,7 +127,7 @@ def CertifiedTermSpine.consStep_dim0Trivial
 
 /-- **Nil-step constructor for the spine.**
 
-Trivially `.nil`.  Shipped as the symmetric counterpart to
+Trivially `.nil`.  The symmetric counterpart to
 `consStep_dim0Trivial` so the mutual block's spine arm's `nil` case
 reads as a one-liner alongside the cons case. -/
 def CertifiedTermSpine.nilStep

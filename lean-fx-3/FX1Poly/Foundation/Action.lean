@@ -9,10 +9,11 @@ architecture.
 
 ## Why an `Action` typeclass
 
-Pre-Tier-3, every traversal-style operation (`Ty.weaken`, `Ty.rename`,
-`Ty.subst`, `Ty.substHet`, `Term.weaken`, `Term.rename`, `Term.subst`,
-`Term.substHet`, plus `RawTerm.{weaken,rename,subst}`) carries its own
-recursion engine and its own ladder of commute lemmas:
+Without this abstraction, every traversal-style operation
+(`Ty.weaken`, `Ty.rename`, `Ty.subst`, `Ty.substHet`, `Term.weaken`,
+`Term.rename`, `Term.subst`, `Term.substHet`, plus
+`RawTerm.{weaken,rename,subst}`) carries its own recursion engine and
+its own ladder of commute lemmas:
 
 * `Ty.rename_pointwise`, `Ty.subst_pointwise`, `Ty.substHet_pointwise`
 * `Ty.rename_compose`, `Ty.subst_compose`, `Ty.subst_subst_compose`,
@@ -23,9 +24,8 @@ recursion engine and its own ladder of commute lemmas:
   `Ty.subst0_substHet_commute`
 * …mirrored at Term layer (3 copies) and RawTerm layer (~25 lemmas).
 
-Per the MEGA-Z1.5 cast-and-commute map (`/tmp/mega-z1.5-comprehensive-
-map.md`), this ladder totals **~174 propositional commute lemmas**
-across 4 layers.  Most of them collapse under a unified `Action`
+That ladder totals **~174 propositional commute lemmas** across 4
+layers.  Most of them collapse under the unified `Action`
 abstraction:
 
 * `*_pointwise`        → `Action.apply_ext`         (extensionality)
@@ -86,12 +86,6 @@ syntax-with-binding the project later defines.
 
 `Smoke/AuditMegaZ1A.lean` runs `#print axioms` on every declaration in
 this file.  All zero-axiom under strict policy.
-
-## Wave
-
-Tier 3 / MEGA-Z1.A.  Z1.B wraps the existing `RawRenaming`, `Subst`,
-`SubstHet` as instances.  Z2.A builds `Ty.act` over the Action
-typeclass.  Z3 retires the propositional commute ladder.
 -/
 
 namespace FX1Poly.Foundation
@@ -344,14 +338,14 @@ instance : Action IdAction where
 
 /-! ## Section 4 — Smoke test: dual-lift on a 3-ctor mock Ty.
 
-Per the MEGA-Z1.A risk register entry **R11**, the dual-lift design
-must accommodate ctors whose binders bind a Ty (like piTy) versus
-ctors whose binders bind a RawTerm (like refine's predicate).
+The dual-lift design (R11) must accommodate ctors whose binders bind
+a Ty (like piTy) versus ctors whose binders bind a RawTerm (like
+refine's predicate).
 
-This section ships a 3-ctor mock `MockTy` and verifies that the
+This section defines a 3-ctor mock `MockTy` and verifies that the
 typeclass `liftForTy` and `liftForRaw` both elaborate cleanly when
-used inside a recursion engine.  This validates the design before
-Z2.A applies the same pattern to the real `Ty` inductive (25 ctors). -/
+used inside a recursion engine, validating the pattern that the real
+`Ty` inductive (25 ctors) applies. -/
 
 /-- Mock 3-ctor type to smoke-test dual-lift.  Subset of FX's real
 `Ty` covering the three binder shapes:

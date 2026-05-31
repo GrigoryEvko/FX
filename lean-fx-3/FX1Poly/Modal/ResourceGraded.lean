@@ -15,26 +15,13 @@ Security {unclassified < classified} is another instance.
 Reference: arXiv:2603.29716 (Agda-formalized).
 Zero external dependencies.
 
-## V2-fix-2 (2026-05-27): propext-free rewrite
+## Propext-free discipline
 
-The original definitions used overlapping curried match patterns
-like `| .zero, g => g | g, .zero => g`.  When both arguments are
-`.zero`, the two arms overlap; Lean 4 v4.29.1's match compiler
-emits `propext` in the auto-generated equation lemmas to discharge
-the overlap.  This shipped six declarations with a `propext`
-dependency (verified via `#print axioms`):
-
-  * UsageGrade.add, UsageGrade.mul, UsageGrade.le
-  * SecurityGrade.add, SecurityGrade.le
-  * fxUsageSemiring, fxSecuritySemiring (transitively)
-
-The file is orphan (not imported by any production module), so the
-leak was invisible to the project's `#audit_namespace LeanFX2` sweep
-which walks the import closure only.  Agent 5 of the V2 falsification
-audit (2026-05-27) found this with a per-file probe.
-
-This rewrite expands each overlapping def to **full enumeration over
-the product space** of the inductive arguments:
+Each grade operation is defined by **full enumeration over the
+product space** of the inductive arguments, rather than overlapping
+curried patterns like `| .zero, g => g | g, .zero => g` (whose
+overlap at `.zero, .zero` makes Lean's match compiler emit `propext`
+in the auto-generated equation lemmas):
 
   * UsageGrade.add: 3 × 3 = 9 arms
   * UsageGrade.mul: 9 arms
@@ -42,16 +29,14 @@ the product space** of the inductive arguments:
   * SecurityGrade.add: 2 × 2 = 4 arms
   * SecurityGrade.le:  4 arms
 
-Every arm pattern is a CTOR pair with no wildcard, no overlap.  Lean's
-match compiler emits no equation lemma propext for distinct-CTOR
-patterns.  Result: all seven declarations pass `#print axioms` clean
-(verified post-rewrite).
+Every arm pattern is a CTOR pair with no wildcard, no overlap, so
+Lean's match compiler emits no equation-lemma propext.  All seven
+declarations (the five operations above plus `fxUsageSemiring` and
+`fxSecuritySemiring`) pass `#print axioms` clean.
 
-The behavioral semantics are PRESERVED — every output value is the
-same as the original overlapping form computed.  Verified by the
-seven existing semiring-law theorems (`add_comm`, `add_zero`,
-`zero_add`, `mul_one`, `one_mul`, `mul_zero`, `zero_mul`,
-`linear_div_omega_eq_zero`) still closing by `cases ... <;> rfl`.
+The seven semiring-law theorems (`add_comm`, `add_zero`, `zero_add`,
+`mul_one`, `one_mul`, `mul_zero`, `zero_mul`,
+`linear_div_omega_eq_zero`) close by `cases ... <;> rfl`.
 
 Pattern catalogued in
 `feedback_lean_match_propext_recipe.md`.
@@ -79,7 +64,7 @@ inductive UsageGrade where
   deriving DecidableEq, Repr
 
 /-- Usage-grade addition.  Full 3×3 enumeration; no wildcard, no
-overlapping patterns — propext-free per V2-fix-2. -/
+overlapping patterns — propext-free. -/
 def UsageGrade.add : UsageGrade → UsageGrade → UsageGrade
   | .zero,  .zero  => .zero
   | .zero,  .one   => .one
@@ -91,8 +76,7 @@ def UsageGrade.add : UsageGrade → UsageGrade → UsageGrade
   | .omega, .one   => .omega
   | .omega, .omega => .omega
 
-/-- Usage-grade multiplication.  Full 3×3 enumeration; propext-free
-per V2-fix-2. -/
+/-- Usage-grade multiplication.  Full 3×3 enumeration; propext-free. -/
 def UsageGrade.mul : UsageGrade → UsageGrade → UsageGrade
   | .zero,  .zero  => .zero
   | .zero,  .one   => .zero
@@ -105,7 +89,7 @@ def UsageGrade.mul : UsageGrade → UsageGrade → UsageGrade
   | .omega, .omega => .omega
 
 /-- Usage-grade order: `zero ≤ one ≤ omega`.  Full 3×3 enumeration;
-propext-free per V2-fix-2. -/
+propext-free. -/
 def UsageGrade.le : UsageGrade → UsageGrade → Bool
   | .zero,  .zero  => true
   | .zero,  .one   => true
@@ -135,7 +119,7 @@ inductive SecurityGrade where
 
 /-- Security-grade addition (join): unclassified is the bottom; any
 classified input poisons the result.  Full 2×2 enumeration;
-propext-free per V2-fix-2. -/
+propext-free. -/
 def SecurityGrade.add : SecurityGrade → SecurityGrade → SecurityGrade
   | .unclassified, .unclassified => .unclassified
   | .unclassified, .classified   => .classified
@@ -143,9 +127,8 @@ def SecurityGrade.add : SecurityGrade → SecurityGrade → SecurityGrade
   | .classified,   .classified   => .classified
 
 /-- Security-grade multiplication (meet on the boolean lattice
-{unclassified < classified}).  Distinct-CTOR overlap-free patterns
-were already propext-free in the pre-V2-fix-2 form; kept here as
-explicit full enumeration for stylistic uniformity. -/
+{unclassified < classified}).  Full 2×2 enumeration with
+distinct-CTOR overlap-free patterns; propext-free. -/
 def SecurityGrade.mul : SecurityGrade → SecurityGrade → SecurityGrade
   | .unclassified, .unclassified => .unclassified
   | .unclassified, .classified   => .unclassified
@@ -153,7 +136,7 @@ def SecurityGrade.mul : SecurityGrade → SecurityGrade → SecurityGrade
   | .classified,   .classified   => .classified
 
 /-- Security-grade order: `unclassified ≤ classified`.  Full 2×2
-enumeration; propext-free per V2-fix-2. -/
+enumeration; propext-free. -/
 def SecurityGrade.le : SecurityGrade → SecurityGrade → Bool
   | .unclassified, .unclassified => true
   | .unclassified, .classified   => true

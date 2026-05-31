@@ -4,7 +4,7 @@ import FX1Poly.Core.RawTermSubstIdentity
 
 /-! # Foundation/PolyCell/Core/RawTermSubst0Commute
 
-Small beta-replay reshaping lemmas for the v2 raw substrate.
+Small beta-replay reshaping lemmas for the raw substrate.
 
 The main theorem, `RawTerm.subst0_subst_commute`, is the contractum
 reshape needed when a beta step is replayed after an outer
@@ -13,9 +13,8 @@ substitution:
 `subst sigma (subst0 body arg) =
  subst0 (subst sigma.lift body) (subst sigma arg)`.
 
-This is the v2 counterpart of the legacy raw beta-compatibility
-equation, but it is proved from the generic fold-based
-`RawTerm.subst_compose` plus pointwise substitution equality.
+It is proved from the generic fold-based `RawTerm.subst_compose`
+plus pointwise substitution equality.
 -/
 
 namespace FX1Poly.Core

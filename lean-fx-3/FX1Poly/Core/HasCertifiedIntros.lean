@@ -2,8 +2,8 @@ import FX1Poly.Core.CertifiedToPolyCell
 
 /-! # Foundation/PolyCell/Core/HasCertifiedIntros — nullary-generator intros
 
-V2-L3.1 phase D step 13 (2026-05-27).  Ships **smart constructors**
-for `HasCertifiedCellDim0` over nullary (zero-children) generators.
+**Smart constructors** for `HasCertifiedCellDim0` over nullary
+(zero-children) generators.
 
 ## What this gives us
 
@@ -14,9 +14,8 @@ the global `SupportedGenerator.g` admission witness, the default
 `()` payload evidence, and the empty `CertifiedTermSpine.nil`
 spine.
 
-This file ships those intros as 1-line `theorem`s, one per
-nullary generator currently used by SR's iota arms (extracted
-from `Step.lean`'s constructor list).
+These intros are 1-line `theorem`s, one per nullary generator
+used by SR's iota arms (from `Step.lean`'s constructor list).
 
 ## Why now
 

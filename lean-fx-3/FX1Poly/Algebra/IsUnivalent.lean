@@ -46,7 +46,7 @@ inductive AlgebraConstructionLevel where
   | closedPolynomialUniverse
   /-- A polynomial-monad distributive-law package is supplied. -/
   | monadDistributiveLaw
-  /-- The FX generator interface is modeled as the planned generator coproduct. -/
+  /-- The FX generator interface is modeled as the generator coproduct. -/
   | generatorCoproductModel
   deriving DecidableEq, Repr
 
@@ -90,7 +90,7 @@ def AlgebraConstructionLevel.hasMonadDistributiveLaw :
   | .monadDistributiveLaw => true
   | .generatorCoproductModel => true
 
-/-- Whether this Axis 2 level uses the planned generator coproduct model. -/
+/-- Whether this Axis 2 level uses the generator coproduct model. -/
 def AlgebraConstructionLevel.hasGeneratorCoproductModel :
     AlgebraConstructionLevel → Bool
   | .polynomialOperations => false
@@ -114,10 +114,10 @@ theorem identity_isUnivalent : IsUnivalent Poly.identity := by
   exact match lensF.toLens.forward position, lensG.toLens.forward position with
   | (), () => rfl
 
-/-- The current FX generator polynomial.
+/-- The FX generator polynomial.
 
-This is a monomial scaffold: one position with one direction for each current
-dim-0 term/type id.  It is not the planned coproduct of generator polynomials. -/
+A monomial: one position with one direction for each dim-0 term/type id.
+It is not the coproduct of per-generator polynomials. -/
 def fxGeneratorPolynomial : Poly.{0, 0} :=
   Poly.monomial (Fin 103)
 
@@ -169,10 +169,10 @@ structure PolynomialUniverse where
   /-- Pointwise subterminality witness for the underlying polynomial. -/
   univalent : IsUnivalent poly
 
-/-- The current FX algebra universe.
+/-- The FX algebra universe.
 
-This carries a real pointwise subterminality proof for the monomial
-scaffold, and deliberately records that stronger algebraic packages have
+Carries a real pointwise subterminality proof for the monomial
+polynomial, and records that stronger algebraic packages have
 not been constructed. -/
 def fxAlgebraUniverse : PolynomialUniverse where
   constructionLevel := fxAlgebraConstructionLevel

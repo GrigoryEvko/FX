@@ -4,17 +4,16 @@ import FX1Poly.Core.RawSize
 /-! # Foundation/PolyCell/Core/StrongNormalizationEta
     - eta-only accessibility for the raw eta sibling relation
 
-Root eta is easier than beta+iota: every current eta constructor
-strictly contracts raw size.  This file proves the eta-only
-well-foundedness substrate needed by #357, while leaving the harder
-beta-only-to-betaEta SN transfer blocked on #258.
+Root eta is easier than beta+iota: every eta constructor strictly
+contracts raw size.  This file proves the eta-only well-foundedness
+substrate (the harder beta-only-to-betaEta SN transfer is handled
+elsewhere).
 -/
 
 namespace FX1Poly.Core
 
--- `RawRenaming` lived in lean-fx-2's enclosing `LeanFX2` namespace (visible
--- by nesting); in lean-fx-3 it moved to `FX1Poly.Foundation`, which no longer
--- encloses `FX1Poly.Core`, so open it explicitly.
+-- `RawRenaming` lives in `FX1Poly.Foundation`, which does not enclose
+-- `FX1Poly.Core`, so open it explicitly.
 open FX1Poly.Foundation
 
 mutual

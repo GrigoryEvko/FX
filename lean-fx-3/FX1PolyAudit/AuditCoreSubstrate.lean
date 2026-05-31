@@ -1,6 +1,6 @@
 import FX1PolyAudit.AuditGen
 -- Sink files of the foundational term-substrate slice (importing these
--- transitively loads every migrated FX1Poly.Core declaration).
+-- transitively loads every FX1Poly.Core declaration).
 import FX1Poly.Core.AbstractTermSpine
 import FX1Poly.Core.CheckResult
 import FX1Poly.Core.ConsistencyStrength
@@ -95,8 +95,7 @@ import FX1Poly.Core.StepIotaEtaDoubleStrips
 
 /-! # FX1PolyAudit/AuditCoreSubstrate — namespace zero-axiom sweep
 
-Persistent zero-axiom gate for the foundational term-substrate slice
-migrated out of lean-fx-2's `Foundation/PolyCell/Core`:
+Persistent zero-axiom gate for the foundational term-substrate slice:
 
 * Generator substrate: `GeneratorCore` / `GeneratorMetadata` /
   `GeneratorAdmission` / `GenPayloadEvidence` / `GeneratorTotalityClass` /
@@ -113,9 +112,9 @@ migrated out of lean-fx-2's `Foundation/PolyCell/Core`:
 
 The `#audit_namespace` sweep walks EVERY loaded declaration under the
 namespace and fails the build at the first axiom leak — so this single
-gate auto-covers all ~430 migrated declarations and every future Core
-slice without a hand-maintained per-decl list.  It also re-checks the
-native infra under `FX1Poly.Foundation`.
+gate auto-covers every Core declaration without a hand-maintained
+per-decl list.  It also re-checks the native infra under
+`FX1Poly.Foundation`.
 -/
 
 #audit_namespace FX1Poly.Core

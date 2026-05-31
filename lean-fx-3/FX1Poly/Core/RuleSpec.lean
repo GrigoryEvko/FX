@@ -2,8 +2,8 @@ import FX1Poly.Core.CellSort
 
 /-! # Foundation/PolyCell/Core/RuleSpec — dim-1 generating-rule admission
 
-This file ships the v2 generating-rule metadata + admission layer for
-dim-1 cells (rewrite rules).  Parallel to:
+The generating-rule metadata + admission layer for dim-1 cells
+(rewrite rules).  Parallel to:
 
 * `GeneratorAdmission` — admits dim-0 generators (term-formers)
 * `GenPayloadEvidence` — admits generator payloads (Type-Unit
@@ -12,7 +12,7 @@ dim-1 cells (rewrite rules).  Parallel to:
 Per `polycell.md` §4, the certified `PolyCell.generatingCell`
 constructor takes BOTH a `RuleSpec` parameter (the rule's metadata)
 AND a `SupportedRuleSpec rule` parameter (the per-rule admission
-witness).  This file ships the v2 counterparts.
+witness).
 
 ## Architectural distinction — closed enum vs open set
 
@@ -25,7 +25,7 @@ well-defined — exhaustive by `cases g`.
 whose `ruleId : Nat` field admits infinitely many distinct rule
 values.  No total admission witness exists — most `RuleSpec` values
 are not admitted by any current profile.  Hence only the
-Option-valued lookup `supportedRuleSpec?` ships here, never a total
+Option-valued lookup `supportedRuleSpec?` lives here, never a total
 form.
 
 ## Three pieces
@@ -35,9 +35,9 @@ form.
    `CellSort` components (both zero-axiom).
 
 2. `termStepRuleSpec : RuleSpec` constant — the seed rule.
-   ruleId 0, cellSort `.term`, endpointDimension 0.  Mirrors v1's
-   `termStepRuleSpec`.  Marked `@[reducible]` so downstream
-   DecidableEq comparisons can reduce through the abstraction.
+   ruleId 0, cellSort `.term`, endpointDimension 0.  Marked
+   `@[reducible]` so downstream DecidableEq comparisons can reduce
+   through the abstraction.
 
 3. `SupportedRuleSpec : RuleSpec -> Type` inductive — the
    admission ledger.  Currently one arm: `.termStep` admits
@@ -87,14 +87,14 @@ case-on-rule.
 
 When `h : rule = termStepRuleSpec`, transport
 `SupportedRuleSpec.termStep : SupportedRuleSpec termStepRuleSpec`
-to `SupportedRuleSpec rule` via `h.symm ▸ .termStep`.  This is the
-SPIKE-1-style value-level transport, propext-clean because the
-equation comes from `Nat.decEq` / `CellSort` DecEq (both zero-axiom),
-not from equation-compiler reasoning on a type index.
+to `SupportedRuleSpec rule` via `h.symm ▸ .termStep`.  This is a
+value-level transport, propext-clean because the equation comes from
+`Nat.decEq` / `CellSort` DecEq (both zero-axiom), not from
+equation-compiler reasoning on a type index.
 
 ## Zero-axiom verification
 
-Every shipped declaration audited via `#assert_no_axioms` in
+Every declaration audited via `#assert_no_axioms` in
 `Tools/AuditAll/AuditPolyCell.lean`.
 -/
 
@@ -164,7 +164,7 @@ witness `SupportedRuleSpec rule` if `rule` is admitted, else
 Implementation: dispatches on `rule = termStepRuleSpec` via the
 auto-derived `DecidableEq`.  When the equation holds, transports
 `SupportedRuleSpec.termStep` from index `termStepRuleSpec` to
-index `rule` via value-level `▸` (the SPIKE-1 transport).
+index `rule` via value-level `▸`.
 
 The `▸` transport is propext-clean because the equation comes from
 `Nat.decEq` + `CellSort` decEq (both zero-axiom) on the struct's

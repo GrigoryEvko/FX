@@ -17,16 +17,15 @@ HasType.classifierIsType : WfContext Γ → HasType Γ t T → IsType Γ T
 
 The `WfContext Γ` hypothesis is load-bearing for exactly one arm — `var`,
 whose classifier is a context lookup; the other arms (`conv`,
-`universeFormation`) are unconditional.
+`universeFormation`, `piFormation`, `sigmaFormation`) are unconditional.
 
 ## What this brick delivers
 
 * `IsType.weakenUnderBinding` / `IsType.substituteUnderBinding` — the
-  `IsType`-stability lemmas (TY-WF #468 remaining piece): `IsType` survives
-  weakening and single-substitution.  Direct `IsType`-lifts of the `HasType`
-  weakening (#456) and substitution (#457) lemmas — the universe-code
-  classifier is rename/subst invariant, so the existential witness transports
-  unchanged.
+  `IsType`-stability lemmas: `IsType` survives weakening and
+  single-substitution.  Direct `IsType`-lifts of the `HasType` weakening and
+  substitution lemmas — the universe-code classifier is rename/subst invariant,
+  so the existential witness transports unchanged.
 * `WfContext.lookupIsType` — looking up a variable in a well-formed context
   yields a type.  The engine of the `var` case: it threads
   `IsType.weakenUnderBinding` along the `lookup` recursion's weakening chain.
@@ -97,8 +96,9 @@ theorem WfContext.lookupIsType {profile : PolyProfile} {scope : Nat}
 /-- Validity (P3): the classifier of any well-typed cell is itself a type.
 By induction on the derivation — `var` looks up a type in the well-formed
 context, `conv` hands back its classifier-well-formedness witness verbatim,
-and `universeFormation` re-fires one level up.  The `WfContext` hypothesis is
-needed only for `var`. -/
+and `universeFormation` / `piFormation` / `sigmaFormation` produce a universe
+code (itself typed one level up).  The `WfContext` hypothesis is needed only
+for `var`. -/
 theorem HasType.classifierIsType {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {subject classifier : RawTerm scope}

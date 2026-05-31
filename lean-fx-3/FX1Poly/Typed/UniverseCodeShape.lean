@@ -14,10 +14,10 @@ collapse the cell: its nullary child-spine is `childNil`
 its payload is a `LevelExpr x UniverseFlag` pair (Prod-eta is definitional), so
 once the spine is `childNil` the reconstruction is by reflexivity.
 
-This is the raw destructor that `Decidable IsType` (#303) needs: to confirm a
-candidate type is a universe code — and apply `HasType.universeFormation` — the
-decision procedure must turn `headGenerator = gen_universeCode` into a concrete
-`universeCodeCell e flag`.
+This is the raw destructor `Decidable IsType` needs: to confirm a candidate type
+is a universe code — and apply `HasType.universeFormation` — the decision procedure
+must turn `headGenerator = gen_universeCode` into a concrete `universeCodeCell e
+flag`.
 
 ## Zero-axiom verification
 
@@ -95,9 +95,9 @@ theorem headGenerator_piTyCodeCell {scope : Nat} (domainCode : RawTerm scope)
 /-- A cell whose head generator is `gen_piTyCode` is a `piTyCodeCell`: unlike the
 nullary universe/variable cells, its child-spine has TWO entries (domain at
 `scope`, codomain at `scope + 1`), recovered by destructuring the `[0, 1]`-indexed
-`RawTermChildren` and collapsing the `childNil` tail.  The destructor `Decidable`
-typing of Π-formation (#443) needs to turn `headGenerator = gen_piTyCode` into a
-concrete `piTyCodeCell domain codomain`. -/
+`RawTermChildren` and collapsing the `childNil` tail.  Decidable Π-formation typing
+turns `headGenerator = gen_piTyCode` into a concrete `piTyCodeCell domain codomain`
+with this. -/
 theorem eq_piTyCodeCell_of_headGenerator {scope : Nat}
     {cell : RawTerm scope}
     (headIsPi : RawTerm.headGenerator cell = Generator.gen_piTyCode) :
@@ -139,7 +139,7 @@ substrate tactic that `RawTermDecEq` uses to compare `mkGen` cells (raw
 spine).  `cases` unifies the two `childCons … childNil` spines, substituting the
 second domain/codomain by the first, leaving `⟨rfl, rfl⟩`.
 
-The component extractor the `piFormation` arm of `HasType.inversionPiCode` (#443)
+The component extractor the `piFormation` arm of `HasType.inversionPiCode`
 needs: it aligns the inducted arm's own `domainCode` / `codomainCode` with the
 `piTyCodeCell` targeted by the inversion. -/
 theorem piTyCodeCell_inj {scope : Nat}
@@ -157,12 +157,11 @@ formation is a pure type former (no head redex — `Step.from_piTyCode` has only
 congruence case), so any step of the cell descends into the domain or codomain,
 each ruled out by hypothesis.
 
-This is the inductive crux that #443 stage 2's `subjectHasNoStep` Π-case will call
-directly (`exact piTyCodeCell_noStep_of_childrenNoStep IH_domain IH_codomain`),
-turning the load-bearing invariant from "typed subject is a non-stepping LEAF"
-into "typed subject is NORMAL" — a piTyCodeCell is not a leaf but is still normal
-when its (typed ⇒ normal) children are.  Stated at the raw `Step` layer so it
-lands non-breaking, before the `piFormation` arm cascades. -/
+This is the inductive crux the `HasType.subjectHasNoStep` Π-case calls directly
+(`exact piTyCodeCell_noStep_of_childrenNoStep IH_domain IH_codomain`): the
+load-bearing invariant is "typed subject is NORMAL", not "typed subject is a
+non-stepping LEAF" — a piTyCodeCell is not a leaf but is still normal when its
+(typed ⇒ normal) children are.  Stated at the raw `Step` layer. -/
 theorem piTyCodeCell_noStep_of_childrenNoStep {scope : Nat}
     {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
     (domainNoStep : ∀ reduct, Step domainCode reduct → False)
@@ -176,7 +175,7 @@ theorem piTyCodeCell_noStep_of_childrenNoStep {scope : Nat}
 
 /-- The domain code is strictly smaller (by `RawTerm.size`) than the Π-type code
 cell containing it.  The `decreasing_by` obligation a well-founded recursive
-Π-formation decider (#443 stage 2) discharges when it recurses into the domain.
+Π-formation decider discharges when it recurses into the domain.
 
 Proved by composing the spine brick `RawTermChildren.size_lt_childCons_head`
 (`domain.size < (childCons domain _).size`) with `Nat.lt_succ_self` (the cell's

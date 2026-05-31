@@ -14,11 +14,11 @@ per-feature cascade the description engine exists to kill.  To grow the engine
 FREELY we must DECOUPLE: give `HasTypeDesc` its own metatheory, proved by induction
 on `HasTypeDesc` itself rather than routed through `HasType`.
 
-This file ships the FIRST such intrinsic metatheorem: VALIDITY (a.k.a. regularity /
+This file carries the intrinsic VALIDITY metatheorem (a.k.a. regularity /
 type-correctness, P3) — the classifier of any well-typed cell is itself a type, AS
-SEEN BY THE DESCRIPTION ENGINE.  We state it against an INTRINSIC `IsTypeDesc`
+SEEN BY THE DESCRIPTION ENGINE.  It is stated against an INTRINSIC `IsTypeDesc`
 (`∃ ℓ f, HasTypeDesc Γ T (universeCodeCell ℓ f)`, mirroring the bespoke `IsType` but
-over `HasTypeDesc`), and prove it by case analysis on the engine — no `Conv.trans`,
+over `HasTypeDesc`), and proved by case analysis on the engine — no `Conv.trans`,
 no `HasType` induction.
 
 ## Why each arm closes intrinsically
@@ -43,7 +43,7 @@ no `HasType` induction.
 ## Zero-axiom
 
 Full-enumeration term-mode `match` on the derivation (the propext-free structural
-form used by the shipped `HasTypeDesc.toHasType` / `DescTelescope.toHasTypeTelescope`)
+form used by `HasTypeDesc.toHasType` / `DescTelescope.toHasTypeTelescope`)
 — no wildcard, no partial/impossible-case inversion.  No `axiom`, `sorry`, `propext`,
 `Quot.sound`, `Classical`, `native_decide`, `omega`.  Audit-gated.
 -/

@@ -3,11 +3,10 @@ import FX1Poly.Core.NatEliminatorLayer
 /-! # Foundation/PolyCell/Core/RemainingDim0Eliminators
    — full compositional layer for `listElim`, `optionMatch`, `eitherMatch`
 
-V2-L3.1 phase D step 25 (2026-05-27).  Completes the 3-child
-same-scope eliminator family.  Sibling to steps 23-24 (boolElim,
-natElim/natRec).
+The 3-child same-scope eliminator family.  Sibling to
+`BoolEliminatorLayer` and `NatEliminatorLayer`.
 
-## What this file ships (30 declarations)
+## Contents (30 declarations)
 
 For each of `gen_listElim`, `gen_optionMatch`, `gen_eitherMatch`,
 10 declarations:
@@ -24,27 +23,12 @@ Child layouts:
   * `eitherMatch`: `(scrutinee, leftBranch, rightBranch)`
 
 All are 3-child same-scope (no binder shifts on any child) — same
-shape as boolElim/natElim/natRec.
-
-## Coverage progress
-
-After this iteration:
-
-| Category                 | Generators                            | Count |
-|--------------------------|---------------------------------------|-------|
-| Nullary leaves           | 7 from HasCertifiedIntros             | 7     |
-| Compound constructors    | 9 from HasCertifiedComposition        | 9     |
-| Pair eliminators         | fst, snd                              | 2     |
-| 3-child eliminators      | boolElim, natElim, natRec,            | 6     |
-|                          | listElim, optionMatch, eitherMatch    |       |
-| **Total dim-0 surface**  |                                       | **24** |
-
-Remaining missing eliminators: `idJ`, `idStrictRec` (higher
-arity).
+shape as boolElim/natElim/natRec.  (`IdEliminatorLayer` carries the
+full dim-0 coverage table.)
 
 ## Zero-axiom verification
 
-Each declaration follows the proven 3-child template from
+Each declaration follows the 3-child template from
 `BoolEliminatorLayer` / `NatEliminatorLayer`.  Audit-gated.
 -/
 

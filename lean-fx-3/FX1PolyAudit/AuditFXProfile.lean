@@ -1,14 +1,13 @@
 import FX1PolyAudit.AuditGen
 -- Leaf module of the FXProfile slice (CertifiedViewsSound imports
--- CertifiedViews, so importing it transitively loads every migrated
+-- CertifiedViews, so importing it transitively loads every
 -- FX1Poly.FXProfile declaration).
 import FX1Poly.FXProfile.CertifiedViewsSound
 
 /-! # FX1PolyAudit/AuditFXProfile — namespace zero-axiom sweep for the FX-profile views
 
-Persistent zero-axiom gate for the FX-profile certifier entry points
-migrated out of lean-fx-2's `Foundation/PolyCell/FXProfile` directory.
-The slice ships the profile-fixed ingress wrappers (`certifyFXCellExact?`
+Persistent zero-axiom gate for the FX-profile certifier entry points.
+The slice carries the profile-fixed ingress wrappers (`certifyFXCellExact?`
 / `certifyFXCell?`, binding the `PolyProfile` parameter to `fxProfile`)
 and their four soundness theorems (compH-rejection, exact-erasure,
 cellDimension-equality, and the HEq no-laundering guarantee).

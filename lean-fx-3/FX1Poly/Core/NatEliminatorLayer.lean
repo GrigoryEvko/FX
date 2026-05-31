@@ -3,9 +3,8 @@ import FX1Poly.Core.BoolEliminatorLayer
 /-! # Foundation/PolyCell/Core/NatEliminatorLayer
    — full compositional layer for `gen_natElim` and `gen_natRec`
 
-V2-L3.1 phase D step 24 (2026-05-27).  Sibling to step 23
-(`BoolEliminatorLayer`); extends eliminator coverage to the two
-natural-number eliminators (large-elim `natElim` and recursor
+Sibling to `BoolEliminatorLayer`; the compositional layer for the
+two natural-number eliminators (large-elim `natElim` and recursor
 `natRec`), both 3-child same-scope.
 
 ## Child layout (shared by both generators)
@@ -14,7 +13,7 @@ natural-number eliminators (large-elim `natElim` and recursor
 `(scrutinee, thenBranch, elseBranch)` modulo names.  No binder
 shifts (all children at same scope as parent).
 
-## What this file ships (20 declarations)
+## Contents (20 declarations)
 
 For each of `gen_natElim` and `gen_natRec`, 10 declarations:
 
@@ -25,19 +24,19 @@ For each of `gen_natElim` and `gen_natRec`, 10 declarations:
   * **Subst probe + preservation** (2 per generator).
   * **Subst0 probe + preservation** (2 per generator).
 
-## Coverage progress
+## Coverage
 
 | Surface                     | Generators                | Count |
 |-----------------------------|---------------------------|-------|
 | Term constructors           | var, unit, etc. (16)      | 16    |
 | Pair eliminators            | fst, snd                  | 2     |
 | Boolean eliminator          | boolElim                  | 1     |
-| Nat eliminators (NEW)       | natElim, natRec           | 2     |
+| Nat eliminators             | natElim, natRec           | 2     |
 | **Total**                   |                           | **21** |
 
 ## Zero-axiom verification
 
-Each declaration follows the proven 3-child template from
+Each declaration follows the 3-child template from
 `BoolEliminatorLayer`.  Audit-gated.
 -/
 

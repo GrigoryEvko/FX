@@ -10,11 +10,8 @@ import FX1Poly.Core.RawCellDecEq
 This file ships `certifyRawCellExact?`: ONE recursion over
 `RawCell` that certifies the entire non-`horizontalComposite`
 fragment at every dimension.  This is the architectural HEADLINE of
-the v2 certifier — every raw cell either certifies cleanly or
-rejects with a specific reason.
-
-Direct v2 counterpart to v1's `certifyRawCellExact?`
-(`Core/Check.lean:1851`).
+the certifier — every raw cell either certifies cleanly or rejects
+with a specific reason.
 
 ## Architecture — fuel-based mutual recursion
 
@@ -56,10 +53,10 @@ later tasks) prove the fuel-allocation in the wrapper always suffices.
   children`, look up admission + payload evidence + certify the
   children spine, package via `PolyCell.gen`.
 * `.generatingCell ruleId source target` — recurse on source and
-  target, dispatch to `buildGeneratingCellExact?` (#160).
+  target, dispatch to `buildGeneratingCellExact?`.
 * `.verticalComposite first second` — recurse on first and second,
   pattern-match on first.dim to obtain `parentDimension`, dispatch
-  to `buildVerticalCompositeExact?` (#161) with witnesses.
+  to `buildVerticalCompositeExact?` with witnesses.
 * `.horizontalComposite _ _` — reject with `.unsupportedCompH`
   (Gray-tensor semantics pending Axis 6).
 * `.identityCell base` — recurse on base, build via
@@ -78,7 +75,7 @@ handles the general case via:
 2. Explicit `Eq.rec` with multi-arg motive abstracting both the
    dim AND the dim-dependent boundary in lockstep.
 
-Same pattern as `buildVerticalCompositeExact?` (#161).
+Same pattern as `buildVerticalCompositeExact?`.
 
 ## Zero-axiom verification
 

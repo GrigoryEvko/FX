@@ -4,22 +4,19 @@ import FX1Poly.Core.CellNonVarStepSubstituter
 /-! # Foundation/PolyCell/Core/StepHCCWrappers
    — Prop-output HCC wrappers around the cell-step helpers
 
-Per `M-spineRenamers-retro` (#379): this file is part of the
-~400-LoC spine-renamer substrate task home consumed by M2 #251
-(SR arm 17 beta) + M3 #252 (SR arm 18 cong).  Sibling files:
-`SpineRenameStep.lean`, `SpineSubstStep.lean`, `SpineConsStep.lean`.
+Part of the spine-renamer substrate consumed by the SR-beta and SR-cong
+mutual blocks.  Sibling files: `SpineRenameStep.lean`,
+`SpineSubstStep.lean`, `SpineConsStep.lean`.
 
-V2-L3.1 phase D step 35 (2026-05-27).  Ships HCC (`HasCertifiedCellDim0`,
-Prop-valued) wrappers around the Type-valued cell-step helpers from
-`CellNonVarStepRenamer.lean` (step 32) and
-`CellNonVarStepSubstituter.lean` (step 33).
+HCC (`HasCertifiedCellDim0`, Prop-valued) wrappers around the
+Type-valued cell-step helpers from `CellNonVarStepRenamer.lean` and
+`CellNonVarStepSubstituter.lean`.
 
-## What this ships
+## What this provides
 
 Four Prop-valued theorems closing the HCC-level cell side of the
-eventual mutual block — same recipe as the cell-step defs, but
-wrapping the Type-valued cell with `HasCertifiedCellDim0.intro` to
-land in Prop:
+mutual block — same recipe as the cell-step defs, but wrapping the
+Type-valued cell with `HasCertifiedCellDim0.intro` to land in Prop:
 
   * `HasCertifiedCellDim0.rename_nonVarStep` — Prop wrapper of
     `PolyCell.rename_dim0_nonVarStep`.
@@ -33,7 +30,7 @@ land in Prop:
 ## Why both APIs exist
 
 The Type-valued cell-step helpers expose the produced cell at a
-known sort (used internally by the eventual mutual block).  The
+known sort (used internally by the mutual block).  The
 HCC wrappers package the sort existentially, giving the public-
 facing Prop-level API (used by SR-cong / SR-beta umbrellas).
 

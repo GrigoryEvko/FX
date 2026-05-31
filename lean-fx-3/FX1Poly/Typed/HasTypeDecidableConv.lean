@@ -7,18 +7,19 @@ import FX1Poly.Core.RawTermDecEq
 /-! # FX1Poly/Typed/HasTypeDecidableConv
     — decidable type conversion for the current typing fragment
 
-In the current `HasType` fragment (`var` / `conv` / `universeFormation`) every
-well-typed subject is a non-stepping leaf — a `variableCell` or a
-`universeCodeCell` (`typedSubjectIsVariableOrUniverseCode`).  In particular
-every *type* (every `IsType` classifier) is normal: it has no outgoing `Step`.
+In the current `HasType` fragment every *type* (every `IsType` classifier) is
+NORMAL: it has no outgoing `Step`.  The type formers (`piTyCodeCell`,
+`sigmaTyCodeCell`) are non-stepping because their typed children are normal, and
+the leaves (`variableCell`, `universeCodeCell`) trivially so
+(`HasType.subjectHasNoStep`).
 
 Feeding that into the normal-form rigidity seed (`Conv.iff_eq_of_noStep`) gives
-the headline of this fragment's P11 line: **type conversion is decidable** —
-two well-formed types are convertible iff equal, decided by the propext-free
-`DecidableEq (RawTerm scope)` with no normalizer.  This is honestly scoped: the
-general decider still needs the NbE normalizer (M12) for non-normal inputs; the
-typed classifiers of *this* fragment are already normal, so the special case
-suffices and is exact (0 false negatives here).
+this fragment's P11 line: **type conversion is decidable** — two well-formed
+types are convertible iff equal, decided by the propext-free `DecidableEq
+(RawTerm scope)` with no normalizer.  Scope: the general decider needs the NbE
+normalizer for non-normal inputs; the typed classifiers of *this* fragment are
+already normal, so the special case suffices and is exact (0 false negatives
+here).
 
 ## Zero-axiom verification
 
@@ -40,9 +41,8 @@ subject-side `HasType.subjectHasNoStep` specialised to that derivation —
 `IsType.hasNoStep` is the classifier-side face of the one structural invariant.
 
 Delegating (rather than re-running the classification split) keeps both faces on
-the single induction-on-derivation proof, so neither breaks when the
-classification lemma widens for a nesting former (#443): `subjectHasNoStep`
-absorbs the new arm via its children IHs and this corollary follows untouched. -/
+the single induction-on-derivation proof: `subjectHasNoStep` absorbs the nesting
+formers via their children IHs and this corollary follows directly. -/
 theorem IsType.hasNoStep {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {classifier : RawTerm scope}
     (isType : IsType profile context classifier) :
@@ -68,13 +68,12 @@ the `Conv` to a literal cell equality, and `injection` (the same propext-free
 destructuring `inversionUniverseCode` uses) extracts the `LevelExpr × UniverseFlag`
 payload — then splits the `Prod`.
 
-Staged for #443: a Π type's principal classifier is `universeCodeCell (lmax l1
-l2) f` where the `(l1, f)`, `(l2, f)` come from the *derivation's* premises, so
-matching two Π derivations (recursive `uniqueness`) and refuting a flag-mismatch
+A Π type's principal classifier is `universeCodeCell (lmax l1 l2) f` where the
+`(l1, f)`, `(l2, f)` come from the *derivation's* premises, so matching two Π
+derivations (recursive `uniqueness`) and refuting a flag-mismatch
 (`Decidable IsType`'s Π `isFalse` branch) both need to turn a `Conv` between the
-children's universe-code classifiers into syntactic level/flag equality.  Holds
-on the current fragment and stays valid after Π lands (universe codes never nest,
-so they remain normal leaves). -/
+children's universe-code classifiers into syntactic level/flag equality.
+Universe codes never nest, so they remain normal leaves. -/
 theorem levelFlag_eq_of_conv_universeCodeCell {profile : PolyProfile}
     {scope : Nat} {context : TypingContext profile scope}
     {firstLevel secondLevel : LevelExpr} {firstFlag secondFlag : UniverseFlag}

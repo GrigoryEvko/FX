@@ -4,13 +4,13 @@ import FX1Poly.Core.RawTermRename
    — regression smoke for `iterateLiftRaw` + `foldChildren` at binder
    depths greater than one
 
-V2-fix-8 (2026-05-27).  Pins the fold engine's binder-shift behavior
-ahead of Phase Z₀'s commitment to add eliminator motive children +
-iterator-style succ cases at shift > 1 (per polycell.md §11.8.3).
+Pins the fold engine's binder-shift behavior at shift > 1, the
+domain that eliminator motive children + iterator-style succ cases
+need (per polycell.md §11.8.3).
 
 ## Why this smoke exists
 
-The current Generator table tops out at shift 1 (`gen_lam` /
+The Generator table tops out at shift 1 (`gen_lam` /
 `gen_pathLam` / `gen_piTyCode` / `gen_sigmaTyCode` / `gen_polyFunctor`).
 But the fold engine's signature is shift-polymorphic:
 
@@ -26,8 +26,8 @@ But the fold engine's signature is shift-polymorphic:
   `binderShifts` table.  Synthetic shifts are admissible at the
   inductive level.
 
-§11.8.3 (Phase Z₀ apex commitment) refactors eliminators with MOTIVE
-children + iterator-with-IH succ cases.  Concretely:
+§11.8.3 specifies eliminators with MOTIVE children + iterator-with-IH
+succ cases.  Concretely:
 
 * `gen_natElim` → `[1 (motive), 0 (zero case), 2 (succ case), 0
   (scrutinee)]` — the succ case binds (predecessor, ih, result).
@@ -35,15 +35,10 @@ children + iterator-with-IH succ cases.  Concretely:
   `gen_eitherMatch`, and the HIT eliminators (`gen_quotRec`,
   `gen_pushRec`, `gen_circleRec`).
 
-By Phase Z₀, the engine MUST handle shift ≥ 2.  This smoke pins
-THAT BEHAVIOR TODAY against the existing shift-polymorphic engine, so
-that:
-
-1. Refactors between now and Phase Z₀ cannot silently break the
-   engine's higher-shift semantics.
-2. When Phase Z₀ lands and the Generator table starts using shift > 1,
-   no engine-level surprises emerge: the smokes already prove the
-   relevant equations.
+These require the engine to handle shift ≥ 2.  This smoke pins that
+behavior against the shift-polymorphic engine, so that refactors
+cannot silently break the engine's higher-shift semantics and a
+Generator table using shift > 1 produces no engine-level surprises.
 
 ## What this ships
 
@@ -90,10 +85,10 @@ theorem iterateLiftRaw_depth_one_eq_liftForRaw
 
 /-- **Smoke: depth 2 is two `liftForRaw`** — the key headline smoke.
 
-This pins that the engine handles a binder shift of 2 (the shift used
-by `gen_natElim.succCase` once Phase Z₀ refactors eliminators with the
-motive + iterator-style succ-case shape).  The reduction goes through
-two layers of structural recursion in `iterateLiftRaw`. -/
+This pins that the engine handles a binder shift of 2 (the shift an
+eliminator's iterator-style succ case binds: motive + predecessor +
+IH).  The reduction goes through two layers of structural recursion
+in `iterateLiftRaw`. -/
 theorem iterateLiftRaw_depth_two_eq_double_liftForRaw
     {Container : Nat → Nat → Type} [LiftsRaw Container]
     {sourceScope targetScope : Nat}
@@ -103,8 +98,8 @@ theorem iterateLiftRaw_depth_two_eq_double_liftForRaw
 
 /-- **Smoke: depth 3 is three `liftForRaw`.**
 
-Architecturally required for future eliminators whose recursive case
-binds three positions (e.g. a `succCase` exposing predecessor, induction
+Architecturally required for eliminators whose recursive case binds
+three positions (e.g. a `succCase` exposing predecessor, induction
 hypothesis, AND result of the induction, or HIT eliminators with three
 introduced cubical-interval variables). -/
 theorem iterateLiftRaw_depth_three_eq_triple_liftForRaw

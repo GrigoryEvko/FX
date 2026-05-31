@@ -4,19 +4,19 @@ import FX1Poly.Core.RawTermSubst
 
 /-! # Foundation/PolyCell/Core/SubstPreservationProbes — rename/subst leaf probes
 
-V2-L3.1 phase D step 15 (2026-05-27).  Foundation work for the
-subst/rename preservation mutual block that will eventually
-unblock structural SR-beta + SR-cong.
+Foundation work for the subst/rename preservation mutual block
+(`SubstPreservationMutual.lean`) that underlies structural SR-beta +
+SR-cong.
 
-## What this file ships
+## What this file provides
 
 Small, focused theorems establishing that the fold-based
 `RawTerm.rename` and `RawTerm.subst` operations on LEAF terms
 (nullary generators) reduce by definitional equality to the
 expected closed forms.  These probes are:
 
-1. **Useful infrastructure** for the eventual mutual block —
-   the leaf base cases of the inductive proofs.
+1. **Useful infrastructure** for the mutual block — the leaf base
+   cases of the inductive proofs.
 
 2. **Documentation** of where `rfl` works and where it doesn't.
    If a fold reduces by `rfl` on a closed input, downstream
@@ -24,7 +24,7 @@ expected closed forms.  These probes are:
    downstream proof needs a manual lemma about the fold's
    behavior on that input shape.
 
-## Probes shipped
+## Probes
 
   * `rename_var_reduces` — `RawTerm.rename ρ (gen_var i nil)
     = gen_var (ρ i) nil`, by `rfl`.  Direct fold reduction.
@@ -39,7 +39,7 @@ expected closed forms.  These probes are:
 
 ## Lifts of cell-level preservation lemmas
 
-Combining these probes with the just-shipped intros from
+Combining these probes with the intros from
 `HasCertifiedIntros.lean` gives the SIMPLEST nontrivial pieces
 of preservation:
 
@@ -49,23 +49,19 @@ of preservation:
     unit after rename, certified via `HasCertifiedCellDim0.unit`.
 
 These are STRUCTURALLY trivial (the renamed term is a nullary
-gen-shape) but they confirm the proof template that will scale
-to the full mutual block: extract via `cases`, reduce via the
-fold's definitional behavior, reconstruct via the intro.
+gen-shape) but they confirm the proof template the full mutual block
+uses: extract via `cases`, reduce via the fold's definitional
+behavior, reconstruct via the intro.
 
 Subst-side analogs are conditional on σ producing certified
-substituents — recorded here for the full block's design.
+substituents.
 
-## What this file does NOT ship
+## Scope of this file
 
-The full `HasCertifiedCellDim0.preservedByRename` /
-`preservedBySubst` mutual block remains pending — that
-requires structural induction on the PolyCell + spine, which
-is the substantial multi-iteration work.
-
-These probes establish that the LEAF cases work; the
-inductive cases over compound generators are the remaining
-substance.
+The full `HasCertifiedCellDim0.preservedByRename` / `preservedBySubst`
+mutual block lives in `SubstPreservationMutual.lean`.  This file
+establishes the LEAF cases; the inductive cases over compound
+generators are handled there.
 -/
 
 namespace FX1Poly.Core
@@ -136,10 +132,9 @@ theorem RawTerm.subst_unit_reduces
 
 /-! ## Section 3 — cell-level preservation: leaf cases
 
-Combining Section 1 + the just-shipped intros from
-`HasCertifiedIntros.lean` gives the simplest nontrivial pieces
-of cell-level preservation: variable and unit stay structurally
-admitted after renaming. -/
+Combining Section 1 + the intros from `HasCertifiedIntros.lean`
+gives the simplest nontrivial pieces of cell-level preservation:
+variable and unit stay structurally admitted after renaming. -/
 
 /-- **Cell-level: var preserved by rename.**
 
@@ -337,7 +332,7 @@ theorem RawTerm.subst_optionNone_reduces
 Combines Section 6 with the corresponding intros from
 `HasCertifiedIntros.lean`.  Closes the leaf coverage so every nullary
 generator has a `_preservedBySubst` lemma, mirroring the rename direction
-shipped in Sections 3 and 5.  Each is a 2-tactic proof:
+in Sections 3 and 5.  Each is a 2-tactic proof:
 `rw [reduces]; exact intro`. -/
 
 /-- **Cell-level: boolTrue preserved by ANY subst.** -/

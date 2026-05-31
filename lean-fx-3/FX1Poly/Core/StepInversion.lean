@@ -2,53 +2,43 @@ import FX1Poly.Core.Step
 
 /-! # Foundation/PolyCell/Core/StepInversion — Step inversion lemmas
 
-V2-L3.1 phase C step 6 prep (2026-05-27).  Ships foundational
-inversion lemmas the SR theorem's cong arm will consume.
+The `from_X` inversion family the SR cong arm and the SN cascade consume.
 
 ## What inversion lemmas are
 
-When the SR theorem proceeds by case analysis on `Step source
-target`, each arm needs to know what's structurally possible.
-For terminal terms (units, leaf constructors with empty children
-spine), the inversion is "Step is impossible" -- no rule fires.
-For non-leaf terms, inversion characterizes the possible source/
-target shapes per Step constructor.
+When a proof proceeds by case analysis on `Step source target`,
+each arm needs to know what's structurally possible.  For terminal
+terms (units, leaf constructors with empty children spine), the
+inversion is "Step is impossible" -- no rule fires.  For non-leaf
+terms, inversion characterizes the possible source/target shapes
+per Step constructor.
 
-This file builds inversion bottom-up: empty-spine → leaf-ctors →
-specific-redex inversions.  Per `M-stepInversion-retro` (#376):
-the 21-commit `from_X` inversion family is the retroactive
-substrate task home for this 1150-LoC file; consumers M4 SR
-umbrella (#253) + M9 SN cascade (#258) cite from here.  The
-"deferred to later iterations" specific-redex line is now
-STALE — the relevant inversions shipped through the SR cascade
-M2-M4 (#251-#253) and the η cascade M8a-M8h (#350-#357).
+The file builds inversion bottom-up: empty-spine → leaf-ctors →
+specific-redex inversions.
 
-## What this file ships (phase C step 6 prep)
+## Contents
 
 * `StepChildren.no_step_at_empty_spine` -- StepChildren is
   uninhabited when the input children spine is `.childNil`.
   Foundational because the `cong` arm of any leaf-ctor Step
   inversion needs this fact.
 
-* `Step.no_step_from_unit` -- the unit term admits no Step.
-  Direct application of the empty-spine lemma to the cong arm,
-  combined with auto-discharge of the other 17 Step constructors
-  (their source patterns require generators other than gen_unit).
+* `Step.no_step_from_unit` and the other leaf no-step lemmas
+  (`no_step_from_boolTrue` / `_boolFalse` / `_natZero` /
+  `_listNil` / `_optionNone` / `_var`) -- these terms admit no
+  Step.  Each applies the empty-spine lemma to the cong arm and
+  auto-discharges the redex constructors (whose source patterns
+  require a different generator).
 
-## What this file does NOT ship (yet)
-
-* Inversion lemmas for non-leaf terms (boolElim, lam, app, etc.)
-  -- these characterize which Step ctor could have fired given
-  the source shape.  Deferred to later phase C step 6 atomic
-  iterations.
-* The full SR theorem itself.  Built atop these inversion lemmas
-  + V2-L2.12's cell-level subst boundary + the certifier's
-  recursive structure.
+* The `from_X` family for non-leaf terms (`from_lam`, `from_app`,
+  `from_boolElim`, `from_natElim`, `from_pair`, the type-code
+  constructors, etc.) -- each characterizes which Step ctor could
+  have fired given the source shape.
 
 ## Zero-axiom verification
 
-Both shipped declarations pass `#assert_no_axioms`.  Audit-gated
-in `Tools/AuditAll/AuditPolyCell.lean`.
+All declarations pass `#assert_no_axioms`.  Audit-gated in
+`Tools/AuditAll/AuditPolyCell.lean`.
 -/
 
 namespace FX1Poly.Core
@@ -1399,7 +1389,7 @@ Three-way disjunction: beta iota + 2 cong positions.  The beta
 arm structurally requires `fn` (the function child) to be a
 lambda -- the inversion characterizes this with an existential
 for the lambda's body.  This existential is exactly the `body`
-that SR's beta arm will subst into via V2-L2.12's cell-level
+that SR's beta arm substitutes into via the cell-level
 substitution boundary lemma.
 
 The function child lives at the same scope as `fn`; the

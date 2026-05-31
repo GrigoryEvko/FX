@@ -20,14 +20,10 @@ cannot reach `RawTerm`, hence cannot close the guarded cycle).  The current
 alphabet is `Fin` / `Nat` / `Unit` (from Init) plus `LevelExpr × UniverseFlag`
 for `gen_universeCode` — the universe-level polynomial + Setzer-Rathjen
 strength flag (§11.8.2), both self-contained inductives in the Universe
-layer.  Future rich payloads (cubical `FaceFormula`, guarded clocks) may
+layer.  Rich payloads (cubical `FaceFormula`, guarded clocks) may
 join the alphabet ONLY if they too are leaves.  The serialized `List Nat`
 wire form for FX0 certificates is produced at the FX1->FX0 boundary
-(`UniversePayloadSerialize`), NOT smeared into this descriptor.
-
-(Clean-cut note: this file was migrated out of lean-fx-2's
-`LeanFX2.Foundation.PolyCell.Core.GeneratorCore`; it was already
-typed-term-free there, so the cut is a pure namespace rename.) -/
+(`UniversePayloadSerialize`), NOT smeared into this descriptor. -/
 
 namespace FX1Poly.Core
 
@@ -75,7 +71,7 @@ inductive Generator : Type
   -- Identity types
   | gen_refl
   | gen_idJ
-  -- Modal (Layer 6 references; raw-side ctors land from day 1)
+  -- Modal
   | gen_modIntro
   | gen_modElim
   | gen_subsume
@@ -119,12 +115,12 @@ inductive Generator : Type
   | gen_effectPerform
   -- Universe-code term (LevelExpr × UniverseFlag payload, no RawTerm children)
   | gen_universeCode
-  -- CUMUL-2.1: per-shape type-code constructors (atom-shape)
+  -- Per-shape type-code constructors (atom-shape)
   | gen_arrowCode
-  -- CUMUL-2.1: per-shape type-code constructors (binder-shape)
+  -- Per-shape type-code constructors (binder-shape)
   | gen_piTyCode
   | gen_sigmaTyCode
-  -- CUMUL-2.1: more atom-shape codes
+  -- More atom-shape codes
   | gen_productCode
   | gen_sumCode
   | gen_listCode
@@ -132,17 +128,17 @@ inductive Generator : Type
   | gen_eitherCode
   | gen_idCode
   | gen_equivCode
-  -- CUMUL-2.6: cumulativity marker
+  -- Cumulativity marker
   | gen_cumulUpMarker
-  -- D3.6-P1/P2: univalence-to-equiv vocabulary
+  -- Univalence-to-equiv vocabulary
   | gen_uaToEquiv
   | gen_equivApply
-  -- D3.6-S3/S4/S5: cubical/HOTT composition vocabulary
+  -- Cubical/HoTT composition vocabulary
   | gen_pathCompose
   | gen_idToEquiv
   | gen_oeqTrans
   | gen_equivCompose
-  -- D2.5.6-Blocker-A: cubical fill operation
+  -- Cubical fill operation
   | gen_transpFill
   -- ═══════════════════════════════════════════════════════════════
   -- Tier ★★★★★ extensions (28 ctors): voracious foundation
@@ -247,7 +243,7 @@ inductive Generator : Type
   | gen_flatModality
   | gen_sharpModality
   | gen_cohesiveAdjunctionUnit
-  -- 4.3 Quotient Inductive-Inductive Types (K20-era FX-in-FX bootstrap)
+  -- 4.3 Quotient Inductive-Inductive Types (FX-in-FX bootstrap)
   | gen_qiitIntro
   | gen_qiitElim
   -- 4.4 Two-Level Type Theory (inner univalent / outer strict bridges)
@@ -867,13 +863,15 @@ theorem Generator.binderShifts_length_eq_arity (g : Generator) :
   cases g <;> rfl
 
 /-- Per-generator local-scalar payload type, indexed by scope.
-`gen_var` maps to `Fin scope` (scope-safe BY CONSTRUCTION — the strict
-improvement over v1's `index < scope` side-condition).  `gen_universeCode`
-maps to `LevelExpr × UniverseFlag` — the universe-level polynomial plus the
-Setzer-Rathjen strength flag (§11.8.2); this replaces the former bare `Nat`,
-which made `Universe : Universe` syntactically admissible (Girard's paradox
-at the admission level).  All other 72 ctors map to `Unit`.  Full
-enumeration, no wildcard. -/
+`gen_var` maps to `Fin scope` (scope-safe BY CONSTRUCTION — no
+`index < scope` side-condition needed).  `gen_universeCode` maps to
+`LevelExpr × UniverseFlag` — the universe-level polynomial plus the
+Setzer-Rathjen strength flag (§11.8.2); carrying the level in a
+structured payload (rather than a bare `Nat`) keeps `Universe :
+Universe` syntactically inadmissible (no Girard's paradox at the
+admission level).  The truncation generators (`gen_truncIntro`,
+`gen_truncCoh`, `gen_truncRec`) map to `Nat` (the truncation level);
+all other ctors map to `Unit`.  Full enumeration, no wildcard. -/
 def Generator.payload : Generator → Nat → Type
   | .gen_var, scope => Fin scope
   | .gen_universeCode, _ => FX1Poly.Universe.LevelExpr × FX1Poly.Universe.UniverseFlag

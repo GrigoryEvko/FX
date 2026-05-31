@@ -6,17 +6,15 @@ import FX1Poly.Foundation.RawSubst.ActionInstances
 /-! # FX1PolyAudit/AuditFoundation — zero-axiom gate for the native infra
 
 Persistent per-declaration `#assert_no_axioms` gate for the generic
-renaming / action substrate migrated out of lean-fx-2's
-`LeanFX2.Foundation.{Action, RawSubst.RenameDefs, RawSubst.ActionInstances}`.
+renaming / action substrate.
 
 This is the leaves-first native infra the PolyCell cell calculus stands
 on: the universal `Action` typeclass with binding (Allais et al. ICFP'18)
 and the positional `RawRenaming` Container with its `Action` instance.
 
-The clean cut SEVERED the legacy MLTT `RawTerm` coupling: the lean-fx-2
-originals dragged `Foundation.RawTerm` (the intrinsic-MLTT raw term);
-these native copies carry only the positional / typeclass machinery that
-PolyCell's `.mkGen`-cell `RawTerm` actually consumes.
+The substrate carries only the positional / typeclass machinery that
+PolyCell's `.mkGen`-cell `RawTerm` consumes — no coupling to an
+intrinsic-MLTT raw term.
 -/
 
 -- Section 1: the universal Action typeclass + derived pointwise laws

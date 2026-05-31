@@ -4,10 +4,9 @@ import FX1Poly.Core.BetaRedexLeafPreservation
 /-! # Foundation/PolyCell/Core/BetaRedexCompoundPreservation
    — beta-redex compound preservations (subst0 distributing over compounds)
 
-V2-L3.1 phase D step 19 (2026-05-27).  Sibling to
-`BetaRedexLeafPreservation.lean` (step 18); ships the
-**compositional inductive step** of the future structural
-SR-beta theorem for the compound body shapes.
+Sibling to `BetaRedexLeafPreservation.lean`; ships the
+**compositional inductive step** of the structural SR-beta theorem
+for the compound body shapes.
 
 ## What this ships
 
@@ -44,8 +43,8 @@ the structural induction's inductive step is:
   2. Apply the compound subst0 preservation to combine them.
 
 This file ships step 2 (the COMBINING half) for all 9 compound
-shapes.  Step 1 (the RECURSIVE CALL) will come when the full
-structural induction lands as a mutual block.
+shapes.  Step 1 (the RECURSIVE CALL) is supplied by the full
+structural induction's mutual block.
 
 ## Coverage
 
@@ -210,8 +209,8 @@ theorem RawTerm.subst0_lam_reduces
 
 Each preservation takes the substituted children's cells and
 produces the parent's certification under subst0.  These are the
-COMPOSITIONAL inductive steps that the future structural
-induction will dispatch to. -/
+COMPOSITIONAL inductive steps the structural induction dispatches
+to. -/
 
 /-- **Beta-redex: `(lam (.gen_app () [f, a])) outerArg →
     .gen_app () [subst0 f outerArg, subst0 a outerArg]`.** -/

@@ -3,35 +3,30 @@ import FX1Poly.Core.CertifyRawCellExactCoverage
 
 /-! # CertifyRawCellExactNegativeProbes — rejection-side coverage suite
 
-This file ships the negative-probe suite for the v2 ingress: the dual
-of #170's positive coverage.  Where #170 proves the certifier ACCEPTS
-well-formed fixtures with the expected sort, this file proves the
-certifier REJECTS malformed fixtures with the expected rejection
-reason.
-
-Direct v2 counterpart to v1's rejection-family headlines at
-`Core/CertifyExact.lean:99-109`
-(`inferRawCellGeneral?_unknownGenerator_rejects`,
-`inferRawCellGeneral?_compH_rejects`, ...).
+This file ships the negative-probe suite for the certifier ingress:
+the dual of the positive coverage suite.  Where positive coverage
+proves the certifier ACCEPTS well-formed fixtures with the expected
+sort, this file proves the certifier REJECTS malformed fixtures with
+the expected rejection reason.
 
 ## The rejection-side guarantee
 
-Soundness (#165-#169) proves the certifier never accepts BADLY: every
-accepted certification faithfully reflects its input.  But soundness
-alone could be vacuously satisfied by a certifier that ALWAYS REJECTS.
+Soundness proves the certifier never accepts BADLY: every accepted
+certification faithfully reflects its input.  But soundness alone
+could be vacuously satisfied by a certifier that ALWAYS REJECTS.
 
 The negative probes are the dual: they prove specific malformed inputs
 trigger the EXPECTED rejection reason.  Together with positive
-coverage (#170), they triangulate the certifier's decision boundary:
+coverage, they triangulate the certifier's decision boundary:
 
-* **Soundness (#165-#169)**: if accepted, the cell is faithful
-* **Positive coverage (#170)**: well-formed fixtures ARE accepted
+* **Soundness**: if accepted, the cell is faithful
+* **Positive coverage**: well-formed fixtures ARE accepted
 * **Negative coverage (this file)**: malformed fixtures ARE rejected
 
 ## The reachable-rejection landscape under fxProfile
 
-Under v2 with `fxProfile` (all 194 generators admitted), three
-rejection branches are runtime-reachable:
+Under `fxProfile` (all 194 generators admitted), three rejection
+branches are runtime-reachable:
 
 * `.unsupportedCompH` — `.horizontalComposite _ _` always rejects
   (Gray-tensor semantics pending Axis 6).
@@ -40,7 +35,7 @@ rejection branches are runtime-reachable:
 * `.wrongSort` — `checkRawCellAs?` with expectedSort != inferred sort.
 
 The remaining seven rejection branches in `CellCheckRejection.all` are
-forward-compat dead code under fxProfile:
+unreachable under fxProfile:
 
 * `.unknownGenerator` — `supportedGenerator?` always returns `some`
   under fxProfile (all 194 admitted).  Restricted profiles (e.g.
@@ -51,20 +46,20 @@ forward-compat dead code under fxProfile:
   `GenPayloadEvidence` with discriminating bodies.
 * `.wrongChildShape` — under fxProfile, every child spec has sort
   `.term` and `cellDimension 0`, matching every termBase child's
-  inferred shape.  Reachable only under future profiles with
-  cross-sort spine semantics.
+  inferred shape.  Reachable only under profiles with cross-sort
+  spine semantics.
 * `.fuelExhausted` — top-level wrapper supplies `raw.size + 1` fuel,
   always sufficient.  Reachable only from direct callers of
   `certifyRawCellExactFueled?` with insufficient fuel.
-* `.badBoundaryEndpoint`, `.unsupportedCertification` — used by v2's
-  `buildGeneratingCellExact?` and reserved for future ingress
-  extensions; dead code under the current fxProfile ingress surface.
+* `.badBoundaryEndpoint`, `.unsupportedCertification` — used by
+  `buildGeneratingCellExact?` and reserved for ingress extensions;
+  unreachable under the current fxProfile ingress surface.
 
 The fxProfile-reachable trio (`.unsupportedCompH`,
 `.badVerticalBoundary`, `.wrongSort`) covers every rejection branch
-exercisable from the public ingress API.  Future restricted-profile
-test suites will activate the dead-code branches without changing
-this file's `rfl`-proved theorems.
+exercisable from the public ingress API.  Restricted-profile test
+suites activate the remaining branches without changing this file's
+`rfl`-proved theorems.
 
 ## Why `rfl` works
 
@@ -155,9 +150,9 @@ def horizontalCompositeUnitRaw : RawCell 0 :=
       (.termBase (.mkGen .gen_unit () .childNil))`
 
 The simplest fixture triggering `.badVerticalBoundary`.  Both operands
-certify cleanly as unit terms (per #170), but every `.termBase _` has
-computed `dim = 0`, so the certifier's `match first.dim with | 0`
-branch fires — vertical composition is only well-defined at `dim >= 1`.
+certify cleanly as unit terms, but every `.termBase _` has computed
+`dim = 0`, so the certifier's `match first.dim with | 0` branch fires
+— vertical composition is only well-defined at `dim >= 1`.
 
 This is the "no dim-0 vertical composite" guard: vertical composition
 of 0-cells is meaningless in a higher category (0-cells have no
@@ -175,9 +170,8 @@ through the general existential ingress.
 
 Closes by `rfl`: the `.horizontalComposite _ _` certifier arm
 unconditionally returns `.error .unsupportedCompH` without recursing
-into the operands.  This is the architectural marker that v2 does not
-yet implement horizontal composition — Axis 6's Gray-tensor semantics
-must land first. -/
+into the operands.  Horizontal composition is unimplemented pending
+Axis 6's Gray-tensor semantics. -/
 theorem negative_horizontalCompositeUnit_rejects_unsupportedCompH
     {profile : PolyProfile} :
     certifiedResultRejection?
@@ -188,9 +182,9 @@ theorem negative_horizontalCompositeUnit_rejects_unsupportedCompH
 /-- The `verticalCompositeUnit` fixture rejects with `.badVerticalBoundary`
 through the general existential ingress.
 
-Closes by `rfl`: both operands certify (per #170), but `first.dim = 0`
-triggers the certifier's vertical-composite guard.  Dim-0 cells cannot
-be vertically composed (they have no boundary along which to compose).
+Closes by `rfl`: both operands certify, but `first.dim = 0` triggers
+the certifier's vertical-composite guard.  Dim-0 cells cannot be
+vertically composed (they have no boundary along which to compose).
 
 The deep-trace is non-trivial — the certifier recursively certifies
 both operands (each producing `.ok` with `cellSort := .term, dim := 0`)
@@ -203,11 +197,11 @@ theorem negative_verticalCompositeUnit_rejects_badVerticalBoundary
         NegativeProbes.verticalCompositeUnitRaw) =
       some .badVerticalBoundary := rfl
 
-/-- The `unitTermRaw` fixture (from #170's coverage suite) rejects with
+/-- The `unitTermRaw` fixture (from the coverage suite) rejects with
 `.wrongSort` when checked against expected sort `.type`.
 
 Closes by `rfl`: `inferRawCellGeneral?` accepts the unit term at
-inferred sort `.term` (per #170's `coverage_unitTermRaw_sort`), but
+inferred sort `.term` (per `coverage_unitTermRaw_sort`), but
 `checkRawCellAs?`'s sort comparison rejects when the expected sort
 is `.type`.
 
@@ -217,10 +211,10 @@ rejects with `.wrongSort` — the rejection class is specific to
 `checkRawCellAs?`'s expected-shape contract.
 
 Pattern note: rather than introduce a separate negative fixture,
-this theorem REUSES `Coverage.unitTermRaw` from #170.  Same raw
-cell, different question — coverage asks "what sort?" and gets `.term`;
-negative-probe asks "is it `.type`?" and gets `.wrongSort`.  The fixture
-catalog stays compact. -/
+this theorem REUSES `Coverage.unitTermRaw`.  Same raw cell, different
+question — coverage asks "what sort?" and gets `.term`; negative-probe
+asks "is it `.type`?" and gets `.wrongSort`.  The fixture catalog
+stays compact. -/
 theorem negative_unitTerm_as_type_rejects_wrongSort
     {profile : PolyProfile} :
     (match checkRawCellAs? (profile := profile) .type 0 Coverage.unitTermRaw with

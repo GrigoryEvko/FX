@@ -4,12 +4,11 @@ import FX1Poly.Core.RawCellDecEq
 
 /-! # Foundation/PolyCell/Core/ReconcileChild — per-child reconciler
 
-This file ships `reconcileChild`: the bridge that turns the
-general recursive certifier (returning `CertifiedCell profile
-scope` with EXISTENTIAL sort/dim/boundary/rawCell) into the
-SPEC-MATCHED `CertifiedChildAtSpec profile spec parentScope
-headRaw` that `certifyChildSpine?` (#156) demands as its per-child
-callback.
+`reconcileChild`: the bridge that turns the general recursive
+certifier (returning `CertifiedCell profile scope` with EXISTENTIAL
+sort/dim/boundary/rawCell) into the SPEC-MATCHED
+`CertifiedChildAtSpec profile spec parentScope headRaw` that
+`certifyChildSpine?` demands as its per-child callback.
 
 ## What reconciliation does
 
@@ -29,8 +28,7 @@ certified cell from its existential type to the spec-matched type.
 
 ## The transport pattern — `cases` + `by_cases` + `subst`
 
-v1's `buildTermStepCellExact?` (`Core/Check.lean:1796`) established
-the propext-clean recipe:
+The propext-clean recipe:
 
 1. `cases cell with | mk resultSort resultDim ... => ...` — destructure
    the struct, freeing its fields as separate variables.
@@ -45,16 +43,15 @@ the propext-clean recipe:
    gymnastics — just rebuild the target struct from the now-typed
    fields.
 
-This avoids the `▸`-chain propext risk of explicit transports and
-matches the v1 spike's proven shape.
+This avoids the `▸`-chain propext risk of explicit transports.
 
 ## Decidability requirements
 
 Three Decidable instances are needed:
 
-* `DecidableEq CellSort` — shipped at L0 in `CellSort.lean`
+* `DecidableEq CellSort` — in `CellSort.lean`
 * `DecidableEq Nat` — Lean core stdlib
-* `DecidableEq (RawCell _)` — shipped at L0 in `RawCellDecEq.lean`
+* `DecidableEq (RawCell _)` — in `RawCellDecEq.lean`
 
 All zero-axiom by prior audit gates.
 
@@ -85,11 +82,10 @@ namespace FX1Poly.Core
 `ChildSpec`, producing a spec-matched `CertifiedChildAtSpec` or
 a `.wrongChildShape` rejection.
 
-The `recursiveCertifier` is the v2 recursive certifier from #162
-(or any function with the right type) — supplied as a callback to
-avoid an explicit mutual recursion at this stage.  The Stage L1c.4
-work (#162) ties the recursion by passing its own
-`certifyRawCellExact?` as the callback.
+The `recursiveCertifier` is the recursive certifier (or any
+function with the right type) — supplied as a callback to avoid an
+explicit mutual recursion at this stage.  The recursion is tied by
+passing `certifyRawCellExact?` as the callback.
 
 Implementation: standard tactic-mode `cases` + `by_cases` + `subst`
 pattern.  Three Decidable tests:

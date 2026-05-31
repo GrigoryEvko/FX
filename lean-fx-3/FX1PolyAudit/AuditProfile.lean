@@ -6,8 +6,7 @@ import FX1Poly.Extension.ProfileExtension
 
 /-! # FX1PolyAudit/AuditProfile — namespace zero-axiom sweep for the axis substrate
 
-Persistent zero-axiom gate for the PolyProfile axis closure migrated out
-of lean-fx-2's `Foundation/PolyCell/<Axis>` directories.  `PolyProfile`
+Persistent zero-axiom gate for the PolyProfile axis closure.  `PolyProfile`
 bundles the fourteen graded-modal axis structures the cell calculus
 fibres over (the directed-complex shape, univalent algebra, thin
 stratification, cubical saturation, rung enrichment, Gray tensor,

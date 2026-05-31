@@ -8,18 +8,16 @@ import FX1Poly.Core.BetaRedexEndToEnd
 /-! # Foundation/PolyCell/Core/SubstPreservationMutual
    — generic structural preservation drivers for rename/subst
 
-This file starts the M2 structural-induction block from task #251.
-The first shipped half is the generic rename driver over the certified
-cell/spine mutual structure:
+The structural-induction block for rename/subst preservation over the
+certified cell/spine mutual structure:
 
-* `PolyCell.rename_dim0`
-* `CertifiedTermSpine.rename_dim0`
+* rename half: `PolyCell.rename_dim0`, `CertifiedTermSpine.rename_dim0`
+* subst half:  `PolyCell.subst_dim0`,  `CertifiedTermSpine.subst_dim0`
 
-These definitions turn the earlier non-recursive step helpers into a
-real recursion.  The substitution half needs this rename half to
-certify lifted substitutions under binders, because `RawTermSubst.lift`
-weakens old substituents, and weakening is rawRenaming by
-`RawRenaming.weaken`.
+These definitions drive the non-recursive step helpers as a real
+recursion.  The substitution half depends on the rename half to certify
+lifted substitutions under binders, because `RawTermSubst.lift` weakens
+old substituents, and weakening is rawRenaming by `RawRenaming.weaken`.
 -/
 
 namespace FX1Poly.Core
@@ -393,7 +391,7 @@ theorem HasCertifiedCellDim0.preservedBySubst0
 
 /-- SR-beta structural preservation.
 
-This is the M2 endpoint: from a certified beta-redex source
+The SR-beta endpoint: from a certified beta-redex source
 `app (lam body) arg`, certify its structural beta target
 `subst0 body arg`.  The proof extracts the sort-precise argument cell
 from the source spine, then feeds the generic `subst0` theorem through

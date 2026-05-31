@@ -4,9 +4,8 @@ import FX1Poly.Core.BetaRedexLeafPreservation
 /-! # Foundation/PolyCell/Core/BetaRedexEndToEnd
    — end-to-end SR-beta for fixture-shaped bodies
 
-V2-L3.1 phase D step 21 (2026-05-27).  First concrete end-to-end
-SR-beta theorem.  Composes the EXTRACTION (step 20 projections)
-with the REBUILD (step 18 leaf preservations) into a complete
+Concrete end-to-end SR-beta theorems.  Compose the EXTRACTION (cert
+projections) with the REBUILD (leaf preservations) into a complete
 chain: source cert → post-beta cert.
 
 ## What this ships
@@ -32,18 +31,17 @@ For body shapes that are closed nullary (unit/boolTrue/etc.),
 the post-beta term is closed and trivially certified
 INDEPENDENTLY of the source cert hypothesis.  Those theorems
 would be vacuous (proved without using the cert), so they're
-captured by `subst0_X_preservation` (step 18) and don't need
-a separate end-to-end theorem.
+captured by `subst0_X_preservation` and don't need a separate
+end-to-end theorem.
 
 For compound body shapes, the structural induction is required —
 the inner subst recursively certifies the substituted children,
 which depends on each child's cert (from the body cert via
-deeper projections), and that recursion is the PENDING work.
+deeper projections).
 
-## Forward-compat: scaling to compound bodies
+## Scaling to compound bodies
 
-When the structural induction lands, end-to-end SR-beta for
-compound body shapes will compose:
+End-to-end SR-beta for compound body shapes composes:
   * `app_argument_projection` → arg cert
   * `app_function_projection` → lam cert
   * `lam_body_projection` → body cert
@@ -107,15 +105,12 @@ preservation:
   2. Extract `argCert` via `app_argument_projection`.
   3. Apply `subst0_varZero_preservation argCert` → result cert.
 
-This is the FIRST atomic end-to-end SR-beta theorem,
-demonstrating the projection + preservation chain composes
+Demonstrates the projection + preservation chain composes
 correctly at zero axioms.
 
-Forward-compat: when the structural induction lands, this
-theorem becomes a corollary of the general
-`HasCertifiedCellDim0.preservedBySubst0` (specialized to
-body = var 0).  Until then, this concrete instance is shipped
-directly to verify the chain assembly. -/
+This concrete instance is a specialization (body = var 0) of the
+general structural induction
+`HasCertifiedCellDim0.preservedBySubst0`. -/
 theorem HasCertifiedCellDim0.beta_var_zero_e2e
     {profile : PolyProfile} {scope : Nat}
     (arg : RawTerm scope)
@@ -161,16 +156,14 @@ This factors SR-beta into two halves:
   * EXTRACTION — `beta_redex_projection` yields `(bodyCert, argCert)`.
   * REBUILD — `substPreservation bodyCert argCert` produces the target.
 
-The `substPreservation` hypothesis is precisely what the future
+The `substPreservation` hypothesis is precisely what the
 structural induction `HasCertifiedCellDim0.preservedBySubst0`
-will provide.  Plugging that theorem in HERE closes SR-beta
+provides.  Plugging that theorem in HERE closes SR-beta
 END-TO-END for arbitrary body shapes.
 
-Until the structural induction lands, this theorem is the
-**conceptual bridge**: callers that handle specific body shapes
-(e.g., the 8 leaf preservations + 9 compound preservations
-shipped in steps 18-19) can instantiate `substPreservation`
-case-by-case. -/
+This theorem is the **assembly bridge**: callers that handle
+specific body shapes (the 8 leaf preservations + 9 compound
+preservations) can instantiate `substPreservation` case-by-case. -/
 theorem HasCertifiedCellDim0.beta_redex_assembly
     {profile : PolyProfile} {scope : Nat}
     (body : RawTerm (scope + 1))

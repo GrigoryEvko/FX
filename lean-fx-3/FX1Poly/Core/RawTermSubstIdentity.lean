@@ -2,7 +2,7 @@ import FX1Poly.Core.RawTermSubstPointwise
 
 /-! # Foundation/PolyCell/Core/RawTermSubstIdentity — `subst identity = identity`
 
-This file ships the **second of three Action laws** V2-L2.7 needs:
+The **second of three Action laws**:
 **substituting by the identity substitution returns the term unchanged**.
 
 In monad language: `subst` respects the polynomial monad's η law
@@ -10,11 +10,11 @@ In monad language: `subst` respects the polynomial monad's η law
 is identity-on-the-term, witnessing the fundamental theorem's
 boundary case.
 
-## The three Action laws V2-L2.7 needs
+## The three Action laws
 
-  1. apply_ext      / subst_pointwise   (#181a, RawTermSubstPointwise.lean)
+  1. apply_ext      / subst_pointwise   (RawTermSubstPointwise.lean)
   2. identity_apply / subst_identity    (THIS FILE)
-  3. compose_assoc  / subst_compose     (next iteration)
+  3. compose_assoc  / subst_compose     (RawTermSubstCompose.lean)
 
 Together they close the `Action RawTermSubst` instance zero-axiom.
 
@@ -41,28 +41,23 @@ The natural proof shape:
       -- as functions (the match-form of `lift` makes the iterated
       -- version definitionally different from `identity`).  They ARE
       -- pointwise-equal — which is exactly what `subst_pointwise`
-      -- (#181a) handles.
+      -- handles.
 
 The chain:
 * `lift_identity_pointwise` proves `lift identity ≅ identity` (pointwise).
 * `iterateLiftRaw_identity_pointwise` proves
   `iterateLiftRaw identity n ≅ identity` (pointwise) by Nat induction.
-* `subst_pointwise` (from #181a) converts the pointwise equality of
+* `subst_pointwise` converts the pointwise equality of
   substitutions to an equation of subst results.
 * The chain `subst (iterLift identity n) head = subst identity head =
   head` closes via two `rw`s.
 
-This is exactly why we shipped `subst_pointwise` FIRST — it's the
-load-bearing infrastructure for `subst_identity` AND for the upcoming
-`subst_compose`.
+`subst_pointwise` is the load-bearing infrastructure for both
+`subst_identity` and `subst_compose`.
 
-## v1 comparison
+## Structure
 
-v1's `RawTerm.subst_identity` (Foundation/RawSubst/SubstIdentityAndBeta.lean
-lines 58-127) is a **74-arm structural induction** — one arm per
-RawTerm constructor.  Each arm is `dsimp only [RawTerm.subst] + rw [...]`.
-
-v2's version is a **4-arm mutual induction**:
+A **4-arm mutual induction**:
 * `.mkGen` var sub-case (rfl after `subst hVar`)
 * `.mkGen` non-var sub-case (`dsimp + simp [dif_neg] + congr 1 +
   children IH`)
@@ -78,7 +73,7 @@ All declarations propext-free:
   0 / k+1; both cases close by `rfl` because lift of identity
   reduces to identity at each position.
 * `iterateLiftRaw_identity_pointwise` — Nat induction; succ case
-  uses `lift_pointwise priorIH` (from #181a) + `lift_identity_pointwise`.
+  uses `lift_pointwise priorIH` + `lift_identity_pointwise`.
 * `RawTerm.subst_identity_apply` /
   `RawTermChildren.subst_identity_apply` — mutual structural
   induction with `dsimp only [fold]` (not `unfold` — see
@@ -150,16 +145,13 @@ The headline theorem: substituting by the identity substitution
 returns the term unchanged.  This is the polynomial monad's
 right-unit law at the term layer.
 
-In v1: 74-arm structural induction.
-In v2: 4-arm mutual induction.  The Generator cascade is dead. -/
+A 4-arm mutual induction; the Generator cascade is amortized into
+fold. -/
 
 mutual
 
 /-- Allais identity_apply for terms: substituting by `RawTermSubst.identity`
-returns the term unchanged.
-
-This is the v2 replacement for v1's 74-arm `RawTerm.subst_identity`
-(Foundation/RawSubst/SubstIdentityAndBeta.lean lines 58-127). -/
+returns the term unchanged. -/
 theorem RawTerm.subst_identity_apply {scope : Nat}
     (sourceTerm : RawTerm scope) :
     RawTerm.subst RawTermSubst.identity sourceTerm = sourceTerm := by
@@ -185,7 +177,7 @@ theorem RawTerm.subst_identity_apply {scope : Nat}
       --
       -- CRITICAL: `dsimp only [fold]` not `unfold fold` — `unfold`
       -- on a mutual recursive def pulls Quot.sound (see
-      -- feedback_lean_unfold_mutual_quot_sound, confirmed during #181a).
+      -- feedback_lean_unfold_mutual_quot_sound).
       dsimp only [RawTerm.subst, fold]
       simp only [dif_neg hVar]
       congr 1
@@ -242,11 +234,10 @@ end -- mutual
 
 Verify the headline theorem invokes cleanly on representative terms.
 
-The unit smoke test was already shipped at #180 as
-`subst_identity_unit_smoke` (which closes by `rfl` directly because
-unit has no variables).  The smokes below USE the general theorem
-rather than `rfl`, exercising the mutual induction's dispatch on
-non-trivial generators. -/
+`RawTermSubst.lean`'s `subst_identity_unit_smoke` closes by `rfl`
+directly (unit has no variables).  The smokes below USE the general
+theorem rather than `rfl`, exercising the mutual induction's
+dispatch on non-trivial generators. -/
 
 /-- Smoke: subst_identity_apply on `.gen_unit` returns the unit term
 unchanged.  Exercises the non-variable arm (despite the unit having

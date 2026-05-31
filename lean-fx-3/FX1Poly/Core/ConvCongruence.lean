@@ -4,19 +4,16 @@ import FX1Poly.Core.StepSubst
 /-! # Foundation/PolyCell/Core/ConvCongruence
    — generic Conv-as-congruence lifter (one theorem for all 194 generators)
 
-M-Conv-cong (#369, 2026-05-28).  Ships the per-generator congruence
-rules that M20 `#269`'s description silently omitted.  The 5-agent
-gap audit found:
+Ships the per-generator Conv-level congruence rules (#369).  The
+surrounding substrate provides:
 
-* `Conv.refl` + `Conv.sym` already shipped at `StepStarConfluence.lean`.
-* 4 conditional `Conv.trans_of_*` variants shipped.
+* `Conv.refl` + `Conv.sym` at `StepStarConfluence.lean`.
+* 4 conditional `Conv.trans_of_*` variants.
 * Three hand-coded StepStar-level congruence helpers:
   `StepStar.appFunction`, `StepStar.appArgument`, `StepStar.lamBody`.
-* **ZERO per-generator Conv-level congruence rules** for 194 generators.
 
-Without a Conv-level congruence rule, downstream `HasType.conv`
-(M33 `#282`), typed SR (M46 `#295`), and Conv-respecting term-
-replacement reasoning all fall through.
+A Conv-level congruence rule is what `HasType.conv`, typed SR, and
+Conv-respecting term-replacement reasoning all build on.
 
 ## What this file ships
 
@@ -66,24 +63,13 @@ no large elimination) or by direct ctor construction.  No `simp`, no
 
 ## Consumers
 
-* M46 `#295` ★ Typed Subject Reduction: cites `Conv.ofChildren`
-  to lift child Conv to parent Conv under any typing-context shape.
-* M47 `#296` typed weakening + substitution: cites per-ctor
-  corollaries.
-* M-Conv-subst-rename `#370`: extends to subst/rename preservation.
-* M-Conv-equivalence `#371`: composes with refl/symm/trans for the
-  `Equivalence` typeclass instance.
-* M55a `#364` typed β+η Decidable Conv: relies on Conv being a
-  congruence to lift η-long readback comparisons.
-
-## Why this is the load-bearing M20 closure
-
-Per Agent 2 of the 5-agent gap audit: "M20 (`#269`) as titled is
-NOT sufficient — its literal scope is the three equivalence-relation
-laws plus an `Equivalence` instance.  Conv-congruence is a wholly
-distinct concern absent from the task list."  This file closes that
-distinct concern with the SINGLE GENERIC theorem the polycell
-uniformity thesis promises. -/
+* Typed Subject Reduction: cites `Conv.ofChildren` to lift child
+  Conv to parent Conv under any typing-context shape.
+* Typed weakening + substitution: cites per-ctor corollaries.
+* Conv subst/rename preservation: extends to substitution/renaming.
+* The Conv `Equivalence` instance: composes with refl/symm/trans.
+* Typed beta+eta Decidable Conv: relies on Conv being a congruence
+  to lift eta-long readback comparisons. -/
 
 namespace FX1Poly.Core
 

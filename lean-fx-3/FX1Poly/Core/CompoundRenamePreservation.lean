@@ -3,8 +3,8 @@ import FX1Poly.Core.SubstPreservationProbes
 
 /-! # Foundation/PolyCell/Core/CompoundRenamePreservation — compound rename preservation
 
-V2-L3.1 phase D step 17 (2026-05-27).  Ships **compositional
-preservation lemmas** for compound generators under rename.
+Ships **compositional preservation lemmas** for compound
+generators under rename.
 
 ## What this ships
 
@@ -23,12 +23,11 @@ For each compound term-shape generator, two theorems:
 
 ## Compositional, not full induction
 
-These are the **inductive step** of the future structural
-induction.  The CALLER (eventually
-`HasCertifiedCellDim0.preservedByRename` in a structural
+These are the **inductive step** of the structural induction.
+The CALLER (`HasCertifiedCellDim0.preservedByRename`, a structural
 induction over the cell) provides the renamed-children cells
-recursively.  This file gives the BUILDING BLOCKS; the next
-step is to thread the inductive hypothesis through them.
+recursively.  This file gives the BUILDING BLOCKS that thread the
+inductive hypothesis.
 
 ## Coverage
 

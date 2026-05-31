@@ -3,13 +3,10 @@ import FX1Poly.Core.PolyProfile
 
 /-! # FX1Poly/Typed/TypingContext — the native de Bruijn typing telescope
 
-The `.context`-sort spine of the typed layer (polycell.md §11.8.5,
-"TODO[Z₁ M31/M32]" pinned in `FX1Poly/Typed/HasType.lean`).  This is the
-clean-cut lean-fx-3 re-port of lean-fx-2's `M31`/`M32`
-(`TypingContext` inductive + `lookup`), rebuilt under the design
-corrections below.
+The `.context`-sort spine of the typed layer (polycell.md §11.8.5): the
+`TypingContext` inductive + `lookup`, under the design described below.
 
-## The design: a RAW de Bruijn telescope (DD2)
+## The design: a RAW de Bruijn telescope
 
 A `TypingContext profile scope` is a de Bruijn sequence of exactly
 `scope` binding-type cells.  Each binding's type is itself a `.type`-
@@ -32,30 +29,29 @@ INDEX signature reference a sibling (`HasType`/`IsType`) that itself
 references `TypingContext` — exactly the sibling-index cycle Lean 4
 rejects (it forbids mutual references in index signatures, not only
 strict-positivity violations).  The resolution: `TypingContext` is the
-RAW spine here; well-formedness is a SEPARATE `WfContext` predicate
-(TY-WF, the next typed brick), layered OVER this raw telescope rather
-than baked into it.  Do not "helpfully" add an `IsType` field back — it
-will not build.
+RAW spine here; well-formedness is a SEPARATE `WfContext` predicate,
+layered OVER this raw telescope rather than baked into it.  Do not
+"helpfully" add an `IsType` field back — it will not build.
 
 ## What is delivered
 
 * `TypingContext` — the `empty` / `cons` raw telescope.
 * `length` + `length_eq_scope` — the recursive binding count agrees with
-  the scope index (the §467 length/scope coherence deliverable).
+  the scope index (length/scope coherence).
 * `lookup` — the de Bruijn variable lookup returning the bound type with
   the weakening shift applied (§11.6.3); `Fin` is destructured via the
   propext-free `⟨0, _⟩` / `⟨k + 1, _⟩` structure matching (NOT
   `Fin.cases`, which pulls `propext`).
 * `lookup_cons_zero` / `lookup_cons_succ` — definitional unfolders.
 
-**On context "weakening" (§467 deliverable c).**  A whole-context
-renaming action `TypingContext profile source → TypingContext profile
-target` is ILL-DEFINED: a telescope of `n` bindings IS scope `n`, so it
-cannot be renamed to a different scope while keeping `n` bindings.  The
-genuine weakening is (i) the per-binding `RawRenaming.weaken` shift that
-`lookup` threads internally, here, and (ii) the JUDGMENT-level lemma
-`HasType` under `RawRenaming.weaken` — which lives with the typed
-weakening lemma (TY-SR-cong / M47-S1), not as a context primitive.
+**On context "weakening".**  A whole-context renaming action
+`TypingContext profile source → TypingContext profile target` is
+ILL-DEFINED: a telescope of `n` bindings IS scope `n`, so it cannot be
+renamed to a different scope while keeping `n` bindings.  The genuine
+weakening is (i) the per-binding `RawRenaming.weaken` shift that `lookup`
+threads internally, here, and (ii) the JUDGMENT-level lemma `HasType`
+under `RawRenaming.weaken` — which lives with the typed weakening lemma,
+not as a context primitive.
 
 ## Zero-axiom verification
 

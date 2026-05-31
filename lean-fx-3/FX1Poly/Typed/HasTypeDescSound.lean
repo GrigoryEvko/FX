@@ -3,13 +3,13 @@ import FX1Poly.Typed.HasTypeDesc
 /-! # FX1Poly/Typed/HasTypeDescSound — SOUNDNESS of the description engine
     (`HasTypeDesc → HasType`), completing the `HasTypeDesc ⟺ HasType` faithfulness.
 
-Completeness (`HasType.toHasTypeDesc`, shipped) showed the data-driven generic
-engine is at least as strong as the bespoke arms.  This file proves the converse:
-every `HasTypeDesc` derivation maps to the trusted bespoke `HasType` — so the
-description engine derives NOTHING the hand-written kernel wouldn't (0-FP wrt the
-trusted engine).  Together: the two engines are equivalent on the formation
-fragment, so the cascade-free description-driven `gen` arm is a faithful
-replacement for the per-shape arms.
+Completeness (`HasType.toHasTypeDesc`) shows the data-driven generic engine is at
+least as strong as the bespoke arms.  This file proves the converse: every
+`HasTypeDesc` derivation maps to the trusted bespoke `HasType` — so the description
+engine derives NOTHING the hand-written kernel wouldn't (0-FP wrt the trusted
+engine).  Together: the two engines are equivalent on the formation fragment, so
+the cascade-free description-driven `gen` arm is a faithful replacement for the
+per-shape arms.
 
 ## Structure
 

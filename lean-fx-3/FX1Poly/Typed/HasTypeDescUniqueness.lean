@@ -11,7 +11,7 @@ consumed by the typechecker's conv-check and by canonicity.
 ## Intrinsic spine, bespoke leaf (honest scope)
 
 `HasTypeDesc.uniqueness` is a recursion on `HasTypeDesc` ITSELF (the propext-free
-term-mode `match`).  ALL FOUR arms now reason through the description engine's own
+term-mode `match`).  All four arms reason through the description engine's own
 structure:
 
 * `var` / `universeFormation` invert the SECOND derivation with the INTRINSIC leaf
@@ -25,20 +25,19 @@ structure:
 The remaining coupling is ONE LEAF: `uniquenessAgree` settles each HEAD CHILD's
 universe level/flag through the verified bespoke `HasType.uniqueness` (via
 `HasTypeDesc.toHasType`), because as a STANDALONE (non-mutual) recursion it cannot call
-the intrinsic uniqueness it precedes.  The fully intrinsic version makes the two a
+the intrinsic uniqueness it precedes.  A fully intrinsic version would make the two a
 MUTUAL recursion (the `HasTypeDesc.toHasType`/`DescTelescope.toHasTypeTelescope` shape)
-so head children recurse into the intrinsic uniqueness; that mutual block is the
-decouple's last step (its termination needs the careful scope-index phrasing of the
-soundness pair).  The formation SPINE — inversion + telescope agreement — is now
-intrinsic; only the per-child leaf is bespoke.
+so head children recurse into the intrinsic uniqueness, with termination needing the
+careful scope-index phrasing of the soundness pair.  The formation SPINE — inversion +
+telescope agreement — is intrinsic; only the per-child leaf is bespoke.
 
 ## `uniquenessAgree`: separate children + a threaded equality
 
-The earlier blocker was deconstructing the SECOND telescope when its children index was
-UNIFIED with the first's (forced `childCons head rest`), which makes `cases`/`rcases`
-field alignment unpredictable.  The fix is the equation-motive recipe: give the two
-telescopes SEPARATE free children (`children1`, `children2`) and thread an explicit
-`children1 = children2`.  Each telescope then matches cleanly (free children, like
+Deconstructing the SECOND telescope when its children index is UNIFIED with the first's
+(forced `childCons head rest`) makes `cases`/`rcases` field alignment unpredictable.  So
+`uniquenessAgree` uses the equation-motive recipe: the two telescopes take SEPARATE free
+children (`children1`, `children2`) threaded with an explicit `children1 = children2`.
+Each telescope then matches cleanly (free children, like
 `DescTelescope.toHasTypeTelescope`), and the equality connects them via `injection`
 (cons/cons) / `RawTermChildren.noConfusion` (the impossible nil/cons cross-cases).
 
@@ -52,7 +51,7 @@ non-empty.
 
 ## Zero-axiom
 
-Term-mode recursion + the shipped propext-free inversions + `injection` /
+Term-mode recursion + the propext-free inversions + `injection` /
 `RawTermChildren.noConfusion` + the verified `Conv.trans_of_typedMiddle` /
 `HasType.uniqueness` / `levelFlag_eq_of_conv_universeCodeCell`.  No `axiom`, `sorry`,
 `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Audit-gated.

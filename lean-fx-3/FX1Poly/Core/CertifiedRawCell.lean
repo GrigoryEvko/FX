@@ -3,21 +3,20 @@ import FX1Poly.Core.CellBoundary
 
 /-! # Foundation/PolyCell/Core/CertifiedRawCell — raw-indexed certified package
 
-This file ships `CertifiedRawCell`: the v2 analog of v1's
-`CertifiedRawCell` (`Core/Certified.lean`).  It is a raw-INDEXED
-certified package — like `CertifiedCell` (#154) but with the
-`rawCell` as a TYPE PARAMETER, not a field.
+This file ships `CertifiedRawCell`: a raw-INDEXED certified
+package — like `CertifiedCell` but with the `rawCell` as a TYPE
+PARAMETER, not a field.
 
 ## The two package types
 
 * `CertifiedCell profile scope` — EXISTENTIAL.  rawCell is a
-  field, varying per cell.  Used by `inferRawCellGeneral?` (#163)
-  — the existential wrapper.
+  field, varying per cell.  Used by `inferRawCellGeneral?` —
+  the existential wrapper.
 
 * `CertifiedRawCell profile scope rawCell` — RAW-INDEXED.
   rawCell is a parameter; the type pins the certificate to a
-  specific raw input.  Used by `certifyRawCellExact?` (#162) —
-  the recursive workhorse.
+  specific raw input.  Used by `certifyRawCellExact?` — the
+  recursive workhorse.
 
 Splitting the two clarifies the type-level guarantees: the exact
 certifier never silently changes the rawCell it certifies, while
@@ -34,16 +33,14 @@ structure CertifiedRawCell (profile : PolyProfile) (scope : Nat)
   certifiedCell : PolyCell profile sort rawCell.dim scope boundary rawCell
 ```
 
-Three fields (vs CertifiedCell's five): `sort`, `boundary`,
-`certifiedCell`.  The `dim` field is gone — replaced by `rawCell.dim`
-(computed function on the parameter).  The `rawCell` field is also
-gone — it's the type parameter.
+Three fields: `sort`, `boundary`, `certifiedCell`.  There is no
+`dim` field — the dim is `rawCell.dim` (computed function on the
+parameter).  There is no `rawCell` field — it's the type parameter.
 
 ## Why dim = rawCell.dim
 
-In CertifiedCell the dim was an existential field (varied
-per cell).  In CertifiedRawCell we KNOW the rawCell, so dim is
-determined: it's `rawCell.dim` (the computed function from RawCell).
+Because the rawCell is KNOWN (a parameter), the dim is determined:
+it's `rawCell.dim` (the computed function from RawCell).
 
 This commits the package to dimensional honesty — you can't
 construct a CertifiedRawCell whose cell's dim differs from its

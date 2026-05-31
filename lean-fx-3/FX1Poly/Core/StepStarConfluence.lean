@@ -1,36 +1,30 @@
 import FX1Poly.Core.CdLemma
 
 /-! # Foundation/PolyCell/Core/StepStarConfluence
-    - M8 confluence bridge over the v2 raw substrate
+    - confluence bridge over the v2 raw substrate
 
-M7 ships the local one-step join theorem `cd_lemma`.  This file pins the
-M8 bridge shape without overclaiming global Church-Rosser: local confluence
-alone does not imply global confluence for an arbitrary non-terminating rewrite
-system.  The global theorem is therefore factored through the standard strip
-property, and raw `Conv` transitivity is derived from global confluence.
+The local one-step join theorem `cd_lemma` lives elsewhere; this file
+pins the confluence bridge shape without overclaiming global
+Church-Rosser: local confluence alone does not imply global confluence
+for an arbitrary non-terminating rewrite system.  The global theorem is
+therefore factored through the standard strip property, and raw `Conv`
+transitivity is derived from global confluence.
 
-## Retroactive substrate-attribution task home
+## Contents
 
-Per `M-confluence-vocab-retro` (#375): this file is the substrate
-task home for the confluence vocabulary cited by M6 #255 (CR
-scaffold), M7 #256 (cd_lemma), and M8 #257 (unconditional Conv
-trans).  All 268 LoC of `StepStar.Join` / `HasConfluence` /
+The confluence vocabulary: `StepStar.Join` / `HasConfluence` /
 `HasStrip` / `IsStronglyNormalizing` / `HasStrongNormalization`
-definitions + `Conv.refl` / `Conv.sym` / 4 conditional
-`Conv.trans_of_*` variants + Newman lifts live here.
+definitions, `Conv.refl` / `Conv.sym` / four conditional
+`Conv.trans_of_*` variants, and the Newman lifts.
 
-Downstream consumers (per the 5-agent gap audit):
-* M6 #255 critical-pair dispatcher cites `Join` shape.
-* M7 #256 cd_lemma cites `localJoin_of_cdLemma`.
-* M8 #257 unconditional confluence will cite one of the four
-  `confluence_of_*` Newman variants.
-* M-Conv-equivalence #371 cites `Conv.trans_of_strongNormalization`
-  or `Conv.trans_of_confluence` for the unconditional trans.
-* η-cascade M8e #354 + M8h #357 cite `IsStronglyNormalizing` for
-  the β+η Newman bridge.
-
-This attribution closes Agent 5's "drive-by substrate" finding —
-the 268 LoC are now explicitly tracked under #375.
+Downstream consumers:
+* the critical-pair dispatcher cites the `Join` shape;
+* `cd_lemma` cites `localJoin_of_cdLemma`;
+* unconditional confluence cites one of the four `confluence_of_*`
+  Newman variants;
+* the unconditional Conv-transitivity proof cites
+  `Conv.trans_of_strongNormalization` or `Conv.trans_of_confluence`;
+* the beta+eta Newman bridge cites `IsStronglyNormalizing`.
 -/
 
 namespace FX1Poly.Core
@@ -75,7 +69,7 @@ def HasStrongNormalization : Prop :=
   ∀ {scope : Nat} (sourceTerm : RawTerm scope),
     IsStronglyNormalizing sourceTerm
 
-/-- M7's `cd_lemma` gives the one-step/one-step local join, not global
+/-- `cd_lemma` gives the one-step/one-step local join, not global
 confluence by itself. -/
 theorem localJoin_of_cdLemma {scope : Nat}
     {sourceTerm leftReduct rightReduct : RawTerm scope}
@@ -91,7 +85,7 @@ theorem joinStepWithReflRight {scope : Nat}
     Join leftReduct sourceTerm :=
   ⟨leftReduct, StepStar.refl _, StepStar.single leftStep⟩
 
-/-- A single step joins with a single-step right chain by M7. -/
+/-- A single step joins with a single-step right chain via `cd_lemma`. -/
 theorem joinStepWithSingleRight {scope : Nat}
     {sourceTerm leftReduct rightReduct : RawTerm scope}
     (leftStep : Step sourceTerm leftReduct)
@@ -102,8 +96,8 @@ theorem joinStepWithSingleRight {scope : Nat}
 /-- Newman's lift from local one-step confluence plus accessibility to
 global Church-Rosser, specialized to the v2 raw `Step` relation.
 
-This is the honest SN route for M8: M7 supplies local joins, while a future
-SN theorem supplies `IsStronglyNormalizing sourceTerm`. -/
+This is the SN route to global confluence: `cd_lemma` supplies local
+joins, and an SN theorem supplies `IsStronglyNormalizing sourceTerm`. -/
 theorem confluence_of_localJoin_and_accessible {scope : Nat}
     {sourceTerm leftReduct rightReduct : RawTerm scope}
     (sourceTerminates : IsStronglyNormalizing sourceTerm)
@@ -150,8 +144,8 @@ theorem confluence_of_localJoin_and_accessible {scope : Nat}
       leftChain
       rightChain
 
-/-- Strong normalization plus M7's local join theorem gives global
-Church-Rosser. -/
+/-- Strong normalization plus the local join theorem (`cd_lemma`) gives
+global Church-Rosser. -/
 theorem confluence_of_strongNormalization
     (hasStrongNormalization : HasStrongNormalization) :
     HasConfluence := by
@@ -164,7 +158,7 @@ theorem confluence_of_strongNormalization
 
 /-- The standard strip-to-Church-Rosser lift.
 
-This is the exact reusable M8 spine: once the strip property is supplied
+This is the reusable confluence spine: once the strip property is supplied
 (from a parallel-reduction diamond or a Newman-style Noetherian argument),
 arbitrary diverging `StepStar` chains join. -/
 theorem confluence_of_strip (hasStrip : HasStrip) :
@@ -274,8 +268,8 @@ theorem trans_of_strip
     (StepStar.confluence_of_strip hasStrip)
     firstMiddle middleLast
 
-/-- Raw conversion transitivity follows from strong normalization plus M7's
-local join theorem. -/
+/-- Raw conversion transitivity follows from strong normalization plus the
+local join theorem (`cd_lemma`). -/
 theorem trans_of_strongNormalization
     (hasStrongNormalization : StepStar.HasStrongNormalization)
     {scope : Nat} {firstTerm middleTerm lastTerm : RawTerm scope}

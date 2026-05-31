@@ -2,31 +2,22 @@ import FX1Poly.Core.RawTermSubst
 
 /-! # Foundation/PolyCell/Core/RawTermSubstPointwise — Allais extensionality
 
-This file ships the **Allais extensionality theorem** for fold:
+The **Allais extensionality theorem** for fold:
 **pointwise-equal substitutions act equally on terms**.
 
-This is the FIRST of three Action laws V2-L2.7 needs:
+The **first of three Action laws**:
 
 1. **apply_ext** (THIS FILE)   — `(∀ pos, sigma1 pos = sigma2 pos) →
                                   term.subst sigma1 = term.subst sigma2`
-2. **identity_apply** (next)    — `term.subst identity = term`
-3. **compose_assoc** (next)     — `(term.subst s1).subst s2 = term.subst (s1.compose s2)`
+2. **identity_apply**           — `term.subst identity = term`
+3. **compose_assoc**            — `(term.subst s1).subst s2 = term.subst (s1.compose s2)`
 
-Together they witness the polynomial-monad laws at the term layer.
-Once all three ship, the `Action RawTermSubst` instance closes
-zero-axiom.
+Together they witness the polynomial-monad laws at the term layer,
+closing the `Action RawTermSubst` instance zero-axiom.
 
-## The L2 cascade-tax killer at work
+## A single mutual induction
 
-v1's `RawTerm.subst_pointwise` (Foundation/RawSubst/SubstLemmas.lean,
-lines 40-220) is a **74-arm structural induction** — one arm per
-RawTerm constructor.  Each arm is one line of `dsimp + rw`, but
-adding a new term former requires adding a new arm.  That cascade is
-load-bearing for the polynomial-monad fusion ladder; in v1 it costs
-roughly 5-8 K LoC across the rename / subst / weaken / substHet trio.
-
-v2's version collapses to a **single mutual induction** with FOUR
-structural arms:
+The proof is a **single mutual induction** with FOUR structural arms:
 
   * `.mkGen` term arm:
     - `.gen_var` sub-case (dispatches via `varToRawTerm`)
@@ -35,13 +26,10 @@ structural arms:
     - `.childNil`
     - `.childCons`
 
-The 194-generator dispatch is amortized into fold (#177) ONCE
-across the kernel.  Adding a new Generator requires NO new
-pointwise arm — the proof closes for the new generator automatically
-through the non-var sub-case.
-
-This is the empirical L2 demonstration #181 needs to make:
-**the cascade tax is dead**.
+The 194-generator dispatch is amortized into fold ONCE across the
+kernel.  Adding a new Generator requires NO new pointwise arm — the
+proof closes for the new generator automatically through the non-var
+sub-case.
 
 ## Mutual structural induction
 
@@ -69,9 +57,7 @@ formulation).
 
 The standard Allais workaround: state laws **pointwise** as the
 proposition `∀ pos, sigma1 pos = sigma2 pos`.  This makes the
-laws funext-free and zero-axiom — exactly the discipline v1's
-`RawTermSubst.lift_pointwise` (Foundation/RawSubst/SubstLemmas.lean
-line 30) already uses.
+laws funext-free and zero-axiom.
 
 ## Zero-axiom verification
 
@@ -86,7 +72,7 @@ All declarations propext-free:
 * `RawTerm.subst_pointwise` / `RawTermChildren.subst_pointwise` —
   mutual structural match on `RawTerm` / `RawTermChildren`
   (full-enum, no wildcards), with binary `by_cases hVar` on
-  `Generator`'s `DecidableEq` (which is propext-free per V2-L0.11
+  `Generator`'s `DecidableEq` (which is propext-free —
   `instDecidableEqGenerator`)
 
 Audit-gated in `Tools/AuditAll/AuditPolyCell.lean`.
@@ -193,14 +179,11 @@ theorem iterateLiftRaw_RawTermSubst_pointwise {sourceScope targetScope : Nat}
 
 /-! ## Section 3 — The Allais extensionality theorem (mutual induction)
 
-This is the L2 cascade-tax killer demonstration.  In v1, the analog
-`RawTerm.subst_pointwise` is 74 per-ctor arms (one per term former).
-In v2, the proof collapses to a single mutual structural induction
-with four arms total — and adding a new Generator requires NO new
-arm.
+A single mutual structural induction with four arms total — adding
+a new Generator requires NO new arm.
 
-The proof uses `by_cases` on Generator's `DecidableEq` (propext-free
-per V2-L0.11) to dispatch between the variable and non-variable arms
+The proof uses `by_cases` on Generator's `DecidableEq` (propext-free)
+to dispatch between the variable and non-variable arms
 of fold.  Both branches are taken simultaneously on both sides of
 the equation because the dispatch depends only on the term (not the
 substitution), so the two sides always agree on which arm to take. -/
@@ -210,7 +193,6 @@ mutual
 /-- Allais extensionality: pointwise-equal substitutions produce
 equal subst results on any term.
 
-This is the v2 replacement for v1's 74-arm `RawTerm.subst_pointwise`.
 Adding a new Generator does NOT require adding a new arm here — the
 proof closes uniformly through the non-variable case via the children
 spine recursion. -/
@@ -249,8 +231,8 @@ theorem RawTerm.subst_pointwise {sourceScope targetScope : Nat}
       --
       -- CRITICAL: use `dsimp only [fold]` rather than `unfold fold`.
       -- `unfold` on a mutual recursive def pulls `Quot.sound` via the
-      -- equation lemma generation pipeline (confirmed empirically
-      -- 2026-05-27, see feedback_lean_unfold_mutual_quot_sound).
+      -- equation lemma generation pipeline (see
+      -- feedback_lean_unfold_mutual_quot_sound).
       -- `dsimp only` uses definitional reduction without the equation
       -- lemma engine, keeping the proof zero-axiom.
       show RawTerm.subst firstSubstitution
@@ -265,10 +247,9 @@ theorem RawTerm.subst_pointwise {sourceScope targetScope : Nat}
 /-- Allais extensionality on children spines: pointwise-equal
 substitutions produce equal foldChildren results.
 
-In v1 this lemma is fused into the term-level pointwise (no separate
-children-spine).  In v2, the mutual structure of RawTerm /
-RawTermChildren means children get their own pointwise theorem,
-which is invoked by the non-variable arm of subst_pointwise. -/
+The mutual structure of RawTerm / RawTermChildren means children
+get their own pointwise theorem, invoked by the non-variable arm of
+subst_pointwise. -/
 theorem RawTermChildren.subst_pointwise
     {sourceScope targetScope : Nat}
     {firstSubstitution secondSubstitution :
@@ -312,10 +293,10 @@ end -- mutual
 Verify the headline `RawTerm.subst_pointwise` invokes cleanly on
 representative terms.
 
-These are sanity checks — the real consumers are V2-L2.7b
-(`subst_identity_apply` uses `subst_pointwise` to bridge between the
-literal `identity` and `iterateLiftRaw identity n`) and V2-L2.7c
-(`subst_compose` similarly). -/
+These are sanity checks — the real consumers are
+`subst_identity_apply` (which uses `subst_pointwise` to bridge
+between the literal `identity` and `iterateLiftRaw identity n`) and
+`subst_compose` (similarly). -/
 
 /-- Smoke test: subst_pointwise on `.gen_unit` is `rfl` (the term has
 no variables, so no pointwise-eq usage).

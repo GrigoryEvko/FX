@@ -43,8 +43,8 @@ inductive DependentTelescopeChildren (profile : PolyProfile) :
       DependentTelescopeChildren profile context (headLevel :: restLevels) flag
         (.childCons head rest)
 
-/-- Faithfulness: the `[0,1]` instance reconstructs exactly what s1's fixed
-`DependentBinaryFormationChildren` accepted (domain typed in `context`, codomain
+/-- Faithfulness: the `[0,1]` instance reconstructs exactly what the fixed
+`DependentBinaryFormationChildren` accepts (domain typed in `context`, codomain
 typed under the domain binder), over `RawTermChildren.binderShape`. -/
 theorem dependentTelescope_reconstructs_piFormation
     {profile : PolyProfile} {scope : Nat}

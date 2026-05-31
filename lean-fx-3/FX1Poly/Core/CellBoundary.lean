@@ -2,12 +2,11 @@ import FX1Poly.Core.PolyProfile
 import FX1Poly.Core.CellSort
 import FX1Poly.Core.RawCell
 
-/-! # Foundation/PolyCell/Core/CellBoundary — boundary data for v2 cells
+/-! # Foundation/PolyCell/Core/CellBoundary — boundary data for cells
 
-This file ships the v2 boundary-data computation: `CellBoundary`
+This file ships the boundary-data computation: `CellBoundary`
 returns the TYPE of boundary data a certified cell carries at each
-dimension.  It is the v2 counterpart to v1's `CellBoundary`
-(`Foundation/PolyCell/Core/Certified.lean`).
+dimension.
 
 ## The dimension stratification of boundary data
 
@@ -20,7 +19,7 @@ boundary describing where it lives in the polygraph:
 
 * **Dim (n+1) cells** (rewrite steps, equality cells, composites)
   have a PAIR boundary: a SOURCE endpoint at dim n and a TARGET
-  endpoint at dim n.  In v2 these endpoints are RAW cells
+  endpoint at dim n.  These endpoints are RAW cells
   (`RawCell scope`), because the certified layer pins their dim
   through the certified sub-cell parameter type — not through the
   boundary value's type.
@@ -32,14 +31,10 @@ hits the trivial base case.
 
 ## Why the source/target are raw, not certified
 
-In v1, the boundary was a pair of typed `PolyTerm profile dimension`
-values — the boundary type CARRIED the dim constraint at the type
-level.  This was the very source of the propext walls that motivated
-the v2 architecture: pattern-matching on a `(dim, term)` pair
-triggered equation-compiler reasoning over the Nat dim index.
-
-In v2, the boundary carries RAW cells (`RawCell scope`, dim
-computed not indexed).  The dim constraint is enforced ELSEWHERE:
+The boundary carries RAW cells (`RawCell scope`, dim computed not
+indexed), so pattern-matching on the boundary triggers no
+equation-compiler reasoning over a Nat dim index.  The dim
+constraint is enforced ELSEWHERE:
 
 * The certified sub-cell parameters (`PolyCell profile cellSort
   source.dim scope sourceBoundary source` etc.) demand source and
@@ -49,18 +44,16 @@ computed not indexed).  The dim constraint is enforced ELSEWHERE:
 * The `HasEqualDim source target` parameter explicitly reconciles
   the two endpoints' computed dims as a propext-free `Nat` equation.
 
-This decoupling is the SPIKE-1 architectural payoff: boundary data
-becomes raw-only (zero type-level dim reasoning), and dim
-correctness gets enforced via separate certified parameters.
+This decoupling keeps boundary data raw-only (zero type-level dim
+reasoning), with dim correctness enforced via separate certified
+parameters.
 
 ## The profile parameter
 
 `CellBoundary` takes a `PolyProfile` parameter for spec alignment
-with `polycell.md` §4 and forward-compat: future profiles may
-restrict WHICH raw cells are admissible as boundaries (e.g. a
-constructive-only profile rejecting HoTT cells in boundary
-positions).  Under `fxProfile`, the boundary is unconstrained beyond
-the dim stratification — the parameter is phantom for now.
+with `polycell.md` §4.  Under `fxProfile`, the boundary is
+unconstrained beyond the dim stratification — the parameter does
+not appear in the body.
 
 The underscore prefix `_profile` documents the intentional-but-
 currently-unused parameter without triggering Lean's
@@ -91,7 +84,7 @@ to avoid the wildcard-pattern propext-leak class catalogued in
 
 namespace FX1Poly.Core
 
-/-- Boundary-data TYPE for a v2 certified cell at the given
+/-- Boundary-data TYPE for a certified cell at the given
 dimension.
 
 Reads as a sentence: "for any profile, sort, dimension, and scope,
@@ -99,9 +92,8 @@ the boundary type is either Unit (dim 0) or a pair of raw cells
 (dim n+1)".  The dim parameter is what discriminates: the function
 is a type-level dispatch on dim.
 
-Currently profile-agnostic (the `_profile` parameter is forward-
-compat).  Future per-profile restrictions refine the body without
-breaking the existing surface. -/
+Profile-agnostic: the `_profile` parameter does not appear in the
+body. -/
 def CellBoundary (_profile : PolyProfile) :
     CellSort → Nat → Nat → Type
   | _, 0, _ => Unit

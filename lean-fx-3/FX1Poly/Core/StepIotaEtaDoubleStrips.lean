@@ -2,21 +2,21 @@ import FX1Poly.Core.StepIotaEtaInsideBinder
 
 /-! # Foundation/PolyCell/Core/StepIotaEtaDoubleStrips
 
-Reserved iota-vs-eta double-strip coverage for future generator phases.
+Reserved iota-vs-eta double-strip coverage for generators not yet present.
 
 This file deliberately does not assert join theorems for rules that are
-not present in the current `Step` relation.  The current beta+iota
-relation has exactly the 16 iota roots catalogued by `IotaRootKind`; it
-does not yet contain modal, path, clock, parametricity, or Glue
-eliminator-on-intro iotas.  The safe artifact for task #386 is therefore
-an audited reserved-slot table that records what will become a
-double-strip critical pair when the matching generator/iota phase lands.
+not present in the `Step` relation.  The beta+iota relation has exactly
+the 16 iota roots catalogued by `IotaRootKind`; it does not contain
+modal, path, clock, parametricity, or Glue eliminator-on-intro iotas.
+The artifact is therefore an audited reserved-slot table that records
+what becomes a double-strip critical pair once the matching
+generator/iota lands.
 -/
 
 namespace FX1Poly.Core
 
-/-- Future iota/eta double-strip families that are intentionally reserved
-outside the current `Step` root-iota catalog. -/
+/-- Iota/eta double-strip families that are intentionally reserved
+outside the `Step` root-iota catalog. -/
 inductive IotaEtaReservedDoubleStripKind : Type where
   | modal
   | path
@@ -72,8 +72,8 @@ def eliminatorGeneratorOption :
   | .parametricity => none
   | .glue => some .gen_glueElim
 
-/-- Does the current beta+iota `Step` relation contain the matching
-future eliminator-on-intro iota?  Today all five rows are reserved. -/
+/-- Does the beta+iota `Step` relation contain the matching
+eliminator-on-intro iota?  All five rows are reserved. -/
 def hasCurrentStepIota (_reservedKind : IotaEtaReservedDoubleStripKind) :
     Bool :=
   false
@@ -97,7 +97,7 @@ inductive IotaEtaReservedDoubleStripBlocker : Type where
   | missingGeneratorAndStepIota
   deriving DecidableEq
 
-/-- Reserved-status payload for a future double-strip critical pair. -/
+/-- Reserved-status payload for a reserved double-strip critical pair. -/
 inductive IotaEtaDoubleStripStatus : Type where
   | reserved
       (phaseMilestone : Nat)
@@ -117,7 +117,7 @@ theorem reserved_isReserved
 
 end IotaEtaDoubleStripStatus
 
-/-- One row in the future iota/eta double-strip table. -/
+/-- One row in the reserved iota/eta double-strip table. -/
 structure IotaEtaReservedDoubleStrip where
   reservedKind : IotaEtaReservedDoubleStripKind
   phaseMilestone : Nat
@@ -139,7 +139,7 @@ def blockerForKind :
   | .parametricity => .missingGeneratorAndStepIota
   | .glue => .missingStepIota
 
-/-- Build the reserved-row metadata for one future double-strip family. -/
+/-- Build the reserved-row metadata for one reserved double-strip family. -/
 def rowForKind
     (reservedKind : IotaEtaReservedDoubleStripKind) :
     IotaEtaReservedDoubleStrip where
@@ -171,7 +171,7 @@ namespace IotaEtaReservedDoubleStripKind
 def reservedRows : List IotaEtaReservedDoubleStrip :=
   all.map IotaEtaReservedDoubleStrip.rowForKind
 
-/-- Build-time coverage bit for task #386. -/
+/-- Build-time coverage bit: every reserved double-strip row is complete. -/
 def reservedRowsComplete : Bool :=
   reservedRows.all IotaEtaReservedDoubleStrip.isCompleteReservedRow
 
@@ -205,10 +205,10 @@ end IotaEtaReservedDoubleStripKind
 
 namespace Step
 
-/-- Audit bit exported under `Step` for task #386.
+/-- Audit bit exported under `Step` for the reserved double-strips.
 
-This is intentionally a reserved-slot bit, not a join theorem.  When a
-future phase adds one of these eliminator-on-intro iotas to `Step`, the
+This is intentionally a reserved-slot bit, not a join theorem.  When
+one of these eliminator-on-intro iotas is added to `Step`, the
 corresponding row must be replaced by a proof-producing critical-pair
 entry. -/
 def iotaEta_reserved_doublestrips_complete : Bool :=

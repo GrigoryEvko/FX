@@ -2,33 +2,26 @@ import FX1Poly.Core.RawCell
 
 /-! # Foundation/PolyCell/Core/HasEqualDim — value-level dim reconciliation
 
-This file ships the propext-free dim-equality predicate used by the
-certified `PolyCell.generatingCell` constructor to reconcile source
-and target endpoints of a dim-(n+1) generating cell.  The whole point
-of v2's un-indexed raw layer (`RawCell scope` carries no dim type
-index) is that dim is a COMPUTED value (`RawCell.dim : ... → Nat`),
-so dim equality reduces to `Nat` equality, decidable by `Nat.decEq`.
+The propext-free dim-equality predicate used by the certified
+`PolyCell.generatingCell` constructor to reconcile source and target
+endpoints of a dim-(n+1) generating cell.  Because the raw layer is
+un-indexed (`RawCell scope` carries no dim type index), dim is a
+COMPUTED value (`RawCell.dim : ... → Nat`), so dim equality reduces
+to `Nat` equality, decidable by `Nat.decEq`.
 
-## The SPIKE-1 pattern (recapped)
+## Why value-level dim transport stays propext-clean
 
-v1's `PolyTerm profile : Nat → Type` was dim-indexed.  Reconciling two
-cells' dims at the type level required equation-compiler reasoning on
-the Nat index, which leaked `propext` through `noConfusion` over
-constructor-vs-index mismatches.  Two attempts (TCB.7d / TCB.7f) hit
-this wall.
-
-v2 dissolves the trap by un-indexing the raw layer: `RawCell` carries
+A dim-INDEXED raw layer would require equation-compiler reasoning on
+the Nat index to reconcile two cells' dims at the type level, which
+leaks `propext` through `noConfusion` over constructor-vs-index
+mismatches.  The un-indexed raw layer avoids this: `RawCell` carries
 no dim index, dim is `def RawCell.dim : RawCell scope → Nat` (a
 computed function), and "two cells have the same dim" is
 `source.dim = target.dim` — vanilla `Nat` equality.  `Nat.decEq` is
 zero-axiom; the resulting `Decidable (HasEqualDim ...)` instance is
 zero-axiom; downstream `▸` transports built from this proof are
-zero-axiom.
-
-The SPIKE-1 spike confirmed empirically (see `SpikeDimTransport.lean`)
-that value-level `(boundary, cert)` transport over this equality is
-propext-clean.  This file ships the predicate that the spike
-demonstrated.
+zero-axiom — value-level `(boundary, cert)` transport over this
+equality is propext-clean.
 
 ## Why a named predicate rather than just `Eq` directly
 
@@ -39,7 +32,7 @@ Three reasons:
    parameter, not raw `source.dim = target.dim`.  The name makes the
    intent explicit at the call site.
 
-2. **Forward-compat per-profile.**  A future profile may refine
+2. **Per-profile refinement point.**  A profile may refine
    `HasEqualDim` to also require sort agreement or scope coercibility.
    The named predicate gives one refinement point that flows through
    every downstream consumer; raw `Eq` would require global edits.
@@ -51,8 +44,8 @@ Three reasons:
 ## Why `@[reducible]` and `Prop`
 
 * `@[reducible]` lets downstream code transparently unfold to the
-  underlying `Eq` when needed (e.g., for `▸` transport in the SPIKE-1
-  pattern), without manual unfolding.  The abstraction is a NAMING
+  underlying `Eq` when needed (e.g., for value-level `▸` transport),
+  without manual unfolding.  The abstraction is a NAMING
   choice, not a strict barrier.
 
 * `Prop` not `Type` because dim equality has no computational content
@@ -87,7 +80,7 @@ through downstream code without explicit unfolding. -/
 
 /-- `HasEqualDim` is decidable: it's `Nat` equality on the computed
 dims, decided by `Nat.decEq` which is zero-axiom.  This is the
-SPIKE-1 propext-clean discipline made concrete — no equation-compiler
+propext-clean discipline made concrete — no equation-compiler
 on a Nat type index, just value-level `Nat.decEq`. -/
 instance hasEqualDim_decidable {scope : Nat}
     (source target : RawCell scope) :

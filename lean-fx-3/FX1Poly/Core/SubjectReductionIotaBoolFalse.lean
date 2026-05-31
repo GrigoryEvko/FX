@@ -1,11 +1,9 @@
 import FX1Poly.Core.CertifiedToPolyCell
 import FX1Poly.Core.Step
 
-/-! # Foundation/PolyCell/Core/SubjectReductionIotaBoolFalse — SR's second arm
+/-! # Foundation/PolyCell/Core/SubjectReductionIotaBoolFalse — SR arm for iotaBoolFalse
 
-V2-L3.1 phase D step 6 (2026-05-27).  Ships the SECOND arm of the
-Subject Reduction theorem on the v2 substrate: preservation across
-`Step.iotaBoolFalse`.
+The Subject Reduction arm for preservation across `Step.iotaBoolFalse`.
 
 ## What this arm proves
 
@@ -34,11 +32,10 @@ The bool-eliminator's spine has three children at the same scope
 
 ## Confirms the pattern template
 
-This symmetric commit validates that the pure-projection iota
-pattern from `preservedByIotaBoolTrue` transfers without
-modification.  Sibling pure-projection iotas (`iotaNatElimZero`,
-`iotaListElimNil`, `iotaOptionMatchNone`) follow the same template
-with possibly different tail-counts and head sorts.
+The pure-projection iota pattern from `preservedByIotaBoolTrue`
+transfers without modification.  Sibling pure-projection iotas
+(`iotaNatElimZero`, `iotaListElimNil`, `iotaOptionMatchNone`) follow
+the same template with possibly different tail-counts and head sorts.
 
 ## Zero-axiom verification
 

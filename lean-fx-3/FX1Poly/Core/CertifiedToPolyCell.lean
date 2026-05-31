@@ -3,9 +3,9 @@ import FX1Poly.Core.CertifiedTermSpineProjections
 
 /-! # Foundation/PolyCell/Core/CertifiedToPolyCell — Certified→PolyCell
 
-V2-L3.1 phase D step 4 (2026-05-27).  Ships the bridge from the
-procedural `Certified` predicate (certifier accepts) to the
-structural `PolyCell` representation (a certified cell exists).
+Ships the bridge from the procedural `Certified` predicate
+(certifier accepts) to the structural `PolyCell` representation (a
+certified cell exists).
 
 ## The bridge direction
 
@@ -30,14 +30,13 @@ returns it.  Extracting the underlying `PolyCell` requires:
 
 SR's source obligation is `Certified source`.  To run the SR proof
 at the structural level — where the spine projections + the
-substitution preservation lemma (V2-L2.12) live — we need to
-convert `Certified source` to a `PolyCell ... (.termBase source)`.
+substitution preservation lemma live — we need to convert
+`Certified source` to a `PolyCell ... (.termBase source)`.
 
 This file ships that bridge.  The reverse direction (PolyCell →
-Certified, i.e., certifier completeness) is tracked as V2-L3.5
-#238 + M-substrate-3 #367 (isNF predicate is the certifier-
-completeness substrate).  Fuel monotonicity / completeness
-machinery scheduled with that task.
+Certified, i.e., certifier completeness) is a separate concern
+(the `isNF` predicate is the certifier-completeness substrate),
+along with the fuel monotonicity / completeness machinery.
 
 ## What this does NOT do
 

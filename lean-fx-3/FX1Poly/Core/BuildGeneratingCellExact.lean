@@ -8,9 +8,6 @@ takes already-certified source and target cells + a ruleId and
 constructs a certified dim-(n+1) generating cell, or rejects with
 a specific reason.
 
-Direct v2 counterpart to v1's `buildTermStepCellExact?`
-(`Core/Check.lean:1796`).
-
 ## The reconciliation steps
 
 `buildGeneratingCellExact?` performs four Decidable checks before
@@ -33,8 +30,7 @@ pattern.
 
 ## The transport pattern — cases + by_cases + subst + generalize
 
-This is the canonical v1-proven recipe (`buildTermStepCellExact?`),
-extended for v2's value-level dim handling:
+The transport recipe for value-level dim handling:
 
 1. `by_cases hRuleId : ruleId = termStepRuleSpec.ruleId` +
    `subst hRuleId` to replace ruleId throughout
@@ -91,8 +87,8 @@ namespace FX1Poly.Core
 source and target, and their already-certified packages.
 
 This is the dispatcher for the `.generatingCell` case of the
-recursive certifier (#162).  Currently admits only ruleId 0 (the
-termStepRuleSpec rule); future rules add new `by_cases` branches.
+recursive certifier.  Currently admits only ruleId 0 (the
+termStepRuleSpec rule); further rules add new `by_cases` branches.
 
 Returns a raw-indexed `CertifiedRawCell` whose rawCell is exactly
 `.generatingCell ruleId source target` (the input shape). -/

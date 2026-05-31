@@ -2,12 +2,12 @@ import FX1Poly.Core.PolyCell
 
 /-! # Foundation/PolyCell/Core/PolyCellHelpers — package helpers
 
-This file ships convenience structures and constructors that
-PACKAGE a certified `PolyCell` cell together with its sort, dim,
-boundary, and rawCell indices into a single value.  These are the
-"existentialized" wrappers the certifier (Stage L1c.4) and
-downstream consumers use to pass certified cells around without
-threading 5+ implicit arguments at every call site.
+Convenience structures and constructors that PACKAGE a certified
+`PolyCell` cell together with its sort, dim, boundary, and rawCell
+indices into a single value.  These are the "existentialized"
+wrappers the certifier and downstream consumers use to pass
+certified cells around without threading 5+ implicit arguments at
+every call site.
 
 ## The packaging problem
 
@@ -21,13 +21,12 @@ in its type signature.  Code that wants to RETURN a certified cell
 * Use a struct that bundles indices + cell into one named record.
   Each consumer projects via field accessors.  Clean.
 
-This file ships the struct version, which is what `polycell.md` §4
-indicates via its `CertifiedRawCellResult` type.  The v2 split is:
+This file uses the struct version, which is what `polycell.md` §4
+indicates via its `CertifiedRawCellResult` type.  The split is:
 
-* `CertifiedCell` — the cell-only package (this file, #154).
+* `CertifiedCell` — the cell-only package (this file).
 * `CertifiedRawCellResult` — extends `CertifiedCell` with the
-  input-code matching field needed by the certifier (Stage L1c.4,
-  task #163).
+  input-code matching field needed by the certifier.
 
 ## The `CertifiedCell` structure
 
@@ -61,9 +60,7 @@ Saves callers from threading the indices through both the ctor and
 the package — they can just supply the ctor's arguments and get a
 packaged result.
 
-These mirror the spirit of v1's per-fixture builders
-(`Core/Certified.lean:220-313`) but operate at the generic ctor
-level rather than per-fixture.
+These operate at the generic ctor level rather than per-fixture.
 
 ## Zero-axiom verification
 
@@ -103,10 +100,8 @@ namespace CertifiedCell
 
 /-- Package a certified `PolyCell` cell into a `CertifiedCell`.
 
-Mirrors v1's `CertifiedChild.ofCell` (`Core/Certified.lean:408`)
-with the v2 vocabulary.  The implicit arguments are recovered from
-the cell's type signature by Lean's unifier; callers just provide
-the cell.
+The implicit arguments are recovered from the cell's type signature
+by Lean's unifier; callers just provide the cell.
 
 Usage: `CertifiedCell.ofCell cell` where `cell : PolyCell ...`. -/
 def ofCell {profile : PolyProfile} {sort : CellSort}
@@ -150,7 +145,7 @@ Returns the cell at `source.dim + 1` with boundary
 `(source, target)` and raw erasure
 `.generatingCell rule.ruleId source target`.
 
-The SPIKE-1 transport via `HasEqualDim` is propext-clean (decided
+The transport via `HasEqualDim` is propext-clean (decided
 by `Nat.decEq` on `RawCell.dim`). -/
 def packageGeneratingCell {profile : PolyProfile} {scope : Nat}
     (rule : RuleSpec)

@@ -8,9 +8,9 @@ The payoff direction (polycell.md §11.8 P10): canonicity ⇒ consistency
 / `universeFormation` / `piFormation` / `sigmaFormation`, all type-formers with
 NO term-introduction arms yet — this takes a sharp, honest shape: **every closed
 well-typed subject is itself a type.**  There are no closed proper TERMS at all
-yet (a proper term would be a `lam` / `pair` / `natZero` / … — every one of
-those arms is deferred to the NbE-gated intro/elim batch, #444/#446/#447…), so
-the closed `.term` layer below the universe is empty.
+on this fragment (a proper term would be a `lam` / `pair` / `natZero` / …, none
+of which has a typing arm here), so the closed `.term` layer below the universe
+is empty.
 
 ```
 HasType.closedSubjectIsType : HasType profile .empty t T → IsType profile .empty t
@@ -18,11 +18,11 @@ HasType.closedSubjectIsType : HasType profile .empty t T → IsType profile .emp
 
 This is the fragment's consistency content: the only closed-typeable cells are
 universe / Π / Σ CODES, each classified by a universe code — none is a closed
-inhabitant of a non-universe classifier.  When a hypothetical empty type
-(`gen_empty` / `never`) and term-introduction arms land, the statement refines
-(closed terms become "type OR canonical value"); for now the degeneracy is the
-honest, checkable truth, and `HasType .empty t (nonUniverseClassifier)` is
-already structurally impossible.
+inhabitant of a non-universe classifier.  With a hypothetical empty type
+(`gen_empty` / `never`) and term-introduction arms, the statement refines
+(closed terms become "type OR canonical value").  On the current fragment the
+degeneracy is the honest, checkable truth, and `HasType .empty t
+(nonUniverseClassifier)` is structurally impossible.
 
 ## What this brick delivers
 
@@ -88,9 +88,9 @@ theorem HasType.subjectIsVariableOrIsType {profile : PolyProfile} {scope : Nat}
 /-- P10 consistency precursor (current fragment): every closed well-typed
 subject is itself a type.  In the empty context the variable disjunct of
 `subjectIsVariableOrIsType` is impossible (`Fin 0` has no inhabitant), so the
-`IsType` disjunct always holds.  Honestly fragment-specific: it states that the
+`IsType` disjunct always holds.  Fragment-specific scope: it states that the
 type-former-only fragment has NO closed proper terms (the closed `.term` layer
-below the universe is empty), which refines once term-introduction arms land. -/
+below the universe is empty); term-introduction arms would refine it. -/
 theorem HasType.closedSubjectIsType {profile : PolyProfile}
     {subject classifier : RawTerm 0}
     (typed : HasType profile TypingContext.empty subject classifier) :

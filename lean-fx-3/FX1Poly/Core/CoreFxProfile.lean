@@ -2,30 +2,22 @@ import FX1Poly.Core.GeneratorAdmission
 
 /-! # Foundation/PolyCell/Core/CoreFxProfile — restricted-profile admission demonstration
 
-V2-fix-4 (2026-05-27).  Ships a CONCRETE restricted-profile
-admission predicate that exercises the per-profile admission
-machinery and discharges Agent 3's H3.2 finding.
+Ships a CONCRETE restricted-profile admission predicate that
+exercises the per-profile admission machinery.
 
 ## Context: why this file exists
 
-Agent 3 of the V2 falsification audit (2026-05-27) found that
-`supportedGenerator?` is the constant `some _` for every
-`Generator` under the default `fxProfile` — the `.none` branch
-of `match supportedGenerator? generator with | none => ...
-| some => ...` in the certifier is **unreachable**.  The
-"per-profile admission" architecture is decoration today.
+Under the default `fxProfile`, `supportedGenerator?` is the
+constant `some _` for every `Generator` — the `.none` branch of
+`match supportedGenerator? generator with | none => ...
+| some => ...` in the certifier is unreachable.  The admission
+inductive `SupportedGenerator` has a constructor for every
+Generator, so the decision procedure `supportedGenerator?` can
+never fail.  Restricted profiles requiring fewer Generators need a
+DIFFERENT admission predicate with FEWER admitting arms.
 
-That finding is **architecturally accurate**: the admission
-inductive `SupportedGenerator` (V2-L1.4) has a constructor for
-every Generator, so the decision procedure `supportedGenerator?`
-can never fail.  Restricted profiles requiring fewer Generators
-would need a DIFFERENT admission predicate with FEWER admitting
-arms.
-
-But until this commit, no concrete restricted-profile predicate
-existed — so the architectural claim "per-profile admission can
-restrict" had no machine-witnessed example.  This commit ships
-that example.
+This file is a concrete restricted-profile predicate, the
+machine-witnessed example of "per-profile admission can restrict".
 
 ## What this file ships
 
@@ -68,50 +60,33 @@ The clean alternative — a 194-arm match
 `Generator → Bool | .gen_var => true | .gen_unit => true | ...
 | .gen_modIntro => false | ...` — would honor the
 `feedback_lean_zero_axiom_match` no-wildcard discipline but
-require 194 explicit arms.  At V2-VORACIOUS scale this is ~200
-lines per restricted profile, hostile to forward extensibility.
+require 194 explicit arms (~200 lines per restricted profile,
+hostile to extensibility).
 
 The list-based approach trades:
 * Brevity for explicitness (3 lines per exclusion, not 194).
 * `rfl`-cleanliness preserved (list membership against
   decidable-equality types reduces definitionally).
-* Forward-compat for ProfileExtension's restriction interface:
-  a future profile defines its own `Excluded : List Generator`
+* Extensibility for ProfileExtension's restriction interface:
+  another profile defines its own `Excluded : List Generator`
   and the rest of the infrastructure inherits.
 
-## Integration trajectory (FUTURE work, not this commit)
+## Integration with the certifier
 
-This commit ships the PREDICATE and its witness theorems.  Full
-integration with the certifier — i.e., a `certifyRawCellExact?`
-variant parameterized by a restricted-profile admission filter —
-is a separate architectural concern (would require either
-modifying `supportedGenerator?` to accept a profile parameter,
-or wrapping the certifier in a generator-allowlist filter).
+This file is the PREDICATE and its witness theorems.  Full
+integration with the certifier — a `certifyRawCellExact?` variant
+parameterized by a restricted-profile admission filter — is a
+separate architectural concern (would require either modifying
+`supportedGenerator?` to accept a profile parameter, or wrapping
+the certifier in a generator-allowlist filter).
 
-The predicate stands alone as the FIRST concrete restricted-
-profile admission decision in v2.  Subsequent work (V2-mig-x or
-a future V2-fix-* extension) can integrate it with the certifier
-when the engineering payoff is clear.
+The predicate stands alone as a concrete restricted-profile
+admission decision.
 
 ## Zero-axiom verification
 
 All six witness theorems pass `#print axioms`.  Audit-gated in
 `Tools/AuditAll/AuditPolyCell.lean`.
-
-## Labor-value cascade payoff
-
-Agent 3 H3.2 was the second of three Tier-B "architecture-honesty"
-findings (after H3.3 unbounded universes / V2-fix-3, before H3.4
-coverage sparsity / V2-fix-5).  This commit converts the
-admission-decoration finding from "infrastructure with no example"
-to "infrastructure with one concrete restricted-profile witness".
-
-The trajectory: each Tier-B finding either becomes substantive
-(V2-fix-3 design commitment witness, V2-fix-4 concrete restricted
-predicate) or gets honestly framed (V2-fix-1 `_sound` docstring
-rewrite).  Tier-A shipped-code violations (V2-fix-2 ResourceGraded
-propext) are pure fixes.  V2-fix-* is incrementally closing the
-labor-value gap that the Marxist critique correctly identified.
 -/
 
 namespace FX1Poly.Core
@@ -133,8 +108,8 @@ their per-generator equations definitionally.
 
 For comparison: `supportedGenerator?` returns `some _` for ALL
 194 Generators (constant-true under fxProfile).  `isInCoreFx`
-returns `false` for the 3 excluded Generators.  This is the FIRST
-shipped Bool predicate that genuinely rejects some Generator. -/
+returns `false` for the 3 excluded Generators — a Bool predicate
+that genuinely rejects some Generator. -/
 @[reducible] def Generator.isInCoreFx (someGenerator : Generator) : Bool :=
   !(coreFxExcluded.contains someGenerator)
 

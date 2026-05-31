@@ -3,19 +3,18 @@ import FX1Poly.Core.StepStar
 import FX1Poly.Core.StepSubst
 
 /-! # Foundation/PolyCell/Core/CriticalPairs
-    — M6 confluence scaffold, root-rule catalog
+    — confluence critical-pair enumeration, root-rule catalog
 
-This file starts M6 (`Generator`-table critical-pair enumeration) with
-the finite catalog of **root** reduction rules: beta plus the 16 iota
-rules.  The uniform `Step.cong` rule is intentionally not represented
-as a root rule here, because its branchings are indexed by a parent
-generator and a child position.  Those child-position branchings are the
-next M6 slice.
+This file holds the `Generator`-table critical-pair enumeration: the
+finite catalog of **root** reduction rules (beta plus the 16 iota
+rules) and the critical-pair schema built over them.  The uniform
+`Step.cong` rule is not represented as a root rule, because its
+branchings are indexed by a parent generator and a child position;
+those are handled by the congruence branchings of the schema.
 
-The important invariant of this slice is modest but real: the
-non-congruence part of `Step` is now computably visible as data.  The
-next confluence files can consume this catalog instead of rediscovering
-which generator heads have root redexes.
+The catalog makes the non-congruence part of `Step` computably
+visible as data, so confluence reasoning consumes it instead of
+rediscovering which generator heads have root redexes.
 -/
 
 namespace FX1Poly.Core
@@ -100,9 +99,8 @@ def forSourceGenerator (sourceGenerator : Generator) : List RootStepKind :=
 
 /-- Root/root overlap classification.
 
-This is intentionally only the root-rule part of M6.  Congruence
-overlaps need a child-position shape and are represented in a later
-slice. -/
+This covers the root-rule overlaps.  Congruence overlaps need a
+child-position shape and are represented separately. -/
 inductive RootOverlapShape : Type where
   | sameRootRedex
   | sameGeneratorDifferentRootRedexes
@@ -121,9 +119,9 @@ def classifyRootOverlap
 
 /-- A finite root/root critical-pair entry.
 
-The full M6 `CriticalPair` will add congruence branchings and diamond
-filler templates.  This root entry is the non-congruence subcatalog
-that those later entries compose with. -/
+The top-level `CriticalPair` schema adds congruence branchings and
+diamond filler templates.  This root entry is the non-congruence
+subcatalog those entries compose with. -/
 structure RootCriticalPair where
   leftKind : RootStepKind
   rightKind : RootStepKind
@@ -200,7 +198,7 @@ def sameGeneratorDifferentRootPairHasDisjointWitness
       if expectedRightKind = rightKind then true else false
   | none => false
 
-/-- Does this finite root/root schema entry have current M6 coverage?
+/-- Does this finite root/root schema entry have current coverage?
 
 * same-root entries are covered by concrete `LocalDiamond` witnesses;
 * same-generator different-root entries are covered only when their disjoint
@@ -312,7 +310,7 @@ namespace Generator
 
 /-- Root/root critical pairs keyed by source-head generators.
 
-This is the first, root-only part of M6.  It deliberately excludes
+This is the root-only part of the catalog.  It deliberately excludes
 `Step.cong` branchings, which need a child-position index in addition
 to the parent generator. -/
 def rootCriticalPairs
@@ -376,8 +374,8 @@ inductive RootCongruenceOrientation : Type where
 /-- A root rule overlapping a `Step.cong` reduction under one child
 position of the same parent generator.
 
-This is still only a **schema** for M6.  The diamond filler for each
-schema belongs to the later filler-template slice. -/
+This is a **schema** entry.  The diamond filler for each schema lives
+in the filler-template section. -/
 structure RootCongruenceBranching where
   rootKind : RootStepKind
   childPosition : ChildPosition
@@ -431,7 +429,7 @@ def RootCongruenceBranching.hasValidChildPosition
     (fun tablePosition =>
       if tablePosition = branching.childPosition then true else false)
 
-/-- Does this root/congruence schema entry have current M6 coverage?
+/-- Does this root/congruence schema entry have current coverage?
 
 The predicate is deliberately conservative for arbitrary values of
 `RootCongruenceBranching`: it first checks that the child position is one
@@ -536,21 +534,21 @@ theorem rootCongruenceBranchings_idStrictRec_haveCurrentResolution :
     (rootCongruenceBranchings .gen_idStrictRec).all
       (fun branching => branching.hasCurrentResolution) = true := rfl
 
-/-- Top-level M6 critical-pair schema.
+/-- Top-level critical-pair schema.
 
-This intentionally remains a **schema** datatype: it records which
-finite branching family a later diamond filler must handle, but it does
-not claim that the filler has been constructed. -/
+This is a **schema** datatype: it records which finite branching
+family a diamond filler must handle, but it does not claim that the
+filler has been constructed. -/
 inductive CriticalPair : Type where
   | rootRoot (rootPair : RootStepKind.RootCriticalPair)
   | rootCongruence (branching : RootCongruenceBranching)
   deriving DecidableEq
 
-/-- Does this top-level M6 critical-pair schema entry have current coverage?
+/-- Does this top-level critical-pair schema entry have current coverage?
 
-This is the list-level dispatcher predicate M7 consumes before invoking the
-proof-relevant local diamond templates.  It deliberately only lifts the two
-M6 schema families that exist today:
+This is the list-level dispatcher predicate consumed before invoking the
+proof-relevant local diamond templates.  It lifts the two schema
+families:
 
 * root/root branchings, via `RootCriticalPair.hasCurrentRootResolution`;
 * root/congruence branchings, via `RootCongruenceBranching.hasCurrentResolution`.
@@ -597,7 +595,7 @@ theorem CriticalPair.currentResolution?_isSome
     · rfl
     · exact False.elim (hResolution hCurrent)
 
-/-- Lift root/root entries into the top-level M6 critical-pair schema. -/
+/-- Lift root/root entries into the top-level critical-pair schema. -/
 def criticalPairsFromRootPairs :
     List RootStepKind.RootCriticalPair → List CriticalPair
   | [] => []
@@ -605,7 +603,7 @@ def criticalPairsFromRootPairs :
       CriticalPair.rootRoot rootPair ::
         criticalPairsFromRootPairs remainingRootPairs
 
-/-- Lift root/congruence entries into the top-level M6 critical-pair
+/-- Lift root/congruence entries into the top-level critical-pair
 schema. -/
 def criticalPairsFromRootCongruenceBranchings :
     List RootCongruenceBranching → List CriticalPair
@@ -637,17 +635,17 @@ def criticalPairsEmptyDecision
     Decidable (criticalPairs leftGenerator rightGenerator = []) :=
   inferInstance
 
-/-- List-level M6 coverage predicate for the unified critical-pair schema. -/
+/-- List-level coverage predicate for the unified critical-pair schema. -/
 def hasCurrentResolutionForCriticalPairs
     (leftGenerator rightGenerator : Generator) : Bool :=
   (criticalPairs leftGenerator rightGenerator).all
     (fun criticalPair => criticalPair.hasCurrentResolution)
 
-/-- Proof-relevant M6 dispatch token for a whole generator-pair schema list.
+/-- Proof-relevant dispatch token for a whole generator-pair schema list.
 
-M7 can require this token before doing the proof-relevant case split over
-`criticalPairs leftGenerator rightGenerator`, avoiding another ad hoc coverage
-predicate. -/
+A consumer can require this token before doing the proof-relevant case
+split over `criticalPairs leftGenerator rightGenerator`, avoiding another
+ad hoc coverage predicate. -/
 inductive CriticalPairResolutionDispatch
     (leftGenerator rightGenerator : Generator) : Type where
   | intro :
@@ -790,12 +788,12 @@ theorem optionNone_hasNoStep {scope : Nat} {target : RawTerm scope} :
 
 end Step
 
-/-- A concrete local one-step branching in the v2 reduction relation.
+/-- A concrete local one-step branching in the reduction relation.
 
 Unlike `Generator.CriticalPair`, this is proof-relevant: it stores the
 actual source term, both one-step reducts, and the two `Step` witnesses.
-M7's `cd_lemma` consumes branchings of this shape after dispatching
-through the finite M6 schema. -/
+`cd_lemma` consumes branchings of this shape after dispatching through
+the finite critical-pair schema. -/
 structure LocalStepBranching {scope : Nat} where
   source : RawTerm scope
   leftReduct : RawTerm scope
@@ -808,7 +806,8 @@ namespace LocalStepBranching
 /-- Swap the two one-step sides of a local branching.
 
 This supplies the proof-relevant bridge from root-left/congruence-right
-branchings to the reverse orientation recorded by the M6 schema. -/
+branchings to the reverse orientation recorded by the critical-pair
+schema. -/
 def swap {scope : Nat} (branching : LocalStepBranching (scope := scope)) :
     LocalStepBranching (scope := scope) where
   source := branching.source
@@ -2741,9 +2740,9 @@ end LocalStepBranching
 
 /-- A concrete local diamond filler for one local one-step branching.
 
-This is the proof-relevant version of the M6 "diamond filler template":
-the join target is an actual raw term, and both sides are actual
-`StepStar` chains into that join. -/
+This is the proof-relevant "diamond filler template": the join target
+is an actual raw term, and both sides are actual `StepStar` chains
+into that join. -/
 structure LocalDiamond {scope : Nat}
     (branching : LocalStepBranching (scope := scope)) where
   commonReduct : RawTerm scope

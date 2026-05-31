@@ -3,8 +3,7 @@ import FX1Poly.Core.Step
 
 /-! # Foundation/PolyCell/Core/SubjectReductionBaseIotas — base-case iotas
 
-V2-L3.1 phase D step 7 (2026-05-27).  Ships SR arms 3-6: the
-remaining base-case branch-selection iotas.
+The SR arms for the base-case branch-selection iotas.
 
 Each base-case eliminator (natElim/natRec on natZero, listElim on
 listNil, optionMatch on optionNone) selects the "base" branch from a
@@ -12,11 +11,10 @@ listNil, optionMatch on optionNone) selects the "base" branch from a
 `iotaBoolTrue` (which extracts the then-branch from boolElim's
 3-child spine).
 
-## Family ships in one commit
+## One family, one file
 
-The four arms shipped here are STRUCTURALLY INDISTINGUISHABLE at
-the proof level — they differ only by which generator's spine they
-case-analyze:
+The four arms are STRUCTURALLY INDISTINGUISHABLE at the proof level —
+they differ only by which generator's spine they case-analyze:
 
   * iotaNatElimZero    : natElim natZero    zeroBranch succBranch ↝ zeroBranch
   * iotaNatRecZero     : natRec  natZero    zeroBranch succBranch ↝ zeroBranch
@@ -24,36 +22,8 @@ case-analyze:
   * iotaOptionMatchNone: optionMatch optionNone noneBranch someBranch ↝ noneBranch
 
 Each: 3-child same-scope spine, target = second child.  Proof =
-`spine.tail.headAtDim0 rfl`.  Shipping them together demonstrates
-the template's broad applicability and groups semantically-similar
-lemmas in one file (cleaner audit-gate organization).
-
-## Total SR arm progress
-
-After this commit: 6/18 SR arms shipped.
-
-  * Pure projection iotas (base-case, 3-child spine, 2nd-child
-    target):           **5/5 done** (iotaBoolTrue + this commit's
-                       4 arms).
-  * Pure projection iotas (base-case, 3-child spine, 3rd-child
-    target):           1/1 done (iotaBoolFalse).
-  * Nested projection iotas (fst/snd/either-match-inl/inr):
-                       0/4 — pending (need nested cases on the
-                       wrapped raw cell's spine).
-  * Compound iotas (natElim/natRec/listElim/optionMatch on
-    successor/cons/some):
-                       0/4 — pending (need to build a `gen_app`
-                       term after extraction via PolyCell.gen
-                       constructor).
-  * Identity iotas (idJ/idStrictRec on refl):
-                       0/2 — pending (similar to compound iotas,
-                       but with motive substitution that may
-                       require subst preservation).
-  * Beta:              0/1 — pending (the heaviest arm; uses
-                       V2-L2.12 substitution preservation).
-  * Cong:              0/1 — pending (the only arm requiring
-                       structural induction on a sub-Step + spine
-                       recursion).
+`spine.tail.headAtDim0 rfl`.  Grouping these semantically-similar
+lemmas in one file keeps the audit gate organized.
 
 ## Zero-axiom verification
 

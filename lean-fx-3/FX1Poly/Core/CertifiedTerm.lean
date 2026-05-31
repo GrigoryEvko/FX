@@ -2,8 +2,8 @@ import FX1Poly.Core.InferRawCellGeneral
 
 /-! # Foundation/PolyCell/Core/CertifiedTerm — the `Certified` predicate for SR
 
-V2-L3.1 phase C step 6 prep (2026-05-27).  Ships the `Certified`
-predicate that the Subject Reduction theorem states about.
+Ships the `Certified` predicate that the Subject Reduction theorem
+states about.
 
 ## What this file ships
 
@@ -24,7 +24,7 @@ predicate that the Subject Reduction theorem states about.
 
 ## What the predicate captures
 
-The SR theorem (V2-L3.1 phase C step 6) statement:
+The SR theorem statement:
 
   ∀ {profile scope} {source target : RawTerm scope},
       Step source target → Certified source → Certified target
@@ -124,9 +124,9 @@ theorem Certified.ofExistentialOk
 /-! ## Inhabitation smokes
 
 Concrete fixtures demonstrating that `Certified` is non-vacuous.
-The certifier reduces transparently on basic fixtures (per V2-L1cert.15's
-coverage suite), so `Certified.intro _ rfl` works -- Lean's elaborator
-infers the existential witness from the rfl proof.
+The certifier reduces transparently on basic fixtures, so
+`Certified.intro _ rfl` works -- Lean's elaborator infers the
+existential witness from the rfl proof.
 
 These smokes are profile-parametric: every profile admits the basic
 fixtures (unit at scope 0, var at scope 1) because they don't depend
@@ -200,10 +200,10 @@ theorem Certified.optionNone_at_scope_zero {profile : PolyProfile} :
 
 /-! ## Inhabitation smokes for composite (arity 1+) fixtures
 
-Building further: composite fixtures with non-trivial spines.
-Each lifts a V2-L1cert.15 coverage fixture to the Certified
-level.  Spine recursion through arity-1 (natSucc, optionSome,
-eitherInl) and arity-2 (pair, listCons) generators. -/
+Composite fixtures with non-trivial spines.  Each lifts a coverage
+fixture to the Certified level.  Spine recursion through arity-1
+(natSucc, optionSome, eitherInl) and arity-2 (pair, listCons)
+generators. -/
 
 /-- **Smoke: `natSucc natZero` = 1 is Certified at scope 0.**
 Exercises arity-1 spine through one recursion level. -/

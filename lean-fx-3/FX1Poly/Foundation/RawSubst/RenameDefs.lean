@@ -1,27 +1,15 @@
 /-! # FX1Poly.Foundation.RawSubst.RenameDefs — positional renaming substrate
 
-Native-infra clean cut from lean-fx-2's
-`LeanFX2.Foundation.RawSubst.RenameDefs`.
+`RawRenaming` — the purely positional renaming type
+`Fin source → Fin target` plus `identity` / `lift` / `weaken` /
+`compose`.  This is what the PolyCell cell calculus consumes: the
+`Fold` engine's variable case applies a `RawRenaming` to a `Fin`
+position and re-wraps as a `gen_var` cell.  It carries NO dependency
+on any raw-term type — it is first-order data over `Fin`, so this
+file has zero imports.
 
-## What this file carries (and what it deliberately drops)
-
-lean-fx-2's `RawSubst/RenameDefs` mixed two unrelated things:
-
-1. **`RawRenaming`** — the purely positional renaming type
-   `Fin source → Fin target` plus `identity` / `lift` / `weaken` /
-   `compose`.  This is what the PolyCell cell calculus actually consumes
-   (the `Fold` engine's variable case applies a `RawRenaming` to a `Fin`
-   position and re-wraps as a `gen_var` cell).  It carries NO dependency
-   on any raw-term type — it is first-order data over `Fin`.
-
-2. `RawTerm.rename` / `RawTerm.weaken` over the **legacy MLTT `RawTerm`**
-   (`.var` / `.lam` / `.app` / …).  Those operated on lean-fx-2's
-   intrinsic-MLTT raw term and are NOT used by the PolyCell substrate —
-   PolyCell's own `RawTerm` (`FX1Poly.Core.RawTerm`, a `.mkGen`-cell
-   term) defines its rename via `FX1Poly.Core.Fold`, not here.
-
-The clean cut keeps (1) and SEVERS (2): the legacy MLTT raw term is NOT
-a dependency of FX1Poly.  This file therefore has zero imports.
+PolyCell's `RawTerm` (`FX1Poly.Core.RawTerm`, a `.mkGen`-cell term)
+defines its own rename via `FX1Poly.Core.Fold`, not here.
 
 ## Root status
 

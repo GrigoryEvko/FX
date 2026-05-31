@@ -9,14 +9,13 @@ import FX1Poly.NbE.StrictNormalizer
 /-! # FX1PolyAudit/AuditNbE — namespace zero-axiom sweep for the NbE slice
 
 Persistent zero-axiom gate for the normalization-by-evaluation
-substrate migrated out of lean-fx-2's `Foundation/PolyCell/NbE`
-directory.  The slice ships the committed NbE design markers
+substrate.  The slice carries the NbE design markers
 (`NbEDesignChoice` / `ReductionStrategy` hybrid + call-by-name), the
 signature-level `Normalizer` / `Quote` / `StrictNormalizer` contracts,
 and the canonical identity `quoteRaw` instance plus the eval-then-quote
 pipeline composition.
 
-The slice is pure contract scaffolding: structure declarations, flat
+The slice is interface-level: structure declarations, flat
 marker enums, and `rfl`-closed cross-reference theorems.  The two
 `deriving DecidableEq` enums are non-indexed, so their `decEq`
 instances are propext-free — confirmed by this sweep.

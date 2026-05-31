@@ -2,7 +2,7 @@ import FX1Poly.Core.RawTermRenameSubstCommute
 
 /-! # Foundation/PolyCell/Core/RawTermSubstRenameCommute — subst-then-rename commute
 
-This file ships the **second cross-direction commute lemma**:
+The **second cross-direction commute lemma**:
 
   RawTerm.rename rho (RawTerm.subst sigma term)
     = RawTerm.subst (RawTermSubst.postRename sigma rho) term
@@ -11,22 +11,11 @@ This file ships the **second cross-direction commute lemma**:
 post-composed (substitute-then-rename-each-substituent)
 substitution".
 
-Position in the cross-direction fusion ladder:
-
-  rename_pointwise            (#181c1, shipped)
-  rename's lift_compose etc.  (#181c2, shipped)
-  payload_cast_compose keystone + rename_compose  (#181c3, shipped)
-  rename_subst_commute        (#181c4, shipped)
-  subst_rename_commute        (THIS COMMIT)
-  subst's lift_compose etc.   (next)
-  subst_compose               (the headline — third Action law)
-  Action RawTermSubst instance  (closes V2-L2.7)
-
 ## Why this direction is structurally more complex
 
-The OTHER direction `rename_subst_commute` (shipped #181c4) had a
-binder pull lemma `lift_thenSubst_pull` whose proof closed by
-`rfl` at both Fin cases — purely definitional.
+The OTHER direction `rename_subst_commute` has a binder pull lemma
+`lift_thenSubst_pull` whose proof closes by `rfl` at both Fin cases
+— purely definitional.
 
 This direction's binder pull lemma `lift_then_rename_lift_pull`
 needs NON-TRIVIAL work at the `⟨k+1, h⟩` case:
@@ -41,11 +30,11 @@ needs NON-TRIVIAL work at the `⟨k+1, h⟩` case:
     = (postRename sigma rho).lift ⟨k+1, h⟩
 
 So this binder pull uses:
-* `RawTerm.rename_compose` (#181c3 — shipped, just landed)
-* `RawTerm.rename_pointwise` (#181c1)
+* `RawTerm.rename_compose`
+* `RawTerm.rename_pointwise`
 * `RawRenaming.weaken_lift_commute` (THIS FILE — trivial `fun _ => rfl`)
 
-Hence we depend on the keystone + the rename ladder shipped earlier.
+Hence it depends on the keystone plus the rename ladder.
 
 ## The post-composition bridge
 
@@ -58,8 +47,7 @@ then rename each substituent".
 
 ## Zero-axiom verification
 
-All declarations propext-free, following the recipe established
-across #181a-c4:
+All declarations propext-free:
 * `RawRenaming.weaken_lift_commute` — `fun _ => rfl`.
 * `RawTermSubst.postRename` — `@[reducible]` def.
 * `RawTermSubst.lift_then_rename_lift_pull` — Fin pattern match;
@@ -74,12 +62,8 @@ across #181a-c4:
 
 Audit-gated in `Tools/AuditAll/AuditPolyCell.lean`.
 
-## v1 comparison
-
-v1's `RawTerm.subst_rename_commute` (Foundation/RawSubst/
-SubstLemmas.lean lines 432-525) is a 74-arm structural induction.
-v2's version is a 4-arm mutual induction.  Cascade-tax ratio
-preserved at ~18x.
+The mutual `RawTerm.subst_rename_commute` /
+`RawTermChildren.subst_rename_commute` is a 4-arm mutual induction.
 -/
 
 namespace FX1Poly.Core
@@ -142,9 +126,9 @@ the post-rename bridge.
 
 * Position ⟨0, _⟩: both sides reduce to `mkGen .gen_var ⟨0, _⟩
   .childNil` (the fresh variable).  Closes by `rfl`.
-* Position ⟨k+1, _⟩: uses `RawTerm.rename_compose` (#181c3) twice
+* Position ⟨k+1, _⟩: uses `RawTerm.rename_compose` twice
   and `weaken_lift_commute` (this file) plus `rename_pointwise`
-  (#181c1) to convert
+  to convert
     (weaken (sigma ⟨k, _⟩)).rename rho.lift
   to
     weaken (rename rho (sigma ⟨k, _⟩)). -/
@@ -200,7 +184,7 @@ binder depths.  Needed at each `childCons` spine descent in
 Inducts on `binderDepth`:
 * `zero`: both reduce to `postRename sigma rho` (since iter _ 0 = _).
 * `succ priorDepth`: chains
-  - `lift_pointwise priorIH` (#181a, lifts the IH through one binder)
+  - `lift_pointwise priorIH` (lifts the IH through one binder)
   - `lift_then_rename_lift_pull` (this file, pulls the lift inside)
   via the standard 2-step pattern. -/
 theorem iterateLiftRaw_RawTermSubst_postRename_pointwise
@@ -239,16 +223,12 @@ theorem iterateLiftRaw_RawTermSubst_postRename_pointwise
 
 /-! ## Section 5 — The term-level commute (mutual)
 
-In v1: 74-arm structural induction.
-In v2: 4-arm mutual induction reusing fold + payload_cast_compose
+A 4-arm mutual induction reusing fold + payload_cast_compose
 keystone + the iterated bridge above. -/
 
 mutual
 
-/-- Subst-then-rename commutes through a post-composed substitution.
-
-This is the v2 replacement for v1's 74-arm
-`RawTerm.subst_rename_commute`. -/
+/-- Subst-then-rename commutes through a post-composed substitution. -/
 theorem RawTerm.subst_rename_commute
     {sourceScope middleScope targetScope : Nat}
     (someSubstitution : RawTermSubst sourceScope middleScope)
@@ -272,7 +252,8 @@ theorem RawTerm.subst_rename_commute
       match someChildren with
       | .childNil => rfl
     case neg =>
-      -- Non-variable arm: same template as #181c3 / #181c4.
+      -- Non-variable arm: same template as the rename-compose /
+      -- rename-subst-commute non-variable arms.
       show RawTerm.rename rawRenaming
               (RawTerm.subst someSubstitution
                   (.mkGen someGenerator somePayload someChildren)) =
@@ -305,7 +286,7 @@ mutual head IH at the lifted scopes gives:
     = subst (postRename (iter sigma shift) (iter rho shift)) head
 
 The bridge via `iterateLiftRaw_RawTermSubst_postRename_pointwise`
-(symmetric direction + subst_pointwise from #181a) converts this to
+(symmetric direction + subst_pointwise) converts this to
 `subst (iter (postRename sigma rho) shift) head`. -/
 theorem RawTermChildren.subst_rename_commute
     {sourceScope middleScope targetScope : Nat}

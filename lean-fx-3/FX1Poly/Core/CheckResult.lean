@@ -1,7 +1,7 @@
 /-!
 # CheckResult — Raw-to-Certified Rejection Reasons
 
-This file defines the finite rejection vocabulary for the future computable
+This file defines the finite rejection vocabulary for the computable
 raw-to-certified PolyCell checker.  It does not accept any raw cell and does
 not prove checker soundness; it only fixes the concrete reasons a checker must
 return when raw input fails a certified-cell invariant.

@@ -2,10 +2,10 @@
 # Mode Theory 2-Category Interface (Gratzer arXiv:2301.11842 §2)
 
 A mode theory: objects=modes, 1-cells=modalities, 2-cells=coherences.
-The planned MTT-normalization route applies Gratzer's theorem after an
-MTT syntax and normalization proof are mechanized.  This file only builds
-the mode-category input and an explicit readiness record; it does not
-decide FX conversion.
+The MTT-normalization route applies Gratzer's theorem once an MTT syntax
+and normalization proof are mechanized.  This file only builds the
+mode-category input and an explicit readiness record; it does not decide
+FX conversion.
 
 Reference: arXiv:2301.11842 §2.
 Zero external dependencies.

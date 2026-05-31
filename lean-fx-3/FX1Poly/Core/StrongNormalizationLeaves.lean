@@ -3,10 +3,10 @@ import FX1Poly.Core.StepStarConfluence
 /-! # Foundation/PolyCell/Core/StrongNormalizationLeaves
     - first concrete v2 SN endpoints
 
-This starts the M9/M10 strong-normalization lane with real accessibility
-witnesses, not a placeholder reducibility predicate.  The theorems here prove
-that closed nullary normal leaves have no outgoing `Step`, and therefore are
-`IsStronglyNormalizing` for the `StepSuccessor` relation consumed by the M8
+The first concrete SN endpoints, with real accessibility witnesses rather
+than a placeholder reducibility predicate.  The theorems here prove that
+closed nullary normal leaves have no outgoing `Step`, and therefore are
+`IsStronglyNormalizing` for the `StepSuccessor` relation consumed by the
 Newman bridge.
 -/
 

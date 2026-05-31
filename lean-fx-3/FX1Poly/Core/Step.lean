@@ -2,13 +2,12 @@ import FX1Poly.Core.RawTermSubst0
 
 /-! # Foundation/PolyCell/Core/Step — single-step reduction on V2
 
-V2-L3.1 phase A + B + C-steps 1/2/3/4a/4b/4c/5 (2026-05-27).
-Discharges the first L3 metatheory task per polycell.md §11.6.1.
-Ships the `Step` inductive relation with beta + uniform cong +
-iota covering ALL standard inductive types (bool / nat / list /
-option / either / pair / identity).  Eighteen smokes total.
+The `Step` inductive relation per polycell.md §11.6.1: beta + uniform
+cong + iota covering all standard inductive types (bool / nat / list /
+option / either / pair / identity).  Eta lives in the `Step.eta` sibling
+inductive in `StepEta.lean`.
 
-Five iota SHAPES saturated; eighteen iota constructors total:
+Five iota SHAPES; eighteen iota constructors total:
 
   * SHAPE 1 (branch-selection): bool×2, nat zero×2, list nil,
     option none, idJ refl, idStrictRec refl -- 8 ctors
@@ -19,94 +18,40 @@ Five iota SHAPES saturated; eighteen iota constructors total:
   * SHAPE 5 (3-arg app-chain w/ recursive call): listElim on
     listCons -- 1 ctor
 
-After step 5 the standard MLTT iotas are FULLY COVERED.  Step 6
-ships the SR theorem (one structural induction over Step / mutual
-StepChildren, with arms organized by shape -- ~5 arms covering an
-unbounded population of iotas).
+## The iota shapes in detail
 
-## Phase A vs Phase B vs Phase C
+* **SHAPE 1 (branch-selection)** for boolElim / nat-zero / list-nil /
+  option-none / idJ-refl / idStrictRec-refl: pure tag-selection at the
+  same scope.  Bool's two-ctor scheme + zero binders is the simplest
+  case.  For identity elimination the substrate gives idJ arity 2
+  (baseCase, witness) with no explicit motive child, so the iota just
+  returns the base case when the witness is `refl`; motive and
+  dependent-elimination semantics live in the PROFILE layer.
+* **SHAPE 2 (content-projection)** for `fst`/`snd` on `pair`: the
+  eliminator unwraps a constructor and returns one of its components
+  rather than selecting one of several branches.
+* **SHAPE 3 (1-arg app-chain build)** for `iotaOptionMatchSome` /
+  `iotaEitherMatchInl` / `iotaEitherMatchInr`: the reduct is
+  `app branch wrappedValue` rather than just `branch`.  No direct
+  substitution at iota -- beta handles the binding work in a subsequent
+  reduction.
+* **SHAPE 4 (2-arg app-chain with recursive call)** for
+  `iotaNatElimSucc` / `iotaNatRecSucc`: the reduct is a NESTED app
+  `app (app succBranch predecessor) recursiveCall` where `recursiveCall`
+  is the original eliminator applied to the predecessor.  This shape
+  gives induction principles their inductive power -- the recursive call
+  appears as a syntactic sub-term that subsequent reductions fold down.
+* **SHAPE 5 (3-arg app-chain with recursive call)** for
+  `iotaListElimCons`: a triple-nested app `app (app (app consBranch
+  head) tail) (listElim tail nil cons)` -- one curried argument per
+  piece of the cons payload (head + tail) plus the recursive call.
 
-* **Phase A** shipped just `Step.beta` -- the beta-reduction
-  constructor + one smoke witnessing the identity-lambda fixture.
-* **Phase B** shipped the UNIFORM congruence rule `Step.cong` via a
-  mutual `Step + StepChildren` block.  ONE rule covers all 194
-  generators because StepChildren expresses "Step at some child
-  position" generically using `binderShifts` and the generic
-  `RawTermChildren` substrate.
-* **Phase C step 1** ships branch-selection iota for boolElim:
-  `Step.iotaBoolTrue` / `Step.iotaBoolFalse`.  Bool's two-ctor
-  scheme + zero binders means iota is pure tag-selection at the
-  same scope.
-* **Phase C step 2** ships content-projection iota for `fst`/`snd`
-  on `pair`: `Step.iotaFstPair` / `Step.iotaSndPair`.  Same scope
-  discipline as bool iotas, but a DIFFERENT iota shape -- the
-  eliminator unwraps a constructor and returns one of its
-  components rather than selecting one of several branches.
-* **Phase C step 3** extends branch-selection iota to the
-  remaining standard 3-branch eliminators on their BASE (0-arity)
-  constructors: `Step.iotaNatElimZero`, `Step.iotaNatRecZero`,
-  `Step.iotaListElimNil`, `Step.iotaOptionMatchNone`.  Same shape
-  as `iotaBoolTrue` -- base-case ctor's iota is pure projection.
-* **Phase C step 4a** introduces the THIRD iota SHAPE: 1-arg
-  app-chain build.  `Step.iotaOptionMatchSome`,
-  `Step.iotaEitherMatchInl`, `Step.iotaEitherMatchInr`.  Same
-  scope discipline, but the reduct is `app branch wrappedValue`
-  rather than just `branch`.  No direct substitution at iota --
-  beta handles the binding work in a SUBSEQUENT reduction.
-* **Phase C step 4b** introduces the FOURTH iota SHAPE: 2-arg
-  app-chain WITH RECURSIVE CALL.  `Step.iotaNatElimSucc`,
-  `Step.iotaNatRecSucc`.  The reduct is a NESTED app
-  `app (app succBranch predecessor) recursiveCall` where
-  `recursiveCall` is the ORIGINAL eliminator applied to the
-  predecessor.  This SHAPE gives induction principles their
-  inductive power: the recursive call appears in the reduct as a
-  syntactic sub-term that subsequent reductions fold down.
-* **Phase C step 4c** introduces the FIFTH iota SHAPE: 3-arg
-  app-chain WITH RECURSIVE CALL.  `Step.iotaListElimCons`.  The
-  reduct is a TRIPLE-nested app `app (app (app consBranch head)
-  tail) (listElim tail nil cons)` -- one curried argument per
-  piece of the cons constructor's payload (head + tail) plus the
-  recursive call.  Same inductive shape as natSucc, with one more
-  curried layer.
-* **Phase C step 5** (THIS update) ships iota for identity-type
-  elimination: `Step.iotaIdJRefl` and `Step.iotaIdStrictRecRefl`.
-  Both are SHAPE-1 (pure projection) -- the v2 substrate's
-  metadata gives idJ arity 2 (baseCase, witness) with no explicit
-  motive child, so the iota simply returns the base case when the
-  witness is `refl`.  The motive and dependent-elimination
-  semantics live in the PROFILE layer that interprets identity
-  types, not in the substrate.
-* **Phase C (η cascade — SHIPPED)**: opt-in eta rules per generator
-  via the `Step.eta` sibling inductive (#351 etaLam/etaPair/etaPathLam/
-  etaModIntro/etaClockAbs/etaParamAbs/etaGlueIntro at StepEta.lean)
-  + SR-η arms M8c/M8d (#352/#353) + β-η confluence cascade M8e-M8h
-  (#354-#357).  SR theorem itself: M4 Step.preservesShape umbrella
-  (#253).  After M8h, β+ι+η is FULLY COVERED at the raw layer.
-
-This is the L3 KICKOFF: the FIRST shipped piece of v2's reduction
-calculus.  Together with V2-L2.10's `RawTerm.subst0`, it establishes
-the substrate that V2-L3.{1..7} build on (subject reduction,
-confluence, strong normalization, decidable Conv).
-
-## What V2-L3.1 wants
-
-Subject Reduction (SR) for the v2 substrate per §11.6.1:
-
-  Step t t' AND <certifier accepts t> => <certifier accepts t' with
-                                            same sort>
-
-For the full SR theorem we need:
-1. A Step relation on RawTerm (this file's `Step`).
-2. A certification-acceptance predicate (already provided by
-   `inferRawCellGeneral?`).
-3. A theorem proving the implication for every Step constructor.
-
-Phase A + B ship steps 1 (with `beta` + uniform `cong`) + smokes.
-Phase C will add iota / eta rules and prove the full SR theorem.
+Subject reduction, confluence, strong normalization, and decidable Conv
+build on this relation together with `RawTerm.subst0`.
 
 ## The beta-reduction rule
 
-The shipped beta constructor:
+The beta constructor:
 
   Step (.mkGen .gen_app ()
           (.childCons
@@ -119,7 +64,7 @@ raw substrate.
 
 ## The uniform congruence rule
 
-The phase-B `cong` constructor:
+The `cong` constructor:
 
   Step.cong (gen) (payload)
             (childStep : StepChildren children children')
@@ -166,40 +111,30 @@ makes scope an implicit index of every Step instance.  Each Step
 fixes one scope and the constructor's terms are at that scope.
 Reduction across scopes is mediated by `Step` + `RawTerm.rename`.
 
-## What's NOT shipped yet
+## Scope of this file
 
-* iota rules (eliminator-on-constructor reductions): `natElim z s
-  natZero ↝ z`, etc.  Phase C; one constructor per eliminator
-  generator.
-* eta rules: lambda eta-equality, pair eta-equality, etc.  Phase C;
-  opt-in per generator.
-* The full SR theorem: `Step t t' → certifier-accepts t →
-  certifier-accepts t' (same sort)`.  Phase C.  Substantive
-  metatheory cascade requiring structural induction over Step
-  (mutually with StepChildren) + the certifier's recursive
-  structure.
-* `Step` over `RawCell` (cell-layer reduction).  Cell-layer is
-  V2-L3.x phase later.
+This relation operates on `RawTerm`.  Reduction at the `RawCell`
+(cell) layer is a separate concern not handled here.  Eta lives in
+`Step.eta` (`StepEta.lean`); subject reduction is proved in the
+`Step.preservesShape` umbrella.
 
-## Why phase B's uniform cong is the L3 leverage point
+## Why the uniform cong is the L3 leverage point
 
-The whole PolyCell v2 thesis is "ONE generic operation covers all
-194 generators uniformly".  Phase A's `beta` covers only the
-beta-redex shape.  Phase B's `cong + StepChildren` is the FIRST
-uniform L3 rule -- congruence under any generator's children spine,
-without enumerating generators.
+The PolyCell thesis is "ONE generic operation covers all 194
+generators uniformly".  `beta` covers only the beta-redex shape;
+`cong + StepChildren` is the uniform congruence rule -- reduction
+under any generator's children spine, without enumerating
+generators.
 
-Every subsequent L3 theorem (SR, confluence, SN) gets to handle
-"congruence under any ctor" as a single mutual-induction case
-rather than 194 enumerated cases.  This is the L3 expression of
-the L2 Allais-fold leverage.
+Every L3 theorem (SR, confluence, SN) handles "congruence under any
+ctor" as a single mutual-induction case rather than 194 enumerated
+cases.  This is the L3 expression of the L2 Allais-fold leverage.
 
 ## Zero-axiom verification
 
-All 3 declarations (Step, StepChildren, Step.identity_lam_applied_to_unit,
-Step.cong_lam_body_beta) pass `#assert_no_axioms`.  The mutual block
-+ smokes are axiom-clean per the probe in Tools/_probe_cong.lean.
-Audit-gated in `Tools/AuditAll/AuditPolyCell.lean`.
+The mutual block (`Step`, `StepChildren`) and every smoke pass
+`#assert_no_axioms`.  Audit-gated in
+`Tools/AuditAll/AuditPolyCell.lean`.
 -/
 
 namespace FX1Poly.Core
@@ -208,9 +143,9 @@ mutual
 
 /-- Single-step reduction relation on `RawTerm`.
 
-Phase A shipped `beta` only.  Phase B adds the uniform `cong` rule
-that handles reduction under any generator's children spine, mutually
-with `StepChildren`.
+Carries `beta`, the uniform `cong` rule (reduction under any
+generator's children spine, mutually with `StepChildren`), and the 18
+iota constructors.
 
 The relation is parameterized by `scope : Nat` (implicit index): each
 Step instance fixes one scope and relates terms at that scope.
@@ -244,12 +179,12 @@ inductive Step : {scope : Nat} → RawTerm scope → RawTerm scope → Prop wher
       selects the then-branch.  No substitution involved -- pure tag-
       selection at the same scope (`binderShifts [0, 0, 0]`).
 
-      Phase C kickoff: the SIMPLEST iota rule on the v2 substrate.
-      Bool's two-constructor scheme + zero binders makes this the
-      textbook minimal iota.  More complex iota (natRec on natSucc,
-      listElim on listCons) follow the same pattern: pattern-match the
-      scrutinee's constructor in the children spine, then return the
-      branch term (Church-encoded, no direct subst). -/
+      The simplest iota rule: bool's two-constructor scheme + zero
+      binders makes this the textbook minimal iota.  More complex iota
+      (natRec on natSucc, listElim on listCons) follow the same
+      pattern: pattern-match the scrutinee's constructor in the children
+      spine, then return the branch term (Church-encoded, no direct
+      subst). -/
   | iotaBoolTrue {scope : Nat}
                  {thenBranch elseBranch : RawTerm scope} :
       Step
@@ -593,13 +528,9 @@ The simplest concrete beta-reduction instance.  The LHS is
 unit value.  The RHS is `unit`.
 
 Closes by `apply Step.beta`: Lean's unifier discharges the
-implicit equation `subst0 (var 0) unit = unit` via V2-L2.10's
+implicit equation `subst0 (var 0) unit = unit` via
 `subst0_var_zero` (closes by `rfl` thanks to the `@[reducible]`
-attribute on `singleton` + `subst0`).
-
-This is the FIRST DOWNSTREAM CONSUMER of the V2-L2.10 subst0
-infrastructure -- proof that the L2-L3 cascade was wired
-correctly. -/
+attribute on `singleton` + `subst0`). -/
 theorem Step.identity_lam_applied_to_unit :
     let identityLamBody : RawTerm 1 :=
       .mkGen .gen_var (⟨0, Nat.zero_lt_succ 0⟩ : Fin 1) .childNil
@@ -615,7 +546,7 @@ theorem Step.identity_lam_applied_to_unit :
 
 /-- **Smoke: cong rule fires under `lam`.**
 
-Witnesses Phase B's uniform `cong` rule on a concrete fixture.  The
+Witnesses the uniform `cong` rule on a concrete fixture.  The
 LHS is `lam (app (lam (var 0)) unit)` -- a lambda whose body contains
 a beta-redex.  The RHS is `lam unit` -- the same lambda with the
 body reduced.
@@ -653,7 +584,7 @@ theorem Step.cong_lam_body_beta :
   apply StepChildren.here .childNil
   apply Step.beta
 
-/-- **Phase C smoke: iotaBoolTrue selects the then-branch.**
+/-- **Smoke: iotaBoolTrue selects the then-branch.**
 
 Distinct then/else branches verify that the right one is selected:
 
@@ -679,7 +610,7 @@ theorem Step.iotaBoolTrue_selects_then :
     Step elimTerm thenBranch := by
   apply Step.iotaBoolTrue
 
-/-- **Phase C smoke: iotaBoolFalse selects the else-branch.**
+/-- **Smoke: iotaBoolFalse selects the else-branch.**
 
 Symmetric to `iotaBoolTrue_selects_then`.  Distinct branches verify
 the right selection:
@@ -706,7 +637,7 @@ theorem Step.iotaBoolFalse_selects_else :
     Step elimTerm elseBranch := by
   apply Step.iotaBoolFalse
 
-/-- **Phase C smoke: iotaFstPair projects the first component.**
+/-- **Smoke: iotaFstPair projects the first component.**
 
 Distinct first/second components verify the RIGHT component is
 projected:
@@ -730,7 +661,7 @@ theorem Step.iotaFstPair_projects_first :
     Step fstTerm firstValue := by
   apply Step.iotaFstPair
 
-/-- **Phase C smoke: iotaSndPair projects the second component.**
+/-- **Smoke: iotaSndPair projects the second component.**
 
 Symmetric to `iotaFstPair_projects_first`.  Distinct components
 verify the right projection:
@@ -754,7 +685,7 @@ theorem Step.iotaSndPair_projects_second :
     Step sndTerm secondValue := by
   apply Step.iotaSndPair
 
-/-- **Phase C smoke: iotaNatElimZero selects the zero-branch.**
+/-- **Smoke: iotaNatElimZero selects the zero-branch.**
 
   `natElim natZero boolTrue boolFalse  ↝  boolTrue`
 
@@ -778,7 +709,7 @@ theorem Step.iotaNatElimZero_selects_zero :
     Step elimTerm zeroBranch := by
   apply Step.iotaNatElimZero
 
-/-- **Phase C smoke: iotaNatRecZero selects the zero-branch.**
+/-- **Smoke: iotaNatRecZero selects the zero-branch.**
 
 Symmetric to `iotaNatElimZero_selects_zero` -- same shape on
 `gen_natRec` instead of `gen_natElim`. -/
@@ -797,7 +728,7 @@ theorem Step.iotaNatRecZero_selects_zero :
     Step recTerm zeroBranch := by
   apply Step.iotaNatRecZero
 
-/-- **Phase C smoke: iotaListElimNil selects the nil-branch.**
+/-- **Smoke: iotaListElimNil selects the nil-branch.**
 
   `listElim listNil boolTrue boolFalse  ↝  boolTrue`
 
@@ -817,7 +748,7 @@ theorem Step.iotaListElimNil_selects_nil :
     Step elimTerm nilBranch := by
   apply Step.iotaListElimNil
 
-/-- **Phase C smoke: iotaOptionMatchNone selects the none-branch.**
+/-- **Smoke: iotaOptionMatchNone selects the none-branch.**
 
   `optionMatch optionNone boolTrue boolFalse  ↝  boolTrue`
 
@@ -837,7 +768,7 @@ theorem Step.iotaOptionMatchNone_selects_none :
     Step matchTerm noneBranch := by
   apply Step.iotaOptionMatchNone
 
-/-- **Phase C smoke: iotaOptionMatchSome builds app chain.**
+/-- **Smoke: iotaOptionMatchSome builds app chain.**
 
   `optionMatch (optionSome unit) boolTrue boolFalse
      ↝  app boolFalse unit`
@@ -864,7 +795,7 @@ theorem Step.iotaOptionMatchSome_builds_app :
     Step matchTerm appResult := by
   apply Step.iotaOptionMatchSome
 
-/-- **Phase C smoke: iotaEitherMatchInl builds app chain.**
+/-- **Smoke: iotaEitherMatchInl builds app chain.**
 
   `eitherMatch (eitherInl unit) boolTrue boolFalse
      ↝  app boolTrue unit`
@@ -891,7 +822,7 @@ theorem Step.iotaEitherMatchInl_builds_app :
     Step matchTerm appResult := by
   apply Step.iotaEitherMatchInl
 
-/-- **Phase C smoke: iotaEitherMatchInr builds app chain.**
+/-- **Smoke: iotaEitherMatchInr builds app chain.**
 
   `eitherMatch (eitherInr unit) boolTrue boolFalse
      ↝  app boolFalse unit`
@@ -917,7 +848,7 @@ theorem Step.iotaEitherMatchInr_builds_app :
     Step matchTerm appResult := by
   apply Step.iotaEitherMatchInr
 
-/-- **Phase C smoke: iotaNatElimSucc builds nested app with
+/-- **Smoke: iotaNatElimSucc builds nested app with
 recursion.**
 
   `natElim (natSucc natZero) zeroBranch succBranch
@@ -958,7 +889,7 @@ theorem Step.iotaNatElimSucc_builds_nested_app :
     Step elimTerm nestedApp := by
   apply Step.iotaNatElimSucc
 
-/-- **Phase C smoke: iotaNatRecSucc builds nested app with
+/-- **Smoke: iotaNatRecSucc builds nested app with
 recursion.**
 
 Symmetric to `iotaNatElimSucc_builds_nested_app` -- same nested
@@ -992,7 +923,7 @@ theorem Step.iotaNatRecSucc_builds_nested_app :
     Step recTerm nestedApp := by
   apply Step.iotaNatRecSucc
 
-/-- **Phase C smoke: iotaListElimCons builds triple-nested app
+/-- **Smoke: iotaListElimCons builds triple-nested app
 with recursion.**
 
   `listElim (listCons unit listNil) boolTrue boolFalse
@@ -1042,7 +973,7 @@ theorem Step.iotaListElimCons_builds_triple_app :
     Step elimTerm tripleApp := by
   apply Step.iotaListElimCons
 
-/-- **Phase C smoke: iotaIdJRefl selects the base case.**
+/-- **Smoke: iotaIdJRefl selects the base case.**
 
   `idJ boolTrue (refl unit)  ↝  boolTrue`
 
@@ -1061,7 +992,7 @@ theorem Step.iotaIdJRefl_selects_base :
     Step idJTerm baseCase := by
   apply Step.iotaIdJRefl
 
-/-- **Phase C smoke: iotaIdStrictRecRefl selects the base case.**
+/-- **Smoke: iotaIdStrictRecRefl selects the base case.**
 
 Symmetric to `iotaIdJRefl_selects_base` for `gen_idStrictRec`. -/
 theorem Step.iotaIdStrictRecRefl_selects_base :

@@ -1,10 +1,9 @@
 /-! # Foundation/PolyCell/Core/ConsistencyStrength — Gödel's-ceiling tag
 
-V2-L1.12 (2026-05-27).  Discharges polycell.md §11.7.1 "Gödel's
-ceiling → ConsistencyStrength as computable data".  Ships the
-6-ctor inductive + total rank + decidable LE ordering that the
-ProfileExtension monotonicity check (V2-L1.12 phase B) and the
-FX0-PolyCell `.fx0c` certificate header (FX0-PC.2) will consume.
+Addresses polycell.md §11.7.1 "Gödel's ceiling → ConsistencyStrength
+as computable data".  Ships the 6-ctor inductive + total rank +
+decidable LE ordering that the ProfileExtension monotonicity check
+and the FX0-PolyCell `.fx0c` certificate header consume.
 
 ## What this file ships
 
@@ -41,19 +40,14 @@ Seven witness theorems pin behavior across the strength tower:
 
 The polycell.md spec uses `custom (tag : Name)` where `Name` is
 `Lean.Name` (hierarchical identifier in the Lean elaborator).  The
-v2 kernel cannot import `Lean.*` without dragging the whole
-elaborator into the audit tree, so this implementation substitutes
-`Nat` as the user-tag carrier.
+kernel cannot import `Lean.*` without dragging the whole elaborator
+into the audit tree, so this implementation substitutes `Nat` as the
+user-tag carrier, keeping the substrate elaborator-independent.
 
 The `Nat` tag is operationally sufficient for the monotonicity
 check: a Lean-level proof obligation can map any `Name` to a fresh
 Nat via the elaborator at admission time.  The strength tower's
 ordering only requires DECIDABLE comparison; Nat suffices.
-
-When the V2 substrate eventually crosses the Lean-elaborator
-boundary (e.g., for `fxc` agent-mode integration), the `Nat` tag
-becomes a translation surface.  Until then, the Nat encoding keeps
-the v2 substrate elaborator-independent.
 
 ## Why `@[reducible]` on `toRank` and `le`
 
@@ -62,11 +56,11 @@ The `@[reducible]` attribute lets the witness theorems close by
 at typecheck time.  Without it, `decide` falls back to runtime
 evaluation that requires extra elaboration work.
 
-## Forward-compat: V2-L1.12 phase B (ProfileExtension monotonicity)
+## Integration with ProfileExtension
 
-This commit ships the OBSERVATIONAL layer (the strength inductive
-+ ordering).  The integration with `ProfileExtension` is a
-separate task:
+This file is the OBSERVATIONAL layer (the strength inductive +
+ordering).  The integration with `ProfileExtension` carries the
+strength tuple and a monotonicity field:
 
 ```lean
 structure ProfileExtension ... where
@@ -76,13 +70,7 @@ structure ProfileExtension ... where
   ...
 ```
 
-Adding the strength tuple + the monotonicity field to
-`ProfileExtension` requires touching every existing ProfileExtension
-construction site (currently `Foundation/PolyCell/Extension/
-ProfileExtension.lean`).  Deferred to phase B so this commit stays
-atomic and reviewable.
-
-When phase B lands, the monotonicity proof obligation becomes:
+The monotonicity proof obligation:
 * For conservative extensions (definitional additions):
   `strengthAfter = strengthBefore`, trivially monotone.
 * For axiomatic extensions (bare declarations): `strengthAfter`
@@ -98,10 +86,6 @@ finite join (max) operation is needed because:
 * Combining two independent extensions (a join) isn't a primitive
   operation in the ProfileExtension calculus.
 
-A future ProfileExtension calculus with parallel extensions might
-need a `sup` operation; that would extend this file with a
-`@[reducible] def sup` taking the max of two `toRank` values.
-
 ## FX0-PolyCell external-verifier discipline
 
 Per polycell.md §11.7.1:
@@ -114,12 +98,11 @@ Per polycell.md §11.7.1:
 
 This file's `ConsistencyStrength` and `LE` decision procedure are
 the SOURCE OF TRUTH for both verifiers:
-* The Lean-side checker (V2-L1.12 phase B) uses the LE instance
-  to discharge the strength monotonicity inside ProfileExtension
-  proofs.
-* The external `.fx0c` verifier (FX0-PC.2 onwards) serializes the
-  tag as a single Nat (via `toRank`) and checks monotonicity by
-  comparing successive Nats.
+* The Lean-side checker uses the LE instance to discharge the
+  strength monotonicity inside ProfileExtension proofs.
+* The external `.fx0c` verifier serializes the tag as a single Nat
+  (via `toRank`) and checks monotonicity by comparing successive
+  Nats.
 
 The Nat encoding of `toRank` is the cross-verifier ABI: any future
 verifier (C / Rust / etc.) reads the same Nat tag and applies the
@@ -127,13 +110,11 @@ same numeric comparison.
 
 ## What's NOT shipped here
 
-* `ProfileExtension` field for strength + monotonicity (V2-L1.12
-  phase B).
-* The Gödel-climbing mechanism (D.10 of extended-roadmap.md) that
-  adds `Con(S_n)` as a Generator entry with `strengthAfter =
-  strength(S_n) + 1`.
+* `ProfileExtension` field for strength + monotonicity.
+* The Gödel-climbing mechanism that adds `Con(S_n)` as a Generator
+  entry with `strengthAfter = strength(S_n) + 1`.
 * The strength-witness proof obligation for axiomatic extensions
-  (requires per-axiom strength analysis, deferred).
+  (requires per-axiom strength analysis).
 
 ## Zero-axiom verification
 
@@ -161,7 +142,7 @@ Six tiers from polycell.md §11.7.1:
                      declared strengths).
 
 The `custom` ctor uses `Nat` instead of `Lean.Name` (per the
-spec's `tag : Name` slot) so the v2 substrate stays
+spec's `tag : Name` slot) so the substrate stays
 elaborator-independent.  Operationally sufficient for the
 monotonicity check — see the file docstring. -/
 inductive ConsistencyStrength where

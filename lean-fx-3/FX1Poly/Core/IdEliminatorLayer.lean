@@ -3,9 +3,9 @@ import FX1Poly.Core.RemainingDim0Eliminators
 /-! # Foundation/PolyCell/Core/IdEliminatorLayer
    — full compositional layer for `idJ` and `idStrictRec`
 
-V2-L3.1 phase D step 26 (2026-05-27).  Completes dim-0 eliminator
-coverage.  Both `gen_idJ` and `gen_idStrictRec` are 2-child
-same-scope eliminators (not 3-child as the family above).
+Full compositional layer for `idJ` and `idStrictRec`.  Both
+`gen_idJ` and `gen_idStrictRec` are 2-child same-scope eliminators
+(not 3-child as the family above).
 
 ## Child layout (shared)
 
@@ -16,7 +16,7 @@ Semantically:
   the motive evaluated at `refl`; identityWitness is the equality.
 * `idStrictRec`:  strict (non-dependent) variant of J.  Same shape.
 
-## What this file ships (18 declarations)
+## Contents (18 declarations)
 
 For each of `gen_idJ` and `gen_idStrictRec`, 9 declarations:
 
@@ -26,27 +26,25 @@ For each of `gen_idJ` and `gen_idStrictRec`, 9 declarations:
   * Subst probe + preservation (2).
   * Subst0 probe + preservation (2).
 
-## Coverage milestone
-
-After this iteration:
+## Coverage
 
 | Category                    | Generators                                              | Count |
 |-----------------------------|---------------------------------------------------------|-------|
 | Nullary leaves              | 7                                                       | 7     |
 | Compound constructors       | 9                                                       | 9     |
-| 1-child eliminators (NEW)   | fst, snd                                                | 2     |
+| 1-child eliminators         | fst, snd                                                | 2     |
 | 2-child eliminators         | idJ, idStrictRec                                        | **2** |
 | 3-child eliminators         | boolElim, natElim, natRec, listElim, optionMatch, eitherMatch | 6 |
 | **Total dim-0 surface**     |                                                         | **26** |
 
-**All 7 dim-0 eliminators now have full compositional support.**
-The compositional infrastructure for SR-cong is COMPLETE across
-all the term-level shapes that the existing 16 SR iota arms touch.
+All 7 dim-0 eliminators have full compositional support.  The
+compositional infrastructure for SR-cong covers all the term-level
+shapes that the 16 SR iota arms touch.
 
 ## Zero-axiom verification
 
-Same proven template as `PairEliminatorLayer` (1-child) and the
-3-child eliminator files.  Audit-gated.
+Same template as `PairEliminatorLayer` (1-child) and the 3-child
+eliminator files.  Audit-gated.
 -/
 
 namespace FX1Poly.Core

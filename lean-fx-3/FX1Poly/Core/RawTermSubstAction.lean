@@ -3,68 +3,42 @@ import FX1Poly.Core.RawTermSubstIdentity
 
 /-! # Foundation/PolyCell/Core/RawTermSubstAction — Action typeclass instance
 
-THE FINISH LINE OF V2-L2.7.
+The full `FX1Poly.Foundation.Action RawTermSubst` typeclass instance,
+citing the three Action laws:
 
-This file ships the full `FX1Poly.Foundation.Action RawTermSubst` typeclass
-instance, citing the three Action laws that landed across the
-previous commits in this layer:
+  * `apply_ext` — covered by `RawTerm.subst_pointwise`
+  * `identity_apply` — covered by `RawTerm.subst_identity_apply`
+  * `compose_assoc` — covered by `RawTerm.subst_compose`
 
-  * `apply_ext` — covered by `RawTerm.subst_pointwise`        (#181a)
-  * `identity_apply` — covered by `RawTerm.subst_identity_apply` (#181b)
-  * `compose_assoc` — covered by `RawTerm.subst_compose`       (#181c6)
+Plus the supporting infrastructure it builds on:
 
-Plus the supporting infrastructure shipped along the way:
+  * `RawTermSubst.identity`
+  * `RawTermSubst.compose`
+  * `RawTermSubst.lift`
+  * `subst_identity_apply`
+  * `subst_compose`
 
-  * `RawTermSubst.identity`              (#175)
-  * `RawTermSubst.compose`               (#181c6)
-  * `RawTermSubst.lift`                  (#180)
-  * `subst_identity_apply`                 (#181b)
-  * `subst_compose`                        (#181c6)
-
-## Closes the chicken-and-egg from #180
-
-At #180 (subst via fold), the full `Action RawTermSubst`
-instance couldn't ship because:
-* `RawTermSubst.compose` semantically requires `RawTerm.subst`
-  (compose s1 s2 pos = subst s2 (s1 pos)).
-* `RawTerm.subst` was being DEFINED via fold.
-* fold originally required `[Action Container]` — circular.
-
-The #180 refactor introduced `LiftsRaw` as the minimal typeclass
-fold actually needs (just `liftForRaw`).  The chicken-and-egg
-was resolved: `RawTermSubst` got `LiftsRaw` immediately, `subst`
-got defined, and now — finally — the FULL Action instance ships.
-
-## Position in the V2-L2.7 ladder
-
-  V2-L2.7a apply_ext      (#181a, shipped) ──┐
-  V2-L2.7b identity_apply (#181b, shipped) ──┤── three Action laws ✓
-  V2-L2.7c compose_assoc  (#181c6 shipped)  ──┘
-  rename_pointwise        (#181c1, shipped)
-  rename lift_compose     (#181c2, shipped)
-  rename_compose          (#181c3, shipped)
-  rename_subst_commute    (#181c4, shipped)
-  subst_rename_commute    (#181c5, shipped)
-  subst_compose           (#181c6, shipped)
-  Action instance         (THIS COMMIT — closes V2-L2.7)
-
-After this commit, V2-L2.7 is COMPLETE and #181 closes entirely.
+`RawTermSubst.compose` semantically requires `RawTerm.subst`
+(`compose s1 s2 pos = subst s2 (s1 pos)`), and `RawTerm.subst` is
+defined via fold over `LiftsRaw` (the minimal typeclass fold needs —
+just `liftForRaw`), so `RawTermSubst` carries `LiftsRaw` before the
+full Action instance closes.
 
 ## The instance shape
 
-Each typeclass field maps directly to v2 infrastructure:
+Each typeclass field maps directly to the substitution infrastructure:
 
   ActionTarget := RawTerm                     -- substituents are terms
   headIndex sigma pos := sigma pos              -- direct lookup
   liftForTy / liftForRaw sigma := sigma.lift    -- same lift for both binder kinds
-  identity := RawTermSubst.identity           -- shipped #175
-  compose := RawTermSubst.compose             -- shipped #181c6
+  identity := RawTermSubst.identity
+  compose := RawTermSubst.compose
   composeAtHeadIndex s1 s2 pos := subst s2 (s1 pos)  -- = (compose s1 s2) pos
 
 The four laws:
-  compose_assoc_pointwise   : cite subst_compose         (#181c6)
+  compose_assoc_pointwise   : cite subst_compose
   compose_identity_left     : rfl (fold var-arm reduction)
-  compose_identity_right    : cite subst_identity_apply  (#181b)
+  compose_identity_right    : cite subst_identity_apply
   headIndex_compose         : rfl (compose's defn matches composeAtHeadIndex)
 
 ## Why same `lift` for liftForTy and liftForRaw
@@ -73,28 +47,19 @@ The `Action` typeclass exposes TWO lift methods (per
 `Foundation/Action.lean` R11) to accommodate ctors that bind a Ty
 under a binder (piTy/sigmaTy) vs ctors that bind a RawTerm under a
 binder (refine/lam/pathLam).  For concrete instances where the
-two lifts coincide (Subst, SubstHet, Renaming, and our
-RawTermSubst), both methods point to the same `RawTermSubst.lift`.
+two lifts coincide (Subst, SubstHet, Renaming, and RawTermSubst),
+both methods point to the same `RawTermSubst.lift`.
 
 ## Zero-axiom verification
 
 All declarations propext-free:
 * The instance itself — definitional unfolding + cite the three
-  shipped laws.
+  laws.
 * The four equivalence theorems below (`identity_eq_action`,
   `lift_eq_actionForTy`, `lift_eq_actionForRaw`, `compose_eq_action`)
   — definitional `rfl`.
 
 Audit-gated in `Tools/AuditAll/AuditPolyCell.lean`.
-
-## v1 comparison
-
-v1 ships an analogous `Action RawTermSubst` instance at
-`Foundation/RawSubst/ActionInstances.lean` lines 86-116.  Same
-shape, same proofs.  The difference is purely the underlying
-substrate (v1's RawTerm vs v2's RawTerm) and the v2 argument
-order on `subst` and `rename` (substitution/renaming first, term
-second — flipped from v1).
 -/
 
 namespace FX1Poly.Core
@@ -126,7 +91,7 @@ the three monoid laws (associativity and two-sided identity).
   `subst secondSigma (firstSigma position)` by direct definition.
 
 The four laws:
-* `compose_assoc_pointwise`: cite `subst_compose` (#181c6).
+* `compose_assoc_pointwise`: cite `subst_compose`.
   Reduces to `subst s3 (subst s2 (s1 pos)) = subst (compose s2 s3) (s1 pos)`,
   which IS subst_compose applied to `s1 pos`.
 * `compose_identity_left_pointwise`: `rfl`.  After unfolding,
@@ -134,8 +99,8 @@ The four laws:
   substitution at pos is `mkGen .gen_var pos .childNil`; fold's
   var arm reduces `subst sigma (mkGen .gen_var pos .childNil)`
   to `sigma pos`.
-* `compose_identity_right_pointwise`: cite `subst_identity_apply`
-  (#181b).  Reduces to `subst identity (sigma pos) = sigma pos`,
+* `compose_identity_right_pointwise`: cite `subst_identity_apply`.
+  Reduces to `subst identity (sigma pos) = sigma pos`,
   which IS subst_identity_apply applied to `sigma pos`.
 * `headIndex_compose`: `rfl`.  Both sides reduce to
   `subst secondSigma (firstSigma pos)` by compose's definition.
@@ -169,7 +134,7 @@ instance instActionRawTermSubst : FX1Poly.Foundation.Action RawTermSubst where
   compose_identity_right_pointwise someSubstitution position := by
     -- Goal (after unfolding composeAtHeadIndex):
     --   subst identity (someSubstitution position) = someSubstitution position
-    -- Which is RawTerm.subst_identity_apply (#181b) applied at
+    -- Which is RawTerm.subst_identity_apply applied at
     -- term = someSubstitution position.
     exact RawTerm.subst_identity_apply (someSubstitution position)
   headIndex_compose firstSubstitution secondSubstitution position := by
@@ -183,7 +148,7 @@ instance instActionRawTermSubst : FX1Poly.Foundation.Action RawTermSubst where
 
 /-! ## Section 2 — Equivalence theorems
 
-Witness that the manually-named v2 operations agree with the
+Witness that the manually-named operations agree with the
 Action-typeclass-derived operations.  Useful for proofs that
 straddle the manual / typeclass API. -/
 

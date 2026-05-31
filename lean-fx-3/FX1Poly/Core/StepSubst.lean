@@ -224,7 +224,7 @@ theorem Step.weaken {scope : Nat}
 /-- Replay a step out of a weakened term by substituting any closed
 source-scope unit term for the fresh variable.
 
-This is the source-step half of the future weaken-step inversion lemma:
+This is the source-step half of the weaken-step inversion lemma:
 it derives a genuine source-scope `Step` from
 `Step (RawTerm.weaken sourceTerm) targetTerm`.  The remaining freshness
 half is proving that `targetTerm` is itself a weakening image, i.e. that

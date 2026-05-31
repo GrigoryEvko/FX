@@ -5,11 +5,11 @@ import FX1Poly.Core.ReconcileChild
 
 This file ships `certifyTermSpine?`: the top-level child-spine
 certifier produced by wiring the parametric `certifyChildSpine?`
-(#156) with the per-child reconciler `reconcileChild` (#157).
+with the per-child reconciler `reconcileChild`.
 
 ## The signature: binderShifts + coherence
 
-To enable downstream callers (`certifyTermExact?` in #159) to pass
+To enable downstream callers (`certifyTermExact?`) to pass
 `children : RawTermChildren generator.binderShifts scope` directly
 — without a `▸` transport — this function takes `binderShifts` as
 an explicit type-level parameter along with a coherence proof:
@@ -38,15 +38,15 @@ rewrite `binderShifts := childSpecs.map (·.scopeShift)`.  After
 
 ## The wiring (post-subst)
 
-After `subst coherence`, the body reduces to:
+After `subst coherence`, the body reduces to a one-line
+composition:
 
 ```
 certifyChildSpine? (reconcileChild recursiveCertifier)
   childSpecs children
 ```
 
-— the same one-line composition that previously was the entire
-body.  The coherence threading happens entirely at the boundary.
+The coherence threading happens entirely at the boundary.
 
 ## Why coherence as a parameter rather than .map directly
 
@@ -71,8 +71,8 @@ namespace FX1Poly.Core
 
 /-- Top-level certified-term-spine certifier.  Given:
 
-* `recursiveCertifier` — the general v2 certifier (forward-declared
-  as a callback; closed mutually by `certifyRawCellExact?` #162)
+* `recursiveCertifier` — the general certifier (forward-declared
+  as a callback; closed mutually by `certifyRawCellExact?`)
 * `childSpecs` — a generator's metadata
 * `binderShifts` — the type-level binderShifts (typically
   `generator.binderShifts` from the caller)
@@ -89,8 +89,8 @@ into the `.map` form, then wire `certifyChildSpine?` with
 `reconcileChild` as the per-child callback.
 
 This is the certifier-side input for `PolyCell.gen`'s
-`CertifiedTermSpine` parameter (Stage L1c.4 task #159
-`certifyTermExact?` consumes this to build the gen-ctor cell). -/
+`CertifiedTermSpine` parameter (`certifyTermExact?` consumes this
+to build the gen-ctor cell). -/
 def certifyTermSpine? {profile : PolyProfile}
     (recursiveCertifier :
       (scope : Nat) → (raw : RawCell scope) →

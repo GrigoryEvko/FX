@@ -3,24 +3,22 @@ import FX1Poly.Core.LiftsRaw
 
 /-! # Foundation/PolyCell/Core/Fold — the generic fold engine (L2 workhorse)
 
-This file ships **the substantial L2 piece**: the mutual recursive
-engine that consumes the inputs shipped at #175 (`ActsOnRawTermVar`,
-`RawTermSubst`) + #176 (`GenAlgebra`) and traverses a `RawTerm`,
-producing a target `RawTerm` at a (possibly different) scope.
+This file ships the mutual recursive engine that consumes
+`ActsOnRawTermVar` / `RawTermSubst` + `GenAlgebra` and traverses a
+`RawTerm`, producing a target `RawTerm` at a (possibly different)
+scope.
 
-This is the architectural payoff of L2: ONE generic recursion that
-subsequent tasks (#178 rename, #179 weaken, #180 subst) instantiate
-without re-introducing a per-Generator cascade.
+ONE generic recursion that `rename`, `weaken`, and `subst`
+instantiate without re-introducing a per-Generator cascade.
 
 ## The engine — mutual structural recursion
 
 `fold` recurses on a `RawTerm`'s `.mkGen` payload-children pair.
 The recursion is MUTUAL with `foldChildren`, which walks the
 `RawTermChildren` spine.  Because `RawTerm` and
-`RawTermChildren` were defined in the same mutual inductive block
+`RawTermChildren` are defined in the same mutual inductive block
 (see `RawTerm.lean`), Lean's structural-recursion mechanism handles
-termination automatically — no fuel parameter needed (unlike #162's
-certifier, which had to cross a non-mutual inductive boundary).
+termination automatically — no fuel parameter needed.
 
 ## The variable-vs-non-variable dispatch
 
@@ -36,11 +34,11 @@ At each `.mkGen generator payload children` node, fold:
 2. **Non-variable case (generator ≠ .gen_var)**: recursively fold
    children (lifting the Container at each binder crossing), then
    invoke `algebra.algebra generator payloadAtTarget foldedChildren`.
-   The canonical algebra (#176) rebuilds `.mkGen` — uniform across
-   all 193 non-variable generators.
+   The canonical algebra rebuilds `.mkGen` — uniform across all 193
+   non-variable generators.
 
 The dispatch uses `if hVar : generator = .gen_var then ... else ...`
-via `DecidableEq Generator` (#122).  No wildcard match, no 194-arm
+via `DecidableEq Generator`.  No wildcard match, no 194-arm
 enumeration in the recursion body itself.
 
 ## The scope-invariance helper (one-place 194-arm enumeration)
@@ -63,28 +61,22 @@ theorem ... :
 ```
 
 Three tactic lines that auto-discharge 194 goals (1 absurd + 193
-rfls).  This is the L2 architectural promise made concrete: the
-194-arm enumeration lives in ONE place (this helper), and every
-downstream traversal reuses it without re-enumerating.
+rfls).  The 194-arm enumeration lives in ONE place (this helper),
+and every downstream traversal reuses it without re-enumerating.
 
-In v1's era, the analog work would require enumeration in every
-traversal operation (rename, subst, weaken, ...).  L2 pays the cost
-once.
+## What this engine ENABLES
 
-## What this engine ENABLES (downstream tasks #178-#180)
-
-* **`rename` via fold (#178)**: instantiate `fold` with `Container :=
+* **`rename` via fold**: instantiate `fold` with `Container :=
   RawRenaming` and the canonical algebra.  ONE LINE.
 
-* **`weaken` via fold (#179)**: special case of rename where the
+* **`weaken` via fold**: special case of rename where the
   renaming is `Fin.succ`.  Composes via Container.
 
-* **`subst` via fold (#180)**: instantiate `fold` with `Container :=
+* **`subst` via fold**: instantiate `fold` with `Container :=
   RawTermSubst` and the canonical algebra.  ONE LINE.
 
-Each of these would be a 74-arm pattern match in v1's era.  In v2,
-they reduce to one-line fold instantiations because the cascade-tax
-is amortized into this engine.
+Each reduces to a one-line fold instantiation because the
+per-Generator enumeration is amortized into this engine.
 
 ## Zero-axiom verification
 
@@ -116,11 +108,10 @@ For example, when fold recurses into the body of a `gen_lam`
 This generalizes to arbitrary binder depths (any non-negative
 shift).
 
-The `[LiftsRaw Container]` constraint replaces an earlier `[Action
-Container]` (per V2-L2.6 / #180 refactor).  `LiftsRaw` is the
-minimal typeclass providing `liftForRaw` alone — sufficient for
-fold and avoids the chicken-and-egg with `Action.compose` which
-would require `RawTerm.subst` for the `RawTermSubst` instance. -/
+The `[LiftsRaw Container]` constraint is the minimal typeclass
+providing `liftForRaw` alone — sufficient for fold and avoids the
+chicken-and-egg with `Action.compose`, which would require
+`RawTerm.subst` for the `RawTermSubst` instance. -/
 def iterateLiftRaw {Container : Nat → Nat → Type} [LiftsRaw Container]
     {sourceScope targetScope : Nat}
     (someAction : Container sourceScope targetScope) (binderDepth : Nat) :
@@ -165,10 +156,9 @@ mutual
 the Container (via ActsOnRawTermVar) and non-variable generators
 to the algebra (after recursively folding children).
 
-The `[LiftsRaw Container]` constraint (formerly `[Action Container]`,
-per #180 refactor) suffices: fold only invokes the binder lift,
-not `Action.compose` / `Action.identity` / the law fields.  See
-`LiftsRaw.lean` for the architectural rationale. -/
+The `[LiftsRaw Container]` constraint suffices: fold only invokes
+the binder lift, not `Action.compose` / `Action.identity` / the
+law fields.  See `LiftsRaw.lean` for the architectural rationale. -/
 def fold
     {Container : Nat → Nat → Type} [LiftsRaw Container]
     [ActsOnRawTermVar Container]
@@ -205,8 +195,7 @@ def fold
 /-- Fold a `RawTermChildren` spine: walk each child, lifting the
 Container under binders as needed (per the child's binder shift).
 
-Same `[LiftsRaw Container]` constraint as `fold` (per #180
-refactor). -/
+Same `[LiftsRaw Container]` constraint as `fold`. -/
 def foldChildren
     {Container : Nat → Nat → Type} [LiftsRaw Container]
     [ActsOnRawTermVar Container]

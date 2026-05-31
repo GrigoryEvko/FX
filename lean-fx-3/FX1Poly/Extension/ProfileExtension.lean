@@ -21,10 +21,10 @@ namespace FX1Poly.Extension
 
 open Core Tier0
 
-/-- A construction-level ledger for the current profile-extension subsystem.
+/-- A construction-level ledger for the profile-extension subsystem.
 
-The order is intentional: later milestones may use the earlier interfaces,
-but this file only reaches profile-tower bookkeeping. -/
+The order is cumulative: higher levels build on the earlier interfaces.
+This file reaches `profileTowerBookkeeping`. -/
 inductive ExtensionConstructionLevel where
   | interfaceLedger
   | localAdmissionRecord
@@ -297,8 +297,8 @@ structure ProfileExtension (baseProfile : PolyProfile) where
 
 /-- Record a profile extension in the profile tower.
 
-This deliberately does not claim to extend the polynomial universe yet; the
-generator-level algebra extension is a later PolyCell milestone. -/
+This does not extend the polynomial universe: generator-level algebra
+extension is not part of this definition. -/
 def extendProfile (baseProfile : PolyProfile)
     (_extension : ProfileExtension baseProfile) : PolyProfile where
   shapeMaxDim := baseProfile.shapeMaxDim
@@ -408,15 +408,13 @@ theorem extendProfile_preserves_mttNormConstructionLevel
     (extendProfile baseProfile extension).mttNormConstructionLevel =
       baseProfile.mttNormConstructionLevel := rfl
 
--- `ProfileLens` (formerly here, defined over v1 `PolyTerm`) was retired
--- alongside the v1 dim-indexed cell substrate (TCB.9 v1 retirement).  A v2
--- counterpart living over `RawTerm` is V2-L5.1 in the roadmap, not yet
--- shipped — pending the PolyCell-aware ProfileLens redesign.
+-- This file defines no `ProfileLens`; a `RawTerm`-level ProfileLens is
+-- not part of the current profile-extension subsystem.
 
 /-- Proof-relevant view of the five local admission evidence fields.
 
-This is deliberately only the local admission ledger. It is not the
-eventual PolyCell admissibility theorem promised by the long-range plan. -/
+This is only the local admission ledger.  It is not the full PolyCell
+admissibility theorem. -/
 structure ProfileExtension.Admitted {baseProfile : PolyProfile}
     (extension : ProfileExtension baseProfile) where
   implementationEvidence : ImplementationSoundEvidence extension.interface
@@ -447,12 +445,11 @@ structure ProfileExtension.ExtendedAdmissionEvidence
       .extend baseProfile.fibrationTower
   admitted : extension.Admitted
 
-/-- Present mechanized slice of extension preservation.
+/-- Mechanized slice of extension preservation.
 
-The later theorem must eventually target an `AdmissibleProfile` structure.
-For now this theorem only checks the facts the implementation currently
-computes: the profile tower is extended and the local admission record is
-carried explicitly. -/
+This theorem checks the facts the implementation computes: the profile
+tower is extended and the local admission record is carried explicitly.
+It does not target a full `AdmissibleProfile` structure. -/
 theorem extendProfile_preserves_admission_evidence
     (baseProfile : PolyProfile)
     (extension : ProfileExtension baseProfile)
@@ -562,14 +559,13 @@ theorem etaReductionExtension_localAdmissionRecord :
     etaReductionExtension.Admitted :=
   etaReductionExtension.admitted_from_fields
 
-/-- Compatibility alias for the eta extension local admission record. -/
+/-- Alias for the eta extension local admission record. -/
 theorem etaReductionExtension_admitted :
     etaReductionExtension.Admitted :=
   etaReductionExtension_localAdmissionRecord
 
--- `etaReductionExtension_structuralLens` (formerly here) was retired with
--- the v1 PolyTerm-bound `ProfileLens` it consumed.  A v2-aware structural
--- lens lives in V2-L5.1's roadmap entry.
+-- This file defines no structural lens for `etaReductionExtension`; a
+-- `RawTerm`-aware structural lens is not part of the current subsystem.
 
 /-- Extended FX with eta bookkeeping as a `PolyProfile` value.  The extension
 does not add an algebra-extension theorem. -/

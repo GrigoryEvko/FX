@@ -3,25 +3,14 @@ import FX1Poly.Foundation.Action
 
 /-! # FX1Poly.Foundation.RawSubst.ActionInstances — Action instance for RawRenaming
 
-Native-infra clean cut from lean-fx-2's
-`LeanFX2.Foundation.RawSubst.ActionInstances`.
+The **`Action RawRenaming`** instance.  `FX1Poly.Core.LiftsRaw`
+projects `Action.liftForRaw` to satisfy `LiftsRaw RawRenaming`, which
+is what `FX1Poly.Core.Fold` requires for the rename-style traversal
+of `.mkGen` cells.
 
-## What this file carries (and what it deliberately drops)
-
-lean-fx-2's `RawSubst/ActionInstances` wrapped BOTH `RawRenaming` and the
-legacy `RawTermSubst` (`Fin → legacy RawTerm`) as `Action` instances,
-plus `ActsOnRawTermVar` / `ActsOnRawTermVarLifts` instances and ~30
-per-ctor smoke theorems over the legacy MLTT `RawTerm.act`.
-
-The PolyCell cell calculus consumes ONLY the **`Action RawRenaming`**
-instance: `FX1Poly.Core.LiftsRaw` projects `Action.liftForRaw` to satisfy
-`LiftsRaw RawRenaming`, which is what `FX1Poly.Core.Fold` requires for the
-rename-style traversal of `.mkGen` cells.  Everything tied to the legacy
-MLTT `RawTerm` (the `RawTermSubst` Action instance, the `ActsOnRawTermVar`
-/ `ActsOnRawTermVarLifts` bridges over the legacy raw term, all the
-`RawTerm.act_*_smoke` theorems) is SEVERED — PolyCell defines its own
-`ActsOnRawTermVar` over `FX1Poly.Core.RawTerm` in
-`FX1Poly.Core.RawTermSubstDefs`, and its own subst Container there.
+PolyCell's `RawTerm` defines its own `ActsOnRawTermVar` over
+`FX1Poly.Core.RawTerm` in `FX1Poly.Core.RawTermSubstDefs`, with its
+own subst Container there — not here.
 
 ## Root status
 

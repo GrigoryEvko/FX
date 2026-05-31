@@ -3,15 +3,10 @@ import FX1Poly.Foundation.RawSubst.ActionInstances
 
 /-! # Foundation/PolyCell/Core/RawTermRename — rename via fold
 
-This file ships `RawTerm.rename` and `RawTermChildren.rename`,
-the FIRST one-line fold instantiations.  The L2 cascade-tax killer
-made concrete: each definition is **one line** because fold (#177)
-already handles all 194 generators uniformly via the GenAlgebra
-canonical algebra (#176) and the ActsOnRawTermVar bridge (#175).
-
-Direct v2 counterpart to v1's `RawTerm.rename` (in
-`Foundation/RawTerm.lean`'s 74-arm pattern match) and the
-corresponding children-spine renamer.
+`RawTerm.rename` and `RawTermChildren.rename`, one-line fold
+instantiations: each definition is **one line** because fold
+handles all 194 generators uniformly via the GenAlgebra canonical
+algebra and the ActsOnRawTermVar bridge.
 
 ## The one-line definitions
 
@@ -20,21 +15,18 @@ def RawTerm.rename rho term :=
   fold GenAlgebra.canonical rho term
 ```
 
-That's the entire body.  In v1's era, the equivalent would be a
-74-arm pattern match enumerating every Term constructor — and EACH
-new traversal (subst, weaken, ...) duplicated the same 74-arm
+That's the entire body.  Every traversal (rename, subst, weaken,
+...) reuses the same fold rather than duplicating a per-constructor
 cascade.
 
 This one line composes:
-* `RawRenaming` Action instance (from v1's `RawSubst/ActionInstances`,
+* `RawRenaming` Action instance (from `RawSubst/ActionInstances`,
   reusable verbatim since `RawRenaming := Fin src → Fin tgt` is
   profile-agnostic)
-* `ActsOnRawTermVar RawRenaming` instance (from #175 — variable
-  bridge wrapping renamed Fin in `.mkGen .gen_var pos .childNil`)
-* `GenAlgebra.canonical` (from #176 — uniform rebuild algebra)
-* `fold` engine (from #177 — mutual structural recursion)
-
-Each prior commit's investment makes THIS commit a single line.
+* `ActsOnRawTermVar RawRenaming` instance (variable bridge wrapping
+  renamed Fin in `.mkGen .gen_var pos .childNil`)
+* `GenAlgebra.canonical` (uniform rebuild algebra)
+* `fold` engine (mutual structural recursion)
 
 ## Smoke tests demonstrate the architecture composes correctly
 
@@ -48,8 +40,8 @@ The smoke theorems reduce THROUGH fold's full dispatch chain:
    `Generator.payload_scope_invariant_of_not_var`, invoke algebra
 
 If `rfl` closes the smoke tests, the entire pipeline reduces
-definitionally on concrete inputs — empirical proof that v2's
-un-indexed substrate + Allais factoring composes cleanly.
+definitionally on concrete inputs — proof that the un-indexed
+substrate + Allais factoring composes cleanly.
 
 ## Zero-axiom verification
 
@@ -70,10 +62,8 @@ open FX1Poly.Foundation
 /-- Rename a `RawTerm`: apply a positional renaming to every
 variable in the term, threading through binders.
 
-**ONE LINE via fold**.  In v1's era this would be a 74-arm
-pattern match; in v2 it's a single fold instantiation with the
-`RawRenaming` Container and the canonical algebra.  The cascade-tax
-killer made concrete. -/
+**ONE LINE via fold**: a single fold instantiation with the
+`RawRenaming` Container and the canonical algebra. -/
 def RawTerm.rename {sourceScope targetScope : Nat}
     (someRenaming : RawRenaming sourceScope targetScope)
     (sourceTerm : RawTerm sourceScope) :

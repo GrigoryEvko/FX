@@ -8,12 +8,12 @@ endofunctor P_p(Y) = Σ (a : A), B a → Y on Type.
 The category Poly has polynomials as objects and lenses as morphisms.
 Cartesian lenses (where backward maps are equivalences) form the
 subcategory Poly^Cart whose subterminality is the polynomial-univalence
-notion used by the current Axis 2 slice.
+notion used by the Axis 2 slice.
 
-For the planned faithful FX generator model, each Generator g should
-correspond to a polynomial with one position and g.arity-many directions,
-and the generator interface should be their coproduct.  The current
-`fxProfile` intentionally records only the smaller monomial scaffold.
+In a faithful FX generator model, each Generator g corresponds to a
+polynomial with one position and g.arity-many directions, and the
+generator interface is their coproduct.  `fxProfile` records the
+monomial polynomial only.
 
 Reference: arXiv:2409.19176 §3.
 Zero external dependencies.

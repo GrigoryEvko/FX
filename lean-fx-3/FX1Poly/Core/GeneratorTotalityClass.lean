@@ -2,11 +2,10 @@ import FX1Poly.Core.GeneratorCore
 
 /-! # Foundation/PolyCell/Core/GeneratorTotalityClass — Turing-boundary classification
 
-V2-L1.11 (2026-05-27).  Discharges polycell.md §11.7.2 "Turing's
-ceiling → Tot/Div/Productive as Generator-level effect grades".
-Ships the per-Generator `TotalityClass` classifier — the load-bearing
-metadata that the future Tot/Productive/Partial fragment boundary
-enforcement depends on.
+Addresses polycell.md §11.7.2 "Turing's ceiling → Tot/Div/Productive
+as Generator-level effect grades".  Ships the per-Generator
+`TotalityClass` classifier — the metadata the Tot/Productive/Partial
+fragment boundary enforcement depends on.
 
 ## What this file ships
 
@@ -23,15 +22,14 @@ enforcement depends on.
   2: `gen_codataUnfold` and `gen_polyNu`).
 * **`@[reducible] Generator.totalityClass`** — the dispatch.  Returns
   `partialClass` / `productiveClass` / `totalClass` based on
-  list-membership.  Same architectural pattern as V2-fix-4's
-  `coreFxExcluded` (`CoreFxProfile.lean`): list-based exclusion
-  avoids a 194-arm match that would leak propext per Lean's
-  match-equation-lemma discipline.
+  list-membership.  Same architectural pattern as `coreFxExcluded`
+  (`CoreFxProfile.lean`): list-based exclusion avoids a 194-arm match
+  that would leak propext per Lean's match-equation-lemma discipline.
 
 Eight witness theorems pin behavior on representative generators
 across all three classes.
 
-## The classification (current — defensible, conservative)
+## The classification (defensible, conservative)
 
 **partial (2 generators):**
 * `gen_natRec` — general recursion on naturals; distinct from
@@ -74,10 +72,9 @@ The list-based exclusion approach:
 * Forward-compat: adding a new partial / productive generator
   is a list-append, not a 194-arm rewrite.
 
-Same architectural pattern as V2-fix-4's `coreFxExcluded`
-(restricted-profile admission predicate).  Both ship reusable
-infrastructure that scales linearly with the exception count, not
-with the generator count.
+Same architectural pattern as `coreFxExcluded` (restricted-profile
+admission predicate).  Both are reusable infrastructure that scales
+linearly with the exception count, not with the generator count.
 
 ## What this enables
 
@@ -89,11 +86,12 @@ Per polycell.md §11.7.2:
 >   (but not `partial`).
 > A `partial` Generator may have children of any class.
 
-The certifier's per-child reconciliation (`V2-L1cert.2`) will gain
-a per-child `TotalityClass` check via this classification.  That
-check ENFORCES the Turing-boundary structurally: every step of every
-Tot/Productive cell tree carries a typed witness that no Partial
-child has leaked into a Tot parent.
+This classification is the metadata for a per-child `TotalityClass`
+check in the certifier's reconciliation, which enforces the
+Turing-boundary structurally: every step of every Tot/Productive
+cell tree carries a typed witness that no Partial child has leaked
+into a Tot parent.  (The certifier-side check itself is not yet
+wired; see "What's NOT shipped here".)
 
 What this BUYS, per the spec:
 * The Tot fragment is a DECIDABLE sub-language: SN holds (structural
@@ -107,22 +105,20 @@ What this BUYS, per the spec:
 ## What's NOT shipped here
 
 * **Certifier child-constraint enforcement** — requires extending
-  `reconcileChild` (`V2-L1cert.2`) to check the child's
-  TotalityClass against the parent's.  Deferred to a follow-up
-  V2-L1.11.B if the certifier-side propagation lands.
+  `reconcileChild` to check the child's TotalityClass against the
+  parent's.
 * **The metatheory quartet on the Tot fragment** — SN + CR + SR +
   decidable Conv apply only after the certifier-side check is in
   place AND the L3 metatheory tasks land.
 * **Profile-level subset/refinement of allowed TotalityClasses** —
-  a restricted profile excluding the partial fragment would be a
-  ProfileExtension follow-up.
+  a restricted profile excluding the partial fragment.
 
-## Forward-compat
+## Extensibility
 
-When the certifier ships TotalityClass checking, this file's
-exclusion lists become load-bearing.  Adding a new partial /
-productive generator only requires editing the corresponding list
-here -- the certifier inherits the updated boundary automatically.
+The exclusion lists are the single point of control: adding a new
+partial / productive generator only requires editing the
+corresponding list here, and a certifier-side TotalityClass check
+inherits the updated boundary automatically.
 
 ## Zero-axiom verification
 
@@ -189,7 +185,7 @@ def productiveGenerators : List Generator :=
 list-membership against `partialGenerators` and `productiveGenerators`.
 
 Defaults to `totalClass` for any generator not in either exclusion
-list (190 of the 194 V2 generators).
+list (190 of the 194 generators).
 
 The `@[reducible]` attribute makes the witness theorems below close
 by `rfl` -- list-membership on a decidable-equality inductive

@@ -6,21 +6,20 @@ import FX1Poly.Core.ConvSubstRename
     description engine.
 
 polycell.md §11.8.5 P6 ("Substitution / weakening = whiskering, the β-engine"): typing is
-preserved along a context morphism.  This file ships the renaming half — `HasTypeDesc` is
+preserved along a context morphism.  This file carries the renaming half — `HasTypeDesc` is
 preserved along ANY renaming that respects the context (sends each source binding's
 looked-up type to the target's, commuting with `rename`), and its weakening special case.
 
-## Intrinsic — the first clean mutual `HasTypeDesc` metatheorem of the DECOUPLE
+## Intrinsic mutual `HasTypeDesc` recursion (the DECOUPLE)
 
-`HasTypeDesc` is MUTUAL with `DescTelescope`, so this is a MUTUAL recursion — but unlike
-the deferred full-intrinsic P7 uniqueness, it has NO second-derivation inversion, so the
-cross-calls sit on PRISTINE `match`-bound subterms (`typedPremise`, `premises`, `headTyped`)
-exactly like the proven `HasTypeDesc.toHasType` ⋈ `DescTelescope.toHasTypeTelescope` pair.
-Lean's structural recursion lands it directly (no `termination_by` needed) once the
-genFormation arm's companion cross-call is HOISTED before the `by_cases` (so `premises` is
-still pristine — the same discipline `toHasType` uses).  Proved BY INDUCTION on
-`HasTypeDesc`, NOT routed through `HasType` — the first intrinsic-by-induction metatheorem
-of the decouple (validity/inversion/uniqueness were case-analysis; this is genuine
+`HasTypeDesc` is MUTUAL with `DescTelescope`, so this is a MUTUAL recursion — and unlike
+the P7 uniqueness recursion, it has NO second-derivation inversion, so the cross-calls sit
+on PRISTINE `match`-bound subterms (`typedPremise`, `premises`, `headTyped`) exactly like
+the `HasTypeDesc.toHasType` ⋈ `DescTelescope.toHasTypeTelescope` pair.  Lean's structural
+recursion lands it directly (no `termination_by` needed) once the genFormation arm's
+companion cross-call is HOISTED before the `by_cases` (so `premises` is still pristine —
+the same discipline `toHasType` uses).  Proved BY INDUCTION on `HasTypeDesc`, NOT routed
+through `HasType` (validity/inversion/uniqueness are case-analysis; this is genuine
 recursion).
 
 ## The telescope companion

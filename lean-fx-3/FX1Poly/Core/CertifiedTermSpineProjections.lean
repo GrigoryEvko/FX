@@ -2,9 +2,9 @@ import FX1Poly.Core.PolyCell
 
 /-! # Foundation/PolyCell/Core/CertifiedTermSpineProjections — head / tail
 
-V2-L3.1 phase D step 2 (2026-05-27).  Ships structural projections on
-`CertifiedTermSpine`: given a spine whose `RawTermChildren` index
-is `.childCons headRaw restRaws`, extract:
+Ships structural projections on `CertifiedTermSpine`: given a spine
+whose `RawTermChildren` index is `.childCons headRaw restRaws`,
+extract:
 
   * the head cell `PolyCell ... (.termBase headRaw)`, together with
     its (existentially-bound) boundary, as a sigma pair, and
@@ -12,11 +12,11 @@ is `.childCons headRaw restRaws`, extract:
 
 ## Why this matters for SR
 
-The termBase shape pin shipped in V2-L3.1 phase D step 1 yields a
-spine success witness: `∃ spine, certifyChildrenInlineFueled? ...
-= .ok spine`.  But the spine itself is an opaque inductive over the
-parent's children — to feed the SR proof's cong + iota arms, we need
-to **destructure** the spine into per-child certificates.
+The termBase shape pin yields a spine success witness:
+`∃ spine, certifyChildrenInlineFueled? ... = .ok spine`.  But the
+spine itself is an opaque inductive over the parent's children — to
+feed the SR proof's cong + iota arms, we need to **destructure** the
+spine into per-child certificates.
 
 For a composite generator like `lam body` (children =
 `.childCons body .childNil`), destructuring gives:
@@ -43,7 +43,7 @@ the spine constructor, return the carried head + tail as a sigma
 pair (head's boundary is existentially bound by the cons
 constructor, so it must surface in the destructor's return type).
 
-## Dim-0 boundary uniqueness (now shipped via `generalize` + `subst`)
+## Dim-0 boundary uniqueness (via `generalize` + `subst`)
 
 For fxProfile (every ChildSpec has `cellDimension = 0`), the
 existential boundary collapses: `CellBoundary profile sort 0 scope
@@ -73,8 +73,7 @@ projection (not a free variable).  Workaround:
 ## What this does NOT do
 
 This file ships PURE STRUCTURAL projections — no fuel reasoning, no
-soundness lifting, no Certified-level wrapping.  Those higher
-operations come later in the phase D progression.  The projections
+soundness lifting, no Certified-level wrapping.  The projections
 here are the **substrate**: given an actual spine value, expose its
 head and tail components.
 
@@ -165,8 +164,8 @@ The `headAtDim0` helper collapses the sigma-wrapped boundary from
 head spec's dim is 0.
 
 This is the SR projection's load-bearing helper: combined with the
-termBase shape pin (phase D step 1) and `headWithBoundary` /
-`tail` (this file's other projections), the chain reads as
+termBase shape pin and `headWithBoundary` / `tail` (this file's
+other projections), the chain reads as
 
   `Certified (lam body)`
   → spine success (via shape pin)

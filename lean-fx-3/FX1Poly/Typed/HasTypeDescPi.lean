@@ -1,25 +1,22 @@
 import FX1Poly.Typed.HasTypeDescApplication
 
-/-! # FX1Poly/Typed/HasTypeDescPi — GROWING THE ENGINE PAST FORMATION: Π-introduction +
-    Π-elimination, and the FIRST non-vacuous subject reduction in the kernel.
+/-! # FX1Poly/Typed/HasTypeDescPi — the engine past formation: Π-introduction +
+    Π-elimination, and the first non-vacuous subject reduction in the kernel.
 
-For many fires the typed-layer decouple was complete for the FORMATION fragment (validity,
-inversion, uniqueness-spine, weakening+substitution for both spines, dependent-eliminator
-output-validity) but BLOCKED on growth: subject reduction and canonicity are DEGENERATE on
-the redex-free formation fragment, and the redex-creating term-formers (λ/app) could not land
-in `HasTypeDesc` without breaking the shipped TOTAL `toHasType ⟺ HasType` cross-check (any new
-gen row makes the soundness map non-exhaustive), which cascades into decidability + uniqueness.
+The formation fragment (`HasTypeDesc`) is redex-free, so subject reduction and canonicity over
+it are DEGENERATE.  `HasTypeDescPi` is the engine extended with the redex-creating Π term-formers
+(λ/app), giving a genuinely-reducing β-redex whose reduct retypes.
 
-## The unblock (polycell.md §11.8.5): 0-FP is FREE BY CONSTRUCTION
+## 0-FP is FREE BY CONSTRUCTION (polycell.md §11.8.5)
 
 §11.8.5: "0 false positives = soundness = intrinsic introduction rules ⇒ empty fiber over the
-unsound.  Free by construction, not a theorem to chase."  The `toHasType ⟺ HasType` map was
-only ever a CROSS-CHECK for the formation fragment, NOT the source of soundness.  So the engine
-can grow past formation ADDITIVELY: `HasTypeDescPi` EMBEDS the whole formation fragment
-(`ofFormation`) and adds the Π term-formers, with soundness by-construction (correct intro
-rules) plus the already-proven dependent-eliminator output-validity.  This leaves `HasTypeDesc`,
-`toHasType`, `HasTypeDesc.decidableOfWellFormed`, and the uniqueness proofs UNTOUCHED and green
-— it sidesteps the decidability/uniqueness cascade that a direct `HasTypeDesc` extension forces.
+unsound.  Free by construction, not a theorem to chase."  The `toHasType ⟺ HasType` map is a
+CROSS-CHECK for the formation fragment, NOT the source of soundness.  So the engine grows past
+formation ADDITIVELY: `HasTypeDescPi` EMBEDS the whole formation fragment (`ofFormation`) and
+adds the Π term-formers, with soundness by-construction (correct intro rules) plus the
+dependent-eliminator output-validity.  This leaves `HasTypeDesc`, `toHasType`,
+`HasTypeDesc.decidableOfWellFormed`, and the uniqueness proofs UNTOUCHED — it sidesteps the
+decidability/uniqueness cascade that a direct `HasTypeDesc` extension would force.
 
 `HasTypeDesc` cannot type `lamCell`/`appCell` (their generators `gen_lam`/`gen_app` have no
 `typingRuleDescOf` row, so the `genFormation` arm cannot produce them) — so `ofFormation` of a
@@ -30,13 +27,12 @@ rules) plus the already-proven dependent-eliminator output-validity.  This leave
 * `ofFormation` — embed any formation derivation (var/conv/universeFormation/genFormation).
 * `conv` — conversion at the grown level (mirror of `HasTypeDesc.conv`; the formation `conv`
   only relates formation terms, so the grown engine needs its own).
-* `piFormation` / `sigmaFormation` — NATIVE dependent type-former formation: `domain : Type@dl`
-  and `codomain : Type@cl` (under the domain binder) give `Π/Σ domain. codomain : Type@(dl ⊔
-  cl)`.  These exist (rather than only `ofFormation`) so the engine is SUBSTITUTION-CLOSED:
-  substituting a grown term (e.g. an application) into a `piTyCodeCell` component yields a Π type
-  with a NON-formation component, which `ofFormation` cannot type — but `piFormation` can.  They
-  are the prerequisite for the grown-engine substitution leg (the `ofFormation` case of
-  `substRespectingContext` rebuilds a substituted formation Π/Σ via these native arms).
+* `genFormationPi` — the sole formation arm, GENERIC over `typingRuleDescOf` (the grown mirror of
+  `HasTypeDesc.genFormation`, mutual with the premise spine `DescTelescopePi`): a former's children
+  form a dependent telescope of types `Type@levelᵢ` and the cell inhabits the rule's output
+  classifier (`Type@(⊔ levels)` for Π/Σ).  It types formers with GROWN components — so the engine
+  is SUBSTITUTION-CLOSED — with no per-former dispatch (a per-former arm would force a partial-match
+  on the child telescope, the indexed-inductive propext trap).
 * `piIntro` (λ) — `body : codomainCode` under `context.cons domainCode`, with `domainCode` a
   type (witness exposed as `domainLevel`/`domainFlag`/`domainTyped`, per the
   nested-`Exists`-in-a-ctor-premise rejection), gives `lamCell body : Π domainCode. codomainCode`.
@@ -48,17 +44,17 @@ rules) plus the already-proven dependent-eliminator output-validity.  This leave
 
 `betaCoherence_formationBody` proves that for a β-redex built from FORMATION components, the
 redex `appCell (lamCell body) argument` AND its β-reduct `subst0 body argument` are BOTH typed
-at `subst0 codomainCode argument` — the β-rule preserves typing.  Honest scope: this is the
-PRESERVATION direction for COMPONENT-derived redexes (built from the pieces), reusing the
-shipped intrinsic `HasTypeDesc.substituteUnderBinding`; the fully-general inverted SR (arbitrary
-`HasTypeDescPi` derivation modulo `conv`, arbitrary `HasTypeDescPi` body) follows once Π-arm
-inversion + the grown-engine substitution land (next fires).  It is the FIRST SR in the kernel
-that is genuinely non-vacuous — a redex that actually reduces, whose reduct retypes.
+at `subst0 codomainCode argument` — the β-rule preserves typing.  Scope: this is the
+PRESERVATION direction for COMPONENT-derived redexes (built from the pieces), via the
+intrinsic `HasTypeDesc.substituteUnderBinding`.  The fully-general inverted SR (arbitrary
+`HasTypeDescPi` derivation modulo `conv`, arbitrary `HasTypeDescPi` body) additionally needs
+Π-arm inversion + the grown-engine substitution.  It is the first SR in the kernel that is
+genuinely non-vacuous — a redex that actually reduces, whose reduct retypes.
 
 ## Zero-axiom
 
 A new inductive (strictly positive: `HasTypeDescPi` only in premises, `HasTypeDesc` positively
-in `ofFormation`) + the shipped `HasTypeDesc.substituteUnderBinding` + `ofFormation`.  No
+in `ofFormation`) + `HasTypeDesc.substituteUnderBinding` + `ofFormation`.  No
 `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Audit-gated.
 -/
 
@@ -177,7 +173,7 @@ def IsTypeDescPi (profile : PolyProfile) {scope : Nat}
     HasTypeDescPi profile context classifier (universeCodeCell levelExpr flag)
 
 /-- The formation engine embeds faithfully into the grown engine (the `ofFormation` arm, named).
-Every formation typing is a grown-engine typing — so all the shipped formation metatheory
+Every formation typing is a grown-engine typing — so all the formation metatheory
 (validity, inversion, uniqueness, weakening, substitution) transfers to the embedded fragment. -/
 theorem HasTypeDesc.toHasTypeDescPi {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
@@ -207,9 +203,9 @@ theorem DescTelescope.toDescTelescopePi {profile : PolyProfile}
 description-engine type-former formation is a grown-engine formation, via `toDescTelescopePi`.
 The §11.8.5 cascade-free subsumption at the judgment level — the grown engine is at least as
 strong as the formation engine on the WHOLE `typingRuleDescOf` family, through ONE generic arm
-(not per-former).  (Note `ofFormation` already embeds the same conclusion whole; this exhibits
-the SECOND, structural route — the one the substitution leg will rebuild grown components
-through.) -/
+(not per-former).  (`ofFormation` already embeds the same conclusion whole; this exhibits
+the SECOND, structural route — the one through which the substitution leg rebuilds grown
+components.) -/
 theorem HasTypeDesc.genFormationToHasTypeDescPi {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {generator : Generator} {payload : generator.payload scope}
@@ -230,14 +226,14 @@ domainCode`, `argument : domainCode`, and `domainCode` a type — BOTH the redex
 `Step.beta`) are typed at `subst0 codomainCode argument` in the grown engine.
 
 The redex types by `piElim ∘ piIntro` (over `ofFormation`-embedded components); the reduct
-types by the shipped intrinsic `HasTypeDesc.substituteUnderBinding` (the β-engine — substituting
+types by the intrinsic `HasTypeDesc.substituteUnderBinding` (the β-engine — substituting
 `argument` for de Bruijn 0 throughout `body` preserves typing, with the classifier
 `codomainCode` instantiated to `subst0 codomainCode argument`), then `ofFormation`.  Both land
 at the SAME type, which IS subject reduction for the β-redex.
 
-Honest scope: PRESERVATION for component-derived redexes; the fully-general inverted SR
-(arbitrary `HasTypeDescPi` derivation modulo `conv`, arbitrary grown-engine body) follows once
-Π-arm inversion + the grown-engine substitution land.  But it is genuinely non-vacuous — unlike
+Scope: PRESERVATION for component-derived redexes.  The fully-general inverted SR
+(arbitrary `HasTypeDescPi` derivation modulo `conv`, arbitrary grown-engine body) additionally
+needs Π-arm inversion + the grown-engine substitution.  It is genuinely non-vacuous — unlike
 formation-fragment SR, the redex here actually reduces and the reduct retypes. -/
 theorem HasTypeDescPi.betaCoherence_formationBody {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}

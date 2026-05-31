@@ -189,7 +189,7 @@ contractum's SN directly (`isStronglyNormalizing_of_noStep`), exactly as the
 two branches did for `boolElim`.  Accessibility induction runs on the active
 witness.  (The strictly-more-general "base merely SN" form would need a nested
 two-dimensional accessibility induction over base × witness; the normal-base
-form matches the shipped `boolElim` convention and is the honest increment.) -/
+form matches the `boolElim` convention.) -/
 theorem idJ_isStronglyNormalizing_of_normal_base
     {scope : Nat} {baseCase witness : RawTerm scope}
     (baseHasNoStep :

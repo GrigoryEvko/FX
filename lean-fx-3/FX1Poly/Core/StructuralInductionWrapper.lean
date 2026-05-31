@@ -1,18 +1,18 @@
 import FX1Poly.Core.StructuralInductionPrimitives
 
 /-! # Foundation/PolyCell/Core/StructuralInductionWrapper
-   — wrapper patterns for the future structural induction
+   — wrapper patterns for the structural induction
 
-V2-L3.1 phase D step 29 (2026-05-27).  Sibling to step 28
-(StructuralInductionPrimitives); ships the WRAPPER theorems that
+Sibling to `StructuralInductionPrimitives`; the WRAPPER theorems that
 factor the public-facing `HCC` preservation into:
 
   * Outer wrapper (this file): destructure HCC, call a Type-level
     cell renamer/substituter, wrap back into HCC.intro.
-  * Inner cell renamer/substituter (future): the mutual `def`
-    block over PolyCell + spine producing the new cell directly.
+  * Inner cell renamer/substituter: the mutual `def` block over
+    PolyCell + spine producing the new cell directly
+    (`SubstPreservationMutual.lean`).
 
-## What this file ships (2 declarations)
+## What this file provides (2 declarations)
 
   * `HCC.preservedByRename_via_renamer` — given an abstract cell
     renamer (Type-level), produce HCC preservation.
@@ -37,15 +37,14 @@ mutual partner for the binder lift (subst only).  Plugging
 that `def` into THIS wrapper closes the public-facing HCC
 preservation.
 
-This separation lets the mutual block be designed/shipped
-independently — once it lands, this wrapper becomes the public
-HCC entry point.
+This separation lets the mutual block be designed independently;
+this wrapper is the public HCC entry point.
 
 ## Zero-axiom verification
 
 Each wrapper is a 2-line proof using `obtain` + `exact .intro`.
 The abstract operation hypothesis is what the mutual block
-will provide.  Audit-gated.
+provides.  Audit-gated.
 -/
 
 namespace FX1Poly.Core
@@ -57,9 +56,9 @@ open FX1Poly.Foundation
 Given an abstract Type-level cell renamer, produce the public-
 facing HCC preservation by destructuring + wrapping.
 
-When the full mutual structural induction lands (next iteration),
-plug its `PolyCell.rename_dim0` def into the `cellRenamer`
-parameter to get HCC preservation END-TO-END. -/
+Plug the mutual structural induction's `PolyCell.rename_dim0` def
+(`SubstPreservationMutual.lean`) into the `cellRenamer` parameter to
+get HCC preservation END-TO-END. -/
 theorem HasCertifiedCellDim0.preservedByRename_via_renamer
     {profile : PolyProfile} {srcScope tgtScope : Nat}
     (rho : RawRenaming srcScope tgtScope)
@@ -81,8 +80,8 @@ theorem HasCertifiedCellDim0.preservedByRename_via_renamer
 Sibling of `preservedByRename_via_renamer` for substitution.
 Same destructure-and-wrap pattern.
 
-When the full mutual structural induction lands, plug its
-`PolyCell.subst_dim0` def in to close HCC preservation under
+Plug the mutual structural induction's `PolyCell.subst_dim0` def
+(`SubstPreservationMutual.lean`) in to close HCC preservation under
 substitution. -/
 theorem HasCertifiedCellDim0.preservedBySubst_via_substituter
     {profile : PolyProfile} {srcScope tgtScope : Nat}

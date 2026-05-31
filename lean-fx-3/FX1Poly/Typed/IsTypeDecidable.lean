@@ -5,33 +5,35 @@ import FX1Poly.Typed.UniverseCodeShape
 import FX1Poly.Typed.SigmaCodeShape
 
 /-! # FX1Poly/Typed/IsTypeDecidable
-    — characterization of which cells are types (current var/conv/universe fragment)
+    — characterization of which cells are types (current fragment)
 
 `IsType context classifier` unfolds to `∃ levelExpr flag, HasType context
 classifier (universeCodeCell levelExpr flag)`.  On the current `HasType` fragment
-(`var` / `conv` / `universeFormation`) this is a decidable trichotomy on
-`classifier`'s head generator:
+this is decidable by casing on `classifier`'s head generator:
 
-* `gen_universeCode` head ⇒ always a type (`IsType.universeCodeCell`, via
+* `gen_universeCode` head ⇒ always a type (`IsType.ofUniverseCodeCell`, via
   `HasType.universeFormation`);
 * `gen_var` head ⇒ a type *iff* the looked-up classifier is itself a universe
   code (`IsType.variableCell_iff_lookupIsUniverseCode`) — the only case that
   consults the context; forward by `inversionVariable` + normal-form rigidity
   (`Conv.eq_of_isType`), backward by the universe-code destructor + the variable
   rule;
+* `gen_piTyCode` / `gen_sigmaTyCode` head ⇒ a type iff its domain and codomain
+  children are types (the codomain under the domain binder), decided by recursing
+  into `decideWithWitness`;
 * any other head ⇒ never a type (`IsType.not_of_headGenerator`, via
   `typedSubjectIsVariableOrUniverseCode`).
 
-These three lemmas are the full mathematical content of `Decidable IsType`
-(#303); the decision procedure assembles them by casing on the cell's head
-generator (`DecidableEq Generator`) over the two cell destructors in
-`UniverseCodeShape` — built next on top of this characterization.
+These lemmas are the content of `Decidable IsType` (#303); the decision procedure
+`decideWithWitness` assembles them by casing on the cell's head generator
+(`DecidableEq Generator`) over the cell destructors in `UniverseCodeShape` /
+`SigmaCodeShape`.
 
 ## Zero-axiom verification
 
 The forward variable case rests on normal-form rigidity (`Conv.eq_of_isType`,
 itself zero-axiom) rather than on any normalizer: both endpoints of the
-`inversionVariable` convertibility are types, hence non-stepping leaves, so the
+`inversionVariable` convertibility are types, hence normal, so the
 `Conv` collapses to a literal cell equality.  The refutation `subst`s the
 cell-shape equality and closes by `rfl` at default transparency (a concrete
 cell's head generator reduces definitionally).  Per-declaration gated in
@@ -302,9 +304,9 @@ def IsType.decideWithWitness {profile : PolyProfile} {scope : Nat}
       | exact size_lt_sigmaTyCodeCell_codomain _ _
 
 /-- Decide whether `classifier` inhabits some universe, for the current fragment
-(var / conv / universe / Π-formation).  A thin wrapper over the data-returning
-`decideWithWitness`: a universe witness is the `isTrue` evidence; the
-`no-universe` proof is the `isFalse` evidence. -/
+(var / conv / universe / Π-formation / Σ-formation).  A thin wrapper over the
+data-returning `decideWithWitness`: a universe witness is the `isTrue` evidence;
+the `no-universe` proof is the `isFalse` evidence. -/
 def IsType.decidableOfWellFormed {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} (wellFormed : WfContext context)
     (classifier : RawTerm scope) : Decidable (IsType profile context classifier) :=

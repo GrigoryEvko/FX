@@ -2,26 +2,22 @@ import FX1Poly.Core.HasCertifiedIntros
 
 /-! # Foundation/PolyCell/Core/HasCertifiedHonestyProbes — overadmission probes
 
-V2-L3.1 phase D step 14 (2026-05-27).  Codex audit response.
-
 ## Purpose
 
 The PolyCell substrate provides STRUCTURAL admission, not full
-type-theoretic well-typedness.  Codex's M-2026-05-27 audit
-correctly flagged this as a potential overclaim risk if the
-shipped infrastructure is described as a "type checker" or "full
-Subject Reduction."
+type-theoretic well-typedness.  Describing the substrate as a "type
+checker" or as "full Subject Reduction" would be an overclaim.
 
-This file ships **honesty probes**: theorems that DEMONSTRATE the
+This file holds **honesty probes**: theorems that DEMONSTRATE the
 structural-vs-semantic gap by proving the structural admission of
 ill-typed terms.  Each probe is a green theorem proving the
 substrate accepts a term that a full type checker would reject.
 
-The probes make the gap audit-visible: a future reader inspecting
+The probes make the gap audit-visible: a reader inspecting
 `HasCertifiedCellDim0` cannot misread it as "well-typed" because
 THESE THEOREMS PROVE otherwise.
 
-## Probes shipped
+## The probes
 
   * `app_unit_unit` — `app unit unit` is structurally admitted
     despite `unit` not having function type.  This is the
@@ -37,24 +33,21 @@ THESE THEOREMS PROVE otherwise.
 ## What the probes do NOT mean
 
 They do NOT mean PolyCell is broken — the substrate is doing
-exactly what it claims (structural admission).  They mean we
-need a SEMANTIC LAYER (typing judgment) layered above the
+exactly what it claims (structural admission).  They mean the
+SEMANTIC LAYER (typing judgment) must be layered above the
 structural layer before claiming type-theoretic SR.
 
-## Future semantic layer
+## The semantic layer
 
-Per codex's recommendation, the next major layer adds:
+The semantic layer lives in `FX1Poly/Typed`:
 
   * `TypingContext profile scope` — per-variable types
-  * `GeneratorTypingRule generator` — premises + conclusion
-    distinct from `ChildSpec`
-  * `HasType ctx term type` — the actual typing judgment
-  * `SemanticallySupportedGenerator` ⊂ `SupportedGenerator`
+  * `HasType ctx term type` — the typing judgment
 
-The 16 "SR arms" then become STRUCTURAL preservation arms (a
-real result), and the SEMANTIC SR theorem
-`HasType ctx s T → Step s t → HasType ctx t T` becomes a
-separate, stronger result for the typed fragment.
+The structural preservation arms are a real result over the
+structural layer; the SEMANTIC SR theorem
+`HasType ctx s T → Step s t → HasType ctx t T` is a separate,
+stronger result for the typed fragment.
 
 These probes establish the baseline that prevents the structural
 layer from being misread as the semantic layer.

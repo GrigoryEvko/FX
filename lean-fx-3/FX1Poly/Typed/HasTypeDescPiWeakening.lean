@@ -5,29 +5,26 @@ import FX1Poly.Core.RawTermFresh
 /-! # FX1Poly/Typed/HasTypeDescPiWeakening — INTRINSIC renaming/weakening (P6) for the GROWN
     engine `HasTypeDescPi` (formation + Π-intro/elim): its first fibration leg (cartesian lift).
 
-polycell.md §11.8.5 P6: typing is preserved along a context morphism.  This file ships the
+polycell.md §11.8.5 P6: typing is preserved along a context morphism.  This file carries the
 RENAMING half for the grown engine — `HasTypeDescPi` is preserved along ANY renaming respecting
-the context — and its weakening special case.  It is the first of the two grown-engine fibration
-legs; the substitution leg (the grown β-engine) follows once the engine is made
-substitution-closed (it needs a native Π-formation arm, since term-substitution into a Π type's
-component can produce a Π type with a non-formation component — see below).
+the context — and its weakening special case.  It is the cartesian-lift fibration leg of the
+grown engine.
 
-## Why renaming is clean now, but substitution is NOT (yet)
+## Why the `ofFormation` arm delegates directly
 
 RENAMING preserves formation-ness: renaming introduces no eliminations, so a renamed formation
-term is still a formation term.  Hence the `ofFormation` arm delegates DIRECTLY to the shipped
+term is still a formation term.  Hence the `ofFormation` arm delegates DIRECTLY to
 `HasTypeDesc.renameRespectingContext` (its context-condition is an EQUALITY, satisfied verbatim)
-and re-wraps with `ofFormation` — no closure gap.  Term-SUBSTITUTION is different: substituting a
-grown term (e.g. an application) into a `piTyCodeCell A B`'s component yields a Π type with a
-non-formation component, which `ofFormation` cannot type (the grown engine currently forms Π
-types only via `ofFormation`).  So the substitution leg awaits a native Π-formation arm; renaming
-does not, and lands fully here.
+and re-wraps with `ofFormation` — no closure gap.  (Term-SUBSTITUTION does not preserve
+formation-ness — substituting a grown term into a `piTyCodeCell A B`'s component yields a Π type
+with a non-formation component — which is why the grown engine carries the native `genFormationPi`
+arm that types such results.)
 
 ## Structure (mutual recursion: 5 arms + the telescope companion)
 
 A `match`-form MUTUAL recursion, `HasTypeDescPi.renameRespectingContext` ⋈
-`DescTelescopePi.renameRespectingTelescope`: the `ofFormation` cross-call is to the shipped
-`HasTypeDesc.renameRespectingContext` (a different, completed theorem) on the opaque
+`DescTelescopePi.renameRespectingTelescope`: the `ofFormation` cross-call is to
+`HasTypeDesc.renameRespectingContext` (a separate theorem) on the opaque
 `formationTyped`; the other recursions are on strictly-smaller `HasTypeDescPi`/`DescTelescopePi`
 sub-derivations (the `genFormationPi` companion cross-call HOISTED before its `by_cases`, so the
 spine stays pristine), so Lean's structural recursion lands it without `termination_by`.
@@ -48,7 +45,7 @@ spine stays pristine), so Lean's structural recursion lands it without `terminat
 
 ## Zero-axiom
 
-Self-recursion + the shipped `HasTypeDesc.renameRespectingContext` + `Conv.rename` + the reused
+Self-recursion + `HasTypeDesc.renameRespectingContext` + `Conv.rename` + the
 `rename_{universeCodeCell,piTyCodeCell,lift_weaken_commute,subst0_commute}` bricks + the rfl
 `rename_{lamCell,appCell}`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
 `native_decide`, `omega`.  Audit-gated.

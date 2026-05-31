@@ -6,21 +6,20 @@ import FX1Poly.Typed.HasTypeDescSubstitution
     for the ELIMINATOR-shape term spine `DescTermTelescope`.
 
 polycell.md §11.8.5 P6 ("Substitution / weakening = whiskering, the β-engine"): typing is
-preserved along a context morphism.  This file ships the SUBSTITUTION half for
+preserved along a context morphism.  This file carries the SUBSTITUTION half for
 `DescTermTelescope` (HasTypeDescElim) — the maximally-general typed-children spine the
-future eliminator `gen`-arm consumes — completing the pair with last fire's renaming/
-weakening half (`HasTypeDescElimWeakening`).  Together they are the eliminator spine's two
-fibration legs (cartesian lift + β-substitution), ready for the eliminator arm regardless
-of how it lands.
+eliminator `gen`-arm consumes — paired with the renaming/weakening half
+(`HasTypeDescElimWeakening`).  Together they are the eliminator spine's two fibration legs
+(cartesian lift + β-substitution).
 
-## Self-recursion over the shipped HasTypeDesc β-engine (NON-breaking)
+## Self-recursion over the HasTypeDesc β-engine (NON-breaking)
 
 `DescTermTelescope` is a STANDALONE inductive (`HasTypeDesc` appears only positively in
 `cons`'s `headTyped`), so this touches neither `HasTypeDesc`'s constructors nor the
-`toHasType` ⟺ soundness map.  The head child's typing is re-substituted by cross-calling the
-ALREADY-SHIPPED `HasTypeDesc.substRespectingContext` on the opaque `headTyped`; the only
-recursion is on the strictly-smaller `restTyped`, so Lean's structural recursion lands it
-without `termination_by` — the same self-recursive shape as
+`toHasType` ⟺ soundness map.  The head child's typing is re-substituted by cross-calling
+`HasTypeDesc.substRespectingContext` on the opaque `headTyped`; the only recursion is on the
+strictly-smaller `restTyped`, so Lean's structural recursion lands it without
+`termination_by` — the same self-recursive shape as
 `DescTermTelescope.renameRespectingTermTelescope` and `DescTelescope.toTermTelescope`.
 
 ## The arbitrary classifier substitutes generically; the decouple compounds
@@ -38,8 +37,8 @@ restates each lifted lookup in `lift` form and `subst_lift_weaken_commute` fires
 
 ## Zero-axiom
 
-Self-recursion + the shipped `HasTypeDesc.substRespectingContext` +
-`HasTypeDesc.weakenUnderBinding` + the reused bespoke `subst_{lift_weaken_commute,
+Self-recursion + `HasTypeDesc.substRespectingContext` +
+`HasTypeDesc.weakenUnderBinding` + the bespoke `subst_{lift_weaken_commute,
 singleton_renameWeaken_cancel}` bricks.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
 `Classical`, `native_decide`, `omega`.  Audit-gated.
 -/
@@ -51,7 +50,7 @@ open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
 /-- INTRINSIC general substitution (P6) for the eliminator-shape term spine: a
 `DescTermTelescope` is preserved along any substitution whose substituents are target-typed
 at the substituted source-binding types (condition stated at the spine's `currentDepth` via
-`iterateLiftRaw`).  Self-recursive — the head child's typing is re-substituted by the shipped
+`iterateLiftRaw`).  Self-recursive — the head child's typing is re-substituted by
 `HasTypeDesc.substRespectingContext`; the tail recurses at depth `currentDepth + 1` with the
 LIFTED substitution-condition.  Decoupled from `HasType`. -/
 theorem DescTermTelescope.substRespectingTermTelescope {profile : PolyProfile}
@@ -115,7 +114,7 @@ theorem DescTermTelescope.substRespectingTermTelescope {profile : PolyProfile}
 /-- INTRINSIC single-substitution (the β-engine) for the eliminator-shape term spine:
 substituting a well-typed `argument` for de Bruijn 0 throughout the children preserves
 `DescTermTelescope`.  The corollary the eliminator arm's β/ι reduction cites (the scrutinee
-spine's binders collapse onto the substituted argument).  Symmetric to last fire's
+spine's binders collapse onto the substituted argument).  Symmetric to
 `DescTermTelescope.weakenUnderBinding`; mirrors `HasTypeDesc.substituteUnderBinding`'s
 side-condition (`0` returns the argument after `subst_singleton_renameWeaken_cancel`, `k+1` a
 shifted `var`).  `iterateLiftRaw (singleton argument) 0 ≡ singleton argument` (defeq, base

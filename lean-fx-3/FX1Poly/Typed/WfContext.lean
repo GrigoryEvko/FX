@@ -1,8 +1,8 @@
 import FX1Poly.Typed.HasType
 
-/-! # FX1Poly/Typed/WfContext — context well-formedness (TY-WF)
+/-! # FX1Poly/Typed/WfContext — context well-formedness
 
-`TypingContext` (#467) is a RAW de Bruijn telescope: it stores binding-type
+`TypingContext` is a RAW de Bruijn telescope: it stores binding-type
 cells with NO typing constraint, by design (a typing-well-formedness field
 inside `cons` would put `HasType`/`IsType` in the inductive's INDEX
 signature — the mutual-index wall Lean 4 rejects).  `WfContext` is the
@@ -24,14 +24,12 @@ discharging the impossible `empty` case (the cons-index match-compiler
 trap).  Well-formedness is a CONDITION, not a derivation object, so the
 computed form is the natural choice (and mirrors `TypingContext.lookup`).
 
-## Now non-vacuous
+## Non-vacuity
 
-Until the `universeFormation` rule landed (#442), `IsType` was empty —
-nothing inhabited a universe — so `WfContext` held only for the empty
-context.  Now a universe-code binding is provably a type
-(`wfContext_universeBinding`), so `WfContext` is meaningfully inhabited.
-The well-formedness predicate has teeth exactly because the typing core
-grounds `IsType`.
+`WfContext` is meaningfully inhabited beyond the empty context: a
+universe-code binding is provably a type (`wfContext_universeBinding`),
+because `universeFormation` grounds `IsType`.  The well-formedness
+predicate has teeth exactly because the typing core grounds `IsType`.
 
 ## Zero-axiom verification
 
@@ -78,7 +76,7 @@ theorem WfContext.headIsType {profile : PolyProfile} {scope : Nat}
 well-formed context by a binding that is a type in the prefix yields a
 well-formed context.  The primitive a recursive type-former checker needs to
 thread well-formedness into a codomain checked under `Γ.cons dom` — e.g. the
-#443 Π-formation decider, where the codomain premise lives at `scope + 1`. -/
+Π-formation decider, where the codomain premise lives at `scope + 1`. -/
 theorem WfContext.cons {profile : PolyProfile} {scope : Nat}
     {restContext : TypingContext profile scope} {bindingType : RawTerm scope}
     (restWellFormed : WfContext restContext)
@@ -88,8 +86,8 @@ theorem WfContext.cons {profile : PolyProfile} {scope : Nat}
 
 /-- `WfContext` is non-vacuous: a context binding a single universe code is
 well-formed, because the universe code is a type (`universeFormation`).
-This is the payoff of grounding `IsType` (#442) — the well-formedness
-predicate is now inhabited beyond the empty context. -/
+The payoff of grounding `IsType` — the well-formedness predicate is
+inhabited beyond the empty context. -/
 theorem wfContext_universeBinding {profile : PolyProfile}
     (levelExpr : LevelExpr) (flag : UniverseFlag) :
     WfContext (profile := profile)

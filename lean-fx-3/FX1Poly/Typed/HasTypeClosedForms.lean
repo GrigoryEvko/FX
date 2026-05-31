@@ -22,17 +22,18 @@ current fragment (`var` / `conv` / `universeFormation` / `piFormation` /
 Together they read: a closed typing judgment is exactly
 `(type-former code) : (universe code, up to Conv)`.  This is the fragment's
 CONSISTENCY content — there is NO closed term below the universe level (no closed
-inhabitant of a data / `El`-level type).  It is the honest precursor to the
+inhabitant of a data / `El`-level type).  It is the precursor to the
 starred ★ #460 (`HasType .empty t Empty → False`), which additionally needs an
-`Empty` type-former to instantiate (deferred to the term-introduction batch:
-once `gen_empty` and its `El` exist, `closedClassifierConvUniverseCode` refutes a
-closed `El Empty` inhabitant directly — `El Empty` is not a universe code, so the
-`Conv` clashes by normal-form rigidity).
+`Empty` type-former to instantiate: with `gen_empty` and its `El`,
+`closedClassifierConvUniverseCode` refutes a closed `El Empty` inhabitant directly
+— `El Empty` is not a universe code, so the `Conv` clashes by normal-form
+rigidity.
 
-Honestly fragment-specific: when term-introduction arms land (λ / pair / data
+Fragment-specific scope: with term-introduction arms (λ / pair / data
 constructors), the SUBJECT side gains canonical-value disjuncts (closed terms
-become "type-former OR canonical value"); for now the type-former-only shape is
-the checkable truth, exactly mirroring `closedSubjectIsType`'s honesty note.
+become "type-former OR canonical value").  On the current fragment the
+type-former-only shape is the checkable truth, mirroring `closedSubjectIsType`'s
+honesty note.
 
 ## Zero-axiom verification
 
