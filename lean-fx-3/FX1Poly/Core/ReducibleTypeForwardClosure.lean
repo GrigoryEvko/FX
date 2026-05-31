@@ -137,4 +137,39 @@ theorem StepStar.piTyCode_decompose {scope : Nat}
       StepStar domain updatedDomain ∧ StepStar codomain updatedCodomain :=
   StepStar.piTyCode_decompose_through chain rfl
 
+/-- **Reduction dichotomy.**  Every `Step` out of a term is EITHER a root reduction (β / ι), exposing a
+weak-head step on the SOURCE, OR the uniform congruence rule (the source and reduct share generator and
+payload, their child spines related by a `StepChildren`).  This is the inversion the weak-head-normality
+preservation proof rests on: a step that does not expose a source weak-head step must be a congruence,
+which preserves the root and confines the change to one child — so weak-head-normality of the parent
+descends to a weak-head-normality obligation on the stepped child. -/
+theorem Step.weakHeadStep_or_cong {scope : Nat} {subjectType reductType : RawTerm scope}
+    (step : Step subjectType reductType) :
+    (∃ reduct : RawTerm scope, WeakHeadStep subjectType reduct) ∨
+    (∃ (generator : Generator) (payload : generator.payload scope)
+        (children childrenAfter : RawTermChildren generator.binderShifts scope),
+      subjectType = .mkGen generator payload children ∧
+      reductType = .mkGen generator payload childrenAfter ∧
+      StepChildren children childrenAfter) := by
+  cases step with
+  | beta => exact Or.inl ⟨_, WeakHeadStep.beta⟩
+  | cong generator payload childStep =>
+      exact Or.inr ⟨generator, payload, _, _, rfl, rfl, childStep⟩
+  | iotaBoolTrue => exact Or.inl ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaBoolTrue⟩
+  | iotaBoolFalse => exact Or.inl ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaBoolFalse⟩
+  | iotaFstPair => exact Or.inl ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaFstPair⟩
+  | iotaSndPair => exact Or.inl ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaSndPair⟩
+  | iotaNatElimZero => exact Or.inl ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaNatElimZero⟩
+  | iotaNatRecZero => exact Or.inl ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaNatRecZero⟩
+  | iotaListElimNil => exact Or.inl ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaListElimNil⟩
+  | iotaOptionMatchNone => exact Or.inl ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaOptionMatchNone⟩
+  | iotaOptionMatchSome => exact Or.inl ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaOptionMatchSome⟩
+  | iotaEitherMatchInl => exact Or.inl ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaEitherMatchInl⟩
+  | iotaEitherMatchInr => exact Or.inl ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaEitherMatchInr⟩
+  | iotaNatElimSucc => exact Or.inl ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaNatElimSucc⟩
+  | iotaNatRecSucc => exact Or.inl ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaNatRecSucc⟩
+  | iotaListElimCons => exact Or.inl ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaListElimCons⟩
+  | iotaIdJRefl => exact Or.inl ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaIdJRefl⟩
+  | iotaIdStrictRecRefl => exact Or.inl ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaIdStrictRecRefl⟩
+
 end FX1Poly.Core
