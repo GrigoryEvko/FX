@@ -18,7 +18,11 @@ inductive appears in its own stored constructor data.
 
 This file resolves it by STRATIFICATION: a step-FUNCTOR `ReducibleTypeStep lowerReducible` parameterised by
 the relation ONE LEVEL DOWN (a PARAMETER, so positivity holds — verified), with a `universe` arm denoting
-`fun typeCode => ∃ candidate, lowerReducible typeCode candidate` ("is a reducible type at the lower level").
+`fun typeCode => IsStronglyNormalizing typeCode ∧ ∃ candidate, lowerReducible typeCode candidate`
+("is a STRONGLY-NORMALIZING reducible type at the lower level").  The `IsStronglyNormalizing` conjunct is
+load-bearing: the `neutral` arm admits non-SN reducible types (`app (var f) omega` is weak-head-normal yet
+loops), so without it the universe candidate would contain non-SN members and FAIL CR1; conjoining SN
+filters them out — see `universeReducibilityPredicate` and the `universeCode` arm.
 The level-indexed relation `ReducibleTypeAt` ties the knot by recursion on a `Nat` fuel level: level `0`
 has an empty lower relation; level `n+1` feeds level `n` as the lower relation.  A term using universe
 nesting depth `k` is reducible at any level `≥ k`.
@@ -45,6 +49,17 @@ guard) and `Iff.rfl` (two universe arms share the candidate at a fixed lower rel
 namespace FX1Poly.Core
 open FX1Poly.Foundation
 open StepStar
+
+/-- **The Tarski-universe candidate predicate.**  A universe code's candidate: a type code is in the
+universe when it is strongly normalizing AND denotes some candidate at the lower level (is a reducible type
+there).  The SN conjunct is what makes this a Girard reducibility candidate — CR1 (members are SN) reads it
+off the conjunct, where the bare "is a reducible type" predicate would fail it (the `neutral` arm admits
+non-SN reducible types). -/
+def universeReducibilityPredicate {scope : Nat}
+    (lowerReducible : RawTerm scope → (RawTerm scope → Prop) → Prop) :
+    RawTerm scope → Prop :=
+  fun typeCode => IsStronglyNormalizing typeCode ∧
+    ∃ candidate : RawTerm scope → Prop, lowerReducible typeCode candidate
 
 /-- **The stratified reducibility step-functor.**  `ReducibleTypeStep lowerReducible` assigns a candidate
 to a type-code GIVEN the reducibility relation one level down (`lowerReducible`, a parameter).  Three arms
@@ -79,11 +94,16 @@ inductive ReducibleTypeStep {scope : Nat}
         (fun functionTerm => ∀ argument : RawTerm scope, domainCandidate argument →
           codomainCandidate argument
             (.mkGen .gen_app () (.childCons functionTerm (.childCons argument .childNil))))
-  /-- The Tarski universe: a universe code denotes "is a reducible type at the lower level". -/
+  /-- The Tarski universe: a universe code denotes "is a STRONGLY-NORMALIZING reducible type at the lower
+  level" (`universeReducibilityPredicate`).  The `IsStronglyNormalizing` conjunct is load-bearing for CR1:
+  the `neutral` arm admits non-SN reducible types (e.g. `app (var f) omega`, weak-head-normal but looping),
+  so the bare "is a reducible type" predicate would contain non-SN members and FAIL CR1.  Conjoining SN
+  filters those out and — at a type variable — makes a reducible environment carry BOTH the variable's SN
+  witness AND its candidate. -/
   | universeCode (levelExpr : FX1Poly.Universe.LevelExpr) (flag : FX1Poly.Universe.UniverseFlag) :
       ReducibleTypeStep lowerReducible
         (.mkGen .gen_universeCode (levelExpr, flag) .childNil)
-        (fun typeCode => ∃ candidate : RawTerm scope → Prop, lowerReducible typeCode candidate)
+        (universeReducibilityPredicate lowerReducible)
 
 /-- **The level-indexed reducibility relation.**  By recursion on a `Nat` fuel level: at level `0` the
 lower relation is empty (`fun _ _ => False`, so a universe denotes "is a reducible type at level −1" = the

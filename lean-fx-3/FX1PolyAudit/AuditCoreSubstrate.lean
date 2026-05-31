@@ -40,6 +40,7 @@ import FX1Poly.Core.ReducibleMemberNeutral
 import FX1Poly.Core.ReducibleTypeWellFormed
 import FX1Poly.Core.StratifiedReducibleType
 import FX1Poly.Core.StratifiedReducibleTypeForwardClosure
+import FX1Poly.Core.StratifiedReducibleTypeCandidate
 import FX1Poly.Core.RawTermSubstConsCommute
 -- Certifier base (CellBoundary / PolyCell + immediate consumers).
 import FX1Poly.Core.CertifiedRawCell
