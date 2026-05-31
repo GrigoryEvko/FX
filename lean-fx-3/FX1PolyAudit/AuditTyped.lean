@@ -677,3 +677,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.substContextCondition_cons
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.substRespectingContext
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.substRespectingTelescope
+
+/-! ### GROWN β SUBJECT REDUCTION — the subst0 corollary + general β-coherence.
+    `HasTypeDescPi.substituteUnderBinding` specializes `substRespectingContext` to the singleton
+    substitution (substitute a grown-typed `argument` for de Bruijn 0) — the grown β-engine, mirror
+    of the formation `HasTypeDesc.substituteUnderBinding`.  `HasTypeDescPi.betaCoherence` is the
+    first FULLY-GENERAL non-vacuous β subject reduction: a redex `appCell (lamCell body) argument`
+    from GROWN components and its β-reduct `subst0 body argument` are BOTH typed at the same
+    `subst0 codomainCode argument` (redex by `piElim ∘ piIntro`, reduct by `substituteUnderBinding`).
+    It strictly generalizes `betaCoherence_formationBody` to arbitrary grown body/argument/domain. -/
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.substituteUnderBinding
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.betaCoherence

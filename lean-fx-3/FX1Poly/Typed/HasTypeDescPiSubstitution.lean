@@ -37,6 +37,15 @@ result lands in `HasTypeDescPi`, never `HasTypeDesc`.
   reshapes the dependent output by `RawTerm.subst0_subst_commute` and reassembles via `subst_appCell`;
   `genFormationPi` substitutes the spine through the companion and re-fires generically.
 
+* `HasTypeDescPi.substituteUnderBinding` — the subst0 corollary (the grown β-engine): the
+  singleton-substitution specialization (`subject[argument]`, `classifier[argument]`), the grown
+  mirror of `HasTypeDesc.substituteUnderBinding`.
+
+* `HasTypeDescPi.betaCoherence` — GENERAL non-vacuous β subject reduction: a redex
+  `appCell (lamCell body) argument` from GROWN components and its reduct `subst0 body argument` are
+  BOTH typed at `subst0 codomainCode argument` (redex by `piElim ∘ piIntro`, reduct by
+  `substituteUnderBinding`).  Strictly generalizes the formation-component `betaCoherence_formationBody`.
+
 ## Why two mutual blocks, not one
 
 Each block stays WITHIN one inductive family — `substIntoGrown` over `HasTypeDesc`/`DescTelescope`,
@@ -425,5 +434,69 @@ theorem DescTelescopePi.substRespectingTelescope {profile : PolyProfile}
               (RawTerm.subst (iterateLiftRaw substitution currentDepth) head)
 
 end
+
+/-- Typed single-substitution (the grown β-engine's subst0 corollary): substituting a GROWN-typed
+`argument` for de Bruijn 0 throughout a grown derivation preserves `HasTypeDescPi`.  The
+singleton-substitution specialization of `substRespectingContext` — `HasTypeDescPi (Γ.cons argType)
+subject classifier` and `HasTypeDescPi Γ argument argType` give `HasTypeDescPi Γ (subject[argument])
+(classifier[argument])`.  The side condition splits `Fin` `0`/successor: position `0` returns the
+argument (after the singleton cancels the weakening), position `k+1` a shifted variable (via
+`ofFormation`).  The grown mirror of `HasTypeDesc.substituteUnderBinding`. -/
+theorem HasTypeDescPi.substituteUnderBinding {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {argType : RawTerm scope}
+    {subject classifier : RawTerm (scope + 1)} (argument : RawTerm scope)
+    (derivation : HasTypeDescPi profile (context.cons argType) subject classifier)
+    (argumentTyped : HasTypeDescPi profile context argument argType) :
+    HasTypeDescPi profile context
+      (RawTerm.subst0 subject argument)
+      (RawTerm.subst0 classifier argument) := by
+  refine derivation.substRespectingContext context
+    (RawTermSubst.singleton argument) ?_
+  intro index
+  obtain ⟨indexValue, indexBound⟩ := index
+  cases indexValue with
+  | zero =>
+      show HasTypeDescPi profile context argument
+        (RawTerm.subst (RawTermSubst.singleton argument)
+          (RawTerm.rename RawRenaming.weaken argType))
+      rw [subst_singleton_renameWeaken_cancel]
+      exact argumentTyped
+  | succ k =>
+      show HasTypeDescPi profile context
+          (variableCell ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩)
+        (RawTerm.subst (RawTermSubst.singleton argument)
+          (RawTerm.rename RawRenaming.weaken
+            (context.lookup ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩)))
+      rw [subst_singleton_renameWeaken_cancel]
+      exact HasTypeDescPi.ofFormation
+        (HasTypeDesc.var context ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩)
+
+/-- GENERAL non-vacuous β subject reduction for grown redexes: the β-rule preserves typing for a
+redex built from GROWN components.  For `body : codomainCode` under `context.cons domainCode`,
+`argument : domainCode`, and `domainCode` a grown type — BOTH the redex
+`appCell (lamCell body) argument` and its β-reduct `subst0 body argument` (the contractum of
+`Step.beta`) are typed at `subst0 codomainCode argument`.  The redex types by `piElim ∘ piIntro`; the
+reduct by the grown `substituteUnderBinding`.  This STRICTLY GENERALIZES
+`betaCoherence_formationBody` (which required formation components) to arbitrary grown
+body/argument/domain — the PRESERVATION direction for component-given grown redexes (the fully-general
+inverted SR over an arbitrary `HasTypeDescPi` derivation modulo `conv` additionally needs Π-arm
+inversion). -/
+theorem HasTypeDescPi.betaCoherence {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
+    {argument : RawTerm scope}
+    (bodyTyped : HasTypeDescPi profile (context.cons domainCode) body codomainCode)
+    (argumentTyped : HasTypeDescPi profile context argument domainCode)
+    (domainIsType : IsTypeDescPi profile context domainCode) :
+    HasTypeDescPi profile context (appCell (lamCell body) argument)
+        (RawTerm.subst0 codomainCode argument)
+      ∧ HasTypeDescPi profile context (RawTerm.subst0 body argument)
+        (RawTerm.subst0 codomainCode argument) := by
+  obtain ⟨domainLevel, domainFlag, domainTyped⟩ := domainIsType
+  refine ⟨?_, ?_⟩
+  · exact HasTypeDescPi.piElim
+      (HasTypeDescPi.piIntro domainLevel domainFlag domainTyped bodyTyped)
+      argumentTyped
+  · exact HasTypeDescPi.substituteUnderBinding argument bodyTyped argumentTyped
 
 end FX1Poly.Typed
