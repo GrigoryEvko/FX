@@ -144,6 +144,52 @@ theorem ReducibleEnvAtAllLevelsWithTypeValueCandidates.consArgumentAtPositiveMem
         positiveMemberExtension.toAllReducibleTypesHaveTypeValueCandidates
         argumentAtAllPositiveLevelsInUniverse candidatePredLevel)
 
+/-- **Positive candidates from a type-in-universe result over the type-value environment.**  This is the
+member-only counterpart of
+`FundamentalValidityWithTypeValueCandidates.toPositiveCandidateOfUniverseClassifier`: it does not require
+the bundled type-value payload.  Instead, positive-member extension supplies the semantic completion from
+the member half's strong-normalization plus all-level reducible-type extraction. -/
+theorem FundamentalConclusionWithTypeValueCandidates.typeInUniverse_hasPositiveCandidateOfPositiveMemberExtension
+    {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
+    {typeCode : RawTerm scope} {levelExpr : LevelExpr} {flag : UniverseFlag}
+    (positiveMemberExtension :
+      HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes)
+    (typeFundamental :
+      FundamentalConclusionWithTypeValueCandidates context typeCode
+        (universeCodeCell levelExpr flag)) :
+    PositiveCandidateConclusionWithTypeValueCandidates context typeCode := by
+  intro _targetScope substitution envWithTypeValueCandidates predLevel
+  have typeData :=
+    FundamentalConclusionWithTypeValueCandidates.typeInUniverse_hasStrongNormalizationAndAllLevelReducibility
+      typeFundamental substitution envWithTypeValueCandidates
+  exact positiveMemberExtension.toAllReducibleTypesHaveTypeValueCandidates
+    typeData.1 typeData.2 predLevel
+
+/-- **Positive-fuel members under a type-value-environment type-in-universe result extend to all positive
+fuels.**  This is the member-strengthening projection of
+`FundamentalConclusionWithTypeValueCandidates.typeInUniverse_hasPositiveCandidateOfPositiveMemberExtension`.
+-/
+theorem FundamentalConclusionWithTypeValueCandidates.typeInUniverse_positiveMemberExtendsToAllPositiveOfPositiveMemberExtension
+    {profile : PolyProfile} {scope targetScope : Nat}
+    {context : TypingContext profile scope}
+    {typeCode : RawTerm scope} {levelExpr : LevelExpr} {flag : UniverseFlag}
+    {argument : RawTerm (targetScope + 1)} {memberPredLevel : Nat}
+    (positiveMemberExtension :
+      HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes)
+    (typeFundamental :
+      FundamentalConclusionWithTypeValueCandidates context typeCode
+        (universeCodeCell levelExpr flag))
+    (substitution : RawTermSubst scope (targetScope + 1))
+    (envWithTypeValueCandidates :
+      ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution)
+    (argumentMember :
+      IsReducibleMemberAt (memberPredLevel + 1) (RawTerm.subst substitution typeCode) argument) :
+    IsReducibleMemberAtAllPositiveLevels (RawTerm.subst substitution typeCode) argument :=
+  IsReducibleMemberAt.extendsToAllPositiveOfAllPositiveCandidate
+    (FundamentalConclusionWithTypeValueCandidates.typeInUniverse_hasPositiveCandidateOfPositiveMemberExtension
+      positiveMemberExtension typeFundamental substitution envWithTypeValueCandidates memberPredLevel)
+    argumentMember
+
 /-- **Telescope cons through positive-member extension with an explicit fuel-zero branch.**  The telescope
 tail is asked for every `memberLevel`.  Positive-member extension covers only the positive levels
 `memberPredLevel + 1`; therefore this bridge keeps the fuel-zero tail premise explicit and uses
