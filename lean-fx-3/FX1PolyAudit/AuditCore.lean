@@ -2,6 +2,7 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.Core.CellSort
 import FX1Poly.Typed.HasType
 import FX1Poly.Core.GeneratorTagRoundTrip
+import FX1Poly.Core.ReducibleTypeClosed
 
 /-! # FX1PolyAudit/AuditCore — zero-axiom gate for the cell-calculus core
 
@@ -42,3 +43,11 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.Generator.fromTag
 #assert_no_axioms FX1Poly.Core.Generator.fromTag_toNat
 #assert_no_axioms FX1Poly.Core.Generator.toNat_injective
+
+-- Pointwise-saturation of the dependent reducibility relation (the level-free FT's choice-free piIntro
+-- keystone): `ReducibleTypeClosed` is closed under pointwise-iff by construction, so it carries the
+-- canonical member-predicate candidate that bare `ReducibleType` cannot.  (New file outside the
+-- AuditCoreSubstrate sweep's import closure, so gated per-declaration here.)
+#assert_no_axioms FX1Poly.Core.ReducibleTypeClosed
+#assert_no_axioms FX1Poly.Core.ReducibleType.toClosed
+#assert_no_axioms FX1Poly.Core.ReducibleType.closedAtMemberPredicate
