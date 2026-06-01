@@ -55,6 +55,7 @@ import FX1Poly.Typed.HasTypeDescPiFundamentalVectorFromFormation
 import FX1Poly.Typed.ReducibleEnvVec
 import FX1Poly.Typed.ReducibleEnvVecTypeVariable
 import FX1Poly.Typed.HasTypeDescPiConsistency
+import FX1Poly.Typed.HasTypeFormationNoLambdaApplication
 import FX1Poly.Typed.ReducibleSemanticRules
 import FX1Poly.Typed.ReducibleMemberFormation
 import FX1Poly.Typed.DescTelescopeInversion
@@ -969,6 +970,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectRootGenerator
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectRootGenerator
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedSubjectRootGenerator
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectRootGenerator_ne_lam
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectRootGenerator_ne_app
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectCannotBeLambda
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectCannotBeApplication
+#assert_no_axioms FX1Poly.Typed.HasType.subjectRootGenerator_ne_lam
+#assert_no_axioms FX1Poly.Typed.HasType.subjectRootGenerator_ne_app
+#assert_no_axioms FX1Poly.Typed.HasType.subjectCannotBeLambda
+#assert_no_axioms FX1Poly.Typed.HasType.subjectCannotBeApplication
 
 /-! ### FORMATION-ARM BRIDGE: membership at a universe-code classifier ⟺ strong normalization.
     A universe code is a normal leaf (`noStep_universeCode`), hence neutral, so the dependent
