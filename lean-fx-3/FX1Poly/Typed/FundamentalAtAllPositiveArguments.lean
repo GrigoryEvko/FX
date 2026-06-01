@@ -136,6 +136,19 @@ theorem HasAllPositiveReducibleCandidateAt.memberExtendsToAllPositive {scope : N
     IsReducibleMemberAtAllPositiveLevels typeCode term :=
   (ReducibleTypeAt.deterministic candidateReducible hasAllPositiveCandidate term).mp candidateMember
 
+/-- **Concrete-member extension from an all-positive candidate at the same fuel.**  If a type denotes the
+all-positive member predicate at the exact fuel where a concrete term is known to be a member, then that
+term extends to membership at every positive fuel.  This packages the existential member witness before the
+shape-specific Pi/Sigma/universe dispatch lemmas below. -/
+theorem IsReducibleMemberAt.extendsToAllPositiveOfAllPositiveCandidate {scope : Nat}
+    {level : Nat} {typeCode term : RawTerm scope}
+    (hasAllPositiveCandidate : HasAllPositiveReducibleCandidateAt level typeCode)
+    (member : IsReducibleMemberAt level typeCode term) :
+    IsReducibleMemberAtAllPositiveLevels typeCode term := by
+  obtain ⟨candidate, candidateReducible, candidateMember⟩ := member
+  exact HasAllPositiveReducibleCandidateAt.memberExtendsToAllPositive
+    hasAllPositiveCandidate candidateReducible candidateMember
+
 /-- **Neutral classifiers have the all-positive member predicate as a reducible candidate.**  For a
 weak-head-normal classifier that is neither Π-rooted nor universe-rooted, stratified membership is exactly
 strong normalization at every level.  Therefore the candidate `IsStronglyNormalizing` is pointwise equivalent
@@ -180,14 +193,10 @@ theorem IsReducibleMemberAt.extendsToAllPositiveAtNeutralClassifier {scope : Nat
     (notPiType : typeCode.rootGenerator ≠ Generator.gen_piTyCode)
     (notUniverse : typeCode.rootGenerator ≠ Generator.gen_universeCode)
     (member : IsReducibleMemberAt memberLevel typeCode term) :
-    IsReducibleMemberAtAllPositiveLevels typeCode term := by
-  have termNormalizing :
-      IsStronglyNormalizing term :=
-    (IsReducibleMemberAt.atNeutralClassifier (level := memberLevel)
-      weakHeadNormal notPiType notUniverse).mp member
-  intro positiveLevel
-  exact (IsReducibleMemberAt.atNeutralClassifier (level := positiveLevel + 1)
-    weakHeadNormal notPiType notUniverse).mpr termNormalizing
+    IsReducibleMemberAtAllPositiveLevels typeCode term :=
+  IsReducibleMemberAt.extendsToAllPositiveOfAllPositiveCandidate
+    (HasAllPositiveReducibleCandidateAt.ofNeutralClassifier weakHeadNormal notPiType notUniverse)
+    member
 
 /-- **Π types preserve the all-positive candidate discipline.**  If the domain has the all-positive
 member-predicate as a reducible candidate at every level, and every instantiated codomain has the same
@@ -347,6 +356,26 @@ theorem HasAllPositiveReducibleCandidateAt.piTypeAtPositiveLevel {scope : Nat} {
       exact applicationAtAllPositiveLevels positiveLevel
   exact ReducibleTypeStep.ofPointwiseIff piReducibleAtLevel pointwise
 
+/-- **Members of a Π type-code extend to all positive fuels from all-fuel Pi companions.**  This is the
+membership-level structural clause for non-universe domains: once the domain and all instantiated
+codomains already expose the all-positive member predicate as candidates at every fuel, any concrete member
+of the Π code upgrades to all-positive membership. -/
+theorem IsReducibleMemberAt.extendsToAllPositiveAtPiType {scope : Nat}
+    {memberLevel : Nat} {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {functionTerm : RawTerm scope}
+    (domainHasAllPositiveCandidate :
+      ∀ level : Nat, HasAllPositiveReducibleCandidateAt level domainCode)
+    (codomainHasAllPositiveCandidate :
+      ∀ (level : Nat) (argument : RawTerm scope),
+        IsReducibleMemberAtAllPositiveLevels domainCode argument →
+          HasAllPositiveReducibleCandidateAt level (RawTerm.subst0 codomainCode argument))
+    (member : IsReducibleMemberAt memberLevel (piTyCodeCell domainCode codomainCode) functionTerm) :
+    IsReducibleMemberAtAllPositiveLevels (piTyCodeCell domainCode codomainCode) functionTerm :=
+  IsReducibleMemberAt.extendsToAllPositiveOfAllPositiveCandidate
+    (HasAllPositiveReducibleCandidateAt.piType
+      domainHasAllPositiveCandidate codomainHasAllPositiveCandidate)
+    member
+
 /-- **Substituted Π types preserve the all-positive candidate discipline.**  This is the
 under-substitution form consumed by a type companion for the fundamental theorem: after distributing the
 closing substitution over the Π cell, `HasAllPositiveReducibleCandidateAt.piType` applies to the substituted
@@ -388,6 +417,28 @@ theorem HasAllPositiveReducibleCandidateAt.piTypeUnderSubstAtPositiveLevel
   exact HasAllPositiveReducibleCandidateAt.piTypeAtPositiveLevel
     domainHasAllPositiveCandidate codomainHasAllPositiveCandidate
 
+/-- **Positive-fuel Π members extend to all positive fuels from positive-fuel Pi companions.**  This is the
+universe-compatible Pi member clause: it only requires the domain and instantiated codomains to expose the
+all-positive member predicate at positive fuels, matching the fact that universe codes cannot do so at
+fuel `0`. -/
+theorem IsReducibleMemberAt.extendsToAllPositiveAtPositivePiType {scope : Nat}
+    {predLevel : Nat} {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {functionTerm : RawTerm scope}
+    (domainHasAllPositiveCandidate :
+      ∀ predLevel : Nat, HasAllPositiveReducibleCandidateAt (predLevel + 1) domainCode)
+    (codomainHasAllPositiveCandidate :
+      ∀ (predLevel : Nat) (argument : RawTerm scope),
+        IsReducibleMemberAtAllPositiveLevels domainCode argument →
+          HasAllPositiveReducibleCandidateAt (predLevel + 1)
+            (RawTerm.subst0 codomainCode argument))
+    (member :
+      IsReducibleMemberAt (predLevel + 1) (piTyCodeCell domainCode codomainCode) functionTerm) :
+    IsReducibleMemberAtAllPositiveLevels (piTyCodeCell domainCode codomainCode) functionTerm :=
+  IsReducibleMemberAt.extendsToAllPositiveOfAllPositiveCandidate
+    (HasAllPositiveReducibleCandidateAt.piTypeAtPositiveLevel
+      domainHasAllPositiveCandidate codomainHasAllPositiveCandidate)
+    member
+
 /-- **Σ type codes have the all-positive member predicate as their reducible candidate.**  In the current
 stratified reducibility relation, only Π codes receive a dependent-arrow candidate; Σ codes are
 weak-head-normal non-Π non-universe classifiers, hence they use the neutral strong-normalization candidate at
@@ -399,6 +450,18 @@ theorem HasAllPositiveReducibleCandidateAt.sigmaType {scope : Nat} {level : Nat}
     (fun _reduct weakHeadStep => by cases weakHeadStep with | rootIota iotaStep => cases iotaStep)
     (fun rootEquation => nomatch rootEquation)
     (fun rootEquation => nomatch rootEquation)
+
+/-- **Members of a Σ type-code extend to all positive fuels.**  In this stratified model, Σ codes are
+neutral non-Π non-universe classifiers, hence they already expose the all-positive member predicate at
+every fuel. -/
+theorem IsReducibleMemberAt.extendsToAllPositiveAtSigmaType {scope : Nat}
+    {memberLevel : Nat} {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {term : RawTerm scope}
+    (member : IsReducibleMemberAt memberLevel (sigmaTyCodeCell domainCode codomainCode) term) :
+    IsReducibleMemberAtAllPositiveLevels (sigmaTyCodeCell domainCode codomainCode) term :=
+  IsReducibleMemberAt.extendsToAllPositiveOfAllPositiveCandidate
+    (HasAllPositiveReducibleCandidateAt.sigmaType domainCode codomainCode)
+    member
 
 /-- **Substituted Σ type codes have the all-positive member predicate as their reducible candidate.**  The
 substitution distributes over the Σ cell, and the resulting Σ code is still a neutral non-Π non-universe
@@ -517,6 +580,27 @@ theorem HasAllPositiveReducibleCandidateAt.universeCodeOfLowerTypeExtendsToAllLe
       exact ⟨normalizingAndReducibleAtAllLevels.1,
         normalizingAndReducibleAtAllLevels.2 predLevel⟩
   exact ReducibleTypeStep.ofPointwiseIff (ReducibleTypeStep.universeCode levelExpr flag) pointwise
+
+/-- **Positive-fuel universe members extend when lower reducible types extend.**  A member of `Type@level`
+at fuel `predLevel + 1` contains a strongly-normalizing type reducible at lower fuel `predLevel`.  If that
+lower reducibility extends to all fuels, the universe code has the all-positive member predicate as its
+candidate at the original positive fuel, and the concrete member upgrades to all positive levels. -/
+theorem IsReducibleMemberAt.extendsToAllPositiveAtUniverseCodeOfLowerTypeExtendsToAllLevels
+    {scope : Nat} {predLevel : Nat} {levelExpr : LevelExpr} {flag : UniverseFlag}
+    {typeCode : RawTerm scope}
+    (lowerTypeExtendsToAllLevels :
+      ∀ typeCode : RawTerm scope,
+        IsStronglyNormalizing typeCode →
+          IsReducibleTypeAt predLevel typeCode → IsReducibleTypeAtAllLevels typeCode)
+    (member :
+      IsReducibleMemberAt (predLevel + 1)
+        (universeCodeCell levelExpr flag : RawTerm scope) typeCode) :
+    IsReducibleMemberAtAllPositiveLevels
+      (universeCodeCell levelExpr flag : RawTerm scope) typeCode :=
+  IsReducibleMemberAt.extendsToAllPositiveOfAllPositiveCandidate
+    (HasAllPositiveReducibleCandidateAt.universeCodeOfLowerTypeExtendsToAllLevels
+      levelExpr flag lowerTypeExtendsToAllLevels)
+    member
 
 /-- **Fuel-zero universe membership is empty.**  At reducibility fuel `0`, a universe code's candidate is
 `universeReducibilityPredicate` over the empty lower relation, so no term can be a member of any universe
