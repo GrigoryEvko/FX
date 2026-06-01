@@ -42,6 +42,7 @@ import FX1Poly.Typed.ConvCodeInjectivity
 import FX1Poly.Typed.ReducibleEnv
 import FX1Poly.Typed.ReducibleEnvAt
 import FX1Poly.Typed.ReducibleEnvVec
+import FX1Poly.Typed.ReducibleEnvVecTypeVariable
 import FX1Poly.Typed.HasTypeDescPiConsistency
 import FX1Poly.Typed.ReducibleSemanticRules
 import FX1Poly.Typed.ReducibleMemberFormation
@@ -799,6 +800,7 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvVec.lookupReducible
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvVec.empty
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvVec.cons
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvVec.typeVariableReducible
 
 /-! ### SEMANTIC TYPING RULES UNDER A CLOSING SUBSTITUTION (the fundamental theorem's arm bodies).
     The Girard-Tait fundamental theorem over `HasTypeDescPi` is a thin induction whose arms dispatch to
