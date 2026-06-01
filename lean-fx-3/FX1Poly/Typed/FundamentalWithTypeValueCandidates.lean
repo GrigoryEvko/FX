@@ -1541,6 +1541,150 @@ theorem fundamentalSigmaFormationValidityWithTypeValueCandidatesOfAllReducibleTy
         substitutedDomainIsUniverse candidatePredLevel)
     codomainMemberAtDomainLevel codomainValidity.memberConclusion
 
+/-- **Base-level codomain premise from a fuel-zero-empty domain.**  This is the reusable form of the
+universe-domain trick: if the substituted domain has no members at fuel zero, then the base-level branch of
+former-child reducibility is discharged by contradiction.  At successor fuel, the domain positive-candidate
+companion upgrades the argument to all-positive membership, the caller's type-value payload extends the
+environment, and the codomain recursive premise runs one level up. -/
+theorem codomainMemberAtDomainLevelWithTypeValueCandidatesFromNoZeroDomain
+    {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {codomainLevel : LevelExpr} {flag : UniverseFlag}
+    (domainHasPositiveCandidate :
+      PositiveCandidateConclusionWithTypeValueCandidates context domainCode)
+    (domainHasNoMemberAtZero :
+      ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+        (_env : ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution)
+        (argument : RawTerm (targetScope + 1)),
+        IsReducibleMemberAt 0 (RawTerm.subst substitution domainCode) argument → False)
+    (argumentValueHasPositiveCandidateWhenDomainIsUniverse :
+      ∀ {targetScope : Nat}
+        (substitution : RawTermSubst scope (targetScope + 1))
+        (_env : ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution)
+        (argument : RawTerm (targetScope + 1)),
+        IsReducibleMemberAtAllPositiveLevels (RawTerm.subst substitution domainCode) argument →
+          ∀ {levelExpr : LevelExpr} {domainFlag : UniverseFlag},
+            RawTerm.subst substitution domainCode = universeCodeCell levelExpr domainFlag →
+              ∀ candidatePredLevel : Nat,
+                HasAllPositiveReducibleCandidateAt (candidatePredLevel + 1) argument)
+    (codomainFundamental :
+      FundamentalConclusionWithTypeValueCandidates (context.cons domainCode) codomainCode
+        (universeCodeCell codomainLevel flag)) :
+    ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+      (_env : ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution)
+      (predLevel : Nat) (argument : RawTerm (targetScope + 1)),
+      IsReducibleMemberAt predLevel (RawTerm.subst substitution domainCode) argument →
+      IsReducibleMemberAt (predLevel + 1) (universeCodeCell codomainLevel flag)
+        (RawTerm.subst (RawTermSubst.cons argument substitution) codomainCode) := by
+  intro _targetScope substitution envWithTypeValueCandidates predLevel argument argumentMember
+  cases predLevel with
+  | zero =>
+      exact False.elim
+        (domainHasNoMemberAtZero substitution envWithTypeValueCandidates argument argumentMember)
+  | succ memberPredLevel =>
+      obtain ⟨domainCandidate, domainReducible, argumentInDomain⟩ := argumentMember
+      have argumentAtAllPositiveLevels :
+          IsReducibleMemberAtAllPositiveLevels
+            (RawTerm.subst substitution domainCode) argument :=
+        HasAllPositiveReducibleCandidateAt.memberExtendsToAllPositive
+          (domainHasPositiveCandidate substitution envWithTypeValueCandidates memberPredLevel)
+          domainReducible argumentInDomain
+      have extendedEnvWithTypeValueCandidates :
+          ReducibleEnvAtAllLevelsWithTypeValueCandidates (context.cons domainCode)
+            (RawTermSubst.cons argument substitution) :=
+        ReducibleEnvAtAllLevelsWithTypeValueCandidates.cons envWithTypeValueCandidates
+          argumentAtAllPositiveLevels
+          (fun headPredLevel =>
+            domainHasPositiveCandidate substitution envWithTypeValueCandidates headPredLevel)
+          (argumentValueHasPositiveCandidateWhenDomainIsUniverse substitution
+            envWithTypeValueCandidates argument argumentAtAllPositiveLevels)
+      exact codomainFundamental (RawTermSubst.cons argument substitution)
+        extendedEnvWithTypeValueCandidates (memberPredLevel + 1)
+
+/-- **Generic Pi-formation validity for fuel-zero-empty domains.**  This specializes the arbitrary-domain
+type-value-completion former arm by deriving the base-level codomain premise from `domainHasNoMemberAtZero`.
+It strictly generalizes the syntactic universe-domain wrapper without claiming all domains satisfy the
+fuel-zero emptiness property. -/
+theorem fundamentalPiFormationValidityWithTypeValueCandidatesFromNoZeroDomainAllReducibleTypesHaveTypeValueCandidates
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
+    (allReducibleTypesHaveTypeValueCandidates :
+      HasTypeValueCandidatesForAllReducibleTypesAtAllLevels)
+    (domainValidity :
+      FundamentalValidityWithTypeValueCandidates context domainCode
+        (universeCodeCell domainLevel flag))
+    (domainHasNoMemberAtZero :
+      ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+        (_env : ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution)
+        (argument : RawTerm (targetScope + 1)),
+        IsReducibleMemberAt 0 (RawTerm.subst substitution domainCode) argument → False)
+    (codomainValidity :
+      FundamentalValidityWithTypeValueCandidates (context.cons domainCode) codomainCode
+        (universeCodeCell codomainLevel flag)) :
+    FundamentalValidityWithTypeValueCandidates context
+      (piTyCodeCell domainCode codomainCode) (universeCodeCell formerLevel flag) := by
+  let domainHasPositiveCandidate :
+      PositiveCandidateConclusionWithTypeValueCandidates context domainCode :=
+    FundamentalValidityWithTypeValueCandidates.toPositiveCandidateOfUniverseClassifier domainValidity
+  let universeMembersHaveTypeValueCandidates :
+      HasTypeValueCandidatesForAllPositiveUniverseMembers :=
+    HasTypeValueCandidatesForAllReducibleTypesAtAllLevels.toUniverseMembers
+      allReducibleTypesHaveTypeValueCandidates
+  exact fundamentalPiFormationValidityWithTypeValueCandidatesOfAllReducibleTypesHaveTypeValueCandidates
+    allReducibleTypesHaveTypeValueCandidates domainValidity
+    (codomainMemberAtDomainLevelWithTypeValueCandidatesFromNoZeroDomain
+      domainHasPositiveCandidate domainHasNoMemberAtZero
+      (fun {_targetScope} substitution envWithTypeValueCandidates argument argumentAtAllPositiveLevels
+          {_levelExpr} {_domainFlag} substitutedDomainIsUniverse candidatePredLevel =>
+        HasTypeValueCandidatesForAllPositiveUniverseMembers.ofSubstitutedUniverseDomainMember
+          universeMembersHaveTypeValueCandidates substitution argumentAtAllPositiveLevels
+          substitutedDomainIsUniverse candidatePredLevel)
+      codomainValidity.memberConclusion)
+    codomainValidity
+
+/-- **Generic Sigma-formation validity for fuel-zero-empty domains.**  Sigma's no-zero-domain wrapper,
+parallel to `fundamentalPiFormationValidityWithTypeValueCandidatesFromNoZeroDomainAllReducibleTypesHaveTypeValueCandidates`. -/
+theorem fundamentalSigmaFormationValidityWithTypeValueCandidatesFromNoZeroDomainAllReducibleTypesHaveTypeValueCandidates
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
+    (allReducibleTypesHaveTypeValueCandidates :
+      HasTypeValueCandidatesForAllReducibleTypesAtAllLevels)
+    (domainValidity :
+      FundamentalValidityWithTypeValueCandidates context domainCode
+        (universeCodeCell domainLevel flag))
+    (domainHasNoMemberAtZero :
+      ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+        (_env : ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution)
+        (argument : RawTerm (targetScope + 1)),
+        IsReducibleMemberAt 0 (RawTerm.subst substitution domainCode) argument → False)
+    (codomainValidity :
+      FundamentalValidityWithTypeValueCandidates (context.cons domainCode) codomainCode
+        (universeCodeCell codomainLevel flag)) :
+    FundamentalValidityWithTypeValueCandidates context
+      (sigmaTyCodeCell domainCode codomainCode) (universeCodeCell formerLevel flag) := by
+  let domainHasPositiveCandidate :
+      PositiveCandidateConclusionWithTypeValueCandidates context domainCode :=
+    FundamentalValidityWithTypeValueCandidates.toPositiveCandidateOfUniverseClassifier domainValidity
+  let universeMembersHaveTypeValueCandidates :
+      HasTypeValueCandidatesForAllPositiveUniverseMembers :=
+    HasTypeValueCandidatesForAllReducibleTypesAtAllLevels.toUniverseMembers
+      allReducibleTypesHaveTypeValueCandidates
+  exact fundamentalSigmaFormationValidityWithTypeValueCandidatesOfAllReducibleTypesHaveTypeValueCandidates
+    allReducibleTypesHaveTypeValueCandidates domainValidity
+    (codomainMemberAtDomainLevelWithTypeValueCandidatesFromNoZeroDomain
+      domainHasPositiveCandidate domainHasNoMemberAtZero
+      (fun {_targetScope} substitution envWithTypeValueCandidates argument argumentAtAllPositiveLevels
+          {_levelExpr} {_domainFlag} substitutedDomainIsUniverse candidatePredLevel =>
+        HasTypeValueCandidatesForAllPositiveUniverseMembers.ofSubstitutedUniverseDomainMember
+          universeMembersHaveTypeValueCandidates substitution argumentAtAllPositiveLevels
+          substitutedDomainIsUniverse candidatePredLevel)
+      codomainValidity.memberConclusion)
+    codomainValidity
+
 /-- **The base-level codomain premise for a universe-code domain over the type-value environment.**  Fuel
 zero is impossible for universe-domain membership.  At successor fuel, the domain positive-candidate
 companion upgrades the argument to all-positive membership, the explicit type-value premise supplies the
