@@ -826,7 +826,8 @@ gates pin them shut.
     level, off-by-one-free), `universeFormation` (`Type@e : Type@(lsucc e)`), and `conv` (reclassifier IH one
     level up → `tarskiDecode` → `castAlongConvUnderSubst`) all close with zero axioms over
     `ReducibleEnvAtAllLevels`, validating the env on the leaf/conv fragment.  The `genFormation` / `piIntro`
-    telescope arms (needing an all-levels telescope) are the separate next development. -/
+    binder companions use the per-variable-level bridge for the fresh argument; their non-recursive packaging
+    gates pin them shut. -/
 #assert_no_axioms FX1Poly.Typed.FundamentalConclusionAtAll
 #assert_no_axioms FX1Poly.Typed.fundamentalVarAtAll
 #assert_no_axioms FX1Poly.Typed.fundamentalUniverseFormationAtAll

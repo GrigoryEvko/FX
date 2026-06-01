@@ -30,10 +30,10 @@ each validated to close over the ∀-level environment:
     environment is passed to both induction hypotheses at their respective levels — exactly what the all-levels
     family delivers.
 
-The remaining `genFormation` arm (and the Π-layer `piIntro`) consume a premise telescope; over the ∀-level
-environment that needs an all-levels telescope-reducibility predicate (the `cons` extension requires the bound
-argument at all levels), a larger separate development.  These three leaf arms confirm the ∀-level environment
-closes the dependent fundamental theorem's leaf/conv fragment with zero axioms.
+The remaining recursive `genFormation` and `piIntro` companions cross binders: their recursor premises must
+use the per-variable-level environment bridge for the freshly bound argument, while the outer theorem remains
+stated over the ∀-level environment.  These leaf arms confirm the ∀-level environment closes the
+non-binder/conv fragment with zero axioms.
 
 ## Zero-axiom verification
 
