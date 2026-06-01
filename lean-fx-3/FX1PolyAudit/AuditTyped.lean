@@ -80,6 +80,7 @@ import FX1Poly.Typed.ReducibleTypeAtAllLevelsPiNeutralDomain
 import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsLeaves
 import FX1Poly.Typed.FundamentalTelescopeConsNeutralDomain
 import FX1Poly.Typed.ReducibleTypeAtAllLevelsPiDomainMemberExtension
+import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsPiMemberExtension
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -1371,3 +1372,9 @@ gates pin them shut.
 -- (rebuild with the domain's fixed canonical member-predicate).  The type leg of the mutual type+member
 -- irrelevance — residual obstruction now purely member-side (member-extension for Π/universe domains).
 #assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllLevels.piTypeOfDomainMemberExtension
+
+-- The MEMBER leg of the Π `piType` arm: a positive-level Π member extends to all positive levels via the
+-- application chain (domain member-ext → `application` → codomain member-ext), run entirely at positive
+-- levels (the degenerate fuel-0 base untouched).  With the type leg, the full `piType` arm of mutual
+-- type+member level-irrelevance is reduced to domain+codomain member-extension.
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.piTypeMemberExtension
