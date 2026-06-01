@@ -124,6 +124,30 @@ def HasTypeDescPiTypeValueReducibilityAndStrongNormalizationTheorem
     HasTypeDescPiTypeValueCandidateSubstitutedStrongNormalizationTheorem profile ∧
       HasTypeDescPiClosedStrongNormalizationTheorem profile
 
+/-- Project the type-value fundamental theorem from the bundled metatheory package. -/
+theorem HasTypeDescPiTypeValueReducibilityAndStrongNormalizationTheorem.fundamentalTheorem
+    {profile : PolyProfile}
+    (metatheory :
+      HasTypeDescPiTypeValueReducibilityAndStrongNormalizationTheorem profile) :
+    HasTypeDescPiTypeValueCandidateFundamentalTheorem profile :=
+  metatheory.1
+
+/-- Project substituted strong normalization from the bundled metatheory package. -/
+theorem HasTypeDescPiTypeValueReducibilityAndStrongNormalizationTheorem.substitutedStrongNormalizationTheorem
+    {profile : PolyProfile}
+    (metatheory :
+      HasTypeDescPiTypeValueReducibilityAndStrongNormalizationTheorem profile) :
+    HasTypeDescPiTypeValueCandidateSubstitutedStrongNormalizationTheorem profile :=
+  metatheory.2.1
+
+/-- Project closed strong normalization from the bundled metatheory package. -/
+theorem HasTypeDescPiTypeValueReducibilityAndStrongNormalizationTheorem.closedStrongNormalizationTheorem
+    {profile : PolyProfile}
+    (metatheory :
+      HasTypeDescPiTypeValueReducibilityAndStrongNormalizationTheorem profile) :
+    HasTypeDescPiClosedStrongNormalizationTheorem profile :=
+  metatheory.2.2
+
 /-- **Type-value validity from an all-level member theorem plus type-value completion.**  An exact
 all-level fundamental conclusion already supplies ordinary member reducibility under the stronger
 type-value environment by forgetting that environment to its all-level projection.  The only additional
