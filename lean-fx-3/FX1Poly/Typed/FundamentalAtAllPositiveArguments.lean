@@ -614,6 +614,60 @@ theorem IsReducibleMemberAt.extendsToAllPositiveAtPositivePiType {scope : Nat}
       domainHasAllPositiveCandidate codomainHasAllPositiveCandidate)
     member
 
+/-- **Positive-fuel Π members extend from structural component member-extension hypotheses.**  This is the
+recursive Pi clause for the all-positive member-extension bridge: if the Π code is reducible as a type at
+all fuels, domain members extend to all positive fuels, and each instantiated codomain's members extend to
+all positive fuels under all-positive domain arguments, then any positive-fuel member of the Π code extends
+to all positive fuels.  The proof builds the all-positive domain and codomain candidates at positive fuels
+from those concrete member-extension hypotheses, then delegates to the positive-fuel Π member clause. -/
+theorem IsReducibleMemberAt.extendsToAllPositiveAtPiTypeOfComponentMemberExtensions {scope : Nat}
+    {memberPredLevel : Nat} {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {functionTerm : RawTerm scope}
+    (piTypeReducibleAtAllLevels :
+      IsReducibleTypeAtAllLevels (piTyCodeCell domainCode codomainCode))
+    (domainMembersExtend :
+      ∀ {argument : RawTerm scope} {predLevel : Nat},
+        IsReducibleMemberAt (predLevel + 1) domainCode argument →
+          IsReducibleMemberAtAllPositiveLevels domainCode argument)
+    (codomainMembersExtend :
+      ∀ argument : RawTerm scope,
+        IsReducibleMemberAtAllPositiveLevels domainCode argument →
+          ∀ {term : RawTerm scope} {predLevel : Nat},
+            IsReducibleMemberAt (predLevel + 1)
+              (RawTerm.subst0 codomainCode argument) term →
+              IsReducibleMemberAtAllPositiveLevels
+                (RawTerm.subst0 codomainCode argument) term)
+    (member :
+      IsReducibleMemberAt (memberPredLevel + 1)
+        (piTyCodeCell domainCode codomainCode) functionTerm) :
+    IsReducibleMemberAtAllPositiveLevels (piTyCodeCell domainCode codomainCode) functionTerm := by
+  have domainReducibleAtAllPositiveLevels :
+      IsReducibleTypeAtAllPositiveLevels domainCode :=
+    (IsReducibleTypeAtAllLevels.domainOfPiType piTypeReducibleAtAllLevels).atAllPositiveLevels
+  have domainHasAllPositiveCandidate :
+      ∀ predLevel : Nat, HasAllPositiveReducibleCandidateAt (predLevel + 1) domainCode :=
+    HasAllPositiveReducibleCandidateAt.atPositiveLevelsOfMemberExtension
+      domainReducibleAtAllPositiveLevels
+      (fun member => domainMembersExtend member)
+  have codomainHasAllPositiveCandidate :
+      ∀ (predLevel : Nat) (argument : RawTerm scope),
+        IsReducibleMemberAtAllPositiveLevels domainCode argument →
+          HasAllPositiveReducibleCandidateAt (predLevel + 1)
+            (RawTerm.subst0 codomainCode argument) := by
+    intro predLevel argument argumentMemberAtAllPositiveLevels
+    have codomainReducibleAtAllPositiveLevels :
+        IsReducibleTypeAtAllPositiveLevels (RawTerm.subst0 codomainCode argument) :=
+      IsReducibleTypeAtAllLevels.codomainOfPiTypeAtAllPositiveArgument
+        piTypeReducibleAtAllLevels argumentMemberAtAllPositiveLevels
+    obtain ⟨codomainCandidate, codomainReducibleAtPositiveLevel⟩ :=
+      codomainReducibleAtAllPositiveLevels predLevel
+    exact HasAllPositiveReducibleCandidateAt.ofMemberExtensionAtPositiveLevel
+      codomainReducibleAtPositiveLevel
+      (fun member =>
+        codomainMembersExtend argument argumentMemberAtAllPositiveLevels member)
+  exact IsReducibleMemberAt.extendsToAllPositiveAtPositivePiType
+    domainHasAllPositiveCandidate codomainHasAllPositiveCandidate member
+
 /-- **Σ type codes have the all-positive member predicate as their reducible candidate.**  In the current
 stratified reducibility relation, only Π codes receive a dependent-arrow candidate; Σ codes are
 weak-head-normal non-Π non-universe classifiers, hence they use the neutral strong-normalization candidate at
