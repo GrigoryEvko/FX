@@ -103,4 +103,29 @@ theorem HasTypeDescPi.subjectRootGenerator {profile : PolyProfile} {scope : Nat}
           simp only [typingRuleDescOf, if_neg isPiFormer, if_neg isSigmaFormer] at isSome
           nomatch isSome)
 
+/-- **Closed grown subjects are rooted at a type code, a λ, or an application.**  The empty-context
+corollary of `subjectRootGenerator`: a closed subject cannot be `gen_var`-rooted (the `gen_var` payload is
+`Fin 0`, uninhabited — refuted via `Nat.not_lt_zero`, NOT `Fin.elim0` which routes through the casesOn
+propext trap), so a closed grown subject is rooted at `gen_universeCode` / `gen_piTyCode` /
+`gen_sigmaTyCode` / `gen_lam` / `gen_app`.  This is the precise statement consistency turns on: of these
+five, only `gen_app` can classify at a non-universe / non-Π type, so `HasTypeDescPi .empty t Empty → False`
+reduces to ruling out a closed application at the empty type — the strong-normalization obligation the
+fundamental theorem discharges. -/
+theorem HasTypeDescPi.closedSubjectRootGenerator {profile : PolyProfile}
+    {subject classifier : RawTerm 0}
+    (typed : HasTypeDescPi profile TypingContext.empty subject classifier) :
+    subject.rootGenerator = Generator.gen_universeCode ∨
+      subject.rootGenerator = Generator.gen_piTyCode ∨
+      subject.rootGenerator = Generator.gen_sigmaTyCode ∨
+      subject.rootGenerator = Generator.gen_lam ∨
+      subject.rootGenerator = Generator.gen_app := by
+  rcases typed.subjectRootGenerator with isVar | rest
+  · exfalso
+    cases subject with
+    | mkGen generator payload children =>
+        have isVarGenerator : generator = Generator.gen_var := isVar
+        subst isVarGenerator
+        exact absurd payload.isLt (Nat.not_lt_zero payload.val)
+  · exact rest
+
 end FX1Poly.Typed

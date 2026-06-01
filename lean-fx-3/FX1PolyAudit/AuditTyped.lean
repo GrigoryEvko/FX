@@ -852,6 +852,7 @@ gates pin them shut.
     recursion sidesteps the HasTypeDescPi/DescTelescopePi mutual-induction rejection. -/
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectRootGenerator
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectRootGenerator
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedSubjectRootGenerator
 
 /-! ### FORMATION-ARM BRIDGE: membership at a universe-code classifier ⟺ strong normalization.
     A universe code is a normal leaf (`noStep_universeCode`), hence neutral, so the dependent
