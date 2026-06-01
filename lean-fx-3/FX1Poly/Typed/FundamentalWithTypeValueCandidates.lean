@@ -335,6 +335,29 @@ theorem fundamentalConvWithTypeValueCandidates
     (subjectFundamental substitution envWithTypeValueCandidates predLevel)
     reclassifierReducible converts
 
+/-- **Bundled conversion validity over the type-value environment, with the target type-value payload
+explicit.**  The ordinary member half is the semantic conversion rule
+`fundamentalConvWithTypeValueCandidates`.  The conditional type-value half is deliberately an input: if a
+conversion changes the classifier into something syntactically universe-shaped after substitution, bare
+membership in that universe gives only lower-level type reducibility, not the all-positive candidate payload
+the strengthened FT motive requires.  This theorem therefore records the exact proof obligation a full
+recursor assembly must discharge rather than hiding it behind a false level-irrelevance cast. -/
+theorem fundamentalConvValidityWithTypeValueCandidatesFromTargetTypeValuePremise
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier reclassifier : RawTerm scope}
+    {levelExpr : LevelExpr} {flag : UniverseFlag}
+    (subjectFundamental :
+      FundamentalConclusionWithTypeValueCandidates context subject classifier)
+    (reclassifierFundamental :
+      FundamentalConclusionWithTypeValueCandidates context reclassifier
+        (universeCodeCell levelExpr flag))
+    (converts : Conv classifier reclassifier)
+    (targetTypeValueCandidate :
+      TypeValueCandidateConclusionWithTypeValueCandidates context subject reclassifier) :
+    FundamentalValidityWithTypeValueCandidates context subject reclassifier :=
+  ⟨fundamentalConvWithTypeValueCandidates subjectFundamental reclassifierFundamental converts,
+    targetTypeValueCandidate⟩
+
 /-- **The `piElim`/application member arm over the type-value environment.**  Application does not need any
 new type-value payload: the dependent application rule consumes the function and argument member premises at
 the same conclusion fuel and performs the codomain substitution bookkeeping internally. -/
@@ -354,6 +377,30 @@ theorem fundamentalPiElimWithTypeValueCandidates
   exact IsReducibleMemberAt.applicationUnderSubst substitution
     (functionFundamental substitution envWithTypeValueCandidates predLevel)
     (argumentFundamental substitution envWithTypeValueCandidates predLevel)
+
+/-- **Bundled dependent application validity over the type-value environment, with the result type-value
+payload explicit.**  The member half is `fundamentalPiElimWithTypeValueCandidates`.  The type-value half is
+again a genuine extra obligation: when the instantiated codomain reduces to a universe-shaped classifier,
+the application result must be known as a type value carrying the all-positive candidate.  Ordinary Π-member
+reducibility alone proves the application is a member of the instantiated codomain; it does not expose the
+stronger type-value payload for universe-valued codomains.  This factored arm is the precise recursor
+interface for the eventual application case. -/
+theorem fundamentalPiElimValidityWithTypeValueCandidatesFromResultTypeValuePremise
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {functionTerm argument domainCode : RawTerm scope}
+    {codomainCode : RawTerm (scope + 1)}
+    (functionFundamental :
+      FundamentalConclusionWithTypeValueCandidates context functionTerm
+        (piTyCodeCell domainCode codomainCode))
+    (argumentFundamental :
+      FundamentalConclusionWithTypeValueCandidates context argument domainCode)
+    (resultTypeValueCandidate :
+      TypeValueCandidateConclusionWithTypeValueCandidates context
+        (appCell functionTerm argument) (RawTerm.subst0 codomainCode argument)) :
+    FundamentalValidityWithTypeValueCandidates context
+      (appCell functionTerm argument) (RawTerm.subst0 codomainCode argument) :=
+  ⟨fundamentalPiElimWithTypeValueCandidates functionFundamental argumentFundamental,
+    resultTypeValueCandidate⟩
 
 /-- **Dependent lambda introduction over the type-value environment, with the universe-domain value
 payload explicit.**  The ordinary member proof is the same canonical-candidate argument as in the
