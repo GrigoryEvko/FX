@@ -40,6 +40,7 @@ import FX1Poly.Typed.HasTypeDescPiApplication
 import FX1Poly.Typed.HasTypeDescPiValidity
 import FX1Poly.Typed.ConvCodeInjectivity
 import FX1Poly.Typed.ReducibleEnv
+import FX1Poly.Typed.ReducibleEnvAt
 import FX1Poly.Typed.ReducibleMemberFormation
 
 /-! # Tools/AuditAll/AuditTyped
@@ -768,6 +769,18 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.ReducibleEnv.lookupReducible
 #assert_no_axioms FX1Poly.Typed.ReducibleEnv.empty
 #assert_no_axioms FX1Poly.Typed.ReducibleEnv.cons
+
+/-! ### LEVEL-INDEXED REDUCIBLE ENVIRONMENT (the conv-closing stratified port of the above).
+    `ReducibleEnvAt level context γ` rides on `IsReducibleMemberAt level` instead of `IsReducibleMember`:
+    its universe arm carries each type variable's candidate ONE LEVEL DOWN, closing the conv-invariance
+    gap the pure-SN `ReducibleEnv` leaves open at a type variable `x : Type@k`.  The `level` is inert
+    through the `cons` binder rewrites (they touch only the looked-up type and substituted term), so the
+    `empty` / `cons` / `lookupReducible` proofs port character-identically.  This is the environment the
+    fundamental theorem over `HasTypeDescPi` actually consumes. -/
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAt
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAt.lookupReducible
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAt.empty
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAt.cons
 
 /-! ### FORMATION-ARM BRIDGE: membership at a universe-code classifier ⟺ strong normalization.
     A universe code is a normal leaf (`noStep_universeCode`), hence neutral, so the dependent
