@@ -81,6 +81,7 @@ import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsLeaves
 import FX1Poly.Typed.FundamentalTelescopeConsNeutralDomain
 import FX1Poly.Typed.ReducibleTypeAtAllLevelsPiDomainMemberExtension
 import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsPiMemberExtension
+import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsHeadExpand
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -1378,3 +1379,9 @@ gates pin them shut.
 -- levels (the degenerate fuel-0 base untouched).  With the type leg, the full `piType` arm of mutual
 -- type+member level-irrelevance is reduced to domain+codomain member-extension.
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.piTypeMemberExtension
+
+-- The member-side `whnfExpand` arm of mutual type+member level-irrelevance: member-extension lifts backward
+-- across one weak-head step of the classifier (peel the member to the shared-candidate contractum, strengthen
+-- by the contractum's member-extension, head-expand back).  With `ofNeutralClassifier` this completes the
+-- member-side arm family for the non-Π / non-universe cases — the structurally-recursive part.
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.extensionHeadExpand
