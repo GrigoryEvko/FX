@@ -1,5 +1,6 @@
 import FX1Poly.Core.StratifiedReducibleMember
 import FX1Poly.Core.StratifiedReducibleTypeNeutral
+import FX1Poly.Core.StratifiedReducibleTypeReducibilityCandidate
 
 /-! # FX1Poly/Core/StratifiedReducibleMemberNeutral
     — stratified membership at a neutral classifier is exactly strong normalization
@@ -71,5 +72,20 @@ theorem IsReducibleMemberAt.atNeutralClassifier {scope : Nat} {level : Nat}
     exact ⟨IsStronglyNormalizing,
       ReducibleTypeAt.stronglyNormalizingAtNeutral weakHeadNormal notPiType notUniverse,
       stronglyNormalizing⟩
+
+/-- **A variable is a stratified reducible member of any reducible type** (at a positive level / non-empty
+scope).  At `predLevel + 1` the type's candidate is a genuine Girard reducibility candidate
+(`ReducibleTypeAt.isReducibilityCandidate`), and every reducibility candidate contains all variables
+(`IsReducibilityCandidate.containsVariable` — a variable is neutral with no reducts, so CR3 holds
+vacuously).  Packaged at the `IsReducibleMemberAt` layer: the witnessing candidate is the type's own, the
+membership is variable-containment.  This is the var-0 ingredient of the binder-lifted reducible
+environment (the fresh variable a `RawTermSubst.lift` introduces is a reducible member of the lifted
+binding type) and the membership form of the fundamental theorem's variable case. -/
+theorem IsReducibleMemberAt.variable {scope : Nat} {predLevel : Nat}
+    {typeCode : RawTerm (scope + 1)} {candidate : RawTerm (scope + 1) → Prop}
+    (reducible : ReducibleTypeAt (predLevel + 1) typeCode candidate)
+    (index : Fin (scope + 1)) :
+    IsReducibleMemberAt (predLevel + 1) typeCode (.mkGen .gen_var index .childNil) :=
+  ⟨candidate, reducible, reducible.isReducibilityCandidate.containsVariable index⟩
 
 end FX1Poly.Core
