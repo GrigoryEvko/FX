@@ -422,6 +422,32 @@ theorem HasTypeValueCandidatesForAllReducibleTypesAtAllLevels.reducibleTypeAtExt
     (levelExpr := LevelExpr.lzero) (flag := UniverseFlag.standard)
     (typeCode := typeCode)).mp typeCodeMemberAtAllPositiveLevels).2
 
+/-- **Positive-member extension supplies the candidate completion principle.**  This named projection keeps
+the operational bridge (`HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes`) as the public
+premise while reusing the already-proved equivalence to the candidate formulation. -/
+theorem HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes.toAllReducibleTypesHaveTypeValueCandidates
+    (positiveMemberExtension :
+      HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes) :
+    HasTypeValueCandidatesForAllReducibleTypesAtAllLevels :=
+  hasTypeValueCandidatesForAllReducibleTypesAtAllLevels_iff_positiveMemberExtension.mpr
+    positiveMemberExtension
+
+/-- **Positive-member extension entails lower-fuel type extension.**  This is the universe-formation bridge
+in its most operational form: if a strongly normalizing type code is reducible at one fuel, then the
+positive-member-extension principle makes it reducible at every fuel.  It is the exact theorem consumed by
+the universe-code/type-value arms after the semantic obligation is discharged. -/
+theorem HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes.reducibleTypeAtExtendsToAllLevels
+    (positiveMemberExtension :
+      HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes)
+    {scope : Nat} {predLevel : Nat} {typeCode : RawTerm scope}
+    {candidate : RawTerm scope → Prop}
+    (typeCodeNormalizing : IsStronglyNormalizing typeCode)
+    (typeCodeReducibleAtLevel : ReducibleTypeAt predLevel typeCode candidate) :
+    IsReducibleTypeAtAllLevels typeCode :=
+  HasTypeValueCandidatesForAllReducibleTypesAtAllLevels.reducibleTypeAtExtendsToAllLevels
+    positiveMemberExtension.toAllReducibleTypesHaveTypeValueCandidates
+    typeCodeNormalizing typeCodeReducibleAtLevel
+
 /-- **A member conclusion yields the type-value payload from the universe-member principle.**  If a
 substituted classifier is syntactically a universe code, the member half can be run at EVERY positive fuel,
 so it exhibits the substituted subject as an all-positive member of that universe.  The global
