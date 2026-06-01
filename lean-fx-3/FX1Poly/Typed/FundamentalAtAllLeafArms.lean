@@ -114,4 +114,55 @@ theorem fundamentalPiElimAtAll {profile : PolyProfile} {scope : Nat}
   exact IsReducibleMemberAt.applicationUnderSubst substitution
     (functionFundamental substitution env predLevel) (argumentFundamental substitution env predLevel)
 
+/-- **The `piIntro` (lambda) arm over the ∀-level conclusion, factored at the real binder boundary.**  The
+domain premise is still an ordinary `FundamentalConclusionAtAll`: run it one level up and `tarskiDecode` to
+obtain the reducible domain type at the conclusion level.  The two binder-recursive premises are stated in
+the EXACT semantic shape `abstractionCanonicalUnderSubst` needs: for every domain-reducible argument, the
+instantiated codomain is a reducible type and the instantiated body is a reducible member of it.
+
+This theorem deliberately does not manufacture those two premises from `FundamentalConclusionAtAll` for the
+extended context.  That is the remaining mutual-recursion/environment problem.  What it does ship is the
+complete, zero-axiom `piIntro` dispatch once that recursive companion has produced the codomain/body semantic
+obligations. -/
+theorem fundamentalPiIntroAtAll {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
+    {domainLevel : LevelExpr} {flag : UniverseFlag}
+    (domainFundamental :
+      FundamentalConclusionAtAll context domainCode (universeCodeCell domainLevel flag))
+    (codomainReducibleUnderArgument :
+      ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+        (_env : ReducibleEnvAtAllLevels context substitution) (predLevel : Nat)
+        {domainCandidate : RawTerm (targetScope + 1) → Prop},
+        ReducibleTypeAt (predLevel + 1) (RawTerm.subst substitution domainCode) domainCandidate →
+        ∀ argument : RawTerm (targetScope + 1), domainCandidate argument →
+          IsReducibleTypeAt (predLevel + 1)
+            (RawTerm.subst0
+              (RawTerm.subst (RawTermSubst.lift substitution) codomainCode) argument))
+    (bodyReducibleUnderArgument :
+      ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+        (_env : ReducibleEnvAtAllLevels context substitution) (predLevel : Nat)
+        {domainCandidate : RawTerm (targetScope + 1) → Prop},
+        ReducibleTypeAt (predLevel + 1) (RawTerm.subst substitution domainCode) domainCandidate →
+        ∀ argument : RawTerm (targetScope + 1), domainCandidate argument →
+          IsReducibleMemberAt (predLevel + 1)
+            (RawTerm.subst0
+              (RawTerm.subst (RawTermSubst.lift substitution) codomainCode) argument)
+            (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) body) argument)) :
+    FundamentalConclusionAtAll context (lamCell body) (piTyCodeCell domainCode codomainCode) := by
+  intro _targetScope substitution env predLevel
+  have domainMember := domainFundamental substitution env (predLevel + 1)
+  rw [subst_universeCodeCell] at domainMember
+  obtain ⟨domainCandidate, domainReducible⟩ := domainMember.tarskiDecode
+  refine IsReducibleMemberAt.abstractionCanonicalUnderSubst substitution domainReducible
+    (fun _argument argumentInDomain =>
+      domainReducible.isReducibilityCandidate.stronglyNormalizing argumentInDomain)
+    ?codomainExists ?bodyReducible
+  · intro argument argumentInDomain
+    exact codomainReducibleUnderArgument substitution env predLevel domainReducible
+      argument argumentInDomain
+  · intro argument argumentInDomain
+    exact bodyReducibleUnderArgument substitution env predLevel domainReducible
+      argument argumentInDomain
+
 end FX1Poly.Typed

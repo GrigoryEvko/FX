@@ -818,6 +818,7 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.fundamentalUniverseFormationAtAll
 #assert_no_axioms FX1Poly.Typed.fundamentalConvAtAll
 #assert_no_axioms FX1Poly.Typed.fundamentalPiElimAtAll
+#assert_no_axioms FX1Poly.Typed.fundamentalPiIntroAtAll
 
 /-! ### PER-VARIABLE-LEVEL reducible environment (the Kripke refinement for the dependent fundamental
     theorem).  `ReducibleEnvAt`'s single global level cannot serve a context that mixes variables at
