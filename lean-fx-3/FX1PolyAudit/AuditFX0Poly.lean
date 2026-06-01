@@ -1,6 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX0Poly.StructuralRecheck
 import FX0Poly.CertRecheck
+import FX0Poly.CertRecheckSound
 
 /-! # FX1PolyAudit/AuditFX0Poly
    — per-declaration zero-axiom gate for the FX0Poly minimal external checker
@@ -35,3 +36,11 @@ Each gate fails the build if its declaration depends on `propext` / `Quot.sound`
 #assert_no_axioms FX0Poly.Cert.recheck_smoke_unknownTag
 #assert_no_axioms FX0Poly.Cert.recheck_smoke_recursiveAccepted
 #assert_no_axioms FX0Poly.Cert.recheck_smoke_recursiveRejected
+
+/-! ### FX0Poly recursive re-check soundness (the driver accepts exactly the structurally-valid trees) -/
+
+#assert_no_axioms FX0Poly.Cert.isValidB
+#assert_no_axioms FX0Poly.Cert.allValidB
+#assert_no_axioms FX0Poly.Cert.recheck_wasAccepted_eq_isValidB
+#assert_no_axioms FX0Poly.Cert.recheckChildren_all_wasAccepted_eq_allValidB
+#assert_no_axioms FX0Poly.Cert.isValidB_smoke_valid
