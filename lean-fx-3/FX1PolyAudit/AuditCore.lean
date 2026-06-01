@@ -4,6 +4,7 @@ import FX1Poly.Typed.HasType
 import FX1Poly.Core.GeneratorTagRoundTrip
 import FX1Poly.Core.ReducibleTypeClosed
 import FX1Poly.Core.PointwiseIffAlgebra
+import FX1Poly.Core.StratifiedReducibleLevelCongr
 
 /-! # FX1PolyAudit/AuditCore — zero-axiom gate for the cell-calculus core
 
@@ -59,3 +60,9 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.PointwiseIff.refl
 #assert_no_axioms FX1Poly.Core.PointwiseIff.symm
 #assert_no_axioms FX1Poly.Core.PointwiseIff.trans
+
+-- Candidate-congruence of the stratified reducibility step-functor under lower-existence-equivalence: the
+-- inductive STEP of level-irrelevance (Π case via ofPointwiseIff, universe case via the lower-existence
+-- equivalence).  Does NOT bootstrap full irrelevance alone (level-0 degenerate base) — see the module
+-- docstring; reusable as the hard core of any future level argument.
+#assert_no_axioms FX1Poly.Core.ReducibleTypeStep.existsCongr
