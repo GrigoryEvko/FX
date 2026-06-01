@@ -6575,6 +6575,69 @@ theorem LevelExpr.MaxPlusForm.canonicalizeVarOffsetsSteps_toMaxPlusForm_le_size
       (LevelExpr.toMaxPlusForm level).varOffsets)
     (Nat.add_le_add (Nat.mul_le_mul hWorkingSet hWorkingSet) hWorkingSet)
 
+/-- The comparison-cost counter for `normalizeBase`'s `maxOffset` fold: one `levelMax` comparison per
+offset entry (the fold visits every entry once), mirroring `maxOffset`'s structural recursion. -/
+def LevelExpr.MaxPlusForm.maxOffsetSteps : List (Nat × Nat) → Nat
+  | [] => 0
+  | _entry :: rest => LevelExpr.MaxPlusForm.maxOffsetSteps rest + 1
+
+/-- The `maxOffset` fold performs EXACTLY `length` comparisons — linear in the offset list (one
+`levelMax` per entry).  Structural induction: the empty list costs `0`, a cons costs the tail's count
+plus the head's single comparison. -/
+theorem LevelExpr.MaxPlusForm.maxOffsetSteps_eq_length (entries : List (Nat × Nat)) :
+    LevelExpr.MaxPlusForm.maxOffsetSteps entries = entries.length := by
+  induction entries with
+  | nil => rfl
+  | cons _entry rest ih =>
+      show LevelExpr.MaxPlusForm.maxOffsetSteps rest + 1 = (_entry :: rest).length
+      rw [List.length_cons, ih]
+
+/-- The comparison-cost counter for `fullCanonicalize` (= `normalizeBase ∘ canonicalize`): the
+variable-offset canonicalization's comparisons (`canonicalizeVarOffsetsSteps` on the input offsets) plus
+the base-normalization fold's comparisons (`maxOffsetSteps` over `canonicalize`'s output offsets, since
+`canonicalize` sets `varOffsets := canonicalizeVarOffsets form.varOffsets` and leaves the base for
+`normalizeBase` to fold). -/
+def LevelExpr.MaxPlusForm.fullCanonicalizeSteps (form : LevelExpr.MaxPlusForm) : Nat :=
+  LevelExpr.MaxPlusForm.canonicalizeVarOffsetsSteps form.varOffsets +
+    LevelExpr.MaxPlusForm.maxOffsetSteps
+      (LevelExpr.MaxPlusForm.canonicalizeVarOffsets form.varOffsets)
+
+/-- **END-TO-END STRICT-COMPLEXITY witness for the level-canonicalization decision engine.**
+`fullCanonicalize`-ing the max-plus form of a level expression performs at most `size² + size + size`
+comparisons — QUADRATIC in the input size.  The sort-dominated offset canonicalization contributes
+`size² + size` (`canonicalizeVarOffsetsSteps_toMaxPlusForm_le_size`); the base-normalization fold
+contributes a further `≤ size` (the post-canonicalization offset list never grows —
+`canonicalizeVarOffsets_length_le` — and starts `≤ size` — `toMaxPlusForm_varOffsets_length_le_size`).
+The quadratic term is the INSERTION sort in `sortByVariable`; an `O(size · log size)` bound would require
+replacing it with a merge sort (deferred — the per-phase cost counters are already factored, so only the
+sort changes). -/
+theorem LevelExpr.MaxPlusForm.fullCanonicalizeSteps_toMaxPlusForm_le_size (level : LevelExpr) :
+    LevelExpr.MaxPlusForm.fullCanonicalizeSteps (LevelExpr.toMaxPlusForm level) ≤
+      level.size * level.size + level.size + level.size := by
+  have hCanon :
+      LevelExpr.MaxPlusForm.canonicalizeVarOffsetsSteps (LevelExpr.toMaxPlusForm level).varOffsets ≤
+        level.size * level.size + level.size :=
+    LevelExpr.MaxPlusForm.canonicalizeVarOffsetsSteps_toMaxPlusForm_le_size level
+  have hNormalize :
+      LevelExpr.MaxPlusForm.maxOffsetSteps
+          (LevelExpr.MaxPlusForm.canonicalizeVarOffsets (LevelExpr.toMaxPlusForm level).varOffsets) ≤
+        level.size := by
+    rw [LevelExpr.MaxPlusForm.maxOffsetSteps_eq_length]
+    exact Nat.le_trans
+      (LevelExpr.MaxPlusForm.canonicalizeVarOffsets_length_le
+        (LevelExpr.toMaxPlusForm level).varOffsets)
+      (LevelExpr.toMaxPlusForm_varOffsets_length_le_size level)
+  show LevelExpr.MaxPlusForm.canonicalizeVarOffsetsSteps (LevelExpr.toMaxPlusForm level).varOffsets +
+      LevelExpr.MaxPlusForm.maxOffsetSteps
+        (LevelExpr.MaxPlusForm.canonicalizeVarOffsets (LevelExpr.toMaxPlusForm level).varOffsets) ≤
+    level.size * level.size + level.size + level.size
+  exact Nat.add_le_add hCanon hNormalize
+
+/-- Non-vacuity: the base-normalization counter computes a concrete, correct, non-zero comparison count
+(`maxOffset` over a two-entry list folds twice), closed by full evaluation. -/
+theorem LevelExpr.MaxPlusForm.maxOffsetSteps_smoke_twoEntries :
+    LevelExpr.MaxPlusForm.maxOffsetSteps [(0, 3), (1, 5)] = 2 := rfl
+
 /-! ### Non-vacuity corpus for the cost counters
 
 The `*Steps` bounds prove "≤ polynomial"; these smokes prove the counters

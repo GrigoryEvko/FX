@@ -417,6 +417,14 @@ full strict-zero-axiom sweep.
 #assert_no_axioms FX1Poly.Universe.LevelExpr.MaxPlusForm.canonicalizeVarOffsetsSteps_le
 #assert_no_axioms FX1Poly.Universe.LevelExpr.MaxPlusForm.canonicalizeVarOffsetsSteps_toMaxPlusForm_le_size
 
+/-! ### Complexity witness — END-TO-END fullCanonicalize cost (canonicalize + normalizeBase fold), QUADRATIC -/
+
+#assert_no_axioms FX1Poly.Universe.LevelExpr.MaxPlusForm.maxOffsetSteps
+#assert_no_axioms FX1Poly.Universe.LevelExpr.MaxPlusForm.maxOffsetSteps_eq_length
+#assert_no_axioms FX1Poly.Universe.LevelExpr.MaxPlusForm.fullCanonicalizeSteps
+#assert_no_axioms FX1Poly.Universe.LevelExpr.MaxPlusForm.fullCanonicalizeSteps_toMaxPlusForm_le_size
+#assert_no_axioms FX1Poly.Universe.LevelExpr.MaxPlusForm.maxOffsetSteps_smoke_twoEntries
+
 /-! ### Complexity witness — cost-counter non-vacuity corpus -/
 
 #assert_no_axioms FX1Poly.Universe.LevelExpr.MaxPlusForm.insertByVariableSteps_smoke_empty
