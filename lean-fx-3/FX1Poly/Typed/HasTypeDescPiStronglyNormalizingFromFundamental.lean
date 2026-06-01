@@ -144,6 +144,22 @@ theorem HasTypeDescPiAllLevelFundamentalTheorem.toTypeValueCandidateFundamentalT
     FundamentalConclusionAtAll.toTypeValueCandidateValidityOfAllReducibleTypesHaveTypeValueCandidates
       (fundamentalTheorem typed) allReducibleTypesHaveTypeValueCandidates
 
+/-- **Promote the exact all-level `HasTypeDescPi` fundamental theorem using positive-member extension.**
+The positive-member-extension premise is the operational binder/telescope bridge: a member of a strongly
+normalizing type reducible at every fuel extends from one positive fuel to all positive fuels.  The candidate
+formulation used by the bundled type-value interface is equivalent to it, so this theorem exposes the
+sharper premise directly instead of forcing callers to package it manually. -/
+theorem HasTypeDescPiAllLevelFundamentalTheorem.toTypeValueCandidateFundamentalTheoremOfPositiveMemberExtension
+    {profile : PolyProfile}
+    (fundamentalTheorem : HasTypeDescPiAllLevelFundamentalTheorem profile)
+    (positiveMemberExtension :
+      HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes) :
+    HasTypeDescPiTypeValueCandidateFundamentalTheorem profile :=
+  HasTypeDescPiAllLevelFundamentalTheorem.toTypeValueCandidateFundamentalTheoremOfAllReducibleTypesHaveTypeValueCandidates
+    fundamentalTheorem
+    (hasTypeValueCandidatesForAllReducibleTypesAtAllLevels_iff_positiveMemberExtension.mpr
+      positiveMemberExtension)
+
 /-- **Substituted strong normalization from an all-level fundamental conclusion.**  This is the exact CR1
 handoff for the dependent `HasTypeDescPi` theorem: after a closing substitution into a positive target
 scope, the substituted subject strongly normalizes whenever the derivation's all-level fundamental
@@ -589,6 +605,21 @@ theorem HasTypeDescPiAllLevelFundamentalTheorem.toTypeValueCandidateSubstitutedS
   HasTypeDescPiTypeValueCandidateFundamentalTheorem.toSubstitutedStrongNormalizationTheorem
     (HasTypeDescPiAllLevelFundamentalTheorem.toTypeValueCandidateFundamentalTheoremOfAllReducibleTypesHaveTypeValueCandidates
       fundamentalTheorem allReducibleTypesHaveTypeValueCandidates)
+
+/-- **Substituted strong normalization in the bundled type-value environment from positive-member
+extension.**  This is the strongest current exported handoff for the multi-universe dependent theorem:
+exact all-level reducibility plus the operational positive-member-extension bridge yields substituted
+strong normalization under the proof-relevant type-value environment. -/
+theorem HasTypeDescPiAllLevelFundamentalTheorem.toTypeValueCandidateSubstitutedStrongNormalizationTheoremOfPositiveMemberExtension
+    {profile : PolyProfile}
+    (fundamentalTheorem : HasTypeDescPiAllLevelFundamentalTheorem profile)
+    (positiveMemberExtension :
+      HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes) :
+    HasTypeDescPiTypeValueCandidateSubstitutedStrongNormalizationTheorem profile :=
+  HasTypeDescPiAllLevelFundamentalTheorem.toTypeValueCandidateSubstitutedStrongNormalizationTheoremOfAllReducibleTypesHaveTypeValueCandidates
+    fundamentalTheorem
+    (hasTypeValueCandidatesForAllReducibleTypesAtAllLevels_iff_positiveMemberExtension.mpr
+      positiveMemberExtension)
 
 /-- **Closed subject-and-classifier strong normalization from the all-level fundamental theorem.** -/
 theorem HasTypeDescPiAllLevelFundamentalTheorem.toClosedStrongNormalizationTheorem
