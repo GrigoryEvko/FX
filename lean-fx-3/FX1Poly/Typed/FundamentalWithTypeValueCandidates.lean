@@ -168,6 +168,77 @@ theorem fundamentalVarValidityWithTypeValueCandidates {profile : PolyProfile} {s
   ⟨fundamentalVarWithTypeValueCandidates context index,
     typeValueCandidateVarWithTypeValueCandidates context index⟩
 
+/-- **Universe formation over the type-value environment.**  This theorem is polymorphic in the syntactic
+universe expression and universe flag; it is not a one-universe result. -/
+theorem fundamentalUniverseFormationWithTypeValueCandidates
+    {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    FundamentalConclusionWithTypeValueCandidates context (universeCodeCell levelExpr flag)
+      (universeCodeCell levelExpr.lsucc flag) :=
+  FundamentalConclusionWithPositiveTypeCandidates.toTypeValueCandidateEnv
+    (fundamentalUniverseFormationWithPositiveTypeCandidates context levelExpr flag)
+
+/-- **Universe-code positive-candidate type half over the type-value environment, conditional on the exact
+lower-type extension obligation.**  The theorem is fully universe-parametric: `levelExpr` and `flag` remain
+arbitrary.  The remaining hypothesis is not a one-universe artifact; it is the honest lower-reducibility
+extension obligation imposed by the stratified fuel semantics for universe candidates. -/
+theorem positiveCandidateUniverseCodeWithTypeValueCandidatesOfLowerTypeExtendsToAllLevels
+    {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (levelExpr : LevelExpr) (flag : UniverseFlag)
+    (lowerTypeExtendsToAllLevels :
+      ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+        (_env : ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution)
+        (predLevel : Nat) (typeCode : RawTerm (targetScope + 1)),
+        IsStronglyNormalizing typeCode →
+          IsReducibleTypeAt predLevel typeCode → IsReducibleTypeAtAllLevels typeCode) :
+    PositiveCandidateConclusionWithTypeValueCandidates context (universeCodeCell levelExpr flag) := by
+  intro _targetScope substitution envWithTypeValueCandidates predLevel
+  rw [subst_universeCodeCell]
+  exact HasAllPositiveReducibleCandidateAt.universeCodeOfLowerTypeExtendsToAllLevels
+    levelExpr flag
+    (fun typeCode typeCodeNormalizing typeCodeReducibleAtLowerLevel =>
+      lowerTypeExtendsToAllLevels substitution envWithTypeValueCandidates predLevel typeCode
+        typeCodeNormalizing typeCodeReducibleAtLowerLevel)
+
+/-- **Universe-code type-value half over the type-value environment, conditional on lower-type extension.**
+Because a universe code is itself a type value, the positive-candidate universe theorem also supplies the
+conditional type-value payload for any universe classifier. -/
+theorem typeValueCandidateUniverseCodeWithTypeValueCandidatesOfLowerTypeExtendsToAllLevels
+    {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope)
+    (subjectLevelExpr classifierLevelExpr : LevelExpr) (flag : UniverseFlag)
+    (lowerTypeExtendsToAllLevels :
+      ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+        (_env : ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution)
+        (predLevel : Nat) (typeCode : RawTerm (targetScope + 1)),
+        IsStronglyNormalizing typeCode →
+          IsReducibleTypeAt predLevel typeCode → IsReducibleTypeAtAllLevels typeCode) :
+    TypeValueCandidateConclusionWithTypeValueCandidates context
+      (universeCodeCell subjectLevelExpr flag) (universeCodeCell classifierLevelExpr flag) :=
+  PositiveCandidateConclusionWithTypeValueCandidates.toTypeValueCandidateConclusion
+    (classifier := universeCodeCell classifierLevelExpr flag)
+    (positiveCandidateUniverseCodeWithTypeValueCandidatesOfLowerTypeExtendsToAllLevels
+      context subjectLevelExpr flag lowerTypeExtendsToAllLevels)
+
+/-- **Bundled universe validity over arbitrary universe levels and flags.**  The member half is pure
+universe formation (`Type@levelExpr : Type@(lsucc levelExpr)`); the type-value half is exactly the
+stratified lower-type extension obligation.  This theorem makes the "not one universe" status explicit in
+the library: both the syntactic level expression and flag are parameters, not constants. -/
+theorem fundamentalUniverseValidityWithTypeValueCandidatesOfLowerTypeExtendsToAllLevels
+    {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (levelExpr : LevelExpr) (flag : UniverseFlag)
+    (lowerTypeExtendsToAllLevels :
+      ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+        (_env : ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution)
+        (predLevel : Nat) (typeCode : RawTerm (targetScope + 1)),
+        IsStronglyNormalizing typeCode →
+          IsReducibleTypeAt predLevel typeCode → IsReducibleTypeAtAllLevels typeCode) :
+    FundamentalValidityWithTypeValueCandidates context
+      (universeCodeCell levelExpr flag) (universeCodeCell levelExpr.lsucc flag) :=
+  ⟨fundamentalUniverseFormationWithTypeValueCandidates context levelExpr flag,
+    typeValueCandidateUniverseCodeWithTypeValueCandidatesOfLowerTypeExtendsToAllLevels
+      context levelExpr levelExpr.lsucc flag lowerTypeExtendsToAllLevels⟩
+
 /-- A strengthened member result for `typeCode : Type@levelExpr` yields strong normalization and
 all-level reducibility of the substituted type code. -/
 theorem FundamentalConclusionWithTypeValueCandidates.typeInUniverse_hasStrongNormalizationAndAllLevelReducibility

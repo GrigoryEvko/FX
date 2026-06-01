@@ -1,4 +1,5 @@
 import FX1Poly.Typed.FundamentalWithPositiveTypeCandidates
+import FX1Poly.Typed.FundamentalWithTypeValueCandidates
 import FX1Poly.Typed.HasTypeDescPiFundamentalVectorFromFormation
 import FX1Poly.Typed.HasTypeDescPiValidity
 
@@ -45,6 +46,16 @@ def HasTypeDescPiPositiveCandidateFundamentalTheorem (profile : PolyProfile) : P
     HasTypeDescPi profile context subject classifier →
       FundamentalConclusionWithPositiveTypeCandidates context subject classifier
 
+/-- **The bundled type-value-candidate fundamental theorem interface for `HasTypeDescPi`.**  This is the
+stronger theorem shape used by the universe-polymorphic/type-variable development: every grown typing
+derivation returns ordinary member reducibility together with the conditional type-value candidate payload.
+Universe levels are not collapsed to one object here; `subject` and `classifier` range over arbitrary raw
+codes, including `universeCodeCell levelExpr flag` for every syntactic `LevelExpr` and `UniverseFlag`. -/
+def HasTypeDescPiTypeValueCandidateFundamentalTheorem (profile : PolyProfile) : Prop :=
+  ∀ {scope : Nat} {context : TypingContext profile scope} {subject classifier : RawTerm scope},
+    HasTypeDescPi profile context subject classifier →
+      FundamentalValidityWithTypeValueCandidates context subject classifier
+
 /-- **Substituted strong-normalization theorem interface for `HasTypeDescPi`.**  A profile has substituted
 strong normalization when every grown typing derivation in a well-formed context sends both its subject and
 its classifier to strongly normalizing terms under every all-level reducible closing substitution. -/
@@ -70,6 +81,22 @@ def HasTypeDescPiPositiveCandidateSubstitutedStrongNormalizationTheorem
       HasTypeDescPi profile context subject classifier →
         ∀ (substitution : RawTermSubst scope (targetScope + 1)),
           ReducibleEnvAtAllLevelsWithPositiveTypeCandidates context substitution →
+            ∀ _predLevel : Nat,
+              IsStronglyNormalizing (RawTerm.subst substitution subject) ∧
+                IsStronglyNormalizing (RawTerm.subst substitution classifier)
+
+/-- **Substituted strong-normalization theorem interface for the bundled type-value-candidate environment.**
+This is the downstream shape of the strongest current FT interface: a caller supplies the proof-relevant
+environment carrying binding-type and type-variable value candidates, and both the substituted subject and
+classifier strongly normalize. -/
+def HasTypeDescPiTypeValueCandidateSubstitutedStrongNormalizationTheorem
+    (profile : PolyProfile) : Prop :=
+  ∀ {scope targetScope : Nat} {context : TypingContext profile scope}
+    {subject classifier : RawTerm scope},
+    WfContext context →
+      HasTypeDescPi profile context subject classifier →
+        ∀ (substitution : RawTermSubst scope (targetScope + 1)),
+          ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution →
             ∀ _predLevel : Nat,
               IsStronglyNormalizing (RawTerm.subst substitution subject) ∧
                 IsStronglyNormalizing (RawTerm.subst substitution classifier)
@@ -216,6 +243,43 @@ theorem HasTypeDescPi.classifierStronglyNormalizingFromPositiveCandidateFundamen
     typed.classifierIsTypeDesc contextWellFormed
   exact HasTypeDescPi.subjectStronglyNormalizingFromPositiveCandidateFundamentalTheorem
     fundamentalTheorem classifierTyped substitution envWithCandidates predLevel
+
+/-- **Substituted subject strong normalization from the bundled type-value-candidate fundamental theorem.**
+CR1 projects through the member component of the bundled validity result; the extra type-value component
+stays present in the theorem interface for universe-polymorphic/type-variable consumers. -/
+theorem HasTypeDescPi.subjectStronglyNormalizingFromTypeValueCandidateFundamentalTheorem
+    {profile : PolyProfile}
+    (fundamentalTheorem : HasTypeDescPiTypeValueCandidateFundamentalTheorem profile)
+    {scope targetScope : Nat} {context : TypingContext profile scope}
+    {subject classifier : RawTerm scope}
+    (typed : HasTypeDescPi profile context subject classifier)
+    (substitution : RawTermSubst scope (targetScope + 1))
+    (envWithTypeValueCandidates :
+      ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution)
+    (predLevel : Nat) :
+    IsStronglyNormalizing (RawTerm.subst substitution subject) :=
+  (FundamentalValidityWithTypeValueCandidates.memberConclusion (fundamentalTheorem typed)
+    substitution envWithTypeValueCandidates predLevel).stronglyNormalizing
+
+/-- **Substituted classifier strong normalization from the bundled type-value-candidate fundamental theorem.**
+Validity turns the classifier into a grown type, and the same bundled theorem normalizes that
+classifier-as-subject under the same strengthened environment. -/
+theorem HasTypeDescPi.classifierStronglyNormalizingFromTypeValueCandidateFundamentalTheorem
+    {profile : PolyProfile}
+    (fundamentalTheorem : HasTypeDescPiTypeValueCandidateFundamentalTheorem profile)
+    {scope targetScope : Nat} {context : TypingContext profile scope}
+    {subject classifier : RawTerm scope}
+    (contextWellFormed : WfContext context)
+    (typed : HasTypeDescPi profile context subject classifier)
+    (substitution : RawTermSubst scope (targetScope + 1))
+    (envWithTypeValueCandidates :
+      ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution)
+    (predLevel : Nat) :
+    IsStronglyNormalizing (RawTerm.subst substitution classifier) := by
+  obtain ⟨_levelExpr, _flag, classifierTyped⟩ :=
+    typed.classifierIsTypeDesc contextWellFormed
+  exact HasTypeDescPi.subjectStronglyNormalizingFromTypeValueCandidateFundamentalTheorem
+    fundamentalTheorem classifierTyped substitution envWithTypeValueCandidates predLevel
 
 /-- **Closed reducibility from the all-level fundamental theorem.**  Empty contexts have a vacuous all-level
 environment, so the exact fundamental theorem immediately yields closed reducibility under any closing
@@ -385,6 +449,22 @@ theorem HasTypeDescPiPositiveCandidateFundamentalTheorem.toSubstitutedStrongNorm
       fundamentalTheorem typed substitution envWithCandidates predLevel,
     HasTypeDescPi.classifierStronglyNormalizingFromPositiveCandidateFundamentalTheorem
       fundamentalTheorem contextWellFormed typed substitution envWithCandidates predLevel⟩
+
+/-- **Substituted subject-and-classifier strong normalization from the bundled type-value-candidate
+fundamental theorem.**  This is the strongest exported substituted SN handoff: the same proof-relevant
+environment that carries arbitrary-universe/type-variable candidate payloads also normalizes both sides of a
+grown typing derivation. -/
+theorem HasTypeDescPiTypeValueCandidateFundamentalTheorem.toSubstitutedStrongNormalizationTheorem
+    {profile : PolyProfile}
+    (fundamentalTheorem : HasTypeDescPiTypeValueCandidateFundamentalTheorem profile) :
+    HasTypeDescPiTypeValueCandidateSubstitutedStrongNormalizationTheorem profile := by
+  intro _scope _targetScope _context _subject _classifier contextWellFormed typed
+    substitution envWithTypeValueCandidates predLevel
+  exact ⟨
+    HasTypeDescPi.subjectStronglyNormalizingFromTypeValueCandidateFundamentalTheorem
+      fundamentalTheorem typed substitution envWithTypeValueCandidates predLevel,
+    HasTypeDescPi.classifierStronglyNormalizingFromTypeValueCandidateFundamentalTheorem
+      fundamentalTheorem contextWellFormed typed substitution envWithTypeValueCandidates predLevel⟩
 
 /-- **Closed subject-and-classifier strong normalization from the all-level fundamental theorem.** -/
 theorem HasTypeDescPiAllLevelFundamentalTheorem.toClosedStrongNormalizationTheorem
