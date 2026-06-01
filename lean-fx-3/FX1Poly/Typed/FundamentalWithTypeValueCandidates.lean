@@ -986,6 +986,54 @@ theorem fundamentalPiIntroValidityWithTypeValueCandidatesFromTypedArgumentPremis
         substitutedPiTyCode_ne_universeCodeCell substitution domainCode codomainCode
           levelExpr flag classifierSubstIsUniverse)⟩
 
+/-- **Generic dependent lambda-introduction validity from type-value completion.**  This is the
+recursor-facing binder arm for the bundled type-value FT: the domain recursive IH is a bundled validity
+proof for `domainCode : Type@domainLevel`, so its type-value half recovers the positive-candidate companion
+for the domain.  Any accepted argument is therefore promoted to all-positive membership in the substituted
+domain; if that substituted domain is itself a universe code, the global completion principle supplies the
+type-value payload needed to extend the proof-relevant environment under the binder.  No syntactic
+restriction is placed on the domain code. -/
+theorem fundamentalPiIntroValidityWithTypeValueCandidatesOfAllReducibleTypesHaveTypeValueCandidates
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
+    {domainLevel codomainLevel : LevelExpr} {flag : UniverseFlag}
+    (allReducibleTypesHaveTypeValueCandidates :
+      HasTypeValueCandidatesForAllReducibleTypesAtAllLevels)
+    (domainValidity :
+      FundamentalValidityWithTypeValueCandidates context domainCode
+        (universeCodeCell domainLevel flag))
+    (codomainValidity :
+      FundamentalValidityWithTypeValueCandidates (context.cons domainCode) codomainCode
+        (universeCodeCell codomainLevel flag))
+    (bodyValidity :
+      FundamentalValidityWithTypeValueCandidates (context.cons domainCode) body codomainCode) :
+    FundamentalValidityWithTypeValueCandidates context (lamCell body)
+      (piTyCodeCell domainCode codomainCode) := by
+  let domainHasPositiveCandidate :
+      PositiveCandidateConclusionWithTypeValueCandidates context domainCode :=
+    FundamentalValidityWithTypeValueCandidates.toPositiveCandidateOfUniverseClassifier domainValidity
+  let universeMembersHaveTypeValueCandidates :
+      HasTypeValueCandidatesForAllPositiveUniverseMembers :=
+    HasTypeValueCandidatesForAllReducibleTypesAtAllLevels.toUniverseMembers
+      allReducibleTypesHaveTypeValueCandidates
+  exact fundamentalPiIntroValidityWithTypeValueCandidatesFromTypedArgumentPremise
+    domainValidity.memberConclusion
+    domainHasPositiveCandidate
+    (fun {_targetScope} substitution envWithTypeValueCandidates predLevel {_candidate} {argument}
+        domainReducible argumentInDomain {_levelExpr} {_domainFlag}
+        substitutedDomainIsUniverse candidatePredLevel =>
+      have argumentAtAllPositiveLevels :
+          IsReducibleMemberAtAllPositiveLevels
+            (RawTerm.subst substitution domainCode) argument :=
+        PositiveCandidateConclusionWithTypeValueCandidates.memberExtendsToAllPositive
+          domainHasPositiveCandidate substitution envWithTypeValueCandidates predLevel
+          domainReducible argumentInDomain
+      HasTypeValueCandidatesForAllPositiveUniverseMembers.ofSubstitutedUniverseDomainMember
+        universeMembersHaveTypeValueCandidates substitution argumentAtAllPositiveLevels
+        substitutedDomainIsUniverse candidatePredLevel)
+    codomainValidity.memberConclusion bodyValidity.memberConclusion
+
 /-- **Universe-domain lambda introduction from the global universe-member type-value principle.**  When the
 domain is syntactically a universe code, any decoded domain argument can first be strengthened to all-positive
 universe membership by the domain positive-candidate companion; the global multi-universe principle then
