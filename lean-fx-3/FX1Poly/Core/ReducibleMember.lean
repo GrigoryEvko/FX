@@ -2,6 +2,7 @@ import FX1Poly.Core.ReducibleTypeAbstraction
 import FX1Poly.Core.ReducibleTypeHeadExpansion
 import FX1Poly.Core.ReducibleTypeConvInvariance
 import FX1Poly.Core.ReducibleTypeReducibilityCandidate
+import FX1Poly.Core.ConvSubstRename
 
 /-! # Foundation/PolyCell/Core/ReducibleMember
     — semantic membership: the fundamental theorem's conclusion shape + its Π/conv/SN rules
@@ -150,5 +151,26 @@ theorem IsReducibleMember.stronglyNormalizing {scope : Nat}
     IsStronglyNormalizing term := by
   obtain ⟨_candidate, reducible, membership⟩ := member
   exact reducible.isReducibilityCandidate.stronglyNormalizing membership
+
+/-- **Semantic conversion under a closing substitution (the fundamental theorem's `conv` arm).**  The
+under-substitution form `IsReducibleMember.castAlongConv` consumes at the fundamental-theorem induction
+site: a closing `substitution` sends `subject` to a reducible member of the closed `typeLeft` (the
+subject's induction hypothesis) and the closed `typeRight` is itself reducible (the reclassifier's
+type-formation induction hypothesis); since `typeLeft` and `typeRight` are convertible, the SUBSTITUTED
+conversion `Conv.subst substitution conv` transports membership to the closed `typeRight`.  The level-free
+counterpart of the stratified `IsReducibleMemberAt.castAlongConvUnderSubst` — and the arm the choice-free
+`InterpretsType` interpretation cannot supply (it is not forward-closed; conversion-invariance lives on the
+weak-head-normal `ReducibleType` relation underlying `IsReducibleMember`). -/
+theorem IsReducibleMember.castAlongConvUnderSubst {scope targetScope : Nat}
+    {typeLeft typeRight subject : RawTerm scope}
+    {candidateRight : RawTerm targetScope → Prop}
+    (substitution : RawTermSubst scope targetScope)
+    (subjectMember : IsReducibleMember
+      (RawTerm.subst substitution typeLeft) (RawTerm.subst substitution subject))
+    (targetReducible : ReducibleType (RawTerm.subst substitution typeRight) candidateRight)
+    (conv : Conv typeLeft typeRight) :
+    IsReducibleMember
+      (RawTerm.subst substitution typeRight) (RawTerm.subst substitution subject) :=
+  IsReducibleMember.castAlongConv subjectMember targetReducible (Conv.subst substitution conv)
 
 end FX1Poly.Core
