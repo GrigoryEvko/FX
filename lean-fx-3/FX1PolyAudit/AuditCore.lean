@@ -6,6 +6,7 @@ import FX1Poly.Core.ReducibleTypeClosed
 import FX1Poly.Core.PointwiseIffAlgebra
 import FX1Poly.Core.StratifiedReducibleLevelCongr
 import FX1Poly.Core.StratifiedReducibleMemberNeutral
+import FX1Poly.Core.StratifiedReducibleMemberStepClosure
 import FX1Poly.Core.StrongNormalizationSubterm
 
 /-! # FX1PolyAudit/AuditCore — zero-axiom gate for the cell-calculus core
@@ -80,3 +81,10 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.StepStar.codomain_isStronglyNormalizing_of_piTyCode
 #assert_no_axioms FX1Poly.Core.StepStar.domain_isStronglyNormalizing_of_sigmaTyCode
 #assert_no_axioms FX1Poly.Core.StepStar.codomain_isStronglyNormalizing_of_sigmaTyCode
+
+-- CR2 / CR3 closure lifted to the semantic-membership layer (the forward-Step, forward-StepStar, and
+-- neutral-backward companions of the shipped CR1 membership corollary; the Tait closure bricks the
+-- fundamental theorem's neutral and reduction-stable cases consume).
+#assert_no_axioms FX1Poly.Core.IsReducibleMemberAt.closedUnderStep
+#assert_no_axioms FX1Poly.Core.IsReducibleMemberAt.closedUnderStepStar
+#assert_no_axioms FX1Poly.Core.IsReducibleMemberAt.neutralExpansion
