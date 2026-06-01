@@ -848,6 +848,7 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.formerChildrenReducibleAtAll
 #assert_no_axioms FX1Poly.Typed.fundamentalPiIntroAtAllFromMemberPremises
 #assert_no_axioms FX1Poly.Typed.IsFundamentalConclusionAtVector
+#assert_no_axioms FX1Poly.Typed.fundamentalVarAtVectorMatchingLevel
 #assert_no_axioms FX1Poly.Typed.fundamentalConclusionAtAllOfVector
 #assert_no_axioms FX1Poly.Typed.fundamentalPiIntroAtAllFromVectorPremises
 #assert_no_axioms FX1Poly.Typed.fundamentalPiIntroNonDependentAtAllFromVectorPremise

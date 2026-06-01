@@ -47,6 +47,24 @@ def IsFundamentalConclusionAtVector {profile : PolyProfile} {scope : Nat}
     IsReducibleMemberAt (predLevel + 1) (RawTerm.subst substitution classifier)
       (RawTerm.subst substitution subject)
 
+/-- **Variable lookup in a vector environment at the matching level.**  The vector premise shape is not
+unconditionally valid for `var`: lookup returns the level stored for the variable, while a fundamental-theorem
+conclusion asks for the caller's `predLevel + 1`.  This is the exact valid bridge: if the stored level for the
+looked-up variable is the requested positive conclusion level, the variable arm closes by `lookupReducible`.
+Binder-local recursors can arrange this equality for freshly installed heads; a global formation theorem cannot
+assume it for arbitrary variables. -/
+theorem fundamentalVarAtVectorMatchingLevel {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (index : Fin scope)
+    {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+    {envLevels : Fin scope → Nat} (predLevel : Nat)
+    (env : ReducibleEnvVec envLevels context substitution)
+    (levelMatches : envLevels index = predLevel + 1) :
+    IsReducibleMemberAt (predLevel + 1)
+      (RawTerm.subst substitution (context.lookup index))
+      (RawTerm.subst substitution (variableCell index)) := by
+  rw [← levelMatches]
+  exact ReducibleEnvVec.lookupReducible env index
+
 /-- **Read a vector-environment fundamental result as an all-level result.**  The all-level environment
 supplies the positive vector whose every tail entry is the conclusion level.  This is the final export
 bridge for a recursor proved in vector form. -/
