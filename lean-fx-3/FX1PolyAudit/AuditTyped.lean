@@ -18,6 +18,7 @@ import FX1Poly.Typed.HasTypeSmokeCorpus
 import FX1Poly.Typed.HasTypeConsistency
 import FX1Poly.Typed.HasTypeInfer
 import FX1Poly.Typed.HasTypeCheck
+import FX1Poly.Typed.MilestoneACurrentFragment
 import FX1Poly.Typed.HasTypeClosedForms
 import FX1Poly.Typed.WfContextDecidable
 import FX1Poly.Typed.HasTypeDesc
@@ -368,6 +369,17 @@ gates pin them shut.
     this fragment it agrees with the direct decider. -/
 
 #assert_no_axioms FX1Poly.Typed.HasType.check
+
+/-! ### ★ MILESTONE A seed certificate (current fragment)
+    — explicit record packaging of the already-proved current-fragment typed
+    checking (`decidableOfWellFormed` + bidirectional `check`), typed
+    classifier conversion (`Conv.decidableOfTyped`), validity, and typed SN.
+    This is deliberately scoped to the current `HasType` fragment; the
+    description-driven `HasTypeDescPi` reducibility assembly remains the next
+    metatheory step. -/
+
+#assert_no_axioms FX1Poly.Typed.CurrentFragmentMilestoneACertificate
+#assert_no_axioms FX1Poly.Typed.buildCurrentFragmentMilestoneACertificate
 
 /-! ### ★ MOONSHOT CORE — the description-driven generic typing engine
     (`HasTypeDesc`, polycell.md §11.8.5 / §5.2: the Natural-Model display map
