@@ -26,6 +26,7 @@ import FX1Poly.Typed.HasTypeDescSound
 import FX1Poly.Typed.HasTypeDescDecidable
 import FX1Poly.Typed.HasTypeDescElim
 import FX1Poly.Typed.HasTypeDescValidity
+import FX1Poly.Typed.HasTypeDescStronglyNormalizing
 import FX1Poly.Typed.HasTypeDescInversion
 import FX1Poly.Typed.HasTypeDescUniqueness
 import FX1Poly.Typed.HasTypeDescWeakening
@@ -467,6 +468,15 @@ gates pin them shut.
     `by_cases`+`exfalso` generator-pin). -/
 #assert_no_axioms FX1Poly.Typed.IsTypeDesc
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.classifierIsTypeDesc
+
+/-! ### Strong normalization and typed conversion for the description formation engine.
+    These are the `HasTypeDesc`-side consequences of the proven `HasTypeDesc -> HasType` soundness map:
+    subject SN, type SN, and typed-middle conversion transitivity.  They are scoped to the description
+    formation engine and do not claim the grown lambda/application reducibility theorem. -/
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.isStronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.IsTypeDesc.toIsType
+#assert_no_axioms FX1Poly.Typed.IsTypeDesc.isStronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.Conv.trans_of_hasTypeDescMiddle
 
 /-! ### INVERSION (P8 descent, premise half) for the description engine
     (`HasTypeDescInversion`).  polycell.md §11.8.5 P8: from a `piTyCodeCell`'s
