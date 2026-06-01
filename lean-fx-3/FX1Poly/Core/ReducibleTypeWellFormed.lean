@@ -124,4 +124,37 @@ theorem IsReducibleMember.abstractionAtMemberPredicate {scope : Nat}
         (fun _witnessCandidate witnessReducible => ReducibleType.atMemberPredicate witnessReducible))
     bodyReducible
 
+/-- **Choice-free dependent piIntro under a closing substitution (the fundamental theorem's `piIntro`
+arm).**  The under-substitution form of `abstractionAtMemberPredicate`: a closing `substitution` sends
+`lam body` to a reducible member of the substituted Π-type given, per reducible argument, the substituted
+instantiated codomain is a reducible TYPE and the substituted body instance is a reducible member of it.
+The substitution distributes over the Π cell (`subst_piTyCode`, domain by the substitution, codomain by
+the lift) and the `lam` cell (`subst_lam_reduces`, body by the lift) — both `rfl` — landing exactly the
+shape `abstractionAtMemberPredicate` produces.  The codomain and body hypotheses are stated at
+`subst0 (subst (lift substitution) ·) argument`, which the fundamental theorem reshapes its `cons`-extended
+codomain / body induction hypotheses into by `RawTerm.subst_cons_eq_subst0_lift`.  Level-free and
+choice-free; the piIntro counterpart of `applicationUnderSubst` (piElim) and `castAlongConvUnderSubst`
+(conv). -/
+theorem IsReducibleMember.abstractionUnderSubst {scope targetScope : Nat}
+    {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
+    {domainCandidate : RawTerm targetScope → Prop}
+    (substitution : RawTermSubst scope targetScope)
+    (domainReducible : ReducibleType (RawTerm.subst substitution domainCode) domainCandidate)
+    (domainArgumentsSN : ∀ argument : RawTerm targetScope, domainCandidate argument →
+      IsStronglyNormalizing argument)
+    (codomainIsReducibleType : ∀ argument : RawTerm targetScope, domainCandidate argument →
+      IsReducibleType
+        (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) codomainCode) argument))
+    (bodyReducible : ∀ argument : RawTerm targetScope, domainCandidate argument →
+      IsReducibleMember
+        (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) codomainCode) argument)
+        (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) body) argument)) :
+    IsReducibleMember
+      (RawTerm.subst substitution
+        (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))))
+      (RawTerm.subst substitution (.mkGen .gen_lam () (.childCons body .childNil))) := by
+  rw [RawTerm.subst_piTyCode, RawTerm.subst_lam_reduces]
+  exact IsReducibleMember.abstractionAtMemberPredicate domainReducible domainArgumentsSN
+    codomainIsReducibleType bodyReducible
+
 end FX1Poly.Core
