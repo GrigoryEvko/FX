@@ -77,6 +77,7 @@ import FX1Poly.Typed.UniverseDomainMemberExtension
 import FX1Poly.Typed.ReducibleTypeAtAllLevelsLeaves
 import FX1Poly.Typed.ReducibleTypeAtAllLevelsInduction
 import FX1Poly.Typed.ReducibleTypeAtAllLevelsPiNeutralDomain
+import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsLeaves
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -1350,3 +1351,9 @@ gates pin them shut.
 -- universe-rooted domains.
 #assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllLevels.piTypeOfNeutralDomain
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.ofUniverseMemberPiNeutralDomainArgument
+
+-- Member-side leaf (dual of the type leaves): membership in a neutral / data-former classifier is
+-- `IsStronglyNormalizing` (level-independent), so a one-level member extends to all positive levels — the
+-- cons-arm `headMemberExtendsToAllPositive` premise for a neutral-domain former.
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.ofNeutralClassifier
+#assert_no_axioms FX1Poly.Typed.headMemberExtendsToAllPositive_ofNeutralClassifier
