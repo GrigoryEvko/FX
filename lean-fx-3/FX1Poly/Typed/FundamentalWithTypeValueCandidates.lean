@@ -789,6 +789,25 @@ theorem fundamentalConvValidityWithTypeValueCandidatesOfAllReducibleTypesHaveTyp
     (fundamentalConvWithTypeValueCandidates subjectFundamental reclassifierFundamental converts)
     allReducibleTypesHaveTypeValueCandidates
 
+/-- **Bundled conversion validity from positive-member extension.**  The conversion member rule is unchanged;
+the type-value payload is supplied by the operational member-extension bridge. -/
+theorem fundamentalConvValidityWithTypeValueCandidatesOfPositiveMemberExtension
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier reclassifier : RawTerm scope}
+    {levelExpr : LevelExpr} {flag : UniverseFlag}
+    (positiveMemberExtension :
+      HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes)
+    (subjectFundamental :
+      FundamentalConclusionWithTypeValueCandidates context subject classifier)
+    (reclassifierFundamental :
+      FundamentalConclusionWithTypeValueCandidates context reclassifier
+        (universeCodeCell levelExpr flag))
+    (converts : Conv classifier reclassifier) :
+    FundamentalValidityWithTypeValueCandidates context subject reclassifier :=
+  fundamentalConvValidityWithTypeValueCandidatesOfAllReducibleTypesHaveTypeValueCandidates
+    positiveMemberExtension.toAllReducibleTypesHaveTypeValueCandidates
+    subjectFundamental reclassifierFundamental converts
+
 /-- **The `piElim`/application member arm over the type-value environment.**  Application does not need any
 new type-value payload: the dependent application rule consumes the function and argument member premises at
 the same conclusion fuel and performs the codomain substitution bookkeeping internally. -/
@@ -854,6 +873,25 @@ theorem fundamentalPiElimValidityWithTypeValueCandidatesOfAllReducibleTypesHaveT
   FundamentalConclusionWithTypeValueCandidates.toValidityOfAllReducibleTypesHaveTypeValueCandidates
     (fundamentalPiElimWithTypeValueCandidates functionFundamental argumentFundamental)
     allReducibleTypesHaveTypeValueCandidates
+
+/-- **Dependent application validity from positive-member extension.**  This exposes the application arm
+against the operational type-value bridge directly. -/
+theorem fundamentalPiElimValidityWithTypeValueCandidatesOfPositiveMemberExtension
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {functionTerm argument domainCode : RawTerm scope}
+    {codomainCode : RawTerm (scope + 1)}
+    (positiveMemberExtension :
+      HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes)
+    (functionFundamental :
+      FundamentalConclusionWithTypeValueCandidates context functionTerm
+        (piTyCodeCell domainCode codomainCode))
+    (argumentFundamental :
+      FundamentalConclusionWithTypeValueCandidates context argument domainCode) :
+    FundamentalValidityWithTypeValueCandidates context
+      (appCell functionTerm argument) (RawTerm.subst0 codomainCode argument) :=
+  fundamentalPiElimValidityWithTypeValueCandidatesOfAllReducibleTypesHaveTypeValueCandidates
+    positiveMemberExtension.toAllReducibleTypesHaveTypeValueCandidates
+    functionFundamental argumentFundamental
 
 /-- **Dependent lambda introduction over the type-value environment, with the universe-domain value
 payload explicit.**  The ordinary member proof is the same canonical-candidate argument as in the
@@ -1156,6 +1194,30 @@ theorem fundamentalPiIntroValidityWithTypeValueCandidatesOfAllReducibleTypesHave
         universeMembersHaveTypeValueCandidates substitution argumentAtAllPositiveLevels
         substitutedDomainIsUniverse candidatePredLevel)
     codomainValidity.memberConclusion bodyValidity.memberConclusion
+
+/-- **Generic dependent lambda-introduction validity from positive-member extension.**  This is the direct
+operational-premise form of the bundled lambda arm: the domain type-value payload still comes from the
+domain validity proof, while any universe-valued binder argument is completed by positive-member extension. -/
+theorem fundamentalPiIntroValidityWithTypeValueCandidatesOfPositiveMemberExtension
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
+    {domainLevel codomainLevel : LevelExpr} {flag : UniverseFlag}
+    (positiveMemberExtension :
+      HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes)
+    (domainValidity :
+      FundamentalValidityWithTypeValueCandidates context domainCode
+        (universeCodeCell domainLevel flag))
+    (codomainValidity :
+      FundamentalValidityWithTypeValueCandidates (context.cons domainCode) codomainCode
+        (universeCodeCell codomainLevel flag))
+    (bodyValidity :
+      FundamentalValidityWithTypeValueCandidates (context.cons domainCode) body codomainCode) :
+    FundamentalValidityWithTypeValueCandidates context (lamCell body)
+      (piTyCodeCell domainCode codomainCode) :=
+  fundamentalPiIntroValidityWithTypeValueCandidatesOfAllReducibleTypesHaveTypeValueCandidates
+    positiveMemberExtension.toAllReducibleTypesHaveTypeValueCandidates
+    domainValidity codomainValidity bodyValidity
 
 /-- **Universe-domain lambda introduction from the global universe-member type-value principle.**  When the
 domain is syntactically a universe code, any decoded domain argument can first be strengthened to all-positive
@@ -1663,6 +1725,64 @@ theorem fundamentalSigmaFormationValidityWithTypeValueCandidatesOfAllReducibleTy
         universeMembersHaveTypeValueCandidates substitution argumentAtAllPositiveLevels
         substitutedDomainIsUniverse candidatePredLevel)
     codomainMemberAtDomainLevel codomainValidity.memberConclusion
+
+/-- **Generic Π-formation validity from positive-member extension.**  The base-level codomain premise
+remains explicit for the same reason as in the completion-theorem version; positive-member extension
+supplies the universe-valued argument payload. -/
+theorem fundamentalPiFormationValidityWithTypeValueCandidatesOfPositiveMemberExtension
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
+    (positiveMemberExtension :
+      HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes)
+    (domainValidity :
+      FundamentalValidityWithTypeValueCandidates context domainCode
+        (universeCodeCell domainLevel flag))
+    (codomainMemberAtDomainLevel :
+      ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+        (_env : ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution)
+        (predLevel : Nat) (argument : RawTerm (targetScope + 1)),
+        IsReducibleMemberAt predLevel (RawTerm.subst substitution domainCode) argument →
+        IsReducibleMemberAt (predLevel + 1) (universeCodeCell codomainLevel flag)
+          (RawTerm.subst (RawTermSubst.cons argument substitution) codomainCode))
+    (codomainValidity :
+      FundamentalValidityWithTypeValueCandidates (context.cons domainCode) codomainCode
+        (universeCodeCell codomainLevel flag)) :
+    FundamentalValidityWithTypeValueCandidates context
+      (piTyCodeCell domainCode codomainCode) (universeCodeCell formerLevel flag) :=
+  fundamentalPiFormationValidityWithTypeValueCandidatesOfAllReducibleTypesHaveTypeValueCandidates
+    positiveMemberExtension.toAllReducibleTypesHaveTypeValueCandidates
+    domainValidity codomainMemberAtDomainLevel codomainValidity
+
+/-- **Generic Sigma-formation validity from positive-member extension.**  The Sigma type-value half remains
+neutral-data-former reducibility; positive-member extension supplies the universe-valued argument payload
+used while extending the proof-relevant environment. -/
+theorem fundamentalSigmaFormationValidityWithTypeValueCandidatesOfPositiveMemberExtension
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
+    (positiveMemberExtension :
+      HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes)
+    (domainValidity :
+      FundamentalValidityWithTypeValueCandidates context domainCode
+        (universeCodeCell domainLevel flag))
+    (codomainMemberAtDomainLevel :
+      ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+        (_env : ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution)
+        (predLevel : Nat) (argument : RawTerm (targetScope + 1)),
+        IsReducibleMemberAt predLevel (RawTerm.subst substitution domainCode) argument →
+        IsReducibleMemberAt (predLevel + 1) (universeCodeCell codomainLevel flag)
+          (RawTerm.subst (RawTermSubst.cons argument substitution) codomainCode))
+    (codomainValidity :
+      FundamentalValidityWithTypeValueCandidates (context.cons domainCode) codomainCode
+        (universeCodeCell codomainLevel flag)) :
+    FundamentalValidityWithTypeValueCandidates context
+      (sigmaTyCodeCell domainCode codomainCode) (universeCodeCell formerLevel flag) :=
+  fundamentalSigmaFormationValidityWithTypeValueCandidatesOfAllReducibleTypesHaveTypeValueCandidates
+    positiveMemberExtension.toAllReducibleTypesHaveTypeValueCandidates
+    domainValidity codomainMemberAtDomainLevel codomainValidity
 
 /-- **Base-level codomain premise from a fuel-zero-empty domain.**  This is the reusable form of the
 universe-domain trick: if the substituted domain has no members at fuel zero, then the base-level branch of
