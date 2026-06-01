@@ -41,6 +41,7 @@ import FX1Poly.Typed.HasTypeDescPiValidity
 import FX1Poly.Typed.ConvCodeInjectivity
 import FX1Poly.Typed.ReducibleEnv
 import FX1Poly.Typed.ReducibleEnvAt
+import FX1Poly.Typed.ReducibleEnvAtAllLevels
 import FX1Poly.Typed.ReducibleEnvVec
 import FX1Poly.Typed.ReducibleEnvVecTypeVariable
 import FX1Poly.Typed.HasTypeDescPiConsistency
@@ -789,6 +790,18 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAt.lookupReducible
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAt.empty
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAt.cons
+
+/-! ### ∀-LEVEL (Kripke) reducible environment — the off-by-one resolution for the dependent fundamental
+    theorem's `var` arm.  A fixed-level `ReducibleEnvAt (predLevel+1)` cannot close `var` at a TYPE variable:
+    the binder steps deposit each binding at the level its classifier supplies (`predLevel` after
+    `tarskiDecode`), the universe candidate changes per fuel level (no monotonic cast), so `var`'s demanded
+    `predLevel+1` never matches.  `ReducibleEnvAtAllLevels` certifies every variable at ALL positive levels
+    (`∀ level, ReducibleEnvAt (level+1) …`) — exactly the `∀ level` discipline `TelescopeReducible` already
+    uses — so `var` instantiates the family at the conclusion level and binder extension threads through. -/
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevels
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevels.lookupReducible
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevels.empty
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevels.cons
 
 /-! ### PER-VARIABLE-LEVEL reducible environment (the Kripke refinement for the dependent fundamental
     theorem).  `ReducibleEnvAt`'s single global level cannot serve a context that mixes variables at
