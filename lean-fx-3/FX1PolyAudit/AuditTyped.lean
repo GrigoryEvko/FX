@@ -76,6 +76,7 @@ import FX1Poly.Typed.TelescopeReducible
 import FX1Poly.Typed.UniverseDomainMemberExtension
 import FX1Poly.Typed.ReducibleTypeAtAllLevelsLeaves
 import FX1Poly.Typed.ReducibleTypeAtAllLevelsInduction
+import FX1Poly.Typed.ReducibleTypeAtAllLevelsPiNeutralDomain
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -1341,3 +1342,11 @@ gates pin them shut.
 -- level-irrelevance obstruction is reduced to ONE hypothesis, the `piArm` (Π-former case).
 #assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllLevels.ofReducibleTypeStep
 #assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllLevels.ofReducibleAtLevel
+
+-- The `piArm` CLOSES for a neutral / data-former domain: such a domain's reducible-type candidate is
+-- `IsStronglyNormalizing` at EVERY level, so the domain-candidate level-mismatch dissolves and the Π type
+-- rebuilds at every level (canonical codomain candidate, choice-free).  Level-irrelevance now holds
+-- unconditionally for every Π type whose domain is neutral / a data former — residual gap: Π- or
+-- universe-rooted domains.
+#assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllLevels.piTypeOfNeutralDomain
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.ofUniverseMemberPiNeutralDomainArgument
