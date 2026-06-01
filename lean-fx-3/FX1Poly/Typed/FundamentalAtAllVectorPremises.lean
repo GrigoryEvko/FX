@@ -156,4 +156,30 @@ theorem formerChildrenReducibleAtAllFromVectorPremise {profile : PolyProfile} {s
       codomainFundamental (RawTermSubst.cons argument substitution) predLevel
         (ReducibleEnvVec.cons (env.toVecPositive (fun _index => predLevel)) argumentMember))
 
+/-- **Dispatch-level former-child reducibility over the all-level environment, from a vector codomain
+premise.**  This is the level-exact sibling of `formerChildrenReducibleAtAllFromVectorPremise`: it packages
+only the two codomain-under-argument levels consumed by the Π/Σ former dispatch.  The fresh head is installed
+in the vector environment at the exact level supplied by each argument premise; tail variables are read from
+the all-level environment at the conclusion level. -/
+theorem formerChildrenReducibleAtDispatchLevelsFromVectorPremise {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainLevel codomainLevel : LevelExpr} {flag : UniverseFlag}
+    (domainFundamental :
+      FundamentalConclusionAtAll context domainCode (universeCodeCell domainLevel flag))
+    (codomainFundamental :
+      IsFundamentalConclusionAtVector (context.cons domainCode) codomainCode
+        (universeCodeCell codomainLevel flag)) :
+    ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+      (_env : ReducibleEnvAtAllLevels context substitution) (predLevel : Nat),
+      FormerChildrenReducibleAtDispatchLevels predLevel flag substitution domainCode codomainCode
+        domainLevel codomainLevel :=
+  formerChildrenReducibleAtDispatchLevelsFromAtAllPremises domainFundamental
+    (fun substitution env predLevel argument argumentMember =>
+      codomainFundamental (RawTermSubst.cons argument substitution) predLevel
+        (ReducibleEnvVec.cons (env.toVecPositive (fun _index => predLevel)) argumentMember))
+    (fun substitution env predLevel argument argumentMember =>
+      codomainFundamental (RawTermSubst.cons argument substitution) predLevel
+        (ReducibleEnvVec.cons (env.toVecPositive (fun _index => predLevel)) argumentMember))
+
 end FX1Poly.Typed
