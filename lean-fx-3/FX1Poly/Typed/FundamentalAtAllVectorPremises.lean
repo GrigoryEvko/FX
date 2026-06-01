@@ -15,9 +15,11 @@ the two non-recursive bridges from those vector premises back to the all-level a
 * `fundamentalPiIntroAtAllFromVectorPremises`, for lambda introduction; and
 * `formerChildrenReducibleAtAllFromVectorPremise`, for the two-child Pi/Sigma former telescope.
 
-The bridges are intentionally factored away from the recursor.  The recursor only has to supply vector
-premises for the binder-extended context; these lemmas perform the environment construction with
-`ReducibleEnvVec.cons`.
+The bridges are intentionally factored away from the recursor.  They are useful exactly at a binder, where a
+fresh head has one semantic member level while the tail variables still come from the all-level environment.
+They are NOT a standalone replacement for the full fundamental theorem: an arbitrary-vector conclusion is too
+strong for a judgment with `var`, because the `var` arm can only return the level stored for that variable.
+Use these bridges only for recursive premises whose level vector has been built by the binder rule itself.
 
 ## Zero-axiom verification
 
@@ -30,10 +32,12 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- **The vector-environment fundamental-theorem conclusion.**  Under any closing substitution and any
-per-variable reducible environment, the subject is a reducible member of its classifier at the requested
-positive conclusion level.  This is the shape recursive binder premises consume after a single fresh
-argument is consed into the environment. -/
+/-- **The vector-environment binder-premise conclusion.**  Under a closing substitution and a per-variable
+reducible environment, the subject is a reducible member of its classifier at the requested positive
+conclusion level.  This is deliberately stronger than the all-level conclusion and is generally unprovable
+for judgments with an unrestricted `var` arm.  Its intended use is local: binder-recursive premises consume
+it after the caller has constructed a level vector whose fresh head matches the semantic level demanded by
+the binder rule. -/
 def IsFundamentalConclusionAtVector {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) (subject classifier : RawTerm scope) : Prop :=
   ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))

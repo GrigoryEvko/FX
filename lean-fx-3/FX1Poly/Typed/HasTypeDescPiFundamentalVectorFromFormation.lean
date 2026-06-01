@@ -6,16 +6,18 @@ import FX1Poly.Typed.DescTelescopeInversion
     — assemble the grown-engine vector fundamental theorem from the formation-engine one
 
 The grown description engine `HasTypeDescPi` embeds the formation engine (`ofFormation`) and adds the
-dependent lambda/application rules.  This file proves the non-formation part of the dependent fundamental
-theorem by the kernel's mutual recursor:
+dependent lambda/application rules.  This file proves a conditional vector-premise assembly by the kernel's
+mutual recursor:
 
 * `conv`, `piIntro`, `piElim`, and `genFormationPi` are discharged directly from already-gated semantic
   rules and telescope reducibility; and
-* `ofFormation` is factored as an explicit hypothesis: the formation engine's vector fundamental theorem.
+* `ofFormation` is factored as an explicit hypothesis: a formation-engine vector premise.
 
-So the remaining assembly obligation is now precise: prove the corresponding `HasTypeDesc` theorem, then
-instantiate `HasTypeDescPi.fundamentalVectorFromFormation`.  No placeholder proof is hidden here; the
-formation premise is an argument of the theorem.
+No placeholder proof is hidden here; the formation premise is an argument of the theorem.  The premise is
+intentionally strong and should not be confused with the final formation fundamental theorem: an arbitrary
+vector conclusion is not derivable for `HasTypeDesc.var`, whose level is fixed by the environment entry.
+The final all-level theorem must use this vector shape only for binder-local recursive premises whose fresh
+head level is supplied by the binder rule, not as a global replacement for the formation fragment.
 
 ## Zero-axiom verification
 
@@ -44,9 +46,10 @@ abbrev IsTelescopeReducibleAtVector {profile : PolyProfile} {baseScope currentDe
     (shapeEq : binderShifts = consecutiveShifts currentDepth levelsList.length),
     TelescopeReducible flag currentDepth levelsList.length substitution levelsList (shapeEq ▸ children)
 
-/-- **Grown-engine vector fundamental theorem, assuming the formation-engine vector theorem.**  This is the
-complete `HasTypeDescPi` recursor assembly except for the embedded `HasTypeDesc` arm.  It proves the vector
-environment conclusion; `fundamentalConclusionAtAllOfVector` then exports it to the all-level environment. -/
+/-- **Grown-engine vector premise assembly, assuming a formation-engine vector premise.**  This is the
+complete `HasTypeDescPi` recursor assembly under a deliberately strong hypothesis for the embedded
+`HasTypeDesc` arm.  It is useful for binder-local premises, but the hypothesis is not the final formation
+fundamental theorem because unrestricted `var` cannot satisfy arbitrary vector levels. -/
 theorem HasTypeDescPi.fundamentalVectorFromFormation {profile : PolyProfile}
     (formationFundamental :
       ∀ {scope : Nat} {context : TypingContext profile scope}
