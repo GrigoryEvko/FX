@@ -5,6 +5,7 @@ import FX1Poly.Core.StrongNormalizationLeaves
 import FX1Poly.Core.CompoundSubstPreservation
 import FX1Poly.Core.RawTermSubstConsCommute
 import FX1Poly.Core.CandidateInterpretationSubst
+import FX1Poly.Core.StrongNormalizationConstructors
 
 /-! # FX1Poly/Core/CandidateInterpretationFundamental
     — the fundamental-theorem cases under a closing substitution, over the choice-free interpretation
@@ -195,5 +196,58 @@ theorem InterpretsType.codomainAfterApplication {scope targetScope : Nat}
   | ⟨0, _⟩ => exact argumentInterprets
   | ⟨priorValue + 1, hBound⟩ =>
       exact InterpretsType.typeVariable env ⟨priorValue, Nat.lt_of_succ_lt_succ hBound⟩
+
+/-- **The Π-former `genFormationPi` case of the fundamental theorem under a closing substitution.**  A
+Π-type code `Π domain. codomain` is a member of its universe `Type@e`'s candidate — which (the universe
+code being a non-Π weak-head-normal leaf) `InterpretsType.baseType` makes the strong-normalization
+candidate — so membership is exactly strong normalization of the (substituted) former.  The closing
+substitution distributes over the Π cell by `rfl` (domain by the substitution, codomain by the lift), and
+`piTyCode_isStronglyNormalizing_of_domain_codomain` builds the former's SN from its children's SN — the
+children's fundamental-theorem induction hypotheses, each a member of its own universe's SN candidate.
+The level-free counterpart of the stratified `IsReducibleMemberAt.piFormationUnderSubst`: over the
+opaque-universe interpretation a type former inhabits its universe purely by strong normalization, with no
+fuel and no per-former arrow candidate (the arrow candidate is what `InterpretsType.piType` supplies when
+the Π is used as a TYPE, not when it is a member of `Type@e`). -/
+theorem InterpretsType.fundamentalPiFormation {scope targetScope : Nat}
+    (substitution : RawTermSubst scope targetScope)
+    {domain : RawTerm scope} {codomain : RawTerm (scope + 1)}
+    (domainNormalizing : IsStronglyNormalizing (RawTerm.subst substitution domain))
+    (codomainNormalizing :
+      IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift substitution) codomain)) :
+    IsStronglyNormalizing
+      (RawTerm.subst substitution
+        (.mkGen .gen_piTyCode () (.childCons domain (.childCons codomain .childNil)))) := by
+  have substEquation :
+      RawTerm.subst substitution
+          (.mkGen .gen_piTyCode () (.childCons domain (.childCons codomain .childNil)))
+        = .mkGen .gen_piTyCode ()
+            (.childCons (RawTerm.subst substitution domain)
+              (.childCons (RawTerm.subst (RawTermSubst.lift substitution) codomain) .childNil)) := rfl
+  rw [substEquation]
+  exact piTyCode_isStronglyNormalizing_of_domain_codomain domainNormalizing codomainNormalizing
+
+/-- **The Σ-former `genFormationPi` case of the fundamental theorem under a closing substitution.**  The
+Σ twin of `fundamentalPiFormation`: a Σ-type code `Σ domain. codomain` is a member of its universe
+`Type@e`'s strong-normalization candidate, built from its children's SN by
+`sigmaTyCode_isStronglyNormalizing_of_domain_codomain`.  Together with `fundamentalPiFormation` and
+`fundamentalUniverseFormation` this discharges every `typingRuleDescOf` formation generator's
+universe-membership over the choice-free interpretation. -/
+theorem InterpretsType.fundamentalSigmaFormation {scope targetScope : Nat}
+    (substitution : RawTermSubst scope targetScope)
+    {domain : RawTerm scope} {codomain : RawTerm (scope + 1)}
+    (domainNormalizing : IsStronglyNormalizing (RawTerm.subst substitution domain))
+    (codomainNormalizing :
+      IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift substitution) codomain)) :
+    IsStronglyNormalizing
+      (RawTerm.subst substitution
+        (.mkGen .gen_sigmaTyCode () (.childCons domain (.childCons codomain .childNil)))) := by
+  have substEquation :
+      RawTerm.subst substitution
+          (.mkGen .gen_sigmaTyCode () (.childCons domain (.childCons codomain .childNil)))
+        = .mkGen .gen_sigmaTyCode ()
+            (.childCons (RawTerm.subst substitution domain)
+              (.childCons (RawTerm.subst (RawTermSubst.lift substitution) codomain) .childNil)) := rfl
+  rw [substEquation]
+  exact sigmaTyCode_isStronglyNormalizing_of_domain_codomain domainNormalizing codomainNormalizing
 
 end FX1Poly.Core
