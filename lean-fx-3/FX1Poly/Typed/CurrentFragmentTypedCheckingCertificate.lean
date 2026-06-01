@@ -1,7 +1,7 @@
 import FX1Poly.Typed.HasTypeCheck
 import FX1Poly.Typed.HasTypeStronglyNormalizing
 
-/-! # FX1Poly/Typed/MilestoneACurrentFragment
+/-! # FX1Poly/Typed/CurrentFragmentTypedCheckingCertificate
     — an explicit ★ Milestone A certificate for the current typed core fragment
 
 `polycell.md` defines revised Milestone A as **decidable TYPED conversion + decidable TYPED checking**
@@ -14,7 +14,7 @@ for the semantic core.  The current `HasType` fragment already has the individua
 * current-fragment normalization: `HasType.isStronglyNormalizing`.
 
 This file packages those pieces as a single kernel object,
-`CurrentFragmentMilestoneACertificate`, so downstream Milestone-A/A+/A++ work can depend on one explicit
+`CurrentFragmentTypedCheckingCertificate`, so downstream semantic-core work can depend on one explicit
 capability record rather than re-discovering the individual declarations.  It is intentionally scoped to the
 CURRENT fragment; it does not claim the still-open `HasTypeDescPi` reducibility assembly or the future A+/A++
 cubical/HIT layers.
@@ -33,7 +33,7 @@ open FX1Poly.Core
 /-- **Milestone A seed certificate for the current `HasType` fragment.**  From a well-formed context, the
 typed core exposes both forms of typed checking (direct and bidirectional), typed classifier conversion, and
 the metatheoretic facts that make those deciders sound inputs to the larger semantic-core program. -/
-structure CurrentFragmentMilestoneACertificate {profile : PolyProfile} {scope : Nat}
+structure CurrentFragmentTypedCheckingCertificate {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) : Type where
   /-- The context whose checker is certified is well-formed. -/
   contextIsWellFormed : WfContext context
@@ -67,9 +67,9 @@ structure CurrentFragmentMilestoneACertificate {profile : PolyProfile} {scope : 
 /-- Build the current-fragment Milestone A certificate from a well-formed context.  This is the explicit
 record-level aggregation of the already-proved typed checking, bidirectional checking, typed conversion,
 validity, and strong-normalization facts. -/
-def buildCurrentFragmentMilestoneACertificate {profile : PolyProfile} {scope : Nat}
+def buildCurrentFragmentTypedCheckingCertificate {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} (contextIsWellFormed : WfContext context) :
-    CurrentFragmentMilestoneACertificate context where
+    CurrentFragmentTypedCheckingCertificate context where
   contextIsWellFormed := contextIsWellFormed
   decideHasType := HasType.decidableOfWellFormed contextIsWellFormed
   inferClassifier := HasType.infer contextIsWellFormed

@@ -107,6 +107,21 @@ theorem ReducibleEnvAtAllLevels.ofVecPositiveFamily {profile : PolyProfile} {sco
     ReducibleEnvAtAllLevels context substitution :=
   fun level index => envFamily (fun _index => level) index
 
+/-- Extend an all-level tail environment with a head known at ONE positive level, producing the ordinary
+fixed-level environment at that same positive level.  This is the direct binder bridge for recursor arms that
+need to run a recursive premise at one chosen conclusion level: the tail comes from the all-level family
+instantiated at `headLevel`, and the fresh head is exactly the supplied `headLevel + 1` member. -/
+theorem ReducibleEnvAtAllLevels.consHeadToEnvAtPositive {profile : PolyProfile} {scope targetScope : Nat}
+    {context : TypingContext profile scope} {bindingType : RawTerm scope}
+    {tailSubst : RawTermSubst scope targetScope} {headTerm : RawTerm targetScope}
+    (tailReducible : ReducibleEnvAtAllLevels context tailSubst)
+    {headLevel : Nat}
+    (headReducible :
+      IsReducibleMemberAt (headLevel + 1) (RawTerm.subst tailSubst bindingType) headTerm) :
+    ReducibleEnvAt (headLevel + 1) (context.cons bindingType)
+      (RawTermSubst.cons headTerm tailSubst) :=
+  ReducibleEnvAt.cons (tailReducible headLevel) headReducible
+
 /-- Extend an all-level tail environment with a head known at ONE positive level, producing the mixed
 per-variable vector environment that binder bodies and premise telescopes actually consume: the fresh head
 is fixed at `headLevel + 1`, while every tail variable remains available at the caller-chosen positive level

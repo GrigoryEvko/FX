@@ -18,7 +18,7 @@ import FX1Poly.Typed.HasTypeSmokeCorpus
 import FX1Poly.Typed.HasTypeConsistency
 import FX1Poly.Typed.HasTypeInfer
 import FX1Poly.Typed.HasTypeCheck
-import FX1Poly.Typed.MilestoneACurrentFragment
+import FX1Poly.Typed.CurrentFragmentTypedCheckingCertificate
 import FX1Poly.Typed.HasTypeClosedForms
 import FX1Poly.Typed.WfContextDecidable
 import FX1Poly.Typed.HasTypeDesc
@@ -378,8 +378,8 @@ gates pin them shut.
     description-driven `HasTypeDescPi` reducibility assembly remains the next
     metatheory step. -/
 
-#assert_no_axioms FX1Poly.Typed.CurrentFragmentMilestoneACertificate
-#assert_no_axioms FX1Poly.Typed.buildCurrentFragmentMilestoneACertificate
+#assert_no_axioms FX1Poly.Typed.CurrentFragmentTypedCheckingCertificate
+#assert_no_axioms FX1Poly.Typed.buildCurrentFragmentTypedCheckingCertificate
 
 /-! ### ★ MOONSHOT CORE — the description-driven generic typing engine
     (`HasTypeDesc`, polycell.md §11.8.5 / §5.2: the Natural-Model display map
@@ -818,6 +818,7 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevels.cons
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevels.toVecPositive
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevels.ofVecPositiveFamily
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevels.consHeadToEnvAtPositive
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevels.consHeadToVecPositive
 
 /-! ### Dependent fundamental theorem — the NON-telescope arms over the ∀-level environment.  `var` (the arm
