@@ -769,4 +769,44 @@ theorem formerChildrenReducibleAtDispatchLevelsFromAllLevelDomainCandidateCompan
       domainHasAllPositiveCandidateUnderSubstitution substitution env memberLevel)
     codomainFundamental
 
+/-- **Π-formation from the all-level domain-candidate companion.**  This is the direct former-rule bridge
+for domains whose substituted candidate is available at every fuel level: build the dispatch-level child
+bundle from the companion, then run the Π-former semantic dispatch. -/
+theorem fundamentalPiFormationAtAllFromAllLevelDomainCandidateCompanion
+    {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
+    (domainFundamental :
+      FundamentalConclusionAtAll context domainCode (universeCodeCell domainLevel flag))
+    (domainHasAllPositiveCandidateUnderSubstitution :
+      HasAllPositiveReducibleCandidateUnderAllLevelSubstitution context domainCode)
+    (codomainFundamental :
+      FundamentalConclusionAtAll (context.cons domainCode) codomainCode
+        (universeCodeCell codomainLevel flag)) :
+    FundamentalConclusionAtAll context (piTyCodeCell domainCode codomainCode)
+      (universeCodeCell formerLevel flag) :=
+  fundamentalPiFormationAtDispatchLevelsAtAll
+    (formerChildrenReducibleAtDispatchLevelsFromAllLevelDomainCandidateCompanion
+      domainFundamental domainHasAllPositiveCandidateUnderSubstitution codomainFundamental)
+
+/-- **Σ-formation from the all-level domain-candidate companion.**  The data-former twin of
+`fundamentalPiFormationAtAllFromAllLevelDomainCandidateCompanion`.  It uses the same dispatch-level child
+bundle and then runs the Σ-former semantic dispatch. -/
+theorem fundamentalSigmaFormationAtAllFromAllLevelDomainCandidateCompanion
+    {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
+    (domainFundamental :
+      FundamentalConclusionAtAll context domainCode (universeCodeCell domainLevel flag))
+    (domainHasAllPositiveCandidateUnderSubstitution :
+      HasAllPositiveReducibleCandidateUnderAllLevelSubstitution context domainCode)
+    (codomainFundamental :
+      FundamentalConclusionAtAll (context.cons domainCode) codomainCode
+        (universeCodeCell codomainLevel flag)) :
+    FundamentalConclusionAtAll context (sigmaTyCodeCell domainCode codomainCode)
+      (universeCodeCell formerLevel flag) :=
+  fundamentalSigmaFormationAtDispatchLevelsAtAll
+    (formerChildrenReducibleAtDispatchLevelsFromAllLevelDomainCandidateCompanion
+      domainFundamental domainHasAllPositiveCandidateUnderSubstitution codomainFundamental)
+
 end FX1Poly.Typed
