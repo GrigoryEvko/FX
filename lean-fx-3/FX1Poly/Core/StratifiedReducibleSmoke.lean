@@ -59,4 +59,25 @@ theorem identityLambda_stronglyNormalizing_viaReducibility {scope : Nat} {predLe
     universeReducible
     (fun _argument argumentInDomain => argumentInDomain)).stronglyNormalizing
 
+/-- **The closed simply-typed arrow `Type@levelExpr → Type@levelExpr` is a reducible type, via the
+choice-free type-former machinery.**  `ReducibleTypeAt.arrowType` (the non-dependent specialization of the
+choice-free dependent Π-formation) from a reducible domain and codomain — both the `universeCode` arm.  The
+type-FORMATION counterpart to `identityLambda_…` (the introduction side) and
+`universeCode_…` (the membership side): together the three witness that type formation, membership, and
+introduction all compose through the stratified reducibility model on concrete well-typed cells. -/
+theorem closedSimpleArrow_isReducibleType {scope : Nat} {predLevel : Nat}
+    (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    IsReducibleTypeAt (predLevel + 1)
+      (.mkGen .gen_piTyCode ()
+        (.childCons (.mkGen .gen_universeCode (levelExpr, flag) .childNil)
+          (.childCons (RawTerm.weaken (.mkGen .gen_universeCode (levelExpr, flag) .childNil))
+            .childNil))
+        : RawTerm (scope + 1)) :=
+  have universeReducible :
+      ReducibleTypeAt (predLevel + 1)
+        (.mkGen .gen_universeCode (levelExpr, flag) .childNil : RawTerm (scope + 1))
+        (universeReducibilityPredicate (ReducibleTypeAt predLevel)) :=
+    ReducibleTypeStep.universeCode levelExpr flag
+  ⟨_, ReducibleTypeAt.arrowType universeReducible universeReducible⟩
+
 end FX1Poly.Core
