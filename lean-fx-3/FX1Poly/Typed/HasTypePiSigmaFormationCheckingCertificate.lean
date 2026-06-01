@@ -1,4 +1,5 @@
 import FX1Poly.Typed.HasTypeCheck
+import FX1Poly.Typed.HasTypeDescClosedForms
 import FX1Poly.Typed.HasTypeDescDecidable
 import FX1Poly.Typed.HasTypeDescStronglyNormalizing
 import FX1Poly.Typed.HasTypeStronglyNormalizing
@@ -35,7 +36,7 @@ each field delegates to an existing zero-axiom theorem/definition.  Per-declarat
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core
+open FX1Poly.Core FX1Poly.Universe
 
 /-- **Typed checking certificate for the native pi/sigma-formation `HasType` core.**  From a well-formed context, the
 typed core exposes both forms of native typed checking (direct and bidirectional), the equivalent
@@ -119,5 +120,91 @@ def buildHasTypePiSigmaFormationCheckingCertificate {profile : PolyProfile} {sco
   proveClassifierIsType := fun typed => HasType.classifierIsType contextIsWellFormed typed
   proveHasTypeDescSubjectIsStronglyNormalizing := fun typed => typed.isStronglyNormalizing
   proveSubjectIsStronglyNormalizing := fun typed => typed.isStronglyNormalizing
+
+/-- Native empty-context subject regularity exposed through the checking certificate.  This is scoped to the
+native pi/sigma-formation `HasType` core: a closed typed subject is itself a native type. -/
+theorem HasTypePiSigmaFormationCheckingCertificate.proveClosedSubjectIsType {profile : PolyProfile}
+    (_checkingCertificate :
+      HasTypePiSigmaFormationCheckingCertificate
+        (TypingContext.empty : TypingContext profile 0))
+    {subject classifier : RawTerm 0}
+    (typed : HasType profile TypingContext.empty subject classifier) :
+    IsType profile TypingContext.empty subject :=
+  HasType.closedSubjectIsType typed
+
+/-- Native empty-context canonical-form shape exposed through the checking certificate: a closed subject in
+the native pi/sigma-formation `HasType` core is a universe, Pi-code, or Sigma-code cell. -/
+theorem HasTypePiSigmaFormationCheckingCertificate.proveClosedSubjectIsTypeFormer
+    {profile : PolyProfile}
+    (_checkingCertificate :
+      HasTypePiSigmaFormationCheckingCertificate
+        (TypingContext.empty : TypingContext profile 0))
+    {subject classifier : RawTerm 0}
+    (typed : HasType profile TypingContext.empty subject classifier) :
+    (∃ (levelExpr : LevelExpr) (flag : UniverseFlag),
+        subject = universeCodeCell levelExpr flag) ∨
+      (∃ (domainCode : RawTerm 0) (codomainCode : RawTerm 1),
+        subject = piTyCodeCell domainCode codomainCode) ∨
+      (∃ (domainCode : RawTerm 0) (codomainCode : RawTerm 1),
+        subject = sigmaTyCodeCell domainCode codomainCode) :=
+  HasType.closedSubjectIsTypeFormer typed
+
+/-- Native empty-context classifier shape exposed through the checking certificate: every closed typed
+subject's classifier is convertible to a universe code. -/
+theorem HasTypePiSigmaFormationCheckingCertificate.proveClosedClassifierConvUniverseCode
+    {profile : PolyProfile}
+    (_checkingCertificate :
+      HasTypePiSigmaFormationCheckingCertificate
+        (TypingContext.empty : TypingContext profile 0))
+    {subject classifier : RawTerm 0}
+    (typed : HasType profile TypingContext.empty subject classifier) :
+    ∃ (levelExpr : LevelExpr) (flag : UniverseFlag),
+      Conv classifier (universeCodeCell levelExpr flag) :=
+  HasType.closedClassifierConvUniverseCode typed
+
+/-- Description-engine empty-context subject regularity exposed through the checking certificate.  The proof
+uses the certificate's soundness map from `HasTypeDesc` to the native pi/sigma-formation `HasType` core, then
+transports the resulting native type witness back to `IsTypeDesc`. -/
+theorem HasTypePiSigmaFormationCheckingCertificate.proveClosedHasTypeDescSubjectIsTypeDesc
+    {profile : PolyProfile}
+    (checkingCertificate :
+      HasTypePiSigmaFormationCheckingCertificate
+        (TypingContext.empty : TypingContext profile 0))
+    {subject classifier : RawTerm 0}
+    (typed : HasTypeDesc profile TypingContext.empty subject classifier) :
+    IsTypeDesc profile TypingContext.empty subject :=
+  (HasType.closedSubjectIsType (checkingCertificate.translateDescToHasType typed)).toIsTypeDesc
+
+/-- Description-engine empty-context canonical-form shape exposed through the checking certificate: after
+transporting to the native pi/sigma-formation `HasType` core, a closed `HasTypeDesc` subject is a universe,
+Pi-code, or Sigma-code cell. -/
+theorem HasTypePiSigmaFormationCheckingCertificate.proveClosedHasTypeDescSubjectIsTypeFormer
+    {profile : PolyProfile}
+    (checkingCertificate :
+      HasTypePiSigmaFormationCheckingCertificate
+        (TypingContext.empty : TypingContext profile 0))
+    {subject classifier : RawTerm 0}
+    (typed : HasTypeDesc profile TypingContext.empty subject classifier) :
+    (∃ (levelExpr : LevelExpr) (flag : UniverseFlag),
+        subject = universeCodeCell levelExpr flag) ∨
+      (∃ (domainCode : RawTerm 0) (codomainCode : RawTerm 1),
+        subject = piTyCodeCell domainCode codomainCode) ∨
+      (∃ (domainCode : RawTerm 0) (codomainCode : RawTerm 1),
+        subject = sigmaTyCodeCell domainCode codomainCode) :=
+  HasType.closedSubjectIsTypeFormer (checkingCertificate.translateDescToHasType typed)
+
+/-- Description-engine empty-context classifier shape exposed through the checking certificate: after
+transporting to the native pi/sigma-formation `HasType` core, every closed `HasTypeDesc` subject's
+classifier is convertible to a universe code. -/
+theorem HasTypePiSigmaFormationCheckingCertificate.proveClosedHasTypeDescClassifierConvUniverseCode
+    {profile : PolyProfile}
+    (checkingCertificate :
+      HasTypePiSigmaFormationCheckingCertificate
+        (TypingContext.empty : TypingContext profile 0))
+    {subject classifier : RawTerm 0}
+    (typed : HasTypeDesc profile TypingContext.empty subject classifier) :
+    ∃ (levelExpr : LevelExpr) (flag : UniverseFlag),
+      Conv classifier (universeCodeCell levelExpr flag) :=
+  HasType.closedClassifierConvUniverseCode (checkingCertificate.translateDescToHasType typed)
 
 end FX1Poly.Typed

@@ -393,6 +393,12 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.proveHasTypeDescClassifierIsTypeDesc
 #assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.proveHasTypeDescSubjectIsStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.buildHasTypePiSigmaFormationCheckingCertificate
+#assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.proveClosedSubjectIsType
+#assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.proveClosedSubjectIsTypeFormer
+#assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.proveClosedClassifierConvUniverseCode
+#assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.proveClosedHasTypeDescSubjectIsTypeDesc
+#assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.proveClosedHasTypeDescSubjectIsTypeFormer
+#assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.proveClosedHasTypeDescClassifierConvUniverseCode
 
 /-! ### ★ MOONSHOT CORE — the description-driven generic typing engine
     (`HasTypeDesc`, polycell.md §11.8.5 / §5.2: the Natural-Model display map
