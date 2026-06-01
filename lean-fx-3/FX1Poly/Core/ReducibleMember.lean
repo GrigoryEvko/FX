@@ -56,6 +56,26 @@ theorem (`HasType Γ t T → IsReducibleMember (T.subst γ) (t.subst γ)` under 
 def IsReducibleMember {scope : Nat} (typeCode term : RawTerm scope) : Prop :=
   ∃ candidate : RawTerm scope → Prop, ReducibleType typeCode candidate ∧ candidate term
 
+/-- **The canonical candidate (the choice-free `piIntro` keystone).**  A reducible type's OWN
+member-predicate `IsReducibleMember typeCode` is a genuine `ReducibleType` candidate for it.  This is the
+payoff of the `ofPointwiseIff` congruence arm: the bare relation could not host `IsReducibleMember typeCode`
+(its `neutral` arm hard-codes `IsStronglyNormalizing`), but the arm closes the relation under pointwise
+equivalence, and `IsReducibleMember typeCode` is pointwise-equal to any base candidate `candidate` —
+forward, a candidate member exhibits itself (`⟨candidate, reducible, ·⟩`); backward, a member's witnessing
+candidate coincides with `candidate` by `ReducibleType.deterministic`.  Because the canonical candidate is
+definitionally a FUNCTION of the type, the fundamental theorem's `piIntro` arm reads the codomain candidate
+family `fun argument => IsReducibleMember (subst0 codomainCode argument)` off the per-argument
+type-formation hypotheses WITHOUT choice (the genuine-`ReducibleType` counterpart of the saturated
+`ReducibleType.closedAtMemberPredicate`). -/
+theorem ReducibleType.atMemberPredicate {scope : Nat} {typeCode : RawTerm scope}
+    {candidate : RawTerm scope → Prop} (reducible : ReducibleType typeCode candidate) :
+    ReducibleType typeCode (IsReducibleMember typeCode) :=
+  ReducibleType.ofPointwiseIff reducible (fun term =>
+    ⟨fun candidateHolds => ⟨candidate, reducible, candidateHolds⟩,
+     fun memberHolds =>
+       have ⟨_witnessCandidate, witnessReducible, witnessHolds⟩ := memberHolds
+       (ReducibleType.deterministic witnessReducible reducible term).mp witnessHolds⟩)
+
 /-- **Π-code inversion.**  A `gen_piTyCode`-rooted reducible type's candidate is pointwise the
 dependent-arrow candidate: inverting recovers the domain candidate, the codomain candidate family, their
 reducibility witnesses, and the pointwise equivalence.  A Π-code is weak-head normal with root
