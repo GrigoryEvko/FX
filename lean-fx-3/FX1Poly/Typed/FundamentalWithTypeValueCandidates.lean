@@ -2117,43 +2117,6 @@ theorem fundamentalPiFormationWithTypeValueCandidatesFromUniverseDomain
     argumentValueHasPositiveCandidateWhenDomainIsUniverse codomainFundamental
     substitution envWithTypeValueCandidates predLevel).toPiMember
 
-/-- **Sigma-formation for a universe-code domain over the type-value environment.** -/
-theorem fundamentalSigmaFormationWithTypeValueCandidatesFromUniverseDomain
-    {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
-    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
-    {codomainCode : RawTerm (scope + 1)}
-    (domainFundamental :
-      FundamentalConclusionWithTypeValueCandidates context (universeCodeCell domainLevel flag)
-        (universeCodeCell domainLevel.lsucc flag))
-    (domainHasPositiveCandidate :
-      PositiveCandidateConclusionWithTypeValueCandidates context
-        (universeCodeCell domainLevel flag))
-    (argumentValueHasPositiveCandidateWhenDomainIsUniverse :
-      ∀ {targetScope : Nat}
-        (substitution : RawTermSubst scope (targetScope + 1))
-        (_env : ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution)
-        (argument : RawTerm (targetScope + 1)),
-        IsReducibleMemberAtAllPositiveLevels
-          (RawTerm.subst substitution (universeCodeCell domainLevel flag)) argument →
-          ∀ {levelExpr : LevelExpr} {domainFlag : UniverseFlag},
-            RawTerm.subst substitution (universeCodeCell domainLevel flag) =
-              universeCodeCell levelExpr domainFlag →
-              ∀ candidatePredLevel : Nat,
-                HasAllPositiveReducibleCandidateAt (candidatePredLevel + 1) argument)
-    (codomainFundamental :
-      FundamentalConclusionWithTypeValueCandidates
-        (context.cons (universeCodeCell domainLevel flag)) codomainCode
-        (universeCodeCell codomainLevel flag)) :
-    FundamentalConclusionWithTypeValueCandidates context
-      (sigmaTyCodeCell (universeCodeCell domainLevel flag) codomainCode)
-      (universeCodeCell formerLevel flag) := by
-  intro _targetScope substitution envWithTypeValueCandidates predLevel
-  rw [subst_universeCodeCell]
-  exact (formerChildrenReducibleAtDispatchLevelsWithTypeValueCandidatesFromUniverseDomain
-    domainFundamental domainHasPositiveCandidate
-    argumentValueHasPositiveCandidateWhenDomainIsUniverse codomainFundamental
-    substitution envWithTypeValueCandidates predLevel).toSigmaMember
-
 /-- **Bundled Pi-formation validity for a universe-code domain over the type-value environment.**  This is
 the bundled counterpart of `fundamentalPiFormationWithTypeValueCandidatesFromUniverseDomain`: the member
 half uses the universe-domain former-children specialization, while the type-value half is the generic Pi
@@ -2199,44 +2162,6 @@ theorem fundamentalPiFormationValidityWithTypeValueCandidatesFromUniverseDomain
       codomainFundamental)
     codomainFundamental codomainHasPositiveCandidate
 
-/-- **Bundled Sigma-formation validity for a universe-code domain over the type-value environment.**  The
-member half uses the universe-domain dispatch-level child bundle; the type-value half is Sigma's neutral
-positive-candidate payload.  This packages the universe-domain Sigma formation arm for the strengthened FT
-motive without adding any level-irrelevance assumption. -/
-theorem fundamentalSigmaFormationValidityWithTypeValueCandidatesFromUniverseDomain
-    {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
-    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
-    {codomainCode : RawTerm (scope + 1)}
-    (domainFundamental :
-      FundamentalConclusionWithTypeValueCandidates context (universeCodeCell domainLevel flag)
-        (universeCodeCell domainLevel.lsucc flag))
-    (domainHasPositiveCandidate :
-      PositiveCandidateConclusionWithTypeValueCandidates context
-        (universeCodeCell domainLevel flag))
-    (argumentValueHasPositiveCandidateWhenDomainIsUniverse :
-      ∀ {targetScope : Nat}
-        (substitution : RawTermSubst scope (targetScope + 1))
-        (_env : ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution)
-        (argument : RawTerm (targetScope + 1)),
-        IsReducibleMemberAtAllPositiveLevels
-          (RawTerm.subst substitution (universeCodeCell domainLevel flag)) argument →
-          ∀ {levelExpr : LevelExpr} {domainFlag : UniverseFlag},
-            RawTerm.subst substitution (universeCodeCell domainLevel flag) =
-              universeCodeCell levelExpr domainFlag →
-              ∀ candidatePredLevel : Nat,
-                HasAllPositiveReducibleCandidateAt (candidatePredLevel + 1) argument)
-    (codomainFundamental :
-      FundamentalConclusionWithTypeValueCandidates
-        (context.cons (universeCodeCell domainLevel flag)) codomainCode
-        (universeCodeCell codomainLevel flag)) :
-    FundamentalValidityWithTypeValueCandidates context
-      (sigmaTyCodeCell (universeCodeCell domainLevel flag) codomainCode)
-      (universeCodeCell formerLevel flag) :=
-  fundamentalSigmaFormationValidityWithTypeValueCandidatesFromPositiveDomainCandidate
-    domainFundamental domainHasPositiveCandidate
-    argumentValueHasPositiveCandidateWhenDomainIsUniverse
-    codomainFundamental
-
 /-- **Bundled Pi-formation validity for a universe-code domain from the global universe-member type-value
 principle.**  This removes the repeated explicit argument-payload premise from
 `fundamentalPiFormationValidityWithTypeValueCandidatesFromUniverseDomain`: all-positive members of the
@@ -2272,8 +2197,9 @@ theorem fundamentalPiFormationValidityWithTypeValueCandidatesFromUniverseDomainM
     codomainFundamental codomainHasPositiveCandidate
 
 /-- **Bundled Sigma-formation validity for a universe-code domain from the global universe-member type-value
-principle.**  The member half uses the same universe-domain child bundle as Pi formation; Sigma's type-value
-half remains the neutral Sigma positive-candidate theorem. -/
+principle.**  Sigma formation routes through the generic positive-domain theorem: the global
+universe-member principle supplies the type-value payload needed to extend the strengthened environment, and
+the Sigma type-value half remains the neutral Sigma positive-candidate theorem. -/
 theorem fundamentalSigmaFormationValidityWithTypeValueCandidatesFromUniverseDomainMembersHaveTypeValueCandidates
     {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
     {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
@@ -2293,7 +2219,7 @@ theorem fundamentalSigmaFormationValidityWithTypeValueCandidatesFromUniverseDoma
     FundamentalValidityWithTypeValueCandidates context
       (sigmaTyCodeCell (universeCodeCell domainLevel flag) codomainCode)
       (universeCodeCell formerLevel flag) :=
-  fundamentalSigmaFormationValidityWithTypeValueCandidatesFromUniverseDomain
+  fundamentalSigmaFormationValidityWithTypeValueCandidatesFromPositiveDomainCandidate
     domainFundamental domainHasPositiveCandidate
     (fun {_targetScope} substitution _envWithTypeValueCandidates _argument argumentAtAllPositiveLevels
         {_levelExpr} {_domainFlag} substitutedDomainIsUniverse candidatePredLevel =>

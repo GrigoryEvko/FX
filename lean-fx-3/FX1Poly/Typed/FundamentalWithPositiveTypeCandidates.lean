@@ -506,27 +506,6 @@ theorem fundamentalPiFormationWithPositiveTypeCandidatesFromUniverseDomain
     domainFundamental domainHasPositiveCandidate codomainFundamental
     substitution envWithCandidates predLevel).toPiMember
 
-/-- **Sigma-formation for a universe-code domain over the strengthened environment.** -/
-theorem fundamentalSigmaFormationWithPositiveTypeCandidatesFromUniverseDomain
-    {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
-    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
-    {codomainCode : RawTerm (scope + 1)}
-    (domainFundamental :
-      FundamentalConclusionWithPositiveTypeCandidates context (universeCodeCell domainLevel flag)
-        (universeCodeCell domainLevel.lsucc flag))
-    (domainHasPositiveCandidate :
-      PositiveCandidateConclusionWithPositiveTypeCandidates context
-        (universeCodeCell domainLevel flag))
-    (codomainFundamental :
-      FundamentalConclusionWithPositiveTypeCandidates
-        (context.cons (universeCodeCell domainLevel flag)) codomainCode
-        (universeCodeCell codomainLevel flag)) :
-    FundamentalConclusionWithPositiveTypeCandidates context
-      (sigmaTyCodeCell (universeCodeCell domainLevel flag) codomainCode)
-      (universeCodeCell formerLevel flag) :=
-  fundamentalSigmaFormationWithPositiveTypeCandidates
-    domainFundamental domainHasPositiveCandidate codomainFundamental
-
 /-- **Dependent lambda introduction over the strengthened environment.**  The domain premise supplies the
 ordinary decoded domain candidate at the conclusion fuel.  The domain's positive-fuel candidate companion
 then upgrades every argument accepted by that decoded candidate into all-positive membership, allowing the

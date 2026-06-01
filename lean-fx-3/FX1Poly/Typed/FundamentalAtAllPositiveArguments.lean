@@ -1414,25 +1414,4 @@ theorem fundamentalSigmaFormationAtAllFromPositiveDomainCandidate
   rw [subst_universeCodeCell]
   exact result
 
-/-- **Σ-formation for a universe-code domain from the positive-fuel domain companion.**  The data-former
-twin of `fundamentalPiFormationAtAllFromUniverseDomainPositiveCandidate`. -/
-theorem fundamentalSigmaFormationAtAllFromUniverseDomainPositiveCandidate
-    {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
-    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
-    {codomainCode : RawTerm (scope + 1)}
-    (domainFundamental :
-      FundamentalConclusionAtAll context (universeCodeCell domainLevel flag)
-        (universeCodeCell domainLevel.lsucc flag))
-    (domainHasPositiveCandidateUnderSubstitution :
-      HasAllPositiveReducibleCandidateAtPositiveLevelsUnderSubstitution context
-        (universeCodeCell domainLevel flag))
-    (codomainFundamental :
-      FundamentalConclusionAtAll (context.cons (universeCodeCell domainLevel flag)) codomainCode
-        (universeCodeCell codomainLevel flag)) :
-    FundamentalConclusionAtAll context (sigmaTyCodeCell (universeCodeCell domainLevel flag) codomainCode)
-      (universeCodeCell formerLevel flag) :=
-  fundamentalSigmaFormationAtDispatchLevelsAtAll
-    (formerChildrenReducibleAtDispatchLevelsFromUniverseDomainPositiveCandidate
-      domainFundamental domainHasPositiveCandidateUnderSubstitution codomainFundamental)
-
 end FX1Poly.Typed
