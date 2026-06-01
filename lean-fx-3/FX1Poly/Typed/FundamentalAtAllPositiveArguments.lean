@@ -1,6 +1,7 @@
 import FX1Poly.Typed.FundamentalAtAllFormerChildren
 import FX1Poly.Typed.FundamentalAtAllPiIntro
 import FX1Poly.Core.StratifiedReducibleMemberNeutral
+import FX1Poly.Core.StratifiedReducibleUniverseDecode
 
 /-! # FX1Poly/Typed/FundamentalAtAllPositiveArguments
     — dependent binder bridges from all-positive semantic arguments
@@ -37,6 +38,12 @@ def IsReducibleMemberAtAllPositiveLevels {scope : Nat}
     (typeCode term : RawTerm scope) : Prop :=
   ∀ level : Nat, IsReducibleMemberAt (level + 1) typeCode term
 
+/-- A type code is reducible at every stratification fuel level.  This is the type-level counterpart of
+`IsReducibleMemberAtAllPositiveLevels`, used to state exactly what all-positive membership in a universe
+means. -/
+def IsReducibleTypeAtAllLevels {scope : Nat} (typeCode : RawTerm scope) : Prop :=
+  ∀ level : Nat, IsReducibleTypeAt level typeCode
+
 /-- Read an all-positive member at one concrete positive level. -/
 theorem IsReducibleMemberAtAllPositiveLevels.atLevel {scope : Nat}
     {typeCode term : RawTerm scope}
@@ -44,6 +51,30 @@ theorem IsReducibleMemberAtAllPositiveLevels.atLevel {scope : Nat}
     (level : Nat) :
     IsReducibleMemberAt (level + 1) typeCode term :=
   memberAtAllPositiveLevels level
+
+/-- **All-positive membership in a universe.**  A term is an all-positive member of a universe code exactly
+when it is strongly normalizing and reducible as a type at every fuel level.  This theorem states the hard
+dependent-Type obligation precisely: ordinary Tarski membership at one positive level decodes to one lower
+type-reducibility level, while all-positive universe membership requires those decodings uniformly at every
+level. -/
+theorem IsReducibleMemberAtAllPositiveLevels.universeCode_iff {scope : Nat}
+    {levelExpr : LevelExpr} {flag : UniverseFlag} {typeCode : RawTerm scope} :
+    IsReducibleMemberAtAllPositiveLevels (universeCodeCell levelExpr flag) typeCode ↔
+      IsStronglyNormalizing typeCode ∧ IsReducibleTypeAtAllLevels typeCode := by
+  constructor
+  · intro memberAtAllPositiveLevels
+    have memberAtFirstLevel :
+        IsStronglyNormalizing typeCode ∧ IsReducibleTypeAt 0 typeCode :=
+      (IsReducibleMemberAt.universeMembership_iff (predLevel := 0)
+        (levelExpr := levelExpr) (flag := flag)).mp (memberAtAllPositiveLevels 0)
+    exact ⟨memberAtFirstLevel.1, fun level =>
+      ((IsReducibleMemberAt.universeMembership_iff (predLevel := level)
+        (levelExpr := levelExpr) (flag := flag)).mp (memberAtAllPositiveLevels level)).2⟩
+  · intro normalizingAndReducibleAtAllLevels
+    intro level
+    exact (IsReducibleMemberAt.universeMembership_iff (predLevel := level)
+      (levelExpr := levelExpr) (flag := flag)).mpr
+      ⟨normalizingAndReducibleAtAllLevels.1, normalizingAndReducibleAtAllLevels.2 level⟩
 
 /-- **A type whose level candidate is the all-positive member predicate.**  This is the candidate-level
 semantic hook the dependent binder needs: determinism then turns membership in any decoded candidate for the
