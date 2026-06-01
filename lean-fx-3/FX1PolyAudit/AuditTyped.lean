@@ -73,6 +73,7 @@ import FX1Poly.Typed.DescTelescopeInversion
 import FX1Poly.Typed.PiFormerMembership
 import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.TelescopeReducible
+import FX1Poly.Typed.UniverseDomainMemberExtension
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -1315,3 +1316,11 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.TelescopeReducible
 #assert_no_axioms FX1Poly.Typed.Generator.gen_piTyCode_binderShifts_eq
 #assert_no_axioms FX1Poly.Typed.Generator.gen_sigmaTyCode_binderShifts_eq
+
+-- Universe-domain member-extension reduction: the cons-arm's last hard case (the type-polymorphic binder
+-- `Π (A : Type@e). …`) is EXACTLY type-level positive level-irrelevance — the membership/SN layer stripped
+-- off via the Tarski universe decode/encode, exposing the pure type-level lift the level-congruence
+-- inductive step (`ReducibleTypeStep.existsCongr`) is built to thread.
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.ofUniverseMemberUnderTypeLevelIrrelevance
+#assert_no_axioms FX1Poly.Typed.universeDomainMemberExtension_ofTypeLevelIrrelevance
+#assert_no_axioms FX1Poly.Typed.typeLevelIrrelevance_ofUniverseDomainMemberExtension
