@@ -1,4 +1,5 @@
 import FX1Poly.Core.ReducibleMember
+import FX1Poly.Core.StrongNormalizationConstructors
 
 /-! # Foundation/PolyCell/Core/ReducibleMemberNeutral
     — membership at a neutral classifier is exactly strong normalization
@@ -41,5 +42,42 @@ theorem IsReducibleMember.atNeutralClassifier {scope : Nat} {classifier term : R
       (ReducibleType.neutral noWeakHeadStep notPiType) term).mp membership
   · intro stronglyNormalizing
     exact ⟨IsStronglyNormalizing, ReducibleType.neutral noWeakHeadStep notPiType, stronglyNormalizing⟩
+
+/-- **The Π former inhabits its universe — the `genFormationPi` arm over the CONV-COMPLETE membership
+layer.**  A Π-type code is a reducible member of any neutral non-Π universe classifier (every universe code
+`Type@e` qualifies — a normal leaf, root `gen_universeCode`) exactly when it is strongly normalizing, which
+`piTyCode_isStronglyNormalizing_of_domain_codomain` supplies from the children's strong normalization (their
+fundamental-theorem induction hypotheses).  The `IsReducibleMember`/`ReducibleType` counterpart of the
+choice-free `InterpretsType.fundamentalPiFormation` — this is the toolkit the fundamental theorem assembles
+over, because it ALSO carries the `conv` arm (`IsReducibleMember.castAlongConv`), which the
+`InterpretsType` interpretation cannot (its `baseType` arm admits redexes, so it is not forward-closed). -/
+theorem IsReducibleMember.piFormerInNeutralUniverse {scope : Nat}
+    {universeCode : RawTerm scope}
+    (universeNoWeakHeadStep : ∀ reduct : RawTerm scope, ¬ WeakHeadStep universeCode reduct)
+    (universeNotPiType : universeCode.rootGenerator ≠ Generator.gen_piTyCode)
+    {domain : RawTerm scope} {codomain : RawTerm (scope + 1)}
+    (domainNormalizing : IsStronglyNormalizing domain)
+    (codomainNormalizing : IsStronglyNormalizing codomain) :
+    IsReducibleMember universeCode
+      (.mkGen .gen_piTyCode () (.childCons domain (.childCons codomain .childNil))) :=
+  (IsReducibleMember.atNeutralClassifier universeNoWeakHeadStep universeNotPiType).mpr
+    (piTyCode_isStronglyNormalizing_of_domain_codomain domainNormalizing codomainNormalizing)
+
+/-- **The Σ former inhabits its universe — the Σ twin of `piFormerInNeutralUniverse`.**  A Σ-type code is a
+reducible member of any neutral non-Π universe classifier when strongly normalizing, supplied from the
+children's strong normalization by `sigmaTyCode_isStronglyNormalizing_of_domain_codomain`.  Together with
+`piFormerInNeutralUniverse` this discharges both `typingRuleDescOf` formers' universe membership over the
+conv-complete `IsReducibleMember` layer. -/
+theorem IsReducibleMember.sigmaFormerInNeutralUniverse {scope : Nat}
+    {universeCode : RawTerm scope}
+    (universeNoWeakHeadStep : ∀ reduct : RawTerm scope, ¬ WeakHeadStep universeCode reduct)
+    (universeNotPiType : universeCode.rootGenerator ≠ Generator.gen_piTyCode)
+    {domain : RawTerm scope} {codomain : RawTerm (scope + 1)}
+    (domainNormalizing : IsStronglyNormalizing domain)
+    (codomainNormalizing : IsStronglyNormalizing codomain) :
+    IsReducibleMember universeCode
+      (.mkGen .gen_sigmaTyCode () (.childCons domain (.childCons codomain .childNil))) :=
+  (IsReducibleMember.atNeutralClassifier universeNoWeakHeadStep universeNotPiType).mpr
+    (sigmaTyCode_isStronglyNormalizing_of_domain_codomain domainNormalizing codomainNormalizing)
 
 end FX1Poly.Core
