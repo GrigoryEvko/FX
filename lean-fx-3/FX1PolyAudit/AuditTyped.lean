@@ -803,6 +803,9 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevels.lookupReducible
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevels.empty
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevels.cons
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevels.toVecPositive
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevels.ofVecPositiveFamily
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevels.consHeadToVecPositive
 
 /-! ### Dependent fundamental theorem — the NON-telescope arms over the ∀-level environment.  `var` (the arm
     the ∀-level env was built to unblock: closes by instantiating the all-levels family at the conclusion

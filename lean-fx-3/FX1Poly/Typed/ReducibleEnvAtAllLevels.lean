@@ -1,4 +1,5 @@
 import FX1Poly.Typed.ReducibleEnvAt
+import FX1Poly.Typed.ReducibleEnvVec
 
 /-! # FX1Poly/Typed/ReducibleEnvAtAllLevels
     — the ∀-level (Kripke) reducible closing-substitution environment for the dependent fundamental theorem
@@ -86,5 +87,40 @@ theorem ReducibleEnvAtAllLevels.cons {profile : PolyProfile} {scope targetScope 
       IsReducibleMemberAt (level + 1) (RawTerm.subst tailSubst bindingType) headTerm) :
     ReducibleEnvAtAllLevels (context.cons bindingType) (RawTermSubst.cons headTerm tailSubst) :=
   fun level => ReducibleEnvAt.cons (tailReducible level) (headReducible level)
+
+/-- Read a ∀-level environment as a per-variable-level environment at any positive level vector.  This is the
+bridge from the all-level outer environment to the binder/telescope machinery that tracks each freshly-bound
+variable at the single level supplied by the semantic rule. -/
+theorem ReducibleEnvAtAllLevels.toVecPositive {profile : PolyProfile} {scope targetScope : Nat}
+    {context : TypingContext profile scope} {substitution : RawTermSubst scope targetScope}
+    (envReducible : ReducibleEnvAtAllLevels context substitution)
+    (levels : Fin scope → Nat) :
+    ReducibleEnvVec (fun index => levels index + 1) context substitution :=
+  fun index => envReducible (levels index) index
+
+/-- Rebuild a ∀-level environment from a family of positive per-variable-level environments.  The uniform
+level `level + 1` is the positive vector whose every entry is `level + 1`. -/
+theorem ReducibleEnvAtAllLevels.ofVecPositiveFamily {profile : PolyProfile} {scope targetScope : Nat}
+    {context : TypingContext profile scope} {substitution : RawTermSubst scope targetScope}
+    (envFamily : ∀ levels : Fin scope → Nat,
+      ReducibleEnvVec (fun index => levels index + 1) context substitution) :
+    ReducibleEnvAtAllLevels context substitution :=
+  fun level index => envFamily (fun _index => level) index
+
+/-- Extend an all-level tail environment with a head known at ONE positive level, producing the mixed
+per-variable vector environment that binder bodies and premise telescopes actually consume: the fresh head
+is fixed at `headLevel + 1`, while every tail variable remains available at the caller-chosen positive level
+vector.  This is the non-vacuous binder bridge that avoids requiring the bound argument at all levels. -/
+theorem ReducibleEnvAtAllLevels.consHeadToVecPositive {profile : PolyProfile} {scope targetScope : Nat}
+    {context : TypingContext profile scope} {bindingType : RawTerm scope}
+    {tailSubst : RawTermSubst scope targetScope} {headTerm : RawTerm targetScope}
+    (tailReducible : ReducibleEnvAtAllLevels context tailSubst)
+    {headLevel : Nat}
+    (headReducible :
+      IsReducibleMemberAt (headLevel + 1) (RawTerm.subst tailSubst bindingType) headTerm)
+    (tailLevels : Fin scope → Nat) :
+    ReducibleEnvVec (levelCons (headLevel + 1) (fun index => tailLevels index + 1))
+      (context.cons bindingType) (RawTermSubst.cons headTerm tailSubst) :=
+  ReducibleEnvVec.cons (tailReducible.toVecPositive tailLevels) headReducible
 
 end FX1Poly.Typed
