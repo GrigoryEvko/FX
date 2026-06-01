@@ -186,6 +186,41 @@ theorem HasTypeDescPi.subjectStronglyNormalizingFromFormation {profile : PolyPro
   ((HasTypeDescPi.fundamentalAtAllFromFormation formationFundamental typed)
     substitution env predLevel).stronglyNormalizing
 
+/-- **Closed reducibility under a closing substitution, conditional on the formation-engine premise.**  In the
+empty context the all-level environment is vacuous, so the conditional grown-engine fundamental theorem
+immediately specializes to a closed term under any target closing substitution.  This is the reducible-member
+handoff the downstream semantic spine consumes; the only remaining assumption is still explicit, namely the
+formation-engine vector premise. -/
+theorem HasTypeDescPi.closedSubjectReducibleUnderSubstFromFormation {profile : PolyProfile}
+    (formationFundamental :
+      ∀ {scope : Nat} {context : TypingContext profile scope}
+        {subject classifier : RawTerm scope},
+        HasTypeDesc profile context subject classifier →
+          IsFundamentalConclusionAtVector context subject classifier)
+    {targetScope : Nat} (substitution : RawTermSubst 0 (targetScope + 1)) (predLevel : Nat)
+    {subject classifier : RawTerm 0}
+    (typed : HasTypeDescPi profile TypingContext.empty subject classifier) :
+    IsReducibleMemberAt (predLevel + 1)
+      (RawTerm.subst substitution classifier) (RawTerm.subst substitution subject) :=
+  (HasTypeDescPi.fundamentalAtAllFromFormation formationFundamental typed)
+    substitution (ReducibleEnvAtAllLevels.empty substitution) predLevel
+
+/-- **Closed strong normalization under a closing substitution, conditional on the formation-engine premise.**
+This is the CR1 projection of `closedSubjectReducibleUnderSubstFromFormation`: after closing an empty-context
+`HasTypeDescPi` derivation by any target substitution, the substituted subject is strongly normalizing. -/
+theorem HasTypeDescPi.closedSubjectSubstStronglyNormalizingFromFormation {profile : PolyProfile}
+    (formationFundamental :
+      ∀ {scope : Nat} {context : TypingContext profile scope}
+        {subject classifier : RawTerm scope},
+        HasTypeDesc profile context subject classifier →
+          IsFundamentalConclusionAtVector context subject classifier)
+    {targetScope : Nat} (substitution : RawTermSubst 0 (targetScope + 1)) (predLevel : Nat)
+    {subject classifier : RawTerm 0}
+    (typed : HasTypeDescPi profile TypingContext.empty subject classifier) :
+    IsStronglyNormalizing (RawTerm.subst substitution subject) :=
+  (HasTypeDescPi.closedSubjectReducibleUnderSubstFromFormation
+    formationFundamental substitution predLevel typed).stronglyNormalizing
+
 /-- **Closed strong normalization from the conditional grown-engine fundamental theorem.**  In the empty
 context, instantiate the closing substitution with the unique empty substitution into scope `1`, use the
 vacuous all-level environment, then reflect strong normalization back along the unique empty renaming.  The

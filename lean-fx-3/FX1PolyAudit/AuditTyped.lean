@@ -856,6 +856,8 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.fundamentalVectorFromFormation
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.fundamentalAtAllFromFormation
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectStronglyNormalizingFromFormation
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedSubjectReducibleUnderSubstFromFormation
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedSubjectSubstStronglyNormalizingFromFormation
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedSubjectStronglyNormalizingFromFormation
 
 /-! ### PER-VARIABLE-LEVEL reducible environment (the Kripke refinement for the dependent fundamental
