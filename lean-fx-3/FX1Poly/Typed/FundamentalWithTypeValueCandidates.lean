@@ -234,6 +234,61 @@ theorem HasTypeValueCandidatesForAllPositiveUniverseMembers.ofSubstitutedUnivers
   universeMembersHaveTypeValueCandidates
     (substitutedDomainIsUniverse ▸ argumentAtAllPositiveLevels) predLevel
 
+/-- **Semantic completion for all reducible type values.**  This is the universe-member payload with the
+universe wrapper peeled off: every strongly-normalizing type code that is reducible at every fuel level
+denotes the all-positive member predicate at every positive fuel.
+
+The statement is intentionally separated from `HasTypeValueCandidatesForAllPositiveUniverseMembers`.
+`IsReducibleMemberAtAllPositiveLevels.universeCode_iff` proves they are equivalent, so the remaining
+semantic work can target the sharper type-value completion principle directly instead of redoing a Tarski
+universe decode at each binder arm. -/
+def HasTypeValueCandidatesForAllReducibleTypesAtAllLevels : Prop :=
+  ∀ {scope : Nat} {typeCode : RawTerm scope},
+    IsStronglyNormalizing typeCode →
+      IsReducibleTypeAtAllLevels typeCode →
+        ∀ predLevel : Nat, HasAllPositiveReducibleCandidateAt (predLevel + 1) typeCode
+
+/-- The reducible-type completion principle implies the universe-member payload: all-positive membership in
+a universe code is exactly strong normalization plus reducibility at every fuel level. -/
+theorem HasTypeValueCandidatesForAllReducibleTypesAtAllLevels.toUniverseMembers
+    (allReducibleTypesHaveTypeValueCandidates :
+      HasTypeValueCandidatesForAllReducibleTypesAtAllLevels) :
+    HasTypeValueCandidatesForAllPositiveUniverseMembers := by
+  intro scope levelExpr flag typeCode memberAtAllPositiveLevels predLevel
+  have typeValueData :=
+    (IsReducibleMemberAtAllPositiveLevels.universeCode_iff
+      (scope := scope) (levelExpr := levelExpr) (flag := flag)
+      (typeCode := typeCode)).mp memberAtAllPositiveLevels
+  exact allReducibleTypesHaveTypeValueCandidates typeValueData.1 typeValueData.2 predLevel
+
+/-- Conversely, the universe-member payload implies the reducible-type completion principle: package any
+strongly-normalizing all-level reducible type as an all-positive member of a fixed standard universe, then
+use the universe-member payload.  The chosen syntactic universe is arbitrary; the proof uses
+`Type@0[standard]` only as a Tarski wrapper. -/
+theorem HasTypeValueCandidatesForAllPositiveUniverseMembers.toAllReducibleTypesAtAllLevels
+    (universeMembersHaveTypeValueCandidates :
+      HasTypeValueCandidatesForAllPositiveUniverseMembers) :
+    HasTypeValueCandidatesForAllReducibleTypesAtAllLevels := by
+  intro scope typeCode typeCodeNormalizing typeCodeReducibleAtAllLevels predLevel
+  have memberAtAllPositiveLevels :
+      IsReducibleMemberAtAllPositiveLevels
+        (universeCodeCell LevelExpr.lzero UniverseFlag.standard : RawTerm scope) typeCode :=
+    (IsReducibleMemberAtAllPositiveLevels.universeCode_iff
+      (scope := scope) (levelExpr := LevelExpr.lzero) (flag := UniverseFlag.standard)
+      (typeCode := typeCode)).mpr
+      ⟨typeCodeNormalizing, typeCodeReducibleAtAllLevels⟩
+  exact universeMembersHaveTypeValueCandidates memberAtAllPositiveLevels predLevel
+
+/-- **Universe-member payload iff reducible-type completion.**  This pins the remaining type-value semantic
+obligation exactly: proving it for universe members is the same as proving that every strongly-normalizing
+type reducible at all fuel levels has the all-positive member predicate as a candidate at every positive
+fuel. -/
+theorem hasTypeValueCandidatesForAllPositiveUniverseMembers_iff_allReducibleTypesAtAllLevels :
+    HasTypeValueCandidatesForAllPositiveUniverseMembers ↔
+      HasTypeValueCandidatesForAllReducibleTypesAtAllLevels :=
+  ⟨HasTypeValueCandidatesForAllPositiveUniverseMembers.toAllReducibleTypesAtAllLevels,
+    HasTypeValueCandidatesForAllReducibleTypesAtAllLevels.toUniverseMembers⟩
+
 /-- **The variable member arm over the type-value environment.** -/
 theorem fundamentalVarWithTypeValueCandidates {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) (index : Fin scope) :
