@@ -892,11 +892,15 @@ gates pin them shut.
     all-positive membership, extending the strengthened environment before running the codomain/body
     recursive premises. -/
 #assert_no_axioms FX1Poly.Typed.FundamentalConclusionWithPositiveTypeCandidates
+#assert_no_axioms FX1Poly.Typed.PositiveCandidateConclusionWithPositiveTypeCandidates
 #assert_no_axioms FX1Poly.Typed.FundamentalConclusionAtAll.toPositiveTypeCandidateEnv
 #assert_no_axioms FX1Poly.Typed.fundamentalVarWithPositiveTypeCandidates
 #assert_no_axioms FX1Poly.Typed.fundamentalUniverseFormationWithPositiveTypeCandidates
 #assert_no_axioms FX1Poly.Typed.fundamentalConvWithPositiveTypeCandidates
 #assert_no_axioms FX1Poly.Typed.fundamentalPiElimWithPositiveTypeCandidates
+#assert_no_axioms FX1Poly.Typed.positiveCandidateVarWithPositiveTypeCandidates
+#assert_no_axioms FX1Poly.Typed.positiveCandidateSigmaTypeWithPositiveTypeCandidates
+#assert_no_axioms FX1Poly.Typed.positiveCandidatePiTypeWithPositiveTypeCandidates
 #assert_no_axioms FX1Poly.Typed.fundamentalPiIntroWithPositiveTypeCandidatesFromPositiveDomainCandidate
 
 /-! ### Dependent fundamental theorem — the NON-telescope arms over the ∀-level environment.  `var` (the arm

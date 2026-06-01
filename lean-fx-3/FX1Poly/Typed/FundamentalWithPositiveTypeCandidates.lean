@@ -42,6 +42,18 @@ def FundamentalConclusionWithPositiveTypeCandidates {profile : PolyProfile} {sco
     IsReducibleMemberAt (predLevel + 1) (RawTerm.subst substitution classifier)
       (RawTerm.subst substitution subject)
 
+/-- **The positive-candidate type half over the strengthened environment.**  A type code has, under every
+strengthened closing substitution and every positive semantic fuel, the all-positive member predicate as a
+reducible candidate.  This is the proof-relevant companion the lambda and former binder arms consume for
+domain types. -/
+def PositiveCandidateConclusionWithPositiveTypeCandidates {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (typeCode : RawTerm scope) : Prop :=
+  ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+    (_env : ReducibleEnvAtAllLevelsWithPositiveTypeCandidates context substitution)
+    (predLevel : Nat),
+    HasAllPositiveReducibleCandidateAt (predLevel + 1)
+      (RawTerm.subst substitution typeCode)
+
 /-- Read an ordinary all-level fundamental result through the strengthened environment projection. -/
 theorem FundamentalConclusionAtAll.toPositiveTypeCandidateEnv
     {profile : PolyProfile} {scope : Nat}
@@ -104,6 +116,60 @@ theorem fundamentalPiElimWithPositiveTypeCandidates
   exact IsReducibleMemberAt.applicationUnderSubst substitution
     (functionFundamental substitution envWithCandidates predLevel)
     (argumentFundamental substitution envWithCandidates predLevel)
+
+/-- **The positive-candidate `var` type half over the strengthened environment.**  The environment carries
+exactly the companion required for each looked-up binding type. -/
+theorem positiveCandidateVarWithPositiveTypeCandidates
+    {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (index : Fin scope) :
+    PositiveCandidateConclusionWithPositiveTypeCandidates context (context.lookup index) := by
+  intro _targetScope substitution envWithCandidates predLevel
+  exact envWithCandidates.lookupPositiveCandidate index predLevel
+
+/-- **The positive-candidate Sigma type half over the strengthened environment.**  Sigma codes are neutral
+non-Pi type codes in the current reducibility semantics, so they denote the all-positive candidate at every
+positive fuel without recursive child candidate premises. -/
+theorem positiveCandidateSigmaTypeWithPositiveTypeCandidates
+    {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope)
+    (domainCode : RawTerm scope) (codomainCode : RawTerm (scope + 1)) :
+    PositiveCandidateConclusionWithPositiveTypeCandidates context
+      (sigmaTyCodeCell domainCode codomainCode) := by
+  intro _targetScope substitution _envWithCandidates predLevel
+  exact HasAllPositiveReducibleCandidateAt.sigmaTypeUnderSubst
+    (level := predLevel + 1) substitution domainCode codomainCode
+
+/-- **The positive-candidate dependent Pi type half over the strengthened environment.**  The domain
+candidate companion upgrades any accepted argument to all-positive membership; the strengthened environment
+then extends through the binder, allowing the codomain candidate companion to run under the cons
+substitution. -/
+theorem positiveCandidatePiTypeWithPositiveTypeCandidates
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    (domainHasPositiveCandidate :
+      PositiveCandidateConclusionWithPositiveTypeCandidates context domainCode)
+    (codomainHasPositiveCandidate :
+      PositiveCandidateConclusionWithPositiveTypeCandidates (context.cons domainCode) codomainCode) :
+    PositiveCandidateConclusionWithPositiveTypeCandidates context
+      (piTyCodeCell domainCode codomainCode) := by
+  intro _targetScope substitution envWithCandidates predLevel
+  rw [subst_piTyCodeCell]
+  exact HasAllPositiveReducibleCandidateAt.piTypeAtPositiveLevel
+    (fun candidatePredLevel =>
+      domainHasPositiveCandidate substitution envWithCandidates candidatePredLevel)
+    (fun candidatePredLevel argument argumentAtAllPositiveLevels => by
+      have extendedEnvWithCandidates :
+          ReducibleEnvAtAllLevelsWithPositiveTypeCandidates (context.cons domainCode)
+            (RawTermSubst.cons argument substitution) :=
+        ReducibleEnvAtAllLevelsWithPositiveTypeCandidates.cons envWithCandidates
+          argumentAtAllPositiveLevels
+          (fun headPredLevel =>
+            domainHasPositiveCandidate substitution envWithCandidates headPredLevel)
+      have codomainCandidate :=
+        codomainHasPositiveCandidate (RawTermSubst.cons argument substitution)
+          extendedEnvWithCandidates candidatePredLevel
+      rwa [RawTerm.subst_cons_eq_subst0_lift] at codomainCandidate)
 
 /-- **Dependent lambda introduction over the strengthened environment.**  The domain premise supplies the
 ordinary decoded domain candidate at the conclusion fuel.  The domain's positive-fuel candidate companion
