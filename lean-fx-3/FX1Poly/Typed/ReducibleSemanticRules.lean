@@ -136,4 +136,94 @@ theorem IsReducibleMemberAt.abstractionNonDependentUnderSubst {scope targetScope
   exact IsReducibleMemberAt.abstractionNonDependent
     domainReducible domainArgumentsSN codomainReducible bodyReducible
 
+/-- **Semantic DEPENDENT Π introduction under a closing substitution (the dependent `piIntro` arm).**  The
+dependent twin of `abstractionNonDependentUnderSubst`: the codomain candidate `codomainCandidate argument`
+is a PER-ARGUMENT family (the codomain code `codomainCode : RawTerm (scope + 1)` genuinely varies with the
+bound variable), so this is the introduction arm the FULL (large-elimination) fundamental theorem consumes
+once the recursive type-interpretation supplies the per-argument candidates.
+
+As a SEMANTIC RULE it is choice-free and shippable now — it merely lifts the shipped raw
+`IsReducibleMemberAt.abstraction`, which TAKES the per-argument candidate as given; the candidate-congruence
+choice obstruction lives in the FT ASSEMBLY (constructing the candidate from `∀ argument ∃ candidate`), not
+here.  It is also CLEANER than the non-dependent arm: the dependent codomain stays in the extended scope, so
+only the `rfl` cell-substitutions `subst_piTyCodeCell` / `subst_lamCell` are needed (which push the closing
+substitution under the binder as `iterateLiftRaw substitution 1 ≡ RawTermSubst.lift substitution`) — NO
+weakening-commutation.  The `level` is threaded unchanged. -/
+theorem IsReducibleMemberAt.abstractionUnderSubst {scope targetScope : Nat} {level : Nat}
+    {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
+    {domainCandidate : RawTerm targetScope → Prop}
+    {codomainCandidate : RawTerm targetScope → (RawTerm targetScope → Prop)}
+    (substitution : RawTermSubst scope targetScope)
+    (domainReducible : ReducibleTypeAt level
+      (RawTerm.subst substitution domainCode) domainCandidate)
+    (domainArgumentsSN : ∀ argument : RawTerm targetScope, domainCandidate argument →
+      IsStronglyNormalizing argument)
+    (codomainReducible : ∀ argument : RawTerm targetScope, domainCandidate argument →
+      ReducibleTypeAt level
+        (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) codomainCode) argument)
+        (codomainCandidate argument))
+    (bodyReducible : ∀ argument : RawTerm targetScope, domainCandidate argument →
+      codomainCandidate argument
+        (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) body) argument)) :
+    IsReducibleMemberAt level
+      (RawTerm.subst substitution (piTyCodeCell domainCode codomainCode))
+      (RawTerm.subst substitution (lamCell body)) := by
+  rw [subst_piTyCodeCell, subst_lamCell]
+  exact IsReducibleMemberAt.abstraction
+    domainReducible domainArgumentsSN codomainReducible bodyReducible
+
+/-- **Semantic non-dependent (simply-typed) Π formation under a closing substitution (the simple-arrow
+`Π`-formation arm).**  `gen_piTyCode (A, weaken B)` is a reducible TYPE at the non-dependent arrow candidate
+`IsArrowReducible domainCandidate codomainCandidate` under a closing `substitution`, from the γ-closed
+reducibility of the domain `A` and the codomain `B`.  Lifts the shipped raw `ReducibleTypeAt.arrowType`
+through the SAME `typeEq` re-expression as `abstractionNonDependentUnderSubst` (`subst_piTyCodeCell` rfl +
+`subst_lift_weaken_commute` for the codomain weakening through the binder lift).  The type-former companion
+to the simply-typed `piIntro` arm; the `level` rides through unchanged. -/
+theorem ReducibleTypeAt.arrowTypeUnderSubst {scope targetScope : Nat} {level : Nat}
+    {domainCode codomainCodeBase : RawTerm scope}
+    {domainCandidate codomainCandidate : RawTerm targetScope → Prop}
+    (substitution : RawTermSubst scope targetScope)
+    (domainReducible : ReducibleTypeAt level
+      (RawTerm.subst substitution domainCode) domainCandidate)
+    (codomainReducible : ReducibleTypeAt level
+      (RawTerm.subst substitution codomainCodeBase) codomainCandidate) :
+    ReducibleTypeAt level
+      (RawTerm.subst substitution (piTyCodeCell domainCode (RawTerm.weaken codomainCodeBase)))
+      (IsArrowReducible domainCandidate codomainCandidate) := by
+  have typeEq :
+      RawTerm.subst substitution (piTyCodeCell domainCode (RawTerm.weaken codomainCodeBase))
+        = piTyCodeCell (RawTerm.subst substitution domainCode)
+            (RawTerm.weaken (RawTerm.subst substitution codomainCodeBase)) := by
+    rw [subst_piTyCodeCell]
+    exact congrArg (piTyCodeCell (RawTerm.subst substitution domainCode))
+      (subst_lift_weaken_commute substitution codomainCodeBase)
+  rw [typeEq]
+  exact ReducibleTypeAt.arrowType domainReducible codomainReducible
+
+/-- **Semantic DEPENDENT Π formation under a closing substitution (the dependent `Π`-formation arm).**  The
+dependent twin of `arrowTypeUnderSubst`: `gen_piTyCode (A, codomainCode)` with a genuinely dependent codomain
+`codomainCode : RawTerm (scope + 1)` is a reducible TYPE at the dependent-arrow candidate
+`IsDependentArrowReducible domainCandidate codomainCandidate` under a closing `substitution`.  Lifts the
+shipped raw `ReducibleTypeAt.piType`; like `abstractionUnderSubst` it needs ONLY the `rfl` cell-substitution
+`subst_piTyCodeCell` (the dependent codomain stays in the extended scope — no weakening-commutation), so the
+per-argument codomain reducibility carries straight through.  The formation arm of the full
+(large-elimination) fundamental theorem; choice-free as a semantic rule (the per-argument candidate is
+given). -/
+theorem ReducibleTypeAt.piTypeUnderSubst {scope targetScope : Nat} {level : Nat}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainCandidate : RawTerm targetScope → Prop}
+    {codomainCandidate : RawTerm targetScope → (RawTerm targetScope → Prop)}
+    (substitution : RawTermSubst scope targetScope)
+    (domainReducible : ReducibleTypeAt level
+      (RawTerm.subst substitution domainCode) domainCandidate)
+    (codomainReducible : ∀ argument : RawTerm targetScope, domainCandidate argument →
+      ReducibleTypeAt level
+        (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) codomainCode) argument)
+        (codomainCandidate argument)) :
+    ReducibleTypeAt level
+      (RawTerm.subst substitution (piTyCodeCell domainCode codomainCode))
+      (IsDependentArrowReducible domainCandidate codomainCandidate) := by
+  rw [subst_piTyCodeCell]
+  exact ReducibleTypeAt.piType codomainCandidate domainReducible codomainReducible
+
 end FX1Poly.Typed

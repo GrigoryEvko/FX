@@ -804,6 +804,17 @@ gates pin them shut.
     theorem. -/
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.abstractionNonDependentUnderSubst
 
+/-! ### DEPENDENT Π-introduction + both Π-formation arms under a closing substitution.  The dependent
+    `piIntro` (`abstractionUnderSubst`) and `Π`-formation (`piTypeUnderSubst`) twins lift the raw
+    `abstraction` / `piType` through the rfl cell-substitutions (dependent codomain stays in the extended
+    scope — no weakening-commutation); the simple-arrow formation (`arrowTypeUnderSubst`) lifts
+    `arrowType` through the same `typeEq` re-expression as the non-dependent `piIntro` arm.  Choice-free as
+    semantic rules (the per-argument candidate is given); the dependent arms are the full-FT (large
+    elimination) introduction/formation rules. -/
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.abstractionUnderSubst
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeAt.arrowTypeUnderSubst
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeAt.piTypeUnderSubst
+
 /-! ### FORMATION-ARM BRIDGE: membership at a universe-code classifier ⟺ strong normalization.
     A universe code is a normal leaf (`noStep_universeCode`), hence neutral, so the dependent
     reducibility relation assigns it the SN candidate and `IsReducibleMember (universeCodeCell ..) t ↔
