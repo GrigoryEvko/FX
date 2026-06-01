@@ -24,6 +24,25 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
+/-- **Cons-shape inversion of the formation premise telescope.**  A `DescTelescope` over a non-empty level
+list and a `childCons` spine splits into the head's `HasTypeDesc` derivation and the tail telescope in the
+binder-extended context.  This is the formation-engine analogue of `DescTelescopePi.consInversion`, used by
+the formation-fragment fundamental theorem without inspecting the telescope inside a recursive call. -/
+theorem DescTelescope.consInversion {profile : PolyProfile} {baseScope currentDepth : Nat}
+    {restShifts : List Nat}
+    {context : TypingContext profile (baseScope + currentDepth)}
+    {head : RawTerm (baseScope + currentDepth)} {headLevel : LevelExpr}
+    {restLevels : List LevelExpr} {flag : UniverseFlag}
+    {rest : RawTermChildren restShifts baseScope}
+    (telescope : DescTelescope profile context (headLevel :: restLevels) flag
+      (.childCons head rest)) :
+    HasTypeDesc profile context head (universeCodeCell headLevel flag) ∧
+      DescTelescope profile (currentDepth := currentDepth + 1)
+        (context.cons head) restLevels flag rest := by
+  cases telescope with
+  | cons _context _head _headLevel _restLevels _flag _rest headTyped restTyped =>
+      exact ⟨headTyped, restTyped⟩
+
 /-- **Two-child formation telescope -> two-element level list.**  The formation-engine counterpart of
 `DescTelescopePi.twoChildLevels`: a depth-0 `DescTelescope` over the concrete two-child spine
 `childCons _ (childCons _ childNil)` carries exactly two universe levels.  This is the non-recursive
