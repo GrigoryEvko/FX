@@ -55,6 +55,77 @@ def PositiveCandidateConclusionWithPositiveTypeCandidates {profile : PolyProfile
     HasAllPositiveReducibleCandidateAt (predLevel + 1)
       (RawTerm.subst substitution typeCode)
 
+/-- **A positive-candidate conclusion strengthens membership in any decoded candidate to all-positive
+membership.**  This is the binder-local projection consumed when a decoded domain candidate accepts an
+argument: the positive-candidate type half identifies that level's candidate with
+`IsReducibleMemberAtAllPositiveLevels`, and determinism transports the argument into the all-positive
+predicate. -/
+theorem PositiveCandidateConclusionWithPositiveTypeCandidates.memberExtendsToAllPositive
+    {profile : PolyProfile} {scope targetScope : Nat}
+    {context : TypingContext profile scope} {typeCode : RawTerm scope}
+    (typeHasPositiveCandidate :
+      PositiveCandidateConclusionWithPositiveTypeCandidates context typeCode)
+    (substitution : RawTermSubst scope (targetScope + 1))
+    (envWithCandidates :
+      ReducibleEnvAtAllLevelsWithPositiveTypeCandidates context substitution)
+    (predLevel : Nat) {candidate : RawTerm (targetScope + 1) → Prop}
+    (typeReducible :
+      ReducibleTypeAt (predLevel + 1) (RawTerm.subst substitution typeCode) candidate)
+    {argument : RawTerm (targetScope + 1)} (argumentInCandidate : candidate argument) :
+    IsReducibleMemberAtAllPositiveLevels (RawTerm.subst substitution typeCode) argument :=
+  HasAllPositiveReducibleCandidateAt.memberExtendsToAllPositive
+    (typeHasPositiveCandidate substitution envWithCandidates predLevel)
+    typeReducible argumentInCandidate
+
+/-- **Extend a strengthened environment from a positive-candidate conclusion and one decoded argument.**
+The caller supplies an argument in the decoded candidate for the binder domain at the current positive fuel;
+`memberExtendsToAllPositive` upgrades it to all-positive membership, and the same positive-candidate
+conclusion supplies variable zero's type-candidate companion after consing. -/
+theorem PositiveCandidateConclusionWithPositiveTypeCandidates.consEnv
+    {profile : PolyProfile} {scope targetScope : Nat}
+    {context : TypingContext profile scope} {typeCode : RawTerm scope}
+    (typeHasPositiveCandidate :
+      PositiveCandidateConclusionWithPositiveTypeCandidates context typeCode)
+    (substitution : RawTermSubst scope (targetScope + 1))
+    (envWithCandidates :
+      ReducibleEnvAtAllLevelsWithPositiveTypeCandidates context substitution)
+    (predLevel : Nat) {candidate : RawTerm (targetScope + 1) → Prop}
+    (typeReducible :
+      ReducibleTypeAt (predLevel + 1) (RawTerm.subst substitution typeCode) candidate)
+    {argument : RawTerm (targetScope + 1)} (argumentInCandidate : candidate argument) :
+    ReducibleEnvAtAllLevelsWithPositiveTypeCandidates (context.cons typeCode)
+      (RawTermSubst.cons argument substitution) :=
+  ReducibleEnvAtAllLevelsWithPositiveTypeCandidates.cons envWithCandidates
+    (typeHasPositiveCandidate.memberExtendsToAllPositive substitution envWithCandidates
+      predLevel typeReducible argumentInCandidate)
+    (fun headPredLevel =>
+      typeHasPositiveCandidate substitution envWithCandidates headPredLevel)
+
+/-- **A strengthened fundamental result for `typeCode : Type@levelExpr` yields the type half at every fuel.**
+Running the strengthened member conclusion at every positive universe-membership fuel and decoding Tarski
+membership gives both strong normalization and reducibility of the substituted type code at every semantic
+fuel.  This is the strengthened-environment counterpart of
+`FundamentalConclusionAtAll.typeInUniverse_hasStrongNormalizationAndAllLevelReducibility`. -/
+theorem FundamentalConclusionWithPositiveTypeCandidates.typeInUniverse_hasStrongNormalizationAndAllLevelReducibility
+    {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
+    {typeCode : RawTerm scope} {levelExpr : LevelExpr} {flag : UniverseFlag}
+    (typeFundamental :
+      FundamentalConclusionWithPositiveTypeCandidates context typeCode
+        (universeCodeCell levelExpr flag)) :
+    ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+      (_env : ReducibleEnvAtAllLevelsWithPositiveTypeCandidates context substitution),
+      IsStronglyNormalizing (RawTerm.subst substitution typeCode) ∧
+        IsReducibleTypeAtAllLevels (RawTerm.subst substitution typeCode) := by
+  intro _targetScope substitution envWithCandidates
+  have typeMemberAtAllPositive :
+      IsReducibleMemberAtAllPositiveLevels (universeCodeCell levelExpr flag)
+        (RawTerm.subst substitution typeCode) := by
+    intro level
+    have typeMember := typeFundamental substitution envWithCandidates level
+    rwa [subst_universeCodeCell] at typeMember
+  exact (IsReducibleMemberAtAllPositiveLevels.universeCode_iff
+    (levelExpr := levelExpr) (flag := flag)).mp typeMemberAtAllPositive
+
 /-- Read an ordinary all-level fundamental result through the strengthened environment projection. -/
 theorem FundamentalConclusionAtAll.toPositiveTypeCandidateEnv
     {profile : PolyProfile} {scope : Nat}
