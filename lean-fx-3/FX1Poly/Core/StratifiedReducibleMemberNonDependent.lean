@@ -12,9 +12,10 @@ DEPENDENT function space: the codomain candidate `codomainCandidate argument` is
 fundamental theorem's `piIntro` / Π-formation arms must supply, for every reducible argument, that argument's
 codomain candidate.  The only handle the typing premise gives is `∀ argument, ∃ candidate, ReducibleTypeAt …`,
 and turning `∀ argument ∃ candidate` into a function needs choice (banned).  That is the candidate-congruence
-wall — and it is an artifact of OVER-GENERALITY, not a real obstruction for Milestone A.
+wall — and it is an artifact of OVER-GENERALITY, not a real obstruction for the non-dependent/no-large-
+elimination lane.
 
-The wall DISSOLVES for the no-large-elimination fragment Milestone A targets.  With no large elimination a type's
+The wall DISSOLVES for the non-dependent/no-large-elimination lane.  With no large elimination a type's
 reducibility candidate never depends on a term value (the System-F fact: type formers do not compute on terms),
 so the codomain candidate is CONSTANT across arguments and no choice is needed.  The cleanest manifestly-constant
 instance is the NON-DEPENDENT arrow `A → B`, whose codomain `B : RawTerm scope` occupies the Π binder slot as
@@ -39,9 +40,9 @@ codomainCandidate` (the `fun _argument => codomainCandidate` applied to any argu
     candidate (the membership packs it existentially), so the match is syntactic and the only work is discharging
     the per-argument codomain premise by the same cancellation.
 
-The DEPENDENT `piIntro` (per-argument codomain) is RETAINED unchanged for post-Milestone-A large elimination —
-that case needs the recursive type-interpretation (realizability) pivot, not choice.  This file ships exactly
-the fragment Milestone A consumes, choice-free.
+The DEPENDENT `piIntro` (per-argument codomain) is RETAINED unchanged for large elimination — that case needs
+the recursive type-interpretation (realizability) pivot, not choice.  This file ships exactly the
+non-dependent/no-large-elimination lane, choice-free.
 
 ## Zero-axiom verification
 

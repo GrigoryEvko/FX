@@ -5,7 +5,7 @@ import FX1Poly.Typed.HasTypeStronglyNormalizing
 /-! # FX1Poly/Typed/HasTypePiSigmaFormationCheckingCertificate
     — a typed-checking certificate for the native pi/sigma-formation HasType core
 
-`polycell.md` defines revised Milestone A as **decidable TYPED conversion + decidable TYPED checking**
+`polycell.md`'s Phase Z typed-core target includes decidable typed conversion and decidable typed checking
 for the semantic core.  This file does NOT claim that full semantic-core result.  It packages the proved
 decidability/coherence facts for the smaller native pi/sigma-formation `HasType` core:
 
@@ -20,8 +20,8 @@ decidability/coherence facts for the smaller native pi/sigma-formation `HasType`
 This file packages those pieces as a single kernel object,
 `HasTypePiSigmaFormationCheckingCertificate`, so downstream semantic-core work can depend on one explicit
 capability record rather than re-discovering the individual declarations.  It is intentionally scoped to the
-native pi/sigma-formation HasType core; it does not claim the still-open `HasTypeDescPi` reducibility assembly or the future A+/A++
-cubical/HIT layers.
+native pi/sigma-formation HasType core; it does not claim the still-open `HasTypeDescPi` reducibility
+assembly or the later cubical/HIT layers.
 
 ## Zero-axiom verification
 

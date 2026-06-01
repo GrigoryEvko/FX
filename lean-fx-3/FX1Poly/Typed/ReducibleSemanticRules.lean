@@ -110,7 +110,7 @@ substitution under the λ binder (as `iterateLiftRaw substitution 1 ≡ RawTermS
 exposing the γ-closed simple arrow exactly in the shape the shipped raw
 `IsReducibleMemberAt.abstractionNonDependent` consumes.  The `level` is threaded unchanged — introduction
 introduces no universe nesting.  This is the binder arm of the SIMPLY-TYPED fundamental theorem; the
-DEPENDENT `piIntro` (per-argument codomain) is the post-Milestone-A large-elimination case. -/
+DEPENDENT `piIntro` (per-argument codomain) belongs to the large-elimination lane. -/
 theorem IsReducibleMemberAt.abstractionNonDependentUnderSubst {scope targetScope : Nat} {level : Nat}
     {domainCode codomainCodeBase : RawTerm scope} {body : RawTerm (scope + 1)}
     {domainCandidate codomainCandidate : RawTerm targetScope → Prop}
