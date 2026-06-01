@@ -846,6 +846,8 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.fundamentalPiIntroAtAll
 #assert_no_axioms FX1Poly.Typed.fundamentalPiFormationAtAll
 #assert_no_axioms FX1Poly.Typed.fundamentalSigmaFormationAtAll
+#assert_no_axioms FX1Poly.Typed.fundamentalPiFormationAtDispatchLevelsAtAll
+#assert_no_axioms FX1Poly.Typed.fundamentalSigmaFormationAtDispatchLevelsAtAll
 #assert_no_axioms FX1Poly.Typed.formerChildrenReducibleNonDependentAtAll
 #assert_no_axioms FX1Poly.Typed.fundamentalPiFormationNonDependentAtAll
 #assert_no_axioms FX1Poly.Typed.fundamentalSigmaFormationNonDependentAtAll

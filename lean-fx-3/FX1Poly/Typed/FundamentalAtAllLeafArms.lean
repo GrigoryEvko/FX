@@ -185,6 +185,25 @@ theorem fundamentalPiFormationAtAll {profile : PolyProfile} {scope : Nat}
   rw [subst_universeCodeCell]
   exact (childrenReducible substitution env predLevel).toPiMember
 
+/-- **The Π-formation arm over the ∀-level conclusion, using the level-exact two-child bundle.**  This is
+the dispatch-level sibling of `fundamentalPiFormationAtAll`: the premise companion need only provide the two
+codomain-under-argument levels consumed by `FormerChildrenReducibleAtDispatchLevels.toPiMember`, not the
+older all-`memberLevel` codomain premise. -/
+theorem fundamentalPiFormationAtDispatchLevelsAtAll {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
+    (childrenReducible :
+      ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+        (_env : ReducibleEnvAtAllLevels context substitution) (predLevel : Nat),
+        FormerChildrenReducibleAtDispatchLevels predLevel flag substitution domainCode codomainCode
+          domainLevel codomainLevel) :
+    FundamentalConclusionAtAll context (piTyCodeCell domainCode codomainCode)
+      (universeCodeCell formerLevel flag) := by
+  intro _targetScope substitution env predLevel
+  rw [subst_universeCodeCell]
+  exact (childrenReducible substitution env predLevel).toPiMember
+
 /-- **The Σ-formation arm over the ∀-level conclusion, factored through the two-child former bundle.**  The
 Σ/data-former twin of `fundamentalPiFormationAtAll`: the premise telescope supplies the same child bundle,
 and `FormerChildrenReducible.toSigmaMember` performs the semantic dispatch. -/
@@ -196,6 +215,24 @@ theorem fundamentalSigmaFormationAtAll {profile : PolyProfile} {scope : Nat}
       ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
         (_env : ReducibleEnvAtAllLevels context substitution) (predLevel : Nat),
         FormerChildrenReducible predLevel flag substitution domainCode codomainCode
+          domainLevel codomainLevel) :
+    FundamentalConclusionAtAll context
+      (.mkGen .gen_sigmaTyCode () (.childCons domainCode (.childCons codomainCode .childNil)))
+      (universeCodeCell formerLevel flag) := by
+  intro _targetScope substitution env predLevel
+  rw [subst_universeCodeCell]
+  exact (childrenReducible substitution env predLevel).toSigmaMember
+
+/-- **The Σ-formation arm over the ∀-level conclusion, using the level-exact two-child bundle.**  The data
+former counterpart of `fundamentalPiFormationAtDispatchLevelsAtAll`. -/
+theorem fundamentalSigmaFormationAtDispatchLevelsAtAll {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
+    (childrenReducible :
+      ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+        (_env : ReducibleEnvAtAllLevels context substitution) (predLevel : Nat),
+        FormerChildrenReducibleAtDispatchLevels predLevel flag substitution domainCode codomainCode
           domainLevel codomainLevel) :
     FundamentalConclusionAtAll context
       (.mkGen .gen_sigmaTyCode () (.childCons domainCode (.childCons codomainCode .childNil)))
