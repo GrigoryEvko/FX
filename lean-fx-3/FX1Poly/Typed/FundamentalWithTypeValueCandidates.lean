@@ -336,6 +336,70 @@ theorem HasTypeValueCandidatesForAllReducibleTypesAtAllLevels.reducibleTypeAtExt
     (levelExpr := LevelExpr.lzero) (flag := UniverseFlag.standard)
     (typeCode := typeCode)).mp typeCodeMemberAtAllPositiveLevels).2
 
+/-- **A member conclusion yields the type-value payload from the universe-member principle.**  If a
+substituted classifier is syntactically a universe code, the member half can be run at EVERY positive fuel,
+so it exhibits the substituted subject as an all-positive member of that universe.  The global
+universe-member/type-value principle then gives the required all-positive candidate for the subject itself.
+This is the generic closure principle behind application and conversion type-value payloads: no per-arm
+type-value premise is needed once the member half is already all-positive. -/
+theorem FundamentalConclusionWithTypeValueCandidates.toTypeValueCandidateConclusionOfUniverseMembersHaveTypeValueCandidates
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (subjectFundamental :
+      FundamentalConclusionWithTypeValueCandidates context subject classifier)
+    (universeMembersHaveTypeValueCandidates :
+      HasTypeValueCandidatesForAllPositiveUniverseMembers) :
+    TypeValueCandidateConclusionWithTypeValueCandidates context subject classifier := by
+  intro _targetScope substitution envWithTypeValueCandidates levelExpr flag
+    classifierSubstIsUniverse predLevel
+  have subjectMemberAtAllPositiveLevels :
+      IsReducibleMemberAtAllPositiveLevels (universeCodeCell levelExpr flag)
+        (RawTerm.subst substitution subject) := by
+    intro level
+    have subjectMember := subjectFundamental substitution envWithTypeValueCandidates level
+    rwa [classifierSubstIsUniverse] at subjectMember
+  exact universeMembersHaveTypeValueCandidates subjectMemberAtAllPositiveLevels predLevel
+
+/-- **A member conclusion yields the type-value payload from type-value completion.**  This is the
+completion-principle version of
+`toTypeValueCandidateConclusionOfUniverseMembersHaveTypeValueCandidates`, using the already-proved
+equivalence from all reducible types to all positive universe members. -/
+theorem FundamentalConclusionWithTypeValueCandidates.toTypeValueCandidateConclusionOfAllReducibleTypesHaveTypeValueCandidates
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (subjectFundamental :
+      FundamentalConclusionWithTypeValueCandidates context subject classifier)
+    (allReducibleTypesHaveTypeValueCandidates :
+      HasTypeValueCandidatesForAllReducibleTypesAtAllLevels) :
+    TypeValueCandidateConclusionWithTypeValueCandidates context subject classifier :=
+  subjectFundamental.toTypeValueCandidateConclusionOfUniverseMembersHaveTypeValueCandidates
+    allReducibleTypesHaveTypeValueCandidates.toUniverseMembers
+
+/-- **Bundle a member conclusion into validity from the universe-member principle.** -/
+theorem FundamentalConclusionWithTypeValueCandidates.toValidityOfUniverseMembersHaveTypeValueCandidates
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (subjectFundamental :
+      FundamentalConclusionWithTypeValueCandidates context subject classifier)
+    (universeMembersHaveTypeValueCandidates :
+      HasTypeValueCandidatesForAllPositiveUniverseMembers) :
+    FundamentalValidityWithTypeValueCandidates context subject classifier :=
+  ⟨subjectFundamental,
+    subjectFundamental.toTypeValueCandidateConclusionOfUniverseMembersHaveTypeValueCandidates
+      universeMembersHaveTypeValueCandidates⟩
+
+/-- **Bundle a member conclusion into validity from type-value completion.** -/
+theorem FundamentalConclusionWithTypeValueCandidates.toValidityOfAllReducibleTypesHaveTypeValueCandidates
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (subjectFundamental :
+      FundamentalConclusionWithTypeValueCandidates context subject classifier)
+    (allReducibleTypesHaveTypeValueCandidates :
+      HasTypeValueCandidatesForAllReducibleTypesAtAllLevels) :
+    FundamentalValidityWithTypeValueCandidates context subject classifier :=
+  subjectFundamental.toValidityOfUniverseMembersHaveTypeValueCandidates
+    allReducibleTypesHaveTypeValueCandidates.toUniverseMembers
+
 /-- **The variable member arm over the type-value environment.** -/
 theorem fundamentalVarWithTypeValueCandidates {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) (index : Fin scope) :
@@ -592,6 +656,28 @@ theorem fundamentalPiElimValidityWithTypeValueCandidatesFromResultTypeValuePremi
       (appCell functionTerm argument) (RawTerm.subst0 codomainCode argument) :=
   ⟨fundamentalPiElimWithTypeValueCandidates functionFundamental argumentFundamental,
     resultTypeValueCandidate⟩
+
+/-- **Dependent application validity from type-value completion.**  The member half is the usual semantic
+application.  The type-value half no longer needs a bespoke result premise: if the instantiated codomain is
+a universe code after substitution, the member half supplies all-positive universe membership of the
+application result, and the global completion principle turns that membership into the required type-value
+candidate payload. -/
+theorem fundamentalPiElimValidityWithTypeValueCandidatesOfAllReducibleTypesHaveTypeValueCandidates
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {functionTerm argument domainCode : RawTerm scope}
+    {codomainCode : RawTerm (scope + 1)}
+    (allReducibleTypesHaveTypeValueCandidates :
+      HasTypeValueCandidatesForAllReducibleTypesAtAllLevels)
+    (functionFundamental :
+      FundamentalConclusionWithTypeValueCandidates context functionTerm
+        (piTyCodeCell domainCode codomainCode))
+    (argumentFundamental :
+      FundamentalConclusionWithTypeValueCandidates context argument domainCode) :
+    FundamentalValidityWithTypeValueCandidates context
+      (appCell functionTerm argument) (RawTerm.subst0 codomainCode argument) :=
+  FundamentalConclusionWithTypeValueCandidates.toValidityOfAllReducibleTypesHaveTypeValueCandidates
+    (fundamentalPiElimWithTypeValueCandidates functionFundamental argumentFundamental)
+    allReducibleTypesHaveTypeValueCandidates
 
 /-- **Dependent lambda introduction over the type-value environment, with the universe-domain value
 payload explicit.**  The ordinary member proof is the same canonical-candidate argument as in the
