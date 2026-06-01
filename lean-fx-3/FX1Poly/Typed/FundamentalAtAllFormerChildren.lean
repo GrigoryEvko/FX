@@ -59,4 +59,46 @@ theorem formerChildrenReducibleAtAll {profile : PolyProfile} {scope : Nat}
     · intro memberLevel argument argumentMember
       exact codomainMemberUnderArgument substitution env predLevel argument argumentMember
 
+/-- **Dispatch-level former-child reducibility from factored all-level child premises.**  This is the
+level-exact sibling of `formerChildrenReducibleAtAll`: it packages only the two codomain-under-argument
+levels consumed by `FormerChildrenReducibleAtDispatchLevels.toPiMember` / `.toSigmaMember`, rather than the
+older all-`memberLevel` telescope premise.  The domain child is still read from its all-level fundamental
+result at the two adjacent levels needed by the former dispatch; the codomain child is supplied separately at
+the domain-candidate level `predLevel` and the fresh-variable normalization level `predLevel + 1`. -/
+theorem formerChildrenReducibleAtDispatchLevelsFromAtAllPremises {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainLevel codomainLevel : LevelExpr} {flag : UniverseFlag}
+    (domainFundamental :
+      FundamentalConclusionAtAll context domainCode (universeCodeCell domainLevel flag))
+    (codomainMemberAtDomainLevel :
+      ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+        (_env : ReducibleEnvAtAllLevels context substitution) (predLevel : Nat)
+        (argument : RawTerm (targetScope + 1)),
+        IsReducibleMemberAt predLevel (RawTerm.subst substitution domainCode) argument →
+        IsReducibleMemberAt (predLevel + 1) (universeCodeCell codomainLevel flag)
+          (RawTerm.subst (RawTermSubst.cons argument substitution) codomainCode))
+    (codomainMemberAtNextDomainLevel :
+      ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+        (_env : ReducibleEnvAtAllLevels context substitution) (predLevel : Nat)
+        (argument : RawTerm (targetScope + 1)),
+        IsReducibleMemberAt (predLevel + 1) (RawTerm.subst substitution domainCode) argument →
+        IsReducibleMemberAt (predLevel + 1) (universeCodeCell codomainLevel flag)
+          (RawTerm.subst (RawTermSubst.cons argument substitution) codomainCode)) :
+    ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+      (_env : ReducibleEnvAtAllLevels context substitution) (predLevel : Nat),
+      FormerChildrenReducibleAtDispatchLevels predLevel flag substitution domainCode codomainCode
+        domainLevel codomainLevel := by
+  intro _targetScope substitution env predLevel
+  refine ⟨?domainAtLevel, ?domainAboveAndCodomain⟩
+  · have domainMember := domainFundamental substitution env predLevel
+    rwa [subst_universeCodeCell] at domainMember
+  · refine ⟨?domainAtNextLevel, ?codomainAtDomainLevel, ?codomainAtNextDomainLevel⟩
+    · have domainMemberAbove := domainFundamental substitution env (predLevel + 1)
+      rwa [subst_universeCodeCell] at domainMemberAbove
+    · intro argument argumentMember
+      exact codomainMemberAtDomainLevel substitution env predLevel argument argumentMember
+    · intro argument argumentMember
+      exact codomainMemberAtNextDomainLevel substitution env predLevel argument argumentMember
+
 end FX1Poly.Typed

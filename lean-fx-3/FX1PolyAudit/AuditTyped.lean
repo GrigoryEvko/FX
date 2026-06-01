@@ -853,6 +853,7 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.fundamentalTelescopeNilAtAll
 #assert_no_axioms FX1Poly.Typed.fundamentalTelescopeConsAtAll
 #assert_no_axioms FX1Poly.Typed.formerChildrenReducibleAtAll
+#assert_no_axioms FX1Poly.Typed.formerChildrenReducibleAtDispatchLevelsFromAtAllPremises
 #assert_no_axioms FX1Poly.Typed.fundamentalPiIntroAtAllFromMemberPremises
 #assert_no_axioms FX1Poly.Typed.IsFundamentalConclusionAtVector
 #assert_no_axioms FX1Poly.Typed.fundamentalVarAtVectorMatchingLevel
