@@ -2,6 +2,7 @@ import FX1PolyAudit.DependencyAudit
 import FX0Poly.StructuralRecheck
 import FX0Poly.CertRecheck
 import FX0Poly.CertRecheckSound
+import FX0Poly.KernelArity
 
 /-! # FX1PolyAudit/AuditFX0Poly
    — per-declaration zero-axiom gate for the FX0Poly minimal external checker
@@ -44,3 +45,14 @@ Each gate fails the build if its declaration depends on `propext` / `Quot.sound`
 #assert_no_axioms FX0Poly.Cert.recheck_wasAccepted_eq_isValidB
 #assert_no_axioms FX0Poly.Cert.recheckChildren_all_wasAccepted_eq_allValidB
 #assert_no_axioms FX0Poly.Cert.isValidB_smoke_valid
+
+/-! ### FX0Poly concrete kernel-fragment arity model + end-to-end cell re-check (var/universe/Π/Σ) -/
+
+#assert_no_axioms FX0Poly.fxArity
+#assert_no_axioms FX0Poly.recheck_fxArity_wasAccepted_eq_isValidB
+#assert_no_axioms FX0Poly.recheck_fxArity_smoke_var
+#assert_no_axioms FX0Poly.recheck_fxArity_smoke_universe
+#assert_no_axioms FX0Poly.recheck_fxArity_smoke_pi
+#assert_no_axioms FX0Poly.recheck_fxArity_smoke_sigma
+#assert_no_axioms FX0Poly.recheck_fxArity_smoke_piWrongArity
+#assert_no_axioms FX0Poly.recheck_fxArity_smoke_unknownTag
