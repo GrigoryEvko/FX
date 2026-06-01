@@ -843,6 +843,7 @@ gates pin them shut.
     induction site. -/
 #assert_no_axioms FX1Poly.Typed.formationGenerator_noWeakHeadStep
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.sigmaFormationUnderSubst
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.piFormationUnderSubst
 
 /-! ### FORMATION-ARM BRIDGE: membership at a universe-code classifier ⟺ strong normalization.
     A universe code is a normal leaf (`noStep_universeCode`), hence neutral, so the dependent

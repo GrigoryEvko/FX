@@ -350,4 +350,44 @@ theorem IsReducibleMemberAt.sigmaFormationUnderSubst {scope targetScope : Nat} {
     (fun rootEquation => nomatch rootEquation)
     (fun rootEquation => nomatch rootEquation)
 
+/-- **Semantic Π-former formation under a closing substitution (the `genFormationPi` arm for
+`gen_piTyCode`).**  Under a closing `substitution`, the Π-type code `Π domain. codomain` is a reducible
+member of its universe `Type@levelExpr` from: the domain's γ-closed reducibility + per-argument codomain
+existence (the dependent-Π formation data), plus strong normalization of the substituted domain and
+under-binder codomain.  Unlike the Σ / data-former arm (`sigmaFormationUnderSubst`, routed through
+`dataFormerInUniverse` whose `reducibleOfWeakHeadNormalFormer` core EXCLUDES Π roots), the Π former is NOT
+classified by the bare strong-normalization candidate — it is a reducible TYPE at the genuine
+(dependent-)arrow candidate.  So membership in the universe is `tarskiEncode` of: strong normalization of
+the substituted Π former (`piTyCode_isStronglyNormalizing_of_domain_codomain` over the substituted children,
+the cell distributing by `subst_piTyCodeCell`/`rfl`) AND its reducibility-as-a-type
+(`piTypeCanonicalUnderSubst`, the choice-free dependent Π-formation, packaged existentially).
+`subst_universeCodeCell` (`rfl`) leaves the universe classifier fixed.  Together with
+`sigmaFormationUnderSubst` (the Σ / data-former arm) and `formationGenerator_noWeakHeadStep` (the
+weak-head-normality the formers share), this completes the universe-membership half of the fundamental
+theorem's `genFormationPi` arm for BOTH `typingRuleDescOf` formers — no per-former development remains at the
+induction site. -/
+theorem IsReducibleMemberAt.piFormationUnderSubst {scope targetScope : Nat} {predLevel : Nat}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainCandidate : RawTerm targetScope → Prop}
+    (levelExpr : LevelExpr) (flag : UniverseFlag)
+    (substitution : RawTermSubst scope targetScope)
+    (domainReducible : ReducibleTypeAt predLevel
+      (RawTerm.subst substitution domainCode) domainCandidate)
+    (domainNormalizing : IsStronglyNormalizing (RawTerm.subst substitution domainCode))
+    (codomainNormalizing :
+      IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift substitution) codomainCode))
+    (codomainExists : ∀ argument : RawTerm targetScope, domainCandidate argument →
+      IsReducibleTypeAt predLevel
+        (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) codomainCode) argument)) :
+    IsReducibleMemberAt (predLevel + 1)
+      (RawTerm.subst substitution (universeCodeCell levelExpr flag))
+      (RawTerm.subst substitution (piTyCodeCell domainCode codomainCode)) := by
+  rw [subst_universeCodeCell]
+  have formerNormalizing :
+      IsStronglyNormalizing (RawTerm.subst substitution (piTyCodeCell domainCode codomainCode)) := by
+    rw [subst_piTyCodeCell]
+    exact piTyCode_isStronglyNormalizing_of_domain_codomain domainNormalizing codomainNormalizing
+  exact IsReducibleMemberAt.tarskiEncode formerNormalizing
+    ⟨_, ReducibleTypeAt.piTypeCanonicalUnderSubst substitution domainReducible codomainExists⟩
+
 end FX1Poly.Typed
