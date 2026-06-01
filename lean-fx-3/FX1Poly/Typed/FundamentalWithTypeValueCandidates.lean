@@ -613,6 +613,27 @@ theorem fundamentalConvValidityWithTypeValueCandidatesFromTargetTypeValuePremise
   ⟨fundamentalConvWithTypeValueCandidates subjectFundamental reclassifierFundamental converts,
     targetTypeValueCandidate⟩
 
+/-- **Bundled conversion validity from type-value completion.**  The member half is the semantic conversion
+rule.  The type-value half is derived generically: if the substituted reclassifier is a universe code, the
+converted subject member conclusion can be run at every positive fuel, and the completion principle turns
+that all-positive universe membership into the required type-value payload. -/
+theorem fundamentalConvValidityWithTypeValueCandidatesOfAllReducibleTypesHaveTypeValueCandidates
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier reclassifier : RawTerm scope}
+    {levelExpr : LevelExpr} {flag : UniverseFlag}
+    (allReducibleTypesHaveTypeValueCandidates :
+      HasTypeValueCandidatesForAllReducibleTypesAtAllLevels)
+    (subjectFundamental :
+      FundamentalConclusionWithTypeValueCandidates context subject classifier)
+    (reclassifierFundamental :
+      FundamentalConclusionWithTypeValueCandidates context reclassifier
+        (universeCodeCell levelExpr flag))
+    (converts : Conv classifier reclassifier) :
+    FundamentalValidityWithTypeValueCandidates context subject reclassifier :=
+  FundamentalConclusionWithTypeValueCandidates.toValidityOfAllReducibleTypesHaveTypeValueCandidates
+    (fundamentalConvWithTypeValueCandidates subjectFundamental reclassifierFundamental converts)
+    allReducibleTypesHaveTypeValueCandidates
+
 /-- **The `piElim`/application member arm over the type-value environment.**  Application does not need any
 new type-value payload: the dependent application rule consumes the function and argument member premises at
 the same conclusion fuel and performs the codomain substitution bookkeeping internally. -/
