@@ -51,6 +51,7 @@ import FX1Poly.Typed.FundamentalAtAllFormerChildren
 import FX1Poly.Typed.FundamentalAtAllPiIntro
 import FX1Poly.Typed.FundamentalAtAllVectorPremises
 import FX1Poly.Typed.FundamentalAtAllNonDependentBinders
+import FX1Poly.Typed.FundamentalAtUniformVectorPremises
 import FX1Poly.Typed.HasTypeDescPiFundamentalVectorFromFormation
 import FX1Poly.Typed.ReducibleEnvVec
 import FX1Poly.Typed.ReducibleEnvVecTypeVariable
@@ -897,6 +898,12 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.fundamentalPiIntroNonDependentAtAllFromVectorPremise
 #assert_no_axioms FX1Poly.Typed.formerChildrenReducibleAtAllFromVectorPremise
 #assert_no_axioms FX1Poly.Typed.formerChildrenReducibleAtDispatchLevelsFromVectorPremise
+#assert_no_axioms FX1Poly.Typed.positiveUniformLevels
+#assert_no_axioms FX1Poly.Typed.positiveUniformLevels_eq
+#assert_no_axioms FX1Poly.Typed.IsFundamentalConclusionAtUniformVector
+#assert_no_axioms FX1Poly.Typed.fundamentalVarAtUniformVector
+#assert_no_axioms FX1Poly.Typed.fundamentalConclusionAtAllOfUniformVector
+#assert_no_axioms FX1Poly.Typed.fundamentalPiIntroNonDependentAtAllFromUniformVectorPremise
 #assert_no_axioms FX1Poly.Typed.IsTelescopeReducibleAtVector
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.fundamentalVectorFromFormation
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.fundamentalAtAllFromFormation
