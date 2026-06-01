@@ -1,3 +1,4 @@
+import FX1Poly.Typed.FundamentalWithPositiveTypeCandidates
 import FX1Poly.Typed.HasTypeDescPiFundamentalVectorFromFormation
 import FX1Poly.Typed.HasTypeDescPiValidity
 
@@ -34,6 +35,15 @@ def HasTypeDescPiAllLevelFundamentalTheorem (profile : PolyProfile) : Prop :=
   ∀ {scope : Nat} {context : TypingContext profile scope} {subject classifier : RawTerm scope},
     HasTypeDescPi profile context subject classifier →
       FundamentalConclusionAtAll context subject classifier
+
+/-- **The strengthened positive-candidate fundamental theorem interface for `HasTypeDescPi`.**  This is the
+proof-relevant theorem shape used by the binder-facing development: every grown typing derivation has the
+strengthened reducibility conclusion under closing substitutions whose environments also carry positive
+type-candidate companions for context bindings. -/
+def HasTypeDescPiPositiveCandidateFundamentalTheorem (profile : PolyProfile) : Prop :=
+  ∀ {scope : Nat} {context : TypingContext profile scope} {subject classifier : RawTerm scope},
+    HasTypeDescPi profile context subject classifier →
+      FundamentalConclusionWithPositiveTypeCandidates context subject classifier
 
 /-- **Substituted strong-normalization theorem interface for `HasTypeDescPi`.**  A profile has substituted
 strong normalization when every grown typing derivation in a well-formed context sends both its subject and
@@ -217,6 +227,83 @@ theorem HasTypeDescPi.closedClassifierStronglyNormalizingFromAllLevelFundamental
   exact HasTypeDescPi.closedSubjectStronglyNormalizingFromAllLevelFundamentalTheorem
     fundamentalTheorem classifierTyped
 
+/-- **Closed reducibility from the strengthened positive-candidate fundamental theorem.**  Empty contexts
+have a vacuous strengthened environment, so the proof-relevant FT interface immediately yields closed
+semantic membership under any closing substitution.  This is intentionally a CLOSED handoff: a nonempty
+substituted handoff would need a caller-supplied strengthened environment, not merely an ordinary all-level
+environment. -/
+theorem HasTypeDescPi.closedSubjectReducibleUnderSubstFromPositiveCandidateFundamentalTheorem
+    {profile : PolyProfile}
+    (fundamentalTheorem : HasTypeDescPiPositiveCandidateFundamentalTheorem profile)
+    {targetScope : Nat} (substitution : RawTermSubst 0 (targetScope + 1)) (predLevel : Nat)
+    {subject classifier : RawTerm 0}
+    (typed : HasTypeDescPi profile TypingContext.empty subject classifier) :
+    IsReducibleMemberAt (predLevel + 1)
+      (RawTerm.subst substitution classifier) (RawTerm.subst substitution subject) :=
+  fundamentalTheorem typed substitution
+    (ReducibleEnvAtAllLevelsWithPositiveTypeCandidates.empty substitution) predLevel
+
+/-- **Closed substituted subject strong normalization from the strengthened positive-candidate fundamental
+theorem.** -/
+theorem HasTypeDescPi.closedSubjectSubstStronglyNormalizingFromPositiveCandidateFundamentalTheorem
+    {profile : PolyProfile}
+    (fundamentalTheorem : HasTypeDescPiPositiveCandidateFundamentalTheorem profile)
+    {targetScope : Nat} (substitution : RawTermSubst 0 (targetScope + 1)) (predLevel : Nat)
+    {subject classifier : RawTerm 0}
+    (typed : HasTypeDescPi profile TypingContext.empty subject classifier) :
+    IsStronglyNormalizing (RawTerm.subst substitution subject) :=
+  (HasTypeDescPi.closedSubjectReducibleUnderSubstFromPositiveCandidateFundamentalTheorem
+    fundamentalTheorem substitution predLevel typed).stronglyNormalizing
+
+/-- **Closed substituted classifier strong normalization from the strengthened positive-candidate
+fundamental theorem.**  Validity turns the classifier into a grown type, then the same strengthened
+fundamental theorem applies to it as a subject. -/
+theorem HasTypeDescPi.closedClassifierSubstStronglyNormalizingFromPositiveCandidateFundamentalTheorem
+    {profile : PolyProfile}
+    (fundamentalTheorem : HasTypeDescPiPositiveCandidateFundamentalTheorem profile)
+    {targetScope : Nat} (substitution : RawTermSubst 0 (targetScope + 1)) (predLevel : Nat)
+    {subject classifier : RawTerm 0}
+    (typed : HasTypeDescPi profile TypingContext.empty subject classifier) :
+    IsStronglyNormalizing (RawTerm.subst substitution classifier) := by
+  obtain ⟨_levelExpr, _flag, classifierTyped⟩ :=
+    typed.classifierIsTypeDesc (WfContext.emptyIsWellFormed (profile := profile))
+  exact HasTypeDescPi.closedSubjectSubstStronglyNormalizingFromPositiveCandidateFundamentalTheorem
+    fundamentalTheorem substitution predLevel classifierTyped
+
+/-- **Closed subject strong normalization from the strengthened positive-candidate fundamental theorem.** -/
+theorem HasTypeDescPi.closedSubjectStronglyNormalizingFromPositiveCandidateFundamentalTheorem
+    {profile : PolyProfile}
+    (fundamentalTheorem : HasTypeDescPiPositiveCandidateFundamentalTheorem profile)
+    {subject classifier : RawTerm 0}
+    (typed : HasTypeDescPi profile TypingContext.empty subject classifier) :
+    IsStronglyNormalizing subject := by
+  let emptyRenaming : RawRenaming 0 1 := fun emptyIndex => emptyIndex.elim0
+  let emptySubstitution : RawTermSubst 0 1 :=
+    RawRenaming.thenSubst emptyRenaming (RawTermSubst.identity : RawTermSubst 1 1)
+  have subjectNormalizing :
+      IsStronglyNormalizing (RawTerm.subst emptySubstitution subject) :=
+    HasTypeDescPi.closedSubjectSubstStronglyNormalizingFromPositiveCandidateFundamentalTheorem
+      fundamentalTheorem emptySubstitution 0 typed
+  have renamedSubjectNormalizing :
+      IsStronglyNormalizing (RawTerm.rename emptyRenaming subject) := by
+    rw [← RawTerm.subst_identity_apply (RawTerm.rename emptyRenaming subject)]
+    rwa [RawTerm.rename_subst_commute emptyRenaming
+      (RawTermSubst.identity : RawTermSubst 1 1) subject]
+  exact StepStar.isStronglyNormalizing_of_rename emptyRenaming renamedSubjectNormalizing
+
+/-- **Closed classifier strong normalization from the strengthened positive-candidate fundamental theorem.**
+Validity turns the closed classifier into a grown type, then the closed subject theorem applies. -/
+theorem HasTypeDescPi.closedClassifierStronglyNormalizingFromPositiveCandidateFundamentalTheorem
+    {profile : PolyProfile}
+    (fundamentalTheorem : HasTypeDescPiPositiveCandidateFundamentalTheorem profile)
+    {subject classifier : RawTerm 0}
+    (typed : HasTypeDescPi profile TypingContext.empty subject classifier) :
+    IsStronglyNormalizing classifier := by
+  obtain ⟨_levelExpr, _flag, classifierTyped⟩ :=
+    typed.classifierIsTypeDesc (WfContext.emptyIsWellFormed (profile := profile))
+  exact HasTypeDescPi.closedSubjectStronglyNormalizingFromPositiveCandidateFundamentalTheorem
+    fundamentalTheorem classifierTyped
+
 /-- **Substituted subject-and-classifier strong normalization from the all-level fundamental theorem.**
 This packages the exact theorem interface consumed by typed conversion: the same reducible closing
 substitution normalizes both the term being typed and its classifier. -/
@@ -242,6 +329,19 @@ theorem HasTypeDescPiAllLevelFundamentalTheorem.toClosedStrongNormalizationTheor
     HasTypeDescPi.closedSubjectStronglyNormalizingFromAllLevelFundamentalTheorem
       fundamentalTheorem typed,
     HasTypeDescPi.closedClassifierStronglyNormalizingFromAllLevelFundamentalTheorem
+      fundamentalTheorem typed⟩
+
+/-- **Closed subject-and-classifier strong normalization from the strengthened positive-candidate
+fundamental theorem.**  This is the closed downstream handoff for the proof-relevant FT interface. -/
+theorem HasTypeDescPiPositiveCandidateFundamentalTheorem.toClosedStrongNormalizationTheorem
+    {profile : PolyProfile}
+    (fundamentalTheorem : HasTypeDescPiPositiveCandidateFundamentalTheorem profile) :
+    HasTypeDescPiClosedStrongNormalizationTheorem profile := by
+  intro _subject _classifier typed
+  exact ⟨
+    HasTypeDescPi.closedSubjectStronglyNormalizingFromPositiveCandidateFundamentalTheorem
+      fundamentalTheorem typed,
+    HasTypeDescPi.closedClassifierStronglyNormalizingFromPositiveCandidateFundamentalTheorem
       fundamentalTheorem typed⟩
 
 end FX1Poly.Typed
