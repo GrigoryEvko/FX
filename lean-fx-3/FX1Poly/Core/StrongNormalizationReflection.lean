@@ -1,5 +1,7 @@
 import FX1Poly.Core.StepSubst
 import FX1Poly.Core.StepStarConfluence
+import FX1Poly.Core.StratifiedReducibleMember
+import FX1Poly.Core.RawTermSubstConsCommute
 
 /-! # FX1Poly/Core/StrongNormalizationReflection
     — strong normalization is REFLECTED by `subst0` instantiation
@@ -55,5 +57,27 @@ theorem IsStronglyNormalizing.ofSubst0Body {scope : Nat}
         exact inductiveHypothesis (RawTerm.subst0 candidateReduct argument)
           (currentEquation ▸ instantiationStep) candidateReduct rfl
   exact reflectAccessibility instantiationNormalizing body rfl
+
+/-- **An open body is strongly normalizing when its `cons`-instantiation is a reducible member.**  The
+fundamental theorem's `genFormationPi` arm needs strong normalization of a binder's body (the Π/Σ codomain)
+under the LIFTED substitution `RawTerm.subst (lift substitution) body`, but only has the body's
+reducibility-membership after `cons`-instantiating the binder with a concrete argument (its own
+fundamental-theorem IH under a `cons`-extended environment).  The two are bridged WITHOUT a binder-lifted
+reducible environment (and so without renaming-stability of the reducibility relation): the membership is
+strongly normalizing by CR1 (`IsReducibleMemberAt.stronglyNormalizing`); the binder-split keystone
+`RawTerm.subst_cons_eq_subst0_lift` rewrites the `cons`-substitution as `subst0 (lifted body) argument`; and
+`IsStronglyNormalizing.ofSubst0Body` reflects that instantiation's strong normalization back to the open
+lifted body.  This is exactly the `codomainNormalizing` premise of the under-substitution Π/Σ-former
+membership rules, discharged from the `codomainExists`-style instantiated IH. -/
+theorem IsStronglyNormalizing.openBodyOfConsSubstMember {scope targetScope : Nat} {predLevel : Nat}
+    {classifier : RawTerm (targetScope + 1)} {body : RawTerm (scope + 1)}
+    {argument : RawTerm (targetScope + 1)}
+    {substitution : RawTermSubst scope (targetScope + 1)}
+    (member : IsReducibleMemberAt (predLevel + 1) classifier
+      (RawTerm.subst (RawTermSubst.cons argument substitution) body)) :
+    IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift substitution) body) := by
+  have instantiationNormalizing := member.stronglyNormalizing
+  rw [RawTerm.subst_cons_eq_subst0_lift] at instantiationNormalizing
+  exact IsStronglyNormalizing.ofSubst0Body instantiationNormalizing
 
 end FX1Poly.Core
