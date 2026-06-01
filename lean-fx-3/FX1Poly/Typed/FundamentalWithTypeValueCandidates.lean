@@ -409,6 +409,83 @@ theorem fundamentalPiIntroWithTypeValueCandidatesFromTypeValueArgumentPremise
     exact bodyFundamental (RawTermSubst.cons argument substitution)
       extendedEnvWithTypeValueCandidates predLevel
 
+/-- **The positive-candidate dependent Pi type half over the type-value environment.**  The construction is
+the strengthened-environment version of the reducibility candidate for Pi codes: the domain candidate
+companion upgrades each accepted argument to all-positive membership, the type-value environment extends
+under the binder, and the codomain candidate companion runs under the cons substitution.
+
+As in the lambda arm, universe-valued domains require an explicit type-value payload for each chosen
+argument.  This theorem therefore exposes the exact premise needed to make binder extension sound instead
+of deriving it from ordinary universe membership. -/
+theorem positiveCandidatePiTypeWithTypeValueCandidatesFromTypeValueArgumentPremise
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    (domainHasPositiveCandidate :
+      PositiveCandidateConclusionWithTypeValueCandidates context domainCode)
+    (argumentValueHasPositiveCandidateWhenDomainIsUniverse :
+      ∀ {targetScope : Nat}
+        (substitution : RawTermSubst scope (targetScope + 1))
+        (_env : ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution)
+        (argument : RawTerm (targetScope + 1)),
+        IsReducibleMemberAtAllPositiveLevels (RawTerm.subst substitution domainCode) argument →
+          ∀ {levelExpr : LevelExpr} {domainFlag : UniverseFlag},
+            RawTerm.subst substitution domainCode = universeCodeCell levelExpr domainFlag →
+              ∀ candidatePredLevel : Nat,
+                HasAllPositiveReducibleCandidateAt (candidatePredLevel + 1) argument)
+    (codomainHasPositiveCandidate :
+      PositiveCandidateConclusionWithTypeValueCandidates (context.cons domainCode) codomainCode) :
+    PositiveCandidateConclusionWithTypeValueCandidates context
+      (piTyCodeCell domainCode codomainCode) := by
+  intro _targetScope substitution envWithTypeValueCandidates predLevel
+  rw [subst_piTyCodeCell]
+  exact HasAllPositiveReducibleCandidateAt.piTypeAtPositiveLevel
+    (fun candidatePredLevel =>
+      domainHasPositiveCandidate substitution envWithTypeValueCandidates candidatePredLevel)
+    (fun candidatePredLevel argument argumentAtAllPositiveLevels => by
+      have extendedEnvWithTypeValueCandidates :
+          ReducibleEnvAtAllLevelsWithTypeValueCandidates (context.cons domainCode)
+            (RawTermSubst.cons argument substitution) :=
+        ReducibleEnvAtAllLevelsWithTypeValueCandidates.cons envWithTypeValueCandidates
+          argumentAtAllPositiveLevels
+          (fun headPredLevel =>
+            domainHasPositiveCandidate substitution envWithTypeValueCandidates headPredLevel)
+          (argumentValueHasPositiveCandidateWhenDomainIsUniverse substitution
+            envWithTypeValueCandidates argument argumentAtAllPositiveLevels)
+      have codomainCandidate :=
+        codomainHasPositiveCandidate (RawTermSubst.cons argument substitution)
+          extendedEnvWithTypeValueCandidates candidatePredLevel
+      rwa [RawTerm.subst_cons_eq_subst0_lift] at codomainCandidate)
+
+/-- **The dependent Pi type-value half over the type-value environment.**  A Pi code satisfying the explicit
+universe-domain value premise is a type value, so its positive-candidate theorem supplies the conditional
+type-value payload for any classifier. -/
+theorem typeValueCandidatePiTypeWithTypeValueCandidatesFromTypeValueArgumentPremise
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    (domainHasPositiveCandidate :
+      PositiveCandidateConclusionWithTypeValueCandidates context domainCode)
+    (argumentValueHasPositiveCandidateWhenDomainIsUniverse :
+      ∀ {targetScope : Nat}
+        (substitution : RawTermSubst scope (targetScope + 1))
+        (_env : ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution)
+        (argument : RawTerm (targetScope + 1)),
+        IsReducibleMemberAtAllPositiveLevels (RawTerm.subst substitution domainCode) argument →
+          ∀ {levelExpr : LevelExpr} {domainFlag : UniverseFlag},
+            RawTerm.subst substitution domainCode = universeCodeCell levelExpr domainFlag →
+              ∀ candidatePredLevel : Nat,
+                HasAllPositiveReducibleCandidateAt (candidatePredLevel + 1) argument)
+    (codomainHasPositiveCandidate :
+      PositiveCandidateConclusionWithTypeValueCandidates (context.cons domainCode) codomainCode)
+    (classifier : RawTerm scope) :
+    TypeValueCandidateConclusionWithTypeValueCandidates context
+      (piTyCodeCell domainCode codomainCode) classifier :=
+  PositiveCandidateConclusionWithTypeValueCandidates.toTypeValueCandidateConclusion
+    (positiveCandidatePiTypeWithTypeValueCandidatesFromTypeValueArgumentPremise
+      domainHasPositiveCandidate argumentValueHasPositiveCandidateWhenDomainIsUniverse
+      codomainHasPositiveCandidate)
+
 /-- **The positive-candidate Sigma type half over the type-value environment.**  Sigma codes are neutral
 non-Pi type codes in the stratified reducibility semantics, so the existing positive-candidate arm reads
 through the stronger environment unchanged. -/
