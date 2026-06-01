@@ -76,6 +76,30 @@ theorem IsReducibleMemberAtAllPositiveLevels.universeCode_iff {scope : Nat}
       (levelExpr := levelExpr) (flag := flag)).mpr
       ⟨normalizingAndReducibleAtAllLevels.1, normalizingAndReducibleAtAllLevels.2 level⟩
 
+/-- **A fundamental theorem result for `typeCode : Type@levelExpr` yields the type half at every fuel.**
+This is the reusable extraction from the all-level member theorem: running the fundamental result at every
+positive membership level and decoding universe membership gives strong normalization of the substituted
+type code plus `IsReducibleTypeAtAllLevels`.  It is deliberately only the type-half fact, not the stronger
+all-positive candidate witness needed by dependent binders. -/
+theorem FundamentalConclusionAtAll.typeInUniverse_hasStrongNormalizationAndAllLevelReducibility
+    {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
+    {typeCode : RawTerm scope} {levelExpr : LevelExpr} {flag : UniverseFlag}
+    (typeFundamental :
+      FundamentalConclusionAtAll context typeCode (universeCodeCell levelExpr flag)) :
+    ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+      (_env : ReducibleEnvAtAllLevels context substitution),
+      IsStronglyNormalizing (RawTerm.subst substitution typeCode) ∧
+        IsReducibleTypeAtAllLevels (RawTerm.subst substitution typeCode) := by
+  intro _targetScope substitution env
+  have typeMemberAtAllPositive :
+      IsReducibleMemberAtAllPositiveLevels (universeCodeCell levelExpr flag)
+        (RawTerm.subst substitution typeCode) := by
+    intro level
+    have typeMember := typeFundamental substitution env level
+    rwa [subst_universeCodeCell] at typeMember
+  exact (IsReducibleMemberAtAllPositiveLevels.universeCode_iff
+    (levelExpr := levelExpr) (flag := flag)).mp typeMemberAtAllPositive
+
 /-- **A type whose level candidate is the all-positive member predicate.**  This is the candidate-level
 semantic hook the dependent binder needs: determinism then turns membership in any decoded candidate for the
 same type/level into all-positive membership. -/

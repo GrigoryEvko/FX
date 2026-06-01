@@ -898,6 +898,7 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllLevels
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.atLevel
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.universeCode_iff
+#assert_no_axioms FX1Poly.Typed.FundamentalConclusionAtAll.typeInUniverse_hasStrongNormalizationAndAllLevelReducibility
 #assert_no_axioms FX1Poly.Typed.HasAllPositiveReducibleCandidateAt
 #assert_no_axioms FX1Poly.Typed.HasAllPositiveReducibleCandidateAt.memberExtendsToAllPositive
 #assert_no_axioms FX1Poly.Typed.HasAllPositiveReducibleCandidateAt.ofNeutralClassifier
