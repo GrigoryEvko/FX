@@ -108,6 +108,22 @@ def HasTypeDescPiClosedStrongNormalizationTheorem (profile : PolyProfile) : Prop
     HasTypeDescPi profile TypingContext.empty subject classifier →
       IsStronglyNormalizing subject ∧ IsStronglyNormalizing classifier
 
+/-- **Bundled multi-universe reducibility and strong normalization theorem.**  This is the exported
+metatheory package for the grown dependent typing judgment once the type-value boundary is available:
+
+* the full type-value-candidate fundamental theorem;
+* substituted strong normalization under proof-relevant type-value environments; and
+* closed subject/classifier strong normalization.
+
+The package is deliberately a theorem interface, not a certificate for the decidable formation checker.
+It ranges over arbitrary `LevelExpr`/`UniverseFlag` through the type-value fundamental theorem, and it
+does not encode any roadmap label in the declaration name. -/
+def HasTypeDescPiTypeValueReducibilityAndStrongNormalizationTheorem
+    (profile : PolyProfile) : Prop :=
+  HasTypeDescPiTypeValueCandidateFundamentalTheorem profile ∧
+    HasTypeDescPiTypeValueCandidateSubstitutedStrongNormalizationTheorem profile ∧
+      HasTypeDescPiClosedStrongNormalizationTheorem profile
+
 /-- **Type-value validity from an all-level member theorem plus type-value completion.**  An exact
 all-level fundamental conclusion already supplies ordinary member reducibility under the stronger
 type-value environment by forgetting that environment to its all-level projection.  The only additional
@@ -658,5 +674,39 @@ theorem HasTypeDescPiTypeValueCandidateFundamentalTheorem.toClosedStrongNormaliz
       fundamentalTheorem typed,
     HasTypeDescPi.closedClassifierStronglyNormalizingFromTypeValueCandidateFundamentalTheorem
       fundamentalTheorem typed⟩
+
+/-- **Bundled multi-universe metatheory from all-level FT plus type-value completion.**  This composes the
+exact all-level dependent fundamental theorem with the candidate-completion principle and packages the
+resulting type-value FT, substituted SN theorem, and closed SN theorem as one reusable theorem value. -/
+theorem HasTypeDescPiAllLevelFundamentalTheorem.toTypeValueReducibilityAndStrongNormalizationTheoremOfAllReducibleTypesHaveTypeValueCandidates
+    {profile : PolyProfile}
+    (fundamentalTheorem : HasTypeDescPiAllLevelFundamentalTheorem profile)
+    (allReducibleTypesHaveTypeValueCandidates :
+      HasTypeValueCandidatesForAllReducibleTypesAtAllLevels) :
+    HasTypeDescPiTypeValueReducibilityAndStrongNormalizationTheorem profile := by
+  let typeValueFundamentalTheorem :
+      HasTypeDescPiTypeValueCandidateFundamentalTheorem profile :=
+    HasTypeDescPiAllLevelFundamentalTheorem.toTypeValueCandidateFundamentalTheoremOfAllReducibleTypesHaveTypeValueCandidates
+      fundamentalTheorem allReducibleTypesHaveTypeValueCandidates
+  exact ⟨
+    typeValueFundamentalTheorem,
+    HasTypeDescPiTypeValueCandidateFundamentalTheorem.toSubstitutedStrongNormalizationTheorem
+      typeValueFundamentalTheorem,
+    HasTypeDescPiTypeValueCandidateFundamentalTheorem.toClosedStrongNormalizationTheorem
+      typeValueFundamentalTheorem⟩
+
+/-- **Bundled multi-universe metatheory from the operational positive-member-extension bridge.**  This is
+the strongest current honest package: the exact all-level dependent FT plus the operational bridge
+(`member at one positive fuel -> member at every positive fuel` for strongly-normalizing all-level types)
+gives the type-value FT, substituted SN under type-value environments, and closed SN. -/
+theorem HasTypeDescPiAllLevelFundamentalTheorem.toTypeValueReducibilityAndStrongNormalizationTheoremOfPositiveMemberExtension
+    {profile : PolyProfile}
+    (fundamentalTheorem : HasTypeDescPiAllLevelFundamentalTheorem profile)
+    (positiveMemberExtension :
+      HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes) :
+    HasTypeDescPiTypeValueReducibilityAndStrongNormalizationTheorem profile :=
+  HasTypeDescPiAllLevelFundamentalTheorem.toTypeValueReducibilityAndStrongNormalizationTheoremOfAllReducibleTypesHaveTypeValueCandidates
+    fundamentalTheorem
+    positiveMemberExtension.toAllReducibleTypesHaveTypeValueCandidates
 
 end FX1Poly.Typed
