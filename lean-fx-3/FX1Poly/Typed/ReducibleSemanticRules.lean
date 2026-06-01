@@ -1,4 +1,5 @@
 import FX1Poly.Core.StratifiedReducibleMember
+import FX1Poly.Core.StratifiedReducibleMemberNonDependent
 import FX1Poly.Core.ConvSubstRename
 import FX1Poly.Typed.HasTypeDescPi
 import FX1Poly.Typed.HasTypeDescPiSubstitution
@@ -90,5 +91,49 @@ theorem IsReducibleMemberAt.castAlongConvUnderSubst {scope targetScope : Nat} {l
       (RawTerm.subst substitution reclassifier) (RawTerm.subst substitution subject) :=
   IsReducibleMemberAt.castAlongConv subjectReducible reclassifierReducible
     (Conv.subst substitution converts)
+
+/-- **Semantic non-dependent Π introduction under a closing substitution (the simply-typed `piIntro` arm of
+the fundamental theorem).**  Given that a closing `substitution` makes the domain `domainCode` and the
+codomain `codomainCodeBase` reducible types at `level` (the type premises' γ-closed induction hypotheses),
+that every domain-reducible argument is strongly normalizing (the domain CR1), and that `body` — under the
+lifted substitution — lands in the codomain candidate for every reducible argument (the body's γ-closed IH
+at the binder-extended environment), it sends `lamCell body` to a reducible member of the closed SIMPLE
+arrow `A → B` (code `piTyCodeCell domainCode (weaken codomainCodeBase)`).
+
+The closed cells re-express by the substitution-commutations: `subst_lamCell` (`rfl`) pushes the
+substitution under the λ binder (as `iterateLiftRaw substitution 1 ≡ RawTermSubst.lift substitution`);
+`subst_piTyCodeCell` (`rfl`) splits the Π; and the codomain's weakening commutes OUT through the lift by
+`subst_lift_weaken_commute` (`subst (lift γ) (weaken B) = weaken (subst γ B)` — `RawTerm.weaken` is
+`RawTerm.rename RawRenaming.weaken` definitionally, so the lemma — stated on `rename weaken` — applies),
+exposing the γ-closed simple arrow exactly in the shape the shipped raw
+`IsReducibleMemberAt.abstractionNonDependent` consumes.  The `level` is threaded unchanged — introduction
+introduces no universe nesting.  This is the binder arm of the SIMPLY-TYPED fundamental theorem; the
+DEPENDENT `piIntro` (per-argument codomain) is the post-Milestone-A large-elimination case. -/
+theorem IsReducibleMemberAt.abstractionNonDependentUnderSubst {scope targetScope : Nat} {level : Nat}
+    {domainCode codomainCodeBase : RawTerm scope} {body : RawTerm (scope + 1)}
+    {domainCandidate codomainCandidate : RawTerm targetScope → Prop}
+    (substitution : RawTermSubst scope targetScope)
+    (domainReducible : ReducibleTypeAt level
+      (RawTerm.subst substitution domainCode) domainCandidate)
+    (domainArgumentsSN : ∀ argument : RawTerm targetScope, domainCandidate argument →
+      IsStronglyNormalizing argument)
+    (codomainReducible : ReducibleTypeAt level
+      (RawTerm.subst substitution codomainCodeBase) codomainCandidate)
+    (bodyReducible : ∀ argument : RawTerm targetScope, domainCandidate argument →
+      codomainCandidate
+        (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) body) argument)) :
+    IsReducibleMemberAt level
+      (RawTerm.subst substitution (piTyCodeCell domainCode (RawTerm.weaken codomainCodeBase)))
+      (RawTerm.subst substitution (lamCell body)) := by
+  have typeEq :
+      RawTerm.subst substitution (piTyCodeCell domainCode (RawTerm.weaken codomainCodeBase))
+        = piTyCodeCell (RawTerm.subst substitution domainCode)
+            (RawTerm.weaken (RawTerm.subst substitution codomainCodeBase)) := by
+    rw [subst_piTyCodeCell]
+    exact congrArg (piTyCodeCell (RawTerm.subst substitution domainCode))
+      (subst_lift_weaken_commute substitution codomainCodeBase)
+  rw [typeEq, subst_lamCell]
+  exact IsReducibleMemberAt.abstractionNonDependent
+    domainReducible domainArgumentsSN codomainReducible bodyReducible
 
 end FX1Poly.Typed

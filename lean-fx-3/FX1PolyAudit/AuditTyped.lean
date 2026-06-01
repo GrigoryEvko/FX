@@ -797,6 +797,13 @@ gates pin them shut.
     fundamental theorem via `tarskiDecode` of the `reclassifier : Type@e` premise's IH at `level + 1`. -/
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.castAlongConvUnderSubst
 
+/-! ### NON-DEPENDENT (simply-typed) Π-INTRODUCTION arm under a closing substitution.  Lifts the raw
+    `abstractionNonDependent` (the choice-free no-large-elim piIntro) through the cell-substitution
+    commutations: `subst_lamCell`/`subst_piTyCodeCell` (rfl) + `subst_lift_weaken_commute` (the codomain
+    weakening commutes out through the binder lift).  The binder arm of the simply-typed fundamental
+    theorem. -/
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.abstractionNonDependentUnderSubst
+
 /-! ### FORMATION-ARM BRIDGE: membership at a universe-code classifier ⟺ strong normalization.
     A universe code is a normal leaf (`noStep_universeCode`), hence neutral, so the dependent
     reducibility relation assigns it the SN candidate and `IsReducibleMember (universeCodeCell ..) t ↔
