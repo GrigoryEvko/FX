@@ -850,6 +850,7 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsFundamentalConclusionAtVector
 #assert_no_axioms FX1Poly.Typed.fundamentalConclusionAtAllOfVector
 #assert_no_axioms FX1Poly.Typed.fundamentalPiIntroAtAllFromVectorPremises
+#assert_no_axioms FX1Poly.Typed.fundamentalPiIntroNonDependentAtAllFromVectorPremise
 #assert_no_axioms FX1Poly.Typed.formerChildrenReducibleAtAllFromVectorPremise
 #assert_no_axioms FX1Poly.Typed.IsTelescopeReducibleAtVector
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.fundamentalVectorFromFormation

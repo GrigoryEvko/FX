@@ -1,5 +1,6 @@
 import FX1Poly.Typed.FundamentalAtAllFormerChildren
 import FX1Poly.Typed.FundamentalAtAllPiIntro
+import FX1Poly.Typed.FundamentalAtAllNonDependentBinders
 
 /-! # FX1Poly/Typed/FundamentalAtAllVectorPremises
     — bridge vector recursive premises into the all-level binder/former companions
@@ -83,6 +84,37 @@ theorem fundamentalPiIntroAtAllFromVectorPremises {profile : PolyProfile} {scope
       bodyFundamental (RawTermSubst.cons argument substitution) predLevel
         (ReducibleEnvVec.cons (env.toVecPositive (fun _index => predLevel))
           ⟨domainCandidate, domainReducible, argumentInDomain⟩))
+
+/-- **Non-dependent Pi-introduction over the all-level environment, from a vector body premise.**  The
+domain and base codomain remain all-level premises.  The lambda body is a binder-local vector premise:
+under each reducible argument, the fresh head is available at exactly the simple-arrow domain level, while
+tail variables come from the all-level environment at the conclusion level.  Determinism transports the
+body membership from its witnessing candidate to the fixed base-codomain candidate decoded by
+`fundamentalPiIntroNonDependentAtAll`. -/
+theorem fundamentalPiIntroNonDependentAtAllFromVectorPremise {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainCode codomainCodeBase : RawTerm scope} {body : RawTerm (scope + 1)}
+    {domainLevel codomainLevel : LevelExpr} {flag : UniverseFlag}
+    (domainFundamental :
+      FundamentalConclusionAtAll context domainCode (universeCodeCell domainLevel flag))
+    (codomainFundamental :
+      FundamentalConclusionAtAll context codomainCodeBase (universeCodeCell codomainLevel flag))
+    (bodyFundamental :
+      IsFundamentalConclusionAtVector (context.cons domainCode) body
+        (RawTerm.weaken codomainCodeBase)) :
+    FundamentalConclusionAtAll context (lamCell body)
+      (piTyCodeCell domainCode (RawTerm.weaken codomainCodeBase)) :=
+  fundamentalPiIntroNonDependentAtAll domainFundamental codomainFundamental
+    (fun _targetScope substitution env predLevel {domainCandidate codomainCandidate}
+        domainReducible codomainReducible argument argumentInDomain => by
+      have bodyMember := bodyFundamental (RawTermSubst.cons argument substitution) predLevel
+        (ReducibleEnvVec.cons (env.toVecPositive (fun _index => predLevel))
+          ⟨domainCandidate, domainReducible, argumentInDomain⟩)
+      rw [RawTerm.weaken_eq_rename] at bodyMember
+      rw [RawTerm.weaken_subst_cons] at bodyMember
+      rw [RawTerm.subst_cons_eq_subst0_lift _ argument substitution] at bodyMember
+      obtain ⟨witnessCandidate, witnessReducible, witnessMember⟩ := bodyMember
+      exact (ReducibleTypeAt.deterministic witnessReducible codomainReducible _).mp witnessMember)
 
 /-- **Former-child reducibility over the all-level environment, from a vector codomain premise.**  The domain
 child is read from its all-level premise at the two adjacent levels required by `FormerChildrenReducible`.
