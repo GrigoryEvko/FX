@@ -206,6 +206,18 @@ theorem HasTypePiSigmaFormationCheckingCertificate.proveClosedClassifierConvUniv
       Conv classifier (universeCodeCell levelExpr flag) :=
   HasType.closedClassifierConvUniverseCode typed
 
+/-- Native empty-context subject/classifier strong normalization exposed through the checking certificate.
+This is the closed specialization of the certificate's native normalization package. -/
+theorem HasTypePiSigmaFormationCheckingCertificate.proveClosedSubjectAndClassifierStronglyNormalizing
+    {profile : PolyProfile}
+    (checkingCertificate :
+      HasTypePiSigmaFormationCheckingCertificate
+        (TypingContext.empty : TypingContext profile 0))
+    {subject classifier : RawTerm 0}
+    (typed : HasType profile TypingContext.empty subject classifier) :
+    StepStar.IsStronglyNormalizing subject ∧ StepStar.IsStronglyNormalizing classifier :=
+  checkingCertificate.proveSubjectAndClassifierStronglyNormalizing typed
+
 /-- Description-engine empty-context subject regularity exposed through the checking certificate.  The proof
 uses the certificate's soundness map from `HasTypeDesc` to the native pi/sigma-formation `HasType` core, then
 transports the resulting native type witness back to `IsTypeDesc`. -/
@@ -250,5 +262,18 @@ theorem HasTypePiSigmaFormationCheckingCertificate.proveClosedHasTypeDescClassif
     ∃ (levelExpr : LevelExpr) (flag : UniverseFlag),
       Conv classifier (universeCodeCell levelExpr flag) :=
   HasType.closedClassifierConvUniverseCode (checkingCertificate.translateDescToHasType typed)
+
+/-- Description-engine empty-context subject/classifier strong normalization exposed through the checking
+certificate.  This is the closed specialization of the certificate's description-engine normalization
+package, and remains scoped to the pi/sigma-formation engine. -/
+theorem HasTypePiSigmaFormationCheckingCertificate.proveClosedHasTypeDescSubjectAndClassifierStronglyNormalizing
+    {profile : PolyProfile}
+    (checkingCertificate :
+      HasTypePiSigmaFormationCheckingCertificate
+        (TypingContext.empty : TypingContext profile 0))
+    {subject classifier : RawTerm 0}
+    (typed : HasTypeDesc profile TypingContext.empty subject classifier) :
+    StepStar.IsStronglyNormalizing subject ∧ StepStar.IsStronglyNormalizing classifier :=
+  checkingCertificate.proveHasTypeDescSubjectAndClassifierStronglyNormalizing typed
 
 end FX1Poly.Typed
