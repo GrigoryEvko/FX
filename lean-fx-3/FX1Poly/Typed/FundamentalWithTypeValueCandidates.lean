@@ -1975,31 +1975,6 @@ theorem fundamentalPiFormationValidityWithTypeValueCandidatesFromNoZeroDomainAll
       codomainValidity.memberConclusion)
     codomainValidity
 
-/-- **Generic Sigma-formation validity for fuel-zero-empty domains.**  Sigma's no-zero-domain wrapper,
-parallel to `fundamentalPiFormationValidityWithTypeValueCandidatesFromNoZeroDomainAllReducibleTypesHaveTypeValueCandidates`. -/
-theorem fundamentalSigmaFormationValidityWithTypeValueCandidatesFromNoZeroDomainAllReducibleTypesHaveTypeValueCandidates
-    {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope}
-    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
-    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
-    (allReducibleTypesHaveTypeValueCandidates :
-      HasTypeValueCandidatesForAllReducibleTypesAtAllLevels)
-    (domainValidity :
-      FundamentalValidityWithTypeValueCandidates context domainCode
-        (universeCodeCell domainLevel flag))
-    (_domainHasNoMemberAtZero :
-      ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
-        (_env : ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution)
-        (argument : RawTerm (targetScope + 1)),
-        IsReducibleMemberAt 0 (RawTerm.subst substitution domainCode) argument → False)
-    (codomainValidity :
-      FundamentalValidityWithTypeValueCandidates (context.cons domainCode) codomainCode
-        (universeCodeCell codomainLevel flag)) :
-    FundamentalValidityWithTypeValueCandidates context
-      (sigmaTyCodeCell domainCode codomainCode) (universeCodeCell formerLevel flag) :=
-  fundamentalSigmaFormationValidityWithTypeValueCandidatesOfAllReducibleTypesHaveTypeValueCandidates
-    allReducibleTypesHaveTypeValueCandidates domainValidity codomainValidity
-
 /-- **The base-level codomain premise for a universe-code domain over the type-value environment.**  Fuel
 zero is impossible for universe-domain membership.  At successor fuel, the domain positive-candidate
 companion upgrades the argument to all-positive membership, the explicit type-value premise supplies the
