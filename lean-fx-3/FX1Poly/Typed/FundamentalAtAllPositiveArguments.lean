@@ -1366,33 +1366,6 @@ theorem fundamentalSigmaFormationAtAllFromAllLevelDomainCandidateCompanion
     (formerChildrenReducibleAtDispatchLevelsFromAllLevelDomainCandidateCompanion
       domainFundamental domainHasAllPositiveCandidateUnderSubstitution codomainFundamental)
 
-/-- **Σ-formation from a positive-fuel domain companion plus the base-level codomain premise.**  The
-data-former twin of `fundamentalPiFormationAtAllFromPositiveDomainCandidateAndBaseLevelPremise`. -/
-theorem fundamentalSigmaFormationAtAllFromPositiveDomainCandidateAndBaseLevelPremise
-    {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
-    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
-    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
-    (domainFundamental :
-      FundamentalConclusionAtAll context domainCode (universeCodeCell domainLevel flag))
-    (domainHasPositiveCandidateUnderSubstitution :
-      HasAllPositiveReducibleCandidateAtPositiveLevelsUnderSubstitution context domainCode)
-    (codomainMemberAtDomainLevel :
-      ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
-        (_env : ReducibleEnvAtAllLevels context substitution) (predLevel : Nat)
-        (argument : RawTerm (targetScope + 1)),
-        IsReducibleMemberAt predLevel (RawTerm.subst substitution domainCode) argument →
-        IsReducibleMemberAt (predLevel + 1) (universeCodeCell codomainLevel flag)
-          (RawTerm.subst (RawTermSubst.cons argument substitution) codomainCode))
-    (codomainFundamental :
-      FundamentalConclusionAtAll (context.cons domainCode) codomainCode
-        (universeCodeCell codomainLevel flag)) :
-    FundamentalConclusionAtAll context (sigmaTyCodeCell domainCode codomainCode)
-      (universeCodeCell formerLevel flag) :=
-  fundamentalSigmaFormationAtDispatchLevelsAtAll
-    (formerChildrenReducibleAtDispatchLevelsFromPositiveDomainCandidateAndBaseLevelPremise
-      domainFundamental domainHasPositiveCandidateUnderSubstitution codomainMemberAtDomainLevel
-      codomainFundamental)
-
 /-- **Sigma-formation from a positive-fuel domain companion, without the Pi base-level premise.**  The
 Sigma/data-former reducibility dispatch needs only domain normalization plus one open-body normalization
 witness, mined from the codomain child at the one-higher domain level `predLevel + 1`.  It does not need
