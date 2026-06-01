@@ -46,6 +46,7 @@ import FX1Poly.Typed.ReducibleEnv
 import FX1Poly.Typed.ReducibleEnvAt
 import FX1Poly.Typed.ReducibleEnvAtAllLevels
 import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithPositiveTypeCandidates
+import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithTypeValueCandidates
 import FX1Poly.Typed.FundamentalWithPositiveTypeCandidates
 import FX1Poly.Typed.FundamentalAtAllLeafArms
 import FX1Poly.Typed.FundamentalAtAllTelescope
@@ -884,6 +885,20 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevelsWithPositiveTypeCandidates.cons
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevelsWithPositiveTypeCandidates.consFromPositiveTypeCandidate
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevelsWithPositiveTypeCandidates.lookupMemberExtendsToAllPositive
+
+/-! ### PROOF-RELEVANT ∀-LEVEL ENVIRONMENT with type-value candidate companions.  The previous strengthened
+    environment records candidates for looked-up BINDING TYPES.  The two-part dependent fundamental theorem
+    also needs the type-variable payload: when the substituted lookup classifier is a universe code, the
+    substituted VARIABLE VALUE itself must carry positive-fuel all-positive candidates.  The universe test is
+    stated after substitution so `cons` is stable by `weaken_subst_cons`, avoiding a false syntactic
+    rename-reflection assumption. -/
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevelsWithTypeValueCandidates
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevelsWithTypeValueCandidates.toPositiveTypeCandidates
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevelsWithTypeValueCandidates.toAllLevels
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevelsWithTypeValueCandidates.lookupPositiveCandidate
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevelsWithTypeValueCandidates.lookupTypeValuePositiveCandidate
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevelsWithTypeValueCandidates.empty
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevelsWithTypeValueCandidates.cons
 
 /-! ### Dependent fundamental theorem — proof-relevant positive-candidate environment arm layer.  This is
     the recursor-facing strengthened motive: ordinary all-level membership plus positive type-candidate
