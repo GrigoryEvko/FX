@@ -97,6 +97,53 @@ theorem ReducibleEnvAtAllLevels.consArgumentAtPositiveMemberLevelOfHeadFundament
     (FundamentalConclusionAtAll.typeInUniverse_positiveMemberExtendsToAllPositiveOfPositiveMemberExtension
       positiveMemberExtension bindingTypeFundamental substitution env argumentMember)
 
+/-- **Extend the type-value environment from one positive member under a type-in-universe head.**  This is
+the proof-relevant strengthening of `ReducibleEnvAtAllLevels.consArgumentAtPositiveMemberLevelOfHeadFundamental`.
+The ordinary head membership is lifted to all positive fuels exactly as before.  The additional type-value
+payload for variable zero is discharged by the same positive-member-extension principle: if the substituted
+binding type is a concrete universe code, the all-positive head membership is an all-positive universe
+member, and the universe-member/type-value projection gives the head value's positive candidate at every
+positive fuel. -/
+theorem ReducibleEnvAtAllLevelsWithTypeValueCandidates.consArgumentAtPositiveMemberLevelOfHeadFundamental
+    {profile : PolyProfile} {scope targetScope : Nat}
+    {context : TypingContext profile scope}
+    {bindingType : RawTerm scope} {levelExpr : LevelExpr} {flag : UniverseFlag}
+    {substitution : RawTermSubst scope (targetScope + 1)}
+    {argument : RawTerm (targetScope + 1)} {memberPredLevel : Nat}
+    (positiveMemberExtension :
+      HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes)
+    (envWithTypeValueCandidates :
+      ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution)
+    (bindingTypeFundamental :
+      FundamentalConclusionAtAll context bindingType (universeCodeCell levelExpr flag))
+    (argumentMember :
+      IsReducibleMemberAt (memberPredLevel + 1)
+        (RawTerm.subst substitution bindingType) argument) :
+    ReducibleEnvAtAllLevelsWithTypeValueCandidates (context.cons bindingType)
+      (RawTermSubst.cons argument substitution) :=
+  ReducibleEnvAtAllLevelsWithTypeValueCandidates.cons envWithTypeValueCandidates
+    (FundamentalConclusionAtAll.typeInUniverse_positiveMemberExtendsToAllPositiveOfPositiveMemberExtension
+      positiveMemberExtension bindingTypeFundamental substitution
+      envWithTypeValueCandidates.toAllLevels argumentMember)
+    (fun predLevel =>
+      FundamentalConclusionAtAll.typeInUniverse_hasPositiveCandidateOfPositiveMemberExtension
+        positiveMemberExtension bindingTypeFundamental substitution
+        envWithTypeValueCandidates.toAllLevels predLevel)
+    (fun {headLevelExpr} {headFlag} substitutedBindingTypeIsUniverse candidatePredLevel => by
+      have argumentAtAllPositiveLevels :
+          IsReducibleMemberAtAllPositiveLevels
+            (RawTerm.subst substitution bindingType) argument :=
+        FundamentalConclusionAtAll.typeInUniverse_positiveMemberExtendsToAllPositiveOfPositiveMemberExtension
+          positiveMemberExtension bindingTypeFundamental substitution
+          envWithTypeValueCandidates.toAllLevels argumentMember
+      have argumentAtAllPositiveLevelsInUniverse :
+          IsReducibleMemberAtAllPositiveLevels (universeCodeCell headLevelExpr headFlag) argument := by
+        rw [← substitutedBindingTypeIsUniverse]
+        exact argumentAtAllPositiveLevels
+      exact HasTypeValueCandidatesForAllReducibleTypesAtAllLevels.toUniverseMembers
+        positiveMemberExtension.toAllReducibleTypesHaveTypeValueCandidates
+        argumentAtAllPositiveLevelsInUniverse candidatePredLevel)
+
 /-- **Telescope cons through positive-member extension with an explicit fuel-zero branch.**  The telescope
 tail is asked for every `memberLevel`.  Positive-member extension covers only the positive levels
 `memberPredLevel + 1`; therefore this bridge keeps the fuel-zero tail premise explicit and uses
