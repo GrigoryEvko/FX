@@ -518,6 +518,60 @@ theorem HasAllPositiveReducibleCandidateAt.universeCodeOfLowerTypeExtendsToAllLe
         normalizingAndReducibleAtAllLevels.2 predLevel⟩
   exact ReducibleTypeStep.ofPointwiseIff (ReducibleTypeStep.universeCode levelExpr flag) pointwise
 
+/-- **Successor universe codes do not have the all-positive candidate at fuel zero.**  This is the
+formal obstruction behind the dependent binder impasse: at fuel `0`, the universe candidate is
+`universeReducibilityPredicate` over the empty lower relation, so it contains no type witnesses.  But a
+successor universe `Type@(succ levelExpr)` does have its predecessor `Type@levelExpr` as an all-positive
+member — by `universeFormation` at every positive fuel.  If the successor universe denoted the all-positive
+member predicate already at fuel `0`, `universeCodeInversion` would identify that predecessor membership
+with the empty lower universe predicate, contradiction.  Thus the missing binder bridge cannot be obtained
+by pretending the all-positive universe candidate exists uniformly at every fuel; positive-fuel premises are
+essential. -/
+theorem HasAllPositiveReducibleCandidateAt.notSuccUniverseCodeAtZero {scope : Nat}
+    (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    ¬ HasAllPositiveReducibleCandidateAt 0
+      (universeCodeCell levelExpr.lsucc flag : RawTerm scope) := by
+  intro hasAllPositiveCandidateAtZero
+  have allPositiveCandidateIsEmpty :
+      PointwiseIff
+        (IsReducibleMemberAtAllPositiveLevels
+          (universeCodeCell levelExpr.lsucc flag : RawTerm scope))
+        (universeReducibilityPredicate
+          (fun _typeCode _candidate => False : RawTerm scope → (RawTerm scope → Prop) → Prop)) :=
+    ReducibleTypeStep.universeCodeInversion hasAllPositiveCandidateAtZero
+  have predecessorIsAllPositiveMember :
+      IsReducibleMemberAtAllPositiveLevels
+        (universeCodeCell levelExpr.lsucc flag : RawTerm scope)
+        (universeCodeCell levelExpr flag) := by
+    intro predLevel
+    exact IsReducibleMemberAt.universeFormation predLevel levelExpr flag
+  have predecessorIsInEmptyUniversePredicate :=
+    (allPositiveCandidateIsEmpty (universeCodeCell levelExpr flag)).mp predecessorIsAllPositiveMember
+  obtain ⟨_witnessCandidate, impossibleLowerWitness⟩ :=
+    predecessorIsInEmptyUniversePredicate.2
+  exact impossibleLowerWitness
+
+/-- **All-level candidate companions cannot classify successor universes under a realized reducible
+substitution.**  This is the substitution-facing version of
+`HasAllPositiveReducibleCandidateAt.notSuccUniverseCodeAtZero`: if a context actually admits an all-level
+reducible closing substitution, then claiming that `Type@(succ levelExpr)` denotes the all-positive member
+predicate at EVERY fuel immediately instantiates the impossible fuel-`0` candidate.  This prevents the
+formation/binder assembly from accidentally using the full-fuel companion on universe domains; only the
+positive-fuel companion can be sound there. -/
+theorem HasAllPositiveReducibleCandidateUnderAllLevelSubstitution.notSuccUniverseCode
+    {profile : PolyProfile} {scope targetScope : Nat}
+    {context : TypingContext profile scope}
+    (levelExpr : LevelExpr) (flag : UniverseFlag)
+    (hasAllPositiveCandidateUnderSubstitution :
+      HasAllPositiveReducibleCandidateUnderAllLevelSubstitution context
+        (universeCodeCell levelExpr.lsucc flag))
+    (substitution : RawTermSubst scope (targetScope + 1))
+    (env : ReducibleEnvAtAllLevels context substitution) :
+    False := by
+  have candidateAtZero := hasAllPositiveCandidateUnderSubstitution substitution env 0
+  rw [subst_universeCodeCell] at candidateAtZero
+  exact HasAllPositiveReducibleCandidateAt.notSuccUniverseCodeAtZero levelExpr flag candidateAtZero
+
 /-- **Universe codes have positive-fuel all-positive candidates under all-level substitutions, conditional
 on the exact lower-type extension obligation.**  This packages the universe case for the positive-fuel
 type-companion predicate without hiding the remaining semantic assumption. -/
