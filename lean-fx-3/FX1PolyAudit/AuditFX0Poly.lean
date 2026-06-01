@@ -1,0 +1,25 @@
+import FX1PolyAudit.DependencyAudit
+import FX0Poly.StructuralRecheck
+
+/-! # FX1PolyAudit/AuditFX0Poly
+   — per-declaration zero-axiom gate for the FX0Poly minimal external checker
+
+`FX0Poly` (the Metamath-Zero–flavored re-checker) deliberately does NOT import the `#assert_no_axioms`
+macro — it stays independent of the FX1Poly stack so a reader can audit FX0Poly without trusting FX1Poly.
+The zero-axiom gate therefore lives HERE, in the audit lib (which may import anything): the audit imports
+the checker, not the other way round.  This keeps the trust direction correct while still holding FX0Poly
+to the same per-declaration zero-axiom discipline as the rich kernel.
+
+Each gate fails the build if its declaration depends on `propext` / `Quot.sound` / `Classical` / `sorry` /
+`native_decide` / `omega`.
+-/
+
+/-! ### FX0Poly per-node structural admission rule (the trusted-core re-check step) -/
+
+#assert_no_axioms FX0Poly.recheckNode
+#assert_no_axioms FX0Poly.recheckNode_none_malformed
+#assert_no_axioms FX0Poly.wasAccepted_ite_accepted_malformed
+#assert_no_axioms FX0Poly.recheckNode_some_wasAccepted_eq
+#assert_no_axioms FX0Poly.recheckNode_smoke_accepted
+#assert_no_axioms FX0Poly.recheckNode_smoke_arityMismatch
+#assert_no_axioms FX0Poly.recheckNode_smoke_childRejected

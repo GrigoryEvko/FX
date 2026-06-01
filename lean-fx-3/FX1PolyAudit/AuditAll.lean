@@ -8,6 +8,7 @@ import FX1PolyAudit.AuditFXProfile
 import FX1PolyAudit.AuditNbE
 import FX1PolyAudit.AuditUniverse
 import FX1PolyAudit.AuditTyped
+import FX1PolyAudit.AuditFX0Poly
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
