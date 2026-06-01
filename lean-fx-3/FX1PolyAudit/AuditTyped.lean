@@ -501,6 +501,9 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.isStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.IsTypeDesc.toIsType
 #assert_no_axioms FX1Poly.Typed.IsTypeDesc.isStronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.classifierStronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectAndClassifierStronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.closedSubjectAndClassifierStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.Conv.trans_of_hasTypeDescMiddle
 
 /-! ### Closed-form consequences for the description formation engine.  These expose the native

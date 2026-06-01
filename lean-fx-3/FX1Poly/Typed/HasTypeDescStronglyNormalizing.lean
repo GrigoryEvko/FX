@@ -52,6 +52,39 @@ theorem IsTypeDesc.isStronglyNormalizing {profile : PolyProfile} {scope : Nat}
     StepStar.IsStronglyNormalizing classifier :=
   isTypeDesc.toIsType.isStronglyNormalizing
 
+/-- The classifier of a description-engine typing derivation is strongly normalizing in every
+well-formed context.  This is the classifier-side companion to `HasTypeDesc.isStronglyNormalizing`:
+intrinsic validity first turns the classifier into an `IsTypeDesc`, and the type-level SN projection then
+normalizes it. -/
+theorem HasTypeDesc.classifierStronglyNormalizing {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {subject classifier : RawTerm scope}
+    (wellFormed : WfContext context)
+    (typed : HasTypeDesc profile context subject classifier) :
+    StepStar.IsStronglyNormalizing classifier :=
+  (typed.classifierIsTypeDesc wellFormed).isStronglyNormalizing
+
+/-- Formation-engine subject and classifier strong normalization, packaged in the shape consumed by the
+first metatheory spine.  This is deliberately scoped to `HasTypeDesc`: it routes through the proven
+formation-engine equivalence with `HasType`, not through the open dependent reducibility theorem for
+`HasTypeDescPi`. -/
+theorem HasTypeDesc.subjectAndClassifierStronglyNormalizing {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {subject classifier : RawTerm scope}
+    (wellFormed : WfContext context)
+    (typed : HasTypeDesc profile context subject classifier) :
+    StepStar.IsStronglyNormalizing subject ∧ StepStar.IsStronglyNormalizing classifier :=
+  ⟨typed.isStronglyNormalizing, typed.classifierStronglyNormalizing wellFormed⟩
+
+/-- Closed formation-engine subject and classifier strong normalization.  The empty context is
+well-formed, so the general subject/classifier package specializes without any environmental premise. -/
+theorem HasTypeDesc.closedSubjectAndClassifierStronglyNormalizing {profile : PolyProfile}
+    {subject classifier : RawTerm 0}
+    (typed : HasTypeDesc profile TypingContext.empty subject classifier) :
+    StepStar.IsStronglyNormalizing subject ∧ StepStar.IsStronglyNormalizing classifier :=
+  typed.subjectAndClassifierStronglyNormalizing
+    (WfContext.emptyIsWellFormed (profile := profile))
+
 /-- Typed conversion transitivity through a description-engine middle type.  This is the
 `HasTypeDesc`-side wrapper around the native typed-middle Newman bridge. -/
 theorem Conv.trans_of_hasTypeDescMiddle {profile : PolyProfile} {scope : Nat}
