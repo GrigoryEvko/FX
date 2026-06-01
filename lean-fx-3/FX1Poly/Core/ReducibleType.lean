@@ -149,7 +149,10 @@ theorem ReducibleType.candidateIffStronglyNormalizing {scope : Nat} {typeCode : 
     {candidate : RawTerm scope → Prop} (reducible : ReducibleType typeCode candidate)
     (noWeakHeadStep : ∀ reduct : RawTerm scope, ¬ WeakHeadStep typeCode reduct)
     (notPiType : typeCode.rootGenerator ≠ Generator.gen_piTyCode) :
-    PointwiseIff candidate IsStronglyNormalizing :=
-  ReducibleType.deterministic reducible (ReducibleType.neutral noWeakHeadStep notPiType)
+    PointwiseIff candidate IsStronglyNormalizing := by
+  cases reducible with
+  | whnfExpand weakHeadStep _reductReducible => exact absurd weakHeadStep (noWeakHeadStep _)
+  | neutral _noWeakHeadStep _notPiType => intro _term; exact Iff.rfl
+  | piType _codomainCandidate _domainReducible _codomainReducible => exact absurd rfl notPiType
 
 end FX1Poly.Core
