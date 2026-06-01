@@ -79,6 +79,7 @@ import FX1Poly.Typed.ReducibleTypeAtAllLevelsInduction
 import FX1Poly.Typed.ReducibleTypeAtAllLevelsPiNeutralDomain
 import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsLeaves
 import FX1Poly.Typed.FundamentalTelescopeConsNeutralDomain
+import FX1Poly.Typed.FundamentalTelescopeConsWhnfDomain
 import FX1Poly.Typed.ReducibleTypeAtAllLevelsPiDomainMemberExtension
 import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsPiMemberExtension
 import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsHeadExpand
@@ -1367,6 +1368,11 @@ gates pin them shut.
 -- the lone all-level-assembly `sorry` is discharged for every non-type-polymorphic former, given only the
 -- tail recursion (supplied by the FT's own IH).
 #assert_no_axioms FX1Poly.Typed.fundamentalTelescopeConsAtAllNeutralDomain
+
+-- ASSEMBLY: the same binder arm CLOSES for a weak-head-reducible domain — the member-side `whnfExpand` arm
+-- (this iteration) composed with the all-positive-argument cons companion.  Sibling of the neutral-domain
+-- lemma; chaining the two covers every former whose substituted domain weak-head-normalises to neutral/data.
+#assert_no_axioms FX1Poly.Typed.fundamentalTelescopeConsAtAllWhnfDomain
 
 -- The Π `piType` arm of type-level level-irrelevance, generalized from a neutral domain to ANY domain that
 -- admits MEMBER-EXTENSION: the domain-candidate level-mismatch dissolves under domain member-extension
