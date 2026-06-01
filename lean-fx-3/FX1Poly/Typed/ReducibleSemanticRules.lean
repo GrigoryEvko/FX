@@ -226,4 +226,55 @@ theorem ReducibleTypeAt.piTypeUnderSubst {scope targetScope : Nat} {level : Nat}
   rw [subst_piTyCodeCell]
   exact ReducibleTypeAt.piType codomainCandidate domainReducible codomainReducible
 
+/-- **CHOICE-FREE dependent Π formation under a closing substitution.**  The canonical-codomain twin of
+`piTypeUnderSubst`: feeds the FIXED codomain function `fun argument => IsReducibleMemberAt level (subst0
+(subst (lift substitution) codomainCode) argument)`, so the per-argument codomain premise is discharged from
+mere per-argument EXISTENCE (`codomainExists`) by `ReducibleTypeAt.piTypeCanonical`.  No per-argument
+candidate is chosen — this is the under-substitution Π-FORMATION arm of the dependent fundamental theorem
+that actually dissolves the choice wall (unlike `piTypeUnderSubst`, which takes the candidate as given). -/
+theorem ReducibleTypeAt.piTypeCanonicalUnderSubst {scope targetScope : Nat} {level : Nat}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainCandidate : RawTerm targetScope → Prop}
+    (substitution : RawTermSubst scope targetScope)
+    (domainReducible : ReducibleTypeAt level
+      (RawTerm.subst substitution domainCode) domainCandidate)
+    (codomainExists : ∀ argument : RawTerm targetScope, domainCandidate argument →
+      IsReducibleTypeAt level
+        (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) codomainCode) argument)) :
+    ReducibleTypeAt level
+      (RawTerm.subst substitution (piTyCodeCell domainCode codomainCode))
+      (IsDependentArrowReducible domainCandidate
+        (fun argument => IsReducibleMemberAt level
+          (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) codomainCode) argument))) := by
+  rw [subst_piTyCodeCell]
+  exact ReducibleTypeAt.piTypeCanonical domainReducible codomainExists
+
+/-- **CHOICE-FREE dependent Π introduction under a closing substitution (the dependent `piIntro` FT arm).**
+The canonical-codomain twin of `abstractionUnderSubst`: the body's fundamental-theorem IH lands it in
+`IsReducibleMemberAt level (subst0 (subst (lift substitution) codomainCode) argument)` for every reducible
+argument, and the codomain-reducibility premise is discharged from existence by
+`IsReducibleMemberAt.abstractionCanonical`.  This is the choice-free dependent generalization of
+`abstractionNonDependentUnderSubst`; the binder arm of the dependent fundamental theorem. -/
+theorem IsReducibleMemberAt.abstractionCanonicalUnderSubst {scope targetScope : Nat} {level : Nat}
+    {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
+    {domainCandidate : RawTerm targetScope → Prop}
+    (substitution : RawTermSubst scope targetScope)
+    (domainReducible : ReducibleTypeAt level
+      (RawTerm.subst substitution domainCode) domainCandidate)
+    (domainArgumentsSN : ∀ argument : RawTerm targetScope, domainCandidate argument →
+      IsStronglyNormalizing argument)
+    (codomainExists : ∀ argument : RawTerm targetScope, domainCandidate argument →
+      IsReducibleTypeAt level
+        (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) codomainCode) argument))
+    (bodyReducible : ∀ argument : RawTerm targetScope, domainCandidate argument →
+      IsReducibleMemberAt level
+        (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) codomainCode) argument)
+        (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) body) argument)) :
+    IsReducibleMemberAt level
+      (RawTerm.subst substitution (piTyCodeCell domainCode codomainCode))
+      (RawTerm.subst substitution (lamCell body)) := by
+  rw [subst_piTyCodeCell, subst_lamCell]
+  exact IsReducibleMemberAt.abstractionCanonical
+    domainReducible domainArgumentsSN codomainExists bodyReducible
+
 end FX1Poly.Typed

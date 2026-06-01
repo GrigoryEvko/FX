@@ -815,6 +815,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeAt.arrowTypeUnderSubst
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeAt.piTypeUnderSubst
 
+/-! ### CHOICE-FREE dependent Π formation + introduction under a closing substitution (the Path-A
+    fundamental-theorem binder arms).  The canonical-codomain twins of `piTypeUnderSubst` /
+    `abstractionUnderSubst`: they feed the FIXED `fun arg => IsReducibleMemberAt level (subst0 (subst
+    (lift γ) cod) arg)` codomain and discharge the per-argument codomain premise from mere EXISTENCE via
+    the Core engine `reducibleMemberCandidate` — no candidate is chosen, so the choice wall the dependent
+    fundamental theorem hit at `piIntro`/`piType` is dissolved. -/
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeAt.piTypeCanonicalUnderSubst
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.abstractionCanonicalUnderSubst
+
 /-! ### FORMATION-ARM BRIDGE: membership at a universe-code classifier ⟺ strong normalization.
     A universe code is a normal leaf (`noStep_universeCode`), hence neutral, so the dependent
     reducibility relation assigns it the SN candidate and `IsReducibleMember (universeCodeCell ..) t ↔
