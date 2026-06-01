@@ -50,6 +50,7 @@ import FX1Poly.Typed.FundamentalAtAllTelescope
 import FX1Poly.Typed.FundamentalAtAllFormerChildren
 import FX1Poly.Typed.FundamentalAtAllPiIntro
 import FX1Poly.Typed.FundamentalAtAllPositiveArguments
+import FX1Poly.Typed.FundamentalAtAllCanonicalCandidate
 import FX1Poly.Typed.FundamentalAtAllVectorPremises
 import FX1Poly.Typed.FundamentalAtAllNonDependentBinders
 import FX1Poly.Typed.FundamentalAtUniformVectorPremises
@@ -927,6 +928,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.formerChildrenReducibleAtDispatchLevelsFromAllLevelDomainCandidateCompanion
 #assert_no_axioms FX1Poly.Typed.fundamentalPiFormationAtAllFromAllLevelDomainCandidateCompanion
 #assert_no_axioms FX1Poly.Typed.fundamentalSigmaFormationAtAllFromAllLevelDomainCandidateCompanion
+
+-- Canonical per-level candidate companion extracted from an all-level `T : Type@u` fundamental result.  This
+-- is weaker than the all-positive candidate discipline and avoids assuming stratified level-irrelevance.
+#assert_no_axioms FX1Poly.Typed.HasCanonicalReducibleCandidateUnderAllLevelSubstitution
+#assert_no_axioms FX1Poly.Typed.HasCanonicalReducibleCandidateAtPositiveLevelsUnderSubstitution
+#assert_no_axioms FX1Poly.Typed.HasCanonicalReducibleCandidateUnderAllLevelSubstitution.atPositiveLevels
+#assert_no_axioms FX1Poly.Typed.FundamentalConclusionAtAll.typeInUniverse_hasCanonicalReducibleCandidateUnderSubstitution
+#assert_no_axioms FX1Poly.Typed.FundamentalConclusionAtAll.typeInUniverse_hasCanonicalReducibleCandidateAtPositiveLevels
 #assert_no_axioms FX1Poly.Typed.IsFundamentalConclusionAtVector
 #assert_no_axioms FX1Poly.Typed.fundamentalVarAtVectorMatchingLevel
 #assert_no_axioms FX1Poly.Typed.fundamentalConclusionAtAllOfVector
