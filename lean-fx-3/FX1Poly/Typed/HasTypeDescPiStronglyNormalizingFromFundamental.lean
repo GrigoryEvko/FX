@@ -759,4 +759,57 @@ theorem HasTypeDescPiAllLevelFundamentalTheorem.toTypeValueReducibilityAndStrong
     fundamentalTheorem
     positiveMemberExtension.toAllReducibleTypesHaveTypeValueCandidates
 
+/-- **All-level fundamental theorem interface from the conditional formation-vector assembly.**  The grown
+`HasTypeDescPi` recursor is already proved in `HasTypeDescPi.fundamentalAtAllFromFormation`; this theorem
+packages that conditional assembly in the public `HasTypeDescPiAllLevelFundamentalTheorem` shape.  The
+formation-vector premise remains explicit because arbitrary vector levels are not derivable for
+`HasTypeDesc.var`. -/
+theorem HasTypeDescPi.allLevelFundamentalTheoremFromFormationVector
+    {profile : PolyProfile}
+    (formationFundamental :
+      ∀ {scope : Nat} {context : TypingContext profile scope}
+        {subject classifier : RawTerm scope},
+        HasTypeDesc profile context subject classifier →
+          IsFundamentalConclusionAtVector context subject classifier) :
+    HasTypeDescPiAllLevelFundamentalTheorem profile := by
+  intro _scope _context _subject _classifier typed
+  exact HasTypeDescPi.fundamentalAtAllFromFormation formationFundamental typed
+
+/-- **Bundled type-value metatheory from the conditional formation-vector assembly.**  This composes the
+conditional grown-engine all-level FT with the global type-value completion principle, yielding the full
+type-value fundamental theorem plus substituted and closed strong normalization.  Both remaining semantic
+premises are explicit: the formation-vector premise for `HasTypeDesc`, and type-value completion for
+strongly normalizing all-level reducible type values. -/
+theorem HasTypeDescPi.typeValueReducibilityAndStrongNormalizationTheoremFromFormationVectorAndAllReducibleTypesHaveTypeValueCandidates
+    {profile : PolyProfile}
+    (formationFundamental :
+      ∀ {scope : Nat} {context : TypingContext profile scope}
+        {subject classifier : RawTerm scope},
+        HasTypeDesc profile context subject classifier →
+          IsFundamentalConclusionAtVector context subject classifier)
+    (allReducibleTypesHaveTypeValueCandidates :
+      HasTypeValueCandidatesForAllReducibleTypesAtAllLevels) :
+    HasTypeDescPiTypeValueReducibilityAndStrongNormalizationTheorem profile :=
+  HasTypeDescPiAllLevelFundamentalTheorem.toTypeValueReducibilityAndStrongNormalizationTheoremOfAllReducibleTypesHaveTypeValueCandidates
+    (HasTypeDescPi.allLevelFundamentalTheoremFromFormationVector formationFundamental)
+    allReducibleTypesHaveTypeValueCandidates
+
+/-- **Bundled type-value metatheory from the operational positive-member bridge.**  This is the same
+conditional formation-vector assembly, with the remaining type-value completion supplied in its operational
+form: members of strongly normalizing all-level types extend from one positive fuel to all positive fuels.
+No unconditional FT is claimed; the two unresolved premises are visible in the statement. -/
+theorem HasTypeDescPi.typeValueReducibilityAndStrongNormalizationTheoremFromFormationVectorAndPositiveMemberExtension
+    {profile : PolyProfile}
+    (formationFundamental :
+      ∀ {scope : Nat} {context : TypingContext profile scope}
+        {subject classifier : RawTerm scope},
+        HasTypeDesc profile context subject classifier →
+          IsFundamentalConclusionAtVector context subject classifier)
+    (positiveMemberExtension :
+      HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes) :
+    HasTypeDescPiTypeValueReducibilityAndStrongNormalizationTheorem profile :=
+  HasTypeDescPiAllLevelFundamentalTheorem.toTypeValueReducibilityAndStrongNormalizationTheoremOfPositiveMemberExtension
+    (HasTypeDescPi.allLevelFundamentalTheoremFromFormationVector formationFundamental)
+    positiveMemberExtension
+
 end FX1Poly.Typed
