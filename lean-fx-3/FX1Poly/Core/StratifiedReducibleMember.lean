@@ -156,4 +156,42 @@ theorem IsReducibleMemberAt.stronglyNormalizing {scope : Nat} {predLevel : Nat}
   obtain ⟨_candidate, reducible, membership⟩ := member
   exact reducible.isReducibilityCandidate.stronglyNormalizing membership
 
+/-- **The canonical member-predicate is the type's own candidate.**  For a reducible type, the predicate
+`IsReducibleMemberAt level typeCode` (`fun term => ∃ C, ReducibleTypeAt level typeCode C ∧ C term`) is
+itself a candidate the type denotes: built from any existing candidate by the `ofPointwiseIff`
+congruence-closure arm, with the pointwise equivalence supplied by `deterministic` (every candidate of
+`typeCode` is pointwise-iff to the member-predicate — forward picks the given candidate, backward collapses
+an arbitrary witness candidate onto it).
+
+This is the choice-free ENGINE of the dependent fundamental theorem: the Π codomain can be fed the FIXED
+function `fun argument => IsReducibleMemberAt level (subst0 codomainCode argument)` (no `∃ candidate`
+extracted, hence no choice), and the `piType` premise `ReducibleTypeAt level (subst0 codomainCode argument)
+(IsReducibleMemberAt level (subst0 codomainCode argument))` discharged per argument from mere EXISTENCE of a
+candidate there via this lemma. -/
+theorem ReducibleTypeAt.reducibleMemberCandidate {scope : Nat} {level : Nat}
+    {typeCode : RawTerm scope} {candidate : RawTerm scope → Prop}
+    (reducible : ReducibleTypeAt level typeCode candidate) :
+    ReducibleTypeAt level typeCode (IsReducibleMemberAt level typeCode) := by
+  have pointwise : ∀ term : RawTerm scope,
+      candidate term ↔ IsReducibleMemberAt level typeCode term := by
+    intro term
+    constructor
+    · intro candidateTerm; exact ⟨candidate, reducible, candidateTerm⟩
+    · intro member
+      obtain ⟨_otherCandidate, otherReducible, otherMembership⟩ := member
+      exact (ReducibleTypeAt.deterministic otherReducible reducible term).mp otherMembership
+  cases level with
+  | zero => exact ReducibleTypeStep.ofPointwiseIff reducible pointwise
+  | succ predLevel => exact ReducibleTypeStep.ofPointwiseIff reducible pointwise
+
+/-- **Existence of a candidate suffices for the canonical member-predicate.**  The `IsReducibleTypeAt`
+(`∃ candidate, …`) repackaging of `reducibleMemberCandidate`: a semantically well-formed type denotes its
+own member-predicate.  The form the dependent Π-formation arm consumes (it has existence, not a chosen
+candidate). -/
+theorem IsReducibleTypeAt.reducibleMemberCandidate {scope : Nat} {level : Nat}
+    {typeCode : RawTerm scope} (reducibleType : IsReducibleTypeAt level typeCode) :
+    ReducibleTypeAt level typeCode (IsReducibleMemberAt level typeCode) :=
+  let ⟨_candidate, reducible⟩ := reducibleType
+  reducible.reducibleMemberCandidate
+
 end FX1Poly.Core
