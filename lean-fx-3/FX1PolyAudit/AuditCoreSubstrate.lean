@@ -50,6 +50,7 @@ import FX1Poly.Core.StratifiedReducibleMemberAbstraction
 import FX1Poly.Core.StratifiedReducibleUniverseDecode
 import FX1Poly.Core.StratifiedReducibleMemberNonDependent
 import FX1Poly.Core.ArrowCandidateMembership
+import FX1Poly.Core.CandidateInterpretationFundamental
 import FX1Poly.Core.RawTermSubstConsCommute
 -- Certifier base (CellBoundary / PolyCell + immediate consumers).
 import FX1Poly.Core.CertifiedRawCell
