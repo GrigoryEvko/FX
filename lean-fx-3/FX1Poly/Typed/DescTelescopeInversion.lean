@@ -24,6 +24,23 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
+/-- **Two-child formation telescope -> two-element level list.**  The formation-engine counterpart of
+`DescTelescopePi.twoChildLevels`: a depth-0 `DescTelescope` over the concrete two-child spine
+`childCons _ (childCons _ childNil)` carries exactly two universe levels.  This is the non-recursive
+inversion the formation-fragment fundamental theorem's `genFormation` arm needs before dispatching to the
+Π/Σ former reducibility bundle. -/
+theorem DescTelescope.twoChildLevels {profile : PolyProfile} {baseScope : Nat}
+    {context : TypingContext profile baseScope} {levelsList : List LevelExpr} {flag : UniverseFlag}
+    {children : RawTermChildren [0, 1] baseScope}
+    (telescope : DescTelescope profile (currentDepth := 0) context levelsList flag children) :
+    ∃ domainLevel codomainLevel, levelsList = [domainLevel, codomainLevel] := by
+  cases telescope with
+  | cons _context _head domainLevel _restLevels _flag _rest _headTyped restTyped =>
+      cases restTyped with
+      | cons _context2 _head2 codomainLevel _restLevels2 _flag2 _rest2 _headTyped2 tailTelescope =>
+          cases tailTelescope with
+          | nil => exact ⟨domainLevel, codomainLevel, rfl⟩
+
 /-- **Cons-shape inversion of the grown premise telescope.**  A `DescTelescopePi` over a non-empty level
 list `headLevel :: restLevels` and a `childCons head rest` child vector came through the `cons`
 constructor, so it splits into the head's `HasTypeDescPi` typing (at `universeCodeCell headLevel flag`) and

@@ -913,6 +913,7 @@ gates pin them shut.
     fundamental theorem's formation/universe arm bridge between a well-formed type term and its SN. -/
 #assert_no_axioms FX1Poly.Typed.universeCodeCell_noWeakHeadStep
 #assert_no_axioms FX1Poly.Typed.IsReducibleMember.atUniverseCode
+#assert_no_axioms FX1Poly.Typed.DescTelescope.twoChildLevels
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.consInversion
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.twoChildLevels
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.piFormerOfChildMemberships
