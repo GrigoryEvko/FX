@@ -699,6 +699,32 @@ theorem HasTypeDescPiTypeValueCandidateFundamentalTheorem.toClosedStrongNormaliz
     HasTypeDescPi.closedClassifierStronglyNormalizingFromTypeValueCandidateFundamentalTheorem
       fundamentalTheorem typed⟩
 
+/-- **Package the direct type-value fundamental theorem with its SN consequences.**  The strongest
+proof-relevant FT interface already contains enough data for both substituted and closed strong
+normalization: CR1 projects the substituted theorem, and the empty-context corollary gives the closed
+theorem.  This constructor is the direct handoff for a future unconditional proof of the type-value
+fundamental theorem, without routing through the all-level theorem plus an external completion premise. -/
+theorem HasTypeDescPiTypeValueCandidateFundamentalTheorem.toReducibilityAndStrongNormalizationTheorem
+    {profile : PolyProfile}
+    (fundamentalTheorem : HasTypeDescPiTypeValueCandidateFundamentalTheorem profile) :
+    HasTypeDescPiTypeValueReducibilityAndStrongNormalizationTheorem profile :=
+  ⟨fundamentalTheorem,
+    HasTypeDescPiTypeValueCandidateFundamentalTheorem.toSubstitutedStrongNormalizationTheorem
+      fundamentalTheorem,
+    HasTypeDescPiTypeValueCandidateFundamentalTheorem.toClosedStrongNormalizationTheorem
+      fundamentalTheorem⟩
+
+/-- **The bundled type-value metatheory is equivalent to the direct type-value FT.**  The extra strong
+normalization fields are not additional assumptions: they are consequences of the fundamental theorem
+itself.  This theorem keeps the exported package honest and convenient: downstream code may consume the
+bundle, while proof-producing code only needs to establish the FT. -/
+theorem hasTypeDescPiTypeValueReducibilityAndStrongNormalizationTheorem_iff_typeValueCandidateFundamentalTheorem
+    {profile : PolyProfile} :
+    HasTypeDescPiTypeValueReducibilityAndStrongNormalizationTheorem profile ↔
+      HasTypeDescPiTypeValueCandidateFundamentalTheorem profile :=
+  ⟨HasTypeDescPiTypeValueReducibilityAndStrongNormalizationTheorem.fundamentalTheorem,
+    HasTypeDescPiTypeValueCandidateFundamentalTheorem.toReducibilityAndStrongNormalizationTheorem⟩
+
 /-- **Bundled multi-universe metatheory from all-level FT plus type-value completion.**  This composes the
 exact all-level dependent fundamental theorem with the candidate-completion principle and packages the
 resulting type-value FT, substituted SN theorem, and closed SN theorem as one reusable theorem value. -/
