@@ -1786,9 +1786,9 @@ theorem fundamentalPiFormationValidityWithTypeValueCandidatesOfAllReducibleTypes
 /-- **Generic Sigma-formation validity from type-value completion.**  The Sigma twin of
 `fundamentalPiFormationValidityWithTypeValueCandidatesOfAllReducibleTypesHaveTypeValueCandidates`.
 Sigma's type-value half is neutral-data-former reducibility, so the codomain validity is consumed only for
-the member half; the argument value payload is still supplied uniformly by the global type-value completion
-principle.  The base-level codomain member premise remains explicit for the same fuel-zero reason as in the
-Π theorem. -/
+the member half at the higher domain-dispatch level; unlike Pi formation, no base-level codomain member
+premise is consumed.  The argument value payload is still supplied uniformly by the global type-value
+completion principle. -/
 theorem fundamentalSigmaFormationValidityWithTypeValueCandidatesOfAllReducibleTypesHaveTypeValueCandidates
     {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
@@ -1799,13 +1799,6 @@ theorem fundamentalSigmaFormationValidityWithTypeValueCandidatesOfAllReducibleTy
     (domainValidity :
       FundamentalValidityWithTypeValueCandidates context domainCode
         (universeCodeCell domainLevel flag))
-    (codomainMemberAtDomainLevel :
-      ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
-        (_env : ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution)
-        (predLevel : Nat) (argument : RawTerm (targetScope + 1)),
-        IsReducibleMemberAt predLevel (RawTerm.subst substitution domainCode) argument →
-        IsReducibleMemberAt (predLevel + 1) (universeCodeCell codomainLevel flag)
-          (RawTerm.subst (RawTermSubst.cons argument substitution) codomainCode))
     (codomainValidity :
       FundamentalValidityWithTypeValueCandidates (context.cons domainCode) codomainCode
         (universeCodeCell codomainLevel flag)) :
@@ -1818,7 +1811,7 @@ theorem fundamentalSigmaFormationValidityWithTypeValueCandidatesOfAllReducibleTy
       HasTypeValueCandidatesForAllPositiveUniverseMembers :=
     HasTypeValueCandidatesForAllReducibleTypesAtAllLevels.toUniverseMembers
       allReducibleTypesHaveTypeValueCandidates
-  exact fundamentalSigmaFormationValidityWithTypeValueCandidatesFromTypeValueArgumentPremise
+  exact fundamentalSigmaFormationValidityWithTypeValueCandidatesFromPositiveDomainCandidate
     domainValidity.memberConclusion
     domainHasPositiveCandidate
     (fun {_targetScope} substitution envWithTypeValueCandidates argument argumentAtAllPositiveLevels
@@ -1826,7 +1819,7 @@ theorem fundamentalSigmaFormationValidityWithTypeValueCandidatesOfAllReducibleTy
       HasTypeValueCandidatesForAllPositiveUniverseMembers.ofSubstitutedUniverseDomainMember
         universeMembersHaveTypeValueCandidates substitution argumentAtAllPositiveLevels
         substitutedDomainIsUniverse candidatePredLevel)
-    codomainMemberAtDomainLevel codomainValidity.memberConclusion
+    codomainValidity.memberConclusion
 
 /-- **Generic Π-formation validity from positive-member extension.**  The base-level codomain premise
 remains explicit for the same reason as in the completion-theorem version; positive-member extension
@@ -1870,13 +1863,6 @@ theorem fundamentalSigmaFormationValidityWithTypeValueCandidatesOfPositiveMember
     (domainValidity :
       FundamentalValidityWithTypeValueCandidates context domainCode
         (universeCodeCell domainLevel flag))
-    (codomainMemberAtDomainLevel :
-      ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
-        (_env : ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution)
-        (predLevel : Nat) (argument : RawTerm (targetScope + 1)),
-        IsReducibleMemberAt predLevel (RawTerm.subst substitution domainCode) argument →
-        IsReducibleMemberAt (predLevel + 1) (universeCodeCell codomainLevel flag)
-          (RawTerm.subst (RawTermSubst.cons argument substitution) codomainCode))
     (codomainValidity :
       FundamentalValidityWithTypeValueCandidates (context.cons domainCode) codomainCode
         (universeCodeCell codomainLevel flag)) :
@@ -1884,7 +1870,7 @@ theorem fundamentalSigmaFormationValidityWithTypeValueCandidatesOfPositiveMember
       (sigmaTyCodeCell domainCode codomainCode) (universeCodeCell formerLevel flag) :=
   fundamentalSigmaFormationValidityWithTypeValueCandidatesOfAllReducibleTypesHaveTypeValueCandidates
     positiveMemberExtension.toAllReducibleTypesHaveTypeValueCandidates
-    domainValidity codomainMemberAtDomainLevel codomainValidity
+    domainValidity codomainValidity
 
 /-- **Base-level codomain premise from a fuel-zero-empty domain.**  This is the reusable form of the
 universe-domain trick: if the substituted domain has no members at fuel zero, then the base-level branch of
@@ -2001,7 +1987,7 @@ theorem fundamentalSigmaFormationValidityWithTypeValueCandidatesFromNoZeroDomain
     (domainValidity :
       FundamentalValidityWithTypeValueCandidates context domainCode
         (universeCodeCell domainLevel flag))
-    (domainHasNoMemberAtZero :
+    (_domainHasNoMemberAtZero :
       ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
         (_env : ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution)
         (argument : RawTerm (targetScope + 1)),
@@ -2010,25 +1996,9 @@ theorem fundamentalSigmaFormationValidityWithTypeValueCandidatesFromNoZeroDomain
       FundamentalValidityWithTypeValueCandidates (context.cons domainCode) codomainCode
         (universeCodeCell codomainLevel flag)) :
     FundamentalValidityWithTypeValueCandidates context
-      (sigmaTyCodeCell domainCode codomainCode) (universeCodeCell formerLevel flag) := by
-  let domainHasPositiveCandidate :
-      PositiveCandidateConclusionWithTypeValueCandidates context domainCode :=
-    FundamentalValidityWithTypeValueCandidates.toPositiveCandidateOfUniverseClassifier domainValidity
-  let universeMembersHaveTypeValueCandidates :
-      HasTypeValueCandidatesForAllPositiveUniverseMembers :=
-    HasTypeValueCandidatesForAllReducibleTypesAtAllLevels.toUniverseMembers
-      allReducibleTypesHaveTypeValueCandidates
-  exact fundamentalSigmaFormationValidityWithTypeValueCandidatesOfAllReducibleTypesHaveTypeValueCandidates
-    allReducibleTypesHaveTypeValueCandidates domainValidity
-    (codomainMemberAtDomainLevelWithTypeValueCandidatesFromNoZeroDomain
-      domainHasPositiveCandidate domainHasNoMemberAtZero
-      (fun {_targetScope} substitution envWithTypeValueCandidates argument argumentAtAllPositiveLevels
-          {_levelExpr} {_domainFlag} substitutedDomainIsUniverse candidatePredLevel =>
-        HasTypeValueCandidatesForAllPositiveUniverseMembers.ofSubstitutedUniverseDomainMember
-          universeMembersHaveTypeValueCandidates substitution argumentAtAllPositiveLevels
-          substitutedDomainIsUniverse candidatePredLevel)
-      codomainValidity.memberConclusion)
-    codomainValidity
+      (sigmaTyCodeCell domainCode codomainCode) (universeCodeCell formerLevel flag) :=
+  fundamentalSigmaFormationValidityWithTypeValueCandidatesOfAllReducibleTypesHaveTypeValueCandidates
+    allReducibleTypesHaveTypeValueCandidates domainValidity codomainValidity
 
 /-- **The base-level codomain premise for a universe-code domain over the type-value environment.**  Fuel
 zero is impossible for universe-domain membership.  At successor fuel, the domain positive-candidate
@@ -2287,12 +2257,9 @@ theorem fundamentalSigmaFormationValidityWithTypeValueCandidatesFromUniverseDoma
     FundamentalValidityWithTypeValueCandidates context
       (sigmaTyCodeCell (universeCodeCell domainLevel flag) codomainCode)
       (universeCodeCell formerLevel flag) :=
-  fundamentalSigmaFormationValidityWithTypeValueCandidatesFromTypeValueArgumentPremise
+  fundamentalSigmaFormationValidityWithTypeValueCandidatesFromPositiveDomainCandidate
     domainFundamental domainHasPositiveCandidate
     argumentValueHasPositiveCandidateWhenDomainIsUniverse
-    (codomainMemberAtDomainLevelWithTypeValueCandidatesFromUniverseDomain
-      domainHasPositiveCandidate argumentValueHasPositiveCandidateWhenDomainIsUniverse
-      codomainFundamental)
     codomainFundamental
 
 /-- **Bundled Pi-formation validity for a universe-code domain from the global universe-member type-value
