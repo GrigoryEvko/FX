@@ -355,42 +355,13 @@ theorem fundamentalPiFormationWithPositiveTypeCandidates
     domainFundamental domainHasPositiveCandidate codomainMemberAtDomainLevel codomainFundamental
     substitution envWithCandidates predLevel).toPiMember
 
-/-- **Sigma-formation over the strengthened environment from the factored dispatch-level child premises.** -/
-theorem fundamentalSigmaFormationWithPositiveTypeCandidates
-    {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope}
-    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
-    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
-    (domainFundamental :
-      FundamentalConclusionWithPositiveTypeCandidates context domainCode
-        (universeCodeCell domainLevel flag))
-    (domainHasPositiveCandidate :
-      PositiveCandidateConclusionWithPositiveTypeCandidates context domainCode)
-    (codomainMemberAtDomainLevel :
-      ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
-        (_env : ReducibleEnvAtAllLevelsWithPositiveTypeCandidates context substitution)
-        (predLevel : Nat) (argument : RawTerm (targetScope + 1)),
-        IsReducibleMemberAt predLevel (RawTerm.subst substitution domainCode) argument →
-        IsReducibleMemberAt (predLevel + 1) (universeCodeCell codomainLevel flag)
-          (RawTerm.subst (RawTermSubst.cons argument substitution) codomainCode))
-    (codomainFundamental :
-      FundamentalConclusionWithPositiveTypeCandidates (context.cons domainCode) codomainCode
-        (universeCodeCell codomainLevel flag)) :
-    FundamentalConclusionWithPositiveTypeCandidates context (sigmaTyCodeCell domainCode codomainCode)
-      (universeCodeCell formerLevel flag) := by
-  intro _targetScope substitution envWithCandidates predLevel
-  rw [subst_universeCodeCell]
-  exact (formerChildrenReducibleAtDispatchLevelsWithPositiveTypeCandidates
-    domainFundamental domainHasPositiveCandidate codomainMemberAtDomainLevel codomainFundamental
-    substitution envWithCandidates predLevel).toSigmaMember
-
 /-- **Sigma-formation over the strengthened environment from a positive-fuel domain companion.**  This is
 the Sigma/data-former counterpart of `fundamentalPiFormationWithPositiveTypeCandidates`, but without the
 Pi-specific base-level codomain premise.  Sigma-former membership needs the domain child at two adjacent
 levels and the codomain child only at the one-higher domain level `predLevel + 1`; the latter is obtained by
 strengthening the decoded domain argument through the domain positive-candidate companion, extending the
 proof-relevant environment, and running the codomain recursive premise. -/
-theorem fundamentalSigmaFormationWithPositiveTypeCandidatesFromPositiveDomainCandidate
+theorem fundamentalSigmaFormationWithPositiveTypeCandidates
     {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
@@ -553,7 +524,7 @@ theorem fundamentalSigmaFormationWithPositiveTypeCandidatesFromUniverseDomain
     FundamentalConclusionWithPositiveTypeCandidates context
       (sigmaTyCodeCell (universeCodeCell domainLevel flag) codomainCode)
       (universeCodeCell formerLevel flag) :=
-  fundamentalSigmaFormationWithPositiveTypeCandidatesFromPositiveDomainCandidate
+  fundamentalSigmaFormationWithPositiveTypeCandidates
     domainFundamental domainHasPositiveCandidate codomainFundamental
 
 /-- **Dependent lambda introduction over the strengthened environment.**  The domain premise supplies the
