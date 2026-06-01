@@ -5,6 +5,7 @@ import FX1Poly.Core.GeneratorTagRoundTrip
 import FX1Poly.Core.ReducibleTypeClosed
 import FX1Poly.Core.PointwiseIffAlgebra
 import FX1Poly.Core.StratifiedReducibleLevelCongr
+import FX1Poly.Core.StrongNormalizationSubterm
 
 /-! # FX1PolyAudit/AuditCore — zero-axiom gate for the cell-calculus core
 
@@ -66,3 +67,10 @@ a `.type` classifier) and guard against reintroducing an MLTT
 -- equivalence).  Does NOT bootstrap full irrelevance alone (level-0 degenerate base) — see the module
 -- docstring; reusable as the hard core of any future level argument.
 #assert_no_axioms FX1Poly.Core.ReducibleTypeStep.existsCongr
+
+-- Strong-normalization inverse lemmas for dependent type-code children.  These are the subterm
+-- accessibility projections needed by structural arguments over reducible Pi/Sigma type values.
+#assert_no_axioms FX1Poly.Core.StepStar.domain_isStronglyNormalizing_of_piTyCode
+#assert_no_axioms FX1Poly.Core.StepStar.codomain_isStronglyNormalizing_of_piTyCode
+#assert_no_axioms FX1Poly.Core.StepStar.domain_isStronglyNormalizing_of_sigmaTyCode
+#assert_no_axioms FX1Poly.Core.StepStar.codomain_isStronglyNormalizing_of_sigmaTyCode

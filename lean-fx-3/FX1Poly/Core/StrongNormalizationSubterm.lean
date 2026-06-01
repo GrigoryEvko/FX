@@ -225,5 +225,171 @@ theorem appArgument_isStronglyNormalizing_of_app {scope : Nat}
           (.childCons currentFunction (.childCons argumentAfter .childNil)))
         congruenceLift rfl
 
+/-- The domain child of a strongly-normalizing Pi type code is strongly normalizing.
+Every domain step lifts to a congruence step under the `gen_piTyCode` cell, so accessibility of the parent
+transfers to the first child. -/
+theorem domain_isStronglyNormalizing_of_piTyCode {scope : Nat}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    (piTypeCodeTerminates :
+      IsStronglyNormalizing
+        (.mkGen .gen_piTyCode ()
+          (.childCons domainCode (.childCons codomainCode .childNil)) :
+          RawTerm scope)) :
+    IsStronglyNormalizing domainCode := by
+  suffices general :
+      ∀ {piTypeCode : RawTerm scope}, Acc StepSuccessor piTypeCode →
+        ∀ {currentDomain : RawTerm scope} {currentCodomain : RawTerm (scope + 1)},
+          piTypeCode = .mkGen .gen_piTyCode ()
+            (.childCons currentDomain (.childCons currentCodomain .childNil)) →
+          Acc StepSuccessor currentDomain from
+    general piTypeCodeTerminates rfl
+  intro piTypeCode piTypeCodeAccessible
+  induction piTypeCodeAccessible with
+  | intro piTypeCodeWitness _piTypeCodePredecessors piTypeCodeInductiveHypothesis =>
+      intro currentDomain currentCodomain witnessEq
+      subst witnessEq
+      apply Acc.intro
+      intro domainAfter domainStep
+      have congruenceLift :
+          Step
+            (.mkGen .gen_piTyCode ()
+              (.childCons currentDomain (.childCons currentCodomain .childNil)) :
+              RawTerm scope)
+            (.mkGen .gen_piTyCode ()
+              (.childCons domainAfter (.childCons currentCodomain .childNil)) :
+              RawTerm scope) :=
+        Step.cong .gen_piTyCode ()
+          (StepChildren.here
+            (.childCons currentCodomain .childNil :
+              RawTermChildren [1] scope)
+            domainStep)
+      exact piTypeCodeInductiveHypothesis
+        (.mkGen .gen_piTyCode ()
+          (.childCons domainAfter (.childCons currentCodomain .childNil)))
+        congruenceLift rfl
+
+/-- The codomain child of a strongly-normalizing Pi type code is strongly normalizing.
+The codomain lives under the Pi binder, so the lifted congruence step walks once into the child spine before
+firing at the second child. -/
+theorem codomain_isStronglyNormalizing_of_piTyCode {scope : Nat}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    (piTypeCodeTerminates :
+      IsStronglyNormalizing
+        (.mkGen .gen_piTyCode ()
+          (.childCons domainCode (.childCons codomainCode .childNil)) :
+          RawTerm scope)) :
+    IsStronglyNormalizing codomainCode := by
+  suffices general :
+      ∀ {piTypeCode : RawTerm scope}, Acc StepSuccessor piTypeCode →
+        ∀ {currentDomain : RawTerm scope} {currentCodomain : RawTerm (scope + 1)},
+          piTypeCode = .mkGen .gen_piTyCode ()
+            (.childCons currentDomain (.childCons currentCodomain .childNil)) →
+          Acc StepSuccessor currentCodomain from
+    general piTypeCodeTerminates rfl
+  intro piTypeCode piTypeCodeAccessible
+  induction piTypeCodeAccessible with
+  | intro piTypeCodeWitness _piTypeCodePredecessors piTypeCodeInductiveHypothesis =>
+      intro currentDomain currentCodomain witnessEq
+      subst witnessEq
+      apply Acc.intro
+      intro codomainAfter codomainStep
+      have congruenceLift :
+          Step
+            (.mkGen .gen_piTyCode ()
+              (.childCons currentDomain (.childCons currentCodomain .childNil)) :
+              RawTerm scope)
+            (.mkGen .gen_piTyCode ()
+              (.childCons currentDomain (.childCons codomainAfter .childNil)) :
+              RawTerm scope) :=
+        Step.cong .gen_piTyCode ()
+          (@StepChildren.there scope 0 [1] currentDomain _ _
+            (StepChildren.here
+              (.childNil : RawTermChildren [] scope) codomainStep))
+      exact piTypeCodeInductiveHypothesis
+        (.mkGen .gen_piTyCode ()
+          (.childCons currentDomain (.childCons codomainAfter .childNil)))
+        congruenceLift rfl
+
+/-- The domain child of a strongly-normalizing Sigma type code is strongly normalizing. -/
+theorem domain_isStronglyNormalizing_of_sigmaTyCode {scope : Nat}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    (sigmaTypeCodeTerminates :
+      IsStronglyNormalizing
+        (.mkGen .gen_sigmaTyCode ()
+          (.childCons domainCode (.childCons codomainCode .childNil)) :
+          RawTerm scope)) :
+    IsStronglyNormalizing domainCode := by
+  suffices general :
+      ∀ {sigmaTypeCode : RawTerm scope}, Acc StepSuccessor sigmaTypeCode →
+        ∀ {currentDomain : RawTerm scope} {currentCodomain : RawTerm (scope + 1)},
+          sigmaTypeCode = .mkGen .gen_sigmaTyCode ()
+            (.childCons currentDomain (.childCons currentCodomain .childNil)) →
+          Acc StepSuccessor currentDomain from
+    general sigmaTypeCodeTerminates rfl
+  intro sigmaTypeCode sigmaTypeCodeAccessible
+  induction sigmaTypeCodeAccessible with
+  | intro sigmaTypeCodeWitness _sigmaTypeCodePredecessors sigmaTypeCodeInductiveHypothesis =>
+      intro currentDomain currentCodomain witnessEq
+      subst witnessEq
+      apply Acc.intro
+      intro domainAfter domainStep
+      have congruenceLift :
+          Step
+            (.mkGen .gen_sigmaTyCode ()
+              (.childCons currentDomain (.childCons currentCodomain .childNil)) :
+              RawTerm scope)
+            (.mkGen .gen_sigmaTyCode ()
+              (.childCons domainAfter (.childCons currentCodomain .childNil)) :
+              RawTerm scope) :=
+        Step.cong .gen_sigmaTyCode ()
+          (StepChildren.here
+            (.childCons currentCodomain .childNil :
+              RawTermChildren [1] scope)
+            domainStep)
+      exact sigmaTypeCodeInductiveHypothesis
+        (.mkGen .gen_sigmaTyCode ()
+          (.childCons domainAfter (.childCons currentCodomain .childNil)))
+        congruenceLift rfl
+
+/-- The codomain child of a strongly-normalizing Sigma type code is strongly normalizing. -/
+theorem codomain_isStronglyNormalizing_of_sigmaTyCode {scope : Nat}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    (sigmaTypeCodeTerminates :
+      IsStronglyNormalizing
+        (.mkGen .gen_sigmaTyCode ()
+          (.childCons domainCode (.childCons codomainCode .childNil)) :
+          RawTerm scope)) :
+    IsStronglyNormalizing codomainCode := by
+  suffices general :
+      ∀ {sigmaTypeCode : RawTerm scope}, Acc StepSuccessor sigmaTypeCode →
+        ∀ {currentDomain : RawTerm scope} {currentCodomain : RawTerm (scope + 1)},
+          sigmaTypeCode = .mkGen .gen_sigmaTyCode ()
+            (.childCons currentDomain (.childCons currentCodomain .childNil)) →
+          Acc StepSuccessor currentCodomain from
+    general sigmaTypeCodeTerminates rfl
+  intro sigmaTypeCode sigmaTypeCodeAccessible
+  induction sigmaTypeCodeAccessible with
+  | intro sigmaTypeCodeWitness _sigmaTypeCodePredecessors sigmaTypeCodeInductiveHypothesis =>
+      intro currentDomain currentCodomain witnessEq
+      subst witnessEq
+      apply Acc.intro
+      intro codomainAfter codomainStep
+      have congruenceLift :
+          Step
+            (.mkGen .gen_sigmaTyCode ()
+              (.childCons currentDomain (.childCons currentCodomain .childNil)) :
+              RawTerm scope)
+            (.mkGen .gen_sigmaTyCode ()
+              (.childCons currentDomain (.childCons codomainAfter .childNil)) :
+              RawTerm scope) :=
+        Step.cong .gen_sigmaTyCode ()
+          (@StepChildren.there scope 0 [1] currentDomain _ _
+            (StepChildren.here
+              (.childNil : RawTermChildren [] scope) codomainStep))
+      exact sigmaTypeCodeInductiveHypothesis
+        (.mkGen .gen_sigmaTyCode ()
+          (.childCons currentDomain (.childCons codomainAfter .childNil)))
+        congruenceLift rfl
+
 end StepStar
 end FX1Poly.Core
