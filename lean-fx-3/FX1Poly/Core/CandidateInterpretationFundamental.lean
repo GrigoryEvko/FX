@@ -2,6 +2,7 @@ import FX1Poly.Core.CandidateReducibleSubst
 import FX1Poly.Core.ArrowCandidateMembership
 import FX1Poly.Core.SubstPreservationProbes
 import FX1Poly.Core.StrongNormalizationLeaves
+import FX1Poly.Core.CompoundSubstPreservation
 
 /-! # FX1Poly/Core/CandidateInterpretationFundamental
     — the fundamental-theorem cases under a closing substitution, over the choice-free interpretation
@@ -100,5 +101,36 @@ theorem InterpretsType.fundamentalUniverseFormation {scope targetScope : Nat}
   rw [substEquation]
   exact isStronglyNormalizing_of_noStep
     (fun _target step => noStep_universeCode (levelExpr, flag) step)
+
+/-- **The `piIntro` (λ) case of the fundamental theorem under a closing substitution** — the classical hard
+Tait case, at the non-dependent arrow candidate.  Given the body's fundamental-theorem induction hypothesis
+`bodyReducible` (for every `domainCandidate`-reducible argument, the body — closed under the LIFTED closing
+substitution and then β-substituted by the argument — lies in `codomainCandidate`), the domain candidate's
+CR1 (`domainArgumentsSN`: domain members are strongly normalizing), and the codomain's head-expansion
+closure, the closed `λ body` is a member of the arrow candidate.  The closing substitution pushes through
+the lam cell (`subst substitution (lam body) = lam (subst (lift substitution) body)`,
+`RawTerm.subst_lam_reduces`, rfl — the binder lifts the substitution), and `IsArrowReducible.abstraction`
+discharges the abstraction: the β-redex `app (λ (subst (lift substitution) body)) argument` head-expands to
+`subst0 (subst (lift substitution) body) argument`, across which `codomainCandidate`'s closure carries
+membership back.  No choice — the codomain candidate is argument-independent (the choice-free
+`CandidateInterpretation` no-large-elimination fact), so `bodyReducible` is a single argument-indexed family
+into ONE `codomainCandidate`, never an `∀ argument ∃ candidate`.  This is the binder arm completing the
+simply-typed introduction spine (var leaf, app elim, λ intro, universe formation) of the fundamental theorem
+over the choice-free interpretation. -/
+theorem InterpretsType.fundamentalArrowAbstraction {scope targetScope : Nat}
+    {domainCandidate codomainCandidate : RawTerm targetScope → Prop}
+    {body : RawTerm (scope + 1)}
+    (substitution : RawTermSubst scope targetScope)
+    (domainArgumentsSN : ∀ argument : RawTerm targetScope, domainCandidate argument →
+      IsStronglyNormalizing argument)
+    (codomainClosed : HeadExpansionClosed codomainCandidate)
+    (bodyReducible : ∀ argument : RawTerm targetScope, domainCandidate argument →
+      codomainCandidate
+        (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) body) argument)) :
+    IsArrowReducible domainCandidate codomainCandidate
+      (RawTerm.subst substitution
+        (.mkGen .gen_lam () (.childCons body .childNil))) := by
+  rw [RawTerm.subst_lam_reduces]
+  exact IsArrowReducible.abstraction domainArgumentsSN codomainClosed bodyReducible
 
 end FX1Poly.Core
