@@ -88,4 +88,29 @@ theorem IsReducibleMemberAt.variable {scope : Nat} {predLevel : Nat}
     IsReducibleMemberAt (predLevel + 1) typeCode (.mkGen .gen_var index .childNil) :=
   ⟨candidate, reducible, reducible.isReducibilityCandidate.containsVariable index⟩
 
+/-- **Fuel-zero membership is inhabited at neutral classifiers.**  A variable-headed type code is a weak-head
+normal non-Π non-universe classifier, so at fuel `0` it denotes the strong-normalization candidate.  Since
+variables are strongly normalizing, any variable term is a member of such a variable classifier at fuel `0`.
+
+This is the small boundary theorem behind the dependent-formation telescope: the fuel-zero codomain branch
+cannot be discharged by a generic contradiction.  The contradiction is available for universe-code domains
+(`IsReducibleMemberAt.universeCodeHasNoMemberAtZero`), but neutral domains genuinely admit fuel-zero
+members, so proofs must keep the base-level premise explicit unless the domain is known to be fuel-zero
+empty. -/
+theorem IsReducibleMemberAt.variableClassifierHasVariableMemberAtZero {scope : Nat}
+    (classifierIndex memberIndex : Fin scope) :
+    IsReducibleMemberAt 0
+      (.mkGen .gen_var classifierIndex .childNil : RawTerm scope)
+      (.mkGen .gen_var memberIndex .childNil) :=
+  (IsReducibleMemberAt.atNeutralClassifier
+    (level := 0)
+    (classifier := (.mkGen .gen_var classifierIndex .childNil : RawTerm scope))
+    (term := (.mkGen .gen_var memberIndex .childNil : RawTerm scope))
+    (fun _reduct weakHeadStep => by
+      cases weakHeadStep with
+      | rootIota iotaStep => cases iotaStep)
+    (fun rootEquation => nomatch rootEquation)
+    (fun rootEquation => nomatch rootEquation)).mpr
+    (StepStar.var_isStronglyNormalizing memberIndex)
+
 end FX1Poly.Core

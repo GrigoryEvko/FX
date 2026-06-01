@@ -5,6 +5,7 @@ import FX1Poly.Core.GeneratorTagRoundTrip
 import FX1Poly.Core.ReducibleTypeClosed
 import FX1Poly.Core.PointwiseIffAlgebra
 import FX1Poly.Core.StratifiedReducibleLevelCongr
+import FX1Poly.Core.StratifiedReducibleMemberNeutral
 import FX1Poly.Core.StrongNormalizationSubterm
 
 /-! # FX1PolyAudit/AuditCore — zero-axiom gate for the cell-calculus core
@@ -67,6 +68,11 @@ a `.type` classifier) and guard against reintroducing an MLTT
 -- equivalence).  Does NOT bootstrap full irrelevance alone (level-0 degenerate base) — see the module
 -- docstring; reusable as the hard core of any future level argument.
 #assert_no_axioms FX1Poly.Core.ReducibleTypeStep.existsCongr
+
+-- Fuel-zero boundary witness: unlike universe-code domains, neutral classifiers can genuinely have
+-- members at fuel zero, so the dependent-formation telescope's base-level branch cannot be discharged by
+-- a generic contradiction.
+#assert_no_axioms FX1Poly.Core.IsReducibleMemberAt.variableClassifierHasVariableMemberAtZero
 
 -- Strong-normalization inverse lemmas for dependent type-code children.  These are the subterm
 -- accessibility projections needed by structural arguments over reducible Pi/Sigma type values.
