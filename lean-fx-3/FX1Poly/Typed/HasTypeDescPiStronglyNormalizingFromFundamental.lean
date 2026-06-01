@@ -108,6 +108,42 @@ def HasTypeDescPiClosedStrongNormalizationTheorem (profile : PolyProfile) : Prop
     HasTypeDescPi profile TypingContext.empty subject classifier →
       IsStronglyNormalizing subject ∧ IsStronglyNormalizing classifier
 
+/-- **Type-value validity from an all-level member theorem plus type-value completion.**  An exact
+all-level fundamental conclusion already supplies ordinary member reducibility under the stronger
+type-value environment by forgetting that environment to its all-level projection.  The only additional
+payload needed for bundled type-value validity is the global multi-universe type-value completion principle,
+which turns all-positive universe membership into the all-positive candidate carried by type values.
+
+This bridge is deliberately generic: it removes the need to duplicate a full `HasTypeDescPi` recursor for
+the type-value motive once the exact all-level fundamental theorem is available. -/
+theorem FundamentalConclusionAtAll.toTypeValueCandidateValidityOfAllReducibleTypesHaveTypeValueCandidates
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (subjectFundamental : FundamentalConclusionAtAll context subject classifier)
+    (allReducibleTypesHaveTypeValueCandidates :
+      HasTypeValueCandidatesForAllReducibleTypesAtAllLevels) :
+    FundamentalValidityWithTypeValueCandidates context subject classifier := by
+  refine
+    FundamentalConclusionWithTypeValueCandidates.toValidityOfAllReducibleTypesHaveTypeValueCandidates
+      ?subjectFundamentalWithTypeValueCandidates allReducibleTypesHaveTypeValueCandidates
+  intro _targetScope substitution envWithTypeValueCandidates predLevel
+  exact subjectFundamental substitution envWithTypeValueCandidates.toAllLevels predLevel
+
+/-- **Promote the exact all-level `HasTypeDescPi` fundamental theorem to the bundled type-value interface.**
+The theorem remains fully multi-universe: the completion hypothesis quantifies over every raw type code,
+and the type-value payload is conditional on arbitrary substituted universe classifiers
+`universeCodeCell levelExpr flag`. -/
+theorem HasTypeDescPiAllLevelFundamentalTheorem.toTypeValueCandidateFundamentalTheoremOfAllReducibleTypesHaveTypeValueCandidates
+    {profile : PolyProfile}
+    (fundamentalTheorem : HasTypeDescPiAllLevelFundamentalTheorem profile)
+    (allReducibleTypesHaveTypeValueCandidates :
+      HasTypeValueCandidatesForAllReducibleTypesAtAllLevels) :
+    HasTypeDescPiTypeValueCandidateFundamentalTheorem profile := by
+  intro _scope _context _subject _classifier typed
+  exact
+    FundamentalConclusionAtAll.toTypeValueCandidateValidityOfAllReducibleTypesHaveTypeValueCandidates
+      (fundamentalTheorem typed) allReducibleTypesHaveTypeValueCandidates
+
 /-- **Substituted strong normalization from an all-level fundamental conclusion.**  This is the exact CR1
 handoff for the dependent `HasTypeDescPi` theorem: after a closing substitution into a positive target
 scope, the substituted subject strongly normalizes whenever the derivation's all-level fundamental
@@ -540,6 +576,19 @@ theorem HasTypeDescPiTypeValueCandidateFundamentalTheorem.toSubstitutedStrongNor
       fundamentalTheorem typed substitution envWithTypeValueCandidates predLevel,
     HasTypeDescPi.classifierStronglyNormalizingFromTypeValueCandidateFundamentalTheorem
       fundamentalTheorem contextWellFormed typed substitution envWithTypeValueCandidates predLevel⟩
+
+/-- **Substituted strong normalization in the bundled type-value environment from the exact all-level
+fundamental theorem.**  This composes the all-level FT with the multi-universe type-value completion bridge,
+then reuses the strongest substituted SN handoff. -/
+theorem HasTypeDescPiAllLevelFundamentalTheorem.toTypeValueCandidateSubstitutedStrongNormalizationTheoremOfAllReducibleTypesHaveTypeValueCandidates
+    {profile : PolyProfile}
+    (fundamentalTheorem : HasTypeDescPiAllLevelFundamentalTheorem profile)
+    (allReducibleTypesHaveTypeValueCandidates :
+      HasTypeValueCandidatesForAllReducibleTypesAtAllLevels) :
+  HasTypeDescPiTypeValueCandidateSubstitutedStrongNormalizationTheorem profile :=
+  HasTypeDescPiTypeValueCandidateFundamentalTheorem.toSubstitutedStrongNormalizationTheorem
+    (HasTypeDescPiAllLevelFundamentalTheorem.toTypeValueCandidateFundamentalTheoremOfAllReducibleTypesHaveTypeValueCandidates
+      fundamentalTheorem allReducibleTypesHaveTypeValueCandidates)
 
 /-- **Closed subject-and-classifier strong normalization from the all-level fundamental theorem.** -/
 theorem HasTypeDescPiAllLevelFundamentalTheorem.toClosedStrongNormalizationTheorem
