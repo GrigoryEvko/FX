@@ -6638,6 +6638,32 @@ theorem LevelExpr.MaxPlusForm.fullCanonicalizeSteps_toMaxPlusForm_le_size (level
 theorem LevelExpr.MaxPlusForm.maxOffsetSteps_smoke_twoEntries :
     LevelExpr.MaxPlusForm.maxOffsetSteps [(0, 3), (1, 5)] = 2 := rfl
 
+/-- The comparison-cost counter for the predicative level-equivalence DECISION procedure
+`LevelExpr.decideDenoteEquiv`: deciding `denoteEquiv e1 e2` canonicalizes BOTH operands
+(`fullCanonicalize ∘ toMaxPlusForm`) and tests the two canonical forms for equality.  This counts the
+sort-dominated canonicalization comparisons on both sides; the trailing form-equality test is a single
+`O(size)` structural pass (strictly lower order, subsumed in the quadratic degree). -/
+def LevelExpr.decideDenoteEquivSteps (e1 e2 : LevelExpr) : Nat :=
+  LevelExpr.MaxPlusForm.fullCanonicalizeSteps (LevelExpr.toMaxPlusForm e1) +
+    LevelExpr.MaxPlusForm.fullCanonicalizeSteps (LevelExpr.toMaxPlusForm e2)
+
+/-- **END-TO-END STRICT-COMPLEXITY certificate for the universe-level-equivalence DECIDER.**  Deciding
+`denoteEquiv e1 e2` via `decideDenoteEquiv` costs at most `size e1² + 2·size e1 + size e2² + 2·size e2`
+canonicalization comparisons — QUADRATIC in the operand sizes (the sum of the two one-sided
+`fullCanonicalizeSteps_toMaxPlusForm_le_size` bounds).  The subsequent `DecidableEq`-driven form-equality
+test is a single `O(size)` structural pass, strictly lower order.  This is the tractability certificate
+for the predicative level decider used throughout universe-formation typing; the quadratic term is the
+insertion sort (an `O(size · log size)` decider needs a merge-sort swap). -/
+theorem LevelExpr.decideDenoteEquivSteps_le_size (e1 e2 : LevelExpr) :
+    LevelExpr.decideDenoteEquivSteps e1 e2 ≤
+      e1.size * e1.size + e1.size + e1.size + (e2.size * e2.size + e2.size + e2.size) := by
+  show LevelExpr.MaxPlusForm.fullCanonicalizeSteps (LevelExpr.toMaxPlusForm e1) +
+      LevelExpr.MaxPlusForm.fullCanonicalizeSteps (LevelExpr.toMaxPlusForm e2) ≤
+    e1.size * e1.size + e1.size + e1.size + (e2.size * e2.size + e2.size + e2.size)
+  exact Nat.add_le_add
+    (LevelExpr.MaxPlusForm.fullCanonicalizeSteps_toMaxPlusForm_le_size e1)
+    (LevelExpr.MaxPlusForm.fullCanonicalizeSteps_toMaxPlusForm_le_size e2)
+
 /-! ### Non-vacuity corpus for the cost counters
 
 The `*Steps` bounds prove "≤ polynomial"; these smokes prove the counters

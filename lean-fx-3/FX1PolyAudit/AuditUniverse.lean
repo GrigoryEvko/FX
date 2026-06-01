@@ -425,6 +425,11 @@ full strict-zero-axiom sweep.
 #assert_no_axioms FX1Poly.Universe.LevelExpr.MaxPlusForm.fullCanonicalizeSteps_toMaxPlusForm_le_size
 #assert_no_axioms FX1Poly.Universe.LevelExpr.MaxPlusForm.maxOffsetSteps_smoke_twoEntries
 
+/-! ### Complexity witness — level-equivalence DECIDER capstone (quadratic, the tractability certificate) -/
+
+#assert_no_axioms FX1Poly.Universe.LevelExpr.decideDenoteEquivSteps
+#assert_no_axioms FX1Poly.Universe.LevelExpr.decideDenoteEquivSteps_le_size
+
 /-! ### Complexity witness — cost-counter non-vacuity corpus -/
 
 #assert_no_axioms FX1Poly.Universe.LevelExpr.MaxPlusForm.insertByVariableSteps_smoke_empty
