@@ -201,6 +201,39 @@ theorem PositiveCandidateConclusionWithTypeValueCandidates.consEnvWithTypeValueC
       typeHasPositiveCandidate substitution envWithTypeValueCandidates headPredLevel)
     argumentValueHasPositiveCandidateWhenTypeIsUniverse
 
+/-- **Semantic universe members carry type-value candidates.**  This is the exact proof-relevant principle
+needed by universe-valued binders: any all-positive member of any universe code, at any syntactic universe
+level expression and flag, is itself a type value exposing the all-positive candidate at every positive fuel.
+
+This is intentionally a named theorem interface, not an axiom.  Existing arms may assume it explicitly while
+the final universe-value reducibility argument is built.  The statement is multi-universe by construction:
+`levelExpr` and `flag` are arbitrary parameters. -/
+def HasTypeValueCandidatesForAllPositiveUniverseMembers : Prop :=
+  ∀ {scope : Nat} {levelExpr : LevelExpr} {flag : UniverseFlag} {typeCode : RawTerm scope},
+    IsReducibleMemberAtAllPositiveLevels (universeCodeCell levelExpr flag) typeCode →
+      ∀ predLevel : Nat, HasAllPositiveReducibleCandidateAt (predLevel + 1) typeCode
+
+/-- Read `HasTypeValueCandidatesForAllPositiveUniverseMembers` through a substituted domain that is known
+syntactically to be a universe code.  This is the reusable discharge for
+`ReducibleEnvAtAllLevelsWithTypeValueCandidates.cons` at universe-valued binders: the binder already has an
+all-positive argument in the substituted domain, and the equality identifies that domain with a concrete
+universe code. -/
+theorem HasTypeValueCandidatesForAllPositiveUniverseMembers.ofSubstitutedUniverseDomainMember
+    (universeMembersHaveTypeValueCandidates :
+      HasTypeValueCandidatesForAllPositiveUniverseMembers)
+    {sourceScope targetScope : Nat} {domainCode : RawTerm sourceScope}
+    (substitution : RawTermSubst sourceScope (targetScope + 1))
+    {argument : RawTerm (targetScope + 1)}
+    (argumentAtAllPositiveLevels :
+      IsReducibleMemberAtAllPositiveLevels (RawTerm.subst substitution domainCode) argument)
+    {levelExpr : LevelExpr} {flag : UniverseFlag}
+    (substitutedDomainIsUniverse :
+      RawTerm.subst substitution domainCode = universeCodeCell levelExpr flag)
+    (predLevel : Nat) :
+    HasAllPositiveReducibleCandidateAt (predLevel + 1) argument :=
+  universeMembersHaveTypeValueCandidates
+    (substitutedDomainIsUniverse ▸ argumentAtAllPositiveLevels) predLevel
+
 /-- **The variable member arm over the type-value environment.** -/
 theorem fundamentalVarWithTypeValueCandidates {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) (index : Fin scope) :
@@ -546,6 +579,155 @@ theorem fundamentalPiIntroValidityWithTypeValueCandidatesFromTypeValueArgumentPr
       (fun {_targetScope} substitution {levelExpr} {flag} classifierSubstIsUniverse =>
         substitutedPiTyCode_ne_universeCodeCell substitution domainCode codomainCode
           levelExpr flag classifierSubstIsUniverse)⟩
+
+/-- **Dependent lambda introduction with the decoded domain candidate exposed to the type-value premise.**
+This is the recursor-facing variant of `fundamentalPiIntroWithTypeValueCandidatesFromTypeValueArgumentPremise`:
+the extra universe-domain value premise receives the actual decoded domain reducibility witness, not just
+membership in an abstract candidate.  That shape lets universe-domain wrappers derive the payload from the
+domain positive-candidate companion plus `HasTypeValueCandidatesForAllPositiveUniverseMembers`. -/
+theorem fundamentalPiIntroWithTypeValueCandidatesFromTypedArgumentPremise
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
+    {domainLevel codomainLevel : LevelExpr} {flag : UniverseFlag}
+    (domainFundamental :
+      FundamentalConclusionWithTypeValueCandidates context domainCode
+        (universeCodeCell domainLevel flag))
+    (domainHasPositiveCandidate :
+      PositiveCandidateConclusionWithTypeValueCandidates context domainCode)
+    (argumentValueHasPositiveCandidateWhenDomainIsUniverse :
+      ∀ {targetScope : Nat}
+        (substitution : RawTermSubst scope (targetScope + 1))
+        (_env : ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution)
+        (predLevel : Nat) {candidate : RawTerm (targetScope + 1) → Prop}
+        {argument : RawTerm (targetScope + 1)},
+          ReducibleTypeAt (predLevel + 1) (RawTerm.subst substitution domainCode) candidate →
+            candidate argument →
+              ∀ {levelExpr : LevelExpr} {domainFlag : UniverseFlag},
+                RawTerm.subst substitution domainCode = universeCodeCell levelExpr domainFlag →
+                  ∀ candidatePredLevel : Nat,
+                    HasAllPositiveReducibleCandidateAt (candidatePredLevel + 1) argument)
+    (codomainFundamental :
+      FundamentalConclusionWithTypeValueCandidates (context.cons domainCode) codomainCode
+        (universeCodeCell codomainLevel flag))
+    (bodyFundamental :
+      FundamentalConclusionWithTypeValueCandidates (context.cons domainCode) body codomainCode) :
+    FundamentalConclusionWithTypeValueCandidates context (lamCell body)
+      (piTyCodeCell domainCode codomainCode) := by
+  intro _targetScope substitution envWithTypeValueCandidates predLevel
+  have domainMember := domainFundamental substitution envWithTypeValueCandidates (predLevel + 1)
+  rw [subst_universeCodeCell] at domainMember
+  obtain ⟨domainCandidate, domainReducible⟩ := domainMember.tarskiDecode
+  refine IsReducibleMemberAt.abstractionCanonicalUnderSubst substitution domainReducible
+    (fun _argument argumentInDomain =>
+      domainReducible.isReducibilityCandidate.stronglyNormalizing argumentInDomain)
+    ?codomainExists ?bodyReducible
+  · intro argument argumentInDomain
+    have extendedEnvWithTypeValueCandidates :
+        ReducibleEnvAtAllLevelsWithTypeValueCandidates (context.cons domainCode)
+          (RawTermSubst.cons argument substitution) :=
+      domainHasPositiveCandidate.consEnvWithTypeValueCandidate substitution
+        envWithTypeValueCandidates predLevel domainReducible argumentInDomain
+        (argumentValueHasPositiveCandidateWhenDomainIsUniverse substitution
+          envWithTypeValueCandidates predLevel domainReducible argumentInDomain)
+    have codomainMember :=
+      codomainFundamental (RawTermSubst.cons argument substitution)
+        extendedEnvWithTypeValueCandidates (predLevel + 1)
+    rw [subst_universeCodeCell] at codomainMember
+    have codomainReducibleType := codomainMember.tarskiDecode
+    rwa [RawTerm.subst_cons_eq_subst0_lift] at codomainReducibleType
+  · intro argument argumentInDomain
+    have extendedEnvWithTypeValueCandidates :
+        ReducibleEnvAtAllLevelsWithTypeValueCandidates (context.cons domainCode)
+          (RawTermSubst.cons argument substitution) :=
+      domainHasPositiveCandidate.consEnvWithTypeValueCandidate substitution
+        envWithTypeValueCandidates predLevel domainReducible argumentInDomain
+        (argumentValueHasPositiveCandidateWhenDomainIsUniverse substitution
+          envWithTypeValueCandidates predLevel domainReducible argumentInDomain)
+    rw [← RawTerm.subst_cons_eq_subst0_lift _ argument substitution,
+      ← RawTerm.subst_cons_eq_subst0_lift _ argument substitution]
+    exact bodyFundamental (RawTermSubst.cons argument substitution)
+      extendedEnvWithTypeValueCandidates predLevel
+
+/-- **Bundled lambda-introduction validity with the decoded domain candidate exposed.**  The member half uses
+`fundamentalPiIntroWithTypeValueCandidatesFromTypedArgumentPremise`; the type-value half is again syntactic,
+because a substituted Pi classifier cannot be a universe code. -/
+theorem fundamentalPiIntroValidityWithTypeValueCandidatesFromTypedArgumentPremise
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
+    {domainLevel codomainLevel : LevelExpr} {flag : UniverseFlag}
+    (domainFundamental :
+      FundamentalConclusionWithTypeValueCandidates context domainCode
+        (universeCodeCell domainLevel flag))
+    (domainHasPositiveCandidate :
+      PositiveCandidateConclusionWithTypeValueCandidates context domainCode)
+    (argumentValueHasPositiveCandidateWhenDomainIsUniverse :
+      ∀ {targetScope : Nat}
+        (substitution : RawTermSubst scope (targetScope + 1))
+        (_env : ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution)
+        (predLevel : Nat) {candidate : RawTerm (targetScope + 1) → Prop}
+        {argument : RawTerm (targetScope + 1)},
+          ReducibleTypeAt (predLevel + 1) (RawTerm.subst substitution domainCode) candidate →
+            candidate argument →
+              ∀ {levelExpr : LevelExpr} {domainFlag : UniverseFlag},
+                RawTerm.subst substitution domainCode = universeCodeCell levelExpr domainFlag →
+                  ∀ candidatePredLevel : Nat,
+                    HasAllPositiveReducibleCandidateAt (candidatePredLevel + 1) argument)
+    (codomainFundamental :
+      FundamentalConclusionWithTypeValueCandidates (context.cons domainCode) codomainCode
+        (universeCodeCell codomainLevel flag))
+    (bodyFundamental :
+      FundamentalConclusionWithTypeValueCandidates (context.cons domainCode) body codomainCode) :
+    FundamentalValidityWithTypeValueCandidates context (lamCell body)
+      (piTyCodeCell domainCode codomainCode) :=
+  ⟨fundamentalPiIntroWithTypeValueCandidatesFromTypedArgumentPremise
+      domainFundamental domainHasPositiveCandidate
+      argumentValueHasPositiveCandidateWhenDomainIsUniverse codomainFundamental bodyFundamental,
+    TypeValueCandidateConclusionWithTypeValueCandidates.ofSubstitutedClassifierNeUniverse
+      (fun {_targetScope} substitution {levelExpr} {flag} classifierSubstIsUniverse =>
+        substitutedPiTyCode_ne_universeCodeCell substitution domainCode codomainCode
+          levelExpr flag classifierSubstIsUniverse)⟩
+
+/-- **Universe-domain lambda introduction from the global universe-member type-value principle.**  When the
+domain is syntactically a universe code, any decoded domain argument can first be strengthened to all-positive
+universe membership by the domain positive-candidate companion; the global multi-universe principle then
+turns that semantic universe member into the type-value payload required by the cons environment. -/
+theorem fundamentalPiIntroValidityWithTypeValueCandidatesFromUniverseDomain
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainLevel codomainLevel : LevelExpr} {flag : UniverseFlag}
+    {codomainCode body : RawTerm (scope + 1)}
+    (universeMembersHaveTypeValueCandidates :
+      HasTypeValueCandidatesForAllPositiveUniverseMembers)
+    (domainFundamental :
+      FundamentalConclusionWithTypeValueCandidates context (universeCodeCell domainLevel flag)
+        (universeCodeCell domainLevel.lsucc flag))
+    (domainHasPositiveCandidate :
+      PositiveCandidateConclusionWithTypeValueCandidates context (universeCodeCell domainLevel flag))
+    (codomainFundamental :
+      FundamentalConclusionWithTypeValueCandidates
+        (context.cons (universeCodeCell domainLevel flag)) codomainCode
+        (universeCodeCell codomainLevel flag))
+    (bodyFundamental :
+      FundamentalConclusionWithTypeValueCandidates
+        (context.cons (universeCodeCell domainLevel flag)) body codomainCode) :
+    FundamentalValidityWithTypeValueCandidates context (lamCell body)
+      (piTyCodeCell (universeCodeCell domainLevel flag) codomainCode) :=
+  fundamentalPiIntroValidityWithTypeValueCandidatesFromTypedArgumentPremise
+    domainFundamental domainHasPositiveCandidate
+    (fun {_targetScope} substitution envWithTypeValueCandidates predLevel {_candidate} {argument}
+        domainReducible argumentInDomain {_levelExpr} {_domainFlag}
+        substitutedDomainIsUniverse candidatePredLevel =>
+      have argumentAtAllPositiveLevels :
+          IsReducibleMemberAtAllPositiveLevels
+            (RawTerm.subst substitution (universeCodeCell domainLevel flag)) argument :=
+        HasAllPositiveReducibleCandidateAt.memberExtendsToAllPositive
+          (domainHasPositiveCandidate substitution envWithTypeValueCandidates predLevel)
+          domainReducible argumentInDomain
+      universeMembersHaveTypeValueCandidates.ofSubstitutedUniverseDomainMember
+        substitution argumentAtAllPositiveLevels substitutedDomainIsUniverse candidatePredLevel)
+    codomainFundamental bodyFundamental
 
 /-- **The positive-candidate dependent Pi type half over the type-value environment.**  The construction is
 the strengthened-environment version of the reducibility candidate for Pi codes: the domain candidate
@@ -1152,6 +1334,70 @@ theorem fundamentalSigmaFormationValidityWithTypeValueCandidatesFromUniverseDoma
     (codomainMemberAtDomainLevelWithTypeValueCandidatesFromUniverseDomain
       domainHasPositiveCandidate argumentValueHasPositiveCandidateWhenDomainIsUniverse
       codomainFundamental)
+    codomainFundamental
+
+/-- **Bundled Pi-formation validity for a universe-code domain from the global universe-member type-value
+principle.**  This removes the repeated explicit argument-payload premise from
+`fundamentalPiFormationValidityWithTypeValueCandidatesFromUniverseDomain`: all-positive members of the
+universe domain are converted to type-value candidates by the named multi-universe principle. -/
+theorem fundamentalPiFormationValidityWithTypeValueCandidatesFromUniverseDomainMembersHaveTypeValueCandidates
+    {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
+    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
+    {codomainCode : RawTerm (scope + 1)}
+    (universeMembersHaveTypeValueCandidates :
+      HasTypeValueCandidatesForAllPositiveUniverseMembers)
+    (domainFundamental :
+      FundamentalConclusionWithTypeValueCandidates context (universeCodeCell domainLevel flag)
+        (universeCodeCell domainLevel.lsucc flag))
+    (domainHasPositiveCandidate :
+      PositiveCandidateConclusionWithTypeValueCandidates context
+        (universeCodeCell domainLevel flag))
+    (codomainFundamental :
+      FundamentalConclusionWithTypeValueCandidates
+        (context.cons (universeCodeCell domainLevel flag)) codomainCode
+        (universeCodeCell codomainLevel flag))
+    (codomainHasPositiveCandidate :
+      PositiveCandidateConclusionWithTypeValueCandidates
+        (context.cons (universeCodeCell domainLevel flag)) codomainCode) :
+    FundamentalValidityWithTypeValueCandidates context
+      (piTyCodeCell (universeCodeCell domainLevel flag) codomainCode)
+      (universeCodeCell formerLevel flag) :=
+  fundamentalPiFormationValidityWithTypeValueCandidatesFromUniverseDomain
+    domainFundamental domainHasPositiveCandidate
+    (fun {_targetScope} substitution _envWithTypeValueCandidates _argument argumentAtAllPositiveLevels
+        {_levelExpr} {_domainFlag} substitutedDomainIsUniverse candidatePredLevel =>
+      universeMembersHaveTypeValueCandidates.ofSubstitutedUniverseDomainMember
+        substitution argumentAtAllPositiveLevels substitutedDomainIsUniverse candidatePredLevel)
+    codomainFundamental codomainHasPositiveCandidate
+
+/-- **Bundled Sigma-formation validity for a universe-code domain from the global universe-member type-value
+principle.**  The member half uses the same universe-domain child bundle as Pi formation; Sigma's type-value
+half remains the neutral Sigma positive-candidate theorem. -/
+theorem fundamentalSigmaFormationValidityWithTypeValueCandidatesFromUniverseDomainMembersHaveTypeValueCandidates
+    {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
+    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
+    {codomainCode : RawTerm (scope + 1)}
+    (universeMembersHaveTypeValueCandidates :
+      HasTypeValueCandidatesForAllPositiveUniverseMembers)
+    (domainFundamental :
+      FundamentalConclusionWithTypeValueCandidates context (universeCodeCell domainLevel flag)
+        (universeCodeCell domainLevel.lsucc flag))
+    (domainHasPositiveCandidate :
+      PositiveCandidateConclusionWithTypeValueCandidates context
+        (universeCodeCell domainLevel flag))
+    (codomainFundamental :
+      FundamentalConclusionWithTypeValueCandidates
+        (context.cons (universeCodeCell domainLevel flag)) codomainCode
+        (universeCodeCell codomainLevel flag)) :
+    FundamentalValidityWithTypeValueCandidates context
+      (sigmaTyCodeCell (universeCodeCell domainLevel flag) codomainCode)
+      (universeCodeCell formerLevel flag) :=
+  fundamentalSigmaFormationValidityWithTypeValueCandidatesFromUniverseDomain
+    domainFundamental domainHasPositiveCandidate
+    (fun {_targetScope} substitution _envWithTypeValueCandidates _argument argumentAtAllPositiveLevels
+        {_levelExpr} {_domainFlag} substitutedDomainIsUniverse candidatePredLevel =>
+      universeMembersHaveTypeValueCandidates.ofSubstitutedUniverseDomainMember
+        substitution argumentAtAllPositiveLevels substitutedDomainIsUniverse candidatePredLevel)
     codomainFundamental
 
 /-- A strengthened member result for `typeCode : Type@levelExpr` yields strong normalization and
