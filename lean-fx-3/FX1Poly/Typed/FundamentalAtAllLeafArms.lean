@@ -96,4 +96,22 @@ theorem fundamentalConvAtAll {profile : PolyProfile} {scope : Nat}
   exact IsReducibleMemberAt.castAlongConvUnderSubst substitution
     (subjectFundamental substitution env predLevel) reclassifierReducible converts
 
+/-- **The `piElim` (application) arm over the ∀-level environment.**  Given the function's induction
+hypothesis (a reducible member of the Π-type) and the argument's induction hypothesis (a reducible member of
+the domain), the application is a reducible member of the instantiated codomain.  Non-binder, like `conv`:
+run both induction hypotheses at the conclusion level and apply `applicationUnderSubst` (which distributes the
+substitution over the Π and application cells and β-commutes the dependent codomain classifier). -/
+theorem fundamentalPiElimAtAll {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {functionTerm argument domainCode : RawTerm scope}
+    {codomainCode : RawTerm (scope + 1)}
+    (functionFundamental : FundamentalConclusionAtAll context functionTerm
+      (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))))
+    (argumentFundamental : FundamentalConclusionAtAll context argument domainCode) :
+    FundamentalConclusionAtAll context
+      (.mkGen .gen_app () (.childCons functionTerm (.childCons argument .childNil)))
+      (RawTerm.subst0 codomainCode argument) := by
+  intro _targetScope substitution env predLevel
+  exact IsReducibleMemberAt.applicationUnderSubst substitution
+    (functionFundamental substitution env predLevel) (argumentFundamental substitution env predLevel)
+
 end FX1Poly.Typed
