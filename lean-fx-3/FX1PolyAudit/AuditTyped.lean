@@ -27,6 +27,7 @@ import FX1Poly.Typed.HasTypeDescDecidable
 import FX1Poly.Typed.HasTypeDescElim
 import FX1Poly.Typed.HasTypeDescValidity
 import FX1Poly.Typed.HasTypeDescStronglyNormalizing
+import FX1Poly.Typed.HasTypeDescClosedForms
 import FX1Poly.Typed.HasTypeDescInversion
 import FX1Poly.Typed.HasTypeDescUniqueness
 import FX1Poly.Typed.HasTypeDescWeakening
@@ -477,6 +478,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsTypeDesc.toIsType
 #assert_no_axioms FX1Poly.Typed.IsTypeDesc.isStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.Conv.trans_of_hasTypeDescMiddle
+
+/-! ### Closed-form consequences for the description formation engine.  These expose the native
+    closed-form facts through the proven `HasTypeDesc <-> HasType` bridge: closed subjects are intrinsic
+    description types, have universe/Pi/Sigma type-former shape, and have classifiers convertible to
+    universe codes. -/
+#assert_no_axioms FX1Poly.Typed.IsType.toIsTypeDesc
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.closedSubjectIsTypeDesc
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.closedSubjectIsTypeFormer
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.closedClassifierConvUniverseCode
 
 /-! ### INVERSION (P8 descent, premise half) for the description engine
     (`HasTypeDescInversion`).  polycell.md §11.8.5 P8: from a `piTyCodeCell`'s
