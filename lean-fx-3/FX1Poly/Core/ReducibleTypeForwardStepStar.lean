@@ -118,5 +118,8 @@ theorem ReducibleType.forwardStepStar {scope : Nat} {candidate : RawTerm scope â
         (fun argument domainMember =>
           codomainInductiveHypothesis argument domainMember
             (StepStar.subst0Body argument codomainChain))
+  | ofPointwiseIff _innerReducible pointwiseIff innerInductiveHypothesis =>
+      intro finalType chain
+      exact ReducibleType.ofPointwiseIff (innerInductiveHypothesis chain) pointwiseIff
 
 end FX1Poly.Core

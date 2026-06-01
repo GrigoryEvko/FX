@@ -64,5 +64,7 @@ theorem ReducibleType.headExpansionClosed {scope : Nat} {typeCode : RawTerm scop
           argumentSN contractumAtExtendedSpine
       rw [applySpineApp_append] at redexAtExtendedSpine
       exact redexAtExtendedSpine
+  | ofPointwiseIff _innerReducible pointwiseIff innerInductiveHypothesis =>
+      exact HeadExpansionClosed.respectsPointwiseIff innerInductiveHypothesis pointwiseIff
 
 end FX1Poly.Core

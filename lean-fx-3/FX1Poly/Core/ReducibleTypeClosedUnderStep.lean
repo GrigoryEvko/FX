@@ -63,5 +63,9 @@ theorem ReducibleType.candidateClosedUnderStep {scope : Nat} {typeCode : RawTerm
           (StepChildren.here (.childCons argument .childNil : RawTermChildren [0] scope) stepFunction)
       exact codomainInductiveHypothesis argument argumentReducible
         membershipAtFunction stepApplication
+  | ofPointwiseIff _innerReducible pointwiseIff innerInductiveHypothesis =>
+      intro term reduct candidateTerm stepTermReduct
+      exact (pointwiseIff reduct).mp
+        (innerInductiveHypothesis ((pointwiseIff term).mpr candidateTerm) stepTermReduct)
 
 end FX1Poly.Core

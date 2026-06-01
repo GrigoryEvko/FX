@@ -39,11 +39,11 @@ existentially-packaged membership form:
 
 ## Zero-axiom verification
 
-`piTypeInversion` is `cases` on the derivation (the `whnfExpand`/`neutral` arms discharged by the
-weak-head-normal `gen_piTyCode` root, exactly as in `ReducibleType.deterministic`); the four rules
-destructure the existential and apply the shipped candidate-level lemma.  No `axiom`, `sorry`, `propext`,
-`Quot.sound`, `Classical`, `native_decide`, `omega`.  Swept per declaration by `#audit_namespace
-FX1Poly.Core`.
+`piTypeInversion` delegates to `ReducibleType.candidatePiShape` (the generic-index Π-shape inversion that
+inducts on the derivation and absorbs the `ofPointwiseIff` congruence arm), re-exposing it at the concrete
+`gen_piTyCode` index; the four rules destructure the existential and apply the shipped candidate-level
+lemma.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Swept per
+declaration by `#audit_namespace FX1Poly.Core`.
 -/
 
 namespace FX1Poly.Core
@@ -56,11 +56,11 @@ theorem (`HasType Γ t T → IsReducibleMember (T.subst γ) (t.subst γ)` under 
 def IsReducibleMember {scope : Nat} (typeCode term : RawTerm scope) : Prop :=
   ∃ candidate : RawTerm scope → Prop, ReducibleType typeCode candidate ∧ candidate term
 
-/-- **Π-code inversion.**  A `gen_piTyCode`-rooted type is reducible ONLY through the `piType` arm: it
-is weak-head normal (so `whnfExpand` cannot fire — discharged by `cases` on the impossible head step),
-and its root IS `gen_piTyCode` (so `neutral`'s non-Π guard is refuted by `rfl`).  Inverting recovers the
-domain candidate, the codomain candidate family, their reducibility witnesses, and that the candidate is
-pointwise the dependent-arrow candidate. -/
+/-- **Π-code inversion.**  A `gen_piTyCode`-rooted reducible type's candidate is pointwise the
+dependent-arrow candidate: inverting recovers the domain candidate, the codomain candidate family, their
+reducibility witnesses, and the pointwise equivalence.  A Π-code is weak-head normal with root
+`gen_piTyCode`, so the only derivations are `piType` (which reads the data off directly) and
+`ofPointwiseIff` (which composes a stored equivalence) — both handled by `candidatePiShape`. -/
 theorem ReducibleType.piTypeInversion {scope : Nat}
     {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
     {candidate : RawTerm scope → Prop}
@@ -73,12 +73,10 @@ theorem ReducibleType.piTypeInversion {scope : Nat}
       (∀ argument : RawTerm scope, domainCandidate argument →
         ReducibleType (RawTerm.subst0 codomainCode argument) (codomainCandidate argument)) ∧
       PointwiseIff candidate (DependentArrowCandidate domainCandidate codomainCandidate) := by
-  cases reducible with
-  | whnfExpand weakHeadStep _reductReducible =>
-      cases weakHeadStep with | rootIota iotaStep => cases iotaStep
-  | neutral _noWeakHeadStep notPiType => exact absurd rfl notPiType
-  | piType codomainCandidate domainReducible codomainReducible =>
-      exact ⟨_, codomainCandidate, domainReducible, codomainReducible, fun _term => Iff.rfl⟩
+  obtain ⟨domainCandidate, codomainCandidate, domainReducible, codomainReducible,
+    candidateEquivalence⟩ := reducible.candidatePiShape rfl
+  exact ⟨domainCandidate, codomainCandidate, domainReducible, codomainReducible,
+    candidateEquivalence⟩
 
 /-- **Semantic Π elimination (`piElim` / app).**  Applying a reducible member of a Π-type to a reducible
 argument yields a reducible member of the instantiated codomain.  Inversion supplies the Π's domain and

@@ -56,5 +56,7 @@ theorem ReducibleType.isReducibilityCandidate {scope : Nat} {typeCode : RawTerm 
         domainInductiveHypothesis codomainInductiveHypothesis codomainReducible
         (.mkGen .gen_var ⟨0, Nat.succ_pos scope⟩ .childNil)
         (domainInductiveHypothesis.containsVariable ⟨0, Nat.succ_pos scope⟩)
+  | ofPointwiseIff _innerReducible pointwiseIff innerInductiveHypothesis =>
+      exact innerInductiveHypothesis.respectsPointwiseIff pointwiseIff
 
 end FX1Poly.Core

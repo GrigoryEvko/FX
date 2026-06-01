@@ -16,10 +16,10 @@ needed by any conversion-invariance argument:
 
 ## Zero-axiom verification
 
-`cases` on the `ReducibleType` derivation (the same propext-clean inversion `ReducibleType.deterministic`
-already uses), discharging cross-arm impossibilities by `HeadStep.deterministic` /
-`HeadStep.subjectRootIsApp` + `Generator.noConfusion`.  Pointwise-iff, no predicate equality, hence no
-`funext`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Swept
+Both lemmas delegate to the upstream inversion helpers `ReducibleType.candidateAtWhnfReduct` and
+`ReducibleType.candidateIffStronglyNormalizing`, which perform the derivation induction and absorb the
+`ofPointwiseIff` congruence arm internally; this file re-exposes them under these conv-invariance-facing
+names.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Swept
 per declaration by `#audit_namespace FX1Poly.Core`.
 -/
 
@@ -32,15 +32,8 @@ candidate that weak-head steps has the reduct reducible at the SAME candidate. -
 theorem ReducibleType.reductReducibleThroughWeakHeadStep {scope : Nat}
     {typeCode reduct : RawTerm scope} {candidate : RawTerm scope → Prop}
     (reducible : ReducibleType typeCode candidate) (weakHeadStep : WeakHeadStep typeCode reduct) :
-    ReducibleType reduct candidate := by
-  cases reducible with
-  | whnfExpand weakHeadStepShipped reductReducible =>
-      have reductEquation := WeakHeadStep.deterministic weakHeadStepShipped weakHeadStep
-      subst reductEquation
-      exact reductReducible
-  | neutral noWeakHeadStep _notPiType => exact absurd weakHeadStep (noWeakHeadStep _)
-  | piType _codomainCandidate _domainReducible _codomainReducible =>
-      cases weakHeadStep with | rootIota iotaStep => cases iotaStep
+    ReducibleType reduct candidate :=
+  reducible.candidateAtWhnfReduct weakHeadStep
 
 /-- A weak-head-normal non-Π reducible type's candidate is the strong-normalization candidate (up to
 pointwise iff): the only derivation arm available for such a code is `neutral`. -/
@@ -49,10 +42,7 @@ theorem ReducibleType.neutralCandidateStronglyNormalizing {scope : Nat}
     (reducible : ReducibleType typeCode candidate)
     (noWeakHeadStep : ∀ reduct : RawTerm scope, ¬ WeakHeadStep typeCode reduct)
     (notPiType : typeCode.rootGenerator ≠ Generator.gen_piTyCode) :
-    PointwiseIff candidate IsStronglyNormalizing := by
-  cases reducible with
-  | whnfExpand weakHeadStep _reductReducible => exact absurd weakHeadStep (noWeakHeadStep _)
-  | neutral _noWeakHeadStep _notPiType => intro _term; exact Iff.rfl
-  | piType _codomainCandidate _domainReducible _codomainReducible => exact absurd rfl notPiType
+    PointwiseIff candidate IsStronglyNormalizing :=
+  reducible.candidateIffStronglyNormalizing noWeakHeadStep notPiType
 
 end FX1Poly.Core

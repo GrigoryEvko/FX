@@ -85,12 +85,109 @@ inductive ReducibleType {scope : Nat} : RawTerm scope → (RawTerm scope → Pro
         (fun functionTerm => ∀ argument : RawTerm scope, domainCandidate argument →
           codomainCandidate argument
             (.mkGen .gen_app () (.childCons functionTerm (.childCons argument .childNil))))
+  /-- **Pointwise-congruence closure.**  A reducible type at one candidate is reducible at any
+  pointwise-equivalent candidate.  Closing the relation under `PointwiseIff` (which it is otherwise
+  functional up to but not closed under) is what lets the fundamental theorem feed the Π codomain the
+  FIXED canonical member-predicate `fun arg => IsReducibleMember (subst0 cod arg)` WITHOUT choice: the
+  per-argument premise is discharged from per-argument existence, then transported onto the fixed
+  predicate here.  Positivity holds — the recursive premise is strictly positive, `canonicalCandidate` is
+  a non-uniform index, and `PointwiseIff` has no recursive occurrence. -/
+  | ofPointwiseIff {typeCode : RawTerm scope} {candidate canonicalCandidate : RawTerm scope → Prop} :
+      ReducibleType typeCode candidate →
+      PointwiseIff candidate canonicalCandidate →
+      ReducibleType typeCode canonicalCandidate
+
+/-- **Weak-head peel.**  A reducible type that weak-head-steps inherits the SAME candidate at its
+contractum.  Induction (subject generic): `whnfExpand` equates the two reducts by
+`WeakHeadStep.deterministic`; `neutral` has no weak-head step; the `piType` leaf is weak-head normal
+(`rootIota` then the impossible `IotaHeadStep`); the `ofPointwiseIff` arm recurses by its induction
+hypothesis and re-wraps the stored pointwise equivalence.  The inversion `deterministic`'s `whnfExpand`
+cross-arm consumes (mirrors the stratified `ReducibleTypeStep.candidateAtWhnfReduct`). -/
+theorem ReducibleType.candidateAtWhnfReduct {scope : Nat} {typeCode : RawTerm scope}
+    {candidate : RawTerm scope → Prop} (reducible : ReducibleType typeCode candidate) :
+    ∀ {reduct : RawTerm scope}, WeakHeadStep typeCode reduct → ReducibleType reduct candidate := by
+  induction reducible with
+  | whnfExpand weakHeadStep0 reductReducible0 _reductInductiveHypothesis =>
+      intro reduct weakHeadStep
+      have reductEquation := WeakHeadStep.deterministic weakHeadStep0 weakHeadStep
+      subst reductEquation
+      exact reductReducible0
+  | neutral noWeakHeadStep _notPiType =>
+      intro reduct weakHeadStep
+      exact absurd weakHeadStep (noWeakHeadStep reduct)
+  | piType _codomainCandidate _domainReducible _codomainReducible =>
+      intro reduct weakHeadStep
+      cases weakHeadStep with | rootIota iotaStep => cases iotaStep
+  | ofPointwiseIff _innerReducible pointwiseIff innerInductiveHypothesis =>
+      intro reduct weakHeadStep
+      exact ReducibleType.ofPointwiseIff (innerInductiveHypothesis weakHeadStep) pointwiseIff
+
+/-- **Π-shape inversion (up to pointwise iff).**  A reducible Π-code recovers its domain candidate, its
+per-argument codomain candidate, their reducibility, and the pointwise equivalence of its candidate with
+the dependent-arrow candidate.  `whnfExpand` (a Π-code is weak-head normal) and `neutral` (its root IS
+`gen_piTyCode`) are impossible; `piType` reads off the data (its candidate IS the dependent-arrow candidate,
+`Iff.rfl`); `ofPointwiseIff` recurses by its induction hypothesis and composes its stored equivalence.  The
+inversion `deterministic`'s `piType` cross-arm consumes (mirrors the stratified
+`ReducibleTypeStep.candidatePiShape`). -/
+theorem ReducibleType.candidatePiShape {scope : Nat} {typeCode : RawTerm scope}
+    {candidate : RawTerm scope → Prop} (reducible : ReducibleType typeCode candidate) :
+    ∀ {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)},
+      typeCode = (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))) →
+      ∃ (domainCandidate : RawTerm scope → Prop)
+        (codomainCandidate : RawTerm scope → (RawTerm scope → Prop)),
+        ReducibleType domainCode domainCandidate ∧
+        (∀ argument : RawTerm scope, domainCandidate argument →
+          ReducibleType (RawTerm.subst0 codomainCode argument) (codomainCandidate argument)) ∧
+        PointwiseIff candidate
+          (fun functionTerm => ∀ argument : RawTerm scope, domainCandidate argument →
+            codomainCandidate argument
+              (.mkGen .gen_app () (.childCons functionTerm (.childCons argument .childNil)))) := by
+  induction reducible with
+  | whnfExpand weakHeadStep _reductReducible _reductInductiveHypothesis =>
+      intro _domainCode _codomainCode shapeEquation; subst shapeEquation
+      cases weakHeadStep with | rootIota iotaStep => cases iotaStep
+  | neutral _noWeakHeadStep notPiType =>
+      intro _domainCode _codomainCode shapeEquation; subst shapeEquation
+      exact absurd rfl notPiType
+  | piType codomainCandidate domainReducible codomainReducible =>
+      intro _domainCode _codomainCode shapeEquation; cases shapeEquation
+      exact ⟨_, codomainCandidate, domainReducible, codomainReducible, fun _term => Iff.rfl⟩
+  | ofPointwiseIff _innerReducible pointwiseIff innerInductiveHypothesis =>
+      intro _domainCode _codomainCode shapeEquation
+      obtain ⟨domainCandidate, codomainCandidate, domainReducible, codomainReducible,
+        pointwiseInner⟩ := innerInductiveHypothesis shapeEquation
+      exact ⟨domainCandidate, codomainCandidate, domainReducible, codomainReducible,
+        fun term => ((pointwiseIff term).symm).trans (pointwiseInner term)⟩
+
+/-- **A weak-head-normal non-Π type's candidate is pointwise strong normalization.**  The candidate-level
+neutral characterization: any candidate a weak-head-normal non-Π type-code denotes coincides pointwise with
+`IsStronglyNormalizing`.  Induction: `whnfExpand` contradicts weak-head normality; `neutral` gives `SN` on
+the nose (`Iff.rfl`); `piType` contradicts the non-Π root guard; `ofPointwiseIff` composes its stored
+equivalence with the induction hypothesis.  The inversion the fundamental theorem's type-formation
+`neutral` arm reads, and the helper `deterministic`'s `neutral` cross-arm consumes (mirrors the stratified
+`ReducibleTypeStep.candidateIffStronglyNormalizing`); deterministic-independent so `deterministic` may call
+it. -/
+theorem ReducibleType.candidateIffStronglyNormalizing {scope : Nat} {typeCode : RawTerm scope}
+    {candidate : RawTerm scope → Prop} (reducible : ReducibleType typeCode candidate)
+    (noWeakHeadStep : ∀ reduct : RawTerm scope, ¬ WeakHeadStep typeCode reduct)
+    (notPiType : typeCode.rootGenerator ≠ Generator.gen_piTyCode) :
+    PointwiseIff candidate IsStronglyNormalizing := by
+  induction reducible with
+  | whnfExpand weakHeadStep _reductReducible _reductInductiveHypothesis =>
+      exact absurd weakHeadStep (noWeakHeadStep _)
+  | neutral _noWeakHeadStep _notPiType => intro _term; exact Iff.rfl
+  | piType _codomainCandidate _domainReducible _codomainReducible => exact absurd rfl notPiType
+  | ofPointwiseIff _innerReducible pointwiseIff innerInductiveHypothesis =>
+      intro term
+      exact (pointwiseIff term).symm.trans (innerInductiveHypothesis noWeakHeadStep notPiType term)
 
 /-- **The dependent reducibility relation is functional** (up to pointwise iff): a type-code denotes at
-most one candidate.  Induction on the first derivation, inverting the second; a weak-head step forces
-`headExpand` on both (reducts equated by `HeadStep.deterministic`), a `gen_piTyCode` root forces
-`piType` on both (domain candidates equivalent by the induction hypothesis, codomain candidates
-equivalent pointwise at each reducible argument), and the remaining cross-arm pairs are impossible. -/
+most one candidate.  Induction on the first derivation, inverting the second with the shape helpers that
+ABSORB the `ofPointwiseIff` arm (`candidateAtWhnfReduct` / `candidateIffStronglyNormalizing` /
+`candidatePiShape`): `whnfExpand` peels the second to the shared reduct; `neutral` reads the second's
+strong-normalization candidate; `piType` inverts the second's arrow shape and equates domain (IH) +
+codomain (IH, pointwise per argument); `ofPointwiseIff` recurses and composes.  Mirrors the stratified
+`ReducibleTypeStep.deterministic`. -/
 theorem ReducibleType.deterministic {scope : Nat} {typeCode : RawTerm scope}
     {candidate1 : RawTerm scope → Prop} (reducible1 : ReducibleType typeCode candidate1) :
     ∀ {candidate2 : RawTerm scope → Prop},
@@ -98,61 +195,31 @@ theorem ReducibleType.deterministic {scope : Nat} {typeCode : RawTerm scope}
   induction reducible1 with
   | whnfExpand weakHeadStep1 _reductReducible1 reductInductiveHypothesis =>
       intro candidate2 reducible2
-      cases reducible2 with
-      | whnfExpand weakHeadStep2 reductReducible2 =>
-          have reductEquation := WeakHeadStep.deterministic weakHeadStep1 weakHeadStep2
-          subst reductEquation
-          exact reductInductiveHypothesis reductReducible2
-      | neutral noWeakHeadStep2 _notPiType2 => exact absurd weakHeadStep1 (noWeakHeadStep2 _)
-      | piType _codomainCandidate2 _domainReducible2 _codomainReducible2 =>
-          cases weakHeadStep1 with | rootIota iotaStep => cases iotaStep
+      exact reductInductiveHypothesis (reducible2.candidateAtWhnfReduct weakHeadStep1)
   | neutral noWeakHeadStep1 notPiType1 =>
-      intro candidate2 reducible2
-      cases reducible2 with
-      | whnfExpand weakHeadStep2 _reductReducible2 => exact absurd weakHeadStep2 (noWeakHeadStep1 _)
-      | neutral _noWeakHeadStep2 _notPiType2 => intro _term; exact Iff.rfl
-      | piType _codomainCandidate2 _domainReducible2 _codomainReducible2 =>
-          exact absurd rfl notPiType1
+      intro candidate2 reducible2 term
+      exact (reducible2.candidateIffStronglyNormalizing noWeakHeadStep1 notPiType1 term).symm
   | piType _codomainCandidate1 _domainReducible1 _codomainReducible1
       domainInductiveHypothesis codomainInductiveHypothesis =>
       intro candidate2 reducible2
-      cases reducible2 with
-      | whnfExpand weakHeadStep2 _reductReducible2 =>
-          cases weakHeadStep2 with | rootIota iotaStep => cases iotaStep
-      | neutral _noWeakHeadStep2 notPiType2 => exact absurd rfl notPiType2
-      | piType _codomainCandidate2 domainReducible2 codomainReducible2 =>
-          have domainEquivalence := domainInductiveHypothesis domainReducible2
-          intro functionTerm
-          constructor
-          · intro membership1 argument domain2Argument
-            have domain1Argument := (domainEquivalence argument).mpr domain2Argument
-            have codomainEquivalence :=
-              codomainInductiveHypothesis argument domain1Argument
-                (codomainReducible2 argument domain2Argument)
-            exact (codomainEquivalence _).mp (membership1 argument domain1Argument)
-          · intro membership2 argument domain1Argument
-            have domain2Argument := (domainEquivalence argument).mp domain1Argument
-            have codomainEquivalence :=
-              codomainInductiveHypothesis argument domain1Argument
-                (codomainReducible2 argument domain2Argument)
-            exact (codomainEquivalence _).mpr (membership2 argument domain2Argument)
-
-/-- **A weak-head-normal non-Π type's candidate is pointwise strong normalization.**  The candidate-level
-neutral characterization: any candidate a weak-head-normal non-Π type-code denotes coincides pointwise with
-`IsStronglyNormalizing` — because the `neutral` arm denotes EXACTLY that candidate, and `deterministic`
-forces every candidate of the same code to agree.  This is the inversion the fundamental theorem's
-type-formation `neutral` arm reads (a universe code, a stuck application/eliminator, any non-Π data former
-is a reducible TYPE whose members are precisely the strongly-normalizing terms), and the
-`candidateIffStronglyNormalizing` helper the dependent-reducibility `deterministic`/closure proofs invoke at
-neutral codes (mirrors the stratified `ReducibleTypeStep.candidateIffStronglyNormalizing`). -/
-theorem ReducibleType.candidateIffStronglyNormalizing {scope : Nat} {typeCode : RawTerm scope}
-    {candidate : RawTerm scope → Prop} (reducible : ReducibleType typeCode candidate)
-    (noWeakHeadStep : ∀ reduct : RawTerm scope, ¬ WeakHeadStep typeCode reduct)
-    (notPiType : typeCode.rootGenerator ≠ Generator.gen_piTyCode) :
-    PointwiseIff candidate IsStronglyNormalizing := by
-  cases reducible with
-  | whnfExpand weakHeadStep _reductReducible => exact absurd weakHeadStep (noWeakHeadStep _)
-  | neutral _noWeakHeadStep _notPiType => intro _term; exact Iff.rfl
-  | piType _codomainCandidate _domainReducible _codomainReducible => exact absurd rfl notPiType
+      obtain ⟨_domainCandidate2, _codomainCandidate2, domainReducible2, codomainReducible2,
+        pointwiseIff2⟩ := reducible2.candidatePiShape rfl
+      refine fun functionTerm => Iff.trans ?_ (pointwiseIff2 functionTerm).symm
+      constructor
+      · intro membership1 argument domain2Argument
+        have domain1Argument := (domainInductiveHypothesis domainReducible2 argument).mpr domain2Argument
+        have codomainEquivalence :=
+          codomainInductiveHypothesis argument domain1Argument
+            (codomainReducible2 argument domain2Argument)
+        exact (codomainEquivalence _).mp (membership1 argument domain1Argument)
+      · intro membership2 argument domain1Argument
+        have domain2Argument := (domainInductiveHypothesis domainReducible2 argument).mp domain1Argument
+        have codomainEquivalence :=
+          codomainInductiveHypothesis argument domain1Argument
+            (codomainReducible2 argument domain2Argument)
+        exact (codomainEquivalence _).mpr (membership2 argument domain2Argument)
+  | ofPointwiseIff _innerReducible1 pointwiseIff1 innerInductiveHypothesis1 =>
+      intro candidate2 reducible2 term
+      exact (pointwiseIff1 term).symm.trans (innerInductiveHypothesis1 reducible2 term)
 
 end FX1Poly.Core
