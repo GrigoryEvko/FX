@@ -18,9 +18,9 @@ decidability/coherence facts for the smaller native pi/sigma-formation `HasType`
 * formation-engine equivalence: `HasType.toHasTypeDesc` and `HasTypeDesc.toHasType`;
 * typed classifier conversion: `Conv.decidableOfTyped` and `Conv.decidableOfHasTypeDesc`;
 * validity: `HasType.classifierIsType`;
-* native-pi-sigma HasType normalization: `HasType.isStronglyNormalizing`.
+* native-pi-sigma HasType normalization: subject normalization plus classifier normalization from validity.
 * description-engine validity and normalization: `HasTypeDesc.classifierIsTypeDesc` and
-  `HasTypeDesc.isStronglyNormalizing`.
+  subject/classifier normalization.
 * formation-boundary rejection: native `HasType` and `HasTypeDesc` cannot type lambda/application subjects.
 
 This file packages those pieces as a single kernel object,
@@ -95,9 +95,24 @@ structure HasTypePiSigmaFormationCheckingCertificate {profile : PolyProfile} {sc
   /-- Description-engine normalization: every description-typed subject is strongly normalizing. -/
   proveHasTypeDescSubjectIsStronglyNormalizing : ∀ {subject classifier : RawTerm scope},
     HasTypeDesc profile context subject classifier → StepStar.IsStronglyNormalizing subject
+  /-- Description-engine classifier normalization in well-formed contexts. -/
+  proveHasTypeDescClassifierIsStronglyNormalizing : ∀ {subject classifier : RawTerm scope},
+    HasTypeDesc profile context subject classifier → StepStar.IsStronglyNormalizing classifier
+  /-- Description-engine subject and classifier normalization in one package. -/
+  proveHasTypeDescSubjectAndClassifierStronglyNormalizing :
+    ∀ {subject classifier : RawTerm scope},
+      HasTypeDesc profile context subject classifier →
+        StepStar.IsStronglyNormalizing subject ∧ StepStar.IsStronglyNormalizing classifier
   /-- Native pi/sigma-formation HasType normalization: every typed subject is strongly normalizing. -/
   proveSubjectIsStronglyNormalizing : ∀ {subject classifier : RawTerm scope},
     HasType profile context subject classifier → StepStar.IsStronglyNormalizing subject
+  /-- Native pi/sigma-formation HasType classifier normalization in well-formed contexts. -/
+  proveClassifierIsStronglyNormalizing : ∀ {subject classifier : RawTerm scope},
+    HasType profile context subject classifier → StepStar.IsStronglyNormalizing classifier
+  /-- Native pi/sigma-formation HasType subject and classifier normalization in one package. -/
+  proveSubjectAndClassifierStronglyNormalizing : ∀ {subject classifier : RawTerm scope},
+    HasType profile context subject classifier →
+      StepStar.IsStronglyNormalizing subject ∧ StepStar.IsStronglyNormalizing classifier
   /-- Native pi/sigma-formation `HasType` rejects lambda subjects. -/
   rejectHasTypeLambda : ∀ {body : RawTerm (scope + 1)} {classifier : RawTerm scope},
     HasType profile context (lamCell body) classifier → False
@@ -135,7 +150,16 @@ def buildHasTypePiSigmaFormationCheckingCertificate {profile : PolyProfile} {sco
     HasTypeDesc.classifierIsTypeDesc contextIsWellFormed typed
   proveClassifierIsType := fun typed => HasType.classifierIsType contextIsWellFormed typed
   proveHasTypeDescSubjectIsStronglyNormalizing := fun typed => typed.isStronglyNormalizing
+  proveHasTypeDescClassifierIsStronglyNormalizing := fun typed =>
+    typed.classifierStronglyNormalizing contextIsWellFormed
+  proveHasTypeDescSubjectAndClassifierStronglyNormalizing := fun typed =>
+    typed.subjectAndClassifierStronglyNormalizing contextIsWellFormed
   proveSubjectIsStronglyNormalizing := fun typed => typed.isStronglyNormalizing
+  proveClassifierIsStronglyNormalizing := fun typed =>
+    (HasType.classifierIsType contextIsWellFormed typed).isStronglyNormalizing
+  proveSubjectAndClassifierStronglyNormalizing := fun typed =>
+    ⟨typed.isStronglyNormalizing,
+      (HasType.classifierIsType contextIsWellFormed typed).isStronglyNormalizing⟩
   rejectHasTypeLambda := fun typed => HasType.subjectCannotBeLambda typed
   rejectHasTypeApplication := fun typed => HasType.subjectCannotBeApplication typed
   rejectHasTypeDescLambda := fun typed => HasTypeDesc.subjectCannotBeLambda typed
