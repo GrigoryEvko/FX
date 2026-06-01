@@ -53,6 +53,7 @@ import FX1Poly.Typed.FundamentalAtAllVectorPremises
 import FX1Poly.Typed.FundamentalAtAllNonDependentBinders
 import FX1Poly.Typed.FundamentalAtUniformVectorPremises
 import FX1Poly.Typed.HasTypeDescPiFundamentalVectorFromFormation
+import FX1Poly.Typed.HasTypeDescPiStronglyNormalizingFromFundamental
 import FX1Poly.Typed.ReducibleEnvVec
 import FX1Poly.Typed.ReducibleEnvVecTypeVariable
 import FX1Poly.Typed.HasTypeDescPiConsistency
@@ -911,6 +912,10 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedSubjectReducibleUnderSubstFromFormation
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedSubjectSubstStronglyNormalizingFromFormation
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedSubjectStronglyNormalizingFromFormation
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectStronglyNormalizingFromFundamentalAtAll
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedSubjectReducibleUnderSubstFromFundamentalAtAll
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedSubjectSubstStronglyNormalizingFromFundamentalAtAll
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedSubjectStronglyNormalizingFromFundamentalAtAll
 
 /-! ### PER-VARIABLE-LEVEL reducible environment (the Kripke refinement for the dependent fundamental
     theorem).  `ReducibleEnvAt`'s single global level cannot serve a context that mixes variables at
