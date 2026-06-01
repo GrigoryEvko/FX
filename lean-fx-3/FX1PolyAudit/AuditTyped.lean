@@ -41,6 +41,7 @@ import FX1Poly.Typed.HasTypeDescPiValidity
 import FX1Poly.Typed.ConvCodeInjectivity
 import FX1Poly.Typed.ReducibleEnv
 import FX1Poly.Typed.ReducibleEnvAt
+import FX1Poly.Typed.ReducibleEnvVec
 import FX1Poly.Typed.ReducibleSemanticRules
 import FX1Poly.Typed.ReducibleMemberFormation
 
@@ -782,6 +783,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAt.lookupReducible
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAt.empty
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAt.cons
+
+/-! ### PER-VARIABLE-LEVEL reducible environment (the Kripke refinement for the dependent fundamental
+    theorem).  `ReducibleEnvAt`'s single global level cannot serve a context that mixes variables at
+    different typing-tower rungs (each rung sits one fuel higher via `tarskiDecode`, and upward
+    level-cumulativity is false).  `ReducibleEnvVec` indexes each variable by its OWN tower level via a
+    `Fin scope → Nat` vector; `levelCons` is the propext-free fresh-level cons. -/
+#assert_no_axioms FX1Poly.Typed.levelCons
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvVec
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvVec.lookupReducible
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvVec.empty
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvVec.cons
 
 /-! ### SEMANTIC TYPING RULES UNDER A CLOSING SUBSTITUTION (the fundamental theorem's arm bodies).
     The Girard-Tait fundamental theorem over `HasTypeDescPi` is a thin induction whose arms dispatch to
