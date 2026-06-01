@@ -4,6 +4,7 @@ import FX1Poly.Core.SubstPreservationProbes
 import FX1Poly.Core.StrongNormalizationLeaves
 import FX1Poly.Core.CompoundSubstPreservation
 import FX1Poly.Core.RawTermSubstConsCommute
+import FX1Poly.Core.CandidateInterpretationSubst
 
 /-! # FX1Poly/Core/CandidateInterpretationFundamental
     — the fundamental-theorem cases under a closing substitution, over the choice-free interpretation
@@ -162,5 +163,37 @@ theorem InterpretsType.fundamentalArrowAbstractionConsForm {scope targetScope : 
   intro argument argumentInDomain
   rw [← RawTerm.subst_cons_eq_subst0_lift]
   exact bodyReducible argument argumentInDomain
+
+/-- **The dependent `piElim` (application) classifier conversion** — the elimination-side counterpart of
+`fundamentalArrowAbstractionConsForm`, the precise glue the closure induction's piElim arm calls.  In the
+`HasTypeDescPi` engine, applying `functionTerm : Π domainCode. codomainCode` to `argument : domainCode`
+yields the DEPENDENT classifier `subst0 codomainCode argument` (the codomain instantiated at the actual
+argument — `piElim`'s motive-dependent output).  But the function's induction hypothesis interprets its Π
+classifier as `IsArrowReducible domainCandidate codomainCandidate`, where `codomainCandidate` is the codomain
+interpreted in the env EXTENDED by the domain's candidate (`InterpretsType (env.cons domainCandidate)
+codomainCode codomainCandidate`).  This lemma reconciles the two: the substituted codomain `subst0
+codomainCode argument` interprets, under the BASE env, to the SAME `codomainCandidate` — provided the
+argument, viewed as a type-code, interprets to the domain's candidate (`argumentInterprets`, the
+no-large-elimination premise — the codomain's candidate depends only on the argument's candidate, never its
+value).  It is the singleton-substitution instance of the general semantic substitution lemma
+`InterpretsType.subst`: the variable-0 substituent is `argument` (interpreting to `domainCandidate`), every
+higher variable `k+1` maps to `var k` (interpreting to `env k` by `typeVariable`), and `subst0 codomainCode
+argument = subst (singleton argument) codomainCode` definitionally.  With this, the closure's piElim arm
+reads off `codomainCandidate (subst σ (appCell functionTerm argument))` from `fundamentalArrowApplication`
+and rewrites the classifier to `subst0 codomainCode argument` — no substitution reasoning at the arm. -/
+theorem InterpretsType.codomainAfterApplication {scope targetScope : Nat}
+    {env : CandidateEnv scope targetScope}
+    {domainCandidate codomainCandidate : RawTerm targetScope → Prop}
+    {codomainCode : RawTerm (scope + 1)} {argument : RawTerm scope}
+    (codomainInterprets :
+      InterpretsType (CandidateEnv.cons domainCandidate env) codomainCode codomainCandidate)
+    (argumentInterprets : InterpretsType env argument domainCandidate) :
+    InterpretsType env (RawTerm.subst0 codomainCode argument) codomainCandidate := by
+  apply codomainInterprets.subst (RawTermSubst.singleton argument)
+  intro index
+  match index with
+  | ⟨0, _⟩ => exact argumentInterprets
+  | ⟨priorValue + 1, hBound⟩ =>
+      exact InterpretsType.typeVariable env ⟨priorValue, Nat.lt_of_succ_lt_succ hBound⟩
 
 end FX1Poly.Core
