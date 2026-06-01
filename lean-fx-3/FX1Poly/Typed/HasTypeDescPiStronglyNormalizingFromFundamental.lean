@@ -35,6 +35,27 @@ def HasTypeDescPiAllLevelFundamentalTheorem (profile : PolyProfile) : Prop :=
     HasTypeDescPi profile context subject classifier →
       FundamentalConclusionAtAll context subject classifier
 
+/-- **Substituted strong-normalization theorem interface for `HasTypeDescPi`.**  A profile has substituted
+strong normalization when every grown typing derivation in a well-formed context sends both its subject and
+its classifier to strongly normalizing terms under every all-level reducible closing substitution. -/
+def HasTypeDescPiSubstitutedStrongNormalizationTheorem (profile : PolyProfile) : Prop :=
+  ∀ {scope targetScope : Nat} {context : TypingContext profile scope}
+    {subject classifier : RawTerm scope},
+    WfContext context →
+      HasTypeDescPi profile context subject classifier →
+        ∀ (substitution : RawTermSubst scope (targetScope + 1)),
+          ReducibleEnvAtAllLevels context substitution →
+            ∀ _predLevel : Nat,
+              IsStronglyNormalizing (RawTerm.subst substitution subject) ∧
+                IsStronglyNormalizing (RawTerm.subst substitution classifier)
+
+/-- **Closed strong-normalization theorem interface for `HasTypeDescPi`.**  A profile has closed strong
+normalization when every closed grown typing derivation has a strongly normalizing subject and classifier. -/
+def HasTypeDescPiClosedStrongNormalizationTheorem (profile : PolyProfile) : Prop :=
+  ∀ {subject classifier : RawTerm 0},
+    HasTypeDescPi profile TypingContext.empty subject classifier →
+      IsStronglyNormalizing subject ∧ IsStronglyNormalizing classifier
+
 /-- **Substituted strong normalization from an all-level fundamental conclusion.**  This is the exact CR1
 handoff for the dependent `HasTypeDescPi` theorem: after a closing substitution into a positive target
 scope, the substituted subject strongly normalizes whenever the derivation's all-level fundamental
@@ -195,5 +216,32 @@ theorem HasTypeDescPi.closedClassifierStronglyNormalizingFromAllLevelFundamental
     typed.classifierIsTypeDesc (WfContext.emptyIsWellFormed (profile := profile))
   exact HasTypeDescPi.closedSubjectStronglyNormalizingFromAllLevelFundamentalTheorem
     fundamentalTheorem classifierTyped
+
+/-- **Substituted subject-and-classifier strong normalization from the all-level fundamental theorem.**
+This packages the exact theorem interface consumed by typed conversion: the same reducible closing
+substitution normalizes both the term being typed and its classifier. -/
+theorem HasTypeDescPiAllLevelFundamentalTheorem.toSubstitutedStrongNormalizationTheorem
+    {profile : PolyProfile}
+    (fundamentalTheorem : HasTypeDescPiAllLevelFundamentalTheorem profile) :
+    HasTypeDescPiSubstitutedStrongNormalizationTheorem profile := by
+  intro _scope _targetScope _context _subject _classifier contextWellFormed typed
+    substitution env predLevel
+  exact ⟨
+    HasTypeDescPi.subjectStronglyNormalizingFromAllLevelFundamentalTheorem
+      fundamentalTheorem typed substitution env predLevel,
+    HasTypeDescPi.classifierStronglyNormalizingFromAllLevelFundamentalTheorem
+      fundamentalTheorem contextWellFormed typed substitution env predLevel⟩
+
+/-- **Closed subject-and-classifier strong normalization from the all-level fundamental theorem.** -/
+theorem HasTypeDescPiAllLevelFundamentalTheorem.toClosedStrongNormalizationTheorem
+    {profile : PolyProfile}
+    (fundamentalTheorem : HasTypeDescPiAllLevelFundamentalTheorem profile) :
+    HasTypeDescPiClosedStrongNormalizationTheorem profile := by
+  intro _subject _classifier typed
+  exact ⟨
+    HasTypeDescPi.closedSubjectStronglyNormalizingFromAllLevelFundamentalTheorem
+      fundamentalTheorem typed,
+    HasTypeDescPi.closedClassifierStronglyNormalizingFromAllLevelFundamentalTheorem
+      fundamentalTheorem typed⟩
 
 end FX1Poly.Typed
