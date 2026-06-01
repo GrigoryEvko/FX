@@ -887,6 +887,35 @@ theorem fundamentalPiIntroValidityWithTypeValueCandidatesFromUniverseDomain
         substitution argumentAtAllPositiveLevels substitutedDomainIsUniverse candidatePredLevel)
     codomainFundamental bodyFundamental
 
+/-- **Universe-domain lambda introduction from type-value completion.**  This is the direct completion
+principle version of `fundamentalPiIntroValidityWithTypeValueCandidatesFromUniverseDomain`: the global
+all-reducible-types payload is converted once to the all-positive-universe-member payload needed to extend
+the binder environment. -/
+theorem fundamentalPiIntroValidityWithTypeValueCandidatesFromUniverseDomainAllReducibleTypesHaveTypeValueCandidates
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainLevel codomainLevel : LevelExpr} {flag : UniverseFlag}
+    {codomainCode body : RawTerm (scope + 1)}
+    (allReducibleTypesHaveTypeValueCandidates :
+      HasTypeValueCandidatesForAllReducibleTypesAtAllLevels)
+    (domainFundamental :
+      FundamentalConclusionWithTypeValueCandidates context (universeCodeCell domainLevel flag)
+        (universeCodeCell domainLevel.lsucc flag))
+    (domainHasPositiveCandidate :
+      PositiveCandidateConclusionWithTypeValueCandidates context (universeCodeCell domainLevel flag))
+    (codomainFundamental :
+      FundamentalConclusionWithTypeValueCandidates
+        (context.cons (universeCodeCell domainLevel flag)) codomainCode
+        (universeCodeCell codomainLevel flag))
+    (bodyFundamental :
+      FundamentalConclusionWithTypeValueCandidates
+        (context.cons (universeCodeCell domainLevel flag)) body codomainCode) :
+    FundamentalValidityWithTypeValueCandidates context (lamCell body)
+      (piTyCodeCell (universeCodeCell domainLevel flag) codomainCode) :=
+  fundamentalPiIntroValidityWithTypeValueCandidatesFromUniverseDomain
+    allReducibleTypesHaveTypeValueCandidates.toUniverseMembers
+    domainFundamental domainHasPositiveCandidate codomainFundamental bodyFundamental
+
 /-- **The positive-candidate dependent Pi type half over the type-value environment.**  The construction is
 the strengthened-environment version of the reducibility candidate for Pi codes: the domain candidate
 companion upgrades each accepted argument to all-positive membership, the type-value environment extends
@@ -1557,6 +1586,61 @@ theorem fundamentalSigmaFormationValidityWithTypeValueCandidatesFromUniverseDoma
       universeMembersHaveTypeValueCandidates.ofSubstitutedUniverseDomainMember
         substitution argumentAtAllPositiveLevels substitutedDomainIsUniverse candidatePredLevel)
     codomainFundamental
+
+/-- **Pi-formation validity for a universe-code domain from type-value completion.**  Direct wrapper around
+`fundamentalPiFormationValidityWithTypeValueCandidatesFromUniverseDomainMembersHaveTypeValueCandidates`,
+using the completion principle's universe-member projection. -/
+theorem fundamentalPiFormationValidityWithTypeValueCandidatesFromUniverseDomainAllReducibleTypesHaveTypeValueCandidates
+    {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
+    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
+    {codomainCode : RawTerm (scope + 1)}
+    (allReducibleTypesHaveTypeValueCandidates :
+      HasTypeValueCandidatesForAllReducibleTypesAtAllLevels)
+    (domainFundamental :
+      FundamentalConclusionWithTypeValueCandidates context (universeCodeCell domainLevel flag)
+        (universeCodeCell domainLevel.lsucc flag))
+    (domainHasPositiveCandidate :
+      PositiveCandidateConclusionWithTypeValueCandidates context
+        (universeCodeCell domainLevel flag))
+    (codomainFundamental :
+      FundamentalConclusionWithTypeValueCandidates
+        (context.cons (universeCodeCell domainLevel flag)) codomainCode
+        (universeCodeCell codomainLevel flag))
+    (codomainHasPositiveCandidate :
+      PositiveCandidateConclusionWithTypeValueCandidates
+        (context.cons (universeCodeCell domainLevel flag)) codomainCode) :
+    FundamentalValidityWithTypeValueCandidates context
+      (piTyCodeCell (universeCodeCell domainLevel flag) codomainCode)
+      (universeCodeCell formerLevel flag) :=
+  fundamentalPiFormationValidityWithTypeValueCandidatesFromUniverseDomainMembersHaveTypeValueCandidates
+    allReducibleTypesHaveTypeValueCandidates.toUniverseMembers
+    domainFundamental domainHasPositiveCandidate codomainFundamental codomainHasPositiveCandidate
+
+/-- **Sigma-formation validity for a universe-code domain from type-value completion.**  Direct wrapper
+around the universe-member-payload version, again making the completion principle the single global
+semantic hypothesis. -/
+theorem fundamentalSigmaFormationValidityWithTypeValueCandidatesFromUniverseDomainAllReducibleTypesHaveTypeValueCandidates
+    {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
+    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
+    {codomainCode : RawTerm (scope + 1)}
+    (allReducibleTypesHaveTypeValueCandidates :
+      HasTypeValueCandidatesForAllReducibleTypesAtAllLevels)
+    (domainFundamental :
+      FundamentalConclusionWithTypeValueCandidates context (universeCodeCell domainLevel flag)
+        (universeCodeCell domainLevel.lsucc flag))
+    (domainHasPositiveCandidate :
+      PositiveCandidateConclusionWithTypeValueCandidates context
+        (universeCodeCell domainLevel flag))
+    (codomainFundamental :
+      FundamentalConclusionWithTypeValueCandidates
+        (context.cons (universeCodeCell domainLevel flag)) codomainCode
+        (universeCodeCell codomainLevel flag)) :
+    FundamentalValidityWithTypeValueCandidates context
+      (sigmaTyCodeCell (universeCodeCell domainLevel flag) codomainCode)
+      (universeCodeCell formerLevel flag) :=
+  fundamentalSigmaFormationValidityWithTypeValueCandidatesFromUniverseDomainMembersHaveTypeValueCandidates
+    allReducibleTypesHaveTypeValueCandidates.toUniverseMembers
+    domainFundamental domainHasPositiveCandidate codomainFundamental
 
 /-- A strengthened member result for `typeCode : Type@levelExpr` yields strong normalization and
 all-level reducibility of the substituted type code. -/
