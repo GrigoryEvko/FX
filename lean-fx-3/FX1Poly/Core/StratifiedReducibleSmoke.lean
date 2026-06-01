@@ -81,6 +81,45 @@ theorem closedSimpleArrow_isReducibleType {scope : Nat} {predLevel : Nat}
     ReducibleTypeStep.universeCode levelExpr flag
   ⟨_, ReducibleTypeAt.arrowType universeReducible universeReducible⟩
 
+/-- **SN of a genuinely REDUCING closed β-redex, via the membership pipeline.**  The application
+`(λ. var0) (Type@levelExpr)` — the identity at `Type@(lsucc levelExpr) → Type@(lsucc levelExpr)` applied to
+`Type@levelExpr : Type@(lsucc levelExpr)` — is a reducible member of the codomain (the elimination rule
+`IsReducibleMemberAt.application` over the identity's arrow membership and the argument's domain membership),
+hence strongly normalizing by CR1.  This goes BEYOND `identityLambda_…` (a normal λ): the subject here is an
+actual β-redex that head-reduces to `Type@levelExpr`, so it exercises the elimination side of the deep
+strong-normalization pipeline (the `piElim` arm consuming `piIntro` and `universeFormation`) on a term that
+genuinely steps — a concrete instance of "a well-typed redex-bearing term is strongly normalizing" routed
+through the stratified reducibility model.  The identity's arrow membership is `abstractionNonDependent` at
+the universe domain (the no-large-elimination `piIntro`); the argument's domain membership is
+`universeFormation` (`Type@levelExpr : Type@(lsucc levelExpr)`); `application` lands the redex in the codomain
+candidate at the shared level `predLevel + 1`, and CR1 extracts strong normalization. -/
+theorem identityAppliedToUniverse_stronglyNormalizing_viaReducibility {scope : Nat} {predLevel : Nat}
+    (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam ()
+            (.childCons (.mkGen .gen_var ⟨0, Nat.succ_pos (scope + 1)⟩ .childNil) .childNil))
+          (.childCons (.mkGen .gen_universeCode (levelExpr, flag) .childNil) .childNil))
+        : RawTerm (scope + 1)) := by
+  have domainReducible :
+      ReducibleTypeAt (predLevel + 1)
+        (.mkGen .gen_universeCode (LevelExpr.lsucc levelExpr, flag) .childNil : RawTerm (scope + 1))
+        (universeReducibilityPredicate (ReducibleTypeAt predLevel)) :=
+    ReducibleTypeStep.universeCode (LevelExpr.lsucc levelExpr) flag
+  have functionMember :=
+    IsReducibleMemberAt.abstractionNonDependent
+      (codomainCodeBase :=
+        (.mkGen .gen_universeCode (LevelExpr.lsucc levelExpr, flag) .childNil : RawTerm (scope + 1)))
+      (body := (.mkGen .gen_var ⟨0, Nat.succ_pos (scope + 1)⟩ .childNil : RawTerm (scope + 1 + 1)))
+      domainReducible
+      (fun _argument argumentInDomain => argumentInDomain.1)
+      domainReducible
+      (fun _argument argumentInDomain => argumentInDomain)
+  have argumentMember :=
+    IsReducibleMemberAt.universeFormation (scope := scope + 1) predLevel levelExpr flag
+  exact (IsReducibleMemberAt.application functionMember argumentMember).stronglyNormalizing
+
 /-- **A Σ-type former over strongly-normalizing components is a reducible member of its universe, via the
 data-former arm of the fundamental theorem.**  `Σ domain codomain` (a genuine 2-child data former, distinct
 from the Π/universe codes) is a reducible member of `Type@levelExpr` at `predLevel + 1` whenever its domain
