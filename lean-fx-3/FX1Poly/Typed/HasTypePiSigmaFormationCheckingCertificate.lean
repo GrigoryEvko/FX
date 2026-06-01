@@ -1,4 +1,5 @@
 import FX1Poly.Typed.HasTypeCheck
+import FX1Poly.Typed.HasTypeDescDecidable
 import FX1Poly.Typed.HasTypeStronglyNormalizing
 
 /-! # FX1Poly/Typed/HasTypePiSigmaFormationCheckingCertificate
@@ -10,6 +11,8 @@ decidability/coherence facts for the smaller native pi/sigma-formation `HasType`
 
 * direct typed checking: `HasType.decidableOfWellFormed`;
 * bidirectional checking: `HasType.infer` / `HasType.check` plus `infer_complete`;
+* description-engine typed checking: `HasTypeDesc.decidableOfWellFormed`;
+* formation-engine equivalence: `HasType.toHasTypeDesc` and `HasTypeDesc.toHasType`;
 * typed classifier conversion: `Conv.decidableOfTyped`;
 * validity: `HasType.classifierIsType`;
 * native-pi-sigma HasType normalization: `HasType.isStronglyNormalizing`.
@@ -32,8 +35,9 @@ namespace FX1Poly.Typed
 open FX1Poly.Core
 
 /-- **Typed checking certificate for the native pi/sigma-formation `HasType` core.**  From a well-formed context, the
-typed core exposes both forms of typed checking (direct and bidirectional), typed classifier conversion, and
-the metatheoretic facts that make those deciders sound inputs to the larger semantic-core program. -/
+typed core exposes both forms of native typed checking (direct and bidirectional), the equivalent
+description-engine checker, typed classifier conversion, and the metatheoretic facts that make those deciders
+sound inputs to the larger semantic-core program. -/
 structure HasTypePiSigmaFormationCheckingCertificate {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) : Type where
   /-- The context whose checker is certified is well-formed. -/
@@ -47,6 +51,17 @@ structure HasTypePiSigmaFormationCheckingCertificate {profile : PolyProfile} {sc
   /-- Bidirectional checking decision procedure against a caller-supplied target type. -/
   checkHasType : ∀ subject targetType : RawTerm scope,
     Decidable (HasType profile context subject targetType)
+  /-- Direct typed-checking decision procedure for the equivalent `HasTypeDesc` formation engine. -/
+  decideHasTypeDesc : ∀ subject classifier : RawTerm scope,
+    Decidable (HasTypeDesc profile context subject classifier)
+  /-- Completeness of the description engine relative to native `HasType`. -/
+  translateHasTypeToDesc : ∀ {subject classifier : RawTerm scope},
+    HasType profile context subject classifier →
+      HasTypeDesc profile context subject classifier
+  /-- Soundness of the description engine relative to native `HasType`. -/
+  translateDescToHasType : ∀ {subject classifier : RawTerm scope},
+    HasTypeDesc profile context subject classifier →
+      HasType profile context subject classifier
   /-- Completeness of synthesis on the typeable domain, with the synthesized classifier convertible to any
   actual classifier. -/
   inferCompletes : ∀ {subject classifier : RawTerm scope},
@@ -65,9 +80,9 @@ structure HasTypePiSigmaFormationCheckingCertificate {profile : PolyProfile} {sc
   proveSubjectIsStronglyNormalizing : ∀ {subject classifier : RawTerm scope},
     HasType profile context subject classifier → StepStar.IsStronglyNormalizing subject
 
-/-- Build the native-pi-sigma HasType checking certificate from a well-formed context.  This is the explicit
-record-level aggregation of the already-proved typed checking, bidirectional checking, typed conversion,
-validity, and strong-normalization facts. -/
+/-- Build the native-pi-sigma formation checking certificate from a well-formed context.  This is the explicit
+record-level aggregation of the already-proved native typed checking, equivalent description-engine checking,
+bidirectional checking, typed conversion, validity, and strong-normalization facts. -/
 def buildHasTypePiSigmaFormationCheckingCertificate {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} (contextIsWellFormed : WfContext context) :
     HasTypePiSigmaFormationCheckingCertificate context where
@@ -75,6 +90,9 @@ def buildHasTypePiSigmaFormationCheckingCertificate {profile : PolyProfile} {sco
   decideHasType := HasType.decidableOfWellFormed contextIsWellFormed
   inferClassifier := HasType.infer contextIsWellFormed
   checkHasType := HasType.check contextIsWellFormed
+  decideHasTypeDesc := HasTypeDesc.decidableOfWellFormed contextIsWellFormed
+  translateHasTypeToDesc := fun typed => HasType.toHasTypeDesc typed
+  translateDescToHasType := fun typed => HasTypeDesc.toHasType typed
   inferCompletes := fun typed => HasType.infer_complete contextIsWellFormed typed
   decideTypedClassifierConv := fun firstTyped secondTyped =>
     Conv.decidableOfTyped contextIsWellFormed firstTyped secondTyped

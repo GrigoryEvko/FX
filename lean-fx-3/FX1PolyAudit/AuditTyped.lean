@@ -373,15 +373,19 @@ gates pin them shut.
 
 #assert_no_axioms FX1Poly.Typed.HasType.check
 
-/-! ### Typed checking certificate (native pi/sigma-formation HasType core)
+/-! ### Typed checking certificate (native pi/sigma-formation HasType / HasTypeDesc formation core)
     — explicit record packaging of the already-proved native-pi-sigma HasType typed
-    checking (`decidableOfWellFormed` + bidirectional `check`), typed
-    classifier conversion (`Conv.decidableOfTyped`), validity, and typed SN.
+    checking (`decidableOfWellFormed` + bidirectional `check`), equivalent
+    description-engine checking (`HasTypeDesc.decidableOfWellFormed` + the two
+    translation maps), typed classifier conversion (`Conv.decidableOfTyped`), validity, and typed SN.
     This is deliberately scoped to the native pi/sigma-formation `HasType` core; the
     description-driven `HasTypeDescPi` reducibility assembly remains the next
     metatheory step. -/
 
 #assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate
+#assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.decideHasTypeDesc
+#assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.translateHasTypeToDesc
+#assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.translateDescToHasType
 #assert_no_axioms FX1Poly.Typed.buildHasTypePiSigmaFormationCheckingCertificate
 
 /-! ### ★ MOONSHOT CORE — the description-driven generic typing engine
