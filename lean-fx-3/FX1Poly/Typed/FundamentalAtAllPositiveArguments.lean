@@ -518,6 +518,28 @@ theorem HasAllPositiveReducibleCandidateAt.universeCodeOfLowerTypeExtendsToAllLe
         normalizingAndReducibleAtAllLevels.2 predLevel⟩
   exact ReducibleTypeStep.ofPointwiseIff (ReducibleTypeStep.universeCode levelExpr flag) pointwise
 
+/-- **Fuel-zero universe membership is empty.**  At reducibility fuel `0`, a universe code's candidate is
+`universeReducibilityPredicate` over the empty lower relation, so no term can be a member of any universe
+code at that fuel.  This is the ordinary-membership counterpart of
+`HasAllPositiveReducibleCandidateAt.notSuccUniverseCodeAtZero`: the obstruction is not only that successor
+universes cannot denote the all-positive candidate at fuel `0`; even the raw universe-member predicate is
+empty at fuel `0`.  Dependent formation proofs therefore must split the base level from positive levels
+rather than attempting to strengthen fuel-`0` universe membership. -/
+theorem IsReducibleMemberAt.universeCodeHasNoMemberAtZero {scope : Nat}
+    (levelExpr : LevelExpr) (flag : UniverseFlag) (memberCode : RawTerm scope) :
+    ¬ IsReducibleMemberAt 0 (universeCodeCell levelExpr flag : RawTerm scope) memberCode := by
+  intro memberAtZero
+  obtain ⟨candidate, universeReducible, memberInCandidate⟩ := memberAtZero
+  have candidateIsEmpty :
+      PointwiseIff candidate
+        (universeReducibilityPredicate
+          (fun _typeCode _candidate => False : RawTerm scope → (RawTerm scope → Prop) → Prop)) :=
+    ReducibleTypeStep.universeCodeInversion universeReducible
+  have memberInEmptyUniversePredicate := (candidateIsEmpty memberCode).mp memberInCandidate
+  obtain ⟨_stronglyNormalizing, lowerReducibleWitness⟩ := memberInEmptyUniversePredicate
+  obtain ⟨_lowerCandidate, impossibleLowerReducible⟩ := lowerReducibleWitness
+  exact impossibleLowerReducible
+
 /-- **Successor universe codes do not have the all-positive candidate at fuel zero.**  This is the
 formal obstruction behind the dependent binder impasse: at fuel `0`, the universe candidate is
 `universeReducibilityPredicate` over the empty lower relation, so it contains no type witnesses.  But a
