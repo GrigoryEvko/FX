@@ -1,0 +1,148 @@
+import FX1Poly.Typed.FundamentalAtAllVectorPremises
+import FX1Poly.Typed.TelescopeReducible
+import FX1Poly.Typed.DescTelescopeInversion
+
+/-! # FX1Poly/Typed/HasTypeDescPiFundamentalVectorFromFormation
+    — assemble the grown-engine vector fundamental theorem from the formation-engine one
+
+The grown description engine `HasTypeDescPi` embeds the formation engine (`ofFormation`) and adds the
+dependent lambda/application rules.  This file proves the non-formation part of the dependent fundamental
+theorem by the kernel's mutual recursor:
+
+* `conv`, `piIntro`, `piElim`, and `genFormationPi` are discharged directly from already-gated semantic
+  rules and telescope reducibility; and
+* `ofFormation` is factored as an explicit hypothesis: the formation engine's vector fundamental theorem.
+
+So the remaining assembly obligation is now precise: prove the corresponding `HasTypeDesc` theorem, then
+instantiate `HasTypeDescPi.fundamentalVectorFromFormation`.  No placeholder proof is hidden here; the
+formation premise is an argument of the theorem.
+
+## Zero-axiom verification
+
+The proof is one `HasTypeDescPi.rec` application.  The binder arm uses
+`RawTerm.subst_cons_eq_subst0_lift` and `ReducibleEnvVec.cons`; the telescope arm uses the recursor-provided
+head and tail induction hypotheses plus `FormerChildrenReducible.ofTelescopeReducible`.  No `axiom`,
+`sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.
+-/
+
+namespace FX1Poly.Typed
+
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+
+/-- **Vector reducibility for a grown premise telescope.**  Under a per-variable-level reducible
+environment, every telescope head is a member of its universe at every positive level, and the tail remains
+reducible after consing any reducible head argument.  The `shapeEq` parameter aligns the recursor's generic
+child-spine index with the consecutive-shift index consumed by `TelescopeReducible`. -/
+abbrev IsTelescopeReducibleAtVector {profile : PolyProfile} {baseScope currentDepth : Nat}
+    {binderShifts : List Nat}
+    (context : TypingContext profile (baseScope + currentDepth)) (levelsList : List LevelExpr)
+    (flag : UniverseFlag) (children : RawTermChildren binderShifts baseScope)
+    (_telescope : DescTelescopePi profile context levelsList flag children) : Prop :=
+  ∀ {targetScope : Nat} (substitution : RawTermSubst (baseScope + currentDepth) (targetScope + 1))
+    {envLevels : Fin (baseScope + currentDepth) → Nat} (_predLevel : Nat)
+    (_env : ReducibleEnvVec envLevels context substitution)
+    (shapeEq : binderShifts = consecutiveShifts currentDepth levelsList.length),
+    TelescopeReducible flag currentDepth levelsList.length substitution levelsList (shapeEq ▸ children)
+
+/-- **Grown-engine vector fundamental theorem, assuming the formation-engine vector theorem.**  This is the
+complete `HasTypeDescPi` recursor assembly except for the embedded `HasTypeDesc` arm.  It proves the vector
+environment conclusion; `fundamentalConclusionAtAllOfVector` then exports it to the all-level environment. -/
+theorem HasTypeDescPi.fundamentalVectorFromFormation {profile : PolyProfile}
+    (formationFundamental :
+      ∀ {scope : Nat} {context : TypingContext profile scope}
+        {subject classifier : RawTerm scope},
+        HasTypeDesc profile context subject classifier →
+          IsFundamentalConclusionAtVector context subject classifier) :
+    ∀ {scope : Nat} {context : TypingContext profile scope} {subject classifier : RawTerm scope},
+      HasTypeDescPi profile context subject classifier →
+        IsFundamentalConclusionAtVector context subject classifier := by
+  intro scope context subject classifier typed
+  refine HasTypeDescPi.rec
+    (motive_1 := fun context subject classifier _typed =>
+      IsFundamentalConclusionAtVector context subject classifier)
+    (motive_2 := IsTelescopeReducibleAtVector)
+    ?ofFormation ?conv ?piIntro ?piElim ?genFormationPi ?nilTelescope ?consTelescope typed
+  · intro _scope _context _subject _classifier formationTyped
+    exact formationFundamental formationTyped
+  · intro _scope _context _subject _classifier _reclassifier levelExpr flag _typed converts
+      _reclassifierTyped subjectFundamental reclassifierFundamental
+    intro _targetScope substitution _envLevels predLevel env
+    have reclassifierMember := reclassifierFundamental substitution (predLevel + 1) env
+    rw [subst_universeCodeCell] at reclassifierMember
+    obtain ⟨_candidate, reclassifierReducible⟩ := reclassifierMember.tarskiDecode
+    exact IsReducibleMemberAt.castAlongConvUnderSubst substitution
+      (subjectFundamental substitution predLevel env) reclassifierReducible converts
+  · intro _scope _context _domainCode _codomainCode _body _domainLevel _codomainLevel _flag
+      _domainTyped _codomainTyped _bodyTyped domainFundamental codomainFundamental bodyFundamental
+    intro _targetScope substitution _envLevels predLevel env
+    have domainMember := domainFundamental substitution (predLevel + 1) env
+    rw [subst_universeCodeCell] at domainMember
+    obtain ⟨domainCandidate, domainReducible⟩ := domainMember.tarskiDecode
+    refine IsReducibleMemberAt.abstractionCanonicalUnderSubst substitution domainReducible
+      (fun _argument argumentInDomain =>
+        domainReducible.isReducibilityCandidate.stronglyNormalizing argumentInDomain)
+      (fun argument argumentInDomain => ?_) (fun argument argumentInDomain => ?_)
+    · rw [← RawTerm.subst_cons_eq_subst0_lift _ argument substitution]
+      have codomainMember := codomainFundamental (RawTermSubst.cons argument substitution)
+        (predLevel + 1)
+        (ReducibleEnvVec.cons env ⟨domainCandidate, domainReducible, argumentInDomain⟩)
+      rw [subst_universeCodeCell] at codomainMember
+      exact codomainMember.tarskiDecode
+    · rw [← RawTerm.subst_cons_eq_subst0_lift _ argument substitution,
+        ← RawTerm.subst_cons_eq_subst0_lift _ argument substitution]
+      exact bodyFundamental (RawTermSubst.cons argument substitution) predLevel
+        (ReducibleEnvVec.cons env ⟨domainCandidate, domainReducible, argumentInDomain⟩)
+  · intro _scope _context _functionTerm _argument _domainCode _codomainCode _functionTyped
+      _argumentTyped functionFundamental argumentFundamental
+    intro _targetScope substitution _envLevels predLevel env
+    exact IsReducibleMemberAt.applicationUnderSubst substitution
+      (functionFundamental substitution predLevel env) (argumentFundamental substitution predLevel env)
+  · intro _scope _context generator _payload children levelsList flag rule isFormation premises
+      premisesFundamental
+    intro _targetScope substitution _envLevels predLevel env
+    by_cases isPiFormer : generator = .gen_piTyCode
+    · subst isPiFormer
+      obtain rfl : rule = { outputType := universeFormerOutput } := Option.some.inj isFormation.symm
+      match children with
+      | .childCons _domainCode (.childCons _codomainCode .childNil) =>
+          obtain ⟨_domainLevel, _codomainLevel, levelsShape⟩ :=
+            DescTelescopePi.twoChildLevels premises
+          subst levelsShape
+          dsimp only [universeFormerOutput]
+          rw [subst_universeCodeCell]
+          exact (FormerChildrenReducible.ofTelescopeReducible predLevel
+            (premisesFundamental substitution predLevel env
+              Generator.gen_piTyCode_binderShifts_eq)).toPiMember
+    · by_cases isSigmaFormer : generator = .gen_sigmaTyCode
+      · subst isSigmaFormer
+        obtain rfl : rule = { outputType := universeFormerOutput } := Option.some.inj isFormation.symm
+        match children with
+        | .childCons _domainCode (.childCons _codomainCode .childNil) =>
+            obtain ⟨_domainLevel, _codomainLevel, levelsShape⟩ :=
+              DescTelescopePi.twoChildLevels premises
+            subst levelsShape
+            dsimp only [universeFormerOutput]
+            rw [subst_universeCodeCell]
+            exact (FormerChildrenReducible.ofTelescopeReducible predLevel
+              (premisesFundamental substitution predLevel env
+                Generator.gen_sigmaTyCode_binderShifts_eq)).toSigmaMember
+      · exfalso
+        unfold typingRuleDescOf at isFormation
+        rw [if_neg isPiFormer, if_neg isSigmaFormer] at isFormation
+        contradiction
+  · intro _baseScope _currentDepth _context _flag
+    intro _targetScope _substitution _envLevels _predLevel _env _shapeEq
+    exact True.intro
+  · intro _baseScope _currentDepth _restShifts _context _head _headLevel _restLevels _flag _rest
+      _headTyped _restTyped headFundamental restFundamental
+    intro _targetScope substitution _envLevels predLevel env shapeEq
+    simp only [List.length_cons, consecutiveShifts] at shapeEq
+    obtain ⟨_headShiftEq, restShapeEq⟩ := List.cons.inj shapeEq
+    subst restShapeEq
+    refine ⟨fun level => ?_, fun {_memberLevel} argument argumentMember => ?_⟩
+    · have headMember := headFundamental substitution level env
+      rwa [subst_universeCodeCell] at headMember
+    · exact restFundamental (RawTermSubst.cons argument substitution) predLevel
+        (ReducibleEnvVec.cons env argumentMember) rfl
+
+end FX1Poly.Typed
