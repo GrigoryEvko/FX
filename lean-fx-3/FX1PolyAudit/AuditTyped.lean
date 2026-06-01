@@ -42,6 +42,7 @@ import FX1Poly.Typed.ConvCodeInjectivity
 import FX1Poly.Typed.ReducibleEnv
 import FX1Poly.Typed.ReducibleEnvAt
 import FX1Poly.Typed.ReducibleEnvVec
+import FX1Poly.Typed.HasTypeDescPiConsistency
 import FX1Poly.Typed.ReducibleSemanticRules
 import FX1Poly.Typed.ReducibleMemberFormation
 
@@ -844,6 +845,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.formationGenerator_noWeakHeadStep
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.sigmaFormationUnderSubst
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.piFormationUnderSubst
+
+/-! ### Grown-engine closed-subject shape characterization (the consistency-spine inversion leg).
+    A well-typed grown subject is rooted at one of the six grown-engine generators; in the empty context
+    consistency reduces to the `gen_app` case the fundamental theorem's SN rules out.  Term-mode structural
+    recursion sidesteps the HasTypeDescPi/DescTelescopePi mutual-induction rejection. -/
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectRootGenerator
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectRootGenerator
 
 /-! ### FORMATION-ARM BRIDGE: membership at a universe-code classifier ⟺ strong normalization.
     A universe code is a normal leaf (`noStep_universeCode`), hence neutral, so the dependent
