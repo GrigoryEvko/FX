@@ -317,6 +317,36 @@ theorem fundamentalPiIntroAtAllFromAllPositiveArgumentPremises {profile : PolyPr
       exact bodyFundamental (RawTermSubst.cons argument substitution)
         (ReducibleEnvAtAllLevels.cons env argumentAtAllPositiveLevels) predLevel)
 
+/-- **Dependent Π-introduction from an all-positive domain candidate.**  This is the recursor-facing form of
+`fundamentalPiIntroAtAllFromAllPositiveArgumentPremises`: instead of assuming directly that every member of
+the decoded domain candidate extends to all positive levels, it asks for the semantic candidate witness that
+the substituted domain denotes `IsReducibleMemberAtAllPositiveLevels` at the exact decoded level.  Candidate
+determinism then turns ordinary domain-candidate membership into all-positive domain membership. -/
+theorem fundamentalPiIntroAtAllFromAllPositiveDomainCandidate {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
+    {domainLevel codomainLevel : LevelExpr} {flag : UniverseFlag}
+    (domainFundamental :
+      FundamentalConclusionAtAll context domainCode (universeCodeCell domainLevel flag))
+    (domainHasAllPositiveCandidate :
+      ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+        (_env : ReducibleEnvAtAllLevels context substitution) (predLevel : Nat),
+        HasAllPositiveReducibleCandidateAt (predLevel + 1)
+          (RawTerm.subst substitution domainCode))
+    (codomainFundamental :
+      FundamentalConclusionAtAll (context.cons domainCode) codomainCode
+        (universeCodeCell codomainLevel flag))
+    (bodyFundamental :
+      FundamentalConclusionAtAll (context.cons domainCode) body codomainCode) :
+    FundamentalConclusionAtAll context (lamCell body) (piTyCodeCell domainCode codomainCode) :=
+  fundamentalPiIntroAtAllFromAllPositiveArgumentPremises domainFundamental
+    (fun _targetScope substitution env predLevel {_domainCandidate} domainReducible _argument
+        argumentInDomain =>
+      HasAllPositiveReducibleCandidateAt.memberExtendsToAllPositive
+        (domainHasAllPositiveCandidate substitution env predLevel)
+        domainReducible argumentInDomain)
+    codomainFundamental bodyFundamental
+
 /-- **Dispatch-level Pi/Sigma former children from all-positive arguments.**  If any semantic domain member
 needed by the former dispatch can be strengthened to all positive domain-membership levels, then the
 codomain child's all-level recursive hypothesis supplies both codomain-under-argument premises consumed by
@@ -352,5 +382,39 @@ theorem formerChildrenReducibleAtDispatchLevelsFromAllPositiveArgumentPremises {
         domainMemberExtendsToAllPositive substitution env predLevel argument argumentMember
       exact codomainFundamental (RawTermSubst.cons argument substitution)
         (ReducibleEnvAtAllLevels.cons env argumentAtAllPositiveLevels) predLevel)
+
+/-- **Dispatch-level Π/Σ former children from all-positive domain candidates.**  This is the
+recursor-facing sibling of `formerChildrenReducibleAtDispatchLevelsFromAllPositiveArgumentPremises`.  The
+former dispatch may receive the domain argument at either of its consumed member levels, so the premise
+provides the all-positive domain candidate at the concrete `memberLevel` being consumed; determinism then
+strengthens that member into all-positive membership before running the codomain recursive hypothesis under
+the cons-extended all-level environment. -/
+theorem formerChildrenReducibleAtDispatchLevelsFromAllPositiveDomainCandidate {profile : PolyProfile}
+    {scope : Nat} {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainLevel codomainLevel : LevelExpr} {flag : UniverseFlag}
+    (domainFundamental :
+      FundamentalConclusionAtAll context domainCode (universeCodeCell domainLevel flag))
+    (domainHasAllPositiveCandidate :
+      ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+        (_env : ReducibleEnvAtAllLevels context substitution) (_predLevel : Nat)
+        (memberLevel : Nat),
+        HasAllPositiveReducibleCandidateAt memberLevel
+          (RawTerm.subst substitution domainCode))
+    (codomainFundamental :
+      FundamentalConclusionAtAll (context.cons domainCode) codomainCode
+        (universeCodeCell codomainLevel flag)) :
+    ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+      (_env : ReducibleEnvAtAllLevels context substitution) (predLevel : Nat),
+      FormerChildrenReducibleAtDispatchLevels predLevel flag substitution domainCode codomainCode
+        domainLevel codomainLevel :=
+  formerChildrenReducibleAtDispatchLevelsFromAllPositiveArgumentPremises domainFundamental
+    (fun _targetScope substitution env predLevel {memberLevel} _argument argumentMember =>
+      let memberWitness := argumentMember
+      let candidateWitness := domainHasAllPositiveCandidate substitution env predLevel memberLevel
+      let ⟨_domainCandidate, domainReducible, argumentInDomain⟩ := memberWitness
+      HasAllPositiveReducibleCandidateAt.memberExtendsToAllPositive
+        candidateWitness domainReducible argumentInDomain)
+    codomainFundamental
 
 end FX1Poly.Typed
