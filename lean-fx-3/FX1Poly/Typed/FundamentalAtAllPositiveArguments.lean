@@ -201,6 +201,18 @@ theorem HasAllPositiveReducibleCandidateAt.piType {scope : Nat} {level : Nat}
   | zero => exact ReducibleTypeStep.ofPointwiseIff piReducibleAtLevel pointwise
   | succ predLevel => exact ReducibleTypeStep.ofPointwiseIff piReducibleAtLevel pointwise
 
+/-- **Σ type codes have the all-positive member predicate as their reducible candidate.**  In the current
+stratified reducibility relation, only Π codes receive a dependent-arrow candidate; Σ codes are
+weak-head-normal non-Π non-universe classifiers, hence they use the neutral strong-normalization candidate at
+every level.  Therefore the neutral all-positive bridge applies directly. -/
+theorem HasAllPositiveReducibleCandidateAt.sigmaType {scope : Nat} {level : Nat}
+    (domainCode : RawTerm scope) (codomainCode : RawTerm (scope + 1)) :
+    HasAllPositiveReducibleCandidateAt level (sigmaTyCodeCell domainCode codomainCode) :=
+  HasAllPositiveReducibleCandidateAt.ofNeutralClassifier
+    (fun _reduct weakHeadStep => by cases weakHeadStep with | rootIota iotaStep => cases iotaStep)
+    (fun rootEquation => nomatch rootEquation)
+    (fun rootEquation => nomatch rootEquation)
+
 /-- **Dependent Pi-introduction from all-positive arguments.**  If every argument accepted by the decoded
 domain candidate can be strengthened to all positive domain-membership levels, then the codomain and body
 all-level recursive hypotheses can be run under the cons-extended all-level environment.  This is the exact
