@@ -37,7 +37,7 @@ def all : List IotaEtaReservedDoubleStripKind :=
   ]
 
 /-- Roadmap milestone number that activates the reserved family. -/
-def phaseMilestone : IotaEtaReservedDoubleStripKind → Nat
+def activationPhase : IotaEtaReservedDoubleStripKind → Nat
   | .modal => 93
   | .path => 61
   | .clock => 84
@@ -81,8 +81,8 @@ def hasCurrentStepIota (_reservedKind : IotaEtaReservedDoubleStripKind) :
 theorem all_length :
     all.length = 5 := rfl
 
-theorem phaseMilestones :
-    all.map phaseMilestone = [93, 61, 84, 86, 66] := rfl
+theorem activationPhases :
+    all.map activationPhase = [93, 61, 84, 86, 66] := rfl
 
 theorem currentStepIotas_absent :
     all.map hasCurrentStepIota =
@@ -100,7 +100,7 @@ inductive IotaEtaReservedDoubleStripBlocker : Type where
 /-- Reserved-status payload for a reserved double-strip critical pair. -/
 inductive IotaEtaDoubleStripStatus : Type where
   | reserved
-      (phaseMilestone : Nat)
+      (activationPhase : Nat)
       (blocker : IotaEtaReservedDoubleStripBlocker)
   deriving DecidableEq
 
@@ -108,19 +108,19 @@ namespace IotaEtaDoubleStripStatus
 
 /-- Boolean view used by the reserved-slot audit gate. -/
 def isReserved : IotaEtaDoubleStripStatus → Bool
-  | .reserved _phaseMilestone _blocker => true
+  | .reserved _activationPhase _blocker => true
 
 theorem reserved_isReserved
-    (phaseMilestone : Nat)
+    (activationPhase : Nat)
     (blocker : IotaEtaReservedDoubleStripBlocker) :
-    isReserved (.reserved phaseMilestone blocker) = true := rfl
+    isReserved (.reserved activationPhase blocker) = true := rfl
 
 end IotaEtaDoubleStripStatus
 
 /-- One row in the reserved iota/eta double-strip table. -/
 structure IotaEtaReservedDoubleStrip where
   reservedKind : IotaEtaReservedDoubleStripKind
-  phaseMilestone : Nat
+  activationPhase : Nat
   etaKindOption : Option EtaStepKind
   introGeneratorOption : Option Generator
   eliminatorGeneratorOption : Option Generator
@@ -144,12 +144,12 @@ def rowForKind
     (reservedKind : IotaEtaReservedDoubleStripKind) :
     IotaEtaReservedDoubleStrip where
   reservedKind := reservedKind
-  phaseMilestone := reservedKind.phaseMilestone
+  activationPhase := reservedKind.activationPhase
   etaKindOption := reservedKind.etaKindOption
   introGeneratorOption := reservedKind.introGeneratorOption
   eliminatorGeneratorOption := reservedKind.eliminatorGeneratorOption
   status :=
-    .reserved reservedKind.phaseMilestone (blockerForKind reservedKind)
+    .reserved reservedKind.activationPhase (blockerForKind reservedKind)
 
 /-- A row is complete for this task when it is explicitly reserved and the
 current `Step` relation has no matching iota root. -/
