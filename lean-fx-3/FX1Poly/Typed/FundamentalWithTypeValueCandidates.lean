@@ -131,6 +131,38 @@ theorem PositiveCandidateConclusionWithTypeValueCandidates.toTypeValueCandidateC
   intro _classifierSubstIsUniverse predLevel
   exact typeHasPositiveCandidate substitution envWithTypeValueCandidates predLevel
 
+/-- **Recover the positive-candidate type half from a universe-classified type-value payload.**  The
+type-value conclusion is conditional on the substituted classifier being a universe code.  When the
+classifier is syntactically `Type@levelExpr`, that condition is discharged by substitution preservation,
+leaving exactly the positive-candidate theorem for the subject type code.  This is the recursor-facing
+bridge that lets a bundled IH for `typeCode : Type@levelExpr` feed binder/former domain companions. -/
+theorem TypeValueCandidateConclusionWithTypeValueCandidates.toPositiveCandidateOfUniverseClassifier
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {typeCode : RawTerm scope}
+    {levelExpr : LevelExpr} {flag : UniverseFlag}
+    (typeValueCandidate :
+      TypeValueCandidateConclusionWithTypeValueCandidates context typeCode
+        (universeCodeCell levelExpr flag)) :
+    PositiveCandidateConclusionWithTypeValueCandidates context typeCode := by
+  intro _targetScope substitution envWithTypeValueCandidates predLevel
+  exact typeValueCandidate substitution envWithTypeValueCandidates
+    (levelExpr := levelExpr) (flag := flag) (by rw [subst_universeCodeCell]) predLevel
+
+/-- **Recover the positive-candidate type half from bundled validity at a universe classifier.**  This is
+the bundled version of `TypeValueCandidateConclusionWithTypeValueCandidates.toPositiveCandidateOfUniverseClassifier`:
+the ordinary member half is irrelevant, while the type-value half supplies the positive-candidate
+companion demanded by dependent binder and former arms. -/
+theorem FundamentalValidityWithTypeValueCandidates.toPositiveCandidateOfUniverseClassifier
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {typeCode : RawTerm scope}
+    {levelExpr : LevelExpr} {flag : UniverseFlag}
+    (typeValidity :
+      FundamentalValidityWithTypeValueCandidates context typeCode
+        (universeCodeCell levelExpr flag)) :
+    PositiveCandidateConclusionWithTypeValueCandidates context typeCode :=
+  TypeValueCandidateConclusionWithTypeValueCandidates.toPositiveCandidateOfUniverseClassifier
+    typeValidity.typeValueCandidateConclusion
+
 /-- **Vacuous type-value payload for classifiers that can never substitute to a universe code.**  The
 conditional type-value half asks for a positive-candidate witness only under a classifier-universe equality.
 For syntactically non-universe classifiers whose root is preserved by every substitution (for example Pi
