@@ -137,4 +137,19 @@ theorem ReducibleType.deterministic {scope : Nat} {typeCode : RawTerm scope}
                 (codomainReducible2 argument domain2Argument)
             exact (codomainEquivalence _).mpr (membership2 argument domain2Argument)
 
+/-- **A weak-head-normal non-Π type's candidate is pointwise strong normalization.**  The candidate-level
+neutral characterization: any candidate a weak-head-normal non-Π type-code denotes coincides pointwise with
+`IsStronglyNormalizing` — because the `neutral` arm denotes EXACTLY that candidate, and `deterministic`
+forces every candidate of the same code to agree.  This is the inversion the fundamental theorem's
+type-formation `neutral` arm reads (a universe code, a stuck application/eliminator, any non-Π data former
+is a reducible TYPE whose members are precisely the strongly-normalizing terms), and the
+`candidateIffStronglyNormalizing` helper the dependent-reducibility `deterministic`/closure proofs invoke at
+neutral codes (mirrors the stratified `ReducibleTypeStep.candidateIffStronglyNormalizing`). -/
+theorem ReducibleType.candidateIffStronglyNormalizing {scope : Nat} {typeCode : RawTerm scope}
+    {candidate : RawTerm scope → Prop} (reducible : ReducibleType typeCode candidate)
+    (noWeakHeadStep : ∀ reduct : RawTerm scope, ¬ WeakHeadStep typeCode reduct)
+    (notPiType : typeCode.rootGenerator ≠ Generator.gen_piTyCode) :
+    PointwiseIff candidate IsStronglyNormalizing :=
+  ReducibleType.deterministic reducible (ReducibleType.neutral noWeakHeadStep notPiType)
+
 end FX1Poly.Core
