@@ -131,6 +131,24 @@ theorem PositiveCandidateConclusionWithTypeValueCandidates.toTypeValueCandidateC
   intro _classifierSubstIsUniverse predLevel
   exact typeHasPositiveCandidate substitution envWithTypeValueCandidates predLevel
 
+/-- **Vacuous type-value payload for classifiers that can never substitute to a universe code.**  The
+conditional type-value half asks for a positive-candidate witness only under a classifier-universe equality.
+For syntactically non-universe classifiers whose root is preserved by every substitution (for example Pi
+and future Sigma intro classifiers), that equality is impossible.  This reusable eliminator keeps such arms
+honest: the type-value branch is closed by an explicit root-impossibility proof, not by semantic
+level-irrelevance or a hidden reducibility cast. -/
+theorem TypeValueCandidateConclusionWithTypeValueCandidates.ofSubstitutedClassifierNeUniverse
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (substitutedClassifierIsNeverUniverse :
+      ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+        {levelExpr : LevelExpr} {flag : UniverseFlag},
+        RawTerm.subst substitution classifier = universeCodeCell levelExpr flag → False) :
+    TypeValueCandidateConclusionWithTypeValueCandidates context subject classifier := by
+  intro _targetScope substitution _envWithTypeValueCandidates _levelExpr _flag
+  intro classifierSubstIsUniverse _predLevel
+  exact False.elim (substitutedClassifierIsNeverUniverse substitution classifierSubstIsUniverse)
+
 /-- **A type-value-environment positive-candidate conclusion strengthens decoded membership.**  If a
 decoded candidate for a type accepts an argument, the positive-candidate companion identifies that candidate
 with all-positive membership and transports the argument into the all-positive predicate. -/
@@ -426,6 +444,22 @@ theorem substitutedPiTyCode_ne_universeCodeCell {sourceScope targetScope : Nat}
     (congrArg RawTerm.headGenerator classifierEquation :
       Generator.gen_piTyCode = Generator.gen_universeCode)
 
+/-- **A substituted Sigma-code classifier is never syntactically a universe code.**  This is the Sigma
+counterpart of `substitutedPiTyCode_ne_universeCodeCell`, staged for future Sigma introduction/elimination
+validity arms: substitution preserves the `gen_sigmaTyCode` root, which is disjoint from
+`gen_universeCode`. -/
+theorem substitutedSigmaTyCode_ne_universeCodeCell {sourceScope targetScope : Nat}
+    (substitution : RawTermSubst sourceScope targetScope)
+    (domainCode : RawTerm sourceScope) (codomainCode : RawTerm (sourceScope + 1))
+    (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    RawTerm.subst substitution (sigmaTyCodeCell domainCode codomainCode) ≠
+      universeCodeCell levelExpr flag := by
+  rw [subst_sigmaTyCodeCell]
+  intro classifierEquation
+  exact Generator.noConfusion
+    (congrArg RawTerm.headGenerator classifierEquation :
+      Generator.gen_sigmaTyCode = Generator.gen_universeCode)
+
 /-- **Bundled dependent lambda-introduction validity over the type-value environment.**  The member half is
 `fundamentalPiIntroWithTypeValueCandidatesFromTypeValueArgumentPremise`.  The conditional type-value half
 is discharged syntactically: after any closing substitution, the classifier remains a Pi code and therefore
@@ -461,11 +495,9 @@ theorem fundamentalPiIntroValidityWithTypeValueCandidatesFromTypeValueArgumentPr
   ⟨fundamentalPiIntroWithTypeValueCandidatesFromTypeValueArgumentPremise
       domainFundamental domainHasPositiveCandidate
       argumentValueHasPositiveCandidateWhenDomainIsUniverse codomainFundamental bodyFundamental,
-    by
-      intro _targetScope substitution _envWithTypeValueCandidates levelExpr flag
-      intro classifierSubstIsUniverse _predLevel
-      exact False.elim
-        (substitutedPiTyCode_ne_universeCodeCell substitution domainCode codomainCode
+    TypeValueCandidateConclusionWithTypeValueCandidates.ofSubstitutedClassifierNeUniverse
+      (fun {_targetScope} substitution {levelExpr} {flag} classifierSubstIsUniverse =>
+        substitutedPiTyCode_ne_universeCodeCell substitution domainCode codomainCode
           levelExpr flag classifierSubstIsUniverse)⟩
 
 /-- **The positive-candidate dependent Pi type half over the type-value environment.**  The construction is
