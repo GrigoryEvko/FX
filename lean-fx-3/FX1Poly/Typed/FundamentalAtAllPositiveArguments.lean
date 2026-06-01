@@ -116,6 +116,16 @@ def HasAllPositiveReducibleCandidateUnderAllLevelSubstitution {profile : PolyPro
     (_env : ReducibleEnvAtAllLevels context substitution) (level : Nat),
     HasAllPositiveReducibleCandidateAt level (RawTerm.subst substitution typeCode)
 
+/-- **All-positive candidate at every positive fuel under every all-level reducible substitution.**  This
+is the universe-compatible type-companion shape: universe codes cannot denote the all-positive candidate at
+fuel `0` (the lower relation is empty there), but binder and formation dispatch premises consume positive
+fuel levels. -/
+def HasAllPositiveReducibleCandidateAtPositiveLevelsUnderSubstitution {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (typeCode : RawTerm scope) : Prop :=
+  ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+    (_env : ReducibleEnvAtAllLevels context substitution) (predLevel : Nat),
+    HasAllPositiveReducibleCandidateAt (predLevel + 1) (RawTerm.subst substitution typeCode)
+
 /-- If a type denotes the all-positive member predicate at a level, any other candidate for that same
 type/level contains only all-positive members. -/
 theorem HasAllPositiveReducibleCandidateAt.memberExtendsToAllPositive {scope : Nat}
@@ -266,6 +276,77 @@ theorem HasAllPositiveReducibleCandidateAt.piType {scope : Nat} {level : Nat}
   | zero => exact ReducibleTypeStep.ofPointwiseIff piReducibleAtLevel pointwise
   | succ predLevel => exact ReducibleTypeStep.ofPointwiseIff piReducibleAtLevel pointwise
 
+/-- **Π types preserve the all-positive candidate discipline at positive fuel levels.**  This avoids the
+universe-code level-0 obstruction: to build the Π candidate at `predLevel+1`, and to interpret its
+all-positive member predicate, only positive-level domain/codomain all-positive candidate witnesses are
+needed. -/
+theorem HasAllPositiveReducibleCandidateAt.piTypeAtPositiveLevel {scope : Nat} {predLevel : Nat}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    (domainHasAllPositiveCandidate :
+      ∀ predLevel : Nat, HasAllPositiveReducibleCandidateAt (predLevel + 1) domainCode)
+    (codomainHasAllPositiveCandidate :
+      ∀ (predLevel : Nat) (argument : RawTerm scope),
+        IsReducibleMemberAtAllPositiveLevels domainCode argument →
+          HasAllPositiveReducibleCandidateAt (predLevel + 1)
+            (RawTerm.subst0 codomainCode argument)) :
+    HasAllPositiveReducibleCandidateAt (predLevel + 1) (piTyCodeCell domainCode codomainCode) := by
+  let allPositiveArrowCandidate : RawTerm scope → Prop :=
+    fun functionTerm =>
+      ∀ argument : RawTerm scope,
+        IsReducibleMemberAtAllPositiveLevels domainCode argument →
+          IsReducibleMemberAtAllPositiveLevels (RawTerm.subst0 codomainCode argument)
+            (appCell functionTerm argument)
+  have piReducibleAtLevel :
+      ReducibleTypeAt (predLevel + 1) (piTyCodeCell domainCode codomainCode)
+        allPositiveArrowCandidate :=
+    ReducibleTypeStep.piType
+      (codomainCandidate :=
+        fun argument =>
+          IsReducibleMemberAtAllPositiveLevels (RawTerm.subst0 codomainCode argument))
+      (domainHasAllPositiveCandidate predLevel)
+      (fun argument argumentAtAllPositiveLevels =>
+        codomainHasAllPositiveCandidate predLevel argument argumentAtAllPositiveLevels)
+  have pointwise :
+      PointwiseIff allPositiveArrowCandidate
+        (IsReducibleMemberAtAllPositiveLevels (piTyCodeCell domainCode codomainCode)) := by
+    intro functionTerm
+    constructor
+    · intro functionMapsAllPositive positiveLevel
+      have piReducibleAtPositiveLevel :
+          ReducibleTypeAt (positiveLevel + 1) (piTyCodeCell domainCode codomainCode)
+            allPositiveArrowCandidate :=
+        ReducibleTypeStep.piType
+          (codomainCandidate :=
+            fun argument =>
+              IsReducibleMemberAtAllPositiveLevels (RawTerm.subst0 codomainCode argument))
+          (domainHasAllPositiveCandidate positiveLevel)
+          (fun argument argumentAtAllPositiveLevels =>
+            codomainHasAllPositiveCandidate positiveLevel argument argumentAtAllPositiveLevels)
+      exact ⟨allPositiveArrowCandidate, piReducibleAtPositiveLevel, functionMapsAllPositive⟩
+    · intro functionMemberAtAllPositiveLevels argument argumentAtAllPositiveLevels positiveLevel
+      obtain ⟨piCandidate, piReducible, functionInPiCandidate⟩ :=
+        functionMemberAtAllPositiveLevels positiveLevel
+      obtain ⟨domainCandidateAtLevel, codomainCandidateAtLevel, domainReducibleAtLevel,
+        codomainReducibleAtLevel, piCandidateEquivalence⟩ := piReducible.piTypeInversion
+      have argumentInDomainCandidate : domainCandidateAtLevel argument :=
+        (ReducibleTypeAt.deterministic
+          (domainHasAllPositiveCandidate positiveLevel) domainReducibleAtLevel argument).mp
+          argumentAtAllPositiveLevels
+      have functionMapsDomainCandidate :=
+        (piCandidateEquivalence functionTerm).mp functionInPiCandidate
+      have applicationInCodomainCandidate :
+          codomainCandidateAtLevel argument (appCell functionTerm argument) :=
+        functionMapsDomainCandidate argument argumentInDomainCandidate
+      have applicationAtAllPositiveLevels :
+          IsReducibleMemberAtAllPositiveLevels (RawTerm.subst0 codomainCode argument)
+            (appCell functionTerm argument) :=
+        (ReducibleTypeAt.deterministic
+          (codomainReducibleAtLevel argument argumentInDomainCandidate)
+          (codomainHasAllPositiveCandidate positiveLevel argument argumentAtAllPositiveLevels)
+          (appCell functionTerm argument)).mp applicationInCodomainCandidate
+      exact applicationAtAllPositiveLevels positiveLevel
+  exact ReducibleTypeStep.ofPointwiseIff piReducibleAtLevel pointwise
+
 /-- **Substituted Π types preserve the all-positive candidate discipline.**  This is the
 under-substitution form consumed by a type companion for the fundamental theorem: after distributing the
 closing substitution over the Π cell, `HasAllPositiveReducibleCandidateAt.piType` applies to the substituted
@@ -285,6 +366,26 @@ theorem HasAllPositiveReducibleCandidateAt.piTypeUnderSubst {sourceScope targetS
       (RawTerm.subst substitution (piTyCodeCell domainCode codomainCode)) := by
   rw [subst_piTyCodeCell]
   exact HasAllPositiveReducibleCandidateAt.piType
+    domainHasAllPositiveCandidate codomainHasAllPositiveCandidate
+
+/-- **Substituted Π types preserve the all-positive candidate discipline at positive fuel levels.** -/
+theorem HasAllPositiveReducibleCandidateAt.piTypeUnderSubstAtPositiveLevel
+    {sourceScope targetScope : Nat} {predLevel : Nat}
+    {domainCode : RawTerm sourceScope} {codomainCode : RawTerm (sourceScope + 1)}
+    (substitution : RawTermSubst sourceScope targetScope)
+    (domainHasAllPositiveCandidate :
+      ∀ predLevel : Nat,
+        HasAllPositiveReducibleCandidateAt (predLevel + 1)
+          (RawTerm.subst substitution domainCode))
+    (codomainHasAllPositiveCandidate :
+      ∀ (predLevel : Nat) (argument : RawTerm targetScope),
+        IsReducibleMemberAtAllPositiveLevels (RawTerm.subst substitution domainCode) argument →
+          HasAllPositiveReducibleCandidateAt (predLevel + 1)
+            (RawTerm.subst0 (RawTerm.subst (iterateLiftRaw substitution 1) codomainCode) argument)) :
+    HasAllPositiveReducibleCandidateAt (predLevel + 1)
+      (RawTerm.subst substitution (piTyCodeCell domainCode codomainCode)) := by
+  rw [subst_piTyCodeCell]
+  exact HasAllPositiveReducibleCandidateAt.piTypeAtPositiveLevel
     domainHasAllPositiveCandidate codomainHasAllPositiveCandidate
 
 /-- **Σ type codes have the all-positive member predicate as their reducible candidate.**  In the current
@@ -351,6 +452,39 @@ theorem HasAllPositiveReducibleCandidateUnderAllLevelSubstitution.sigmaType
   exact HasAllPositiveReducibleCandidateAt.sigmaTypeUnderSubst
     (level := level) substitution domainCode codomainCode
 
+/-- **Π type codes preserve positive-fuel all-positive candidates under all-level substitutions.** -/
+theorem HasAllPositiveReducibleCandidateAtPositiveLevelsUnderSubstitution.piType
+    {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    (domainHasAllPositiveCandidateUnderSubstitution :
+      HasAllPositiveReducibleCandidateAtPositiveLevelsUnderSubstitution context domainCode)
+    (codomainHasAllPositiveCandidateUnderSubstitution :
+      HasAllPositiveReducibleCandidateAtPositiveLevelsUnderSubstitution
+        (context.cons domainCode) codomainCode) :
+    HasAllPositiveReducibleCandidateAtPositiveLevelsUnderSubstitution context
+      (piTyCodeCell domainCode codomainCode) := by
+  intro _targetScope substitution env predLevel
+  exact HasAllPositiveReducibleCandidateAt.piTypeUnderSubstAtPositiveLevel substitution
+    (fun candidatePredLevel =>
+      domainHasAllPositiveCandidateUnderSubstitution substitution env candidatePredLevel)
+    (fun candidatePredLevel argument argumentAtAllPositiveLevels => by
+      have codomainHasCandidate :=
+        codomainHasAllPositiveCandidateUnderSubstitution
+          (RawTermSubst.cons argument substitution)
+          (ReducibleEnvAtAllLevels.cons env argumentAtAllPositiveLevels)
+          candidatePredLevel
+      rwa [RawTerm.subst_cons_eq_subst0_lift] at codomainHasCandidate)
+
+/-- **Σ type codes have positive-fuel all-positive candidates under all-level substitutions.** -/
+theorem HasAllPositiveReducibleCandidateAtPositiveLevelsUnderSubstitution.sigmaType
+    {profile : PolyProfile} {scope : Nat} (context : TypingContext profile scope)
+    (domainCode : RawTerm scope) (codomainCode : RawTerm (scope + 1)) :
+    HasAllPositiveReducibleCandidateAtPositiveLevelsUnderSubstitution context
+      (sigmaTyCodeCell domainCode codomainCode) := by
+  intro _targetScope substitution _env predLevel
+  exact HasAllPositiveReducibleCandidateAt.sigmaTypeUnderSubst
+    (level := predLevel + 1) substitution domainCode codomainCode
+
 /-- **Conditional universe all-positive candidate.**  A universe code at positive fuel
 `predLevel + 1` has the all-positive member predicate as its reducible candidate if every strongly
 normalizing type reducible at the lower fuel `predLevel` is reducible at every fuel level.  This is the exact
@@ -383,6 +517,28 @@ theorem HasAllPositiveReducibleCandidateAt.universeCodeOfLowerTypeExtendsToAllLe
       exact ⟨normalizingAndReducibleAtAllLevels.1,
         normalizingAndReducibleAtAllLevels.2 predLevel⟩
   exact ReducibleTypeStep.ofPointwiseIff (ReducibleTypeStep.universeCode levelExpr flag) pointwise
+
+/-- **Universe codes have positive-fuel all-positive candidates under all-level substitutions, conditional
+on the exact lower-type extension obligation.**  This packages the universe case for the positive-fuel
+type-companion predicate without hiding the remaining semantic assumption. -/
+theorem HasAllPositiveReducibleCandidateAtPositiveLevelsUnderSubstitution.universeCodeOfLowerTypeExtendsToAllLevels
+    {profile : PolyProfile} {scope : Nat} (context : TypingContext profile scope)
+    (levelExpr : LevelExpr) (flag : UniverseFlag)
+    (lowerTypeExtendsToAllLevels :
+      ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+        (_env : ReducibleEnvAtAllLevels context substitution) (predLevel : Nat)
+        (typeCode : RawTerm (targetScope + 1)),
+        IsStronglyNormalizing typeCode →
+          IsReducibleTypeAt predLevel typeCode → IsReducibleTypeAtAllLevels typeCode) :
+    HasAllPositiveReducibleCandidateAtPositiveLevelsUnderSubstitution context
+      (universeCodeCell levelExpr flag) := by
+  intro _targetScope substitution env predLevel
+  rw [subst_universeCodeCell]
+  exact HasAllPositiveReducibleCandidateAt.universeCodeOfLowerTypeExtendsToAllLevels
+    levelExpr flag
+    (fun typeCode typeCodeNormalizing typeCodeReducibleAtLowerLevel =>
+      lowerTypeExtendsToAllLevels substitution env predLevel typeCode
+        typeCodeNormalizing typeCodeReducibleAtLowerLevel)
 
 /-- **Dependent Pi-introduction from all-positive arguments.**  If every argument accepted by the decoded
 domain candidate can be strengthened to all positive domain-membership levels, then the codomain and body
