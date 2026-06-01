@@ -49,6 +49,7 @@ import FX1Poly.Typed.FundamentalAtAllLeafArms
 import FX1Poly.Typed.FundamentalAtAllTelescope
 import FX1Poly.Typed.FundamentalAtAllFormerChildren
 import FX1Poly.Typed.FundamentalAtAllPiIntro
+import FX1Poly.Typed.FundamentalAtAllPositiveArguments
 import FX1Poly.Typed.FundamentalAtAllVectorPremises
 import FX1Poly.Typed.FundamentalAtAllNonDependentBinders
 import FX1Poly.Typed.FundamentalAtUniformVectorPremises
@@ -855,8 +856,9 @@ gates pin them shut.
     the binder steps deposit each binding at the level its classifier supplies (`predLevel` after
     `tarskiDecode`), the universe candidate changes per fuel level (no monotonic cast), so `var`'s demanded
     `predLevel+1` never matches.  `ReducibleEnvAtAllLevels` certifies every variable at ALL positive levels
-    (`∀ level, ReducibleEnvAt (level+1) …`) — exactly the `∀ level` discipline `TelescopeReducible` already
-    uses — so `var` instantiates the family at the conclusion level and binder extension threads through. -/
+    (`∀ level, ReducibleEnvAt (level+1) …`) so `var` instantiates the family at the conclusion level.  Binder
+    extension additionally needs the fresh semantic argument at all positive levels; the explicit
+    all-positive argument bridges below isolate that remaining condition. -/
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevels
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevels.lookupReducible
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevels.empty
@@ -892,6 +894,10 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.formerChildrenReducibleAtAll
 #assert_no_axioms FX1Poly.Typed.formerChildrenReducibleAtDispatchLevelsFromAtAllPremises
 #assert_no_axioms FX1Poly.Typed.fundamentalPiIntroAtAllFromMemberPremises
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.atLevel
+#assert_no_axioms FX1Poly.Typed.fundamentalPiIntroAtAllFromAllPositiveArgumentPremises
+#assert_no_axioms FX1Poly.Typed.formerChildrenReducibleAtDispatchLevelsFromAllPositiveArgumentPremises
 #assert_no_axioms FX1Poly.Typed.IsFundamentalConclusionAtVector
 #assert_no_axioms FX1Poly.Typed.fundamentalVarAtVectorMatchingLevel
 #assert_no_axioms FX1Poly.Typed.fundamentalConclusionAtAllOfVector
