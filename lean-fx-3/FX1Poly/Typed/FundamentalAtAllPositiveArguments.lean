@@ -540,6 +540,27 @@ theorem HasAllPositiveReducibleCandidateAtPositiveLevelsUnderSubstitution.univer
       lowerTypeExtendsToAllLevels substitution env predLevel typeCode
         typeCodeNormalizing typeCodeReducibleAtLowerLevel)
 
+/-- **Positive-fuel candidate companions strengthen ordinary members to all-positive members.**  This is
+the recursor-facing projection from the positive-fuel type companion: once the substituted domain denotes
+`IsReducibleMemberAtAllPositiveLevels` at the exact positive level consumed by a binder, determinism turns
+membership in any decoded domain candidate at that same level into all-positive membership. -/
+theorem HasAllPositiveReducibleCandidateAtPositiveLevelsUnderSubstitution.memberExtendsToAllPositive
+    {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
+    {domainCode : RawTerm scope}
+    (domainHasPositiveCandidateUnderSubstitution :
+      HasAllPositiveReducibleCandidateAtPositiveLevelsUnderSubstitution context domainCode) :
+    ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+      (_env : ReducibleEnvAtAllLevels context substitution) (predLevel : Nat)
+      {domainCandidate : RawTerm (targetScope + 1) → Prop},
+      ReducibleTypeAt (predLevel + 1) (RawTerm.subst substitution domainCode) domainCandidate →
+        ∀ argument : RawTerm (targetScope + 1), domainCandidate argument →
+          IsReducibleMemberAtAllPositiveLevels
+            (RawTerm.subst substitution domainCode) argument := by
+  intro _targetScope substitution env predLevel domainCandidate domainReducible argument argumentMember
+  exact HasAllPositiveReducibleCandidateAt.memberExtendsToAllPositive
+    (domainHasPositiveCandidateUnderSubstitution substitution env predLevel)
+    domainReducible argumentMember
+
 /-- **Dependent Pi-introduction from all-positive arguments.**  If every argument accepted by the decoded
 domain candidate can be strengthened to all positive domain-membership levels, then the codomain and body
 all-level recursive hypotheses can be run under the cons-extended all-level environment.  This is the exact
@@ -608,6 +629,30 @@ theorem fundamentalPiIntroAtAllFromAllPositiveDomainCandidate {profile : PolyPro
       HasAllPositiveReducibleCandidateAt.memberExtendsToAllPositive
         (domainHasAllPositiveCandidate substitution env predLevel)
         domainReducible argumentInDomain)
+    codomainFundamental bodyFundamental
+
+/-- **Dependent Π-introduction from the positive-fuel domain-candidate companion.**  This packages the
+previous bridge in the exact positive-fuel companion form expected from the type half of the dependent
+fundamental theorem.  The domain companion supplies the all-positive candidate at `predLevel + 1`, which is
+precisely the decoded domain level consumed by the abstraction rule. -/
+theorem fundamentalPiIntroAtAllFromPositiveDomainCandidateCompanion
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
+    {domainLevel codomainLevel : LevelExpr} {flag : UniverseFlag}
+    (domainFundamental :
+      FundamentalConclusionAtAll context domainCode (universeCodeCell domainLevel flag))
+    (domainHasPositiveCandidateUnderSubstitution :
+      HasAllPositiveReducibleCandidateAtPositiveLevelsUnderSubstitution context domainCode)
+    (codomainFundamental :
+      FundamentalConclusionAtAll (context.cons domainCode) codomainCode
+        (universeCodeCell codomainLevel flag))
+    (bodyFundamental :
+      FundamentalConclusionAtAll (context.cons domainCode) body codomainCode) :
+    FundamentalConclusionAtAll context (lamCell body) (piTyCodeCell domainCode codomainCode) :=
+  fundamentalPiIntroAtAllFromAllPositiveDomainCandidate domainFundamental
+    (fun substitution env predLevel =>
+      domainHasPositiveCandidateUnderSubstitution substitution env predLevel)
     codomainFundamental bodyFundamental
 
 /-- **Dispatch-level Pi/Sigma former children from all-positive arguments.**  If any semantic domain member
