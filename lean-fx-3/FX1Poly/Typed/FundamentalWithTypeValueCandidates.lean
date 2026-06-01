@@ -131,6 +131,58 @@ theorem PositiveCandidateConclusionWithTypeValueCandidates.toTypeValueCandidateC
   intro _classifierSubstIsUniverse predLevel
   exact typeHasPositiveCandidate substitution envWithTypeValueCandidates predLevel
 
+/-- **A type-value-environment positive-candidate conclusion strengthens decoded membership.**  If a
+decoded candidate for a type accepts an argument, the positive-candidate companion identifies that candidate
+with all-positive membership and transports the argument into the all-positive predicate. -/
+theorem PositiveCandidateConclusionWithTypeValueCandidates.memberExtendsToAllPositive
+    {profile : PolyProfile} {scope targetScope : Nat}
+    {context : TypingContext profile scope} {typeCode : RawTerm scope}
+    (typeHasPositiveCandidate :
+      PositiveCandidateConclusionWithTypeValueCandidates context typeCode)
+    (substitution : RawTermSubst scope (targetScope + 1))
+    (envWithTypeValueCandidates :
+      ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution)
+    (predLevel : Nat) {candidate : RawTerm (targetScope + 1) → Prop}
+    (typeReducible :
+      ReducibleTypeAt (predLevel + 1) (RawTerm.subst substitution typeCode) candidate)
+    {argument : RawTerm (targetScope + 1)} (argumentInCandidate : candidate argument) :
+    IsReducibleMemberAtAllPositiveLevels (RawTerm.subst substitution typeCode) argument :=
+  HasAllPositiveReducibleCandidateAt.memberExtendsToAllPositive
+    (typeHasPositiveCandidate substitution envWithTypeValueCandidates predLevel)
+    typeReducible argumentInCandidate
+
+/-- **Extend the type-value environment through a binder from a decoded argument.**  The positive-candidate
+type half upgrades the decoded argument to all-positive membership and supplies the binding TYPE's
+positive-candidate companion.  The caller must still provide the value payload required specifically when
+the substituted binding type is a universe code: in that case the bound VALUE itself is a type value and
+must denote the all-positive member predicate.  Keeping that premise explicit is the sound boundary; it does
+not assume level irrelevance or that every reducible type automatically carries the all-positive candidate. -/
+theorem PositiveCandidateConclusionWithTypeValueCandidates.consEnvWithTypeValueCandidate
+    {profile : PolyProfile} {scope targetScope : Nat}
+    {context : TypingContext profile scope} {typeCode : RawTerm scope}
+    (typeHasPositiveCandidate :
+      PositiveCandidateConclusionWithTypeValueCandidates context typeCode)
+    (substitution : RawTermSubst scope (targetScope + 1))
+    (envWithTypeValueCandidates :
+      ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution)
+    (predLevel : Nat) {candidate : RawTerm (targetScope + 1) → Prop}
+    (typeReducible :
+      ReducibleTypeAt (predLevel + 1) (RawTerm.subst substitution typeCode) candidate)
+    {argument : RawTerm (targetScope + 1)} (argumentInCandidate : candidate argument)
+    (argumentValueHasPositiveCandidateWhenTypeIsUniverse :
+      ∀ {levelExpr : LevelExpr} {flag : UniverseFlag},
+        RawTerm.subst substitution typeCode = universeCodeCell levelExpr flag →
+          ∀ candidatePredLevel : Nat,
+            HasAllPositiveReducibleCandidateAt (candidatePredLevel + 1) argument) :
+    ReducibleEnvAtAllLevelsWithTypeValueCandidates (context.cons typeCode)
+      (RawTermSubst.cons argument substitution) :=
+  ReducibleEnvAtAllLevelsWithTypeValueCandidates.cons envWithTypeValueCandidates
+    (typeHasPositiveCandidate.memberExtendsToAllPositive substitution
+      envWithTypeValueCandidates predLevel typeReducible argumentInCandidate)
+    (fun headPredLevel =>
+      typeHasPositiveCandidate substitution envWithTypeValueCandidates headPredLevel)
+    argumentValueHasPositiveCandidateWhenTypeIsUniverse
+
 /-- **The variable member arm over the type-value environment.** -/
 theorem fundamentalVarWithTypeValueCandidates {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) (index : Fin scope) :
@@ -284,6 +336,78 @@ theorem fundamentalPiElimWithTypeValueCandidates
   exact IsReducibleMemberAt.applicationUnderSubst substitution
     (functionFundamental substitution envWithTypeValueCandidates predLevel)
     (argumentFundamental substitution envWithTypeValueCandidates predLevel)
+
+/-- **Dependent lambda introduction over the type-value environment, with the universe-domain value
+payload explicit.**  The ordinary member proof is the same canonical-candidate argument as in the
+positive-candidate layer: the domain is decoded one fuel level up, accepted arguments are strengthened to
+all-positive membership, and the codomain/body recursive premises run under the cons-extended environment.
+
+The additional premise is exactly the type-value payload required by
+`ReducibleEnvAtAllLevelsWithTypeValueCandidates.cons`: if the substituted domain itself is a universe, the
+chosen argument is a type value and must carry the all-positive candidate at every positive fuel.  This is
+the proof-relevant boundary needed for universe-valued binders; the theorem does not collapse it by false
+level irrelevance. -/
+theorem fundamentalPiIntroWithTypeValueCandidatesFromTypeValueArgumentPremise
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
+    {domainLevel codomainLevel : LevelExpr} {flag : UniverseFlag}
+    (domainFundamental :
+      FundamentalConclusionWithTypeValueCandidates context domainCode
+        (universeCodeCell domainLevel flag))
+    (domainHasPositiveCandidate :
+      PositiveCandidateConclusionWithTypeValueCandidates context domainCode)
+    (argumentValueHasPositiveCandidateWhenDomainIsUniverse :
+      ∀ {targetScope : Nat}
+        (substitution : RawTermSubst scope (targetScope + 1))
+        (_env : ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution)
+        (_predLevel : Nat) {candidate : RawTerm (targetScope + 1) → Prop}
+        {argument : RawTerm (targetScope + 1)}, candidate argument →
+          ∀ {levelExpr : LevelExpr} {domainFlag : UniverseFlag},
+            RawTerm.subst substitution domainCode = universeCodeCell levelExpr domainFlag →
+              ∀ candidatePredLevel : Nat,
+                HasAllPositiveReducibleCandidateAt (candidatePredLevel + 1) argument)
+    (codomainFundamental :
+      FundamentalConclusionWithTypeValueCandidates (context.cons domainCode) codomainCode
+        (universeCodeCell codomainLevel flag))
+    (bodyFundamental :
+      FundamentalConclusionWithTypeValueCandidates (context.cons domainCode) body codomainCode) :
+    FundamentalConclusionWithTypeValueCandidates context (lamCell body)
+      (piTyCodeCell domainCode codomainCode) := by
+  intro _targetScope substitution envWithTypeValueCandidates predLevel
+  have domainMember := domainFundamental substitution envWithTypeValueCandidates (predLevel + 1)
+  rw [subst_universeCodeCell] at domainMember
+  obtain ⟨domainCandidate, domainReducible⟩ := domainMember.tarskiDecode
+  refine IsReducibleMemberAt.abstractionCanonicalUnderSubst substitution domainReducible
+    (fun _argument argumentInDomain =>
+      domainReducible.isReducibilityCandidate.stronglyNormalizing argumentInDomain)
+    ?codomainExists ?bodyReducible
+  · intro argument argumentInDomain
+    have extendedEnvWithTypeValueCandidates :
+        ReducibleEnvAtAllLevelsWithTypeValueCandidates (context.cons domainCode)
+          (RawTermSubst.cons argument substitution) :=
+      domainHasPositiveCandidate.consEnvWithTypeValueCandidate substitution
+        envWithTypeValueCandidates predLevel domainReducible argumentInDomain
+        (argumentValueHasPositiveCandidateWhenDomainIsUniverse substitution
+          envWithTypeValueCandidates predLevel argumentInDomain)
+    have codomainMember :=
+      codomainFundamental (RawTermSubst.cons argument substitution)
+        extendedEnvWithTypeValueCandidates (predLevel + 1)
+    rw [subst_universeCodeCell] at codomainMember
+    have codomainReducibleType := codomainMember.tarskiDecode
+    rwa [RawTerm.subst_cons_eq_subst0_lift] at codomainReducibleType
+  · intro argument argumentInDomain
+    have extendedEnvWithTypeValueCandidates :
+        ReducibleEnvAtAllLevelsWithTypeValueCandidates (context.cons domainCode)
+          (RawTermSubst.cons argument substitution) :=
+      domainHasPositiveCandidate.consEnvWithTypeValueCandidate substitution
+        envWithTypeValueCandidates predLevel domainReducible argumentInDomain
+        (argumentValueHasPositiveCandidateWhenDomainIsUniverse substitution
+          envWithTypeValueCandidates predLevel argumentInDomain)
+    rw [← RawTerm.subst_cons_eq_subst0_lift _ argument substitution,
+      ← RawTerm.subst_cons_eq_subst0_lift _ argument substitution]
+    exact bodyFundamental (RawTermSubst.cons argument substitution)
+      extendedEnvWithTypeValueCandidates predLevel
 
 /-- **The positive-candidate Sigma type half over the type-value environment.**  Sigma codes are neutral
 non-Pi type codes in the stratified reducibility semantics, so the existing positive-candidate arm reads
