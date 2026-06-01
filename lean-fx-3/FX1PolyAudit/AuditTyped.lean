@@ -79,6 +79,7 @@ import FX1Poly.Typed.ReducibleTypeAtAllLevelsInduction
 import FX1Poly.Typed.ReducibleTypeAtAllLevelsPiNeutralDomain
 import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsLeaves
 import FX1Poly.Typed.FundamentalTelescopeConsNeutralDomain
+import FX1Poly.Typed.ReducibleTypeAtAllLevelsPiDomainMemberExtension
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -1364,3 +1365,9 @@ gates pin them shut.
 -- the lone all-level-assembly `sorry` is discharged for every non-type-polymorphic former, given only the
 -- tail recursion (supplied by the FT's own IH).
 #assert_no_axioms FX1Poly.Typed.fundamentalTelescopeConsAtAllNeutralDomain
+
+-- The Π `piType` arm of type-level level-irrelevance, generalized from a neutral domain to ANY domain that
+-- admits MEMBER-EXTENSION: the domain-candidate level-mismatch dissolves under domain member-extension
+-- (rebuild with the domain's fixed canonical member-predicate).  The type leg of the mutual type+member
+-- irrelevance — residual obstruction now purely member-side (member-extension for Π/universe domains).
+#assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllLevels.piTypeOfDomainMemberExtension
