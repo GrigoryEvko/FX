@@ -1021,6 +1021,92 @@ theorem fundamentalSigmaFormationWithTypeValueCandidatesFromUniverseDomain
     argumentValueHasPositiveCandidateWhenDomainIsUniverse codomainFundamental
     substitution envWithTypeValueCandidates predLevel).toSigmaMember
 
+/-- **Bundled Pi-formation validity for a universe-code domain over the type-value environment.**  This is
+the bundled counterpart of `fundamentalPiFormationWithTypeValueCandidatesFromUniverseDomain`: the member
+half uses the universe-domain former-children specialization, while the type-value half is the generic Pi
+positive-candidate construction.  The theorem stays universe-polymorphic in both `LevelExpr` and
+`UniverseFlag`; it does not collapse to a single universe or hide the universe-domain value payload. -/
+theorem fundamentalPiFormationValidityWithTypeValueCandidatesFromUniverseDomain
+    {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
+    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
+    {codomainCode : RawTerm (scope + 1)}
+    (domainFundamental :
+      FundamentalConclusionWithTypeValueCandidates context (universeCodeCell domainLevel flag)
+        (universeCodeCell domainLevel.lsucc flag))
+    (domainHasPositiveCandidate :
+      PositiveCandidateConclusionWithTypeValueCandidates context
+        (universeCodeCell domainLevel flag))
+    (argumentValueHasPositiveCandidateWhenDomainIsUniverse :
+      ∀ {targetScope : Nat}
+        (substitution : RawTermSubst scope (targetScope + 1))
+        (_env : ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution)
+        (argument : RawTerm (targetScope + 1)),
+        IsReducibleMemberAtAllPositiveLevels
+          (RawTerm.subst substitution (universeCodeCell domainLevel flag)) argument →
+          ∀ {levelExpr : LevelExpr} {domainFlag : UniverseFlag},
+            RawTerm.subst substitution (universeCodeCell domainLevel flag) =
+              universeCodeCell levelExpr domainFlag →
+              ∀ candidatePredLevel : Nat,
+                HasAllPositiveReducibleCandidateAt (candidatePredLevel + 1) argument)
+    (codomainFundamental :
+      FundamentalConclusionWithTypeValueCandidates
+        (context.cons (universeCodeCell domainLevel flag)) codomainCode
+        (universeCodeCell codomainLevel flag))
+    (codomainHasPositiveCandidate :
+      PositiveCandidateConclusionWithTypeValueCandidates
+        (context.cons (universeCodeCell domainLevel flag)) codomainCode) :
+    FundamentalValidityWithTypeValueCandidates context
+      (piTyCodeCell (universeCodeCell domainLevel flag) codomainCode)
+      (universeCodeCell formerLevel flag) :=
+  fundamentalPiFormationValidityWithTypeValueCandidatesFromTypeValueArgumentPremise
+    domainFundamental domainHasPositiveCandidate
+    argumentValueHasPositiveCandidateWhenDomainIsUniverse
+    (codomainMemberAtDomainLevelWithTypeValueCandidatesFromUniverseDomain
+      domainHasPositiveCandidate argumentValueHasPositiveCandidateWhenDomainIsUniverse
+      codomainFundamental)
+    codomainFundamental codomainHasPositiveCandidate
+
+/-- **Bundled Sigma-formation validity for a universe-code domain over the type-value environment.**  The
+member half uses the universe-domain dispatch-level child bundle; the type-value half is Sigma's neutral
+positive-candidate payload.  This packages the universe-domain Sigma formation arm for the strengthened FT
+motive without adding any level-irrelevance assumption. -/
+theorem fundamentalSigmaFormationValidityWithTypeValueCandidatesFromUniverseDomain
+    {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
+    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
+    {codomainCode : RawTerm (scope + 1)}
+    (domainFundamental :
+      FundamentalConclusionWithTypeValueCandidates context (universeCodeCell domainLevel flag)
+        (universeCodeCell domainLevel.lsucc flag))
+    (domainHasPositiveCandidate :
+      PositiveCandidateConclusionWithTypeValueCandidates context
+        (universeCodeCell domainLevel flag))
+    (argumentValueHasPositiveCandidateWhenDomainIsUniverse :
+      ∀ {targetScope : Nat}
+        (substitution : RawTermSubst scope (targetScope + 1))
+        (_env : ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution)
+        (argument : RawTerm (targetScope + 1)),
+        IsReducibleMemberAtAllPositiveLevels
+          (RawTerm.subst substitution (universeCodeCell domainLevel flag)) argument →
+          ∀ {levelExpr : LevelExpr} {domainFlag : UniverseFlag},
+            RawTerm.subst substitution (universeCodeCell domainLevel flag) =
+              universeCodeCell levelExpr domainFlag →
+              ∀ candidatePredLevel : Nat,
+                HasAllPositiveReducibleCandidateAt (candidatePredLevel + 1) argument)
+    (codomainFundamental :
+      FundamentalConclusionWithTypeValueCandidates
+        (context.cons (universeCodeCell domainLevel flag)) codomainCode
+        (universeCodeCell codomainLevel flag)) :
+    FundamentalValidityWithTypeValueCandidates context
+      (sigmaTyCodeCell (universeCodeCell domainLevel flag) codomainCode)
+      (universeCodeCell formerLevel flag) :=
+  fundamentalSigmaFormationValidityWithTypeValueCandidatesFromTypeValueArgumentPremise
+    domainFundamental domainHasPositiveCandidate
+    argumentValueHasPositiveCandidateWhenDomainIsUniverse
+    (codomainMemberAtDomainLevelWithTypeValueCandidatesFromUniverseDomain
+      domainHasPositiveCandidate argumentValueHasPositiveCandidateWhenDomainIsUniverse
+      codomainFundamental)
+    codomainFundamental
+
 /-- A strengthened member result for `typeCode : Type@levelExpr` yields strong normalization and
 all-level reducibility of the substituted type code. -/
 theorem FundamentalConclusionWithTypeValueCandidates.typeInUniverse_hasStrongNormalizationAndAllLevelReducibility
