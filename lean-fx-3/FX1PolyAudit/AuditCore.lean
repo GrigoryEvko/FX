@@ -3,6 +3,7 @@ import FX1Poly.Core.CellSort
 import FX1Poly.Typed.HasType
 import FX1Poly.Core.GeneratorTagRoundTrip
 import FX1Poly.Core.ReducibleTypeClosed
+import FX1Poly.Core.PointwiseIffAlgebra
 
 /-! # FX1PolyAudit/AuditCore — zero-axiom gate for the cell-calculus core
 
@@ -51,3 +52,10 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.ReducibleTypeClosed
 #assert_no_axioms FX1Poly.Core.ReducibleType.toClosed
 #assert_no_axioms FX1Poly.Core.ReducibleType.closedAtMemberPredicate
+
+-- Equivalence-relation algebra of candidate pointwise-iff (the transport algebra the reducibility
+-- model threads through every `ReducibleType.deterministic` candidate transfer, and the pending
+-- `ReducibleType.ofPointwiseIff` congruence-closure cascade).
+#assert_no_axioms FX1Poly.Core.PointwiseIff.refl
+#assert_no_axioms FX1Poly.Core.PointwiseIff.symm
+#assert_no_axioms FX1Poly.Core.PointwiseIff.trans
