@@ -1,6 +1,7 @@
 import FX1Poly.Typed.FundamentalAtAllVectorPremises
 import FX1Poly.Typed.TelescopeReducible
 import FX1Poly.Typed.DescTelescopeInversion
+import FX1Poly.Typed.HasTypeDescPiValidity
 import FX1Poly.Core.RawTermRenameSubstCommute
 import FX1Poly.Core.StrongNormalizationRename
 
@@ -186,6 +187,28 @@ theorem HasTypeDescPi.subjectStronglyNormalizingFromFormation {profile : PolyPro
   ((HasTypeDescPi.fundamentalAtAllFromFormation formationFundamental typed)
     substitution env predLevel).stronglyNormalizing
 
+/-- **Classifier strong normalization from the conditional grown-engine fundamental theorem.**  Validity
+turns the classifier into a grown type, then the conditional all-level theorem applies to that
+classifier-as-subject.  The formation-engine vector premise remains explicit; no unconditional FT claim is
+hidden here. -/
+theorem HasTypeDescPi.classifierStronglyNormalizingFromFormation {profile : PolyProfile}
+    (formationFundamental :
+      ∀ {scope : Nat} {context : TypingContext profile scope}
+        {subject classifier : RawTerm scope},
+        HasTypeDesc profile context subject classifier →
+          IsFundamentalConclusionAtVector context subject classifier)
+    {scope targetScope : Nat} {context : TypingContext profile scope}
+    {subject classifier : RawTerm scope}
+    (contextWellFormed : WfContext context)
+    (typed : HasTypeDescPi profile context subject classifier)
+    (substitution : RawTermSubst scope (targetScope + 1))
+    (env : ReducibleEnvAtAllLevels context substitution) (predLevel : Nat) :
+    IsStronglyNormalizing (RawTerm.subst substitution classifier) := by
+  obtain ⟨_levelExpr, _flag, classifierTyped⟩ :=
+    typed.classifierIsTypeDesc contextWellFormed
+  exact HasTypeDescPi.subjectStronglyNormalizingFromFormation
+    formationFundamental classifierTyped substitution env predLevel
+
 /-- **Closed reducibility under a closing substitution, conditional on the formation-engine premise.**  In the
 empty context the all-level environment is vacuous, so the conditional grown-engine fundamental theorem
 immediately specializes to a closed term under any target closing substitution.  This is the reducible-member
@@ -221,6 +244,22 @@ theorem HasTypeDescPi.closedSubjectSubstStronglyNormalizingFromFormation {profil
   (HasTypeDescPi.closedSubjectReducibleUnderSubstFromFormation
     formationFundamental substitution predLevel typed).stronglyNormalizing
 
+/-- **Closed classifier strong normalization under a closing substitution, conditional on the
+formation-engine premise.** -/
+theorem HasTypeDescPi.closedClassifierSubstStronglyNormalizingFromFormation {profile : PolyProfile}
+    (formationFundamental :
+      ∀ {scope : Nat} {context : TypingContext profile scope}
+        {subject classifier : RawTerm scope},
+        HasTypeDesc profile context subject classifier →
+          IsFundamentalConclusionAtVector context subject classifier)
+    {targetScope : Nat} (substitution : RawTermSubst 0 (targetScope + 1)) (predLevel : Nat)
+    {subject classifier : RawTerm 0}
+    (typed : HasTypeDescPi profile TypingContext.empty subject classifier) :
+    IsStronglyNormalizing (RawTerm.subst substitution classifier) :=
+  HasTypeDescPi.classifierStronglyNormalizingFromFormation
+    formationFundamental (WfContext.emptyIsWellFormed (profile := profile)) typed
+    substitution (ReducibleEnvAtAllLevels.empty substitution) predLevel
+
 /-- **Closed strong normalization from the conditional grown-engine fundamental theorem.**  In the empty
 context, instantiate the closing substitution with the unique empty substitution into scope `1`, use the
 vacuous all-level environment, then reflect strong normalization back along the unique empty renaming.  The
@@ -249,5 +288,22 @@ theorem HasTypeDescPi.closedSubjectStronglyNormalizingFromFormation {profile : P
     rwa [RawTerm.rename_subst_commute emptyRenaming
       (RawTermSubst.identity : RawTermSubst 1 1) subject]
   exact StepStar.isStronglyNormalizing_of_rename emptyRenaming renamedSubjectNormalizing
+
+/-- **Closed classifier strong normalization from the conditional grown-engine fundamental theorem.**
+Validity turns the closed classifier into a closed grown type, and the conditional closed-subject theorem
+normalizes that type.  The formation-engine premise remains explicit. -/
+theorem HasTypeDescPi.closedClassifierStronglyNormalizingFromFormation {profile : PolyProfile}
+    (formationFundamental :
+      ∀ {scope : Nat} {context : TypingContext profile scope}
+        {subject classifier : RawTerm scope},
+        HasTypeDesc profile context subject classifier →
+          IsFundamentalConclusionAtVector context subject classifier)
+    {subject classifier : RawTerm 0}
+    (typed : HasTypeDescPi profile TypingContext.empty subject classifier) :
+    IsStronglyNormalizing classifier := by
+  obtain ⟨_levelExpr, _flag, classifierTyped⟩ :=
+    typed.classifierIsTypeDesc (WfContext.emptyIsWellFormed (profile := profile))
+  exact HasTypeDescPi.closedSubjectStronglyNormalizingFromFormation
+    formationFundamental classifierTyped
 
 end FX1Poly.Typed
