@@ -277,4 +277,37 @@ theorem IsReducibleMemberAt.abstractionCanonicalUnderSubst {scope targetScope : 
   exact IsReducibleMemberAt.abstractionCanonical
     domainReducible domainArgumentsSN codomainExists bodyReducible
 
+/-- **A formation generator's cell admits no weak-head step (the `genFormationPi` arm's weak-head-normality
+obligation).**  The grown engine's sole formation arm `HasTypeDescPi.genFormationPi` is generic over
+`typingRuleDescOf generator = some rule`; that table is `some` for EXACTLY `gen_piTyCode` and
+`gen_sigmaTyCode` (the two dependent type-formers), both of which are weak-head normal — a type former is
+neither a β-redex (root `gen_app`) nor an ι-redex (an eliminator applied to a constructor), so the only
+weak-head arm whose subject unifies is `rootIota`, and no `IotaHeadStep` fires on a former root.  This
+discharges the weak-head-normality hypothesis of `ReducibleTypeAt.reducibleOfWeakHeadNormalFormer` for the
+non-Π formation formers (`gen_sigmaTyCode` and any future data former added as a `typingRuleDescOf` row),
+so the fundamental theorem's `genFormationPi` arm classifies the substituted former by strong normalization
+in the Tarski universe with no per-former weak-head-normality proof at the induction site.  The `gen_piTyCode`
+case is handled separately (the arrow candidate via `piTypeCanonicalUnderSubst`); this lemma covers the
+weak-head-normality both share.  Proof: the formation generator is `gen_piTyCode` or `gen_sigmaTyCode` (else
+`typingRuleDescOf` is `none`, contradicting `isFormation`), and each is weak-head normal by
+`cases` on the step leaving only the vacuous `rootIota`/`IotaHeadStep`. -/
+theorem formationGenerator_noWeakHeadStep {scope : Nat} {generator : Generator}
+    {payload : generator.payload scope}
+    {children : RawTermChildren generator.binderShifts scope}
+    {rule : TypingRuleDesc} (isFormation : typingRuleDescOf generator = some rule) :
+    ∀ reduct : RawTerm scope,
+      ¬ WeakHeadStep (.mkGen generator payload children) reduct := by
+  by_cases isPiFormer : generator = .gen_piTyCode
+  · subst isPiFormer
+    intro _reduct weakHeadStep
+    cases weakHeadStep with
+    | rootIota iotaStep => cases iotaStep
+  · by_cases isSigmaFormer : generator = .gen_sigmaTyCode
+    · subst isSigmaFormer
+      intro _reduct weakHeadStep
+      cases weakHeadStep with
+      | rootIota iotaStep => cases iotaStep
+    · simp only [typingRuleDescOf, if_neg isPiFormer, if_neg isSigmaFormer] at isFormation
+      nomatch isFormation
+
 end FX1Poly.Typed

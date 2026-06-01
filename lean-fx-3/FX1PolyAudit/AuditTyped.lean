@@ -824,6 +824,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeAt.piTypeCanonicalUnderSubst
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.abstractionCanonicalUnderSubst
 
+/-! ### genFormationPi former weak-head-normality — the `genFormationPi` arm's WHN obligation.
+    `typingRuleDescOf` is `some` only for `gen_piTyCode` / `gen_sigmaTyCode` (the dependent type-formers),
+    both weak-head normal, so the fundamental theorem's generic formation arm discharges the
+    `reducibleOfWeakHeadNormalFormer` weak-head-normality hypothesis with no per-former proof at the
+    induction site. -/
+#assert_no_axioms FX1Poly.Typed.formationGenerator_noWeakHeadStep
+
 /-! ### FORMATION-ARM BRIDGE: membership at a universe-code classifier ⟺ strong normalization.
     A universe code is a normal leaf (`noStep_universeCode`), hence neutral, so the dependent
     reducibility relation assigns it the SN candidate and `IsReducibleMember (universeCodeCell ..) t ↔
