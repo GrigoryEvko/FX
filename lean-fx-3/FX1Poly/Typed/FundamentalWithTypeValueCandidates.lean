@@ -676,6 +676,49 @@ theorem fundamentalUniverseValidityWithTypeValueCandidatesOfAllReducibleTypesHav
       allReducibleTypesHaveTypeValueCandidates.reducibleTypeAtExtendsToAllLevels
         typeCodeNormalizing candidateReducibleAtLevel)
 
+/-- **Universe-code positive candidate from positive-member extension.**  The statement is fully
+multi-universe: every syntactic level expression and universe flag is accepted.  The operational
+positive-member-extension premise supplies the lower-fuel extension bridge required by the Tarski universe
+candidate. -/
+theorem positiveCandidateUniverseCodeWithTypeValueCandidatesOfPositiveMemberExtension
+    {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (levelExpr : LevelExpr) (flag : UniverseFlag)
+    (positiveMemberExtension :
+      HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes) :
+    PositiveCandidateConclusionWithTypeValueCandidates context (universeCodeCell levelExpr flag) :=
+  positiveCandidateUniverseCodeWithTypeValueCandidatesOfAllReducibleTypesHaveTypeValueCandidates
+    context levelExpr flag
+    positiveMemberExtension.toAllReducibleTypesHaveTypeValueCandidates
+
+/-- **Universe-code type-value payload from positive-member extension.**  This is the universe-parametric
+type-value half for arbitrary `Type@levelExpr`/flag cells, stated against the operational member-extension
+bridge. -/
+theorem typeValueCandidateUniverseCodeWithTypeValueCandidatesOfPositiveMemberExtension
+    {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope)
+    (subjectLevelExpr classifierLevelExpr : LevelExpr) (flag : UniverseFlag)
+    (positiveMemberExtension :
+      HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes) :
+    TypeValueCandidateConclusionWithTypeValueCandidates context
+      (universeCodeCell subjectLevelExpr flag) (universeCodeCell classifierLevelExpr flag) :=
+  typeValueCandidateUniverseCodeWithTypeValueCandidatesOfAllReducibleTypesHaveTypeValueCandidates
+    context subjectLevelExpr classifierLevelExpr flag
+    positiveMemberExtension.toAllReducibleTypesHaveTypeValueCandidates
+
+/-- **Bundled universe validity from positive-member extension.**  This is the direct multi-universe
+universe-formation arm for the type-value FT interface: member reducibility is ordinary universe formation,
+and the type-value half is discharged by positive-member extension. -/
+theorem fundamentalUniverseValidityWithTypeValueCandidatesOfPositiveMemberExtension
+    {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (levelExpr : LevelExpr) (flag : UniverseFlag)
+    (positiveMemberExtension :
+      HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes) :
+    FundamentalValidityWithTypeValueCandidates context
+      (universeCodeCell levelExpr flag) (universeCodeCell levelExpr.lsucc flag) :=
+  fundamentalUniverseValidityWithTypeValueCandidatesOfAllReducibleTypesHaveTypeValueCandidates
+    context levelExpr flag
+    positiveMemberExtension.toAllReducibleTypesHaveTypeValueCandidates
+
 /-- **The `conv` member arm over the type-value environment.**  The reclassifier premise is run one fuel
 level up, decoded from its universe membership to a reducible target type at the conclusion fuel, and the
 subject member is transported along the substituted conversion.  This is only the member half: the
