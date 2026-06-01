@@ -78,6 +78,7 @@ import FX1Poly.Typed.ReducibleTypeAtAllLevelsLeaves
 import FX1Poly.Typed.ReducibleTypeAtAllLevelsInduction
 import FX1Poly.Typed.ReducibleTypeAtAllLevelsPiNeutralDomain
 import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsLeaves
+import FX1Poly.Typed.FundamentalTelescopeConsNeutralDomain
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -1357,3 +1358,9 @@ gates pin them shut.
 -- cons-arm `headMemberExtendsToAllPositive` premise for a neutral-domain former.
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.ofNeutralClassifier
 #assert_no_axioms FX1Poly.Typed.headMemberExtendsToAllPositive_ofNeutralClassifier
+
+-- ASSEMBLY: the formation-FT telescope-cons (binder) arm CLOSES for a neutral / data-former domain — the
+-- member-side leaf composed with the all-positive-argument cons companion.  The binder arm that has carried
+-- the lone all-level-assembly `sorry` is discharged for every non-type-polymorphic former, given only the
+-- tail recursion (supplied by the FT's own IH).
+#assert_no_axioms FX1Poly.Typed.fundamentalTelescopeConsAtAllNeutralDomain
