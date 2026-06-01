@@ -41,6 +41,7 @@ import FX1Poly.Typed.HasTypeDescPiValidity
 import FX1Poly.Typed.ConvCodeInjectivity
 import FX1Poly.Typed.ReducibleEnv
 import FX1Poly.Typed.ReducibleEnvAt
+import FX1Poly.Typed.ReducibleSemanticRules
 import FX1Poly.Typed.ReducibleMemberFormation
 
 /-! # Tools/AuditAll/AuditTyped
@@ -781,6 +782,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAt.lookupReducible
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAt.empty
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAt.cons
+
+/-! ### SEMANTIC TYPING RULES UNDER A CLOSING SUBSTITUTION (the fundamental theorem's arm bodies).
+    The Girard-Tait fundamental theorem over `HasTypeDescPi` is a thin induction whose arms dispatch to
+    these substitution-closed semantic rules.  `applicationUnderSubst` is the `piElim` arm: it lifts the
+    raw `IsReducibleMemberAt.application` through the β-substitution commutation
+    `RawTerm.subst0_subst_commute` (which lines up `subst γ (subst0 codomainCode argument)` with the
+    dependent output of the substituted pieces), at a FIXED `level` (elimination introduces no universe
+    nesting).  Future arms (conv / piIntro / formation) append here. -/
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.applicationUnderSubst
 
 /-! ### FORMATION-ARM BRIDGE: membership at a universe-code classifier ⟺ strong normalization.
     A universe code is a normal leaf (`noStep_universeCode`), hence neutral, so the dependent
