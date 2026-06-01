@@ -146,4 +146,25 @@ theorem IsReducibleMemberAt.universeFormation {scope : Nat} (predLevel : Nat)
     (isStronglyNormalizing_of_noStep (fun _ step => noStep_universeCode (levelExpr, flag) step))
     (IsReducibleTypeAt.universeCode predLevel levelExpr flag)
 
+/-- **A strongly-normalizing data type former inhabits its universe** — the fundamental theorem's
+`genFormationPi` arm for the non-Π non-universe formers, semantically.  Any weak-head-normal non-Π
+non-universe type code (every DATA former — Σ / Nat / List / Option / Either / Id / product / sum) that is
+strongly normalizing is a reducible member of any universe code `Type@levelExpr` at `predLevel + 1`:
+`tarskiEncode` the former from its strong normalization (supplied from SN of its children at the call site)
+and its reducibility AS A TYPE at `predLevel` (`reducibleOfWeakHeadNormalFormer` — the SN candidate, the
+Tarski model classifying every data type by strong normalization).  The classifier universe level is
+decoupled from the former's structure, the `lsucc`/level discipline being the typing rules' responsibility.
+With the Π formers handled by `piTypeCanonical` and the universe code by `universeFormation`, this discharges
+the remaining `genFormationPi` formers — no per-former reducibility candidate required. -/
+theorem IsReducibleMemberAt.dataFormerInUniverse {scope : Nat} {predLevel : Nat}
+    (levelExpr : LevelExpr) (flag : UniverseFlag) {former : RawTerm scope}
+    (stronglyNormalizing : IsStronglyNormalizing former)
+    (weakHeadNormal : ∀ reduct : RawTerm scope, ¬ WeakHeadStep former reduct)
+    (notPiType : former.rootGenerator ≠ Generator.gen_piTyCode)
+    (notUniverse : former.rootGenerator ≠ Generator.gen_universeCode) :
+    IsReducibleMemberAt (predLevel + 1)
+      (.mkGen .gen_universeCode (levelExpr, flag) .childNil) former :=
+  IsReducibleMemberAt.tarskiEncode stronglyNormalizing
+    (ReducibleTypeAt.reducibleOfWeakHeadNormalFormer weakHeadNormal notPiType notUniverse)
+
 end FX1Poly.Core
