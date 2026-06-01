@@ -409,6 +409,65 @@ theorem fundamentalPiIntroWithTypeValueCandidatesFromTypeValueArgumentPremise
     exact bodyFundamental (RawTermSubst.cons argument substitution)
       extendedEnvWithTypeValueCandidates predLevel
 
+/-- **A substituted Pi-code classifier is never syntactically a universe code.**  Substitution distributes
+over the Pi code and preserves its `gen_piTyCode` root, while a universe code has root
+`gen_universeCode`.  This is the syntactic discharge for the conditional type-value payload of lambda
+introduction: the classifier of a lambda is a Pi code, so the "if the classifier is a universe" branch is
+unreachable by root injectivity, not by any semantic level-irrelevance assumption. -/
+theorem substitutedPiTyCode_ne_universeCodeCell {sourceScope targetScope : Nat}
+    (substitution : RawTermSubst sourceScope targetScope)
+    (domainCode : RawTerm sourceScope) (codomainCode : RawTerm (sourceScope + 1))
+    (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    RawTerm.subst substitution (piTyCodeCell domainCode codomainCode) ≠
+      universeCodeCell levelExpr flag := by
+  rw [subst_piTyCodeCell]
+  intro classifierEquation
+  exact Generator.noConfusion
+    (congrArg RawTerm.headGenerator classifierEquation :
+      Generator.gen_piTyCode = Generator.gen_universeCode)
+
+/-- **Bundled dependent lambda-introduction validity over the type-value environment.**  The member half is
+`fundamentalPiIntroWithTypeValueCandidatesFromTypeValueArgumentPremise`.  The conditional type-value half
+is discharged syntactically: after any closing substitution, the classifier remains a Pi code and therefore
+cannot be a universe code.  This packages the `piIntro` recursor arm for the strengthened FT motive without
+smuggling in level monotonicity or collapsing universe-valued binders. -/
+theorem fundamentalPiIntroValidityWithTypeValueCandidatesFromTypeValueArgumentPremise
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
+    {domainLevel codomainLevel : LevelExpr} {flag : UniverseFlag}
+    (domainFundamental :
+      FundamentalConclusionWithTypeValueCandidates context domainCode
+        (universeCodeCell domainLevel flag))
+    (domainHasPositiveCandidate :
+      PositiveCandidateConclusionWithTypeValueCandidates context domainCode)
+    (argumentValueHasPositiveCandidateWhenDomainIsUniverse :
+      ∀ {targetScope : Nat}
+        (substitution : RawTermSubst scope (targetScope + 1))
+        (_env : ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution)
+        (_predLevel : Nat) {candidate : RawTerm (targetScope + 1) → Prop}
+        {argument : RawTerm (targetScope + 1)}, candidate argument →
+          ∀ {levelExpr : LevelExpr} {domainFlag : UniverseFlag},
+            RawTerm.subst substitution domainCode = universeCodeCell levelExpr domainFlag →
+              ∀ candidatePredLevel : Nat,
+                HasAllPositiveReducibleCandidateAt (candidatePredLevel + 1) argument)
+    (codomainFundamental :
+      FundamentalConclusionWithTypeValueCandidates (context.cons domainCode) codomainCode
+        (universeCodeCell codomainLevel flag))
+    (bodyFundamental :
+      FundamentalConclusionWithTypeValueCandidates (context.cons domainCode) body codomainCode) :
+    FundamentalValidityWithTypeValueCandidates context (lamCell body)
+      (piTyCodeCell domainCode codomainCode) :=
+  ⟨fundamentalPiIntroWithTypeValueCandidatesFromTypeValueArgumentPremise
+      domainFundamental domainHasPositiveCandidate
+      argumentValueHasPositiveCandidateWhenDomainIsUniverse codomainFundamental bodyFundamental,
+    by
+      intro _targetScope substitution _envWithTypeValueCandidates levelExpr flag
+      intro classifierSubstIsUniverse _predLevel
+      exact False.elim
+        (substitutedPiTyCode_ne_universeCodeCell substitution domainCode codomainCode
+          levelExpr flag classifierSubstIsUniverse)⟩
+
 /-- **The positive-candidate dependent Pi type half over the type-value environment.**  The construction is
 the strengthened-environment version of the reducibility candidate for Pi codes: the domain candidate
 companion upgrades each accepted argument to all-positive membership, the type-value environment extends
