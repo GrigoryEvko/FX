@@ -949,7 +949,9 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.DescTelescope.twoChildLevels
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.consInversion
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.twoChildLevels
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.piFormerOfChildMembershipsAtRequiredLevels
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.piFormerOfChildMemberships
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.sigmaFormerOfChildMembershipsAtRequiredLevel
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.sigmaFormerOfChildMemberships
 #assert_no_axioms FX1Poly.Typed.FormerChildrenReducible.toPiMember
 #assert_no_axioms FX1Poly.Typed.FormerChildrenReducible.toSigmaMember

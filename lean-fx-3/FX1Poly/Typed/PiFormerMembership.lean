@@ -35,6 +35,63 @@ namespace FX1Poly.Typed
 open FX1Poly.Core FX1Poly.Universe
 open StepStar
 
+/-- **The Π former only consumes the codomain child at two argument levels.**
+This is the level-exact form of `piFormerOfChildMemberships`: Π formation needs the codomain premise
+
+* at `predLevel`, for arbitrary arguments in the domain candidate decoded from `domainMember`; and
+* at `predLevel + 1`, only to get open-body normalization from the fresh variable in the stronger domain
+  candidate decoded from `domainMemberAbove`.
+
+The older `∀ memberLevel` premise is stronger than the semantic dispatch itself requires.  Splitting the
+two levels makes the remaining fundamental-theorem obstruction precise: the former-membership rule is not
+what requires arbitrary member levels; that universal quantification came from the telescope companion. -/
+theorem IsReducibleMemberAt.piFormerOfChildMembershipsAtRequiredLevels {scope targetScope : Nat}
+    {predLevel : Nat}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
+    {substitution : RawTermSubst scope (targetScope + 1)}
+    (domainMember : IsReducibleMemberAt (predLevel + 1)
+      (universeCodeCell domainLevel flag) (RawTerm.subst substitution domainCode))
+    (domainMemberAbove : IsReducibleMemberAt (predLevel + 2)
+      (universeCodeCell domainLevel flag) (RawTerm.subst substitution domainCode))
+    (codomainMemberAtDomainLevel :
+      ∀ argument : RawTerm (targetScope + 1),
+        IsReducibleMemberAt predLevel (RawTerm.subst substitution domainCode) argument →
+        IsReducibleMemberAt (predLevel + 1) (universeCodeCell codomainLevel flag)
+          (RawTerm.subst (RawTermSubst.cons argument substitution) codomainCode))
+    (codomainMemberAtNextLevel :
+      ∀ argument : RawTerm (targetScope + 1),
+        IsReducibleMemberAt (predLevel + 1) (RawTerm.subst substitution domainCode) argument →
+        IsReducibleMemberAt (predLevel + 1) (universeCodeCell codomainLevel flag)
+          (RawTerm.subst (RawTermSubst.cons argument substitution) codomainCode)) :
+    IsReducibleMemberAt (predLevel + 1)
+      (universeCodeCell formerLevel flag)
+      (RawTerm.subst substitution (piTyCodeCell domainCode codomainCode)) := by
+  have domainNormalizing := domainMember.stronglyNormalizing
+  obtain ⟨domainCandidate, domainReducible⟩ := domainMember.tarskiDecode
+  obtain ⟨domainCandidateAbove, domainReducibleAbove⟩ := domainMemberAbove.tarskiDecode
+  have freshVarInDomain :
+      domainCandidateAbove (.mkGen .gen_var ⟨0, Nat.succ_pos _⟩ .childNil) :=
+    domainReducibleAbove.isReducibilityCandidate.containsVariable ⟨0, Nat.succ_pos _⟩
+  have codomainExists :
+      ∀ argument : RawTerm (targetScope + 1), domainCandidate argument →
+        IsReducibleTypeAt predLevel
+          (RawTerm.subst0
+            (RawTerm.subst (RawTermSubst.lift substitution) codomainCode) argument) := by
+    intro argument argumentInDomain
+    have member := codomainMemberAtDomainLevel argument
+      ⟨domainCandidate, domainReducible, argumentInDomain⟩
+    have asType := member.tarskiDecode
+    rwa [RawTerm.subst_cons_eq_subst0_lift] at asType
+  have codomainNormalizing :
+      IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift substitution) codomainCode) :=
+    IsStronglyNormalizing.openBodyOfConsSubstMember
+      (codomainMemberAtNextLevel (.mkGen .gen_var ⟨0, Nat.succ_pos _⟩ .childNil)
+        ⟨domainCandidateAbove, domainReducibleAbove, freshVarInDomain⟩)
+  have result := IsReducibleMemberAt.piFormationUnderSubst formerLevel flag substitution
+    domainReducible domainNormalizing codomainNormalizing codomainExists
+  rwa [subst_universeCodeCell] at result
+
 /-- **The Π former is a reducible universe member, from its children's fundamental-theorem memberships.**
 Takes the domain's universe membership at `predLevel+1` and `predLevel+2` (the latter only to extract a
 variable inhabitant of the domain candidate) and the codomain's universe membership under `cons argument
@@ -54,29 +111,46 @@ theorem IsReducibleMemberAt.piFormerOfChildMemberships {scope targetScope : Nat}
         (RawTerm.subst (RawTermSubst.cons argument substitution) codomainCode)) :
     IsReducibleMemberAt (predLevel + 1)
       (universeCodeCell formerLevel flag)
-      (RawTerm.subst substitution (piTyCodeCell domainCode codomainCode)) := by
+      (RawTerm.subst substitution (piTyCodeCell domainCode codomainCode)) :=
+  IsReducibleMemberAt.piFormerOfChildMembershipsAtRequiredLevels domainMember domainMemberAbove
+    (fun argument argumentMember => codomainMember argument argumentMember)
+    (fun argument argumentMember => codomainMember argument argumentMember)
+
+/-- **The Σ former only consumes the codomain child at the next argument level.**
+Unlike Π formation, Σ formation here routes through strong normalization of the data former, so it does not
+need the codomain to be reducible as a type for every domain-candidate argument.  It only needs one open-body
+normalization witness, obtained by applying the codomain premise to the fresh variable in the stronger
+domain candidate at `predLevel + 1`. -/
+theorem IsReducibleMemberAt.sigmaFormerOfChildMembershipsAtRequiredLevel {scope targetScope : Nat}
+    {predLevel : Nat}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
+    {substitution : RawTermSubst scope (targetScope + 1)}
+    (domainMember : IsReducibleMemberAt (predLevel + 1)
+      (universeCodeCell domainLevel flag) (RawTerm.subst substitution domainCode))
+    (domainMemberAbove : IsReducibleMemberAt (predLevel + 2)
+      (universeCodeCell domainLevel flag) (RawTerm.subst substitution domainCode))
+    (codomainMemberAtNextLevel :
+      ∀ argument : RawTerm (targetScope + 1),
+        IsReducibleMemberAt (predLevel + 1) (RawTerm.subst substitution domainCode) argument →
+        IsReducibleMemberAt (predLevel + 1) (universeCodeCell codomainLevel flag)
+          (RawTerm.subst (RawTermSubst.cons argument substitution) codomainCode)) :
+    IsReducibleMemberAt (predLevel + 1)
+      (universeCodeCell formerLevel flag)
+      (RawTerm.subst substitution
+        (.mkGen .gen_sigmaTyCode () (.childCons domainCode (.childCons codomainCode .childNil)))) := by
   have domainNormalizing := domainMember.stronglyNormalizing
-  obtain ⟨domainCandidate, domainReducible⟩ := domainMember.tarskiDecode
   obtain ⟨domainCandidateAbove, domainReducibleAbove⟩ := domainMemberAbove.tarskiDecode
   have freshVarInDomain :
       domainCandidateAbove (.mkGen .gen_var ⟨0, Nat.succ_pos _⟩ .childNil) :=
     domainReducibleAbove.isReducibilityCandidate.containsVariable ⟨0, Nat.succ_pos _⟩
-  have codomainExists :
-      ∀ argument : RawTerm (targetScope + 1), domainCandidate argument →
-        IsReducibleTypeAt predLevel
-          (RawTerm.subst0
-            (RawTerm.subst (RawTermSubst.lift substitution) codomainCode) argument) := by
-    intro argument argumentInDomain
-    have member := codomainMember argument ⟨domainCandidate, domainReducible, argumentInDomain⟩
-    have asType := member.tarskiDecode
-    rwa [RawTerm.subst_cons_eq_subst0_lift] at asType
   have codomainNormalizing :
       IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift substitution) codomainCode) :=
     IsStronglyNormalizing.openBodyOfConsSubstMember
-      (codomainMember (.mkGen .gen_var ⟨0, Nat.succ_pos _⟩ .childNil)
+      (codomainMemberAtNextLevel (.mkGen .gen_var ⟨0, Nat.succ_pos _⟩ .childNil)
         ⟨domainCandidateAbove, domainReducibleAbove, freshVarInDomain⟩)
-  have result := IsReducibleMemberAt.piFormationUnderSubst formerLevel flag substitution
-    domainReducible domainNormalizing codomainNormalizing codomainExists
+  have result := IsReducibleMemberAt.sigmaFormationUnderSubst (predLevel := predLevel)
+    formerLevel flag substitution domainNormalizing codomainNormalizing
   rwa [subst_universeCodeCell] at result
 
 /-- **The Σ former is a reducible universe member, from its children's fundamental-theorem memberships.**
@@ -103,19 +177,8 @@ theorem IsReducibleMemberAt.sigmaFormerOfChildMemberships {scope targetScope : N
     IsReducibleMemberAt (predLevel + 1)
       (universeCodeCell formerLevel flag)
       (RawTerm.subst substitution
-        (.mkGen .gen_sigmaTyCode () (.childCons domainCode (.childCons codomainCode .childNil)))) := by
-  have domainNormalizing := domainMember.stronglyNormalizing
-  obtain ⟨domainCandidateAbove, domainReducibleAbove⟩ := domainMemberAbove.tarskiDecode
-  have freshVarInDomain :
-      domainCandidateAbove (.mkGen .gen_var ⟨0, Nat.succ_pos _⟩ .childNil) :=
-    domainReducibleAbove.isReducibilityCandidate.containsVariable ⟨0, Nat.succ_pos _⟩
-  have codomainNormalizing :
-      IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift substitution) codomainCode) :=
-    IsStronglyNormalizing.openBodyOfConsSubstMember
-      (codomainMember (.mkGen .gen_var ⟨0, Nat.succ_pos _⟩ .childNil)
-        ⟨domainCandidateAbove, domainReducibleAbove, freshVarInDomain⟩)
-  have result := IsReducibleMemberAt.sigmaFormationUnderSubst (predLevel := predLevel)
-    formerLevel flag substitution domainNormalizing codomainNormalizing
-  rwa [subst_universeCodeCell] at result
+        (.mkGen .gen_sigmaTyCode () (.childCons domainCode (.childCons codomainCode .childNil)))) :=
+  IsReducibleMemberAt.sigmaFormerOfChildMembershipsAtRequiredLevel domainMember domainMemberAbove
+    (fun argument argumentMember => codomainMember argument argumentMember)
 
 end FX1Poly.Typed
