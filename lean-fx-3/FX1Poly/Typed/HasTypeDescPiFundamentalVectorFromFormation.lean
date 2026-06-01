@@ -30,6 +30,7 @@ head and tail induction hypotheses plus `FormerChildrenReducible.ofTelescopeRedu
 namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open StepStar
 
 /-- **Vector reducibility for a grown premise telescope.**  Under a per-variable-level reducible
 environment, every telescope head is a member of its universe at every positive level, and the tail remains
@@ -147,5 +148,40 @@ theorem HasTypeDescPi.fundamentalVectorFromFormation {profile : PolyProfile}
       rwa [subst_universeCodeCell] at headMember
     · exact restFundamental (RawTermSubst.cons argument substitution) predLevel
         (ReducibleEnvVec.cons env argumentMember) rfl
+
+/-- **All-level grown-engine fundamental theorem, conditional on the formation-engine vector premise.**
+`fundamentalVectorFromFormation` is the recursor assembly shape used under binders; this theorem exports the
+same result in the public all-level closing-environment shape.  The remaining hypothesis is explicit and
+unchanged: a formation-engine vector premise strong enough for `ofFormation`. -/
+theorem HasTypeDescPi.fundamentalAtAllFromFormation {profile : PolyProfile}
+    (formationFundamental :
+      ∀ {scope : Nat} {context : TypingContext profile scope}
+        {subject classifier : RawTerm scope},
+        HasTypeDesc profile context subject classifier →
+          IsFundamentalConclusionAtVector context subject classifier)
+    {scope : Nat} {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (typed : HasTypeDescPi profile context subject classifier) :
+    FundamentalConclusionAtAll context subject classifier :=
+  fundamentalConclusionAtAllOfVector
+    ((HasTypeDescPi.fundamentalVectorFromFormation formationFundamental) typed)
+
+/-- **Strong normalization from the conditional grown-engine fundamental theorem.**  Under a closing
+all-level reducible substitution, a `HasTypeDescPi` subject is strongly normalizing once the explicit
+formation-engine vector premise is supplied.  This is the downstream SN handoff in exactly the substituted
+shape produced by the fundamental theorem; no closed-term or checker equivalence claim is hidden here. -/
+theorem HasTypeDescPi.subjectStronglyNormalizingFromFormation {profile : PolyProfile}
+    (formationFundamental :
+      ∀ {scope : Nat} {context : TypingContext profile scope}
+        {subject classifier : RawTerm scope},
+        HasTypeDesc profile context subject classifier →
+          IsFundamentalConclusionAtVector context subject classifier)
+    {scope targetScope : Nat} {context : TypingContext profile scope}
+    {subject classifier : RawTerm scope}
+    (typed : HasTypeDescPi profile context subject classifier)
+    (substitution : RawTermSubst scope (targetScope + 1))
+    (env : ReducibleEnvAtAllLevels context substitution) (predLevel : Nat) :
+    IsStronglyNormalizing (RawTerm.subst substitution subject) :=
+  ((HasTypeDescPi.fundamentalAtAllFromFormation formationFundamental typed)
+    substitution env predLevel).stronglyNormalizing
 
 end FX1Poly.Typed

@@ -854,6 +854,8 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.formerChildrenReducibleAtAllFromVectorPremise
 #assert_no_axioms FX1Poly.Typed.IsTelescopeReducibleAtVector
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.fundamentalVectorFromFormation
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.fundamentalAtAllFromFormation
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectStronglyNormalizingFromFormation
 
 /-! ### PER-VARIABLE-LEVEL reducible environment (the Kripke refinement for the dependent fundamental
     theorem).  `ReducibleEnvAt`'s single global level cannot serve a context that mixes variables at
