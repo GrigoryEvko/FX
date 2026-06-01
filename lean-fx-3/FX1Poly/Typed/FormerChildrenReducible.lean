@@ -42,6 +42,42 @@ def FormerChildrenReducible {scope targetScope : Nat} (predLevel : Nat)
       IsReducibleMemberAt (predLevel + 1) (universeCodeCell codomainLevel flag)
         (RawTerm.subst (RawTermSubst.cons argument substitution) codomainCode))
 
+/-- **The level-exact 2-child former-children reducibility bundle.**  This weaker bundle packages exactly the
+codomain premises consumed by the Π/Σ former-membership dispatches: codomain membership at the domain
+candidate level `predLevel`, plus codomain membership at the one-higher level `predLevel + 1` used to get
+open-body normalization from the fresh variable.  It is the intended target for future mixed-env telescope
+companions; the older `FormerChildrenReducible` implies this bundle, but asks for a stronger
+`∀ memberLevel` codomain premise. -/
+def FormerChildrenReducibleAtDispatchLevels {scope targetScope : Nat} (predLevel : Nat)
+    (flag : UniverseFlag) (substitution : RawTermSubst scope (targetScope + 1))
+    (domainCode : RawTerm scope) (codomainCode : RawTerm (scope + 1))
+    (domainLevel codomainLevel : LevelExpr) : Prop :=
+  IsReducibleMemberAt (predLevel + 1)
+      (universeCodeCell domainLevel flag) (RawTerm.subst substitution domainCode) ∧
+    IsReducibleMemberAt (predLevel + 2)
+      (universeCodeCell domainLevel flag) (RawTerm.subst substitution domainCode) ∧
+    (∀ argument : RawTerm (targetScope + 1),
+      IsReducibleMemberAt predLevel (RawTerm.subst substitution domainCode) argument →
+      IsReducibleMemberAt (predLevel + 1) (universeCodeCell codomainLevel flag)
+        (RawTerm.subst (RawTermSubst.cons argument substitution) codomainCode)) ∧
+    (∀ argument : RawTerm (targetScope + 1),
+      IsReducibleMemberAt (predLevel + 1) (RawTerm.subst substitution domainCode) argument →
+      IsReducibleMemberAt (predLevel + 1) (universeCodeCell codomainLevel flag)
+        (RawTerm.subst (RawTermSubst.cons argument substitution) codomainCode))
+
+/-- The older all-member-level bundle implies the level-exact dispatch bundle. -/
+theorem FormerChildrenReducible.toDispatchLevels {scope targetScope : Nat}
+    {predLevel : Nat} {flag : UniverseFlag} {substitution : RawTermSubst scope (targetScope + 1)}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainLevel codomainLevel : LevelExpr}
+    (bundle : FormerChildrenReducible predLevel flag substitution domainCode codomainCode
+      domainLevel codomainLevel) :
+    FormerChildrenReducibleAtDispatchLevels predLevel flag substitution domainCode codomainCode
+      domainLevel codomainLevel :=
+  ⟨bundle.1, bundle.2.1,
+    fun argument argumentMember => bundle.2.2 argument argumentMember,
+    fun argument argumentMember => bundle.2.2 argument argumentMember⟩
+
 /-- **Dispatch the bundle to the Π former's universe membership.**  Unpacks the three child results and
 applies the shipped `piFormerOfChildMemberships`. -/
 theorem FormerChildrenReducible.toPiMember {scope targetScope : Nat}
@@ -54,6 +90,19 @@ theorem FormerChildrenReducible.toPiMember {scope targetScope : Nat}
       (universeCodeCell formerLevel flag)
       (RawTerm.subst substitution (piTyCodeCell domainCode codomainCode)) :=
   IsReducibleMemberAt.piFormerOfChildMemberships bundle.1 bundle.2.1 bundle.2.2
+
+/-- **Dispatch the level-exact bundle to the Π former's universe membership.** -/
+theorem FormerChildrenReducibleAtDispatchLevels.toPiMember {scope targetScope : Nat}
+    {predLevel : Nat} {flag : UniverseFlag} {substitution : RawTermSubst scope (targetScope + 1)}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainLevel codomainLevel formerLevel : LevelExpr}
+    (bundle : FormerChildrenReducibleAtDispatchLevels predLevel flag substitution domainCode codomainCode
+      domainLevel codomainLevel) :
+    IsReducibleMemberAt (predLevel + 1)
+      (universeCodeCell formerLevel flag)
+      (RawTerm.subst substitution (piTyCodeCell domainCode codomainCode)) :=
+  IsReducibleMemberAt.piFormerOfChildMembershipsAtRequiredLevels bundle.1 bundle.2.1
+    bundle.2.2.1 bundle.2.2.2
 
 /-- **Dispatch the bundle to the Σ former's universe membership.**  The data-former twin of `toPiMember`,
 applying the shipped `sigmaFormerOfChildMemberships`. -/
@@ -68,6 +117,19 @@ theorem FormerChildrenReducible.toSigmaMember {scope targetScope : Nat}
       (RawTerm.subst substitution
         (.mkGen .gen_sigmaTyCode () (.childCons domainCode (.childCons codomainCode .childNil)))) :=
   IsReducibleMemberAt.sigmaFormerOfChildMemberships bundle.1 bundle.2.1 bundle.2.2
+
+/-- **Dispatch the level-exact bundle to the Σ former's universe membership.** -/
+theorem FormerChildrenReducibleAtDispatchLevels.toSigmaMember {scope targetScope : Nat}
+    {predLevel : Nat} {flag : UniverseFlag} {substitution : RawTermSubst scope (targetScope + 1)}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainLevel codomainLevel formerLevel : LevelExpr}
+    (bundle : FormerChildrenReducibleAtDispatchLevels predLevel flag substitution domainCode codomainCode
+      domainLevel codomainLevel) :
+    IsReducibleMemberAt (predLevel + 1)
+      (universeCodeCell formerLevel flag)
+      (RawTerm.subst substitution
+        (.mkGen .gen_sigmaTyCode () (.childCons domainCode (.childCons codomainCode .childNil)))) :=
+  IsReducibleMemberAt.sigmaFormerOfChildMembershipsAtRequiredLevel bundle.1 bundle.2.1 bundle.2.2.2
 
 /-- **Extract the bundle from the telescope logical relation.**  The mutual `fundamentalTelescope`
 companion returns a `TelescopeReducible flag 0 2 substitution (domainLevel :: codomainLevel :: [])` over
@@ -93,5 +155,18 @@ theorem FormerChildrenReducible.ofTelescopeReducible {scope targetScope : Nat}
     fun {_memberLevel} argument argumentMember =>
       (telescopeReducible.2 argument argumentMember).1 predLevel⟩
 
-end FX1Poly.Typed
+/-- **Extract the level-exact bundle from the telescope logical relation.**  This is the precise projection
+of the two codomain levels consumed by the former dispatches. -/
+theorem FormerChildrenReducibleAtDispatchLevels.ofTelescopeReducible {scope targetScope : Nat}
+    (predLevel : Nat) {flag : UniverseFlag}
+    {substitution : RawTermSubst scope (targetScope + 1)}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainLevel codomainLevel : LevelExpr}
+    (telescopeReducible :
+      TelescopeReducible flag 0 2 substitution (domainLevel :: codomainLevel :: [])
+        (.childCons domainCode (.childCons codomainCode .childNil))) :
+    FormerChildrenReducibleAtDispatchLevels predLevel flag substitution domainCode codomainCode
+      domainLevel codomainLevel :=
+  (FormerChildrenReducible.ofTelescopeReducible predLevel telescopeReducible).toDispatchLevels
 
+end FX1Poly.Typed
