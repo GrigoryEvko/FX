@@ -256,6 +256,27 @@ theorem HasAllPositiveReducibleCandidateAt.piType {scope : Nat} {level : Nat}
   | zero => exact ReducibleTypeStep.ofPointwiseIff piReducibleAtLevel pointwise
   | succ predLevel => exact ReducibleTypeStep.ofPointwiseIff piReducibleAtLevel pointwise
 
+/-- **Substituted Π types preserve the all-positive candidate discipline.**  This is the
+under-substitution form consumed by a type companion for the fundamental theorem: after distributing the
+closing substitution over the Π cell, `HasAllPositiveReducibleCandidateAt.piType` applies to the substituted
+domain and lifted substituted codomain. -/
+theorem HasAllPositiveReducibleCandidateAt.piTypeUnderSubst {sourceScope targetScope : Nat}
+    {level : Nat} {domainCode : RawTerm sourceScope} {codomainCode : RawTerm (sourceScope + 1)}
+    (substitution : RawTermSubst sourceScope targetScope)
+    (domainHasAllPositiveCandidate :
+      ∀ level : Nat,
+        HasAllPositiveReducibleCandidateAt level (RawTerm.subst substitution domainCode))
+    (codomainHasAllPositiveCandidate :
+      ∀ (level : Nat) (argument : RawTerm targetScope),
+        IsReducibleMemberAtAllPositiveLevels (RawTerm.subst substitution domainCode) argument →
+          HasAllPositiveReducibleCandidateAt level
+            (RawTerm.subst0 (RawTerm.subst (iterateLiftRaw substitution 1) codomainCode) argument)) :
+    HasAllPositiveReducibleCandidateAt level
+      (RawTerm.subst substitution (piTyCodeCell domainCode codomainCode)) := by
+  rw [subst_piTyCodeCell]
+  exact HasAllPositiveReducibleCandidateAt.piType
+    domainHasAllPositiveCandidate codomainHasAllPositiveCandidate
+
 /-- **Σ type codes have the all-positive member predicate as their reducible candidate.**  In the current
 stratified reducibility relation, only Π codes receive a dependent-arrow candidate; Σ codes are
 weak-head-normal non-Π non-universe classifiers, hence they use the neutral strong-normalization candidate at
@@ -267,6 +288,19 @@ theorem HasAllPositiveReducibleCandidateAt.sigmaType {scope : Nat} {level : Nat}
     (fun _reduct weakHeadStep => by cases weakHeadStep with | rootIota iotaStep => cases iotaStep)
     (fun rootEquation => nomatch rootEquation)
     (fun rootEquation => nomatch rootEquation)
+
+/-- **Substituted Σ type codes have the all-positive member predicate as their reducible candidate.**  The
+substitution distributes over the Σ cell, and the resulting Σ code is still a neutral non-Π non-universe
+classifier in the stratified reducibility relation. -/
+theorem HasAllPositiveReducibleCandidateAt.sigmaTypeUnderSubst {sourceScope targetScope : Nat}
+    {level : Nat} (substitution : RawTermSubst sourceScope targetScope)
+    (domainCode : RawTerm sourceScope) (codomainCode : RawTerm (sourceScope + 1)) :
+    HasAllPositiveReducibleCandidateAt level
+      (RawTerm.subst substitution (sigmaTyCodeCell domainCode codomainCode)) := by
+  rw [subst_sigmaTyCodeCell]
+  exact HasAllPositiveReducibleCandidateAt.sigmaType
+    (RawTerm.subst substitution domainCode)
+    (RawTerm.subst (iterateLiftRaw substitution 1) codomainCode)
 
 /-- **Conditional universe all-positive candidate.**  A universe code at positive fuel
 `predLevel + 1` has the all-positive member predicate as its reducible candidate if every strongly
