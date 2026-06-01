@@ -244,6 +244,39 @@ theorem HasAllPositiveReducibleCandidateAt.sigmaType {scope : Nat} {level : Nat}
     (fun rootEquation => nomatch rootEquation)
     (fun rootEquation => nomatch rootEquation)
 
+/-- **Conditional universe all-positive candidate.**  A universe code at positive fuel
+`predLevel + 1` has the all-positive member predicate as its reducible candidate if every strongly
+normalizing type reducible at the lower fuel `predLevel` is reducible at every fuel level.  This is the exact
+remaining semantic obligation for dependent domains ranging over types: Tarski membership in a universe
+decodes one level down, while an all-level binder needs the decoded type at every positive universe-member
+level. -/
+theorem HasAllPositiveReducibleCandidateAt.universeCodeOfLowerTypeExtendsToAllLevels {scope : Nat}
+    {predLevel : Nat} (levelExpr : LevelExpr) (flag : UniverseFlag)
+    (lowerTypeExtendsToAllLevels :
+      ∀ typeCode : RawTerm scope,
+        IsStronglyNormalizing typeCode →
+          IsReducibleTypeAt predLevel typeCode → IsReducibleTypeAtAllLevels typeCode) :
+    HasAllPositiveReducibleCandidateAt (predLevel + 1)
+      (universeCodeCell levelExpr flag : RawTerm scope) := by
+  have pointwise :
+      PointwiseIff (universeReducibilityPredicate (ReducibleTypeAt predLevel))
+        (IsReducibleMemberAtAllPositiveLevels (universeCodeCell levelExpr flag : RawTerm scope)) := by
+    intro typeCode
+    constructor
+    · intro universeMemberAtLowerLevel
+      exact (IsReducibleMemberAtAllPositiveLevels.universeCode_iff
+        (levelExpr := levelExpr) (flag := flag)).mpr
+        ⟨universeMemberAtLowerLevel.1,
+          lowerTypeExtendsToAllLevels typeCode
+            universeMemberAtLowerLevel.1 universeMemberAtLowerLevel.2⟩
+    · intro universeMemberAtAllPositiveLevels
+      have normalizingAndReducibleAtAllLevels :=
+        (IsReducibleMemberAtAllPositiveLevels.universeCode_iff
+          (levelExpr := levelExpr) (flag := flag)).mp universeMemberAtAllPositiveLevels
+      exact ⟨normalizingAndReducibleAtAllLevels.1,
+        normalizingAndReducibleAtAllLevels.2 predLevel⟩
+  exact ReducibleTypeStep.ofPointwiseIff (ReducibleTypeStep.universeCode levelExpr flag) pointwise
+
 /-- **Dependent Pi-introduction from all-positive arguments.**  If every argument accepted by the decoded
 domain candidate can be strengthened to all positive domain-membership levels, then the codomain and body
 all-level recursive hypotheses can be run under the cons-extended all-level environment.  This is the exact
