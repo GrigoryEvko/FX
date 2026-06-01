@@ -45,6 +45,7 @@ import FX1Poly.Typed.ConvCodeInjectivity
 import FX1Poly.Typed.ReducibleEnv
 import FX1Poly.Typed.ReducibleEnvAt
 import FX1Poly.Typed.ReducibleEnvAtAllLevels
+import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithPositiveTypeCandidates
 import FX1Poly.Typed.FundamentalAtAllLeafArms
 import FX1Poly.Typed.FundamentalAtAllTelescope
 import FX1Poly.Typed.FundamentalAtAllFormerChildren
@@ -869,6 +870,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevels.ofVecPositiveFamily
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevels.consHeadToEnvAtPositive
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevels.consHeadToVecPositive
+
+/-! ### PROOF-RELEVANT ∀-LEVEL ENVIRONMENT with positive type-candidate companions.  This strengthens the
+    all-level environment with the binder-facing fact that every substituted lookup type has the
+    all-positive member predicate as a candidate at every positive fuel level.  The `cons` operation is the
+    key checked bookkeeping step: old variables use the tail companion after the weakening/substitution
+    cancellation, and variable zero uses the explicit head-type companion. -/
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevelsWithPositiveTypeCandidates
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevelsWithPositiveTypeCandidates.toAllLevels
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevelsWithPositiveTypeCandidates.lookupPositiveCandidate
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevelsWithPositiveTypeCandidates.empty
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevelsWithPositiveTypeCandidates.cons
 
 /-! ### Dependent fundamental theorem — the NON-telescope arms over the ∀-level environment.  `var` (the arm
     the ∀-level env was built to unblock: closes by instantiating the all-levels family at the conclusion
