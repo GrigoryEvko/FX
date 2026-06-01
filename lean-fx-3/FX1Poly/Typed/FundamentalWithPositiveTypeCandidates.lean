@@ -576,4 +576,51 @@ theorem fundamentalPiIntroWithPositiveTypeCandidatesFromPositiveDomainCandidate
     exact bodyFundamental (RawTermSubst.cons argument substitution)
       extendedEnvWithCandidates predLevel
 
+/-- **Dependent lambda introduction over the strengthened motive's own type half.**  This is the
+recursor-facing lambda arm: the domain's recursive positive-candidate conclusion is consumed directly to
+strengthen each decoded argument and extend the proof-relevant environment under the binder. -/
+theorem fundamentalPiIntroWithPositiveTypeCandidates
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
+    {domainLevel codomainLevel : LevelExpr} {flag : UniverseFlag}
+    (domainFundamental :
+      FundamentalConclusionWithPositiveTypeCandidates context domainCode
+        (universeCodeCell domainLevel flag))
+    (domainHasPositiveCandidate :
+      PositiveCandidateConclusionWithPositiveTypeCandidates context domainCode)
+    (codomainFundamental :
+      FundamentalConclusionWithPositiveTypeCandidates (context.cons domainCode) codomainCode
+        (universeCodeCell codomainLevel flag))
+    (bodyFundamental :
+      FundamentalConclusionWithPositiveTypeCandidates (context.cons domainCode) body codomainCode) :
+    FundamentalConclusionWithPositiveTypeCandidates context (lamCell body)
+      (piTyCodeCell domainCode codomainCode) := by
+  intro _targetScope substitution envWithCandidates predLevel
+  have domainMember := domainFundamental substitution envWithCandidates (predLevel + 1)
+  rw [subst_universeCodeCell] at domainMember
+  obtain ⟨domainCandidate, domainReducible⟩ := domainMember.tarskiDecode
+  refine IsReducibleMemberAt.abstractionCanonicalUnderSubst substitution domainReducible
+    (fun _argument argumentInDomain =>
+      domainReducible.isReducibilityCandidate.stronglyNormalizing argumentInDomain)
+    ?codomainExists ?bodyReducible
+  · intro argument argumentInDomain
+    have extendedEnvWithCandidates :=
+      domainHasPositiveCandidate.consEnv substitution envWithCandidates predLevel
+        domainReducible argumentInDomain
+    have codomainMember :=
+      codomainFundamental (RawTermSubst.cons argument substitution)
+        extendedEnvWithCandidates (predLevel + 1)
+    rw [subst_universeCodeCell] at codomainMember
+    have codomainReducibleType := codomainMember.tarskiDecode
+    rwa [RawTerm.subst_cons_eq_subst0_lift] at codomainReducibleType
+  · intro argument argumentInDomain
+    have extendedEnvWithCandidates :=
+      domainHasPositiveCandidate.consEnv substitution envWithCandidates predLevel
+        domainReducible argumentInDomain
+    rw [← RawTerm.subst_cons_eq_subst0_lift _ argument substitution,
+      ← RawTerm.subst_cons_eq_subst0_lift _ argument substitution]
+    exact bodyFundamental (RawTermSubst.cons argument substitution)
+      extendedEnvWithCandidates predLevel
+
 end FX1Poly.Typed
