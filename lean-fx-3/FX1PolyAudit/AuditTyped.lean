@@ -42,6 +42,7 @@ import FX1Poly.Typed.ConvCodeInjectivity
 import FX1Poly.Typed.ReducibleEnv
 import FX1Poly.Typed.ReducibleEnvAt
 import FX1Poly.Typed.ReducibleEnvAtAllLevels
+import FX1Poly.Typed.FundamentalAtAllLeafArms
 import FX1Poly.Typed.ReducibleEnvVec
 import FX1Poly.Typed.ReducibleEnvVecTypeVariable
 import FX1Poly.Typed.HasTypeDescPiConsistency
@@ -802,6 +803,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevels.lookupReducible
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevels.empty
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevels.cons
+
+/-! ### Dependent fundamental theorem — the NON-telescope arms over the ∀-level environment.  `var` (the arm
+    the ∀-level env was built to unblock: closes by instantiating the all-levels family at the conclusion
+    level, off-by-one-free), `universeFormation` (`Type@e : Type@(lsucc e)`), and `conv` (reclassifier IH one
+    level up → `tarskiDecode` → `castAlongConvUnderSubst`) all close with zero axioms over
+    `ReducibleEnvAtAllLevels`, validating the env on the leaf/conv fragment.  The `genFormation` / `piIntro`
+    telescope arms (needing an all-levels telescope) are the separate next development. -/
+#assert_no_axioms FX1Poly.Typed.FundamentalConclusionAtAll
+#assert_no_axioms FX1Poly.Typed.fundamentalVarAtAll
+#assert_no_axioms FX1Poly.Typed.fundamentalUniverseFormationAtAll
+#assert_no_axioms FX1Poly.Typed.fundamentalConvAtAll
 
 /-! ### PER-VARIABLE-LEVEL reducible environment (the Kripke refinement for the dependent fundamental
     theorem).  `ReducibleEnvAt`'s single global level cannot serve a context that mixes variables at
