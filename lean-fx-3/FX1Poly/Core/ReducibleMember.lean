@@ -3,6 +3,9 @@ import FX1Poly.Core.ReducibleTypeHeadExpansion
 import FX1Poly.Core.ReducibleTypeConvInvariance
 import FX1Poly.Core.ReducibleTypeReducibilityCandidate
 import FX1Poly.Core.ConvSubstRename
+import FX1Poly.Core.CandidateInterpretationSubst
+import FX1Poly.Core.CompoundSubstPreservation
+import FX1Poly.Core.RawTermSubst0Commute
 
 /-! # Foundation/PolyCell/Core/ReducibleMember
     — semantic membership: the fundamental theorem's conclusion shape + its Π/conv/SN rules
@@ -172,5 +175,35 @@ theorem IsReducibleMember.castAlongConvUnderSubst {scope targetScope : Nat}
     IsReducibleMember
       (RawTerm.subst substitution typeRight) (RawTerm.subst substitution subject) :=
   IsReducibleMember.castAlongConv subjectMember targetReducible (Conv.subst substitution conv)
+
+/-- **Semantic Π elimination under a closing substitution (the fundamental theorem's `piElim` arm).**  The
+under-substitution form `IsReducibleMember.application` consumes at the induction site: a closing
+`substitution` sends the function to a member of the closed Π-type and the argument to a member of the
+closed domain (the function's and argument's induction hypotheses), so the closed application is a member
+of the closed instantiated codomain.  The substitution distributes over the Π cell (`subst_piTyCode`,
+`rfl` — domain by the substitution, codomain by the lift), over the application cell (`subst_app_reduces`,
+`rfl`), and the dependent output classifier `subst γ (subst0 codomainCode argument)` re-expresses as
+`subst0 (subst (lift γ) codomainCode) (subst γ argument)` by the β-commutation `subst0_subst_commute` —
+exactly the shape `IsReducibleMember.application` produces.  The level-free counterpart of the stratified
+`IsReducibleMemberAt.applicationUnderSubst`; CHOICE-FREE (the argument's candidate aligns with the Π domain
+by `ReducibleType.deterministic` inside `application`, no uniform codomain candidate needed — the piElim arm
+does not hit the piIntro choice obstruction). -/
+theorem IsReducibleMember.applicationUnderSubst {scope targetScope : Nat}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {functionTerm argument : RawTerm scope}
+    (substitution : RawTermSubst scope targetScope)
+    (functionReducible : IsReducibleMember
+      (RawTerm.subst substitution
+        (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))))
+      (RawTerm.subst substitution functionTerm))
+    (argumentReducible : IsReducibleMember
+      (RawTerm.subst substitution domainCode) (RawTerm.subst substitution argument)) :
+    IsReducibleMember
+      (RawTerm.subst substitution (RawTerm.subst0 codomainCode argument))
+      (RawTerm.subst substitution
+        (.mkGen .gen_app () (.childCons functionTerm (.childCons argument .childNil)))) := by
+  rw [RawTerm.subst_piTyCode] at functionReducible
+  rw [RawTerm.subst_app_reduces, RawTerm.subst0_subst_commute]
+  exact IsReducibleMember.application functionReducible argumentReducible
 
 end FX1Poly.Core
