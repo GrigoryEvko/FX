@@ -239,6 +239,77 @@ theorem fundamentalUniverseValidityWithTypeValueCandidatesOfLowerTypeExtendsToAl
     typeValueCandidateUniverseCodeWithTypeValueCandidatesOfLowerTypeExtendsToAllLevels
       context levelExpr levelExpr.lsucc flag lowerTypeExtendsToAllLevels⟩
 
+/-- **The `conv` member arm over the type-value environment.**  The reclassifier premise is run one fuel
+level up, decoded from its universe membership to a reducible target type at the conclusion fuel, and the
+subject member is transported along the substituted conversion.  This is only the member half: the
+conditional type-value payload for arbitrary conversions is intentionally not asserted here, because a
+conversion into a universe classifier does not by itself identify the original classifier as a universe
+code. -/
+theorem fundamentalConvWithTypeValueCandidates
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier reclassifier : RawTerm scope}
+    {levelExpr : LevelExpr} {flag : UniverseFlag}
+    (subjectFundamental :
+      FundamentalConclusionWithTypeValueCandidates context subject classifier)
+    (reclassifierFundamental :
+      FundamentalConclusionWithTypeValueCandidates context reclassifier
+        (universeCodeCell levelExpr flag))
+    (converts : Conv classifier reclassifier) :
+    FundamentalConclusionWithTypeValueCandidates context subject reclassifier := by
+  intro _targetScope substitution envWithTypeValueCandidates predLevel
+  have reclassifierMember :=
+    reclassifierFundamental substitution envWithTypeValueCandidates (predLevel + 1)
+  rw [subst_universeCodeCell] at reclassifierMember
+  obtain ⟨_candidate, reclassifierReducible⟩ := reclassifierMember.tarskiDecode
+  exact IsReducibleMemberAt.castAlongConvUnderSubst substitution
+    (subjectFundamental substitution envWithTypeValueCandidates predLevel)
+    reclassifierReducible converts
+
+/-- **The `piElim`/application member arm over the type-value environment.**  Application does not need any
+new type-value payload: the dependent application rule consumes the function and argument member premises at
+the same conclusion fuel and performs the codomain substitution bookkeeping internally. -/
+theorem fundamentalPiElimWithTypeValueCandidates
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {functionTerm argument domainCode : RawTerm scope}
+    {codomainCode : RawTerm (scope + 1)}
+    (functionFundamental :
+      FundamentalConclusionWithTypeValueCandidates context functionTerm
+        (piTyCodeCell domainCode codomainCode))
+    (argumentFundamental :
+      FundamentalConclusionWithTypeValueCandidates context argument domainCode) :
+    FundamentalConclusionWithTypeValueCandidates context
+      (.mkGen .gen_app () (.childCons functionTerm (.childCons argument .childNil)))
+      (RawTerm.subst0 codomainCode argument) := by
+  intro _targetScope substitution envWithTypeValueCandidates predLevel
+  exact IsReducibleMemberAt.applicationUnderSubst substitution
+    (functionFundamental substitution envWithTypeValueCandidates predLevel)
+    (argumentFundamental substitution envWithTypeValueCandidates predLevel)
+
+/-- **The positive-candidate Sigma type half over the type-value environment.**  Sigma codes are neutral
+non-Pi type codes in the stratified reducibility semantics, so the existing positive-candidate arm reads
+through the stronger environment unchanged. -/
+theorem positiveCandidateSigmaTypeWithTypeValueCandidates
+    {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope)
+    (domainCode : RawTerm scope) (codomainCode : RawTerm (scope + 1)) :
+    PositiveCandidateConclusionWithTypeValueCandidates context
+      (sigmaTyCodeCell domainCode codomainCode) :=
+  PositiveCandidateConclusionWithPositiveTypeCandidates.toTypeValueCandidateEnv
+    (positiveCandidateSigmaTypeWithPositiveTypeCandidates context domainCode codomainCode)
+
+/-- **The Sigma type-value half over the type-value environment.**  Since a Sigma code is already known to
+carry the all-positive candidate at every positive fuel, it also satisfies the conditional type-value
+payload for any universe classifier. -/
+theorem typeValueCandidateSigmaTypeWithTypeValueCandidates
+    {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope)
+    (domainCode : RawTerm scope) (codomainCode : RawTerm (scope + 1))
+    (classifier : RawTerm scope) :
+    TypeValueCandidateConclusionWithTypeValueCandidates context
+      (sigmaTyCodeCell domainCode codomainCode) classifier :=
+  PositiveCandidateConclusionWithTypeValueCandidates.toTypeValueCandidateConclusion
+    (positiveCandidateSigmaTypeWithTypeValueCandidates context domainCode codomainCode)
+
 /-- A strengthened member result for `typeCode : Type@levelExpr` yields strong normalization and
 all-level reducibility of the substituted type code. -/
 theorem FundamentalConclusionWithTypeValueCandidates.typeInUniverse_hasStrongNormalizationAndAllLevelReducibility
