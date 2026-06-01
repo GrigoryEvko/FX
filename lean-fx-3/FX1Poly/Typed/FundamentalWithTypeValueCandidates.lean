@@ -444,6 +444,62 @@ theorem fundamentalUniverseValidityWithTypeValueCandidatesOfLowerTypeExtendsToAl
     typeValueCandidateUniverseCodeWithTypeValueCandidatesOfLowerTypeExtendsToAllLevels
       context levelExpr levelExpr.lsucc flag lowerTypeExtendsToAllLevels⟩
 
+/-- **Universe-code positive candidate from type-value completion.**  The lower-type extension premise of
+`positiveCandidateUniverseCodeWithTypeValueCandidatesOfLowerTypeExtendsToAllLevels` is exactly supplied by
+`HasTypeValueCandidatesForAllReducibleTypesAtAllLevels.reducibleTypeAtExtendsToAllLevels`, so universe-code
+formation can be read directly from the type-value completion principle.  The statement remains fully
+multi-universe: `levelExpr` and `flag` are arbitrary. -/
+theorem positiveCandidateUniverseCodeWithTypeValueCandidatesOfAllReducibleTypesHaveTypeValueCandidates
+    {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (levelExpr : LevelExpr) (flag : UniverseFlag)
+    (allReducibleTypesHaveTypeValueCandidates :
+      HasTypeValueCandidatesForAllReducibleTypesAtAllLevels) :
+    PositiveCandidateConclusionWithTypeValueCandidates context (universeCodeCell levelExpr flag) :=
+  positiveCandidateUniverseCodeWithTypeValueCandidatesOfLowerTypeExtendsToAllLevels
+    context levelExpr flag
+    (fun _substitution _envWithTypeValueCandidates _predLevel _typeCode typeCodeNormalizing
+        typeCodeReducibleAtLevel =>
+      let ⟨_candidate, candidateReducibleAtLevel⟩ := typeCodeReducibleAtLevel
+      allReducibleTypesHaveTypeValueCandidates.reducibleTypeAtExtendsToAllLevels
+        typeCodeNormalizing candidateReducibleAtLevel)
+
+/-- **Universe-code type-value payload from type-value completion.**  This is the type-value half of a
+universe code's validity with the lower-fuel bridge discharged by the global type-value completion
+principle. -/
+theorem typeValueCandidateUniverseCodeWithTypeValueCandidatesOfAllReducibleTypesHaveTypeValueCandidates
+    {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope)
+    (subjectLevelExpr classifierLevelExpr : LevelExpr) (flag : UniverseFlag)
+    (allReducibleTypesHaveTypeValueCandidates :
+      HasTypeValueCandidatesForAllReducibleTypesAtAllLevels) :
+    TypeValueCandidateConclusionWithTypeValueCandidates context
+      (universeCodeCell subjectLevelExpr flag) (universeCodeCell classifierLevelExpr flag) :=
+  typeValueCandidateUniverseCodeWithTypeValueCandidatesOfLowerTypeExtendsToAllLevels
+    context subjectLevelExpr classifierLevelExpr flag
+    (fun _substitution _envWithTypeValueCandidates _predLevel _typeCode typeCodeNormalizing
+        typeCodeReducibleAtLevel =>
+      let ⟨_candidate, candidateReducibleAtLevel⟩ := typeCodeReducibleAtLevel
+      allReducibleTypesHaveTypeValueCandidates.reducibleTypeAtExtendsToAllLevels
+        typeCodeNormalizing candidateReducibleAtLevel)
+
+/-- **Bundled universe validity from type-value completion.**  This is the universe-formation validity arm
+the dependent fundamental theorem can consume once it assumes the global type-value completion principle,
+with no separate lower-fuel extension parameter. -/
+theorem fundamentalUniverseValidityWithTypeValueCandidatesOfAllReducibleTypesHaveTypeValueCandidates
+    {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (levelExpr : LevelExpr) (flag : UniverseFlag)
+    (allReducibleTypesHaveTypeValueCandidates :
+      HasTypeValueCandidatesForAllReducibleTypesAtAllLevels) :
+    FundamentalValidityWithTypeValueCandidates context
+      (universeCodeCell levelExpr flag) (universeCodeCell levelExpr.lsucc flag) :=
+  fundamentalUniverseValidityWithTypeValueCandidatesOfLowerTypeExtendsToAllLevels
+    context levelExpr flag
+    (fun _substitution _envWithTypeValueCandidates _predLevel _typeCode typeCodeNormalizing
+        typeCodeReducibleAtLevel =>
+      let ⟨_candidate, candidateReducibleAtLevel⟩ := typeCodeReducibleAtLevel
+      allReducibleTypesHaveTypeValueCandidates.reducibleTypeAtExtendsToAllLevels
+        typeCodeNormalizing candidateReducibleAtLevel)
+
 /-- **The `conv` member arm over the type-value environment.**  The reclassifier premise is run one fuel
 level up, decoded from its universe membership to a reducible target type at the conclusion fuel, and the
 subject member is transported along the substituted conversion.  This is only the member half: the
