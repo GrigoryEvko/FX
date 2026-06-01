@@ -114,6 +114,93 @@ theorem IsReducibleMemberAt.extendsToAllPositiveAtNeutralClassifier {scope : Nat
   exact (IsReducibleMemberAt.atNeutralClassifier (level := positiveLevel + 1)
     weakHeadNormal notPiType notUniverse).mpr termNormalizing
 
+/-- **Π types preserve the all-positive candidate discipline.**  If the domain has the all-positive
+member-predicate as a reducible candidate at every level, and every instantiated codomain has the same
+property for every all-positive argument, then the dependent Π-code also has the all-positive
+member-predicate as a reducible candidate.
+
+This is the positive recursive clause for the proof-relevant/Kripke argument relation: a function is an
+all-positive member of `Π domainCode. codomainCode` exactly when it maps all-positive domain arguments to
+all-positive codomain members.  The forward direction constructs the Π candidate at each positive level; the
+reverse direction inverts the Π candidate at that level and uses determinism to align the per-level domain
+and codomain candidates with their all-positive canonical candidates. -/
+theorem HasAllPositiveReducibleCandidateAt.piType {scope : Nat} {level : Nat}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    (domainHasAllPositiveCandidate :
+      ∀ level : Nat, HasAllPositiveReducibleCandidateAt level domainCode)
+    (codomainHasAllPositiveCandidate :
+      ∀ (level : Nat) (argument : RawTerm scope),
+        IsReducibleMemberAtAllPositiveLevels domainCode argument →
+          HasAllPositiveReducibleCandidateAt level (RawTerm.subst0 codomainCode argument)) :
+    HasAllPositiveReducibleCandidateAt level (piTyCodeCell domainCode codomainCode) := by
+  let allPositiveArrowCandidate : RawTerm scope → Prop :=
+    fun functionTerm =>
+      ∀ argument : RawTerm scope,
+        IsReducibleMemberAtAllPositiveLevels domainCode argument →
+          IsReducibleMemberAtAllPositiveLevels (RawTerm.subst0 codomainCode argument)
+            (appCell functionTerm argument)
+  have piReducibleAtLevel :
+      ReducibleTypeAt level (piTyCodeCell domainCode codomainCode) allPositiveArrowCandidate := by
+    cases level with
+    | zero =>
+        exact ReducibleTypeStep.piType
+          (codomainCandidate :=
+            fun argument =>
+              IsReducibleMemberAtAllPositiveLevels (RawTerm.subst0 codomainCode argument))
+          (domainHasAllPositiveCandidate 0)
+          (fun argument argumentAtAllPositiveLevels =>
+            codomainHasAllPositiveCandidate 0 argument argumentAtAllPositiveLevels)
+    | succ predLevel =>
+        exact ReducibleTypeStep.piType
+          (codomainCandidate :=
+            fun argument =>
+              IsReducibleMemberAtAllPositiveLevels (RawTerm.subst0 codomainCode argument))
+          (domainHasAllPositiveCandidate (predLevel + 1))
+          (fun argument argumentAtAllPositiveLevels =>
+            codomainHasAllPositiveCandidate (predLevel + 1) argument argumentAtAllPositiveLevels)
+  have pointwise :
+      PointwiseIff allPositiveArrowCandidate
+        (IsReducibleMemberAtAllPositiveLevels (piTyCodeCell domainCode codomainCode)) := by
+    intro functionTerm
+    constructor
+    · intro functionMapsAllPositive positiveLevel
+      have piReducibleAtPositiveLevel :
+          ReducibleTypeAt (positiveLevel + 1) (piTyCodeCell domainCode codomainCode)
+            allPositiveArrowCandidate := by
+        exact ReducibleTypeStep.piType
+          (codomainCandidate :=
+            fun argument =>
+              IsReducibleMemberAtAllPositiveLevels (RawTerm.subst0 codomainCode argument))
+          (domainHasAllPositiveCandidate (positiveLevel + 1))
+          (fun argument argumentAtAllPositiveLevels =>
+            codomainHasAllPositiveCandidate (positiveLevel + 1) argument argumentAtAllPositiveLevels)
+      exact ⟨allPositiveArrowCandidate, piReducibleAtPositiveLevel, functionMapsAllPositive⟩
+    · intro functionMemberAtAllPositiveLevels argument argumentAtAllPositiveLevels positiveLevel
+      obtain ⟨piCandidate, piReducible, functionInPiCandidate⟩ :=
+        functionMemberAtAllPositiveLevels positiveLevel
+      obtain ⟨domainCandidateAtLevel, codomainCandidateAtLevel, domainReducibleAtLevel,
+        codomainReducibleAtLevel, piCandidateEquivalence⟩ := piReducible.piTypeInversion
+      have argumentInDomainCandidate : domainCandidateAtLevel argument :=
+        (ReducibleTypeAt.deterministic
+          (domainHasAllPositiveCandidate (positiveLevel + 1)) domainReducibleAtLevel argument).mp
+          argumentAtAllPositiveLevels
+      have functionMapsDomainCandidate :=
+        (piCandidateEquivalence functionTerm).mp functionInPiCandidate
+      have applicationInCodomainCandidate :
+          codomainCandidateAtLevel argument (appCell functionTerm argument) :=
+        functionMapsDomainCandidate argument argumentInDomainCandidate
+      have applicationAtAllPositiveLevels :
+          IsReducibleMemberAtAllPositiveLevels (RawTerm.subst0 codomainCode argument)
+            (appCell functionTerm argument) :=
+        (ReducibleTypeAt.deterministic
+          (codomainReducibleAtLevel argument argumentInDomainCandidate)
+          (codomainHasAllPositiveCandidate (positiveLevel + 1) argument argumentAtAllPositiveLevels)
+          (appCell functionTerm argument)).mp applicationInCodomainCandidate
+      exact applicationAtAllPositiveLevels positiveLevel
+  cases level with
+  | zero => exact ReducibleTypeStep.ofPointwiseIff piReducibleAtLevel pointwise
+  | succ predLevel => exact ReducibleTypeStep.ofPointwiseIff piReducibleAtLevel pointwise
+
 /-- **Dependent Pi-introduction from all-positive arguments.**  If every argument accepted by the decoded
 domain candidate can be strengthened to all positive domain-membership levels, then the codomain and body
 all-level recursive hypotheses can be run under the cons-extended all-level environment.  This is the exact
