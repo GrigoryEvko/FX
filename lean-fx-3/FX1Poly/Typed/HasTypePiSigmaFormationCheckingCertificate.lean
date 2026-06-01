@@ -13,7 +13,7 @@ decidability/coherence facts for the smaller native pi/sigma-formation `HasType`
 * bidirectional checking: `HasType.infer` / `HasType.check` plus `infer_complete`;
 * description-engine typed checking: `HasTypeDesc.decidableOfWellFormed`;
 * formation-engine equivalence: `HasType.toHasTypeDesc` and `HasTypeDesc.toHasType`;
-* typed classifier conversion: `Conv.decidableOfTyped`;
+* typed classifier conversion: `Conv.decidableOfTyped` and `Conv.decidableOfHasTypeDesc`;
 * validity: `HasType.classifierIsType`;
 * native-pi-sigma HasType normalization: `HasType.isStronglyNormalizing`.
 
@@ -73,6 +73,12 @@ structure HasTypePiSigmaFormationCheckingCertificate {profile : PolyProfile} {sc
       HasType profile context firstSubject firstClassifier →
       HasType profile context secondSubject secondClassifier →
         Decidable (Conv firstClassifier secondClassifier)
+  /-- Description-engine typed conversion is decidable between classifiers of two well-typed subjects. -/
+  decideHasTypeDescClassifierConv :
+    ∀ {firstSubject firstClassifier secondSubject secondClassifier : RawTerm scope},
+      HasTypeDesc profile context firstSubject firstClassifier →
+      HasTypeDesc profile context secondSubject secondClassifier →
+        Decidable (Conv firstClassifier secondClassifier)
   /-- Validity: every classifier produced by typing is itself a type. -/
   proveClassifierIsType : ∀ {subject classifier : RawTerm scope},
     HasType profile context subject classifier → IsType profile context classifier
@@ -96,6 +102,8 @@ def buildHasTypePiSigmaFormationCheckingCertificate {profile : PolyProfile} {sco
   inferCompletes := fun typed => HasType.infer_complete contextIsWellFormed typed
   decideTypedClassifierConv := fun firstTyped secondTyped =>
     Conv.decidableOfTyped contextIsWellFormed firstTyped secondTyped
+  decideHasTypeDescClassifierConv := fun firstTyped secondTyped =>
+    Conv.decidableOfHasTypeDesc contextIsWellFormed firstTyped secondTyped
   proveClassifierIsType := fun typed => HasType.classifierIsType contextIsWellFormed typed
   proveSubjectIsStronglyNormalizing := fun typed => typed.isStronglyNormalizing
 

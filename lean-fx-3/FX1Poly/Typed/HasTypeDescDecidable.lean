@@ -56,4 +56,20 @@ def HasTypeDesc.decidableOfWellFormed {profile : PolyProfile} {scope : Nat}
       isFalse (fun descDerivation =>
         bespokeRefutation (HasTypeDesc.toHasType descDerivation))
 
+/-- **Decidable typed classifier conversion for the description engine.**  If two subjects are typed by
+`HasTypeDesc`, their classifiers' convertibility is decidable by transporting both derivations through the
+proved soundness map `HasTypeDesc.toHasType` and using the native typed-conversion decider
+`Conv.decidableOfTyped`.  This is the description-engine typed-Conv leg paired with
+`HasTypeDesc.decidableOfWellFormed`: checking and classifier conversion are now exposed for the same
+formation judgment, not only for its native `HasType` counterpart. -/
+def Conv.decidableOfHasTypeDesc {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {firstSubject firstClassifier secondSubject secondClassifier : RawTerm scope}
+    (wellFormed : WfContext context)
+    (firstTyped : HasTypeDesc profile context firstSubject firstClassifier)
+    (secondTyped : HasTypeDesc profile context secondSubject secondClassifier) :
+    Decidable (Conv firstClassifier secondClassifier) :=
+  Conv.decidableOfTyped wellFormed
+    (HasTypeDesc.toHasType firstTyped) (HasTypeDesc.toHasType secondTyped)
+
 end FX1Poly.Typed

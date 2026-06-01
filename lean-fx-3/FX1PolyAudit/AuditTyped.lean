@@ -377,7 +377,8 @@ gates pin them shut.
     — explicit record packaging of the already-proved native-pi-sigma HasType typed
     checking (`decidableOfWellFormed` + bidirectional `check`), equivalent
     description-engine checking (`HasTypeDesc.decidableOfWellFormed` + the two
-    translation maps), typed classifier conversion (`Conv.decidableOfTyped`), validity, and typed SN.
+    translation maps), typed classifier conversion (`Conv.decidableOfTyped` /
+    `Conv.decidableOfHasTypeDesc`), validity, and typed SN.
     This is deliberately scoped to the native pi/sigma-formation `HasType` core; the
     description-driven `HasTypeDescPi` reducibility assembly remains the next
     metatheory step. -/
@@ -386,6 +387,7 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.decideHasTypeDesc
 #assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.translateHasTypeToDesc
 #assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.translateDescToHasType
+#assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.decideHasTypeDescClassifierConv
 #assert_no_axioms FX1Poly.Typed.buildHasTypePiSigmaFormationCheckingCertificate
 
 /-! ### ★ MOONSHOT CORE — the description-driven generic typing engine
@@ -434,6 +436,7 @@ gates pin them shut.
 -- the native pi/sigma-formation HasType core.  Hand-built (match on the bespoke decision + the two
 -- equivalence maps), no `decidable_of_iff`/`Iff`, so propext-free.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.decidableOfWellFormed
+#assert_no_axioms FX1Poly.Typed.Conv.decidableOfHasTypeDesc
 
 /-! ### Eliminator-shape SUBSTRATE for the description engine (`HasTypeDescElim`).
     `DescTermTelescope` — the maximally-general typed-children spine over the
