@@ -106,6 +106,16 @@ same type/level into all-positive membership. -/
 def HasAllPositiveReducibleCandidateAt {scope : Nat} (level : Nat) (typeCode : RawTerm scope) : Prop :=
   ReducibleTypeAt level typeCode (IsReducibleMemberAtAllPositiveLevels typeCode)
 
+/-- **All-positive candidate under every all-level reducible substitution.**  This is the type-companion
+shape needed by the dependent fundamental theorem: after any closing substitution whose context variables
+are reducible at all positive levels, the substituted type code denotes the all-positive member predicate at
+every fuel level. -/
+def HasAllPositiveReducibleCandidateUnderAllLevelSubstitution {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (typeCode : RawTerm scope) : Prop :=
+  ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+    (_env : ReducibleEnvAtAllLevels context substitution) (level : Nat),
+    HasAllPositiveReducibleCandidateAt level (RawTerm.subst substitution typeCode)
+
 /-- If a type denotes the all-positive member predicate at a level, any other candidate for that same
 type/level contains only all-positive members. -/
 theorem HasAllPositiveReducibleCandidateAt.memberExtendsToAllPositive {scope : Nat}
@@ -301,6 +311,45 @@ theorem HasAllPositiveReducibleCandidateAt.sigmaTypeUnderSubst {sourceScope targ
   exact HasAllPositiveReducibleCandidateAt.sigmaType
     (RawTerm.subst substitution domainCode)
     (RawTerm.subst (iterateLiftRaw substitution 1) codomainCode)
+
+/-- **Π type codes preserve all-positive candidates under all-level substitutions.**  The domain companion
+supplies all-positive candidates for the substituted domain at every fuel level; the codomain companion is
+run under the cons-extended all-level environment built from an all-positive domain argument.  This packages
+the binder-recursive type-companion step without choosing candidates. -/
+theorem HasAllPositiveReducibleCandidateUnderAllLevelSubstitution.piType
+    {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    (domainHasAllPositiveCandidateUnderSubstitution :
+      HasAllPositiveReducibleCandidateUnderAllLevelSubstitution context domainCode)
+    (codomainHasAllPositiveCandidateUnderSubstitution :
+      HasAllPositiveReducibleCandidateUnderAllLevelSubstitution
+        (context.cons domainCode) codomainCode) :
+    HasAllPositiveReducibleCandidateUnderAllLevelSubstitution context
+      (piTyCodeCell domainCode codomainCode) := by
+  intro _targetScope substitution env level
+  exact HasAllPositiveReducibleCandidateAt.piTypeUnderSubst substitution
+    (fun candidateLevel =>
+      domainHasAllPositiveCandidateUnderSubstitution substitution env candidateLevel)
+    (fun candidateLevel argument argumentAtAllPositiveLevels => by
+      have codomainHasCandidate :=
+        codomainHasAllPositiveCandidateUnderSubstitution
+          (RawTermSubst.cons argument substitution)
+          (ReducibleEnvAtAllLevels.cons env argumentAtAllPositiveLevels)
+          candidateLevel
+      rwa [RawTerm.subst_cons_eq_subst0_lift] at codomainHasCandidate)
+
+/-- **Σ type codes have all-positive candidates under all-level substitutions.**  In the stratified
+candidate relation, Σ codes are neutral non-Π non-universe classifiers, so no recursive candidate
+assumption is needed for the candidate itself; child reducibility is enforced separately by the former
+membership theorem. -/
+theorem HasAllPositiveReducibleCandidateUnderAllLevelSubstitution.sigmaType
+    {profile : PolyProfile} {scope : Nat} (context : TypingContext profile scope)
+    (domainCode : RawTerm scope) (codomainCode : RawTerm (scope + 1)) :
+    HasAllPositiveReducibleCandidateUnderAllLevelSubstitution context
+      (sigmaTyCodeCell domainCode codomainCode) := by
+  intro _targetScope substitution _env level
+  exact HasAllPositiveReducibleCandidateAt.sigmaTypeUnderSubst
+    (level := level) substitution domainCode codomainCode
 
 /-- **Conditional universe all-positive candidate.**  A universe code at positive fuel
 `predLevel + 1` has the all-positive member predicate as its reducible candidate if every strongly
