@@ -1,5 +1,6 @@
 import FX1Poly.Typed.FundamentalAtAllFormerChildren
 import FX1Poly.Typed.FundamentalAtAllPiIntro
+import FX1Poly.Core.StratifiedReducibleMemberNeutral
 
 /-! # FX1Poly/Typed/FundamentalAtAllPositiveArguments
     — dependent binder bridges from all-positive semantic arguments
@@ -27,6 +28,7 @@ No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `
 namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
+open StepStar
 
 /-- **All-positive semantic membership.**  A term is a reducible member of a type at every positive
 stratification level.  This is the argument strength an all-level dependent binder needs in order to run
@@ -58,6 +60,59 @@ theorem HasAllPositiveReducibleCandidateAt.memberExtendsToAllPositive {scope : N
     (candidateMember : candidate term) :
     IsReducibleMemberAtAllPositiveLevels typeCode term :=
   (ReducibleTypeAt.deterministic candidateReducible hasAllPositiveCandidate term).mp candidateMember
+
+/-- **Neutral classifiers have the all-positive member predicate as a reducible candidate.**  For a
+weak-head-normal classifier that is neither Π-rooted nor universe-rooted, stratified membership is exactly
+strong normalization at every level.  Therefore the candidate `IsStronglyNormalizing` is pointwise equivalent
+to `IsReducibleMemberAtAllPositiveLevels classifier`, and the `ofPointwiseIff` congruence arm turns the
+neutral reducible-type witness into the all-positive candidate witness.
+
+This is the first concrete discharge of `HasAllPositiveReducibleCandidateAt`: it covers neutral object-level
+domains (variables, stuck eliminators, and future neutral data classifiers).  It deliberately does not cover
+universe domains; those are the hard dependent-type case because a universe member at one fuel level only
+contains a type reducible one level down. -/
+theorem HasAllPositiveReducibleCandidateAt.ofNeutralClassifier {scope : Nat}
+    {level : Nat} {typeCode : RawTerm scope}
+    (weakHeadNormal : ∀ reduct : RawTerm scope, ¬ WeakHeadStep typeCode reduct)
+    (notPiType : typeCode.rootGenerator ≠ Generator.gen_piTyCode)
+    (notUniverse : typeCode.rootGenerator ≠ Generator.gen_universeCode) :
+    HasAllPositiveReducibleCandidateAt level typeCode := by
+  have pointwise :
+      PointwiseIff IsStronglyNormalizing (IsReducibleMemberAtAllPositiveLevels typeCode) := by
+    intro term
+    constructor
+    · intro termNormalizing positiveLevel
+      exact (IsReducibleMemberAt.atNeutralClassifier (level := positiveLevel + 1)
+        weakHeadNormal notPiType notUniverse).mpr termNormalizing
+    · intro termMemberAtAllPositiveLevels
+      exact (IsReducibleMemberAt.atNeutralClassifier (level := 1)
+        weakHeadNormal notPiType notUniverse).mp (termMemberAtAllPositiveLevels 0)
+  cases level with
+  | zero =>
+      exact ReducibleTypeStep.ofPointwiseIff
+        (ReducibleTypeStep.neutral weakHeadNormal notPiType notUniverse) pointwise
+  | succ predLevel =>
+      exact ReducibleTypeStep.ofPointwiseIff
+        (ReducibleTypeStep.neutral weakHeadNormal notPiType notUniverse) pointwise
+
+/-- **Neutral-classifier members extend to all positive levels.**  The membership-level form of
+`HasAllPositiveReducibleCandidateAt.ofNeutralClassifier`: at a neutral non-Π non-universe classifier,
+membership at any level is equivalent to strong normalization, and strong normalization re-injects as
+membership at every positive level. -/
+theorem IsReducibleMemberAt.extendsToAllPositiveAtNeutralClassifier {scope : Nat}
+    {memberLevel : Nat} {typeCode term : RawTerm scope}
+    (weakHeadNormal : ∀ reduct : RawTerm scope, ¬ WeakHeadStep typeCode reduct)
+    (notPiType : typeCode.rootGenerator ≠ Generator.gen_piTyCode)
+    (notUniverse : typeCode.rootGenerator ≠ Generator.gen_universeCode)
+    (member : IsReducibleMemberAt memberLevel typeCode term) :
+    IsReducibleMemberAtAllPositiveLevels typeCode term := by
+  have termNormalizing :
+      IsStronglyNormalizing term :=
+    (IsReducibleMemberAt.atNeutralClassifier (level := memberLevel)
+      weakHeadNormal notPiType notUniverse).mp member
+  intro positiveLevel
+  exact (IsReducibleMemberAt.atNeutralClassifier (level := positiveLevel + 1)
+    weakHeadNormal notPiType notUniverse).mpr termNormalizing
 
 /-- **Dependent Pi-introduction from all-positive arguments.**  If every argument accepted by the decoded
 domain candidate can be strengthened to all positive domain-membership levels, then the codomain and body
