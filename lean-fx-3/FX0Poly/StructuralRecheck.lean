@@ -16,8 +16,8 @@ Metamath-Zero discipline: the trusted core is a tiny total decision, auditable a
 
 ## Zero-axiom verification
 
-`recheckNode` is a total `match` + `if` on `Bool`; the soundness theorem is closed by `Bool.and_eq_true`,
-`beq_iff_eq`, and a one-line `Bool` case-split helper — no `propext`, `Quot.sound`, `Classical`, `sorry`,
+`recheckNode` is a total `match` + `if` on `Bool`; the soundness theorem is a direct computational equation
+against the deciding Boolean — no `propext`, `Quot.sound`, `Classical`, `sorry`,
 `native_decide`, or `omega`.  Each declaration is gated by a per-declaration `#assert_no_axioms` in
 `FX1PolyAudit/AuditFX0Poly.lean`; FX0Poly itself stays free of the audit macro, preserving its independence
 from the FX1Poly stack (the trust point — FX0Poly is auditable without trusting FX1Poly).
