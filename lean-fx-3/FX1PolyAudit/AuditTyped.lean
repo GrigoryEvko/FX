@@ -47,6 +47,7 @@ import FX1Poly.Typed.ReducibleSemanticRules
 import FX1Poly.Typed.ReducibleMemberFormation
 import FX1Poly.Typed.DescTelescopeInversion
 import FX1Poly.Typed.PiFormerMembership
+import FX1Poly.Typed.FormerChildrenReducible
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -866,3 +867,5 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.consInversion
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.piFormerOfChildMemberships
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.sigmaFormerOfChildMemberships
+#assert_no_axioms FX1Poly.Typed.FormerChildrenReducible.toPiMember
+#assert_no_axioms FX1Poly.Typed.FormerChildrenReducible.toSigmaMember
