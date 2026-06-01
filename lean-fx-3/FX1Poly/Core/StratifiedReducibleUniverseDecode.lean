@@ -113,4 +113,41 @@ theorem IsReducibleMemberAt.universeMembership_iff {scope : Nat} {predLevel : Na
     exact IsReducibleMemberAt.tarskiEncode
       stronglyNormalizingAndReducible.1 stronglyNormalizingAndReducible.2
 
+/-- **Every kernel universe code is a reducible type, at EVERY reducibility level — independent of its
+`LevelExpr` and `UniverseFlag`.**  The formal LINK between the Tarski-universe reducibility relation and the
+kernel's `gen_universeCode (LevelExpr × UniverseFlag)` codes: the `universeCode` arm of `ReducibleTypeStep`
+produces `universeReducibilityPredicate lower` for ANY `(levelExpr, flag)` payload, so the relation's `Nat`
+fuel — the META-level stratification of the logical relation — is DECOUPLED from the kernel's `LevelExpr`
+OBJECT-level universe levels.  This decoupling is sound because the no-Type-in-Type level discipline is
+enforced by the TYPING rules (`HasType` universe formation: `Type@e : Type@(lsucc e)`), NOT re-derived in
+the reducibility model — the model is a permissive semantic interpretation whose job is "every well-typed
+term is reducible", not "reject the ill-typed". -/
+theorem IsReducibleTypeAt.universeCode {scope : Nat} (level : Nat)
+    (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    IsReducibleTypeAt level
+      (.mkGen .gen_universeCode (levelExpr, flag) .childNil : RawTerm scope) := by
+  cases level with
+  | zero => exact ⟨_, ReducibleTypeStep.universeCode levelExpr flag⟩
+  | succ predLevel => exact ⟨_, ReducibleTypeStep.universeCode levelExpr flag⟩
+
+/-- **The universe-formation arm of the fundamental theorem, semantically.**  `Type@e` is a reducible
+member of `Type@(lsucc e)` at `predLevel + 1`: `tarskiEncode` the universe code `Type@e` as a member of the
+universe `Type@(lsucc e)` from its strong normalization (a normal leaf — `noStep_universeCode`) and its
+reducibility AS A TYPE at `predLevel` (`IsReducibleTypeAt.universeCode`).  This is the semantic discharge of
+the embedded `HasTypeDesc` universe-formation rule — the formation arm of the fundamental theorem at a
+universe classifier.
+
+The reducibility fuel `predLevel + 1` is DECOUPLED from the syntactic level `e`: `tarskiEncode` accepts any
+classifier universe code, the `lsucc`-level discipline being the typing rules' responsibility, not the
+model's.  (The model would equally accept `Type@e : Type@e'` for any `e'` — it is the `HasType` rule, not
+the reducibility relation, that pins the classifier to `lsucc e`.) -/
+theorem IsReducibleMemberAt.universeFormation {scope : Nat} (predLevel : Nat)
+    (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    IsReducibleMemberAt (predLevel + 1)
+      (.mkGen .gen_universeCode (LevelExpr.lsucc levelExpr, flag) .childNil : RawTerm scope)
+      (.mkGen .gen_universeCode (levelExpr, flag) .childNil) :=
+  IsReducibleMemberAt.tarskiEncode
+    (isStronglyNormalizing_of_noStep (fun _ step => noStep_universeCode (levelExpr, flag) step))
+    (IsReducibleTypeAt.universeCode predLevel levelExpr flag)
+
 end FX1Poly.Core
