@@ -44,6 +44,12 @@ means. -/
 def IsReducibleTypeAtAllLevels {scope : Nat} (typeCode : RawTerm scope) : Prop :=
   ∀ level : Nat, IsReducibleTypeAt level typeCode
 
+/-- A type code is reducible at every positive stratification fuel level.  This is weaker than
+`IsReducibleTypeAtAllLevels` exactly at fuel `0`, and is the shape obtained for instantiated Π-codomains
+from all-positive arguments. -/
+def IsReducibleTypeAtAllPositiveLevels {scope : Nat} (typeCode : RawTerm scope) : Prop :=
+  ∀ predLevel : Nat, IsReducibleTypeAt (predLevel + 1) typeCode
+
 /-- Read an all-positive member at one concrete positive level. -/
 theorem IsReducibleMemberAtAllPositiveLevels.atLevel {scope : Nat}
     {typeCode term : RawTerm scope}
@@ -111,6 +117,46 @@ theorem IsReducibleMemberAt.extendsToAllPositiveAtWeakHeadExpansion {scope : Nat
     ⟨candidate, typeCodeReducible.candidateAtWhnfReduct weakHeadStep, termInCandidate⟩
   exact IsReducibleMemberAtAllPositiveLevels.headExpand weakHeadStep
     (reductMembersExtend reductMember)
+
+/-- **The domain of an all-level reducible Π type is all-level reducible.**  This is the type-level
+projection obtained by inverting the Π candidate at each fuel. -/
+theorem IsReducibleTypeAtAllLevels.domainOfPiType {scope : Nat}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    (piTypeReducibleAtAllLevels :
+      IsReducibleTypeAtAllLevels (piTyCodeCell domainCode codomainCode)) :
+    IsReducibleTypeAtAllLevels domainCode := by
+  intro level
+  obtain ⟨piCandidate, piReducibleAtLevel⟩ := piTypeReducibleAtAllLevels level
+  obtain ⟨domainCandidate, _codomainCandidate, domainReducibleAtLevel,
+    _codomainReducibleAtLevel, _candidateEquivalence⟩ := piReducibleAtLevel.piTypeInversion
+  exact ⟨domainCandidate, domainReducibleAtLevel⟩
+
+/-- **The instantiated codomain of an all-level reducible Π type is reducible at every positive fuel for
+every all-positive domain argument.**  The positive restriction is load-bearing: at fuel `predLevel + 1`,
+Π-inversion gives the domain candidate at the same positive level, and all-positive membership supplies the
+argument in that candidate by determinism.  No claim is made at fuel `0`, where the all-positive argument
+does not provide a level-`0` domain member. -/
+theorem IsReducibleTypeAtAllLevels.codomainOfPiTypeAtAllPositiveArgument {scope : Nat}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {argument : RawTerm scope}
+    (piTypeReducibleAtAllLevels :
+      IsReducibleTypeAtAllLevels (piTyCodeCell domainCode codomainCode))
+    (argumentMemberAtAllPositiveLevels :
+      IsReducibleMemberAtAllPositiveLevels domainCode argument) :
+    IsReducibleTypeAtAllPositiveLevels (RawTerm.subst0 codomainCode argument) := by
+  intro predLevel
+  obtain ⟨piCandidate, piReducibleAtPositiveLevel⟩ :=
+    piTypeReducibleAtAllLevels (predLevel + 1)
+  obtain ⟨domainCandidate, codomainCandidate, domainReducibleAtPositiveLevel,
+    codomainReducibleAtPositiveLevel, _candidateEquivalence⟩ :=
+    piReducibleAtPositiveLevel.piTypeInversion
+  obtain ⟨argumentCandidate, argumentReducibleAtPositiveLevel, argumentInCandidate⟩ :=
+    argumentMemberAtAllPositiveLevels predLevel
+  have argumentInDomainCandidate : domainCandidate argument :=
+    (ReducibleTypeAt.deterministic argumentReducibleAtPositiveLevel
+      domainReducibleAtPositiveLevel argument).mp argumentInCandidate
+  exact ⟨codomainCandidate argument,
+    codomainReducibleAtPositiveLevel argument argumentInDomainCandidate⟩
 
 /-- **All-positive membership in a universe.**  A term is an all-positive member of a universe code exactly
 when it is strongly normalizing and reducible as a type at every fuel level.  This theorem states the hard
