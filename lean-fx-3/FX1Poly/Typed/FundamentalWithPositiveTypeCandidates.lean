@@ -30,6 +30,7 @@ The proofs compose already-gated arm bodies, `tarskiDecode`, `subst_universeCode
 namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open StepStar
 
 /-- **The dependent fundamental theorem's conclusion over the strengthened environment.**  A subject is a
 reducible member of its substituted classifier at every positive semantic fuel, but only for substitutions
@@ -77,6 +78,30 @@ theorem fundamentalUniverseFormationWithPositiveTypeCandidates
       (universeCodeCell levelExpr.lsucc flag) :=
   FundamentalConclusionAtAll.toPositiveTypeCandidateEnv
     (fundamentalUniverseFormationAtAll context levelExpr flag)
+
+/-- **The positive-candidate universe-code type half over the strengthened environment, conditional on
+the exact lower-type extension obligation.**  Universe codes are the only place where the positive-candidate
+type half cannot be discharged structurally: at fuel `predLevel + 1`, the universe candidate is the lower
+reducibility relation at `predLevel`, so turning it into the all-positive member predicate requires that
+lower reducible types extend to all positive levels.  This theorem packages that obligation in the
+strengthened-environment shape consumed by the dependent fundamental theorem assembly. -/
+theorem positiveCandidateUniverseCodeWithPositiveTypeCandidatesOfLowerTypeExtendsToAllLevels
+    {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (levelExpr : LevelExpr) (flag : UniverseFlag)
+    (lowerTypeExtendsToAllLevels :
+      ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+        (_env : ReducibleEnvAtAllLevelsWithPositiveTypeCandidates context substitution)
+        (predLevel : Nat) (typeCode : RawTerm (targetScope + 1)),
+        IsStronglyNormalizing typeCode →
+          IsReducibleTypeAt predLevel typeCode → IsReducibleTypeAtAllLevels typeCode) :
+    PositiveCandidateConclusionWithPositiveTypeCandidates context (universeCodeCell levelExpr flag) := by
+  intro _targetScope substitution envWithCandidates predLevel
+  rw [subst_universeCodeCell]
+  exact HasAllPositiveReducibleCandidateAt.universeCodeOfLowerTypeExtendsToAllLevels
+    levelExpr flag
+    (fun typeCode typeCodeNormalizing typeCodeReducibleAtLowerLevel =>
+      lowerTypeExtendsToAllLevels substitution envWithCandidates predLevel typeCode
+        typeCodeNormalizing typeCodeReducibleAtLowerLevel)
 
 /-- **The `conv` arm over the strengthened environment.**  The reclassifier premise is run one fuel level
 up, decoded to a reducible target type at the conclusion fuel, and the subject member is transported across
