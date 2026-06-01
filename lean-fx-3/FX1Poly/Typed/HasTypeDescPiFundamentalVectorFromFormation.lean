@@ -1,6 +1,8 @@
 import FX1Poly.Typed.FundamentalAtAllVectorPremises
 import FX1Poly.Typed.TelescopeReducible
 import FX1Poly.Typed.DescTelescopeInversion
+import FX1Poly.Core.RawTermRenameSubstCommute
+import FX1Poly.Core.StrongNormalizationRename
 
 /-! # FX1Poly/Typed/HasTypeDescPiFundamentalVectorFromFormation
     — assemble the grown-engine vector fundamental theorem from the formation-engine one
@@ -183,5 +185,34 @@ theorem HasTypeDescPi.subjectStronglyNormalizingFromFormation {profile : PolyPro
     IsStronglyNormalizing (RawTerm.subst substitution subject) :=
   ((HasTypeDescPi.fundamentalAtAllFromFormation formationFundamental typed)
     substitution env predLevel).stronglyNormalizing
+
+/-- **Closed strong normalization from the conditional grown-engine fundamental theorem.**  In the empty
+context, instantiate the closing substitution with the unique empty substitution into scope `1`, use the
+vacuous all-level environment, then reflect strong normalization back along the unique empty renaming.  The
+formation-engine premise remains explicit; this is the closed-term SN handoff that becomes unconditional
+exactly when the formation premise is discharged. -/
+theorem HasTypeDescPi.closedSubjectStronglyNormalizingFromFormation {profile : PolyProfile}
+    (formationFundamental :
+      ∀ {scope : Nat} {context : TypingContext profile scope}
+        {subject classifier : RawTerm scope},
+        HasTypeDesc profile context subject classifier →
+          IsFundamentalConclusionAtVector context subject classifier)
+    {subject classifier : RawTerm 0}
+    (typed : HasTypeDescPi profile TypingContext.empty subject classifier) :
+    IsStronglyNormalizing subject := by
+  let emptyRenaming : RawRenaming 0 1 := fun emptyIndex => emptyIndex.elim0
+  let emptySubstitution : RawTermSubst 0 1 :=
+    RawRenaming.thenSubst emptyRenaming (RawTermSubst.identity : RawTermSubst 1 1)
+  have subjectNormalizing :
+      IsStronglyNormalizing (RawTerm.subst emptySubstitution subject) :=
+    HasTypeDescPi.subjectStronglyNormalizingFromFormation
+      formationFundamental typed emptySubstitution
+      (ReducibleEnvAtAllLevels.empty emptySubstitution) 0
+  have renamedSubjectNormalizing :
+      IsStronglyNormalizing (RawTerm.rename emptyRenaming subject) := by
+    rw [← RawTerm.subst_identity_apply (RawTerm.rename emptyRenaming subject)]
+    rwa [RawTerm.rename_subst_commute emptyRenaming
+      (RawTermSubst.identity : RawTermSubst 1 1) subject]
+  exact StepStar.isStronglyNormalizing_of_rename emptyRenaming renamedSubjectNormalizing
 
 end FX1Poly.Typed
