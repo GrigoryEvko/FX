@@ -5,10 +5,10 @@ import FX1Poly.Typed.UniverseCodeShape
 import FX1Poly.Typed.SigmaCodeShape
 
 /-! # FX1Poly/Typed/IsTypeDecidable
-    — characterization of which cells are types (current fragment)
+    — characterization of which cells are types (native pi/sigma-formation HasType core)
 
 `IsType context classifier` unfolds to `∃ levelExpr flag, HasType context
-classifier (universeCodeCell levelExpr flag)`.  On the current `HasType` fragment
+classifier (universeCodeCell levelExpr flag)`.  On the native pi/sigma-formation `HasType` core
 this is decidable by casing on `classifier`'s head generator:
 
 * `gen_universeCode` head ⇒ always a type (`IsType.ofUniverseCodeCell`, via
@@ -303,7 +303,7 @@ def IsType.decideWithWitness {profile : PolyProfile} {scope : Nat}
       | exact size_lt_sigmaTyCodeCell_domain _ _
       | exact size_lt_sigmaTyCodeCell_codomain _ _
 
-/-- Decide whether `classifier` inhabits some universe, for the current fragment
+/-- Decide whether `classifier` inhabits some universe, for the native pi/sigma-formation HasType core
 (var / conv / universe / Π-formation / Σ-formation).  A thin wrapper over the
 data-returning `decideWithWitness`: a universe witness is the `isTrue` evidence;
 the `no-universe` proof is the `isFalse` evidence. -/

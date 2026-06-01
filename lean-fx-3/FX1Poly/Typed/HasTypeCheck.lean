@@ -1,7 +1,7 @@
 import FX1Poly.Typed.HasTypeInfer
 
 /-! # FX1Poly/Typed/HasTypeCheck
-    — bidirectional type CHECKING (`check`) for the current fragment
+    — bidirectional type CHECKING (`check`) for the native pi/sigma-formation HasType core
 
 The check half of bidirectional typing: "does `subject` have the GIVEN type
 `targetType`?".  The synthesis-based decision procedure: synthesise `subject`'s
@@ -19,7 +19,7 @@ HasType.check : WfContext Γ → (t T : RawTerm scope) → Decidable (HasType Γ
 This is the GENERAL bidirectional method — it rests only on `infer`, the generic
 decidable `Conv` (`Conv.decidableOfIsType`), and the conversion rule, NOT on the
 fragment-specific collapse-to-classifier-equality that powers the direct decider
-`HasType.decidableOfWellFormed` (#461).  On the current fragment the two
+`HasType.decidableOfWellFormed` (#461).  On the native pi/sigma-formation HasType core the two
 necessarily decide the same judgment (any two `Decidable p` agree).  `check` is a
 parallel decision procedure independent of the fragment-specific collapse — the
 synthesise-then-convert skeleton decides typing through `infer` and `Conv` alone,

@@ -2,7 +2,7 @@ import FX1Poly.Typed.HasTypeDecidable
 import FX1Poly.Typed.HasTypeConsistency
 
 /-! # FX1Poly/Typed/HasTypeInfer
-    — bidirectional type SYNTHESIS (`infer`) for the current fragment
+    — bidirectional type SYNTHESIS (`infer`) for the native pi/sigma-formation HasType core
 
 The decidable-typing triad (#461/#462/#303) answers "does `subject` have the GIVEN
 type `T`?".  Synthesis is the dual, more primitive query an agentic FX user asks:

@@ -18,7 +18,7 @@ import FX1Poly.Typed.HasTypeSmokeCorpus
 import FX1Poly.Typed.HasTypeConsistency
 import FX1Poly.Typed.HasTypeInfer
 import FX1Poly.Typed.HasTypeCheck
-import FX1Poly.Typed.CurrentFragmentTypedCheckingCertificate
+import FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate
 import FX1Poly.Typed.HasTypeClosedForms
 import FX1Poly.Typed.WfContextDecidable
 import FX1Poly.Typed.HasTypeDesc
@@ -128,13 +128,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.WfContext.lookupIsType
 #assert_no_axioms FX1Poly.Typed.HasType.classifierIsType
 
-/-! ### Fundamental theorem (typed SN, current fragment) + typed Conv.trans payoff -/
+/-! ### Fundamental theorem (typed SN, native pi/sigma-formation HasType core) + typed Conv.trans payoff -/
 
 #assert_no_axioms FX1Poly.Typed.HasType.isStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.IsType.isStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.Conv.trans_of_typedMiddle
 
-/-! ### INVERSION (#454, current fragment) — per-shape classifier characterization -/
+/-! ### INVERSION (#454, native pi/sigma-formation HasType core) — per-shape classifier characterization -/
 
 #assert_no_axioms FX1Poly.Typed.HasType.inversionVariable
 #assert_no_axioms FX1Poly.Typed.HasType.inversionUniverseCode
@@ -152,11 +152,11 @@ gates pin them shut.
 -- `sigmaFormation` arm closed by `sigmaTyCodeCell_inj`.
 #assert_no_axioms FX1Poly.Typed.HasType.inversionSigmaCode
 
-/-! ### UNIQUENESS OF TYPING (#469, current fragment) -/
+/-! ### UNIQUENESS OF TYPING (#469, native pi/sigma-formation HasType core) -/
 
 #assert_no_axioms FX1Poly.Typed.HasType.uniqueness
 
-/-! ### DECIDABLE TYPE CONVERSION (current fragment) — normal-form rigidity →
+/-! ### DECIDABLE TYPE CONVERSION (native pi/sigma-formation HasType core) — normal-form rigidity →
     decidable Conv.  Core rigidity (`StepStar.eq_of_noStep`, `Conv.eq_of_noStep`,
     `Conv.iff_eq_of_noStep`) is swept by `#audit_namespace FX1Poly.Core` in
     `AuditCoreSubstrate.lean`; the typed payoff is pinned per-decl here. -/
@@ -167,7 +167,7 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.Conv.iff_eq_of_isType
 #assert_no_axioms FX1Poly.Typed.Conv.decidableOfIsType
 
-/-! ### Typed subject reduction (P4, current fragment) — `subjectHasNoStep`
+/-! ### Typed subject reduction (P4, native pi/sigma-formation HasType core) — `subjectHasNoStep`
     is the structural invariant (well-typed subjects are normal); SR itself
     holds vacuously over the redex-free fragment. -/
 
@@ -256,7 +256,7 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsType.variableCell_iff_lookupIsUniverseCode
 #assert_no_axioms FX1Poly.Typed.IsType.not_of_headGenerator
 
-/-! ### Decidable IsType (current fragment) — the decision procedure
+/-! ### Decidable IsType (native pi/sigma-formation HasType core) — the decision procedure
     assembled over the head-generator cases: case on the cell (payload = index as data),
     `dite` on the head generator (`DecidableEq Generator`, no `Classical`).  The
     Π arm makes the procedure RECURSIVE (well-founded on `RawTerm.size`); the
@@ -277,18 +277,18 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasType.universeCodeCell_iff_classifierEqSucc
 #assert_no_axioms FX1Poly.Typed.HasType.not_of_headGenerator
 
-/-! ### Decidable HasType (current fragment) — typed checking decision
+/-! ### Decidable HasType (native pi/sigma-formation HasType core) — typed checking decision
     procedure assembled over the classifier-equality characterization; mirror of
     `IsType.decidableOfWellFormed`, deciding via `DecidableEq RawTerm`. -/
 
 #assert_no_axioms FX1Poly.Typed.HasType.decidableOfWellFormed
 
-/-! ### Decidable typed Conv (current fragment) — convertibility
+/-! ### Decidable typed Conv (native pi/sigma-formation HasType core) — convertibility
     of the classifiers of two well-typed terms, via validity + rigidity. -/
 
 #assert_no_axioms FX1Poly.Typed.Conv.decidableOfTyped
 
-/-! ### Typed smoke corpus (current fragment) — non-vacuity /
+/-! ### Typed smoke corpus (native pi/sigma-formation HasType core) — non-vacuity /
     regression witnesses pinning that the deciders DISCRIMINATE: one accepted +
     one rejected cell per outcome branch (universeCode-isTrue, var-isTrue,
     outer-reject, universeCode-isFalse). -/
@@ -308,8 +308,7 @@ gates pin them shut.
 
 #assert_no_axioms FX1Poly.Typed.probe_universe_Type_in_Type_rejected
 
-/-! ### Closed-typing characterization (P10 consistency precursor, current
-    fragment) — every closed well-typed subject is itself a type.  The
+/-! ### Closed-typing characterization (P10 consistency precursor, native pi/sigma-formation HasType core) — every closed well-typed subject is itself a type.  The
     type-former-only fragment has NO closed proper terms (the closed `.term`
     layer below the universe is empty); `subjectIsVariableOrIsType` is the
     context-general induction engine (each non-`conv` arm witnesses `IsType` from
@@ -319,8 +318,7 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasType.subjectIsVariableOrIsType
 #assert_no_axioms FX1Poly.Typed.HasType.closedSubjectIsType
 
-/-! ### Closed-typing characterization, both halves (P10 precursor, current
-    fragment) — the two complementary halves of "what is a closed typing
+/-! ### Closed-typing characterization, both halves (P10 precursor, native pi/sigma-formation HasType core) — the two complementary halves of "what is a closed typing
     judgment?".  `closedSubjectIsTypeFormer`: a closed well-typed subject is
     EXACTLY a universe / Π / Σ type-former code (canonical forms; the `var`
     disjunct of the 4-way shape classification is killed by `Fin 0`).
@@ -343,7 +341,7 @@ gates pin them shut.
 
 #assert_no_axioms FX1Poly.Typed.WfContext.decidable
 
-/-! ### Type synthesis / bidirectional `infer` (current fragment)
+/-! ### Type synthesis / bidirectional `infer` (native pi/sigma-formation HasType core)
     — synthesise a subject's classifier + derivation (sound by construction);
     `var` direct, every other head delegates to `IsType.decideWithWitness`.
     `infer_succeeds` is totality on the typeable domain (via the
@@ -356,7 +354,7 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasType.infer_succeeds
 #assert_no_axioms FX1Poly.Typed.HasType.infer_complete
 
-/-! ### Type checking / bidirectional `check` (current fragment)
+/-! ### Type checking / bidirectional `check` (native pi/sigma-formation HasType core)
     — decide whether `subject` has the GIVEN `targetType`: synthesise with
     `infer`, confirm `targetType` is a type (`decideWithWitness`), decide
     `Conv synthType targetType`, coerce via the conversion rule on success.
@@ -370,16 +368,16 @@ gates pin them shut.
 
 #assert_no_axioms FX1Poly.Typed.HasType.check
 
-/-! ### ★ MILESTONE A seed certificate (current fragment)
-    — explicit record packaging of the already-proved current-fragment typed
+/-! ### Typed checking certificate (native pi/sigma-formation HasType core)
+    — explicit record packaging of the already-proved native-pi-sigma HasType typed
     checking (`decidableOfWellFormed` + bidirectional `check`), typed
     classifier conversion (`Conv.decidableOfTyped`), validity, and typed SN.
-    This is deliberately scoped to the current `HasType` fragment; the
+    This is deliberately scoped to the native pi/sigma-formation `HasType` core; the
     description-driven `HasTypeDescPi` reducibility assembly remains the next
     metatheory step. -/
 
-#assert_no_axioms FX1Poly.Typed.CurrentFragmentTypedCheckingCertificate
-#assert_no_axioms FX1Poly.Typed.buildCurrentFragmentTypedCheckingCertificate
+#assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate
+#assert_no_axioms FX1Poly.Typed.buildHasTypePiSigmaFormationCheckingCertificate
 
 /-! ### ★ MOONSHOT CORE — the description-driven generic typing engine
     (`HasTypeDesc`, polycell.md §11.8.5 / §5.2: the Natural-Model display map
@@ -424,7 +422,7 @@ gates pin them shut.
 -- DECIDABILITY (P11 0-FN) of the description engine, transported across the
 -- proven ⟺ equivalence from the bespoke `HasType.decidableOfWellFormed`: the
 -- cascade-free description-driven `gen` arm is a genuine DECIDABLE typechecker on
--- the current fragment.  Hand-built (match on the bespoke decision + the two
+-- the native pi/sigma-formation HasType core.  Hand-built (match on the bespoke decision + the two
 -- equivalence maps), no `decidable_of_iff`/`Iff`, so propext-free.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.decidableOfWellFormed
 

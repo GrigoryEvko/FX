@@ -314,7 +314,7 @@ theorem HasType.inversionSigmaCode {profile : PolyProfile} {scope : Nat}
       exact ⟨armDomainLevel, armCodomainLevel, armFlag,
         domainTyped, codomainTyped, Conv.refl _⟩
 
-/-- **Uniqueness of typing (#469)** for the current fragment: any two classifiers
+/-- **Uniqueness of typing (#469)** for the native pi/sigma-formation HasType core: any two classifiers
 of the same subject are convertible.  Proved by **induction on the first
 derivation**: the `var` and
 `universeFormation` subjects have a derivation-INDEPENDENT principal type, so

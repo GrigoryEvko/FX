@@ -1,10 +1,10 @@
 import FX1Poly.Typed.HasType
 
 /-! # FX1Poly/Typed/HasTypeConsistency
-    — the closed-typing characterization (P10 consistency precursor, current fragment)
+    — the closed-typing characterization (P10 consistency precursor, native pi/sigma-formation HasType core)
 
 The payoff direction (polycell.md §11.8 P10): canonicity ⇒ consistency
-(`HasType .empty t Empty → False`).  On the CURRENT fragment — `var` / `conv`
+(`HasType .empty t Empty → False`).  On the native pi/sigma-formation HasType core — `var` / `conv`
 / `universeFormation` / `piFormation` / `sigmaFormation`, all type-formers with
 NO term-introduction arms yet — this takes a sharp, honest shape: **every closed
 well-typed subject is itself a type.**  There are no closed proper TERMS at all
@@ -20,7 +20,7 @@ This is the fragment's consistency content: the only closed-typeable cells are
 universe / Π / Σ CODES, each classified by a universe code — none is a closed
 inhabitant of a non-universe classifier.  With a hypothetical empty type
 (`gen_empty` / `never`) and term-introduction arms, the statement refines
-(closed terms become "type OR canonical value").  On the current fragment the
+(closed terms become "type OR canonical value").  On the native pi/sigma-formation HasType core the
 degeneracy is the honest, checkable truth, and `HasType .empty t
 (nonUniverseClassifier)` is structurally impossible.
 
@@ -85,7 +85,7 @@ theorem HasType.subjectIsVariableOrIsType {profile : PolyProfile} {scope : Nat}
         HasType.sigmaFormation context domainCode codomainCode
           domainLevel codomainLevel flag domainTyped codomainTyped⟩
 
-/-- P10 consistency precursor (current fragment): every closed well-typed
+/-- P10 consistency precursor (native pi/sigma-formation HasType core): every closed well-typed
 subject is itself a type.  In the empty context the variable disjunct of
 `subjectIsVariableOrIsType` is impossible (`Fin 0` has no inhabitant), so the
 `IsType` disjunct always holds.  Fragment-specific scope: it states that the

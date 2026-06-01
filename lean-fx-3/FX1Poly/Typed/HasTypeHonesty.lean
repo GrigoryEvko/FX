@@ -13,7 +13,7 @@ the .term-over-.type layer.
 ## Scope of this fragment
 
 `HasType` types only variable, universe-code, Π-type code, and Σ-type code
-cells on the current fragment (`HasType.typedSubjectIsVariableOrUniverseCode`).
+cells on the native pi/sigma-formation HasType core (`HasType.typedSubjectIsVariableOrUniverseCode`).
 Every other cell — in particular the genuinely ill-typed `app(unit, unit)`
 — therefore has no derivation (`appUnitUnit_hasNoTyping`).
 

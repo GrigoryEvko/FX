@@ -17,7 +17,7 @@ to the description engine in a few lines — `Decidable (HasTypeDesc Γ t T)` �
 generic engine's P11 "0 false negatives" property (every typing question is
 decidable), WITHOUT redoing the decider from scratch.  This is the concrete payoff
 of the equivalence: the cascade-free description-driven `gen` arm is not just sound
-+ complete but a genuine, decidable typechecker on the current fragment.
++ complete but a genuine, decidable typechecker on the native pi/sigma-formation HasType core.
 
 ## Why hand-built, not `decidable_of_iff`
 

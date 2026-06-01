@@ -224,7 +224,7 @@ theorem hasTypeDesc_sigmaFormation_viaGenArm
     (DescTelescope.nil (currentDepth := 2) (context.cons domain |>.cons codomain) flag)
 
 /-- COMPLETENESS of the description engine wrt the bespoke `HasType`:
-every `HasType` derivation on the current fragment has a `HasTypeDesc`
+every `HasType` derivation on the native pi/sigma-formation HasType core has a `HasTypeDesc`
 counterpart.  A single induction on `HasType` (NOT mutual — `HasType`'s premises
 are direct sub-derivations with IHs): `var`/`conv`/`universeFormation` map to the
 matching `HasTypeDesc` arm; `piFormation`/`sigmaFormation` map through the

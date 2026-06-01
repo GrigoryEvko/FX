@@ -8,7 +8,7 @@ import FX1Poly.Typed.WfContext
 `HasTypeConsistency` established that every closed (empty-context) well-typed
 subject IS a type (`closedSubjectIsType`).  This file sharpens that into the two
 complementary halves of a COMPLETE characterization of closed typing on the
-current fragment (`var` / `conv` / `universeFormation` / `piFormation` /
+native pi/sigma-formation HasType core (`var` / `conv` / `universeFormation` / `piFormation` /
 `sigmaFormation`):
 
 * the SUBJECT side — `closedSubjectIsTypeFormer`: a closed well-typed subject is
@@ -31,7 +31,7 @@ rigidity.
 
 Fragment-specific scope: with term-introduction arms (λ / pair / data
 constructors), the SUBJECT side gains canonical-value disjuncts (closed terms
-become "type-former OR canonical value").  On the current fragment the
+become "type-former OR canonical value").  On the native pi/sigma-formation HasType core the
 type-former-only shape is the checkable truth, mirroring `closedSubjectIsType`'s
 honesty note.
 
@@ -51,7 +51,7 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- Canonical forms (P10 precursor, current fragment): a closed well-typed
+/-- Canonical forms (P10 precursor, native pi/sigma-formation HasType core): a closed well-typed
 subject is EXACTLY a universe / Π / Σ type-former code.  The empty context has
 no variables (`Fin 0`), so the `var` disjunct of the 4-way shape classification
 `typedSubjectIsVariableOrUniverseCode` is impossible; the other three disjuncts
@@ -73,7 +73,7 @@ theorem HasType.closedSubjectIsTypeFormer {profile : PolyProfile}
   · exact Or.inr (Or.inl piShape)
   · exact Or.inr (Or.inr sigmaShape)
 
-/-- P10 consistency interface (current fragment): in the empty context, every
+/-- P10 consistency interface (native pi/sigma-formation HasType core): in the empty context, every
 well-typed subject's classifier is convertible to a universe code.  Hence no
 closed term lives below the universe level — the fragment's consistency content
 (an `Empty`/`El`-level type, once it exists, has a non-universe-code classifier,

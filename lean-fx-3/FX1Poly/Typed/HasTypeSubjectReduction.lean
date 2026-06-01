@@ -4,10 +4,9 @@ import FX1Poly.Typed.SigmaCodeShape
 import FX1Poly.Core.StrongNormalizationLeaves
 
 /-! # FX1Poly/Typed/HasTypeSubjectReduction
-    — typed Subject Reduction (P4) for the current typing fragment
+    — typed Subject Reduction (P4) for the native pi/sigma-formation HasType core
 
-`HasType.subjectHasNoStep` is the structural invariant of the current `HasType`
-fragment (`var` / `conv` / `universeFormation` / `piFormation` /
+`HasType.subjectHasNoStep` is the structural invariant of the native pi/sigma-formation `HasType` core (`var` / `conv` / `universeFormation` / `piFormation` /
 `sigmaFormation`): every well-typed SUBJECT is NORMAL — the leaves
 (`variableCell`, `universeCodeCell`) have no outgoing `Step`, and the type
 formers (`piTyCodeCell`, `sigmaTyCodeCell`) are pure (no head redex), so a step
@@ -37,7 +36,7 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core
 
-/-- Every well-typed subject in the current fragment is NORMAL: the leaves
+/-- Every well-typed subject in the native pi/sigma-formation HasType core is NORMAL: the leaves
 (`variableCell`, `universeCodeCell`) step nowhere (`noStep_var` /
 `noStep_universeCode`), and the type formers (`piTyCodeCell`, `sigmaTyCodeCell`)
 are pure, so a step could only descend into a child.
@@ -68,7 +67,7 @@ theorem HasType.subjectHasNoStep {profile : PolyProfile} {scope : Nat}
       domainTyped codomainTyped ihDomain ihCodomain =>
       exact sigmaTyCodeCell_noStep_of_childrenNoStep ihDomain ihCodomain
 
-/-- **Typed Subject Reduction (P4)** for the current fragment.  Holds vacuously:
+/-- **Typed Subject Reduction (P4)** for the native pi/sigma-formation HasType core.  Holds vacuously:
 a well-typed subject does not `Step` (`subjectHasNoStep`), so the reduction
 premise is absurd and typing is preserved with no redex to check.  The statement
 is permanent; β/ι content arrives with the redex-bearing `HasType` arms. -/

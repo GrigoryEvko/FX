@@ -1,9 +1,9 @@
 import FX1Poly.Typed.IsTypeDecidable
 
 /-! # FX1Poly/Typed/HasTypeDecidable
-    — typed checking collapses to classifier equality (current fragment)
+    — typed checking collapses to classifier equality (native pi/sigma-formation HasType core)
 
-On the current `HasType` fragment, deciding
+On the native pi/sigma-formation `HasType` core, deciding
 `HasType context subject classifier` does NOT require a `Conv` decision: validity
 (`HasType.classifierIsType`) makes every classifier an `IsType`, hence a
 non-stepping normal cell, and the per-shape inversions hand back a `Conv` to
@@ -112,7 +112,7 @@ theorem HasType.not_of_headGenerator {profile : PolyProfile} {scope : Nat}
   · subst subjectIsSigma
     exact notSigma (headGenerator_sigmaTyCodeCell domainCode codomainCode)
 
-/-- Decide `HasType context subject classifier` for the current fragment — typed
+/-- Decide `HasType context subject classifier` for the native pi/sigma-formation HasType core — typed
 checking as a decision procedure.  A direct mirror of
 `IsType.decidableOfWellFormed`: case on the SUBJECT cell `mkGen generator payload
 children` (single ctor → large elimination into `Decidable`; `payload` carries

@@ -5,9 +5,9 @@ import FX1Poly.Core.StrongNormalizationLeaves
 import FX1Poly.Core.RawTermDecEq
 
 /-! # FX1Poly/Typed/HasTypeDecidableConv
-    — decidable type conversion for the current typing fragment
+    — decidable type conversion for the native pi/sigma-formation HasType core
 
-In the current `HasType` fragment every *type* (every `IsType` classifier) is
+In the native pi/sigma-formation `HasType` core every *type* (every `IsType` classifier) is
 NORMAL: it has no outgoing `Step`.  The type formers (`piTyCodeCell`,
 `sigmaTyCodeCell`) are non-stepping because their typed children are normal, and
 the leaves (`variableCell`, `universeCodeCell`) trivially so
@@ -34,7 +34,7 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- Every type in the current fragment is a non-stepping normal form.  An
+/-- Every type in the native pi/sigma-formation HasType core is a non-stepping normal form.  An
 `IsType` witness exposes a typing derivation whose *subject* is the type itself
 (`typed : HasType … classifier (univ …)`), so type normality is exactly the
 subject-side `HasType.subjectHasNoStep` specialised to that derivation —
@@ -50,7 +50,7 @@ theorem IsType.hasNoStep {profile : PolyProfile} {scope : Nat}
   obtain ⟨levelExpr, flag, typed⟩ := isType
   exact typed.subjectHasNoStep
 
-/-- **Convertible well-formed types are equal** (current fragment): both types
+/-- **Convertible well-formed types are equal** (native pi/sigma-formation HasType core): both types
 are normal, so `Conv` collapses to `Eq` by rigidity. -/
 theorem Conv.eq_of_isType {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
@@ -96,7 +96,7 @@ theorem levelFlag_eq_of_conv_universeCodeCell {profile : PolyProfile}
   injection payloadEqual with levelAgree flagAgree
   exact ⟨levelAgree, flagAgree⟩
 
-/-- For the current fragment, type conversion is exactly equality of types. -/
+/-- For the native pi/sigma-formation HasType core, type conversion is exactly equality of types. -/
 theorem Conv.iff_eq_of_isType {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {firstType secondType : RawTerm scope}
@@ -105,7 +105,7 @@ theorem Conv.iff_eq_of_isType {profile : PolyProfile} {scope : Nat}
     Conv firstType secondType ↔ firstType = secondType :=
   Conv.iff_eq_of_noStep firstIsType.hasNoStep secondIsType.hasNoStep
 
-/-- **Type conversion is decidable for the current fragment** (the P11 /
+/-- **Type conversion is decidable for the native pi/sigma-formation HasType core** (the P11 /
 ★ MILESTONE-A seed): decide `firstType = secondType` with the propext-free
 `DecidableEq (RawTerm scope)` and transport across `Conv.iff_eq_of_isType`.  No
 normalizer is consulted — the typed classifiers here are already normal. -/

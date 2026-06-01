@@ -4,10 +4,10 @@ import FX1Poly.Core.StrongNormalizationLeaves
 import FX1Poly.Core.StepStarConfluence
 
 /-! # FX1Poly/Typed/HasTypeStronglyNormalizing
-    — the fundamental theorem (typed SN) for the current typing fragment
+    — the fundamental theorem (typed SN) for the native pi/sigma-formation HasType core
 
 `HasType.isStronglyNormalizing` is the fundamental theorem — *every
-well-typed term is strongly normalizing* — for the current `HasType` fragment
+well-typed term is strongly normalizing* — for the native pi/sigma-formation `HasType` core
 (`var` / `conv` / `universeFormation` / `piFormation` / `sigmaFormation`).  At
 this fragment every well-typed subject is NON-STEPPING
 (`HasType.subjectHasNoStep`), so SN is immediate: a term with no outgoing `Step`
@@ -38,7 +38,7 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core
 
-/-- The fundamental theorem for the current fragment: every well-typed term is
+/-- The fundamental theorem for the native pi/sigma-formation HasType core: every well-typed term is
 strongly normalizing.  Since every well-typed subject is NON-STEPPING
 (`HasType.subjectHasNoStep` — including a `piTyCodeCell` once its typed children
 are normal), strong normalization is immediate: a term with no outgoing `Step`
