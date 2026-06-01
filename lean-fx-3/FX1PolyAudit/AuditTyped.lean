@@ -865,3 +865,4 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsReducibleMember.atUniverseCode
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.consInversion
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.piFormerOfChildMemberships
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.sigmaFormerOfChildMemberships
