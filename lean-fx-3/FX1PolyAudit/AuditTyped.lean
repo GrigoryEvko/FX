@@ -902,6 +902,9 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.positiveCandidateSigmaTypeWithPositiveTypeCandidates
 #assert_no_axioms FX1Poly.Typed.positiveCandidatePiTypeWithPositiveTypeCandidates
 #assert_no_axioms FX1Poly.Typed.fundamentalPiIntroWithPositiveTypeCandidatesFromPositiveDomainCandidate
+#assert_no_axioms FX1Poly.Typed.formerChildrenReducibleAtDispatchLevelsWithPositiveTypeCandidates
+#assert_no_axioms FX1Poly.Typed.fundamentalPiFormationWithPositiveTypeCandidates
+#assert_no_axioms FX1Poly.Typed.fundamentalSigmaFormationWithPositiveTypeCandidates
 
 /-! ### Dependent fundamental theorem — the NON-telescope arms over the ∀-level environment.  `var` (the arm
     the ∀-level env was built to unblock: closes by instantiating the all-levels family at the conclusion

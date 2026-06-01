@@ -127,8 +127,8 @@ theorem positiveCandidateVarWithPositiveTypeCandidates
   exact envWithCandidates.lookupPositiveCandidate index predLevel
 
 /-- **The positive-candidate Sigma type half over the strengthened environment.**  Sigma codes are neutral
-non-Pi type codes in the current reducibility semantics, so they denote the all-positive candidate at every
-positive fuel without recursive child candidate premises. -/
+non-Pi type codes in this stratified reducibility semantics, so they denote the all-positive candidate at
+every positive fuel without recursive child candidate premises. -/
 theorem positiveCandidateSigmaTypeWithPositiveTypeCandidates
     {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
@@ -170,6 +170,123 @@ theorem positiveCandidatePiTypeWithPositiveTypeCandidates
         codomainHasPositiveCandidate (RawTermSubst.cons argument substitution)
           extendedEnvWithCandidates candidatePredLevel
       rwa [RawTerm.subst_cons_eq_subst0_lift] at codomainCandidate)
+
+/-- **Dispatch-level former children over the strengthened environment.**  The domain child is read from
+the strengthened member half at the two adjacent levels consumed by Pi/Sigma formation.  For the codomain
+child at the one-higher domain level, the positive-candidate type half upgrades the argument to all-positive
+domain membership, extends the strengthened environment through the binder, and runs the codomain recursive
+premise.  The base-level codomain child remains explicit, because fuel `0` domain membership cannot in
+general be promoted to all-positive membership. -/
+theorem formerChildrenReducibleAtDispatchLevelsWithPositiveTypeCandidates
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainLevel codomainLevel : LevelExpr} {flag : UniverseFlag}
+    (domainFundamental :
+      FundamentalConclusionWithPositiveTypeCandidates context domainCode
+        (universeCodeCell domainLevel flag))
+    (domainHasPositiveCandidate :
+      PositiveCandidateConclusionWithPositiveTypeCandidates context domainCode)
+    (codomainMemberAtDomainLevel :
+      ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+        (_env : ReducibleEnvAtAllLevelsWithPositiveTypeCandidates context substitution)
+        (predLevel : Nat) (argument : RawTerm (targetScope + 1)),
+        IsReducibleMemberAt predLevel (RawTerm.subst substitution domainCode) argument →
+        IsReducibleMemberAt (predLevel + 1) (universeCodeCell codomainLevel flag)
+          (RawTerm.subst (RawTermSubst.cons argument substitution) codomainCode))
+    (codomainFundamental :
+      FundamentalConclusionWithPositiveTypeCandidates (context.cons domainCode) codomainCode
+        (universeCodeCell codomainLevel flag)) :
+    ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+      (_env : ReducibleEnvAtAllLevelsWithPositiveTypeCandidates context substitution)
+      (predLevel : Nat),
+      FormerChildrenReducibleAtDispatchLevels predLevel flag substitution domainCode codomainCode
+        domainLevel codomainLevel := by
+  intro _targetScope substitution envWithCandidates predLevel
+  refine ⟨?domainAtLevel, ?domainAboveAndCodomain⟩
+  · have domainMember := domainFundamental substitution envWithCandidates predLevel
+    rwa [subst_universeCodeCell] at domainMember
+  · refine ⟨?domainAtNextLevel, ?codomainAtDomainLevel, ?codomainAtNextDomainLevel⟩
+    · have domainMemberAbove := domainFundamental substitution envWithCandidates (predLevel + 1)
+      rwa [subst_universeCodeCell] at domainMemberAbove
+    · intro argument argumentMember
+      exact codomainMemberAtDomainLevel substitution envWithCandidates predLevel
+        argument argumentMember
+    · intro argument argumentMember
+      obtain ⟨domainCandidate, domainReducible, argumentInDomain⟩ := argumentMember
+      have argumentAtAllPositiveLevels :
+          IsReducibleMemberAtAllPositiveLevels
+            (RawTerm.subst substitution domainCode) argument :=
+        HasAllPositiveReducibleCandidateAt.memberExtendsToAllPositive
+          (domainHasPositiveCandidate substitution envWithCandidates predLevel)
+          domainReducible argumentInDomain
+      have extendedEnvWithCandidates :
+          ReducibleEnvAtAllLevelsWithPositiveTypeCandidates (context.cons domainCode)
+            (RawTermSubst.cons argument substitution) :=
+        ReducibleEnvAtAllLevelsWithPositiveTypeCandidates.cons envWithCandidates
+          argumentAtAllPositiveLevels
+          (fun headPredLevel =>
+            domainHasPositiveCandidate substitution envWithCandidates headPredLevel)
+      exact codomainFundamental (RawTermSubst.cons argument substitution)
+        extendedEnvWithCandidates predLevel
+
+/-- **Pi-formation over the strengthened environment from the factored dispatch-level child premises.** -/
+theorem fundamentalPiFormationWithPositiveTypeCandidates
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
+    (domainFundamental :
+      FundamentalConclusionWithPositiveTypeCandidates context domainCode
+        (universeCodeCell domainLevel flag))
+    (domainHasPositiveCandidate :
+      PositiveCandidateConclusionWithPositiveTypeCandidates context domainCode)
+    (codomainMemberAtDomainLevel :
+      ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+        (_env : ReducibleEnvAtAllLevelsWithPositiveTypeCandidates context substitution)
+        (predLevel : Nat) (argument : RawTerm (targetScope + 1)),
+        IsReducibleMemberAt predLevel (RawTerm.subst substitution domainCode) argument →
+        IsReducibleMemberAt (predLevel + 1) (universeCodeCell codomainLevel flag)
+          (RawTerm.subst (RawTermSubst.cons argument substitution) codomainCode))
+    (codomainFundamental :
+      FundamentalConclusionWithPositiveTypeCandidates (context.cons domainCode) codomainCode
+        (universeCodeCell codomainLevel flag)) :
+    FundamentalConclusionWithPositiveTypeCandidates context (piTyCodeCell domainCode codomainCode)
+      (universeCodeCell formerLevel flag) := by
+  intro _targetScope substitution envWithCandidates predLevel
+  rw [subst_universeCodeCell]
+  exact (formerChildrenReducibleAtDispatchLevelsWithPositiveTypeCandidates
+    domainFundamental domainHasPositiveCandidate codomainMemberAtDomainLevel codomainFundamental
+    substitution envWithCandidates predLevel).toPiMember
+
+/-- **Sigma-formation over the strengthened environment from the factored dispatch-level child premises.** -/
+theorem fundamentalSigmaFormationWithPositiveTypeCandidates
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
+    (domainFundamental :
+      FundamentalConclusionWithPositiveTypeCandidates context domainCode
+        (universeCodeCell domainLevel flag))
+    (domainHasPositiveCandidate :
+      PositiveCandidateConclusionWithPositiveTypeCandidates context domainCode)
+    (codomainMemberAtDomainLevel :
+      ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+        (_env : ReducibleEnvAtAllLevelsWithPositiveTypeCandidates context substitution)
+        (predLevel : Nat) (argument : RawTerm (targetScope + 1)),
+        IsReducibleMemberAt predLevel (RawTerm.subst substitution domainCode) argument →
+        IsReducibleMemberAt (predLevel + 1) (universeCodeCell codomainLevel flag)
+          (RawTerm.subst (RawTermSubst.cons argument substitution) codomainCode))
+    (codomainFundamental :
+      FundamentalConclusionWithPositiveTypeCandidates (context.cons domainCode) codomainCode
+        (universeCodeCell codomainLevel flag)) :
+    FundamentalConclusionWithPositiveTypeCandidates context (sigmaTyCodeCell domainCode codomainCode)
+      (universeCodeCell formerLevel flag) := by
+  intro _targetScope substitution envWithCandidates predLevel
+  rw [subst_universeCodeCell]
+  exact (formerChildrenReducibleAtDispatchLevelsWithPositiveTypeCandidates
+    domainFundamental domainHasPositiveCandidate codomainMemberAtDomainLevel codomainFundamental
+    substitution envWithCandidates predLevel).toSigmaMember
 
 /-- **Dependent lambda introduction over the strengthened environment.**  The domain premise supplies the
 ordinary decoded domain candidate at the conclusion fuel.  The domain's positive-fuel candidate companion
