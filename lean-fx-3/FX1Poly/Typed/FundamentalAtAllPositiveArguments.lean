@@ -270,6 +270,47 @@ theorem HasAllPositiveReducibleCandidateAt.memberExtendsToAllPositive {scope : N
     IsReducibleMemberAtAllPositiveLevels typeCode term :=
   (ReducibleTypeAt.deterministic candidateReducible hasAllPositiveCandidate term).mp candidateMember
 
+/-- **Build the all-positive candidate from a concrete positive-level member-extension principle.**  If
+every member at `predLevel + 1` extends to all positive levels, then any existing candidate at that
+positive fuel can be transported onto `IsReducibleMemberAtAllPositiveLevels typeCode`.  The positivity is
+essential: fuel `0` has the empty lower universe relation, so the all-positive candidate is not generally a
+fuel-`0` candidate. -/
+theorem HasAllPositiveReducibleCandidateAt.ofMemberExtensionAtPositiveLevel {scope : Nat}
+    {predLevel : Nat} {typeCode : RawTerm scope} {candidate : RawTerm scope → Prop}
+    (candidateReducible : ReducibleTypeAt (predLevel + 1) typeCode candidate)
+    (membersExtend :
+      ∀ {term : RawTerm scope},
+        IsReducibleMemberAt (predLevel + 1) typeCode term →
+          IsReducibleMemberAtAllPositiveLevels typeCode term) :
+    HasAllPositiveReducibleCandidateAt (predLevel + 1) typeCode := by
+  have pointwise : PointwiseIff candidate (IsReducibleMemberAtAllPositiveLevels typeCode) := by
+    intro term
+    constructor
+    · intro termInCandidate
+      exact membersExtend ⟨candidate, candidateReducible, termInCandidate⟩
+    · intro termAtAllPositiveLevels
+      obtain ⟨witnessCandidate, witnessReducible, termInWitness⟩ :=
+        termAtAllPositiveLevels predLevel
+      exact (ReducibleTypeAt.deterministic witnessReducible candidateReducible term).mp
+        termInWitness
+  exact ReducibleTypeStep.ofPointwiseIff candidateReducible pointwise
+
+/-- **Positive-level all-positive candidates from a positive-level member-extension principle.** -/
+theorem HasAllPositiveReducibleCandidateAt.atPositiveLevelsOfMemberExtension {scope : Nat}
+    {typeCode : RawTerm scope}
+    (typeCodeReducibleAtAllPositiveLevels :
+      IsReducibleTypeAtAllPositiveLevels typeCode)
+    (membersExtend :
+      ∀ {term : RawTerm scope} {predLevel : Nat},
+        IsReducibleMemberAt (predLevel + 1) typeCode term →
+          IsReducibleMemberAtAllPositiveLevels typeCode term) :
+    ∀ predLevel : Nat, HasAllPositiveReducibleCandidateAt (predLevel + 1) typeCode := by
+  intro predLevel
+  obtain ⟨candidate, candidateReducible⟩ :=
+    typeCodeReducibleAtAllPositiveLevels predLevel
+  exact HasAllPositiveReducibleCandidateAt.ofMemberExtensionAtPositiveLevel candidateReducible
+    (fun member => membersExtend member)
+
 /-- **Concrete-member extension from an all-positive candidate at the same fuel.**  If a type denotes the
 all-positive member predicate at the exact fuel where a concrete term is known to be a member, then that
 term extends to membership at every positive fuel.  This packages the existential member witness before the
